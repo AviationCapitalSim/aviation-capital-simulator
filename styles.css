@@ -1,28 +1,14 @@
+/* ======== BASE ======== */
 body {
   margin: 0;
   font-family: "Poppins", sans-serif;
   background: #0C1F3C;
   color: white;
   text-align: center;
+  padding-top: 80px; /* para evitar que el header tape el contenido */
 }
-header {
-  background: #0A1830;
-  padding: 1rem 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-}
-header h1 {
-  color: #FFB300;
-}
-nav a {
-  color: white;
-  text-decoration: none;
-  margin: 0 1rem;
-}
-nav a:hover {
-  color: #FFB300;
-}
+
+/* ======== HERO ======== */
 .hero {
   padding: 6rem 1rem;
 }
@@ -34,13 +20,121 @@ nav a:hover {
   padding: 0.8rem 2rem;
   border-radius: 12px;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 .hero button:hover {
   background: #ffcb42;
+  transform: scale(1.05);
 }
+
+/* ======== FOOTER ======== */
 footer {
   padding: 1rem;
   border-top: 1px solid #1A335C;
   color: #bbb;
   font-size: 0.9rem;
+}
+
+/* ======== ACS HEADER ======== */
+.acs-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(10, 24, 48, 0.95); /* semitransparente */
+  backdrop-filter: blur(4px);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 2rem;
+  border-bottom: 2px solid #FFB300;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+/* Efecto scroll premium */
+.acs-header.scrolled {
+  background: rgba(10, 24, 48, 0.85);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.acs-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.acs-logo img {
+  height: 40px;
+}
+
+.acs-logo h1 {
+  font-size: 1.1rem;
+  color: #FFB300;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.acs-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.acs-nav a {
+  color: #ddd;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.acs-nav a:hover {
+  color: #FFB300;
+}
+
+.acs-auth a {
+  text-decoration: none;
+  padding: 6px 14px;
+  margin-left: 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.login-btn {
+  border: 1px solid #FFB300;
+  color: #FFB300;
+}
+
+.login-btn:hover {
+  background: #FFB300;
+  color: #0A1830;
+}
+
+.register-btn {
+  background: #FFB300;
+  color: #0A1830;
+}
+
+.register-btn:hover {
+  background: #ffcb42;
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 768px) {
+  .acs-header {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+  }
+  .acs-nav {
+    flex-basis: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+    gap: 1rem;
+  }
+  .acs-auth {
+    margin-top: 0.5rem;
+  }
 }
