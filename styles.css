@@ -5,7 +5,8 @@ body {
   background: #0C1F3C;
   color: white;
   text-align: center;
-  padding-top: 80px; /* para evitar que el header tape el contenido */
+  padding-top: 80px; /* to prevent header overlap */
+  overflow-x: hidden;
 }
 
 /* ======== HERO ======== */
@@ -41,7 +42,7 @@ footer {
   top: 0;
   left: 0;
   width: 100%;
-  background: rgba(10, 24, 48, 0.95); /* semitransparente */
+  background: rgba(10, 24, 48, 0.95);
   backdrop-filter: blur(4px);
   color: white;
   display: flex;
@@ -51,93 +52,82 @@ footer {
   border-bottom: 2px solid #FFB300;
   z-index: 1000;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
-/* Efecto scroll premium */
+/* Scroll effect */
 .acs-header.scrolled {
   background: rgba(10, 24, 48, 0.85);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
+/* Logo */
 .acs-logo {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
-
 .acs-logo img {
-  height: 40px;
+  height: 36px;
+  width: auto;
 }
-
 .acs-logo h1 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #FFB300;
   margin: 0;
   letter-spacing: 1px;
 }
 
+/* Navigation */
 .acs-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.2rem;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
 }
-
 .acs-nav a {
   color: #ddd;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s;
 }
-
 .acs-nav a:hover {
   color: #FFB300;
 }
 
+/* Auth buttons */
+.acs-auth {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
 .acs-auth a {
   text-decoration: none;
   padding: 6px 14px;
-  margin-left: 0.5rem;
   border-radius: 6px;
   font-weight: 600;
   transition: all 0.3s ease;
+  font-size: 0.9rem;
 }
-
 .login-btn {
   border: 1px solid #FFB300;
   color: #FFB300;
+  background: transparent;
 }
-
 .login-btn:hover {
   background: #FFB300;
   color: #0A1830;
 }
-
 .register-btn {
   background: #FFB300;
   color: #0A1830;
 }
-
 .register-btn:hover {
   background: #ffcb42;
 }
 
-/* ======== RESPONSIVE ======== */
-@media (max-width: 768px) {
-  .acs-header {
-    flex-wrap: wrap;
-    justify-content: center;
-    text-align: center;
-    padding: 1rem;
-  }
-  .acs-nav {
-    flex-basis: 100%;
-    justify-content: center;
-    margin-top: 0.5rem;
-    gap: 1rem;
-  }
-  .acs-auth {
-    margin-top: 0.5rem;
-  }
-}
 /* ======== LOGO ACS ======== */
 .acs-symbol {
   font-size: 1.4rem;
@@ -154,9 +144,33 @@ footer {
   box-shadow: 0 0 10px rgba(255, 179, 0, 0.2);
   transition: all 0.4s ease;
 }
-
 .acs-symbol:hover {
   transform: scale(1.05);
   box-shadow: 0 0 15px rgba(255, 187, 0, 0.5);
   text-shadow: 0 0 15px rgba(255, 179, 0, 0.6);
+}
+
+/* ======== RESPONSIVE ======== */
+@media (max-width: 850px) {
+  .acs-header {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+  }
+  .acs-logo {
+    justify-content: center;
+    flex-basis: 100%;
+  }
+  .acs-nav {
+    flex-basis: 100%;
+    justify-content: center;
+    margin-top: 0.4rem;
+    gap: 1rem;
+  }
+  .acs-auth {
+    flex-basis: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
 }
