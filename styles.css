@@ -9,11 +9,12 @@ body {
   overflow-x: hidden;
 }
 
-/* ======== HERO (Fondo unificado y sin halo) ======== */
+/* ======== HERO (limpio y coherente) ======== */
 .hero {
   padding: 6rem 1rem;
-  background-color: #081428; /* Azul extraído directamente del logo ACS */
+  background: #081428; /* azul base del logo */
   background-image: none !important;
+  box-shadow: none !important;
 }
 
 .hero h2 {
@@ -34,7 +35,25 @@ body {
   background: none !important;
   box-shadow: none !important;
   filter: none !important;
-  mix-blend-mode: normal;
+  border: none !important;
+}
+
+/* ======== BOTÓN ======== */
+.hero button {
+  background: #FFB300;
+  color: #0A1830;
+  font-weight: 700;
+  border: none;
+  padding: 0.9rem 2.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.hero button:hover {
+  background: #ffcb42;
+  transform: scale(1.05);
 }
 
 /* ======== FOOTER ======== */
