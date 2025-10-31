@@ -9,10 +9,10 @@ body {
   overflow-x: hidden;
 }
 
-/* ======== HERO ======== */
+/* ======== HERO (Color corregido y sin halo) ======== */
 .hero {
   padding: 6rem 1rem;
-  background: #0A1630; /* azul aeronáutico profundo, igual al del logo */
+  background-color: #09162A; /* Azul profundo, igualado al tono base del logo */
 }
 
 .hero h2 {
@@ -30,7 +30,9 @@ body {
   width: 200px;
   margin: 30px auto 25px;
   display: block;
-  filter: none; /* sin sombra ni brillo */
+  filter: none !important; /* sin sombras ni brillos */
+  box-shadow: none !important;
+  background: none !important;
 }
 
 /* ======== FOOTER ======== */
