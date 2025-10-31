@@ -9,10 +9,11 @@ body {
   overflow-x: hidden;
 }
 
-/* ======== HERO (Color corregido y sin halo) ======== */
+/* ======== HERO (Fondo unificado y sin halo) ======== */
 .hero {
   padding: 6rem 1rem;
-  background-color: #09162A; /* Azul profundo, igualado al tono base del logo */
+  background-color: #081428; /* Azul extraído directamente del logo ACS */
+  background-image: none !important;
 }
 
 .hero h2 {
@@ -30,9 +31,10 @@ body {
   width: 200px;
   margin: 30px auto 25px;
   display: block;
-  filter: none !important; /* sin sombras ni brillos */
-  box-shadow: none !important;
   background: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  mix-blend-mode: normal;
 }
 
 /* ======== FOOTER ======== */
