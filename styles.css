@@ -174,3 +174,9 @@ footer {
     margin-top: 0.5rem;
   }
 }
+.hero-logo {
+  width: 180px;
+  margin: 25px auto 10px;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(255, 179, 0, 0.4));
+}
