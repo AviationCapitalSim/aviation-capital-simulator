@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="#">Fleet</a>
+      <a href="#">Routes</a>
+      <a href="#">Finance</a>
+      <a href="#">Forum</a>
+      <a href="#">Support</a>
+    </nav>
+
+    <div class="acs-auth">
+      <span class="user-tag">Captain Francisco ✈️</span>
+      <a href="index.html" class="logout-btn">Logout</a>
+    </div>
+  </header>
+
+  <!-- DASHBOARD BODY -->
+  <section class="dashboard">
+    <div class="top-info">
+      <h2>Welcome, Captain Francisco</h2>
+      <p>Current Credits: <span class="credits">2,000</span> | Plan: <span class="plan">PRO</span></p>
+      <button class="buy-btn">Buy Credits</button>
+    </div>
+
+    <div class="main-grid">
+      <!-- Left panel -->
+      <div class="panel economy">
+        <h3>Economy Overview</h3>
+        <ul>
+          <li><strong>Company Pre-Tax Profit:</strong> $903,000 <span class="up">+36.6%</span></li>
+          <li><strong>Operating Profit/Loss:</strong> $961,000 <span class="up">+33.6%</span></li>
+          <li><strong>Load Factors:</strong> 72.8% <span class="up">+1.6%</span></li>
+        </ul>
+      </div>
+
+      <!-- Right panel -->
+      <div class="panel billing">
+        <h3>Billing Information</h3>
+        <ul>
+          <li><strong>Weekly Membership Cost:</strong> 1 Cr / week</li>
+          <li><strong>Your Credit Balance:</strong> 25 Cr</li>
+          <li><strong>Next Billing:</strong> 01.11.2025, 12:00</li>
+          <li><strong>Credits needed to play to the end:</strong> 70 Cr</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+</body>
+</html>
