@@ -59,20 +59,60 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
+<script>
+  // Generador dinámico de países
+  document.addEventListener("DOMContentLoaded", () => {
+    const countries = [
+      "Afghanistan","Albania","Algeria","Andorra","Angola","Argentina","Armenia","Australia","Austria",
+      "Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin",
+      "Bhutan","Bolivia","Bosnia and Herzegovina","Botswana","Brazil","Brunei","Bulgaria","Burkina Faso",
+      "Cambodia","Cameroon","Canada","Chile","China","Colombia","Costa Rica","Croatia","Cuba","Cyprus",
+      "Czech Republic","Denmark","Dominican Republic","Ecuador","Egypt","El Salvador","Estonia","Ethiopia",
+      "Finland","France","Georgia","Germany","Greece","Guatemala","Honduras","Hungary","Iceland","India",
+      "Indonesia","Iran","Iraq","Ireland","Israel","Italy","Jamaica","Japan","Jordan","Kazakhstan",
+      "Kenya","Kuwait","Kyrgyzstan","Latvia","Lebanon","Lithuania","Luxembourg","Madagascar","Malaysia",
+      "Maldives","Malta","Mauritius","Mexico","Moldova","Mongolia","Montenegro","Morocco","Nepal",
+      "Netherlands","New Zealand","Nigeria","North Macedonia","Norway","Oman","Pakistan","Panama",
+      "Paraguay","Peru","Philippines","Poland","Portugal","Qatar","Romania","Russia","Rwanda","Saudi Arabia",
+      "Senegal","Serbia","Singapore","Slovakia","Slovenia","South Africa","South Korea","Spain","Sri Lanka",
+      "Sweden","Switzerland","Syria","Taiwan","Tajikistan","Tanzania","Thailand","Tunisia","Turkey",
+      "Turkmenistan","Uganda","Ukraine","United Arab Emirates","United Kingdom","United States","Uruguay",
+      "Uzbekistan","Venezuela","Vietnam","Zambia","Zimbabwe"
+    ];
+
+    const select = document.querySelector("select");
+    select.innerHTML = '<option value="">Select Country</option>' + 
+      countries.map(c => `<option value="${c}">${c}</option>`).join('');
+  });
+</script>
+  
   <!-- Script de registro local -->
   <script>
-    function handleRegister(event) {
-      event.preventDefault(); // evita recargar la página
+  function handleRegister(event) {
+    event.preventDefault();
 
-      // Simulación de registro local
-      alert("✅ Welcome aboard, Captain! Your ACS account has been created.");
+    const password = document.querySelectorAll("input[type='password']")[0].value;
+    const confirm = document.querySelectorAll("input[type='password']")[1].value;
 
-      // Redirección a la página principal (ajusta si luego hay un dashboard)
-      window.location.href = "index.html";
+    // Reglas de contraseña
+    const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
 
+    if (!regex.test(password)) {
+      alert("⚠️ Password must be at least 8 characters long, include one uppercase letter and one number.");
       return false;
     }
-  </script>
+
+    if (password !== confirm) {
+      alert("⚠️ Passwords do not match. Please verify.");
+      return false;
+    }
+
+    alert("✅ Welcome aboard, Captain! Your ACS account has been created.");
+    window.location.href = "index.html";
+    return false;
+  }
+</script>
+
 </body>
 </html>
 
