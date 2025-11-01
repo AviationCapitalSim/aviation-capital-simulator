@@ -55,7 +55,7 @@
       background: #FFB300;
       color: #0C1F3C;
       font-weight: 800;
-      font-size: 1.05rem; /* ← letra más grande */
+      font-size: 1.00rem; /* ← letra más grande */
       border: none;
       border-radius: 12px;
       padding: 1rem 2.4rem;
@@ -88,7 +88,7 @@
       <a href="support.html">Support</a>
     </nav>
     <div class="acs-auth">
-      <a href="logout.html" class="login-btn">Logout</a>
+      <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
     </div>
   </header>
 
@@ -202,5 +202,15 @@
       return false;
     }
   </script>
+  
+  <script>
+  function handleLogout() {
+    // Elimina los datos de sesión almacenados
+    localStorage.removeItem("ACS_User");
+    localStorage.removeItem("ACS_Airline");
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "index.html"; // redirige a la página principal
+  }
+</script>
 </body>
 </html>
