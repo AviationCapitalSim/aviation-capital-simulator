@@ -47,30 +47,52 @@
 
   <!-- ======== SCRIPT ======== -->
   <script>
-    function handleLogin(event) {
-      event.preventDefault();
+  function handleLogin(event) {
+    event.preventDefault();
 
-      const email = document.querySelector("input[type='email']").value.trim();
-      const password = document.querySelector("input[type='password']").value.trim();
+    const email = document.querySelector("input[type='email']").value.trim();
+    const password = document.querySelector("input[type='password']").value.trim();
 
-      // Validación básica
-      if (!email || !password) {
-        alert("⚠️ Please enter both email and password.");
-        return false;
-      }
-
-      // Validación simple del formato de correo
-      const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
-      if (!email.match(emailPattern)) {
-        alert("⚠️ Please enter a valid email address.");
-        return false;
-      }
-
-      // Simulación de acceso correcto
-      alert("✅ Welcome back, Captain!");
-      window.location.href = "index.html";
+    // Validación básica
+    if (!email || !password) {
+      alert("⚠️ Please enter both email and password.");
       return false;
     }
-  </script>
+
+    // Validación simple del formato de correo
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+    if (!email.match(emailPattern)) {
+      alert("⚠️ Please enter a valid email address.");
+      return false;
+    }
+
+    // Credenciales temporales válidas
+    const validEmail = "captain@acs.com";
+    const validPassword = "ACS2025";
+
+    if (email === validEmail && password === validPassword) {
+      alert("✅ Welcome back, Captain!");
+
+      // Guardar sesión de usuario
+      localStorage.setItem("ACS_User", JSON.stringify({ email }));
+
+      // Verificar si ya existe aerolínea registrada
+      const existingAirline = localStorage.getItem("ACS_Airline");
+
+      if (existingAirline) {
+        console.log("✈️ Airline already exists → redirecting to dashboard...");
+        window.location.href = "dashboard.html";
+      } else {
+        console.log("🛫 No airline found → redirecting to create_airline.html...");
+        window.location.href = "create_airline.html";
+      }
+
+    } else {
+      alert("❌ Invalid credentials. Please try again.");
+    }
+
+    return false;
+  }
+</script>
 </body>
 </html>
