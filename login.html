@@ -49,30 +49,41 @@
 
   <!-- ======== SCRIPT ======== -->
   <script>
-    function handleLogin(event) {
-      event.preventDefault();
+  function handleLogin(event) {
+    event.preventDefault();
 
-      const email = document.querySelector("input[type='email']").value.trim();
-      const password = document.querySelector("input[type='password']").value.trim();
+    const email = document.querySelector("input[type='email']").value.trim();
+    const password = document.querySelector("input[type='password']").value.trim();
 
-      // Validación básica
-      if (!email || !password) {
-        alert("⚠️ Please enter both email and password.");
-        return false;
-      }
-
-      // Validación simple del formato de correo
-      const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
-      if (!email.match(emailPattern)) {
-        alert("⚠️ Please enter a valid email address.");
-        return false;
-      }
-
-      // Simulación de acceso correcto
-      alert("✅ Welcome back, Captain!");
-      window.location.href = "index.html";
+    // Empty fields
+    if (!email || !password) {
+      alert("⚠️ Please enter both email and password.");
       return false;
     }
-  </script>
+
+    // Email format validation
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+    if (!email.match(emailPattern)) {
+      alert("⚠️ Please enter a valid email address.");
+      return false;
+    }
+
+    // Password strength validation
+    if (password.length < 6) {
+      alert("⚠️ Password must be at least 6 characters long.");
+      return false;
+    }
+
+    if (!/[A-Z]/.test(password) || !/\d/.test(password)) {
+      alert("⚠️ Password must contain at least one uppercase letter and one number.");
+      return false;
+    }
+
+    // Simulated success
+    alert("✅ Welcome back, Captain!");
+    window.location.href = "index.html";
+    return false;
+  }
+</script>
 </body>
 </html>
