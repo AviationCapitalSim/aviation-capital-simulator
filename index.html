@@ -10,23 +10,22 @@
 <body>
   <!-- ======== HEADER ACS ======== -->
   <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo">
-    <h1>Aviation Capital Simulator</h1>
-  </div>
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo">
+      <h1>Aviation Capital Simulator</h1>
+    </div>
 
-  <nav class="acs-nav" style="justify-content: center;">
-    <a href="#">Home</a>
-    <a href="#">Forum</a>
-    <a href="#">Support</a>
-  </nav>
+    <nav class="acs-nav">
+      <a href="#">Home</a>
+      <a href="#">Forum</a>
+      <a href="#">Support</a>
+    </nav>
 
-  <div class="acs-auth">
-    <button class="login-btn" onclick="goToLogin()">Login</button>
-    <button class="register-btn" onclick="goToRegister()">Register</button>
-  </div>
-</header>
-
+    <div class="acs-auth">
+      <a href="login.html" class="login-btn">Login</a>
+      <a href="register.html" class="register-btn">Register</a>
+    </div>
+  </header>
   <!-- ======== END HEADER ======== -->
 
   <!-- ======== HERO SECTION ======== -->
@@ -43,28 +42,5 @@
   </footer>
 
   <script src="script.js"></script>
-
-<script>
-  // Botones principales
-  function goToLogin() {
-    window.location.href = "login.html";
-  }
-
-  function goToRegister() {
-    window.location.href = "register.html";
-  }
-
-  // Control automático de sesión (opcional)
-  const user = localStorage.getItem("ACS_User");
-  const airline = localStorage.getItem("ACS_Airline");
-
-  if (user && airline) {
-    console.log("Session active: redirecting to dashboard...");
-    window.location.href = "dashboard.html";
-  } else if (user && !airline) {
-    console.log("User logged in but no airline created: redirecting to create_airline.html...");
-    window.location.href = "create_airline.html";
-  }
-</script>  
 </body>
 </html>
