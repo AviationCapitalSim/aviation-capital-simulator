@@ -221,5 +221,23 @@
       window.location.href = "index.html";
     }
   </script>
+
+<script>
+  // 🔒 Verificación de sesión: si no está logueado, redirigir al login
+  document.addEventListener("DOMContentLoaded", () => {
+    const user = localStorage.getItem("ACS_User");
+    if (!user) {
+      alert("⚠️ Please log in to access this page.");
+      window.location.href = "login.html";
+    }
+  });
+
+  // 🚪 Cierre de sesión: limpia todo y vuelve al index
+  function handleLogout() {
+    localStorage.clear(); // ← Limpieza completa de toda la sesión
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "index.html";
+  }
+</script>  
 </body>
 </html>
