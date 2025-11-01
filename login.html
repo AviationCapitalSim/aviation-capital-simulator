@@ -17,21 +17,15 @@
 
     <nav class="acs-nav">
       <a href="index.html">Home</a>
-      <a href="#">Dashboard</a>
-      <a href="#">Marketplace</a>
-      <a href="#">Forum</a>
+      <a href="register.html">Register</a>
       <a href="#">Support</a>
     </nav>
-
-    <div class="acs-auth">
-      <a href="register.html" class="register-btn">Register</a>
-    </div>
   </header>
 
   <!-- ======== LOGIN SECTION ======== -->
   <section class="register-section">
-    <h2>Welcome back, Captain</h2>
-    <p>Log in to continue managing your airline and empire.</p>
+    <h2>Welcome back, Captain!</h2>
+    <p>Log in to continue managing your airline empire.</p>
 
     <form class="register-form" onsubmit="return handleLogin(event)">
       <input type="email" placeholder="Email Address" required />
@@ -39,7 +33,10 @@
       <button type="submit">Login</button>
     </form>
 
-    <p class="login-link">Don’t have an account? <a href="register.html">Create one here</a>.</p>
+    <p class="login-link">
+      Don’t have an account?
+      <a href="register.html">Register here</a>.
+    </p>
   </section>
 
   <!-- ======== FOOTER ======== -->
@@ -47,43 +44,35 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <!-- ======== SCRIPT ======== -->
+  <!-- ======== LOGIN SCRIPT ======== -->
   <script>
-  function handleLogin(event) {
-    event.preventDefault();
+    function handleLogin(event) {
+      event.preventDefault();
 
-    const email = document.querySelector("input[type='email']").value.trim();
-    const password = document.querySelector("input[type='password']").value.trim();
+      const email = document.querySelector("input[type='email']").value.trim();
+      const password = document.querySelector("input[type='password']").value.trim();
 
-    // Empty fields
-    if (!email || !password) {
-      alert("⚠️ Please enter both email and password.");
+      if (!email || !password) {
+        alert("⚠️ Please enter both email and password.");
+        return false;
+      }
+
+      // Temporary mock authentication (replace with real DB later)
+      const validEmail = "captain@acs.com";
+      const validPassword = "ACS2025";
+
+      if (email === validEmail && password === validPassword) {
+        alert("🛫 Welcome aboard, Captain!\nRedirecting to your Dashboard...");
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1200);
+      } else {
+        alert("❌ Invalid credentials. Please try again.");
+      }
+
       return false;
     }
+  </script>
 
-    // Email format validation
-    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
-    if (!email.match(emailPattern)) {
-      alert("⚠️ Please enter a valid email address.");
-      return false;
-    }
-
-    // Password strength validation
-    if (password.length < 6) {
-      alert("⚠️ Password must be at least 6 characters long.");
-      return false;
-    }
-
-    if (!/[A-Z]/.test(password) || !/\d/.test(password)) {
-      alert("⚠️ Password must contain at least one uppercase letter and one number.");
-      return false;
-    }
-
-    // Simulated success
-    alert("✅ Welcome back, Captain!");
-    window.location.href = "index.html";
-    return false;
-  }
-</script>
 </body>
 </html>
