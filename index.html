@@ -42,5 +42,30 @@
   </footer>
 
   <script src="script.js"></script>
+
+<script>
+  // === BOTONES PRINCIPALES ===
+  function goToLogin() {
+    // No revisa el estado; simplemente lleva al login
+    window.location.href = "login.html";
+  }
+
+  function goToRegister() {
+    window.location.href = "register.html";
+  }
+
+  // === CONTROL DE SESIÓN (solo después del login real) ===
+  // Este bloque NO redirige desde el index, solo mantiene registro de sesión.
+  document.addEventListener("DOMContentLoaded", () => {
+    const user = localStorage.getItem("ACS_User");
+    const airline = localStorage.getItem("ACS_Airline");
+
+    console.log("Session check:", { user, airline });
+
+    // No hacemos redirect automático aquí, para evitar que el botón Login
+    // salte directamente a Create Airline.
+    // El flujo de redirección ocurre desde login.html después de validarse.
+  });
+</script>
 </body>
 </html>
