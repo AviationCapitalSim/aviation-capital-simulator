@@ -60,7 +60,7 @@
   </footer>
 
 <script>
-  // Generador dinámico de países
+  // Dynamic country list generator
   document.addEventListener("DOMContentLoaded", () => {
     const countries = [
       "Afghanistan","Albania","Algeria","Andorra","Angola","Argentina","Armenia","Australia","Austria",
@@ -84,30 +84,45 @@
     select.innerHTML = '<option value="">Select Country</option>' + 
       countries.map(c => `<option value="${c}">${c}</option>`).join('');
   });
-</script>
-  
-  <!-- Script de registro local -->
-  <script>
+
+  // Registration validation
   function handleRegister(event) {
     event.preventDefault();
 
+    const fullName = document.querySelector("input[placeholder='Full Name']").value.trim();
+    const email = document.querySelector("input[type='email']").value.trim();
     const password = document.querySelectorAll("input[type='password']")[0].value;
     const confirm = document.querySelectorAll("input[type='password']")[1].value;
+    const country = document.querySelector("select").value;
 
-    // Reglas de contraseña
-    const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-
-    if (!regex.test(password)) {
-      alert("⚠️ Password must be at least 8 characters long, include one uppercase letter and one number.");
+    // Check for empty fields
+    if (!fullName || !email || !password || !confirm || !country) {
+      alert("⚠️ Please complete all fields before continuing.");
       return false;
     }
 
+    // Validate email format
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+    if (!email.match(emailPattern)) {
+      alert("⚠️ Please enter a valid email address.");
+      return false;
+    }
+
+    // Password rules
+    const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!regex.test(password)) {
+      alert("⚠️ Password must be at least 8 characters long and include one uppercase letter and one number.");
+      return false;
+    }
+
+    // Confirm password match
     if (password !== confirm) {
       alert("⚠️ Passwords do not match. Please verify.");
       return false;
     }
 
-    alert("✅ Welcome aboard, Captain! Your ACS account has been created.");
+    // Success message
+    alert("✅ Welcome aboard, Captain! Your ACS account has been created successfully.");
     window.location.href = "index.html";
     return false;
   }
