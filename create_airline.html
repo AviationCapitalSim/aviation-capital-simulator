@@ -54,10 +54,11 @@
     button {
       background: #FFB300;
       color: #0C1F3C;
-      font-weight: 700;
+      font-weight: 800;
+      font-size: 1.00rem; /* ← letra más grande */
       border: none;
       border-radius: 12px;
-      padding: 0.9rem 2rem;
+      padding: 1rem 2.4rem;
       cursor: pointer;
       transition: all 0.3s ease;
     }
@@ -87,7 +88,7 @@
       <a href="support.html">Support</a>
     </nav>
     <div class="acs-auth">
-      <a href="logout.html" class="login-btn">Logout</a>
+      <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
     </div>
   </header>
 
@@ -117,15 +118,25 @@
         <option value="">Select Country</option>
       </select>
 
-      <select id="type" required>
-        <option value="">Select Type of Airline</option>
+      <!-- NUEVO SISTEMA DE TIPOS -->
+      <select id="businessModel" required>
+        <option value="">Select Business Model</option>
         <option value="Regional">Regional</option>
         <option value="Domestic">Domestic</option>
         <option value="International">International</option>
-        <option value="Cargo">Cargo</option>
+        <option value="Global Alliance">Global Alliance</option>
       </select>
 
-      <button type="submit">Create Airline</button>
+      <select id="operationMode" required>
+        <option value="">Select Operation Mode</option>
+        <option value="Passenger">Passenger</option>
+        <option value="Cargo">Cargo</option>
+        <option value="Passenger + Cargo">Passenger + Cargo</option>
+        <option value="Charter">Charter</option>
+        <option value="ACMI / Wet Lease">ACMI / Wet Lease</option>
+      </select>
+
+      <button type="submit">CREATE AIRLINE</button>
     </form>
   </section>
 
@@ -175,10 +186,11 @@
         slogan: document.getElementById("slogan").value.trim(),
         region: document.getElementById("region").value,
         country: document.getElementById("country").value,
-        type: document.getElementById("type").value
+        businessModel: document.getElementById("businessModel").value,
+        operationMode: document.getElementById("operationMode").value
       };
 
-      if (!airline.name || !airline.icao || !airline.iata || !airline.region || !airline.country || !airline.type) {
+      if (!airline.name || !airline.icao || !airline.iata || !airline.region || !airline.country || !airline.businessModel || !airline.operationMode) {
         alert("⚠️ Please complete all required fields.");
         return false;
       }
@@ -188,6 +200,25 @@
       alert(`✅ Airline Created Successfully!\nWelcome aboard, Captain!\nYour airline "${airline.name}" is ready for takeoff.`);
       window.location.href = "select_game.html";
       return false;
+    }
+  </script>
+
+  <script>
+    // 🔒 Verificación de sesión: si no está logueado, redirigir al login
+    document.addEventListener("DOMContentLoaded", () => {
+      const user = localStorage.getItem("ACS_User");
+      if (!user) {
+        alert("⚠️ Please log in to access this page.");
+        window.location.href = "login.html";
+      }
+    });
+
+    // 🚪 Cierre de sesión: limpia todo y vuelve al index
+    function handleLogout() {
+      localStorage.removeItem("ACS_User");
+      localStorage.removeItem("ACS_Airline");
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "index.html";
     }
   </script>
 </body>
