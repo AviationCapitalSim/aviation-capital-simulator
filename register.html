@@ -30,7 +30,7 @@
     <h2>Welcome to ACS</h2>
     <p>Join the Aviation Capital Simulator and start building your airline today.</p>
 
-    <form class="register-form">
+    <form class="register-form" onsubmit="return handleRegister(event)">
       <input type="text" placeholder="Full Name" required />
       <input type="email" placeholder="Email Address" required />
       <input type="password" placeholder="Password" required />
@@ -55,8 +55,24 @@
     <p class="login-link">Already have an account? <a href="login.html">Login here</a>.</p>
   </section>
 
-  <footer>
+    <footer>
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
+
+  <!-- Script de registro local -->
+  <script>
+    function handleRegister(event) {
+      event.preventDefault(); // evita recargar la página
+
+      // Simulación de registro local
+      alert("✅ Welcome aboard, Captain! Your ACS account has been created.");
+
+      // Redirección a la página principal (ajusta si luego hay un dashboard)
+      window.location.href = "index.html";
+
+      return false;
+    }
+  </script>
 </body>
 </html>
+
