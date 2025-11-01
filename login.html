@@ -8,7 +8,6 @@
 </head>
 
 <body>
-  <!-- ======== HEADER ======== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
@@ -22,50 +21,44 @@
     </nav>
   </header>
 
-  <!-- ======== LOGIN SECTION ======== -->
   <section class="register-section">
     <h2>Welcome back, Captain!</h2>
     <p>Log in to continue managing your airline empire.</p>
 
     <form class="register-form" onsubmit="return handleLogin(event)">
-      <input type="email" placeholder="Email Address" required />
-      <input type="password" placeholder="Password" required />
+      <input type="email" id="email" placeholder="Email Address" required />
+      <input type="password" id="password" placeholder="Password" required />
       <button type="submit">Login</button>
     </form>
 
-    <p class="login-link">
-      Don’t have an account?
-      <a href="register.html">Register here</a>.
-    </p>
+    <p class="login-link">Don’t have an account? <a href="register.html">Register here</a>.</p>
   </section>
 
-  <!-- ======== FOOTER ======== -->
   <footer>
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <!-- ======== LOGIN SCRIPT ======== -->
   <script>
     function handleLogin(event) {
       event.preventDefault();
 
-      const email = document.querySelector("input[type='email']").value.trim();
-      const password = document.querySelector("input[type='password']").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
       if (!email || !password) {
         alert("⚠️ Please enter both email and password.");
         return false;
       }
 
-      // Temporary mock authentication (replace with real DB later)
+      // Simulación de autenticación temporal
       const validEmail = "captain@acs.com";
       const validPassword = "ACS2025";
 
       if (email === validEmail && password === validPassword) {
-        alert("🛫 Welcome aboard, Captain!\nRedirecting to your Dashboard...");
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1200);
+        alert("🛫 Welcome aboard, Captain!");
+        // Guardamos un estado temporal de sesión
+        localStorage.setItem("ACS_User", JSON.stringify({ email }));
+        window.location.href = "create_airline.html";
       } else {
         alert("❌ Invalid credentials. Please try again.");
       }
@@ -73,6 +66,5 @@
       return false;
     }
   </script>
-
 </body>
 </html>
