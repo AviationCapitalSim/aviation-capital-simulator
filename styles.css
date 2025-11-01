@@ -288,3 +288,95 @@ footer {
 .login-link a:hover {
   text-decoration: underline;
 }
+/* ======== DASHBOARD ======== */
+.dashboard {
+  background: #081428;
+  min-height: 100vh;
+  color: white;
+  padding: 6rem 2rem;
+}
+
+.top-info {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.top-info h2 {
+  color: #FFB300;
+  font-size: 1.8rem;
+}
+
+.top-info .credits {
+  color: #00ff88;
+  font-weight: 700;
+}
+
+.top-info .plan {
+  color: #FFB300;
+  font-weight: 600;
+}
+
+.buy-btn {
+  background: #FFB300;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  color: #0A1830;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.buy-btn:hover {
+  background: #ffcb42;
+  transform: scale(1.05);
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.panel {
+  background: #0C1F3C;
+  border-radius: 10px;
+  padding: 1.5rem;
+  border: 1px solid #1A335C;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+.panel h3 {
+  color: #FFB300;
+  margin-bottom: 1rem;
+}
+
+.panel ul {
+  list-style: none;
+  padding: 0;
+  color: #ccc;
+}
+
+.panel li {
+  margin-bottom: 0.8rem;
+}
+
+.up {
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.logout-btn {
+  color: #FFB300;
+  text-decoration: none;
+  border: 1px solid #FFB300;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.logout-btn:hover {
+  background: #FFB300;
+  color: #0A1830;
+}
