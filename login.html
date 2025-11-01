@@ -3,8 +3,77 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Aviation Capital Simulator</title>
+  <title>Create Airline - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      background-color: #0C1F3C;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding-top: 100px;
+      text-align: center;
+    }
+
+    .form-container {
+      background: #122850;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      border: 1px solid #1A335C;
+    }
+
+    h2 {
+      color: #FFB300;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-container p {
+      color: #ccc;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+      border: none;
+      font-size: 1rem;
+      background: #1A335C;
+      color: white;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid #FFB300;
+    }
+
+    button {
+      background: #FFB300;
+      color: #0C1F3C;
+      font-weight: 800;
+      font-size: 1.05rem; /* ← letra más grande */
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 2.4rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #ffcb42;
+      transform: scale(1.05);
+    }
+
+    footer {
+      margin-top: 3rem;
+      color: #bbb;
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
 
 <body>
@@ -13,25 +82,62 @@
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
-
     <nav class="acs-nav">
       <a href="index.html">Home</a>
-      <a href="register.html">Register</a>
-      <a href="#">Support</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
     </nav>
+    <div class="acs-auth">
+      <a href="logout.html" class="login-btn">Logout</a>
+    </div>
   </header>
 
-  <section class="register-section">
-    <h2>Welcome back, Captain!</h2>
-    <p>Log in to continue managing your airline empire.</p>
+  <section class="form-container">
+    <h2>Create Your Airline</h2>
+    <p>Enter your airline details below to begin your aviation journey.</p>
 
-    <form class="register-form" onsubmit="return handleLogin(event)">
-      <input type="email" id="email" placeholder="Email Address" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <button type="submit">Login</button>
+    <form id="createAirlineForm" onsubmit="return handleAirlineCreation(event)">
+      <input type="text" id="airlineName" placeholder="Airline Name" required oninput="generateCodes(this.value)" />
+
+      <input type="text" id="icao" placeholder="ICAO Code (3 letters)" maxlength="3" required />
+      <input type="text" id="iata" placeholder="IATA Code (2 letters)" maxlength="2" required />
+
+      <input type="text" id="slogan" placeholder="Airline Slogan (optional)" />
+
+      <select id="region" required onchange="updateCountries()">
+        <option value="">Select World Area</option>
+        <option value="Europe">Europe</option>
+        <option value="Asia">Asia</option>
+        <option value="North America">North America</option>
+        <option value="South America">South America</option>
+        <option value="Africa">Africa</option>
+        <option value="Oceania">Oceania</option>
+      </select>
+
+      <select id="country" required>
+        <option value="">Select Country</option>
+      </select>
+
+      <!-- NUEVO SISTEMA DE TIPOS -->
+      <select id="businessModel" required>
+        <option value="">Select Business Model</option>
+        <option value="Regional">Regional</option>
+        <option value="Domestic">Domestic</option>
+        <option value="International">International</option>
+        <option value="Global Alliance">Global Alliance</option>
+      </select>
+
+      <select id="operationMode" required>
+        <option value="">Select Operation Mode</option>
+        <option value="Passenger">Passenger</option>
+        <option value="Cargo">Cargo</option>
+        <option value="Passenger + Cargo">Passenger + Cargo</option>
+        <option value="Charter">Charter</option>
+        <option value="ACMI / Wet Lease">ACMI / Wet Lease</option>
+      </select>
+
+      <button type="submit">CREATE AIRLINE</button>
     </form>
-
-    <p class="login-link">Don’t have an account? <a href="register.html">Register here</a>.</p>
   </section>
 
   <footer>
@@ -39,30 +145,60 @@
   </footer>
 
   <script>
-    function handleLogin(event) {
+    const regions = {
+      "Europe": ["Spain", "France", "Germany", "Italy", "United Kingdom", "Poland"],
+      "Asia": ["Japan", "China", "India", "Singapore", "Kyrgyzstan", "South Korea"],
+      "North America": ["United States", "Canada", "Mexico"],
+      "South America": ["Brazil", "Argentina", "Chile", "Peru"],
+      "Africa": ["South Africa", "Nigeria", "Egypt", "Morocco"],
+      "Oceania": ["Australia", "New Zealand", "Fiji"]
+    };
+
+    function updateCountries() {
+      const region = document.getElementById("region").value;
+      const countrySelect = document.getElementById("country");
+      countrySelect.innerHTML = '<option value="">Select Country</option>';
+      if (region && regions[region]) {
+        regions[region].forEach(country => {
+          const opt = document.createElement("option");
+          opt.value = country;
+          opt.textContent = country;
+          countrySelect.appendChild(opt);
+        });
+      }
+    }
+
+    function generateCodes(name) {
+      const clean = name.replace(/[^A-Z]/gi, '').toUpperCase();
+      const icao = clean.slice(0, 3).padEnd(3, 'X');
+      const iata = clean.slice(0, 2).padEnd(2, 'X');
+      document.getElementById("icao").value = icao;
+      document.getElementById("iata").value = iata;
+    }
+
+    function handleAirlineCreation(event) {
       event.preventDefault();
 
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+      const airline = {
+        name: document.getElementById("airlineName").value.trim(),
+        icao: document.getElementById("icao").value.trim().toUpperCase(),
+        iata: document.getElementById("iata").value.trim().toUpperCase(),
+        slogan: document.getElementById("slogan").value.trim(),
+        region: document.getElementById("region").value,
+        country: document.getElementById("country").value,
+        businessModel: document.getElementById("businessModel").value,
+        operationMode: document.getElementById("operationMode").value
+      };
 
-      if (!email || !password) {
-        alert("⚠️ Please enter both email and password.");
+      if (!airline.name || !airline.icao || !airline.iata || !airline.region || !airline.country || !airline.businessModel || !airline.operationMode) {
+        alert("⚠️ Please complete all required fields.");
         return false;
       }
 
-      // Simulación de autenticación temporal
-      const validEmail = "captain@acs.com";
-      const validPassword = "ACS2025";
+      localStorage.setItem("ACS_Airline", JSON.stringify(airline));
 
-      if (email === validEmail && password === validPassword) {
-        alert("🛫 Welcome aboard, Captain!");
-        // Guardamos un estado temporal de sesión
-        localStorage.setItem("ACS_User", JSON.stringify({ email }));
-        window.location.href = "create_airline.html";
-      } else {
-        alert("❌ Invalid credentials. Please try again.");
-      }
-
+      alert(`✅ Airline Created Successfully!\nWelcome aboard, Captain!\nYour airline "${airline.name}" is ready for takeoff.`);
+      window.location.href = "select_game.html";
       return false;
     }
   </script>
