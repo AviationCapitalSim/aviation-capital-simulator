@@ -212,5 +212,45 @@
     window.location.href = "index.html"; // redirige a la página principal
   }
 </script>
+
+  <script>
+  function handleLogin(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!email || !password) {
+      alert("⚠️ Please enter both email and password.");
+      return false;
+    }
+
+    // Credenciales temporales
+    const validEmail = "captain@acs.com";
+    const validPassword = "ACS2025";
+
+    if (email === validEmail && password === validPassword) {
+      alert("🛫 Welcome aboard, Captain!");
+      localStorage.setItem("ACS_User", JSON.stringify({ email }));
+
+      // 🧠 Verificar si ya existe aerolínea y el usuario realmente está logueado
+      const existingAirline = localStorage.getItem("ACS_Airline");
+
+      // Si el usuario hace login después de un logout completo, debe iniciar limpio
+      if (!existingAirline) {
+        console.log("No airline found. Redirecting to creation page...");
+        window.location.href = "create_airline.html";
+      } else {
+        console.log("Airline found. Redirecting to dashboard...");
+        window.location.href = "dashboard.html";
+      }
+
+    } else {
+      alert("❌ Invalid credentials. Please try again.");
+    }
+
+    return false;
+  }
+</script>  
 </body>
 </html>
