@@ -128,10 +128,11 @@ let clean = country.trim()
 const code = isoMap[clean] || clean.slice(0, 2).toUpperCase();
 
   try {
-    return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
-  } catch {
-    return "🌍";
-  }
+  return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
+} catch {
+  // Si no puede generar bandera, muestra iniciales en un círculo
+  return `🌐 ${code}`;
+}
 }
 
 // ✅ Mostrar bienvenida personalizada (con ICAO y bandera)
