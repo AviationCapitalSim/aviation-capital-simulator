@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - Aviation Capital Simulator</title>
+  <title>Register - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -15,26 +15,32 @@
 
     <nav class="acs-nav">
       <a href="index.html">Home</a>
+      <a href="#">Dashboard</a>
+      <a href="#">Marketplace</a>
       <a href="#">Forum</a>
       <a href="#">Support</a>
     </nav>
 
     <div class="acs-auth">
-      <a href="register.html" class="register-btn">Register</a>
+      <a href="login.html" class="login-btn">Login</a>
     </div>
   </header>
 
   <section class="register-section">
-    <h2>Welcome back, Captain</h2>
-    <p>Log in to continue managing your airline and empire.</p>
+    <h2>Welcome to ACS</h2>
+    <p>Join the Aviation Capital Simulator and start building your airline today.</p>
 
-    <form class="register-form" onsubmit="return handleLogin(event)">
+    <form class="register-form" onsubmit="return handleRegister(event)">
+      <input type="text" placeholder="Full Name" required />
       <input type="email" placeholder="Email Address" required />
       <input type="password" placeholder="Password" required />
-      <button type="submit">Login</button>
+      <input type="password" placeholder="Confirm Password" required />
+      <input type="text" placeholder="Country" required />
+
+      <button type="submit">Register Now</button>
     </form>
 
-    <p class="login-link">Don’t have an account? <a href="register.html">Create one here</a>.</p>
+    <p class="login-link">Already have an account? <a href="login.html">Login here</a>.</p>
   </section>
 
   <footer>
@@ -42,27 +48,46 @@
   </footer>
 
 <script>
-  function handleLogin(event) {
+  function handleRegister(event) {
     event.preventDefault();
 
+    const fullName = document.querySelector("input[placeholder='Full Name']").value.trim();
     const email = document.querySelector("input[type='email']").value.trim();
-    const password = document.querySelector("input[type='password']").value.trim();
+    const password = document.querySelectorAll("input[type='password']")[0].value;
+    const confirm = document.querySelectorAll("input[type='password']")[1].value;
+    const country = document.querySelector("input[placeholder='Country']").value.trim();
 
-    const savedUser = JSON.parse(localStorage.getItem("ACS_User"));
-    const validEmail = savedUser ? savedUser.email : null;
-
-    if (!email || !password) {
-      alert("⚠️ Please enter both email and password.");
+    if (!fullName || !email || !password || !confirm || !country) {
+      alert("⚠️ Please complete all fields before continuing.");
       return false;
     }
 
-    if (email === validEmail) {
-      alert(`✅ Welcome back, Captain ${savedUser.name}!`);
-      window.location.href = "dashboard.html";
-    } else {
-      alert("❌ Invalid credentials. Please try again or register first.");
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+    if (!email.match(emailPattern)) {
+      alert("⚠️ Please enter a valid email address.");
+      return false;
     }
 
+    const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!regex.test(password)) {
+      alert("⚠️ Password must be at least 8 characters long and include one uppercase letter and one number.");
+      return false;
+    }
+
+    if (password !== confirm) {
+      alert("⚠️ Passwords do not match. Please verify.");
+      return false;
+    }
+
+    // Save user info for Dashboard
+    localStorage.setItem("ACS_User", JSON.stringify({
+      name: fullName,
+      email: email,
+      country: country
+    }));
+
+    alert("✅ Welcome aboard, Captain! Your ACS account has been created successfully.");
+    window.location.href = "login.html";
     return false;
   }
 </script>
