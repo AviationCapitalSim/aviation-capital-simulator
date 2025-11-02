@@ -440,3 +440,10 @@ footer {
 .dropdown:hover .dropbtn::after {
   content: " ▴";
 }
+/* === BANK PAGE ADJUSTMENTS === */
+#interestChart {
+  max-width: 600px;
+  max-height: 300px;
+  margin: 20px auto;
+  display: block;
+}
