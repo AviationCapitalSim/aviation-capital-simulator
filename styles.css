@@ -403,14 +403,16 @@ footer {
   transition: color 0.2s ease;
 }
 
+/* Hover */
 .dropbtn:hover {
-  color: #1E90FF;
+  color: #FFD700;
 }
 
+/* Dropdown content */
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: rgba(12, 31, 60, 0.95);
+  background-color: rgba(12, 31, 60, 0.96);
   border: 1px solid rgba(255, 179, 0, 0.3);
   border-radius: 10px;
   min-width: 180px;
@@ -432,8 +434,16 @@ footer {
   color: #FFD700;
 }
 
+/* Mostrar menú al pasar */
 .dropdown:hover .dropdown-content {
   display: block;
+}
+
+/* Flecha fija ▾ (sin animaciones ni rotaciones) */
+.dropbtn::after {
+  content: " ▾";
+  position: relative;
+  top: 0;
 }
 
 /* === BANK PAGE ADJUSTMENTS === */
@@ -443,6 +453,7 @@ footer {
   margin: 20px auto;
   display: block;
 }
+
 /* =========================================
    ACS GLOBAL HEADER — FINAL POLISHED VERSION
    ========================================= */
