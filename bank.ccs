@@ -1,0 +1,243 @@
+/* ===========================
+   ACS FINANCE — ICB MODULE
+   =========================== */
+
+/* Fuente oficial ACS */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+/* ===== COLORES PRINCIPALES ===== */
+:root {
+  --gold: #ffd700;
+  --blue-dark: #08131f;
+  --blue-mid: #0f2035;
+  --blue-light: #1e90ff;
+  --white: #ffffff;
+  --glass: rgba(15, 25, 40, 0.85);
+  --border: rgba(255, 215, 0, 0.2);
+  --shadow: rgba(255, 215, 0, 0.1);
+}
+
+/* ===== GLOBAL ===== */
+body {
+  background: radial-gradient(circle at top left, var(--blue-dark), #030a13);
+  color: var(--white);
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2 {
+  color: var(--gold);
+  margin: 0;
+}
+
+p, span, label, li {
+  color: #c7e0ff;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ===== HEADER ===== */
+.bank-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: linear-gradient(90deg, #0c192c 0%, #122840 100%);
+  border-bottom: 2px solid var(--gold);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.bank-title h1 {
+  font-size: 1.6rem;
+  color: var(--gold);
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.bank-title p {
+  font-size: 0.9rem;
+  color: #9fd1ff;
+  margin-top: 4px;
+}
+
+.bank-info {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  color: #9fd1ff;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* ===== MAIN CONTAINER ===== */
+.bank-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+  padding: 25px;
+  flex-grow: 1;
+}
+
+/* ===== SECTIONS ===== */
+section {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 0 15px var(--shadow);
+  backdrop-filter: blur(6px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.25);
+}
+
+h2 {
+  font-size: 1.2rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  padding-bottom: 6px;
+  margin-bottom: 15px;
+}
+
+/* ===== CHART CARD ===== */
+.chart-card {
+  grid-column: 1 / -1;
+  background: linear-gradient(180deg, rgba(15, 25, 40, 0.95) 0%, rgba(25, 35, 55, 0.8) 100%);
+  text-align: center;
+}
+
+canvas {
+  width: 100%;
+  height: 260px;
+  margin-top: 10px;
+}
+
+/* ===== SUMMARY CARD ===== */
+.summary-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.summary-card li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.95rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* ===== LOAN FORM ===== */
+.loan-card label {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #aad1ff;
+}
+
+.loan-card input,
+.loan-card select {
+  width: 100%;
+  margin-top: 5px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: #0a1725;
+  color: var(--white);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.loan-card input:focus,
+.loan-card select:focus {
+  box-shadow: 0 0 6px var(--blue-light);
+}
+
+.loan-card button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--blue-light), var(--gold));
+  color: #000;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.loan-card button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+#loanResult {
+  margin-top: 12px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* ===== LOANS TABLE ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--white);
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 8px;
+  text-align: center;
+}
+
+thead {
+  background: rgba(255, 215, 0, 0.2);
+}
+
+tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+tbody tr:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+/* ===== FOOTER ===== */
+.bank-footer {
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8rem;
+  color: #9fd1ff;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 18, 30, 0.9);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .bank-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .bank-info {
+    align-items: center;
+  }
+
+  canvas {
+    height: 200px;
+  }
+}
