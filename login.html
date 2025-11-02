@@ -43,28 +43,38 @@
 
 <script>
   function handleLogin(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    const email = document.querySelector("input[type='email']").value.trim();
-    const password = document.querySelector("input[type='password']").value.trim();
+  const email = document.querySelector("input[type='email']").value.trim();
+  const password = document.querySelector("input[type='password']").value.trim();
 
-    const savedUser = JSON.parse(localStorage.getItem("ACS_User"));
-    const validEmail = savedUser ? savedUser.email : null;
+  const savedUser = JSON.parse(localStorage.getItem("ACS_User"));
+  const validEmail = savedUser ? savedUser.email : null;
 
-    if (!email || !password) {
-      alert("⚠️ Please enter both email and password.");
-      return false;
-    }
-
-    if (email === validEmail) {
-      alert(`✅ Welcome back, Captain ${savedUser.name}!`);
-      window.location.href = "dashboard.html";
-    } else {
-      alert("❌ Invalid credentials. Please try again or register first.");
-    }
-
+  if (!email || !password) {
+    alert("⚠️ Please enter both email and password.");
     return false;
   }
+
+  if (email === validEmail) {
+    alert(`✅ Welcome back, Captain ${savedUser.name}!`);
+
+    const existingAirline = localStorage.getItem("ACS_Airline");
+
+    if (existingAirline) {
+      console.log("✈️ Airline exists → Redirecting to dashboard...");
+      window.location.href = "dashboard.html";
+    } else {
+      console.log("🛫 No airline yet → Redirecting to create_airline...");
+      window.location.href = "create_airline.html";
+    }
+
+  } else {
+    alert("❌ Invalid credentials. Please try again or register first.");
+  }
+
+  return false;
+}
 </script>
 </body>
 </html>
