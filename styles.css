@@ -447,3 +447,92 @@ footer {
   margin: 20px auto;
   display: block;
 }
+/* =========================================
+   ACS GLOBAL HEADER — FINAL POLISHED VERSION
+   ========================================= */
+
+/* NAV GENERAL */
+.acs-nav {
+  display: flex;
+  gap: 1.2rem;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.acs-nav a,
+.dropbtn {
+  color: #ddd;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.55rem 1rem;
+  border-radius: 6px;
+  transition: all 0.25s ease;
+  line-height: 1.2;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Hover uniforme */
+.acs-nav a:hover,
+.dropbtn:hover {
+  color: #FFB300;
+  transform: translateY(-1px);
+}
+
+/* Active (página actual) */
+.acs-nav a.active,
+.dropbtn.active {
+  color: #FFB300;
+  border-bottom: 2px solid #FFB300;
+}
+
+/* Dropdown específico */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 120%;
+  left: 0;
+  background-color: rgba(12, 31, 60, 0.98);
+  border: 1px solid rgba(255, 179, 0, 0.25);
+  border-radius: 10px;
+  min-width: 190px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
+
+.dropdown-content a {
+  display: block;
+  padding: 10px 16px;
+  text-align: left;
+  color: #ddd;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-content a:hover {
+  background: rgba(255, 179, 0, 0.08);
+  color: #FFD700;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* ▾ / ▴ animation */
+.dropbtn::after {
+  content: " ▾";
+  transition: transform 0.25s ease;
+}
+
+.dropdown:hover .dropbtn::after {
+  transform: rotate(180deg);
+}
