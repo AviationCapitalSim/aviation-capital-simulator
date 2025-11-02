@@ -96,10 +96,12 @@ footer {
   gap: 10px;
   flex-shrink: 0;
 }
+
 .acs-logo img {
   height: 36px;
   width: auto;
 }
+
 .acs-logo h1 {
   font-size: 1rem;
   color: #FFB300;
@@ -115,12 +117,14 @@ footer {
   justify-content: center;
   flex-wrap: wrap;
 }
+
 .acs-nav a {
   color: #ddd;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s;
 }
+
 .acs-nav a:hover {
   color: #FFB300;
 }
@@ -131,6 +135,7 @@ footer {
   gap: 0.5rem;
   flex-shrink: 0;
 }
+
 .acs-auth a {
   text-decoration: none;
   padding: 6px 14px;
@@ -139,19 +144,23 @@ footer {
   transition: all 0.3s ease;
   font-size: 0.9rem;
 }
+
 .login-btn {
   border: 1px solid #FFB300;
   color: #FFB300;
   background: transparent;
 }
+
 .login-btn:hover {
   background: #FFB300;
   color: #0A1830;
 }
+
 .register-btn {
   background: #FFB300;
   color: #0A1830;
 }
+
 .register-btn:hover {
   background: #ffcb42;
 }
@@ -172,6 +181,7 @@ footer {
   box-shadow: 0 0 10px rgba(255, 179, 0, 0.2);
   transition: all 0.4s ease;
 }
+
 .acs-symbol:hover {
   transform: scale(1.05);
   box-shadow: 0 0 15px rgba(255, 187, 0, 0.5);
@@ -186,28 +196,33 @@ footer {
     text-align: center;
     padding: 1rem;
   }
+
   .acs-logo {
     justify-content: center;
     flex-basis: 100%;
   }
+
   .acs-nav {
     flex-basis: 100%;
     justify-content: center;
     margin-top: 0.4rem;
     gap: 1rem;
   }
+
   .acs-auth {
     flex-basis: 100%;
     justify-content: center;
     margin-top: 0.5rem;
   }
 }
+
 .hero-logo {
   width: 180px;
   margin: 25px auto 10px;
   display: block;
   filter: drop-shadow(0 0 12px rgba(255, 179, 0, 0.4));
 }
+
 /* ======== REGISTER PAGE ======== */
 .register-section {
   background: #081428;
@@ -288,6 +303,7 @@ footer {
 .login-link a:hover {
   text-decoration: underline;
 }
+
 /* ======== DASHBOARD ======== */
 .dashboard {
   background: #081428;
@@ -344,7 +360,7 @@ footer {
   border-radius: 10px;
   padding: 1.5rem;
   border: 1px solid #1A335C;
-  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
 .panel h3 {
@@ -382,11 +398,9 @@ footer {
 }
 
 /* =========================================
-   ACS FINANCE — DASHBOARD MODULE
-   Navigation bar and Finance dropdown styles
+   ACS FINANCE — CLEAN FINAL DROPDOWN
    ========================================= */
 
-/* ===== Finance dropdown ===== */
 .dropdown {
   position: relative;
   display: inline-block;
@@ -403,12 +417,10 @@ footer {
   transition: color 0.2s ease;
 }
 
-/* Hover */
 .dropbtn:hover {
   color: #FFD700;
 }
 
-/* Dropdown content */
 .dropdown-content {
   display: none;
   position: absolute;
@@ -434,12 +446,11 @@ footer {
   color: #FFD700;
 }
 
-/* Mostrar menú al pasar */
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-/* Flecha fija ▾ (sin animaciones ni rotaciones) */
+/* Flecha fija (sin animación) */
 .dropbtn::after {
   content: " ▾";
   position: relative;
@@ -455,118 +466,26 @@ footer {
 }
 
 /* =========================================
-   ACS GLOBAL HEADER — FINAL POLISHED VERSION
-   ========================================= */
-
-/* NAV GENERAL */
-.acs-nav {
-  display: flex;
-  gap: 1.2rem;
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.acs-nav a,
-.dropbtn {
-  color: #ddd;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.55rem 1rem;
-  border-radius: 6px;
-  transition: all 0.25s ease;
-  line-height: 1.2;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-/* Hover uniforme */
-.acs-nav a:hover,
-.dropbtn:hover {
-  color: #FFB300;
-  transform: translateY(-1px);
-}
-
-/* Active (página actual) */
-.acs-nav a.active,
-.dropbtn.active {
-  color: #FFB300;
-  border-bottom: 2px solid #FFB300;
-}
-
-/* Dropdown específico */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  top: 120%;
-  left: 0;
-  background-color: rgba(12, 31, 60, 0.98);
-  border: 1px solid rgba(255, 179, 0, 0.25);
-  border-radius: 10px;
-  min-width: 190px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  z-index: 10;
-  backdrop-filter: blur(6px);
-}
-
-.dropdown-content a {
-  display: block;
-  padding: 10px 16px;
-  text-align: left;
-  color: #ddd;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.dropdown-content a:hover {
-  background: rgba(255, 179, 0, 0.08);
-  color: #FFD700;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-/* ▾ / ▴ animation */
-.dropbtn::after {
-  content: " ▾";
-  transition: transform 0.25s ease;
-}
-
-.dropdown:hover .dropbtn::after {
-  transform: rotate(180deg);
-}
-/* =========================================
    HEADER TEXT ALIGNMENT FIX — ACS NAV
    ========================================= */
 
-/* Asegura que todos los ítems del header estén perfectamente centrados */
 .acs-nav a,
 .dropbtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 36px; /* altura uniforme */
+  height: 36px;
   line-height: 1;
   padding-top: 0;
   padding-bottom: 0;
 }
 
-/* Evita que Finance ▾ se desplace hacia abajo */
 .dropbtn::after {
   content: " ▾";
   position: relative;
-  top: -1px; /* ajusta el triángulo visualmente */
+  top: -1px;
 }
 
-/* Para pantallas pequeñas mantiene la proporción */
 @media (max-width: 850px) {
   .acs-nav a,
   .dropbtn {
