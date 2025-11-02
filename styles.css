@@ -380,52 +380,7 @@ footer {
   background: #FFB300;
   color: #0A1830;
 }
-/* ======== DROPDOWN MENU ======== */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
 
-.dropbtn {
-  color: #ddd;
-  text-decoration: none;
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-  transition: color 0.3s;
-}
-
-.dropbtn:hover {
-  color: #FFB300;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #0C1F3C;
-  min-width: 180px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  border-radius: 6px;
-  z-index: 10;
-  border: 1px solid #1A335C;
-}
-
-.dropdown-content a {
-  color: #ddd;
-  padding: 10px 14px;
-  display: block;
-  text-align: left;
-  text-decoration: none;
-  transition: background 0.3s, color 0.3s;
-}
-
-.dropdown-content a:hover {
-  background-color: #FFB300;
-  color: #0A1830;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
 /* =========================================
    ACS FINANCE — DASHBOARD MODULE
    Navigation bar and Finance dropdown styles
