@@ -18,7 +18,7 @@
       cursor: pointer;
       transition: all 0.3s ease;
       text-decoration: none;
-      margin-left: 12px; /* separación visual */
+      margin-left: 12px;
     }
 
     .acs-nav .login-btn:hover {
@@ -31,23 +31,28 @@
       box-shadow: none;
     }
 
-    /* === Estilo del eslogan principal (nombre de la aerolínea) === */
+    /* === Eslogan principal (nombre de aerolínea) === */
     #welcomeMessage {
       color: #FFFFFF;
       font-size: 1.6rem;
       font-weight: 700;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.3rem;
     }
 
     #welcomeMessage span {
       color: #FFB300;
     }
 
-    /* Subtexto (mantiene estilo profesional) */
-    .sub {
+    /* === Subtítulo (país + modelo de negocio) === */
+    #airlineSub {
       color: #ccc;
       font-size: 1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #airlineSub span {
+      margin-right: 6px;
+      font-size: 1.2rem;
     }
   </style>
 </head>
@@ -74,6 +79,7 @@
 
   <main class="acs-main">
     <h2 id="welcomeMessage">Welcome to your Airline Headquarters</h2>
+    <p id="airlineSub"></p>
     <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
     <section class="dashboard-panels">
@@ -90,15 +96,35 @@
   </footer>
 
   <script>
-    // ✅ Mostrar bienvenida personalizada al CEO
+    // ✅ Obtener bandera automática (funciona con todos los países del mundo)
+    function getFlagEmoji(country) {
+      if (!country) return "🌍";
+      // Extrae las dos primeras letras del país y genera la bandera
+      const code = country
+        .toUpperCase()
+        .replace(/[^A-Z]/g, "")
+        .slice(0, 2);
+      return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
+    }
+
+    // ✅ Mostrar bienvenida personalizada
     const airlineData = JSON.parse(localStorage.getItem("ACS_Airline"));
 
     if (airlineData && airlineData.name) {
       document.getElementById("welcomeMessage").innerHTML =
         `Welcome to <span>${airlineData.name}</span>`;
+
+      const flag = getFlagEmoji(airlineData.country);
+      const country = airlineData.country || "Unknown";
+      const model = airlineData.businessModel || "Operations";
+
+      document.getElementById("airlineSub").innerHTML = `
+        <span>${flag}</span>${country} — ${model}
+      `;
     } else {
       document.getElementById("welcomeMessage").textContent =
         "Welcome to your Airline Headquarters";
+      document.getElementById("airlineSub").textContent = "";
     }
 
     // ✅ Logout coherente
