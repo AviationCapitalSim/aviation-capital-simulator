@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>International Credit Bank — ACS Finance</title>
+  <link rel="stylesheet" href="styles/bank.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="bank-header">
+    <div class="bank-title">
+      <h1>🏛️ International Credit Bank (ICB)</h1>
+      <p id="bankSubtitle">Serving the Aviation Industry since 1940</p>
+    </div>
+    <div class="bank-info">
+      <span id="yearDisplay">Year: 1940</span>
+      <span id="rateDisplay">Global Interest Rate: 3.1%</span>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTAINER ===== -->
+  <main class="bank-container">
+
+    <!-- ===== GRAPH ===== -->
+    <section class="chart-card">
+      <h2>Interest Rate Evolution</h2>
+      <canvas id="rateChart"></canvas>
+    </section>
+
+    <!-- ===== FINANCIAL SUMMARY ===== -->
+    <section class="summary-card">
+      <h2>Financial Summary</h2>
+      <ul>
+        <li>💼 Balance: <span id="balance">$1,250,000</span></li>
+        <li>📈 Credit Score: <span id="score">75 / 100</span></li>
+        <li>💳 Active Loans: <span id="loanCount">0</span></li>
+      </ul>
+    </section>
+
+    <!-- ===== LOAN FORM ===== -->
+    <section class="loan-card">
+      <h2>Request New Loan</h2>
+
+      <label>Collateral Aircraft</label>
+      <select id="collateralList"></select>
+
+      <label>Loan Amount (USD)</label>
+      <input type="number" id="loanAmount" placeholder="Enter amount" />
+
+      <label>Term (Years)</label>
+      <select id="loanTerm">
+        <option value="1">1 Year</option>
+        <option value="2">2 Years</option>
+        <option value="3">3 Years</option>
+        <option value="4">4 Years</option>
+        <option value="5">5 Years</option>
+        <option value="6">6 Years</option>
+      </select>
+
+      <button id="applyLoanBtn">Apply for Loan</button>
+      <div id="loanResult"></div>
+    </section>
+
+    <!-- ===== ACTIVE LOANS ===== -->
+    <section class="loans-card">
+      <h2>Active Loans</h2>
+      <table id="loanTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Collateral</th>
+            <th>Amount</th>
+            <th>Rate</th>
+            <th>Years</th>
+            <th>Due</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="bank-footer">
+    <p>© 1940–2030 International Credit Bank (ICB) — Part of the Aviation Capital Simulator</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+  // ==================== CONFIGURACIÓN BÁSICA ====================
+  let yearOfGame = 1940;
+  const endYear = 2030;
+  const company = {
+    balance: 1250000,
+    score: 75,
+    loans: [],
+    aircraft: [
+      { id: "A300-B4", year: 1981, value: 2200000, condition: "Good", owned: true },
+      { id: "B737-400", year: 1995, value: 3200000, condition: "Excellent", owned: true }
+    ]
+  };
+
+  // ==================== TASA HISTÓRICA ====================
+  function getHistoricalBaseRate(year) {
+    if (year < 1950) return (Math.random() * 1 + 2.5).toFixed(2);
+    if (year < 1960) return (Math.random() * 1 + 3.0).toFixed(2);
+    if (year < 1970) return (Math.random() * 1.5 + 4.0).toFixed(2);
+    if (year < 1980) return (Math.random() * 3 + 7.0).toFixed(2);
+    if (year < 1990) return (Math.random() * 4 + 10.0).toFixed(2);
+    if (year < 2000) return (Math.random() * 2 + 6.0).toFixed(2);
+    if (year < 2010) return (Math.random() * 2 + 4.0).toFixed(2);
+    if (year < 2020) return (Math.random() * 2 + 2.0).toFixed(2);
+    return (Math.random() * 4.5 + 3.0).toFixed(2); // Virtual era
+  }
+
+  let marketRate = parseFloat(getHistoricalBaseRate(yearOfGame));
+
+  // ==================== GRÁFICO (Chart.js) ====================
+  const ctx = document.getElementById('rateChart').getContext('2d');
+  const rateChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [yearOfGame],
+      datasets: [{
+        label: 'ICB Global Interest Rate (%)',
+        data: [marketRate],
+        borderColor: '#FFD700',
+        backgroundColor: 'rgba(255, 215, 0, 0.25)',
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 4,
+        pointBackgroundColor: '#FFD700'
+      }]
+    },
+    options: {
+      animation: false,
+      scales: {
+        x: { title: { display: true, text: 'Year' }, ticks: { color: '#9fd1ff' } },
+        y: { title: { display: true, text: 'Rate (%)' }, beginAtZero: true, ticks: { color: '#9fd1ff' } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // ==================== FUNCIONES BÁSICAS ====================
+  function loadCollateral() {
+    const list = document.getElementById("collateralList");
+    company.aircraft.forEach(a => {
+      const opt = document.createElement("option");
+      opt.value = a.id;
+      opt.textContent = `${a.id} — $${a.value.toLocaleString()}`;
+      list.appendChild(opt);
+    });
+  }
+
+  function updateLoans() {
+    const tbody = document.querySelector("#loanTable tbody");
+    tbody.innerHTML = "";
+    company.loans.forEach(l => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${l.id}</td>
+        <td>${l.collateral}</td>
+        <td>$${l.amount.toLocaleString()}</td>
+        <td>${l.rate}%</td>
+        <td>${l.years}</td>
+        <td>${l.due}</td>
+        <td>$${l.totalPay.toLocaleString()}</td>`;
+      tbody.appendChild(row);
+    });
+    document.getElementById("loanCount").textContent = company.loans.length;
+  }
+
+  function calculateInterestRate(baseRate, years) {
+    const risk = (years - 1) * 0.8;
+    return parseFloat((baseRate + risk).toFixed(2));
+  }
+
+  // ==================== PRÉSTAMOS ====================
+  document.getElementById("applyLoanBtn").addEventListener("click", () => {
+    const collateral = document.getElementById("collateralList").value;
+    const amount = parseFloat(document.getElementById("loanAmount").value);
+    const years = parseInt(document.getElementById("loanTerm").value);
+
+    const selectedAircraft = company.aircraft.find(a => a.id === collateral);
+    const maxLoan = selectedAircraft.value * 0.6;
+
+    if (amount > maxLoan) {
+      document.getElementById("loanResult").textContent =
+        `❌ Loan exceeds collateral limit ($${maxLoan.toLocaleString()})`;
+      return;
+    }
+
+    const adjustedRate = calculateInterestRate(marketRate, years);
+    const totalInterest = (amount * (adjustedRate / 100) * years).toFixed(2);
+    const totalToPay = (amount + parseFloat(totalInterest)).toFixed(2);
+
+    const due = new Date();
+    due.setFullYear(due.getFullYear() + years);
+
+    const newLoan = {
+      id: `LN-${Date.now()}`,
+      collateral,
+      amount,
+      rate: adjustedRate,
+      years,
+      due: due.toLocaleDateString(),
+      totalPay: parseFloat(totalToPay)
+    };
+
+    company.loans.push(newLoan);
+    company.balance += amount;
+
+    document.getElementById("balance").textContent = `$${company.balance.toLocaleString()}`;
+    document.getElementById("loanResult").innerHTML =
+      `✅ Loan approved: $${amount.toLocaleString()} @ ${adjustedRate}% for ${years} years.`;
+
+    updateLoans();
+  });
+
+  // ==================== AVANCE AUTOMÁTICO DE AÑO ====================
+  function advanceYear() {
+    if (yearOfGame >= endYear) return;
+
+    yearOfGame++;
+    marketRate = parseFloat(getHistoricalBaseRate(yearOfGame));
+
+    // Actualizar encabezado
+    document.getElementById("yearDisplay").textContent = `Year: ${yearOfGame}`;
+    document.getElementById("rateDisplay").textContent = `Global Interest Rate: ${marketRate}%`;
+
+    // Aviso visual de era virtual
+    if (yearOfGame >= 2020) {
+      document.getElementById("bankSubtitle").textContent = "💠 Virtual Financial System Active (ICB Digital Era)";
+    }
+
+    // Actualizar gráfico
+    rateChart.data.labels.push(yearOfGame);
+    rateChart.data.datasets[0].data.push(marketRate);
+    rateChart.update();
+
+    console.log(`📈 Year ${yearOfGame} — ICB Rate: ${marketRate}%`);
+  }
+
+  // Simular 1 año = 10 segundos (ajustable)
+  setInterval(advanceYear, 10000);
+
+  // ==================== INICIO ====================
+  document.getElementById("yearDisplay").textContent = `Year: ${yearOfGame}`;
+  document.getElementById("rateDisplay").textContent = `Global Interest Rate: ${marketRate}%`;
+  loadCollateral();
+  updateLoans();
+  </script>
+</body>
+</html>
