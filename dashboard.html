@@ -14,17 +14,17 @@
     </div>
 
     <nav class="acs-nav">
-      <a href="dashboard.html" class="active">Main</a>
-      <a href="finance.html">Finance</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html">Routes</a>
-      <a href="market.html">Market</a>
-      <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="profile.html">Profile</a>
-      <a href="support.html">Support</a>
-      <button id="logoutBtn" class="logout">Logout</button>
-    </nav>
+  <a href="dashboard.html" class="active">Main</a>
+  <a href="finance.html">Finance</a>
+  <a href="aircraft.html">Aircraft</a>
+  <a href="routes.html">Routes</a>
+  <a href="market.html">Market</a>
+  <a href="hr.html">HR</a>
+  <a href="forum.html">Forum</a>
+  <a href="profile.html">Profile</a>
+  <a href="support.html">Support</a>
+  <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
+</nav>
   </header>
 
   <main class="acs-main">
@@ -52,8 +52,7 @@
     document.getElementById("welcomeMessage").textContent = `Welcome, Captain ${userData.name}`;
   }
 
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("ACS_User");
+    localStorage.removeItem("ACS_Airline");
     window.location.href = "login.html";
   });
 </script>
