@@ -1,5 +1,5 @@
 /* =========================================
-   ACS FINANCE — BANK MODULE v2
+   ACS FINANCE — BANK MODULE v3
    Stylesheet for International Credit Bank (ICB)
    ========================================= */
 
@@ -7,47 +7,61 @@
 body {
   margin: 0;
   font-family: "Poppins", sans-serif;
-  background: #081428;
+  background: #0A1630;
   color: #ffffff;
   overflow-x: hidden;
+  padding-top: 80px;
 }
 
 /* ===== HEADER ===== */
 .bank-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
   background: rgba(10, 24, 48, 0.95);
+  backdrop-filter: blur(4px);
   border-bottom: 2px solid #FFB300;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.8rem 2rem;
-  flex-wrap: wrap;
+  z-index: 1000;
   box-sizing: border-box;
 }
 
-.bank-title h1 {
-  margin: 0;
-  font-size: 1.4rem;
-  color: #FFB300;
-  font-weight: 700;
+.bank-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.bank-title p {
+.bank-logo img {
+  height: 36px;
+}
+
+.bank-logo h1 {
+  color: #FFB300;
+  font-size: 1.2rem;
   margin: 0;
+  letter-spacing: 1px;
+}
+
+.bank-header-info {
   color: #a9c8ff;
   font-size: 0.9rem;
+  text-align: right;
+  flex-grow: 1;
 }
 
-.bank-info {
-  text-align: right;
-  color: #cde1ff;
-  font-size: 0.95rem;
-  flex-grow: 1;
+.bank-header-info p {
+  margin: 0;
 }
 
 /* ===== BACK BUTTON (ACS STYLE) ===== */
 .bank-btn {
   background: #FFB300;
-  color: #0C1F3C;
+  color: #0A1630;
   font-weight: 800;
   font-size: 0.95rem;
   border: none;
@@ -64,139 +78,192 @@ body {
   transform: scale(1.05);
 }
 
-/* ===== MAIN CONTAINER ===== */
-.bank-container {
-  padding: 2rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 1.8rem;
-  justify-items: center;
+/* ===== MAIN ===== */
+.bank-main {
+  padding: 2rem 2rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
 }
 
-/* ===== CARD STYLE ===== */
-.chart-card,
-.summary-card,
-.loan-card,
-.loans-card {
+/* ===== PANEL (general) ===== */
+.bank-panel {
   background: #0C1F3C;
   border: 1px solid rgba(255, 215, 0, 0.25);
   border-radius: 12px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.05);
-  padding: 1.5rem;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.08);
+  padding: 1.8rem;
   width: 100%;
-  max-width: 600px;
+  max-width: 950px;
 }
 
-.chart-card h2,
-.summary-card h2,
-.loan-card h2,
-.loans-card h2 {
+.bank-panel h2 {
   color: #FFD700;
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
+  margin-bottom: 0.6rem;
+  font-size: 1.3rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  padding-bottom: 0.4rem;
 }
 
-/* ===== GRAPH ===== */
-#rateChart {
-  max-width: 100%;
-  max-height: 300px;
-  margin: 0 auto;
+.panel-desc {
+  color: #a9c8ff;
+  font-size: 0.95rem;
+  margin-bottom: 1.2rem;
+  line-height: 1.5;
 }
 
-/* ===== SUMMARY ===== */
-.summary-card ul {
-  list-style: none;
-  padding: 0;
+/* ===== RATE SECTION ===== */
+.rate-summary {
+  display: flex;
+  justify-content: space-evenly;
+  margin-bottom: 1.2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rate-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 10px;
+  padding: 1rem 2rem;
+  text-align: center;
+  width: 200px;
+}
+
+.rate-box h3 {
+  color: #FFD700;
+  font-size: 1rem;
+  margin: 0 0 0.3rem;
+}
+
+.rate-box p {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #00ff88;
   margin: 0;
 }
 
-.summary-card li {
-  margin-bottom: 0.7rem;
-  color: #cde1ff;
-  font-size: 1rem;
-}
-
-/* ===== FORM ===== */
-.loan-card label {
-  display: block;
-  margin-top: 0.8rem;
-  color: #ffffff;
-  font-weight: 500;
-}
-
-.loan-card input,
-.loan-card select {
-  width: 100%;
-  padding: 0.7rem;
-  margin-top: 0.3rem;
-  border: 1px solid #1A335C;
-  border-radius: 8px;
-  background: #0B2040;
-  color: #ffffff;
-  font-size: 1rem;
-}
-
-.loan-card input:focus,
-.loan-card select:focus {
-  outline: none;
-  border-color: #FFB300;
-}
-
-.loan-card button {
-  margin-top: 1.2rem;
-  background: #FFB300;
-  color: #0C1F3C;
-  border: none;
+/* ===== CHART ===== */
+.chart-container {
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 10px;
-  font-weight: 700;
-  padding: 0.8rem;
+  padding: 1rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+#interestChart {
   width: 100%;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  height: 280px !important;
 }
 
-.loan-card button:hover {
-  background: #ffcb42;
-  transform: scale(1.03);
-}
-
-#loanResult {
-  margin-top: 1rem;
-  font-weight: 600;
-}
-
-/* ===== TABLE ===== */
-.loans-card table {
-  width: 100%;
-  border-collapse: collapse;
-  color: #fff;
-  font-size: 0.9rem;
-}
-
-.loans-card th,
-.loans-card td {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px;
+/* ===== CREDIT RATING ===== */
+.rating-display {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 1rem;
   text-align: center;
 }
 
-.loans-card th {
+.rating-display h3 {
+  font-size: 3rem;
+  margin: 0;
+  color: #00ff88;
+}
+
+.rating-display p {
+  color: #ccc;
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+}
+
+/* ===== TABLE (LOANS) ===== */
+#loanTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+#loanTable th,
+#loanTable td {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px;
+  text-align: center;
+}
+
+#loanTable th {
   background: rgba(255, 215, 0, 0.1);
   color: #FFD700;
   font-weight: 700;
 }
 
-.loans-card tr:nth-child(even) {
+#loanTable tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.03);
+}
+
+.no-data {
+  color: #888;
+  font-style: italic;
+  padding: 1rem;
+}
+
+/* ===== LOAN FORM ===== */
+.loan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.loan-form label {
+  font-weight: 500;
+  color: #fff;
+  text-align: left;
+}
+
+.loan-form input,
+.loan-form select {
+  width: 100%;
+  padding: 0.8rem;
+  background: #0B2040;
+  border: 1px solid #1A335C;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.loan-form input:focus,
+.loan-form select:focus {
+  border-color: #FFB300;
+  outline: none;
+}
+
+.loan-btn {
+  background: #FFB300;
+  color: #0C1F3C;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  padding: 0.9rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.loan-btn:hover {
+  background: #ffcb42;
+  transform: scale(1.05);
 }
 
 /* ===== FOOTER ===== */
 .bank-footer {
+  background: #0C1F3C;
+  border-top: 1px solid #1A335C;
+  color: #bbb;
   text-align: center;
   padding: 1rem;
-  background: #0C1F3C;
-  color: #ccc;
-  border-top: 1px solid #1A335C;
   font-size: 0.85rem;
 }
 
@@ -204,29 +271,20 @@ body {
 @media (max-width: 768px) {
   .bank-header {
     flex-direction: column;
-    align-items: center;
     text-align: center;
     gap: 0.6rem;
   }
 
-  .bank-info {
-    text-align: center;
+  .rate-summary {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .bank-btn {
-    margin-left: 0;
-    margin-top: 0.5rem;
-  }
-
-  .bank-container {
-    grid-template-columns: 1fr;
-    padding: 1.5rem;
-  }
-
-  .chart-card,
-  .summary-card,
-  .loan-card,
-  .loans-card {
+  .chart-container {
     max-width: 100%;
+  }
+
+  .bank-panel {
+    padding: 1.2rem;
   }
 }
