@@ -14,17 +14,17 @@
     </div>
 
     <nav class="acs-nav">
-  <a href="dashboard.html" class="active">Main</a>
-  <a href="finance.html">Finance</a>
-  <a href="aircraft.html">Aircraft</a>
-  <a href="routes.html">Routes</a>
-  <a href="market.html">Market</a>
-  <a href="hr.html">HR</a>
-  <a href="forum.html">Forum</a>
-  <a href="profile.html">Profile</a>
-  <a href="support.html">Support</a>
-  <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
-</nav>
+      <a href="dashboard.html" class="active">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
+    </nav>
   </header>
 
   <main class="acs-main">
@@ -44,17 +44,21 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-<script>
-  const userData = JSON.parse(localStorage.getItem("ACS_User"));
-  if (!userData || !userData.name) {
-    window.location.href = "login.html";
-  } else {
-    document.getElementById("welcomeMessage").textContent = `Welcome, Captain ${userData.name}`;
-  }
+  <script>
+    // ✅ Mostrar saludo personalizado
+    const userData = JSON.parse(localStorage.getItem("ACS_User"));
+    if (!userData || !userData.name) {
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("welcomeMessage").textContent = `Welcome, Captain ${userData.name}`;
+    }
 
-    localStorage.removeItem("ACS_Airline");
-    window.location.href = "login.html";
-  });
-</script>
+    // ✅ Función estándar de Logout (idéntica al resto del sistema)
+    function handleLogout() {
+      localStorage.removeItem("ACS_Airline"); // borra solo la aerolínea
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html"; // regresa al login
+    }
+  </script>
 </body>
 </html>
