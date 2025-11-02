@@ -398,63 +398,47 @@ footer {
 }
 
 /* =========================================
-   ACS FINANCE — CLEAN FINAL DROPDOWN
+   FINANCE DROPDOWN — CLEAN & FIXED VERSION
    ========================================= */
-
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropbtn {
-  background: none;
-  border: none;
-  color: #FFB300;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  padding: 0.4rem 0.8rem;
-  transition: color 0.2s ease;
-}
-
-.dropbtn:hover {
-  color: #FFD700;
-}
-
 .dropdown-content {
   display: none;
   position: absolute;
+  top: 120%;
+  left: 0;
   background-color: rgba(12, 31, 60, 0.96);
   border: 1px solid rgba(255, 179, 0, 0.3);
   border-radius: 10px;
-  min-width: 180px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   z-index: 10;
+  backdrop-filter: blur(6px);
+  text-align: left;
+  padding: 4px 0;
 }
 
 .dropdown-content a {
-  color: #fff;
-  padding: 10px 15px;
-  text-decoration: none;
   display: block;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  transition: background 0.2s ease, color 0.2s ease;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  text-align: left;
+  color: #ddd;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-content a:last-child {
+  border-bottom: none;
 }
 
 .dropdown-content a:hover {
-  background: rgba(255, 179, 0, 0.1);
+  background: rgba(255, 179, 0, 0.08);
   color: #FFD700;
 }
 
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-/* Flecha fija (sin animación) */
+/* 🔹 SINGLE ARROW ONLY — NO DOUBLE ▾ BUG */
 .dropbtn::after {
-  content: "▾";
+  content: " ▾";
   position: relative;
-  top: 0;
+  top: -1px;
 }
 
 /* === BANK PAGE ADJUSTMENTS === */
