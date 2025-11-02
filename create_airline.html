@@ -238,6 +238,28 @@
     alert("👋 Session closed. See you soon, Captain!");
     window.location.href = "index.html";
   }
-</script>  
+<script>
+  // Ejemplo de función en create_airline.html
+  function handleCreateAirline(event) {
+    event.preventDefault();
+
+    const airlineName = document.querySelector("#airlineName").value.trim();
+
+    if (!airlineName) {
+      alert("⚠️ Please enter your airline name.");
+      return false;
+    }
+
+    // Guardar aerolínea creada
+    localStorage.setItem("ACS_Airline", JSON.stringify({
+      name: airlineName,
+      created: Date.now()
+    }));
+
+    alert(`✅ Airline "${airlineName}" successfully created!`);
+    window.location.href = "dashboard.html";
+    return false;
+  }
+</script>
 </body>
 </html>
