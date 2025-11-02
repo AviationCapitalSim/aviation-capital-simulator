@@ -5,6 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* === Estilo del botón Logout (idéntico a los demás botones del sistema) === */
+    .acs-nav .login-btn {
+      background: #FFB300;
+      color: #0C1F3C;
+      font-weight: 800;
+      font-size: 1.00rem;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 2.4rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .acs-nav .login-btn:hover {
+      background: #ffcb42;
+      transform: scale(1.05);
+    }
+
+    .acs-nav .login-btn:focus {
+      outline: none;
+      box-shadow: none;
+    }
+  </style>
 </head>
 <body>
   <header class="acs-header">
@@ -53,11 +78,11 @@
       document.getElementById("welcomeMessage").textContent = `Welcome, Captain ${userData.name}`;
     }
 
-    // ✅ Función estándar de Logout (idéntica al resto del sistema)
+    // ✅ Logout coherente con el resto del sistema
     function handleLogout() {
-      localStorage.removeItem("ACS_Airline"); // borra solo la aerolínea
+      localStorage.removeItem("ACS_Airline"); // solo borra la aerolínea
       alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html"; // regresa al login
+      window.location.href = "login.html";
     }
   </script>
 </body>
