@@ -5,17 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>International Credit Bank — ACS Finance</title>
   <link rel="stylesheet" href="styles/style.css" />
-  <link rel="stylesheet" href="styles/bank.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
   <!-- =========================================
        ACS FINANCE — INTERNATIONAL CREDIT BANK
-       Version 4.0 — Unified with Global Style
+       Clean Integration using global style.css
        ========================================= -->
 
-  <!-- ===== GLOBAL HEADER (same as dashboard) ===== -->
+  <!-- ===== GLOBAL HEADER ===== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
@@ -24,8 +23,6 @@
 
     <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
-
-      <!-- ===== FINANCE DROPDOWN ===== -->
       <div class="dropdown">
         <button class="dropbtn">Finance ▾</button>
         <div class="dropdown-content">
@@ -34,7 +31,6 @@
           <a href="#">💳 Credit Rating (future)</a>
         </div>
       </div>
-
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html">Routes</a>
       <a href="market.html">Market</a>
@@ -42,113 +38,106 @@
       <a href="forum.html">Forum</a>
       <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
-
       <a href="dashboard.html" class="login-btn">← Back</a>
     </nav>
   </header>
 
-  <!-- ===== MAIN ===== -->
-  <main class="bank-main">
+  <!-- ===== MAIN SECTION ===== -->
+  <main class="dashboard">
+    <div class="top-info">
+      <h2>🏛️ International Credit Bank (ICB)</h2>
+      <p class="plan">Serving the Aviation Industry since 1940</p>
+      <p class="credits">Current Year: <span id="yearDisplay">1940</span> | Global Rate: <span id="rateDisplay">3.1%</span></p>
+    </div>
 
-    <!-- === SECTION 1: INTEREST RATE === -->
-    <section class="bank-panel">
-      <h2>💹 Loan Interest Rate</h2>
-      <p class="panel-desc">
-        The global base rate affecting all aviation corporate loans.
-        It changes yearly according to simulated world economy.
-      </p>
-
-      <div class="rate-summary">
-        <div class="rate-box">
-          <h3>Loan Rate</h3>
-          <p id="loanRate">5.00%</p>
-        </div>
-        <div class="rate-box">
-          <h3>Credit Rate</h3>
-          <p id="creditRate">0.00%</p>
-        </div>
-      </div>
-
-      <div class="chart-container">
+    <div class="main-grid">
+      <!-- === Interest Rate Panel === -->
+      <div class="panel">
+        <h3>💹 Loan Interest Rate</h3>
+        <p>The base interest rate evolves with the global economy over time.</p>
         <canvas id="interestChart"></canvas>
       </div>
-    </section>
 
-    <!-- === SECTION 2: CREDIT RATING === -->
-    <section class="bank-panel">
-      <h2>⭐ Credit Rating</h2>
-      <p class="panel-desc">
-        Evaluation of your airline’s financial reliability.
-        Ratings range from <strong>AAA</strong> (excellent) to <strong>D</strong> (default risk).
-      </p>
-
-      <div class="rating-display">
-        <h3 id="ratingLetter">A</h3>
+      <!-- === Credit Rating Panel === -->
+      <div class="panel">
+        <h3>⭐ Credit Rating</h3>
+        <p>Your airline’s financial reputation and risk index.</p>
+        <h2 id="ratingLetter" style="color:#00ff88;font-size:3rem;margin:10px 0;">A</h2>
         <p id="ratingComment">Stable investment grade — low risk.</p>
       </div>
-    </section>
 
-    <!-- === SECTION 3: ACTIVE LOANS === -->
-    <section class="bank-panel">
-      <h2>💰 Current Loans</h2>
-      <table id="loanTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Collateral</th>
-            <th>Amount</th>
-            <th>Rate</th>
-            <th>Term</th>
-            <th>Due</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="7" class="no-data">No active loans</td></tr>
-        </tbody>
-      </table>
-    </section>
+      <!-- === Loan Summary Panel === -->
+      <div class="panel">
+        <h3>💰 Current Loans</h3>
+        <table id="loanTable" style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+          <thead>
+            <tr style="background:rgba(255,215,0,0.1);color:#FFD700;">
+              <th>ID</th><th>Collateral</th><th>Amount</th><th>Rate</th><th>Term</th><th>Due</th><th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7" style="color:#aaa;padding:8px;">No active loans</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-    <!-- === SECTION 4: NEW LOAN REQUEST === -->
-    <section class="bank-panel">
-      <h2>🏦 Request a New Loan</h2>
-      <p class="panel-desc">
-        Select aircraft as collateral, define the amount and repayment term.
-        Your financial rating and asset value will determine eligibility.
-      </p>
+      <!-- === Loan Request Panel === -->
+      <div class="panel">
+        <h3>🏦 Request a New Loan</h3>
+        <p>Choose aircraft as collateral, set an amount and select repayment term.</p>
+        <form class="register-form" style="max-width:100%;margin-top:1rem;">
+          <label>Collateral Aircraft</label>
+          <select id="collateralSelect">
+            <option value="">Select Aircraft</option>
+          </select>
 
-      <form class="loan-form">
-        <label>Collateral Aircraft</label>
-        <select id="collateralSelect">
-          <option value="">Select Aircraft</option>
-        </select>
+          <label>Loan Amount (USD)</label>
+          <input type="number" id="loanAmount" placeholder="Enter amount" />
 
-        <label>Loan Amount (USD)</label>
-        <input type="number" id="loanAmount" placeholder="Enter amount" />
+          <label>Term (Years)</label>
+          <select id="loanTerm">
+            <option value="1">1 Year</option>
+            <option value="2">2 Years</option>
+            <option value="3">3 Years</option>
+            <option value="4">4 Years</option>
+            <option value="5">5 Years</option>
+            <option value="6">6 Years</option>
+          </select>
 
-        <label>Term (Years)</label>
-        <select id="loanTerm">
-          <option value="1">1 Year</option>
-          <option value="2">2 Years</option>
-          <option value="3">3 Years</option>
-          <option value="4">4 Years</option>
-          <option value="5">5 Years</option>
-          <option value="6">6 Years</option>
-        </select>
-
-        <button type="button" class="loan-btn">Request Loan</button>
-      </form>
-    </section>
+          <button type="button" class="register-btn">Request Loan</button>
+        </form>
+      </div>
+    </div>
   </main>
 
   <!-- ===== FOOTER ===== -->
-  <footer class="bank-footer">
+  <footer>
     <p>© 1940–2030 International Credit Bank (ICB) — Aviation Capital Simulator</p>
   </footer>
 
-  <!-- ===== SCRIPT PLACEHOLDER ===== -->
+  <!-- ===== SCRIPT (prueba de gráfico) ===== -->
   <script>
-    // Chart.js & game logic se integrarán después
+    const ctx = document.getElementById('interestChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['1935','1940','1945','1950'],
+        datasets: [{
+          label: 'Global Interest Rate (%)',
+          data: [2.5, 3.1, 4.2, 3.8],
+          borderColor: '#FFD700',
+          backgroundColor: 'rgba(255, 215, 0, 0.2)',
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          x: { ticks: { color: '#ccc' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { ticks: { color: '#ccc' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        },
+        plugins: { legend: { labels: { color: '#FFD700' } } }
+      }
+    });
   </script>
 </body>
 </html>
