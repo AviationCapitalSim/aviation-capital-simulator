@@ -6,74 +6,99 @@
   <title>Dashboard - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-  <!-- HEADER -->
+  <!-- ====== HEADER ====== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
 
+    <!-- ====== NAV BAR ====== -->
     <nav class="acs-nav">
-  <a href="dashboard.html">Dashboard</a>
-
-  <div class="dropdown">
-    <a href="#" class="dropbtn">Office ▾</a>
-    <div class="dropdown-content">
-      <a href="#">Finances</a>
-      <a href="#">Reports</a>
-      <a href="#">Human Resources</a>
-      <a href="#">Company Data</a>
-    </div>
-  </div>
-
-  <a href="#">Aircraft</a>
-  <a href="#">Routes</a>
-  <a href="#">Forum</a>
-  <a href="#">Support</a>
-</nav>
-
-    <div class="acs-auth">
-      <span class="user-tag">Captain Francisco ✈️</span>
-      <a href="index.html" class="logout-btn">Logout</a>
-    </div>
+      <a href="dashboard.html" class="active">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <button id="logoutBtn" class="logout">Logout</button>
+    </nav>
   </header>
 
-  <!-- DASHBOARD BODY -->
-  <section class="dashboard">
-    <div class="top-info">
-      <h2>Welcome, Captain Francisco</h2>
-      <p>Current Credits: <span class="credits">2,000</span> | Plan: <span class="plan">PRO</span></p>
-      <button class="buy-btn">Buy Credits</button>
-    </div>
+  <!-- ====== MAIN BODY ====== -->
+  <main class="acs-main">
+    <h2 id="welcomeMessage">Welcome, Captain</h2>
+    <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
-    <div class="main-grid">
-      <!-- Left panel -->
-      <div class="panel economy">
-        <h3>Economy Overview</h3>
-        <ul>
-          <li><strong>Company Pre-Tax Profit:</strong> $903,000 <span class="up">+36.6%</span></li>
-          <li><strong>Operating Profit/Loss:</strong> $961,000 <span class="up">+33.6%</span></li>
-          <li><strong>Load Factors:</strong> 72.8% <span class="up">+1.6%</span></li>
-        </ul>
+    <!-- DASHBOARD PANELS -->
+    <section class="dashboard-panels">
+      <div class="panel" id="creditsPanel">
+        <h3>Credits</h3>
+        <p id="creditsValue">Loading...</p>
       </div>
 
-      <!-- Right panel -->
-      <div class="panel billing">
-        <h3>Billing Information</h3>
-        <ul>
-          <li><strong>Weekly Membership Cost:</strong> 1 Cr / week</li>
-          <li><strong>Your Credit Balance:</strong> 25 Cr</li>
-          <li><strong>Next Billing:</strong> 01.11.2025, 12:00</li>
-          <li><strong>Credits needed to play to the end:</strong> 70 Cr</li>
-        </ul>
+      <div class="panel" id="fleetPanel">
+        <h3>Active Aircraft</h3>
+        <p id="fleetCount">Loading...</p>
       </div>
-    </div>
-  </section>
 
-  <!-- FOOTER -->
-  <footer>
+      <div class="panel" id="routesPanel">
+        <h3>Active Routes</h3>
+        <p id="routeCount">Loading...</p>
+      </div>
+
+      <div class="panel" id="staffPanel">
+        <h3>Personnel</h3>
+        <p id="staffCount">Loading...</p>
+      </div>
+
+      <div class="panel" id="rankPanel">
+        <h3>Global Ranking</h3>
+        <p id="rankPosition">Loading...</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="acs-footer">
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
+
+  <script>
+    // ===== AUTH CHECK =====
+    const username = localStorage.getItem("username");
+    if (!username) {
+      window.location.href = "login.html";
+    }
+
+    // ===== USER GREETING =====
+    document.getElementById("welcomeMessage").textContent = `Welcome, Captain ${username}`;
+
+    // ===== DASHBOARD DUMMY DATA =====
+    const dashboardData = {
+      credits: 125,
+      aircraft: 5,
+      routes: 8,
+      staff: 42,
+      rank: "Top 18%"
+    };
+
+    document.getElementById("creditsValue").textContent = dashboardData.credits + " AC$";
+    document.getElementById("fleetCount").textContent = dashboardData.aircraft;
+    document.getElementById("routeCount").textContent = dashboardData.routes;
+    document.getElementById("staffCount").textContent = dashboardData.staff;
+    document.getElementById("rankPosition").textContent = dashboardData.rank;
+
+    // ===== LOGOUT =====
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("username");
+      window.location.href = "login.html";
+    });
+  </script>
 </body>
 </html>
