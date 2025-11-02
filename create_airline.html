@@ -55,7 +55,7 @@
       background: #FFB300;
       color: #0C1F3C;
       font-weight: 800;
-      font-size: 1.00rem; /* ← letra más grande */
+      font-size: 1.00rem;
       border: none;
       border-radius: 12px;
       padding: 1rem 2.4rem;
@@ -118,7 +118,6 @@
         <option value="">Select Country</option>
       </select>
 
-      <!-- NUEVO SISTEMA DE TIPOS -->
       <select id="businessModel" required>
         <option value="">Select Business Model</option>
         <option value="Regional">Regional</option>
@@ -198,12 +197,10 @@
       localStorage.setItem("ACS_Airline", JSON.stringify(airline));
 
       alert(`✅ Airline Created Successfully!\nWelcome aboard, Captain!\nYour airline "${airline.name}" is ready for takeoff.`);
-      window.location.href = "select_game.html";
+      window.location.href = "dashboard.html";
       return false;
     }
-  </script>
 
-  <script>
     // 🔒 Verificación de sesión: si no está logueado, redirigir al login
     document.addEventListener("DOMContentLoaded", () => {
       const user = localStorage.getItem("ACS_User");
@@ -213,7 +210,7 @@
       }
     });
 
-    // 🚪 Cierre de sesión: limpia todo y vuelve al index
+    // 🚪 Cierre de sesión
     function handleLogout() {
       localStorage.removeItem("ACS_User");
       localStorage.removeItem("ACS_Airline");
@@ -221,45 +218,5 @@
       window.location.href = "index.html";
     }
   </script>
-
-<script>
-  // 🔒 Verificación de sesión: si no está logueado, redirigir al login
-  document.addEventListener("DOMContentLoaded", () => {
-    const user = localStorage.getItem("ACS_User");
-    if (!user) {
-      alert("⚠️ Please log in to access this page.");
-      window.location.href = "login.html";
-    }
-  });
-
-  // 🚪 Cierre de sesión: limpia todo y vuelve al index
-  function handleLogout() {
-    localStorage.clear(); // ← Limpieza completa de toda la sesión
-    alert("👋 Session closed. See you soon, Captain!");
-    window.location.href = "index.html";
-  }
-<script>
-  // Ejemplo de función en create_airline.html
-  function handleCreateAirline(event) {
-    event.preventDefault();
-
-    const airlineName = document.querySelector("#airlineName").value.trim();
-
-    if (!airlineName) {
-      alert("⚠️ Please enter your airline name.");
-      return false;
-    }
-
-    // Guardar aerolínea creada
-    localStorage.setItem("ACS_Airline", JSON.stringify({
-      name: airlineName,
-      created: Date.now()
-    }));
-
-    alert(`✅ Airline "${airlineName}" successfully created!`);
-    window.location.href = "dashboard.html";
-    return false;
-  }
-</script>
 </body>
 </html>
