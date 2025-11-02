@@ -101,34 +101,31 @@ function getFlagEmoji(country) {
   if (!country) return "🌍";
 
   // Mapa mínimo de excepciones para nombres que no siguen el patrón ISO
-  const isoMap = {
-    "United States": "US",
-    "United Kingdom": "GB",
-    "Russia": "RU",
-    "South Korea": "KR",
-    "North Korea": "KP",
-    "Iran": "IR",
-    "Vietnam": "VN",
-    "Czech Republic": "CZ",
-    "Democratic Republic of the Congo": "CD",
-    "Republic of the Congo": "CG",
-    "South Sudan": "SS",
-    "Syria": "SY",
-    "Vatican City": "VA",
-    "Ivory Coast": "CI",
-    "Taiwan": "TW",
-    "Hong Kong": "HK",
-    "Macau": "MO"
-  };
+  // Diccionario extendido de países comunes (asegura códigos ISO correctos)
+const isoMap = {
+  "United States": "US", "United Kingdom": "GB", "Spain": "ES", "Kyrgyzstan": "KG",
+  "Russia": "RU", "Brazil": "BR", "Argentina": "AR", "Mexico": "MX", "France": "FR",
+  "Germany": "DE", "Italy": "IT", "Japan": "JP", "China": "CN", "India": "IN",
+  "Canada": "CA", "Australia": "AU", "Chile": "CL", "Peru": "PE", "South Korea": "KR",
+  "North Korea": "KP", "Saudi Arabia": "SA", "South Africa": "ZA", "United Arab Emirates": "AE",
+  "Qatar": "QA", "Turkey": "TR", "Switzerland": "CH", "Norway": "NO", "Finland": "FI",
+  "Poland": "PL", "Sweden": "SE", "Denmark": "DK", "Netherlands": "NL", "New Zealand": "NZ",
+  "Portugal": "PT", "Czech Republic": "CZ", "Ukraine": "UA", "Israel": "IL", "Iran": "IR",
+  "Iraq": "IQ", "Vietnam": "VN", "Thailand": "TH", "Singapore": "SG", "Malaysia": "MY",
+  "Indonesia": "ID", "Philippines": "PH", "Morocco": "MA", "Egypt": "EG", "Tunisia": "TN",
+  "Greece": "GR", "Belgium": "BE", "Austria": "AT", "Ireland": "IE", "Romania": "RO",
+  "Hungary": "HU", "Bulgaria": "BG", "Serbia": "RS", "Croatia": "HR", "Slovakia": "SK",
+  "Slovenia": "SI", "Estonia": "EE", "Latvia": "LV", "Lithuania": "LT"
+};
 
-  // Limpieza del texto
-  let clean = country.trim()
-    .normalize("NFD") // quita acentos
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[’'"]/g, "") // quita apóstrofes
-    .replace(/\s+/g, " "); // normaliza espacios
+// Limpieza del texto del país (acentos, espacios, etc.)
+let clean = country.trim()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[’'"]/g, "")
+  .replace(/\s+/g, " ");
 
-  const code = isoMap[clean] || clean.slice(0, 2).toUpperCase();
+const code = isoMap[clean] || clean.slice(0, 2).toUpperCase();
 
   try {
     return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
