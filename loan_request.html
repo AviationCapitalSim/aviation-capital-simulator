@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan Request — ACS Finance</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- ===== GLOBAL HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <div class="dropdown">
+        <button class="dropbtn active">Finance ▾</button>
+        <div class="dropdown-content">
+          <a href="bank.html">🏦 Bank</a>
+          <a href="loan_request.html" class="active">💰 Loan Request</a>
+          <a href="#">📈 Investments (coming soon)</a>
+          <a href="#">💳 Credit Rating (future)</a>
+        </div>
+      </div>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="dashboard">
+    <section class="top-info">
+      <h2>💰 Loan Request Center</h2>
+      <p>Secure financing for your airline expansion. Select your aircraft, loan amount and repayment term.</p>
+    </section>
+
+    <div class="main-grid">
+      <!-- === AIRCRAFT COLLATERAL === -->
+      <div class="panel">
+        <h3>✈️ Collateral Aircraft</h3>
+        <select id="collateralSelect">
+          <option value="">Select Aircraft</option>
+        </select>
+        <p id="aircraftValue" style="margin-top:10px; color:#bbb;">No aircraft selected</p>
+      </div>
+
+      <!-- === LOAN DETAILS === -->
+      <div class="panel">
+        <h3>💵 Loan Details</h3>
+        <label>Loan Amount (USD)</label>
+        <input type="number" id="loanAmount" placeholder="Enter amount" style="width:100%; padding:0.6rem; border-radius:8px; border:none; background:#0C1F3C; color:white; margin-top:0.5rem;" />
+        <label style="margin-top:1rem; display:block;">Term (Years)</label>
+        <select id="loanTerm" style="width:100%; padding:0.6rem; border-radius:8px; border:none; background:#0C1F3C; color:white; margin-top:0.5rem;">
+          <option value="1">1 Year</option>
+          <option value="2">2 Years</option>
+          <option value="3">3 Years</option>
+          <option value="4">4 Years</option>
+          <option value="5">5 Years</option>
+          <option value="6">6 Years</option>
+        </select>
+      </div>
+
+      <!-- === LOAN EVALUATION === -->
+      <div class="panel">
+        <h3>📊 Loan Evaluation</h3>
+        <p>Credit Rating: <span id="creditRating" style="color:#00ff88;">A</span></p>
+        <p>Risk Level: <span id="riskLevel" style="color:#FFD700;">Low</span></p>
+        <p>Estimated Interest Rate: <span id="interestRate" style="color:#FFB300;">3.2%</span></p>
+        <p>Max Available Loan: <span id="maxLoan" style="color:#1E90FF;">$2,100,000</span></p>
+      </div>
+
+      <!-- === SUBMIT SECTION === -->
+      <div class="panel">
+        <h3>📝 Submit Request</h3>
+        <p>Once approved, funds will be transferred instantly to your airline balance.</p>
+        <button id="requestLoanBtn" class="buy-btn">Submit Loan Request</button>
+        <p id="loanMessage" style="margin-top:15px; color:#ccc;"></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT (básico temporal) ===== -->
+  <script>
+    const aircrafts = [
+      { id: "A300-B4", value: 2200000 },
+      { id: "B737-400", value: 3200000 },
+      { id: "DC-9-15", value: 1800000 },
+    ];
+
+    const collateralSelect = document.getElementById("collateralSelect");
+    const aircraftValue = document.getElementById("aircraftValue");
+
+    aircrafts.forEach(a => {
+      const opt = document.createElement("option");
+      opt.value = a.id;
+      opt.textContent = `${a.id} — $${a.value.toLocaleString()}`;
+      collateralSelect.appendChild(opt);
+    });
+
+    collateralSelect.addEventListener("change", e => {
+      const selected = aircrafts.find(a => a.id === e.target.value);
+      if (selected) {
+        aircraftValue.textContent = `Value: $${selected.value.toLocaleString()}`;
+      } else {
+        aircraftValue.textContent = "No aircraft selected";
+      }
+    });
+
+    document.getElementById("requestLoanBtn").addEventListener("click", () => {
+      document.getElementById("loanMessage").innerHTML =
+        "✅ Loan request submitted. The International Credit Bank will review your application.";
+    });
+
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
