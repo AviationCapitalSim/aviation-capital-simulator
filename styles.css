@@ -536,3 +536,34 @@ footer {
 .dropdown:hover .dropbtn::after {
   transform: rotate(180deg);
 }
+/* =========================================
+   HEADER TEXT ALIGNMENT FIX — ACS NAV
+   ========================================= */
+
+/* Asegura que todos los ítems del header estén perfectamente centrados */
+.acs-nav a,
+.dropbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px; /* altura uniforme */
+  line-height: 1;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Evita que Finance ▾ se desplace hacia abajo */
+.dropbtn::after {
+  content: " ▾";
+  position: relative;
+  top: -1px; /* ajusta el triángulo visualmente */
+}
+
+/* Para pantallas pequeñas mantiene la proporción */
+@media (max-width: 850px) {
+  .acs-nav a,
+  .dropbtn {
+    height: auto;
+    padding: 0.4rem 1rem;
+  }
+}
