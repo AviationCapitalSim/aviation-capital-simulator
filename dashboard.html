@@ -71,10 +71,14 @@
 
   <script>
     // ===== AUTH CHECK =====
-    const username = localStorage.getItem("username");
-    if (!username) {
-      window.location.href = "login.html";
-    }
+const userData = JSON.parse(localStorage.getItem("ACS_User"));
+
+if (!userData || !userData.email) {
+  window.location.href = "login.html";
+} else {
+  const email = userData.email;
+  document.getElementById("welcomeMessage").textContent = `Welcome, Captain (${email})`;
+}
 
     // ===== USER GREETING =====
     document.getElementById("welcomeMessage").textContent = `Welcome, Captain ${username}`;
