@@ -100,8 +100,8 @@
 function getFlagEmoji(country) {
   if (!country) return "🌍";
 
-  // Diccionario mínimo para excepciones comunes donde el nombre difiere del ISO
-  const exceptions = {
+  // Mapa mínimo de excepciones para nombres que no siguen el patrón ISO
+  const isoMap = {
     "United States": "US",
     "United Kingdom": "GB",
     "Russia": "RU",
@@ -114,14 +114,27 @@ function getFlagEmoji(country) {
     "Republic of the Congo": "CG",
     "South Sudan": "SS",
     "Syria": "SY",
-    "Vatican City": "VA"
+    "Vatican City": "VA",
+    "Ivory Coast": "CI",
+    "Taiwan": "TW",
+    "Hong Kong": "HK",
+    "Macau": "MO"
   };
 
-  // Normaliza el nombre, deduce código ISO (dos primeras letras si no está en excepciones)
-  const code = exceptions[country] || country.trim().slice(0, 2).toUpperCase();
+  // Limpieza del texto
+  let clean = country.trim()
+    .normalize("NFD") // quita acentos
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’'"]/g, "") // quita apóstrofes
+    .replace(/\s+/g, " "); // normaliza espacios
 
-  // Convierte las letras a puntos de código de bandera Unicode
-  return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
+  const code = isoMap[clean] || clean.slice(0, 2).toUpperCase();
+
+  try {
+    return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
+  } catch {
+    return "🌍";
+  }
 }
 
 // ✅ Mostrar bienvenida personalizada (con ICAO y bandera)
