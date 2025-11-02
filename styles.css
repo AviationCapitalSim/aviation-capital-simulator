@@ -452,7 +452,7 @@ footer {
 
 /* Flecha fija (sin animación) */
 .dropbtn::after {
-  content: " ▾";
+  content: "▾";
   position: relative;
   top: 0;
 }
