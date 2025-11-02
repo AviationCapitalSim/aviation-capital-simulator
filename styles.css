@@ -426,3 +426,62 @@ footer {
 .dropdown:hover .dropdown-content {
   display: block;
 }
+/* =========================================
+   ACS FINANCE — DASHBOARD MODULE
+   Navigation bar and Finance dropdown styles
+   ========================================= */
+
+/* ===== Finance dropdown ===== */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  background: none;
+  border: none;
+  color: #FFB300;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  transition: color 0.2s ease;
+}
+
+.dropbtn:hover {
+  color: #1E90FF;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: rgba(12, 31, 60, 0.95);
+  border: 1px solid rgba(255, 179, 0, 0.3);
+  border-radius: 10px;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+}
+
+.dropdown-content a {
+  color: #fff;
+  padding: 10px 15px;
+  text-decoration: none;
+  display: block;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-content a:hover {
+  background: rgba(255, 179, 0, 0.1);
+  color: #FFD700;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Opcional: cambia ▾ a ▴ al pasar el mouse */
+.dropdown:hover .dropbtn::after {
+  content: " ▴";
+}
