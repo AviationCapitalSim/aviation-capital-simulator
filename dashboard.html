@@ -6,20 +6,20 @@
   <title>Dashboard - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* === Alineación Logout igual al resto del sistema === */
-.acs-nav .login-btn {
-  background: #FFB300;
-  color: #0C1F3C;
-  font-weight: 800;
-  font-size: 0.95rem;
-  border: none;
-  border-radius: 10px;
-  padding: 0.55rem 1.4rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  margin-left: 12px; /* 👈 Desplaza un poco hacia la derecha */
-}
+    /* === Logout igual al botón Register y alineado === */
+    .acs-nav .login-btn {
+      background: #FFB300;
+      color: #0C1F3C;
+      font-weight: 800;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 10px;
+      padding: 0.55rem 1.4rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      margin-left: 12px; /* separación visual */
+    }
 
     .acs-nav .login-btn:hover {
       background: #ffcb42;
@@ -29,6 +29,25 @@
     .acs-nav .login-btn:focus {
       outline: none;
       box-shadow: none;
+    }
+
+    /* === Estilo del eslogan principal (nombre de la aerolínea) === */
+    #welcomeMessage {
+      color: #FFFFFF;
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    #welcomeMessage span {
+      color: #FFB300;
+    }
+
+    /* Subtexto (mantiene estilo profesional) */
+    .sub {
+      color: #ccc;
+      font-size: 1rem;
+      margin-bottom: 2rem;
     }
   </style>
 </head>
@@ -54,7 +73,7 @@
   </header>
 
   <main class="acs-main">
-    <h2 id="welcomeMessage">Welcome, Captain</h2>
+    <h2 id="welcomeMessage">Welcome to your Airline Headquarters</h2>
     <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
     <section class="dashboard-panels">
@@ -71,19 +90,22 @@
   </footer>
 
   <script>
-    // ✅ Mostrar saludo personalizado
-    const userData = JSON.parse(localStorage.getItem("ACS_User"));
-    if (!userData || !userData.name) {
-      window.location.href = "login.html";
+    // ✅ Mostrar bienvenida personalizada al CEO
+    const airlineData = JSON.parse(localStorage.getItem("ACS_Airline"));
+
+    if (airlineData && airlineData.name) {
+      document.getElementById("welcomeMessage").innerHTML =
+        `Welcome to <span>${airlineData.name}</span>`;
     } else {
-      document.getElementById("welcomeMessage").textContent = `Welcome, Captain ${userData.name}`;
+      document.getElementById("welcomeMessage").textContent =
+        "Welcome to your Airline Headquarters";
     }
 
-    // ✅ Logout coherente con el resto del sistema
+    // ✅ Logout coherente
     function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href = "login.html";
-}
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
   </script>
 </body>
 </html>
