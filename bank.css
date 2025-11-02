@@ -1,187 +1,126 @@
 /* =========================================
-   ACS FINANCE — BANK MODULE v3
-   Stylesheet for International Credit Bank (ICB)
+   ACS FINANCE — BANK MODULE
+   Coherent with global ACS style (style.css)
    ========================================= */
 
-/* ===== BASE ===== */
+/* ===== BODY (hereda el estilo base) ===== */
 body {
   margin: 0;
   font-family: "Poppins", sans-serif;
-  background: #0A1630;
-  color: #ffffff;
+  background: #081428; /* igual que dashboard */
+  color: white;
+  text-align: center;
+  padding-top: 80px; /* header fijo */
   overflow-x: hidden;
-  padding-top: 80px;
 }
 
-/* ===== HEADER ===== */
-.bank-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: rgba(10, 24, 48, 0.95);
-  backdrop-filter: blur(4px);
-  border-bottom: 2px solid #FFB300;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.8rem 2rem;
-  z-index: 1000;
-  box-sizing: border-box;
-}
-
-.bank-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.bank-logo img {
-  height: 36px;
-}
-
-.bank-logo h1 {
-  color: #FFB300;
-  font-size: 1.2rem;
-  margin: 0;
-  letter-spacing: 1px;
-}
-
-.bank-header-info {
-  color: #a9c8ff;
-  font-size: 0.9rem;
-  text-align: right;
-  flex-grow: 1;
-}
-
-.bank-header-info p {
-  margin: 0;
-}
-
-/* ===== BACK BUTTON (ACS STYLE) ===== */
-.bank-btn {
-  background: #FFB300;
-  color: #0A1630;
-  font-weight: 800;
-  font-size: 0.95rem;
-  border: none;
-  border-radius: 10px;
-  padding: 0.55rem 1.4rem;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  margin-left: 1rem;
-}
-
-.bank-btn:hover {
-  background: #ffcb42;
-  transform: scale(1.05);
-}
-
-/* ===== MAIN ===== */
+/* ===== MAIN CONTAINER ===== */
 .bank-main {
-  padding: 2rem 2rem 4rem;
+  padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
   align-items: center;
+  gap: 2rem;
 }
 
-/* ===== PANEL (general) ===== */
+/* ====== PANEL GENERAL ====== */
 .bank-panel {
   background: #0C1F3C;
-  border: 1px solid rgba(255, 215, 0, 0.25);
-  border-radius: 12px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.08);
-  padding: 1.8rem;
+  border-radius: 10px;
+  border: 1px solid #1A335C;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 950px;
+  max-width: 900px;
+  padding: 1.8rem;
+  text-align: left;
 }
 
 .bank-panel h2 {
-  color: #FFD700;
-  margin-bottom: 0.6rem;
-  font-size: 1.3rem;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  color: #FFB300;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(255, 179, 0, 0.3);
   padding-bottom: 0.4rem;
 }
 
 .panel-desc {
-  color: #a9c8ff;
+  color: #ccc;
   font-size: 0.95rem;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.5rem;
   line-height: 1.5;
 }
 
-/* ===== RATE SECTION ===== */
+/* ====== RATE SUMMARY ====== */
 .rate-summary {
   display: flex;
-  justify-content: space-evenly;
-  margin-bottom: 1.2rem;
-  gap: 1rem;
+  justify-content: center;
+  gap: 2rem;
   flex-wrap: wrap;
+  margin-bottom: 1.5rem;
 }
 
 .rate-box {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 10px;
-  padding: 1rem 2rem;
+  padding: 1rem 1.8rem;
   text-align: center;
-  width: 200px;
+  width: 180px;
 }
 
 .rate-box h3 {
   color: #FFD700;
   font-size: 1rem;
-  margin: 0 0 0.3rem;
+  margin: 0 0 0.4rem;
 }
 
 .rate-box p {
+  color: #00ff88;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #00ff88;
   margin: 0;
 }
 
-/* ===== CHART ===== */
+/* ====== CHART ====== */
 .chart-container {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 10px;
   padding: 1rem;
-  max-width: 700px;
+  max-width: 650px;
   margin: 0 auto;
 }
 
 #interestChart {
   width: 100%;
-  height: 280px !important;
+  height: 260px !important;
 }
 
-/* ===== CREDIT RATING ===== */
+/* ====== CREDIT RATING ====== */
 .rating-display {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
-  padding: 1rem;
   text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 1.2rem;
 }
 
 .rating-display h3 {
   font-size: 3rem;
-  margin: 0;
   color: #00ff88;
+  margin: 0;
 }
 
 .rating-display p {
-  color: #ccc;
-  margin: 0.5rem 0 0;
+  color: #bbb;
   font-size: 1rem;
+  margin: 0.6rem 0 0;
 }
 
-/* ===== TABLE (LOANS) ===== */
+/* ====== TABLE ====== */
 #loanTable {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 1rem;
   font-size: 0.95rem;
 }
 
@@ -203,12 +142,12 @@ body {
 }
 
 .no-data {
-  color: #888;
+  color: #999;
   font-style: italic;
   padding: 1rem;
 }
 
-/* ===== LOAN FORM ===== */
+/* ====== FORM ====== */
 .loan-form {
   display: flex;
   flex-direction: column;
@@ -219,7 +158,6 @@ body {
 .loan-form label {
   font-weight: 500;
   color: #fff;
-  text-align: left;
 }
 
 .loan-form input,
@@ -228,7 +166,7 @@ body {
   padding: 0.8rem;
   background: #0B2040;
   border: 1px solid #1A335C;
-  color: #fff;
+  color: white;
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
@@ -236,16 +174,17 @@ body {
 
 .loan-form input:focus,
 .loan-form select:focus {
-  border-color: #FFB300;
   outline: none;
+  border-color: #FFB300;
 }
 
+/* ====== BUTTON (ACS STYLE) ====== */
 .loan-btn {
   background: #FFB300;
-  color: #0C1F3C;
-  font-weight: 700;
+  color: #0A1830;
   border: none;
   border-radius: 10px;
+  font-weight: 700;
   padding: 0.9rem;
   cursor: pointer;
   font-size: 1rem;
@@ -269,10 +208,8 @@ body {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .bank-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.6rem;
+  .bank-panel {
+    padding: 1.2rem;
   }
 
   .rate-summary {
@@ -284,7 +221,7 @@ body {
     max-width: 100%;
   }
 
-  .bank-panel {
-    padding: 1.2rem;
+  #interestChart {
+    height: 220px !important;
   }
 }
