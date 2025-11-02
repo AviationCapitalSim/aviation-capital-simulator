@@ -436,10 +436,6 @@ footer {
   display: block;
 }
 
-/* Opcional: cambia ▾ a ▴ al pasar el mouse */
-.dropdown:hover .dropbtn::after {
-  content: " ▴";
-}
 /* === BANK PAGE ADJUSTMENTS === */
 #interestChart {
   max-width: 600px;
