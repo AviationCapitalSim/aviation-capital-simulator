@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bank - Aviation Capital Simulator</title>
-  <link rel="stylesheet" href="style.css?v=3.1" />
+  <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
     /* === Ajustes locales para el Bank === */
     .bank-panels {
@@ -36,25 +36,24 @@
     </div>
 
     <nav class="acs-nav">
-  <a href="dashboard.html">Main</a>
-  <div class="dropdown">
-  <a class="dropbtn">Finance</a>
-  <div class="dropdown-bridge"></div>
-  <div class="dropdown-content">
-    <a href="bank.html">🏦 Bank</a>
-    <a href="loan_request.html">💰 Loan Request</a>
-  </div>
-</div>
-  <a href="aircraft.html">Aircraft</a>
-  <a href="routes.html">Routes</a>
-  <a href="market.html">Market</a>
-  <a href="hr.html">HR</a>
-  <a href="forum.html">Forum</a>
-  <a href="profile.html">Profile</a>
-  <a href="support.html">Support</a>
-  <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
-</nav>
-
+      <a href="dashboard.html">Main</a>
+      <div class="dropdown">
+        <a class="dropbtn">Finance</a>
+        <div class="dropdown-bridge"></div>
+        <div class="dropdown-content">
+          <a href="bank.html">🏦 Bank</a>
+          <a href="loan_request.html">💰 Loan Request</a>
+        </div>
+      </div>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
   </header>
 
   <!-- ===== MAIN CONTENT ===== -->
@@ -94,5 +93,12 @@
   <footer class="acs-footer">
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
+
+  <script>
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
 </body>
 </html>
