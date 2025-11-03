@@ -63,7 +63,17 @@
 
     <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
-      <a href="finance.html">Routes</a>      
+
+      <!-- === Finance dropdown === -->
+      <div class="dropdown">
+        <a class="dropbtn">Finance</a>
+        <div class="dropdown-bridge"></div>
+        <div class="dropdown-content">
+          <a href="bank.html">🏦 Bank</a>
+          <a href="loan_request.html">💰 Loan Request</a>
+        </div>
+      </div>
+
       <a href="aircraft.html" class="active">Aircraft</a>
       <a href="routes.html">Routes</a>
       <a href="market.html">Market</a>
@@ -78,9 +88,9 @@
   <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
     <h2>Aircraft</h2>
-    <p class="sub">Fleet management, acquisitions, maintenance, and operational scheduling.</p>
+    <p class="sub">Fleet management, acquisitions, maintenance, scheduling, and live tracking.</p>
 
-    <!-- ===== AIRCRAFT ACTIVITY CENTER PANEL ===== -->
+    <!-- ===== AIRCRAFT PANELS ===== -->
     <section class="aircraft-panels">
       <div class="panel aac-panel" onclick="openAAC()">
         <div class="aac-title">
@@ -113,6 +123,12 @@
         <p>Assign routes, track load factors, and manage operational efficiency based on demand.</p>
         <button class="acs-btn">Open</button>
       </div>
+
+      <div class="panel" onclick="openSkyTrack()">
+        <h3>🌍 SkyTrack (Live Map)</h3>
+        <p>Visualize your active flights worldwide in real time. Follow your aircraft as they traverse global routes.</p>
+        <button class="acs-btn">Open</button>
+      </div>
     </section>
   </main>
 
@@ -123,24 +139,23 @@
 
   <!-- ===== SCRIPT ===== -->
   <script>
-    // === Navegación al AAC ===
+    // === Navegación a submódulos ===
     function openAAC() {
       window.location.href = "aac.html";
     }
 
-    // === Badge dinámico ===
-    let aacCount = 3; // valor inicial de ejemplo
+    function openSkyTrack() {
+      window.location.href = "skytrack.html";
+    }
+
+    // === Badge dinámico (ejemplo) ===
+    let aacCount = 3;
     const badge = document.getElementById("aacBadge");
 
     function updateAACBadge(count) {
       aacCount = count;
       badge.textContent = count;
       badge.style.display = count > 0 ? "flex" : "none";
-    }
-
-    // Ejemplo: si se leen los mensajes
-    function resetAAC() {
-      updateAACBadge(0);
     }
 
     // === Logout coherente ===
