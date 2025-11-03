@@ -152,7 +152,7 @@ function updatePlane() {
   const emoji = document.getElementById("planeEmoji");
   if (emoji) {
     emoji.style.setProperty('--angle', `${bearing}deg`);
-    emoji.style.transform = `rotate(${bearing - 90}deg)`;
+    emoji.style.transform = `rotate(${bearing + 90}deg)`;
   }
 
   if (progress < 1) setTimeout(updatePlane, updateInterval);
