@@ -575,7 +575,8 @@ footer {
 .login-btn:hover,
 .register-btn:hover,
 .logout-btn:hover {
-  background: #FFB300;
-  color: #0A1830;
+  background: #FFB300 !important; /* fondo dorado */
+  color: #000000 !important;      /* letras negras */
   transform: scale(1.05);
 }
+
