@@ -434,9 +434,9 @@ footer {
   color: #FFD700;
 }
 
-/* 🔹 SINGLE ARROW ONLY — NO DOUBLE ▾ BUG */
+/* 🔹 SINGLE ARROW ONLY — NO BOBBLE ▾ BUG */
 .dropbtn::after {
-  content: " ▾";
+  content: "▾";
   position: relative;
   top: -1px;
 }
