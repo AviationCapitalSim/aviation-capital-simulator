@@ -5,14 +5,16 @@ body {
   background: #0A1630;
   color: white;
   text-align: center;
-  padding-top: 80px;
+  padding-top: 80px; /* to prevent header overlap */
   overflow-x: hidden;
 }
 
-/* ======== HERO ======== */
+/* ======== HERO (limpio y coherente) ======== */
 .hero {
   padding: 6rem 1rem;
-  background: #081428;
+  background: #081428; /* azul base del logo */
+  background-image: none !important;
+  box-shadow: none !important;
 }
 
 .hero h2 {
@@ -30,9 +32,13 @@ body {
   width: 200px;
   margin: 30px auto 25px;
   display: block;
+  background: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  border: none !important;
 }
 
-/* ======== BUTTON ======== */
+/* ======== BOTÓN ======== */
 .hero button {
   background: #FFB300;
   color: #0A1830;
@@ -58,7 +64,7 @@ footer {
   font-size: 0.9rem;
 }
 
-/* ======== HEADER ======== */
+/* ======== ACS HEADER ======== */
 .acs-header {
   position: fixed;
   top: 0;
@@ -123,28 +129,43 @@ footer {
   color: #FFB300;
 }
 
-/* ======== LOGOUT (igual que Login/Register) ======== */
-.logout-btn {
-  background: transparent;
-  color: #FFB300;
-  font-weight: 700;
-  border: 1.8px solid #FFB300;
-  border-radius: 8px;
-  padding: 0.45rem 1.2rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  font-size: 0.9rem;
-  margin-left: 12px;
+/* Auth buttons */
+.acs-auth {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
-.logout-btn:hover {
+.acs-auth a {
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.login-btn {
+  border: 1px solid #FFB300;
+  color: #FFB300;
+  background: transparent;
+}
+
+.login-btn:hover {
   background: #FFB300;
   color: #0A1830;
-  transform: scale(1.05);
 }
 
-/* ======== LOGO EFFECT ======== */
+.register-btn {
+  background: #FFB300;
+  color: #0A1830;
+}
+
+.register-btn:hover {
+  background: #ffcb42;
+}
+
+/* ======== LOGO ACS ======== */
 .acs-symbol {
   font-size: 1.4rem;
   font-weight: 800;
@@ -187,6 +208,100 @@ footer {
     margin-top: 0.4rem;
     gap: 1rem;
   }
+
+  .acs-auth {
+    flex-basis: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+}
+
+.hero-logo {
+  width: 180px;
+  margin: 25px auto 10px;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(255, 179, 0, 0.4));
+}
+
+/* ======== REGISTER PAGE ======== */
+.register-section {
+  background: #081428;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  padding: 4rem 1rem;
+}
+
+.register-section h2 {
+  color: #FFB300;
+  font-size: 2rem;
+  margin-bottom: 0.3rem;
+  font-weight: 700;
+}
+
+.register-section p {
+  color: #ccc;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 350px;
+}
+
+.register-form input,
+.register-form select {
+  padding: 0.9rem;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: #0C1F3C;
+  color: white;
+  font-size: 1rem;
+}
+
+.register-form input:focus,
+.register-form select:focus {
+  border: 2px solid #FFB300;
+}
+
+.register-form button {
+  background: #FFB300;
+  color: #0A1830;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  padding: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.register-form button:hover {
+  background: #ffcb42;
+  transform: scale(1.05);
+}
+
+.login-link {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.login-link a {
+  color: #FFB300;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
 }
 
 /* ======== DASHBOARD ======== */
@@ -195,6 +310,49 @@ footer {
   min-height: 100vh;
   color: white;
   padding: 6rem 2rem;
+}
+
+.top-info {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.top-info h2 {
+  color: #FFB300;
+  font-size: 1.8rem;
+}
+
+.top-info .credits {
+  color: #00ff88;
+  font-weight: 700;
+}
+
+.top-info .plan {
+  color: #FFB300;
+  font-weight: 600;
+}
+
+.buy-btn {
+  background: #FFB300;
+  border: none;
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  color: #0A1830;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.buy-btn:hover {
+  background: #ffcb42;
+  transform: scale(1.05);
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
 }
 
 .panel {
@@ -210,60 +368,65 @@ footer {
   margin-bottom: 1rem;
 }
 
-/* ======== FINANCE DROPDOWN — ESTABLE ======== */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropbtn {
-  background: none;
-  border: none;
-  color: #ddd;
-  font-weight: 500;
-  cursor: pointer;
-  font-size: 1rem;
+.panel ul {
+  list-style: none;
   padding: 0;
+  color: #ccc;
 }
 
-.dropbtn:hover {
+.panel li {
+  margin-bottom: 0.8rem;
+}
+
+.up {
+  color: #00ff88;
+  font-weight: 600;
+}
+
+.logout-btn {
   color: #FFB300;
+  text-decoration: none;
+  border: 1px solid #FFB300;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
-/* 🔹 Mantiene el menú abierto correctamente */
+.logout-btn:hover {
+  background: #FFB300;
+  color: #0A1830;
+}
+
+/* =========================================
+   FINANCE DROPDOWN — CLEAN & FIXED VERSION
+   ========================================= */
 .dropdown-content {
   display: none;
   position: absolute;
-  top: 100%;
+  top: 120%;
   left: 0;
   background-color: rgba(12, 31, 60, 0.96);
   border: 1px solid rgba(255, 179, 0, 0.3);
   border-radius: 10px;
-  min-width: 180px;
+  min-width: 200px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  z-index: 9999;
+  z-index: 10;
   backdrop-filter: blur(6px);
   text-align: left;
   padding: 4px 0;
-  transition: all 0.15s ease;
-  opacity: 0;
-  visibility: hidden;
 }
 
-/* 🔸 Hover sin cierre */
-.dropdown:hover .dropdown-content {
-  display: block;
-  opacity: 1;
-  visibility: visible;
-}
-
-/* 🔹 Enlaces del submenú */
 .dropdown-content a {
   display: block;
   padding: 10px 18px;
   font-size: 0.95rem;
+  text-align: left;
   color: #ddd;
-  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dropdown-content a:last-child {
+  border-bottom: none;
 }
 
 .dropdown-content a:hover {
@@ -271,14 +434,25 @@ footer {
   color: #FFD700;
 }
 
-/* 🔸 Elimina la flecha extra */
+/* 🔹 SINGLE ARROW ONLY — NO BOBBLE ▾ BUG */
 .dropbtn::after {
-  content: "";
+  content: "▾";
+  position: relative;
+  top: -1px;
+}
+
+/* === BANK PAGE ADJUSTMENTS === */
+#interestChart {
+  max-width: 600px;
+  max-height: 300px;
+  margin: 20px auto;
+  display: block;
 }
 
 /* =========================================
    HEADER TEXT ALIGNMENT FIX — ACS NAV
    ========================================= */
+
 .acs-nav a,
 .dropbtn {
   display: flex;
@@ -288,4 +462,18 @@ footer {
   line-height: 1;
   padding-top: 0;
   padding-bottom: 0;
+}
+
+.dropbtn::after {
+  content: " ▾";
+  position: relative;
+  top: -1px;
+}
+
+@media (max-width: 850px) {
+  .acs-nav a,
+  .dropbtn {
+    height: auto;
+    padding: 0.4rem 1rem;
+  }
 }
