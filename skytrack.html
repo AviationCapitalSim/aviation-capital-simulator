@@ -99,29 +99,17 @@
       dashArray: '5, 6'
     }).addTo(map);
 
-    // === ✈️ Emoji de avión ACS dorado con rotación y animación ===
+    // === ✈️ Emoji de avión estático y orientado ===
 const planeIcon = L.divIcon({
   html: `<span id="planeEmoji" style="
     display:inline-block;
-    font-size: 28px;
-    color: #FFB300;
-    text-shadow: 0 0 5px rgba(255,255,255,0.7);
+    font-size: 26px;
     transform: rotate(0deg);
-    animation: flyMotion 1.2s ease-in-out infinite alternate;
   ">✈️</span>`,
   className: "",
   iconSize: [28, 28],
   iconAnchor: [14, 14]
 });
-
-// === Animación de oscilación de vuelo ===
-const style = document.createElement('style');
-style.innerHTML = `
-@keyframes flyMotion {
-  from { transform: translateY(0) rotate(var(--angle, 0deg)); }
-  to { transform: translateY(-3px) rotate(var(--angle, 0deg)); }
-}`;
-document.head.appendChild(style);
 
 const planeMarker = L.marker([origin.lat, origin.lon], { icon: planeIcon }).addTo(map);
 
@@ -136,27 +124,40 @@ function getBearing(lat1, lon1, lat2, lon2) {
   return ((brng * 180) / Math.PI + 360) % 360;
 }
 
-// === Simula movimiento y rotación ===
+// === Simula movimiento y rotación del avión ===
+let progress = 0;
+const steps = 400;
+const updateInterval = 50;
+
+function interpolatePosition(start, end, t) {
+  return [
+    start.lat + (end.lat - start.lat) * t,
+    start.lon + (end.lon - start.lon) * t
+  ];
+}
+
 function updatePlane() {
   progress += 1 / steps;
   if (progress > 1) {
     progress = 1;
-    document.getElementById("flightStatus").innerHTML = "✅ Flight completed: Arrived in Dubai (OMDB)";
+    document.getElementById("flightStatus").innerHTML =
+      "✅ Flight completed: Arrived in Dubai (OMDB)";
   }
 
   const [lat, lon] = interpolatePosition(origin, destination, progress);
   planeMarker.setLatLng([lat, lon]);
 
-  // Calcular rumbo y rotar emoji
+  // Calcular rumbo y rotar emoji (ajustado para no ir de cola)
   const bearing = getBearing(origin.lat, origin.lon, lat, lon);
   const emoji = document.getElementById("planeEmoji");
   if (emoji) {
-    emoji.style.setProperty('--angle', `${bearing}deg`);
-    emoji.style.transform = `rotate(${bearing + 180}deg)`;
+    emoji.style.transform = `rotate(${bearing + 270}deg)`; // Ajuste estable, sin inversión
   }
 
   if (progress < 1) setTimeout(updatePlane, updateInterval);
 }
+
+updatePlane(); // Inicia animación
 
     // === Simulate flight movement ===
     let progress = 0; // 0 → 1
