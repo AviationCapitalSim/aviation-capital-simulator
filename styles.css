@@ -398,48 +398,61 @@ footer {
 }
 
 /* =========================================
-   FINANCE DROPDOWN — CLEAN & FIXED VERSION
+   FINANCE DROPDOWN — DEFINITIVO Y ESTABLE
    ========================================= */
-
-/* Contenedor del dropdown */
 .dropdown {
   position: relative;
   display: inline-block;
 }
 
-/* Contenido oculto hasta activar */
+.dropbtn {
+  background: none;
+  border: none;
+  color: #ddd;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.dropbtn:hover {
+  color: #FFB300;
+}
+
+/* 🔹 Mantiene menú activo mientras pasas al submenú */
 .dropdown-content {
   display: none;
   position: absolute;
-  top: 120%;
+  top: 100%; /* antes era 120%, lo bajamos para eliminar el salto */
   left: 0;
   background-color: rgba(12, 31, 60, 0.96);
   border: 1px solid rgba(255, 179, 0, 0.3);
   border-radius: 10px;
-  min-width: 200px;
+  min-width: 180px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  z-index: 10;
+  z-index: 9999;
   backdrop-filter: blur(6px);
   text-align: left;
   padding: 4px 0;
+  transition: all 0.15s ease;
+  opacity: 0;
+  visibility: hidden;
 }
 
-/* Hover temporal para probar despliegue */
+/* 🔸 Hover activo sin cierre */
 .dropdown:hover .dropdown-content {
   display: block;
+  opacity: 1;
+  visibility: visible;
 }
 
+/* 🔹 Enlaces del submenú */
 .dropdown-content a {
   display: block;
   padding: 10px 18px;
   font-size: 0.95rem;
-  text-align: left;
   color: #ddd;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.dropdown-content a:last-child {
-  border-bottom: none;
+  text-decoration: none;
 }
 
 .dropdown-content a:hover {
@@ -447,11 +460,9 @@ footer {
   color: #FFD700;
 }
 
-/* 🔹 ÚNICA FLECHA (sin duplicación) */
+/* 🔸 Elimina la flecha extra del botón */
 .dropbtn::after {
-  content: " ▾";
-  position: relative;
-  top: -1px;
+  content: "";
 }
 
 /* === BANK PAGE ADJUSTMENTS === */
