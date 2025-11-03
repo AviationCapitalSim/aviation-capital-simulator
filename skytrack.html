@@ -72,7 +72,7 @@
   </footer>
 
   <!-- ===== SCRIPT ===== -->
-  <script>
+    <script>
     // === Initialize map ===
     const map = L.map('map').setView([33.0, 68.0], 5); // Central Asia
 
@@ -91,7 +91,7 @@
     const endMarker = L.marker([destination.lat, destination.lon]).addTo(map)
       .bindPopup(`<b>${destination.name}</b><br>Arrival Airport`);
 
-    // === Draw flight route line ===
+    // === Route line ===
     const routeLine = L.polyline([[origin.lat, origin.lon], [destination.lat, destination.lon]], {
       color: '#FFB300',
       weight: 2.5,
@@ -100,69 +100,34 @@
     }).addTo(map);
 
     // === ✈️ Emoji de avión estático y orientado ===
-const planeIcon = L.divIcon({
-  html: `<span id="planeEmoji" style="
-    display:inline-block;
-    font-size: 26px;
-    transform: rotate(0deg);
-  ">✈️</span>`,
-  className: "",
-  iconSize: [28, 28],
-  iconAnchor: [14, 14]
-});
+    const planeIcon = L.divIcon({
+      html: `<span id="planeEmoji" style="
+        display:inline-block;
+        font-size: 26px;
+        transform: rotate(0deg);
+      ">✈️</span>`,
+      className: "",
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
 
-const planeMarker = L.marker([origin.lat, origin.lon], { icon: planeIcon }).addTo(map);
+    const planeMarker = L.marker([origin.lat, origin.lon], { icon: planeIcon }).addTo(map);
 
-// === Calcula el rumbo entre dos puntos ===
-function getBearing(lat1, lon1, lat2, lon2) {
-  const toRad = Math.PI / 180;
-  const y = Math.sin((lon2 - lon1) * toRad) * Math.cos(lat2 * toRad);
-  const x =
-    Math.cos(lat1 * toRad) * Math.sin(lat2 * toRad) -
-    Math.sin(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.cos((lon2 - lon1) * toRad);
-  const brng = Math.atan2(y, x);
-  return ((brng * 180) / Math.PI + 360) % 360;
-}
+    // === Calcula el rumbo entre dos puntos ===
+    function getBearing(lat1, lon1, lat2, lon2) {
+      const toRad = Math.PI / 180;
+      const y = Math.sin((lon2 - lon1) * toRad) * Math.cos(lat2 * toRad);
+      const x =
+        Math.cos(lat1 * toRad) * Math.sin(lat2 * toRad) -
+        Math.sin(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.cos((lon2 - lon1) * toRad);
+      const brng = Math.atan2(y, x);
+      return ((brng * 180) / Math.PI + 360) % 360;
+    }
 
-// === Simula movimiento y rotación del avión ===
-let progress = 0;
-const steps = 400;
-const updateInterval = 50;
-
-function interpolatePosition(start, end, t) {
-  return [
-    start.lat + (end.lat - start.lat) * t,
-    start.lon + (end.lon - start.lon) * t
-  ];
-}
-
-function updatePlane() {
-  progress += 1 / steps;
-  if (progress > 1) {
-    progress = 1;
-    document.getElementById("flightStatus").innerHTML =
-      "✅ Flight completed: Arrived in Dubai (OMDB)";
-  }
-
-  const [lat, lon] = interpolatePosition(origin, destination, progress);
-  planeMarker.setLatLng([lat, lon]);
-
-  // Calcular rumbo y rotar emoji (ajustado para no ir de cola)
-  const bearing = getBearing(origin.lat, origin.lon, lat, lon);
-  const emoji = document.getElementById("planeEmoji");
-  if (emoji) {
-    emoji.style.transform = `rotate(${bearing + 270}deg)`; // Ajuste estable, sin inversión
-  }
-
-  if (progress < 1) setTimeout(updatePlane, updateInterval);
-}
-
-updatePlane(); // Inicia animación
-
-    // === Simulate flight movement ===
-    let progress = 0; // 0 → 1
-    const steps = 400; // smooth animation steps
-    const updateInterval = 50; // ms
+    // === Simula movimiento y rotación del avión ===
+    let progress = 0;
+    const steps = 400;
+    const updateInterval = 50;
 
     function interpolatePosition(start, end, t) {
       return [
@@ -175,15 +140,24 @@ updatePlane(); // Inicia animación
       progress += 1 / steps;
       if (progress > 1) {
         progress = 1;
-        document.getElementById("flightStatus").innerHTML = "✅ Flight completed: Arrived in Dubai (OMDB)";
+        document.getElementById("flightStatus").innerHTML =
+          "✅ Flight completed: Arrived in Dubai (OMDB)";
       }
 
       const [lat, lon] = interpolatePosition(origin, destination, progress);
       planeMarker.setLatLng([lat, lon]);
+
+      // Calcular rumbo y rotar emoji (ajustado para no ir de cola)
+      const bearing = getBearing(origin.lat, origin.lon, lat, lon);
+      const emoji = document.getElementById("planeEmoji");
+      if (emoji) {
+        emoji.style.transform = `rotate(${bearing + 270}deg)`; // Ajuste estable, sin inversión
+      }
+
       if (progress < 1) setTimeout(updatePlane, updateInterval);
     }
 
-    updatePlane(); // Start animation
+    updatePlane(); // Inicia animación
 
     // === Logout coherente ===
     function handleLogout() {
