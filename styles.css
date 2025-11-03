@@ -477,7 +477,7 @@ footer {
     padding: 0.4rem 1rem;
   }
 }
-/* === PATCH: Finance Dropdown hover fix (v3.1.1) === */
+/* === Finance dropdown stability fix (hover bridge patch) === */
 .dropdown {
   position: relative;
   display: inline-block;
@@ -497,11 +497,11 @@ footer {
   color: #FFB300;
 }
 
-/* 🔹 Menú con mismo estilo, pero mejora de detección hover */
+/* 🔹 Menú desplegable (mantiene el mismo aspecto que antes) */
 .dropdown-content {
   display: none;
   position: absolute;
-  top: 120%; /* conserva la misma separación visual de tu imagen */
+  top: calc(100% - 2px); /* elimina el hueco que causaba el cierre */
   left: 0;
   background-color: rgba(12, 31, 60, 0.96);
   border: 1px solid rgba(255, 179, 0, 0.3);
@@ -515,10 +515,10 @@ footer {
   transition: all 0.15s ease;
   opacity: 0;
   visibility: hidden;
-  pointer-events: none; /* evita interferencias en hover */
+  pointer-events: none;
 }
 
-/* ✅ Hover estable: mantiene abierto el menú mientras bajas */
+/* ✅ Hover sólido (permite bajar el mouse sin cierre) */
 .dropdown:hover .dropdown-content,
 .dropdown-content:hover {
   display: block;
