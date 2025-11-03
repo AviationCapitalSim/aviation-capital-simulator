@@ -554,3 +554,28 @@ footer {
   background: rgba(255, 179, 0, 0.08);
   color: #FFD700;
 }
+/* =======================================================
+   GLOBAL AUTH BUTTONS — Unifica Login, Register y Logout
+   ======================================================= */
+.login-btn,
+.register-btn,
+.logout-btn {
+  border: 1px solid #FFB300;
+  color: #FFB300;
+  background: transparent;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 6px 14px;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.login-btn:hover,
+.register-btn:hover,
+.logout-btn:hover {
+  background: #FFB300;
+  color: #0A1830;
+  transform: scale(1.05);
+}
