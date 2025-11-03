@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
     /* === Logout igual al botón Register y alineado === */
-    .acs-nav .login-btn {
+    .logout-btn {
       background: #FFB300;
       color: #0C1F3C;
       font-weight: 800;
@@ -21,12 +21,12 @@
       margin-left: 12px;
     }
 
-    .acs-nav .login-btn:hover {
+    .logout-btn:hover {
       background: #ffcb42;
       transform: scale(1.05);
     }
 
-    .acs-nav .login-btn:focus {
+    .logout-btn:focus {
       outline: none;
       box-shadow: none;
     }
@@ -65,14 +65,13 @@
 
     <nav class="acs-nav">
       <a href="dashboard.html" class="active">Main</a>
-      
       <!-- ===== FINANCE DROPDOWN ===== -->
-<div class="dropdown">
-  <button class="dropbtn">Finance ▾</button>
-  <div class="dropdown-content">
-    <a href="bank.html">🏦 Bank</a>
-  </div>
-</div>
+      <div class="dropdown">
+        <button class="dropbtn">Finance</button>
+        <div class="dropdown-content">
+          <a href="bank.html">🏦 Bank</a>
+        </div>
+      </div>
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html">Routes</a>
       <a href="market.html">Market</a>
@@ -80,7 +79,7 @@
       <a href="forum.html">Forum</a>
       <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
-      <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
   </header>
 
@@ -104,64 +103,60 @@
 
   <script>
     // 🌍 Convierte nombre de país a bandera emoji (compatible con todos los países)
-function getFlagEmoji(country) {
-  if (!country) return "🌍";
+    function getFlagEmoji(country) {
+      if (!country) return "🌍";
 
-  // Mapa mínimo de excepciones para nombres que no siguen el patrón ISO
-  // Diccionario extendido de países comunes (asegura códigos ISO correctos)
-const isoMap = {
-  "United States": "US", "United Kingdom": "GB", "Spain": "ES", "Kyrgyzstan": "KG",
-  "Russia": "RU", "Brazil": "BR", "Argentina": "AR", "Mexico": "MX", "France": "FR",
-  "Germany": "DE", "Italy": "IT", "Japan": "JP", "China": "CN", "India": "IN",
-  "Canada": "CA", "Australia": "AU", "Chile": "CL", "Peru": "PE", "South Korea": "KR",
-  "North Korea": "KP", "Saudi Arabia": "SA", "South Africa": "ZA", "United Arab Emirates": "AE",
-  "Qatar": "QA", "Turkey": "TR", "Switzerland": "CH", "Norway": "NO", "Finland": "FI",
-  "Poland": "PL", "Sweden": "SE", "Denmark": "DK", "Netherlands": "NL", "New Zealand": "NZ",
-  "Portugal": "PT", "Czech Republic": "CZ", "Ukraine": "UA", "Israel": "IL", "Iran": "IR",
-  "Iraq": "IQ", "Vietnam": "VN", "Thailand": "TH", "Singapore": "SG", "Malaysia": "MY",
-  "Indonesia": "ID", "Philippines": "PH", "Morocco": "MA", "Egypt": "EG", "Tunisia": "TN",
-  "Greece": "GR", "Belgium": "BE", "Austria": "AT", "Ireland": "IE", "Romania": "RO",
-  "Hungary": "HU", "Bulgaria": "BG", "Serbia": "RS", "Croatia": "HR", "Slovakia": "SK",
-  "Slovenia": "SI", "Estonia": "EE", "Latvia": "LV", "Lithuania": "LT"
-};
+      const isoMap = {
+        "United States": "US", "United Kingdom": "GB", "Spain": "ES", "Kyrgyzstan": "KG",
+        "Russia": "RU", "Brazil": "BR", "Argentina": "AR", "Mexico": "MX", "France": "FR",
+        "Germany": "DE", "Italy": "IT", "Japan": "JP", "China": "CN", "India": "IN",
+        "Canada": "CA", "Australia": "AU", "Chile": "CL", "Peru": "PE", "South Korea": "KR",
+        "North Korea": "KP", "Saudi Arabia": "SA", "South Africa": "ZA", "United Arab Emirates": "AE",
+        "Qatar": "QA", "Turkey": "TR", "Switzerland": "CH", "Norway": "NO", "Finland": "FI",
+        "Poland": "PL", "Sweden": "SE", "Denmark": "DK", "Netherlands": "NL", "New Zealand": "NZ",
+        "Portugal": "PT", "Czech Republic": "CZ", "Ukraine": "UA", "Israel": "IL", "Iran": "IR",
+        "Iraq": "IQ", "Vietnam": "VN", "Thailand": "TH", "Singapore": "SG", "Malaysia": "MY",
+        "Indonesia": "ID", "Philippines": "PH", "Morocco": "MA", "Egypt": "EG", "Tunisia": "TN",
+        "Greece": "GR", "Belgium": "BE", "Austria": "AT", "Ireland": "IE", "Romania": "RO",
+        "Hungary": "HU", "Bulgaria": "BG", "Serbia": "RS", "Croatia": "HR", "Slovakia": "SK",
+        "Slovenia": "SI", "Estonia": "EE", "Latvia": "LV", "Lithuania": "LT"
+      };
 
-// Limpieza del texto del país (acentos, espacios, etc.)
-let clean = country.trim()
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/[’'"]/g, "")
-  .replace(/\s+/g, " ");
+      let clean = country.trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[’'"]/g, "")
+        .replace(/\s+/g, " ");
 
-const code = isoMap[clean] || clean.slice(0, 2).toUpperCase();
+      const code = isoMap[clean] || clean.slice(0, 2).toUpperCase();
 
-  try {
-  return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
-} catch {
-  // Si no puede generar bandera, muestra iniciales en un círculo
-  return `🌐 ${code}`;
-}
-}
+      try {
+        return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
+      } catch {
+        return `🌐 ${code}`;
+      }
+    }
 
-// ✅ Mostrar bienvenida personalizada (con ICAO y bandera)
-const airlineData = JSON.parse(localStorage.getItem("ACS_Airline"));
+    // ✅ Mostrar bienvenida personalizada (con ICAO y bandera)
+    const airlineData = JSON.parse(localStorage.getItem("ACS_Airline"));
 
-if (airlineData && airlineData.name) {
-  const icao = airlineData.icao ? ` (${airlineData.icao})` : "";
-  document.getElementById("welcomeMessage").innerHTML =
-    `Welcome to <span>${airlineData.name}${icao}</span>`;
+    if (airlineData && airlineData.name) {
+      const icao = airlineData.icao ? ` (${airlineData.icao})` : "";
+      document.getElementById("welcomeMessage").innerHTML =
+        `Welcome to <span>${airlineData.name}${icao}</span>`;
 
-  const flag = getFlagEmoji(airlineData.country);
-  const country = airlineData.country || "Unknown";
-  const model = airlineData.businessModel || "Operations";
+      const flag = getFlagEmoji(airlineData.country);
+      const country = airlineData.country || "Unknown";
+      const model = airlineData.businessModel || "Operations";
 
-  document.getElementById("airlineSub").innerHTML = `
-    <span>${flag}</span> ${country} — ${model}
-  `;
-} else {
-  document.getElementById("welcomeMessage").textContent =
-    "Welcome to your Airline Headquarters";
-  document.getElementById("airlineSub").textContent = "";
-}
+      document.getElementById("airlineSub").innerHTML = `
+        <span>${flag}</span> ${country} — ${model}
+      `;
+    } else {
+      document.getElementById("welcomeMessage").textContent =
+        "Welcome to your Airline Headquarters";
+      document.getElementById("airlineSub").textContent = "";
+    }
 
     // ✅ Logout coherente
     function handleLogout() {
