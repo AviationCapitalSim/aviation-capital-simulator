@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aircraft - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    /* === Ajustes locales para Aircraft === */
+    .aircraft-panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .panel h3 {
+      color: #FFB300;
+      margin-bottom: 0.8rem;
+    }
+
+    .panel p {
+      color: #ddd;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    /* === AAC contador de mensajes === */
+    .aac-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .aac-badge {
+      background-color: #E53935;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 6px rgba(255, 0, 0, 0.6);
+    }
+
+    .aac-panel:hover {
+      transform: scale(1.02);
+      transition: transform 0.2s ease;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="aircraft.html" class="active">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="acs-main">
+    <h2>Aircraft</h2>
+    <p class="sub">Fleet management, acquisitions, maintenance, and operational scheduling.</p>
+
+    <!-- ===== AIRCRAFT ACTIVITY CENTER PANEL ===== -->
+    <section class="aircraft-panels">
+      <div class="panel aac-panel" onclick="openAAC()">
+        <div class="aac-title">
+          <h3>🛫 Aircraft Activity Center (AAC)</h3>
+          <span id="aacBadge" class="aac-badge">3</span>
+        </div>
+        <p>Monitor fleet activities, deliveries, maintenance alerts, and transactions between players.</p>
+      </div>
+
+      <div class="panel">
+        <h3>✈️ My Aircraft</h3>
+        <p>View and manage your owned fleet. Access detailed status, maintenance history, and resale options.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel">
+        <h3>💸 Buy New</h3>
+        <p>Order new aircraft directly from manufacturers. Access catalogs, pre-orders, and delivery slots.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel">
+        <h3>🔁 Rent</h3>
+        <p>Rent or lease aircraft between players. Flexible terms and dynamic market conditions.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel">
+        <h3>🕓 Schedule</h3>
+        <p>Assign routes, track load factors, and manage operational efficiency based on demand.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    // === Navegación al AAC ===
+    function openAAC() {
+      window.location.href = "aac.html";
+    }
+
+    // === Badge dinámico ===
+    let aacCount = 3; // valor inicial de ejemplo
+    const badge = document.getElementById("aacBadge");
+
+    function updateAACBadge(count) {
+      aacCount = count;
+      badge.textContent = count;
+      badge.style.display = count > 0 ? "flex" : "none";
+    }
+
+    // Ejemplo: si se leen los mensajes
+    function resetAAC() {
+      updateAACBadge(0);
+    }
+
+    // === Logout coherente ===
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
