@@ -6,12 +6,12 @@
   <title>Dashboard - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === Logout coherente con el resto del header === */
+    /* === Logout coherente (igual que Login/Register) === */
     .logout-btn {
       background: transparent;
-      color: #fff;
+      color: #FFB300;        /* letras amarillas */
       font-weight: 700;
-      border: 1px solid #FFB300;
+      border: 1.8px solid #FFB300;
       border-radius: 8px;
       padding: 0.45rem 1.2rem;
       cursor: pointer;
@@ -22,12 +22,12 @@
     }
 
     .logout-btn:hover {
-      background: #FFB300;
-      color: #0A1830;
+      background: #FFB300;   /* fondo amarillo */
+      color: #0A1830;        /* letras oscuras */
       transform: scale(1.05);
     }
 
-    /* === Finance dropdown igual que los demás links (hover) === */
+    /* === Finance dropdown === */
     .dropdown {
       position: relative;
       display: inline-block;
@@ -59,6 +59,10 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
       z-index: 10;
       backdrop-filter: blur(6px);
+      margin-top: 0px; /* evita gap */
+      transition: opacity 0.15s ease;
+      opacity: 0;
+      visibility: hidden;
     }
 
     .dropdown-content a {
@@ -74,12 +78,12 @@
       color: #FFD700;
     }
 
-    /* Mostrar menú al pasar el mouse */
     .dropdown:hover .dropdown-content {
       display: block;
+      opacity: 1;
+      visibility: visible;
     }
 
-    /* Eliminar flecha del botón */
     .dropbtn::after {
       content: "";
     }
@@ -118,7 +122,7 @@
 
     <nav class="acs-nav">
       <a href="dashboard.html" class="active">Main</a>
-      <!-- ===== FINANCE DROPDOWN (solo hover, sin flecha) ===== -->
+      <!-- ===== FINANCE DROPDOWN ===== -->
       <div class="dropdown">
         <a class="dropbtn">Finance</a>
         <div class="dropdown-content">
