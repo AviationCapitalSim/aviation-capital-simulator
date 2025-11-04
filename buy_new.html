@@ -6,10 +6,10 @@
   <title>Buy New - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === BUY NEW AIRCRAFT PAGE (with Rendered Images) === */
+    /* === BUY NEW AIRCRAFT PAGE (Final NM Conversion + Image Update) === */
     .manufacturer-section {
       margin: 2rem auto;
-      max-width: 1200px;
+      max-width: 1400px;
     }
 
     .manufacturer-section h2 {
@@ -22,8 +22,8 @@
 
     .aircraft-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.2rem;
     }
 
     .aircraft-card {
@@ -41,7 +41,7 @@
 
     .aircraft-card img {
       width: 100%;
-      height: 140px;
+      height: 200px;
       object-fit: cover;
       background: #0a162f;
     }
@@ -90,7 +90,7 @@
     .lease-btn { background: #00a86b; }
     .lease-btn:hover { background: #007d4e; }
 
-    /* Leasing Modal */
+    /* Unified Modal (Lease + Buy) */
     .modal {
       display: none;
       position: fixed;
@@ -166,29 +166,15 @@
       <h2>Airbus</h2>
       <div class="aircraft-grid">
         <div class="aircraft-card">
-          <img src="img/a320neo.png" alt="Airbus A320neo" />
+          <img src="img/airbus_a320.png" alt="Airbus A320" />
           <div class="aircraft-info">
-            <h3>Airbus A320neo</h3>
-            <p>Range: 6,300 km</p>
+            <h3>Airbus A320</h3>
+            <p>Range: 6,300 km (3,400 NM)</p>
             <p>Capacity: 180 passengers</p>
             <p class="price">Price: USD 110,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn">Buy Now</button>
-              <button class="lease-btn" data-aircraft="Airbus A320neo" data-price="110000000">Lease</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="aircraft-card">
-          <img src="img/a350.png" alt="Airbus A350-900" />
-          <div class="aircraft-info">
-            <h3>Airbus A350-900</h3>
-            <p>Range: 15,000 km</p>
-            <p>Capacity: 325 passengers</p>
-            <p class="price">Price: USD 317,000,000</p>
-            <div class="action-buttons">
-              <button class="buy-btn">Buy Now</button>
-              <button class="lease-btn" data-aircraft="Airbus A350-900" data-price="317000000">Lease</button>
+              <button class="buy-btn" data-aircraft="Airbus A320" data-price="110000000">Buy Now</button>
+              <button class="lease-btn" data-aircraft="Airbus A320" data-price="110000000">Lease</button>
             </div>
           </div>
         </div>
@@ -200,29 +186,15 @@
       <h2>Boeing</h2>
       <div class="aircraft-grid">
         <div class="aircraft-card">
-          <img src="img/b737max8.png" alt="Boeing 737 MAX 8" />
+          <img src="img/boeing_737.png" alt="Boeing 737" />
           <div class="aircraft-info">
-            <h3>Boeing 737 MAX 8</h3>
-            <p>Range: 6,570 km</p>
+            <h3>Boeing 737</h3>
+            <p>Range: 6,570 km (3,550 NM)</p>
             <p>Capacity: 178 passengers</p>
             <p class="price">Price: USD 120,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn">Buy Now</button>
-              <button class="lease-btn" data-aircraft="Boeing 737 MAX 8" data-price="120000000">Lease</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="aircraft-card">
-          <img src="img/b787.png" alt="Boeing 787-9 Dreamliner" />
-          <div class="aircraft-info">
-            <h3>Boeing 787-9 Dreamliner</h3>
-            <p>Range: 14,010 km</p>
-            <p>Capacity: 296 passengers</p>
-            <p class="price">Price: USD 292,000,000</p>
-            <div class="action-buttons">
-              <button class="buy-btn">Buy Now</button>
-              <button class="lease-btn" data-aircraft="Boeing 787-9 Dreamliner" data-price="292000000">Lease</button>
+              <button class="buy-btn" data-aircraft="Boeing 737" data-price="120000000">Buy Now</button>
+              <button class="lease-btn" data-aircraft="Boeing 737" data-price="120000000">Lease</button>
             </div>
           </div>
         </div>
@@ -234,29 +206,35 @@
       <h2>Embraer</h2>
       <div class="aircraft-grid">
         <div class="aircraft-card">
-          <img src="img/e190.png" alt="Embraer E190" />
+          <img src="img/embraer_190.png" alt="Embraer 190" />
           <div class="aircraft-info">
-            <h3>Embraer E190</h3>
-            <p>Range: 4,400 km</p>
+            <h3>Embraer 190</h3>
+            <p>Range: 4,400 km (2,400 NM)</p>
             <p>Capacity: 100 passengers</p>
             <p class="price">Price: USD 60,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn">Buy Now</button>
-              <button class="lease-btn" data-aircraft="Embraer E190" data-price="60000000">Lease</button>
+              <button class="buy-btn" data-aircraft="Embraer 190" data-price="60000000">Buy Now</button>
+              <button class="lease-btn" data-aircraft="Embraer 190" data-price="60000000">Lease</button>
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
+    <!-- === BOMBARDIER === -->
+    <section class="manufacturer-section">
+      <h2>Bombardier</h2>
+      <div class="aircraft-grid">
         <div class="aircraft-card">
-          <img src="img/e195e2.png" alt="Embraer E195-E2" />
+          <img src="img/bombardier_crj.png" alt="Bombardier CRJ" />
           <div class="aircraft-info">
-            <h3>Embraer E195-E2</h3>
-            <p>Range: 4,800 km</p>
-            <p>Capacity: 132 passengers</p>
-            <p class="price">Price: USD 72,000,000</p>
+            <h3>Bombardier CRJ</h3>
+            <p>Range: 2,870 km (1,550 NM)</p>
+            <p>Capacity: 90 passengers</p>
+            <p class="price">Price: USD 45,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn">Buy Now</button>
-              <button class="lease-btn" data-aircraft="Embraer E195-E2" data-price="72000000">Lease</button>
+              <button class="buy-btn" data-aircraft="Bombardier CRJ" data-price="45000000">Buy Now</button>
+              <button class="lease-btn" data-aircraft="Bombardier CRJ" data-price="45000000">Lease</button>
             </div>
           </div>
         </div>
@@ -268,29 +246,15 @@
       <h2>ATR</h2>
       <div class="aircraft-grid">
         <div class="aircraft-card">
-          <img src="img/atr72.png" alt="ATR 72-600" />
+          <img src="img/atr_72.png" alt="ATR 72" />
           <div class="aircraft-info">
-            <h3>ATR 72-600</h3>
-            <p>Range: 1,500 km</p>
+            <h3>ATR 72</h3>
+            <p>Range: 1,500 km (810 NM)</p>
             <p>Capacity: 70 passengers</p>
             <p class="price">Price: USD 26,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn">Buy Now</button>
-              <button class="lease-btn" data-aircraft="ATR 72-600" data-price="26000000">Lease</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="aircraft-card">
-          <img src="img/atr42.png" alt="ATR 42-600" />
-          <div class="aircraft-info">
-            <h3>ATR 42-600</h3>
-            <p>Range: 1,400 km</p>
-            <p>Capacity: 50 passengers</p>
-            <p class="price">Price: USD 19,000,000</p>
-            <div class="action-buttons">
-              <button class="buy-btn">Buy Now</button>
-              <button class="lease-btn" data-aircraft="ATR 42-600" data-price="19000000">Lease</button>
+              <button class="buy-btn" data-aircraft="ATR 72" data-price="26000000">Buy Now</button>
+              <button class="lease-btn" data-aircraft="ATR 72" data-price="26000000">Lease</button>
             </div>
           </div>
         </div>
@@ -298,13 +262,13 @@
     </section>
   </main>
 
-  <!-- === LEASE MODAL === -->
-  <div id="leaseModal" class="modal">
+  <!-- === UNIFIED MODAL === -->
+  <div id="modalBox" class="modal">
     <div class="modal-content">
-      <h2 id="leaseTitle"></h2>
-      <p id="leaseDetails"></p>
+      <h2 id="modalTitle"></h2>
+      <p id="modalDetails"></p>
       <button class="close-btn" id="closeModal">Cancel</button>
-      <button class="confirm-btn" id="confirmLease">Confirm Lease</button>
+      <button class="confirm-btn" id="confirmAction">Confirm</button>
     </div>
   </div>
 
@@ -314,26 +278,42 @@
   </footer>
 
   <script>
-    // === LEASING LOGIC ===
-    const leaseButtons = document.querySelectorAll('.lease-btn');
-    const modal = document.getElementById('leaseModal');
-    const leaseTitle = document.getElementById('leaseTitle');
-    const leaseDetails = document.getElementById('leaseDetails');
+    const modal = document.getElementById('modalBox');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDetails = document.getElementById('modalDetails');
+    const confirmAction = document.getElementById('confirmAction');
     const closeModal = document.getElementById('closeModal');
 
-    leaseButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
+    function openModal(type, name, price) {
+      modal.style.display = 'block';
+
+      if (type === 'lease') {
+        const years = 10;
+        const rate = 0.05;
+        const monthlyPayment = ((price * (1 + rate * years)) / (years * 12)).toFixed(0);
+        modalTitle.textContent = `Lease Agreement - ${name}`;
+        modalDetails.textContent = `Duration: ${years} years\nMonthly Payment: USD ${monthlyPayment}\nInitial Deposit: USD ${(price * 0.03).toFixed(0)}\nManufacturer: ${name.split(' ')[0]}`;
+        confirmAction.textContent = 'Confirm Lease';
+      } else {
+        modalTitle.textContent = `Purchase Confirmation - ${name}`;
+        modalDetails.textContent = `Total Purchase Price: USD ${price.toLocaleString()}\nManufacturer: ${name.split(' ')[0]}`;
+        confirmAction.textContent = 'Confirm Purchase';
+      }
+    }
+
+    document.querySelectorAll('.buy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
         const name = btn.getAttribute('data-aircraft');
         const price = parseFloat(btn.getAttribute('data-price'));
-        const years = 10;
-        const rate = 0.05; // 5% annual interest
-        const monthlyPayment = ((price * (1 + rate * years)) / (years * 12)).toFixed(0);
+        openModal('buy', name, price);
+      });
+    });
 
-        leaseTitle.textContent = `Lease Agreement - ${name}`;
-        leaseDetails.textContent = `Duration: ${years} years\nMonthly Payment: USD ${monthlyPayment}\nInitial Deposit: USD ${(price * 0.03).toFixed(0)}\nManufacturer: ${name.split(' ')[0]}`;
-
-        modal.style.display = 'block';
+    document.querySelectorAll('.lease-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.getAttribute('data-aircraft');
+        const price = parseFloat(btn.getAttribute('data-price'));
+        openModal('lease', name, price);
       });
     });
 
@@ -341,18 +321,17 @@
       modal.style.display = 'none';
     });
 
+    confirmAction.addEventListener('click', () => {
+      alert('Transaction confirmed! (simulation)');
+      modal.style.display = 'none';
+    });
+
     window.onclick = function(event) {
-      if (event.target == modal) {
+      if (event.target === modal) {
         modal.style.display = 'none';
       }
     };
 
-    document.getElementById('confirmLease').addEventListener('click', () => {
-      alert('Lease confirmed! (simulation)');
-      modal.style.display = 'none';
-    });
-
-    // Logout function reuse
     function handleLogout() {
       alert('👋 Session closed. See you soon, Captain!');
       window.location.href = 'login.html';
