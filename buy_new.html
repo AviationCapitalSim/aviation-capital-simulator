@@ -6,7 +6,7 @@
   <title>Buy New - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === BUY NEW AIRCRAFT PAGE (Catalog Layout with Compact Boxes) === */
+    /* === BUY NEW AIRCRAFT PAGE (4 Boxes per Row for Desktop) === */
     .manufacturer-section {
       margin: 2rem auto;
       max-width: 1400px;
@@ -22,15 +22,15 @@
 
     .aircraft-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 0.8rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
     }
 
     .aircraft-card {
       background: #102040;
       border-radius: 12px;
       overflow: hidden;
-      height: 360px;
+      height: 280px;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       display: flex;
@@ -45,7 +45,7 @@
 
     .aircraft-card img {
       width: 100%;
-      max-height: 180px;
+      max-height: 140px;
       object-fit: contain;
       background: #0a162f;
       display: block;
@@ -53,7 +53,7 @@
     }
 
     .aircraft-info {
-      padding: 10px;
+      padding: 8px;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -63,14 +63,14 @@
 
     .aircraft-info h3 {
       color: #FFB300;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       margin: 4px 0;
     }
 
     .aircraft-info p {
       color: #cfd8dc;
       margin: 2px 0;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
 
     .price {
@@ -82,7 +82,7 @@
     .action-buttons {
       display: flex;
       gap: 6px;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .buy-btn, .lease-btn {
@@ -94,7 +94,7 @@
       font-weight: 600;
       color: white;
       transition: background 0.2s ease;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
 
     .buy-btn { background: #1565c0; }
@@ -190,83 +190,45 @@
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- === BOEING === -->
-    <section class="manufacturer-section">
-      <h2>Boeing</h2>
-      <div class="aircraft-grid">
         <div class="aircraft-card">
-          <img src="img/boeing_737.png" alt="Boeing 737" />
+          <img src="img/airbus_a319.png" alt="Airbus A319" />
           <div class="aircraft-info">
-            <h3>Boeing 737</h3>
-            <p>Range: 6,570 km (3,550 NM)</p>
-            <p>Capacity: 178 passengers</p>
-            <p class="price">USD 120,000,000</p>
+            <h3>Airbus A319</h3>
+            <p>Range: 6,900 km (3,725 NM)</p>
+            <p>Capacity: 156 passengers</p>
+            <p class="price">USD 92,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="Boeing 737" data-price="120000000">Buy</button>
-              <button class="lease-btn" data-aircraft="Boeing 737" data-price="120000000">Lease</button>
+              <button class="buy-btn" data-aircraft="Airbus A319" data-price="92000000">Buy</button>
+              <button class="lease-btn" data-aircraft="Airbus A319" data-price="92000000">Lease</button>
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- === EMBRAER === -->
-    <section class="manufacturer-section">
-      <h2>Embraer</h2>
-      <div class="aircraft-grid">
         <div class="aircraft-card">
-          <img src="img/embraer_190.png" alt="Embraer 190" />
+          <img src="img/airbus_a320_200.png" alt="Airbus A320-200" />
           <div class="aircraft-info">
-            <h3>Embraer 190</h3>
-            <p>Range: 4,400 km (2,400 NM)</p>
-            <p>Capacity: 100 passengers</p>
-            <p class="price">USD 60,000,000</p>
+            <h3>Airbus A320-200</h3>
+            <p>Range: 6,150 km (3,320 NM)</p>
+            <p>Capacity: 180 passengers</p>
+            <p class="price">USD 106,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="Embraer 190" data-price="60000000">Buy</button>
-              <button class="lease-btn" data-aircraft="Embraer 190" data-price="60000000">Lease</button>
+              <button class="buy-btn" data-aircraft="Airbus A320-200" data-price="106000000">Buy</button>
+              <button class="lease-btn" data-aircraft="Airbus A320-200" data-price="106000000">Lease</button>
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- === BOMBARDIER === -->
-    <section class="manufacturer-section">
-      <h2>Bombardier</h2>
-      <div class="aircraft-grid">
         <div class="aircraft-card">
-          <img src="img/bombardier_crj.png" alt="Bombardier CRJ" />
+          <img src="img/airbus_a320_100.png" alt="Airbus A320-100" />
           <div class="aircraft-info">
-            <h3>Bombardier CRJ</h3>
-            <p>Range: 2,870 km (1,550 NM)</p>
-            <p>Capacity: 90 passengers</p>
-            <p class="price">USD 45,000,000</p>
+            <h3>Airbus A320-100</h3>
+            <p>Range: 5,900 km (3,185 NM)</p>
+            <p>Capacity: 180 passengers</p>
+            <p class="price">USD 95,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="Bombardier CRJ" data-price="45000000">Buy</button>
-              <button class="lease-btn" data-aircraft="Bombardier CRJ" data-price="45000000">Lease</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- === ATR === -->
-    <section class="manufacturer-section">
-      <h2>ATR</h2>
-      <div class="aircraft-grid">
-        <div class="aircraft-card">
-          <img src="img/atr_72.png" alt="ATR 72" />
-          <div class="aircraft-info">
-            <h3>ATR 72</h3>
-            <p>Range: 1,500 km (810 NM)</p>
-            <p>Capacity: 70 passengers</p>
-            <p class="price">USD 26,000,000</p>
-            <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="ATR 72" data-price="26000000">Buy</button>
-              <button class="lease-btn" data-aircraft="ATR 72" data-price="26000000">Lease</button>
+              <button class="buy-btn" data-aircraft="Airbus A320-100" data-price="95000000">Buy</button>
+              <button class="lease-btn" data-aircraft="Airbus A320-100" data-price="95000000">Lease</button>
             </div>
           </div>
         </div>
