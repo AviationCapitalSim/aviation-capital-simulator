@@ -6,7 +6,7 @@
   <title>Buy New - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === BUY NEW AIRCRAFT PAGE (Compact Boxes for 3–4 per Row) === */
+    /* === BUY NEW AIRCRAFT PAGE (Catalog Layout with Compact Boxes) === */
     .manufacturer-section {
       margin: 2rem auto;
       max-width: 1400px;
@@ -22,16 +22,20 @@
 
     .aircraft-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0.9rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.8rem;
     }
 
     .aircraft-card {
       background: #102040;
       border-radius: 12px;
       overflow: hidden;
+      height: 360px;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .aircraft-card:hover {
@@ -41,34 +45,38 @@
 
     .aircraft-card img {
       width: 100%;
-      height: 120px;
-      object-fit: cover;
+      max-height: 180px;
+      object-fit: contain;
       background: #0a162f;
+      display: block;
+      margin: 0 auto;
     }
 
     .aircraft-info {
       padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
     }
 
     .aircraft-info h3 {
       color: #FFB300;
       font-size: 0.95rem;
-      margin: 0 0 6px 0;
-      text-align: center;
+      margin: 4px 0;
     }
 
     .aircraft-info p {
       color: #cfd8dc;
-      margin: 3px 0;
+      margin: 2px 0;
       font-size: 0.8rem;
-      text-align: center;
     }
 
     .price {
       color: #42a5f5;
       font-weight: 700;
-      margin-top: 8px;
-      text-align: center;
+      margin-top: 4px;
     }
 
     .action-buttons {
@@ -94,7 +102,7 @@
     .lease-btn { background: #00a86b; }
     .lease-btn:hover { background: #007d4e; }
 
-    /* Modal (unchanged) */
+    /* Unified Modal */
     .modal {
       display: none;
       position: fixed;
@@ -276,6 +284,7 @@
     </div>
   </div>
 
+  <!-- === FOOTER === -->
   <footer class="acs-footer">
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
