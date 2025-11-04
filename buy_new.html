@@ -172,11 +172,35 @@
   </style>
 </head>
 <body>
+  <!-- === HEADER COPIADO DE DASHBOARD === -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+
+      <!-- ===== FINANCE DROPDOWN ===== -->
+      <div class="dropdown">
+        <a class="dropbtn">Finance</a>
+        <div class="dropdown-bridge"></div>
+        <div class="dropdown-content">
+          <a href="bank.html">🏦 Bank</a>
+          <a href="loan_request.html">💰 Loan Request</a>
+        </div>
+      </div>
+
+      <a href="aircraft.html" class="active">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
   </header>
 
   <main class="acs-main">
@@ -331,6 +355,12 @@
 
     closeInfo.addEventListener("click", () => infoModal.style.display = "none");
     window.onclick = e => { if (e.target === infoModal) infoModal.style.display = "none"; };
+
+    // ✅ Logout coherente
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
   </script>
 </body>
 </html>
