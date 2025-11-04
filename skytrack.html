@@ -136,11 +136,11 @@
     const planeMarker = L.marker([origin.lat, origin.lon], { icon: planeIcon }).addTo(map);
 
     // === Ruta dinámica (traza del vuelo) ===
-    const flightTrace = L.polyline([], {
-      color: "#FFB300",
-      weight: 2,
-      opacity: 0.8
-    }).addTo(map);
+const flightTrace = L.polyline([], {
+  color: "#00E0FF",   // cian brillante tipo radar
+  weight: 2.2,        // grosor ajustado
+  opacity: 0.85
+}).addTo(map);
 
     // === Movimiento y rotación ===
     let progress = 0;
