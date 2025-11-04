@@ -6,7 +6,7 @@
   <title>Buy New - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === BUY NEW AIRCRAFT PAGE (Final NM Conversion + Image Update) === */
+    /* === BUY NEW AIRCRAFT PAGE (Compact Boxes for 3–4 per Row) === */
     .manufacturer-section {
       margin: 2rem auto;
       max-width: 1400px;
@@ -22,67 +22,71 @@
 
     .aircraft-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.9rem;
     }
 
     .aircraft-card {
       background: #102040;
-      border-radius: 14px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .aircraft-card:hover {
       transform: scale(1.02);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.4);
     }
 
     .aircraft-card img {
       width: 100%;
-      height: 200px;
+      height: 120px;
       object-fit: cover;
       background: #0a162f;
     }
 
     .aircraft-info {
-      padding: 14px;
+      padding: 10px;
     }
 
     .aircraft-info h3 {
       color: #FFB300;
-      font-size: 1rem;
-      margin: 0 0 8px 0;
+      font-size: 0.95rem;
+      margin: 0 0 6px 0;
+      text-align: center;
     }
 
     .aircraft-info p {
       color: #cfd8dc;
-      margin: 4px 0;
-      font-size: 0.85rem;
+      margin: 3px 0;
+      font-size: 0.8rem;
+      text-align: center;
     }
 
     .price {
       color: #42a5f5;
       font-weight: 700;
-      margin-top: 10px;
+      margin-top: 8px;
+      text-align: center;
     }
 
     .action-buttons {
       display: flex;
-      gap: 10px;
-      margin-top: 12px;
+      gap: 6px;
+      margin-top: 8px;
     }
 
     .buy-btn, .lease-btn {
       flex: 1;
       border: none;
-      border-radius: 8px;
-      padding: 8px 0;
+      border-radius: 6px;
+      padding: 6px 0;
       cursor: pointer;
       font-weight: 600;
       color: white;
       transition: background 0.2s ease;
+      font-size: 0.8rem;
     }
 
     .buy-btn { background: #1565c0; }
@@ -90,7 +94,7 @@
     .lease-btn { background: #00a86b; }
     .lease-btn:hover { background: #007d4e; }
 
-    /* Unified Modal (Lease + Buy) */
+    /* Modal (unchanged) */
     .modal {
       display: none;
       position: fixed;
@@ -171,9 +175,9 @@
             <h3>Airbus A320</h3>
             <p>Range: 6,300 km (3,400 NM)</p>
             <p>Capacity: 180 passengers</p>
-            <p class="price">Price: USD 110,000,000</p>
+            <p class="price">USD 110,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="Airbus A320" data-price="110000000">Buy Now</button>
+              <button class="buy-btn" data-aircraft="Airbus A320" data-price="110000000">Buy</button>
               <button class="lease-btn" data-aircraft="Airbus A320" data-price="110000000">Lease</button>
             </div>
           </div>
@@ -191,9 +195,9 @@
             <h3>Boeing 737</h3>
             <p>Range: 6,570 km (3,550 NM)</p>
             <p>Capacity: 178 passengers</p>
-            <p class="price">Price: USD 120,000,000</p>
+            <p class="price">USD 120,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="Boeing 737" data-price="120000000">Buy Now</button>
+              <button class="buy-btn" data-aircraft="Boeing 737" data-price="120000000">Buy</button>
               <button class="lease-btn" data-aircraft="Boeing 737" data-price="120000000">Lease</button>
             </div>
           </div>
@@ -211,9 +215,9 @@
             <h3>Embraer 190</h3>
             <p>Range: 4,400 km (2,400 NM)</p>
             <p>Capacity: 100 passengers</p>
-            <p class="price">Price: USD 60,000,000</p>
+            <p class="price">USD 60,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="Embraer 190" data-price="60000000">Buy Now</button>
+              <button class="buy-btn" data-aircraft="Embraer 190" data-price="60000000">Buy</button>
               <button class="lease-btn" data-aircraft="Embraer 190" data-price="60000000">Lease</button>
             </div>
           </div>
@@ -231,9 +235,9 @@
             <h3>Bombardier CRJ</h3>
             <p>Range: 2,870 km (1,550 NM)</p>
             <p>Capacity: 90 passengers</p>
-            <p class="price">Price: USD 45,000,000</p>
+            <p class="price">USD 45,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="Bombardier CRJ" data-price="45000000">Buy Now</button>
+              <button class="buy-btn" data-aircraft="Bombardier CRJ" data-price="45000000">Buy</button>
               <button class="lease-btn" data-aircraft="Bombardier CRJ" data-price="45000000">Lease</button>
             </div>
           </div>
@@ -251,9 +255,9 @@
             <h3>ATR 72</h3>
             <p>Range: 1,500 km (810 NM)</p>
             <p>Capacity: 70 passengers</p>
-            <p class="price">Price: USD 26,000,000</p>
+            <p class="price">USD 26,000,000</p>
             <div class="action-buttons">
-              <button class="buy-btn" data-aircraft="ATR 72" data-price="26000000">Buy Now</button>
+              <button class="buy-btn" data-aircraft="ATR 72" data-price="26000000">Buy</button>
               <button class="lease-btn" data-aircraft="ATR 72" data-price="26000000">Lease</button>
             </div>
           </div>
@@ -272,7 +276,6 @@
     </div>
   </div>
 
-  <!-- === FOOTER === -->
   <footer class="acs-footer">
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
@@ -286,7 +289,6 @@
 
     function openModal(type, name, price) {
       modal.style.display = 'block';
-
       if (type === 'lease') {
         const years = 10;
         const rate = 0.05;
@@ -317,20 +319,9 @@
       });
     });
 
-    closeModal.addEventListener('click', () => {
-      modal.style.display = 'none';
-    });
-
-    confirmAction.addEventListener('click', () => {
-      alert('Transaction confirmed! (simulation)');
-      modal.style.display = 'none';
-    });
-
-    window.onclick = function(event) {
-      if (event.target === modal) {
-        modal.style.display = 'none';
-      }
-    };
+    closeModal.addEventListener('click', () => modal.style.display = 'none');
+    confirmAction.addEventListener('click', () => { alert('Transaction confirmed! (simulation)'); modal.style.display = 'none'; });
+    window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
     function handleLogout() {
       alert('👋 Session closed. See you soon, Captain!');
