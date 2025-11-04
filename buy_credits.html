@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buy Credits - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    /* === BUY CREDITS PAGE === */
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    h2 {
+      color: #FFB300;
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    p.sub {
+      color: #ccc;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .credits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
+      max-width: 1000px;
+      margin: 0 auto 2rem auto;
+    }
+
+    .credit-card {
+      background: #102040;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
+      position: relative;
+    }
+
+    .credit-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 5px 16px rgba(0,0,0,0.5);
+      border-color: #FFB300;
+    }
+
+    .credit-card h3 {
+      color: #FFB300;
+      margin-bottom: 0.4rem;
+    }
+
+    .credit-card p {
+      color: #cfd8dc;
+      margin: 0.2rem 0;
+    }
+
+    .credit-card .price {
+      color: #42a5f5;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-top: 0.6rem;
+    }
+
+    .buy-btn {
+      background-color: #00a86b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      margin-top: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .buy-btn:hover {
+      background-color: #007d4e;
+    }
+
+    /* === Highlighted (Best Deal) Card === */
+    .credit-card.featured {
+      background: linear-gradient(180deg, #153060, #102040);
+      border: 2px solid #FFB300;
+      box-shadow: 0 0 20px rgba(255, 179, 0, 0.5);
+      transform: scale(1.02);
+    }
+
+    .featured .offer-badge {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: #FFB300;
+      color: #0A1830;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .featured .price {
+      color: #FFD700;
+      font-size: 1.1rem;
+    }
+
+    /* === Secure Payment Section === */
+    .secure-section {
+      text-align: center;
+      padding: 1.5rem;
+      background: rgba(255,255,255,0.05);
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .secure-section p {
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    .payment-icons {
+      display: flex;
+      justify-content: center;
+      gap: 1.2rem;
+      font-size: 1.6rem;
+    }
+
+    .payment-icons span {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #FFB300;
+      font-weight: 600;
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    }
+
+    /* === Modal === */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+    }
+
+    .modal-content {
+      background: #102040;
+      color: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: 10% auto;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+
+    .modal-content h2 { color: #FFB300; }
+    .modal-content p { margin: 10px 0; }
+
+    .confirm-btn, .close-btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      margin: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .confirm-btn { background: #00a86b; color: white; }
+    .confirm-btn:hover { background: #007d4e; }
+    .close-btn { background: #E53935; color: white; }
+    .close-btn:hover { background: #c62828; }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html" class="active">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="acs-main">
+    <h2>Buy Credits</h2>
+    <p class="sub">Purchase ACS credits securely using your preferred payment method.</p>
+
+    <section class="credits-grid">
+      <div class="credit-card">
+        <h3>💠 500 Credits</h3>
+        <p>Basic starter pack for new airlines.</p>
+        <p class="price">$5.00 USD</p>
+        <button class="buy-btn" onclick="openModal('500 Credits', '$5.00 USD')">Buy Now</button>
+      </div>
+
+      <div class="credit-card">
+        <h3>💠 1,000 Credits</h3>
+        <p>Recommended for growing fleets.</p>
+        <p class="price">$9.50 USD</p>
+        <button class="buy-btn" onclick="openModal('1,000 Credits', '$9.50 USD')">Buy Now</button>
+      </div>
+
+      <div class="credit-card">
+        <h3>💠 2,500 Credits</h3>
+        <p>Expand your operations efficiently.</p>
+        <p class="price">$22.00 USD</p>
+        <button class="buy-btn" onclick="openModal('2,500 Credits', '$22.00 USD')">Buy Now</button>
+      </div>
+
+      <div class="credit-card">
+        <h3>💠 5,000 Credits</h3>
+        <p>Advanced plan for regional expansion.</p>
+        <p class="price">$40.00 USD</p>
+        <button class="buy-btn" onclick="openModal('5,000 Credits', '$40.00 USD')">Buy Now</button>
+      </div>
+
+      <div class="credit-card featured">
+        <span class="offer-badge">🔥 15% OFF</span>
+        <h3>💠 10,000 Credits</h3>
+        <p>Best value! Perfect for ambitious airlines.</p>
+        <p class="price">$68.00 USD</p>
+        <button class="buy-btn" onclick="openModal('10,000 Credits (15% OFF)', '$68.00 USD')">Buy Now</button>
+      </div>
+    </section>
+
+    <!-- Secure Section -->
+    <div class="secure-section">
+      <p>🔒 Secure Payments — Your data is protected with SSL encryption</p>
+      <div class="payment-icons">
+        <span>💳 Visa</span>
+        <span>💳 MasterCard</span>
+        <span>💱 Wise</span>
+        <span>🔐 SSL</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== MODAL ===== -->
+  <div id="purchaseModal" class="modal">
+    <div class="modal-content">
+      <h2>Confirm Purchase</h2>
+      <p id="modalText"></p>
+      <p>Select Payment Method:</p>
+      <div style="margin-bottom:10px;">
+        <button class="confirm-btn" onclick="confirmPurchase('Credit Card')">💳 Credit Card</button>
+        <button class="confirm-btn" onclick="confirmPurchase('Wise')">💱 Wise</button>
+      </div>
+      <button class="close-btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    let selectedPackage = "";
+
+    function openModal(packageName, price) {
+      selectedPackage = packageName + " – " + price;
+      document.getElementById("modalText").textContent = "You are about to purchase " + selectedPackage + ".";
+      document.getElementById("purchaseModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("purchaseModal").style.display = "none";
+    }
+
+    function confirmPurchase(method) {
+      alert("✅ Purchase confirmed for " + selectedPackage + " via " + method + ".\\nYour credits will be added shortly!");
+      closeModal();
+    }
+
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+
+    // Close modal on background click
+    window.onclick = function(event) {
+      const modal = document.getElementById("purchaseModal");
+      if (event.target === modal) closeModal();
+    };
+  </script>
+</body>
+</html>
