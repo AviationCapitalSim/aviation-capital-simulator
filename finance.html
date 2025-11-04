@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    /* === FINANCE PAGE === */
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    .finance-panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .panel h3 {
+      color: #FFB300;
+      margin-bottom: 0.8rem;
+    }
+
+    .panel p {
+      color: #ddd;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .panel:hover {
+      transform: scale(1.02);
+      transition: transform 0.2s ease;
+    }
+
+    .acs-btn {
+      background-color: #00a86b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-top: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .acs-btn:hover {
+      background-color: #007d4e;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html" class="active">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="acs-main">
+    <h2>Finance Center</h2>
+    <p class="sub">Manage all financial operations of your airline — from loans to investments.</p>
+
+    <!-- ===== FINANCE PANELS ===== -->
+    <section class="finance-panels">
+
+      <div class="panel" onclick="openBank()">
+        <h3>🏦 Bank</h3>
+        <p>Access your airline's main financial institution. Check balances, transfers, and interest rates.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel" onclick="openLoans()">
+        <h3>💰 Loan Request</h3>
+        <p>Apply for short or long-term loans to expand your operations or acquire new assets.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel" onclick="openBuyCredits()">
+        <h3>💠 Buy Credits</h3>
+        <p>Purchase ACS credits using real currency to fund your airline's growth and investments.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel" onclick="openInvestments()">
+        <h3>📈 Investments</h3>
+        <p>Coming soon — diversify your capital into market assets, airline bonds, or regional projects.</p>
+        <button class="acs-btn">Coming Soon</button>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    function openBank() {
+      window.location.href = "bank.html";
+    }
+
+    function openLoans() {
+      window.location.href = "loan_request.html";
+    }
+
+    function openBuyCredits() {
+      window.location.href = "buy_credits.html";
+    }
+
+    function openInvestments() {
+      alert("📈 Investment module coming soon!");
+    }
+
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
