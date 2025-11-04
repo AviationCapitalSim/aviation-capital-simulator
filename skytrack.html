@@ -34,25 +34,27 @@
       color: #888 !important;
     }
 
-    /* === Radar Marker Styles === */
-    .acs-diamond {
-      background: #0096FF;
-      width: 10px;
-      height: 10px;
-      transform: rotate(45deg);
-      border: 1px solid white;
-      border-radius: 2px;
-    }
-    .acs-label {
-      position: absolute;
-      top: -8px;
-      left: 14px;
-      font-size: 11px;
-      font-family: monospace;
-      color: #ffffff;
-      text-shadow: 0 0 2px black;
-      white-space: nowrap;
-    }
+    /* === Radar Marker Styles (mejor legibilidad y centrado) === */
+.acs-diamond {
+  background: #0096FF;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  border: 1px solid white;
+  border-radius: 2px;
+}
+
+.acs-label {
+  position: absolute;
+  top: -3px;       /* antes -8px → mejor centrado */
+  left: 14px;      /* mantiene separación mínima */
+  font-size: 11px;
+  font-family: monospace;
+  color: #000000;  /* texto negro */
+  text-shadow: 0 0 2px #ffffff; /* borde blanco suave */
+  white-space: nowrap;
+  font-weight: 600;
+}
   </style>
 </head>
 
