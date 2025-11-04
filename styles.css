@@ -437,3 +437,51 @@ footer {
   color: #000000 !important;      /* letras negras */
   transform: scale(1.05);
 }
+/* === HEADER ALIGNMENT FIX (Finance visible & centered) === */
+.acs-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+  height: 42px; /* fuerza el centrado vertical */
+}
+
+.acs-nav a {
+  color: #ddd;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.96rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  height: 100%;
+  transition: color 0.3s ease;
+}
+
+.acs-nav a:hover {
+  color: #FFB300;
+}
+
+/* Alineación general del header */
+.acs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 2rem;
+  height: 60px; /* equilibrado visual */
+}
+
+.acs-logo img {
+  height: 38px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+}
