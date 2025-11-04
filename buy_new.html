@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buy New - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* === BUY NEW MODULE (ACS) === */
+    body {
+      background: #f4f7fb;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #002b5b;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .catalog-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .aircraft-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .aircraft-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .aircraft-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .aircraft-info {
+      padding: 20px;
+    }
+
+    .aircraft-info h3 {
+      margin-top: 0;
+      color: #002b5b;
+      font-size: 1.2rem;
+    }
+
+    .aircraft-info p {
+      margin: 6px 0;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    .price {
+      font-weight: bold;
+      color: #007bff;
+      margin-top: 8px;
+    }
+
+    .buy-btn, .lease-btn {
+      display: inline-block;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      margin-top: 12px;
+      transition: background 0.2s ease;
+      margin-right: 10px;
+    }
+
+    .buy-btn {
+      background: #007bff;
+      color: white;
+    }
+
+    .buy-btn:hover {
+      background: #0056b3;
+    }
+
+    .lease-btn {
+      background: #00a86b;
+      color: white;
+    }
+
+    .lease-btn:hover {
+      background: #007d4e;
+    }
+
+    /* Modal for Leasing Info */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      max-width: 420px;
+      margin: 10% auto;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .modal-content h2 {
+      color: #002b5b;
+    }
+
+    .modal-content p {
+      color: #444;
+      white-space: pre-line;
+    }
+
+    .close-btn, .confirm-btn {
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+      font-weight: 600;
+    }
+
+    .close-btn { background: #d9534f; }
+    .confirm-btn { background: #00a86b; }
+
+    .button-group { margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Buy New Aircraft</h1>
+    <p>Purchase or lease your next aircraft directly from the manufacturer</p>
+  </header>
+
+  <section class="catalog-container">
+    <!-- Airbus -->
+    <div class="aircraft-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Airbus_A320neo_MSN6101_first_flight_3.jpg" alt="Airbus A320neo" />
+      <div class="aircraft-info">
+        <h3>Airbus A320neo</h3>
+        <p>Manufacturer: Airbus</p>
+        <p>Range: 6,300 km</p>
+        <p>Capacity: 180 passengers</p>
+        <p class="price">Price: USD 110,000,000</p>
+        <a href="#" class="buy-btn">Buy Now</a>
+        <a href="#" class="lease-btn" data-aircraft="Airbus A320neo" data-price="110000000">Lease</a>
+      </div>
+    </div>
+
+    <div class="aircraft-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fb/Airbus_A350-900_XWB%2C_Airbus_Industrie_JP7575903.jpg" alt="Airbus A350-900" />
+      <div class="aircraft-info">
+        <h3>Airbus A350-900</h3>
+        <p>Manufacturer: Airbus</p>
+        <p>Range: 15,000 km</p>
+        <p>Capacity: 325 passengers</p>
+        <p class="price">Price: USD 317,000,000</p>
+        <a href="#" class="buy-btn">Buy Now</a>
+        <a href="#" class="lease-btn" data-aircraft="Airbus A350-900" data-price="317000000">Lease</a>
+      </div>
+    </div>
+
+    <!-- Boeing -->
+    <div class="aircraft-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/73/Boeing_737_MAX_8_N7201S_Takeoff.jpg" alt="Boeing 737 MAX 8" />
+      <div class="aircraft-info">
+        <h3>Boeing 737 MAX 8</h3>
+        <p>Manufacturer: Boeing</p>
+        <p>Range: 6,570 km</p>
+        <p>Capacity: 178 passengers</p>
+        <p class="price">Price: USD 120,000,000</p>
+        <a href="#" class="buy-btn">Buy Now</a>
+        <a href="#" class="lease-btn" data-aircraft="Boeing 737 MAX 8" data-price="120000000">Lease</a>
+      </div>
+    </div>
+
+    <div class="aircraft-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Boeing_787-9_Dreamliner_N789EX_Takeoff.jpg" alt="Boeing 787-9 Dreamliner" />
+      <div class="aircraft-info">
+        <h3>Boeing 787-9 Dreamliner</h3>
+        <p>Manufacturer: Boeing</p>
+        <p>Range: 14,010 km</p>
+        <p>Capacity: 296 passengers</p>
+        <p class="price">Price: USD 292,000,000</p>
+        <a href="#" class="buy-btn">Buy Now</a>
+        <a href="#" class="lease-btn" data-aircraft="Boeing 787-9 Dreamliner" data-price="292000000">Lease</a>
+      </div>
+    </div>
+
+    <!-- Embraer -->
+    <div class="aircraft-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/Embraer_190-100IGW_E190AR%2C_Aerolineas_Argentinas_JP7559899.jpg" alt="Embraer E190" />
+      <div class="aircraft-info">
+        <h3>Embraer E190</h3>
+        <p>Manufacturer: Embraer</p>
+        <p>Range: 4,400 km</p>
+        <p>Capacity: 100 passengers</p>
+        <p class="price">Price: USD 60,000,000</p>
+        <a href="#" class="buy-btn">Buy Now</a>
+        <a href="#" class="lease-btn" data-aircraft="Embraer E190" data-price="60000000">Lease</a>
+      </div>
+    </div>
+
+    <div class="aircraft-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Embraer_195_E2_-_First_flight_-_04.jpg" alt="Embraer E195-E2" />
+      <div class="aircraft-info">
+        <h3>Embraer E195-E2</h3>
+        <p>Manufacturer: Embraer</p>
+        <p>Range: 4,800 km</p>
+        <p>Capacity: 132 passengers</p>
+        <p class="price">Price: USD 72,000,000</p>
+        <a href="#" class="buy-btn">Buy Now</a>
+        <a href="#" class="lease-btn" data-aircraft="Embraer E195-E2" data-price="72000000">Lease</a>
+      </div>
+    </div>
+
+    <!-- ATR -->
+    <div class="aircraft-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/3/3b/ATR_72-600_Air_New_Zealand.jpg" alt="ATR 72-600" />
+      <div class="aircraft-info">
+        <h3>ATR 72-600</h3>
+        <p>Manufacturer: ATR</p>
+        <p>Range: 1,500 km</p>
+        <p>Capacity: 70 passengers</p>
+        <p class="price">Price: USD 26,000,000</p>
+        <a href="#" class="buy-btn">Buy Now</a>
+        <a href="#" class="lease-btn" data-aircraft="ATR 72-600" data-price="26000000">Lease</a>
+      </div>
+    </div>
+
+    <div class="aircraft-card">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/ATR_42-600_%28ATR%29.jpg" alt="ATR 42-600" />
+      <div class="aircraft-info">
+        <h3>ATR 42-600</h3>
+        <p>Manufacturer: ATR</p>
+        <p>Range: 1,400 km</p>
+        <p>Capacity: 50 passengers</p>
+        <p class="price">Price: USD 19,000,000</p>
+        <a href="#" class="buy-btn">Buy Now</a>
+        <a href="#" class="lease-btn" data-aircraft="ATR 42-600" data-price="19000000">Lease</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Leasing Modal -->
+  <div id="leaseModal" class="modal">
+    <div class="modal-content">
+      <h2 id="leaseTitle"></h2>
+      <p id="leaseDetails"></p>
+      <div class="button-group">
+        <button class="close-btn" id="closeModal">Cancel</button>
+        <button class="confirm-btn" id="confirmLease">Confirm Lease</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === LEASING LOGIC ===
+    const leaseButtons = document.querySelectorAll('.lease-btn');
+    const modal = document.getElementById('leaseModal');
+    const leaseTitle = document.getElementById('leaseTitle');
+    const leaseDetails = document.getElementById('leaseDetails');
+    const closeModal = document.getElementById('closeModal');
+
+    leaseButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const name = btn.getAttribute('data-aircraft');
+        const price = parseFloat(btn.getAttribute('data-price'));
+        const years = 10;
+        const rate = 0.05; // 5% annual interest
+        const monthlyPayment = ((price * (1 + rate * years)) / (years * 12)).toFixed(0);
+
+        leaseTitle.textContent = `Lease Agreement - ${name}`;
+        leaseDetails.textContent = `Duration: ${years} years\nMonthly Payment: USD ${monthlyPayment}\nInitial Deposit: USD ${(price * 0.03).toFixed(0)}\nManufacturer: ${name.split(' ')[0]}`;
+
+        modal.style.display = 'block';
+      });
+    });
+
+    closeModal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = 'none';
+      }
+    };
+
+    document.getElementById('confirmLease').addEventListener('click', () => {
+      alert('Lease confirmed! (simulation)');
+      modal.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
