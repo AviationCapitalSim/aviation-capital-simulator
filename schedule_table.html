@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schedule Table - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    body {
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+    }
+
+    h2 {
+      color: #FFB300;
+      margin-top: 2rem;
+    }
+
+    .sub {
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
+
+    table {
+      width: 90%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background: #0e1b3c;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    }
+
+    th, td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      padding: 0.8rem;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background-color: #102040;
+      color: #FFB300;
+      font-weight: 600;
+    }
+
+    td {
+      background-color: #0e2048;
+      color: #ccc;
+    }
+
+    .slot-maintenance-a {
+      background-color: #b8860b;
+      color: #fff;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 4px 6px;
+      display: inline-block;
+    }
+
+    .slot-maintenance-b {
+      background-color: #444;
+      color: #FFB300;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 4px 6px;
+      display: inline-block;
+    }
+
+    .plan-btn {
+      background-color: #1DB954;
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    .plan-btn:hover {
+      background-color: #17a84d;
+    }
+
+    .summary {
+      margin-top: 2rem;
+      text-align: center;
+      color: #ccc;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #0e1b3c;
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      width: 300px;
+      text-align: center;
+      color: #fff;
+    }
+
+    select {
+      width: 100%;
+      margin: 0.6rem 0;
+      padding: 0.5rem;
+      border-radius: 6px;
+      background: #12224c;
+      border: none;
+      color: #fff;
+    }
+
+    .modal button {
+      background-color: #1DB954;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+
+    .modal button:hover {
+      background-color: #17a84d;
+    }
+  </style>
+</head>
+<body>
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <main class="acs-main">
+    <h2>📅 Weekly Fleet Schedule</h2>
+    <p class="sub">Assign confirmed routes and plan maintenance strategically to maximize efficiency.</p>
+
+    <div id="pendingRoute" style="text-align:center; color:#1DB954; font-weight:600; margin-bottom:1rem;">No pending routes.</div>
+
+    <table id="scheduleTable">
+      <thead>
+        <tr>
+          <th>Aircraft</th>
+          <th>Mon</th>
+          <th>Tue</th>
+          <th>Wed</th>
+          <th>Thu</th>
+          <th>Fri</th>
+          <th>Sat</th>
+          <th>Sun</th>
+          <th>Plan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>EC-MAD (B737-200)</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+          <td><button class="plan-btn" onclick="openModal(this)">⚙ Plan Maintenance</button></td>
+        </tr>
+        <tr>
+          <td>EC-BCN (A320)</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+          <td><button class="plan-btn" onclick="openModal(this)">⚙ Plan Maintenance</button></td>
+        </tr>
+        <tr>
+          <td>EC-LON (B767-300ER)</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+          <td><button class="plan-btn" onclick="openModal(this)">⚙ Plan Maintenance</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="summary">
+      <p>Total Flights: <span id="totalFlights">0</span></p>
+      <p>Total Hours: <span id="totalHours">0</span> h</p>
+      <p>Efficiency: <span id="effIndex">0</span>%</p>
+    </div>
+  </main>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h3>Plan Maintenance</h3>
+      <label>Type</label>
+      <select id="maintenanceType">
+        <option value="A">A-Check (5h)</option>
+        <option value="B">B-Check (24h)</option>
+      </select>
+      <label>Day</label>
+      <select id="maintenanceDay">
+        <option value="1">Mon</option>
+        <option value="2">Tue</option>
+        <option value="3">Wed</option>
+        <option value="4">Thu</option>
+        <option value="5">Fri</option>
+        <option value="6">Sat</option>
+        <option value="7">Sun</option>
+      </select>
+      <button onclick="applyMaintenance()">Apply</button>
+    </div>
+  </div>
+
+  <footer style="text-align:center; color:#999; margin-top:2rem; padding:1rem;">© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+
+  <script>
+    let currentRow = null;
+
+    window.onload = function() {
+      const route = JSON.parse(localStorage.getItem("confirmedRoute"));
+      if (route) {
+        document.getElementById("pendingRoute").innerText = `✅ Pending Route: ${route.origin} ➜ ${route.destination} (${route.aircraft})`;
+        document.getElementById("totalFlights").innerText = 1;
+        document.getElementById("totalHours").innerText = route.rotation;
+        document.getElementById("effIndex").innerText = (85 + Math.random() * 10).toFixed(1);
+      }
+    };
+
+    function openModal(button) {
+      currentRow = button.closest("tr");
+      document.getElementById("modal").style.display = "flex";
+    }
+
+    function applyMaintenance() {
+      const type = document.getElementById("maintenanceType").value;
+      const day = parseInt(document.getElementById("maintenanceDay").value);
+      const tableCells = currentRow.querySelectorAll("td");
+      const targetCell = tableCells[day];
+
+      if (type === "A") {
+        targetCell.innerHTML = '<span class="slot-maintenance-a">🟡 A-Check</span>';
+      } else {
+        targetCell.innerHTML = '<span class="slot-maintenance-b">⚙️ B-Check</span>';
+      }
+
+      document.getElementById("modal").style.display = "none";
+      updateSummary();
+    }
+
+    function updateSummary() {
+      let totalMaint = document.querySelectorAll('.slot-maintenance-a, .slot-maintenance-b').length;
+      let eff = Math.max(50, 100 - totalMaint * 5);
+      document.getElementById("effIndex").innerText = eff;
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("modal");
+      if (event.target === modal) modal.style.display = "none";
+    };
+
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
