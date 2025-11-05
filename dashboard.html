@@ -4,192 +4,221 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard - Aviation Capital Simulator</title>
-  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <link rel="stylesheet" href="styles.css?v=3.2" />
   <style>
-    /* === Logout coherente (igual que Login/Register) === */
-    .logout-btn {
-      background: transparent;
-      color: #FFB300;        /* letras amarillas */
-      font-weight: 700;
-      border: 1.8px solid #FFB300;
-      border-radius: 8px;
-      padding: 0.45rem 1.2rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      font-size: 0.9rem;
-      margin-left: 12px;
+    /* === DASHBOARD STYLE (Finance-consistent) === */
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
     }
 
-    .logout-btn:hover {
-      background: #FFB300;   /* fondo amarillo */
-      color: #0A1830;        /* letras oscuras */
-      transform: scale(1.05);
+    .finance-panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
     }
 
-    /* === Finance dropdown === */
-    .dropdown {
-      position: relative;
-      display: inline-block;
+    .panel h3 {
+      color: #FFB300;
+      margin-bottom: 0.8rem;
     }
 
-    .dropbtn {
-      background: none;
+    .panel p {
+      color: #ddd;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .panel:hover {
+      transform: scale(1.02);
+      transition: transform 0.2s ease;
+    }
+
+    .acs-btn {
+      background-color: #00a86b;
+      color: #fff;
       border: none;
-      color: #ddd;
-      font-weight: 500;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-top: 0.8rem;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 1rem;
-      padding: 0;
+      transition: background 0.2s ease;
     }
 
-    .dropbtn:hover {
+    .acs-btn:hover {
+      background-color: #007d4e;
+    }
+
+    .aircraft-list, .alert-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .aircraft-list li, .alert-list li {
+      margin: 6px 0;
+    }
+
+    .aircraft-list a {
       color: #FFB300;
-    }
-
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      top: 120%;
-      left: 0;
-      background-color: rgba(12, 31, 60, 0.96);
-      border: 1px solid rgba(255, 179, 0, 0.3);
-      border-radius: 10px;
-      min-width: 160px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      z-index: 10;
-      backdrop-filter: blur(6px);
-      margin-top: 0px; /* evita gap */
-      transition: opacity 0.15s ease;
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .dropdown-content a {
-      display: block;
-      padding: 10px 18px;
-      color: #ddd;
       text-decoration: none;
-      font-size: 0.95rem;
     }
 
-    .dropdown-content a:hover {
-      background: rgba(255, 179, 0, 0.08);
-      color: #FFD700;
+    .aircraft-list a:hover {
+      text-decoration: underline;
     }
 
-    .dropdown:hover .dropdown-content {
-      display: block;
-      opacity: 1;
-      visibility: visible;
+    .positive {
+      color: #00d17a;
+      font-weight: 600;
     }
 
-    .dropbtn::after {
-      content: "";
+    .alert-list li {
+      color: #ff9b00;
     }
 
-    /* === Eslogan principal (nombre de aerolínea) === */
-    #welcomeMessage {
-      color: #FFFFFF;
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 0.3rem;
-    }
-
-    #welcomeMessage span {
-      color: #FFB300;
-    }
-
-    /* === Subtítulo (país + modelo de negocio) === */
-    #airlineSub {
-      color: #ccc;
-      font-size: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    #airlineSub span {
-      margin-right: 6px;
-      font-size: 1.2rem;
+    canvas {
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
+
 <body>
+  <!-- ===== HEADER ===== -->
   <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
-    <h1>Aviation Capital Simulator</h1>
-  </div>
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
 
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html">Routes</a>
-    <a href="market.html">Market</a>
-    <a href="hr.html">HR</a>
-    <a href="forum.html">Forum</a>
-    <a href="profile.html">Profile</a>
-    <a href="support.html">Support</a>
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-  </nav>
-</header>
+    <nav class="acs-nav">
+      <a href="dashboard.html" class="active">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
 
+  <!-- ===== MAIN ===== -->
   <main class="acs-main">
     <h2 id="welcomeMessage">Welcome to your Airline Headquarters</h2>
     <p id="airlineSub"></p>
     <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
-    <section class="dashboard-panels">
-      <div class="panel"><h3>Credits</h3><p id="creditsValue">125 AC$</p></div>
-      <div class="panel"><h3>Active Aircraft</h3><p>5</p></div>
-      <div class="panel"><h3>Active Routes</h3><p>8</p></div>
-      <div class="panel"><h3>Personnel</h3><p>42</p></div>
-      <div class="panel"><h3>Global Ranking</h3><p>Top 18%</p></div>
+    <section class="finance-panels">
+      <!-- 💠 CREDITS -->
+      <div class="panel">
+        <h3>💠 Credits</h3>
+        <p><strong id="creditsAmount">2,450 AC$</strong> available</p>
+        <button class="acs-btn" onclick="window.location.href='buy_credits.html'">Buy</button>
+      </div>
+
+      <!-- ✈️ TOP EARNING AIRCRAFT -->
+      <div class="panel">
+        <h3>✈️ Top Earning Aircraft</h3>
+        <ul id="topAircraftList" class="aircraft-list">
+          <li><a href="aircraft_profile.html?id=EC-DDR">A320 (EC-DDR)</a> — <span class="positive">+ $12,450</span></li>
+          <li><a href="aircraft_profile.html?id=EI-KAV">B737-400 (EI-KAV)</a> — <span class="positive">+ $9,780</span></li>
+          <li><a href="aircraft_profile.html?id=TC-ALM">E190 (TC-ALM)</a> — <span class="positive">+ $8,230</span></li>
+        </ul>
+      </div>
+
+      <!-- ⛽ FUEL PRICE -->
+      <div class="panel">
+        <h3>⛽ Fuel Price</h3>
+        <p><strong id="fuelPrice">$2.37 / gal</strong><br><small>Updated weekly</small></p>
+        <button class="acs-btn" onclick="window.location.href='fuel.html'">Open</button>
+      </div>
+
+      <!-- 💼 COMPANY VALUE -->
+      <div class="panel">
+        <h3>💼 Company Value</h3>
+        <p>Total assets: <strong id="companyValue">$78.5M</strong></p>
+        <p>Includes fleet, credits, and investments.</p>
+        <button class="acs-btn" onclick="window.location.href='company_value.html'">Open</button>
+      </div>
+
+      <!-- 📊 WEEKLY GROWTH -->
+      <div class="panel">
+        <h3>📊 Weekly Growth</h3>
+        <p>+8.4% vs last week</p>
+        <canvas id="growthChart" width="220" height="100"></canvas>
+        <button class="acs-btn" onclick="window.location.href='finance.html'">View Graph</button>
+      </div>
+
+      <!-- ⚠️ OPERATIONAL ALERTS -->
+      <div class="panel">
+        <h3>⚠️ Operational Alerts</h3>
+        <ul class="alert-list">
+          <li>Maintenance due: <strong>B737-400 (EI-KAV)</strong></li>
+          <li>Loan repayment in 2 days</li>
+          <li>Low credits warning</li>
+        </ul>
+        <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
+      </div>
+
+      <!-- 📰 GLOBAL NEWS & EVENTS -->
+      <div class="panel">
+        <h3>📰 Global News & Events</h3>
+        <p><strong>“Oil prices surge after conflict in the Middle East.”</strong><br>
+          Passenger demand drops 4% this week.</p>
+        <button class="acs-btn" onclick="window.location.href='events.html'">Read More</button>
+      </div>
     </section>
   </main>
 
+  <!-- ===== FOOTER ===== -->
   <footer class="acs-footer">
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
+  <!-- ===== SCRIPTS ===== -->
   <script>
-    // 🌍 Convierte nombre de país a bandera emoji (compatible con todos los países)
-    function getFlagEmoji(country) {
-      if (!country) return "🌍";
-      const isoMap = {
-        "United States": "US", "United Kingdom": "GB", "Spain": "ES", "Kyrgyzstan": "KG",
-        "Russia": "RU", "Brazil": "BR", "Argentina": "AR", "Mexico": "MX", "France": "FR",
-        "Germany": "DE", "Italy": "IT", "Japan": "JP", "China": "CN", "India": "IN",
-        "Canada": "CA", "Australia": "AU", "Chile": "CL", "Peru": "PE", "South Korea": "KR",
-        "Saudi Arabia": "SA", "South Africa": "ZA", "United Arab Emirates": "AE"
-      };
-      let clean = country.trim()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[’'"]/g, "")
-        .replace(/\s+/g, " ");
-      const code = isoMap[clean] || clean.slice(0, 2).toUpperCase();
-      try {
-        return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
-      } catch {
-        return `🌐 ${code}`;
-      }
-    }
-
-    // ✅ Mostrar bienvenida personalizada
+    // ✅ Display airline info from localStorage
     const airlineData = JSON.parse(localStorage.getItem("ACS_Airline"));
     if (airlineData && airlineData.name) {
       const icao = airlineData.icao ? ` (${airlineData.icao})` : "";
       document.getElementById("welcomeMessage").innerHTML =
         `Welcome to <span>${airlineData.name}${icao}</span>`;
-      const flag = getFlagEmoji(airlineData.country);
+      const flag = airlineData.country ? getFlagEmoji(airlineData.country) : "🌍";
       const country = airlineData.country || "Unknown";
       const model = airlineData.businessModel || "Operations";
-      document.getElementById("airlineSub").innerHTML =
-        `<span>${flag}</span> ${country} — ${model}`;
+      document.getElementById("airlineSub").innerHTML = `<span>${flag}</span> ${country} — ${model}`;
     }
 
-    // ✅ Logout coherente
+    // 🌍 Flag emoji generator
+    function getFlagEmoji(country) {
+      if (!country) return "🌍";
+      const isoMap = { "United States": "US", "Spain": "ES", "Kyrgyzstan": "KG", "Russia": "RU" };
+      const code = isoMap[country] || country.slice(0, 2).toUpperCase();
+      return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
+    }
+
+    // 📊 Simple mockup growth chart (to be replaced by Chart.js later)
+    const canvas = document.getElementById("growthChart");
+    const ctx = canvas.getContext("2d");
+    ctx.strokeStyle = "#FFB300";
+    ctx.beginPath();
+    ctx.moveTo(10, 90);
+    ctx.lineTo(50, 60);
+    ctx.lineTo(90, 70);
+    ctx.lineTo(130, 40);
+    ctx.lineTo(180, 45);
+    ctx.lineTo(210, 30);
+    ctx.stroke();
+
+    // 🚪 Logout
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
