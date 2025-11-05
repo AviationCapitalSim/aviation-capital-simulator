@@ -6,7 +6,6 @@
   <title>Route Schedule - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === ROUTE SCHEDULE (TECHNICAL MODE) === */
     body {
       background-color: #081530;
       color: white;
@@ -61,11 +60,6 @@
       color: #ccc;
     }
 
-    .acs-checkbox input {
-      width: 18px;
-      height: 18px;
-    }
-
     .tech-list {
       margin-top: 1.5rem;
       background: #102040;
@@ -84,6 +78,20 @@
     .tech-item span {
       color: #FFB300;
       font-weight: 600;
+    }
+
+    .status-line {
+      margin-top: 0.8rem;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .status-warning {
+      color: #FFD54F;
+    }
+
+    .status-ok {
+      color: #00E676;
     }
 
     .acs-btn {
@@ -178,7 +186,7 @@
       </select>
 
       <label class="acs-checkbox">
-        <input type="checkbox" id="optimizeRotation" />
+        <input type="checkbox" id="optimizeRotation" onchange="toggleOptimization()" />
         Optimize Rotation (avoid delay & maintenance conflict)
       </label>
 
@@ -193,6 +201,8 @@
         <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
       </div>
 
+      <div id="statusLine" class="status-line status-warning">⚠ Non-optimized rotation (45 min ground time)</div>
+
       <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
       <div class="result" id="result"></div>
     </div>
@@ -204,14 +214,12 @@
 
   <!-- ===== SCRIPT ===== -->
   <script>
-    // === Aircraft Performance Data ===
     const aircraftData = {
-      "B737-200": { speed: 420, turnaround: 1.0 },
-      "A320": { speed: 450, turnaround: 1.0 },
-      "B767-300ER": { speed: 470, turnaround: 1.3 }
+      "B737-200": { speed: 420 },
+      "A320": { speed: 450 },
+      "B767-300ER": { speed: 470 }
     };
 
-    // === Coordinates (simplified for Europe major hubs) ===
     const airportCoords = {
       LEMD: { lat: 40.472, lon: -3.560 },
       EGLL: { lat: 51.4775, lon: -0.4614 },
@@ -225,12 +233,10 @@
       ESSA: { lat: 59.6498, lon: 17.9238 }
     };
 
-    // === Autocomplete destination if passed from Europe list ===
     const urlParams = new URLSearchParams(window.location.search);
     const toParam = urlParams.get("to");
     if (toParam) document.getElementById("destination").value = toParam.toUpperCase();
 
-    // === Utility: Haversine formula (distance in NM) ===
     function calcDistanceNM(from, to) {
       if (!airportCoords[from] || !airportCoords[to]) return 0;
       const R = 3440;
@@ -242,62 +248,81 @@
       return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
     }
 
-    // === Auto calculation on aircraft select ===
+    let rotationOptimized = false;
+
     function autoCalculate() {
       const origin = document.getElementById("origin").value.toUpperCase();
       const destination = document.getElementById("destination").value.toUpperCase();
       const aircraft = document.getElementById("aircraft").value;
-      const optimize = document.getElementById("optimizeRotation").checked;
       if (!origin || !destination || !aircraft) return;
+      calculateData(origin, destination, aircraft);
+    }
 
+    function toggleOptimization() {
+      rotationOptimized = document.getElementById("optimizeRotation").checked;
+      autoCalculate();
+    }
+
+    function calculateData(origin, destination, aircraft) {
       const distance = calcDistanceNM(origin, destination);
-      const { speed, turnaround } = aircraftData[aircraft];
+      const { speed } = aircraftData[aircraft];
+      const turnaround = rotationOptimized ? 1.0 : 0.75;
 
       const blockTime = distance / speed;
       const totalRotation = (blockTime * 2) + (turnaround * 2);
 
-      const serviceA = 5 - (totalRotation / 2).toFixed(1);
-      const serviceB = 24 - (totalRotation / 4).toFixed(1);
+      const serviceA = 5 - (totalRotation / 2);
+      const serviceB = 24 - (totalRotation / 4);
 
       let delayRisk = Math.min(100, (totalRotation / 5) * 10);
       let effIndex = Math.max(50, 100 - delayRisk / 1.5);
-      if (optimize) {
+      if (rotationOptimized) {
         delayRisk *= 0.8;
         effIndex += 5;
       }
 
       document.getElementById("distance").innerText = distance;
       document.getElementById("blockTime").innerText = `${blockTime.toFixed(2)} h`;
-      document.getElementById("turnaround").innerText = `${turnaround.toFixed(1)} h`;
+      document.getElementById("turnaround").innerText = `${turnaround.toFixed(2)} h`;
       document.getElementById("totalRotation").innerText = `${totalRotation.toFixed(2)} h`;
       document.getElementById("serviceA").innerText = serviceA.toFixed(1);
       document.getElementById("serviceB").innerText = serviceB.toFixed(1);
       document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
       document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
+
+      const statusLine = document.getElementById("statusLine");
+      if (rotationOptimized) {
+        statusLine.innerHTML = "✅ Optimized rotation applied (1h ground time)";
+        statusLine.className = "status-line status-ok";
+      } else {
+        statusLine.innerHTML = "⚠ Non-optimized rotation (45 min ground time)";
+        statusLine.className = "status-line status-warning";
+      }
     }
 
-    // === Confirm route action ===
     function confirmRoute() {
-      const origin = document.getElementById("origin").value.toUpperCase();
-      const destination = document.getElementById("destination").value.toUpperCase();
-      const aircraft = document.getElementById("aircraft").value;
-      const optimize = document.getElementById("optimizeRotation").checked;
-      if (!origin || !destination || !aircraft) {
+      const origin = document.getElementById("origin");
+      const destination = document.getElementById("destination");
+      const aircraft = document.getElementById("aircraft");
+      const optimize = document.getElementById("optimizeRotation");
+      if (!origin.value || !destination.value || !aircraft.value) {
         alert("Please select all fields before confirming.");
         return;
       }
 
-      const totalRotation = document.getElementById("totalRotation").innerText;
-      const delayRisk = document.getElementById("delayRisk").innerText;
-      const effIndex = document.getElementById("effIndex").innerText;
-
-      document.getElementById("result").innerHTML = `
-        Route scheduled: <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
-        Aircraft: <strong>${aircraft}</strong><br>
-        Optimize Rotation: ${optimize ? "Yes ✅" : "No ⚠️"}<br>
-        Total Rotation Time: ${totalRotation}<br>
-        Delay Risk: ${delayRisk} | Efficiency: ${effIndex}
+      const resultBox = document.getElementById("result");
+      resultBox.innerHTML = `
+        ✅ Route confirmed and locked.<br>
+        <strong>${origin.value} ➜ ${destination.value} ➜ ${origin.value}</strong><br>
+        Aircraft: <strong>${aircraft.value}</strong><br>
+        Optimize Rotation: ${optimize.checked ? "Yes ✅" : "No ⚠️"}<br>
+        Flight ready for aircraft assignment.
       `;
+
+      origin.disabled = true;
+      destination.disabled = true;
+      aircraft.disabled = true;
+      optimize.disabled = true;
     }
 
     function handleLogout() {
