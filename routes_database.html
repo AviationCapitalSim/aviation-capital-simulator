@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Route Schedule - Aviation Capital Simulator</title>
+  <title>World Airports Database - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === ROUTE SCHEDULE (TECHNICAL MODE) === */
+    /* === ROUTES DATABASE MODULE === */
     body {
       background-color: #081530;
       color: white;
@@ -24,115 +24,82 @@
       margin-bottom: 2rem;
     }
 
-    .schedule-container {
-      width: 90%;
-      max-width: 800px;
-      margin: 0 auto;
-      background: #0e1b3c;
-      border-radius: 10px;
-      padding: 1.5rem 2rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    .continent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
     }
 
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
-      color: #FFB300;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
-      border-radius: 6px;
-      border: none;
-      background: #12224c;
-      color: white;
-      font-size: 1rem;
-      outline: none;
-    }
-
-    .acs-checkbox {
-      margin-top: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #ccc;
-    }
-
-    .acs-checkbox input {
-      width: 18px;
-      height: 18px;
-    }
-
-    .tech-list {
-      margin-top: 1.5rem;
+    .continent-card {
       background: #102040;
-      border-radius: 8px;
-      padding: 1rem;
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
     }
 
-    .tech-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #ddd;
+    .continent-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 16px rgba(255, 179, 0, 0.5);
     }
 
-    .tech-item span {
+    .continent-card h3 {
       color: #FFB300;
-      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    .continent-card p {
+      color: #ccc;
+      font-size: 0.95rem;
     }
 
     .acs-btn {
-      display: block;
       background-color: #1DB954;
       color: #fff;
       border: none;
-      padding: 0.7rem 1.4rem;
+      padding: 0.6rem 1.2rem;
       border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
-      margin: 1.5rem auto;
-      transition: 0.2s;
+      margin-top: 0.8rem;
+      transition: background-color 0.2s ease;
     }
 
     .acs-btn:hover {
       background-color: #17a84d;
     }
 
+    /* Search bar */
+    .search-bar {
+      margin: 1rem 0;
+      text-align: center;
+    }
+
+    .search-bar input {
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: none;
+      width: 280px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    /* Back button */
     .back-btn {
-      display: block;
-      margin: 1rem auto;
       color: #1DB954;
       background: none;
       border: 1px solid #1DB954;
       border-radius: 6px;
       padding: 0.4rem 1rem;
       cursor: pointer;
+      margin-top: 1rem;
     }
 
     .back-btn:hover {
       background-color: #1DB954;
       color: white;
-    }
-
-    .result {
-      margin-top: 1rem;
-      background: #0e2048;
-      padding: 1rem;
-      border-radius: 8px;
-      color: #ccc;
-    }
-
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      color: #999;
-      font-size: 0.9rem;
-      padding: 1rem;
     }
   </style>
 </head>
@@ -150,8 +117,10 @@
       <a href="finance.html">Finance</a>
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html" class="active">Routes</a>
+      <a href="market.html">Market</a>
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
@@ -159,147 +128,83 @@
 
   <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
-    <h2>🧭 Route Schedule Setup</h2>
-    <p class="sub">Plan and evaluate your route performance based on technical parameters and operational constraints.</p>
+    <h2>World Airports Database</h2>
+    <p class="sub">Select a continent to explore airports, calculate distances from your base, and analyze operational opportunities.</p>
 
-    <div class="schedule-container">
-      <label>Origin (ICAO)</label>
-      <input type="text" id="origin" value="LEMD" />
+    <div class="search-bar">
+      <input type="text" id="searchAirport" placeholder="🔍 Search by airport name or ICAO code..." onkeyup="searchContinents()" />
+    </div>
 
-      <label>Destination (ICAO)</label>
-      <input type="text" id="destination" placeholder="e.g. EGLL, LFPG, EHAM" />
-
-      <label>Aircraft Type</label>
-      <select id="aircraft" onchange="autoCalculate()">
-        <option value="">-- Select Aircraft --</option>
-        <option value="B737-200">Boeing 737-200</option>
-        <option value="A320">Airbus A320</option>
-        <option value="B767-300ER">Boeing 767-300ER</option>
-      </select>
-
-      <label class="acs-checkbox">
-        <input type="checkbox" id="optimizeRotation" />
-        Optimize Rotation (avoid delay & maintenance conflict)
-      </label>
-
-      <div class="tech-list">
-        <div class="tech-item">Distance (NM): <span id="distance">--</span></div>
-        <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
-        <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
-        <div class="tech-item">Total Rotation: <span id="totalRotation">--</span></div>
-        <div class="tech-item">Time to A-Check (h remaining): <span id="serviceA">--</span></div>
-        <div class="tech-item">Time to B-Check (h remaining): <span id="serviceB">--</span></div>
-        <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
-        <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
+    <section class="continent-grid" id="continentGrid">
+      <div class="continent-card" onclick="openContinent('Europe')">
+        <h3>🌍 Europe</h3>
+        <p>Explore major hubs like London Heathrow (EGLL), Frankfurt (EDDF), and Madrid (LEMD). Range and demand optimized for medium and long-haul operations.</p>
+        <button class="acs-btn">Open</button>
       </div>
 
-      <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
-      <div class="result" id="result"></div>
-    </div>
+      <div class="continent-card" onclick="openContinent('NorthAmerica')">
+        <h3>🛫 North America</h3>
+        <p>Includes key airports such as New York JFK (KJFK), Miami (KMIA), and Los Angeles (KLAX). High passenger flow and long-haul connectivity.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('SouthAmerica')">
+        <h3>🌎 South America</h3>
+        <p>Dynamic markets with high cargo potential: Bogotá (SKBO), São Paulo (SBGR), Buenos Aires (SAEZ).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('Asia')">
+        <h3>🌏 Asia</h3>
+        <p>Hub of high-density traffic: Dubai (OMDB), Tokyo (RJTT), Singapore (WSSS), Hong Kong (VHHH).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('Africa')">
+        <h3>🌍 Africa</h3>
+        <p>Emerging routes and expanding cargo networks: Cairo (HECA), Johannesburg (FAOR), Nairobi (HKJK).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('Oceania')">
+        <h3>🌏 Oceania</h3>
+        <p>Strategic Pacific gateways: Sydney (YSSY), Auckland (NZAA), Melbourne (YMML).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('MiddleEast')">
+        <h3>🕌 Middle East</h3>
+        <p>Major long-haul connections and cargo hubs: Doha (OTHH), Dubai (OMDB), Riyadh (OERK).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+    </section>
 
     <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
   </main>
 
-  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
 
   <!-- ===== SCRIPT ===== -->
   <script>
-    // === Aircraft Performance Data ===
-    const aircraftData = {
-      "B737-200": { speed: 420, turnaround: 1.0 },
-      "A320": { speed: 450, turnaround: 1.0 },
-      "B767-300ER": { speed: 470, turnaround: 1.3 }
-    };
-
-    // === Coordinates (simplified for Europe major hubs) ===
-    const airportCoords = {
-      LEMD: { lat: 40.472, lon: -3.560 },
-      EGLL: { lat: 51.4775, lon: -0.4614 },
-      LFPG: { lat: 49.0097, lon: 2.5479 },
-      EHAM: { lat: 52.3086, lon: 4.7639 },
-      EDDF: { lat: 50.0379, lon: 8.5622 },
-      LIRF: { lat: 41.8003, lon: 12.2389 },
-      EKCH: { lat: 55.618, lon: 12.656 },
-      LGAV: { lat: 37.9364, lon: 23.9445 },
-      LSZH: { lat: 47.4647, lon: 8.5492 },
-      ESSA: { lat: 59.6498, lon: 17.9238 }
-    };
-
-    // === Autocomplete destination if passed from Europe list ===
-    const urlParams = new URLSearchParams(window.location.search);
-    const toParam = urlParams.get("to");
-    if (toParam) document.getElementById("destination").value = toParam.toUpperCase();
-
-    // === Utility: Haversine formula (distance in NM) ===
-    function calcDistanceNM(from, to) {
-      if (!airportCoords[from] || !airportCoords[to]) return 0;
-      const R = 3440;
-      const lat1 = (airportCoords[from].lat * Math.PI) / 180;
-      const lat2 = (airportCoords[to].lat * Math.PI) / 180;
-      const dLat = ((airportCoords[to].lat - airportCoords[from].lat) * Math.PI) / 180;
-      const dLon = ((airportCoords[to].lon - airportCoords[from].lon) * Math.PI) / 180;
-      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+    // === Redirection by continent ===
+    function openContinent(continent) {
+      window.location.href = "airport_list_" + continent.toLowerCase() + ".html";
     }
 
-    // === Auto calculation on aircraft select ===
-    function autoCalculate() {
-      const origin = document.getElementById("origin").value.toUpperCase();
-      const destination = document.getElementById("destination").value.toUpperCase();
-      const aircraft = document.getElementById("aircraft").value;
-      const optimize = document.getElementById("optimizeRotation").checked;
-      if (!origin || !destination || !aircraft) return;
-
-      const distance = calcDistanceNM(origin, destination);
-      const { speed, turnaround } = aircraftData[aircraft];
-
-      const blockTime = distance / speed;
-      const totalRotation = (blockTime * 2) + (turnaround * 2);
-
-      const serviceA = 5 - (totalRotation / 2).toFixed(1);
-      const serviceB = 24 - (totalRotation / 4).toFixed(1);
-
-      let delayRisk = Math.min(100, (totalRotation / 5) * 10);
-      let effIndex = Math.max(50, 100 - delayRisk / 1.5);
-      if (optimize) {
-        delayRisk *= 0.8;
-        effIndex += 5;
-      }
-
-      document.getElementById("distance").innerText = distance;
-      document.getElementById("blockTime").innerText = `${blockTime.toFixed(2)} h`;
-      document.getElementById("turnaround").innerText = `${turnaround.toFixed(1)} h`;
-      document.getElementById("totalRotation").innerText = `${totalRotation.toFixed(2)} h`;
-      document.getElementById("serviceA").innerText = serviceA.toFixed(1);
-      document.getElementById("serviceB").innerText = serviceB.toFixed(1);
-      document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
-      document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
+    // === Search feature (future integration for airport search) ===
+    function searchContinents() {
+      const input = document.getElementById("searchAirport").value.toLowerCase();
+      const cards = document.querySelectorAll(".continent-card");
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(input) ? "block" : "none";
+      });
     }
 
-    // === Confirm route action ===
-    function confirmRoute() {
-      const origin = document.getElementById("origin").value.toUpperCase();
-      const destination = document.getElementById("destination").value.toUpperCase();
-      const aircraft = document.getElementById("aircraft").value;
-      const optimize = document.getElementById("optimizeRotation").checked;
-      if (!origin || !destination || !aircraft) {
-        alert("Please select all fields before confirming.");
-        return;
-      }
-
-      const totalRotation = document.getElementById("totalRotation").innerText;
-      const delayRisk = document.getElementById("delayRisk").innerText;
-      const effIndex = document.getElementById("effIndex").innerText;
-
-      document.getElementById("result").innerHTML = `
-        Route scheduled: <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
-        Aircraft: <strong>${aircraft}</strong><br>
-        Optimize Rotation: ${optimize ? "Yes ✅" : "No ⚠️"}<br>
-        Total Rotation Time: ${totalRotation}<br>
-        Delay Risk: ${delayRisk} | Efficiency: ${effIndex}
-      `;
-    }
-
+    // === Logout handler ===
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
