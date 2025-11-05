@@ -6,7 +6,6 @@
   <title>Department Control Center - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === DEPARTMENT CONTROL CENTER (ACS) === */
     body {
       margin: 0;
       background-color: #081530;
@@ -37,62 +36,42 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.4);
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
-    th, td {
-      padding: 0.7rem;
-      text-align: left;
-    }
-
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 0.7rem; text-align: left; }
     th {
       background-color: #102040;
       color: #FFB300;
       border-bottom: 2px solid #FFB300;
     }
-
     tr { border-bottom: 1px solid #FFB300; }
 
     .salary { color: #ff6464; font-weight: 600; }
-    .staff { color: #00d17a; font-weight: 600; }
+    .staff { color: #00d17a; font-weight: 600; transition: color 0.3s ease; }
     .morale { color: #00d17a; font-weight: 600; }
 
     .btn {
-      border: none;
-      border-radius: 6px;
-      padding: 6px 10px;
-      margin-left: 4px;
-      font-weight: 600;
-      cursor: pointer;
+      border: none; border-radius: 6px;
+      padding: 6px 10px; margin-left: 4px;
+      font-weight: 600; cursor: pointer;
       transition: background 0.2s ease;
     }
 
     .btn-bonus { background-color: #00a86b; color: #fff; }
-    .btn-bonus:hover { background-color: #007d4e; }
-
     .btn-hire { background-color: #007bff; color: #fff; }
-    .btn-hire:hover { background-color: #005fcc; }
-
     .btn-adjust { background-color: #ffb300; color: #000; }
-    .btn-adjust:hover { background-color: #e4a000; }
-
-    .btn-transfer { background-color: #87b8ff; color: #000; }
-    .btn-transfer.disabled { background-color: #444a60; color: #888; cursor: not-allowed; }
-
     .btn-dismiss { background-color: #000; color: #fff; }
-    .btn-dismiss:hover { background-color: #222; }
+    .btn:hover { opacity: 0.85; }
 
     tfoot td {
       border-top: 2px solid #FFB300;
       font-weight: bold;
       text-align: right;
       padding-top: 1rem;
+      color: #FFB300;
+      text-shadow: 0 0 8px rgba(255,179,0,0.4);
     }
 
-    /* === MODALS (ACS STYLE) === */
+    /* === MODALS === */
     .acs-modal {
       display: none;
       position: fixed;
@@ -150,33 +129,20 @@
       padding: 8px 16px;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 1rem;
+      margin: 0.5rem;
       transition: background 0.2s ease;
     }
-    .modal-btn:hover { background-color: #007d4e; }
-   
-/* === TOTAL PAYROLL STYLE === */
-#totalPayroll {
-  color: #FFB300;
-  text-shadow: 0 0 8px rgba(255, 179, 0, 0.4);
-  font-weight: 600;
-  font-size: 1.1rem;
-  letter-spacing: 0.5px;
-}
-  </style>
-</head>
-
+    .modal-btn.cancel { background-color: #ff6464; }
+    .modal-btn:hover { opacity: 0.85; }
   </style>
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
-
     <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
       <a href="finance.html">Finance</a>
@@ -191,11 +157,9 @@
     </nav>
   </header>
 
-  <!-- ===== MAIN ===== -->
   <main class="acs-main">
     <h2>🏢 Department Control Center</h2>
     <p class="sub">Manage all departments, staff, salaries, morale and workforce actions.</p>
-
     <section class="control-panel">
       <table id="deptTable">
         <thead>
@@ -217,53 +181,31 @@
     </section>
   </main>
 
-  <!-- ===== MODALS ===== -->
-  <!-- BONUS -->
-  <div class="acs-modal" id="bonusModal">
-    <div class="acs-modal-content">
-      <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
-      <h3>Assign Department Bonus</h3>
-      <p id="bonusDeptName">Department</p>
-      <input type="range" min="20" max="100" step="10" value="20" id="bonusRange">
-      <p>Bonus: <span id="bonusValue">20%</span></p>
-      <p>Estimated Cost: <span id="bonusCost">0</span> USD</p>
-      <button class="modal-btn" onclick="confirmBonus()">Confirm Bonus</button>
-    </div>
-  </div>
-
-  <!-- HIRE -->
+  <!-- HIRE Modal -->
   <div class="acs-modal" id="hireModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('hireModal')">✖</button>
       <h3>Hire New Staff</h3>
       <p id="hireDeptName">Department</p>
       <input type="number" id="hireCount" min="1" max="50" value="1">
-      <p>Estimated Cost: <span id="hireCost">0</span> USD</p>
-      <button class="modal-btn" onclick="confirmHire()">Confirm Hire</button>
+      <div>
+        <button class="modal-btn" onclick="confirmAction('hire')">Confirm</button>
+        <button class="modal-btn cancel" onclick="closeModal('hireModal')">Cancel</button>
+      </div>
     </div>
   </div>
 
-  <!-- ADJUST SALARY -->
-  <div class="acs-modal" id="salaryModal">
-    <div class="acs-modal-content">
-      <button class="close-modal" onclick="closeModal('salaryModal')">✖</button>
-      <h3>Adjust Department Salary</h3>
-      <p id="salaryDeptName">Department</p>
-      <input type="range" min="5" max="120" step="5" value="100" id="salaryRange">
-      <p>Adjustment: <span id="salaryValue">100%</span></p>
-      <p>New Payroll Estimate: <span id="salaryNewTotal">0</span> USD</p>
-      <button class="modal-btn" onclick="confirmSalary()">Apply Adjustment</button>
-    </div>
-  </div>
-
-  <!-- DISMISS -->
+  <!-- DISMISS Modal -->
   <div class="acs-modal" id="dismissModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('dismissModal')">✖</button>
-      <h3>Confirm Dismissal</h3>
-      <p id="dismissDeptName">Enter number of staff to dismiss:</p>
+      <h3>Dismiss Staff</h3>
+      <p id="dismissDeptName">Department</p>
       <input type="number" id="dismissCount" min="1" max="50" value="1">
-      <button class="modal-btn" onclick="confirmDismiss()">Confirm</button>
+      <div>
+        <button class="modal-btn" onclick="confirmAction('dismiss')">Confirm</button>
+        <button class="modal-btn cancel" onclick="closeModal('dismissModal')">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -271,114 +213,114 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <!-- ===== SCRIPT ===== -->
   <script>
     const user = JSON.parse(localStorage.getItem("ACS_User"));
     const CEOname = user ? user.name : "CEO";
 
     const departments = [
-      `Airline CEO - ${CEOname}`,
-      "High Level Management",
-      "Middle Level Management",
-      "Economics and Finance",
-      "Corporate Communications",
-      "Human Resources",
-      "Quality Department",
-      "Safety and Security",
-      "Customer Services",
-      "Flight Operations Division",
-      "Technical Services and Maintenance",
-      "Ground Handling",
-      "Route Strategies Department",
-      "Pilots (Small A/C)",
-      "Pilots (Medium A/C)",
-      "Pilots (Large A/C)",
-      "Pilots (Very Large A/C)",
-      "Cabin Crew"
+      "Human Resources", "Flight Operations Division", "Technical Services and Maintenance",
+      "Ground Handling", "Cabin Crew"
     ];
 
-    const deptTable = document.getElementById("departmentRows");
+    const ACS = {
+      time: { minute: 0, hour: 0, day: 1, week: 1 },
+      hr: {},
+      pendingEffects: []
+    };
 
-    departments.forEach(dept => {
-      const isCrew = dept.includes("Pilot") || dept.includes("Cabin");
-      const isCEO = dept.includes("CEO");
-
-      deptTable.innerHTML += `
-        <tr>
-          <td>${dept}</td>
-          <td class="staff" data-staff="100">${isCEO ? "-" : "100 / 100"}</td>
-          <td class="salary" data-salary="${isCEO ? "15000" : "3000"}">$${isCEO ? "15,000" : "3,000"}</td>
-          <td class="morale" data-morale="100">100%</td>
-          <td>
-            ${
-              isCEO
-                ? `<button class="btn btn-adjust" onclick="openModal('salaryModal')">📈</button>`
-                : `
-                  <button class="btn btn-bonus" onclick="openModal('bonusModal')">💵</button>
-                  <button class="btn btn-hire" onclick="openModal('hireModal')">🧍</button>
-                  <button class="btn btn-adjust" onclick="openModal('salaryModal')">📈</button>
-                  <button class="btn btn-transfer ${isCrew ? '' : 'disabled'}" ${isCrew ? '' : 'disabled'} onclick="openModal('transferModal')">🔁</button>
-                  <button class="btn btn-dismiss" onclick="openModal('dismissModal')">❌</button>`
-            }
-          </td>
-        </tr>`;
+    departments.forEach(d => {
+      ACS.hr[d] = { staff: 100, required: 100, salary: 3000, morale: 100 };
     });
 
-    // === MODAL CONTROLS ===
+    const table = document.getElementById("departmentRows");
+
+    function renderTable() {
+      table.innerHTML = "";
+      let total = 0;
+      departments.forEach(dep => {
+        const d = ACS.hr[dep];
+        const color = d.staff < d.required ? "#ff6464" : d.staff > d.required ? "#FFB300" : "#00d17a";
+        total += d.salary * d.staff;
+        table.innerHTML += `
+          <tr>
+            <td>${dep}</td>
+            <td class="staff" style="color:${color}">${d.staff} / ${d.required}</td>
+            <td class="salary" data-salary="${d.salary}">$${d.salary.toLocaleString()}</td>
+            <td class="morale">${d.morale}%</td>
+            <td>
+              <button class="btn btn-hire" onclick="openHire('${dep}')">🧍</button>
+              <button class="btn btn-dismiss" onclick="openDismiss('${dep}')">❌</button>
+            </td>
+          </tr>`;
+      });
+      document.getElementById("totalPayroll").innerHTML = `Total Monthly Payroll: $${total.toLocaleString()}`;
+    }
+
+    renderTable();
+
+    // === MODALS ===
+    function openHire(dep) {
+      document.getElementById("hireDeptName").textContent = dep;
+      openModal("hireModal");
+    }
+    function openDismiss(dep) {
+      document.getElementById("dismissDeptName").textContent = dep;
+      openModal("dismissModal");
+    }
+
     function openModal(id) { document.getElementById(id).style.display = "flex"; }
     function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-    // === Dynamic slider update for salary adjustment ===
-    document.getElementById("salaryRange").addEventListener("input", function () {
-      const val = this.value;
-      document.getElementById("salaryValue").textContent = val + "%";
-    });
+    // === Confirm Actions ===
+    function confirmAction(type) {
+      const dept = type === "hire"
+        ? document.getElementById("hireDeptName").textContent
+        : document.getElementById("dismissDeptName").textContent;
+      const count = type === "hire"
+        ? parseInt(document.getElementById("hireCount").value)
+        : parseInt(document.getElementById("dismissCount").value);
+
+      if (!confirm(`⚠️ Are you sure you want to ${type} ${count} staff in ${dept}?`)) return;
+
+      const d = ACS.hr[dept];
+      if (type === "hire") d.staff += count;
+      else d.staff = Math.max(0, d.staff - count);
+
+      if (type === "dismiss") {
+        ACS.pendingEffects.push({ dept, effect: -10, triggerWeek: ACS.time.week + 1 });
+      }
+
+      renderTable();
+      closeModal(type === "hire" ? "hireModal" : "dismissModal");
+    }
+
+    // === TIME ENGINE ===
+    setInterval(() => {
+      ACS.time.minute++;
+      if (ACS.time.minute >= 60) { ACS.time.minute = 0; ACS.time.hour++; }
+      if (ACS.time.hour >= 24) { ACS.time.hour = 0; ACS.time.day++; }
+      if (ACS.time.day > 7) {
+        ACS.time.day = 1;
+        ACS.time.week++;
+        checkWeeklyEffects();
+      }
+    }, 1000);
+
+    function checkWeeklyEffects() {
+      ACS.pendingEffects.forEach((ef, i) => {
+        if (ef.triggerWeek === ACS.time.week) {
+          const dept = ACS.hr[ef.dept];
+          dept.morale = Math.max(0, Math.min(100, dept.morale + ef.effect));
+          ACS.pendingEffects.splice(i, 1);
+          renderTable();
+        }
+      });
+    }
 
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-
-    function confirmBonus() { closeModal('bonusModal'); }
-    function confirmHire() { closeModal('hireModal'); }
-    function confirmSalary() { closeModal('salaryModal'); }
-    function confirmDismiss() { closeModal('dismissModal'); }
-
-    // === TOTAL PAYROLL CALCULATION (SUM COLUMN VALUES) ===
-function calculateTotalPayroll() {
-  let total = 0;
-
-  document.querySelectorAll("#departmentRows tr").forEach(row => {
-    const salaryCell = row.querySelector(".salary");
-    if (!salaryCell) return;
-
-    // Sumamos el valor total del salario por departamento (data-salary)
-    const salary = parseFloat(salaryCell.dataset.salary || "0");
-    if (!isNaN(salary)) total += salary;
-  });
-
-  document.getElementById("totalPayroll").textContent =
-    "Total Monthly Payroll: $" + total.toLocaleString();
-}
-
-// === Recalculate when page loads ===
-window.addEventListener("DOMContentLoaded", calculateTotalPayroll);
-
-// === Recalculate dynamically when hire, dismiss or salary adjust happens ===
-function confirmHire() {
-  closeModal('hireModal');
-  calculateTotalPayroll();
-}
-
-function confirmDismiss() {
-  closeModal('dismissModal');
-  calculateTotalPayroll();
-}
-
-function confirmSalary() {
-  closeModal('salaryModal');
-  calculateTotalPayroll();
-}
   </script>
 </body>
 </html>
