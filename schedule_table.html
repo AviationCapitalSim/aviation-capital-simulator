@@ -69,18 +69,37 @@
       display: inline-block;
     }
 
-    .plan-btn {
-      background-color: #1DB954;
+    /* === Elegant ACS Buttons === */
+    .btn {
       border: none;
-      color: #fff;
-      font-weight: 600;
-      border-radius: 8px;
-      padding: 6px 12px;
+      border-radius: 9999px;
+      padding: 7px 13px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
       cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      margin: 0 4px;
     }
 
-    .plan-btn:hover {
-      background-color: #17a84d;
+    .btn-assign {
+      background: #1ED760;
+      color: #111;
+    }
+
+    .btn-assign:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(30, 215, 96, 0.35);
+    }
+
+    .btn-maint {
+      background: linear-gradient(180deg, #FFC72C 0%, #FFB300 100%);
+      color: #111;
+    }
+
+    .btn-maint:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(255, 179, 0, 0.35);
     }
 
     .summary {
@@ -180,22 +199,25 @@
           <td>EC-MAD (B737-200)</td>
           <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
           <td>
-  <button class="acs-btn-small" onclick="assignRoute('EC-MAD (B737-200)')">🟩 Assign Route</button>
-  <button class="acs-btn-small">⚙ Plan Maintenance</button></td>
+            <button class="btn btn-assign" onclick="assignRoute('EC-MAD (B737-200)', this)">Assign Route</button>
+            <button class="btn btn-maint" onclick="openModal(this)">Plan Maintenance</button>
+          </td>
         </tr>
         <tr>
           <td>EC-BCN (A320)</td>
           <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
           <td>
-  <button class="acs-btn-small" onclick="assignRoute('EC-MAD (B737-200)')">🟩 Assign Route</button>
-  <button class="acs-btn-small">⚙ Plan Maintenance</button></td>
+            <button class="btn btn-assign" onclick="assignRoute('EC-BCN (A320)', this)">Assign Route</button>
+            <button class="btn btn-maint" onclick="openModal(this)">Plan Maintenance</button>
+          </td>
         </tr>
         <tr>
           <td>EC-LON (B767-300ER)</td>
           <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
           <td>
-  <button class="acs-btn-small" onclick="assignRoute('EC-MAD (B737-200)')">🟩 Assign Route</button>
-  <button class="acs-btn-small">⚙ Plan Maintenance</button></td>
+            <button class="btn btn-assign" onclick="assignRoute('EC-LON (B767-300ER)', this)">Assign Route</button>
+            <button class="btn btn-maint" onclick="openModal(this)">Plan Maintenance</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -238,9 +260,6 @@
       const route = JSON.parse(localStorage.getItem("confirmedRoute"));
       if (route) {
         document.getElementById("pendingRoute").innerText = `✅ Pending Route: ${route.origin} ➜ ${route.destination} (${route.aircraft})`;
-        document.getElementById("totalFlights").innerText = 1;
-        document.getElementById("totalHours").innerText = route.rotation;
-        document.getElementById("effIndex").innerText = (85 + Math.random() * 10).toFixed(1);
       }
     };
 
@@ -262,13 +281,6 @@
       }
 
       document.getElementById("modal").style.display = "none";
-      updateSummary();
-    }
-
-    function updateSummary() {
-      let totalMaint = document.querySelectorAll('.slot-maintenance-a, .slot-maintenance-b').length;
-      let eff = Math.max(50, 100 - totalMaint * 5);
-      document.getElementById("effIndex").innerText = eff;
     }
 
     window.onclick = function(event) {
@@ -280,35 +292,32 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-    function assignRoute(selectedAircraft) {
-  const pending = JSON.parse(localStorage.getItem("confirmedRoute"));
-  if (!pending) {
-    alert("No pending route to assign.");
-    return;
-  }
 
-  // Mostrar confirmación visual
-  alert(`✅ Route ${pending.origin} ➜ ${pending.destination} assigned to ${selectedAircraft}.`);
+    function assignRoute(selectedAircraft, btn) {
+      const pending = JSON.parse(localStorage.getItem("confirmedRoute"));
+      if (!pending) {
+        alert("No pending route to assign.");
+        return;
+      }
 
-  // Guardar en registro de vuelos (simulado)
-  const assignedRoutes = JSON.parse(localStorage.getItem("assignedRoutes")) || [];
-  assignedRoutes.push({
-    aircraft: selectedAircraft,
-    origin: pending.origin,
-    destination: pending.destination,
-    optimized: pending.optimized,
-    rotation: pending.rotation,
-    timestamp: new Date().toISOString()
-  });
-  localStorage.setItem("assignedRoutes", JSON.stringify(assignedRoutes));
+      const aircraftType = selectedAircraft.match(/\(([^)]+)\)/)[1];
+      if (aircraftType !== pending.aircraft) {
+        alert(`⚠ The pending route is for ${pending.aircraft}. You cannot assign it to ${aircraftType}.`);
+        return;
+      }
 
-  // Eliminar la pending route
-  localStorage.removeItem("confirmedRoute");
+      const row = btn.closest("tr");
+      const firstEmpty = Array.from(row.cells).find((c, i) => i > 0 && i < 8 && c.innerHTML.trim() === "");
+      if (firstEmpty) {
+        firstEmpty.innerHTML = `✈️ ${pending.origin} ➜ ${pending.destination}`;
+        alert(`✅ Route ${pending.origin} ➜ ${pending.destination} assigned to ${selectedAircraft}.`);
+      } else {
+        alert("⚠ No available slots to assign this route.");
+      }
 
-  // Actualizar el banner
-  const banner = document.getElementById("pendingRouteNotice");
-  if (banner) banner.style.display = "none";
-}
+      localStorage.removeItem("confirmedRoute");
+      document.getElementById("pendingRoute").innerText = "No pending routes.";
+    }
   </script>
 </body>
 </html>
