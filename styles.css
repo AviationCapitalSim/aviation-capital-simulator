@@ -485,15 +485,3 @@ footer {
   justify-content: center;
   height: 32px;
 }
-/* === Ajuste de tamaño y posición del botón LOGOUT === */
-.logout-btn {
-  position: absolute;
-  right: 2rem;     /* igual separación que Register */
-  top: 1.1rem;     /* alineado verticalmente con Register */
-  height: 36px;    /* misma altura visual */
-  padding: 6px 16px; /* mismo relleno lateral */
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
