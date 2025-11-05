@@ -202,8 +202,8 @@
         <div id="statusLine" class="status-line status-warning">⚠ Non-optimized rotation (45 min ground time)</div>
       </div>
 
-      <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
       <div class="result" id="result"></div>
+      <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
     </div>
 
     <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
@@ -254,8 +254,18 @@
       const destination = document.getElementById("destination").value.toUpperCase();
       const aircraft = document.getElementById("aircraft").value;
       if (!origin || !destination || !aircraft) return;
+
       document.getElementById("techData").style.display = "block";
       calculateData(origin, destination, aircraft);
+
+      const resultBox = document.getElementById("result");
+      resultBox.innerHTML = `
+        ✅ Route ready for confirmation.<br>
+        <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
+        Aircraft: <strong>${aircraft}</strong><br>
+        Optimize Rotation: ${rotationOptimized ? "Yes ✅" : "No ⚠️"}<br>
+        Flight parameters calculated and awaiting confirmation.
+      `;
     }
 
     function toggleOptimization() {
@@ -305,6 +315,7 @@
       const destination = document.getElementById("destination");
       const aircraft = document.getElementById("aircraft");
       const optimize = document.getElementById("optimizeRotation");
+
       if (!origin.value || !destination.value || !aircraft.value) {
         alert("Please select all fields before confirming.");
         return;
