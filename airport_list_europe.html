@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Europe - Airport List | Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    /* === AIRPORT LIST (EUROPE) === */
+    body {
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+    }
+
+    h2 {
+      color: #FFB300;
+      margin-top: 2rem;
+    }
+
+    .sub {
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
+
+    table {
+      width: 90%;
+      margin: 2rem auto;
+      border-collapse: collapse;
+      background-color: #0e1b3c;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
+
+    thead {
+      background-color: #102959;
+    }
+
+    th, td {
+      padding: 0.9rem 1rem;
+      text-align: center;
+    }
+
+    th {
+      color: #FFB300;
+      border-bottom: 2px solid #FFB300;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: #12224c;
+    }
+
+    tr:hover {
+      background-color: #1a2b60;
+      transition: background-color 0.2s ease;
+    }
+
+    td {
+      color: #ddd;
+      font-size: 0.95rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .schedule-btn {
+      background-color: #1DB954;
+      border: none;
+      border-radius: 6px;
+      padding: 0.4rem 0.8rem;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .schedule-btn:hover {
+      background-color: #17a84d;
+    }
+
+    .back-btn {
+      display: block;
+      margin: 2rem auto;
+      color: #1DB954;
+      background: none;
+      border: 1px solid #1DB954;
+      border-radius: 6px;
+      padding: 0.4rem 1rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .back-btn:hover {
+      background-color: #1DB954;
+      color: white;
+    }
+
+    .acs-footer {
+      margin-top: 3rem;
+      padding: 1rem;
+      background-color: #0a1630;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html" class="active">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="acs-main">
+    <h2>🇪🇺 Europe – Airports Overview</h2>
+    <p class="sub">Base of Operations: <strong>LEMD – Madrid Barajas</strong> | Distances shown in Nautical Miles (NM)</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Airport</th>
+          <th>ICAO</th>
+          <th>IATA</th>
+          <th>Country</th>
+          <th>Runway (ft)</th>
+          <th>Type</th>
+          <th>Slots</th>
+          <th>Distance (NM)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Adolfo Suárez Madrid-Barajas</td>
+          <td>LEMD</td>
+          <td>MAD</td>
+          <td>Spain</td>
+          <td>14,000</td>
+          <td>INTL</td>
+          <td>120</td>
+          <td>0</td>
+          <td><button class="schedule-btn" onclick="openSchedule('LEMD')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>London Heathrow</td>
+          <td>EGLL</td>
+          <td>LHR</td>
+          <td>United Kingdom</td>
+          <td>12,800</td>
+          <td>INTL</td>
+          <td>150</td>
+          <td>646</td>
+          <td><button class="schedule-btn" onclick="openSchedule('EGLL')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>Paris Charles de Gaulle</td>
+          <td>LFPG</td>
+          <td>CDG</td>
+          <td>France</td>
+          <td>13,400</td>
+          <td>INTL</td>
+          <td>140</td>
+          <td>556</td>
+          <td><button class="schedule-btn" onclick="openSchedule('LFPG')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>Frankfurt am Main</td>
+          <td>EDDF</td>
+          <td>FRA</td>
+          <td>Germany</td>
+          <td>13,100</td>
+          <td>INTL</td>
+          <td>110</td>
+          <td>782</td>
+          <td><button class="schedule-btn" onclick="openSchedule('EDDF')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>Rome Fiumicino</td>
+          <td>LIRF</td>
+          <td>FCO</td>
+          <td>Italy</td>
+          <td>12,800</td>
+          <td>INTL</td>
+          <td>100</td>
+          <td>741</td>
+          <td><button class="schedule-btn" onclick="openSchedule('LIRF')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>Amsterdam Schiphol</td>
+          <td>EHAM</td>
+          <td>AMS</td>
+          <td>Netherlands</td>
+          <td>12,500</td>
+          <td>INTL</td>
+          <td>115</td>
+          <td>915</td>
+          <td><button class="schedule-btn" onclick="openSchedule('EHAM')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>Copenhagen Kastrup</td>
+          <td>EKCH</td>
+          <td>CPH</td>
+          <td>Denmark</td>
+          <td>11,800</td>
+          <td>INTL</td>
+          <td>90</td>
+          <td>1,228</td>
+          <td><button class="schedule-btn" onclick="openSchedule('EKCH')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>Zurich Kloten</td>
+          <td>LSZH</td>
+          <td>ZRH</td>
+          <td>Switzerland</td>
+          <td>12,100</td>
+          <td>INTL</td>
+          <td>95</td>
+          <td>611</td>
+          <td><button class="schedule-btn" onclick="openSchedule('LSZH')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>Athens Eleftherios Venizelos</td>
+          <td>LGAV</td>
+          <td>ATH</td>
+          <td>Greece</td>
+          <td>13,100</td>
+          <td>INTL</td>
+          <td>80</td>
+          <td>1,344</td>
+          <td><button class="schedule-btn" onclick="openSchedule('LGAV')">Schedule</button></td>
+        </tr>
+        <tr>
+          <td>Stockholm Arlanda</td>
+          <td>ESSA</td>
+          <td>ARN</td>
+          <td>Sweden</td>
+          <td>10,800</td>
+          <td>INTL</td>
+          <td>85</td>
+          <td>1,575</td>
+          <td><button class="schedule-btn" onclick="openSchedule('ESSA')">Schedule</button></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="back-btn" onclick="window.location.href='routes_database.html'">⬅ Back to Database</button>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    function openSchedule(icao) {
+      alert("✈️ Opening schedule setup for " + icao + " from base LEMD...");
+      window.location.href = "route_schedule.html?from=LEMD&to=" + icao;
+    }
+
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
