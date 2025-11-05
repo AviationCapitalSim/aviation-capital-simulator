@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Airports Database - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    /* === ROUTES DATABASE MODULE === */
+    body {
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+    }
+
+    h2 {
+      color: #FFB300;
+      margin-top: 2rem;
+    }
+
+    .sub {
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
+
+    .continent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .continent-card {
+      background: #102040;
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .continent-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 16px rgba(255, 179, 0, 0.5);
+    }
+
+    .continent-card h3 {
+      color: #FFB300;
+      margin-bottom: 0.6rem;
+    }
+
+    .continent-card p {
+      color: #ccc;
+      font-size: 0.95rem;
+    }
+
+    .acs-btn {
+      background-color: #1DB954;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 0.8rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .acs-btn:hover {
+      background-color: #17a84d;
+    }
+
+    /* Search bar */
+    .search-bar {
+      margin: 1rem 0;
+      text-align: center;
+    }
+
+    .search-bar input {
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: none;
+      width: 280px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    /* Back button */
+    .back-btn {
+      color: #1DB954;
+      background: none;
+      border: 1px solid #1DB954;
+      border-radius: 6px;
+      padding: 0.4rem 1rem;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .back-btn:hover {
+      background-color: #1DB954;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html" class="active">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="acs-main">
+    <h2>World Airports Database</h2>
+    <p class="sub">Select a continent to explore airports, calculate distances from your base, and analyze operational opportunities.</p>
+
+    <div class="search-bar">
+      <input type="text" id="searchAirport" placeholder="🔍 Search by airport name or ICAO code..." onkeyup="searchContinents()" />
+    </div>
+
+    <section class="continent-grid" id="continentGrid">
+      <div class="continent-card" onclick="openContinent('Europe')">
+        <h3>🌍 Europe</h3>
+        <p>Explore major hubs like London Heathrow (EGLL), Frankfurt (EDDF), and Madrid (LEMD). Range and demand optimized for medium and long-haul operations.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('NorthAmerica')">
+        <h3>🛫 North America</h3>
+        <p>Includes key airports such as New York JFK (KJFK), Miami (KMIA), and Los Angeles (KLAX). High passenger flow and long-haul connectivity.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('SouthAmerica')">
+        <h3>🌎 South America</h3>
+        <p>Dynamic markets with high cargo potential: Bogotá (SKBO), São Paulo (SBGR), Buenos Aires (SAEZ).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('Asia')">
+        <h3>🌏 Asia</h3>
+        <p>Hub of high-density traffic: Dubai (OMDB), Tokyo (RJTT), Singapore (WSSS), Hong Kong (VHHH).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('Africa')">
+        <h3>🌍 Africa</h3>
+        <p>Emerging routes and expanding cargo networks: Cairo (HECA), Johannesburg (FAOR), Nairobi (HKJK).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('Oceania')">
+        <h3>🌏 Oceania</h3>
+        <p>Strategic Pacific gateways: Sydney (YSSY), Auckland (NZAA), Melbourne (YMML).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="continent-card" onclick="openContinent('MiddleEast')">
+        <h3>🕌 Middle East</h3>
+        <p>Major long-haul connections and cargo hubs: Doha (OTHH), Dubai (OMDB), Riyadh (OERK).</p>
+        <button class="acs-btn">Open</button>
+      </div>
+    </section>
+
+    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    // === Redirection by continent ===
+    function openContinent(continent) {
+      window.location.href = "airport_list_" + continent.toLowerCase() + ".html";
+    }
+
+    // === Search feature (future integration for airport search) ===
+    function searchContinents() {
+      const input = document.getElementById("searchAirport").value.toLowerCase();
+      const cards = document.querySelectorAll(".continent-card");
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(input) ? "block" : "none";
+      });
+    }
+
+    // === Logout handler ===
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
