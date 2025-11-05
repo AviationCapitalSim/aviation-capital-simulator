@@ -485,17 +485,3 @@ footer {
   justify-content: center;
   height: 32px;
 }
-/* === FIX: Logout alineado y proporcionado como Register === */
-.logout-btn {
-  position: relative;       /* vuelve a flujo normal dentro del header */
-  margin-left: auto;        /* empuja hacia la derecha */
-  height: 34px;             /* altura idéntica al botón Register */
-  padding: 6px 14px;        /* mismo relleno */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  border-radius: 6px;
-  box-sizing: border-box;
-  top: 0;                   /* evita el salto vertical */
-}
