@@ -179,17 +179,23 @@
         <tr>
           <td>EC-MAD (B737-200)</td>
           <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-          <td><button class="plan-btn" onclick="openModal(this)">⚙ Plan Maintenance</button></td>
+          <td>
+  <button class="acs-btn-small" onclick="assignRoute('EC-MAD (B737-200)')">🟩 Assign Route</button>
+  <button class="acs-btn-small">⚙ Plan Maintenance</button></td>
         </tr>
         <tr>
           <td>EC-BCN (A320)</td>
           <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-          <td><button class="plan-btn" onclick="openModal(this)">⚙ Plan Maintenance</button></td>
+          <td>
+  <button class="acs-btn-small" onclick="assignRoute('EC-MAD (B737-200)')">🟩 Assign Route</button>
+  <button class="acs-btn-small">⚙ Plan Maintenance</button></td>
         </tr>
         <tr>
           <td>EC-LON (B767-300ER)</td>
           <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-          <td><button class="plan-btn" onclick="openModal(this)">⚙ Plan Maintenance</button></td>
+          <td>
+  <button class="acs-btn-small" onclick="assignRoute('EC-MAD (B737-200)')">🟩 Assign Route</button>
+  <button class="acs-btn-small">⚙ Plan Maintenance</button></td>
         </tr>
       </tbody>
     </table>
@@ -274,6 +280,35 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+    function assignRoute(selectedAircraft) {
+  const pending = JSON.parse(localStorage.getItem("confirmedRoute"));
+  if (!pending) {
+    alert("No pending route to assign.");
+    return;
+  }
+
+  // Mostrar confirmación visual
+  alert(`✅ Route ${pending.origin} ➜ ${pending.destination} assigned to ${selectedAircraft}.`);
+
+  // Guardar en registro de vuelos (simulado)
+  const assignedRoutes = JSON.parse(localStorage.getItem("assignedRoutes")) || [];
+  assignedRoutes.push({
+    aircraft: selectedAircraft,
+    origin: pending.origin,
+    destination: pending.destination,
+    optimized: pending.optimized,
+    rotation: pending.rotation,
+    timestamp: new Date().toISOString()
+  });
+  localStorage.setItem("assignedRoutes", JSON.stringify(assignedRoutes));
+
+  // Eliminar la pending route
+  localStorage.removeItem("confirmedRoute");
+
+  // Actualizar el banner
+  const banner = document.getElementById("pendingRouteNotice");
+  if (banner) banner.style.display = "none";
+}
   </script>
 </body>
 </html>
