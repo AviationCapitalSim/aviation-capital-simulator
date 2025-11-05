@@ -304,6 +304,7 @@
 if (statusLine) {
   statusLine.style.display = "none";
 }
+} // 👈 ESTA llave cierra correctamente la función calculateData()
 
 function confirmRoute() {
   const origin = document.getElementById("origin");
@@ -315,6 +316,7 @@ function confirmRoute() {
     alert("Please select all fields before confirming.");
     return;
   }
+
 
       const resultBox = document.getElementById("result");
       resultBox.innerHTML = `
