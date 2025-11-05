@@ -331,6 +331,48 @@
     function confirmHire() { closeModal('hireModal'); }
     function confirmSalary() { closeModal('salaryModal'); }
     function confirmDismiss() { closeModal('dismissModal'); }
+}
+    // === TOTAL PAYROLL CALCULATION ===
+function calculateTotalPayroll() {
+  let total = 0;
+
+  document.querySelectorAll("#departmentRows tr").forEach(row => {
+    const salaryCell = row.querySelector(".salary");
+    const staffCell = row.querySelector(".staff");
+    if (!salaryCell || !staffCell) return;
+
+    // Exclude CEO (no staff number)
+    if (row.textContent.includes("CEO")) return;
+
+    const salary = parseFloat(salaryCell.dataset.salary);
+    const staffText = staffCell.dataset.staff;
+    const staff = parseInt(staffText) || 0;
+
+    total += salary * staff;
+  });
+
+  document.getElementById("totalPayroll").textContent =
+    "Total Monthly Payroll: $" + total.toLocaleString();
+}
+
+// === Recalculate when page loads ===
+window.addEventListener("DOMContentLoaded", calculateTotalPayroll);
+
+// === Recalculate dynamically when hire, dismiss or salary adjust happens ===
+function confirmHire() {
+  closeModal('hireModal');
+  calculateTotalPayroll();
+}
+
+function confirmDismiss() {
+  closeModal('dismissModal');
+  calculateTotalPayroll();
+}
+
+function confirmSalary() {
+  closeModal('salaryModal');
+  calculateTotalPayroll();
+}
   </script>
 </body>
 </html>
