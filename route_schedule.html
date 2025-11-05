@@ -317,21 +317,34 @@ function confirmRoute() {
     return;
   }
 
+  const resultBox = document.getElementById("result");
+  resultBox.innerHTML = `
+    ✅ Route confirmed and locked.<br>
+    <strong>${origin.value} ➜ ${destination.value} ➜ ${origin.value}</strong><br>
+    Aircraft: <strong>${aircraft.value}</strong><br>
+    Optimize Rotation: ${optimize.checked ? "Yes ✅" : "No ⚠️"}<br>
+    Flight ready for aircraft assignment.
+  `;
 
-      const resultBox = document.getElementById("result");
-      resultBox.innerHTML = `
-        ✅ Route confirmed and locked.<br>
-        <strong>${origin.value} ➜ ${destination.value} ➜ ${origin.value}</strong><br>
-        Aircraft: <strong>${aircraft.value}</strong><br>
-        Optimize Rotation: ${optimize.checked ? "Yes ✅" : "No ⚠️"}<br>
-        Flight ready for aircraft assignment.
-      `;
+  // === Guardar información para Schedule Table ===
+  localStorage.setItem("confirmedRoute", JSON.stringify({
+    origin: origin.value,
+    destination: destination.value,
+    aircraft: aircraft.value,
+    optimized: optimize.checked,
+    rotation: document.getElementById("totalRotation").innerText
+  }));
 
-      origin.disabled = true;
-      destination.disabled = true;
-      aircraft.disabled = true;
-      optimize.disabled = true;
-    }
+  // === Bloquear campos ===
+  origin.disabled = true;
+  destination.disabled = true;
+  aircraft.disabled = true;
+  optimize.disabled = true;
+
+  // === Redirección automática ===
+  alert("✅ Route confirmed and saved. Returning to Routes...");
+  window.location.href = "routes.html";
+}
 
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
