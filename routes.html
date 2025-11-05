@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Routes - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    /* === ROUTES MODULE STYLE === */
+    body {
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+    }
+
+    .routes-panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .panel h3 {
+      color: #FFB300;
+      margin-bottom: 0.8rem;
+    }
+
+    .panel p {
+      color: #ddd;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .panel:hover {
+      transform: scale(1.02);
+      transition: transform 0.2s ease;
+    }
+
+    .acs-btn {
+      background-color: #1DB954;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .acs-btn:hover {
+      background-color: #17a84d;
+    }
+
+    h2 {
+      color: #FFB300;
+      margin-top: 2rem;
+    }
+
+    .sub {
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html" class="active">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="acs-main">
+    <h2>Routes</h2>
+    <p class="sub">Create, schedule, and manage your global air network with precision and realism.</p>
+
+    <section class="routes-panels">
+      <div class="panel" onclick="openRoutesDB()">
+        <h3>🌍 World Airports Database</h3>
+        <p>Access all global airports categorized by continent. Browse detailed data such as ICAO codes, runways, and available slots.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel" onclick="openRouteSetup()">
+        <h3>🧭 Create New Route</h3>
+        <p>Select origin, destination, aircraft type, and operational days. The system validates range and airport compatibility.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel" onclick="openRoutesActive()">
+        <h3>📊 My Routes</h3>
+        <p>View all your active routes, aircraft assigned, total distance, weekly frequency, and average load factor.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel" onclick="openDistanceCalc()">
+        <h3>📡 Distance Calculator</h3>
+        <p>Calculate nautical miles between two airports. Useful for range validation and operational planning.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+
+      <div class="panel" onclick="openTimetable()">
+        <h3>🕓 Schedule & Timetable</h3>
+        <p>Manage route frequencies, departure times, turnaround durations, and slot coordination.</p>
+        <button class="acs-btn">Open</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    // === Submodule Navigation ===
+    function openRoutesDB() {
+      window.location.href = "routes_database.html";
+    }
+
+    function openRouteSetup() {
+      window.location.href = "route_setup.html";
+    }
+
+    function openRoutesActive() {
+      window.location.href = "routes_active.html";
+    }
+
+    function openDistanceCalc() {
+      window.location.href = "distance_calc.html";
+    }
+
+    function openTimetable() {
+      window.location.href = "timetable.html";
+    }
+
+    // === Logout Handler ===
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
