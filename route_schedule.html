@@ -300,26 +300,21 @@
       document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
       document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
 
-      const statusLine = document.getElementById("statusLine");
-      if (rotationOptimized) {
-        statusLine.innerHTML = "✅ Optimized rotation applied (1h ground time)";
-        statusLine.className = "status-line status-ok";
-      } else {
-        statusLine.innerHTML = "⚠ Non-optimized rotation (45 min ground time)";
-        statusLine.className = "status-line status-warning";
-      }
-    }
+     const statusLine = document.getElementById("statusLine");
+if (statusLine) {
+  statusLine.style.display = "none";
+}
 
-    function confirmRoute() {
-      const origin = document.getElementById("origin");
-      const destination = document.getElementById("destination");
-      const aircraft = document.getElementById("aircraft");
-      const optimize = document.getElementById("optimizeRotation");
+function confirmRoute() {
+  const origin = document.getElementById("origin");
+  const destination = document.getElementById("destination");
+  const aircraft = document.getElementById("aircraft");
+  const optimize = document.getElementById("optimizeRotation");
 
-      if (!origin.value || !destination.value || !aircraft.value) {
-        alert("Please select all fields before confirming.");
-        return;
-      }
+  if (!origin.value || !destination.value || !aircraft.value) {
+    alert("Please select all fields before confirming.");
+    return;
+  }
 
       const resultBox = document.getElementById("result");
       resultBox.innerHTML = `
