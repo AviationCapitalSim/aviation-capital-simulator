@@ -49,27 +49,35 @@
     td {
       background-color: #0e2048;
       color: #ccc;
+      vertical-align: top;
     }
 
-    .slot-maintenance-a {
-      background-color: #b8860b;
-      color: #fff;
-      font-weight: 600;
-      border-radius: 4px;
-      padding: 4px 6px;
-      display: inline-block;
+    /* === chips compactos por día === */
+    .day-stack{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:center;
     }
-
-    .slot-maintenance-b {
-      background-color: #444;
-      color: #FFB300;
-      font-weight: 600;
-      border-radius: 4px;
-      padding: 4px 6px;
-      display: inline-block;
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:9999px;
+      padding:4px 8px;
+      font-weight:700;
+      font-size:.85rem;
+      box-shadow:0 2px 6px rgba(0,0,0,.25);
+      white-space:nowrap;
+      max-width: 160px;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
+    .chip-flight{ background:#0b2b5f; color:#d7e7ff; }
+    .chip-acheck{ background:#FFC72C; color:#111; font-size:.78rem; }
+    .chip-bcheck{ background:#444; color:#FFB300; font-size:.78rem; }
 
-    /* === Elegant ACS Buttons === */
+    /* === Botones elegantes ACS === */
     .btn {
       border: none;
       border-radius: 9999px;
@@ -81,26 +89,10 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
       margin: 0 4px;
     }
-
-    .btn-assign {
-      background: #1ED760;
-      color: #111;
-    }
-
-    .btn-assign:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(30, 215, 96, 0.35);
-    }
-
-    .btn-maint {
-      background: linear-gradient(180deg, #FFC72C 0%, #FFB300 100%);
-      color: #111;
-    }
-
-    .btn-maint:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(255, 179, 0, 0.35);
-    }
+    .btn-assign { background:#1ED760; color:#111; }
+    .btn-assign:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(30,215,96,.35); }
+    .btn-maint  { background:linear-gradient(180deg,#FFC72C 0%,#FFB300 100%); color:#111; }
+    .btn-maint:hover  { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,179,0,.35); }
 
     .summary {
       margin-top: 2rem;
@@ -268,16 +260,34 @@
       document.getElementById("modal").style.display = "flex";
     }
 
+    // asegura un contenedor por día para apilar chips
+    function ensureStack(cell){
+      let stack = cell.querySelector('.day-stack');
+      if(!stack){
+        stack = document.createElement('div');
+        stack.className = 'day-stack';
+        cell.appendChild(stack);
+      }
+      return stack;
+    }
+
     function applyMaintenance() {
       const type = document.getElementById("maintenanceType").value;
       const day = parseInt(document.getElementById("maintenanceDay").value);
       const tableCells = currentRow.querySelectorAll("td");
       const targetCell = tableCells[day];
+      const stack = ensureStack(targetCell);
 
       if (type === "A") {
-        targetCell.innerHTML = '<span class="slot-maintenance-a">🟡 A-Check</span>';
+        const span = document.createElement('span');
+        span.className = 'chip chip-acheck';
+        span.textContent = '🟡 A-Check';
+        stack.appendChild(span);
       } else {
-        targetCell.innerHTML = '<span class="slot-maintenance-b">⚙️ B-Check</span>';
+        const span = document.createElement('span');
+        span.className = 'chip chip-bcheck';
+        span.textContent = '⚙️ B-Check';
+        stack.appendChild(span);
       }
 
       document.getElementById("modal").style.display = "none";
@@ -300,21 +310,25 @@
         return;
       }
 
+      // validar tipo de avión
       const aircraftType = selectedAircraft.match(/\(([^)]+)\)/)[1];
       if (aircraftType !== pending.aircraft) {
         alert(`⚠ The pending route is for ${pending.aircraft}. You cannot assign it to ${aircraftType}.`);
         return;
       }
 
+      // fila del avión y primer día libre (si la celda ya tiene algo, se apila)
       const row = btn.closest("tr");
-      const firstEmpty = Array.from(row.cells).find((c, i) => i > 0 && i < 8 && c.innerHTML.trim() === "");
-      if (firstEmpty) {
-        firstEmpty.innerHTML = `✈️ ${pending.origin} ➜ ${pending.destination}`;
-        alert(`✅ Route ${pending.origin} ➜ ${pending.destination} assigned to ${selectedAircraft}.`);
-      } else {
-        alert("⚠ No available slots to assign this route.");
-      }
+      const cells = Array.from(row.cells).slice(1, 8); // Mon..Sun
+      const targetCell = cells.find(c => true) || cells[0]; // (por ahora usamos el primero; luego podemos elegir día)
 
+      const stack = ensureStack(targetCell);
+      const chip = document.createElement('span');
+      chip.className = 'chip chip-flight';
+      chip.textContent = `✈️ ${pending.origin} ➜ ${pending.destination}`;
+      stack.appendChild(chip);
+
+      alert(`✅ Route ${pending.origin} ➜ ${pending.destination} assigned to ${selectedAircraft}.`);
       localStorage.removeItem("confirmedRoute");
       document.getElementById("pendingRoute").innerText = "No pending routes.";
     }
