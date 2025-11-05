@@ -57,7 +57,7 @@
     tr { border-bottom: 1px solid #FFB300; }
 
     .salary { color: #ff6464; font-weight: 600; }
-    .staff { color: #00d17a; font-weight: 600; transition: color 0.3s ease; }
+    .staff { color: #00d17a; font-weight: 600; }
     .morale { color: #00d17a; font-weight: 600; }
 
     .btn {
@@ -90,10 +90,6 @@
       font-weight: bold;
       text-align: right;
       padding-top: 1rem;
-      color: #FFB300;
-      text-shadow: 0 0 8px rgba(255,179,0,0.4);
-      font-size: 1.1rem;
-      letter-spacing: 0.5px;
     }
 
     /* === MODALS (ACS STYLE) === */
@@ -158,13 +154,18 @@
       transition: background 0.2s ease;
     }
     .modal-btn:hover { background-color: #007d4e; }
+   
+/* === TOTAL PAYROLL STYLE === */
+#totalPayroll {
+  color: #FFB300;
+  text-shadow: 0 0 8px rgba(255, 179, 0, 0.4);
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+  </style>
+</head>
 
-    .cancel-btn {
-      background-color: #333;
-      color: white;
-      margin-left: 10px;
-    }
-    .cancel-btn:hover { background-color: #555; }
   </style>
 </head>
 
@@ -217,6 +218,20 @@
   </main>
 
   <!-- ===== MODALS ===== -->
+  <!-- BONUS -->
+  <div class="acs-modal" id="bonusModal">
+    <div class="acs-modal-content">
+      <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
+      <h3>Assign Department Bonus</h3>
+      <p id="bonusDeptName">Department</p>
+      <input type="range" min="20" max="100" step="10" value="20" id="bonusRange">
+      <p>Bonus: <span id="bonusValue">20%</span></p>
+      <p>Estimated Cost: <span id="bonusCost">0</span> USD</p>
+      <button class="modal-btn" onclick="confirmBonus()">Confirm Bonus</button>
+    </div>
+  </div>
+
+  <!-- HIRE -->
   <div class="acs-modal" id="hireModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('hireModal')">✖</button>
@@ -224,11 +239,11 @@
       <p id="hireDeptName">Department</p>
       <input type="number" id="hireCount" min="1" max="50" value="1">
       <p>Estimated Cost: <span id="hireCost">0</span> USD</p>
-      <button class="modal-btn" onclick="confirmHire()">Confirm</button>
-      <button class="modal-btn cancel-btn" onclick="closeModal('hireModal')">Cancel</button>
+      <button class="modal-btn" onclick="confirmHire()">Confirm Hire</button>
     </div>
   </div>
 
+  <!-- ADJUST SALARY -->
   <div class="acs-modal" id="salaryModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('salaryModal')">✖</button>
@@ -238,10 +253,10 @@
       <p>Adjustment: <span id="salaryValue">100%</span></p>
       <p>New Payroll Estimate: <span id="salaryNewTotal">0</span> USD</p>
       <button class="modal-btn" onclick="confirmSalary()">Apply Adjustment</button>
-      <button class="modal-btn cancel-btn" onclick="closeModal('salaryModal')">Cancel</button>
     </div>
   </div>
 
+  <!-- DISMISS -->
   <div class="acs-modal" id="dismissModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('dismissModal')">✖</button>
@@ -249,7 +264,6 @@
       <p id="dismissDeptName">Enter number of staff to dismiss:</p>
       <input type="number" id="dismissCount" min="1" max="50" value="1">
       <button class="modal-btn" onclick="confirmDismiss()">Confirm</button>
-      <button class="modal-btn cancel-btn" onclick="closeModal('dismissModal')">Cancel</button>
     </div>
   </div>
 
@@ -285,7 +299,6 @@
 
     const deptTable = document.getElementById("departmentRows");
 
-    // === BUILD TABLE ===
     departments.forEach(dept => {
       const isCrew = dept.includes("Pilot") || dept.includes("Cabin");
       const isCEO = dept.includes("CEO");
@@ -293,7 +306,7 @@
       deptTable.innerHTML += `
         <tr>
           <td>${dept}</td>
-          <td class="staff" data-current="100" data-required="100">${isCEO ? "-" : "100 / 100"}</td>
+          <td class="staff" data-staff="100">${isCEO ? "-" : "100 / 100"}</td>
           <td class="salary" data-salary="${isCEO ? "15000" : "3000"}">$${isCEO ? "15,000" : "3,000"}</td>
           <td class="morale" data-morale="100">100%</td>
           <td>
@@ -301,106 +314,71 @@
               isCEO
                 ? `<button class="btn btn-adjust" onclick="openModal('salaryModal')">📈</button>`
                 : `
-                  <button class="btn btn-hire" onclick="openModal('hireModal', '${dept}')">🧍</button>
-                  <button class="btn btn-adjust" onclick="openModal('salaryModal', '${dept}')">📈</button>
-                  <button class="btn btn-dismiss" onclick="openModal('dismissModal', '${dept}')">❌</button>`
+                  <button class="btn btn-bonus" onclick="openModal('bonusModal')">💵</button>
+                  <button class="btn btn-hire" onclick="openModal('hireModal')">🧍</button>
+                  <button class="btn btn-adjust" onclick="openModal('salaryModal')">📈</button>
+                  <button class="btn btn-transfer ${isCrew ? '' : 'disabled'}" ${isCrew ? '' : 'disabled'} onclick="openModal('transferModal')">🔁</button>
+                  <button class="btn btn-dismiss" onclick="openModal('dismissModal')">❌</button>`
             }
           </td>
         </tr>`;
     });
 
-    // === MODAL CONTROL ===
-    let currentDept = null;
-    function openModal(id, dept) {
-      currentDept = dept;
-      document.getElementById(id).style.display = "flex";
-    }
+    // === MODAL CONTROLS ===
+    function openModal(id) { document.getElementById(id).style.display = "flex"; }
     function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-    // === STAFF LOGIC ===
-    function updateStaffDisplay(row) {
-      const staffCell = row.querySelector(".staff");
-      const current = parseInt(staffCell.dataset.current);
-      const required = parseInt(staffCell.dataset.required);
-      staffCell.textContent = `${current} / ${required}`;
-
-      if (current < required) staffCell.style.color = "#ff4444";
-      else if (current > required) staffCell.style.color = "#FFB300";
-      else staffCell.style.color = "#00d17a";
-    }
-
-    function confirmHire() {
-      const count = parseInt(document.getElementById("hireCount").value);
-      const row = [...document.querySelectorAll("#departmentRows tr")].find(r => r.textContent.includes(currentDept));
-      if (!row) return;
-      const staffCell = row.querySelector(".staff");
-      staffCell.dataset.current = parseInt(staffCell.dataset.current) + count;
-      updateStaffDisplay(row);
-      closeModal("hireModal");
-      calculateTotalPayroll();
-    }
-
-    function confirmDismiss() {
-      const count = parseInt(document.getElementById("dismissCount").value);
-      const row = [...document.querySelectorAll("#departmentRows tr")].find(r => r.textContent.includes(currentDept));
-      if (!row) return;
-      const staffCell = row.querySelector(".staff");
-      staffCell.dataset.current = Math.max(0, parseInt(staffCell.dataset.current) - count);
-      updateStaffDisplay(row);
-      closeModal("dismissModal");
-      calculateTotalPayroll();
-    }
-
-    // === SALARY ADJUSTMENT ===
+    // === Dynamic slider update for salary adjustment ===
     document.getElementById("salaryRange").addEventListener("input", function () {
-      document.getElementById("salaryValue").textContent = this.value + "%";
+      const val = this.value;
+      document.getElementById("salaryValue").textContent = val + "%";
     });
-
-    function confirmSalary() {
-      const percent = parseInt(document.getElementById("salaryRange").value);
-      const row = [...document.querySelectorAll("#departmentRows tr")].find(r => r.textContent.includes(currentDept));
-      if (!row) return;
-      const salaryCell = row.querySelector(".salary");
-      const base = parseFloat(salaryCell.dataset.salary);
-      const newSalary = base * (percent / 100);
-      salaryCell.dataset.salary = newSalary.toFixed(0);
-      salaryCell.textContent = "$" + newSalary.toLocaleString();
-      closeModal("salaryModal");
-      calculateTotalPayroll();
-    }
-
-    // === TOTAL PAYROLL ===
-    function calculateTotalPayroll() {
-      let total = 0;
-      document.querySelectorAll("#departmentRows tr").forEach(row => {
-        const staffCell = row.querySelector(".staff");
-        const salaryCell = row.querySelector(".salary");
-        if (!staffCell || !salaryCell || staffCell.textContent.includes("-")) return;
-        total += parseInt(staffCell.dataset.current) * parseFloat(salaryCell.dataset.salary);
-      });
-      document.getElementById("totalPayroll").textContent = "Total Monthly Payroll: $" + total.toLocaleString();
-    }
-    window.addEventListener("DOMContentLoaded", calculateTotalPayroll);
-
-    // === TIME ENGINE PLACEHOLDER ===
-    const TimeEngine = {
-      timeScale: 1000, // 1 sec = 1 min simulated
-      currentMinute: 0,
-      start() {
-        setInterval(() => {
-          this.currentMinute++;
-          if (this.currentMinute % 10080 === 0) { // every 7 simulated days
-            console.log("⚠️ Weekly HR evaluation: morale update pending.");
-          }
-        }, this.timeScale);
-      }
-    };
-    // TimeEngine.start(); // standby - to activate later
 
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+
+    function confirmBonus() { closeModal('bonusModal'); }
+    function confirmHire() { closeModal('hireModal'); }
+    function confirmSalary() { closeModal('salaryModal'); }
+    function confirmDismiss() { closeModal('dismissModal'); }
+
+    // === TOTAL PAYROLL CALCULATION (SUM COLUMN VALUES) ===
+function calculateTotalPayroll() {
+  let total = 0;
+
+  document.querySelectorAll("#departmentRows tr").forEach(row => {
+    const salaryCell = row.querySelector(".salary");
+    if (!salaryCell) return;
+
+    // Sumamos el valor total del salario por departamento (data-salary)
+    const salary = parseFloat(salaryCell.dataset.salary || "0");
+    if (!isNaN(salary)) total += salary;
+  });
+
+  document.getElementById("totalPayroll").textContent =
+    "Total Monthly Payroll: $" + total.toLocaleString();
+}
+
+// === Recalculate when page loads ===
+window.addEventListener("DOMContentLoaded", calculateTotalPayroll);
+
+// === Recalculate dynamically when hire, dismiss or salary adjust happens ===
+function confirmHire() {
+  closeModal('hireModal');
+  calculateTotalPayroll();
+}
+
+function confirmDismiss() {
+  closeModal('dismissModal');
+  calculateTotalPayroll();
+}
+
+function confirmSalary() {
+  closeModal('salaryModal');
+  calculateTotalPayroll();
+}
   </script>
 </body>
 </html>
