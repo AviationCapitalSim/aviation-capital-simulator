@@ -332,23 +332,17 @@
     function confirmSalary() { closeModal('salaryModal'); }
     function confirmDismiss() { closeModal('dismissModal'); }
 
-    // === TOTAL PAYROLL CALCULATION ===
+    // === TOTAL PAYROLL CALCULATION (SUM COLUMN VALUES) ===
 function calculateTotalPayroll() {
   let total = 0;
 
   document.querySelectorAll("#departmentRows tr").forEach(row => {
     const salaryCell = row.querySelector(".salary");
-    const staffCell = row.querySelector(".staff");
-    if (!salaryCell || !staffCell) return;
+    if (!salaryCell) return;
 
-    // Exclude CEO (no staff number)
-    if (row.textContent.includes("CEO")) return;
-
-    const salary = parseFloat(salaryCell.dataset.salary);
-    const staffText = staffCell.dataset.staff;
-    const staff = parseInt(staffText) || 0;
-
-    total += salary * staff;
+    // Sumamos el valor total del salario por departamento (data-salary)
+    const salary = parseFloat(salaryCell.dataset.salary || "0");
+    if (!isNaN(salary)) total += salary;
   });
 
   document.getElementById("totalPayroll").textContent =
