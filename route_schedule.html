@@ -190,7 +190,7 @@
         Optimize Rotation (avoid delay & maintenance conflict)
       </label>
 
-      <div class="tech-list">
+      <div class="tech-list" id="techData" style="display:none;">
         <div class="tech-item">Distance (NM): <span id="distance">--</span></div>
         <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
         <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
@@ -199,9 +199,8 @@
         <div class="tech-item">Time to B-Check (h remaining): <span id="serviceB">--</span></div>
         <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
         <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
+        <div id="statusLine" class="status-line status-warning">⚠ Non-optimized rotation (45 min ground time)</div>
       </div>
-
-      <div id="statusLine" class="status-line status-warning">⚠ Non-optimized rotation (45 min ground time)</div>
 
       <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
       <div class="result" id="result"></div>
@@ -255,6 +254,7 @@
       const destination = document.getElementById("destination").value.toUpperCase();
       const aircraft = document.getElementById("aircraft").value;
       if (!origin || !destination || !aircraft) return;
+      document.getElementById("techData").style.display = "block";
       calculateData(origin, destination, aircraft);
     }
 
