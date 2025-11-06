@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Schedule Control - Aviation Capital Simulator</title>
+  <title>Schedule Table - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
     body {
@@ -12,16 +12,19 @@
       font-family: "Segoe UI", sans-serif;
       margin: 0;
     }
+
     h2 {
       color: #FFB300;
       margin-top: 2rem;
       text-align: center;
     }
+
     .sub {
       color: #ccc;
       text-align: center;
       margin-bottom: 2rem;
     }
+
     table {
       width: 90%;
       margin: 0 auto;
@@ -31,6 +34,7 @@
       overflow: hidden;
       box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
+
     th, td {
       border: 1px solid rgba(255,255,255,0.1);
       text-align: center;
@@ -38,15 +42,18 @@
       font-size: 0.95rem;
       vertical-align: top;
     }
+
     th {
       background-color: #102040;
       color: #FFB300;
       font-weight: 600;
     }
+
     td {
       background-color: #0e2048;
       color: #ccc;
     }
+
     .chip {
       display: inline-flex;
       align-items: center;
@@ -58,10 +65,11 @@
       padding: 4px 8px;
       font-weight: 700;
       font-size: .85rem;
-      margin: 2px 0;
+      margin: 3px 0;
+      cursor: pointer;
       position: relative;
-      cursor: default;
     }
+
     .chip .tooltip {
       position: absolute;
       bottom: 125%;
@@ -76,23 +84,81 @@
       display: none;
       z-index: 10;
     }
+
     .chip:hover .tooltip {
       display: block;
     }
+
     .next-slot {
       margin-top: 6px;
       font-size: 0.8rem;
       color: #88c7ff;
     }
+
     .conflict {
       color: #FFD54F;
       font-weight: 600;
     }
+
+    .btn {
+      border: none;
+      border-radius: 9999px;
+      padding: 7px 13px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      margin: 0 4px;
+    }
+    .btn-assign { background:#1ED760; color:#111; }
+    .btn-assign:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(30,215,96,.35); }
+    .btn-maint  { background:linear-gradient(180deg,#FFC72C 0%,#FFB300 100%); color:#111; }
+    .btn-maint:hover  { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,179,0,.35); }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #0e1b3c;
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      width: 300px;
+      text-align: center;
+      color: #fff;
+    }
+
+    .modal-content button {
+      background-color: #1DB954;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 0.5rem;
+      cursor: pointer;
+    }
+
+    .modal-content button:hover {
+      background-color: #17a84d;
+    }
+
     .summary {
       margin-top: 2rem;
       text-align: center;
       color: #ccc;
     }
+
     .back-btn {
       display: block;
       margin: 2rem auto;
@@ -103,6 +169,7 @@
       padding: 0.4rem 1rem;
       cursor: pointer;
     }
+
     .back-btn:hover {
       background-color: #1DB954;
       color: white;
@@ -123,6 +190,7 @@
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
   </header>
 
@@ -141,6 +209,7 @@
           <th>Fri</th>
           <th>Sat</th>
           <th>Sun</th>
+          <th>Plan</th>
         </tr>
       </thead>
       <tbody id="scheduleBody"></tbody>
@@ -153,21 +222,32 @@
     <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
   </main>
 
+  <!-- Modal Remove/Move -->
+  <div id="actionModal" class="modal">
+    <div class="modal-content">
+      <h3>Manage Flight</h3>
+      <button onclick="removeFlight()">🗑 Remove</button>
+      <button onclick="moveFlight()">🔁 Move</button>
+      <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
   <footer style="text-align:center; color:#999; margin-top:2rem; padding:1rem;">© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <script>
     const days = ["mon","tue","wed","thu","fri","sat","sun"];
+    let selectedChip = null;
 
-    // Simular base de datos local
     function loadRoutes() {
       const saved = localStorage.getItem("confirmedRoute");
       return saved ? [JSON.parse(saved)] : [];
     }
 
     function toMinutes(time) {
-      const [h, m] = time.split(":").map(Number);
+      const [h,m] = time.split(":").map(Number);
       return h * 60 + m;
     }
+
     function toHHMM(mins) {
       const h = Math.floor(mins / 60);
       const m = mins % 60;
@@ -179,11 +259,10 @@
       tbody.innerHTML = "";
       const routes = loadRoutes();
       if (routes.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="color:#777;">No routes scheduled yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="color:#777;">No routes scheduled yet.</td></tr>`;
         return;
       }
 
-      // Agrupar vuelos por avión
       const grouped = {};
       routes.forEach(r => {
         if (!grouped[r.aircraft]) grouped[r.aircraft] = [];
@@ -204,9 +283,9 @@
           let lastEnd = 0;
           let conflict = false;
 
-          dayFlights.forEach((f, idx) => {
+          dayFlights.forEach(f => {
             const dep = toMinutes(f.departure);
-            const dur = 210; // promedio 3.5h rotación total
+            const dur = 210; // 3.5h total rotation
             const arr = dep + dur;
             if (dep < lastEnd) conflict = true;
             lastEnd = arr;
@@ -218,6 +297,7 @@
             tooltip.className = "tooltip";
             tooltip.textContent = `${f.departure}–${toHHMM(arr)}`;
             chip.appendChild(tooltip);
+            chip.onclick = () => openModal(chip);
             td.appendChild(chip);
           });
 
@@ -227,11 +307,24 @@
             info.className = "next-slot";
             info.innerHTML = conflict
               ? `<span class='conflict'>⚠️ Conflict — overlapping flights</span>`
-              : `Next available slot: ${nextSlot}`;
+              : `Next Flight: ${nextSlot}`;
             td.appendChild(info);
           }
           tr.appendChild(td);
         });
+
+        // plan buttons
+        const planTd = document.createElement("td");
+        const assignBtn = document.createElement("button");
+        assignBtn.className = "btn btn-assign";
+        assignBtn.textContent = "Assign Route";
+        const maintBtn = document.createElement("button");
+        maintBtn.className = "btn btn-maint";
+        maintBtn.textContent = "Plan Maintenance";
+        planTd.appendChild(assignBtn);
+        planTd.appendChild(maintBtn);
+        tr.appendChild(planTd);
+
         tbody.appendChild(tr);
       }
 
@@ -239,7 +332,32 @@
         "Last update: " + new Date().toLocaleTimeString();
     }
 
-    // Actualización en vivo
+    // === Modal Control ===
+    function openModal(chip) {
+      selectedChip = chip;
+      document.getElementById("actionModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("actionModal").style.display = "none";
+      selectedChip = null;
+    }
+
+    function removeFlight() {
+      if (selectedChip) selectedChip.remove();
+      closeModal();
+    }
+
+    function moveFlight() {
+      alert("🔁 Move function coming soon (under development).");
+      closeModal();
+    }
+
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+
     window.addEventListener("storage", renderSchedule);
     window.addEventListener("load", renderSchedule);
     setInterval(renderSchedule, 5000);
