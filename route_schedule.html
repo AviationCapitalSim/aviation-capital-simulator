@@ -115,6 +115,43 @@
       margin-top: 0.5rem;
     }
 
+    .tech-list {
+      margin-top: 1.5rem;
+      background: #102040;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .tech-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ddd;
+    }
+
+    .tech-item span {
+      color: #FFB300;
+      font-weight: 600;
+    }
+
+    .status-line {
+      margin-top: 0.8rem;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .status-warning { color: #FFD54F; }
+    .status-ok { color: #00E676; }
+
+    .result {
+      margin-top: 1rem;
+      background: #0e2048;
+      padding: 1rem;
+      border-radius: 8px;
+      color: #ccc;
+    }
+
     footer {
       margin-top: 3rem;
       text-align: center;
@@ -166,9 +203,7 @@
       </select>
 
       <label>Departure Time (Local)</label>
-      <select id="departureTime" onchange="autoCalculate()">
-        <!-- opciones de 06:00 a 23:55 -->
-      </select>
+      <select id="departureTime" onchange="autoCalculate()"></select>
 
       <label style="text-align:center; margin-top:1.2rem;">Days of Operation</label>
       <div class="days-row">
@@ -183,13 +218,10 @@
       </div>
 
       <hr class="divider" />
-
       <div class="options-center">
         <label><input type="checkbox" id="separateDays"> Create each day as a separate route</label>
       </div>
-
       <hr class="divider" />
-
       <div class="options-center">
         <label><input type="checkbox" id="optimizeRotation" onchange="toggleOptimization()"> Optimize Rotation (avoid delay & maintenance conflict)</label>
       </div>
@@ -205,9 +237,9 @@
         <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
       </div>
 
-      <div id="statusLine" class="status-line"></div>
-
       <div class="result" id="result"></div>
+      <div id="optStatus" class="status-line"></div>
+
       <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
     </div>
 
@@ -216,9 +248,8 @@
 
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- ===== SCRIPT ===== -->
   <script>
-    // Generar opciones de hora (06:00–23:55 cada 5 min)
+    // === Generar selector horario ===
     const timeSelect = document.getElementById("departureTime");
     for (let h = 6; h < 24; h++) {
       for (let m = 0; m < 60; m += 5) {
@@ -231,6 +262,11 @@
       }
     }
     timeSelect.value = "06:00";
+
+    // === Destino automático desde ?to ===
+    const urlParams = new URLSearchParams(window.location.search);
+    const toParam = urlParams.get("to");
+    if (toParam) document.getElementById("destination").value = toParam.toUpperCase();
 
     function toggleEveryDay() {
       const all = document.getElementById("everyDay").checked;
@@ -270,9 +306,11 @@
       const origin = document.getElementById("origin").value.toUpperCase();
       const destination = document.getElementById("destination").value.toUpperCase();
       const aircraft = document.getElementById("aircraft").value;
+      const departure = document.getElementById("departureTime").value;
       if (!origin || !destination || !aircraft) return;
 
       document.getElementById("techData").style.display = "block";
+
       const distance = calcDistanceNM(origin, destination);
       const speed = aircraftData[aircraft].speed;
       const turnaround = rotationOptimized ? 1.0 : 0.75;
@@ -296,8 +334,19 @@
       document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
       document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
 
-      const statusLine = document.getElementById("statusLine");
-      statusLine.innerHTML = rotationOptimized
+      const selectedDays = ["mon","tue","wed","thu","fri","sat","sun"].filter(id => document.getElementById(id).checked);
+      const resultBox = document.getElementById("result");
+      resultBox.innerHTML = `
+        ✅ Route preview generated.<br>
+        <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
+        Aircraft: <strong>${aircraft}</strong><br>
+        Days: ${selectedDays.length}<br>
+        Departure: ${departure}
+      `;
+
+      const optStatus = document.getElementById("optStatus");
+      optStatus.className = "status-line " + (rotationOptimized ? "status-ok" : "status-warning");
+      optStatus.innerHTML = rotationOptimized
         ? "✅ Optimized rotation applied."
         : "⚠ Non-optimized rotation (45 min ground time)";
     }
@@ -308,7 +357,18 @@
     }
 
     function confirmRoute() {
+      const origin = document.getElementById("origin").value;
+      const destination = document.getElementById("destination").value;
+      const aircraft = document.getElementById("aircraft").value;
+      const departure = document.getElementById("departureTime").value;
+      const optimized = document.getElementById("optimizeRotation").checked;
+
+      localStorage.setItem("confirmedRoute", JSON.stringify({
+        origin, destination, aircraft, departure, optimized
+      }));
+
       alert("✅ Route confirmed and saved!");
+      window.location.href = "routes.html";
     }
 
     function handleLogout() {
