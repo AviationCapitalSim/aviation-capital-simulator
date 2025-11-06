@@ -390,19 +390,34 @@
     }
 
     function confirmRoute() {
-      const origin = document.getElementById("origin").value;
-      const destination = document.getElementById("destination").value;
-      const aircraft = document.getElementById("aircraft").value;
-      const departure = document.getElementById("departureTime").value;
-      const optimized = document.getElementById("optimizeRotation").checked;
+  const origin = document.getElementById("origin").value.trim();
+  const destination = document.getElementById("destination").value.trim();
+  const aircraft = document.getElementById("aircraft").value;
+  const departure = document.getElementById("departureTime").value;
+  const optimized = document.getElementById("optimizeRotation").checked;
 
-      localStorage.setItem("confirmedRoute", JSON.stringify({
-        origin, destination, aircraft, departure, optimized
-      }));
+  // ✅ verificar al menos un día seleccionado
+  const selectedDays = ["mon","tue","wed","thu","fri","sat","sun"].filter(id => document.getElementById(id).checked);
 
-      alert("✅ Route confirmed and saved!");
-      window.location.href = "routes.html";
-    }
+  // ⚠️ validación de campos vacíos o sin días
+  if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+    alert("⚠️ Please complete all required fields and select at least one day before confirming the route.");
+    return;
+  }
+
+  // ✅ Guardar información en localStorage
+  localStorage.setItem("confirmedRoute", JSON.stringify({
+    origin,
+    destination,
+    aircraft,
+    departure,
+    optimized,
+    days: selectedDays
+  }));
+
+  alert("✅ Route confirmed and saved!");
+  window.location.href = "routes.html";
+}
 
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
