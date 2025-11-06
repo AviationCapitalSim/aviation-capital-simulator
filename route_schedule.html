@@ -6,153 +6,36 @@
   <title>Route Schedule - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    body {
-      background-color: #081530;
-      color: white;
-      font-family: "Segoe UI", sans-serif;
-      margin: 0;
-    }
-
-    h2 {
-      color: #FFB300;
-      margin-top: 2rem;
-    }
-
-    .sub {
-      color: #ccc;
-      margin-bottom: 2rem;
-    }
-
-    .schedule-container {
-      width: 90%;
-      max-width: 800px;
-      margin: 0 auto;
-      background: #0e1b3c;
-      border-radius: 10px;
-      padding: 1.5rem 2rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-    }
-
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
-      color: #FFB300;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
-      border-radius: 6px;
-      border: none;
-      background: #12224c;
-      color: white;
-      font-size: 1rem;
-      outline: none;
-    }
-
-    .acs-checkbox {
-      margin-top: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #ccc;
-    }
-
-    .tech-list {
-      margin-top: 1.5rem;
-      background: #102040;
-      border-radius: 8px;
-      padding: 1rem;
-    }
-
-    .tech-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #ddd;
-    }
-
-    .tech-item span {
-      color: #FFB300;
-      font-weight: 600;
-    }
-
-    .status-line {
-      margin-top: 0.8rem;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .status-warning {
-      color: #FFD54F;
-    }
-
-    .status-ok {
-      color: #00E676;
-    }
-
-    .acs-btn {
-      display: block;
-      background-color: #1DB954;
-      color: #fff;
-      border: none;
-      padding: 0.7rem 1.4rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      margin: 1.5rem auto;
-      transition: 0.2s;
-    }
-
-    .acs-btn:hover {
-      background-color: #17a84d;
-    }
-
-    .back-btn {
-      display: block;
-      margin: 1rem auto;
-      color: #1DB954;
-      background: none;
-      border: 1px solid #1DB954;
-      border-radius: 6px;
-      padding: 0.4rem 1rem;
-      cursor: pointer;
-    }
-
-    .back-btn:hover {
-      background-color: #1DB954;
-      color: white;
-    }
-
-    .result {
-      margin-top: 1rem;
-      background: #0e2048;
-      padding: 1rem;
-      border-radius: 8px;
-      color: #ccc;
-    }
-
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      color: #999;
-      font-size: 0.9rem;
-      padding: 1rem;
-    }
+    body { background-color:#081530; color:white; font-family:"Segoe UI",sans-serif; margin:0; }
+    h2 { color:#FFB300; margin-top:2rem; }
+    .sub { color:#ccc; margin-bottom:2rem; }
+    .schedule-container { width:90%; max-width:800px; margin:0 auto; background:#0e1b3c; border-radius:10px; padding:1.5rem 2rem; box-shadow:0 0 10px rgba(0,0,0,.4); }
+    label { display:block; margin-top:1rem; font-weight:600; color:#FFB300; }
+    select,input { width:100%; padding:.5rem; margin-top:.3rem; border-radius:6px; border:none; background:#12224c; color:white; font-size:1rem; outline:none; }
+    .acs-checkbox { margin-top:1rem; display:flex; align-items:center; gap:8px; color:#ccc; }
+    .tech-list { margin-top:1.5rem; background:#102040; border-radius:8px; padding:1rem; }
+    .tech-item { display:flex; justify-content:space-between; padding:.4rem 0; border-bottom:1px solid rgba(255,255,255,0.1); color:#ddd; }
+    .tech-item span { color:#FFB300; font-weight:600; }
+    .status-line { margin-top:.8rem; text-align:center; font-weight:600; }
+    .status-warning { color:#FFD54F; }
+    .status-ok { color:#00E676; }
+    .acs-btn { display:block; background-color:#1DB954; color:#fff; border:none; padding:.7rem 1.4rem; border-radius:8px; cursor:pointer; font-weight:600; margin:1.5rem auto; transition:.2s; }
+    .acs-btn:hover { background-color:#17a84d; }
+    .back-btn { display:block; margin:1rem auto; color:#1DB954; background:none; border:1px solid #1DB954; border-radius:6px; padding:.4rem 1rem; cursor:pointer; }
+    .back-btn:hover { background-color:#1DB954; color:white; }
+    .result { margin-top:1rem; background:#0e2048; padding:1rem; border-radius:8px; color:#ccc; }
+    footer { margin-top:3rem; text-align:center; color:#999; font-size:.9rem; padding:1rem; }
+    .days-selector { display:flex; justify-content:space-between; flex-wrap:wrap; margin-top:0.5rem; color:#ccc; font-weight:500; }
+    .days-selector label { width:30%; margin-top:0.4rem; color:#ccc; }
   </style>
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
-
     <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
       <a href="finance.html">Finance</a>
@@ -165,7 +48,6 @@
     </nav>
   </header>
 
-  <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
     <h2>🧭 Route Schedule Setup</h2>
     <p class="sub">Plan and evaluate your route performance based on technical parameters and operational constraints.</p>
@@ -184,6 +66,27 @@
         <option value="A320">Airbus A320</option>
         <option value="B767-300ER">Boeing 767-300ER</option>
       </select>
+
+      <label>Departure Time (Local)</label>
+      <input type="time" id="departureTime" value="06:00" />
+
+      <label>Flight Duration (hours)</label>
+      <input type="number" id="flightDuration" min="0.5" step="0.1" value="2.5" />
+
+      <label>Days of Operation</label>
+      <div class="days-selector">
+        <label><input type="checkbox" value="1"> Mon</label>
+        <label><input type="checkbox" value="2"> Tue</label>
+        <label><input type="checkbox" value="3"> Wed</label>
+        <label><input type="checkbox" value="4"> Thu</label>
+        <label><input type="checkbox" value="5"> Fri</label>
+        <label><input type="checkbox" value="6"> Sat</label>
+        <label><input type="checkbox" value="7"> Sun</label>
+      </div>
+
+      <label class="acs-checkbox">
+        <input type="checkbox" id="separateDays" /> Create each day as a separate route
+      </label>
 
       <label class="acs-checkbox">
         <input type="checkbox" id="optimizeRotation" onchange="toggleOptimization()" />
@@ -211,7 +114,6 @@
 
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- ===== SCRIPT ===== -->
   <script>
     const aircraftData = {
       "B737-200": { speed: 420 },
@@ -220,136 +122,66 @@
     };
 
     const airportCoords = {
-      LEMD: { lat: 40.472, lon: -3.560 },
-      EGLL: { lat: 51.4775, lon: -0.4614 },
-      LFPG: { lat: 49.0097, lon: 2.5479 },
-      EHAM: { lat: 52.3086, lon: 4.7639 },
-      EDDF: { lat: 50.0379, lon: 8.5622 },
-      LIRF: { lat: 41.8003, lon: 12.2389 },
-      EKCH: { lat: 55.618, lon: 12.656 },
-      LGAV: { lat: 37.9364, lon: 23.9445 },
-      LSZH: { lat: 47.4647, lon: 8.5492 },
-      ESSA: { lat: 59.6498, lon: 17.9238 }
+      LEMD:{lat:40.472,lon:-3.56},EGLL:{lat:51.4775,lon:-0.4614},LFPG:{lat:49.0097,lon:2.5479},EHAM:{lat:52.3086,lon:4.7639},
+      EDDF:{lat:50.0379,lon:8.5622},LIRF:{lat:41.8003,lon:12.2389},EKCH:{lat:55.618,lon:12.656},LGAV:{lat:37.9364,lon:23.9445},
+      LSZH:{lat:47.4647,lon:8.5492},ESSA:{lat:59.6498,lon:17.9238}
     };
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const toParam = urlParams.get("to");
-    if (toParam) document.getElementById("destination").value = toParam.toUpperCase();
+    function calcDistanceNM(from,to){if(!airportCoords[from]||!airportCoords[to])return 0;const R=3440;const lat1=(airportCoords[from].lat*Math.PI)/180;const lat2=(airportCoords[to].lat*Math.PI)/180;const dLat=((airportCoords[to].lat-airportCoords[from].lat)*Math.PI)/180;const dLon=((airportCoords[to].lon-airportCoords[from].lon)*Math.PI)/180;const a=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));}
 
-    function calcDistanceNM(from, to) {
-      if (!airportCoords[from] || !airportCoords[to]) return 0;
-      const R = 3440;
-      const lat1 = (airportCoords[from].lat * Math.PI) / 180;
-      const lat2 = (airportCoords[to].lat * Math.PI) / 180;
-      const dLat = ((airportCoords[to].lat - airportCoords[from].lat) * Math.PI) / 180;
-      const dLon = ((airportCoords[to].lon - airportCoords[from].lon) * Math.PI) / 180;
-      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-    }
+    let rotationOptimized=false;
 
-    let rotationOptimized = false;
+    function autoCalculate(){const origin=document.getElementById("origin").value.toUpperCase();const destination=document.getElementById("destination").value.toUpperCase();const aircraft=document.getElementById("aircraft").value;if(!origin||!destination||!aircraft)return;document.getElementById("techData").style.display="block";calculateData(origin,destination,aircraft);const resultBox=document.getElementById("result");resultBox.innerHTML=`✅ Route ready for confirmation.<br><strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>Aircraft: <strong>${aircraft}</strong><br>Optimize Rotation: ${rotationOptimized?"Yes ✅":"No ⚠️"}<br>Flight parameters calculated and awaiting confirmation.`;}
 
-    function autoCalculate() {
-      const origin = document.getElementById("origin").value.toUpperCase();
-      const destination = document.getElementById("destination").value.toUpperCase();
-      const aircraft = document.getElementById("aircraft").value;
-      if (!origin || !destination || !aircraft) return;
+    function toggleOptimization(){rotationOptimized=document.getElementById("optimizeRotation").checked;autoCalculate();}
 
-      document.getElementById("techData").style.display = "block";
-      calculateData(origin, destination, aircraft);
+    function calculateData(origin,destination,aircraft){const distance=calcDistanceNM(origin,destination);const{speed}=aircraftData[aircraft];const turnaround=rotationOptimized?1.0:0.75;const blockTime=distance/speed;const totalRotation=(blockTime*2)+(turnaround*2);const serviceA=5-(totalRotation/2);const serviceB=24-(totalRotation/4);let delayRisk=Math.min(100,(totalRotation/5)*10);let effIndex=Math.max(50,100-delayRisk/1.5);if(rotationOptimized){delayRisk*=0.8;effIndex+=5;}document.getElementById("distance").innerText=distance;document.getElementById("blockTime").innerText=`${blockTime.toFixed(2)} h`;document.getElementById("turnaround").innerText=`${turnaround.toFixed(2)} h`;document.getElementById("totalRotation").innerText=`${totalRotation.toFixed(2)} h`;document.getElementById("serviceA").innerText=serviceA.toFixed(1);document.getElementById("serviceB").innerText=serviceB.toFixed(1);document.getElementById("delayRisk").innerText=`${delayRisk.toFixed(1)}%`;document.getElementById("effIndex").innerText=`${effIndex.toFixed(1)}%`;const statusLine=document.getElementById("statusLine");if(statusLine){statusLine.style.display="none";}}
 
-      const resultBox = document.getElementById("result");
-      resultBox.innerHTML = `
-        ✅ Route ready for confirmation.<br>
-        <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
-        Aircraft: <strong>${aircraft}</strong><br>
-        Optimize Rotation: ${rotationOptimized ? "Yes ✅" : "No ⚠️"}<br>
-        Flight parameters calculated and awaiting confirmation.
-      `;
-    }
+    // === NUEVAS FUNCIONES ===
+    function generateFlightNumbers(){const used=JSON.parse(localStorage.getItem("usedFlightNumbers"))||[];let num;do{num=Math.floor(100+Math.random()*899);}while(used.includes(num)||used.includes(num+1));used.push(num,num+1);localStorage.setItem("usedFlightNumbers",JSON.stringify(used));return{out:`AL${num}`,ret:`AL${num+1}`};}
 
-    function toggleOptimization() {
-      rotationOptimized = document.getElementById("optimizeRotation").checked;
-      autoCalculate();
-    }
+    function confirmRoute(){
+      const origin=document.getElementById("origin");
+      const destination=document.getElementById("destination");
+      const aircraft=document.getElementById("aircraft");
+      const optimize=document.getElementById("optimizeRotation");
+      const depTime=document.getElementById("departureTime").value;
+      const duration=parseFloat(document.getElementById("flightDuration").value);
+      const selectedDays=Array.from(document.querySelectorAll('.days-selector input:checked')).map(i=>+i.value);
+      const separate=document.getElementById("separateDays").checked;
 
-    function calculateData(origin, destination, aircraft) {
-      const distance = calcDistanceNM(origin, destination);
-      const { speed } = aircraftData[aircraft];
-      const turnaround = rotationOptimized ? 1.0 : 0.75;
-
-      const blockTime = distance / speed;
-      const totalRotation = (blockTime * 2) + (turnaround * 2);
-
-      const serviceA = 5 - (totalRotation / 2);
-      const serviceB = 24 - (totalRotation / 4);
-
-      let delayRisk = Math.min(100, (totalRotation / 5) * 10);
-      let effIndex = Math.max(50, 100 - delayRisk / 1.5);
-      if (rotationOptimized) {
-        delayRisk *= 0.8;
-        effIndex += 5;
+      if(!origin.value||!destination.value||!aircraft.value||selectedDays.length===0){
+        alert("Please complete all fields and select operating days.");
+        return;
       }
 
-      document.getElementById("distance").innerText = distance;
-      document.getElementById("blockTime").innerText = `${blockTime.toFixed(2)} h`;
-      document.getElementById("turnaround").innerText = `${turnaround.toFixed(2)} h`;
-      document.getElementById("totalRotation").innerText = `${totalRotation.toFixed(2)} h`;
-      document.getElementById("serviceA").innerText = serviceA.toFixed(1);
-      document.getElementById("serviceB").innerText = serviceB.toFixed(1);
-      document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
-      document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
+      const flights=generateFlightNumbers();
+      const route={
+        routeIdOut:flights.out,
+        routeIdRet:flights.ret,
+        origin:origin.value,
+        destination:destination.value,
+        aircraft:aircraft.value,
+        duration:duration,
+        departure:depTime,
+        days:selectedDays,
+        separate:separate,
+        optimized:optimize.checked,
+        rotation:document.getElementById("totalRotation").innerText
+      };
 
-     const statusLine = document.getElementById("statusLine");
-if (statusLine) {
-  statusLine.style.display = "none";
-}
-} // 👈 ESTA llave cierra correctamente la función calculateData()
+      localStorage.setItem("confirmedRoute",JSON.stringify(route));
 
-function confirmRoute() {
-  const origin = document.getElementById("origin");
-  const destination = document.getElementById("destination");
-  const aircraft = document.getElementById("aircraft");
-  const optimize = document.getElementById("optimizeRotation");
+      const resultBox=document.getElementById("result");
+      resultBox.innerHTML=`✅ Route confirmed and locked.<br><strong>${route.origin} ➜ ${route.destination} ➜ ${route.origin}</strong><br>Flights: <strong>${route.routeIdOut}/${route.routeIdRet}</strong><br>Departure: ${depTime}<br>Duration: ${duration}h<br>Days: ${selectedDays.length} selected<br>Optimize Rotation: ${optimize.checked?"Yes ✅":"No ⚠️"}<br>Flight ready for aircraft assignment.`;
 
-  if (!origin.value || !destination.value || !aircraft.value) {
-    alert("Please select all fields before confirming.");
-    return;
-  }
+      origin.disabled=true;destination.disabled=true;aircraft.disabled=true;optimize.disabled=true;
 
-  const resultBox = document.getElementById("result");
-  resultBox.innerHTML = `
-    ✅ Route confirmed and locked.<br>
-    <strong>${origin.value} ➜ ${destination.value} ➜ ${origin.value}</strong><br>
-    Aircraft: <strong>${aircraft.value}</strong><br>
-    Optimize Rotation: ${optimize.checked ? "Yes ✅" : "No ⚠️"}<br>
-    Flight ready for aircraft assignment.
-  `;
-
-  // === Guardar información para Schedule Table ===
-  localStorage.setItem("confirmedRoute", JSON.stringify({
-    origin: origin.value,
-    destination: destination.value,
-    aircraft: aircraft.value,
-    optimized: optimize.checked,
-    rotation: document.getElementById("totalRotation").innerText
-  }));
-
-  // === Bloquear campos ===
-  origin.disabled = true;
-  destination.disabled = true;
-  aircraft.disabled = true;
-  optimize.disabled = true;
-
-  // === Redirección automática ===
-  alert("✅ Route confirmed and saved. Returning to Routes...");
-  window.location.href = "routes.html";
-}
-
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
+      alert(`✅ Flights ${flights.out}/${flights.ret} created and saved.`);
+      window.location.href="routes.html";
     }
+
+    function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
   </script>
 </body>
 </html>
