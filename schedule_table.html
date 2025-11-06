@@ -53,29 +53,30 @@
     }
 
     /* === chips compactos por día === */
-    .day-stack{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:center;
+    .day-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
     }
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      border-radius:9999px;
-      padding:4px 8px;
-      font-weight:700;
-      font-size:.85rem;
-      box-shadow:0 2px 6px rgba(0,0,0,.25);
-      white-space:nowrap;
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 9999px;
+      padding: 4px 8px;
+      font-weight: 700;
+      font-size: .85rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+      white-space: nowrap;
       max-width: 160px;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
     }
-    .chip-flight{ background:#0b2b5f; color:#d7e7ff; }
-    .chip-acheck{ background:#FFC72C; color:#111; font-size:.78rem; }
-    .chip-bcheck{ background:#444; color:#FFB300; font-size:.78rem; }
+    .chip-flight { background: #0b2b5f; color: #d7e7ff; }
+    .chip-acheck { background: #FFC72C; color: #111; font-size: .78rem; }
+    .chip-bcheck { background: #444; color: #FFB300; font-size: .78rem; }
 
     /* === Botones elegantes ACS === */
     .btn {
@@ -89,10 +90,10 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
       margin: 0 4px;
     }
-    .btn-assign { background:#1ED760; color:#111; }
-    .btn-assign:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(30,215,96,.35); }
-    .btn-maint  { background:linear-gradient(180deg,#FFC72C 0%,#FFB300 100%); color:#111; }
-    .btn-maint:hover  { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,179,0,.35); }
+    .btn-assign { background: #1ED760; color: #111; }
+    .btn-assign:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30,215,96,.35); }
+    .btn-maint  { background: linear-gradient(180deg,#FFC72C 0%,#FFB300 100%); color: #111; }
+    .btn-maint:hover  { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255,179,0,.35); }
 
     .summary {
       margin-top: 2rem;
@@ -247,12 +248,14 @@
 
   <script>
     let currentRow = null;
+    let scheduleData = [];
 
     window.onload = function() {
       const route = JSON.parse(localStorage.getItem("confirmedRoute"));
       if (route) {
         document.getElementById("pendingRoute").innerText = `✅ Pending Route: ${route.origin} ➜ ${route.destination} (${route.aircraft})`;
       }
+      updateSummary();
     };
 
     function openModal(button) {
@@ -260,10 +263,9 @@
       document.getElementById("modal").style.display = "flex";
     }
 
-    // asegura un contenedor por día para apilar chips
-    function ensureStack(cell){
+    function ensureStack(cell) {
       let stack = cell.querySelector('.day-stack');
-      if(!stack){
+      if (!stack) {
         stack = document.createElement('div');
         stack.className = 'day-stack';
         cell.appendChild(stack);
@@ -278,19 +280,14 @@
       const targetCell = tableCells[day];
       const stack = ensureStack(targetCell);
 
-      if (type === "A") {
-        const span = document.createElement('span');
-        span.className = 'chip chip-acheck';
-        span.textContent = '🟡 A-Check';
-        stack.appendChild(span);
-      } else {
-        const span = document.createElement('span');
-        span.className = 'chip chip-bcheck';
-        span.textContent = '⚙️ B-Check';
-        stack.appendChild(span);
-      }
+      const span = document.createElement('span');
+      span.className = type === "A" ? 'chip chip-acheck' : 'chip chip-bcheck';
+      span.textContent = type === "A" ? '🟡 A-Check' : '⚙️ B-Check';
+      stack.appendChild(span);
 
+      scheduleData.push({ type: type === "A" ? "A" : "B" });
       document.getElementById("modal").style.display = "none";
+      updateSummary();
     }
 
     window.onclick = function(event) {
@@ -310,27 +307,62 @@
         return;
       }
 
-      // validar tipo de avión
       const aircraftType = selectedAircraft.match(/\(([^)]+)\)/)[1];
       if (aircraftType !== pending.aircraft) {
         alert(`⚠ The pending route is for ${pending.aircraft}. You cannot assign it to ${aircraftType}.`);
         return;
       }
 
-      // fila del avión y primer día libre (si la celda ya tiene algo, se apila)
       const row = btn.closest("tr");
-      const cells = Array.from(row.cells).slice(1, 8); // Mon..Sun
-      const targetCell = cells.find(c => true) || cells[0]; // (por ahora usamos el primero; luego podemos elegir día)
-
+      const cells = Array.from(row.cells).slice(1, 8);
+      const targetCell = cells[0];
       const stack = ensureStack(targetCell);
+
       const chip = document.createElement('span');
       chip.className = 'chip chip-flight';
       chip.textContent = `✈️ ${pending.origin} ➜ ${pending.destination}`;
       stack.appendChild(chip);
 
+      scheduleData.push({ type: "route", duration: pending.duration || 2 });
+      updateSummary();
+
       alert(`✅ Route ${pending.origin} ➜ ${pending.destination} assigned to ${selectedAircraft}.`);
       localStorage.removeItem("confirmedRoute");
       document.getElementById("pendingRoute").innerText = "No pending routes.";
+    }
+
+    // === Interacción con chips: Editar, mover o eliminar ===
+    document.addEventListener("click", function (e) {
+      const chip = e.target.closest(".chip-acheck, .chip-bcheck, .chip-flight");
+      if (!chip) return;
+      const action = prompt("Edit (E), Move (M), or Delete (D)?").toUpperCase();
+      if (action === "D") {
+        chip.remove();
+        updateSummary();
+      } else if (action === "M") {
+        const newDay = prompt("Move to day (1=Mon...7=Sun):");
+        if (!newDay || newDay < 1 || newDay > 7) return alert("Invalid day.");
+        const td = chip.closest("tr").querySelectorAll("td")[newDay];
+        const stack = ensureStack(td);
+        stack.appendChild(chip);
+        updateSummary();
+      } else if (action === "E" && chip.classList.contains("chip-flight")) {
+        const newText = prompt("Edit route:", chip.textContent);
+        if (newText) chip.textContent = newText;
+      }
+    });
+
+    // === Actualización de totales ===
+    function updateSummary() {
+      const flights = document.querySelectorAll(".chip-flight").length;
+      const aChecks = document.querySelectorAll(".chip-acheck").length;
+      const bChecks = document.querySelectorAll(".chip-bcheck").length;
+      const totalHours = flights * 2 + aChecks * 5 + bChecks * 24;
+      const efficiency = ((totalHours / (7 * 24 * 3)) * 100).toFixed(1);
+
+      document.getElementById("totalFlights").textContent = flights;
+      document.getElementById("totalHours").textContent = totalHours;
+      document.getElementById("effIndex").textContent = efficiency;
     }
   </script>
 </body>
