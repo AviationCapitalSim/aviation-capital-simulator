@@ -152,6 +152,40 @@
       color: #ccc;
     }
 
+    /* === Botones ACS === */
+    .acs-btn {
+      display: block;
+      background-color: #1DB954;
+      color: #fff;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 1.5rem auto 0.8rem;
+      transition: 0.2s;
+    }
+
+    .acs-btn:hover {
+      background-color: #17a84d;
+    }
+
+    .back-btn {
+      display: block;
+      margin: 0 auto 0.5rem;
+      color: #1DB954;
+      background: none;
+      border: 1px solid #1DB954;
+      border-radius: 6px;
+      padding: 0.4rem 1rem;
+      cursor: pointer;
+    }
+
+    .back-btn:hover {
+      background-color: #1DB954;
+      color: white;
+    }
+
     footer {
       margin-top: 3rem;
       text-align: center;
@@ -241,9 +275,8 @@
       <div id="optStatus" class="status-line"></div>
 
       <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
+      <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
     </div>
-
-    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
   </main>
 
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
