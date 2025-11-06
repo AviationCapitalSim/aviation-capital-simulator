@@ -17,16 +17,17 @@
     .tech-item { display:flex; justify-content:space-between; padding:.4rem 0; border-bottom:1px solid rgba(255,255,255,0.1); color:#ddd; }
     .tech-item span { color:#FFB300; font-weight:600; }
     .status-line { margin-top:.8rem; text-align:center; font-weight:600; }
-    .status-warning { color:#FFD54F; }
-    .status-ok { color:#00E676; }
     .acs-btn { display:block; background-color:#1DB954; color:#fff; border:none; padding:.7rem 1.4rem; border-radius:8px; cursor:pointer; font-weight:600; margin:1.5rem auto; transition:.2s; }
     .acs-btn:hover { background-color:#17a84d; }
     .back-btn { display:block; margin:1rem auto; color:#1DB954; background:none; border:1px solid #1DB954; border-radius:6px; padding:.4rem 1rem; cursor:pointer; }
     .back-btn:hover { background-color:#1DB954; color:white; }
-    .result { margin-top:1rem; background:#0e2048; padding:1rem; border-radius:8px; color:#ccc; }
+    .result { margin-top:1rem; background:#0e2048; padding:1rem; border-radius:8px; color:#ccc; text-align:center; }
     footer { margin-top:3rem; text-align:center; color:#999; font-size:.9rem; padding:1rem; }
-    .days-line { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; color:#ccc; margin-top:.5rem; }
+    .days-line { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px; color:#ccc; border-bottom:1px solid rgba(255,179,0,0.3); padding-bottom:0.6rem; margin-bottom:0.6rem; }
     .days-line label { display:flex; align-items:center; gap:4px; width:auto; margin:0 .3rem; font-weight:500; color:#ccc; }
+    .rotation-status { margin-top:0.8rem; text-align:center; font-weight:600; }
+    .rotation-warning { color:#FFD54F; }
+    .rotation-ok { color:#00E676; }
   </style>
 </head>
 
@@ -100,10 +101,10 @@
         <div class="tech-item">Time to B-Check (h remaining): <span id="serviceB">--</span></div>
         <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
         <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
-        <div id="statusLine" class="status-line status-warning">⚠ Non-optimized rotation (45 min ground time)</div>
       </div>
 
       <div class="result" id="result">...</div>
+      <div id="rotationIndicator" class="rotation-status rotation-warning">⚠ Non-optimized rotation</div>
       <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
     </div>
 
@@ -140,6 +141,7 @@
       calculateData(origin,destination,aircraft);
       const resultBox=document.getElementById("result");
       resultBox.innerHTML=`✅ Route preview generated.<br><strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>Aircraft: <strong>${aircraft}</strong><br>Days: ${selectedDays.length}<br>Departure: ${document.getElementById("departureTime").value}`;
+      updateRotationIndicator();
     }
 
     function toggleOptimization(){rotationOptimized=document.getElementById("optimizeRotation").checked;autoCalculate();}
@@ -165,24 +167,15 @@
       document.getElementById("effIndex").innerText=`${effIndex.toFixed(1)}%`;
     }
 
-    function generateFlightNumbers(){const used=JSON.parse(localStorage.getItem("usedFlightNumbers"))||[];let num;do{num=Math.floor(100+Math.random()*899);}while(used.includes(num)||used.includes(num+1));used.push(num,num+1);localStorage.setItem("usedFlightNumbers",JSON.stringify(used));return{out:`AL${num}`,ret:`AL${num+1}`};}
-
-    function confirmRoute(){
-      const origin=document.getElementById("origin");
-      const destination=document.getElementById("destination");
-      const aircraft=document.getElementById("aircraft");
-      const optimize=document.getElementById("optimizeRotation");
-      const depTime=document.getElementById("departureTime").value;
-      const selectedDays=Array.from(document.querySelectorAll('.days-line input[type="checkbox"]:checked')).filter(i=>i.id!=="selectAllDays").map(i=>+i.value);
-      const separate=document.getElementById("separateDays").checked;
-      if(!origin.value||!destination.value||!aircraft.value||selectedDays.length===0){alert("Please complete all fields and select operating days.");return;}
-      const distance=parseFloat(document.getElementById("distance").innerText)||0;
-      const blockTime=parseFloat(document.getElementById("blockTime").innerText)||0;
-      const flights=generateFlightNumbers();
-      const route={routeIdOut:flights.out,routeIdRet:flights.ret,origin:origin.value,destination:destination.value,aircraft:aircraft.value,blockTime:blockTime,departure:depTime,days:selectedDays,separate:separate,optimized:optimize.checked,rotation:document.getElementById("totalRotation").innerText};
-      localStorage.setItem("confirmedRoute",JSON.stringify(route));
-      alert(`✅ Flights ${flights.out}/${flights.ret} created and saved.`);
-      window.location.href="routes.html";
+    function updateRotationIndicator(){
+      const indicator=document.getElementById("rotationIndicator");
+      if(rotationOptimized){
+        indicator.innerHTML="✅ Optimized rotation active";
+        indicator.className="rotation-status rotation-ok";
+      } else {
+        indicator.innerHTML="⚠ Non-optimized rotation";
+        indicator.className="rotation-status rotation-warning";
+      }
     }
 
     function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
