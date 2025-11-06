@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Route Schedule - Aviation Capital Simulator</title>
+  <title>Schedule Control - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
     body {
@@ -12,167 +12,90 @@
       font-family: "Segoe UI", sans-serif;
       margin: 0;
     }
-
     h2 {
       color: #FFB300;
       margin-top: 2rem;
+      text-align: center;
     }
-
     .sub {
       color: #ccc;
+      text-align: center;
       margin-bottom: 2rem;
     }
-
-    .schedule-container {
+    table {
       width: 90%;
-      max-width: 800px;
       margin: 0 auto;
+      border-collapse: collapse;
       background: #0e1b3c;
       border-radius: 10px;
-      padding: 1.5rem 2rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
-
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: 600;
-      color: #FFB300;
-    }
-
-    select, input {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
-      border-radius: 6px;
-      border: none;
-      background: #12224c;
-      color: white;
-      font-size: 1rem;
-      outline: none;
-    }
-
-    /* === checkbox moderno azul === */
-    input[type="checkbox"] {
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 4px;
-      border: 2px solid #3a4a7a;
-      background-color: #1e2b55;
-      cursor: pointer;
-      position: relative;
-      transition: all 0.2s ease;
-    }
-
-    input[type="checkbox"]:hover {
-      border-color: #2196F3;
-      box-shadow: 0 0 6px #2196F3;
-    }
-
-    input[type="checkbox"]:checked {
-      background-color: #2196F3;
-      border-color: #2196F3;
-    }
-
-    input[type="checkbox"]:checked::after {
-      content: "✔";
-      color: white;
-      position: absolute;
-      top: -2px;
-      left: 3px;
-      font-size: 0.9rem;
-    }
-
-    /* === línea dorada === */
-    .divider {
-      border: none;
-      height: 1px;
-      background: rgba(255,179,0,0.6);
-      margin: 0.8rem 0 1.2rem;
-    }
-
-    .days-row {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 0.8rem;
-    }
-
-    .days-row label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 500;
-      color: #ddd;
+    th, td {
+      border: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+      padding: 0.8rem;
       font-size: 0.95rem;
+      vertical-align: top;
     }
-
-    .options-center {
-      text-align: center;
-      margin-top: 0.5rem;
-    }
-
-    .tech-list {
-      margin-top: 1.5rem;
-      background: #102040;
-      border-radius: 8px;
-      padding: 1rem;
-    }
-
-    .tech-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.4rem 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #ddd;
-    }
-
-    .tech-item span {
+    th {
+      background-color: #102040;
       color: #FFB300;
       font-weight: 600;
     }
-
-    .status-line {
-      margin-top: 0.8rem;
-      text-align: center;
-      font-weight: 600;
-    }
-
-    .status-warning { color: #FFD54F; }
-    .status-ok { color: #00E676; }
-
-    .result {
-      margin-top: 1rem;
-      background: #0e2048;
-      padding: 1rem;
-      border-radius: 8px;
+    td {
+      background-color: #0e2048;
       color: #ccc;
     }
-
-    /* === Botones ACS === */
-    .acs-btn {
-      display: block;
-      background-color: #1DB954;
-      color: #fff;
-      border: none;
-      padding: 0.7rem 1.4rem;
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: #0b2b5f;
+      color: #FFB300;
       border-radius: 8px;
-      cursor: pointer;
+      padding: 4px 8px;
+      font-weight: 700;
+      font-size: .85rem;
+      margin: 2px 0;
+      position: relative;
+      cursor: default;
+    }
+    .chip .tooltip {
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FFB300;
+      color: #111;
+      padding: 3px 7px;
+      border-radius: 5px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      display: none;
+      z-index: 10;
+    }
+    .chip:hover .tooltip {
+      display: block;
+    }
+    .next-slot {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #88c7ff;
+    }
+    .conflict {
+      color: #FFD54F;
       font-weight: 600;
-      margin: 1.5rem auto 0.8rem;
-      transition: 0.2s;
     }
-
-    .acs-btn:hover {
-      background-color: #17a84d;
+    .summary {
+      margin-top: 2rem;
+      text-align: center;
+      color: #ccc;
     }
-
     .back-btn {
       display: block;
-      margin: 0 auto 0.5rem;
+      margin: 2rem auto;
       color: #1DB954;
       background: none;
       border: 1px solid #1DB954;
@@ -180,249 +103,146 @@
       padding: 0.4rem 1rem;
       cursor: pointer;
     }
-
     .back-btn:hover {
       background-color: #1DB954;
       color: white;
     }
-
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      color: #999;
-      font-size: 0.9rem;
-      padding: 1rem;
-    }
   </style>
 </head>
-
 <body>
-  <!-- ===== HEADER ===== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
-
     <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
       <a href="finance.html">Finance</a>
       <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html" class="active">Routes</a>
+      <a href="routes.html">Routes</a>
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
   </header>
 
-  <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
-    <h2>🧭 Route Schedule Setup</h2>
-    <p class="sub">Plan and evaluate your route performance based on technical parameters and operational constraints.</p>
+    <h2>📅 Weekly Flight Schedule</h2>
+    <p class="sub">Automatic schedule monitor with live slot tracking and conflict detection.</p>
 
-    <div class="schedule-container">
-      <label>Origin (ICAO)</label>
-      <input type="text" id="origin" value="LEMD" />
+    <table id="scheduleTable">
+      <thead>
+        <tr>
+          <th>Aircraft</th>
+          <th>Mon</th>
+          <th>Tue</th>
+          <th>Wed</th>
+          <th>Thu</th>
+          <th>Fri</th>
+          <th>Sat</th>
+          <th>Sun</th>
+        </tr>
+      </thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
 
-      <label>Destination (ICAO)</label>
-      <input type="text" id="destination" placeholder="e.g. EGLL, LFPG, EHAM" />
-
-      <label>Aircraft Type</label>
-      <select id="aircraft" onchange="autoCalculate()">
-        <option value="">-- Select Aircraft --</option>
-        <option value="B737-200">Boeing 737-200</option>
-        <option value="A320">Airbus A320</option>
-        <option value="B767-300ER">Boeing 767-300ER</option>
-      </select>
-
-      <label>Departure Time (Local)</label>
-      <select id="departureTime" onchange="autoCalculate()"></select>
-
-      <label style="text-align:center; margin-top:1.2rem;">Days of Operation</label>
-      <div class="days-row">
-        <label><input type="checkbox" id="everyDay" onchange="toggleEveryDay()"> Every Day</label>
-        <label><input type="checkbox" id="mon"> Mo</label>
-        <label><input type="checkbox" id="tue"> Tu</label>
-        <label><input type="checkbox" id="wed"> We</label>
-        <label><input type="checkbox" id="thu"> Th</label>
-        <label><input type="checkbox" id="fri"> Fr</label>
-        <label><input type="checkbox" id="sat"> Sa</label>
-        <label><input type="checkbox" id="sun"> Su</label>
-      </div>
-
-      <hr class="divider" />
-      <div class="options-center">
-        <label><input type="checkbox" id="separateDays"> Create each day as a separate route</label>
-      </div>
-      <hr class="divider" />
-      <div class="options-center">
-        <label><input type="checkbox" id="optimizeRotation" onchange="toggleOptimization()"> Optimize Rotation (avoid delay & maintenance conflict)</label>
-      </div>
-
-      <div id="techData" class="tech-list" style="display:none;">
-        <div class="tech-item">Distance (NM): <span id="distance">--</span></div>
-        <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
-        <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
-        <div class="tech-item">Total Rotation: <span id="totalRotation">--</span></div>
-        <div class="tech-item">Time to A-Check (h remaining): <span id="serviceA">--</span></div>
-        <div class="tech-item">Time to B-Check (h remaining): <span id="serviceB">--</span></div>
-        <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
-        <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
-      </div>
-
-      <div class="result" id="result"></div>
-      <div id="optStatus" class="status-line"></div>
-
-      <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
-      <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
+    <div class="summary">
+      <p id="updateTime">Last update: --</p>
     </div>
+
+    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
   </main>
 
-  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+  <footer style="text-align:center; color:#999; margin-top:2rem; padding:1rem;">© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <script>
-    // === Generar selector horario ===
-    const timeSelect = document.getElementById("departureTime");
-    for (let h = 6; h < 24; h++) {
-      for (let m = 0; m < 60; m += 5) {
-        const hh = String(h).padStart(2, "0");
-        const mm = String(m).padStart(2, "0");
-        const opt = document.createElement("option");
-        opt.value = `${hh}:${mm}`;
-        opt.textContent = `${hh}:${mm}`;
-        timeSelect.appendChild(opt);
-      }
+    const days = ["mon","tue","wed","thu","fri","sat","sun"];
+
+    // Simular base de datos local
+    function loadRoutes() {
+      const saved = localStorage.getItem("confirmedRoute");
+      return saved ? [JSON.parse(saved)] : [];
     }
-    timeSelect.value = "06:00";
 
-    // === Destino automático desde ?to ===
-    const urlParams = new URLSearchParams(window.location.search);
-    const toParam = urlParams.get("to");
-    if (toParam) document.getElementById("destination").value = toParam.toUpperCase();
+    function toMinutes(time) {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    }
+    function toHHMM(mins) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+    }
 
-    function toggleEveryDay() {
-      const all = document.getElementById("everyDay").checked;
-      ["mon","tue","wed","thu","fri","sat","sun"].forEach(id => {
-        document.getElementById(id).checked = all;
+    function renderSchedule() {
+      const tbody = document.getElementById("scheduleBody");
+      tbody.innerHTML = "";
+      const routes = loadRoutes();
+      if (routes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="color:#777;">No routes scheduled yet.</td></tr>`;
+        return;
+      }
+
+      // Agrupar vuelos por avión
+      const grouped = {};
+      routes.forEach(r => {
+        if (!grouped[r.aircraft]) grouped[r.aircraft] = [];
+        grouped[r.aircraft].push(r);
       });
-    }
 
-    const aircraftData = {
-      "B737-200": { speed: 420 },
-      "A320": { speed: 450 },
-      "B767-300ER": { speed: 470 }
-    };
+      for (const aircraft in grouped) {
+        const tr = document.createElement("tr");
+        const tdAircraft = document.createElement("td");
+        tdAircraft.textContent = aircraft;
+        tr.appendChild(tdAircraft);
 
-    const airportCoords = {
-      LEMD: { lat: 40.472, lon: -3.560 },
-      EGLL: { lat: 51.4775, lon: -0.4614 },
-      LFPG: { lat: 49.0097, lon: 2.5479 },
-      EHAM: { lat: 52.3086, lon: 4.7639 },
-      ESSA: { lat: 59.6498, lon: 17.9238 }
-    };
+        const flights = grouped[aircraft];
 
-    let rotationOptimized = false;
+        days.forEach(day => {
+          const td = document.createElement("td");
+          const dayFlights = flights.filter(f => f.days && f.days.includes(day));
+          let lastEnd = 0;
+          let conflict = false;
 
-    function calcDistanceNM(from, to) {
-      if (!airportCoords[from] || !airportCoords[to]) return 0;
-      const R = 3440;
-      const lat1 = (airportCoords[from].lat * Math.PI) / 180;
-      const lat2 = (airportCoords[to].lat * Math.PI) / 180;
-      const dLat = ((airportCoords[to].lat - airportCoords[from].lat) * Math.PI) / 180;
-      const dLon = ((airportCoords[to].lon - airportCoords[from].lon) * Math.PI) / 180;
-      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-    }
+          dayFlights.forEach((f, idx) => {
+            const dep = toMinutes(f.departure);
+            const dur = 210; // promedio 3.5h rotación total
+            const arr = dep + dur;
+            if (dep < lastEnd) conflict = true;
+            lastEnd = arr;
 
-    function autoCalculate() {
-      const origin = document.getElementById("origin").value.toUpperCase();
-      const destination = document.getElementById("destination").value.toUpperCase();
-      const aircraft = document.getElementById("aircraft").value;
-      const departure = document.getElementById("departureTime").value;
-      if (!origin || !destination || !aircraft) return;
+            const chip = document.createElement("span");
+            chip.className = "chip";
+            chip.textContent = "✈️ " + f.origin + "-" + f.destination;
+            const tooltip = document.createElement("span");
+            tooltip.className = "tooltip";
+            tooltip.textContent = `${f.departure}–${toHHMM(arr)}`;
+            chip.appendChild(tooltip);
+            td.appendChild(chip);
+          });
 
-      document.getElementById("techData").style.display = "block";
-
-      const distance = calcDistanceNM(origin, destination);
-      const speed = aircraftData[aircraft].speed;
-      const turnaround = rotationOptimized ? 1.0 : 0.75;
-      const blockTime = distance / speed;
-      const totalRotation = (blockTime * 2) + (turnaround * 2);
-      const serviceA = 5 - (totalRotation / 2);
-      const serviceB = 24 - (totalRotation / 4);
-      let delayRisk = Math.min(100, (totalRotation / 5) * 10);
-      let effIndex = Math.max(50, 100 - delayRisk / 1.5);
-      if (rotationOptimized) {
-        delayRisk *= 0.8;
-        effIndex += 5;
+          if (dayFlights.length > 0) {
+            const nextSlot = toHHMM(lastEnd + 60);
+            const info = document.createElement("div");
+            info.className = "next-slot";
+            info.innerHTML = conflict
+              ? `<span class='conflict'>⚠️ Conflict — overlapping flights</span>`
+              : `Next available slot: ${nextSlot}`;
+            td.appendChild(info);
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
       }
 
-      document.getElementById("distance").innerText = distance;
-      document.getElementById("blockTime").innerText = `${blockTime.toFixed(2)} h`;
-      document.getElementById("turnaround").innerText = `${turnaround.toFixed(2)} h`;
-      document.getElementById("totalRotation").innerText = `${totalRotation.toFixed(2)} h`;
-      document.getElementById("serviceA").innerText = serviceA.toFixed(1);
-      document.getElementById("serviceB").innerText = serviceB.toFixed(1);
-      document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
-      document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
-
-      const selectedDays = ["mon","tue","wed","thu","fri","sat","sun"].filter(id => document.getElementById(id).checked);
-      const resultBox = document.getElementById("result");
-      resultBox.innerHTML = `
-        ✅ Route preview generated.<br>
-        <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
-        Aircraft: <strong>${aircraft}</strong><br>
-        Days: ${selectedDays.length}<br>
-        Departure: ${departure}
-      `;
-
-      const optStatus = document.getElementById("optStatus");
-      optStatus.className = "status-line " + (rotationOptimized ? "status-ok" : "status-warning");
-      optStatus.innerHTML = rotationOptimized
-        ? "✅ Optimized rotation applied."
-        : "⚠ Non-optimized rotation (45 min ground time)";
+      document.getElementById("updateTime").textContent =
+        "Last update: " + new Date().toLocaleTimeString();
     }
 
-    function toggleOptimization() {
-      rotationOptimized = document.getElementById("optimizeRotation").checked;
-      autoCalculate();
-    }
-
-    function confirmRoute() {
-  const origin = document.getElementById("origin").value.trim();
-  const destination = document.getElementById("destination").value.trim();
-  const aircraft = document.getElementById("aircraft").value;
-  const departure = document.getElementById("departureTime").value;
-  const optimized = document.getElementById("optimizeRotation").checked;
-
-  // ✅ verificar al menos un día seleccionado
-  const selectedDays = ["mon","tue","wed","thu","fri","sat","sun"].filter(id => document.getElementById(id).checked);
-
-  // ⚠️ validación de campos vacíos o sin días
-  if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
-    alert("⚠️ Please complete all required fields and select at least one day before confirming the route.");
-    return;
-  }
-
-  // ✅ Guardar información en localStorage
-  localStorage.setItem("confirmedRoute", JSON.stringify({
-    origin,
-    destination,
-    aircraft,
-    departure,
-    optimized,
-    days: selectedDays
-  }));
-
-  alert("✅ Route confirmed and saved!");
-  window.location.href = "routes.html";
-}
-
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
+    // Actualización en vivo
+    window.addEventListener("storage", renderSchedule);
+    window.addEventListener("load", renderSchedule);
+    setInterval(renderSchedule, 5000);
   </script>
 </body>
 </html>
