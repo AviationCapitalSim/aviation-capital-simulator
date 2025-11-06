@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Schedule Table - Aviation Capital Simulator</title>
+  <title>Schedule Control - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
     body {
@@ -12,17 +12,16 @@
       font-family: "Segoe UI", sans-serif;
       margin: 0;
     }
-
     h2 {
       color: #FFB300;
       margin-top: 2rem;
+      text-align: center;
     }
-
     .sub {
       color: #ccc;
+      text-align: center;
       margin-bottom: 2rem;
     }
-
     table {
       width: 90%;
       margin: 0 auto;
@@ -30,122 +29,83 @@
       background: #0e1b3c;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
-
     th, td {
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255,255,255,0.1);
       text-align: center;
       padding: 0.8rem;
       font-size: 0.95rem;
+      vertical-align: top;
     }
-
     th {
       background-color: #102040;
       color: #FFB300;
       font-weight: 600;
     }
-
     td {
       background-color: #0e2048;
       color: #ccc;
-      vertical-align: top;
-    }
-
-    /* === chips compactos por día === */
-    .day-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: center;
     }
     .chip {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      border-radius: 9999px;
+      justify-content: center;
+      gap: 4px;
+      background: #0b2b5f;
+      color: #FFB300;
+      border-radius: 8px;
       padding: 4px 8px;
       font-weight: 700;
       font-size: .85rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+      margin: 2px 0;
+      position: relative;
+      cursor: default;
+    }
+    .chip .tooltip {
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FFB300;
+      color: #111;
+      padding: 3px 7px;
+      border-radius: 5px;
+      font-size: 0.75rem;
       white-space: nowrap;
-      max-width: 160px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: pointer;
+      display: none;
+      z-index: 10;
     }
-    .chip-flight { background: #0b2b5f; color: #d7e7ff; }
-    .chip-acheck { background: #FFC72C; color: #111; font-size: .78rem; }
-    .chip-bcheck { background: #444; color: #FFB300; font-size: .78rem; }
-
-    /* === Botones elegantes ACS === */
-    .btn {
-      border: none;
-      border-radius: 9999px;
-      padding: 7px 13px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-      margin: 0 4px;
+    .chip:hover .tooltip {
+      display: block;
     }
-    .btn-assign { background: #1ED760; color: #111; }
-    .btn-assign:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(30,215,96,.35); }
-    .btn-maint  { background: linear-gradient(180deg,#FFC72C 0%,#FFB300 100%); color: #111; }
-    .btn-maint:hover  { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255,179,0,.35); }
-
+    .next-slot {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #88c7ff;
+    }
+    .conflict {
+      color: #FFD54F;
+      font-weight: 600;
+    }
     .summary {
       margin-top: 2rem;
       text-align: center;
       color: #ccc;
     }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 10;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background-color: #0e1b3c;
-      border-radius: 10px;
-      padding: 1.5rem 2rem;
-      width: 300px;
-      text-align: center;
-      color: #fff;
-    }
-
-    select {
-      width: 100%;
-      margin: 0.6rem 0;
-      padding: 0.5rem;
+    .back-btn {
+      display: block;
+      margin: 2rem auto;
+      color: #1DB954;
+      background: none;
+      border: 1px solid #1DB954;
       border-radius: 6px;
-      background: #12224c;
-      border: none;
-      color: #fff;
-    }
-
-    .modal button {
-      background-color: #1DB954;
-      color: white;
-      border: none;
-      padding: 0.5rem 1.2rem;
-      border-radius: 6px;
-      font-weight: 600;
-      margin-top: 1rem;
+      padding: 0.4rem 1rem;
       cursor: pointer;
     }
-
-    .modal button:hover {
-      background-color: #17a84d;
+    .back-btn:hover {
+      background-color: #1DB954;
+      color: white;
     }
   </style>
 </head>
@@ -163,15 +123,12 @@
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
   </header>
 
   <main class="acs-main">
-    <h2>📅 Weekly Fleet Schedule</h2>
-    <p class="sub">Assign confirmed routes and plan maintenance strategically to maximize efficiency.</p>
-
-    <div id="pendingRoute" style="text-align:center; color:#1DB954; font-weight:600; margin-bottom:1rem;">No pending routes.</div>
+    <h2>📅 Weekly Flight Schedule</h2>
+    <p class="sub">Automatic schedule monitor with live slot tracking and conflict detection.</p>
 
     <table id="scheduleTable">
       <thead>
@@ -184,186 +141,108 @@
           <th>Fri</th>
           <th>Sat</th>
           <th>Sun</th>
-          <th>Plan</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>EC-MAD (B737-200)</td>
-          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-          <td>
-            <button class="btn btn-assign" onclick="assignRoute('EC-MAD (B737-200)', this)">Assign Route</button>
-            <button class="btn btn-maint" onclick="openModal(this)">Plan Maintenance</button>
-          </td>
-        </tr>
-        <tr>
-          <td>EC-BCN (A320)</td>
-          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-          <td>
-            <button class="btn btn-assign" onclick="assignRoute('EC-BCN (A320)', this)">Assign Route</button>
-            <button class="btn btn-maint" onclick="openModal(this)">Plan Maintenance</button>
-          </td>
-        </tr>
-        <tr>
-          <td>EC-LON (B767-300ER)</td>
-          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-          <td>
-            <button class="btn btn-assign" onclick="assignRoute('EC-LON (B767-300ER)', this)">Assign Route</button>
-            <button class="btn btn-maint" onclick="openModal(this)">Plan Maintenance</button>
-          </td>
-        </tr>
-      </tbody>
+      <tbody id="scheduleBody"></tbody>
     </table>
 
     <div class="summary">
-      <p>Total Flights: <span id="totalFlights">0</span></p>
-      <p>Total Hours: <span id="totalHours">0</span> h</p>
-      <p>Efficiency: <span id="effIndex">0</span>%</p>
+      <p id="updateTime">Last update: --</p>
     </div>
-  </main>
 
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <h3>Plan Maintenance</h3>
-      <label>Type</label>
-      <select id="maintenanceType">
-        <option value="A">A-Check (5h)</option>
-        <option value="B">B-Check (24h)</option>
-      </select>
-      <label>Day</label>
-      <select id="maintenanceDay">
-        <option value="1">Mon</option>
-        <option value="2">Tue</option>
-        <option value="3">Wed</option>
-        <option value="4">Thu</option>
-        <option value="5">Fri</option>
-        <option value="6">Sat</option>
-        <option value="7">Sun</option>
-      </select>
-      <button onclick="applyMaintenance()">Apply</button>
-    </div>
-  </div>
+    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
+  </main>
 
   <footer style="text-align:center; color:#999; margin-top:2rem; padding:1rem;">© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <script>
-    let currentRow = null;
-    let scheduleData = [];
+    const days = ["mon","tue","wed","thu","fri","sat","sun"];
 
-    window.onload = function() {
-      const route = JSON.parse(localStorage.getItem("confirmedRoute"));
-      if (route) {
-        document.getElementById("pendingRoute").innerText = `✅ Pending Route: ${route.origin} ➜ ${route.destination} (${route.aircraft})`;
-      }
-      updateSummary();
-    };
-
-    function openModal(button) {
-      currentRow = button.closest("tr");
-      document.getElementById("modal").style.display = "flex";
+    // Simular base de datos local
+    function loadRoutes() {
+      const saved = localStorage.getItem("confirmedRoute");
+      return saved ? [JSON.parse(saved)] : [];
     }
 
-    function ensureStack(cell) {
-      let stack = cell.querySelector('.day-stack');
-      if (!stack) {
-        stack = document.createElement('div');
-        stack.className = 'day-stack';
-        cell.appendChild(stack);
-      }
-      return stack;
+    function toMinutes(time) {
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    }
+    function toHHMM(mins) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
     }
 
-    function applyMaintenance() {
-      const type = document.getElementById("maintenanceType").value;
-      const day = parseInt(document.getElementById("maintenanceDay").value);
-      const tableCells = currentRow.querySelectorAll("td");
-      const targetCell = tableCells[day];
-      const stack = ensureStack(targetCell);
-
-      const span = document.createElement('span');
-      span.className = type === "A" ? 'chip chip-acheck' : 'chip chip-bcheck';
-      span.textContent = type === "A" ? '🟡 A-Check' : '⚙️ B-Check';
-      stack.appendChild(span);
-
-      scheduleData.push({ type: type === "A" ? "A" : "B" });
-      document.getElementById("modal").style.display = "none";
-      updateSummary();
-    }
-
-    window.onclick = function(event) {
-      const modal = document.getElementById("modal");
-      if (event.target === modal) modal.style.display = "none";
-    };
-
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-
-    function assignRoute(selectedAircraft, btn) {
-      const pending = JSON.parse(localStorage.getItem("confirmedRoute"));
-      if (!pending) {
-        alert("No pending route to assign.");
+    function renderSchedule() {
+      const tbody = document.getElementById("scheduleBody");
+      tbody.innerHTML = "";
+      const routes = loadRoutes();
+      if (routes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="color:#777;">No routes scheduled yet.</td></tr>`;
         return;
       }
 
-      const aircraftType = selectedAircraft.match(/\(([^)]+)\)/)[1];
-      if (aircraftType !== pending.aircraft) {
-        alert(`⚠ The pending route is for ${pending.aircraft}. You cannot assign it to ${aircraftType}.`);
-        return;
+      // Agrupar vuelos por avión
+      const grouped = {};
+      routes.forEach(r => {
+        if (!grouped[r.aircraft]) grouped[r.aircraft] = [];
+        grouped[r.aircraft].push(r);
+      });
+
+      for (const aircraft in grouped) {
+        const tr = document.createElement("tr");
+        const tdAircraft = document.createElement("td");
+        tdAircraft.textContent = aircraft;
+        tr.appendChild(tdAircraft);
+
+        const flights = grouped[aircraft];
+
+        days.forEach(day => {
+          const td = document.createElement("td");
+          const dayFlights = flights.filter(f => f.days && f.days.includes(day));
+          let lastEnd = 0;
+          let conflict = false;
+
+          dayFlights.forEach((f, idx) => {
+            const dep = toMinutes(f.departure);
+            const dur = 210; // promedio 3.5h rotación total
+            const arr = dep + dur;
+            if (dep < lastEnd) conflict = true;
+            lastEnd = arr;
+
+            const chip = document.createElement("span");
+            chip.className = "chip";
+            chip.textContent = "✈️ " + f.origin + "-" + f.destination;
+            const tooltip = document.createElement("span");
+            tooltip.className = "tooltip";
+            tooltip.textContent = `${f.departure}–${toHHMM(arr)}`;
+            chip.appendChild(tooltip);
+            td.appendChild(chip);
+          });
+
+          if (dayFlights.length > 0) {
+            const nextSlot = toHHMM(lastEnd + 60);
+            const info = document.createElement("div");
+            info.className = "next-slot";
+            info.innerHTML = conflict
+              ? `<span class='conflict'>⚠️ Conflict — overlapping flights</span>`
+              : `Next available slot: ${nextSlot}`;
+            td.appendChild(info);
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
       }
 
-      const row = btn.closest("tr");
-      const cells = Array.from(row.cells).slice(1, 8);
-      const targetCell = cells[0];
-      const stack = ensureStack(targetCell);
-
-      const chip = document.createElement('span');
-      chip.className = 'chip chip-flight';
-      chip.textContent = `✈️ ${pending.origin} ➜ ${pending.destination}`;
-      stack.appendChild(chip);
-
-      scheduleData.push({ type: "route", duration: pending.duration || 2 });
-      updateSummary();
-
-      alert(`✅ Route ${pending.origin} ➜ ${pending.destination} assigned to ${selectedAircraft}.`);
-      localStorage.removeItem("confirmedRoute");
-      document.getElementById("pendingRoute").innerText = "No pending routes.";
+      document.getElementById("updateTime").textContent =
+        "Last update: " + new Date().toLocaleTimeString();
     }
 
-    // === Interacción con chips: Editar, mover o eliminar ===
-    document.addEventListener("click", function (e) {
-      const chip = e.target.closest(".chip-acheck, .chip-bcheck, .chip-flight");
-      if (!chip) return;
-      const action = prompt("Edit (E), Move (M), or Delete (D)?").toUpperCase();
-      if (action === "D") {
-        chip.remove();
-        updateSummary();
-      } else if (action === "M") {
-        const newDay = prompt("Move to day (1=Mon...7=Sun):");
-        if (!newDay || newDay < 1 || newDay > 7) return alert("Invalid day.");
-        const td = chip.closest("tr").querySelectorAll("td")[newDay];
-        const stack = ensureStack(td);
-        stack.appendChild(chip);
-        updateSummary();
-      } else if (action === "E" && chip.classList.contains("chip-flight")) {
-        const newText = prompt("Edit route:", chip.textContent);
-        if (newText) chip.textContent = newText;
-      }
-    });
-
-    // === Actualización de totales ===
-    function updateSummary() {
-      const flights = document.querySelectorAll(".chip-flight").length;
-      const aChecks = document.querySelectorAll(".chip-acheck").length;
-      const bChecks = document.querySelectorAll(".chip-bcheck").length;
-      const totalHours = flights * 2 + aChecks * 5 + bChecks * 24;
-      const efficiency = ((totalHours / (7 * 24 * 3)) * 100).toFixed(1);
-
-      document.getElementById("totalFlights").textContent = flights;
-      document.getElementById("totalHours").textContent = totalHours;
-      document.getElementById("effIndex").textContent = efficiency;
-    }
+    // Actualización en vivo
+    window.addEventListener("storage", renderSchedule);
+    window.addEventListener("load", renderSchedule);
+    setInterval(renderSchedule, 5000);
   </script>
 </body>
 </html>
