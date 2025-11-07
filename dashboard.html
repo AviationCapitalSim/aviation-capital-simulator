@@ -1,3 +1,5 @@
+<!-- === DASHBOARD MODULE === -->
+<!-- Version: Beta v1 | Date: 07 NOV 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +8,7 @@
   <title>Dashboard - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === DASHBOARD STYLE (replica visual de Finance) === */
+    /* === DASHBOARD STYLE (ACS CLEAN BETA) === */
     body {
       margin: 0;
       background-color: #081530;
@@ -21,6 +23,18 @@
       margin-top: 2rem;
     }
 
+    .panel {
+      background: #0e1b3c;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease;
+    }
+
+    .panel:hover {
+      transform: scale(1.02);
+    }
+
     .panel h3 {
       color: #FFB300;
       margin-bottom: 0.8rem;
@@ -30,11 +44,6 @@
       color: #ddd;
       font-size: 1rem;
       line-height: 1.4;
-    }
-
-    .panel:hover {
-      transform: scale(1.02);
-      transition: transform 0.2s ease;
     }
 
     .acs-btn {
@@ -57,20 +66,25 @@
       list-style: none;
       padding-left: 0;
     }
+
     .aircraft-list li, .alert-list li {
       margin: 6px 0;
     }
+
     .aircraft-list a {
       color: #FFB300;
       text-decoration: none;
     }
+
     .aircraft-list a:hover {
       text-decoration: underline;
     }
+
     .positive {
       color: #00d17a;
       font-weight: 600;
     }
+
     .alert-list li {
       color: #ff9b00;
     }
@@ -81,14 +95,13 @@
       margin-top: 0.5rem;
     }
 
-    /* === Nombre de aerolínea dorado === */
     #welcomeMessage span {
       color: #FFB300;
       text-shadow: 0 0 6px rgba(255, 179, 0, 0.4);
       letter-spacing: 0.5px;
     }
 
-    /* === GROWTH MODAL STYLE === */
+    /* === GROWTH MODAL === */
     #growthModal {
       position: fixed;
       top: 0; left: 0;
@@ -98,6 +111,7 @@
       align-items: center; justify-content: center;
       z-index: 1000;
     }
+
     #growthModalContent {
       background: #0b1c3f;
       border: 1px solid #FFB300;
@@ -107,6 +121,7 @@
       width: 420px;
       box-shadow: 0 0 15px rgba(255,179,0,0.4);
     }
+
     #growthModal h3 {
       color: #FFB300;
       margin-bottom: 1rem;
@@ -141,13 +156,6 @@
     <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
     <section class="finance-panels">
-      <!-- 💠 Credits -->
-      <div class="panel">
-        <h3>💠 Credits</h3>
-        <p><strong id="creditsAmount">2,450 AC$</strong> available</p>
-        <button class="acs-btn" onclick="window.location.href='buy_credits.html'">Buy</button>
-      </div>
-
       <!-- ✈️ Top Earning Aircraft -->
       <div class="panel">
         <h3>✈️ Top Earning Aircraft</h3>
@@ -158,11 +166,12 @@
         </ul>
       </div>
 
-      <!-- ⛽ Fuel Price -->
+      <!-- 📊 Weekly Growth -->
       <div class="panel">
-        <h3>⛽ Fuel Price</h3>
-        <p><strong id="fuelPrice">$2.37 / gal</strong><br><small>Updated weekly</small></p>
-        <button class="acs-btn" onclick="window.location.href='fuel.html'">Open</button>
+        <h3>📊 Weekly Growth</h3>
+        <p id="growthText">+8.4% vs last week</p>
+        <canvas id="growthChart" width="220" height="100"></canvas>
+        <button class="acs-btn" onclick="openGrowthModal()">View Graph</button>
       </div>
 
       <!-- 💼 Company Value -->
@@ -173,12 +182,21 @@
         <button class="acs-btn" onclick="window.location.href='company_value.html'">Open</button>
       </div>
 
-      <!-- 📊 Weekly Growth -->
+      <!-- ⚙️ Settings -->
       <div class="panel">
-        <h3>📊 Weekly Growth</h3>
-        <p id="growthText">+8.4% vs last week</p>
-        <canvas id="growthChart" width="220" height="100"></canvas>
-        <button class="acs-btn" onclick="openGrowthModal()">View Graph</button>
+        <h3>⚙️ Settings</h3>
+        <p>Manage system preferences, theme, and data synchronization.</p>
+        <button class="acs-btn" onclick="window.location.href='settings.html'">Open Settings</button>
+      </div>
+
+      <!-- 📰 Global News & Events -->
+      <div class="panel">
+        <h3>📰 Global News & Events</h3>
+        <p id="newsTeaser">
+          <strong>“Oil prices surge after conflict in the Middle East.”</strong><br>
+          Passenger demand drops 4% this week.
+        </p>
+        <button class="acs-btn" onclick="window.location.href='events.html'">Read More</button>
       </div>
 
       <!-- ⚠️ Operational Alerts -->
@@ -192,14 +210,11 @@
         <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
       </div>
 
-      <!-- 📰 Global News & Events -->
+      <!-- 💠 Credits -->
       <div class="panel">
-        <h3>📰 Global News & Events</h3>
-        <p id="newsTeaser">
-          <strong>“Oil prices surge after conflict in the Middle East.”</strong><br>
-          Passenger demand drops 4% this week.
-        </p>
-        <button class="acs-btn" onclick="window.location.href='events.html'">Read More</button>
+        <h3>💠 Credits</h3>
+        <p><strong id="creditsAmount">2,450 AC$</strong> available</p>
+        <button class="acs-btn" onclick="window.location.href='buy_credits.html'">Buy</button>
       </div>
     </section>
   </main>
@@ -225,24 +240,17 @@
     function getFlagEmoji(country) {
       if (!country) return "🌍";
       const isoMap = {
-        "United States": "US", "United Kingdom": "GB", "Spain": "ES", "Kyrgyzstan": "KG",
+        "Kyrgyzstan": "KG", "United States": "US", "United Kingdom": "GB", "Spain": "ES",
         "Russia": "RU", "Brazil": "BR", "Argentina": "AR", "Mexico": "MX", "France": "FR",
         "Germany": "DE", "Italy": "IT", "Japan": "JP", "China": "CN", "India": "IN",
         "Canada": "CA", "Australia": "AU", "Chile": "CL", "Peru": "PE", "South Korea": "KR",
         "Saudi Arabia": "SA", "South Africa": "ZA", "United Arab Emirates": "AE"
       };
-      let clean = country.trim()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[’'"]/g, "").replace(/\s+/g, " ");
-      const code = isoMap[clean] || clean.slice(0, 2).toUpperCase();
-      try {
-        return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
-      } catch {
-        return `🌐 ${code}`;
-      }
+      const code = isoMap[country] || country.slice(0, 2).toUpperCase();
+      return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
     }
 
-    // 📊 Mini chart preview
+    // 📊 Draw mini growth chart
     (function drawGrowth() {
       const c = document.getElementById("growthChart");
       if (!c) return;
@@ -275,6 +283,7 @@
       ctx.lineTo(320, 50);
       ctx.stroke();
     }
+
     function closeGrowthModal() {
       document.getElementById("growthModal").style.display = "none";
     }
@@ -284,20 +293,21 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-    // === AUTOLOAD AIRLINE INFO FROM CREATE_AIRLINE ===
-document.addEventListener("DOMContentLoaded", () => {
-  const airlineName = localStorage.getItem("userAirline");
-  const iataCode = localStorage.getItem("userIATA");
 
-  if (airlineName && iataCode) {
-    const welcomeMsg = document.getElementById("welcomeMessage");
-    if (welcomeMsg) {
-      welcomeMsg.innerHTML = `Welcome to <span>${airlineName} (${iataCode})</span>`;
-    }
-  } else {
-    console.warn("⚠️ Airline data not found — please complete airline setup first.");
-  }
-});
+    // 🏢 Load airline info from setup
+    document.addEventListener("DOMContentLoaded", () => {
+      const airlineName = localStorage.getItem("userAirline");
+      const iataCode = localStorage.getItem("userIATA");
+
+      if (airlineName && iataCode) {
+        const welcomeMsg = document.getElementById("welcomeMessage");
+        if (welcomeMsg) {
+          welcomeMsg.innerHTML = `Welcome to <span>${airlineName} (${iataCode})</span>`;
+        }
+      } else {
+        console.warn("⚠️ Airline data not found — please complete airline setup first.");
+      }
+    });
   </script>
 </body>
 </html>
