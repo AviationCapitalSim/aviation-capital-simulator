@@ -30,8 +30,22 @@ function updateClockDisplay() {
     const day = String(t.getUTCDate()).padStart(2, "0");
     const month = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
     const year = t.getUTCFullYear();
-    cclockEl.textContent = `${hours}:${minutes}  —  ${day} ${month} ${year}`;
+    clockEl.textContent = `${hours}:${minutes}  —  ${day} ${month} ${year}`;
   }
+}
+
+/* === Permite que otros módulos (Finance, HR, etc.) escuchen el tiempo === */
+function registerTimeListener(callback) {
+  if (typeof callback === "function") ACS_TIME.listeners.push(callback);
+}
+
+}
+
+/* === Permite que otros módulos (Finance, HR, etc.) escuchen el tiempo === */
+function registerTimeListener(callback) {
+  if (typeof callback === "function") ACS_TIME.listeners.push(callback);
+}
+
 }
 
 /* === Permite que otros módulos (Finance, HR, etc.) escuchen el tiempo === */
