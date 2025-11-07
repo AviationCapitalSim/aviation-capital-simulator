@@ -284,6 +284,19 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+    // === IATA CODE REGISTRATION (ATLAS Example) ===
+// Este bloque guarda el prefijo IATA de la compañía actual en localStorage
+(function registerIATA() {
+  const airlineName = "ATLAS"; // nombre mostrado en Dashboard
+  const iataCode = "AT";       // código asignado por el sistema o registro inicial
+
+  // Guardar en localStorage para uso global (Route Schedule, Schedule Table, etc.)
+  localStorage.setItem("userAirline", airlineName);
+  localStorage.setItem("userIATA", iataCode);
+
+  // Comprobación visual en consola (opcional)
+  console.log(`✅ IATA Code Registered: ${iataCode} (${airlineName})`);
+})();
   </script>
 </body>
 </html>
