@@ -333,33 +333,80 @@
       closeActionModal();
       renderSchedule();
     }
-// === Delete completo ===
+// === ✅ DELETE FLIGHT + FULL RELEASE SYSTEM — 2025-11-07 ===
+/* Fusión del borrado original con la liberación completa de números y slots */
 function deleteFlight(){
   if(!selectedChip){ closeActionModal(); return; }
+
   const id = selectedChip.dataset.id;
   const block = selectedChip.dataset.blockId || "";
-  const items = getItems();
+  let items = getItems();
+  let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
 
-  // Elimina completamente cualquier vuelo que use ese ID o bloque
-  const updated = items.filter(x => x.id !== id && x.blockId !== block);
-  setItems(updated);
+  // 🔎 Buscar vuelo actual
+  const flight = items.find(f => f.id === id || f.blockId === block);
+  if (!flight) {
+    alert("⚠️ Flight not found or already deleted.");
+    closeActionModal();
+    return;
+  }
 
+  // 1️⃣ Eliminar vuelo del listado general
+  items = items.filter(f => f.id !== id && f.blockId !== block);
+  setItems(items);
+
+  // 2️⃣ Liberar números de vuelo
+  if (flight.flightNumberOut && flight.flightNumberIn) {
+    usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
+    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+    console.log(`🧹 Released flight numbers: ${flight.flightNumberOut} / ${flight.flightNumberIn}`);
+  }
+
+  // 3️⃣ Liberar slot (simulado)
+  let releasedSlots = JSON.parse(localStorage.getItem("releasedSlots") || "[]");
+  releasedSlots.push({
+    aircraft: flight.acType || "Unknown",
+    day: flight.day || "N/A",
+    time: flight.departure || "N/A"
+  });
+  localStorage.setItem("releasedSlots", JSON.stringify(releasedSlots));
+
+  // 4️⃣ Actualizar visualmente
   closeActionModal();
   renderSchedule();
 
-  alert("🗑 Flight deleted permanently. Slot and flight number released.");
+  // 5️⃣ Confirmación
+  alert(`❌ Flight ${flight.flightNumberOut || ""} deleted permanently.`);
 }
 
 // === Editar vuelo ===
 function editFlight(){
   if(!selectedChip){ closeActionModal(); return; }
-  // Guardamos el ID del vuelo a editar para usarlo en schedule_route.html
+  // Guardamos el ID del vuelo a editar para usarlo en route_schedule.html
   localStorage.setItem("editFlightID", selectedChip.dataset.id);
   closeActionModal();
   window.location.href = "route_schedule.html";
 }
-    function handleLogout(){ alert("👋 Session closed. See you soon, Captain!"); window.location.href="login.html"; }
-    window.addEventListener("load",renderSchedule);
+
+/* === Asignación al botón DELETE del modal === */
+document.addEventListener("DOMContentLoaded", () => {
+  const delBtn = document.getElementById("deleteFlightBtn");
+  if (delBtn) {
+    delBtn.onclick = () => {
+      const flightID = delBtn.getAttribute("data-flight-id");
+      if (confirm("⚠️ Are you sure you want to permanently delete this flight?")) {
+        deleteFlight(flightID);
+      }
+    };
+  }
+});
+
+function handleLogout(){ 
+  alert("👋 Session closed. See you soon, Captain!"); 
+  window.location.href="login.html"; 
+}
+
+window.addEventListener("load", renderSchedule);
   </script>
 </body>
 </html>
