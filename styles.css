@@ -485,3 +485,23 @@ footer {
   justify-content: center;
   height: 32px;
 }
+/* ============================================================
+   === ACS MODULE: TIME ENGINE DISPLAY (Header Aviation Clock) ===
+   Version: 1.0
+   Date: 2025-11-08
+   ============================================================ */
+.acs-clock-header {
+  color: #FFB300;
+  font-family: "Consolas", "Segoe UI", monospace;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  margin-left: 1rem;
+  padding: 6px 14px;
+  border-left: 2px solid #FFB300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  text-shadow: 0 0 6px rgba(255, 179, 0, 0.5);
+  user-select: none;
+}
