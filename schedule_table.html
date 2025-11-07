@@ -17,9 +17,6 @@
 
     .chip { display:inline-flex; align-items:center; justify-content:center; gap:4px; background:#0b2b5f; color:#FFB300;
             border-radius:8px; padding:4px 8px; font-weight:700; font-size:.85rem; margin:3px 0; cursor:pointer; position:relative; }
-    .chip .tooltip { position:absolute; bottom:125%; left:50%; transform:translateX(-50%); background:#FFB300; color:#111;
-                    padding:3px 7px; border-radius:5px; font-size:.75rem; white-space:nowrap; display:none; z-index:10; }
-    .chip:hover .tooltip { display:block; }
 
     .next-slot { margin-top:6px; font-size:.8rem; color:#88c7ff; }
     .conflict { color:#FFD54F; font-weight:600; }
@@ -41,6 +38,26 @@
     .summary { margin-top:2rem; text-align:center; color:#ccc; }
     .back-btn { display:block; margin:2rem auto; color:#1DB954; background:none; border:1px solid #1DB954; border-radius:6px; padding:.4rem 1rem; cursor:pointer; }
     .back-btn:hover { background:#1DB954; color:#fff; }
+
+    /* === NUEVOS ESTILOS === */
+    .chip-time {
+      display: inline-block;
+      background: #FFB300;
+      color: #0b1f3d;
+      font-weight: 700;
+      border-radius: 8px;
+      padding: 4px 10px;
+      margin: 3px 0;
+      font-size: 0.85rem;
+      line-height: 1.2rem;
+    }
+    .route-inline {
+      display: block;
+      font-size: 0.8rem;
+      color: #0b1f3d;
+      font-weight: 700;
+      margin-top: 2px;
+    }
   </style>
 </head>
 <body>
@@ -114,14 +131,12 @@
   <footer style="text-align:center; color:#999; margin-top:2rem; padding:1rem;">© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <script>
-    // ====== Constantes / Keys ======
     const days = ["mon","tue","wed","thu","fri","sat","sun"];
-    const STORE_KEY = "scheduleItems";     // vuelos/servicios ya colocados
-    const ROUTE_KEY  = "confirmedRoute";   // ruta pendiente (setup)
-    const FLEET_KEY  = "fleet";            // [{tail:'EC-MAD', type:'B737-200'}, ...]
-    const TURNAROUND_MIN = 45;             // turnaround real (no dar ventaja)
+    const STORE_KEY = "scheduleItems";
+    const ROUTE_KEY  = "confirmedRoute";
+    const FLEET_KEY  = "fleet";
+    const TURNAROUND_MIN = 45;
 
-    // ====== Utils ======
     const toMin = hhmm => { const [h,m]=hhmm.split(":").map(Number); return h*60+m; };
     const toHHMM = min => { const h=Math.floor(min/60)%24, m=min%60; return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`; };
 
@@ -131,7 +146,6 @@
     const getFleet = () => JSON.parse(localStorage.getItem(FLEET_KEY) || "[]");
     const setFleet = f => localStorage.setItem(FLEET_KEY, JSON.stringify(f));
 
-    // ====== Init: flota de 5 si no existe ======
     (function initFleet(){
       if(getFleet().length) return;
       setFleet([
@@ -143,35 +157,28 @@
       ]);
     })();
 
-    // ====== Render principal ======
     function renderSchedule(){
       const tbody = document.getElementById("scheduleBody");
       tbody.innerHTML = "";
 
       const items = getItems();
       const fleet = getFleet();
-
-      // Agrupar items por matrícula
       const byTail = {};
       items.forEach(it => {
         if(!byTail[it.tail]) byTail[it.tail] = [];
         byTail[it.tail].push(it);
       });
 
-      // Render por matrícula
       fleet.forEach(ac=>{
         const tr = document.createElement("tr");
-
         const tdTail = document.createElement("td");
-        tdTail.textContent = ac.tail; // solo matrícula
+        tdTail.textContent = ac.tail;
         tr.appendChild(tdTail);
 
         days.forEach(d=>{
           const td = document.createElement("td");
           const dayItems = (byTail[ac.tail]||[]).filter(x=>x.day===d);
-
-          // chips del día
-          let lastEnd = null; // en minutos, solo vuelos
+          let lastEnd = null;
           let hadFlight = false;
 
           dayItems.forEach(it=>{
@@ -182,27 +189,19 @@
             chip.dataset.type = it.type;
 
             if(it.type==="flight"){
-  hadFlight = true;
+              hadFlight = true;
+              const iata = localStorage.getItem("userIATA") || "XX";
+              const flightOut = `${iata}${String(it.flightOut || 100)}`;
+              const flightIn = `${iata}${String(it.flightIn || 101)}`;
+              chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
 
-  // === Chip azul: muestra número de vuelo ida/vuelta ===
-  const iata = localStorage.getItem("userIATA") || "XX";
-  const flightOut = `${iata}${String(it.flightOut || 100)}`;
-  const flightIn = `${iata}${String(it.flightIn || 101)}`;
-  chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
-
-  // === Chip amarillo: mantiene la hora e integra la ruta ===
-  const timeChip = document.createElement("div");
-  timeChip.className = "chip-time";
-  timeChip.innerHTML = `
-    ${it.departure}–${it.arrival}<br>
-    <span class="route-inline">${it.origin}-${it.destination}</span>
-  `;
-  td.appendChild(timeChip);
-
-  // tooltip eliminado (ya no se usa)
-  const arrMin = toMin(it.arrival);
-  lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
-}
+              const timeChip = document.createElement("div");
+              timeChip.className = "chip-time";
+              timeChip.innerHTML = `
+                ${it.departure}–${it.arrival}<br>
+                <span class="route-inline">${it.origin}-${it.destination}</span>
+              `;
+              td.appendChild(timeChip);
 
               const arrMin = toMin(it.arrival);
               lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
@@ -214,7 +213,6 @@
             td.appendChild(chip);
           });
 
-          // Next Flight solo si hubo vuelos
           if(hadFlight){
             const nextInfo = document.createElement("div");
             nextInfo.className = "next-slot";
@@ -222,11 +220,9 @@
             nextInfo.textContent = `Next Flight: ${next}`;
             td.appendChild(nextInfo);
           }
-
           tr.appendChild(td);
         });
 
-        // Plan column (botones)
         const planTd = document.createElement("td");
         const wrap = document.createElement("div"); wrap.className="plan-actions";
 
@@ -248,7 +244,6 @@
       document.getElementById("updateTime").textContent = "Last update: " + new Date().toLocaleTimeString();
     }
 
-    // ====== Asignar ruta al tail (bloque o días sueltos, con conflicto) ======
     function assignRouteToTail(ac){
       const route = getRoute();
       if(!route){ alert("No confirmed route available."); return; }
@@ -258,10 +253,9 @@
       const daysSel = Array.isArray(route.days) && route.days.length ? route.days : ["mon"];
       const separate = !!route.separateDays;
       const dep = route.departure || "06:00";
-      const dur = Number(route.blockTimeMin || 210); // minutos de bloque ida+vuelta
+      const dur = Number(route.blockTimeMin || 210);
       const arr = toHHMM(toMin(dep) + dur);
 
-      // Conflicto: misma hora o solapamiento (turnaround 45 min)
       const hasConflict = (day)=>{
         const dayItems = items.filter(x=>x.tail===ac.tail && x.day===day && x.type==="flight");
         const newStart = toMin(dep);
@@ -269,23 +263,16 @@
         for(const f of dayItems){
           const s = toMin(f.departure);
           const e = toMin(f.arrival);
-          // bloquear misma hora
           if(s === newStart) return true;
-          // bloqueo por solapamiento con turnaround
           if(!(newEnd + TURNAROUND_MIN <= s || e + TURNAROUND_MIN <= newStart)) return true;
         }
         return false;
       };
 
-      // Si es bloque (no separate): usar blockId común; si no, elementos individuales
       const blockId = separate ? null : ("block-"+Math.random().toString(36).slice(2,8));
-
       let assignedAny = false;
       daysSel.forEach(day=>{
-        if(hasConflict(day)){
-          // no asignar ese día por conflicto
-          return;
-        }
+        if(hasConflict(day)) return;
         const flight = {
           id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
           blockId: separate ? "" : blockId,
@@ -310,7 +297,6 @@
       renderSchedule();
     }
 
-    // ====== Maintenance ======
     let maintTail=null;
     function openMaintModal(tail){ maintTail=tail; document.getElementById("maintModal").style.display="flex"; }
     function closeMaintModal(){ maintTail=null; document.getElementById("maintModal").style.display="none"; }
@@ -332,7 +318,6 @@
       renderSchedule();
     }
 
-    // ====== Modal acciones ======
     let selectedChip=null;
     function openActionModal(chip){ selectedChip=chip; document.getElementById("actionModal").style.display="flex"; }
     function closeActionModal(){ selectedChip=null; document.getElementById("actionModal").style.display="none"; }
@@ -343,7 +328,7 @@
       const type = selectedChip.dataset.type;
       const items=getItems();
       let filtered;
-      if(type==="flight" && block){ // borrar bloque completo
+      if(type==="flight" && block){
         filtered = items.filter(x=>x.blockId!==block);
       }else{
         filtered = items.filter(x=>x.id!==id);
@@ -353,9 +338,7 @@
       renderSchedule();
     }
 
-    // ====== Otros ======
     function handleLogout(){ alert("👋 Session closed. See you soon, Captain!"); window.location.href="login.html"; }
-
     window.addEventListener("load",renderSchedule);
   </script>
 </body>
