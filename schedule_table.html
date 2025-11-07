@@ -182,12 +182,27 @@
             chip.dataset.type = it.type;
 
             if(it.type==="flight"){
-              hadFlight = true;
-              chip.textContent = `✈️ ${it.origin}-${it.destination}`;
-              const tt = document.createElement("span");
-              tt.className="tooltip";
-              tt.textContent = `${it.departure}–${it.arrival}`;
-              chip.appendChild(tt);
+  hadFlight = true;
+
+  // === Chip azul: muestra número de vuelo ida/vuelta ===
+  const iata = localStorage.getItem("userIATA") || "XX";
+  const flightOut = `${iata}${String(it.flightOut || 100)}`;
+  const flightIn = `${iata}${String(it.flightIn || 101)}`;
+  chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
+
+  // === Chip amarillo: mantiene la hora e integra la ruta ===
+  const timeChip = document.createElement("div");
+  timeChip.className = "chip-time";
+  timeChip.innerHTML = `
+    ${it.departure}–${it.arrival}<br>
+    <span class="route-inline">${it.origin}-${it.destination}</span>
+  `;
+  td.appendChild(timeChip);
+
+  // tooltip eliminado (ya no se usa)
+  const arrMin = toMin(it.arrival);
+  lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
+}
 
               const arrMin = toMin(it.arrival);
               lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
