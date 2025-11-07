@@ -15,8 +15,25 @@
     th { background:#102040; color:#FFB300; font-weight:600; }
     td { background:#0e2048; color:#ccc; }
 
-    .chip { display:inline-flex; align-items:center; justify-content:center; gap:4px; background:#0b2b5f; color:#FFB300;
-            border-radius:8px; padding:4px 8px; font-weight:700; font-size:.85rem; margin:3px 0; cursor:pointer; position:relative; }
+    /* === CHIP AZUL (número de vuelo) === */
+    .chip {
+      display:inline-flex; align-items:center; justify-content:center; gap:4px;
+      background:#0b2b5f; color:#FFB300; border-radius:8px;
+      padding:4px 8px; font-weight:700; font-size:.85rem;
+      margin:3px 0; cursor:pointer; position:relative;
+    }
+
+    /* === TOOLTIP flotante === */
+    .chip .tooltip {
+      position:absolute;
+      bottom:125%; left:50%; transform:translateX(-50%);
+      background:#FFB300; color:#0b1f3d;
+      padding:6px 10px; border-radius:6px;
+      font-size:.8rem; font-weight:700;
+      white-space:nowrap; display:none; z-index:20;
+      box-shadow:0 3px 10px rgba(0,0,0,.4);
+    }
+    .chip:hover .tooltip { display:block; }
 
     .next-slot { margin-top:6px; font-size:.8rem; color:#88c7ff; }
     .conflict { color:#FFD54F; font-weight:600; }
@@ -38,26 +55,6 @@
     .summary { margin-top:2rem; text-align:center; color:#ccc; }
     .back-btn { display:block; margin:2rem auto; color:#1DB954; background:none; border:1px solid #1DB954; border-radius:6px; padding:.4rem 1rem; cursor:pointer; }
     .back-btn:hover { background:#1DB954; color:#fff; }
-
-    /* === NUEVOS ESTILOS === */
-    .chip-time {
-      display: inline-block;
-      background: #FFB300;
-      color: #0b1f3d;
-      font-weight: 700;
-      border-radius: 8px;
-      padding: 4px 10px;
-      margin: 3px 0;
-      font-size: 0.85rem;
-      line-height: 1.2rem;
-    }
-    .route-inline {
-      display: block;
-      font-size: 0.8rem;
-      color: #0b1f3d;
-      font-weight: 700;
-      margin-top: 2px;
-    }
   </style>
 </head>
 <body>
@@ -195,13 +192,10 @@
               const flightIn = `${iata}${String(it.flightIn || 101)}`;
               chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
 
-              const timeChip = document.createElement("div");
-              timeChip.className = "chip-time";
-              timeChip.innerHTML = `
-                ${it.departure}–${it.arrival}<br>
-                <span class="route-inline">${it.origin}-${it.destination}</span>
-              `;
-              td.appendChild(timeChip);
+              const tooltip = document.createElement("span");
+              tooltip.className = "tooltip";
+              tooltip.innerHTML = `${it.departure}–${it.arrival}<br>${it.origin}-${it.destination}`;
+              chip.appendChild(tooltip);
 
               const arrMin = toMin(it.arrival);
               lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
