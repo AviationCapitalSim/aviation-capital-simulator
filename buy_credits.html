@@ -306,6 +306,10 @@
       const modal = document.getElementById("purchaseModal");
       if (event.target === modal) closeModal();
     };
-  </script>
+  <script>
+  // Compra de créditos ACS (ingreso neto, por ahora 0)
+  localStorage.setItem("acs_finance_ops", 0);
+</script>
+<script src="finance.js?v=1.0.0"></script>
 </body>
 </html>
