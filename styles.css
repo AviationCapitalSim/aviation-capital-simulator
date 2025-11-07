@@ -488,30 +488,29 @@ footer {
   height: 32px;
 }
 /* ============================================================
-   === ACS COCKPIT CLOCK (Orbitron Digital Style) ===
-   Version: 1.2
+   === ACS FMS CLOCK DISPLAY (MCDU Green Style) ===
+   Version: 1.3
    Date: 2025-11-08
    ============================================================ */
 .acs-clock-header {
-  color: #FFD000;
+  color: #00FF9C; /* Verde FMS */
   font-family: 'Orbitron', 'Consolas', monospace;
   font-weight: 700;
   font-size: 1rem;
   letter-spacing: 2px;
   margin-left: auto;
   padding: 8px 22px;
-  border-left: 2px solid #FFD000;
+  border-left: 2px solid #00FF9C;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   min-width: 220px;
-  text-shadow: 0 0 12px rgba(255, 208, 0, 0.8);
+  text-shadow: 0 0 10px rgba(0, 255, 156, 0.9);
   user-select: none;
+  animation: fmsGlow 3s ease-in-out infinite;
 }
 
-.acs-clock-header::before {
-  content: "🕓";
-  margin-right: 8px;
-  font-size: 1.3rem;
-  filter: drop-shadow(0 0 6px rgba(255, 208, 0, 0.7));
+@keyframes fmsGlow {
+  0%, 100% { text-shadow: 0 0 8px rgba(0, 255, 156, 0.8); }
+  50% { text-shadow: 0 0 16px rgba(0, 255, 156, 1); }
 }
