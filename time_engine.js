@@ -39,20 +39,6 @@ function registerTimeListener(callback) {
   if (typeof callback === "function") ACS_TIME.listeners.push(callback);
 }
 
-}
-
-/* === Permite que otros módulos (Finance, HR, etc.) escuchen el tiempo === */
-function registerTimeListener(callback) {
-  if (typeof callback === "function") ACS_TIME.listeners.push(callback);
-}
-
-}
-
-/* === Permite que otros módulos (Finance, HR, etc.) escuchen el tiempo === */
-function registerTimeListener(callback) {
-  if (typeof callback === "function") ACS_TIME.listeners.push(callback);
-}
-
 /* === Envía actualización a los módulos conectados === */
 function notifyTimeListeners() {
   ACS_TIME.listeners.forEach((cb) => cb(ACS_TIME.currentTime));
