@@ -492,23 +492,41 @@ confirmRoute = function () {
   alert(`✅ Route confirmed and saved!\n${flightNumberOut} / ${flightNumberIn}`);
   window.location.href = "routes.html";
 };
-    // === LOAD EDIT MODE ===
+   // === LOAD EDIT MODE (optimized clean version) ===
 document.addEventListener("DOMContentLoaded", () => {
   const editID = localStorage.getItem("editFlightID");
-  if (!editID) return; // no viene en modo edición
+  if (!editID) return; // no está en modo edición
 
   const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   const flight = items.find(f => f.id === editID || f.blockId === editID);
   if (!flight) return;
 
-  // Rellenar el formulario existente
-  document.getElementById("origin").value = flight.origin || "";
-  document.getElementById("destination").value = flight.destination || "";
-  document.getElementById("departure").value = flight.departure || "";
-  document.getElementById("arrival").value = flight.arrival || "";
-  if (document.getElementById("aircraft")) {
-    document.getElementById("aircraft").value = flight.acType || "";
-  }
+  console.log("✏️ Editing flight loaded:", flight);
+
+  const $ = id => document.getElementById(id);
+  if ($("origin")) $("origin").value = flight.origin || "";
+  if ($("destination")) $("destination").value = flight.destination || "";
+  if ($("aircraft")) $("aircraft").value = flight.acType || "";
+  if ($("departureTime")) $("departureTime").value = flight.departure || "";
+
+  // Aviso visual
+  const notice = document.createElement("div");
+  notice.style.color = "#FFB300";
+  notice.style.marginBottom = "1rem";
+  notice.style.fontWeight = "600";
+  notice.innerHTML = `✏️ Editing Flight: <strong>${flight.origin}-${flight.destination}</strong>`;
+  const container = document.querySelector(".schedule-container") || document.body;
+  container.prepend(notice);
+
+  // Cambiar texto botón
+  const btn = document.querySelector(".acs-btn");
+  if (btn) btn.textContent = "UPDATE FLIGHT";
+
+  // Limpiar ID al guardar
+  btn.addEventListener("click", () => {
+    localStorage.removeItem("editFlightID");
+  });
+});
 
   // Mostrar mensaje visual
   const notice = document.createElement("div");
