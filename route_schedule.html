@@ -140,7 +140,7 @@
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <script>
-    /* === CONFIGURACIÓN BASE === */
+    /* === BASE === */
     const timeSelect = document.getElementById("departureTime");
     for (let h = 6; h < 24; h++) {
       for (let m = 0; m < 60; m += 5) {
@@ -178,6 +178,7 @@
       ESSA: { lat: 59.6498, lon: 17.9238 }
     };
 
+    const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
     let rotationOptimized = false;
 
     function calcDistanceNM(from,to){
@@ -195,6 +196,7 @@
       const aircraft=document.getElementById("aircraft").value;
       const departure=document.getElementById("departureTime").value;
       if(!origin||!destination||!aircraft)return;
+
       document.getElementById("techData").style.display="block";
       const distance=calcDistanceNM(origin,destination);
       const speed=aircraftData[aircraft].speed;
@@ -206,6 +208,7 @@
       let delayRisk=Math.min(100,(totalRotation/5)*10);
       let effIndex=Math.max(50,100-delayRisk/1.5);
       if(rotationOptimized){delayRisk*=0.8; effIndex+=5;}
+
       document.getElementById("distance").innerText=distance;
       document.getElementById("blockTime").innerText=`${blockTime.toFixed(2)} h`;
       document.getElementById("turnaround").innerText=`${turnaround.toFixed(2)} h`;
@@ -214,6 +217,22 @@
       document.getElementById("serviceB").innerText=serviceB.toFixed(1);
       document.getElementById("delayRisk").innerText=`${delayRisk.toFixed(1)}%`;
       document.getElementById("effIndex").innerText=`${effIndex.toFixed(1)}%`;
+
+      // ✅ Panel informativo y estado de optimize reactivados
+      const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
+      const resultBox = document.getElementById("result");
+      resultBox.innerHTML = `
+        ✅ Route preview generated.<br>
+        <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
+        Aircraft: <strong>${aircraft}</strong><br>
+        Days: ${selectedDays.length}<br>
+        Departure: ${departure}
+      `;
+      const optStatus = document.getElementById("optStatus");
+      optStatus.className = "status-line " + (rotationOptimized ? "status-ok" : "status-warning");
+      optStatus.innerHTML = rotationOptimized
+        ? "✅ Optimized rotation applied."
+        : "⚠ Non-optimized rotation (45 min ground time)";
     }
 
     function toggleOptimization(){
@@ -223,96 +242,157 @@
 
     function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
 
-    /* === ✅ EDIT MODE FULL FIX — 2025-11-07 === */
-/* Corrige carga incompleta, mantiene número de vuelo, conserva días, 
-   restaura panel técnico y vuelve a mostrar el estado de optimización. */
+    /* === ✅ CONTROL NÚMEROS DE VUELO — 2025-11-07 === */
+    const flightNumberInput = document.getElementById("flightNumber");
+    const userIATA = localStorage.getItem("userIATA") || "AT";
+    let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
+    let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
 
-document.addEventListener("DOMContentLoaded", () => {
-  const editID = localStorage.getItem("editFlightID");
-  const isEditing = !!editID;
-  const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-  // Si no estamos editando, generar número de vuelo nuevo
-  if (!isEditing) {
-    generateFlightNumbers();
-    return;
-  }
-
-  // Buscar vuelo a editar
-  const flight = items.find(f => f.id === editID || f.blockId === editID);
-  if (!flight) return;
-
-  console.log("✏️ Edit mode activated:", flight);
-
-  const $ = id => document.getElementById(id);
-
-  // === Rellenar formulario ===
-  $("origin").value = flight.origin || "";
-  $("destination").value = flight.destination || "";
-  $("aircraft").value = flight.acType || "";
-  $("departureTime").value = flight.departure || "06:00";
-
-  // Rellenar días
-  (flight.days || []).forEach(day => {
-    const box = document.getElementById(day);
-    if (box) box.checked = true;
-  });
-
-  // Mostrar número de vuelo si existe
-  if (flight.flightNumberOut && flight.flightNumberIn) {
-    $("flightNumber").value = `${flight.flightNumberOut} ➜ ${flight.flightNumberIn}`;
-  }
-
-  // Mostrar aviso visual arriba del formulario
-  const notice = document.createElement("div");
-  notice.style.color = "#FFB300";
-  notice.style.marginBottom = "1rem";
-  notice.style.fontWeight = "600";
-  notice.innerHTML = `✏️ Editando vuelo: <strong>${flight.origin} ➜ ${flight.destination}</strong>`;
-  document.querySelector(".schedule-container").prepend(notice);
-
-  // Mostrar cálculos y panel técnico
-  autoCalculate();
-
-  // Cambiar texto del botón principal
-  const btn = document.querySelector(".acs-btn");
-  if (btn) btn.textContent = "UPDATE FLIGHT";
-
-  // === Acción del botón UPDATE ===
-  btn.onclick = () => {
-    const origin = $("origin").value.trim();
-    const destination = $("destination").value.trim();
-    const aircraft = $("aircraft").value;
-    const departure = $("departureTime").value;
-    const optimized = document.getElementById("optimizeRotation").checked;
-    const selectedDays = ["mon","tue","wed","thu","fri","sat","sun"]
-      .filter(id => document.getElementById(id).checked);
-
-    if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
-      alert("⚠️ Por favor completa todos los campos antes de actualizar.");
-      return;
+    function generateFlightPair() {
+      let out = `${userIATA}${lastFlightNumber}`;
+      let inn = `${userIATA}${lastFlightNumber + 1}`;
+      while (usedFlights.includes(out) || usedFlights.includes(inn)) {
+        lastFlightNumber += 2;
+        out = `${userIATA}${lastFlightNumber}`;
+        inn = `${userIATA}${lastFlightNumber + 1}`;
+      }
+      if (flightNumberInput) flightNumberInput.value = `${out} ➜ ${inn}`;
+      return { out, inn };
     }
+    function bumpFlightCounter(){ lastFlightNumber += 2; localStorage.setItem("lastFlightNumber", String(lastFlightNumber)); }
+    function markNumbersUsed(out, inn){ usedFlights.push(out, inn); localStorage.setItem("flightNumbers", JSON.stringify(usedFlights)); }
+    function freeNumbers(out, inn){
+      if(!out || !inn) return;
+      usedFlights = usedFlights.filter(n => n !== out && n !== inn);
+      localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+    }
+    // Wrapper para crear
+    function generateFlightNumbers(){ generateFlightPair(); }
 
-    // Eliminar vuelo previo y reemplazar por el actualizado
-    const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
-    const updatedFlight = {
-      ...flight,
-      origin,
-      destination,
-      acType: aircraft,
-      departure,
-      optimized,
-      days: selectedDays.length ? selectedDays : flight.days || [],
-    };
-    updatedList.push(updatedFlight);
-    localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
+    /* === ✅ MODO CREACIÓN Y EDICIÓN UNIFICADO — 2025-11-07 === */
+    document.addEventListener("DOMContentLoaded", () => {
+      const editID = localStorage.getItem("editFlightID");
+      const isEditing = !!editID;
 
-    // Limpiar identificador y redirigir
-    localStorage.removeItem("editFlightID");
-    alert("✅ Vuelo actualizado correctamente.");
-    window.location.href = "schedule_table.html";
-  };
-});
+      if (!isEditing) {
+        // === CREAR NUEVO VUELO ===
+        generateFlightNumbers();   // genera números para nuevo vuelo
+        autoCalculate();           // muestra panel técnico y estado optimize
+        return;
+      }
+
+      // === EDITAR VUELO EXISTENTE ===
+      const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+      const flight = items.find(f => f.id === editID || f.blockId === editID);
+      if (!flight) return;
+
+      const $ = id => document.getElementById(id);
+
+      // Rellenar formulario
+      $("origin").value = flight.origin || "";
+      $("destination").value = flight.destination || "";
+      $("aircraft").value = flight.acType || "";
+      $("departureTime").value = flight.departure || "06:00";
+      (flight.days || []).forEach(d => { const box = document.getElementById(d); if (box) box.checked = true; });
+
+      // Aviso visual
+      const notice = document.createElement("div");
+      notice.style.color = "#FFB300";
+      notice.style.marginBottom = "1rem";
+      notice.style.fontWeight = "600";
+      notice.innerHTML = `✏️ Editando vuelo: <strong>${flight.origin} ➜ ${flight.destination}</strong>`;
+      document.querySelector(".schedule-container").prepend(notice);
+
+      // Liberar números del vuelo anterior (el vuelo editado "muere")
+      if (flight.flightNumberOut && flight.flightNumberIn) {
+        freeNumbers(flight.flightNumberOut, flight.flightNumberIn);
+      }
+
+      // Generar NUEVOS números para el vuelo actualizado
+      const newPair = generateFlightPair();
+
+      // Panel técnico
+      autoCalculate();
+
+      // Cambiar botón a UPDATE y controlar acción (sin auto-asignar)
+      const btn = document.querySelector(".acs-btn");
+      if (btn) btn.textContent = "UPDATE FLIGHT";
+
+      btn.onclick = () => {
+        const origin = $("origin").value.trim();
+        const destination = $("destination").value.trim();
+        const aircraft = $("aircraft").value;
+        const departure = $("departureTime").value;
+        const optimized = document.getElementById("optimizeRotation").checked;
+        const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
+
+        if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+          alert("⚠️ Por favor completa todos los campos antes de actualizar.");
+          return;
+        }
+
+        // Eliminar vuelo original de la tabla
+        const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
+        localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
+
+        // Tomar números en UI
+        const rawFN = (flightNumberInput.value || "");
+        // Soporta separador con flecha o espacios
+        const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+        const flightNumberOut = match[1] || newPair.out;
+        const flightNumberIn  = match[2] || newPair.inn;
+
+        // Guardar ruta actualizada (no asigna nada todavía)
+        const updatedRoute = {
+          origin, destination, aircraft, departure, optimized,
+          days: selectedDays,
+          flightNumberOut, flightNumberIn
+        };
+        localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
+
+        // Marcar números usados y avanzar contador
+        markNumbersUsed(flightNumberOut, flightNumberIn);
+        bumpFlightCounter();
+
+        // Limpiar modo edición y volver a la tabla para asignar
+        localStorage.removeItem("editFlightID");
+        alert("✅ Vuelo actualizado. Ahora puedes asignarlo desde la tabla.");
+        window.location.href = "schedule_table.html";
+      };
+    });
+
+    /* === ✅ CONFIRMAR NUEVO VUELO — 2025-11-07 === */
+    function confirmRoute() {
+      const origin = document.getElementById("origin").value.trim();
+      const destination = document.getElementById("destination").value.trim();
+      const aircraft = document.getElementById("aircraft").value;
+      const departure = document.getElementById("departureTime").value;
+      const optimized = document.getElementById("optimizeRotation").checked;
+      const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
+
+      if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+        alert("⚠️ Please complete all required fields and select at least one day before confirming the route.");
+        return;
+      }
+
+      const rawFN = (document.getElementById("flightNumber").value || "");
+      const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+      const flightNumberOut = match[1];
+      const flightNumberIn  = match[2];
+
+      localStorage.setItem("confirmedRoute", JSON.stringify({
+        origin, destination, aircraft, departure, optimized,
+        days: selectedDays, flightNumberOut, flightNumberIn
+      }));
+
+      if (flightNumberOut && flightNumberIn) {
+        markNumbersUsed(flightNumberOut, flightNumberIn);
+        bumpFlightCounter();
+      }
+
+      alert(`✅ Route confirmed and saved!\n${flightNumberOut || ""} ${flightNumberIn ? "/ " + flightNumberIn : ""}`);
+      window.location.href = "routes.html";
+    }
   </script>
 </body>
 </html>
