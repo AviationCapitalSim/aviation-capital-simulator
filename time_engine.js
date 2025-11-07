@@ -30,7 +30,7 @@ function updateClockDisplay() {
     const day = String(t.getUTCDate()).padStart(2, "0");
     const month = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
     const year = t.getUTCFullYear();
-    clockEl.textContent = `🕒 ACS TIME | ${hours}:${minutes} — ${day} ${month} ${year}`;
+    cclockEl.textContent = `${hours}:${minutes}  —  ${day} ${month} ${year}`;
   }
 }
 
