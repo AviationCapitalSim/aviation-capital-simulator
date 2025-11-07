@@ -1,0 +1,293 @@
+<!-- === MONTHLY GROWTH MODULE === -->
+<!-- Version: Operational Build | Date: 07 NOV 2025 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Growth - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: #fff;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    h2 span {
+      color: #FFB300;
+      text-shadow: 0 0 6px rgba(255, 179, 0, 0.5);
+    }
+
+    .finance-container {
+      width: 92%;
+      max-width: 1300px;
+      margin: 2rem auto;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .card {
+      background: #0e1b3c;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      padding: 1.2rem 1.5rem;
+      text-align: center;
+      border: 1px solid rgba(255,179,0,0.2);
+    }
+
+    .card h3 {
+      color: #FFB300;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 1.3rem;
+      margin: 0.4rem 0;
+      font-weight: 600;
+    }
+
+    .positive { color: #00d17a; }
+    .negative { color: #ff5757; }
+    .neutral { color: #bfbfbf; }
+
+    /* === Graph Section === */
+    .graph-section {
+      margin-top: 2.5rem;
+      background: #0b1c3f;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,179,0,0.2);
+    }
+
+    .graph-section h3 {
+      color: #FFB300;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    canvas {
+      background: rgba(255,255,255,0.03);
+      border-radius: 6px;
+      width: 100%;
+      height: 320px;
+    }
+
+    /* === Table Section === */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+      font-size: 0.95rem;
+      background: #0e1b3c;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    }
+
+    th, td {
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #14224a;
+      color: #FFB300;
+      font-weight: 600;
+    }
+
+    .trend-up { color: #00d17a; }
+    .trend-down { color: #ff5757; }
+    .trend-stable { color: #cccccc; }
+
+    /* === Insights === */
+    .insight {
+      margin-top: 2rem;
+      background: #0e1b3c;
+      padding: 1rem 1.5rem;
+      border-left: 4px solid #FFB300;
+      border-radius: 8px;
+      font-size: 1rem;
+      color: #ddd;
+    }
+
+    .insight strong {
+      color: #FFB300;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="monthly_growth.html" class="active">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="finance-container">
+    <h2 id="financeTitle">Monthly Growth — <span>ATLAS (ATL)</span></h2>
+    <p style="color:#ccc; margin-bottom:2rem;">Financial performance overview by month and weekly breakdown.</p>
+
+    <!-- === SUMMARY CARDS === -->
+    <section class="summary-grid">
+      <div class="card">
+        <h3>💰 Total Revenue</h3>
+        <p class="positive" id="revValue">$3,248,000</p>
+      </div>
+      <div class="card">
+        <h3>📉 Total Expenses</h3>
+        <p class="negative" id="expValue">$2,894,000</p>
+      </div>
+      <div class="card">
+        <h3>📈 Net Profit</h3>
+        <p class="positive" id="netProfit">$354,000</p>
+      </div>
+      <div class="card">
+        <h3>🧮 Profit Margin</h3>
+        <p class="neutral" id="margin">12.8%</p>
+      </div>
+    </section>
+
+    <!-- === MONTHLY GRAPH === -->
+    <section class="graph-section">
+      <h3>📊 Monthly Growth (USD)</h3>
+      <canvas id="monthlyGraph"></canvas>
+    </section>
+
+    <!-- === WEEKLY BREAKDOWN === -->
+    <section class="graph-section" style="margin-top:2rem;">
+      <h3>📅 Weekly Breakdown (Current Month)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Week</th>
+            <th>Revenue</th>
+            <th>Expenses</th>
+            <th>Net Result</th>
+            <th>Trend</th>
+          </tr>
+        </thead>
+        <tbody id="weeklyTable">
+          <tr><td>Week 1</td><td>$820,000</td><td>$720,000</td><td class="positive">+$100,000</td><td class="trend-up">🔼</td></tr>
+          <tr><td>Week 2</td><td>$790,000</td><td>$730,000</td><td class="positive">+$60,000</td><td class="trend-stable">⚖️</td></tr>
+          <tr><td>Week 3</td><td>$810,000</td><td>$810,000</td><td class="neutral">$0</td><td class="trend-stable">⚖️</td></tr>
+          <tr><td>Week 4</td><td>$828,000</td><td>$634,000</td><td class="positive">+$194,000</td><td class="trend-up">🔼</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- === MONTHLY TABLE === -->
+    <section class="graph-section" style="margin-top:2rem;">
+      <h3>📆 Monthly Comparative Summary</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Total Revenue</th>
+            <th>Total Expenses</th>
+            <th>Net Profit</th>
+            <th>Margin %</th>
+            <th>Trend</th>
+          </tr>
+        </thead>
+        <tbody id="monthlyTable">
+          <tr><td>July</td><td>$3,120,000</td><td>$2,780,000</td><td class="positive">+$340,000</td><td class="neutral">10.8%</td><td class="trend-up">🔼</td></tr>
+          <tr><td>August</td><td>$3,640,000</td><td>$2,910,000</td><td class="positive">+$730,000</td><td class="neutral">20.1%</td><td class="trend-up">🔼</td></tr>
+          <tr><td>September</td><td>$3,240,000</td><td>$3,120,000</td><td class="positive">+$120,000</td><td class="neutral">3.7%</td><td class="trend-stable">⚖️</td></tr>
+          <tr><td>October</td><td>$2,880,000</td><td>$3,260,000</td><td class="negative">–$380,000</td><td class="neutral">–13.1%</td><td class="trend-down">🔻</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- === INSIGHT TEXT === -->
+    <div class="insight" id="insightText">
+      <strong>Insight:</strong> October showed a lower profit margin due to higher maintenance and fuel costs. Expect recovery next month with expanded route operations.
+    </div>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const airlineName = localStorage.getItem("userAirline");
+      const iataCode = localStorage.getItem("userIATA");
+      if (airlineName && iataCode) {
+        document.getElementById("financeTitle").innerHTML =
+          `Monthly Growth — <span>${airlineName} (${iataCode})</span>`;
+      }
+      drawMonthlyGraph();
+    });
+
+    // === STATIC GRAPH ===
+    function drawMonthlyGraph() {
+      const c = document.getElementById("monthlyGraph");
+      const ctx = c.getContext("2d");
+
+      ctx.strokeStyle = "#fff2";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(50, 280);
+      ctx.lineTo(50, 30);
+      ctx.lineTo(800, 30);
+      ctx.stroke();
+
+      ctx.fillStyle = "#ccc";
+      ctx.font = "12px Segoe UI";
+      const months = ["Jul", "Aug", "Sep", "Oct"];
+      months.forEach((m, i) => ctx.fillText(m, 100 + i * 160, 300));
+
+      const revPoints = [260, 220, 230, 250];
+      ctx.strokeStyle = "#00d17a";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(100, revPoints[0]);
+      for (let i = 1; i < revPoints.length; i++) ctx.lineTo(100 + i * 160, revPoints[i]);
+      ctx.stroke();
+
+      const expPoints = [280, 240, 240, 270];
+      ctx.strokeStyle = "#ff5757";
+      ctx.beginPath();
+      ctx.moveTo(100, expPoints[0]);
+      for (let i = 1; i < expPoints.length; i++) ctx.lineTo(100 + i * 160, expPoints[i]);
+      ctx.stroke();
+
+      const netPoints = [240, 200, 210, 260];
+      ctx.strokeStyle = "#FFB300";
+      ctx.beginPath();
+      ctx.moveTo(100, netPoints[0]);
+      for (let i = 1; i < netPoints.length; i++) ctx.lineTo(100 + i * 160, netPoints[i]);
+      ctx.stroke();
+    }
+
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
