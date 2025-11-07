@@ -15,34 +15,32 @@
     th { background:#102040; color:#FFB300; font-weight:600; }
     td { background:#0e2048; color:#ccc; }
 
-    .chip { display:inline-flex; align-items:center; justify-content:center; gap:4px; border-radius:8px; padding:4px 8px; font-weight:700; font-size:.85rem; margin:3px 0; cursor:pointer; position:relative; }
-    .chip.flight { background:#0b2b5f; color:#FFB300; }
-    .chip.serviceA { background:#fff8d6; color:#000; }
-    .chip.serviceB { background:#ffd6d6; color:#000; }
-    .chip .tooltip { position:absolute; bottom:125%; left:50%; transform:translateX(-50%); background:#FFB300; color:#111; padding:3px 7px; border-radius:5px; font-size:.75rem; white-space:nowrap; display:none; z-index:10; }
+    .chip { display:inline-flex; align-items:center; justify-content:center; gap:4px; background:#0b2b5f; color:#FFB300;
+            border-radius:8px; padding:4px 8px; font-weight:700; font-size:.85rem; margin:3px 0; cursor:pointer; position:relative; }
+    .chip .tooltip { position:absolute; bottom:125%; left:50%; transform:translateX(-50%); background:#FFB300; color:#111;
+                    padding:3px 7px; border-radius:5px; font-size:.75rem; white-space:nowrap; display:none; z-index:10; }
     .chip:hover .tooltip { display:block; }
 
     .next-slot { margin-top:6px; font-size:.8rem; color:#88c7ff; }
+    .conflict { color:#FFD54F; font-weight:600; }
 
-    .btn { border:none; border-radius:9999px; padding:7px 13px; font-weight:700; letter-spacing:.2px; cursor:pointer; transition:all .15s ease; box-shadow:0 2px 6px rgba(0,0,0,.25); margin:0 4px; }
-    .btn-assign, .btn-maint { background:#1ED760; color:#111; }
-    .btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(30,215,96,.35); }
+    .btn { border:none; border-radius:9999px; padding:7px 13px; font-weight:700; letter-spacing:.2px; cursor:pointer;
+          transition:all .15s ease; box-shadow:0 2px 6px rgba(0,0,0,.25); margin:0 4px; }
+    .btn-assign { background:#1ED760; color:#111; }
+    .btn-assign:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(30,215,96,.35); }
+    .btn-maint { background:linear-gradient(180deg,#FFC72C 0%,#FFB300 100%); color:#111; }
+    .btn-maint:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,179,0,.35); }
     .plan-actions { display:flex; flex-direction:column; align-items:center; gap:10px; }
 
-    .modal { display:none; position:fixed; z-index:10; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,.7); justify-content:center; align-items:center; }
-    .modal-content { background:#0e1b3c; border-radius:10px; padding:1.5rem 2rem; width:320px; text-align:center; color:#fff; }
-    .modal-content button { border:none; padding:.5rem 1.2rem; border-radius:6px; font-weight:600; margin:.5rem; cursor:pointer; }
-    .modal-content .btn-remove { background:#1DB954; color:#fff; }
-    .modal-content .btn-delete { background:#ff4747; color:#fff; }
-    .modal-content .btn-edit { background:#FFB300; color:#111; }
-    .modal-content .btn-cancel { background:#b91c1c; color:#fff; }
+    .modal { display:none; position:fixed; z-index:10; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,.7);
+            justify-content:center; align-items:center; }
+    .modal-content { background:#0e1b3c; border-radius:10px; padding:1.5rem 2rem; width:300px; text-align:center; color:#fff; }
+    .modal-content button { background:#1DB954; color:#fff; border:none; padding:.5rem 1.2rem; border-radius:6px; font-weight:600; margin:.5rem; cursor:pointer; }
+    .modal-content button:hover { background:#17a84d; }
 
     .summary { margin-top:2rem; text-align:center; color:#ccc; }
     .back-btn { display:block; margin:2rem auto; color:#1DB954; background:none; border:1px solid #1DB954; border-radius:6px; padding:.4rem 1rem; cursor:pointer; }
     .back-btn:hover { background:#1DB954; color:#fff; }
-
-    .model { font-size:.8rem; color:#aaa; margin-top:4px; }
-    .group-title { background:#081530; color:#FFB300; font-weight:600; text-align:left; padding:.5rem 1rem; border-top:2px solid #FFB300; }
   </style>
 </head>
 <body>
@@ -89,80 +87,260 @@
   <div id="actionModal" class="modal">
     <div class="modal-content">
       <h3>Manage Flight</h3>
-      <button class="btn-remove" onclick="moveItem()">🔁 Remove</button>
-      <button class="btn-delete" onclick="deleteItem()">🗑 Delete</button>
-      <button class="btn-edit" onclick="editItem()">✏️ Edit</button>
-      <button class="btn-cancel" onclick="closeActionModal()">Cancel</button>
+      <button onclick="removeItem()">🗑 Remove</button>
+      <button onclick="closeActionModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Modal: mantenimiento -->
+  <div id="maintModal" class="modal">
+    <div class="modal-content">
+      <h3>Plan Maintenance</h3>
+      <label style="display:block;margin:6px 0 4px;">Type</label>
+      <select id="maintType" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
+        <option value="A">A-Check (5h)</option>
+        <option value="B">B-Check (24h)</option>
+      </select>
+      <label style="display:block;margin:10px 0 4px;">Day</label>
+      <select id="maintDay" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
+        <option value="mon">Mon</option><option value="tue">Tue</option><option value="wed">Wed</option>
+        <option value="thu">Thu</option><option value="fri">Fri</option><option value="sat">Sat</option><option value="sun">Sun</option>
+      </select>
+      <button onclick="applyMaintenance()">Apply</button>
+      <button onclick="closeMaintModal()">Cancel</button>
     </div>
   </div>
 
   <footer style="text-align:center; color:#999; margin-top:2rem; padding:1rem;">© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <script>
-    const days=["mon","tue","wed","thu","fri","sat","sun"];
-    const STORE_KEY="scheduleItems";
-    const ROUTE_KEY="confirmedRoute";
-    const FLEET_KEY="fleet";
-    const TURNAROUND_MIN=45;
+    // ====== Constantes / Keys ======
+    const days = ["mon","tue","wed","thu","fri","sat","sun"];
+    const STORE_KEY = "scheduleItems";     // vuelos/servicios ya colocados
+    const ROUTE_KEY  = "confirmedRoute";   // ruta pendiente (setup)
+    const FLEET_KEY  = "fleet";            // [{tail:'EC-MAD', type:'B737-200'}, ...]
+    const TURNAROUND_MIN = 45;             // turnaround real (no dar ventaja)
 
-    const toMin=hhmm=>{const[h,m]=hhmm.split(":").map(Number);return h*60+m;};
-    const toHHMM=min=>{const h=Math.floor(min/60)%24,m=min%60;return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;};
-    const getItems=()=>JSON.parse(localStorage.getItem(STORE_KEY)||"[]");
-    const setItems=l=>localStorage.setItem(STORE_KEY,JSON.stringify(l));
-    const getRoute=()=>{const r=localStorage.getItem(ROUTE_KEY);return r?JSON.parse(r):null;};
-    const getFleet=()=>JSON.parse(localStorage.getItem(FLEET_KEY)||"[]");
+    // ====== Utils ======
+    const toMin = hhmm => { const [h,m]=hhmm.split(":").map(Number); return h*60+m; };
+    const toHHMM = min => { const h=Math.floor(min/60)%24, m=min%60; return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`; };
 
-    (function initFleet(){if(getFleet().length)return;localStorage.setItem(FLEET_KEY,JSON.stringify([{tail:"EC-MAD",type:"B737-200"},{tail:"EC-BCN",type:"B737-200"}]));})();
+    const getItems = () => JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
+    const setItems = list => localStorage.setItem(STORE_KEY, JSON.stringify(list));
+    const getRoute = () => { const r=localStorage.getItem(ROUTE_KEY); return r?JSON.parse(r):null; };
+    const getFleet = () => JSON.parse(localStorage.getItem(FLEET_KEY) || "[]");
+    const setFleet = f => localStorage.setItem(FLEET_KEY, JSON.stringify(f));
 
+    // ====== Init: flota de 5 si no existe ======
+    (function initFleet(){
+      if(getFleet().length) return;
+      setFleet([
+        {tail:"EC-MAD", type:"B737-200"},
+        {tail:"EC-BCN", type:"B737-200"},
+        {tail:"EC-LON", type:"B737-200"},
+        {tail:"EC-SVQ", type:"B737-200"},
+        {tail:"EC-BIL", type:"B737-200"}
+      ]);
+    })();
+
+    // ====== Render principal ======
     function renderSchedule(){
-      const tbody=document.getElementById("scheduleBody");tbody.innerHTML="";
-      const items=getItems();const fleet=getFleet();
-      const grouped={};fleet.forEach(ac=>{if(!grouped[ac.type])grouped[ac.type]=[];grouped[ac.type].push(ac);});
+      const tbody = document.getElementById("scheduleBody");
+      tbody.innerHTML = "";
 
-      for(const model in grouped){
-        grouped[model].forEach(ac=>{
-          const tr=document.createElement("tr");
-          const tdTail=document.createElement("td");
-          tdTail.innerHTML=`${ac.tail}<div class='model'>${ac.type}</div>`;
-          tr.appendChild(tdTail);
-          days.forEach(d=>{
-            const td=document.createElement("td");
-            const dayItems=items.filter(x=>x.tail===ac.tail&&x.day===d);
-            let lastEnd=null;let hadFlight=false;
-            dayItems.forEach(it=>{
-              const chip=document.createElement("span");chip.classList.add("chip");chip.dataset.id=it.id;chip.dataset.type=it.type;
-              if(it.type==="flight"){
-                chip.classList.add("flight");hadFlight=true;
-                chip.textContent=`✈️ ${it.flightNumber||it.origin+"-"+it.destination}`;
-                const tt=document.createElement("span");tt.className="tooltip";tt.textContent=`${it.departure}–${it.arrival}`;chip.appendChild(tt);
-                lastEnd=Math.max(lastEnd||0,toMin(it.arrival));
-              }else{
-                chip.classList.add(it.serviceType==="A"?"serviceA":"serviceB");
-                chip.textContent=it.serviceType==="A"?"🟡 A-Check":"⚙️ B-Check";
-              }
-              chip.onclick=()=>openActionModal(chip);td.appendChild(chip);
-            });
-            if(hadFlight){const nextInfo=document.createElement("div");nextInfo.className="next-slot";const next=toHHMM((lastEnd||0)+TURNAROUND_MIN);nextInfo.textContent=`Next Flight: ${next}`;td.appendChild(nextInfo);}
-            tr.appendChild(td);
+      const items = getItems();
+      const fleet = getFleet();
+
+      // Agrupar items por matrícula
+      const byTail = {};
+      items.forEach(it => {
+        if(!byTail[it.tail]) byTail[it.tail] = [];
+        byTail[it.tail].push(it);
+      });
+
+      // Render por matrícula
+      fleet.forEach(ac=>{
+        const tr = document.createElement("tr");
+
+        const tdTail = document.createElement("td");
+        tdTail.textContent = ac.tail; // solo matrícula
+        tr.appendChild(tdTail);
+
+        days.forEach(d=>{
+          const td = document.createElement("td");
+          const dayItems = (byTail[ac.tail]||[]).filter(x=>x.day===d);
+
+          // chips del día
+          let lastEnd = null; // en minutos, solo vuelos
+          let hadFlight = false;
+
+          dayItems.forEach(it=>{
+            const chip = document.createElement("span");
+            chip.className = "chip";
+            chip.dataset.id = it.id;
+            chip.dataset.blockId = it.blockId || "";
+            chip.dataset.type = it.type;
+
+            if(it.type==="flight"){
+              hadFlight = true;
+              chip.textContent = `✈️ ${it.origin}-${it.destination}`;
+              const tt = document.createElement("span");
+              tt.className="tooltip";
+              tt.textContent = `${it.departure}–${it.arrival}`;
+              chip.appendChild(tt);
+
+              const arrMin = toMin(it.arrival);
+              lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
+            } else {
+              chip.textContent = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
+            }
+
+            chip.onclick = ()=>openActionModal(chip);
+            td.appendChild(chip);
           });
-          const planTd=document.createElement("td");const wrap=document.createElement("div");wrap.className="plan-actions";
-          const assignBtn=document.createElement("button");assignBtn.className="btn btn-assign";assignBtn.textContent="Assign Route";assignBtn.onclick=()=>assignRouteToTail(ac);
-          const maintBtn=document.createElement("button");maintBtn.className="btn btn-maint";maintBtn.textContent="Plan Maintenance";maintBtn.onclick=()=>openMaintModal(ac.tail);
-          wrap.appendChild(assignBtn);wrap.appendChild(maintBtn);planTd.appendChild(wrap);tr.appendChild(planTd);tbody.appendChild(tr);
+
+          // Next Flight solo si hubo vuelos
+          if(hadFlight){
+            const nextInfo = document.createElement("div");
+            nextInfo.className = "next-slot";
+            const next = toHHMM((lastEnd ?? 0) + TURNAROUND_MIN);
+            nextInfo.textContent = `Next Flight: ${next}`;
+            td.appendChild(nextInfo);
+          }
+
+          tr.appendChild(td);
         });
-      }
-      document.getElementById("updateTime").textContent="Last update: "+new Date().toLocaleTimeString();
+
+        // Plan column (botones)
+        const planTd = document.createElement("td");
+        const wrap = document.createElement("div"); wrap.className="plan-actions";
+
+        const assignBtn = document.createElement("button");
+        assignBtn.className = "btn btn-assign";
+        assignBtn.textContent = "Assign Route";
+        assignBtn.onclick = ()=>assignRouteToTail(ac);
+
+        const maintBtn = document.createElement("button");
+        maintBtn.className = "btn btn-maint";
+        maintBtn.textContent = "Plan Maintenance";
+        maintBtn.onclick = ()=>openMaintModal(ac.tail);
+
+        wrap.appendChild(assignBtn); wrap.appendChild(maintBtn);
+        planTd.appendChild(wrap); tr.appendChild(planTd);
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("updateTime").textContent = "Last update: " + new Date().toLocaleTimeString();
     }
 
-    function moveItem(){alert('🔁 This will allow moving the flight to another aircraft (under development).');}
-    function deleteItem(){if(!selectedChip)return;const id=selectedChip.dataset.id;const items=getItems().filter(x=>x.id!==id);setItems(items);closeActionModal();renderSchedule();}
-    function editItem(){alert('✏️ Edit function placeholder (inline edit planned).');}
+    // ====== Asignar ruta al tail (bloque o días sueltos, con conflicto) ======
+    function assignRouteToTail(ac){
+      const route = getRoute();
+      if(!route){ alert("No confirmed route available."); return; }
+      if(route.aircraft !== ac.type){ alert(`⚠ Route is for ${route.aircraft}, but tail ${ac.tail} is ${ac.type}.`); return; }
 
+      const items = getItems();
+      const daysSel = Array.isArray(route.days) && route.days.length ? route.days : ["mon"];
+      const separate = !!route.separateDays;
+      const dep = route.departure || "06:00";
+      const dur = Number(route.blockTimeMin || 210); // minutos de bloque ida+vuelta
+      const arr = toHHMM(toMin(dep) + dur);
+
+      // Conflicto: misma hora o solapamiento (turnaround 45 min)
+      const hasConflict = (day)=>{
+        const dayItems = items.filter(x=>x.tail===ac.tail && x.day===day && x.type==="flight");
+        const newStart = toMin(dep);
+        const newEnd = newStart + dur;
+        for(const f of dayItems){
+          const s = toMin(f.departure);
+          const e = toMin(f.arrival);
+          // bloquear misma hora
+          if(s === newStart) return true;
+          // bloqueo por solapamiento con turnaround
+          if(!(newEnd + TURNAROUND_MIN <= s || e + TURNAROUND_MIN <= newStart)) return true;
+        }
+        return false;
+      };
+
+      // Si es bloque (no separate): usar blockId común; si no, elementos individuales
+      const blockId = separate ? null : ("block-"+Math.random().toString(36).slice(2,8));
+
+      let assignedAny = false;
+      daysSel.forEach(day=>{
+        if(hasConflict(day)){
+          // no asignar ese día por conflicto
+          return;
+        }
+        const flight = {
+          id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
+          blockId: separate ? "" : blockId,
+          type:"flight",
+          tail: ac.tail,
+          acType: ac.type,
+          day,
+          origin: route.origin,
+          destination: route.destination,
+          departure: dep,
+          arrival: arr
+        };
+        items.push(flight);
+        assignedAny = true;
+      });
+
+      if(!assignedAny){
+        alert("⚠ Cannot assign: schedule conflicts on selected days.");
+        return;
+      }
+      setItems(items);
+      renderSchedule();
+    }
+
+    // ====== Maintenance ======
+    let maintTail=null;
+    function openMaintModal(tail){ maintTail=tail; document.getElementById("maintModal").style.display="flex"; }
+    function closeMaintModal(){ maintTail=null; document.getElementById("maintModal").style.display="none"; }
+    function applyMaintenance(){
+      if(!maintTail){ closeMaintModal(); return; }
+      const t=document.getElementById("maintType").value;
+      const d=document.getElementById("maintDay").value;
+      const items=getItems();
+      items.push({
+        id:"svc-"+Math.random().toString(36).slice(2,8),
+        type:"service",
+        serviceType:t,
+        tail:maintTail,
+        acType: getFleet().find(x=>x.tail===maintTail)?.type || "",
+        day:d
+      });
+      setItems(items);
+      closeMaintModal();
+      renderSchedule();
+    }
+
+    // ====== Modal acciones ======
     let selectedChip=null;
-    function openActionModal(chip){selectedChip=chip;document.getElementById("actionModal").style.display="flex";}
-    function closeActionModal(){selectedChip=null;document.getElementById("actionModal").style.display="none";}
+    function openActionModal(chip){ selectedChip=chip; document.getElementById("actionModal").style.display="flex"; }
+    function closeActionModal(){ selectedChip=null; document.getElementById("actionModal").style.display="none"; }
+    function removeItem(){
+      if(!selectedChip){ closeActionModal(); return; }
+      const id = selectedChip.dataset.id;
+      const block = selectedChip.dataset.blockId || "";
+      const type = selectedChip.dataset.type;
+      const items=getItems();
+      let filtered;
+      if(type==="flight" && block){ // borrar bloque completo
+        filtered = items.filter(x=>x.blockId!==block);
+      }else{
+        filtered = items.filter(x=>x.id!==id);
+      }
+      setItems(filtered);
+      closeActionModal();
+      renderSchedule();
+    }
 
-    function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
+    // ====== Otros ======
+    function handleLogout(){ alert("👋 Session closed. See you soon, Captain!"); window.location.href="login.html"; }
+
     window.addEventListener("load",renderSchedule);
   </script>
 </body>
