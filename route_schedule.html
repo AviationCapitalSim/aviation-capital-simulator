@@ -492,6 +492,73 @@ confirmRoute = function () {
   alert(`✅ Route confirmed and saved!\n${flightNumberOut} / ${flightNumberIn}`);
   window.location.href = "routes.html";
 };
+    // === EDIT MODE: load and update existing flight ===
+document.addEventListener("DOMContentLoaded", () => {
+  const editID = localStorage.getItem("editFlightID");
+  if (!editID) return; // no viene en modo edición
+
+  const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  const flight = items.find(f => f.id === editID || f.blockId === editID);
+  if (!flight) return;
+
+  console.log("✏️ Editing flight:", flight);
+
+  // Cargar datos al formulario
+  document.getElementById("origin").value = flight.origin || "";
+  document.getElementById("destination").value = flight.destination || "";
+  document.getElementById("aircraft").value = flight.acType || "";
+  document.getElementById("departureTime").value = flight.departure || "06:00";
+
+  // Mostrar aviso visual
+  const notice = document.createElement("div");
+  notice.style.color = "#FFB300";
+  notice.style.marginBottom = "1rem";
+  notice.style.fontWeight = "600";
+  notice.innerHTML = `✏️ Editing Flight: <strong>${flight.origin}-${flight.destination}</strong>`;
+  document.querySelector(".schedule-container").prepend(notice);
+
+  // Cambiar texto del botón
+  const btn = document.querySelector(".acs-btn");
+  if (btn) btn.textContent = "UPDATE FLIGHT";
+
+  // Reemplazar comportamiento del botón principal
+  btn.onclick = () => {
+    const origin = document.getElementById("origin").value.trim();
+    const destination = document.getElementById("destination").value.trim();
+    const aircraft = document.getElementById("aircraft").value;
+    const departure = document.getElementById("departureTime").value;
+    const optimized = document.getElementById("optimizeRotation").checked;
+    const selectedDays = ["mon","tue","wed","thu","fri","sat","sun"]
+      .filter(id => document.getElementById(id).checked);
+
+    if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+      alert("⚠️ Please complete all required fields before updating.");
+      return;
+    }
+
+    // Eliminar vuelo previo
+    const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
+
+    // Crear nuevo vuelo con datos actualizados
+    const newFlight = {
+      ...flight,
+      origin,
+      destination,
+      acType: aircraft,
+      departure,
+      optimized,
+      day: selectedDays[0] || "mon",
+    };
+
+    updatedList.push(newFlight);
+    localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
+
+    // Limpiar identificador y redirigir
+    localStorage.removeItem("editFlightID");
+    alert("✅ Flight updated successfully!");
+    window.location.href = "schedule_table.html";
+  };
+});
   </script>
 </body>
 </html>
