@@ -356,7 +356,7 @@ function editFlight(){
   // Guardamos el ID del vuelo a editar para usarlo en schedule_route.html
   localStorage.setItem("editFlightID", selectedChip.dataset.id);
   closeActionModal();
-  window.location.href = "schedule_route.html";
+  window.location.href = "route_schedule.html";
 }
     function handleLogout(){ alert("👋 Session closed. See you soon, Captain!"); window.location.href="login.html"; }
     window.addEventListener("load",renderSchedule);
