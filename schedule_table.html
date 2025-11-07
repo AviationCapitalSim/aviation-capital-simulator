@@ -333,8 +333,8 @@
       closeActionModal();
       renderSchedule();
     }
-// === ✅ DELETE FLIGHT + FULL RELEASE SYSTEM — 2025-11-07 (FIXED) ===
-/* Fusión del borrado original con liberación completa y compatibilidad con modal */
+/* === ✅ DELETE FLIGHT + FULL BLOCK RELEASE SYSTEM — 2025-11-07 === */
+/* Si el vuelo pertenece a un bloque (repeticiones semanales), elimina todo el bloque completo */
 function deleteFlight(){
   if(!selectedChip){ closeActionModal(); return; }
 
@@ -351,18 +351,15 @@ function deleteFlight(){
     return;
   }
 
-  // 1️⃣ Eliminar vuelo del listado general
-  items = items.filter(f => f.id !== id && f.blockId !== block);
-  setItems(items);
+  // 1️⃣ Determinar criterio de eliminación
+  const isBlock = !!block && block.startsWith("block-");
+  const updatedItems = isBlock 
+    ? items.filter(f => f.blockId !== block)   // Elimina todas las instancias del bloque
+    : items.filter(f => f.id !== id);
 
-  // 2️⃣ Liberar números de vuelo (si existen o si se derivan del localStorage)
-  if (!flight.flightNumberOut || !flight.flightNumberIn) {
-    // Recuperar del localStorage de ruta actual si no fueron guardados
-    const lastRoute = JSON.parse(localStorage.getItem("confirmedRoute") || "{}");
-    flight.flightNumberOut = lastRoute.flightNumberOut;
-    flight.flightNumberIn  = lastRoute.flightNumberIn;
-  }
+  setItems(updatedItems);
 
+  // 2️⃣ Liberar números de vuelo
   if (flight.flightNumberOut && flight.flightNumberIn) {
     usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
     localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
@@ -378,12 +375,12 @@ function deleteFlight(){
   });
   localStorage.setItem("releasedSlots", JSON.stringify(releasedSlots));
 
-  // 4️⃣ Actualizar visualmente
+  // 4️⃣ Refrescar vista
   closeActionModal();
   renderSchedule();
 
   // 5️⃣ Confirmación
-  alert(`❌ Flight ${flight.flightNumberOut || "(no number)"} deleted permanently.`);
+  alert(`❌ Flight ${flight.flightNumberOut || ""} deleted permanently (block cleared).`);
 }
 
 // === Editar vuelo ===
