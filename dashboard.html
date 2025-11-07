@@ -284,19 +284,20 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-    // === IATA CODE REGISTRATION (ATLAS Example) ===
-// Este bloque guarda el prefijo IATA de la compañía actual en localStorage
-(function registerIATA() {
-  const airlineName = "ATLAS"; // nombre mostrado en Dashboard
-  const iataCode = "AT";       // código asignado por el sistema o registro inicial
+    // === AUTOLOAD AIRLINE INFO FROM CREATE_AIRLINE ===
+document.addEventListener("DOMContentLoaded", () => {
+  const airlineName = localStorage.getItem("userAirline");
+  const iataCode = localStorage.getItem("userIATA");
 
-  // Guardar en localStorage para uso global (Route Schedule, Schedule Table, etc.)
-  localStorage.setItem("userAirline", airlineName);
-  localStorage.setItem("userIATA", iataCode);
-
-  // Comprobación visual en consola (opcional)
-  console.log(`✅ IATA Code Registered: ${iataCode} (${airlineName})`);
-})();
+  if (airlineName && iataCode) {
+    const welcomeMsg = document.getElementById("welcomeMessage");
+    if (welcomeMsg) {
+      welcomeMsg.innerHTML = `Welcome to <span>${airlineName} (${iataCode})</span>`;
+    }
+  } else {
+    console.warn("⚠️ Airline data not found — please complete airline setup first.");
+  }
+});
   </script>
 </body>
 </html>
