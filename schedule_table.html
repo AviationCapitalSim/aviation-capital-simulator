@@ -333,8 +333,8 @@
       closeActionModal();
       renderSchedule();
     }
-// === ✅ DELETE FLIGHT + FULL RELEASE SYSTEM — 2025-11-07 ===
-/* Fusión del borrado original con la liberación completa de números y slots */
+// === ✅ DELETE FLIGHT + FULL RELEASE SYSTEM — 2025-11-07 (FIXED) ===
+/* Fusión del borrado original con liberación completa y compatibilidad con modal */
 function deleteFlight(){
   if(!selectedChip){ closeActionModal(); return; }
 
@@ -355,7 +355,14 @@ function deleteFlight(){
   items = items.filter(f => f.id !== id && f.blockId !== block);
   setItems(items);
 
-  // 2️⃣ Liberar números de vuelo
+  // 2️⃣ Liberar números de vuelo (si existen o si se derivan del localStorage)
+  if (!flight.flightNumberOut || !flight.flightNumberIn) {
+    // Recuperar del localStorage de ruta actual si no fueron guardados
+    const lastRoute = JSON.parse(localStorage.getItem("confirmedRoute") || "{}");
+    flight.flightNumberOut = lastRoute.flightNumberOut;
+    flight.flightNumberIn  = lastRoute.flightNumberIn;
+  }
+
   if (flight.flightNumberOut && flight.flightNumberIn) {
     usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
     localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
@@ -376,13 +383,12 @@ function deleteFlight(){
   renderSchedule();
 
   // 5️⃣ Confirmación
-  alert(`❌ Flight ${flight.flightNumberOut || ""} deleted permanently.`);
+  alert(`❌ Flight ${flight.flightNumberOut || "(no number)"} deleted permanently.`);
 }
 
 // === Editar vuelo ===
 function editFlight(){
   if(!selectedChip){ closeActionModal(); return; }
-  // Guardamos el ID del vuelo a editar para usarlo en route_schedule.html
   localStorage.setItem("editFlightID", selectedChip.dataset.id);
   closeActionModal();
   window.location.href = "route_schedule.html";
@@ -390,14 +396,17 @@ function editFlight(){
 
 /* === Asignación al botón DELETE del modal === */
 document.addEventListener("DOMContentLoaded", () => {
-  const delBtn = document.getElementById("deleteFlightBtn");
-  if (delBtn) {
-    delBtn.onclick = () => {
-      const flightID = delBtn.getAttribute("data-flight-id");
-      if (confirm("⚠️ Are you sure you want to permanently delete this flight?")) {
-        deleteFlight(flightID);
-      }
-    };
+  // 🔧 Se asegura que el botón del modal dispare el delete correcto
+  const modal = document.getElementById("actionModal");
+  if (modal) {
+    const delBtn = modal.querySelector("button[onclick*='deleteFlight']");
+    if (delBtn) {
+      delBtn.onclick = () => {
+        if (confirm("⚠️ Are you sure you want to permanently delete this flight?")) {
+          deleteFlight();
+        }
+      };
+    }
   }
 });
 
