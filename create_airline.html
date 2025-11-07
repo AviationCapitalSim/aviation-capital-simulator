@@ -195,6 +195,11 @@
       }
 
       localStorage.setItem("ACS_Airline", JSON.stringify(airline));
+      
+      // === Guardar código IATA y nombre para módulos ACS ===
+      localStorage.setItem("userAirline", airline.name);
+      localStorage.setItem("userIATA", airline.iata);
+      console.log(`✅ Airline registered in ACS memory: ${airline.name} (${airline.iata})`);
 
       alert(`✅ Airline Created Successfully!\nWelcome aboard, Captain!\nYour airline "${airline.name}" is ready for takeoff.`);
       window.location.href = "dashboard.html";
