@@ -228,6 +228,9 @@
       <label>Destination (ICAO)</label>
       <input type="text" id="destination" placeholder="e.g. EGLL, LFPG, EHAM" />
 
+      <label>Flight Number (Auto)</label>
+      <input type="text" id="flightNumber" readonly />
+
       <label>Aircraft Type</label>
       <select id="aircraft" onchange="autoCalculate()">
         <option value="">-- Select Aircraft --</option>
@@ -423,6 +426,72 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+    
+    // === Generar número de vuelo automático ===
+const flightNumberInput = document.getElementById("flightNumber");
+let userIATA = localStorage.getItem("userIATA") || "AT"; // Prefijo guardado en Dashboard
+let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
+
+// Evitar duplicados de número de vuelo previos
+let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+
+function generateFlightNumbers() {
+  let nextOut = `${userIATA}${lastFlightNumber}`;
+  let nextIn = `${userIATA}${lastFlightNumber + 1}`;
+
+  // Validación: no duplicar
+  if (usedFlights.includes(nextOut) || usedFlights.includes(nextIn)) {
+    flightNumberInput.style.border = "2px solid red";
+    alert("⚠️ Flight number already exists, please review your previous routes.");
+    return;
+  }
+
+  flightNumberInput.style.border = "none";
+  flightNumberInput.value = `${nextOut} ➜ ${nextIn}`;
+}
+
+generateFlightNumbers();
+
+// === Al confirmar ruta, guardar el número de vuelo y actualizar contador ===
+const originalConfirmRoute = confirmRoute;
+confirmRoute = function () {
+  const origin = document.getElementById("origin").value.trim();
+  const destination = document.getElementById("destination").value.trim();
+  const aircraft = document.getElementById("aircraft").value;
+  const departure = document.getElementById("departureTime").value;
+  const optimized = document.getElementById("optimizeRotation").checked;
+  const selectedDays = ["mon","tue","wed","thu","fri","sat","sun"].filter(id => document.getElementById(id).checked);
+
+  if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+    alert("⚠️ Please complete all required fields and select at least one day before confirming the route.");
+    return;
+  }
+
+  const [flightNumberOut, , flightNumberIn] = flightNumberInput.value.split(" ");
+
+  // Guardar datos de ruta
+  localStorage.setItem("confirmedRoute", JSON.stringify({
+    origin,
+    destination,
+    aircraft,
+    departure,
+    optimized,
+    days: selectedDays,
+    flightNumberOut,
+    flightNumberIn
+  }));
+
+  // Actualizar historial de números usados
+  usedFlights.push(flightNumberOut, flightNumberIn);
+  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+
+  // Incrementar contador global
+  lastFlightNumber += 2;
+  localStorage.setItem("lastFlightNumber", lastFlightNumber.toString());
+
+  alert(`✅ Route confirmed and saved!\n${flightNumberOut} / ${flightNumberIn}`);
+  window.location.href = "routes.html";
+};
   </script>
 </body>
 </html>
