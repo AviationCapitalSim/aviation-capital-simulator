@@ -16,12 +16,13 @@
 
     h2 {
       color: #FFB300;
-      margin-top: 2rem;
+      margin-top: 6rem; /* ✅ CORREGIDO: más espacio para header fijo */
     }
 
     .sub {
       color: #ccc;
       margin-bottom: 2rem;
+      text-align: center;
     }
 
     table {
@@ -103,6 +104,18 @@
       color: #aaa;
       font-size: 0.9rem;
     }
+
+    /* ✅ CORREGIDO: Reloj Airbus cockpit */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80; /* Verde Airbus tipo cockpit */
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
   </style>
 </head>
 
@@ -122,8 +135,16 @@
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+
+      <!-- ✅ CORREGIDO: eliminado Logout del nav -->
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <!-- ✅ CORREGIDO: agregado reloj verde cockpit -->
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN CONTENT ===== -->
@@ -279,5 +300,8 @@
       window.location.href = "login.html";
     }
   </script>
+
+  <!-- ✅ CORREGIDO: motor de reloj global -->
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
