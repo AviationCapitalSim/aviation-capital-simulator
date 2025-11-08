@@ -52,6 +52,18 @@
     .acs-btn:hover {
       background-color: #007d4e;
     }
+
+    /* ✅ CORREGIDO: reloj Airbus cockpit */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80; /* Verde Airbus tipo cockpit */
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
   </style>
 </head>
 
@@ -68,13 +80,18 @@
       <a href="finance.html" class="active">Finance</a>
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html">Routes</a>
-      <a href="market.html">Market</a>
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
-      <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+      <!-- ✅ CORREGIDO: eliminado Logout dentro del nav -->
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <!-- ✅ CORREGIDO: reloj Airbus cockpit -->
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN CONTENT ===== -->
@@ -84,7 +101,6 @@
 
     <!-- ===== FINANCE PANELS ===== -->
     <section class="finance-panels">
-
       <div class="panel" onclick="openBank()">
         <h3>🏦 Bank</h3>
         <p>Access your airline's main financial institution. Check balances, transfers, and interest rates.</p>
@@ -108,7 +124,6 @@
         <p>Coming soon — diversify your capital into market assets, airline bonds, or regional projects.</p>
         <button class="acs-btn">Coming Soon</button>
       </div>
-
     </section>
   </main>
 
@@ -139,10 +154,15 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+  </script>
+
+  <!-- ✅ CORREGIDO: cierre de script y sincronización global -->
   <script>
-  // Operaciones financieras (intereses, activos, préstamos, etc.)
-  localStorage.setItem("acs_finance_ops", 0);
-</script>
-<script src="finance.js?v=1.0.0"></script>
+    // Operaciones financieras (intereses, activos, préstamos, etc.)
+    localStorage.setItem("acs_finance_ops", 0);
+  </script>
+
+  <script src="finance.js?v=1.0.0"></script>
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
