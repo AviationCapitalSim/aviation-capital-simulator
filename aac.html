@@ -98,6 +98,17 @@
       margin-top: 1rem;
       font-style: italic;
     }
+    /* === CLOCK STYLE (ACS Airbus Digits) === */
+.acs-clock-header {
+  font-family: 'Orbitron', 'Consolas', monospace;
+  color: #00ff80; /* Verde Airbus tipo cockpit */
+  font-weight: bold;
+  background: rgba(0, 255, 128, 0.08);
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem; /* tamaño compacto estilo Dashboard */
+  margin-left: 1rem;
+}
   </style>
 </head>
 
@@ -120,8 +131,14 @@
       <a href="support.html">Support</a>
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
-  </header>
+    
+    <div class="acs-auth">
+    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+  </div>
 
+  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+</header>
+ 
   <!-- ===== MAIN ===== -->
   <main class="acs-main">
     <h2>Aircraft Activity Center (AAC)</h2>
@@ -204,6 +221,7 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+    <script src="time_engine.js?v=1.2"></script>
   </script>
 </body>
 </html>
