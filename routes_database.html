@@ -6,7 +6,7 @@
   <title>World Airports Database - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === ROUTES DATABASE MODULE === */
+    /* === WORLD AIRPORTS DATABASE (ACS Clean 2) === */
     body {
       background-color: #081530;
       color: white;
@@ -16,18 +16,36 @@
 
     h2 {
       color: #FFB300;
-      margin-top: 2rem;
+      margin-top: 6rem; /* ✅ espacio por header fijo */
+      text-align: center;
     }
 
     .sub {
       color: #ccc;
+      text-align: center;
       margin-bottom: 2rem;
+    }
+
+    .search-bar {
+      margin: 1rem 0;
+      text-align: center;
+    }
+
+    .search-bar input {
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: none;
+      width: 280px;
+      font-size: 1rem;
+      outline: none;
     }
 
     .continent-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1.5rem;
+      margin: 0 auto;
+      width: 90%;
       margin-top: 2rem;
     }
 
@@ -71,22 +89,6 @@
       background-color: #17a84d;
     }
 
-    /* Search bar */
-    .search-bar {
-      margin: 1rem 0;
-      text-align: center;
-    }
-
-    .search-bar input {
-      padding: 0.6rem;
-      border-radius: 8px;
-      border: none;
-      width: 280px;
-      font-size: 1rem;
-      outline: none;
-    }
-
-    /* Back button */
     .back-btn {
       color: #1DB954;
       background: none;
@@ -94,12 +96,33 @@
       border-radius: 6px;
       padding: 0.4rem 1rem;
       cursor: pointer;
-      margin-top: 1rem;
+      display: block;
+      margin: 2rem auto 1rem;
     }
 
     .back-btn:hover {
       background-color: #1DB954;
       color: white;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #999;
+      font-size: 0.9rem;
+      padding: 1rem;
+    }
+
+    /* ✅ Reloj cockpit Airbus */
+    .acs-clock-header {
+      font-family: 'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      font-weight:bold;
+      background:rgba(0,255,128,0.08);
+      padding:0.3rem 0.8rem;
+      border-radius:6px;
+      font-size:0.9rem;
+      margin-left:1rem;
     }
   </style>
 </head>
@@ -117,18 +140,21 @@
       <a href="finance.html">Finance</a>
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html" class="active">Routes</a>
-      <a href="market.html">Market</a>
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
-      <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
-    <h2>World Airports Database</h2>
+    <h2>🌍 World Airports Database</h2>
     <p class="sub">Select a continent to explore airports, calculate distances from your base, and analyze operational opportunities.</p>
 
     <div class="search-bar">
@@ -138,43 +164,43 @@
     <section class="continent-grid" id="continentGrid">
       <div class="continent-card" onclick="openContinent('Europe')">
         <h3>🌍 Europe</h3>
-        <p>Explore major hubs like London Heathrow (EGLL), Frankfurt (EDDF), and Madrid (LEMD). Range and demand optimized for medium and long-haul operations.</p>
+        <p>Explore major hubs like London Heathrow (EGLL), Frankfurt (EDDF), and Madrid (LEMD).</p>
         <button class="acs-btn">Open</button>
       </div>
 
       <div class="continent-card" onclick="openContinent('NorthAmerica')">
         <h3>🛫 North America</h3>
-        <p>Includes key airports such as New York JFK (KJFK), Miami (KMIA), and Los Angeles (KLAX). High passenger flow and long-haul connectivity.</p>
+        <p>Includes JFK (KJFK), Miami (KMIA), Los Angeles (KLAX). High passenger flow and long-haul connectivity.</p>
         <button class="acs-btn">Open</button>
       </div>
 
       <div class="continent-card" onclick="openContinent('SouthAmerica')">
         <h3>🌎 South America</h3>
-        <p>Dynamic markets with high cargo potential: Bogotá (SKBO), São Paulo (SBGR), Buenos Aires (SAEZ).</p>
+        <p>Dynamic markets with cargo potential: Bogotá (SKBO), São Paulo (SBGR), Buenos Aires (SAEZ).</p>
         <button class="acs-btn">Open</button>
       </div>
 
       <div class="continent-card" onclick="openContinent('Asia')">
         <h3>🌏 Asia</h3>
-        <p>Hub of high-density traffic: Dubai (OMDB), Tokyo (RJTT), Singapore (WSSS), Hong Kong (VHHH).</p>
+        <p>High-density hubs: Dubai (OMDB), Tokyo (RJTT), Singapore (WSSS), Hong Kong (VHHH).</p>
         <button class="acs-btn">Open</button>
       </div>
 
       <div class="continent-card" onclick="openContinent('Africa')">
         <h3>🌍 Africa</h3>
-        <p>Emerging routes and expanding cargo networks: Cairo (HECA), Johannesburg (FAOR), Nairobi (HKJK).</p>
+        <p>Expanding networks: Cairo (HECA), Johannesburg (FAOR), Nairobi (HKJK).</p>
         <button class="acs-btn">Open</button>
       </div>
 
       <div class="continent-card" onclick="openContinent('Oceania')">
         <h3>🌏 Oceania</h3>
-        <p>Strategic Pacific gateways: Sydney (YSSY), Auckland (NZAA), Melbourne (YMML).</p>
+        <p>Pacific gateways: Sydney (YSSY), Auckland (NZAA), Melbourne (YMML).</p>
         <button class="acs-btn">Open</button>
       </div>
 
       <div class="continent-card" onclick="openContinent('MiddleEast')">
         <h3>🕌 Middle East</h3>
-        <p>Major long-haul connections and cargo hubs: Doha (OTHH), Dubai (OMDB), Riyadh (OERK).</p>
+        <p>Long-haul and cargo hubs: Doha (OTHH), Dubai (OMDB), Riyadh (OERK).</p>
         <button class="acs-btn">Open</button>
       </div>
     </section>
@@ -183,18 +209,14 @@
   </main>
 
   <!-- ===== FOOTER ===== -->
-  <footer class="acs-footer">
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-  </footer>
+  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <!-- ===== SCRIPT ===== -->
   <script>
-    // === Redirection by continent ===
     function openContinent(continent) {
       window.location.href = "airport_list_" + continent.toLowerCase() + ".html";
     }
 
-    // === Search feature (future integration for airport search) ===
     function searchContinents() {
       const input = document.getElementById("searchAirport").value.toLowerCase();
       const cards = document.querySelectorAll(".continent-card");
@@ -204,11 +226,13 @@
       });
     }
 
-    // === Logout handler ===
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
   </script>
+
+  <!-- ✅ Reloj cockpit Airbus sincronizado -->
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
