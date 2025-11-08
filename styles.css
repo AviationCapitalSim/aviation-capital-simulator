@@ -66,7 +66,7 @@ footer {
   font-size: 0.9rem;
 }
 
-/* ======== ACS HEADER (Perfect Center Alignment) ======== */
+/* ======== ACS HEADER (Balanced Alignment v2.1) ======== */
 .acs-header {
   position: fixed;
   top: 0;
@@ -78,26 +78,26 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.8rem 3rem 0.8rem 2.4rem; /* 📏 margen ajustado para equilibrio */
+  padding: 0.8rem 3.4rem 0.8rem 2.4rem; /* ⬅️ margen derecho ligeramente mayor */
   border-bottom: 2px solid #FFB300;
   z-index: 1000;
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
 
-/* ======== MENU NAV CENTRAL ======== */
+/* ======== MENU NAV CENTRAL (Optical Centering) ======== */
 .acs-nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 1; /* fuerza el centrado real */
+  flex: 1;
   gap: 1.5rem;
-  transform: translateX(12px); /* ⚖️ ligera corrección óptica al centro */
+  transform: translateX(18px); /* 🔧 corrección óptica centrada */
 }
 
-/* ======== CLOCK POSITION TUNING ======== */
+/* ======== CLOCK POSITION (Right Edge Precision) ======== */
 .acs-clock-header {
-  margin-right: 10px; /* ✅ reloj movido unos milímetros más a la derecha */
+  margin-right: 18px; /* ⏱ un toque más cerca del borde derecho */
 }
 
 /* Scroll effect */
