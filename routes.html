@@ -6,7 +6,7 @@
   <title>Routes - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === ROUTES MODULE STYLE === */
+    /* === ROUTES MODULE (ACS Clean 2) === */
     body {
       background-color: #081530;
       color: white;
@@ -14,11 +14,38 @@
       margin: 0;
     }
 
+    h2 {
+      color: #FFB300;
+      margin-top: 6rem; /* ✅ espacio por header fijo */
+      text-align: center;
+    }
+
+    .sub {
+      color: #ccc;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
     .routes-panels {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
+      margin: 0 auto;
+      width: 90%;
       margin-top: 2rem;
+    }
+
+    .panel {
+      background: #0b1c3f;
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      border: 1px solid rgba(255,179,0,0.25);
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .panel:hover {
+      transform: scale(1.02);
     }
 
     .panel h3 {
@@ -30,11 +57,6 @@
       color: #ddd;
       font-size: 1rem;
       line-height: 1.4;
-    }
-
-    .panel:hover {
-      transform: scale(1.02);
-      transition: transform 0.2s ease;
     }
 
     .acs-btn {
@@ -53,14 +75,24 @@
       background-color: #17a84d;
     }
 
-    h2 {
-      color: #FFB300;
-      margin-top: 2rem;
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #999;
+      font-size: 0.9rem;
+      padding: 1rem;
     }
 
-    .sub {
-      color: #ccc;
-      margin-bottom: 2rem;
+    /* ✅ Reloj cockpit Airbus */
+    .acs-clock-header {
+      font-family: 'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      font-weight:bold;
+      background:rgba(0,255,128,0.08);
+      padding:0.3rem 0.8rem;
+      border-radius:6px;
+      font-size:0.9rem;
+      margin-left:1rem;
     }
   </style>
 </head>
@@ -81,18 +113,23 @@
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
-    <h2>Routes</h2>
+    <h2>🌍 Routes</h2>
     <p class="sub">Create, schedule, and manage your global air network with precision and realism.</p>
 
     <section class="routes-panels">
       <div class="panel" onclick="openRoutesDB()">
-        <h3>🌍 World Airports Database</h3>
+        <h3>🌐 World Airports Database</h3>
         <p>Access all global airports categorized by continent. Browse detailed data such as ICAO codes, runways, and available slots.</p>
         <button class="acs-btn">Open</button>
       </div>
@@ -115,51 +152,35 @@
         <button class="acs-btn">Open</button>
       </div>
 
-      <div class="panel">
-  <h3>🕓 Schedule & Time Table</h3>
-  <p>Plan weekly operations, assign confirmed routes, and schedule maintenance checks.</p>
-  <button class="acs-btn" onclick="window.location.href='schedule_table.html'">Open</button>
-  </div>
+      <div class="panel" onclick="window.location.href='schedule_table.html'">
+        <h3>🕓 Schedule & Time Table</h3>
+        <p>Plan weekly operations, assign confirmed routes, and schedule maintenance checks.</p>
+        <button class="acs-btn">Open</button>
+      </div>
     </section>
   </main>
 
   <!-- ===== FOOTER ===== -->
-  <footer class="acs-footer">
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-  </footer>
+  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <!-- ===== SCRIPT ===== -->
   <script>
-    // === Submodule Navigation ===
-    function openRoutesDB() {
-      window.location.href = "routes_database.html";
-    }
-
-    function openRouteSetup() {
-      window.location.href = "route_setup.html";
-    }
-
-    function openRoutesActive() {
-      window.location.href = "routes_active.html";
-    }
-
-    function openDistanceCalc() {
-      window.location.href = "distance_calc.html";
-    }
-
-    function openTimetable() {
-      window.location.href = "timetable.html";
-    }
-
-    // === Logout Handler ===
+    function openRoutesDB() { window.location.href = "routes_database.html"; }
+    function openRouteSetup() { window.location.href = "route_setup.html"; }
+    function openRoutesActive() { window.location.href = "routes_active.html"; }
+    function openDistanceCalc() { window.location.href = "distance_calc.html"; }
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+  </script>
+
   <script>
-  // Ingresos por vuelos (actualmente 0, luego será totalFlightRevenue)
-  localStorage.setItem("acs_flight_revenue", 0);
-</script>
-<script src="finance.js?v=1.0.0"></script>
+    // Ingresos por vuelos (actualmente 0, luego será totalFlightRevenue)
+    localStorage.setItem("acs_flight_revenue", 0);
+  </script>
+
+  <script src="finance.js?v=1.0.0"></script>
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
