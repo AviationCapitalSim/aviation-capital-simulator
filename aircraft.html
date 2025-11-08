@@ -132,26 +132,28 @@
       window.location.href = "login.html";
     }
 
-    // === Reloj cockpit Airbus (modo simulador unificado) ===
-    window.addEventListener("load", () => {
-      const c = document.getElementById("acs-clock");
-      if (!c) return;
-      let simTime = new Date();
+     <script src="finance.js?v=1.0.0"></script>
 
-      function refreshClock() {
-        simTime.setMinutes(simTime.getMinutes() + 1);
-        const hh = String(simTime.getHours()).padStart(2, "0");
-        const mm = String(simTime.getMinutes()).padStart(2, "0");
-        const date = simTime.toDateString().toUpperCase();
-        c.textContent = `${hh}:${mm} — ${date}`;
-      }
+<!-- === Reloj cockpit Airbus (modo simulador) === -->
+<script>
+window.addEventListener("load", () => {
+  const c = document.getElementById("acs-clock");
+  if (!c) return;
 
-      refreshClock();
-      setInterval(refreshClock, 1000);
-    });
-  </script>
+  let simTime = new Date();
 
-  <script src="finance.js?v=1.0.0"></script>
-  <script src="time_engine.js?v=1.2"></script>
+  function refreshClock() {
+    simTime.setMinutes(simTime.getMinutes() + 1);
+    const hh = String(simTime.getHours()).padStart(2, "0");
+    const mm = String(simTime.getMinutes()).padStart(2, "0");
+    const date = simTime.toDateString().toUpperCase();
+    c.textContent = `${hh}:${mm} — ${date}`;
+  }
+
+  refreshClock();
+  setInterval(refreshClock, 1000);
+});
+</script>
+
 </body>
 </html>
