@@ -17,7 +17,7 @@
     h2 {
       text-align: center;
       color: #FFB300;
-      margin-top: 2rem;
+      margin-top: 6rem; /* ✅ Ajuste para header fijo */
       margin-bottom: 0.4rem;
     }
 
@@ -51,38 +51,9 @@
       margin-bottom: 0.8rem;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 0.5rem;
-    }
-
-    th, td {
-      padding: 0.6rem;
-      border-bottom: 1px solid #1c2e55;
-      text-align: left;
-    }
-
-    th {
-      color: #FFB300;
-      background-color: #102040;
-    }
-
     .salary { color: #ff6464; font-weight: 600; }
     .staff { color: #00d17a; font-weight: 600; }
     .morale { font-weight: 600; color: #00d17a; }
-
-    .bonus-btn {
-      background-color: #00a86b;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    .bonus-btn:hover { background-color: #007d4e; }
 
     .acs-btn {
       background-color: #00a86b;
@@ -133,6 +104,18 @@
       top: 10px;
       right: 20px;
     }
+
+    /* ✅ Reloj cockpit Airbus */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80;
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
   </style>
 </head>
 
@@ -154,8 +137,13 @@
       <a href="forum.html">Forum</a>
       <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN ===== -->
@@ -164,7 +152,6 @@
     <p class="sub">Manage all staff, morale, payroll and bonuses across the company.</p>
 
     <section class="finance-panels">
-      <!-- 🟨 HR OVERVIEW -->
       <div class="panel">
         <h3>📊 HR Overview</h3>
         <p>Total Staff: <strong id="totalStaff">1,990 / 1,949</strong></p>
@@ -173,20 +160,18 @@
         <p>Staff Coverage: <strong id="coverage">102%</strong></p>
       </div>
 
-      <!-- 🧑‍💼 DEPARTMENT CONTROL -->
-<div class="panel">
-  <h3>🧑‍💼 Department Control</h3>
-  <p>Total Departments: <strong>5</strong></p>
-  <p>Total Staff: <strong>1,949 Employees</strong></p>
-  <p>Average Morale: <strong>97%</strong></p>
-  <p>Monthly Payroll: <strong>$2,830,291</strong></p>
-  <br />
-  <button class="acs-btn" onclick="window.location.href='department_control.html'">
-    🏢 Open Department Control Center
-  </button>
-</div>
+      <div class="panel">
+        <h3>🧑‍💼 Department Control</h3>
+        <p>Total Departments: <strong>5</strong></p>
+        <p>Total Staff: <strong>1,949 Employees</strong></p>
+        <p>Average Morale: <strong>97%</strong></p>
+        <p>Monthly Payroll: <strong>$2,830,291</strong></p>
+        <br />
+        <button class="acs-btn" onclick="window.location.href='department_control.html'">
+          🏢 Open Department Control Center
+        </button>
+      </div>
 
-      <!-- 💰 PAYROLL SUMMARY -->
       <div class="panel">
         <h3>💰 Payroll & Bonuses</h3>
         <p>This Month Payroll: <strong id="payrollTotal">$2,830,291</strong></p>
@@ -195,7 +180,6 @@
         <button class="acs-btn" onclick="resetBonuses()">Reset Bonuses</button>
       </div>
 
-      <!-- ✈️ OPERATIONAL IMPACT -->
       <div class="panel">
         <h3>✈️ Operational Impact</h3>
         <p>Flight Efficiency: <strong id="efficiency">94%</strong></p>
@@ -240,15 +224,8 @@
 
     let currentDept = null;
 
-    // === BONUS MODAL CONTROL ===
-    document.querySelectorAll(".bonus-btn").forEach(btn => {
-      btn.addEventListener("click", e => {
-        currentDept = e.target.dataset.dept;
-        openBonusModal(currentDept);
-      });
-    });
-
-    function openBonusModal(dept) {
+    function openBonusModal(dept = "management") {
+      currentDept = dept;
       const modal = document.getElementById("bonusModal");
       const range = document.getElementById("bonusRange");
       range.value = 20;
@@ -276,7 +253,6 @@
       ACS.finance.cash -= cost;
       ACS.finance.bonuses += cost;
       document.getElementById("bonusTotal").textContent = "$" + ACS.finance.bonuses.toLocaleString();
-      document.getElementById("morale" + capitalize(currentDept)).textContent = dept.morale + "%";
       alert(`${dept.name} morale increased to ${dept.morale}% (+${moraleBoost.toFixed(1)}). Cost: $${cost.toLocaleString()}`);
       closeBonusModal();
     }
@@ -289,16 +265,13 @@
       alert("Bonus records reset for this month.");
     }
 
-    function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
-
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-  <script>
-  // Gasto de RRHH (actualmente 0)
-  localStorage.setItem("acs_hr_expense", 0);
-</script>
-<script src="finance.js?v=1.0.0"></script>
+  </script>
+
+  <!-- ✅ Sincronización global de hora -->
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
