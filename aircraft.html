@@ -1,3 +1,4 @@
+/* === AIRCRAFT MODULE Version Beta 2 === */
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +7,7 @@
   <title>Aircraft - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === Ajustes locales para Aircraft === */
+    /* === AIRCRAFT MODULE (ACS Clean 3) === */
     .aircraft-panels {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -25,41 +26,34 @@
       line-height: 1.4;
     }
 
-    /* === AAC contador de mensajes === */
-    .aac-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* === Botón estándar ACS === */
+    .acs-btn {
+      background-color: #fff;
+      color: #081530;
+      border: 1px solid #fff;
+      padding: 0.4rem 1.4rem;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s ease;
     }
 
-    .aac-badge {
-      background-color: #E53935;
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.8rem;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 6px rgba(255, 0, 0, 0.6);
+    .acs-btn:hover {
+      background-color: #FFB300;
+      color: #081530;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
 
-    .aac-panel:hover {
-      transform: scale(1.02);
-      transition: transform 0.2s ease;
-    }
-
-    /* ✅ CORREGIDO: agregado reloj Airbus cockpit */
+    /* === Reloj cockpit Airbus === */
     .acs-clock-header {
       font-family: 'Orbitron', 'Consolas', monospace;
-      color: #00ff80; /* Verde Airbus tipo cockpit */
+      color: #00ff80;
       font-weight: bold;
       background: rgba(0, 255, 128, 0.08);
       padding: 0.3rem 0.8rem;
       border-radius: 6px;
-      font-size: 0.9rem; /* tamaño compacto estilo Dashboard */
+      font-size: 0.9rem;
       margin-left: 1rem;
     }
   </style>
@@ -81,61 +75,47 @@
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
-
-      <!-- ✅ CORREGIDO: eliminado Logout dentro del nav -->
     </nav>
 
     <div class="acs-auth">
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </div>
 
-    <!-- ✅ CORREGIDO: reloj agregado y sincronizado -->
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
     <h2>Aircraft</h2>
-    <p class="sub">Fleet management, acquisitions, maintenance, scheduling, and live tracking.</p>
+    <p class="sub">Fleet management, acquisitions, used markets, and live tracking.</p>
 
-    <!-- ===== AIRCRAFT PANELS ===== -->
     <section class="aircraft-panels">
-      <div class="panel aac-panel" onclick="openAAC()">
-        <div class="aac-title">
-          <h3>🛫 Aircraft Activity Center (AAC)</h3>
-          <span id="aacBadge" class="aac-badge">3</span>
-        </div>
-        <p>Monitor fleet activities, deliveries, maintenance alerts, and transactions between players.</p>
-      </div>
-
+      <!-- MY AIRCRAFT -->
       <div class="panel">
         <h3>✈️ My Aircraft</h3>
-        <p>View and manage your owned fleet. Access detailed status, maintenance history, and resale options.</p>
-        <button class="acs-btn">Open</button>
+        <p>View and manage your company fleet. Access detailed status, maintenance history, and resale options.</p>
+        <button class="acs-btn" onclick="window.location.href='my_aircraft.html'">Open</button>
       </div>
 
+      <!-- BUY NEW -->
       <div class="panel">
         <h3>💸 Buy New</h3>
-        <p>Order new aircraft directly from manufacturers. Access catalogs, pre-orders, and delivery slots.</p>
-        <button class="open-btn" onclick="window.location.href='buy_new.html'">Open</button>
+        <p>Order brand-new aircraft directly from manufacturers. Browse catalogs, place pre-orders, and manage deliveries.</p>
+        <button class="acs-btn" onclick="window.location.href='buy_new.html'">Open</button>
       </div>
 
+      <!-- BUY / RENT USED -->
       <div class="panel">
-        <h3>🔁 Rent</h3>
-        <p>Rent or lease aircraft between players. Flexible terms and dynamic market conditions.</p>
-        <button class="acs-btn">Open</button>
+        <h3>🔁 Buy-Rent Used Aircraft</h3>
+        <p>Access the secondary market to buy or lease used aircraft. System-calculated fair pricing based on age and usage.</p>
+        <button class="acs-btn" onclick="window.location.href='used_market.html'">Open</button>
       </div>
 
+      <!-- SKYTRACK -->
       <div class="panel">
-        <h3>🕓 Schedule</h3>
-        <p>Assign routes, track load factors, and manage operational efficiency based on demand.</p>
-        <button class="acs-btn">Open</button>
-      </div>
-
-      <div class="panel" onclick="openSkyTrack()">
         <h3>🌍 SkyTrack (Live Map)</h3>
-        <p>Visualize your active flights worldwide in real time. Follow your aircraft as they traverse global routes.</p>
-        <button class="acs-btn">Open</button>
+        <p>Track your company flights worldwide in real time. Monitor aircraft locations, status, and route progress.</p>
+        <button class="acs-btn" onclick="window.location.href='skytrack.html'">Open</button>
       </div>
     </section>
   </main>
@@ -147,37 +127,28 @@
 
   <!-- ===== SCRIPT ===== -->
   <script>
-    // === Navegación a submódulos ===
-    function openAAC() {
-      window.location.href = "aac.html";
-    }
-
-    function openSkyTrack() {
-      window.location.href = "skytrack.html";
-    }
-
-    // === Badge dinámico (ejemplo) ===
-    let aacCount = 3;
-    const badge = document.getElementById("aacBadge");
-
-    function updateAACBadge(count) {
-      aacCount = count;
-      badge.textContent = count;
-      badge.style.display = count > 0 ? "flex" : "none";
-    }
-
-    // === Logout coherente ===
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-  </script>
 
-  <!-- ✅ CORREGIDO: cerrado correctamente script duplicado -->
-  <!-- ✅ CORREGIDO: añadido motor de tiempo global -->
-  <script>
-    // Costos de mantenimiento y arrendamientos (actualmente 0)
-    localStorage.setItem("acs_maintenance_cost", 0);
+    // === Reloj cockpit Airbus (modo simulador unificado) ===
+    window.addEventListener("load", () => {
+      const c = document.getElementById("acs-clock");
+      if (!c) return;
+      let simTime = new Date();
+
+      function refreshClock() {
+        simTime.setMinutes(simTime.getMinutes() + 1);
+        const hh = String(simTime.getHours()).padStart(2, "0");
+        const mm = String(simTime.getMinutes()).padStart(2, "0");
+        const date = simTime.toDateString().toUpperCase();
+        c.textContent = `${hh}:${mm} — ${date}`;
+      }
+
+      refreshClock();
+      setInterval(refreshClock, 1000);
+    });
   </script>
 
   <script src="finance.js?v=1.0.0"></script>
