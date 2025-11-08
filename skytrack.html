@@ -8,53 +8,78 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    /* === SKYTRACK LOCAL STYLES === */
+    /* === SKYTRACK LOCAL STYLES (ACS Clean 2) === */
+    body {
+      background:#081530;
+      color:white;
+      font-family:"Segoe UI",sans-serif;
+      margin:0;
+    }
+
+    h2 {
+      color:#FFB300;
+      margin-top:6rem; /* ✅ header fijo */
+      text-align:center;
+    }
+    .sub { text-align:center; color:#ccc; margin-bottom:1rem; }
+
     #map {
-      height: 85vh;
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid rgba(255,179,0,0.3);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-      margin-top: 1.5rem;
+      height:85vh;
+      width:90%;
+      border-radius:12px;
+      border:1px solid rgba(255,179,0,0.3);
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+      margin:1.5rem auto;
     }
 
     .flight-info {
-      color: #ddd;
-      margin-top: 0.5rem;
-      text-align: center;
-      font-size: 0.95rem;
+      color:#ddd;
+      text-align:center;
+      font-size:0.95rem;
+      margin-top:0.3rem;
     }
 
-    .acs-main h2 {
-      margin-bottom: 0.4rem;
-      color: #FFB300;
+    .leaflet-control-attribution { color:#888 !important; }
+
+    /* === Radar Marker Styles === */
+    .acs-diamond {
+      background:#0096FF;
+      width:10px;
+      height:10px;
+      transform:rotate(45deg);
+      border:1px solid white;
+      border-radius:2px;
+    }
+    .acs-label {
+      position:absolute;
+      top:-4px;
+      left:14px;
+      font-size:11px;
+      font-family:'Orbitron',monospace;
+      color:#000;
+      text-shadow:0 0 2px #fff;
+      white-space:nowrap;
+      font-weight:600;
     }
 
-    .leaflet-control-attribution {
-      color: #888 !important;
+    footer {
+      text-align:center;
+      color:#999;
+      font-size:0.9rem;
+      padding:1rem;
     }
 
-    /* === Radar Marker Styles (mejor legibilidad y centrado) === */
-.acs-diamond {
-  background: #0096FF;
-  width: 10px;
-  height: 10px;
-  transform: rotate(45deg);
-  border: 1px solid white;
-  border-radius: 2px;
-}
-
-.acs-label {
-  position: absolute;
-  top: -3px;       /* antes -8px → mejor centrado */
-  left: 14px;      /* mantiene separación mínima */
-  font-size: 11px;
-  font-family: monospace;
-  color: #000000;  /* texto negro */
-  text-shadow: 0 0 2px #ffffff; /* borde blanco suave */
-  white-space: nowrap;
-  font-weight: 600;
-}
+    /* ✅ Reloj cockpit Airbus */
+    .acs-clock-header {
+      font-family:'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      font-weight:bold;
+      background:rgba(0,255,128,0.08);
+      padding:0.3rem 0.8rem;
+      border-radius:6px;
+      font-size:0.9rem;
+      margin-left:1rem;
+    }
   </style>
 </head>
 
@@ -76,8 +101,14 @@
       <a href="forum.html">Forum</a>
       <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <!-- ✅ Reloj cockpit Airbus -->
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN ===== -->
@@ -90,107 +121,76 @@
   </main>
 
   <!-- ===== FOOTER ===== -->
-  <footer class="acs-footer">
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-  </footer>
+  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <!-- ===== SCRIPT ===== -->
   <script>
     // === Initialize map ===
-    const map = L.map('map').setView([33.0, 68.0], 5); // Central Asia
-
+    const map = L.map('map').setView([33.0, 68.0], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 10,
-      attribution: '&copy; OpenStreetMap — ACS SkyTrack'
+      maxZoom:10,
+      attribution:'&copy; OpenStreetMap — ACS SkyTrack'
     }).addTo(map);
 
-    // === Define airports ===
-    const origin = { name: "Bishkek (UCFM)", lat: 42.866, lon: 74.529 };
-    const destination = { name: "Dubai (OMDB)", lat: 25.253, lon: 55.365 };
+    // === Airports ===
+    const origin = { name:"Bishkek (UCFM)", lat:42.866, lon:74.529 };
+    const destination = { name:"Dubai (OMDB)", lat:25.253, lon:55.365 };
 
-    // === Add airport markers ===
-    const startMarker = L.marker([origin.lat, origin.lon]).addTo(map)
-      .bindPopup(`<b>${origin.name}</b><br>Departure Airport`);
-    const endMarker = L.marker([destination.lat, destination.lon]).addTo(map)
-      .bindPopup(`<b>${destination.name}</b><br>Arrival Airport`);
+    // === Markers & route ===
+    L.marker([origin.lat,origin.lon]).addTo(map).bindPopup(`<b>${origin.name}</b><br>Departure`);
+    L.marker([destination.lat,destination.lon]).addTo(map).bindPopup(`<b>${destination.name}</b><br>Arrival`);
 
-    // === Route line ===
-    const routeLine = L.polyline([[origin.lat, origin.lon], [destination.lat, destination.lon]], {
-      color: '#FFB300',
-      weight: 2.5,
-      opacity: 0.8,
-      dashArray: '5, 6'
+    const routeLine = L.polyline([[origin.lat,origin.lon],[destination.lat,destination.lon]],{
+      color:'#FFB300',weight:2.5,opacity:0.8,dashArray:'5,6'
     }).addTo(map);
 
-    // === ✳️ ACS Radar Diamond Marker ===
+    // === ✳️ Radar Diamond Marker ===
     const planeIcon = L.divIcon({
-      html: `
-        <div class="acs-diamond"></div>
-        <div class="acs-label">A320 | N388PP</div>
-      `,
-      className: "acs-plane",
-      iconSize: [20, 20],
-      iconAnchor: [10, 10]
+      html:`<div class="acs-diamond"></div><div class="acs-label">A320 | N388PP</div>`,
+      className:"acs-plane",iconSize:[20,20],iconAnchor:[10,10]
     });
-
-    const planeMarker = L.marker([origin.lat, origin.lon], { icon: planeIcon }).addTo(map);
+    const planeMarker = L.marker([origin.lat,origin.lon],{icon:planeIcon}).addTo(map);
 
     // === Ruta dinámica (traza del vuelo) ===
-const flightTrace = L.polyline([], {
-  color: "#00E0FF",   // cian brillante tipo radar
-  weight: 2.2,        // grosor ajustado
-  opacity: 0.85
-}).addTo(map);
+    const flightTrace = L.polyline([],{
+      color:"#00E0FF",weight:2.2,opacity:0.85
+    }).addTo(map);
 
-    // === Movimiento y rotación ===
-    let progress = 0;
-    const steps = 400;
-    const updateInterval = 50;
+    let progress=0; const steps=400; const updateInterval=50;
 
-    function interpolatePosition(start, end, t) {
-      return [
-        start.lat + (end.lat - start.lat) * t,
-        start.lon + (end.lon - start.lon) * t
-      ];
+    function interpolatePosition(a,b,t){ return [a.lat+(b.lat-a.lat)*t, a.lon+(b.lon-a.lon)*t]; }
+    function getBearing(lat1,lon1,lat2,lon2){
+      const r=Math.PI/180;
+      const y=Math.sin((lon2-lon1)*r)*Math.cos(lat2*r);
+      const x=Math.cos(lat1*r)*Math.sin(lat2*r)-Math.sin(lat1*r)*Math.cos(lat2*r)*Math.cos((lon2-lon1)*r);
+      return ((Math.atan2(y,x)*180/Math.PI)+360)%360;
     }
 
-    function getBearing(lat1, lon1, lat2, lon2) {
-      const toRad = Math.PI / 180;
-      const y = Math.sin((lon2 - lon1) * toRad) * Math.cos(lat2 * toRad);
-      const x =
-        Math.cos(lat1 * toRad) * Math.sin(lat2 * toRad) -
-        Math.sin(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.cos((lon2 - lon1) * toRad);
-      const brng = Math.atan2(y, x);
-      return ((brng * 180) / Math.PI + 360) % 360;
-    }
-
-    function updatePlane() {
-      progress += 1 / steps;
-      if (progress > 1) {
-        progress = 1;
-        document.getElementById("flightStatus").innerHTML =
-          "✅ Flight completed: Arrived in Dubai (OMDB)";
+    function updatePlane(){
+      progress+=1/steps;
+      if(progress>1){
+        progress=1;
+        document.getElementById("flightStatus").innerHTML="✅ Flight completed: Arrived in Dubai (OMDB)";
       }
+      const [lat,lon]=interpolatePosition(origin,destination,progress);
+      planeMarker.setLatLng([lat,lon]);
+      flightTrace.addLatLng([lat,lon]);
 
-      const [lat, lon] = interpolatePosition(origin, destination, progress);
-      planeMarker.setLatLng([lat, lon]);
-      flightTrace.addLatLng([lat, lon]);
+      const bearing=getBearing(origin.lat,origin.lon,lat,lon);
+      const diamond=planeMarker.getElement()?.querySelector(".acs-diamond");
+      if(diamond) diamond.style.transform=`rotate(${bearing+45}deg)`;
 
-      // Rotación del diamante según rumbo
-      const bearing = getBearing(origin.lat, origin.lon, lat, lon);
-      const diamond = planeMarker.getElement()?.querySelector(".acs-diamond");
-      if (diamond) diamond.style.transform = `rotate(${bearing + 45}deg)`;
-
-      if (progress < 1) setTimeout(updatePlane, updateInterval);
+      if(progress<1) setTimeout(updatePlane,updateInterval);
     }
+    updatePlane();
 
-    updatePlane(); // Start animation
-
-    // === Logout coherente ===
-    function handleLogout() {
+    function handleLogout(){
       alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
+      window.location.href="login.html";
     }
   </script>
+
+  <!-- ✅ Reloj cockpit Airbus sincronizado -->
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
