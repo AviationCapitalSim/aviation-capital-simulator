@@ -100,6 +100,11 @@ footer {
   margin-right: 18px; /* ⏱ un toque más cerca del borde derecho */
 }
 
+/* ======== CLOCK COLOR (Unified Airbus Green) ======== */
+.acs-clock-header {
+  color: #00ff80; /* Verde Airbus tipo cockpit */
+}
+
 /* Scroll effect */
 .acs-header.scrolled {
   background: rgba(10, 24, 48, 0.85);
