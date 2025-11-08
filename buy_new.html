@@ -1,3 +1,6 @@
+<!-- === AIRCRAFT MODULE === -->
+<!-- Version: Beta v1 | Date: 08 NOV 2025 -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -207,10 +210,108 @@
     <h2>Buy New Aircraft</h2>
     <p class="sub">Purchase or lease your next aircraft directly from the manufacturer.</p>
 
-    <!-- === MANUFACTURERS === -->
-    <!-- (Contenido original conservado) -->
-    <!-- Airbus, Boeing, Embraer, Bombardier, ATR -->
-    <!-- ✅ Mantiene las tarjetas y los modales como estaban -->
+    <!-- === MANUFACTURERS (tarjetas reales) === -->
+
+    <!-- AIRBUS -->
+    <div class="manufacturer-section">
+      <h2>Airbus</h2>
+      <div class="aircraft-grid">
+        <div class="aircraft-card">
+          <img src="img/airbus_a320.jpg" alt="Airbus A320-200" />
+          <div class="aircraft-info">
+            <h3>Airbus A320-200</h3>
+            <p>Range: 3,400 NM • Seats: 180</p>
+            <p class="price">$98 M USD</p>
+            <div class="action-buttons">
+              <button class="buy-btn">Buy</button>
+              <button class="lease-btn">Lease</button>
+              <button class="info-btn" data-aircraft="Airbus A320-200">Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOEING -->
+    <div class="manufacturer-section">
+      <h2>Boeing</h2>
+      <div class="aircraft-grid">
+        <div class="aircraft-card">
+          <img src="img/boeing_737_800.jpg" alt="Boeing 737-800" />
+          <div class="aircraft-info">
+            <h3>Boeing 737-800</h3>
+            <p>Range: 3,550 NM • Seats: 189</p>
+            <p class="price">$106 M USD</p>
+            <div class="action-buttons">
+              <button class="buy-btn">Buy</button>
+              <button class="lease-btn">Lease</button>
+              <button class="info-btn" data-aircraft="Boeing 737-800">Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMBRAER -->
+    <div class="manufacturer-section">
+      <h2>Embraer</h2>
+      <div class="aircraft-grid">
+        <div class="aircraft-card">
+          <img src="img/embraer_e190.jpg" alt="Embraer E190" />
+          <div class="aircraft-info">
+            <h3>Embraer E190</h3>
+            <p>Range: 2,450 NM • Seats: 98</p>
+            <p class="price">$51 M USD</p>
+            <div class="action-buttons">
+              <button class="buy-btn">Buy</button>
+              <button class="lease-btn">Lease</button>
+              <button class="info-btn" data-aircraft="Embraer E190">Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOMBARDIER -->
+    <div class="manufacturer-section">
+      <h2>Bombardier</h2>
+      <div class="aircraft-grid">
+        <div class="aircraft-card">
+          <img src="img/bombardier_crj900.jpg" alt="Bombardier CRJ-900" />
+          <div class="aircraft-info">
+            <h3>Bombardier CRJ-900</h3>
+            <p>Range: 1,550 NM • Seats: 90</p>
+            <p class="price">$45 M USD</p>
+            <div class="action-buttons">
+              <button class="buy-btn">Buy</button>
+              <button class="lease-btn">Lease</button>
+              <button class="info-btn" data-aircraft="Bombardier CRJ-900">Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATR -->
+    <div class="manufacturer-section">
+      <h2>ATR</h2>
+      <div class="aircraft-grid">
+        <div class="aircraft-card">
+          <img src="img/atr_72_600.jpg" alt="ATR 72-600" />
+          <div class="aircraft-info">
+            <h3>ATR 72-600</h3>
+            <p>Range: 810 NM • Seats: 72</p>
+            <p class="price">$28 M USD</p>
+            <div class="action-buttons">
+              <button class="buy-btn">Buy</button>
+              <button class="lease-btn">Lease</button>
+              <button class="info-btn" data-aircraft="ATR 72-600">Info</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- === INFO MODAL === -->
     <div id="infoModal" class="modal">
       <div class="modal-specs">
@@ -302,26 +403,26 @@
 
   <script src="finance.js?v=1.0.0"></script>
 
-<!-- === Reloj cockpit Airbus (modo simulador) === -->
-<script>
-window.addEventListener("load", () => {
-  const c = document.getElementById("acs-clock");
-  if (!c) return;
+  <!-- === Reloj cockpit Airbus (modo simulador) === -->
+  <script>
+  window.addEventListener("load", () => {
+    const c = document.getElementById("acs-clock");
+    if (!c) return;
 
-  let simTime = new Date();
+    let simTime = new Date();
 
-  function refreshClock() {
-    simTime.setMinutes(simTime.getMinutes() + 1);
-    const hh = String(simTime.getHours()).padStart(2, "0");
-    const mm = String(simTime.getMinutes()).padStart(2, "0");
-    const date = simTime.toDateString().toUpperCase();
-    c.textContent = `${hh}:${mm} — ${date}`;
-  }
+    function refreshClock() {
+      simTime.setMinutes(simTime.getMinutes() + 1);
+      const hh = String(simTime.getHours()).padStart(2, "0");
+      const mm = String(simTime.getMinutes()).padStart(2, "0");
+      const date = simTime.toDateString().toUpperCase();
+      c.textContent = `${hh}:${mm} — ${date}`;
+    }
 
-  refreshClock();
-  setInterval(refreshClock, 1000);
-});
-</script>
+    refreshClock();
+    setInterval(refreshClock, 1000);
+  });
+  </script>
 
 </body>
 </html>
