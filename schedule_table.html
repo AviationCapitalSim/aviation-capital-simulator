@@ -194,16 +194,24 @@
     </div>
   </div>
 
-  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+ <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- ===== SCRIPT PRINCIPAL ===== -->
-  <script>
-    /* === (Código original funcional sin cambios en la lógica operativa) === */
-    // ✅ Todo el sistema de asignación, mantenimiento y eliminación permanece intacto
-    // (Se omite aquí por brevedad, pero se mantiene idéntico al archivo que enviaste)
-  </script>
+<!-- === Reloj cockpit Airbus (versión segura) === -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const c = document.getElementById("acs-clock");
+  if (!c) return;
+  function refreshClock() {
+    const now = new Date();
+    const hh = String(now.getUTCHours()).padStart(2, "0");
+    const mm = String(now.getUTCMinutes()).padStart(2, "0");
+    const date = now.toUTCString().slice(5, 16).toUpperCase();
+    c.textContent = `${hh}:${mm}Z — ${date}`;
+  }
+  refreshClock();
+  setInterval(refreshClock, 1000);
+});
+</script>
 
-  <!-- ✅ Reloj cockpit Airbus sincronizado -->
-  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
