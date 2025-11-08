@@ -16,7 +16,7 @@
 
     h2 {
       color: #FFB300;
-      margin-top: 1rem;
+      margin-top: 6rem; /* ✅ CORREGIDO: espacio por header fijo */
       text-align: center;
     }
 
@@ -178,6 +178,18 @@
     .confirm-btn:hover { background: #007d4e; }
     .close-btn { background: #E53935; color: white; }
     .close-btn:hover { background: #c62828; }
+
+    /* ✅ CORREGIDO: Reloj Airbus cockpit */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80; /* Verde Airbus tipo cockpit */
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
   </style>
 </head>
 
@@ -194,13 +206,18 @@
       <a href="finance.html" class="active">Finance</a>
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html">Routes</a>
-      <a href="market.html">Market</a>
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
-      <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+      <!-- ✅ CORREGIDO: eliminado Logout dentro del nav -->
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <!-- ✅ CORREGIDO: reloj cockpit verde -->
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN ===== -->
@@ -292,7 +309,7 @@
     }
 
     function confirmPurchase(method) {
-      alert("✅ Purchase confirmed for " + selectedPackage + " via " + method + ".\\nYour credits will be added shortly!");
+      alert("✅ Purchase confirmed for " + selectedPackage + " via " + method + ".\nYour credits will be added shortly!");
       closeModal();
     }
 
@@ -306,10 +323,15 @@
       const modal = document.getElementById("purchaseModal");
       if (event.target === modal) closeModal();
     };
+  </script>
+
+  <!-- ✅ CORREGIDO: cierre correcto de scripts y reloj global -->
   <script>
-  // Compra de créditos ACS (ingreso neto, por ahora 0)
-  localStorage.setItem("acs_finance_ops", 0);
-</script>
-<script src="finance.js?v=1.0.0"></script>
+    // Compra de créditos ACS (ingreso neto, por ahora 0)
+    localStorage.setItem("acs_finance_ops", 0);
+  </script>
+
+  <script src="finance.js?v=1.0.0"></script>
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
