@@ -5,28 +5,124 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Loan Request — ACS Finance</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    /* === LOAN REQUEST PAGE (ACS Unified Style) === */
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    h2 {
+      text-align: center;
+      color: #FFB300;
+      margin-top: 6rem; /* ✅ espacio por header fijo */
+      margin-bottom: 0.4rem;
+    }
+
+    .top-info p {
+      text-align: center;
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .panel {
+      background: #0b1c3f;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255,179,0,0.25);
+      box-shadow: 0 0 12px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .panel:hover { transform: scale(1.02); }
+
+    .panel h3 {
+      color: #FFB300;
+      margin-bottom: 0.8rem;
+    }
+
+    select, input {
+      border-radius: 8px;
+      border: none;
+      background: #0C1F3C;
+      color: white;
+      padding: 0.6rem;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 0.8rem;
+      color: #ccc;
+      font-weight: 500;
+    }
+
+    .buy-btn {
+      background-color: #00a86b;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .buy-btn:hover { background-color: #007d4e; }
+
+    /* ✅ Reloj cockpit Airbus */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80;
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
+  </style>
 </head>
+
 <body>
   <!-- ===== GLOBAL HEADER ===== -->
   <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
-    <h1>Aviation Capital Simulator</h1>
-  </div>
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
 
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html">Routes</a>
-    <a href="market.html">Market</a>
-    <a href="hr.html">HR</a>
-    <a href="forum.html">Forum</a>
-    <a href="profile.html">Profile</a>
-    <a href="support.html">Support</a>
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-  </nav>
-</header>
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html" class="active">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
+    </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  </header>
 
   <!-- ===== MAIN ===== -->
   <main class="acs-main">
@@ -49,9 +145,9 @@
       <div class="panel">
         <h3>💵 Loan Details</h3>
         <label>Loan Amount (USD)</label>
-        <input type="number" id="loanAmount" placeholder="Enter amount" style="width:100%; padding:0.6rem; border-radius:8px; border:none; background:#0C1F3C; color:white; margin-top:0.5rem; margin-bottom:0.8rem;" />
-        <label style="margin-top:1rem; display:block;">Term (Years)</label>
-        <select id="loanTerm" style="width:100%; padding:0.6rem; border-radius:8px; border:none; background:#0C1F3C; color:white; margin-top:0.5rem;">
+        <input type="number" id="loanAmount" placeholder="Enter amount" />
+        <label>Term (Years)</label>
+        <select id="loanTerm">
           <option value="1">1 Year</option>
           <option value="2">2 Years</option>
           <option value="3">3 Years</option>
@@ -119,10 +215,9 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-  <script>
-  // Flujo de préstamos / amortizaciones (por ahora 0)
-  localStorage.setItem("acs_finance_ops", 0);
-</script>
-<script src="finance.js?v=1.0.0"></script>
+  </script>
+
+  <!-- ✅ ACS Time Synchronization -->
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
