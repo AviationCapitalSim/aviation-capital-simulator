@@ -17,7 +17,7 @@
     h2 {
       color: #FFB300;
       text-align: center;
-      margin-top: 2rem;
+      margin-top: 6rem; /* espacio por el header fijo */
     }
 
     .container {
@@ -87,6 +87,31 @@
 </head>
 <body>
 
+  <!-- ======== HEADER (ACS Global Navigation) ======== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="index.html">Main</a>
+      <a href="finance.html" class="active">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
+    </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn">Logout</a>
+    </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  </header>
+
+  <!-- ======== MAIN CONTENT ======== -->
   <h2>📊 Monthly Growth (USD)</h2>
 
   <div class="container">
@@ -94,11 +119,11 @@
       <h3>Financial Overview</h3>
       <table>
         <tr>
-  <td id="finance-revenue">$0</td>
-  <td id="finance-expenses">$0</td>
-  <td id="finance-profit">$0</td>
-  <td id="finance-margin">0%</td>
-</tr>
+          <td id="finance-revenue">$0</td>
+          <td id="finance-expenses">$0</td>
+          <td id="finance-profit">$0</td>
+          <td id="finance-margin">0%</td>
+        </tr>
       </table>
       <p class="note">Awaiting financial data from ACS modules...</p>
     </div>
@@ -122,10 +147,11 @@
     </div>
   </div>
 
+  <!-- ======== SCRIPTS ======== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="time_engine.js?v=1.2"></script>
   <script>
     // === ACS Finance Reset 0.0 ===
-    // Placeholder chart awaiting data linkage with real modules
     const ctx = document.getElementById('growthChart').getContext('2d');
     const growthChart = new Chart(ctx, {
       type: 'line',
@@ -150,15 +176,6 @@
         }
       }
     });
-
-    // Ready to receive real data from ACS systems
-    // Example integration hook:
-    /*
-    const financeData = JSON.parse(localStorage.getItem('acs_finance_data'));
-    if (financeData) {
-      updateFinanceDisplay(financeData);
-    }
-    */
   </script>
 
 </body>
