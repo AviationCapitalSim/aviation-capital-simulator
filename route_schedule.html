@@ -51,29 +51,15 @@
     }
     .back-btn:hover { background-color:#1DB954; color:white; }
     footer { margin-top:3rem; text-align:center; color:#999; font-size:0.9rem; padding:1rem; }
-
-    /* ✅ Reloj cockpit Airbus (NUEVO) */
-    .acs-clock-header {
-      font-family: 'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      font-weight:bold;
-      background:rgba(0,255,128,0.08);
-      padding:0.3rem 0.8rem;
-      border-radius:6px;
-      font-size:0.9rem;
-      margin-left:1rem;
-    }
   </style>
 </head>
 
 <body>
-  <!-- ===== HEADER UNIFICADO + RELOJ (ÚNICO CAMBIO EN MARKUP) ===== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
-
     <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
       <a href="finance.html">Finance</a>
@@ -82,16 +68,10 @@
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
-    </nav>
-
-    <div class="acs-auth">
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    </div>
-
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+    </nav>
   </header>
 
-  <!-- ===== MAIN (SIN CAMBIOS) ===== -->
   <main class="acs-main">
     <h2>🧭 Route Schedule Setup</h2>
     <p class="sub">Plan and evaluate your route performance based on technical parameters and operational constraints.</p>
@@ -115,7 +95,7 @@
       </select>
 
       <label>Departure Time (Local)</label>
-      <select id="departureTime" onchange="autoCalculate"></select>
+      <select id="departureTime" onchange="autoCalculate()"></select>
 
       <label style="text-align:center; margin-top:1.2rem;">Days of Operation</label>
       <div class="days-row">
@@ -159,7 +139,6 @@
 
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- ===== SCRIPT ORIGINAL (SIN TOCAR) ===== -->
   <script>
     /* === BASE === */
     const timeSelect = document.getElementById("departureTime");
@@ -415,8 +394,5 @@
       window.location.href = "routes.html";
     }
   </script>
-
-  <!-- ✅ Reloj sincronizado -->
-  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
