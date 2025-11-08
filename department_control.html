@@ -17,7 +17,7 @@
     h2 {
       text-align: center;
       color: #FFB300;
-      margin-top: 2rem;
+      margin-top: 6rem; /* ✅ Ajuste por header fijo */
       margin-bottom: 0.4rem;
     }
 
@@ -92,7 +92,7 @@
       padding-top: 1rem;
     }
 
-    /* === MODALS (ACS STYLE) === */
+    /* === MODALS === */
     .acs-modal {
       display: none;
       position: fixed;
@@ -153,19 +153,29 @@
       margin-top: 1rem;
       transition: background 0.2s ease;
     }
-    .modal-btn:hover { background-color: #007d4e; }
-   
-/* === TOTAL PAYROLL STYLE === */
-#totalPayroll {
-  color: #FFB300;
-  text-shadow: 0 0 8px rgba(255, 179, 0, 0.4);
-  font-weight: 600;
-  font-size: 1.1rem;
-  letter-spacing: 0.5px;
-}
-  </style>
-</head>
 
+    .modal-btn:hover { background-color: #007d4e; }
+
+    /* === TOTAL PAYROLL STYLE === */
+    #totalPayroll {
+      color: #FFB300;
+      text-shadow: 0 0 8px rgba(255, 179, 0, 0.4);
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* ✅ Reloj cockpit Airbus */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80;
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
   </style>
 </head>
 
@@ -183,12 +193,17 @@
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html">Routes</a>
       <a href="market.html">Market</a>
-      <a href="hr.html">HR</a>
+      <a href="hr.html" class="active">HR</a>
       <a href="forum.html">Forum</a>
       <a href="profile.html">Profile</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
   <!-- ===== MAIN ===== -->
@@ -218,7 +233,6 @@
   </main>
 
   <!-- ===== MODALS ===== -->
-  <!-- BONUS -->
   <div class="acs-modal" id="bonusModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
@@ -231,7 +245,6 @@
     </div>
   </div>
 
-  <!-- HIRE -->
   <div class="acs-modal" id="hireModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('hireModal')">✖</button>
@@ -243,7 +256,6 @@
     </div>
   </div>
 
-  <!-- ADJUST SALARY -->
   <div class="acs-modal" id="salaryModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('salaryModal')">✖</button>
@@ -256,7 +268,6 @@
     </div>
   </div>
 
-  <!-- DISMISS -->
   <div class="acs-modal" id="dismissModal">
     <div class="acs-modal-content">
       <button class="close-modal" onclick="closeModal('dismissModal')">✖</button>
@@ -324,14 +335,11 @@
         </tr>`;
     });
 
-    // === MODAL CONTROLS ===
     function openModal(id) { document.getElementById(id).style.display = "flex"; }
     function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-    // === Dynamic slider update for salary adjustment ===
     document.getElementById("salaryRange").addEventListener("input", function () {
-      const val = this.value;
-      document.getElementById("salaryValue").textContent = val + "%";
+      document.getElementById("salaryValue").textContent = this.value + "%";
     });
 
     function handleLogout() {
@@ -340,45 +348,24 @@
     }
 
     function confirmBonus() { closeModal('bonusModal'); }
-    function confirmHire() { closeModal('hireModal'); }
-    function confirmSalary() { closeModal('salaryModal'); }
-    function confirmDismiss() { closeModal('dismissModal'); }
+    function confirmHire() { closeModal('hireModal'); calculateTotalPayroll(); }
+    function confirmSalary() { closeModal('salaryModal'); calculateTotalPayroll(); }
+    function confirmDismiss() { closeModal('dismissModal'); calculateTotalPayroll(); }
 
-    // === TOTAL PAYROLL CALCULATION (SUM COLUMN VALUES) ===
-function calculateTotalPayroll() {
-  let total = 0;
+    function calculateTotalPayroll() {
+      let total = 0;
+      document.querySelectorAll("#departmentRows tr").forEach(row => {
+        const salary = parseFloat(row.querySelector(".salary")?.dataset.salary || "0");
+        if (!isNaN(salary)) total += salary;
+      });
+      document.getElementById("totalPayroll").textContent =
+        "Total Monthly Payroll: $" + total.toLocaleString();
+    }
 
-  document.querySelectorAll("#departmentRows tr").forEach(row => {
-    const salaryCell = row.querySelector(".salary");
-    if (!salaryCell) return;
-
-    // Sumamos el valor total del salario por departamento (data-salary)
-    const salary = parseFloat(salaryCell.dataset.salary || "0");
-    if (!isNaN(salary)) total += salary;
-  });
-
-  document.getElementById("totalPayroll").textContent =
-    "Total Monthly Payroll: $" + total.toLocaleString();
-}
-
-// === Recalculate when page loads ===
-window.addEventListener("DOMContentLoaded", calculateTotalPayroll);
-
-// === Recalculate dynamically when hire, dismiss or salary adjust happens ===
-function confirmHire() {
-  closeModal('hireModal');
-  calculateTotalPayroll();
-}
-
-function confirmDismiss() {
-  closeModal('dismissModal');
-  calculateTotalPayroll();
-}
-
-function confirmSalary() {
-  closeModal('salaryModal');
-  calculateTotalPayroll();
-}
+    window.addEventListener("DOMContentLoaded", calculateTotalPayroll);
   </script>
+
+  <!-- ✅ Reloj cockpit Airbus -->
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
