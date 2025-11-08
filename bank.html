@@ -24,30 +24,50 @@
       font-size: 1rem;
       line-height: 1.4;
     }
+
+    /* ✅ CORREGIDO: Reloj Airbus cockpit */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80; /* Verde Airbus tipo cockpit */
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
   </style>
 </head>
 
 <body>
   <!-- ===== HEADER ===== -->
   <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
-    <h1>Aviation Capital Simulator</h1>
-  </div>
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
 
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html">Routes</a>
-    <a href="market.html">Market</a>
-    <a href="hr.html">HR</a>
-    <a href="forum.html">Forum</a>
-    <a href="profile.html">Profile</a>
-    <a href="support.html">Support</a>
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-  </nav>
-</header>
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+
+      <!-- ✅ CORREGIDO: eliminado Logout dentro del nav -->
+    </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <!-- ✅ CORREGIDO: agregado reloj verde cockpit -->
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  </header>
 
   <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
@@ -87,15 +107,21 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
+  <!-- ===== SCRIPT ===== -->
   <script>
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+  </script>
+
+  <!-- ✅ CORREGIDO: cierre correcto de <script> y motor de tiempo global -->
   <script>
-  // Transacciones bancarias (por ahora 0)
-  localStorage.setItem("acs_finance_ops", 0);
-</script>
-<script src="finance.js?v=1.0.0"></script>
+    // Transacciones bancarias (por ahora 0)
+    localStorage.setItem("acs_finance_ops", 0);
+  </script>
+
+  <script src="finance.js?v=1.0.0"></script>
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
