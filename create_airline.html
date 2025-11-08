@@ -6,12 +6,13 @@
   <title>Create Airline - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
+    /* === CREATE AIRLINE PAGE (ACS Unified Style) === */
     body {
       background-color: #0C1F3C;
       color: white;
       font-family: "Poppins", sans-serif;
       margin: 0;
-      padding-top: 100px;
+      padding-top: 120px; /* ✅ espacio para header fijo */
       text-align: center;
     }
 
@@ -55,7 +56,7 @@
       background: #FFB300;
       color: #0C1F3C;
       font-weight: 800;
-      font-size: 1.00rem;
+      font-size: 1rem;
       border: none;
       border-radius: 12px;
       padding: 1rem 2.4rem;
@@ -73,35 +74,51 @@
       color: #bbb;
       font-size: 0.85rem;
     }
+
+    /* ✅ Reloj Airbus cockpit */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80;
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
   </style>
 </head>
 
 <body>
+  <!-- ===== HEADER ===== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
+
     <nav class="acs-nav">
       <a href="index.html">Home</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
     </nav>
+
     <div class="acs-auth">
-      <a href="#" class="login-btn" onclick="handleLogout()">Logout</a>
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
+  <!-- ===== FORM MAIN ===== -->
   <section class="form-container">
     <h2>Create Your Airline</h2>
     <p>Enter your airline details below to begin your aviation journey.</p>
 
     <form id="createAirlineForm" onsubmit="return handleAirlineCreation(event)">
       <input type="text" id="airlineName" placeholder="Airline Name" required oninput="generateCodes(this.value)" />
-
       <input type="text" id="icao" placeholder="ICAO Code (3 letters)" maxlength="3" required />
       <input type="text" id="iata" placeholder="IATA Code (2 letters)" maxlength="2" required />
-
       <input type="text" id="slogan" placeholder="Airline Slogan (optional)" />
 
       <select id="region" required onchange="updateCountries()">
@@ -143,6 +160,7 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
+  <!-- ===== SCRIPT ===== -->
   <script>
     const regions = {
       "Europe": ["Spain", "France", "Germany", "Italy", "United Kingdom", "Poland"],
@@ -195,18 +213,15 @@
       }
 
       localStorage.setItem("ACS_Airline", JSON.stringify(airline));
-      
-      // === Guardar código IATA y nombre para módulos ACS ===
       localStorage.setItem("userAirline", airline.name);
       localStorage.setItem("userIATA", airline.iata);
-      console.log(`✅ Airline registered in ACS memory: ${airline.name} (${airline.iata})`);
 
       alert(`✅ Airline Created Successfully!\nWelcome aboard, Captain!\nYour airline "${airline.name}" is ready for takeoff.`);
       window.location.href = "dashboard.html";
       return false;
     }
 
-    // 🔒 Verificación de sesión: si no está logueado, redirigir al login
+    // 🔒 Check login session
     document.addEventListener("DOMContentLoaded", () => {
       const user = localStorage.getItem("ACS_User");
       if (!user) {
@@ -215,11 +230,14 @@
       }
     });
 
-    // 🚪 Cierre de sesión
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href = "login.html";
-}
+    // 🚪 Logout
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
   </script>
+
+  <!-- ✅ Motor de tiempo global -->
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
