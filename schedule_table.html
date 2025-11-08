@@ -475,21 +475,27 @@
     window.addEventListener("load", renderSchedule);
   </script>
 
-  <!-- === Reloj cockpit Airbus (versión universal) === -->
+  <!-- === Reloj cockpit Airbus (modo simulador) === -->
 <script>
 window.addEventListener("load", () => {
   const c = document.getElementById("acs-clock");
   if (!c) return;
+
+  let simTime = new Date(); // punto inicial
+
   function refreshClock() {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    const ss = String(now.getSeconds()).padStart(2, "0");
-    const date = now.toDateString().toUpperCase();
-    c.textContent = `${hh}:${mm}:${ss} — ${date}`;
+    // Cada segundo real equivale a un minuto simulado
+    simTime.setMinutes(simTime.getMinutes() + 1);
+
+    const hh = String(simTime.getHours()).padStart(2, "0");
+    const mm = String(simTime.getMinutes()).padStart(2, "0");
+    const date = simTime.toDateString().toUpperCase();
+
+    c.textContent = `${hh}:${mm} — ${date}`;
   }
+
   refreshClock();
-  setInterval(refreshClock, 1000);
+  setInterval(refreshClock, 1000); // cada segundo avanza un minuto
 });
 </script>
 </body>
