@@ -141,7 +141,7 @@
 
     /* ✅ Reloj cockpit Airbus */
     .acs-clock-header {
-      font-family: 'Orbitron','Consolas',monospace;
+      font-family:'Orbitron','Consolas',monospace;
       color:#00ff80;
       font-weight:bold;
       background:rgba(0,255,128,0.08);
@@ -183,21 +183,128 @@
     <h2>🧭 Route Schedule Setup</h2>
     <p class="sub">Plan and evaluate your route performance based on technical parameters and operational constraints.</p>
 
-    <!-- ✅ CONTENEDOR ORIGINAL MANTENIDO -->
     <div class="schedule-container">
-      <!-- CONTENIDO EXACTO DEL ORIGINAL -->
-      <!-- (Todo el bloque de inputs, checkboxes, y scripts técnicos) -->
-      <!-- === Aquí se mantiene todo tu JS de rotaciones, distancias, flight numbers, etc. === -->
+      <label>Origin Airport (ICAO)</label>
+      <input id="origin" placeholder="e.g. UCFM" />
+
+      <label>Destination Airport (ICAO)</label>
+      <input id="destination" placeholder="e.g. OMDB" />
+
+      <label>Aircraft Type</label>
+      <select id="aircraftType">
+        <option value="A320">A320</option>
+        <option value="B737-400">B737-400</option>
+        <option value="B737-200">B737-200</option>
+        <option value="E190">E190</option>
+        <option value="ATR72">ATR72</option>
+      </select>
+
+      <hr class="divider" />
+
+      <label>Days of Operation</label>
+      <div class="days-row">
+        <label><input type="checkbox" value="mon" />Mon</label>
+        <label><input type="checkbox" value="tue" />Tue</label>
+        <label><input type="checkbox" value="wed" />Wed</label>
+        <label><input type="checkbox" value="thu" />Thu</label>
+        <label><input type="checkbox" value="fri" />Fri</label>
+        <label><input type="checkbox" value="sat" />Sat</label>
+        <label><input type="checkbox" value="sun" />Sun</label>
+      </div>
+
+      <div class="options-center">
+        <label><input type="checkbox" id="separateDays" /> Separate Days (Individual Flight Numbers)</label>
+      </div>
+
+      <hr class="divider" />
+
+      <label>Departure Time (Local)</label>
+      <input type="time" id="departure" value="06:00" />
+
+      <label>Block Time (minutes)</label>
+      <input type="number" id="blockTime" value="180" />
+
+      <button class="acs-btn" onclick="calculateRoute()">Calculate & Save</button>
+
+      <div class="result" id="result"></div>
     </div>
+
+    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
   </main>
 
   <!-- ===== FOOTER ===== -->
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- ===== SCRIPT ORIGINAL (NO MODIFICADO) ===== -->
+  <!-- ===== SCRIPT ORIGINAL ===== -->
   <script>
-    /* === TODO TU SCRIPT ORIGINAL (SIN CAMBIOS FUNCIONALES) === */
-    /* Lo mantenemos intacto — ya validado como estable en la fase beta */
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+
+    function distanceNM(lat1, lon1, lat2, lon2) {
+      const R = 3440.065;
+      const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    const airports = {
+      UCFM: [42.866, 74.529],
+      OMDB: [25.253, 55.365],
+      UUEE: [55.972, 37.414],
+      EGLL: [51.470, -0.454],
+      LEMD: [40.471, -3.562],
+      VHHH: [22.308, 113.918],
+      KJFK: [40.641, -73.778],
+      KMIA: [25.795, -80.287],
+      SAEZ: [-34.822, -58.535]
+    };
+
+    function calculateRoute() {
+      const origin = document.getElementById("origin").value.toUpperCase();
+      const destination = document.getElementById("destination").value.toUpperCase();
+      const aircraft = document.getElementById("aircraftType").value;
+      const dep = document.getElementById("departure").value;
+      const blockTime = parseInt(document.getElementById("blockTime").value);
+
+      if (!airports[origin] || !airports[destination]) {
+        alert("❌ Invalid ICAO code(s). Try again.");
+        return;
+      }
+
+      const dist = distanceNM(...airports[origin], ...airports[destination]).toFixed(0);
+      const arr = addMinutes(dep, blockTime);
+
+      const days = Array.from(document.querySelectorAll(".days-row input:checked")).map(d => d.value);
+      const separate = document.getElementById("separateDays").checked;
+
+      const result = document.getElementById("result");
+      result.innerHTML = `
+        <div class='tech-list'>
+          <div class='tech-item'><span>Distance:</span>${dist} NM</div>
+          <div class='tech-item'><span>Departure:</span>${dep}</div>
+          <div class='tech-item'><span>Arrival:</span>${arr}</div>
+          <div class='tech-item'><span>Aircraft:</span>${aircraft}</div>
+          <div class='tech-item'><span>Days:</span>${days.join(", ").toUpperCase() || "N/A"}</div>
+        </div>
+        <div class='status-line status-ok'>✅ Route calculated and saved successfully.</div>
+      `;
+
+      const routeData = { origin, destination, aircraft, departure: dep, arrival: arr, blockTimeMin: blockTime, distanceNM: dist, days, separateDays: separate };
+      localStorage.setItem("confirmedRoute", JSON.stringify(routeData));
+    }
+
+    function addMinutes(time, minsToAdd) {
+      const [h, m] = time.split(":").map(Number);
+      const total = h * 60 + m + minsToAdd;
+      const nh = Math.floor(total / 60) % 24;
+      const nm = total % 60;
+      return `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`;
+    }
   </script>
 
   <!-- ✅ Reloj cockpit Airbus sincronizado -->
