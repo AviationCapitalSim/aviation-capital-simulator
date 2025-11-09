@@ -100,6 +100,26 @@
       font-size: 0.9rem;
     }
 
+    /* === SETTINGS PANEL INTRO === */
+    .acs-intro {
+      margin-top: 5.5rem; /* espacio por debajo del header fijo */
+      text-align: center;
+    }
+
+    .acs-title {
+      color: #FFB300;
+      font-size: 1.6rem;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.3rem;
+    }
+
+    .acs-subtitle {
+      color: #ccc;
+      font-size: 1rem;
+      font-style: italic;
+      margin-bottom: 1.5rem;
+    }
+
     /* === PANELS GRID === */
     .finance-panels {
       display: grid;
@@ -232,6 +252,7 @@
     <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
   </div>
 </header>
+
 <!-- === SETTINGS PANEL TITLE === -->
 <section class="acs-intro">
   <h2 class="acs-title">⚙️ Settings Control Panel</h2>
@@ -239,6 +260,7 @@
     Manage your airline’s global parameters — interface, alerts, fleet automation and company behavior.
   </p>
 </section>
+
 <!-- ===== MAIN SETTINGS PANELS ===== -->
 <main>
   <section class="finance-panels">
@@ -343,25 +365,7 @@
     </div>
   </section>
 </main>
-/* === SETTINGS PANEL INTRO === */
-.acs-intro {
-  margin-top: 5.5rem; /* espacio por debajo del header fijo */
-  text-align: center;
-}
 
-.acs-title {
-  color: #FFB300;
-  font-size: 1.6rem;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.3rem;
-}
-
-.acs-subtitle {
-  color: #ccc;
-  font-size: 1rem;
-  font-style: italic;
-  margin-bottom: 1.5rem;
-}
 <footer>
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
