@@ -498,5 +498,67 @@ window.addEventListener("load", () => {
   setInterval(refreshClock, 1000); // cada segundo avanza un minuto
 });
 </script>
+
+<!-- === SCHEDULE-LINK v1.0 | My Aircraft ↔ Schedule Integration === -->
+<script>
+document.addEventListener("acsAircraftStatusChange", e => {
+  const { registration, newStatus } = e.detail;
+  if (!registration || !newStatus) return;
+
+  // Buscar la fila del avión correspondiente (coincide con la matrícula/tail)
+  const rows = document.querySelectorAll("#scheduleBody tr");
+  rows.forEach(row => {
+    const tailCell = row.firstChild;
+    if (!tailCell) return;
+
+    const tailText = tailCell.textContent.trim();
+    if (tailText === registration || tailText === registration.replace("EX-", "EC-")) {
+
+      // Cambiar visualmente el estado del avión en la tabla
+      if (["maintenance", "leased", "scrapped"].includes(newStatus)) {
+        row.style.opacity = "0.5";
+        row.style.filter = "grayscale(0.6)";
+        row.title = `⛔ Aircraft unavailable (${newStatus})`;
+
+        // Desactivar botones de asignación
+        const btns = row.querySelectorAll(".btn-assign, .btn-maint");
+        btns.forEach(b => {
+          b.disabled = true;
+          b.style.cursor = "not-allowed";
+          b.style.opacity = "0.6";
+        });
+
+        // Añadir indicador visual en la primera celda
+        if (!row.querySelector(".blocked-flag")) {
+          const flag = document.createElement("div");
+          flag.className = "blocked-flag";
+          flag.style.color = "#FFB300";
+          flag.style.fontWeight = "700";
+          flag.textContent = "🔴 BLOCKED (" + newStatus.toUpperCase() + ")";
+          tailCell.appendChild(flag);
+        }
+      }
+
+      // Reactivar si el avión vuelve a estar disponible
+      if (newStatus === "active") {
+        row.style.opacity = "1";
+        row.style.filter = "none";
+        row.title = "🟢 Aircraft Active";
+
+        const btns = row.querySelectorAll(".btn-assign, .btn-maint");
+        btns.forEach(b => {
+          b.disabled = false;
+          b.style.cursor = "pointer";
+          b.style.opacity = "1";
+        });
+
+        const flag = row.querySelector(".blocked-flag");
+        if (flag) flag.remove();
+      }
+    }
+  });
+});
+</script>
+
 </body>
 </html>
