@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aircraft Leasing Center - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    /* === LEASING BETA v2 (ACS) === */
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    h2 {
+      color: #FFB300;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .sub {
+      color: #ccc;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .leasing-panels {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      width: 90%;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: #0e1b3c;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,.4);
+    }
+
+    .panel h3 {
+      color: #FFB300;
+      border-bottom: 1px solid #FFB300;
+      padding-bottom: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #fff;
+    }
+
+    th, td {
+      border: 1px solid rgba(255,255,255,.1);
+      padding: .6rem;
+      text-align: left;
+      font-size: .9rem;
+    }
+
+    th {
+      background: #112055;
+      color: #FFB300;
+    }
+
+    .btn {
+      background: #00C851;
+      border: none;
+      border-radius: 6px;
+      padding: .4rem .8rem;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform .2s;
+    }
+    .btn:hover { transform: scale(1.05); background:#00e060; }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #102040;
+      padding: 1.5rem;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 90%;
+      color: white;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0,0,0,.5);
+    }
+    select, input {
+      background: #0e1b3c;
+      color: white;
+      border: 1px solid #FFB300;
+      border-radius: 5px;
+      padding: .4rem;
+      width: 100%;
+      margin-bottom: .6rem;
+    }
+
+    #summary-panel {
+      text-align: center;
+      background: #102040;
+      border-radius: 10px;
+      padding: 1rem;
+    }
+    #summary-panel p { margin: .5rem 0; }
+  </style>
+</head>
+
+<body>
+  <!-- === HEADER === -->
+  <header style="background:#0a1630; padding:1rem; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,.4); position:sticky; top:0;">
+    <h1 style="color:#FFB300;">Aviation Capital Simulator</h1>
+    <nav>
+      <a href="dashboard.html" style="color:white; margin:0 10px;">Dashboard</a>
+      <a href="finance.html" style="color:white; margin:0 10px;">Finance</a>
+      <a href="aircraft.html" style="color:white; margin:0 10px;">Aircraft</a>
+      <a href="hr.html" style="color:white; margin:0 10px;">HR</a>
+      <a href="schedule.html" style="color:white; margin:0 10px;">Schedule</a>
+    </nav>
+  </header>
+
+  <h2>Aircraft Leasing Center</h2>
+  <p class="sub">Manage your active leases, payments, and available contracts</p>
+
+  <div class="leasing-panels">
+    <!-- AVAILABLE LEASES -->
+    <div class="panel">
+      <h3>Available Leases</h3>
+      <table id="available-table">
+        <tr><th>Model</th><th>Value (M$)</th><th>Action</th></tr>
+      </table>
+    </div>
+
+    <!-- SUMMARY -->
+    <div id="summary-panel">
+      <h3>Summary</h3>
+      <p>Balance: <span id="balance">$200.0 M</span></p>
+      <p>Active Leases: <span id="lease-count">0</span></p>
+      <p>Total Monthly Cost: <span id="monthly-total">$0.0 M</span></p>
+    </div>
+  </div>
+
+  <div class="panel" style="width:90%; margin:2rem auto;">
+    <h3>Active Leases</h3>
+    <table id="active-table">
+      <tr><th>Model</th><th>Years</th><th>Monthly</th><th>Remaining</th><th>Action</th></tr>
+    </table>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal" id="leaseModal">
+    <div class="modal-content">
+      <h3>Confirm Lease</h3>
+      <p id="modalModel"></p>
+      <label for="leaseYears">Select duration (years):</label>
+      <select id="leaseYears">
+        <option value="5">5 years</option>
+        <option value="10">10 years</option>
+        <option value="15" selected>15 years</option>
+      </select>
+      <p id="leaseInfo"></p>
+      <button class="btn" id="confirmLease">Confirm Lease</button>
+      <button class="btn" style="background:#cc0000;" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    /* === LEASING LOGIC (BETA v2) === */
+    let acsBalance = 200.0; // millones iniciales
+    const availableAircraft = [
+      { model: "Airbus A320", price: 55 },
+      { model: "Boeing 737-800", price: 60 },
+      { model: "Embraer 190", price: 42 }
+    ];
+
+    const availableTable = document.getElementById("available-table");
+    const activeTable = document.getElementById("active-table");
+    const balanceEl = document.getElementById("balance");
+    const leaseCountEl = document.getElementById("lease-count");
+    const monthlyTotalEl = document.getElementById("monthly-total");
+    const modal = document.getElementById("leaseModal");
+    const modalModel = document.getElementById("modalModel");
+    const leaseYearsSel = document.getElementById("leaseYears");
+    const leaseInfo = document.getElementById("leaseInfo");
+
+    let selectedAircraft = null;
+    let activeLeases = [];
+
+    // Populate available leases
+    function loadAvailable() {
+      availableAircraft.forEach(ac => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${ac.model}</td>
+          <td>$${ac.price.toFixed(1)} M</td>
+          <td><button class="btn" onclick="openModal('${ac.model}', ${ac.price})">Lease Now</button></td>
+        `;
+        availableTable.appendChild(row);
+      });
+    }
+
+    function openModal(model, price) {
+      selectedAircraft = { model, price };
+      modal.style.display = "flex";
+      updateLeaseInfo();
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    function updateLeaseInfo() {
+      const years = parseInt(leaseYearsSel.value);
+      const monthly = (selectedAircraft.price / (years * 12)) * 1.12;
+      const residual = selectedAircraft.price * 0.15;
+      leaseInfo.innerHTML = `
+        Monthly payment: <b>$${monthly.toFixed(2)} M</b><br>
+        Residual value after ${years} years: <b>$${residual.toFixed(2)} M</b>
+      `;
+    }
+
+    leaseYearsSel.addEventListener("change", updateLeaseInfo);
+
+    document.getElementById("confirmLease").addEventListener("click", () => {
+      const years = parseInt(leaseYearsSel.value);
+      const monthly = (selectedAircraft.price / (years * 12)) * 1.12;
+      const months = years * 12;
+      const newLease = {
+        model: selectedAircraft.model,
+        years,
+        monthly,
+        remaining: months
+      };
+      activeLeases.push(newLease);
+      acsBalance -= monthly; // primer pago
+      updateFinance();
+      refreshActive();
+      closeModal();
+    });
+
+    function refreshActive() {
+      // limpia y vuelve a generar
+      activeTable.innerHTML = `<tr><th>Model</th><th>Years</th><th>Monthly</th><th>Remaining</th><th>Action</th></tr>`;
+      activeLeases.forEach((l, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${l.model}</td>
+          <td>${l.years}</td>
+          <td>$${l.monthly.toFixed(2)} M</td>
+          <td>${l.remaining}</td>
+          <td><button class="btn" style="background:#cc0000" onclick="endLease(${i})">End</button></td>
+        `;
+        activeTable.appendChild(row);
+      });
+      leaseCountEl.textContent = activeLeases.length;
+      const totalMonthly = activeLeases.reduce((a,b)=>a+b.monthly,0);
+      monthlyTotalEl.textContent = `$${totalMonthly.toFixed(2)} M`;
+      balanceEl.textContent = `$${acsBalance.toFixed(1)} M`;
+    }
+
+    function endLease(index) {
+      const l = activeLeases[index];
+      const penalty = l.monthly * 2; // 2 meses de penalidad
+      acsBalance -= penalty;
+      activeLeases.splice(index,1);
+      updateFinance();
+      refreshActive();
+    }
+
+    function updateFinance() {
+      balanceEl.textContent = `$${acsBalance.toFixed(1)} M`;
+    }
+
+    // Simulación mensual: cada 5s equivale a 1 mes
+    setInterval(() => {
+      activeLeases.forEach((l, i) => {
+        if (l.remaining > 0) {
+          acsBalance -= l.monthly;
+          l.remaining--;
+          if (l.remaining === 0) {
+            alert(`Lease completed for ${l.model}. You may buy or return it.`);
+          }
+        }
+      });
+      refreshActive();
+    }, 5000);
+
+    loadAvailable();
+  </script>
+</body>
+</html>
