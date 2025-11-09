@@ -1,0 +1,225 @@
+<!-- === SETTINGS MODULE === -->
+<!-- Version: v1.0 | Date: 09 NOV 2025 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background-color: #0a1433;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 2rem;
+      border-bottom: 2px solid #FFB300;
+      z-index: 1000;
+    }
+
+    .acs-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .acs-logo img { height: 40px; }
+    .acs-logo h1 { font-size: 1.1rem; color: #FFB300; margin: 0; }
+
+    .acs-nav { display: flex; justify-content: center; gap: 1.5rem; flex: 1; }
+    .acs-nav a { color: white; text-decoration: none; font-size: 0.95rem; transition: 0.3s; }
+    .acs-nav a:hover, .acs-nav a.active { color: #FFB300; text-shadow: 0 0 6px rgba(255,179,0,0.6); }
+
+    .logout-btn {
+      color: #FFB300; border: 1px solid #FFB300; padding: 0.3rem 0.8rem; border-radius: 6px;
+      text-decoration: none; font-size: 0.9rem; transition: 0.3s;
+    }
+    .logout-btn:hover { background-color: #FFB300; color: #081530; }
+
+    .finance-panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 6rem;
+      padding: 2rem;
+    }
+
+    .panel {
+      background: #0e1b3c;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease;
+    }
+    .panel:hover { transform: scale(1.02); }
+    .panel h3 { color: #FFB300; margin-bottom: 1rem; }
+    .panel section { margin-bottom: 1rem; }
+    label { display: block; margin: 0.4rem 0; }
+
+    table {
+      width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.05);
+      border-radius: 8px; margin-top: 0.5rem; font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th { color: #FFB300; background: rgba(255,255,255,0.05); }
+
+    .warning { color: #ffae00; font-size: 0.85rem; margin-top: 0.6rem; }
+    .acs-btn {
+      background-color: #00a86b; color: #fff; border: none; border-radius: 6px;
+      padding: 8px 14px; margin-top: 0.8rem; font-weight: 600; cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .acs-btn:hover { background-color: #007d4e; }
+
+    .save-group { text-align: center; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="settings.html" class="active">Settings</a>
+  </nav>
+  <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+</header>
+
+<main>
+  <section class="finance-panels">
+    <!-- 1. Interface -->
+    <div class="panel">
+      <h3>🎨 Interface Settings</h3>
+      <p>Customize your display, language and theme. <em>(Coming soon)</em></p>
+    </div>
+
+    <!-- 2. Notifications -->
+    <div class="panel">
+      <h3>🔔 Notification Settings</h3>
+      <p>Manage in-game and e-mail alerts. <em>(Coming soon)</em></p>
+    </div>
+
+    <!-- 3. Aircraft -->
+    <div class="panel">
+      <h3>✈️ Aircraft Settings</h3>
+      <section>
+        <h4>Maintenance Automation</h4>
+        <label><input type="checkbox" id="autoCcheck"> Automatically perform C check maintenance</label>
+        <label><input type="checkbox" id="autoDcheck"> Automatically perform D check maintenance</label>
+        <p class="warning">⚠️ For any automatic maintenance tasks, your airline must have enough funds when the check is due. Otherwise, the aircraft will remain in “Overdue Maintenance”.</p>
+      </section>
+
+      <section>
+        <h4>Default Registration Format</h4>
+        <table>
+          <tr><th>Family</th><th>Country / Region</th><th>First Registration</th></tr>
+          <tr><td>Airbus A320 Family</td><td>Kyrgyzstan</td><td><input type="text" id="regA320" value="EX-"></td></tr>
+          <tr><td>Boeing 737 Family</td><td>–</td><td><input type="text" id="regB737" value="EX-"></td></tr>
+          <tr><td>Embraer / CRJ / ATR</td><td>–</td><td><input type="text" id="regECRJ" value="EX-"></td></tr>
+        </table>
+      </section>
+
+      <section>
+        <h4>Default Turnaround Time</h4>
+        <table>
+          <tr><th>Aircraft Family</th><th>Default (mins)</th></tr>
+          <tr><td>Airbus A320 Family</td><td><input type="number" id="taA320" value="45"></td></tr>
+          <tr><td>Boeing 737 Family</td><td><input type="number" id="taB737" value="45"></td></tr>
+          <tr><td>Embraer 190 / E-Jet</td><td><input type="number" id="taE190" value="35"></td></tr>
+          <tr><td>Bombardier CRJ</td><td><input type="number" id="taCRJ" value="35"></td></tr>
+          <tr><td>ATR 72 / Turboprops</td><td><input type="number" id="taATR" value="30"></td></tr>
+        </table>
+      </section>
+
+      <div class="save-group">
+        <button class="acs-btn" onclick="saveAircraft()">💾 Save Settings</button>
+        <button class="acs-btn" style="background:#444;" onclick="resetAircraft()">↩️ Reset Defaults</button>
+      </div>
+    </div>
+
+    <!-- 4. Company -->
+    <div class="panel">
+      <h3>🏢 Company Settings</h3>
+      <label><input type="checkbox" id="autoHire"> Auto hiring personnel</label>
+      <label><input type="checkbox" id="autoSalary"> Auto increase salary</label>
+
+      <div class="save-group">
+        <button class="acs-btn" onclick="saveCompany()">💾 Save Settings</button>
+        <button class="acs-btn" style="background:#444;" onclick="resetCompany()">↩️ Reset Defaults</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer style="text-align:center; padding:1rem; color:#ccc;">© 2025 Aviation Capital Simulator</footer>
+
+<script>
+function handleLogout(){alert("👋 Session closed.");window.location.href="login.html";}
+
+// === Load Saved Settings ===
+document.addEventListener("DOMContentLoaded",()=>{
+  ["autoCcheck","autoDcheck","autoHire","autoSalary"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(localStorage.getItem(id)==="true") el.checked=true;
+  });
+  ["regA320","regB737","regECRJ","taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
+    const val=localStorage.getItem(id);
+    if(val!==null) document.getElementById(id).value=val;
+  });
+});
+
+function saveAircraft(){
+  ["autoCcheck","autoDcheck","regA320","regB737","regECRJ","taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
+    const el=document.getElementById(id);
+    localStorage.setItem(id, el.type==="checkbox"?el.checked:el.value);
+  });
+  alert("✅ Aircraft settings saved.");
+}
+
+function resetAircraft(){
+  ["autoCcheck","autoDcheck"].forEach(id=>{document.getElementById(id).checked=false;localStorage.removeItem(id);});
+  ["regA320","regB737","regECRJ"].forEach(id=>{document.getElementById(id).value="EX-";localStorage.removeItem(id);});
+  document.getElementById("taA320").value=45;
+  document.getElementById("taB737").value=45;
+  document.getElementById("taE190").value=35;
+  document.getElementById("taCRJ").value=35;
+  document.getElementById("taATR").value=30;
+  ["taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>localStorage.removeItem(id));
+  alert("🔄 Aircraft settings reset to defaults.");
+}
+
+function saveCompany(){
+  ["autoHire","autoSalary"].forEach(id=>{
+    const el=document.getElementById(id);
+    localStorage.setItem(id, el.checked);
+  });
+  alert("✅ Company settings saved.");
+}
+
+function resetCompany(){
+  ["autoHire","autoSalary"].forEach(id=>{
+    document.getElementById(id).checked=false;
+    localStorage.removeItem(id);
+  });
+  alert("🔄 Company settings reset.");
+}
+</script>
+</body>
+</html>
