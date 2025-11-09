@@ -115,22 +115,47 @@
       padding: 1rem;
     }
     #summary-panel p { margin: .5rem 0; }
+
+    /* === Header ACS oficial === */
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80;
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
   </style>
 </head>
 
 <body>
-  <!-- === HEADER === -->
-  <header style="background:#0a1630; padding:1rem; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,.4); position:sticky; top:0;">
-    <h1 style="color:#FFB300;">Aviation Capital Simulator</h1>
-    <nav>
-      <a href="dashboard.html" style="color:white; margin:0 10px;">Dashboard</a>
-      <a href="finance.html" style="color:white; margin:0 10px;">Finance</a>
-      <a href="aircraft.html" style="color:white; margin:0 10px;">Aircraft</a>
-      <a href="hr.html" style="color:white; margin:0 10px;">HR</a>
-      <a href="schedule.html" style="color:white; margin:0 10px;">Schedule</a>
+  <!-- ===== HEADER (ACS oficial) ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html" class="active">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
     </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
+  <!-- ===== MAIN ===== -->
   <h2>Aircraft Leasing Center</h2>
   <p class="sub">Manage your active leases, payments, and available contracts</p>
 
@@ -298,6 +323,27 @@
     }, 5000);
 
     loadAvailable();
+
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+
+    // === Reloj cockpit Airbus (modo simulador) ===
+    window.addEventListener("load", () => {
+      const c = document.getElementById("acs-clock");
+      if (!c) return;
+      let simTime = new Date();
+      function refreshClock() {
+        simTime.setMinutes(simTime.getMinutes() + 1);
+        const hh = String(simTime.getHours()).padStart(2, "0");
+        const mm = String(simTime.getMinutes()).padStart(2, "0");
+        const date = simTime.toDateString().toUpperCase();
+        c.textContent = `${hh}:${mm} — ${date}`;
+      }
+      refreshClock();
+      setInterval(refreshClock, 1000);
+    });
   </script>
 </body>
 </html>
