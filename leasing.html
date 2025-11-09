@@ -308,19 +308,24 @@
       balanceEl.textContent = `$${acsBalance.toFixed(1)} M`;
     }
 
-    // Simulación mensual: cada 5s equivale a 1 mes
-    setInterval(() => {
-      activeLeases.forEach((l, i) => {
-        if (l.remaining > 0) {
-          acsBalance -= l.monthly;
-          l.remaining--;
-          if (l.remaining === 0) {
-            alert(`Lease completed for ${l.model}. You may buy or return it.`);
-          }
-        }
-      });
-      refreshActive();
-    }, 5000);
+    // === Simulación real ACS ===
+// 1 hora de juego = 60 segundos reales
+// 1 día = 24 minutos reales
+// 1 mes ≈ 12 horas reales (43,200,000 ms)
+const MONTH_DURATION_MS = 43200000; // 12 horas reales = 1 mes simulado
+
+setInterval(() => {
+  activeLeases.forEach((l, i) => {
+    if (l.remaining > 0) {
+      acsBalance -= l.monthly;   // deduce mensualidad
+      l.remaining--;             // reduce un mes
+      if (l.remaining === 0) {
+        alert(`Lease completed for ${l.model}. You may buy or return it.`);
+      }
+    }
+  });
+  refreshActive();
+}, MONTH_DURATION_MS);
 
     loadAvailable();
 
