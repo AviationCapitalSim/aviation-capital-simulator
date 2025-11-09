@@ -1,5 +1,5 @@
 <!-- === BUY AIRCRAFT MODULE === -->
-<!-- Version: v1.2 | Date: 09 NOV 2025 -->
+<!-- Version: v1.3 | Date: 09 NOV 2025 -->
 <!-- Aviation Capital Simulator -->
 
 <!DOCTYPE html>
@@ -23,7 +23,11 @@
       text-align: center;
     }
 
-    .sub { color: #ccc; text-align: center; margin-bottom: 1rem; }
+    .sub {
+      color: #ccc;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
 
     /* === BALANCE PANEL === */
     .balance-panel {
@@ -37,10 +41,19 @@
       align-items: center;
       box-shadow: 0 0 10px rgba(0,0,0,.4);
     }
-    .balance-panel h3 { color: #FFB300; margin: 0; font-size: 1rem; }
-    .balance-panel p { color: #00ff80; font-weight: 700; font-size: 1.1rem; margin: 0; }
+    .balance-panel h3 {
+      color: #FFB300;
+      margin: 0;
+      font-size: 1rem;
+    }
+    .balance-panel p {
+      color: #00ff80;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin: 0;
+    }
 
-    /* === AIRCRAFT CATALOG === */
+    /* === AIRCRAFT GRID === */
     .manufacturer-section {
       margin: 2rem auto;
       max-width: 1300px;
@@ -56,15 +69,15 @@
 
     .aircraft-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 1rem;
     }
 
     .aircraft-card {
-      background: linear-gradient(180deg, #0e1f44 0%, #081530 100%);
+      background: #102040;
       border-radius: 10px;
       overflow: hidden;
-      height: 370px;
+      height: 320px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       display: flex;
@@ -73,35 +86,32 @@
 
     .aircraft-card:hover {
       transform: scale(1.02);
-      box-shadow: 0 5px 14px rgba(0,0,0,0.5);
+      box-shadow: 0 5px 14px rgba(0,0,0,0.4);
     }
 
     .aircraft-card img {
       width: 100%;
-      height: 64%;
+      height: 65%;
       object-fit: cover;
       background: #000;
     }
 
     .aircraft-info {
-      padding: 10px 8px 16px;
+      padding: 10px 8px 12px;
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       text-align: center;
     }
 
     .aircraft-info h3 {
       color: #FFB300;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       margin: 4px 0;
     }
 
     .aircraft-info p {
       color: #cfd8dc;
       margin: 2px 0;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
     }
 
     .price {
@@ -110,24 +120,18 @@
       margin-top: 4px;
     }
 
-    .slot-status {
-      color: #ffd54f;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
     .action-buttons {
       display: flex;
       gap: 6px;
+      margin-top: 8px;
       justify-content: center;
-      margin-top: 10px;
     }
 
     .buy-btn, .info-btn {
       flex: 1;
       border: none;
       border-radius: 6px;
-      padding: 6px 0;
+      padding: 5px 0;
       cursor: pointer;
       font-weight: 600;
       color: white;
@@ -137,22 +141,18 @@
 
     .buy-btn { background: #1565c0; }
     .buy-btn:hover { background: #0d47a1; }
-    .buy-btn[disabled] {
-      background: #444;
-      cursor: not-allowed;
-      opacity: .6;
-    }
-
     .info-btn { background: #ffb300; color: #102040; }
     .info-btn:hover { background: #ffcc33; }
 
-    /* === MODALS === */
+    /* === MODAL === */
     .modal {
       display: none;
       position: fixed;
       z-index: 1000;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(0,0,0,0.6);
       justify-content: center;
       align-items: center;
@@ -161,20 +161,41 @@
     .modal-content {
       background: #102040;
       color: #fff;
-      padding: 1.5rem 2rem;
+      padding: 1.8rem 2rem;
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.4);
       text-align: center;
       max-width: 450px;
     }
 
-    .modal-content h3 { color: #FFB300; }
+    .modal-content h3 { color: #FFB300; margin-bottom: .8rem; }
     .modal-content p { color: #ccc; font-size: 0.9rem; }
+
+    .payment-options {
+      display: flex;
+      justify-content: space-around;
+      margin: 1rem 0;
+    }
+    .payment-options label {
+      background: #0d2b5a;
+      padding: .6rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #FFB300;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #fff;
+      transition: background 0.3s;
+    }
+    .payment-options label:hover {
+      background: #ffb300;
+      color: #102040;
+    }
 
     .modal-content button {
       border: none;
       border-radius: 6px;
-      padding: .6rem 1.4rem;
+      padding: .6rem 1.2rem;
       margin: 0 .3rem;
       cursor: pointer;
       font-weight: 600;
@@ -183,16 +204,15 @@
     .confirm-btn { background: #1DB954; color: #fff; }
     .cancel-btn { background: #b71c1c; color: #fff; }
 
-    /* === CLOCK === */
     .acs-clock-header {
-      font-family:'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      background:rgba(0,255,128,.08);
-      padding:.3rem .8rem;
-      border-radius:6px;
-      font-size:.9rem;
-      margin-left:1rem;
-      font-weight:bold;
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80;
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
     }
   </style>
 </head>
@@ -227,163 +247,128 @@
 
   <div class="balance-panel">
     <h3>💳 Current Balance</h3>
-    <p id="balanceDisplay">$0.0 M</p>
+    <p id="balanceDisplay">$200.0 M</p>
   </div>
 
-  <!-- === AIRCRAFT MANUFACTURERS === -->
-  <div id="catalog"></div>
-</main>
-  <!-- === CONFIRMATION MODAL === -->
-  <div id="buyModal" class="modal">
-    <div class="modal-content">
-      <h3>Confirm Aircraft Purchase</h3>
-      <p id="modalDetails"></p>
-      <div style="margin-top:1rem;">
-        <button class="confirm-btn" id="confirmBuy">Confirm</button>
-        <button class="cancel-btn" id="cancelBuy">Cancel</button>
+  <div class="manufacturer-section">
+    <h2>Airbus</h2>
+    <div class="aircraft-grid">
+      <div class="aircraft-card">
+        <img src="img/airbus_a320.png" alt="Airbus A320-200" />
+        <div class="aircraft-info">
+          <h3>Airbus A320-200</h3>
+          <p>Range: 3,400 NM • Seats: 180</p>
+          <p class="price">$98 M USD</p>
+          <div class="action-buttons">
+            <button class="buy-btn" data-model="Airbus A320-200" data-price="98">Buy</button>
+            <button class="info-btn">Info</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+</main>
 
-  <script>
-  // === INITIAL AIRCRAFT DATA ===
-  const aircraftList = [
-    { manufacturer:"Airbus", model:"A320-200", price:98, range:"3,400 NM", seats:180, img:"img/airbus_a320.png" },
-    { manufacturer:"Boeing", model:"737-800", price:106, range:"3,550 NM", seats:189, img:"img/boeing_737.png" },
-    { manufacturer:"Embraer", model:"E190", price:51, range:"2,450 NM", seats:98, img:"img/embraer_190.png" },
-    { manufacturer:"Bombardier", model:"CRJ-900", price:45, range:"1,550 NM", seats:90, img:"img/bombardier_crj.png" },
-    { manufacturer:"ATR", model:"ATR 72-600", price:28, range:"810 NM", seats:72, img:"img/atr_72.png" }
-  ];
+<!-- === PURCHASE MODAL === -->
+<div id="buyModal" class="modal">
+  <div class="modal-content">
+    <h3>Confirm Purchase</h3>
+    <p id="modalDetails"></p>
+    <div class="payment-options">
+      <label><input type="radio" name="payment" value="50"> 50% Deposit</label>
+      <label><input type="radio" name="payment" value="75"> 75% Deposit</label>
+      <label><input type="radio" name="payment" value="100" checked> 100% Full</label>
+    </div>
+    <p id="deliveryInfo"></p>
+    <div style="margin-top:1rem;">
+      <button class="confirm-btn" id="confirmBuy">Confirm</button>
+      <button class="cancel-btn" id="cancelBuy">Cancel</button>
+    </div>
+  </div>
+</div>
 
-  // === PLAYER BALANCE (Temporal; conectado luego a finance.js) ===
-  let playerBalance = 200; // en millones USD
+<script>
+let playerBalance = 200;
+document.getElementById("balanceDisplay").textContent = `$${playerBalance.toFixed(1)} M`;
+let selectedAircraft = null;
+
+const modal = document.getElementById("buyModal");
+const modalDetails = document.getElementById("modalDetails");
+const deliveryInfo = document.getElementById("deliveryInfo");
+
+document.querySelectorAll(".buy-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const price = parseFloat(btn.dataset.price);
+    const model = btn.dataset.model;
+    selectedAircraft = { model, price };
+    modalDetails.textContent = `${model} — Base Price: $${price} M`;
+    const estDays = Math.floor(Math.random()*90)+60;
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate()+estDays);
+    deliveryInfo.textContent = `Estimated Delivery: ${deliveryDate.toDateString().toUpperCase()}`;
+    modal.style.display = "flex";
+  });
+});
+
+document.getElementById("cancelBuy").addEventListener("click",()=> modal.style.display="none");
+
+document.getElementById("confirmBuy").addEventListener("click",()=>{
+  const selected = document.querySelector('input[name="payment"]:checked');
+  if(!selected || !selectedAircraft) return;
+
+  let payPercent = parseInt(selected.value);
+  let price = selectedAircraft.price;
+  let finalCost = price;
+  let discount = 0;
+
+  if(payPercent===100){ discount = price*0.03; finalCost = price - discount; }
+  else if(payPercent===50){ finalCost = price * 1.02; }
+
+  if(playerBalance < (finalCost*payPercent/100)){
+    alert("❌ Insufficient funds for this payment option.");
+    return;
+  }
+
+  playerBalance -= (finalCost*payPercent/100);
   document.getElementById("balanceDisplay").textContent = `$${playerBalance.toFixed(1)} M`;
 
-  // === RENDER CATALOG ===
-  const catalog = document.getElementById("catalog");
-  const grouped = aircraftList.reduce((acc,a)=>{
-    if(!acc[a.manufacturer]) acc[a.manufacturer]=[];
-    acc[a.manufacturer].push(a);
-    return acc;
-  },{});
+  const owned = JSON.parse(localStorage.getItem("acs_myAircraft")||"[]");
+  owned.push({
+    reg:"EX-",
+    model:selectedAircraft.model,
+    delivery:deliveryInfo.textContent.replace("Estimated Delivery: ",""),
+    payment:payPercent,
+    paid:(finalCost*payPercent/100).toFixed(1),
+    status:"pending"
+  });
+  localStorage.setItem("acs_myAircraft",JSON.stringify(owned));
+  alert(`✅ ${selectedAircraft.model} purchased (${payPercent}% paid)\n${deliveryInfo.textContent}`);
+  modal.style.display="none";
+  selectedAircraft=null;
+});
 
-  for(const manu in grouped){
-    const section = document.createElement("div");
-    section.className="manufacturer-section";
-    section.innerHTML=`<h2>${manu}</h2>`;
-    const grid = document.createElement("div");
-    grid.className="aircraft-grid";
+window.onclick=e=>{ if(e.target===modal) modal.style.display="none"; };
 
-    grouped[manu].forEach(ac=>{
-      const card=document.createElement("div");
-      card.className="aircraft-card";
-      card.innerHTML=`
-        <img src="${ac.img}" alt="${ac.manufacturer} ${ac.model}">
-        <div class="aircraft-info">
-          <h3>${ac.manufacturer} ${ac.model}</h3>
-          <p>Range: ${ac.range} • Seats: ${ac.seats}</p>
-          <p class="price">$${ac.price} M</p>
-          <p class="slot-status">Next Delivery: Calculating...</p>
-          <div class="action-buttons">
-            <button class="buy-btn" data-model="${ac.model}" data-price="${ac.price}">Buy</button>
-            <button class="info-btn" data-model="${ac.model}">Info</button>
-          </div>
-        </div>`;
-      grid.appendChild(card);
-    });
+function handleLogout(){
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href="login.html";
+}
 
-    section.appendChild(grid);
-    catalog.appendChild(section);
+window.addEventListener("load",()=>{
+  const c=document.getElementById("acs-clock");
+  if(!c) return;
+  let simTime=new Date();
+  function refreshClock(){
+    simTime.setMinutes(simTime.getMinutes()+1);
+    const hh=String(simTime.getHours()).padStart(2,"0");
+    const mm=String(simTime.getMinutes()).padStart(2,"0");
+    const date=simTime.toDateString().toUpperCase();
+    c.textContent=`${hh}:${mm} — ${date}`;
   }
-
-  // === BUY PROCESS ===
-  const modal=document.getElementById("buyModal");
-  const modalDetails=document.getElementById("modalDetails");
-  const confirmBtn=document.getElementById("confirmBuy");
-  const cancelBtn=document.getElementById("cancelBuy");
-  let selectedAircraft=null;
-
-  document.querySelectorAll(".buy-btn").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const price=parseFloat(btn.dataset.price);
-      const model=btn.dataset.model;
-      selectedAircraft={model,price};
-
-      if(playerBalance<price){
-        alert("❌ Insufficient funds, Captain.");
-        return;
-      }
-
-      modalDetails.textContent=`Model: ${model} — Price: $${price} M`;
-      modal.style.display="flex";
-    });
-  });
-
-  cancelBtn.addEventListener("click",()=>{ modal.style.display="none"; });
-
-  confirmBtn.addEventListener("click",()=>{
-    if(!selectedAircraft) return;
-
-    // Deduct balance
-    playerBalance-=selectedAircraft.price;
-    document.getElementById("balanceDisplay").textContent=`$${playerBalance.toFixed(1)} M`;
-
-    // Simulate Delivery Slot (delayed 2–3 months game time)
-    const deliveryDelayDays=Math.floor(Math.random()*90)+60; // 60–150 days
-    const deliveryDate=new Date();
-    deliveryDate.setDate(deliveryDate.getDate()+deliveryDelayDays);
-    const deliveryStr=deliveryDate.toDateString().toUpperCase();
-
-    // Register aircraft in localStorage
-    const owned=JSON.parse(localStorage.getItem("acs_myAircraft")||"[]");
-    owned.push({
-      reg:"EX-", // without number until delivery
-      model:selectedAircraft.model,
-      delivery:deliveryStr,
-      status:"pending",
-      paid:selectedAircraft.price
-    });
-    localStorage.setItem("acs_myAircraft",JSON.stringify(owned));
-
-    alert(`✅ Purchase confirmed!\n${selectedAircraft.model}\nDelivery: ${deliveryStr}`);
-    modal.style.display="none";
-    selectedAircraft=null;
-  });
-
-  window.onclick=e=>{ if(e.target===modal) modal.style.display="none"; };
-
-  // === INFO BUTTONS ===
-  document.querySelectorAll(".info-btn").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const model=btn.dataset.model;
-      const ac=aircraftList.find(a=>a.model===model);
-      if(!ac) return;
-      alert(`✈️ ${ac.manufacturer} ${ac.model}\nRange: ${ac.range}\nSeats: ${ac.seats}\nPrice: $${ac.price} M`);
-    });
-  });
-
-  // === LOGOUT HANDLER ===
-  function handleLogout(){
-    alert("👋 Session closed. See you soon, Captain!");
-    window.location.href="login.html";
-  }
-
-  // === SIMULATION CLOCK ===
-  window.addEventListener("load",()=>{
-    const c=document.getElementById("acs-clock");
-    if(!c) return;
-    let simTime=new Date();
-    function refreshClock(){
-      simTime.setMinutes(simTime.getMinutes()+1);
-      const hh=String(simTime.getHours()).padStart(2,"0");
-      const mm=String(simTime.getMinutes()).padStart(2,"0");
-      const date=simTime.toDateString().toUpperCase();
-      c.textContent=`${hh}:${mm} — ${date}`;
-    }
-    refreshClock();
-    setInterval(refreshClock,1000);
-  });
-  </script>
+  refreshClock();
+  setInterval(refreshClock,1000);
+});
+</script>
 
 </body>
 </html>
