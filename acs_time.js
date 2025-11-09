@@ -1,5 +1,5 @@
 /* ============================================================
-   === ACS CORE TIME SYSTEM v1.0 ===
+   === ACS CORE TIME SYSTEM v1.1 ===
    Central simulation clock for Aviation Capital Simulator
    Author: Capt. Francisco Pérez Barrera
    Date: 09 NOV 2025
@@ -35,36 +35,38 @@ function acsUpdateClockDisplay() {
 
 // === AVANZAR TIEMPO GLOBAL ACS ===
 function acsAdvanceTime() {
-  // 1 segundo real = 1 hora simulada
-  window.acsTime.simTime.setHours(window.acsTime.simTime.getHours() + 1);
-  window.acsTime.hoursPassed++;
+  // ✅ 1 segundo real = 1 minuto simulado (reloj más estable visualmente)
+  window.acsTime.simTime.setMinutes(window.acsTime.simTime.getMinutes() + 1);
 
-  // --- EVENTO GLOBAL: cada hora simulada ---
-  document.dispatchEvent(new Event("acsTick"));
+  // Cada 60 minutos simulados = 1 hora real de juego
+  if (window.acsTime.simTime.getMinutes() === 0) {
+    window.acsTime.hoursPassed++;
+    document.dispatchEvent(new Event("acsTick"));
+  }
 
   // --- EVENTO GLOBAL: cada 24 horas simuladas = 1 día ---
-  if (window.acsTime.hoursPassed % 24 === 0) {
+  if (window.acsTime.hoursPassed % 24 === 0 && window.acsTime.hoursPassed !== 0) {
     window.acsTime.dayCounter++;
     document.dispatchEvent(new Event("acsNewDay"));
   }
 
   // --- EVENTO GLOBAL: cada 720 horas simuladas = 1 mes ---
-  if (window.acsTime.hoursPassed % 720 === 0) {
+  if (window.acsTime.hoursPassed % 720 === 0 && window.acsTime.hoursPassed !== 0) {
     window.acsTime.monthCounter++;
     document.dispatchEvent(new Event("acsNewMonth"));
   }
 
   // --- EVENTO GLOBAL: cada 8640 horas simuladas = 1 año (12 meses) ---
-  if (window.acsTime.hoursPassed % 8640 === 0) {
+  if (window.acsTime.hoursPassed % 8640 === 0 && window.acsTime.hoursPassed !== 0) {
     document.dispatchEvent(new Event("acsNewYear"));
   }
 
-  // Actualiza reloj cockpit
+  // Actualiza el reloj cockpit sin mover el header
   acsUpdateClockDisplay();
 }
 
 // === INICIAR RELOJ CENTRAL ===
-setInterval(acsAdvanceTime, 1000); // 1 seg real = 1 hora simulada
+setInterval(acsAdvanceTime, 1000); // 1 seg real = 1 min simulado
 acsUpdateClockDisplay();
 
 // === API Opcional: sincronización manual ===
@@ -73,4 +75,4 @@ window.acsTime.syncNow = function() {
 };
 
 // === Mensaje de consola al iniciar ===
-console.log("%cACS CORE TIME SYSTEM v1.0 initialized", "color:#00ff80;font-weight:bold;");
+console.log("%cACS CORE TIME SYSTEM v1.1 (Cockpit Stable) initialized", "color:#00ff80;font-weight:bold;");
