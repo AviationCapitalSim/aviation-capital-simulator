@@ -126,6 +126,13 @@
       border-radius: 6px;
       font-size: 0.9rem;
       margin-left: 1rem;
+
+      /* Fix para que no se mueva el header */
+      min-width: 260px;
+      white-space: nowrap;
+      text-align: right;
+      box-sizing: border-box;
+      display: inline-block;
     }
   </style>
 </head>
@@ -200,6 +207,9 @@
       <button class="btn" style="background:#cc0000;" onclick="closeModal()">Cancel</button>
     </div>
   </div>
+
+  <!-- === RELOJ Y TIEMPO GLOBAL ACS === -->
+  <script src="acs_time.js?v=1.0.0"></script>
 
   <script>
     /* === LEASING LOGIC (BETA v2) === */
@@ -308,24 +318,19 @@
       balanceEl.textContent = `$${acsBalance.toFixed(1)} M`;
     }
 
-    // === Simulación real ACS ===
-// 1 hora de juego = 60 segundos reales
-// 1 día = 24 minutos reales
-// 1 mes ≈ 12 horas reales (43,200,000 ms)
-const MONTH_DURATION_MS = 43200000; // 12 horas reales = 1 mes simulado
-
-setInterval(() => {
-  activeLeases.forEach((l, i) => {
-    if (l.remaining > 0) {
-      acsBalance -= l.monthly;   // deduce mensualidad
-      l.remaining--;             // reduce un mes
-      if (l.remaining === 0) {
-        alert(`Lease completed for ${l.model}. You may buy or return it.`);
-      }
-    }
-  });
-  refreshActive();
-}, MONTH_DURATION_MS);
+    // === Sincronizado con reloj maestro ACS: pago mensual ===
+    document.addEventListener("acsNewMonth", () => {
+      activeLeases.forEach(l => {
+        if (l.remaining > 0) {
+          acsBalance -= l.monthly;   // pago mensual
+          l.remaining--;             // baja un mes
+          if (l.remaining === 0) {
+            alert(`Lease completed for ${l.model}. You may buy or return it.`);
+          }
+        }
+      });
+      refreshActive();
+    });
 
     loadAvailable();
 
@@ -333,22 +338,6 @@ setInterval(() => {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-
-    // === Reloj cockpit Airbus (modo simulador) ===
-    window.addEventListener("load", () => {
-      const c = document.getElementById("acs-clock");
-      if (!c) return;
-      let simTime = new Date();
-      function refreshClock() {
-        simTime.setMinutes(simTime.getMinutes() + 1);
-        const hh = String(simTime.getHours()).padStart(2, "0");
-        const mm = String(simTime.getMinutes()).padStart(2, "0");
-        const date = simTime.toDateString().toUpperCase();
-        c.textContent = `${hh}:${mm} — ${date}`;
-      }
-      refreshClock();
-      setInterval(refreshClock, 1000);
-    });
   </script>
 </body>
 </html>
