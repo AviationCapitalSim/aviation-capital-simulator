@@ -1,0 +1,346 @@
+<!-- === MY AIRCRAFT MODULE === -->
+<!-- Version: Beta v1 | Date: 09 NOV 2025 -->
+<!-- === ACS Maintenance System v1.2 (FULL FUNCTIONAL) === -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Aircraft - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <style>
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    h2 {
+      color: #FFB300;
+      text-align: center;
+      margin-top: 6rem;
+    }
+
+    .sub { color: #ccc; text-align: center; margin-bottom: 2rem; }
+
+    /* === DASHBOARD PANEL === */
+    .dashboard {
+      display: flex;
+      justify-content: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      margin: 1rem auto 2rem;
+      width: 90%;
+    }
+
+    .dash-box {
+      background: #0e1b3c;
+      border-radius: 10px;
+      padding: 0.8rem 1.2rem;
+      min-width: 180px;
+      text-align: center;
+      box-shadow: 0 0 8px rgba(0,0,0,.4);
+    }
+    .dash-box h3 { color: #FFB300; margin: 0.2rem 0; font-size: 1rem; }
+    .dash-box p { color: #00ff80; font-weight: 600; margin: 0; }
+
+    /* === FLEET TABLE === */
+    table {
+      width: 90%;
+      margin: 0 auto 2rem;
+      border-collapse: collapse;
+      background: #0e1b3c;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,.4);
+    }
+    th, td {
+      border: 1px solid rgba(255,255,255,.1);
+      padding: .6rem;
+      font-size: .9rem;
+      text-align: center;
+    }
+    th {
+      background: #112055;
+      color: #FFB300;
+    }
+    tr:nth-child(even) { background: #102040; }
+
+    .btn {
+      background: #00C851;
+      border: none;
+      border-radius: 6px;
+      padding: .3rem .8rem;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform .2s;
+    }
+    .btn:hover { transform: scale(1.05); background:#00e060; }
+
+    .danger { background:#cc0000; }
+    .warn { color:#ff4d4d; font-weight:600; }
+
+    /* === MAINTENANCE LOG === */
+    #log {
+      width: 90%;
+      margin: 1rem auto 3rem;
+      background: #0e1b3c;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,.4);
+      font-size: .9rem;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    #log h3 { color:#FFB300; margin-top:0; text-align:center; }
+    #log-entry { border-top:1px solid rgba(255,255,255,.2); padding-top:.5rem; }
+
+    /* === CLOCK === */
+    .acs-clock-header {
+      font-family:'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      background:rgba(0,255,128,.08);
+      padding:.3rem .8rem;
+      border-radius:6px;
+      font-size:.9rem;
+      margin-left:1rem;
+      font-weight:bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- === HEADER === -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html" class="active">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
+    </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  </header>
+
+  <main>
+    <h2>My Aircraft</h2>
+    <p class="sub">Monitor your fleet condition, maintenance, and financial performance.</p>
+
+    <!-- === DASHBOARD === -->
+    <section class="dashboard" id="dashboard">
+      <div class="dash-box"><h3>Balance</h3><p id="balance">$200.0 M</p></div>
+      <div class="dash-box"><h3>Active</h3><p id="activeCount">0</p></div>
+      <div class="dash-box"><h3>Maintenance</h3><p id="maintCount">0</p></div>
+      <div class="dash-box"><h3>Leased Out</h3><p id="leasedCount">0</p></div>
+      <div class="dash-box"><h3>Total Fleet Value</h3><p id="fleetValue">$0 M</p></div>
+      <div class="dash-box"><h3>Avg Age / Hours</h3><p id="fleetStats">0 yrs / 0 h</p></div>
+    </section>
+
+    <!-- === FLEET TABLE === -->
+    <table id="fleetTable">
+      <tr>
+        <th>Model</th><th>Status</th><th>Age</th><th>Hours</th><th>Condition</th>
+        <th>Next Maint.</th><th>Actions</th>
+      </tr>
+    </table>
+
+    <!-- === LOG === -->
+    <section id="log">
+      <h3>Maintenance Log</h3>
+      <div id="log-entry"></div>
+    </section>
+  </main>
+
+  <!-- === SCRIPT SECTION === -->
+  <script>
+  /* === INITIAL FLEET DATA === */
+  const defaultFleet = [
+    { model:"Airbus A320", value:98, age:5, hours:14200, condition:92, status:"Active" },
+    { model:"Boeing 737-800", value:106, age:6, hours:15800, condition:88, status:"Leased Out" },
+    { model:"Embraer E190", value:51, age:4, hours:9800, condition:93, status:"Active" },
+    { model:"Bombardier CRJ-900", value:45, age:7, hours:17500, condition:84, status:"Active" },
+    { model:"ATR 72-600", value:28, age:3, hours:6200, condition:96, status:"Active" }
+  ];
+
+  let balance = 200.0;
+  let fleet = JSON.parse(localStorage.getItem("acsFleet")) || defaultFleet;
+  let logData = JSON.parse(localStorage.getItem("acsLog")) || [];
+
+  /* === UTILS === */
+  const balanceEl = document.getElementById("balance");
+  const fleetTable = document.getElementById("fleetTable");
+  const logEl = document.getElementById("log-entry");
+
+  function saveData(){
+    localStorage.setItem("acsFleet", JSON.stringify(fleet));
+    localStorage.setItem("acsBalance", balance);
+    localStorage.setItem("acsLog", JSON.stringify(logData));
+  }
+
+  function logAction(text){
+    const time = window.acsTime?.simTime?.toDateString() || new Date().toDateString();
+    const entry = `[${time}] ${text}`;
+    logData.unshift(entry);
+    logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join("");
+    saveData();
+  }
+
+  /* === DASHBOARD UPDATE === */
+  function updateDashboard(){
+    const active = fleet.filter(f=>f.status==="Active").length;
+    const maint = fleet.filter(f=>f.status.includes("Maint")).length;
+    const leased = fleet.filter(f=>f.status==="Leased Out").length;
+    const totalValue = fleet.reduce((a,b)=>a+b.value,0);
+    const avgAge = (fleet.reduce((a,b)=>a+b.age,0)/fleet.length).toFixed(1);
+    const avgHrs = (fleet.reduce((a,b)=>a+b.hours,0)/fleet.length).toFixed(0);
+    document.getElementById("activeCount").textContent = active;
+    document.getElementById("maintCount").textContent = maint;
+    document.getElementById("leasedCount").textContent = leased;
+    document.getElementById("fleetValue").textContent = `$${totalValue.toFixed(0)} M`;
+    document.getElementById("fleetStats").textContent = `${avgAge} yrs / ${avgHrs} h`;
+    balanceEl.textContent = `$${balance.toFixed(1)} M`;
+  }
+
+  /* === MAINTENANCE COST CALC === */
+  function maintenanceCost(f, type){
+    const base = f.value * (type==="C"?0.04:0.08);
+    const ageFactor = f.age * 0.5;
+    return (base + ageFactor).toFixed(2);
+  }
+
+  /* === FLEET RENDER === */
+  function renderFleet(){
+    fleetTable.innerHTML = `
+      <tr>
+        <th>Model</th><th>Status</th><th>Age</th><th>Hours</th><th>Condition</th>
+        <th>Next Maint.</th><th>Actions</th>
+      </tr>`;
+    fleet.forEach((f,i)=>{
+      let maintWarn = f.condition<60?'<span class="warn">⚠️ Maintenance Required</span>':'OK';
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${f.model}</td>
+        <td>${f.status}</td>
+        <td>${f.age}</td>
+        <td>${f.hours.toLocaleString()}</td>
+        <td>${f.condition}%</td>
+        <td>${maintWarn}</td>
+        <td>
+          <button class="btn" onclick="startMaint(${i},'C')">C-Check</button>
+          <button class="btn" onclick="startMaint(${i},'D')">D-Check</button>
+          <button class="btn" onclick="sellAircraft(${i})">Sell</button>
+          <button class="btn" onclick="leaseOut(${i})">Lease Out</button>
+          <button class="btn danger" onclick="scrapAircraft(${i})">Scrap</button>
+        </td>`;
+      fleetTable.appendChild(row);
+    });
+    updateDashboard();
+  }
+
+  /* === MAINTENANCE ENGINE === */
+  function startMaint(i, type){
+    const f = fleet[i];
+    if(f.status!=="Active"){ alert("Aircraft not available."); return; }
+    const cost = parseFloat(maintenanceCost(f,type));
+    balance -= cost;
+    f.status = `In ${type}-Check`;
+    f.condition = Math.min(100, f.condition+10);
+    logAction(`Started ${type}-Check on ${f.model} (-$${cost}M)`);
+    saveData();
+    renderFleet();
+
+    const months = type==="C"?1:2;
+    const duration = months*60*1000; // 1m = 1h sim = 60s real (adjust later)
+    setTimeout(()=>{
+      f.status="Active";
+      logAction(`${type}-Check completed on ${f.model}`);
+      saveData(); renderFleet();
+    }, duration);
+  }
+
+  /* === ECONOMIC ENGINE === */
+  function sellAircraft(i){
+    const f = fleet[i];
+    const value = f.value * (0.7 + Math.random()*0.15);
+    balance += value;
+    logAction(`Sold ${f.model} for +$${value.toFixed(1)}M`);
+    fleet.splice(i,1); saveData(); renderFleet();
+  }
+
+  function leaseOut(i){
+    const f = fleet[i];
+    if(f.status!=="Active"){ alert("Aircraft not available."); return; }
+    f.status="Leased Out";
+    const income = leaseIncome(f.model);
+    logAction(`${f.model} leased out (+$${income.toFixed(1)}M/month)`);
+    saveData(); renderFleet();
+  }
+
+  function scrapAircraft(i){
+    const f = fleet[i];
+    const value = f.value * 0.08;
+    balance += value;
+    logAction(`Scrapped ${f.model} (+$${value.toFixed(1)}M)`);
+    fleet.splice(i,1); saveData(); renderFleet();
+  }
+
+  function leaseIncome(model){
+    if(model.includes("A320")) return 2.0;
+    if(model.includes("737")) return 2.1;
+    if(model.includes("E190")) return 1.3;
+    if(model.includes("CRJ")) return 1.0;
+    if(model.includes("ATR")) return 0.8;
+    return 1.0;
+  }
+
+  /* === MONTHLY INCOME TICK (ACS Time Sync) === */
+  document.addEventListener("acsNewMonth", ()=>{
+    fleet.filter(f=>f.status==="Leased Out").forEach(f=>{
+      const income = leaseIncome(f.model);
+      balance += income;
+      logAction(`Lease income: ${f.model} +$${income.toFixed(1)}M`);
+    });
+    saveData(); renderFleet();
+  });
+
+  /* === INITIALIZATION === */
+  renderFleet();
+  logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join("");
+  updateDashboard();
+
+  function handleLogout(){
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href="login.html";
+  }
+
+  /* === ACS TIME INTEGRATION === */
+  window.addEventListener("load",()=>{
+    const c=document.getElementById("acs-clock");
+    if(!c)return;
+    function refreshClock(){
+      const sim=window.acsTime?.simTime||new Date();
+      const hh=String(sim.getHours()).padStart(2,"0");
+      const mm=String(sim.getMinutes()).padStart(2,"0");
+      const date=sim.toDateString().toUpperCase();
+      c.textContent=`${hh}:${mm} — ${date}`;
+    }
+    refreshClock();
+    setInterval(refreshClock,1000);
+  });
+  </script>
+</body>
+</html>
+<!-- END OF MODULE -->
