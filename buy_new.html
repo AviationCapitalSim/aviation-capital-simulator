@@ -42,61 +42,61 @@
       gap: 0.8rem;
     }
 
- .aircraft-card {
-  background: #102040;
-  border-radius: 10px;
-  overflow: hidden;
-  height: 340px; /* más alta para equilibrar imagen + botones */
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex;
-  flex-direction: column;
-}
+    .aircraft-card {
+      background: #102040;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 340px; /* más alta para equilibrar imagen + botones */
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
 
-.aircraft-card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.4);
-}
+    .aircraft-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.4);
+    }
 
-.aircraft-card img {
-  width: 100%;
-  height: 63%; /* ajustado para dejar espacio abajo */
-  object-fit: cover; /* mantiene proporción real */
-  background: #000; /* contraste elegante */
-}
+    .aircraft-card img {
+      width: 100%;
+      height: 63%; /* ajustado para dejar espacio abajo */
+      object-fit: cover; /* mantiene proporción real */
+      background: #000; /* contraste elegante */
+    }
 
-.aircraft-info {
-  padding: 10px 8px 16px; /* más espacio inferior */
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: center;
-}
+    .aircraft-info {
+      padding: 10px 8px 16px; /* más espacio inferior */
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+    }
 
-.aircraft-info h3 {
-  color: #FFB300;
-  font-size: 0.85rem;
-  margin: 4px 0;
-}
+    .aircraft-info h3 {
+      color: #FFB300;
+      font-size: 0.85rem;
+      margin: 4px 0;
+    }
 
-.aircraft-info p {
-  color: #cfd8dc;
-  margin: 2px 0;
-  font-size: 0.7rem;
-}
+    .aircraft-info p {
+      color: #cfd8dc;
+      margin: 2px 0;
+      font-size: 0.7rem;
+    }
 
-.price {
-  color: #42a5f5;
-  font-weight: 700;
-  margin-top: 4px;
-}
+    .price {
+      color: #42a5f5;
+      font-weight: 700;
+      margin-top: 4px;
+    }
 
-.action-buttons {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-}
+    .action-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
 
     .buy-btn, .lease-btn, .info-btn {
       flex: 1;
@@ -319,6 +319,14 @@
         </div>
       </div>
     </div>
+
+    <!-- === PRODUCTION SLOTS OVERVIEW === -->
+    <div class="manufacturer-section">
+      <h2>📦 Production Slots Availability</h2>
+      <p class="sub">Check monthly manufacturing capacity and next delivery dates per manufacturer.</p>
+      <div id="production-overview"></div>
+    </div>
+
   </main>
 
   <script>
@@ -396,6 +404,14 @@
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
+  </script>
+
+  <!-- === ACS Production System (slots) === -->
+  <script src="acs_production.js?v=1.0"></script>
+  <script>
+    window.addEventListener('load', () => {
+      renderProductionTables('production-overview');
+    });
   </script>
 
   <script src="finance.js?v=1.0.0"></script>
