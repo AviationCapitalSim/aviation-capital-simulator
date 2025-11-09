@@ -109,6 +109,41 @@
       margin-left:1rem;
       font-weight:bold;
     }
+
+    /* === FLEET MODEL MODALS (Beta v2.1) === */
+    .model-modal, .maint-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: #0e1b3c;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      width: 85%;
+      max-height: 85%;
+      overflow-y: auto;
+      box-shadow: 0 0 15px rgba(0,0,0,.6);
+      border: 1px solid #FFB300;
+    }
+    .close {
+      float: right;
+      font-size: 1.5rem;
+      color: #FFB300;
+      cursor: pointer;
+      margin-top: -0.5rem;
+    }
+    .close:hover { color: #fff; }
+    .model-header h3 {
+      color: #FFB300;
+      margin-bottom: .5rem;
+    }
+    .maint-detail { background:#102040; padding:1rem; border-radius:8px; margin-top:.5rem; }
+    .maint-detail p { margin:.2rem 0; font-size:.9rem; }
   </style>
 </head>
 <body>
@@ -164,22 +199,41 @@
     </section>
   </main>
 
+  <!-- === MODEL MODAL (GROUPED AIRCRAFT) === -->
+  <div id="modelModal" class="model-modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModelModal()">&times;</span>
+      <div class="model-header"><h3 id="modelTitle">Model Fleet</h3></div>
+      <table id="modelTable">
+        <tr><th>Registration</th><th>Status</th><th>Hours</th><th>Last Check</th><th>Next Check</th><th>Engineer</th><th>Action</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- === MAINTENANCE DETAIL MODAL === -->
+  <div id="maintModal" class="maint-modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeMaintModal()">&times;</span>
+      <div class="model-header"><h3>Maintenance Detail</h3></div>
+      <div class="maint-detail" id="maintDetail"></div>
+      <button class="btn" id="confirmMaintBtn">Confirm Maintenance</button>
+    </div>
+  </div>
+
   <!-- === SCRIPT SECTION === -->
   <script>
-  /* === INITIAL FLEET DATA === */
   const defaultFleet = [
-    { model:"Airbus A320", value:98, age:5, hours:14200, condition:92, status:"Active" },
-    { model:"Boeing 737-800", value:106, age:6, hours:15800, condition:88, status:"Leased Out" },
-    { model:"Embraer E190", value:51, age:4, hours:9800, condition:93, status:"Active" },
-    { model:"Bombardier CRJ-900", value:45, age:7, hours:17500, condition:84, status:"Active" },
-    { model:"ATR 72-600", value:28, age:3, hours:6200, condition:96, status:"Active" }
+    { model:"Airbus A320-200", registration:"EX-32001", value:98, age:5, hours:14200, condition:92, status:"Active", lastCheck:"B", nextCheck:"C", engineer:"Eng. V. Petrova" },
+    { model:"Airbus A320-200", registration:"EX-32002", value:97, age:5, hours:13000, condition:90, status:"Active", lastCheck:"A", nextCheck:"B", engineer:"Tech. A. Rahimov" },
+    { model:"Boeing 737-800", registration:"EX-73701", value:106, age:6, hours:15800, condition:88, status:"Leased Out", lastCheck:"C", nextCheck:"D", engineer:"Eng. S. Bekov" },
+    { model:"Embraer E190", registration:"EX-E1901", value:51, age:4, hours:9800, condition:93, status:"Active", lastCheck:"B", nextCheck:"C", engineer:"Eng. O. Nazarova" },
+    { model:"ATR 72-600", registration:"EX-ATR01", value:28, age:3, hours:6200, condition:96, status:"Active", lastCheck:"A", nextCheck:"B", engineer:"Tech. K. Muradov" }
   ];
 
   let balance = 200.0;
   let fleet = JSON.parse(localStorage.getItem("acsFleet")) || defaultFleet;
   let logData = JSON.parse(localStorage.getItem("acsLog")) || [];
 
-  /* === UTILS === */
   const balanceEl = document.getElementById("balance");
   const fleetTable = document.getElementById("fleetTable");
   const logEl = document.getElementById("log-entry");
@@ -191,17 +245,16 @@
   }
 
   function logAction(text){
-    const time = window.acsTime?.simTime?.toDateString() || new Date().toDateString();
+    const time = new Date().toDateString();
     const entry = `[${time}] ${text}`;
     logData.unshift(entry);
     logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join("");
     saveData();
   }
 
-  /* === DASHBOARD UPDATE === */
   function updateDashboard(){
     const active = fleet.filter(f=>f.status==="Active").length;
-    const maint = fleet.filter(f=>f.status.includes("Maint")).length;
+    const maint = fleet.filter(f=>f.status.includes("In")).length;
     const leased = fleet.filter(f=>f.status==="Leased Out").length;
     const totalValue = fleet.reduce((a,b)=>a+b.value,0);
     const avgAge = (fleet.reduce((a,b)=>a+b.age,0)/fleet.length).toFixed(1);
@@ -214,131 +267,83 @@
     balanceEl.textContent = `$${balance.toFixed(1)} M`;
   }
 
-  /* === MAINTENANCE COST CALC === */
-  function maintenanceCost(f, type){
-    const base = f.value * (type==="C"?0.04:0.08);
-    const ageFactor = f.age * 0.5;
-    return (base + ageFactor).toFixed(2);
-  }
-
-  /* === FLEET RENDER === */
   function renderFleet(){
-    fleetTable.innerHTML = `
-      <tr>
-        <th>Model</th><th>Status</th><th>Age</th><th>Hours</th><th>Condition</th>
-        <th>Next Maint.</th><th>Actions</th>
-      </tr>`;
+    fleetTable.innerHTML = `<tr><th>Model</th><th>Status</th><th>Age</th><th>Hours</th><th>Condition</th><th>Next Maint.</th><th>Actions</th></tr>`;
     fleet.forEach((f,i)=>{
-      let maintWarn = f.condition<60?'<span class="warn">⚠️ Maintenance Required</span>':'OK';
       const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${f.model}</td>
-        <td>${f.status}</td>
-        <td>${f.age}</td>
-        <td>${f.hours.toLocaleString()}</td>
-        <td>${f.condition}%</td>
-        <td>${maintWarn}</td>
-        <td>
-          <button class="btn" onclick="startMaint(${i},'C')">C-Check</button>
-          <button class="btn" onclick="startMaint(${i},'D')">D-Check</button>
-          <button class="btn" onclick="sellAircraft(${i})">Sell</button>
-          <button class="btn" onclick="leaseOut(${i})">Lease Out</button>
-          <button class="btn danger" onclick="scrapAircraft(${i})">Scrap</button>
-        </td>`;
+      let warn = f.condition<60?'<span class="warn">⚠️</span>':'OK';
+      row.innerHTML = `<td>${f.model}</td><td>${f.status}</td><td>${f.age}</td><td>${f.hours}</td><td>${f.condition}%</td><td>${warn}</td>
+      <td><button class="btn" onclick="openModelModal('${f.model}')">View Fleet</button></td>`;
       fleetTable.appendChild(row);
     });
     updateDashboard();
   }
 
-  /* === MAINTENANCE ENGINE === */
-  function startMaint(i, type){
-    const f = fleet[i];
-    if(f.status!=="Active"){ alert("Aircraft not available."); return; }
-    const cost = parseFloat(maintenanceCost(f,type));
-    balance -= cost;
-    f.status = `In ${type}-Check`;
-    f.condition = Math.min(100, f.condition+10);
-    logAction(`Started ${type}-Check on ${f.model} (-$${cost}M)`);
-    saveData();
-    renderFleet();
-
-    const months = type==="C"?1:2;
-    const duration = months*60*1000; // 1m = 1h sim = 60s real (adjust later)
-    setTimeout(()=>{
-      f.status="Active";
-      logAction(`${type}-Check completed on ${f.model}`);
-      saveData(); renderFleet();
-    }, duration);
-  }
-
-  /* === ECONOMIC ENGINE === */
-  function sellAircraft(i){
-    const f = fleet[i];
-    const value = f.value * (0.7 + Math.random()*0.15);
-    balance += value;
-    logAction(`Sold ${f.model} for +$${value.toFixed(1)}M`);
-    fleet.splice(i,1); saveData(); renderFleet();
-  }
-
-  function leaseOut(i){
-    const f = fleet[i];
-    if(f.status!=="Active"){ alert("Aircraft not available."); return; }
-    f.status="Leased Out";
-    const income = leaseIncome(f.model);
-    logAction(`${f.model} leased out (+$${income.toFixed(1)}M/month)`);
-    saveData(); renderFleet();
-  }
-
-  function scrapAircraft(i){
-    const f = fleet[i];
-    const value = f.value * 0.08;
-    balance += value;
-    logAction(`Scrapped ${f.model} (+$${value.toFixed(1)}M)`);
-    fleet.splice(i,1); saveData(); renderFleet();
-  }
-
-  function leaseIncome(model){
-    if(model.includes("A320")) return 2.0;
-    if(model.includes("737")) return 2.1;
-    if(model.includes("E190")) return 1.3;
-    if(model.includes("CRJ")) return 1.0;
-    if(model.includes("ATR")) return 0.8;
-    return 1.0;
-  }
-
-  /* === MONTHLY INCOME TICK (ACS Time Sync) === */
-  document.addEventListener("acsNewMonth", ()=>{
-    fleet.filter(f=>f.status==="Leased Out").forEach(f=>{
-      const income = leaseIncome(f.model);
-      balance += income;
-      logAction(`Lease income: ${f.model} +$${income.toFixed(1)}M`);
+  /* === MODEL MODAL === */
+  function openModelModal(modelName){
+    const modal=document.getElementById("modelModal");
+    modal.style.display="flex";
+    document.getElementById("modelTitle").textContent=modelName+" — Fleet Detail";
+    const tbl=document.getElementById("modelTable");
+    const list=fleet.filter(f=>f.model===modelName);
+    tbl.innerHTML=`<tr><th>Registration</th><th>Status</th><th>Hours</th><th>Last Check</th><th>Next Check</th><th>Engineer</th><th>Action</th></tr>`;
+    list.forEach((f,i)=>{
+      const row=document.createElement("tr");
+      row.innerHTML=`<td>${f.registration}</td><td>${f.status}</td><td>${f.hours}</td><td>${f.lastCheck}</td><td>${f.nextCheck}</td><td>${f.engineer}</td>
+      <td><button class="btn" onclick="openMaintModal('${f.registration}','${f.model}')">🔧 Start</button></td>`;
+      tbl.appendChild(row);
     });
-    saveData(); renderFleet();
-  });
+  }
+  function closeModelModal(){ document.getElementById("modelModal").style.display="none"; }
 
-  /* === INITIALIZATION === */
-  renderFleet();
-  logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join("");
-  updateDashboard();
+  /* === MAINTENANCE MODAL === */
+  let currentReg=null;
+  function openMaintModal(reg,model){
+    currentReg=reg;
+    document.getElementById("maintModal").style.display="flex";
+    const f=fleet.find(x=>x.registration===reg);
+    const cost=((f.value*0.04)+(f.age*0.5)).toFixed(2);
+    document.getElementById("maintDetail").innerHTML=`
+      <p><b>Aircraft:</b> ${reg} (${model})</p>
+      <p><b>Engineer:</b> ${f.engineer}</p>
+      <p><b>Maintenance Type:</b> C-Check</p>
+      <p><b>Estimated Duration:</b> 1 month (sim)</p>
+      <p><b>Estimated Cost:</b> $${cost}M</p>`;
+    const btn=document.getElementById("confirmMaintBtn");
+    btn.onclick=function(){ confirmMaintenance(f,cost); };
+  }
+  function closeMaintModal(){ document.getElementById("maintModal").style.display="none"; }
 
-  function handleLogout(){
-    alert("👋 Session closed. See you soon, Captain!");
-    window.location.href="login.html";
+  function confirmMaintenance(f,cost){
+    if(f.status!=="Active"){ alert("Aircraft not available."); return; }
+    f.status="In Maintenance";
+    balance-=parseFloat(cost);
+    logAction(`Started C-Check on ${f.registration} (-$${cost}M)`);
+    document.dispatchEvent(new CustomEvent("acsAircraftStatusChange",{detail:{registration:f.registration,model:f.model,newStatus:"maintenance",cost:cost}}));
+    saveData(); renderFleet(); closeMaintModal(); closeModelModal();
+    setTimeout(()=>{
+      f.status="Active"; f.condition=Math.min(100,f.condition+10);
+      logAction(`C-Check completed on ${f.registration}`);
+      document.dispatchEvent(new CustomEvent("acsAircraftStatusChange",{detail:{registration:f.registration,model:f.model,newStatus:"active"}}));
+      saveData(); renderFleet();
+    },60000); // sim delay
   }
 
-  /* === ACS TIME INTEGRATION === */
+  renderFleet(); logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join(""); updateDashboard();
+
+  function handleLogout(){ alert("👋 Session closed. See you soon, Captain!"); window.location.href="login.html"; }
+
   window.addEventListener("load",()=>{
     const c=document.getElementById("acs-clock");
     if(!c)return;
     function refreshClock(){
-      const sim=window.acsTime?.simTime||new Date();
+      const sim=new Date();
       const hh=String(sim.getHours()).padStart(2,"0");
       const mm=String(sim.getMinutes()).padStart(2,"0");
       const date=sim.toDateString().toUpperCase();
       c.textContent=`${hh}:${mm} — ${date}`;
     }
-    refreshClock();
-    setInterval(refreshClock,1000);
+    refreshClock(); setInterval(refreshClock,1000);
   });
   </script>
 </body>
