@@ -1,5 +1,5 @@
 <!-- === BUY AIRCRAFT MODULE === -->
-<!-- Version: Beta v1 | Date: 09 NOV 2025 -->
+<!-- Version: Beta v1.2 | Date: 09 NOV 2025 -->
 <!-- Aviation Capital Simulator -->
 
 <!DOCTYPE html>
@@ -10,7 +10,6 @@
   <title>Buy Aircraft - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === BASE (igual que buy_new) === */
     body {
       margin: 0;
       background-color: #081530;
@@ -41,8 +40,8 @@
 
     .aircraft-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.8rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
     }
 
     .aircraft-card {
@@ -101,7 +100,7 @@
       margin-top: 10px;
     }
 
-    .buy-btn, .lease-btn, .info-btn {
+    .buy-btn, .info-btn {
       flex: 1;
       border: none;
       border-radius: 6px;
@@ -115,12 +114,9 @@
 
     .buy-btn { background: #1565c0; }
     .buy-btn:hover { background: #0d47a1; }
-    .lease-btn { background: #00a86b; }
-    .lease-btn:hover { background: #007d4e; }
     .info-btn { background: #ffb300; color: #102040; }
     .info-btn:hover { background: #ffcc33; }
 
-    /* === BALANCE PANEL === */
     .balance-panel {
       width: 90%;
       margin: 0 auto 1.5rem;
@@ -144,120 +140,6 @@
       margin: 0;
     }
 
-    /* === INFO MODAL (igual que buy_new) === */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-specs, .modal-content {
-      background: #102040;
-      color: #fff;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
-
-    .modal-specs {
-      max-width: 600px;
-      margin: 5% auto;
-      text-align: left;
-    }
-
-    .modal-specs h2 { color: #FFB300; text-align: center; }
-    .modal-specs ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 20px;
-      font-size: 0.95rem;
-    }
-
-    .modal-specs li { margin-bottom: 8px; }
-
-    .close-btn {
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      margin: 10px 5px;
-      cursor: pointer;
-      font-weight: 600;
-      background: #00a86b;
-      color: #fff;
-    }
-
-    /* === BUY MODAL EXTRA === */
-    .modal-content {
-      max-width: 420px;
-      margin: 5% auto;
-      text-align: center;
-    }
-    .modal-content h3 { color:#FFB300; margin-top:0; }
-    .modal-content label {
-      display:block;
-      text-align:left;
-      margin-top:.5rem;
-      font-size:.85rem;
-      color:#cfd8dc;
-    }
-    .modal-content input[type="number"] {
-      width:100%;
-      padding:6px;
-      border-radius:6px;
-      border:none;
-      background:#0d1f40;
-      color:#fff;
-      margin-top:4px;
-      text-align:center;
-    }
-    .payment-row {
-      display:flex;
-      justify-content:space-between;
-      margin-top:.4rem;
-      font-size:.8rem;
-      color:#cfd8dc;
-    }
-    .payment-options {
-      display:flex;
-      justify-content:space-between;
-      margin:0.5rem 0 0.8rem;
-    }
-    .payment-options label {
-      flex:1;
-      margin:0 3px;
-      background:#0d2b5a;
-      border-radius:6px;
-      padding:4px 0;
-      border:1px solid #FFB300;
-      cursor:pointer;
-      font-size:.8rem;
-      text-align:center;
-    }
-    .payment-options input {
-      margin-right:4px;
-    }
-    .modal-buttons {
-      margin-top:1rem;
-    }
-    .modal-buttons button {
-      border:none;
-      border-radius:6px;
-      padding:.6rem 1.2rem;
-      margin:0 .3rem;
-      cursor:pointer;
-      font-weight:600;
-    }
-    .confirm-btn { background:#1DB954; color:#fff; }
-    .cancel-btn { background:#b71c1c; color:#fff; }
-
-    /* ✅ Reloj Airbus cockpit */
     .acs-clock-header {
       font-family: 'Orbitron', 'Consolas', monospace;
       color: #00ff80;
@@ -272,7 +154,6 @@
 </head>
 
 <body>
-  <!-- === HEADER === -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
@@ -298,15 +179,14 @@
 
   <main class="acs-main">
     <h2>Buy New Aircraft</h2>
-    <p class="sub">Purchase or lease your next aircraft directly from the manufacturer.</p>
+    <p class="sub">Purchase your next aircraft directly from the manufacturer.</p>
 
-    <!-- BALANCE -->
     <div class="balance-panel">
       <h3>💳 Current Balance</h3>
       <p id="balanceDisplay">$0.0 M</p>
     </div>
 
-    <!-- AIRBUS -->
+    <!-- === AIRBUS === -->
     <div class="manufacturer-section">
       <h2>Airbus</h2>
       <div class="aircraft-grid">
@@ -317,16 +197,15 @@
             <p>Range: 3,400 NM • Seats: 180</p>
             <p class="price">$98 M USD</p>
             <div class="action-buttons">
-              <button class="buy-btn" onclick="openBuyModal('Airbus A320-200', 98)">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="Airbus A320-200">Info</button>
+              <button class="buy-btn">Buy</button>
+              <button class="info-btn">Info</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- BOEING -->
+    <!-- === BOEING === -->
     <div class="manufacturer-section">
       <h2>Boeing</h2>
       <div class="aircraft-grid">
@@ -337,16 +216,15 @@
             <p>Range: 3,550 NM • Seats: 189</p>
             <p class="price">$106 M USD</p>
             <div class="action-buttons">
-              <button class="buy-btn" onclick="openBuyModal('Boeing 737-800', 106)">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="Boeing 737-800">Info</button>
+              <button class="buy-btn">Buy</button>
+              <button class="info-btn">Info</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- EMBRAER -->
+    <!-- === EMBRAER === -->
     <div class="manufacturer-section">
       <h2>Embraer</h2>
       <div class="aircraft-grid">
@@ -357,16 +235,15 @@
             <p>Range: 2,450 NM • Seats: 98</p>
             <p class="price">$51 M USD</p>
             <div class="action-buttons">
-              <button class="buy-btn" onclick="openBuyModal('Embraer E190', 51)">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="Embraer E190">Info</button>
+              <button class="buy-btn">Buy</button>
+              <button class="info-btn">Info</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- BOMBARDIER -->
+    <!-- === BOMBARDIER === -->
     <div class="manufacturer-section">
       <h2>Bombardier</h2>
       <div class="aircraft-grid">
@@ -377,16 +254,15 @@
             <p>Range: 1,550 NM • Seats: 90</p>
             <p class="price">$45 M USD</p>
             <div class="action-buttons">
-              <button class="buy-btn" onclick="openBuyModal('Bombardier CRJ-900', 45)">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="Bombardier CRJ-900">Info</button>
+              <button class="buy-btn">Buy</button>
+              <button class="info-btn">Info</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ATR -->
+    <!-- === ATR === -->
     <div class="manufacturer-section">
       <h2>ATR</h2>
       <div class="aircraft-grid">
@@ -397,51 +273,10 @@
             <p>Range: 810 NM • Seats: 72</p>
             <p class="price">$28 M USD</p>
             <div class="action-buttons">
-              <button class="buy-btn" onclick="openBuyModal('ATR 72-600', 28)">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="ATR 72-600">Info</button>
+              <button class="buy-btn">Buy</button>
+              <button class="info-btn">Info</button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- === INFO MODAL === -->
-    <div id="infoModal" class="modal">
-      <div class="modal-specs">
-        <h2 id="infoTitle"></h2>
-        <ul id="infoList"></ul>
-        <div style="text-align:center;">
-          <button class="close-btn" id="closeInfo">Close</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- === BUY MODAL === -->
-    <div id="buyModal" class="modal">
-      <div class="modal-content">
-        <h3 id="buyTitle">Confirm Purchase</h3>
-        <p id="buyBasePrice"></p>
-
-        <label>Quantity</label>
-        <input type="number" id="buyQty" min="1" value="1" />
-
-        <label>Payment Option</label>
-        <div class="payment-options">
-          <label><input type="radio" name="payOpt" value="50">50% </label>
-          <label><input type="radio" name="payOpt" value="75">75% </label>
-          <label><input type="radio" name="payOpt" value="100" checked>100%</label>
-        </div>
-
-        <div class="payment-row"><span>Total Price:</span><span id="buyTotal">$0 M</span></div>
-        <div class="payment-row"><span>Pay Now:</span><span id="buyNow">$0 M</span></div>
-        <div class="payment-row"><span>Pending at Delivery:</span><span id="buyPending">$0 M</span></div>
-        <div class="payment-row"><span>Balance After:</span><span id="buyBalanceAfter">$0 M</span></div>
-        <p style="margin-top:.6rem;font-size:.8rem;color:#ffd54f;">Delivery: Pending (production slot system)</p>
-
-        <div class="modal-buttons">
-          <button class="confirm-btn" id="buyConfirmBtn">Confirm</button>
-          <button class="cancel-btn" id="buyCancelBtn">Cancel</button>
         </div>
       </div>
     </div>
@@ -449,205 +284,19 @@
   </main>
 
   <script>
-    /* === SPECS (igual que buy_new) === */
-    const aircraftSpecs = {
-      "Airbus A320-200": {
-        range: "3,400 NM",
-        speed: "Mach 0.78 (450 KTAS)",
-        engines: "2× CFM56-5B4/P",
-        runway: "7,200 ft (2,200 m)",
-        mtow: "77 t",
-        upgrade: "✅ A320neo (LEAP-1A)"
-      },
-      "Boeing 737-800": {
-        range: "3,550 NM",
-        speed: "Mach 0.785 (455 KTAS)",
-        engines: "2× CFM56-7B26",
-        runway: "8,200 ft (2,500 m)",
-        mtow: "79 t",
-        upgrade: "✅ 737 MAX 8 (LEAP-1B)"
-      },
-      "Embraer E190": {
-        range: "2,450 NM",
-        speed: "Mach 0.78 (447 KTAS)",
-        engines: "2× GE CF34-10E",
-        runway: "6,800 ft (2,070 m)",
-        mtow: "51 t",
-        upgrade: "✅ E190-E2 (PW1900G)"
-      },
-      "Bombardier CRJ-900": {
-        range: "1,550 NM",
-        speed: "Mach 0.78 (447 KTAS)",
-        engines: "2× GE CF34-8C5",
-        runway: "6,100 ft (1,860 m)",
-        mtow: "38 t",
-        upgrade: "⚙️ No major upgrade"
-      },
-      "ATR 72-600": {
-        range: "810 NM",
-        speed: "Mach 0.41 (250 KTAS)",
-        engines: "2× PW127M Turboprop",
-        runway: "4,400 ft (1,340 m)",
-        mtow: "23 t",
-        upgrade: "⚙️ No upgrade (variant: ATR 42-600)"
-      }
-    };
-
-    /* === INFO MODAL LOGIC === */
-    const infoButtons = document.querySelectorAll(".info-btn");
-    const infoModal = document.getElementById("infoModal");
-    const infoTitle = document.getElementById("infoTitle");
-    const infoList = document.getElementById("infoList");
-    const closeInfo = document.getElementById("closeInfo");
-
-    infoButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const model = btn.getAttribute("data-aircraft");
-        const specs = aircraftSpecs[model];
-        if (specs) {
-          infoTitle.textContent = `Specs – ${model}`;
-          infoList.innerHTML = `
-            <li>🧭 <strong>Range:</strong> ${specs.range}</li>
-            <li>⚡ <strong>Speed:</strong> ${specs.speed}</li>
-            <li>⚙️ <strong>Engines:</strong> ${specs.engines}</li>
-            <li>🛫 <strong>Runway:</strong> ${specs.runway}</li>
-            <li>💪 <strong>MTOW:</strong> ${specs.mtow}</li>
-            <li>🔧 <strong>Upgrade:</strong> ${specs.upgrade}</li>`;
-          infoModal.style.display = "flex";
-        }
-      });
-    });
-
-    closeInfo.addEventListener("click", () => infoModal.style.display = "none");
-    window.addEventListener("click", e => {
-      if (e.target === infoModal) infoModal.style.display = "none";
-      if (e.target === buyModal) buyModal.style.display = "none";
-    });
+    let balance = parseFloat(localStorage.getItem("acsBalance") || "200.0");
+    document.getElementById("balanceDisplay").textContent = `$${balance.toFixed(1)} M`;
 
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
 
-    /* === BALANCE === */
-    let balance = parseFloat(localStorage.getItem("acsBalance") || "200.0");
-    const balanceDisplay = document.getElementById("balanceDisplay");
-    function refreshBalanceView(){
-      balanceDisplay.textContent = `$${balance.toFixed(1)} M`;
-    }
-    refreshBalanceView();
-
-    /* === BUY MODAL LOGIC === */
-    const buyModal = document.getElementById("buyModal");
-    const buyTitle = document.getElementById("buyTitle");
-    const buyBasePrice = document.getElementById("buyBasePrice");
-    const buyQty = document.getElementById("buyQty");
-    const buyTotal = document.getElementById("buyTotal");
-    const buyNow = document.getElementById("buyNow");
-    const buyPending = document.getElementById("buyPending");
-    const buyBalanceAfter = document.getElementById("buyBalanceAfter");
-    const buyConfirmBtn = document.getElementById("buyConfirmBtn");
-    const buyCancelBtn = document.getElementById("buyCancelBtn");
-
-    let currentModel = null;
-    let currentUnitPrice = 0;
-
-    function getSelectedPayPercent(){
-      const opt = document.querySelector("input[name='payOpt']:checked");
-      return opt ? parseInt(opt.value) : 100;
-    }
-
-    function recalcBuy(){
-      const qty = Math.max(1, parseInt(buyQty.value) || 1);
-      buyQty.value = qty;
-      const payPercent = getSelectedPayPercent();
-      const grossTotal = currentUnitPrice * qty;
-
-      // Descuentos / recargos
-      let finalTotal = grossTotal;
-      if (payPercent === 100){
-        finalTotal = grossTotal * 0.97; // 3% descuento
-      } else if (payPercent === 50){
-        finalTotal = grossTotal * 1.02; // 2% recargo
-      }
-
-      const payNowAmt = finalTotal * (payPercent/100);
-      const pendingAmt = finalTotal - payNowAmt;
-      const afterBalance = balance - payNowAmt;
-
-      buyTotal.textContent = `$${finalTotal.toFixed(1)} M`;
-      buyNow.textContent = `$${payNowAmt.toFixed(1)} M`;
-      buyPending.textContent = `$${pendingAmt.toFixed(1)} M`;
-      buyBalanceAfter.textContent = `$${afterBalance.toFixed(1)} M`;
-    }
-
-    function openBuyModal(model, price){
-      currentModel = model;
-      currentUnitPrice = price;
-      buyTitle.textContent = `Purchase ${model}`;
-      buyBasePrice.textContent = `Unit Price: $${price} M`;
-      buyQty.value = 1;
-      document.querySelector("input[name='payOpt'][value='100']").checked = true;
-      recalcBuy();
-      buyModal.style.display = "flex";
-    }
-
-    buyQty.addEventListener("input", recalcBuy);
-    document.querySelectorAll("input[name='payOpt']").forEach(r=>r.addEventListener("change", recalcBuy));
-
-    buyCancelBtn.addEventListener("click", ()=>{ buyModal.style.display = "none"; });
-
-    buyConfirmBtn.addEventListener("click", ()=>{
-      const qty = Math.max(1, parseInt(buyQty.value) || 1);
-      const payPercent = getSelectedPayPercent();
-      const finalTotalText = buyTotal.textContent.replace("$","").replace(" M","");
-      const payNowText = buyNow.textContent.replace("$","").replace(" M","");
-      const finalTotal = parseFloat(finalTotalText) || 0;
-      const payNowAmt = parseFloat(payNowText) || 0;
-
-      if (payNowAmt <= 0){
-        alert("Invalid amount.");
-        return;
-      }
-      if (balance < payNowAmt){
-        alert("❌ Insufficient funds for this purchase.");
-        return;
-      }
-
-      balance -= payNowAmt;
-      localStorage.setItem("acsBalance", balance.toFixed(1));
-      refreshBalanceView();
-
-      const pending = JSON.parse(localStorage.getItem("acsPendingDeliveries") || "[]");
-      for(let i=0;i<qty;i++){
-        pending.push({
-          model: currentModel,
-          registration: "EX-",
-          unitPrice: currentUnitPrice,
-          totalPrice: (finalTotal/qty).toFixed(1),
-          payPercent,
-          paidNow: (payNowAmt/qty).toFixed(1),
-          status: "On Order (slot system)",
-          createdAt: new Date().toISOString()
-        });
-      }
-      localStorage.setItem("acsPendingDeliveries", JSON.stringify(pending));
-
-      document.dispatchEvent(new CustomEvent("acsPurchaseRegistered", {
-        detail: { model: currentModel, qty, payPercent, total: finalTotal }
-      }));
-
-      alert(`✅ Order placed: ${qty}× ${currentModel}\nPaid now: $${payNowAmt.toFixed(1)} M\nPending: slots & delivery to be assigned.`);
-      buyModal.style.display = "none";
-    });
-
-    /* === ACS CLOCK === */
     window.addEventListener("load", () => {
       const c = document.getElementById("acs-clock");
       if (!c) return;
 
       let simTime = new Date();
-
       function refreshClock() {
         simTime.setMinutes(simTime.getMinutes() + 1);
         const hh = String(simTime.getHours()).padStart(2, "0");
@@ -660,6 +309,5 @@
       setInterval(refreshClock, 1000);
     });
   </script>
-
 </body>
 </html>
