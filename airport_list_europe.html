@@ -1,7 +1,7 @@
 <!-- ===========================================================
      === AIRPORT LIST (EUROPE) - AVIATION CAPITAL SIMULATOR ===
-     Version: v2.0 | Date: 10 NOV 2025
-     Redesigned from card view → Dynamic Table View
+     Version: v2.1 | Date: 10 NOV 2025
+     Dynamic Table View + Demand Load Bar + Tooltip Analytics
      =========================================================== -->
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +11,7 @@
   <title>Europe Airports - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === TABLE VIEW STYLE (ACS Enhanced) === */
+/* === TABLE VIEW STYLE (ACS Enhanced) === */
 body {
   background: radial-gradient(circle at top, #0b1e4a 0%, #06122d 100%);
   color: #fff;
@@ -174,6 +174,21 @@ footer {
   border-radius: 50%;
   background: conic-gradient(#1DB954 0deg var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 360deg);
 }
+
+/* === DEMAND LOAD BAR (ACS Visual v1.0) === */
+.demand-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 6px;
+  background: linear-gradient(
+    to right,
+    #1DB954 var(--eco),
+    #FFB300 var(--eco) var(--biz),
+    #FF6F00 var(--biz) 100%
+  );
+  box-shadow: 0 0 6px rgba(255, 179, 0, 0.3);
+  margin-top: 6px;
+}
   </style>
 </head>
 
@@ -235,81 +250,89 @@ footer {
 
   <!-- ===== SCRIPTS ===== -->
   <script src="worldairportsacs.js?v=1.0"></script>
+  <script src="time_engine.js?v=1.2"></script>
 
   <script>
-    function loadAirports(continent) {
-      const tableBody = document.getElementById("airportTableBody");
-      tableBody.innerHTML = "";
+  function loadAirports(continent) {
+    const tableBody = document.getElementById("airportTableBody");
+    tableBody.innerHTML = "";
 
-      const userBase = localStorage.getItem("userBaseICAO") || "LEMD";
-      const airports = WorldAirportsACS[continent]
-        .filter(a => a.icao !== userBase)
-        .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
+    const userBase = localStorage.getItem("userBaseICAO") || "LEMD";
+    const airports = WorldAirportsACS[continent]
+      .filter(a => a.icao !== userBase)
+      .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
 
-      airports.forEach(a => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td><strong>${a.city}</strong> (${a.icao}/${a.iata})</td>
-          <td>${a.country}</td>
-          <td>${a.runway_m}</td>
-          <td>${a.demand.Y}/${a.demand.C}/${a.demand.F}</td>
-          <td>$${a.slot_cost_usd}</td>
-          <td>$${a.landing_fee_usd}</td>
-          <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
-          <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
-          <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
-        `;
-        tableBody.appendChild(row);
-      });
-    }
+    airports.forEach(a => {
+      const total = a.demand.Y + a.demand.C + a.demand.F;
+      const ecoPct = (a.demand.Y / total) * 100;
+      const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
 
-    function createRoute(icao) {
-      window.location.href = `route_schedule.html?to=${icao}`;
-    }
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><strong>${a.city}</strong> (${a.icao}/${a.iata})</td>
+        <td>${a.country}</td>
+        <td>${a.runway_m}</td>
+        <td>
+          ${a.demand.Y}/${a.demand.C}/${a.demand.F}
+          <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+        </td>
+        <td>$${a.slot_cost_usd}</td>
+        <td>$${a.landing_fee_usd}</td>
+        <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
+        <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
+        <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
 
-    function sortTable(n) {
-      const table = document.getElementById("airportTable");
-      let switching = true, dir = "asc", switchcount = 0;
-      while (switching) {
-        switching = false;
-        const rows = table.rows;
-        for (let i = 1; i < (rows.length - 1); i++) {
-          let shouldSwitch = false;
-          const x = rows[i].getElementsByTagName("TD")[n];
-          const y = rows[i + 1].getElementsByTagName("TD")[n];
-          const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
-          const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
-          if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
-            shouldSwitch = true;
-            break;
-          }
-        }
-        if (shouldSwitch) {
-          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-          switching = true;
-          switchcount++;
-        } else if (switchcount === 0 && dir === "asc") {
-          dir = "desc";
-          switching = true;
+  function createRoute(icao) {
+    window.location.href = `route_schedule.html?to=${icao}`;
+  }
+
+  function sortTable(n) {
+    const table = document.getElementById("airportTable");
+    let switching = true, dir = "asc", switchcount = 0;
+    while (switching) {
+      switching = false;
+      const rows = table.rows;
+      for (let i = 1; i < (rows.length - 1); i++) {
+        let shouldSwitch = false;
+        const x = rows[i].getElementsByTagName("TD")[n];
+        const y = rows[i + 1].getElementsByTagName("TD")[n];
+        const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
+        const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
+        if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
+          shouldSwitch = true;
+          break;
         }
       }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        switchcount++;
+      } else if (switchcount === 0 && dir === "asc") {
+        dir = "desc";
+        switching = true;
+      }
     }
+  }
 
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
+  function handleLogout() {
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "login.html";
+  }
 
-    document.addEventListener("DOMContentLoaded", () => loadAirports("Europe"));
+  document.addEventListener("DOMContentLoaded", () => loadAirports("Europe"));
   </script>
 
-  <script src="time_engine.js?v=1.2"></script>
   <script>
   // === ACS DEMAND TOOLTIP (v1.0) ===
   const tooltip = document.getElementById("demandTooltip");
 
-  document.querySelectorAll("td:nth-child(4)").forEach((cell) => {
-    cell.addEventListener("mousemove", (e) => {
+  document.addEventListener("mousemove", (e) => {
+    const cell = e.target.closest("td:nth-child(4)");
+    if (cell) {
       const parts = cell.textContent.trim().split("/");
       if (parts.length === 3) {
         const [Y, C, F] = parts.map(Number);
@@ -326,16 +349,13 @@ footer {
             <div class="slice"></div>
           </div>
         `;
-
         tooltip.style.display = "block";
         tooltip.style.left = e.pageX + 15 + "px";
         tooltip.style.top = e.pageY - 60 + "px";
       }
-    });
-
-    cell.addEventListener("mouseleave", () => {
+    } else {
       tooltip.style.display = "none";
-    });
+    }
   });
   </script>
 </body>
