@@ -137,7 +137,8 @@ footer {
   margin-left:1rem;
   text-shadow: 0 0 6px rgba(0,255,128,0.5);
 }
-       /* === DEMAND TOOLTIP ANALYTIC (ACS Tooltip v1.0) === */
+
+/* === DEMAND TOOLTIP ANALYTIC (ACS Tooltip v1.0) === */
 #demandTooltip {
   position: absolute;
   display: none;
@@ -199,15 +200,12 @@ footer {
     </div>
 
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-    <div id="demandTooltip"></div>
   </header>
 
   <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
     <h2>🌍 European Airports</h2>
-    <p class="sub">
-      Sort by demand, cost, or runway length. Click “Create Route” to plan flights.
-    </p>
+    <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
 
     <table id="airportTable">
       <thead>
@@ -232,6 +230,9 @@ footer {
   <!-- ===== FOOTER ===== -->
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
+  <!-- ===== TOOLTIP ELEMENT ===== -->
+  <div id="demandTooltip"></div>
+
   <!-- ===== SCRIPTS ===== -->
   <script src="worldairportsacs.js?v=1.0"></script>
 
@@ -240,7 +241,7 @@ footer {
       const tableBody = document.getElementById("airportTableBody");
       tableBody.innerHTML = "";
 
-      const userBase = localStorage.getItem("userBaseICAO") || "LEMD"; // ejemplo base Madrid
+      const userBase = localStorage.getItem("userBaseICAO") || "LEMD";
       const airports = WorldAirportsACS[continent]
         .filter(a => a.icao !== userBase)
         .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
@@ -303,37 +304,39 @@ footer {
   </script>
 
   <script src="time_engine.js?v=1.2"></script>
-// === ACS DEMAND TOOLTIP (v1.0) ===
-const tooltip = document.getElementById("demandTooltip");
+  <script>
+  // === ACS DEMAND TOOLTIP (v1.0) ===
+  const tooltip = document.getElementById("demandTooltip");
 
-document.querySelectorAll("td:nth-child(4)").forEach((cell) => {
-  cell.addEventListener("mousemove", (e) => {
-    const parts = cell.textContent.trim().split("/");
-    if (parts.length === 3) {
-      const [Y, C, F] = parts.map(Number);
-      const total = Y + C + F;
-      const ecoDeg = (Y / total) * 360;
-      const bizDeg = ((Y + C) / total) * 360;
+  document.querySelectorAll("td:nth-child(4)").forEach((cell) => {
+    cell.addEventListener("mousemove", (e) => {
+      const parts = cell.textContent.trim().split("/");
+      if (parts.length === 3) {
+        const [Y, C, F] = parts.map(Number);
+        const total = Y + C + F;
+        const ecoDeg = (Y / total) * 360;
+        const bizDeg = ((Y + C) / total) * 360;
 
-      tooltip.innerHTML = `
-        <h4>Passenger Demand</h4>
-        <div>Economy: ${Y}</div>
-        <div>Business: ${C}</div>
-        <div>First: ${F}</div>
-        <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
-          <div class="slice"></div>
-        </div>
-      `;
+        tooltip.innerHTML = `
+          <h4>Passenger Demand</h4>
+          <div>Economy: ${Y}</div>
+          <div>Business: ${C}</div>
+          <div>First: ${F}</div>
+          <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+            <div class="slice"></div>
+          </div>
+        `;
 
-      tooltip.style.display = "block";
-      tooltip.style.left = e.pageX + 15 + "px";
-      tooltip.style.top = e.pageY - 60 + "px";
-    }
+        tooltip.style.display = "block";
+        tooltip.style.left = e.pageX + 15 + "px";
+        tooltip.style.top = e.pageY - 60 + "px";
+      }
+    });
+
+    cell.addEventListener("mouseleave", () => {
+      tooltip.style.display = "none";
+    });
   });
-
-  cell.addEventListener("mouseleave", () => {
-    tooltip.style.display = "none";
-  });
-});
+  </script>
 </body>
 </html>
