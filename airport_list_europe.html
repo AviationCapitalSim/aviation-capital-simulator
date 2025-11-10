@@ -189,6 +189,22 @@ footer {
   box-shadow: 0 0 6px rgba(255, 179, 0, 0.3);
   margin-top: 6px;
 }
+/* === GROWTH TREND (ACS Visual v2.0) === */
+.growth-positive {
+  color: #1DB954;
+  font-weight: 600;
+  text-shadow: 0 0 6px rgba(29,185,84,0.4);
+}
+.growth-neutral {
+  color: #FFB300;
+  font-weight: 600;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+.growth-negative {
+  color: #FF4C4C;
+  font-weight: 600;
+  text-shadow: 0 0 6px rgba(255,76,76,0.4);
+}
   </style>
 </head>
 
@@ -279,7 +295,15 @@ footer {
         <td>$${a.slot_cost_usd}</td>
         <td>$${a.landing_fee_usd}</td>
         <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
-        <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
+        const growthPct = ((a.pax_growth_factor - 1) * 100);
+let growthClass = "growth-neutral", growthIcon = "➡";
+
+if (growthPct > 10) { growthClass = "growth-positive"; growthIcon = "⬆"; }
+else if (growthPct < 0) { growthClass = "growth-negative"; growthIcon = "⬇"; }
+
+...
+
+<td class="${growthClass}">${growthPct.toFixed(1)}% ${growthIcon}</td>
         <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
       `;
       tableBody.appendChild(row);
