@@ -137,6 +137,42 @@ footer {
   margin-left:1rem;
   text-shadow: 0 0 6px rgba(0,255,128,0.5);
 }
+       /* === DEMAND TOOLTIP ANALYTIC (ACS Tooltip v1.0) === */
+#demandTooltip {
+  position: absolute;
+  display: none;
+  background: rgba(10, 25, 60, 0.95);
+  color: #fff;
+  border: 1px solid #FFB300;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(255, 179, 0, 0.3);
+  z-index: 1000;
+  width: 180px;
+}
+
+#demandTooltip h4 {
+  color: #FFB300;
+  margin: 0 0 6px 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.demand-pie {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.demand-pie .slice {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: conic-gradient(#1DB954 0deg var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 360deg);
+}
   </style>
 </head>
 
@@ -163,6 +199,7 @@ footer {
     </div>
 
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+    <div id="demandTooltip"></div>
   </header>
 
   <!-- ===== MAIN CONTENT ===== -->
@@ -266,5 +303,37 @@ footer {
   </script>
 
   <script src="time_engine.js?v=1.2"></script>
+// === ACS DEMAND TOOLTIP (v1.0) ===
+const tooltip = document.getElementById("demandTooltip");
+
+document.querySelectorAll("td:nth-child(4)").forEach((cell) => {
+  cell.addEventListener("mousemove", (e) => {
+    const parts = cell.textContent.trim().split("/");
+    if (parts.length === 3) {
+      const [Y, C, F] = parts.map(Number);
+      const total = Y + C + F;
+      const ecoDeg = (Y / total) * 360;
+      const bizDeg = ((Y + C) / total) * 360;
+
+      tooltip.innerHTML = `
+        <h4>Passenger Demand</h4>
+        <div>Economy: ${Y}</div>
+        <div>Business: ${C}</div>
+        <div>First: ${F}</div>
+        <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+          <div class="slice"></div>
+        </div>
+      `;
+
+      tooltip.style.display = "block";
+      tooltip.style.left = e.pageX + 15 + "px";
+      tooltip.style.top = e.pageY - 60 + "px";
+    }
+  });
+
+  cell.addEventListener("mouseleave", () => {
+    tooltip.style.display = "none";
+  });
+});
 </body>
 </html>
