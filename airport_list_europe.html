@@ -1,3 +1,8 @@
+<!-- ===========================================================
+     === AIRPORT LIST (EUROPE) - AVIATION CAPITAL SIMULATOR ===
+     Version: v2.0 | Date: 10 NOV 2025
+     Redesigned from card view → Dynamic Table View
+     =========================================================== -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,116 +10,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Europe Airports - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
-  <script src="worldairportsacs.js?v=2.0"></script>
   <style>
-    /* === AIRPORT LIST (EUROPE) === */
+    /* === TABLE VIEW STYLE (ACS Professional Layout) === */
     body {
       background-color: #081530;
       color: white;
       font-family: "Segoe UI", sans-serif;
       margin: 0;
     }
+
     h2 {
       color: #FFB300;
+      text-align: center;
       margin-top: 6rem;
-      text-align: center;
     }
+
     .sub {
+      text-align: center;
       color: #ccc;
-      text-align: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
-    .search-bar {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .search-bar input {
-      width: 300px;
-      padding: 0.6rem;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      background: #0e1b3c;
-      color: #fff;
-      font-size: 1rem;
-      text-align: center;
-    }
-    .airport-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.2rem;
-      width: 90%;
+
+    /* === Table styling === */
+    table {
+      width: 95%;
       margin: 0 auto;
+      border-collapse: collapse;
+      background: #0e1b3c;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
-    .airport-card {
-      background: #0e1c3f;
-      border-radius: 12px;
-      padding: 1rem 1.2rem;
-      border: 1px solid rgba(255,179,0,0.2);
-      box-shadow: 0 0 8px rgba(0,0,0,0.3);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    .airport-card:hover {
-      transform: scale(1.02);
-      box-shadow: 0 0 12px rgba(255,179,0,0.4);
-    }
-    .airport-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .airport-header h3 {
+
+    th {
+      background-color: #102a60;
       color: #FFB300;
-      margin: 0;
+      cursor: pointer;
+      user-select: none;
     }
-    .airport-header span {
-      color: #1DB954;
-      font-weight: bold;
-      font-size: 0.9rem;
+
+    tr:hover {
+      background-color: rgba(255,179,0,0.08);
     }
-    .airport-info p {
-      color: #ccc;
-      margin: 0.2rem 0;
-      font-size: 0.95rem;
-    }
+
     .acs-btn {
       background-color: #1DB954;
       color: #fff;
       border: none;
-      padding: 0.5rem 1rem;
+      padding: 6px 14px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
-      margin-top: 0.6rem;
-      width: 100%;
+      transition: background-color 0.2s;
     }
+
     .acs-btn:hover {
       background-color: #17a84d;
     }
+
     .back-btn {
       display: block;
       margin: 2rem auto;
-      color: #1DB954;
       background: none;
       border: 1px solid #1DB954;
+      color: #1DB954;
+      padding: 6px 14px;
       border-radius: 6px;
-      padding: 0.5rem 1rem;
       cursor: pointer;
     }
+
     .back-btn:hover {
       background-color: #1DB954;
-      color: white;
+      color: #fff;
     }
+
     footer {
-      margin-top: 3rem;
       text-align: center;
-      color: #999;
-      font-size: 0.9rem;
+      margin-top: 2rem;
       padding: 1rem;
+      color: #aaa;
+      font-size: 0.9rem;
     }
+
+    /* === Clock (ACS Header) === */
     .acs-clock-header {
       font-family: 'Orbitron','Consolas',monospace;
       color:#00ff80;
+      font-weight:bold;
       background:rgba(0,255,128,0.08);
       padding:0.3rem 0.8rem;
       border-radius:6px;
@@ -146,78 +134,109 @@
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </div>
 
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
-  <!-- ===== MAIN ===== -->
-  <main>
-    <h2>🇪🇺 Europe Airports</h2>
-    <p class="sub">Select an airport to analyze demand and create a new route.</p>
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="acs-main">
+    <h2>🌍 European Airports</h2>
+    <p class="sub">
+      Sort by demand, cost, or runway length. Click “Create Route” to plan flights.
+    </p>
 
-    <div class="search-bar">
-      <input type="text" id="searchBox" placeholder="🔍 Search airport, ICAO or country..." onkeyup="filterAirports()" />
-    </div>
+    <table id="airportTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">Airport</th>
+          <th onclick="sortTable(1)">Country</th>
+          <th onclick="sortTable(2)">Runway (m)</th>
+          <th onclick="sortTable(3)">Demand (Y/C/F)</th>
+          <th onclick="sortTable(4)">Slot $</th>
+          <th onclick="sortTable(5)">Landing $</th>
+          <th onclick="sortTable(6)">Ticket %</th>
+          <th onclick="sortTable(7)">Growth</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="airportTableBody"></tbody>
+    </table>
 
-    <div id="airportGrid" class="airport-grid"></div>
-
-    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
+    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back</button>
   </main>
 
+  <!-- ===== FOOTER ===== -->
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- ===== SCRIPT ===== -->
-  <script src="time_engine.js?v=1.2"></script>
+  <!-- ===== SCRIPTS ===== -->
+  <script src="worldairportsacs.js?v=1.0"></script>
+
   <script>
+    function loadAirports(continent) {
+      const tableBody = document.getElementById("airportTableBody");
+      tableBody.innerHTML = "";
+
+      const userBase = localStorage.getItem("userBaseICAO") || "LEMD"; // ejemplo base Madrid
+      const airports = WorldAirportsACS[continent]
+        .filter(a => a.icao !== userBase)
+        .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
+
+      airports.forEach(a => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><strong>${a.city}</strong> (${a.icao}/${a.iata})</td>
+          <td>${a.country}</td>
+          <td>${a.runway_m}</td>
+          <td>${a.demand.Y}/${a.demand.C}/${a.demand.F}</td>
+          <td>$${a.slot_cost_usd}</td>
+          <td>$${a.landing_fee_usd}</td>
+          <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
+          <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
+          <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function createRoute(icao) {
+      window.location.href = `route_schedule.html?to=${icao}`;
+    }
+
+    function sortTable(n) {
+      const table = document.getElementById("airportTable");
+      let switching = true, dir = "asc", switchcount = 0;
+      while (switching) {
+        switching = false;
+        const rows = table.rows;
+        for (let i = 1; i < (rows.length - 1); i++) {
+          let shouldSwitch = false;
+          const x = rows[i].getElementsByTagName("TD")[n];
+          const y = rows[i + 1].getElementsByTagName("TD")[n];
+          const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
+          const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
+          if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          switchcount++;
+        } else if (switchcount === 0 && dir === "asc") {
+          dir = "desc";
+          switching = true;
+        }
+      }
+    }
+
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
 
-    // === LOAD EUROPE AIRPORTS ===
-    const grid = document.getElementById("airportGrid");
-    const europe = WorldAirportsACS.Europe || [];
-
-    function renderAirports(list) {
-      grid.innerHTML = "";
-      list.forEach(a => {
-        const card = document.createElement("div");
-        card.className = "airport-card";
-        card.innerHTML = `
-          <div class="airport-header">
-            <h3>${a.city} (${a.icao})</h3>
-            <span>${a.category}</span>
-          </div>
-          <div class="airport-info">
-            <p><strong>Country:</strong> ${a.country}</p>
-            <p><strong>Runway:</strong> ${a.runway_m} m | <strong>Open:</strong> ${a.open_hrs}</p>
-            <p><strong>Demand (Y/C/F):</strong> ${a.demand.Y}/${a.demand.C}/${a.demand.F}</p>
-            <p><strong>Fees:</strong> Slot $${a.slot_cost_usd} | Landing $${a.landing_fee_usd}</p>
-          </div>
-          <button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function filterAirports() {
-      const val = document.getElementById("searchBox").value.toLowerCase();
-      const filtered = europe.filter(a =>
-        a.city.toLowerCase().includes(val) ||
-        a.country.toLowerCase().includes(val) ||
-        a.icao.toLowerCase().includes(val) ||
-        a.iata.toLowerCase().includes(val)
-      );
-      renderAirports(filtered);
-    }
-
-    function createRoute(icao) {
-      const airport = findAirport(icao);
-      if (!airport) return alert("Airport not found.");
-      localStorage.setItem("selectedAirport", icao);
-      window.location.href = `route_setup.html?to=${icao}`;
-    }
-
-    renderAirports(europe);
+    document.addEventListener("DOMContentLoaded", () => loadAirports("Europe"));
   </script>
+
+  <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
