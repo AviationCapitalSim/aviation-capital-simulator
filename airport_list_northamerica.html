@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>North America Airports - Aviation Capital Simulator</title>
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <script src="worldairportsacs.js?v=2.0"></script>
+  <style>
+    /* === AIRPORT LIST (NORTH AMERICA) === */
+    body {
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+    }
+    h2 {
+      color: #FFB300;
+      margin-top: 6rem;
+      text-align: center;
+    }
+    .sub {
+      color: #ccc;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .search-bar {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .search-bar input {
+      width: 300px;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background: #0e1b3c;
+      color: #fff;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .airport-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.2rem;
+      width: 90%;
+      margin: 0 auto;
+    }
+    .airport-card {
+      background: #0e1c3f;
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      border: 1px solid rgba(255,179,0,0.2);
+      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .airport-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 12px rgba(255,179,0,0.4);
+    }
+    .airport-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .airport-header h3 {
+      color: #FFB300;
+      margin: 0;
+    }
+    .airport-header span {
+      color: #1DB954;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .airport-info p {
+      color: #ccc;
+      margin: 0.2rem 0;
+      font-size: 0.95rem;
+    }
+    .acs-btn {
+      background-color: #1DB954;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 0.6rem;
+      width: 100%;
+    }
+    .acs-btn:hover {
+      background-color: #17a84d;
+    }
+    .back-btn {
+      display: block;
+      margin: 2rem auto;
+      color: #1DB954;
+      background: none;
+      border: 1px solid #1DB954;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+    .back-btn:hover {
+      background-color: #1DB954;
+      color: white;
+    }
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #999;
+      font-size: 0.9rem;
+      padding: 1rem;
+    }
+    .acs-clock-header {
+      font-family: 'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      background:rgba(0,255,128,0.08);
+      padding:0.3rem 0.8rem;
+      border-radius:6px;
+      font-size:0.9rem;
+      margin-left:1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html" class="active">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
+    </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main>
+    <h2>🌎 North America Airports</h2>
+    <p class="sub">Select an airport to analyze demand and create a new route.</p>
+
+    <div class="search-bar">
+      <input type="text" id="searchBox" placeholder="🔍 Search airport, ICAO or country..." onkeyup="filterAirports()" />
+    </div>
+
+    <div id="airportGrid" class="airport-grid"></div>
+
+    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
+  </main>
+
+  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script src="time_engine.js?v=1.2"></script>
+  <script>
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+
+    // === LOAD NORTH AMERICA AIRPORTS ===
+    const grid = document.getElementById("airportGrid");
+    const northAmerica = WorldAirportsACS.NorthAmerica || [];
+
+    function renderAirports(list) {
+      grid.innerHTML = "";
+      list.forEach(a => {
+        const card = document.createElement("div");
+        card.className = "airport-card";
+        card.innerHTML = `
+          <div class="airport-header">
+            <h3>${a.city} (${a.icao})</h3>
+            <span>${a.category}</span>
+          </div>
+          <div class="airport-info">
+            <p><strong>Country:</strong> ${a.country}</p>
+            <p><strong>Runway:</strong> ${a.runway_m} m | <strong>Open:</strong> ${a.open_hrs}</p>
+            <p><strong>Demand (Y/C/F):</strong> ${a.demand.Y}/${a.demand.C}/${a.demand.F}</p>
+            <p><strong>Fees:</strong> Slot $${a.slot_cost_usd} | Landing $${a.landing_fee_usd}</p>
+          </div>
+          <button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterAirports() {
+      const val = document.getElementById("searchBox").value.toLowerCase();
+      const filtered = northAmerica.filter(a =>
+        a.city.toLowerCase().includes(val) ||
+        a.country.toLowerCase().includes(val) ||
+        a.icao.toLowerCase().includes(val) ||
+        a.iata.toLowerCase().includes(val)
+      );
+      renderAirports(filtered);
+    }
+
+    function createRoute(icao) {
+      const airport = findAirport(icao);
+      if (!airport) return alert("Airport not found.");
+      localStorage.setItem("selectedAirport", icao);
+      window.location.href = `route_setup.html?to=${icao}`;
+    }
+
+    renderAirports(northAmerica);
+  </script>
+</body>
+</html>
