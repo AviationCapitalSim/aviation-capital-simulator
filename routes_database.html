@@ -231,7 +231,52 @@
       window.location.href = "login.html";
     }
   </script>
+<!-- ✅ Conexión directa a la base de datos global de aeropuertos -->
+<script src="worldairportsacs.js?v=2.0"></script>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof WorldAirportsACS === "undefined") {
+    console.warn("⚠️ WorldAirportsACS.js not loaded yet.");
+    return;
+  }
+
+  const stats = {
+    europe: WorldAirportsACS.Europe.length,
+    asia: WorldAirportsACS.Asia.length,
+    northamerica: WorldAirportsACS.NorthAmerica.length,
+    southamerica: WorldAirportsACS.SouthAmerica.length,
+    africa: WorldAirportsACS.Africa.length,
+    oceania: WorldAirportsACS.Oceania.length,
+    middleeast: WorldAirportsACS.MiddleEast.length,
+  };
+
+  const passengers = {
+    europe: WorldAirportsACS.Europe.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
+    asia: WorldAirportsACS.Asia.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
+    northamerica: WorldAirportsACS.NorthAmerica.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
+    southamerica: WorldAirportsACS.SouthAmerica.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
+    africa: WorldAirportsACS.Africa.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
+    oceania: WorldAirportsACS.Oceania.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
+    middleeast: WorldAirportsACS.MiddleEast.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
+  };
+
+  // Actualiza visualmente cada tarjeta
+  const cards = document.querySelectorAll(".continent-card");
+  cards.forEach(card => {
+    const title = card.querySelector("h3").innerText.toLowerCase();
+    const key = Object.keys(stats).find(k => title.includes(k));
+    if (key && stats[key]) {
+      const info = document.createElement("p");
+      info.style.color = "#00e676";
+      info.style.fontSize = "0.9rem";
+      info.style.marginTop = "0.5rem";
+      info.innerHTML = `🛫 ${stats[key]} airports<br>👥 ${passengers[key].toLocaleString()} pax/year`;
+      card.appendChild(info);
+    }
+  });
+});
+</script>
   <!-- ✅ Reloj cockpit Airbus sincronizado -->
   <script src="time_engine.js?v=1.2"></script>
 </body>
