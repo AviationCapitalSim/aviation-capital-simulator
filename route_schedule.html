@@ -245,113 +245,125 @@
       return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
     }
 
-    /* === MAIN CALCULATION === */
-    function autoCalculate() {
-      const origin = document.getElementById("origin").value.toUpperCase();
-      const destination = document.getElementById("destination").value.toUpperCase();
-      const aircraft = document.getElementById("aircraft").value;
-      const departure = document.getElementById("departureTime").value;
-      const confirmBtn = document.getElementById("confirmBtn");
-      const resultBox = document.getElementById("result");
+   /* === MAIN CALCULATION + ADVANCED VALIDATION (ACS v3.6) === */
+function autoCalculate() {
+  const origin = document.getElementById("origin").value.toUpperCase();
+  const destination = document.getElementById("destination").value.toUpperCase();
+  const aircraft = document.getElementById("aircraft").value;
+  const departure = document.getElementById("departureTime").value;
+  const confirmBtn = document.getElementById("confirmBtn");
+  const resultBox = document.getElementById("result");
 
-      if (!origin || !destination || !aircraft) return;
-      document.getElementById("techData").style.display = "block";
+  if (!origin || !destination || !aircraft) return;
+  document.getElementById("techData").style.display = "block";
 
-      const ac = aircraftData[aircraft];
-      const distance = calcDistanceNM(origin, destination);
-      const speed = ac.speed;
-      const turnaround = rotationOptimized ? 1.0 : 0.75;
-      const blockTime = distance / speed;
-      const totalRotation = (blockTime * 2) + (turnaround * 2);
-      const serviceA = 5 - (totalRotation / 2);
-      const serviceB = 24 - (totalRotation / 4);
-      let delayRisk = Math.min(100, (totalRotation / 5) * 10);
-      let effIndex = Math.max(50, 100 - delayRisk / 1.5);
-      if (rotationOptimized) { delayRisk *= 0.8; effIndex += 5; }
+  const ac = aircraftData[aircraft];
+  const distance = calcDistanceNM(origin, destination);
+  const speed = ac.speed;
+  const turnaround = rotationOptimized ? 1.0 : 0.75;
+  const blockTime = distance / speed;
+  const totalRotation = (blockTime * 2) + (turnaround * 2);
+  const serviceA = 5 - (totalRotation / 2);
+  const serviceB = 24 - (totalRotation / 4);
+  let delayRisk = Math.min(100, (totalRotation / 5) * 10);
+  let effIndex = Math.max(50, 100 - delayRisk / 1.5);
+  if (rotationOptimized) { delayRisk *= 0.8; effIndex += 5; }
 
-      // Update tech info
-      document.getElementById("distance").innerText = distance;
-      document.getElementById("blockTime").innerText = `${blockTime.toFixed(2)} h`;
-      document.getElementById("turnaround").innerText = `${turnaround.toFixed(2)} h`;
-      document.getElementById("totalRotation").innerText = `${totalRotation.toFixed(2)} h`;
-      document.getElementById("serviceA").innerText = serviceA.toFixed(1);
-      document.getElementById("serviceB").innerText = serviceB.toFixed(1);
-      document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
-      document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
+  // Update tech info
+  document.getElementById("distance").innerText = distance;
+  document.getElementById("blockTime").innerText = `${blockTime.toFixed(2)} h`;
+  document.getElementById("turnaround").innerText = `${turnaround.toFixed(2)} h`;
+  document.getElementById("totalRotation").innerText = `${totalRotation.toFixed(2)} h`;
+  document.getElementById("serviceA").innerText = serviceA.toFixed(1);
+  document.getElementById("serviceB").innerText = serviceB.toFixed(1);
+  document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
+  document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
 
-      // === VALIDATION AGAINST WORLD AIRPORT DATABASE ===
-      const originData = getAirportByICAO(origin);
-      const destData = getAirportByICAO(destination);
-      let warnings = [];
-      let severity = "ok"; // ok, warn, error
+  // === FETCH AIRPORT DATA ===
+  const originData = getAirportByICAO(origin);
+  const destData = getAirportByICAO(destination);
+  let warnings = [];
+  let severity = "ok"; // ok, warn, error
 
-      if (!originData || !destData) {
-        resultBox.innerHTML = `<span style="color:#ff9999;">⚠️ Airport data not found in database.</span>`;
-        confirmBtn.disabled = true;
-        return;
-      }
+  if (!originData || !destData) {
+    resultBox.innerHTML = `<span style="color:#ff9999;">⚠️ Airport data not found in database.</span>`;
+    confirmBtn.disabled = true;
+    return;
+  }
 
-      // RANGE CHECK
-      if (distance > ac.range) {
-        warnings.push(`Route distance (${distance} NM) exceeds ${aircraft} range (${ac.range} NM).`);
-        severity = "error";
-      }
+  // === RANGE VALIDATION ===
+  if (distance > ac.range) {
+    warnings.push(`Route distance (${distance} NM) exceeds ${aircraft} range (${ac.range} NM).`);
+    severity = "error";
+  } else if (distance > ac.range * 0.9) {
+    warnings.push(`Route distance is near maximum range (${distance}/${ac.range} NM).`);
+    severity = severity === "ok" ? "warn" : severity;
+  }
 
-      // RUNWAY LENGTH
-      const minRunway = ac.runway_min_m;
-      if (originData.runway_m < minRunway || destData.runway_m < minRunway) {
-        warnings.push(`Runway too short (min ${minRunway} m required).`);
-        severity = "error";
-      }
+  // === RUNWAY VALIDATION ===
+  const minRunway = ac.runway_min_m;
+  if (originData.runway_m < minRunway || destData.runway_m < minRunway) {
+    warnings.push(`Runway too short (min ${minRunway} m required).`);
+    severity = "error";
+  } else if (originData.runway_m < minRunway + 200 || destData.runway_m < minRunway + 200) {
+    warnings.push(`Runway marginal for this aircraft type.`);
+    if (severity === "ok") severity = "warn";
+  }
 
-      // CATEGORY COMPATIBILITY (simplified logic)
-      const restrictedCats = ["Regional"];
-      if (restrictedCats.includes(destData.category) && ac.size === "Heavy") {
-        warnings.push(`Destination category ${destData.category} not suitable for Heavy aircraft.`);
-        severity = "error";
-      }
+  // === AIRCRAFT CATEGORY VALIDATION ===
+  const restrictedCats = ["Regional", "Domestic", "Short Haul"];
+  if (restrictedCats.includes(destData.category) && ac.size === "Heavy") {
+    warnings.push(`Destination category "${destData.category}" not suitable for Heavy aircraft.`);
+    severity = "error";
+  }
 
-      // AIRCRAFT LIMIT
-      if (destData.aircraft_limit && destData.aircraft_limit === "Medium" && ac.size === "Heavy") {
-        warnings.push(`Airport restricted to Medium aircraft.`);
-        severity = "error";
-      }
+  // === AIRCRAFT LIMIT VALIDATION ===
+  const destLimit = destData.aircraft_limit || "Medium";
+  const originLimit = originData.aircraft_limit || "Medium";
+  if ((destLimit === "Medium" && ac.size === "Heavy") || (originLimit === "Medium" && ac.size === "Heavy")) {
+    warnings.push(`One or more airports restricted to Medium aircraft.`);
+    severity = "error";
+  }
 
-      // === VISUAL OUTPUT ===
-      let color = "#00ff99";
-      if (severity === "warn") color = "#ffcc66";
-      if (severity === "error") color = "#ff5555";
+  // === FINAL VISUAL OUTPUT ===
+  let color = "#00ff99";
+  if (severity === "warn") color = "#ffcc66";
+  if (severity === "error") color = "#ff5555";
 
-      // Aircraft color highlight
-      const acHTML = `<span style="color:${color};font-weight:700;">${aircraft}</span>`;
+  const acHTML = `<span style="color:${color};font-weight:700;">${aircraft}</span>`;
 
-      if (warnings.length > 0) {
-        resultBox.innerHTML = `
-          ❌ <span style="color:#ff6666;font-weight:600;">Operational restrictions detected:</span>
-          <ul style="color:#ff9999;margin-top:0.5rem;">
-            ${warnings.map(w => `<li>${w}</li>`).join("")}
-          </ul>
-        `;
-        confirmBtn.disabled = true;
-      } else {
-        resultBox.innerHTML = `
-          ✅ Route preview generated.<br>
-          <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
-          Aircraft: ${acHTML}<br>
-          Departure: ${departure}<br><br>
-          <span style="color:#00ff99;">✔ Compatible with operational limits.</span><br><br>
-          <strong>Origin (${origin}):</strong> Runway ${originData.runway_m} m | ${originData.category} | Limit: ${originData.aircraft_limit}<br>
-          <strong>Destination (${destination}):</strong> Runway ${destData.runway_m} m | ${destData.category} | Limit: ${destData.aircraft_limit}
-        `;
-        confirmBtn.disabled = false;
-      }
+  // === OUTPUT PANEL ===
+  if (warnings.length > 0) {
+    const icon = severity === "error" ? "❌" : "⚠️";
+    const header = severity === "error"
+      ? "Operational restrictions detected:"
+      : "Advisory notices:";
+    resultBox.innerHTML = `
+      ${icon} <span style="color:${color};font-weight:600;">${header}</span>
+      <ul style="color:${color};margin-top:0.5rem;">
+        ${warnings.map(w => `<li>${w}</li>`).join("")}
+      </ul>
+    `;
+    confirmBtn.disabled = (severity === "error");
+  } else {
+    resultBox.innerHTML = `
+      ✅ Route valid.<br>
+      <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
+      Aircraft: ${acHTML}<br>
+      Departure: ${departure}<br><br>
+      <span style="color:#00ff99;">✔ Compatible with operational limits.</span><br><br>
+      <strong>Origin (${origin}):</strong> Runway ${originData.runway_m} m | ${originData.category} | Limit: ${originData.aircraft_limit}<br>
+      <strong>Destination (${destination}):</strong> Runway ${destData.runway_m} m | ${destData.category} | Limit: ${destData.aircraft_limit}
+    `;
+    confirmBtn.disabled = false;
+  }
 
-      const optStatus = document.getElementById("optStatus");
-      optStatus.className = "status-line " + (rotationOptimized ? "status-ok" : "status-warning");
-      optStatus.innerHTML = rotationOptimized
-        ? "✅ Optimized rotation applied."
-        : "⚠ Non-optimized rotation (45 min ground time)";
-    }
+  const optStatus = document.getElementById("optStatus");
+  optStatus.className = "status-line " + (rotationOptimized ? "status-ok" : "status-warning");
+  optStatus.innerHTML = rotationOptimized
+    ? "✅ Optimized rotation applied."
+    : "⚠ Non-optimized rotation (45 min ground time)";
+}
 
     /* === SUPPORTING FUNCTIONS === */
     function toggleEveryDay() {
