@@ -165,9 +165,9 @@
     }
 
     const aircraftData = {
-      "B737-200": { speed: 420, range: 2000 },
-      "A320": { speed: 450, range: 3100 },
-      "B767-300ER": { speed: 470, range: 5600 }
+      "B737-200": { speed: 420 },
+      "A320": { speed: 450 },
+      "B767-300ER": { speed: 470 }
     };
 
     const airportCoords = {
@@ -190,17 +190,6 @@
       return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
     }
 
-    // === VALIDACIÓN DE COMPATIBILIDAD AERONAVE-RUTA ===
-    function validateAircraftCompatibility(aircraft, distance) {
-      if (!aircraftData[aircraft]) return true;
-      const maxRange = aircraftData[aircraft].range;
-      if (distance > maxRange) {
-        alert(`⚠️ The route distance (${distance} NM) exceeds the maximum range of the ${aircraft} (${maxRange} NM). Please select a larger aircraft.`);
-        return false;
-      }
-      return true;
-    }
-
     function autoCalculate(){
       const origin=document.getElementById("origin").value.toUpperCase();
       const destination=document.getElementById("destination").value.toUpperCase();
@@ -208,11 +197,8 @@
       const departure=document.getElementById("departureTime").value;
       if(!origin||!destination||!aircraft)return;
 
-      const distance=calcDistanceNM(origin,destination);
-      // 🚨 Validación aquí
-      if (!validateAircraftCompatibility(aircraft, distance)) return;
-
       document.getElementById("techData").style.display="block";
+      const distance=calcDistanceNM(origin,destination);
       const speed=aircraftData[aircraft].speed;
       const turnaround=rotationOptimized?1.0:0.75;
       const blockTime=distance/speed;
@@ -232,6 +218,7 @@
       document.getElementById("delayRisk").innerText=`${delayRisk.toFixed(1)}%`;
       document.getElementById("effIndex").innerText=`${effIndex.toFixed(1)}%`;
 
+      // ✅ Panel informativo y estado de optimize reactivados
       const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
       const resultBox = document.getElementById("result");
       resultBox.innerHTML = `
@@ -255,7 +242,7 @@
 
     function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
 
-    /* === CONTROL NÚMEROS DE VUELO === */
+    /* === ✅ CONTROL NÚMEROS DE VUELO — 2025-11-07 === */
     const flightNumberInput = document.getElementById("flightNumber");
     const userIATA = localStorage.getItem("userIATA") || "AT";
     let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
@@ -274,8 +261,107 @@
     }
     function bumpFlightCounter(){ lastFlightNumber += 2; localStorage.setItem("lastFlightNumber", String(lastFlightNumber)); }
     function markNumbersUsed(out, inn){ usedFlights.push(out, inn); localStorage.setItem("flightNumbers", JSON.stringify(usedFlights)); }
+    function freeNumbers(out, inn){
+      if(!out || !inn) return;
+      usedFlights = usedFlights.filter(n => n !== out && n !== inn);
+      localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+    }
+    // Wrapper para crear
+    function generateFlightNumbers(){ generateFlightPair(); }
 
-    /* === CONFIRMAR NUEVO VUELO === */
+    /* === ✅ MODO CREACIÓN Y EDICIÓN UNIFICADO — 2025-11-07 === */
+    document.addEventListener("DOMContentLoaded", () => {
+      const editID = localStorage.getItem("editFlightID");
+      const isEditing = !!editID;
+
+      if (!isEditing) {
+        // === CREAR NUEVO VUELO ===
+        generateFlightNumbers();   // genera números para nuevo vuelo
+        autoCalculate();           // muestra panel técnico y estado optimize
+        return;
+      }
+
+      // === EDITAR VUELO EXISTENTE ===
+      const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+      const flight = items.find(f => f.id === editID || f.blockId === editID);
+      if (!flight) return;
+
+      const $ = id => document.getElementById(id);
+
+      // Rellenar formulario
+      $("origin").value = flight.origin || "";
+      $("destination").value = flight.destination || "";
+      $("aircraft").value = flight.acType || "";
+      $("departureTime").value = flight.departure || "06:00";
+      (flight.days || []).forEach(d => { const box = document.getElementById(d); if (box) box.checked = true; });
+
+      // Aviso visual
+      const notice = document.createElement("div");
+      notice.style.color = "#FFB300";
+      notice.style.marginBottom = "1rem";
+      notice.style.fontWeight = "600";
+      notice.innerHTML = `✏️ Editando vuelo: <strong>${flight.origin} ➜ ${flight.destination}</strong>`;
+      document.querySelector(".schedule-container").prepend(notice);
+
+      // Liberar números del vuelo anterior (el vuelo editado "muere")
+      if (flight.flightNumberOut && flight.flightNumberIn) {
+        freeNumbers(flight.flightNumberOut, flight.flightNumberIn);
+      }
+
+      // Generar NUEVOS números para el vuelo actualizado
+      const newPair = generateFlightPair();
+
+      // Panel técnico
+      autoCalculate();
+
+      // Cambiar botón a UPDATE y controlar acción (sin auto-asignar)
+      const btn = document.querySelector(".acs-btn");
+      if (btn) btn.textContent = "UPDATE FLIGHT";
+
+      btn.onclick = () => {
+        const origin = $("origin").value.trim();
+        const destination = $("destination").value.trim();
+        const aircraft = $("aircraft").value;
+        const departure = $("departureTime").value;
+        const optimized = document.getElementById("optimizeRotation").checked;
+        const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
+
+        if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+          alert("⚠️ Por favor completa todos los campos antes de actualizar.");
+          return;
+        }
+
+        // Eliminar vuelo original de la tabla
+        const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
+        localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
+
+        // Tomar números en UI
+        const rawFN = (flightNumberInput.value || "");
+        // Soporta separador con flecha o espacios
+        const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+        const flightNumberOut = match[1] || newPair.out;
+        const flightNumberIn  = match[2] || newPair.inn;
+
+        // Guardar ruta actualizada (no asigna nada todavía)
+        const updatedRoute = {
+          origin, destination, aircraft, departure, optimized,
+          days: selectedDays,
+          flightNumberOut, flightNumberIn
+        };
+        localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
+
+        // Marcar números usados y avanzar contador
+        markNumbersUsed(flightNumberOut, flightNumberIn);
+        bumpFlightCounter();
+
+        // Limpiar modo edición y volver a la tabla para asignar
+        localStorage.removeItem("editFlightID");
+        alert("✅ Vuelo actualizado. Ahora puedes asignarlo desde la tabla.");
+        window.location.href = "schedule_table.html";
+      };
+    });
+
+    /* === ✅ CONFIRMAR NUEVO VUELO — 2025-11-07 === */
     function confirmRoute() {
       const origin = document.getElementById("origin").value.trim();
       const destination = document.getElementById("destination").value.trim();
@@ -293,9 +379,6 @@
       const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
       const flightNumberOut = match[1];
       const flightNumberIn  = match[2];
-
-      const distance=calcDistanceNM(origin,destination);
-      if (!validateAircraftCompatibility(aircraft, distance)) return; // validación final
 
       localStorage.setItem("confirmedRoute", JSON.stringify({
         origin, destination, aircraft, departure, optimized,
