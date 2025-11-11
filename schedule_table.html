@@ -283,7 +283,22 @@
             chip.onclick = ()=>openActionModal(chip);
             td.appendChild(chip);
           });
-
+          // === Maintenance influence on Next Flight ===
+             const maintToday = dayItems.find(x => x.type === "service");
+            if (maintToday) {
+            if (maintToday.serviceType === "A") {
+            const maintEnd = toMin(maintToday.end);
+            lastEnd = (lastEnd ?? maintEnd) < maintEnd ? maintEnd : lastEnd;
+         }
+           if (maintToday.serviceType === "B") {
+           const nextInfo = document.createElement("div");
+           nextInfo.className = "next-slot";
+           nextInfo.textContent = "Next Flight: N/A (B-Check Day)";
+           td.appendChild(nextInfo);
+           tr.appendChild(td);
+           return; // skip rest for B-check day
+        }
+       }
           if(hadFlight){
             const nextInfo = document.createElement("div");
             nextInfo.className = "next-slot";
@@ -323,6 +338,16 @@
       const arr = toHHMM(toMin(dep) + dur);
       const flightOut = route.flightNumberOut || Math.floor(100 + Math.random() * 800);
       const flightIn  = route.flightNumberIn  || flightOut + 1;
+      // === Prevent duplicate flight numbers across aircraft ===
+      const allFlights = getItems().filter(f => f.type === "flight");
+      const isDuplicate = allFlights.some(f =>
+      f.flightNumberOut === flightOut || f.flightNumberIn === flightIn
+      );
+
+      if (isDuplicate) {
+      alert(`⚠️ Flight number ${flightOut}/${flightIn} already assigned to another aircraft.`);
+      return;
+     }
       const hasConflict = (day)=>{
         const dayItems = items.filter(x=>x.tail===ac.tail && x.day===day && x.type==="flight");
         const newStart = toMin(dep);
