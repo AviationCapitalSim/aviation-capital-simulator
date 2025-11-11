@@ -456,31 +456,44 @@
     }
 
     function deleteFlight(){
-      if(!selectedChip){ closeActionModal(); return; }
-      const id = selectedChip.dataset.id;
-      const block = selectedChip.dataset.blockId || "";
-      let items = getItems();
-      let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-        // === Add deleted flight numbers to blacklist ===
-      let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
+  if(!selectedChip){ closeActionModal(); return; }
+  const id = selectedChip.dataset.id;
+  const block = selectedChip.dataset.blockId || "";
+  let items = getItems();
+  let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+  let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
 
-      const flight = items.find(f => f.id === id || f.blockId === block);
-      if (flight && flight.flightNumberOut) {
-      deletedFlights.push(flight.flightNumberOut, flight.flightNumberIn);
-      localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
+  // === Buscar vuelo a eliminar ===
+  const flight = items.find(f => f.id === id || f.blockId === block);
+  if (!flight) { 
+    alert("⚠️ Flight not found or already deleted."); 
+    closeActionModal(); 
+    return; 
   }
-      const flight = items.find(f => f.id === id || f.blockId === block);
-      if (!flight) { alert("⚠️ Flight not found or already deleted."); closeActionModal(); return; }
-      const isBlock = !!block && block.startsWith("block-");
-      const updatedItems = isBlock ? items.filter(f => f.blockId !== block) : items.filter(f => f.id !== id);
-      setItems(updatedItems);
-      if (flight.flightNumberOut && flight.flightNumberIn) {
-        usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
-        localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-      }
-      closeActionModal(); renderSchedule();
-      alert(`❌ Flight ${flight.flightNumberOut || ""} deleted permanently (block cleared).`);
-    }
+
+  // === Añadir a lista negra (no reutilizable) ===
+  if (flight.flightNumberOut) {
+    deletedFlights.push(flight.flightNumberOut, flight.flightNumberIn);
+    localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
+    console.log(`🚫 Blacklisted flights: ${flight.flightNumberOut} / ${flight.flightNumberIn}`);
+  }
+
+  // === Eliminar vuelo o bloque del schedule ===
+  const isBlock = !!block && block.startsWith("block-");
+  const updatedItems = isBlock ? items.filter(f => f.blockId !== block) : items.filter(f => f.id !== id);
+  setItems(updatedItems);
+
+  // === Actualizar lista de vuelos activos ===
+  if (flight.flightNumberOut && flight.flightNumberIn) {
+    usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
+    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+  }
+
+  closeActionModal();
+  renderSchedule();
+  alert(`❌ Flight ${flight.flightNumberOut || ""} deleted permanently (block cleared).`);
+}
+
 
     function editFlight(){
       if(!selectedChip){ closeActionModal(); return; }
