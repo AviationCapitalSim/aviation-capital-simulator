@@ -343,7 +343,12 @@
       const isDuplicate = allFlights.some(f =>
       f.flightNumberOut === flightOut || f.flightNumberIn === flightIn
       );
-
+      // === Prevent reusing deleted flight numbers ===
+     const deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
+     if (deletedFlights.includes(flightOut) || deletedFlights.includes(flightIn)) {
+     alert(`⛔ Flight ${flightOut}/${flightIn} was previously deleted and cannot be reused.`);
+     return;
+     }
       if (isDuplicate) {
       alert(`⚠️ Flight number ${flightOut}/${flightIn} already assigned to another aircraft.`);
       return;
@@ -414,7 +419,26 @@
     }  <!-- ✅ cierre correcto -->
 
     let selectedChip=null;
-    function openActionModal(chip){ selectedChip=chip; document.getElementById("actionModal").style.display="flex"; }
+    function openActionModal(chip){
+    selectedChip = chip;
+    const modal = document.getElementById("actionModal");
+    const buttons = modal.querySelectorAll("button");
+
+    // Ocultar o mostrar botones según tipo
+    const type = chip.dataset.type;
+    buttons.forEach(btn => btn.style.display = "inline-block"); // reset
+
+    if (type === "service") {
+     buttons.forEach(btn => {
+      if (btn.textContent.includes("Delete") || btn.textContent.includes("Edit")) {
+        btn.style.display = "none";
+      }
+    });
+  }
+
+  modal.style.display = "flex";
+}
+
     function closeActionModal(){ selectedChip=null; document.getElementById("actionModal").style.display="none"; }
 
     function removeItem(){
@@ -437,6 +461,14 @@
       const block = selectedChip.dataset.blockId || "";
       let items = getItems();
       let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+        // === Add deleted flight numbers to blacklist ===
+      let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
+
+      const flight = items.find(f => f.id === id || f.blockId === block);
+      if (flight && flight.flightNumberOut) {
+      deletedFlights.push(flight.flightNumberOut, flight.flightNumberIn);
+      localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
+  }
       const flight = items.find(f => f.id === id || f.blockId === block);
       if (!flight) { alert("⚠️ Flight not found or already deleted."); closeActionModal(); return; }
       const isBlock = !!block && block.startsWith("block-");
