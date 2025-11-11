@@ -320,6 +320,9 @@
       const dep = route.departure || "06:00";
       const dur = Number(route.blockTimeMin || 210);
       const arr = toHHMM(toMin(dep) + dur);
+      // === Retrieve real flight numbers from confirmedRoute ===
+      const flightOut = route.flightNumberOut || Math.floor(100 + Math.random() * 800);
+      const flightIn  = route.flightNumberIn  || flightOut + 1;
 
       const hasConflict = (day)=>{
         const dayItems = items.filter(x=>x.tail===ac.tail && x.day===day && x.type==="flight");
