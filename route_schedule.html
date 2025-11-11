@@ -399,27 +399,41 @@
       window.location.href = "routes.html";
     }
 
-    /* === GENERATE FLIGHT NUMBERS === */
-    document.addEventListener("DOMContentLoaded", () => {
-      const flightNumberInput = document.getElementById("flightNumber");
-      const userIATA = localStorage.getItem("userIATA") || "AT";
-      let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
-      let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+    /* === GENERATE FLIGHT NUMBERS (with DB sync) === */
+document.addEventListener("DOMContentLoaded", () => {
+  const flightNumberInput = document.getElementById("flightNumber");
+  const userIATA = localStorage.getItem("userIATA") || "AT";
+  let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
+  let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
 
-      function generateFlightPair() {
-        let out = `${userIATA}${lastFlightNumber}`;
-        let inn = `${userIATA}${lastFlightNumber + 1}`;
-        while (usedFlights.includes(out) || usedFlights.includes(inn)) {
-          lastFlightNumber += 2;
-          out = `${userIATA}${lastFlightNumber}`;
-          inn = `${userIATA}${lastFlightNumber + 1}`;
-        }
-        if (flightNumberInput) flightNumberInput.value = `${out} ➜ ${inn}`;
-      }
+  function generateFlightPair() {
+    let out = `${userIATA}${lastFlightNumber}`;
+    let inn = `${userIATA}${lastFlightNumber + 1}`;
+    while (usedFlights.includes(out) || usedFlights.includes(inn)) {
+      lastFlightNumber += 2;
+      out = `${userIATA}${lastFlightNumber}`;
+      inn = `${userIATA}${lastFlightNumber + 1}`;
+    }
+    if (flightNumberInput) flightNumberInput.value = `${out} ➜ ${inn}`;
+  }
 
+  // Wait until WorldAirportsACS is ready before calculating
+  function waitForDBandCalc(retries = 0) {
+    if (typeof WorldAirportsACS !== "undefined" && WorldAirportsACS) {
       generateFlightPair();
       autoCalculate();
-    });
+      console.log("✅ Database loaded, route calculation initialized.");
+    } else if (retries < 10) {
+      console.warn("⏳ Waiting for worldairportacs.js to load...");
+      setTimeout(() => waitForDBandCalc(retries + 1), 300);
+    } else {
+      document.getElementById("result").innerHTML =
+        "<span style='color:#ff7777;'>❌ Failed to load airport database. Check worldairportacs.js file.</span>";
+    }
+  }
+
+  waitForDBandCalc();
+});
   </script>
 </body>
 </html>
