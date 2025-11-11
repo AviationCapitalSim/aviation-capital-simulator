@@ -70,6 +70,8 @@
       <a href="support.html">Support</a>
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </nav>
+    <!-- ⏱ Reloj ACS en el header -->
+    <div id="acs-clock" class="acs-clock"></div>
   </header>
 
   <main class="acs-main">
@@ -140,6 +142,29 @@
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <script>
+    /* === ACS SIM CLOCK (SYNC ACROSS MODULES) === */
+    window.addEventListener("load", () => {
+      const c = document.getElementById("acs-clock");
+      if (!c) return;
+
+      // Leer hora simulada o iniciar nueva
+      let stored = localStorage.getItem("acsSimTime");
+      let simTime = stored ? new Date(stored) : new Date();
+
+      function refreshClock() {
+        // 1 segundo real = 1 minuto simulado
+        simTime.setMinutes(simTime.getMinutes() + 1);
+        const hh = String(simTime.getHours()).padStart(2, "0");
+        const mm = String(simTime.getMinutes()).padStart(2, "0");
+        const date = simTime.toDateString().toUpperCase();
+        c.textContent = `${hh}:${mm} — ${date}`;
+        localStorage.setItem("acsSimTime", simTime.toISOString());
+      }
+
+      refreshClock();
+      setInterval(refreshClock, 1000);
+    });
+
     /* === BASE === */
     const timeSelect = document.getElementById("departureTime");
     for (let h = 6; h < 24; h++) {
@@ -165,9 +190,9 @@
     }
 
     const aircraftData = {
-      "B737-200": { speed: 420 },
-      "A320": { speed: 450 },
-      "B767-300ER": { speed: 470 }
+      "B737-200": { speed: 420, range: 2000 },
+      "A320":     { speed: 450, range: 3100 },
+      "B767-300ER": { speed: 470, range: 5600 }
     };
 
     const airportCoords = {
@@ -190,6 +215,19 @@
       return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
     }
 
+    // === VALIDACIÓN DE COMPATIBILIDAD AERONAVE-RUTA (ALCANCE) ===
+    function validateAircraftCompatibility(aircraft, distance) {
+      const data = aircraftData[aircraft];
+      if (!data || !data.range) return true; // si falta info, no bloquea
+
+      const maxRange = data.range;
+      if (distance > maxRange) {
+        alert(`⚠️ The route distance (${distance} NM) exceeds the maximum range of the ${aircraft} (${maxRange} NM). Please select a different aircraft or adjust the route.`);
+        return false;
+      }
+      return true;
+    }
+
     function autoCalculate(){
       const origin=document.getElementById("origin").value.toUpperCase();
       const destination=document.getElementById("destination").value.toUpperCase();
@@ -197,8 +235,10 @@
       const departure=document.getElementById("departureTime").value;
       if(!origin||!destination||!aircraft)return;
 
-      document.getElementById("techData").style.display="block";
       const distance=calcDistanceNM(origin,destination);
+      if (!validateAircraftCompatibility(aircraft, distance)) return;
+
+      document.getElementById("techData").style.display="block";
       const speed=aircraftData[aircraft].speed;
       const turnaround=rotationOptimized?1.0:0.75;
       const blockTime=distance/speed;
@@ -338,7 +378,7 @@
         // Tomar números en UI
         const rawFN = (flightNumberInput.value || "");
         // Soporta separador con flecha o espacios
-        const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+        const match = rawFN.match(/^([A-Z]{2}\d+)\\s*[\\u2192\\u279C\\u27A1\\-\\>]*\\s*([A-Z]{2}\\d+)$/) || [];
         const flightNumberOut = match[1] || newPair.out;
         const flightNumberIn  = match[2] || newPair.inn;
 
@@ -379,6 +419,9 @@
       const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
       const flightNumberOut = match[1];
       const flightNumberIn  = match[2];
+
+      const distance = calcDistanceNM(origin.toUpperCase(), destination.toUpperCase());
+      if (!validateAircraftCompatibility(aircraft, distance)) return;
 
       localStorage.setItem("confirmedRoute", JSON.stringify({
         origin, destination, aircraft, departure, optimized,
