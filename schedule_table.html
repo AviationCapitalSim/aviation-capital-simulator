@@ -120,7 +120,6 @@
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
   <header class="acs-header">
   <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo" />
@@ -137,7 +136,6 @@
     <a href="support.html">Support</a>
   </nav>
 
-  <!-- ✅ Este es el único Logout que queda -->
   <div class="acs-auth">
     <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
   </div>
@@ -145,7 +143,6 @@
   <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
 </header>
 
-  <!-- ===== MAIN ===== -->
   <main class="acs-main">
     <h2>📅 Weekly Flight Schedule</h2>
     <p class="sub">Automatic schedule monitor with real-time route integration.</p>
@@ -166,7 +163,6 @@
     <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
   </main>
 
-  <!-- ===== MODALS ===== -->
   <div id="actionModal" class="modal">
     <div class="modal-content">
       <h3>Manage Flight</h3>
@@ -185,21 +181,22 @@
         <option value="A">A-Check (5 h)</option>
         <option value="B">B-Check (24 h)</option>
       </select>
+
       <label style="margin-top:10px;">Day</label>
       <select id="maintDay" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
-      <label style="margin-top:10px;">Start Time</label>
-      <input type="time" id="maintStart" value="06:00" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
         <option value="mon">Mon</option><option value="tue">Tue</option><option value="wed">Wed</option>
         <option value="thu">Thu</option><option value="fri">Fri</option><option value="sat">Sat</option><option value="sun">Sun</option>
       </select>
+
+      <label style="margin-top:10px;">Start Time</label>
+      <input type="time" id="maintStart" value="06:00" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
+
       <button onclick="applyMaintenance()">Apply</button>
       <button onclick="closeMaintModal()">❌ Cancel</button>
     </div>
   </div>
-
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- ===== SCRIPT ORIGINAL DE LA TABLA ===== -->
   <script>
     const days = ["mon","tue","wed","thu","fri","sat","sun"];
     const STORE_KEY = "scheduleItems";
@@ -259,38 +256,29 @@
             chip.dataset.type = it.type;
 
             if(it.type==="flight"){
-            hadFlight = true;
-            const iata = localStorage.getItem("userIATA") || "XX";
-
-            let numOut = it.flightNumberOut ?? it.flightOut ?? 100;
-            let numIn  = it.flightNumberIn  ?? it.flightIn  ?? (Number(numOut) + 1);
-
-            // Evita duplicar el prefijo si ya viene incluido
-            if (String(numOut).startsWith(iata)) numOut = String(numOut).replace(iata, "");
-            if (String(numIn).startsWith(iata)) numIn = String(numIn).replace(iata, "");
-
-            const flightOut = `${iata}${String(numOut)}`;
-            const flightIn  = `${iata}${String(numIn)}`;
-
-            chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
-
-
+              hadFlight = true;
+              const iata = localStorage.getItem("userIATA") || "XX";
+              let numOut = it.flightNumberOut ?? it.flightOut ?? 100;
+              let numIn  = it.flightNumberIn  ?? it.flightIn  ?? (Number(numOut) + 1);
+              if (String(numOut).startsWith(iata)) numOut = String(numOut).replace(iata, "");
+              if (String(numIn).startsWith(iata)) numIn = String(numIn).replace(iata, "");
+              const flightOut = `${iata}${String(numOut)}`;
+              const flightIn  = `${iata}${String(numIn)}`;
+              chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
               const tooltip = document.createElement("span");
               tooltip.className = "tooltip";
               tooltip.innerHTML = `${it.departure}–${it.arrival}<br>${it.origin}-${it.destination}`;
               chip.appendChild(tooltip);
-
               const arrMin = toMin(it.arrival);
               lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
             } else if(it.type==="service") {
-  const label = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
-  chip.textContent = label;
-
-  const tooltip = document.createElement("span");
-  tooltip.className = "tooltip";
-  tooltip.innerHTML = `${it.start || "?"} – ${it.end || "?"}`;
-  chip.appendChild(tooltip);
-}
+              const label = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
+              chip.textContent = label;
+              const tooltip = document.createElement("span");
+              tooltip.className = "tooltip";
+              tooltip.innerHTML = `${it.start || "?"} – ${it.end || "?"}`;
+              chip.appendChild(tooltip);
+            }
 
             chip.onclick = ()=>openActionModal(chip);
             td.appendChild(chip);
@@ -308,22 +296,18 @@
 
         const planTd = document.createElement("td");
         const wrap = document.createElement("div"); wrap.className="plan-actions";
-
         const assignBtn = document.createElement("button");
         assignBtn.className = "btn btn-assign";
         assignBtn.textContent = "Assign Route";
         assignBtn.onclick = ()=>assignRouteToTail(ac);
-
         const maintBtn = document.createElement("button");
         maintBtn.className = "btn btn-maint";
         maintBtn.textContent = "Plan Maintenance";
         maintBtn.onclick = ()=>openMaintModal(ac.tail);
-
         wrap.appendChild(assignBtn); wrap.appendChild(maintBtn);
         planTd.appendChild(wrap); tr.appendChild(planTd);
         tbody.appendChild(tr);
       });
-
       document.getElementById("updateTime").textContent = "Last update: " + new Date().toLocaleTimeString();
     }
 
@@ -331,17 +315,14 @@
       const route = getRoute();
       if(!route){ alert("No confirmed route available."); return; }
       if(route.aircraft !== ac.type){ alert(`⚠ Route is for ${route.aircraft}, but tail ${ac.tail} is ${ac.type}.`); return; }
-
       const items = getItems();
       const daysSel = Array.isArray(route.days) && route.days.length ? route.days : ["mon"];
       const separate = !!route.separateDays;
       const dep = route.departure || "06:00";
       const dur = Number(route.blockTimeMin || 210);
       const arr = toHHMM(toMin(dep) + dur);
-      // === Retrieve real flight numbers from confirmedRoute ===
       const flightOut = route.flightNumberOut || Math.floor(100 + Math.random() * 800);
       const flightIn  = route.flightNumberIn  || flightOut + 1;
-
       const hasConflict = (day)=>{
         const dayItems = items.filter(x=>x.tail===ac.tail && x.day===day && x.type==="flight");
         const newStart = toMin(dep);
@@ -354,33 +335,28 @@
         }
         return false;
       };
-
       const blockId = separate ? null : ("block-"+Math.random().toString(36).slice(2,8));
       let assignedAny = false;
       daysSel.forEach(day=>{
         if(hasConflict(day)) return;
         const flight = {
-  id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
-  blockId: separate ? "" : blockId,
-  type:"flight",
-  tail: ac.tail,
-  acType: ac.type,
-  day,
-  origin: route.origin,
-  destination: route.destination,
-  departure: dep,
-  arrival: arr,
-  flightNumberOut: flightOut,
-  flightNumberIn: flightIn
-};
+          id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
+          blockId: separate ? "" : blockId,
+          type:"flight",
+          tail: ac.tail,
+          acType: ac.type,
+          day,
+          origin: route.origin,
+          destination: route.destination,
+          departure: dep,
+          arrival: arr,
+          flightNumberOut: flightOut,
+          flightNumberIn: flightIn
+        };
         items.push(flight);
         assignedAny = true;
       });
-
-      if(!assignedAny){
-        alert("⚠ Cannot assign: schedule conflicts on selected days.");
-        return;
-      }
+      if(!assignedAny){ alert("⚠ Cannot assign: schedule conflicts on selected days."); return; }
       setItems(items);
       renderSchedule();
     }
@@ -388,28 +364,29 @@
     let maintTail=null;
     function openMaintModal(tail){ maintTail=tail; document.getElementById("maintModal").style.display="flex"; }
     function closeMaintModal(){ maintTail=null; document.getElementById("maintModal").style.display="none"; }
+
     function applyMaintenance(){
       if(!maintTail){ closeMaintModal(); return; }
       const t = document.getElementById("maintType").value;
-const d = document.getElementById("maintDay").value;
-const start = document.getElementById("maintStart").value || "06:00";
-const dur = t === "A" ? 300 : 1440; // minutos: A=5h, B=24h
-const end = toHHMM(toMin(start) + dur);
-
-const items = getItems();
-items.push({
-  id:"svc-"+Math.random().toString(36).slice(2,8),
-  type:"service",
-  serviceType:t,
-  tail:maintTail,
-  acType:getFleet().find(x=>x.tail===maintTail)?.type || "",
-  day:d,
-  start:start,
-  end:end
-});
-setItems(items);
-closeMaintModal();
-renderSchedule();
+      const d = document.getElementById("maintDay").value;
+      const start = document.getElementById("maintStart").value || "06:00";
+      const dur = t === "A" ? 300 : 1440;
+      const end = toHHMM(toMin(start) + dur);
+      const items = getItems();
+      items.push({
+        id:"svc-"+Math.random().toString(36).slice(2,8),
+        type:"service",
+        serviceType:t,
+        tail:maintTail,
+        acType:getFleet().find(x=>x.tail===maintTail)?.type || "",
+        day:d,
+        start:start,
+        end:end
+      });
+      setItems(items);
+      closeMaintModal();
+      renderSchedule();
+    }  <!-- ✅ cierre correcto -->
 
     let selectedChip=null;
     function openActionModal(chip){ selectedChip=chip; document.getElementById("actionModal").style.display="flex"; }
@@ -422,55 +399,29 @@ renderSchedule();
       const type = selectedChip.dataset.type;
       const items=getItems();
       let filtered;
-      if(type==="flight" && block){
-        filtered = items.filter(x=>x.blockId!==block);
-      }else{
-        filtered = items.filter(x=>x.id!==id);
-      }
+      if(type==="flight" && block){ filtered = items.filter(x=>x.blockId!==block); }
+      else{ filtered = items.filter(x=>x.id!==id); }
       setItems(filtered);
       closeActionModal();
       renderSchedule();
     }
 
-    /* === DELETE FLIGHT + FULL BLOCK RELEASE SYSTEM === */
     function deleteFlight(){
       if(!selectedChip){ closeActionModal(); return; }
-
       const id = selectedChip.dataset.id;
       const block = selectedChip.dataset.blockId || "";
       let items = getItems();
       let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-
       const flight = items.find(f => f.id === id || f.blockId === block);
-      if (!flight) {
-        alert("⚠️ Flight not found or already deleted.");
-        closeActionModal();
-        return;
-      }
-
+      if (!flight) { alert("⚠️ Flight not found or already deleted."); closeActionModal(); return; }
       const isBlock = !!block && block.startsWith("block-");
-      const updatedItems = isBlock
-        ? items.filter(f => f.blockId !== block)
-        : items.filter(f => f.id !== id);
-
+      const updatedItems = isBlock ? items.filter(f => f.blockId !== block) : items.filter(f => f.id !== id);
       setItems(updatedItems);
-
       if (flight.flightNumberOut && flight.flightNumberIn) {
         usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
         localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-        console.log(`🧹 Released flight numbers: ${flight.flightNumberOut} / ${flight.flightNumberIn}`);
       }
-
-      let releasedSlots = JSON.parse(localStorage.getItem("releasedSlots") || "[]");
-      releasedSlots.push({
-        aircraft: flight.acType || "Unknown",
-        day: flight.day || "N/A",
-        time: flight.departure || "N/A"
-      });
-      localStorage.setItem("releasedSlots", JSON.stringify(releasedSlots));
-
-      closeActionModal();
-      renderSchedule();
+      closeActionModal(); renderSchedule();
       alert(`❌ Flight ${flight.flightNumberOut || ""} deleted permanently (block cleared).`);
     }
 
@@ -486,107 +437,25 @@ renderSchedule();
       window.location.href="login.html";
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const modal = document.getElementById("actionModal");
-      if (modal) {
-        const delBtn = modal.querySelector("button[onclick*='deleteFlight']");
-        if (delBtn) {
-          delBtn.onclick = () => {
-            if (confirm("⚠️ Are you sure you want to permanently delete this flight?")) {
-              deleteFlight();
-            }
-          };
-        }
-      }
-    });
-
     window.addEventListener("load", renderSchedule);
   </script>
 
-  <!-- === Reloj cockpit Airbus (modo simulador) === -->
-<script>
-window.addEventListener("load", () => {
-  const c = document.getElementById("acs-clock");
-  if (!c) return;
-
-  let simTime = new Date(); // punto inicial
-
-  function refreshClock() {
-    // Cada segundo real equivale a un minuto simulado
-    simTime.setMinutes(simTime.getMinutes() + 1);
-
-    const hh = String(simTime.getHours()).padStart(2, "0");
-    const mm = String(simTime.getMinutes()).padStart(2, "0");
-    const date = simTime.toDateString().toUpperCase();
-
-    c.textContent = `${hh}:${mm} — ${date}`;
-  }
-
-  refreshClock();
-  setInterval(refreshClock, 1000); // cada segundo avanza un minuto
-});
-</script>
-
-<!-- === SCHEDULE-LINK v1.0 | My Aircraft ↔ Schedule Integration === -->
-<script>
-document.addEventListener("acsAircraftStatusChange", e => {
-  const { registration, newStatus } = e.detail;
-  if (!registration || !newStatus) return;
-
-  // Buscar la fila del avión correspondiente (coincide con la matrícula/tail)
-  const rows = document.querySelectorAll("#scheduleBody tr");
-  rows.forEach(row => {
-    const tailCell = row.firstChild;
-    if (!tailCell) return;
-
-    const tailText = tailCell.textContent.trim();
-    if (tailText === registration || tailText === registration.replace("EX-", "EC-")) {
-
-      // Cambiar visualmente el estado del avión en la tabla
-      if (["maintenance", "leased", "scrapped"].includes(newStatus)) {
-        row.style.opacity = "0.5";
-        row.style.filter = "grayscale(0.6)";
-        row.title = `⛔ Aircraft unavailable (${newStatus})`;
-
-        // Desactivar botones de asignación
-        const btns = row.querySelectorAll(".btn-assign, .btn-maint");
-        btns.forEach(b => {
-          b.disabled = true;
-          b.style.cursor = "not-allowed";
-          b.style.opacity = "0.6";
-        });
-
-        // Añadir indicador visual en la primera celda
-        if (!row.querySelector(".blocked-flag")) {
-          const flag = document.createElement("div");
-          flag.className = "blocked-flag";
-          flag.style.color = "#FFB300";
-          flag.style.fontWeight = "700";
-          flag.textContent = "🔴 BLOCKED (" + newStatus.toUpperCase() + ")";
-          tailCell.appendChild(flag);
-        }
-      }
-
-      // Reactivar si el avión vuelve a estar disponible
-      if (newStatus === "active") {
-        row.style.opacity = "1";
-        row.style.filter = "none";
-        row.title = "🟢 Aircraft Active";
-
-        const btns = row.querySelectorAll(".btn-assign, .btn-maint");
-        btns.forEach(b => {
-          b.disabled = false;
-          b.style.cursor = "pointer";
-          b.style.opacity = "1";
-        });
-
-        const flag = row.querySelector(".blocked-flag");
-        if (flag) flag.remove();
-      }
+  <!-- === Reloj cockpit Airbus === -->
+  <script>
+  window.addEventListener("load", () => {
+    const c = document.getElementById("acs-clock");
+    if (!c) return;
+    let simTime = new Date();
+    function refreshClock() {
+      simTime.setMinutes(simTime.getMinutes() + 1);
+      const hh = String(simTime.getHours()).padStart(2, "0");
+      const mm = String(simTime.getMinutes()).padStart(2, "0");
+      const date = simTime.toDateString().toUpperCase();
+      c.textContent = `${hh}:${mm} — ${date}`;
     }
+    refreshClock();
+    setInterval(refreshClock, 1000);
   });
-});
-</script>
-
+  </script>
 </body>
 </html>
