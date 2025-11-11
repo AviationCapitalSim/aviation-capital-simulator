@@ -1,7 +1,7 @@
 <!-- ===========================================================
-     === ROUTE SCHEDULE MODULE v3.5 | Date: 11 NOV 2025 ===
+     === ROUTE SCHEDULE MODULE v3.7 Final Stable | 11 NOV 2025 ===
      Aviation Capital Simulator (ACS)
-     Route validation: range, runway, category & limits
+     Range, Runway & Operational Validation System
      =========================================================== -->
 
 <!DOCTYPE html>
@@ -12,76 +12,139 @@
   <title>Route Schedule - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    body { background-color:#081530; color:white; font-family:"Segoe UI",sans-serif; margin:0; }
-    h2 { color:#FFB300; margin-top:2rem; text-align:center; }
-    .sub { color:#ccc; margin-bottom:2rem; text-align:center; }
-
+    body {
+      background-color:#081530;
+      color:white;
+      font-family:"Segoe UI",sans-serif;
+      margin:0;
+    }
+    h2 {
+      color:#FFB300;
+      margin-top:2rem;
+      text-align:center;
+    }
+    .sub {
+      color:#ccc;
+      margin-bottom:2rem;
+      text-align:center;
+    }
     .schedule-container {
-      width:90%; max-width:800px; margin:0 auto; background:#0e1b3c;
-      border-radius:10px; padding:1.5rem 2rem; box-shadow:0 0 10px rgba(0,0,0,0.4);
+      width:90%;
+      max-width:800px;
+      margin:0 auto;
+      background:#0e1b3c;
+      border-radius:10px;
+      padding:1.5rem 2rem;
+      box-shadow:0 0 10px rgba(0,0,0,0.4);
     }
-
-    label { display:block; margin-top:1rem; font-weight:600; color:#FFB300; }
+    label {
+      display:block;
+      margin-top:1rem;
+      font-weight:600;
+      color:#FFB300;
+    }
     select, input {
-      width:100%; padding:0.5rem; margin-top:0.3rem; border-radius:6px;
-      border:none; background:#12224c; color:white; font-size:1rem; outline:none;
+      width:100%;
+      padding:0.5rem;
+      margin-top:0.3rem;
+      border-radius:6px;
+      border:none;
+      background:#12224c;
+      color:white;
+      font-size:1rem;
+      outline:none;
     }
-
     input[type="checkbox"] {
-      appearance:none; width:18px; height:18px; border-radius:4px;
-      border:2px solid #3a4a7a; background-color:#1e2b55;
-      cursor:pointer; position:relative; transition:all 0.2s ease;
+      appearance:none;
+      width:18px;
+      height:18px;
+      border-radius:4px;
+      border:2px solid #3a4a7a;
+      background-color:#1e2b55;
+      cursor:pointer;
+      position:relative;
+      transition:all 0.2s ease;
     }
     input[type="checkbox"]:hover { border-color:#2196F3; box-shadow:0 0 6px #2196F3; }
     input[type="checkbox"]:checked { background-color:#2196F3; border-color:#2196F3; }
     input[type="checkbox"]:checked::after {
-      content:"✔"; color:white; position:absolute; top:-2px; left:3px; font-size:0.9rem;
+      content:"✔";
+      color:white;
+      position:absolute;
+      top:-2px;
+      left:3px;
+      font-size:0.9rem;
     }
-
     .divider { border:none; height:1px; background:rgba(255,179,0,0.6); margin:0.8rem 0 1.2rem; }
-
     .days-row {
-      display:flex; justify-content:center; align-items:center; gap:12px;
-      flex-wrap:wrap; margin-top:0.8rem;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:0.8rem;
     }
     .days-row label { display:flex; align-items:center; gap:6px; color:#ddd; font-size:0.95rem; }
-
     .options-center { text-align:center; margin-top:0.5rem; }
-
-    .tech-list { margin-top:1.5rem; background:#102040; border-radius:8px; padding:1rem; }
-    .tech-item { display:flex; justify-content:space-between; padding:0.4rem 0;
-                 border-bottom:1px solid rgba(255,255,255,0.1); color:#ddd; }
-    .tech-item span { color:#FFB300; font-weight:600; }
-
-    .status-line { margin-top:0.8rem; text-align:center; font-weight:600; }
-    .status-warning { color:#FFD54F; } .status-ok { color:#00E676; }
-
-    .result {
-      margin-top:1rem; background:#0e2048; padding:1rem;
-      border-radius:8px; color:#ccc; text-align:left;
+    .tech-list {
+      margin-top:1.5rem;
+      background:#102040;
+      border-radius:8px;
+      padding:1rem;
     }
-
+    .tech-item {
+      display:flex;
+      justify-content:space-between;
+      padding:0.4rem 0;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+      color:#ddd;
+    }
+    .tech-item span { color:#FFB300; font-weight:600; }
+    .status-line { margin-top:0.8rem; text-align:center; font-weight:600; }
+    .status-warning { color:#FFD54F; }
+    .status-ok { color:#00E676; }
+    .result {
+      margin-top:1rem;
+      background:#0e2048;
+      padding:1rem;
+      border-radius:8px;
+      color:#ccc;
+      text-align:left;
+    }
     .acs-btn {
-      display:block; background-color:#1DB954; color:#fff; border:none;
-      padding:0.7rem 1.4rem; border-radius:8px; cursor:pointer;
-      font-weight:600; margin:1.5rem auto 0.8rem; transition:0.2s;
+      display:block;
+      background-color:#1DB954;
+      color:#fff;
+      border:none;
+      padding:0.7rem 1.4rem;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      margin:1.5rem auto 0.8rem;
+      transition:0.2s;
     }
     .acs-btn:hover { background-color:#17a84d; }
-    .acs-btn:disabled {
-      opacity:0.4; cursor:not-allowed; background-color:#555 !important;
-    }
-
+    .acs-btn:disabled { opacity:0.4; cursor:not-allowed; background-color:#555 !important; }
     .back-btn {
-      display:block; margin:0 auto 0.5rem; color:#1DB954; background:none;
-      border:1px solid #1DB954; border-radius:6px;
-      padding:0.4rem 1rem; cursor:pointer;
+      display:block;
+      margin:0 auto 0.5rem;
+      color:#1DB954;
+      background:none;
+      border:1px solid #1DB954;
+      border-radius:6px;
+      padding:0.4rem 1rem;
+      cursor:pointer;
     }
     .back-btn:hover { background-color:#1DB954; color:white; }
-
     footer { margin-top:3rem; text-align:center; color:#999; font-size:0.9rem; padding:1rem; }
-
-    /* ACS CLOCK */
-    #acs-clock { color:#1DB954; font-weight:600; position:absolute; top:15px; right:25px; font-size:1rem; }
+    #acs-clock {
+      color:#1DB954;
+      font-weight:600;
+      position:absolute;
+      top:15px;
+      right:25px;
+      font-size:1rem;
+    }
   </style>
 </head>
 
@@ -171,7 +234,7 @@
 
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- === ACS CLOCK SCRIPT === -->
+  <!-- === CLOCK SCRIPT === -->
   <script>
     window.addEventListener("load", () => {
       const c = document.getElementById("acs-clock");
@@ -185,67 +248,85 @@
         c.textContent = `${hh}:${mm} — ${date}`;
         localStorage.setItem("acsSimTime", simTime.toISOString());
       }
-      refreshClock(); setInterval(refreshClock, 1000);
+      refreshClock();
+      setInterval(refreshClock, 1000);
     });
   </script>
 
-  <!-- === LINK TO GLOBAL AIRPORT DATABASE === -->
-  <script src="worldairportacs.js"></script>
-  <script>
-    /* ===========================================================
-       === ROUTE VALIDATION LOGIC (ACS v3.5) ===
-       Includes range, runway, category & limit verification
-       =========================================================== */
+  <!-- === GLOBAL AIRPORT DATABASE === -->
+  <script src="worldairportsacs.js?v=2.0"></script>
+<script>
+/* ===========================================================
+   === ROUTE VALIDATION & CALCULATION ENGINE — v3.7 Final ===
+   Includes: Distance, Range, Runway, Category & Aircraft Limits
+   =========================================================== */
 
-    /* === TIME OPTIONS === */
-    const timeSelect = document.getElementById("departureTime");
-    for (let h = 6; h < 24; h++) {
-      for (let m = 0; m < 60; m += 5) {
-        const hh = String(h).padStart(2,"0");
-        const mm = String(m).padStart(2,"0");
-        const opt = document.createElement("option");
-        opt.value = `${hh}:${mm}`; opt.textContent = `${hh}:${mm}`;
-        timeSelect.appendChild(opt);
-      }
-    }
-    timeSelect.value = "06:00";
+/* === TIME SELECT OPTIONS === */
+const timeSelect = document.getElementById("departureTime");
+for (let h = 6; h < 24; h++) {
+  for (let m = 0; m < 60; m += 5) {
+    const hh = String(h).padStart(2,"0");
+    const mm = String(m).padStart(2,"0");
+    const opt = document.createElement("option");
+    opt.value = `${hh}:${mm}`;
+    opt.textContent = `${hh}:${mm}`;
+    timeSelect.appendChild(opt);
+  }
+}
+timeSelect.value = "06:00";
 
-    const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-    let rotationOptimized = false;
+/* === GLOBAL CONSTANTS === */
+const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+let rotationOptimized = false;
 
-    /* === BASE AIRCRAFT DATA (now with range/runway) === */
-    const aircraftData = {
-      "B737-200": { speed: 420, range: 2000, runway_min_m: 1800, size: "Medium" },
-      "A320": { speed: 450, range: 3100, runway_min_m: 2200, size: "Medium" },
-      "B767-300ER": { speed: 470, range: 5600, runway_min_m: 2600, size: "Heavy" }
-    };
+/* === AIRCRAFT PERFORMANCE DATA === */
+const aircraftData = {
+  "B737-200": { speed: 420, range: 2000, runway_min_m: 1800, size: "Medium" },
+  "A320": { speed: 450, range: 3100, runway_min_m: 2200, size: "Medium" },
+  "B767-300ER": { speed: 470, range: 5600, runway_min_m: 2600, size: "Heavy" }
+};
 
-    /* === FIND AIRPORT IN GLOBAL DATABASE === */
-    function getAirportByICAO(code) {
-      code = code.toUpperCase();
-      for (const region in WorldAirportsACS) {
-        const found = WorldAirportsACS[region].find(a => a.icao === code);
-        if (found) return found;
-      }
-      return null;
-    }
+/* === LOAD DESTINATION FROM PREVIOUS PAGE === */
+window.addEventListener("DOMContentLoaded", () => {
+  const storedDest = localStorage.getItem("selectedDestination");
+  if (storedDest) {
+    document.getElementById("destination").value = storedDest;
+    console.log("🧭 Destination loaded:", storedDest);
+  }
+});
 
-    /* === DISTANCE CALCULATION === */
-    function calcDistanceNM(from, to) {
-      const origin = getAirportByICAO(from);
-      const dest = getAirportByICAO(to);
-      if (!origin || !dest) return 0;
-      const R = 3440;
-      const lat1 = (origin.latitude * Math.PI) / 180;
-      const lat2 = (dest.latitude * Math.PI) / 180;
-      const dLat = ((dest.latitude - origin.latitude) * Math.PI) / 180;
-      const dLon = ((dest.longitude - origin.longitude) * Math.PI) / 180;
-      const a = Math.sin(dLat / 2) ** 2 +
-                Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-      return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-    }
+/* === GET AIRPORT INFO FROM DATABASE === */
+function getAirportByICAO(code) {
+  code = (code || "").toUpperCase();
+  const db = window.WorldAirportsACS || window.worldairportsacs;
+  if (!db) {
+    console.warn("⚠️ WorldAirportsACS not available.");
+    return null;
+  }
+  for (const region in db) {
+    const list = db[region];
+    if (!Array.isArray(list)) continue;
+    const found = list.find(a => a.icao === code);
+    if (found) return found;
+  }
+  return null;
+}
 
-   /* === MAIN CALCULATION + ADVANCED VALIDATION (ACS v3.6) === */
+/* === DISTANCE CALCULATION === */
+function calcDistanceNM(from, to) {
+  const origin = getAirportByICAO(from);
+  const dest = getAirportByICAO(to);
+  if (!origin || !dest) return 0;
+  const R = 3440;
+  const lat1 = (origin.latitude * Math.PI) / 180;
+  const lat2 = (dest.latitude * Math.PI) / 180;
+  const dLat = ((dest.latitude - origin.latitude) * Math.PI) / 180;
+  const dLon = ((dest.longitude - origin.longitude) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+/* === MAIN CALCULATION FUNCTION === */
 function autoCalculate() {
   const origin = document.getElementById("origin").value.toUpperCase();
   const destination = document.getElementById("destination").value.toUpperCase();
@@ -269,7 +350,6 @@ function autoCalculate() {
   let effIndex = Math.max(50, 100 - delayRisk / 1.5);
   if (rotationOptimized) { delayRisk *= 0.8; effIndex += 5; }
 
-  // Update tech info
   document.getElementById("distance").innerText = distance;
   document.getElementById("blockTime").innerText = `${blockTime.toFixed(2)} h`;
   document.getElementById("turnaround").innerText = `${turnaround.toFixed(2)} h`;
@@ -279,67 +359,56 @@ function autoCalculate() {
   document.getElementById("delayRisk").innerText = `${delayRisk.toFixed(1)}%`;
   document.getElementById("effIndex").innerText = `${effIndex.toFixed(1)}%`;
 
-  // === FETCH AIRPORT DATA ===
   const originData = getAirportByICAO(origin);
   const destData = getAirportByICAO(destination);
-  let warnings = [];
-  let severity = "ok"; // ok, warn, error
-
   if (!originData || !destData) {
-    resultBox.innerHTML = `<span style="color:#ff9999;">⚠️ Airport data not found in database.</span>`;
+    resultBox.innerHTML = `<span style="color:#ff7777;">⚠️ Airport data not found in worldairportsacs.js.</span>`;
     confirmBtn.disabled = true;
     return;
   }
 
-  // === RANGE VALIDATION ===
+  // === VALIDATIONS ===
+  let warnings = [];
+  let severity = "ok";
+
+  // Range check
   if (distance > ac.range) {
-    warnings.push(`Route distance (${distance} NM) exceeds ${aircraft} range (${ac.range} NM).`);
+    warnings.push(`Distance ${distance} NM exceeds aircraft range ${ac.range} NM.`);
     severity = "error";
   } else if (distance > ac.range * 0.9) {
-    warnings.push(`Route distance is near maximum range (${distance}/${ac.range} NM).`);
-    severity = severity === "ok" ? "warn" : severity;
+    warnings.push(`Route distance near aircraft limit (${distance}/${ac.range} NM).`);
+    severity = "warn";
   }
 
-  // === RUNWAY VALIDATION ===
-  const minRunway = ac.runway_min_m;
-  if (originData.runway_m < minRunway || destData.runway_m < minRunway) {
-    warnings.push(`Runway too short (min ${minRunway} m required).`);
+  // Runway check
+  if (originData.runway_m < ac.runway_min_m || destData.runway_m < ac.runway_min_m) {
+    warnings.push(`Runway below minimum (${ac.runway_min_m} m required).`);
     severity = "error";
-  } else if (originData.runway_m < minRunway + 200 || destData.runway_m < minRunway + 200) {
-    warnings.push(`Runway marginal for this aircraft type.`);
-    if (severity === "ok") severity = "warn";
   }
 
-  // === AIRCRAFT CATEGORY VALIDATION ===
-  const restrictedCats = ["Regional", "Domestic", "Short Haul"];
+  // Category restriction
+  const restrictedCats = ["Regional", "Domestic"];
   if (restrictedCats.includes(destData.category) && ac.size === "Heavy") {
-    warnings.push(`Destination category "${destData.category}" not suitable for Heavy aircraft.`);
+    warnings.push(`Destination ${destData.category} not suitable for Heavy aircraft.`);
     severity = "error";
   }
 
-  // === AIRCRAFT LIMIT VALIDATION ===
-  const destLimit = destData.aircraft_limit || "Medium";
-  const originLimit = originData.aircraft_limit || "Medium";
-  if ((destLimit === "Medium" && ac.size === "Heavy") || (originLimit === "Medium" && ac.size === "Heavy")) {
-    warnings.push(`One or more airports restricted to Medium aircraft.`);
+  // Aircraft limit
+  if ((destData.aircraft_limit === "Medium" && ac.size === "Heavy") ||
+      (originData.aircraft_limit === "Medium" && ac.size === "Heavy")) {
+    warnings.push(`Airport restricted to Medium aircraft.`);
     severity = "error";
   }
 
-  // === FINAL VISUAL OUTPUT ===
+  // === RESULT OUTPUT ===
   let color = "#00ff99";
   if (severity === "warn") color = "#ffcc66";
   if (severity === "error") color = "#ff5555";
-
   const acHTML = `<span style="color:${color};font-weight:700;">${aircraft}</span>`;
 
-  // === OUTPUT PANEL ===
   if (warnings.length > 0) {
-    const icon = severity === "error" ? "❌" : "⚠️";
-    const header = severity === "error"
-      ? "Operational restrictions detected:"
-      : "Advisory notices:";
     resultBox.innerHTML = `
-      ${icon} <span style="color:${color};font-weight:600;">${header}</span>
+      ❌ <span style="color:${color};font-weight:600;">Operational restrictions:</span>
       <ul style="color:${color};margin-top:0.5rem;">
         ${warnings.map(w => `<li>${w}</li>`).join("")}
       </ul>
@@ -347,13 +416,13 @@ function autoCalculate() {
     confirmBtn.disabled = (severity === "error");
   } else {
     resultBox.innerHTML = `
-      ✅ Route valid.<br>
+      ✅ Route validated.<br>
       <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
       Aircraft: ${acHTML}<br>
       Departure: ${departure}<br><br>
-      <span style="color:#00ff99;">✔ Compatible with operational limits.</span><br><br>
-      <strong>Origin (${origin}):</strong> Runway ${originData.runway_m} m | ${originData.category} | Limit: ${originData.aircraft_limit}<br>
-      <strong>Destination (${destination}):</strong> Runway ${destData.runway_m} m | ${destData.category} | Limit: ${destData.aircraft_limit}
+      <strong>Origin:</strong> Runway ${originData.runway_m} m | ${originData.category} | Limit: ${originData.aircraft_limit}<br>
+      <strong>Destination:</strong> Runway ${destData.runway_m} m | ${destData.category} | Limit: ${destData.aircraft_limit}<br><br>
+      <span style="color:#00ff99;">✔ Compatible with operational limits.</span>
     `;
     confirmBtn.disabled = false;
   }
@@ -365,53 +434,21 @@ function autoCalculate() {
     : "⚠ Non-optimized rotation (45 min ground time)";
 }
 
-    /* === SUPPORTING FUNCTIONS === */
-    function toggleEveryDay() {
-      const all = document.getElementById("everyDay").checked;
-      ["mon","tue","wed","thu","fri","sat","sun"].forEach(id => {
-        document.getElementById(id).checked = all;
-      });
-    }
+/* === OTHER UTILITIES === */
+function toggleEveryDay() {
+  const all = document.getElementById("everyDay").checked;
+  DAY_IDS.forEach(id => document.getElementById(id).checked = all);
+}
+function toggleOptimization() {
+  rotationOptimized = document.getElementById("optimizeRotation").checked;
+  autoCalculate();
+}
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
 
-    function toggleOptimization() {
-      rotationOptimized = document.getElementById("optimizeRotation").checked;
-      autoCalculate();
-    }
-
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-
-    /* === CONFIRM FUNCTION (PRESERVED) === */
-    function confirmRoute() {
-      const origin = document.getElementById("origin").value.trim();
-      const destination = document.getElementById("destination").value.trim();
-      const aircraft = document.getElementById("aircraft").value;
-      const departure = document.getElementById("departureTime").value;
-      const optimized = document.getElementById("optimizeRotation").checked;
-      const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
-
-      if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
-        alert("⚠️ Please complete all required fields and select at least one day before confirming the route.");
-        return;
-      }
-
-      const rawFN = (document.getElementById("flightNumber").value || "");
-      const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
-      const flightNumberOut = match[1];
-      const flightNumberIn  = match[2];
-
-      localStorage.setItem("confirmedRoute", JSON.stringify({
-        origin, destination, aircraft, departure, optimized,
-        days: selectedDays, flightNumberOut, flightNumberIn
-      }));
-
-      alert(`✅ Route confirmed and saved!\n${flightNumberOut || ""} ${flightNumberIn ? "/ " + flightNumberIn : ""}`);
-      window.location.href = "routes.html";
-    }
-
-    /* === GENERATE FLIGHT NUMBERS (with DB sync) === */
+/* === GENERATE FLIGHT NUMBERS === */
 document.addEventListener("DOMContentLoaded", () => {
   const flightNumberInput = document.getElementById("flightNumber");
   const userIATA = localStorage.getItem("userIATA") || "AT";
@@ -429,23 +466,49 @@ document.addEventListener("DOMContentLoaded", () => {
     if (flightNumberInput) flightNumberInput.value = `${out} ➜ ${inn}`;
   }
 
-  // Wait until WorldAirportsACS is ready before calculating
   function waitForDBandCalc(retries = 0) {
     if (typeof WorldAirportsACS !== "undefined" && WorldAirportsACS) {
       generateFlightPair();
       autoCalculate();
       console.log("✅ Database loaded, route calculation initialized.");
     } else if (retries < 10) {
-      console.warn("⏳ Waiting for worldairportacs.js to load...");
-      setTimeout(() => waitForDBandCalc(retries + 1), 300);
+      setTimeout(() => waitForDBandCalc(retries + 1), 400);
     } else {
       document.getElementById("result").innerHTML =
-        "<span style='color:#ff7777;'>❌ Failed to load airport database. Check worldairportacs.js file.</span>";
+        "<span style='color:#ff7777;'>❌ Failed to load worldairportsacs.js file.</span>";
     }
   }
 
   waitForDBandCalc();
 });
-  </script>
+
+/* === CONFIRM ROUTE === */
+function confirmRoute() {
+  const origin = document.getElementById("origin").value.trim();
+  const destination = document.getElementById("destination").value.trim();
+  const aircraft = document.getElementById("aircraft").value;
+  const departure = document.getElementById("departureTime").value;
+  const optimized = document.getElementById("optimizeRotation").checked;
+  const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
+
+  if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+    alert("⚠️ Please complete all required fields and select at least one day before confirming.");
+    return;
+  }
+
+  const rawFN = document.getElementById("flightNumber").value || "";
+  const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+  const flightNumberOut = match[1];
+  const flightNumberIn = match[2];
+
+  localStorage.setItem("confirmedRoute", JSON.stringify({
+    origin, destination, aircraft, departure, optimized,
+    days: selectedDays, flightNumberOut, flightNumberIn
+  }));
+
+  alert(`✅ Route confirmed!\n${flightNumberOut || ""} / ${flightNumberIn || ""}`);
+  window.location.href = "routes.html";
+}
+</script>
 </body>
 </html>
