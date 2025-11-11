@@ -257,17 +257,20 @@
             chip.dataset.type = it.type;
 
             if(it.type==="flight"){
-  hadFlight = true;
-  const iata = localStorage.getItem("userIATA") || "XX";
+            hadFlight = true;
+            const iata = localStorage.getItem("userIATA") || "XX";
 
-  // 1º intentamos usar los números reales guardados
-  const numOut = (it.flightNumberOut ?? it.flightOut ?? 100);
-  const numIn  = (it.flightNumberIn  ?? it.flightIn  ?? (Number(numOut) + 1));
+            let numOut = it.flightNumberOut ?? it.flightOut ?? 100;
+            let numIn  = it.flightNumberIn  ?? it.flightIn  ?? (Number(numOut) + 1);
 
-  const flightOut = `${iata}${String(numOut)}`;
-  const flightIn  = `${iata}${String(numIn)}`;
+            // Evita duplicar el prefijo si ya viene incluido
+            if (String(numOut).startsWith(iata)) numOut = String(numOut).replace(iata, "");
+            if (String(numIn).startsWith(iata)) numIn = String(numIn).replace(iata, "");
 
-  chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
+            const flightOut = `${iata}${String(numOut)}`;
+            const flightIn  = `${iata}${String(numIn)}`;
+
+            chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
 
 
               const tooltip = document.createElement("span");
