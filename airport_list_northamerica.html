@@ -34,6 +34,33 @@ h2 {
   font-size: 0.95rem;
 }
 
+/* === COUNTRY FILTER MODULE === */
+.filter-container {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.filter-container label {
+  margin-right: 8px;
+  font-size: 0.95rem;
+  color: #ddd;
+}
+.filter-container select {
+  background-color: rgba(14,27,70,0.9);
+  color: #fff;
+  border: 1px solid #FFB300;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 0 6px rgba(255,179,0,0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.filter-container select:hover {
+  background-color: rgba(20,40,90,1);
+  transform: scale(1.03);
+}
+
 /* === Table container === */
 table {
   width: 95%;
@@ -217,6 +244,25 @@ footer {
     <h2>🌍 North America Airports</h2>
     <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
 
+    <!-- === COUNTRY FILTER MODULE (NORTH AMERICA) === -->
+    <div class="filter-container">
+      <label for="countryFilter">Filter by Country:</label>
+      <select id="countryFilter">
+        <option value="all">All Countries</option>
+        <option value="United States">United States</option>
+        <option value="Canada">Canada</option>
+        <option value="Mexico">Mexico</option>
+        <option value="Cuba">Cuba</option>
+        <option value="Dominican Republic">Dominican Republic</option>
+        <option value="Jamaica">Jamaica</option>
+        <option value="Bahamas">Bahamas</option>
+        <option value="Puerto Rico">Puerto Rico</option>
+        <option value="Panama">Panama</option>
+        <option value="Costa Rica">Costa Rica</option>
+      </select>
+    </div>
+    <!-- === END COUNTRY FILTER MODULE === -->
+
     <table id="airportTable">
       <thead>
         <tr>
@@ -318,7 +364,20 @@ footer {
     window.location.href = "login.html";
   }
 
-  document.addEventListener("DOMContentLoaded", () => loadAirports("NorthAmerica"));
+  /* === COUNTRY FILTER MODULE (JS) === */
+  document.addEventListener("DOMContentLoaded", () => {
+    loadAirports("NorthAmerica");
+    const filter = document.getElementById("countryFilter");
+    if (!filter) return;
+    filter.addEventListener("change", () => {
+      const selected = filter.value.toLowerCase();
+      const rows = document.querySelectorAll("#airportTableBody tr");
+      rows.forEach(row => {
+        const country = row.cells[1].textContent.toLowerCase();
+        row.style.display = (selected === "all" || country === selected) ? "" : "none";
+      });
+    });
+  });
   </script>
 
   <script>
