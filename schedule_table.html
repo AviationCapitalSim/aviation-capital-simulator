@@ -342,17 +342,19 @@
       daysSel.forEach(day=>{
         if(hasConflict(day)) return;
         const flight = {
-          id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
-          blockId: separate ? "" : blockId,
-          type:"flight",
-          tail: ac.tail,
-          acType: ac.type,
-          day,
-          origin: route.origin,
-          destination: route.destination,
-          departure: dep,
-          arrival: arr
-        };
+  id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
+  blockId: separate ? "" : blockId,
+  type:"flight",
+  tail: ac.tail,
+  acType: ac.type,
+  day,
+  origin: route.origin,
+  destination: route.destination,
+  departure: dep,
+  arrival: arr,
+  flightNumberOut: flightOut,
+  flightNumberIn: flightIn
+};
         items.push(flight);
         assignedAny = true;
       });
