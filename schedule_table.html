@@ -187,6 +187,8 @@
       </select>
       <label style="margin-top:10px;">Day</label>
       <select id="maintDay" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
+      <label style="margin-top:10px;">Start Time</label>
+      <input type="time" id="maintStart" value="06:00" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
         <option value="mon">Mon</option><option value="tue">Tue</option><option value="wed">Wed</option>
         <option value="thu">Thu</option><option value="fri">Fri</option><option value="sat">Sat</option><option value="sun">Sun</option>
       </select>
@@ -280,9 +282,15 @@
 
               const arrMin = toMin(it.arrival);
               lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
-            } else {
-              chip.textContent = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
-            }
+            } else if(it.type==="service") {
+  const label = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
+  chip.textContent = label;
+
+  const tooltip = document.createElement("span");
+  tooltip.className = "tooltip";
+  tooltip.innerHTML = `${it.start || "?"} – ${it.end || "?"}`;
+  chip.appendChild(tooltip);
+}
 
             chip.onclick = ()=>openActionModal(chip);
             td.appendChild(chip);
@@ -382,21 +390,26 @@
     function closeMaintModal(){ maintTail=null; document.getElementById("maintModal").style.display="none"; }
     function applyMaintenance(){
       if(!maintTail){ closeMaintModal(); return; }
-      const t=document.getElementById("maintType").value;
-      const d=document.getElementById("maintDay").value;
-      const items=getItems();
-      items.push({
-        id:"svc-"+Math.random().toString(36).slice(2,8),
-        type:"service",
-        serviceType:t,
-        tail:maintTail,
-        acType: getFleet().find(x=>x.tail===maintTail)?.type || "",
-        day:d
-      });
-      setItems(items);
-      closeMaintModal();
-      renderSchedule();
-    }
+      const t = document.getElementById("maintType").value;
+const d = document.getElementById("maintDay").value;
+const start = document.getElementById("maintStart").value || "06:00";
+const dur = t === "A" ? 300 : 1440; // minutos: A=5h, B=24h
+const end = toHHMM(toMin(start) + dur);
+
+const items = getItems();
+items.push({
+  id:"svc-"+Math.random().toString(36).slice(2,8),
+  type:"service",
+  serviceType:t,
+  tail:maintTail,
+  acType:getFleet().find(x=>x.tail===maintTail)?.type || "",
+  day:d,
+  start:start,
+  end:end
+});
+setItems(items);
+closeMaintModal();
+renderSchedule();
 
     let selectedChip=null;
     function openActionModal(chip){ selectedChip=chip; document.getElementById("actionModal").style.display="flex"; }
