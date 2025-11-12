@@ -107,29 +107,28 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <!-- ===== SCRIPT ===== -->
-  <script>
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-  </script>
+ <!-- ===== SCRIPT ===== -->
+<script>
+  function handleLogout() {
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "login.html";
+  }
+</script>
 
-  <!-- ✅ CORREGIDO: cierre correcto de <script> y motor de tiempo global -->
-  <script>
-    // Transacciones bancarias (por ahora 0)
-    localStorage.setItem("acs_finance_ops", 0);
-  </script>
+<script>
+  // Transacciones bancarias (por ahora 0)
+  localStorage.setItem("acs_finance_ops", 0);
+</script>
 
-  <script src="finance.js?v=1.0.0"></script>
-  <!-- === MOTOR GLOBAL DE TIEMPO ACS === -->
-<script src="time_engine.js?v=3.2"></script>
+<!-- === MOTOR GLOBAL DE TIEMPO ACS === -->
+<script src="time_engine.js"></script>
+<script src="finance.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // Suscribir este módulo al reloj global
-    registerTimeListener(updateClockDisplay);
-    // Pintar inmediatamente según el estado/tiempo actual
-    updateClockDisplay();
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+      updateClockDisplay();
+    }
   });
 </script>
 </body>
