@@ -323,18 +323,19 @@
   </footer>
 
   <!-- ===== SCRIPTS ===== -->
+    <!-- ===== SCRIPTS ===== -->
   <script>
     // 🌍 Flag emoji generator
     function getFlagEmoji(country) {
       if (!country) return "🌍";
       const isoMap = {
-        "Kyrgyzstan": "KG", "United States": "US", "United Kingdom": "GB", "Spain": "ES",
-        "Russia": "RU", "Brazil": "BR", "Argentina": "AR", "Mexico": "MX", "France": "FR",
-        "Germany": "DE", "Italy": "IT", "Japan": "JP", "China": "CN", "India": "IN",
-        "Canada": "CA", "Australia": "AU", "Chile": "CL", "Peru": "PE", "South Korea": "KR",
-        "Saudi Arabia": "SA", "South Africa": "ZA", "United Arab Emirates": "AE"
+        "Kyrgyzstan":"KG","United States":"US","United Kingdom":"GB","Spain":"ES",
+        "Russia":"RU","Brazil":"BR","Argentina":"AR","Mexico":"MX","France":"FR",
+        "Germany":"DE","Italy":"IT","Japan":"JP","China":"CN","India":"IN",
+        "Canada":"CA","Australia":"AU","Chile":"CL","Peru":"PE","South Korea":"KR",
+        "Saudi Arabia":"SA","South Africa":"ZA","United Arab Emirates":"AE"
       };
-      const code = isoMap[country] || country.slice(0, 2).toUpperCase();
+      const code = isoMap[country] || country.slice(0,2).toUpperCase();
       return String.fromCodePoint(...[...code].map(c => 0x1F1E6 - 65 + c.charCodeAt()));
     }
 
@@ -371,7 +372,6 @@
       ctx.lineTo(320, 50);
       ctx.stroke();
     }
-
     function closeGrowthModal() {
       document.getElementById("growthModal").style.display = "none";
     }
@@ -383,64 +383,39 @@
     }
 
     // 🏢 Load airline and base info (ACS Unified)
-document.addEventListener("DOMContentLoaded", () => {
-  // --- Primary load ---
-  let user = JSON.parse(localStorage.getItem("ACS_User") || "{}");
-  let airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}");
-  let base = JSON.parse(localStorage.getItem("ACS_Base") || "{}");
+    document.addEventListener("DOMContentLoaded", () => {
+      // --- Primary load ---
+      let user = JSON.parse(localStorage.getItem("ACS_User") || "{}");
+      let airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}");
+      let base = JSON.parse(localStorage.getItem("ACS_Base") || "{}");
 
-  // ✅ Fallbacks for backward compatibility
-  if (!user || !user.name) {
-    user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  }
-  if (!airline || !airline.name) {
-    airline = user.airline || {};
-  }
-  if (!base || !base.city) {
-    base = airline.base || {};
-  }
+      // ✅ Fallbacks for backward compatibility
+      if (!user || !user.name) user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+      if (!airline || !airline.name) airline = user.airline || {};
+      if (!base || !base.city) base = airline.base || {};
 
-  // --- Mostrar mensaje principal ---
-  if (airline.name && airline.iata) {
-    document.getElementById("welcomeMessage").innerHTML =
-      `Welcome to <span>${airline.name} (${airline.iata})</span>`;
-  }
+      // --- Mostrar mensaje principal ---
+      if (airline.name && airline.iata) {
+        const welcome = document.getElementById("welcomeMessage");
+        if (welcome) welcome.innerHTML = `Welcome to <span>${airline.name} (${airline.iata})</span>`;
+      }
 
-  const sub = document.getElementById("airlineSub");
-  if (sub) {
-    const flag = getFlagEmoji(airline.country || base.country || "World");
-    const country = airline.country || base.country || "Unknown";
-    const baseText = base.city
-      ? `Base: ${base.city} (${base.airport || base.icao || "—"})`
-      : "Base: Unassigned Base";
-    sub.innerHTML = `${flag} ${country} — ${baseText}`;
-  }
-});
+      // --- País y Base (sin ‘Passenger’) ---
+      const sub = document.getElementById("airlineSub");
+      if (sub) {
+        const flag = getFlagEmoji(airline.country || base.country || "World");
+        const country = airline.country || base.country || "Unknown";
+        const baseCity = base.city || base.name || "";
+        const baseCode = base.airport || base.icao || base.code || "";
+        const baseText = (baseCity || baseCode) ? `Base: ${baseCity} (${baseCode})` : "Base: Unassigned Base";
+        sub.innerHTML = `${flag} ${country} — ${baseText}`;
+      }
 
-  // --- Construir la línea de país y base (sin mode) ---
-const sub = document.getElementById("airlineSub");
-if (sub) {
-  const flag = getFlagEmoji(base.country || airline.country || "World");
-  const country = base.country || airline.country || "Unknown";
-
-  // detectar nombre y código del aeropuerto base
-  const baseCity = base.city || base.name || "";
-  const baseCode = base.airport || base.icao || base.code || "";
-  const baseText =
-    baseCity || baseCode
-      ? `Base: ${baseCity} (${baseCode})`
-      : "Base: Unassigned Base";
-
-  // mostrar línea completa
-  sub.innerHTML = `${flag} ${country} — ${baseText}`;
-}
-
-console.log("✅ ACS Dashboard loaded:", { user, airline, base });
-
-});
-
+      console.log("✅ ACS Dashboard loaded:", { user, airline, base });
+    });
   </script>
-  
+
+  <!-- (cerrado el bloque anterior) AHORA sí va el externo: -->
   <script src="finance.js?v=1.0.0"></script>
 
 <!-- === Reloj cockpit Airbus (modo simulador) === -->
