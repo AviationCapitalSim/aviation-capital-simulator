@@ -156,13 +156,21 @@
     }
   </script>
 
-  <!-- ✅ CORREGIDO: cierre de script y sincronización global -->
-  <script>
-    // Operaciones financieras (intereses, activos, préstamos, etc.)
-    localStorage.setItem("acs_finance_ops", 0);
-  </script>
+    <!-- ✅ MOTORES GLOBALES SINCRONIZADOS -->
+  <script src="time_engine.js"></script>
+  <script src="finance.js"></script>
 
-  <script src="finance.js?v=1.0.0"></script>
-  <script src="time_engine.js?v=1.2"></script>
+  <script>
+    // 🧭 Inicialización de operaciones financieras
+    localStorage.setItem("acs_finance_ops", 0);
+
+    // 🕐 Sincronizar reloj cockpit Airbus con motor global ACS
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+  </script>
 </body>
 </html>
