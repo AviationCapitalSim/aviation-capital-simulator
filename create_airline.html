@@ -1,3 +1,7 @@
+* =====================================================
+   === AVIATION CAPITAL SIMULATOR - CREATE AIRLINE v1.2 ===
+                  Date: 2025-12-08
+   ===================================================== *
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +10,14 @@
   <title>Create Airline - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
-    /* === CREATE AIRLINE PAGE (ACS Unified Style) === */
     body {
       background-color: #0C1F3C;
       color: white;
       font-family: "Poppins", sans-serif;
       margin: 0;
-      padding-top: 120px; /* ✅ espacio para header fijo */
+      padding-top: 120px;
       text-align: center;
     }
-
     .form-container {
       background: #122850;
       max-width: 600px;
@@ -25,72 +27,31 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.4);
       border: 1px solid #1A335C;
     }
-
-    h2 {
-      color: #FFB300;
-      margin-bottom: 0.5rem;
-    }
-
-    .form-container p {
-      color: #ccc;
-      font-size: 0.95rem;
-      margin-bottom: 2rem;
-    }
-
+    h2 { color: #FFB300; margin-bottom: 0.5rem; }
+    .form-container p { color: #ccc; font-size: 0.95rem; margin-bottom: 2rem; }
     input, select {
-      width: 100%;
-      padding: 0.8rem;
-      margin-bottom: 1rem;
-      border-radius: 10px;
-      border: none;
-      font-size: 1rem;
-      background: #1A335C;
-      color: white;
+      width: 100%; padding: 0.8rem; margin-bottom: 1rem;
+      border-radius: 10px; border: none; font-size: 1rem;
+      background: #1A335C; color: white;
     }
-
-    input:focus, select:focus {
-      outline: 2px solid #FFB300;
-    }
-
+    input:focus, select:focus { outline: 2px solid #FFB300; }
     button {
-      background: #FFB300;
-      color: #0C1F3C;
-      font-weight: 800;
-      font-size: 1rem;
-      border: none;
-      border-radius: 12px;
-      padding: 1rem 2.4rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
+      background: #FFB300; color: #0C1F3C; font-weight: 800;
+      font-size: 1rem; border: none; border-radius: 12px;
+      padding: 1rem 2.4rem; cursor: pointer; transition: all 0.3s ease;
     }
-
-    button:hover {
-      background: #ffcb42;
-      transform: scale(1.05);
-    }
-
-    footer {
-      margin-top: 3rem;
-      color: #bbb;
-      font-size: 0.85rem;
-    }
-
-    /* ✅ Reloj Airbus cockpit */
+    button:hover { background: #ffcb42; transform: scale(1.05); }
+    footer { margin-top: 3rem; color: #bbb; font-size: 0.85rem; }
     .acs-clock-header {
-      font-family: 'Orbitron', 'Consolas', monospace;
-      color: #00ff80;
-      font-weight: bold;
-      background: rgba(0, 255, 128, 0.08);
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
+      font-family: 'Orbitron', 'Consolas', monospace; color: #00ff80;
+      font-weight: bold; background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.9rem;
       margin-left: 1rem;
     }
   </style>
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
@@ -110,15 +71,14 @@
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
-  <!-- ===== FORM MAIN ===== -->
   <section class="form-container">
     <h2>Create Your Airline</h2>
     <p>Enter your airline details below to begin your aviation journey.</p>
 
     <form id="createAirlineForm" onsubmit="return handleAirlineCreation(event)">
-      <input type="text" id="airlineName" placeholder="Airline Name" required oninput="generateCodes(this.value)" />
-      <input type="text" id="icao" placeholder="ICAO Code (3 letters)" maxlength="3" required />
-      <input type="text" id="iata" placeholder="IATA Code (2 letters)" maxlength="2" required />
+      <input type="text" id="airlineName" placeholder="Airline Name" required />
+      <input type="text" id="icao" placeholder="ICAO Code (auto)" maxlength="3" readonly />
+      <input type="text" id="iata" placeholder="IATA Code (auto)" maxlength="2" readonly />
       <input type="text" id="slogan" placeholder="Airline Slogan (optional)" />
 
       <select id="region" required onchange="updateCountries()">
@@ -160,84 +120,119 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <!-- ===== SCRIPT ===== -->
   <script>
     const regions = {
-      "Europe": ["Spain", "France", "Germany", "Italy", "United Kingdom", "Poland"],
-      "Asia": ["Japan", "China", "India", "Singapore", "Kyrgyzstan", "South Korea"],
-      "North America": ["United States", "Canada", "Mexico"],
-      "South America": ["Brazil", "Argentina", "Chile", "Peru"],
-      "Africa": ["South Africa", "Nigeria", "Egypt", "Morocco"],
-      "Oceania": ["Australia", "New Zealand", "Fiji"]
+      "Europe": ["Spain","France","Germany","Italy","United Kingdom","Poland"],
+      "Asia": ["Japan","China","India","Singapore","Kyrgyzstan","South Korea"],
+      "North America": ["United States","Canada","Mexico"],
+      "South America": ["Brazil","Argentina","Chile","Peru"],
+      "Africa": ["South Africa","Nigeria","Egypt","Morocco"],
+      "Oceania": ["Australia","New Zealand","Fiji"]
     };
+
+    const realAirlines = [
+      "American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
+      "Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
+      "Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
+      "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
+    ];
 
     function updateCountries() {
       const region = document.getElementById("region").value;
       const countrySelect = document.getElementById("country");
       countrySelect.innerHTML = '<option value="">Select Country</option>';
       if (region && regions[region]) {
-        regions[region].forEach(country => {
+        regions[region].forEach(c => {
           const opt = document.createElement("option");
-          opt.value = country;
-          opt.textContent = country;
+          opt.value = c; opt.textContent = c;
           countrySelect.appendChild(opt);
         });
       }
     }
 
-    function generateCodes(name) {
-      const clean = name.replace(/[^A-Z]/gi, '').toUpperCase();
-      const icao = clean.slice(0, 3).padEnd(3, 'X');
-      const iata = clean.slice(0, 2).padEnd(2, 'X');
-      document.getElementById("icao").value = icao;
+    function generateUniqueCodes() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const random = n => Array.from({length:n},()=>letters[Math.floor(Math.random()*letters.length)]).join("");
+      let iata, icao;
+      let existing = JSON.parse(localStorage.getItem("ACS_users")||"[]")
+        .map(u => u.airline?.icao || "").concat(u => u.airline?.iata || "");
+      do { iata = random(2); } while (existing.includes(iata));
+      do { icao = random(3); } while (existing.includes(icao));
       document.getElementById("iata").value = iata;
+      document.getElementById("icao").value = icao;
     }
+
+    document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
 
     function handleAirlineCreation(event) {
       event.preventDefault();
 
-      const airline = {
-        name: document.getElementById("airlineName").value.trim(),
-        icao: document.getElementById("icao").value.trim().toUpperCase(),
-        iata: document.getElementById("iata").value.trim().toUpperCase(),
-        slogan: document.getElementById("slogan").value.trim(),
-        region: document.getElementById("region").value,
-        country: document.getElementById("country").value,
-        businessModel: document.getElementById("businessModel").value,
-        operationMode: document.getElementById("operationMode").value
-      };
+      const airlineName = document.getElementById("airlineName").value.trim();
+      const region = document.getElementById("region").value;
+      const country = document.getElementById("country").value;
+      const businessModel = document.getElementById("businessModel").value;
+      const operationMode = document.getElementById("operationMode").value;
+      const slogan = document.getElementById("slogan").value.trim();
+      const icao = document.getElementById("icao").value.trim().toUpperCase();
+      const iata = document.getElementById("iata").value.trim().toUpperCase();
 
-      if (!airline.name || !airline.icao || !airline.iata || !airline.region || !airline.country || !airline.businessModel || !airline.operationMode) {
+      if (!airlineName || !region || !country || !businessModel || !operationMode) {
         alert("⚠️ Please complete all required fields.");
         return false;
       }
 
-      localStorage.setItem("ACS_Airline", JSON.stringify(airline));
-      localStorage.setItem("userAirline", airline.name);
-      localStorage.setItem("userIATA", airline.iata);
+      // 🚫 Bloquear nombres reales exactos
+      if (realAirlines.some(real => real.toLowerCase() === airlineName.toLowerCase())) {
+        alert("⚠️ That airline name exists in the real world. Please choose a fictional name.");
+        return false;
+      }
 
-      alert(`✅ Airline Created Successfully!\nWelcome aboard, Captain!\nYour airline "${airline.name}" is ready for takeoff.`);
+      // ⚙️ Evitar nombres duplicados en ACS
+      const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+      const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
+      if (nameExists) {
+        alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
+        return false;
+      }
+
+      const airline = { name: airlineName, icao, iata, slogan, region, country, businessModel, operationMode };
+
+      // 🔒 Usuario activo
+      let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+      if (!user) {
+        alert("⚠️ Session not found. Please log in again.");
+        window.location.href = "login.html";
+        return false;
+      }
+
+      // 🧩 Guardar aerolínea
+      user.airline = airline;
+      localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+
+      // 🧠 Actualizar lista global
+      const index = allUsers.findIndex(u => u.email === user.email);
+      if (index !== -1) allUsers[index] = user;
+      localStorage.setItem("ACS_users", JSON.stringify(allUsers));
+
+      localStorage.setItem("ACS_Airline", JSON.stringify(airline));
+      alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.name}.`);
       window.location.href = "dashboard.html";
       return false;
     }
 
-    // 🔒 Check login session
     document.addEventListener("DOMContentLoaded", () => {
-      const user = localStorage.getItem("ACS_User");
+      const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
       if (!user) {
         alert("⚠️ Please log in to access this page.");
         window.location.href = "login.html";
       }
     });
 
-    // 🚪 Logout
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
   </script>
-
-  <!-- ✅ Motor de tiempo global -->
   <script src="time_engine.js?v=1.2"></script>
 </body>
 </html>
