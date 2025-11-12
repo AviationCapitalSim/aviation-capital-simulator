@@ -1,6 +1,6 @@
 /* ============================================================
    === AVIATION CAPITAL SIMULATOR - HISTORICAL TIME ENGINE ===
-   Version: 3.2 (Final Admin-Synced Global Engine)
+   Version: 3.3 (Unified Sync Edition)
    Date: 2025-11-12
    Author: Aviation Capital Systems
    ------------------------------------------------------------
@@ -8,7 +8,7 @@
    ▪ Global synchronized simulation (1940 → 2026)
    ▪ Controlled via admin-only Simulation Toggle (ON/OFF)
    ▪ Automatically resets at cycle end, preserving users
-   ▪ Dynamic update in Settings (no reload required)
+   ▪ Dynamic update across all open modules
    ============================================================ */
 
 const ACS_TIME = {
@@ -145,7 +145,7 @@ function updateClockDisplay() {
   const month = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
   const yy = t.getUTCFullYear();
 
-  // Solo hora y fecha (sin estado)
+  // Solo hora y fecha (sin estado ON/OFF)
   el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy}`;
   el.style.color = "#00ff80"; // verde cockpit fijo
 }
@@ -218,4 +218,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   economicWatcher();
+});
+
+/* === 🔄 Sync global de estado ON/OFF entre páginas (dashboard, finance, setting, etc.) === */
+window.addEventListener("storage", (e) => {
+  if (e.key === "ACS_Cycle") {
+    try {
+      const updated = JSON.parse(e.newValue || "{}");
+      if (!updated || !updated.status) return;
+
+      // Actualiza el estado y arranca/detiene el reloj
+      ACS_CYCLE = updated;
+      if (ACS_CYCLE.status === "ON") startACSTime();
+      else stopACSTime();
+
+      updateClockDisplay();
+    } catch (err) {
+      console.warn("ACS_Cycle storage event parse error:", err);
+    }
+  }
+
+  // Si otra pestaña reseteó el tiempo, refresca el reloj
+  if (e.key === "acs_current_time" && e.newValue) {
+    ACS_TIME.currentTime = new Date(e.newValue);
+    updateClockDisplay();
+  }
 });
