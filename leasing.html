@@ -436,20 +436,15 @@ Monthly: $${monthly.toFixed(2)} M for ${years} years.`);
       window.location.href = "login.html";
     }
 
-    // === Reloj cockpit Airbus (modo simulador) ===
-    window.addEventListener("load", () => {
-      const c = document.getElementById("acs-clock");
-      if (!c) return;
-      let simTime = new Date();
-      function refreshClock() {
-        simTime.setMinutes(simTime.getMinutes() + 1);
-        const hh = String(simTime.getHours()).padStart(2, "0");
-        const mm = String(simTime.getMinutes()).padStart(2, "0");
-        const date = simTime.toDateString().toUpperCase();
-        c.textContent = `${hh}:${mm} — ${date}`;
+      <!-- ✅ Sincronización global ACS -->
+  <script src="time_engine.js"></script>
+  <script>
+    // 🕐 Reloj cockpit Airbus sincronizado con el motor global de tiempo
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
       }
-      refreshClock();
-      setInterval(refreshClock, 1000);
     });
   </script>
 </body>
