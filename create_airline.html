@@ -224,6 +224,22 @@
       window.location.href = "login.html";
     }
   </script>
-  <script src="time_engine.js?v=1.2"></script>
+    </script>
+
+  <!-- === MOTOR GLOBAL DE TIEMPO ACS === -->
+  <script src="time_engine.js"></script>
+
+  <script>
+    // Sincronizar reloj del encabezado con el motor de tiempo global
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+  </script>
+</body>
+</html>
+
 </body>
 </html>
