@@ -68,9 +68,11 @@
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    </nav>
-  </header>
+          <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+  </nav>
+
+  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+</header>
 
   <main class="acs-main">
     <h2>🧭 Route Schedule Setup</h2>
@@ -393,6 +395,16 @@
       alert(`✅ Route confirmed and saved!\n${flightNumberOut || ""} ${flightNumberIn ? "/ " + flightNumberIn : ""}`);
       window.location.href = "routes.html";
     }
+      <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
+  <script src="time_engine.js"></script>
+  <script>
+    // 🕐 Reloj cockpit Airbus sincronizado con el motor global ACS
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
   </script>
 </body>
 </html>
