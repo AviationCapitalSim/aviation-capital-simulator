@@ -406,11 +406,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const flag = getFlagEmoji(base.country || airline.country || "World");
     const mode = airline.operationMode || "Operations";
     const country = base.country || airline.country || "Unknown";
-    const baseName = base.city
-      ? `${base.city} (${base.airport})`
-      : base.airport
-      ? `${base.airport}`
-      : "Unassigned Base";
+    const baseName = base.city || base.name
+  ? `${base.city || base.name} (${base.airport || base.icao || base.code || "—"})`
+  : base.airport || base.icao || "Unassigned Base";
+
 
     sub.innerHTML = `${flag} ${country} — ${mode} | Base: ${baseName}`;
   }
