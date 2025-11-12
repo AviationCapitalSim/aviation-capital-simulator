@@ -247,9 +247,7 @@ window.addEventListener("load", () => {
 <script src="time_engine.js?v=3.2"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // Suscribir este módulo al reloj global
     registerTimeListener(updateClockDisplay);
-    // Pintar inmediatamente según el estado/tiempo actual
     updateClockDisplay();
   });
 </script>
