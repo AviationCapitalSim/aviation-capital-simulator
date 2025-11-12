@@ -1,6 +1,6 @@
 /* ============================================================
    === AVIATION CAPITAL SIMULATOR - HISTORICAL TIME ENGINE ===
-   Version: 3.3 (Unified Sync Edition)
+   Version: 3.4 (Global Sync Final)
    Date: 2025-11-12
    Author: Aviation Capital Systems
    ------------------------------------------------------------
@@ -8,7 +8,7 @@
    ▪ Global synchronized simulation (1940 → 2026)
    ▪ Controlled via admin-only Simulation Toggle (ON/OFF)
    ▪ Automatically resets at cycle end, preserving users
-   ▪ Dynamic update across all open modules
+   ▪ Fully synchronized clocks across all open modules
    ============================================================ */
 
 const ACS_TIME = {
@@ -23,8 +23,8 @@ const ACS_TIME = {
 let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle")) || {
   startYear: 1940,
   endYear: 2026,
-  realStartDate: null, // fecha real en que se activó ON
-  status: "OFF",       // ON / OFF / COMPLETED
+  realStartDate: null,
+  status: "OFF", // ON / OFF / COMPLETED
 };
 
 /* === 🕹 Start accelerated simulation (admin-controlled) === */
@@ -32,16 +32,11 @@ function startACSTime() {
   stopACSTime(); // evita duplicados
 
   if (ACS_TIME.tickInterval) {
-    console.log("⚠️ Simulation already running. Skipping duplicate start.");
+    console.log("⚠️ Simulation already running.");
     return;
   }
 
-  if (ACS_CYCLE.status !== "ON") {
-    console.log("🕓 Simulation paused — system in OFF state.");
-    updateClockDisplay();
-    return;
-  }
-
+  // Si no tiene fecha de inicio, crearla
   if (!ACS_CYCLE.realStartDate) {
     ACS_CYCLE.realStartDate = new Date().toISOString();
     localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
@@ -67,7 +62,7 @@ function startACSTime() {
   }, 1000);
 }
 
-/* === ⏸ Stop or pause simulation === */
+/* === ⏸ Stop simulation === */
 function stopACSTime() {
   if (ACS_TIME.tickInterval) clearInterval(ACS_TIME.tickInterval);
   ACS_TIME.tickInterval = null;
@@ -93,14 +88,13 @@ function toggleSimState() {
   }
 
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
-
-  // 🔁 Actualizar panel dinámicamente sin recargar
   const simStatus = document.getElementById("simStatus");
   if (simStatus) simStatus.textContent = ACS_CYCLE.status.toUpperCase();
+
   updateClockDisplay();
 }
 
-/* === 🏁 End of cycle (automatic trigger) === */
+/* === 🏁 End of cycle === */
 function endWorldCycle() {
   stopACSTime();
   ACS_CYCLE.status = "COMPLETED";
@@ -113,11 +107,10 @@ function endWorldCycle() {
 
 /* === ♻️ Reset data but preserve users === */
 function resetSimulationData() {
-  const users = localStorage.getItem("ACS_users"); // preserva jugadores
+  const users = localStorage.getItem("ACS_users");
   localStorage.clear();
   if (users) localStorage.setItem("ACS_users", users);
 
-  // restablece el ciclo base
   ACS_CYCLE = {
     startYear: 1940,
     endYear: 2026,
@@ -125,6 +118,7 @@ function resetSimulationData() {
     status: "OFF",
   };
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+
   ACS_TIME.currentTime = new Date("1940-01-01T00:00:00Z");
   localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
 
@@ -133,7 +127,7 @@ function resetSimulationData() {
   alert("♻️ ACS world has been reset to 1940. Simulation is now OFF.");
 }
 
-/* === 📺 Update cockpit clock (clean public version) === */
+/* === 📺 Update cockpit clock === */
 function updateClockDisplay() {
   const el = document.getElementById("acs-clock");
   if (!el) return;
@@ -145,12 +139,12 @@ function updateClockDisplay() {
   const month = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
   const yy = t.getUTCFullYear();
 
-  // Solo hora y fecha (sin estado ON/OFF)
-  el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy}`;
-  el.style.color = "#00ff80"; // verde cockpit fijo
+  const status = ACS_CYCLE.status === "ON" ? "🟢 ON" : "⏸ OFF";
+  el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy} | ${status}`;
+  el.style.color = "#00ff80";
 }
 
-/* === 📡 Notify connected modules (Finance, HR, etc.) === */
+/* === 📡 Notify connected modules === */
 function notifyTimeListeners() {
   for (const cb of ACS_TIME.listeners) cb(ACS_TIME.currentTime);
 }
@@ -203,12 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ? new Date(savedTime)
     : new Date("1940-01-01T00:00:00Z");
 
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  if (ACS_CYCLE.status === "ON" && user.email !== "aviationcapitalsim@gmail.com") {
-    ACS_CYCLE.status = "OFF";
-    localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
-    console.warn("⛔ Unauthorized simulation state detected. Reset to OFF.");
-  }
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+  ACS_CYCLE = cycle.status ? cycle : ACS_CYCLE;
 
   if (ACS_CYCLE.status === "ON") {
     startACSTime();
@@ -220,25 +210,19 @@ document.addEventListener("DOMContentLoaded", () => {
   economicWatcher();
 });
 
-/* === 🔄 Sync global de estado ON/OFF entre páginas (dashboard, finance, setting, etc.) === */
+/* === 🔄 Cross-tab synchronization (Dashboard, Finance, Settings, etc.) === */
 window.addEventListener("storage", (e) => {
   if (e.key === "ACS_Cycle") {
-    try {
-      const updated = JSON.parse(e.newValue || "{}");
-      if (!updated || !updated.status) return;
+    const updated = JSON.parse(e.newValue || "{}");
+    if (!updated || !updated.status) return;
 
-      // Actualiza el estado y arranca/detiene el reloj
-      ACS_CYCLE = updated;
-      if (ACS_CYCLE.status === "ON") startACSTime();
-      else stopACSTime();
+    ACS_CYCLE = updated;
+    if (ACS_CYCLE.status === "ON") startACSTime();
+    else stopACSTime();
 
-      updateClockDisplay();
-    } catch (err) {
-      console.warn("ACS_Cycle storage event parse error:", err);
-    }
+    updateClockDisplay();
   }
 
-  // Si otra pestaña reseteó el tiempo, refresca el reloj
   if (e.key === "acs_current_time" && e.newValue) {
     ACS_TIME.currentTime = new Date(e.newValue);
     updateClockDisplay();
