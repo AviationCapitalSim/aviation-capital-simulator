@@ -277,7 +277,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-  <!-- ✅ Reloj cockpit Airbus sincronizado -->
-  <script src="time_engine.js?v=1.2"></script>
+   <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
+  <script src="time_engine.js"></script>
+  <script>
+    // 🕐 Reloj cockpit Airbus sincronizado con el motor global ACS
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+  </script>
 </body>
 </html>
