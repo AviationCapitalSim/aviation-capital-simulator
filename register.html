@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+/* =====================================================
+   === AVIATION CAPITAL SIMULATOR - REGISTER v1.2 ===
+                Date: 2025-12-08
+   ===================================================== *
+   <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -29,11 +33,115 @@
     <p>Join the Aviation Capital Simulator and start building your airline today.</p>
 
     <form class="register-form" onsubmit="return handleRegister(event)">
-      <input type="text" placeholder="Full Name" required />
-      <input type="email" placeholder="Email Address" required />
-      <input type="password" placeholder="Password" required />
-      <input type="password" placeholder="Confirm Password" required />
-      <input type="text" placeholder="Country" required />
+      <input type="text" id="fullName" placeholder="Full Name" required />
+      <input type="email" id="email" placeholder="Email Address" required />
+
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password" required />
+        <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+      </div>
+
+      <div class="password-wrapper">
+        <input type="password" id="confirm" placeholder="Confirm Password" required />
+        <span class="toggle-password" onclick="togglePassword('confirm', this)">👁️</span>
+      </div>
+
+      <select id="country" required>
+        <option value="">🌍 Select your country</option>
+        <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
+        <option value="Spain">🇪🇸 Spain</option>
+        <option value="United States">🇺🇸 United States</option>
+        <option value="Russia">🇷🇺 Russia</option>
+        <option value="France">🇫🇷 France</option>
+        <option value="China">🇨🇳 China</option>
+        <option value="Brazil">🇧🇷 Brazil</option>
+        <option value="India">🇮🇳 India</option>
+        <option disabled>──────────────</option>
+        <option value="Afghanistan">🇦🇫 Afghanistan</option>
+        <option value="Albania">🇦🇱 Albania</option>
+        <option value="Algeria">🇩🇿 Algeria</option>
+        <option value="Argentina">🇦🇷 Argentina</option>
+        <option value="Armenia">🇦🇲 Armenia</option>
+        <option value="Australia">🇦🇺 Australia</option>
+        <option value="Austria">🇦🇹 Austria</option>
+        <option value="Azerbaijan">🇦🇿 Azerbaijan</option>
+        <option value="Bangladesh">🇧🇩 Bangladesh</option>
+        <option value="Belgium">🇧🇪 Belgium</option>
+        <option value="Bolivia">🇧🇴 Bolivia</option>
+        <option value="Bosnia and Herzegovina">🇧🇦 Bosnia & Herzegovina</option>
+        <option value="Bulgaria">🇧🇬 Bulgaria</option>
+        <option value="Canada">🇨🇦 Canada</option>
+        <option value="Chile">🇨🇱 Chile</option>
+        <option value="Colombia">🇨🇴 Colombia</option>
+        <option value="Costa Rica">🇨🇷 Costa Rica</option>
+        <option value="Croatia">🇭🇷 Croatia</option>
+        <option value="Czech Republic">🇨🇿 Czech Republic</option>
+        <option value="Denmark">🇩🇰 Denmark</option>
+        <option value="Dominican Republic">🇩🇴 Dominican Republic</option>
+        <option value="Ecuador">🇪🇨 Ecuador</option>
+        <option value="Egypt">🇪🇬 Egypt</option>
+        <option value="El Salvador">🇸🇻 El Salvador</option>
+        <option value="Estonia">🇪🇪 Estonia</option>
+        <option value="Finland">🇫🇮 Finland</option>
+        <option value="Germany">🇩🇪 Germany</option>
+        <option value="Greece">🇬🇷 Greece</option>
+        <option value="Guatemala">🇬🇹 Guatemala</option>
+        <option value="Honduras">🇭🇳 Honduras</option>
+        <option value="Hungary">🇭🇺 Hungary</option>
+        <option value="Iceland">🇮🇸 Iceland</option>
+        <option value="Indonesia">🇮🇩 Indonesia</option>
+        <option value="Iran">🇮🇷 Iran</option>
+        <option value="Iraq">🇮🇶 Iraq</option>
+        <option value="Ireland">🇮🇪 Ireland</option>
+        <option value="Israel">🇮🇱 Israel</option>
+        <option value="Italy">🇮🇹 Italy</option>
+        <option value="Japan">🇯🇵 Japan</option>
+        <option value="Jordan">🇯🇴 Jordan</option>
+        <option value="Kazakhstan">🇰🇿 Kazakhstan</option>
+        <option value="Kenya">🇰🇪 Kenya</option>
+        <option value="Kuwait">🇰🇼 Kuwait</option>
+        <option value="Latvia">🇱🇻 Latvia</option>
+        <option value="Lebanon">🇱🇧 Lebanon</option>
+        <option value="Lithuania">🇱🇹 Lithuania</option>
+        <option value="Luxembourg">🇱🇺 Luxembourg</option>
+        <option value="Malaysia">🇲🇾 Malaysia</option>
+        <option value="Mexico">🇲🇽 Mexico</option>
+        <option value="Moldova">🇲🇩 Moldova</option>
+        <option value="Mongolia">🇲🇳 Mongolia</option>
+        <option value="Morocco">🇲🇦 Morocco</option>
+        <option value="Nepal">🇳🇵 Nepal</option>
+        <option value="Netherlands">🇳🇱 Netherlands</option>
+        <option value="New Zealand">🇳🇿 New Zealand</option>
+        <option value="Nigeria">🇳🇬 Nigeria</option>
+        <option value="Norway">🇳🇴 Norway</option>
+        <option value="Pakistan">🇵🇰 Pakistan</option>
+        <option value="Paraguay">🇵🇾 Paraguay</option>
+        <option value="Peru">🇵🇪 Peru</option>
+        <option value="Philippines">🇵🇭 Philippines</option>
+        <option value="Poland">🇵🇱 Poland</option>
+        <option value="Portugal">🇵🇹 Portugal</option>
+        <option value="Qatar">🇶🇦 Qatar</option>
+        <option value="Romania">🇷🇴 Romania</option>
+        <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+        <option value="Serbia">🇷🇸 Serbia</option>
+        <option value="Singapore">🇸🇬 Singapore</option>
+        <option value="Slovakia">🇸🇰 Slovakia</option>
+        <option value="Slovenia">🇸🇮 Slovenia</option>
+        <option value="South Africa">🇿🇦 South Africa</option>
+        <option value="South Korea">🇰🇷 South Korea</option>
+        <option value="Sweden">🇸🇪 Sweden</option>
+        <option value="Switzerland">🇨🇭 Switzerland</option>
+        <option value="Thailand">🇹🇭 Thailand</option>
+        <option value="Tunisia">🇹🇳 Tunisia</option>
+        <option value="Turkey">🇹🇷 Turkey</option>
+        <option value="Ukraine">🇺🇦 Ukraine</option>
+        <option value="United Arab Emirates">🇦🇪 United Arab Emirates</option>
+        <option value="United Kingdom">🇬🇧 United Kingdom</option>
+        <option value="Uruguay">🇺🇾 Uruguay</option>
+        <option value="Uzbekistan">🇺🇿 Uzbekistan</option>
+        <option value="Venezuela">🇻🇪 Venezuela</option>
+        <option value="Vietnam">🇻🇳 Vietnam</option>
+      </select>
 
       <button type="submit">Register Now</button>
     </form>
@@ -46,48 +154,61 @@
   </footer>
 
 <script>
-  function handleRegister(event) {
-    event.preventDefault();
+function togglePassword(id, element) {
+  const input = document.getElementById(id);
+  if (input.type === "password") {
+    input.type = "text";
+    element.textContent = "🙈";
+  } else {
+    input.type = "password";
+    element.textContent = "👁️";
+  }
+}
 
-    const fullName = document.querySelector("input[placeholder='Full Name']").value.trim();
-    const email = document.querySelector("input[type='email']").value.trim();
-    const password = document.querySelectorAll("input[type='password']")[0].value;
-    const confirm = document.querySelectorAll("input[type='password']")[1].value;
-    const country = document.querySelector("input[placeholder='Country']").value.trim();
+function handleRegister(event) {
+  event.preventDefault();
 
-    if (!fullName || !email || !password || !confirm || !country) {
-      alert("⚠️ Please complete all fields before continuing.");
-      return false;
-    }
+  const fullName = document.getElementById("fullName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const confirm = document.getElementById("confirm").value;
+  const country = document.getElementById("country").value;
 
-    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
-    if (!email.match(emailPattern)) {
-      alert("⚠️ Please enter a valid email address.");
-      return false;
-    }
-
-    const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!regex.test(password)) {
-      alert("⚠️ Password must be at least 8 characters long and include one uppercase letter and one number.");
-      return false;
-    }
-
-    if (password !== confirm) {
-      alert("⚠️ Passwords do not match. Please verify.");
-      return false;
-    }
-
-    // Save user info for Dashboard
-    localStorage.setItem("ACS_User", JSON.stringify({
-      name: fullName,
-      email: email,
-      country: country
-    }));
-
-    alert("✅ Welcome aboard, Captain! Your ACS account has been created successfully.");
-    window.location.href = "login.html";
+  if (!fullName || !email || !password || !confirm || !country) {
+    alert("⚠️ Please complete all fields.");
     return false;
   }
+
+  const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!regex.test(password)) {
+    alert("⚠️ Password must include at least 8 characters, one uppercase letter, and one number.");
+    return false;
+  }
+
+  if (password !== confirm) {
+    alert("⚠️ Passwords do not match.");
+    return false;
+  }
+
+  const user = {
+    id: crypto.randomUUID(),
+    name: fullName,
+    email,
+    password,
+    country,
+    createdAt: new Date().toISOString(),
+    airline: null
+  };
+
+  const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+  users.push(user);
+  localStorage.setItem("ACS_users", JSON.stringify(users));
+  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+
+  alert(`✅ Welcome aboard, Captain ${fullName}! Let's create your airline.`);
+  window.location.href = "create_airlines.html";
+  return false;
+}
 </script>
 </body>
 </html>
