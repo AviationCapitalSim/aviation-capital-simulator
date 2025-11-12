@@ -133,7 +133,7 @@ function resetSimulationData() {
   alert("♻️ ACS world has been reset to 1940. Simulation is now OFF.");
 }
 
-/* === 📺 Update cockpit clock on header (with state indicator) === */
+/* === 📺 Update cockpit clock (clean public version) === */
 function updateClockDisplay() {
   const el = document.getElementById("acs-clock");
   if (!el) return;
@@ -145,10 +145,9 @@ function updateClockDisplay() {
   const month = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
   const yy = t.getUTCFullYear();
 
-  const state = ACS_CYCLE.status === "ON" ? "🟢 ON" : "⏸️ OFF";
-  el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy} | ${state}`;
-
-  el.style.color = ACS_CYCLE.status === "ON" ? "#00ff80" : "#ff9b00";
+  // Solo hora y fecha (sin estado)
+  el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy}`;
+  el.style.color = "#00ff80"; // verde cockpit fijo
 }
 
 /* === 📡 Notify connected modules (Finance, HR, etc.) === */
