@@ -1,49 +1,118 @@
 /* ============================================================
    === AVIATION CAPITAL SIMULATOR - HISTORICAL TIME ENGINE ===
-   Version: 2.0 (Beta)
-   Date: 2025-11-10
+   Version: 3.0 (Cycle Control Edition)
+   Date: 2025-11-12
    Author: Aviation Capital Systems
    ------------------------------------------------------------
    ▪ 1 real second = 1 in-game minute
-   ▪ Simulation runs from 1 JAN 1940 → 31 DEC 2028
-   ▪ Includes dynamic economic variables (Ticket Fees, Fuel)
-   ▪ Fully compatible with registerTimeListener()
+   ▪ Global synchronized simulation (1940 → 2026)
+   ▪ Controlled via admin-only Simulation Toggle (ON/OFF)
+   ▪ Automatically resets at cycle end, preserving users
    ============================================================ */
 
 const ACS_TIME = {
   startYear: 1940,
-  endYear: 2028,
+  endYear: 2026,
   currentTime: new Date("1940-01-01T00:00:00Z"),
   tickInterval: null,
   listeners: [],
 };
 
-/* === 🕒 Start accelerated simulation clock === */
+/* === 🧭 Load or initialize cycle configuration === */
+let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle")) || {
+  startYear: 1940,
+  endYear: 2026,
+  realStartDate: null, // fecha real en que se activó ON
+  status: "OFF",       // ON / OFF / COMPLETED
+};
+
+/* === 🕹 Start accelerated simulation (admin-controlled) === */
 function startACSTime() {
-  stopACSTime(); // prevent duplicates
+  stopACSTime(); // evita duplicados
+
+  // Solo avanza si el estado global está en ON
+  if (ACS_CYCLE.status !== "ON") {
+    console.log("🕓 Simulation paused — system in OFF state.");
+    updateClockDisplay();
+    return;
+  }
+
+  // Si es la primera vez que se inicia, guardar fecha real de inicio
+  if (!ACS_CYCLE.realStartDate) {
+    ACS_CYCLE.realStartDate = new Date().toISOString();
+    localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+  }
+
   ACS_TIME.tickInterval = setInterval(() => {
-    // +1 simulated minute per real second
+    // +1 minuto simulado por segundo real
     ACS_TIME.currentTime = new Date(ACS_TIME.currentTime.getTime() + 60000);
     localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
+
     updateClockDisplay();
     notifyTimeListeners();
 
-    // Stop automatically when simulation reaches 2028
+    // Verificar año de fin de ciclo
     if (ACS_TIME.currentTime.getUTCFullYear() >= ACS_TIME.endYear) {
-      stopACSTime();
-      alert("🕛 Simulation complete — Year 2028 reached!");
-      window.location.href = "ranking.html";
+      endWorldCycle();
     }
   }, 1000);
 }
 
-/* === ⏸ Stop or pause clock === */
+/* === ⏸ Stop or pause simulation === */
 function stopACSTime() {
   if (ACS_TIME.tickInterval) clearInterval(ACS_TIME.tickInterval);
   ACS_TIME.tickInterval = null;
 }
 
-/* === 📺 Update cockpit clock on header === */
+/* === 🧭 Toggle simulation ON/OFF (Admin only) === */
+function toggleSimState() {
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  if (!user || user.email !== "aviationcapitalsim@gmail.com") {
+    alert("⛔ Only admin can toggle the simulation state.");
+    return;
+  }
+
+  ACS_CYCLE.status = ACS_CYCLE.status === "ON" ? "OFF" : "ON";
+  if (ACS_CYCLE.status === "ON") {
+    ACS_CYCLE.realStartDate = new Date().toISOString();
+    alert("✅ Simulation started — The world of aviation begins in 1940!");
+  } else {
+    alert("⏸️ Simulation paused — All time progression stopped.");
+  }
+  localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+  window.location.reload();
+}
+
+/* === 🏁 End of cycle (automatic trigger) === */
+function endWorldCycle() {
+  stopACSTime();
+  ACS_CYCLE.status = "COMPLETED";
+  localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+
+  alert("🕛 Simulation complete — Year 2026 reached. The cycle has ended.");
+  resetSimulationData();
+  window.location.href = "ranking.html";
+}
+
+/* === ♻️ Reset data but preserve users === */
+function resetSimulationData() {
+  const users = localStorage.getItem("ACS_users"); // preserva jugadores
+  localStorage.clear();
+  if (users) localStorage.setItem("ACS_users", users);
+
+  // restablece el ciclo base
+  ACS_CYCLE = {
+    startYear: 1940,
+    endYear: 2026,
+    realStartDate: null,
+    status: "OFF",
+  };
+  localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+  ACS_TIME.currentTime = new Date("1940-01-01T00:00:00Z");
+  localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
+}
+
+/* === 📺 Update cockpit clock on header (with state indicator) === */
 function updateClockDisplay() {
   const el = document.getElementById("acs-clock");
   if (!el) return;
@@ -53,7 +122,9 @@ function updateClockDisplay() {
   const dd = String(t.getUTCDate()).padStart(2, "0");
   const month = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
   const yy = t.getUTCFullYear();
-  el.textContent = `${hh}:${mm}  —  ${dd} ${month} ${yy}`;
+
+  const state = ACS_CYCLE.status === "ON" ? "🟢 ON" : "⏸️ OFF";
+  el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy} | ${state}`;
 }
 
 /* === 📡 Notify connected modules (Finance, HR, etc.) === */
@@ -61,23 +132,22 @@ function notifyTimeListeners() {
   for (const cb of ACS_TIME.listeners) cb(ACS_TIME.currentTime);
 }
 
-/* === 🧭 Allow external modules to receive updates === */
+/* === 🧩 Register external listeners === */
 function registerTimeListener(callback) {
   if (typeof callback === "function") ACS_TIME.listeners.push(callback);
 }
 
 /* === ⚙️ Dynamic Economic Adjustments by Year === */
 function updateEconomicVariables(year) {
-  let ticketFee = 0.06; // default 6%
-  let fuelUSD = 3.2;    // avg per gallon
+  let ticketFee = 0.06;
+  let fuelUSD = 3.2;
 
-  if (year < 1960) { ticketFee = 0.12; fuelUSD = 1.1; }       // Early post-war aviation
-  else if (year < 1980) { ticketFee = 0.09; fuelUSD = 1.9; }  // Jet age expansion
-  else if (year < 2000) { ticketFee = 0.07; fuelUSD = 2.5; }  // Liberalization era
-  else if (year < 2020) { ticketFee = 0.05; fuelUSD = 4.3; }  // Modern digital period
-  else { ticketFee = 0.04; fuelUSD = 5.8; }                    // 2020s and beyond
+  if (year < 1960) { ticketFee = 0.12; fuelUSD = 1.1; }
+  else if (year < 1980) { ticketFee = 0.09; fuelUSD = 1.9; }
+  else if (year < 2000) { ticketFee = 0.07; fuelUSD = 2.5; }
+  else if (year < 2020) { ticketFee = 0.05; fuelUSD = 4.3; }
+  else { ticketFee = 0.04; fuelUSD = 5.8; }
 
-  // Apply globally (when WorldAirportsACS is loaded)
   if (typeof WorldAirportsACS !== "undefined") {
     for (const cont in WorldAirportsACS) {
       WorldAirportsACS[cont].forEach(a => {
@@ -87,12 +157,11 @@ function updateEconomicVariables(year) {
     }
   }
 
-  // Save reference for Finance calculations
   localStorage.setItem("acs_ticket_fee", ticketFee);
   localStorage.setItem("acs_fuel_price", fuelUSD);
 }
 
-/* === 🪙 Sync economics every simulated hour === */
+/* === 🪙 Economic watcher (every simulated hour) === */
 function economicWatcher() {
   let lastHour = null;
   registerTimeListener((time) => {
@@ -104,15 +173,20 @@ function economicWatcher() {
   });
 }
 
-/* === 🧩 Initialization === */
+/* === 🚀 Initialization === */
 document.addEventListener("DOMContentLoaded", () => {
   const savedTime = localStorage.getItem("acs_current_time");
   ACS_TIME.currentTime = savedTime
     ? new Date(savedTime)
     : new Date("1940-01-01T00:00:00Z");
 
-  startACSTime();
-  updateClockDisplay();
+  // Verificar estado global antes de iniciar
+  if (ACS_CYCLE.status === "ON") {
+    startACSTime();
+  } else {
+    stopACSTime();
+    updateClockDisplay();
+  }
+
   economicWatcher();
 });
-
