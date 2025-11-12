@@ -415,14 +415,15 @@
     });
   </script>
 
-  <!-- (cerrado el bloque anterior) AHORA sí va el externo: -->
-  <script src="finance.js?v=1.0.0"></script>
+  <!-- === MOTORES Y SCRIPTS SINCRONIZADOS === -->
+<script src="time_engine.js"></script>
+<script src="finance.js"></script>
 
 <script>
-  // Limpia claves legacy para evitar lecturas viejas
-  localStorage.removeItem("ACS_CurrentTime"); // (antiguo de acs_time.js)
+  // 🧭 Limpieza de claves antiguas
+  localStorage.removeItem("ACS_CurrentTime");
 
-  // Pinta el reloj de cabina usando SOLO el tiempo global
+  // 🕐 Reloj cockpit sincronizado con motor global
   function cockpitClockListener(t) {
     const el = document.getElementById("acs-clock");
     if (!el) return;
@@ -433,7 +434,6 @@
     const mon = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
     const yy = t.getUTCFullYear();
 
-    // Lee estado ON/OFF del ciclo
     let status = "⏸️ OFF";
     try {
       const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
@@ -445,17 +445,21 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Pintado inmediato con la hora actual del motor
-    cockpitClockListener(ACS_TIME.currentTime);
+    // Si el motor existe, usarlo directamente
+    if (typeof ACS_TIME !== "undefined") {
+      cockpitClockListener(ACS_TIME.currentTime);
+    }
 
-    // Suscripción a los ticks del motor global
+    // Vincular al motor global
     if (typeof registerTimeListener === "function") {
       registerTimeListener(cockpitClockListener);
     }
 
-    // Reforzar repintado al volver al tab
+    // Refrescar al volver de segundo plano
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) cockpitClockListener(ACS_TIME.currentTime);
+      if (!document.hidden && typeof ACS_TIME !== "undefined") {
+        cockpitClockListener(ACS_TIME.currentTime);
+      }
     });
   });
 </script>
