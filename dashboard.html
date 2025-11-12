@@ -400,21 +400,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- Construir la línea de país, modo y base ---
-  const sub = document.getElementById("airlineSub");
-  if (sub) {
-    const flag = getFlagEmoji(base.country || airline.country || "World");
-    const mode = airline.operationMode || "Operations";
-    const country = base.country || airline.country || "Unknown";
-    const baseName = base.city || base.name
-  ? `${base.city || base.name} (${base.airport || base.icao || base.code || "—"})`
-  : base.airport || base.icao || "Unassigned Base";
+  // --- Construir la línea de país y base (sin mode) ---
+const sub = document.getElementById("airlineSub");
+if (sub) {
+  const flag = getFlagEmoji(base.country || airline.country || "World");
+  const country = base.country || airline.country || "Unknown";
 
+  // detectar nombre y código del aeropuerto base
+  const baseCity = base.city || base.name || "";
+  const baseCode = base.airport || base.icao || base.code || "";
+  const baseText =
+    baseCity || baseCode
+      ? `Base: ${baseCity} (${baseCode})`
+      : "Base: Unassigned Base";
 
-    sub.innerHTML = `${flag} ${country} — ${mode} | Base: ${baseName}`;
-  }
+  // mostrar línea completa
+  sub.innerHTML = `${flag} ${country} — ${baseText}`;
+}
 
-  console.log("✅ ACS Dashboard loaded:", { user, airline, base });
+console.log("✅ ACS Dashboard loaded:", { user, airline, base });
+
 });
 
   </script>
