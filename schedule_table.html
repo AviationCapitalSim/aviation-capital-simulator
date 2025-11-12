@@ -416,7 +416,7 @@
       setItems(items);
       closeMaintModal();
       renderSchedule();
-    }  <!-- ✅ cierre correcto -->
+  }  // ✅ cierre correcto
 
     let selectedChip=null;
     function openActionModal(chip){
@@ -510,22 +510,15 @@
     window.addEventListener("load", renderSchedule);
   </script>
 
-  <!-- === Reloj cockpit Airbus === -->
+    <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
+  <script src="time_engine.js"></script>
   <script>
-  window.addEventListener("load", () => {
-    const c = document.getElementById("acs-clock");
-    if (!c) return;
-    let simTime = new Date();
-    function refreshClock() {
-      simTime.setMinutes(simTime.getMinutes() + 1);
-      const hh = String(simTime.getHours()).padStart(2, "0");
-      const mm = String(simTime.getMinutes()).padStart(2, "0");
-      const date = simTime.toDateString().toUpperCase();
-      c.textContent = `${hh}:${mm} — ${date}`;
-    }
-    refreshClock();
-    setInterval(refreshClock, 1000);
-  });
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
   </script>
 </body>
 </html>
