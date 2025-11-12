@@ -382,31 +382,42 @@
       window.location.href = "login.html";
     }
 
-    // 🏢 Load airline and base info
+    // 🏢 Load airline and base info (ACS Unified)
 document.addEventListener("DOMContentLoaded", () => {
-  const airlineName = localStorage.getItem("userAirline");
-  const iataCode = localStorage.getItem("userIATA");
-  const baseData = JSON.parse(localStorage.getItem("ACS_Base") || "{}");
+  const user = JSON.parse(localStorage.getItem("ACS_User") || "{}");
+  const airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}");
+  const base = JSON.parse(localStorage.getItem("ACS_Base") || "{}");
 
-  // --- Validate airline ---
+  // ✅ Fallbacks para compatibilidad
+  const airlineName = airline.name || localStorage.getItem("userAirline");
+  const iataCode = airline.iata || localStorage.getItem("userIATA");
+
+  // --- Mostrar mensaje principal ---
   if (airlineName && iataCode) {
     const welcomeMsg = document.getElementById("welcomeMessage");
     if (welcomeMsg) {
       welcomeMsg.innerHTML = `Welcome to <span>${airlineName} (${iataCode})</span>`;
     }
-  } else {
-    console.warn("⚠️ Airline data not found — please complete airline setup first.");
   }
 
-  // --- Show base info if available ---
-  if (baseData && baseData.airport) {
-    const baseText = `Base: ${baseData.city || ""} (${baseData.airport || "Unknown"}) — ${baseData.country || ""}`;
-    const baseEl = document.getElementById("baseInfo");
-    if (baseEl) baseEl.textContent = baseText;
-  } else {
-    console.warn("⚠️ Base not set — user must select a base in choose_base.html");
+  // --- Construir la línea de país, modo y base ---
+  const sub = document.getElementById("airlineSub");
+  if (sub) {
+    const flag = getFlagEmoji(base.country || airline.country || "World");
+    const mode = airline.operationMode || "Operations";
+    const country = base.country || airline.country || "Unknown";
+    const baseName = base.city
+      ? `${base.city} (${base.airport})`
+      : base.airport
+      ? `${base.airport}`
+      : "Unassigned Base";
+
+    sub.innerHTML = `${flag} ${country} — ${mode} | Base: ${baseName}`;
   }
+
+  console.log("✅ ACS Dashboard loaded:", { user, airline, base });
 });
+
   </script>
   
   <script src="finance.js?v=1.0.0"></script>
