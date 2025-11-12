@@ -176,144 +176,128 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <!-- ===== SCRIPTS ===== -->
-  <script src="worldairportsacs.js"></script>
-  <script src="time_engine.js?v=1.2"></script>
+  <!-- ===== SCRIPTS ORDENADOS Y SINCRONIZADOS ===== -->
+<script src="time_engine.js"></script>
+<script src="worldairportsacs.js"></script>
 
-  <script>
-    let selectedContinent = "";
-    let selectedCountry = "";
+<script>
+  let selectedContinent = "";
+  let selectedCountry = "";
 
-    function loadCountries() {
-      selectedContinent = document.getElementById("continentSelect").value;
-      const countrySelect = document.getElementById("countrySelect");
-      countrySelect.innerHTML = '<option value="">🏳️ Select Country</option>';
-      document.getElementById("airportList").innerHTML =
-        '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
+  function loadCountries() {
+    selectedContinent = document.getElementById("continentSelect").value;
+    const countrySelect = document.getElementById("countrySelect");
+    countrySelect.innerHTML = '<option value="">🏳️ Select Country</option>';
+    document.getElementById("airportList").innerHTML =
+      '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
 
-      if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
+    if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
 
-      // Unique country list
-      const countries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.country))].sort();
-      countries.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        countrySelect.appendChild(opt);
-      });
-    }
-
-    function loadAirports() {
-      selectedCountry = document.getElementById("countrySelect").value;
-      const tbody = document.getElementById("airportList");
-      tbody.innerHTML = "";
-
-      if (!selectedContinent || !selectedCountry) {
-        tbody.innerHTML = '<tr><td colspan="9">Please select both continent and country.</td></tr>';
-        return;
-      }
-
-      const airports = WorldAirportsACS[selectedContinent].filter(a => a.country === selectedCountry);
-
-      if (!airports.length) {
-        tbody.innerHTML = '<tr><td colspan="9">No airports available for this country.</td></tr>';
-        return;
-      }
-
-      // Sort by total demand (Y + C + F)
-      airports.sort((a, b) => {
-        const demandA = (a.demand.Y || 0) + (a.demand.C || 0) + (a.demand.F || 0);
-        const demandB = (b.demand.Y || 0) + (b.demand.C || 0) + (b.demand.F || 0);
-        return demandB - demandA;
-      });
-
-      airports.forEach(a => {
-        const totalDemand = (a.demand.Y || 0) + (a.demand.C || 0) + (a.demand.F || 0);
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${a.icao}</td>
-          <td>${a.iata}</td>
-          <td>${a.city}</td>
-          <td>${a.name || a.city}</td>
-          <td>${a.category}</td>
-          <td>${totalDemand}</td>
-          <td>${a.slot_capacity}</td>
-          <td>$${a.slot_cost_usd.toLocaleString()}</td>
-          <td><button class="acs-btn" onclick="setBase('${a.icao}')">Set as Base</button></td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function setBase(icao) {
-      const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
-      if (!airport) return alert("⚠️ Airport not found.");
-
-      const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-      if (!user || !user.airline) {
-        alert("⚠️ No active session or airline found. Please log in again.");
-        window.location.href = "login.html";
-        return;
-      }
-
-      // Save base data
-      user.airline.base = {
-        icao: airport.icao,
-        iata: airport.iata,
-        city: airport.city,
-        country: airport.country,
-        continent: airport.continent,
-        demand_total: (airport.demand.Y || 0) + (airport.demand.C || 0) + (airport.demand.F || 0),
-        slot_capacity: airport.slot_capacity,
-        cost_slot_usd: airport.slot_cost_usd
-      };
-
-      // Update local data
-      localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-
-      const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
-      const index = users.findIndex(u => u.email === user.email);
-      if (index !== -1) {
-        users[index] = user;
-        localStorage.setItem("ACS_users", JSON.stringify(users));
-      }
-
-      // Save main airline object
-localStorage.setItem("ACS_Airline", JSON.stringify(user.airline));
-
-// 🔹 NEW: also save standalone base info for Dashboard
-localStorage.setItem("ACS_Base", JSON.stringify({
-  airport: airport.icao,
-  iata: airport.iata,
-  city: airport.city,
-  country: airport.country
-}));
-
-alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).\nWelcome to your operations center, Captain ${user.name}!`);
-window.location.href = "dashboard.html";
-
-    }
-
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-
-    // 🕐 Clock
-    window.addEventListener("load", () => {
-      const c = document.getElementById("acs-clock");
-      if (!c) return;
-      let simTime = new Date();
-      function refreshClock() {
-        simTime.setMinutes(simTime.getMinutes() + 1);
-        const hh = String(simTime.getHours()).padStart(2, "0");
-        const mm = String(simTime.getMinutes()).padStart(2, "0");
-        const date = simTime.toDateString().toUpperCase();
-        c.textContent = `${hh}:${mm} — ${date}`;
-      }
-      refreshClock();
-      setInterval(refreshClock, 1000);
+    const countries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.country))].sort();
+    countries.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      countrySelect.appendChild(opt);
     });
-  </script>
+  }
+
+  function loadAirports() {
+    selectedCountry = document.getElementById("countrySelect").value;
+    const tbody = document.getElementById("airportList");
+    tbody.innerHTML = "";
+
+    if (!selectedContinent || !selectedCountry) {
+      tbody.innerHTML = '<tr><td colspan="9">Please select both continent and country.</td></tr>';
+      return;
+    }
+
+    const airports = WorldAirportsACS[selectedContinent].filter(a => a.country === selectedCountry);
+
+    if (!airports.length) {
+      tbody.innerHTML = '<tr><td colspan="9">No airports available for this country.</td></tr>';
+      return;
+    }
+
+    airports.sort((a, b) => {
+      const demandA = (a.demand.Y || 0) + (a.demand.C || 0) + (a.demand.F || 0);
+      const demandB = (b.demand.Y || 0) + (b.demand.C || 0) + (b.demand.F || 0);
+      return demandB - demandA;
+    });
+
+    airports.forEach(a => {
+      const totalDemand = (a.demand.Y || 0) + (a.demand.C || 0) + (a.demand.F || 0);
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${a.icao}</td>
+        <td>${a.iata}</td>
+        <td>${a.city}</td>
+        <td>${a.name || a.city}</td>
+        <td>${a.category}</td>
+        <td>${totalDemand}</td>
+        <td>${a.slot_capacity}</td>
+        <td>$${a.slot_cost_usd.toLocaleString()}</td>
+        <td><button class="acs-btn" onclick="setBase('${a.icao}')">Set as Base</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function setBase(icao) {
+    const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
+    if (!airport) return alert("⚠️ Airport not found.");
+
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+    if (!user || !user.airline) {
+      alert("⚠️ No active session or airline found. Please log in again.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    user.airline.base = {
+      icao: airport.icao,
+      iata: airport.iata,
+      city: airport.city,
+      country: airport.country,
+      continent: airport.continent,
+      demand_total: (airport.demand.Y || 0) + (airport.demand.C || 0) + (airport.demand.F || 0),
+      slot_capacity: airport.slot_capacity,
+      cost_slot_usd: airport.slot_cost_usd
+    };
+
+    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+
+    const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+    const index = users.findIndex(u => u.email === user.email);
+    if (index !== -1) {
+      users[index] = user;
+      localStorage.setItem("ACS_users", JSON.stringify(users));
+    }
+
+    localStorage.setItem("ACS_Airline", JSON.stringify(user.airline));
+    localStorage.setItem("ACS_Base", JSON.stringify({
+      airport: airport.icao,
+      iata: airport.iata,
+      city: airport.city,
+      country: airport.country
+    }));
+
+    alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).\nWelcome to your operations center, Captain ${user.name}!`);
+    window.location.href = "dashboard.html";
+  }
+
+  function handleLogout() {
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "login.html";
+  }
+
+  // 🔄 Sincronizar con el motor de tiempo global
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+      updateClockDisplay();
+    }
+  });
+</script>
 </body>
 </html>
