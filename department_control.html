@@ -365,7 +365,17 @@
     window.addEventListener("DOMContentLoaded", calculateTotalPayroll);
   </script>
 
-  <!-- ✅ Reloj cockpit Airbus -->
-  <script src="time_engine.js?v=1.2"></script>
+    <!-- ✅ MOTORES GLOBALES SINCRONIZADOS -->
+  <script src="time_engine.js"></script>
+
+  <script>
+    // Sincronizar reloj del encabezado con el motor de tiempo ACS
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+  </script>
 </body>
 </html>
