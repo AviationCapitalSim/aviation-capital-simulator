@@ -127,35 +127,22 @@
   </footer>
 
   <!-- ===== SCRIPT ===== -->
-  <script>
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-
-     <script src="finance.js?v=1.0.0"></script>
-
-<!-- === Reloj cockpit Airbus (modo simulador) === -->
 <script>
-window.addEventListener("load", () => {
-  const c = document.getElementById("acs-clock");
-  if (!c) return;
-
-  let simTime = new Date();
-
-  function refreshClock() {
-    simTime.setMinutes(simTime.getMinutes() + 1);
-    const hh = String(simTime.getHours()).padStart(2, "0");
-    const mm = String(simTime.getMinutes()).padStart(2, "0");
-    const date = simTime.toDateString().toUpperCase();
-    c.textContent = `${hh}:${mm} — ${date}`;
+  function handleLogout() {
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "login.html";
   }
+</script>
 
-  <script src="time_engine.js?v=3.2"></script>
+<!-- ===== SCRIPTS (orden correcto) ===== -->
+<script src="time_engine.js"></script>
+<script src="finance.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+      updateClockDisplay();
+    }
   });
 </script>
 </body>
