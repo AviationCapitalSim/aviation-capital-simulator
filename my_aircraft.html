@@ -333,19 +333,16 @@
 
   function handleLogout(){ alert("👋 Session closed. See you soon, Captain!"); window.location.href="login.html"; }
 
-  window.addEventListener("load",()=>{
-    const c=document.getElementById("acs-clock");
-    if(!c)return;
-    function refreshClock(){
-      const sim=new Date();
-      const hh=String(sim.getHours()).padStart(2,"0");
-      const mm=String(sim.getMinutes()).padStart(2,"0");
-      const date=sim.toDateString().toUpperCase();
-      c.textContent=`${hh}:${mm} — ${date}`;
-    }
-    refreshClock(); setInterval(refreshClock,1000);
-  });
+    <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
+  <script src="time_engine.js"></script>
+  <script>
+    // 🕐 Reloj cockpit Airbus sincronizado con el motor global de tiempo ACS
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
   </script>
 </body>
 </html>
-<!-- END OF MODULE -->
