@@ -96,16 +96,11 @@
         <option value="Regional">Regional</option>
         <option value="Domestic">Domestic</option>
         <option value="International">International</option>
-        <option value="Global Alliance">Global Alliance</option>
       </select>
 
       <select id="operationMode" required>
         <option value="">Select Operation Mode</option>
         <option value="Passenger">Passenger</option>
-        <option value="Cargo">Cargo</option>
-        <option value="Passenger + Cargo">Passenger + Cargo</option>
-        <option value="Charter">Charter</option>
-        <option value="ACMI / Wet Lease">ACMI / Wet Lease</option>
       </select>
 
       <button type="submit">CREATE AIRLINE</button>
@@ -172,16 +167,16 @@
       const icao = document.getElementById("icao").value.trim().toUpperCase();
       const iata = document.getElementById("iata").value.trim().toUpperCase();
 
-      if (!airlineName || !region || !country || !businessModel || !operationMode) {
-        alert("⚠️ Please complete all required fields.");
-        return false;
-      }
+      // 🚫 Bloquear nombres reales (coincidencias parciales o exactas)
+      const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
 
-      // 🚫 Bloquear nombres reales exactos
-      if (realAirlines.some(real => real.toLowerCase() === airlineName.toLowerCase())) {
-        alert("⚠️ That airline name exists in the real world. Please choose a fictional name.");
-        return false;
-      }
+      if (realAirlines.some(real => {
+      const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
+      return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
+   })) {
+      alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
+      return false;
+   }
 
       // ⚙️ Evitar nombres duplicados en ACS
       const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
