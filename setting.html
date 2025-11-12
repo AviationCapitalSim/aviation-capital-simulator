@@ -369,25 +369,28 @@
   <h3>🕹️ Simulation Control</h3>
   <p>Activate or pause the global time engine. This affects all players in the ACS world.</p>
 
+  <!-- 🔐 Admin unlock section -->
   <div id="adminAuthSection">
-    <input type="email" id="adminEmailInput" placeholder="Enter admin email to unlock" 
+    <input type="email" id="adminEmailInput" placeholder="Enter admin email to unlock"
            style="width:100%;padding:6px;border-radius:6px;border:none;background:#111;color:#fff;margin-bottom:8px;">
     <button class="acs-btn" onclick="verifyAdminEmail()">🔓 Unlock Admin Access</button>
   </div>
 
+  <!-- ⚙️ Admin control section -->
   <div id="adminPanelContent" style="display:none;">
     <table>
       <tr><th>Cycle</th><th>Real Start</th><th>Status</th></tr>
       <tr>
         <td><span id="simCycle">1940–2026</span></td>
         <td><span id="simStart">—</span></td>
-        <td><span id="simStatus">OFF</span></td>
+        <td><span id="simStatus" style="color:#ff4040;font-weight:bold;">OFF</span></td>
       </tr>
     </table>
 
     <div class="save-group">
       <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle Simulation</button>
       <button class="acs-btn secondary" onclick="resetSimulationData()">♻️ Reset World (Preserve Users)</button>
+      <button class="acs-btn secondary" onclick="closeAdminPanel()">❌ Close</button>
     </div>
 
     <p class="warning">⚠️ Admin only. This affects the global ACS timeline for all users.</p>
@@ -500,7 +503,7 @@ function resetCompany(){
 }
 </script>
   <!-- === ADMIN SIMULATION CONTROL (SYNC WITH time_engine.js) === -->
-<script src="time_engine.js?v=3.0"></script>
+<script src="time_engine.js?v=3.1"></script>
 <script>
 function verifyAdminEmail() {
   const input = document.getElementById("adminEmailInput").value.trim().toLowerCase();
@@ -514,6 +517,56 @@ function verifyAdminEmail() {
   }
 }
 
+function closeAdminPanel() {
+  document.getElementById("adminPanelContent").style.display = "none";
+  document.getElementById("adminAuthSection").style.display = "block";
+}
+
+function toggleSimState() {
+  const statusEl = document.getElementById("simStatus");
+  const current = statusEl.textContent.trim();
+  const newStatus = current === "ON" ? "OFF" : "ON";
+
+  statusEl.textContent = newStatus;
+  statusEl.style.color = newStatus === "ON" ? "#00ff80" : "#ff4040";
+
+  if (newStatus === "ON") {
+    startACSTime();
+    const cycle = {
+      startYear: ACS_TIME.startYear,
+      endYear: ACS_TIME.endYear,
+      realStartDate: new Date().toISOString(),
+      status: "on"
+    };
+    localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
+    document.getElementById("simStart").textContent = new Date().toDateString();
+  } else {
+    stopACSTime();
+    const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+    cycle.status = "off";
+    localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
+  }
+
+  alert(`🔁 Simulation turned ${newStatus}`);
+}
+
+function resetSimulationData() {
+  stopACSTime();
+  ACS_TIME.currentTime = new Date("1940-01-01T00:00:00Z");
+  localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
+  updateClockDisplay();
+  const cycle = {
+    startYear: 1940,
+    endYear: 2026,
+    realStartDate: null,
+    status: "off"
+  };
+  localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
+  document.getElementById("simStatus").textContent = "OFF";
+  document.getElementById("simStatus").style.color = "#ff4040";
+  alert("♻️ World reset complete. Time returned to 1940.");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
   if (user && user.email === "aviationcapitalsim@gmail.com") {
@@ -521,7 +574,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("adminPanelContent").style.display = "block";
   }
 
-  // Mostrar información del ciclo actual
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
   if (cycle.startYear && cycle.endYear)
     document.getElementById("simCycle").textContent = `${cycle.startYear}–${cycle.endYear}`;
@@ -529,8 +581,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const d = new Date(cycle.realStartDate);
     document.getElementById("simStart").textContent = d.toDateString();
   }
-  if (cycle.status)
-    document.getElementById("simStatus").textContent = cycle.status.toUpperCase();
+  if (cycle.status) {
+    const st = cycle.status.toUpperCase();
+    const el = document.getElementById("simStatus");
+    el.textContent = st;
+    el.style.color = st === "ON" ? "#00ff80" : "#ff4040";
+  }
 });
 </script>
 </body>
