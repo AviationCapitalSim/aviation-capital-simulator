@@ -242,6 +242,7 @@
     <h2 id="welcomeMessage">Welcome to <span>ATLAS (ATL)</span></h2>
     <p id="airlineSub"><span>🇰🇬</span> Kyrgyzstan — Cargo Operations</p>
     <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
+    <p id="baseInfo" style="color:#FFB300; font-weight:600; margin-top:-0.5rem;"></p>
 
     <section class="finance-panels">
       <!-- ✈️ Top Earning Aircraft -->
@@ -381,20 +382,32 @@
       window.location.href = "login.html";
     }
 
-    // 🏢 Load airline info from setup
-    document.addEventListener("DOMContentLoaded", () => {
-      const airlineName = localStorage.getItem("userAirline");
-      const iataCode = localStorage.getItem("userIATA");
+    // 🏢 Load airline and base info
+document.addEventListener("DOMContentLoaded", () => {
+  const airlineName = localStorage.getItem("userAirline");
+  const iataCode = localStorage.getItem("userIATA");
+  const baseData = JSON.parse(localStorage.getItem("ACS_Base") || "{}");
 
-      if (airlineName && iataCode) {
-        const welcomeMsg = document.getElementById("welcomeMessage");
-        if (welcomeMsg) {
-          welcomeMsg.innerHTML = `Welcome to <span>${airlineName} (${iataCode})</span>`;
-        }
-      } else {
-        console.warn("⚠️ Airline data not found — please complete airline setup first.");
-      }
-    });
+  // --- Validate airline ---
+  if (airlineName && iataCode) {
+    const welcomeMsg = document.getElementById("welcomeMessage");
+    if (welcomeMsg) {
+      welcomeMsg.innerHTML = `Welcome to <span>${airlineName} (${iataCode})</span>`;
+    }
+  } else {
+    console.warn("⚠️ Airline data not found — please complete airline setup first.");
+  }
+
+  // --- Show base info if available ---
+  if (baseData && baseData.airport) {
+    const baseText = `Base: ${baseData.city || ""} (${baseData.airport || "Unknown"}) — ${baseData.country || ""}`;
+    const baseEl = document.getElementById("baseInfo");
+    if (baseEl) baseEl.textContent = baseText;
+  } else {
+    console.warn("⚠️ Base not set — user must select a base in choose_base.html");
+  }
+});
+
   <script src="finance.js?v=1.0.0"></script>
 
 <!-- === Reloj cockpit Airbus (modo simulador) === -->
