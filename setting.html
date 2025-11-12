@@ -363,6 +363,28 @@
         <button class="acs-btn secondary" onclick="resetCompany()">↩️ Reset Defaults</button>
       </div>
     </div>
+   
+    <!-- 5. Simulation Control (Admin Only) -->
+<div class="panel" id="adminControlPanel" style="display:none;">
+  <h3>🕹️ Simulation Control</h3>
+  <p>Activate or pause the global time engine. This affects all players in the ACS world.</p>
+
+  <table>
+    <tr><th>Cycle</th><th>Real Start</th><th>Status</th></tr>
+    <tr>
+      <td><span id="simCycle">1940–2026</span></td>
+      <td><span id="simStart">—</span></td>
+      <td><span id="simStatus">OFF</span></td>
+    </tr>
+  </table>
+
+  <div class="save-group">
+    <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle Simulation</button>
+    <button class="acs-btn secondary" onclick="resetSimulationData()">♻️ Reset World (Preserve Users)</button>
+  </div>
+
+  <p class="warning">⚠️ Admin only. This affects the global ACS timeline for all users.</p>
+</div>
   </section>
 </main>
 
@@ -469,6 +491,29 @@ function resetCompany(){
   alert("🔄 Company settings reset.");
 }
 </script>
+  <!-- === ADMIN SIMULATION CONTROL (SYNC WITH time_engine.js) === -->
+<script src="time_engine.js?v=3.0"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  const adminPanel = document.getElementById("adminControlPanel");
 
+  // Mostrar el panel solo si es el administrador
+  if (user && user.email === "aviationcapitalsim@gmail.com") {
+    adminPanel.style.display = "block";
+  }
+
+  // Mostrar información del ciclo actual
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+  if (cycle.startYear && cycle.endYear)
+    document.getElementById("simCycle").textContent = `${cycle.startYear}–${cycle.endYear}`;
+  if (cycle.realStartDate) {
+    const d = new Date(cycle.realStartDate);
+    document.getElementById("simStart").textContent = d.toDateString();
+  }
+  if (cycle.status)
+    document.getElementById("simStatus").textContent = cycle.status.toUpperCase();
+});
+</script>
 </body>
 </html>
