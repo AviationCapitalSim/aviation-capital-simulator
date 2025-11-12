@@ -384,21 +384,38 @@
 
     // 🏢 Load airline and base info (ACS Unified)
 document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("ACS_User") || "{}");
-  const airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}");
-  const base = JSON.parse(localStorage.getItem("ACS_Base") || "{}");
+  // --- Primary load ---
+  let user = JSON.parse(localStorage.getItem("ACS_User") || "{}");
+  let airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}");
+  let base = JSON.parse(localStorage.getItem("ACS_Base") || "{}");
 
-  // ✅ Fallbacks para compatibilidad
-  const airlineName = airline.name || localStorage.getItem("userAirline");
-  const iataCode = airline.iata || localStorage.getItem("userIATA");
+  // ✅ Fallbacks for backward compatibility
+  if (!user || !user.name) {
+    user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  }
+  if (!airline || !airline.name) {
+    airline = user.airline || {};
+  }
+  if (!base || !base.city) {
+    base = airline.base || {};
+  }
 
   // --- Mostrar mensaje principal ---
-  if (airlineName && iataCode) {
-    const welcomeMsg = document.getElementById("welcomeMessage");
-    if (welcomeMsg) {
-      welcomeMsg.innerHTML = `Welcome to <span>${airlineName} (${iataCode})</span>`;
-    }
+  if (airline.name && airline.iata) {
+    document.getElementById("welcomeMessage").innerHTML =
+      `Welcome to <span>${airline.name} (${airline.iata})</span>`;
   }
+
+  const sub = document.getElementById("airlineSub");
+  if (sub) {
+    const flag = getFlagEmoji(airline.country || base.country || "World");
+    const country = airline.country || base.country || "Unknown";
+    const baseText = base.city
+      ? `Base: ${base.city} (${base.airport || base.icao || "—"})`
+      : "Base: Unassigned Base";
+    sub.innerHTML = `${flag} ${country} — ${baseText}`;
+  }
+});
 
   // --- Construir la línea de país y base (sin mode) ---
 const sub = document.getElementById("airlineSub");
