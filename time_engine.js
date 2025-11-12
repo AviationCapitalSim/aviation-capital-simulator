@@ -1,6 +1,6 @@
 /* ============================================================
    === AVIATION CAPITAL SIMULATOR - HISTORICAL TIME ENGINE ===
-   Version: 3.1 (Stable Global Engine)
+   Version: 3.2 (Final Admin-Synced Global Engine)
    Date: 2025-11-12
    Author: Aviation Capital Systems
    ------------------------------------------------------------
@@ -8,7 +8,7 @@
    ▪ Global synchronized simulation (1940 → 2026)
    ▪ Controlled via admin-only Simulation Toggle (ON/OFF)
    ▪ Automatically resets at cycle end, preserving users
-   ▪ Optimized interval protection, visual sync & storage load
+   ▪ Dynamic update in Settings (no reload required)
    ============================================================ */
 
 const ACS_TIME = {
@@ -31,36 +31,29 @@ let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle")) || {
 function startACSTime() {
   stopACSTime(); // evita duplicados
 
-  // [v3.1+] Protección contra duplicados de intervalo
   if (ACS_TIME.tickInterval) {
     console.log("⚠️ Simulation already running. Skipping duplicate start.");
     return;
   }
 
-  // Solo avanza si el estado global está en ON
   if (ACS_CYCLE.status !== "ON") {
     console.log("🕓 Simulation paused — system in OFF state.");
     updateClockDisplay();
     return;
   }
 
-  // Si es la primera vez que se inicia, guardar fecha real de inicio
   if (!ACS_CYCLE.realStartDate) {
     ACS_CYCLE.realStartDate = new Date().toISOString();
     localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
   }
 
-  // [v3.1+] Actualización visual inmediata antes del primer tick
   updateClockDisplay();
 
-  let tickCount = 0; // [v3.1+] Control para almacenamiento cada 60 ticks (~1 min real)
-
+  let tickCount = 0;
   ACS_TIME.tickInterval = setInterval(() => {
-    // +1 minuto simulado por segundo real
     ACS_TIME.currentTime = new Date(ACS_TIME.currentTime.getTime() + 60000);
     tickCount++;
 
-    // [v3.1+] Guardar en localStorage solo cada minuto real
     if (tickCount % 60 === 0) {
       localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
     }
@@ -68,7 +61,6 @@ function startACSTime() {
     updateClockDisplay();
     notifyTimeListeners();
 
-    // Verificar año de fin de ciclo
     if (ACS_TIME.currentTime.getUTCFullYear() >= ACS_TIME.endYear) {
       endWorldCycle();
     }
@@ -90,14 +82,22 @@ function toggleSimState() {
   }
 
   ACS_CYCLE.status = ACS_CYCLE.status === "ON" ? "OFF" : "ON";
+
   if (ACS_CYCLE.status === "ON") {
     ACS_CYCLE.realStartDate = new Date().toISOString();
     alert("✅ Simulation started — The world of aviation begins in 1940!");
+    startACSTime();
   } else {
     alert("⏸️ Simulation paused — All time progression stopped.");
+    stopACSTime();
   }
+
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
-  window.location.reload();
+
+  // 🔁 Actualizar panel dinámicamente sin recargar
+  const simStatus = document.getElementById("simStatus");
+  if (simStatus) simStatus.textContent = ACS_CYCLE.status.toUpperCase();
+  updateClockDisplay();
 }
 
 /* === 🏁 End of cycle (automatic trigger) === */
@@ -127,12 +127,17 @@ function resetSimulationData() {
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
   ACS_TIME.currentTime = new Date("1940-01-01T00:00:00Z");
   localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
+
+  stopACSTime();
+  updateClockDisplay();
+  alert("♻️ ACS world has been reset to 1940. Simulation is now OFF.");
 }
 
 /* === 📺 Update cockpit clock on header (with state indicator) === */
 function updateClockDisplay() {
   const el = document.getElementById("acs-clock");
   if (!el) return;
+
   const t = ACS_TIME.currentTime;
   const hh = String(t.getUTCHours()).padStart(2, "0");
   const mm = String(t.getUTCMinutes()).padStart(2, "0");
@@ -143,7 +148,6 @@ function updateClockDisplay() {
   const state = ACS_CYCLE.status === "ON" ? "🟢 ON" : "⏸️ OFF";
   el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy} | ${state}`;
 
-  // [v3.1+] Cambio visual dinámico según estado
   el.style.color = ACS_CYCLE.status === "ON" ? "#00ff80" : "#ff9b00";
 }
 
@@ -200,7 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ? new Date(savedTime)
     : new Date("1940-01-01T00:00:00Z");
 
-  // [v3.1+] Protección anti-manipulación de estado local
   const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
   if (ACS_CYCLE.status === "ON" && user.email !== "aviationcapitalsim@gmail.com") {
     ACS_CYCLE.status = "OFF";
@@ -208,7 +211,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("⛔ Unauthorized simulation state detected. Reset to OFF.");
   }
 
-  // Verificar estado global antes de iniciar
   if (ACS_CYCLE.status === "ON") {
     startACSTime();
   } else {
