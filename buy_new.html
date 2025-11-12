@@ -414,28 +414,26 @@
     });
   </script>
 
-  <script src="finance.js?v=1.0.0"></script>
+ <!-- === MOTOR GLOBAL DE TIEMPO ACS === -->
+<script src="time_engine.js"></script>
+<script src="acs_production.js"></script>
+<script src="finance.js"></script>
 
-  <!-- === Reloj cockpit Airbus (modo simulador) === -->
-  <script>
-  window.addEventListener("load", () => {
-    const c = document.getElementById("acs-clock");
-    if (!c) return;
-
-    let simTime = new Date();
-
-    function refreshClock() {
-      simTime.setMinutes(simTime.getMinutes() + 1);
-      const hh = String(simTime.getHours()).padStart(2, "0");
-      const mm = String(simTime.getMinutes()).padStart(2, "0");
-      const date = simTime.toDateString().toUpperCase();
-      c.textContent = `${hh}:${mm} — ${date}`;
+<script>
+  // Inicializar render de producción
+  window.addEventListener('load', () => {
+    if (typeof renderProductionTables === "function") {
+      renderProductionTables('production-overview');
     }
-
-    refreshClock();
-    setInterval(refreshClock, 1000);
   });
-  </script>
 
+  // Sincronizar reloj global
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+      updateClockDisplay();
+    }
+  });
+</script>
 </body>
 </html>
