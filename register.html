@@ -174,22 +174,32 @@ function handleRegister(event) {
   const confirm = document.getElementById("confirm").value;
   const country = document.getElementById("country").value;
 
+  // === Validar campos ===
   if (!fullName || !email || !password || !confirm || !country) {
     alert("⚠️ Please complete all fields.");
-    return false;
+    return;
   }
 
+  // === Validar email real ===
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
+  if (!emailPattern.test(email)) {
+    alert("⚠️ Please enter a valid email address (example: name@example.com).");
+    return;
+  }
+
+  // === Validar contraseña ===
   const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
   if (!regex.test(password)) {
     alert("⚠️ Password must include at least 8 characters, one uppercase letter, and one number.");
-    return false;
+    return;
   }
 
   if (password !== confirm) {
     alert("⚠️ Passwords do not match.");
-    return false;
+    return;
   }
 
+  // === Guardar datos ===
   const user = {
     id: crypto.randomUUID(),
     name: fullName,
@@ -206,8 +216,9 @@ function handleRegister(event) {
   localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
   alert(`✅ Welcome aboard, Captain ${fullName}! Let's create your airline.`);
-  window.location.href = "create_airlines.html";
-  return false;
+
+  // === Redirección ===
+  window.location.assign("create_airlines.html");
 }
 </script>
 </body>
