@@ -325,13 +325,22 @@
     };
   </script>
 
-  <!-- ✅ CORREGIDO: cierre correcto de scripts y reloj global -->
-  <script>
-    // Compra de créditos ACS (ingreso neto, por ahora 0)
-    localStorage.setItem("acs_finance_ops", 0);
-  </script>
+ <!-- ✅ CORREGIDO: cierre correcto de scripts y reloj global -->
+<script>
+  // Compra de créditos ACS (ingreso neto, por ahora 0)
+  localStorage.setItem("acs_finance_ops", 0);
+</script>
 
-  <script src="finance.js?v=1.0.0"></script>
-  <script src="time_engine.js?v=1.2"></script>
+<!-- === MOTOR GLOBAL DE TIEMPO ACS === -->
+<script src="time_engine.js"></script>
+<script src="finance.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+      updateClockDisplay();
+    }
+  });
+</script>
 </body>
 </html>
