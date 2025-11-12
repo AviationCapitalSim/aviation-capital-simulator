@@ -160,8 +160,18 @@
 
   <!-- ======== SCRIPTS ======== -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="time_engine.js?v=1.2"></script>
+
+  <!-- ✅ MOTORES GLOBALES SINCRONIZADOS -->
+  <script src="time_engine.js"></script>
   <script>
+    // 🕐 Reloj cockpit Airbus sincronizado con el motor global ACS
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+
     // === ACS Finance Reset 0.0 ===
     const ctx = document.getElementById('growthChart').getContext('2d');
     const growthChart = new Chart(ctx, {
@@ -188,6 +198,5 @@
       }
     });
   </script>
-
 </body>
 </html>
