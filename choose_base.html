@@ -278,10 +278,20 @@
         localStorage.setItem("ACS_users", JSON.stringify(users));
       }
 
-      localStorage.setItem("ACS_Airline", JSON.stringify(user.airline));
+      // Save main airline object
+localStorage.setItem("ACS_Airline", JSON.stringify(user.airline));
 
-      alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).\nWelcome to your operations center, Captain ${user.name}!`);
-      window.location.href = "dashboard.html";
+// 🔹 NEW: also save standalone base info for Dashboard
+localStorage.setItem("ACS_Base", JSON.stringify({
+  airport: airport.icao,
+  iata: airport.iata,
+  city: airport.city,
+  country: airport.country
+}));
+
+alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).\nWelcome to your operations center, Captain ${user.name}!`);
+window.location.href = "dashboard.html";
+
     }
 
     function handleLogout() {
