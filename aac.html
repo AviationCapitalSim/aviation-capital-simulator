@@ -243,10 +243,12 @@ window.addEventListener("load", () => {
 
     c.textContent = `${hh}:${mm} — ${date}`;
   }
-
-  refreshClock();
-  setInterval(refreshClock, 1000); // cada segundo avanza un minuto
-});
+<script src="time_engine.js?v=3.2"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  });
 </script>
 </body>
 </html>
