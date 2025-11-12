@@ -323,7 +323,7 @@
   </footer>
 
   <!-- ===== SCRIPTS ===== -->
-    <!-- ===== SCRIPTS ===== -->
+
   <script>
     // 🌍 Flag emoji generator
     function getFlagEmoji(country) {
@@ -418,26 +418,46 @@
   <!-- (cerrado el bloque anterior) AHORA sí va el externo: -->
   <script src="finance.js?v=1.0.0"></script>
 
-<!-- === Reloj cockpit Airbus (modo simulador) === -->
 <script>
-window.addEventListener("load", () => {
-  const c = document.getElementById("acs-clock");
-  if (!c) return;
+  // Limpia claves legacy para evitar lecturas viejas
+  localStorage.removeItem("ACS_CurrentTime"); // (antiguo de acs_time.js)
 
-  let simTime = new Date();
+  // Pinta el reloj de cabina usando SOLO el tiempo global
+  function cockpitClockListener(t) {
+    const el = document.getElementById("acs-clock");
+    if (!el) return;
 
-  function refreshClock() {
-    simTime.setMinutes(simTime.getMinutes() + 1);
-    const hh = String(simTime.getHours()).padStart(2, "0");
-    const mm = String(simTime.getMinutes()).padStart(2, "0");
-    const date = simTime.toDateString().toUpperCase();
-    c.textContent = `${hh}:${mm} — ${date}`;
+    const hh = String(t.getUTCHours()).padStart(2, "0");
+    const mm = String(t.getUTCMinutes()).padStart(2, "0");
+    const dd = String(t.getUTCDate()).padStart(2, "0");
+    const mon = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
+    const yy = t.getUTCFullYear();
+
+    // Lee estado ON/OFF del ciclo
+    let status = "⏸️ OFF";
+    try {
+      const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+      status = (cycle && cycle.status === "ON") ? "🟢 ON" : "⏸️ OFF";
+    } catch(e) {}
+
+    el.textContent = `${hh}:${mm} — ${dd} ${mon} ${yy} | ${status}`;
+    el.style.color = (status === "🟢 ON") ? "#00ff80" : "#ff9b00";
   }
 
-  refreshClock();
-  setInterval(refreshClock, 1000);
-});
-</script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Pintado inmediato con la hora actual del motor
+    cockpitClockListener(ACS_TIME.currentTime);
 
+    // Suscripción a los ticks del motor global
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(cockpitClockListener);
+    }
+
+    // Reforzar repintado al volver al tab
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) cockpitClockListener(ACS_TIME.currentTime);
+    });
+  });
+</script>
 </body>
 </html>
