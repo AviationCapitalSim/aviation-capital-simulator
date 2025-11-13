@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Monthly Growth - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
   <style>
-    /* === MONTHLY GROWTH (ACS Finance Reset 0.0) === */
+    /* === MONTHLY GROWTH (ACS Finance v1.0) === */
     body {
       margin: 0;
       background-color: #081530;
@@ -17,7 +18,7 @@
     h2 {
       color: #FFB300;
       text-align: center;
-      margin-top: 6rem; /* espacio por el header fijo */
+      margin-top: 6rem;
     }
 
     .container {
@@ -62,44 +63,19 @@
       background: #0a1433;
     }
 
-    tr:last-child td {
-      border-bottom: none;
-    }
-
     canvas {
-      display: block;
+      height: 260px;
       background: rgba(255,255,255,0.03);
       border-radius: 8px;
-      width: 100%;
-      max-width: 100%;
-      height: 260px;
       margin: 0 auto;
-      box-sizing: border-box;
     }
-
-    .note {
-      text-align: center;
-      color: #999;
-      margin-top: 1rem;
-      font-style: italic;
-    }
-    /* === CLOCK STYLE (Unified Airbus Green) === */
-.acs-clock-header {
-  font-family: 'Orbitron', 'Consolas', monospace;
-  color: #00ff80; /* Verde Airbus tipo cockpit */
-  font-weight: bold;
-  background: rgba(0, 255, 128, 0.08);
-  padding: 0.3rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  margin-left: 1rem;
-}
   </style>
 </head>
+
 <body>
 
-  <!-- ======== HEADER (ACS Global Navigation) ======== -->
-  <header class="acs-header">
+<!-- HEADER ——————————————————————————— -->
+<header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
@@ -111,92 +87,85 @@
       <a href="aircraft.html">Aircraft</a>
       <a href="routes.html">Routes</a>
       <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
     </nav>
 
-    <div class="acs-auth">
-      <a href="#" class="logout-btn">Logout</a>
-    </div>
+    <div class="acs-clock-header" id="acs-clock">00:00</div>
+</header>
 
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </header>
+<!-- TITLE ——————————————————————————— -->
+<h2>📊 Monthly Growth (USD)</h2>
 
-  <!-- ======== MAIN CONTENT ======== -->
-  <h2>📊 Monthly Growth (USD)</h2>
+<div class="container">
 
-  <div class="container">
-    <div class="section">
-      <h3>Financial Overview</h3>
-      <table>
-        <tr>
-          <td id="finance-revenue">$0</td>
-          <td id="finance-expenses">$0</td>
-          <td id="finance-profit">$0</td>
-          <td id="finance-margin">0%</td>
-        </tr>
-      </table>
-      <p class="note">Awaiting financial data from ACS modules...</p>
-    </div>
-
-    <div class="section">
-      <h3>📈 Monthly Growth Chart</h3>
-      <canvas id="growthChart"></canvas>
-      <p class="note">Chart initialized — waiting for in-game financial updates.</p>
-    </div>
-
-    <div class="section">
-      <h3>Department Contribution</h3>
-      <table>
-        <tr><th>Department</th><th>Performance</th><th>Monthly Cost</th><th>Impact</th></tr>
-        <tr><td>HR</td><td>0%</td><td>$0</td><td>Neutral</td></tr>
-        <tr><td>Flight Ops</td><td>0%</td><td>$0</td><td>Neutral</td></tr>
-        <tr><td>Maintenance</td><td>0%</td><td>$0</td><td>Neutral</td></tr>
-        <tr><td>Routes / Schedule</td><td>0%</td><td>$0</td><td>Neutral</td></tr>
-        <tr><td>Finance / Credits</td><td>0%</td><td>$0</td><td>Neutral</td></tr>
-      </table>
-    </div>
+  <div class="section">
+    <h3>Financial Overview</h3>
+    <table>
+      <tr>
+        <th>Revenue</th>
+        <th>Expenses</th>
+        <th>Profit</th>
+        <th>Capital</th>
+      </tr>
+      <tr>
+        <td id="finance-revenue">$0</td>
+        <td id="finance-expenses">$0</td>
+        <td id="finance-profit">$0</td>
+        <td id="finance-capital">$0</td>
+      </tr>
+    </table>
   </div>
 
-  <!-- ======== SCRIPTS ======== -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <div class="section">
+    <h3>📈 Monthly Growth Chart</h3>
+    <canvas id="growthChart"></canvas>
+  </div>
 
-  <!-- ✅ MOTORES GLOBALES SINCRONIZADOS -->
-  <script src="time_engine.js"></script>
-  <script>
-    // 🕐 Reloj cockpit Airbus sincronizado con el motor global ACS
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof registerTimeListener === "function") {
-        registerTimeListener(updateClockDisplay);
-        updateClockDisplay();
-      }
-    });
+</div>
 
-    // === ACS Finance Reset 0.0 ===
-    const ctx = document.getElementById('growthChart').getContext('2d');
-    const growthChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-        datasets: [{
-          label: 'Monthly Growth (USD)',
-          data: [0, 0, 0, 0],
-          borderColor: '#FFB300',
-          borderWidth: 2,
-          fill: false,
-          tension: 0.3
-        }]
-      },
-      options: {
-        scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
-          x: { grid: { color: 'rgba(255,255,255,0.05)' } }
-        },
-        plugins: {
-          legend: { labels: { color: 'white' } }
-        }
-      }
-    });
-  </script>
+<!-- SCRIPTS ——————————————————————————— -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Motores financieros -->
+<script src="acs_finance.js"></script>
+<script src="engine/acs_finance.js"></script>
+
+<script>
+  function updateMonthlyGrowth() {
+    const f = JSON.parse(localStorage.getItem("ACS_Finance"));
+
+    document.getElementById("finance-revenue").textContent = "$" + f.revenue.toLocaleString();
+    document.getElementById("finance-expenses").textContent = "$" + f.expenses.toLocaleString();
+    document.getElementById("finance-profit").textContent = "$" + f.profit.toLocaleString();
+    document.getElementById("finance-capital").textContent = "$" + f.capital.toLocaleString();
+
+    const history = f.history.map(h => h.profit);
+    const labels = f.history.map(h => h.month);
+
+    growthChart.data.labels = labels.length > 0 ? labels : ["Month 1"];
+    growthChart.data.datasets[0].data = history.length > 0 ? history : [0];
+
+    growthChart.update();
+  }
+
+  const ctx = document.getElementById('growthChart').getContext('2d');
+  const growthChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["Month 1"],
+      datasets: [{
+        label: "Monthly Profit",
+        data: [0],
+        borderColor: "#FFB300",
+        borderWidth: 2,
+        tension: 0.3,
+        fill: false
+      }]
+    },
+    options: { scales:{ y:{beginAtZero:true } } }
+  });
+
+  updateMonthlyGrowth();
+</script>
+
 </body>
 </html>
