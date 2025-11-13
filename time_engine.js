@@ -1,84 +1,130 @@
 /* ============================================================
-   === AVIATION CAPITAL SIMULATOR - TIME ENGINE v5.0 FINAL ====
+   === AVIATION CAPITAL SIMULATOR - TIME ENGINE v6.0 FINAL ====
    ------------------------------------------------------------
-   ▪ Universal UTC Matrix Clock (same time for all players)
-   ▪ 1 real second = 1 simulated minute
-   ▪ OFF freezes perfectly across ALL pages
-   ▪ ON resumes EXACTLY where it left off
-   ▪ No resets, no drifting, no desync
-   ▪ Includes Safari/macOS/iOS storage event FIX
-   ▪ ZERO HTML changes required
+   ▪ OFF freezes absolutely everything
+   ▪ ON resumes from exact frozen moment
+   ▪ No resets, no drift, no desync
+   ▪ One single master time value: acs_sim_time
+   ▪ Perfect for Safari, Chrome, Firefox, Edge, iOS, Android
+   ▪ Zero HTML edits needed
    ============================================================ */
 
-/* === GLOBAL TIME OBJECT === */
+/* ============================================================
+   === CONSTANTS ===============================================
+   ============================================================ */
+
+const SIM_START = new Date(Date.UTC(1940, 0, 1, 0, 0, 0));  // 1 JAN 1940, UTC
+
+/* Storage Keys */
+const KEY_SIM_TIME = "acs_sim_time";        // ALWAYS stores the master time
+const KEY_SIM_STATE = "acs_sim_state";      // "ON" | "OFF"
+const KEY_REAL_START = "acs_real_start";    // real start timestamp (ON only)
+
+/* ============================================================
+   === GLOBAL ENGINE OBJECT ====================================
+   ============================================================ */
+
 const ACS_TIME = {
-  startYear: 1940,
-  endYear: 2026,
-  currentTime: new Date("1940-01-01T00:00:00Z"),
-  tickInterval: null,
+  simTime: SIM_START,
+  tick: null,
   listeners: [],
 };
 
-/* === LOAD OR INIT CYCLE === */
-let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}") || {
-  startYear: 1940,
-  endYear: 2026,
-  realStartDate: null,
-  status: "OFF",
-};
-
 /* ============================================================
-   === UTC MATRIX CLOCK (REAL → SIM) ===========================
+   === LOAD ENGINE STATE =======================================
    ============================================================ */
 
-function computeSimTime() {
-  if (ACS_CYCLE.status !== "ON") return ACS_TIME.currentTime;
+function loadEngineState() {
+  const savedTime = localStorage.getItem(KEY_SIM_TIME);
+  const savedState = localStorage.getItem(KEY_SIM_STATE);
+  const savedRealStart = localStorage.getItem(KEY_REAL_START);
 
-  const now = new Date();
-  const realStart = new Date(ACS_CYCLE.realStartDate);
-  const secPassed = Math.floor((now - realStart) / 1000);
+  ACS_TIME.simTime = savedTime ? new Date(savedTime) : SIM_START;
 
-  return new Date(Date.UTC(1940, 0, 1, 0, secPassed));
+  return {
+    state: savedState || "OFF",
+    realStart: savedRealStart ? new Date(savedRealStart) : null
+  };
 }
 
 /* ============================================================
-   === START ENGINE (ON) =======================================
+   === SAVE SIM TIME (MASTER) ==================================
    ============================================================ */
 
-function startACSTime() {
-  stopACSTime(); // avoid duplicates
+function saveSimTime(dateObj) {
+  localStorage.setItem(KEY_SIM_TIME, dateObj.toISOString());
+  ACS_TIME.simTime = dateObj;
+}
 
-  if (!ACS_CYCLE.realStartDate) {
-    ACS_CYCLE.realStartDate = new Date().toISOString();
-    localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+/* ============================================================
+   === RECONSTRUCT SIM TIME (ON MODE) ==========================
+   ============================================================ */
+
+function reconstructSimTime(realStart) {
+  const now = new Date();
+  const secPassed = Math.floor((now - realStart) / 1000);
+  return new Date(SIM_START.getTime() + secPassed * 60000);
+}
+
+/* ============================================================
+   === START SIMULATION (ON) ===================================
+   ============================================================ */
+
+function startSimulation() {
+  stopSimulation();
+
+  let { state, realStart } = loadEngineState();
+
+  if (!realStart) {
+    const savedSim = ACS_TIME.simTime;
+    const minutesFromStart = (savedSim - SIM_START) / 60000;
+    realStart = new Date(Date.now() - minutesFromStart * 1000);
+    localStorage.setItem(KEY_REAL_START, realStart.toISOString());
   }
 
-  ACS_TIME.currentTime = computeSimTime();
-  updateClockDisplay();
-  notifyTimeListeners();
+  localStorage.setItem(KEY_SIM_STATE, "ON");
 
-  ACS_TIME.tickInterval = setInterval(() => {
-    ACS_TIME.currentTime = computeSimTime();
-    updateClockDisplay();
-    notifyTimeListeners();
+  ACS_TIME.tick = setInterval(() => {
+    const realStartNow = new Date(localStorage.getItem(KEY_REAL_START));
+    const newSim = reconstructSimTime(realStartNow);
+    saveSimTime(newSim);
 
-    if (ACS_TIME.currentTime.getUTCFullYear() >= ACS_TIME.endYear) {
-      endWorldCycle();
+    renderClock(newSim);
+    notifyListeners(newSim);
+
+    if (newSim.getUTCFullYear() >= 2026) {
+      endCycle();
     }
   }, 1000);
 }
 
 /* ============================================================
-   === STOP ENGINE (OFF) =======================================
+   === STOP SIMULATION (OFF) ===================================
    ============================================================ */
 
-function stopACSTime() {
-  if (ACS_TIME.tickInterval) clearInterval(ACS_TIME.tickInterval);
-  ACS_TIME.tickInterval = null;
+function stopSimulation() {
+  if (ACS_TIME.tick) clearInterval(ACS_TIME.tick);
+  ACS_TIME.tick = null;
 }
 
 /* ============================================================
-   === TOGGLE SIM STATE (ADMIN ONLY) ===========================
+   === TURN OFF (FREEZE) =======================================
+   ============================================================ */
+
+function freezeSimulation() {
+  stopSimulation();
+
+  saveSimTime(ACS_TIME.simTime);
+
+  localStorage.setItem(KEY_SIM_STATE, "OFF");
+  localStorage.removeItem(KEY_REAL_START);
+
+  renderClock(ACS_TIME.simTime);
+  notifyListeners(ACS_TIME.simTime);
+}
+
+/* ============================================================
+   === ADMIN TOGGLE =============================================
    ============================================================ */
 
 function toggleSimState() {
@@ -88,98 +134,52 @@ function toggleSimState() {
     return;
   }
 
-  if (ACS_CYCLE.status === "ON") {
-    /* ===== OFF (FREEZE) ===== */
-    ACS_TIME.currentTime = computeSimTime();
-    const frozenStr = ACS_TIME.currentTime.toISOString();
+  const state = localStorage.getItem(KEY_SIM_STATE) || "OFF";
 
-    // SAVE FROZEN TIME INTO ALL SAFE KEYS (Safari FIX)
-    localStorage.setItem("acs_frozen_time", frozenStr);
-    localStorage.setItem("acs_frozen_time_backup", frozenStr);
-    localStorage.setItem("acs_current_time", frozenStr);
-
-    ACS_CYCLE.status = "OFF";
-    localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
-
-    stopACSTime();
-    updateClockDisplay();
-    notifyTimeListeners();
+  if (state === "ON") {
+    freezeSimulation();
+    alert("⏸ Simulation OFF — Time frozen.");
+  } else {
+    startSimulation();
+    alert("▶️ Simulation ON — Time advancing.");
   }
-
-  else {
-    /* ===== ON (RESUME FROM FROZEN) ===== */
-    const now = new Date();
-
-    // LOAD FROZEN TIME FROM THE SAFEST POSSIBLE SOURCE
-    let frozen =
-      localStorage.getItem("acs_frozen_time") ||
-      localStorage.getItem("acs_current_time") ||
-      localStorage.getItem("acs_frozen_time_backup") ||
-      "1940-01-01T00:00:00Z";
-
-    frozen = new Date(frozen);
-
-    const minutesFromStart =
-      (frozen - new Date(Date.UTC(1940, 0, 1))) / 60000;
-
-    ACS_CYCLE.realStartDate = new Date(
-      now - minutesFromStart * 1000
-    ).toISOString();
-
-    ACS_CYCLE.status = "ON";
-    localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
-
-    startACSTime();
-  }
-
-  // Update status on the page
-  const simStatus = document.getElementById("simStatus");
-  if (simStatus) simStatus.textContent = ACS_CYCLE.status;
-
-  updateClockDisplay();
 }
 
 /* ============================================================
-   === RESET SIMULATION ========================================
+   === END OF CYCLE =============================================
    ============================================================ */
 
-function resetSimulationData() {
-  const users = localStorage.getItem("ACS_users");
-  localStorage.clear();
-
-  if (users) localStorage.setItem("ACS_users", users);
-
-  ACS_CYCLE = {
-    startYear: 1940,
-    endYear: 2026,
-    realStartDate: null,
-    status: "OFF",
-  };
-
-  localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
-
-  ACS_TIME.currentTime = new Date("1940-01-01T00:00:00Z");
-
-  const frozenStr = ACS_TIME.currentTime.toISOString();
-
-  localStorage.setItem("acs_frozen_time", frozenStr);
-  localStorage.setItem("acs_current_time", frozenStr);
-  localStorage.setItem("acs_frozen_time_backup", frozenStr);
-
-  stopACSTime();
-  updateClockDisplay();
-  notifyTimeListeners();
+function endCycle() {
+  freezeSimulation();
+  alert("🕛 Simulation reached 2026 — End of world cycle.");
+  window.location.href = "ranking.html";
 }
 
 /* ============================================================
-   === CLOCK DISPLAY ===========================================
+   === RESET WORLD ==============================================
    ============================================================ */
 
-function updateClockDisplay() {
+function resetWorld() {
+  stopSimulation();
+
+  saveSimTime(SIM_START);
+
+  localStorage.setItem(KEY_SIM_STATE, "OFF");
+  localStorage.removeItem(KEY_REAL_START);
+
+  renderClock(SIM_START);
+  notifyListeners(SIM_START);
+
+  alert("♻️ World reset to 1940.");
+}
+
+/* ============================================================
+   === CLOCK RENDERING ==========================================
+   ============================================================ */
+
+function renderClock(t) {
   const el = document.getElementById("acs-clock");
   if (!el) return;
-
-  const t = ACS_TIME.currentTime;
 
   const hh = String(t.getUTCHours()).padStart(2, "0");
   const mm = String(t.getUTCMinutes()).padStart(2, "0");
@@ -188,132 +188,68 @@ function updateClockDisplay() {
   const yy = t.getUTCFullYear();
 
   el.textContent = `${hh}:${mm} — ${dd} ${mon} ${yy}`;
-  el.style.color = "#00ff80";
 }
 
 /* ============================================================
-   === LISTENERS ===============================================
+   === LISTENER SYSTEM ==========================================
    ============================================================ */
 
-function notifyTimeListeners() {
-  for (const cb of ACS_TIME.listeners) cb(ACS_TIME.currentTime);
+function notifyListeners(t) {
+  for (const cb of ACS_TIME.listeners) cb(t);
 }
 
-function registerTimeListener(callback) {
-  if (typeof callback === "function") ACS_TIME.listeners.push(callback);
+function registerTimeListener(cb) {
+  if (typeof cb === "function") ACS_TIME.listeners.push(cb);
 }
 
 /* ============================================================
-   === ECONOMIC WATCHER ========================================
+   === HEARTBEAT (SYNC ACROSS PAGES) =============================
    ============================================================ */
 
-function updateEconomicVariables(year) {
-  let ticketFee = 0.06;
-  let fuelUSD = 3.2;
+function heartbeat() {
+  const state = localStorage.getItem(KEY_SIM_STATE) || "OFF";
 
-  if (year < 1960) { ticketFee = 0.12; fuelUSD = 1.1; }
-  else if (year < 1980) { ticketFee = 0.09; fuelUSD = 1.9; }
-  else if (year < 2000) { ticketFee = 0.07; fuelUSD = 2.5; }
-  else if (year < 2020) { ticketFee = 0.05; fuelUSD = 4.3; }
-  else { ticketFee = 0.04; fuelUSD = 5.8; }
-
-  localStorage.setItem("acs_ticket_fee", ticketFee);
-  localStorage.setItem("acs_fuel_price", fuelUSD);
-}
-
-function economicWatcher() {
-  let lastHour = null;
-  registerTimeListener((t) => {
-    const hour = t.getUTCHours();
-    if (hour !== lastHour) {
-      lastHour = hour;
-      updateEconomicVariables(t.getUTCFullYear());
-    }
-  });
-}
-
-/* ============================================================
-   === HEARTBEAT (SAFARI FIX) ==================================
-   ============================================================ */
-
-function heartbeatSync() {
-  const savedCycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-
-  // Load frozen from safest source (OFF)
-  let frozen =
-    localStorage.getItem("acs_frozen_time") ||
-    localStorage.getItem("acs_current_time") ||
-    localStorage.getItem("acs_frozen_time_backup");
-
-  /* ===== OFF (FREEZE) ===== */
-  if (savedCycle.status === "OFF") {
-    stopACSTime();
-    if (frozen) ACS_TIME.currentTime = new Date(frozen);
-    updateClockDisplay();
-    notifyTimeListeners();
-    return;
-  }
-
-  /* ===== ON ===== */
-  if (savedCycle.status === "ON" && !ACS_TIME.tickInterval) {
-    ACS_CYCLE = savedCycle;
-    startACSTime();
+  if (state === "OFF") {
+    stopSimulation();
+    const frozen = new Date(localStorage.getItem(KEY_SIM_TIME) || SIM_START);
+    ACS_TIME.simTime = frozen;
+    renderClock(frozen);
+    notifyListeners(frozen);
+  } else {
+    if (!ACS_TIME.tick) startSimulation();
   }
 }
 
-setInterval(heartbeatSync, 1000);
+setInterval(heartbeat, 1000);
 
 /* ============================================================
-   === INITIALIZATION ==========================================
+   === INITIALIZATION ===========================================
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-  ACS_CYCLE = cycle.status ? cycle : ACS_CYCLE;
+  const { state, realStart } = loadEngineState();
 
-  if (ACS_CYCLE.status === "ON") {
-    ACS_TIME.currentTime = computeSimTime();
-    startACSTime();
+  if (state === "ON") {
+    startSimulation();
   } else {
-    // Load frozen time SAFELY (3-level fallback)
-    let frozen =
-      localStorage.getItem("acs_frozen_time") ||
-      localStorage.getItem("acs_current_time") ||
-      localStorage.getItem("acs_frozen_time_backup") ||
-      "1940-01-01T00:00:00Z";
-
-    ACS_TIME.currentTime = new Date(frozen);
-    stopACSTime();
-    updateClockDisplay();
+    const frozen = new Date(localStorage.getItem(KEY_SIM_TIME) || SIM_START);
+    ACS_TIME.simTime = frozen;
+    renderClock(frozen);
+    notifyListeners(frozen);
   }
-
-  economicWatcher();
 });
 
 /* ============================================================
-   === GLOBAL CLOCK ATTACHER — NO HTML EDITS NEEDED ============
+   === UI CLOCK AUTO-ATTACHER ===================================
    ============================================================ */
 
-function applyClockToAllPages() {
-  const el = document.getElementById("acs-clock");
-  if (!el) return;
-
-  function renderClock(t) {
-    const hh = String(t.getUTCHours()).padStart(2, "0");
-    const mm = String(t.getUTCMinutes()).padStart(2, "0");
-    const dd = String(t.getUTCDate()).padStart(2, "0");
-    const mon = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
-    const yy = t.getUTCFullYear();
-    el.textContent = `${hh}:${mm} — ${dd} ${mon} ${yy}`;
-  }
-
-  renderClock(ACS_TIME.currentTime);
+document.addEventListener("DOMContentLoaded", () => {
+  const t = ACS_TIME.simTime;
+  renderClock(t);
 
   registerTimeListener(renderClock);
 
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) renderClock(ACS_TIME.currentTime);
+    if (!document.hidden) renderClock(ACS_TIME.simTime);
   });
-}
-
-document.addEventListener("DOMContentLoaded", applyClockToAllPages);
+});
