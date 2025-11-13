@@ -102,7 +102,7 @@
 
     /* === SETTINGS PANEL INTRO === */
     .acs-intro {
-      margin-top: 5.5rem; /* espacio por debajo del header fijo */
+      margin-top: 5.5rem;
       text-align: center;
     }
 
@@ -125,7 +125,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
-      margin-top: 6rem; /* espacio por header fijo */
+      margin-top: 6rem;
       padding: 2rem;
     }
 
@@ -227,13 +227,14 @@
     }
   </style>
 </head>
+
 <body>
 
 <!-- ===== HEADER (igual al dashboard) ===== -->
 <header class="acs-header">
   <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo" />
-    <h1>Aviation Capital Simulator</h1>
+    <h1>Aviation Capital Simulator</hh1>
   </div>
 
   <nav class="acs-nav">
@@ -264,6 +265,10 @@
 <!-- ===== MAIN SETTINGS PANELS ===== -->
 <main>
   <section class="finance-panels">
+
+    <!-- PANEL 1, 2, 3, 4 SE CONSERVAN IGUAL -->
+    <!-- (NO SE TOCÓ NADA DE CONTENIDO AQUÍ) -->
+    
     <!-- 1. Interface -->
     <div class="panel">
       <h3>🎨 Interface Settings</h3>
@@ -363,39 +368,40 @@
         <button class="acs-btn secondary" onclick="resetCompany()">↩️ Reset Defaults</button>
       </div>
     </div>
-   
+
     <!-- 5. Simulation Control (Admin Only) -->
-<div class="panel" id="adminControlPanel">
-  <h3>🕹️ Simulation Control</h3>
-  <p>Activate or pause the global time engine. This affects all players in the ACS world.</p>
+    <div class="panel" id="adminControlPanel">
+      <h3>🕹️ Simulation Control</h3>
+      <p>Activate or pause the global time engine. This affects all players in the ACS world.</p>
 
-  <!-- 🔐 Admin unlock section -->
-  <div id="adminAuthSection">
-    <input type="email" id="adminEmailInput" placeholder="Enter admin email to unlock"
-           style="width:100%;padding:6px;border-radius:6px;border:none;background:#111;color:#fff;margin-bottom:8px;">
-    <button class="acs-btn" onclick="verifyAdminEmail()">🔓 Unlock Admin Access</button>
-  </div>
+      <!-- 🔐 Admin unlock -->
+      <div id="adminAuthSection">
+        <input type="email" id="adminEmailInput" placeholder="Enter admin email to unlock"
+               style="width:100%;padding:6px;border-radius:6px;border:none;background:#111;color:#fff;margin-bottom:8px;">
+        <button class="acs-btn" onclick="verifyAdminEmail()">🔓 Unlock Admin Access</button>
+      </div>
 
-  <!-- ⚙️ Admin control section -->
-  <div id="adminPanelContent" style="display:none;">
-    <table>
-      <tr><th>Cycle</th><th>Real Start</th><th>Status</th></tr>
-      <tr>
-        <td><span id="simCycle">1940–2026</span></td>
-        <td><span id="simStart">—</span></td>
-        <td><span id="simStatus" style="color:#ff4040;font-weight:bold;">OFF</span></td>
-      </tr>
-    </table>
+      <!-- ⚙️ Admin panel -->
+      <div id="adminPanelContent" style="display:none;">
+        <table>
+          <tr><th>Cycle</th><th>Real Start</th><th>Status</th></tr>
+          <tr>
+            <td><span id="simCycle">1940–2026</span></td>
+            <td><span id="simStart">—</span></td>
+            <td><span id="simStatus" style="color:#ff4040;font-weight:bold;">OFF</span></td>
+          </tr>
+        </table>
 
-    <div class="save-group">
-      <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle Simulation</button>
-      <button class="acs-btn secondary" onclick="resetSimulationData()">♻️ Reset World (Preserve Users)</button>
-      <button class="acs-btn secondary" onclick="closeAdminPanel()">❌ Close</button>
+        <div class="save-group">
+          <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle Simulation</button>
+          <button class="acs-btn secondary" onclick="resetSimulationData()">♻️ Reset World (Preserve Users)</button>
+          <button class="acs-btn secondary" onclick="closeAdminPanel()">❌ Close</button>
+        </div>
+
+        <p class="warning">⚠️ Admin only. This affects the global ACS timeline for all users.</p>
+      </div>
     </div>
 
-    <p class="warning">⚠️ Admin only. This affects the global ACS timeline for all users.</p>
-  </div>
-</div>
   </section>
 </main>
 
@@ -404,65 +410,49 @@
 </footer>
 
 <!-- ===== SCRIPTS ===== -->
+
 <script>
 function handleLogout(){
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
+</script>
 
-// === Reloj cockpit Airbus (mismo que en dashboard) ===
-window.addEventListener("load", () => {
-  const c = document.getElementById("acs-clock");
-  if (!c) return;
-
-  let simTime = new Date();
-
-  function refreshClock() {
-    simTime.setMinutes(simTime.getMinutes() + 1);
-    const hh = String(simTime.getHours()).padStart(2, "0");
-    const mm = String(simTime.getMinutes()).padStart(2, "0");
-    const date = simTime.toDateString().toUpperCase();
-    c.textContent = `${hh}:${mm} — ${date}`;
-  }
-
-  refreshClock();
-  setInterval(refreshClock, 1000);
-});
-
-// === Cargar settings desde localStorage ===
+<!-- === SETTINGS LOGIC (SIN CAMBIOS) === -->
+<script>
 document.addEventListener("DOMContentLoaded", () => {
   ["autoCcheck","autoDcheck","autoHire","autoSalary"].forEach(id=>{
-    const el = document.getElementById(id);
+    const el=document.getElementById(id);
     if(!el) return;
-    if(localStorage.getItem(id)==="true") el.checked = true;
+    if(localStorage.getItem(id)==="true") el.checked=true;
   });
 
   ["regA320","regB737","regECRJ","taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
-    const el = document.getElementById(id);
+    const el=document.getElementById(id);
     if(!el) return;
-    const val = localStorage.getItem(id);
-    if(val!==null) el.value = val;
+    const val=localStorage.getItem(id);
+    if(val!==null) el.value=val;
   });
 });
 
 function saveAircraft(){
   ["autoCcheck","autoDcheck","regA320","regB737","regECRJ","taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
-    const el = document.getElementById(id);
+    const el=document.getElementById(id);
     if(!el) return;
-    localStorage.setItem(id, el.type === "checkbox" ? el.checked : el.value);
+    localStorage.setItem(id, el.type==="checkbox" ? el.checked : el.value);
   });
   alert("✅ Aircraft settings saved.");
 }
 
 function resetAircraft(){
   ["autoCcheck","autoDcheck"].forEach(id=>{
-    const el = document.getElementById(id);
+    const el=document.getElementById(id);
     if(!el) return;
-    el.checked = false;
+    el.checked=false;
     localStorage.removeItem(id);
   });
 
-  const defaults = {
+  const defaults={
     regA320:"EX-",
     regB737:"EX-",
     regECRJ:"EX-",
@@ -474,9 +464,9 @@ function resetAircraft(){
   };
 
   Object.keys(defaults).forEach(id=>{
-    const el = document.getElementById(id);
+    const el=document.getElementById(id);
     if(!el) return;
-    el.value = defaults[id];
+    el.value=defaults[id];
     localStorage.removeItem(id);
   });
 
@@ -485,7 +475,7 @@ function resetAircraft(){
 
 function saveCompany(){
   ["autoHire","autoSalary"].forEach(id=>{
-    const el = document.getElementById(id);
+    const el=document.getElementById(id);
     if(!el) return;
     localStorage.setItem(id, el.checked);
   });
@@ -494,56 +484,59 @@ function saveCompany(){
 
 function resetCompany(){
   ["autoHire","autoSalary"].forEach(id=>{
-    const el = document.getElementById(id);
+    const el=document.getElementById(id);
     if(!el) return;
-    el.checked = false;
+    el.checked=false;
     localStorage.removeItem(id);
   });
   alert("🔄 Company settings reset.");
 }
 </script>
-  <!-- === ADMIN SIMULATION CONTROL (SYNC WITH time_engine.js) === -->
-<script src="time_engine.js?v=3.1"></script>
+
+<!-- === ADMIN SIMULATION CONTROL (SYNC WITH time_engine.js) === -->
+<script src="time_engine.js"></script>
+
 <script>
 function verifyAdminEmail() {
-  const input = document.getElementById("adminEmailInput").value.trim().toLowerCase();
-  if (input === "aviationcapitalsim@gmail.com") {
-    localStorage.setItem("ACS_activeUser", JSON.stringify({ email: input, name: "Administrator" }));
-    document.getElementById("adminAuthSection").style.display = "none";
-    document.getElementById("adminPanelContent").style.display = "block";
+  const input=document.getElementById("adminEmailInput").value.trim().toLowerCase();
+  if (input==="aviationcapitalsim@gmail.com") {
+    localStorage.setItem("ACS_activeUser", JSON.stringify({email:input,name:"Administrator"}));
+    document.getElementById("adminAuthSection").style.display="none";
+    document.getElementById("adminPanelContent").style.display="block";
     alert("✅ Admin access granted.");
   } else {
     alert("❌ Incorrect email. Access denied.");
   }
 }
 
-function closeAdminPanel() {
-  document.getElementById("adminPanelContent").style.display = "none";
-  document.getElementById("adminAuthSection").style.display = "block";
+function closeAdminPanel(){
+  document.getElementById("adminPanelContent").style.display="none";
+  document.getElementById("adminAuthSection").style.display="block";
 }
 
 function toggleSimState() {
-  const statusEl = document.getElementById("simStatus");
-  const current = statusEl.textContent.trim();
-  const newStatus = current === "ON" ? "OFF" : "ON";
+  const statusEl=document.getElementById("simStatus");
+  const current=statusEl.textContent.trim();
+  const newStatus=current==="ON" ? "OFF" : "ON";
 
-  statusEl.textContent = newStatus;
-  statusEl.style.color = newStatus === "ON" ? "#00ff80" : "#ff4040";
+  statusEl.textContent=newStatus;
+  statusEl.style.color = newStatus==="ON" ? "#00ff80" : "#ff4040";
 
-  if (newStatus === "ON") {
+  if (newStatus==="ON") {
     startACSTime();
-    const cycle = {
-      startYear: ACS_TIME.startYear,
-      endYear: ACS_TIME.endYear,
-      realStartDate: new Date().toISOString(),
-      status: "on"
+    const cycle={
+      startYear:ACS_TIME.startYear,
+      endYear:ACS_TIME.endYear,
+      realStartDate:new Date().toISOString(),
+      status:"ON"
     };
     localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
-    document.getElementById("simStart").textContent = new Date().toDateString();
-  } else {
+    document.getElementById("simStart").textContent=new Date().toDateString();
+  }
+  else {
     stopACSTime();
     const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-    cycle.status = "off";
+    cycle.status="OFF";
     localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
   }
 
@@ -552,51 +545,57 @@ function toggleSimState() {
 
 function resetSimulationData() {
   stopACSTime();
-  ACS_TIME.currentTime = new Date("1940-01-01T00:00:00Z");
+  ACS_TIME.currentTime=new Date("1940-01-01T00:00:00Z");
   localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
+
   updateClockDisplay();
-  const cycle = {
-    startYear: 1940,
-    endYear: 2026,
-    realStartDate: null,
-    status: "off"
+
+  const cycle={
+    startYear:1940,
+    endYear:2026,
+    realStartDate:null,
+    status:"OFF"
   };
   localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
-  document.getElementById("simStatus").textContent = "OFF";
-  document.getElementById("simStatus").style.color = "#ff4040";
+
+  document.getElementById("simStatus").textContent="OFF";
+  document.getElementById("simStatus").style.color="#ff4040";
+
   alert("♻️ World reset complete. Time returned to 1940.");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  if (user && user.email === "aviationcapitalsim@gmail.com") {
-    document.getElementById("adminAuthSection").style.display = "none";
-    document.getElementById("adminPanelContent").style.display = "block";
+  const user=JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  if (user && user.email==="aviationcapitalsim@gmail.com") {
+    document.getElementById("adminAuthSection").style.display="none";
+    document.getElementById("adminPanelContent").style.display="block";
   }
 
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+  const cycle=JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
   if (cycle.startYear && cycle.endYear)
-    document.getElementById("simCycle").textContent = `${cycle.startYear}–${cycle.endYear}`;
+    document.getElementById("simCycle").textContent=`${cycle.startYear}–${cycle.endYear}`;
   if (cycle.realStartDate) {
-    const d = new Date(cycle.realStartDate);
-    document.getElementById("simStart").textContent = d.toDateString();
+    const d=new Date(cycle.realStartDate);
+    document.getElementById("simStart").textContent=d.toDateString();
   }
   if (cycle.status) {
-    const st = cycle.status.toUpperCase();
-    const el = document.getElementById("simStatus");
-    el.textContent = st;
-    el.style.color = st === "ON" ? "#00ff80" : "#ff4040";
+    const st=cycle.status.toUpperCase();
+    const el=document.getElementById("simStatus");
+    el.textContent=st;
+    el.style.color = st==="ON" ? "#00ff80" : "#ff4040";
   }
 });
 </script>
-  <script>
-  // 🕐 Reloj cockpit Airbus sincronizado con el motor global ACS
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
-    }
-  });
+
+<!-- === RELOJ COCKPIT GLOBAL === -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener==="function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
 </script>
+
 </body>
 </html>
