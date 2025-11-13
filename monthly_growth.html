@@ -171,7 +171,17 @@
   });
 
   updateMonthlyGrowth();
+  
+  <!-- ===== SCRIPTS (orden correcto) ===== -->
+<script src="time_engine.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+      updateClockDisplay();
+    }
+  });
 </script>
-
+  
 </body>
 </html>
