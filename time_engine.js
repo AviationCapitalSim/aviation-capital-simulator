@@ -1,16 +1,18 @@
 /* ============================================================
    === AVIATION CAPITAL SIMULATOR - HISTORICAL TIME ENGINE ===
-   Version: 3.4 (Global Sync Final)
-   Date: 2025-11-12
+   Version: 3.5 (Global Real-Time Matrix)
+   Date: 2025-11-13
    Author: Aviation Capital Systems
    ------------------------------------------------------------
    ▪ 1 real second = 1 in-game minute
    ▪ Global synchronized simulation (1940 → 2026)
    ▪ Controlled via admin-only Simulation Toggle (ON/OFF)
-   ▪ Automatically resets at cycle end, preserving users
-   ▪ Fully synchronized clocks across all open modules
+   ▪ Time NEVER pauses if ON (even if all players disconnect)
+   ▪ All HTML pages read the same clock (UTC)
+   ▪ Accurate universal "Matrix Clock" using real-world timestamps
    ============================================================ */
 
+/* === 🌍 GLOBAL TIME OBJECT === */
 const ACS_TIME = {
   startYear: 1940,
   endYear: 2026,
@@ -23,36 +25,48 @@ const ACS_TIME = {
 let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle")) || {
   startYear: 1940,
   endYear: 2026,
-  realStartDate: null,
-  status: "OFF", // ON / OFF / COMPLETED
+  realStartDate: null,   // UTC timestamp when ON was activated
+  status: "OFF",         // ON / OFF / COMPLETED
 };
 
-/* === 🕹 Start accelerated simulation (admin-controlled) === */
+/* ============================================================
+   === 🕒 REAL-TIME → SIM-TIME CONVERSION MATRIX ===============
+   ============================================================ */
+
+function computeSimTime() {
+  // If OFF → keep the last saved freeze time.
+  if (ACS_CYCLE.status !== "ON") return ACS_TIME.currentTime;
+
+  const now = new Date();                       // UTC now
+  const realStart = new Date(ACS_CYCLE.realStartDate);  
+  const secPassed = Math.floor((now - realStart) / 1000);
+
+  // 1 sec real = 1 min sim
+  const simMinutes = secPassed;
+  return new Date(Date.UTC(1940, 0, 1, 0, simMinutes));
+}
+
+/* ============================================================
+   === ▶️ Start accelerated simulation (admin) ================
+   ============================================================ */
+
 function startACSTime() {
-  stopACSTime(); // evita duplicados
+  stopACSTime(); // avoid duplicates
 
-  if (ACS_TIME.tickInterval) {
-    console.log("⚠️ Simulation already running.");
-    return;
-  }
-
-  // Si no tiene fecha de inicio, crearla
+  // If cycle has no real-start timestamp → create it.
   if (!ACS_CYCLE.realStartDate) {
-    ACS_CYCLE.realStartDate = new Date().toISOString();
+    ACS_CYCLE.realStartDate = new Date().toISOString(); // UTC
     localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
   }
 
+  // Immediate sync
+  ACS_TIME.currentTime = computeSimTime();
   updateClockDisplay();
+  notifyTimeListeners();
 
-  let tickCount = 0;
+  // Interval: ONLY refresh display (not advance the universe)
   ACS_TIME.tickInterval = setInterval(() => {
-    ACS_TIME.currentTime = new Date(ACS_TIME.currentTime.getTime() + 60000);
-    tickCount++;
-
-    if (tickCount % 60 === 0) {
-      localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
-    }
-
+    ACS_TIME.currentTime = computeSimTime();
     updateClockDisplay();
     notifyTimeListeners();
 
@@ -62,39 +76,53 @@ function startACSTime() {
   }, 1000);
 }
 
-/* === ⏸ Stop simulation === */
+/* ============================================================
+   === ⏸ Pause simulation =====================================
+   ============================================================ */
+
 function stopACSTime() {
   if (ACS_TIME.tickInterval) clearInterval(ACS_TIME.tickInterval);
   ACS_TIME.tickInterval = null;
 }
 
-/* === 🧭 Toggle simulation ON/OFF (Admin only) === */
+/* ============================================================
+   === 🚦 Toggle simulation (Admin Only) ========================
+   ============================================================ */
+
 function toggleSimState() {
   const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
   if (!user || user.email !== "aviationcapitalsim@gmail.com") {
     alert("⛔ Only admin can toggle the simulation state.");
     return;
   }
 
-  ACS_CYCLE.status = ACS_CYCLE.status === "ON" ? "OFF" : "ON";
-
   if (ACS_CYCLE.status === "ON") {
-    ACS_CYCLE.realStartDate = new Date().toISOString();
+    // Turning OFF → freeze sim time
+    ACS_TIME.currentTime = computeSimTime();
+    ACS_CYCLE.status = "OFF";
+    alert("⏸️ Simulation paused — All time progression stopped.");
+
+  } else {
+    // Turning ON → start real-time world
+    ACS_CYCLE.status = "ON";
+    ACS_CYCLE.realStartDate = new Date().toISOString();  
     alert("✅ Simulation started — The world of aviation begins in 1940!");
     startACSTime();
-  } else {
-    alert("⏸️ Simulation paused — All time progression stopped.");
-    stopACSTime();
   }
 
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+
   const simStatus = document.getElementById("simStatus");
   if (simStatus) simStatus.textContent = ACS_CYCLE.status.toUpperCase();
 
   updateClockDisplay();
 }
 
-/* === 🏁 End of cycle === */
+/* ============================================================
+   === 🏁 End of cycle (Year 2026) ==============================
+   ============================================================ */
+
 function endWorldCycle() {
   stopACSTime();
   ACS_CYCLE.status = "COMPLETED";
@@ -105,10 +133,14 @@ function endWorldCycle() {
   window.location.href = "ranking.html";
 }
 
-/* === ♻️ Reset data but preserve users === */
+/* ============================================================
+   === ♻️ Reset data but preserve users ========================
+   ============================================================ */
+
 function resetSimulationData() {
   const users = localStorage.getItem("ACS_users");
   localStorage.clear();
+
   if (users) localStorage.setItem("ACS_users", users);
 
   ACS_CYCLE = {
@@ -120,19 +152,20 @@ function resetSimulationData() {
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
 
   ACS_TIME.currentTime = new Date("1940-01-01T00:00:00Z");
-  localStorage.setItem("acs_current_time", ACS_TIME.currentTime.toISOString());
-
-  stopACSTime();
   updateClockDisplay();
   alert("♻️ ACS world has been reset to 1940. Simulation is now OFF.");
 }
 
-/* === 📺 Update cockpit clock === */
+/* ============================================================
+   === 🛫 Update cockpit clock (UTC only) =======================
+   ============================================================ */
+
 function updateClockDisplay() {
   const el = document.getElementById("acs-clock");
   if (!el) return;
 
   const t = ACS_TIME.currentTime;
+
   const hh = String(t.getUTCHours()).padStart(2, "0");
   const mm = String(t.getUTCMinutes()).padStart(2, "0");
   const dd = String(t.getUTCDate()).padStart(2, "0");
@@ -143,17 +176,22 @@ function updateClockDisplay() {
   el.style.color = "#00ff80";
 }
 
-/* === 📡 Notify connected modules === */
+/* ============================================================
+   === 📡 Listeners for modules (HR, Finance, FlightOps, etc.) ==
+   ============================================================ */
+
 function notifyTimeListeners() {
   for (const cb of ACS_TIME.listeners) cb(ACS_TIME.currentTime);
 }
 
-/* === 🧩 Register external listeners === */
 function registerTimeListener(callback) {
   if (typeof callback === "function") ACS_TIME.listeners.push(callback);
 }
 
-/* === ⚙️ Dynamic Economic Adjustments by Year === */
+/* ============================================================
+   === 💹 Economic Adjustments (Dynamic per Year) ===============
+   ============================================================ */
+
 function updateEconomicVariables(year) {
   let ticketFee = 0.06;
   let fuelUSD = 3.2;
@@ -177,7 +215,10 @@ function updateEconomicVariables(year) {
   localStorage.setItem("acs_fuel_price", fuelUSD);
 }
 
-/* === 🪙 Economic watcher (every simulated hour) === */
+/* ============================================================
+   === 📈 Economic Watcher (Hourly) =============================
+   ============================================================ */
+
 function economicWatcher() {
   let lastHour = null;
   registerTimeListener((time) => {
@@ -189,7 +230,10 @@ function economicWatcher() {
   });
 }
 
-/* === 🚀 Initialization === */
+/* ============================================================
+   === 🚀 Initialization ========================================
+   ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
   const savedTime = localStorage.getItem("acs_current_time");
   ACS_TIME.currentTime = savedTime
@@ -209,7 +253,10 @@ document.addEventListener("DOMContentLoaded", () => {
   economicWatcher();
 });
 
-/* === 🔄 Cross-tab synchronization (Dashboard, Finance, Settings, etc.) === */
+/* ============================================================
+   === 🔄 Cross-tab Sync (Dashboard, Finance, Settings, etc.) ===
+   ============================================================ */
+
 window.addEventListener("storage", (e) => {
   if (e.key === "ACS_Cycle") {
     const updated = JSON.parse(e.newValue || "{}");
@@ -219,11 +266,6 @@ window.addEventListener("storage", (e) => {
     if (ACS_CYCLE.status === "ON") startACSTime();
     else stopACSTime();
 
-    updateClockDisplay();
-  }
-
-  if (e.key === "acs_current_time" && e.newValue) {
-    ACS_TIME.currentTime = new Date(e.newValue);
     updateClockDisplay();
   }
 });
