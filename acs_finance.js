@@ -1,21 +1,28 @@
 /* ============================================================
-   === ACS FINANCE ENGINE - CORE v1.0 ==========================
+   === ACS FINANCE ENGINE - CORE v1.5 (Integración HR) ========
    ------------------------------------------------------------
    ▪ Capital inicial: 3,000,000 USD (Año 1940)
-   ▪ Manejo básico de ingresos, gastos y profit
-   ▪ Historial mensual
-   ▪ API para que cualquier módulo agregue gastos/ingresos
+   ▪ Payroll inicial automático desde HR
+   ▪ Manejo de ingresos, gastos y profit
+   ▪ Historial mensual inicial (Month 1 - JAN 1940)
+   ▪ API completa para todos los módulos
+   ▪ Ahora sincronizado con ACS_HR
    ============================================================ */
 
 // Crear estructura base si no existe
 if (!localStorage.getItem("ACS_Finance")) {
+
+    // Traer payroll del HR inicial
+    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+    const payroll = HR && HR.payroll ? HR.payroll : 0;
+
     const baseFinance = {
         capital: 3000000,
         month: "JAN 1940",
 
         revenue: 0,
-        expenses: 0,
-        profit: 0,
+        expenses: payroll,
+        profit: -payroll,
 
         income: {
             routes: 0,
@@ -25,7 +32,7 @@ if (!localStorage.getItem("ACS_Finance")) {
         },
 
         cost: {
-            salaries: 0,
+            salaries: payroll,
             maintenance: 0,
             leasing: 0,
             fuel: 0,
@@ -36,7 +43,14 @@ if (!localStorage.getItem("ACS_Finance")) {
             loans: 0
         },
 
-        history: [] // Guardará el historial mensual completo
+        history: [
+            {
+                month: "JAN 1940",
+                revenue: 0,
+                expenses: payroll,
+                profit: -payroll
+            }
+        ]
     };
 
     localStorage.setItem("ACS_Finance", JSON.stringify(baseFinance));
@@ -49,6 +63,22 @@ function loadFinance() {
 
 function saveFinance(data) {
     localStorage.setItem("ACS_Finance", JSON.stringify(data));
+}
+
+/* ============================================================
+   ===  INTEGRACIÓN HR — PAYROLL REAL                         ==
+   ============================================================ */
+function ACS_syncPayrollWithHR() {
+    const f = loadFinance();
+    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+
+    if (!f || !HR || !HR.payroll) return;
+
+    f.cost.salaries = HR.payroll;
+    f.expenses = HR.payroll; // por ahora solo salarios (resto vendrá luego)
+    f.profit = f.revenue - f.expenses;
+
+    saveFinance(f);
 }
 
 /* ============================================================
@@ -88,7 +118,10 @@ function ACS_updateProfit() {
 function ACS_closeMonth() {
     const f = loadFinance();
 
-    // Calcular profit antes de cerrar
+    // Sincronizar payroll antes de cerrar
+    ACS_syncPayrollWithHR();
+
+    // Calcular profit final
     ACS_updateProfit();
 
     f.history.push({
@@ -98,12 +131,11 @@ function ACS_closeMonth() {
         profit: f.profit
     });
 
-    // Resetear valores para el siguiente mes (pero capital se mantiene)
+    // Reset para el siguiente mes
     f.revenue = 0;
-    f.expenses = 0;
+    f.expenses = f.cost.salaries; // salaries siempre quedan activos
     f.profit = 0;
 
-    // NO cambiamos el mes todavía (Time Engine lo hará más adelante)
     saveFinance(f);
 }
 
@@ -116,3 +148,21 @@ function ACS_getCapital() {
 function ACS_getHistory() {
     return loadFinance().history;
 }
+
+/* ============================================================
+   ===  AUTO-SYNC AL ENTRAR AL DASHBOARD ======================
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+
+    const isDashboard =
+        window.location.pathname.includes("dashboard.html") ||
+        window.location.href.includes("dashboard.html");
+
+    if (!isDashboard) return;
+
+    // Cada vez que se entra al Dashboard:
+    // sincronizamos salarios de HR con Finance
+    ACS_syncPayrollWithHR();
+
+    console.log("💼 Finance synced with HR → payroll actualizado.");
+});
