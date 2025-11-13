@@ -1,77 +1,73 @@
 /* ============================================================
-   === AVIATION CAPITAL SIMULATOR - TIME ENGINE v3.7-F ========
+   === AVIATION CAPITAL SIMULATOR - TIME ENGINE v7-COMPAT ======
    ------------------------------------------------------------
-   FINAL STABLE EDITION
-   ▪ Global simTime stored in localStorage ("acs_sim_time")
-   ▪ OFF freezes the world at exact minute
-   ▪ ON resumes from that exact instant
-   ▪ No resets when changing pages
-   ▪ No "undefined" problems
+   FINAL STABLE EDITION + FULL HTML COMPATIBILITY
+   ▪ Keeps all old HTML clocks working (updateClockDisplay)
+   ▪ No resets when switching pages
+   ▪ OFF freezes exact time, ON resumes perfectly
+   ▪ Safari/iOS/Chrome/Firefox compatible
    ▪ No HTML edits required
-   ▪ Safari compatible (Heartbeat Sync)
    ============================================================ */
 
 /* ===== CONSTANTS ===== */
-const SIM_START_TIME = new Date(Date.UTC(1940, 0, 1, 0, 0, 0));
+const SIM_START = new Date(Date.UTC(1940, 0, 1, 0, 0, 0));
 const KEY_SIM_TIME   = "acs_sim_time";
-const KEY_STATE      = "acs_state";     // "ON" / "OFF"
-const KEY_REAL_START = "acs_realstart"; // only used during ON
+const KEY_STATE      = "acs_state";      // "ON" / "OFF"
+const KEY_REAL_START = "acs_realstart";  // real timestamp for ON mode
 
 /* ===== GLOBAL ENGINE ===== */
 const ACS_TIME = {
-  currentTime: SIM_START_TIME,
+  currentTime: SIM_START,
   tick: null,
   listeners: []
 };
 
 /* ============================================================
-   🔄 LOAD ENGINE STATE
+   LOAD ENGINE STATE
    ============================================================ */
 function loadState() {
   const saved = localStorage.getItem(KEY_SIM_TIME);
-  ACS_TIME.currentTime = saved ? new Date(saved) : SIM_START_TIME;
+  ACS_TIME.currentTime = saved ? new Date(saved) : SIM_START;
 
-  const state = localStorage.getItem(KEY_STATE) || "OFF";
-  return state;
+  return localStorage.getItem(KEY_STATE) || "OFF";
 }
 
 /* ============================================================
-   🕒 REAL → SIM LOGIC
+   REAL → SIMULATION TIME
    ============================================================ */
 function computeSimTime() {
-  const realStart = localStorage.getItem(KEY_REAL_START);
-  if (!realStart) return ACS_TIME.currentTime;
+  const realStartStr = localStorage.getItem(KEY_REAL_START);
+  if (!realStartStr) return ACS_TIME.currentTime;
 
-  const start = new Date(realStart);
+  const realStart = new Date(realStartStr);
   const now = new Date();
 
-  const secPassed = Math.floor((now - start) / 1000);
-  return new Date(SIM_START_TIME.getTime() + secPassed * 60000);
+  const secPassed = Math.floor((now - realStart) / 1000);
+  return new Date(SIM_START.getTime() + secPassed * 60000);
 }
 
 /* ============================================================
-   ▶️ START SIMULATION (ON)
+   START (ON)
    ============================================================ */
 function startSimulation() {
   stopSimulation(); // avoid duplicates
 
-  // Compute realStart based on frozen time
-  const frozen = new Date(localStorage.getItem(KEY_SIM_TIME) || SIM_START_TIME);
-  const minutesFromStart = (frozen - SIM_START_TIME) / 60000;
+  const frozen = new Date(localStorage.getItem(KEY_SIM_TIME) || SIM_START);
+  const minutesFromStart = (frozen - SIM_START) / 60000;
 
   const newRealStart = new Date(Date.now() - minutesFromStart * 1000);
+
   localStorage.setItem(KEY_REAL_START, newRealStart.toISOString());
   localStorage.setItem(KEY_STATE, "ON");
 
-  // Immediate sync
   ACS_TIME.currentTime = computeSimTime();
   saveSimTime(ACS_TIME.currentTime);
   renderClock(ACS_TIME.currentTime);
   notifyListeners(ACS_TIME.currentTime);
 
-  // 1Hz global tick
   ACS_TIME.tick = setInterval(() => {
-    const t = computeSimTime();
+    const realStart = new Date(localStorage.getItem(KEY_REAL_START));
+    const t = computeSimTime(realStart);
 
     ACS_TIME.currentTime = t;
     saveSimTime(t);
@@ -85,12 +81,19 @@ function startSimulation() {
 }
 
 /* ============================================================
-   ⏸ FREEZE SIMULATION (OFF)
+   STOP TICK
+   ============================================================ */
+function stopSimulation() {
+  if (ACS_TIME.tick) clearInterval(ACS_TIME.tick);
+  ACS_TIME.tick = null;
+}
+
+/* ============================================================
+   FREEZE (OFF)
    ============================================================ */
 function freezeSimulation() {
   stopSimulation();
 
-  // Save exact frozen instant
   saveSimTime(ACS_TIME.currentTime);
 
   localStorage.setItem(KEY_STATE, "OFF");
@@ -101,15 +104,7 @@ function freezeSimulation() {
 }
 
 /* ============================================================
-   ⛔ STOP TICKER
-   ============================================================ */
-function stopSimulation() {
-  if (ACS_TIME.tick) clearInterval(ACS_TIME.tick);
-  ACS_TIME.tick = null;
-}
-
-/* ============================================================
-   🔘 ADMIN TOGGLE ================================
+   ADMIN TOGGLE ON/OFF
    ============================================================ */
 function toggleSimState() {
   const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
@@ -130,7 +125,7 @@ function toggleSimState() {
 }
 
 /* ============================================================
-   🏁 END OF WORLD
+   END OF WORLD
    ============================================================ */
 function endWorldCycle() {
   freezeSimulation();
@@ -139,31 +134,31 @@ function endWorldCycle() {
 }
 
 /* ============================================================
-   ♻️ RESET WORLD
+   RESET
    ============================================================ */
 function resetSimulationData() {
   stopSimulation();
 
-  localStorage.setItem(KEY_SIM_TIME, SIM_START_TIME.toISOString());
+  localStorage.setItem(KEY_SIM_TIME, SIM_START.toISOString());
   localStorage.setItem(KEY_STATE, "OFF");
   localStorage.removeItem(KEY_REAL_START);
 
-  ACS_TIME.currentTime = SIM_START_TIME;
-  renderClock(SIM_START_TIME);
-  notifyListeners(SIM_START_TIME);
+  ACS_TIME.currentTime = SIM_START;
+  renderClock(SIM_START);
+  notifyListeners(SIM_START);
 
   alert("♻️ Reset to 1940.");
 }
 
 /* ============================================================
-   💾 SAVE SIM TIME
+   SAVE TIME
    ============================================================ */
 function saveSimTime(t) {
   localStorage.setItem(KEY_SIM_TIME, t.toISOString());
 }
 
 /* ============================================================
-   🕹 CLOCK RENDERER
+   CLOCK RENDERER
    ============================================================ */
 function renderClock(t) {
   const el = document.getElementById("acs-clock");
@@ -179,7 +174,7 @@ function renderClock(t) {
 }
 
 /* ============================================================
-   🔔 LISTENERS
+   LISTENERS
    ============================================================ */
 function registerTimeListener(cb) {
   if (typeof cb === "function") ACS_TIME.listeners.push(cb);
@@ -190,17 +185,17 @@ function notifyListeners(t) {
 }
 
 /* ============================================================
-   ❤️ SAFARI HEARTBEAT SYNC
+   SAFARI HEARTBEAT SYNC (global)
    ============================================================ */
 function heartbeat() {
   const state = localStorage.getItem(KEY_STATE) || "OFF";
-  const saved = new Date(localStorage.getItem(KEY_SIM_TIME) || SIM_START_TIME);
+  const frozen = new Date(localStorage.getItem(KEY_SIM_TIME) || SIM_START);
 
   if (state === "OFF") {
     stopSimulation();
-    ACS_TIME.currentTime = saved;
-    renderClock(saved);
-    notifyListeners(saved);
+    ACS_TIME.currentTime = frozen;
+    renderClock(frozen);
+    notifyListeners(frozen);
   } else {
     if (!ACS_TIME.tick) startSimulation();
   }
@@ -209,7 +204,7 @@ function heartbeat() {
 setInterval(heartbeat, 1000);
 
 /* ============================================================
-   🚀 INITIAL LOAD
+   INITIAL LOAD
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   const state = loadState();
@@ -220,4 +215,30 @@ document.addEventListener("DOMContentLoaded", () => {
     renderClock(ACS_TIME.currentTime);
     notifyListeners(ACS_TIME.currentTime);
   }
+});
+
+/* ============================================================
+   COMPATIBILITY LAYER (NO HTML EDITS REQUIRED)
+   ============================================================ */
+
+/*
+   Old HTML files call:
+
+      updateClockDisplay()
+      registerTimeListener(updateClockDisplay)
+
+   This shim keeps everything running normally.
+*/
+function updateClockDisplay(t = ACS_TIME.currentTime) {
+  try {
+    renderClock(t);
+  } catch (err) {
+    console.warn("CompatClock: updateClockDisplay fallback", err);
+  }
+}
+
+registerTimeListener(updateClockDisplay);
+
+document.addEventListener("DOMContentLoaded", () => {
+  updateClockDisplay(ACS_TIME.currentTime);
 });
