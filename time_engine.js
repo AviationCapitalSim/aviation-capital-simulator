@@ -139,7 +139,6 @@ function updateClockDisplay() {
   const month = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
   const yy = t.getUTCFullYear();
 
-  const status = ACS_CYCLE.status === "ON" ? "🟢 ON" : "⏸ OFF";
   el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy}`;
   el.style.color = "#00ff80";
 }
@@ -227,16 +226,4 @@ window.addEventListener("storage", (e) => {
     ACS_TIME.currentTime = new Date(e.newValue);
     updateClockDisplay();
   }
-});
-// --- Auto-sync al cargar cualquier página ---
-document.addEventListener("DOMContentLoaded", () => {
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-
-  if (cycle.status === "ON") {
-    startACSTime();     // asegura que el motor corre en background
-  } else {
-    stopACSTime();      // pausa global
-  }
-
-  updateClockDisplay(); // actualiza la hora exacta al entrar
 });
