@@ -116,6 +116,20 @@
       font-size: 0.9rem;
       margin-left: 1rem;
     }
+    /* === INACTIVE PANELS (COMING SOON) === */
+.inactive-panel {
+  opacity: 0.45;               /* grisáceo */
+  filter: grayscale(100%);
+  pointer-events: none;        /* no interactivo */
+  position: relative;
+}
+
+.inactive-btn {
+  background: #444 !important;
+  color: #ccc !important;
+  border: 1px solid #666 !important;
+  cursor: not-allowed !important;
+}
   </style>
 </head>
 
@@ -170,20 +184,26 @@
         </button>
       </div>
 
-      <div class="panel">
-        <h3>💰 Payroll & Bonuses</h3>
-        <p>This Month Payroll: <strong id="payrollTotal">—</strong></p>
-        <p>Bonuses Applied: <strong id="bonusTotal">$0</strong></p>
-        <p>Expense Share: <strong id="expenseShare">—</strong></p>
-        <button class="acs-btn" onclick="resetBonuses()">Reset Bonuses</button>
-      </div>
+      <!-- === 💰 Payroll & Bonuses (INACTIVE VERSION) === -->
+<div class="panel inactive-panel">
+  <h3>💰 Payroll & Bonuses</h3>
+  <p>This Month Payroll: <strong>—</strong></p>
+  <p>Bonuses Applied: <strong>$0</strong></p>
+  <p>Expense Share: <strong>—</strong></p>
+  <button class="acs-btn inactive-btn" disabled>Coming Soon</button>
+</div>
 
-      <div class="panel">
-        <h3>✈️ Operational Impact</h3>
-        <p>Flight Efficiency: <strong id="efficiency">—</strong></p>
-        <p>Delay Risk: <strong id="delayRisk">None</strong></p>
-        <p>Maintenance Reliability: <strong id="reliability">—</strong></p>
-      </div>
+<!-- === ✈️ Operational Impact (INACTIVE VERSION) === -->
+<div class="panel inactive-panel">
+  <h3>✈️ Operational Impact</h3>
+  <p>Flight Efficiency: <strong>—</strong></p>
+  <p>Delay Risk: <strong>None</strong></p>
+  <p>Maintenance Reliability: <strong>—</strong></p>
+  <p style="margin-top:1rem;color:#aaa;font-style:italic;text-align:center;">
+    Coming Soon
+  </p>
+</div>
+
     </section>
   </main>
 
