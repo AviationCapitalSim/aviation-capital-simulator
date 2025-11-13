@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Human Resources - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
   <style>
     /* === HR MODULE (ACS Unified Dashboard Design) === */
     body {
@@ -51,58 +52,17 @@
       margin-bottom: 0.8rem;
     }
 
-    .salary { color: #ff6464; font-weight: 600; }
-    .staff { color: #00d17a; font-weight: 600; }
-    .morale { font-weight: 600; color: #00d17a; }
-
-    .acs-btn {
-      background-color: #00a86b;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
-      margin-top: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    .acs-btn:hover { background-color: #007d4e; }
-
-    /* === BONUS MODAL === */
-    #bonusModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
+    .inactive-panel {
+      opacity: 0.45;
+      filter: grayscale(100%);
+      pointer-events: none;
     }
 
-    #bonusModalContent {
-      background: #0b1c3f;
-      border: 1px solid #FFB300;
-      border-radius: 12px;
-      padding: 1.5rem 2rem;
-      text-align: center;
-      width: 350px;
-      box-shadow: 0 0 15px rgba(255,179,0,0.4);
-      position: relative;
-    }
-
-    #bonusModal h3 { color: #FFB300; margin-bottom: 1rem; }
-    #bonusModal input[type="range"] { width: 80%; margin: 1rem 0; }
-
-    .close-modal {
-      background: none;
-      border: none;
-      color: #aaa;
-      font-size: 1.2rem;
-      cursor: pointer;
-      position: absolute;
-      top: 10px;
-      right: 20px;
+    .inactive-btn {
+      background: #444 !important;
+      color: #ccc !important;
+      border: 1px solid #666 !important;
+      cursor: not-allowed !important;
     }
 
     /* Clock */
@@ -116,273 +76,135 @@
       font-size: 0.9rem;
       margin-left: 1rem;
     }
-    /* === INACTIVE PANELS (COMING SOON) === */
-.inactive-panel {
-  opacity: 0.45;               /* grisáceo */
-  filter: grayscale(100%);
-  pointer-events: none;        /* no interactivo */
-  position: relative;
-}
-
-.inactive-btn {
-  background: #444 !important;
-  color: #ccc !important;
-  border: 1px solid #666 !important;
-  cursor: not-allowed !important;
-}
   </style>
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
-      <h1>Aviation Capital Simulator</h1>
-    </div>
 
-    <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html">Finance</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html">Routes</a>
-      <a href="hr.html" class="active">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
-    </nav>
-
-    <div class="acs-auth">
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    </div>
-
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </header>
-
-  <!-- ===== MAIN ===== -->
-  <main class="acs-main">
-    <h2>👥 Human Resources Department</h2>
-    <p class="sub">Manage all staff, morale, payroll and bonuses across the company.</p>
-
-    <section class="finance-panels">
-      <div class="panel">
-        <h3>📊 HR Overview</h3>
-        <p>Total Staff: <strong id="totalStaff">—</strong></p>
-        <p>Total Payroll: <strong id="totalPayroll">—</strong></p>
-        <p>Average Morale: <strong id="avgMorale">—</strong></p>
-        <p>Staff Coverage: <strong id="coverage">—</strong></p>
-      </div>
-
-      <div class="panel">
-        <h3>🧑‍💼 Department Control</h3>
-        <p>Total Departments: <strong>7</strong></p>
-        <p>Total Staff: <strong id="totalStaff2">—</strong></p>
-        <p>Average Morale: <strong id="avgMorale2">—</strong></p>
-        <p>Monthly Payroll: <strong id="monthlyPayroll">—</strong></p>
-        <br />
-        <button class="acs-btn" onclick="window.location.href='department_control.html'">
-          🏢 Open Department Control Center
-        </button>
-      </div>
-
-      <!-- === 💰 Payroll & Bonuses (INACTIVE VERSION) === -->
-<div class="panel inactive-panel">
-  <h3>💰 Payroll & Bonuses</h3>
-  <p>This Month Payroll: <strong>—</strong></p>
-  <p>Bonuses Applied: <strong>$0</strong></p>
-  <p>Expense Share: <strong>—</strong></p>
-  <button class="acs-btn inactive-btn" disabled>Coming Soon</button>
-</div>
-
-<!-- === ✈️ Operational Impact (INACTIVE VERSION) === -->
-<div class="panel inactive-panel">
-  <h3>✈️ Operational Impact</h3>
-  <p>Flight Efficiency: <strong>—</strong></p>
-  <p>Delay Risk: <strong>None</strong></p>
-  <p>Maintenance Reliability: <strong>—</strong></p>
-  <p style="margin-top:1rem;color:#aaa;font-style:italic;text-align:center;">
-    Coming Soon
-  </p>
-</div>
-
-    </section>
-  </main>
-
-  <!-- ===== BONUS MODAL ===== -->
-  <div id="bonusModal">
-    <div id="bonusModalContent">
-      <button class="close-modal" onclick="closeBonusModal()">✖</button>
-      <h3>Assign Bonus</h3>
-      <p id="bonusDeptName">Department</p>
-      <input type="range" min="20" max="100" step="10" value="20" id="bonusRange">
-      <p>Bonus: <span id="bonusValue">20%</span></p>
-      <p>Estimated Cost: <span id="bonusCost">0</span> USD</p>
-      <button class="acs-btn" onclick="confirmBonus()">Confirm</button>
-    </div>
+<!-- ===== HEADER ===== -->
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
+    <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <!-- ===== FOOTER ===== -->
-  <footer class="acs-footer">
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-  </footer>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html" class="active">HR</a>
+    <a href="forum.html">Forum</a>
+    <a href="support.html">Support</a>
+  </nav>
 
-  <!-- ===== SCRIPT ===== -->
-  <script>
-    /*****************************************************
-     *  Cargamos ACS_HR desde localStorage
-     *****************************************************/
-    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-    const Finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  <div class="acs-auth">
+    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+  </div>
 
-    /*****************************************************
-     *  Departamentos profesionales (SIN AVIONES)
-     *****************************************************/
-    const departments = {
-      management: {
-        name: "High Level Management",
-        staff: HR.staff ? HR.staff.admin : 0,
-        morale: HR.morale ? HR.morale.admin : 100,
-        salary: HR.salaries ? HR.salaries.admin : 55
-      },
-      admin: {
-        name: "Finance & Administration",
-        staff: HR.staff ? HR.staff.admin : 0,
-        morale: HR.morale ? HR.morale.admin : 100,
-        salary: HR.salaries ? HR.salaries.admin : 55
-      },
-      operations: {
-        name: "Operations (Dispatch)",
-        staff: HR.staff ? HR.staff.operations_basic : 0,
-        morale: HR.morale ? HR.morale.operations_basic : 100,
-        salary: HR.salaries ? HR.salaries.operations_basic : 85
-      },
-      flightcrew: {
-        name: "Flight Crew",
-        staff: HR.staff ? HR.staff.pilots + HR.staff.copilots : 0,
-        morale: HR.morale ? HR.morale.pilots : 100,
-        salary: HR.salaries ? HR.salaries.pilot : 120
-      },
-      cabin: {
-        name: "Cabin Crew",
-        staff: HR.staff ? HR.staff.cabin : 0,
-        morale: HR.morale ? HR.morale.cabin : 100,
-        salary: HR.salaries ? HR.salaries.cabin : 45
-      },
-      maintenance: {
-        name: "Maintenance",
-        staff: HR.staff ? HR.staff.mechanics : 0,
-        morale: HR.morale ? HR.morale.mechanics : 100,
-        salary: HR.salaries ? HR.salaries.mechanic : 70
-      },
-      ground: {
-        name: "Ground Handling",
-        staff: HR.staff ? HR.staff.ground : 0,
-        morale: HR.morale ? HR.morale.ground : 100,
-        salary: HR.salaries ? HR.salaries.ground : 25
-      }
-    };
+  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+</header>
 
-    /*****************************************************
-     *  Calcular totales reales
-     *****************************************************/
-    const totalStaff =
-      HR.staff.admin +
-      HR.staff.operations_basic +
-      HR.staff.pilots +
-      HR.staff.copilots +
-      HR.staff.cabin +
-      HR.staff.mechanics +
-      HR.staff.ground;
+<!-- ===== MAIN ===== -->
+<main class="acs-main">
+  <h2>👥 Human Resources Department</h2>
+  <p class="sub">Manage all staff, morale, payroll and bonuses across the company.</p>
 
-    const avgMorale = HR.avgMorale || 100;
-    const payroll = HR.payroll || 0;
+  <section class="finance-panels">
 
-    /*****************************************************
-     *  Pintar en la UI
-     *****************************************************/
-    document.getElementById("totalStaff").textContent = totalStaff;
-    document.getElementById("totalStaff2").textContent = totalStaff;
+    <!-- ===== HR OVERVIEW ===== -->
+    <div class="panel">
+      <h3>📊 HR Overview</h3>
+      <p>Total Staff: <strong id="totalStaff">—</strong></p>
+      <p>Total Payroll: <strong id="totalPayroll">—</strong></p>
+      <p>Average Morale: <strong id="avgMorale">—</strong></p>
+      <p>Staff Coverage: <strong id="coverage">100%</strong></p>
+    </div>
 
-    document.getElementById("totalPayroll").textContent = `$${payroll.toLocaleString()} / month`;
-    document.getElementById("monthlyPayroll").textContent = `$${payroll.toLocaleString()}`;
-    document.getElementById("payrollTotal").textContent = `$${payroll.toLocaleString()}`;
+    <!-- ===== DEPARTMENT CONTROL ===== -->
+    <div class="panel">
+      <h3>🧑‍💼 Department Control</h3>
+      <p>Total Departments: <strong id="deptCount">—</strong></p>
+      <p>Total Staff: <strong id="totalStaff2">—</strong></p>
+      <p>Average Morale: <strong id="avgMorale2">—</strong></p>
+      <p>Monthly Payroll: <strong id="monthlyPayroll">—</strong></p>
+      <br />
+      <button class="acs-btn" onclick="window.location.href='department_control.html'">
+        🏢 Open Department Control Center
+      </button>
+    </div>
 
-    document.getElementById("avgMorale").textContent = `${avgMorale}%`;
-    document.getElementById("avgMorale2").textContent = `${avgMorale}%`;
+    <!-- ===== INACTIVE PANELS ===== -->
+    <div class="panel inactive-panel">
+      <h3>💰 Payroll & Bonuses</h3>
+      <p>This Month Payroll: <strong>—</strong></p>
+      <p>Bonuses Applied: <strong>$0</strong></p>
+      <p>Expense Share: <strong>—</strong></p>
+      <button class="acs-btn inactive-btn" disabled>Coming Soon</button>
+    </div>
 
-    document.getElementById("coverage").textContent = "100%";
-    document.getElementById("expenseShare").textContent =
-      Finance.expenses > 0 ? `${Math.round((payroll / Finance.expenses) * 100)}%` : "100%";
+    <div class="panel inactive-panel">
+      <h3>✈️ Operational Impact</h3>
+      <p>Flight Efficiency: <strong>—</strong></p>
+      <p>Delay Risk: <strong>None</strong></p>
+      <p>Maintenance Reliability: <strong>—</strong></p>
+      <p style="margin-top:1rem;color:#aaa;font-style:italic;text-align:center;">
+        Coming Soon
+      </p>
+    </div>
 
-    document.getElementById("efficiency").textContent = "—";
-    document.getElementById("delayRisk").textContent = "None";
-    document.getElementById("reliability").textContent = "—";
+  </section>
+</main>
 
-    /*****************************************************
-     * BONUS MODAL (funcional)
-     *****************************************************/
-    let currentDept = null;
+<footer class="acs-footer">
+  <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+</footer>
 
-    function openBonusModal(deptKey) {
-      currentDept = deptKey;
-      const modal = document.getElementById("bonusModal");
-      const range = document.getElementById("bonusRange");
+<!-- ===== SCRIPTS ===== -->
+<script src="engine/acs_hr_engine.js"></script>
+<script src="engine/acs_finance.js"></script>
+<script src="time_engine.js"></script>
 
-      range.value = 20;
-      updateBonusCost();
+<script>
+/*****************************************************
+ * Cargar datos reales desde el motor HR
+ *****************************************************/
+window.addEventListener("DOMContentLoaded", () => {
 
-      document.getElementById("bonusDeptName").textContent =
-        departments[deptKey].name;
+  const overview = ACS_HR_getOverview();   // { totalStaff, payroll, avgMorale }
+  const totalPayroll = ACS_HR_getTotalPayroll();
+  const deptView = ACS_HR_getDepartmentsView();
 
-      modal.style.display = "flex";
-    }
+  // Pintar valores
+  document.getElementById("totalStaff").textContent = overview.totalStaff;
+  document.getElementById("totalStaff2").textContent = overview.totalStaff;
 
-    document.getElementById("bonusRange").addEventListener("input", updateBonusCost);
+  document.getElementById("totalPayroll").textContent =
+    `$${overview.payroll.toLocaleString()} / month`;
 
-    function updateBonusCost() {
-      const percent = parseInt(document.getElementById("bonusRange").value);
-      const d = departments[currentDept];
-      const cost = d.salary * d.staff * (percent / 100);
+  document.getElementById("monthlyPayroll").textContent =
+    `$${totalPayroll.toLocaleString()}`;
 
-      document.getElementById("bonusValue").textContent = percent + "%";
-      document.getElementById("bonusCost").textContent = cost.toLocaleString();
-    }
+  document.getElementById("avgMorale").textContent = overview.avgMorale + "%";
+  document.getElementById("avgMorale2").textContent = overview.avgMorale + "%";
 
-    function confirmBonus() {
-      const percent = parseInt(document.getElementById("bonusRange").value);
-      const d = departments[currentDept];
-      const cost = d.salary * d.staff * (percent / 100);
+  document.getElementById("deptCount").textContent = deptView.length;
 
-      d.morale = Math.min(100, d.morale + (percent / 5));
+  // Reloj global
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
 
-      alert(`${d.name} morale increased to ${d.morale}%`);
-      closeBonusModal();
-    }
-
-    function closeBonusModal() {
-      document.getElementById("bonusModal").style.display = "none";
-    }
-
-    function resetBonuses() {
-      document.getElementById("bonusTotal").textContent = "$0";
-      alert("Bonus records reset.");
-    }
-
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-  </script>
-
-  <!-- GLOBAL CLOCK -->
-  <script src="time_engine.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof registerTimeListener === "function") {
-        registerTimeListener(updateClockDisplay);
-        updateClockDisplay();
-      }
-    });
-  </script>
+/*****************************************************
+ * Logout
+ *****************************************************/
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
+</script>
 
 </body>
 </html>
