@@ -423,7 +423,7 @@
   // 🧭 Limpieza de claves antiguas
   localStorage.removeItem("ACS_CurrentTime");
 
-  // 🕐 Reloj cockpit sincronizado con motor global
+  // 🕐 Reloj cockpit sincronizado con motor global ACS — SIN ESTADO VISUAL
   function cockpitClockListener(t) {
     const el = document.getElementById("acs-clock");
     if (!el) return;
@@ -434,28 +434,21 @@
     const mon = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
     const yy = t.getUTCFullYear();
 
-    let status = "⏸️ OFF";
-    try {
-      const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-      status = (cycle && cycle.status === "ON") ? "🟢 ON" : "⏸️ OFF";
-    } catch(e) {}
-
-    el.textContent = `${hh}:${mm} — ${dd} ${mon} ${yy} | ${status}`;
-    el.style.color = (status === "🟢 ON") ? "#00ff80" : "#ff9b00";
+    // ❌ Eliminamos estado ON/OFF del texto
+    el.textContent = `${hh}:${mm} — ${dd} ${mon} ${yy}`;
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Si el motor existe, usarlo directamente
     if (typeof ACS_TIME !== "undefined") {
       cockpitClockListener(ACS_TIME.currentTime);
     }
 
-    // Vincular al motor global
+    // Registrar actualizaciones
     if (typeof registerTimeListener === "function") {
       registerTimeListener(cockpitClockListener);
     }
 
-    // Refrescar al volver de segundo plano
+    // Refrescar cuando vuelves a la pestaña
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden && typeof ACS_TIME !== "undefined") {
         cockpitClockListener(ACS_TIME.currentTime);
@@ -463,5 +456,6 @@
     });
   });
 </script>
+
 </body>
 </html>
