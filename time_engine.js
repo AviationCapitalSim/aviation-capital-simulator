@@ -104,12 +104,25 @@ function toggleSimState() {
     alert("⏸️ Simulation paused — All time progression stopped.");
 
   } else {
-    // Turning ON → start real-time world
+    // Turning ON → continue from frozen sim time
     ACS_CYCLE.status = "ON";
-    ACS_CYCLE.realStartDate = new Date().toISOString();  
-    alert("✅ Simulation started — The world of aviation begins in 1940!");
+
+    // compute new realStartDate based on the frozen currentTime
+    const now = new Date();
+    const frozen = ACS_TIME.currentTime;
+
+    // minutes between 1940-01-01 and frozen time
+    const minutesFromStart =
+      (frozen - new Date(Date.UTC(1940, 0, 1))) / 60000;
+
+    // new realStartDate ensures continuity
+    const newRealStart = new Date(now - minutesFromStart * 1000);
+
+    ACS_CYCLE.realStartDate = newRealStart.toISOString();
+
+    alert("▶️ Simulation resumed — Continuing timeline.");
     startACSTime();
-  }
+}
 
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
 
