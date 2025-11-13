@@ -32,19 +32,31 @@
 
     .btn { border:none; border-radius:6px; padding:6px 10px; margin-left:4px;
       font-weight:600; cursor:pointer; transition:background 0.2s ease; }
+    .btn-bonus { background:#00a86b; color:#fff; }
+    .btn-bonus:hover { background:#007d4e; }
 
-    .btn-bonus { background:#00a86b; color:#fff; cursor:not-allowed !important; opacity:0.4; }
     .btn-hire { background:#007bff; color:#fff; }
-    .btn-adjust { background:#ffb300; color:#000; }
-    .btn-dismiss { background:#000; color:#fff; }
-
     .btn-hire:hover { background:#005fcc; }
+
+    .btn-adjust { background:#ffb300; color:#000; }
     .btn-adjust:hover { background:#e4a000; }
+
+    .btn-dismiss { background:#000; color:#fff; }
     .btn-dismiss:hover { background:#222; }
 
     tfoot td {
       border-top:2px solid #FFB300;
       font-weight:bold; text-align:right; padding-top:1rem;
+      color:#FFB300;
+      text-shadow:0 0 8px rgba(255,179,0,0.4);
+      font-size:1.1rem;
+      letter-spacing:0.5px;
+    }
+
+    /* BONUS deshabilitado visualmente pero con mismo estilo base */
+    .btn-bonus[disabled] {
+      opacity:0.45;
+      cursor:not-allowed;
     }
 
     /* === MODALS === */
@@ -70,11 +82,18 @@
       cursor:pointer; position:absolute; top:10px; right:20px;
     }
 
-    #totalPayroll {
-      color:#FFB300;
-      text-shadow:0 0 8px rgba(255,179,0,0.4);
-      font-weight:600; font-size:1.1rem; letter-spacing:0.5px;
+    input[type="range"], input[type="number"] {
+      width:80%; margin:1rem 0; padding:0.3rem;
+      border-radius:6px; border:1px solid #FFB300;
+      background:#102040; color:white;
     }
+
+    .modal-btn {
+      background:#00a86b; color:#fff; border:none;
+      border-radius:6px; padding:8px 16px; font-weight:600;
+      cursor:pointer; margin-top:1rem; transition:background 0.2s ease;
+    }
+    .modal-btn:hover { background:#007d4e; }
 
     /* Reloj cockpit */
     .acs-clock-header{
@@ -135,11 +154,12 @@
           <td colspan="5" id="totalPayroll">Total Monthly Payroll: $0</td>
         </tr>
       </tfoot>
+
     </table>
   </section>
 </main>
 
-<!-- MODALS (unchanged) -->
+<!-- MODALS (sin cambios de lógica, aunque bonus no se usa de momento) -->
 <div class="acs-modal" id="bonusModal">
   <div class="acs-modal-content">
     <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
@@ -152,7 +172,37 @@
   </div>
 </div>
 
-<!-- (otros modales intactos) -->
+<div class="acs-modal" id="hireModal">
+  <div class="acs-modal-content">
+    <button class="close-modal" onclick="closeModal('hireModal')">✖</button>
+    <h3>Hire New Staff</h3>
+    <p id="hireDeptName">Department</p>
+    <input type="number" id="hireCount" min="1" max="50" value="1">
+    <p>Cost: <span id="hireCost">0</span> USD</p>
+    <button class="modal-btn" onclick="confirmHire()">Confirm Hire</button>
+  </div>
+</div>
+
+<div class="acs-modal" id="salaryModal">
+  <div class="acs-modal-content">
+    <button class="close-modal" onclick="closeModal('salaryModal')">✖</button>
+    <h3>Adjust Department Salary</h3>
+    <p id="salaryDeptName">Department</p>
+    <input type="range" min="50" max="150" step="5" value="100" id="salaryRange">
+    <p>Adjustment: <span id="salaryValue">100%</span></p>
+    <button class="modal-btn" onclick="confirmSalary()">Apply Adjustment</button>
+  </div>
+</div>
+
+<div class="acs-modal" id="dismissModal">
+  <div class="acs-modal-content">
+    <button class="close-modal" onclick="closeModal('dismissModal')">✖</button>
+    <h3>Confirm Dismissal</h3>
+    <p id="dismissDeptName">Department</p>
+    <input type="number" id="dismissCount" min="1" max="50" value="1">
+    <button class="modal-btn" onclick="confirmDismiss()">Confirm</button>
+  </div>
+</div>
 
 <footer class="acs-footer">
   <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
@@ -166,7 +216,9 @@
 <script>
 let activeDept = null;
 
-/* LOAD DEPARTMENTS ==================================================== */
+/* ============================================================
+   LOAD DEPARTMENTS INTO THE TABLE
+   ============================================================ */
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
   rows.innerHTML = "";
@@ -175,7 +227,7 @@ function loadDepartments() {
 
   depts.forEach(dep => {
 
-    /* CEO SPECIAL CASE — NO BUTTONS */
+    // CEO sin botones
     if (dep.id === "ceo") {
       rows.innerHTML += `
         <tr>
@@ -189,7 +241,7 @@ function loadDepartments() {
       return;
     }
 
-    /* OTHERS — BONUS DISABLED ONLY */
+    // Resto: bonus deshabilitado, otros botones funcionales
     rows.innerHTML += `
       <tr>
         <td>${dep.name}</td>
@@ -197,7 +249,7 @@ function loadDepartments() {
         <td class="salary">$${dep.salary}</td>
         <td class="morale">${dep.morale}%</td>
         <td>
-          <button class="btn btn-bonus">💵</button>
+          <button class="btn btn-bonus" disabled title="Bonus system coming soon">💵</button>
           <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
           <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
           <button class="btn btn-dismiss" onclick="openDismiss('${dep.id}')">❌</button>
@@ -209,27 +261,108 @@ function loadDepartments() {
   updatePayroll();
 }
 
-/* EXCLUDE bonus functionality */
-function openBonus() {
-  return; /* disabled */
-}
-
-/* OTHERS remain functional */
+/* ============================================================
+   UPDATE PAYROLL TOTAL
+   ============================================================ */
 function updatePayroll() {
   const total = ACS_HR_getTotalPayroll();
   document.getElementById("totalPayroll").textContent =
     "Total Monthly Payroll: $" + total.toLocaleString();
 }
 
-function openHire(id){ /* igual */ }
-function openSalary(id){ /* igual */ }
-function openDismiss(id){ /* igual */ }
+/* ============================================================
+   MODAL OPENERS (HIRE / SALARY / DISMISS)
+   ============================================================ */
+function openBonus(id) {
+  // por ahora no se usa; bonus deshabilitado
+  return;
+}
 
-function handleLogout(){
+function openHire(id) {
+  activeDept = id;
+  const hr = ACS_HR_load()[id];
+  document.getElementById("hireDeptName").textContent = hr.name;
+  document.getElementById("hireCount").value = 1;
+  document.getElementById("hireCost").textContent = hr.salary.toLocaleString();
+  document.getElementById("hireModal").style.display = "flex";
+}
+
+function openSalary(id) {
+  activeDept = id;
+  const hr = ACS_HR_load()[id];
+  document.getElementById("salaryDeptName").textContent = hr.name;
+  document.getElementById("salaryRange").value = 100;
+  document.getElementById("salaryValue").textContent = "100%";
+  document.getElementById("salaryModal").style.display = "flex";
+}
+
+function openDismiss(id) {
+  activeDept = id;
+  const hr = ACS_HR_load()[id];
+  document.getElementById("dismissDeptName").textContent = hr.name;
+  document.getElementById("dismissCount").value = 1;
+  document.getElementById("dismissModal").style.display = "flex";
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+/* ============================================================
+   BONUS CONFIRM (no se usará hasta activar sistema)
+   ============================================================ */
+function confirmBonus() {
+  const percent = parseInt(document.getElementById("bonusRange").value);
+  ACS_HR_applyBonus(activeDept, percent);
+
+  closeModal('bonusModal');
+  loadDepartments();
+}
+
+/* ============================================================
+   HIRE CONFIRM
+   ============================================================ */
+function confirmHire() {
+  const count = parseInt(document.getElementById("hireCount").value);
+  ACS_HR_hire(activeDept, count);
+
+  closeModal('hireModal');
+  loadDepartments();
+}
+
+/* ============================================================
+   DISMISS CONFIRM
+   ============================================================ */
+function confirmDismiss() {
+  const count = parseInt(document.getElementById("dismissCount").value);
+  ACS_HR_fire(activeDept, count);
+
+  closeModal('dismissModal');
+  loadDepartments();
+}
+
+/* ============================================================
+   SALARY ADJUST CONFIRM
+   ============================================================ */
+function confirmSalary() {
+  const percent = parseInt(document.getElementById("salaryRange").value);
+  ACS_HR_adjustSalary(activeDept, percent);
+
+  closeModal('salaryModal');
+  loadDepartments();
+}
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
 
+/* ============================================================
+   INIT
+   ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
   loadDepartments();
 
