@@ -87,10 +87,15 @@ function toggleSimState() {
   if (ACS_CYCLE.status === "ON") {
     /* ===== OFF (freeze) ===== */
     ACS_TIME.currentTime = computeSimTime();
-    localStorage.setItem("acs_frozen_time", ACS_TIME.currentTime.toISOString());
-    ACS_CYCLE.status = "OFF";
-    alert("⏸️ Simulation frozen.");
-    stopACSTime();
+
+// FORCE save BEFORE status change (Safari fix)
+const frozenStr = ACS_TIME.currentTime.toISOString();
+localStorage.setItem("acs_frozen_time", frozenStr);
+localStorage.setItem("acs_frozen_time_backup", frozenStr); // backup for Safari
+
+ACS_CYCLE.status = "OFF";
+localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+
   } else {
     /* ===== ON (resume from freeze) ===== */
     const now = new Date();
@@ -212,7 +217,10 @@ function economicWatcher() {
 
 function heartbeatSync() {
   const savedCycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-  const savedFrozen = localStorage.getItem("acs_frozen_time");
+  let savedFrozen = localStorage.getItem("acs_frozen_time");
+
+// Safari sometimes returns null for a few ms — use backup
+if (!savedFrozen) savedFrozen = localStorage.getItem("acs_frozen_time_backup");
 
   /* ===== RESET SYNC ===== */
   if (localStorage.getItem("acs_reset")) {
