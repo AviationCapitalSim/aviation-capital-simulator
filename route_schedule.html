@@ -395,11 +395,13 @@
       alert(`✅ Route confirmed and saved!\n${flightNumberOut || ""} ${flightNumberIn ? "/ " + flightNumberIn : ""}`);
       window.location.href = "routes.html";
     }
-      <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
-  <script src="time_engine.js"></script>
-  
+      </script>
+
+  <!-- ✅ Sincronización global ACS -->
+  <script src="./time_engine.js"></script>
+
   <script>
-    // 🕐 Reloj cockpit Airbus sincronizado con el motor global ACS
+    // 🕐 Reloj cockpit Airbus sincronizado con el motor global de tiempo
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof registerTimeListener === "function") {
         registerTimeListener(updateClockDisplay);
@@ -407,5 +409,6 @@
       }
     });
   </script>
+
 </body>
 </html>
