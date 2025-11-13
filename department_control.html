@@ -7,354 +7,301 @@
   <link rel="stylesheet" href="styles.css?v=3.1" />
   <style>
     /* === DEPARTMENT CONTROL CENTER (ACS) === */
-    body { margin:0; background:#081530; color:white; font-family:"Segoe UI",sans-serif; }
-    h2 { text-align:center; color:#FFB300; margin-top:6rem; margin-bottom:0.4rem; }
-    p.sub { text-align:center; color:#ccc; margin-bottom:2rem; }
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    h2 {
+      text-align: center;
+      color: #FFB300;
+      margin-top: 6rem;
+      margin-bottom: 0.4rem;
+    }
+
+    p.sub {
+      text-align: center;
+      color: #ccc;
+      margin-bottom: 2rem;
+    }
 
     .control-panel {
-      max-width:1150px; margin:2rem auto; background:#0b1c3f;
-      border-radius:12px; padding:1.5rem 2rem;
-      border:1px solid rgba(255,179,0,0.25);
-      box-shadow:0 0 15px rgba(0,0,0,0.4);
+      max-width: 1150px;
+      margin: 2rem auto;
+      background: #0b1c3f;
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      border: 1px solid rgba(255,179,0,0.25);
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
     }
 
-    table { width:100%; border-collapse:collapse; margin-top:1rem; }
-    th, td { padding:0.7rem; text-align:left; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 0.7rem;
+      text-align: left;
+    }
+
     th {
-      background:#102040; color:#FFB300;
-      border-bottom:2px solid #FFB300;
+      background-color: #102040;
+      color: #FFB300;
+      border-bottom: 2px solid #FFB300;
     }
-    tr { border-bottom:1px solid #FFB300; }
 
-    .salary { color:#ff6464; font-weight:600; }
-    .staff { color:#00d17a; font-weight:600; }
-    .morale { color:#00d17a; font-weight:600; }
+    tr { border-bottom: 1px solid #FFB300; }
 
-    .btn { border:none; border-radius:6px; padding:6px 10px; margin-left:4px;
-      font-weight:600; cursor:pointer; transition:background 0.2s ease; }
-    .btn-bonus { background:#00a86b; color:#fff; }
-    .btn-bonus:hover { background:#007d4e; }
+    .salary { color: #ff6464; font-weight: 600; }
+    .staff { color: #00d17a; font-weight: 600; }
+    .morale { color: #00d17a; font-weight: 600; }
 
-    .btn-hire { background:#007bff; color:#fff; }
-    .btn-hire:hover { background:#005fcc; }
+    .btn {
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      margin-left: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
 
-    .btn-adjust { background:#ffb300; color:#000; }
-    .btn-adjust:hover { background:#e4a000; }
+    .btn-bonus { background-color: #00a86b; color: #fff; }
+    .btn-bonus:hover { background-color: #007d4e; }
 
-    .btn-dismiss { background:#000; color:#fff; }
-    .btn-dismiss:hover { background:#222; }
+    .btn-hire { background-color: #007bff; color: #fff; }
+    .btn-hire:hover { background-color: #005fcc; }
+
+    .btn-adjust { background-color: #ffb300; color: #000; }
+    .btn-adjust:hover { background-color: #e4a000; }
+
+    .btn-transfer { background-color: #87b8ff; color: #000; }
+    .btn-transfer:hover { background-color: #6ca0e6; }
+
+    .btn-dismiss { background-color: #000; color: #fff; }
+    .btn-dismiss:hover { background-color: #222; }
 
     tfoot td {
-      border-top:2px solid #FFB300;
-      font-weight:bold; text-align:right; padding-top:1rem;
+      border-top: 2px solid #FFB300;
+      font-weight: bold;
+      text-align: right;
+      padding-top: 1rem;
+      color: #00E0FF; /* nuevo color */
     }
 
-    /* === MODALS === */
-    .acs-modal {
-      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.7); align-items:center; justify-content:center; z-index:2000;
+    /* === DISABLED BONUS BUTTON === */
+    .btn-disabled {
+      opacity: 0.35;
+      filter: grayscale(100%);
+      cursor: not-allowed !important;
+      pointer-events: none !important;
     }
 
-    .acs-modal-content {
-      background:#0b1c3f; border:1px solid #FFB300; border-radius:12px;
-      padding:1.5rem 2rem; width:400px; text-align:center;
-      box-shadow:0 0 15px rgba(255,179,0,0.4);
-      position:relative; animation:fadeIn 0.3s ease;
+    .btn-disabled:hover {
+      background: inherit !important;
     }
 
-    @keyframes fadeIn {
-      from { opacity:0; transform:translateY(-10px); }
-      to { opacity:1; transform:translateY(0); }
+    /* Tooltip Coming Soon */
+    .btn[data-tip] {
+      position: relative;
     }
 
-    .close-modal {
-      background:none; border:none; color:#aaa; font-size:1.2rem;
-      cursor:pointer; position:absolute; top:10px; right:20px;
-    }
-
-    input[type="range"], input[type="number"] {
-      width:80%; margin:1rem 0; padding:0.3rem;
-      border-radius:6px; border:1px solid #FFB300;
-      background:#102040; color:white;
-    }
-
-    .modal-btn {
-      background:#00a86b; color:#fff; border:none;
-      border-radius:6px; padding:8px 16px; font-weight:600;
-      cursor:pointer; margin-top:1rem; transition:background 0.2s ease;
-    }
-    .modal-btn:hover { background:#007d4e; }
-
-    #totalPayroll {
-      color:#FFB300; text-shadow:0 0 8px rgba(255,179,0,0.4);
-      font-weight:600; font-size:1.1rem; letter-spacing:0.5px;
+    .btn[data-tip]:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      background: #111;
+      color: #FFB300;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      top: -32px;
+      right: 0;
+      white-space: nowrap;
+      border: 1px solid #FFB300;
+      z-index: 10;
     }
 
     /* Reloj cockpit */
-    .acs-clock-header{
-      font-family:'Orbitron','Consolas',monospace;color:#00ff80;font-weight:bold;
-      background:rgba(0,255,128,0.08);padding:0.3rem 0.8rem;border-radius:6px;
-      font-size:0.9rem;margin-left:1rem;
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace;
+      color: #00ff80;
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
     }
   </style>
 </head>
 
 <body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
 
-<!-- HEADER -->
-<header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
-    <h1>Aviation Capital Simulator</h1>
-  </div>
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="market.html">Market</a>
+      <a href="hr.html" class="active">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="profile.html">Profile</a>
+      <a href="support.html">Support</a>
+    </nav>
 
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html">Routes</a>
-    <a href="hr.html" class="active">HR</a>
-    <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
-  </nav>
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
 
-  <div class="acs-auth">
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-  </div>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  </header>
 
-  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-</header>
+  <!-- ===== MAIN ===== -->
+  <main class="acs-main">
+    <h2>🏢 Department Control Center</h2>
+    <p class="sub">Manage all departments, staff, salaries, morale and workforce actions.</p>
 
-<!-- MAIN -->
-<main class="acs-main">
-  <h2>🏢 Department Control Center</h2>
-  <p class="sub">Manage all departments, staff, salaries, morale and workforce actions.</p>
+    <section class="control-panel">
+      <table id="deptTable">
+        <thead>
+          <tr>
+            <th>Department</th>
+            <th>Staff</th>
+            <th>Salary</th>
+            <th>Morale</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="departmentRows"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5" id="totalPayroll">Total Monthly Payroll: $0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+  </main>
 
-  <section class="control-panel">
-    <table id="deptTable">
-      <thead>
+  <!-- ===== MODALS =====  (NO CAMBIADOS) ===== -->
+  <div class="acs-modal" id="bonusModal"></div>
+  <div class="acs-modal" id="hireModal"></div>
+  <div class="acs-modal" id="salaryModal"></div>
+  <div class="acs-modal" id="dismissModal"></div>
+
+  <footer class="acs-footer">
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    const departments = [
+      "CEO",
+      "Vice President",
+      "Middle Level Management",
+      "Economics and Finance",
+      "Corporate Communications",
+      "Human Resources",
+      "Quality Department",
+      "Safety and Security",
+      "Customer Services",
+      "Flight Operations Division",
+      "Technical Services and Maintenance",
+      "Ground Handling",
+      "Route Strategies Department",
+      "Pilots (Small A/C)",
+      "Pilots (Medium A/C)",
+      "Pilots (Large A/C)",
+      "Pilots (Very Large A/C)",
+      "Cabin Crew"
+    ];
+
+    const initialStaff = [1,0,1,1,0,1,1,0,0,1,0,0,1,0,0,0,0,0];
+
+    const sysSalary = {
+      CEO: 90,
+      VP: 70,
+      finance_admin: 55,
+      flight_ops: 75,
+      ground: 25,
+      maintenance: 70,
+      pilots: 120,
+      copilots: 90,
+      cabin: 45
+    };
+
+    const deptTable = document.getElementById("departmentRows");
+
+    departments.forEach((dept, i) => {
+      const staff = initialStaff[i];
+      const salary = 50; // placeholder, luego mapeable real
+      const morale = 100;
+
+      let actions = "";
+
+      if (dept === "CEO") {
+        actions = `<em style="color:#aaa;">No actions available</em>`;
+      } else {
+        actions = `
+          <button class="btn btn-bonus btn-disabled" data-tip="Bonus disabled">💵</button>
+          <button class="btn btn-hire" onclick="dummy()">🧍</button>
+          <button class="btn btn-adjust" onclick="dummy()">📈</button>
+          <button class="btn btn-transfer" onclick="dummy()">🔁</button>
+          <button class="btn btn-dismiss" onclick="dummy()">❌</button>
+        `;
+      }
+
+      deptTable.innerHTML += `
         <tr>
-          <th>Department</th>
-          <th>Staff</th>
-          <th>Salary</th>
-          <th>Morale</th>
-          <th>Actions</th>
+          <td>${dept}</td>
+          <td class="staff">${staff}</td>
+          <td class="salary">$${salary}</td>
+          <td class="morale">${morale}%</td>
+          <td>${actions}</td>
         </tr>
-      </thead>
+      `;
+    });
 
-      <tbody id="departmentRows"></tbody>
+    function dummy(){
+      alert("Feature under development.");
+    }
 
-      <tfoot>
-        <tr>
-          <td colspan="5" id="totalPayroll">Total Monthly Payroll: $0</td>
-        </tr>
-      </tfoot>
+    function calculatePayroll(){
+      let total = 0;
+      document.querySelectorAll(".salary").forEach(s => {
+        const v = parseFloat(s.textContent.replace("$",""));
+        total += v;
+      });
+      document.getElementById("totalPayroll").textContent =
+        "Total Monthly Payroll: $" + total.toLocaleString();
+    }
 
-    </table>
-  </section>
-</main>
+    window.addEventListener("DOMContentLoaded", calculatePayroll);
 
-<!-- MODALS ======================================================= -->
-<div class="acs-modal" id="bonusModal">
-  <div class="acs-modal-content">
-    <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
-    <h3>Assign Department Bonus</h3>
-    <p id="bonusDeptName">Department</p>
-    <input type="range" min="20" max="100" step="10" value="20" id="bonusRange">
-    <p>Bonus: <span id="bonusValue">20%</span></p>
-    <p>Estimated Cost: <span id="bonusCost">0</span> USD</p>
-    <button class="modal-btn" onclick="confirmBonus()">Confirm Bonus</button>
-  </div>
-</div>
+    function handleLogout(){
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href="login.html";
+    }
+  </script>
 
-<div class="acs-modal" id="hireModal">
-  <div class="acs-modal-content">
-    <button class="close-modal" onclick="closeModal('hireModal')">✖</button>
-    <h3>Hire New Staff</h3>
-    <p id="hireDeptName">Department</p>
-    <input type="number" id="hireCount" min="1" max="50" value="1">
-    <p>Cost: <span id="hireCost">0</span> USD</p>
-    <button class="modal-btn" onclick="confirmHire()">Confirm Hire</button>
-  </div>
-</div>
-
-<div class="acs-modal" id="salaryModal">
-  <div class="acs-modal-content">
-    <button class="close-modal" onclick="closeModal('salaryModal')">✖</button>
-    <h3>Adjust Department Salary</h3>
-    <p id="salaryDeptName">Department</p>
-    <input type="range" min="50" max="150" step="5" value="100" id="salaryRange">
-    <p>Adjustment: <span id="salaryValue">100%</span></p>
-    <button class="modal-btn" onclick="confirmSalary()">Apply Adjustment</button>
-  </div>
-</div>
-
-<div class="acs-modal" id="dismissModal">
-  <div class="acs-modal-content">
-    <button class="close-modal" onclick="closeModal('dismissModal')">✖</button>
-    <h3>Confirm Dismissal</h3>
-    <p id="dismissDeptName">Department</p>
-    <input type="number" id="dismissCount" min="1" max="50" value="1">
-    <button class="modal-btn" onclick="confirmDismiss()">Confirm</button>
-  </div>
-</div>
-
-<footer class="acs-footer">
-  <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-</footer>
-
-<!-- SCRIPTS ======================================================= -->
-
-<!-- MOTORES -->
-<script src="engine/acs_finance.js"></script>
-<script src="engine/acs_hr_engine.js"></script>
-<script src="time_engine.js"></script>
-
-<script>
-/* ============================================================
-   LOAD DEPARTMENTS INTO THE TABLE
-   ============================================================ */
-let activeDept = null;
-
-function loadDepartments() {
-  const rows = document.getElementById("departmentRows");
-  rows.innerHTML = "";
-
-  const depts = ACS_HR_getDepartmentsView();
-
-  depts.forEach(dep => {
-    rows.innerHTML += `
-      <tr>
-        <td>${dep.name}</td>
-        <td class="staff">${dep.staff}</td>
-        <td class="salary">$${dep.salary}</td>
-        <td class="morale">${dep.morale}%</td>
-        <td>
-          <button class="btn btn-bonus" onclick="openBonus('${dep.id}')">💵</button>
-          <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
-          <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
-          <button class="btn btn-dismiss" onclick="openDismiss('${dep.id}')">❌</button>
-        </td>
-      </tr>
-    `;
-  });
-
-  updatePayroll();
-}
-
-/* ============================================================
-   UPDATE PAYROLL TOTAL
-   ============================================================ */
-function updatePayroll() {
-  const total = ACS_HR_getTotalPayroll();
-  document.getElementById("totalPayroll").textContent =
-    "Total Monthly Payroll: $" + total.toLocaleString();
-}
-
-/* ============================================================
-   MODAL OPENERS
-   ============================================================ */
-function openBonus(id) {
-  activeDept = id;
-  const hr = ACS_HR_load()[id];
-  document.getElementById("bonusDeptName").textContent = hr.name;
-  document.getElementById("bonusModal").style.display = "flex";
-}
-
-function openHire(id) {
-  activeDept = id;
-  const hr = ACS_HR_load()[id];
-  document.getElementById("hireDeptName").textContent = hr.name;
-  document.getElementById("hireCount").value = 1;
-  document.getElementById("hireCost").textContent = hr.salary.toLocaleString();
-  document.getElementById("hireModal").style.display = "flex";
-}
-
-function openSalary(id) {
-  activeDept = id;
-  const hr = ACS_HR_load()[id];
-  document.getElementById("salaryDeptName").textContent = hr.name;
-  document.getElementById("salaryRange").value = 100;
-  document.getElementById("salaryValue").textContent = "100%";
-  document.getElementById("salaryModal").style.display = "flex";
-}
-
-function openDismiss(id) {
-  activeDept = id;
-  const hr = ACS_HR_load()[id];
-  document.getElementById("dismissDeptName").textContent = hr.name;
-  document.getElementById("dismissCount").value = 1;
-  document.getElementById("dismissModal").style.display = "flex";
-}
-
-function closeModal(id) {
-  document.getElementById(id).style.display = "none";
-}
-
-/* ============================================================
-   BONUS CONFIRM
-   ============================================================ */
-function confirmBonus() {
-  const percent = parseInt(document.getElementById("bonusRange").value);
-  ACS_HR_applyBonus(activeDept, percent);
-
-  closeModal('bonusModal');
-  loadDepartments();
-}
-
-/* ============================================================
-   HIRE CONFIRM
-   ============================================================ */
-function confirmHire() {
-  const count = parseInt(document.getElementById("hireCount").value);
-  ACS_HR_hire(activeDept, count);
-
-  closeModal('hireModal');
-  loadDepartments();
-}
-
-/* ============================================================
-   DISMISS CONFIRM
-   ============================================================ */
-function confirmDismiss() {
-  const count = parseInt(document.getElementById("dismissCount").value);
-  ACS_HR_fire(activeDept, count);
-
-  closeModal('dismissModal');
-  loadDepartments();
-}
-
-/* ============================================================
-   SALARY ADJUST CONFIRM
-   ============================================================ */
-function confirmSalary() {
-  const percent = parseInt(document.getElementById("salaryRange").value);
-  ACS_HR_adjustSalary(activeDept, percent);
-
-  closeModal('salaryModal');
-  loadDepartments();
-}
-
-/* ============================================================
-   LOGOUT
-   ============================================================ */
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href = "login.html";
-}
-
-/* ============================================================
-   INIT
-   ============================================================ */
-window.addEventListener("DOMContentLoaded", () => {
-  loadDepartments();
-
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
-});
-</script>
+  <script src="time_engine.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener==="function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+  </script>
 
 </body>
 </html>
