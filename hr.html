@@ -17,7 +17,7 @@
     h2 {
       text-align: center;
       color: #FFB300;
-      margin-top: 6rem; /* ✅ Ajuste para header fijo */
+      margin-top: 6rem;
       margin-bottom: 0.4rem;
     }
 
@@ -105,7 +105,7 @@
       right: 20px;
     }
 
-    /* ✅ Reloj cockpit Airbus */
+    /* Clock */
     .acs-clock-header {
       font-family: 'Orbitron', 'Consolas', monospace;
       color: #00ff80;
@@ -152,18 +152,18 @@
     <section class="finance-panels">
       <div class="panel">
         <h3>📊 HR Overview</h3>
-        <p>Total Staff: <strong id="totalStaff">1,990 / 1,949</strong></p>
-        <p>Total Payroll: <strong id="totalPayroll">$2,830,291 / month</strong></p>
-        <p>Average Morale: <strong id="avgMorale">100%</strong></p>
-        <p>Staff Coverage: <strong id="coverage">102%</strong></p>
+        <p>Total Staff: <strong id="totalStaff">—</strong></p>
+        <p>Total Payroll: <strong id="totalPayroll">—</strong></p>
+        <p>Average Morale: <strong id="avgMorale">—</strong></p>
+        <p>Staff Coverage: <strong id="coverage">—</strong></p>
       </div>
 
       <div class="panel">
         <h3>🧑‍💼 Department Control</h3>
-        <p>Total Departments: <strong>5</strong></p>
-        <p>Total Staff: <strong>1,949 Employees</strong></p>
-        <p>Average Morale: <strong>97%</strong></p>
-        <p>Monthly Payroll: <strong>$2,830,291</strong></p>
+        <p>Total Departments: <strong>7</strong></p>
+        <p>Total Staff: <strong id="totalStaff2">—</strong></p>
+        <p>Average Morale: <strong id="avgMorale2">—</strong></p>
+        <p>Monthly Payroll: <strong id="monthlyPayroll">—</strong></p>
         <br />
         <button class="acs-btn" onclick="window.location.href='department_control.html'">
           🏢 Open Department Control Center
@@ -172,17 +172,17 @@
 
       <div class="panel">
         <h3>💰 Payroll & Bonuses</h3>
-        <p>This Month Payroll: <strong id="payrollTotal">$2,830,291</strong></p>
+        <p>This Month Payroll: <strong id="payrollTotal">—</strong></p>
         <p>Bonuses Applied: <strong id="bonusTotal">$0</strong></p>
-        <p>Expense Share: <strong id="expenseShare">41%</strong></p>
+        <p>Expense Share: <strong id="expenseShare">—</strong></p>
         <button class="acs-btn" onclick="resetBonuses()">Reset Bonuses</button>
       </div>
 
       <div class="panel">
         <h3>✈️ Operational Impact</h3>
-        <p>Flight Efficiency: <strong id="efficiency">94%</strong></p>
-        <p>Delay Risk: <strong id="delayRisk">Low</strong></p>
-        <p>Maintenance Reliability: <strong id="reliability">98%</strong></p>
+        <p>Flight Efficiency: <strong id="efficiency">—</strong></p>
+        <p>Delay Risk: <strong id="delayRisk">None</strong></p>
+        <p>Maintenance Reliability: <strong id="reliability">—</strong></p>
       </div>
     </section>
   </main>
@@ -207,28 +207,112 @@
 
   <!-- ===== SCRIPT ===== -->
   <script>
-    const ACS = {
-      finance: { cash: 40000000, bonuses: 0 },
-      hr: {
-        departments: {
-          management: { name: "High Level Management", salary: 4040, staff: 20, morale: 96 },
-          maintenance: { name: "Maintenance", salary: 3200, staff: 260, morale: 100 },
-          operations: { name: "Flight Operations", salary: 7000, staff: 250, morale: 98 },
-          cabin: { name: "Cabin Crew", salary: 1500, staff: 225, morale: 97 },
-          ground: { name: "Ground Handling", salary: 1200, staff: 228, morale: 95 }
-        }
+    /*****************************************************
+     *  Cargamos ACS_HR desde localStorage
+     *****************************************************/
+    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+    const Finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+    /*****************************************************
+     *  Departamentos profesionales (SIN AVIONES)
+     *****************************************************/
+    const departments = {
+      management: {
+        name: "High Level Management",
+        staff: HR.staff ? HR.staff.admin : 0,
+        morale: HR.morale ? HR.morale.admin : 100,
+        salary: HR.salaries ? HR.salaries.admin : 55
+      },
+      admin: {
+        name: "Finance & Administration",
+        staff: HR.staff ? HR.staff.admin : 0,
+        morale: HR.morale ? HR.morale.admin : 100,
+        salary: HR.salaries ? HR.salaries.admin : 55
+      },
+      operations: {
+        name: "Operations (Dispatch)",
+        staff: HR.staff ? HR.staff.operations_basic : 0,
+        morale: HR.morale ? HR.morale.operations_basic : 100,
+        salary: HR.salaries ? HR.salaries.operations_basic : 85
+      },
+      flightcrew: {
+        name: "Flight Crew",
+        staff: HR.staff ? HR.staff.pilots + HR.staff.copilots : 0,
+        morale: HR.morale ? HR.morale.pilots : 100,
+        salary: HR.salaries ? HR.salaries.pilot : 120
+      },
+      cabin: {
+        name: "Cabin Crew",
+        staff: HR.staff ? HR.staff.cabin : 0,
+        morale: HR.morale ? HR.morale.cabin : 100,
+        salary: HR.salaries ? HR.salaries.cabin : 45
+      },
+      maintenance: {
+        name: "Maintenance",
+        staff: HR.staff ? HR.staff.mechanics : 0,
+        morale: HR.morale ? HR.morale.mechanics : 100,
+        salary: HR.salaries ? HR.salaries.mechanic : 70
+      },
+      ground: {
+        name: "Ground Handling",
+        staff: HR.staff ? HR.staff.ground : 0,
+        morale: HR.morale ? HR.morale.ground : 100,
+        salary: HR.salaries ? HR.salaries.ground : 25
       }
     };
 
+    /*****************************************************
+     *  Calcular totales reales
+     *****************************************************/
+    const totalStaff =
+      HR.staff.admin +
+      HR.staff.operations_basic +
+      HR.staff.pilots +
+      HR.staff.copilots +
+      HR.staff.cabin +
+      HR.staff.mechanics +
+      HR.staff.ground;
+
+    const avgMorale = HR.avgMorale || 100;
+    const payroll = HR.payroll || 0;
+
+    /*****************************************************
+     *  Pintar en la UI
+     *****************************************************/
+    document.getElementById("totalStaff").textContent = totalStaff;
+    document.getElementById("totalStaff2").textContent = totalStaff;
+
+    document.getElementById("totalPayroll").textContent = `$${payroll.toLocaleString()} / month`;
+    document.getElementById("monthlyPayroll").textContent = `$${payroll.toLocaleString()}`;
+    document.getElementById("payrollTotal").textContent = `$${payroll.toLocaleString()}`;
+
+    document.getElementById("avgMorale").textContent = `${avgMorale}%`;
+    document.getElementById("avgMorale2").textContent = `${avgMorale}%`;
+
+    document.getElementById("coverage").textContent = "100%";
+    document.getElementById("expenseShare").textContent =
+      Finance.expenses > 0 ? `${Math.round((payroll / Finance.expenses) * 100)}%` : "100%";
+
+    document.getElementById("efficiency").textContent = "—";
+    document.getElementById("delayRisk").textContent = "None";
+    document.getElementById("reliability").textContent = "—";
+
+    /*****************************************************
+     * BONUS MODAL (funcional)
+     *****************************************************/
     let currentDept = null;
 
-    function openBonusModal(dept = "management") {
-      currentDept = dept;
+    function openBonusModal(deptKey) {
+      currentDept = deptKey;
       const modal = document.getElementById("bonusModal");
       const range = document.getElementById("bonusRange");
+
       range.value = 20;
       updateBonusCost();
-      document.getElementById("bonusDeptName").textContent = ACS.hr.departments[dept].name;
+
+      document.getElementById("bonusDeptName").textContent =
+        departments[deptKey].name;
+
       modal.style.display = "flex";
     }
 
@@ -236,31 +320,31 @@
 
     function updateBonusCost() {
       const percent = parseInt(document.getElementById("bonusRange").value);
-      const dept = ACS.hr.departments[currentDept];
-      const cost = dept.salary * dept.staff * (percent / 100);
+      const d = departments[currentDept];
+      const cost = d.salary * d.staff * (percent / 100);
+
       document.getElementById("bonusValue").textContent = percent + "%";
       document.getElementById("bonusCost").textContent = cost.toLocaleString();
     }
 
     function confirmBonus() {
       const percent = parseInt(document.getElementById("bonusRange").value);
-      const dept = ACS.hr.departments[currentDept];
-      const cost = dept.salary * dept.staff * (percent / 100);
-      const moraleBoost = percent / 5;
-      dept.morale = Math.min(100, dept.morale + moraleBoost);
-      ACS.finance.cash -= cost;
-      ACS.finance.bonuses += cost;
-      document.getElementById("bonusTotal").textContent = "$" + ACS.finance.bonuses.toLocaleString();
-      alert(`${dept.name} morale increased to ${dept.morale}% (+${moraleBoost.toFixed(1)}). Cost: $${cost.toLocaleString()}`);
+      const d = departments[currentDept];
+      const cost = d.salary * d.staff * (percent / 100);
+
+      d.morale = Math.min(100, d.morale + (percent / 5));
+
+      alert(`${d.name} morale increased to ${d.morale}%`);
       closeBonusModal();
     }
 
-    function closeBonusModal() { document.getElementById("bonusModal").style.display = "none"; }
+    function closeBonusModal() {
+      document.getElementById("bonusModal").style.display = "none";
+    }
 
     function resetBonuses() {
-      ACS.finance.bonuses = 0;
       document.getElementById("bonusTotal").textContent = "$0";
-      alert("Bonus records reset for this month.");
+      alert("Bonus records reset.");
     }
 
     function handleLogout() {
@@ -269,11 +353,9 @@
     }
   </script>
 
-    <!-- ✅ MOTORES GLOBALES SINCRONIZADOS -->
+  <!-- GLOBAL CLOCK -->
   <script src="time_engine.js"></script>
-
   <script>
-    // 🕐 Sincronizar reloj cockpit Airbus con el motor global ACS
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof registerTimeListener === "function") {
         registerTimeListener(updateClockDisplay);
@@ -281,5 +363,6 @@
       }
     });
   </script>
+
 </body>
 </html>
