@@ -164,3 +164,125 @@ function ACS_HR_getDepartmentsView() {
         payroll: hr[d.id].payroll
     }));
 }
+/* ============================================================
+   === ACS HR AUTO-SALARY ENGINE v1.0 (DEPARTAMENTAL + SETTINGS)
+   ------------------------------------------------------------
+   • Dynamic salary depends on settings toggle (ON/OFF)
+   • Automatic annual raises (per department)
+   • Morale + Bonus + Seniority integrated
+   • Auto-update after hire / fire / salary adjust
+   • Linked to Global Time Engine (year listener)
+   ============================================================ */
+
+/* === CONFIG === */
+const ACS_HR_DYNAMIC_KEY = "ACS_HR_DYNAMIC";
+
+/* Coeficientes */
+const ACS_HR_MORALE_FACTOR = m => 1 + ((m - 50) / 1000);
+const ACS_HR_BONUS_FACTOR = b => 1 + (b || 0) / 100;
+
+/* Incrementos anuales según tu tabla 1940 */
+const ACS_HR_ANNUAL_RAISE = {
+    pilots: 0.03,
+    copilots: 0.02,
+    cabin: 0.01,
+    default: 0.015
+};
+
+/* ============================================================
+   CÁLCULO SALARIO DINÁMICO (por departamento)
+   ============================================================ */
+function ACS_HR_calcDynamic(dep) {
+    const base = ACS_HR_SALARY[dep.base];
+    const moraleFactor = ACS_HR_MORALE_FACTOR(dep.morale);
+    const bonusFactor = ACS_HR_BONUS_FACTOR(dep.bonus || 0);
+
+    const years = dep.years || 0;
+    const raise = ACS_HR_ANNUAL_RAISE[dep.base] || ACS_HR_ANNUAL_RAISE.default;
+    const seniority = 1 + raise * years;
+
+    return Math.round(base * moraleFactor * bonusFactor * seniority);
+}
+
+/* ============================================================
+   RECÁLCULO GENERAL (según selector settings)
+   ============================================================ */
+function ACS_HR_recalculateAll() {
+
+    const hr = ACS_HR_load();
+    let payroll = 0;
+
+    const auto = localStorage.getItem("ACS_AutoSalary") === "ON";
+
+    Object.keys(hr).forEach(id => {
+        const dep = hr[id];
+
+        /* Dynamic salary siempre se recalcula */
+        dep.dynamic_salary = ACS_HR_calcDynamic(dep);
+
+        /* Salary mostrado depende del selector */
+        dep.salary = auto 
+            ? dep.dynamic_salary 
+            : ACS_HR_SALARY[dep.base];
+
+        dep.payroll = dep.salary * dep.staff;
+
+        /* Guardar years si no existe */
+        if (!dep.years) dep.years = 0;
+
+        payroll += dep.payroll;
+    });
+
+    ACS_HR_save(hr);
+    localStorage.setItem("ACS_Payroll_Monthly", payroll);
+
+    return payroll;
+}
+
+/* ============================================================
+   OVERRIDE acciones HR
+   ============================================================ */
+const __hr_hire = ACS_HR_hire;
+ACS_HR_hire = function(d, amount){
+    __hr_hire(d, amount);
+    ACS_HR_recalculateAll();
+};
+
+const __hr_fire = ACS_HR_fire;
+ACS_HR_fire = function(d, amount){
+    __hr_fire(d, amount);
+    ACS_HR_recalculateAll();
+};
+
+const __hr_adj = ACS_HR_adjustSalary;
+ACS_HR_adjustSalary = function(d, p){
+    __hr_adj(d, p);
+    ACS_HR_recalculateAll();
+};
+
+/* ============================================================
+   LISTENER DE CAMBIO DE AÑO (TIME ENGINE)
+   ============================================================ */
+let __HR_lastYear = null;
+
+registerTimeListener((time) => {
+    const year = time.getUTCFullYear();
+    if (__HR_lastYear === null) __HR_lastYear = year;
+
+    if (year !== __HR_lastYear) {
+        const hr = ACS_HR_load();
+        Object.values(hr).forEach(dep => dep.years = (dep.years || 0) + 1);
+        ACS_HR_save(hr);
+        ACS_HR_recalculateAll();
+    }
+
+    __HR_lastYear = year;
+});
+
+/* ============================================================
+   AUTO-EJECUCIÓN INICIAL
+   ============================================================ */
+setTimeout(() => {
+    ACS_HR_recalculateAll();
+}, 300);
+}
