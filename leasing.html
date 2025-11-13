@@ -427,29 +427,31 @@ Monthly: $${monthly.toFixed(2)} M for ${years} years.`);
       saveLeases();
     }, MONTH_DURATION_MS);
 
-    loadAvailable();
+        loadAvailable();
     refreshActive();
     updateFinance();
-<script>
-  <!-- ✅ Scripts finales -->
-<script>
-  function handleLogout() {
-    alert("👋 Session closed. See you soon, Captain!");
-    window.location.href = "login.html";
-  }
-</script>
+  </script>
 
-<!-- ✅ Sincronización global ACS -->
-<script src="./time_engine.js"></script>
-
-<script>
-  // 🕐 Reloj cockpit Airbus sincronizado con el motor global de tiempo
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
+  <!-- ✅ Scripts Finales -->
+  <script>
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
     }
-  });
-</script>
+  </script>
+
+  <!-- ✅ Sincronización global ACS -->
+  <script src="./time_engine.js"></script>
+
+  <script>
+    // 🕐 Reloj cockpit Airbus sincronizado con el motor global de tiempo
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+  </script>
+
 </body>
 </html>
