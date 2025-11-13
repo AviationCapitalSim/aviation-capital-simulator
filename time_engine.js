@@ -140,7 +140,7 @@ function updateClockDisplay() {
   const yy = t.getUTCFullYear();
 
   const status = ACS_CYCLE.status === "ON" ? "🟢 ON" : "⏸ OFF";
-  el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy} | ${status}`;
+  el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy}`;
   el.style.color = "#00ff80";
 }
 
