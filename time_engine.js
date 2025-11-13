@@ -1,12 +1,12 @@
 /* ============================================================
-   === AVIATION CAPITAL SIMULATOR - GLOBAL TIME ENGINE v3.9 ===
+   === AVIATION CAPITAL SIMULATOR - GLOBAL TIME ENGINE v4.0 ===
    ------------------------------------------------------------
    ▪ Universal UTC Matrix Clock
    ▪ Perfect cross-page synchronization
-   ▪ ON = real-time progression 24/7
-   ▪ OFF = freeze everywhere (no drifts)
-   ▪ Reset = 1940 shown everywhere
-   ▪ No HTML edits required
+   ▪ ON = global real-time progression
+   ▪ OFF = freeze (same time everywhere)
+   ▪ Reset = complete 1940 sync everywhere
+   ▪ Fully stable in Settings page
    ============================================================ */
 
 /* === 🌍 GLOBAL TIME OBJECT === */
@@ -18,7 +18,7 @@ const ACS_TIME = {
   listeners: [],
 };
 
-/* === 🧭 CYCLE CONFIGURATION === */
+/* === 🧭 GLOBAL CYCLE CONFIGURATION === */
 let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle")) || {
   startYear: 1940,
   endYear: 2026,
@@ -45,7 +45,7 @@ function computeSimTime() {
 }
 
 /* ============================================================
-   === ▶️ START SIMULATION =====================================
+   === ▶️ START SIMULATION (GLOBAL) ============================
    ============================================================ */
 
 function startACSTime() {
@@ -83,14 +83,11 @@ function stopACSTime() {
 }
 
 /* ============================================================
-   === 🟦 UNIVERSAL TIME UPDATE (core of sync) ==================
+   === 🟦 UNIVERSAL TIME UPDATE ================================
    ============================================================ */
 
 function updateUniversalTime() {
-  localStorage.setItem(
-    "acs_universal_time",
-    ACS_TIME.currentTime.toISOString()
-  );
+  localStorage.setItem("acs_universal_time", ACS_TIME.currentTime.toISOString());
 }
 
 /* ============================================================
@@ -198,7 +195,7 @@ function resetSimulationData() {
 }
 
 /* ============================================================
-   === 🛫 COCKPIT CLOCK (UTC) ==================================
+   === 🛫 COCKPIT CLOCK DISPLAY ================================
    ============================================================ */
 
 function updateClockDisplay() {
@@ -228,8 +225,7 @@ function notifyTimeListeners() {
 }
 
 function registerTimeListener(callback) {
-  if (typeof callback === "function")
-    ACS_TIME.listeners.push(callback);
+  if (typeof callback === "function") ACS_TIME.listeners.push(callback);
 }
 
 /* ============================================================
@@ -286,7 +282,7 @@ function economicWatcher() {
 }
 
 /* ============================================================
-   === 🚀 INIT (RUNS ON EVERY PAGE) ============================
+   === 🚀 INIT ON EVERY PAGE ===================================
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -296,11 +292,16 @@ document.addEventListener("DOMContentLoaded", () => {
     ? new Date(universal)
     : new Date("1940-01-01T00:00:00Z");
 
+  /* ⭐ SPECIAL PATCH FOR SETTINGS PAGE ⭐
+     Ensures the time is correctly updated BEFORE intervals */
+  ACS_TIME.currentTime = computeSimTime();
+  updateUniversalTime();
+  updateClockDisplay();
+
   if (ACS_CYCLE.status === "ON") {
     startACSTime();
   } else {
     stopACSTime();
-    updateClockDisplay();
   }
 
   economicWatcher();
