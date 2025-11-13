@@ -69,6 +69,17 @@
       border-radius: 8px;
       margin: 0 auto;
     }
+
+    /* Reloj cockpit */
+    .acs-clock-header {
+      font-family: 'Orbitron','Consolas',monospace;
+      color: #00ff80;
+      background: rgba(0,255,128,0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -93,7 +104,7 @@
   </nav>
 
   <div class="acs-auth">
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
     <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
   </div>
 </header>
@@ -136,52 +147,65 @@
 <script src="engine/acs_finance.js"></script>
 
 <script>
-  function updateMonthlyGrowth() {
-    const f = JSON.parse(localStorage.getItem("ACS_Finance"));
+// === Actualizar tabla y gráfica ===
+function updateMonthlyGrowth() {
+  const f = JSON.parse(localStorage.getItem("ACS_Finance"));
 
-    document.getElementById("finance-revenue").textContent = "$" + f.revenue.toLocaleString();
-    document.getElementById("finance-expenses").textContent = "$" + f.expenses.toLocaleString();
-    document.getElementById("finance-profit").textContent = "$" + f.profit.toLocaleString();
-    document.getElementById("finance-capital").textContent = "$" + f.capital.toLocaleString();
+  document.getElementById("finance-revenue").textContent = "$" + f.revenue.toLocaleString();
+  document.getElementById("finance-expenses").textContent = "$" + f.expenses.toLocaleString();
+  document.getElementById("finance-profit").textContent = "$" + f.profit.toLocaleString();
+  document.getElementById("finance-capital").textContent = "$" + f.capital.toLocaleString();
 
-    const history = f.history.map(h => h.profit);
-    const labels = f.history.map(h => h.month);
+  const history = f.history.map(h => h.profit);
+  const labels = f.history.map(h => h.month);
 
-    growthChart.data.labels = labels.length > 0 ? labels : ["Month 1"];
-    growthChart.data.datasets[0].data = history.length > 0 ? history : [0];
+  growthChart.data.labels = labels.length > 0 ? labels : ["Month 1"];
+  growthChart.data.datasets[0].data = history.length > 0 ? history : [0];
 
-    growthChart.update();
+  growthChart.update();
+}
+
+// === Inicializar gráfica ===
+const ctx = document.getElementById('growthChart').getContext('2d');
+const growthChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ["Month 1"],
+    datasets: [{
+      label: "Monthly Profit",
+      data: [0],
+      borderColor: "#FFB300",
+      borderWidth: 2,
+      tension: 0.3,
+      fill: false
+    }]
+  },
+  options: {
+    scales: { y: { beginAtZero: true } }
   }
+});
 
-  const ctx = document.getElementById('growthChart').getContext('2d');
-  const growthChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ["Month 1"],
-      datasets: [{
-        label: "Monthly Profit",
-        data: [0],
-        borderColor: "#FFB300",
-        borderWidth: 2,
-        tension: 0.3,
-        fill: false
-      }]
-    },
-    options: { scales:{ y:{beginAtZero:true } } }
-  });
-
-  updateMonthlyGrowth();
-  
-  <!-- ===== SCRIPTS (orden correcto) ===== -->
-<script src="time_engine.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
-    }
-  });
+updateMonthlyGrowth();
 </script>
-  
+
+<!-- ===== TIME ENGINE ===== -->
+<script src="time_engine.js"></script>
+
+<!-- 🟢 Reloj cockpit global ACS -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
+
+// Logout función
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
+</script>
+
 </body>
 </html>
