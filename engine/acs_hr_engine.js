@@ -164,6 +164,7 @@ function ACS_HR_getDepartmentsView() {
         payroll: hr[d.id].payroll
     }));
 }
+
 /* ============================================================
    === ACS HR AUTO-SALARY ENGINE v1.0 (DEPARTAMENTAL + SETTINGS)
    ------------------------------------------------------------
