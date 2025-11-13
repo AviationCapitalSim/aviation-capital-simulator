@@ -285,4 +285,3 @@ registerTimeListener((time) => {
 setTimeout(() => {
     ACS_HR_recalculateAll();
 }, 300);
-}
