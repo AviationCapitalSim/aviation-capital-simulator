@@ -30,8 +30,10 @@
     .staff { color:#00d17a; font-weight:600; }
     .morale { color:#00d17a; font-weight:600; }
 
-    .btn { border:none; border-radius:6px; padding:6px 10px; margin-left:4px;
-      font-weight:600; cursor:pointer; transition:background 0.2s ease; }
+    .btn {
+      border:none; border-radius:6px; padding:6px 10px; margin-left:4px;
+      font-weight:600; cursor:pointer; transition:background 0.2s ease;
+    }
     .btn-bonus { background:#00a86b; color:#fff; }
     .btn-bonus:hover { background:#007d4e; }
 
@@ -44,6 +46,12 @@
     .btn-dismiss { background:#000; color:#fff; }
     .btn-dismiss:hover { background:#222; }
 
+    /* BONUS disabled but same visual design */
+    .btn-bonus[disabled] {
+      opacity:0.45;
+      cursor:not-allowed;
+    }
+
     tfoot td {
       border-top:2px solid #FFB300;
       font-weight:bold; text-align:right; padding-top:1rem;
@@ -53,13 +61,7 @@
       letter-spacing:0.5px;
     }
 
-    /* BONUS deshabilitado visualmente pero con mismo estilo base */
-    .btn-bonus[disabled] {
-      opacity:0.45;
-      cursor:not-allowed;
-    }
-
-    /* === MODALS === */
+    /* MODALS */
     .acs-modal {
       display:none; position:fixed; top:0; left:0; width:100%; height:100%;
       background:rgba(0,0,0,0.7); align-items:center; justify-content:center; z-index:2000;
@@ -159,7 +161,7 @@
   </section>
 </main>
 
-<!-- MODALS (sin cambios de lógica, aunque bonus no se usa de momento) -->
+<!-- MODALS ======================================================= -->
 <div class="acs-modal" id="bonusModal">
   <div class="acs-modal-content">
     <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
@@ -208,7 +210,7 @@
   <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
 </footer>
 
-<!-- SCRIPTS -->
+<!-- SCRIPTS ======================================================= -->
 <script src="engine/acs_finance.js"></script>
 <script src="engine/acs_hr_engine.js"></script>
 <script src="time_engine.js"></script>
@@ -227,7 +229,7 @@ function loadDepartments() {
 
   depts.forEach(dep => {
 
-    // CEO sin botones
+    /* CEO — sin acciones */
     if (dep.id === "ceo") {
       rows.innerHTML += `
         <tr>
@@ -241,7 +243,7 @@ function loadDepartments() {
       return;
     }
 
-    // Resto: bonus deshabilitado, otros botones funcionales
+    /* Otros departamentos → bonus deshabilitado */
     rows.innerHTML += `
       <tr>
         <td>${dep.name}</td>
@@ -271,12 +273,9 @@ function updatePayroll() {
 }
 
 /* ============================================================
-   MODAL OPENERS (HIRE / SALARY / DISMISS)
+   OPEN MODALS
    ============================================================ */
-function openBonus(id) {
-  // por ahora no se usa; bonus deshabilitado
-  return;
-}
+function openBonus(_) { /* deshabilitado */ return; }
 
 function openHire(id) {
   activeDept = id;
@@ -309,45 +308,25 @@ function closeModal(id) {
 }
 
 /* ============================================================
-   BONUS CONFIRM (no se usará hasta activar sistema)
-   ============================================================ */
-function confirmBonus() {
-  const percent = parseInt(document.getElementById("bonusRange").value);
-  ACS_HR_applyBonus(activeDept, percent);
-
-  closeModal('bonusModal');
-  loadDepartments();
-}
-
-/* ============================================================
-   HIRE CONFIRM
+   ACTIONS
    ============================================================ */
 function confirmHire() {
   const count = parseInt(document.getElementById("hireCount").value);
   ACS_HR_hire(activeDept, count);
-
   closeModal('hireModal');
   loadDepartments();
 }
 
-/* ============================================================
-   DISMISS CONFIRM
-   ============================================================ */
 function confirmDismiss() {
   const count = parseInt(document.getElementById("dismissCount").value);
   ACS_HR_fire(activeDept, count);
-
   closeModal('dismissModal');
   loadDepartments();
 }
 
-/* ============================================================
-   SALARY ADJUST CONFIRM
-   ============================================================ */
 function confirmSalary() {
   const percent = parseInt(document.getElementById("salaryRange").value);
   ACS_HR_adjustSalary(activeDept, percent);
-
   closeModal('salaryModal');
   loadDepartments();
 }
@@ -365,7 +344,6 @@ function handleLogout() {
    ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
   loadDepartments();
-
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
