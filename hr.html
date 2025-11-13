@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Human Resources - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
-
   <style>
     /* === HR MODULE (ACS Unified Dashboard Design) === */
     body {
@@ -44,7 +43,6 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
       transition: transform 0.2s ease;
     }
-
     .panel:hover { transform: scale(1.02); }
 
     .panel h3 {
@@ -52,10 +50,12 @@
       margin-bottom: 0.8rem;
     }
 
+    /* === INACTIVE PANELS === */
     .inactive-panel {
       opacity: 0.45;
       filter: grayscale(100%);
       pointer-events: none;
+      position: relative;
     }
 
     .inactive-btn {
@@ -67,36 +67,34 @@
 
     /* Clock */
     .acs-clock-header {
-      font-family: 'Orbitron', 'Consolas', monospace;
-      color: #00ff80;
-      font-weight: bold;
-      background: rgba(0, 255, 128, 0.08);
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      margin-left: 1rem;
+      font-family: 'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      font-weight:bold;
+      background:rgba(0,255,128,0.08);
+      padding:0.3rem 0.8rem;
+      border-radius:6px;
+      font-size:0.9rem;
+      margin-left:1rem;
     }
-    /* === ACS STANDARD BUTTON === */
-   .acs-btn {
-   background-color: #00a86b;
-   color: #fff;
-   border: none;
-   border-radius: 6px;
-   padding: 9px 18px;
-   font-weight: 600;
-   cursor: pointer;
-   transition: background 0.2s ease;
-}
 
-.acs-btn:hover {
-  background-color: #007d4e;
-}
+    /* Standard ACS button */
+    .acs-btn {
+      background-color: #00a86b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .acs-btn:hover { background-color: #007d4e; }
   </style>
 </head>
 
 <body>
 
-<!-- ===== HEADER ===== -->
+<!-- HEADER -->
 <header class="acs-header">
   <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo" />
@@ -120,14 +118,14 @@
   <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
 </header>
 
-<!-- ===== MAIN ===== -->
+<!-- MAIN -->
 <main class="acs-main">
   <h2>👥 Human Resources Department</h2>
   <p class="sub">Manage all staff, morale, payroll and bonuses across the company.</p>
 
   <section class="finance-panels">
 
-    <!-- ===== HR OVERVIEW ===== -->
+    <!-- === HR OVERVIEW === -->
     <div class="panel">
       <h3>📊 HR Overview</h3>
       <p>Total Staff: <strong id="totalStaff">—</strong></p>
@@ -136,20 +134,20 @@
       <p>Staff Coverage: <strong id="coverage">100%</strong></p>
     </div>
 
-    <!-- ===== DEPARTMENT CONTROL ===== -->
+    <!-- === Department Control === -->
     <div class="panel">
       <h3>🧑‍💼 Department Control</h3>
-      <p>Total Departments: <strong id="deptCount">—</strong></p>
+      <p>Total Departments: <strong>18</strong></p>
       <p>Total Staff: <strong id="totalStaff2">—</strong></p>
       <p>Average Morale: <strong id="avgMorale2">—</strong></p>
       <p>Monthly Payroll: <strong id="monthlyPayroll">—</strong></p>
       <br />
       <button class="acs-btn" onclick="window.location.href='department_control.html'">
-      🏢 Open Department Control Center
+        🏢 Open Department Control Center
       </button>
     </div>
 
-    <!-- ===== INACTIVE PANELS ===== -->
+    <!-- === INACTIVE PANELS === -->
     <div class="panel inactive-panel">
       <h3>💰 Payroll & Bonuses</h3>
       <p>This Month Payroll: <strong>—</strong></p>
@@ -175,50 +173,53 @@
   <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
 </footer>
 
-<!-- ===== SCRIPTS ===== -->
-<script src="engine/acs_hr_engine.js"></script>
+<!-- ENGINE -->
 <script src="engine/acs_finance.js"></script>
+<script src="engine/acs_hr_engine.js"></script>
 <script src="time_engine.js"></script>
 
 <script>
-/*****************************************************
- * Cargar datos reales desde el motor HR
- *****************************************************/
-window.addEventListener("DOMContentLoaded", () => {
+/* ============================================================
+   LOAD DATA FROM ENGINE
+   ============================================================ */
+function loadHRDashboard() {
+  const hr = ACS_HR_load();
 
-  const overview = ACS_HR_getOverview();   // { totalStaff, payroll, avgMorale }
-  const totalPayroll = ACS_HR_getTotalPayroll();
-  const deptView = ACS_HR_getDepartmentsView();
+  // Total staff
+  const totalStaff = Object.values(hr).reduce((sum, d) => sum + d.staff, 0);
 
-  // Pintar valores
-  document.getElementById("totalStaff").textContent = overview.totalStaff;
-  document.getElementById("totalStaff2").textContent = overview.totalStaff;
+  // Average morale
+  const morale = Math.round(
+    Object.values(hr).reduce((sum, d) => sum + d.morale, 0) /
+    Object.values(hr).length
+  );
+
+  // Total payroll
+  const payroll = ACS_HR_getTotalPayroll();
+
+  // Paint UI
+  document.getElementById("totalStaff").textContent = totalStaff;
+  document.getElementById("totalStaff2").textContent = totalStaff;
+
+  document.getElementById("avgMorale").textContent = morale + "%";
+  document.getElementById("avgMorale2").textContent = morale + "%";
 
   document.getElementById("totalPayroll").textContent =
-    `$${overview.payroll.toLocaleString()} / month`;
+    "$" + payroll.toLocaleString() + " / month";
 
   document.getElementById("monthlyPayroll").textContent =
-    `$${totalPayroll.toLocaleString()}`;
+    "$" + payroll.toLocaleString();
+}
 
-  document.getElementById("avgMorale").textContent = overview.avgMorale + "%";
-  document.getElementById("avgMorale2").textContent = overview.avgMorale + "%";
+/* INIT */
+window.addEventListener("DOMContentLoaded", () => {
+  loadHRDashboard();
 
-  document.getElementById("deptCount").textContent = deptView.length;
-
-  // Reloj global
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
 });
-
-/*****************************************************
- * Logout
- *****************************************************/
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href = "login.html";
-}
 </script>
 
 </body>
