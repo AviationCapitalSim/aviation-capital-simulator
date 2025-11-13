@@ -287,3 +287,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   economicWatcher();
 });
+/* ============================================================
+   === GLOBAL CLOCK ATTACHER (NO HTML EDITS NEEDED) ===========
+   ============================================================ */
+
+function applyClockToAllPages() {
+  const el = document.getElementById("acs-clock");
+  if (!el) return;
+
+  function renderClock(t) {
+    const hh = String(t.getUTCHours()).padStart(2, "0");
+    const mm = String(t.getUTCMinutes()).padStart(2, "0");
+    const dd = String(t.getUTCDate()).padStart(2, "0");
+    const mon = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
+    const yy = t.getUTCFullYear();
+    el.textContent = `${hh}:${mm} — ${dd} ${mon} ${yy}`;
+  }
+
+  // Paint immediately on page load
+  renderClock(ACS_TIME.currentTime);
+
+  // Update every time engine ticks
+  registerTimeListener(renderClock);
+
+  // Ensure update when returning to the tab
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      renderClock(ACS_TIME.currentTime);
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", applyClockToAllPages);
