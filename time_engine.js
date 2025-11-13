@@ -1,12 +1,12 @@
 /* ============================================================
-   === AVIATION CAPITAL SIMULATOR - GLOBAL TIME ENGINE v3.8 ===
+   === AVIATION CAPITAL SIMULATOR - GLOBAL TIME ENGINE v3.9 ===
    ------------------------------------------------------------
    ▪ Universal UTC Matrix Clock
    ▪ Perfect cross-page synchronization
-   ▪ One single time source: acs_universal_time
-   ▪ OFF = freeze (same time across all pages)
-   ▪ ON = real-time progression 24/7 globally
-   ▪ Zero HTML changes needed
+   ▪ ON = real-time progression 24/7
+   ▪ OFF = freeze everywhere (no drifts)
+   ▪ Reset = 1940 shown everywhere
+   ▪ No HTML edits required
    ============================================================ */
 
 /* === 🌍 GLOBAL TIME OBJECT === */
@@ -83,12 +83,14 @@ function stopACSTime() {
 }
 
 /* ============================================================
-   === 🟦 UNIVERSAL TIME UPDATE (core of v3.8) ==================
+   === 🟦 UNIVERSAL TIME UPDATE (core of sync) ==================
    ============================================================ */
 
 function updateUniversalTime() {
-  // This is the ONLY source of truth for time across all pages.
-  localStorage.setItem("acs_universal_time", ACS_TIME.currentTime.toISOString());
+  localStorage.setItem(
+    "acs_universal_time",
+    ACS_TIME.currentTime.toISOString()
+  );
 }
 
 /* ============================================================
@@ -103,23 +105,35 @@ function toggleSimState() {
     return;
   }
 
+  /* ========================================================
+     === TURNING OFF → FREEZE MODE ==========================
+     ======================================================== */
   if (ACS_CYCLE.status === "ON") {
-    /* === TURNING OFF → FREEZE MODE === */
     ACS_TIME.currentTime = computeSimTime();
 
-    localStorage.setItem("acs_universal_time", ACS_TIME.currentTime.toISOString());
-    localStorage.setItem("acs_frozen_time", ACS_TIME.currentTime.toISOString());
+    const freeze = ACS_TIME.currentTime.toISOString();
+    localStorage.setItem("acs_universal_time", freeze);
+    localStorage.setItem("acs_frozen_time", freeze);
 
     ACS_CYCLE.status = "OFF";
     stopACSTime();
+    localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
 
+    updateClockDisplay();
     alert("⏸ Simulation paused — Time frozen.");
-  } else {
-    /* === TURNING ON → CONTINUE FROM FREEZE === */
+    return;
+  }
+
+  /* ========================================================
+     === TURNING ON → CONTINUE FROM FREEZE ==================
+     ======================================================== */
+  if (ACS_CYCLE.status === "OFF") {
     ACS_CYCLE.status = "ON";
 
     const now = new Date();
-    const frozen = new Date(localStorage.getItem("acs_frozen_time") || ACS_TIME.currentTime);
+    const frozen = new Date(
+      localStorage.getItem("acs_frozen_time") || ACS_TIME.currentTime
+    );
 
     const minutesFromStart =
       (frozen - new Date(Date.UTC(1940, 0, 1))) / 60000;
@@ -127,17 +141,16 @@ function toggleSimState() {
     const newRealStart = new Date(now - minutesFromStart * 1000);
     ACS_CYCLE.realStartDate = newRealStart.toISOString();
 
-    alert("▶️ Simulation resumed — Timeline continues.");
+    localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
+
+    ACS_TIME.currentTime = computeSimTime();
+    updateUniversalTime();
+    updateClockDisplay();
 
     startACSTime();
+    alert("▶️ Simulation resumed — Timeline continues.");
+    return;
   }
-
-  localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
-
-  const simStatus = document.getElementById("simStatus");
-  if (simStatus) simStatus.textContent = ACS_CYCLE.status.toUpperCase();
-
-  updateClockDisplay();
 }
 
 /* ============================================================
@@ -174,8 +187,9 @@ function resetSimulationData() {
 
   ACS_TIME.currentTime = new Date("1940-01-01T00:00:00Z");
 
-  localStorage.setItem("acs_universal_time", ACS_TIME.currentTime.toISOString());
-  localStorage.setItem("acs_frozen_time", ACS_TIME.currentTime.toISOString());
+  const zero = ACS_TIME.currentTime.toISOString();
+  localStorage.setItem("acs_universal_time", zero);
+  localStorage.setItem("acs_frozen_time", zero);
 
   stopACSTime();
   updateClockDisplay();
@@ -196,7 +210,9 @@ function updateClockDisplay() {
   const hh = String(t.getUTCHours()).padStart(2, "0");
   const mm = String(t.getUTCMinutes()).padStart(2, "0");
   const dd = String(t.getUTCDate()).padStart(2, "0");
-  const month = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
+  const month = t
+    .toLocaleString("en-US", { month: "short" })
+    .toUpperCase();
   const yy = t.getUTCFullYear();
 
   el.textContent = `${hh}:${mm} — ${dd} ${month} ${yy}`;
@@ -212,7 +228,8 @@ function notifyTimeListeners() {
 }
 
 function registerTimeListener(callback) {
-  if (typeof callback === "function") ACS_TIME.listeners.push(callback);
+  if (typeof callback === "function")
+    ACS_TIME.listeners.push(callback);
 }
 
 /* ============================================================
@@ -223,15 +240,26 @@ function updateEconomicVariables(year) {
   let ticketFee = 0.06;
   let fuelUSD = 3.2;
 
-  if (year < 1960) { ticketFee = 0.12; fuelUSD = 1.1; }
-  else if (year < 1980) { ticketFee = 0.09; fuelUSD = 1.9; }
-  else if (year < 2000) { ticketFee = 0.07; fuelUSD = 2.5; }
-  else if (year < 2020) { ticketFee = 0.05; fuelUSD = 4.3; }
-  else { ticketFee = 0.04; fuelUSD = 5.8; }
+  if (year < 1960) {
+    ticketFee = 0.12;
+    fuelUSD = 1.1;
+  } else if (year < 1980) {
+    ticketFee = 0.09;
+    fuelUSD = 1.9;
+  } else if (year < 2000) {
+    ticketFee = 0.07;
+    fuelUSD = 2.5;
+  } else if (year < 2020) {
+    ticketFee = 0.05;
+    fuelUSD = 4.3;
+  } else {
+    ticketFee = 0.04;
+    fuelUSD = 5.8;
+  }
 
   if (typeof WorldAirportsACS !== "undefined") {
     for (const cont in WorldAirportsACS) {
-      WorldAirportsACS[cont].forEach(a => {
+      WorldAirportsACS[cont].forEach((a) => {
         a.ticket_fee_percent = ticketFee;
         a.fuel_usd_gal = fuelUSD;
       });
@@ -264,9 +292,9 @@ function economicWatcher() {
 document.addEventListener("DOMContentLoaded", () => {
   const universal = localStorage.getItem("acs_universal_time");
 
-  if (universal) {
-    ACS_TIME.currentTime = new Date(universal);
-  }
+  ACS_TIME.currentTime = universal
+    ? new Date(universal)
+    : new Date("1940-01-01T00:00:00Z");
 
   if (ACS_CYCLE.status === "ON") {
     startACSTime();
