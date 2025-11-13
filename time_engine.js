@@ -228,3 +228,15 @@ window.addEventListener("storage", (e) => {
     updateClockDisplay();
   }
 });
+// --- Auto-sync al cargar cualquier página ---
+document.addEventListener("DOMContentLoaded", () => {
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+
+  if (cycle.status === "ON") {
+    startACSTime();     // asegura que el motor corre en background
+  } else {
+    stopACSTime();      // pausa global
+  }
+
+  updateClockDisplay(); // actualiza la hora exacta al entrar
+});
