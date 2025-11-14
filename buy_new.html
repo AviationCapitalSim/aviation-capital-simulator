@@ -1,5 +1,5 @@
 <!-- === BUY NEW MODULE === -->
-<!-- Version: Beta v1 | Date: 08 NOV 2025 -->
+<!-- Version: V3 Final | Date: 14 NOV 2025 -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,7 +7,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Buy New - Aviation Capital Simulator</title>
+
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
   <style>
     /* === BUY NEW AIRCRAFT PAGE === */
     body {
@@ -19,8 +21,15 @@
 
     h2 {
       color: #FFB300;
-      margin-top: 6rem; /* ✅ Ajuste por header fijo */
+      margin-top: 6rem;
       text-align: center;
+    }
+
+    .sub {
+      color: #cfd8dc;
+      text-align: center;
+      margin-top: 0.3rem;
+      margin-bottom: 2rem;
     }
 
     .manufacturer-section {
@@ -30,7 +39,7 @@
 
     .manufacturer-section h2 {
       color: #FFB300;
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       margin-bottom: 1rem;
       border-bottom: 2px solid #FFB300;
       padding-bottom: 6px;
@@ -46,7 +55,7 @@
       background: #102040;
       border-radius: 10px;
       overflow: hidden;
-      height: 340px; /* más alta para equilibrar imagen + botones */
+      height: 340px;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       display: flex;
@@ -60,13 +69,13 @@
 
     .aircraft-card img {
       width: 100%;
-      height: 63%; /* ajustado para dejar espacio abajo */
-      object-fit: cover; /* mantiene proporción real */
-      background: #000; /* contraste elegante */
+      height: 63%;
+      object-fit: cover;
+      background: #000;
     }
 
     .aircraft-info {
-      padding: 10px 8px 16px; /* más espacio inferior */
+      padding: 10px 8px 16px;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -106,70 +115,78 @@
       cursor: pointer;
       font-weight: 600;
       color: white;
-      transition: background 0.2s ease;
       font-size: 0.75rem;
     }
 
     .buy-btn { background: #1565c0; }
     .buy-btn:hover { background: #0d47a1; }
+
     .lease-btn { background: #00a86b; }
     .lease-btn:hover { background: #007d4e; }
+
     .info-btn { background: #ffb300; color: #102040; }
     .info-btn:hover { background: #ffcc33; }
 
-    /* === Modals === */
+    /* === PURCHASE MODAL === */
     .modal {
       display: none;
       position: fixed;
       z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.65);
+      justify-content: center;
+      align-items: center;
     }
 
-    .modal-content, .modal-specs {
+    .modal-content {
       background: #102040;
-      color: #fff;
       padding: 24px;
       border-radius: 12px;
+      width: 420px;
+      text-align: center;
       box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
 
-    .modal-specs {
-      max-width: 600px;
-      margin: 5% auto;
-      text-align: left;
+    .modal-content h2 { color: #FFB300; }
+
+    .modal-content p {
+      font-size: 0.85rem;
+      margin: 6px 0;
+      color: #ddd;
     }
 
-    .modal-specs h2 { color: #FFB300; text-align: center; }
-    .modal-specs ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 20px;
-      font-size: 0.95rem;
-    }
-
-    .modal-specs li { margin-bottom: 8px; }
-
-    .close-btn, .confirm-btn {
+    .confirm-btn {
+      background: #1565c0;
       border: none;
       border-radius: 8px;
-      padding: 10px 16px;
-      margin: 10px 5px;
+      padding: 10px;
+      width: 100%;
+      color: white;
+      font-weight: bold;
+      margin-top: 14px;
       cursor: pointer;
-      font-weight: 600;
     }
 
-    .close-btn { background: #00a86b; color: #fff; }
+    .confirm-btn:hover { background: #0d47a1; }
 
-    /* ✅ Reloj Airbus cockpit */
+    .close-btn {
+      margin-top: 10px;
+      background: #00a86b;
+      width: 100%;
+      border: none;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* === CLOCK (Airbus style) === */
     .acs-clock-header {
       font-family: 'Orbitron', 'Consolas', monospace;
       color: #00ff80;
       font-weight: bold;
-      background: rgba(0, 255, 128, 0.08);
+      background: rgba(0, 255, 128, 0.1);
       padding: 0.3rem 0.8rem;
       border-radius: 6px;
       font-size: 0.9rem;
@@ -179,6 +196,7 @@
 </head>
 
 <body>
+
   <!-- === HEADER === -->
   <header class="acs-header">
     <div class="acs-logo">
@@ -200,240 +218,123 @@
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </div>
 
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
   </header>
 
-  <main class="acs-main">
-    <h2>Buy New Aircraft</h2>
-    <p class="sub">Purchase or lease your next aircraft directly from the manufacturer.</p>
+  <!-- === TITLE === -->
+  <h2>Buy New Aircraft</h2>
+  <p class="sub">Purchase or lease aircraft directly from the manufacturer.</p>
 
-    <!-- === MANUFACTURERS (ajustado a tus imágenes .png) === -->
+  <!-- ============================================================
+       === DYNAMIC MANUFACTURER SECTIONS (OPTION A: grouped) ===
+       ============================================================ -->
 
-    <!-- AIRBUS -->
-    <div class="manufacturer-section">
-      <h2>Airbus</h2>
-      <div class="aircraft-grid">
-        <div class="aircraft-card">
-          <img src="img/airbus_a320.png" alt="Airbus A320-200" />
-          <div class="aircraft-info">
-            <h3>Airbus A320-200</h3>
-            <p>Range: 3,400 NM • Seats: 180</p>
-            <p class="price">$98 M USD</p>
-            <div class="action-buttons">
-              <button class="buy-btn" onclick="window.location.href='buy_aircraft.html'">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="Airbus A320-200">Info</button>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="manufacturer-section">
+    <h2>Airbus</h2>
+    <div class="aircraft-grid" id="section-airbus"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>Boeing</h2>
+    <div class="aircraft-grid" id="section-boeing"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>Embraer</h2>
+    <div class="aircraft-grid" id="section-embraer"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>Bombardier</h2>
+    <div class="aircraft-grid" id="section-bombardier"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>ATR</h2>
+    <div class="aircraft-grid" id="section-atr"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>McDonnell Douglas</h2>
+    <div class="aircraft-grid" id="section-mcdonnelldouglas"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>Soviet / Russian</h2>
+    <div class="aircraft-grid" id="section-soviet"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>Vintage Classics</h2>
+    <div class="aircraft-grid" id="section-vintage"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>Business Jets</h2>
+    <div class="aircraft-grid" id="section-business"></div>
+  </div>
+
+  <div class="manufacturer-section">
+    <h2>Helicopters & VTOL</h2>
+    <div class="aircraft-grid" id="section-helicopters"></div>
+  </div>
+
+  <!-- ============================================================
+       === PURCHASE MODAL =========================================
+       ============================================================ -->
+
+  <div class="modal" id="purchase-modal">
+    <div class="modal-content">
+
+      <h2 id="purchase-title"></h2>
+
+      <p>💵 Price: <span id="purchase-price"></span></p>
+      <p>🧭 Range: <span id="purchase-range"></span></p>
+      <p>👥 Seats: <span id="purchase-seats"></span></p>
+      <p>⚙️ MTOW: <span id="purchase-mtow"></span></p>
+      <p>📅 Year: <span id="purchase-year"></span></p>
+
+      <button class="confirm-btn" onclick="confirmPurchase()">Confirm Purchase</button>
+      <button class="close-btn" onclick="closePurchaseModal()">Cancel</button>
+
     </div>
+  </div>
 
-    <!-- BOEING -->
-    <div class="manufacturer-section">
-      <h2>Boeing</h2>
-      <div class="aircraft-grid">
-        <div class="aircraft-card">
-          <img src="img/boeing_737.png" alt="Boeing 737-800" />
-          <div class="aircraft-info">
-            <h3>Boeing 737-800</h3>
-            <p>Range: 3,550 NM • Seats: 189</p>
-            <p class="price">$106 M USD</p>
-            <div class="action-buttons">
-              <button class="buy-btn" onclick="window.location.href='buy_aircraft.html'">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="Boeing 737-800">Info</button>
-            </div>
-          </div>
-        </div>
-      </div>
+  <!-- ============================================================
+       === INFO MODAL =============================================
+       ============================================================ -->
+
+  <div class="modal" id="infoModal">
+    <div class="modal-content">
+      <h2 id="infoTitle"></h2>
+      <ul id="infoList" style="text-align:left; margin-top:1rem;"></ul>
+      <button class="close-btn" onclick="closeInfo()">Close</button>
     </div>
+  </div>
 
-    <!-- EMBRAER -->
-    <div class="manufacturer-section">
-      <h2>Embraer</h2>
-      <div class="aircraft-grid">
-        <div class="aircraft-card">
-          <img src="img/embraer_190.png" alt="Embraer E190" />
-          <div class="aircraft-info">
-            <h3>Embraer E190</h3>
-            <p>Range: 2,450 NM • Seats: 98</p>
-            <p class="price">$51 M USD</p>
-            <div class="action-buttons">
-              <button class="buy-btn" onclick="window.location.href='buy_aircraft.html'">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="Embraer E190">Info</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- ============================================================
+       === SCRIPTS ===============================================
+       ============================================================ -->
 
-    <!-- BOMBARDIER -->
-    <div class="manufacturer-section">
-      <h2>Bombardier</h2>
-      <div class="aircraft-grid">
-        <div class="aircraft-card">
-          <img src="img/bombardier_crj.png" alt="Bombardier CRJ-900" />
-          <div class="aircraft-info">
-            <h3>Bombardier CRJ-900</h3>
-            <p>Range: 1,550 NM • Seats: 90</p>
-            <p class="price">$45 M USD</p>
-            <div class="action-buttons">
-              <button class="buy-btn" onclick="window.location.href='buy_aircraft.html'">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="Bombardier CRJ-900">Info</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ATR -->
-    <div class="manufacturer-section">
-      <h2>ATR</h2>
-      <div class="aircraft-grid">
-        <div class="aircraft-card">
-          <img src="img/atr_72.png" alt="ATR 72-600" />
-          <div class="aircraft-info">
-            <h3>ATR 72-600</h3>
-            <p>Range: 810 NM • Seats: 72</p>
-            <p class="price">$28 M USD</p>
-            <div class="action-buttons">
-              <button class="buy-btn" onclick="window.location.href='buy_aircraft.html'">Buy</button>
-              <button class="lease-btn" onclick="window.location.href='leasing.html'">Lease</button>
-              <button class="info-btn" data-aircraft="ATR 72-600">Info</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- === INFO MODAL === -->
-    <div id="infoModal" class="modal">
-      <div class="modal-specs">
-        <h2 id="infoTitle"></h2>
-        <ul id="infoList"></ul>
-        <div style="text-align:center;">
-          <button class="close-btn" id="closeInfo">Close</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- === PRODUCTION SLOTS OVERVIEW === -->
-    <div class="manufacturer-section">
-      <h2>📦 Production Slots Availability</h2>
-      <p class="sub">Check monthly manufacturing capacity and next delivery dates per manufacturer.</p>
-      <div id="production-overview"></div>
-    </div>
-
-  </main>
+  <script src="acs_aircraft_db.js"></script>
+  <script src="acs_buy_new.js"></script>
+  <script src="time_engine.js"></script>
+  <script src="finance.js"></script>
 
   <script>
-    const aircraftSpecs = {
-      "Airbus A320-200": {
-        range: "3,400 NM",
-        speed: "Mach 0.78 (450 KTAS)",
-        engines: "2× CFM56-5B4/P",
-        runway: "7,200 ft (2,200 m)",
-        mtow: "77 t",
-        upgrade: "✅ A320neo (LEAP-1A)"
-      },
-      "Boeing 737-800": {
-        range: "3,550 NM",
-        speed: "Mach 0.785 (455 KTAS)",
-        engines: "2× CFM56-7B26",
-        runway: "8,200 ft (2,500 m)",
-        mtow: "79 t",
-        upgrade: "✅ 737 MAX 8 (LEAP-1B)"
-      },
-      "Embraer E190": {
-        range: "2,450 NM",
-        speed: "Mach 0.78 (447 KTAS)",
-        engines: "2× GE CF34-10E",
-        runway: "6,800 ft (2,070 m)",
-        mtow: "51 t",
-        upgrade: "✅ E190-E2 (PW1900G)"
-      },
-      "Bombardier CRJ-900": {
-        range: "1,550 NM",
-        speed: "Mach 0.78 (447 KTAS)",
-        engines: "2× GE CF34-8C5",
-        runway: "6,100 ft (1,860 m)",
-        mtow: "38 t",
-        upgrade: "⚙️ No major upgrade"
-      },
-      "ATR 72-600": {
-        range: "810 NM",
-        speed: "Mach 0.41 (250 KTAS)",
-        engines: "2× PW127M Turboprop",
-        runway: "4,400 ft (1,340 m)",
-        mtow: "23 t",
-        upgrade: "⚙️ No upgrade (variant: ATR 42-600)"
-      }
-    };
-
-    const infoButtons = document.querySelectorAll(".info-btn");
-    const infoModal = document.getElementById("infoModal");
-    const infoTitle = document.getElementById("infoTitle");
-    const infoList = document.getElementById("infoList");
-    const closeInfo = document.getElementById("closeInfo");
-
-    infoButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const model = btn.getAttribute("data-aircraft");
-        const specs = aircraftSpecs[model];
-        if (specs) {
-          infoTitle.textContent = `Specs – ${model}`;
-          infoList.innerHTML = `
-            <li>🧭 <strong>Range:</strong> ${specs.range}</li>
-            <li>⚡ <strong>Speed:</strong> ${specs.speed}</li>
-            <li>⚙️ <strong>Engines:</strong> ${specs.engines}</li>
-            <li>🛫 <strong>Runway:</strong> ${specs.runway}</li>
-            <li>💪 <strong>MTOW:</strong> ${specs.mtow}</li>
-            <li>🔧 <strong>Upgrade:</strong> ${specs.upgrade}</li>`;
-          infoModal.style.display = "block";
-        }
-      });
-    });
-
-    closeInfo.addEventListener("click", () => infoModal.style.display = "none");
-    window.onclick = e => { if (e.target === infoModal) infoModal.style.display = "none"; };
-
     function handleLogout() {
       alert("👋 Session closed. See you soon, Captain!");
       window.location.href = "login.html";
     }
-  </script>
 
-  <!-- === ACS Production System (slots) === -->
-  <script src="acs_production.js?v=1.0"></script>
-  <script>
-    window.addEventListener('load', () => {
-      renderProductionTables('production-overview');
+    // Reloj cockpit Airbus
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
     });
   </script>
 
- <!-- === MOTOR GLOBAL DE TIEMPO ACS === -->
-<script src="time_engine.js"></script>
-<script src="acs_production.js"></script>
-<script src="finance.js"></script>
-
-<script>
-  // Inicializar render de producción
-  window.addEventListener('load', () => {
-    if (typeof renderProductionTables === "function") {
-      renderProductionTables('production-overview');
-    }
-  });
-
-  // Sincronizar reloj global
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
-    }
-  });
-</script>
 </body>
 </html>
