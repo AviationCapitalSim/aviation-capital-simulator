@@ -5,7 +5,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== PWA Manifest (Android / Chrome) ======== -->
+  <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
@@ -34,8 +47,10 @@
     <h2>Build your Airline. Grow your Empire.</h2>
     <img src="acs_logo.png" alt="ACS Logo" class="hero-logo">
     <p>Create your virtual airline, earn credits, and manage your fleet.</p>
-    <button onclick="window.location.href='register.html'">Start Free 5-Day Trial</button>
 
+    <button onclick="window.location.href='register.html'">
+      Start Free 5-Day Trial
+    </button>
   </section>
 
   <!-- ======== FOOTER ======== -->
@@ -48,26 +63,22 @@
 <script>
   // === BOTONES PRINCIPALES ===
   function goToLogin() {
-    // No revisa el estado; simplemente lleva al login
-    window.location.href = "modules/login.html";
+    window.location.href = "login.html";
   }
 
   function goToRegister() {
-    window.location.href = "modules/register.html";
+    window.location.href = "register.html";
   }
 
   // === CONTROL DE SESIÓN (solo después del login real) ===
-  // Este bloque NO redirige desde el index, solo mantiene registro de sesión.
   document.addEventListener("DOMContentLoaded", () => {
     const user = localStorage.getItem("ACS_User");
     const airline = localStorage.getItem("ACS_Airline");
 
     console.log("Session check:", { user, airline });
-
-    // No hacemos redirect automático aquí, para evitar que el botón Login
-    // salte directamente a Create Airline.
-    // El flujo de redirección ocurre desde login.html después de validarse.
+    // No redirect automático aquí.
   });
 </script>
+
 </body>
 </html>
