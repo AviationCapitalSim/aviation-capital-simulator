@@ -116,3 +116,78 @@ function saveRegistration() {
 
   closeRegModal();
 }
+/* ============================================================
+   === PART 2 — INTERNAL REGISTRATION API ======================
+   ------------------------------------------------------------
+   • Funciones listas para que MyAircraft y otros módulos
+     puedan consultar, validar y asignar matrículas.
+   ============================================================ */
+
+/* ========= OBTENER MATRÍCULA DE UN AVIÓN =================== */
+function getAircraftRegistrationById(acId) {
+  const fleet = reg_loadMyAircraft();
+  const ac = fleet.find(a => a.id === acId);
+  return ac ? (ac.registration || null) : null;
+}
+
+/* ========= VERIFICAR SI UNA MATRÍCULA YA EXISTE ============ */
+function registrationExists(reg) {
+  const fleet = reg_loadMyAircraft();
+  return fleet.some(ac => ac.registration === reg);
+}
+
+/* ========= GENERAR SUGERENCIA DE SERIAL ==================== */
+function suggestNextSerial(prefix) {
+  const fleet = reg_loadMyAircraft();
+  // Buscar el número más alto existente con ese prefijo
+  let max = 0;
+
+  fleet.forEach(ac => {
+    if (ac.registration && ac.registration.startsWith(prefix)) {
+      const serial = ac.registration.replace(prefix, "");
+      const num = parseInt(serial);
+      if (!isNaN(num) && num > max) max = num;
+    }
+  });
+
+  return String(max + 1).padStart(4, "0");
+}
+
+/* ========= ASIGNAR MATRÍCULA DIRECTAMENTE ================== */
+function assignRegistrationDirect(acId, reg) {
+  let fleet = reg_loadMyAircraft();
+  const idx = fleet.findIndex(a => a.id === acId);
+
+  if (idx === -1) return false;
+
+  fleet[idx].registration = reg.toUpperCase();
+  reg_saveMyAircraft(fleet);
+
+  return true;
+}
+
+/* ========= OBTENER PREFIJO + SERIAL SUGERIDO =============== */
+function getAutoSuggestedRegistration() {
+  const prefix = getRegistrationPrefix();
+  const serial = suggestNextSerial(prefix);
+  return prefix + serial;
+}
+
+/* ========= GENERAR MATRÍCULA AUTOMÁTICA (SI SE REQUIERE) === */
+function autoAssignMissingRegistrations() {
+  let fleet = reg_loadMyAircraft();
+  let changed = false;
+
+  fleet.forEach(ac => {
+    if (!ac.registration) {
+      const reg = getAutoSuggestedRegistration();
+      ac.registration = reg;
+      changed = true;
+    }
+  });
+
+  if (changed) reg_saveMyAircraft(fleet);
+}
+
+/* ========= DEBUG =========================================== */
+console.log("🔧 RegManager Part 2 ready");
