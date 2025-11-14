@@ -220,126 +220,212 @@
     </div>
   </div>
 
-  <!-- === SCRIPT SECTION === -->
+  <!-- === SCRIPT PRINCIPAL DEL MÓDULO (por ahora inline, luego lo pasamos a my_aircraft.js) === -->
   <script>
-  const defaultFleet = [
-    { model:"Airbus A320-200", registration:"EX-32001", value:98, age:5, hours:14200, condition:92, status:"Active", lastCheck:"B", nextCheck:"C", engineer:"Eng. V. Petrova" },
-    { model:"Airbus A320-200", registration:"EX-32002", value:97, age:5, hours:13000, condition:90, status:"Active", lastCheck:"A", nextCheck:"B", engineer:"Tech. A. Rahimov" },
-    { model:"Boeing 737-800", registration:"EX-73701", value:106, age:6, hours:15800, condition:88, status:"Leased Out", lastCheck:"C", nextCheck:"D", engineer:"Eng. S. Bekov" },
-    { model:"Embraer E190", registration:"EX-E1901", value:51, age:4, hours:9800, condition:93, status:"Active", lastCheck:"B", nextCheck:"C", engineer:"Eng. O. Nazarova" },
-    { model:"ATR 72-600", registration:"EX-ATR01", value:28, age:3, hours:6200, condition:96, status:"Active", lastCheck:"A", nextCheck:"B", engineer:"Tech. K. Muradov" }
-  ];
+    const defaultFleet = [
+      { model:"Airbus A320-200", registration:"EX-32001", value:98, age:5, hours:14200, condition:92, status:"Active",     lastCheck:"B", nextCheck:"C", engineer:"Eng. V. Petrova" },
+      { model:"Airbus A320-200", registration:"EX-32002", value:97, age:5, hours:13000, condition:90, status:"Active",     lastCheck:"A", nextCheck:"B", engineer:"Tech. A. Rahimov" },
+      { model:"Boeing 737-800",  registration:"EX-73701", value:106,age:6, hours:15800, condition:88, status:"Leased Out", lastCheck:"C", nextCheck:"D", engineer:"Eng. S. Bekov" },
+      { model:"Embraer E190",    registration:"EX-E1901", value:51, age:4, hours:9800,  condition:93, status:"Active",     lastCheck:"B", nextCheck:"C", engineer:"Eng. O. Nazarova" },
+      { model:"ATR 72-600",      registration:"EX-ATR01", value:28, age:3, hours:6200,  condition:96, status:"Active",     lastCheck:"A", nextCheck:"B", engineer:"Tech. K. Muradov" }
+    ];
 
-  let balance = 200.0;
-  let fleet = JSON.parse(localStorage.getItem("acsFleet")) || defaultFleet;
-  let logData = JSON.parse(localStorage.getItem("acsLog")) || [];
+    let balance = 200.0;
+    let storedBalance = parseFloat(localStorage.getItem("acsBalance"));
+    if (!isNaN(storedBalance)) balance = storedBalance;
 
-  const balanceEl = document.getElementById("balance");
-  const fleetTable = document.getElementById("fleetTable");
-  const logEl = document.getElementById("log-entry");
+    let fleet   = JSON.parse(localStorage.getItem("acsFleet")) || defaultFleet;
+    let logData = JSON.parse(localStorage.getItem("acsLog"))   || [];
 
-  function saveData(){
-    localStorage.setItem("acsFleet", JSON.stringify(fleet));
-    localStorage.setItem("acsBalance", balance);
-    localStorage.setItem("acsLog", JSON.stringify(logData));
-  }
+    const balanceEl  = document.getElementById("balance");
+    const fleetTable = document.getElementById("fleetTable");
+    const logEl      = document.getElementById("log-entry");
 
-  function logAction(text){
-    const time = new Date().toDateString();
-    const entry = `[${time}] ${text}`;
-    logData.unshift(entry);
+    function saveData(){
+      localStorage.setItem("acsFleet", JSON.stringify(fleet));
+      localStorage.setItem("acsBalance", balance);
+      localStorage.setItem("acsLog", JSON.stringify(logData));
+    }
+
+    function logAction(text){
+      const time = new Date().toDateString();
+      const entry = `[${time}] ${text}`;
+      logData.unshift(entry);
+      logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join("");
+      saveData();
+    }
+
+    function updateDashboard(){
+      const active = fleet.filter(f=>f.status==="Active").length;
+      const maint  = fleet.filter(f=>f.status.includes("In")).length;
+      const leased = fleet.filter(f=>f.status==="Leased Out").length;
+      const totalValue = fleet.reduce((a,b)=>a+b.value,0);
+      const avgAge = (fleet.reduce((a,b)=>a+b.age,0)/fleet.length).toFixed(1);
+      const avgHrs = (fleet.reduce((a,b)=>a+b.hours,0)/fleet.length).toFixed(0);
+
+      document.getElementById("activeCount").textContent = active;
+      document.getElementById("maintCount").textContent  = maint;
+      document.getElementById("leasedCount").textContent = leased;
+      document.getElementById("fleetValue").textContent  = `$${totalValue.toFixed(0)} M`;
+      document.getElementById("fleetStats").textContent  = `${avgAge} yrs / ${avgHrs} h`;
+      balanceEl.textContent = `$${balance.toFixed(1)} M`;
+    }
+
+    function renderFleet(){
+      fleetTable.innerHTML = `
+        <tr>
+          <th>Model</th><th>Status</th><th>Age</th><th>Hours</th>
+          <th>Condition</th><th>Next Maint.</th><th>Actions</th>
+        </tr>`;
+
+      fleet.forEach((f)=>{
+        const row = document.createElement("tr");
+        let warn = f.condition < 60 ? '<span class="warn">⚠️</span>' : 'OK';
+        row.innerHTML = `
+          <td>${f.model}</td>
+          <td>${f.status}</td>
+          <td>${f.age}</td>
+          <td>${f.hours}</td>
+          <td>${f.condition}%</td>
+          <td>${warn}</td>
+          <td><button class="btn" onclick="openModelModal('${f.model}')">View Fleet</button></td>
+        `;
+        fleetTable.appendChild(row);
+      });
+
+      updateDashboard();
+    }
+
+    /* === MODEL MODAL === */
+    function openModelModal(modelName){
+      const modal = document.getElementById("modelModal");
+      modal.style.display = "flex";
+      document.getElementById("modelTitle").textContent = modelName + " — Fleet Detail";
+
+      const tbl  = document.getElementById("modelTable");
+      const list = fleet.filter(f=>f.model === modelName);
+
+      tbl.innerHTML = `
+        <tr>
+          <th>Registration</th><th>Status</th><th>Hours</th>
+          <th>Last Check</th><th>Next Check</th><th>Engineer</th><th>Action</th>
+        </tr>`;
+
+      list.forEach((f)=>{
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${f.registration}</td>
+          <td>${f.status}</td>
+          <td>${f.hours}</td>
+          <td>${f.lastCheck}</td>
+          <td>${f.nextCheck}</td>
+          <td>${f.engineer}</td>
+          <td><button class="btn" onclick="openMaintModal('${f.registration}','${f.model}')">🔧 Start</button></td>
+        `;
+        tbl.appendChild(row);
+      });
+    }
+
+    function closeModelModal(){
+      document.getElementById("modelModal").style.display = "none";
+    }
+
+    /* === MAINTENANCE MODAL === */
+    let currentReg = null;
+
+    function openMaintModal(reg,model){
+      currentReg = reg;
+      document.getElementById("maintModal").style.display = "flex";
+
+      const f = fleet.find(x=>x.registration === reg);
+      const cost = ((f.value * 0.04) + (f.age * 0.5)).toFixed(2);
+
+      document.getElementById("maintDetail").innerHTML = `
+        <p><b>Aircraft:</b> ${reg} (${model})</p>
+        <p><b>Engineer:</b> ${f.engineer}</p>
+        <p><b>Maintenance Type:</b> C-Check</p>
+        <p><b>Estimated Duration:</b> 1 month (sim)</p>
+        <p><b>Estimated Cost:</b> $${cost}M</p>
+      `;
+
+      const btn = document.getElementById("confirmMaintBtn");
+      btn.onclick = function(){ confirmMaintenance(f,cost); };
+    }
+
+    function closeMaintModal(){
+      document.getElementById("maintModal").style.display = "none";
+    }
+
+    function confirmMaintenance(f,cost){
+      if (f.status !== "Active"){
+        alert("Aircraft not available.");
+        return;
+      }
+      f.status = "In Maintenance";
+      balance -= parseFloat(cost);
+
+      logAction(`Started C-Check on ${f.registration} (-$${cost}M)`);
+
+      document.dispatchEvent(new CustomEvent("acsAircraftStatusChange",{
+        detail:{ registration:f.registration, model:f.model, newStatus:"maintenance", cost:cost }
+      }));
+
+      saveData();
+      renderFleet();
+      closeMaintModal();
+      closeModelModal();
+
+      // Simulación de finalización de mantenimiento (1 min real)
+      setTimeout(()=>{
+        f.status = "Active";
+        f.condition = Math.min(100, f.condition + 10);
+        logAction(`C-Check completed on ${f.registration}`);
+
+        document.dispatchEvent(new CustomEvent("acsAircraftStatusChange",{
+          detail:{ registration:f.registration, model:f.model, newStatus:"active" }
+        }));
+
+        saveData();
+        renderFleet();
+      }, 60000);
+    }
+
+    function handleLogout(){
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+
+    // Inicialización
+    renderFleet();
     logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join("");
-    saveData();
-  }
-
-  function updateDashboard(){
-    const active = fleet.filter(f=>f.status==="Active").length;
-    const maint = fleet.filter(f=>f.status.includes("In")).length;
-    const leased = fleet.filter(f=>f.status==="Leased Out").length;
-    const totalValue = fleet.reduce((a,b)=>a+b.value,0);
-    const avgAge = (fleet.reduce((a,b)=>a+b.age,0)/fleet.length).toFixed(1);
-    const avgHrs = (fleet.reduce((a,b)=>a+b.hours,0)/fleet.length).toFixed(0);
-    document.getElementById("activeCount").textContent = active;
-    document.getElementById("maintCount").textContent = maint;
-    document.getElementById("leasedCount").textContent = leased;
-    document.getElementById("fleetValue").textContent = `$${totalValue.toFixed(0)} M`;
-    document.getElementById("fleetStats").textContent = `${avgAge} yrs / ${avgHrs} h`;
-    balanceEl.textContent = `$${balance.toFixed(1)} M`;
-  }
-
-  function renderFleet(){
-    fleetTable.innerHTML = `<tr><th>Model</th><th>Status</th><th>Age</th><th>Hours</th><th>Condition</th><th>Next Maint.</th><th>Actions</th></tr>`;
-    fleet.forEach((f,i)=>{
-      const row = document.createElement("tr");
-      let warn = f.condition<60?'<span class="warn">⚠️</span>':'OK';
-      row.innerHTML = `<td>${f.model}</td><td>${f.status}</td><td>${f.age}</td><td>${f.hours}</td><td>${f.condition}%</td><td>${warn}</td>
-      <td><button class="btn" onclick="openModelModal('${f.model}')">View Fleet</button></td>`;
-      fleetTable.appendChild(row);
-    });
     updateDashboard();
-  }
+  </script>
 
-  /* === MODEL MODAL === */
-  function openModelModal(modelName){
-    const modal=document.getElementById("modelModal");
-    modal.style.display="flex";
-    document.getElementById("modelTitle").textContent=modelName+" — Fleet Detail";
-    const tbl=document.getElementById("modelTable");
-    const list=fleet.filter(f=>f.model===modelName);
-    tbl.innerHTML=`<tr><th>Registration</th><th>Status</th><th>Hours</th><th>Last Check</th><th>Next Check</th><th>Engineer</th><th>Action</th></tr>`;
-    list.forEach((f,i)=>{
-      const row=document.createElement("tr");
-      row.innerHTML=`<td>${f.registration}</td><td>${f.status}</td><td>${f.hours}</td><td>${f.lastCheck}</td><td>${f.nextCheck}</td><td>${f.engineer}</td>
-      <td><button class="btn" onclick="openMaintModal('${f.registration}','${f.model}')">🔧 Start</button></td>`;
-      tbl.appendChild(row);
-    });
-  }
-  function closeModelModal(){ document.getElementById("modelModal").style.display="none"; }
-
-  /* === MAINTENANCE MODAL === */
-  let currentReg=null;
-  function openMaintModal(reg,model){
-    currentReg=reg;
-    document.getElementById("maintModal").style.display="flex";
-    const f=fleet.find(x=>x.registration===reg);
-    const cost=((f.value*0.04)+(f.age*0.5)).toFixed(2);
-    document.getElementById("maintDetail").innerHTML=`
-      <p><b>Aircraft:</b> ${reg} (${model})</p>
-      <p><b>Engineer:</b> ${f.engineer}</p>
-      <p><b>Maintenance Type:</b> C-Check</p>
-      <p><b>Estimated Duration:</b> 1 month (sim)</p>
-      <p><b>Estimated Cost:</b> $${cost}M</p>`;
-    const btn=document.getElementById("confirmMaintBtn");
-    btn.onclick=function(){ confirmMaintenance(f,cost); };
-  }
-  function closeMaintModal(){ document.getElementById("maintModal").style.display="none"; }
-
-  function confirmMaintenance(f,cost){
-    if(f.status!=="Active"){ alert("Aircraft not available."); return; }
-    f.status="In Maintenance";
-    balance-=parseFloat(cost);
-    logAction(`Started C-Check on ${f.registration} (-$${cost}M)`);
-    document.dispatchEvent(new CustomEvent("acsAircraftStatusChange",{detail:{registration:f.registration,model:f.model,newStatus:"maintenance",cost:cost}}));
-    saveData(); renderFleet(); closeMaintModal(); closeModelModal();
-    setTimeout(()=>{
-      f.status="Active"; f.condition=Math.min(100,f.condition+10);
-      logAction(`C-Check completed on ${f.registration}`);
-      document.dispatchEvent(new CustomEvent("acsAircraftStatusChange",{detail:{registration:f.registration,model:f.model,newStatus:"active"}}));
-      saveData(); renderFleet();
-    },60000); // sim delay
-  }
-
-  renderFleet(); logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join(""); updateDashboard();
-
-  function handleLogout(){ alert("👋 Session closed. See you soon, Captain!"); window.location.href="login.html"; }
-
-    <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
+  <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
   <script src="time_engine.js"></script>
   <script>
     // 🕐 Reloj cockpit Airbus sincronizado con el motor global de tiempo ACS
+    function updateClockDisplay(simTime){
+      const clockEl = document.getElementById("acs-clock");
+      if (!clockEl) return;
+
+      let d = simTime instanceof Date ? simTime : new Date();
+      const day   = String(d.getUTCDate()).padStart(2,"0");
+      const monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+      const month = monthNames[d.getUTCMonth()];
+      const year  = d.getUTCFullYear();
+      const hh    = String(d.getUTCHours()).padStart(2,"0");
+      const mm    = String(d.getUTCMinutes()).padStart(2,"0");
+
+      clockEl.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof registerTimeListener === "function") {
+        // Asumimos que registerTimeListener pasa un Date simTime
         registerTimeListener(updateClockDisplay);
+      } else {
+        // fallback sencillo
         updateClockDisplay();
       }
     });
