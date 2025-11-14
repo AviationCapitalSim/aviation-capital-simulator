@@ -270,31 +270,37 @@
     </div>
 
     <!-- ==== 5. Simulation Control ==== -->
-    <div class="panel" id="adminControlPanel">
-      <h3>🕹️ Simulation Control</h3>
-      <p>Activate or pause the global simulation.</p>
+<div class="panel" id="adminControlPanel">
+  <h3>🕹️ Simulation Control</h3>
+  <p>Activate or pause the global simulation.</p>
 
-      <div id="adminAuthSection">
-        <input type="email" id="adminEmailInput" placeholder="Admin email" 
-               style="width:100%;padding:6px;border-radius:6px;border:none;background:#111;color:#fff;">
-        <button class="acs-btn" onclick="verifyAdminEmail()">🔓 Unlock</button>
-      </div>
+  <!-- Siempre visible -->
+  <div id="adminAuthSection">
+    <input type="email" id="adminEmailInput" placeholder="Admin email"
+           style="width:100%;padding:6px;border-radius:6px;border:none;background:#111;color:#fff;">
+    <button class="acs-btn" onclick="verifyAdminEmail()">🔓 Unlock</button>
+  </div>
 
-      <div id="adminPanelContent" style="display:none;">
-        <table>
-          <tr><th>Cycle</th><th>Start</th><th>Status</th></tr>
-          <tr>
-            <td id="simCycle">1940–2026</td>
-            <td id="simStart">—</td>
-            <td id="simStatus" style="color:#ff4040;font-weight:bold;">OFF</td>
-          </tr>
-        </table>
+  <!-- Panel oculto hasta autenticar -->
+  <div id="adminPanelContent" style="display:none; margin-top:1rem;">
+    <table>
+      <tr><th>Cycle</th><th>Start</th><th>Status</th></tr>
+      <tr>
+        <td id="simCycle">1940–2026</td>
+        <td id="simStart">—</td>
+        <td id="simStatus" style="color:#ff4040;font-weight:bold;">OFF</td>
+      </tr>
+    </table>
 
-        <div class="save-group">
-          <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle</button>
-          <button class="acs-btn secondary" onclick="resetSimulationData()">♻ Reset</button>
-        </div>
-      </div>
+    <div class="save-group">
+      <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle</button>
+      <button class="acs-btn secondary" onclick="resetSimulationData()">♻ Reset</button>
+      <button class="acs-btn secondary" onclick="closeAdminPanel()">❌ Close</button>
+    </div>
+
+    <p class="warning">⚠️ Admin only. Affects global time engine.</p>
+  </div>
+</div>
     </div>
 
   </section>
@@ -408,6 +414,56 @@ function resetCompany(){
 
   alert("🔄 Company settings reset.");
 }
+  <script>
+function verifyAdminEmail() {
+  const input = document.getElementById("adminEmailInput").value.trim().toLowerCase();
+
+  if (input === "aviationcapitalsim@gmail.com") {
+    localStorage.setItem("ACS_activeUser",
+        JSON.stringify({ email: input, name: "Administrator" })
+    );
+    document.getElementById("adminAuthSection").style.display = "none";
+    document.getElementById("adminPanelContent").style.display = "block";
+    alert("✅ Admin access granted.");
+  } else {
+    alert("❌ Incorrect email. Access denied.");
+  }
+}
+
+function closeAdminPanel(){
+  document.getElementById("adminPanelContent").style.display="none";
+  document.getElementById("adminAuthSection").style.display="block";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* Auto-Unlock si ya está verificado */
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  if (user.email === "aviationcapitalsim@gmail.com") {
+    document.getElementById("adminAuthSection").style.display = "none";
+    document.getElementById("adminPanelContent").style.display = "block";
+  }
+
+  /* Cargar estado del ciclo */
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+
+  if (cycle.startYear && cycle.endYear)
+    document.getElementById("simCycle").textContent = `${cycle.startYear}–${cycle.endYear}`;
+
+  if (cycle.realStartDate) {
+    const d = new Date(cycle.realStartDate);
+    document.getElementById("simStart").textContent = d.toDateString();
+  }
+
+  if (cycle.status) {
+    const st = cycle.status.toUpperCase();
+    const el = document.getElementById("simStatus");
+    el.textContent = st;
+    el.style.color = st === "ON" ? "#00ff80" : "#ff4040";
+  }
+});
+</script>
 </script>
 
 <!-- ADMIN + CLOCK -->
