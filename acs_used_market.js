@@ -4,16 +4,25 @@
    ============================================================ */
 
 /* ============================================================
-   1) READ YEAR FROM GLOBAL SIM TIME
+   === SYNC — ONLY UPDATE IF YEAR CHANGES ======================
    ============================================================ */
 let USED_YEAR = 1940;
+let LAST_YEAR = 1940;
 
 function updateUsedMarketYear(simTime) {
   if (!simTime) simTime = new Date();
+
   USED_YEAR = simTime.getUTCFullYear();
 
-  rotateMarket();                     // genera inventario nuevo
-  renderUsed(makerSelect.value);      // respeta el filtro activo
+  // SOLO ACTUALIZAR SI EL AÑO CAMBIÓ
+  if (USED_YEAR !== LAST_YEAR) {
+    LAST_YEAR = USED_YEAR;
+
+    console.log("📆 Used Market updated for new year:", USED_YEAR);
+
+    rotateMarket();                 // Nuevo inventario SOLO cuando cambia el año
+    renderUsed(makerSelect.value);  // Mantener filtro actual
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
