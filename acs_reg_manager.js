@@ -1,10 +1,11 @@
 /* ============================================================
-   === ACS REGISTRATION MANAGER — v1.0 =========================
+   === ACS REGISTRATION MANAGER — v1.1 =========================
    ------------------------------------------------------------
-   • Manejador global de matrículas
-   • Lee prefijo desde ACS_Airline.country / ACS_Base.country
-   • Abre modal, actualiza preview y guarda matrícula
-   • No modifica nada más del juego
+   • Manejador universal de matrículas
+   • Lee prefijo desde ACS_Airline / ACS_Base
+   • Modal para asignar / editar matrícula
+   • Permite eliminar matrícula
+   • Totalmente compatible con MyAircraft
    ============================================================ */
 
 console.log("✅ ACS Registration Manager loaded");
@@ -68,8 +69,8 @@ function openRegModal(acId) {
 
   const prefix = getRegistrationPrefix();
   prefixEl.textContent = prefix;
-  previewEl.textContent = prefix + "00000";
   serialInput.value = "";
+  previewEl.textContent = prefix + "00000";
 
   modal.style.display = "flex";
 }
@@ -79,7 +80,7 @@ function closeRegModal() {
   if (modal) modal.style.display = "none";
 }
 
-/* ========= ACTUALIZAR PREVIEW DINÁMICAMENTE ================= */
+/* ========= PREVIEW DINÁMICO ================================ */
 document.addEventListener("input", (ev) => {
   if (ev.target.id === "regSerialInput") {
     const prefix = document.getElementById("regPrefix").textContent;
@@ -103,91 +104,30 @@ function saveRegistration() {
 
   let fleet = loadMyAircraft();
   const idx = fleet.findIndex(ac => ac.id === REG_SELECTED_ID);
-
   if (idx === -1) {
-    alert("❌ Aircraft not found in MyFleet.");
+    alert("❌ Aircraft not found.");
     return;
   }
 
   fleet[idx].registration = fullReg;
   saveMyAircraft(fleet);
 
-  alert(`✔️ Registration assigned:\n${fullReg}`);
-
+  alert(`✔️ Registration saved:\n${fullReg}`);
   closeRegModal();
-}
-/* ============================================================
-   === PART 2 — INTERNAL REGISTRATION API ======================
-   ------------------------------------------------------------
-   • Funciones listas para que MyAircraft y otros módulos
-     puedan consultar, validar y asignar matrículas.
-   ============================================================ */
 
-/* ========= OBTENER MATRÍCULA DE UN AVIÓN =================== */
-function getAircraftRegistrationById(acId) {
-  const fleet = reg_loadMyAircraft();
-  const ac = fleet.find(a => a.id === acId);
-  return ac ? (ac.registration || null) : null;
+  if (typeof refreshFleetTable === "function") refreshFleetTable();
 }
 
-/* ========= VERIFICAR SI UNA MATRÍCULA YA EXISTE ============ */
-function registrationExists(reg) {
-  const fleet = reg_loadMyAircraft();
-  return fleet.some(ac => ac.registration === reg);
+/* ========= ELIMINAR MATRÍCULA =============================== */
+function removeRegistration(acId) {
+  let fleet = loadMyAircraft();
+  const idx = fleet.findIndex(ac => ac.id === acId);
+  if (idx === -1) return;
+
+  delete fleet[idx].registration;
+  saveMyAircraft(fleet);
+
+  alert("✔️ Registration removed");
+
+  if (typeof refreshFleetTable === "function") refreshFleetTable();
 }
-
-/* ========= GENERAR SUGERENCIA DE SERIAL ==================== */
-function suggestNextSerial(prefix) {
-  const fleet = reg_loadMyAircraft();
-  // Buscar el número más alto existente con ese prefijo
-  let max = 0;
-
-  fleet.forEach(ac => {
-    if (ac.registration && ac.registration.startsWith(prefix)) {
-      const serial = ac.registration.replace(prefix, "");
-      const num = parseInt(serial);
-      if (!isNaN(num) && num > max) max = num;
-    }
-  });
-
-  return String(max + 1).padStart(4, "0");
-}
-
-/* ========= ASIGNAR MATRÍCULA DIRECTAMENTE ================== */
-function assignRegistrationDirect(acId, reg) {
-  let fleet = reg_loadMyAircraft();
-  const idx = fleet.findIndex(a => a.id === acId);
-
-  if (idx === -1) return false;
-
-  fleet[idx].registration = reg.toUpperCase();
-  reg_saveMyAircraft(fleet);
-
-  return true;
-}
-
-/* ========= OBTENER PREFIJO + SERIAL SUGERIDO =============== */
-function getAutoSuggestedRegistration() {
-  const prefix = getRegistrationPrefix();
-  const serial = suggestNextSerial(prefix);
-  return prefix + serial;
-}
-
-/* ========= GENERAR MATRÍCULA AUTOMÁTICA (SI SE REQUIERE) === */
-function autoAssignMissingRegistrations() {
-  let fleet = reg_loadMyAircraft();
-  let changed = false;
-
-  fleet.forEach(ac => {
-    if (!ac.registration) {
-      const reg = getAutoSuggestedRegistration();
-      ac.registration = reg;
-      changed = true;
-    }
-  });
-
-  if (changed) reg_saveMyAircraft(fleet);
-}
-
-/* ========= DEBUG =========================================== */
-console.log("🔧 RegManager Part 2 ready");
