@@ -1,5 +1,3 @@
-<!-- === MY AIRCRAFT MODULE === -->
-<!-- Version: Beta v1 | Date: 14 NOV 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,9 +7,6 @@
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
   <style>
-    /* ============================================================
-       === BASE ACS STYLE =========================================
-       ============================================================ */
     body {
       margin: 0;
       background-color: #081530;
@@ -19,9 +14,7 @@
       font-family: "Segoe UI", sans-serif;
     }
 
-    /* ============================================================
-       === GLOBAL HEADER — EXACTO COMO setting.html ===============
-       ============================================================ */
+    /* === GLOBAL HEADER (COPIA EXACTA DE setting.html) === */
     .acs-header {
       position: fixed;
       top: 0;
@@ -35,12 +28,15 @@
       z-index: 999;
       box-sizing: border-box;
     }
+
     .acs-logo {
       display: flex;
       align-items: center;
       gap: 0.6rem;
     }
-    .acs-logo img { height: 40px; }
+    .acs-logo img {
+      height: 40px;
+    }
     .acs-logo h1 {
       font-size: 1.1rem;
       margin: 0;
@@ -71,7 +67,6 @@
       align-items: center;
       gap: 0.8rem;
     }
-
     .logout-btn {
       color: #FFB300;
       border: 1px solid #FFB300;
@@ -81,7 +76,10 @@
       font-size: 0.9rem;
       transition: 0.2s;
     }
-    .logout-btn:hover { background: #FFB300; color: #081530; }
+    .logout-btn:hover {
+      background: #FFB300;
+      color: #081530;
+    }
 
     .acs-clock-header {
       font-family: 'Orbitron','Consolas',monospace;
@@ -93,9 +91,7 @@
       font-size:0.9rem;
     }
 
-    /* ============================================================
-       === TITLE / INTRO ==========================================
-       ============================================================ */
+    /* === PAGE TITLE === */
     .acs-intro {
       margin-top: 6rem;
       text-align: center;
@@ -110,178 +106,173 @@
       font-style: italic;
     }
 
-    /* ============================================================
-       === SKYOS FILTER BAR =======================================
-       ============================================================ */
+    /* === FILTER BAR (SkyOS / FR24 style) === */
     .filter-bar {
-      width: 96%;
+      width: 94%;
       margin: 1.5rem auto;
       background: #0d1c3c;
       padding: 1rem;
       border-radius: 10px;
       border: 1px solid rgba(255,179,0,0.25);
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
-      align-items: center;
+      justify-content: space-between;
     }
-    .filter-bar select,
-    .filter-bar input {
-      padding: 0.45rem 0.6rem;
-      border-radius: 6px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: #fff;
-      font-size: 0.9rem;
-      min-width: 160px;
-    }
-    .filter-bar input::placeholder { color:#bbb; }
 
-    /* ============================================================
-       === FLIGHTRADAR STYLE TABLE ================================
-       ============================================================ */
+    .filter-group {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar select,
+    .filter-bar input[type="text"] {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      min-width: 140px;
+    }
+    .filter-bar input[type="text"]::placeholder {
+      color: #aaa;
+    }
+
+    /* === AIRCRAFT TABLE (FR24 Style) === */
     .fleet-table-wrapper {
-      width: 96%;
-      margin: 1rem auto;
-      overflow-y: auto;
-      max-height: 65vh;
+      width: 94%;
+      margin: 1rem auto 3rem;
+      background: #0d1c3c;
       border-radius: 10px;
+      border: 1px solid rgba(255,179,0,0.25);
       box-shadow: 0 0 12px rgba(0,0,0,0.4);
+      overflow-x: auto;
     }
 
     table.fleet-table {
       width: 100%;
       border-collapse: collapse;
-      background: #0a1733;
+      font-size: 0.9rem;
+      color: white;
     }
 
-    table.fleet-table th {
-      background: #15264b;
-      color: #FFB300;
-      padding: 0.7rem;
+    .fleet-table thead th {
       position: sticky;
       top: 0;
-      font-size: 0.88rem;
-      z-index: 10;
+      background: #102040;
+      color: #FFB300;
+      padding: 0.7rem;
       border-bottom: 1px solid rgba(255,255,255,0.15);
+      text-align: left;
     }
 
-    table.fleet-table td {
-      padding: 0.65rem;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      text-align: center;
-      font-size: 0.9rem;
+    .fleet-table tbody tr {
+      height: 58px;
+      transition: 0.15s;
+    }
+    .fleet-table tbody tr:hover {
+      background: rgba(255,255,255,0.06);
     }
 
-    table.fleet-table tr:hover {
-      background: rgba(255,179,0,0.06);
+    .fleet-table td {
+      padding: 0.7rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
     }
 
-    /* Icons in table */
+    /* ICONS */
     .icon {
-      font-size: 1rem;
-      margin-right: 4px;
-      opacity: 0.9;
+      margin-right: 6px;
+      opacity: 0.85;
     }
 
-    /* ============================================================
-       === ACTION BUTTONS =========================================
-       ============================================================ */
-    .ac-btn {
-      padding: 0.35rem 0.7rem;
+    /* ACTION BUTTONS */
+    .btn-action {
+      background: #1479ff;
       border: none;
+      padding: 0.4rem 0.7rem;
       border-radius: 6px;
       font-size: 0.85rem;
+      color: white;
       cursor: pointer;
-      font-weight: 600;
       transition: 0.2s;
-      margin: 2px;
     }
-    .ac-view { background:#1479FF; color:white; }
-    .ac-view:hover { background:#0d5fd6; }
+    .btn-action:hover {
+      transform: scale(1.05);
+      background: #2d8cff;
+    }
 
-    .ac-c { background:#00C851; color:white; }
-    .ac-c:hover { background:#00e060; }
-
-    .ac-d { background:#FFB300; color:#081530; }
-    .ac-d:hover { background:#ffca47; }
-
-    /* ============================================================
-       === MODAL DETAIL ===========================================
-       ============================================================ */
+    /* === MODAL DETAIL === */
     .modal-bg {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.65);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 2000;
       justify-content: center;
       align-items: center;
-      z-index: 2000;
     }
 
-    .modal-content {
-      width: 90%;
-      max-width: 780px;
+    .modal-detail {
+      width: 80%;
+      max-width: 860px;
       background: #0d1c3c;
-      padding: 1.5rem;
-      border-radius: 12px;
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
       border: 1px solid #FFB300;
-      box-shadow: 0 0 18px rgba(0,0,0,0.6);
-      color: #fff;
-      max-height: 85vh;
-      overflow-y: auto;
+      box-shadow: 0 0 14px rgba(255,179,0,0.4);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 1rem;
     }
-    .modal-header h2 {
-      color:#FFB300;
-      margin:0;
-      font-size:1.3rem;
+    .modal-header h3 {
+      color: #FFB300;
+      margin: 0;
     }
     .modal-close {
-      font-size:1.8rem;
-      color:#FFB300;
-      cursor:pointer;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: #FFB300;
+      transition: 0.2s;
     }
-    .modal-close:hover { color:white; }
+    .modal-close:hover {
+      color: white;
+    }
 
-    .modal-body {
+    .modal-content-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1.2rem;
-      margin-top: 1rem;
     }
 
-    .modal-section {
-      background:#0a1733;
-      padding:1rem;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,0.12);
+    .modal-box {
+      background: #102040;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
     }
-
-    .modal-section h3 {
-      margin-top: 0;
-      margin-bottom: 0.6rem;
-      color:#FFB300;
+    .modal-box h4 {
+      color: #FFB300;
+      margin-bottom: 0.5rem;
     }
-
-    .detail-row {
-      margin-bottom: 0.4rem;
-      font-size: 0.92rem;
+    .modal-box p {
+      margin: 0.3rem 0;
     }
   </style>
 </head>
 
 <body>
 
-<!-- ============================================================
-     === HEADER ==================================================
-     ============================================================ -->
+<!-- === HEADER (ACS global) === -->
 <header class="acs-header">
   <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo" />
@@ -291,7 +282,7 @@
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
     <a href="finance.html">Finance</a>
-    <a href="aircraft.html">Aircraft</a>
+    <a href="aircraft.html" class="active">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
@@ -305,136 +296,141 @@
   </div>
 </header>
 
-<!-- ============================================================
-     === INTRO ===================================================
-     ============================================================ -->
+<!-- PAGE TITLE -->
 <section class="acs-intro">
-  <h2 class="acs-title">✈️ My Aircraft</h2>
-  <p class="acs-subtitle">Fleet overview, maintenance control and aircraft health status.</p>
+  <h2 class="acs-title">🛫 My Aircraft</h2>
+  <p class="acs-subtitle">Your complete fleet overview, synchronized with global time.</p>
 </section>
-
-<!-- ============================================================
-     === FILTER BAR =============================================
-     ============================================================ -->
+<!-- === FILTER BAR === -->
 <div class="filter-bar">
-  <select id="filterModel">
-    <option value="all">Model (All)</option>
-  </select>
 
-  <select id="filterFamily">
-    <option value="all">Family (All)</option>
-  </select>
+  <div class="filter-group">
+    <select id="filterModel">
+      <option value="">Model</option>
+    </select>
 
-  <select id="filterStatus">
-    <option value="all">Status (All)</option>
-    <option value="Active">Active</option>
-    <option value="Pending Delivery">Pending Delivery</option>
-    <option value="In Maintenance C">In Maintenance C</option>
-    <option value="In Maintenance D">In Maintenance D</option>
-    <option value="Scheduled A">Scheduled A</option>
-    <option value="Scheduled B">Scheduled B</option>
-    <option value="Leased Out">Leased Out</option>
-    <option value="Grounded">Grounded</option>
-  </select>
+    <select id="filterFamily">
+      <option value="">Family</option>
+    </select>
 
-  <select id="filterCondition">
-    <option value="all">Condition</option>
-    <option value="90">≥ 90%</option>
-    <option value="80">≥ 80%</option>
-    <option value="70">≥ 70%</option>
-    <option value="60">≥ 60%</option>
-  </select>
+    <select id="filterStatus">
+      <option value="">Status</option>
+      <option value="Active">Active</option>
+      <option value="Pending Delivery">Pending Delivery</option>
+      <option value="In C-Check">In C-Check</option>
+      <option value="In D-Check">In D-Check</option>
+      <option value="A-Check">A-Check</option>
+      <option value="B-Check">B-Check</option>
+    </select>
 
-  <select id="filterBase">
-    <option value="all">Base (All)</option>
-  </select>
+    <select id="filterCondition">
+      <option value="">Condition</option>
+      <option value="90">> 90%</option>
+      <option value="80">> 80%</option>
+      <option value="70">> 70%</option>
+      <option value="60">> 60%</option>
+    </select>
 
-  <input type="text" id="filterSearch" placeholder="🔎 Search (reg, model, etc)">
+    <select id="filterAge">
+      <option value="">Age</option>
+      <option value="0-5">0–5 yrs</option>
+      <option value="5-10">5–10 yrs</option>
+      <option value="10-20">10–20 yrs</option>
+      <option value="20+">20+ yrs</option>
+    </select>
+
+    <select id="filterBase">
+      <option value="">Base</option>
+    </select>
+  </div>
+
+  <input type="text" id="searchInput" placeholder="Search registration or model..." />
 </div>
 
-<!-- ============================================================
-     === TABLE WRAPPER ==========================================
-     ============================================================ -->
+
+<!-- === TABLE WRAPPER === -->
 <div class="fleet-table-wrapper">
   <table class="fleet-table" id="fleetTable">
     <thead>
       <tr>
-        <th><span class="icon">✈️</span> Reg</th>
-        <th><span class="icon">✈️</span> Model</th>
-        <th><span class="icon">🟦</span> Status</th>
-        <th><span class="icon">⏱</span> Hours</th>
-        <th><span class="icon">🔄</span> Cycles</th>
-        <th><span class="icon">❤️</span> Cond</th>
-        <th><span class="icon">🛠</span> Next C</th>
-        <th><span class="icon">🛠</span> Next D</th>
-        <th><span class="icon">📍</span> Base</th>
-        <th><span class="icon">📘</span> Actions</th>
+        <th><span class="icon">✈️</span>Reg</th>
+        <th><span class="icon">📘</span>Model</th>
+        <th><span class="icon">🟦</span>Status</th>
+        <th><span class="icon">⏱</span>Hours</th>
+        <th><span class="icon">🔄</span>Cycles</th>
+        <th><span class="icon">❤️</span>Cond</th>
+        <th><span class="icon">🛠</span>Next C</th>
+        <th><span class="icon">🛠</span>Next D</th>
+        <th><span class="icon">📍</span>Base</th>
+        <th><span class="icon">📘</span>Actions</th>
       </tr>
     </thead>
-    <tbody id="fleetBody">
-      <!-- JS RENDER HERE -->
+    <tbody id="fleetTableBody">
+      <!-- JS rellena aquí -->
     </tbody>
   </table>
 </div>
 
-<!-- ============================================================
-     === MODAL DETAIL ===========================================
-     ============================================================ -->
-<div class="modal-bg" id="acModal">
-  <div class="modal-content">
+
+<!-- === MODAL DETALLE === -->
+<div class="modal-bg" id="aircraftModal">
+  <div class="modal-detail">
+    
     <div class="modal-header">
-      <h2 id="modalTitle">Aircraft Detail</h2>
-      <span class="modal-close" onclick="closeAcModal()">&times;</span>
+      <h3 id="modalTitle">Aircraft Detail</h3>
+      <span class="modal-close" onclick="closeModal()">×</span>
     </div>
 
-    <div class="modal-body">
-
-      <!-- LEFT SIDE -->
-      <div class="modal-section">
-        <h3>Aircraft Info</h3>
-        <div class="detail-row"><b>Registration:</b> <span id="md-reg"></span></div>
-        <div class="detail-row"><b>Model:</b> <span id="md-model"></span></div>
-        <div class="detail-row"><b>Family:</b> <span id="md-family"></span></div>
-        <div class="detail-row"><b>Status:</b> <span id="md-status"></span></div>
-        <div class="detail-row"><b>Age:</b> <span id="md-age"></span></div>
-        <div class="detail-row"><b>Hours:</b> <span id="md-hours"></span></div>
-        <div class="detail-row"><b>Cycles:</b> <span id="md-cycles"></span></div>
-        <div class="detail-row"><b>Condition:</b> <span id="md-cond"></span></div>
-        <div class="detail-row"><b>Base:</b> <span id="md-base"></span></div>
+    <div class="modal-content-grid">
+      
+      <!-- LEFT COLUMN -->
+      <div class="modal-box">
+        <h4>General Info</h4>
+        <p><b>Registration:</b> <span id="mReg"></span></p>
+        <p><b>Model:</b> <span id="mModel"></span></p>
+        <p><b>Family:</b> <span id="mFamily"></span></p>
+        <p><b>Base:</b> <span id="mBase"></span></p>
+        <p><b>Status:</b> <span id="mStatus"></span></p>
+        <p><b>Condition:</b> <span id="mCondition"></span>%</p>
+        <p><b>Hours:</b> <span id="mHours"></span></p>
+        <p><b>Cycles:</b> <span id="mCycles"></span></p>
+        <p><b>Age:</b> <span id="mAge"></span> yrs</p>
       </div>
 
-      <!-- RIGHT SIDE -->
-      <div class="modal-section">
-        <h3>Maintenance</h3>
-        <div class="detail-row"><b>Last C-Check:</b> <span id="md-lastC"></span></div>
-        <div class="detail-row"><b>Last D-Check:</b> <span id="md-lastD"></span></div>
-        <div class="detail-row"><b>Next C:</b> <span id="md-nextC"></span></div>
-        <div class="detail-row"><b>Next D:</b> <span id="md-nextD"></span></div>
-        <hr style="border-color:rgba(255,255,255,0.1)">
-        <button class="ac-btn ac-c" id="btnCcheck">Start C-Check</button>
-        <button class="ac-btn ac-d" id="btnDcheck">Start D-Check</button>
+      <!-- RIGHT COLUMN -->
+      <div class="modal-box">
+        <h4>Maintenance</h4>
+        <p><b>Last C Check:</b> <span id="mLastC"></span></p>
+        <p><b>Next C Check:</b> <span id="mNextC"></span></p>
+        <p><b>Last D Check:</b> <span id="mLastD"></span></p>
+        <p><b>Next D Check:</b> <span id="mNextD"></span></p>
+        <hr style="border-color:rgba(255,255,255,0.15); margin:0.6rem 0;">
+        <button class="btn-action" id="btnCcheck">Start C-Check</button>
+        <button class="btn-action" id="btnDcheck" style="background:#FFB300;">Start D-Check</button>
+        <button class="btn-action" id="btnLog" style="background:#007d4e;">Open Log</button>
       </div>
 
     </div>
+
   </div>
 </div>
 
-<!-- ============================================================
-     === TIME ENGINE ============================================
-     ============================================================ -->
-<script src="time_engine.js"></script>
 
-<!-- ============================================================
-     === MAIN MODULE JS (NEXT MESSAGE COMPLETES THIS FILE) =======
-     ============================================================ -->
-<script src="my_aircraft.js"></script>
-
+<!-- FOOTER SPACER -->
+<div style="height:4rem;"></div>
+<!-- === LOGOUT FUNCTION === -->
 <script>
 function handleLogout(){
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
 </script>
+
+<!-- === TIME ENGINE (Global ACS Clock System) === -->
+<script src="time_engine.js"></script>
+
+<!-- === MY AIRCRAFT JS MODULE === -->
+<script src="my_aircraft.js?v=1.0"></script>
 
 </body>
 </html>
