@@ -1,7 +1,8 @@
 <!-- ===========================================================
-     === ACS USED MARKET - FULL EDITION ========================
-     Version: FINAL | Date: 14 NOV 2025
+     === ACS USED AIRCRAFT MARKET — FINAL EDITION (HTML) =======
+     Header identical to settings.html
      =========================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,61 +12,142 @@
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
   <style>
-    /* ===== FILTER TABS ===== */
-    .used-tabs {
+    /* === BASE === */
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    /* === GLOBAL HEADER (copiado EXACTO de settings.html) === */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background-color: #0a1433;
       display: flex;
-      gap: 1rem;
-      margin: 1rem 0;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 2rem;
+      border-bottom: 2px solid #FFB300;
+      z-index: 999;
+      box-sizing: border-box;
     }
-    .used-tab {
-      padding: 0.6rem 1.4rem;
-      background: rgba(10, 25, 50, 0.85);
-      border: 1px solid rgba(255, 179, 0, 0.4);
-      border-radius: 8px;
-      color: #eee;
-      cursor: pointer;
-      user-select: none;
-      transition: 0.2s;
+    .acs-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .acs-logo img { height: 40px; }
+    .acs-logo h1 {
+      font-size: 1.1rem;
+      margin: 0;
+      color: #FFB300;
+      letter-spacing: 0.6px;
+    }
+
+    .acs-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex: 1;
+    }
+    .acs-nav a {
+      color: white;
+      text-decoration: none;
       font-size: 0.95rem;
+      transition: 0.3s;
     }
-    .used-tab.active {
-      background: #ffb300;
-      color: #000;
+    .acs-nav a:hover,
+    .acs-nav a.active {
+      color: #FFB300;
+      text-shadow: 0 0 6px rgba(255,179,0,0.6);
+    }
+
+    .acs-auth {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .logout-btn {
+      color: #FFB300;
+      border: 1px solid #FFB300;
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    .logout-btn:hover {
+      background: #FFB300;
+      color: #081530;
+    }
+
+    .acs-clock-header {
+      font-family: 'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      font-weight:bold;
+      background:rgba(0,255,128,0.08);
+      padding:0.3rem 0.8rem;
+      border-radius:6px;
+      font-size:0.9rem;
+    }
+
+    /* ===== TITLE ===== */
+    .page-title {
+      margin-top: 6rem;
+      text-align: center;
+      color: #FFB300;
+      font-size: 1.7rem;
       font-weight: 700;
+    }
+
+    /* ===== FILTER BAR ===== */
+    .filter-bar {
+      width: 90%;
+      margin: 1.5rem auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: flex-start;
+    }
+    .filter-label {
+      font-size: 1rem;
+      color: #ddd;
+    }
+    .filter-select {
+      background: #0e1b3c;
+      color: white;
+      border: 1px solid #FFB300;
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-size: 1rem;
+      cursor: pointer;
     }
 
     /* ===== GRID ===== */
     .used-grid {
+      width: 90%;
+      margin: 1rem auto 2rem;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
       gap: 1.4rem;
-      margin-top: 1rem;
     }
-
-    /* ===== CARD ===== */
     .used-card {
-      background: rgba(12, 28, 55, 0.9);
-      border: 1px solid rgba(255, 179, 0, 0.25);
+      background: #0e1b3c;
+      border: 1px solid rgba(255, 179, 0, 0.3);
       border-radius: 12px;
       padding: 1rem;
       color: #eee;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
     }
     .used-card img {
       width: 100%;
       height: 130px;
       object-fit: contain;
       margin-bottom: 0.5rem;
-    }
-    .badge {
-      display: inline-block;
-      padding: 0.3rem 0.6rem;
-      background: #0e2036;
-      border: 1px solid #ffb300;
-      border-radius: 6px;
-      margin-bottom: 0.5rem;
-      font-size: 0.75rem;
     }
 
     .ac-btn {
@@ -80,6 +162,7 @@
     }
     .ac-buy { background: #1fa345; color: #fff; }
     .ac-lease { background: #1f7aa3; color: #fff; }
+    .ac-info { background: #FFB300; color: #000; }
 
     /* ===== MODAL ===== */
     .modal-bg {
@@ -110,31 +193,98 @@
 
 <body>
 
-  <div class="header">
-    <h1>Used Aircraft Market</h1>
+<!-- === HEADER (copiado EXACTO del de settings.html) === -->
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
+    <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <!-- FILTERS -->
-  <div class="used-tabs">
-    <div class="used-tab active" data-filter="all">All</div>
-    <div class="used-tab" data-filter="player">Player Listings</div>
-    <div class="used-tab" data-filter="bank">Bank / Liquidation</div>
-    <div class="used-tab" data-filter="return">Returned from Lease</div>
-    <div class="used-tab" data-filter="system">System</div>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+    <a href="support.html">Support</a>
+    <a href="setting.html">Settings</a>
+  </nav>
+
+  <div class="acs-auth">
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
   </div>
+</header>
 
-  <!-- GRID -->
-  <div class="used-grid" id="usedGrid"></div>
+<!-- === TITLE === -->
+<h2 class="page-title">Used Aircraft Market</h2>
 
-  <!-- MODAL -->
-  <div class="modal-bg" id="infoModal">
-    <div class="modal-box">
-      <span class="modal-close" onclick="closeInfoModal()">✖</span>
-      <h2 id="modalName"></h2>
-      <p id="modalDetails"></p>
-    </div>
+<!-- === FILTER BAR === -->
+<div class="filter-bar">
+  <span class="filter-label">Filter by Manufacturer:</span>
+  <select id="filterMaker" class="filter-select">
+    <option value="all">All Manufacturers</option>
+    <option value="Airbus">Airbus</option>
+    <option value="Boeing">Boeing</option>
+    <option value="Embraer">Embraer</option>
+    <option value="Bombardier">Bombardier</option>
+    <option value="ATR">ATR</option>
+    <option value="Douglas">Douglas</option>
+    <option value="Lockheed">Lockheed</option>
+    <option value="Junkers">Junkers</option>
+    <option value="Sud Aviation">Sud Aviation</option>
+    <option value="McDonnell Douglas">McDonnell Douglas</option>
+  </select>
+</div>
+
+<!-- === GRID === -->
+<div class="used-grid" id="usedGrid"></div>
+
+<!-- === MODAL === -->
+<div class="modal-bg" id="infoModal">
+  <div class="modal-box">
+    <span class="modal-close" onclick="closeInfoModal()">✖</span>
+    <h2 id="modalName"></h2>
+    <p id="modalDetails"></p>
   </div>
+</div>
 
-  <script src="acs_used_market.js?v=FULL"></script>
+<!-- === JS === -->
+<script src="acs_used_market.js?v=FINAL"></script>
+
+<!-- === TIME ENGINE === -->
+<script src="time_engine.js"></script>
+<script>
+  // cockpit clock sync
+  function updateClockDisplay(simTime){
+    const clockEl = document.getElementById("acs-clock");
+    if(!clockEl) return;
+
+    let d = simTime instanceof Date ? simTime : new Date();
+    const day   = String(d.getUTCDate()).padStart(2,"0");
+    const monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+    const month = monthNames[d.getUTCMonth()];
+    const year  = d.getUTCFullYear();
+    const hh    = String(d.getUTCHours()).padStart(2,"0");
+    const mm    = String(d.getUTCMinutes()).padStart(2,"0");
+
+    clockEl.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+    } else {
+      updateClockDisplay();
+    }
+  });
+
+  function handleLogout(){
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href="login.html";
+  }
+</script>
+
 </body>
 </html>
