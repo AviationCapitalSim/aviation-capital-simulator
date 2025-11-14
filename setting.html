@@ -27,6 +27,7 @@
       padding: 0.8rem 2rem;
       border-bottom: 2px solid #FFB300;
       z-index: 999;
+      box-sizing: border-box;
     }
 
     .acs-logo {
@@ -52,6 +53,7 @@
       color: white;
       text-decoration: none;
       font-size: 0.95rem;
+      transition: 0.3s;
     }
     .acs-nav a:hover,
     .acs-nav a.active {
@@ -62,7 +64,7 @@
     .acs-auth {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.8rem;
     }
 
     .logout-btn {
@@ -71,16 +73,18 @@
       padding: 0.3rem 0.8rem;
       border-radius: 6px;
       text-decoration: none;
+      font-size: 0.9rem;
       transition: 0.2s;
     }
     .logout-btn:hover {
-      background:#FFB300;
-      color:#081530;
+      background: #FFB300;
+      color: #081530;
     }
 
     .acs-clock-header {
-      font-family: "Orbitron","Consolas",monospace;
+      font-family: 'Orbitron','Consolas',monospace;
       color:#00ff80;
+      font-weight:bold;
       background:rgba(0,255,128,0.08);
       padding:0.3rem 0.8rem;
       border-radius:6px;
@@ -99,22 +103,22 @@
     }
     .acs-subtitle {
       color: #ccc;
-      margin-bottom: 1.5rem;
       font-style: italic;
     }
 
-    /* PANELS */
+    /* PANELS GRID */
     .finance-panels {
       display: grid;
       grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
       gap: 1.5rem;
       padding: 2rem;
-      margin-top: 1rem;
+      margin-top: 1.5rem;
+      box-sizing: border-box;
     }
 
     .panel {
       background: #0d1c3c;
-      padding: 1.2rem 1.5rem;
+      padding: 1.2rem 1.4rem;
       border-radius: 10px;
       border: 1px solid rgba(255,179,0,0.25);
       box-shadow: 0 0 10px rgba(0,0,0,0.4);
@@ -129,32 +133,36 @@
     }
 
     label { display:block; margin:0.4rem 0; }
+
     .acs-btn {
-      background: #00a86b;
+      background-color: #00a86b;
+      color:#fff;
       border:none;
-      color:white;
-      padding: 8px 14px;
-      border-radius:6px;
-      font-weight:600;
+      border-radius: 6px;
+      padding:8px 14px;
+      margin-top: 0.6rem;
+      font-weight: 600;
       cursor:pointer;
-      margin-top:0.8rem;
+      transition: 0.2s;
     }
     .acs-btn:hover { background:#007d4e; }
+    .acs-btn.secondary { background:#444; }
+    .acs-btn.secondary:hover { background:#555; }
 
-    .acs-btn.secondary {
-      background:#444;
-    }
+    .save-group { text-align:center; margin-top:1rem; }
 
     table {
       width:100%;
       border-collapse:collapse;
-      margin-top:0.4rem;
       background:rgba(255,255,255,0.03);
-      border-radius: 8px;
+      border-radius:8px;
+      margin-top:0.5rem;
+      font-size:0.9rem;
     }
     th,td {
-      padding:0.4rem;
+      padding:0.5rem;
       border:1px solid rgba(255,255,255,0.12);
+      text-align:left;
     }
     th {
       color:#FFB300;
@@ -166,19 +174,27 @@
     input[type="email"] {
       width:100%;
       padding:0.3rem 0.4rem;
-      background:rgba(0,0,0,0.3);
-      border:1px solid rgba(255,255,255,0.2);
-      color:white;
       border-radius:4px;
+      border:1px solid rgba(255,255,255,0.2);
+      background:rgba(0,0,0,0.3);
+      color:#fff;
+      box-sizing:border-box;
     }
 
     .warning {
-      margin-top: 0.6rem;
       color:#ffae00;
+      font-size:0.85rem;
+      margin-top:0.6rem;
+    }
+
+    footer {
+      text-align:center;
+      padding:1rem;
+      color:#ccc;
       font-size:0.85rem;
     }
 
-    /* MODAL SAVE */
+    /* SIMPLE MODAL PARA SAVE/RESET (NO PARA UNLOCK) */
     .save-modal {
       display:none;
       position:fixed;
@@ -191,27 +207,16 @@
     }
     .save-modal-content {
       background:#0d1c3c;
-      padding:2rem;
-      border:1px solid #FFB300;
+      padding:1.5rem 2rem;
       border-radius:10px;
+      border:1px solid #FFB300;
       text-align:center;
-      width:380px;
       box-shadow:0 0 12px rgba(255,179,0,0.4);
-      animation: fadeIn 0.3s ease;
+      max-width:360px;
     }
-    @keyframes fadeIn {
-      from { opacity:0; transform: translateY(-10px); }
-      to { opacity:1; transform: translateY(0); }
-    }
-    .close-save {
-      margin-top:1.2rem;
-      background:#00a86b;
-      border:none;
-      padding:8px 16px;
-      border-radius:6px;
-      color:white;
-      cursor:pointer;
-      font-weight:600;
+    .save-modal-content h3 {
+      color:#FFB300;
+      margin-bottom:0.8rem;
     }
   </style>
 </head>
@@ -236,256 +241,312 @@
   </nav>
 
   <div class="acs-auth">
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
     <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
   </div>
 </header>
 
 <section class="acs-intro">
   <h2 class="acs-title">⚙️ Settings Control Panel</h2>
-  <p class="acs-subtitle">Manage interface, alerts, maintenance and global control.</p>
+  <p class="acs-subtitle">Manage interface, automation and the global simulation engine.</p>
 </section>
 
 <main>
-<section class="finance-panels">
+  <section class="finance-panels">
 
-  <!-- PANEL 1 -->
-  <div class="panel">
-    <h3>🎨 Interface Settings</h3>
-    <p>Coming soon.</p>
-  </div>
-
-  <!-- PANEL 2 -->
-  <div class="panel">
-    <h3>🔔 Notification Settings</h3>
-    <p>Coming soon.</p>
-  </div>
-
-  <!-- PANEL 3 -->
-  <div class="panel">
-    <h3>✈️ Aircraft Settings</h3>
-    <label><input type="checkbox" id="autoCcheck"> Auto C-Check</label>
-    <label><input type="checkbox" id="autoDcheck"> Auto D-Check</label>
-
-    <h4 style="margin-top:1rem;color:#FFB300;">Registration Prefix</h4>
-    <table>
-      <tr><th>Family</th><th>Prefix</th></tr>
-      <tr><td>A320</td><td><input id="regA320" value="EX-"></td></tr>
-      <tr><td>B737</td><td><input id="regB737" value="EX-"></td></tr>
-      <tr><td>E190/CRJ/ATR</td><td><input id="regECRJ" value="EX-"></td></tr>
-    </table>
-
-    <h4 style="margin-top:1rem;color:#FFB300;">Turnaround Time</h4>
-    <table>
-      <tr><th>Family</th><th>Mins</th></tr>
-      <tr><td>A320</td><td><input type="number" id="taA320" value="45"></td></tr>
-      <tr><td>B737</td><td><input type="number" id="taB737" value="45"></td></tr>
-      <tr><td>E190</td><td><input type="number" id="taE190" value="35"></td></tr>
-      <tr><td>CRJ</td><td><input type="number" id="taCRJ" value="35"></td></tr>
-      <tr><td>ATR</td><td><input type="number" id="taATR" value="30"></td></tr>
-    </table>
-
-    <div class="save-group">
-      <button class="acs-btn" onclick="saveAircraft()">💾 Save</button>
-      <button class="acs-btn secondary" onclick="resetAircraft()">↩ Reset</button>
+    <!-- 1. Interface -->
+    <div class="panel">
+      <h3>🎨 Interface Settings</h3>
+      <p>Coming soon.</p>
     </div>
-  </div>
 
-  <!-- PANEL 4 -->
-  <div class="panel">
-    <h3>🏢 Company Settings</h3>
-
-    <label><input type="checkbox" id="autoHire"> Auto-Hiring Staff</label>
-    <label><input type="checkbox" id="autoSalary"> Auto-Salary Increase</label>
-
-    <div class="save-group">
-      <button class="acs-btn" onclick="saveCompany()">💾 Save</button>
-      <button class="acs-btn secondary" onclick="resetCompany()">↩ Reset</button>
+    <!-- 2. Notifications -->
+    <div class="panel">
+      <h3>🔔 Notification Settings</h3>
+      <p>Coming soon.</p>
     </div>
-  </div>
 
-  <!-- PANEL 5 — SIMULATION CONTROL -->
-  <div class="panel">
-    <h3>🕹️ Simulation Control</h3>
-    <p>Admin access required.</p>
+    <!-- 3. Aircraft -->
+    <div class="panel">
+      <h3>✈️ Aircraft Settings</h3>
 
-    <input type="email" id="adminEmailInput" placeholder="Enter admin email">
+      <section>
+        <h4>Maintenance Automation</h4>
+        <label><input type="checkbox" id="autoCcheck"> Automatically perform C Check</label>
+        <label><input type="checkbox" id="autoDcheck"> Automatically perform D Check</label>
+      </section>
 
-    <button class="acs-btn" onclick="verifyAdminEmail()">🔓 Unlock</button>
+      <section>
+        <h4>Default Registration Format</h4>
+        <table>
+          <tr><th>Family</th><th>Prefix</th></tr>
+          <tr><td>A320 Family</td><td><input id="regA320" value="EX-"></td></tr>
+          <tr><td>B737 Family</td><td><input id="regB737" value="EX-"></td></tr>
+          <tr><td>Embraer / CRJ / ATR</td><td><input id="regECRJ" value="EX-"></td></tr>
+        </table>
+      </section>
 
-    <div id="adminPanelContent" style="display:none;margin-top:1rem;">
-
-      <table>
-        <tr><th>Cycle</th><th>Start</th><th>Status</th></tr>
-        <tr>
-          <td id="simCycle">1940–2026</td>
-          <td id="simStart">—</td>
-          <td id="simStatus" style="font-weight:bold;color:#ff4040;">OFF</td>
-        </tr>
-      </table>
+      <section>
+        <h4>Default Turnaround Time</h4>
+        <table>
+          <tr><th>Family</th><th>Mins</th></tr>
+          <tr><td>A320 Family</td><td><input type="number" id="taA320" value="45"></td></tr>
+          <tr><td>B737 Family</td><td><input type="number" id="taB737" value="45"></td></tr>
+          <tr><td>E190</td><td><input type="number" id="taE190" value="35"></td></tr>
+          <tr><td>CRJ</td><td><input type="number" id="taCRJ" value="35"></td></tr>
+          <tr><td>ATR</td><td><input type="number" id="taATR" value="30"></td></tr>
+        </table>
+      </section>
 
       <div class="save-group">
-        <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle</button>
-        <button class="acs-btn secondary" onclick="resetSimulationData()">♻ Reset</button>
+        <button class="acs-btn" onclick="saveAircraft()">💾 Save</button>
+        <button class="acs-btn secondary" onclick="resetAircraft()">↩ Reset</button>
       </div>
-
-      <p class="warning">⚠ Global time engine control.</p>
     </div>
 
-  </div>
+    <!-- 4. Company -->
+    <div class="panel">
+      <h3>🏢 Company Settings</h3>
 
-</section>
+      <label><input type="checkbox" id="autoHire"> Auto hiring personnel</label>
+      <label><input type="checkbox" id="autoSalary"> Auto increase salary</label>
+
+      <div class="save-group">
+        <button class="acs-btn" onclick="saveCompany()">💾 Save</button>
+        <button class="acs-btn secondary" onclick="resetCompany()">↩ Reset</button>
+      </div>
+    </div>
+
+    <!-- 5. Simulation Control -->
+    <div class="panel">
+      <h3>🕹️ Simulation Control</h3>
+      <p>Admin access required.</p>
+
+      <!-- Caja de email SIEMPRE visible -->
+      <div id="adminAuthSection">
+        <input type="email" id="adminEmailInput" placeholder="Enter admin email" />
+        <button class="acs-btn" onclick="verifyAdminEmail()">🔓 Unlock</button>
+      </div>
+
+      <!-- Panel que se abre sólo cuando eres admin -->
+      <div id="adminPanelContent" style="display:none; margin-top:1rem;">
+        <table>
+          <tr><th>Cycle</th><th>Start</th><th>Status</th></tr>
+          <tr>
+            <td id="simCycle">1940–2026</td>
+            <td id="simStart">—</td>
+            <td id="simStatus" style="color:#ff4040;font-weight:bold;">OFF</td>
+          </tr>
+        </table>
+
+        <div class="save-group">
+          <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle</button>
+          <button class="acs-btn secondary" onclick="resetSimulationData()">♻ Reset</button>
+          <button class="acs-btn secondary" onclick="closeAdminPanel()">❌ Close</button>
+        </div>
+
+        <p class="warning">⚠️ Global time engine control.</p>
+      </div>
+    </div>
+
+  </section>
 </main>
 
-<footer style="text-align:center;padding:1rem;color:#ccc;font-size:0.85rem;">
-  © 2025 Aviation Capital Simulator
+<footer>
+  © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
 
-<!-- SAVE MODAL -->
+<!-- MODAL PARA SAVE/RESET -->
 <div class="save-modal" id="saveModal">
   <div class="save-modal-content">
-    <h3 style="color:#FFB300;">✔ Settings Saved</h3>
-    <button class="close-save" onclick="closeSaveModal()">OK</button>
+    <h3 id="saveModalTitle">✔ Settings</h3>
+    <p id="saveModalMessage">Settings updated.</p>
+    <button class="acs-btn" style="margin-top:0.8rem;" onclick="closeSaveModal()">OK</button>
   </div>
 </div>
 
-<!-- ===== SCRIPTS ===== -->
+<!-- TIME ENGINE -->
 <script src="time_engine.js"></script>
 
 <script>
-function showSaveModal(){
-  document.getElementById("saveModal").style.display="flex";
+/* ========== UTIL MODAL ========== */
+function openSaveModal(title, msg){
+  document.getElementById("saveModalTitle").textContent = title;
+  document.getElementById("saveModalMessage").textContent = msg;
+  document.getElementById("saveModal").style.display = "flex";
 }
 function closeSaveModal(){
-  document.getElementById("saveModal").style.display="none";
+  document.getElementById("saveModal").style.display = "none";
 }
 
-/* LOGOUT */
+/* ========== LOGOUT ========== */
 function handleLogout(){
   alert("👋 Session closed. See you soon, Captain!");
-  window.location.href="login.html";
+  window.location.href = "login.html";
 }
 
-/* LOAD SETTINGS */
-document.addEventListener("DOMContentLoaded",()=>{
+/* ========== LOAD SETTINGS AL ENTRAR ========== */
+document.addEventListener("DOMContentLoaded", () => {
 
+  // Cargar toggles
   ["autoCcheck","autoDcheck","autoHire"].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el && localStorage.getItem(id)==="true") el.checked=true;
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (localStorage.getItem(id) === "true") el.checked = true;
   });
 
-  if(localStorage.getItem("ACS_AutoSalary")==="ON")
-    document.getElementById("autoSalary").checked=true;
-
-  ["regA320","regB737","regECRJ",
-   "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
-    const el=document.getElementById(id);
-    const val=localStorage.getItem(id);
-    if(el && val!==null) el.value=val;
-  });
-
-  /* Auto-unlock admin */
-  const user=JSON.parse(localStorage.getItem("ACS_activeUser")||"{}");
-  if(user.email==="aviationcapitalsim@gmail.com"){
-    document.getElementById("adminPanelContent").style.display="block";
+  const autoSalaryFlag = localStorage.getItem("ACS_AutoSalary");
+  if (autoSalaryFlag === "ON") {
+    const cb = document.getElementById("autoSalary");
+    if (cb) cb.checked = true;
   }
 
-  if(typeof registerTimeListener==="function"){
+  // Cargar inputs text/number
+  ["regA320","regB737","regECRJ",
+   "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = localStorage.getItem(id);
+    if (val !== null) el.value = val;
+  });
+
+  // Si ya eres admin, mostrar panel directamente
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  if (user && user.email === "aviationcapitalsim@gmail.com") {
+    document.getElementById("adminAuthSection").style.display = "block";
+    document.getElementById("adminPanelContent").style.display = "block";
+  }
+
+  // Refrescar datos del ciclo
+  refreshSimPanel();
+
+  // Reloj sincronizado con time_engine
+  if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
 });
-</script>
 
-<script>
-/* SAVE / RESET LOGIC */
+/* ========== SAVE / RESET AIRCRAFT ========== */
 function saveAircraft(){
   ["autoCcheck","autoDcheck",
    "regA320","regB737","regECRJ",
    "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el) return;
-    localStorage.setItem(id,el.type==="checkbox"?el.checked:el.value);
+    const el = document.getElementById(id);
+    if (!el) return;
+    localStorage.setItem(
+      id,
+      el.type === "checkbox" ? el.checked : el.value
+    );
   });
-  showSaveModal();
+  openSaveModal("Aircraft Settings", "Aircraft configuration saved successfully.");
 }
 
 function resetAircraft(){
-  const defaults={
-    regA320:"EX-",regB737:"EX-",regECRJ:"EX-",
-    taA320:45,taB737:45,taE190:35,taCRJ:35,taATR:30
-  };
-
   ["autoCcheck","autoDcheck"].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.checked = false;
     localStorage.removeItem(id);
-    document.getElementById(id).checked=false;
   });
 
-  for(let id in defaults){
-    document.getElementById(id).value=defaults[id];
+  const defaults = {
+    regA320:"EX-",
+    regB737:"EX-",
+    regECRJ:"EX-",
+    taA320:45,
+    taB737:45,
+    taE190:35,
+    taCRJ:35,
+    taATR:30
+  };
+
+  Object.keys(defaults).forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = defaults[id];
     localStorage.removeItem(id);
-  }
-  showSaveModal();
+  });
+
+  openSaveModal("Aircraft Settings", "Aircraft settings reset to defaults.");
 }
 
+/* ========== SAVE / RESET COMPANY ========== */
 function saveCompany(){
-  const autoHire=document.getElementById("autoHire").checked;
-  const autoSalary=document.getElementById("autoSalary").checked;
+  const autoHire = document.getElementById("autoHire").checked;
+  const autoSalary = document.getElementById("autoSalary").checked;
 
-  localStorage.setItem("autoHire",autoHire);
-  localStorage.setItem("ACS_AutoSalary",autoSalary?"ON":"OFF");
+  localStorage.setItem("autoHire", autoHire);
+  localStorage.setItem("ACS_AutoSalary", autoSalary ? "ON" : "OFF");
 
-  showSaveModal();
+  openSaveModal("Company Settings", "Company settings saved successfully.");
 }
 
 function resetCompany(){
   localStorage.removeItem("autoHire");
   localStorage.removeItem("ACS_AutoSalary");
 
-  document.getElementById("autoHire").checked=false;
-  document.getElementById("autoSalary").checked=false;
+  document.getElementById("autoHire").checked = false;
+  document.getElementById("autoSalary").checked = false;
 
-  showSaveModal();
+  openSaveModal("Company Settings", "Company settings reset.");
 }
 
-/* ADMIN PANEL */
+/* ========== ADMIN PANEL ========== */
 function verifyAdminEmail(){
-  const email=document.getElementById("adminEmailInput").value.trim().toLowerCase();
-  if(email==="aviationcapitalsim@gmail.com"){
-    localStorage.setItem("ACS_activeUser",JSON.stringify({email,name:"Admin"}));
-    document.getElementById("adminPanelContent").style.display="block";
-    showSaveModal();
+  const input = document.getElementById("adminEmailInput").value.trim().toLowerCase();
+
+  if (input === "aviationcapitalsim@gmail.com") {
+    localStorage.setItem("ACS_activeUser", JSON.stringify({
+      email: input,
+      name: "Administrator"
+    }));
+    document.getElementById("adminPanelContent").style.display = "block";
+    alert("✅ Admin access granted.");
   } else {
-    alert("❌ Incorrect email.");
+    alert("❌ Incorrect email. Access denied.");
   }
 }
 
-function toggleSimState(){
-  const st=document.getElementById("simStatus");
-  const now=st.textContent==="ON"?"OFF":"ON";
-  st.textContent=now;
-  st.style.color=now==="ON"?"#00ff80":"#ff4040";
-
-  if(now==="ON") startACSTime();
-  else stopACSTime();
-
-  showSaveModal();
+function closeAdminPanel(){
+  document.getElementById("adminPanelContent").style.display = "none";
 }
 
+/* ========== REFRESCAR PANEL DE CICLO ========== */
+function refreshSimPanel(){
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+
+  const simCycleEl = document.getElementById("simCycle");
+  const simStartEl = document.getElementById("simStart");
+  const simStatusEl = document.getElementById("simStatus");
+
+  if (!simCycleEl || !simStartEl || !simStatusEl) return;
+
+  if (cycle.startYear && cycle.endYear) {
+    simCycleEl.textContent = `${cycle.startYear}–${cycle.endYear}`;
+  }
+
+  if (cycle.realStartDate) {
+    const d = new Date(cycle.realStartDate);
+    simStartEl.textContent = d.toDateString();
+  } else {
+    simStartEl.textContent = "—";
+  }
+
+  const st = (cycle.status || "OFF").toUpperCase();
+  simStatusEl.textContent = st;
+  simStatusEl.style.color = st === "ON" ? "#00ff80" : "#ff4040";
+}
+
+/* ========== RESET SIMULATION DATA (USANDO time_engine) ========== */
 function resetSimulationData(){
-  stopACSTime();
-  ACS_TIME.currentTime=new Date("1940-01-01T00:00:00Z");
-  localStorage.setItem("acs_current_time",ACS_TIME.currentTime.toISOString());
-  updateClockDisplay();
-
-  localStorage.setItem("ACS_Cycle",JSON.stringify({
-    startYear:1940,endYear:2026,realStartDate:null,status:"OFF"
-  }));
-
-  document.getElementById("simStatus").textContent="OFF";
-  document.getElementById("simStatus").style.color="#ff4040";
-
-  showSaveModal();
+  // Usamos la función global del time_engine, pero además refrescamos panel.
+  if (typeof window.resetSimulationData === "function") {
+    // Llamar a la función del time_engine
+    window.resetSimulationData();
+  }
+  // Después de que el motor actualice ACS_Cycle, refrescamos el panel
+  setTimeout(refreshSimPanel, 100);
 }
 </script>
 
