@@ -1,7 +1,5 @@
 <!-- === MY AIRCRAFT MODULE === -->
-<!-- Version: Beta v1 | Date: 09 NOV 2025 -->
-<!-- === ACS Maintenance System v1.2 (FULL FUNCTIONAL) === -->
-
+<!-- Version: Beta v1 | Date: 14 NOV 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +7,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Aircraft - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
   <style>
+    /* ============================================================
+       === BASE ACS STYLE =========================================
+       ============================================================ */
     body {
       margin: 0;
       background-color: #081530;
@@ -17,418 +19,422 @@
       font-family: "Segoe UI", sans-serif;
     }
 
-    h2 {
+    /* ============================================================
+       === GLOBAL HEADER — EXACTO COMO setting.html ===============
+       ============================================================ */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background-color: #0a1433;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 2rem;
+      border-bottom: 2px solid #FFB300;
+      z-index: 999;
+      box-sizing: border-box;
+    }
+    .acs-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .acs-logo img { height: 40px; }
+    .acs-logo h1 {
+      font-size: 1.1rem;
+      margin: 0;
       color: #FFB300;
-      text-align: center;
-      margin-top: 6rem;
+      letter-spacing: 0.6px;
     }
 
-    .sub { color: #ccc; text-align: center; margin-bottom: 2rem; }
-
-    /* === DASHBOARD PANEL === */
-    .dashboard {
+    .acs-nav {
       display: flex;
       justify-content: center;
-      gap: 1.2rem;
-      flex-wrap: wrap;
-      margin: 1rem auto 2rem;
-      width: 90%;
+      gap: 1.5rem;
+      flex: 1;
     }
-
-    .dash-box {
-      background: #0e1b3c;
-      border-radius: 10px;
-      padding: 0.8rem 1.2rem;
-      min-width: 180px;
-      text-align: center;
-      box-shadow: 0 0 8px rgba(0,0,0,.4);
+    .acs-nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: 0.3s;
     }
-    .dash-box h3 { color: #FFB300; margin: 0.2rem 0; font-size: 1rem; }
-    .dash-box p { color: #00ff80; font-weight: 600; margin: 0; }
-
-    /* === FLEET TABLE === */
-    table {
-      width: 90%;
-      margin: 0 auto 2rem;
-      border-collapse: collapse;
-      background: #0e1b3c;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 10px rgba(0,0,0,.4);
-    }
-    th, td {
-      border: 1px solid rgba(255,255,255,.1);
-      padding: .6rem;
-      font-size: .9rem;
-      text-align: center;
-    }
-    th {
-      background: #112055;
+    .acs-nav a:hover,
+    .acs-nav a.active {
       color: #FFB300;
+      text-shadow: 0 0 6px rgba(255,179,0,0.6);
     }
-    tr:nth-child(even) { background: #102040; }
 
-    .btn {
-      background: #00C851;
+    .acs-auth {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .logout-btn {
+      color: #FFB300;
+      border: 1px solid #FFB300;
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.2s;
+    }
+    .logout-btn:hover { background: #FFB300; color: #081530; }
+
+    .acs-clock-header {
+      font-family: 'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      font-weight:bold;
+      background:rgba(0,255,128,0.08);
+      padding:0.3rem 0.8rem;
+      border-radius:6px;
+      font-size:0.9rem;
+    }
+
+    /* ============================================================
+       === TITLE / INTRO ==========================================
+       ============================================================ */
+    .acs-intro {
+      margin-top: 6rem;
+      text-align: center;
+    }
+    .acs-title {
+      color: #FFB300;
+      font-size: 1.6rem;
+      margin-bottom: 0.3rem;
+    }
+    .acs-subtitle {
+      color: #ccc;
+      font-style: italic;
+    }
+
+    /* ============================================================
+       === SKYOS FILTER BAR =======================================
+       ============================================================ */
+    .filter-bar {
+      width: 96%;
+      margin: 1.5rem auto;
+      background: #0d1c3c;
+      padding: 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,179,0,0.25);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+    .filter-bar select,
+    .filter-bar input {
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 0.9rem;
+      min-width: 160px;
+    }
+    .filter-bar input::placeholder { color:#bbb; }
+
+    /* ============================================================
+       === FLIGHTRADAR STYLE TABLE ================================
+       ============================================================ */
+    .fleet-table-wrapper {
+      width: 96%;
+      margin: 1rem auto;
+      overflow-y: auto;
+      max-height: 65vh;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
+    }
+
+    table.fleet-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #0a1733;
+    }
+
+    table.fleet-table th {
+      background: #15264b;
+      color: #FFB300;
+      padding: 0.7rem;
+      position: sticky;
+      top: 0;
+      font-size: 0.88rem;
+      z-index: 10;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+
+    table.fleet-table td {
+      padding: 0.65rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    table.fleet-table tr:hover {
+      background: rgba(255,179,0,0.06);
+    }
+
+    /* Icons in table */
+    .icon {
+      font-size: 1rem;
+      margin-right: 4px;
+      opacity: 0.9;
+    }
+
+    /* ============================================================
+       === ACTION BUTTONS =========================================
+       ============================================================ */
+    .ac-btn {
+      padding: 0.35rem 0.7rem;
       border: none;
       border-radius: 6px;
-      padding: .3rem .8rem;
-      color: white;
+      font-size: 0.85rem;
       cursor: pointer;
       font-weight: 600;
-      transition: transform .2s;
+      transition: 0.2s;
+      margin: 2px;
     }
-    .btn:hover { transform: scale(1.05); background:#00e060; }
+    .ac-view { background:#1479FF; color:white; }
+    .ac-view:hover { background:#0d5fd6; }
 
-    .danger { background:#cc0000; }
-    .warn { color:#ff4d4d; font-weight:600; }
+    .ac-c { background:#00C851; color:white; }
+    .ac-c:hover { background:#00e060; }
 
-    /* === MAINTENANCE LOG === */
-    #log {
-      width: 90%;
-      margin: 1rem auto 3rem;
-      background: #0e1b3c;
-      border-radius: 10px;
-      padding: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,.4);
-      font-size: .9rem;
-      max-height: 260px;
-      overflow-y: auto;
-    }
-    #log h3 { color:#FFB300; margin-top:0; text-align:center; }
-    #log-entry { border-top:1px solid rgba(255,255,255,.2); padding-top:.5rem; }
+    .ac-d { background:#FFB300; color:#081530; }
+    .ac-d:hover { background:#ffca47; }
 
-    /* === CLOCK === */
-    .acs-clock-header {
-      font-family:'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      background:rgba(0,255,128,.08);
-      padding:.3rem .8rem;
-      border-radius:6px;
-      font-size:.9rem;
-      margin-left:1rem;
-      font-weight:bold;
-    }
-
-    /* === FLEET MODEL MODALS (Beta v2.1) === */
-    .model-modal, .maint-modal {
+    /* ============================================================
+       === MODAL DETAIL ===========================================
+       ============================================================ */
+    .modal-bg {
       display: none;
       position: fixed;
-      z-index: 1000;
-      left: 0; top: 0;
+      top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center; align-items: center;
+      background: rgba(0,0,0,0.65);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
     }
+
     .modal-content {
-      background: #0e1b3c;
-      border-radius: 10px;
-      padding: 1rem 1.5rem;
-      width: 85%;
-      max-height: 85%;
-      overflow-y: auto;
-      box-shadow: 0 0 15px rgba(0,0,0,.6);
+      width: 90%;
+      max-width: 780px;
+      background: #0d1c3c;
+      padding: 1.5rem;
+      border-radius: 12px;
       border: 1px solid #FFB300;
+      box-shadow: 0 0 18px rgba(0,0,0,0.6);
+      color: #fff;
+      max-height: 85vh;
+      overflow-y: auto;
     }
-    .close {
-      float: right;
-      font-size: 1.5rem;
-      color: #FFB300;
-      cursor: pointer;
-      margin-top: -0.5rem;
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .close:hover { color: #fff; }
-    .model-header h3 {
-      color: #FFB300;
-      margin-bottom: .5rem;
+    .modal-header h2 {
+      color:#FFB300;
+      margin:0;
+      font-size:1.3rem;
     }
-    .maint-detail { background:#102040; padding:1rem; border-radius:8px; margin-top:.5rem; }
-    .maint-detail p { margin:.2rem 0; font-size:.9rem; }
+    .modal-close {
+      font-size:1.8rem;
+      color:#FFB300;
+      cursor:pointer;
+    }
+    .modal-close:hover { color:white; }
+
+    .modal-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin-top: 1rem;
+    }
+
+    .modal-section {
+      background:#0a1733;
+      padding:1rem;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.12);
+    }
+
+    .modal-section h3 {
+      margin-top: 0;
+      margin-bottom: 0.6rem;
+      color:#FFB300;
+    }
+
+    .detail-row {
+      margin-bottom: 0.4rem;
+      font-size: 0.92rem;
+    }
   </style>
 </head>
+
 <body>
-  <!-- === HEADER === -->
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
-      <h1>Aviation Capital Simulator</h1>
-    </div>
 
-    <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html">Finance</a>
-      <a href="aircraft.html" class="active">Aircraft</a>
-      <a href="routes.html">Routes</a>
-      <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
-    </nav>
+<!-- ============================================================
+     === HEADER ==================================================
+     ============================================================ -->
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
+    <h1>Aviation Capital Simulator</h1>
+  </div>
 
-    <div class="acs-auth">
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    </div>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </header>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+    <a href="support.html">Support</a>
+    <a href="setting.html">Settings</a>
+  </nav>
 
-  <main>
-    <h2>My Aircraft</h2>
-    <p class="sub">Monitor your fleet condition, maintenance, and financial performance.</p>
+  <div class="acs-auth">
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+  </div>
+</header>
 
-    <!-- === DASHBOARD === -->
-    <section class="dashboard" id="dashboard">
-      <div class="dash-box"><h3>Balance</h3><p id="balance">$200.0 M</p></div>
-      <div class="dash-box"><h3>Active</h3><p id="activeCount">0</p></div>
-      <div class="dash-box"><h3>Maintenance</h3><p id="maintCount">0</p></div>
-      <div class="dash-box"><h3>Leased Out</h3><p id="leasedCount">0</p></div>
-      <div class="dash-box"><h3>Total Fleet Value</h3><p id="fleetValue">$0 M</p></div>
-      <div class="dash-box"><h3>Avg Age / Hours</h3><p id="fleetStats">0 yrs / 0 h</p></div>
-    </section>
+<!-- ============================================================
+     === INTRO ===================================================
+     ============================================================ -->
+<section class="acs-intro">
+  <h2 class="acs-title">✈️ My Aircraft</h2>
+  <p class="acs-subtitle">Fleet overview, maintenance control and aircraft health status.</p>
+</section>
 
-    <!-- === FLEET TABLE === -->
-    <table id="fleetTable">
+<!-- ============================================================
+     === FILTER BAR =============================================
+     ============================================================ -->
+<div class="filter-bar">
+  <select id="filterModel">
+    <option value="all">Model (All)</option>
+  </select>
+
+  <select id="filterFamily">
+    <option value="all">Family (All)</option>
+  </select>
+
+  <select id="filterStatus">
+    <option value="all">Status (All)</option>
+    <option value="Active">Active</option>
+    <option value="Pending Delivery">Pending Delivery</option>
+    <option value="In Maintenance C">In Maintenance C</option>
+    <option value="In Maintenance D">In Maintenance D</option>
+    <option value="Scheduled A">Scheduled A</option>
+    <option value="Scheduled B">Scheduled B</option>
+    <option value="Leased Out">Leased Out</option>
+    <option value="Grounded">Grounded</option>
+  </select>
+
+  <select id="filterCondition">
+    <option value="all">Condition</option>
+    <option value="90">≥ 90%</option>
+    <option value="80">≥ 80%</option>
+    <option value="70">≥ 70%</option>
+    <option value="60">≥ 60%</option>
+  </select>
+
+  <select id="filterBase">
+    <option value="all">Base (All)</option>
+  </select>
+
+  <input type="text" id="filterSearch" placeholder="🔎 Search (reg, model, etc)">
+</div>
+
+<!-- ============================================================
+     === TABLE WRAPPER ==========================================
+     ============================================================ -->
+<div class="fleet-table-wrapper">
+  <table class="fleet-table" id="fleetTable">
+    <thead>
       <tr>
-        <th>Model</th><th>Status</th><th>Age</th><th>Hours</th><th>Condition</th>
-        <th>Next Maint.</th><th>Actions</th>
+        <th><span class="icon">✈️</span> Reg</th>
+        <th><span class="icon">✈️</span> Model</th>
+        <th><span class="icon">🟦</span> Status</th>
+        <th><span class="icon">⏱</span> Hours</th>
+        <th><span class="icon">🔄</span> Cycles</th>
+        <th><span class="icon">❤️</span> Cond</th>
+        <th><span class="icon">🛠</span> Next C</th>
+        <th><span class="icon">🛠</span> Next D</th>
+        <th><span class="icon">📍</span> Base</th>
+        <th><span class="icon">📘</span> Actions</th>
       </tr>
-    </table>
+    </thead>
+    <tbody id="fleetBody">
+      <!-- JS RENDER HERE -->
+    </tbody>
+  </table>
+</div>
 
-    <!-- === LOG === -->
-    <section id="log">
-      <h3>Maintenance Log</h3>
-      <div id="log-entry"></div>
-    </section>
-  </main>
+<!-- ============================================================
+     === MODAL DETAIL ===========================================
+     ============================================================ -->
+<div class="modal-bg" id="acModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitle">Aircraft Detail</h2>
+      <span class="modal-close" onclick="closeAcModal()">&times;</span>
+    </div>
 
-  <!-- === MODEL MODAL (GROUPED AIRCRAFT) === -->
-  <div id="modelModal" class="model-modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModelModal()">&times;</span>
-      <div class="model-header"><h3 id="modelTitle">Model Fleet</h3></div>
-      <table id="modelTable">
-        <tr><th>Registration</th><th>Status</th><th>Hours</th><th>Last Check</th><th>Next Check</th><th>Engineer</th><th>Action</th></tr>
-      </table>
+    <div class="modal-body">
+
+      <!-- LEFT SIDE -->
+      <div class="modal-section">
+        <h3>Aircraft Info</h3>
+        <div class="detail-row"><b>Registration:</b> <span id="md-reg"></span></div>
+        <div class="detail-row"><b>Model:</b> <span id="md-model"></span></div>
+        <div class="detail-row"><b>Family:</b> <span id="md-family"></span></div>
+        <div class="detail-row"><b>Status:</b> <span id="md-status"></span></div>
+        <div class="detail-row"><b>Age:</b> <span id="md-age"></span></div>
+        <div class="detail-row"><b>Hours:</b> <span id="md-hours"></span></div>
+        <div class="detail-row"><b>Cycles:</b> <span id="md-cycles"></span></div>
+        <div class="detail-row"><b>Condition:</b> <span id="md-cond"></span></div>
+        <div class="detail-row"><b>Base:</b> <span id="md-base"></span></div>
+      </div>
+
+      <!-- RIGHT SIDE -->
+      <div class="modal-section">
+        <h3>Maintenance</h3>
+        <div class="detail-row"><b>Last C-Check:</b> <span id="md-lastC"></span></div>
+        <div class="detail-row"><b>Last D-Check:</b> <span id="md-lastD"></span></div>
+        <div class="detail-row"><b>Next C:</b> <span id="md-nextC"></span></div>
+        <div class="detail-row"><b>Next D:</b> <span id="md-nextD"></span></div>
+        <hr style="border-color:rgba(255,255,255,0.1)">
+        <button class="ac-btn ac-c" id="btnCcheck">Start C-Check</button>
+        <button class="ac-btn ac-d" id="btnDcheck">Start D-Check</button>
+      </div>
+
     </div>
   </div>
+</div>
 
-  <!-- === MAINTENANCE DETAIL MODAL === -->
-  <div id="maintModal" class="maint-modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeMaintModal()">&times;</span>
-      <div class="model-header"><h3>Maintenance Detail</h3></div>
-      <div class="maint-detail" id="maintDetail"></div>
-      <button class="btn" id="confirmMaintBtn">Confirm Maintenance</button>
-    </div>
-  </div>
+<!-- ============================================================
+     === TIME ENGINE ============================================
+     ============================================================ -->
+<script src="time_engine.js"></script>
 
-  <!-- === SCRIPT PRINCIPAL DEL MÓDULO (por ahora inline, luego lo pasamos a my_aircraft.js) === -->
-  <script>
-    const defaultFleet = [
-      { model:"Airbus A320-200", registration:"EX-32001", value:98, age:5, hours:14200, condition:92, status:"Active",     lastCheck:"B", nextCheck:"C", engineer:"Eng. V. Petrova" },
-      { model:"Airbus A320-200", registration:"EX-32002", value:97, age:5, hours:13000, condition:90, status:"Active",     lastCheck:"A", nextCheck:"B", engineer:"Tech. A. Rahimov" },
-      { model:"Boeing 737-800",  registration:"EX-73701", value:106,age:6, hours:15800, condition:88, status:"Leased Out", lastCheck:"C", nextCheck:"D", engineer:"Eng. S. Bekov" },
-      { model:"Embraer E190",    registration:"EX-E1901", value:51, age:4, hours:9800,  condition:93, status:"Active",     lastCheck:"B", nextCheck:"C", engineer:"Eng. O. Nazarova" },
-      { model:"ATR 72-600",      registration:"EX-ATR01", value:28, age:3, hours:6200,  condition:96, status:"Active",     lastCheck:"A", nextCheck:"B", engineer:"Tech. K. Muradov" }
-    ];
+<!-- ============================================================
+     === MAIN MODULE JS (NEXT MESSAGE COMPLETES THIS FILE) =======
+     ============================================================ -->
+<script src="my_aircraft.js"></script>
 
-    let balance = 200.0;
-    let storedBalance = parseFloat(localStorage.getItem("acsBalance"));
-    if (!isNaN(storedBalance)) balance = storedBalance;
+<script>
+function handleLogout(){
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
+</script>
 
-    let fleet   = JSON.parse(localStorage.getItem("acsFleet")) || defaultFleet;
-    let logData = JSON.parse(localStorage.getItem("acsLog"))   || [];
-
-    const balanceEl  = document.getElementById("balance");
-    const fleetTable = document.getElementById("fleetTable");
-    const logEl      = document.getElementById("log-entry");
-
-    function saveData(){
-      localStorage.setItem("acsFleet", JSON.stringify(fleet));
-      localStorage.setItem("acsBalance", balance);
-      localStorage.setItem("acsLog", JSON.stringify(logData));
-    }
-
-    function logAction(text){
-      const time = new Date().toDateString();
-      const entry = `[${time}] ${text}`;
-      logData.unshift(entry);
-      logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join("");
-      saveData();
-    }
-
-    function updateDashboard(){
-      const active = fleet.filter(f=>f.status==="Active").length;
-      const maint  = fleet.filter(f=>f.status.includes("In")).length;
-      const leased = fleet.filter(f=>f.status==="Leased Out").length;
-      const totalValue = fleet.reduce((a,b)=>a+b.value,0);
-      const avgAge = (fleet.reduce((a,b)=>a+b.age,0)/fleet.length).toFixed(1);
-      const avgHrs = (fleet.reduce((a,b)=>a+b.hours,0)/fleet.length).toFixed(0);
-
-      document.getElementById("activeCount").textContent = active;
-      document.getElementById("maintCount").textContent  = maint;
-      document.getElementById("leasedCount").textContent = leased;
-      document.getElementById("fleetValue").textContent  = `$${totalValue.toFixed(0)} M`;
-      document.getElementById("fleetStats").textContent  = `${avgAge} yrs / ${avgHrs} h`;
-      balanceEl.textContent = `$${balance.toFixed(1)} M`;
-    }
-
-    function renderFleet(){
-      fleetTable.innerHTML = `
-        <tr>
-          <th>Model</th><th>Status</th><th>Age</th><th>Hours</th>
-          <th>Condition</th><th>Next Maint.</th><th>Actions</th>
-        </tr>`;
-
-      fleet.forEach((f)=>{
-        const row = document.createElement("tr");
-        let warn = f.condition < 60 ? '<span class="warn">⚠️</span>' : 'OK';
-        row.innerHTML = `
-          <td>${f.model}</td>
-          <td>${f.status}</td>
-          <td>${f.age}</td>
-          <td>${f.hours}</td>
-          <td>${f.condition}%</td>
-          <td>${warn}</td>
-          <td><button class="btn" onclick="openModelModal('${f.model}')">View Fleet</button></td>
-        `;
-        fleetTable.appendChild(row);
-      });
-
-      updateDashboard();
-    }
-
-    /* === MODEL MODAL === */
-    function openModelModal(modelName){
-      const modal = document.getElementById("modelModal");
-      modal.style.display = "flex";
-      document.getElementById("modelTitle").textContent = modelName + " — Fleet Detail";
-
-      const tbl  = document.getElementById("modelTable");
-      const list = fleet.filter(f=>f.model === modelName);
-
-      tbl.innerHTML = `
-        <tr>
-          <th>Registration</th><th>Status</th><th>Hours</th>
-          <th>Last Check</th><th>Next Check</th><th>Engineer</th><th>Action</th>
-        </tr>`;
-
-      list.forEach((f)=>{
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${f.registration}</td>
-          <td>${f.status}</td>
-          <td>${f.hours}</td>
-          <td>${f.lastCheck}</td>
-          <td>${f.nextCheck}</td>
-          <td>${f.engineer}</td>
-          <td><button class="btn" onclick="openMaintModal('${f.registration}','${f.model}')">🔧 Start</button></td>
-        `;
-        tbl.appendChild(row);
-      });
-    }
-
-    function closeModelModal(){
-      document.getElementById("modelModal").style.display = "none";
-    }
-
-    /* === MAINTENANCE MODAL === */
-    let currentReg = null;
-
-    function openMaintModal(reg,model){
-      currentReg = reg;
-      document.getElementById("maintModal").style.display = "flex";
-
-      const f = fleet.find(x=>x.registration === reg);
-      const cost = ((f.value * 0.04) + (f.age * 0.5)).toFixed(2);
-
-      document.getElementById("maintDetail").innerHTML = `
-        <p><b>Aircraft:</b> ${reg} (${model})</p>
-        <p><b>Engineer:</b> ${f.engineer}</p>
-        <p><b>Maintenance Type:</b> C-Check</p>
-        <p><b>Estimated Duration:</b> 1 month (sim)</p>
-        <p><b>Estimated Cost:</b> $${cost}M</p>
-      `;
-
-      const btn = document.getElementById("confirmMaintBtn");
-      btn.onclick = function(){ confirmMaintenance(f,cost); };
-    }
-
-    function closeMaintModal(){
-      document.getElementById("maintModal").style.display = "none";
-    }
-
-    function confirmMaintenance(f,cost){
-      if (f.status !== "Active"){
-        alert("Aircraft not available.");
-        return;
-      }
-      f.status = "In Maintenance";
-      balance -= parseFloat(cost);
-
-      logAction(`Started C-Check on ${f.registration} (-$${cost}M)`);
-
-      document.dispatchEvent(new CustomEvent("acsAircraftStatusChange",{
-        detail:{ registration:f.registration, model:f.model, newStatus:"maintenance", cost:cost }
-      }));
-
-      saveData();
-      renderFleet();
-      closeMaintModal();
-      closeModelModal();
-
-      // Simulación de finalización de mantenimiento (1 min real)
-      setTimeout(()=>{
-        f.status = "Active";
-        f.condition = Math.min(100, f.condition + 10);
-        logAction(`C-Check completed on ${f.registration}`);
-
-        document.dispatchEvent(new CustomEvent("acsAircraftStatusChange",{
-          detail:{ registration:f.registration, model:f.model, newStatus:"active" }
-        }));
-
-        saveData();
-        renderFleet();
-      }, 60000);
-    }
-
-    function handleLogout(){
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-
-    // Inicialización
-    renderFleet();
-    logEl.innerHTML = logData.map(e=>`<div>${e}</div>`).join("");
-    updateDashboard();
-  </script>
-
-  <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
-  <script src="time_engine.js"></script>
-  <script>
-    // 🕐 Reloj cockpit Airbus sincronizado con el motor global de tiempo ACS
-    function updateClockDisplay(simTime){
-      const clockEl = document.getElementById("acs-clock");
-      if (!clockEl) return;
-
-      let d = simTime instanceof Date ? simTime : new Date();
-      const day   = String(d.getUTCDate()).padStart(2,"0");
-      const monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-      const month = monthNames[d.getUTCMonth()];
-      const year  = d.getUTCFullYear();
-      const hh    = String(d.getUTCHours()).padStart(2,"0");
-      const mm    = String(d.getUTCMinutes()).padStart(2,"0");
-
-      clockEl.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof registerTimeListener === "function") {
-        // Asumimos que registerTimeListener pasa un Date simTime
-        registerTimeListener(updateClockDisplay);
-      } else {
-        // fallback sencillo
-        updateClockDisplay();
-      }
-    });
-  </script>
 </body>
 </html>
