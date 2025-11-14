@@ -1,17 +1,17 @@
 <!-- ===========================================================
-     === ACS USED MARKET - PHASE 1 (HTML) ======================
-     Version: 1.0 | Date: 14 NOV 2025
+     === ACS USED MARKET - FULL EDITION ========================
+     Version: FINAL | Date: 14 NOV 2025
      =========================================================== -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Used Market - Aviation Capital Simulator</title>
+  <title>Used Aircraft Market - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
   <style>
-    /* ===== USED MARKET FILTER TABS ===== */
+    /* ===== FILTER TABS ===== */
     .used-tabs {
       display: flex;
       gap: 1rem;
@@ -35,13 +35,15 @@
       font-weight: 700;
     }
 
-    /* ===== AIRCRAFT CARD ===== */
+    /* ===== GRID ===== */
     .used-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 1.4rem;
       margin-top: 1rem;
     }
+
+    /* ===== CARD ===== */
     .used-card {
       background: rgba(12, 28, 55, 0.9);
       border: 1px solid rgba(255, 179, 0, 0.25);
@@ -65,6 +67,7 @@
       margin-bottom: 0.5rem;
       font-size: 0.75rem;
     }
+
     .ac-btn {
       width: 100%;
       padding: 0.6rem;
@@ -75,14 +78,8 @@
       font-weight: 600;
       font-size: 0.9rem;
     }
-    .ac-buy {
-      background: #1fa345;
-      color: #fff;
-    }
-    .ac-lease {
-      background: #1f7aa3;
-      color: #fff;
-    }
+    .ac-buy { background: #1fa345; color: #fff; }
+    .ac-lease { background: #1f7aa3; color: #fff; }
 
     /* ===== MODAL ===== */
     .modal-bg {
@@ -113,12 +110,11 @@
 
 <body>
 
-  <!-- ===== HEADER ===== -->
   <div class="header">
     <h1>Used Aircraft Market</h1>
   </div>
 
-  <!-- ===== FILTERS ===== -->
+  <!-- FILTERS -->
   <div class="used-tabs">
     <div class="used-tab active" data-filter="all">All</div>
     <div class="used-tab" data-filter="player">Player Listings</div>
@@ -127,10 +123,10 @@
     <div class="used-tab" data-filter="system">System</div>
   </div>
 
-  <!-- ===== GRID ===== -->
+  <!-- GRID -->
   <div class="used-grid" id="usedGrid"></div>
 
-  <!-- ===== MODAL ===== -->
+  <!-- MODAL -->
   <div class="modal-bg" id="infoModal">
     <div class="modal-box">
       <span class="modal-close" onclick="closeInfoModal()">✖</span>
@@ -139,6 +135,6 @@
     </div>
   </div>
 
-  <script src="acs_used_market.js?v=1.0"></script>
+  <script src="acs_used_market.js?v=FULL"></script>
 </body>
 </html>
