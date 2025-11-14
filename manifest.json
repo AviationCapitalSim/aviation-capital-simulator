@@ -1,0 +1,28 @@
+{
+  "name": "Aviation Capital Simulator",
+  "short_name": "ACS",
+  "start_url": "index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#081530",
+  "theme_color": "#081530",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "acs_logo_256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "acs_logo_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "acs_logo_1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
