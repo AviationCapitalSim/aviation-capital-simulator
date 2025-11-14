@@ -267,7 +267,82 @@
     .modal-box p {
       margin: 0.3rem 0;
     }
-  </style>
+    <!-- ============================================================
+     === ACS AIRCRAFT REGISTRATION MODAL — DARK PANEL ===========
+     ============================================================ -->
+
+<div id="regModal" class="reg-modal-bg">
+  <div class="reg-modal-box">
+    <span class="reg-modal-close" onclick="closeRegModal()">✖</span>
+
+    <h2 class="reg-title">✈️ Assign Aircraft Registration</h2>
+
+    <div class="reg-content">
+      <p><b>Prefix:</b> <span id="regPrefix">EX-</span></p>
+
+      <label>Serial Number</label>
+      <input id="regSerialInput" type="text" class="reg-input" />
+
+      <p><b>Full Registration:</b> <span id="regFullPreview">EX-12345</span></p>
+
+      <button class="reg-btn" onclick="saveRegistration()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .reg-modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .reg-modal-box {
+    background: #081530;
+    border: 1px solid #FFB300;
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 360px;
+    color: white;
+    text-align: left;
+    box-shadow: 0 0 12px rgba(255,179,0,0.3);
+  }
+  .reg-modal-close {
+    float: right;
+    font-size: 1.2rem;
+    color: #FFB300;
+    cursor: pointer;
+  }
+  .reg-title {
+    margin-top: 0;
+    color: #FFB300;
+  }
+  .reg-input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 6px;
+    background: #0e1b3c;
+    border: 1px solid #FFB300;
+    color: white;
+    margin-bottom: 0.8rem;
+  }
+  .reg-btn {
+    width: 100%;
+    padding: 0.6rem;
+    background: #1fa345;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .reg-btn:hover {
+    background: #188a39;
+  }
+</style>
 </head>
 
 <body>
