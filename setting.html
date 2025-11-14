@@ -301,7 +301,6 @@
     <p class="warning">⚠️ Admin only. Affects global time engine.</p>
   </div>
 </div>
-    </div>
 
   </section>
 </main>
@@ -413,8 +412,11 @@ function resetCompany(){
   });
 
   alert("🔄 Company settings reset.");
-}
-  <script>
+});
+</script>
+
+<!-- ADMIN CONTROLS -->
+<script>
 function verifyAdminEmail() {
   const input = document.getElementById("adminEmailInput").value.trim().toLowerCase();
 
@@ -437,7 +439,7 @@ function closeAdminPanel(){
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* Auto-Unlock si ya está verificado */
+  /* Auto unlock if admin was already verified */
   const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
   if (user.email === "aviationcapitalsim@gmail.com") {
@@ -445,7 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("adminPanelContent").style.display = "block";
   }
 
-  /* Cargar estado del ciclo */
+  /* Load cycle info */
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
 
   if (cycle.startYear && cycle.endYear)
@@ -464,9 +466,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
-</script>
 
-<!-- ADMIN + CLOCK -->
+<!-- TIME ENGINE -->
 <script src="time_engine.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
