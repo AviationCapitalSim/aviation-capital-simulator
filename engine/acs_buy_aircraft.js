@@ -1,18 +1,39 @@
 /* ============================================================
-   === ACS BUY NEW AIRCRAFT ENGINE — CARDS VERSION (v2.0) =====
+   === ACS BUY NEW AIRCRAFT ENGINE — CARDS VERSION (v2.1) =====
    ============================================================ 
-   ✈ Funciones clave:
-   • Render de tarjetas (cards)
-   • Sistema de filtros (chip bar)
+   ✈ Mejoras v2.1:
+   • Motores compactos integrados en tarjetas (EngineLine)
+   • Compatible con DB original (no se modifica)
+   • Filtros por época y fabricante
    • Modal profesional "View Options"
-   • BUY NEW y LEASE NEW (cálculo real)
-   • Slots por fabricante (persistentes)
-   • Backlog real → delivery date
-   • Integración Finance & MyAircraft
-   • Pending deliveries + auto-delivery en Time Engine
+   • BUY / LEASE con backlog y slots reales
+   • Auto-delivery en Time Engine
    ============================================================ */
 
 console.log("🟦 ACS Buy Aircraft Engine (Cards) — Loaded");
+
+/* ============================================================
+   0) ENGINE SPECS (Compact Version for Cards)
+   ============================================================ */
+const ACS_ENGINE_SPECS = {
+  "Lockheed L-10 Electra": { code:"PW R-985", n:2, power:"450 hp" },
+  "Douglas DC-2": { code:"PW R-1830", n:2, power:"850 hp" },
+  "Douglas DC-3": { code:"PW R-1830", n:2, power:"1200 hp" },
+  "Douglas DC-4": { code:"PW R-2000", n:4, power:"1350 hp" },
+  "Douglas DC-6": { code:"PW R-2800", n:4, power:"2400 hp" },
+  "Douglas DC-7": { code:"Wright R-3350", n:4, power:"3250 hp" },
+
+  "Lockheed Constellation": { code:"Wright R-3350", n:4, power:"2200 hp" },
+
+  "Boeing 737-200": { code:"JT8D-9A", n:2, power:"14.5k" },
+  "Boeing 737-800": { code:"CFM56-7B", n:2, power:"27k" },
+
+  "Airbus A300B4": { code:"GE CF6-50", n:2, power:"51k" },
+  "Airbus A320-200": { code:"CFM56-5B", n:2, power:"27k" },
+  "Airbus A330-300": { code:"Trent 700", n:2, power:"68k" },
+
+  "Boeing 787-9": { code:"GEnx-1B", n:2, power:"70k" }
+};
 
 /* ============================================================
    1) CONFIGURACIÓN DE SLOTS POR FABRICANTE
@@ -31,12 +52,8 @@ const ACS_MANUFACTURER_SLOTS = {
   Lockheed: 28
 };
 
-/* Backlog persistente */
 let ACS_SLOTS = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
-
-function saveSlots() {
-  localStorage.setItem("ACS_SLOTS", JSON.stringify(ACS_SLOTS));
-}
+function saveSlots() { localStorage.setItem("ACS_SLOTS", JSON.stringify(ACS_SLOTS)); }
 
 /* ============================================================
    2) AÑO DE SIMULACIÓN
@@ -44,7 +61,6 @@ function saveSlots() {
 function getCurrentSimYear() {
   try {
     if (typeof getSimYear === "function") return getSimYear();
-
     if (window.ACS_TIME?.currentTime) {
       return new Date(ACS_TIME.currentTime).getUTCFullYear();
     }
@@ -55,7 +71,7 @@ function getCurrentSimYear() {
 }
 
 /* ============================================================
-   3) BASE DE DATOS FILTRADA POR ÉPOCA
+   3) BASE DB FILTRADA POR ÉPOCA
    ============================================================ */
 
 function getAircraftBase() {
@@ -72,7 +88,7 @@ function getAircraftBase() {
 }
 
 /* ============================================================
-   4) GENERAR CHIPS DE FABRICANTES
+   4) CHIPS DE FABRICANTE
    ============================================================ */
 
 function buildFilterChips() {
@@ -113,6 +129,7 @@ function buildFilterChips() {
 /* ============================================================
    5) IMAGEN AUTOMÁTICA
    ============================================================ */
+
 function getAircraftImage(ac) {
   const base = ac.model.toLowerCase().replace(/[^a-z0-9]+/g, "_");
   const manu = (ac.manufacturer || "").toLowerCase().replace(/[^a-z0-9]+/g, "_");
@@ -125,17 +142,8 @@ function getAircraftImage(ac) {
     `img/${manu}_${base}.jpg`
   ];
 
-  for (const g of guesses) {
-    if (doesImageExist(g)) return g;
-  }
-
+  for (const g of guesses) return g;
   return "img/no_preview.png";
-}
-
-function doesImageExist(url) {
-  const img = new Image();
-  img.src = url;
-  return true; // GitHub pages no permite ver existencia real
 }
 
 /* ============================================================
@@ -159,13 +167,16 @@ function renderCards(filterManufacturer = "All") {
 
     const img = getAircraftImage(ac);
 
+    const eng = ACS_ENGINE_SPECS[ac.model];
+    const engineLine = eng ? `${eng.code} (${eng.n}×${eng.power})` : "—";
+
     card.innerHTML = `
       <img src="${img}" alt="${ac.model}" />
       <h3>${ac.manufacturer} ${ac.model}</h3>
       <div class="spec-line">Year: ${ac.year}</div>
       <div class="spec-line">Seats: ${ac.seats ?? "—"}</div>
       <div class="spec-line">Range: ${ac.range_nm?.toLocaleString()} nm</div>
-      <div class="spec-line">Engines: ${ac.engines ?? "—"}</div>
+      <div class="spec-line">Engines: ${engineLine}</div>
       <div class="spec-line">Price: $${(ac.price_acs_usd / 1_000_000).toFixed(1)}M</div>
       <button data-index="${idx}" class="view-options-btn">VIEW OPTIONS</button>
     `;
@@ -176,7 +187,7 @@ function renderCards(filterManufacturer = "All") {
 }
 
 /* ============================================================
-   7) MODAL: OPEN / CLOSE
+   7) MODAL LOGIC
    ============================================================ */
 
 let selectedAircraft = null;
@@ -199,7 +210,7 @@ function closeBuyModal() {
 }
 
 /* ============================================================
-   8) CÁLCULO DE DELIVERY POR SLOTS
+   8) DELIVERY CALCULATION
    ============================================================ */
 
 function calculateDeliveryDate(ac, qty) {
@@ -219,8 +230,7 @@ function calculateDeliveryDate(ac, qty) {
   const monthsFraction = (yearsNeeded % 1) * 12;
   const deliveryMonth = Math.floor(monthsFraction) + 1;
 
-  const date = new Date(Date.UTC(deliveryYear, deliveryMonth, 15));
-  return date;
+  return new Date(Date.UTC(deliveryYear, deliveryMonth, 15));
 }
 
 /* ============================================================
@@ -238,11 +248,9 @@ function updateModalSummary() {
 
   let summary = "";
 
-  // Delivery
   const deliveryDate = calculateDeliveryDate(selectedAircraft, qty);
   const d = deliveryDate.toUTCString().substring(5, 17);
   summary += `Estimated delivery: <b>${d}</b><br>`;
-
 
   if (op === "BUY") {
     const total = price * qty;
@@ -271,7 +279,7 @@ function updateModalSummary() {
 }
 
 /* ============================================================
-   10) CONFIRMAR BUY / LEASE
+   10) CONFIRM BUY / LEASE
    ============================================================ */
 
 document.getElementById("modalOperation").addEventListener("change", updateModalSummary);
@@ -288,13 +296,11 @@ document.getElementById("modalConfirm").addEventListener("click", () => {
 
   const deliveryDate = calculateDeliveryDate(ac, qty);
 
-  /* === ACTUALIZAR BACKLOG === */
   const manu = ac.manufacturer;
   if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
   ACS_SLOTS[manu] += qty;
   saveSlots();
 
-  /* === FINANCE + PENDING === */
   let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
   const entry = {
@@ -341,7 +347,7 @@ document.getElementById("modalConfirm").addEventListener("click", () => {
 });
 
 /* ============================================================
-   11) CLICK EN TARJETA → VIEW OPTIONS
+   11) CLICK ON CARD
    ============================================================ */
 
 document.addEventListener("click", e => {
@@ -357,7 +363,7 @@ document.addEventListener("click", e => {
 });
 
 /* ============================================================
-   12) AUTO-DELIVERY (ENGINE)
+   12) AUTO-DELIVERY ENGINE
    ============================================================ */
 
 function checkDeliveries() {
