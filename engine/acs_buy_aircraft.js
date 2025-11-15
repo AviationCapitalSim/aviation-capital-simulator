@@ -22,16 +22,12 @@ const ACS_ENGINE_SPECS = {
   "Douglas DC-4": { code:"PW R-2000", n:4, power:"1350 hp" },
   "Douglas DC-6": { code:"PW R-2800", n:4, power:"2400 hp" },
   "Douglas DC-7": { code:"Wright R-3350", n:4, power:"3250 hp" },
-
   "Lockheed Constellation": { code:"Wright R-3350", n:4, power:"2200 hp" },
-
   "Boeing 737-200": { code:"JT8D-9A", n:2, power:"14.5k" },
   "Boeing 737-800": { code:"CFM56-7B", n:2, power:"27k" },
-
   "Airbus A300B4": { code:"GE CF6-50", n:2, power:"51k" },
   "Airbus A320-200": { code:"CFM56-5B", n:2, power:"27k" },
   "Airbus A330-300": { code:"Trent 700", n:2, power:"68k" },
-
   "Boeing 787-9": { code:"GEnx-1B", n:2, power:"70k" }
 };
 
@@ -88,16 +84,36 @@ function getAircraftBase() {
 }
 
 /* ============================================================
-   4) CHIPS DE FABRICANTE
+   *** FIX #1 — FABRICANTES DISPONIBLES SEGÚN AÑO ***
+   ============================================================ */
+
+function getAvailableManufacturers() {
+  const base = getAircraftBase();
+  const simYear = getCurrentSimYear();
+
+  const manufacturers = new Set();
+
+  base.forEach(a => {
+    if (!a.manufacturer) return;
+
+    const firstYear = a.year ?? 1900;
+    if (firstYear <= simYear) {
+      manufacturers.add(a.manufacturer);
+    }
+  });
+
+  return Array.from(manufacturers).sort();
+}
+
+/* ============================================================
+   4) CHIPS DE FABRICANTE (YA CON FIX APLICADO)
    ============================================================ */
 
 function buildFilterChips() {
   const bar = document.getElementById("filterBar");
   if (!bar) return;
 
-  const base = getAircraftBase();
-  const set = new Set(base.map(a => a.manufacturer));
-  const list = Array.from(set).sort();
+  const list = getAvailableManufacturers();
 
   bar.innerHTML = "";
 
@@ -166,7 +182,6 @@ function renderCards(filterManufacturer = "All") {
     card.className = "card";
 
     const img = getAircraftImage(ac);
-
     const eng = ACS_ENGINE_SPECS[ac.model];
     const engineLine = eng ? `${eng.code} (${eng.n}×${eng.power})` : "—";
 
