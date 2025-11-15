@@ -10,151 +10,181 @@
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
   <style>
-    body {
-      margin: 0;
-      background-color: #081530;
-      color: white;
-      font-family: "Segoe UI", sans-serif;
-    }
+  body {
+    margin: 0;
+    background-color: #081530;
+    color: white;
+    font-family: "Segoe UI", sans-serif;
+  }
 
-    h2 {
-      color: #FFB300;
-      text-align: center;
-      margin-top: 5rem;
-      font-size: 1.9rem;
-    }
+  h2 {
+    color: #FFB300;
+    text-align: center;
+    margin-top: 5rem;
+    font-size: 1.9rem;
+  }
 
-    .sub {
-      color: #ccc;
-      text-align: center;
-      margin-bottom: 1.8rem;
-      font-size: 1rem;
-    }
+  .sub {
+    color: #ccc;
+    text-align: center;
+    margin-bottom: 1.8rem;
+    font-size: 1rem;
+  }
 
-    /* FILTER BAR */
-    .filter-bar {
-      display: flex;
-      gap: 0.6rem;
-      padding: 0.7rem 1rem;
-      overflow-x: auto;
-      scrollbar-width: thin;
-      max-width: 1400px;
-      margin: 0 auto 1.5rem;
-    }
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.7rem 1rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    max-width: 1400px;
+    margin: 0 auto 1.5rem;
+  }
 
-    .chip {
-      padding: 0.45rem 1rem;
-      background: #0f203c;
-      color: #ccc;
-      border: 1px solid #FFB30066;
-      border-radius: 20px;
-      white-space: nowrap;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: 0.2s;
-    }
-    .chip.active {
-      background: #FFB300;
-      color: #081530;
-      font-weight: bold;
-    }
+  .chip {
+    padding: 0.45rem 1rem;
+    background: #0f203c;
+    color: #ccc;
+    border: 1px solid #FFB30066;
+    border-radius: 20px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.2s;
+  }
+  .chip.active {
+    background: #FFB300;
+    color: #081530;
+    font-weight: bold;
+  }
 
-    /* CARDS GRID */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.4rem;
-      width: 92%;
-      margin: 0 auto;
-    }
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.4rem;
+    width: 92%;
+    margin: 0 auto;
+  }
 
-    .card {
-      background: #0f1b3d;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 0 12px rgba(0,0,0,.4);
-      display: flex;
-      flex-direction: column;
-    }
+  .card {
+    background: #0f1b3d;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 0 12px rgba(0,0,0,.4);
+    display: flex;
+    flex-direction: column;
+  }
 
-    .card img {
-      width: 100%;
-      border-radius: 10px;
-      height: 150px;
-      object-fit: cover;
-      background: #102040;
-    }
+  .card img {
+    width: 100%;
+    border-radius: 10px;
+    height: 150px;
+    object-fit: cover;
+    background: #102040;
+  }
 
-    .card h3 {
-      margin: 0.8rem 0 0.4rem;
-      font-size: 1.1rem;
-      color: #FFB300;
-    }
+  .card h3 {
+    margin: 0.8rem 0 0.4rem;
+    font-size: 1.1rem;
+    color: #FFB300;
+  }
 
-    .spec-line {
-      font-size: 0.85rem;
-      color: #ccc;
-      margin: 0.2rem 0;
-    }
+  .spec-line {
+    font-size: 0.85rem;
+    color: #ccc;
+    margin: 0.2rem 0;
+  }
 
-    .card button {
-      margin-top: auto;
-      background: #00C851;
-      border: none;
-      border-radius: 6px;
-      padding: 0.5rem;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.9rem;
-    }
-    .card button:hover { background:#00e060; }
+  .card button {
+    margin-top: auto;
+    background: #00C851;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+  .card button:hover {
+    background: #00e060;
+  }
 
-    /* MODAL */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.6);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-    .modal-content {
-      background: #102040;
-      padding: 1.5rem;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 420px;
-      color: white;
-      text-align: center;
-      box-shadow: 0 0 15px rgba(0,0,0,.5);
-    }
+  /* MODAL */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
 
-    .modal-content img {
-      width: 100%;
-      height: 150px;
-      border-radius: 10px;
-      object-fit: cover;
-      margin-bottom: 1rem;
-      background:#0f1b3d;
-    }
+  .modal-content {
+    background: #102040;
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 420px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0,0,0,.5);
+  }
 
-    select, input {
-      background: #0e1b3c;
-      color: white;
-      border: 1px solid #FFB300;
-      border-radius: 5px;
-      padding: .4rem;
-      width: 100%;
-      margin-bottom: .6rem;
-    }
+  .modal-content img {
+    width: 100%;
+    height: 150px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    background:#0f1b3d;
+  }
 
-    .close-btn {
-      background: #d33;
-      margin-top: 0.5rem;
-    }
-  </style>
+  select, input {
+    background: #0e1b3c;
+    color: white;
+    border: 1px solid #FFB300;
+    border-radius: 5px;
+    padding: 0.4rem;
+    width: 100%;
+    margin-bottom: 0.6rem;
+  }
+
+  .close-btn {
+    background: #d33;
+    margin-top: 0.5rem;
+  }
+
+  /* ===================== ADDED STYLES ===================== */
+
+  .logout-btn {
+    color: #FFB300;
+    border: 1px solid #FFB300;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: 0.2s;
+  }
+
+  .logout-btn:hover {
+    background: #FFB300;
+    color: #081530;
+  }
+
+  .acs-clock-header {
+    font-family: 'Orbitron','Consolas',monospace;
+    color: #00ff80;
+    font-weight: bold;
+    background: rgba(0,255,128,0.08);
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+</style>
 </head>
 
 <body>
