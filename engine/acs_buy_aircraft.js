@@ -1,170 +1,320 @@
 /* ============================================================
-   === ACS BUY NEW AIRCRAFT ENGINE — OEM TABLE v3.0 ============
+   === ACS BUY NEW AIRCRAFT ENGINE — TABLE VERSION (v1.0) =====
    ------------------------------------------------------------
-   • Carga toda la DB desde acs_aircraft_master_db.js
-   • Tabla profesional estilo Airbus/Boeing
-   • Filtros por fabricante dinámicos
-   • Info modal
-   • Buy modal básico integrado con el balance
+   • Lee la base global window.ACS_AIRCRAFT_DB
+   • Genera chips de fabricante (All + OEMs únicos)
+   • Renderiza tabla con modelos disponibles
+   • Aplica filtro por fabricante
+   • Modal de información básica (especificaciones)
+   • Botón Buy → placeholder (luego se integra con Finance/MyAircraft)
    ============================================================ */
 
-console.log("🟦 ACS Buy Aircraft Engine Loaded");
+console.log("✅ ACS Buy New Aircraft Engine loaded");
 
 /* ============================================================
-   1) ELEMENTOS DEL DOM
+   1) HELPERS BÁSICOS
    ============================================================ */
-const filterBar = document.getElementById("filterBar");
-const tableBody = document.getElementById("aircraftTableBody");
-const infoModal = document.getElementById("infoModal");
-const infoTitle = document.getElementById("infoTitle");
-const infoList = document.getElementById("infoList");
 
-/* ============================================================
-   2) OBTENER LISTA DE FABRICANTES
-   ============================================================ */
-function getManufacturers() {
-  const makers = new Set();
+/**
+ * Devuelve el año actual de simulación si existe algún motor de tiempo.
+ * Si no, usa 2025 para que se vean todos los aviones.
+ */
+function getCurrentSimYear() {
+  try {
+    if (typeof getSimYear === "function") {
+      return getSimYear();
+    }
+    if (window.ACS_TIME && ACS_TIME.currentTime) {
+      return new Date(ACS_TIME.currentTime).getUTCFullYear();
+    }
+    // Intento adicional: leer de ACS_Cycle si existe
+    const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+    if (cycle.currentSimDate) {
+      return new Date(cycle.currentSimDate).getUTCFullYear();
+    }
+  } catch (e) {
+    console.warn("⚠️ No se pudo leer el año de simulación:", e);
+  }
+  // Fallback: año moderno para que se vea todo
+  return 2025;
+}
 
-  ACS_AIRCRAFT_DB.forEach(a => {
-    if (!a.manufacturer) return;
-    makers.add(a.manufacturer);
-  });
+/**
+ * Formatea rango (nm).
+ */
+function formatRangeNm(rangeNm) {
+  if (!rangeNm || isNaN(rangeNm)) return "—";
+  return rangeNm.toLocaleString("en-US") + " nm";
+}
 
-  return ["ALL", ...Array.from(makers).sort()];
+/**
+ * Formatea precio ACS en USD como millones (ej: $72.0M).
+ */
+function formatPriceUsd(num) {
+  if (!num || isNaN(num)) return "—";
+  const millions = num / 1_000_000;
+  return "$" + millions.toFixed(1) + "M";
 }
 
 /* ============================================================
-   3) CREAR FILTROS DE FABRICANTE
+   2) OBTENER BASE DE DATOS
    ============================================================ */
-function createFilterChips() {
-  const makers = getManufacturers();
-  filterBar.innerHTML = "";
 
-  makers.forEach(m => {
+function getAircraftBase() {
+  if (!window.ACS_AIRCRAFT_DB || !Array.isArray(window.ACS_AIRCRAFT_DB)) {
+    console.error("❌ ACS_AIRCRAFT_DB no está definido o no es un array.");
+    return [];
+  }
+
+  const simYear = getCurrentSimYear();
+
+  // Por ahora: mostramos todos los que tengan año <= simYear
+  // y estado activo/cancelled/future (pero no filtramos por estado aún).
+  const list = window.ACS_AIRCRAFT_DB.filter(a => {
+    if (!a || typeof a !== "object") return false;
+    if (typeof a.year !== "number") return true; // si no tiene año, no bloqueamos
+    return a.year <= simYear;
+  });
+
+  // Orden por año y después por modelo
+  list.sort((a, b) => {
+    const ya = a.year || 0;
+    const yb = b.year || 0;
+    if (ya !== yb) return ya - yb;
+    const ma = a.model || "";
+    const mb = b.model || "";
+    return ma.localeCompare(mb);
+  });
+
+  return list;
+}
+
+/* ============================================================
+   3) GENERAR CHIPS DE FABRICANTE
+   ============================================================ */
+
+function buildFilterChips() {
+  const bar = document.getElementById("filterBar");
+  if (!bar) return;
+
+  const base = getAircraftBase();
+  const manufacturersSet = new Set();
+
+  base.forEach(a => {
+    if (a.manufacturer) manufacturersSet.add(a.manufacturer);
+  });
+
+  const manufacturers = Array.from(manufacturersSet).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  bar.innerHTML = "";
+
+  // Chip ALL
+  const allChip = document.createElement("div");
+  allChip.className = "chip active";
+  allChip.dataset.manufacturer = "All";
+  allChip.textContent = "All";
+  bar.appendChild(allChip);
+
+  // Chips por fabricante
+  manufacturers.forEach(m => {
     const chip = document.createElement("div");
     chip.className = "chip";
+    chip.dataset.manufacturer = m;
     chip.textContent = m;
+    bar.appendChild(chip);
+  });
 
-    if (m === "ALL") chip.classList.add("active");
+  // Listener de chips
+  bar.addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
 
-    chip.addEventListener("click", () => {
-      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-      chip.classList.add("active");
-      loadAircraft(m);
-    });
+    // activar/desactivar visual
+    Array.from(bar.querySelectorAll(".chip")).forEach(c =>
+      c.classList.remove("active")
+    );
+    chip.classList.add("active");
 
-    filterBar.appendChild(chip);
+    const manu = chip.dataset.manufacturer || "All";
+    renderAircraftTable(manu);
   });
 }
 
 /* ============================================================
-   4) CARGAR TABLA
+   4) RENDER TABLA DE MODELOS
    ============================================================ */
-function loadAircraft(filter = "ALL") {
-  tableBody.innerHTML = "";
 
-  const currentYear = parseInt(localStorage.getItem("ACS_Game_Year") || "1940");
+function renderAircraftTable(filterManufacturer = "All") {
+  const tbody = document.getElementById("aircraftTableBody");
+  if (!tbody) return;
 
-  const filtered = ACS_AIRCRAFT_DB.filter(ac => {
-    if (filter !== "ALL" && ac.manufacturer !== filter) return false;
-    if (ac.start_year > currentYear) return false;
-    return true;
-  });
+  const base = getAircraftBase();
 
-  if (filtered.length === 0) {
-    tableBody.innerHTML = `
+  let filtered = base;
+  if (filterManufacturer && filterManufacturer !== "All") {
+    filtered = base.filter(a => a.manufacturer === filterManufacturer);
+  }
+
+  if (!filtered.length) {
+    tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="color:#ccc; padding:1rem;">No aircraft available for this year.</td>
+        <td colspan="8" style="text-align:center; padding:0.8rem;">
+          No aircraft available for this selection.
+        </td>
       </tr>
     `;
     return;
   }
 
-  // Ordenamos por año (EIS)
-  filtered.sort((a, b) => a.start_year - b.start_year);
+  tbody.innerHTML = "";
 
-  filtered.forEach(ac => {
+  filtered.forEach((ac, idx) => {
     const tr = document.createElement("tr");
 
+    const engines = ac.engines || (ac.fuel_burn_kgph && ac.seats ? "—" : "—");
+    const seats = typeof ac.seats === "number" ? ac.seats.toString() : "—";
+    const range = formatRangeNm(ac.range_nm);
+    const price = formatPriceUsd(ac.price_acs_usd);
+
     tr.innerHTML = `
-      <td>${ac.model}</td>
-      <td>${ac.start_year}</td>
-      <td>${ac.engines || "—"}</td>
-      <td>${ac.seats || "—"}</td>
-      <td>${ac.range || "—"}</td>
-      <td>$${ac.price} M</td>
-      <td><button class="btn-buy" onclick="openBuyModal('${ac.model}', ${ac.price})">Buy</button></td>
-      <td><button class="btn-info" onclick="openInfo('${ac.model}')">Info</button></td>
+      <td>${ac.model || "—"}</td>
+      <td>${ac.year || "—"}</td>
+      <td>${engines}</td>
+      <td>${seats}</td>
+      <td>${range}</td>
+      <td>${price}</td>
+      <td>
+        <button class="btn-buy" data-index="${idx}" data-manu="${ac.manufacturer || ""}">
+          Buy
+        </button>
+      </td>
+      <td>
+        <button class="btn-info" data-index="${idx}" data-manu="${ac.manufacturer || ""}">
+          Info
+        </button>
+      </td>
     `;
 
-    tableBody.appendChild(tr);
+    // Guardamos una referencia interna al objeto
+    tr.dataset.manufacturer = ac.manufacturer || "";
+    tr.dataset.model = ac.model || "";
+    tbody.appendChild(tr);
   });
 }
 
 /* ============================================================
-   5) INFO MODAL
+   5) MODAL DE INFO
    ============================================================ */
-function openInfo(model) {
-  const ac = ACS_AIRCRAFT_DB.find(a => a.model === model);
-  if (!ac) return;
 
-  infoTitle.textContent = model;
-  infoList.innerHTML = `
-    <li><strong>Manufacturer:</strong> ${ac.manufacturer}</li>
-    <li><strong>Entry Into Service:</strong> ${ac.start_year}</li>
-    <li><strong>Engines:</strong> ${ac.engines || "N/A"}</li>
-    <li><strong>Seats:</strong> ${ac.seats || "N/A"}</li>
-    <li><strong>Range:</strong> ${ac.range || "N/A"}</li>
-    <li><strong>MTOW:</strong> ${ac.mtow || "N/A"}</li>
-    <li><strong>Price:</strong> $${ac.price} M</li>
-  `;
+function openInfoModal(aircraft) {
+  const modal = document.getElementById("infoModal");
+  const titleEl = document.getElementById("infoTitle");
+  const listEl = document.getElementById("infoList");
+  if (!modal || !titleEl || !listEl) return;
 
-  infoModal.style.display = "flex";
+  titleEl.textContent = `${aircraft.manufacturer || ""} ${aircraft.model || ""}`.trim();
+
+  const lines = [];
+
+  if (aircraft.year) lines.push(`Year: ${aircraft.year}`);
+  if (aircraft.seats) lines.push(`Seats: ${aircraft.seats}`);
+  if (aircraft.range_nm) lines.push(`Range: ${formatRangeNm(aircraft.range_nm)}`);
+  if (aircraft.speed_kts) lines.push(`Cruise speed: ${aircraft.speed_kts} kts`);
+  if (aircraft.mtow_kg) lines.push(`MTOW: ${aircraft.mtow_kg.toLocaleString("en-US")} kg`);
+  if (aircraft.fuel_burn_kgph)
+    lines.push(`Fuel burn: ${aircraft.fuel_burn_kgph.toLocaleString("en-US")} kg/h`);
+  if (aircraft.price_acs_usd)
+    lines.push(`ACS price: ${formatPriceUsd(aircraft.price_acs_usd)}`);
+  if (aircraft.status)
+    lines.push(`Status: ${aircraft.status}`);
+
+  listEl.innerHTML = "";
+  lines.forEach(txt => {
+    const li = document.createElement("li");
+    li.textContent = txt;
+    listEl.appendChild(li);
+  });
+
+  modal.style.display = "flex";
 }
 
 function closeInfoModal() {
-  infoModal.style.display = "none";
+  const modal = document.getElementById("infoModal");
+  if (modal) modal.style.display = "none";
 }
 
-window.addEventListener("click", e => {
-  if (e.target === infoModal) closeInfoModal();
+// cierre por click fuera
+document.addEventListener("click", (e) => {
+  const modal = document.getElementById("infoModal");
+  if (!modal || modal.style.display !== "flex") return;
+
+  if (e.target === modal) {
+    closeInfoModal();
+  }
+});
+
+// cierre por ESC
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeInfoModal();
+  }
 });
 
 /* ============================================================
-   6) BUY MODAL (BÁSICO)
+   6) GESTIÓN DEL BOTÓN BUY (placeholder)
    ============================================================ */
-function openBuyModal(model, price) {
-  if (!confirm(`Confirm purchase?\n\nModel: ${model}\nPrice: $${price} M`)) return;
 
-  let balance = parseFloat(localStorage.getItem("acsBalance") || "200");
-
-  if (balance < price) {
-    alert("❌ Insufficient funds.");
-    return;
-  }
-
-  balance -= price;
-  localStorage.setItem("acsBalance", balance.toFixed(1));
-
-  alert(`✅ Purchase Completed!\n\n${model} added to Pending Deliveries.`);
-
-  const pending = JSON.parse(localStorage.getItem("acsPendingDeliveries") || "[]");
-
-  pending.push({
-    model,
-    unitPrice: price,
-    paidNow: price,
-    status: "On Order (production slot)",
-    createdAt: new Date().toISOString()
-  });
-
-  localStorage.setItem("acsPendingDeliveries", JSON.stringify(pending));
+function handleBuyAircraft(aircraft) {
+  // Más adelante: integrar con Finance + MyAircraft (delivery delay, slots, leasing, etc.)
+  const price = formatPriceUsd(aircraft.price_acs_usd);
+  alert(
+    `✅ Pending integration\n` +
+    `You selected: ${aircraft.manufacturer || ""} ${aircraft.model || ""}\n` +
+    `ACS price: ${price}\n\n` +
+    `In the next phase, this will create a purchase order and send the aircraft to My Aircraft with delivery time.`
+  );
 }
 
 /* ============================================================
-   7) INICIALIZAR
+   7) INICIALIZACIÓN
    ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
-  createFilterChips();
-  loadAircraft("ALL");
+  // 1) Construir filtros
+  buildFilterChips();
+
+  // 2) Render inicial (All)
+  renderAircraftTable("All");
+
+  // 3) Delegar clicks en la tabla (Buy / Info)
+  const tbody = document.getElementById("aircraftTableBody");
+  if (tbody) {
+    tbody.addEventListener("click", (e) => {
+      const infoBtn = e.target.closest(".btn-info");
+      const buyBtn = e.target.closest(".btn-buy");
+      const base = getAircraftBase();
+
+      if (infoBtn) {
+        const manu = infoBtn.dataset.manu;
+        const idx = parseInt(infoBtn.dataset.index, 10);
+        const filtered = base.filter(a => !manu || a.manufacturer === manu);
+        const aircraft = filtered[idx];
+        if (aircraft) openInfoModal(aircraft);
+        return;
+      }
+
+      if (buyBtn) {
+        const manu = buyBtn.dataset.manu;
+        const idx = parseInt(buyBtn.dataset.index, 10);
+        const filtered = base.filter(a => !manu || a.manufacturer === manu);
+        const aircraft = filtered[idx];
+        if (aircraft) handleBuyAircraft(aircraft);
+        return;
+      }
+    });
+  }
+
+  console.log("✈️ Buy New Aircraft table initialized.");
 });
