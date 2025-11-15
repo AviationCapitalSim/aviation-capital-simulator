@@ -144,7 +144,7 @@
       margin: 0;
     }
 
-    /* === INFO MODAL (igual que buy_new) === */
+    /* === INFO MODAL === */
     .modal {
       display: none;
       position: fixed;
@@ -157,7 +157,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .modal-specs, .modal-content {
       background: #102040;
       color: #fff;
@@ -193,7 +192,6 @@
       color: #fff;
     }
 
-    /* === BUY MODAL EXTRA === */
     .modal-content {
       max-width: 420px;
       margin: 5% auto;
@@ -240,9 +238,7 @@
       font-size:.8rem;
       text-align:center;
     }
-    .payment-options input {
-      margin-right:4px;
-    }
+
     .modal-buttons {
       margin-top:1rem;
     }
@@ -257,7 +253,6 @@
     .confirm-btn { background:#1DB954; color:#fff; }
     .cancel-btn { background:#b71c1c; color:#fff; }
 
-    /* ✅ Reloj Airbus cockpit */
     .acs-clock-header {
       font-family: 'Orbitron', 'Consolas', monospace;
       color: #00ff80;
@@ -563,12 +558,11 @@
       const payPercent = getSelectedPayPercent();
       const grossTotal = currentUnitPrice * qty;
 
-      // Descuentos / recargos
       let finalTotal = grossTotal;
       if (payPercent === 100){
-        finalTotal = grossTotal * 0.97; // 3% descuento
+        finalTotal = grossTotal * 0.97;
       } else if (payPercent === 50){
-        finalTotal = grossTotal * 1.02; // 2% recargo
+        finalTotal = grossTotal * 1.02;
       }
 
       const payNowAmt = finalTotal * (payPercent/100);
@@ -640,17 +634,22 @@
       alert(`✅ Order placed: ${qty}× ${currentModel}\nPaid now: $${payNowAmt.toFixed(1)} M\nPending: slots & delivery to be assigned.`);
       buyModal.style.display = "none";
     });
+  </script>
 
-    <!-- ===== SCRIPTS (orden correcto) ===== -->
-<script src="time_engine.js"></script>
-<script src="finance.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
-    }
-  });
-</script>
+  <!-- ===== SCRIPTS (orden correcto) ===== -->
+  <script src="time_engine.js"></script>
+  <script src="finance.js"></script>
+  <script src="acs_aircraft_db.js"></script>
+  <script src="acs_buy_aircraft.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+  </script>
+
 </body>
 </html>
