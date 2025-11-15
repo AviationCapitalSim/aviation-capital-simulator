@@ -1,96 +1,78 @@
 /* ============================================================
-   === ACS BUY NEW AIRCRAFT ENGINE — TABLE VERSION (v1.0) =====
-   ------------------------------------------------------------
-   • Lee la base global window.ACS_AIRCRAFT_DB
-   • Genera chips de fabricante (All + OEMs únicos)
-   • Renderiza tabla con modelos disponibles
-   • Aplica filtro por fabricante
-   • Modal de información básica (especificaciones)
-   • Botón Buy → placeholder (luego se integra con Finance/MyAircraft)
+   === ACS BUY NEW AIRCRAFT ENGINE — CARDS VERSION (v2.0) =====
+   ============================================================ 
+   ✈ Funciones clave:
+   • Render de tarjetas (cards)
+   • Sistema de filtros (chip bar)
+   • Modal profesional "View Options"
+   • BUY NEW y LEASE NEW (cálculo real)
+   • Slots por fabricante (persistentes)
+   • Backlog real → delivery date
+   • Integración Finance & MyAircraft
+   • Pending deliveries + auto-delivery en Time Engine
    ============================================================ */
 
-console.log("✅ ACS Buy New Aircraft Engine loaded");
+console.log("🟦 ACS Buy Aircraft Engine (Cards) — Loaded");
 
 /* ============================================================
-   1) HELPERS BÁSICOS
+   1) CONFIGURACIÓN DE SLOTS POR FABRICANTE
    ============================================================ */
 
-/**
- * Devuelve el año actual de simulación si existe algún motor de tiempo.
- * Si no, usa 2025 para que se vean todos los aviones.
- */
+const ACS_MANUFACTURER_SLOTS = {
+  Douglas: 30,
+  "McDonnell Douglas": 30,
+  Boeing: 60,
+  Airbus: 55,
+  Embraer: 40,
+  Bombardier: 20,
+  ATR: 18,
+  Tupolev: 25,
+  Ilyushin: 22,
+  Lockheed: 28
+};
+
+/* Backlog persistente */
+let ACS_SLOTS = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
+
+function saveSlots() {
+  localStorage.setItem("ACS_SLOTS", JSON.stringify(ACS_SLOTS));
+}
+
+/* ============================================================
+   2) AÑO DE SIMULACIÓN
+   ============================================================ */
 function getCurrentSimYear() {
   try {
-    if (typeof getSimYear === "function") {
-      return getSimYear();
-    }
-    if (window.ACS_TIME && ACS_TIME.currentTime) {
+    if (typeof getSimYear === "function") return getSimYear();
+
+    if (window.ACS_TIME?.currentTime) {
       return new Date(ACS_TIME.currentTime).getUTCFullYear();
     }
-    // Intento adicional: leer de ACS_Cycle si existe
-    const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-    if (cycle.currentSimDate) {
-      return new Date(cycle.currentSimDate).getUTCFullYear();
-    }
   } catch (e) {
-    console.warn("⚠️ No se pudo leer el año de simulación:", e);
+    console.warn("⚠️ Error leyendo año sim:", e);
   }
-  // Fallback: año moderno para que se vea todo
-  return 2025;
-}
-
-/**
- * Formatea rango (nm).
- */
-function formatRangeNm(rangeNm) {
-  if (!rangeNm || isNaN(rangeNm)) return "—";
-  return rangeNm.toLocaleString("en-US") + " nm";
-}
-
-/**
- * Formatea precio ACS en USD como millones (ej: $72.0M).
- */
-function formatPriceUsd(num) {
-  if (!num || isNaN(num)) return "—";
-  const millions = num / 1_000_000;
-  return "$" + millions.toFixed(1) + "M";
+  return 2025; // fallback
 }
 
 /* ============================================================
-   2) OBTENER BASE DE DATOS
+   3) BASE DE DATOS FILTRADA POR ÉPOCA
    ============================================================ */
 
 function getAircraftBase() {
-  if (!window.ACS_AIRCRAFT_DB || !Array.isArray(window.ACS_AIRCRAFT_DB)) {
-    console.error("❌ ACS_AIRCRAFT_DB no está definido o no es un array.");
-    return [];
-  }
+  if (!window.ACS_AIRCRAFT_DB) return [];
 
   const simYear = getCurrentSimYear();
 
-  // Por ahora: mostramos todos los que tengan año <= simYear
-  // y estado activo/cancelled/future (pero no filtramos por estado aún).
   const list = window.ACS_AIRCRAFT_DB.filter(a => {
-    if (!a || typeof a !== "object") return false;
-    if (typeof a.year !== "number") return true; // si no tiene año, no bloqueamos
+    if (typeof a.year !== "number") return true;
     return a.year <= simYear;
   });
 
-  // Orden por año y después por modelo
-  list.sort((a, b) => {
-    const ya = a.year || 0;
-    const yb = b.year || 0;
-    if (ya !== yb) return ya - yb;
-    const ma = a.model || "";
-    const mb = b.model || "";
-    return ma.localeCompare(mb);
-  });
-
-  return list;
+  return list.sort((a, b) => (a.year || 0) - (b.year || 0));
 }
 
 /* ============================================================
-   3) GENERAR CHIPS DE FABRICANTE
+   4) GENERAR CHIPS DE FABRICANTES
    ============================================================ */
 
 function buildFilterChips() {
@@ -98,27 +80,18 @@ function buildFilterChips() {
   if (!bar) return;
 
   const base = getAircraftBase();
-  const manufacturersSet = new Set();
-
-  base.forEach(a => {
-    if (a.manufacturer) manufacturersSet.add(a.manufacturer);
-  });
-
-  const manufacturers = Array.from(manufacturersSet).sort((a, b) =>
-    a.localeCompare(b)
-  );
+  const set = new Set(base.map(a => a.manufacturer));
+  const list = Array.from(set).sort();
 
   bar.innerHTML = "";
 
-  // Chip ALL
   const allChip = document.createElement("div");
   allChip.className = "chip active";
   allChip.dataset.manufacturer = "All";
   allChip.textContent = "All";
   bar.appendChild(allChip);
 
-  // Chips por fabricante
-  manufacturers.forEach(m => {
+  list.forEach(m => {
     const chip = document.createElement("div");
     chip.className = "chip";
     chip.dataset.manufacturer = m;
@@ -126,195 +99,309 @@ function buildFilterChips() {
     bar.appendChild(chip);
   });
 
-  // Listener de chips
-  bar.addEventListener("click", (e) => {
+  bar.addEventListener("click", e => {
     const chip = e.target.closest(".chip");
     if (!chip) return;
 
-    // activar/desactivar visual
-    Array.from(bar.querySelectorAll(".chip")).forEach(c =>
-      c.classList.remove("active")
-    );
+    Array.from(bar.querySelectorAll(".chip")).forEach(c => c.classList.remove("active"));
     chip.classList.add("active");
 
-    const manu = chip.dataset.manufacturer || "All";
-    renderAircraftTable(manu);
+    renderCards(chip.dataset.manufacturer);
   });
 }
 
 /* ============================================================
-   4) RENDER TABLA DE MODELOS
+   5) IMAGEN AUTOMÁTICA
+   ============================================================ */
+function getAircraftImage(ac) {
+  const base = ac.model.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  const manu = (ac.manufacturer || "").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+
+  const guesses = [
+    `img/${base}.png`,
+    `img/${manu}_${base}.png`,
+    `img/${manu}.png`,
+    `img/${base}.jpg`,
+    `img/${manu}_${base}.jpg`
+  ];
+
+  for (const g of guesses) {
+    if (doesImageExist(g)) return g;
+  }
+
+  return "img/no_preview.png";
+}
+
+function doesImageExist(url) {
+  const img = new Image();
+  img.src = url;
+  return true; // GitHub pages no permite ver existencia real
+}
+
+/* ============================================================
+   6) RENDER DE TARJETAS
    ============================================================ */
 
-function renderAircraftTable(filterManufacturer = "All") {
-  const tbody = document.getElementById("aircraftTableBody");
-  if (!tbody) return;
+function renderCards(filterManufacturer = "All") {
+  const grid = document.getElementById("cardsGrid");
+  if (!grid) return;
 
   const base = getAircraftBase();
+  const list = (filterManufacturer === "All")
+    ? base
+    : base.filter(a => a.manufacturer === filterManufacturer);
 
-  let filtered = base;
-  if (filterManufacturer && filterManufacturer !== "All") {
-    filtered = base.filter(a => a.manufacturer === filterManufacturer);
-  }
+  grid.innerHTML = "";
 
-  if (!filtered.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="8" style="text-align:center; padding:0.8rem;">
-          No aircraft available for this selection.
-        </td>
-      </tr>
-    `;
-    return;
-  }
+  list.forEach((ac, idx) => {
+    const card = document.createElement("div");
+    card.className = "card";
 
-  tbody.innerHTML = "";
+    const img = getAircraftImage(ac);
 
-  filtered.forEach((ac, idx) => {
-    const tr = document.createElement("tr");
-
-    const engines = ac.engines || (ac.fuel_burn_kgph && ac.seats ? "—" : "—");
-    const seats = typeof ac.seats === "number" ? ac.seats.toString() : "—";
-    const range = formatRangeNm(ac.range_nm);
-    const price = formatPriceUsd(ac.price_acs_usd);
-
-    tr.innerHTML = `
-      <td>${ac.model || "—"}</td>
-      <td>${ac.year || "—"}</td>
-      <td>${engines}</td>
-      <td>${seats}</td>
-      <td>${range}</td>
-      <td>${price}</td>
-      <td>
-        <button class="btn-buy" data-index="${idx}" data-manu="${ac.manufacturer || ""}">
-          Buy
-        </button>
-      </td>
-      <td>
-        <button class="btn-info" data-index="${idx}" data-manu="${ac.manufacturer || ""}">
-          Info
-        </button>
-      </td>
+    card.innerHTML = `
+      <img src="${img}" alt="${ac.model}" />
+      <h3>${ac.manufacturer} ${ac.model}</h3>
+      <div class="spec-line">Year: ${ac.year}</div>
+      <div class="spec-line">Seats: ${ac.seats ?? "—"}</div>
+      <div class="spec-line">Range: ${ac.range_nm?.toLocaleString()} nm</div>
+      <div class="spec-line">Engines: ${ac.engines ?? "—"}</div>
+      <div class="spec-line">Price: $${(ac.price_acs_usd / 1_000_000).toFixed(1)}M</div>
+      <button data-index="${idx}" class="view-options-btn">VIEW OPTIONS</button>
     `;
 
-    // Guardamos una referencia interna al objeto
-    tr.dataset.manufacturer = ac.manufacturer || "";
-    tr.dataset.model = ac.model || "";
-    tbody.appendChild(tr);
+    card.dataset.idx = idx;
+    grid.appendChild(card);
   });
 }
 
 /* ============================================================
-   5) MODAL DE INFO
+   7) MODAL: OPEN / CLOSE
    ============================================================ */
 
-function openInfoModal(aircraft) {
-  const modal = document.getElementById("infoModal");
-  const titleEl = document.getElementById("infoTitle");
-  const listEl = document.getElementById("infoList");
-  if (!modal || !titleEl || !listEl) return;
+let selectedAircraft = null;
+let selectedAircraftImage = "";
 
-  titleEl.textContent = `${aircraft.manufacturer || ""} ${aircraft.model || ""}`.trim();
+function openBuyModal(ac) {
+  selectedAircraft = ac;
+  selectedAircraftImage = getAircraftImage(ac);
 
-  const lines = [];
+  document.getElementById("modalImage").src = selectedAircraftImage;
+  document.getElementById("modalTitle").textContent = `${ac.manufacturer} ${ac.model}`;
 
-  if (aircraft.year) lines.push(`Year: ${aircraft.year}`);
-  if (aircraft.seats) lines.push(`Seats: ${aircraft.seats}`);
-  if (aircraft.range_nm) lines.push(`Range: ${formatRangeNm(aircraft.range_nm)}`);
-  if (aircraft.speed_kts) lines.push(`Cruise speed: ${aircraft.speed_kts} kts`);
-  if (aircraft.mtow_kg) lines.push(`MTOW: ${aircraft.mtow_kg.toLocaleString("en-US")} kg`);
-  if (aircraft.fuel_burn_kgph)
-    lines.push(`Fuel burn: ${aircraft.fuel_burn_kgph.toLocaleString("en-US")} kg/h`);
-  if (aircraft.price_acs_usd)
-    lines.push(`ACS price: ${formatPriceUsd(aircraft.price_acs_usd)}`);
-  if (aircraft.status)
-    lines.push(`Status: ${aircraft.status}`);
+  updateModalSummary();
 
-  listEl.innerHTML = "";
-  lines.forEach(txt => {
-    const li = document.createElement("li");
-    li.textContent = txt;
-    listEl.appendChild(li);
+  document.getElementById("buyModal").style.display = "flex";
+}
+
+function closeBuyModal() {
+  document.getElementById("buyModal").style.display = "none";
+}
+
+/* ============================================================
+   8) CÁLCULO DE DELIVERY POR SLOTS
+   ============================================================ */
+
+function calculateDeliveryDate(ac, qty) {
+  const year = getCurrentSimYear();
+
+  const manu = ac.manufacturer;
+  const capacity = ACS_MANUFACTURER_SLOTS[manu] || 20;
+
+  if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
+
+  const backlog = ACS_SLOTS[manu];
+  const total = backlog + qty;
+
+  const yearsNeeded = total / capacity;
+
+  const deliveryYear = year + Math.floor(yearsNeeded);
+  const monthsFraction = (yearsNeeded % 1) * 12;
+  const deliveryMonth = Math.floor(monthsFraction) + 1;
+
+  const date = new Date(Date.UTC(deliveryYear, deliveryMonth, 15));
+  return date;
+}
+
+/* ============================================================
+   9) MODAL SUMMARY
+   ============================================================ */
+
+function updateModalSummary() {
+  if (!selectedAircraft) return;
+
+  const op = document.getElementById("modalOperation").value;
+  const qty = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
+
+  const manu = selectedAircraft.manufacturer;
+  const price = selectedAircraft.price_acs_usd;
+
+  let summary = "";
+
+  // Delivery
+  const deliveryDate = calculateDeliveryDate(selectedAircraft, qty);
+  const d = deliveryDate.toUTCString().substring(5, 17);
+  summary += `Estimated delivery: <b>${d}</b><br>`;
+
+
+  if (op === "BUY") {
+    const total = price * qty;
+    summary += `Total: <b>$${(total / 1_000_000).toFixed(2)}M</b>`;
+    document.getElementById("leaseOptions").style.display = "none";
+  } else {
+    document.getElementById("leaseOptions").style.display = "block";
+
+    const years = parseInt(document.getElementById("modalLeaseYears").value);
+    const pct = parseInt(document.getElementById("modalInitialPct").value);
+
+    const total = price * qty;
+    const initial = total * (pct / 100);
+
+    const months = years * 12;
+    const remaining = total - initial;
+    const monthly = (remaining / months) * 1.12;
+
+    summary += `
+      Initial payment: <b>$${(initial/1_000_000).toFixed(2)}M</b><br>
+      Monthly: <b>$${(monthly/1_000_000).toFixed(2)}M</b> for ${years} years
+    `;
+  }
+
+  document.getElementById("modalSummary").innerHTML = summary;
+}
+
+/* ============================================================
+   10) CONFIRMAR BUY / LEASE
+   ============================================================ */
+
+document.getElementById("modalOperation").addEventListener("change", updateModalSummary);
+document.getElementById("modalQty").addEventListener("input", updateModalSummary);
+document.getElementById("modalLeaseYears").addEventListener("change", updateModalSummary);
+document.getElementById("modalInitialPct").addEventListener("change", updateModalSummary);
+
+document.getElementById("modalConfirm").addEventListener("click", () => {
+  const ac = selectedAircraft;
+  if (!ac) return;
+
+  const op = document.getElementById("modalOperation").value;
+  const qty = Math.max(1, parseInt(document.getElementById("modalQty").value));
+
+  const deliveryDate = calculateDeliveryDate(ac, qty);
+
+  /* === ACTUALIZAR BACKLOG === */
+  const manu = ac.manufacturer;
+  if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
+  ACS_SLOTS[manu] += qty;
+  saveSlots();
+
+  /* === FINANCE + PENDING === */
+  let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+  const entry = {
+    id: "order-" + Date.now(),
+    manufacturer: ac.manufacturer,
+    model: ac.model,
+    qty,
+    type: op,
+    price: ac.price_acs_usd,
+    image: selectedAircraftImage,
+    deliveryDate: deliveryDate.toISOString(),
+    created: new Date().toISOString()
+  };
+
+  if (op === "BUY") {
+    entry.total = ac.price_acs_usd * qty;
+
+    let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
+    balance -= entry.total;
+    localStorage.setItem("ACS_FinanceBalance", balance.toString());
+  }
+
+  if (op === "LEASE") {
+    const years = parseInt(document.getElementById("modalLeaseYears").value);
+    const pct = parseInt(document.getElementById("modalInitialPct").value);
+
+    entry.years = years;
+    entry.initialPct = pct;
+
+    const total = ac.price_acs_usd * qty;
+    entry.initialPayment = total * (pct / 100);
+
+    let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
+    balance -= entry.initialPayment;
+    localStorage.setItem("ACS_FinanceBalance", balance.toString());
+  }
+
+  pending.push(entry);
+  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+
+  alert("✅ Order successfully created!");
+
+  closeBuyModal();
+});
+
+/* ============================================================
+   11) CLICK EN TARJETA → VIEW OPTIONS
+   ============================================================ */
+
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".view-options-btn");
+  if (!btn) return;
+
+  const idx = parseInt(btn.dataset.index);
+  const base = getAircraftBase();
+  const ac = base[idx];
+  if (!ac) return;
+
+  openBuyModal(ac);
+});
+
+/* ============================================================
+   12) AUTO-DELIVERY (ENGINE)
+   ============================================================ */
+
+function checkDeliveries() {
+  let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+  const now = window.ACS_TIME?.currentTime
+    ? new Date(ACS_TIME.currentTime)
+    : new Date();
+
+  const remaining = [];
+
+  pending.forEach(entry => {
+    const d = new Date(entry.deliveryDate);
+    if (now >= d) {
+      for (let i = 0; i < entry.qty; i++) {
+        myFleet.push({
+          id: "AC-" + Date.now() + "-" + i,
+          model: entry.model,
+          manufacturer: entry.manufacturer,
+          year: new Date().getUTCFullYear(),
+          delivered: d.toISOString(),
+          image: entry.image
+        });
+      }
+      ACS_SLOTS[entry.manufacturer] -= entry.qty;
+    } else {
+      remaining.push(entry);
+    }
   });
 
-  modal.style.display = "flex";
-}
-
-function closeInfoModal() {
-  const modal = document.getElementById("infoModal");
-  if (modal) modal.style.display = "none";
-}
-
-// cierre por click fuera
-document.addEventListener("click", (e) => {
-  const modal = document.getElementById("infoModal");
-  if (!modal || modal.style.display !== "flex") return;
-
-  if (e.target === modal) {
-    closeInfoModal();
-  }
-});
-
-// cierre por ESC
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeInfoModal();
-  }
-});
-
-/* ============================================================
-   6) GESTIÓN DEL BOTÓN BUY (placeholder)
-   ============================================================ */
-
-function handleBuyAircraft(aircraft) {
-  // Más adelante: integrar con Finance + MyAircraft (delivery delay, slots, leasing, etc.)
-  const price = formatPriceUsd(aircraft.price_acs_usd);
-  alert(
-    `✅ Pending integration\n` +
-    `You selected: ${aircraft.manufacturer || ""} ${aircraft.model || ""}\n` +
-    `ACS price: ${price}\n\n` +
-    `In the next phase, this will create a purchase order and send the aircraft to My Aircraft with delivery time.`
-  );
+  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(remaining));
+  localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
+  saveSlots();
 }
 
 /* ============================================================
-   7) INICIALIZACIÓN
+   13) INICIALIZACIÓN
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1) Construir filtros
   buildFilterChips();
+  renderCards("All");
+  checkDeliveries();
 
-  // 2) Render inicial (All)
-  renderAircraftTable("All");
-
-  // 3) Delegar clicks en la tabla (Buy / Info)
-  const tbody = document.getElementById("aircraftTableBody");
-  if (tbody) {
-    tbody.addEventListener("click", (e) => {
-      const infoBtn = e.target.closest(".btn-info");
-      const buyBtn = e.target.closest(".btn-buy");
-      const base = getAircraftBase();
-
-      if (infoBtn) {
-        const manu = infoBtn.dataset.manu;
-        const idx = parseInt(infoBtn.dataset.index, 10);
-        const filtered = base.filter(a => !manu || a.manufacturer === manu);
-        const aircraft = filtered[idx];
-        if (aircraft) openInfoModal(aircraft);
-        return;
-      }
-
-      if (buyBtn) {
-        const manu = buyBtn.dataset.manu;
-        const idx = parseInt(buyBtn.dataset.index, 10);
-        const filtered = base.filter(a => !manu || a.manufacturer === manu);
-        const aircraft = filtered[idx];
-        if (aircraft) handleBuyAircraft(aircraft);
-        return;
-      }
-    });
-  }
-
-  console.log("✈️ Buy New Aircraft table initialized.");
+  console.log("🟩 Buy Aircraft Cards System — Ready");
 });
