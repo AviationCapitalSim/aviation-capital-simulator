@@ -1,10 +1,12 @@
 /* ============================================================
    === ACS BUY NEW AIRCRAFT ENGINE — CARDS VERSION (v2.2) =====
    ------------------------------------------------------------
-   • Usa la DB que ya tienes (ACS_AIRCRAFT_MASTER_DB o ACS_AIRCRAFT_DB)
-   • SOLO agrega la línea de motores en la tarjeta
+   • Usa ACS_AIRCRAFT_DB como base principal
+   • Tarjetas con motores añadidos
    • Chips por fabricante
-   • Modal BUY / LEASE con delivery y finance
+   • Modal BUY / LEASE con delivery realista
+   • Sistema de backlog por fabricante
+   • Auto-delivery hacia ACS_MyAircraft
    ============================================================ */
 
 console.log("🟦 ACS Buy Aircraft Engine (Cards) — v2.2 Loaded");
@@ -103,7 +105,6 @@ const ACS_ENGINE_SPECS = {
   "787-9 Dreamliner": { code:"GEnx-1B", n:2, power:"70k" },
   "787-10 Dreamliner": { code:"GEnx-1B", n:2, power:"70k" },
   "787-9 (2025 Update)": { code:"GEnx-1B PIP", n:2, power:"70k" }
-  // Puedes seguir ampliando según necesites
 };
 
 /* ============================================================
@@ -146,18 +147,17 @@ function getCurrentSimYear() {
   } catch (e) {
     console.warn("⚠️ Error leyendo año sim:", e);
   }
-  return 1940; // fallback seguro
+  return 1940;
 }
 
 /* ============================================================
-   3) RESOLVER BASE DE DATOS (TU DB REAL)
+   3) RESOLVER BASE DE DATOS
    ============================================================ */
 function resolveAircraftDB() {
-  // Soporta las dos opciones de nombre
-  if (typeof ACS_AIRCRAFT_MASTER_DB !== "undefined") return ACS_AIRCRAFT_MASTER_DB;
   if (typeof ACS_AIRCRAFT_DB !== "undefined") return ACS_AIRCRAFT_DB;
+  if (typeof ACS_AIRCRAFT_MASTER_DB !== "undefined") return ACS_AIRCRAFT_MASTER_DB;
 
-  console.error("❌ No se encontró ACS_AIRCRAFT_MASTER_DB ni ACS_AIRCRAFT_DB");
+  console.error("❌ No se encontró base de datos ACS_AIRCRAFT_DB");
   return [];
 }
 
@@ -165,12 +165,9 @@ function getAircraftBase() {
   const db = resolveAircraftDB();
   const simYear = getCurrentSimYear();
 
-  const list = db.filter(a => {
-    if (typeof a.year !== "number") return true;
-    return a.year <= simYear;
-  });
-
-  return list.sort((a, b) => (a.year || 0) - (b.year || 0));
+  return db
+    .filter(a => a.year <= simYear)
+    .sort((a, b) => a.year - b.year);
 }
 
 /* ============================================================
@@ -216,7 +213,7 @@ function buildFilterChips() {
    ============================================================ */
 function getAircraftImage(ac) {
   const base = ac.model.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  const manu = (ac.manufacturer || "").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  const manu = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
 
   const guesses = [
     `img/${base}.png`,
@@ -226,19 +223,18 @@ function getAircraftImage(ac) {
     `img/${manu}_${base}.jpg`
   ];
 
-  // De momento devolvemos el primer guess siempre
   return guesses[0];
 }
 
 /* ============================================================
-   6) RENDER DE TARJETAS (AQUÍ SALE LA LÍNEA DEL MOTOR) 😎
+   6) RENDER DE TARJETAS
    ============================================================ */
 function renderCards(filterManufacturer = "All") {
   const grid = document.getElementById("cardsGrid");
   if (!grid) return;
 
   const base = getAircraftBase();
-  const list = (filterManufacturer === "All")
+  const list = filterManufacturer === "All"
     ? base
     : base.filter(a => a.manufacturer === filterManufacturer);
 
@@ -250,18 +246,19 @@ function renderCards(filterManufacturer = "All") {
 
     const img = getAircraftImage(ac);
 
-    // Buscar motor por modelo
-    const eng = ACS_ENGINE_SPECS[ac.model] || ACS_ENGINE_SPECS[ac.model.replace(/^Airbus |Boeing |McDonnell Douglas |Douglas |Lockheed /, "")];
-    const engineLine = eng ? `${eng.code} (${eng.n}×${eng.power})` : (ac.engines || "—");
+    const eng = ACS_ENGINE_SPECS[ac.model] ||
+      ACS_ENGINE_SPECS[ac.model.replace(/^Airbus |Boeing |McDonnell Douglas |Douglas |Lockheed /, "")];
+
+    const engineLine = eng ? `${eng.code} (${eng.n}×${eng.power})` : ac.engines;
 
     card.innerHTML = `
       <img src="${img}" alt="${ac.model}" />
       <h3>${ac.manufacturer} ${ac.model}</h3>
-      <div class="spec-line">Year: ${ac.year ?? "—"}</div>
-      <div class="spec-line">Seats: ${ac.seats ?? "—"}</div>
-      <div class="spec-line">Range: ${ac.range_nm ? ac.range_nm.toLocaleString() + " nm" : "—"}</div>
+      <div class="spec-line">Year: ${ac.year}</div>
+      <div class="spec-line">Seats: ${ac.seats}</div>
+      <div class="spec-line">Range: ${ac.range_nm.toLocaleString()} nm</div>
       <div class="spec-line">Engines: ${engineLine}</div>
-      <div class="spec-line">Price: $${ac.price_acs_usd ? (ac.price_acs_usd / 1_000_000).toFixed(1) + "M" : "—"}</div>
+      <div class="spec-line">Price: $${(ac.price_acs_usd / 1_000_000).toFixed(1)}M</div>
       <button data-index="${idx}" class="view-options-btn">VIEW OPTIONS</button>
     `;
 
@@ -271,7 +268,7 @@ function renderCards(filterManufacturer = "All") {
 }
 
 /* ============================================================
-   7) MODAL LOGIC
+   7) MODAL
    ============================================================ */
 let selectedAircraft = null;
 let selectedAircraftImage = "";
@@ -286,6 +283,7 @@ function openBuyModal(ac) {
   updateModalSummary();
   document.getElementById("buyModal").style.display = "flex";
 }
+
 function closeBuyModal() {
   document.getElementById("buyModal").style.display = "none";
 }
@@ -295,7 +293,6 @@ function closeBuyModal() {
    ============================================================ */
 function calculateDeliveryDate(ac, qty) {
   const year = getCurrentSimYear();
-
   const manu = ac.manufacturer;
   const capacity = ACS_MANUFACTURER_SLOTS[manu] || 20;
 
@@ -303,12 +300,11 @@ function calculateDeliveryDate(ac, qty) {
 
   const backlog = ACS_SLOTS[manu];
   const total = backlog + qty;
-
   const yearsNeeded = total / capacity;
 
   const deliveryYear = year + Math.floor(yearsNeeded);
   const monthsFraction = (yearsNeeded % 1) * 12;
-  const deliveryMonth = Math.floor(monthsFraction); // 0–11
+  const deliveryMonth = Math.floor(monthsFraction);
 
   return new Date(Date.UTC(deliveryYear, deliveryMonth, 15));
 }
@@ -333,6 +329,7 @@ function updateModalSummary() {
   if (op === "BUY") {
     const total = price * qty;
     summary += `Total: <b>$${(total / 1_000_000).toFixed(2)}M</b>`;
+
     document.getElementById("leaseOptions").style.display = "none";
   } else {
     document.getElementById("leaseOptions").style.display = "block";
@@ -345,7 +342,7 @@ function updateModalSummary() {
 
     const months = years * 12;
     const remaining = total - initial;
-    const monthly = (months > 0) ? (remaining / months) * 1.12 : 0;
+    const monthly = months > 0 ? (remaining / months) * 1.12 : 0;
 
     summary += `
       Initial payment: <b>$${(initial/1_000_000).toFixed(2)}M</b><br>
@@ -431,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Click en tarjeta → abrir modal
+  /* ---- Card click → open modal ---- */
   document.addEventListener("click", e => {
     const btn = e.target.closest(".view-options-btn");
     if (!btn) return;
@@ -444,7 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
     openBuyModal(ac);
   });
 
-  // Inicialización visual
+  /* ---- Initialize ---- */
   buildFilterChips();
   renderCards("All");
   checkDeliveries();
