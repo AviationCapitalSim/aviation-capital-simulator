@@ -1,206 +1,171 @@
-<!-- === BUY NEW MODULE === -->
-<!-- Version: V3 Final | Date: 14 NOV 2025 -->
-
+<!-- ===========================================================
+     === BUY AIRCRAFT (Dynamic Marketplace Style) — ACS v2.0 ===
+     =========================================================== -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Buy New - Aviation Capital Simulator</title>
-
+  <title>Buy Aircraft - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
   <style>
-    /* === BUY NEW AIRCRAFT PAGE === */
     body {
       margin: 0;
-      background-color: #081530;
+      background: #081530;
       color: white;
       font-family: "Segoe UI", sans-serif;
     }
 
     h2 {
       color: #FFB300;
-      margin-top: 6rem;
+      margin-top: 5rem;
       text-align: center;
+      font-size: 1.6rem;
     }
 
-    .sub {
-      color: #cfd8dc;
-      text-align: center;
-      margin-top: 0.3rem;
-      margin-bottom: 2rem;
+    .sub { 
+      text-align: center; 
+      color: #ccc; 
+      margin-bottom: 1.5rem; 
     }
 
-    .manufacturer-section {
-      margin: 2rem auto;
+    /* === FILTER CHIPS (Used Market Style) === */
+    .filter-bar {
+      display: flex;
+      gap: .6rem;
+      padding: .8rem;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      margin: 0 auto 1.2rem;
       max-width: 1300px;
     }
 
-    .manufacturer-section h2 {
-      color: #FFB300;
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-      border-bottom: 2px solid #FFB300;
-      padding-bottom: 6px;
+    .chip {
+      padding: .45rem 1rem;
+      background: #0f203c;
+      color: #ccc;
+      border: 1px solid #FFB30066;
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: 0.2s;
     }
 
+    .chip.active {
+      background: #FFB300;
+      color: #081530;
+      font-weight: bold;
+    }
+
+    /* === CARDS GRID === */
     .aircraft-grid {
+      max-width: 1300px;
+      margin: auto;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.8rem;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      padding: 0 1rem 2rem;
     }
 
     .aircraft-card {
       background: #102040;
       border-radius: 10px;
       overflow: hidden;
-      height: 340px;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      display: flex;
-      flex-direction: column;
+      box-shadow: 0 3px 8px rgba(0,0,0,.35);
+      transition: transform .25s;
+      cursor: pointer;
     }
-
     .aircraft-card:hover {
       transform: scale(1.02);
-      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.4);
     }
 
     .aircraft-card img {
       width: 100%;
-      height: 63%;
+      height: 160px;
       object-fit: cover;
       background: #000;
     }
 
-    .aircraft-info {
-      padding: 10px 8px 16px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      text-align: center;
+    .ac-info {
+      padding: .7rem 1rem .9rem;
     }
 
-    .aircraft-info h3 {
+    .ac-info h3 {
+      margin: 0;
       color: #FFB300;
-      font-size: 0.85rem;
-      margin: 4px 0;
+      font-size: 1rem;
     }
 
-    .aircraft-info p {
-      color: #cfd8dc;
+    .ac-info p {
       margin: 2px 0;
-      font-size: 0.7rem;
+      color: #cfd8dc;
+      font-size: .8rem;
     }
 
     .price {
       color: #42a5f5;
-      font-weight: 700;
-      margin-top: 4px;
+      font-weight: bold;
+      margin-top: .4rem;
     }
 
-    .action-buttons {
+    .btn-row {
       display: flex;
-      gap: 6px;
-      margin-top: 10px;
+      gap: .4rem;
+      margin-top: .8rem;
     }
-
-    .buy-btn, .lease-btn, .info-btn {
+    .btn-row button {
       flex: 1;
       border: none;
+      padding: .5rem 0;
       border-radius: 6px;
-      padding: 5px 0;
       cursor: pointer;
       font-weight: 600;
-      color: white;
-      font-size: 0.75rem;
+      font-size: .8rem;
     }
+    .buy-btn { background:#1565c0; color:white; }
+    .buy-btn:hover { background:#0d47a1; }
+    .info-btn { background:#FFB300; color:#102040; }
+    .info-btn:hover { background:#ffcc33; }
 
-    .buy-btn { background: #1565c0; }
-    .buy-btn:hover { background: #0d47a1; }
-
-    .lease-btn { background: #00a86b; }
-    .lease-btn:hover { background: #007d4e; }
-
-    .info-btn { background: #ffb300; color: #102040; }
-    .info-btn:hover { background: #ffcc33; }
-
-    /* === PURCHASE MODAL === */
+    /* === INFO MODAL === */
     .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.65);
-      justify-content: center;
-      align-items: center;
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.6);
+      z-index:1000;
+      justify-content:center;
+      align-items:center;
     }
-
-    .modal-content {
-      background: #102040;
-      padding: 24px;
-      border-radius: 12px;
-      width: 420px;
-      text-align: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    .modal-content, .modal-specs {
+      background:#102040;
+      padding:1.5rem;
+      border-radius:12px;
+      max-width:500px;
+      color:white;
     }
-
-    .modal-content h2 { color: #FFB300; }
-
-    .modal-content p {
-      font-size: 0.85rem;
-      margin: 6px 0;
-      color: #ddd;
-    }
-
-    .confirm-btn {
-      background: #1565c0;
-      border: none;
-      border-radius: 8px;
-      padding: 10px;
-      width: 100%;
-      color: white;
-      font-weight: bold;
-      margin-top: 14px;
-      cursor: pointer;
-    }
-
-    .confirm-btn:hover { background: #0d47a1; }
-
+    .modal-specs h2 { color:#FFB300; text-align:center; margin:0 0 1rem; }
+    .modal-specs ul { list-style:none; padding:0; }
+    .modal-specs li { margin-bottom:.5rem; }
     .close-btn {
-      margin-top: 10px;
-      background: #00a86b;
-      width: 100%;
-      border: none;
-      padding: 8px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    /* === CLOCK (Airbus style) === */
-    .acs-clock-header {
-      font-family: 'Orbitron', 'Consolas', monospace;
-      color: #00ff80;
-      font-weight: bold;
-      background: rgba(0, 255, 128, 0.1);
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      margin-left: 1rem;
+      margin-top:1rem;
+      padding:.5rem 1rem;
+      background:#00a86b;
+      border:none;
+      color:white;
+      border-radius:8px;
+      cursor:pointer;
     }
   </style>
 </head>
 
 <body>
-
   <!-- === HEADER === -->
   <header class="acs-header">
     <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
+      <img src="acs_logo.png" alt="ACS Logo">
       <h1>Aviation Capital Simulator</h1>
     </div>
 
@@ -215,119 +180,38 @@
     </nav>
 
     <div class="acs-auth">
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+      <a href="#" onclick="handleLogout()">Logout</a>
     </div>
 
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
   </header>
 
-  <!-- === TITLE === -->
-  <h2>Buy New Aircraft</h2>
-  <p class="sub">Purchase or lease aircraft directly from the manufacturer.</p>
+  <main>
+    <h2>Buy New Aircraft</h2>
+    <p class="sub">Select your manufacturer and choose your next aircraft.</p>
 
-  <!-- ============================================================
-       === DYNAMIC MANUFACTURER SECTIONS (OPTION A: grouped) ===
-       ============================================================ -->
+    <!-- FILTER BAR -->
+    <div id="filterBar" class="filter-bar"></div>
 
-  <div class="manufacturer-section">
-    <h2>Airbus</h2>
-    <div class="aircraft-grid" id="section-airbus"></div>
-  </div>
+    <!-- GRID -->
+    <div id="aircraftGrid" class="aircraft-grid"></div>
+  </main>
 
-  <div class="manufacturer-section">
-    <h2>Boeing</h2>
-    <div class="aircraft-grid" id="section-boeing"></div>
-  </div>
-
-  <div class="manufacturer-section">
-    <h2>Embraer</h2>
-    <div class="aircraft-grid" id="section-embraer"></div>
-  </div>
-
-  <div class="manufacturer-section">
-    <h2>Bombardier</h2>
-    <div class="aircraft-grid" id="section-bombardier"></div>
-  </div>
-
-  <div class="manufacturer-section">
-    <h2>ATR</h2>
-    <div class="aircraft-grid" id="section-atr"></div>
-  </div>
-
-  <div class="manufacturer-section">
-    <h2>McDonnell Douglas</h2>
-    <div class="aircraft-grid" id="section-mcdonnelldouglas"></div>
-  </div>
-
-  <div class="manufacturer-section">
-    <h2>Soviet / Russian</h2>
-    <div class="aircraft-grid" id="section-soviet"></div>
-  </div>
-
-  <div class="manufacturer-section">
-    <h2>Vintage Classics</h2>
-    <div class="aircraft-grid" id="section-vintage"></div>
-  </div>
-
-  <div class="manufacturer-section">
-    <h2>Business Jets</h2>
-    <div class="aircraft-grid" id="section-business"></div>
-  </div>
-
-  <div class="manufacturer-section">
-    <h2>Helicopters & VTOL</h2>
-    <div class="aircraft-grid" id="section-helicopters"></div>
-  </div>
-
-  <!-- ============================================================
-       === PURCHASE MODAL =========================================
-       ============================================================ -->
-
-  <div class="modal" id="purchase-modal">
-    <div class="modal-content">
-
-      <h2 id="purchase-title"></h2>
-
-      <p>💵 Price: <span id="purchase-price"></span></p>
-      <p>🧭 Range: <span id="purchase-range"></span></p>
-      <p>👥 Seats: <span id="purchase-seats"></span></p>
-      <p>⚙️ MTOW: <span id="purchase-mtow"></span></p>
-      <p>📅 Year: <span id="purchase-year"></span></p>
-
-      <button class="confirm-btn" onclick="confirmPurchase()">Confirm Purchase</button>
-      <button class="close-btn" onclick="closePurchaseModal()">Cancel</button>
-
-    </div>
-  </div>
-
-  <!-- ============================================================
-       === INFO MODAL =============================================
-       ============================================================ -->
-
-  <div class="modal" id="infoModal">
-    <div class="modal-content">
+  <!-- INFO MODAL -->
+  <div id="infoModal" class="modal">
+    <div class="modal-specs">
       <h2 id="infoTitle"></h2>
-      <ul id="infoList" style="text-align:left; margin-top:1rem;"></ul>
-      <button class="close-btn" onclick="closeInfo()">Close</button>
+      <ul id="infoList"></ul>
+      <button class="close-btn" onclick="closeInfoModal()">Close</button>
     </div>
   </div>
 
-  <!-- ============================================================
-       === SCRIPTS ===============================================
-       ============================================================ -->
-
-  <script src="acs_aircraft_db.js"></script>
-  <script src="acs_buy_new.js"></script>
-  <script src="time_engine.js"></script>
-  <script src="finance.js"></script>
+  <!-- ====================== SCRIPTS ====================== -->
+  <script src="engine/time_engine.js"></script>
+  <script src="engine/acs_aircraft_db.js"></script>
+  <script src="engine/acs_buy_aircraft.js"></script>
 
   <script>
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-
-    // Reloj cockpit Airbus
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof registerTimeListener === "function") {
         registerTimeListener(updateClockDisplay);
