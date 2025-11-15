@@ -1652,17 +1652,17 @@ const ACS_AIRCRAFT_DB = [
     status: "future"
   },
 
-  {
-  manufacturer: "ATR",
-  model: "ATR 72-700 EVO Max",
-  year: 2029,
-  seats: 78,
-  range_nm: 950,
-  speed_kts: 280,
-  mtow_kg: 24500,
-  fuel_burn_kgph: 680,
-  price_acs_usd: 25500000,
-  engines: "PW127XT-EVO",
-  status: "future"
-}   <-- ESTE CIERRE DEBE SER SIN COMA
-];  <-- Y LUEGO ESTO
+    {
+    manufacturer: "ATR",
+    model: "ATR 72-700 EVO Max",
+    year: 2029,
+    seats: 78,
+    range_nm: 950,
+    speed_kts: 280,
+    mtow_kg: 24500,
+    fuel_burn_kgph: 680,
+    price_acs_usd: 25500000,
+    engines: "PW127XT-EVO",
+    status: "future"
+  }
+];
