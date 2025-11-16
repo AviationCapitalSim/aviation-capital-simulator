@@ -36,10 +36,16 @@ function computeSimTime() {
 
   const now = new Date();
   const realStart = new Date(ACS_CYCLE.realStartDate);
-  const secPassed = Math.floor((now - realStart) / 1000);
-  const simMinutes = secPassed;
 
-  return new Date(Date.UTC(1940, 0, 1, 0, simMinutes));
+  // Segundos reales transcurridos → minutos simulados
+  const secPassed = Math.floor((now - realStart) / 1000);
+  const minutesToAdd = secPassed;
+
+  // Tomar la hora simulada actual como base, NO 1940 fijo
+  let sim = new Date(ACS_TIME.currentTime);
+  sim = new Date(sim.getTime() + minutesToAdd * 60000);
+
+  return sim;
 }
 
 /* ============================================================
