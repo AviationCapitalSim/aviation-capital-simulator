@@ -209,21 +209,54 @@ function buildFilterChips() {
 }
 
 /* ============================================================
-   5) IMAGEN AUTOMÁTICA
+   5) IMAGEN AUTOMÁTICA — CARPETAS POR FABRICANTE
    ============================================================ */
 function getAircraftImage(ac) {
-  const base = ac.model.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  const manu = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  if (!ac || !ac.model || !ac.manufacturer) {
+    return "img/placeholder_aircraft.png";
+  }
 
-  const guesses = [
-    `img/${base}.png`,
-    `img/${manu}_${base}.png`,
-    `img/${manu}.png`,
-    `img/${base}.jpg`,
-    `img/${manu}_${base}.jpg`
-  ];
+  // Carpeta del fabricante: "Lockheed", "Boeing", "Airbus", etc.
+  const manuFolder = ac.manufacturer
+    .trim()
+    .replace(/\s+/g, " ");   // limpia espacios extra
 
-  return guesses[0];
+  // Modelo en minúsculas
+  const rawModel = ac.model.toLowerCase().trim();
+
+  // Versión base: reemplaza todo lo raro por "_"
+  let base = rawModel.replace(/[^a-z0-9]+/g, "_"); // ej: "L-10 Electra" → "l_10_electra"
+
+  // Variantes para intentar coincidir con tus nombres reales
+  const variants = new Set();
+
+  // "l_10_electra"
+  variants.add(base);
+
+  // "l10_electra"  (quita guion bajo después de la letra+numero)
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
+
+  // sin guiones bajos: "l10electra"
+  variants.add(base.replace(/_/g, ""));
+
+  // súper compacto: todo pegado sin símbolos
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
+
+  // Construimos lista de candidatos dentro de la carpeta del fabricante
+  const candidates = [];
+
+  for (const v of variants) {
+    candidates.push(`img/${manuFolder}/${v}.png`);
+    candidates.push(`img/${manuFolder}/${v}.jpg`);
+  }
+
+  // Fallback a estructura vieja por si queda algo suelto en img/
+  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  candidates.push(`img/${base}.png`);
+  candidates.push(`img/${manuSlug}_${base}.png`);
+
+  // Devolvemos el primer candidato; si no existe, el onerror del <img> pondrá un placeholder
+  return candidates[0] || "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
@@ -252,15 +285,16 @@ function renderCards(filterManufacturer = "All") {
     const engineLine = eng ? `${eng.code} (${eng.n}×${eng.power})` : ac.engines;
 
     card.innerHTML = `
-      <img src="${img}" alt="${ac.model}" />
-      <h3>${ac.manufacturer} ${ac.model}</h3>
-      <div class="spec-line">Year: ${ac.year}</div>
-      <div class="spec-line">Seats: ${ac.seats}</div>
-      <div class="spec-line">Range: ${ac.range_nm.toLocaleString()} nm</div>
-      <div class="spec-line">Engines: ${engineLine}</div>
-      <div class="spec-line">Price: $${(ac.price_acs_usd / 1_000_000).toFixed(1)}M</div>
-      <button data-index="${idx}" class="view-options-btn">VIEW OPTIONS</button>
-    `;
+  <img src="${img}" alt="${ac.model}"
+       onerror="this.onerror=null; this.src='img/placeholder_aircraft.png';" />
+  <h3>${ac.manufacturer} ${ac.model}</h3>
+  <div class="spec-line">Year: ${ac.year}</div>
+  <div class="spec-line">Seats: ${ac.seats}</div>
+  <div class="spec-line">Range: ${ac.range_nm.toLocaleString()} nm</div>
+  <div class="spec-line">Engines: ${engineLine}</div>
+  <div class="spec-line">Price: $${(ac.price_acs_usd / 1_000_000).toFixed(1)}M</div>
+  <button data-index="${idx}" class="view-options-btn">VIEW OPTIONS</button>
+`;
 
     card.dataset.idx = idx;
     grid.appendChild(card);
