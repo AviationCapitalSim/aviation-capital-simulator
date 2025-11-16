@@ -573,6 +573,940 @@ const ACS_AIRCRAFT_DB = [
 },
 
 // ============================================================
+// DOUGLAS — FULL PASSENGER SERIES (Clean / No Duplicates)
+// ============================================================
+
+// === DC-1 (1933) — Prototipo precursor del DC-2 ===
+{
+  manufacturer: "Douglas",
+  model: "DC-1",
+  year: 1933,
+  seats: 12,
+  range_nm: 1000,
+  speed_kts: 190,
+  mtow_kg: 7050,
+  fuel_burn_kgph: 420,
+  price_acs_usd: 480000,
+  engines: "PW R-1690"
+},
+
+// === DC-6B (1951) — Versión mejorada de largo alcance ===
+{
+  manufacturer: "Douglas",
+  model: "DC-6B",
+  year: 1951,
+  seats: 68,
+  range_nm: 4025,
+  speed_kts: 310,
+  mtow_kg: 49250,
+  fuel_burn_kgph: 2400,
+  price_acs_usd: 3650000,
+  engines: "PW R-2800"
+},
+
+// === DC-7B (1954) — Más capacidad, mejor economía ===
+{
+  manufacturer: "Douglas",
+  model: "DC-7B",
+  year: 1954,
+  seats: 79,
+  range_nm: 4300,
+  speed_kts: 335,
+  mtow_kg: 65000,
+  fuel_burn_kgph: 3100,
+  price_acs_usd: 5200000,
+  engines: "Wright R-3350"
+},
+
+// === DC-7C “Seven Seas” (1956) — Transatlántico total ===
+{
+  manufacturer: "Douglas",
+  model: "DC-7C Seven Seas",
+  year: 1956,
+  seats: 90,
+  range_nm: 5150,
+  speed_kts: 350,
+  mtow_kg: 68000,
+  fuel_burn_kgph: 3300,
+  price_acs_usd: 5900000,
+  engines: "Wright R-3350"
+},
+
+// ============================================================
+// BOEING — FULL PASSENGER SERIES (Clean / No Duplicates)
+// ============================================================
+
+// === Boeing 247 (1933) — Primer avión moderno de pasajeros ===
+{
+  manufacturer: "Boeing",
+  model: "247",
+  year: 1933,
+  seats: 10,
+  range_nm: 745,
+  speed_kts: 180,
+  mtow_kg: 7250,
+  fuel_burn_kgph: 320,
+  price_acs_usd: 420000,
+  engines: "PW R-1340"
+},
+
+// === Boeing 377 Stratocruiser (1947) — Doble cubierta ===
+{
+  manufacturer: "Boeing",
+  model: "377 Stratocruiser",
+  year: 1947,
+  seats: 100,
+  range_nm: 4350,
+  speed_kts: 300,
+  mtow_kg: 61000,
+  fuel_burn_kgph: 2350,
+  price_acs_usd: 4300000,
+  engines: "PW R-4360"
+},
+
+// === Boeing 720 (1960) — Versión corta del 707 ===
+{
+  manufacturer: "Boeing",
+  model: "720",
+  year: 1960,
+  seats: 116,
+  range_nm: 2800,
+  speed_kts: 540,
+  mtow_kg: 104000,
+  fuel_burn_kgph: 6100,
+  price_acs_usd: 13500000,
+  engines: "JT3C / JT3D"
+},
+
+// === Boeing 727-200 (1967) — Superventas ===
+{
+  manufacturer: "Boeing",
+  model: "727-200",
+  year: 1967,
+  seats: 155,
+  range_nm: 2050,
+  speed_kts: 540,
+  mtow_kg: 86000,
+  fuel_burn_kgph: 5500,
+  price_acs_usd: 16000000,
+  engines: "JT8D-15"
+},
+
+// === Boeing 737-500 (1990) — Classic mejorado ===
+{
+  manufacturer: "Boeing",
+  model: "737-500",
+  year: 1990,
+  seats: 108,
+  range_nm: 2200,
+  speed_kts: 495,
+  mtow_kg: 60500,
+  fuel_burn_kgph: 3000,
+  price_acs_usd: 23000000,
+  engines: "CFM56-3C1"
+},
+
+// === Boeing 747-300 (1983) — Upper Deck extendido ===
+{
+  manufacturer: "Boeing",
+  model: "747-300",
+  year: 1983,
+  seats: 412,
+  range_nm: 6000,
+  speed_kts: 560,
+  mtow_kg: 351000,
+  fuel_burn_kgph: 24000,
+  price_acs_usd: 165000000,
+  engines: "JT9D-7R4G2"
+},
+
+// === Boeing 747SP (1976) — Ultra long range ===
+{
+  manufacturer: "Boeing",
+  model: "747SP",
+  year: 1976,
+  seats: 276,
+  range_nm: 6650,
+  speed_kts: 560,
+  mtow_kg: 314000,
+  fuel_burn_kgph: 22000,
+  price_acs_usd: 155000000,
+  engines: "JT9D-7A"
+},
+
+// === Boeing 777-200ER (1997) — Extended Range ===
+{
+  manufacturer: "Boeing",
+  model: "777-200ER",
+  year: 1997,
+  seats: 314,
+  range_nm: 7250,
+  speed_kts: 560,
+  mtow_kg: 297500,
+  fuel_burn_kgph: 9000,
+  price_acs_usd: 208000000,
+  engines: "GE90-94B"
+},
+
+// === Boeing 777-200LR (2006) — Ultra Long Range ===
+{
+  manufacturer: "Boeing",
+  model: "777-200LR",
+  year: 2006,
+  seats: 317,
+  range_nm: 9400,
+  speed_kts: 560,
+  mtow_kg: 347800,
+  fuel_burn_kgph: 9500,
+  price_acs_usd: 250000000,
+  engines: "GE90-110B/115B"
+},
+
+// === Boeing 777-300ER (2004) — Widebody líder global ===
+{
+  manufacturer: "Boeing",
+  model: "777-300ER",
+  year: 2004,
+  seats: 396,
+  range_nm: 7370,
+  speed_kts: 560,
+  mtow_kg: 351500,
+  fuel_burn_kgph: 10000,
+  price_acs_usd: 320000000,
+  engines: "GE90-115B"
+},
+
+// ============================================================
+// McDONNELL DOUGLAS — FULL PASSENGER LINEUP (No duplicates)
+// ============================================================
+
+/* ===========================
+   === DC-8 (1959–1972) =======
+   =========================== */
+
+// --- DC-8-20 (1959) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-20",
+  year: 1959,
+  seats: 125,
+  range_nm: 3100,
+  speed_kts: 540,
+  mtow_kg: 124000,
+  fuel_burn_kgph: 7200,
+  price_acs_usd: 16000000,
+  engines: "JT4A"
+},
+
+// --- DC-8-30 (1960) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-30",
+  year: 1960,
+  seats: 142,
+  range_nm: 3800,
+  speed_kts: 545,
+  mtow_kg: 143000,
+  fuel_burn_kgph: 7500,
+  price_acs_usd: 17500000,
+  engines: "JT4A"
+},
+
+// --- DC-8-40 (1961) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-40",
+  year: 1961,
+  seats: 146,
+  range_nm: 4050,
+  speed_kts: 550,
+  mtow_kg: 147000,
+  fuel_burn_kgph: 7000,
+  price_acs_usd: 18000000,
+  engines: "RR Conway 509"
+},
+
+// --- DC-8-60 (1965) — Serie "Super Sixty" ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-61",
+  year: 1965,
+  seats: 259,
+  range_nm: 3300,
+  speed_kts: 550,
+  mtow_kg: 162000,
+  fuel_burn_kgph: 8500,
+  price_acs_usd: 19500000,
+  engines: "JT3D"
+},
+
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-62",
+  year: 1967,
+  seats: 189,
+  range_nm: 5100,
+  speed_kts: 550,
+  mtow_kg: 158000,
+  fuel_burn_kgph: 8200,
+  price_acs_usd: 20500000,
+  engines: "JT3D"
+},
+
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-63",
+  year: 1968,
+  seats: 259,
+  range_nm: 4600,
+  speed_kts: 550,
+  mtow_kg: 162000,
+  fuel_burn_kgph: 8500,
+  price_acs_usd: 21000000,
+  engines: "JT3D"
+},
+
+// --- DC-8-70 (1982) — Re-motores CFM56 ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-71",
+  year: 1982,
+  seats: 259,
+  range_nm: 3800,
+  speed_kts: 550,
+  mtow_kg: 165000,
+  fuel_burn_kgph: 6500,
+  price_acs_usd: 23000000,
+  engines: "CFM56-2"
+},
+
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-72",
+  year: 1982,
+  seats: 189,
+  range_nm: 5200,
+  speed_kts: 550,
+  mtow_kg: 165000,
+  fuel_burn_kgph: 6400,
+  price_acs_usd: 24000000,
+  engines: "CFM56-2"
+},
+
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-8-73",
+  year: 1982,
+  seats: 259,
+  range_nm: 4600,
+  speed_kts: 550,
+  mtow_kg: 165000,
+  fuel_burn_kgph: 6450,
+  price_acs_usd: 24500000,
+  engines: "CFM56-2"
+},
+
+
+/* ===========================
+   === DC-9 FAMILY (1965–1982)
+   =========================== */
+
+// --- DC-9-10 (1965) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-9-10",
+  year: 1965,
+  seats: 90,
+  range_nm: 1400,
+  speed_kts: 485,
+  mtow_kg: 38000,
+  fuel_burn_kgph: 2600,
+  price_acs_usd: 12000000,
+  engines: "JT8D-1"
+},
+
+// --- DC-9-20 (1969) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-9-20",
+  year: 1969,
+  seats: 95,
+  range_nm: 1500,
+  speed_kts: 485,
+  mtow_kg: 39500,
+  fuel_burn_kgph: 2700,
+  price_acs_usd: 13000000,
+  engines: "JT8D-11"
+},
+
+// --- DC-9-30 (1967) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-9-30",
+  year: 1967,
+  seats: 115,
+  range_nm: 1550,
+  speed_kts: 490,
+  mtow_kg: 47000,
+  fuel_burn_kgph: 2900,
+  price_acs_usd: 14000000,
+  engines: "JT8D-7"
+},
+
+// --- DC-9-40 (1968) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-9-40",
+  year: 1968,
+  seats: 125,
+  range_nm: 1500,
+  speed_kts: 490,
+  mtow_kg: 49500,
+  fuel_burn_kgph: 3000,
+  price_acs_usd: 15000000,
+  engines: "JT8D-9"
+},
+
+// --- DC-9-50 (1975) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "DC-9-50",
+  year: 1975,
+  seats: 139,
+  range_nm: 1600,
+  speed_kts: 490,
+  mtow_kg: 54000,
+  fuel_burn_kgph: 3150,
+  price_acs_usd: 16500000,
+  engines: "JT8D-17"
+},
+
+
+/* ===========================
+   === MD-80 SERIES (1980–1997)
+   =========================== */
+
+// --- MD-81 (1980) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "MD-81",
+  year: 1980,
+  seats: 155,
+  range_nm: 1500,
+  speed_kts: 475,
+  mtow_kg: 63500,
+  fuel_burn_kgph: 3500,
+  price_acs_usd: 21000000,
+  engines: "JT8D-209"
+},
+
+// --- MD-83 (1985) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "MD-83",
+  year: 1985,
+  seats: 155,
+  range_nm: 2400,
+  speed_kts: 475,
+  mtow_kg: 70800,
+  fuel_burn_kgph: 3600,
+  price_acs_usd: 22500000,
+  engines: "JT8D-219"
+},
+
+// --- MD-87 (1987) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "MD-87",
+  year: 1987,
+  seats: 130,
+  range_nm: 2500,
+  speed_kts: 475,
+  mtow_kg: 62500,
+  fuel_burn_kgph: 3300,
+  price_acs_usd: 23000000,
+  engines: "JT8D-217"
+},
+
+// --- MD-88 (1988) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "MD-88",
+  year: 1988,
+  seats: 155,
+  range_nm: 2200,
+  speed_kts: 475,
+  mtow_kg: 67500,
+  fuel_burn_kgph: 3500,
+  price_acs_usd: 24000000,
+  engines: "JT8D-219"
+},
+
+
+/* ===========================
+   === MD-90 FAMILY (1993–1999)
+   =========================== */
+
+// --- MD-90-30 (1993) ---
+{
+  manufacturer: "McDonnell Douglas",
+  model: "MD-90",
+  year: 1993,
+  seats: 172,
+  range_nm: 2100,
+  speed_kts: 475,
+  mtow_kg: 76000,
+  fuel_burn_kgph: 3100,
+  price_acs_usd: 26000000,
+  engines: "IAE V2500"
+},
+
+
+/* ===========================
+   === MD-95 (Boeing 717) — 1999
+   =========================== */
+
+{
+  manufacturer: "Boeing",
+  model: "717-200",
+  year: 1999,
+  seats: 117,
+  range_nm: 2060,
+  speed_kts: 470,
+  mtow_kg: 55000,
+  fuel_burn_kgph: 2600,
+  price_acs_usd: 30000000,
+  engines: "RR BR715"
+},
+
+// ============================================================
+// AIRBUS — FULL PASSENGER SERIES (Missing Models Added)
+// ============================================================
+
+/* =============================
+   === A300 FAMILY (1972–1985)
+   ============================= */
+
+// --- A300B1 (1972) — Prototype & first production ---
+{
+  manufacturer: "Airbus",
+  model: "A300B1",
+  year: 1972,
+  seats: 259,
+  range_nm: 1150,
+  speed_kts: 495,
+  mtow_kg: 132000,
+  fuel_burn_kgph: 5200,
+  price_acs_usd: 42000000,
+  engines: "GE CF6-50A"
+},
+
+// --- A300B2-200 (1976) ---
+{
+  manufacturer: "Airbus",
+  model: "A300B2-200",
+  year: 1976,
+  seats: 266,
+  range_nm: 1900,
+  speed_kts: 495,
+  mtow_kg: 142000,
+  fuel_burn_kgph: 5400,
+  price_acs_usd: 54000000,
+  engines: "GE CF6-50C"
+},
+
+// --- A300B4-200 (1979) ---
+{
+  manufacturer: "Airbus",
+  model: "A300B4-200",
+  year: 1979,
+  seats: 266,
+  range_nm: 2600,
+  speed_kts: 495,
+  mtow_kg: 157000,
+  fuel_burn_kgph: 5600,
+  price_acs_usd: 62000000,
+  engines: "GE CF6-50C2"
+},
+
+
+/* =============================
+   === A318/A319/A320/A321 FAMILY (1988–2025)
+   ============================= */
+
+// --- A318-100 (2003) ---
+{
+  manufacturer: "Airbus",
+  model: "A318-100",
+  year: 2003,
+  seats: 117,
+  range_nm: 3100,
+  speed_kts: 470,
+  mtow_kg: 68000,
+  fuel_burn_kgph: 2500,
+  price_acs_usd: 72000000,
+  engines: "CFM56-5B8"
+},
+
+// --- A319neo (2017) ---
+{
+  manufacturer: "Airbus",
+  model: "A319neo",
+  year: 2017,
+  seats: 140,
+  range_nm: 3500,
+  speed_kts: 470,
+  mtow_kg: 75000,
+  fuel_burn_kgph: 2400,
+  price_acs_usd: 99000000,
+  engines: "LEAP-1A26"
+},
+
+
+/* =============================
+   === A330 FAMILY (1994–2025)
+   ============================= */
+
+// (Pasajeros) — ya tienes 200 / 300 / NEO, no añadimos más
+
+
+/* =============================
+   === A340 FAMILY (1992–2002)
+   ============================= */
+
+// --- A340-200 (1992) ---
+{
+  manufacturer: "Airbus",
+  model: "A340-200",
+  year: 1992,
+  seats: 261,
+  range_nm: 7400,
+  speed_kts: 490,
+  mtow_kg: 253000,
+  fuel_burn_kgph: 7400,
+  price_acs_usd: 170000000,
+  engines: "CFM56-5C"
+},
+
+// --- A340-300 (1993) ---
+{
+  manufacturer: "Airbus",
+  model: "A340-300",
+  year: 1993,
+  seats: 295,
+  range_nm: 7000,
+  speed_kts: 490,
+  mtow_kg: 257000,
+  fuel_burn_kgph: 7800,
+  price_acs_usd: 180000000,
+  engines: "CFM56-5C"
+},
+
+// ============================================================
+// BOMBARDIER / CANADAIR / DE HAVILLAND — FULL PASSENGER SERIES
+// ============================================================
+
+/* =============================
+   === DASH 8 FAMILY (1984–1999)
+   ============================= */
+
+// --- Dash 8-100 (1984) ---
+{
+  manufacturer: "De Havilland Canada",
+  model: "Dash 8-100",
+  year: 1984,
+  seats: 37,
+  range_nm: 1200,
+  speed_kts: 285,
+  mtow_kg: 15600,
+  fuel_burn_kgph: 700,
+  price_acs_usd: 12500000,
+  engines: "PW120A"
+},
+
+// --- Dash 8-200 (1995) ---
+{
+  manufacturer: "De Havilland Canada",
+  model: "Dash 8-200",
+  year: 1995,
+  seats: 39,
+  range_nm: 1250,
+  speed_kts: 285,
+  mtow_kg: 17000,
+  fuel_burn_kgph: 750,
+  price_acs_usd: 14500000,
+  engines: "PW123C"
+},
+
+// --- Dash 8-300 (1989) ---
+{
+  manufacturer: "De Havilland Canada",
+  model: "Dash 8-300",
+  year: 1989,
+  seats: 56,
+  range_nm: 930,
+  speed_kts: 285,
+  mtow_kg: 19000,
+  fuel_burn_kgph: 900,
+  price_acs_usd: 18500000,
+  engines: "PW123"
+},
+
+
+/* =============================
+   === CRJ FAMILY (1991–2010)
+   ============================= */
+
+// --- CRJ-440 (2001) — versión reducida del CRJ200 ---
+{
+  manufacturer: "Bombardier",
+  model: "CRJ440",
+  year: 2001,
+  seats: 44,
+  range_nm: 1400,
+  speed_kts: 450,
+  mtow_kg: 22700,
+  fuel_burn_kgph: 1600,
+  price_acs_usd: 25500000,
+  engines: "GE CF34-3B1"
+},
+
+// --- CRJ1000 (2010) ---
+{
+  manufacturer: "Bombardier",
+  model: "CRJ1000",
+  year: 2010,
+  seats: 104,
+  range_nm: 1600,
+  speed_kts: 470,
+  mtow_kg: 41800,
+  fuel_burn_kgph: 2300,
+  price_acs_usd: 46000000,
+  engines: "GE CF34-8C5A1"
+},
+
+// ============================================================
+// EMBRAER — FULL PASSENGER SERIES (NO DUPLICADOS)
+// ============================================================
+
+/* =============================
+   === ERJ FAMILY (1995–2003)
+   ============================= */
+
+// --- ERJ-140 (1997) ---
+{
+  manufacturer: "Embraer",
+  model: "ERJ-140",
+  year: 1997,
+  seats: 44,
+  range_nm: 1650,
+  speed_kts: 430,
+  mtow_kg: 20900,
+  fuel_burn_kgph: 1550,
+  price_acs_usd: 22500000,
+  engines: "RR AE3007A1"
+},
+
+
+/* =============================
+   === E-JETS 1st GENERATION (2002–2013)
+   ============================= */
+
+// --- E175 (2003) ---
+{
+  manufacturer: "Embraer",
+  model: "E175",
+  year: 2003,
+  seats: 78,
+  range_nm: 1800,
+  speed_kts: 470,
+  mtow_kg: 36000,
+  fuel_burn_kgph: 2400,
+  price_acs_usd: 38000000,
+  engines: "GE CF34-8E"
+},
+
+// --- E195 (2006) ---
+{
+  manufacturer: "Embraer",
+  model: "E195",
+  year: 2006,
+  seats: 122,
+  range_nm: 2300,
+  speed_kts: 470,
+  mtow_kg: 50400,
+  fuel_burn_kgph: 2600,
+  price_acs_usd: 44000000,
+  engines: "GE CF34-10E"
+},
+
+// ============================================================
+// FOKKER — PASSENGER AIRCRAFT (COMPLETE, NO DUPLICATES)
+// ============================================================
+
+// --- Fokker F50 (1985) ---
+{
+  manufacturer: "Fokker",
+  model: "F50",
+  year: 1985,
+  seats: 52,
+  range_nm: 1480,
+  speed_kts: 285,
+  mtow_kg: 20500,
+  fuel_burn_kgph: 950,
+  price_acs_usd: 8000000,
+  engines: "PW125B"
+},
+
+// ============================================================
+// H — BRITISH PASSENGER AIRCRAFT (HS / BAe / AVRO / BAC)
+// ============================================================
+
+
+/* =============================
+   === HAWKER SIDDELEY TRIDENT
+   ============================= */
+
+// --- Trident 1C (1962) ---
+{
+  manufacturer: "Hawker Siddeley",
+  model: "HS-121 Trident 1C",
+  year: 1962,
+  seats: 101,
+  range_nm: 1500,
+  speed_kts: 525,
+  mtow_kg: 52800,
+  fuel_burn_kgph: 4800,
+  price_acs_usd: 9000000,
+  engines: "RR Spey"
+},
+
+// --- Trident 2E (1968) ---
+{
+  manufacturer: "Hawker Siddeley",
+  model: "HS-121 Trident 2E",
+  year: 1968,
+  seats: 115,
+  range_nm: 2050,
+  speed_kts: 525,
+  mtow_kg: 56500,
+  fuel_burn_kgph: 5100,
+  price_acs_usd: 10500000,
+  engines: "RR Spey"
+},
+
+// --- Trident 3B (1971) ---
+{
+  manufacturer: "Hawker Siddeley",
+  model: "HS-121 Trident 3B",
+  year: 1971,
+  seats: 180,
+  range_nm: 1750,
+  speed_kts: 525,
+  mtow_kg: 64000,
+  fuel_burn_kgph: 5400,
+  price_acs_usd: 12000000,
+  engines: "RR Spey + Booster"
+},
+
+
+/* =============================
+   === BAe 146 FAMILY (1983–1993)
+   ============================= */
+
+// --- BAe 146-100 (1983) ---
+{
+  manufacturer: "BAe",
+  model: "BAe 146-100",
+  year: 1983,
+  seats: 82,
+  range_nm: 1050,
+  speed_kts: 430,
+  mtow_kg: 38100,
+  fuel_burn_kgph: 3000,
+  price_acs_usd: 24000000,
+  engines: "Lycoming ALF 502R-5"
+},
+
+// --- BAe 146-200 (1982) ---
+{
+  manufacturer: "BAe",
+  model: "BAe 146-200",
+  year: 1982,
+  seats: 100,
+  range_nm: 1600,
+  speed_kts: 430,
+  mtow_kg: 42100,
+  fuel_burn_kgph: 3200,
+  price_acs_usd: 26000000,
+  engines: "Lycoming ALF 502R-5"
+},
+
+// --- BAe 146-300 (1988) ---
+{
+  manufacturer: "BAe",
+  model: "BAe 146-300",
+  year: 1988,
+  seats: 112,
+  range_nm: 1600,
+  speed_kts: 430,
+  mtow_kg: 43800,
+  fuel_burn_kgph: 3400,
+  price_acs_usd: 28000000,
+  engines: "Lycoming ALF 502R-5"
+},
+
+
+/* =============================
+   === AVRO RJ SERIES (1992–2001)
+   ============================= */
+
+// --- Avro RJ70 (1992) ---
+{
+  manufacturer: "Avro",
+  model: "RJ70",
+  year: 1992,
+  seats: 70,
+  range_nm: 1300,
+  speed_kts: 450,
+  mtow_kg: 42500,
+  fuel_burn_kgph: 3100,
+  price_acs_usd: 31000000,
+  engines: "Honeywell LF 507"
+},
+
+// --- Avro RJ85 (1993) ---
+{
+  manufacturer: "Avro",
+  model: "RJ85",
+  year: 1993,
+  seats: 82,
+  range_nm: 1500,
+  speed_kts: 450,
+  mtow_kg: 44000,
+  fuel_burn_kgph: 3300,
+  price_acs_usd: 33000000,
+  engines: "Honeywell LF 507"
+},
+
+// --- Avro RJ100 (1993) ---
+{
+  manufacturer: "Avro",
+  model: "RJ100",
+  year: 1993,
+  seats: 100,
+  range_nm: 1600,
+  speed_kts: 450,
+  mtow_kg: 46000,
+  fuel_burn_kgph: 3500,
+  price_acs_usd: 36000000,
+  engines: "Honeywell LF 507"
+},
+
+   
+   
+   
+// ============================================================
 // 1945 — 1980 (Soviet Aircraft Expansion)
 // Ilyushin • Tupolev • Antonov • Yakovlev
 // ============================================================
