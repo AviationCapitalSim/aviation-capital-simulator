@@ -1,68 +1,168 @@
 /* ============================================================
-   === ACS FINANCE ENGINE - ADVANCED v1.0 ======================
+   === ACS FINANCE ENGINE - CORE v1.5 (Integración HR) ========
    ------------------------------------------------------------
-   ▪ Extiende el motor económico principal
-   ▪ Costos por década (1940 → 2026)
-   ▪ Fuel Market
-   ▪ Handling
-   ▪ Penalidades
-   ▪ Slots y operatividad
-   ▪ Preparado para Time Engine
+   ▪ Capital inicial: 3,000,000 USD (Año 1940)
+   ▪ Payroll inicial automático desde HR
+   ▪ Manejo de ingresos, gastos y profit
+   ▪ Historial mensual inicial (Month 1 - JAN 1940)
+   ▪ API completa para todos los módulos
+   ▪ Ahora sincronizado con ACS_HR
    ============================================================ */
 
-console.log("ACS Advanced Finance Engine Loaded");
+// Crear estructura base si no existe
+if (!localStorage.getItem("ACS_Finance")) {
 
-// Precio histórico del combustible (USD por litro)
-const ACS_FUEL_MARKET = {
-    "1940": 0.02,
-    "1950": 0.03,
-    "1960": 0.05,
-    "1970": 0.10,
-    "1980": 0.25,
-    "1990": 0.30,
-    "2000": 0.40,
-    "2010": 0.50,
-    "2020": 0.60
-};
+    // Traer payroll del HR inicial
+    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+    const payroll = HR && HR.payroll ? HR.payroll : 0;
 
-// Obtener precio según año
-function ACS_getFuelPrice(year) {
-    year = parseInt(year);
-    if (year <= 1945) return ACS_FUEL_MARKET["1940"];
-    if (year <= 1955) return ACS_FUEL_MARKET["1950"];
-    if (year <= 1965) return ACS_FUEL_MARKET["1960"];
-    if (year <= 1975) return ACS_FUEL_MARKET["1970"];
-    if (year <= 1985) return ACS_FUEL_MARKET["1980"];
-    if (year <= 1995) return ACS_FUEL_MARKET["1990"];
-    if (year <= 2005) return ACS_FUEL_MARKET["2000"];
-    if (year <= 2015) return ACS_FUEL_MARKET["2010"];
-    return ACS_FUEL_MARKET["2020"];
+    const baseFinance = {
+        capital: 3000000,
+        month: "JAN 1940",
+
+        revenue: 0,
+        expenses: payroll,
+        profit: -payroll,
+
+        income: {
+            routes: 0,
+            cargo: 0,
+            leasing_income: 0,
+            credits: 0
+        },
+
+        cost: {
+            salaries: payroll,
+            maintenance: 0,
+            leasing: 0,
+            fuel: 0,
+            ground_handling: 0,
+            virtual_handling: 0,
+            slot_fees: 0,
+            penalties: 0,
+            loans: 0
+        },
+
+        history: [
+            {
+                month: "JAN 1940",
+                revenue: 0,
+                expenses: payroll,
+                profit: -payroll
+            }
+        ]
+    };
+
+    localStorage.setItem("ACS_Finance", JSON.stringify(baseFinance));
 }
 
-// Costos de handling por aeropuerto
-function ACS_calcHandling(flightsPerDay) {
-    return flightsPerDay * 35; // Handling base por vuelo
+// Helper para cargar/salvar
+function loadFinance() {
+    return JSON.parse(localStorage.getItem("ACS_Finance"));
 }
 
-// Penalidad por no operar slots
-function ACS_applySlotPenalty() {
-    const penalty = 500; // base, ajustable por época y aeropuerto
-    ACS_addExpense("penalties", penalty);
+function saveFinance(data) {
+    localStorage.setItem("ACS_Finance", JSON.stringify(data));
 }
 
-// Mantenimiento variable según horas voladas
-function ACS_calcMaintenance(hours) {
-    const base = 50;  // USD por hora en 1940
-    return hours * base;
+/* ============================================================
+   ===  INTEGRACIÓN HR — PAYROLL REAL                         ==
+   ============================================================ */
+function ACS_syncPayrollWithHR() {
+    const f = loadFinance();
+    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+
+    if (!f || !HR || !HR.payroll) return;
+
+    f.cost.salaries = HR.payroll;
+    f.expenses = HR.payroll; // por ahora solo salarios (resto vendrá luego)
+    f.profit = f.revenue - f.expenses;
+
+    saveFinance(f);
 }
 
-// Leasing dinámico para eras futuras
-function ACS_calcLeasingDynamic(value, year) {
-    let rate = 0.02; // base
+/* ============================================================
+   === API PRINCIPAL (módulos pueden llamar estos métodos) ====
+   ============================================================ */
 
-    if (year >= 1960) rate = 0.03;
-    if (year >= 1980) rate = 0.04;
-    if (year >= 2000) rate = 0.05;
-
-    return value * rate;
+// Agregar ingreso
+function ACS_addIncome(type, amount) {
+    const f = loadFinance();
+    if (f.income[type] !== undefined) {
+        f.income[type] += amount;
+        f.revenue += amount;
+        f.capital += amount;
+        saveFinance(f);
+    }
 }
+
+// Agregar gasto
+function ACS_addExpense(type, amount) {
+    const f = loadFinance();
+    if (f.cost[type] !== undefined) {
+        f.cost[type] += amount;
+        f.expenses += amount;
+        f.capital -= amount;
+        saveFinance(f);
+    }
+}
+
+// Calcular profit del mes
+function ACS_updateProfit() {
+    const f = loadFinance();
+    f.profit = f.revenue - f.expenses;
+    saveFinance(f);
+}
+
+// Guardar registro mensual en el historial
+function ACS_closeMonth() {
+    const f = loadFinance();
+
+    // Sincronizar payroll antes de cerrar
+    ACS_syncPayrollWithHR();
+
+    // Calcular profit final
+    ACS_updateProfit();
+
+    f.history.push({
+        month: f.month,
+        revenue: f.revenue,
+        expenses: f.expenses,
+        profit: f.profit
+    });
+
+    // Reset para el siguiente mes
+    f.revenue = 0;
+    f.expenses = f.cost.salaries; // salaries siempre quedan activos
+    f.profit = 0;
+
+    saveFinance(f);
+}
+
+// API para obtener capital en vivo
+function ACS_getCapital() {
+    return loadFinance().capital;
+}
+
+// API para obtener historial
+function ACS_getHistory() {
+    return loadFinance().history;
+}
+
+/* ============================================================
+   ===  AUTO-SYNC AL ENTRAR AL DASHBOARD ======================
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+
+    const isDashboard =
+        window.location.pathname.includes("dashboard.html") ||
+        window.location.href.includes("dashboard.html");
+
+    if (!isDashboard) return;
+
+    // Cada vez que se entra al Dashboard:
+    // sincronizamos salarios de HR con Finance
+    ACS_syncPayrollWithHR();
+
+    console.log("💼 Finance synced with HR → payroll actualizado.");
+});
