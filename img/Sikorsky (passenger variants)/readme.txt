@@ -1,1 +1,0 @@
-Sikorsky (passenger variants) placeholder
