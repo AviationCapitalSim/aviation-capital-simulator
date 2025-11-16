@@ -273,12 +273,6 @@ function closeInfoModal() {
    9) INIT
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+  buildFilterChips();
   renderUsedMarket("all");
-
-  const sel = document.getElementById("filterMaker");
-  if (sel) {
-    sel.addEventListener("change", () => {
-      renderUsedMarket(sel.value);
-    });
-  }
 });
