@@ -216,33 +216,24 @@ function getAircraftImage(ac) {
     return "img/placeholder_aircraft.png";
   }
 
-  // Carpeta del fabricante: "Lockheed", "Boeing", "Airbus", etc.
-  const manuFolder = ac.manufacturer
+  let manuFolder = ac.manufacturer
     .trim()
-    .replace(/\s+/g, " ");   // limpia espacios extra
+    .replace(/\s+/g, " ");
 
-  // Modelo en minúsculas
+  // 🔧 FIX para De Havilland (carpeta real: de_havilland)
+  if (ac.manufacturer.toLowerCase() === "de havilland") {
+    manuFolder = "de_havilland";
+  }
+
   const rawModel = ac.model.toLowerCase().trim();
+  let base = rawModel.replace(/[^a-z0-9]+/g, "_");
 
-  // Versión base: reemplaza todo lo raro por "_"
-  let base = rawModel.replace(/[^a-z0-9]+/g, "_"); // ej: "L-10 Electra" → "l_10_electra"
-
-  // Variantes para intentar coincidir con tus nombres reales
   const variants = new Set();
-
-  // "l_10_electra"
   variants.add(base);
-
-  // "l10_electra"  (quita guion bajo después de la letra+numero)
   variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
-
-  // sin guiones bajos: "l10electra"
   variants.add(base.replace(/_/g, ""));
-
-  // súper compacto: todo pegado sin símbolos
   variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
 
-  // Construimos lista de candidatos dentro de la carpeta del fabricante
   const candidates = [];
 
   for (const v of variants) {
@@ -250,12 +241,10 @@ function getAircraftImage(ac) {
     candidates.push(`img/${manuFolder}/${v}.jpg`);
   }
 
-  // Fallback a estructura vieja por si queda algo suelto en img/
   const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
   candidates.push(`img/${base}.png`);
   candidates.push(`img/${manuSlug}_${base}.png`);
 
-  // Devolvemos el primer candidato; si no existe, el onerror del <img> pondrá un placeholder
   return candidates[0] || "img/placeholder_aircraft.png";
 }
 
