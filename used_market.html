@@ -20,7 +20,7 @@
       font-family: "Segoe UI", sans-serif;
     }
 
-    /* === GLOBAL HEADER (copiado EXACTO de settings.html) === */
+    /* === GLOBAL HEADER === */
     .acs-header {
       position: fixed;
       top: 0;
@@ -104,27 +104,34 @@
       font-weight: 700;
     }
 
-    /* ===== FILTER BAR ===== */
+    /* ============================================================
+       === FILTER BAR (CHIPS STYLE, SAME AS BUY NEW) ==============
+       ============================================================ */
     .filter-bar {
-      width: 90%;
-      margin: 1.5rem auto;
       display: flex;
-      align-items: center;
-      gap: 1rem;
-      justify-content: flex-start;
+      gap: 0.6rem;
+      padding: 0.7rem 1rem;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      max-width: 1400px;
+      margin: 1.5rem auto;
     }
-    .filter-label {
-      font-size: 1rem;
-      color: #ddd;
-    }
-    .filter-select {
-      background: #0e1b3c;
-      color: white;
-      border: 1px solid #FFB300;
-      border-radius: 6px;
-      padding: 0.4rem 0.6rem;
-      font-size: 1rem;
+
+    .chip {
+      padding: 0.45rem 1rem;
+      background: #0f203c;
+      color: #ccc;
+      border: 1px solid #FFB30066;
+      border-radius: 20px;
+      white-space: nowrap;
       cursor: pointer;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+    .chip.active {
+      background: #FFB300;
+      color: #081530;
+      font-weight: bold;
     }
 
     /* ===== GRID ===== */
@@ -193,7 +200,7 @@
 
 <body>
 
-<!-- === HEADER (copiado EXACTO del de settings.html) === -->
+<!-- === HEADER === -->
 <header class="acs-header">
   <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo" />
@@ -220,23 +227,8 @@
 <!-- === TITLE === -->
 <h2 class="page-title">Used Aircraft Market</h2>
 
-<!-- === FILTER BAR === -->
-<div class="filter-bar">
-  <span class="filter-label">Filter by Manufacturer:</span>
-  <select id="filterMaker" class="filter-select">
-    <option value="all">All Manufacturers</option>
-    <option value="Airbus">Airbus</option>
-    <option value="Boeing">Boeing</option>
-    <option value="Embraer">Embraer</option>
-    <option value="Bombardier">Bombardier</option>
-    <option value="ATR">ATR</option>
-    <option value="Douglas">Douglas</option>
-    <option value="Lockheed">Lockheed</option>
-    <option value="Junkers">Junkers</option>
-    <option value="Sud Aviation">Sud Aviation</option>
-    <option value="McDonnell Douglas">McDonnell Douglas</option>
-  </select>
-</div>
+<!-- === FILTER BAR (CHIPS) === -->
+<div id="filterBar" class="filter-bar"></div>
 
 <!-- === GRID === -->
 <div class="used-grid" id="usedGrid"></div>
@@ -262,7 +254,6 @@
 
 <!-- === CLOCK + LOGOUT SCRIPT === -->
 <script>
-  // cockpit clock sync
   function updateClockDisplay(simTime){
     const clockEl = document.getElementById("acs-clock");
     if(!clockEl) return;
