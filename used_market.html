@@ -250,12 +250,16 @@
   </div>
 </div>
 
-<!-- === JS === -->
-<script src="acs_used_market.js?v=FINAL"></script>
+<!-- === ENGINE / CORE SCRIPTS === -->
+<script src="engine/acs_finance_engine.js"></script>
+<script src="engine/acs_leasing.js"></script>
+<script src="engine/acs_registration_manager.js"></script>
+<script src="engine/acs_aircraft_db.js"></script>
+<script src="engine/acs_used_market.js"></script>
 
 <!-- === TIME ENGINE === -->
-<script src="time_engine.js"></script>
-<script>
+<script src="engine/time_engine.js"></script>
+
   // cockpit clock sync
   function updateClockDisplay(simTime){
     const clockEl = document.getElementById("acs-clock");
