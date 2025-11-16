@@ -1,7 +1,6 @@
 /* ============================================================
    === ACS PRODUCTION SYSTEM v1.0 ===
    Global aircraft manufacturing slots for ACS
-   Author: Capt. Francisco Pérez Barrera
    Date: 09 NOV 2025
    ============================================================ */
 
