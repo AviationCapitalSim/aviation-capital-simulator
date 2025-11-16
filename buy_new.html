@@ -260,8 +260,17 @@
     </div>
   </div>
 
+  <!-- (Todo tu HTML arriba queda igual, sin tocar nada) -->
+
+  <!-- === SCRIPTS === -->
   <script src="time_engine.js"></script>
   <script src="engine/acs_aircraft_db.js"></script>
+
+  <!-- 👇 Ajuste para permitir rutas por fabricante y fallback de imagen -->
+  <script>
+    window.ACS_BUY_NEW_IMAGE_FALLBACK = true;
+  </script>
+
   <script src="engine/acs_buy_aircraft.js"></script>
 
   <script>
@@ -272,5 +281,6 @@
       }
     });
   </script>
+
 </body>
 </html>
