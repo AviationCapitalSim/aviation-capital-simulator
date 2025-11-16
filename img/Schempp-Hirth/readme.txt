@@ -1,0 +1,1 @@
+Schempp-Hirth placeholder
