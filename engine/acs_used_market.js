@@ -11,6 +11,50 @@
 console.log("🟦 ACS Used Aircraft Market — Loaded");
 
 /* ============================================================
+   === FILTER BAR (BUY-NEW STYLE) — CHIP BUILDER ===============
+   ============================================================ */
+function buildFilterChips() {
+  const bar = document.getElementById("filterBar");
+  if (!bar) return;
+
+  const list = generateUsedMarket();
+
+  const manufacturers = Array.from(
+    new Set(list.map(ac => ac.manufacturer))
+  ).sort();
+
+  bar.innerHTML = "";
+
+  // === CHIP "ALL" ===
+  const allChip = document.createElement("div");
+  allChip.className = "chip active";
+  allChip.dataset.manufacturer = "All";
+  allChip.textContent = "All";
+  bar.appendChild(allChip);
+
+  // === CHIPS POR FABRICANTE ===
+  manufacturers.forEach(m => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.dataset.manufacturer = m;
+    chip.textContent = m;
+    bar.appendChild(chip);
+  });
+
+  // === CLICK HANDLER ===
+  bar.addEventListener("click", e => {
+    const chip = e.target.closest(".chip");
+    if (!chip) return;
+
+    bar.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+
+    const filter = chip.dataset.manufacturer;
+    renderUsedMarket(filter === "All" ? "all" : filter);
+  });
+}
+
+/* ============================================================
    1) DB Resolver
    ============================================================ */
 function resolveUsedDB() {
