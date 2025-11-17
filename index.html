@@ -53,6 +53,106 @@
     </button>
   </section>
 
+  <!-- ======== GAME LINEUP (LAUNCHER) ======== -->
+<section class="acs-game-lineup">
+  <h2 class="acs-lineup-title">ACS Universe — Game Lineup</h2>
+  <p class="acs-lineup-sub">
+    One universe, multiple strategy games. Start with the main Airline Simulator and get ready for future eras.
+  </p>
+
+  <div class="acs-game-grid">
+    <!-- JUEGO PRINCIPAL (FUNCIONAL) -->
+    <article class="acs-game-card acs-game-card-main">
+      <div>
+        <div class="acs-game-header">
+          <h3 class="acs-game-title">ACS — Airline Capital Simulator</h3>
+          <span class="acs-badge">Early Access</span>
+        </div>
+
+        <div class="acs-game-meta">
+          1940–2026 · Airline Strategy · Fleet · Finance · HR · Credits
+        </div>
+
+        <p class="acs-game-desc">
+          Build your airline from the dawn of commercial aviation. Buy and lease aircraft, manage staff and routes,
+          control your cashflow and survive crises, oil shocks and competition.
+        </p>
+      </div>
+
+      <div class="acs-game-footer">
+        <span class="acs-game-version">Current Build: v0.9 Beta</span>
+        <!--
+          ⚠️ IMPORTANTE:
+          Por ahora este botón es solo visual.
+          En la siguiente fase lo haremos "inteligente" con JS:
+          - Si no hay usuario → Register
+          - Si hay usuario pero no sesión → Login
+          - Si está logeado → Dashboard
+        -->
+        <button
+          id="acs-main-game-btn"
+          class="acs-card-btn acs-card-btn-primary"
+          type="button"
+        >
+          Play / Continue
+        </button>
+      </div>
+    </article>
+
+    <!-- JUEGO FUTURO 1 (CARGO EMPIRE) -->
+    <article class="acs-game-card acs-game-card-disabled">
+      <div>
+        <div class="acs-game-header">
+          <h3 class="acs-game-title">ACS — Cargo Empire</h3>
+          <span class="acs-badge acs-badge-soon">Coming Soon</span>
+        </div>
+
+        <div class="acs-game-meta">
+          Freight · Hubs · Yields · Multimodal Logistics
+        </div>
+
+        <p class="acs-game-desc">
+          Focus only on freight. Build global cargo hubs, optimize load factors and yields, and dominate air logistics
+          across continents and seasons.
+        </p>
+      </div>
+
+      <div class="acs-game-footer">
+        <span class="acs-game-version">Planned Window: Q2 2026</span>
+        <button class="acs-card-btn acs-card-btn-disabled" type="button" disabled>
+          Not Available Yet
+        </button>
+      </div>
+    </article>
+
+    <!-- JUEGO FUTURO 2 (COLD WAR SKIES) -->
+    <article class="acs-game-card acs-game-card-disabled">
+      <div>
+        <div class="acs-game-header">
+          <h3 class="acs-game-title">ACS — Cold War Skies</h3>
+          <span class="acs-badge acs-badge-concept">In Concept</span>
+        </div>
+
+        <div class="acs-game-meta">
+          Airports · Slots · Turnarounds · Jet Age & Cold War Era
+        </div>
+
+        <p class="acs-game-desc">
+          Run airports through iconic aviation eras: early jets, Cold War tensions and slot-saturated hubs. Manage
+          ground operations, turnarounds and fees while airlines fight for capacity.
+        </p>
+      </div>
+
+      <div class="acs-game-footer">
+        <span class="acs-game-version">Vision: 2026–2027</span>
+        <button class="acs-card-btn acs-card-btn-disabled" type="button" disabled>
+          Not Available Yet
+        </button>
+      </div>
+    </article>
+  </div>
+</section>
+  
   <!-- ======== FOOTER ======== -->
   <footer>
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
