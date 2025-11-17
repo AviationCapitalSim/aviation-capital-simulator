@@ -589,7 +589,35 @@ function togglePassword(id, element) {
     `;
   }
 }
+/* ============================================================
+   === AUTO-GENERATE DOB SELECT OPTIONS ========================
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  const daySelect = document.getElementById("dob-day");
+  const monthSelect = document.getElementById("dob-month");
+  const yearSelect = document.getElementById("dob-year");
 
+  if (!daySelect || !monthSelect || !yearSelect) return;
+
+  // Days
+  daySelect.innerHTML = `<option value="">Day</option>`;
+  for (let d = 1; d <= 31; d++) {
+    daySelect.innerHTML += `<option value="${d}">${d}</option>`;
+  }
+
+  // Months
+  monthSelect.innerHTML = `<option value="">Month</option>`;
+  for (let m = 1; m <= 12; m++) {
+    monthSelect.innerHTML += `<option value="${m}">${m}</option>`;
+  }
+
+  // Years (2025 → 1920)
+  yearSelect.innerHTML = `<option value="">Year</option>`;
+  for (let y = 2025; y >= 1920; y--) {
+    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+});
+     
 async function hashPassword(password) {
   const enc = new TextEncoder().encode(password);
   const buffer = await crypto.subtle.digest("SHA-256", enc);
