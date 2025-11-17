@@ -1,8 +1,7 @@
-<!-- ================================================================
-   === REGISTER MODULE — Qatar Luxury Edition ========================
-   === Version: Beta v1 | Date: 17 NOV 2025 ==========================
-   === Includes: Age Verification | Strong Password | ToS Required ===
-   ============================================================== -->
+<!-- ============================================================
+   === ACS REGISTER MODULE — Qatar Luxury Edition ================
+   === Version: Beta v1 | Date: 17 NOV 2025 ======================
+   ============================================================ -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,182 +10,183 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register — Aviation Capital Simulator</title>
 
+  <!-- Styles -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
-  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="acs_logo_32.png" />
+  <link rel="apple-touch-icon" href="acs_logo_180.png" />
 
   <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(to bottom, #050a19, #081530);
-      color: white;
-      padding-top: 90px;
-    }
 
-    /* === HEADER (same as index) === */
-    .acs-header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      padding: 0.8rem 2rem;
-      background: rgba(12, 23, 50, 0.45);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(255, 179, 0, 0.35);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 1000;
-      animation: fadeHeader 0.8s ease forwards;
-    }
+  /* ===== Base ===== */
+  body {
+    margin: 0;
+    background: #050a19;
+    font-family: "Segoe UI", sans-serif;
+    color: white;
+  }
 
-    @keyframes fadeHeader {
-      from { opacity: 0; transform: translateY(-12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+  /* ===== Header (Qatar Luxury Edition) ===== */
+  .acs-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 0.8rem 2rem;
+    background: rgba(12, 23, 50, 0.45);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,179,0,0.35);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 900;
+  }
 
-    .acs-logo img {
-      height: 46px;
-      filter: drop-shadow(0 0 6px rgba(255,179,0,0.35));
-    }
+  .acs-logo img {
+    height: 46px;
+  }
+  .acs-logo h1 {
+    color: #ffb300;
+    margin-left: 0.6rem;
+    font-size: 1.15rem;
+    display: inline-block;
+  }
 
-    .acs-logo h1 {
-      color: #FFB300;
-      font-size: 1.15rem;
-      margin: 0;
-      letter-spacing: 0.6px;
-      text-shadow: 0 0 8px rgba(255,179,0,0.4);
-    }
+  .acs-nav-buttons {
+    display: flex;
+    gap: 1rem;
+  }
 
-    .acs-nav-buttons {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
+  .nav-btn {
+    padding: 0.45rem 1.2rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
 
-    .nav-btn {
-      padding: 0.45rem 1.2rem;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: 0.25s;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
+  .nav-btn-yellow { color: #ffb300; }
+  .nav-btn-blue { color: #8AB4FF; }
 
-    .nav-btn-yellow { color: #FFB300; }
-    .nav-btn-yellow:hover { background: rgba(255,179,0,0.25); }
+  /* ===== Register Panel ===== */
+  .register-wrapper {
+    margin: 6.5rem auto 4rem;
+    max-width: 500px;
+    padding: 2.4rem 2.6rem;
+    background: rgba(12, 17, 45, 0.85);
+    border-radius: 18px;
+    border: 1px solid rgba(255,179,0,0.35);
+    box-shadow: 0 0 22px rgba(0,0,0,0.55);
+  }
 
-    .nav-btn-blue { color: #8AB4FF; }
-    .nav-btn-blue:hover { background: rgba(138,180,255,0.25); }
+  .register-title {
+    font-size: 1.9rem;
+    font-weight: 700;
+    text-align: center;
+    color: #ffb300;
+    margin-bottom: 0.4rem;
+  }
 
-    /* === REGISTER PANEL === */
-    .register-box {
-      width: 100%;
-      max-width: 540px;
-      margin: 0 auto;
-      margin-top: 2.5rem;
-      padding: 2.2rem 2.6rem;
-      background: rgba(12, 23, 50, 0.50);
-      border: 1px solid rgba(255,179,0,0.35);
-      border-radius: 14px;
-      box-shadow: 0 0 22px rgba(0,0,0,0.45);
-      animation: fadeIn 1s ease forwards;
-    }
+  .register-sub {
+    color: #c7d1f8;
+    text-align: center;
+    margin-bottom: 1.8rem;
+  }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+  /* Inputs */
+  .acs-input {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1.2rem;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.10);
+    color: white;
+  }
 
-    .register-box h2 {
-      font-size: 1.8rem;
-      text-align: center;
-      color: #FFB300;
-      margin-bottom: 0.6rem;
-    }
+  /* Password wrapper */
+  .password-wrapper {
+    position: relative;
+  }
 
-    .register-box p {
-      text-align: center;
-      color: #cfd8ff;
-      margin-bottom: 2rem;
-    }
+  .toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    cursor: pointer;
+    font-size: 1.2rem;
+  }
 
-    input, select {
-      width: 100%;
-      padding: 0.8rem;
-      margin-bottom: 1.3rem;
-      border-radius: 10px;
-      border: none;
-      font-size: 1rem;
-      background: rgba(255,255,255,0.12);
-      color: white;
-      backdrop-filter: blur(6px);
-    }
+  /* Country dropdown fix */
+  select {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.10);
+    color: white;
+    border: none;
+    font-size: 1rem;
+  }
 
-    .password-wrapper {
-      position: relative;
-    }
+  option {
+    color: black;
+  }
 
-    .toggle-password {
-      position: absolute;
-      right: -38px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.3rem;
-      cursor: pointer;
-      user-select: none;
-      color: #FFB300;
-      opacity: 0.85;
-    }
+  /* Checkbox */
+  .terms-box {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
 
-    button {
-      width: 100%;
-      padding: 0.9rem;
-      font-size: 1.1rem;
-      font-weight: 700;
-      border: none;
-      border-radius: 12px;
-      background-color: #00c853;
-      color: white;
-      cursor: pointer;
-      margin-top: 0.6rem;
-      transition: 0.25s;
-    }
+  .terms-text a {
+    color: #6fa8ff;
+  }
 
-    button:hover {
-      background-color: #00e76a;
-      box-shadow: 0 0 12px rgba(0,255,140,0.5);
-    }
+  /* Button */
+  .register-btn {
+    width: 100%;
+    margin-top: 1.6rem;
+    padding: 0.9rem;
+    border: none;
+    border-radius: 999px;
+    background: #00c46d;
+    color: white;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: 0.25s;
+  }
 
-    .tos-area {
-      margin-bottom: 1.4rem;
-      font-size: 0.85rem;
-      color: #d9e2ff;
-    }
+  .register-btn:hover {
+    background: #00e77d;
+    transform: translateY(-2px);
+  }
 
-    .tos-area a {
-      color: #8ab4ff;
-      text-decoration: underline;
-    }
+  .login-link {
+    margin-top: 1.3rem;
+    text-align: center;
+  }
 
-    footer p {
-      text-align: center;
-      margin-top: 3rem;
-      margin-bottom: 1rem;
-      color: #ffffff;
-      opacity: 0.8;
-    }
+  footer p {
+    text-align: center;
+    margin: 4rem 0 2rem;
+    color: white;
+  }
+
   </style>
 </head>
 
 <body>
 
-<!-- ===== HEADER ===== -->
+<!-- ===== Header ===== -->
 <header class="acs-header">
   <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo">
+    <img src="acs_logo.png" alt="">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
@@ -197,48 +197,60 @@
   </div>
 </header>
 
-<!-- ===== REGISTER PANEL ===== -->
-<div class="register-box">
+<!-- ===== Register Box ===== -->
+<div class="register-wrapper">
 
-  <h2>Create Your ACS Account</h2>
-  <p>Begin your journey through the world of global aviation.</p>
+  <h2 class="register-title">Create Your ACS Account</h2>
+  <p class="register-sub">Begin your journey through the world of global aviation.</p>
 
   <form onsubmit="return handleRegister(event)">
 
-    <input type="text" id="fullName" placeholder="Full Name" required />
+    <input id="fullName" class="acs-input" type="text" placeholder="Full Name" required>
 
-    <input type="email" id="email" placeholder="Email Address" required />
+    <input id="email" class="acs-input" type="email" placeholder="Email Address" required>
 
+    <!-- Password -->
     <div class="password-wrapper">
-      <input type="password" id="password" placeholder="Password" required />
+      <input id="password" class="acs-input" type="password"
+        placeholder="Password (min 8 chars, 1 uppercase, 1 number)" required>
       <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
     </div>
 
+    <!-- Confirm -->
     <div class="password-wrapper">
-      <input type="password" id="confirm" placeholder="Confirm Password" required />
+      <input id="confirm" class="acs-input" type="password"
+        placeholder="Confirm Password" required>
       <span class="toggle-password" onclick="togglePassword('confirm', this)">👁️</span>
     </div>
 
-    <input type="date" id="dob" required />
+    <!-- DOB -->
+    <input id="dob" class="acs-input" type="date" required />
 
+    <!-- Country -->
     <select id="country" required>
       <option value="">🌍 Select your country</option>
-      <!-- (All countries remain as you had them) -->
-      <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
-      <option value="Spain">🇪🇸 Spain</option>
+      <!-- FULL scroll now works -->
+      <!-- (List omitted here for space — keep your full one) -->
       <option value="United States">🇺🇸 United States</option>
-      <!-- ... full country list ... -->
+      <option value="Spain">🇪🇸 Spain</option>
+      <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
+      <!-- ... all other countries ... -->
     </select>
 
-    <div class="tos-area">
-      <label>
-        <input type="checkbox" id="agreeTos" required />
-        I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>.
-      </label>
+    <!-- Terms -->
+    <div class="terms-box">
+      <input id="terms" type="checkbox" required />
+      <div class="terms-text">
+        I agree to the <a href="terms.html">Terms & Conditions</a>.
+      </div>
     </div>
 
-    <button type="submit">Register Now</button>
+    <!-- Submit -->
+    <button class="register-btn" type="submit">Register Now</button>
+
   </form>
+
+  <p class="login-link">Already have an account? <a href="login.html">Login here.</a></p>
 
 </div>
 
@@ -246,19 +258,11 @@
   <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
 </footer>
 
-
-<!-- ===== JS LOGIC ===== -->
+<!-- ===== JS ===== -->
 <script>
-function togglePassword(id, eye) {
-  const field = document.getElementById(id);
-  field.type = field.type === "password" ? "text" : "password";
-  eye.textContent = field.type === "password" ? "👁️" : "🙈";
-}
-
-function calculateAge(dob) {
-  const diff = Date.now() - new Date(dob).getTime();
-  const age = new Date(diff).getUTCFullYear() - 1970;
-  return age;
+function togglePassword(id, element) {
+  const input = document.getElementById(id);
+  input.type = input.type === "password" ? "text" : "password";
 }
 
 function handleRegister(event) {
@@ -270,27 +274,26 @@ function handleRegister(event) {
   const confirm = document.getElementById("confirm").value;
   const dob = document.getElementById("dob").value;
   const country = document.getElementById("country").value;
-  const agree = document.getElementById("agreeTos").checked;
+  const terms = document.getElementById("terms").checked;
 
-  if (!agree) {
-    alert("⚠️ You must accept the Terms & Conditions.");
+  if (!terms) {
+    alert("⚠️ You must agree to the Terms & Conditions.");
     return;
   }
 
-  if (calculateAge(dob) < 18) {
-    alert("⚠️ You must be at least 18 years old to play ACS.");
+  /* Age validation: 18+ */
+  const birth = new Date(dob);
+  const today = new Date();
+  const age = today.getFullYear() - birth.getFullYear();
+  if (age < 18) {
+    alert("⚠️ You must be at least 18 years old to create an ACS account.");
     return;
   }
 
-  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
-  if (!emailPattern.test(email)) {
-    alert("⚠️ Please enter a valid email address.");
-    return;
-  }
-
-  const strong = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-  if (!strong.test(password)) {
-    alert("⚠️ Password must be at least 8 characters, include one uppercase letter and one number.");
+  /* Password strength */
+  const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!regex.test(password)) {
+    alert("⚠️ Password must include at least 8 chars, 1 uppercase, 1 number.");
     return;
   }
 
@@ -299,24 +302,29 @@ function handleRegister(event) {
     return;
   }
 
+  /* Save user */
+  const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+
   const user = {
     id: crypto.randomUUID(),
     name: fullName,
     email,
-    country,
+    password,
     dob,
-    createdAt: new Date().toISOString()
+    country,
+    createdAt: new Date().toISOString(),
+    airline: null
   };
 
-  const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
   users.push(user);
 
   localStorage.setItem("ACS_users", JSON.stringify(users));
   localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-  alert(`Welcome aboard, Captain ${fullName}!`);
+  alert(`✈️ Welcome aboard, Captain ${fullName}!`);
   window.location.href = "create_airline.html";
 }
+
 </script>
 
 </body>
