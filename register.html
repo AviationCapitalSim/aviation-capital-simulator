@@ -392,23 +392,27 @@
           One account, one airline empire. You can expand, restart, or launch new projects in the future ACS universe.
         </p>
 
-        <form class="register-form" onsubmit="handleRegister(event)">
-          <input type="text" id="fullName" placeholder="Full Name" required />
-          <input type="email" id="email" placeholder="Email Address" required />
+       <form class="register-form" onsubmit="handleRegister(event)">
+  <input type="text" id="fullName" placeholder="Full Name" required />
+  <input type="email" id="email" placeholder="Email Address" required />
 
-          <div class="password-wrapper">
-            <input type="password" id="password" placeholder="Password (min 8 chars, 1 uppercase, 1 number)" required />
-            <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
-          </div>
+  <!-- ===== DATE OF BIRTH (18+ VERIFICATION) ===== -->
+  <input type="date" id="dob" required />
 
-          <div class="password-wrapper">
-            <input type="password" id="confirm" placeholder="Confirm Password" required />
-            <span class="toggle-password" onclick="togglePassword('confirm', this)">👁️</span>
-          </div>
+  <!-- ===== PASSWORD FIELD (MODERN APPLE EYE ICON) ===== -->
+  <div class="password-wrapper">
+    <input type="password" id="password" placeholder="Password (min 8 chars, 1 uppercase, 1 number)" required />
+    <span class="toggle-password" onclick="togglePassword('password', this)">👁</span>
+  </div>
 
-          <select id="country" required>
-            <option value="">🌍 Select your country</option>
-            <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
+  <div class="password-wrapper">
+    <input type="password" id="confirm" placeholder="Confirm Password" required />
+    <span class="toggle-password" onclick="togglePassword('confirm', this)">👁</span>
+  </div>
+
+  <select id="country" required>
+    <option value="">🌍 Select your country</option>
+     <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
             <option value="Spain">🇪🇸 Spain</option>
             <option value="United States">🇺🇸 United States</option>
             <option value="Russia">🇷🇺 Russia</option>
@@ -502,9 +506,15 @@
             <option value="Venezuela">🇻🇪 Venezuela</option>
             <option value="Vietnam">🇻🇳 Vietnam</option>
           </select>
+ 
+  <!-- ===== TERMS & CONDITIONS CHECKBOX ===== -->
+  <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:#c8d6ff; margin-top:0.4rem;">
+    <input type="checkbox" id="terms" required style="width:16px; height:16px;" />
+    I accept the <a href="terms.html" target="_blank" style="color:#ffb300;">Terms & Conditions</a>
+  </label>
 
-          <button type="submit">Register Now</button>
-        </form>
+  <button type="submit">Register Now</button>
+</form>
 
         <p class="login-link">
           Already have an account? <a href="login.html">Login here</a>.
