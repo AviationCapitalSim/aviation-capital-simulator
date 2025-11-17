@@ -1,4 +1,4 @@
-<!-- INDEX NEW BETA v1 -->
+<!-- INDEX NEW BETA v1 — Qatar Luxury Header Enabled -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,7 +88,7 @@
   cursor: default;
 }
 
-/* HEADER */
+/* HEADER inside cards */
 .acs-game-header {
   display: flex;
   justify-content: space-between;
@@ -123,7 +123,7 @@
   color: #9ec2ff;
 }
 
-/* META Y DESCRIPCIÓN */
+/* META & DESC */
 .acs-game-meta {
   font-size: 0.9rem;
   color: #9fb0e8;
@@ -176,7 +176,7 @@
   color: #b5b5b5;
   cursor: not-allowed;
 }
-    
+
 /* ============================================================
    === ACS HEADER — QATAR LUXURY EDITION v1.0 ================
    ============================================================ */
@@ -187,7 +187,6 @@
   width: 100%;
   padding: 0.8rem 2rem;
 
-  /* Glass + Blur + Gradient */
   background: rgba(12, 23, 50, 0.45);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -201,7 +200,6 @@
   z-index: 1000;
   box-sizing: border-box;
 
-  /* Soft fade animation */
   animation: acsHeaderFade 0.8s ease forwards;
 }
 
@@ -224,9 +222,9 @@
   text-shadow: 0 0 8px rgba(255,179,0,0.4);
 }
 
-/* ======== REMOVE OLD NAV ======== */
+/* Remove old nav */
 .acs-nav {
-  display: none; /* ya no lo usamos en el diseño */
+  display: none;
 }
 
 /* ============================================================
@@ -240,34 +238,27 @@
   margin-left: auto;
 }
 
-/* BASE BUTTON */
 .nav-btn {
   padding: 0.45rem 1.2rem;
   border-radius: 10px;
-
   font-size: 0.9rem;
   font-weight: 600;
-
   text-decoration: none;
   cursor: pointer;
   transition: 0.25s;
-
   min-width: 100px;
-  text-align: center;
 
-  /* Glass */
   background: rgba(255,255,255,0.06);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.1),
-    0 0 10px rgba(0,0,0,0.25);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1),
+              0 0 10px rgba(0,0,0,0.25);
 
   border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* YELLOW BUTTONS (Login / Register) */
+/* Yellow buttons */
 .nav-btn-yellow {
   color: #FFB300;
   border-color: rgba(255,179,0,0.45);
@@ -278,7 +269,7 @@
   box-shadow: 0 0 12px rgba(255,179,0,0.55);
 }
 
-/* BLUE BUTTON (Support) */
+/* Blue button */
 .nav-btn-blue {
   color: #8AB4FF;
   border-color: rgba(138,180,255,0.45);
@@ -288,7 +279,7 @@
   background: rgba(138,180,255,0.20);
   box-shadow: 0 0 12px rgba(138,180,255,0.55);
 }
-    
+
 /* ============================================================
    === HERO PREMIUM (ACS TOKEN ECONOMY ENTRANCE) ==============
    ============================================================ */
@@ -299,7 +290,6 @@
   background: linear-gradient(to bottom, #050a19, #081530);
 }
 
-/* Línea informativa superior */
 .hero-tag {
   color: #ffb300;
   font-size: 0.9rem;
@@ -310,7 +300,6 @@
   opacity: 0.9;
 }
 
-/* Título principal */
 .hero-title {
   font-size: 2.4rem;
   line-height: 1.25;
@@ -320,7 +309,6 @@
   font-weight: 800;
 }
 
-/* Subtítulo económico */
 .hero-subtitle {
   font-size: 1.4rem;
   margin-top: 0.8rem;
@@ -330,7 +318,6 @@
   text-shadow: 0 0 8px rgba(0,255,192,0.5);
 }
 
-/* Logo ACS grande */
 .hero-logo-premium {
   width: 260px;
   margin: 2rem 0 1.5rem;
@@ -339,7 +326,11 @@
   opacity: 0;
 }
 
-/* Texto descriptivo */
+@keyframes hero-fade-in {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 .hero-text {
   max-width: 650px;
   margin: 0 auto 2.2rem;
@@ -348,7 +339,6 @@
   line-height: 1.5;
 }
 
-/* Botón principal */
 .hero-cta {
   background-color: #ffb300;
   color: #081530;
@@ -367,176 +357,13 @@
   transform: translateY(-3px);
   box-shadow: 0 0 24px rgba(255,200,0,0.7);
 }
-
-/* Animación del logo */
-@keyframes hero-fade-in {
-  0% { opacity: 0; transform: scale(0.92); }
-  100% { opacity: 1; transform: scale(1); }
-}
-/* ============================================================
-   === CORPORATE AIRLINE HQ HEADER — PREMIUM ===================
-   ============================================================ */
-
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 82px;
-  background: linear-gradient(to right, #081530, #0b1740);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 2.4rem;
-  border-bottom: 2px solid #FFB300;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.55);
-  z-index: 1000;
-  box-sizing: border-box;
-}
-
-/* --- LOGO + NOMBRE --- */
-.acs-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  cursor: pointer;
-}
-
-.acs-logo img {
-  height: 52px; /* MÁS GRANDE */
-  filter: drop-shadow(0 0 10px rgba(255,179,0,0.35));
-}
-
-.acs-logo h1 {
-  font-size: 1.35rem;
-  color: #FFB300;
-  margin: 0;
-  font-weight: 700;
-  letter-spacing: 0.7px;
-}
-
-/* --- NAV CORPORATIVO (SOLO SUPPORT) --- */
-.acs-nav {
-  display: flex;
-  gap: 2rem;
-  margin-left: 4rem;
-}
-
-.acs-nav a {
-  color: #dfe6ff;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: 0.25s;
-}
-
-.acs-nav a:hover {
-  color: #FFB300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.5);
-}
-
-/* --- BOTONES LOGIN / REGISTER --- */
-.acs-auth {
-  display: flex;
-  gap: 0.8rem;
-}
-
-.login-btn,
-.register-btn {
-  padding: 0.45rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #FFB300;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  background: transparent;
-  color: #FFB300;
-  transition: 0.25s;
-}
-
-.login-btn:hover,
-.register-btn:hover {
-  background: #FFB300;
-  color: #081530;
-  box-shadow: 0 0 10px rgba(255,179,0,0.6);
-}
-/* === SUPPORT BUTTON (CORPORATE STYLE) === */
-.support-btn {
-  padding: 0.45rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #8AB4FF; /* azul corporativo */
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #8AB4FF;
-  text-decoration: none;
-  cursor: pointer;
-  transition: 0.25s;
-}
-
-.support-btn:hover {
-  background: #8AB4FF;
-  color: #081530;
-  box-shadow: 0 0 10px rgba(138,180,255,0.6);
-}
-
-/* ============================================================
-   === RIGHT SIDE BUTTON GROUP (Login / Register / Support) ===
-   ============================================================ */
-
-.acs-nav-buttons {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  margin-left: auto;   /* los empuja totalmente a la derecha */
-}
-
-/* BOTONES BASE */
-.nav-btn {
-  padding: 0.45rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: 0.25s;
-  min-width: 90px;       /* MISMO TAMAÑO absoluto */
-  text-align: center;    /* centra el texto */
-  display: inline-block;
-  box-sizing: border-box;
-}
-
-/* AMARILLOS (Login / Register) */
-.nav-btn-yellow {
-  border: 1px solid #FFB300;
-  color: #FFB300;
-  background: transparent;
-}
-
-.nav-btn-yellow:hover {
-  background: #FFB300;
-  color: #081530;
-  box-shadow: 0 0 10px rgba(255,179,0,0.6);
-}
-
-/* AZUL (Support) */
-.nav-btn-blue {
-  border: 1px solid #8AB4FF;
-  color: #8AB4FF;
-  background: transparent;
-}
-
-.nav-btn-blue:hover {
-  background: #8AB4FF;
-  color: #081530;
-  box-shadow: 0 0 10px rgba(138,180,255,0.6);
-}
-</style>  
+  </style>
 </head>
+
 <body>
-  
-  <!-- ======== HEADER ACS ======== -->
-  
-  <header class="acs-header">
+
+<!-- ===== HEADER — QATAR LUXURY ===== -->
+<header class="acs-header">
   <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
@@ -549,30 +376,27 @@
   </div>
 </header>
 
+<!-- ===== HERO — PREMIUM ===== -->
+<section class="hero-premium">
+  <div class="hero-tag">ACS Token Economy — 2026</div>
 
-  <!-- ======== END HEADER ======== -->
+  <h2 class="hero-title">Build your Airline.<br>Shape the Future of Aviation.</h2>
 
-  <!-- ======== HERO SECTION — PREMIUM ======== -->
-  <section class="hero-premium">
-    <div class="hero-tag">ACS Token Economy — 2026</div>
+  <h3 class="hero-subtitle">Play. Invest. Earn.</h3>
 
-    <h2 class="hero-title">Build your Airline.<br>Shape the Future of Aviation.</h2>
+  <img src="acs_logo.png" alt="ACS Logo" class="hero-logo-premium">
 
-    <h3 class="hero-subtitle">Play. Invest. Earn.</h3>
+  <p class="hero-text">
+    Grow your airline from 1940 to 2026, expand fleets, manage capital, survive crises,
+    and earn ACS Tokens based on your airline’s real performance.
+  </p>
 
-    <img src="acs_logo.png" alt="ACS Logo" class="hero-logo-premium">
+  <button class="hero-cta" onclick="window.location.href='register.html'">
+    Start Your Airline — Free Trial
+  </button>
+</section>
 
-    <p class="hero-text">
-      Grow your airline from 1940 to 2026, expand fleets, manage capital, survive crises,
-      and earn ACS Tokens based on your airline’s real performance.
-    </p>
-
-    <button class="hero-cta" onclick="window.location.href='register.html'">
-      Start Your Airline — Free Trial
-    </button>
-  </section>
-
-  <!-- ======== GAME LINEUP (LAUNCHER) ======== -->
+<!-- ===== GAME LINEUP ===== -->
 <section class="acs-game-lineup">
   <h2 class="acs-lineup-title">ACS Universe — Game Lineup</h2>
   <p class="acs-lineup-sub">
@@ -580,7 +404,8 @@
   </p>
 
   <div class="acs-game-grid">
-    <!-- JUEGO PRINCIPAL (FUNCIONAL) -->
+
+    <!-- Juego Principal -->
     <article class="acs-game-card acs-game-card-main">
       <div>
         <div class="acs-game-header">
@@ -600,18 +425,13 @@
 
       <div class="acs-game-footer">
         <span class="acs-game-version">Current Build: v0.9 Beta</span>
-
-        <button
-          id="acs-main-game-btn"
-          class="acs-card-btn acs-card-btn-primary"
-          type="button"
-        >
+        <button id="acs-main-game-btn" class="acs-card-btn acs-card-btn-primary">
           Play / Continue
         </button>
       </div>
     </article>
 
-    <!-- JUEGO FUTURO 1 (CARGO EMPIRE) -->
+    <!-- Cargo Empire -->
     <article class="acs-game-card acs-game-card-disabled">
       <div>
         <div class="acs-game-header">
@@ -624,20 +444,20 @@
         </div>
 
         <p class="acs-game-desc">
-          Focus only on freight. Build global cargo hubs, optimize load factors and yields, and dominate air logistics
-          across continents and seasons.
+          Focus only on freight. Build global cargo hubs, optimize load factors and yields,
+          and dominate air logistics across continents and seasons.
         </p>
       </div>
 
       <div class="acs-game-footer">
         <span class="acs-game-version">Planned Window: Q2 2026</span>
-        <button class="acs-card-btn acs-card-btn-disabled" type="button" disabled>
+        <button class="acs-card-btn acs-card-btn-disabled" disabled>
           Not Available Yet
         </button>
       </div>
     </article>
 
-    <!-- JUEGO FUTURO 2 (COLD WAR SKIES) -->
+    <!-- Cold War Skies -->
     <article class="acs-game-card acs-game-card-disabled">
       <div>
         <div class="acs-game-header">
@@ -650,35 +470,35 @@
         </div>
 
         <p class="acs-game-desc">
-          Run airports through iconic aviation eras: early jets, Cold War tensions and slot-saturated hubs. Manage
-          ground operations, turnarounds and fees while airlines fight for capacity.
+          Run airports through iconic aviation eras: early jets, Cold War tensions,
+          and slot-saturated hubs. Manage ground operations and turnarounds while airlines fight for capacity.
         </p>
       </div>
 
       <div class="acs-game-footer">
         <span class="acs-game-version">Vision: 2026–2027</span>
-        <button class="acs-card-btn acs-card-btn-disabled" type="button" disabled>
+        <button class="acs-card-btn acs-card-btn-disabled" disabled>
           Not Available Yet
         </button>
       </div>
     </article>
+
   </div>
 </section>
-  
-  <!-- ======== FOOTER ======== -->
-  <footer>
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-  </footer>
 
-  <script src="script.js"></script>
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+</footer>
+
+<script src="script.js"></script>
 
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const user = localStorage.getItem("ACS_User");
-    const airline = localStorage.getItem("ACS_Airline");
-
-    console.log("Session check:", { user, airline });
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  const user = localStorage.getItem("ACS_User");
+  const airline = localStorage.getItem("ACS_Airline");
+  console.log("Session check:", { user, airline });
+});
 </script>
 
 </body>
