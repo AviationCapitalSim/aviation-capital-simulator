@@ -287,16 +287,20 @@
 
     .toggle-password {
       position: absolute;
-      right: 0.75rem;
+      right: -2.1rem;
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
-      font-size: 0.9rem;
-      opacity: 0.8;
+      opacity: 0.75;
+      transition: 0.2s;
     }
 
     .toggle-password:hover {
       opacity: 1;
+    }
+
+    .toggle-password svg {
+      pointer-events: none;
     }
 
     .register-form button {
@@ -332,28 +336,10 @@
       text-align: center;
       padding: 1rem 0 1.2rem;
       font-size: 0.85rem;
-      color: #ffffff; /* blanco puro */
+      color: #ffffff;
       opacity: 0.9;
     }
 
-       /* Apple Modern Eye — OUTSIDE INPUT */
-     .toggle-password {
-      position: absolute;
-      right: -2.1rem; /* fuera del campo */
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      opacity: 0.75;
-      transition: 0.2s;
-}
-
-.toggle-password:hover {
-  opacity: 1;
-}
-
-.toggle-password svg {
-  pointer-events: none; /* evita que el svg bloquee el click */
-}
   </style>
 </head>
 <body>
@@ -412,39 +398,57 @@
         </p>
 
        <form class="register-form" onsubmit="handleRegister(event)">
+        
   <input type="text" id="fullName" placeholder="Full Name" required />
   <input type="email" id="email" placeholder="Email Address" required />
 
-  <!-- ===== DATE OF BIRTH (18+ VERIFICATION) ===== -->
-  <input type="date" id="dob" required />
+  <!-- ===== NEW DOB SELECTORS (DAY - MONTH - YEAR) ===== -->
+  <div style="display:flex; gap:0.5rem; width:100%;">
+    <select id="dob-day" required>
+      <option value="">Day</option>
+      <!-- 1–31 -->
+      ${[...Array(31)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
+    </select>
+
+    <select id="dob-month" required>
+      <option value="">Month</option>
+      ${[...Array(12)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
+    </select>
+
+    <select id="dob-year" required>
+      <option value="">Year</option>
+      <!-- Años 1920–2025 -->
+      ${Array.from({length:106},(_,i)=>2025-i).map(y=>`<option value="${y}">${y}</option>`).join("")}
+    </select>
+  </div>
+  <!-- ========================================================= -->
 
   <!-- ===== PASSWORD FIELD (MODERN APPLE EYE ICON) ===== -->
   <div class="password-wrapper">
     <input type="password" id="password" placeholder="Password (min 8 chars, 1 uppercase, 1 number)" required />
     <span class="toggle-password" onclick="togglePassword('password', this)">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
-       stroke-linecap="round" stroke-linejoin="round">
-    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
-    <circle cx="12" cy="12" r="3"></circle>
-  </svg>
-</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </span>
   </div>
 
   <div class="password-wrapper">
     <input type="password" id="confirm" placeholder="Confirm Password" required />
     <span class="toggle-password" onclick="togglePassword('password', this)">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
-       stroke-linecap="round" stroke-linejoin="round">
-    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
-    <circle cx="12" cy="12" r="3"></circle>
-  </svg>
-</span>
-
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7 -11 7S1 12 1 12z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    </span>
   </div>
 
   <select id="country" required>
     <option value="">🌍 Select your country</option>
-     <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
+    <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
             <option value="Spain">🇪🇸 Spain</option>
             <option value="United States">🇺🇸 United States</option>
             <option value="Russia">🇷🇺 Russia</option>
@@ -538,8 +542,7 @@
             <option value="Venezuela">🇻🇪 Venezuela</option>
             <option value="Vietnam">🇻🇳 Vietnam</option>
           </select>
- 
-  <!-- ===== TERMS & CONDITIONS CHECKBOX ===== -->
+    
   <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:#c8d6ff; margin-top:0.4rem;">
     <input type="checkbox" id="terms" required style="width:16px; height:16px;" />
     I accept the <a href="terms.html" target="_blank" style="color:#ffb300;">Terms & Conditions</a>
@@ -560,18 +563,14 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <script>
-       
-  /* ============================================================
-   === PASSWORD TOGGLE — APPLE + RED HIDE ICON ================
-   ============================================================ */
+<script>
+
 function togglePassword(id, element) {
   const input = document.getElementById(id);
   if (!input) return;
 
-  if (input.type === "password") {
-    // Mostrar contraseña — ojo moderno
-    input.type = "text";
+  if (input.type === "text") {
+    input.type = "password";
     element.innerHTML = `
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
            stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -580,95 +579,104 @@ function togglePassword(id, element) {
       </svg>
     `;
   } else {
-    // Ocultar contraseña — círculo rojo exactamente como tu imagen
-    input.type = "password";
+    input.type = "text";
     element.innerHTML = `
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-           xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="12" r="10" fill="#ff1a1a" stroke="#cc0000" stroke-width="2"/>
-        <line x1="7" y1="7" x2="17" y2="17" stroke="white" stroke-width="3" stroke-linecap="round"/>
+           stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
       </svg>
     `;
   }
 }
 
-    /* ============================================================
-       === SIMPLE SHA-256 HASH HELPER =============================
-       ============================================================ */
-    async function hashPassword(password) {
-      const enc = new TextEncoder().encode(password);
-      const buffer = await crypto.subtle.digest("SHA-256", enc);
-      const hashArray = Array.from(new Uint8Array(buffer));
-      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-    }
+async function hashPassword(password) {
+  const enc = new TextEncoder().encode(password);
+  const buffer = await crypto.subtle.digest("SHA-256", enc);
+  const hashArray = Array.from(new Uint8Array(buffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
 
-    /* ============================================================
-       === HANDLE REGISTER ========================================
-       ============================================================ */
-    async function handleRegister(event) {
-      event.preventDefault();
+async function handleRegister(event) {
+  event.preventDefault();
 
-      const fullName = document.getElementById("fullName").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-      const confirm = document.getElementById("confirm").value;
-      const country = document.getElementById("country").value;
+  const fullName = document.getElementById("fullName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const confirm = document.getElementById("confirm").value;
+  const country = document.getElementById("country").value;
 
-      if (!fullName || !email || !password || !confirm || !country) {
-        alert("⚠️ Please complete all fields.");
-        return;
-      }
+  const day = parseInt(document.getElementById("dob-day").value);
+  const month = parseInt(document.getElementById("dob-month").value);
+  const year = parseInt(document.getElementById("dob-year").value);
 
-      const emailPattern =
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
-      if (!emailPattern.test(email)) {
-        alert("⚠️ Please enter a valid email address (example: name@example.com).");
-        return;
-      }
+  if (!fullName || !email || !password || !confirm || !country || !day || !month || !year) {
+    alert("⚠️ Please complete all fields.");
+    return;
+  }
 
-      const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
-      if (!regex.test(password)) {
-        alert("⚠️ Password must include at least 8 characters, one uppercase letter, and one number.");
-        return;
-      }
+  // === AGE VALIDATION (18+) ===
+  const dob = new Date(year, month - 1, day);
+  const today = new Date();
+  const age =
+    today.getFullYear() - dob.getFullYear() -
+    (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
 
-      if (password !== confirm) {
-        alert("⚠️ Passwords do not match.");
-        return;
-      }
+  if (age < 18) {
+    alert("⚠️ You must be at least 18 years old to create an ACS account.");
+    return;
+  }
 
-      // === Cargar usuarios existentes ===
-      const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+  const emailPattern =
+    /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
+  if (!emailPattern.test(email)) {
+    alert("⚠️ Please enter a valid email address (example: name@example.com).");
+    return;
+  }
 
-      // Evitar doble registro mismo email
-      const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-      if (existing) {
-        alert("⚠️ This email is already registered. Please login instead.");
-        return;
-      }
+  const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!regex.test(password)) {
+    alert("⚠️ Password must include at least 8 characters, one uppercase letter, and one number.");
+    return;
+  }
 
-      // === Hash de la contraseña (no guardamos en claro) ===
-      const passwordHash = await hashPassword(password);
+  if (password !== confirm) {
+    alert("⚠️ Passwords do not match.");
+    return;
+  }
 
-      const user = {
-        id: crypto.randomUUID(),
-        name: fullName,
-        email,
-        passwordHash,          // << en vez de password plano
-        country,
-        createdAt: new Date().toISOString(),
-        airline: null
-      };
+  const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+  const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
-      users.push(user);
-      localStorage.setItem("ACS_users", JSON.stringify(users));
-      localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+  if (existing) {
+    alert("⚠️ This email is already registered. Please login instead.");
+    return;
+  }
 
-      alert(`✅ Welcome aboard, Captain ${fullName}! Let's create your airline.`);
+  const passwordHash = await hashPassword(password);
 
-      // ===== Próximo paso del flujo: crear aerolínea =====
-      window.location.assign("create_airline.html");
-    }
-  </script>
+  const user = {
+    id: crypto.randomUUID(),
+    name: fullName,
+    email,
+    dob: `${year}-${month}-${day}`,
+    age,
+    passwordHash,
+    country,
+    createdAt: new Date().toISOString(),
+    airline: null
+  };
+
+  users.push(user);
+  localStorage.setItem("ACS_users", JSON.stringify(users));
+  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+
+  alert(`✅ Welcome aboard, Captain ${fullName}! Let's create your airline.`);
+
+  window.location.assign("create_airline.html");
+}
+
+</script>
+
 </body>
 </html>
