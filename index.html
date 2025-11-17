@@ -365,7 +365,59 @@
   background: #8AB4FF;
   color: #081530;
   box-shadow: 0 0 10px rgba(138,180,255,0.6);
-}    
+}
+
+/* ============================================================
+   === RIGHT SIDE BUTTON GROUP (Login / Register / Support) ===
+   ============================================================ */
+
+.acs-nav-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-left: auto;   /* los empuja totalmente a la derecha */
+}
+
+/* BOTONES BASE */
+.nav-btn {
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.25s;
+  min-width: 90px;       /* MISMO TAMAÑO absoluto */
+  text-align: center;    /* centra el texto */
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+/* AMARILLOS (Login / Register) */
+.nav-btn-yellow {
+  border: 1px solid #FFB300;
+  color: #FFB300;
+  background: transparent;
+}
+
+.nav-btn-yellow:hover {
+  background: #FFB300;
+  color: #081530;
+  box-shadow: 0 0 10px rgba(255,179,0,0.6);
+}
+
+/* AZUL (Support) */
+.nav-btn-blue {
+  border: 1px solid #8AB4FF;
+  color: #8AB4FF;
+  background: transparent;
+}
+
+.nav-btn-blue:hover {
+  background: #8AB4FF;
+  color: #081530;
+  box-shadow: 0 0 10px rgba(138,180,255,0.6);
+}
 </style>  
 </head>
 <body>
@@ -377,14 +429,11 @@
     <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <nav class="acs-nav">
-  <a href="support.html" class="support-btn">Support</a>
-  </nav>
-
-  <div class="acs-auth">
-    <a href="login.html" class="login-btn">Login</a>
-    <a href="register.html" class="register-btn">Register</a>
-  </div>
+  <nav class="acs-nav-buttons">
+  <a href="login.html" class="nav-btn nav-btn-yellow">Login</a>
+  <a href="register.html" class="nav-btn nav-btn-yellow">Register</a>
+  <a href="support.html" class="nav-btn nav-btn-blue">Support</a>
+</nav>
 
 </header>
 
