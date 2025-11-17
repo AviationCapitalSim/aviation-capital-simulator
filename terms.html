@@ -1,155 +1,534 @@
 <!-- ============================================================
-     === Aviation Capital Simulator — Terms & Conditions v1.0 ===
-     === Date: 17 NOV 2025 =====================================
-     === Legal Docs: Terms of Service + Privacy Policy =========
-     ============================================================ -->
+   === ACS TERMS & CONDITIONS MODULE ============================
+   === Version: Beta v1 | Date: 17 NOV 2025 =====================
+   === Author: Aviation Capital Simulator =======================
+   ============================================================ -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terms & Conditions — Aviation Capital Simulator</title>
+  <title>Terms & Conditions - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
+  <!-- ======== ACS Favicons ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+
   <style>
+    /* ============================================================
+       === BASE PAGE ==============================================
+       ============================================================ */
     body {
       margin: 0;
-      background-color: #081530;
-      font-family: "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #050a19 0, #081530 45%, #050814 100%);
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
       color: #ffffff;
-      padding: 2rem;
-      line-height: 1.55;
-    }
-
-    h1, h2, h3 {
-      color: #ffb300;
-    }
-
-    .acs-container {
-      max-width: 950px;
-      margin: 0 auto;
-      background: rgba(12, 23, 50, 0.55);
-      border: 1px solid rgba(255,179,0,0.35);
-      border-radius: 16px;
-      padding: 2.5rem;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 18px rgba(0,0,0,0.45);
+      min-height: 100vh;
+      box-sizing: border-box;
     }
 
     a {
-      color: #8ab4ff;
+      color: #ffb300;
+      text-decoration: none;
+    }
+
+    a:hover {
       text-decoration: underline;
     }
 
-    ul li {
-      margin-bottom: 0.4rem;
+    /* ============================================================
+       === ACS HEADER — QATAR LUXURY EDITION =====================
+       ============================================================ */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 0.8rem 2rem;
+
+      background: rgba(12, 23, 50, 0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+
+      border-bottom: 1px solid rgba(255, 179, 0, 0.35);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      z-index: 1000;
+      box-sizing: border-box;
+
+      animation: acsHeaderFade 0.8s ease forwards;
     }
 
-    footer {
-      margin-top: 2rem;
+    @keyframes acsHeaderFade {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .acs-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .acs-logo img {
+      height: 44px;
+      filter: drop-shadow(0 0 6px rgba(255,179,0,0.35));
+    }
+
+    .acs-logo h1 {
+      color: #FFB300;
+      font-size: 1.1rem;
+      margin: 0;
+      letter-spacing: 0.6px;
+      text-shadow: 0 0 8px rgba(255,179,0,0.4);
+      white-space: nowrap;
+    }
+
+    /* NAV BUTTONS RIGHT SIDE */
+    .acs-nav-buttons {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    .nav-btn {
+      padding: 0.45rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: 0.25s;
+      min-width: 100px;
+
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1),
+                  0 0 10px rgba(0,0,0,0.25);
+
+      border: 1px solid rgba(255,255,255,0.08);
       text-align: center;
+    }
+
+    .nav-btn-yellow {
+      color: #FFB300;
+      border-color: rgba(255,179,0,0.45);
+    }
+
+    .nav-btn-yellow:hover {
+      background: rgba(255,179,0,0.20);
+      box-shadow: 0 0 12px rgba(255,179,0,0.55);
+    }
+
+    .nav-btn-blue {
+      color: #8AB4FF;
+      border-color: rgba(138,180,255,0.45);
+    }
+
+    .nav-btn-blue:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 12px rgba(138,180,255,0.55);
+    }
+
+    .nav-btn-outline {
+      background: transparent;
+    }
+
+    /* ============================================================
+       === TERMS WRAPPER / HERO ==================================
+       ============================================================ */
+    .terms-hero {
+      padding-top: 6rem; /* header offset */
+      padding-bottom: 2rem;
+      text-align: center;
+    }
+
+    .terms-hero-tag {
+      font-size: 0.85rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #ffb300;
+      opacity: 0.85;
+      margin-bottom: 0.6rem;
+    }
+
+    .terms-hero-title {
+      font-size: 2.1rem;
+      margin: 0;
+      font-weight: 800;
+      text-shadow: 0 0 12px rgba(0,0,0,0.6);
+    }
+
+    .terms-hero-subtitle {
+      margin-top: 0.7rem;
+      margin-bottom: 0;
+      font-size: 1rem;
+      color: #c9d4ff;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.45;
+    }
+
+    /* MAIN CARD */
+    .terms-wrapper {
+      max-width: 980px;
+      margin: 1.5rem auto 3.5rem;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+
+    .terms-card {
+      background: rgba(10, 20, 50, 0.82);
+      border-radius: 14px;
+      border: 1px solid rgba(255,179,0,0.35);
+      box-shadow: 0 0 22px rgba(0,0,0,0.55);
+      padding: 2rem 2.3rem;
+    }
+
+    .terms-meta {
+      font-size: 0.85rem;
+      color: #9fb0e8;
+      margin-bottom: 1.5rem;
+    }
+
+    .terms-meta span {
+      opacity: 0.85;
+    }
+
+    .terms-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .terms-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.4rem;
+      color: #ffd260;
+    }
+
+    .terms-section p {
+      margin: 0.2rem 0 0.4rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #e4e8ff;
+    }
+
+    .terms-section ul {
+      margin: 0.2rem 0 0.8rem 1.1rem;
+      padding-left: 0.4rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #d7ddff;
+    }
+
+    .terms-highlight {
+      font-weight: 600;
+      color: #ffb300;
+    }
+
+    .terms-warning {
+      font-size: 0.9rem;
+      color: #ffb3b3;
+      margin-top: 0.4rem;
+    }
+
+    .terms-note {
+      font-size: 0.85rem;
+      color: #aab6ff;
+      margin-top: 0.3rem;
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 1.5rem 1rem 2rem;
+      font-size: 0.85rem;
       color: #ffffff;
-      opacity: 0.6;
+      opacity: 0.85;
+    }
+
+    @media (max-width: 768px) {
+      .acs-header {
+        padding: 0.7rem 1.1rem;
+      }
+      .acs-logo h1 {
+        display: none;
+      }
+      .nav-btn {
+        min-width: auto;
+        padding: 0.4rem 0.9rem;
+        font-size: 0.8rem;
+      }
+      .terms-card {
+        padding: 1.4rem 1.2rem;
+      }
+      .terms-hero-title {
+        font-size: 1.7rem;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="acs-container">
 
-    <h1>ACS — Términos y Condiciones</h1>
-    <p><strong>Última actualización:</strong> 17 de noviembre de 2025</p>
-
-    <p>
-      Bienvenido a <strong>Aviation Capital Simulator</strong> (“ACS”), un simulador global de estrategia y gestión aeronáutica. 
-      Al crear una cuenta, acceder o utilizar el juego, usted acepta estos Términos y Condiciones, que regulan su participación dentro de la plataforma.
-    </p>
-
-    <hr>
-
-    <h2>1. Requisitos para participar</h2>
-    <ul>
-      <li>Debe ser mayor de <strong>18 años</strong>.</li>
-      <li>Debe proporcionar información real y verificable (nombre completo, país y fecha de nacimiento).</li>
-      <li>Debe aceptar las presentes condiciones antes de crear una cuenta.</li>
-    </ul>
-
-    <h2>2. Cuentas de usuario</h2>
-    <ul>
-      <li>Usted es responsable de su contraseña y seguridad de acceso.</li>
-      <li>Está prohibido compartir cuentas con terceros.</li>
-      <li>ACS puede suspender cuentas que violen los términos, abusen del sistema o intenten manipular la economía del juego.</li>
-    </ul>
-
-    <h2>3. Economía interna y ACS Tokens</h2>
-    <p>
-      ACS integra un sistema económico basado en créditos internos y, en el futuro, <strong>ACS Tokens</strong> (“tokens virtuales”). 
-      Estos tokens podrán representar valor dentro del juego y eventualmente permitir transacciones externas.
-    </p>
-
-    <p><strong>Importante:</strong></p>
-    <ul>
-      <li>ACS Tokens son <strong>digitales</strong>, no son dinero fiduciario.</li>
-      <li>La valorización de ACS Tokens puede variar según condiciones del juego o del mercado.</li>
-      <li>Participar en la economía del juego implica riesgos — incluidos pérdida parcial o total del valor virtual.</li>
-      <li>No hay garantía de retornos financieros.</li>
-    </ul>
-
-    <h2>4. Prohibiciones y conducta</h2>
-    <ul>
-      <li>Está prohibido usar bots, automatizaciones o exploits.</li>
-      <li>Está prohibido manipular falsamente la economía para obtener tokens o ventajas indebidas.</li>
-      <li>Está prohibido suplantar identidad u ofrecer servicios fraudulentos dentro del simulador.</li>
-    </ul>
-
-    <h2>5. Datos personales y privacidad</h2>
-    <p>
-      ACS recopila información básica para su correcto funcionamiento: nombre, edad, país, email, preferencias de juego,
-      y datos operativos de sus aerolíneas virtuales.
-    </p>
-
-    <ul>
-      <li>Sus datos serán almacenados de forma segura.</li>
-      <li>No se venden a terceros.</li>
-      <li>Solo se usarán para mejorar la experiencia del juego y la seguridad de la plataforma.</li>
-    </ul>
-
-    <h2>6. Pagos y compras opcionales</h2>
-    <p>
-      ACS puede ofrecer compras internas (créditos, mejoras, tokens, expansiones). Todas las compras son finales y no reembolsables,
-      excepto donde la ley del país lo exija.
-    </p>
-
-    <h2>7. Riesgos asociados a tokens</h2>
-    <p>
-      ACS incluirá un sistema futuro donde jugadores podrán ganar o comprar <strong>ACS Tokens</strong>. Estos pueden aumentar o disminuir
-      de valor según la actividad y rendimiento del usuario, la economía interna o factores externos.
-    </p>
-    <ul>
-      <li>Usted reconoce que existen riesgos digitales y económicos.</li>
-      <li>ACS no se responsabiliza por pérdidas virtuales causadas por fluctuaciones del sistema.</li>
-    </ul>
-
-    <h2>8. Limitación de responsabilidad</h2>
-    <p>
-      ACS se ofrece “tal cual es”. Aunque buscamos la mejor experiencia posible, no garantizamos disponibilidad continua, ausencia de errores
-      o pérdidas asociadas al uso del juego.
-    </p>
-
-    <h2>9. Modificaciones</h2>
-    <p>
-      ACS puede actualizar estos Términos y Condiciones. Cuando ocurra, los usuarios serán notificados dentro del juego.
-    </p>
-
-    <h2>10. Contacto</h2>
-    <p>Puede contactarnos en: <strong>support@aviationcapitalsim.com</strong></p>
-
+<!-- ===== HEADER — QATAR LUXURY ===== -->
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <footer>
-    © 2025 Aviation Capital Simulator. All rights reserved.
-  </footer>
+  <div class="acs-nav-buttons">
+    <a href="index.html" class="nav-btn nav-btn-outline nav-btn-yellow">Home</a>
+    <a href="login.html" class="nav-btn nav-btn-yellow">Login</a>
+    <a href="register.html" class="nav-btn nav-btn-yellow">Register</a>
+    <a href="support.html" class="nav-btn nav-btn-blue">Support</a>
+  </div>
+</header>
+
+<!-- ===== HERO TEXT ===== -->
+<section class="terms-hero">
+  <div class="terms-hero-tag">ACS Legal Framework · Early Access</div>
+  <h2 class="terms-hero-title">Terms & Conditions</h2>
+  <p class="terms-hero-subtitle">
+    Please read these Terms carefully. By creating an account or playing Aviation Capital Simulator,
+    you agree to these rules and to the way we handle virtual credits, tokens, and your account.
+  </p>
+</section>
+
+<!-- ===== TERMS CARD ===== -->
+<main class="terms-wrapper">
+  <article class="terms-card">
+    <div class="terms-meta">
+      <span><strong>Project:</strong> Aviation Capital Simulator (ACS)</span><br />
+      <span><strong>Version:</strong> Beta v1 · <strong>Last updated:</strong> 17 November 2025</span><br />
+      <span><strong>Contact:</strong> <a href="mailto:capitalaviationsim@gmail.com">capitalaviationsim@gmail.com</a></span>
+    </div>
+
+    <!-- 1. INTRODUCTION -->
+    <section class="terms-section" id="intro">
+      <h3>1. Introduction</h3>
+      <p>
+        Aviation Capital Simulator (“<span class="terms-highlight">ACS</span>”, “we”, “our” or “us”) is a web-based airline
+        strategy simulator where players build and manage virtual airlines from 1940 to 2026 and beyond.
+      </p>
+      <p>
+        These Terms &amp; Conditions (“<span class="terms-highlight">Terms</span>”) govern your access to and use of ACS,
+        including your account, virtual items, credits, and any future token-based reward system.
+      </p>
+      <p>
+        By creating an account, logging in, or using ACS in any way, you agree to be bound by these Terms.
+        If you do not agree, you must not use ACS.
+      </p>
+    </section>
+
+    <!-- 2. ELIGIBILITY -->
+    <section class="terms-section" id="eligibility">
+      <h3>2. Eligibility · Age 18+</h3>
+      <p>
+        To create an account and play ACS, you must:
+      </p>
+      <ul>
+        <li>Be at least <span class="terms-highlight">18 years old</span>, and</li>
+        <li>Have the legal capacity to enter into binding agreements under the laws of your country.</li>
+      </ul>
+      <p class="terms-warning">
+        If you are under 18, or if using ACS is prohibited by the laws of your jurisdiction, you must not
+        create an account or access the game.
+      </p>
+    </section>
+
+    <!-- 3. ACCOUNT CREATION & SECURITY -->
+    <section class="terms-section" id="account">
+      <h3>3. Account Creation & Security</h3>
+      <p>
+        When you register, you provide information such as your name, email address, country,
+        and a secure password. You agree that:
+      </p>
+      <ul>
+        <li>All information you provide is accurate, complete, and kept up-to-date.</li>
+        <li>You will not create an account using false identity or on behalf of someone else without permission.</li>
+        <li>You are responsible for keeping your password secret and secure.</li>
+        <li>You are responsible for all actions taken through your account.</li>
+      </ul>
+      <p>
+        If you believe your account or password may have been compromised, you must inform us as soon as possible at
+        <a href="mailto:capitalaviationsim@gmail.com">capitalaviationsim@gmail.com</a>.
+      </p>
+    </section>
+
+    <!-- 4. MULTI-USER & FAIR USE -->
+    <section class="terms-section" id="multi-user">
+      <h3>4. Multi-User Environment & Fair Use</h3>
+      <p>
+        ACS is designed as a multi-user experience, with many players building airlines in the same economic universe.
+        To keep the game fair and enjoyable, you agree not to:
+      </p>
+      <ul>
+        <li>Use bots, scripts, or automation to gain unfair advantage.</li>
+        <li>Exploit bugs or glitches for financial or gameplay advantage.</li>
+        <li>Create multiple accounts for the purpose of abusing bonuses, rewards, or the in-game economy.</li>
+        <li>Engage in harassment, hate speech, or abusive behavior towards other players.</li>
+      </ul>
+      <p>
+        We reserve the right to investigate suspicious activity and to suspend or terminate accounts that breach these rules.
+      </p>
+    </section>
+
+    <!-- 5. VIRTUAL CURRENCY: CREDITS & FUTURE TOKENS -->
+    <section class="terms-section" id="credits-tokens">
+      <h3>5. Virtual Currency · ACS Credits & Future Tokens</h3>
+      <p>
+        ACS may use one or more virtual economic units, including but not limited to:
+      </p>
+      <ul>
+        <li><span class="terms-highlight">ACS Credits</span> – in-game units used to unlock features, start airlines, or access premium modules.</li>
+        <li><span class="terms-highlight">ACS Tokens</span> (future) – crypto or tokenized rewards that may reflect performance or achievements.</li>
+      </ul>
+      <p>
+        Unless explicitly stated otherwise in a separate, updated policy:
+      </p>
+      <ul>
+        <li>ACS Credits and any virtual items have no guaranteed real-world monetary value.</li>
+        <li>ACS Tokens, if implemented, may be experimental, volatile, and subject to regulatory constraints.</li>
+        <li>We may change how Credits or Tokens are earned, priced, or used inside the game at any time.</li>
+      </ul>
+      <p class="terms-warning">
+        Nothing in ACS constitutes financial, investment, or legal advice.
+        There is <strong>no guarantee</strong> that you will earn money or receive any specific value from Credits or Tokens.
+      </p>
+      <p class="terms-note">
+        Before investing real money into Credits or any Token-related functionality, you should carefully consider your
+        financial situation and, if needed, consult an independent professional advisor.
+      </p>
+    </section>
+
+    <!-- 6. PAYMENTS, REFUNDS & EARLY ACCESS -->
+    <section class="terms-section" id="payments">
+      <h3>6. Payments, Refunds & Early Access</h3>
+      <p>
+        During the Beta and Early Access phases, ACS systems, prices, and features may change frequently.
+        If real-money purchases (e.g., Credits, premium access) are enabled:
+      </p>
+      <ul>
+        <li>All prices and available packages will be clearly shown before you confirm payment.</li>
+        <li>Third-party payment providers (e.g., card processors, wallets, exchanges) may apply their own terms and fees.</li>
+        <li>Except where required by law, purchases are generally <span class="terms-highlight">non-refundable</span>.</li>
+      </ul>
+      <p>
+        We may adjust, suspend, or discontinue payment-related features as we refine the project.
+      </p>
+    </section>
+
+    <!-- 7. DATA & PRIVACY (BASIC) -->
+    <section class="terms-section" id="privacy">
+      <h3>7. Data & Privacy (Basic Overview)</h3>
+      <p>
+        ACS stores certain information locally in your browser (for example, using <span class="terms-highlight">localStorage</span>)
+        and may also interact with external services (such as Google Sheets, GitHub Pages or other tools) to manage your account
+        and game progress.
+      </p>
+      <p>
+        As part of account creation and gameplay, we may process:
+      </p>
+      <ul>
+        <li>Your name and email address.</li>
+        <li>Country and basic profile information.</li>
+        <li>Gameplay data (fleets, routes, balances, achievements).</li>
+        <li>Technical data such as browser type, timestamps, or error logs.</li>
+      </ul>
+      <p>
+        We will not sell your personal data to third parties. Some data may be stored or processed
+        by third-party providers that host infrastructure or tools used by ACS.
+      </p>
+      <p class="terms-note">
+        A more detailed Privacy Policy may be published separately as ACS grows and integrates more services.
+      </p>
+    </section>
+
+    <!-- 8. INTELLECTUAL PROPERTY -->
+    <section class="terms-section" id="ip">
+      <h3>8. Intellectual Property</h3>
+      <p>
+        All content in ACS – including but not limited to logos, interface design, game mechanics, aircraft databases,
+        text, images, and code – is owned by ACS or its licensors and is protected by copyright and other laws.
+      </p>
+      <p>
+        You may not copy, distribute, modify, reverse-engineer, or reuse ACS content outside the game environment
+        without our prior written consent.
+      </p>
+    </section>
+
+    <!-- 9. DISCLAIMERS & LIMITATION OF LIABILITY -->
+    <section class="terms-section" id="disclaimer">
+      <h3>9. Disclaimers & Limitation of Liability</h3>
+      <p>
+        ACS is provided on an “<span class="terms-highlight">as is</span>” and “<span class="terms-highlight">as available</span>” basis.
+        We do not guarantee that the game will be free from errors, interruptions, or vulnerabilities.
+      </p>
+      <p>
+        To the fullest extent permitted by applicable law:
+      </p>
+      <ul>
+        <li>We disclaim all warranties, express or implied, including fitness for a particular purpose.</li>
+        <li>We are not liable for losses of profits, data, or any indirect or consequential damages
+            arising from your use of ACS.</li>
+        <li>Your sole remedy for dissatisfaction with ACS is to stop using the service and close your account.</li>
+      </ul>
+    </section>
+
+    <!-- 10. CHANGES TO TERMS -->
+    <section class="terms-section" id="changes">
+      <h3>10. Changes to These Terms</h3>
+      <p>
+        We may update these Terms from time to time, for example to reflect changes in the game, economy,
+        applicable laws, or technical infrastructure.
+      </p>
+      <p>
+        When we make material changes, we will update the “Last updated” date at the top of this page.
+        In some cases we may also display a notification inside the game or during login.
+      </p>
+      <p>
+        If you continue using ACS after changes take effect, you are considered to have accepted the updated Terms.
+      </p>
+    </section>
+
+    <!-- 11. CONTACT -->
+    <section class="terms-section" id="contact">
+      <h3>11. Contact</h3>
+      <p>
+        For questions about these Terms, your account, or any legal or security concern regarding ACS,
+        you can contact us at:
+      </p>
+      <p>
+        <strong>Email:</strong>
+        <a href="mailto:capitalaviationsim@gmail.com">capitalaviationsim@gmail.com</a>
+      </p>
+      <p class="terms-note">
+        ACS is an evolving project. We strongly recommend that you review these Terms and, if necessary,
+        consult an independent legal professional before launching ACS at large scale or integrating real-money tokens.
+      </p>
+    </section>
+
+  </article>
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  © 2025 Aviation Capital Simulator. All rights reserved.
+</footer>
 
 </body>
 </html>
