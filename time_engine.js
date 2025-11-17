@@ -138,8 +138,19 @@ function toggleSimState() {
     alert("▶️ Time resumed.");
   }
 
+  /* ======================================================
+     📌 UPDATE VISUAL STATUS IN SETTINGS IMMEDIATELY
+     ====================================================== */
   const simStatus = document.getElementById("simStatus");
-  if (simStatus) simStatus.textContent = ACS_CYCLE.status.toUpperCase();
+  if (simStatus) {
+    simStatus.textContent = ACS_CYCLE.status.toUpperCase();
+    simStatus.style.color = ACS_CYCLE.status === "ON" ? "#00ff80" : "#ff4040";
+  }
+
+  // Actualizar también el Start Date sin refrescar la página
+  if (typeof refreshSimPanel === "function") {
+    setTimeout(refreshSimPanel, 50);
+  }
 }
 
 /* ============================================================
