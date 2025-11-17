@@ -176,7 +176,119 @@
   color: #b5b5b5;
   cursor: not-allowed;
 }
+    
+/* ============================================================
+   === ACS HEADER — QATAR LUXURY EDITION v1.0 ================
+   ============================================================ */
 
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  padding: 0.8rem 2rem;
+
+  /* Glass + Blur + Gradient */
+  background: rgba(12, 23, 50, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border-bottom: 1px solid rgba(255, 179, 0, 0.35);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  z-index: 1000;
+  box-sizing: border-box;
+
+  /* Soft fade animation */
+  animation: acsHeaderFade 0.8s ease forwards;
+}
+
+@keyframes acsHeaderFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* === LOGO === */
+.acs-logo img {
+  height: 46px;
+  filter: drop-shadow(0 0 6px rgba(255,179,0,0.35));
+}
+
+.acs-logo h1 {
+  color: #FFB300;
+  font-size: 1.15rem;
+  margin: 0;
+  letter-spacing: 0.6px;
+  text-shadow: 0 0 8px rgba(255,179,0,0.4);
+}
+
+/* ======== REMOVE OLD NAV ======== */
+.acs-nav {
+  display: none; /* ya no lo usamos en el diseño */
+}
+
+/* ============================================================
+   === RIGHT SIDE BUTTON GROUP (Login / Register / Support) ===
+   ============================================================ */
+
+.acs-nav-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+/* BASE BUTTON */
+.nav-btn {
+  padding: 0.45rem 1.2rem;
+  border-radius: 10px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.25s;
+
+  min-width: 100px;
+  text-align: center;
+
+  /* Glass */
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.1),
+    0 0 10px rgba(0,0,0,0.25);
+
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* YELLOW BUTTONS (Login / Register) */
+.nav-btn-yellow {
+  color: #FFB300;
+  border-color: rgba(255,179,0,0.45);
+}
+
+.nav-btn-yellow:hover {
+  background: rgba(255,179,0,0.20);
+  box-shadow: 0 0 12px rgba(255,179,0,0.55);
+}
+
+/* BLUE BUTTON (Support) */
+.nav-btn-blue {
+  color: #8AB4FF;
+  border-color: rgba(138,180,255,0.45);
+}
+
+.nav-btn-blue:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 12px rgba(138,180,255,0.55);
+}
+    
 /* ============================================================
    === HERO PREMIUM (ACS TOKEN ECONOMY ENTRANCE) ==============
    ============================================================ */
@@ -421,21 +533,22 @@
 </style>  
 </head>
 <body>
+  
   <!-- ======== HEADER ACS ======== -->
+  
   <header class="acs-header">
-
-  <div class="acs-logo" onclick="window.location.href='index.html'">
+  <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <nav class="acs-nav-buttons">
-  <a href="login.html" class="nav-btn nav-btn-yellow">Login</a>
-  <a href="register.html" class="nav-btn nav-btn-yellow">Register</a>
-  <a href="support.html" class="nav-btn nav-btn-blue">Support</a>
-</nav>
-
+  <div class="acs-nav-buttons">
+    <a href="login.html" class="nav-btn nav-btn-yellow">Login</a>
+    <a href="register.html" class="nav-btn nav-btn-yellow">Register</a>
+    <a href="support.html" class="nav-btn nav-btn-blue">Support</a>
+  </div>
 </header>
+
 
   <!-- ======== END HEADER ======== -->
 
