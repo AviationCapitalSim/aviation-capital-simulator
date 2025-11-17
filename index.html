@@ -19,8 +19,165 @@
 
   <!-- ======== PWA Manifest (Android / Chrome) ======== -->
   <link rel="manifest" href="manifest.json">
-</head>
 
+  <style>
+/* ============================================================
+   === INDEX — GAME LINEUP (ACS LAUNCHER STYLE) ===============
+   ============================================================ */
+
+.acs-game-lineup {
+  padding: 2rem 1.5rem 3rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.acs-lineup-title {
+  font-size: 1.6rem;
+  color: #ffb300;
+  margin-bottom: 0.4rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.acs-lineup-sub {
+  font-size: 1rem;
+  color: #c9d4ff;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* GRID */
+.acs-game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 2rem;
+}
+
+/* ==== TARJETA BASE (panel estilo dashboard) === */
+.acs-game-card {
+  background: #0e1b3c;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 179, 0, 0.45);
+  padding: 1.5rem 1.8rem;
+  box-shadow: 0 0 15px rgba(0,0,0,0.45);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 240px;
+  transition: all 0.25s ease;
+}
+
+/* Tarjeta activa */
+.acs-game-card-main {
+  background: radial-gradient(circle at top left, rgba(0,168,107,0.2), #081530);
+  border-color: rgba(0,168,107,0.8);
+}
+
+.acs-game-card-main:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 25px rgba(0,168,107,0.4);
+  cursor: pointer;
+}
+
+/* Tarjeta desactivada */
+.acs-game-card-disabled {
+  opacity: 0.65;
+  border-style: dashed;
+  cursor: default;
+}
+
+/* HEADER */
+.acs-game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.7rem;
+}
+
+.acs-game-title {
+  font-size: 1.3rem;
+  margin: 0;
+  color: #ffffff;
+}
+
+/* BADGES */
+.acs-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 1px solid #ffb300;
+  color: #ffb300;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.acs-badge-soon {
+  border-color: #aaaaaa;
+  color: #d0d0d0;
+}
+
+.acs-badge-concept {
+  border-color: #6ea0ff;
+  color: #9ec2ff;
+}
+
+/* META Y DESCRIPCIÓN */
+.acs-game-meta {
+  font-size: 0.9rem;
+  color: #9fb0e8;
+  margin-bottom: 0.6rem;
+}
+
+.acs-game-desc {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #e1e7ff;
+}
+
+/* FOOTER TARJETA */
+.acs-game-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.acs-game-version {
+  font-size: 0.85rem;
+  color: #a7b6ff;
+}
+
+/* BOTONES */
+.acs-card-btn {
+  border-radius: 20px;
+  padding: 0.45rem 1.2rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.acs-card-btn-primary {
+  background-color: #00a86b;
+  color: #ffffff;
+}
+
+.acs-card-btn-primary:hover {
+  background-color: #007d4e;
+  transform: translateY(-2px);
+}
+
+.acs-card-btn-disabled {
+  background: transparent;
+  border: 1px solid rgba(180,180,180,0.4);
+  color: #b5b5b5;
+  cursor: not-allowed;
+}
+</style>  
+</head>
 <body>
   <!-- ======== HEADER ACS ======== -->
   <header class="acs-header">
