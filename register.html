@@ -625,6 +625,9 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+/* ============================================================
+   === HANDLE REGISTER — SEND DATA TO GOOGLE SHEETS ============
+   ============================================================ */
 async function handleRegister(event) {
   event.preventDefault();
 
@@ -634,37 +637,28 @@ async function handleRegister(event) {
   const confirm = document.getElementById("confirm").value;
   const country = document.getElementById("country").value;
 
-  const day = parseInt(document.getElementById("dob-day").value);
-  const month = parseInt(document.getElementById("dob-month").value);
-  const year = parseInt(document.getElementById("dob-year").value);
+  const day = document.getElementById("dob-day").value;
+  const month = document.getElementById("dob-month").value;
+  const year = document.getElementById("dob-year").value;
 
   if (!fullName || !email || !password || !confirm || !country || !day || !month || !year) {
     alert("⚠️ Please complete all fields.");
     return;
   }
 
-  // === AGE VALIDATION (18+) ===
-  const dob = new Date(year, month - 1, day);
-  const today = new Date();
-  const age =
-    today.getFullYear() - dob.getFullYear() -
-    (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
-
-  if (age < 18) {
-    alert("⚠️ You must be at least 18 years old to create an ACS account.");
-    return;
-  }
-
+  // EMAIL FORMAT VALIDATION
   const emailPattern =
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
+
   if (!emailPattern.test(email)) {
-    alert("⚠️ Please enter a valid email address (example: name@example.com).");
+    alert("⚠️ Please enter a valid email address.");
     return;
   }
 
+  // PASSWORD STRENGTH VALIDATION
   const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
   if (!regex.test(password)) {
-    alert("⚠️ Password must include at least 8 characters, one uppercase letter, and one number.");
+    alert("⚠️ Password must include 8+ characters, one uppercase letter and one number.");
     return;
   }
 
@@ -673,37 +667,52 @@ async function handleRegister(event) {
     return;
   }
 
-  const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
-  const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  // AGE CHECK (18+)
+  const dob = `${year}-${month}-${day}`;
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
 
-  if (existing) {
-    alert("⚠️ This email is already registered. Please login instead.");
+  if (age < 18) {
+    alert("⚠️ You must be at least 18 years old to play ACS.");
     return;
   }
 
+  // HASH PASSWORD
   const passwordHash = await hashPassword(password);
 
-  const user = {
-    id: crypto.randomUUID(),
-    name: fullName,
+  // BUILD PAYLOAD
+  const payload = {
+    fullName,
     email,
-    dob: `${year}-${month}-${day}`,
-    age,
-    passwordHash,
     country,
-    createdAt: new Date().toISOString(),
-    airline: null
+    dob,
+    termsAccepted: true,
+    ip: "",
+    passwordHash
   };
 
-  users.push(user);
-  localStorage.setItem("ACS_users", JSON.stringify(users));
-  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+  // SEND TO GOOGLE SHEETS (PRODUCTION ENDPOINT)
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycby6z6K87J4saHEkYQEArPeqYA-4gT4AP2k225gT4-TvOn0MXxuNKZS2zgscFosnfbK8tw/exec";
 
-  alert(`✅ Welcome aboard, Captain ${fullName}! Let's create your airline.`);
+  try {
+    await fetch(ENDPOINT, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  window.location.assign("create_airline.html");
+    alert("✅ Registration complete! Welcome to ACS, Captain.");
+    window.location.assign("create_airline.html");
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Error connecting to ACS server. Please try again.");
+  }
 }
-
 </script>
 
 </body>
