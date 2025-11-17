@@ -268,15 +268,27 @@ document.addEventListener("DOMContentLoaded", () => {
 /* ============================================================
    === TAB SYNC ================================================
    ============================================================ */
-
 window.addEventListener("storage", (e) => {
 
   if (e.key === "ACS_Cycle") {
+
     const updated = JSON.parse(e.newValue || "{}");
     ACS_CYCLE = updated;
 
-    if (ACS_CYCLE.status === "ON") startACSTime();
-    else {
+    // 🚫 Si acaba de ocurrir un master reset → NO iniciar reloj
+    if (localStorage.getItem("ACS_NewCycle") === "true") {
+      stopACSTime();
+      const frozen = localStorage.getItem("acs_frozen_time");
+      if (frozen) ACS_TIME.currentTime = new Date(frozen);
+      updateClockDisplay();
+      notifyTimeListeners();
+      return; // ⛔ NO continuar
+    }
+
+    // 🔄 Estado real del ciclo
+    if (ACS_CYCLE.status === "ON") {
+      startACSTime();
+    } else {
       stopACSTime();
       const frozen = localStorage.getItem("acs_frozen_time");
       if (frozen) ACS_TIME.currentTime = new Date(frozen);
@@ -292,4 +304,5 @@ window.addEventListener("storage", (e) => {
     updateClockDisplay();
     notifyTimeListeners();
   }
+
 });
