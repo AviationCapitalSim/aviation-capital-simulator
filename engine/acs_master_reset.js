@@ -64,38 +64,42 @@ window.ACS_MasterReset = function () {
   keysToRemove.forEach(k => localStorage.removeItem(k));
 
   /* ============================================================
-     3. RESTAURAR SOLO USERS Y ACTIVE USER
-     ============================================================ */
-  localStorage.clear(); // Borra TODO lo demás
+   3. RESTAURAR SOLO USERS Y ACTIVE USER
+   ============================================================ */
+localStorage.clear(); // Borra TODO lo demás
 
-  if (savedUsers) localStorage.setItem("ACS_users", savedUsers);
-  if (activeUser) localStorage.setItem("ACS_activeUser", activeUser);
+if (savedUsers) localStorage.setItem("ACS_users", savedUsers);
+if (activeUser) localStorage.setItem("ACS_activeUser", activeUser);
 
-  /* ============================================================
-     4. RECREAR CICLO LIMPIO
-     ============================================================ */
-  const newCycle = {
-    startYear: 1940,
-    endYear: 2026,
-    realStartDate: null,
-    status: "OFF"
-  };
+/* ============================================================
+   3B. MARCAR ARRANQUE DE CICLO NUEVO
+   ============================================================ */
+localStorage.setItem("ACS_NewCycle", "true");
 
-  localStorage.setItem("ACS_Cycle", JSON.stringify(newCycle));
+/* ============================================================
+   4. RECREAR CICLO LIMPIO
+   ============================================================ */
+const newCycle = {
+  startYear: 1940,
+  endYear: 2026,
+  realStartDate: null,
+  status: "OFF"
+};
 
-  /* ============================================================
-     5. RESET DEL RELOJ GLOBAL
-     ============================================================ */
-  localStorage.setItem("acs_frozen_time", "1940-01-01T00:00:00.000Z");
+localStorage.setItem("ACS_Cycle", JSON.stringify(newCycle));
 
-  // avisar al time_engine para que sincronice tabs
-  localStorage.setItem("acs_reset", Date.now());
+/* ============================================================
+   5. RESET DEL RELOJ GLOBAL
+   ============================================================ */
+localStorage.setItem("acs_frozen_time", "1940-01-01T00:00:00.000Z");
 
-  /* ============================================================
-     6. RETORNAR CONFIRMACIÓN
-     ============================================================ */
-  return {
-    ok: true,
-    message: "Game cycle finalized and reset to 1940."
-  };
+// avisar al time_engine para que sincronice tabs
+localStorage.setItem("acs_reset", Date.now());
+
+/* ============================================================
+   6. RETORNAR CONFIRMACIÓN
+   ============================================================ */
+return {
+  ok: true,
+  message: "Game cycle finalized and reset to 1940."
 };
