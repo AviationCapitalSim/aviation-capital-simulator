@@ -368,14 +368,16 @@
 
 <!-- TIME ENGINE -->
 <script src="time_engine.js"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  if (localStorage.getItem("ACS_NewCycle") === "true") {
+// 🛑 Congelar INMEDIATAMENTE después de cargar el motor,
+// antes de que setting.html registre listeners o dibuje el reloj.
+if (localStorage.getItem("ACS_NewCycle") === "true") {
     if (typeof stopACSTime === "function") stopACSTime();
     if (typeof updateClockDisplay === "function") updateClockDisplay();
-  }
-});
+}
 </script>
+
 <!-- MASTER RESET ENGINE -->
 <script src="engine/acs_master_reset.js"></script>
 
