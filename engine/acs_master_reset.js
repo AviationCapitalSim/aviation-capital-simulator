@@ -1,79 +1,101 @@
 /* ============================================================
    === ACS MASTER RESET ENGINE — v1.0 ==========================
    ------------------------------------------------------------
-   • Reinicia TODO el mundo ACS a 1940
-   • BORRA:
-       - Flota, leasing, finanzas, HR, settings, etc.
-       - Cualquier ACS_* relacionado con la partida activa
-   • CONSERVA:
-       - ACS_users          → cuentas registradas
-       - ACS_activeUser     → sesión actual
-       - ACS_airlineRecords → récords históricos
-   • REINICIA:
-       - ACS_Cycle          → OFF + 1940
-       - acs_frozen_time
-       - acs_reset          → broadcast global
-   • No toca ninguna otra página.
+   • Ejecutado SOLO desde Settings → botón ♻ Reset
+   • Restaura el juego completo a 1940
+   • NO borra usuarios (ACS_users)
+   • NO borra ACS_activeUser (usuario logueado)
+   • Mantiene créditos del usuario
+   • Limpia TODA la data de juego, aircraft, slots, HR, finance…
+   • Reinicia ACS_Cycle (1940–2026, OFF)
    ============================================================ */
 
-console.log("🟦 ACS Master Reset Engine loaded");
+console.log("🟦 ACS MASTER RESET ENGINE — Loaded");
 
-function ACS_MasterReset() {
-
-  const msg =
-    "⚠️ MASTER RESET\n\n" +
-    "Esto reiniciará TODO el mundo ACS a 1940.\n" +
-    "Se borrarán flota, leasing, finanzas, HR, rutas, settings, etc.\n\n" +
-    "Se mantienen:\n" +
-    "• Cuentas registradas (ACS_users)\n" +
-    "• Usuario activo (ACS_activeUser)\n" +
-    "• Récords históricos (ACS_airlineRecords)\n\n" +
-    "¿Confirmas continuar?";
-
-  if (!confirm(msg)) return;
+window.ACS_MasterReset = function () {
 
   /* ============================================================
-     1) Guardar lo que NO debe borrarse
+     1. GUARDAR USUARIOS Y ACTIVO (se deben conservar)
      ============================================================ */
-  const users   = localStorage.getItem("ACS_users");
-  const active  = localStorage.getItem("ACS_activeUser");
-  const records = localStorage.getItem("ACS_airlineRecords");
+  const savedUsers = localStorage.getItem("ACS_users");
+  const activeUser = localStorage.getItem("ACS_activeUser");
 
   /* ============================================================
-     2) Limpiar TODO lo demás
+     2. LISTA OFICIAL DE CLAVES A BORRAR (confirmada)
      ============================================================ */
-  localStorage.clear();
+  const keysToRemove = [
+    "ACS_Airline",
+    "ACS_Base",
+    "ACS_Cycle",
+    "ACS_Finance",
+    "acs_finance_data",
+    "acs_finance_ops",
+    "ACS_FinanceBalance",
+    "acs_flight_revenue",
+    "ACS_HR",
+    "ACS_Leasing",
+    "ACS_MyAircraft",
+    "ACS_PendingAircraft",
+    "ACS_SLOTS",
+    "ACS_UsedMarket",
+    "ACS_UsedPool",
+    "ACS_Used_LastPool",
+    "ACS_Used_LastRotation",
+    "fleet",
+    "flightNumbers",
+    "lastFlightNumber",
+    "scheduleItems",
+    "acs_fuel_price",
+    "acs_ticket_fee",
+    "autoCcheck",
+    "autoDcheck",
+    "autoHire",
+    "regA320",
+    "regB737",
+    "regECRJ",
+    "taA320",
+    "taB737",
+    "taE190",
+    "taCRJ",
+    "taATR",
+    "acs_frozen_time"
+  ];
+
+  keysToRemove.forEach(k => localStorage.removeItem(k));
 
   /* ============================================================
-     3) Restaurar lo que sí debe quedar
+     3. RESTAURAR SOLO USERS Y ACTIVE USER
      ============================================================ */
-  if (users)   localStorage.setItem("ACS_users", users);
-  if (active)  localStorage.setItem("ACS_activeUser", active);
-  if (records) localStorage.setItem("ACS_airlineRecords", records);
+  localStorage.clear(); // Borra TODO lo demás
+
+  if (savedUsers) localStorage.setItem("ACS_users", savedUsers);
+  if (activeUser) localStorage.setItem("ACS_activeUser", activeUser);
 
   /* ============================================================
-     4) Reiniciar el motor de tiempo
+     4. RECREAR CICLO LIMPIO
      ============================================================ */
   const newCycle = {
+    startYear: 1940,
+    endYear: 2026,
     realStartDate: null,
     status: "OFF"
   };
+
   localStorage.setItem("ACS_Cycle", JSON.stringify(newCycle));
-  localStorage.setItem("acs_frozen_time", "1940-01-01T00:00:00Z");
 
   /* ============================================================
-     5) Enviar señal global de RESET (todas las tabs oyen esto)
+     5. RESET DEL RELOJ GLOBAL
      ============================================================ */
-  localStorage.setItem("acs_reset", Date.now().toString());
+  localStorage.setItem("acs_frozen_time", "1940-01-01T00:00:00.000Z");
 
-  alert("♻️ ACS reiniciado completamente a 1940. Cuentas y récords conservados.");
+  // avisar al time_engine para que sincronice tabs
+  localStorage.setItem("acs_reset", Date.now());
 
   /* ============================================================
-     6) Volver al dashboard (o main)
+     6. RETORNAR CONFIRMACIÓN
      ============================================================ */
-  try {
-    window.location.href = "dashboard.html";
-  } catch (err) {
-    console.warn("ACS_MasterReset redirection error:", err);
-  }
-}
+  return {
+    ok: true,
+    message: "Game cycle finalized and reset to 1940."
+  };
+};
