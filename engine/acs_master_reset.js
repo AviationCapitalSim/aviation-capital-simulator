@@ -1,12 +1,12 @@
 /* ============================================================
-   === ACS MASTER RESET ENGINE — v1.0 ==========================
+   === ACS MASTER RESET ENGINE — v1.1 ==========================
    ------------------------------------------------------------
    • Ejecutado SOLO desde Settings → botón ♻ Reset
    • Restaura el juego completo a 1940
    • NO borra usuarios (ACS_users)
    • NO borra ACS_activeUser (usuario logueado)
    • Mantiene créditos del usuario
-   • Limpia TODA la data de juego, aircraft, slots, HR, finance…
+   • Limpia TODA la data del juego solamente
    • Reinicia ACS_Cycle (1940–2026, OFF)
    ============================================================ */
 
@@ -15,13 +15,13 @@ console.log("🟦 ACS MASTER RESET ENGINE — Loaded");
 window.ACS_MasterReset = function () {
 
   /* ============================================================
-     1. GUARDAR USUARIOS Y ACTIVO (se deben conservar)
+     1. GUARDAR USERS Y ACTIVE USER
      ============================================================ */
   const savedUsers = localStorage.getItem("ACS_users");
   const activeUser = localStorage.getItem("ACS_activeUser");
 
   /* ============================================================
-     2. LISTA OFICIAL DE CLAVES A BORRAR (confirmada)
+     2. BORRAR SOLO LAS KEYS OFICIALES DEL JUEGO
      ============================================================ */
   const keysToRemove = [
     "ACS_Airline",
@@ -64,42 +64,41 @@ window.ACS_MasterReset = function () {
   keysToRemove.forEach(k => localStorage.removeItem(k));
 
   /* ============================================================
-   3. RESTAURAR SOLO USERS Y ACTIVE USER
-   ============================================================ */
-localStorage.clear(); // Borra TODO lo demás
+     3. RESTAURAR USERS Y ACTIVE USER
+     ============================================================ */
+  if (savedUsers) localStorage.setItem("ACS_users", savedUsers);
+  if (activeUser) localStorage.setItem("ACS_activeUser", activeUser);
 
-if (savedUsers) localStorage.setItem("ACS_users", savedUsers);
-if (activeUser) localStorage.setItem("ACS_activeUser", activeUser);
+  /* ============================================================
+     3B. FLAG DE CICLO NUEVO
+     ============================================================ */
+  localStorage.setItem("ACS_NewCycle", "true");
 
-/* ============================================================
-   3B. MARCAR ARRANQUE DE CICLO NUEVO
-   ============================================================ */
-localStorage.setItem("ACS_NewCycle", "true");
+  /* ============================================================
+     4. CREAR NUEVO CICLO
+     ============================================================ */
+  const newCycle = {
+    startYear: 1940,
+    endYear: 2026,
+    realStartDate: null,
+    status: "OFF"
+  };
 
-/* ============================================================
-   4. RECREAR CICLO LIMPIO
-   ============================================================ */
-const newCycle = {
-  startYear: 1940,
-  endYear: 2026,
-  realStartDate: null,
-  status: "OFF"
-};
+  localStorage.setItem("ACS_Cycle", JSON.stringify(newCycle));
 
-localStorage.setItem("ACS_Cycle", JSON.stringify(newCycle));
+  /* ============================================================
+     5. RESET DEL RELOJ GLOBAL
+     ============================================================ */
+  localStorage.setItem("acs_frozen_time", "1940-01-01T00:00:00.000Z");
 
-/* ============================================================
-   5. RESET DEL RELOJ GLOBAL
-   ============================================================ */
-localStorage.setItem("acs_frozen_time", "1940-01-01T00:00:00.000Z");
+  // Notificar globalmente
+  localStorage.setItem("acs_reset", Date.now());
 
-// avisar al time_engine para que sincronice tabs
-localStorage.setItem("acs_reset", Date.now());
-
-/* ============================================================
-   6. RETORNAR CONFIRMACIÓN
-   ============================================================ */
-return {
-  ok: true,
-  message: "Game cycle finalized and reset to 1940."
+  /* ============================================================
+     6. CONFIRMACIÓN FINAL
+     ============================================================ */
+  return {
+    ok: true,
+    message: "Game cycle finalized and reset to 1940."
+  };
 };
