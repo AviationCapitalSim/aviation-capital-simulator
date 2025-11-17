@@ -1,3 +1,11 @@
+/* ============================================================
+   === ACS GLOBAL SETTINGS & TIME ENGINE CONTROL — v1.0 ========
+   ------------------------------------------------------------
+   • Ajustes generales del simulador
+   • Control total del reloj global (1940–2026 UTC)
+   • Panel Admin con Toggle + Master Reset
+   • Integrado con acs_master_reset.js y time_engine.js
+   ============================================================ */
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -194,7 +202,7 @@
       font-size:0.85rem;
     }
 
-    /* SIMPLE MODAL PARA SAVE/RESET (NO PARA UNLOCK) */
+    /* SIMPLE MODAL PARA SAVE/RESET */
     .save-modal {
       display:none;
       position:fixed;
@@ -368,6 +376,9 @@
 <!-- TIME ENGINE -->
 <script src="time_engine.js"></script>
 
+<!-- MASTER RESET ENGINE -->
+<script src="engine/acs_master_reset.js"></script>
+
 <script>
 /* ========== UTIL MODAL ========== */
 function openSaveModal(title, msg){
@@ -388,7 +399,6 @@ function handleLogout(){
 /* ========== LOAD SETTINGS AL ENTRAR ========== */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Cargar toggles
   ["autoCcheck","autoDcheck","autoHire"].forEach(id=>{
     const el = document.getElementById(id);
     if (!el) return;
@@ -401,7 +411,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cb) cb.checked = true;
   }
 
-  // Cargar inputs text/number
   ["regA320","regB737","regECRJ",
    "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
     const el = document.getElementById(id);
@@ -410,17 +419,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (val !== null) el.value = val;
   });
 
-  // Si ya eres admin, mostrar panel directamente
   const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
   if (user && user.email === "aviationcapitalsim@gmail.com") {
     document.getElementById("adminAuthSection").style.display = "block";
     document.getElementById("adminPanelContent").style.display = "block";
   }
 
-  // Refrescar datos del ciclo
   refreshSimPanel();
 
-  // Reloj sincronizado con time_engine
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
@@ -538,15 +544,24 @@ function refreshSimPanel(){
   simStatusEl.style.color = st === "ON" ? "#00ff80" : "#ff4040";
 }
 
-/* ========== RESET SIMULATION DATA (USANDO time_engine) ========== */
+/* ============================================================
+   === MASTER RESET CALL (Settings) ============================
+   ============================================================ */
 function resetSimulationData(){
-  // Usamos la función global del time_engine, pero además refrescamos panel.
-  if (typeof window.resetSimulationData === "function") {
-    // Llamar a la función del time_engine
-    window.resetSimulationData();
+  if (typeof window.ACS_MasterReset === "function") {
+
+    const result = window.ACS_MasterReset();
+
+    openSaveModal(
+      "Master Reset Completed",
+      "🟦 " + result.message + "\n\nA new clean cycle is now ready."
+    );
+
+    setTimeout(() => {
+      refreshSimPanel();
+      updateClockDisplay();
+    }, 200);
   }
-  // Después de que el motor actualice ACS_Cycle, refrescamos el panel
-  setTimeout(refreshSimPanel, 100);
 }
 </script>
 
