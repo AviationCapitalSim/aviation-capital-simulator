@@ -1,80 +1,284 @@
+<!-- === LOGIN MODULE === -->
+<!-- Version: Beta v1 | Date: 17 NOV 2025 -->
+<!-- Qatar Luxury Edition + Dynamic Captain Engine -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - Aviation Capital Simulator</title>
+
   <link rel="stylesheet" href="styles.css?v=3.1" />
-</head>
-<body>
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png">
-      <h1>Aviation Capital Simulator</h1>
-    </div>
 
-    <nav class="acs-nav">
-      <a href="index.html">Home</a>
-      <a href="#">Forum</a>
-      <a href="#">Support</a>
-    </nav>
-
-    <div class="acs-auth">
-      <a href="register.html" class="register-btn">Register</a>
-    </div>
-  </header>
-
-  <section class="register-section">
-    <h2>Welcome back, Captain</h2>
-    <p>Log in to continue managing your airline and empire.</p>
-
-    <form class="register-form" onsubmit="return handleLogin(event)">
-      <input type="email" placeholder="Email Address" required />
-      <input type="password" placeholder="Password" required />
-      <button type="submit">Login</button>
-    </form>
-
-    <p class="login-link">Don’t have an account? <a href="register.html">Create one here</a>.</p>
-  </section>
-
-  <footer>
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-  </footer>
-
-<script>
-  function handleLogin(event) {
-  event.preventDefault();
-
-  const email = document.querySelector("input[type='email']").value.trim();
-  const password = document.querySelector("input[type='password']").value.trim();
-
-  const savedUser = JSON.parse(localStorage.getItem("ACS_User"));
-  const validEmail = savedUser ? savedUser.email : null;
-
-  if (!email || !password) {
-    alert("⚠️ Please enter both email and password.");
-    return false;
-  }
-
-  if (email === validEmail) {
-    alert(`✅ Welcome back, Captain ${savedUser.name}!`);
-
-    const existingAirline = localStorage.getItem("ACS_Airline");
-
-    if (existingAirline) {
-      console.log("✈️ Airline exists → Redirecting to dashboard...");
-      window.location.href = "dashboard.html";
-    } else {
-      console.log("🛫 No airline yet → Redirecting to create_airline...");
-      window.location.href = "create_airline.html";
+  <style>
+    /* ============================================================
+       === GLOBAL BASE ===
+       ============================================================ */
+    body {
+      margin: 0;
+      background: linear-gradient(to bottom, #050a19, #081530 60%);
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+      padding-top: 90px; /* space for header */
+      animation: fadeIn 1s ease;
     }
 
-  } else {
-    alert("❌ Invalid credentials. Please try again or register first.");
-  }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
 
-  return false;
-}
+    /* ============================================================
+       === QATAR LUXURY HEADER (same as index but with Home/Support)
+       ============================================================ */
+
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 0.8rem 2rem;
+
+      background: rgba(12, 23, 50, 0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+
+      border-bottom: 1px solid rgba(255, 179, 0, 0.35);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      z-index: 1000;
+      animation: acsHeaderFade 0.8s ease forwards;
+    }
+
+    @keyframes acsHeaderFade {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .acs-logo img {
+      height: 46px;
+      filter: drop-shadow(0 0 6px rgba(255,179,0,0.35));
+    }
+
+    .acs-logo h1 {
+      color: #FFB300;
+      font-size: 1.15rem;
+      margin: 0;
+      letter-spacing: 0.6px;
+      text-shadow: 0 0 8px rgba(255,179,0,0.4);
+    }
+
+    .acs-nav-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .nav-btn {
+      padding: 0.45rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: 0.25s;
+      min-width: 100px;
+
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(6px);
+
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1),
+                  0 0 10px rgba(0,0,0,0.25);
+
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .nav-btn-yellow {
+      color: #FFB300;
+      border-color: rgba(255,179,0,0.45);
+    }
+    .nav-btn-yellow:hover {
+      background: rgba(255,179,0,0.20);
+      box-shadow: 0 0 12px rgba(255,179,0,0.55);
+    }
+
+    .nav-btn-blue {
+      color: #8AB4FF;
+      border-color: rgba(138,180,255,0.45);
+    }
+    .nav-btn-blue:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 12px rgba(138,180,255,0.55);
+    }
+
+    /* ============================================================
+       === LOGIN CONTAINER
+       ============================================================ */
+
+    .login-wrapper {
+      max-width: 420px;
+      margin: 3rem auto 4rem;
+      text-align: center;
+      padding: 2.5rem 2rem;
+      background: rgba(10, 20, 50, 0.55);
+      border-radius: 14px;
+      border: 1px solid rgba(255,179,0,0.35);
+      box-shadow: 0 0 22px rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+      animation: fadeSlide 0.9s ease;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(15px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #FFB300;
+      margin-bottom: 0.4rem;
+    }
+
+    .login-subtitle {
+      font-size: 1.05rem;
+      color: #c8d6ff;
+      margin-bottom: 2rem;
+      font-weight: 500;
+      letter-spacing: 0.4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1.4rem;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 1rem;
+      backdrop-filter: blur(6px);
+    }
+
+    button {
+      width: 100%;
+      padding: 0.9rem;
+      border-radius: 12px;
+      border: none;
+      background-color: #00c853;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.25s;
+      box-shadow: 0 0 18px rgba(0,255,140,0.45);
+    }
+
+    button:hover {
+      background-color: #00e76b;
+      transform: translateY(-2px);
+    }
+
+    .login-link {
+      margin-top: 1.3rem;
+      color: #a7b6ff;
+      font-size: 0.9rem;
+    }
+
+    .login-link a {
+      color: #ffb300;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #5060a0;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ===== HEADER — QATAR LUXURY ===== -->
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png">
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <div class="acs-nav-buttons">
+    <a href="index.html" class="nav-btn nav-btn-yellow">Home</a>
+    <a href="register.html" class="nav-btn nav-btn-yellow">Register</a>
+    <a href="support.html" class="nav-btn nav-btn-blue">Support</a>
+  </div>
+</header>
+
+<!-- ===== LOGIN PANEL ===== -->
+<div class="login-wrapper">
+  <h2 class="login-title" id="loginTitle">Welcome back</h2>
+  <p class="login-subtitle">The skies await your command.</p>
+
+  <form onsubmit="return handleLogin(event)">
+    <input type="email" id="email" placeholder="Email Address" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+  </form>
+
+  <p class="login-link">Don’t have an account? <a href="register.html">Create one here</a>.</p>
+</div>
+
+<footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+
+<script>
+  /* ============================================================
+     === LOGIN LOGIC with dynamic Captain {NAME}
+     ============================================================ */
+  document.addEventListener("DOMContentLoaded", () => {
+    const user = JSON.parse(localStorage.getItem("ACS_User"));
+
+    if (user && user.name) {
+      document.getElementById("loginTitle").textContent =
+        `Captain ${user.name},`;
+    }
+  });
+
+  function handleLogin(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    const savedUser = JSON.parse(localStorage.getItem("ACS_User"));
+    const validEmail = savedUser ? savedUser.email : null;
+
+    if (!email || !password) {
+      alert("⚠️ Please enter both email and password.");
+      return false;
+    }
+
+    if (email === validEmail) {
+      alert(`🛫 Welcome back, Captain ${savedUser.name}!`);
+
+      const existingAirline = localStorage.getItem("ACS_Airline");
+
+      if (existingAirline) {
+        window.location.href = "dashboard.html";
+      } else {
+        window.location.href = "create_airline.html";
+      }
+
+    } else {
+      alert("❌ Invalid credentials. Please try again or register first.");
+    }
+
+    return false;
+  }
 </script>
+
 </body>
 </html>
