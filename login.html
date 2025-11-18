@@ -247,49 +247,76 @@
 <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
 <script>
-  /* ============================================================
-     === LOGIN LOGIC with dynamic Captain {NAME}
-     ============================================================ */
-  document.addEventListener("DOMContentLoaded", () => {
-    const user = JSON.parse(localStorage.getItem("ACS_User"));
+/* ============================================================
+   === ACS LOGIN — GOOGLE SHEETS BACKEND =======================
+   === Version: Beta v1 | 18 NOV 2025 ==========================
+   ============================================================ */
 
-    if (user && user.name) {
-      document.getElementById("loginTitle").textContent =
-        `Captain ${user.name},`;
-    }
-  });
+const ACS_API_URL = "https://script.google.com/macros/s/AKfycbxZ1Yk4hdqEwRIb7-ozCmEW7ZuEseDjmyAEAX6o61PyGyoQKJZPKxQe7P2fkNehp1Wj_Q/exec";
 
-  function handleLogin(event) {
-    event.preventDefault();
+/* === Utility: Hash password (same as register) =============== */
+async function hashPassword(password) {
+  const enc = new TextEncoder().encode(password);
+  const buffer = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+/* ============================================================
+   === HANDLE LOGIN ============================================
+   ============================================================ */
+async function handleLogin(event) {
+  event.preventDefault();
 
-    const savedUser = JSON.parse(localStorage.getItem("ACS_User"));
-    const validEmail = savedUser ? savedUser.email : null;
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const password = document.getElementById("password").value;
 
-    if (!email || !password) {
-      alert("⚠️ Please enter both email and password.");
+  if (!email || !password) {
+    alert("⚠️ Please enter both email and password.");
+    return false;
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  // === SEND REQUEST TO GOOGLE SHEETS ===
+  try {
+    const response = await fetch(ACS_API_URL + "?action=login", {
+      method: "POST",
+      body: JSON.stringify({ email, passwordHash }),
+      headers: { "Content-Type": "application/json" }
+    });
+
+    const result = await response.json();
+
+    if (result.status === "error") {
+      alert("❌ " + result.msg);
       return false;
     }
 
-    if (email === validEmail) {
-      alert(`🛫 Welcome back, Captain ${savedUser.name}!`);
+    // === LOGIN SUCCESSFUL ===
+    const user = result.user;
 
-      const existingAirline = localStorage.getItem("ACS_Airline");
+    // Guardar en sesión local ACS
+    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-      if (existingAirline) {
-        window.location.href = "dashboard.html";
-      } else {
-        window.location.href = "create_airline.html";
-      }
+    alert(`🛫 Welcome back, Captain ${user.full_name}!`);
 
-    } else {
-      alert("❌ Invalid credentials. Please try again or register first.");
+    // === LOGIC A: Does the user already have an airline? =========
+    if (!user.airline_id || user.airline_id === "") {
+      window.location.href = "create_airline.html";
+      return false;
     }
 
+    // If airline exists → dashboard
+    window.location.href = "dashboard.html";
+    return false;
+
+  } catch (err) {
+    alert("❌ Login failed: " + err.message);
     return false;
   }
+}
 </script>
 
 </body>
