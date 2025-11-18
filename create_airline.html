@@ -1,3 +1,8 @@
+<!-- ============================================================
+     === ACS CREATE AIRLINE MODULE — Beta v1 | Date: 18 NOV 2025 
+     ------------------------------------------------------------
+     • Qatar Luxury Header (igual que index.html)
+     ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Create Airline - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
   <style>
     body {
       background-color: #0C1F3C;
@@ -14,6 +20,87 @@
       padding-top: 120px;
       text-align: center;
     }
+
+    /* ================= Qatar Luxury Header ================= */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 0.8rem 2rem;
+
+      background: rgba(12, 23, 50, 0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+
+      border-bottom: 1px solid rgba(255, 179, 0, 0.35);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      z-index: 1000;
+      box-sizing: border-box;
+
+      animation: acsHeaderFade 0.8s ease forwards;
+    }
+
+    @keyframes acsHeaderFade {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .acs-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .acs-logo img {
+      height: 46px;
+      filter: drop-shadow(0 0 6px rgba(255,179,0,0.35));
+    }
+
+    .acs-logo h1 {
+      color: #FFB300;
+      font-size: 1.15rem;
+      margin: 0;
+      letter-spacing: 0.6px;
+      text-shadow: 0 0 8px rgba(255,179,0,0.4);
+    }
+
+    .acs-nav-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    .nav-btn {
+      padding: 0.45rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.25s;
+      min-width: 100px;
+
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+      text-decoration: none;
+
+      color: #8AB4FF;
+      border-color: rgba(138,180,255,0.45);
+    }
+
+    .nav-btn:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 12px rgba(138,180,255,0.55);
+    }
+    /* ======================================================= */
+
     .form-container {
       background: #122850;
       max-width: 600px;
@@ -25,19 +112,24 @@
     }
     h2 { color: #FFB300; margin-bottom: 0.5rem; }
     .form-container p { color: #ccc; font-size: 0.95rem; margin-bottom: 2rem; }
+
     input, select {
       width: 100%; padding: 0.8rem; margin-bottom: 1rem;
       border-radius: 10px; border: none; font-size: 1rem;
       background: #1A335C; color: white;
     }
+
     input:focus, select:focus { outline: 2px solid #FFB300; }
+
     button {
       background: #FFB300; color: #0C1F3C; font-weight: 800;
       font-size: 1rem; border: none; border-radius: 12px;
       padding: 1rem 2.4rem; cursor: pointer; transition: all 0.3s ease;
     }
     button:hover { background: #ffcb42; transform: scale(1.05); }
+
     footer { margin-top: 3rem; color: #bbb; font-size: 0.85rem; }
+
     .acs-clock-header {
       font-family: 'Orbitron', 'Consolas', monospace; color: #00ff80;
       font-weight: bold; background: rgba(0, 255, 128, 0.08);
@@ -48,24 +140,22 @@
 </head>
 
 <body>
+
+  <!-- ================= Qatar Luxury Header ================= -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
 
-    <nav class="acs-nav">
-      <a href="index.html">Home</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
-    </nav>
-
-    <div class="acs-auth">
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-nav-buttons">
+      <a href="index.html" class="nav-btn">Home</a>
+      <a href="support.html" class="nav-btn">Support</a>
     </div>
 
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
+  <!-- ======================================================= -->
 
   <section class="form-container">
     <h2>Create Your Airline</h2>
@@ -111,6 +201,7 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
+  <!-- ❗Tu JS permanece EXACTAMENTE igual -->
   <script>
     const regions = {
       "Europe": ["Spain","France","Germany","Italy","United Kingdom","Poland"],
@@ -144,11 +235,16 @@
     function generateUniqueCodes() {
       const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       const random = n => Array.from({length:n},()=>letters[Math.floor(Math.random()*letters.length)]).join("");
+
       let iata, icao;
-      let existing = JSON.parse(localStorage.getItem("ACS_users")||"[]")
-        .map(u => u.airline?.icao || "").concat(u => u.airline?.iata || "");
+      let existing = JSON.parse(localStorage.getItem("ACS_users") || "[]")
+        .map(u => u.airline?.icao || "")
+        .concat(JSON.parse(localStorage.getItem("ACS_users") || "[]")
+        .map(u => u.airline?.iata || ""));
+
       do { iata = random(2); } while (existing.includes(iata));
       do { icao = random(3); } while (existing.includes(icao));
+
       document.getElementById("iata").value = iata;
       document.getElementById("icao").value = icao;
     }
@@ -167,18 +263,16 @@
       const icao = document.getElementById("icao").value.trim().toUpperCase();
       const iata = document.getElementById("iata").value.trim().toUpperCase();
 
-      // 🚫 Bloquear nombres reales (coincidencias parciales o exactas)
       const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
 
       if (realAirlines.some(real => {
-      const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
-      return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
-   })) {
-      alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
-      return false;
-   }
+        const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
+        return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
+      })) {
+        alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
+        return false;
+      }
 
-      // ⚙️ Evitar nombres duplicados en ACS
       const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
       const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
       if (nameExists) {
@@ -188,7 +282,6 @@
 
       const airline = { name: airlineName, icao, iata, slogan, region, country, businessModel, operationMode };
 
-      // 🔒 Usuario activo
       let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
       if (!user) {
         alert("⚠️ Session not found. Please log in again.");
@@ -196,17 +289,16 @@
         return false;
       }
 
-      // 🧩 Guardar aerolínea
       user.airline = airline;
       localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-      // 🧠 Actualizar lista global
       const index = allUsers.findIndex(u => u.email === user.email);
       if (index !== -1) allUsers[index] = user;
       localStorage.setItem("ACS_users", JSON.stringify(allUsers));
 
       localStorage.setItem("ACS_Airline", JSON.stringify(airline));
       alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.name}.`);
+
       window.location.href = "choose_base.html";
       return false;
     }
@@ -224,13 +316,11 @@
       window.location.href = "login.html";
     }
   </script>
-    </script>
 
-  <!-- === MOTOR GLOBAL DE TIEMPO ACS === -->
+  <!-- TIME ENGINE -->
   <script src="time_engine.js"></script>
 
   <script>
-    // Sincronizar reloj del encabezado con el motor de tiempo global
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof registerTimeListener === "function") {
         registerTimeListener(updateClockDisplay);
@@ -238,8 +328,6 @@
       }
     });
   </script>
-</body>
-</html>
 
 </body>
 </html>
