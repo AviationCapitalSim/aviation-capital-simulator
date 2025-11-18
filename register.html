@@ -694,9 +694,8 @@ async function handleRegister(event) {
   };
 
   // SEND TO GOOGLE SHEETS (PRODUCTION ENDPOINT)
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzCr2H149NJ6fb7UamGgQTYczH4qyy-bEUNOQ0bzJA6btVWs_yysnkIsYo7WmCkk6umuQ/exec";
-
-
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbxsB3HNbcawcp5_11mf1tYCt0J91S3aG20yap89qCtgps0K-7KcC5Zc9okBwJL-Z0e6tA/exec";
+     
   try {
     await fetch(ENDPOINT, {
       method: "POST",
