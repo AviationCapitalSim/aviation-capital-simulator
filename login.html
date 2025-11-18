@@ -249,164 +249,78 @@
 
 <script>
 /* ============================================================
-   === ACS WEB API — REGISTER + LOGIN (COMBINED) ===============
-   === Version: 18 NOV 2025 — Stable Edition ===================
+   === ACS LOGIN — GOOGLE SHEETS BACKEND =======================
+   === Version: Beta v1 | 18 NOV 2025 ==========================
    ============================================================ */
 
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents || "{}");
+const ACS_API_URL = "https://script.google.com/macros/s/AKfycbxZ1Yk4hdqEwRIb7-ozCmEW7ZuEseDjmyAEAX6o61PyGyoQKJZPKxQe7P2fkNehp1Wj_Q/exec";
 
-    const ss = SpreadsheetApp.openById("1O5gkV7JTEb7EM_7P8XO6Zdlat9aatv4NXpidcU0FdPY");
-    const usersSheet = ss.getSheetByName("USERS");
-
-    if (!usersSheet) {
-      return jsonError("USERS sheet not found");
-    }
-
-    /* ============================================================
-       === LOGIN FLOW (action = "login") ==========================
-       ============================================================ */
-    if (data.action === "login") {
-      const email = (data.email || "").toLowerCase();
-      const incomingHash = data.passwordHash || "";
-
-      if (!email || !incomingHash) {
-        return jsonError("Missing credentials");
-      }
-
-      const lastRow = usersSheet.getLastRow();
-      if (lastRow < 2) return jsonError("User not found");
-
-      const usersData = usersSheet.getRange(2, 1, lastRow - 1, usersSheet.getLastColumn()).getValues();
-
-      let matchedUser = null;
-
-      for (const row of usersData) {
-        const [
-          user_id, full_name, user_email, country,
-          dob, age, created_at, termsAccepted,
-          airline_id, ip_address
-        ] = row;
-
-        if ((user_email || "").toLowerCase() === email) {
-          matchedUser = { user_id, full_name, user_email, country, dob, age, airline_id };
-          break;
-        }
-      }
-
-      if (!matchedUser) return jsonError("User not found");
-
-      // ⬇️ AUTH CHECK (USER_AUTH table)
-      let authSheet = ss.getSheetByName("USER_AUTH");
-      if (!authSheet) return jsonError("Auth database not initialized");
-
-      const authLastRow = authSheet.getLastRow();
-      if (authLastRow < 2) return jsonError("Auth database empty");
-
-      const authData = authSheet.getRange(2, 1, authLastRow - 1, 3).getValues();
-
-      let storedHash = "";
-
-      for (const row of authData) {
-        const [auth_email, auth_hash, auth_user_id] = row;
-
-        if ((auth_email || "").toLowerCase() === email) {
-          storedHash = auth_hash;
-          break;
-        }
-      }
-
-      if (!storedHash) return jsonError("Password not found for this user");
-      if (storedHash !== incomingHash) return jsonError("Invalid password");
-
-      // LOGIN SUCCESS
-      return jsonSuccess({
-        user_id: matchedUser.user_id,
-        full_name: matchedUser.full_name,
-        email: matchedUser.user_email,
-        country: matchedUser.country,
-        dob: matchedUser.dob,
-        age: matchedUser.age,
-        airline_id: matchedUser.airline_id
-      });
-    }
-
-
-    /* ============================================================
-       === REGISTER FLOW (default) ===============================
-       ============================================================ */
-
-    const email = (data.email || "").toLowerCase();
-    if (!email) return jsonError("Email is required");
-
-    // Duplicate in USERS
-    const existing = usersSheet
-      .getRange(2, 3, Math.max(usersSheet.getLastRow() - 1, 0), 1)
-      .getValues()
-      .flat()
-      .map(v => (v || "").toLowerCase());
-
-    if (existing.includes(email)) return jsonError("Email already registered");
-
-    // Age calculation
-    const dob = new Date(data.dob);
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const m = today.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-
-    // Generate ACS ID
-    const userId = "ACS-" + Math.floor(100000 + Math.random() * 900000);
-
-    // Insert into USERS
-    const newRow = [
-      userId,
-      data.fullName,
-      email,
-      data.country,
-      data.dob,
-      age,
-      new Date().toISOString(),
-      data.termsAccepted,
-      "",
-      data.ip || ""
-    ];
-
-    usersSheet.appendRow(newRow);
-
-    // PASSWORD HASH SAVING
-    let authSheet = ss.getSheetByName("USER_AUTH");
-    if (!authSheet) {
-      authSheet = ss.insertSheet("USER_AUTH");
-      authSheet.getRange(1, 1, 1, 3).setValues([["email", "password_hash", "user_id"]]);
-      authSheet.setFrozenRows(1);
-    }
-    authSheet.appendRow([email, data.passwordHash, userId]);
-
-    return jsonSuccess({ userId });
-
-  } catch (err) {
-    return jsonError(err.message);
-  }
+/* === Utility: Hash password (same as register) =============== */
+async function hashPassword(password) {
+  const enc = new TextEncoder().encode(password);
+  const buffer = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /* ============================================================
-   === JSON HELPERS ============================================
+   === HANDLE LOGIN ============================================
    ============================================================ */
+async function handleLogin(event) {
+  event.preventDefault();
 
-function jsonError(msg) {
-  return ContentService
-    .createTextOutput(JSON.stringify({ status: "error", msg }))
-    .setMimeType(ContentService.MimeType.JSON);
+  const email = document.getElementById("email").value.trim().toLowerCase();
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    alert("⚠️ Please enter both email and password.");
+    return false;
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  try {
+    const response = await fetch(ACS_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "login",
+        email,
+        passwordHash
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.status === "error") {
+      alert("❌ " + result.msg);
+      return false;
+    }
+
+    const user = result.user;
+
+    // Guardar sesión activa
+    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+
+    alert(`🛫 Welcome back, Captain ${user.full_name}!`);
+
+    // ✅ LÓGICA QUE COMENTASTE:
+    // Si NO tiene aerolínea → a create_airline
+    if (!user.airline_id || user.airline_id === "") {
+      window.location.href = "create_airline.html";
+      return false;
+    }
+
+    // Si SÍ tiene aerolínea → al Dashboard
+    window.location.href = "dashboard.html";
+    return false;
+
+  } catch (err) {
+    alert("❌ Login failed: " + err.message);
+    return false;
+  }
 }
-
-function jsonSuccess(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify({ status: "success", ...obj }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
 </script>
 
 </body>
