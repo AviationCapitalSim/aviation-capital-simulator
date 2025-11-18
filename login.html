@@ -11,16 +11,16 @@
   <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
-  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <!-- ======== ACS Favicons (16 / 32 / 64) — FIXED VERSION ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png?v=2">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png?v=2">
 
   <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
-  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png?v=2">
 
   <!-- ======== PWA Manifest (Android / Chrome) ======== -->
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json?v=2">
 
   <style>
     
@@ -305,7 +305,6 @@ async function handleLogin(event) {
 
     alert(`🛫 Welcome back, Captain ${user.full_name}!`);
 
-    // ✅ LÓGICA QUE COMENTASTE:
     // Si NO tiene aerolínea → a create_airline
     if (!user.airline_id || user.airline_id === "") {
       window.location.href = "create_airline.html";
