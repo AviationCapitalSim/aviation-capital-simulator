@@ -250,8 +250,11 @@
 <script>
 /* ============================================================
    === ACS LOGIN — GOOGLE SHEETS BACKEND =======================
-   === Version: Beta v1 | 18 NOV 2025 ==========================
+   === Version: Stable | 18 NOV 2025 ===========================
    ============================================================ */
+
+// Limpiar sesiones viejas
+localStorage.removeItem("ACS_activeUser");
 
 const ACS_API_URL = "https://script.google.com/macros/s/AKfycbxZ1Yk4hdqEwRIb7-ozCmEW7ZuEseDjmyAEAX6o61PyGyoQKJZPKxQe7P2fkNehp1Wj_Q/exec";
 
@@ -305,7 +308,6 @@ async function handleLogin(event) {
 
     alert(`🛫 Welcome back, Captain ${user.full_name}!`);
 
-    // ✅ LÓGICA QUE COMENTASTE:
     // Si NO tiene aerolínea → a create_airline
     if (!user.airline_id || user.airline_id === "") {
       window.location.href = "create_airline.html";
@@ -321,6 +323,19 @@ async function handleLogin(event) {
     return false;
   }
 }
+
+/* ============================================================
+   === DYNAMIC TITLE (Captain Name) ============================
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+
+  if (user && user.full_name) {
+    document.getElementById("loginTitle").textContent =
+      `Captain ${user.full_name},`;
+  }
+});
 </script>
 
 </body>
