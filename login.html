@@ -280,12 +280,15 @@ async function handleLogin(event) {
 
   const passwordHash = await hashPassword(password);
 
-  // === SEND REQUEST TO GOOGLE SHEETS ===
   try {
-    const response = await fetch(ACS_API_URL + "?action=login", {
+    const response = await fetch(ACS_API_URL, {
       method: "POST",
-      body: JSON.stringify({ email, passwordHash }),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "login",
+        email,
+        passwordHash
+      })
     });
 
     const result = await response.json();
@@ -295,21 +298,21 @@ async function handleLogin(event) {
       return false;
     }
 
-    // === LOGIN SUCCESSFUL ===
     const user = result.user;
 
-    // Guardar en sesión local ACS
+    // Guardar sesión activa
     localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
     alert(`🛫 Welcome back, Captain ${user.full_name}!`);
 
-    // === LOGIC A: Does the user already have an airline? =========
+    // ✅ LÓGICA QUE COMENTASTE:
+    // Si NO tiene aerolínea → a create_airline
     if (!user.airline_id || user.airline_id === "") {
       window.location.href = "create_airline.html";
       return false;
     }
 
-    // If airline exists → dashboard
+    // Si SÍ tiene aerolínea → al Dashboard
     window.location.href = "dashboard.html";
     return false;
 
