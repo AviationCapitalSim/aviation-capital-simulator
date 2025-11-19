@@ -400,6 +400,43 @@ function openResetModal() {
 function closeResetModal() {
   document.getElementById("resetPasswordModal").style.display = "none";
 }
+
+/* ============================================================
+   === SEND TEMPORARY PASSWORD ================================
+   ============================================================ */
+
+async function sendPasswordReset() {
+  const email = document.getElementById("resetEmail").value.trim().toLowerCase();
+
+  if (!email) {
+    alert("⚠️ Please enter your email.");
+    return;
+  }
+
+  try {
+    const response = await fetch(ACS_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "forgotPassword",
+        email
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      alert("✔ A temporary password was sent to your email.");
+      closeResetModal();
+    } else {
+      alert("❌ " + result.msg);
+    }
+
+  } catch (err) {
+    alert("❌ Error: " + err.message);
+  }
+}
+  
 /* ============================================================
    === HANDLE LOGIN ============================================
    ============================================================ */
