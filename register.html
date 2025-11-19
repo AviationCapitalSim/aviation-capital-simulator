@@ -564,39 +564,23 @@
 
 <script>
 
+const ACS_API_URL = "https://script.google.com/macros/s/AKfycbxsB3HNbcawcp5_11mf1tYCt0J91S3aG20yap89qCtgps0K-7KcC5Zc9okBwJL-Z0e6tA/exec";
+
 function togglePassword(id, element) {
   const input = document.getElementById(id);
   if (!input) return;
 
   if (input.type === "text") {
     input.type = "password";
-    element.innerHTML = `
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-           stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-    `;
   } else {
     input.type = "text";
-    element.innerHTML = `
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-           stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-    `;
   }
 }
-/* ============================================================
-   === AUTO-GENERATE DOB SELECT OPTIONS ========================
-   ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
   const daySelect = document.getElementById("dob-day");
   const monthSelect = document.getElementById("dob-month");
   const yearSelect = document.getElementById("dob-year");
-
-  if (!daySelect || !monthSelect || !yearSelect) return;
 
   // Days
   daySelect.innerHTML = `<option value="">Day</option>`;
@@ -610,28 +594,24 @@ document.addEventListener("DOMContentLoaded", () => {
     monthSelect.innerHTML += `<option value="${m}">${m}</option>`;
   }
 
-  // Years (2025 → 1920)
+  // Years
   yearSelect.innerHTML = `<option value="">Year</option>`;
   for (let y = 2025; y >= 1920; y--) {
     yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
   }
 });
-     
+
 async function hashPassword(password) {
   const enc = new TextEncoder().encode(password);
   const buffer = await crypto.subtle.digest("SHA-256", enc);
-  const hashArray = Array.from(new Uint8Array(buffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  return [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-/* ============================================================
-   === HANDLE REGISTER — SEND DATA TO GOOGLE SHEETS ============
-   ============================================================ */
 async function handleRegister(event) {
   event.preventDefault();
 
   const fullName = document.getElementById("fullName").value.trim();
-  const email = document.getElementById("email").value.trim();
+  const email = document.getElementById("email").value.trim().toLowerCase();
   const password = document.getElementById("password").value;
   const confirm = document.getElementById("confirm").value;
   const country = document.getElementById("country").value;
@@ -645,19 +625,17 @@ async function handleRegister(event) {
     return;
   }
 
-  // EMAIL FORMAT VALIDATION
   const emailPattern =
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
 
   if (!emailPattern.test(email)) {
-    alert("⚠️ Please enter a valid email address.");
+    alert("⚠️ Please enter a valid email.");
     return;
   }
 
-  // PASSWORD STRENGTH VALIDATION
   const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
   if (!regex.test(password)) {
-    alert("⚠️ Password must include 8+ characters, one uppercase letter and one number.");
+    alert("⚠️ Password must include 8+ chars, one uppercase, one number.");
     return;
   }
 
@@ -666,24 +644,12 @@ async function handleRegister(event) {
     return;
   }
 
-  // AGE CHECK (18+)
   const dob = `${year}-${month}-${day}`;
-  const birthDate = new Date(dob);
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
 
-  if (age < 18) {
-    alert("⚠️ You must be at least 18 years old to play ACS.");
-    return;
-  }
-
-  // HASH PASSWORD
   const passwordHash = await hashPassword(password);
 
-  // BUILD PAYLOAD
   const payload = {
+    action: "register",
     fullName,
     email,
     country,
@@ -693,25 +659,27 @@ async function handleRegister(event) {
     passwordHash
   };
 
-  // SEND TO GOOGLE SHEETS (PRODUCTION ENDPOINT)
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbxsB3HNbcawcp5_11mf1tYCt0J91S3aG20yap89qCtgps0K-7KcC5Zc9okBwJL-Z0e6tA/exec";
-
   try {
-    await fetch(ENDPOINT, {
+    const response = await fetch(ACS_API_URL, {
       method: "POST",
-      mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
-    alert("✅ Registration complete! Welcome to ACS, Captain.");
-    window.location.assign("create_airline.html");
+    const result = await response.json();
+
+    if (result.status === "success") {
+      alert("✅ Registration complete!");
+      window.location.assign("create_airline.html");
+    } else {
+      alert("❌ " + result.msg);
+    }
 
   } catch (err) {
-    console.error(err);
-    alert("❌ Error connecting to ACS server. Please try again.");
+    alert("❌ Error connecting: " + err.message);
   }
 }
+
 </script>
 
 </body>
