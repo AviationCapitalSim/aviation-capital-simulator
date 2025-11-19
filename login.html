@@ -453,10 +453,10 @@ async function handleLogin(event) {
 
   const passwordHash = await hashPassword(password);
 
-  try {
+    try {
     const response = await fetch(ACS_API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      // ⛔ SIN headers
       body: JSON.stringify({
         action: "login",
         email,
@@ -464,7 +464,16 @@ async function handleLogin(event) {
       })
     });
 
-    const result = await response.json();
+    const text = await response.text();
+    console.log("LOGIN RAW RESPONSE:", text);
+
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      alert("❌ Server returned invalid response:\n" + text);
+      return false;
+    }
 
     // === 1) Email no registrado ===
     if (result.status === "NO_USER") {
@@ -500,6 +509,5 @@ async function handleLogin(event) {
 }
 
 </script>
-
 </body>
 </html>
