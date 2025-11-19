@@ -695,10 +695,11 @@ async function handleRegister(event) {
 
   // SEND TO GOOGLE SHEETS (PRODUCTION ENDPOINT)
   const ENDPOINT = "https://script.google.com/macros/s/AKfycbxsB3HNbcawcp5_11mf1tYCt0J91S3aG20yap89qCtgps0K-7KcC5Zc9okBwJL-Z0e6tA/exec";
-     
+
   try {
     await fetch(ENDPOINT, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
