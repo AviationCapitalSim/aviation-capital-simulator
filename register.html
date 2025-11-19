@@ -679,7 +679,7 @@ async function handleRegister(event) {
     return;
   }
 
-  // HASH PASSWORD
+    // HASH PASSWORD
   const passwordHash = await hashPassword(password);
 
   // BUILD PAYLOAD
@@ -693,35 +693,39 @@ async function handleRegister(event) {
     passwordHash
   };
 
-// SEND TO GOOGLE SHEETS (PRODUCTION ENDPOINT)
-const ACS_API_URL = "https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec";
+  // ✅ URL DEL WEB APP
+  const ACS_API_URL = "https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec";
 
-try {
-  const response = await fetch(ACS_API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  try {
+    const response = await fetch(ACS_API_URL, {
+      method: "POST",
+      // ⛔ SIN headers
+      body: JSON.stringify(payload)
+    });
 
-  const result = await response.json();
+    const resultText = await response.text();
+    console.log("REGISTER RAW RESPONSE:", resultText);
 
-  if (result.status === "success") {
-    alert("✅ Registration complete! Welcome to ACS, Captain.");
-    window.location.assign("create_airline.html");
-  } else {
-    alert("❌ Registration failed: " + result.msg);
+    let result;
+    try {
+      result = JSON.parse(resultText);
+    } catch (e) {
+      alert("❌ Server returned invalid response:\n" + resultText);
+      return;
+    }
+
+    if (result.status === "success") {
+      alert("✅ Registration complete! Welcome to ACS, Captain.");
+      window.location.assign("create_airline.html");
+    } else {
+      alert("❌ Registration failed: " + result.msg);
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Error connecting to ACS server. Please try again.");
   }
-
-} catch (err) {
-  console.error(err);
-  alert("❌ Error connecting to ACS server. Please try again.");
-}
-
-// 🔴 AQUÍ VA EL CIERRE REAL DE LA FUNCIÓN
-}  // ← cierre correcto de handleRegister(event)
-
-// 🔴 DESPUÉS VIENE EL CIERRE DEL SCRIPT
+} // 👈 cierre de handleRegister
 </script>
-
 </body>
 </html>
