@@ -452,11 +452,6 @@ async function handleLogin(event) {
     return false;
   }
 
-  if (!email.includes("@") || !email.includes(".")) {
-    alert("⚠️ Invalid email format.");
-    return false;
-  }
-
   const passwordHash = await hashPassword(password);
 
   try {
@@ -472,25 +467,32 @@ async function handleLogin(event) {
 
     const result = await response.json();
 
-    if (result.status === "error") {
-      alert("❌ " + result.msg);
+    // === 1) Email no registrado ===
+    if (result.status === "NO_USER") {
+      alert("❌ This email is not registered.\nPlease create your account.");
+      window.location.href = "register.html";
       return false;
     }
 
-    const user = result.user;
+    // === 2) Contraseña incorrecta ===
+    if (result.status === "WRONG_PASSWORD") {
+      alert("❌ Incorrect password. Please try again.");
+      return false;
+    }
 
-    // Guardar sesión activa
-    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-
-    // Si NO tiene aerolínea → a create_airline
-    if (!user.airline_id || user.airline_id === "") {
+    // === 3) Usuario SIN aerolínea ===
+    if (result.status === "NO_AIRLINE") {
+      localStorage.setItem("ACS_activeUser", JSON.stringify(result.user));
       window.location.href = "create_airline.html";
       return false;
     }
 
-    // Si SÍ tiene aerolínea → al Dashboard
-    window.location.href = "dashboard.html";
-    return false;
+    // === 4) Usuario con aerolínea ===
+    if (result.status === "HAS_AIRLINE") {
+      localStorage.setItem("ACS_activeUser", JSON.stringify(result.user));
+      window.location.href = "dashboard.html";
+      return false;
+    }
 
   } catch (err) {
     alert("❌ Login failed: " + err.message);
