@@ -451,6 +451,11 @@ async function handleLogin(event) {
     return false;
   }
 
+  if (!email.includes("@") || !email.includes(".")) {
+    alert("⚠️ Invalid email format.");
+    return false;
+  }
+
   const passwordHash = await hashPassword(password);
 
   try {
@@ -476,8 +481,6 @@ async function handleLogin(event) {
     // Guardar sesión activa
     localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-    alert(`🛫 Welcome back, Captain ${user.full_name}!`);
-
     // Si NO tiene aerolínea → a create_airline
     if (!user.airline_id || user.airline_id === "") {
       window.location.href = "create_airline.html";
@@ -494,18 +497,6 @@ async function handleLogin(event) {
   }
 }
 
-/* ============================================================
-   === DYNAMIC TITLE (Captain Name) ============================
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-
-  if (user && user.full_name) {
-    document.getElementById("loginTitle").textContent =
-      `Captain ${user.full_name},`;
-  }
-});
 </script>
 
 </body>
