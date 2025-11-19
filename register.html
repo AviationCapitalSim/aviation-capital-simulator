@@ -693,25 +693,34 @@ async function handleRegister(event) {
     passwordHash
   };
 
-  // SEND TO GOOGLE SHEETS (PRODUCTION ENDPOINT)
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec";
+// SEND TO GOOGLE SHEETS (PRODUCTION ENDPOINT)
+const ACS_API_URL = "https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec";
 
-  try {
-    await fetch(ENDPOINT, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+try {
+  const response = await fetch(ACS_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
+  const result = await response.json();
+
+  if (result.status === "success") {
     alert("✅ Registration complete! Welcome to ACS, Captain.");
     window.location.assign("create_airline.html");
-
-  } catch (err) {
-    console.error(err);
-    alert("❌ Error connecting to ACS server. Please try again.");
+  } else {
+    alert("❌ Registration failed: " + result.msg);
   }
+
+} catch (err) {
+  console.error(err);
+  alert("❌ Error connecting to ACS server. Please try again.");
 }
+
+// 🔴 AQUÍ VA EL CIERRE REAL DE LA FUNCIÓN
+}  // ← cierre correcto de handleRegister(event)
+
+// 🔴 DESPUÉS VIENE EL CIERRE DEL SCRIPT
 </script>
 
 </body>
