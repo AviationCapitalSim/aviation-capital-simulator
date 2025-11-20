@@ -799,29 +799,6 @@ function closeAgeModal() {
 }
 </script>
 
-<!-- 👇 AQUI PEGAS EL SCRIPT NUEVO -->
-<script>
-// ============================================================
-//  CHECK TERMS FLAG WHEN USER TICKS THE CHECKBOX
-// ============================================================
-document.addEventListener("DOMContentLoaded", () => {
-  const termsCheckbox = document.getElementById("terms");
-  if (!termsCheckbox) return;
-
-  termsCheckbox.addEventListener("change", () => {
-    const accepted = localStorage.getItem("ACS_termsAccepted");
-
-    // Si marca la casilla pero NO viene de terms.html
-    if (termsCheckbox.checked && accepted !== "yes") {
-      alert("⚠️ You must read and accept the Terms & Conditions on the previous page before checking this box.");
-      termsCheckbox.checked = false;          // desmarca la casilla
-      window.location.href = "terms.html";    // lo lleva a terms.html
-    }
-  });
-});
-
-<!-- 👇 REEMPLAZA TODO DESDE AQUÍ -->
-
 <!-- ============================================================
      SAVE FORM DATA (AUTO-SAVE)
 ============================================================ -->
