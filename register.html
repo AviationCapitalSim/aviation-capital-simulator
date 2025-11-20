@@ -339,44 +339,6 @@
       opacity: 0.9;
     }
        
-<!-- ===== AGE RESTRICTION MODAL ===== -->
-       
-<div id="ageModal" style="
-  display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:rgba(0,0,0,0.65);
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-">
-  <div style="
-    background:#081530;
-    padding: 22px 30px;
-    border:1px solid #ffb300;
-    border-radius:10px;
-    width: 320px;
-    text-align:center;
-    color:white;
-  ">
-    <h3 style="margin:0 0 10px; color:#ffb300;">Age Restriction</h3>
-    <p style="font-size:0.9rem; opacity:0.85; margin-bottom:18px;">
-      You must be at least <strong>18 years old</strong> to create an ACS account.
-    </p>
-    <button onclick="closeAgeModal()" style="
-      background:#ffb300;
-      border:none;
-      padding:8px 18px;
-      border-radius:6px;
-      color:black;
-      font-weight:bold;
-      cursor:pointer;
-      width:100%;
-    ">Close</button>
-  </div>
-</div>
-
   </style>
 </head>
 <body>
@@ -602,8 +564,45 @@
       </div>
     </div>
   </section>
-
+     
   <!-- ===== FOOTER ===== -->
+  <!-- 🔹 Ponemos el modal ANTES del footer -->
+  <div id="ageModal" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.65);
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  ">
+    <div style="
+      background:#081530;
+      padding: 22px 30px;
+      border:1px solid #ffb300;
+      border-radius:10px;
+      width: 320px;
+      text-align:center;
+      color:white;
+    ">
+      <h3 style="margin:0 0 10px; color:#ffb300;">Age Restriction</h3>
+      <p style="font-size:0.9rem; opacity:0.85; margin-bottom:18px;">
+        You must be at least <strong>18 years old</strong> to create an ACS account.
+      </p>
+      <button onclick="closeAgeModal()" style="
+        background:#ffb300;
+        border:none;
+        padding:8px 18px;
+        border-radius:6px;
+        color:black;
+        font-weight:bold;
+        cursor:pointer;
+        width:100%;
+      ">Close</button>
+    </div>
+  </div>
+
   <footer>
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
@@ -713,26 +712,27 @@ async function handleRegister(event) {
     return;
   }
 
-// ===== AGE CHECK (18+) =====
+  // ===== AGE CHECK (18+) =====
+  // Normalizamos mes y día a 2 dígitos para que Safari no se líe
+  const mm  = String(month).padStart(2, "0");
+  const dd  = String(day).padStart(2, "0");
+  const dob = `${year}-${mm}-${dd}`;
 
-// Construir DOB correctamente (Safari-safe)
-const dob = `${year.padStart(4,"0")}-${month.padStart(2,"0")}-${day.padStart(2,"0")}`;
-const birthDate = new Date(dob);
-const today = new Date();
+  const birthDate = new Date(dob);
+  const today = new Date();
 
-// Cálculo exacto
-let age = today.getFullYear() - birthDate.getFullYear();
-let m   = today.getMonth() - birthDate.getMonth();
-if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-  age--;
-}
+  let age = today.getFullYear() - birthDate.getFullYear();
+  let m   = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
 
-console.log("AGE CHECK:", dob, age);
+  console.log("AGE CHECK:", dob, age);
 
-if (age < 18) {
-  openAgeModal();
-  return;
-}
+  if (age < 18) {
+    openAgeModal();  // muestra el modal elegante
+    return;          // ❗ NO se envía nada al servidor
+  }
 
   // ===== HASH PASSWORD =====
   const passwordHash = await hashPassword(password);
@@ -749,7 +749,8 @@ if (age < 18) {
   };
 
   // ✅ URL DEL WEB APP
-  const ACS_API_URL = "https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec";
+  const ACS_API_URL =
+    "https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec";
 
   try {
     const response = await fetch(ACS_API_URL, {
@@ -783,11 +784,13 @@ if (age < 18) {
 
 // ===== AGE MODAL FUNCTIONS =====
 function openAgeModal() { 
-  document.getElementById("ageModal").style.display = "flex"; 
+  const modal = document.getElementById("ageModal");
+  if (modal) modal.style.display = "flex";
 }
 
 function closeAgeModal() { 
-  document.getElementById("ageModal").style.display = "none"; 
+  const modal = document.getElementById("ageModal");
+  if (modal) modal.style.display = "none";
 }
      
 </script>
