@@ -820,13 +820,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-<script>
-// ============================================================
-//  AUTO-SAVE FORM DATA (Full Name, Email, DOB, Country)
-// ============================================================
+<!-- 👇 REEMPLAZA TODO DESDE AQUÍ -->
 
+<!-- ============================================================
+     SAVE FORM DATA (AUTO-SAVE)
+============================================================ -->
+<script>
 document.addEventListener("DOMContentLoaded", () => {
-  // Cargar valores guardados
+
   const saved = JSON.parse(localStorage.getItem("ACS_registerCache") || "{}");
 
   if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
@@ -836,7 +837,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (saved.year)     document.getElementById("dob-year").value = saved.year;
   if (saved.country)  document.getElementById("country").value  = saved.country;
 
-  // Guardar automáticamente
   function save() {
     const cache = {
       fullName: document.getElementById("fullName").value.trim(),
@@ -849,29 +849,29 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("ACS_registerCache", JSON.stringify(cache));
   }
 
-  // Eventos que disparan el auto-save
   ["fullName","email","dob-day","dob-month","dob-year","country"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", save);
   });
 });
+</script>
 
+
+<!-- ============================================================
+     BLOCK CHECKBOX IF USER DID NOT ACCEPT TERMS (ONLY ONE TIME)
+============================================================ -->
 <script>
-// ============================================================
-//  BLOCK CHECKBOX IF USER DID NOT ACCEPT TERMS IN TERMS.HTML
-// ============================================================
 document.addEventListener("DOMContentLoaded", () => {
-  const termsCheckbox = document.getElementById("terms");
-  if (!termsCheckbox) return;
+  const checkbox = document.getElementById("terms");
+  if (!checkbox) return;
 
-  termsCheckbox.addEventListener("change", () => {
+  checkbox.addEventListener("change", () => {
     const accepted = localStorage.getItem("ACS_termsAccepted");
 
-    // Si intenta marcar la casilla sin venir de terms.html
-    if (termsCheckbox.checked && accepted !== "yes") {
+    if (checkbox.checked && accepted !== "yes") {
       alert("⚠️ You must read and accept the Terms & Conditions first.");
-      termsCheckbox.checked = false;  // desmarca
-      window.location.href = "terms.html"; // envía a términos
+      checkbox.checked = false;
+      window.location.href = "terms.html";
     }
   });
 });
