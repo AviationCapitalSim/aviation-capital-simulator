@@ -569,29 +569,39 @@
 <footer>
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
+
 <script>
+  function acceptTerms() {
+    // 1) Guardar bandera local para register.html
+    try {
+      localStorage.setItem("ACS_termsAccepted", "yes");
+    } catch (e) {
+      console.error("localStorage error:", e);
+      // Aunque falle localStorage, seguimos con el flujo
+    }
 
-  <script>
-function acceptTerms() {
-  // Save flag for the register.html check
-  localStorage.setItem("ACS_termsAccepted", "yes");
+    // 2) Enviar log al App Script (no bloquea la navegación)
+    try {
+      fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
+        method: "POST",
+        body: JSON.stringify({
+          action: "TERMS_ACCEPTED",
+          version: "1.0",
+          userAgent: navigator.userAgent,
+          source: "terms.html",
+          email: ""   // por ahora sin email
+        })
+      });
+    } catch (e) {
+      console.error("fetch error:", e);
+      // No bloqueamos al usuario aunque falle el log
+    }
 
-  // Send log to App Script
-  fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
-    method: "POST",
-    body: JSON.stringify({
-      action: "TERMS_ACCEPTED",
-      version: "1.0",
-      userAgent: navigator.userAgent,
-      source: "terms.html",
-      email: ""
-    })
-  });
-
-  alert("✔ Thank you. You accepted the Terms & Conditions.");
-  window.location.href = "register.html";
-}
-
+    // 3) Confirmación al usuario + redirección
+    alert("✔ Thank you. You accepted the Terms & Conditions.");
+    window.location.href = "register.html";
+  }
 </script>
+
 </body>
 </html>
