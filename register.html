@@ -799,5 +799,17 @@ function closeAgeModal() {
      
 </script>
 
+<!-- 🔹 NUEVO SCRIPT AQUÍ -->
+<script>
+// ========== BLOCK USERS WHO DID NOT ACCEPT TERMS ==========
+document.addEventListener("DOMContentLoaded", () => {
+  const accepted = localStorage.getItem("ACS_termsAccepted");
+
+  if (!accepted || accepted !== "yes") {
+    alert("⚠️ You must read and accept the Terms & Conditions before creating an account.");
+    window.location.href = "terms.html";
+  }
+});
+</script>
 </body>
 </html>
