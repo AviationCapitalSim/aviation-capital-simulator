@@ -855,7 +855,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (el) el.addEventListener("input", save);
   });
 });
-     
+
+<script>
+// ============================================================
+//  BLOCK CHECKBOX IF USER DID NOT ACCEPT TERMS IN TERMS.HTML
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const termsCheckbox = document.getElementById("terms");
+  if (!termsCheckbox) return;
+
+  termsCheckbox.addEventListener("change", () => {
+    const accepted = localStorage.getItem("ACS_termsAccepted");
+
+    // Si intenta marcar la casilla sin venir de terms.html
+    if (termsCheckbox.checked && accepted !== "yes") {
+      alert("⚠️ You must read and accept the Terms & Conditions first.");
+      termsCheckbox.checked = false;  // desmarca
+      window.location.href = "terms.html"; // envía a términos
+    }
+  });
+});
 </script>
+
 </body>
 </html>
