@@ -681,21 +681,22 @@ async function handleRegister(event) {
   event.preventDefault();
 
   const fullName = document.getElementById("fullName").value.trim();
-  const email = document.getElementById("email").value.trim();
+  const email    = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
-  const confirm = document.getElementById("confirm").value;
-  const country = document.getElementById("country").value;
+  const confirm  = document.getElementById("confirm").value;
+  const country  = document.getElementById("country").value;
 
-  const day = document.getElementById("dob-day").value;
+  const day   = document.getElementById("dob-day").value;
   const month = document.getElementById("dob-month").value;
-  const year = document.getElementById("dob-year").value;
+  const year  = document.getElementById("dob-year").value;
 
+  // ===== VALIDACIÓN BÁSICA CAMPOS =====
   if (!fullName || !email || !password || !confirm || !country || !day || !month || !year) {
     alert("⚠️ Please complete all fields.");
     return;
   }
 
-  // EMAIL FORMAT VALIDATION
+  // ===== EMAIL =====
   const emailPattern =
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
 
@@ -704,7 +705,7 @@ async function handleRegister(event) {
     return;
   }
 
-  // PASSWORD STRENGTH VALIDATION
+  // ===== PASSWORD STRENGTH =====
   const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
   if (!regex.test(password)) {
     alert("⚠️ Password must include 8+ characters, one uppercase letter and one number.");
@@ -716,28 +717,29 @@ async function handleRegister(event) {
     return;
   }
 
-  // AGE CHECK (18+)
-const dob = `${year}-${month}-${day}`;
-const birthDate = new Date(dob);
-const today = new Date();
+  // ===== AGE CHECK (18+) =====
+  const dob = `${year}-${month}-${day}`;
+  const birthDate = new Date(dob);
+  const today = new Date();
 
-let age = today.getFullYear() - birthDate.getFullYear();
-let m = today.getMonth() - birthDate.getMonth();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  let m   = today.getMonth() - birthDate.getMonth();
 
-if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-  age--;
-}
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
 
-// ❗ Si el usuario es menor de 18, NO deja registrar
-if (age < 18) {
-  openAgeModal();
-  return;
-}
+  console.log("AGE CHECK:", { dob, age }); // 👈 para verificar en consola
 
-    // HASH PASSWORD
+  if (age < 18) {
+    openAgeModal();  // muestra el modal elegante
+    return;          // ❗ NO se envía nada al servidor
+  }
+
+  // ===== HASH PASSWORD =====
   const passwordHash = await hashPassword(password);
 
-  // BUILD PAYLOAD
+  // ===== BUILD PAYLOAD =====
   const payload = {
     fullName,
     email,
@@ -754,8 +756,7 @@ if (age < 18) {
   try {
     const response = await fetch(ACS_API_URL, {
       method: "POST",
-      // ⛔ SIN headers
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload)   // sin headers para evitar preflight
     });
 
     const resultText = await response.text();
@@ -777,12 +778,10 @@ if (age < 18) {
     }
 
   } catch (err) {
-  console.error(err);
-  alert("❌ Error connecting to ACS server. Please try again.");
+    console.error(err);
+    alert("❌ Error connecting to ACS server. Please try again.");
+  }
 }
-
-} // 👈 cierre correcto de handleRegister()
-
 
 // ===== AGE MODAL FUNCTIONS =====
 function openAgeModal() { 
@@ -792,6 +791,7 @@ function openAgeModal() {
 function closeAgeModal() { 
   document.getElementById("ageModal").style.display = "none"; 
 }
+     
 </script>
 
 </body>
