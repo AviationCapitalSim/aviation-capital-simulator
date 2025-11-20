@@ -633,6 +633,7 @@ function togglePassword(id, element) {
     `;
   }
 }
+
 /* ============================================================
    === AUTO-GENERATE DOB SELECT OPTIONS ========================
    ============================================================ */
@@ -643,19 +644,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!daySelect || !monthSelect || !yearSelect) return;
 
-  // Days
   daySelect.innerHTML = `<option value="">Day</option>`;
   for (let d = 1; d <= 31; d++) {
     daySelect.innerHTML += `<option value="${d}">${d}</option>`;
   }
 
-  // Months
   monthSelect.innerHTML = `<option value="">Month</option>`;
   for (let m = 1; m <= 12; m++) {
     monthSelect.innerHTML += `<option value="${m}">${m}</option>`;
   }
 
-  // Years (2025 → 1920)
   yearSelect.innerHTML = `<option value="">Year</option>`;
   for (let y = 2025; y >= 1920; y--) {
     yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
@@ -668,10 +666,12 @@ async function hashPassword(password) {
   const hashArray = Array.from(new Uint8Array(buffer));
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
+</script>
 
-/* ============================================================
-   === HANDLE REGISTER — SEND DATA TO GOOGLE SHEETS ============
-   ============================================================ */
+<!-- ============================================================
+     HANDLE REGISTER — SEND DATA TO SERVER
+============================================================ -->
+<script>
 async function handleRegister(event) {
   event.preventDefault();
 
@@ -685,13 +685,11 @@ async function handleRegister(event) {
   const month = document.getElementById("dob-month").value;
   const year  = document.getElementById("dob-year").value;
 
-  // ===== VALIDACIÓN BÁSICA CAMPOS =====
   if (!fullName || !email || !password || !confirm || !country || !day || !month || !year) {
     alert("⚠️ Please complete all fields.");
     return;
   }
 
-  // ===== EMAIL =====
   const emailPattern =
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
 
@@ -700,7 +698,6 @@ async function handleRegister(event) {
     return;
   }
 
-  // ===== PASSWORD STRENGTH =====
   const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
   if (!regex.test(password)) {
     alert("⚠️ Password must include 8+ characters, one uppercase letter and one number.");
@@ -712,8 +709,6 @@ async function handleRegister(event) {
     return;
   }
 
-  // ===== AGE CHECK (18+) =====
-  // Normalizamos mes y día a 2 dígitos para que Safari no se líe
   const mm  = String(month).padStart(2, "0");
   const dd  = String(day).padStart(2, "0");
   const dob = `${year}-${mm}-${dd}`;
@@ -727,54 +722,40 @@ async function handleRegister(event) {
     age--;
   }
 
-  console.log("AGE CHECK:", dob, age);
-
   if (age < 18) {
-    openAgeModal();  // muestra el modal elegante
-    return;          // ❗ NO se envía nada al servidor
+    openAgeModal();
+    return;
   }
 
-  // ===== HASH PASSWORD =====
   const passwordHash = await hashPassword(password);
 
- // ===== BUILD PAYLOAD =====
   const payload = {
-  fullName,
-  email,
-  country,
-  dob,
-  ip: "",
-  passwordHash,
+    fullName,
+    email,
+    country,
+    dob,
+    ip: "",
+    passwordHash,
+    termsAccepted: true,
+    termsVersion: "1.0",
+    termsAcceptedAt: new Date().toISOString(),
+  };
 
-  // ===== TERMS ACCEPTANCE (NEW) =====
-  termsAccepted: true,
-  termsVersion: "1.0",
-  termsAcceptedAt: new Date().toISOString(),
-};
-
-  // ✅ URL DEL WEB APP
   const ACS_API_URL =
     "https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec";
 
   try {
     const response = await fetch(ACS_API_URL, {
       method: "POST",
-      body: JSON.stringify(payload)   // sin headers para evitar preflight
+      body: JSON.stringify(payload)
     });
 
-    const resultText = await response.text();
-    console.log("REGISTER RAW RESPONSE:", resultText);
-
-    let result;
-    try {
-      result = JSON.parse(resultText);
-    } catch (e) {
-      alert("❌ Server returned invalid response:\n" + resultText);
-      return;
-    }
+    const raw = await response.text();
+    let result = JSON.parse(raw);
 
     if (result.status === "success") {
       alert("✅ Registration complete! Welcome to ACS, Captain.");
+      localStorage.removeItem("ACS_registerCache");
       window.location.assign("create_airline.html");
     } else {
       alert("❌ Registration failed: " + result.msg);
@@ -785,8 +766,12 @@ async function handleRegister(event) {
     alert("❌ Error connecting to ACS server. Please try again.");
   }
 }
+</script>
 
-// ===== AGE MODAL FUNCTIONS =====
+<!-- ============================================================
+     AGE MODAL
+============================================================ -->
+<script>
 function openAgeModal() { 
   const modal = document.getElementById("ageModal");
   if (modal) modal.style.display = "flex";
@@ -798,34 +783,12 @@ function closeAgeModal() {
 }
 </script>
 
-<!-- 👇 AQUI PEGAS EL SCRIPT NUEVO -->
+<!-- ============================================================
+     AUTO-SAVE FORM DATA — FINAL VERSION
+============================================================ -->
 <script>
-// ============================================================
-//  CHECK TERMS FLAG WHEN USER TICKS THE CHECKBOX
-// ============================================================
 document.addEventListener("DOMContentLoaded", () => {
-  const termsCheckbox = document.getElementById("terms");
-  if (!termsCheckbox) return;
 
-  termsCheckbox.addEventListener("change", () => {
-    const accepted = localStorage.getItem("ACS_termsAccepted");
-
-    // Si marca la casilla pero NO viene de terms.html
-    if (termsCheckbox.checked && accepted !== "yes") {
-      alert("⚠️ You must read and accept the Terms & Conditions on the previous page before checking this box.");
-      termsCheckbox.checked = false;          // desmarca la casilla
-      window.location.href = "terms.html";    // lo lleva a terms.html
-    }
-  });
-});
-
-<script>
-// ============================================================
-//  AUTO-SAVE FORM DATA (Full Name, Email, DOB, Country)
-// ============================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Cargar valores guardados
   const saved = JSON.parse(localStorage.getItem("ACS_registerCache") || "{}");
 
   if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
@@ -835,7 +798,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (saved.year)     document.getElementById("dob-year").value = saved.year;
   if (saved.country)  document.getElementById("country").value  = saved.country;
 
-  // Guardar automáticamente
   function save() {
     const cache = {
       fullName: document.getElementById("fullName").value.trim(),
@@ -848,19 +810,18 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("ACS_registerCache", JSON.stringify(cache));
   }
 
-  // Eventos que disparan el auto-save
   ["fullName","email","dob-day","dob-month","dob-year","country"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener("input", save);
   });
+
 });
+</script>
 
+<!-- ============================================================
+     TERMS BLOCK — FINAL, ÚNICO, CORRECTO
+============================================================ -->
 <script>
-// ============================================================
-//   BLOCK CHECKBOX IF USER DID NOT ACCEPT TERMS (FINAL VERSION)
-// ============================================================     
-<script>
-
 document.addEventListener("DOMContentLoaded", () => {
 
   const checkbox = document.getElementById("terms");
@@ -869,9 +830,6 @@ document.addEventListener("DOMContentLoaded", () => {
   checkbox.addEventListener("change", () => {
     const accepted = localStorage.getItem("ACS_termsAccepted");
 
-    console.log("Terms flag:", accepted); // diagnóstico
-
-    // Si NO ha aceptado oficialmente en terms.html
     if (checkbox.checked && accepted !== "yes") {
       alert("⚠️ You must read and accept the Terms & Conditions first.");
       checkbox.checked = false;
