@@ -854,7 +854,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (el) el.addEventListener("input", save);
   });
 });
-     
+
+<script>
+// ============================================================
+//   BLOCK CHECKBOX IF USER DID NOT ACCEPT TERMS (FINAL VERSION)
+// ============================================================     
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const checkbox = document.getElementById("terms");
+  if (!checkbox) return;
+
+  checkbox.addEventListener("change", () => {
+    const accepted = localStorage.getItem("ACS_termsAccepted");
+
+    console.log("Terms flag:", accepted); // diagnóstico
+
+    // Si NO ha aceptado oficialmente en terms.html
+    if (checkbox.checked && accepted !== "yes") {
+      alert("⚠️ You must read and accept the Terms & Conditions first.");
+      checkbox.checked = false;
+      window.location.href = "terms.html";
+    }
+  });
+
+});
 </script>
+
 </body>
 </html>
