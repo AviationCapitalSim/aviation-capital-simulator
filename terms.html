@@ -570,8 +570,12 @@
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
 <script>
+
+  <script>
 function acceptTerms() {
-  localStorage.setItem("ACS_termsAccepted", "1.0");
+
+  // 🔥 NUEVA LÍNEA (correcta)
+  localStorage.setItem("ACS_termsAccepted", "yes");
 
   fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
     method: "POST",
