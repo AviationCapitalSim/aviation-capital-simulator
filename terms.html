@@ -250,6 +250,24 @@
       margin-top: 0.3rem;
     }
 
+   .agree-btn {
+      background: linear-gradient(135deg, #FFB300 0%, #FFD260 100%);
+      color: #0a1433;
+      padding: 0.75rem 2.6rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(255,179,0,0.45);
+      transition: 0.25s ease;
+    }
+
+    .agree-btn:hover {
+      box-shadow: 0 0 20px rgba(255,179,0,0.75);
+      transform: translateY(-2px);
+    }
+     
     /* FOOTER */
     footer {
       text-align: center;
@@ -278,6 +296,7 @@
         font-size: 1.7rem;
       }
     }
+      
   </style>
 </head>
 
@@ -522,7 +541,15 @@
       </p>
     </section>
 
-  </article>
+    </article>
+
+  <!-- ===== I AGREE BUTTON — QATAR LUXURY STYLE ===== -->
+  <div style="text-align:center; margin-top:2.5rem;">
+    <button id="agreeBtn" class="agree-btn">
+      ✓ I Agree & Accept These Terms
+    </button>
+  </div>
+
 </main>
 
 <!-- ===== FOOTER ===== -->
