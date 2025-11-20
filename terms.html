@@ -541,14 +541,27 @@
       </p>
     </section>
 
+    <!-- AGREEMENT BUTTON -->
+    <div style="text-align:center; margin-top:2.8rem;">
+    <button onclick="acceptTerms()" 
+    style="
+      padding: 0.9rem 2.6rem;
+      background: linear-gradient(135deg, #00ff9d 0%, #14cba8 50%, #009f7b 100%);
+      color: #001622;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(0,255,180,0.45), inset 0 0 8px rgba(255,255,255,0.15);
+      backdrop-filter: blur(6px);
+      transition: 0.25s;
+    ">
+    ✔ I Agree & Accept Terms
+  </button>
+</div>
+     
     </article>
-
-  <!-- ===== I AGREE BUTTON — QATAR LUXURY STYLE ===== -->
-  <div style="text-align:center; margin-top:2.5rem;">
-    <button id="agreeBtn" class="agree-btn">
-      ✓ I Agree & Accept These Terms
-    </button>
-  </div>
 
 </main>
 
@@ -556,6 +569,24 @@
 <footer>
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
+<script>
+function acceptTerms() {
+  localStorage.setItem("ACS_termsAccepted", "1.0");
 
+  fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "TERMS_ACCEPTED",
+      version: "1.0",
+      userAgent: navigator.userAgent,
+      source: "terms.html",
+      email: "" 
+    })
+  });
+
+  alert("✔ Thank you. You accepted the Terms & Conditions.");
+  window.location.href = "register.html";
+}
+</script>
 </body>
 </html>
