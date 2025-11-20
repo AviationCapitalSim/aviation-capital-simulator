@@ -675,14 +675,6 @@ async function hashPassword(password) {
 async function handleRegister(event) {
   event.preventDefault();
 
-     // === CHECK IF USER ACCEPTED TERMS IN TERMS.HTML ===
-  const accepted = localStorage.getItem("ACS_termsAccepted");
-
-  if (!accepted) {
-  alert("⚠️ You must read and accept the Terms & Conditions first.");
-  window.location.href = "terms.html";
-  return;
-}
   const fullName = document.getElementById("fullName").value.trim();
   const email    = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
@@ -800,25 +792,7 @@ function closeAgeModal() {
   const modal = document.getElementById("ageModal");
   if (modal) modal.style.display = "none";
 }
-<script>
-function acceptTerms() {
-  localStorage.setItem("ACS_termsAccepted", "1.0");
-
-  // Enviar al servidor también
-  fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
-    method: "POST",
-    body: JSON.stringify({
-      action: "TERMS_ACCEPTED",
-      version: "1.0",
-      userAgent: navigator.userAgent,
-      source: "terms.html",
-      email: "" // futuro: llenar en settings
-    })
-  });
-
-  alert("✔ Thank you. You accepted the Terms & Conditions.");
-  window.location.href = "register.html";
-}
+     
 </script>
 
 </body>
