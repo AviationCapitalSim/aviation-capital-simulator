@@ -439,25 +439,21 @@
   <input type="text" id="fullName" placeholder="Full Name" required />
   <input type="email" id="email" placeholder="Email Address" required />
 
-  <!-- ===== NEW DOB SELECTORS (DAY - MONTH - YEAR) ===== -->
-  <div style="display:flex; gap:0.5rem; width:100%;">
-    <select id="dob-day" required>
-      <option value="">Day</option>
-      <!-- 1–31 -->
-      ${[...Array(31)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
-    </select>
+  <!-- ===== DOB SELECTORS (DAY - MONTH - YEAR) ===== -->
+  <!-- ===== NEW DOB SELECTORS ===== -->
+<div style="display:flex; gap:0.5rem; width:100%;">
+  <select id="dob-day" required>
+    <option value="">Day</option>
+  </select>
 
-    <select id="dob-month" required>
-      <option value="">Month</option>
-      ${[...Array(12)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
-    </select>
+  <select id="dob-month" required>
+    <option value="">Month</option>
+  </select>
 
-    <select id="dob-year" required>
-      <option value="">Year</option>
-      <!-- Años 1920–2025 -->
-      ${Array.from({length:106},(_,i)=>2025-i).map(y=>`<option value="${y}">${y}</option>`).join("")}
-    </select>
-  </div>
+  <select id="dob-year" required>
+    <option value="">Year</option>
+  </select>
+</div>
 
    <!-- ===== DOB INFO MESSAGE (ACS Professional Style) ===== -->
   <div style="
@@ -717,13 +713,10 @@ async function handleRegister(event) {
     return;
   }
 
-  // ===== AGE CHECK (18+) =====
-const day   = document.getElementById("dob-day").value;
-const month = document.getElementById("dob-month").value;
-const year  = document.getElementById("dob-year").value;
+// ===== AGE CHECK (18+) =====
 
-// Construir DOB correctamente
-const dob = `${year}-${month}-${day}`;
+// Construir DOB correctamente (Safari-safe)
+const dob = `${year.padStart(4,"0")}-${month.padStart(2,"0")}-${day.padStart(2,"0")}`;
 const birthDate = new Date(dob);
 const today = new Date();
 
@@ -738,7 +731,7 @@ console.log("AGE CHECK:", dob, age);
 
 if (age < 18) {
   openAgeModal();
-  return;  
+  return;
 }
 
   // ===== HASH PASSWORD =====
