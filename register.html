@@ -796,20 +796,29 @@ function closeAgeModal() {
   const modal = document.getElementById("ageModal");
   if (modal) modal.style.display = "none";
 }
-     
 </script>
 
-<!-- 🔹 NUEVO SCRIPT AQUÍ -->
+<!-- 👇 AQUI PEGAS EL SCRIPT NUEVO -->
 <script>
-// ========== BLOCK USERS WHO DID NOT ACCEPT TERMS ==========
+// ============================================================
+//  CHECK TERMS FLAG WHEN USER TICKS THE CHECKBOX
+// ============================================================
 document.addEventListener("DOMContentLoaded", () => {
-  const accepted = localStorage.getItem("ACS_termsAccepted");
+  const termsCheckbox = document.getElementById("terms");
+  if (!termsCheckbox) return;
 
-  if (!accepted || accepted !== "yes") {
-    alert("⚠️ You must read and accept the Terms & Conditions before creating an account.");
-    window.location.href = "terms.html";
-  }
+  termsCheckbox.addEventListener("change", () => {
+    const accepted = localStorage.getItem("ACS_termsAccepted");
+
+    // Si marca la casilla pero NO viene de terms.html
+    if (termsCheckbox.checked && accepted !== "yes") {
+      alert("⚠️ You must read and accept the Terms & Conditions on the previous page before checking this box.");
+      termsCheckbox.checked = false;          // desmarca la casilla
+      window.location.href = "terms.html";    // lo lleva a terms.html
+    }
+  });
 });
 </script>
+
 </body>
 </html>
