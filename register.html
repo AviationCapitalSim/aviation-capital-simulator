@@ -775,7 +775,8 @@ async function handleRegister(event) {
 
     if (result.status === "success") {
       alert("✅ Registration complete! Welcome to ACS, Captain.");
-      window.location.assign("create_airline.html");
+     localStorage.removeItem("ACS_registerCache");
+     window.location.assign("create_airline.html");
     } else {
       alert("❌ Registration failed: " + result.msg);
     }
