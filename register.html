@@ -775,8 +775,7 @@ async function handleRegister(event) {
 
     if (result.status === "success") {
       alert("✅ Registration complete! Welcome to ACS, Captain.");
-     localStorage.removeItem("ACS_registerCache");
-     window.location.assign("create_airline.html");
+      window.location.assign("create_airline.html");
     } else {
       alert("❌ Registration failed: " + result.msg);
     }
@@ -799,56 +798,23 @@ function closeAgeModal() {
 }
 </script>
 
-<!-- ============================================================
-     SAVE FORM DATA (AUTO-SAVE)
-============================================================ -->
+<!-- 👇 AQUI PEGAS EL SCRIPT NUEVO -->
 <script>
+// ============================================================
+//  CHECK TERMS FLAG WHEN USER TICKS THE CHECKBOX
+// ============================================================
 document.addEventListener("DOMContentLoaded", () => {
+  const termsCheckbox = document.getElementById("terms");
+  if (!termsCheckbox) return;
 
-  const saved = JSON.parse(localStorage.getItem("ACS_registerCache") || "{}");
-
-  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
-  if (saved.email)    document.getElementById("email").value    = saved.email;
-  if (saved.day)      document.getElementById("dob-day").value  = saved.day;
-  if (saved.month)    document.getElementById("dob-month").value = saved.month;
-  if (saved.year)     document.getElementById("dob-year").value = saved.year;
-  if (saved.country)  document.getElementById("country").value  = saved.country;
-
-  function save() {
-    const cache = {
-      fullName: document.getElementById("fullName").value.trim(),
-      email:    document.getElementById("email").value.trim(),
-      day:      document.getElementById("dob-day").value,
-      month:    document.getElementById("dob-month").value,
-      year:     document.getElementById("dob-year").value,
-      country:  document.getElementById("country").value
-    };
-    localStorage.setItem("ACS_registerCache", JSON.stringify(cache));
-  }
-
-  ["fullName","email","dob-day","dob-month","dob-year","country"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener("input", save);
-  });
-});
-</script>
-
-
-<!-- ============================================================
-     BLOCK CHECKBOX IF USER DID NOT ACCEPT TERMS (ONLY ONE TIME)
-============================================================ -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const checkbox = document.getElementById("terms");
-  if (!checkbox) return;
-
-  checkbox.addEventListener("change", () => {
+  termsCheckbox.addEventListener("change", () => {
     const accepted = localStorage.getItem("ACS_termsAccepted");
 
-    if (checkbox.checked && accepted !== "yes") {
-      alert("⚠️ You must read and accept the Terms & Conditions first.");
-      checkbox.checked = false;
-      window.location.href = "terms.html";
+    // Si marca la casilla pero NO viene de terms.html
+    if (termsCheckbox.checked && accepted !== "yes") {
+      alert("⚠️ You must read and accept the Terms & Conditions on the previous page before checking this box.");
+      termsCheckbox.checked = false;          // desmarca la casilla
+      window.location.href = "terms.html";    // lo lleva a terms.html
     }
   });
 });
