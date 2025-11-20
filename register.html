@@ -737,16 +737,20 @@ async function handleRegister(event) {
   // ===== HASH PASSWORD =====
   const passwordHash = await hashPassword(password);
 
-  // ===== BUILD PAYLOAD =====
+ // ===== BUILD PAYLOAD =====
   const payload = {
-    fullName,
-    email,
-    country,
-    dob,
-    termsAccepted: true,
-    ip: "",
-    passwordHash
-  };
+  fullName,
+  email,
+  country,
+  dob,
+  ip: "",
+  passwordHash,
+
+  // ===== TERMS ACCEPTANCE (NEW) =====
+  termsAccepted: true,
+  termsVersion: "1.0",
+  termsAcceptedAt: new Date().toISOString(),
+};
 
   // ✅ URL DEL WEB APP
   const ACS_API_URL =
