@@ -573,10 +573,10 @@
 
   <script>
 function acceptTerms() {
-
-  // 🔥 NUEVA LÍNEA (correcta)
+  // Save flag for the register.html check
   localStorage.setItem("ACS_termsAccepted", "yes");
 
+  // Send log to App Script
   fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
     method: "POST",
     body: JSON.stringify({
@@ -584,13 +584,14 @@ function acceptTerms() {
       version: "1.0",
       userAgent: navigator.userAgent,
       source: "terms.html",
-      email: "" 
+      email: ""
     })
   });
 
   alert("✔ Thank you. You accepted the Terms & Conditions.");
   window.location.href = "register.html";
 }
+
 </script>
 </body>
 </html>
