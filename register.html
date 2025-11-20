@@ -718,24 +718,28 @@ async function handleRegister(event) {
   }
 
   // ===== AGE CHECK (18+) =====
+const day   = document.getElementById("dob-day").value;
+const month = document.getElementById("dob-month").value;
+const year  = document.getElementById("dob-year").value;
 
-  // 🔥 FORMATO SEGURO PARA SAFARI (padStart evita fechas inválidas)
-  const dob = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-  const birthDate = new Date(dob);
-  const today = new Date();
+// Construir DOB correctamente
+const dob = `${year}-${month}-${day}`;
+const birthDate = new Date(dob);
+const today = new Date();
 
-  let age = today.getFullYear() - birthDate.getFullYear();
-  let m   = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
+// Cálculo exacto
+let age = today.getFullYear() - birthDate.getFullYear();
+let m   = today.getMonth() - birthDate.getMonth();
+if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+  age--;
+}
 
-  console.log("AGE CHECK:", dob, age);
+console.log("AGE CHECK:", dob, age);
 
-  if (age < 18) {
-    openAgeModal();
-    return;  
-  }
+if (age < 18) {
+  openAgeModal();
+  return;  
+}
 
   // ===== HASH PASSWORD =====
   const passwordHash = await hashPassword(password);
