@@ -472,8 +472,6 @@
   </div>
 <!-- ===================================================== -->
             
-  <!-- ========================================================= -->
-
   <!-- ===== PASSWORD FIELD (MODERN APPLE EYE ICON) ===== -->
   <div class="password-wrapper">
     <input type="password" id="password" placeholder="Password (min 8 chars, 1 uppercase, 1 number)" required />
@@ -488,7 +486,7 @@
 
   <div class="password-wrapper">
     <input type="password" id="confirm" placeholder="Confirm Password" required />
-    <span class="toggle-password" onclick="togglePassword('password', this)">
+    <span class="toggle-password" onclick="togglePassword('confirm', this)">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
            stroke-linecap="round" stroke-linejoin="round">
         <path d="M1 12s4-7 11-7 11 7 11 7-4 7 -11 7S1 12 1 12z"></path>
@@ -730,7 +728,6 @@ async function handleRegister(event) {
   openAgeModal();
   return;
 }
-  }
 
     // HASH PASSWORD
   const passwordHash = await hashPassword(password);
