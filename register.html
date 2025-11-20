@@ -717,14 +717,19 @@ async function handleRegister(event) {
   }
 
   // AGE CHECK (18+)
-  const dob = `${year}-${month}-${day}`;
-  const birthDate = new Date(dob);
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+const dob = `${year}-${month}-${day}`;
+const birthDate = new Date(dob);
+const today = new Date();
 
-  if (age < 18) {
+let age = today.getFullYear() - birthDate.getFullYear();
+let m = today.getMonth() - birthDate.getMonth();
+
+if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+  age--;
+}
+
+// ❗ Si el usuario es menor de 18, NO deja registrar
+if (age < 18) {
   openAgeModal();
   return;
 }
