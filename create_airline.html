@@ -13,298 +13,363 @@
   <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <!-- ======== ACS Favicons ======== -->
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
   <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== PWA Manifest (Android / Chrome) ======== -->
   <link rel="manifest" href="manifest.json">
 
-<style>
-/* ========= SAME STYLES YOU PROVIDED ========= */
-body {
-  background-color: #0C1F3C;
-  color: white;
-  font-family: "Poppins", sans-serif;
-  margin: 0;
-  padding-top: 120px;
-  text-align: center;
-}
+  <style>
 
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  padding: 0.8rem 2rem;
-  background: rgba(12, 23, 50, 0.45);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255, 179, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 1000;
-  animation: acsHeaderFade 0.8s ease forwards;
-}
+    body {
+      background-color: #0C1F3C;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding-top: 120px;
+      text-align: center;
+    }
 
-@keyframes acsHeaderFade {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    /* ================= Qatar Luxury Header ================= */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 0.8rem 2rem;
 
-.acs-logo { display:flex; align-items:center; gap:0.6rem;}
-.acs-logo img { height:46px; filter: drop-shadow(0 0 6px rgba(255,179,0,0.35)); }
-.acs-logo h1 { color:#FFB300; font-size:1.15rem; margin:0; letter-spacing:0.6px;}
+      background: rgba(12, 23, 50, 0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
 
-.nav-btn {
-  padding:0.45rem 1.2rem; border-radius:10px; font-size:0.9rem;
-  cursor:pointer; text-align:center; text-decoration:none;
-  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08);
-  color:#8AB4FF;
-}
+      border-bottom: 1px solid rgba(255, 179, 0, 0.35);
 
-.form-container {
-  background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2.4rem;
-  border-radius: 22px;
-  border: 1px solid rgba(255, 179, 0, 0.22);
-  box-shadow: 0 0 30px rgba(0,0,0,0.55);
-}
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
-input, select {
-  width:100%;
-  padding:0.9rem;
-  margin-bottom:1.1rem;
-  border-radius:14px;
-  border:1px solid rgba(255,179,0,0.18);
-  background:rgba(10,30,60,0.7);
-  color:white;
-}
+      z-index: 1000;
+      box-sizing: border-box;
 
-button {
-  background: linear-gradient(135deg, #ffb300 0%, #ffcf53 100%);
-  color:#0C1F3C;
-  font-weight:900;
-  font-size:1.1rem;
-  border:none;
-  border-radius:16px;
-  padding:1.1rem 2.6rem;
-  cursor:pointer;
-  box-shadow:0 0 20px rgba(255,179,0,0.45);
-}
-</style>
+      animation: acsHeaderFade 0.8s ease forwards;
+    }
 
+    @keyframes acsHeaderFade {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .acs-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .acs-logo img {
+      height: 46px;
+      filter: drop-shadow(0 0 6px rgba(255,179,0,0.35));
+    }
+
+    .acs-logo h1 {
+      color: #FFB300;
+      font-size: 1.15rem;
+      margin: 0;
+      letter-spacing: 0.6px;
+      text-shadow: 0 0 8px rgba(255,179,0,0.4);
+    }
+
+    .acs-nav-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-left: auto;
+    }
+
+    .nav-btn {
+      padding: 0.45rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.25s;
+      min-width: 100px;
+
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+      text-decoration: none;
+
+      color: #8AB4FF;
+      border-color: rgba(138,180,255,0.45);
+    }
+
+    .nav-btn:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 12px rgba(138,180,255,0.55);
+    }
+
+    /* ============================================================
+       === QATAR LUXURY A + B + C — PREMIUM UI UPGRADE ===========
+       ============================================================ */
+
+    /* --- A: Glass Royale Premium Card --- */
+    .form-container {
+      background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2.4rem;
+      border-radius: 22px;
+
+      border: 1px solid rgba(255, 179, 0, 0.22);
+      box-shadow:
+        0 0 30px rgba(0,0,0,0.55),
+        inset 0 0 25px rgba(255,255,255,0.04);
+
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+
+      animation: floatCard 1.2s ease forwards;
+    }
+
+    @keyframes floatCard {
+      from { opacity:0; transform: translateY(20px) scale(0.97); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    /* --- BONUS: Golden Title Line --- */
+    h2 {
+      color: #FFB300;
+      font-size: 1.7rem;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.8rem;
+      position: relative;
+    }
+
+    h2::after {
+      content: "";
+      display: block;
+      width: 90px;
+      height: 2px;
+      margin: 0.6rem auto 1.3rem;
+      background: linear-gradient(90deg, transparent, #ffb300, transparent);
+    }
+
+    /* --- B: Qatar Royal Inputs --- */
+    input, select {
+      width: 100%;
+      padding: 0.9rem;
+      margin-bottom: 1.1rem;
+
+      border-radius: 14px;
+      border: 1px solid rgba(255, 179, 0, 0.18);
+
+      background: rgba(10, 30, 60, 0.7);
+      color: white;
+      font-size: 1rem;
+
+      box-shadow:
+        inset 0 0 10px rgba(0,0,0,0.25),
+        0 0 6px rgba(255,179,0,0.15);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #FFB300;
+      box-shadow:
+        0 0 10px rgba(255,179,0,0.45),
+        inset 0 0 5px rgba(255,179,0,0.2);
+    }
+
+    /* --- C: Gulf Premium Gold Button --- */
+    button {
+      background: linear-gradient(135deg, #ffb300 0%, #ffcf53 100%);
+      color: #0C1F3C;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 16px;
+
+      padding: 1.1rem 2.6rem;
+      cursor: pointer;
+      transition: 0.25s ease;
+
+      box-shadow:
+        0 0 20px rgba(255,179,0,0.45),
+        0 6px 18px rgba(0,0,0,0.35);
+    }
+
+    button:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow:
+        0 0 30px rgba(255,179,0,0.65),
+        0 12px 18px rgba(0,0,0,0.4);
+    }
+
+    footer {
+      margin-top: 3rem;
+      color: #bbb;
+      font-size: 0.85rem;
+    }
+
+    .acs-clock-header {
+      font-family: 'Orbitron', 'Consolas', monospace; 
+      color: #00ff80;
+      font-weight: bold;
+      background: rgba(0, 255, 128, 0.08);
+      padding: 0.3rem 0.8rem; 
+      border-radius: 6px; 
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
+  </style>
 </head>
 
 <body>
 
-<header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
-    <h1>Aviation Capital Simulator</h1>
-  </div>
+  <!-- ================= Qatar Luxury Header ================= -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
 
-  <div class="acs-nav-buttons">
-    <a href="index.html" class="nav-btn nav-btn-yellow">Home</a>
-    <a href="support.html" class="nav-btn nav-btn-blue">Support</a>
-  </div>
+    <div class="acs-nav-buttons">
+      <a href="index.html" class="nav-btn nav-btn-yellow">Home</a>
+      <a href="support.html" class="nav-btn nav-btn-blue">Support</a>
+    </div>
 
-  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-</header>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  </header>
 
-<section class="form-container">
-  <h2>Create Your Airline</h2>
-  <p>Enter your airline details below to begin your aviation journey.</p>
+  <!-- ======================================================= -->
 
-  <form id="createAirlineForm" onsubmit="return handleAirlineCreation(event)">
-    <input type="text" id="airlineName" placeholder="Airline Name" required />
-    <input type="text" id="icao" placeholder="ICAO Code (auto)" maxlength="3" readonly />
-    <input type="text" id="iata" placeholder="IATA Code (auto)" maxlength="2" readonly />
-    <input type="text" id="slogan" placeholder="Airline Slogan (optional)" />
+  <section class="form-container">
+    <h2>Create Your Airline</h2>
+    <p>Enter your airline details below to begin your aviation journey.</p>
 
-    <select id="region" required onchange="updateCountries()">
-      <option value="">Select World Area</option>
-      <option value="Europe">Europe</option>
-      <option value="Asia">Asia</option>
-      <option value="North America">North America</option>
-      <option value="South America">South America</option>
-      <option value="Africa">Africa</option>
-      <option value="Oceania">Oceania</option>
-    </select>
+    <form id="createAirlineForm" onsubmit="return handleAirlineCreation(event)">
+      <input type="text" id="airlineName" placeholder="Airline Name" required />
+      <input type="text" id="icao" placeholder="ICAO Code (auto)" maxlength="3" readonly />
+      <input type="text" id="iata" placeholder="IATA Code (auto)" maxlength="2" readonly />
+      <input type="text" id="slogan" placeholder="Airline Slogan (optional)" />
 
-    <select id="country" required>
-      <option value="">Select Country</option>
-    </select>
+      <select id="region" required onchange="updateCountries()">
+        <option value="">Select World Area</option>
+        <option value="Europe">Europe</option>
+        <option value="Asia">Asia</option>
+        <option value="North America">North America</option>
+        <option value="South America">South America</option>
+        <option value="Africa">Africa</option>
+        <option value="Oceania">Oceania</option>
+      </select>
 
-    <select id="airportBase" required>
-      <option value="">Select Airport Base</option>
-    </select>
+      <select id="country" required>
+        <option value="">Select Country</option>
+      </select>
 
-    <select id="businessModel" required>
-      <option value="">Select Business Model</option>
-      <option value="Regional">Regional</option>
-      <option value="Domestic">Domestic</option>
-      <option value="International">International</option>
-    </select>
+       <select id="airportBase" required>
+        <option value="">Select Airport Base</option>
+      </select>
 
-    <select id="operationMode" required>
-      <option value="">Select Operation Mode</option>
-      <option value="Passenger">Passenger</option>
-    </select>
+      <select id="businessModel" required>
+        <option value="">Select Business Model</option>
+        <option value="Regional">Regional</option>
+        <option value="Domestic">Domestic</option>
+        <option value="International">International</option>
+      </select>
 
-    <button type="submit">CREATE AIRLINE</button>
-  </form>
-</section>
+      <select id="operationMode" required>
+        <option value="">Select Operation Mode</option>
+        <option value="Passenger">Passenger</option>
+      </select>
 
-<footer>
-  <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-</footer>
+      <button type="submit">CREATE AIRLINE</button>
+    </form>
+  </section>
 
-<!-- ============================================================
-     LOAD AIRPORT DATABASE (Your file in root)
-============================================================ -->
-<script src="worldairportsacs.js?v=1"></script>
+  <footer>
+    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  </footer>
 
-<!-- ============================================================
-     REGIONS — COUNTRIES OF THE WORLD
-============================================================ -->
-<script>
-const regions = {
-  "Europe": ["Albania","Andorra","Armenia","Austria","Azerbaijan","Belarus","Belgium",
-  "Bosnia and Herzegovina","Bulgaria","Croatia","Cyprus","Czech Republic",
-  "Denmark","Estonia","Finland","France","Georgia","Germany","Greece",
-  "Hungary","Iceland","Ireland","Italy","Kazakhstan","Kosovo","Latvia",
-  "Liechtenstein","Lithuania","Luxembourg","Malta","Moldova","Monaco",
-  "Montenegro","Netherlands","North Macedonia","Norway","Poland","Portugal",
-  "Romania","San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden",
-  "Switzerland","Turkey","Ukraine","United Kingdom","Vatican City"
-  ],
+  <!-- ======================================================= -->
+  <!--                    JAVASCRIPT ORIGINAL                 -->
+  <!-- ======================================================= -->
+  <script>
+    const regions = {
+      "Europe": ["Spain","France","Germany","Italy","United Kingdom","Poland"],
+      "Asia": ["Japan","China","India","Singapore","Kyrgyzstan","South Korea"],
+      "North America": ["United States","Canada","Mexico"],
+      "South America": ["Brazil","Argentina","Chile","Peru"],
+      "Africa": ["South Africa","Nigeria","Egypt","Morocco"],
+      "Oceania": ["Australia","New Zealand","Fiji"]
+    };
 
-  "Asia": [
-  "Afghanistan","Armenia","Azerbaijan","Bahrain","Bangladesh","Bhutan",
-  "Brunei","Cambodia","China","Cyprus","Georgia","India","Indonesia",
-  "Iran","Iraq","Israel","Japan","Jordan","Kazakhstan","Kuwait",
-  "Kyrgyzstan","Laos","Lebanon","Malaysia","Maldives","Mongolia",
-  "Myanmar","Nepal","North Korea","Oman","Pakistan","Philippines",
-  "Qatar","Saudi Arabia","Singapore","South Korea","Sri Lanka","Syria",
-  "Tajikistan","Thailand","Timor-Leste","Turkmenistan",
-  "United Arab Emirates","Uzbekistan","Vietnam","Yemen"
-  ],
+    const realAirlines = [
+      "American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
+      "Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
+      "Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
+      "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
+    ];
 
-  "North America": [
-  "Antigua and Barbuda","Bahamas","Barbados","Belize","Canada","Costa Rica",
-  "Cuba","Dominica","Dominican Republic","El Salvador","Grenada","Guatemala",
-  "Haiti","Honduras","Jamaica","Mexico","Nicaragua","Panama",
-  "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines",
-  "Trinidad and Tobago","United States"
-  ],
+    function updateCountries() {
+      const region = document.getElementById("region").value;
+      const countrySelect = document.getElementById("country");
+      countrySelect.innerHTML = '<option value="">Select Country</option>';
+      if (region && regions[region]) {
+        regions[region].forEach(c => {
+          const opt = document.createElement("option");
+          opt.value = c; opt.textContent = c;
+          countrySelect.appendChild(opt);
+        });
+      }
+    }
+     // === Cuando cambie el país — cargar aeropuertos ===
+    document.getElementById("country").addEventListener("change", updateAirportBase);
 
-  "South America": [
-  "Argentina","Bolivia","Brazil","Chile","Colombia","Ecuador",
-  "Guyana","Paraguay","Peru","Suriname","Uruguay","Venezuela"
-  ],
+     function updateAirportBase() {
+      const country = document.getElementById("country").value;
+      const airportSelect = document.getElementById("airportBase");
+      airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
 
-  "Africa": [
-  "Algeria","Angola","Benin","Botswana","Burkina Faso","Burundi",
-  "Cabo Verde","Cameroon","Central African Republic","Chad",
-  "Comoros","Congo","Democratic Republic of the Congo",
-  "Djibouti","Egypt","Equatorial Guinea","Eritrea","Eswatini",
-  "Ethiopia","Gabon","Gambia","Ghana","Guinea","Guinea-Bissau",
-  "Ivory Coast","Kenya","Lesotho","Liberia","Libya","Madagascar",
-  "Malawi","Mali","Mauritania","Mauritius","Morocco","Mozambique",
-  "Namibia","Niger","Nigeria","Rwanda","Sao Tome and Principe",
-  "Senegal","Seychelles","Sierra Leone","Somalia","South Africa",
-  "South Sudan","Sudan","Tanzania","Togo","Tunisia","Uganda",
-  "Zambia","Zimbabwe"
-  ],
+     // Filtrar aeropuertos por país usando tu base real
+     const airports = WorldAirportsACS.filter(a => a.country === country);
 
-  "Oceania": [
-  "Australia","Fiji","Kiribati","Marshall Islands","Micronesia",
-  "Nauru","New Zealand","Palau","Papua New Guinea","Samoa",
-  "Solomon Islands","Tonga","Tuvalu","Vanuatu"
-  ]
-};
-</script>
-
-<!-- ============================================================
-     REAL AIRLINES LIST
-============================================================ -->
-<script>
-const realAirlines = [
-"American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
-"Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
-"Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
-"Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
-];
-</script>
-
-<!-- ============================================================
-     COUNTRIES → AIRPORTS
-============================================================ -->
-<script>
-function updateCountries() {
-  const region = document.getElementById("region").value;
-  const countrySelect = document.getElementById("country");
-
-  countrySelect.innerHTML = '<option value="">Select Country</option>';
-
-  if (region && regions[region]) {
-    regions[region].forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      countrySelect.appendChild(opt);
-    });
-  }
-}
-
-document.getElementById("country")
-  .addEventListener("change", updateAirportBase);
-
-function updateAirportBase() {
-  const country = document.getElementById("country").value;
-  const airportSelect = document.getElementById("airportBase");
-
-  airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
-
-  const airports = WorldAirportsACS.filter(a => a.country === country);
-
-  airports.forEach(a => {
-    const opt = document.createElement("option");
-    opt.value = a.icao;
-    opt.textContent = `${a.icao} — ${a.city} (${a.iata})`;
-    airportSelect.appendChild(opt);
+     airports.forEach(a => {
+     const opt = document.createElement("option");
+     opt.value = a.icao;  // lo que guardamos como base
+     opt.textContent = `${a.icao} — ${a.city} (${a.iata})`;
+     airportSelect.appendChild(opt);
   });
 }
-</script>
 
-<!-- ============================================================
-     AIRLINE CREATION
-============================================================ -->
-<script>
-function generateUniqueCodes() {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const random = n => Array.from({length:n},()=>letters[Math.floor(Math.random()*letters.length)]).join("");
+    function generateUniqueCodes() {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const random = n => Array.from({length:n},()=>letters[Math.floor(Math.random()*letters.length)]).join("");
 
-  let iata, icao;
-  let existing = JSON.parse(localStorage.getItem("ACS_users") || "[]")
-    .map(u => u.airline?.icao || "")
-    .concat(JSON.parse(localStorage.getItem("ACS_users") || "[]")
-    .map(u => u.airline?.iata || ""));
+      let iata, icao;
+      let existing = JSON.parse(localStorage.getItem("ACS_users") || "[]")
+        .map(u => u.airline?.icao || "")
+        .concat(JSON.parse(localStorage.getItem("ACS_users") || "[]")
+        .map(u => u.airline?.iata || ""));
 
-  do { iata = random(2); } while (existing.includes(iata));
-  do { icao = random(3); } while (existing.includes(icao));
+      do { iata = random(2); } while (existing.includes(iata));
+      do { icao = random(3); } while (existing.includes(icao));
 
-  document.getElementById("iata").value = iata;
-  document.getElementById("icao").value = icao;
-}
+      document.getElementById("iata").value = iata;
+      document.getElementById("icao").value = icao;
+    }
 
-document.getElementById("airlineName")
-  .addEventListener("input", generateUniqueCodes);
+    document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
 
-function handleAirlineCreation(event) {
+    function handleAirlineCreation(event) {
   event.preventDefault();
 
   const airlineName = document.getElementById("airlineName").value.trim();
@@ -315,6 +380,8 @@ function handleAirlineCreation(event) {
   const slogan = document.getElementById("slogan").value.trim();
   const icao = document.getElementById("icao").value.trim().toUpperCase();
   const iata = document.getElementById("iata").value.trim().toUpperCase();
+
+  // ⭐ Nuevo: aeropuerto base seleccionado
   const baseAirport = document.getElementById("airportBase").value;
 
   const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
@@ -323,18 +390,18 @@ function handleAirlineCreation(event) {
     const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
     return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
   })) {
-    alert("⚠️ That airline name is too similar to a real-world airline.");
+    alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
     return false;
   }
 
   const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
   const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
-
   if (nameExists) {
-    alert("⚠️ Airline name already taken.");
+    alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
     return false;
   }
 
+  // ⭐ Aquí se integra base_airport
   const airline = { 
     name: airlineName,
     icao,
@@ -349,7 +416,7 @@ function handleAirlineCreation(event) {
 
   let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
   if (!user) {
-    alert("⚠️ Session not found.");
+    alert("⚠️ Session not found. Please log in again.");
     window.location.href = "login.html";
     return false;
   }
@@ -359,52 +426,60 @@ function handleAirlineCreation(event) {
 
   const index = allUsers.findIndex(u => u.email === user.email);
   if (index !== -1) allUsers[index] = user;
+  localStorage.setItem("ACS_users", JSON.stringify(allUser_
 
-  localStorage.setItem("ACS_users", JSON.stringify(allUsers));
 
-  fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      action: "createAirline",
-      user_id: user.user_id,
-      airline_name: airlineName,
-      country: country
-    })
-  }).then(() => {
-    alert(`✅ Airline "${airlineName}" created successfully!`);
-    window.location.href = "choose_base.html";
-  }).catch(err => {
-    alert("⚠️ Sync failed: " + err);
-    window.location.href = "choose_base.html";
-  });
+      // ============================================================
+      //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
+      // ============================================================
+      fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "createAirline",
+          user_id: user.user_id,
+          airline_name: airlineName,
+          country: country
+        })
+      })
+      .then(() => {
+        alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.full_name}.`);
+        window.location.href = "choose_base.html";
+      })
+      .catch(err => {
+        alert("⚠️ Airline created locally but failed to sync with server: " + err);
+        window.location.href = "choose_base.html";
+      });
 
-  return false;
-}
+      return false;
+    }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-  if (!user) {
-    alert("⚠️ Please log in to access this page.");
-    window.location.href = "login.html";
-  }
-});
-</script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+      if (!user) {
+        alert("⚠️ Please log in to access this page.");
+        window.location.href = "login.html";
+      }
+    });
 
-<!-- ============================================================
-     TIME ENGINE
-============================================================ -->
-<script src="time_engine.js"></script>
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
+    }
+  </script>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
-});
-</script>
+  <!-- TIME ENGINE -->
+  <script src="time_engine.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(updateClockDisplay);
+        updateClockDisplay();
+      }
+    });
+  </script>
 
 </body>
 </html>
