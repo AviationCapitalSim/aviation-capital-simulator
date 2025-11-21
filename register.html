@@ -784,78 +784,48 @@ function closeAgeModal() {
 </script>
 
 <!-- ============================================================
-     AUTO-SAVE FORM DATA — FINAL VERSION
+     REGISTER — TERMS CONTROL (FINAL FIXED VERSION)
 ============================================================ -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  const saved = JSON.parse(localStorage.getItem("ACS_registerCache") || "{}");
+  /* ============================================================
+     0) LIMPIAR EL AUTO-SAVE GENERAL (NO DEBE USARSE)
+     ============================================================ */
+  localStorage.removeItem("ACS_registerCache");
 
-  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
-  if (saved.email)    document.getElementById("email").value    = saved.email;
-  if (saved.day)      document.getElementById("dob-day").value  = saved.day;
-  if (saved.month)    document.getElementById("dob-month").value = saved.month;
-  if (saved.year)     document.getElementById("dob-year").value = saved.year;
-  if (saved.country)  document.getElementById("country").value  = saved.country;
 
-  function save() {
-    const cache = {
-      fullName: document.getElementById("fullName").value.trim(),
-      email:    document.getElementById("email").value.trim(),
-      day:      document.getElementById("dob-day").value,
-      month:    document.getElementById("dob-month").value,
-      year:     document.getElementById("dob-year").value,
-      country:  document.getElementById("country").value
-    };
-    localStorage.setItem("ACS_registerCache", JSON.stringify(cache));
-  }
-
-  ["fullName","email","dob-day","dob-month","dob-year","country"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener("input", save);
-  });
-
-});
-</script>
-
-<!-- ============================================================
-     TERMS BLOCK — FINAL, OFFICIAL, WORKING VERSION
-============================================================ -->
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
+  /* ============================================================
+     1) DESHABILITAR SIEMPRE LA CASILLA HASTA QUE ACEPTE TERMS
+     ============================================================ */
   const checkbox = document.getElementById("terms");
   if (!checkbox) return;
 
-  // ============================================================
-  // 1) INICIAR SIEMPRE DESHABILITADO Y DESMARCADO
-  // ============================================================
   checkbox.checked = false;
   checkbox.disabled = true;
 
-  // ============================================================
-  // 2) SI YA ACEPTÓ TERMS EN terms.html → HABILITAR CASILLA
-  // ============================================================
+
+  /* ============================================================
+     2) SI YA ACEPTÓ TERMS EN terms.html → PERMITIR MARCAR
+     ============================================================ */
   const accepted = localStorage.getItem("ACS_termsAccepted");
 
   if (accepted === "yes") {
     checkbox.disabled = false;
   }
 
-  // ============================================================
-  // 3) SI INTENTA MARCAR SIN HABER PASADO POR terms.html
-  // ============================================================
+
+  /* ============================================================
+     3) SI INTENTA MARCAR SIN HABER PASADO POR terms.html
+     ============================================================ */
   checkbox.addEventListener("click", (e) => {
 
     const flag = localStorage.getItem("ACS_termsAccepted");
 
-    // Si NO viene de terms.html → bloquear intento
     if (flag !== "yes") {
-
       e.preventDefault();
 
-      // Guardar datos antes de salir
+      // Guardar SOLO si va hacia terms.html
       const temp = {
         fullName: document.getElementById("fullName").value.trim(),
         email:    document.getElementById("email").value.trim(),
@@ -869,21 +839,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       alert("⚠️ You must read and accept the Terms & Conditions first.");
       window.location.href = "terms.html";
-      return;
     }
   });
 
-  // ============================================================
-  // 4) RESTAURAR DATOS DEL FORMULARIO SI VIENE DE terms.html
-  // ============================================================
+
+  /* ============================================================
+     4) RESTAURAR DATOS SOLO SI VIENE DE terms.html
+     ============================================================ */
   const saved = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
 
   if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
-  if (saved.email)    document.getElementById("email").value    = saved.email;
-  if (saved.day)      document.getElementById("dob-day").value  = saved.day;
+  if (saved.email)    document.getElementById("email").value = saved.email;
+  if (saved.day)      document.getElementById("dob-day").value = saved.day;
   if (saved.month)    document.getElementById("dob-month").value = saved.month;
   if (saved.year)     document.getElementById("dob-year").value = saved.year;
-  if (saved.country)  document.getElementById("country").value  = saved.country;
+  if (saved.country)  document.getElementById("country").value = saved.country;
 
 });
 </script>
