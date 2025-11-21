@@ -822,37 +822,40 @@ document.addEventListener("DOMContentLoaded", () => {
      TERMS BLOCK — FINAL, OFFICIAL, WORKING VERSION
 ============================================================ -->
 <script>
+<script>
 document.addEventListener("DOMContentLoaded", () => {
 
   const checkbox = document.getElementById("terms");
   if (!checkbox) return;
 
-  // ----------------------------------------
-  // 1) Siempre iniciar DESHABILITADO
-  // ----------------------------------------
+  // ============================================================
+  // 1) INICIAR SIEMPRE DESHABILITADO Y DESMARCADO
+  // ============================================================
   checkbox.checked = false;
   checkbox.disabled = true;
 
-  // ----------------------------------------
-  // 2) Si ya aceptó Terms → habilitar checkbox
-  // ----------------------------------------
+  // ============================================================
+  // 2) SI YA ACEPTÓ TERMS EN terms.html → HABILITAR CASILLA
+  // ============================================================
   const accepted = localStorage.getItem("ACS_termsAccepted");
+
   if (accepted === "yes") {
     checkbox.disabled = false;
   }
 
-  // ----------------------------------------
-  // 3) Manejar intento de marcar Terms
-  // ----------------------------------------
+  // ============================================================
+  // 3) SI INTENTA MARCAR SIN HABER PASADO POR terms.html
+  // ============================================================
   checkbox.addEventListener("click", (e) => {
 
-    const acceptedNow = localStorage.getItem("ACS_termsAccepted");
+    const flag = localStorage.getItem("ACS_termsAccepted");
 
-    // Si intenta marcar sin pasar por terms.html
-    if (acceptedNow !== "yes") {
+    // Si NO viene de terms.html → bloquear intento
+    if (flag !== "yes") {
+
       e.preventDefault();
 
-      // Guardar datos del formulario ANTES de salir
+      // Guardar datos antes de salir
       const temp = {
         fullName: document.getElementById("fullName").value.trim(),
         email:    document.getElementById("email").value.trim(),
@@ -870,9 +873,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ----------------------------------------
-  // 4) Restaurar datos si viene desde Terms
-  // ----------------------------------------
+  // ============================================================
+  // 4) RESTAURAR DATOS DEL FORMULARIO SI VIENE DE terms.html
+  // ============================================================
   const saved = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
 
   if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
