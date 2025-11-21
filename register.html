@@ -787,30 +787,14 @@ function closeAgeModal() {
      REGISTER — TERMS CONTROL (FINAL WORKING LOGIC)
 ============================================================ -->
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+async function handleRegister(event) {
+  event.preventDefault();
 
-  // 0) Borrar auto-save general
-  localStorage.removeItem("ACS_registerCache");
-
-  const checkbox = document.getElementById("terms");
-  if (!checkbox) return;
-
-  // 1) Casilla SIEMPRE desmarcada y deshabilitada al inicio
-  checkbox.checked = false;
-  checkbox.disabled = true;
-
-  // 2) Si ya aceptó los términos → habilitar casilla normalmente
+  // Verificamos si ya aceptó términos
   const accepted = localStorage.getItem("ACS_termsAccepted");
-  if (accepted === "yes") {
-    checkbox.disabled = false;
-    return; 
-  }
 
-  // 3) Interceptar clic si NO ha aceptado terms
-  checkbox.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    // Guardar datos temporales
+  if (accepted !== "yes") {
+    // Guardar datos antes de salir
     const temp = {
       fullName: document.getElementById("fullName").value.trim(),
       email:    document.getElementById("email").value.trim(),
@@ -821,22 +805,14 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
-
     alert("⚠️ You must read and accept the Terms & Conditions first.");
     window.location.href = "terms.html";
-  });
+    return;
+  }
 
-  // 4) Restaurar datos después de volver de terms.html
-  const saved = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
-
-  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
-  if (saved.email)    document.getElementById("email").value = saved.email;
-  if (saved.day)      document.getElementById("dob-day").value = saved.day;
-  if (saved.month)    document.getElementById("dob-month").value = saved.month;
-  if (saved.year)     document.getElementById("dob-year").value = saved.year;
-  if (saved.country)  document.getElementById("country").value = saved.country;
-
-});
+  // Si ya aceptó términos → ejecutar registro normalmente (tu código)
+  // ...
+}
 </script>
      
 </body>
