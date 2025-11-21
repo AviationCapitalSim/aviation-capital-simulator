@@ -784,68 +784,48 @@ function closeAgeModal() {
 </script>
 
 <!-- ============================================================
-     REGISTER — TERMS CONTROL (FINAL FIXED VERSION)
+     REGISTER — TERMS CONTROL (FINAL WORKING LOGIC)
 ============================================================ -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ============================================================
-     0) LIMPIAR EL AUTO-SAVE GENERAL (NO DEBE USARSE)
-     ============================================================ */
+  // 0) Borrar auto-save general (no lo usamos)
   localStorage.removeItem("ACS_registerCache");
 
-
-  /* ============================================================
-     1) DESHABILITAR SIEMPRE LA CASILLA HASTA QUE ACEPTE TERMS
-     ============================================================ */
   const checkbox = document.getElementById("terms");
   if (!checkbox) return;
 
+  // 1) Casilla SIEMPRE desmarcada, pero *NO* deshabilitada
   checkbox.checked = false;
-  checkbox.disabled = true;
+  checkbox.disabled = false; // 👈 ESTE CAMBIO ES LA CLAVE
 
-
-  /* ============================================================
-     2) SI YA ACEPTÓ TERMS EN terms.html → PERMITIR MARCAR
-     ============================================================ */
+  // 2) Si ya aceptó los términos → permitir marcar normalmente
   const accepted = localStorage.getItem("ACS_termsAccepted");
-
   if (accepted === "yes") {
-    checkbox.disabled = false;
+    return; // Todo funciona normal
   }
 
-
-  /* ============================================================
-     3) SI INTENTA MARCAR SIN HABER PASADO POR terms.html
-     ============================================================ */
+  // 3) Interceptar clic si NO ha aceptado terms
   checkbox.addEventListener("click", (e) => {
+    e.preventDefault();
 
-    const flag = localStorage.getItem("ACS_termsAccepted");
+    // Guardar datos temporales
+    const temp = {
+      fullName: document.getElementById("fullName").value.trim(),
+      email:    document.getElementById("email").value.trim(),
+      day:      document.getElementById("dob-day").value,
+      month:    document.getElementById("dob-month").value,
+      year:     document.getElementById("dob-year").value,
+      country:  document.getElementById("country").value
+    };
 
-    if (flag !== "yes") {
-      e.preventDefault();
+    localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
 
-      // Guardar SOLO si va hacia terms.html
-      const temp = {
-        fullName: document.getElementById("fullName").value.trim(),
-        email:    document.getElementById("email").value.trim(),
-        day:      document.getElementById("dob-day").value,
-        month:    document.getElementById("dob-month").value,
-        year:     document.getElementById("dob-year").value,
-        country:  document.getElementById("country").value
-      };
-
-      localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
-
-      alert("⚠️ You must read and accept the Terms & Conditions first.");
-      window.location.href = "terms.html";
-    }
+    alert("⚠️ You must read and accept the Terms & Conditions first.");
+    window.location.href = "terms.html";
   });
 
-
-  /* ============================================================
-     4) RESTAURAR DATOS SOLO SI VIENE DE terms.html
-     ============================================================ */
+  // 4) Restaurar datos después de volver de terms.html
   const saved = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
 
   if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
