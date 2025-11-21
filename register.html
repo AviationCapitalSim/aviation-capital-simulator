@@ -827,47 +827,60 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("terms");
   if (!checkbox) return;
 
-  // === Al volver desde terms.html, permitir marcar normalmente ===
-  const alreadyAccepted = localStorage.getItem("ACS_termsAccepted");
+  // ----------------------------------------
+  // 1) Siempre iniciar DESHABILITADO
+  // ----------------------------------------
+  checkbox.checked = false;
+  checkbox.disabled = true;
 
-  if (alreadyAccepted === "yes") {
-    // Permitir marcar sin bloqueo
+  // ----------------------------------------
+  // 2) Si ya aceptó Terms → habilitar checkbox
+  // ----------------------------------------
+  const accepted = localStorage.getItem("ACS_termsAccepted");
+  if (accepted === "yes") {
     checkbox.disabled = false;
   }
 
-  checkbox.addEventListener("change", () => {
-    const accepted = localStorage.getItem("ACS_termsAccepted");
+  // ----------------------------------------
+  // 3) Manejar intento de marcar Terms
+  // ----------------------------------------
+  checkbox.addEventListener("click", (e) => {
 
-    if (checkbox.checked && accepted !== "yes") {
+    const acceptedNow = localStorage.getItem("ACS_termsAccepted");
 
-      // === Guardar datos actuales del formulario antes de ir a terms ===
-      const tempData = {
+    // Si intenta marcar sin pasar por terms.html
+    if (acceptedNow !== "yes") {
+      e.preventDefault();
+
+      // Guardar datos del formulario ANTES de salir
+      const temp = {
         fullName: document.getElementById("fullName").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        day: document.getElementById("dob-day").value,
-        month: document.getElementById("dob-month").value,
-        year: document.getElementById("dob-year").value,
-        country: document.getElementById("country").value
+        email:    document.getElementById("email").value.trim(),
+        day:      document.getElementById("dob-day").value,
+        month:    document.getElementById("dob-month").value,
+        year:     document.getElementById("dob-year").value,
+        country:  document.getElementById("country").value
       };
 
-      localStorage.setItem("ACS_registerTemp", JSON.stringify(tempData));
+      localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
 
-      // Bloquear e ir a Terms
       alert("⚠️ You must read and accept the Terms & Conditions first.");
-      checkbox.checked = false;
       window.location.href = "terms.html";
+      return;
     }
   });
 
-  // === Restaurar datos si vienen de terms.html ===
-  const savedTemp = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
+  // ----------------------------------------
+  // 4) Restaurar datos si viene desde Terms
+  // ----------------------------------------
+  const saved = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
 
-  if (savedTemp.fullName) document.getElementById("fullName").value = savedTemp.fullName;
-  if (savedTemp.email)    document.getElementById("email").value    = savedTemp.email;
-  if (savedTemp.day)      document.getElementById("dob-day").value  = savedTemp.day;
-  if (savedTemp.month)    document.getElementById("dob-month").value = savedTemp.month;
-  if (savedTemp.year)     document.getElementById("dob-year").value = savedTemp.year;
-  if (savedTemp.country)  document.getElementById("country").value  = savedTemp.country;
+  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
+  if (saved.email)    document.getElementById("email").value    = saved.email;
+  if (saved.day)      document.getElementById("dob-day").value  = saved.day;
+  if (saved.month)    document.getElementById("dob-month").value = saved.month;
+  if (saved.year)     document.getElementById("dob-year").value = saved.year;
+  if (saved.country)  document.getElementById("country").value  = saved.country;
 
 });
 </script>
