@@ -838,34 +838,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
-
-<!-- ============================================================
-     AUTO-GENERATE DOB SELECT OPTIONS
-============================================================ -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const daySelect = document.getElementById("dob-day");
-  const monthSelect = document.getElementById("dob-month");
-  const yearSelect = document.getElementById("dob-year");
-
-  if (!daySelect || !monthSelect || !yearSelect) return;
-
-  daySelect.innerHTML = `<option value="">Day</option>`;
-  for (let d = 1; d <= 31; d++) {
-    daySelect.innerHTML += `<option value="${d}">${d}</option>`;
-  }
-
-  monthSelect.innerHTML = `<option value="">Month</option>`;
-  for (let m = 1; m <= 12; m++) {
-    monthSelect.innerHTML += `<option value="${m}">${m}</option>`;
-  }
-
-  yearSelect.innerHTML = `<option value="">Year</option>`;
-  for (let y = 2025; y >= 1920; y--) {
-    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
-  }
-});
-</script>
      
 </body>
 </html>
