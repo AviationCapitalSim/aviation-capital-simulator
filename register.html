@@ -795,18 +795,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("terms");
   if (!checkbox) return;
 
-  // 1) Casilla SIEMPRE desmarcada, pero *NO* deshabilitada
+  // 1) Casilla SIEMPRE desmarcada y deshabilitada al inicio
   checkbox.checked = false;
-  checkbox.disabled = false; // 👈 ESTE CAMBIO ES LA CLAVE
+  checkbox.disabled = true;
 
-  // 2) Si ya aceptó los términos → permitir marcar normalmente
+  // 2) Si ya aceptó los términos → habilitar casilla normalmente
   const accepted = localStorage.getItem("ACS_termsAccepted");
   if (accepted === "yes") {
-    return; // Todo funciona normal
+    checkbox.disabled = false;
   }
 
   // 3) Interceptar clic si NO ha aceptado terms
   checkbox.addEventListener("click", (e) => {
+
+    const flag = localStorage.getItem("ACS_termsAccepted");
+    if (flag === "yes") return; // permitir marcar
+
     e.preventDefault();
 
     // Guardar datos temporales
