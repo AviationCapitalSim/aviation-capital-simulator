@@ -275,6 +275,10 @@
         <option value="">Select Country</option>
       </select>
 
+       <select id="airportBase" required>
+        <option value="">Select Airport Base</option>
+      </select>
+
       <select id="businessModel" required>
         <option value="">Select Business Model</option>
         <option value="Regional">Regional</option>
@@ -327,6 +331,24 @@
         });
       }
     }
+     // === Cuando cambie el país — cargar aeropuertos ===
+    document.getElementById("country").addEventListener("change", updateAirportBase);
+
+     function updateAirportBase() {
+      const country = document.getElementById("country").value;
+      const airportSelect = document.getElementById("airportBase");
+      airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
+
+     // Filtrar aeropuertos por país usando tu base real
+     const airports = WorldAirportsACS.filter(a => a.country === country);
+
+     airports.forEach(a => {
+     const opt = document.createElement("option");
+     opt.value = a.icao;  // lo que guardamos como base
+     opt.textContent = `${a.icao} — ${a.city} (${a.iata})`;
+     airportSelect.appendChild(opt);
+  });
+}
 
     function generateUniqueCodes() {
       const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -348,51 +370,64 @@
     document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
 
     function handleAirlineCreation(event) {
-      event.preventDefault();
+  event.preventDefault();
 
-      const airlineName = document.getElementById("airlineName").value.trim();
-      const region = document.getElementById("region").value;
-      const country = document.getElementById("country").value;
-      const businessModel = document.getElementById("businessModel").value;
-      const operationMode = document.getElementById("operationMode").value;
-      const slogan = document.getElementById("slogan").value.trim();
-      const icao = document.getElementById("icao").value.trim().toUpperCase();
-      const iata = document.getElementById("iata").value.trim().toUpperCase();
+  const airlineName = document.getElementById("airlineName").value.trim();
+  const region = document.getElementById("region").value;
+  const country = document.getElementById("country").value;
+  const businessModel = document.getElementById("businessModel").value;
+  const operationMode = document.getElementById("operationMode").value;
+  const slogan = document.getElementById("slogan").value.trim();
+  const icao = document.getElementById("icao").value.trim().toUpperCase();
+  const iata = document.getElementById("iata").value.trim().toUpperCase();
 
-      const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
+  // ⭐ Nuevo: aeropuerto base seleccionado
+  const baseAirport = document.getElementById("airportBase").value;
 
-      if (realAirlines.some(real => {
-        const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
-        return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
-      })) {
-        alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
-        return false;
-      }
+  const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
 
-      const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
-      const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
-      if (nameExists) {
-        alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
-        return false;
-      }
+  if (realAirlines.some(real => {
+    const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
+    return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
+  })) {
+    alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
+    return false;
+  }
 
-      const airline = { name: airlineName, icao, iata, slogan, region, country, businessModel, operationMode };
+  const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+  const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
+  if (nameExists) {
+    alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
+    return false;
+  }
 
-      let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-      if (!user) {
-        alert("⚠️ Session not found. Please log in again.");
-        window.location.href = "login.html";
-        return false;
-      }
+  // ⭐ Aquí se integra base_airport
+  const airline = { 
+    name: airlineName,
+    icao,
+    iata,
+    slogan,
+    region,
+    country,
+    businessModel,
+    operationMode,
+    base_airport: baseAirport
+  };
 
-      user.airline = airline;
-      localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+  let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+  if (!user) {
+    alert("⚠️ Session not found. Please log in again.");
+    window.location.href = "login.html";
+    return false;
+  }
 
-      const index = allUsers.findIndex(u => u.email === user.email);
-      if (index !== -1) allUsers[index] = user;
-      localStorage.setItem("ACS_users", JSON.stringify(allUsers));
+  user.airline = airline;
+  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-      localStorage.setItem("ACS_Airline", JSON.stringify(airline));
+  const index = allUsers.findIndex(u => u.email === user.email);
+  if (index !== -1) allUsers[index] = user;
+  localStorage.setItem("ACS_users", JSON.stringify(allUser_
+
 
       // ============================================================
       //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
