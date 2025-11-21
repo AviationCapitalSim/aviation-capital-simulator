@@ -406,7 +406,7 @@ const regions = {
       airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
 
      // Filtrar aeropuertos por país usando tu base real
-     const airports = WorldAirportsACS.filter(a => a.country === country);
+     const airports = Object.values(WorldAirportsACS).flat().filter(a => a.country === country);
 
      airports.forEach(a => {
      const opt = document.createElement("option");
