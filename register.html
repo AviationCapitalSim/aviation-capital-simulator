@@ -789,7 +789,7 @@ function closeAgeModal() {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 0) Borrar auto-save general (no lo usamos)
+  // 0) Borrar auto-save general
   localStorage.removeItem("ACS_registerCache");
 
   const checkbox = document.getElementById("terms");
@@ -803,14 +803,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const accepted = localStorage.getItem("ACS_termsAccepted");
   if (accepted === "yes") {
     checkbox.disabled = false;
+    return; 
   }
 
   // 3) Interceptar clic si NO ha aceptado terms
   checkbox.addEventListener("click", (e) => {
-
-    const flag = localStorage.getItem("ACS_termsAccepted");
-    if (flag === "yes") return; // permitir marcar
-
     e.preventDefault();
 
     // Guardar datos temporales
@@ -842,5 +839,33 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<!-- ============================================================
+     AUTO-GENERATE DOB SELECT OPTIONS
+============================================================ -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const daySelect = document.getElementById("dob-day");
+  const monthSelect = document.getElementById("dob-month");
+  const yearSelect = document.getElementById("dob-year");
+
+  if (!daySelect || !monthSelect || !yearSelect) return;
+
+  daySelect.innerHTML = `<option value="">Day</option>`;
+  for (let d = 1; d <= 31; d++) {
+    daySelect.innerHTML += `<option value="${d}">${d}</option>`;
+  }
+
+  monthSelect.innerHTML = `<option value="">Month</option>`;
+  for (let m = 1; m <= 12; m++) {
+    monthSelect.innerHTML += `<option value="${m}">${m}</option>`;
+  }
+
+  yearSelect.innerHTML = `<option value="">Year</option>`;
+  for (let y = 2025; y >= 1920; y--) {
+    yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+});
+</script>
+     
 </body>
 </html>
