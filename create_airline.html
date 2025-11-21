@@ -490,9 +490,9 @@ const regions = {
   user.airline = airline;
   localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-  const index = allUsers.findIndex(u => u.email === user.email);
+    const index = allUsers.findIndex(u => u.email === user.email);
   if (index !== -1) allUsers[index] = user;
-  localStorage.setItem("ACS_users", JSON.stringify(allUser_
+  localStorage.setItem("ACS_users", JSON.stringify(allUsers));
 
 
       // ============================================================
