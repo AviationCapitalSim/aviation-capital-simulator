@@ -368,20 +368,29 @@
     ];
 
     function updateCountries() {
-      regions[region].forEach(c => {
-      const opt = document.createElement("option");
+  const region = document.getElementById("region").value;
+  const countrySelect = document.getElementById("country");
 
-      // Convertir nombre → ISO
-      const iso = countryISO[c] || c;  
+  // Reiniciar lista
+  countrySelect.innerHTML = '<option value="">Select Country</option>';
 
-      opt.value = iso;         // lo que usa WorldAirportsACS
-      opt.textContent = c;     // lo que ve el usuario
+  // Si no hay región seleccionada, no hacer nada
+  if (!region || !regions[region]) return;
 
-      countrySelect.appendChild(opt);
-      });
+  // Insertar países de esa región
+  regions[region].forEach(c => {
+    const opt = document.createElement("option");
 
-      }
-    }
+    // Convertir nombre → ISO si existe
+    const iso = countryISO[c] || c;
+
+    opt.value = iso;       // valor usado para buscar en WorldAirportsACS
+    opt.textContent = c;   // lo que ve el usuario
+
+    countrySelect.appendChild(opt);
+  });
+}
+
      // === Cuando cambie el país — cargar aeropuertos ===
     document.getElementById("country").addEventListener("change", updateAirportBase);
 
