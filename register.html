@@ -819,7 +819,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <!-- ============================================================
-     TERMS BLOCK — FINAL, ÚNICO, CORRECTO
+     TERMS BLOCK — FINAL, OFFICIAL, WORKING VERSION
 ============================================================ -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -827,15 +827,47 @@ document.addEventListener("DOMContentLoaded", () => {
   const checkbox = document.getElementById("terms");
   if (!checkbox) return;
 
+  // === Al volver desde terms.html, permitir marcar normalmente ===
+  const alreadyAccepted = localStorage.getItem("ACS_termsAccepted");
+
+  if (alreadyAccepted === "yes") {
+    // Permitir marcar sin bloqueo
+    checkbox.disabled = false;
+  }
+
   checkbox.addEventListener("change", () => {
     const accepted = localStorage.getItem("ACS_termsAccepted");
 
     if (checkbox.checked && accepted !== "yes") {
+
+      // === Guardar datos actuales del formulario antes de ir a terms ===
+      const tempData = {
+        fullName: document.getElementById("fullName").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        day: document.getElementById("dob-day").value,
+        month: document.getElementById("dob-month").value,
+        year: document.getElementById("dob-year").value,
+        country: document.getElementById("country").value
+      };
+
+      localStorage.setItem("ACS_registerTemp", JSON.stringify(tempData));
+
+      // Bloquear e ir a Terms
       alert("⚠️ You must read and accept the Terms & Conditions first.");
       checkbox.checked = false;
       window.location.href = "terms.html";
     }
   });
+
+  // === Restaurar datos si vienen de terms.html ===
+  const savedTemp = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
+
+  if (savedTemp.fullName) document.getElementById("fullName").value = savedTemp.fullName;
+  if (savedTemp.email)    document.getElementById("email").value    = savedTemp.email;
+  if (savedTemp.day)      document.getElementById("dob-day").value  = savedTemp.day;
+  if (savedTemp.month)    document.getElementById("dob-month").value = savedTemp.month;
+  if (savedTemp.year)     document.getElementById("dob-year").value = savedTemp.year;
+  if (savedTemp.country)  document.getElementById("country").value  = savedTemp.country;
 
 });
 </script>
