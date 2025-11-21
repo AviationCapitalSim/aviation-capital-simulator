@@ -275,7 +275,7 @@
         <option value="">Select Country</option>
       </select>
 
-       <select id="airportBase" required>
+      <select id="airportBase" required>
         <option value="">Select Airport Base</option>
       </select>
 
@@ -299,19 +299,85 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <!-- ======================================================= -->
-  <!--                    JAVASCRIPT ORIGINAL                 -->
-  <!-- ======================================================= -->
+  <!-- ========================= JS ========================= -->
   <script>
-    const regions = {
-      "Europe": ["Spain","France","Germany","Italy","United Kingdom","Poland"],
-      "Asia": ["Japan","China","India","Singapore","Kyrgyzstan","South Korea"],
-      "North America": ["United States","Canada","Mexico"],
-      "South America": ["Brazil","Argentina","Chile","Peru"],
-      "Africa": ["South Africa","Nigeria","Egypt","Morocco"],
-      "Oceania": ["Australia","New Zealand","Fiji"]
-    };
+const regions = {
 
+  /* =============================================================
+     🌍 EUROPE
+     ============================================================= */
+  "Europe": [
+    "Albania","Andorra","Armenia","Austria","Azerbaijan","Belarus","Belgium",
+    "Bosnia and Herzegovina","Bulgaria","Croatia","Cyprus","Czech Republic",
+    "Denmark","Estonia","Finland","France","Georgia","Germany","Greece",
+    "Hungary","Iceland","Ireland","Italy","Kazakhstan","Kosovo","Latvia",
+    "Liechtenstein","Lithuania","Luxembourg","Malta","Moldova","Monaco",
+    "Montenegro","Netherlands","North Macedonia","Norway","Poland","Portugal",
+    "Romania","San Marino","Serbia","Slovakia","Slovenia","Spain","Sweden",
+    "Switzerland","Turkey","Ukraine","United Kingdom","Vatican City"
+  ],
+
+  /* =============================================================
+     🌏 ASIA
+     ============================================================= */
+  "Asia": [
+    "Afghanistan","Armenia","Azerbaijan","Bahrain","Bangladesh","Bhutan",
+    "Brunei","Cambodia","China","Cyprus","Georgia","India","Indonesia",
+    "Iran","Iraq","Israel","Japan","Jordan","Kazakhstan","Kuwait",
+    "Kyrgyzstan","Laos","Lebanon","Malaysia","Maldives","Mongolia",
+    "Myanmar","Nepal","North Korea","Oman","Pakistan","Philippines",
+    "Qatar","Saudi Arabia","Singapore","South Korea","Sri Lanka","Syria",
+    "Tajikistan","Thailand","Timor-Leste","Turkmenistan","United Arab Emirates",
+    "Uzbekistan","Vietnam","Yemen"
+  ],
+
+  /* =============================================================
+     🌎 NORTH AMERICA
+     ============================================================= */
+  "North America": [
+    "Antigua and Barbuda","Bahamas","Barbados","Belize","Canada","Costa Rica",
+    "Cuba","Dominica","Dominican Republic","El Salvador","Grenada","Guatemala",
+    "Haiti","Honduras","Jamaica","Mexico","Nicaragua","Panama",
+    "Saint Kitts and Nevis","Saint Lucia","Saint Vincent and the Grenadines",
+    "Trinidad and Tobago","United States"
+  ],
+
+  /* =============================================================
+     🌎 SOUTH AMERICA
+     ============================================================= */
+  "South America": [
+    "Argentina","Bolivia","Brazil","Chile","Colombia","Ecuador","Guyana",
+    "Paraguay","Peru","Suriname","Uruguay","Venezuela"
+  ],
+
+  /* =============================================================
+     🌍 AFRICA
+     ============================================================= */
+  "Africa": [
+    "Algeria","Angola","Benin","Botswana","Burkina Faso","Burundi","Cabo Verde",
+    "Cameroon","Central African Republic","Chad","Comoros","Congo",
+    "Democratic Republic of the Congo","Djibouti","Egypt","Equatorial Guinea",
+    "Eritrea","Eswatini","Ethiopia","Gabon","Gambia","Ghana","Guinea",
+    "Guinea-Bissau","Ivory Coast","Kenya","Lesotho","Liberia","Libya",
+    "Madagascar","Malawi","Mali","Mauritania","Mauritius","Morocco","Mozambique",
+    "Namibia","Niger","Nigeria","Rwanda","Sao Tome and Principe","Senegal",
+    "Seychelles","Sierra Leone","Somalia","South Africa","South Sudan",
+    "Sudan","Tanzania","Togo","Tunisia","Uganda","Zambia","Zimbabwe"
+  ],
+
+  /* =============================================================
+     🌊 OCEANIA
+     ============================================================= */
+  "Oceania": [
+    "Australia","Fiji","Kiribati","Marshall Islands","Micronesia","Nauru",
+    "New Zealand","Palau","Papua New Guinea","Samoa","Solomon Islands",
+    "Tonga","Tuvalu","Vanuatu"
+  ]
+
+};
+</script>
+
+</script>     
     const realAirlines = [
       "American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
       "Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
@@ -326,29 +392,30 @@
       if (region && regions[region]) {
         regions[region].forEach(c => {
           const opt = document.createElement("option");
-          opt.value = c; opt.textContent = c;
+          opt.value = c;
+          opt.textContent = c;
           countrySelect.appendChild(opt);
         });
       }
     }
-     // === Cuando cambie el país — cargar aeropuertos ===
+
+    // === Cuando cambie el país — cargar aeropuertos ===
     document.getElementById("country").addEventListener("change", updateAirportBase);
 
-     function updateAirportBase() {
+    function updateAirportBase() {
       const country = document.getElementById("country").value;
       const airportSelect = document.getElementById("airportBase");
       airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
 
-     // Filtrar aeropuertos por país usando tu base real
-     const airports = WorldAirportsACS.filter(a => a.country === country);
+      const airports = WorldAirportsACS.filter(a => a.country === country);
 
-     airports.forEach(a => {
-     const opt = document.createElement("option");
-     opt.value = a.icao;  // lo que guardamos como base
-     opt.textContent = `${a.icao} — ${a.city} (${a.iata})`;
-     airportSelect.appendChild(opt);
-  });
-}
+      airports.forEach(a => {
+        const opt = document.createElement("option");
+        opt.value = a.icao;
+        opt.textContent = `${a.icao} — ${a.city} (${a.iata})`;
+        airportSelect.appendChild(opt);
+      });
+    }
 
     function generateUniqueCodes() {
       const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -370,64 +437,67 @@
     document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
 
     function handleAirlineCreation(event) {
-  event.preventDefault();
+      event.preventDefault();
 
-  const airlineName = document.getElementById("airlineName").value.trim();
-  const region = document.getElementById("region").value;
-  const country = document.getElementById("country").value;
-  const businessModel = document.getElementById("businessModel").value;
-  const operationMode = document.getElementById("operationMode").value;
-  const slogan = document.getElementById("slogan").value.trim();
-  const icao = document.getElementById("icao").value.trim().toUpperCase();
-  const iata = document.getElementById("iata").value.trim().toUpperCase();
+      const airlineName = document.getElementById("airlineName").value.trim();
+      const region = document.getElementById("region").value;
+      const country = document.getElementById("country").value;
+      const businessModel = document.getElementById("businessModel").value;
+      const operationMode = document.getElementById("operationMode").value;
+      const slogan = document.getElementById("slogan").value.trim();
+      const icao = document.getElementById("icao").value.trim().toUpperCase();
+      const iata = document.getElementById("iata").value.trim().toUpperCase();
 
-  // ⭐ Nuevo: aeropuerto base seleccionado
-  const baseAirport = document.getElementById("airportBase").value;
+      // ⭐ Nuevo: aeropuerto base seleccionado
+      const baseAirport = document.getElementById("airportBase").value;
 
-  const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
+      const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
 
-  if (realAirlines.some(real => {
-    const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
-    return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
-  })) {
-    alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
-    return false;
-  }
+      if (realAirlines.some(real => {
+        const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
+        return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
+      })) {
+        alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
+        return false;
+      }
 
-  const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
-  const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
-  if (nameExists) {
-    alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
-    return false;
-  }
+      const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+      const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
+      if (nameExists) {
+        alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
+        return false;
+      }
 
-  // ⭐ Aquí se integra base_airport
-  const airline = { 
-    name: airlineName,
-    icao,
-    iata,
-    slogan,
-    region,
-    country,
-    businessModel,
-    operationMode,
-    base_airport: baseAirport
-  };
+      // ⭐ Aquí se integra base_airport
+      const airline = { 
+        name: airlineName,
+        icao,
+        iata,
+        slogan,
+        region,
+        country,
+        businessModel,
+        operationMode,
+        base_airport: baseAirport
+      };
 
-  let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-  if (!user) {
-    alert("⚠️ Session not found. Please log in again.");
-    window.location.href = "login.html";
-    return false;
-  }
+      let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+      if (!user) {
+        alert("⚠️ Session not found. Please log in again.");
+        window.location.href = "login.html";
+        return false;
+      }
 
-  user.airline = airline;
-  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+      user.airline = airline;
+      localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-  const index = allUsers.findIndex(u => u.email === user.email);
-  if (index !== -1) allUsers[index] = user;
-  localStorage.setItem("ACS_users", JSON.stringify(allUser_
+      const index = allUsers.findIndex(u => u.email === user.email);
+      if (index !== -1) allUsers[index] = user;
 
+      <!-- ⭐ CORRECCIÓN -->
+      <script>
+localStorage.setItem("ACS_users", JSON.stringify(allUsers));
+</script>
 
       // ============================================================
       //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
