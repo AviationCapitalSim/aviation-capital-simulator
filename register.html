@@ -783,18 +783,30 @@ function closeAgeModal() {
 }
 </script>
 
-<!-- ============================================================
-     REGISTER — TERMS CONTROL (FINAL WORKING LOGIC)
-============================================================ -->
 <script>
-async function handleRegister(event) {
-  event.preventDefault();
+// ======================================================
+//   TERMS CONTROL — FINAL WORKING VERSION
+// ======================================================
+document.addEventListener("DOMContentLoaded", () => {
 
-  // Verificamos si ya aceptó términos
+  const checkbox = document.getElementById("terms");
+  if (!checkbox) return;
+
+  // Siempre deshabilitada al cargar
+  checkbox.checked = false;
+  checkbox.disabled = true;
+
+  // Si ya aceptó en terms.html → habilitar
   const accepted = localStorage.getItem("ACS_termsAccepted");
+  if (accepted === "yes") {
+    checkbox.disabled = false;
+    return;
+  }
 
-  if (accepted !== "yes") {
-    // Guardar datos antes de salir
+  // Si intenta marcar sin aceptar → guardar datos y enviar
+  checkbox.addEventListener("click", (e) => {
+    e.preventDefault();
+
     const temp = {
       fullName: document.getElementById("fullName").value.trim(),
       email:    document.getElementById("email").value.trim(),
@@ -805,14 +817,22 @@ async function handleRegister(event) {
     };
 
     localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
+
     alert("⚠️ You must read and accept the Terms & Conditions first.");
     window.location.href = "terms.html";
-    return;
-  }
+  });
 
-  // Si ya aceptó términos → ejecutar registro normalmente (tu código)
-  // ...
-}
+  // Restaurar datos cuando regresa desde terms.html
+  const saved = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
+
+  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
+  if (saved.email)    document.getElementById("email").value = saved.email;
+  if (saved.day)      document.getElementById("dob-day").value = saved.day;
+  if (saved.month)    document.getElementById("dob-month").value = saved.month;
+  if (saved.year)     document.getElementById("dob-year").value = saved.year;
+  if (saved.country)  document.getElementById("country").value = saved.country;
+
+});
 </script>
      
 </body>
