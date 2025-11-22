@@ -142,3 +142,34 @@ function estimateRouteEconomics(icao1, icao2, demandClass) {
    === CARGA FINAL DEL SISTEMA
    ============================================================= */
 loadAirportScripts(buildAirportIndex);
+/* =============================================================
+   === SIMPLE HISTORICAL ENGINE — NO DATA EDITING REQUIRED ======
+   ============================================================= */
+
+function ACS_filterAirportsByYear(simYear) {
+  return Object.values(AirportIndex).filter(a => {
+
+    // 1) Aeropuertos militares o sin runway → aparecen tarde
+    if (a.runway_m < 900 && simYear < 1970) return false;
+
+    // 2) Aeropuertos muy pequeños (demanda baja) → aparecen después de 1960
+    if ((a.demand?.Y || 0) < 300 && simYear < 1960) return false;
+
+    // 3) Regla general: antes de 1950 solo grandes hubs
+    if (simYear < 1950 && a.category !== "Major International") return false;
+
+    return true;
+  });
+}
+function ACS_getHistoricalDemand(a, simYear) {
+
+  const yearFactor = Math.max(0.10, (simYear - 1940) / 86); 
+  // 1940 → 0.10 (baja demanda)
+  // 2026 → 1.0 (demanda actual)
+
+  return {
+    Y: Math.round((a.demand?.Y || 0) * yearFactor),
+    C: Math.round((a.demand?.C || 0) * yearFactor),
+    F: Math.round((a.demand?.F || 0) * yearFactor)
+  };
+}
