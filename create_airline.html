@@ -454,31 +454,6 @@ function ACS_getHistoricalDemand(airport, year) {
 }
 
 /* ============================================================
-   ACS PREMIUM DOTS — Mini size + color + right alignment
-   ============================================================ */
-     
-function makeMiniColoredDots(percent) {
-  const total = 10;
-  const filled = Math.round(percent * total);
-  const empty  = total - filled;
-
-  // Color del nivel
-  let colorDot;
-  if (percent >= 0.66) colorDot = "🟢";
-  else if (percent >= 0.33) colorDot = "🟡";
-  else colorDot = "🔴";
-
-  // Bolitas muy pequeñas
-  const miniFull = "•";  // bolita mini llena
-  const miniEmpty = "○"; // bolita mini vacía
-
-  // Construcción
-  const bar = miniFull.repeat(filled) + miniEmpty.repeat(empty);
-
-  return `${colorDot}${bar}`;
-}
-
-/* ============================================================
    UPDATE AIRPORT BASE (HISTORICAL + POWER BAR COLORS)
    ============================================================ */
 document.getElementById("country").addEventListener("change", updateAirportBase);
@@ -523,28 +498,29 @@ function updateAirportBase() {
 
   // 5) Crear las opciones
   airports.forEach(a => {
-    const opt = document.createElement("option");
-    opt.value = a.icao;
+  const opt = document.createElement("option");
+  opt.value = a.icao;
 
-    // Normaliza 0–1
-    const percent = a.powerIndex / maxPower;
+  // Normaliza 0–1
+  const percent = a.powerIndex / maxPower;
 
-    // Barra ACS Premium Dot Color (equilibrada)
-    const bar = makeMiniColoredDots(percent);
+  // Barra premium ACS Qatar
+  const bar = makeThinBar(percent);
 
-    // Texto final Premium
-    opt.textContent =
-      `${a.icao} — ${a.city} ` +
-      `(${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ` +
-      `${bar}`;
+  // Texto final (orden ACS Premium)
+  opt.textContent =
+    `${a.icao} — ${a.city}  ` +
+    `(${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ` +
+    `${bar}`;
 
-    airportSelect.appendChild(opt);
-  });
+  airportSelect.appendChild(opt);
+});
+
 
   // Activar el selector (por si estaba deshabilitado)
   airportSelect.disabled = false;
 }
-
+     
 /* ============================================================
    AUTO CODE GENERATOR
    ============================================================ */
