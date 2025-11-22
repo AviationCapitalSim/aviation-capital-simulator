@@ -432,17 +432,19 @@ function handleLogout() {
 <!-- TIME ENGINE -->
 <script src="time_engine.js"></script>
 <script src="engine/acs_country_history.js"></script>
-     
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-  updateCountries();   // 🔥 Cargar países al iniciar
+  updateCountries();  
 
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
 });
+
+// 🔥 ESTA ES LA LÍNEA QUE FALTABA
+document.getElementById("region").addEventListener("change", updateCountries);
 
 </script>
 
