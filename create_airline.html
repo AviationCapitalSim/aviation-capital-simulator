@@ -466,7 +466,75 @@ function updateAirportBase() {
     airportSelect.appendChild(opt);
   });
 }
+     
+/* ============================================================
+   GET SIM YEAR FROM ACS TIME ENGINE
+   ============================================================ */
+function ACS_getSimYear() {
+  return parseInt(localStorage.getItem("ACS_year") || "2025");
+}
 
+/* ============================================================
+   FILTER AIRPORTS BY YEAR (HISTORICAL VISIBILITY ENGINE)
+   ============================================================ */
+function ACS_filterAirportsByYear(simYear) {
+  return Object.values(WorldAirportsACS)
+    .flat()
+    .filter(a => a.open_year <= simYear);
+}
+
+/* ============================================================
+   HISTORICAL DEMAND ENGINE
+   ============================================================ */
+function ACS_getHistoricalDemand(airport, year) {
+  const baseY = airport.demand.Y;
+  const growth = airport.pax_growth_factor;
+
+  const start = airport.open_year || 1940;
+  const years = Math.max(0, year - start);
+
+  const factor = Math.pow(growth, years);
+
+  return {
+    Y: Math.round(baseY * factor),
+    C: Math.round((airport.demand.C || 0) * factor),
+    F: Math.round((airport.demand.F || 0) * factor)
+  };
+}
+
+/* ============================================================
+   LOAD AIRPORTS WHEN COUNTRY CHANGES
+   ============================================================ */
+function updateAirportBase() {
+  const country = document.getElementById("country").value;
+  const airportSelect = document.getElementById("airportBase");
+
+  airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
+
+  if (!country) return;
+
+  // Obtener año del simulador
+  const simYear = ACS_getSimYear();
+
+  // Aeropuertos válidos históricamente
+  const airports = ACS_filterAirportsByYear(simYear)
+    .filter(a => a.country === country);
+
+  // Ordenar por demanda
+  airports.sort((a, b) => b.demand.Y - a.demand.Y);
+
+  // Pintar aeropuertos con demanda estimada
+  airports.forEach(a => {
+    const d = ACS_getHistoricalDemand(a, simYear);
+    const opt = document.createElement("option");
+
+    opt.value = a.icao;
+    opt.textContent = `${a.icao} — ${a.city} (${d.Y} pax est.)`;
+
+    airportSelect.appendChild(opt);
+  });
+}
+     
 /* ============================================================
    AUTO CODE GENERATOR
    ============================================================ */
