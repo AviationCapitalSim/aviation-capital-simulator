@@ -303,15 +303,15 @@ function updateCountries() {
 
   countrySelect.innerHTML = '<option value="">Select Country</option>';
 
-  // Solo países activos históricamente
-  const available = Object.values(ACS_CountryHistory)
-    .filter(c => c.open_year <= simYear)
-    .sort((a, b) => a.country.localeCompare(b.country));
+  // FILTRO CORRECTO USANDO start / end / name
+  const available = ACS_CountryHistory
+    .filter(c => c.start <= simYear && (c.end === null || c.end >= simYear))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   available.forEach(c => {
     const opt = document.createElement("option");
-    opt.value = c.country;
-    opt.textContent = c.country;
+    opt.value = c.name;
+    opt.textContent = c.name;
     countrySelect.appendChild(opt);
   });
 }
