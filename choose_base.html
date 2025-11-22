@@ -328,16 +328,16 @@ function initChooseBase() {
     updateClockDisplay();
   }
 
-  // Cargar países cuando el usuario elija continente
-  document.getElementById("continentSelect")
-    .addEventListener("change", loadCountries);
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
 
-  // Cargar lista de aeropuertos cuando elija un país
-  document.getElementById("countrySelect")
-    .addEventListener("change", loadAirports);
+  loadAirportScripts(() => {
+    buildAirportIndex();
+    console.log("🔥 Airports ready:", Object.keys(AirportIndex).length);
+    initChooseBase();
+  });
 
-  console.log("✔ Choose Base initialized.");
-}
+});
 </script>
 
 </body>
