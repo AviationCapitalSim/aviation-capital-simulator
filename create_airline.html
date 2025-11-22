@@ -427,11 +427,15 @@ function handleLogout() {
      
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+
+  updateCountries();   // 🔥 Cargar países al iniciar
+
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
 });
+
 </script>
 
 </body>
