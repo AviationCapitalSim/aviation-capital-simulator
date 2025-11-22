@@ -423,26 +423,49 @@ const realAirlines = [
 /* ============================================================
    UPDATE AIRPORT BASE
    ============================================================ */
+// === Cuando cambie el país — cargar aeropuertos (POWER BAR COLOR VERSION) ===
 document.getElementById("country").addEventListener("change", updateAirportBase);
 
 function updateAirportBase() {
   const country = document.getElementById("country").value;
   const airportSelect = document.getElementById("airportBase");
-
   airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
 
-  const airports = Object.values(WorldAirportsACS)
+  let airports = Object.values(WorldAirportsACS)
     .flat()
     .filter(a => a.country === country);
+
+  if (airports.length === 0) return;
+
+  // Calcular índice ACS
+  airports.forEach(a => {
+    a.powerIndex = a.demand.Y + a.demand.C * 2 + a.demand.F * 3;
+  });
+
+  // Ordenar de mayor → menor
+  airports.sort((a, b) => b.powerIndex - a.powerIndex);
+
+  const maxPower = airports[0].powerIndex;
 
   airports.forEach(a => {
     const opt = document.createElement("option");
     opt.value = a.icao;
-    opt.textContent = `${a.icao} — ${a.city} (${a.iata})`;
+
+    // Normalizar
+    const percent = a.powerIndex / maxPower;
+
+    let barColor;
+    if (percent >= 0.66) barColor = "🟩";   // High
+    else if (percent >= 0.33) barColor = "🟨"; // Medium
+    else barColor = "🟥";                    // Low
+
+    const barBlocks = Math.round(percent * 10);
+    const bar = barColor.repeat(barBlocks);
+
+    opt.textContent = `${a.icao} — ${a.city} (${a.iata}) ${bar}  (${a.powerIndex})`;
     airportSelect.appendChild(opt);
   });
 }
-
 
 /* ============================================================
    AUTO CODE GENERATOR
