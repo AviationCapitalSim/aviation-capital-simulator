@@ -18,6 +18,11 @@
       text-align: center;
     }
 
+    /* ==== REMOVE YELLOW HEADER LINE ==== */
+    .acs-header {
+      border-bottom: none !important;
+    }
+
     .form-container {
       background: #0e1b3c;
       border: 1px solid #1A335C;
@@ -117,12 +122,20 @@
       <h1>Aviation Capital Simulator</h1>
     </div>
 
+    <!-- === ONLY SUPPORT BUTTON (Qatar Blue) === -->
     <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html">Finance</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html">Routes</a>
-      <a href="hr.html">HR</a>
+      <a href="support.html" 
+         style="padding:0.45rem 1.2rem; 
+                border-radius:10px; 
+                background:rgba(255,255,255,0.06); 
+                backdrop-filter:blur(6px);
+                border:1px solid rgba(255,255,255,0.08);
+                color:#8AB4FF; 
+                text-decoration:none;
+                font-size:0.9rem;
+                font-weight:600;">
+        Support
+      </a>
     </nav>
 
     <div class="acs-auth">
@@ -196,13 +209,8 @@ function getCountryNameFromAirports(code, continent) {
   const list = WorldAirportsACS[continent].filter(a => a.country === code);
   if (!list.length) return code;
 
-  // Tratamos de extraer nombre real a partir de datos existentes
-  // Si el dataset trae countryName, úsalo:
   if (list[0].countryName) return list[0].countryName;
 
-  // Si NO tiene countryName, hacemos fallback:
-  // Convertimos el código ISO a nombre “estético”
-  // Ejemplo: “DZ” → “DZ (Country)”
   return code;  
 }
   
@@ -218,21 +226,19 @@ function loadCountries() {
   const countries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.country))].sort();
 
   countries.forEach(c => {
-  const opt = document.createElement("option");
-  opt.value = c;
+    const opt = document.createElement("option");
+    opt.value = c;
 
-  // Buscar un aeropuerto que tenga ese país y leer el nombre desde region
-  const airport = WorldAirportsACS[selectedContinent].find(a => a.country === c);
+    // Buscar un aeropuerto que tenga ese país y leer el nombre desde region
+    const airport = WorldAirportsACS[selectedContinent].find(a => a.country === c);
 
-  // Mostrar el nombre REAL del país (region)
-  opt.textContent = airport?.region || c;
+    opt.textContent = airport?.region || c;
 
-  countrySelect.appendChild(opt);
-});
-  
+    countrySelect.appendChild(opt);
+  });
 }
   
-  function loadAirports() {
+function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
   const tbody = document.getElementById("airportList");
   tbody.innerHTML = "";
@@ -323,13 +329,11 @@ function handleLogout() {
 
 function initChooseBase() {
 
-  // Reloj ACS
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
 
-  // Eventos UI
   document.getElementById("continentSelect")
     .addEventListener("change", loadCountries);
 
