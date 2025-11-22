@@ -419,117 +419,90 @@ const realAirlines = [
   "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
 ];
 
-
-/* ============================================================
-   UPDATE AIRPORT BASE
-   ============================================================ */
-// === Cuando cambie el país — cargar aeropuertos (POWER BAR COLOR VERSION) ===
-document.getElementById("country").addEventListener("change", updateAirportBase);
-
-function updateAirportBase() {
-  const country = document.getElementById("country").value;
-  const airportSelect = document.getElementById("airportBase");
-  airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
-
-  let airports = Object.values(WorldAirportsACS)
-    .flat()
-    .filter(a => a.country === country);
-
-  if (airports.length === 0) return;
-
-  // Calcular índice ACS
-  airports.forEach(a => {
-    a.powerIndex = a.demand.Y + a.demand.C * 2 + a.demand.F * 3;
-  });
-
-  // Ordenar de mayor → menor
-  airports.sort((a, b) => b.powerIndex - a.powerIndex);
-
-  const maxPower = airports[0].powerIndex;
-
-  airports.forEach(a => {
-    const opt = document.createElement("option");
-    opt.value = a.icao;
-
-    // Normalizar
-    const percent = a.powerIndex / maxPower;
-
-    let barColor;
-    if (percent >= 0.66) barColor = "🟩";   // High
-    else if (percent >= 0.33) barColor = "🟨"; // Medium
-    else barColor = "🟥";                    // Low
-
-    const barBlocks = Math.round(percent * 10);
-    const bar = barColor.repeat(barBlocks);
-
-    opt.textContent = `${a.icao} — ${a.city} (${a.iata}) ${bar}  (${a.powerIndex})`;
-    airportSelect.appendChild(opt);
-  });
-}
-     
 /* ============================================================
    GET SIM YEAR FROM ACS TIME ENGINE
    ============================================================ */
 function ACS_getSimYear() {
-  return parseInt(localStorage.getItem("ACS_year") || "2025");
+  return parseInt(localStorage.getItem("ACS_year") || "1940");
 }
 
 /* ============================================================
-   FILTER AIRPORTS BY YEAR (HISTORICAL VISIBILITY ENGINE)
+   FILTER AIRPORTS BY YEAR (Historical Visibility)
    ============================================================ */
 function ACS_filterAirportsByYear(simYear) {
   return Object.values(WorldAirportsACS)
     .flat()
-    .filter(a => a.open_year <= simYear);
+    .filter(a => (a.open_year || 1940) <= simYear);
 }
 
 /* ============================================================
    HISTORICAL DEMAND ENGINE
    ============================================================ */
 function ACS_getHistoricalDemand(airport, year) {
-  const baseY = airport.demand.Y;
-  const growth = airport.pax_growth_factor;
-
   const start = airport.open_year || 1940;
-  const years = Math.max(0, year - start);
+  const base = airport.demand;
+  const growth = airport.pax_growth_factor || 1.01;
 
+  const years = Math.max(0, year - start);
   const factor = Math.pow(growth, years);
 
   return {
-    Y: Math.round(baseY * factor),
-    C: Math.round((airport.demand.C || 0) * factor),
-    F: Math.round((airport.demand.F || 0) * factor)
+    Y: Math.round(base.Y * factor),
+    C: Math.round(base.C * factor),
+    F: Math.round(base.F * factor)
   };
 }
 
 /* ============================================================
-   LOAD AIRPORTS WHEN COUNTRY CHANGES
+   UPDATE AIRPORT BASE (FINAL UNIFIED VERSION)
    ============================================================ */
+document.getElementById("country").addEventListener("change", updateAirportBase);
+
 function updateAirportBase() {
   const country = document.getElementById("country").value;
   const airportSelect = document.getElementById("airportBase");
 
   airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
-
   if (!country) return;
 
-  // Obtener año del simulador
   const simYear = ACS_getSimYear();
 
-  // Aeropuertos válidos históricamente
-  const airports = ACS_filterAirportsByYear(simYear)
+  // Filtrar aeropuertos válidos para el año actual
+  let airports = ACS_filterAirportsByYear(simYear)
     .filter(a => a.country === country);
 
-  // Ordenar por demanda
-  airports.sort((a, b) => b.demand.Y - a.demand.Y);
+  if (airports.length === 0) return;
 
-  // Pintar aeropuertos con demanda estimada
+  // Calcular demanda histórica y power index
   airports.forEach(a => {
     const d = ACS_getHistoricalDemand(a, simYear);
-    const opt = document.createElement("option");
 
+    a.histDemand = d;
+    a.powerIndex = d.Y + d.C * 2 + d.F * 3; // Weighted ACS formula
+  });
+
+  // Ordenar mayor a menor poder
+  airports.sort((a, b) => b.powerIndex - a.powerIndex);
+
+  const maxPower = airports[0].powerIndex;
+
+  airports.forEach(a => {
+    const d = a.histDemand;
+
+    // normalizado para barra
+    const percent = a.powerIndex / maxPower;
+    let color;
+    if (percent >= 0.66) color = "🟩";
+    else if (percent >= 0.33) color = "🟨";
+    else color = "🟥";
+
+    const bar = color.repeat(Math.round(percent * 10));
+
+    const opt = document.createElement("option");
     opt.value = a.icao;
-    opt.textContent = `${a.icao} — ${a.city} (${d.Y} pax est.)`;
+
+    opt.textContent =
+      `${a.icao} — ${a.city} | Y:${d.Y} C:${d.C} F:${d.F}  ${bar}`;
 
     airportSelect.appendChild(opt);
   });
