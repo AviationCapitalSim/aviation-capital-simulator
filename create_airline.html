@@ -400,13 +400,13 @@ function updateCountries() {
   if (!region || !regions[region]) return;
 
   regions[region].forEach(countryName => {
+    const iso = countryISO[countryName] || countryName;
     const opt = document.createElement("option");
-    opt.value = countryName;         // ❗ nombre real (coincide con airports)
-    opt.textContent = countryName;   
+    opt.value = iso;
+    opt.textContent = countryName;
     countrySelect.appendChild(opt);
   });
 }
-
 
 /* ============================================================
    REAL AIRLINES
