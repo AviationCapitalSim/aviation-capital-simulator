@@ -298,6 +298,47 @@
       updateClockDisplay();
     }
   });
+
+  <!-- WORLD AIRPORT LOADER -->
+<script src="airport_loader.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // 1️⃣ Cargar todos los continentes
+  loadAirportScripts(() => {
+
+    // 2️⃣ Construir el índice global de aeropuertos
+    buildAirportIndex();
+    console.log("🔥 Airports ready:", Object.keys(AirportIndex).length);
+
+    // 3️⃣ Iniciar toda la lógica de Choose Base
+    initChooseBase();
+  });
+
+});
 </script>
+
+<script>
+function initChooseBase() {
+
+  // Activar reloj global si existe
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+
+  // Cargar países cuando el usuario elija continente
+  document.getElementById("continentSelect")
+    .addEventListener("change", loadCountries);
+
+  // Cargar lista de aeropuertos cuando elija un país
+  document.getElementById("countrySelect")
+    .addEventListener("change", loadAirports);
+
+  console.log("✔ Choose Base initialized.");
+}
+</script>
+  
 </body>
 </html>
