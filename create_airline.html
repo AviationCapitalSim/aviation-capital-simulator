@@ -458,28 +458,26 @@ function ACS_getHistoricalDemand(airport, year) {
    ============================================================ */
 document.getElementById("country").addEventListener("change", updateAirportBase);
 
-  /* ============================================================
-   ACS THIN BAR (Original Cuadros Verdes/Amarillos/Rojos)
+ /* ============================================================
+   ACS QATAR SMOOTH BAR — RIGHT ALIGNED
    ============================================================ */
-
-/* ============================================================
-   ACS THIN BAR — MINI VERSION (Small Elegant Blocks)
-   ============================================================ */
-function makeThinBar(percent) {
-  const total = 10;
-  const filled = Math.round(percent * total);
-  const empty = total - filled;
+function makeQatarSmoothBar(percent) {
+  const smooth = ["▁","▂","▃","▄","▅","▆","▇","█"];
+  const index = Math.min(
+    smooth.length - 1,
+    Math.floor(percent * smooth.length)
+  );
 
   let color;
   if (percent >= 0.66) color = "🟩";
   else if (percent >= 0.33) color = "🟨";
   else color = "🟥";
 
-  // BLOQUES MÁS PEQUEÑOS
-  const block = "▌";     // cuadro pequeño
-  const emptyBlock = "░"; // cuadro vacío delgado
+  // barra
+  const bar = `${color} ${smooth.slice(0, index + 1).join("")}`;
 
-  return `${color} ${block.repeat(filled)}${emptyBlock.repeat(empty)}`;
+  // alineación elegante
+  return bar.padStart(22, " ");  
 }
 
 function updateAirportBase() {
@@ -529,7 +527,7 @@ function updateAirportBase() {
   const percent = a.powerIndex / maxPower;
 
   // Barra premium ACS Qatar
-  const bar = makeThinBar(percent);
+  const bar = makeQatarSmoothBar(percent);
 
   // Texto final (orden ACS Premium)
   opt.textContent =
