@@ -502,9 +502,10 @@ function runwayHistoricalFilter(a, year) {
   return true;
 }
 
-// ============================================================
-//  FULL HISTORICAL FILTER (COUNTRY + RUNWAY ERA)
-// ============================================================
+<!-- ============================================================
+     FULL HISTORICAL FILTER (COUNTRY + RUNWAY ERA)
+============================================================ -->
+<script>
 function ACS_filterAirport_Historical(a, year) {
 
   // 1) Country must exist in that year
@@ -516,7 +517,8 @@ function ACS_filterAirport_Historical(a, year) {
   return true;
 }
 </script>
-  
+
+<script>
 document.addEventListener("DOMContentLoaded", () => {
   loadAirportScripts(() => {
     buildAirportIndex();
@@ -525,6 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
 
 </body>
 </html>
