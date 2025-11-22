@@ -454,6 +454,23 @@ function ACS_getHistoricalDemand(airport, year) {
 }
 
 /* ============================================================
+   ACS PREMIUM DOT BAR — Colored (medium-size balanced)
+   ============================================================ */
+function makeColoredDotBar(percent) {
+  const total = 10;
+  const filled = Math.round(percent * total);
+  const empty  = total - filled;
+
+  let dotColor;
+  if (percent >= 0.66) dotColor = "🟢";
+  else if (percent >= 0.33) dotColor = "🟡";
+  else dotColor = "🔴";
+
+  return dotColor.repeat(filled) + "○".repeat(empty);
+}
+
+
+/* ============================================================
    UPDATE AIRPORT BASE (HISTORICAL + POWER BAR COLORS)
    ============================================================ */
 document.getElementById("country").addEventListener("change", updateAirportBase);
@@ -498,29 +515,28 @@ function updateAirportBase() {
 
   // 5) Crear las opciones
   airports.forEach(a => {
-  const opt = document.createElement("option");
-  opt.value = a.icao;
+    const opt = document.createElement("option");
+    opt.value = a.icao;
 
-  // Normaliza 0–1
-  const percent = a.powerIndex / maxPower;
+    // Normaliza 0–1
+    const percent = a.powerIndex / maxPower;
 
-  // Barra ACS Premium Dot Color (equilibrada)
-  const bar = makeColoredDotBar(percent);
+    // Barra ACS Premium Dot Color (equilibrada)
+    const bar = makeColoredDotBar(percent);
 
-  // Texto final Premium
-  opt.textContent =
-    `${a.icao} — ${a.city} ` +
-    `(${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ` +
-    `${bar}`;
+    // Texto final Premium
+    opt.textContent =
+      `${a.icao} — ${a.city} ` +
+      `(${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ` +
+      `${bar}`;
 
-  airportSelect.appendChild(opt);
-});
-
+    airportSelect.appendChild(opt);
+  });
 
   // Activar el selector (por si estaba deshabilitado)
   airportSelect.disabled = false;
 }
-     
+
 /* ============================================================
    AUTO CODE GENERATOR
    ============================================================ */
