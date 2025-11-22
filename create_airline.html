@@ -530,7 +530,7 @@ function updateAirportBase() {
     const percent = a.powerIndex / maxPower;
 
     // Barra ACS Premium Dot Color (equilibrada)
-    const bar = makeColoredDotBar(percent);
+    const bar = makeMiniColoredDots(percent);
 
     // Texto final Premium
     opt.textContent =
