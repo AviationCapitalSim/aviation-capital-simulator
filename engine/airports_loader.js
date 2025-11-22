@@ -147,25 +147,27 @@ loadAirportScripts(buildAirportIndex);
    ============================================================= */
 
 function ACS_filterAirportsByYear(simYear) {
-
   return Object.values(AirportIndex).filter(a => {
 
-    // === ERA 1 – Aviación Temprana (1940–1949) ===
-    // DC-3 / DC-4 / C-47 requerían aprox. 900–1000 m
+    // === ERA 1 – 1940 a 1949 (DC-3 era) ===
     if (simYear < 1950) {
-      if (a.runway_m < 900) return false;
+      // Muchos aeropuertos antiguos tienen runway mal cargado (0).
+      // Para evitar eliminarlos por error:
+      if (!a.runway_m || a.runway_m === 0) return true;
+
+      // Filtro realista para DC-3/DC-4
+      if (a.runway_m < 800) return false;
+
       return true;
     }
 
-    // === ERA 2 – Expansión Global (1950–1969) ===
-    // Muchísimos aeropuertos se expanden; pistas pequeñas aún limitadas
+    // === ERA 2 – 1950 a 1969 ===
     if (simYear < 1970) {
       if (a.runway_m < 600) return false;
       return true;
     }
 
-    // === ERA 3 – Jet Age y Moderna (1970–2026) ===
-    // Aquí todos los aeropuertos del dataset son válidos
+    // === ERA 3 – moderno ===
     return true;
   });
 }
