@@ -50,6 +50,19 @@ function loadAirportScripts(callback) {
 const AirportIndex = {};
 
 function buildAirportIndex() {
+
+  // ============================================
+  //  AÑADIR NOMBRE DEL PAÍS (SIN ROMPER NADA)
+  // ============================================
+  for (const cont in WorldAirportsACS) {
+    WorldAirportsACS[cont].forEach(a => {
+      a.country_name = a.region;   // 🔥 Nombre del país ya insertado
+    });
+  }
+
+  // ============================================
+  //  INDEX BUILDER (NO TOCAR)
+  // ============================================
   for (const cont in WorldAirportsACS) {
     WorldAirportsACS[cont].forEach(a => {
       AirportIndex[a.icao] = a;
