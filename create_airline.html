@@ -295,11 +295,31 @@
       const index = allUsers.findIndex(u => u.email === user.email);
       if (index !== -1) allUsers[index] = user;
       localStorage.setItem("ACS_users", JSON.stringify(allUsers));
-
       localStorage.setItem("ACS_Airline", JSON.stringify(airline));
-      alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.name}.`);
+         
+       // ============================================================
+      //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
+      // ============================================================
+      fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "createAirline",
+          user_id: user.user_id,
+          airline_name: airlineName,
+          country: country
+        })
+      })
+      then(() => {
+        alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.full_name}.`);
+        window.location.href = "choose_base.html";
+      })
+      .catch(err => {
+        alert("⚠️ Airline created locally but failed to sync with server: " + err);
+        window.location.href = "choose_base.html";
+      });
 
-      window.location.href = "choose_base.html";
       return false;
     }
 
