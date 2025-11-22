@@ -147,20 +147,29 @@ loadAirportScripts(buildAirportIndex);
    ============================================================= */
 
 function ACS_filterAirportsByYear(simYear) {
+
   return Object.values(AirportIndex).filter(a => {
 
-    // 1) Aeropuertos militares o sin runway → aparecen tarde
-    if (a.runway_m < 900 && simYear < 1970) return false;
+    // === ERA 1 – Aviación Temprana (1940–1949) ===
+    // DC-3 / DC-4 / C-47 requerían aprox. 900–1000 m
+    if (simYear < 1950) {
+      if (a.runway_m < 900) return false;
+      return true;
+    }
 
-    // 2) Aeropuertos muy pequeños (demanda baja) → aparecen después de 1960
-    if ((a.demand?.Y || 0) < 300 && simYear < 1960) return false;
+    // === ERA 2 – Expansión Global (1950–1969) ===
+    // Muchísimos aeropuertos se expanden; pistas pequeñas aún limitadas
+    if (simYear < 1970) {
+      if (a.runway_m < 600) return false;
+      return true;
+    }
 
-    // 3) Regla general: antes de 1950 solo grandes hubs
-    if (simYear < 1950 && a.category !== "Major International") return false;
-
+    // === ERA 3 – Jet Age y Moderna (1970–2026) ===
+    // Aquí todos los aeropuertos del dataset son válidos
     return true;
   });
 }
+
 function ACS_getHistoricalDemand(a, simYear) {
 
   const yearFactor = Math.max(0.10, (simYear - 1940) / 86); 
