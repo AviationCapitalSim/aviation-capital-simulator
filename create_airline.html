@@ -465,53 +465,60 @@ function updateAirportBase() {
   airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
   if (!country) return;
 
+  // Convertir nombre → código ISO
+  const countryCode = countryISO[country];
+  if (!countryCode) {
+    console.warn("No ISO code found for country:", country);
+    return;
+  }
+
   // 1) Año del simulador
   const simYear = ACS_getSimYear();
 
-  // 2) Aeropuertos activos históricamente
+  // 2) Aeropuertos activos históricamente + filtro por país (ISO)
   let airports = ACS_filterAirportsByYear(simYear)
-  .filter(a => a.country === countryISO[country]);
+    .filter(a => a.country === countryCode);
 
-  if (airports.length === 0) return;
+  if (airports.length === 0) {
+    console.warn("No airports found for:", country, "(" + countryCode + ")");
+    return;
+  }
 
-  // 3) Calcular demanda histórica y powerIndex ACS
+  // 3) Calcular demanda histórica y powerIndex
   airports = airports.map(a => {
-    const d = ACS_getHistoricalDemand(a, simYear);
-    const powerIndex = d.Y + d.C * 2 + d.F * 3;
-    return { ...a, histDemand: d, powerIndex };
+     const d = ACS_getHistoricalDemand(a, simYear);
+     const powerIndex = d.Y + d.C * 2 + d.F * 3;
+     return { ...a, histDemand: d, powerIndex };
   });
 
-  // 4) Ordenar por demanda (powerIndex)
+  // 4) Ordenar por demanda
   airports.sort((a, b) => b.powerIndex - a.powerIndex);
 
   const maxPower = airports[0].powerIndex;
 
-  // 5) Crear opciones con barra ACS
+  // 5) Crear las opciones
   airports.forEach(a => {
     const opt = document.createElement("option");
     opt.value = a.icao;
 
-    // Normalizar 0–1
     const percent = a.powerIndex / maxPower;
 
-    // Selección color ACS
     let barColor;
-    if (percent >= 0.66) barColor = "🟩";     // High
-    else if (percent >= 0.33) barColor = "🟨"; // Medium
-    else barColor = "🟥";                      // Low
+    if (percent >= 0.66) barColor = "🟩";
+    else if (percent >= 0.33) barColor = "🟨";
+    else barColor = "🟥";
 
-    // Construcción de barra
     const blocks = Math.round(percent * 10);
     const bar = barColor.repeat(blocks);
 
-    // Texto final
     opt.textContent =
-      `${a.icao} — ${a.city} ` +
-      `(${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ` +
-      `${bar}`;
+      `${a.icao} — ${a.city} (${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ${bar}`;
 
     airportSelect.appendChild(opt);
   });
+
+  // Activar el selector (por si estaba deshabilitado)
+  airportSelect.disabled = false;
 }
      
 /* ============================================================
