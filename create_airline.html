@@ -299,19 +299,18 @@
 function updateCountries() {
 
   const simYear = parseInt(localStorage.getItem("ACS_year") || "1940");
-  const regionSelected = document.getElementById("region").value;
   const countrySelect = document.getElementById("country");
+  const selectedRegion = document.getElementById("region").value;
 
   countrySelect.innerHTML = '<option value="">Select Country</option>';
 
-  if (!regionSelected) return;
+  if (!selectedRegion) return;
 
-  // Filtrar por región + filtro histórico
   const available = ACS_CountryHistory
-    .filter(c =>
-      c.region === regionSelected &&      // región correcta
-      c.start <= simYear &&               // país ya existía
-      (c.end === null || c.end >= simYear) // país NO desapareció aún
+    .filter(c => 
+        c.region === selectedRegion &&
+        c.start <= simYear &&
+        (c.end === null || c.end >= simYear)
     )
     .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -322,6 +321,7 @@ function updateCountries() {
     countrySelect.appendChild(opt);
   });
 }
+
 
 
 function generateUniqueCodes() {
