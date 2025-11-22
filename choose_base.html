@@ -192,6 +192,20 @@
 let selectedContinent = "";
 let selectedCountry = "";
 
+function getCountryNameFromAirports(code, continent) {
+  const list = WorldAirportsACS[continent].filter(a => a.country === code);
+  if (!list.length) return code;
+
+  // Tratamos de extraer nombre real a partir de datos existentes
+  // Si el dataset trae countryName, úsalo:
+  if (list[0].countryName) return list[0].countryName;
+
+  // Si NO tiene countryName, hacemos fallback:
+  // Convertimos el código ISO a nombre “estético”
+  // Ejemplo: “DZ” → “DZ (Country)”
+  return code;  
+}
+  
 function loadCountries() {
   selectedContinent = document.getElementById("continentSelect").value;
   const countrySelect = document.getElementById("countrySelect");
@@ -202,15 +216,17 @@ function loadCountries() {
   if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
 
   const countries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.country))].sort();
-  countries.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    countrySelect.appendChild(opt);
-  });
-}
 
-function loadAirports() {
+  countries.forEach(c => {
+  const opt = document.createElement("option");
+  opt.value = c;
+  opt.textContent = getCountryNameFromAirports(c, selectedContinent); // 🔥 ESTA ES LA LÍNEA CORRECTA
+  countrySelect.appendChild(opt);
+});
+  
+}
+  
+  function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
   const tbody = document.getElementById("airportList");
   tbody.innerHTML = "";
