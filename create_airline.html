@@ -454,21 +454,29 @@ function ACS_getHistoricalDemand(airport, year) {
 }
 
 /* ============================================================
-   ACS PREMIUM DOT BAR — Colored (medium-size balanced)
+   ACS PREMIUM DOTS — Mini size + color + right alignment
    ============================================================ */
-function makeColoredDotBar(percent) {
+     
+function makeMiniColoredDots(percent) {
   const total = 10;
   const filled = Math.round(percent * total);
   const empty  = total - filled;
 
-  let dotColor;
-  if (percent >= 0.66) dotColor = "🟢";
-  else if (percent >= 0.33) dotColor = "🟡";
-  else dotColor = "🔴";
+  // Color del nivel
+  let colorDot;
+  if (percent >= 0.66) colorDot = "🟢";
+  else if (percent >= 0.33) colorDot = "🟡";
+  else colorDot = "🔴";
 
-  return dotColor.repeat(filled) + "○".repeat(empty);
+  // Bolitas muy pequeñas
+  const miniFull = "•";  // bolita mini llena
+  const miniEmpty = "○"; // bolita mini vacía
+
+  // Construcción
+  const bar = miniFull.repeat(filled) + miniEmpty.repeat(empty);
+
+  return `${colorDot}${bar}`;
 }
-
 
 /* ============================================================
    UPDATE AIRPORT BASE (HISTORICAL + POWER BAR COLORS)
