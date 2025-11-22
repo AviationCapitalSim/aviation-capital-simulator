@@ -454,7 +454,7 @@ function ACS_getHistoricalDemand(airport, year) {
 }
 
 /* ============================================================
-   UPDATE AIRPORT BASE (FINAL UNIFIED VERSION)
+   UPDATE AIRPORT BASE (HISTORICAL + POWER BAR COLORS)
    ============================================================ */
 document.getElementById("country").addEventListener("change", updateAirportBase);
 
@@ -465,44 +465,50 @@ function updateAirportBase() {
   airportSelect.innerHTML = '<option value="">Select Airport Base</option>';
   if (!country) return;
 
+  // 1) Año del simulador
   const simYear = ACS_getSimYear();
 
-  // Filtrar aeropuertos válidos para el año actual
+  // 2) Aeropuertos activos históricamente
   let airports = ACS_filterAirportsByYear(simYear)
     .filter(a => a.country === country);
 
   if (airports.length === 0) return;
 
-  // Calcular demanda histórica y power index
-  airports.forEach(a => {
+  // 3) Calcular demanda histórica y powerIndex ACS
+  airports = airports.map(a => {
     const d = ACS_getHistoricalDemand(a, simYear);
-
-    a.histDemand = d;
-    a.powerIndex = d.Y + d.C * 2 + d.F * 3; // Weighted ACS formula
+    const powerIndex = d.Y + d.C * 2 + d.F * 3;
+    return { ...a, histDemand: d, powerIndex };
   });
 
-  // Ordenar mayor a menor poder
+  // 4) Ordenar por demanda (powerIndex)
   airports.sort((a, b) => b.powerIndex - a.powerIndex);
 
   const maxPower = airports[0].powerIndex;
 
+  // 5) Crear opciones con barra ACS
   airports.forEach(a => {
-    const d = a.histDemand;
-
-    // normalizado para barra
-    const percent = a.powerIndex / maxPower;
-    let color;
-    if (percent >= 0.66) color = "🟩";
-    else if (percent >= 0.33) color = "🟨";
-    else color = "🟥";
-
-    const bar = color.repeat(Math.round(percent * 10));
-
     const opt = document.createElement("option");
     opt.value = a.icao;
 
+    // Normalizar 0–1
+    const percent = a.powerIndex / maxPower;
+
+    // Selección color ACS
+    let barColor;
+    if (percent >= 0.66) barColor = "🟩";     // High
+    else if (percent >= 0.33) barColor = "🟨"; // Medium
+    else barColor = "🟥";                      // Low
+
+    // Construcción de barra
+    const blocks = Math.round(percent * 10);
+    const bar = barColor.repeat(blocks);
+
+    // Texto final
     opt.textContent =
-      `${a.icao} — ${a.city} | Y:${d.Y} C:${d.C} F:${d.F}  ${bar}`;
+      `${a.icao} — ${a.city} ` +
+      `(${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ` +
+      `${bar}`;
 
     airportSelect.appendChild(opt);
   });
