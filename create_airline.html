@@ -304,7 +304,7 @@ function updateCountries() {
   countrySelect.innerHTML = '<option value="">Select Country</option>';
 
   // Solo países activos históricamente
-  const available = ACS_CountryHistory
+  const available = Object.values(ACS_CountryHistory)
     .filter(c => c.open_year <= simYear)
     .sort((a, b) => a.country.localeCompare(b.country));
 
