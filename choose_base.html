@@ -1,260 +1,230 @@
 <!-- === CHOOSE BASE MODULE — Qatar Luxury Edition === -->
-<!-- Version: Beta v4 | Date: 22 NOV 2025 -->
+<!-- Version: Beta v4 FIXED | Date: 22 NOV 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Choose Base - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
- <!-- ======== ACS Styles ======== -->
-  <link rel="stylesheet" href="styles.css?v=3.1" />
-
-  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <!-- ======== ACS Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
 
-  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
+  <!-- ======== Apple Home Screen ======== -->
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
-  <!-- ======== PWA Manifest (Android / Chrome) ======== -->
+  <!-- ======== PWA Manifest ======== -->
   <link rel="manifest" href="manifest.json">
 
   <style>
-  body {
-    
-    margin: 0;
-    background-color: #0C1F3C;
-    color: white;
-    font-family: "Poppins", sans-serif;
-    padding-top: 120px;
-    text-align: center;
-  }
+    body {
+      margin: 0;
+      background-color: #0C1F3C;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      padding-top: 120px;
+      text-align: center;
+    }
 
-  /* ============================================================
-       === QATAR LUXURY HEADER — EXACT COPY FROM INDEX ============
-     ============================================================ */
-  .acs-header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    padding: 0.8rem 2rem;
-    background: rgba(12,23,50,0.45);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(255,179,0,0.35);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 1000;
-    animation: acsHeaderFade 0.8s ease forwards;
-  }
+    /* ============================================================
+         QATAR LUXURY HEADER — EXACT COPY
+       ============================================================ */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 0.8rem 2rem;
+      background: rgba(12,23,50,0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,179,0,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      animation: acsHeaderFade 0.8s ease forwards;
+    }
 
-  @keyframes acsHeaderFade {
-    from { opacity:0; transform: translateY(-10px); }
-    to   { opacity:1; transform: translateY(0); }
-  }
+    @keyframes acsHeaderFade {
+      from { opacity:0; transform: translateY(-10px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
 
-  .acs-logo {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
+    .acs-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .acs-logo img { height: 46px; filter: drop-shadow(0 0 6px rgba(255,179,0,0.35)); }
+    .acs-logo h1 {
+      color: #FFB300;
+      font-size: 1.15rem;
+      margin: 0;
+      letter-spacing: 0.6px;
+      text-shadow: 0 0 8px rgba(255,179,0,0.4);
+    }
 
-  .acs-logo img {
-    height: 46px;
-    filter: drop-shadow(0 0 6px rgba(255,179,0,0.35));
-  }
+    .nav-btn {
+      padding: 0.45rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: 0.25s;
+      min-width: 100px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
 
-  .acs-logo h1 {
-    color: #FFB300;
-    font-size: 1.15rem;
-    margin: 0;
-    letter-spacing: 0.6px;
-    text-shadow: 0 0 8px rgba(255,179,0,0.4);
-  }
+    .nav-btn-blue {
+      color: #8AB4FF;
+      border-color: rgba(138,180,255,0.45);
+    }
 
-  .nav-btn {
-    padding: 0.45rem 1.2rem;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: 0.25s;
-    min-width: 100px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
-  }
+    .nav-btn-blue:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 12px rgba(138,180,255,0.55);
+    }
 
-  .nav-btn-blue {
-    color: #8AB4FF;
-    border-color: rgba(138,180,255,0.45);
-  }
+    .acs-clock-header {
+      font-family: 'Orbitron', monospace;
+      color: #00ff80;
+      background: rgba(0,255,128,0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
 
-  .nav-btn-blue:hover {
-    background: rgba(138,180,255,0.20);
-    box-shadow: 0 0 12px rgba(138,180,255,0.55);
-  }
+    /* ============================================================
+         QATAR LUXURY MAIN CARD
+       ============================================================ */
+    .form-container {
+      background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2.4rem;
+      border-radius: 22px;
+      border: 1px solid rgba(255,179,0,0.22);
+      box-shadow: 0 0 30px rgba(0,0,0,0.55),
+                  inset 0 0 25px rgba(255,255,255,0.04);
+      backdrop-filter: blur(14px);
+    }
 
-  .acs-clock-header {
-    font-family: 'Orbitron', monospace;
-    color: #00ff80;
-    background: rgba(0,255,128,0.08);
-    padding: 0.3rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    margin-left:1rem;
-  }
+    h2 { color: #FFB300; font-size: 1.8rem; }
+    p  { color: #c9d4ff; font-size: 1rem; }
 
-  /* ============================================================
-       === QATAR LUXURY — GLASS ROYALE CARD ======================
-     ============================================================ */
-  .form-container {
-    background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2.4rem;
-    border-radius: 22px;
-    border: 1px solid rgba(255,179,0,0.22);
-    box-shadow: 0 0 30px rgba(0,0,0,0.55),
-                inset 0 0 25px rgba(255,255,255,0.04);
-    backdrop-filter: blur(14px);
-  }
+    /* ============================================================
+         SELECTS
+       ============================================================ */
+    .lux-select {
+      width: 48%;
+      padding: 0.85rem 1rem;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,179,0,0.25);
+      color: #e8ecff;
+      font-size: 1rem;
+      font-weight: 500;
+      backdrop-filter: blur(12px);
+      box-shadow: inset 0 0 18px rgba(255,255,255,0.04);
+      transition: 0.25s;
+    }
 
-  h2 {
-    color: #FFB300;
-    font-size: 1.8rem;
-  }
+    .lux-select:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,179,0,0.45);
+      box-shadow: 0 0 12px rgba(255,179,0,0.4),
+                  inset 0 0 22px rgba(255,255,255,0.07);
+    }
 
-  p {
-    color: #c9d4ff;
-    font-size: 1rem;
-  }
+    /* ============================================================
+         TABLE
+       ============================================================ */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1.5rem;
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      overflow: hidden;
+    }
 
-  /* ============================================================
-       === QATAR LUXURY — SELECTS ================================
-     ============================================================ */
-  .lux-select {
-    width: 48%;
-    padding: 0.85rem 1rem;
-    border-radius: 16px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,179,0,0.25);
-    color: #e8ecff;
-    font-size: 1rem;
-    font-weight: 500;
-    backdrop-filter: blur(12px);
-    box-shadow: inset 0 0 18px rgba(255,255,255,0.04);
-    transition: 0.25s;
-  }
+    th {
+      background: rgba(255,179,0,0.15);
+      color: #FFB300;
+      padding: 0.7rem;
+      font-size: 0.95rem;
+    }
 
-  .lux-select:hover {
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,179,0,0.45);
-    box-shadow: 0 0 12px rgba(255,179,0,0.4),
-                inset 0 0 22px rgba(255,255,255,0.07);
-  }
+    td {
+      padding: 0.6rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1.5rem;
-    background: rgba(255,255,255,0.04);
-    border-radius: 14px;
-    overflow: hidden;
-  }
+    tr:hover { background: rgba(255,255,255,0.07); }
 
-  th {
-    background: rgba(255,179,0,0.15);
-    color: #FFB300;
-    padding: 0.7rem;
-    font-size: 0.95rem;
-  }
+    /* ============================================================
+         DEMAND BAR + TOOLTIP
+       ============================================================ */
+    #demandTooltip {
+      position: absolute;
+      display: none;
+      background: rgba(10,25,60,0.95);
+      color: #fff;
+      border: 1px solid #FFB300;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      pointer-events: none;
+      box-shadow: 0 0 10px rgba(255,179,0,0.3);
+      z-index: 1000;
+      width: 180px;
+    }
 
-  td {
-    padding: 0.6rem;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    text-align: center;
-  }
+    .demand-pie .slice {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: conic-gradient(#1DB954 0deg var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 360deg);
+    }
 
-  tr:hover { background: rgba(255,255,255,0.07); }
+    .demand-bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 6px;
+      background: linear-gradient(to right, #1DB954 var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 100%);
+      box-shadow: 0 0 6px rgba(255,179,0,0.3);
+      margin-top: 6px;
+    }
 
-  /* ============================================================
-       === DEMAND BAR + TOOLTIP (IDÉNTICO A SOUTH AMERICA) =======
-     ============================================================ */
+    /* ============================================================
+         GREEN BUTTON
+       ============================================================ */
+    .acs-btn {
+      background-color: #1DB954;
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: 0.25s;
+      box-shadow: 0 0 10px rgba(29,185,84,0.4);
+    }
 
-  #demandTooltip {
-    position: absolute;
-    display: none;
-    background: rgba(10,25,60,0.95);
-    color: #fff;
-    border: 1px solid #FFB300;
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.85rem;
-    pointer-events: none;
-    box-shadow: 0 0 10px rgba(255,179,0,0.3);
-    z-index: 1000;
-    width: 180px;
-  }
-
-  #demandTooltip h4 {
-    color: #FFB300;
-    margin: 0 0 6px 0;
-    font-size: 0.9rem;
-    text-align: center;
-  }
-
-  .demand-pie {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 8px;
-  }
-
-  .demand-pie .slice {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: conic-gradient(#1DB954 0deg var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 360deg);
-  }
-
-  .demand-bar {
-    width: 100%;
-    height: 8px;
-    border-radius: 6px;
-    background: linear-gradient(to right, #1DB954 var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 100%);
-    box-shadow: 0 0 6px rgba(255,179,0,0.3);
-    margin-top: 6px;
-  }
-
-  /* ============================================================
-       === BOTÓN VERDE GALÁCTICO =================================
-     ============================================================ */
-  .acs-btn {
-    background-color: #1DB954;
-    color: #fff;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: 0.25s;
-    box-shadow: 0 0 10px rgba(29,185,84,0.4);
-  }
-
-  .acs-btn:hover {
-    background-color: #21e065;
-    transform: scale(1.05);
-    box-shadow: 0 0 16px rgba(29,185,84,0.6);
-  }
-
-</style>
+    .acs-btn:hover {
+      background-color: #21e065;
+      transform: scale(1.05);
+      box-shadow: 0 0 16px rgba(29,185,84,0.6);
+    }
+  </style>
 </head>
+
 <body>
 
 <header class="acs-header">
@@ -315,24 +285,30 @@
 
 <div id="demandTooltip"></div>
 
+<!-- ENGINE SCRIPTS -->
 <script src="time_engine.js"></script>
 <script src="engine/airports_loader.js"></script>
+<script src="engine/acs_country_history.js"></script>
 
 <script>
 let selectedContinent = "";
 let selectedCountry = "";
 
-/* ========== LOAD COUNTRIES (REGION) ========== */
+/* ============================================================
+   LOAD COUNTRIES
+============================================================ */
 function loadCountries() {
   selectedContinent = document.getElementById("continentSelect").value;
   const countrySelect = document.getElementById("countrySelect");
+  const list = document.getElementById("airportList");
+
   countrySelect.innerHTML = '<option value="">🏳️ Select Country</option>';
-  document.getElementById("airportList").innerHTML =
-    '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
+  list.innerHTML = '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
 
   if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
 
   const countries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.region))].sort();
+
   countries.forEach(name => {
     const opt = document.createElement("option");
     opt.value = name;
@@ -341,7 +317,9 @@ function loadCountries() {
   });
 }
 
-/* ========== LOAD AIRPORTS WITH DEMAND BAR + TOOLTIP ========== */
+/* ============================================================
+   LOAD AIRPORTS
+============================================================ */
 function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
   const tbody = document.getElementById("airportList");
@@ -355,13 +333,13 @@ function loadAirports() {
   const year = ACS_TIME.currentTime.getUTCFullYear();
 
   const airports = WorldAirportsACS[selectedContinent]
-  .filter(a => a.region === selectedCountry)
-  .filter(a => ACS_filterAirport_Historical(a, year))   // 🔥 FILTRO HISTÓRICO REAL
-  .sort((a, b) => {
+    .filter(a => a.region === selectedCountry)
+    //.filter(a => ACS_filterAirport_Historical(a, year))  <!-- Histórico desactivado -->
+    .sort((a, b) => {
       const demandA = (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
       const demandB = (b.demand?.Y || 0) + (b.demand?.C || 0) + (b.demand?.F || 0);
-      return demandB - demandA;  // mayor → menor
-  });
+      return demandB - demandA;
+    });
 
   if (!airports.length) {
     tbody.innerHTML = '<tr><td colspan="9">No airports available for this country.</td></tr>';
@@ -401,7 +379,9 @@ function loadAirports() {
   });
 }
 
-/* ========== SET BASE ========= */
+/* ============================================================
+   SET BASE
+============================================================ */
 function setBase(icao) {
   const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
   if (!airport) return alert("⚠️ Airport not found.");
@@ -419,8 +399,7 @@ function setBase(icao) {
     city: airport.city,
     country: airport.region,
     continent: selectedContinent,
-    demand_total:
-      (airport.demand.Y||0)+(airport.demand.C||0)+(airport.demand.F||0),
+    demand_total: (airport.demand.Y||0)+(airport.demand.C||0)+(airport.demand.F||0),
     slot_capacity: airport.slot_capacity,
     cost_slot_usd: airport.slot_cost_usd
   };
@@ -436,8 +415,11 @@ function setBase(icao) {
   window.location.href = "dashboard.html";
 }
 
-/* ========== DEMAND TOOLTIP ========== */
+/* ============================================================
+   DEMAND TOOLTIP
+============================================================ */
 const tooltip = document.getElementById("demandTooltip");
+
 document.addEventListener("mousemove", e => {
   const cell = e.target.closest("td:nth-child(6)");
   if (cell && cell.textContent.includes("/")) {
@@ -465,60 +447,10 @@ document.addEventListener("mousemove", e => {
     tooltip.style.display = "none";
   }
 });
-  
-<script>
-// ============================================================
-//  COUNTRY EXISTENCE CHECK (Historical 1940–2026)
-// ============================================================
-function countryExisted(countryName, year) {
-  const entry = ACS_CountryHistory.find(c => c.name === countryName);
-  if (!entry) return true;
 
-  if (year < entry.start) return false;
-  if (entry.end && year > entry.end) return false;
-
-  return true;
-}
-
-// ============================================================
-//  RUNWAY HISTORICAL ERA FILTER
-// ============================================================
-function runwayHistoricalFilter(a, year) {
-
-  // === ERA 1 (1940–1949) — DC-3 era ===
-  if (year < 1950) {
-    if (!a.runway_m || a.runway_m === 0) return false;
-    if (a.runway_m < 800) return false;
-    return true;
-  }
-
-  // === ERA 2 (1950–1969) ===
-  if (year < 1970) {
-    if (a.runway_m < 600) return false;
-    return true;
-  }
-
-  // === ERA MODERN ===
-  return true;
-}
-
-<!-- ============================================================
-     FULL HISTORICAL FILTER (COUNTRY + RUNWAY ERA)
-============================================================ -->
-<script>
-function ACS_filterAirport_Historical(a, year) {
-
-  // 1) Country must exist in that year
-  if (!countryExisted(a.region, year)) return false;
-
-  // 2) Runway must match the historical era
-  if (!runwayHistoricalFilter(a, year)) return false;
-
-  return true;
-}
-</script>
-
-<script>
+/* ============================================================
+   INITIALIZER
+============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   loadAirportScripts(() => {
     buildAirportIndex();
@@ -527,7 +459,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
 
 </body>
 </html>
