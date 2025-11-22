@@ -458,6 +458,30 @@ function ACS_getHistoricalDemand(airport, year) {
    ============================================================ */
 document.getElementById("country").addEventListener("change", updateAirportBase);
 
+  /* ============================================================
+   ACS THIN BAR (Original Cuadros Verdes/Amarillos/Rojos)
+   ============================================================ */
+
+/* ============================================================
+   ACS THIN BAR — MINI VERSION (Small Elegant Blocks)
+   ============================================================ */
+function makeThinBar(percent) {
+  const total = 10;
+  const filled = Math.round(percent * total);
+  const empty = total - filled;
+
+  let color;
+  if (percent >= 0.66) color = "🟩";
+  else if (percent >= 0.33) color = "🟨";
+  else color = "🟥";
+
+  // BLOQUES MÁS PEQUEÑOS
+  const block = "▌";     // cuadro pequeño
+  const emptyBlock = "░"; // cuadro vacío delgado
+
+  return `${color} ${block.repeat(filled)}${emptyBlock.repeat(empty)}`;
+}
+
 function updateAirportBase() {
   const country = document.getElementById("country").value;
   const airportSelect = document.getElementById("airportBase");
