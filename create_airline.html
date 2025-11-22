@@ -281,153 +281,158 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
+ </script>  
+     
   <!-- ❗Tu JS permanece EXACTAMENTE igual -->
-  <script>
-    const regions = {
-      "Europe": ["Spain","France","Germany","Italy","United Kingdom","Poland"],
-      "Asia": ["Japan","China","India","Singapore","Kyrgyzstan","South Korea"],
-      "North America": ["United States","Canada","Mexico"],
-      "South America": ["Brazil","Argentina","Chile","Peru"],
-      "Africa": ["South Africa","Nigeria","Egypt","Morocco"],
-      "Oceania": ["Australia","New Zealand","Fiji"]
-    };
-
+     
+<script>
     const realAirlines = [
       "American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
       "Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
       "Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
       "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
     ];
+     
+/* ============================================================
+   UPDATE COUNTRIES (HISTORICAL REAL-WORLD)
+   ============================================================ */
+function updateCountries() {
 
-    function updateCountries() {
-      const region = document.getElementById("region").value;
-      const countrySelect = document.getElementById("country");
-      countrySelect.innerHTML = '<option value="">Select Country</option>';
-      if (region && regions[region]) {
-        regions[region].forEach(c => {
-          const opt = document.createElement("option");
-          opt.value = c; opt.textContent = c;
-          countrySelect.appendChild(opt);
-        });
-      }
-    }
+  const simYear = parseInt(localStorage.getItem("ACS_year") || "1940");
+  const countrySelect = document.getElementById("country");
 
-    function generateUniqueCodes() {
-      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      const random = n => Array.from({length:n},()=>letters[Math.floor(Math.random()*letters.length)]).join("");
+  countrySelect.innerHTML = '<option value="">Select Country</option>';
 
-      let iata, icao;
-      let existing = JSON.parse(localStorage.getItem("ACS_users") || "[]")
-        .map(u => u.airline?.icao || "")
-        .concat(JSON.parse(localStorage.getItem("ACS_users") || "[]")
-        .map(u => u.airline?.iata || ""));
+  // Solo países activos históricamente
+  const available = ACS_CountryHistory
+    .filter(c => c.open_year <= simYear)
+    .sort((a, b) => a.country.localeCompare(b.country));
 
-      do { iata = random(2); } while (existing.includes(iata));
-      do { icao = random(3); } while (existing.includes(icao));
+  available.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.country;
+    opt.textContent = c.country;
+    countrySelect.appendChild(opt);
+  });
+}
 
-      document.getElementById("iata").value = iata;
-      document.getElementById("icao").value = icao;
-    }
+function generateUniqueCodes() {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const random = n => Array.from({length:n},()=>letters[Math.floor(Math.random()*letters.length)]).join("");
 
-    document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
+  let iata, icao;
+  let existing = JSON.parse(localStorage.getItem("ACS_users") || "[]")
+    .map(u => u.airline?.icao || "")
+    .concat(JSON.parse(localStorage.getItem("ACS_users") || "[]")
+    .map(u => u.airline?.iata || ""));
 
-    function handleAirlineCreation(event) {
-      event.preventDefault();
+  do { iata = random(2); } while (existing.includes(iata));
+  do { icao = random(3); } while (existing.includes(icao));
 
-      const airlineName = document.getElementById("airlineName").value.trim();
-      const region = document.getElementById("region").value;
-      const country = document.getElementById("country").value;
-      const businessModel = document.getElementById("businessModel").value;
-      const operationMode = document.getElementById("operationMode").value;
-      const slogan = document.getElementById("slogan").value.trim();
-      const icao = document.getElementById("icao").value.trim().toUpperCase();
-      const iata = document.getElementById("iata").value.trim().toUpperCase();
+  document.getElementById("iata").value = iata;
+  document.getElementById("icao").value = icao;
+}
 
-      const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
+document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
 
-      if (realAirlines.some(real => {
-        const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
-        return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
-      })) {
-        alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
-        return false;
-      }
+function handleAirlineCreation(event) {
+  event.preventDefault();
 
-      const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
-      const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
-      if (nameExists) {
-        alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
-        return false;
-      }
+  const airlineName = document.getElementById("airlineName").value.trim();
+  const region = document.getElementById("region").value;
+  const country = document.getElementById("country").value;
+  const businessModel = document.getElementById("businessModel").value;
+  const operationMode = document.getElementById("operationMode").value;
+  const slogan = document.getElementById("slogan").value.trim();
+  const icao = document.getElementById("icao").value.trim().toUpperCase();
+  const iata = document.getElementById("iata").value.trim().toUpperCase();
 
-      const airline = { name: airlineName, icao, iata, slogan, region, country, businessModel, operationMode };
+  const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, '').trim();
 
-      let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-      if (!user) {
-        alert("⚠️ Session not found. Please log in again.");
-        window.location.href = "login.html";
-        return false;
-      }
+  if (realAirlines.some(real => {
+    const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, '');
+    return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
+  })) {
+    alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
+    return false;
+  }
 
-      user.airline = airline;
-      localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+  const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
+  const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
+  if (nameExists) {
+    alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
+    return false;
+  }
 
-      const index = allUsers.findIndex(u => u.email === user.email);
-      if (index !== -1) allUsers[index] = user;
-      localStorage.setItem("ACS_users", JSON.stringify(allUsers));
-      localStorage.setItem("ACS_Airline", JSON.stringify(airline));
-         
-       // ============================================================
-      //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
-      // ============================================================
-      fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "createAirline",
-          user_id: user.user_id,
-          airline_name: airlineName,
-          country: country
-        })
-      .then(() => {
+  const airline = { name: airlineName, icao, iata, slogan, region, country, businessModel, operationMode };
 
-        alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.full_name}.`);
-        window.location.href = "choose_base.html";
-      })
-      .catch(err => {
-        alert("⚠️ Airline created locally but failed to sync with server: " + err);
-        window.location.href = "choose_base.html";
-      });
+  let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+  if (!user) {
+    alert("⚠️ Session not found. Please log in again.");
+    window.location.href = "login.html";
+    return false;
+  }
 
-      return false;
-    }
+  user.airline = airline;
+  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-      if (!user) {
-        alert("⚠️ Please log in to access this page.");
-        window.location.href = "login.html";
-      }
-    });
+  const index = allUsers.findIndex(u => u.email === user.email);
+  if (index !== -1) allUsers[index] = user;
+  localStorage.setItem("ACS_users", JSON.stringify(allUsers));
+  localStorage.setItem("ACS_Airline", JSON.stringify(airline));
+     
+  // ============================================================
+  //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
+  // ============================================================
+  fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "createAirline",
+      user_id: user.user_id,
+      airline_name: airlineName,
+      country: country
+    })
+  })   <!-- 🔥 AQUI VA EL PARENTHESIS -->
+  .then(() => {
+    alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.full_name}.`);
+    window.location.href = "choose_base.html";
+  })
+  .catch(err => {
+    alert("⚠️ Airline created locally but failed to sync with server: " + err);
+    window.location.href = "choose_base.html";
+  });
 
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-  </script>
+  return false;
+}
 
-  <!-- TIME ENGINE -->
-  <script src="time_engine.js"></script>
+document.addEventListener("DOMContentLoaded", () => {
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+  if (!user) {
+    alert("⚠️ Please log in to access this page.");
+    window.location.href = "login.html";
+  }
+});
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof registerTimeListener === "function") {
-        registerTimeListener(updateClockDisplay);
-        updateClockDisplay();
-      }
-    });
-  </script>
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
+</script>
+
+<!-- TIME ENGINE -->
+<script src="time_engine.js"></script>
+<script src="engine/acs_country_history.js"></script>
+     
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
+</script>
 
 </body>
 </html>
