@@ -220,7 +220,13 @@ function loadCountries() {
   countries.forEach(c => {
   const opt = document.createElement("option");
   opt.value = c;
-  opt.textContent = getCountryNameFromAirports(c, selectedContinent); // 🔥 ESTA ES LA LÍNEA CORRECTA
+
+  // Buscar un aeropuerto que tenga ese país y leer el nombre desde region
+  const airport = WorldAirportsACS[selectedContinent].find(a => a.country === c);
+
+  // Mostrar el nombre REAL del país (region)
+  opt.textContent = airport?.region || c;
+
   countrySelect.appendChild(opt);
 });
   
