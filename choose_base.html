@@ -1,5 +1,5 @@
 <!-- === CHOOSE BASE MODULE — Qatar Luxury Edition === -->
-<!-- Version: Beta v3 | Date: 22 NOV 2025 -->
+<!-- Version: Beta v4 | Date: 22 NOV 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Choose Base - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
-<!-- ======== ACS Styles ======== -->
+
+ <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
   <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
@@ -21,9 +22,9 @@
   <!-- ======== PWA Manifest (Android / Chrome) ======== -->
   <link rel="manifest" href="manifest.json">
 
- 
   <style>
   body {
+    
     margin: 0;
     background-color: #0C1F3C;
     color: white;
@@ -75,10 +76,6 @@
     text-shadow: 0 0 8px rgba(255,179,0,0.4);
   }
 
-  .acs-nav {
-    display: none !important;
-  }
-
   .nav-btn {
     padding: 0.45rem 1.2rem;
     border-radius: 10px;
@@ -89,8 +86,6 @@
     transition: 0.25s;
     min-width: 100px;
     background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
     border: 1px solid rgba(255,255,255,0.08);
   }
 
@@ -111,6 +106,7 @@
     padding: 0.3rem 0.8rem;
     border-radius: 6px;
     font-size: 0.9rem;
+    margin-left:1rem;
   }
 
   /* ============================================================
@@ -126,13 +122,6 @@
     box-shadow: 0 0 30px rgba(0,0,0,0.55),
                 inset 0 0 25px rgba(255,255,255,0.04);
     backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    animation: floatCard 1.2s ease forwards;
-  }
-
-  @keyframes floatCard {
-    from { opacity:0; transform: translateY(20px) scale(0.97); }
-    to   { opacity:1; transform: translateY(0) scale(1); }
   }
 
   h2 {
@@ -146,7 +135,7 @@
   }
 
   /* ============================================================
-       === QATAR LUXURY ROYALE SELECTS (PASO 2) ==================
+       === QATAR LUXURY — SELECTS ================================
      ============================================================ */
   .lux-select {
     width: 48%;
@@ -158,9 +147,8 @@
     font-size: 1rem;
     font-weight: 500;
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: 0.25s;
     box-shadow: inset 0 0 18px rgba(255,255,255,0.04);
+    transition: 0.25s;
   }
 
   .lux-select:hover {
@@ -168,14 +156,6 @@
     border-color: rgba(255,179,0,0.45);
     box-shadow: 0 0 12px rgba(255,179,0,0.4),
                 inset 0 0 22px rgba(255,255,255,0.07);
-  }
-
-  .lux-select:focus {
-    outline: none;
-    background: rgba(255,255,255,0.14);
-    border-color: #ffb300;
-    box-shadow: 0 0 18px rgba(255,179,0,0.55),
-                inset 0 0 25px rgba(255,255,255,0.12);
   }
 
   table {
@@ -197,52 +177,98 @@
   td {
     padding: 0.6rem;
     border-bottom: 1px solid rgba(255,255,255,0.08);
+    text-align: center;
   }
 
-  tr:hover {
-    background: rgba(255,255,255,0.07);
-  }
+  tr:hover { background: rgba(255,255,255,0.07); }
 
-  .acs-btn {
-    background: #00a86b;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 10px;
+  /* ============================================================
+       === DEMAND BAR + TOOLTIP (IDÉNTICO A SOUTH AMERICA) =======
+     ============================================================ */
+
+  #demandTooltip {
+    position: absolute;
+    display: none;
+    background: rgba(10,25,60,0.95);
     color: #fff;
+    border: 1px solid #FFB300;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(255,179,0,0.3);
+    z-index: 1000;
+    width: 180px;
+  }
+
+  #demandTooltip h4 {
+    color: #FFB300;
+    margin: 0 0 6px 0;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .demand-pie {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .demand-pie .slice {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: conic-gradient(#1DB954 0deg var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 360deg);
+  }
+
+  .demand-bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 6px;
+    background: linear-gradient(to right, #1DB954 var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 100%);
+    box-shadow: 0 0 6px rgba(255,179,0,0.3);
+    margin-top: 6px;
+  }
+
+  /* ============================================================
+       === BOTÓN VERDE GALÁCTICO =================================
+     ============================================================ */
+  .acs-btn {
+    background-color: #1DB954;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: 0.25s;
     font-weight: 600;
+    font-size: 0.9rem;
+    transition: 0.25s;
+    box-shadow: 0 0 10px rgba(29,185,84,0.4);
   }
 
   .acs-btn:hover {
-    background: #007d4e;
+    background-color: #21e065;
+    transform: scale(1.05);
+    box-shadow: 0 0 16px rgba(29,185,84,0.6);
   }
 
-  footer {
-    margin-top: 2rem;
-    color: #bbb;
-    font-size: 0.85rem;
-  }
 </style>
 </head>
-
 <body>
 
-<!-- ===== HEADER Qatar Luxury ===== -->
 <header class="acs-header">
   <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo" />
     <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <!-- PASO 1 — Support → Clock -->
   <div style="display:flex; align-items:center; gap:1rem;">
     <a href="support.html" class="nav-btn nav-btn-blue">Support</a>
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
   </div>
 </header>
 
-<!-- ===== MAIN SECTION ===== -->
 <section class="form-container">
   <h2>Choose Your Base</h2>
   <p>Select a continent and country to establish your main operations base.</p>
@@ -250,10 +276,10 @@
   <div>
     <select id="continentSelect" class="lux-select">
       <option value="">🌍 Select Continent</option>
-      <option value="Europe">Europe</option>
-      <option value="Asia">Asia</option>
       <option value="NorthAmerica">North America</option>
       <option value="SouthAmerica">South America</option>
+      <option value="Europe">Europe</option>
+      <option value="Asia">Asia</option>
       <option value="Africa">Africa</option>
       <option value="Oceania">Oceania</option>
     </select>
@@ -271,7 +297,7 @@
         <th>City</th>
         <th>Airport</th>
         <th>Category</th>
-        <th>Demand</th>
+        <th>Demand (Y/C/F)</th>
         <th>Slots</th>
         <th>Cost (USD)</th>
         <th>Action</th>
@@ -287,21 +313,16 @@
   <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
 </footer>
 
-<!-- ===== JS (NO CAMBIADO) ===== -->
+<div id="demandTooltip"></div>
+
 <script src="time_engine.js"></script>
 <script src="engine/airports_loader.js"></script>
 
 <script>
-/* === EXACTAMENTE TU JS SIN CAMBIAR === */
 let selectedContinent = "";
 let selectedCountry = "";
 
-function getCountryNameFromAirports(code, continent) {
-  const list = WorldAirportsACS[continent].filter(a => a.country === code);
-  if (!list.length) return code;
-  return list[0].region || code;
-}
-
+/* ========== LOAD COUNTRIES (REGION) ========== */
 function loadCountries() {
   selectedContinent = document.getElementById("continentSelect").value;
   const countrySelect = document.getElementById("countrySelect");
@@ -311,17 +332,16 @@ function loadCountries() {
 
   if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
 
-  const countries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.country))].sort();
-
-  countries.forEach(c => {
-    const airport = WorldAirportsACS[selectedContinent].find(a => a.country === c);
+  const countries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.region))].sort();
+  countries.forEach(name => {
     const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = airport?.region || c;
+    opt.value = name;
+    opt.textContent = name;
     countrySelect.appendChild(opt);
   });
 }
 
+/* ========== LOAD AIRPORTS WITH DEMAND BAR + TOOLTIP ========== */
 function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
   const tbody = document.getElementById("airportList");
@@ -332,21 +352,24 @@ function loadAirports() {
     return;
   }
 
-  const airports = WorldAirportsACS[selectedContinent].filter(a => a.country === selectedCountry);
+  const airports = WorldAirportsACS[selectedContinent].filter(a => a.region === selectedCountry);
 
   if (!airports.length) {
     tbody.innerHTML = '<tr><td colspan="9">No airports available for this country.</td></tr>';
     return;
   }
 
-  airports.sort((a, b) => {
-    const demandA = (a.demand.Y||0)+(a.demand.C||0)+(a.demand.F||0);
-    const demandB = (b.demand.Y||0)+(b.demand.C||0)+(b.demand.F||0);
-    return demandB - demandA;
-  });
-
   airports.forEach(a => {
-    const totalDemand = (a.demand.Y||0)+(a.demand.C||0)+(a.demand.F||0);
+    const Y = a.demand?.Y || 0;
+    const C = a.demand?.C || 0;
+    const F = a.demand?.F || 0;
+    const total = Y + C + F;
+
+    const ecoPct = total ? (Y / total) * 100 : 0;
+    const bizPct = total ? ((Y + C) / total) * 100 : 0;
+    const ecoDeg = total ? (Y / total) * 360 : 0;
+    const bizDeg = total ? ((Y + C) / total) * 360 : 0;
+
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${a.icao}</td>
@@ -354,7 +377,13 @@ function loadAirports() {
       <td>${a.city}</td>
       <td>${a.name || a.city}</td>
       <td>${a.category}</td>
-      <td>${totalDemand}</td>
+      <td>
+        ${Y}/${C}/${F}
+        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+        <div class="demand-pie" style="display:none; --eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+          <div class="slice"></div>
+        </div>
+      </td>
       <td>${a.slot_capacity}</td>
       <td>$${a.slot_cost_usd.toLocaleString()}</td>
       <td><button class="acs-btn" onclick="setBase('${a.icao}')">Set as Base</button></td>
@@ -363,6 +392,7 @@ function loadAirports() {
   });
 }
 
+/* ========== SET BASE ========= */
 function setBase(icao) {
   const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
   if (!airport) return alert("⚠️ Airport not found.");
@@ -378,8 +408,8 @@ function setBase(icao) {
     icao: airport.icao,
     iata: airport.iata,
     city: airport.city,
-    country: airport.country,
-    continent: airport.continent,
+    country: airport.region,
+    continent: selectedContinent,
     demand_total:
       (airport.demand.Y||0)+(airport.demand.C||0)+(airport.demand.F||0),
     slot_capacity: airport.slot_capacity,
@@ -397,27 +427,41 @@ function setBase(icao) {
   window.location.href = "dashboard.html";
 }
 
-function initChooseBase() {
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
+/* ========== DEMAND TOOLTIP ========== */
+const tooltip = document.getElementById("demandTooltip");
+document.addEventListener("mousemove", e => {
+  const cell = e.target.closest("td:nth-child(6)");
+  if (cell && cell.textContent.includes("/")) {
+    const parts = cell.textContent.trim().split("/");
+    if (parts.length === 3) {
+      const [Y, C, F] = parts.map(Number);
+      const total = Y + C + F;
+      const ecoDeg = total ? (Y/total)*360 : 0;
+      const bizDeg = total ? ((Y+C)/total)*360 : 0;
+
+      tooltip.innerHTML = `
+        <h4>Passenger Demand</h4>
+        <div>Economy: ${Y}</div>
+        <div>Business: ${C}</div>
+        <div>First: ${F}</div>
+        <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+          <div class="slice"></div>
+        </div>
+      `;
+      tooltip.style.display = "block";
+      tooltip.style.left = e.pageX + 15 + "px";
+      tooltip.style.top = e.pageY - 60 + "px";
+    }
+  } else {
+    tooltip.style.display = "none";
   }
+});
 
-  document.getElementById("continentSelect")
-    .addEventListener("change", loadCountries);
-
-  document.getElementById("countrySelect")
-    .addEventListener("change", loadAirports);
-
-  console.log("✔ Choose Base initialized.");
-}
-</script>
-
-<script>
 document.addEventListener("DOMContentLoaded", () => {
   loadAirportScripts(() => {
     buildAirportIndex();
-    initChooseBase();
+    document.getElementById("continentSelect").addEventListener("change", loadCountries);
+    document.getElementById("countrySelect").addEventListener("change", loadAirports);
   });
 });
 </script>
