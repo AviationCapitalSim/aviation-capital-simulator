@@ -352,12 +352,15 @@ function loadAirports() {
     return;
   }
 
+  const year = ACS_TIME.currentTime.getUTCFullYear();
+
   const airports = WorldAirportsACS[selectedContinent]
   .filter(a => a.region === selectedCountry)
+  .filter(a => ACS_filterAirport_Historical(a, year))   // 🔥 FILTRO HISTÓRICO REAL
   .sort((a, b) => {
       const demandA = (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
       const demandB = (b.demand?.Y || 0) + (b.demand?.C || 0) + (b.demand?.F || 0);
-      return demandB - demandA;  // 🔥 ORDENAR DE MAYOR A MENOR
+      return demandB - demandA;  // mayor → menor
   });
 
   if (!airports.length) {
@@ -462,7 +465,58 @@ document.addEventListener("mousemove", e => {
     tooltip.style.display = "none";
   }
 });
+  
+<script>
+// ============================================================
+//  COUNTRY EXISTENCE CHECK (Historical 1940–2026)
+// ============================================================
+function countryExisted(countryName, year) {
+  const entry = ACS_CountryHistory.find(c => c.name === countryName);
+  if (!entry) return true;
 
+  if (year < entry.start) return false;
+  if (entry.end && year > entry.end) return false;
+
+  return true;
+}
+
+// ============================================================
+//  RUNWAY HISTORICAL ERA FILTER
+// ============================================================
+function runwayHistoricalFilter(a, year) {
+
+  // === ERA 1 (1940–1949) — DC-3 era ===
+  if (year < 1950) {
+    if (!a.runway_m || a.runway_m === 0) return false;
+    if (a.runway_m < 800) return false;
+    return true;
+  }
+
+  // === ERA 2 (1950–1969) ===
+  if (year < 1970) {
+    if (a.runway_m < 600) return false;
+    return true;
+  }
+
+  // === ERA MODERN ===
+  return true;
+}
+
+// ============================================================
+//  FULL HISTORICAL FILTER (COUNTRY + RUNWAY ERA)
+// ============================================================
+function ACS_filterAirport_Historical(a, year) {
+
+  // 1) Country must exist in that year
+  if (!countryExisted(a.region, year)) return false;
+
+  // 2) Runway must match the historical era
+  if (!runwayHistoricalFilter(a, year)) return false;
+
+  return true;
+}
+</script>
+  
 document.addEventListener("DOMContentLoaded", () => {
   loadAirportScripts(() => {
     buildAirportIndex();
