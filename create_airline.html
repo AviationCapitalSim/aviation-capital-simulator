@@ -470,7 +470,7 @@ function updateAirportBase() {
 
   // 2) Aeropuertos activos históricamente
   let airports = ACS_filterAirportsByYear(simYear)
-    .filter(a => a.country === country);
+  .filter(a => a.country === countryISO[country]);
 
   if (airports.length === 0) return;
 
