@@ -504,12 +504,12 @@ function updateAirportBase() {
   // Normaliza 0–1
   const percent = a.powerIndex / maxPower;
 
-  // Barra premium ACS Qatar
-  const bar = makeThinBar(percent);
+  // Barra ACS Premium Dot Color (equilibrada)
+  const bar = makeColoredDotBar(percent);
 
-  // Texto final (orden ACS Premium)
+  // Texto final Premium
   opt.textContent =
-    `${a.icao} — ${a.city}  ` +
+    `${a.icao} — ${a.city} ` +
     `(${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ` +
     `${bar}`;
 
