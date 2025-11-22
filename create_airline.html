@@ -498,24 +498,24 @@ function updateAirportBase() {
 
   // 5) Crear las opciones
   airports.forEach(a => {
-    const opt = document.createElement("option");
-    opt.value = a.icao;
+  const opt = document.createElement("option");
+  opt.value = a.icao;
 
-    const percent = a.powerIndex / maxPower;
+  // Normaliza 0–1
+  const percent = a.powerIndex / maxPower;
 
-    let barColor;
-    if (percent >= 0.66) barColor = "🟩";
-    else if (percent >= 0.33) barColor = "🟨";
-    else barColor = "🟥";
+  // Barra premium ACS Qatar
+  const bar = makeThinBar(percent);
 
-    const blocks = Math.round(percent * 10);
-    const bar = barColor.repeat(blocks);
+  // Texto final (orden ACS Premium)
+  opt.textContent =
+    `${a.icao} — ${a.city}  ` +
+    `(${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ` +
+    `${bar}`;
 
-    opt.textContent =
-      `${a.icao} — ${a.city} (${a.histDemand.Y}/${a.histDemand.C}/${a.histDemand.F}) ${bar}`;
+  airportSelect.appendChild(opt);
+});
 
-    airportSelect.appendChild(opt);
-  });
 
   // Activar el selector (por si estaba deshabilitado)
   airportSelect.disabled = false;
