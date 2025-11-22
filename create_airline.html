@@ -303,7 +303,7 @@ function updateCountries() {
 
   countrySelect.innerHTML = '<option value="">Select Country</option>';
 
-  // FILTRO CORRECTO USANDO start / end / name
+  // FILTRO HISTÓRICO CORRECTO
   const available = ACS_CountryHistory
     .filter(c => c.start <= simYear && (c.end === null || c.end >= simYear))
     .sort((a, b) => a.name.localeCompare(b.name));
