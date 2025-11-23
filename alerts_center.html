@@ -306,5 +306,93 @@ body {
 </div>
 
 <script src="time_engine.js"></script>
+
+<script>
+// =====================================================
+// === ALERT CENTER — Dynamic Real-Time Rendering =======
+// =====================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // 1. Ejecutar escaneo de alertas
+  if (typeof ACS_runAlertScan === "function") {
+    ACS_runAlertScan();
+  }
+
+  const container = document.getElementById("alertCards");
+  const buttons = document.querySelectorAll(".filter-btn");
+
+  if (!container || !window.ACS_ALERTS) return;
+
+  // Render principal
+  function renderAlerts(filter = "all") {
+
+    container.innerHTML = "";
+
+    let alerts = [...window.ACS_ALERTS];
+
+    // Filtro por tipo
+    if (filter !== "all") {
+      alerts = alerts.filter(a => a.type.toLowerCase() === filter);
+    }
+
+    // Si no hay alertas
+    if (alerts.length === 0) {
+      container.innerHTML = `
+        <p style="color:#cbd6ff; text-align:center; margin-top:1rem;">
+          No alerts in this category.
+        </p>`;
+      return;
+    }
+
+    // Crear tarjetas
+    alerts.forEach(alert => {
+      const color =
+        alert.level === "critical" ? "#ff5050" :
+        alert.level === "high"     ? "#ff9944" :
+        alert.level === "medium"   ? "#ffd85c" :
+                                     "#a8b8ff";
+
+      const card = document.createElement("div");
+      card.className = "panel";
+      card.style.border = `1px solid ${color}55`;
+
+      card.innerHTML = `
+        <h3 style="color:${color}; text-shadow:0 0 6px ${color}88;">
+          ${alert.type.toUpperCase()}
+        </h3>
+
+        <p style="font-size:1rem; margin-bottom:0.6rem;">
+          ${alert.message}
+        </p>
+
+        <p style="font-size:0.85rem; color:#9db4ff;">
+          ${new Date(alert.timestamp).toLocaleString()}
+        </p>
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  // Primera carga
+  renderAlerts("all");
+
+  // Filtros
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+      // marcar botón activo
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const filter = btn.dataset.filter;
+      renderAlerts(filter);
+    });
+  });
+
+});
+</script>
+  
 </body>
 </html>
