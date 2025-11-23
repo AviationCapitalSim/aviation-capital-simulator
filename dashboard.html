@@ -399,57 +399,101 @@
     // 🏢 Load airline and base info (ACS Unified) + NEW CYCLE PROTECTION
 document.addEventListener("DOMContentLoaded", () => {
 
-  // --- Primary user load ---
+  // === ORIGINAL: Primary user load ===
   let user = JSON.parse(localStorage.getItem("ACS_User") || "{}");
 
-  // --- Load airline/base
-  let airline = JSON.parse(localStorage.getItem("ACS_Airline") || "null");
-  let base     = JSON.parse(localStorage.getItem("ACS_Base") || "null");
+  // === 🔥 NEW OFFICIAL SOURCE (CHOOSE_BASE) ===
+  // Leemos todo desde ACS_activeUser, que es donde choose_base guarda la base REAL
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  // Airline oficial desde activeUser
+  const airline =
+    activeUser.airline ||
+    JSON.parse(localStorage.getItem("ACS_Airline") || "null") ||
+    user.airline ||
+    {};
+
+  // Base REAL elegida en choose_base.html
+  const base =
+    activeUser.airline?.base ||
+    JSON.parse(localStorage.getItem("ACS_Base") || "null") ||
+    airline.base ||
+    {};
 
   // === 🚨 PROTECCIÓN PARA NUEVO CICLO (evitar ATLAS automático) ===
   const newCycle = localStorage.getItem("ACS_NewCycle") === "true";
 
-  if (!airline && newCycle) {
+  if ((!airline || !airline.name) && newCycle) {
       console.warn("🟡 Nuevo ciclo detectado — Aerolínea aún no creada por el usuario.");
-      airline = {}; // dejar vacío
   }
 
-  // === COMPATIBILIDAD ANTERIOR ===
-  if (!airline || !airline.name) {
-      if (!newCycle) {
-          // Sólo modo legacy, si no es un nuevo ciclo
-          airline = user.airline || {};
-      } else {
-          airline = {}; // nuevo ciclo → vacío
-      }
-  }
-
-  if (!base || !base.city) {
-      base = airline.base || {};
-  }
-
-  // --- Mostrar mensaje principal ---
+  // === DOM Elements ===
   const welcome = document.getElementById("welcomeMessage");
+  const sub     = document.getElementById("airlineSub");
+  const baseInfoEl = document.getElementById("baseInfo");
+
+  // === 🌟 Welcome Message (sin cambios) ===
   if (airline.name && airline.iata) {
       welcome.innerHTML = `Welcome to <span>${airline.name} (${airline.iata})</span>`;
   } else {
       welcome.innerHTML = `Welcome to <span>Unknown (—)</span>`;
   }
 
-  // --- País y Base ---
-  const sub = document.getElementById("airlineSub");
-  if (sub) {
-      const flag = getFlagEmoji(airline.country || base.country || "World");
-      const country = airline.country || base.country || "Unknown";
-      const baseCity = base.city || base.name || "";
-      const baseCode = base.airport || base.icao || base.code || "";
-      const baseText = (baseCity || baseCode) ? `Base: ${baseCity} (${baseCode})` : "Base: Unassigned Base";
+  // === 🇺🇳 Country + Flag (sin cambios) ===
+  const country = airline.country || base.country || "World";
+  const flag    = getFlagEmoji(country);
 
-      sub.innerHTML = `${flag} ${country} — ${baseText}`;
+  if (sub) {
+      sub.innerHTML = `${flag} ${country}`;
   }
 
-  console.log("✅ Dashboard loaded", {user, airline, base, newCycle});
+  // === 🛫 Base Information (AQUÍ ESTÁ EL AJUSTE REAL) ===
+  if (baseInfoEl) {
+
+      // ciudad
+      const baseCity =
+        base.city ||
+        base.cityName ||
+        base.municipality ||
+        "";
+
+      // nombre del aeropuerto
+      const baseName =
+        base.name ||
+        base.airportName ||
+        base.airport ||
+        "";
+
+      // código (ICAO/IATA)
+      const baseCode =
+        base.icao ||
+        base.iata ||
+        base.code ||
+        base.ident ||
+        "";
+
+      let mainLabel = "";
+
+      if (baseCity && baseName) {
+        mainLabel = `${baseCity} — ${baseName}`;
+      } else if (baseCity || baseName) {
+        mainLabel = baseCity || baseName;
+      }
+
+      let baseText;
+      if (mainLabel || baseCode) {
+        baseText = `Base: ${mainLabel}${baseCode ? " (" + baseCode + ")" : ""}`;
+      } else {
+        baseText = "Base: Unassigned Base";
+      }
+
+      baseInfoEl.textContent = baseText;
+  }
+
+  console.log("🔍 Dashboard airline/base loaded:", {activeUser, airline, base, newCycle});
+
 });
+
   </script>
 
   <!-- === MOTORES Y SCRIPTS SINCRONIZADOS === -->
