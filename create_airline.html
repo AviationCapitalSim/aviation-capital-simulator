@@ -393,16 +393,18 @@ function handleAirlineCreation(event) {
   //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
   // ============================================================
   fetch("https://script.google.com/macros/s/AKfycbzWp2ko6OTmPFFv2-Pu9g39dsTxN8YF35Vc97cME2uO1SHoXQtufhIcUM6LTiuRAD7E4w/exec", {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      action: "createAirline",
-      user_id: user.user_id,
-      airline_name: airlineName,
-      country: country
-    })
-  })   <!-- 🔥 AQUI VA EL PARENTHESIS -->
+  method: "POST",
+  mode: "cors",
+  headers: { 
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    action: "createAirline",
+    user_id: user.user_id,
+    airline_name: airlineName,
+    country: country
+  })
+})<!-- 🔥 AQUI VA EL PARENTHESIS -->
   .then(() => {
     alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.full_name}.`);
     window.location.href = "choose_base.html";
