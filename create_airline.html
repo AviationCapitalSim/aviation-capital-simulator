@@ -408,8 +408,8 @@ fetch(ACS_API_URL, {
   const result = JSON.parse(raw);
 
   if (result.ok) {
-    // guardas el airline_id si quieres
     alert("✔ Airline synced with server!");
+    window.location.href = "choose_base.html";   // 🔥 REDIRECCIÓN INMEDIATA
   } else {
     alert("❌ Server error: " + (result.error || "unknown"));
   }
