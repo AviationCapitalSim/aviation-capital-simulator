@@ -396,23 +396,26 @@ function handleAirlineCreation(event) {
 
 fetch(ACS_API_URL, {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
   body: JSON.stringify({
     action: "createAirline",
-    user_id: user.user_id,
+    user_id: user.userId,
     airline_name: airlineName,
     country: country
   })
 })
-.then(() => {
-  alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.full_name}.`);
-  window.location.href = "choose_base.html";
+.then(res => res.text())
+.then(raw => {
+  const result = JSON.parse(raw);
+
+  if (result.ok) {
+    // guardas el airline_id si quieres
+    alert("✔ Airline synced with server!");
+  } else {
+    alert("❌ Server error: " + (result.error || "unknown"));
+  }
 })
 .catch(err => {
-  alert("⚠️ Airline created locally but failed to sync with server: " + err);
-  window.location.href = "choose_base.html";
+  alert("❌ Error connecting to ACS server: " + err);
 });
 
   return false;
