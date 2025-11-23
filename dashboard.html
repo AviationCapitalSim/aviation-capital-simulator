@@ -578,7 +578,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("🔍 Airline Loaded:", { airline, base });
 });
-  
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Asegurar que el motor de alertas ya corrió
+  if (typeof ACS_runAlertScan === "function") {
+    ACS_runAlertScan();
+  }
+
+  const list = document.getElementById("alertsList");
+  if (!list) return;
+
+  // Si no hay alertas reales → mostrar mensaje limpio
+  if (!window.ACS_ALERTS || window.ACS_ALERTS.length === 0) {
+    list.innerHTML = `<li>No active alerts.</li>`;
+    return;
+  }
+
+  // Tomar solo las 3 alertas más importantes
+  const top3 = window.ACS_ALERTS.slice(0, 3);
+
+  list.innerHTML = ""; // limpiar
+
+  top3.forEach(alert => {
+    const li = document.createElement("li");
+    li.style.marginBottom = "6px";
+
+    // Nivel de severidad
+    const color =
+      alert.level === "critical" ? "#ff5050" :
+      alert.level === "high"     ? "#ff9944" :
+      alert.level === "medium"   ? "#ffd85c" :
+                                   "#c0c6ff";
+
+    li.innerHTML = `
+      <span style="color:${color}; font-weight:600;">${alert.type.toUpperCase()}</span>
+      — ${alert.message}
+    `;
+
+    list.appendChild(li);
+  });
+
+});
 </script>
 
 </body>
