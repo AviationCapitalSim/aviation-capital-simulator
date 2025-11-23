@@ -721,6 +721,67 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 </script>
+
+<script>
+// ============================================================
+// === DASHBOARD — Operational Alerts Preview (Auto-load) =====
+// ============================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Esperar a que el Alert Engine haya terminado
+  function waitForAlerts() {
+    if (!window.ACS_ALERTS) {
+      console.log("Dashboard waiting for alert scan...");
+      return setTimeout(waitForAlerts, 150);
+    }
+    renderDashboardAlerts(window.ACS_ALERTS);
+  }
+
+  waitForAlerts();
+
+  function renderDashboardAlerts(alerts) {
+    const list = document.getElementById("alertsList");
+    if (!list) return;
+
+    list.innerHTML = ""; // limpiar
+
+    // Si no hay alertas → mensaje
+    if (!alerts || alerts.length === 0) {
+      list.innerHTML = `
+        <li style="color:#cbd6ff; padding:6px 0;">
+          No active alerts.
+        </li>`;
+      return;
+    }
+
+    // Convertir niveles en íconos
+    function icon(level) {
+      return (
+        level === "critical" ? "🛑" :
+        level === "high"     ? "⚠️" :
+        level === "medium"   ? "🔔" :
+                               "ℹ️"
+      );
+    }
+
+    // Mostrar solo las primeras 3 alertas para vista rápida
+    alerts.slice(0, 3).forEach(a => {
+      const li = document.createElement("li");
+      li.style = "margin-bottom:6px; color:#dfe8ff; list-style:none;";
+
+      li.innerHTML = `
+        ${icon(a.level)} 
+        <strong>${a.type.toUpperCase()}</strong> — ${a.message}
+      `;
+
+      list.appendChild(li);
+    });
+
+    console.log("Dashboard alerts loaded:", alerts);
+  }
+});
+</script>
   
 </body>
 </html>
