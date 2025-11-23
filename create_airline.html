@@ -409,10 +409,10 @@ function handleAirlineCreation(event) {
   alert(`✅ Airline "${airlineName}" created successfully!\nWelcome aboard, Captain ${user.full_name}.`);
   window.location.href = "choose_base.html";
 })
-  .catch(err => {
-    alert("⚠️ Airline created locally but failed to sync with server: " + err);
-    window.location.href = "choose_base.html";
-  });
+.catch(err => {
+  alert("⚠️ Airline created locally but failed to sync with server: " + err);
+  window.location.href = "choose_base.html";
+});
 
   return false;
 }
