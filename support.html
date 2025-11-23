@@ -1,0 +1,206 @@
+<!-- ============================================================
+     === SUPPORT PAGE — Qatar Luxury Edition =====================
+     === Aviation Capital Simulator ==============================
+     === Version: v1 | Date: 23 NOV 2025 =========================
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support - Aviation Capital Simulator</title>
+
+  <!-- ======== Main ACS Styles ======== -->
+  <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== Favicons ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+
+<style>
+/* ============================================================
+   === SUPPORT PAGE DESIGN — Qatar Premium =====================
+   ============================================================ */
+
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
+
+/* SECCIÓN PRINCIPAL */
+.support-container {
+  max-width: 900px;
+  margin: 130px auto 50px;
+  padding: 2rem;
+  border-radius: 22px;
+  background: rgba(20,35,70,0.65);
+  border: 1px solid rgba(255,179,0,0.25);
+  box-shadow: 0 0 25px rgba(0,0,0,0.45);
+}
+
+.support-title {
+  text-align: center;
+  color: #ffb300;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 12px rgba(255,179,0,0.5);
+}
+
+.support-sub {
+  text-align: center;
+  color: #d0dbff;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+/* SECTION BLOCK */
+.support-block {
+  margin-bottom: 2rem;
+  padding: 1.4rem;
+  background: rgba(255,255,255,0.04);
+  border-left: 4px solid #ffb300;
+  border-radius: 12px;
+}
+
+.support-block h3 {
+  color: #ffc45d;
+  font-size: 1.3rem;
+  margin-top: 0;
+}
+
+.support-block p {
+  color: #e0e7ff;
+  line-height: 1.6rem;
+  font-size: 0.95rem;
+}
+
+/* TUTORIAL BUTTON */
+.tutorial-btn {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  margin-top: 1rem;
+  background: linear-gradient(90deg, #ffb300, #ffd974);
+  border: none;
+  border-radius: 14px;
+  color: #0c1f3c;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-shadow: 0 0 5px rgba(255,255,255,0.4);
+  box-shadow: 0 4px 18px rgba(255,190,60,0.4);
+  transition: 0.25s;
+}
+
+.tutorial-btn:hover {
+  box-shadow: 0 6px 25px rgba(255,190,60,0.55);
+  transform: translateY(-2px);
+}
+
+/* EMAIL BLOCK */
+.email-box {
+  font-size: 1rem;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+.support-footer {
+  text-align: center;
+  color: #7b88b5;
+  font-size: 0.85rem;
+  margin-top: 40px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     === GLOBAL HEADER (exact copy from index/dashboard) =========
+     ============================================================ -->
+
+<header class="acs-header">
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Bank</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+    <a href="support.html" class="active">Support</a>
+  </nav>
+
+  <div class="acs-right">
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+  </div>
+</header>
+
+<!-- ============================================================
+     === MAIN SUPPORT CONTENT ===================================
+     ============================================================ -->
+
+<div class="support-container">
+
+  <h2 class="support-title">Support Center</h2>
+  <p class="support-sub">We’re here to help you navigate and manage your growing aviation empire.</p>
+
+  <!-- TUTORIAL BLOCK (C2) -->
+  <div class="support-block">
+    <h3>📘 ACS Tutorial Guide</h3>
+    <p>
+      Learn how every ACS module works: Dashboard, Fleet, HR, Bank, Credits, Schedules,
+      Base Assignment, Routes, and more.  
+      This is your official guide to mastering Aviation Capital Simulator.
+    </p>
+
+    <button class="tutorial-btn" onclick="window.location.href='tutorial.html'">
+      📘 Open ACS Tutorial Guide
+    </button>
+  </div>
+
+  <!-- █ CONTACT BLOCK -->
+  <div class="support-block">
+    <h3>📨 Contact Support</h3>
+    <p>If you experience technical issues or need help with your ACS profile, feel free to reach us:</p>
+    <div class="email-box">support@aviationcapitalsim.com</div>
+  </div>
+
+  <!-- █ FAQ BLOCK -->
+  <div class="support-block">
+    <h3>❓ Frequently Asked Questions</h3>
+    <p>
+      ✔ I completed registration but cannot access Dashboard  
+      ✔ My airline does not load correctly  
+      ✔ Credits were purchased but not reflected  
+      ✔ How to recover my ACS account  
+      ✔ Why my aircraft are not showing  
+    </p>
+  </div>
+
+  <div class="support-footer">
+    © 2025 Aviation Capital Simulator — All rights reserved.
+  </div>
+
+</div>
+
+<script src="time_engine.js"></script>
+<script src="engine/finance.js"></script>
+
+</body>
+</html>
