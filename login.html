@@ -373,7 +373,7 @@
 <script>
 /* ============================================================
    === ACS LOGIN — GOOGLE SHEETS BACKEND =======================
-   === Version: Stable | 18 NOV 2025 ===========================
+   === Version: Stable + AirlineObjectFix | 23 NOV 2025 ========
    ============================================================ */
 
 // Limpiar sesiones viejas
@@ -389,6 +389,7 @@ async function hashPassword(password) {
     .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 }
+
 /* ============================================================
    === RESET PASSWORD MODAL CONTROL ============================
    ============================================================ */
@@ -453,10 +454,9 @@ async function handleLogin(event) {
 
   const passwordHash = await hashPassword(password);
 
-    try {
+  try {
     const response = await fetch(ACS_API_URL, {
       method: "POST",
-      // ⛔ SIN headers
       body: JSON.stringify({
         action: "login",
         email,
@@ -475,29 +475,59 @@ async function handleLogin(event) {
       return false;
     }
 
-    // === 1) Email no registrado ===
+    /* ============================================================
+       === STATUS: NO_USER ========================================
+       ============================================================ */
     if (result.status === "NO_USER") {
       alert("❌ This email is not registered.\nPlease create your account.");
       window.location.href = "register.html";
       return false;
     }
 
-    // === 2) Contraseña incorrecta ===
+    /* ============================================================
+       === STATUS: WRONG_PASSWORD =================================
+       ============================================================ */
     if (result.status === "WRONG_PASSWORD") {
       alert("❌ Incorrect password. Please try again.");
       return false;
     }
 
-    // === 3) Usuario SIN aerolínea ===
+    /* ============================================================
+       === STATUS: NO_AIRLINE =====================================
+       ============================================================ */
     if (result.status === "NO_AIRLINE") {
-      localStorage.setItem("ACS_activeUser", JSON.stringify(result.user));
+      const userPack = {
+        userId: result.user.userId,
+        email: result.user.email,
+        airline: null,
+        airline_id: null
+      };
+
+      localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
       window.location.href = "create_airline.html";
       return false;
     }
 
-    // === 4) Usuario con aerolínea ===
+    /* ============================================================
+       === STATUS: HAS_AIRLINE ====================================
+       ============================================================ */
     if (result.status === "HAS_AIRLINE") {
-      localStorage.setItem("ACS_activeUser", JSON.stringify(result.user));
+
+      // === Ajuste crítico: airline ahora es OBJETO ===
+      const airlineObj = result.user.airline || {};
+
+      const userPack = {
+        userId: result.user.userId,
+        email: result.user.email,
+
+        // soporte completo para módulos antiguos y nuevos
+        airline: airlineObj,
+        airline_id: airlineObj.id || airlineObj.airline_id || null
+      };
+
+      console.log("✔ ACTIVE USER PACK:", userPack);
+
+      localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
       window.location.href = "dashboard.html";
       return false;
     }
@@ -509,5 +539,6 @@ async function handleLogin(event) {
 }
 
 </script>
+
 </body>
 </html>
