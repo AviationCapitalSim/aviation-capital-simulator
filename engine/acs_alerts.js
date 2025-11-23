@@ -168,3 +168,61 @@ function ACS_runAlertScan() {
 document.addEventListener("DOMContentLoaded", () => {
   ACS_runAlertScan();
 });
+/* ============================================================
+   === ACS ALERT ENGINE — BETA REAL v1.0 ======================
+   === Loads alerts from Google Sheets via Apps Script API ====
+   === Author: ACS — 23 NOV 2025 ==============================
+   ============================================================ */
+
+// URL REAL DEL ENDPOINT
+const ACS_API_URL = "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec";
+
+// Donde guardamos las alertas cargadas del servidor
+window.ACS_ALERTS = [];
+
+/* ============================================================
+   === CARGAR ALERTAS para airline_id — BETA REAL ==============
+   ============================================================ */
+async function ACS_loadAlerts(airline_id) {
+  try {
+    const response = await fetch(ACS_API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "getAlerts",
+        airline_id: airline_id
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.ok && Array.isArray(result.alerts)) {
+      window.ACS_ALERTS = result.alerts;
+      console.log("📡 Alerts loaded:", window.ACS_ALERTS);
+    } else {
+      console.warn("⚠️ No alerts received from server");
+      window.ACS_ALERTS = [];
+    }
+
+  } catch (err) {
+    console.error("❌ Error loading alerts:", err);
+    window.ACS_ALERTS = [];
+  }
+}
+
+/* ============================================================
+   === ESCANEAR ALERTAS (VS Dashboard) =========================
+   ============================================================ */
+async function ACS_runAlertScan() {
+
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  if (!activeUser.airline_id) {
+    console.warn("⚠️ No airline_id found for alerts.");
+    return;
+  }
+
+  // Cargar alertas reales desde el servidor
+  await ACS_loadAlerts(activeUser.airline_id);
+
+  console.log("🎯 Alert Scan Completed:", window.ACS_ALERTS);
+}
