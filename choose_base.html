@@ -1,5 +1,5 @@
 <!-- === CHOOSE BASE MODULE — Qatar Luxury Edition === -->
-<!-- Version: Beta v5 | Date: 22 NOV 2025 -->
+<!-- Version: Beta v4 FIXED | Date: 22 NOV 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,18 +10,219 @@
   <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <!-- ======== Favicons ======== -->
+  <!-- ======== ACS Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- ======== Apple Home Screen ======== -->
   <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== PWA Manifest ======== -->
   <link rel="manifest" href="manifest.json">
 
-<style>
-/* …─────────────────────────────── */
-/* TODO TU CSS ORIGINAL SIN CAMBIOS */
-/* …─────────────────────────────── */
-</style>
+  <style>
+    body {
+      margin: 0;
+      background-color: #0C1F3C;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      padding-top: 120px;
+      text-align: center;
+    }
+
+    /* ============================================================
+         QATAR LUXURY HEADER — EXACT COPY
+       ============================================================ */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 0.8rem 2rem;
+      background: rgba(12,23,50,0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,179,0,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      animation: acsHeaderFade 0.8s ease forwards;
+    }
+
+    @keyframes acsHeaderFade {
+      from { opacity:0; transform: translateY(-10px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .acs-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .acs-logo img { height: 46px; filter: drop-shadow(0 0 6px rgba(255,179,0,0.35)); }
+    .acs-logo h1 {
+      color: #FFB300;
+      font-size: 1.15rem;
+      margin: 0;
+      letter-spacing: 0.6px;
+      text-shadow: 0 0 8px rgba(255,179,0,0.4);
+    }
+
+    .nav-btn {
+      padding: 0.45rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: 0.25s;
+      min-width: 100px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .nav-btn-blue {
+      color: #8AB4FF;
+      border-color: rgba(138,180,255,0.45);
+    }
+
+    .nav-btn-blue:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 12px rgba(138,180,255,0.55);
+    }
+
+    .acs-clock-header {
+      font-family: 'Orbitron', monospace;
+      color: #00ff80;
+      background: rgba(0,255,128,0.08);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-left: 1rem;
+    }
+
+    /* ============================================================
+         QATAR LUXURY MAIN CARD
+       ============================================================ */
+    .form-container {
+      background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2.4rem;
+      border-radius: 22px;
+      border: 1px solid rgba(255,179,0,0.22);
+      box-shadow: 0 0 30px rgba(0,0,0,0.55),
+                  inset 0 0 25px rgba(255,255,255,0.04);
+      backdrop-filter: blur(14px);
+    }
+
+    h2 { color: #FFB300; font-size: 1.8rem; }
+    p  { color: #c9d4ff; font-size: 1rem; }
+
+    /* ============================================================
+         SELECTS
+       ============================================================ */
+    .lux-select {
+      width: 48%;
+      padding: 0.85rem 1rem;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,179,0,0.25);
+      color: #e8ecff;
+      font-size: 1rem;
+      font-weight: 500;
+      backdrop-filter: blur(12px);
+      box-shadow: inset 0 0 18px rgba(255,255,255,0.04);
+      transition: 0.25s;
+    }
+
+    .lux-select:hover {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,179,0,0.45);
+      box-shadow: 0 0 12px rgba(255,179,0,0.4),
+                  inset 0 0 22px rgba(255,255,255,0.07);
+    }
+
+    /* ============================================================
+         TABLE
+       ============================================================ */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1.5rem;
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    th {
+      background: rgba(255,179,0,0.15);
+      color: #FFB300;
+      padding: 0.7rem;
+      font-size: 0.95rem;
+    }
+
+    td {
+      padding: 0.6rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+
+    tr:hover { background: rgba(255,255,255,0.07); }
+
+    /* ============================================================
+         DEMAND BAR + TOOLTIP
+       ============================================================ */
+    #demandTooltip {
+      position: absolute;
+      display: none;
+      background: rgba(10,25,60,0.95);
+      color: #fff;
+      border: 1px solid #FFB300;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      pointer-events: none;
+      box-shadow: 0 0 10px rgba(255,179,0,0.3);
+      z-index: 1000;
+      width: 180px;
+    }
+
+    .demand-pie .slice {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: conic-gradient(#1DB954 0deg var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 360deg);
+    }
+
+    .demand-bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 6px;
+      background: linear-gradient(to right, #1DB954 var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 100%);
+      box-shadow: 0 0 6px rgba(255,179,0,0.3);
+      margin-top: 6px;
+    }
+
+    /* ============================================================
+         GREEN BUTTON
+       ============================================================ */
+    .acs-btn {
+      background-color: #1DB954;
+      color: #fff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: 0.25s;
+      box-shadow: 0 0 10px rgba(29,185,84,0.4);
+    }
+
+    .acs-btn:hover {
+      background-color: #21e065;
+      transform: scale(1.05);
+      box-shadow: 0 0 16px rgba(29,185,84,0.6);
+    }
+  </style>
 </head>
 
 <body>
@@ -51,7 +252,6 @@
       <option value="Asia">Asia</option>
       <option value="Africa">Africa</option>
       <option value="Oceania">Oceania</option>
-      <option value="MiddleEast">Middle East</option> <!-- 🔥 AGREGADO -->
     </select>
 
     <select id="countrySelect" class="lux-select">
@@ -85,58 +285,14 @@
 
 <div id="demandTooltip"></div>
 
-<!-- === CORE SCRIPTS === -->
+<!-- ENGINE SCRIPTS -->
 <script src="time_engine.js"></script>
 <script src="engine/airports_loader.js"></script>
 <script src="engine/acs_country_history.js"></script>
 
 <script>
-/* ============================================================
-   GLOBAL VARIABLES
-============================================================ */
 let selectedContinent = "";
 let selectedCountry = "";
-
-/* ============================================================
-   COUNTRY EXISTENCE (HISTORICAL 1940–2026)
-============================================================ */
-function countryExisted(countryName, year) {
-  const entry = ACS_CountryHistory.find(c => c.name === countryName);
-  if (!entry) return true; 
-
-  if (year < entry.start) return false;
-  if (entry.end && year > entry.end) return false;
-
-  return true;
-}
-
-/* ============================================================
-   RUNWAY HISTORICAL FILTER (BY ERA)
-============================================================ */
-function runwayHistoricalFilter(a, year) {
-
-  if (year < 1950) {  
-    if (!a.runway_m || a.runway_m === 0) return false;
-    if (a.runway_m < 800) return false;
-    return true;
-  }
-
-  if (year < 1970) {  
-    if (a.runway_m < 600) return false;
-    return true;
-  }
-
-  return true;
-}
-
-/* ============================================================
-   FULL HISTORICAL FILTER (COUNTRY + RUNWAY)
-============================================================ */
-function ACS_filterAirport_Historical(a, year) {
-  if (!countryExisted(a.region, year)) return false;
-  if (!runwayHistoricalFilter(a, year)) return false;
-  return true;
-}
 
 /* ============================================================
    LOAD COUNTRIES
@@ -144,10 +300,10 @@ function ACS_filterAirport_Historical(a, year) {
 function loadCountries() {
   selectedContinent = document.getElementById("continentSelect").value;
   const countrySelect = document.getElementById("countrySelect");
+  const list = document.getElementById("airportList");
 
   countrySelect.innerHTML = '<option value="">🏳️ Select Country</option>';
-  document.getElementById("airportList").innerHTML =
-    '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
+  list.innerHTML = '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
 
   if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
 
@@ -162,10 +318,9 @@ function loadCountries() {
 }
 
 /* ============================================================
-   LOAD AIRPORTS + HISTORICAL FILTER
+   LOAD AIRPORTS
 ============================================================ */
 function loadAirports() {
-
   selectedCountry = document.getElementById("countrySelect").value;
   const tbody = document.getElementById("airportList");
   tbody.innerHTML = "";
@@ -179,15 +334,15 @@ function loadAirports() {
 
   const airports = WorldAirportsACS[selectedContinent]
     .filter(a => a.region === selectedCountry)
-    .filter(a => ACS_filterAirport_Historical(a, year))  // 🔥 ACTIVO
+    //.filter(a => ACS_filterAirport_Historical(a, year))  <!-- Histórico desactivado -->
     .sort((a, b) => {
-      const dA = (a.demand?.Y||0)+(a.demand?.C||0)+(a.demand?.F||0);
-      const dB = (b.demand?.Y||0)+(b.demand?.C||0)+(b.demand?.F||0);
-      return dB - dA; 
+      const demandA = (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
+      const demandB = (b.demand?.Y || 0) + (b.demand?.C || 0) + (b.demand?.F || 0);
+      return demandB - demandA;
     });
 
   if (!airports.length) {
-    tbody.innerHTML = '<tr><td colspan="9">No airports available for this country in this year.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9">No airports available for this country.</td></tr>';
     return;
   }
 
@@ -197,8 +352,10 @@ function loadAirports() {
     const F = a.demand?.F || 0;
     const total = Y + C + F;
 
-    const ecoPct = total ? (Y/total)*100 : 0;
-    const bizPct = total ? ((Y+C)/total)*100 : 0;
+    const ecoPct = total ? (Y / total) * 100 : 0;
+    const bizPct = total ? ((Y + C) / total) * 100 : 0;
+    const ecoDeg = total ? (Y / total) * 360 : 0;
+    const bizDeg = total ? ((Y + C) / total) * 360 : 0;
 
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -210,6 +367,9 @@ function loadAirports() {
       <td>
         ${Y}/${C}/${F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+        <div class="demand-pie" style="display:none; --eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+          <div class="slice"></div>
+        </div>
       </td>
       <td>${a.slot_capacity}</td>
       <td>$${a.slot_cost_usd.toLocaleString()}</td>
@@ -220,16 +380,15 @@ function loadAirports() {
 }
 
 /* ============================================================
-   SET AIRLINE BASE
+   SET BASE
 ============================================================ */
 function setBase(icao) {
-
   const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
-  if (!airport) return alert("⚠️ Airport Not Found");
+  if (!airport) return alert("⚠️ Airport not found.");
 
   const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
   if (!user || !user.airline) {
-    alert("⚠️ Please log in.");
+    alert("⚠️ No active session or airline found.");
     window.location.href = "login.html";
     return;
   }
@@ -248,48 +407,49 @@ function setBase(icao) {
   localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
   const users = JSON.parse(localStorage.getItem("ACS_users")||"[]");
-  const i = users.findIndex(u => u.email === user.email);
-  if (i !== -1) users[i] = user;
+  const index = users.findIndex(u => u.email === user.email);
+  if (index !== -1) users[index] = user;
   localStorage.setItem("ACS_users", JSON.stringify(users));
 
-  alert(`✅ Base set at ${airport.city} (${airport.icao}).`);
+  alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
   window.location.href = "dashboard.html";
 }
 
 /* ============================================================
-   TOOLTIP (DEMAND)
+   DEMAND TOOLTIP
 ============================================================ */
 const tooltip = document.getElementById("demandTooltip");
 
 document.addEventListener("mousemove", e => {
   const cell = e.target.closest("td:nth-child(6)");
-  if (!cell || !cell.textContent.includes("/")) {
+  if (cell && cell.textContent.includes("/")) {
+    const parts = cell.textContent.trim().split("/");
+    if (parts.length === 3) {
+      const [Y, C, F] = parts.map(Number);
+      const total = Y + C + F;
+      const ecoDeg = total ? (Y/total)*360 : 0;
+      const bizDeg = total ? ((Y+C)/total)*360 : 0;
+
+      tooltip.innerHTML = `
+        <h4>Passenger Demand</h4>
+        <div>Economy: ${Y}</div>
+        <div>Business: ${C}</div>
+        <div>First: ${F}</div>
+        <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+          <div class="slice"></div>
+        </div>
+      `;
+      tooltip.style.display = "block";
+      tooltip.style.left = e.pageX + 15 + "px";
+      tooltip.style.top = e.pageY - 60 + "px";
+    }
+  } else {
     tooltip.style.display = "none";
-    return;
   }
-
-  const [Y,C,F] = cell.textContent.trim().split("/").map(Number);
-  const total = Y + C + F;
-  const ecoDeg = total ? (Y/total)*360 : 0;
-  const bizDeg = total ? ((Y+C)/total)*360 : 0;
-
-  tooltip.innerHTML = `
-    <h4>Passenger Demand</h4>
-    <div>Economy: ${Y}</div>
-    <div>Business: ${C}</div>
-    <div>First: ${F}</div>
-    <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
-      <div class="slice"></div>
-    </div>
-  `;
-
-  tooltip.style.display = "block";
-  tooltip.style.left = e.pageX + 15 + "px";
-  tooltip.style.top = e.pageY - 60 + "px";
 });
 
 /* ============================================================
-   INITIALIZATION
+   INITIALIZER
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   loadAirportScripts(() => {
