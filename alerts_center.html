@@ -294,15 +294,16 @@ body {
 
 
 <script>
+<script>
 // =====================================================
 // === ALERT CENTER — Dynamic Real-Time Rendering =======
 // =====================================================
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-  // 1. Ejecutar escaneo de alertas
+  // 1. Ejecutar escaneo de alertas y ESPERAR la carga desde el servidor
   if (typeof ACS_runAlertScan === "function") {
-    ACS_runAlertScan();
+    await ACS_runAlertScan();
   }
 
   const container = document.getElementById("alertCards");
@@ -361,7 +362,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Primera carga
+  // Primera carga (ya con las alertas reales)
   renderAlerts("all");
 
   // Filtros
