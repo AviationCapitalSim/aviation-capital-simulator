@@ -169,37 +169,30 @@ document.addEventListener("DOMContentLoaded", () => {
   ACS_runAlertScan();
 });
 /* ============================================================
-   === ACS ALERT ENGINE — BETA REAL v1.0 ======================
-   === Loads alerts from Google Sheets via Apps Script API ====
-   === Author: ACS — 23 NOV 2025 ==============================
+   === ACS ALERT ENGINE — SERVER LOADER (BETA REAL) ============
    ============================================================ */
 
-// URL REAL DEL ENDPOINT
 const ACS_API_URL = "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec";
 
 // Donde guardamos las alertas cargadas del servidor
-window.ACS_ALERTS = [];
+window.ACS_ALERTS = window.ACS_ALERTS || [];
 
 /* ============================================================
-   === CARGAR ALERTAS para airline_id — BETA REAL ==============
+   === CARGAR ALERTAS para airline_id — vía GET ================
    ============================================================ */
 async function ACS_loadAlerts(airline_id) {
   try {
-    const response = await fetch(ACS_API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "getAlerts",
-        airline_id: airline_id
-      })
-    });
+    const url = `${ACS_API_URL}?action=getAlerts&airline_id=${encodeURIComponent(airline_id)}`;
 
+    const response = await fetch(url);
     const result = await response.json();
 
-    if (result.ok && Array.isArray(result.alerts)) {
-      window.ACS_ALERTS = result.alerts;
+    // En tu Apps Script doGet devuelve directamente un array de alertas
+    if (Array.isArray(result)) {
+      window.ACS_ALERTS = result;
       console.log("📡 Alerts loaded:", window.ACS_ALERTS);
     } else {
-      console.warn("⚠️ No alerts received from server");
+      console.warn("⚠️ No alerts received from server:", result);
       window.ACS_ALERTS = [];
     }
 
@@ -210,19 +203,36 @@ async function ACS_loadAlerts(airline_id) {
 }
 
 /* ============================================================
-   === ESCANEAR ALERTAS (VS Dashboard) =========================
+   === ESCANEAR ALERTAS (usa localStorage) =====================
    ============================================================ */
 async function ACS_runAlertScan() {
+  const raw = localStorage.getItem("ACS_activeUser");
 
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  if (!activeUser.airline_id) {
-    console.warn("⚠️ No airline_id found for alerts.");
+  if (!raw) {
+    console.warn("⚠️ No ACS_activeUser in localStorage.");
     return;
   }
 
-  // Cargar alertas reales desde el servidor
-  await ACS_loadAlerts(activeUser.airline_id);
+  let activeUser = {};
+  try {
+    activeUser = JSON.parse(raw);
+  } catch (e) {
+    console.warn("⚠️ Cannot parse ACS_activeUser:", e);
+    return;
+  }
+
+  // Intentamos varias claves posibles: airline_id, airline, airlineData...
+  const airlineId =
+    activeUser.airline_id ||
+    activeUser.airline ||
+    (activeUser.airlineData && (activeUser.airlineData.airline_id || activeUser.airlineData.id));
+
+  if (!airlineId) {
+    console.warn("⚠️ No airline_id found for alerts. ActiveUser:", activeUser);
+    return;
+  }
+
+  await ACS_loadAlerts(airlineId);
 
   console.log("🎯 Alert Scan Completed:", window.ACS_ALERTS);
 }
