@@ -393,6 +393,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
+
+<script>
+// ============================================================
+// === ALERT BADGE IN MAIN NAVIGATION — BETA REAL ==============
+// ============================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Asegurar escaneo terminado
+  if (typeof ACS_runAlertScan === "function") {
+    ACS_runAlertScan();
+  }
+
+  const navAlerts = document.querySelector("a[href='alerts_center.html']");
+  if (!navAlerts) return;
+
+  const total = window.ACS_ALERTS?.length || 0;
+
+  // Eliminar badges previos
+  const oldBadge = navAlerts.querySelector(".acs-alert-badge");
+  if (oldBadge) oldBadge.remove();
+
+  // Si no hay alertas, no mostrar badge
+  if (total === 0) return;
+
+  // Crear badge
+  const badge = document.createElement("span");
+  badge.className = "acs-alert-badge";
+  badge.textContent = total;
+
+  navAlerts.appendChild(badge);
+});
+</script>
   
 </body>
 </html>
