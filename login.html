@@ -513,12 +513,11 @@ async function handleLogin(event) {
        ============================================================ */
     if (result.status === "HAS_AIRLINE") {
 
-  // Normalizar formato interno
   const fixedUser = {
     userId: result.user.userId,
     email: result.user.email,
-    airline: result.user.airline,       // string
-    airline_id: result.user.airline     // duplicado para el alert engine
+    airline: result.user.airline,
+    airline_id: result.user.airline
   };
 
   localStorage.setItem("ACS_activeUser", JSON.stringify(fixedUser));
@@ -526,8 +525,12 @@ async function handleLogin(event) {
   return false;
 }
 
+} catch (err) {
+  alert("❌ Login failed: " + err.message);
+  return false;
 }
 
+}
 </script>
 
 </body>
