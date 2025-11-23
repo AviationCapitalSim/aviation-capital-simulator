@@ -38,18 +38,19 @@ async function ACS_loadAlerts(airline_id) {
 }
 
 /* ============================================================
-   === ESCANEO GENERAL DE ALERTAS =============================
+   === MASTER SCAN — usa GET para cargar alertas ===============
    ============================================================ */
+
 async function ACS_runAlertScan() {
 
   const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-  if (!activeUser.airline_id) {
+  if (!activeUser || !activeUser.airline_id) {
     console.warn("⚠️ No airline_id found for alerts.");
     return;
   }
 
-  // Cargar alertas reales desde Google Sheets
+  // Cargar alertas reales desde el servidor
   await ACS_loadAlerts(activeUser.airline_id);
 
   console.log("🎯 Alert Scan Completed:", window.ACS_ALERTS);
