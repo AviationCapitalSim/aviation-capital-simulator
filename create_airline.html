@@ -91,11 +91,15 @@
       border: 1px solid rgba(255,255,255,0.08);
       text-align: center;
       text-decoration: none;
-
       color: #8AB4FF;
       border-color: rgba(138,180,255,0.45);
     }
-
+      /* === FIX: Home button color (only this page) === */
+        
+      a[href="index.html"].nav-btn {
+      color: #FFB300 !important;
+      border-color: rgba(255,179,0,0.45) !important;
+    }
     .nav-btn:hover {
       background: rgba(138,180,255,0.20);
       box-shadow: 0 0 12px rgba(138,180,255,0.55);
