@@ -297,32 +297,33 @@ body {
 // === ALERT CENTER — Dynamic Real-Time Rendering =======
 // =====================================================
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-  // Ejecutar SOLO UNA VEZ
+  // 1) Ejecutar el escaneo REAL y esperar a que termine
   if (typeof ACS_runAlertScan === "function") {
-    ACS_runAlertScan();
+    console.log("⏳ Waiting alert scan...");
+    await ACS_runAlertScan();   // 🔥 ESTA LÍNEA ES LA CLAVE
+    console.log("✅ Alert scan completed:", window.ACS_ALERTS);
   }
 
   const container = document.getElementById("alertsContainer");
   const buttons = document.querySelectorAll(".filter-btn");
 
-  if (!container) return;
+  if (!container || !window.ACS_ALERTS) return;
 
   // Render principal
   function renderAlerts(filter = "all") {
 
-    // Limpiar contenedor
     container.innerHTML = "";
 
-    let alerts = Array.isArray(window.ACS_ALERTS) ? [...window.ACS_ALERTS] : [];
+    let alerts = [...window.ACS_ALERTS];
 
-    // Filtro
+    // Filtro por tipo
     if (filter !== "all") {
       alerts = alerts.filter(a => a.type.toLowerCase() === filter);
     }
 
-    // Sin alertas
+    // Si no hay alertas
     if (alerts.length === 0) {
       container.innerHTML = `
         <p style="color:#cbd6ff; text-align:center; margin-top:1rem;">
@@ -333,7 +334,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Crear tarjetas
     alerts.forEach(alert => {
-
       const color =
         alert.level === "critical" ? "#ff5050" :
         alert.level === "high"     ? "#ff9944" :
@@ -341,43 +341,45 @@ document.addEventListener("DOMContentLoaded", () => {
                                      "#a8b8ff";
 
       const card = document.createElement("div");
-      card.className = "alert-card";
+      card.className = "panel";
+      card.style.border = `1px solid ${color}55`;
 
       card.innerHTML = `
-        <div class="alert-title" style="color:${color};">${alert.type.toUpperCase()}</div>
-        <div class="alert-msg">${alert.message}</div>
-        <div class="alert-time">${new Date(alert.timestamp).toLocaleString()}</div>
+        <h3 style="color:${color}; text-shadow:0 0 6px ${color}88;">
+          ${alert.type.toUpperCase()}
+        </h3>
+
+        <p style="font-size:1rem; margin-bottom:0.6rem;">
+          ${alert.message}
+        </p>
+
+        <p style="font-size:0.85rem; color:#9db4ff;">
+          ${new Date(alert.timestamp).toLocaleString()}
+        </p>
       `;
 
       container.appendChild(card);
     });
   }
 
-  // Primera carga
-renderAlerts("all");
-
-// Forzar estado activo en el botón ALL
-const allBtn = [...buttons].find(b => b.textContent.trim().toLowerCase() === "all");
-if (allBtn) allBtn.classList.add("active");
-
-// Forzar render automático sin hacer click
-setTimeout(() => {
+  // === Primera carga REAL ===
   renderAlerts("all");
-}, 150);
 
-// Filtros
-buttons.forEach(btn => {
-  btn.addEventListener("click", () => {
+  // Marcar el botón ALL activo
+  const allBtn = [...buttons].find(b => b.dataset.filter === "all");
+  if (allBtn) allBtn.classList.add("active");
 
-    buttons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    const filter = btn.textContent.trim().toLowerCase();
-    renderAlerts(filter);
+  // Eventos de filtros
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const filter = btn.dataset.filter;
+      renderAlerts(filter);
+    });
   });
 });
 
-});
 </script>
 
 <script>
