@@ -1,7 +1,6 @@
 <!-- ============================================================
-     === SUPPORT PAGE — Qatar Luxury Edition =====================
-     === Aviation Capital Simulator ==============================
-     === Version: v1 | Date: 23 NOV 2025 =========================
+     === ACS TUTORIAL — Qatar Luxury Edition =====================
+     === Version: v1 | Date: 23 NOV 2025 ==========================
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -9,126 +8,191 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Support - Aviation Capital Simulator</title>
+  <title>ACS Tutorial Guide</title>
 
-  <!-- ======== Main ACS Styles ======== -->
-  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <!-- ======== ACS Main Styles ======== -->
+  <link rel="stylesheet" href="styles.css?v=3.1">
 
-  <!-- ======== Favicons ======== -->
+  <!-- ======== ACS Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
-  <link rel="manifest" href="manifest.json">
 
-<style>
-/* ============================================================
-   === SUPPORT PAGE DESIGN — Qatar Premium =====================
-   ============================================================ */
+  <style>
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Poppins", sans-serif;
+      padding-bottom: 80px;
+    }
 
-body {
-  margin: 0;
-  background-color: #081530;
-  color: white;
-  font-family: "Poppins", sans-serif;
-}
+    /* ===== HEADER EXACT COPY ===== */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      backdrop-filter: blur(9px);
+      background: rgba(12,23,50,0.45);
+      padding: 0.8rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #ffb300;
+      z-index: 5000;
+    }
 
-/* SECCIÓN PRINCIPAL */
-.support-container {
-  max-width: 900px;
-  margin: 130px auto 50px;
-  padding: 2rem;
-  border-radius: 22px;
-  background: rgba(20,35,70,0.65);
-  border: 1px solid rgba(255,179,0,0.25);
-  box-shadow: 0 0 25px rgba(0,0,0,0.45);
-}
+    .acs-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
 
-.support-title {
-  text-align: center;
-  color: #ffb300;
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  text-shadow: 0 0 12px rgba(255,179,0,0.5);
-}
+    .acs-left img {
+      height: 46px;
+    }
 
-.support-sub {
-  text-align: center;
-  color: #d0dbff;
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-}
+    .acs-left h1 {
+      font-size: 1.15rem;
+      margin: 0;
+      color: #ffb300;
+      letter-spacing: 0.5px;
+    }
 
-/* SECTION BLOCK */
-.support-block {
-  margin-bottom: 2rem;
-  padding: 1.4rem;
-  background: rgba(255,255,255,0.04);
-  border-left: 4px solid #ffb300;
-  border-radius: 12px;
-}
+    .acs-nav {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+    }
 
-.support-block h3 {
-  color: #ffc45d;
-  font-size: 1.3rem;
-  margin-top: 0;
-}
+    .acs-nav a {
+      font-size: 1rem;
+      letter-spacing: 0.4px;
+      color: #dbe4ff; 
+      text-decoration: none;
+      padding-bottom: 6px;
+      transition: 0.25s ease;
+    }
 
-.support-block p {
-  color: #e0e7ff;
-  line-height: 1.6rem;
-  font-size: 0.95rem;
-}
+    .acs-nav a:hover,
+    .acs-nav a.active {
+      color: #ffca3a;
+      text-shadow: 0 0 6px rgba(255,179,0,0.45);
+    }
 
-/* TUTORIAL BUTTON */
-.tutorial-btn {
-  width: 100%;
-  padding: 1rem 1.2rem;
-  margin-top: 1rem;
-  background: linear-gradient(90deg, #ffb300, #ffd974);
-  border: none;
-  border-radius: 14px;
-  color: #0c1f3c;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  text-shadow: 0 0 5px rgba(255,255,255,0.4);
-  box-shadow: 0 4px 18px rgba(255,190,60,0.4);
-  transition: 0.25s;
-}
+    .acs-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
 
-.tutorial-btn:hover {
-  box-shadow: 0 6px 25px rgba(255,190,60,0.55);
-  transform: translateY(-2px);
-}
+    .logout-btn, .support-btn {
+      padding: 0.45rem 1.1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
 
-/* EMAIL BLOCK */
-.email-box {
-  font-size: 1rem;
-  padding: 0.7rem 1rem;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  display: inline-block;
-  margin-top: 0.5rem;
-}
+      color: #8AB4FF;
+      border: 1px solid rgba(138,180,255,0.45);
+      background: rgba(138,180,255,0.08);
 
-.support-footer {
-  text-align: center;
-  color: #7b88b5;
-  font-size: 0.85rem;
-  margin-top: 40px;
-}
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
 
-</style>
+      box-shadow: inset 0 0 0 1px rgba(138,180,255,0.2),
+                  0 0 10px rgba(0,0,0,0.25);
+
+      transition: 0.25s ease;
+    }
+
+    .logout-btn:hover,
+    .support-btn:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 14px rgba(138,180,255,0.55);
+      color: #dfe9ff;
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .tutorial-main {
+      padding: 120px 2rem 20px;
+      max-width: 1050px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .tutorial-main h2 {
+      color: #ffca3a;
+      font-size: 2rem;
+      text-shadow: 0 0 10px rgba(255,202,58,0.45);
+      margin-bottom: 0.5rem;
+    }
+
+    .tutorial-main p.sub {
+      color: #cbd6ff;
+      font-size: 1.05rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ===== TUTORIAL PANELS ===== */
+    .tutorial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .tutorial-panel {
+      background: linear-gradient(
+        180deg,
+        rgba(20,35,70,0.75),
+        rgba(10,18,40,0.85)
+      );
+      border: 1px solid rgba(255,179,0,0.25);
+      border-radius: 18px;
+      padding: 1.6rem 1.3rem;
+      text-align: left;
+      box-shadow: 0 0 20px rgba(0,0,0,0.35);
+      transition: 0.25s ease;
+    }
+
+    .tutorial-panel:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255,179,0,0.55);
+      box-shadow: 0 8px 30px rgba(255,179,0,0.25);
+    }
+
+    .tutorial-panel h3 {
+      color: #ffca3a;
+      font-size: 1.25rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .tutorial-panel p {
+      color: #dfe4ff;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    /* ===== FOOTER ===== */
+    .acs-footer {
+      text-align: center;
+      padding: 40px;
+      margin-top: 40px;
+      color: #7c8bb8;
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
 
 <body>
 
 <!-- ============================================================
-     === GLOBAL HEADER (exact copy from index/dashboard) =========
+     === HEADER ==================================================
      ============================================================ -->
-
 <header class="acs-header">
   <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
@@ -146,61 +210,92 @@ body {
   </nav>
 
   <div class="acs-right">
-    <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+    <a href="dashboard.html" class="logout-btn">Back</a>
   </div>
 </header>
 
 <!-- ============================================================
-     === MAIN SUPPORT CONTENT ===================================
+     === MAIN TUTORIAL CONTENT ==================================
      ============================================================ -->
 
-<div class="support-container">
+<main class="tutorial-main">
 
-  <h2 class="support-title">Support Center</h2>
-  <p class="support-sub">We’re here to help you navigate and manage your growing aviation empire.</p>
+  <h2>ACS Tutorial Guide</h2>
+  <p class="sub">Learn how to command your airline step by step.</p>
 
-  <!-- TUTORIAL BLOCK (C2) -->
-  <div class="support-block">
-    <h3>📘 ACS Tutorial Guide</h3>
-    <p>
-      Learn how every ACS module works: Dashboard, Fleet, HR, Bank, Credits, Schedules,
-      Base Assignment, Routes, and more.  
-      This is your official guide to mastering Aviation Capital Simulator.
-    </p>
+  <div class="tutorial-grid">
 
-    <button class="tutorial-btn" onclick="window.location.href='tutorial.html'">
-      📘 Open ACS Tutorial Guide
-    </button>
+    <!-- SECTION 1 -->
+    <div class="tutorial-panel">
+      <h3>🛫 Create Your Airline</h3>
+      <p>Learn how to name your airline, choose ICAO/IATA, set your slogan, and select the operational model (Low Cost, Legacy, Cargo, Regional).</p>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="tutorial-panel">
+      <h3>🌍 Choose Your Base Airport</h3>
+      <p>Pick any airport in the world based on city, region, capacity, runway length, and operational slots available.</p>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="tutorial-panel">
+      <h3>📊 Understanding the Dashboard</h3>
+      <p>Your central command: Top Earning Aircraft, Company Value, Operational Alerts, Global News, and Settings.</p>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="tutorial-panel">
+      <h3>✈️ Buying New Aircraft</h3>
+      <p>Explore Airbus, Boeing, Embraer, ATR, Bombardier and buy or lease aircraft directly from the manufacturers.</p>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="tutorial-panel">
+      <h3>🛠 Used Market</h3>
+      <p>Purchase second-hand aircraft, compare prices, flight hours, cycles, and remaining life.</p>
+    </div>
+
+    <!-- SECTION 6 -->
+    <div class="tutorial-panel">
+      <h3>📅 Routes & Scheduling</h3>
+      <p>Create routes, set weekly frequencies, manage slots, and optimize your aircraft utilization.</p>
+    </div>
+
+    <!-- SECTION 7 -->
+    <div class="tutorial-panel">
+      <h3>👥 HR & Payroll</h3>
+      <p>Manage staff morale, salaries, departments, and bonus systems that affect airline performance.</p>
+    </div>
+
+    <!-- SECTION 8 -->
+    <div class="tutorial-panel">
+      <h3>💠 Bank & Credits</h3>
+      <p>Buy ACS Credits (AC$), handle monthly growth, financial reports, and loan management.</p>
+    </div>
+
+    <!-- SECTION 9 -->
+    <div class="tutorial-panel">
+      <h3>🌐 Events & News</h3>
+      <p>External events like fuel spikes, weather, strikes and economic changes dynamically affect your revenue.</p>
+    </div>
+
+    <!-- SECTION 10 -->
+    <div class="tutorial-panel">
+      <h3>⚙️ Settings & Sync</h3>
+      <p>Control game preferences, language (future), notifications and cloud synchronization.</p>
+    </div>
+
   </div>
 
-  <!-- █ CONTACT BLOCK -->
-  <div class="support-block">
-    <h3>📨 Contact Support</h3>
-    <p>If you experience technical issues or need help with your ACS profile, feel free to reach us:</p>
-    <div class="email-box">support@aviationcapitalsim.com</div>
-  </div>
+</main>
 
-  <!-- █ FAQ BLOCK -->
-  <div class="support-block">
-    <h3>❓ Frequently Asked Questions</h3>
-    <p>
-      ✔ I completed registration but cannot access Dashboard  
-      ✔ My airline does not load correctly  
-      ✔ Credits were purchased but not reflected  
-      ✔ How to recover my ACS account  
-      ✔ Why my aircraft are not showing  
-    </p>
-  </div>
+<!-- ============================================================
+     === FOOTER =================================================
+     ============================================================ -->
 
-  <div class="support-footer">
-    © 2025 Aviation Capital Simulator — All rights reserved.
-  </div>
-
-</div>
-
-<script src="time_engine.js"></script>
-<script src="engine/finance.js"></script>
+<footer class="acs-footer">
+  © 2025 Aviation Capital Simulator. All rights reserved.
+</footer>
 
 </body>
 </html>
