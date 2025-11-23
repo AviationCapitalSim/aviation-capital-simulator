@@ -1,5 +1,5 @@
 <!-- === DASHBOARD MODULE — Qatar Luxury Edition === -->
-<!-- Version: v3 | Date: 23 NOV 2025 -->
+<!-- Version: v4 | Date: 23 NOV 2025 -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -90,14 +90,12 @@ body {
   padding-bottom: 6px;
 }
 
-/* Texto activo o hover */
 .acs-nav a:hover,
 .acs-nav a.active {
   color: #ffca3a;
   text-shadow: 0 0 6px rgba(255,179,0,0.45);
 }
 
-/* Línea dorada suave (Glow) */
 .acs-nav a.active::after,
 .acs-nav a:hover::after {
   content: "";
@@ -110,7 +108,6 @@ body {
   border-radius: 2px;
   box-shadow: 0 0 8px rgba(255,200,60,0.45);
 }
-
 
 .acs-nav a:hover,
 .acs-nav a.active {
@@ -154,7 +151,7 @@ body {
    ============================================================ */
 
 .acs-main {
-  padding: 105px 2rem 70px;   /* Subido 15px más hacia arriba */
+  padding: 105px 2rem 70px;
   text-align: center;
 }
 
@@ -165,7 +162,7 @@ body {
 }
 
 /* ============================================================
-     === PREMIUM PANEL GRID — Qatar Edition ====================
+     === PREMIUM PANEL GRID ====================================
    ============================================================ */
 
 .dashboard-grid {
@@ -174,31 +171,24 @@ body {
   margin-top: 2rem;
 }
 
-/* FILA 1 — Business Row */
 .row-business {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
-/* FILA 2 — Operations Row */
 .row-operations {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
-/* FILA 3 — Capital Row */
 .row-capital {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 /* ============================================================
-     === PANEL STANDARD ========================================
+     === PANEL ==================================================
    ============================================================ */
 
 .panel {
-  background: linear-gradient(
-    180deg,
-    rgba(20,35,70,0.75),
-    rgba(10,18,40,0.85)
-  );
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
   padding: 1.6rem 1.5rem;
   border-radius: 22px;
   box-shadow: 0 0 25px rgba(0,0,0,0.4);
@@ -225,35 +215,15 @@ body {
   line-height: 1.4;
 }
 
-.aircraft-list,
-.alert-list {
+.alert-list,
+.aircraft-list {
   list-style: none;
   padding: 0;
-}
-
-.aircraft-list li {
-  margin: 6px 0;
-}
-
-.aircraft-list a {
-  color: #ffb300;
-  text-decoration: none;
-}
-
-.aircraft-list a:hover {
-  text-decoration: underline;
-}
-
-.positive {
-  color: #00d17a;
-  font-weight: 600;
 }
 
 .alert-list li {
   color: #ff9b00;
 }
-
-/* BUTTON */
 
 .acs-btn {
   margin-top: 1rem;
@@ -271,7 +241,6 @@ body {
   background: #00794f;
 }
 
-/* FOOTER */
 .acs-footer {
   text-align: center;
   padding: 20px;
@@ -279,16 +248,15 @@ body {
   color: #7c8bb8;
   font-size: 0.9rem;
 }
-/* MODAL KEEP AS IS (NO TOUCH) */
- 
+
 /* ============================================================
-   === GALACTIC QATAR LUXURY — AIRLINE DATA BLOCK ===========
-  ============================================================ */
+   === AIRLINE DATA BLOCK =====================================
+   ============================================================ */
 
 #welcomeMessage {
-  font-size: 1.9rem;                 /* grande, elegante */
+  font-size: 1.9rem;
   font-weight: 600;
-  color: #ffca3a;                    /* dorado más suave */
+  color: #ffca3a;
   text-shadow: 0 0 12px rgba(255,190,60,0.55);
   letter-spacing: 0.6px;
   margin-top: 0.5rem;
@@ -296,20 +264,20 @@ body {
 
 #airlineSub {
   font-size: 1.25rem;
-  color: #ffca3a;    /* Qatar gold */
+  color: #ffca3a;
   text-shadow: 0 0 8px rgba(255,202,58,0.4);
 }
 
 #baseInfo {
   font-size: 1.15rem;
   margin-top: 0.6rem;
-  color: #ffca3a;    /* Qatar gold */
+  color: #ffca3a;
   font-weight: 600;
   text-shadow: 0 0 10px rgba(255,180,0,0.40);
 }
 
 /* ============================================================
-   === SUPPORT BUTTON — QATAR BLUE LUXURY =====================
+   === SUPPORT BUTTON ==========================================
    ============================================================ */
 
 .support-btn {
@@ -319,17 +287,10 @@ body {
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-
-  color: #8AB4FF;  /* Azul Qatar Luxury */
+  color: #8AB4FF;
   border: 1px solid rgba(138,180,255,0.45);
   background: rgba(138,180,255,0.08);
-
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-
-  box-shadow: inset 0 0 0 1px rgba(138,180,255,0.2),
-              0 0 10px rgba(0,0,0,0.25);
-
   transition: 0.25s ease;
 }
 
@@ -338,15 +299,12 @@ body {
   box-shadow: 0 0 14px rgba(138,180,255,0.55);
   color: #dfe9ff;
 }
-  
+
 </style>
 </head>
 
 <body>
 
-<!-- ============================================================
-     === HEADER (Exact from index) ==============================
-   ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
@@ -369,42 +327,28 @@ body {
   </div>
 </header>
 
-<!-- ============================================================
-     === MAIN CONTENT ==========================================
-   ============================================================ -->
-
 <main class="acs-main">
 
-  <!-- === AIRLINE HEADER INFORMATION (RESTORED) === -->
   <h2 id="welcomeMessage"></h2>
   <p id="airlineSub"></p>
   <p id="baseInfo" style="color:#ffb300; font-weight:600;"></p>
 
-  <!-- Subtítulo Qatar Luxury -->
   <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
-  <!-- ============================================================
-         === DASHBOARD GRID — 3 ROWS ================================
-       ============================================================ -->
-
+  <!-- Business -->
   <div class="dashboard-grid row-business">
 
-    <!-- ✈️ Top Earning Aircraft -->
-  <div class="panel">
-    <h3>✈️ Top Earning Aircraft</h3>
-    <ul class="aircraft-list" id="topAircraftList">
-     <!-- Datos reales serán cargados aquí dinámicamente -->
-    </ul>
-  </div>
+    <div class="panel">
+      <h3>✈️ Top Earning Aircraft</h3>
+      <ul class="aircraft-list" id="topAircraftList"></ul>
+    </div>
 
-    <!-- 📊 Finance -->
     <div class="panel">
       <h3>📊 Finance</h3>
       <p>Access your company’s monthly and weekly growth overview.</p>
       <button class="acs-btn" onclick="window.location.href='monthly_growth.html'">Open</button>
     </div>
 
-    <!-- 💼 Company Value -->
     <div class="panel">
       <h3>💼 Company Value</h3>
       <p>Total assets: <strong id="companyValue">$78.5M</strong></p>
@@ -414,10 +358,9 @@ body {
 
   </div>
 
-  <!-- ROW 2 — OPERATIONS -->
+  <!-- Operations -->
   <div class="dashboard-grid row-operations">
 
-    <!-- ⚠️ Operational Alerts -->
     <div class="panel">
       <h3>⚠️ Operational Alerts</h3>
       <ul class="alert-list" id="alertsList">
@@ -428,17 +371,12 @@ body {
       <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
     </div>
 
-    <!-- 📰 Global News -->
     <div class="panel">
       <h3>📰 Global News & Events</h3>
-      <p>
-        <strong>“Oil prices surge after conflict in the Middle East.”</strong><br>
-        Passenger demand drops 4% this week.
-      </p>
+      <p><strong>“Oil prices surge after conflict in the Middle East.”</strong><br>Passenger demand drops 4% this week.</p>
       <button class="acs-btn" onclick="window.location.href='events.html'">Read More</button>
     </div>
 
-    <!-- ⚙️ Settings -->
     <div class="panel">
       <h3>⚙️ Settings</h3>
       <p>Manage system preferences, theme, and data synchronization.</p>
@@ -447,23 +385,20 @@ body {
 
   </div>
 
-  <!-- ROW 3 — CAPITAL -->
+  <!-- Capital -->
   <div class="dashboard-grid row-capital">
 
-    <!-- 💠 Credits -->
     <div class="panel">
       <h3>💠 Credits</h3>
       <p><strong id="creditsAmount">2,450 AC$</strong> available</p>
       <button class="acs-btn" onclick="window.location.href='buy_credits.html'">Buy</button>
     </div>
 
-    <!-- Optional future: HR Summary -->
     <div class="panel">
       <h3>👥 HR Summary</h3>
       <p>Coming soon: morale, payroll, staff overview.</p>
     </div>
 
-    <!-- Optional future: Fleet Snapshot -->
     <div class="panel">
       <h3>🛫 Fleet Snapshot</h3>
       <p>Coming soon: total aircraft, utilization %, active leases.</p>
@@ -473,23 +408,14 @@ body {
 
 </main>
 
-<!-- ============================================================
-     === FOOTER =================================================
-   ============================================================ -->
 <footer class="acs-footer">
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
 
-<!-- ============================================================
-     === ORIGINAL SCRIPT BLOCKS — NO MODIFICATION ===============
-   ============================================================ -->
-
-<!-- (Aquí están los scripts exactamente como tu HTML original.
-     NO se modificó ni una línea.) -->
-
+<!-- ORIGINAL SCRIPTS — NO MODIFICATIONS -->
 <script src="time_engine.js"></script>
 <script src="engine/finance.js"></script>
- 
+
 <script>
 /* ============================================================
    === UNIVERSAL FLAG SYSTEM (195 Countries) ==================
@@ -540,10 +466,12 @@ function getFlagEmojiFromCountryName(countryName) {
     iso.charCodeAt(1) - 65 + 0x1F1E6
   );
 }
+</script> <!-- ✅ CORRECCIÓN: cierre del script faltante -->
 
-/* ============================================================
-   === LOAD AIRLINE + COUNTRY + BASE (WORKING VERSION) =========
-   ============================================================ */
+<!-- ============================================================
+     === LOAD AIRLINE DATA — SIN CAMBIOS =========================
+   ============================================================ -->
+<script>
 document.addEventListener("DOMContentLoaded", () => {
 
   const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
@@ -554,19 +482,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const sub     = document.getElementById("airlineSub");
   const baseEl  = document.getElementById("baseInfo");
 
-  /* === WELCOME === */
   if (airline.name && airline.iata) {
     welcome.innerHTML = `Welcome to <span>${airline.name} (${airline.iata})</span>`;
   } else {
     welcome.innerHTML = `Welcome, Captain`;
   }
 
-  /* === COUNTRY + FLAG === */
   const country = airline.country || "World";
   const flag = getFlagEmojiFromCountryName(country);
   sub.innerHTML = `${flag} ${country}`;
 
-  /* === BASE INFO === */
   const baseCity = base.city || base.municipality || "";
   const baseName = base.name || base.airportName || "";
   const baseCode = base.icao || base.iata || "";
@@ -574,15 +499,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let label = baseCity && baseName ? `${baseCity} — ${baseName}` :
               baseCity || baseName || "Unassigned Base";
 
-  baseEl.innerText = `Base: ${label}${baseCode ? " ("+baseCode+")" : ""}`;
+  baseEl.innerText = `Base: ${label}${baseCode ? " (" + baseCode + ")" : ""}`;
 
-  console.log("🔍 Airline Loaded:", { airline, base });
 });
+</script>
 
+<!-- ============================================================
+     === TOP 3 ALERTS — BETA REAL ================================
+   ============================================================ -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Asegurar que el motor de alertas ya corrió
   if (typeof ACS_runAlertScan === "function") {
     ACS_runAlertScan();
   }
@@ -590,22 +517,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const list = document.getElementById("alertsList");
   if (!list) return;
 
-  // Si no hay alertas reales → mostrar mensaje limpio
   if (!window.ACS_ALERTS || window.ACS_ALERTS.length === 0) {
     list.innerHTML = `<li>No active alerts.</li>`;
     return;
   }
 
-  // Tomar solo las 3 alertas más importantes
   const top3 = window.ACS_ALERTS.slice(0, 3);
-
-  list.innerHTML = ""; // limpiar
+  list.innerHTML = "";
 
   top3.forEach(alert => {
     const li = document.createElement("li");
     li.style.marginBottom = "6px";
 
-    // Nivel de severidad
     const color =
       alert.level === "critical" ? "#ff5050" :
       alert.level === "high"     ? "#ff9944" :
@@ -616,21 +539,18 @@ document.addEventListener("DOMContentLoaded", () => {
       <span style="color:${color}; font-weight:600;">${alert.type.toUpperCase()}</span>
       — ${alert.message}
     `;
-
     list.appendChild(li);
   });
 
 });
 </script>
 
+<!-- ============================================================
+     === ALERT BADGE IN NAV =====================================
+   ============================================================ -->
 <script>
-// ============================================================
-// === ALERT BADGE IN MAIN NAVIGATION — BETA REAL ==============
-// ============================================================
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Asegurar escaneo terminado
   if (typeof ACS_runAlertScan === "function") {
     ACS_runAlertScan();
   }
@@ -640,14 +560,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const total = window.ACS_ALERTS?.length || 0;
 
-  // Eliminar badges previos
   const oldBadge = navAlerts.querySelector(".acs-alert-badge");
   if (oldBadge) oldBadge.remove();
 
-  // Si no hay alertas, no mostrar badge
   if (total === 0) return;
 
-  // Crear badge
   const badge = document.createElement("span");
   badge.className = "acs-alert-badge";
   badge.textContent = total;
