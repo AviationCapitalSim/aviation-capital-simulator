@@ -185,34 +185,60 @@
       color: #7c8bb8;
       font-size: 0.85rem;
     }
+
+/* REMOVE NAV + CLOCK (Tutorial only) */
+.acs-nav {
+  display: none !important;
+}
+
+.acs-clock-header {
+  display: none !important;
+}
+
+/* === Qatar Luxury Back Button === */
+.back-btn {
+  padding: 0.45rem 1.2rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  color: #8AB4FF;
+  background: rgba(138,180,255,0.08);
+  border: 1px solid rgba(138,180,255,0.45);
+
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  transition: 0.25s ease;
+}
+
+.back-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 12px rgba(138,180,255,0.55);
+  color: #dfe9ff;
+}
+     
   </style>
 </head>
 
 <body>
 
 <!-- ============================================================
-     === HEADER ==================================================
-     ============================================================ -->
+     === HEADER — Minimal Tutorial Version (Qatar Luxury) =======
+   ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="finance.html">Bank</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html">Routes</a>
-    <a href="hr.html">HR</a>
-    <a href="forum.html">Forum</a>
-    <a href="support.html" class="active">Support</a>
-  </nav>
-
   <div class="acs-right">
-    <a href="dashboard.html" class="logout-btn">Back</a>
+    <a href="dashboard.html" class="back-btn">Main</a>
   </div>
 </header>
+
 
 <!-- ============================================================
      === MAIN TUTORIAL CONTENT ==================================
@@ -296,6 +322,8 @@
 <footer class="acs-footer">
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
+
+     
 
 </body>
 </html>
