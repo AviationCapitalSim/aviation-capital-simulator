@@ -416,6 +416,61 @@ body {
 <script src="time_engine.js"></script>
 <script src="engine/finance.js"></script>
 <script src="engine/acs_alerts.js?v=1.0"></script>
+
+<script>
+// ============================================================
+// === DASHBOARD — LOAD OPERATIONAL ALERTS (Top 3) =============
+// ============================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Esperar a que el Alert Engine termine de cargar
+  setTimeout(() => {
+
+    console.log("📌 Dashboard alerts loaded:", window.ACS_ALERTS);
+
+    const list = document.getElementById("alertsList");
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    const alerts = window.ACS_ALERTS || [];
+
+    // SI NO HAY ALERTAS
+    if (alerts.length === 0) {
+      list.innerHTML = `
+        <li style="color:#cbd6ff; list-style:none; padding:6px 0;">
+          No active alerts.
+        </li>`;
+      return;
+    }
+
+    // MOSTRAR SOLO LAS 3 MÁS RECIENTES
+    const top3 = alerts.slice(0, 3);
+
+    top3.forEach(a => {
+      const li = document.createElement("li");
+      li.style.listStyle = "none";
+      li.style.marginBottom = "8px";
+      li.style.padding = "6px 0";
+      li.style.color = "#dbe4ff";
+
+      li.innerHTML = `
+        <strong style="color:#ffca3a;">${a.type.toUpperCase()}</strong>
+        — ${a.message}
+        <br>
+        <span style="font-size:0.8rem; color:#9db4ff;">
+          ${new Date(a.timestamp).toLocaleString()}
+        </span>
+      `;
+
+      list.appendChild(li);
+    });
+
+  }, 400); // Espera para asegurar carga del engine
+
+});
+</script>
   
 <script>
 /* ============================================================
