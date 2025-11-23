@@ -391,10 +391,12 @@ function handleAirlineCreation(event) {
   // ============================================================
   //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
   // ============================================================
- fetch("https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec", {
+ const ACS_API_URL =
+  "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec";
+
+fetch(ACS_API_URL, {
   method: "POST",
-  mode: "cors",
-  headers: { 
+  headers: {
     "Content-Type": "application/json"
   },
   body: JSON.stringify({
