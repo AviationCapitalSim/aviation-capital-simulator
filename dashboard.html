@@ -362,13 +362,13 @@ body {
   <div class="dashboard-grid row-operations">
 
     <div class="panel">
-      <h3>⚠️ Operational Alerts</h3>
-      <ul class="alert-list" id="alertsList">
-        <li>Maintenance due: <strong>B737-400 (EI-KAV)</strong></li>
-        <li>Loan repayment in 2 days</li>
-        <li>Low credits warning</li>
-      </ul>
-      <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
+    <h3>⚠️ Operational Alerts</h3>
+
+    <ul class="alert-list" id="alertsList"></ul>
+
+    <button class="acs-btn" onclick="window.location.href='alerts_center.html'">
+    Open Center
+    </button>
     </div>
 
     <div class="panel">
@@ -574,5 +574,54 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<script>
+// ============================================================
+// === DASHBOARD — Load Alerts Summary (BETA REAL) =============
+// ============================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // 1. Ejecutar escaneo global de alertas
+  if (typeof ACS_runAlertScan === "function") {
+    ACS_runAlertScan();
+  }
+
+  // 2. Contenedor en dashboard
+  const alertsBox = document.getElementById("dashboard-alerts-box");
+  if (!alertsBox) return;
+
+  const alerts = window.ACS_ALERTS || [];
+
+  // 3. Filtrar: solo mostrar activas (por ahora TODAS)
+  const activeAlerts = alerts;
+
+  // 4. Si NO hay alertas activas
+  if (activeAlerts.length === 0) {
+    alertsBox.innerHTML = `
+      <p style="color:#d0ddff; opacity:0.8;">No active alerts.</p>
+    `;
+    return;
+  }
+
+  // 5. Mostrar solo la primera alerta (resumen)
+  const a = activeAlerts[0];
+  const color =
+      a.level === "critical" ? "#ff5050" :
+      a.level === "high"     ? "#ff9944" :
+      a.level === "medium"   ? "#ffd85c" :
+                               "#a8b8ff";
+
+  alertsBox.innerHTML = `
+      <p style="font-size:1rem; font-weight:600; color:${color}; margin-bottom:0.4rem;">
+        ${a.type.toUpperCase()}
+      </p>
+      <p style="font-size:0.9rem;">${a.message}</p>
+      <p style="font-size:0.75rem; opacity:0.8; margin-top:6px;">
+        ${new Date(a.timestamp).toLocaleString()}
+      </p>
+  `;
+});
+</script>
+  
 </body>
 </html>
