@@ -622,6 +622,50 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
 });
 </script>
+
+<script>
+// ============================================================
+// === DASHBOARD — Load Operational Alerts Automatically ========
+// ============================================================
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  // 1) Asegurar que el motor de alertas ya corrió
+  if (typeof ACS_runAlertScan === "function") {
+    console.log("⏳ Dashboard waiting for alert scan...");
+    await ACS_runAlertScan();     // 🔥 CLAVE: esperamos a que ACS_ALERTS esté listo
+    console.log("✅ Dashboard alerts loaded:", window.ACS_ALERTS);
+  }
+
+  const list = document.getElementById("alertsList");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  const alerts = window.ACS_ALERTS || [];
+
+  // 2) Filtrar sólo "operational" (o cualquier tipo que tú quieras)
+  const ops = alerts.filter(a => a.type.toLowerCase() === "operations");
+
+  // 3) Si no hay alertas
+  if (ops.length === 0) {
+    list.innerHTML = `
+      <li style="color:#cbd6ff; list-style:none; margin-top:0.5rem;">
+        No active alerts.
+      </li>`;
+    return;
+  }
+
+  // 4) Cargar alertas en lista
+  ops.forEach(a => {
+    const li = document.createElement("li");
+    li.style.color = "#ffca3a";
+    li.style.marginBottom = "0.4rem";
+    li.textContent = a.message;
+    list.appendChild(li);
+  });
+});
+</script>
   
 </body>
 </html>
