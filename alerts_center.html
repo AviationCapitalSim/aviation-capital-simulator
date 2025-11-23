@@ -354,19 +354,28 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Primera carga
+renderAlerts("all");
+
+// Forzar estado activo en el botón ALL
+const allBtn = [...buttons].find(b => b.textContent.trim().toLowerCase() === "all");
+if (allBtn) allBtn.classList.add("active");
+
+// Forzar render automático sin hacer click
+setTimeout(() => {
   renderAlerts("all");
+}, 150);
 
-  // Filtros
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
+// Filtros
+buttons.forEach(btn => {
+  btn.addEventListener("click", () => {
 
-      buttons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
+    buttons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
 
-      const filter = btn.textContent.trim().toLowerCase();
-      renderAlerts(filter);
-    });
+    const filter = btn.textContent.trim().toLowerCase();
+    renderAlerts(filter);
   });
+});
 
 });
 </script>
