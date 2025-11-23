@@ -430,18 +430,93 @@ body {
 
 
 <script>
-  
+/* ============================================================
+   === UNIVERSAL FLAG SYSTEM (195 Countries) ==================
+   ============================================================ */
+function getFlagEmojiFromCountryName(countryName) {
+  if (!countryName) return "🌍";
+
+  const isoMap = {
+    "afghanistan":"AF","albania":"AL","algeria":"DZ","andorra":"AD","angola":"AO",
+    "argentina":"AR","armenia":"AM","australia":"AU","austria":"AT","azerbaijan":"AZ",
+    "bahamas":"BS","bahrain":"BH","bangladesh":"BD","belarus":"BY","belgium":"BE",
+    "belize":"BZ","benin":"BJ","bhutan":"BT","bolivia":"BO","bosnia and herzegovina":"BA",
+    "botswana":"BW","brazil":"BR","brunei":"BN","bulgaria":"BG","burkina faso":"BF",
+    "burundi":"BI","cambodia":"KH","cameroon":"CM","canada":"CA","cape verde":"CV",
+    "chad":"TD","chile":"CL","china":"CN","colombia":"CO","congo":"CG",
+    "costa rica":"CR","croatia":"HR","cuba":"CU","cyprus":"CY","czech republic":"CZ",
+    "denmark":"DK","djibouti":"DJ","dominican republic":"DO","ecuador":"EC",
+    "egypt":"EG","el salvador":"SV","estonia":"EE","ethiopia":"ET","fiji":"FJ",
+    "finland":"FI","france":"FR","georgia":"GE","germany":"DE","ghana":"GH",
+    "greece":"GR","guatemala":"GT","haiti":"HT","honduras":"HN","hungary":"HU",
+    "iceland":"IS","india":"IN","indonesia":"ID","iran":"IR","iraq":"IQ",
+    "ireland":"IE","israel":"IL","italy":"IT","jamaica":"JM","japan":"JP",
+    "jordan":"JO","kazakhstan":"KZ","kenya":"KE","kyrgyzstan":"KG","laos":"LA",
+    "latvia":"LV","lebanon":"LB","liberia":"LR","libya":"LY","liechtenstein":"LI",
+    "lithuania":"LT","luxembourg":"LU","madagascar":"MG","malaysia":"MY",
+    "maldives":"MV","mali":"ML","malta":"MT","mexico":"MX","moldova":"MD",
+    "monaco":"MC","mongolia":"MN","montenegro":"ME","morocco":"MA","mozambique":"MZ",
+    "myanmar":"MM","namibia":"NA","nepal":"NP","netherlands":"NL","new zealand":"NZ",
+    "nicaragua":"NI","niger":"NE","nigeria":"NG","north korea":"KP",
+    "north macedonia":"MK","norway":"NO","oman":"OM","pakistan":"PK","panama":"PA",
+    "paraguay":"PY","peru":"PE","philippines":"PH","poland":"PL","portugal":"PT",
+    "qatar":"QA","romania":"RO","russia":"RU","rwanda":"RW","saudi arabia":"SA",
+    "senegal":"SN","serbia":"RS","singapore":"SG","slovakia":"SK","slovenia":"SI",
+    "somalia":"SO","south africa":"ZA","south korea":"KR","spain":"ES","sri lanka":"LK",
+    "sudan":"SD","sweden":"SE","switzerland":"CH","syria":"SY","taiwan":"TW",
+    "tajikistan":"TJ","tanzania":"TZ","thailand":"TH","tunisia":"TN","turkey":"TR",
+    "turkmenistan":"TM","uganda":"UG","ukraine":"UA","united arab emirates":"AE",
+    "united kingdom":"GB","united states":"US","uruguay":"UY","uzbekistan":"UZ",
+    "venezuela":"VE","vietnam":"VN","yemen":"YE","zambia":"ZM","zimbabwe":"ZW"
+  };
+
+  const key = countryName.trim().toLowerCase();
+  const iso = isoMap[key];
+  if (!iso) return "🌍";
+
+  return String.fromCodePoint(
+    iso.charCodeAt(0) - 65 + 0x1F1E6,
+    iso.charCodeAt(1) - 65 + 0x1F1E6
+  );
+}
+
+/* ============================================================
+   === LOAD AIRLINE + COUNTRY + BASE (WORKING VERSION) =========
+   ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-   ... aquí carga airline, país, bandera y base ...
+
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  const airline    = activeUser.airline || {};
+  const base       = activeUser.airline?.base || {};
+
+  const welcome = document.getElementById("welcomeMessage");
+  const sub     = document.getElementById("airlineSub");
+  const baseEl  = document.getElementById("baseInfo");
+
+  /* === WELCOME === */
+  if (airline.name && airline.iata) {
+    welcome.innerHTML = `Welcome to <span>${airline.name} (${airline.iata})</span>`;
+  } else {
+    welcome.innerHTML = `Welcome, Captain`;
+  }
+
+  /* === COUNTRY + FLAG === */
+  const country = airline.country || "World";
+  const flag = getFlagEmojiFromCountryName(country);
+  sub.innerHTML = `${flag} ${country}`;
+
+  /* === BASE INFO === */
+  const baseCity = base.city || base.municipality || "";
+  const baseName = base.name || base.airportName || "";
+  const baseCode = base.icao || base.iata || "";
+
+  let label = baseCity && baseName ? `${baseCity} — ${baseName}` :
+              baseCity || baseName || "Unassigned Base";
+
+  baseEl.innerText = `Base: ${label}${baseCode ? " ("+baseCode+")" : ""}`;
+
+  console.log("🔍 Airline Loaded:", { airline, base });
 });
-  
-</script>
-
-<script src="time_engine.js"></script>
-<script src="engine/finance.js"></script>
-
-<script>
-  /* === Cockpit clock listener (no editado) === */
 </script>
 
 </body>
