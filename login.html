@@ -513,29 +513,19 @@ async function handleLogin(event) {
        ============================================================ */
     if (result.status === "HAS_AIRLINE") {
 
-      // === Ajuste crítico: airline ahora es OBJETO ===
-      const airlineObj = result.user.airline || {};
+  // Normalizar formato interno
+  const fixedUser = {
+    userId: result.user.userId,
+    email: result.user.email,
+    airline: result.user.airline,       // string
+    airline_id: result.user.airline     // duplicado para el alert engine
+  };
 
-      const userPack = {
-        userId: result.user.userId,
-        email: result.user.email,
+  localStorage.setItem("ACS_activeUser", JSON.stringify(fixedUser));
+  window.location.href = "dashboard.html";
+  return false;
+}
 
-        // soporte completo para módulos antiguos y nuevos
-        airline: airlineObj,
-        airline_id: airlineObj.id || airlineObj.airline_id || null
-      };
-
-      console.log("✔ ACTIVE USER PACK:", userPack);
-
-      localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
-      window.location.href = "dashboard.html";
-      return false;
-    }
-
-  } catch (err) {
-    alert("❌ Login failed: " + err.message);
-    return false;
-  }
 }
 
 </script>
