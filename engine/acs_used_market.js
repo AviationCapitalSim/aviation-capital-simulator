@@ -211,16 +211,18 @@ function buyUsed(id) {
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   myFleet.push({
-    id: "AC-" + Date.now(),
-    model: ac.model,
-    manufacturer: ac.manufacturer,
-    delivered: new Date().toISOString(),
-    image: ac.image,
-    status: "Active",
-    hours: ac.hours,
-    cycles: ac.cycles,
-    condition: ac.condition
-  });
+  id: "AC-" + Date.now(),
+  model: ac.model,
+  manufacturer: ac.manufacturer,
+  delivered: new Date().toISOString(),
+  image: ac.image,
+  status: "Active",
+  hours: ac.hours,
+  cycles: ac.cycles,
+  condition: ac.condition,
+  registration: ACS_generateRegistration()   // 🔥 Matrícula automática
+});
+
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
