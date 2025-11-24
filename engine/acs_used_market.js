@@ -259,17 +259,36 @@ function leaseUsed(id) {
   cycles: ac.cycles,
   condition: ac.condition,
 
-  /* === MATRÍCULA AUTOMÁTICA (con fallback seguro) === */
-  registration: (typeof ACS_generateRegistration === "function")
-    ? ACS_generateRegistration()
-    : "XX-" + Math.floor(Math.random()*900 + 100),
+  /* === Matrícula automática === */
+  registration: ACS_generateRegistration(),
 
-  /* === Mantenimientos iniciales — en usados son variables === */
+  /* === Mantenimientos iniciales === */
   lastC: null,
   lastD: null,
   nextC: null,
   nextD: null
 });
+
+/* ============================================================
+   === PASO 13 — CALCULAR PRÓXIMOS C/D (USADOS) ================
+   ============================================================ */
+(() => {
+  const idx = myFleet.length - 1;               // último añadido
+  const baseDeliveryDate = new Date(myFleet[idx].delivered);
+
+  // C-Check → siempre 12 meses
+  const nextCdate = new Date(baseDeliveryDate);
+  nextCdate.setUTCFullYear(nextCdate.getUTCFullYear() + 1);
+
+  // D-Check → siempre 8 años
+  const nextDdate = new Date(baseDeliveryDate);
+  nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + 8);
+
+  // Guardar valores
+  myFleet[idx].nextC = nextCdate.toISOString();
+  myFleet[idx].nextD = nextDdate.toISOString();
+})();
+
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
