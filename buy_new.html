@@ -273,6 +273,23 @@
 
   <script src="engine/acs_buy_aircraft.js"></script>
 
+     <!-- === AUTO-DELIVERY ENGINE (activado para Buy New) === -->
+<script>
+  if (typeof checkDeliveries === "function") {
+    document.addEventListener("DOMContentLoaded", () => {
+      // sincroniza con la hora sim
+      checkDeliveries();
+
+      // Si existiera reloj global, vuelve a revisar
+      if (typeof registerTimeListener === "function") {
+        registerTimeListener(() => {
+          checkDeliveries();
+        });
+      }
+    });
+  }
+</script>
+     
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       if (typeof registerTimeListener === "function") {
