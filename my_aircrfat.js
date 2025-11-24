@@ -503,3 +503,31 @@ if (typeof registerTimeListener === "function") {
     renderFleetTable();
     checkMaintenanceAlerts();  });
 }
+/* ============================================================
+   === ACS TIME ENGINE INTEGRATION — v1.0 ======================
+   === Automatic refresh on every game-time tick ===============
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+
+    // 1) Actualizar entregas pendientes
+    if (typeof checkDeliveries === "function") {
+      checkDeliveries();
+    }
+
+    // 2) Revisar si terminó un C-Check o D-Check
+    updatePendingDeliveries();
+    checkMaintenanceCompletion();
+
+    // 3) Generar alertas (C & D approaching)
+    checkMaintenanceAlerts();
+
+    // 4) Refrescar tabla de flota (sin recargar HTML)
+    if (typeof renderFleetTable === "function") {
+      renderFleetTable();
+    }
+
+    console.log("⏱️ Fleet updated via ACS_TIME tick.");
+  });
+}
