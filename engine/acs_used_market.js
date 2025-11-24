@@ -247,17 +247,27 @@ function leaseUsed(id) {
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   myFleet.push({
-    id: "AC-" + Date.now(),
-    model: ac.model,
-    manufacturer: ac.manufacturer,
-    delivered: new Date().toISOString(),
-    image: ac.image,
-    status: "Leased",
-    hours: ac.hours,
-    cycles: ac.cycles,
-    condition: ac.condition,
-    registration: ACS_generateRegistration()   // 🔥 matrícula automática
-  });
+  id: "AC-" + Date.now(),
+  model: ac.model,
+  manufacturer: ac.manufacturer,
+  delivered: new Date().toISOString(),
+  image: ac.image,
+  status: "Active",
+
+  /* === USED Aircraft: respetar horas reales y estado === */
+  hours: ac.hours,
+  cycles: ac.cycles,
+  condition: ac.condition,
+
+  /* === Matrícula automática === */
+  registration: ACS_generateRegistration(),
+
+  /* === Mantenimientos iniciales — en usados son variables === */
+  lastC: null,
+  lastD: null,
+  nextC: null,
+  nextD: null
+});
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
