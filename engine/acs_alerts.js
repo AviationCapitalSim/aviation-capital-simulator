@@ -1,5 +1,5 @@
 /* ============================================================
-   === ACS ALERT ENGINE — BETA REAL v1.1 ======================
+   === ACS ALERT ENGINE — BETA REAL v1.2 ======================
    === Aligned with ACS Time Engine (GAME TIME)
    === Author: ACS — 23 NOV 2025 ==============================
    ============================================================ */
@@ -20,14 +20,11 @@ function ACS_applyGameTimeToAlerts(alerts) {
   if (!Array.isArray(alerts)) return [];
 
   return alerts.map(alert => {
-    // Garantizar estructura mínima
     const fixed = { ...alert };
 
-    // Si ACS_TIME existe, usamos la hora del juego SIEMPRE
     if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime) {
       fixed.timestamp = ACS_TIME.currentTime.toISOString();
     } else {
-      // Backup (NO recomendado, solo seguridad)
       fixed.timestamp = new Date().toISOString();
     }
 
@@ -47,9 +44,7 @@ async function ACS_loadAlerts(airline_id) {
     const result = await response.json();
 
     if (Array.isArray(result)) {
-      // 1) Aplicar hora del juego
       window.ACS_ALERTS = ACS_applyGameTimeToAlerts(result);
-
       console.log("📡 Alerts loaded (GAME-TIME applied):", window.ACS_ALERTS);
     } else {
       console.warn("⚠️ Invalid alert payload from server:", result);
@@ -60,21 +55,19 @@ async function ACS_loadAlerts(airline_id) {
     window.ACS_ALERTS = [];
   }
 }
+
 /* ============================================================
    === ACS LOCAL GAME ALERT STORAGE ===========================
    ============================================================ */
 
-// Contenedor oficial de alertas generadas por el juego
 if (!localStorage.getItem("ACS_GameAlerts")) {
   localStorage.setItem("ACS_GameAlerts", JSON.stringify([]));
 }
 
-// Guardar alerta en almacenamiento local
 function ACS_saveLocalAlerts(list) {
   localStorage.setItem("ACS_GameAlerts", JSON.stringify(list));
 }
 
-// Cargar alertas locales
 function ACS_getLocalAlerts() {
   try {
     return JSON.parse(localStorage.getItem("ACS_GameAlerts")) || [];
@@ -84,12 +77,81 @@ function ACS_getLocalAlerts() {
 }
 
 /* ============================================================
+   === HR SNAPSHOT ALERTS — SOLO PERSONAL FALTANTE ============
+   ------------------------------------------------------------
+   • NO CEO
+   • Solo staff = 0 en departamentos críticos
+   • Genera alertas en tiempo real
+   ============================================================ */
+
+function ACS_getHRAlertsSnapshot() {
+  const raw = localStorage.getItem("ACS_HR");
+  if (!raw) return [];
+
+  let hr;
+  try {
+    hr = JSON.parse(raw);
+  } catch (e) {
+    console.warn("⚠️ Cannot parse ACS_HR:", e);
+    return [];
+  }
+
+  if (!hr || typeof hr !== "object") return [];
+
+  const CRITICAL_DEPARTMENTS = [
+    "middle",
+    "economics",
+    "hr",
+    "quality",
+    "security",
+    "customers",
+    "flightops",
+    "maintenance",
+    "ground",
+    "routes",
+    "pilots_small",
+    "pilots_medium",
+    "pilots_large",
+    "pilots_vlarge",
+    "cabin"
+  ];
+
+  const simTimeObj =
+    (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+      ? ACS_TIME.currentTime
+      : new Date();
+
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  const airlineId = activeUser?.airline_id || null;
+
+  const alerts = [];
+
+  CRITICAL_DEPARTMENTS.forEach(id => {
+    const dep = hr[id];
+    if (!dep) return;
+
+    if (!dep.staff || dep.staff <= 0) {
+      alerts.push({
+        alert_id: `HR-${id}-${simTimeObj.getTime()}`,
+        airline_id: airlineId,
+        type: "hr",
+        level: "critical",
+        message: `HR CRITICAL — ${dep.name || id} has 0 staff assigned. Operations may be compromised.`,
+        timestamp: simTimeObj.toISOString()
+      });
+    }
+  });
+
+  return alerts;
+}
+
+/* ============================================================
    === MASTER FUNCTION: ADD ALERT (GAME GENERATED) ============
    ============================================================ */
 
 function ACS_addAlert(type, level, message) {
-
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  const activeUser =
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
   if (!activeUser || !activeUser.airline_id) {
     console.warn("⚠️ Cannot generate alert — no active airline.");
@@ -98,9 +160,10 @@ function ACS_addAlert(type, level, message) {
 
   const alerts = ACS_getLocalAlerts();
 
-  const simTime = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
-    ? ACS_TIME.currentTime.toISOString()
-    : new Date().toISOString(); // fallback
+  const simTime =
+    (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+      ? ACS_TIME.currentTime.toISOString()
+      : new Date().toISOString();
 
   const alertObj = {
     alert_id: "GA-" + Date.now(),
@@ -112,14 +175,15 @@ function ACS_addAlert(type, level, message) {
   };
 
   alerts.unshift(alertObj);
-ACS_saveLocalAlerts(alerts);
+  ACS_saveLocalAlerts(alerts);
 
-// NUEVO PASO 14
-ACS_pushToDashboard(alertObj);
+  if (typeof ACS_pushToDashboard === "function") {
+    ACS_pushToDashboard(alertObj);
+  }
 
-console.log("⚡ Game Alert Generated:", alertObj);
-
+  console.log("⚡ Game Alert Generated:", alertObj);
 }
+
 /* ============================================================
    === MASTER SCAN — carga alertas del servidor ===============
    ============================================================ */
@@ -133,26 +197,27 @@ async function ACS_runAlertScan() {
     return;
   }
 
-  // Cargar alertas
   await ACS_loadAlerts(activeUser.airline_id);
 
   console.log("🎯 Alert Scan Completed (GAME TIME):", window.ACS_ALERTS);
 }
+
 /* ============================================================
-   === MERGE REAL + LOCAL GAME ALERTS =========================
+   === MERGE REAL + LOCAL GAME + HR SNAPSHOT =================
    ============================================================ */
 
 function ACS_getAllAlertsMerged() {
   const serverAlerts = window.ACS_ALERTS || [];
-  const localAlerts  = ACS_getLocalAlerts() || [];
+  const localAlerts = ACS_getLocalAlerts() || [];
+  const hrAlerts = ACS_getHRAlertsSnapshot() || [];
 
-  // Mezclar y ordenar por fecha
-  const merged = [...localAlerts, ...serverAlerts];
+  const merged = [...localAlerts, ...serverAlerts, ...hrAlerts];
 
-  return merged.sort((a, b) => 
+  return merged.sort((a, b) =>
     new Date(b.timestamp) - new Date(a.timestamp)
   );
 }
+
 /* ============================================================
    === AUTO-INICIO =============================================
    ============================================================ */
