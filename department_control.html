@@ -1,6 +1,6 @@
 <!-- ============================================================
      === DEPARTMENT CONTROL CENTER — Qatar Luxury Edition ========
-     === Version: v2 | Date: 24 NOV 2025 =========================
+     === Version: v2 FIXED | Date: 24 NOV 2025 ===================
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -263,6 +263,7 @@ tr:nth-child(even) {
   top:10px;
   right:20px;
 }
+
 /* ============================================================
    === ACS GALACTIC LOAD LEVELER (Qatar Luxury) ================
    ============================================================ */
@@ -368,16 +369,15 @@ tr:nth-child(even) {
 
     <table id="deptTable">
       <thead>
-  <tr>
-    <th>Department</th>
-    <th>Staff</th>
-    <th>Load</th> <!-- ⭐ NUEVA COLUMNA GALÁCTICA -->
-    <th>Salary</th>
-    <th>Morale</th>
-    <th>Actions</th>
-  </tr>
-</thead>
-
+        <tr>
+          <th>Department</th>
+          <th>Staff</th>
+          <th>Load</th>
+          <th>Salary</th>
+          <th>Morale</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
 
       <tbody id="departmentRows"></tbody>
 
@@ -459,6 +459,7 @@ tr:nth-child(even) {
 
 <script>
 let activeDept = null;
+
 /* ============================================================
    === GALACTIC LOAD BAR BUILDER ==============================
    ============================================================ */
@@ -483,7 +484,11 @@ function ACS_HR_renderLoadBar(dep) {
     </div>
   `;
 }
-/* LOAD DEPARTMENTS */
+
+/* ============================================================
+   === LOAD DEPARTMENTS — FIXED VERSION ========================
+   ============================================================ */
+
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
   rows.innerHTML = "";
@@ -497,6 +502,7 @@ function loadDepartments() {
         <tr>
           <td>${dep.name}</td>
           <td class="staff">${dep.staff}</td>
+          <td>—</td>
           <td class="salary">$${dep.salary}</td>
           <td class="morale">${dep.morale}%</td>
           <td><em style="color:#aaa;">No actions available</em></td>
@@ -506,24 +512,17 @@ function loadDepartments() {
     }
 
     rows.innerHTML += `
-  <tr>
-    <td>${dep.name}</td>
-    <td class="staff">${dep.staff}</td>
+      <tr>
+        <td>${dep.name}</td>
+        <td class="staff">${dep.staff}</td>
 
-    <!-- ⭐ NUEVA COLUMNA LOAD GALÁCTICA -->
-    <td>${ACS_HR_renderLoadBar(dep)}</td>
+        <!-- ⭐ NUEVA COLUMNA LOAD GALÁCTICA -->
+        <td>${ACS_HR_renderLoadBar(dep)}</td>
 
-    <td class="salary">$${dep.salary}</td>
-    <td class="morale">${dep.morale}%</td>
-    <td>
-      <button class="btn btn-bonus" disabled title="Bonus system coming soon">💵</button>
-      <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
-      <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
-      <button class="btn btn-dismiss" onclick="openDismiss('${dep.id}')">❌</button>
-    </td>
-  </tr>
-`;
-          <button class="btn btn-bonus" disabled>💵</button>
+        <td class="salary">$${dep.salary}</td>
+        <td class="morale">${dep.morale}%</td>
+        <td>
+          <button class="btn btn-bonus" disabled title="Bonus system coming soon">💵</button>
           <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
           <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
           <button class="btn btn-dismiss" onclick="openDismiss('${dep.id}')">❌</button>
