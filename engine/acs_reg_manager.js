@@ -131,3 +131,29 @@ function removeRegistration(acId) {
 
   if (typeof refreshFleetTable === "function") refreshFleetTable();
 }
+/* ============================================================
+   === ACS FLEET NORMALIZER — ensures minimal structure ========
+   ============================================================ */
+
+function ACS_normalizeAircraft(ac) {
+  if (!ac) return ac;
+
+  // Campos obligatorios para mantenimiento
+  ac.hours = ac.hours || 0;
+  ac.cycles = ac.cycles || 0;
+  ac.condition = ac.condition || 100;
+
+  ac.lastC = ac.lastC || null;
+  ac.nextC = ac.nextC || null;
+
+  ac.lastD = ac.lastD || null;
+  ac.nextD = ac.nextD || null;
+
+  ac.base = ac.base || null;
+
+  ac.maintenanceType = ac.maintenanceType || null;
+  ac.alertCsent = ac.alertCsent || false;
+  ac.alertDsent = ac.alertDsent || false;
+
+  return ac;
+}
