@@ -82,7 +82,7 @@ function renderFleetTable() {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-      <td><span class="icon">✈️</span>${ac.registration}</td>
+      <td><span class="icon">✈️</span>${ac.registration || "UNASSIGNED"}</td>
       <td>${ac.model}</td>
       <td>${ac.status}</td>
       <td>${ac.hours}</td>
@@ -190,7 +190,7 @@ function openAircraftModal(reg) {
 
   // Fill modal
   document.getElementById("modalTitle").textContent = `${ac.model} — ${ac.registration}`;
-  document.getElementById("mReg").textContent = ac.registration;
+  document.getElementById("mReg").textContent = ac.registration || "UNASSIGNED";
   document.getElementById("mModel").textContent = ac.model;
   document.getElementById("mFamily").textContent = ac.family || "—";
   document.getElementById("mBase").textContent = ac.base || "—";
