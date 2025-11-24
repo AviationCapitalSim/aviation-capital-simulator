@@ -111,10 +111,14 @@ function ACS_addAlert(type, level, message) {
     timestamp: simTime
   };
 
-  alerts.unshift(alertObj);     // insertar al inicio
-  ACS_saveLocalAlerts(alerts);
+  alerts.unshift(alertObj);
+ACS_saveLocalAlerts(alerts);
 
-  console.log("⚡ Game Alert Generated:", alertObj);
+// NUEVO PASO 14
+ACS_pushToDashboard(alertObj);
+
+console.log("⚡ Game Alert Generated:", alertObj);
+
 }
 /* ============================================================
    === MASTER SCAN — carga alertas del servidor ===============
