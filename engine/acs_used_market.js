@@ -259,8 +259,10 @@ function leaseUsed(id) {
   cycles: ac.cycles,
   condition: ac.condition,
 
-  /* === Matrícula automática === */
-  registration: ACS_generateRegistration(),
+  /* === MATRÍCULA AUTOMÁTICA (con fallback seguro) === */
+  registration: (typeof ACS_generateRegistration === "function")
+    ? ACS_generateRegistration()
+    : "XX-" + Math.floor(Math.random()*900 + 100),
 
   /* === Mantenimientos iniciales — en usados son variables === */
   lastC: null,
