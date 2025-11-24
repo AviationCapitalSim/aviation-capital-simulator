@@ -151,19 +151,34 @@ function ACS_HR_applyBonus(deptID, percent) {
 
 /* ============================================================
    API: VISTA PARA TABLAS (department_control.html)
+   ------------------------------------------------------------
+   • Ahora incluye "required" para poder mostrar staff actual / requerido
+   • Por ahora, required = staff (placeholder), luego lo conectaremos a la flota
    ============================================================ */
 function ACS_HR_getDepartmentsView() {
-    const hr = ACS_HR_load();
-    return ACS_HR_DEPARTMENTS.map(d => ({
-        id: d.id,
-        name: d.name,
-        base: d.base,
-        staff: hr[d.id].staff,
-        morale: hr[d.id].morale,
-        salary: hr[d.id].salary,
-        payroll: hr[d.id].payroll
-    }));
+  const hr = ACS_HR_load();
+
+  return ACS_HR_DEPARTMENTS.map(d => {
+    const dep = hr[d.id];
+
+    // ⚠️ Placeholder: required = staff, más adelante lo calcularemos con la flota
+    const required = (typeof dep.required === "number")
+      ? dep.required
+      : dep.staff;
+
+    return {
+      id: d.id,
+      name: d.name,
+      base: d.base,
+      staff: dep.staff,
+      required: required,
+      morale: dep.morale,
+      salary: dep.salary,
+      payroll: dep.payroll
+    };
+  });
 }
+
 
 /* ============================================================
    === ACS HR AUTO-SALARY ENGINE v1.0 (DEPARTAMENTAL + SETTINGS)
