@@ -263,7 +263,70 @@ tr:nth-child(even) {
   top:10px;
   right:20px;
 }
+/* ============================================================
+   === ACS GALACTIC LOAD LEVELER (Qatar Luxury) ================
+   ============================================================ */
 
+.load-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.load-bar {
+  width: 140px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 200, 60, 0.25);
+  position: relative;
+  box-shadow: 0 0 10px rgba(255,179,0,0.15) inset;
+}
+
+.load-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 10px;
+  transition: width 0.5s ease-out;
+  background: linear-gradient(90deg,
+    rgba(0,255,140,1),
+    rgba(0,200,100,1)
+  );
+  position: relative;
+}
+
+/* Galactic pulse line */
+.load-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40px;
+  width: 40px;
+  height: 100%;
+  background: rgba(255,255,255,0.25);
+  filter: blur(4px);
+  animation: loadPulse 3.6s infinite ease-in-out;
+}
+
+@keyframes loadPulse {
+  0%   { left: -40px; opacity: 0; }
+  35%  { opacity: 0.35; }
+  50%  { left: 140px; opacity: 0.25; }
+  100% { left: 140px; opacity: 0; }
+}
+
+/* COLORS by percentage */
+.load-critical  { background: linear-gradient(90deg,#ff3b3b,#ff7a7a); }
+.load-low       { background: linear-gradient(90deg,#ff8c3b,#ffbd7a); }
+.load-medium    { background: linear-gradient(90deg,#ffc93b,#ffe37a); }
+.load-high      { background: linear-gradient(90deg,#3bff9d,#6effc4); }
+
+.load-number {
+  font-size: 0.85rem;
+  color: #dbe4ff;
+  font-weight: 600;
+}
 </style>
 </head>
 
@@ -305,14 +368,16 @@ tr:nth-child(even) {
 
     <table id="deptTable">
       <thead>
-        <tr>
-          <th>Department</th>
-          <th>Staff</th>
-          <th>Salary</th>
-          <th>Morale</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+  <tr>
+    <th>Department</th>
+    <th>Staff</th>
+    <th>Load</th> <!-- ⭐ NUEVA COLUMNA GALÁCTICA -->
+    <th>Salary</th>
+    <th>Morale</th>
+    <th>Actions</th>
+  </tr>
+</thead>
+
 
       <tbody id="departmentRows"></tbody>
 
@@ -394,7 +459,30 @@ tr:nth-child(even) {
 
 <script>
 let activeDept = null;
+/* ============================================================
+   === GALACTIC LOAD BAR BUILDER ==============================
+   ============================================================ */
+function ACS_HR_renderLoadBar(dep) {
+  const staff = dep.staff;
+  const required = dep.required || dep.min || 0;
 
+  let pct = required > 0 ? (staff / required) * 100 : 100;
+  if (pct > 100) pct = 100;
+
+  let cls = "load-high";
+  if (pct < 40) cls = "load-critical";
+  else if (pct < 60) cls = "load-low";
+  else if (pct < 80) cls = "load-medium";
+
+  return `
+    <div class="load-bar-wrapper">
+      <div class="load-bar">
+        <div class="load-fill ${cls}" style="width:${pct}%"></div>
+      </div>
+      <span class="load-number">${staff} / ${required}</span>
+    </div>
+  `;
+}
 /* LOAD DEPARTMENTS */
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
@@ -418,12 +506,23 @@ function loadDepartments() {
     }
 
     rows.innerHTML += `
-      <tr>
-        <td>${dep.name}</td>
-        <td class="staff">${dep.staff}</td>
-        <td class="salary">$${dep.salary}</td>
-        <td class="morale">${dep.morale}%</td>
-        <td>
+  <tr>
+    <td>${dep.name}</td>
+    <td class="staff">${dep.staff}</td>
+
+    <!-- ⭐ NUEVA COLUMNA LOAD GALÁCTICA -->
+    <td>${ACS_HR_renderLoadBar(dep)}</td>
+
+    <td class="salary">$${dep.salary}</td>
+    <td class="morale">${dep.morale}%</td>
+    <td>
+      <button class="btn btn-bonus" disabled title="Bonus system coming soon">💵</button>
+      <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
+      <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
+      <button class="btn btn-dismiss" onclick="openDismiss('${dep.id}')">❌</button>
+    </td>
+  </tr>
+`;
           <button class="btn btn-bonus" disabled>💵</button>
           <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
           <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
