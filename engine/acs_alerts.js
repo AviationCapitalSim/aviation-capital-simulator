@@ -60,7 +60,62 @@ async function ACS_loadAlerts(airline_id) {
     window.ACS_ALERTS = [];
   }
 }
+/* ============================================================
+   === ACS LOCAL GAME ALERT STORAGE ===========================
+   ============================================================ */
 
+// Contenedor oficial de alertas generadas por el juego
+if (!localStorage.getItem("ACS_GameAlerts")) {
+  localStorage.setItem("ACS_GameAlerts", JSON.stringify([]));
+}
+
+// Guardar alerta en almacenamiento local
+function ACS_saveLocalAlerts(list) {
+  localStorage.setItem("ACS_GameAlerts", JSON.stringify(list));
+}
+
+// Cargar alertas locales
+function ACS_getLocalAlerts() {
+  try {
+    return JSON.parse(localStorage.getItem("ACS_GameAlerts")) || [];
+  } catch {
+    return [];
+  }
+}
+
+/* ============================================================
+   === MASTER FUNCTION: ADD ALERT (GAME GENERATED) ============
+   ============================================================ */
+
+function ACS_addAlert(type, level, message) {
+
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  if (!activeUser || !activeUser.airline_id) {
+    console.warn("⚠️ Cannot generate alert — no active airline.");
+    return;
+  }
+
+  const alerts = ACS_getLocalAlerts();
+
+  const simTime = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+    ? ACS_TIME.currentTime.toISOString()
+    : new Date().toISOString(); // fallback
+
+  const alertObj = {
+    alert_id: "GA-" + Date.now(),
+    airline_id: activeUser.airline_id,
+    type,
+    level,
+    message,
+    timestamp: simTime
+  };
+
+  alerts.unshift(alertObj);     // insertar al inicio
+  ACS_saveLocalAlerts(alerts);
+
+  console.log("⚡ Game Alert Generated:", alertObj);
+}
 /* ============================================================
    === MASTER SCAN — carga alertas del servidor ===============
    ============================================================ */
@@ -79,7 +134,21 @@ async function ACS_runAlertScan() {
 
   console.log("🎯 Alert Scan Completed (GAME TIME):", window.ACS_ALERTS);
 }
+/* ============================================================
+   === MERGE REAL + LOCAL GAME ALERTS =========================
+   ============================================================ */
 
+function ACS_getAllAlertsMerged() {
+  const serverAlerts = window.ACS_ALERTS || [];
+  const localAlerts  = ACS_getLocalAlerts() || [];
+
+  // Mezclar y ordenar por fecha
+  const merged = [...localAlerts, ...serverAlerts];
+
+  return merged.sort((a, b) => 
+    new Date(b.timestamp) - new Date(a.timestamp)
+  );
+}
 /* ============================================================
    === AUTO-INICIO =============================================
    ============================================================ */
