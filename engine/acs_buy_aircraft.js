@@ -507,20 +507,32 @@ function checkDeliveries() {
   delivered: d.toISOString(),
   image: entry.image,
 
-  /* === Matrícula generada automáticamente === */
-  registration: ACS_generateRegistration(),
-
-  /* === NEW Aircraft: salen de fábrica === */
+  status: "Active",
   hours: 0,
   cycles: 0,
   condition: 100,
+  registration: ACS_generateRegistration(),
 
-  /* === Próximos mantenimientos === */
   lastC: null,
   lastD: null,
   nextC: null,
   nextD: null
 });
+
+/* === PASO 12 — Calcular próximos mantenimientos C y D === */
+const baseDeliveryDate = new Date(d);
+
+// C-Check → 12 meses
+const nextCdate = new Date(baseDeliveryDate);
+nextCdate.setUTCFullYear(nextCdate.getUTCFullYear() + 1);
+
+// D-Check → 6–8 años
+const yearsToD = 6 + Math.floor(Math.random() * 3);
+const nextDdate = new Date(baseDeliveryDate);
+nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + yearsToD);
+
+myFleet[myFleet.length - 1].nextC = nextCdate.toISOString();
+myFleet[myFleet.length - 1].nextD = nextDdate.toISOString();
          
       }
       if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
