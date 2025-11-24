@@ -491,13 +491,15 @@ function checkDeliveries() {
     if (now >= d) {
       for (let i = 0; i < entry.qty; i++) {
         myFleet.push({
-          id: "AC-" + Date.now() + "-" + i,
-          model: entry.model,
-          manufacturer: entry.manufacturer,
-          year: now.getUTCFullYear(),
-          delivered: d.toISOString(),
-          image: entry.image
-        });
+        id: "AC-" + Date.now() + "-" + i,
+       model: entry.model,
+       manufacturer: entry.manufacturer,
+      year: now.getUTCFullYear(),
+      delivered: d.toISOString(),
+      image: entry.image,
+      registration: ACS_generateRegistration()   // 🔥 MATRÍCULA NUEVA
+    });
+         
       }
       if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
       ACS_SLOTS[entry.manufacturer] = Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
