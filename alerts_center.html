@@ -299,28 +299,39 @@ body {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // 1) Ejecutar el escaneo REAL y esperar a que termine
+  // 1) Escaneo real de alertas del servidor
   if (typeof ACS_runAlertScan === "function") {
     console.log("⏳ Waiting alert scan...");
-    await ACS_runAlertScan();   // 🔥 ESTA LÍNEA ES LA CLAVE
-    console.log("✅ Alert scan completed:", window.ACS_ALERTS);
+    await ACS_runAlertScan();
+    console.log("✅ Alert scan completed");
   }
 
   const container = document.getElementById("alertsContainer");
   const buttons = document.querySelectorAll(".filter-btn");
 
-  if (!container || !window.ACS_ALERTS) return;
+  if (!container) return;
 
-  // Render principal
+  // === NUEVO: obtener TODAS las alertas (server + local + HR) ===
+  function getAllAlerts() {
+    try {
+      return ACS_getAllAlertsMerged();
+    } catch (e) {
+      console.warn("⚠️ Cannot merge alerts:", e);
+      return [];
+    }
+  }
+
+  // === Render principal ===
   function renderAlerts(filter = "all") {
 
     container.innerHTML = "";
 
-    let alerts = [...window.ACS_ALERTS];
+    // 🔥 AQUÍ SE USA LA FUNCIÓN QUE INCLUYE HR
+    let alerts = getAllAlerts();
 
     // Filtro por tipo
     if (filter !== "all") {
-      alerts = alerts.filter(a => a.type.toLowerCase() === filter);
+      alerts = alerts.filter(a => a.type?.toLowerCase() === filter);
     }
 
     // Si no hay alertas
@@ -346,7 +357,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       card.innerHTML = `
         <h3 style="color:${color}; text-shadow:0 0 6px ${color}88;">
-          ${alert.type.toUpperCase()}
+          ${alert.type?.toUpperCase() || "ALERT"}
         </h3>
 
         <p style="font-size:1rem; margin-bottom:0.6rem;">
@@ -365,21 +376,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   // === Primera carga REAL ===
   renderAlerts("all");
 
-  // Marcar el botón ALL activo
+  // Activar filtros
   const allBtn = [...buttons].find(b => b.dataset.filter === "all");
   if (allBtn) allBtn.classList.add("active");
 
-  // Eventos de filtros
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       buttons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
+
       const filter = btn.dataset.filter;
       renderAlerts(filter);
     });
   });
 });
-
 </script>
 
 <script>
