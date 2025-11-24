@@ -240,8 +240,30 @@ function buyUsed(id) {
    7) LEASE USADO
    ============================================================ */
 function leaseUsed(id) {
-  alert("📘 Leasing engine coming next (step B).");
+  const list = generateUsedMarket();
+  const ac = list.find(x => x.id === id);
+  if (!ac) return alert("❌ Aircraft not found.");
+
+  let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  myFleet.push({
+    id: "AC-" + Date.now(),
+    model: ac.model,
+    manufacturer: ac.manufacturer,
+    delivered: new Date().toISOString(),
+    image: ac.image,
+    status: "Leased",
+    hours: ac.hours,
+    cycles: ac.cycles,
+    condition: ac.condition,
+    registration: ACS_generateRegistration()   // 🔥 matrícula automática
+  });
+
+  localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
+
+  alert("📘 Aircraft leased successfully!");
 }
+
 
 /* ============================================================
    8) MODAL
