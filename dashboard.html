@@ -359,17 +359,15 @@ body {
   </div>
 
   <!-- Operations -->
-  <div class="dashboard-grid row-operations">
+    <div class="dashboard-grid row-operations">
 
     <div class="panel">
-    <h3>⚠️ Operational Alerts</h3>
+    <h3 id="dashboardAlertTitle">⚠️ Operational Alerts</h3>
+    <ul class="alert-list" id="alertsList">
+    </ul>
+    <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
+  </div>
 
-    <ul class="alert-list" id="alertsList"></ul>
-
-    <button class="acs-btn" onclick="window.location.href='alerts_center.html'">
-    Open Center
-    </button>
-    </div>
 
     <div class="panel">
       <h3>📰 Global News & Events</h3>
@@ -766,6 +764,74 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Mostrar solo las primeras 3 alertas para vista rápida
+    alerts.slice(0, 3).forEach(a => {
+      const li = document.createElement("li");
+      li.style = "margin-bottom:6px; color:#dfe8ff; list-style:none;";
+
+      li.innerHTML = `
+        ${icon(a.level)} 
+        <strong>${a.type.toUpperCase()}</strong> — ${a.message}
+      `;
+
+      list.appendChild(li);
+    });
+
+    console.log("Dashboard alerts loaded:", alerts);
+  }
+});
+</script>
+  
+ <script>
+   
+// ============================================================
+// === DASHBOARD — Operational Alerts Preview + Counter ========
+// ============================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Esperar a que ACS_runAlertScan termine
+  function waitForAlerts() {
+    if (!window.ACS_ALERTS) {
+      console.log("Dashboard waiting for alert scan...");
+      return setTimeout(waitForAlerts, 150);
+    }
+    renderDashboardAlerts(window.ACS_ALERTS);
+  }
+
+  waitForAlerts();
+
+  function renderDashboardAlerts(alerts) {
+    const list = document.getElementById("alertsList");
+    const title = document.getElementById("dashboardAlertTitle");
+
+    if (!list || !title) return;
+
+    list.innerHTML = "";
+
+    // === CONTADOR EN EL TÍTULO ===
+    const total = alerts?.length || 0;
+    title.innerHTML = `⚠️ Operational Alerts${total > 0 ? " (" + total + ")" : ""}`;
+
+    // === SI NO HAY ALERTAS ===
+    if (!alerts || alerts.length === 0) {
+      list.innerHTML = `
+        <li style="color:#cbd6ff; padding:6px 0;">
+          No active alerts.
+        </li>`;
+      return;
+    }
+
+    // === ÍCONOS POR NIVEL ===
+    function icon(level) {
+      return (
+        level === "critical" ? "🛑" :
+        level === "high"     ? "⚠️" :
+        level === "medium"   ? "🔔" :
+                               "ℹ️"
+      );
+    }
+
+    // === MOSTRAR 3 PRIMERAS ===
     alerts.slice(0, 3).forEach(a => {
       const li = document.createElement("li");
       li.style = "margin-bottom:6px; color:#dfe8ff; list-style:none;";
