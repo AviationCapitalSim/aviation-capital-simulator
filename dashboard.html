@@ -848,6 +848,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
-  
+<script>
+/* ============================================================
+   === DASHBOARD — ALERT CENTER RENDER ENGINE ==================
+   ============================================================ */
+
+function ACS_renderDashboardAlerts() {
+  const container = document.getElementById("alertsContainer");
+  if (!container) return;
+
+  // Cargar alertas mezcladas (local + servidor + game-time)
+  let all = [];
+  try {
+    all = ACS_getAllAlertsMerged().slice(0, 50); // Máx 50 visibles
+  } catch (e) {
+    console.warn("⚠️ Could not load alerts:", e);
+    container.innerHTML = "<p style='color:#aaa;text-align:center;'>No alerts available.</p>";
+    return;
+  }
+
+  container.innerHTML = "";
+
+  if (all.length === 0) {
+    container.innerHTML = `
+      <p style="color:#aaa; text-align:center; font-style:italic;">
+        No alerts yet. Your systems are running smoothly.
+      </p>`;
+    return;
+  }
+
+  // Crear tarjetas
+  all.forEach(alert => {
+    const div = document.createElement("div");
+    div.className = "alert-card";
+
+    // Colores según nivel
+    let border = "#FFB300"; // default medium
+    if (alert.level === "high") border = "#ff4d4d";
+    if (alert.level === "low") border = "#44d9ff";
+
+    div.style.borderLeft = `4px solid ${border}`;
+
+    const t = new Date(alert.timestamp);
+    const ts = t.toUTCString().substring(5, 22);
+
+    div.innerHTML = `
+      <div class="alert-type">${alert.type.toUpperCase()}</div>
+      <div class="alert-msg">${alert.message}</div>
+      <div class="alert-time">${ts}</div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+// AUTO-RENDER cada vez que el Dashboard carga
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(ACS_renderDashboardAlerts, 400);
+});
+</script>
+
 </body>
 </html>
