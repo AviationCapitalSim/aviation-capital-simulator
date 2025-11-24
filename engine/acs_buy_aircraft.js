@@ -444,10 +444,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       pending.push(entry);
-      localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+      
+      /* === ALERTA: Nueva orden creada === */
+     ACS_addAlert(
+     "order",
+     "low",
+     `New aircraft order created: ${entry.model} x${entry.qty}`
+     );
 
-      alert("✅ Order successfully created!");
-      closeBuyModal();
+     localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+
+     alert("✅ Order successfully created!");
+     closeBuyModal();
+      
     });
   }
 
