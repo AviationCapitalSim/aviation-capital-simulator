@@ -378,7 +378,53 @@ function checkMaintenanceCompletion() {
     renderFleetTable();
   }
 }
+/* ============================================================
+   === AUTOMATIC MAINTENANCE ALERT GENERATOR ==================
+   ============================================================ */
 
+function checkMaintenanceAlerts() {
+  let now = getSimTime();
+
+  fleet.forEach(ac => {
+
+    // --- ALERTA C-CHECK PRÓXIMO ---
+    if (ac.nextC) {
+      const nextC = new Date(ac.nextC);
+
+      const diff = nextC - now;
+      const days = diff / (1000 * 60 * 60 * 24);
+
+      if (days <= 30 && !ac.alertCsent) {
+        ACS_addAlert(
+          "maintenance",
+          "medium",
+          `C-Check approaching for ${ac.registration} (${Math.round(days)} days left)`
+        );
+        ac.alertCsent = true;
+        saveFleet();
+      }
+    }
+
+    // --- ALERTA D-CHECK PRÓXIMO ---
+    if (ac.nextD) {
+      const nextD = new Date(ac.nextD);
+
+      const diff = nextD - now;
+      const days = diff / (1000 * 60 * 60 * 24);
+
+      if (days <= 180 && !ac.alertDsent) {
+        ACS_addAlert(
+          "maintenance",
+          "high",
+          `D-Check approaching for ${ac.registration} (${Math.round(days)} days left)`
+        );
+        ac.alertDsent = true;
+        saveFleet();
+      }
+    }
+
+  });
+}
 // ============================================================
 // === INTEGRACIÓN FINANCE =====================================
 // ============================================================
@@ -455,5 +501,5 @@ if (typeof registerTimeListener === "function") {
     updatePendingDeliveries();
     checkMaintenanceCompletion();
     renderFleetTable();
-  });
+    checkMaintenanceAlerts();  });
 }
