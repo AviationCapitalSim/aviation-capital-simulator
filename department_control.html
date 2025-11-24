@@ -1,117 +1,280 @@
+<!-- ============================================================
+     === DEPARTMENT CONTROL CENTER — Qatar Luxury Edition ========
+     === Version: v2 | Date: 24 NOV 2025 =========================
+     ============================================================ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Department Control Center - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
-  <style>
-    /* === DEPARTMENT CONTROL CENTER (ACS) === */
-    body { margin:0; background:#081530; color:white; font-family:"Segoe UI",sans-serif; }
-    h2 { text-align:center; color:#FFB300; margin-top:6rem; margin-bottom:0.4rem; }
-    p.sub { text-align:center; color:#ccc; margin-bottom:2rem; }
 
-    .control-panel {
-      max-width:1150px; margin:2rem auto; background:#0b1c3f;
-      border-radius:12px; padding:1.5rem 2rem;
-      border:1px solid rgba(255,179,0,0.25);
-      box-shadow:0 0 15px rgba(0,0,0,0.4);
-    }
+  <!-- ======== ACS Favicons ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
 
-    table { width:100%; border-collapse:collapse; margin-top:1rem; }
-    th, td { padding:0.7rem; text-align:left; }
-    th {
-      background:#102040; color:#FFB300;
-      border-bottom:2px solid #FFB300;
-    }
-    tr { border-bottom:1px solid #FFB300; }
+<style>
+/* ============================================================
+     === GLOBAL VISUALS — Qatar Luxury ===========================
+   ============================================================ */
 
-    .salary { color:#ff6464; font-weight:600; }
-    .staff { color:#00d17a; font-weight:600; }
-    .morale { color:#00d17a; font-weight:600; }
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
 
-    .btn {
-      border:none; border-radius:6px; padding:6px 10px; margin-left:4px;
-      font-weight:600; cursor:pointer; transition:background 0.2s ease;
-    }
-    .btn-bonus { background:#00a86b; color:#fff; }
-    .btn-bonus:hover { background:#007d4e; }
+/* ============================================================
+     === HEADER (Exact Copy from Dashboard) =====================
+   ============================================================ */
 
-    .btn-hire { background:#007bff; color:#fff; }
-    .btn-hire:hover { background:#005fcc; }
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
 
-    .btn-adjust { background:#ffb300; color:#000; }
-    .btn-adjust:hover { background:#e4a000; }
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    .btn-dismiss { background:#000; color:#fff; }
-    .btn-dismiss:hover { background:#222; }
+.acs-left img {
+  height: 46px;
+}
 
-    /* BONUS disabled but same visual design */
-    .btn-bonus[disabled] {
-      opacity:0.45;
-      cursor:not-allowed;
-    }
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
 
-    tfoot td {
-      border-top:2px solid #FFB300;
-      font-weight:bold; text-align:right; padding-top:1rem;
-      color:#FFB300;
-      text-shadow:0 0 8px rgba(255,179,0,0.4);
-      font-size:1.1rem;
-      letter-spacing:0.5px;
-    }
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
 
-    /* MODALS */
-    .acs-modal {
-      display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(0,0,0,0.7); align-items:center; justify-content:center; z-index:2000;
-    }
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff; 
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
 
-    .acs-modal-content {
-      background:#0b1c3f; border:1px solid #FFB300; border-radius:12px;
-      padding:1.5rem 2rem; width:400px; text-align:center;
-      box-shadow:0 0 15px rgba(255,179,0,0.4);
-      position:relative; animation:fadeIn 0.3s ease;
-    }
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffb300;
+  text-shadow: 0 0 6px rgba(255,179,0,0.6);
+}
 
-    @keyframes fadeIn {
-      from { opacity:0; transform:translateY(-10px); }
-      to { opacity:1; transform:translateY(0); }
-    }
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+}
 
-    .close-modal {
-      background:none; border:none; color:#aaa; font-size:1.2rem;
-      cursor:pointer; position:absolute; top:10px; right:20px;
-    }
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    input[type="range"], input[type="number"] {
-      width:80%; margin:1rem 0; padding:0.3rem;
-      border-radius:6px; border:1px solid #FFB300;
-      background:#102040; color:white;
-    }
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
 
-    .modal-btn {
-      background:#00a86b; color:#fff; border:none;
-      border-radius:6px; padding:8px 16px; font-weight:600;
-      cursor:pointer; margin-top:1rem; transition:background 0.2s ease;
-    }
-    .modal-btn:hover { background:#007d4e; }
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
 
-    /* Reloj cockpit */
-    .acs-clock-header{
-      font-family:'Orbitron','Consolas',monospace;color:#00ff80;font-weight:bold;
-      background:rgba(0,255,128,0.08);padding:0.3rem 0.8rem;border-radius:6px;
-      font-size:0.9rem;margin-left:1rem;
-    }
-  </style>
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* ============================================================
+     === MAIN LAYOUT ===========================================
+   ============================================================ */
+
+.acs-main {
+  padding: 110px 2rem 70px;
+  text-align: center;
+}
+
+/* Título estilo Dashboard */
+.acs-title {
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: #ffca3a;
+  text-shadow: 0 0 12px rgba(255,190,60,0.55);
+  letter-spacing: 0.6px;
+  margin-bottom: 0.2rem;
+}
+
+.acs-sub {
+  margin-top: -0.2rem;
+  color: #cbd6ff;
+  font-size: 1rem;
+}
+
+/* ============================================================
+     === PREMIUM PANEL (80% width) =============================
+   ============================================================ */
+
+.control-panel {
+  width: 80%;
+  margin: 2rem auto;
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 2rem;
+  border-radius: 22px;
+  border: 1px solid rgba(255,179,0,0.15);
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+}
+
+/* ============================================================
+     === TABLE — Qatar Luxury Dark Premium =====================
+   ============================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th {
+  background: #102040;
+  color: #ffb300;
+  padding: 0.9rem;
+  border-bottom: 2px solid #ffb300;
+  font-size: 1rem;
+}
+
+td {
+  padding: 0.8rem;
+  font-size: 0.95rem;
+  color: #dbe4ff;
+  border-bottom: 1px solid rgba(255,179,0,0.15);
+}
+
+tr:nth-child(even) {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Staff, Salary, Morale colors */
+.staff { color: #00e28a; font-weight: 600; }
+.salary { color: #ff6464; font-weight: 600; }
+.morale { color: #8ae2ff; font-weight: 600; }
+
+/* Action buttons */
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 4px;
+  transition: 0.2s;
+}
+
+.btn-bonus { background:#00a86b; color:white; opacity:0.45; cursor:not-allowed; }
+.btn-hire { background:#007bff; color:white; }
+.btn-adjust { background:#ffb300; color:black; }
+.btn-dismiss { background:#000; color:white; }
+
+/* Total Payroll */
+#totalPayroll {
+  padding-top: 1.2rem;
+  font-weight: bold;
+  text-align: right;
+  font-size: 1.1rem;
+  color: #ffca3a;
+  text-shadow: 0 0 10px rgba(255,200,60,0.4);
+}
+
+/* ============================================================
+     === MODALS (sin cambios de funcionalidad) =================
+   ============================================================ */
+
+.acs-modal {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.7);
+  align-items:center; justify-content:center;
+  z-index:2000;
+}
+
+.acs-modal-content {
+  background:#0b1c3f;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  padding:1.5rem 2rem;
+  width:400px;
+  text-align:center;
+  box-shadow: 0 0 15px rgba(255,179,0,0.4);
+}
+
+/* Close button */
+.close-modal {
+  background:none;
+  border:none;
+  color:#aaa;
+  font-size:1.2rem;
+  cursor:pointer;
+  position:absolute;
+  top:10px;
+  right:20px;
+}
+
+</style>
 </head>
 
 <body>
 
-<!-- HEADER -->
+<!-- ============================================================
+     === HEADER ==================================================
+     ============================================================ -->
 <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
@@ -122,22 +285,24 @@
     <a href="routes.html">Routes</a>
     <a href="hr.html" class="active">HR</a>
     <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
   </nav>
 
-  <div class="acs-auth">
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+  <div class="acs-right">
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 2025</div>
   </div>
-
-  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
 </header>
 
-<!-- MAIN -->
+<!-- ============================================================
+     === MAIN ====================================================
+     ============================================================ -->
 <main class="acs-main">
-  <h2>🏢 Department Control Center</h2>
-  <p class="sub">Manage all departments, staff, salaries, morale and workforce actions.</p>
+
+  <h2 class="acs-title">🏢 Department Control Center</h2>
+  <p class="acs-sub">Manage all departments, staff, salaries and morale.</p>
 
   <section class="control-panel">
+
     <table id="deptTable">
       <thead>
         <tr>
@@ -158,10 +323,16 @@
       </tfoot>
 
     </table>
+
   </section>
+
 </main>
 
-<!-- MODALS ======================================================= -->
+<!-- ============================================================
+     === MODALS (SIN CAMBIOS) ===================================
+     ============================================================ -->
+
+<!-- BONUS -->
 <div class="acs-modal" id="bonusModal">
   <div class="acs-modal-content">
     <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
@@ -174,6 +345,7 @@
   </div>
 </div>
 
+<!-- HIRE -->
 <div class="acs-modal" id="hireModal">
   <div class="acs-modal-content">
     <button class="close-modal" onclick="closeModal('hireModal')">✖</button>
@@ -185,6 +357,7 @@
   </div>
 </div>
 
+<!-- ADJUST SALARY -->
 <div class="acs-modal" id="salaryModal">
   <div class="acs-modal-content">
     <button class="close-modal" onclick="closeModal('salaryModal')">✖</button>
@@ -196,6 +369,7 @@
   </div>
 </div>
 
+<!-- DISMISS -->
 <div class="acs-modal" id="dismissModal">
   <div class="acs-modal-content">
     <button class="close-modal" onclick="closeModal('dismissModal')">✖</button>
@@ -207,10 +381,13 @@
 </div>
 
 <footer class="acs-footer">
-  <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
 
-<!-- SCRIPTS ======================================================= -->
+<!-- ============================================================
+     === SCRIPTS — SIN CAMBIOS (FUNCIONALIDAD ORIGINAL) =========
+     ============================================================ -->
+
 <script src="engine/acs_finance.js"></script>
 <script src="engine/acs_hr_engine.js"></script>
 <script src="time_engine.js"></script>
@@ -218,9 +395,7 @@
 <script>
 let activeDept = null;
 
-/* ============================================================
-   LOAD DEPARTMENTS INTO THE TABLE
-   ============================================================ */
+/* LOAD DEPARTMENTS */
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
   rows.innerHTML = "";
@@ -229,7 +404,6 @@ function loadDepartments() {
 
   depts.forEach(dep => {
 
-    /* CEO — sin acciones */
     if (dep.id === "ceo") {
       rows.innerHTML += `
         <tr>
@@ -243,7 +417,6 @@ function loadDepartments() {
       return;
     }
 
-    /* Otros departamentos → bonus deshabilitado */
     rows.innerHTML += `
       <tr>
         <td>${dep.name}</td>
@@ -251,7 +424,7 @@ function loadDepartments() {
         <td class="salary">$${dep.salary}</td>
         <td class="morale">${dep.morale}%</td>
         <td>
-          <button class="btn btn-bonus" disabled title="Bonus system coming soon">💵</button>
+          <button class="btn btn-bonus" disabled>💵</button>
           <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
           <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
           <button class="btn btn-dismiss" onclick="openDismiss('${dep.id}')">❌</button>
@@ -263,19 +436,11 @@ function loadDepartments() {
   updatePayroll();
 }
 
-/* ============================================================
-   UPDATE PAYROLL TOTAL
-   ============================================================ */
 function updatePayroll() {
   const total = ACS_HR_getTotalPayroll();
   document.getElementById("totalPayroll").textContent =
     "Total Monthly Payroll: $" + total.toLocaleString();
 }
-
-/* ============================================================
-   OPEN MODALS
-   ============================================================ */
-function openBonus(_) { /* deshabilitado */ return; }
 
 function openHire(id) {
   activeDept = id;
@@ -307,9 +472,6 @@ function closeModal(id) {
   document.getElementById(id).style.display = "none";
 }
 
-/* ============================================================
-   ACTIONS
-   ============================================================ */
 function confirmHire() {
   const count = parseInt(document.getElementById("hireCount").value);
   ACS_HR_hire(activeDept, count);
@@ -331,17 +493,11 @@ function confirmSalary() {
   loadDepartments();
 }
 
-/* ============================================================
-   LOGOUT
-   ============================================================ */
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
 
-/* ============================================================
-   INIT
-   ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
   loadDepartments();
   if (typeof registerTimeListener === "function") {
