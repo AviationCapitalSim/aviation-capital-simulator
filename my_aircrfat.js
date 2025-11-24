@@ -366,8 +366,14 @@ function checkMaintenanceCompletion() {
         if (ac.maintenanceType === "D") {
           ac.condition = Math.min(100, ac.condition + 30);
         }
-
-        ac.maintenanceType = null;
+      /* === ALERTA: Mantenimiento completado === */
+       ACS_addAlert(
+      "maintenance",
+      "low",
+      `Maintenance completed: ${ac.registration || ac.model}`
+     );
+        
+         ac.maintenanceType = null;
         changed = true;
       }
     }
