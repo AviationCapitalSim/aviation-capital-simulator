@@ -1,7 +1,8 @@
 <!-- ============================================================
      === ACS USED AIRCRAFT MARKET — Qatar Luxury Edition ========
-     === Version: v2 | Date: 25 NOV 2025 =========================
+     === Version: FINAL v3 | Date: 25 NOV 2025 ===================
      ============================================================ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,8 +21,9 @@
   <link rel="manifest" href="manifest.json">
 
 <style>
+
 /* ============================================================
-     === BASE PAGE SETTINGS (Qatar Luxury) =====================
+     === BASE PAGE SETTINGS ====================================
    ============================================================ */
 
 body {
@@ -32,7 +34,7 @@ body {
 }
 
 /* ============================================================
-     === GLOBAL HEADER — EXACT COPY BUY NEW ====================
+     === QATAR LUXURY HEADER (COPY FROM BUY NEW) ================
    ============================================================ */
 
 .acs-header {
@@ -108,7 +110,25 @@ body {
   gap: 1rem;
 }
 
-/* LOGOUT BUTTON */
+/* SUPPORT */
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+}
+
+/* LOGOUT */
 .logout-btn {
   padding: 0.45rem 1.1rem;
   border: 1px solid #ffb300;
@@ -122,27 +142,6 @@ body {
 .logout-btn:hover {
   background: #ffb300;
   color: #0c1f3c;
-}
-
-/* SUPPORT BUTTON */
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
-  transition: 0.25s ease;
-}
-
-.support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-  color: #dfe9ff;
 }
 
 /* CLOCK */
@@ -178,7 +177,7 @@ body {
 }
 
 /* ============================================================
-     === FILTER BAR — SAME AS BUY NEW ==========================
+     === FILTER BAR — BUY NEW STYLE ============================
    ============================================================ */
 
 .filter-bar {
@@ -209,91 +208,110 @@ body {
 }
 
 /* ============================================================
-     === USED MARKET PANELS — QATAR LUXURY =====================
+     === THE REAL BUY NEW CARD STYLE — APPLIED HERE ============
    ============================================================ */
 
 .used-grid {
   display: grid;
-  gap: 1.6rem;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.4rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   width: 92%;
   margin: 0 auto;
 }
 
-.used-panel {
-  background: #0f1b3d;
-  border-radius: 16px;
-  padding: 1.3rem;
-  border: 1px solid rgba(255,179,0,0.35);
-  box-shadow: 0 0 15px rgba(0,0,0,0.4);
-  transition: 0.25s ease;
+/* ELIMINAR cualquier rastro del sistema viejo */
+.used-panel { display: none !important; }
+
+/* TARJETA QATAR LUXURY — IGUAL A BUY NEW */
+.used-card {
+  background: #0f1b3d !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  box-shadow: 0 0 12px rgba(0,0,0,.4) !important;
+  border: 1px solid #ffb30055 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
-.used-panel:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
-  border: 1px solid rgba(255,179,0,0.55);
+.used-card img {
+  width: 100% !important;
+  height: 150px !important;
+  object-fit: cover !important;
+  border-radius: 10px !important;
+  background: #102040 !important;
 }
 
-/* IMAGE */
-.used-panel img {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  background:#102040;
-  border-radius: 12px;
-  margin-bottom: 0.8rem;
+.used-card h3 {
+  margin: 0.8rem 0 0.4rem;
+  font-size: 1.1rem;
+  color: #FFB300;
 }
 
-/* MODEL TITLE — Qatar Luxury */
-.used-panel h3 {
-  font-size: 1.15rem;
-  color: #ffb300;
-  margin-bottom: 0.6rem;
-  text-shadow: 0 0 8px rgba(255,179,0,0.45);
-}
-
-/* INFO LINES */
-.used-panel p {
+/* LÍNEAS DE INFO */
+.used-card p {
+  font-size: 0.85rem;
+  color: #ccc;
   margin: 0.2rem 0;
-  color: #dbe4ff;
-  font-size: 0.9rem;
 }
 
-/* BUTTONS — Qatar Luxury */
-.acs-btn {
-  margin-top: 1rem;
+/* BOTONES QATAR LUXURY */
+.acs-btn,
+.ac-buy,
+.ac-lease,
+.ac-info {
+  margin-top: 0.5rem;
   width: 100%;
-  background: #00c851;
   border: none;
-  padding: 0.7rem 1.1rem;
+  padding: 0.65rem 1rem;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  color: white;
   transition: 0.25s;
 }
 
-.acs-btn:hover {
+.ac-buy {
+  background: #00c851;
+  color: white;
+}
+
+.ac-buy:hover {
   background: #00e060;
 }
 
-.acs-btn-info {
-  margin-top: 0.6rem;
+.ac-lease {
+  background: #008cff;
+  color: white;
+}
+
+.ac-lease:hover {
+  background: #4dabff;
+}
+
+.ac-info {
   background: #ffb300;
   color: #000;
 }
 
-.acs-btn-info:hover {
+.ac-info:hover {
   background: #ffcf4d;
 }
+
+/* FOOTER */
+.acs-footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  color: #7c8bb8;
+  font-size: 0.9rem;
+}
+
 </style>
 </head>
 
 <body>
 
 <!-- ============================================================
-     === HEADER — EXACT FROM BUY NEW ============================
+     === HEADER — BUY NEW STANDARD ==============================
      ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
@@ -320,6 +338,7 @@ body {
 <!-- ============================================================
      === MAIN ===================================================
      ============================================================ -->
+
 <main class="acs-main">
 
   <h2>Used Aircraft Market</h2>
@@ -330,11 +349,13 @@ body {
 
   <!-- GRID -->
   <div class="used-grid" id="usedGrid"></div>
+
 </main>
 
 <!-- ============================================================
      === MODAL ==================================================
      ============================================================ -->
+
 <div class="modal-bg" id="infoModal">
   <div class="modal-box">
     <span class="modal-close" onclick="closeInfoModal()">✖</span>
