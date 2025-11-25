@@ -1,8 +1,7 @@
 <!-- ============================================================
      === ACS USED AIRCRAFT MARKET — Qatar Luxury Edition ========
-     === Version: v1 | Date: 25 NOV 2025 =========================
+     === Version: v2 | Date: 25 NOV 2025 =========================
      ============================================================ -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,15 +12,11 @@
   <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <!-- ======== ACS Favicons (Qatar Luxury) ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
-
-  <!-- Apple Touch Icon -->
   <link rel="apple-touch-icon" href="acs_logo_180.png">
-
-  <!-- Manifest -->
   <link rel="manifest" href="manifest.json">
 
 <style>
@@ -37,7 +32,7 @@ body {
 }
 
 /* ============================================================
-     === GLOBAL HEADER — IDENTICAL TO DASHBOARD ================
+     === GLOBAL HEADER — EXACT COPY BUY NEW ====================
    ============================================================ */
 
 .acs-header {
@@ -82,7 +77,7 @@ body {
   position: relative;
   font-size: 1rem;
   letter-spacing: 0.4px;
-  color: #dbe4ff;
+  color: #dbe4ff; 
   text-decoration: none;
   transition: 0.25s ease;
   padding-bottom: 6px;
@@ -113,6 +108,7 @@ body {
   gap: 1rem;
 }
 
+/* LOGOUT BUTTON */
 .logout-btn {
   padding: 0.45rem 1.1rem;
   border: 1px solid #ffb300;
@@ -121,7 +117,6 @@ body {
   color: #ffb300;
   font-weight: 600;
   cursor: pointer;
-  text-decoration: none;
 }
 
 .logout-btn:hover {
@@ -129,22 +124,28 @@ body {
   color: #0c1f3c;
 }
 
+/* SUPPORT BUTTON */
 .support-btn {
   padding: 0.45rem 1.1rem;
   border-radius: 12px;
   font-size: 0.9rem;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
   color: #8AB4FF;
   border: 1px solid rgba(138,180,255,0.45);
   background: rgba(138,180,255,0.08);
   backdrop-filter: blur(6px);
+  transition: 0.25s ease;
 }
 
 .support-btn:hover {
   background: rgba(138,180,255,0.20);
   box-shadow: 0 0 14px rgba(138,180,255,0.55);
+  color: #dfe9ff;
 }
 
+/* CLOCK */
 .acs-clock-header {
   font-family: "Orbitron", monospace;
   padding: 0.4rem 0.8rem;
@@ -159,7 +160,7 @@ body {
    ============================================================ */
 
 .acs-main {
-  padding: 105px 2rem 70px;
+  padding: 120px 2rem 70px;
   text-align: center;
 }
 
@@ -167,11 +168,17 @@ body {
   font-size: 1.9rem;
   font-weight: 600;
   color: #ffca3a;
-  text-shadow: 0 0 12px rgba(255,190,60,0.55);
+  margin-bottom: 0.2rem;
+}
+
+.sub {
+  color: #ccc;
+  margin-bottom: 2rem;
+  font-size: 1rem;
 }
 
 /* ============================================================
-     === FILTER BAR (from Buy New, unified ACS) ================
+     === FILTER BAR — SAME AS BUY NEW ==========================
    ============================================================ */
 
 .filter-bar {
@@ -181,7 +188,7 @@ body {
   overflow-x: auto;
   scrollbar-width: thin;
   max-width: 1400px;
-  margin: 1.4rem auto 2rem;
+  margin: 0 auto 1.5rem;
 }
 
 .chip {
@@ -202,55 +209,62 @@ body {
 }
 
 /* ============================================================
-     === USED MARKET PANELS (Dashboard Style) ==================
+     === USED MARKET PANELS — QATAR LUXURY =====================
    ============================================================ */
 
 .used-grid {
   display: grid;
-  gap: 2rem;
-  margin-top: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 1.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  width: 92%;
+  margin: 0 auto;
 }
 
 .used-panel {
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  padding: 1.6rem;
-  border-radius: 22px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,179,0,0.25);
-  transition: 0.25s;
-  text-align: center;
+  background: #0f1b3d;
+  border-radius: 16px;
+  padding: 1.3rem;
+  border: 1px solid rgba(255,179,0,0.35);
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+  transition: 0.25s ease;
 }
 
 .used-panel:hover {
   transform: translateY(-6px);
   box-shadow: 0 8px 32px rgba(255,179,0,0.25);
-  border: 1px solid rgba(255,179,0,0.45);
+  border: 1px solid rgba(255,179,0,0.55);
 }
 
+/* IMAGE */
 .used-panel img {
   width: 100%;
   height: 150px;
-  object-fit: contain;
-  margin-bottom: 0.7rem;
+  object-fit: cover;
+  background:#102040;
+  border-radius: 12px;
+  margin-bottom: 0.8rem;
 }
 
+/* MODEL TITLE — Qatar Luxury */
 .used-panel h3 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: #ffb300;
-  margin-bottom: 1rem;
-  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+  margin-bottom: 0.6rem;
+  text-shadow: 0 0 8px rgba(255,179,0,0.45);
 }
 
+/* INFO LINES */
 .used-panel p {
-  color: #d7e2ff;
-  margin: 0.25rem 0;
+  margin: 0.2rem 0;
+  color: #dbe4ff;
+  font-size: 0.9rem;
 }
 
-/* ACS Buttons */
+/* BUTTONS — Qatar Luxury */
 .acs-btn {
   margin-top: 1rem;
-  background: #00a86b;
+  width: 100%;
+  background: #00c851;
   border: none;
   padding: 0.7rem 1.1rem;
   border-radius: 10px;
@@ -261,10 +275,11 @@ body {
 }
 
 .acs-btn:hover {
-  background: #00794f;
+  background: #00e060;
 }
 
 .acs-btn-info {
+  margin-top: 0.6rem;
   background: #ffb300;
   color: #000;
 }
@@ -272,54 +287,13 @@ body {
 .acs-btn-info:hover {
   background: #ffcf4d;
 }
-
-/* ============================================================
-     === MODAL — Qatar Standard ================================
-   ============================================================ */
-
-.modal-bg {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal-box {
-  background: #081530;
-  padding: 1.5rem;
-  border-radius: 12px;
-  width: 380px;
-  border: 1px solid #ffb300;
-  color: #fff;
-  text-align: center;
-}
-
-.modal-close {
-  float: right;
-  cursor: pointer;
-  color: #ffb300;
-  font-size: 1.3rem;
-}
-
-/* Footer */
-.acs-footer {
-  text-align: center;
-  padding: 20px;
-  margin-top: 50px;
-  color: #7c8bb8;
-  font-size: 0.9rem;
-}
-
 </style>
 </head>
 
 <body>
 
 <!-- ============================================================
-     === HEADER ==================================================
+     === HEADER — EXACT FROM BUY NEW ============================
      ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
@@ -329,18 +303,17 @@ body {
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
-    <a href="aircraft.html">Aircraft</a>
+    <a href="finance.html">Bank</a>
+    <a href="aircraft.html" class="active">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
   </nav>
 
   <div class="acs-right">
     <a href="support.html" class="support-btn">Support</a>
     <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
   </div>
 </header>
 
@@ -357,7 +330,6 @@ body {
 
   <!-- GRID -->
   <div class="used-grid" id="usedGrid"></div>
-
 </main>
 
 <!-- ============================================================
@@ -408,6 +380,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 function handleLogout(){
   window.location.href="login.html";
+}
+
+function closeInfoModal() {
+  document.getElementById("infoModal").style.display = "none";
 }
 </script>
 
