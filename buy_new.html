@@ -9,6 +9,13 @@
   <title>Buy New Aircraft - Aviation Capital Simulator</title>
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
+  <!-- ======== ACS Favicons (Qatar Luxury) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+
   <style>
   body {
     margin: 0;
@@ -158,7 +165,9 @@
     margin-top: 0.5rem;
   }
 
-  /* ===================== ADDED STYLES ===================== */
+  /* ----------------------------------------------------------- */
+  /* NO MODIFICO NADA MÁS - SOLO HEADER Y FAVICONS */
+  /* ----------------------------------------------------------- */
 
   .logout-btn {
     color: #FFB300;
@@ -184,12 +193,12 @@
     border-radius: 6px;
     font-size: 0.9rem;
   }
-</style>
+  </style>
 </head>
 
 <body>
 
-<!-- === HEADER (copiado EXACTO del de settings.html) === -->
+<!-- === QATAR LUXURY GLOBAL HEADER (exact copy from dashboard) === -->
 <header class="acs-header">
   <div class="acs-logo">
     <img src="acs_logo.png" alt="ACS Logo" />
@@ -198,7 +207,7 @@
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
+    <a href="finance.html">Bank</a>
     <a href="aircraft.html" class="active">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
@@ -207,80 +216,73 @@
   </nav>
 
   <div class="acs-auth">
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
     <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
   </div>
 </header>
-     
-  <!-- MAIN -->
-  <h2>Buy New Aircraft</h2>
-  <p class="sub">Direct Purchase & Leasing • OEM Production Slots • Realistic Delivery System</p>
 
-  <!-- FILTERS -->
-  <div id="filterBar" class="filter-bar"></div>
+<!-- MAIN -->
+<h2>Buy New Aircraft</h2>
+<p class="sub">Direct Purchase & Leasing • OEM Production Slots • Realistic Delivery System</p>
 
-  <!-- CARDS GRID -->
-  <div id="cardsGrid" class="cards-grid"></div>
+<!-- FILTERS -->
+<div id="filterBar" class="filter-bar"></div>
 
-  <!-- MODAL -->
-  <div id="buyModal" class="modal">
-    <div class="modal-content">
-      <img id="modalImage" src="" alt="" />
-      <h3 id="modalTitle"></h3>
+<!-- CARDS GRID -->
+<div id="cardsGrid" class="cards-grid"></div>
 
-      <label>Operation Type:</label>
-      <select id="modalOperation">
-        <option value="BUY">Buy New</option>
-        <option value="LEASE">Lease New</option>
+<!-- MODAL -->
+<div id="buyModal" class="modal">
+  <div class="modal-content">
+    <img id="modalImage" src="" alt="" />
+    <h3 id="modalTitle"></h3>
+
+    <label>Operation Type:</label>
+    <select id="modalOperation">
+      <option value="BUY">Buy New</option>
+      <option value="LEASE">Lease New</option>
+    </select>
+
+    <label>Quantity:</label>
+    <input type="number" id="modalQty" min="1" value="1" />
+
+    <div id="leaseOptions" style="display:none;">
+      <label>Lease Duration (years):</label>
+      <select id="modalLeaseYears">
+        <option value="5">5 years</option>
+        <option value="10" selected>10 years</option>
+        <option value="15">15 years</option>
       </select>
 
-      <label>Quantity:</label>
-      <input type="number" id="modalQty" min="1" value="1" />
-
-      <div id="leaseOptions" style="display:none;">
-        <label>Lease Duration (years):</label>
-        <select id="modalLeaseYears">
-          <option value="5">5 years</option>
-          <option value="10" selected>10 years</option>
-          <option value="15">15 years</option>
-        </select>
-
-        <label>Initial Payment (%):</label>
-        <select id="modalInitialPct">
-          <option value="50">50%</option>
-          <option value="70">70%</option>
-          <option value="100">100% (Full)</option>
-        </select>
-      </div>
-
-      <p id="modalSummary" style="margin-top:1rem; font-size:0.9rem; color:#ffb300;"></p>
-
-      <button id="modalConfirm">Confirm Order</button>
-      <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
+      <label>Initial Payment (%):</label>
+      <select id="modalInitialPct">
+        <option value="50">50%</option>
+        <option value="70">70%</option>
+        <option value="100">100% (Full)</option>
+      </select>
     </div>
+
+    <p id="modalSummary" style="margin-top:1rem; font-size:0.9rem; color:#ffb300;"></p>
+
+    <button id="modalConfirm">Confirm Order</button>
+    <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
   </div>
+</div>
 
-  <!-- (Todo tu HTML arriba queda igual, sin tocar nada) -->
+<!-- === SCRIPTS === -->
+<script src="time_engine.js"></script>
+<script src="engine/acs_aircraft_db.js"></script>
 
-  <!-- === SCRIPTS === -->
-  <script src="time_engine.js"></script>
-  <script src="engine/acs_aircraft_db.js"></script>
+<script>
+  window.ACS_BUY_NEW_IMAGE_FALLBACK = true;
+</script>
 
-  <!-- 👇 Ajuste para permitir rutas por fabricante y fallback de imagen -->
-  <script>
-    window.ACS_BUY_NEW_IMAGE_FALLBACK = true;
-  </script>
+<script src="engine/acs_buy_aircraft.js"></script>
 
-  <script src="engine/acs_buy_aircraft.js"></script>
-
-     <!-- === AUTO-DELIVERY ENGINE (activado para Buy New) === -->
 <script>
   if (typeof checkDeliveries === "function") {
     document.addEventListener("DOMContentLoaded", () => {
-      // sincroniza con la hora sim
       checkDeliveries();
-
-      // Si existiera reloj global, vuelve a revisar
       if (typeof registerTimeListener === "function") {
         registerTimeListener(() => {
           checkDeliveries();
@@ -289,15 +291,15 @@
     });
   }
 </script>
-     
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof registerTimeListener === "function") {
-        registerTimeListener(updateClockDisplay);
-        updateClockDisplay();
-      }
-    });
-  </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+      updateClockDisplay();
+    }
+  });
+</script>
 
 </body>
 </html>
