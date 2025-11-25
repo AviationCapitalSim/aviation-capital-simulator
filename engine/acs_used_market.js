@@ -1,39 +1,38 @@
 /* ============================================================
-   === ACS USED AIRCRAFT MARKET — PRO EDITION (v3.0) ==========
+   === ACS USED AIRCRAFT MARKET — FINAL SYNC (v2.0) ==========
    ------------------------------------------------------------
-   • Integrado con ACS_AIRCRAFT_DB y Leasing Engine
-   • Qatar Luxury optimized
-   • FILTRO por fabricante
-   • Compra + Leasing de usados
-   • MATRÍCULA automática
-   • Image Resolver PRO (sin 404, Safari Safe)
-   • Caché local de imágenes
+   • Integrado con ACS_AIRCRAFT_DB y Buy Aircraft Engine
+   • Función de imágenes EXACTA a buy_aircraft.js
+   • Filtrado por fabricante
+   • Compra / Leasing de usados
+   • Auto-delivery inmediato para 1ª flota inicial
    ============================================================ */
 
 console.log("🟦 ACS Used Aircraft Market — Loaded");
 
 /* ============================================================
-   === FILTER BAR BUILDER ======================================
+   === FILTER BAR (BUY-NEW STYLE) — CHIP BUILDER ===============
    ============================================================ */
 function buildFilterChips() {
   const bar = document.getElementById("filterBar");
   if (!bar) return;
 
   const list = generateUsedMarket();
+
   const manufacturers = Array.from(
     new Set(list.map(ac => ac.manufacturer))
   ).sort();
 
   bar.innerHTML = "";
 
-  // === ALL ===
+  // === CHIP "ALL" ===
   const allChip = document.createElement("div");
   allChip.className = "chip active";
   allChip.dataset.manufacturer = "All";
   allChip.textContent = "All";
   bar.appendChild(allChip);
 
-  // === BY MANUFACTURER ===
+  // === CHIPS POR FABRICANTE ===
   manufacturers.forEach(m => {
     const chip = document.createElement("div");
     chip.className = "chip";
@@ -56,7 +55,7 @@ function buildFilterChips() {
 }
 
 /* ============================================================
-   === RESOLVE MAIN DB =========================================
+   1) DB Resolver
    ============================================================ */
 function resolveUsedDB() {
   if (typeof ACS_AIRCRAFT_DB !== "undefined") return ACS_AIRCRAFT_DB;
@@ -65,7 +64,7 @@ function resolveUsedDB() {
 }
 
 /* ============================================================
-   === READ CURRENT SIM YEAR ===================================
+   2) YEAR Resolver
    ============================================================ */
 function getCurrentSimYear() {
   try {
@@ -80,71 +79,57 @@ function getCurrentSimYear() {
 }
 
 /* ============================================================
-   === IMAGE RESOLVER PRO v3.0 — NO 404, SAFARI SAFE ============
+   3) FUNCIÓN DE IMÁGENES — COPIADA 1:1 DE BUY AIRCRAFT
    ============================================================ */
-
-async function ACS_imageExists(url) {
-  try {
-    const res = await fetch(url, { method: "HEAD" });
-    return res.ok;
-  } catch (e) {
-    return false;
-  }
-}
-
-const ACS_ImageCache = JSON.parse(localStorage.getItem("ACS_ImageCache") || "{}");
-
-async function getAircraftImage(ac) {
-
+function getAircraftImage(ac) {
   if (!ac || !ac.model || !ac.manufacturer) {
     return "img/placeholder_aircraft.png";
   }
 
-  const manuFolder = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  const raw = ac.model.toLowerCase();
-  const base = raw.replace(/[^a-z0-9]+/g, "_");
+  let manuFolder = ac.manufacturer
+    .trim()
+    .replace(/\s+/g, " ");
 
-  const candidates = [
-    `img/${manuFolder}/${base}.png`,
-    `img/${manuFolder}/${base}.jpg`,
-    `img/${manuFolder}/${base.replace(/_/g,"")}.png`,
-    `img/${manuFolder}/${base.replace(/_/g,"")}.jpg`,
-    `img/${base}.png`,
-    `img/${base}.jpg`,
-    `img/${manuFolder}_${base}.png`,
-    `img/${manuFolder}_${base}.jpg`
-  ];
-
-  // === CACHE ===
-  for (const c of candidates) {
-    if (ACS_ImageCache[c] === true) return c;
+  // 🔧 Carpeta especial para De Havilland
+  if (ac.manufacturer.toLowerCase() === "de havilland") {
+    manuFolder = "de_havilland";
   }
 
-  // === TEST SECUENCIAL (HEAD REQUEST) ===
-  for (const url of candidates) {
-    const exists = await ACS_imageExists(url);
-    if (exists) {
-      ACS_ImageCache[url] = true;
-      localStorage.setItem("ACS_ImageCache", JSON.stringify(ACS_ImageCache));
-      return url;
-    }
+  const rawModel = ac.model.toLowerCase().trim();
+  let base = rawModel.replace(/[^a-z0-9]+/g, "_");
+
+  const variants = new Set();
+  variants.add(base);
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));    
+  variants.add(base.replace(/_/g, ""));               
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));  
+
+  const candidates = [];
+
+  for (const v of variants) {
+    candidates.push(`img/${manuFolder}/${v}.png`);
+    candidates.push(`img/${manuFolder}/${v}.jpg`);
   }
+
+  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  candidates.push(`img/${base}.png`);
+  candidates.push(`img/${manuSlug}_${base}.png`);
 
   return "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
-   === GENERATE USED MARKET ====================================
+   4) GENERACIÓN BASE — 300 AVIONES
    ============================================================ */
 function generateUsedMarket() {
   let used = JSON.parse(localStorage.getItem("ACS_UsedMarket") || "[]");
-
-  if (used.length >= 100) return used;
+  if (used.length >= 100) return used;  // ya generado
 
   const db = resolveUsedDB();
   const simYear = getCurrentSimYear();
 
   const pool = db.filter(a => a.year <= simYear);
+
   const result = [];
   let count = 0;
 
@@ -163,6 +148,7 @@ function generateUsedMarket() {
       hours: Math.floor(Math.random() * 15000) + 2000,
       cycles: Math.floor(Math.random() * 9000) + 1000,
       condition: ["A", "B", "C"][Math.floor(Math.random() * 3)],
+      image: getAircraftImage(ac),
       source: ["System", "Bank", "Liquidation"][Math.floor(Math.random() * 3)]
     });
 
@@ -174,7 +160,7 @@ function generateUsedMarket() {
 }
 
 /* ============================================================
-   === RENDER CARDS ============================================
+   5) RENDER DE TARJETAS
    ============================================================ */
 function renderUsedMarket(filter = "all") {
   const grid = document.getElementById("usedGrid");
@@ -189,10 +175,11 @@ function renderUsedMarket(filter = "all") {
 
   filtered.forEach(ac => {
     const card = document.createElement("div");
-    card.className = "used-panel";
+    card.className = "used-card";
 
     card.innerHTML = `
-      <img src="img/placeholder_aircraft.png" data-id="${ac.id}" class="ac-img">
+      <img src="${ac.image}" 
+           onerror="this.src='img/placeholder_aircraft.png'" />
 
       <h3>${ac.manufacturer} ${ac.model}</h3>
 
@@ -205,36 +192,16 @@ function renderUsedMarket(filter = "all") {
       <p><b>Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M</b></p>
       <p style="color:#FFB300">Origin: ${ac.source}</p>
 
-      <button class="acs-btn" onclick="buyUsed('${ac.id}')">BUY</button>
-      <button class="acs-btn" onclick="leaseUsed('${ac.id}')">LEASE</button>
-      <button class="acs-btn acs-btn-info" onclick="openInfo('${ac.id}')">INFO</button>
+      <button class="ac-buy" onclick="buyUsed('${ac.id}')">BUY</button>
+      <button class="ac-lease" onclick="leaseUsed('${ac.id}')">LEASE</button>
+      <button class="ac-info" onclick="openInfo('${ac.id}')">INFO</button>
     `;
-
     grid.appendChild(card);
   });
-
-  // Load dynamic images without 404
-  loadUsedImages();
 }
 
 /* ============================================================
-   === IMAGE POST-LOADER — PREVENT 404 =========================
-   ============================================================ */
-async function loadUsedImages() {
-  const list = generateUsedMarket();
-
-  document.querySelectorAll(".ac-img").forEach(async img => {
-    const id = img.dataset.id;
-    const ac = list.find(x => x.id === id);
-    if (!ac) return;
-
-    const real = await getAircraftImage(ac);
-    img.src = real;
-  });
-}
-
-/* ============================================================
-   === BUY USED =================================================
+   6) COMPRAR USADO
    ============================================================ */
 function buyUsed(id) {
   const list = generateUsedMarket();
@@ -244,21 +211,22 @@ function buyUsed(id) {
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   myFleet.push({
-    id: "AC-" + Date.now(),
-    model: ac.model,
-    manufacturer: ac.manufacturer,
-    delivered: new Date().toISOString(),
-    image: ac.image,
-    status: "Active",
-    hours: ac.hours,
-    cycles: ac.cycles,
-    condition: ac.condition,
-    registration: ACS_generateRegistration()
-  });
+  id: "AC-" + Date.now(),
+  model: ac.model,
+  manufacturer: ac.manufacturer,
+  delivered: new Date().toISOString(),
+  image: ac.image,
+  status: "Active",
+  hours: ac.hours,
+  cycles: ac.cycles,
+  condition: ac.condition,
+  registration: ACS_generateRegistration()   // 🔥 Matrícula automática
+});
+
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
-  // Finanzas
+  // FINANZAS
   const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   if (finance.capital !== undefined) {
     finance.capital -= ac.price_acs_usd;
@@ -269,7 +237,7 @@ function buyUsed(id) {
 }
 
 /* ============================================================
-   === LEASE USED ==============================================
+   7) LEASE USADO
    ============================================================ */
 function leaseUsed(id) {
   const list = generateUsedMarket();
@@ -279,47 +247,57 @@ function leaseUsed(id) {
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   myFleet.push({
-    id: "AC-" + Date.now(),
-    model: ac.model,
-    manufacturer: ac.manufacturer,
-    delivered: new Date().toISOString(),
-    image: ac.image,
-    status: "Active",
+  id: "AC-" + Date.now(),
+  model: ac.model,
+  manufacturer: ac.manufacturer,
+  delivered: new Date().toISOString(),
+  image: ac.image,
+  status: "Active",
 
-    hours: ac.hours,
-    cycles: ac.cycles,
-    condition: ac.condition,
+  /* === USED Aircraft: respetar horas reales y estado === */
+  hours: ac.hours,
+  cycles: ac.cycles,
+  condition: ac.condition,
 
-    registration: ACS_generateRegistration(),
+  /* === Matrícula automática === */
+  registration: ACS_generateRegistration(),
 
-    lastC: null,
-    nextC: null,
-    lastD: null,
-    nextD: null
-  });
+  /* === Mantenimientos iniciales === */
+  lastC: null,
+  lastD: null,
+  nextC: null,
+  nextD: null
+});
 
-  // Calcular C y D
-  (() => {
-    const idx = myFleet.length - 1;
-    const baseDate = new Date(myFleet[idx].delivered);
+/* ============================================================
+   === PASO 13 — CALCULAR PRÓXIMOS C/D (USADOS) ================
+   ============================================================ */
+(() => {
+  const idx = myFleet.length - 1;               // último añadido
+  const baseDeliveryDate = new Date(myFleet[idx].delivered);
 
-    const C = new Date(baseDate);
-    C.setUTCFullYear(C.getUTCFullYear() + 1);
+  // C-Check → siempre 12 meses
+  const nextCdate = new Date(baseDeliveryDate);
+  nextCdate.setUTCFullYear(nextCdate.getUTCFullYear() + 1);
 
-    const D = new Date(baseDate);
-    D.setUTCFullYear(D.getUTCFullYear() + 8);
+  // D-Check → siempre 8 años
+  const nextDdate = new Date(baseDeliveryDate);
+  nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + 8);
 
-    myFleet[idx].nextC = C.toISOString();
-    myFleet[idx].nextD = D.toISOString();
-  })();
+  // Guardar valores
+  myFleet[idx].nextC = nextCdate.toISOString();
+  myFleet[idx].nextD = nextDdate.toISOString();
+})();
+
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
   alert("📘 Aircraft leased successfully!");
 }
 
+
 /* ============================================================
-   === MODAL INFO ==============================================
+   8) MODAL
    ============================================================ */
 function openInfo(id) {
   const list = generateUsedMarket();
@@ -347,9 +325,15 @@ function closeInfoModal() {
 }
 
 /* ============================================================
-   === INIT =====================================================
+   9) INIT
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   buildFilterChips();
   renderUsedMarket("all");
 });
+
+// === EXPOSE FUNCTIONS TO GLOBAL (Safari fix) ===
+window.buyUsed = buyUsed;
+window.leaseUsed = leaseUsed;
+window.openInfo = openInfo;
+window.closeInfoModal = closeInfoModal;
