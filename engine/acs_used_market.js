@@ -331,3 +331,9 @@ document.addEventListener("DOMContentLoaded", () => {
   buildFilterChips();
   renderUsedMarket("all");
 });
+
+// === EXPOSE FUNCTIONS TO GLOBAL (Safari fix) ===
+window.buyUsed = buyUsed;
+window.leaseUsed = leaseUsed;
+window.openInfo = openInfo;
+window.closeInfoModal = closeInfoModal;
