@@ -1,129 +1,317 @@
+<!-- ============================================================
+     === HR MODULE — Qatar Luxury Edition | ACS ================
+     === Version: v1 | Date: 25 NOV 2025 =======================
+     ============================================================ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Human Resources - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== PWA Manifest ======== -->
+  <link rel="manifest" href="manifest.json">
+
   <style>
-    /* === HR MODULE (ACS Unified Dashboard Design) === */
-    body {
-      margin: 0;
-      background-color: #081530;
-      color: white;
-      font-family: "Segoe UI", sans-serif;
-    }
+  /* ============================================================
+       === ACS Qatar Luxury Dashboard — Base Design ============
+     ============================================================ */
 
-    h2 {
-      text-align: center;
-      color: #FFB300;
-      margin-top: 6rem;
-      margin-bottom: 0.4rem;
-    }
+  body {
+    margin: 0;
+    background-color: #081530;
+    color: white;
+    font-family: "Poppins", sans-serif;
+  }
 
-    p.sub {
-      text-align: center;
-      color: #ccc;
-      margin-bottom: 2rem;
-    }
+  /* ============================================================
+       === GLOBAL HEADER (Exact Copy from index/dashboard) =====
+     ============================================================ */
 
-    .finance-panels {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
-      padding: 0 1.5rem 3rem;
-    }
+  .acs-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    backdrop-filter: blur(9px);
+    background: rgba(12,23,50,0.45);
+    padding: 0.8rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #ffb300;
+    z-index: 5000;
+  }
 
-    .panel {
-      background: #0b1c3f;
-      border-radius: 12px;
-      padding: 1.2rem 1.5rem;
-      border: 1px solid rgba(255,179,0,0.25);
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      transition: transform 0.2s ease;
-    }
-    .panel:hover { transform: scale(1.02); }
+  .acs-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
 
-    .panel h3 {
-      color: #FFB300;
-      margin-bottom: 0.8rem;
-    }
+  .acs-left img {
+    height: 46px;
+  }
 
-    /* === INACTIVE PANELS === */
-    .inactive-panel {
-      opacity: 0.45;
-      filter: grayscale(100%);
-      pointer-events: none;
-      position: relative;
-    }
+  .acs-left h1 {
+    font-size: 1.15rem;
+    margin: 0;
+    color: #ffb300;
+    letter-spacing: 0.5px;
+  }
 
-    .inactive-btn {
-      background: #444 !important;
-      color: #ccc !important;
-      border: 1px solid #666 !important;
-      cursor: not-allowed !important;
-    }
+  .acs-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
 
-    /* Clock */
-    .acs-clock-header {
-      font-family: 'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      font-weight:bold;
-      background:rgba(0,255,128,0.08);
-      padding:0.3rem 0.8rem;
-      border-radius:6px;
-      font-size:0.9rem;
-      margin-left:1rem;
-    }
+  /* ============================================================
+       === NAVIGATION — QATAR PEARL GLOW STYLE =================
+     ============================================================ */
 
-    /* Standard ACS button */
-    .acs-btn {
-      background-color: #00a86b;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 9px 18px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    .acs-btn:hover { background-color: #007d4e; }
+  .acs-nav a {
+    position: relative;
+    font-size: 1rem;
+    letter-spacing: 0.4px;
+    color: #dbe4ff;
+    text-decoration: none;
+    transition: 0.25s ease;
+    padding-bottom: 6px;
+  }
+
+  .acs-nav a:hover,
+  .acs-nav a.active {
+    color: #ffca3a;
+    text-shadow: 0 0 6px rgba(255,179,0,0.45);
+  }
+
+  .acs-nav a.active::after,
+  .acs-nav a:hover::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, #ffb300, #ffe7a0);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(255,200,60,0.45);
+  }
+
+  .acs-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* LOGOUT BUTTON (Qatar style) */
+  .logout-btn {
+    padding: 0.45rem 1.1rem;
+    border: 1px solid #ffb300;
+    border-radius: 12px;
+    background: rgba(255,179,0,0.05);
+    color: #ffb300;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .logout-btn:hover {
+    background: #ffb300;
+    color: #0c1f3c;
+  }
+
+  /* CLOCK (same as dashboard) */
+  .acs-clock-header {
+    font-family: "Orbitron", monospace;
+    padding: 0.4rem 0.8rem;
+    background: rgba(0,255,128,0.08);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #00ff80;
+  }
+
+  /* ============================================================
+       === SUPPORT BUTTON (igual dashboard) =====================
+     ============================================================ */
+
+  .support-btn {
+    padding: 0.45rem 1.1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    color: #8AB4FF;
+    border: 1px solid rgba(138,180,255,0.45);
+    background: rgba(138,180,255,0.08);
+    backdrop-filter: blur(6px);
+    transition: 0.25s ease;
+  }
+
+  .support-btn:hover {
+    background: rgba(138,180,255,0.20);
+    box-shadow: 0 0 14px rgba(138,180,255,0.55);
+    color: #dfe9ff;
+  }
+
+  /* ============================================================
+       === MAIN CONTENT (igual dashboard) ======================
+     ============================================================ */
+
+  .acs-main {
+    padding: 105px 2rem 70px;
+    text-align: center;
+  }
+
+  .acs-main h2 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #ffca3a;
+    text-shadow: 0 0 12px rgba(255,190,60,0.55);
+    letter-spacing: 0.6px;
+    margin-top: 0.5rem;
+  }
+
+  .acs-main .sub {
+    margin-top: 0.4rem;
+    color: #cbd6ff;
+    font-size: 1rem;
+  }
+
+  /* ============================================================
+       === PANEL GRID (reuso dashboard-grid) ===================
+     ============================================================ */
+
+  .dashboard-grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .row-business {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  /* Panel base (mismo que dashboard) */
+  .panel {
+    background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+    padding: 1.6rem 1.5rem;
+    border-radius: 22px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.4);
+    transition: 0.25s;
+    border: 1px solid rgba(255,179,0,0.15);
+    text-align: left;
+  }
+
+  .panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+    border: 1px solid rgba(255,179,0,0.35);
+  }
+
+  .panel h3 {
+    font-size: 1.25rem;
+    color: #ffb300;
+    margin-bottom: 0.9rem;
+    text-shadow: 0 0 6px rgba(255,179,0,0.4);
+  }
+
+  .panel p {
+    color: #d7e2ff;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin: 0.15rem 0;
+  }
+
+  /* ============================================================
+       === HR-SPECIFIC STYLES ==================================
+     ============================================================ */
+
+  .inactive-panel {
+    opacity: 0.45;
+    filter: grayscale(100%);
+    pointer-events: none;
+    position: relative;
+  }
+
+  .inactive-note {
+    margin-top: 1rem;
+    color: #aaa;
+    font-style: italic;
+    text-align: center;
+  }
+
+  /* Standard ACS button */
+  .acs-btn {
+    margin-top: 1rem;
+    background: #00a86b;
+    border: none;
+    padding: 0.7rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.25s;
+    color: white;
+  }
+
+  .acs-btn:hover {
+    background: #00794f;
+  }
+
+  /* Footer igual dashboard */
+  .acs-footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 50px;
+    color: #7c8bb8;
+    font-size: 0.9rem;
+  }
   </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
+    <a href="finance.html">Bank</a>
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html" class="active">HR</a>
     <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
   </nav>
 
-  <div class="acs-auth">
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
   </div>
-
-  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
 </header>
 
-<!-- MAIN -->
 <main class="acs-main">
   <h2>👥 Human Resources Department</h2>
   <p class="sub">Manage all staff, morale, payroll and bonuses across the company.</p>
 
-  <section class="finance-panels">
+  <div class="dashboard-grid row-business">
 
     <!-- === HR OVERVIEW === -->
     <div class="panel">
@@ -141,46 +329,44 @@
       <p>Total Staff: <strong id="totalStaff2">—</strong></p>
       <p>Average Morale: <strong id="avgMorale2">—</strong></p>
       <p>Monthly Payroll: <strong id="monthlyPayroll">—</strong></p>
-      <br />
       <button class="acs-btn" onclick="window.location.href='department_control.html'">
         🏢 Open Department Control Center
       </button>
     </div>
 
-    <!-- === INACTIVE PANELS === -->
+    <!-- === Payroll & Bonuses (Coming Soon) === -->
     <div class="panel inactive-panel">
       <h3>💰 Payroll & Bonuses</h3>
       <p>This Month Payroll: <strong>—</strong></p>
       <p>Bonuses Applied: <strong>$0</strong></p>
       <p>Expense Share: <strong>—</strong></p>
-      <button class="acs-btn inactive-btn" disabled>Coming Soon</button>
+      <p class="inactive-note">Coming Soon</p>
     </div>
 
+    <!-- === Operational Impact (Coming Soon) === -->
     <div class="panel inactive-panel">
       <h3>✈️ Operational Impact</h3>
       <p>Flight Efficiency: <strong>—</strong></p>
       <p>Delay Risk: <strong>None</strong></p>
       <p>Maintenance Reliability: <strong>—</strong></p>
-      <p style="margin-top:1rem;color:#aaa;font-style:italic;text-align:center;">
-        Coming Soon
-      </p>
+      <p class="inactive-note">Coming Soon</p>
     </div>
 
-  </section>
+  </div>
 </main>
 
 <footer class="acs-footer">
-  <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+  © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
 
 <!-- ENGINE -->
+<script src="time_engine.js"></script>
 <script src="engine/acs_finance.js"></script>
 <script src="engine/acs_hr_engine.js"></script>
-<script src="time_engine.js"></script>
 
 <script>
 /* ============================================================
-   LOAD DATA FROM ENGINE
+   === HR DASHBOARD — DATA LOADER =============================
    ============================================================ */
 function loadHRDashboard() {
   const hr = ACS_HR_load();
