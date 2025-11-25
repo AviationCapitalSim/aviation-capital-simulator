@@ -1,346 +1,436 @@
+<!-- ============================================================
+     === BUY CREDITS — Qatar Luxury Edition | ACS ================
+     === Version: v1 | Date: 25 NOV 2025 ========================
+     ============================================================ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Buy Credits - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
-  <style>
-    /* === BUY CREDITS PAGE === */
-    body {
-      margin: 0;
-      background-color: #081530;
-      color: white;
-      font-family: "Segoe UI", sans-serif;
-    }
 
-    h2 {
-      color: #FFB300;
-      margin-top: 6rem; /* ✅ CORREGIDO: espacio por header fijo */
-      text-align: center;
-    }
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
 
-    p.sub {
-      color: #ccc;
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+  <!-- ======== Apple iPhone Icon ======== -->
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
 
-    .credits-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.2rem;
-      max-width: 1000px;
-      margin: 0 auto 2rem auto;
-    }
+  <!-- ======== Manifest ======== -->
+  <link rel="manifest" href="manifest.json">
 
-    .credit-card {
-      background: #102040;
-      border: 2px solid transparent;
-      border-radius: 12px;
-      padding: 1.2rem;
-      text-align: center;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border 0.2s ease;
-      position: relative;
-    }
+<style>
+/* ============================================================
+     === BASE LAYOUT — Qatar Luxury Standard ===================
+   ============================================================ */
 
-    .credit-card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 5px 16px rgba(0,0,0,0.5);
-      border-color: #FFB300;
-    }
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
 
-    .credit-card h3 {
-      color: #FFB300;
-      margin-bottom: 0.4rem;
-    }
+/* ============================================================
+     === GLOBAL HEADER (Dashboard Style) =======================
+   ============================================================ */
 
-    .credit-card p {
-      color: #cfd8dc;
-      margin: 0.2rem 0;
-    }
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
 
-    .credit-card .price {
-      color: #42a5f5;
-      font-weight: 700;
-      font-size: 1rem;
-      margin-top: 0.6rem;
-    }
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    .buy-btn {
-      background-color: #00a86b;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      margin-top: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
+.acs-left img {
+  height: 46px;
+}
 
-    .buy-btn:hover {
-      background-color: #007d4e;
-    }
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
 
-    /* === Highlighted (Best Deal) Card === */
-    .credit-card.featured {
-      background: linear-gradient(180deg, #153060, #102040);
-      border: 2px solid #FFB300;
-      box-shadow: 0 0 20px rgba(255, 179, 0, 0.5);
-      transform: scale(1.02);
-    }
+/* NAV */
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
 
-    .featured .offer-badge {
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      background: #FFB300;
-      color: #0A1830;
-      font-weight: 700;
-      font-size: 0.8rem;
-      padding: 4px 8px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    }
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
 
-    .featured .price {
-      color: #FFD700;
-      font-size: 1.1rem;
-    }
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
 
-    /* === Secure Payment Section === */
-    .secure-section {
-      text-align: center;
-      padding: 1.5rem;
-      background: rgba(255,255,255,0.05);
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
 
-    .secure-section p {
-      color: #ccc;
-      margin-bottom: 1rem;
-    }
+/* RIGHT SIDE */
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    .payment-icons {
-      display: flex;
-      justify-content: center;
-      gap: 1.2rem;
-      font-size: 1.6rem;
-    }
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
 
-    .payment-icons span {
-      background: rgba(255,255,255,0.1);
-      padding: 10px 16px;
-      border-radius: 8px;
-      color: #FFB300;
-      font-weight: 600;
-      box-shadow: 0 0 8px rgba(0,0,0,0.3);
-    }
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
 
-    /* === Modal === */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-    }
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
 
-    .modal-content {
-      background: #102040;
-      color: #fff;
-      padding: 24px;
-      border-radius: 12px;
-      max-width: 400px;
-      margin: 10% auto;
-      text-align: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    }
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+  color: #dfe9ff;
+}
 
-    .modal-content h2 { color: #FFB300; }
-    .modal-content p { margin: 10px 0; }
+/* CLOCK */
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
 
-    .confirm-btn, .close-btn {
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      margin: 8px;
-      cursor: pointer;
-      font-weight: 600;
-    }
+/* ============================================================
+     === MAIN LAYOUT ===========================================
+   ============================================================ */
 
-    .confirm-btn { background: #00a86b; color: white; }
-    .confirm-btn:hover { background: #007d4e; }
-    .close-btn { background: #E53935; color: white; }
-    .close-btn:hover { background: #c62828; }
+.acs-main {
+  padding: 105px 2rem 70px;
+  text-align: center;
+}
 
-    /* ✅ CORREGIDO: Reloj Airbus cockpit */
-    .acs-clock-header {
-      font-family: 'Orbitron', 'Consolas', monospace;
-      color: #00ff80; /* Verde Airbus tipo cockpit */
-      font-weight: bold;
-      background: rgba(0, 255, 128, 0.08);
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      margin-left: 1rem;
-    }
-  </style>
+.acs-main h2 {
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: #ffca3a;
+  text-shadow: 0 0 12px rgba(255,190,60,0.55);
+  letter-spacing: 0.6px;
+  margin-top: 0.5rem;
+}
+
+.acs-main .sub {
+  margin-top: 0.4rem;
+  color: #cbd6ff;
+  font-size: 1rem;
+}
+
+/* ============================================================
+     === CREDIT PANELS (Dashboard Style Panels) ================
+   ============================================================ */
+
+.credit-grid {
+  display: grid;
+  gap: 2rem;
+  margin-top: 2.2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.credit-panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 1.6rem;
+  border-radius: 22px;
+  box-shadow: 0 0 22px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,179,0,0.25);
+  transition: 0.25s;
+  text-align: center;
+}
+
+.credit-panel:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(255,179,0,0.25);
+  border: 1px solid rgba(255,179,0,0.45);
+}
+
+.credit-panel h3 {
+  font-size: 1.3rem;
+  color: #ffb300;
+  margin-bottom: 0.8rem;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+
+.credit-panel p {
+  color: #d7e2ff;
+  margin: 0.3rem 0;
+}
+
+.credit-price {
+  color: #42a5f5;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.8rem;
+}
+
+/* BUY BUTTON */
+.acs-btn {
+  margin-top: 1rem;
+  background: #00a86b;
+  border: none;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.25s;
+  color: white;
+}
+
+.acs-btn:hover {
+  background: #00794f;
+}
+
+/* FEATURED CARD */
+.featured {
+  border: 1px solid #ffb300;
+  box-shadow: 0 0 25px rgba(255,200,60,0.5);
+}
+
+.offer-badge {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  background: #ffb300;
+  color: #081530;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 8px;
+}
+
+/* FOOTER */
+.acs-footer {
+  text-align: center;
+  padding: 22px;
+  margin-top: 40px;
+  color: #7c8bb8;
+  font-size: 0.9rem;
+}
+
+/* MODAL (same as original, kept intact) */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+  background: #102040;
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 400px;
+  margin: 10% auto;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
+.modal-content h2 { color: #ffb300; }
+.modal-content p { margin: 8px 0; }
+
+</style>
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
-      <h1>Aviation Capital Simulator</h1>
-    </div>
 
-    <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html" class="active">Finance</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html">Routes</a>
-      <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
-      <!-- ✅ CORREGIDO: eliminado Logout dentro del nav -->
-    </nav>
-
-    <div class="acs-auth">
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    </div>
-
-    <!-- ✅ CORREGIDO: reloj cockpit verde -->
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </header>
-
-  <!-- ===== MAIN ===== -->
-  <main class="acs-main">
-    <h2>Buy Credits</h2>
-    <p class="sub">Purchase ACS credits securely using your preferred payment method.</p>
-
-    <section class="credits-grid">
-      <div class="credit-card">
-        <h3>💠 500 Credits</h3>
-        <p>Basic starter pack for new airlines.</p>
-        <p class="price">$5.00 USD</p>
-        <button class="buy-btn" onclick="openModal('500 Credits', '$5.00 USD')">Buy Now</button>
-      </div>
-
-      <div class="credit-card">
-        <h3>💠 1,000 Credits</h3>
-        <p>Recommended for growing fleets.</p>
-        <p class="price">$9.50 USD</p>
-        <button class="buy-btn" onclick="openModal('1,000 Credits', '$9.50 USD')">Buy Now</button>
-      </div>
-
-      <div class="credit-card">
-        <h3>💠 2,500 Credits</h3>
-        <p>Expand your operations efficiently.</p>
-        <p class="price">$22.00 USD</p>
-        <button class="buy-btn" onclick="openModal('2,500 Credits', '$22.00 USD')">Buy Now</button>
-      </div>
-
-      <div class="credit-card">
-        <h3>💠 5,000 Credits</h3>
-        <p>Advanced plan for regional expansion.</p>
-        <p class="price">$40.00 USD</p>
-        <button class="buy-btn" onclick="openModal('5,000 Credits', '$40.00 USD')">Buy Now</button>
-      </div>
-
-      <div class="credit-card featured">
-        <span class="offer-badge">🔥 15% OFF</span>
-        <h3>💠 10,000 Credits</h3>
-        <p>Best value! Perfect for ambitious airlines.</p>
-        <p class="price">$68.00 USD</p>
-        <button class="buy-btn" onclick="openModal('10,000 Credits (15% OFF)', '$68.00 USD')">Buy Now</button>
-      </div>
-    </section>
-
-    <!-- Secure Section -->
-    <div class="secure-section">
-      <p>🔒 Secure Payments — Your data is protected with SSL encryption</p>
-      <div class="payment-icons">
-        <span>💳 Visa</span>
-        <span>💳 MasterCard</span>
-        <span>💱 Wise</span>
-        <span>🔐 SSL</span>
-      </div>
-    </div>
-  </main>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="acs-footer">
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-  </footer>
-
-  <!-- ===== MODAL ===== -->
-  <div id="purchaseModal" class="modal">
-    <div class="modal-content">
-      <h2>Confirm Purchase</h2>
-      <p id="modalText"></p>
-      <p>Select Payment Method:</p>
-      <div style="margin-bottom:10px;">
-        <button class="confirm-btn" onclick="confirmPurchase('Credit Card')">💳 Credit Card</button>
-        <button class="confirm-btn" onclick="confirmPurchase('Wise')">💱 Wise</button>
-      </div>
-      <button class="close-btn" onclick="closeModal()">Cancel</button>
-    </div>
+<header class="acs-header">
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <!-- ===== SCRIPT ===== -->
-  <script>
-    let selectedPackage = "";
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html" class="active">Bank</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+  </nav>
 
-    function openModal(packageName, price) {
-      selectedPackage = packageName + " – " + price;
-      document.getElementById("modalText").textContent = "You are about to purchase " + selectedPackage + ".";
-      document.getElementById("purchaseModal").style.display = "block";
-    }
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+  </div>
+</header>
 
-    function closeModal() {
-      document.getElementById("purchaseModal").style.display = "none";
-    }
+<main class="acs-main">
+  <h2>Buy Credits</h2>
+  <p class="sub">Purchase ACS credits securely using your preferred method.</p>
 
-    function confirmPurchase(method) {
-      alert("✅ Purchase confirmed for " + selectedPackage + " via " + method + ".\nYour credits will be added shortly!");
-      closeModal();
-    }
+  <div class="credit-grid">
 
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
+    <div class="credit-panel">
+      <h3>💠 500 Credits</h3>
+      <p>Starter package</p>
+      <p class="credit-price">$5.00 USD</p>
+      <button class="acs-btn" onclick="openModal('500 Credits', '$5.00 USD')">Buy Now</button>
+    </div>
 
-    // Close modal on background click
-    window.onclick = function(event) {
-      const modal = document.getElementById("purchaseModal");
-      if (event.target === modal) closeModal();
-    };
-  </script>
+    <div class="credit-panel">
+      <h3>💠 1,000 Credits</h3>
+      <p>Great for small expansion</p>
+      <p class="credit-price">$9.50 USD</p>
+      <button class="acs-btn" onclick="openModal('1,000 Credits', '$9.50 USD')">Buy Now</button>
+    </div>
 
- <!-- ✅ CORREGIDO: cierre correcto de scripts y reloj global -->
+    <div class="credit-panel">
+      <h3>💠 2,500 Credits</h3>
+      <p>Solid growth pack</p>
+      <p class="credit-price">$22.00 USD</p>
+      <button class="acs-btn" onclick="openModal('2,500 Credits', '$22.00 USD')">Buy Now</button>
+    </div>
+
+    <div class="credit-panel">
+      <h3>💠 5,000 Credits</h3>
+      <p>Regional expansion pack</p>
+      <p class="credit-price">$40.00 USD</p>
+      <button class="acs-btn" onclick="openModal('5,000 Credits', '$40.00 USD')">Buy Now</button>
+    </div>
+
+    <div class="credit-panel featured">
+      <span class="offer-badge">🔥 15% OFF</span>
+      <h3>💠 10,000 Credits</h3>
+      <p>Best value for ambitious airlines</p>
+      <p class="credit-price">$68.00 USD</p>
+      <button class="acs-btn" onclick="openModal('10,000 Credits (15% OFF)', '$68.00 USD')">Buy Now</button>
+    </div>
+
+  </div>
+
+  <!-- Secure Section -->
+  <div class="credit-panel" style="margin-top:2rem; text-align:center;">
+    <h3>🔒 Secure Payments</h3>
+    <p>Your information is protected with SSL encryption.</p>
+    <p style="margin-top:0.6rem;">
+      💳 Visa • 💳 MasterCard • 💱 Wise • 🔐 SSL
+    </p>
+  </div>
+</main>
+
+<footer class="acs-footer">
+  © 2025 Aviation Capital Simulator. All rights reserved.
+</footer>
+
+<!-- MODAL -->
+<div id="purchaseModal" class="modal">
+  <div class="modal-content">
+    <h2>Confirm Purchase</h2>
+    <p id="modalText"></p>
+    <p>Select Payment Method:</p>
+    <button class="acs-btn" onclick="confirmPurchase('Credit Card')">💳 Credit Card</button>
+    <button class="acs-btn" onclick="confirmPurchase('Wise')">💱 Wise</button>
+    <br><br>
+    <button class="acs-btn" style="background:#d33;" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
 <script>
-  // Compra de créditos ACS (ingreso neto, por ahora 0)
-  localStorage.setItem("acs_finance_ops", 0);
+let selectedPackage = "";
+
+function openModal(pkg, price) {
+  selectedPackage = pkg + " — " + price;
+  document.getElementById("modalText").textContent =
+    "You are about to purchase: " + selectedPackage;
+  document.getElementById("purchaseModal").style.display = "block";
+}
+
+function closeModal() {
+  document.getElementById("purchaseModal").style.display = "none";
+}
+
+function confirmPurchase(method) {
+  alert("Purchase confirmed for " + selectedPackage + " via " + method);
+  closeModal();
+}
+
+function handleLogout() {
+  window.location.href = "login.html";
+}
 </script>
 
-<!-- === MOTOR GLOBAL DE TIEMPO ACS === -->
 <script src="time_engine.js"></script>
 <script src="finance.js"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
-    }
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
 </script>
+
 </body>
 </html>
