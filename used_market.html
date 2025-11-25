@@ -372,12 +372,20 @@ body {
      === SCRIPTS ================================================
      ============================================================ -->
 
-<script src="engine/acs_finance_engine.js"></script>
-<script src="engine/acs_leasing.js"></script>
-<script src="engine/acs_registration_manager.js"></script>
+<!-- PRIMERO: BASES -->
 <script src="engine/acs_aircraft_db.js"></script>
+<script src="engine/acs_finance_engine.js"></script>
+<script src="engine/acs_registration_manager.js"></script>
+
+<!-- LUEGO: SISTEMAS DEPENDIENTES -->
+<script src="engine/acs_leasing.js"></script>
+
+<!-- AHORA: USED MARKET (depende de lo anterior) -->
 <script src="engine/acs_used_market.js"></script>
+
+<!-- SIEMPRE AL FINAL EL MOTOR DE TIEMPO -->
 <script src="time_engine.js"></script>
+
 
 <script>
 function updateClockDisplay(simTime){
