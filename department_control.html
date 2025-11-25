@@ -1,6 +1,6 @@
 <!-- ============================================================
      === DEPARTMENT CONTROL CENTER — Qatar Luxury Edition ========
-     === Version: v2 | Date: 25 NOV 2025 =========================
+     === Version: v2 FIXED | Date: 25 NOV 2025 ===================
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -10,13 +10,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Department Control Center - Aviation Capital Simulator</title>
 
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== ACS Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
 <style>
+/* ============================================================
+     === GLOBAL VISUALS — Qatar Luxury ===========================
+   ============================================================ */
+
 body {
   margin: 0;
   background-color: #081530;
@@ -24,7 +31,10 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
-/* HEADER (igual Dashboard) */
+/* ============================================================
+     === HEADER (Exact Copy from Dashboard) =====================
+   ============================================================ */
+
 .acs-header {
   position: fixed;
   top: 0;
@@ -105,6 +115,7 @@ body {
   color: #ffb300;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .logout-btn:hover {
@@ -121,26 +132,35 @@ body {
   color: #00ff80;
 }
 
-/* MAIN */
+/* ============================================================
+     === MAIN LAYOUT ===========================================
+   ============================================================ */
+
 .acs-main {
   padding: 110px 2rem 70px;
   text-align: center;
 }
 
+/* Título estilo Dashboard */
 .acs-title {
   font-size: 1.9rem;
   font-weight: 600;
   color: #ffca3a;
   text-shadow: 0 0 12px rgba(255,190,60,0.55);
   letter-spacing: 0.6px;
+  margin-bottom: 0.2rem;
 }
 
 .acs-sub {
   margin-top: -0.2rem;
   color: #cbd6ff;
+  font-size: 1rem;
 }
 
-/* PANEL */
+/* ============================================================
+     === PREMIUM PANEL (80% width) =============================
+   ============================================================ */
+
 .control-panel {
   width: 80%;
   margin: 2rem auto;
@@ -151,7 +171,10 @@ body {
   box-shadow: 0 0 25px rgba(0,0,0,0.4);
 }
 
-/* TABLE */
+/* ============================================================
+     === TABLE — Qatar Luxury Dark Premium =====================
+   ============================================================ */
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -177,11 +200,12 @@ tr:nth-child(even) {
   background: rgba(255,255,255,0.03);
 }
 
+/* Staff, Salary, Morale colors */
 .staff { color: #00e28a; font-weight: 600; }
 .salary { color: #ff6464; font-weight: 600; }
 .morale { color: #8ae2ff; font-weight: 600; }
 
-/* BUTTONS */
+/* Action buttons */
 .btn {
   border: none;
   border-radius: 8px;
@@ -197,7 +221,7 @@ tr:nth-child(even) {
 .btn-adjust { background:#ffb300; color:black; }
 .btn-dismiss { background:#000; color:white; }
 
-/* PAYROLL */
+/* Total Payroll */
 #totalPayroll {
   padding-top: 1.2rem;
   font-weight: bold;
@@ -207,7 +231,42 @@ tr:nth-child(even) {
   text-shadow: 0 0 10px rgba(255,200,60,0.4);
 }
 
-/* ====================== GALACTIC LOAD BAR ===================== */
+/* ============================================================
+     === MODALS (sin cambios de funcionalidad) =================
+   ============================================================ */
+
+.acs-modal {
+  display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.7);
+  align-items:center; justify-content:center;
+  z-index:2000;
+}
+
+.acs-modal-content {
+  background:#0b1c3f;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  padding:1.5rem 2rem;
+  width:400px;
+  text-align:center;
+  box-shadow: 0 0 15px rgba(255,179,0,0.4);
+}
+
+/* Close button */
+.close-modal {
+  background:none;
+  border:none;
+  color:#aaa;
+  font-size:1.2rem;
+  cursor:pointer;
+  position:absolute;
+  top:10px;
+  right:20px;
+}
+
+/* ============================================================
+   === ACS GALACTIC LOAD LEVELER (Qatar Luxury) ================
+   ============================================================ */
 
 .load-bar-wrapper {
   display: flex;
@@ -218,24 +277,51 @@ tr:nth-child(even) {
 .load-bar {
   width: 140px;
   height: 12px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(255,200,60,0.25);
+  border: 1px solid rgba(255, 200, 60, 0.25);
   position: relative;
+  box-shadow: 0 0 10px rgba(255,179,0,0.15) inset;
 }
 
 .load-fill {
   height: 100%;
   width: 0%;
-  transition: width 0.5s ease-out;
   border-radius: 10px;
+  transition: width 0.5s ease-out;
+  background: linear-gradient(90deg,
+    rgba(0,255,140,1),
+    rgba(0,200,100,1)
+  );
+  position: relative;
 }
 
-.load-critical { background: linear-gradient(90deg,#ff3b3b,#ff7a7a); }
-.load-low      { background: linear-gradient(90deg,#ff8c3b,#ffbd7a); }
-.load-medium   { background: linear-gradient(90deg,#ffc93b,#ffe37a); }
-.load-high     { background: linear-gradient(90deg,#3bff9d,#6effc4); }
+/* Galactic pulse line */
+.load-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40px;
+  width: 40px;
+  height: 100%;
+  background: rgba(255,255,255,0.25);
+  filter: blur(4px);
+  animation: loadPulse 3.6s infinite ease-in-out;
+}
+
+@keyframes loadPulse {
+  0%   { left: -40px; opacity: 0; }
+  35%  { opacity: 0.35; }
+  50%  { left: 140px; opacity: 0.25; }
+  100% { left: 140px; opacity: 0; }
+}
+
+/* COLORS by percentage */
+.load-critical  { background: linear-gradient(90deg,#ff3b3b,#ff7a7a); }
+.load-low       { background: linear-gradient(90deg,#ff8c3b,#ffbd7a); }
+.load-medium    { background: linear-gradient(90deg,#ffc93b,#ffe37a); }
+.load-high      { background: linear-gradient(90deg,#3bff9d,#6effc4); }
 
 .load-number {
   font-size: 0.85rem;
@@ -247,6 +333,9 @@ tr:nth-child(even) {
 
 <body>
 
+<!-- ============================================================
+     === HEADER ==================================================
+     ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
@@ -268,6 +357,9 @@ tr:nth-child(even) {
   </div>
 </header>
 
+<!-- ============================================================
+     === MAIN ====================================================
+     ============================================================ -->
 <main class="acs-main">
 
   <h2 class="acs-title">🏢 Department Control Center</h2>
@@ -291,7 +383,7 @@ tr:nth-child(even) {
 
       <tfoot>
         <tr>
-          <td colspan="6" id="totalPayroll">Total Monthly Payroll: $0</td>
+          <td colspan="5" id="totalPayroll">Total Monthly Payroll: $0</td>
         </tr>
       </tfoot>
 
@@ -300,97 +392,65 @@ tr:nth-child(even) {
   </section>
 
 </main>
+
 <!-- ============================================================
-     === MODALS — QATAR LUXURY CARD STYLE =======================
+     === MODALS (SIN CAMBIOS) ===================================
      ============================================================ -->
 
-<!-- UNIVERSAL MODAL BACKDROP -->
+<!-- BONUS -->
 <div class="acs-modal" id="bonusModal">
   <div class="acs-modal-content">
-    
-    <!-- CLOSE BUTTON -->
     <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
-
-    <h3 class="modal-title">Assign Department Bonus</h3>
-    <p id="bonusDeptName" class="modal-sub">Department</p>
-
-    <input type="range" min="20" max="100" step="10" value="20" id="bonusRange"
-           class="modal-range">
-    <p class="modal-label">Bonus: <span id="bonusValue">20%</span></p>
-    <p class="modal-label">Estimated Cost: <span id="bonusCost">0</span> USD</p>
-
+    <h3>Assign Department Bonus</h3>
+    <p id="bonusDeptName">Department</p>
+    <input type="range" min="20" max="100" step="10" value="20" id="bonusRange">
+    <p>Bonus: <span id="bonusValue">20%</span></p>
+    <p>Estimated Cost: <span id="bonusCost">0</span> USD</p>
     <button class="modal-btn" onclick="confirmBonus()">Confirm Bonus</button>
   </div>
 </div>
 
-
-<!-- HIRE NEW STAFF -->
+<!-- HIRE -->
 <div class="acs-modal" id="hireModal">
   <div class="acs-modal-content">
-
-    <!-- CLOSE BUTTON -->
     <button class="close-modal" onclick="closeModal('hireModal')">✖</button>
-
-    <h3 class="modal-title">Hire New Staff</h3>
-    <p id="hireDeptName" class="modal-sub">Department</p>
-
-    <input type="number" id="hireCount" min="1" max="50" value="1"
-           class="modal-input">
-
-    <p class="modal-label">Cost: <span id="hireCost">0</span> USD</p>
-
+    <h3>Hire New Staff</h3>
+    <p id="hireDeptName">Department</p>
+    <input type="number" id="hireCount" min="1" max="50" value="1">
+    <p>Cost: <span id="hireCost">0</span> USD</p>
     <button class="modal-btn" onclick="confirmHire()">Confirm Hire</button>
-
   </div>
 </div>
-
 
 <!-- ADJUST SALARY -->
 <div class="acs-modal" id="salaryModal">
   <div class="acs-modal-content">
-
-    <!-- CLOSE BUTTON -->
     <button class="close-modal" onclick="closeModal('salaryModal')">✖</button>
-
-    <h3 class="modal-title">Adjust Department Salary</h3>
-    <p id="salaryDeptName" class="modal-sub">Department</p>
-
-    <input type="range" min="50" max="150" step="5" value="100"
-           id="salaryRange" class="modal-range">
-    <p class="modal-label">Adjustment: <span id="salaryValue">100%</span></p>
-
+    <h3>Adjust Department Salary</h3>
+    <p id="salaryDeptName">Department</p>
+    <input type="range" min="50" max="150" step="5" value="100" id="salaryRange">
+    <p>Adjustment: <span id="salaryValue">100%</span></p>
     <button class="modal-btn" onclick="confirmSalary()">Apply Adjustment</button>
-
   </div>
 </div>
 
-
-<!-- DISMISS STAFF -->
+<!-- DISMISS -->
 <div class="acs-modal" id="dismissModal">
   <div class="acs-modal-content">
-
-    <!-- CLOSE BUTTON -->
     <button class="close-modal" onclick="closeModal('dismissModal')">✖</button>
-
-    <h3 class="modal-title">Confirm Dismissal</h3>
-    <p id="dismissDeptName" class="modal-sub">Department</p>
-
-    <input type="number" id="dismissCount" min="1" max="50" value="1"
-           class="modal-input">
-
+    <h3>Confirm Dismissal</h3>
+    <p id="dismissDeptName">Department</p>
+    <input type="number" id="dismissCount" min="1" max="50" value="1">
     <button class="modal-btn" onclick="confirmDismiss()">Confirm</button>
-
   </div>
 </div>
-
 
 <footer class="acs-footer">
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
 
-
 <!-- ============================================================
-     === SCRIPTS — ORIGINAL (NO CAMBIOS) =========================
+     === SCRIPTS — SIN CAMBIOS (FUNCIONALIDAD ORIGINAL) =========
      ============================================================ -->
 
 <script src="engine/acs_finance.js"></script>
@@ -426,8 +486,9 @@ function ACS_HR_renderLoadBar(dep) {
 }
 
 /* ============================================================
-     === LOAD DEPARTMENTS =======================================
-     ============================================================ */
+   === LOAD DEPARTMENTS — FIXED VERSION ========================
+   ============================================================ */
+
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
   rows.innerHTML = "";
@@ -444,7 +505,7 @@ function loadDepartments() {
           <td>—</td>
           <td class="salary">$${dep.salary}</td>
           <td class="morale">${dep.morale}%</td>
-          <td><em style="color:#777;">No actions available</em></td>
+          <td><em style="color:#aaa;">No actions available</em></td>
         </tr>
       `;
       return;
@@ -454,11 +515,14 @@ function loadDepartments() {
       <tr>
         <td>${dep.name}</td>
         <td class="staff">${dep.staff}</td>
+
+        <!-- ⭐ NUEVA COLUMNA LOAD GALÁCTICA -->
         <td>${ACS_HR_renderLoadBar(dep)}</td>
+
         <td class="salary">$${dep.salary}</td>
         <td class="morale">${dep.morale}%</td>
         <td>
-          <button class="btn btn-bonus" disabled>💵</button>
+          <button class="btn btn-bonus" disabled title="Bonus system coming soon">💵</button>
           <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
           <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
           <button class="btn btn-dismiss" onclick="openDismiss('${dep.id}')">❌</button>
@@ -470,18 +534,12 @@ function loadDepartments() {
   updatePayroll();
 }
 
-/* ============================================================
-   === PAYROLL ==================================================
-   ============================================================ */
 function updatePayroll() {
   const total = ACS_HR_getTotalPayroll();
   document.getElementById("totalPayroll").textContent =
     "Total Monthly Payroll: $" + total.toLocaleString();
 }
 
-/* ============================================================
-   === MODAL OPEN/CLOSE LOGIC ==================================
-   ============================================================ */
 function openHire(id) {
   activeDept = id;
   const hr = ACS_HR_load()[id];
@@ -512,9 +570,6 @@ function closeModal(id) {
   document.getElementById(id).style.display = "none";
 }
 
-/* ============================================================
-   === CONFIRM ACTIONS =========================================
-   ============================================================ */
 function confirmHire() {
   const count = parseInt(document.getElementById("hireCount").value);
   ACS_HR_hire(activeDept, count);
