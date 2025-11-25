@@ -193,8 +193,9 @@
     border-radius: 6px;
     font-size: 0.9rem;
   }
+       
 /* ============================================================
-   === GLOBAL HEADER (Qatar Luxury Official) ===================
+   === GLOBAL HEADER (Exact Copy from index.html) ============
    ============================================================ */
 
 .acs-header {
@@ -235,6 +236,10 @@
   gap: 2rem;
 }
 
+/* ============================================================
+   === NAVIGATION — QATAR PEARL GLOW STYLE =====================
+   ============================================================ */
+
 .acs-nav a {
   position: relative;
   font-size: 1rem;
@@ -247,8 +252,8 @@
 
 .acs-nav a:hover,
 .acs-nav a.active {
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.6);
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
 }
 
 .acs-nav a.active::after,
@@ -270,7 +275,37 @@
   gap: 1rem;
 }
 
-/* SUPPORT BUTTON */
+/* LOGOUT BUTTON (Qatar style) */
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+/* CLOCK */
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* ============================================================
+   === SUPPORT BUTTON (igual dashboard) ========================
+   ============================================================ */
+
 .support-btn {
   padding: 0.45rem 1.1rem;
   border-radius: 12px;
@@ -290,6 +325,7 @@
   box-shadow: 0 0 14px rgba(138,180,255,0.55);
   color: #dfe9ff;
 }
+
 
 /* LOGOUT */
 .logout-btn {
@@ -323,6 +359,7 @@
 <body>
 
 <!-- === QATAR LUXURY GLOBAL HEADER (exact copy from dashboard) === -->
+     
 <header class="acs-header">
   <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
@@ -336,7 +373,6 @@
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
   </nav>
 
   <div class="acs-right">
