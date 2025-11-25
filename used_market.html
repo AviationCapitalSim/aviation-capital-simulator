@@ -1,7 +1,7 @@
-<!-- ===========================================================
-     === ACS USED AIRCRAFT MARKET — FINAL EDITION (HTML) =======
-     Header identical to settings.html
-     =========================================================== -->
+<!-- ============================================================
+     === ACS USED AIRCRAFT MARKET — Qatar Luxury Edition ========
+     === Version: v1 | Date: 25 NOV 2025 =========================
+     ============================================================ -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,201 +9,321 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Used Aircraft Market - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <style>
-    /* === BASE === */
-    body {
-      margin: 0;
-      background-color: #081530;
-      color: white;
-      font-family: "Segoe UI", sans-serif;
-    }
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
 
-    /* === GLOBAL HEADER === */
-    .acs-header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background-color: #0a1433;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.8rem 2rem;
-      border-bottom: 2px solid #FFB300;
-      z-index: 999;
-      box-sizing: border-box;
-    }
-    .acs-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .acs-logo img { height: 40px; }
-    .acs-logo h1 {
-      font-size: 1.1rem;
-      margin: 0;
-      color: #FFB300;
-      letter-spacing: 0.6px;
-    }
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
 
-    .acs-nav {
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      flex: 1;
-    }
-    .acs-nav a {
-      color: white;
-      text-decoration: none;
-      font-size: 0.95rem;
-      transition: 0.3s;
-    }
-    .acs-nav a:hover,
-    .acs-nav a.active {
-      color: #FFB300;
-      text-shadow: 0 0 6px rgba(255,179,0,0.6);
-    }
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
 
-    .acs-auth {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-    }
+<style>
+/* ============================================================
+     === BASE PAGE SETTINGS (Qatar Luxury) =====================
+   ============================================================ */
 
-    .logout-btn {
-      color: #FFB300;
-      border: 1px solid #FFB300;
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
-    .logout-btn:hover {
-      background: #FFB300;
-      color: #081530;
-    }
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
 
-    .acs-clock-header {
-      font-family: 'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      font-weight:bold;
-      background:rgba(0,255,128,0.08);
-      padding:0.3rem 0.8rem;
-      border-radius:6px;
-      font-size:0.9rem;
-    }
+/* ============================================================
+     === GLOBAL HEADER — IDENTICAL TO DASHBOARD ================
+   ============================================================ */
 
-    /* ===== TITLE ===== */
-    .page-title {
-      margin-top: 6rem;
-      text-align: center;
-      color: #FFB300;
-      font-size: 1.7rem;
-      font-weight: 700;
-    }
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
 
-    /* ============================================================
-       === FILTER BAR (CHIPS STYLE, SAME AS BUY NEW) ==============
-       ============================================================ */
-    .filter-bar {
-      display: flex;
-      gap: 0.6rem;
-      padding: 0.7rem 1rem;
-      overflow-x: auto;
-      scrollbar-width: thin;
-      max-width: 1400px;
-      margin: 1.5rem auto;
-    }
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    .chip {
-      padding: 0.45rem 1rem;
-      background: #0f203c;
-      color: #ccc;
-      border: 1px solid #FFB30066;
-      border-radius: 20px;
-      white-space: nowrap;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: 0.2s;
-    }
-    .chip.active {
-      background: #FFB300;
-      color: #081530;
-      font-weight: bold;
-    }
+.acs-left img {
+  height: 46px;
+}
 
-    /* ===== GRID ===== */
-    .used-grid {
-      width: 90%;
-      margin: 1rem auto 2rem;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-      gap: 1.4rem;
-    }
-    .used-card {
-      background: #0e1b3c;
-      border: 1px solid rgba(255, 179, 0, 0.3);
-      border-radius: 12px;
-      padding: 1rem;
-      color: #eee;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-    }
-    .used-card img {
-      width: 100%;
-      height: 130px;
-      object-fit: contain;
-      margin-bottom: 0.5rem;
-    }
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
 
-    .ac-btn {
-      width: 100%;
-      padding: 0.6rem;
-      border-radius: 6px;
-      margin-top: 0.4rem;
-      cursor: pointer;
-      border: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .ac-buy { background: #1fa345; color: #fff; }
-    .ac-lease { background: #1f7aa3; color: #fff; }
-    .ac-info { background: #FFB300; color: #000; }
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
 
-    /* ===== MODAL ===== */
-    .modal-bg {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.75);
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    .modal-box {
-      background: #081530;
-      padding: 1.5rem;
-      border-radius: 12px;
-      width: 360px;
-      border: 1px solid #ffb300;
-      color: #fff;
-    }
-    .modal-close {
-      float: right;
-      cursor: pointer;
-      color: #ffb300;
-      font-size: 1.2rem;
-    }
-  </style>
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+}
+
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* ============================================================
+     === MAIN WRAPPER ==========================================
+   ============================================================ */
+
+.acs-main {
+  padding: 105px 2rem 70px;
+  text-align: center;
+}
+
+.acs-main h2 {
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: #ffca3a;
+  text-shadow: 0 0 12px rgba(255,190,60,0.55);
+}
+
+/* ============================================================
+     === FILTER BAR (from Buy New, unified ACS) ================
+   ============================================================ */
+
+.filter-bar {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  max-width: 1400px;
+  margin: 1.4rem auto 2rem;
+}
+
+.chip {
+  padding: 0.45rem 1rem;
+  background: #0f203c;
+  color: #ccc;
+  border: 1px solid #FFB30066;
+  border-radius: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.chip.active {
+  background: #ffb300;
+  color: #081530;
+  font-weight: bold;
+}
+
+/* ============================================================
+     === USED MARKET PANELS (Dashboard Style) ==================
+   ============================================================ */
+
+.used-grid {
+  display: grid;
+  gap: 2rem;
+  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+}
+
+.used-panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 1.6rem;
+  border-radius: 22px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,179,0,0.25);
+  transition: 0.25s;
+  text-align: center;
+}
+
+.used-panel:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+  border: 1px solid rgba(255,179,0,0.45);
+}
+
+.used-panel img {
+  width: 100%;
+  height: 150px;
+  object-fit: contain;
+  margin-bottom: 0.7rem;
+}
+
+.used-panel h3 {
+  font-size: 1.25rem;
+  color: #ffb300;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+
+.used-panel p {
+  color: #d7e2ff;
+  margin: 0.25rem 0;
+}
+
+/* ACS Buttons */
+.acs-btn {
+  margin-top: 1rem;
+  background: #00a86b;
+  border: none;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: white;
+  transition: 0.25s;
+}
+
+.acs-btn:hover {
+  background: #00794f;
+}
+
+.acs-btn-info {
+  background: #ffb300;
+  color: #000;
+}
+
+.acs-btn-info:hover {
+  background: #ffcf4d;
+}
+
+/* ============================================================
+     === MODAL — Qatar Standard ================================
+   ============================================================ */
+
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-box {
+  background: #081530;
+  padding: 1.5rem;
+  border-radius: 12px;
+  width: 380px;
+  border: 1px solid #ffb300;
+  color: #fff;
+  text-align: center;
+}
+
+.modal-close {
+  float: right;
+  cursor: pointer;
+  color: #ffb300;
+  font-size: 1.3rem;
+}
+
+/* Footer */
+.acs-footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 50px;
+  color: #7c8bb8;
+  font-size: 0.9rem;
+}
+
+</style>
 </head>
 
 <body>
 
-<!-- === HEADER === -->
+<!-- ============================================================
+     === HEADER ==================================================
+     ============================================================ -->
 <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
@@ -215,25 +335,34 @@
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
     <a href="support.html">Support</a>
-    <a href="setting.html">Settings</a>
   </nav>
 
-  <div class="acs-auth">
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
   </div>
 </header>
 
-<!-- === TITLE === -->
-<h2 class="page-title">Used Aircraft Market</h2>
+<!-- ============================================================
+     === MAIN ===================================================
+     ============================================================ -->
+<main class="acs-main">
 
-<!-- === FILTER BAR (CHIPS) === -->
-<div id="filterBar" class="filter-bar"></div>
+  <h2>Used Aircraft Market</h2>
+  <p class="sub">Second-hand fleet opportunities • Real hours • Real cycles</p>
 
-<!-- === GRID === -->
-<div class="used-grid" id="usedGrid"></div>
+  <!-- FILTER BAR -->
+  <div id="filterBar" class="filter-bar"></div>
 
-<!-- === MODAL === -->
+  <!-- GRID -->
+  <div class="used-grid" id="usedGrid"></div>
+
+</main>
+
+<!-- ============================================================
+     === MODAL ==================================================
+     ============================================================ -->
 <div class="modal-bg" id="infoModal">
   <div class="modal-box">
     <span class="modal-close" onclick="closeInfoModal()">✖</span>
@@ -242,45 +371,44 @@
   </div>
 </div>
 
-<!-- === ENGINE / CORE SCRIPTS === -->
+<footer class="acs-footer">
+  © 2025 Aviation Capital Simulator. All rights reserved.
+</footer>
+
+<!-- ============================================================
+     === SCRIPTS ================================================
+     ============================================================ -->
+
 <script src="engine/acs_finance_engine.js"></script>
 <script src="engine/acs_leasing.js"></script>
 <script src="engine/acs_registration_manager.js"></script>
 <script src="engine/acs_aircraft_db.js"></script>
 <script src="engine/acs_used_market.js"></script>
-
-<!-- === TIME ENGINE === -->
 <script src="time_engine.js"></script>
 
-<!-- === CLOCK + LOGOUT SCRIPT === -->
 <script>
-  function updateClockDisplay(simTime){
-    const clockEl = document.getElementById("acs-clock");
-    if(!clockEl) return;
+function updateClockDisplay(simTime){
+  const el = document.getElementById("acs-clock");
+  if(!el) return;
+  let d = simTime instanceof Date ? simTime : new Date();
+  const day = String(d.getUTCDate()).padStart(2,"0");
+  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const month = months[d.getUTCMonth()];
+  const year  = d.getUTCFullYear();
+  const hh = String(d.getUTCHours()).padStart(2,"0");
+  const mm = String(d.getUTCMinutes()).padStart(2,"0");
+  el.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
+}
 
-    let d = simTime instanceof Date ? simTime : new Date();
-    const day   = String(d.getUTCDate()).padStart(2,"0");
-    const monthNames = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-    const month = monthNames[d.getUTCMonth()];
-    const year  = d.getUTCFullYear();
-    const hh    = String(d.getUTCHours()).padStart(2,"0");
-    const mm    = String(d.getUTCMinutes()).padStart(2,"0");
+document.addEventListener("DOMContentLoaded",()=>{
+  if(typeof registerTimeListener==="function"){
+    registerTimeListener(updateClockDisplay);
+  } else updateClockDisplay();
+});
 
-    clockEl.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-    } else {
-      updateClockDisplay();
-    }
-  });
-
-  function handleLogout(){
-    alert("👋 Session closed. See you soon, Captain!");
-    window.location.href="login.html";
-  }
+function handleLogout(){
+  window.location.href="login.html";
+}
 </script>
 
 </body>
