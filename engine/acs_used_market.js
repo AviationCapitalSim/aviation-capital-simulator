@@ -115,7 +115,7 @@ function getAircraftImage(ac) {
   candidates.push(`img/${base}.png`);
   candidates.push(`img/${manuSlug}_${base}.png`);
 
-  return candidates[0] || "img/placeholder_aircraft.png";
+  return "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
