@@ -1,149 +1,305 @@
-<!-- === AIRCRAFT MODULE === -->
-<!-- Version: Beta v1 | Date: 08 NOV 2025 -->
+<!-- === AIRCRAFT MODULE — Qatar Luxury Unified === -->
+<!-- Version: Beta v1.5 | Date: 25 NOV 2025 -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Aircraft - Aviation Capital Simulator</title>
+
+  <!-- ===== STYLES ===== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
-  <style>
-    /* === AIRCRAFT MODULE (ACS Clean 3) === */
-    .aircraft-panels {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
-    }
 
-    .panel h3 {
-      color: #FFB300;
-      margin-bottom: 0.8rem;
-    }
+<style>
+/* ============================================================
+   === GENERAL PAGE BACKGROUND — same as Dashboard ============
+   ============================================================ */
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
 
-    .panel p {
-      color: #ddd;
-      font-size: 1rem;
-      line-height: 1.4;
-    }
+/* ============================================================
+     === HEADER (Adapted to Qatar Luxury Dashboard) ============
+   ============================================================ */
 
-    /* === Botón ACS oficial (verde cockpit) === */
-.acs-btn {
-  background-color: #00c853; /* verde brillante ACS */
-  color: #ffffff;
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+/* === Left block === */
+.acs-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-logo img {
+  height: 46px;
+}
+
+.acs-logo h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
+
+/* === Navigation (center) === */
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  padding-bottom: 6px;
+  transition: 0.25s ease;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffb300;
+  text-shadow: 0 0 6px rgba(255,179,0,0.6);
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+/* === Right block === */
+.acs-auth {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Logout button (Dashboard match) */
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
   font-weight: 600;
-  border: none;
-  border-radius: 10px;
-  padding: 0.45rem 1.2rem;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  text-decoration: none;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+/* Clock — exact dashboard copy */
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* ============================================================
+   === MAIN BODY SPACING (same as Dashboard) ===================
+   ============================================================ */
+
+.acs-main {
+  padding: 110px 2rem 70px;
+  text-align: center;
+}
+
+.acs-main .sub {
+  margin-top: -0.4rem;
+  color: #cbd6ff;
+  font-size: 1rem;
+}
+
+/* ============================================================
+   === PANEL STYLE — Qatar Luxury (Dashboard Model) ============
+   ============================================================ */
+
+.panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 1.6rem 1.5rem;
+  border-radius: 22px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  transition: 0.25s;
+  border: 1px solid rgba(255,179,0,0.15);
+}
+
+.panel:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+  border: 1px solid rgba(255,179,0,0.35);
+}
+
+.panel h3 {
+  font-size: 1.25rem;
+  color: #ffb300;
+  margin-bottom: 0.9rem;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+
+.panel p {
+  color: #d7e2ff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   === PANEL GRID — Qatar Luxury unified ======================
+   ============================================================ */
+
+.aircraft-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* ============================================================
+   === BUTTON — Cockpit Green (Dashboard standard) ============
+   ============================================================ */
+
+.acs-btn {
+  margin-top: 1rem;
+  background: #00a86b;
+  border: none;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.25s;
+  color: white;
 }
 
 .acs-btn:hover {
-  background-color: #00e676; /* tono más claro al pasar el mouse */
-  transform: translateY(-1px);
+  background: #00794f;
 }
 
+/* ============================================================
+   === FOOTER ==================================================
+   ============================================================ */
 
-    /* === Reloj cockpit Airbus === */
-    .acs-clock-header {
-      font-family: 'Orbitron', 'Consolas', monospace;
-      color: #00ff80;
-      font-weight: bold;
-      background: rgba(0, 255, 128, 0.08);
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      margin-left: 1rem;
-    }
-  </style>
+.acs-footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 50px;
+  color: #7c8bb8;
+  font-size: 0.9rem;
+}
+</style>
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
-      <h1>Aviation Capital Simulator</h1>
-    </div>
 
-    <nav class="acs-nav">
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
-      <a href="finance.html">Finance</a>
+      <a href="finance.html">Bank</a>
       <a href="aircraft.html" class="active">Aircraft</a>
       <a href="routes.html">Routes</a>
       <a href="hr.html">HR</a>
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
-    </nav>
+  </nav>
 
-    <div class="acs-auth">
+  <div class="acs-auth">
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+      <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+  </div>
+</header>
+
+<main class="acs-main">
+  <h2>Aircraft</h2>
+  <p class="sub">Fleet management, acquisitions, used markets, and live tracking.</p>
+
+  <section class="aircraft-panels">
+
+    <div class="panel">
+      <h3>✈️ My Aircraft</h3>
+      <p>View and manage your company fleet. Access detailed status, maintenance history, and resale options.</p>
+      <button class="acs-btn" onclick="window.location.href='my_aircraft.html'">Open</button>
     </div>
 
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </header>
+    <div class="panel">
+      <h3>💸 Buy New</h3>
+      <p>Order brand-new aircraft directly from manufacturers. Browse catalogs, place pre-orders, and manage deliveries.</p>
+      <button class="acs-btn" onclick="window.location.href='buy_new.html'">Open</button>
+    </div>
 
-  <!-- ===== MAIN CONTENT ===== -->
-  <main class="acs-main">
-    <h2>Aircraft</h2>
-    <p class="sub">Fleet management, acquisitions, used markets, and live tracking.</p>
+    <div class="panel">
+      <h3>🔁 Buy-Rent Used Aircraft</h3>
+      <p>Access the secondary market to buy or lease used aircraft. Fair pricing based on age and usage.</p>
+      <button class="acs-btn" onclick="window.location.href='used_market.html'">Open</button>
+    </div>
 
-    <section class="aircraft-panels">
-      <!-- MY AIRCRAFT -->
-      <div class="panel">
-        <h3>✈️ My Aircraft</h3>
-        <p>View and manage your company fleet. Access detailed status, maintenance history, and resale options.</p>
-        <button class="acs-btn" onclick="window.location.href='my_aircraft.html'">Open</button>
-      </div>
+    <div class="panel">
+      <h3>🌍 SkyTrack (Live Map)</h3>
+      <p>Track all your company flights live on the world map with real-time status.</p>
+      <button class="acs-btn" onclick="window.location.href='skytrack.html'">Open</button>
+    </div>
 
-      <!-- BUY NEW -->
-      <div class="panel">
-        <h3>💸 Buy New</h3>
-        <p>Order brand-new aircraft directly from manufacturers. Browse catalogs, place pre-orders, and manage deliveries.</p>
-        <button class="acs-btn" onclick="window.location.href='buy_new.html'">Open</button>
-      </div>
+  </section>
+</main>
 
-      <!-- BUY / RENT USED -->
-      <div class="panel">
-        <h3>🔁 Buy-Rent Used Aircraft</h3>
-        <p>Access the secondary market to buy or lease used aircraft. System-calculated fair pricing based on age and usage.</p>
-        <button class="acs-btn" onclick="window.location.href='used_market.html'">Open</button>
-      </div>
+<footer class="acs-footer">
+  © 2025 Aviation Capital Simulator. All rights reserved.
+</footer>
 
-      <!-- SKYTRACK -->
-      <div class="panel">
-        <h3>🌍 SkyTrack (Live Map)</h3>
-        <p>Track your company flights worldwide in real time. Monitor aircraft locations, status, and route progress.</p>
-        <button class="acs-btn" onclick="window.location.href='skytrack.html'">Open</button>
-      </div>
-    </section>
-  </main>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="acs-footer">
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
-  </footer>
-
-  <!-- ===== SCRIPT ===== -->
 <script>
-  function handleLogout() {
-    alert("👋 Session closed. See you soon, Captain!");
-    window.location.href = "login.html";
-  }
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
 </script>
 
-<!-- ===== SCRIPTS (orden correcto) ===== -->
 <script src="time_engine.js"></script>
 <script src="finance.js"></script>
+
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
-    }
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
 </script>
+
 </body>
 </html>
