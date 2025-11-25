@@ -1,201 +1,40 @@
-<!-- ===========================================================
-     === BUY NEW AIRCRAFT — CARDS VERSION (ACS v2.0) ===========
-     =========================================================== -->
+<!-- ============================================================
+     === ACS USED AIRCRAFT MARKET — Qatar Luxury Edition ========
+     === Version: v2 CLEAN | Date: 25 NOV 2025 ===================
+     ============================================================ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Buy New Aircraft - Aviation Capital Simulator</title>
+  <title>Used Aircraft Market - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <!-- ======== ACS Favicons (Qatar Luxury) ======== -->
+  <!-- ======== Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
   <link rel="manifest" href="manifest.json">
 
-  <style>
-  body {
-    margin: 0;
-    background-color: #081530;
-    color: white;
-    font-family: "Segoe UI", sans-serif;
-  }
+<style>
 
-  h2 {
-    color: #FFB300;
-    text-align: center;
-    margin-top: 5rem;
-    font-size: 1.9rem;
-  }
-
-  .sub {
-    color: #ccc;
-    text-align: center;
-    margin-bottom: 1.8rem;
-    font-size: 1rem;
-  }
-
-  /* FILTER BAR */
-  .filter-bar {
-    display: flex;
-    gap: 0.6rem;
-    padding: 0.7rem 1rem;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    max-width: 1400px;
-    margin: 0 auto 1.5rem;
-  }
-
-  .chip {
-    padding: 0.45rem 1rem;
-    background: #0f203c;
-    color: #ccc;
-    border: 1px solid #FFB30066;
-    border-radius: 20px;
-    white-space: nowrap;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: 0.2s;
-  }
-  .chip.active {
-    background: #FFB300;
-    color: #081530;
-    font-weight: bold;
-  }
-
-  /* CARDS GRID */
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.4rem;
-    width: 92%;
-    margin: 0 auto;
-  }
-
-  .card {
-    background: #0f1b3d;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 0 12px rgba(0,0,0,.4);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card img {
-    width: 100%;
-    border-radius: 10px;
-    height: 150px;
-    object-fit: cover;
-    background: #102040;
-  }
-
-  .card h3 {
-    margin: 0.8rem 0 0.4rem;
-    font-size: 1.1rem;
-    color: #FFB300;
-  }
-
-  .spec-line {
-    font-size: 0.85rem;
-    color: #ccc;
-    margin: 0.2rem 0;
-  }
-
-  .card button {
-    margin-top: auto;
-    background: #00C851;
-    border: none;
-    border-radius: 6px;
-    padding: 0.5rem;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.9rem;
-  }
-  .card button:hover {
-    background: #00e060;
-  }
-
-  /* MODAL */
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.6);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-  }
-
-  .modal-content {
-    background: #102040;
-    padding: 1.5rem;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 420px;
-    color: white;
-    text-align: center;
-    box-shadow: 0 0 15px rgba(0,0,0,.5);
-  }
-
-  .modal-content img {
-    width: 100%;
-    height: 150px;
-    border-radius: 10px;
-    object-fit: cover;
-    margin-bottom: 1rem;
-    background:#0f1b3d;
-  }
-
-  select, input {
-    background: #0e1b3c;
-    color: white;
-    border: 1px solid #FFB300;
-    border-radius: 5px;
-    padding: 0.4rem;
-    width: 100%;
-    margin-bottom: 0.6rem;
-  }
-
-  .close-btn {
-    background: #d33;
-    margin-top: 0.5rem;
-  }
-
-  /* ----------------------------------------------------------- */
-  /* NO MODIFICO NADA MÁS - SOLO HEADER Y FAVICONS */
-  /* ----------------------------------------------------------- */
-
-  .logout-btn {
-    color: #FFB300;
-    border: 1px solid #FFB300;
-    padding: 0.3rem 0.8rem;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: 0.2s;
-  }
-
-  .logout-btn:hover {
-    background: #FFB300;
-    color: #081530;
-  }
-
-  .acs-clock-header {
-    font-family: 'Orbitron','Consolas',monospace;
-    color: #00ff80;
-    font-weight: bold;
-    background: rgba(0,255,128,0.08);
-    padding: 0.3rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
-  }
-       
 /* ============================================================
-   === GLOBAL HEADER (Exact Copy from index.html) ============
+     === BASE PAGE (Qatar Luxury) ==============================
+   ============================================================ */
+
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
+
+/* ============================================================
+     === GLOBAL HEADER — SAME AS DASHBOARD =====================
    ============================================================ */
 
 .acs-header {
@@ -236,18 +75,15 @@
   gap: 2rem;
 }
 
-/* ============================================================
-   === NAVIGATION — QATAR PEARL GLOW STYLE =====================
-   ============================================================ */
-
+/* NAV LINKS */
 .acs-nav a {
   position: relative;
   font-size: 1rem;
   letter-spacing: 0.4px;
-  color: #dbe4ff; 
+  color: #dbe4ff;
   text-decoration: none;
-  transition: 0.25s ease;
   padding-bottom: 6px;
+  transition: 0.25s ease;
 }
 
 .acs-nav a:hover,
@@ -256,8 +92,8 @@
   text-shadow: 0 0 6px rgba(255,179,0,0.45);
 }
 
-.acs-nav a.active::after,
-.acs-nav a:hover::after {
+.acs-nav a:hover::after,
+.acs-nav a.active::after {
   content: "";
   position: absolute;
   bottom: -8px;
@@ -275,7 +111,26 @@
   gap: 1rem;
 }
 
-/* LOGOUT BUTTON (Qatar style) */
+/* SUPPORT BUTTON */
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+}
+
+/* LOGOUT BUTTON */
 .logout-btn {
   padding: 0.45rem 1.1rem;
   border: 1px solid #ffb300;
@@ -303,63 +158,169 @@
 }
 
 /* ============================================================
-   === SUPPORT BUTTON (igual dashboard) ========================
+     === MAIN CONTENT ==========================================
    ============================================================ */
 
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
+.acs-main {
+  padding: 105px 2rem 70px;
+  text-align: center;
+}
+
+.acs-main h2 {
+  font-size: 1.9rem;
   font-weight: 600;
-  text-decoration: none;
+  color: #ffca3a;
+  text-shadow: 0 0 12px rgba(255,190,60,0.55);
+}
+
+.sub {
+  color: #ccc;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+/* FILTER BAR */
+.filter-bar {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  overflow-x: auto;
+  max-width: 1400px;
+  margin: 1.4rem auto 2rem;
+}
+
+.chip {
+  padding: 0.45rem 1rem;
+  background: #0f203c;
+  color: #ccc;
+  border: 1px solid #FFB30066;
+  border-radius: 20px;
   cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.chip.active {
+  background: #ffb300;
+  color: #081530;
+  font-weight: bold;
+}
+
+/* ============================================================
+     === USED PANELS (Qatar Dashboard Style) ===================
+   ============================================================ */
+
+.used-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 2rem;
+}
+
+.used-panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 1.6rem;
+  border-radius: 22px;
+  border: 1px solid rgba(255,179,0,0.25);
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  text-align: center;
   transition: 0.25s ease;
 }
 
-.support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-  color: #dfe9ff;
+.used-panel:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255,179,0,0.45);
+  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
 }
 
+.used-panel img {
+  width: 100%;
+  height: 150px;
+  object-fit: contain;
+  margin-bottom: 0.7rem;
+}
 
-/* LOGOUT */
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
+.used-panel h3 {
+  font-size: 1.25rem;
   color: #ffb300;
-  font-weight: 600;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+
+.used-panel p {
+  color: #d7e2ff;
+  margin: 0.25rem 0;
+}
+
+/* BUTTONS */
+.acs-btn {
+  margin-top: 1rem;
+  background: #00a86b;
+  border: none;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
   cursor: pointer;
+  font-weight: 600;
+  color: white;
+  transition: 0.25s ease;
 }
 
-.logout-btn:hover {
+.acs-btn:hover {
+  background: #00794f;
+}
+
+.acs-btn-info {
   background: #ffb300;
-  color: #0c1f3c;
+  color: #000;
 }
 
-/* CLOCK */
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
+.acs-btn-info:hover {
+  background: #ffcf4d;
 }
 
-  </style>
+/* MODAL */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-box {
+  background: #081530;
+  padding: 1.5rem;
+  border-radius: 12px;
+  width: 380px;
+  border: 1px solid #ffb300;
+  text-align: center;
+}
+
+.modal-close {
+  float: right;
+  cursor: pointer;
+  color: #ffb300;
+  font-size: 1.3rem;
+}
+
+/* FOOTER */
+.acs-footer {
+  text-align: center;
+  padding: 26px;
+  color: #7c8bb8;
+  margin-top: 50px;
+  font-size: 0.9rem;
+}
+
+</style>
 </head>
 
 <body>
 
-<!-- === QATAR LUXURY GLOBAL HEADER (exact copy from dashboard) === -->
-     
+<!-- ============================================================
+     === HEADER (ONE COPY ONLY) ================================
+     ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
@@ -368,98 +329,79 @@
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="finance.html">Bank</a>
-    <a href="aircraft.html" class="active">Aircraft</a>
+    <a href="finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
+    <a href="support.html">Support</a>
   </nav>
 
   <div class="acs-right">
     <a href="support.html" class="support-btn">Support</a>
     <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
   </div>
 </header>
 
-<!-- MAIN -->
-<h2>Buy New Aircraft</h2>
-<p class="sub">Direct Purchase & Leasing • OEM Production Slots • Realistic Delivery System</p>
+<!-- ============================================================
+     === MAIN ===================================================
+     ============================================================ -->
 
-<!-- FILTERS -->
-<div id="filterBar" class="filter-bar"></div>
+<main class="acs-main">
+  <h2>Used Aircraft Market</h2>
+  <p class="sub">Second-hand fleet opportunities • Real hours • Real cycles</p>
 
-<!-- CARDS GRID -->
-<div id="cardsGrid" class="cards-grid"></div>
+  <div id="filterBar" class="filter-bar"></div>
 
-<!-- MODAL -->
-<div id="buyModal" class="modal">
-  <div class="modal-content">
-    <img id="modalImage" src="" alt="" />
-    <h3 id="modalTitle"></h3>
+  <div id="usedGrid" class="used-grid"></div>
+</main>
 
-    <label>Operation Type:</label>
-    <select id="modalOperation">
-      <option value="BUY">Buy New</option>
-      <option value="LEASE">Lease New</option>
-    </select>
+<!-- ============================================================
+     === MODAL ==================================================
+     ============================================================ -->
 
-    <label>Quantity:</label>
-    <input type="number" id="modalQty" min="1" value="1" />
-
-    <div id="leaseOptions" style="display:none;">
-      <label>Lease Duration (years):</label>
-      <select id="modalLeaseYears">
-        <option value="5">5 years</option>
-        <option value="10" selected>10 years</option>
-        <option value="15">15 years</option>
-      </select>
-
-      <label>Initial Payment (%):</label>
-      <select id="modalInitialPct">
-        <option value="50">50%</option>
-        <option value="70">70%</option>
-        <option value="100">100% (Full)</option>
-      </select>
-    </div>
-
-    <p id="modalSummary" style="margin-top:1rem; font-size:0.9rem; color:#ffb300;"></p>
-
-    <button id="modalConfirm">Confirm Order</button>
-    <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
+<div class="modal-bg" id="infoModal">
+  <div class="modal-box">
+    <span class="modal-close" onclick="closeInfoModal()">✖</span>
+    <h2 id="modalName"></h2>
+    <p id="modalDetails"></p>
   </div>
 </div>
 
-<!-- === SCRIPTS === -->
-<script src="time_engine.js"></script>
+<footer class="acs-footer">
+  © 2025 Aviation Capital Simulator. All rights reserved.
+</footer>
+
+<!-- ============================================================
+     === SCRIPTS ===============================================
+     ============================================================ -->
+
+<script src="engine/acs_finance_engine.js"></script>
+<script src="engine/acs_leasing.js"></script>
+<script src="engine/acs_registration_manager.js"></script>
 <script src="engine/acs_aircraft_db.js"></script>
+<script src="engine/acs_used_market.js"></script>
+<script src="time_engine.js"></script>
 
 <script>
-  window.ACS_BUY_NEW_IMAGE_FALLBACK = true;
-</script>
+function updateClockDisplay(simTime){
+  const el = document.getElementById("acs-clock");
+  if(!el) return;
+  let d = simTime instanceof Date ? simTime : new Date();
+  const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  el.textContent = `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")} — ${String(d.getUTCDate()).padStart(2,"0")} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
 
-<script src="engine/acs_buy_aircraft.js"></script>
+document.addEventListener("DOMContentLoaded",()=>{
+  if(typeof registerTimeListener==="function"){
+    registerTimeListener(updateClockDisplay);
+  } else updateClockDisplay();
+});
 
-<script>
-  if (typeof checkDeliveries === "function") {
-    document.addEventListener("DOMContentLoaded", () => {
-      checkDeliveries();
-      if (typeof registerTimeListener === "function") {
-        registerTimeListener(() => {
-          checkDeliveries();
-        });
-      }
-    });
-  }
-</script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
-    }
-  });
+function handleLogout(){
+  window.location.href="login.html";
+}
 </script>
 
 </body>
