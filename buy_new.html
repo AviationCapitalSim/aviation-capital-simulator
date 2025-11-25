@@ -1,6 +1,6 @@
 <!-- ============================================================
      === ACS USED AIRCRAFT MARKET — Qatar Luxury Edition ========
-     === Version: v2 CLEAN | Date: 25 NOV 2025 ===================
+     === Version: v1 | Date: 25 NOV 2025 =========================
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -13,17 +13,20 @@
   <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <!-- ======== Favicons ======== -->
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- Apple Touch Icon -->
   <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- Manifest -->
   <link rel="manifest" href="manifest.json">
 
 <style>
-
 /* ============================================================
-     === BASE PAGE (Qatar Luxury) ==============================
+     === BASE PAGE SETTINGS (Qatar Luxury) =====================
    ============================================================ */
 
 body {
@@ -34,7 +37,7 @@ body {
 }
 
 /* ============================================================
-     === GLOBAL HEADER — SAME AS DASHBOARD =====================
+     === GLOBAL HEADER — IDENTICAL TO DASHBOARD ================
    ============================================================ */
 
 .acs-header {
@@ -75,15 +78,14 @@ body {
   gap: 2rem;
 }
 
-/* NAV LINKS */
 .acs-nav a {
   position: relative;
   font-size: 1rem;
   letter-spacing: 0.4px;
   color: #dbe4ff;
   text-decoration: none;
-  padding-bottom: 6px;
   transition: 0.25s ease;
+  padding-bottom: 6px;
 }
 
 .acs-nav a:hover,
@@ -92,8 +94,8 @@ body {
   text-shadow: 0 0 6px rgba(255,179,0,0.45);
 }
 
-.acs-nav a:hover::after,
-.acs-nav a.active::after {
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
   content: "";
   position: absolute;
   bottom: -8px;
@@ -111,26 +113,6 @@ body {
   gap: 1rem;
 }
 
-/* SUPPORT BUTTON */
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
-  transition: 0.25s ease;
-}
-
-.support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-}
-
-/* LOGOUT BUTTON */
 .logout-btn {
   padding: 0.45rem 1.1rem;
   border: 1px solid #ffb300;
@@ -147,7 +129,22 @@ body {
   color: #0c1f3c;
 }
 
-/* CLOCK */
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+}
+
 .acs-clock-header {
   font-family: "Orbitron", monospace;
   padding: 0.4rem 0.8rem;
@@ -158,7 +155,7 @@ body {
 }
 
 /* ============================================================
-     === MAIN CONTENT ==========================================
+     === MAIN WRAPPER ==========================================
    ============================================================ */
 
 .acs-main {
@@ -173,18 +170,16 @@ body {
   text-shadow: 0 0 12px rgba(255,190,60,0.55);
 }
 
-.sub {
-  color: #ccc;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-}
+/* ============================================================
+     === FILTER BAR (from Buy New, unified ACS) ================
+   ============================================================ */
 
-/* FILTER BAR */
 .filter-bar {
   display: flex;
   gap: 0.6rem;
   padding: 0.7rem 1rem;
   overflow-x: auto;
+  scrollbar-width: thin;
   max-width: 1400px;
   margin: 1.4rem auto 2rem;
 }
@@ -195,9 +190,9 @@ body {
   color: #ccc;
   border: 1px solid #FFB30066;
   border-radius: 20px;
+  white-space: nowrap;
   cursor: pointer;
   font-size: 0.85rem;
-  white-space: nowrap;
 }
 
 .chip.active {
@@ -207,29 +202,30 @@ body {
 }
 
 /* ============================================================
-     === USED PANELS (Qatar Dashboard Style) ===================
+     === USED MARKET PANELS (Dashboard Style) ==================
    ============================================================ */
 
 .used-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
   gap: 2rem;
+  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
 }
 
 .used-panel {
   background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
   padding: 1.6rem;
   border-radius: 22px;
-  border: 1px solid rgba(255,179,0,0.25);
   box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,179,0,0.25);
+  transition: 0.25s;
   text-align: center;
-  transition: 0.25s ease;
 }
 
 .used-panel:hover {
   transform: translateY(-6px);
-  border-color: rgba(255,179,0,0.45);
   box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+  border: 1px solid rgba(255,179,0,0.45);
 }
 
 .used-panel img {
@@ -251,7 +247,7 @@ body {
   margin: 0.25rem 0;
 }
 
-/* BUTTONS */
+/* ACS Buttons */
 .acs-btn {
   margin-top: 1rem;
   background: #00a86b;
@@ -261,7 +257,7 @@ body {
   cursor: pointer;
   font-weight: 600;
   color: white;
-  transition: 0.25s ease;
+  transition: 0.25s;
 }
 
 .acs-btn:hover {
@@ -277,7 +273,10 @@ body {
   background: #ffcf4d;
 }
 
-/* MODAL */
+/* ============================================================
+     === MODAL — Qatar Standard ================================
+   ============================================================ */
+
 .modal-bg {
   display: none;
   position: fixed;
@@ -294,6 +293,7 @@ body {
   border-radius: 12px;
   width: 380px;
   border: 1px solid #ffb300;
+  color: #fff;
   text-align: center;
 }
 
@@ -304,12 +304,12 @@ body {
   font-size: 1.3rem;
 }
 
-/* FOOTER */
+/* Footer */
 .acs-footer {
   text-align: center;
-  padding: 26px;
-  color: #7c8bb8;
+  padding: 20px;
   margin-top: 50px;
+  color: #7c8bb8;
   font-size: 0.9rem;
 }
 
@@ -319,7 +319,7 @@ body {
 <body>
 
 <!-- ============================================================
-     === HEADER (ONE COPY ONLY) ================================
+     === HEADER ==================================================
      ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
@@ -347,20 +347,22 @@ body {
 <!-- ============================================================
      === MAIN ===================================================
      ============================================================ -->
-
 <main class="acs-main">
+
   <h2>Used Aircraft Market</h2>
   <p class="sub">Second-hand fleet opportunities • Real hours • Real cycles</p>
 
+  <!-- FILTER BAR -->
   <div id="filterBar" class="filter-bar"></div>
 
-  <div id="usedGrid" class="used-grid"></div>
+  <!-- GRID -->
+  <div class="used-grid" id="usedGrid"></div>
+
 </main>
 
 <!-- ============================================================
      === MODAL ==================================================
      ============================================================ -->
-
 <div class="modal-bg" id="infoModal">
   <div class="modal-box">
     <span class="modal-close" onclick="closeInfoModal()">✖</span>
@@ -374,7 +376,7 @@ body {
 </footer>
 
 <!-- ============================================================
-     === SCRIPTS ===============================================
+     === SCRIPTS ================================================
      ============================================================ -->
 
 <script src="engine/acs_finance_engine.js"></script>
@@ -389,8 +391,13 @@ function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
   if(!el) return;
   let d = simTime instanceof Date ? simTime : new Date();
+  const day = String(d.getUTCDate()).padStart(2,"0");
   const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
-  el.textContent = `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")} — ${String(d.getUTCDate()).padStart(2,"0")} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  const month = months[d.getUTCMonth()];
+  const year  = d.getUTCFullYear();
+  const hh = String(d.getUTCHours()).padStart(2,"0");
+  const mm = String(d.getUTCMinutes()).padStart(2,"0");
+  el.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
