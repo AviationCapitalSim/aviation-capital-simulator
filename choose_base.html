@@ -1,5 +1,5 @@
 <!-- === CHOOSE BASE MODULE — Qatar Luxury Edition === -->
-<!-- Version: Beta v4 FIXED | Date: 26 NOV 2025 -->
+<!-- Version: Beta v4 HISTORICAL DYNAMIC | Date: 26 NOV 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -289,7 +289,90 @@ let selectedContinent = "";
 let selectedCountry = "";
 
 /* ============================================================
-   LOAD COUNTRIES (MODO HISTÓRICO SUAVE)
+   === HISTORICAL GROUPS (OPCIÓN 1) ============================
+   ============================================================ */
+const ACS_HISTORICAL_GROUPS = [
+  {
+    label: "Soviet Union",
+    start: 1917,
+    end: 1991,
+    members: [
+      "Russia","Belarus","Ukraine","Kazakhstan","Kyrgyzstan","Uzbekistan",
+      "Turkmenistan","Tajikistan","Georgia","Armenia","Azerbaijan","Moldova","Lithuania","Latvia","Estonia"
+    ]
+  },
+  {
+    label: "Korea",
+    start: 1900,
+    end: 1948,
+    members: ["South Korea","North Korea","Korea"]
+  },
+  {
+    label: "French Indochina",
+    start: 1887,
+    end: 1954,
+    members: ["Vietnam","Laos","Cambodia"]
+  },
+  {
+    label: "British Protectorates",
+    start: 1900,
+    end: 1971,
+    members: [
+      "United Arab Emirates","Qatar","Bahrain","Kuwait","Oman",
+      "Trucial States"
+    ]
+  }
+];
+
+/* ============================================================
+   === AUX: Buscar entrada en ACS_CountryHistory ===============
+   ============================================================ */
+function findCountryHistory(name) {
+  if (!window.ACS_CountryHistory) return null;
+  return ACS_CountryHistory.find(c => c.name === name) || null;
+}
+
+/* ============================================================
+   === RESOLVE COUNTRY LABEL FOR YEAR ==========================
+   ============================================================ */
+/**
+ * Recibe un país moderno (ej: "Russia") y un año (ej: 1940)
+ * Devuelve:
+ *  - Un nombre histórico agrupado ("Soviet Union", "Korea", etc.)
+ *  - O el mismo país si existe en ese año
+ *  - O null si no debería mostrarse en ese año
+ */
+function resolveCountryForYear(countryName, year) {
+  if (!countryName) return null;
+
+  // 1) ¿Pertenece a un grupo histórico?
+  for (const group of ACS_HISTORICAL_GROUPS) {
+    if (group.members.includes(countryName)) {
+      if (year >= group.start && year <= group.end) {
+        return group.label;
+      }
+      // Fuera del rango del grupo → seguimos evaluando como país moderno
+    }
+  }
+
+  // 2) ¿Existe este país en la historia?
+  const hist = findCountryHistory(countryName);
+  if (hist) {
+    const start = hist.start ?? -9999;
+    const end = (hist.end === null || hist.end === undefined) ? 9999 : hist.end;
+    if (year >= start && year <= end) {
+      return countryName; // válido en ese año
+    } else {
+      return null; // país moderno fuera de su rango
+    }
+  }
+
+  // 3) Si no está en ACS_CountryHistory → lo aceptamos siempre
+  return countryName;
+}
+
+/* ============================================================
+   LOAD COUNTRIES — CON FILTRO HISTÓRICO DINÁMICO
 ============================================================ */
 function loadCountries() {
   selectedContinent = document.getElementById("continentSelect").value;
@@ -301,32 +384,46 @@ function loadCountries() {
 
   if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
 
-  /* Países que aparecen en los aeropuertos */
-  const airportCountries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.region))].sort();
+  const year = ACS_TIME.currentTime.getUTCFullYear();
 
-  /* Países válidos según historia (solo si existen) */
-  const validCountries = ACS_CountryHistory
-    .filter(c => c.region === selectedContinent || true)
-    .map(c => c.name);
+  // Países que aparecen en los aeropuertos de ese continente
+  const airportCountries = [...new Set(
+    WorldAirportsACS[selectedContinent].map(a => a.region)
+  )];
 
-  /* === MODO SUAVE === */
-  const finalCountries = airportCountries.filter(c => {
-    // Si coincide con historia → ok
-    if (validCountries.includes(c)) return true;
-    // Si NO está en historia → igual se acepta (suave)
-    return true;
+  // Resolver etiqueta histórica/actual
+  const labelSet = new Set();
+
+  airportCountries.forEach(countryName => {
+    const label = resolveCountryForYear(countryName, year);
+    if (label) {
+      labelSet.add(label);
+    }
   });
 
-  finalCountries.forEach(name => {
+  const finalCountries = Array.from(labelSet).sort();
+
+  if (finalCountries.length === 0) {
+    // fallback por si algo raro pasa
+    airportCountries.sort().forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      countrySelect.appendChild(opt);
+    });
+    return;
+  }
+
+  finalCountries.forEach(label => {
     const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
+    opt.value = label;
+    opt.textContent = label;
     countrySelect.appendChild(opt);
   });
 }
 
 /* ============================================================
-   LOAD AIRPORTS (SIN CAMBIO, SOLO VISUAL)
+   LOAD AIRPORTS — USA LA MISMA RESOLUCIÓN HISTÓRICA
 ============================================================ */
 function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
@@ -338,8 +435,13 @@ function loadAirports() {
     return;
   }
 
+  const year = ACS_TIME.currentTime.getUTCFullYear();
+
   const airports = WorldAirportsACS[selectedContinent]
-    .filter(a => a.region === selectedCountry)
+    .filter(a => {
+      const label = resolveCountryForYear(a.region, year);
+      return label === selectedCountry;
+    })
     .sort((a, b) => {
       const demandA = (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
       const demandB = (b.demand?.Y || 0) + (b.demand?.C || 0) + (b.demand?.F || 0);
@@ -347,7 +449,7 @@ function loadAirports() {
     });
 
   if (!airports.length) {
-    tbody.innerHTML = '<tr><td colspan="9">No airports available for this country.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9">No airports available for this country in this year.</td></tr>';
     return;
   }
 
@@ -365,7 +467,7 @@ function loadAirports() {
       <td>${a.icao}</td>
       <td>${a.iata}</td>
       <td>${a.city}</td>
-      <td>${a.name}</td>
+      <td>${a.name || a.city}</td>
       <td>${a.category}</td>
       <td>
         ${Y}/${C}/${F}
@@ -380,7 +482,8 @@ function loadAirports() {
 }
 
 /* ============================================================
-   SET BASE (SIN CAMBIO)
+   SET BASE — SE MANTIENE MODERNO (GUARDA a.region)
+   (Luego el Dashboard hará la magia histórica con banderas)
 ============================================================ */
 function setBase(icao) {
   const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
@@ -393,13 +496,16 @@ function setBase(icao) {
     return;
   }
 
+  user.airline.country = airport.region;  // país moderno (para flags actuales de momento)
   user.airline.base = {
     icao: airport.icao,
     iata: airport.iata,
     city: airport.city,
+    name: airport.name,
+    airportName: airport.name,
     country: airport.region,
     continent: selectedContinent,
-    demand_total: (airport.demand.Y||0)+(airport.demand.C||0)+(airport.demand.F||0),
+    demand_total: (airport.demand?.Y||0)+(airport.demand?.C||0)+(airport.demand?.F||0),
     slot_capacity: airport.slot_capacity,
     cost_slot_usd: airport.slot_cost_usd
   };
@@ -451,7 +557,6 @@ document.addEventListener("mousemove", e => {
 document.addEventListener("DOMContentLoaded", () => {
   loadAirportScripts(() => {
     buildAirportIndex();
-
     document.getElementById("continentSelect").addEventListener("change", loadCountries);
     document.getElementById("countrySelect").addEventListener("change", loadAirports);
   });
