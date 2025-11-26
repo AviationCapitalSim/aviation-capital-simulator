@@ -475,7 +475,18 @@ document.addEventListener("DOMContentLoaded", () => {
         "NEW",
         { hours: 0, cycles: 0 }
       );
+/* === MANTENIMIENTO INICIAL PARA LEASE NEW === */
+if (typeof ACS_MyAircraft_addLeasedAircraft === "function") {
+    const deliveryDate = new Date();
+    const nextC = new Date(deliveryDate);
+    nextC.setUTCFullYear(nextC.getUTCFullYear() + 1);
 
+    const nextD = new Date(deliveryDate);
+    nextD.setUTCFullYear(nextD.getUTCFullYear() + 8);
+
+    contract.nextC = nextC.toISOString();
+    contract.nextD = nextD.toISOString();
+}
       console.log("📦 NEW Leasing contract created:", contract);
     }
   }
