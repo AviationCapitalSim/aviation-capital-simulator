@@ -144,30 +144,44 @@ function ACS_Leasing_applyMonthlyCosts() {
 }
 
 /* ============================================================
-   ===  INTEGRACIÓN CON TIME ENGINE — CADA VEZ QUE CAMBIA EL MES
+   ===  INTEGRACIÓN REAL CON TIME ENGINE v4.4 — CAMBIO DE MES ==
    ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
-    if (typeof registerTimeListener === "function") {
-        registerTimeListener(() => {
+  if (typeof registerTimeListener === "function") {
 
-            // Detectamos cambio de mes a través del Time Engine
-            const currentDate = localStorage.getItem("ACS_Sim_CurrentDate");
+    let lastMonth = null;
+    let lastYear  = null;
 
-            if (!currentDate) return;
+    registerTimeListener((simTime) => {
 
-            // Este listener se ejecuta cada tick, pero nosotros detectamos mes nuevo
-            const lastMonth = localStorage.getItem("ACS_Leasing_LastMonth");
-            const currentMonth = currentDate.split(" ")[1] + currentDate.split(" ")[2];
+      if (!(simTime instanceof Date)) return;
 
-            if (lastMonth !== currentMonth) {
-                // Guardar nuevo mes
-                localStorage.setItem("ACS_Leasing_LastMonth", currentMonth);
+      const currentMonth = simTime.getUTCMonth();
+      const currentYear  = simTime.getUTCFullYear();
 
-                // Aplicar cobro del mes
-                ACS_Leasing_applyMonthlyCosts();
-            }
-        });
-    }
+      // Primera ejecución → solo inicializar
+      if (lastMonth === null) {
+        lastMonth = currentMonth;
+        lastYear  = currentYear;
+        return;
+      }
+
+      // Comparación real: ¿cambió el mes?
+      if (currentMonth !== lastMonth || currentYear !== lastYear) {
+
+        console.log("📅 NEW SIM MONTH — Leasing Engine Triggered");
+
+        // Actualizar valores guardados
+        lastMonth = currentMonth;
+        lastYear  = currentYear;
+
+        // Cobro automático del mes
+        ACS_Leasing_applyMonthlyCosts();
+      }
+
+    });
+  }
 
 });
