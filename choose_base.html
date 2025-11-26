@@ -1,5 +1,5 @@
 <!-- === CHOOSE BASE MODULE — Qatar Luxury Edition === -->
-<!-- Version: Beta v4 FIXED | Date: 22 NOV 2025 -->
+<!-- Version: Beta v4 FIXED + Historical Integration | Date: 26 NOV 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,9 +31,7 @@
       text-align: center;
     }
 
-    /* ============================================================
-         QATAR LUXURY HEADER — EXACT COPY
-       ============================================================ */
+    /* ================= Qatar Luxury Header ================= */
     .acs-header {
       position: fixed;
       top: 0;
@@ -98,9 +96,7 @@
       margin-left: 1rem;
     }
 
-    /* ============================================================
-         QATAR LUXURY MAIN CARD
-       ============================================================ */
+    /* ================= Qatar Luxury Main Card ================= */
     .form-container {
       background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
       max-width: 1000px;
@@ -116,9 +112,7 @@
     h2 { color: #FFB300; font-size: 1.8rem; }
     p  { color: #c9d4ff; font-size: 1rem; }
 
-    /* ============================================================
-         SELECTS
-       ============================================================ */
+    /* ================= Selects ================= */
     .lux-select {
       width: 48%;
       padding: 0.85rem 1rem;
@@ -140,9 +134,7 @@
                   inset 0 0 22px rgba(255,255,255,0.07);
     }
 
-    /* ============================================================
-         TABLE
-       ============================================================ */
+    /* ================= Table ================= */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -167,9 +159,7 @@
 
     tr:hover { background: rgba(255,255,255,0.07); }
 
-    /* ============================================================
-         DEMAND BAR + TOOLTIP
-       ============================================================ */
+    /* ================= Demand Tooltip ================= */
     #demandTooltip {
       position: absolute;
       display: none;
@@ -201,9 +191,7 @@
       margin-top: 6px;
     }
 
-    /* ============================================================
-         GREEN BUTTON
-       ============================================================ */
+    /* ================= Green Button ================= */
     .acs-btn {
       background-color: #1DB954;
       color: #fff;
@@ -296,7 +284,7 @@ let selectedContinent = "";
 let selectedCountry = "";
 
 /* ============================================================
-   LOAD COUNTRIES
+   FILTER HISTÓRICO DE PAÍSES — (AÑO ACS)
 ============================================================ */
 function loadCountries() {
   selectedContinent = document.getElementById("continentSelect").value;
@@ -308,14 +296,56 @@ function loadCountries() {
 
   if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
 
-  const countries = [...new Set(WorldAirportsACS[selectedContinent].map(a => a.region))].sort();
+  const year = ACS_TIME.currentTime.getUTCFullYear();
 
-  countries.forEach(name => {
+  // Países válidos históricamente
+  const validCountries = ACS_CountryHistory
+    .filter(c => c.region === selectedContinent)
+    .filter(c => c.start <= year && (c.end === null || c.end >= year))
+    .map(c => c.name);
+
+  // Países disponibles en aeropuertos
+  const airportCountries = [
+    ...new Set(WorldAirportsACS[selectedContinent].map(a => a.region))
+  ];
+
+  // Intersección (historia + aeropuertos)
+  const finalCountries = airportCountries.filter(c => validCountries.includes(c));
+
+  finalCountries.sort().forEach(name => {
     const opt = document.createElement("option");
     opt.value = name;
     opt.textContent = name;
     countrySelect.appendChild(opt);
   });
+}
+
+/* ============================================================
+   FILTRO HISTÓRICO DE AEROPUERTOS — (AÑO ACS)
+============================================================ */
+function ACS_filterAirport_Historical(airport, year) {
+
+  // Si trae start_year/end_year → respetarlos
+  if (airport.start_year || airport.end_year) {
+    return (
+      (!airport.start_year || airport.start_year <= year) &&
+      (!airport.end_year || airport.end_year >= year)
+    );
+  }
+
+  // Estimación automática de aeropuertos sin año real
+  const name = (airport.name || "").toLowerCase();
+
+  const oldKeywords = ["international", "intl", "aerodrome", "aeropuerto", "airport", "airfield"];
+  if (oldKeywords.some(k => name.includes(k))) {
+    return year >= 1930;
+  }
+
+  if (airport.category === "Military" || name.includes("air base")) {
+    return year >= 1920;
+  }
+
+  return year >= 1950;
 }
 
 /* ============================================================
@@ -335,7 +365,7 @@ function loadAirports() {
 
   const airports = WorldAirportsACS[selectedContinent]
     .filter(a => a.region === selectedCountry)
-    //.filter(a => ACS_filterAirport_Historical(a, year))  <!-- Histórico desactivado -->
+    .filter(a => ACS_filterAirport_Historical(a, year))   <!-- ACTIVADO -->
     .sort((a, b) => {
       const demandA = (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
       const demandB = (b.demand?.Y || 0) + (b.demand?.C || 0) + (b.demand?.F || 0);
@@ -343,7 +373,7 @@ function loadAirports() {
     });
 
   if (!airports.length) {
-    tbody.innerHTML = '<tr><td colspan="9">No airports available for this country.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9">No airports available for this country in this year.</td></tr>';
     return;
   }
 
@@ -368,9 +398,6 @@ function loadAirports() {
       <td>
         ${Y}/${C}/${F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-        <div class="demand-pie" style="display:none; --eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
-          <div class="slice"></div>
-        </div>
       </td>
       <td>${a.slot_capacity}</td>
       <td>$${a.slot_cost_usd.toLocaleString()}</td>
@@ -381,7 +408,7 @@ function loadAirports() {
 }
 
 /* ============================================================
-   SET BASE
+   SET BASE — (REPARADO PARA DASHBOARD)
 ============================================================ */
 function setBase(icao) {
   const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
@@ -394,10 +421,13 @@ function setBase(icao) {
     return;
   }
 
+  user.airline.country = airport.region;
   user.airline.base = {
     icao: airport.icao,
     iata: airport.iata,
     city: airport.city,
+    name: airport.name,
+    airportName: airport.name,
     country: airport.region,
     continent: selectedContinent,
     demand_total: (airport.demand.Y||0)+(airport.demand.C||0)+(airport.demand.F||0),
@@ -450,7 +480,7 @@ document.addEventListener("mousemove", e => {
 });
 
 /* ============================================================
-   INITIALIZER
+   INITIALIZER (NO TOCADO)
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   loadAirportScripts(() => {
