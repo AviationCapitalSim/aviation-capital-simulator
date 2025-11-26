@@ -1,6 +1,6 @@
 <!-- ============================================================
-     === ACS COMPANY FINANCE MODULE — Qatar Luxury LITE =========
-     === Version: v1.0 | Date: 26 NOV 2025 ======================
+     === ACS COMPANY FINANCE MODULE — Qatar Luxury Standard =====
+     === Version: v1.1 | FIX = 100% Functional =================
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -22,7 +22,7 @@
 
 <style>
 /* ============================================================
-   === BASE PAGE STYLING — Company Finance SCOPE ONLY ==========
+   === ORIGINAL FINANCE INTERNAL STYLE — RESTORED ==============
    ============================================================ */
 
 body {
@@ -32,7 +32,6 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
-/* wrapper principal de esta página */
 #companyFinanceRoot {
   padding: 120px 2rem 60px;
 }
@@ -74,13 +73,14 @@ body {
   color: #ddd;
 }
 
-/* Cards */
+/* Grid */
 #companyFinanceRoot .finance-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1rem;
 }
 
+/* Cards */
 #companyFinanceRoot .finance-card {
   background: #0e1c45;
   padding: 1rem;
@@ -128,13 +128,151 @@ body {
   border-radius: 10px;
   padding: 1rem;
 }
+     .acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+.acs-left img {
+  height: 46px;   <-- EL TAMAÑO IDEAL DEL LOGO
+}
+/* ============================================================
+   === GLOBAL HEADER (Exact Copy from dashboard.html) ==========
+   ============================================================ */
+
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-left img {
+  height: 46px;
+}
+
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
+
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+  color: #dfe9ff;
+}
+
 </style>
 </head>
 
 <body>
 
 <!-- ============================================================
-     === QATAR LUXURY HEADER (Exacto al dashboard) ===============
+     === QATAR LUXURY HEADER ====================================
      ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
@@ -149,7 +287,6 @@ body {
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
-    <a href="company_finance.html" class="active">Company Finance</a>
   </nav>
 
   <div class="acs-right">
@@ -159,8 +296,9 @@ body {
   </div>
 </header>
 
+
 <!-- ============================================================
-     === MAIN WRAPPER ===========================================
+     === MAIN WRAPPER — RESTORED ID =============================
      ============================================================ -->
 <main class="acs-main" id="companyFinanceRoot">
 
@@ -226,7 +364,6 @@ body {
       </thead>
 
       <tbody id="cf-log-body">
-        <!-- Loaded dynamically -->
       </tbody>
     </table>
   </div>
@@ -245,8 +382,7 @@ body {
         </tr>
       </thead>
 
-      <tbody id="cf-contracts-body">
-      </tbody>
+      <tbody id="cf-contracts-body"></tbody>
     </table>
   </div>
 
@@ -258,115 +394,41 @@ body {
 <script src="time_engine.js"></script>
 
 <script>
-/* ============================================================
-   === SAFE HELPERS — FINANCE OBJECT & MONEY FORMAT ===========
-   ============================================================ */
-
-// Cargar ACS_Finance de forma segura (sin romper si falta algo)
-function getSafeFinance() {
-  let f = null;
-
-  try {
-    f = JSON.parse(localStorage.getItem("ACS_Finance") || "null");
-  } catch (e) {
-    f = null;
-  }
-
-  if (!f || typeof f !== "object") {
-    f = {
-      capital: 0,
-      revenue: 0,
-      expenses: 0,
-      profit: 0,
-      history: []
-    };
-    localStorage.setItem("ACS_Finance", JSON.stringify(f));
-  }
-
-  // Normalizar tipos numéricos
-  f.capital  = Number(f.capital)  || 0;
-  f.revenue  = Number(f.revenue)  || 0;
-  f.expenses = Number(f.expenses) || 0;
-  f.profit   = Number(f.profit)   || 0;
-  if (!Array.isArray(f.history)) f.history = [];
-
-  return f;
-}
-
-function fmtMoney(value) {
-  const n = Number(value);
-  if (!isFinite(n)) return "$0";
-  return "$" + n.toLocaleString();
-}
-
-/* ============================================================
-   === UPDATE OVERVIEW (CARDS) ================================
-   ============================================================ */
 function updateCompanyOverview() {
-  const f = getSafeFinance();
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-  const capEl  = document.getElementById("cf-capital");
-  const revEl  = document.getElementById("cf-revenue");
-  const expEl  = document.getElementById("cf-expenses");
-  const profEl = document.getElementById("cf-profit");
-
-  if (!capEl || !revEl || !expEl || !profEl) return;
-
-  capEl.textContent  = fmtMoney(f.capital);
-  revEl.textContent  = fmtMoney(f.revenue);
-  expEl.textContent  = fmtMoney(f.expenses);
-  profEl.textContent = fmtMoney(f.profit);
+  document.getElementById("cf-capital").textContent  = "$" + f.capital.toLocaleString();
+  document.getElementById("cf-revenue").textContent  = "$" + f.revenue.toLocaleString();
+  document.getElementById("cf-expenses").textContent = "$" + f.expenses.toLocaleString();
+  document.getElementById("cf-profit").textContent   = "$" + f.profit.toLocaleString();
 }
 
-/* ============================================================
-   === MONTHLY HISTORY TABLE ==================================
-   ============================================================ */
 function loadHistory() {
-  const f = getSafeFinance();
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const tbody = document.getElementById("cf-history");
-  if (!tbody) return;
-
   tbody.innerHTML = "";
 
-  if (!f.history || f.history.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" style="color:#aaa; font-style:italic;">
-          No monthly history yet.
-        </td>
-      </tr>`;
-    return;
-  }
+  if (!f.history) return;
 
   f.history.forEach(row => {
-    const month    = row.month || "-";
-    const revenue  = fmtMoney(row.revenue || 0);
-    const expenses = fmtMoney(row.expenses || 0);
-    const profit   = fmtMoney(row.profit || 0);
-
     tbody.innerHTML += `
       <tr>
-        <td>${month}</td>
-        <td>${revenue}</td>
-        <td>${expenses}</td>
-        <td>${profit}</td>
+        <td>${row.month}</td>
+        <td>$${row.revenue.toLocaleString()}</td>
+        <td>$${row.expenses.toLocaleString()}</td>
+        <td>$${row.profit.toLocaleString()}</td>
       </tr>
     `;
   });
 }
 
-/* ============================================================
-   === CHART ===================================================
-   ============================================================ */
 function renderChart() {
-  const f = getSafeFinance();
-  const ctxEl = document.getElementById("growthChart");
-  if (!ctxEl) return;
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-  const labels = (f.history || []).map(h => h.month || "");
-  const data   = (f.history || []).map(h => Number(h.profit) || 0);
+  const labels = f.history.map(h => h.month);
+  const data = f.history.map(h => h.profit);
 
-  const ctx = ctxEl.getContext("2d");
+  const ctx = document.getElementById("growthChart").getContext("2d");
 
   new Chart(ctx, {
     type: "line",
@@ -380,105 +442,46 @@ function renderChart() {
         tension: 0.3,
         fill: false
       }]
-    },
-    options: {
-      scales: {
-        y: { beginAtZero: true }
-      }
     }
   });
 }
 
-/* ============================================================
-   === TRANSACTION LOG ========================================
-   ============================================================ */
 function loadTransactionLog() {
-  let log = [];
-  try {
-    log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-  } catch (e) {
-    log = [];
-  }
-
+  const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
   const body = document.getElementById("cf-log-body");
-  if (!body) return;
-
   body.innerHTML = "";
 
-  if (!log || log.length === 0) {
-    body.innerHTML = `
-      <tr>
-        <td colspan="4" style="color:#aaa; font-style:italic;">
-          No transactions yet.
-        </td>
-      </tr>`;
-    return;
-  }
-
   log.slice().reverse().forEach(entry => {
-    const time   = entry.time   || "-";
-    const type   = entry.type   || "-";
-    const source = entry.source || "-";
-    const amount = fmtMoney(entry.amount || 0);
-
     body.innerHTML += `
       <tr>
-        <td>${time}</td>
-        <td>${type}</td>
-        <td>${source}</td>
-        <td>${amount}</td>
+        <td>${entry.time}</td>
+        <td>${entry.type}</td>
+        <td>${entry.source}</td>
+        <td>$${entry.amount.toLocaleString()}</td>
       </tr>
     `;
   });
 }
 
-/* ============================================================
-   === ACTIVE CONTRACTS (LEASING) =============================
-   ============================================================ */
 function loadContracts() {
-  let fleet = [];
-  try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  } catch (e) {
-    fleet = [];
-  }
-
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
   const tbody = document.getElementById("cf-contracts-body");
-  if (!tbody) return;
-
   tbody.innerHTML = "";
 
-  const leases = fleet.filter(ac => ac && ac.leasing);
-
-  if (leases.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" style="color:#aaa; font-style:italic;">
-          No active leasing contracts.
-        </td>
-      </tr>`;
-    return;
-  }
-
-  leases.forEach(ac => {
-    const name   = `${ac.manufacturer || ""} ${ac.model || ""}`.trim() || "Aircraft";
-    const cost   = ac.leasing && ac.leasing.cost ? fmtMoney(ac.leasing.cost) : "$0";
-    const next   = (ac.leasing && ac.leasing.nextPayment) || "N/A";
-
-    tbody.innerHTML += `
-      <tr>
-        <td>${name}</td>
-        <td>Lease</td>
-        <td>${cost}</td>
-        <td>${next}</td>
-      </tr>
-    `;
-  });
+  fleet
+    .filter(ac => ac.leasing)
+    .forEach(ac => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${ac.manufacturer} ${ac.model}</td>
+          <td>Lease</td>
+          <td>$${ac.leasing.cost.toLocaleString()}</td>
+          <td>${ac.leasing.nextPayment || "N/A"}</td>
+        </tr>
+      `;
+    });
 }
 
-/* ============================================================
-   === TIME ENGINE — CLOCK ====================================
-   ============================================================ */
 function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
   if(!el) return;
@@ -492,25 +495,19 @@ function updateClockDisplay(simTime){
   el.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
 }
 
-/* ============================================================
-   === INITIAL LOAD ===========================================
-   ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
 
-  updateCompanyOverview();   // 👉 Paso A: tarjetas seguras
-  loadHistory();             // ya protegido
-  renderChart();             // ya protegido
-  loadTransactionLog();      // ya protegido
-  loadContracts();           // ya protegido
+  updateCompanyOverview();
+  loadHistory();
+  renderChart();
+  loadTransactionLog();
+  loadContracts();
 });
 
-/* ============================================================
-   === LOGOUT ================================================
-   ============================================================ */
 function handleLogout(){
   window.location.href="login.html";
 }
