@@ -392,73 +392,112 @@ document.addEventListener("DOMContentLoaded", () => {
   if (leasePct) leasePct.addEventListener("change", updateModalSummary);
 
   if (confirmBtn) {
-    confirmBtn.addEventListener("click", () => {
-      const ac = selectedAircraft;
-      if (!ac) return;
+   confirmBtn.addEventListener("click", () => {
 
-      const op = document.getElementById("modalOperation").value;
-      const qty = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
+  const ac = selectedAircraft;
+  if (!ac) return;
 
-      const deliveryDate = calculateDeliveryDate(ac, qty);
+  const op = document.getElementById("modalOperation").value;
+  const qty = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
 
-      const manu = ac.manufacturer;
-      if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
-      ACS_SLOTS[manu] += qty;
-      saveSlots();
+  const deliveryDate = calculateDeliveryDate(ac, qty);
 
-      let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+  const manu = ac.manufacturer;
+  if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
+  ACS_SLOTS[manu] += qty;
+  saveSlots();
 
-      const entry = {
-        id: "order-" + Date.now(),
-        manufacturer: ac.manufacturer,
-        model: ac.model,
-        qty,
-        type: op,
-        price: ac.price_acs_usd || 0,
-        image: selectedAircraftImage,
-        deliveryDate: deliveryDate.toISOString(),
-        created: new Date().toISOString()
-      };
+  let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
-      if (op === "BUY") {
-        entry.total = (ac.price_acs_usd || 0) * qty;
+  const entry = {
+    id: "order-" + Date.now(),
+    manufacturer: ac.manufacturer,
+    model: ac.model,
+    qty,
+    type: op,
+    price: ac.price_acs_usd || 0,
+    image: selectedAircraftImage,
+    deliveryDate: deliveryDate.toISOString(),
+    created: new Date().toISOString()
+  };
 
-        let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
-        balance -= entry.total;
-        localStorage.setItem("ACS_FinanceBalance", balance.toString());
-      }
+  /* ============================================================
+       === BUY (COMPRA DIRECTA) — RESTA CAPITAL ==================
+       ============================================================ */
+  if (op === "BUY") {
+    entry.total = (ac.price_acs_usd || 0) * qty;
 
-      if (op === "LEASE") {
-        const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-        const pct = parseInt(document.getElementById("modalInitialPct").value) || 50;
-
-        entry.years = years;
-        entry.initialPct = pct;
-
-        const total = (ac.price_acs_usd || 0) * qty;
-        entry.initialPayment = total * (pct / 100);
-
-        let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
-        balance -= entry.initialPayment;
-        localStorage.setItem("ACS_FinanceBalance", balance.toString());
-      }
-
-      pending.push(entry);
-      
-      /* === ALERTA: Nueva orden creada === */
-     ACS_addAlert(
-     "order",
-     "low",
-     `New aircraft order created: ${entry.model} x${entry.qty}`
-     );
-
-     localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
-
-     alert("✅ Order successfully created!");
-     closeBuyModal();
-      
-    });
+    let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
+    balance -= entry.total;
+    localStorage.setItem("ACS_FinanceBalance", balance.toString());
   }
+
+  /* ============================================================
+       === LEASE — PARTE 1 (EXISTENTE) ==========================
+       === Cálculo de años, %, inicial y update de capital =======
+       ============================================================ */
+  if (op === "LEASE") {
+
+    const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
+    const pct = parseInt(document.getElementById("modalInitialPct").value) || 50;
+
+    entry.years = years;
+    entry.initialPct = pct;
+
+    const total = (ac.price_acs_usd || 0) * qty;
+    entry.initialPayment = total * (pct / 100);
+
+    let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
+    balance -= entry.initialPayment;
+    localStorage.setItem("ACS_FinanceBalance", balance.toString());
+  }
+
+  /* ============================================================
+       === LEASE — PASO B (CONTRATO REAL PARA COMPANY FINANCE) ==
+       ============================================================ */
+  if (op === "LEASE") {
+
+    if (typeof ACS_Leasing_createContract === "function") {
+
+      const years = entry.years || 10;
+      const months = years * 12;
+      const total = (ac.price_acs_usd || 0) * qty;
+      const upfront = entry.initialPayment || 0;
+
+      // Interés realista contemporáneo
+      const remaining = total - upfront;
+      const monthlyRate = (remaining / months) * 1.11;
+
+      const contract = ACS_Leasing_createContract(
+        ac.model,
+        Math.round(monthlyRate),
+        months,
+        "NEW",
+        { hours: 0, cycles: 0 }
+      );
+
+      console.log("📦 NEW Leasing contract created:", contract);
+    }
+  }
+
+  /* ============================================================
+       === GUARDAR ORDEN Y ALERTA ===============================
+       ============================================================ */
+  pending.push(entry);
+
+  if (typeof ACS_addAlert === "function") {
+    ACS_addAlert(
+      "order",
+      "low",
+      `New aircraft order created: ${entry.model} x${entry.qty}`
+    );
+  }
+
+  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+
+  alert("✅ Order successfully created!");
+  closeBuyModal();
+});
 
   /* ---- Card click → open modal ---- */
   document.addEventListener("click", e => {
