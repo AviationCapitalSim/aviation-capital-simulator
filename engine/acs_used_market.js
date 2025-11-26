@@ -227,13 +227,19 @@ function buyUsed(id) {
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
   // FINANZAS
-  const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  if (finance.capital !== undefined) {
-    finance.capital -= ac.price_acs_usd;
-    localStorage.setItem("ACS_Finance", JSON.stringify(finance));
-  }
+const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+if (finance.capital !== undefined) {
+  finance.capital -= ac.price_acs_usd;
+  localStorage.setItem("ACS_Finance", JSON.stringify(finance));
+}
 
-  alert("✅ Purchased successfully!");
+// === FINANZAS — REGISTRAR COMPRA REAL ===
+if (typeof ACS_addExpense === "function") {
+    ACS_addExpense("aircraft_purchase", ac.price_acs_usd);
+}
+
+alert("✅ Purchased successfully!");
+
 }
 
 /* ============================================================
@@ -291,7 +297,22 @@ function leaseUsed(id) {
 
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
+// === LEASING ULTRA REALISTA (Opción C) ===
 
+// calcular mensualidad
+const leaseMonthly = Math.floor(ac.price_acs_usd * 0.015);
+
+// agregar metadata de leasing al avión
+myFleet[idx].leasing_active = true;
+myFleet[idx].leasing_monthly = leaseMonthly;
+
+// cobro inicial (2 meses)
+const upfront = leaseMonthly * 2;
+
+// registrar gasto real
+if (typeof ACS_addExpense === "function") {
+    ACS_addExpense("leasing", upfront);
+}
   alert("📘 Aircraft leased successfully!");
 }
 
