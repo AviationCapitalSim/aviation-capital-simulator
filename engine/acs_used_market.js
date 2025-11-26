@@ -243,13 +243,60 @@ alert("✅ Purchased successfully!");
 }
 
 /* ============================================================
-   7) LEASE USADO
+   === 7) LEASE USADO — REAL HISTÓRICO 1940–2026 ===============
    ============================================================ */
+
+function getLeasingUpfront(year){
+  if (year < 1960) return 0;          // No leasing
+  if (year < 1970) return 0.35;       // 1960s
+  if (year < 1980) return 0.30;       // 1970s
+  if (year < 1990) return 0.22;       // 1980s
+  if (year < 2000) return 0.18;       // 1990s
+  if (year < 2010) return 0.12;       // 2000s
+  return 0.10;                        // 2010–2026
+}
+
+function getLeasingMonthlyRate(year){
+  if (year < 1960) return 0;          // No leasing
+  if (year < 1970) return 0.022;      // 2.2%
+  if (year < 1980) return 0.018;      // 1.8%
+  if (year < 1990) return 0.015;      // 1.5%
+  if (year < 2000) return 0.013;      // 1.3%
+  if (year < 2010) return 0.011;      // 1.1%
+  return 0.009;                       // 0.9%
+}
+
 function leaseUsed(id) {
+
   const list = generateUsedMarket();
   const ac = list.find(x => x.id === id);
   if (!ac) return alert("❌ Aircraft not found.");
 
+  // === Obtener año actual del juego ===
+  let year = 1940;
+  try {
+    if (typeof ACS_TIME !== "undefined") {
+      year = ACS_TIME.year || 1940;
+    }
+  } catch(e){}
+
+  // === Leasing real histórico ===
+  const upfrontRate = getLeasingUpfront(year);
+  const monthlyRate = getLeasingMonthlyRate(year);
+
+  // Si el leasing no existía en esa época
+  if (upfrontRate === 0 || monthlyRate === 0) {
+    return alert("❌ Leasing was not available in this historical period. You must BUY the aircraft.");
+  }
+
+  const upfront = Math.round(ac.price_acs_usd * upfrontRate);
+  const monthly = Math.round(ac.price_acs_usd * monthlyRate);
+
+  // === Fecha de próximo pago (un mes) ===
+  const nextPayment = new Date();
+  nextPayment.setUTCMonth(nextPayment.getUTCMonth() + 1);
+
+  // === Añadir a flota ===
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   myFleet.push({
@@ -260,65 +307,50 @@ function leaseUsed(id) {
     image: ac.image,
     status: "Active",
 
-    /* === USED Aircraft: respetar horas reales y estado === */
     hours: ac.hours,
     cycles: ac.cycles,
     condition: ac.condition,
 
-    /* === Matrícula automática === */
     registration: ACS_generateRegistration(),
 
-    /* === Mantenimientos iniciales === */
+    // === LEASING REAL ===
+    leasing: {
+      upfront,
+      monthly,
+      rate: monthlyRate,
+      nextPayment: nextPayment.toISOString(),
+      frequency: "monthly",
+      started: new Date().toISOString()
+    },
+
     lastC: null,
     lastD: null,
     nextC: null,
     nextD: null
   });
 
-  /* ========================================================
-     PASO 13 — CALCULAR PRÓXIMOS C/D (USADOS)
-     ======================================================== */
-  (() => {
-    const idx = myFleet.length - 1;               // último añadido
-    const baseDeliveryDate = new Date(myFleet[idx].delivered);
-
-    // C-Check → siempre 12 meses
-    const nextCdate = new Date(baseDeliveryDate);
-    nextCdate.setUTCFullYear(nextCdate.getUTCFullYear() + 1);
-
-    // D-Check → siempre 8 años
-    const nextDdate = new Date(baseDeliveryDate);
-    nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + 8);
-
-    // Guardar valores
-    myFleet[idx].nextC = nextCdate.toISOString();
-    myFleet[idx].nextD = nextDdate.toISOString();
-  })();
-
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
-  /* ========================================================
-     FINANZAS — registrar LEASING en el motor central
-     --------------------------------------------------------
-     Nota: por ahora tomamos un "upfront" = 20% del valor
-     del avión como costo inicial de leasing.
-     (se puede ajustar después muy fácil en esta misma línea)
-     ======================================================== */
-  if (typeof ACS_registerExpense === "function") {
-    const upfront = Math.floor(ac.price_acs_usd * 0.20); // 20% inicial
-
-    ACS_registerExpense(
-      "leasing",              // categoría en cost{}
-      upfront,
-      "Used Aircraft Lease"   // aparecerá en Transaction Log
-    );
-
-    if (typeof ACS_updateProfit === "function") {
-      ACS_updateProfit();
-    }
+  // === FINANZAS DE LA EMPRESA ===
+  const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  if (finance.capital !== undefined) {
+    finance.capital -= upfront;          // solo upfront se paga ahora
+    finance.expenses += upfront;         // gasto inicial
+    finance.profit = finance.revenue - finance.expenses;
+    localStorage.setItem("ACS_Finance", JSON.stringify(finance));
   }
 
-  alert("📘 Aircraft leased successfully!");
+  // === REGISTRO CONTABLE ===
+  let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+  log.push({
+    time: new Date().toLocaleString(),
+    type: "Expense",
+    source: `Used Aircraft Lease: ${ac.manufacturer} ${ac.model}`,
+    amount: upfront
+  });
+  localStorage.setItem("ACS_Log", JSON.stringify(log));
+
+  alert("📘 Aircraft leased successfully (Historical Real Leasing Applied)");
 }
 
 /* ============================================================
