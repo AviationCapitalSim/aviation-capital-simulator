@@ -368,21 +368,23 @@ body {
     </table>
   </div>
 
-  <!-- =================== ACTIVE CONTRACTS =================== -->
+    <!-- =================== ACTIVE LEASING CONTRACTS =================== -->
   <div class="finance-section">
-    <h2>Active Contracts</h2>
+    <h2>Active Leasing Contracts</h2>
 
     <table class="finance-table">
       <thead>
         <tr>
-          <th>Aircraft</th>
-          <th>Contract Type</th>
-          <th>Cost</th>
-          <th>Next Payment</th>
+          <th>Model</th>
+          <th>Type</th>
+          <th>Monthly</th>
+          <th>Months Left</th>
+          <th>Status</th>
         </tr>
       </thead>
 
-      <tbody id="cf-contracts-body"></tbody>
+      <tbody id="cf-contracts-body">
+      </tbody>
     </table>
   </div>
 
@@ -392,7 +394,8 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="engine/acs_finance.js"></script>
 <script src="time_engine.js"></script>
-
+<script src="engine/acs_leasing.js"></script>
+     
 <script>
 function updateCompanyOverview() {
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
@@ -463,24 +466,81 @@ function loadTransactionLog() {
   });
 }
 
+/* ============================================================
+   === ACTIVE CONTRACTS (LEASING ENGINE + LEGACY) =============
+   ============================================================ */
 function loadContracts() {
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
   const tbody = document.getElementById("cf-contracts-body");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
-  fleet
-    .filter(ac => ac.leasing)
-    .forEach(ac => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${ac.manufacturer} ${ac.model}</td>
-          <td>Lease</td>
-          <td>$${ac.leasing.cost.toLocaleString()}</td>
-          <td>${ac.leasing.nextPayment || "N/A"}</td>
-        </tr>
+  /* 1) CONTRATOS DEL LEASING ENGINE (ACS_Leasing.contracts) */
+  let leasingContracts = [];
+  try {
+    const store = JSON.parse(localStorage.getItem("ACS_Leasing") || "{}");
+    leasingContracts = store.contracts || [];
+  } catch (e) {
+    console.warn("⚠️ Error leyendo ACS_Leasing:", e);
+  }
+
+  leasingContracts
+    .filter(c => c.status === "ACTIVE")
+    .forEach(c => {
+      const model       = c.model        || "N/A";
+      const type        = c.type         || "LEASE";
+      const monthly     = c.monthlyRate  || 0;
+      const monthsLeft  = (typeof c.monthsRemaining === "number")
+                            ? c.monthsRemaining
+                            : (c.monthsTotal || 0);
+      const status      = c.status       || "ACTIVE";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${model}</td>
+        <td>${type}</td>
+        <td>$${monthly.toLocaleString()}</td>
+        <td>${monthsLeft}</td>
+        <td>${status}</td>
       `;
+      tbody.appendChild(tr);
     });
+
+  /* 2) LEGACY: LEASING GUARDADO EN LA FLOTA (USED MARKET) */
+  try {
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+    fleet
+      .filter(ac => ac.leasing)
+      .forEach(ac => {
+        const model   = `${ac.manufacturer || ""} ${ac.model || ""}`.trim() || "N/A";
+        const monthly = ac.leasing.monthly || ac.leasing.monthlyRate || 0;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${model}</td>
+          <td>USED</td>
+          <td>$${monthly.toLocaleString()}</td>
+          <td>-</td>
+          <td>ACTIVE</td>
+        `;
+        tbody.appendChild(tr);
+      });
+  } catch (e) {
+    console.warn("⚠️ Error leyendo ACS_MyAircraft para leasing:", e);
+  }
+
+  /* 3) SI NO HAY NINGÚN CONTRATO ACTIVO */
+  if (!tbody.children.length) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td colspan="5" style="text-align:center; color:#ccc;">
+        No active leasing contracts.
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
 }
+
 
 function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
