@@ -1,6 +1,6 @@
 <!-- ============================================================
      === ACS USED AIRCRAFT MARKET — Qatar Luxury Edition ========
-     === Version: FINAL v3 | Date: 25 NOV 2025 ===================
+     === Version: FINAL v3 FIXED | Date: 26 NOV 2025 =============
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -86,7 +86,7 @@ body {
 }
 
 .acs-nav a:hover,
-.acs-nav a.active {
+.accs-nav a.active {
   color: #ffca3a;
   text-shadow: 0 0 6px rgba(255,179,0,0.45);
 }
@@ -219,10 +219,8 @@ body {
   margin: 0 auto;
 }
 
-/* ELIMINAR cualquier rastro del sistema viejo */
 .used-panel { display: none !important; }
 
-/* TARJETA QATAR LUXURY — IGUAL A BUY NEW */
 .used-card {
   background: #0f1b3d !important;
   border-radius: 12px !important;
@@ -247,15 +245,12 @@ body {
   color: #FFB300;
 }
 
-/* LÍNEAS DE INFO */
 .used-card p {
   font-size: 0.85rem;
   color: #ccc;
   margin: 0.2rem 0;
 }
 
-/* BOTONES QATAR LUXURY */
-.acs-btn,
 .ac-buy,
 .ac-lease,
 .ac-info {
@@ -269,34 +264,15 @@ body {
   transition: 0.25s;
 }
 
-.ac-buy {
-  background: #00c851;
-  color: white;
-}
+.ac-buy { background: #00c851; color: white; }
+.ac-buy:hover { background: #00e060; }
 
-.ac-buy:hover {
-  background: #00e060;
-}
+.ac-lease { background: #008cff; color: white; }
+.ac-lease:hover { background: #4dabff; }
 
-.ac-lease {
-  background: #008cff;
-  color: white;
-}
+.ac-info { background: #ffb300; color: #000; }
+.ac-info:hover { background: #ffcf4d; }
 
-.ac-lease:hover {
-  background: #4dabff;
-}
-
-.ac-info {
-  background: #ffb300;
-  color: #000;
-}
-
-.ac-info:hover {
-  background: #ffcf4d;
-}
-
-/* FOOTER */
 .acs-footer {
   text-align: center;
   padding: 20px;
@@ -305,14 +281,18 @@ body {
   font-size: 0.9rem;
 }
 
+/* ============================================================
+   === FIX MODAL POSITION =====================================
+   ============================================================ */
+.modal-bg {
+  position: fixed !important;
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- ============================================================
-     === HEADER — BUY NEW STANDARD ==============================
-     ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
@@ -335,26 +315,16 @@ body {
   </div>
 </header>
 
-<!-- ============================================================
-     === MAIN ===================================================
-     ============================================================ -->
-
 <main class="acs-main">
 
   <h2>Used Aircraft Market</h2>
   <p class="sub">Second-hand fleet opportunities • Real hours • Real cycles</p>
 
-  <!-- FILTER BAR -->
   <div id="filterBar" class="filter-bar"></div>
 
-  <!-- GRID -->
   <div class="used-grid" id="usedGrid"></div>
 
 </main>
-
-<!-- ============================================================
-     === MODAL ==================================================
-     ============================================================ -->
 
 <div class="modal-bg" id="infoModal">
   <div class="modal-box">
@@ -368,25 +338,14 @@ body {
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
 
-<!-- ============================================================
-     === SCRIPTS ================================================
-     ============================================================ -->
+<!-- ========================== SCRIPTS ========================== -->
 
-<!-- PRIMERO: BASES -->
 <script src="engine/acs_aircraft_db.js"></script>
 <script src="engine/acs_finance_engine.js"></script>
 <script src="engine/acs_reg_manager.js"></script>
-
-
-<!-- LUEGO: SISTEMAS DEPENDIENTES -->
 <script src="engine/acs_leasing.js"></script>
-
-<!-- AHORA: USED MARKET (depende de lo anterior) -->
 <script src="engine/acs_used_market.js"></script>
-
-<!-- SIEMPRE AL FINAL EL MOTOR DE TIEMPO -->
 <script src="time_engine.js"></script>
-
 
 <script>
 function updateClockDisplay(simTime){
