@@ -333,7 +333,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // === EXPOSE FUNCTIONS TO GLOBAL (Safari fix) ===
+// ===== SAFARI onclick FIX =====
 window.buyUsed = buyUsed;
 window.leaseUsed = leaseUsed;
 window.openInfo = openInfo;
 window.closeInfoModal = closeInfoModal;
+
