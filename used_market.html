@@ -1,6 +1,6 @@
 <!-- ============================================================
      === ACS USED AIRCRAFT MARKET — Qatar Luxury Edition ========
-     === Version: FINAL v3 FIXED | Date: 26 NOV 2025 =============
+     === Version: FINAL v4 PREMIUM | Date: 26 NOV 2025 ==========
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -282,7 +282,7 @@ body {
 }
 
 /* ============================================================
-   === FIX MODAL POSITION =====================================
+   === FIX MODAL POSITION (legacy, ahora sin uso directo) ======
    ============================================================ */
 .modal-bg {
   position: fixed !important;
@@ -326,11 +326,75 @@ body {
 
 </main>
 
-<div class="modal-bg" id="infoModal">
-  <div class="modal-box">
-    <span class="modal-close" onclick="closeInfoModal()">✖</span>
-    <h2 id="modalName"></h2>
-    <p id="modalDetails"></p>
+<!-- ============================================================
+     === MODAL 1: INFO — Qatar Luxury Premium ===================
+     ============================================================ -->
+<div id="infoModal" class="acs-modal" style="display:none;">
+  <div class="acs-modal-content" style="max-width:420px;">
+    <span class="acs-close" onclick="closeInfoModal()">&times;</span>
+
+    <h2 id="modalName"
+        style="color:#FFB300; margin-bottom:10px; text-align:center;"></h2>
+
+    <div id="modalDetails"
+         style="font-size:16px; line-height:1.4; margin-bottom:25px; text-align:center;">
+    </div>
+
+    <button class="acs-btn-secondary"
+            onclick="closeInfoModal()"
+            style="display:block; margin:auto;">
+      Close
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     === MODAL 2: BUY — Qatar Luxury Premium ====================
+     ============================================================ -->
+<div id="buyUsedModal" class="acs-modal" style="display:none;">
+  <div class="acs-modal-content" style="max-width:420px;">
+    <span class="acs-close" onclick="closeBuyModal()">&times;</span>
+
+    <h2 id="buyTitle"
+        style="color:#FFB300; margin-bottom:10px; text-align:center;"></h2>
+
+    <div id="buyDetails"
+         style="font-size:16px; line-height:1.4; margin-bottom:25px; text-align:center;">
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+      <button id="confirmBuyBtn" class="acs-btn-primary">
+        Confirm Purchase
+      </button>
+      <button class="acs-btn-secondary" onclick="closeBuyModal()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     === MODAL 3: LEASE — Qatar Luxury Premium ==================
+     ============================================================ -->
+<div id="leaseUsedModal" class="acs-modal" style="display:none;">
+  <div class="acs-modal-content" style="max-width:420px;">
+    <span class="acs-close" onclick="closeLeaseModal()">&times;</span>
+
+    <h2 id="leaseTitle"
+        style="color:#FFB300; margin-bottom:10px; text-align:center;"></h2>
+
+    <div id="leaseDetails"
+         style="font-size:16px; line-height:1.4; margin-bottom:25px; text-align:center;">
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+      <button id="confirmLeaseBtn" class="acs-btn-primary">
+        Confirm Lease
+      </button>
+      <button class="acs-btn-secondary" onclick="closeLeaseModal()">
+        Cancel
+      </button>
+    </div>
   </div>
 </div>
 
@@ -372,8 +436,155 @@ function handleLogout(){
 }
 
 function closeInfoModal() {
-  document.getElementById("infoModal").style.display = "none";
+  const m = document.getElementById("infoModal");
+  if (m) m.style.display = "none";
 }
+
+/* ============================================================
+   === USED MARKET MODALS — QATAR LUXURY PREMIUM ===============
+   ============================================================ */
+
+let selectedUsedID = null;
+
+function getUsedById(id) {
+  try {
+    if (typeof generateUsedMarket === "function") {
+      const list = generateUsedMarket();
+      return list.find(x => x.id === id) || null;
+    }
+  } catch(e) {
+    console.warn("Used lookup error:", e);
+  }
+  return null;
+}
+
+/* ---------- BUY MODAL ---------- */
+function openBuyModal(id) {
+  selectedUsedID = id;
+  const ac = getUsedById(id);
+  if (!ac) return;
+
+  const titleEl = document.getElementById("buyTitle");
+  const detailsEl = document.getElementById("buyDetails");
+  const modalEl = document.getElementById("buyUsedModal");
+
+  if (!titleEl || !detailsEl || !modalEl) return;
+
+  titleEl.textContent = `Purchase ${ac.manufacturer} ${ac.model}`;
+  detailsEl.innerHTML = `
+    <b>Price:</b> $${(ac.price_acs_usd/1_000_000).toFixed(2)}M<br>
+    <b>Condition:</b> ${ac.condition}<br>
+    <b>Hours:</b> ${ac.hours.toLocaleString()}<br>
+    <b>Cycles:</b> ${ac.cycles.toLocaleString()}
+  `;
+
+  modalEl.style.display = "flex";
+}
+
+function closeBuyModal() {
+  const m = document.getElementById("buyUsedModal");
+  if (m) m.style.display = "none";
+}
+
+/* ---------- LEASE MODAL ---------- */
+function openLeaseModal(id) {
+  selectedUsedID = id;
+  const ac = getUsedById(id);
+  if (!ac) return;
+
+  const titleEl = document.getElementById("leaseTitle");
+  const detailsEl = document.getElementById("leaseDetails");
+  const modalEl = document.getElementById("leaseUsedModal");
+
+  if (!titleEl || !detailsEl || !modalEl) return;
+
+  const leaseMonth = Math.floor(ac.price_acs_usd * 0.015);
+
+  titleEl.textContent = `Lease ${ac.manufacturer} ${ac.model}`;
+  detailsEl.innerHTML = `
+    <b>Monthly Lease:</b> $${leaseMonth.toLocaleString()}<br>
+    <b>Term:</b> 12 months<br>
+    <b>Condition:</b> ${ac.condition}<br>
+    <b>Hours:</b> ${ac.hours.toLocaleString()}
+  `;
+
+  modalEl.style.display = "flex";
+}
+
+function closeLeaseModal() {
+  const m = document.getElementById("leaseUsedModal");
+  if (m) m.style.display = "none";
+}
+
+/* ---------- CONFIRM BUTTONS (usa tu lógica original) ---------- */
+(function(){
+  const buyBtn = document.getElementById("confirmBuyBtn");
+  if (buyBtn) {
+    buyBtn.addEventListener("click", () => {
+      if (!selectedUsedID) return;
+      if (typeof buyUsed === "function") {
+        buyUsed(selectedUsedID);
+      }
+      closeBuyModal();
+    });
+  }
+
+  const leaseBtn = document.getElementById("confirmLeaseBtn");
+  if (leaseBtn) {
+    leaseBtn.addEventListener("click", () => {
+      if (!selectedUsedID) return;
+      if (typeof leaseUsed === "function") {
+        leaseUsed(selectedUsedID);
+      }
+      closeLeaseModal();
+    });
+  }
+})();
+
+/* ---------- RE-CABLEAR BOTONES DE LAS CARDS ------------------- */
+
+function wireUsedMarketButtons() {
+  const buyBtns = document.querySelectorAll(".ac-buy");
+  buyBtns.forEach(btn => {
+    if (btn.dataset.wired === "1") return;
+    const attr = btn.getAttribute("onclick");
+    let id = null;
+    if (attr) {
+      const match = attr.match(/buyUsed\('(.+)'\)/);
+      if (match) id = match[1];
+    }
+    if (!id) return;
+    btn.removeAttribute("onclick");
+    btn.dataset.wired = "1";
+    btn.addEventListener("click", () => openBuyModal(id));
+  });
+
+  const leaseBtns = document.querySelectorAll(".ac-lease");
+  leaseBtns.forEach(btn => {
+    if (btn.dataset.wired === "1") return;
+    const attr = btn.getAttribute("onclick");
+    let id = null;
+    if (attr) {
+      const match = attr.match(/leaseUsed\('(.+)'\)/);
+      if (match) id = match[1];
+    }
+    if (!id) return;
+    btn.removeAttribute("onclick");
+    btn.dataset.wired = "1";
+    btn.addEventListener("click", () => openLeaseModal(id));
+  });
+}
+
+/* ---------- ENVOLVER renderUsedMarket PARA SIEMPRE CABLEAR ---- */
+(function(){
+  if (typeof renderUsedMarket === "function") {
+    const originalRender = renderUsedMarket;
+    window.renderUsedMarket = function(filter) {
+      originalRender(filter);
+      wireUsedMarketButtons();
+    };
+  }
+})();
 </script>
 
 </body>
