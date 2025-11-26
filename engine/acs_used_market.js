@@ -253,69 +253,73 @@ function leaseUsed(id) {
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   myFleet.push({
-  id: "AC-" + Date.now(),
-  model: ac.model,
-  manufacturer: ac.manufacturer,
-  delivered: new Date().toISOString(),
-  image: ac.image,
-  status: "Active",
+    id: "AC-" + Date.now(),
+    model: ac.model,
+    manufacturer: ac.manufacturer,
+    delivered: new Date().toISOString(),
+    image: ac.image,
+    status: "Active",
 
-  /* === USED Aircraft: respetar horas reales y estado === */
-  hours: ac.hours,
-  cycles: ac.cycles,
-  condition: ac.condition,
+    /* === USED Aircraft: respetar horas reales y estado === */
+    hours: ac.hours,
+    cycles: ac.cycles,
+    condition: ac.condition,
 
-  /* === Matrícula automática === */
-  registration: ACS_generateRegistration(),
+    /* === Matrícula automática === */
+    registration: ACS_generateRegistration(),
 
-  /* === Mantenimientos iniciales === */
-  lastC: null,
-  lastD: null,
-  nextC: null,
-  nextD: null
-});
+    /* === Mantenimientos iniciales === */
+    lastC: null,
+    lastD: null,
+    nextC: null,
+    nextD: null
+  });
 
-/* ============================================================
-   === PASO 13 — CALCULAR PRÓXIMOS C/D (USADOS) ================
-   ============================================================ */
-(() => {
-  const idx = myFleet.length - 1;               // último añadido
-  const baseDeliveryDate = new Date(myFleet[idx].delivered);
+  /* ========================================================
+     PASO 13 — CALCULAR PRÓXIMOS C/D (USADOS)
+     ======================================================== */
+  (() => {
+    const idx = myFleet.length - 1;               // último añadido
+    const baseDeliveryDate = new Date(myFleet[idx].delivered);
 
-  // C-Check → siempre 12 meses
-  const nextCdate = new Date(baseDeliveryDate);
-  nextCdate.setUTCFullYear(nextCdate.getUTCFullYear() + 1);
+    // C-Check → siempre 12 meses
+    const nextCdate = new Date(baseDeliveryDate);
+    nextCdate.setUTCFullYear(nextCdate.getUTCFullYear() + 1);
 
-  // D-Check → siempre 8 años
-  const nextDdate = new Date(baseDeliveryDate);
-  nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + 8);
+    // D-Check → siempre 8 años
+    const nextDdate = new Date(baseDeliveryDate);
+    nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + 8);
 
-  // Guardar valores
-  myFleet[idx].nextC = nextCdate.toISOString();
-  myFleet[idx].nextD = nextDdate.toISOString();
-})();
-
+    // Guardar valores
+    myFleet[idx].nextC = nextCdate.toISOString();
+    myFleet[idx].nextD = nextDdate.toISOString();
+  })();
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
-// === LEASING ULTRA REALISTA (Opción C) ===
 
-// calcular mensualidad
-const leaseMonthly = Math.floor(ac.price_acs_usd * 0.015);
+  /* ========================================================
+     FINANZAS — registrar LEASING en el motor central
+     --------------------------------------------------------
+     Nota: por ahora tomamos un "upfront" = 20% del valor
+     del avión como costo inicial de leasing.
+     (se puede ajustar después muy fácil en esta misma línea)
+     ======================================================== */
+  if (typeof ACS_registerExpense === "function") {
+    const upfront = Math.floor(ac.price_acs_usd * 0.20); // 20% inicial
 
-// agregar metadata de leasing al avión
-myFleet[idx].leasing_active = true;
-myFleet[idx].leasing_monthly = leaseMonthly;
+    ACS_registerExpense(
+      "leasing",              // categoría en cost{}
+      upfront,
+      "Used Aircraft Lease"   // aparecerá en Transaction Log
+    );
 
-// cobro inicial (2 meses)
-const upfront = leaseMonthly * 2;
+    if (typeof ACS_updateProfit === "function") {
+      ACS_updateProfit();
+    }
+  }
 
-// registrar gasto real
-if (typeof ACS_addExpense === "function") {
-    ACS_addExpense("leasing", upfront);
-}
   alert("📘 Aircraft leased successfully!");
 }
-
 
 /* ============================================================
    8) MODAL
