@@ -7,78 +7,81 @@
    ▪ Historial mensual inicial (Month 1 - JAN 1940)
    ▪ API completa para todos los módulos
    ▪ Ahora sincronizado con ACS_HR
+   ▪ Extendido con LOG de transacciones (ACS_Log)
    ============================================================ */
 
 // Crear estructura base si no existe
 if (!localStorage.getItem("ACS_Finance")) {
 
-    // Traer payroll del HR inicial
-    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-    const payroll = HR && HR.payroll ? HR.payroll : 0;
+  // Traer payroll del HR inicial
+  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+  const payroll = HR && HR.payroll ? HR.payroll : 0;
 
-    const baseFinance = {
-        capital: 3000000,
+  const baseFinance = {
+    capital: 3000000,
+    month: "JAN 1940",
+
+    revenue: 0,
+    expenses: payroll,
+    profit: -payroll,
+
+    income: {
+      routes: 0,
+      cargo: 0,
+      leasing_income: 0,
+      credits: 0
+    },
+
+    cost: {
+      salaries: payroll,
+      maintenance: 0,
+      leasing: 0,
+      fuel: 0,
+      ground_handling: 0,
+      virtual_handling: 0,
+      slot_fees: 0,
+      penalties: 0,
+      loans: 0
+    },
+
+    history: [
+      {
         month: "JAN 1940",
-
         revenue: 0,
         expenses: payroll,
-        profit: -payroll,
+        profit: -payroll
+      }
+    ]
+  };
 
-        income: {
-            routes: 0,
-            cargo: 0,
-            leasing_income: 0,
-            credits: 0
-        },
-
-        cost: {
-            salaries: payroll,
-            maintenance: 0,
-            leasing: 0,
-            fuel: 0,
-            ground_handling: 0,
-            virtual_handling: 0,
-            slot_fees: 0,
-            penalties: 0,
-            loans: 0
-        },
-
-        history: [
-            {
-                month: "JAN 1940",
-                revenue: 0,
-                expenses: payroll,
-                profit: -payroll
-            }
-        ]
-    };
-
-    localStorage.setItem("ACS_Finance", JSON.stringify(baseFinance));
+  localStorage.setItem("ACS_Finance", JSON.stringify(baseFinance));
 }
 
-// Helper para cargar/salvar
+/* ============================================================
+   === HELPERS LOAD / SAVE ====================================
+   ============================================================ */
 function loadFinance() {
-    return JSON.parse(localStorage.getItem("ACS_Finance"));
+  return JSON.parse(localStorage.getItem("ACS_Finance"));
 }
 
 function saveFinance(data) {
-    localStorage.setItem("ACS_Finance", JSON.stringify(data));
+  localStorage.setItem("ACS_Finance", JSON.stringify(data));
 }
 
 /* ============================================================
    ===  INTEGRACIÓN HR — PAYROLL REAL                         ==
    ============================================================ */
 function ACS_syncPayrollWithHR() {
-    const f = loadFinance();
-    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+  const f = loadFinance();
+  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
 
-    if (!f || !HR || !HR.payroll) return;
+  if (!f || !HR || !HR.payroll) return;
 
-    f.cost.salaries = HR.payroll;
-    f.expenses = HR.payroll; // por ahora solo salarios (resto vendrá luego)
-    f.profit = f.revenue - f.expenses;
+  f.cost.salaries = HR.payroll;
+  f.expenses = HR.payroll; // por ahora solo salarios (resto vendrá luego)
+  f.profit = f.revenue - f.expenses;
 
-    saveFinance(f);
+  saveFinance(f);
 }
 
 /* ============================================================
@@ -87,66 +90,146 @@ function ACS_syncPayrollWithHR() {
 
 // Agregar ingreso
 function ACS_addIncome(type, amount) {
-    const f = loadFinance();
-    if (f.income[type] !== undefined) {
-        f.income[type] += amount;
-        f.revenue += amount;
-        f.capital += amount;
-        saveFinance(f);
-    }
+  const f = loadFinance();
+  const value = Number(amount) || 0;
+
+  if (f.income[type] !== undefined) {
+    f.income[type] += value;
+    f.revenue += value;
+    f.capital += value;
+    saveFinance(f);
+  }
 }
 
 // Agregar gasto
 function ACS_addExpense(type, amount) {
-    const f = loadFinance();
-    if (f.cost[type] !== undefined) {
-        f.cost[type] += amount;
-        f.expenses += amount;
-        f.capital -= amount;
-        saveFinance(f);
-    }
+  const f = loadFinance();
+  const value = Number(amount) || 0;
+
+  if (f.cost[type] !== undefined) {
+    f.cost[type] += value;
+    f.expenses += value;
+    f.capital -= value;
+    saveFinance(f);
+  }
 }
 
 // Calcular profit del mes
 function ACS_updateProfit() {
-    const f = loadFinance();
-    f.profit = f.revenue - f.expenses;
-    saveFinance(f);
+  const f = loadFinance();
+  f.profit = f.revenue - f.expenses;
+  saveFinance(f);
 }
 
 // Guardar registro mensual en el historial
 function ACS_closeMonth() {
-    const f = loadFinance();
+  const f = loadFinance();
 
-    // Sincronizar payroll antes de cerrar
-    ACS_syncPayrollWithHR();
+  // Sincronizar payroll antes de cerrar
+  ACS_syncPayrollWithHR();
 
-    // Calcular profit final
-    ACS_updateProfit();
+  // Calcular profit final
+  ACS_updateProfit();
 
-    f.history.push({
-        month: f.month,
-        revenue: f.revenue,
-        expenses: f.expenses,
-        profit: f.profit
-    });
+  f.history.push({
+    month: f.month,
+    revenue: f.revenue,
+    expenses: f.expenses,
+    profit: f.profit
+  });
 
-    // Reset para el siguiente mes
-    f.revenue = 0;
-    f.expenses = f.cost.salaries; // salaries siempre quedan activos
-    f.profit = 0;
+  // Reset para el siguiente mes
+  f.revenue = 0;
+  f.expenses = f.cost.salaries; // salaries siempre quedan activos
+  f.profit = 0;
 
-    saveFinance(f);
+  saveFinance(f);
 }
 
 // API para obtener capital en vivo
 function ACS_getCapital() {
-    return loadFinance().capital;
+  return loadFinance().capital;
 }
 
 // API para obtener historial
 function ACS_getHistory() {
-    return loadFinance().history;
+  return loadFinance().history;
+}
+
+/* ============================================================
+   === TRANSACCION LOG (ACS_Log) — NUEVO =======================
+   ============================================================ */
+
+// Inicializar log si no existe
+if (!localStorage.getItem("ACS_Log")) {
+  localStorage.setItem("ACS_Log", "[]");
+}
+
+function ACS_getLog() {
+  return JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+}
+
+function ACS_saveLog(arr) {
+  localStorage.setItem("ACS_Log", JSON.stringify(arr));
+}
+
+/**
+ * Registra una transacción genérica en ACS_Log
+ *  entry = { type: "EXPENSE"|"INCOME"|"INFO", source: "Used Market", amount: 12345 }
+ */
+function ACS_logTransaction(entry) {
+  const log = ACS_getLog();
+
+  const time = entry.time || new Date().toISOString();
+  const type = entry.type || "INFO";
+  const source = entry.source || "System";
+  const amount = Number(entry.amount) || 0;
+
+  log.push({ time, type, source, amount });
+
+  // Mantener el log razonable (últimas 200 transacciones)
+  if (log.length > 200) {
+    log.shift();
+  }
+
+  ACS_saveLog(log);
+}
+
+/**
+ * Helper de gasto: actualiza FINANCE + añade registro al LOG
+ * costType: clave dentro de cost{} (ej: "leasing", "maintenance", "fuel")
+ * source: texto libre para el origen (ej: "Used Market Purchase")
+ */
+function ACS_registerExpense(costType, amount, source) {
+  const value = Number(amount) || 0;
+  if (value <= 0) return;
+
+  // Actualizar módulo Finance
+  ACS_addExpense(costType, value);
+
+  // Registrar en LOG
+  ACS_logTransaction({
+    type: "EXPENSE",
+    source: source || costType,
+    amount: value
+  });
+}
+
+/**
+ * Helper de ingreso: actualiza FINANCE + añade registro al LOG
+ * incomeType: clave dentro de income{} (ej: "routes", "leasing_income")
+ */
+function ACS_registerIncome(incomeType, amount, source) {
+  const value = Number(amount) || 0;
+  if (value <= 0) return;
+
+  ACS_addIncome(incomeType, value);
+
+  ACS_logTransaction({
+    type: "INCOME",
+    source: source || incomeType,
+    amount: value
+  });
 }
 
 /* ============================================================
@@ -154,15 +237,15 @@ function ACS_getHistory() {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-    const isDashboard =
-        window.location.pathname.includes("dashboard.html") ||
-        window.location.href.includes("dashboard.html");
+  const isDashboard =
+    window.location.pathname.includes("dashboard.html") ||
+    window.location.href.includes("dashboard.html");
 
-    if (!isDashboard) return;
+  if (!isDashboard) return;
 
-    // Cada vez que se entra al Dashboard:
-    // sincronizamos salarios de HR con Finance
-    ACS_syncPayrollWithHR();
+  // Cada vez que se entra al Dashboard:
+  // sincronizamos salarios de HR con Finance
+  ACS_syncPayrollWithHR();
 
-    console.log("💼 Finance synced with HR → payroll actualizado.");
+  console.log("💼 Finance synced with HR → payroll actualizado.");
 });
