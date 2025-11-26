@@ -51,6 +51,7 @@ function ACS_Leasing_generateID(model) {
  * @param {string} type - "NEW" o "USED"
  * @param {object} options - horas iniciales, ciclos para used
  */
+
 function ACS_Leasing_createContract(model, monthlyRate, months, type = "NEW", options = {}) {
 
     const leasing = ACS_Leasing_load();
@@ -65,8 +66,10 @@ function ACS_Leasing_createContract(model, monthlyRate, months, type = "NEW", op
         monthsRemaining: months,
         status: "ACTIVE",
 
-        // Inicio del contrato (lectura del Time Engine)
-        startDate: localStorage.getItem("ACS_Sim_CurrentDate") || "01 JAN 1940",
+        // Inicio del contrato (lectura del Time Engine REAL)
+        startDate: (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+          ? ACS_TIME.currentTime.toISOString()
+          : new Date().toISOString(),
 
         // Para NEW siempre 0, para USED pueden venir del options
         hours: options.hours || 0,
@@ -92,6 +95,7 @@ function ACS_Leasing_createContract(model, monthlyRate, months, type = "NEW", op
 
     return contract;
 }
+
 
 /* ============================================================
    === OBTENER TODAS LAS CUOTAS MENSUALES =====================
@@ -139,49 +143,56 @@ function ACS_Leasing_applyMonthlyCosts() {
     if (typeof ACS_addExpense === "function") {
         ACS_addExpense("leasing", total);
     }
+/* === IMPACTAR EN COMPANY FINANCE === */
+let finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-    console.log(`💸 Leasing mensual cobrado: $${total.toLocaleString()}`);
+if (!finance.capital) finance.capital = 0;
+if (!finance.expenses) finance.expenses = 0;
+if (!finance.revenue) finance.revenue = 0;
+if (!finance.profit) finance.profit = 0;
+
+finance.capital -= total;
+finance.expenses += total;
+finance.profit = finance.revenue - finance.expenses;
+
+localStorage.setItem("ACS_Finance", JSON.stringify(finance));
+
+/* === REGISTRAR EN LOG GLOBAL === */
+let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+
+log.push({
+  time: new Date().toLocaleString(),
+  type: "Expense",
+  source: "Leasing Payments",
+  amount: total
+});
+
+localStorage.setItem("ACS_Log", JSON.stringify(log));
+
+console.log(`💸 Leasing mensual cobrado: $${total.toLocaleString()}`);
 }
 
 /* ============================================================
-   ===  INTEGRACIÓN REAL CON TIME ENGINE v4.4 — CAMBIO DE MES ==
+   ===  TIME ENGINE SYNC — COBRAR AL CAMBIAR DE MES ===========
    ============================================================ */
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  if (typeof registerTimeListener === "function") {
+  if (typeof registerTimeListener !== "function") return;
 
-    let lastMonth = null;
-    let lastYear  = null;
+  registerTimeListener((date) => {
 
-    registerTimeListener((simTime) => {
+    if (!(date instanceof Date)) return;
 
-      if (!(simTime instanceof Date)) return;
+    const mm = String(date.getUTCMonth());
+    const yy = String(date.getUTCFullYear());
+    const thisMonth = mm + "-" + yy;
 
-      const currentMonth = simTime.getUTCMonth();
-      const currentYear  = simTime.getUTCFullYear();
+    const last = localStorage.getItem("ACS_Leasing_LastMonth");
 
-      // Primera ejecución → solo inicializar
-      if (lastMonth === null) {
-        lastMonth = currentMonth;
-        lastYear  = currentYear;
-        return;
-      }
-
-      // Comparación real: ¿cambió el mes?
-      if (currentMonth !== lastMonth || currentYear !== lastYear) {
-
-        console.log("📅 NEW SIM MONTH — Leasing Engine Triggered");
-
-        // Actualizar valores guardados
-        lastMonth = currentMonth;
-        lastYear  = currentYear;
-
-        // Cobro automático del mes
-        ACS_Leasing_applyMonthlyCosts();
-      }
-
-    });
-  }
+    if (last !== thisMonth) {
+      localStorage.setItem("ACS_Leasing_LastMonth", thisMonth);
+      ACS_Leasing_applyMonthlyCosts();
+    }
+  });
 
 });
