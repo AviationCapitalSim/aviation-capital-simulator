@@ -217,10 +217,21 @@ function buyUsed(id) {
   delivered: new Date().toISOString(),
   image: ac.image,
   status: "Active",
+
   hours: ac.hours,
   cycles: ac.cycles,
   condition: ac.condition,
-  registration: ACS_generateRegistration()   // 🔥 Matrícula automática
+  registration: ACS_generateRegistration(),
+
+  /* 🟦 DATA COMPLETA DEL MODELO */
+  data: (resolveUsedDB().find(m => 
+    m.manufacturer === ac.manufacturer && m.model === ac.model
+  ) || {}),
+
+  lastC: null,
+  lastD: null,
+  nextC: null,
+  nextD: null
 });
 
 
@@ -313,15 +324,25 @@ function leaseUsed(id) {
   registration: ACS_generateRegistration(),
 
   /* 🟦 DATA COMPLETA DEL MODELO */
-  data: (resolveUsedDB().find(m => 
+  data: (resolveUsedDB().find(m =>
     m.manufacturer === ac.manufacturer && m.model === ac.model
   ) || {}),
+
+  leasing: {
+    upfront,
+    monthly,
+    rate: monthlyRate,
+    nextPayment: nextPayment.toISOString(),
+    frequency: "monthly",
+    started: new Date().toISOString()
+  },
 
   lastC: null,
   lastD: null,
   nextC: null,
   nextD: null
 });
+
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
