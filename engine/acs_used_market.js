@@ -300,34 +300,28 @@ function leaseUsed(id) {
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   myFleet.push({
-    id: "AC-" + Date.now(),
-    model: ac.model,
-    manufacturer: ac.manufacturer,
-    delivered: new Date().toISOString(),
-    image: ac.image,
-    status: "Active",
+  id: "AC-" + Date.now(),
+  model: ac.model,
+  manufacturer: ac.manufacturer,
+  delivered: new Date().toISOString(),
+  image: ac.image,
+  status: "Active",
 
-    hours: ac.hours,
-    cycles: ac.cycles,
-    condition: ac.condition,
+  hours: ac.hours,
+  cycles: ac.cycles,
+  condition: ac.condition,
+  registration: ACS_generateRegistration(),
 
-    registration: ACS_generateRegistration(),
+  /* 🟦 DATA COMPLETA DEL MODELO */
+  data: (resolveUsedDB().find(m => 
+    m.manufacturer === ac.manufacturer && m.model === ac.model
+  ) || {}),
 
-    // === LEASING REAL ===
-    leasing: {
-      upfront,
-      monthly,
-      rate: monthlyRate,
-      nextPayment: nextPayment.toISOString(),
-      frequency: "monthly",
-      started: new Date().toISOString()
-    },
-
-    lastC: null,
-    lastD: null,
-    nextC: null,
-    nextD: null
-  });
+  lastC: null,
+  lastD: null,
+  nextC: null,
+  nextD: null
+});
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
