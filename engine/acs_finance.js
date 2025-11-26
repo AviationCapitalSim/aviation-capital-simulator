@@ -249,3 +249,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("💼 Finance synced with HR → payroll actualizado.");
 });
+/* ============================================================
+   ===  PAYMENTS ENGINE — LEASING MONTHLY AUTO-PAY  ============
+   ============================================================ */
+
+function ACS_runMonthlyLeasePayments(simDate){
+
+  // === Fecha simulada del juego desde ACS_TIME ===
+  let current = simDate instanceof Date ? simDate : new Date();
+
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  if (!fleet.length) return;
+
+  let finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  if (!finance.capital) {
+    console.warn("⚠️ Finance not initialized.");
+    return;
+  }
+
+  let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+
+  let updated = false;
+
+  fleet.forEach(ac => {
+
+    if (!ac.leasing || !ac.leasing.monthly) return;
+
+    const nextDue = new Date(ac.leasing.nextPayment);
+
+    // === Si ya es el mes del pago o ya pasó ===
+    if (current >= nextDue){
+
+      const amount = ac.leasing.monthly;
+
+      // === Actualizar finanzas ===
+      finance.capital -= amount;
+      finance.expenses += amount;
+      finance.profit = finance.revenue - finance.expenses;
+
+      // === Registrar en log ===
+      log.push({
+        time: current.toLocaleString(),
+        type: "Expense",
+        source: `Monthly Lease Payment — ${ac.manufacturer} ${ac.model}`,
+        amount: amount
+      });
+
+      // === Próxima fecha de pago ===
+      const next = new Date(nextDue);
+      next.setUTCMonth(next.getUTCMonth() + 1);
+      ac.leasing.nextPayment = next.toISOString();
+
+      updated = true;
+    }
+  });
+
+  if (updated){
+    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+    localStorage.setItem("ACS_Finance", JSON.stringify(finance));
+    localStorage.setItem("ACS_Log", JSON.stringify(log));
+
+    console.log("💳 Monthly lease payments processed.");
+  }
+}
+
+
+/* ============================================================
+   === REGISTER TIME ENGINE LISTENER ===========================
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(ACS_runMonthlyLeasePayments);
+}
