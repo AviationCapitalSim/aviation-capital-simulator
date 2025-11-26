@@ -22,21 +22,15 @@
 
 <style>
 /* ============================================================
-   === BASE PAGE STYLING ======================================
+   === BASE PAGE STYLING — Company Finance SCOPE ONLY ==========
    ============================================================ */
-body {
-  margin: 0;
-  background-color: #081530;
-  color: white;
-  font-family: "Poppins", sans-serif;
-}
 
-.acs-main {
+#companyFinanceRoot {
   padding: 120px 2rem 60px;
 }
 
 /* Section containers */
-.finance-section {
+#companyFinanceRoot .finance-section {
   background: #0b1638;
   border-radius: 14px;
   padding: 1.5rem;
@@ -45,7 +39,7 @@ body {
 }
 
 /* Titles */
-.finance-section h2 {
+#companyFinanceRoot .finance-section h2 {
   text-align: center;
   color: #FFB300;
   font-size: 1.6rem;
@@ -53,34 +47,33 @@ body {
 }
 
 /* Table */
-.finance-table {
+#companyFinanceRoot .finance-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
 }
 
-.finance-table th {
+#companyFinanceRoot .finance-table th {
   background: #0a1433;
   padding: 0.8rem;
   color: #FFB300;
-  letter-spacing: 0.5px;
 }
 
-.finance-table td {
+#companyFinanceRoot .finance-table td {
   padding: 0.7rem;
   text-align: center;
   border-bottom: 1px solid rgba(255,255,255,0.1);
   color: #ddd;
 }
 
-/* Cards for KPIs */
-.finance-grid {
+/* Cards */
+#companyFinanceRoot .finance-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1rem;
 }
 
-.finance-card {
+#companyFinanceRoot .finance-card {
   background: #0e1c45;
   padding: 1rem;
   border-radius: 12px;
@@ -88,54 +81,44 @@ body {
   border: 1px solid #FFB30066;
 }
 
-.finance-card h3 {
+#companyFinanceRoot .finance-card h3 {
   margin: 0;
   font-size: 1rem;
   color: #FFB300;
 }
 
-.finance-card p {
+#companyFinanceRoot .finance-card p {
   font-size: 1.4rem;
   margin: 0.4rem 0 0;
   font-weight: 600;
   color: #dbe4ff;
 }
 
-/* Chart container */
-#growthChart {
-  background: rgba(255,255,255,0.05);
-  border-radius: 10px;
-  padding: 1rem;
-}
-
 /* Log table */
-.log-table {
+#companyFinanceRoot .log-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
 }
 
-.log-table th {
+#companyFinanceRoot .log-table th {
   background: #0a1433;
   padding: 0.8rem;
   color: #FFB300;
 }
 
-.log-table td {
+#companyFinanceRoot .log-table td {
   padding: 0.6rem;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   color: #ddd;
   text-align: center;
 }
 
-/* Clock cockpit */
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
+/* Chart */
+#companyFinanceRoot #growthChart {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 1rem;
 }
 </style>
 </head>
