@@ -20,107 +20,6 @@
   <link rel="apple-touch-icon" href="acs_logo_180.png">
   <link rel="manifest" href="manifest.json">
 
-<style>
-/* ============================================================
-   === BASE PAGE STYLING — Company Finance SCOPE ONLY ==========
-   ============================================================ */
-
-#companyFinanceRoot {
-  padding: 120px 2rem 60px;
-}
-
-/* Section containers */
-#companyFinanceRoot .finance-section {
-  background: #0b1638;
-  border-radius: 14px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 0 14px rgba(0,0,0,0.45);
-}
-
-/* Titles */
-#companyFinanceRoot .finance-section h2 {
-  text-align: center;
-  color: #FFB300;
-  font-size: 1.6rem;
-  margin-bottom: 1rem;
-}
-
-/* Table */
-#companyFinanceRoot .finance-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-#companyFinanceRoot .finance-table th {
-  background: #0a1433;
-  padding: 0.8rem;
-  color: #FFB300;
-}
-
-#companyFinanceRoot .finance-table td {
-  padding: 0.7rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  color: #ddd;
-}
-
-/* Cards */
-#companyFinanceRoot .finance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1rem;
-}
-
-#companyFinanceRoot .finance-card {
-  background: #0e1c45;
-  padding: 1rem;
-  border-radius: 12px;
-  text-align: center;
-  border: 1px solid #FFB30066;
-}
-
-#companyFinanceRoot .finance-card h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #FFB300;
-}
-
-#companyFinanceRoot .finance-card p {
-  font-size: 1.4rem;
-  margin: 0.4rem 0 0;
-  font-weight: 600;
-  color: #dbe4ff;
-}
-
-/* Log table */
-#companyFinanceRoot .log-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-#companyFinanceRoot .log-table th {
-  background: #0a1433;
-  padding: 0.8rem;
-  color: #FFB300;
-}
-
-#companyFinanceRoot .log-table td {
-  padding: 0.6rem;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  color: #ddd;
-  text-align: center;
-}
-
-/* Chart */
-#companyFinanceRoot #growthChart {
-  background: rgba(255,255,255,0.05);
-  border-radius: 10px;
-  padding: 1rem;
-}
-</style>
 </head>
 
 <body>
@@ -154,29 +53,29 @@
 <!-- ============================================================
      === MAIN WRAPPER ===========================================
      ============================================================ -->
-<main class="acs-main" id="companyFinanceRoot">
+<main class="acs-main" id="company-finance-main">
 
   <!-- =================== COMPANY OVERVIEW =================== -->
-  <div class="finance-section">
+  <div class="cf-section">
     <h2>Company Financial Overview</h2>
 
-    <div class="finance-grid">
-      <div class="finance-card">
+    <div class="cf-grid">
+      <div class="cf-card">
         <h3>Capital</h3>
         <p id="cf-capital">$0</p>
       </div>
 
-      <div class="finance-card">
+      <div class="cf-card">
         <h3>Revenue (This Month)</h3>
         <p id="cf-revenue">$0</p>
       </div>
 
-      <div class="finance-card">
+      <div class="cf-card">
         <h3>Expenses (This Month)</h3>
         <p id="cf-expenses">$0</p>
       </div>
 
-      <div class="finance-card">
+      <div class="cf-card">
         <h3>Profit (This Month)</h3>
         <p id="cf-profit">$0</p>
       </div>
@@ -184,10 +83,10 @@
   </div>
 
   <!-- =================== MONTHLY HISTORY ==================== -->
-  <div class="finance-section">
+  <div class="cf-section">
     <h2>Monthly Growth (History)</h2>
     
-    <table class="finance-table">
+    <table class="cf-table">
       <thead>
         <tr>
           <th>Month</th>
@@ -204,10 +103,10 @@
   </div>
 
   <!-- =================== TRANSACTION LOG ==================== -->
-  <div class="finance-section">
+  <div class="cf-section">
     <h2>Transaction Log</h2>
 
-    <table class="log-table">
+    <table class="cf-table cf-log-table">
       <thead>
         <tr>
           <th>Timestamp</th>
@@ -224,10 +123,10 @@
   </div>
 
   <!-- =================== ACTIVE CONTRACTS =================== -->
-  <div class="finance-section">
+  <div class="cf-section">
     <h2>Active Contracts</h2>
 
-    <table class="finance-table">
+    <table class="cf-table">
       <thead>
         <tr>
           <th>Aircraft</th>
