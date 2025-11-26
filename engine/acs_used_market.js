@@ -234,7 +234,6 @@ function buyUsed(id) {
   nextD: null
 });
 
-
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
   // FINANZAS
@@ -342,7 +341,6 @@ function leaseUsed(id) {
   nextC: null,
   nextD: null
 });
-
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
