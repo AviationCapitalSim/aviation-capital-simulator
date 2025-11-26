@@ -287,7 +287,89 @@ body {
 .modal-bg {
   position: fixed !important;
 }
+/* ============================================================
+   === QATAR LUXURY PREMIUM MODAL SYSTEM =======================
+   ============================================================ */
 
+.acs-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  display: none;               /* hidden by default */
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+}
+
+.acs-modal-content {
+  background: #0d1833;
+  border: 1px solid #ffb30088;
+  border-radius: 14px;
+  padding: 1.6rem;
+  width: 90%;
+  max-width: 420px;
+  color: #e6e6e6;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+  animation: acsModalPop 0.22s ease;
+  position: relative;
+}
+
+@keyframes acsModalPop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.acs-close {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #ffb300;
+  transition: 0.25s;
+}
+
+.acs-close:hover {
+  transform: scale(1.2);
+  color: #ffe08a;
+}
+
+/* Buttons */
+.acs-btn-primary {
+  background: linear-gradient(145deg, #ffb300, #ff9a00);
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #081530;
+  font-weight: 700;
+  transition: 0.25s;
+}
+
+.acs-btn-primary:hover {
+  background: linear-gradient(145deg, #ffc94b, #ffb300);
+  box-shadow: 0 0 10px rgba(255,179,0,0.6);
+}
+
+.acs-btn-secondary {
+  background: #0f1f3e;
+  border: 1px solid #ffb30044;
+  padding: 0.55rem 1.2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #ffb300;
+  font-weight: 600;
+  transition: 0.25s;
+}
+
+.acs-btn-secondary:hover {
+  background: #1a2e55;
+  box-shadow: 0 0 10px rgba(255,179,0,0.4);
+}
 </style>
 </head>
 
