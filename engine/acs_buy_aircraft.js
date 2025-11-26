@@ -513,11 +513,17 @@ function checkDeliveries() {
   condition: 100,
   registration: ACS_generateRegistration(),
 
+  /* 🟦 DATA COMPLETA DEL MODELO (ACS_AIRCRAFT_DB) */
+  data: (resolveAircraftDB().find(m => 
+    m.manufacturer === entry.manufacturer && m.model === entry.model
+  ) || {}),
+
   lastC: null,
   lastD: null,
   nextC: null,
   nextD: null
 });
+
 
 /* === PASO 12 — Calcular próximos mantenimientos C y D === */
 const baseDeliveryDate = new Date(d);
