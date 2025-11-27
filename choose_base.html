@@ -414,20 +414,33 @@ function loadCountries() {
   // Obtener aeropuertos del continente en este año
   const airports = ACS_World.getAirportsByContinent(selectedContinent, { year });
 
-  // Extraer países válidos
-  const countries = [
-    ...new Set(
-      airports.map(a => a.region || a.country).filter(Boolean)
-    )
-  ].sort();
+  // ===============================
+// HISTORICAL COUNTRY RESOLUTION
+// ===============================
 
-  countries.forEach(c => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    countrySelect.appendChild(opt);
-  });
-}
+const year = ACS_World.getSimYear();
+
+// Países crudos del continente (como venían)
+const rawCountries = [
+  ...new Set(
+    airports.map(a => a.region || a.country).filter(Boolean)
+  )
+];
+
+// Aplicar reglas históricas (con ACS_CountryHistory)
+const countries = rawCountries
+  .map(c => resolveCountryForYear(c, year))
+  .filter(Boolean)                            // descarta países fuera de rango histórico
+  .filter((v, i, arr) => arr.indexOf(v) === i) // unique
+  .sort();
+
+// Cargar al <select>
+countries.forEach(c => {
+  const opt = document.createElement("option");
+  opt.value = c;
+  opt.textContent = c;
+  countrySelect.appendChild(opt);
+});
 
 
 /* ============================================================
