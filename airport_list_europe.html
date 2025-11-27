@@ -365,8 +365,22 @@ tr:hover {
       const airports = WorldAirportsACS[continent]
         .filter(a => a.icao !== userBase)
         .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
+ 
+     // === BUILD COUNTRY SELECTOR – QATAR LUXURY ===
+     const selector = document.getElementById("countrySelect");
 
-      airports.forEach(a => {
+     // Limpiar opciones previas
+     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+
+     // Extraer países únicos
+     const uniqueCountries = [...new Set(airports.map(a => a.country))].sort();
+
+     // Rellenar selector
+    uniqueCountries.forEach(country => {
+    selector.innerHTML += `<option value="${country}">${country}</option>`;
+   });      
+         
+        airports.forEach(a => {
         const total = a.demand.Y + a.demand.C + a.demand.F;
         const ecoPct = (a.demand.Y / total) * 100;
         const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
@@ -389,20 +403,7 @@ tr:hover {
         tableBody.appendChild(row);
       });
     }
-     // === BUILD COUNTRY SELECTOR – QATAR LUXURY ===
-     const selector = document.getElementById("countrySelect");
-
-     // Limpiar opciones previas
-     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
-
-     // Extraer países únicos
-     const uniqueCountries = [...new Set(airports.map(a => a.country))].sort();
-
-     // Rellenar selector
-    uniqueCountries.forEach(country => {
-    selector.innerHTML += `<option value="${country}">${country}</option>`;
-});
-   
+    
     function createRoute(icao) {
       window.location.href = `route_schedule.html?to=${icao}`;
     }
