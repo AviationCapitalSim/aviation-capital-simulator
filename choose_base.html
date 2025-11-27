@@ -280,7 +280,7 @@
 <div id="demandTooltip"></div>
 
 /* ============================================================
-   ======================= SCRIPTS ============================
+   === SCRIPTS ============================
    ============================================================ */
   
 <script src="time_engine.js"></script>
@@ -288,6 +288,15 @@
 <script src="engine/acs_country_history.js"></script> <!-- si lo usas -->
 <script src="engine/acs_world_engine.js"></script>    <!-- 👈 NUEVO -->
 
+<script>
+  loadAirportScripts(() => {
+    buildAirportIndex();
+    ACS_processAllAirports(); // <-- MAGIA AQUÍ
+    document.getElementById("continentSelect").addEventListener("change", loadCountries);
+    document.getElementById("countrySelect").addEventListener("change", loadAirports);
+  });
+</script>
+  
 <script>
 let selectedContinent = "";
 let selectedCountry = "";
