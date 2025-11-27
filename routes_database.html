@@ -1,108 +1,223 @@
+<!-- ============================================================
+     === ROUTES DATABASE — Qatar Luxury Edition (ACS v2.0) ======
+     ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>World Airports Database - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== ACS Favicons ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+
   <style>
-    /* === WORLD AIRPORTS DATABASE (ACS Clean 2) === */
     body {
+      margin: 0;
       background-color: #081530;
       color: white;
-      font-family: "Segoe UI", sans-serif;
+      font-family: "Poppins", sans-serif;
+    }
+
+    /* ================= Qatar Luxury Header ================= */
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      backdrop-filter: blur(9px);
+      background: rgba(12,23,50,0.45);
+      padding: 0.8rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #ffb300;
+      z-index: 5000;
+    }
+
+    .acs-logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .acs-logo img {
+      height: 46px;
+    }
+
+    .acs-logo h1 {
+      font-size: 1.15rem;
       margin: 0;
+      color: #ffb300;
+      letter-spacing: 0.5px;
     }
 
-    h2 {
-      color: #FFB300;
-      margin-top: 6rem; /* ✅ espacio por header fijo */
-      text-align: center;
+    .acs-nav {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
     }
 
-    .sub {
-      color: #ccc;
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .search-bar {
-      margin: 1rem 0;
-      text-align: center;
-    }
-
-    .search-bar input {
-      padding: 0.6rem;
-      border-radius: 8px;
-      border: none;
-      width: 280px;
+    .acs-nav a {
+      position: relative;
       font-size: 1rem;
-      outline: none;
+      letter-spacing: 0.4px;
+      color: #dbe4ff; 
+      text-decoration: none;
+      transition: 0.25s ease;
+      padding-bottom: 6px;
     }
 
+    .acs-nav a:hover,
+    .acs-nav a.active {
+      color: #ffb300;
+      text-shadow: 0 0 6px rgba(255,179,0,0.6);
+    }
+
+    .acs-nav a.active::after,
+    .acs-nav a:hover::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to right, #ffb300, #ffe7a0);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255,200,60,0.45);
+    }
+
+    .acs-auth {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logout-btn {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid #ffb300;
+      border-radius: 12px;
+      background: rgba(255,179,0,0.05);
+      color: #ffb300;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .logout-btn:hover {
+      background: #ffb300;
+      color: #0c1f3c;
+    }
+
+    .acs-clock-header {
+      font-family: "Orbitron", monospace;
+      padding: 0.4rem 0.8rem;
+      background: rgba(0,255,128,0.08);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #00ff80;
+    }
+
+    /* ================= MAIN CONTENT ================= */
+    .acs-main {
+      padding: 110px 2rem 70px;
+      text-align: center;
+    }
+
+    .acs-main h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #ffca3a;
+      margin-bottom: 0.4rem;
+      text-shadow: 
+        0 0 6px rgba(255,190,60,0.55),
+        0 0 12px rgba(255,190,60,0.35);
+    }
+
+    .acs-main .sub {
+      font-size: 1.05rem;
+      color: #cbd6ff;
+      opacity: 0.9;
+      text-shadow: 0 0 4px rgba(200,210,255,0.25);
+    }
+
+    /* === Qatar Luxury Cards === */
     .continent-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-      margin: 0 auto;
-      width: 90%;
-      margin-top: 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2.5rem;
+      padding: 0 2rem;
     }
 
     .continent-card {
-      background: #102040;
-      border-radius: 12px;
-      padding: 1.2rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+      border-radius: 22px;
+      padding: 1.6rem 1.5rem;
+      box-shadow: 0 0 25px rgba(0,0,0,0.4);
+      transition: 0.25s;
+      border: 1px solid rgba(255,179,0,0.15);
       cursor: pointer;
+      text-align: left;
     }
 
     .continent-card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 0 16px rgba(255, 179, 0, 0.5);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+      border: 1px solid rgba(255,179,0,0.35);
     }
 
     .continent-card h3 {
-      color: #FFB300;
+      font-size: 1.35rem;
+      color: #ffb300;
       margin-bottom: 0.6rem;
+      text-shadow: 0 0 6px rgba(255,179,0,0.4);
     }
 
     .continent-card p {
-      color: #ccc;
+      color: #d7e2ff;
       font-size: 0.95rem;
+      line-height: 1.4;
     }
 
     .acs-btn {
-      background-color: #1DB954;
-      color: #fff;
+      margin-top: 1rem;
+      background: #00a86b;
       border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 8px;
+      padding: 0.7rem 1.1rem;
+      border-radius: 10px;
       cursor: pointer;
       font-weight: 600;
-      margin-top: 0.8rem;
-      transition: background-color 0.2s ease;
+      transition: 0.25s;
+      color: white;
     }
 
     .acs-btn:hover {
-      background-color: #17a84d;
+      background: #00794f;
     }
 
+    /* BACK BUTTON */
     .back-btn {
-      color: #1DB954;
+      margin-top: 2.5rem;
+      color: #ffb300;
       background: none;
-      border: 1px solid #1DB954;
-      border-radius: 6px;
-      padding: 0.4rem 1rem;
+      border: 1px solid #ffb300;
+      border-radius: 10px;
+      padding: 0.6rem 1.4rem;
       cursor: pointer;
-      display: block;
-      margin: 2rem auto 1rem;
+      font-weight: 600;
     }
 
     .back-btn:hover {
-      background-color: #1DB954;
-      color: white;
+      background: #ffb300;
+      color: #081530;
     }
 
     footer {
@@ -112,172 +227,100 @@
       font-size: 0.9rem;
       padding: 1rem;
     }
-
-    /* ✅ Reloj cockpit Airbus */
-    .acs-clock-header {
-      font-family: 'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      font-weight:bold;
-      background:rgba(0,255,128,0.08);
-      padding:0.3rem 0.8rem;
-      border-radius:6px;
-      font-size:0.9rem;
-      margin-left:1rem;
-    }
   </style>
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
-      <h1>Aviation Capital Simulator</h1>
+
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html" class="active">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+    <a href="support.html">Support</a>
+  </nav>
+
+  <div class="acs-auth">
+    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+  </div>
+</header>
+
+<main class="acs-main">
+  <h2>🌍 World Airports Database</h2>
+  <p class="sub">Select a continent to explore airports and analyze operational opportunities.</p>
+
+  <section class="continent-grid" id="continentGrid">
+
+    <!-- === CARDS — Same content as before, only restyled === -->
+    <div class="continent-card" onclick="openContinent('Europe')">
+      <h3>🌍 Europe</h3>
+      <p>Explore major hubs like London Heathrow (EGLL), Frankfurt (EDDF), Madrid (LEMD).</p>
+      <button class="acs-btn">Open</button>
     </div>
 
-    <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html">Finance</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html" class="active">Routes</a>
-      <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
-    </nav>
-
-    <div class="acs-auth">
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="continent-card" onclick="openContinent('NorthAmerica')">
+      <h3>🛫 North America</h3>
+      <p>Includes JFK (KJFK), Miami (KMIA), Los Angeles (KLAX).</p>
+      <button class="acs-btn">Open</button>
     </div>
 
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </header>
-
-  <!-- ===== MAIN CONTENT ===== -->
-  <main class="acs-main">
-    <h2>🌍 World Airports Database</h2>
-    <p class="sub">Select a continent to explore airports, calculate distances from your base, and analyze operational opportunities.</p>
-
-    <div class="search-bar">
-      <input type="text" id="searchAirport" placeholder="🔍 Search by airport name or ICAO code..." onkeyup="searchContinents()" />
+    <div class="continent-card" onclick="openContinent('SouthAmerica')">
+      <h3>🌎 South America</h3>
+      <p>Bogotá (SKBO), São Paulo (SBGR), Buenos Aires (SAEZ).</p>
+      <button class="acs-btn">Open</button>
     </div>
 
-    <section class="continent-grid" id="continentGrid">
-      <div class="continent-card" onclick="openContinent('Europe')">
-        <h3>🌍 Europe</h3>
-        <p>Explore major hubs like London Heathrow (EGLL), Frankfurt (EDDF), and Madrid (LEMD).</p>
-        <button class="acs-btn">Open</button>
-      </div>
+    <div class="continent-card" onclick="openContinent('Asia')">
+      <h3>🌏 Asia</h3>
+      <p>Tokyo (RJTT), Singapore (WSSS), Hong Kong (VHHH).</p>
+      <button class="acs-btn">Open</button>
+    </div>
 
-      <div class="continent-card" onclick="openContinent('NorthAmerica')">
-        <h3>🛫 North America</h3>
-        <p>Includes JFK (KJFK), Miami (KMIA), Los Angeles (KLAX). High passenger flow and long-haul connectivity.</p>
-        <button class="acs-btn">Open</button>
-      </div>
+    <div class="continent-card" onclick="openContinent('Africa')">
+      <h3>🌍 Africa</h3>
+      <p>Cairo (HECA), Johannesburg (FAOR), Nairobi (HKJK).</p>
+      <button class="acs-btn">Open</button>
+    </div>
 
-      <div class="continent-card" onclick="openContinent('SouthAmerica')">
-        <h3>🌎 South America</h3>
-        <p>Dynamic markets with cargo potential: Bogotá (SKBO), São Paulo (SBGR), Buenos Aires (SAEZ).</p>
-        <button class="acs-btn">Open</button>
-      </div>
+    <div class="continent-card" onclick="openContinent('Oceania')">
+      <h3>🌏 Oceania</h3>
+      <p>Sydney (YSSY), Auckland (NZAA), Melbourne (YMML).</p>
+      <button class="acs-btn">Open</button>
+    </div>
 
-      <div class="continent-card" onclick="openContinent('Asia')">
-        <h3>🌏 Asia</h3>
-        <p>High-density hubs: Dubai (OMDB), Tokyo (RJTT), Singapore (WSSS), Hong Kong (VHHH).</p>
-        <button class="acs-btn">Open</button>
-      </div>
+    <div class="continent-card" onclick="openContinent('MiddleEast')">
+      <h3>🕌 Middle East</h3>
+      <p>Doha (OTHH), Dubai (OMDB), Riyadh (OERK).</p>
+      <button class="acs-btn">Open</button>
+    </div>
 
-      <div class="continent-card" onclick="openContinent('Africa')">
-        <h3>🌍 Africa</h3>
-        <p>Expanding networks: Cairo (HECA), Johannesburg (FAOR), Nairobi (HKJK).</p>
-        <button class="acs-btn">Open</button>
-      </div>
+  </section>
 
-      <div class="continent-card" onclick="openContinent('Oceania')">
-        <h3>🌏 Oceania</h3>
-        <p>Pacific gateways: Sydney (YSSY), Auckland (NZAA), Melbourne (YMML).</p>
-        <button class="acs-btn">Open</button>
-      </div>
+  <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
+</main>
 
-      <div class="continent-card" onclick="openContinent('MiddleEast')">
-        <h3>🕌 Middle East</h3>
-        <p>Long-haul and cargo hubs: Doha (OTHH), Dubai (OMDB), Riyadh (OERK).</p>
-        <button class="acs-btn">Open</button>
-      </div>
-    </section>
-
-    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
-  </main>
-
-  <!-- ===== FOOTER ===== -->
-  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
-
-  <!-- ===== SCRIPT ===== -->
-  <script>
-    function openContinent(continent) {
-      window.location.href = "airport_list_" + continent.toLowerCase() + ".html";
-    }
-
-    function searchContinents() {
-      const input = document.getElementById("searchAirport").value.toLowerCase();
-      const cards = document.querySelectorAll(".continent-card");
-      cards.forEach(card => {
-        const text = card.innerText.toLowerCase();
-        card.style.display = text.includes(input) ? "block" : "none";
-      });
-    }
-
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-  </script>
-<!-- ✅ Conexión directa a la base de datos global de aeropuertos -->
-<script src="worldairportsacs.js?v=2.0"></script>
+<footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof WorldAirportsACS === "undefined") {
-    console.warn("⚠️ WorldAirportsACS.js not loaded yet.");
-    return;
-  }
+function openContinent(continent) {
+  window.location.href = "airport_list_" + continent.toLowerCase() + ".html";
+}
 
-  const stats = {
-    europe: WorldAirportsACS.Europe.length,
-    asia: WorldAirportsACS.Asia.length,
-    northamerica: WorldAirportsACS.NorthAmerica.length,
-    southamerica: WorldAirportsACS.SouthAmerica.length,
-    africa: WorldAirportsACS.Africa.length,
-    oceania: WorldAirportsACS.Oceania.length,
-    middleeast: WorldAirportsACS.MiddleEast.length,
-  };
-
-  const passengers = {
-    europe: WorldAirportsACS.Europe.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
-    asia: WorldAirportsACS.Asia.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
-    northamerica: WorldAirportsACS.NorthAmerica.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
-    southamerica: WorldAirportsACS.SouthAmerica.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
-    africa: WorldAirportsACS.Africa.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
-    oceania: WorldAirportsACS.Oceania.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
-    middleeast: WorldAirportsACS.MiddleEast.reduce((sum,a)=>sum+(a.demands?.Y||0)+(a.demands?.C||0)+(a.demands?.F||0),0),
-  };
-
-  // Actualiza visualmente cada tarjeta
-  const cards = document.querySelectorAll(".continent-card");
-  cards.forEach(card => {
-    const title = card.querySelector("h3").innerText.toLowerCase();
-    const key = Object.keys(stats).find(k => title.includes(k));
-    if (key && stats[key]) {
-      const info = document.createElement("p");
-      info.style.color = "#00e676";
-      info.style.fontSize = "0.9rem";
-      info.style.marginTop = "0.5rem";
-      info.innerHTML = `🛫 ${stats[key]} airports<br>👥 ${passengers[key].toLocaleString()} pax/year`;
-      card.appendChild(info);
-    }
-  });
-});
+function handleLogout() {
+  window.location.href = "login.html";
+}
 </script>
-  <!-- ✅ Reloj cockpit Airbus sincronizado -->
-  <script src="time_engine.js?v=1.2"></script>
+
+<script src="time_engine.js"></script>
+
 </body>
 </html>
