@@ -279,22 +279,35 @@
 
 <div id="demandTooltip"></div>
 
-/* ============================================================
-   === SCRIPTS ============================
-   ============================================================ */
+<!-- ============================================================
+     === SCRIPTS ================================================
+     ============================================================ -->
   
 <script src="time_engine.js"></script>
 <script src="engine/airports_loader.js"></script>
 <script src="engine/acs_country_history.js"></script> <!-- si lo usas -->
 <script src="engine/acs_world_engine.js"></script>    <!-- 👈 NUEVO -->
 
+<!-- ============================================================
+     === INITIALIZER (ÚNICO BLOQUE CORRECTO) ====================
+     ============================================================ -->
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
   loadAirportScripts(() => {
-    buildAirportIndex();
-    ACS_processAllAirports(); // <-- MAGIA AQUÍ
-    document.getElementById("continentSelect").addEventListener("change", loadCountries);
-    document.getElementById("countrySelect").addEventListener("change", loadAirports);
+    buildAirportIndex();       // crea AirportIndex
+    ACS_processAllAirports();  // normaliza ISO2 → país real
+
+    console.log("🌍 Airports loaded:", Object.keys(AirportIndex).length);
+
+    document.getElementById("continentSelect")
+      .addEventListener("change", loadCountries);
+
+    document.getElementById("countrySelect")
+      .addEventListener("change", loadAirports);
   });
+
+});
 </script>
   
 <script>
