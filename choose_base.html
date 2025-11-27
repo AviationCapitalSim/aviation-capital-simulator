@@ -395,52 +395,61 @@ function resolveCountryForYear(countryName, year) {
   // 3) Si no está en ACS_CountryHistory → lo aceptamos siempre
   return countryName;
 }
-
 /* ============================================================
-   LOAD COUNTRIES — usando ACS_WorldEngine
-============================================================ */
-function loadCountries() {
+   === CHOOSE_BASE — loadCountries() FIX — Version: 27 NOV 2025
+   ------------------------------------------------------------
+   ▪ Corrección urgente tras pérdida de países en selector
+   ▪ Se restaura carga estable basada en datos reales del loader
+   ▪ Se mantienen filtros históricos SOLO a nivel aeropuerto
+   ▪ NO usa resolveCountryForYear (evita vacíos)
+   ▪ Compatible con ACS_World.getAirportsByContinent()
+   ============================================================ */
+
+  function loadCountries() {
   selectedContinent = document.getElementById("continentSelect").value;
   const countrySelect = document.getElementById("countrySelect");
   const list = document.getElementById("airportList");
 
+  // Reset del select y de la tabla
   countrySelect.innerHTML = '<option value="">🏳️ Select Country</option>';
   list.innerHTML = '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
 
+  // Si no hay continente seleccionado, salimos
   if (!selectedContinent) return;
 
+  // Año actual de la simulación (1940, 1941, etc.)
   const year = ACS_World.getSimYear();
 
-  // Obtener aeropuertos del continente en este año
+  // Aeropuertos del continente en ese año (ya pasa por airportExistsInYear)
   const airports = ACS_World.getAirportsByContinent(selectedContinent, { year });
 
+  // Si por alguna razón no hay aeropuertos, avisamos y salimos
+  if (!airports || !airports.length) {
+    list.innerHTML = `<tr><td colspan="9">
+      No airports available in this continent for the year ${year}.
+    </td></tr>`;
+    return;
+  }
+
   // ===============================
-// HISTORICAL COUNTRY RESOLUTION
-// ===============================
+  // PAÍSES DEL CONTINENTE (SENCILLO)
+  // ===============================
+  const countries = [
+    ...new Set(
+      airports
+        .map(a => a.region || a.country || a.country_name) // usamos todos los posibles campos
+        .filter(Boolean)
+    )
+  ].sort();
 
-const year = ACS_World.getSimYear();
-
-// Países crudos del continente (como venían)
-const rawCountries = [
-  ...new Set(
-    airports.map(a => a.region || a.country).filter(Boolean)
-  )
-];
-
-// Aplicar reglas históricas (con ACS_CountryHistory)
-const countries = rawCountries
-  .map(c => resolveCountryForYear(c, year))
-  .filter(Boolean)                            // descarta países fuera de rango histórico
-  .filter((v, i, arr) => arr.indexOf(v) === i) // unique
-  .sort();
-
-// Cargar al <select>
-countries.forEach(c => {
-  const opt = document.createElement("option");
-  opt.value = c;
-  opt.textContent = c;
-  countrySelect.appendChild(opt);
-});
+  // Poblar el <select> de países
+  countries.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    countrySelect.appendChild(opt);
+  });
+}
 
 
 /* ============================================================
