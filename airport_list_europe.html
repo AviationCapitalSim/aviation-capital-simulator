@@ -257,7 +257,30 @@ tr:hover {
   z-index: 1000;
   width: 180px;
 }
-  </style>
+       .country-filter {
+  margin: 1.2rem auto 1.8rem auto;
+  display: flex;
+  justify-content: center;
+}
+
+.country-select {
+  background: rgba(20,35,70,0.75);
+  color: #ffca3a;
+  border: 1px solid #ffb300;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 0 12px rgba(255,179,0,0.15);
+}
+
+.country-select:hover {
+  background: rgba(30,45,85,0.9);
+}
+  
+</style>
 </head>
 
 <body>
@@ -287,7 +310,13 @@ tr:hover {
   <main class="acs-main">
     <h2>🌍 European Airports</h2>
     <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
-
+       
+  <div class="country-filter">
+    <select id="countrySelect" class="country-select" onchange="filterByCountry()">
+    <option value="ALL">🌍 All Countries</option>
+  </select>
+  </div>
+       
     <table id="airportTable">
       <thead>
         <tr>
@@ -432,7 +461,23 @@ tr:hover {
       tooltip.style.display = "none";
     }
   });
-  </script>
+<script>
+function filterByCountry() {
+  const selected = document.getElementById("countrySelect").value;
+  const rows = document.querySelectorAll("#airportTable tbody tr");
+
+  rows.forEach(row => {
+    const countryCell = row.children[1].textContent.trim();
+    if (selected === "ALL" || countryCell === selected) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+  });
+}
+</script>
+     
+</script>
 
 </body>
 </html>
