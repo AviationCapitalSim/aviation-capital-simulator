@@ -396,13 +396,12 @@ function resolveCountryForYear(countryName, year) {
   return countryName;
 }
 /* ============================================================
-   === CHOOSE_BASE — loadCountries() FIX — Version: 27 NOV 2025
+   CHOOSE_BASE — loadCountries() (Stable Beta Final)
    ------------------------------------------------------------
-   ▪ Restaura países correctamente para todos los continentes
-   ▪ Aplica normalización ACS_World (normalizeCountry)
-   ▪ No altera lógica histórica de aeropuertos (ya integrada)
-   ▪ Compatible con >4000 aeropuertos del loader original
-   ▪ Sin JS nuevos, sin cambiar arquitectura ACS
+   ▪ Usa solo datos reales del WorldEngine
+   ▪ No usa filtros artificiales
+   ▪ Compatible con >4000 aeropuertos
+   ▪ Genera lista completa de países por continente
    ============================================================ */
 function loadCountries() {
 
@@ -410,7 +409,7 @@ function loadCountries() {
   const countrySelect = document.getElementById("countrySelect");
   const list = document.getElementById("airportList");
 
-  // Reset del select y mensaje inicial
+  // Reset UI
   countrySelect.innerHTML = '<option value="">🏳️ Select Country</option>';
   list.innerHTML = '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
 
@@ -418,7 +417,7 @@ function loadCountries() {
 
   const year = ACS_World.getSimYear();
 
-  // Aeropuertos del continente (ya filtra históricos)
+  // Aeropuertos del continente (filtrados solo por apertura/cierre históricos)
   const airports = ACS_World.getAirportsByContinent(selectedContinent, { year });
 
   if (!airports || !airports.length) {
@@ -428,26 +427,19 @@ function loadCountries() {
     return;
   }
 
-  /* ============================================================
-     === CHOOSE_BASE — Country Normalizer Patch — 27 NOV 2025 ===
-     ------------------------------------------------------------
-     ▪ Normaliza region / country / ISO / nombres modernos
-     ▪ Evita continentes vacíos (Africa, Americas, ME, Oceania)
-     ============================================================ */
+  // Normalizar países
   airports.forEach(a => normalizeCountry(a));
 
-  // Extraer países tras normalización
-  const rawCountries = [
+  // Extraer países válidos
+  const countries = [
     ...new Set(
       airports
         .map(a => a.region || a.country || a.country_name)
         .filter(Boolean)
     )
-  ];
+  ].sort();
 
-  const countries = rawCountries.sort();
-
-  // Poblar select de países
+  // Poblar select
   countries.forEach(c => {
     const opt = document.createElement("option");
     opt.value = c;
@@ -456,10 +448,15 @@ function loadCountries() {
   });
 }
 
-
 /* ============================================================
-   LOAD AIRPORTS — usando ACS_WorldEngine
-============================================================ */
+   LOAD AIRPORTS — ACS World Engine (Stable Beta)
+   ------------------------------------------------------------
+   ▪ Usa solo datos reales del WorldEngine
+   ▪ Sin filtros artificiales (DC-3, runway, etc.)
+   ▪ 100% compatible con fechas de apertura/cierre
+   ▪ Compatible con demanda histórica real
+   ▪ Compatible con >4000 aeropuertos
+   ============================================================ */
 function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
   const tbody = document.getElementById("airportList");
@@ -472,15 +469,15 @@ function loadAirports() {
 
   const year = ACS_World.getSimYear();
 
-  // Obtener aeropuertos del país + continente + año
+  // Aeropuertos del país + continente + año (motor mundial)
   let airports = ACS_World.getAirportsByContinentCountry(
     selectedContinent,
     selectedCountry,
     { year }
   );
 
-  // ✔ Reconectar filtro histórico original
-  airports = airports.filter(a => ACS_filterAirportsByYear(year).includes(a));
+  // ❌ Eliminado filtro artificial de pistas
+  // airports = airports.filter(a => ACS_filterAirportsByYear(year).includes(a));
 
   if (!airports.length) {
     tbody.innerHTML = `<tr><td colspan="9">
@@ -490,7 +487,7 @@ function loadAirports() {
   }
 
   airports.forEach(a => {
-    // Demanda histórica (ya ajustada al año)
+    // Demanda histórica real del motor mundial
     const D = ACS_World.getHistoricalDemand(a, year);
     const total = D.Y + D.C + D.F;
 
