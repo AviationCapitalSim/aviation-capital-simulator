@@ -395,6 +395,59 @@ function resolveCountryForYear(countryName, year) {
   // 3) Si no está en ACS_CountryHistory → lo aceptamos siempre
   return countryName;
 }
+  
+/* ============================================================
+   === HISTORICAL CONTINENT FILTER — Option B2 ===============
+   ------------------------------------------------------------
+   Muestra todos los continentes, pero los que NO tengan
+   aeropuertos disponibles en el año actual se muestran
+   deshabilitados y en gris.
+   ============================================================ */
+  
+function buildContinentSelect() {
+  const continentSelect = document.getElementById("continentSelect");
+  if (!continentSelect) return;
+
+  const year = ACS_World.getSimYear();
+  const allContinents = [
+    "NorthAmerica",
+    "SouthAmerica",
+    "Europe",
+    "Asia",
+    "MiddleEast",
+    "Africa",
+    "Oceania"
+  ];
+
+  // Limpiar opciones
+  continentSelect.innerHTML = '<option value="">🌍 Select Continent</option>';
+
+  allContinents.forEach(cont => {
+    const list = ACS_World.getAirportsByContinent(cont, { year }) || [];
+    const available = list.length > 0;
+
+    const opt = document.createElement("option");
+    opt.value = cont;
+
+    // Nombre limpio: "SouthAmerica" → "South America"
+    const pretty = cont.replace(/([A-Z])/g, " $1").trim();
+
+    if (available) {
+      // Continente válido
+      opt.textContent = pretty;
+      opt.disabled = false;
+      opt.style.color = "#e8ecff";
+    } else {
+      // Continente NO disponible → gris + disabled
+      opt.textContent = `${pretty} (Unavailable in ${year})`;
+      opt.disabled = true;
+      opt.style.color = "#777";
+    }
+
+    continentSelect.appendChild(opt);
+  });
+}
+
 /* ============================================================
    CHOOSE_BASE — loadCountries() (WorldAirportsACS + WorldEngine)
    ------------------------------------------------------------
@@ -421,7 +474,7 @@ function loadCountries() {
       ? WorldAirportsACS[selectedContinent]
       : [];
 
-  // 🔹 Aplicar sólo filtro histórico (apertura/cierre)
+  // 🔹 Aplicar solo filtro histórico (apertura/cierre)
   const airports = rawList.filter(a => ACS_World.airportExistsInYear(a, year));
 
   if (!airports.length) {
@@ -431,7 +484,7 @@ function loadCountries() {
     return;
   }
 
-  // 🔹 Extraer países usando los campos reales de la base
+  // 🔹 Extraer países reales de la base
   const countrySet = new Set();
 
   airports.forEach(a => {
@@ -440,14 +493,12 @@ function loadCountries() {
       (a.country && String(a.country).trim()) ||
       (a.country_name && String(a.country_name).trim());
 
-    if (country) {
-      countrySet.add(country);
-    }
+    if (country) countrySet.add(country);
   });
 
   const countries = Array.from(countrySet).sort();
 
-  // Poblar select
+  // Poblar select de países
   countries.forEach(c => {
     const opt = document.createElement("option");
     opt.value = c;
@@ -455,6 +506,11 @@ function loadCountries() {
     countrySelect.appendChild(opt);
   });
 }
+
+/* Inicializar menú de continentes al cargar */
+document.addEventListener("DOMContentLoaded", () => {
+  buildContinentSelect();
+});
 
 /* ============================================================
    LOAD AIRPORTS — WorldAirportsACS + WorldEngine (Stable Beta)
