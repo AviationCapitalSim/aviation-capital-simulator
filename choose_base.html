@@ -376,7 +376,7 @@ function resolveCountryForYear(countryName, year) {
 }
 
 /* ============================================================
-   LOAD COUNTRIES — CON FILTRO HISTÓRICO DINÁMICO
+   LOAD COUNTRIES — usando ACS_WorldEngine
 ============================================================ */
 function loadCountries() {
   selectedContinent = document.getElementById("continentSelect").value;
@@ -386,48 +386,31 @@ function loadCountries() {
   countrySelect.innerHTML = '<option value="">🏳️ Select Country</option>';
   list.innerHTML = '<tr><td colspan="9">Select a continent and country to view airports.</td></tr>';
 
-  if (!selectedContinent || !WorldAirportsACS[selectedContinent]) return;
+  if (!selectedContinent) return;
 
-  const year = ACS_TIME.currentTime.getUTCFullYear();
+  const year = ACS_World.getSimYear();
 
-  // Países que aparecen en los aeropuertos de ese continente
-  const airportCountries = [...new Set(
-    WorldAirportsACS[selectedContinent].map(a => a.region)
-  )];
+  // Obtener aeropuertos del continente en este año
+  const airports = ACS_World.getAirportsByContinent(selectedContinent, { year });
 
-  // Resolver etiqueta histórica/actual
-  const labelSet = new Set();
+  // Extraer países válidos
+  const countries = [
+    ...new Set(
+      airports.map(a => a.region || a.country).filter(Boolean)
+    )
+  ].sort();
 
-  airportCountries.forEach(countryName => {
-    const label = resolveCountryForYear(countryName, year);
-    if (label) {
-      labelSet.add(label);
-    }
-  });
-
-  const finalCountries = Array.from(labelSet).sort();
-
-  if (finalCountries.length === 0) {
-    // fallback por si algo raro pasa
-    airportCountries.sort().forEach(name => {
-      const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
-      countrySelect.appendChild(opt);
-    });
-    return;
-  }
-
-  finalCountries.forEach(label => {
+  countries.forEach(c => {
     const opt = document.createElement("option");
-    opt.value = label;
-    opt.textContent = label;
+    opt.value = c;
+    opt.textContent = c;
     countrySelect.appendChild(opt);
   });
 }
 
+
 /* ============================================================
-   LOAD AIRPORTS — USA LA MISMA RESOLUCIÓN HISTÓRICA
+   LOAD AIRPORTS — usando ACS_WorldEngine
 ============================================================ */
 function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
@@ -439,32 +422,29 @@ function loadAirports() {
     return;
   }
 
-  const year = ACS_TIME.currentTime.getUTCFullYear();
+  const year = ACS_World.getSimYear();
 
-  const airports = WorldAirportsACS[selectedContinent]
-    .filter(a => {
-      const label = resolveCountryForYear(a.region, year);
-      return label === selectedCountry;
-    })
-    .sort((a, b) => {
-      const demandA = (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
-      const demandB = (b.demand?.Y || 0) + (b.demand?.C || 0) + (b.demand?.F || 0);
-      return demandB - demandA;
-    });
+  // Obtener aeropuertos del país + continente + año
+  const airports = ACS_World.getAirportsByContinentCountry(
+    selectedContinent,
+    selectedCountry,
+    { year }
+  );
 
   if (!airports.length) {
-    tbody.innerHTML = '<tr><td colspan="9">No airports available for this country in this year.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="9">
+      No airports available in ${selectedCountry} for the year ${year}.
+    </td></tr>`;
     return;
   }
 
   airports.forEach(a => {
-    const Y = a.demand?.Y || 0;
-    const C = a.demand?.C || 0;
-    const F = a.demand?.F || 0;
-    const total = Y + C + F;
+    // Demanda histórica (ya ajustada al año)
+    const D = ACS_World.getHistoricalDemand(a, year);
+    const total = D.Y + D.C + D.F;
 
-    const ecoPct = total ? (Y / total) * 100 : 0;
-    const bizPct = total ? ((Y + C) / total) * 100 : 0;
+    const ecoPct = total ? (D.Y / total) * 100 : 0;
+    const bizPct = total ? ((D.Y + D.C) / total) * 100 : 0;
 
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -474,12 +454,15 @@ function loadAirports() {
       <td>${a.name || a.city}</td>
       <td>${a.category}</td>
       <td>
-        ${Y}/${C}/${F}
-        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+        ${D.Y}/${D.C}/${D.F}
+        <div class="demand-bar"
+             style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
       <td>${a.slot_capacity}</td>
-      <td>$${a.slot_cost_usd.toLocaleString()}</td>
-      <td><button class="acs-btn" onclick="setBase('${a.icao}')">Set as Base</button></td>
+      <td>$${(a.slot_cost_usd || 0).toLocaleString()}</td>
+      <td><button class="acs-btn" onclick="setBase('${a.icao}')">
+        Set as Base
+      </button></td>
     `;
     tbody.appendChild(row);
   });
@@ -556,15 +539,19 @@ document.addEventListener("mousemove", e => {
 });
 
 /* ============================================================
-   INITIALIZER (NO TOCADO)
+   INITIALIZER — ahora carga el motor mundial
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   loadAirportScripts(() => {
-    buildAirportIndex();
-    document.getElementById("continentSelect").addEventListener("change", loadCountries);
-    document.getElementById("countrySelect").addEventListener("change", loadAirports);
+    buildAirportIndex();      // airports_loader
+    // Cargar países con el motor nuevo
+    document.getElementById("continentSelect")
+      .addEventListener("change", loadCountries);
+    document.getElementById("countrySelect")
+      .addEventListener("change", loadAirports);
   });
 });
+
 </script>
 
 </body>
