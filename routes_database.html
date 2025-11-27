@@ -150,12 +150,14 @@
 
     /* === Qatar Luxury Cards === */
     .continent-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-      margin-top: 2.5rem;
-      padding: 0 2rem;
-    }
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 350px));
+  justify-content: center;      /* ⬅ CENTRA HORIZONTAL */
+  align-items: start;           /* ⬅ Alinea arriba si hay más */
+  gap: 2.2rem;
+  margin-top: 2.5rem;
+  padding: 0 2rem;
+}
 
     .continent-card {
       background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
