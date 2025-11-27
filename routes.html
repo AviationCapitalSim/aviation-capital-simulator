@@ -265,37 +265,36 @@ footer {
 
   <section class="routes-panels">
 
-    <div class="panel" onclick="openRoutesDB()">
-      <h3>🌐 World Airports Database</h3>
-      <p>Access all global airports categorized by continent. Includes ICAO codes, slots, and runway data.</p>
-      <button class="acs-btn">Open</button>
-    </div>
+  <!-- === PANEL 1 — CREATE ROUTE (Con la función del antiguo World Airports DB) === -->
+  <div class="panel" onclick="openRoutesDB()">
+    <h3>🧭 Create Route</h3>
+    <p>Create new routes by selecting origin and destination airports with full database access.</p>
+    <button class="acs-btn">Open</button>
+  </div>
 
-    <div class="panel" onclick="openRouteSetup()">
-      <h3>🧭 Create New Route</h3>
-      <p>Select origin, destination, aircraft, and frequency. System validates range and airport compatibility.</p>
-      <button class="acs-btn">Open</button>
-    </div>
+  <!-- === PANEL 2 — MY ROUTES === -->
+  <div class="panel" onclick="openRoutesActive()">
+    <h3>📊 My Routes</h3>
+    <p>View your active routes, aircraft assignment, distances, and weekly utilization.</p>
+    <button class="acs-btn">Open</button>
+  </div>
 
-    <div class="panel" onclick="openRoutesActive()">
-      <h3>📊 My Routes</h3>
-      <p>View your active routes, aircraft assignment, distances, and weekly utilization.</p>
-      <button class="acs-btn">Open</button>
-    </div>
+  <!-- === PANEL 3 — SCHEDULE & TIME === -->
+  <div class="panel" onclick="window.location.href='schedule_table.html'">
+    <h3>🕓 Schedule & Time Table</h3>
+    <p>Plan weekly flights, assign aircraft, and manage maintenance slots.</p>
+    <button class="acs-btn">Open</button>
+  </div>
 
-    <div class="panel" onclick="openDistanceCalc()">
-      <h3>📡 Distance Calculator</h3>
-      <p>Calculate nautical miles between two airports for planning and performance validation.</p>
-      <button class="acs-btn">Open</button>
-    </div>
+  <!-- === PANEL 4 — DISTANCE CALCULATOR (Desactivada) === -->
+  <div class="panel" style="opacity:0.35; cursor:not-allowed;">
+    <h3>📡 Distance Calculator</h3>
+    <p>Coming soon. Calculate nautical miles between airports for planning.</p>
+    <button class="acs-btn" style="background:#444; cursor:not-allowed;">Coming Soon</button>
+  </div>
 
-    <div class="panel" onclick="window.location.href='schedule_table.html'">
-      <h3>🕓 Schedule & Time Table</h3>
-      <p>Plan weekly flights, assign aircraft, and manage maintenance slots.</p>
-      <button class="acs-btn">Open</button>
-    </div>
+</section>
 
-  </section>
 </main>
 
 <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
