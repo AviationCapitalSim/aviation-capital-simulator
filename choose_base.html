@@ -560,20 +560,6 @@ document.addEventListener("mousemove", e => {
   }
 });
 
-/* ============================================================
-   INITIALIZER — ahora carga el motor mundial
-============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-  loadAirportScripts(() => {
-    buildAirportIndex();      // airports_loader
-    // Cargar países con el motor nuevo
-    document.getElementById("continentSelect")
-      .addEventListener("change", loadCountries);
-    document.getElementById("countrySelect")
-      .addEventListener("change", loadAirports);
-  });
-});
-
 </script>
 
 </body>
