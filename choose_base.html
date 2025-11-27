@@ -446,11 +446,15 @@ function loadAirports() {
   const year = ACS_World.getSimYear();
 
   // Obtener aeropuertos del país + continente + año
-  const airports = ACS_World.getAirportsByContinentCountry(
-    selectedContinent,
-    selectedCountry,
-    { year }
-  );
+  let airports = ACS_World.getAirportsByContinentCountry(
+  selectedContinent,
+  selectedCountry,
+  { year }
+);
+
+// ✔ Reconectar filtro histórico original
+airports = airports.filter(a => ACS_filterAirportsByYear(year).includes(a));
+
 
   if (!airports.length) {
     tbody.innerHTML = `<tr><td colspan="9">
