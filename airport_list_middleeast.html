@@ -288,8 +288,16 @@ footer {
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
   <div id="demandTooltip"></div>
 
-  <script src="worldairportsacs.js?v=1.0"></script>
+  <!-- ===== SCRIPTS ===== -->
+     
+  <script>
+    // Crear el contenedor global si no existe
+    window.WorldAirportsACS = window.WorldAirportsACS || {};
+  </script>
+
+  <script src="engine/airports/world_airports_me.js"></script>
   <script src="time_engine.js?v=1.2"></script>
+
 
   <script>
   function loadAirports(continent) {
