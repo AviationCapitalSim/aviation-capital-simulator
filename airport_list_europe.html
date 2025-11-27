@@ -1,7 +1,7 @@
 <!-- ===========================================================
      === AIRPORT LIST (EUROPE) - AVIATION CAPITAL SIMULATOR ===
-     Version: v2.2 | Date: 10 NOV 2025
-     Dynamic Table View + Demand Bar + Tooltip + Growth Trend
+     Version: v2.1 | Date: 10 NOV 2025
+     Dynamic Table View + Demand Load Bar + Tooltip Analytics
      =========================================================== -->
 <!DOCTYPE html>
 <html lang="en">
@@ -32,36 +32,6 @@ h2 {
   color: #ccc;
   margin-bottom: 2rem;
   font-size: 0.95rem;
-}
-
-/* === COUNTRY FILTER MODULE === */
-.filter-container {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.filter-container label {
-  margin-right: 8px;
-  font-size: 0.95rem;
-  color: #ddd;
-}
-
-.filter-container select {
-  background-color: rgba(14,27,70,0.9);
-  color: #fff;
-  border: 1px solid #FFB300;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  box-shadow: 0 0 6px rgba(255,179,0,0.4);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-container select:hover {
-  background-color: rgba(20,40,90,1);
-  transform: scale(1.03);
 }
 
 /* === Table container === */
@@ -168,7 +138,7 @@ footer {
   text-shadow: 0 0 6px rgba(0,255,128,0.5);
 }
 
-/* === DEMAND TOOLTIP ANALYTIC === */
+/* === DEMAND TOOLTIP ANALYTIC (ACS Tooltip v1.0) === */
 #demandTooltip {
   position: absolute;
   display: none;
@@ -205,29 +175,31 @@ footer {
   background: conic-gradient(#1DB954 0deg var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 360deg);
 }
 
-/* === DEMAND LOAD BAR === */
+/* === DEMAND LOAD BAR (ACS Visual v1.0) === */
 .demand-bar {
   width: 100%;
   height: 8px;
   border-radius: 6px;
-  background: linear-gradient(to right, #1DB954 var(--eco), #FFB300 var(--eco) var(--biz), #FF6F00 var(--biz) 100%);
-  box-shadow: 0 0 6px rgba(255,179,0,0.3);
+  background: linear-gradient(
+    to right,
+    #1DB954 var(--eco),
+    #FFB300 var(--eco) var(--biz),
+    #FF6F00 var(--biz) 100%
+  );
+  box-shadow: 0 0 6px rgba(255, 179, 0, 0.3);
   margin-top: 6px;
 }
-
-/* === GROWTH TREND === */
-.growth-positive { color: #1DB954; font-weight: 600; text-shadow: 0 0 6px rgba(29,185,84,0.4); }
-.growth-neutral  { color: #FFB300; font-weight: 600; text-shadow: 0 0 6px rgba(255,179,0,0.4); }
-.growth-negative { color: #FF4C4C; font-weight: 600; text-shadow: 0 0 6px rgba(255,76,76,0.4); }
   </style>
 </head>
 
 <body>
+  <!-- ===== HEADER ===== -->
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
       <h1>Aviation Capital Simulator</h1>
     </div>
+
     <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
       <a href="finance.html">Finance</a>
@@ -237,33 +209,18 @@ footer {
       <a href="forum.html">Forum</a>
       <a href="support.html">Support</a>
     </nav>
+
     <div class="acs-auth">
       <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
     </div>
+
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
   </header>
 
+  <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
     <h2>🌍 European Airports</h2>
     <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
-
-    <!-- === COUNTRY FILTER MODULE (EUROPE) === -->
-    <div class="filter-container">
-      <label for="countryFilter">Filter by Country:</label>
-      <select id="countryFilter">
-        <option value="all">All Countries</option>
-        <option value="France">France</option>
-        <option value="Germany">Germany</option>
-        <option value="Italy">Italy</option>
-        <option value="Spain">Spain</option>
-        <option value="United Kingdom">United Kingdom</option>
-        <option value="Netherlands">Netherlands</option>
-        <option value="Switzerland">Switzerland</option>
-        <option value="Austria">Austria</option>
-        <option value="Belgium">Belgium</option>
-      </select>
-    </div>
-    <!-- === END COUNTRY FILTER MODULE === -->
 
     <table id="airportTable">
       <thead>
@@ -285,9 +242,13 @@ footer {
     <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back</button>
   </main>
 
+  <!-- ===== FOOTER ===== -->
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+
+  <!-- ===== TOOLTIP ELEMENT ===== -->
   <div id="demandTooltip"></div>
 
+  <!-- ===== SCRIPTS ===== -->
   <script src="worldairportsacs.js?v=1.0"></script>
   <script src="time_engine.js?v=1.2"></script>
 
@@ -306,23 +267,19 @@ footer {
       const ecoPct = (a.demand.Y / total) * 100;
       const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
 
-      const growthPct = ((a.pax_growth_factor - 1) * 100);
-      let growthClass = "growth-neutral", growthIcon = "➡";
-      if (growthPct > 10) { growthClass = "growth-positive"; growthIcon = "⬆"; }
-      else if (growthPct < 0) { growthClass = "growth-negative"; growthIcon = "⬇"; }
-
       const row = document.createElement("tr");
       row.innerHTML = `
         <td><strong>${a.city}</strong> (${a.icao}/${a.iata})</td>
         <td>${a.country}</td>
         <td>${a.runway_m}</td>
-        <td>${a.demand.Y}/${a.demand.C}/${a.demand.F}
+        <td>
+          ${a.demand.Y}/${a.demand.C}/${a.demand.F}
           <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
         </td>
         <td>$${a.slot_cost_usd}</td>
         <td>$${a.landing_fee_usd}</td>
         <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
-        <td class="${growthClass}">${growthPct.toFixed(1)}% ${growthIcon}</td>
+        <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
         <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
       `;
       tableBody.appendChild(row);
@@ -366,25 +323,13 @@ footer {
     window.location.href = "login.html";
   }
 
-  /* === COUNTRY FILTER MODULE (JS) === */
-  document.addEventListener("DOMContentLoaded", () => {
-    loadAirports("Europe");
-    const filter = document.getElementById("countryFilter");
-    if (!filter) return;
-    filter.addEventListener("change", () => {
-      const selected = filter.value.toLowerCase();
-      const rows = document.querySelectorAll("#airportTableBody tr");
-      rows.forEach(row => {
-        const country = row.cells[1].textContent.toLowerCase();
-        row.style.display = (selected === "all" || country === selected) ? "" : "none";
-      });
-    });
-  });
+  document.addEventListener("DOMContentLoaded", () => loadAirports("Europe"));
   </script>
 
   <script>
   // === ACS DEMAND TOOLTIP (v1.0) ===
   const tooltip = document.getElementById("demandTooltip");
+
   document.addEventListener("mousemove", (e) => {
     const cell = e.target.closest("td:nth-child(4)");
     if (cell) {
