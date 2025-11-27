@@ -453,13 +453,12 @@ function loadCountries() {
 }
 
 /* ============================================================
-   LOAD AIRPORTS — ACS World Engine (Stable Beta)
+   LOAD AIRPORTS — WorldAirportsACS + WorldEngine (Stable Beta)
    ------------------------------------------------------------
-   ▪ Usa solo datos reales del WorldEngine
-   ▪ Sin filtros artificiales (DC-3, runway, etc.)
-   ▪ 100% compatible con fechas de apertura/cierre
-   ▪ Compatible con demanda histórica real
-   ▪ Compatible con >4000 aeropuertos
+   ▪ Usa WorldAirportsACS[continent] como fuente principal
+   ▪ Filtra por país seleccionado + año histórico
+   ▪ Usa ACS_World.getHistoricalDemand para demanda
+   ▪ Sin filtros artificiales (runway, etc.)
    ============================================================ */
 function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
@@ -473,15 +472,25 @@ function loadAirports() {
 
   const year = ACS_World.getSimYear();
 
-  // Aeropuertos del país + continente + año (motor mundial)
-  let airports = ACS_World.getAirportsByContinentCountry(
-    selectedContinent,
-    selectedCountry,
-    { year }
-  );
+  // 🔹 Lista bruta del continente desde el LOADER
+  const rawList =
+    (window.WorldAirportsACS && WorldAirportsACS[selectedContinent])
+      ? WorldAirportsACS[selectedContinent]
+      : [];
 
-  // ❌ Eliminado filtro artificial de pistas
-  // airports = airports.filter(a => ACS_filterAirportsByYear(year).includes(a));
+  // 🔹 Filtrar por país y por año histórico
+  const airports = rawList.filter(a => {
+    const country =
+      (a.region && String(a.region).trim()) ||
+      (a.country && String(a.country).trim()) ||
+      (a.country_name && String(a.country_name).trim());
+
+    if (!country) return false;
+    if (country !== selectedCountry) return false;
+
+    // Respetar apertura/cierre histórica del motor mundial
+    return ACS_World.airportExistsInYear(a, year);
+  });
 
   if (!airports.length) {
     tbody.innerHTML = `<tr><td colspan="9">
