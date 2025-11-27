@@ -396,15 +396,13 @@ function resolveCountryForYear(countryName, year) {
   return countryName;
 }
 /* ============================================================
-   CHOOSE_BASE — loadCountries() (Stable Beta sin normalizador)
+   CHOOSE_BASE — loadCountries() (WorldAirportsACS + WorldEngine)
    ------------------------------------------------------------
-   ▪ Sin normalizeCountry (no depende de funciones internas)
-   ▪ Usa solo region / country / country_name del loader
-   ▪ Compatible con >4000 aeropuertos ya indexados
-   ▪ No aplica filtros artificiales
+   ▪ Usa directamente WorldAirportsACS[continent]
+   ▪ Aplica fechas históricas con ACS_World.airportExistsInYear
+   ▪ No depende de índices internos del motor
    ============================================================ */
 function loadCountries() {
-
   selectedContinent = document.getElementById("continentSelect").value;
   const countrySelect = document.getElementById("countrySelect");
   const list = document.getElementById("airportList");
@@ -417,17 +415,23 @@ function loadCountries() {
 
   const year = ACS_World.getSimYear();
 
-  // Aeropuertos del continente (filtrados solo por año histórico)
-  const airports = ACS_World.getAirportsByContinent(selectedContinent, { year });
+  // 🔹 Lista bruta del continente desde el LOADER
+  const rawList =
+    (window.WorldAirportsACS && WorldAirportsACS[selectedContinent])
+      ? WorldAirportsACS[selectedContinent]
+      : [];
 
-  if (!airports || !airports.length) {
+  // 🔹 Aplicar sólo filtro histórico (apertura/cierre)
+  const airports = rawList.filter(a => ACS_World.airportExistsInYear(a, year));
+
+  if (!airports.length) {
     list.innerHTML = `<tr><td colspan="9">
       No airports available in this continent for the year ${year}.
     </td></tr>`;
     return;
   }
 
-  // Extraer países usando SOLO los campos existentes
+  // 🔹 Extraer países usando los campos reales de la base
   const countrySet = new Set();
 
   airports.forEach(a => {
