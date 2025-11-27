@@ -373,7 +373,7 @@ tr:hover {
      selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
 
      // Extraer países únicos
-     const uniqueCountries = [...new Set(airports.map(a => a.country))].sort();
+     const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
 
      // Rellenar selector
     uniqueCountries.forEach(country => {
@@ -388,7 +388,7 @@ tr:hover {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td><strong>${a.city}</strong> (${a.icao}/${a.iata})</td>
-          <td>${a.country}</td>
+          <td>${a.region}</td>
           <td>${a.runway_m}</td>
           <td>
             ${a.demand.Y}/${a.demand.C}/${a.demand.F}
