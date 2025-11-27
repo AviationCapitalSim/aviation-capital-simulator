@@ -562,9 +562,10 @@ function ACS_normalizeAirportCountry(a) {
 /* ============================================================
    PROCESA TODA LA BASE DE DATOS
 ============================================================ */
-export function ACS_processAllAirports() {
+function ACS_processAllAirports() {
   for (const cont in WorldAirportsACS) {
     WorldAirportsACS[cont] =
       WorldAirportsACS[cont].map(a => ACS_normalizeAirportCountry(a));
   }
 }
+window.ACS_processAllAirports = ACS_processAllAirports;
