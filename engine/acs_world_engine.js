@@ -418,3 +418,153 @@
   global.ACS_World = ACS_World;
 
 })(window);
+/* ============================================================
+   === ISO2 NORMALIZER — Convierte "GB" → "United Kingdom" ====
+   ============================================================ */
+
+const ACS_ISO2_TO_COUNTRY = {
+  AF: "Afghanistan",
+  AL: "Albania",
+  DZ: "Algeria",
+  AD: "Andorra",
+  AO: "Angola",
+  AR: "Argentina",
+  AM: "Armenia",
+  AU: "Australia",
+  AT: "Austria",
+  AZ: "Azerbaijan",
+  BH: "Bahrain",
+  BD: "Bangladesh",
+  BY: "Belarus",
+  BE: "Belgium",
+  BZ: "Belize",
+  BJ: "Benin",
+  BT: "Bhutan",
+  BO: "Bolivia",
+  BA: "Bosnia and Herzegovina",
+  BW: "Botswana",
+  BR: "Brazil",
+  BG: "Bulgaria",
+  BF: "Burkina Faso",
+  BI: "Burundi",
+  KH: "Cambodia",
+  CM: "Cameroon",
+  CA: "Canada",
+  TD: "Chad",
+  CL: "Chile",
+  CN: "China",
+  CO: "Colombia",
+  CR: "Costa Rica",
+  HR: "Croatia",
+  CY: "Cyprus",
+  CZ: "Czech Republic",
+  DK: "Denmark",
+  DO: "Dominican Republic",
+  EC: "Ecuador",
+  EG: "Egypt",
+  EE: "Estonia",
+  FI: "Finland",
+  FR: "France",
+  GE: "Georgia",
+  DE: "Germany",
+  GH: "Ghana",
+  GR: "Greece",
+  GL: "Greenland",
+  HK: "Hong Kong",
+  HU: "Hungary",
+  IS: "Iceland",
+  IN: "India",
+  ID: "Indonesia",
+  IR: "Iran",
+  IQ: "Iraq",
+  IE: "Ireland",
+  IL: "Israel",
+  IT: "Italy",
+  JP: "Japan",
+  JO: "Jordan",
+  KZ: "Kazakhstan",
+  KE: "Kenya",
+  KP: "North Korea",
+  KR: "South Korea",
+  KW: "Kuwait",
+  KG: "Kyrgyzstan",
+  LV: "Latvia",
+  LB: "Lebanon",
+  LT: "Lithuania",
+  LU: "Luxembourg",
+  MY: "Malaysia",
+  MV: "Maldives",
+  MX: "Mexico",
+  MD: "Moldova",
+  MN: "Mongolia",
+  ME: "Montenegro",
+  MA: "Morocco",
+  NP: "Nepal",
+  NL: "Netherlands",
+  NZ: "New Zealand",
+  NG: "Nigeria",
+  NO: "Norway",
+  OM: "Oman",
+  PK: "Pakistan",
+  PA: "Panama",
+  PY: "Paraguay",
+  PE: "Peru",
+  PH: "Philippines",
+  PL: "Poland",
+  PT: "Portugal",
+  QA: "Qatar",
+  RO: "Romania",
+  RU: "Russia",
+  SA: "Saudi Arabia",
+  RS: "Serbia",
+  SG: "Singapore",
+  SK: "Slovakia",
+  SI: "Slovenia",
+  ZA: "South Africa",
+  ES: "Spain",
+  LK: "Sri Lanka",
+  SE: "Sweden",
+  CH: "Switzerland",
+  TW: "Taiwan",
+  TJ: "Tajikistan",
+  TH: "Thailand",
+  TT: "Trinidad and Tobago",
+  TN: "Tunisia",
+  TR: "Turkey",
+  TM: "Turkmenistan",
+  UA: "Ukraine",
+  AE: "United Arab Emirates",
+  GB: "United Kingdom",
+  US: "United States",
+  UY: "Uruguay",
+  UZ: "Uzbekistan",
+  VN: "Vietnam"
+};
+
+/* ============================================================
+   NORMALIZA AEROPUERTOS: region, country, continent
+============================================================ */
+function ACS_normalizeAirportCountry(a) {
+  if (!a.region) return;
+
+  // Si es código ISO2 → convertir
+  if (ACS_ISO2_TO_COUNTRY[a.region]) {
+    a.region = ACS_ISO2_TO_COUNTRY[a.region];
+  }
+
+  if (ACS_ISO2_TO_COUNTRY[a.country]) {
+    a.country = ACS_ISO2_TO_COUNTRY[a.country];
+  }
+
+  return a;
+}
+
+/* ============================================================
+   PROCESA TODA LA BASE DE DATOS
+============================================================ */
+export function ACS_processAllAirports() {
+  for (const cont in WorldAirportsACS) {
+    WorldAirportsACS[cont] =
+      WorldAirportsACS[cont].map(a => ACS_normalizeAirportCountry(a));
+  }
+}
