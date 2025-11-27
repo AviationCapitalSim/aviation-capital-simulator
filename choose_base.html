@@ -502,6 +502,40 @@ function loadAirports() {
     </td></tr>`;
     return;
   }
+/* ============================================================
+   === HISTORICAL SORTING SYSTEM (C-2) =========================
+   ------------------------------------------------------------
+   • 1940–1954 → ordenar por Y
+   • 1955–1975 → ordenar por Y + C
+   • 1976+     → ordenar por Y + C + F
+   ============================================================ */
+airports.sort((a, b) => {
+
+  const D1 = ACS_World.getHistoricalDemand(a, year);
+  const D2 = ACS_World.getHistoricalDemand(b, year);
+
+  let totalA = 0;
+  let totalB = 0;
+
+  if (year < 1955) {
+    // SOLO Y
+    totalA = (D1.Y || 0);
+    totalB = (D2.Y || 0);
+  }
+  else if (year < 1976) {
+    // Y + C
+    totalA = (D1.Y || 0) + (D1.C || 0);
+    totalB = (D2.Y || 0) + (D2.C || 0);
+  }
+  else {
+    // Y + C + F
+    totalA = (D1.Y || 0) + (D1.C || 0) + (D1.F || 0);
+    totalB = (D2.Y || 0) + (D2.C || 0) + (D2.F || 0);
+  }
+
+  // ORDEN DESCENDENTE (Mayor → Menor)
+  return totalB - totalA;
+});
 
   airports.forEach(a => {
     // Demanda histórica real del motor mundial
