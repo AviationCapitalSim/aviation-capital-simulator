@@ -399,11 +399,10 @@ function resolveCountryForYear(countryName, year) {
 /* ============================================================
    === HISTORICAL CONTINENT FILTER — Option B2 ===============
    ------------------------------------------------------------
-   Muestra todos los continentes, pero los que NO tengan
-   aeropuertos disponibles en el año actual se muestran
-   deshabilitados y en gris.
+   Usa WorldAirportsACS[continent] (igual que loadCountries),
+   y marca como "Unavailable" solo los continentes que NO
+   tengan ningún aeropuerto operativo en el año actual.
    ============================================================ */
-  
 function buildContinentSelect() {
   const continentSelect = document.getElementById("continentSelect");
   if (!continentSelect) return;
@@ -423,22 +422,26 @@ function buildContinentSelect() {
   continentSelect.innerHTML = '<option value="">🌍 Select Continent</option>';
 
   allContinents.forEach(cont => {
-    const list = ACS_World.getAirportsByContinent(cont, { year }) || [];
-    const available = list.length > 0;
+    // 🟡 Usamos la misma fuente que loadCountries:
+    const rawList =
+      (window.WorldAirportsACS && WorldAirportsACS[cont])
+        ? WorldAirportsACS[cont]
+        : [];
+
+    // ¿Hay al menos un aeropuerto operando este año?
+    const available = rawList.some(a => ACS_World.airportExistsInYear(a, year));
 
     const opt = document.createElement("option");
     opt.value = cont;
 
-    // Nombre limpio: "SouthAmerica" → "South America"
+    // Nombre bonito: "SouthAmerica" → "South America"
     const pretty = cont.replace(/([A-Z])/g, " $1").trim();
 
     if (available) {
-      // Continente válido
       opt.textContent = pretty;
       opt.disabled = false;
       opt.style.color = "#e8ecff";
     } else {
-      // Continente NO disponible → gris + disabled
       opt.textContent = `${pretty} (Unavailable in ${year})`;
       opt.disabled = true;
       opt.style.color = "#777";
