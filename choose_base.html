@@ -295,17 +295,16 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   loadAirportScripts(() => {
-    buildAirportIndex();       // crea AirportIndex
-    ACS_processAllAirports();  // normaliza ISO2 → país real
+  buildAirportIndex();     // loader original
+  ACS_World.initialize();  // <-- ESTA LÍNEA ES LA QUE FALTABA
+  console.log("🌍 Motor mundial listo:", ACS_World.ready);
 
-    console.log("🌍 Airports loaded:", Object.keys(AirportIndex).length);
+  document.getElementById("continentSelect")
+    .addEventListener("change", loadCountries);
 
-    document.getElementById("continentSelect")
-      .addEventListener("change", loadCountries);
-
-    document.getElementById("countrySelect")
-      .addEventListener("change", loadAirports);
-  });
+  document.getElementById("countrySelect")
+    .addEventListener("change", loadAirports);
+});
 
 });
 </script>
