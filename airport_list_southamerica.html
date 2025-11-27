@@ -334,19 +334,6 @@ footer {
       tableBody.appendChild(row);
     });
   }
-     // === BUILD COUNTRY SELECTOR – QATAR LUXURY ===
-     const selector = document.getElementById("countrySelect");
-
-    // Limpiar opciones previas
-   selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
-
-   // Extraer países únicos
-   const uniqueCountries = [...new Set(airports.map(a => a.country))].sort();
-
-   // Rellenar selector
-   uniqueCountries.forEach(country => {
-   selector.innerHTML += `<option value="${country}">${country}</option>`;
-});
        
   function createRoute(icao) {
     window.location.href = `route_schedule.html?to=${icao}`;
