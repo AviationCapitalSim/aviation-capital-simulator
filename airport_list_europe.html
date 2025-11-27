@@ -1,6 +1,6 @@
 <!-- ===========================================================
      === AIRPORT LIST (EUROPE) - AVIATION CAPITAL SIMULATOR ===
-     Qatar Luxury Edition v3.0 | Date: 27 NOV 2025
+     Qatar Luxury Edition v3.1 | Date: 27 NOV 2025
      =========================================================== -->
 <!DOCTYPE html>
 <html lang="en">
@@ -148,6 +148,30 @@ body {
   font-size: 1.05rem;
 }
 
+/* === Country selector === */
+.country-filter {
+  margin: 1.2rem auto 1.8rem auto;
+  display: flex;
+  justify-content: center;
+}
+
+.country-select {
+  background: rgba(20,35,70,0.75);
+  color: #ffca3a;
+  border: 1px solid #ffb300;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 0 12px rgba(255,179,0,0.15);
+}
+
+.country-select:hover {
+  background: rgba(30,45,85,0.9);
+}
+
 /* ============================================================
    === QATAR LUXURY TABLE =====================================
    ============================================================ */
@@ -257,30 +281,7 @@ tr:hover {
   z-index: 1000;
   width: 180px;
 }
-       .country-filter {
-  margin: 1.2rem auto 1.8rem auto;
-  display: flex;
-  justify-content: center;
-}
-
-.country-select {
-  background: rgba(20,35,70,0.75);
-  color: #ffca3a;
-  border: 1px solid #ffb300;
-  padding: 0.6rem 1rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: center;
-  box-shadow: 0 0 12px rgba(255,179,0,0.15);
-}
-
-.country-select:hover {
-  background: rgba(30,45,85,0.9);
-}
-  
-</style>
+  </style>
 </head>
 
 <body>
@@ -310,13 +311,14 @@ tr:hover {
   <main class="acs-main">
     <h2>🌍 European Airports</h2>
     <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
-       
-  <div class="country-filter">
-    <select id="countrySelect" class="country-select" onchange="filterByCountry()">
-    <option value="ALL">🌍 All Countries</option>
-  </select>
-  </div>
-       
+
+    <!-- Country selector -->
+    <div class="country-filter">
+      <select id="countrySelect" class="country-select" onchange="filterByCountry()">
+        <option value="ALL">🌍 All Countries</option>
+      </select>
+    </div>
+
     <table id="airportTable">
       <thead>
         <tr>
@@ -343,44 +345,42 @@ tr:hover {
   <!-- ===== TOOLTIP ===== -->
   <div id="demandTooltip"></div>
 
-    <!-- ===== SCRIPTS ===== -->
-     
+  <!-- ===== SCRIPTS ===== -->
+
+  <!-- Crear contenedor global si no existe -->
   <script>
-    // Crear el contenedor global si no existe
     window.WorldAirportsACS = window.WorldAirportsACS || {};
   </script>
 
   <script src="engine/airports/world_airports_eu.js"></script>
   <script src="time_engine.js?v=1.2"></script>
 
-
-  <!-- (All your JS preserved exactly) -->
   <script>
-    /* === original JS unchanged === */
     function loadAirports(continent) {
       const tableBody = document.getElementById("airportTableBody");
       tableBody.innerHTML = "";
 
       const userBase = localStorage.getItem("userBaseICAO") || "LEMD";
+
       const airports = WorldAirportsACS[continent]
         .filter(a => a.icao !== userBase)
         .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
- 
-     // === BUILD COUNTRY SELECTOR – QATAR LUXURY ===
-     const selector = document.getElementById("countrySelect");
 
-     // Limpiar opciones previas
-     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+      // === BUILD COUNTRY SELECTOR – usando NOMBRE (region) ===
+      const selector = document.getElementById("countrySelect");
+      if (selector) {
+        selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+        const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
+        uniqueCountries.forEach(country => {
+          const opt = document.createElement("option");
+          opt.value = country;
+          opt.textContent = country;
+          selector.appendChild(opt);
+        });
+      }
 
-     // Extraer países únicos
-     const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
-
-     // Rellenar selector
-    uniqueCountries.forEach(country => {
-    selector.innerHTML += `<option value="${country}">${country}</option>`;
-   });      
-         
-        airports.forEach(a => {
+      // === Construir filas de tabla ===
+      airports.forEach(a => {
         const total = a.demand.Y + a.demand.C + a.demand.F;
         const ecoPct = (a.demand.Y / total) * 100;
         const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
@@ -403,7 +403,19 @@ tr:hover {
         tableBody.appendChild(row);
       });
     }
-    
+
+    function filterByCountry() {
+      const selected = document.getElementById("countrySelect").value;
+      const rows = document.querySelectorAll("#airportTable tbody tr");
+
+      rows.forEach(row => {
+        const countryCell = row.children[1];
+        if (!countryCell) return;
+        const text = countryCell.textContent.trim();
+        row.style.display = (selected === "ALL" || text === selected) ? "" : "none";
+      });
+    }
+
     function createRoute(icao) {
       window.location.href = `route_schedule.html?to=${icao}`;
     }
@@ -442,56 +454,37 @@ tr:hover {
     }
 
     document.addEventListener("DOMContentLoaded", () => loadAirports("Europe"));
-  </script>
 
-  <!-- Tooltip Logic -->
-  <script>
-  const tooltip = document.getElementById("demandTooltip");
+    // === Tooltip demanda ===
+    const tooltip = document.getElementById("demandTooltip");
+    document.addEventListener("mousemove", (e) => {
+      const cell = e.target.closest("td:nth-child(4)");
+      if (cell) {
+        const parts = cell.textContent.trim().split("/");
+        if (parts.length === 3) {
+          const [Y, C, F] = parts.map(Number);
+          const total = Y + C + F;
+          const ecoDeg = (Y / total) * 360;
+          const bizDeg = ((Y + C) / total) * 360;
 
-  document.addEventListener("mousemove", (e) => {
-    const cell = e.target.closest("td:nth-child(4)");
-    if (cell) {
-      const parts = cell.textContent.trim().split("/");
-      if (parts.length === 3) {
-        const [Y, C, F] = parts.map(Number);
-        const total = Y + C + F;
-        const ecoDeg = (Y / total) * 360;
-        const bizDeg = ((Y + C) / total) * 360;
-
-        tooltip.innerHTML = `
-          <h4>Passenger Demand</h4>
-          <div>Economy: ${Y}</div>
-          <div>Business: ${C}</div>
-          <div>First: ${F}</div>
-          <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
-            <div class="slice"></div>
-          </div>
-        `;
-        tooltip.style.display = "block";
-        tooltip.style.left = e.pageX + 15 + "px";
-        tooltip.style.top = e.pageY - 60 + "px";
+          tooltip.innerHTML = `
+            <h4>Passenger Demand</h4>
+            <div>Economy: ${Y}</div>
+            <div>Business: ${C}</div>
+            <div>First: ${F}</div>
+            <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+              <div class="slice"></div>
+            </div>
+          `;
+          tooltip.style.display = "block";
+          tooltip.style.left = e.pageX + 15 + "px";
+          tooltip.style.top = e.pageY - 60 + "px";
+        }
+      } else {
+        tooltip.style.display = "none";
       }
-    } else {
-      tooltip.style.display = "none";
-    }
-  });
-<script>
-function filterByCountry() {
-  const selected = document.getElementById("countrySelect").value;
-  const rows = document.querySelectorAll("#airportTable tbody tr");
-
-  rows.forEach(row => {
-    const countryCell = row.children[1].textContent.trim();
-    if (selected === "ALL" || countryCell === selected) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
-    }
-  });
-}
-</script>
-     
-</script>
+    });
+  </script>
 
 </body>
 </html>
