@@ -148,8 +148,9 @@
       text-shadow: 0 0 4px rgba(200,210,255,0.25);
     }
 
-    /* === Qatar Luxury Cards === */
-    .continent-grid {
+   /* === Qatar Luxury Cards === */
+       
+.continent-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 350px));
   justify-content: center;      /* ⬅ CENTRA HORIZONTAL */
@@ -159,35 +160,41 @@
   padding: 0 2rem;
 }
 
-    .continent-card {
-      background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-      border-radius: 22px;
-      padding: 1.6rem 1.5rem;
-      box-shadow: 0 0 25px rgba(0,0,0,0.4);
-      transition: 0.25s;
-      border: 1px solid rgba(255,179,0,0.15);
-      cursor: pointer;
-      text-align: left;
-    }
+.continent-card {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  border-radius: 22px;
+  padding: 1.6rem 1.5rem;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  transition: 0.25s;
+  border: 1px solid rgba(255,179,0,0.15);
+  cursor: pointer;
 
-    .continent-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 32px rgba(255,179,0,0.25);
-      border: 1px solid rgba(255,179,0,0.35);
-    }
+  /* === CENTRADO REAL === */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
 
-    .continent-card h3 {
-      font-size: 1.35rem;
-      color: #ffb300;
-      margin-bottom: 0.6rem;
-      text-shadow: 0 0 6px rgba(255,179,0,0.4);
-    }
+.continent-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+  border: 1px solid rgba(255,179,0,0.35);
+}
 
-    .continent-card p {
-      color: #d7e2ff;
-      font-size: 0.95rem;
-      line-height: 1.4;
-    }
+.continent-card h3 {
+  font-size: 1.35rem;
+  color: #ffb300;
+  margin-bottom: 0.6rem;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+
+.continent-card p {
+  color: #d7e2ff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
 
     .acs-btn {
       margin-top: 1rem;
