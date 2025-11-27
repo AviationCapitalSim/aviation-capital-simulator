@@ -396,12 +396,12 @@ function resolveCountryForYear(countryName, year) {
   return countryName;
 }
 /* ============================================================
-   CHOOSE_BASE — loadCountries() (Stable Beta Final)
+   CHOOSE_BASE — loadCountries() (Stable Beta sin normalizador)
    ------------------------------------------------------------
-   ▪ Usa solo datos reales del WorldEngine
-   ▪ No usa filtros artificiales
-   ▪ Compatible con >4000 aeropuertos
-   ▪ Genera lista completa de países por continente
+   ▪ Sin normalizeCountry (no depende de funciones internas)
+   ▪ Usa solo region / country / country_name del loader
+   ▪ Compatible con >4000 aeropuertos ya indexados
+   ▪ No aplica filtros artificiales
    ============================================================ */
 function loadCountries() {
 
@@ -417,7 +417,7 @@ function loadCountries() {
 
   const year = ACS_World.getSimYear();
 
-  // Aeropuertos del continente (filtrados solo por apertura/cierre históricos)
+  // Aeropuertos del continente (filtrados solo por año histórico)
   const airports = ACS_World.getAirportsByContinent(selectedContinent, { year });
 
   if (!airports || !airports.length) {
@@ -427,17 +427,21 @@ function loadCountries() {
     return;
   }
 
-  // Normalizar países
-  airports.forEach(a => normalizeCountry(a));
+  // Extraer países usando SOLO los campos existentes
+  const countrySet = new Set();
 
-  // Extraer países válidos
-  const countries = [
-    ...new Set(
-      airports
-        .map(a => a.region || a.country || a.country_name)
-        .filter(Boolean)
-    )
-  ].sort();
+  airports.forEach(a => {
+    const country =
+      (a.region && String(a.region).trim()) ||
+      (a.country && String(a.country).trim()) ||
+      (a.country_name && String(a.country_name).trim());
+
+    if (country) {
+      countrySet.add(country);
+    }
+  });
+
+  const countries = Array.from(countrySet).sort();
 
   // Poblar select
   countries.forEach(c => {
