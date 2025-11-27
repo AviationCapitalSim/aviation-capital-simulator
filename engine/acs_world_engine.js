@@ -222,15 +222,50 @@
     return year >= o && year <= c;
   };
 
-  ACS_World.getHistoricalDemand = function (a, year) {
-    const base = a.demand || { Y:0, C:0, F:0 };
-    const factor = Math.max(0.10, Math.min(1.0, (year - 1940) / (2026 - 1940)));
-    return {
-      Y: Math.round(base.Y * factor),
-      C: Math.round(base.C * factor),
-      F: Math.round(base.F * factor)
-    };
-  };
+  /* ===========================================================
+   HISTORICAL DEMAND ENGINE — REAL-WORLD CLASS EVOLUTION
+   ------------------------------------------------------------
+   A-1: Fechas reales
+     • Business Class (C) aparece en 1955
+     • First Class (F) aparece en 1976
+   B-1: Clases inexistentes NO se muestran (null)
+   C-2: Ordenamiento usará solo las clases existentes según era
+   =========================================================== */
+ACS_World.getHistoricalDemand = function (a, year) {
+  const base = a.demand || { Y:0, C:0, F:0 };
+
+  // === FACTOR DE CRECIMIENTO ANUAL (1940 → 10%, 2026 → 100%) ===
+  const factor = Math.max(
+    0.10,
+    Math.min(1.0, (year - 1940) / (2026 - 1940))
+  );
+
+  // === Demandas escaladas por crecimiento ===
+  let Y = Math.round(base.Y * factor);
+  let C = Math.round(base.C * factor);
+  let F = Math.round(base.F * factor);
+
+  // ===========================================================
+  //   FASE REALISTA DE CLASES
+  // ===========================================================
+
+  // 🎯 Antes de 1955 → NO existe Business ni First
+  if (year < 1955) {
+    C = null;   // ocultar
+    F = null;   // ocultar
+  }
+
+  // 🎯 1955 a 1975 → Existe Business, pero NO First
+  else if (year < 1976) {
+    F = null;   // ocultar
+  }
+
+  // 🎯 1976 en adelante → Y / C / F existen completas (jet age)
+  // (Y, C, F se mantienen tal cual)
+  
+
+  return { Y, C, F };
+};
 
   /* ===========================================================
      DISTANCIA
