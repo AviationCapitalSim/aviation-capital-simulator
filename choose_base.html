@@ -515,14 +515,6 @@ document.addEventListener("DOMContentLoaded", () => {
   buildContinentSelect();
 });
 
-/* ============================================================
-   LOAD AIRPORTS — WorldAirportsACS + WorldEngine (Stable Beta)
-   ------------------------------------------------------------
-   ▪ Usa WorldAirportsACS[continent] como fuente principal
-   ▪ Filtra por país seleccionado + año histórico
-   ▪ Usa ACS_World.getHistoricalDemand para demanda
-   ▪ Sin filtros artificiales (runway, etc.)
-   ============================================================ */
 function loadAirports() {
   selectedCountry = document.getElementById("countrySelect").value;
   const tbody = document.getElementById("airportList");
@@ -535,13 +527,13 @@ function loadAirports() {
 
   const year = ACS_World.getSimYear();
 
-  // 🔹 Lista bruta del continente desde el LOADER
+  // Lista bruta
   const rawList =
     (window.WorldAirportsACS && WorldAirportsACS[selectedContinent])
       ? WorldAirportsACS[selectedContinent]
       : [];
 
-  // 🔹 Filtrar por país y por año histórico
+  // Filtrar
   const airports = rawList.filter(a => {
     const country =
       (a.region && String(a.region).trim()) ||
@@ -551,7 +543,6 @@ function loadAirports() {
     if (!country) return false;
     if (country !== selectedCountry) return false;
 
-    // Respetar apertura/cierre histórica del motor mundial
     return ACS_World.airportExistsInYear(a, year);
   });
 
@@ -561,43 +552,36 @@ function loadAirports() {
     </td></tr>`;
     return;
   }
-/* ============================================================
-   === HISTORICAL SORTING SYSTEM (C-2) =========================
-   ------------------------------------------------------------
-   • 1940–1954 → ordenar por Y
-   • 1955–1975 → ordenar por Y + C
-   • 1976+     → ordenar por Y + C + F
-   ============================================================ */
-airports.sort((a, b) => {
 
-  const D1 = ACS_World.getHistoricalDemand(a, year);
-  const D2 = ACS_World.getHistoricalDemand(b, year);
+  /* ============================================================
+     === HISTORICAL SORTING SYSTEM (C-2) =========================
+     ============================================================ */
+  airports.sort((a, b) => {
 
-  let totalA = 0;
-  let totalB = 0;
+    const D1 = ACS_World.getHistoricalDemand(a, year);
+    const D2 = ACS_World.getHistoricalDemand(b, year);
 
-  if (year < 1955) {
-    // SOLO Y
-    totalA = (D1.Y || 0);
-    totalB = (D2.Y || 0);
-  }
-  else if (year < 1976) {
-    // Y + C
-    totalA = (D1.Y || 0) + (D1.C || 0);
-    totalB = (D2.Y || 0) + (D2.C || 0);
-  }
-  else {
-    // Y + C + F
-    totalA = (D1.Y || 0) + (D1.C || 0) + (D1.F || 0);
-    totalB = (D2.Y || 0) + (D2.C || 0) + (D2.F || 0);
-  }
+    let totalA = 0;
+    let totalB = 0;
 
-  // ORDEN DESCENDENTE (Mayor → Menor)
-  return totalB - totalA;
-});
+    if (year < 1955) {
+      totalA = (D1.Y || 0);
+      totalB = (D2.Y || 0);
+    }
+    else if (year < 1976) {
+      totalA = (D1.Y || 0) + (D1.C || 0);
+      totalB = (D2.Y || 0) + (D2.C || 0);
+    }
+    else {
+      totalA = (D1.Y || 0) + (D1.C || 0) + (D1.F || 0);
+      totalB = (D2.Y || 0) + (D2.C || 0) + (D2.F || 0);
+    }
 
+    return totalB - totalA; // Orden descendente
+  });
+
+  // Render de la tabla
   airports.forEach(a => {
-    // Demanda histórica real del motor mundial
     const D = ACS_World.getHistoricalDemand(a, year);
     const total = D.Y + D.C + D.F;
 
