@@ -264,7 +264,23 @@ tr:hover {
   background: #ffb300;
   color: #081530;
 }
+/* ======================================
+   Passenger Demand Pie (Tooltip)
+   ====================================== */
 
+.demand-pie {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      #1DB954 0deg var(--eco),
+      #FFB300 var(--eco) var(--biz),
+      #FF6F00 var(--biz) 360deg
+    );
+  margin: 10px auto 0 auto;
+  box-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
 /* Tooltip */
 #demandTooltip {
   position: absolute;
@@ -751,10 +767,6 @@ function openAirportInfo(icao) {
 
     <div class="acs-divider"></div>
 
-    <div class="acs-section-title">👥 Passenger Demand</div>
-    <div><span class="acs-label">Demand (Y/C/F):</span> <span class="acs-value">${ap.demand.Y} / ${ap.demand.C} / ${ap.demand.F}</span></div>
-
-    <div class="acs-divider"></div>
 
     <div class="acs-section-title">📝 Notes</div>
     <div class="acs-value">${ap.notes || "—"}</div>
@@ -815,14 +827,17 @@ document.addEventListener("mousemove", (e) => {
       const bizDeg = ((Y + C) / total) * 360;
 
       tooltip.innerHTML = `
-        <h4>Passenger Demand</h4>
-        <div>Economy: ${Y}</div>
-        <div>Business: ${C}</div>
-        <div>First: ${F}</div>
-        <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
-          <div class="slice"></div>
-        </div>
-      `;
+  <h4>Passenger Demand</h4>
+  <div>Economy: ${Y}</div>
+  <div>Business: ${C}</div>
+  <div>First: ${F}</div>
+
+  <div 
+    class="demand-pie" 
+    style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+  </div>
+`;
+
       tooltip.style.display = "block";
       tooltip.style.left = e.pageX + 15 + "px";
       tooltip.style.top = e.pageY - 60 + "px";
