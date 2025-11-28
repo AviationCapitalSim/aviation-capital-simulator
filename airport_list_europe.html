@@ -872,31 +872,46 @@ function handleLogout() {
 }
 
 /* =============================================================
-   === INITIALIZATION (SEGURO) ================================
+   === INITIALIZATION (CORRECTO CON WORLD ENGINE) ==============
    ============================================================= */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Cargar aeropuertos (modo histórico + fallback)
-  loadAirports();
+  // 👉 Cargamos todos los JS de aeropuertos (Europa, etc.)
+  loadAirportScripts(() => {
 
-  // 2) Banner de origen seguro
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (baseIcao) {
-    const airports = getAirportsEuropeSafe();
-    const base = airports.find(a => a.icao === baseIcao);
+    // 👉 Construir índices
+    buildAirportIndex();
 
-    if (base) {
-      const flagEmoji = base.country.replace(/./g, c =>
-        String.fromCodePoint(c.charCodeAt(0) + 127397)
-      );
+    // 👉 Activar el motor mundial ACS
+    ACS_World.initialize();
 
-      document.getElementById("originFlag").textContent = flagEmoji;
-      document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent =
-        `— ${base.city}, ${base.region}`;
+    console.log("🟦 ACS_World listo, cargando aeropuertos Europe...");
+
+    // 👉 Ahora sí cargar tabla con distancias REALES
+    loadAirports();
+
+    // 👉 Banner origen (YA CON DATOS REALES)
+    const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+
+    if (baseIcao) {
+      const airports = getAirportsEuropeSafe();
+      const base = airports.find(a => a.icao === baseIcao);
+
+      if (base) {
+        const flagEmoji = base.country.replace(/./g, c =>
+          String.fromCodePoint(c.charCodeAt(0) + 127397)
+        );
+
+        document.getElementById("originFlag").textContent = flagEmoji;
+        document.getElementById("originIcao").textContent = base.icao;
+        document.getElementById("originCity").textContent =
+          `— ${base.city}, ${base.region}`;
+      }
     }
-  }
+
+  }); // ← cierre loadAirportScripts
 });
+
 </script>
 
 </body>
