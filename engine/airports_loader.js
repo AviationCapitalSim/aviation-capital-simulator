@@ -1,6 +1,6 @@
 /* =============================================================
    === AVIATION CAPITAL SIMULATOR — WORLD AIRPORTS LOADER ======
-   Version: Loader v1.0 (Auto Import)
+   Version: Loader v1.2 (Global Optimized)
    ============================================================= */
 
 // Crear el contenedor global (si no existe)
@@ -17,7 +17,7 @@ if (typeof WorldAirportsACS === "undefined") {
 }
 
 /* =============================================================
-   === AUTO IMPORT DE LOS CONTINENTES
+   === AUTO IMPORT DE LOS CONTINENTES (SECUENCIAL) =============
    ============================================================= */
 const airportScripts = [
   "engine/airports/world_airports_na.js",
@@ -29,9 +29,6 @@ const airportScripts = [
   "engine/airports/world_airports_oc.js"
 ];
 
-/* =============================================================
-   === FIX: LOADER SECUENCIAL (NO PARALELO) ====================
-   ============================================================= */
 function loadAirportScripts(callback) {
   let index = 0;
 
@@ -43,14 +40,15 @@ function loadAirportScripts(callback) {
 
     const src = airportScripts[index];
     const s = document.createElement("script");
-    s.src = src + "?v=" + Date.now(); // Rompe caché
+    s.src = `${src}?v=${Date.now()}`; // rompe caché por versión
 
     s.onload = () => {
       index++;
       loadNext();
     };
 
-    s.onerror = () => console.error(`[ACS ERROR] Failed loading: ${src}`);
+    s.onerror = () =>
+      console.error(`[ACS ERROR] Failed loading: ${src}`);
 
     document.head.appendChild(s);
   }
@@ -59,66 +57,75 @@ function loadAirportScripts(callback) {
 }
 
 /* =============================================================
-   === ⭐ BLOQUE 1 — SANITIZADOR DE COORDENADAS =================
-   Corrige datos defectuosos sin afectar rutas largas reales
+   === ⭐ SANITIZADOR GLOBAL v1.2 — ULTRA SEGURO =================
    ============================================================= */
 function sanitizeAirportCoords(a) {
   if (!a) return;
 
-  // Convertir strings a números
+  // Convertir strings a número (si vienen del CSV)
   a.latitude  = parseFloat(a.latitude);
   a.longitude = parseFloat(a.longitude);
 
-  // 1) Si latitud está fuera de rango
+  // ==============================
+  // 1) Corregir NaN o null
+  // ==============================
+  if (isNaN(a.latitude) || isNaN(a.longitude)) {
+    console.warn(`[ACS WARNING] Invalid coords at ${a.icao}`);
+    a.latitude = 0;
+    a.longitude = 0;
+  }
+
+  // ==============================
+  // 2) Corregir valores imposibles
+  // ==============================
   if (a.latitude < -90 || a.latitude > 90) {
-    if (a.longitude >= -90 && a.longitude <= 90) {
-      let t = a.latitude;
-      a.latitude = a.longitude;
-      a.longitude = t;
-    }
+    console.warn(`[ACS FIX] Latitude out of range at ${a.icao}: ${a.latitude}`);
+    // Suponemos swap invertido (error común)
+    let t = a.latitude;
+    a.latitude = a.longitude;
+    a.longitude = t;
+
+    // volver a asegurarnos
+    a.latitude  = Math.max(-90, Math.min(90, a.latitude));
   }
 
-  // 2) Si longitud está fuera de rango
   if (a.longitude < -180 || a.longitude > 180) {
+    console.warn(`[ACS FIX] Longitude out of range at ${a.icao}: ${a.longitude}`);
     let t = a.latitude;
     a.latitude = a.longitude;
     a.longitude = t;
+
+    a.longitude = ((a.longitude + 180) % 360) - 180;
   }
 
-  // 3) Europa nunca debe superar 60° latitud (errores comunes)
-  if (a.continent === "Europe" && Math.abs(a.latitude) > 60) {
-    let t = a.latitude;
-    a.latitude = a.longitude;
-    a.longitude = t;
-  }
+  // ==============================
+  // ❗ 3) NO TOCAR LATITUDES NORTE
+  // (Europa, Siberia, Alaska, Islandia, etc.)
+  // ==============================
+  // Dejamos los datos tal cual llegan del archivo .js o CSV
+  // porque son legítimos y reales.
 }
 
 /* =============================================================
-   === INDEX BUILDER
+   === INDEX BUILDER — GLOBAL ==================================
    ============================================================= */
 const AirportIndex = {};
 
 function buildAirportIndex() {
 
-  // ⭐ BLOQUE 2 — APLICAR SANITIZADOR A CADA AEROPUERTO
+  // 1) SANITIZAR TODOS LOS AEROPUERTOS (7 continentes)
   for (const cont in WorldAirportsACS) {
-    WorldAirportsACS[cont].forEach(a => {
-      sanitizeAirportCoords(a);   // ← FIX inserto aquí
-    });
+    WorldAirportsACS[cont].forEach(a => sanitizeAirportCoords(a));
   }
 
-  // ============================================
-  //  AÑADIR NOMBRE DEL PAÍS (SIN ROMPER NADA)
-  // ============================================
+  // 2) Añadir country_name solo como alias (no afecta nada)
   for (const cont in WorldAirportsACS) {
     WorldAirportsACS[cont].forEach(a => {
       a.country_name = a.region;
     });
   }
 
-  // ============================================
-  //  INDEX BUILDER (NO TOCAR)
-  // ============================================
+  // 3) INDEX GLOBAL (todos los continentes)
   for (const cont in WorldAirportsACS) {
     WorldAirportsACS[cont].forEach(a => {
       AirportIndex[a.icao] = a;
@@ -126,12 +133,12 @@ function buildAirportIndex() {
   }
 
   console.log(
-    `[ACS] WorldAirportsACS loaded: ${Object.keys(AirportIndex).length} airports indexed.`
+    `[ACS] WorldAirportsACS loaded: ${Object.keys(AirportIndex).length} airports indexed (Global v1.2).`
   );
 }
 
 /* =============================================================
-   === FIND AIRPORT BY ICAO
+   === FIND AIRPORT
    ============================================================= */
 function findAirport(icao) {
   return AirportIndex[icao.toUpperCase()] || null;
@@ -151,14 +158,14 @@ function searchAirports(keyword) {
 }
 
 /* =============================================================
-   === CALCULATE DISTANCE
+   === CALCULATE DISTANCE (HAversine global)
    ============================================================= */
 function calcDistanceNM(icao1, icao2) {
   const a1 = findAirport(icao1);
   const a2 = findAirport(icao2);
   if (!a1 || !a2) return 0;
 
-  const R = 3440;
+  const R = 3440.065;
   const toRad = deg => (deg * Math.PI) / 180;
 
   const dLat = toRad(a2.latitude - a1.latitude);
@@ -169,7 +176,8 @@ function calcDistanceNM(icao1, icao2) {
 
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+    Math.cos(lat1) * Math.cos(lat2) *
+    Math.sin(dLon / 2) ** 2;
 
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
@@ -208,6 +216,6 @@ function estimateRouteEconomics(icao1, icao2, demandClass) {
 }
 
 /* =============================================================
-   === CARGA FINAL DEL SISTEMA
+   === CARGA FINAL
    ============================================================= */
 loadAirportScripts(buildAirportIndex);
