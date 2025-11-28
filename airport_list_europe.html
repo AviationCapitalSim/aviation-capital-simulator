@@ -148,11 +148,14 @@ body {
   color: #cbd6ff;
   opacity: 0.9;
   font-size: 1.05rem;
+  margin-top: 8px;
+  margin-bottom: 26px; /* aire debajo del subtítulo */
 }
 
 /* ===== Origin Banner ===== */
 .origin-banner {
-  margin-top: 1rem;
+  margin-top: 12px;
+  margin-bottom: 18px; /* espacio hacia el selector */
   font-size: 1.15rem;
   color: #ffca3a;
   font-weight: 600;
@@ -163,6 +166,7 @@ body {
   align-items: center;
   gap: 0.45rem;
 }
+
 
 .origin-banner .label {
   color: #ffe7a0;
@@ -381,23 +385,29 @@ tr:hover {
   background: linear-gradient(135deg, #11214a, #1a315c);
   color: #ffca3a;
   border: 1px solid #ffb300;
-  padding: 6px 34px 6px 16px;    /* Compacto */
-  border-radius: 16px;          /* No tan grande */
-  font-size: 0.85rem;           /* Compacto */
+  padding: 6px 34px 6px 16px;    /* compacto */
+  border-radius: 16px;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   text-align: left;
   box-shadow: 0 0 12px rgba(255,179,0,0.20);
   appearance: none;
   -webkit-appearance: none;
+  margin-top: 2px;    /* un poquito de aire interno */
+  margin-bottom: 2px;
 
-  /* Flecha dorada pequeña */
+  /* flecha dorada pequeña */
   background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffb300' height='18' width='18' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
   background-repeat: no-repeat;
-  background-position: right 10px center;
+  background-position: right 10pxcenter;
   background-size: 14px;
 }
-
+.country-filter {
+  margin: 4px auto 26px auto; /* menos pegado al ORIGIN, más espacio antes de la tabla */
+  display: flex;
+  justify-content: center;
+}
 .country-select:hover {
   box-shadow: 0 0 18px rgba(255,179,0,0.32);
 }
