@@ -29,19 +29,33 @@ const airportScripts = [
   "engine/airports/world_airports_oc.js"
 ];
 
+/* =============================================================
+   === FIX: LOADER SECUENCIAL (NO PARALELO) ====================
+   ============================================================= */
 function loadAirportScripts(callback) {
-  let loaded = 0;
+  let index = 0;
 
-  airportScripts.forEach(src => {
+  function loadNext() {
+    if (index >= airportScripts.length) {
+      callback();
+      return;
+    }
+
+    const src = airportScripts[index];
     const s = document.createElement("script");
     s.src = src + "?v=" + Date.now(); // Rompe caché
+
     s.onload = () => {
-      loaded++;
-      if (loaded === airportScripts.length) callback();
+      index++;
+      loadNext();
     };
+
     s.onerror = () => console.error(`[ACS ERROR] Failed loading: ${src}`);
+
     document.head.appendChild(s);
-  });
+  }
+
+  loadNext();
 }
 
 /* =============================================================
@@ -155,45 +169,3 @@ function estimateRouteEconomics(icao1, icao2, demandClass) {
    === CARGA FINAL DEL SISTEMA
    ============================================================= */
 loadAirportScripts(buildAirportIndex);
-/* =============================================================
-   === SIMPLE HISTORICAL ENGINE — NO DATA EDITING REQUIRED ======
-   ============================================================= */
-
-function ACS_filterAirportsByYear(simYear) {
-  return Object.values(AirportIndex).filter(a => {
-
-    // === ERA 1 – 1940 a 1949 (DC-3 era) ===
-    if (simYear < 1950) {
-      // Muchos aeropuertos antiguos tienen runway mal cargado (0).
-      // Para evitar eliminarlos por error:
-      if (!a.runway_m || a.runway_m === 0) return true;
-
-      // Filtro realista para DC-3/DC-4
-      if (a.runway_m < 800) return false;
-
-      return true;
-    }
-
-    // === ERA 2 – 1950 a 1969 ===
-    if (simYear < 1970) {
-      if (a.runway_m < 600) return false;
-      return true;
-    }
-
-    // === ERA 3 – moderno ===
-    return true;
-  });
-}
-
-function ACS_getHistoricalDemand(a, simYear) {
-
-  const yearFactor = Math.max(0.10, (simYear - 1940) / 86); 
-  // 1940 → 0.10 (baja demanda)
-  // 2026 → 1.0 (demanda actual)
-
-  return {
-    Y: Math.round((a.demand?.Y || 0) * yearFactor),
-    C: Math.round((a.demand?.C || 0) * yearFactor),
-    F: Math.round((a.demand?.F || 0) * yearFactor)
-  };
-}
