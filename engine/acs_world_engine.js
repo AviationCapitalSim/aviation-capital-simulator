@@ -1,12 +1,11 @@
 /* =============================================================
-   === ACS WORLD ENGINE — HISTORICAL CORE v1.1 =================
+   === ACS WORLD ENGINE — HISTORICAL CORE v2.0 =================
    -------------------------------------------------------------
-   ▪ Motor mundial definitivo para ACS
-   ▪ NO ejecuta nada antes del loader
-   ▪ Indices y lógica se construyen SOLO cuando se llama
-     a ACS_World.initialize()
-   ▪ Compatible con >4000 aeropuertos, todos los continentes
-   ▪ Preparado para fechas reales y expansión futura
+   ▪ Motor mundial unificado para ACS (1940–2026)
+   ▪ Aeropuertos principales SIEMPRE visibles (lógica híbrida)
+   ▪ Secundarios según fechas históricas
+   ▪ Demanda creciente por década
+   ▪ Índices ICAO / IATA / países / continentes
    ============================================================= */
 
 (function (global) {
@@ -15,6 +14,7 @@
   // Namespace global del motor mundial
   const ACS_World = {
     ready: false,
+
     ALL_AIRPORTS: [],
     INDEX_ICAO: {},
     INDEX_IATA: {},
@@ -30,113 +30,42 @@
       if (global.ACS_TIME && global.ACS_TIME.currentTime instanceof Date) {
         return global.ACS_TIME.currentTime.getUTCFullYear();
       }
-    } catch (e) {
-      console.warn("⚠️ [ACS_World] getSimYear fallback:", e);
-    }
+    } catch (e) {}
     return 1940;
   };
 
   /* ===========================================================
-     NORMALIZADOR ISO2 → Nombres reales
+     INITIALIZE — Construir índices globales
      =========================================================== */
-
-  const ISO2 = {
-    AF:"Afghanistan", AL:"Albania", DZ:"Algeria", AD:"Andorra", AO:"Angola",
-    AR:"Argentina", AM:"Armenia", AU:"Australia", AT:"Austria",
-    AZ:"Azerbaijan", BH:"Bahrain", BD:"Bangladesh", BY:"Belarus",
-    BE:"Belgium", BZ:"Belize", BJ:"Benin", BT:"Bhutan", BO:"Bolivia",
-    BA:"Bosnia and Herzegovina", BW:"Botswana", BR:"Brazil",
-    BG:"Bulgaria", BF:"Burkina Faso", BI:"Burundi", KH:"Cambodia",
-    CM:"Cameroon", CA:"Canada", TD:"Chad", CL:"Chile", CN:"China",
-    CO:"Colombia", CR:"Costa Rica", HR:"Croatia", CY:"Cyprus",
-    CZ:"Czech Republic", DK:"Denmark", DO:"Dominican Republic",
-    EC:"Ecuador", EG:"Egypt", EE:"Estonia", FI:"Finland", FR:"France",
-    GE:"Georgia", DE:"Germany", GH:"Ghana", GR:"Greece",
-    GL:"Greenland", HK:"Hong Kong", HU:"Hungary", IS:"Iceland",
-    IN:"India", ID:"Indonesia", IR:"Iran", IQ:"Iraq", IE:"Ireland",
-    IL:"Israel", IT:"Italy", JP:"Japan", JO:"Jordan", KZ:"Kazakhstan",
-    KE:"Kenya", KP:"North Korea", KR:"South Korea", KW:"Kuwait",
-    KG:"Kyrgyzstan", LV:"Latvia", LB:"Lebanon", LT:"Lithuania",
-    LU:"Luxembourg", MY:"Malaysia", MV:"Maldives", MX:"Mexico",
-    MD:"Moldova", MN:"Mongolia", ME:"Montenegro", MA:"Morocco",
-    NP:"Nepal", NL:"Netherlands", NZ:"New Zealand", NG:"Nigeria",
-    NO:"Norway", OM:"Oman", PK:"Pakistan", PA:"Panama",
-    PY:"Paraguay", PE:"Peru", PH:"Philippines", PL:"Poland",
-    PT:"Portugal", QA:"Qatar", RO:"Romania", RU:"Russia",
-    SA:"Saudi Arabia", RS:"Serbia", SG:"Singapore", SK:"Slovakia",
-    SI:"Slovenia", ZA:"South Africa", ES:"Spain", LK:"Sri Lanka",
-    SE:"Sweden", CH:"Switzerland", TW:"Taiwan", TJ:"Tajikistan",
-    TH:"Thailand", TT:"Trinidad and Tobago", TN:"Tunisia",
-    TR:"Turkey", TM:"Turkmenistan", UA:"Ukraine",
-    AE:"United Arab Emirates", GB:"United Kingdom",
-    US:"United States", UY:"Uruguay", UZ:"Uzbekistan",
-    VN:"Vietnam"
-  };
-
-  function normalizeCountry(a) {
-    if (!a) return a;
-
-    // region → nombre moderno
-    if (ISO2[a.region]) a.region = ISO2[a.region];
-    if (ISO2[a.country]) a.country = ISO2[a.country];
-
-    // fallback
-    if (!a.region) a.region = a.country || "Unknown";
-    return a;
-  }
-
-  /* ===========================================================
-     CARGA PRINCIPAL DEL MOTOR
-     =========================================================== */
-
   ACS_World.initialize = function () {
-
-    // Verificar que WorldAirportsACS existe
-    if (!global.WorldAirportsACS || typeof global.WorldAirportsACS !== "object") {
-      console.error("❌ [ACS_World] WorldAirportsACS todavía no está cargado.");
+    if (!global.WorldAirportsACS) {
+      console.error("❌ WorldAirportsACS no está cargado");
       return;
     }
 
-    console.log("🌍 [ACS_World] Inicializando motor mundial...");
+    console.log("🌐 Inicializando ACS_WorldEngine...");
 
-    // Reset
-    ACS_World.ALL_AIRPORTS = [];
-    ACS_World.INDEX_ICAO = {};
-    ACS_World.INDEX_IATA = {};
-    ACS_World.BY_CONTINENT = {};
-    ACS_World.BY_COUNTRY = {};
+    const continents = Object.keys(global.WorldAirportsACS);
+    const ALL = [];
 
-    const seen = new Set();
+    continents.forEach(cont => {
+      const list = global.WorldAirportsACS[cont] || [];
+      if (!Array.isArray(list)) return;
 
-    // Combinar aeropuertos de todos los continentes
-    Object.keys(global.WorldAirportsACS).forEach(cont => {
-      const arr = global.WorldAirportsACS[cont];
-      if (!Array.isArray(arr)) return;
+      // Guardar lista por continente
+      ACS_World.BY_CONTINENT[cont] = list;
 
-      arr.forEach(a => {
-        if (!a || !a.icao) return;
-        const icao = String(a.icao).toUpperCase();
-        if (seen.has(icao)) return;
+      // Agregar al total
+      ALL.push(...list);
 
-        seen.add(icao);
+      // Indexar por país
+      list.forEach(a => {
+        const country =
+          (a.region?.trim()) ||
+          (a.country?.trim()) ||
+          (a.country_name?.trim()) ||
+          "Unknown";
 
-        normalizeCountry(a);
-
-        ACS_World.ALL_AIRPORTS.push(a);
-
-        // Índices ICAO / IATA
-        const iata = (a.iata || "").toUpperCase();
-        ACS_World.INDEX_ICAO[icao] = a;
-        if (iata) ACS_World.INDEX_IATA[iata] = a;
-
-        // Índice por continente
-        if (!ACS_World.BY_CONTINENT[a.continent]) {
-          ACS_World.BY_CONTINENT[a.continent] = [];
-        }
-        ACS_World.BY_CONTINENT[a.continent].push(a);
-
-        // Índice por país
-        const country = a.region || "Unknown";
         if (!ACS_World.BY_COUNTRY[country]) {
           ACS_World.BY_COUNTRY[country] = [];
         }
@@ -144,183 +73,152 @@
       });
     });
 
-    console.log("   ✔ Total aeropuertos:", ACS_World.ALL_AIRPORTS.length);
-    console.log("   ✔ Index ICAO:", Object.keys(ACS_World.INDEX_ICAO).length);
+    ACS_World.ALL_AIRPORTS = ALL;
+
+    // Índices ICAO / IATA globales
+    ALL.forEach(a => {
+      if (a.icao) ACS_World.INDEX_ICAO[a.icao] = a;
+      if (a.iata) ACS_World.INDEX_IATA[a.iata] = a;
+    });
 
     ACS_World.ready = true;
+    console.log("✅ ACS_WorldEngine listo ::", ALL.length, "aeropuertos indexados");
   };
 
   /* ===========================================================
-     API — FINDERS
+     FECHAS HISTÓRICAS — open_year / close_year
      =========================================================== */
-
-  ACS_World.findAirport = function (code) {
-    if (!code || !ACS_World.ready) return null;
-    const up = String(code).toUpperCase();
-    return ACS_World.INDEX_ICAO[up] || ACS_World.INDEX_IATA[up] || null;
-  };
-
-  ACS_World.getAllAirports = function ({ year } = {}) {
-    if (!ACS_World.ready) return [];
-    if (!year) return ACS_World.ALL_AIRPORTS;
-    return ACS_World.ALL_AIRPORTS.filter(a => ACS_World.airportExistsInYear(a, year));
-  };
-
-  ACS_World.getAirportsByContinent = function (continent, { year } = {}) {
-    if (!ACS_World.ready) return [];
-    const list = ACS_World.BY_CONTINENT[continent] || [];
-    if (!year) return list;
-    return list.filter(a => ACS_World.airportExistsInYear(a, year));
-  };
-
-  ACS_World.getAirportsByCountry = function (country, { year } = {}) {
-    if (!ACS_World.ready) return [];
-    const list = ACS_World.BY_COUNTRY[country] || [];
-    if (!year) return list;
-    return list.filter(a => ACS_World.airportExistsInYear(a, year));
-  };
-
-  ACS_World.getAirportsByContinentCountry = function (continent, country, { year } = {}) {
-    if (!ACS_World.ready) return [];
-    const list = ACS_World.BY_CONTINENT[continent] || [];
-    const filtered = list.filter(a => a.region === country);
-    if (!year) return filtered;
-    return filtered.filter(a => ACS_World.airportExistsInYear(a, year));
-  };
-
-  /* ===========================================================
-     HISTÓRICO (Aperturas + Demanda)
-     =========================================================== */
-
   const AirportDates = global.ACS_AirportDates || {};
 
   function getOpenYear(a) {
     const meta = AirportDates[a.icao];
     if (meta && typeof meta.open === "number") return meta.open;
-
-    // Heurística ligera (mientras completas la base real)
-    const cont = (a.continent || "").toLowerCase();
-    const cat  = (a.category || "").toLowerCase();
-
-    if (cat.includes("primary")) return 1945;
-    if (cont === "europe" || cont === "northamerica") return 1930;
-    if (cont === "africa"  || cont === "southamerica" || cont === "oceania") return 1945;
-
-    return 1940;
+    return a.open_year ?? 1900;
   }
 
   function getCloseYear(a) {
     const meta = AirportDates[a.icao];
     if (meta && typeof meta.close === "number") return meta.close;
-    return 9999;
+    return a.close_year ?? 9999;
   }
 
+  /* ===========================================================
+     === GLOBAL MAJOR AIRPORT CHECK (100% ACS WORLD) ============
+     Determina si un aeropuerto debe existir SIEMPRE
+     =========================================================== */
+  function isMajorAirport(a) {
+
+    if (!a) return false;
+
+    // 1. Aeropuertos International
+    if (a.category && a.category.toLowerCase().includes("international"))
+      return true;
+
+    // 2. Demanda alta
+    const demandTotal =
+      (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
+    if (demandTotal > 2500) return true;
+
+    // 3. Capitales principales del mundo
+    const capitalCities = [
+      "Caracas","Bogota","Lima","Santiago","Buenos Aires","Brasilia",
+      "Quito","Mexico City","Washington","Ottawa",
+      "Madrid","Paris","London","Berlin","Rome","Amsterdam",
+      "Moscow","Tokyo","Beijing","Seoul","Bangkok","Singapore",
+      "Sydney","Melbourne","Auckland","Johannesburg","Cairo"
+    ];
+    if (capitalCities.includes(a.city)) return true;
+
+    // 4. Alta capacidad de slots
+    if (a.slot_capacity > 35) return true;
+
+    // 5. IATA grandes mundiales
+    const hugeIATA = [
+      "CCS","BOG","LIM","SCL","EZE","GRU","GIG","MEX",
+      "JFK","LAX","MIA","DFW","ORD","IAH","ATL",
+      "LHR","LGW","CDG","AMS","FRA","BCN","MAD",
+      "DXB","DOH","SIN","HND","NRT","ICN","BKK","KUL",
+      "SYD","MEL","AKL",
+      "CAI","JNB","ADD"
+    ];
+    if (hugeIATA.includes(a.iata)) return true;
+
+    return false;
+  }
+
+  /* ===========================================================
+     === HISTORICAL EXISTENCE (ACS HYBRID LOGIC v2.0) ============
+     Principales SIEMPRE visibles — secundarios por fechas
+     =========================================================== */
   ACS_World.airportExistsInYear = function (a, year) {
-    if (!a || !year) return false;
+
+    // 1. Aeropuerto principal → siempre existe
+    if (isMajorAirport(a)) return true;
+
+    // 2. Secundarios con fechas históricas
     const o = getOpenYear(a);
     const c = getCloseYear(a);
+
     return year >= o && year <= c;
   };
 
   /* ===========================================================
-   HISTORICAL DEMAND ENGINE — REAL-WORLD CLASS EVOLUTION
-   ------------------------------------------------------------
-   A-1: Fechas reales
-     • Business Class (C) aparece en 1955
-     • First Class (F) aparece en 1976
-   B-1: Clases inexistentes NO se muestran (null)
-   C-2: Ordenamiento usará solo las clases existentes según era
-   =========================================================== */
-ACS_World.getHistoricalDemand = function (a, year) {
-  const base = a.demand || { Y:0, C:0, F:0 };
-
-  // === FACTOR DE CRECIMIENTO ANUAL (1940 → 10%, 2026 → 100%) ===
-  const factor = Math.max(
-    0.10,
-    Math.min(1.0, (year - 1940) / (2026 - 1940))
-  );
-
-  // === Demandas escaladas por crecimiento ===
-  let Y = Math.round(base.Y * factor);
-  let C = Math.round(base.C * factor);
-  let F = Math.round(base.F * factor);
-
-  // ===========================================================
-  //   FASE REALISTA DE CLASES
-  // ===========================================================
-
-  // 🎯 Antes de 1955 → NO existe Business ni First
-  if (year < 1955) {
-    C = null;   // ocultar
-    F = null;   // ocultar
-  }
-
-  // 🎯 1955 a 1975 → Existe Business, pero NO First
-  else if (year < 1976) {
-    F = null;   // ocultar
-  }
-
-  // 🎯 1976 en adelante → Y / C / F existen completas (jet age)
-  // (Y, C, F se mantienen tal cual)
-  
-
-  return { Y, C, F };
-};
-
-  /* ===========================================================
-     DISTANCIA
+     HISTORICAL DEMAND ENGINE — DEMANDA REALISTA
      =========================================================== */
+  ACS_World.getHistoricalDemand = function (a, year) {
+    const base = a.demand || { Y: 0, C: 0, F: 0 };
 
-  ACS_World.getNearestAirports = function (icao, distNM = 500, { year } = {}) {
-    const ref = ACS_World.findAirport(icao);
-    if (!ref) return [];
+    const factor = Math.max(
+      0.10,
+      Math.min(1.0, (year - 1940) / (2026 - 1940))
+    );
 
-    const list = [];
-    const useExternal = typeof global.calcDistanceNM === "function";
+    const Y = Math.round(base.Y * factor);
+    const C = year >= 1955 ? Math.round(base.C * factor) : 0;
+    const F = year >= 1976 ? Math.round(base.F * factor) : 0;
 
-    function localDist(a1, a2) {
-      const R = 3440;
-      const toRad = x => (x * Math.PI) / 180;
-      const dLat = toRad(a2.latitude - a1.latitude);
-      const dLon = toRad(a2.longitude - a1.longitude);
-
-      const A =
-        Math.sin(dLat/2)**2 +
-        Math.cos(toRad(a1.latitude)) *
-        Math.cos(toRad(a2.latitude)) *
-        Math.sin(dLon/2)**2;
-
-      return Math.round(R * 2 * Math.atan2(Math.sqrt(A), Math.sqrt(1-A)));
-    }
-
-    ACS_World.ALL_AIRPORTS.forEach(a => {
-      if (a === ref) return;
-      if (year && !ACS_World.airportExistsInYear(a, year)) return;
-
-      const d = useExternal
-        ? global.calcDistanceNM(ref.icao, a.icao)
-        : localDist(ref, a);
-
-      if (d <= distNM) list.push({ airport:a, distanceNM:d });
-    });
-
-    list.sort((a,b) => a.distanceNM - b.distanceNM);
-    return list;
+    return { Y, C, F };
   };
 
   /* ===========================================================
-     EXPONER MOTOR
+     BÚSQUEDA DIRECTA ICAO / IATA
+     =========================================================== */
+  ACS_World.getByICAO = function (icao) {
+    return ACS_World.INDEX_ICAO[icao] || null;
+  };
+
+  ACS_World.getByIATA = function (iata) {
+    return ACS_World.INDEX_IATA[iata] || null;
+  };
+
+  /* ===========================================================
+     FILTROS POR CONTINENTE / PAÍS
+     =========================================================== */
+  ACS_World.byContinent = function (continent, year) {
+    const list = ACS_World.BY_CONTINENT[continent] || [];
+    return list.filter(a => ACS_World.airportExistsInYear(a, year));
+  };
+
+  ACS_World.byCountry = function (country, year) {
+    const list = ACS_World.BY_COUNTRY[country] || [];
+    return list.filter(a => ACS_World.airportExistsInYear(a, year));
+  };
+
+  ACS_World.byContinentNoFilter = function (continent) {
+    return ACS_World.BY_CONTINENT[continent] || [];
+  };
+
+  /* ===========================================================
+     EXPORTAR MOTOR MUNDIAL
      =========================================================== */
   global.ACS_World = ACS_World;
 
 })(window);
 
 /* =============================================================
-   LLAMADA DESDE choose_base.html:
-   -------------------------------------------------------------
-   Después de:
-     loadAirportScripts(() => {
-        buildAirportIndex();
-        ACS_World.initialize();   <── AQUÍ
+   LLAMADA DESDE choose_base:
+   loadAirportScripts(() => {
+     buildAirportIndex();
+     ACS_World.initialize();   <── AQUÍ
    });
    ============================================================= */
