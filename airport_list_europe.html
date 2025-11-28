@@ -376,27 +376,30 @@ tr:hover {
   from { opacity: 0; transform: scale(0.92); }
   to   { opacity: 1; transform: scale(1); }
 }
+       
 .country-select {
-  background: linear-gradient(135deg, #10214a, #1c335f);
+  background: linear-gradient(135deg, #11214a, #1a315c);
   color: #ffca3a;
   border: 1px solid #ffb300;
-  padding: 10px 40px 10px 20px;
-  border-radius: 999px;
-  font-size: 0.95rem;
+  padding: 6px 34px 6px 16px;    /* Compacto */
+  border-radius: 16px;          /* No tan grande */
+  font-size: 0.85rem;           /* Compacto */
   font-weight: 600;
   cursor: pointer;
   text-align: left;
-  box-shadow: 0 0 12px rgba(255,179,0,0.25);
+  box-shadow: 0 0 12px rgba(255,179,0,0.20);
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffb300' height='24' width='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+
+  /* Flecha dorada pequeña */
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffb300' height='18' width='18' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
   background-repeat: no-repeat;
-  background-position: right 14px center;
-  background-size: 16px;
+  background-position: right 10px center;
+  background-size: 14px;
 }
 
 .country-select:hover {
-  box-shadow: 0 0 20px rgba(255,179,0,0.35);
+  box-shadow: 0 0 18px rgba(255,179,0,0.32);
 }
 
 </style>
