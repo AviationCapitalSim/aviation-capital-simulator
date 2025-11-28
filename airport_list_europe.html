@@ -324,7 +324,7 @@ tr:hover {
         <tr>
           <th onclick="sortTable(0)">Airport (ICAO)</th>
           <th onclick="sortTable(1)">Country</th>
-          <th onclick="sortTable(2)">Distnace</th>
+          <th onclick="sortTable(2)">Distance (NM)</th>
           <th onclick="sortTable(3)">Demand (Y/C/F)</th>
           <th onclick="sortTable(4)">Slot $</th>
           <th onclick="sortTable(5)">Landing $</th>
@@ -356,53 +356,105 @@ tr:hover {
   <script src="time_engine.js?v=1.2"></script>
 
   <script>
-    function loadAirports(continent) {
-      const tableBody = document.getElementById("airportTableBody");
-      tableBody.innerHTML = "";
 
-      const userBase = localStorage.getItem("userBaseICAO") || "LEMD";
+   // =========================
+   // ACS Distance Engine (NM)
+   // =========================
+    function distanceNM(lat1, lon1, lat2, lon2) {
+    const R = 3440.065; // Radius of Earth in nautical miles
+    const toRad = deg => deg * Math.PI / 180;
 
-      const airports = WorldAirportsACS[continent]
-        .filter(a => a.icao !== userBase)
-        .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
 
-      // === BUILD COUNTRY SELECTOR – usando NOMBRE (region) ===
-      const selector = document.getElementById("countrySelect");
-      if (selector) {
-        selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
-        const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
-        uniqueCountries.forEach(country => {
-          const opt = document.createElement("option");
-          opt.value = country;
-          opt.textContent = country;
-          selector.appendChild(opt);
-        });
-      }
+    const a =
+    Math.sin(dLat/2)**2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon/2)**2;
 
-      // === Construir filas de tabla ===
-      airports.forEach(a => {
-        const total = a.demand.Y + a.demand.C + a.demand.F;
-        const ecoPct = (a.demand.Y / total) * 100;
-        const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td><strong>${a.city}</strong> (${a.icao})</td>
-          <td>${a.region}</td>
-          <td>${a.runway_m}</td>
-          <td>
-            ${a.demand.Y}/${a.demand.C}/${a.demand.F}
-            <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-          </td>
-          <td>$${a.slot_cost_usd}</td>
-          <td>$${a.landing_fee_usd}</td>
-          <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
-          <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
-          <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
-        `;
-        tableBody.appendChild(row);
-      });
+    return (R * c).toFixed(0); // Round to nearest NM
     }
+
+      /* ============================================================
+   === LOAD AIRPORTS (Europe / Asia / etc.) ====================
+   === Qatar Luxury Edition — now with Distance (NM) ===========
+   ============================================================ */
+function loadAirports(continent) {
+
+  const tableBody = document.getElementById("airportTableBody");
+  tableBody.innerHTML = "";
+
+  // === BASE DEL JUGADOR (desde registro / choose_base) ===
+  const userBase = localStorage.getItem("ACS_baseICAO") || "LEMD";
+
+  // Buscar aeropuerto base dentro del continente
+  const allAirports = WorldAirportsACS[continent];
+  const baseAp = allAirports.find(a => a.icao === userBase);
+
+  // Si no existe la base dentro del continente (puede pasar) → no calculamos distancia
+  let baseLat = null, baseLon = null;
+  if (baseAp) {
+    baseLat = baseAp.latitude;
+    baseLon = baseAp.longitude;
+  }
+
+  // ============================================================
+  // === ORDENAR AEROPUERTOS ORIGINAL (mayor demanda → menor) ===
+  // ============================================================
+  const airports = allAirports
+    .filter(a => a.icao !== userBase)
+    .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
+
+  // ============================================================
+  // === BUILD COUNTRY SELECTOR – usando region (nombre país) ===
+  // ============================================================
+  const selector = document.getElementById("countrySelect");
+  if (selector) {
+    selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+    const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
+    uniqueCountries.forEach(country => {
+      const opt = document.createElement("option");
+      opt.value = country;
+      opt.textContent = country;
+      selector.appendChild(opt);
+    });
+  }
+
+  // ============================================================
+  // === CONSTRUIR FILAS DE TABLA (con distancia si aplica) =====
+  // ============================================================
+  airports.forEach(a => {
+
+    // === Si la base existe en este continente, calculamos distancia ===
+    let distNM = "-";
+    if (baseLat !== null && baseLon !== null) {
+      distNM = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
+    }
+
+    const total = a.demand.Y + a.demand.C + a.demand.F;
+    const ecoPct = (a.demand.Y / total) * 100;
+    const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><strong>${a.city}</strong> (${a.icao})</td>
+      <td>${a.region}</td>
+      <td>${distNM} NM</td>
+      <td>
+        ${a.demand.Y}/${a.demand.C}/${a.demand.F}
+        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+      </td>
+      <td>$${a.slot_cost_usd}</td>
+      <td>$${a.landing_fee_usd}</td>
+      <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
+      <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
+      <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
 
   function filterByCountry() {
   const selected = document.getElementById("countrySelect").value;
