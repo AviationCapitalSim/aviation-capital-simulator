@@ -656,7 +656,14 @@ function setBase(icao) {
   };
 
   localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-
+  // === GUARDAR BASE COMO CLAVES GLOBALES ===
+  localStorage.setItem("ACS_baseICAO", airport.icao);
+  localStorage.setItem("ACS_baseIATA", airport.iata);
+  localStorage.setItem("ACS_baseCity", airport.city);
+  localStorage.setItem("ACS_baseName", airport.name);
+  localStorage.setItem("ACS_baseCountry", airport.region);
+  localStorage.setItem("ACS_baseContinent", selectedContinent);
+  
   const users = JSON.parse(localStorage.getItem("ACS_users")||"[]");
   const index = users.findIndex(u => u.email === user.email);
   if (index !== -1) users[index] = user;
