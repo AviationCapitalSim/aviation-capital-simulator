@@ -59,18 +59,60 @@ function loadAirportScripts(callback) {
 }
 
 /* =============================================================
+   === ⭐ BLOQUE 1 — SANITIZADOR DE COORDENADAS =================
+   Corrige datos defectuosos sin afectar rutas largas reales
+   ============================================================= */
+function sanitizeAirportCoords(a) {
+  if (!a) return;
+
+  // Convertir strings a números
+  a.latitude  = parseFloat(a.latitude);
+  a.longitude = parseFloat(a.longitude);
+
+  // 1) Si latitud está fuera de rango
+  if (a.latitude < -90 || a.latitude > 90) {
+    if (a.longitude >= -90 && a.longitude <= 90) {
+      let t = a.latitude;
+      a.latitude = a.longitude;
+      a.longitude = t;
+    }
+  }
+
+  // 2) Si longitud está fuera de rango
+  if (a.longitude < -180 || a.longitude > 180) {
+    let t = a.latitude;
+    a.latitude = a.longitude;
+    a.longitude = t;
+  }
+
+  // 3) Europa nunca debe superar 60° latitud (errores comunes)
+  if (a.continent === "Europe" && Math.abs(a.latitude) > 60) {
+    let t = a.latitude;
+    a.latitude = a.longitude;
+    a.longitude = t;
+  }
+}
+
+/* =============================================================
    === INDEX BUILDER
    ============================================================= */
 const AirportIndex = {};
 
 function buildAirportIndex() {
 
+  // ⭐ BLOQUE 2 — APLICAR SANITIZADOR A CADA AEROPUERTO
+  for (const cont in WorldAirportsACS) {
+    WorldAirportsACS[cont].forEach(a => {
+      sanitizeAirportCoords(a);   // ← FIX inserto aquí
+    });
+  }
+
   // ============================================
   //  AÑADIR NOMBRE DEL PAÍS (SIN ROMPER NADA)
   // ============================================
   for (const cont in WorldAirportsACS) {
     WorldAirportsACS[cont].forEach(a => {
-      a.country_name = a.region;   // 🔥 Nombre del país ya insertado
+      a.country_name = a.region;
     });
   }
 
