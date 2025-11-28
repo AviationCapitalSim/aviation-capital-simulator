@@ -404,17 +404,61 @@ tr:hover {
       });
     }
 
-    function filterByCountry() {
-      const selected = document.getElementById("countrySelect").value;
-      const rows = document.querySelectorAll("#airportTable tbody tr");
+  function filterByCountry() {
+  const selected = document.getElementById("countrySelect").value;
+  const tableBody = document.getElementById("airportTableBody");
+  const rows = Array.from(tableBody.querySelectorAll("tr"));
 
-      rows.forEach(row => {
-        const countryCell = row.children[1];
-        if (!countryCell) return;
-        const text = countryCell.textContent.trim();
-        row.style.display = (selected === "ALL" || text === selected) ? "" : "none";
-      });
-    }
+  if (selected === "ALL") {
+    // Mostrar todas las filas
+    rows.forEach(r => r.style.display = "");
+    
+    // Reordenar por demanda total general (opcional)
+    rows.sort((a, b) => {
+      const ad = getRowDemand(a);
+      const bd = getRowDemand(b);
+      return bd - ad; // mayor → menor
+    });
+
+    // Volver a insertar
+    rows.forEach(r => tableBody.appendChild(r));
+    return;
+  }
+
+  // Filtrar por país
+  const filtered = rows.filter(row => {
+    const countryCell = row.children[1].textContent.trim();
+    return countryCell === selected;
+  });
+
+  // Ocultar las que no son del país
+  rows.forEach(r => r.style.display = "none");
+  filtered.forEach(r => r.style.display = "");
+
+  // Ordenar los del país por demanda total
+  filtered.sort((a, b) => {
+    const ad = getRowDemand(a);
+    const bd = getRowDemand(b);
+    return bd - ad; // mayor → menor
+  });
+
+  // Reinsertar ordenados
+  filtered.forEach(r => tableBody.appendChild(r));
+}
+
+// === Utilidad: extraer demanda total de una fila ===
+function getRowDemand(row) {
+  // La celda de demanda es la columna 4 (índice 3)
+  const demandText = row.children[3].textContent.trim();
+  const parts = demandText.split("/");
+  if (parts.length !== 3) return 0;
+
+  const Y = parseInt(parts[0]) || 0;
+  const C = parseInt(parts[1]) || 0;
+  const F = parseInt(parts[2]) || 0;
+
+  return Y + C + F;
+}
 
     function createRoute(icao) {
       window.location.href = `route_schedule.html?to=${icao}`;
