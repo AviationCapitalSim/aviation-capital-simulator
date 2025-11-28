@@ -22,7 +22,7 @@ if (typeof WorldAirportsACS === "undefined") {
 const airportScripts = [
   "engine/airports/world_airports_na.js",
   "engine/airports/world_airports_sa.js",
-  "engine/airports/world_airports_eu_v1.js?v=999",
+  "engine/airports/world_airports_eu.js",
   "engine/airports/world_airports_me.js",
   "engine/airports/world_airports_af.js",
   "engine/airports/world_airports_as.js",
