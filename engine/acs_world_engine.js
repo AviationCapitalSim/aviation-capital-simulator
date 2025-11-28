@@ -1,9 +1,9 @@
 /* =============================================================
-   === ACS WORLD ENGINE — HISTORICAL CORE v2.0 =================
+   === ACS WORLD ENGINE — HISTORICAL CORE v2.1 =================
    -------------------------------------------------------------
    ▪ Motor mundial unificado para ACS (1940–2026)
-   ▪ Aeropuertos principales SIEMPRE visibles (lógica híbrida)
-   ▪ Secundarios según fechas históricas
+   ▪ Aeropuertos principales SIEMPRE visibles
+   ▪ Secundarios según fechas históricas + AUTO-OPEN-YEAR
    ▪ Demanda creciente por década
    ▪ Índices ICAO / IATA / países / continentes
    ============================================================= */
@@ -103,8 +103,8 @@
   }
 
   /* ===========================================================
-     === GLOBAL MAJOR AIRPORT CHECK (100% ACS WORLD) ============
-     Determina si un aeropuerto debe existir SIEMPRE
+     === GLOBAL MAJOR AIRPORT CHECK =============================
+     Aeropuertos que SIEMPRE aparecen (base mundial)
      =========================================================== */
   function isMajorAirport(a) {
 
@@ -119,7 +119,7 @@
       (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
     if (demandTotal > 2500) return true;
 
-    // 3. Capitales principales del mundo
+    // 3. Capitales principales
     const capitalCities = [
       "Caracas","Bogota","Lima","Santiago","Buenos Aires","Brasilia",
       "Quito","Mexico City","Washington","Ottawa",
@@ -132,7 +132,7 @@
     // 4. Alta capacidad de slots
     if (a.slot_capacity > 35) return true;
 
-    // 5. IATA grandes mundiales
+    // 5. IATA grandes
     const hugeIATA = [
       "CCS","BOG","LIM","SCL","EZE","GRU","GIG","MEX",
       "JFK","LAX","MIA","DFW","ORD","IAH","ATL",
@@ -147,23 +147,59 @@
   }
 
   /* ===========================================================
-     === HISTORICAL EXISTENCE (ACS HYBRID LOGIC v2.0) ============
-     Principales SIEMPRE visibles — secundarios por fechas
+     === HISTORICAL EXISTENCE WITH AUTO-OPEN-YEAR ===============
      =========================================================== */
   ACS_World.airportExistsInYear = function (a, year) {
 
-    // 1. Aeropuerto principal → siempre existe
+    // 1. Aeropuerto principal → SIEMPRE visible
     if (isMajorAirport(a)) return true;
 
-    // 2. Secundarios con fechas históricas
-    const o = getOpenYear(a);
-    const c = getCloseYear(a);
+    // 2. Fechas reales
+    const realOpen = getOpenYear(a);
+    const realClose = getCloseYear(a);
 
-    return year >= o && year <= c;
+    // 3. Si el aeropuerto YA tiene fecha real → usarla
+    if (realOpen !== 1900) {
+      return year >= realOpen && year <= realClose;
+    }
+
+    /* ===========================================================
+         AUTO OPEN YEAR SYSTEM — WORLD LOGIC v1.0
+       =========================================================== */
+
+    let openYear = 0;
+
+    const demandTotal =
+      (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
+
+    const runway = a.runway_m || 0;
+    const slots = a.slot_capacity || 0;
+    const isInternational =
+      a.category && a.category.toLowerCase().includes("international");
+
+    // Aeropuertos grandes (capitales, internacionales, hubs)
+    if (isInternational || demandTotal > 2500 || slots > 30 || runway > 2800) {
+      openYear = 1945;
+    }
+    else if (runway > 2200 || slots > 15 || demandTotal > 1500) {
+      openYear = 1955;
+    }
+    else if (runway > 1600 || slots > 10 || demandTotal > 800) {
+      openYear = 1965;
+    }
+    else {
+      openYear = 1975;
+    }
+
+    // Filtro final
+    if (year < openYear) return false;
+    if (year > realClose) return false;
+
+    return true;
   };
 
   /* ===========================================================
-     HISTORICAL DEMAND ENGINE — DEMANDA REALISTA
+     HISTORICAL DEMAND ENGINE
      =========================================================== */
   ACS_World.getHistoricalDemand = function (a, year) {
     const base = a.demand || { Y: 0, C: 0, F: 0 };
