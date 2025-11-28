@@ -281,40 +281,6 @@ tr:hover {
   z-index: 1000;
   width: 180px;
 }
-.origin-banner {
-  margin-top: 1.2rem;
-  font-size: 1.15rem;
-  color: #ffca3a;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  text-shadow: 0 0 8px rgba(255,190,60,0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.origin-banner .label {
-  color: #ffe7a0;
-  font-weight: 700;
-}
-
-.origin-banner strong {
-  color: #ffca3a;
-  font-size: 1.2rem;
-}
-
-.origin-banner #originCity {
-  color: #dbe4ff;
-  opacity: 0.95;
-  font-weight: 400;
-  margin-left: 0.3rem;
-}
-
-.origin-banner .icon {
-  font-size: 1.25rem;
-  margin-right: 0.3rem;
-}
   </style>
 </head>
 
@@ -345,15 +311,7 @@ tr:hover {
   <main class="acs-main">
     <h2>🌍 European Airports</h2>
     <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
-    
-    <div class="origin-banner">
-    <span class="icon">🛫</span>
-    <span class="label">Origin:</span>
-    <span id="originFlag">🇪🇸</span>
-    <strong id="originIcao">LECO</strong>
-    <span id="originCity">— A Coruña, Spain</span>
-    </div>
-       
+
     <!-- Country selector -->
     <div class="country-filter">
       <select id="countrySelect" class="country-select" onchange="filterByCountry()">
@@ -399,11 +357,10 @@ tr:hover {
 
   <script>
 
-   <script>
-  // =========================
-  // ACS Distance Engine (NM)
-  // =========================
-  function distanceNM(lat1, lon1, lat2, lon2) {
+   // =========================
+   // ACS Distance Engine (NM)
+   // =========================
+    function distanceNM(lat1, lon1, lat2, lon2) {
     const R = 3440.065; // Radius of Earth in nautical miles
     const toRad = deg => deg * Math.PI / 180;
 
@@ -411,238 +368,219 @@ tr:hover {
     const dLon = toRad(lon2 - lon1);
 
     const a =
-      Math.sin(dLat/2)**2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLon/2)**2;
+    Math.sin(dLat/2)**2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon/2)**2;
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
     return (R * c).toFixed(0); // Round to nearest NM
+    }
+
+      /* ============================================================
+   === LOAD AIRPORTS (Europe / Asia / etc.) ====================
+   === Qatar Luxury Edition — now with Distance (NM) ===========
+   ============================================================ */
+function loadAirports(continent) {
+
+  const tableBody = document.getElementById("airportTableBody");
+  tableBody.innerHTML = "";
+
+  // === BASE DEL JUGADOR (desde registro / choose_base) ===
+  const userBase = localStorage.getItem("ACS_baseICAO") || "LEMD";
+
+  // Buscar aeropuerto base dentro del continente
+  const allAirports = WorldAirportsACS[continent];
+  const baseAp = allAirports.find(a => a.icao === userBase);
+
+  // Si no existe la base dentro del continente (puede pasar) → no calculamos distancia
+  let baseLat = null, baseLon = null;
+  if (baseAp) {
+    baseLat = baseAp.latitude;
+    baseLon = baseAp.longitude;
   }
 
-  /* ============================================================
-     === LOAD AIRPORTS (Europe / Asia / etc.) ====================
-     === Qatar Luxury Edition — now with Distance (NM) ===========
-     ============================================================ */
-  function loadAirports(continent) {
+  // ============================================================
+  // === ORDENAR AEROPUERTOS ORIGINAL (mayor demanda → menor) ===
+  // ============================================================
+  const airports = allAirports
+    .filter(a => a.icao !== userBase)
+    .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
 
-    const tableBody = document.getElementById("airportTableBody");
-    tableBody.innerHTML = "";
-
-    // === BASE DEL JUGADOR (desde registro / choose_base) ===
-    const userBase = localStorage.getItem("ACS_baseICAO") || "LEMD";
-
-    // Buscar aeropuerto base dentro del continente
-    const allAirports = WorldAirportsACS[continent];
-    const baseAp = allAirports.find(a => a.icao === userBase);
-
-    // Si no existe la base dentro del continente → distancia no aplica
-    let baseLat = null, baseLon = null;
-    if (baseAp) {
-      baseLat = baseAp.latitude;
-      baseLon = baseAp.longitude;
-    }
-
-    // ============================================================
-    // === ORDENAR AEROPUERTOS ORIGINAL (mayor demanda → menor) ===
-    // ============================================================
-    const airports = allAirports
-      .filter(a => a.icao !== userBase)
-      .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
-
-    // ============================================================
-    // === BUILD COUNTRY SELECTOR – usando region (nombre país) ===
-    // ============================================================
-    const selector = document.getElementById("countrySelect");
-    if (selector) {
-      selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
-      const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
-      uniqueCountries.forEach(country => {
-        const opt = document.createElement("option");
-        opt.value = country;
-        opt.textContent = country;
-        selector.appendChild(opt);
-      });
-    }
-
-    // ============================================================
-    // === CONSTRUIR FILAS DE TABLA (con distancia si aplica) =====
-    // ============================================================
-    airports.forEach(a => {
-
-      // === Si la base existe, calculamos distancia NM ===
-      let distNM = "-";
-      if (baseLat !== null && baseLon !== null) {
-        distNM = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
-      }
-
-      const total = a.demand.Y + a.demand.C + a.demand.F;
-      const ecoPct = (a.demand.Y / total) * 100;
-      const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
-
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td><strong>${a.city}</strong> (${a.icao})</td>
-        <td>${a.region}</td>
-        <td>${distNM} NM</td>
-        <td>
-          ${a.demand.Y}/${a.demand.C}/${a.demand.F}
-          <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-        </td>
-        <td>$${a.slot_cost_usd}</td>
-        <td>$${a.landing_fee_usd}</td>
-        <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
-        <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
-        <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
-      `;
-      tableBody.appendChild(row);
+  // ============================================================
+  // === BUILD COUNTRY SELECTOR – usando region (nombre país) ===
+  // ============================================================
+  const selector = document.getElementById("countrySelect");
+  if (selector) {
+    selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+    const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
+    uniqueCountries.forEach(country => {
+      const opt = document.createElement("option");
+      opt.value = country;
+      opt.textContent = country;
+      selector.appendChild(opt);
     });
   }
 
+  // ============================================================
+  // === CONSTRUIR FILAS DE TABLA (con distancia si aplica) =====
+  // ============================================================
+  airports.forEach(a => {
 
-  /* ============================================================
-     === ORIGIN BANNER LOADER (Qatar Luxury Edition) =============
-     ============================================================ */
-  function initOriginBanner() {
-    // ICAO base guardada (ej: LECO)
-    const baseIcao = localStorage.getItem("ACS_baseICAO");
-
-    // Buscar aeropuerto base dentro de Europa
-    const apList = WorldAirportsACS["Europe"] || [];
-    const base = apList.find(a => a.icao === baseIcao);
-
-    if (base) {
-      // Convertir código de país (ES, FR, IT) → bandera Unicode (🇪🇸)
-      const flagEmoji = base.country.replace(/./g, char =>
-        String.fromCodePoint(char.charCodeAt(0) + 127397)
-      );
-
-      // Cargar datos visuales
-      document.getElementById("originFlag").textContent = flagEmoji;
-      document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent = `— ${base.city}, ${base.region}`;
+    // === Si la base existe en este continente, calculamos distancia ===
+    let distNM = "-";
+    if (baseLat !== null && baseLon !== null) {
+      distNM = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
-  }
+
+    const total = a.demand.Y + a.demand.C + a.demand.F;
+    const ecoPct = (a.demand.Y / total) * 100;
+    const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><strong>${a.city}</strong> (${a.icao})</td>
+      <td>${a.region}</td>
+      <td>${distNM} NM</td>
+      <td>
+        ${a.demand.Y}/${a.demand.C}/${a.demand.F}
+        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+      </td>
+      <td>$${a.slot_cost_usd}</td>
+      <td>$${a.landing_fee_usd}</td>
+      <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
+      <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
+      <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
 
   function filterByCountry() {
-    const selected = document.getElementById("countrySelect").value;
-    const tableBody = document.getElementById("airportTableBody");
-    const rows = Array.from(tableBody.querySelectorAll("tr"));
+  const selected = document.getElementById("countrySelect").value;
+  const tableBody = document.getElementById("airportTableBody");
+  const rows = Array.from(tableBody.querySelectorAll("tr"));
 
-    if (selected === "ALL") {
-      rows.forEach(r => r.style.display = "");
-      rows.sort((a, b) => {
-        const ad = getRowDemand(a);
-        const bd = getRowDemand(b);
-        return bd - ad;
-      });
-      rows.forEach(r => tableBody.appendChild(r));
-      return;
-    }
-
-    const filtered = rows.filter(row => {
-      const countryCell = row.children[1].textContent.trim();
-      return countryCell === selected;
-    });
-
-    rows.forEach(r => r.style.display = "none");
-    filtered.forEach(r => r.style.display = "");
-
-    filtered.sort((a, b) => {
+  if (selected === "ALL") {
+    // Mostrar todas las filas
+    rows.forEach(r => r.style.display = "");
+    
+    // Reordenar por demanda total general (opcional)
+    rows.sort((a, b) => {
       const ad = getRowDemand(a);
       const bd = getRowDemand(b);
-      return bd - ad;
+      return bd - ad; // mayor → menor
     });
 
-    filtered.forEach(r => tableBody.appendChild(r));
+    // Volver a insertar
+    rows.forEach(r => tableBody.appendChild(r));
+    return;
   }
 
-  // === Utilidad: extraer demanda total de una fila ===
-  function getRowDemand(row) {
-    const demandText = row.children[3].textContent.trim();
-    const parts = demandText.split("/");
-    if (parts.length !== 3) return 0;
+  // Filtrar por país
+  const filtered = rows.filter(row => {
+    const countryCell = row.children[1].textContent.trim();
+    return countryCell === selected;
+  });
 
-    const Y = parseInt(parts[0]) || 0;
-    const C = parseInt(parts[1]) || 0;
-    const F = parseInt(parts[2]) || 0;
+  // Ocultar las que no son del país
+  rows.forEach(r => r.style.display = "none");
+  filtered.forEach(r => r.style.display = "");
 
-    return Y + C + F;
-  }
+  // Ordenar los del país por demanda total
+  filtered.sort((a, b) => {
+    const ad = getRowDemand(a);
+    const bd = getRowDemand(b);
+    return bd - ad; // mayor → menor
+  });
 
-  function createRoute(icao) {
-    window.location.href = `route_schedule.html?to=${icao}`;
-  }
+  // Reinsertar ordenados
+  filtered.forEach(r => tableBody.appendChild(r));
+}
 
-  function sortTable(n) {
-    const table = document.getElementById("airportTable");
-    let switching = true, dir = "asc", switchcount = 0;
-    while (switching) {
-      switching = false;
-      const rows = table.rows;
-      for (let i = 1; i < (rows.length - 1); i++) {
-        let shouldSwitch = false;
-        const x = rows[i].getElementsByTagName("TD")[n];
-        const y = rows[i + 1].getElementsByTagName("TD")[n];
-        const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
-        const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
-        if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
-          shouldSwitch = true;
-          break;
+// === Utilidad: extraer demanda total de una fila ===
+function getRowDemand(row) {
+  // La celda de demanda es la columna 4 (índice 3)
+  const demandText = row.children[3].textContent.trim();
+  const parts = demandText.split("/");
+  if (parts.length !== 3) return 0;
+
+  const Y = parseInt(parts[0]) || 0;
+  const C = parseInt(parts[1]) || 0;
+  const F = parseInt(parts[2]) || 0;
+
+  return Y + C + F;
+}
+
+    function createRoute(icao) {
+      window.location.href = `route_schedule.html?to=${icao}`;
+    }
+
+    function sortTable(n) {
+      const table = document.getElementById("airportTable");
+      let switching = true, dir = "asc", switchcount = 0;
+      while (switching) {
+        switching = false;
+        const rows = table.rows;
+        for (let i = 1; i < (rows.length - 1); i++) {
+          let shouldSwitch = false;
+          const x = rows[i].getElementsByTagName("TD")[n];
+          const y = rows[i + 1].getElementsByTagName("TD")[n];
+          const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
+          const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
+          if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          switchcount++;
+        } else if (switchcount === 0 && dir === "asc") {
+          dir = "desc";
+          switching = true;
         }
       }
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-        switchcount++;
-      } else if (switchcount === 0 && dir === "asc") {
-        dir = "desc";
-        switching = true;
-      }
     }
-  }
 
-  function handleLogout() {
-    alert("👋 Session closed. See you soon, Captain!");
-    window.location.href = "login.html";
-  }
-
-  // === Cargar banner + tabla al iniciar ===
-  document.addEventListener("DOMContentLoaded", () => {
-    initOriginBanner();
-    loadAirports("Europe");
-  });
-
-  // === Tooltip demanda ===
-  const tooltip = document.getElementById("demandTooltip");
-  document.addEventListener("mousemove", (e) => {
-    const cell = e.target.closest("td:nth-child(4)");
-    if (cell) {
-      const parts = cell.textContent.trim().split("/");
-      if (parts.length === 3) {
-        const [Y, C, F] = parts.map(Number);
-        const total = Y + C + F;
-        const ecoDeg = (Y / total) * 360;
-        const bizDeg = ((Y + C) / total) * 360;
-
-        tooltip.innerHTML = `
-          <h4>Passenger Demand</h4>
-          <div>Economy: ${Y}</div>
-          <div>Business: ${C}</div>
-          <div>First: ${F}</div>
-          <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
-            <div class="slice"></div>
-          </div>
-        `;
-        tooltip.style.display = "block";
-        tooltip.style.left = e.pageX + 15 + "px";
-        tooltip.style.top = e.pageY - 60 + "px";
-      }
-    } else {
-      tooltip.style.display = "none";
+    function handleLogout() {
+      alert("👋 Session closed. See you soon, Captain!");
+      window.location.href = "login.html";
     }
-  });
-</script>
+
+    document.addEventListener("DOMContentLoaded", () => loadAirports("Europe"));
+
+    // === Tooltip demanda ===
+    const tooltip = document.getElementById("demandTooltip");
+    document.addEventListener("mousemove", (e) => {
+      const cell = e.target.closest("td:nth-child(4)");
+      if (cell) {
+        const parts = cell.textContent.trim().split("/");
+        if (parts.length === 3) {
+          const [Y, C, F] = parts.map(Number);
+          const total = Y + C + F;
+          const ecoDeg = (Y / total) * 360;
+          const bizDeg = ((Y + C) / total) * 360;
+
+          tooltip.innerHTML = `
+            <h4>Passenger Demand</h4>
+            <div>Economy: ${Y}</div>
+            <div>Business: ${C}</div>
+            <div>First: ${F}</div>
+            <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+              <div class="slice"></div>
+            </div>
+          `;
+          tooltip.style.display = "block";
+          tooltip.style.left = e.pageX + 15 + "px";
+          tooltip.style.top = e.pageY - 60 + "px";
+        }
+      } else {
+        tooltip.style.display = "none";
+      }
+    });
+  </script>
 
 </body>
 </html>
