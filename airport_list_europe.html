@@ -872,45 +872,33 @@ function handleLogout() {
 }
 
 /* =============================================================
-   === INITIALIZATION (SEGURO — FIX DISTANCIAS) ================
+   === INITIALIZATION (SEGURO) ================================
    ============================================================= */
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ⏳ Esperar hasta que ACS_World termine de construir TODOS los continentes
-  const waitACS = setInterval(() => {
+  // 1) Cargar aeropuertos (modo histórico + fallback)
+  loadAirports();
 
-    if (window.ACS_World && ACS_World.ready) {
+  // 2) Banner de origen seguro
+  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+  if (baseIcao) {
+    const airports = getAirportsEuropeSafe();
+    const base = airports.find(a => a.icao === baseIcao);
 
-      clearInterval(waitACS);
+    if (base) {
+      const flagEmoji = base.country.replace(/./g, c =>
+        String.fromCodePoint(c.charCodeAt(0) + 127397)
+      );
 
-      console.log("🟦 ACS_World READY — Using historical engine");
-
-      // === 1) Cargar aeropuertos con data correcta ===
-      loadAirports();
-
-      // === 2) Banner de origen ===
-      const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-      if (baseIcao) {
-        const airports = getAirportsEuropeSafe();
-        const base = airports.find(a => a.icao === baseIcao);
-
-        if (base) {
-          const flagEmoji = base.country.replace(/./g, c =>
-            String.fromCodePoint(c.charCodeAt(0) + 127397)
-          );
-          document.getElementById("originFlag").textContent = flagEmoji;
-          document.getElementById("originIcao").textContent = base.icao;
-          document.getElementById("originCity").textContent =
-            `— ${base.city}, ${base.region}`;
-        }
-      }
+      document.getElementById("originFlag").textContent = flagEmoji;
+      document.getElementById("originIcao").textContent = base.icao;
+      document.getElementById("originCity").textContent =
+        `— ${base.city}, ${base.region}`;
     }
-
-  }, 50); // revisa cada 50ms
+  }
 });
+  </script>
 
-</script>
-
+<!-- END FILE -->
 </body>
 </html>
