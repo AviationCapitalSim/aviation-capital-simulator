@@ -1,6 +1,6 @@
 <!-- ===========================================================
      === AIRPORT LIST (EUROPE) — AVIATION CAPITAL SIMULATOR ===
-     Qatar Luxury Edition v3.1 — FIX v1.1 (Historical + Fallback)
+     Qatar Luxury Edition v3.1 — FIX v2.0 (Historical Passenger Logic)
      =========================================================== -->
 <!DOCTYPE html>
 <html lang="en">
@@ -167,7 +167,6 @@ body {
   gap: 0.45rem;
 }
 
-
 .origin-banner .label {
   color: #ffe7a0;
   font-weight: 700;
@@ -284,6 +283,7 @@ tr:hover {
   color: #081530;
   transform: scale(1.05);
 }
+
 /* Back Button */
 .back-btn {
   margin: 2.5rem auto;
@@ -301,7 +301,6 @@ tr:hover {
   color: #081530;
 }
 
-/* Tooltip */
 /* Pie chart dentro del tooltip de Passenger Demand */
 .demand-pie {
   width: 58px;
@@ -380,7 +379,8 @@ tr:hover {
   from { opacity: 0; transform: scale(0.92); }
   to   { opacity: 1; transform: scale(1); }
 }
-       
+
+/* Country selector */
 .country-select {
   background: linear-gradient(180deg, #2e3f6e, #1e2d55);
   color: #ffffff;
@@ -393,7 +393,6 @@ tr:hover {
   appearance: none;
   -webkit-appearance: none;
   box-shadow: 0 0 12px rgba(255,179,0,0.25);
-
   background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffffff' height='16' width='16' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
   background-repeat: no-repeat;
   background-position: right 10px center;
@@ -401,16 +400,16 @@ tr:hover {
 }
 
 .country-filter {
-  margin: 4px auto 26px auto; /* menos pegado al ORIGIN, más espacio antes de la tabla */
+  margin: 4px auto 26px auto;
   display: flex;
   justify-content: center;
 }
+
 .country-select {
   width: 160px;
 }
 
-
-</style>
+  </style>
 </head>
 
 <body>
@@ -505,7 +504,7 @@ function distanceNM(lat1, lon1, lat2, lon2) {
   const R = 3440.065;
   const toRad = deg => deg * Math.PI / 180;
   const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
+  const dLon = toRad(lat2 - lon1);
   const a =
     Math.sin(dLat/2)**2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
@@ -513,21 +512,35 @@ function distanceNM(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return (R * c).toFixed(0);
 }
+
+/* ============================================================
+   === HISTORICAL CLASS ENGINE (Y-only / Y+C / Y+C+F) ==========
+   ============================================================ */
+function adjustPassengerClasses(demand) {
+  const year =
+    window.ACS_TIME &&
+    window.ACS_TIME.currentTime instanceof Date
+      ? window.ACS_TIME.currentTime.getFullYear()
+      : 1940; // fallback
+
+  let Y = demand.Y;
+  let C = demand.C;
+  let F = demand.F;
+
+  if (year < 1955) {
+    C = 0;
+    F = 0;
+  } else if (year < 1975) {
+    F = 0;
+  }
+  // >=1975 → Y/C/F normal
+
+  return { Y, C, F };
+}
+
 /* =============================================================
    === HISTORICAL AIRPORT ENGINE — WITH SAFE FALLBACK ==========
    ============================================================= */
-
-/*
-  EXPLICACIÓN:
-  1) Intentamos cargar aeropuertos de ACS_World (modo histórico).
-  2) Si falla o viene vacío → usamos WorldAirportsACS (modo estándar).
-  3) Esto garantiza:
-     ✔ cero pantallas vacías
-     ✔ cero errores visibles
-     ✔ modo histórico cuando esté disponible
-     ✔ experiencia estable para el jugador
-*/
-
 function getAirportsEuropeSafe() {
   try {
     if (window.ACS_World &&
@@ -550,7 +563,6 @@ function getAirportsEuropeSafe() {
 /* =============================================================
    === LOAD AIRPORTS (USANDO HISTORICAL + FALLBACK) ============
    ============================================================= */
-
 function loadAirports() {
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
@@ -572,7 +584,7 @@ function loadAirports() {
     baseLon = base.longitude;
   }
 
-  // ORDENAR POR MAYOR DEMANDA TOTAL
+  // ORDENAR POR MAYOR DEMANDA TOTAL (cruda, igual que antes)
   const ordered = airports
     .filter(a => a.icao !== userBase)
     .sort((a,b) => {
@@ -602,9 +614,11 @@ function loadAirports() {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
-    const total = a.demand.Y + a.demand.C + a.demand.F;
-    const ecoPct = (a.demand.Y / total) * 100;
-    const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
+    // 🔥 DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
+    const d = adjustPassengerClasses(a.demand);
+    const total = d.Y + d.C + d.F || 1; // evitar /0
+    const ecoPct = (d.Y / total) * 100;
+    const bizPct = ((d.Y + d.C) / total) * 100;
 
     const row = document.createElement("tr");
 
@@ -613,9 +627,9 @@ function loadAirports() {
       <td>${a.region}</td>
       <td>${dist} NM</td>
 
-      <td onmouseover="showDemandTooltip(event, ${a.demand.Y}, ${a.demand.C}, ${a.demand.F})"
+      <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
           onmouseout="hideDemandTooltip()">
-        ${a.demand.Y}/${a.demand.C}/${a.demand.F}
+        ${d.Y}/${d.C}/${d.F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
 
@@ -666,18 +680,20 @@ function filterByCountry() {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
-    const total = a.demand.Y + a.demand.C + a.demand.F;
-    const ecoPct = (a.demand.Y / total) * 100;
-    const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
+    // 🔥 DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
+    const d = adjustPassengerClasses(a.demand);
+    const total = d.Y + d.C + d.F || 1;
+    const ecoPct = (d.Y / total) * 100;
+    const bizPct = ((d.Y + d.C) / total) * 100;
 
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><strong>${a.city}</strong> (${a.icao})</td>
       <td>${a.region}</td>
       <td>${dist} NM</td>
-      <td onmouseover="showDemandTooltip(event, ${a.demand.Y}, ${a.demand.C}, ${a.demand.F})"
+      <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
           onmouseout="hideDemandTooltip()">
-        ${a.demand.Y}/${a.demand.C}/${a.demand.F}
+        ${d.Y}/${d.C}/${d.F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
       <td style="display:flex; gap:8px; justify-content:center;">
@@ -688,12 +704,44 @@ function filterByCountry() {
     tableBody.appendChild(row);
   });
 }
+
+/* =============================================================
+   === TABLE SORT (TAL CUAL LO TENÍAS ANTES) ===================
+   ============================================================= */
+function sortTable(n) {
+  const table = document.getElementById("airportTable");
+  let switching = true, dir = "asc", switchcount = 0;
+
+  while (switching) {
+    switching = false;
+    const rows = table.rows;
+    for (let i = 1; i < (rows.length - 1); i++) {
+      let shouldSwitch = false;
+      const x = rows[i].getElementsByTagName("TD")[n];
+      const y = rows[i + 1].getElementsByTagName("TD")[n];
+      const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
+      const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
+      if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
+        shouldSwitch = true;
+        break;
+      }
+    }
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      switchcount++;
+    } else if (switchcount === 0 && dir === "asc") {
+      dir = "desc";
+      switching = true;
+    }
+  }
+}
+
 /* =============================================================
    === TOOLTIP PIE CHART (DEMANDA) =============================
    ============================================================= */
-
 function showDemandTooltip(e, Y, C, F) {
-  const total = Y + C + F;
+  const total = Y + C + F || 1;
 
   const ecoDeg = (Y / total) * 360;
   const bizDeg = ((Y + C) / total) * 360;
@@ -721,13 +769,14 @@ function hideDemandTooltip() {
 }
 
 /* =============================================================
-   === MODAL (NO CAMBIADO, SOLO SEGURO) ========================
+   === MODAL (NO CAMBIADO, SOLO AJUSTE DEMANDA) ================
    ============================================================= */
-
 function openAirportInfo(icao) {
   const airports = getAirportsEuropeSafe();
   const ap = airports.find(a => a.icao === icao);
   if (!ap) return;
+
+  const d = adjustPassengerClasses(ap.demand);
 
   const modal = document.getElementById("airportInfoModal");
   const title = document.getElementById("modalTitle");
@@ -753,7 +802,7 @@ function openAirportInfo(icao) {
     <div><strong>Ticket %:</strong> ${(ap.ticket_fee_percent * 100).toFixed(1)}%</div>
     <div><strong>Growth:</strong> +${((ap.pax_growth_factor - 1) * 100).toFixed(1)}%</div>
     <hr/>
-    <div><strong>Demand (Y/C/F):</strong> ${ap.demand.Y} / ${ap.demand.C} / ${ap.demand.F}</div>
+    <div><strong>Demand (Y/C/F):</strong> ${d.Y} / ${d.C} / ${d.F}</div>
     <hr/>
     <div><strong>Notes:</strong> ${ap.notes || "—"}</div>
   `;
@@ -781,7 +830,6 @@ function handleLogout() {
 /* =============================================================
    === INITIALIZATION (SEGURO) ================================
    ============================================================= */
-
 document.addEventListener("DOMContentLoaded", () => {
 
   // 1) Cargar aeropuertos (modo histórico + fallback)
