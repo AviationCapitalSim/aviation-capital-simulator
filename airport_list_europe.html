@@ -901,6 +901,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 });
+  
+  function goToSchedule(destICAO) {
+  const base = localStorage.getItem("ACS_baseICAO") || "";
+  if (!base) {
+    alert("⚠️ No base selected!");
+    return;
+  }
+
+  window.location.href = `schedule_table.html?from=${base}&to=${destICAO}`;
+}
   </script>
 
 <!-- END FILE -->
