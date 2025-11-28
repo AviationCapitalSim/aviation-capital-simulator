@@ -300,8 +300,8 @@ tr:hover {
 /* Tooltip */
 /* Pie chart dentro del tooltip de Passenger Demand */
 .demand-pie {
-  width: 60px;
-  height: 60px;
+  width: 58px;
+  height: 58px;
   margin: 8px auto 0 auto;
   border-radius: 50%;
   position: relative;
@@ -310,14 +310,14 @@ tr:hover {
     #FFB300 var(--eco) var(--biz),
     #FF6F00 var(--biz) 360deg
   );
-  box-shadow: 0 0 10px rgba(255,179,0,0.4);
+  box-shadow: 0 0 10px rgba(255,179,0,0.45);
 }
 
 .demand-pie .slice {
   position: absolute;
-  inset: 8px;
+  inset: 9px;
+  background: #081530;
   border-radius: 50%;
-  background: #0b1432;
 }
 
 /* ================= Qatar Luxury Modal ================= */
@@ -377,19 +377,28 @@ tr:hover {
   to   { opacity: 1; transform: scale(1); }
 }
 .country-select {
-  background: linear-gradient(135deg, #101f46, #1e3568);
+  background: linear-gradient(135deg, #10214a, #1c335f);
   color: #ffca3a;
   border: 1px solid #ffb300;
-  padding: 0.5rem 1.6rem;
+  padding: 10px 40px 10px 20px;
   border-radius: 999px;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  text-align: center;
-  box-shadow: 0 0 16px rgba(255,179,0,0.22);
+  text-align: left;
+  box-shadow: 0 0 12px rgba(255,179,0,0.25);
   appearance: none;
   -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffb300' height='24' width='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
 }
+
+.country-select:hover {
+  box-shadow: 0 0 20px rgba(255,179,0,0.35);
+}
+
 </style>
 </head>
 
@@ -673,30 +682,31 @@ function filterByCountry() {
    ============================================================= */
 
 function showDemandTooltip(e, Y, C, F) {
-  const tooltip = document.getElementById("demandTooltip");
   const total = Y + C + F;
 
   const ecoDeg = (Y / total) * 360;
   const bizDeg = ((Y + C) / total) * 360;
 
+  const tooltip = document.getElementById("demandTooltip");
   tooltip.innerHTML = `
-    <h4 style="margin:0 0 6px 0; color:#ffca3a;">Passenger Demand</h4>
+    <strong style="color:#ffca3a; font-size:1rem;">Passenger Demand</strong>
     <div>Economy: ${Y}</div>
     <div>Business: ${C}</div>
     <div>First: ${F}</div>
-    <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+
+    <div class="demand-pie" 
+      style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
       <div class="slice"></div>
     </div>
   `;
 
   tooltip.style.display = "block";
-  tooltip.style.left = (e.pageX + 15) + "px";
-  tooltip.style.top  = (e.pageY - 60) + "px";
+  tooltip.style.left = e.pageX + 15 + "px";
+  tooltip.style.top = e.pageY - 60 + "px";
 }
 
 function hideDemandTooltip() {
-  const tooltip = document.getElementById("demandTooltip");
-  tooltip.style.display = "none";
+  document.getElementById("demandTooltip").style.display = "none";
 }
 
 /* =============================================================
