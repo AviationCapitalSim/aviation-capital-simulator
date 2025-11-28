@@ -397,17 +397,17 @@ function resolveCountryForYear(countryName, year) {
 }
   
 /* ============================================================
-   === HISTORICAL CONTINENT FILTER — Option B2 ===============
+   === CONTINENT SELECT — ALWAYS OPEN =========================
    ------------------------------------------------------------
-   Usa WorldAirportsACS[continent] (igual que loadCountries),
-   y marca como "Unavailable" solo los continentes que NO
-   tengan ningún aeropuerto operativo en el año actual.
+   ▪ Muestra SIEMPRE los 7 continentes
+   ▪ Sin "Unavailable in XXXX"
+   ▪ Sin disabled
+   ▪ Filtro histórico se hace luego
    ============================================================ */
 function buildContinentSelect() {
   const continentSelect = document.getElementById("continentSelect");
   if (!continentSelect) return;
 
-  const year = ACS_World.getSimYear();
   const allContinents = [
     "NorthAmerica",
     "SouthAmerica",
@@ -418,38 +418,20 @@ function buildContinentSelect() {
     "Oceania"
   ];
 
-  // Limpiar opciones
   continentSelect.innerHTML = '<option value="">🌍 Select Continent</option>';
 
   allContinents.forEach(cont => {
-    // 🟡 Usamos la misma fuente que loadCountries:
-    const rawList =
-      (window.WorldAirportsACS && WorldAirportsACS[cont])
-        ? WorldAirportsACS[cont]
-        : [];
-
-    // ¿Hay al menos un aeropuerto operando este año?
-    const available = rawList.some(a => ACS_World.airportExistsInYear(a, year));
-
     const opt = document.createElement("option");
     opt.value = cont;
 
-    // Nombre bonito: "SouthAmerica" → "South America"
     const pretty = cont.replace(/([A-Z])/g, " $1").trim();
-
-    if (available) {
-      opt.textContent = pretty;
-      opt.disabled = false;
-      opt.style.color = "#e8ecff";
-    } else {
-      opt.textContent = `${pretty} (Unavailable in ${year})`;
-      opt.disabled = true;
-      opt.style.color = "#777";
-    }
+    opt.textContent = pretty;
+    opt.style.color = "#e8ecff";
 
     continentSelect.appendChild(opt);
   });
 }
+
 
 /* ============================================================
    CHOOSE_BASE — loadCountries() (WorldAirportsACS + WorldEngine)
