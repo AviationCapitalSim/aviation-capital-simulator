@@ -446,10 +446,6 @@ tr:hover {
           <th onclick="sortTable(1)">Country</th>
           <th onclick="sortTable(2)">Distance (NM)</th>
           <th onclick="sortTable(3)">Demand (Y/C/F)</th>
-          <th onclick="sortTable(4)">Slot $</th>
-          <th onclick="sortTable(5)">Landing $</th>
-          <th onclick="sortTable(6)">Ticket %</th>
-          <th onclick="sortTable(7)">Growth</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -578,10 +574,6 @@ function loadAirports(continent) {
         ${a.demand.Y}/${a.demand.C}/${a.demand.F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
-      <td>$${a.slot_cost_usd}</td>
-      <td>$${a.landing_fee_usd}</td>
-      <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
-      <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
       <td style="display:flex; gap:8px; justify-content:center;">
       <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
       <button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button>
