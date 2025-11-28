@@ -1,20 +1,21 @@
 /* =============================================================
-   === ACS WORLD ENGINE — HISTORICAL CORE v2.1 =================
+   === ACS WORLD ENGINE — HISTORICAL CORE v2.3 =================
    -------------------------------------------------------------
    ▪ Motor mundial unificado para ACS (1940–2026)
    ▪ Aeropuertos principales SIEMPRE visibles
-   ▪ Secundarios según fechas históricas + AUTO-OPEN-YEAR
-   ▪ Demanda creciente por década
+   ▪ Secundarios según fechas + infraestructura real
+   ▪ Demanda histórica NO SE TOCA
+   ▪ Control histórico intacto (Business/First)
+   ▪ Aperturas realistas (1945–1975)
    ▪ Índices ICAO / IATA / países / continentes
    ============================================================= */
 
 (function (global) {
   "use strict";
 
-  // Namespace global del motor mundial
+  // Namespace global
   const ACS_World = {
     ready: false,
-
     ALL_AIRPORTS: [],
     INDEX_ICAO: {},
     INDEX_IATA: {},
@@ -23,7 +24,7 @@
   };
 
   /* ===========================================================
-     UTILIDAD: Obtener año de simulación
+     OBTENER AÑO DE SIMULACIÓN
      =========================================================== */
   ACS_World.getSimYear = function () {
     try {
@@ -35,7 +36,7 @@
   };
 
   /* ===========================================================
-     INITIALIZE — Construir índices globales
+     INITIALIZE — Construir índices
      =========================================================== */
   ACS_World.initialize = function () {
     if (!global.WorldAirportsACS) {
@@ -52,10 +53,8 @@
       const list = global.WorldAirportsACS[cont] || [];
       if (!Array.isArray(list)) return;
 
-      // Guardar lista por continente
       ACS_World.BY_CONTINENT[cont] = list;
 
-      // Agregar al total
       ALL.push(...list);
 
       // Indexar por país
@@ -75,7 +74,7 @@
 
     ACS_World.ALL_AIRPORTS = ALL;
 
-    // Índices ICAO / IATA globales
+    // Índices rápidos ICAO / IATA
     ALL.forEach(a => {
       if (a.icao) ACS_World.INDEX_ICAO[a.icao] = a;
       if (a.iata) ACS_World.INDEX_IATA[a.iata] = a;
@@ -103,36 +102,39 @@
   }
 
   /* ===========================================================
-     === GLOBAL MAJOR AIRPORT CHECK =============================
-     Aeropuertos que SIEMPRE aparecen (base mundial)
+     AEROPUERTOS PRINCIPALES (Major Airports)
      =========================================================== */
   function isMajorAirport(a) {
 
     if (!a) return false;
 
-    // 1. Aeropuertos International
+    // International
     if (a.category && a.category.toLowerCase().includes("international"))
       return true;
 
-    // 2. Demanda alta
+    // Demanda muy alta (moderna)
     const demandTotal =
-      (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
+      (a.demand?.Y || 0) +
+      (a.demand?.C || 0) +
+      (a.demand?.F || 0);
+
     if (demandTotal > 2500) return true;
 
-    // 3. Capitales principales
-    const capitalCities = [
+    // Capitales del mundo
+    const capitals = [
       "Caracas","Bogota","Lima","Santiago","Buenos Aires","Brasilia",
       "Quito","Mexico City","Washington","Ottawa",
       "Madrid","Paris","London","Berlin","Rome","Amsterdam",
       "Moscow","Tokyo","Beijing","Seoul","Bangkok","Singapore",
       "Sydney","Melbourne","Auckland","Johannesburg","Cairo"
     ];
-    if (capitalCities.includes(a.city)) return true;
 
-    // 4. Alta capacidad de slots
+    if (capitals.includes(a.city)) return true;
+
+    // Slots muy altos
     if (a.slot_capacity > 35) return true;
 
-    // 5. IATA grandes
+    // IATA grandes
     const hugeIATA = [
       "CCS","BOG","LIM","SCL","EZE","GRU","GIG","MEX",
       "JFK","LAX","MIA","DFW","ORD","IAH","ATL",
@@ -141,57 +143,53 @@
       "SYD","MEL","AKL",
       "CAI","JNB","ADD"
     ];
+
     if (hugeIATA.includes(a.iata)) return true;
 
     return false;
   }
 
   /* ===========================================================
-     === HISTORICAL EXISTENCE WITH AUTO-OPEN-YEAR ===============
+     EXISTENCIA HISTÓRICA — (CORREGIDO v3.0)
      =========================================================== */
   ACS_World.airportExistsInYear = function (a, year) {
 
-    // 1. Aeropuerto principal → SIEMPRE visible
+    // 1. Los aeropuertos grandes SIEMPRE existen
     if (isMajorAirport(a)) return true;
 
-    // 2. Fechas reales
+    // 2. Si tiene fechas reales → usar esas
     const realOpen = getOpenYear(a);
     const realClose = getCloseYear(a);
 
-    // 3. Si el aeropuerto YA tiene fecha real → usarla
     if (realOpen !== 1900) {
       return year >= realOpen && year <= realClose;
     }
 
     /* ===========================================================
-         AUTO OPEN YEAR SYSTEM — WORLD LOGIC v1.0
+         AUTO OPEN YEAR SYSTEM — FINAL v3.0
+         (NO toca demanda histórica)
        =========================================================== */
-
-    let openYear = 0;
-
-    const demandTotal =
-      (a.demand?.Y || 0) + (a.demand?.C || 0) + (a.demand?.F || 0);
 
     const runway = a.runway_m || 0;
     const slots = a.slot_capacity || 0;
-    const isInternational =
-      a.category && a.category.toLowerCase().includes("international");
+    const cat = (a.category || "").toLowerCase();
 
-    // Aeropuertos grandes (capitales, internacionales, hubs)
-    if (isInternational || demandTotal > 2500 || slots > 30 || runway > 2800) {
+    let openYear = 1970; // aeropuertos pequeños aparecen tarde por default
+
+    // Grandes internacionales / hubs → temprano
+    if (cat.includes("international") || slots > 30 || runway > 2800) {
       openYear = 1945;
     }
-    else if (runway > 2200 || slots > 15 || demandTotal > 1500) {
+    // Medianos
+    else if (slots > 15 || runway > 2200) {
       openYear = 1955;
     }
-    else if (runway > 1600 || slots > 10 || demandTotal > 800) {
+    // Regionales
+    else if (slots > 8 || runway > 1600) {
       openYear = 1965;
     }
-    else {
-      openYear = 1975;
-    }
+    // Pequeños → quedan en 1970
 
-    // Filtro final
     if (year < openYear) return false;
     if (year > realClose) return false;
 
@@ -199,10 +197,11 @@
   };
 
   /* ===========================================================
-     HISTORICAL DEMAND ENGINE
+     DEMANDA HISTÓRICA (NO se toca)
      =========================================================== */
   ACS_World.getHistoricalDemand = function (a, year) {
-    const base = a.demand || { Y: 0, C: 0, F: 0 };
+
+    const base = a.demand || {Y:0, C:0, F:0};
 
     const factor = Math.max(
       0.10,
@@ -210,10 +209,10 @@
     );
 
     const Y = Math.round(base.Y * factor);
-    const C = year >= 1955 ? Math.round(base.C * factor) : 0;
-    const F = year >= 1976 ? Math.round(base.F * factor) : 0;
+    const C = (year >= 1955) ? Math.round(base.C * factor) : 0;
+    const F = (year >= 1976) ? Math.round(base.F * factor) : 0;
 
-    return { Y, C, F };
+    return {Y, C, F};
   };
 
   /* ===========================================================
@@ -228,7 +227,7 @@
   };
 
   /* ===========================================================
-     FILTROS POR CONTINENTE / PAÍS
+     FILTROS POR CONTINENTE Y PAÍS
      =========================================================== */
   ACS_World.byContinent = function (continent, year) {
     const list = ACS_World.BY_CONTINENT[continent] || [];
@@ -245,7 +244,7 @@
   };
 
   /* ===========================================================
-     EXPORTAR MOTOR MUNDIAL
+     EXPORTAR MOTOR
      =========================================================== */
   global.ACS_World = ACS_World;
 
@@ -255,6 +254,6 @@
    LLAMADA DESDE choose_base:
    loadAirportScripts(() => {
      buildAirportIndex();
-     ACS_World.initialize();   <── AQUÍ
+     ACS_World.initialize();   // AQUI
    });
    ============================================================= */
