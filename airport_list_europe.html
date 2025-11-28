@@ -281,6 +281,40 @@ tr:hover {
   z-index: 1000;
   width: 180px;
 }
+.origin-banner {
+  margin-top: 1.2rem;
+  font-size: 1.15rem;
+  color: #ffca3a;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 8px rgba(255,190,60,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.origin-banner .label {
+  color: #ffe7a0;
+  font-weight: 700;
+}
+
+.origin-banner strong {
+  color: #ffca3a;
+  font-size: 1.2rem;
+}
+
+.origin-banner #originCity {
+  color: #dbe4ff;
+  opacity: 0.95;
+  font-weight: 400;
+  margin-left: 0.3rem;
+}
+
+.origin-banner .icon {
+  font-size: 1.25rem;
+  margin-right: 0.3rem;
+}
   </style>
 </head>
 
@@ -311,7 +345,15 @@ tr:hover {
   <main class="acs-main">
     <h2>🌍 European Airports</h2>
     <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
-
+    
+    <div class="origin-banner">
+    <span class="icon">🛫</span>
+    <span class="label">Origin:</span>
+    <span id="originFlag">🇪🇸</span>
+    <strong id="originIcao">LECO</strong>
+    <span id="originCity">— A Coruña, Spain</span>
+    </div>
+       
     <!-- Country selector -->
     <div class="country-filter">
       <select id="countrySelect" class="country-select" onchange="filterByCountry()">
@@ -377,84 +419,112 @@ tr:hover {
     return (R * c).toFixed(0); // Round to nearest NM
     }
 
-      /* ============================================================
-   === LOAD AIRPORTS (Europe / Asia / etc.) ====================
-   === Qatar Luxury Edition — now with Distance (NM) ===========
-   ============================================================ */
-function loadAirports(continent) {
+ <script>
+  /* ============================================================
+     === LOAD AIRPORTS (Europe / Asia / etc.) ====================
+     === Qatar Luxury Edition — now with Distance (NM) ===========
+     ============================================================ */
+  function loadAirports(continent) {
 
-  const tableBody = document.getElementById("airportTableBody");
-  tableBody.innerHTML = "";
+    const tableBody = document.getElementById("airportTableBody");
+    tableBody.innerHTML = "";
 
-  // === BASE DEL JUGADOR (desde registro / choose_base) ===
-  const userBase = localStorage.getItem("ACS_baseICAO") || "LEMD";
+    // === BASE DEL JUGADOR (desde registro / choose_base) ===
+    const userBase = localStorage.getItem("ACS_baseICAO") || "LEMD";
 
-  // Buscar aeropuerto base dentro del continente
-  const allAirports = WorldAirportsACS[continent];
-  const baseAp = allAirports.find(a => a.icao === userBase);
+    // Buscar aeropuerto base dentro del continente
+    const allAirports = WorldAirportsACS[continent];
+    const baseAp = allAirports.find(a => a.icao === userBase);
 
-  // Si no existe la base dentro del continente (puede pasar) → no calculamos distancia
-  let baseLat = null, baseLon = null;
-  if (baseAp) {
-    baseLat = baseAp.latitude;
-    baseLon = baseAp.longitude;
-  }
+    // Si no existe la base dentro del continente → distancia no aplica
+    let baseLat = null, baseLon = null;
+    if (baseAp) {
+      baseLat = baseAp.latitude;
+      baseLon = baseAp.longitude;
+    }
 
-  // ============================================================
-  // === ORDENAR AEROPUERTOS ORIGINAL (mayor demanda → menor) ===
-  // ============================================================
-  const airports = allAirports
-    .filter(a => a.icao !== userBase)
-    .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
+    // ============================================================
+    // === ORDENAR AEROPUERTOS ORIGINAL (mayor demanda → menor) ===
+    // ============================================================
+    const airports = allAirports
+      .filter(a => a.icao !== userBase)
+      .sort((a,b) => (b.demand.Y + b.demand.C + b.demand.F) - (a.demand.Y + a.demand.C + a.demand.F));
 
-  // ============================================================
-  // === BUILD COUNTRY SELECTOR – usando region (nombre país) ===
-  // ============================================================
-  const selector = document.getElementById("countrySelect");
-  if (selector) {
-    selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
-    const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
-    uniqueCountries.forEach(country => {
-      const opt = document.createElement("option");
-      opt.value = country;
-      opt.textContent = country;
-      selector.appendChild(opt);
+    // ============================================================
+    // === BUILD COUNTRY SELECTOR – usando region (nombre país) ===
+    // ============================================================
+    const selector = document.getElementById("countrySelect");
+    if (selector) {
+      selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+      const uniqueCountries = [...new Set(airports.map(a => a.region))].sort();
+      uniqueCountries.forEach(country => {
+        const opt = document.createElement("option");
+        opt.value = country;
+        opt.textContent = country;
+        selector.appendChild(opt);
+      });
+    }
+
+    // ============================================================
+    // === CONSTRUIR FILAS DE TABLA (con distancia si aplica) =====
+    // ============================================================
+    airports.forEach(a => {
+
+      // === Si la base existe, calculamos distancia NM ===
+      let distNM = "-";
+      if (baseLat !== null && baseLon !== null) {
+        distNM = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
+      }
+
+      const total = a.demand.Y + a.demand.C + a.demand.F;
+      const ecoPct = (a.demand.Y / total) * 100;
+      const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><strong>${a.city}</strong> (${a.icao})</td>
+        <td>${a.region}</td>
+        <td>${distNM} NM</td>
+        <td>
+          ${a.demand.Y}/${a.demand.C}/${a.demand.F}
+          <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+        </td>
+        <td>$${a.slot_cost_usd}</td>
+        <td>$${a.landing_fee_usd}</td>
+        <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
+        <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
+        <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
+      `;
+      tableBody.appendChild(row);
     });
   }
 
-  // ============================================================
-  // === CONSTRUIR FILAS DE TABLA (con distancia si aplica) =====
-  // ============================================================
-  airports.forEach(a => {
 
-    // === Si la base existe en este continente, calculamos distancia ===
-    let distNM = "-";
-    if (baseLat !== null && baseLon !== null) {
-      distNM = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
+  /* ============================================================
+     === ORIGIN BANNER LOADER (Qatar Luxury Edition) =============
+     ============================================================ */
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    // ICAO base guardada (ej: LECO)
+    const baseIcao = localStorage.getItem("ACS_baseICAO");
+
+    // Buscar aeropuerto base dentro de Europa
+    const apList = WorldAirportsACS["Europe"] || [];
+    const base = apList.find(a => a.icao === baseIcao);
+
+    if (base) {
+      // Convertir código de país (ES, FR, IT) → bandera Unicode (🇪🇸)
+      const flagEmoji = base.country.replace(/./g, char =>
+        String.fromCodePoint(char.charCodeAt(0) + 127397)
+      );
+
+      // Cargar datos visuales
+      document.getElementById("originFlag").textContent = flagEmoji;
+      document.getElementById("originIcao").textContent = base.icao;
+      document.getElementById("originCity").textContent = `— ${base.city}, ${base.region}`;
     }
-
-    const total = a.demand.Y + a.demand.C + a.demand.F;
-    const ecoPct = (a.demand.Y / total) * 100;
-    const bizPct = ((a.demand.Y + a.demand.C) / total) * 100;
-
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td><strong>${a.city}</strong> (${a.icao})</td>
-      <td>${a.region}</td>
-      <td>${distNM} NM</td>
-      <td>
-        ${a.demand.Y}/${a.demand.C}/${a.demand.F}
-        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-      </td>
-      <td>$${a.slot_cost_usd}</td>
-      <td>$${a.landing_fee_usd}</td>
-      <td>${(a.ticket_fee_percent * 100).toFixed(1)}%</td>
-      <td>+${((a.pax_growth_factor - 1) * 100).toFixed(1)}%</td>
-      <td><button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button></td>
-    `;
-    tableBody.appendChild(row);
   });
-}
 
   function filterByCountry() {
   const selected = document.getElementById("countrySelect").value;
