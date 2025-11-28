@@ -513,31 +513,6 @@ function distanceNM(lat1, lon1, lat2, lon2) {
   return (R * c).toFixed(0);
 }
 
-/* ============================================================
-   === HISTORICAL CLASS ENGINE (Y-only / Y+C / Y+C+F) ==========
-   ============================================================ */
-function adjustPassengerClasses(demand) {
-  const year =
-    window.ACS_TIME &&
-    window.ACS_TIME.currentTime instanceof Date
-      ? window.ACS_TIME.currentTime.getFullYear()
-      : 1940; // fallback
-
-  let Y = demand.Y;
-  let C = demand.C;
-  let F = demand.F;
-
-  if (year < 1955) {
-    C = 0;
-    F = 0;
-  } else if (year < 1975) {
-    F = 0;
-  }
-  // >=1975 → Y/C/F normal
-
-  return { Y, C, F };
-}
-
 /* =============================================================
    === HISTORICAL AIRPORT ENGINE — WITH SAFE FALLBACK ==========
    ============================================================= */
@@ -560,9 +535,59 @@ function getAirportsEuropeSafe() {
   return WorldAirportsACS["Europe"] || [];
 }
 
-/* =============================================================
-   === LOAD AIRPORTS (USANDO HISTORICAL + FALLBACK) ============
-   ============================================================= */
+// ============================================================
+// === BLOQUE 3 — HISTORICAL DEMAND CURVE (AÑADIDO) ============
+// ============================================================
+
+function getHistoricalFactor(year) {
+
+  if (year < 1940) return 0.05;     // Aviación temprana
+  if (year < 1950) return 0.10;     // WWII / posguerra
+  if (year < 1958) return 0.25;     // Era turboprop
+  if (year < 1965) return 0.45;     // Jet Age inicial
+  if (year < 1975) return 0.60;     // Boom internacional
+  if (year < 1990) return 0.80;     // Aviación moderna temprana
+
+  return 1.00; // 1990–2025 demanda moderna
+}
+
+// ============================================================
+// === BLOQUE 4 — HISTORICAL CLASS ENGINE (AÑADIDO) ============
+// ============================================================
+
+function adjustPassengerClasses(demand) {
+
+  const year =
+    window.ACS_TIME &&
+    window.ACS_TIME.currentTime instanceof Date
+      ? window.ACS_TIME.currentTime.getFullYear()
+      : 1940;
+
+  let Y = demand.Y;
+  let C = demand.C;
+  let F = demand.F;
+
+  // aplicar factor histórico general
+  const factor = getHistoricalFactor(year);
+  Y = Math.round(Y * factor);
+  C = Math.round(C * factor);
+  F = Math.round(F * factor);
+
+  // activación histórica de clases
+  if (year < 1955) {
+    C = 0;
+    F = 0;
+  } else if (year < 1975) {
+    F = 0;
+  }
+
+  return { Y, C, F };
+}
+
+// ============================================================
+// === A PARTIR DE AQUÍ TU CÓDIGO TAL CUAL LO ENVIASTE =========
+// ============================================================
+
 function loadAirports() {
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
