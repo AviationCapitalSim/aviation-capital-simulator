@@ -399,10 +399,11 @@ tr:hover {
 
   <script>
 
-   // =========================
-   // ACS Distance Engine (NM)
-   // =========================
-    function distanceNM(lat1, lon1, lat2, lon2) {
+   <script>
+  // =========================
+  // ACS Distance Engine (NM)
+  // =========================
+  function distanceNM(lat1, lon1, lat2, lon2) {
     const R = 3440.065; // Radius of Earth in nautical miles
     const toRad = deg => deg * Math.PI / 180;
 
@@ -410,17 +411,15 @@ tr:hover {
     const dLon = toRad(lon2 - lon1);
 
     const a =
-    Math.sin(dLat/2)**2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLon/2)**2;
+      Math.sin(dLat/2)**2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon/2)**2;
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
     return (R * c).toFixed(0); // Round to nearest NM
-    }
-<script>
-     
-<script>
+  }
+
   /* ============================================================
      === LOAD AIRPORTS (Europe / Asia / etc.) ====================
      === Qatar Luxury Edition — now with Distance (NM) ===========
@@ -504,9 +503,7 @@ tr:hover {
   /* ============================================================
      === ORIGIN BANNER LOADER (Qatar Luxury Edition) =============
      ============================================================ */
-
-  document.addEventListener("DOMContentLoaded", () => {
-
+  function initOriginBanner() {
     // ICAO base guardada (ej: LECO)
     const baseIcao = localStorage.getItem("ACS_baseICAO");
 
@@ -525,133 +522,127 @@ tr:hover {
       document.getElementById("originIcao").textContent = base.icao;
       document.getElementById("originCity").textContent = `— ${base.city}, ${base.region}`;
     }
-  });
-
-  function filterByCountry() {
-  const selected = document.getElementById("countrySelect").value;
-  const tableBody = document.getElementById("airportTableBody");
-  const rows = Array.from(tableBody.querySelectorAll("tr"));
-
-  if (selected === "ALL") {
-    // Mostrar todas las filas
-    rows.forEach(r => r.style.display = "");
-    
-    // Reordenar por demanda total general (opcional)
-    rows.sort((a, b) => {
-      const ad = getRowDemand(a);
-      const bd = getRowDemand(b);
-      return bd - ad; // mayor → menor
-    });
-
-    // Volver a insertar
-    rows.forEach(r => tableBody.appendChild(r));
-    return;
   }
 
-  // Filtrar por país
-  const filtered = rows.filter(row => {
-    const countryCell = row.children[1].textContent.trim();
-    return countryCell === selected;
-  });
+  function filterByCountry() {
+    const selected = document.getElementById("countrySelect").value;
+    const tableBody = document.getElementById("airportTableBody");
+    const rows = Array.from(tableBody.querySelectorAll("tr"));
 
-  // Ocultar las que no son del país
-  rows.forEach(r => r.style.display = "none");
-  filtered.forEach(r => r.style.display = "");
-
-  // Ordenar los del país por demanda total
-  filtered.sort((a, b) => {
-    const ad = getRowDemand(a);
-    const bd = getRowDemand(b);
-    return bd - ad; // mayor → menor
-  });
-
-  // Reinsertar ordenados
-  filtered.forEach(r => tableBody.appendChild(r));
-}
-
-// === Utilidad: extraer demanda total de una fila ===
-function getRowDemand(row) {
-  // La celda de demanda es la columna 4 (índice 3)
-  const demandText = row.children[3].textContent.trim();
-  const parts = demandText.split("/");
-  if (parts.length !== 3) return 0;
-
-  const Y = parseInt(parts[0]) || 0;
-  const C = parseInt(parts[1]) || 0;
-  const F = parseInt(parts[2]) || 0;
-
-  return Y + C + F;
-}
-
-    function createRoute(icao) {
-      window.location.href = `route_schedule.html?to=${icao}`;
+    if (selected === "ALL") {
+      rows.forEach(r => r.style.display = "");
+      rows.sort((a, b) => {
+        const ad = getRowDemand(a);
+        const bd = getRowDemand(b);
+        return bd - ad;
+      });
+      rows.forEach(r => tableBody.appendChild(r));
+      return;
     }
 
-    function sortTable(n) {
-      const table = document.getElementById("airportTable");
-      let switching = true, dir = "asc", switchcount = 0;
-      while (switching) {
-        switching = false;
-        const rows = table.rows;
-        for (let i = 1; i < (rows.length - 1); i++) {
-          let shouldSwitch = false;
-          const x = rows[i].getElementsByTagName("TD")[n];
-          const y = rows[i + 1].getElementsByTagName("TD")[n];
-          const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
-          const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
-          if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
-            shouldSwitch = true;
-            break;
-          }
-        }
-        if (shouldSwitch) {
-          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-          switching = true;
-          switchcount++;
-        } else if (switchcount === 0 && dir === "asc") {
-          dir = "desc";
-          switching = true;
-        }
-      }
-    }
-
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-
-    document.addEventListener("DOMContentLoaded", () => loadAirports("Europe"));
-
-    // === Tooltip demanda ===
-    const tooltip = document.getElementById("demandTooltip");
-    document.addEventListener("mousemove", (e) => {
-      const cell = e.target.closest("td:nth-child(4)");
-      if (cell) {
-        const parts = cell.textContent.trim().split("/");
-        if (parts.length === 3) {
-          const [Y, C, F] = parts.map(Number);
-          const total = Y + C + F;
-          const ecoDeg = (Y / total) * 360;
-          const bizDeg = ((Y + C) / total) * 360;
-
-          tooltip.innerHTML = `
-            <h4>Passenger Demand</h4>
-            <div>Economy: ${Y}</div>
-            <div>Business: ${C}</div>
-            <div>First: ${F}</div>
-            <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
-              <div class="slice"></div>
-            </div>
-          `;
-          tooltip.style.display = "block";
-          tooltip.style.left = e.pageX + 15 + "px";
-          tooltip.style.top = e.pageY - 60 + "px";
-        }
-      } else {
-        tooltip.style.display = "none";
-      }
+    const filtered = rows.filter(row => {
+      const countryCell = row.children[1].textContent.trim();
+      return countryCell === selected;
     });
-  </script>
+
+    rows.forEach(r => r.style.display = "none");
+    filtered.forEach(r => r.style.display = "");
+
+    filtered.sort((a, b) => {
+      const ad = getRowDemand(a);
+      const bd = getRowDemand(b);
+      return bd - ad;
+    });
+
+    filtered.forEach(r => tableBody.appendChild(r));
+  }
+
+  // === Utilidad: extraer demanda total de una fila ===
+  function getRowDemand(row) {
+    const demandText = row.children[3].textContent.trim();
+    const parts = demandText.split("/");
+    if (parts.length !== 3) return 0;
+
+    const Y = parseInt(parts[0]) || 0;
+    const C = parseInt(parts[1]) || 0;
+    const F = parseInt(parts[2]) || 0;
+
+    return Y + C + F;
+  }
+
+  function createRoute(icao) {
+    window.location.href = `route_schedule.html?to=${icao}`;
+  }
+
+  function sortTable(n) {
+    const table = document.getElementById("airportTable");
+    let switching = true, dir = "asc", switchcount = 0;
+    while (switching) {
+      switching = false;
+      const rows = table.rows;
+      for (let i = 1; i < (rows.length - 1); i++) {
+        let shouldSwitch = false;
+        const x = rows[i].getElementsByTagName("TD")[n];
+        const y = rows[i + 1].getElementsByTagName("TD")[n];
+        const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
+        const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
+        if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+      if (shouldSwitch) {
+        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+        switching = true;
+        switchcount++;
+      } else if (switchcount === 0 && dir === "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+
+  function handleLogout() {
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "login.html";
+  }
+
+  // === Cargar banner + tabla al iniciar ===
+  document.addEventListener("DOMContentLoaded", () => {
+    initOriginBanner();
+    loadAirports("Europe");
+  });
+
+  // === Tooltip demanda ===
+  const tooltip = document.getElementById("demandTooltip");
+  document.addEventListener("mousemove", (e) => {
+    const cell = e.target.closest("td:nth-child(4)");
+    if (cell) {
+      const parts = cell.textContent.trim().split("/");
+      if (parts.length === 3) {
+        const [Y, C, F] = parts.map(Number);
+        const total = Y + C + F;
+        const ecoDeg = (Y / total) * 360;
+        const bizDeg = ((Y + C) / total) * 360;
+
+        tooltip.innerHTML = `
+          <h4>Passenger Demand</h4>
+          <div>Economy: ${Y}</div>
+          <div>Business: ${C}</div>
+          <div>First: ${F}</div>
+          <div class="demand-pie" style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
+            <div class="slice"></div>
+          </div>
+        `;
+        tooltip.style.display = "block";
+        tooltip.style.left = e.pageX + 15 + "px";
+        tooltip.style.top = e.pageY - 60 + "px";
+      }
+    } else {
+      tooltip.style.display = "none";
+    }
+  });
+</script>
 
 </body>
 </html>
