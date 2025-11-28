@@ -801,8 +801,6 @@ function openAirportInfo(icao) {
   const ap = airports.find(a => a.icao === icao);
   if (!ap) return;
 
-  const d = adjustPassengerClasses(ap.demand);
-
   const modal = document.getElementById("airportInfoModal");
   const title = document.getElementById("modalTitle");
   const content = document.getElementById("modalContent");
@@ -810,30 +808,51 @@ function openAirportInfo(icao) {
   title.textContent = `${ap.city} (${ap.icao})`;
 
   content.innerHTML = `
-    <div><strong>Country:</strong> ${ap.country}</div>
-    <div><strong>Region:</strong> ${ap.region}</div>
-    <div><strong>Category:</strong> ${ap.category}</div>
-    <hr/>
-    <div><strong>Latitude:</strong> ${ap.latitude}</div>
-    <div><strong>Longitude:</strong> ${ap.longitude}</div>
-    <div><strong>Elevation:</strong> ${ap.elevation_ft} ft</div>
-    <div><strong>Runway:</strong> ${ap.runway_m} m</div>
-    <div><strong>Open Hrs:</strong> ${ap.open_hrs}</div>
-    <div><strong>Aircraft Limit:</strong> ${ap.aircraft_limit}</div>
-    <hr/>
-    <div><strong>Slot Cost:</strong> $${ap.slot_cost_usd}</div>
-    <div><strong>Landing Fee:</strong> $${ap.landing_fee_usd}</div>
-    <div><strong>Fuel Price:</strong> $${ap.fuel_usd_gal}/gal</div>
-    <div><strong>Ticket %:</strong> ${(ap.ticket_fee_percent * 100).toFixed(1)}%</div>
-    <div><strong>Growth:</strong> +${((ap.pax_growth_factor - 1) * 100).toFixed(1)}%</div>
-    <hr/>
-    <div><strong>Demand (Y/C/F):</strong> ${d.Y} / ${d.C} / ${d.F}</div>
-    <hr/>
-    <div><strong>Notes:</strong> ${ap.notes || "—"}</div>
+    <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
+      📍 Location
+    </div>
+    <div><strong style="color:#ffe7a0;">Country:</strong> <span style="color:#dbe4ff;">${ap.country}</span></div>
+    <div><strong style="color:#ffe7a0;">Region:</strong> <span style="color:#dbe4ff;">${ap.region}</span></div>
+    <div><strong style="color:#ffe7a0;">Category:</strong> <span style="color:#dbe4ff;">${ap.category}</span></div>
+
+    <hr style="border-color:rgba(255,179,0,0.35); margin:14px 0;">
+
+    <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
+      🧭 Coordinates
+    </div>
+    <div><strong style="color:#ffe7a0;">Latitude:</strong> <span style="color:#dbe4ff;">${ap.latitude}</span></div>
+    <div><strong style="color:#ffe7a0;">Longitude:</strong> <span style="color:#dbe4ff;">${ap.longitude}</span></div>
+    <div><strong style="color:#ffe7a0;">Elevation:</strong> <span style="color:#dbe4ff;">${ap.elevation_ft} ft</span></div>
+    <div><strong style="color:#ffe7a0;">Runway:</strong> <span style="color:#dbe4ff;">${ap.runway_m} m</span></div>
+    <div><strong style="color:#ffe7a0;">Open Hrs:</strong> <span style="color:#dbe4ff;">${ap.open_hrs}</span></div>
+    <div><strong style="color:#ffe7a0;">Aircraft Limit:</strong> <span style="color:#dbe4ff;">${ap.aircraft_limit}</span></div>
+
+    <hr style="border-color:rgba(255,179,0,0.35); margin:14px 0;">
+
+    <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
+      💰 Costs
+    </div>
+    <div><strong style="color:#ffe7a0;">Slot Cost:</strong> <span style="color:#dbe4ff;">$${ap.slot_cost_usd}</span></div>
+    <div><strong style="color:#ffe7a0;">Landing Fee:</strong> <span style="color:#dbe4ff;">$${ap.landing_fee_usd}</span></div>
+    <div><strong style="color:#ffe7a0;">Fuel Price:</strong> <span style="color:#dbe4ff;">$${ap.fuel_usd_gal}/gal</span></div>
+    <div><strong style="color:#ffe7a0;">Ticket %:</strong> 
+      <span style="color:#dbe4ff;">${(ap.ticket_fee_percent * 100).toFixed(1)}%</span>
+    </div>
+    <div><strong style="color:#ffe7a0;">Growth:</strong>
+      <span style="color:#dbe4ff;">+${((ap.pax_growth_factor - 1) * 100).toFixed(1)}%</span>
+    </div>
+
+    <hr style="border-color:rgba(255,179,0,0.35); margin:14px 0;">
+
+    <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
+      📝 Notes
+    </div>
+    <div style="color:#dbe4ff;">${ap.notes || "—"}</div>
   `;
 
   modal.style.display = "flex";
 }
+
 
 function closeAirportInfo() {
   document.getElementById("airportInfoModal").style.display = "none";
