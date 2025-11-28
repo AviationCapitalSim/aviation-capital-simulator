@@ -726,8 +726,10 @@ function filterByCountry() {
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
       <td style="display:flex; gap:8px; justify-content:center;">
-        <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
-        <button class="acs-btn" onclick="createRoute('${a.icao}')">Create Route</button>
+      <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
+
+      <!-- 🔥 AQUI CAMBIAMOS createRoute → goToSchedule -->
+      <button class="acs-btn" onclick="goToSchedule('${a.icao}')">Create Route</button>
       </td>
     `;
     tableBody.appendChild(row);
