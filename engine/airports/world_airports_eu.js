@@ -1,5 +1,4 @@
-window.WorldAirportsACS = window.WorldAirportsACS || {};
-window.WorldAirportsACS.Europe = [
+WorldAirportsACS.Europe = [
 
   {
     icao: "UBTT",
