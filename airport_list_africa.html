@@ -616,18 +616,13 @@ function findBaseAirportGlobal() {
   const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
   if (!baseIcao) return null;
 
-  if (!window.WorldAirportsACS) return null;
+  // 🔥 WorldAirportsACS SIEMPRE tiene todos los continentes
+  const allContinents = Object.values(WorldAirportsACS);
+  const flat = allContinents.flat();
 
-  try {
-    const all = Object.values(WorldAirportsACS).flat();
-    const base = all.find(a => a.icao === baseIcao) || null;
-    return base;
-  } catch (e) {
-    console.warn("findBaseAirportGlobal error:", e);
-    return null;
-  }
+  const found = flat.find(a => a.icao === baseIcao);
+  return found || null;
 }
-
 
 /* ============================================================
    === LOAD AIRPORTS (ÁFRICA — DISTANCIA DESDE BASE GLOBAL) ====
