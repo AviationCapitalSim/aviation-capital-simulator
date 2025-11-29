@@ -899,7 +899,28 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
+/* ============================================================
+   === BASE GLOBAL UNIVERSAL (Funciona en TODAS las páginas) ===
+   ============================================================ */
+function getGlobalBase() {
+  const baseIcao = localStorage.getItem("ACS_baseICAO");
+  if (!baseIcao) return null;
 
+  // 1) Si ACS_World está listo → buscar allí
+  if (window.ACS_World && ACS_World.ALL_AIRPORTS && ACS_World.ALL_AIRPORTS.length) {
+    const ap = ACS_World.ALL_AIRPORTS.find(a => a.icao === baseIcao);
+    if (ap) return ap;
+  }
+
+  // 2) Fallback → usar todos los datasets de WorldAirportsACS
+  if (window.WorldAirportsACS) {
+    const all = Object.values(WorldAirportsACS).flat();
+    return all.find(a => a.icao === baseIcao) || null;
+  }
+
+  return null;
+}
+     
 /* ============================================================
    === INITIALIZATION (SIMPLE: CARGA + BANNER GLOBAL) ==========
    ============================================================ */
@@ -908,20 +929,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1) Cargar la tabla de aeropuertos de África
   loadAirports();
 
-  // 2) Banner de origen (base global desde localStorage)
-  const baseAp = findBaseAirportGlobal();
-  if (!baseAp) return;
+  // 2) Banner de origen
+const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+if (baseIcao) {
 
-  const flagEmoji = baseAp.country.replace(/./g, c =>
-    String.fromCodePoint(c.charCodeAt(0) + 127397)
-  );
+    const base = getGlobalBase();   // ← NUEVO BLOQUE
 
-  document.getElementById("originFlag").textContent = flagEmoji;
-  document.getElementById("originIcao").textContent = baseAp.icao;
-  document.getElementById("originCity").textContent =
-    `— ${baseAp.city}, ${baseAp.region}`;
-});
+    if (base) {
+      const flagEmoji = base.country.replace(/./g, c =>
+        String.fromCodePoint(c.charCodeAt(0) + 127397)
+      );
 
+      document.getElementById("originFlag").textContent = flagEmoji;
+      document.getElementById("originIcao").textContent = base.icao;
+      document.getElementById("originCity").textContent = `— ${base.city}, ${base.region}`;
+    }
+}
 
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
