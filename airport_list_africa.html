@@ -882,23 +882,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1) Cargar aeropuertos
   loadAirports();
 
-  // 2) Banner de origen
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (baseIcao) {
-    const airports = getAirportsAfricaSafe();
-    const base = airports.find(a => a.icao === baseIcao);
+  // 2) Banner de origen — UNIVERSAL (FUNCIONA EN TODOS LOS CONTINENTES)
+const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
 
-    if (base) {
-      const flagEmoji = base.country.replace(/./g, c =>
-        String.fromCodePoint(c.charCodeAt(0) + 127397)
-      );
+if (baseIcao) {
 
-      document.getElementById("originFlag").textContent = flagEmoji;
-      document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent =
-        `— ${base.city}, ${base.region}`;
-    }
+  // Buscar la base entre todos los aeropuertos del mundo
+  let base = null;
+
+  // 1) Preferimos ACS_World si ya está listo
+  if (window.ACS_World &&
+      ACS_World.ready &&
+      Array.isArray(ACS_World.ALL_AIRPORTS)) {
+    base = ACS_World.ALL_AIRPORTS.find(a => a.icao === baseIcao);
   }
+
+  // 2) Fallback por si ACS_World aún no está listo
+  if (!base) {
+    const allContinents = Object.values(WorldAirportsACS).flat();
+    base = allContinents.find(a => a.icao === baseIcao);
+  }
+
+  // Si encontramos la base → actualizar banner
+  if (base) {
+    const flagEmoji = base.country.replace(/./g, c =>
+      String.fromCodePoint(c.charCodeAt(0) + 127397)
+    );
+
+    document.getElementById("originFlag").textContent = flagEmoji;
+    document.getElementById("originIcao").textContent = base.icao;
+    document.getElementById("originCity").textContent =
+      `— ${base.city}, ${base.region}`;
+  }
+}
+
 });
 
 
