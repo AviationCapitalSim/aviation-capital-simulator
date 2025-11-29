@@ -587,7 +587,7 @@ function adjustPassengerClasses(demand) {
 
   return { Y, C, F };
 }
-              
+
 // ============================================================
 // === A PARTIR DE AQUÍ TU CÓDIGO TAL CUAL LO ENVIASTE =========
 // ============================================================
@@ -877,38 +877,33 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
-/* ============================================================
-   === GLOBAL BASE BANNER (WAITS FOR LOADER) ===================
-   ============================================================ */
-function updateGlobalBaseBanner() {
-
-  const baseIcao = localStorage.getItem("ACS_baseICAO");
-  if (!baseIcao) return;
-
-  const base = findBaseAirportGlobal();
-
-  // Loader aún no listo → reintentar
-  if (!base) {
-    setTimeout(updateGlobalBaseBanner, 200);
-    return;
-  }
-
-  // Ya listo → actualizar banner
-  const flagEmoji = base.country.replace(/./g, c =>
-    String.fromCodePoint(c.charCodeAt(0) + 127397)
-  );
-
-  document.getElementById("originFlag").textContent = flagEmoji;
-  document.getElementById("originIcao").textContent = base.icao;
-  document.getElementById("originCity").textContent =
-    `— ${base.city}, ${base.region}`;
-}
-
+/* =============================================================
+   === INITIALIZATION (SEGURO) ================================
+   ============================================================= */
 document.addEventListener("DOMContentLoaded", () => {
+
+  // 1) Cargar aeropuertos (modo histórico + fallback)
   loadAirports();
-  updateGlobalBaseBanner();  // 🔥 Espera hasta que ACS_World esté listo
+
+  // 2) Banner de origen seguro
+  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+  if (baseIcao) {
+    const airports = getAirportsEuropeSafe();
+    const base = airports.find(a => a.icao === baseIcao);
+
+    if (base) {
+      const flagEmoji = base.country.replace(/./g, c =>
+        String.fromCodePoint(c.charCodeAt(0) + 127397)
+      );
+
+      document.getElementById("originFlag").textContent = flagEmoji;
+      document.getElementById("originIcao").textContent = base.icao;
+      document.getElementById("originCity").textContent =
+        `— ${base.city}, ${base.region}`;
+    }
+  }
 });
-       
+  
   function goToSchedule(destICAO) {
   const base = localStorage.getItem("ACS_baseICAO") || "";
   if (!base) {
