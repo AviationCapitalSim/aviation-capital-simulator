@@ -1002,13 +1002,14 @@ function updateGlobalBaseBanner() {
    === INITIALIZATION (AFRICA - SIMPLE, COMO EUROPA) ===========
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  // 1) Cargar tabla con todos los aeropuertos
+
+  // 1) Primero actualizar banner (esto fija la base REAL)
+  updateGlobalBaseBanner();
+
+  // 2) Luego, con la base ya lista, cargar aeropuertos + NM
   loadAirports();
 
-  // 2) Actualizar banner de origen usando la base global
-  updateGlobalBaseBanner();
 });
-
        
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
