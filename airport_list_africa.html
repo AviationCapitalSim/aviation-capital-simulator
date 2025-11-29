@@ -188,22 +188,7 @@ body {
   font-size: 1.25rem;
   margin-right: 0.3rem;
 }
-       
-/* Country Select — Qatar Luxury Style */
-.country-select {
-  background: linear-gradient(180deg, #2e3f6e, #1e2d55);
-  color: #ffffff;
-  border: 2px solid #ffb300;
-  padding: 5px 28px 5px 12px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='14' viewBox='0 0 20 20' width='14' xmlns='http://www.w3.org/2000/svg'><polygon points='0,0 20,0 10,12'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-}
+
 /* ============================================================
    === QATAR LUXURY TABLE =====================================
    ============================================================ */
@@ -386,6 +371,34 @@ tr:hover {
   from { opacity: 0; transform: scale(0.92); }
   to   { opacity: 1; transform: scale(1); }
 }
+/* Country selector */
+.country-select {
+  background: linear-gradient(180deg, #2e3f6e, #1e2d55);
+  color: #ffffff;
+  border: 2px solid #ffb300;
+  padding: 5px 28px 5px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: 0 0 12px rgba(255,179,0,0.25);
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffffff' height='16' width='16' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 13px;
+}
+
+.country-filter {
+  margin: 4px auto 26px auto;
+  display: flex;
+  justify-content: center;
+}
+
+.country-select {
+  width: 160px;
+}
   </style>
 </head>
 
@@ -425,10 +438,10 @@ tr:hover {
       <span id="originCity">— Loading...</span>
     </div>
 
-    <!-- Country selector -->
+     <!-- Country selector -->
     <div class="country-filter">
       <select id="countrySelect" class="country-select" onchange="filterByCountry()">
-      <option value="ALL">🌍 All Countries</option>
+        <option value="ALL">🌍 All Countries</option>
       </select>
     </div>
 
@@ -861,24 +874,21 @@ function handleLogout() {
 }
 
 
-/* =============================================================
-   === INITIALIZATION (SEGURO) ================================
-   ============================================================= */
-// 2) Banner de origen (MISMA LÓGICA QUE EUROPA)
-const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+/* ============================================================
+   === INITIALIZATION (SAFE + IDENTICAL A EUROPA) ==============
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
 
-if (baseIcao) {
+  // 1) Cargar aeropuertos
+  loadAirports();
 
-    // Buscar la base en TODOS los aeropuertos del mundo
-    const airportsAll =
-      (window.ACS_World && ACS_World.ready)
-        ? ACS_World.ALL_AIRPORTS
-        : Object.values(WorldAirportsACS).flat();
-
-    const base = airportsAll.find(a => a.icao === baseIcao);
+  // 2) Banner de origen
+  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+  if (baseIcao) {
+    const airports = getAirportsAfricaSafe();
+    const base = airports.find(a => a.icao === baseIcao);
 
     if (base) {
-      // Convertir país → bandera
       const flagEmoji = base.country.replace(/./g, c =>
         String.fromCodePoint(c.charCodeAt(0) + 127397)
       );
@@ -888,8 +898,7 @@ if (baseIcao) {
       document.getElementById("originCity").textContent =
         `— ${base.city}, ${base.region}`;
     }
-}
-
+  }
 });
 
 
