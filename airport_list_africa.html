@@ -726,7 +726,7 @@ function filterByCountry() {
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
 
-  const airports = getAirportsEuropeSafe();
+  const airports = getAirportsAfricaSafe();
   if (!airports || airports.length === 0) return;
 
   const userBase = localStorage.getItem("ACS_baseICAO") || null;
