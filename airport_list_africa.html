@@ -649,15 +649,15 @@ function loadAirports() {
     return;
   }
 
-  // 🔥 FIX: AFRICA MUST USE GLOBAL BASE
-  const base = findBaseAirportGlobal();
+  const userBase = localStorage.getItem("ACS_baseICAO") || null;
+
+  const baseAp = findBaseAirportGlobal();
   let baseLat = null, baseLon = null;
 
-  if (base) {
-  baseLat = base.latitude;
-  baseLon = base.longitude;
+  if (baseAp) {
+    baseLat = baseAp.latitude;
+    baseLon = baseAp.longitude;
   }
-
 
   // ORDENAR POR MAYOR DEMANDA TOTAL (cruda, igual que antes)
   const ordered = airports
