@@ -637,6 +637,17 @@ function findBaseAirportGlobal() {
 }
         
 /* ============================================================
+   === WAIT FOR WORLD ENGINE BEFORE LOADING TABLE ===============
+   ============================================================ */
+function waitForWorldEngine(callback) {
+  if (window.ACS_World && ACS_World.ready === true) {
+    callback();
+  } else {
+    setTimeout(() => waitForWorldEngine(callback), 120);
+  }
+}
+
+/* ============================================================
    === LOAD AIRPORTS (ÁFRICA — DISTANCIA DESDE BASE GLOBAL) ====
    ============================================================ */
 function loadAirports() {
@@ -950,15 +961,21 @@ function updateGlobalBaseBanner() {
 }
 
 /* ============================================================
-   === INITIALIZATION (AFRICA - FINAL VERSION) =================
+   === INITIALIZATION (AFRICA — NM FIX FINAL) ==================
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Cargar aeropuertos del continente
-  loadAirports();
+  // ✔ Esperar a que ACS_World esté completamente listo
+  waitForWorldEngine(() => {
 
-  // 2) Esperar a que el motor mundial termine y actualizar base
-  updateGlobalBaseBanner();
+    // 1) Cargar aeropuertos con la base REAL del jugador
+    loadAirports();
+
+    // 2) Actualizar banner (origen)
+    updateGlobalBaseBanner();
+
+  });
+
 });
 
         
