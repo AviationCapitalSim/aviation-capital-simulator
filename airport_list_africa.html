@@ -706,9 +706,12 @@ const base = findBaseAirportGlobal();
 
 let dist = "-";
 
+const base = findBaseAirportGlobal();
 if (base &&
-    base.latitude && base.longitude &&
-    a.latitude && a.longitude) {
+    typeof base.latitude === "number" &&
+    typeof base.longitude === "number" &&
+    typeof a.latitude === "number" &&
+    typeof a.longitude === "number") {
 
   dist = distanceNM(
     base.latitude,
@@ -717,6 +720,7 @@ if (base &&
     a.longitude
   );
 }
+
     row.innerHTML = `
       <td><strong>${a.city}</strong> (${a.icao})</td>
       <td>${a.region}</td>
