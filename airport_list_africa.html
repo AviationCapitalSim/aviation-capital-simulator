@@ -926,23 +926,22 @@ function handleLogout() {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  updateOriginBannerAfrica();   /*  🔥🔥🔥 INSERTADO — NO SE TOCÓ NADA MÁS  */
-
-  loadAirports();
-
+  // 1) Cargar origen desde la base global ANTES de cargar aeropuertos
   const baseAp = findBaseAirportGlobal();
-  if (!baseAp) return;
+  if (baseAp) {
+    const flagEmoji = baseAp.country.replace(/./g, c =>
+      String.fromCodePoint(c.charCodeAt(0) + 127397)
+    );
 
-  const flagEmoji = baseAp.country.replace(/./g, c =>
-    String.fromCodePoint(c.charCodeAt(0) + 127397)
-  );
+    document.getElementById("originFlag").textContent = flagEmoji;
+    document.getElementById("originIcao").textContent = baseAp.icao;
+    document.getElementById("originCity").textContent =
+      `— ${baseAp.city}, ${baseAp.region}`;
+  }
 
-  document.getElementById("originFlag").textContent = flagEmoji;
-  document.getElementById("originIcao").textContent = baseAp.icao;
-  document.getElementById("originCity").textContent =
-    `— ${baseAp.city}, ${baseAp.region}`;
+  // 2) Ahora sí cargar la tabla (con la base ya lista)
+  loadAirports();
 });
-
 
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
