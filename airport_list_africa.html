@@ -188,7 +188,22 @@ body {
   font-size: 1.25rem;
   margin-right: 0.3rem;
 }
-
+       
+/* Country Select — Qatar Luxury Style */
+.country-select {
+  background: linear-gradient(180deg, #2e3f6e, #1e2d55);
+  color: #ffffff;
+  border: 2px solid #ffb300;
+  padding: 5px 28px 5px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='14' viewBox='0 0 20 20' width='14' xmlns='http://www.w3.org/2000/svg'><polygon points='0,0 20,0 10,12'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
 /* ============================================================
    === QATAR LUXURY TABLE =====================================
    ============================================================ */
@@ -856,14 +871,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2) Banner de origen
   const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (baseIcao) {
+if (baseIcao) {
+
+    // Buscar la base en TODOS los aeropuertos del mundo
     const airportsAll =
-    (window.ACS_World && ACS_World.ready)
-    ? ACS_World.ALL_AIRPORTS
-    : Object.values(WorldAirportsACS).flat();
+      (window.ACS_World && ACS_World.ready)
+        ? ACS_World.ALL_AIRPORTS
+        : Object.values(WorldAirportsACS).flat();
 
-const base = airportsAll.find(a => a.icao === baseIcao);
-
+    const base = airportsAll.find(a => a.icao === baseIcao);
 
     if (base) {
       const flagEmoji = base.country.replace(/./g, c =>
@@ -875,7 +891,8 @@ const base = airportsAll.find(a => a.icao === baseIcao);
       document.getElementById("originCity").textContent =
         `— ${base.city}, ${base.region}`;
     }
-  }
+}
+
 });
 
 
