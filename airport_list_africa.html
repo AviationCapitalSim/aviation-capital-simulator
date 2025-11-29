@@ -936,27 +936,24 @@ function handleLogout() {
    ============================================================ */
    document.addEventListener("DOMContentLoaded", () => {
 
-     // 1) Ahora sí cargar la tabla (con la base ya lista)
-     loadAirports();  
-     
-     // 2) Cargar origen desde la base global ANTES de cargar aeropuertos
-     const baseIcao = localStorage.getItem("ACS_baseICAO") || null;     
-     if (baseIcao) {     
-     const airports = findBaseAirportGlobal();
+  // 1) Cargar aeropuertos primero
+  loadAirports();  
 
-     if (base) {
-     const flagEmoji = base.country.replace(/./g, c =>
-     String.fromCodePoint(c.charCodeAt(0) + 127397)
+  // 2) Cargar origen desde la base global
+  const base = findBaseAirportGlobal();   // ✔️ AQUÍ VA BASE, NO AIRPORTS
+
+  if (base) {
+    const flagEmoji = base.country.replace(/./g, c =>
+      String.fromCodePoint(c.charCodeAt(0) + 127397)
     );
 
     document.getElementById("originFlag").textContent = flagEmoji;
-      document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent =
-        `— ${base.city}, ${base.region}`;
-    }
+    document.getElementById("originIcao").textContent = base.icao;
+    document.getElementById("originCity").textContent =
+      `— ${base.city}, ${base.region}`;
   }
-});
 
+});
         
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
