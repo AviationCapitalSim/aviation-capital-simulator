@@ -697,6 +697,20 @@ function loadAirports() {
 
     const row = document.createElement("tr");
 
+       // ============================================================
+// CALCULAR DISTANCIA (GLOBAL) - FUNCIONAL PARA TODAS LAS BASES
+// ============================================================
+let dist = "-";
+
+try {
+  // 1) Base global (SIEMPRE funciona)
+  const base = findBaseAirportGlobal();  
+  if (base && a.lat && a.lon && base.lat && base.lon) {
+    dist = distanceNM(base.lat, base.lon, a.lat, a.lon);
+  }
+} catch (e) {
+  dist = "-";
+}
     row.innerHTML = `
       <td><strong>${a.city}</strong> (${a.icao})</td>
       <td>${a.region}</td>
