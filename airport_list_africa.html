@@ -999,20 +999,14 @@ function updateGlobalBaseBanner() {
 }
 
  /* ============================================================
-   === INITIALIZATION (AFRICA — NM FIX FINAL) ==================
+   === INITIALIZATION (AFRICA - SIMPLE, COMO EUROPA) ===========
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+  // 1) Cargar tabla con todos los aeropuertos
+  loadAirports();
 
-  waitForWorldEngine(() => {
-
-    // 1) Actualizar banner con la base real
-    updateGlobalBaseBanner();
-
-    // 2) Cargar aeropuertos SOLO cuando ACS_World esté listo
-    loadAirports();
-
-  });
-
+  // 2) Actualizar banner de origen usando la base global
+  updateGlobalBaseBanner();
 });
 
        
