@@ -1003,13 +1003,16 @@ function updateGlobalBaseBanner() {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Primero actualizar banner (esto fija la base REAL)
+  // 1) Primero fija la base (Safari necesita esto)
   updateGlobalBaseBanner();
 
-  // 2) Luego, con la base ya lista, cargar aeropuertos + NM
-  loadAirports();
+  // 2) Luego carga aeropuertos (80ms garantiza baseLat/baseLon correctos)
+  setTimeout(() => {
+    loadAirports();
+  }, 80);
 
 });
+
        
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
