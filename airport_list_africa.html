@@ -923,37 +923,44 @@ window.addEventListener("click", (e) => {
 
 
 /* ============================================================
-   === LOGOUT (CLON) ==========================================
+   === GLOBAL BASE (WAITS FOR LOADER) ==========================
    ============================================================ */
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href = "login.html";
-}
+function updateGlobalBaseBanner() {
 
+  const baseIcao = localStorage.getItem("ACS_baseICAO");
+  if (!baseIcao) return;
 
-/* ============================================================
-   === INITIALIZATION (SIMPLE: CARGA + BANNER GLOBAL) ==========
-   ============================================================ */
-   document.addEventListener("DOMContentLoaded", () => {
+  const base = findBaseAirportGlobal();
 
-  // 1) Cargar aeropuertos primero
-  loadAirports();  
-
-  // 2) Cargar origen desde la base global
-  const base = findBaseAirportGlobal();   // ✔️ AQUÍ VA BASE, NO AIRPORTS
-
-  if (base) {
-    const flagEmoji = base.country.replace(/./g, c =>
-      String.fromCodePoint(c.charCodeAt(0) + 127397)
-    );
-
-    document.getElementById("originFlag").textContent = flagEmoji;
-    document.getElementById("originIcao").textContent = base.icao;
-    document.getElementById("originCity").textContent =
-      `— ${base.city}, ${base.region}`;
+  // Loader aún no listo → reintentar
+  if (!base) {
+    setTimeout(updateGlobalBaseBanner, 200);
+    return;
   }
 
+  // Ya listo → actualizar banner
+  const flagEmoji = base.country.replace(/./g, c =>
+    String.fromCodePoint(c.charCodeAt(0) + 127397)
+  );
+
+  document.getElementById("originFlag").textContent = flagEmoji;
+  document.getElementById("originIcao").textContent = base.icao;
+  document.getElementById("originCity").textContent =
+    `— ${base.city}, ${base.region}`;
+}
+
+/* ============================================================
+   === INITIALIZATION (AFRICA - FINAL VERSION) =================
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+
+  // 1) Cargar aeropuertos del continente
+  loadAirports();
+
+  // 2) Esperar a que el motor mundial termine y actualizar base
+  updateGlobalBaseBanner();
 });
+
         
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
