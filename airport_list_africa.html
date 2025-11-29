@@ -681,17 +681,11 @@ function loadAirports() {
     });
   }
 
-     // CONSTRUIR TABLA
+   // CONSTRUIR TABLA
   ordered.forEach(a => {
 
-    // === DISTANCIA DESDE BASE GLOBAL (CORRECTA) ===
     let dist = "-";
-    if (
-      baseLat !== null &&
-      baseLon !== null &&
-      typeof a.latitude === "number" &&
-      typeof a.longitude === "number"
-    ) {
+    if (baseLat !== null && baseLon !== null) {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
@@ -722,7 +716,7 @@ function loadAirports() {
 
     tableBody.appendChild(row);
   });
-
+}
 
 /* ============================================================
    === FILTER BY COUNTRY =======================================
