@@ -491,6 +491,7 @@ tr:hover {
   <!-- World + Loader + ACS Engines -->
   <script src="engine/airports_loader.js"></script>
   <script src="engine/acs_world_engine.js"></script>
+
 <script>
 /* ============================================================
    === DISTANCE ENGINE (NO CAMBIADO — PERFECTO) ================
@@ -518,7 +519,6 @@ function distanceNM(lat1, lon1, lat2, lon2) {
 function getAirportsAfricaSafe() {
   try {
     if (window.ACS_World &&
-        ACS_World.ready &&
         ACS_World.BY_CONTINENT &&
         Array.isArray(ACS_World.BY_CONTINENT["Africa"]) &&
         ACS_World.BY_CONTINENT["Africa"].length > 0) {
@@ -531,7 +531,9 @@ function getAirportsAfricaSafe() {
   }
 
   console.log("🟧 Fallback → Using WorldAirportsACS (standard mode) — Africa");
-  return (window.WorldAirportsACS && WorldAirportsACS["Africa"]) ? WorldAirportsACS["Africa"] : [];
+  return (window.WorldAirportsACS && WorldAirportsACS["Africa"])
+    ? WorldAirportsACS["Africa"]
+    : [];
 }
 
 
@@ -583,36 +585,23 @@ function adjustPassengerClasses(demand) {
 
 
 /* ============================================================
-   === HELPER: ENCONTRAR BASE GLOBAL POR ICAO ==================
+   === BASE GLOBAL: LEE LOCALSTORAGE Y BUSCA EN TODOS ==========
    ============================================================ */
-function findBaseAirport() {
+function findBaseAirportGlobal() {
   const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
   if (!baseIcao) return null;
 
-  let base = null;
+  if (!window.WorldAirportsACS) return null;
 
-  // 1) Intentar con ACS_World (cuando ya está listo)
   try {
-    if (window.ACS_World &&
-        ACS_World.ready &&
-        Array.isArray(ACS_World.ALL_AIRPORTS)) {
-      base = ACS_World.ALL_AIRPORTS.find(a => a.icao === baseIcao) || null;
-    }
+    // WorldAirportsACS tiene todos los continentes
+    const all = Object.values(WorldAirportsACS).flat();
+    const base = all.find(a => a.icao === baseIcao) || null;
+    return base;
   } catch (e) {
-    console.warn("findBaseAirport / ACS_World error:", e);
+    console.warn("findBaseAirportGlobal error:", e);
+    return null;
   }
-
-  // 2) Fallback → recorrer WorldAirportsACS completo
-  if (!base && window.WorldAirportsACS) {
-    try {
-      const all = Object.values(WorldAirportsACS).flat();
-      base = all.find(a => a.icao === baseIcao) || null;
-    } catch (e) {
-      console.warn("findBaseAirport / WorldAirportsACS error:", e);
-    }
-  }
-
-  return base;
 }
 
 
@@ -629,10 +618,11 @@ function loadAirports() {
     return;
   }
 
-  // Base GLOBAL (puede ser LIRN en Europa)
-  const baseAp = findBaseAirport();
+  const userBase = localStorage.getItem("ACS_baseICAO") || null;
+
+  // Base GLOBAL (puede estar en China, Italia, USA, etc.)
+  const baseAp = findBaseAirportGlobal();
   let baseLat = null, baseLon = null;
-  const baseIcao = baseAp ? baseAp.icao : null;
 
   if (baseAp) {
     baseLat = baseAp.latitude;
@@ -640,7 +630,7 @@ function loadAirports() {
   }
 
   const ordered = airports
-    .filter(a => a.icao !== baseIcao)
+    .filter(a => a.icao !== userBase)
     .sort((a, b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
       const bd = b.demand.Y + b.demand.C + b.demand.F;
@@ -708,9 +698,10 @@ function filterByCountry() {
   const airports = getAirportsAfricaSafe();
   if (!airports || airports.length === 0) return;
 
-  const baseAp = findBaseAirport();
+  const userBase = localStorage.getItem("ACS_baseICAO") || null;
+
+  const baseAp = findBaseAirportGlobal();
   let baseLat = null, baseLon = null;
-  const baseIcao = baseAp ? baseAp.icao : null;
 
   if (baseAp) {
     baseLat = baseAp.latitude;
@@ -718,7 +709,7 @@ function filterByCountry() {
   }
 
   const filtered = airports
-    .filter(a => a.icao !== baseIcao)
+    .filter(a => a.icao !== userBase)
     .filter(a => selected === "ALL" || a.region === selected)
     .sort((a, b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
@@ -910,37 +901,25 @@ function handleLogout() {
 
 
 /* ============================================================
-   === INITIALIZATION — ESPERA A ACS_World =====================
+   === INITIALIZATION (SIMPLE: CARGA + BANNER GLOBAL) ==========
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  function waitForWorld() {
-    if (window.ACS_World && ACS_World.ready) {
-      initializePage();
-      return;
-    }
-    setTimeout(waitForWorld, 60);
-  }
+  // 1) Cargar la tabla de aeropuertos de África
+  loadAirports();
 
-  function initializePage() {
-    // 1) Cargar tabla de aeropuertos
-    loadAirports();
+  // 2) Banner de origen (base global desde localStorage)
+  const baseAp = findBaseAirportGlobal();
+  if (!baseAp) return;
 
-    // 2) Configurar banner de origen con BASE GLOBAL
-    const baseAp = findBaseAirport();
-    if (!baseAp) return;
+  const flagEmoji = baseAp.country.replace(/./g, c =>
+    String.fromCodePoint(c.charCodeAt(0) + 127397)
+  );
 
-    const flagEmoji = baseAp.country.replace(/./g, c =>
-      String.fromCodePoint(c.charCodeAt(0) + 127397)
-    );
-
-    document.getElementById("originFlag").textContent = flagEmoji;
-    document.getElementById("originIcao").textContent = baseAp.icao;
-    document.getElementById("originCity").textContent =
-      `— ${baseAp.city}, ${baseAp.region}`;
-  }
-
-  waitForWorld();
+  document.getElementById("originFlag").textContent = flagEmoji;
+  document.getElementById("originIcao").textContent = baseAp.icao;
+  document.getElementById("originCity").textContent =
+    `— ${baseAp.city}, ${baseAp.region}`;
 });
 
 
