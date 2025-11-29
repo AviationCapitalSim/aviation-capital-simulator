@@ -1003,15 +1003,16 @@ function updateGlobalBaseBanner() {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Primero fija la base (Safari necesita esto)
+  // 1) Primero actualiza la base
   updateGlobalBaseBanner();
 
-  // 2) Luego carga aeropuertos (80ms garantiza baseLat/baseLon correctos)
+  // 2) Safari necesita un micro–delay para liberar localStorage
   setTimeout(() => {
     loadAirports();
-  }, 80);
+  }, 50);
 
 });
+
 
        
 /* ============================================================
