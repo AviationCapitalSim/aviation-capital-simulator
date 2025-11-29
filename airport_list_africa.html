@@ -681,11 +681,17 @@ function loadAirports() {
     });
   }
 
-   // CONSTRUIR TABLA
+     // CONSTRUIR TABLA
   ordered.forEach(a => {
 
+    // === DISTANCIA DESDE BASE GLOBAL (CORRECTA) ===
     let dist = "-";
-    if (baseLat !== null && baseLon !== null) {
+    if (
+      baseLat !== null &&
+      baseLon !== null &&
+      typeof a.latitude === "number" &&
+      typeof a.longitude === "number"
+    ) {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
@@ -696,28 +702,6 @@ function loadAirports() {
     const bizPct = ((d.Y + d.C) / total) * 100;
 
     const row = document.createElement("tr");
-
-// ============================================================
-// DISTANCIA GLOBAL CORREGIDA (FUNCIONA EN CUALQUIER CONTINENTE)
-// ============================================================
-
-// Usamos la base GLOBAL siempre
-let dist = "-";
-
-const base = findBaseAirportGlobal();
-if (base &&
-    typeof base.latitude === "number" &&
-    typeof base.longitude === "number" &&
-    typeof a.latitude === "number" &&
-    typeof a.longitude === "number") {
-
-  dist = distanceNM(
-    base.latitude,
-    base.longitude,
-    a.latitude,
-    a.longitude
-  );
-}
 
     row.innerHTML = `
       <td><strong>${a.city}</strong> (${a.icao})</td>
@@ -738,7 +722,7 @@ if (base &&
 
     tableBody.appendChild(row);
   });
-}
+
 
 /* ============================================================
    === FILTER BY COUNTRY =======================================
