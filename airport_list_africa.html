@@ -982,19 +982,15 @@ function updateGlobalBaseBanner() {
     `— ${base.city}, ${base.region}`;
 }
 
-function waitForWorldEngine(callback) {
-  const ready =
-    window.ACS_World &&
-    ACS_World.ready === true &&
-    Array.isArray(ACS_World.ALL_AIRPORTS) &&
-    ACS_World.ALL_AIRPORTS.length > 0;
-
-  if (ready) {
+ function waitForWorldEngine(callback) {
+  if (window.ACS_World && ACS_World.ready === true) {
     callback();
-  } else {
-    setTimeout(() => waitForWorldEngine(callback), 120);
+    return;
   }
+  console.warn("⏳ Esperando que ACS_World esté listo...");
+  setTimeout(() => waitForWorldEngine(callback), 120);
 }
+
 
 /* ============================================================
    === INITIALIZATION (AFRICA - FINAL VERSION) =================
