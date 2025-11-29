@@ -474,6 +474,14 @@ tr:hover {
       <span id="originCity">— Loading...</span>
     </div>
 
+       <!-- Country selector -->
+       
+    <div class="country-filter">
+      <select id="countrySelect" class="country-select" onchange="filterByCountry()">
+        <option value="ALL">🌍 All Countries</option>
+      </select>
+    </div>
+       
      <!-- ===== CONTINENT QUICK ACCESS (QATAR LUXURY) ===== -->
     
      <div class="continent-access">
@@ -492,16 +500,8 @@ tr:hover {
 
      </div>
 
-       
-     <!-- Country selector -->
-       
-    <div class="country-filter">
-      <select id="countrySelect" class="country-select" onchange="filterByCountry()">
-        <option value="ALL">🌍 All Countries</option>
-      </select>
-    </div>
-
     <!-- TABLE -->
+       
     <table id="airportTable">
       <thead>
         <tr>
