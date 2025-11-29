@@ -470,25 +470,28 @@ tr:hover {
       <strong id="originIcao">---</strong>
       <span id="originCity">— Loading...</span>
     </div>
- 
-       <!-- ===== CONTINENT QUICK ACCESS (QATAR LUXURY) ===== -->
-    <div class="continent-access">
-      <button onclick="goContinent('europe.html')" class="continent-btn">Europe</button>
-      <button onclick="goContinent('asia.html')" class="continent-btn">Asia</button>
-      <button onclick="goContinent('africa.html')" class="continent-btn">Africa</button>
-      <button onclick="goContinent('northamerica.html')" class="continent-btn">North America</button>
-      <button onclick="goContinent('oceania.html')" class="continent-btn">Oceania</button>
-      <button onclick="goContinent('middleeast.html')" class="continent-btn">Middle East</button>
-    </div>
-       
+   
     <!-- Country selector -->
+       
     <div class="country-filter">
       <select id="countrySelect" class="country-select" onchange="filterByCountry()">
         <option value="ALL">🌍 All Countries</option>
       </select>
     </div>
 
-    <!-- TABLE -->
+     <!-- ===== CONTINENT QUICK ACCESS (QATAR LUXURY) ===== -->
+    
+     <div class="continent-access">
+      <button onclick="goContinent('europe.html')" class="continent-btn">Europe</button>
+      <button onclick="goContinent('asia.html')" class="continent-btn">Asia</button>
+      <button onclick="goContinent('africa.html')" class="continent-btn">Africa</button>
+      <button onclick="goContinent('northamerica.html')" class="continent-btn">North America</button>
+      <button onclick="goContinent('oceania.html')" class="continent-btn">Oceania</button>
+      <button onclick="goContinent('middleeast.html')" class="continent-btn">Middle East</button>
+    </div>    
+       
+     <!-- TABLE -->
+       
     <table id="airportTable">
       <thead>
         <tr>
@@ -519,6 +522,25 @@ tr:hover {
     </div>
   </div>
   
+  <!-- ===== CONTINENT QUICK ACCESS (QATAR LUXURY) ===== -->
+     
+  <div class="continent-access">
+
+    <button onclick="goContinent('airport_list_europe.html')" class="continent-btn">Europe</button>
+
+    <button onclick="goContinent('airport_list_asia.html')" class="continent-btn">Asia</button>
+
+    <button onclick="goContinent('airport_list_africa.html')" class="continent-btn">Africa</button>
+
+    <button onclick="goContinent('airport_list_northamerica.html')" class="continent-btn">North America</button>
+
+    <button onclick="goContinent('airport_list_oceania.html')" class="continent-btn">Oceania</button>
+  
+    <button onclick="goContinent('airport_list_middleeast.html')" class="continent-btn">Middle East</button>
+
+  </div>
+
+     
   <!-- SCRIPTS -->
      
   <script>
@@ -997,6 +1019,7 @@ function goToSchedule(destICAO) {
 }
      
 /* ===== CONTINENT QUICK ACCESS REDIRECT ===== */
+
 function goContinent(page) {
   window.location.href = page;
 }
