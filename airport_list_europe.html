@@ -587,7 +587,7 @@ function adjustPassengerClasses(demand) {
 
   return { Y, C, F };
 }
-
+              
 // ============================================================
 // === A PARTIR DE AQUÍ TU CÓDIGO TAL CUAL LO ENVIASTE =========
 // ============================================================
@@ -878,29 +878,37 @@ function handleLogout() {
 }
 
 /* ============================================================
-   === INITIALIZATION (GLOBAL BASE ALWAYS AVAILABLE) ============
+   === GLOBAL BASE BANNER (WAITS FOR LOADER) ===================
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
+function updateGlobalBaseBanner() {
 
-  // 1) Cargar aeropuertos del continente
-  loadAirports();
+  const baseIcao = localStorage.getItem("ACS_baseICAO");
+  if (!baseIcao) return;
 
-  // 2) Buscar la base GLOBAL (sin importar el continente actual)
   const base = findBaseAirportGlobal();
-  if (!base) return;
 
-  // 3) Convertir país en bandera (🇮🇹, 🇿🇦, 🇧🇷, 🇹🇷, etc.)
+  // Loader aún no listo → reintentar
+  if (!base) {
+    setTimeout(updateGlobalBaseBanner, 200);
+    return;
+  }
+
+  // Ya listo → actualizar banner
   const flagEmoji = base.country.replace(/./g, c =>
     String.fromCodePoint(c.charCodeAt(0) + 127397)
   );
 
-  // 4) Actualizar banner de origen
   document.getElementById("originFlag").textContent = flagEmoji;
   document.getElementById("originIcao").textContent = base.icao;
   document.getElementById("originCity").textContent =
     `— ${base.city}, ${base.region}`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadAirports();
+  updateGlobalBaseBanner();  // 🔥 Espera hasta que ACS_World esté listo
 });
-  
+       
   function goToSchedule(destICAO) {
   const base = localStorage.getItem("ACS_baseICAO") || "";
   if (!base) {
