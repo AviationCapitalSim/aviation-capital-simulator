@@ -606,7 +606,36 @@ function getAirportsAfricaSafe() {
   console.log("🟧 Fallback → Using WorldAirportsACS (standard mode) — Africa");
   return WorldAirportsACS["Africa"] || [];
 }
+        
+/* ============================================================
+   === FIND BASE AIRPORT (GLOBAL — ANY CONTINENT) ===============
+   ============================================================ */
+function findBaseAirportGlobal() {
 
+  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+  if (!baseIcao) return null;
+
+  // 1. Usar ACS_World si está listo
+  if (window.ACS_World &&
+      ACS_World.ready &&
+      ACS_World.INDEX_ICAO &&
+      ACS_World.INDEX_ICAO[baseIcao]) {
+
+    return ACS_World.INDEX_ICAO[baseIcao];
+  }
+
+  // 2. Fallback: buscar en WorldAirportsACS
+  for (const cont in WorldAirportsACS) {
+    const list = WorldAirportsACS[cont];
+    if (!Array.isArray(list)) continue;
+
+    const ap = list.find(a => a.icao === baseIcao);
+    if (ap) return ap;
+  }
+
+  return null;
+}
+        
 /* ============================================================
    === LOAD AIRPORTS (ÁFRICA — DISTANCIA DESDE BASE GLOBAL) ====
    ============================================================ */
