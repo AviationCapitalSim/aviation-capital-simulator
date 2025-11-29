@@ -698,19 +698,25 @@ function loadAirports() {
     const row = document.createElement("tr");
 
 // ============================================================
-// CALCULAR DISTANCIA (GLOBAL) — CORREGIDO SIN DUPLICAR "let"
+// DISTANCIA GLOBAL CORREGIDA (FUNCIONA EN CUALQUIER CONTINENTE)
 // ============================================================
-dist = "-";
 
-try {
-  const base = findBaseAirportGlobal();
-  if (base && a.latitude && a.longitude && base.latitude && base.longitude) {
-    dist = distanceNM(base.latitude, base.longitude, a.latitude, a.longitude);
-  }
-} catch (e) {
-  dist = "-";
+// Usamos la base GLOBAL siempre
+const base = findBaseAirportGlobal();
+
+let dist = "-";
+
+if (base &&
+    base.latitude && base.longitude &&
+    a.latitude && a.longitude) {
+
+  dist = distanceNM(
+    base.latitude,
+    base.longitude,
+    a.latitude,
+    a.longitude
+  );
 }
-
     row.innerHTML = `
       <td><strong>${a.city}</strong> (${a.icao})</td>
       <td>${a.region}</td>
