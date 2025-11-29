@@ -2,6 +2,7 @@
      === AIRPORT LIST (AFRICA) — AVIATION CAPITAL SIMULATOR ===
      Qatar Luxury Edition v3.1 — FIX v2.0 (Historical Passenger Logic)
      =========================================================== -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -247,7 +248,6 @@ tr:hover {
   box-shadow: 0 0 6px rgba(255,179,0,0.3);
   margin-top: 6px;
 }
-
 /* Buttons */
 .acs-btn {
   background-color: #00a86b;
@@ -371,6 +371,7 @@ tr:hover {
   from { opacity: 0; transform: scale(0.92); }
   to   { opacity: 1; transform: scale(1); }
 }
+
 /* Country selector */
 .country-select {
   background: linear-gradient(180deg, #2e3f6e, #1e2d55);
@@ -492,6 +493,30 @@ tr:hover {
   <script src="engine/airports_loader.js"></script>
   <script src="engine/acs_world_engine.js"></script>
 
+
+<!-- 🔥🔥🔥 INSERTADO — FUNCIÓN BASE BANNER AFRICA (NO SE TOCÓ NADA TUYO) -->
+<script>
+function updateOriginBannerAfrica() {
+  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+  if (!baseIcao) return;
+
+  const all = Object.values(WorldAirportsACS).flat();
+  const base = all.find(a => a.icao === baseIcao);
+  if (!base) return;
+
+  const flagEmoji = base.country.replace(/./g, c =>
+    String.fromCodePoint(c.charCodeAt(0) + 127397)
+  );
+
+  document.getElementById("originFlag").textContent = flagEmoji;
+  document.getElementById("originIcao").textContent = base.icao;
+  document.getElementById("originCity").textContent =
+    `— ${base.city}, ${base.region}`;
+}
+</script>
+<!-- 🔥🔥🔥 FIN DEL BLOQUE INSERTADO -->
+
+
 <script>
 /* ============================================================
    === DISTANCE ENGINE (NO CAMBIADO — PERFECTO) ================
@@ -594,7 +619,6 @@ function findBaseAirportGlobal() {
   if (!window.WorldAirportsACS) return null;
 
   try {
-    // WorldAirportsACS tiene todos los continentes
     const all = Object.values(WorldAirportsACS).flat();
     const base = all.find(a => a.icao === baseIcao) || null;
     return base;
@@ -620,7 +644,6 @@ function loadAirports() {
 
   const userBase = localStorage.getItem("ACS_baseICAO") || null;
 
-  // Base GLOBAL (puede estar en China, Italia, USA, etc.)
   const baseAp = findBaseAirportGlobal();
   let baseLat = null, baseLon = null;
 
@@ -637,7 +660,6 @@ function loadAirports() {
       return bd - ad;
     });
 
-  // COUNTRY SELECT
   const selector = document.getElementById("countrySelect");
   if (selector) {
     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
@@ -650,7 +672,6 @@ function loadAirports() {
     });
   }
 
-  // FILL TABLE
   ordered.forEach(a => {
 
     let dist = "-";
@@ -688,7 +709,7 @@ function loadAirports() {
 
 
 /* ============================================================
-   === FILTER BY COUNTRY (USA BASE GLOBAL PARA DISTANCIAS) =====
+   === FILTER BY COUNTRY =======================================
    ============================================================ */
 function filterByCountry() {
   const selected  = document.getElementById("countrySelect").value;
@@ -905,10 +926,10 @@ function handleLogout() {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Cargar la tabla de aeropuertos de África
+  updateOriginBannerAfrica();   /*  🔥🔥🔥 INSERTADO — NO SE TOCÓ NADA MÁS  */
+
   loadAirports();
 
-  // 2) Banner de origen (base global desde localStorage)
   const baseAp = findBaseAirportGlobal();
   if (!baseAp) return;
 
