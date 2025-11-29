@@ -861,16 +861,12 @@ function handleLogout() {
 }
 
 
-/* ============================================================
-   === INITIALIZATION (SAFE + IDENTICAL A EUROPA) ==============
-   ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
+/* =============================================================
+   === INITIALIZATION (SEGURO) ================================
+   ============================================================= */
+// 2) Banner de origen (MISMA LÓGICA QUE EUROPA)
+const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
 
-  // 1) Cargar aeropuertos
-  loadAirports();
-
-  // 2) Banner de origen
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
 if (baseIcao) {
 
     // Buscar la base en TODOS los aeropuertos del mundo
@@ -882,6 +878,7 @@ if (baseIcao) {
     const base = airportsAll.find(a => a.icao === baseIcao);
 
     if (base) {
+      // Convertir país → bandera
       const flagEmoji = base.country.replace(/./g, c =>
         String.fromCodePoint(c.charCodeAt(0) + 127397)
       );
