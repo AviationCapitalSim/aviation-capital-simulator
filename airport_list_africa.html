@@ -493,113 +493,69 @@ tr:hover {
   <script src="engine/airports_loader.js"></script>
   <script src="engine/acs_world_engine.js"></script>
 
-  <script>
-  function updateOriginBannerAfrica() {
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (!baseIcao) return;
-
-  const all = Object.values(WorldAirportsACS).flat();
-  const base = all.find(a => a.icao === baseIcao);
-  if (!base) return;
-
-  const flagEmoji = (base.country || base.region).replace(/./g, c =>
-    String.fromCodePoint(c.charCodeAt(0) + 127397)
-  );
-
-  document.getElementById("originFlag").textContent = flagEmoji;
-  document.getElementById("originIcao").textContent = base.icao;
-  document.getElementById("originCity").textContent =
-    `— ${base.city}, ${base.region}`;
-}
-</script>
-
-<!-- 🔥🔥🔥 INSERTADO — FUNCIÓN BASE BANNER AFRICA (NO SE TOCÓ NADA TUYO) -->
-<script>
-function updateOriginBannerAfrica() {
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (!baseIcao) return;
-
-  const all = Object.values(WorldAirportsACS).flat();
-  const base = all.find(a => a.icao === baseIcao);
-  if (!base) return;
-
-  const flagEmoji = base.country.replace(/./g, c =>
-    String.fromCodePoint(c.charCodeAt(0) + 127397)
-  );
-
-  document.getElementById("originFlag").textContent = flagEmoji;
-  document.getElementById("originIcao").textContent = base.icao;
-  document.getElementById("originCity").textContent =
-    `— ${base.city}, ${base.region}`;
-}
-</script>
-<!-- 🔥🔥🔥 FIN DEL BLOQUE INSERTADO -->
-
-
-<script>
+   <script>
 /* ============================================================
-   === DISTANCE ENGINE (NO CAMBIADO — PERFECTO) ================
+   === DISTANCE ENGINE =============================
    ============================================================ */
 function distanceNM(lat1, lon1, lat2, lon2) {
   const R = 3440.065;
   const toRad = deg => deg * Math.PI / 180;
 
   const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
+  const dLon = toRad(lon2 - lon1);  // ✔ CORRECTO
 
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) *
-    Math.cos(toRad(lat2)) *
-    Math.sin(dLon / 2) ** 2;
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) ** 2;
 
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
 
-/* ============================================================
-   === SAFE AIRPORT LOADER — AFRICA VERSION ====================
-   ============================================================ */
-function getAirportsAfricaSafe() {
+/* =============================================================
+   === HISTORICAL AIRPORT ENGINE — WITH SAFE FALLBACK ==========
+   ============================================================= */
+function getAirportsEuropeSafe() {
   try {
     if (window.ACS_World &&
+        ACS_World.ready &&
         ACS_World.BY_CONTINENT &&
-        Array.isArray(ACS_World.BY_CONTINENT["Africa"]) &&
-        ACS_World.BY_CONTINENT["Africa"].length > 0) {
+        Array.isArray(ACS_World.BY_CONTINENT["Europe"]) &&
+        ACS_World.BY_CONTINENT["Europe"].length > 0) {
 
-      console.log("🟦 Using ACS_World (historical mode) — Africa");
-      return ACS_World.BY_CONTINENT["Africa"];
+      console.log("🟦 Using ACS_World (historical mode)");
+      return ACS_World.BY_CONTINENT["Europe"];
     }
   } catch (err) {
     console.warn("ACS_World failed:", err);
   }
 
-  console.log("🟧 Fallback → Using WorldAirportsACS (standard mode) — Africa");
-  return (window.WorldAirportsACS && WorldAirportsACS["Africa"])
-    ? WorldAirportsACS["Africa"]
-    : [];
+  console.log("🟧 Fallback → Using WorldAirportsACS (standard mode)");
+  return WorldAirportsACS["Europe"] || [];
 }
 
+// ============================================================
+// === BLOQUE 3 — HISTORICAL DEMAND CURVE (AÑADIDO) ============
+// ============================================================
 
-/* ============================================================
-   === HISTORICAL DEMAND CURVE (COPIADA DE EUROPA) =============
-   ============================================================ */
 function getHistoricalFactor(year) {
 
-  if (year < 1940) return 0.05;
-  if (year < 1950) return 0.10;
-  if (year < 1958) return 0.25;
-  if (year < 1965) return 0.45;
-  if (year < 1975) return 0.60;
-  if (year < 1990) return 0.80;
+  if (year < 1940) return 0.05;     // Aviación temprana
+  if (year < 1950) return 0.10;     // WWII / posguerra
+  if (year < 1958) return 0.25;     // Era turboprop
+  if (year < 1965) return 0.45;     // Jet Age inicial
+  if (year < 1975) return 0.60;     // Boom internacional
+  if (year < 1990) return 0.80;     // Aviación moderna temprana
 
-  return 1.00;
+  return 1.00; // 1990–2025 demanda moderna
 }
 
+// ============================================================
+// === BLOQUE 4 — HISTORICAL CLASS ENGINE (AÑADIDO) ============
+// ============================================================
 
-/* ============================================================
-   === HISTORICAL CLASS ENGINE (COPIADA DE EUROPA) =============
-   ============================================================ */
 function adjustPassengerClasses(demand) {
 
   const year =
@@ -612,11 +568,13 @@ function adjustPassengerClasses(demand) {
   let C = demand.C;
   let F = demand.F;
 
+  // aplicar factor histórico general
   const factor = getHistoricalFactor(year);
   Y = Math.round(Y * factor);
   C = Math.round(C * factor);
   F = Math.round(F * factor);
 
+  // activación histórica de clases
   if (year < 1955) {
     C = 0;
     F = 0;
@@ -626,23 +584,6 @@ function adjustPassengerClasses(demand) {
 
   return { Y, C, F };
 }
-
-
-/* ============================================================
-   === BASE GLOBAL: LEE LOCALSTORAGE Y BUSCA EN TODOS ==========
-   ============================================================ */
-function findBaseAirportGlobal() {
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (!baseIcao) return null;
-
-  // 🔥 WorldAirportsACS SIEMPRE tiene todos los continentes
-  const allContinents = Object.values(WorldAirportsACS);
-  const flat = allContinents.flat();
-
-  const found = flat.find(a => a.icao === baseIcao);
-  return found || null;
-}
-
 /* ============================================================
    === LOAD AIRPORTS (ÁFRICA — DISTANCIA DESDE BASE GLOBAL) ====
    ============================================================ */
@@ -666,14 +607,16 @@ function loadAirports() {
     baseLon = baseAp.longitude;
   }
 
+  // ORDENAR POR MAYOR DEMANDA TOTAL (cruda, igual que antes)
   const ordered = airports
     .filter(a => a.icao !== userBase)
-    .sort((a, b) => {
+    .sort((a,b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
       const bd = b.demand.Y + b.demand.C + b.demand.F;
       return bd - ad;
     });
 
+  // COUNTRY SELECTOR
   const selector = document.getElementById("countrySelect");
   if (selector) {
     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
@@ -686,6 +629,7 @@ function loadAirports() {
     });
   }
 
+   // CONSTRUIR TABLA
   ordered.forEach(a => {
 
     let dist = "-";
@@ -693,8 +637,9 @@ function loadAirports() {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
+    // 🔥 DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
     const d = adjustPassengerClasses(a.demand);
-    const total = d.Y + d.C + d.F || 1;
+    const total = d.Y + d.C + d.F || 1; // evitar /0
     const ecoPct = (d.Y / total) * 100;
     const bizPct = ((d.Y + d.C) / total) * 100;
 
@@ -721,7 +666,6 @@ function loadAirports() {
   });
 }
 
-
 /* ============================================================
    === FILTER BY COUNTRY =======================================
    ============================================================ */
@@ -730,17 +674,16 @@ function filterByCountry() {
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
 
-  const airports = getAirportsAfricaSafe();
+  const airports = getAirportsEuropeSafe();
   if (!airports || airports.length === 0) return;
 
   const userBase = localStorage.getItem("ACS_baseICAO") || null;
-
-  const baseAp = findBaseAirportGlobal();
+  const base = airports.find(a => a.icao === userBase);
   let baseLat = null, baseLon = null;
 
-  if (baseAp) {
-    baseLat = baseAp.latitude;
-    baseLon = baseAp.longitude;
+  if (base) {
+    baseLat = base.latitude;
+    baseLon = base.longitude;
   }
 
   const filtered = airports
@@ -763,6 +706,7 @@ function filterByCountry() {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
+    // 🔥 DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
     const d = adjustPassengerClasses(a.demand);
     const total = d.Y + d.C + d.F || 1;
     const ecoPct = (d.Y / total) * 100;
@@ -773,16 +717,16 @@ function filterByCountry() {
       <td><strong>${a.city}</strong> (${a.icao})</td>
       <td>${a.region}</td>
       <td>${dist} NM</td>
-
       <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
           onmouseout="hideDemandTooltip()">
         ${d.Y}/${d.C}/${d.F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
-
       <td style="display:flex; gap:8px; justify-content:center;">
-        <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
-        <button class="acs-btn" onclick="goToSchedule('${a.icao}')">Create Route</button>
+      <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
+
+      <!-- 🔥 AQUI CAMBIAMOS createRoute → goToSchedule -->
+      <button class="acs-btn" onclick="goToSchedule('${a.icao}')">Create Route</button>
       </td>
     `;
     tableBody.appendChild(row);
@@ -938,26 +882,31 @@ function handleLogout() {
 /* ============================================================
    === INITIALIZATION (SIMPLE: CARGA + BANNER GLOBAL) ==========
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
+   document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Cargar origen desde la base global ANTES de cargar aeropuertos
-  const baseAp = findBaseAirportGlobal();
-  if (baseAp) {
-    const flagEmoji = (baseAp.country || baseAp.region).replace(/./g, c =>
-      String.fromCodePoint(c.charCodeAt(0) + 127397)
+     // 1) Ahora sí cargar la tabla (con la base ya lista)
+     loadAirports();  
+     
+     // 2) Cargar origen desde la base global ANTES de cargar aeropuertos
+     const baseIcao = localStorage.getItem("ACS_baseICAO") || null;     
+     if (baseIcao) {     
+     const airports = findBaseAirportGlobal();
+     const base = airports.find(a => a.icao === baseIcao);
+
+     if (base) {
+     const flagEmoji = base.country.replace(/./g, c =>
+     String.fromCodePoint(c.charCodeAt(0) + 127397)
     );
 
     document.getElementById("originFlag").textContent = flagEmoji;
-    document.getElementById("originIcao").textContent = baseAp.icao;
-    document.getElementById("originCity").textContent =
-      `— ${baseAp.city}, ${baseAp.region}`;
+      document.getElementById("originIcao").textContent = base.icao;
+      document.getElementById("originCity").textContent =
+        `— ${base.city}, ${base.region}`;
+    }
   }
-
-  // 2) Ahora sí cargar la tabla (con la base ya lista)
-  loadAirports();
-
 });
 
+        
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
    ============================================================ */
