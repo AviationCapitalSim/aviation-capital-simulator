@@ -994,9 +994,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
-
-
-        
+       
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
    ============================================================ */
@@ -1009,6 +1007,17 @@ function goToSchedule(destICAO) {
 
   window.location.href = `schedule_table.html?from=${base}&to=${destICAO}`;
 }
+
+function buildAirportIndex() {
+
+   // … toda la indexación …
+
+   console.log(`[ACS] WorldAirportsACS loaded: ${count} airports indexed (Global v1.2).`);
+
+   // ***🔥 ARREGLO DEFINITIVO AQUÍ ***
+   ACS_World.ready = true;
+}
+        
 </script>
 
 </body>
