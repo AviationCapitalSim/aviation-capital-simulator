@@ -648,9 +648,10 @@ function waitForWorldEngine(callback) {
 }
 
 /* ============================================================
-   === LOAD AIRPORTS (ÁFRICA — DISTANCIA DESDE BASE GLOBAL) ====
+   === LOAD AIRPORTS (ÁFRICA — NM FIX FINAL) ===================
    ============================================================ */
-function loadAirports() {
+ function loadAirports() {
+
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
 
@@ -660,26 +661,26 @@ function loadAirports() {
     return;
   }
 
+  // ✔ BASE REAL DEL JUGADOR (GLOBAL)
   const userBase = localStorage.getItem("ACS_baseICAO") || null;
+  const base = findBaseAirportGlobal();
 
-  const baseAp = findBaseAirportGlobal();
   let baseLat = null, baseLon = null;
-
-  if (baseAp) {
-    baseLat = baseAp.latitude;
-    baseLon = baseAp.longitude;
+  if (base) {
+    baseLat = base.latitude;
+    baseLon = base.longitude;
   }
 
-  // ORDENAR POR MAYOR DEMANDA TOTAL (cruda, igual que antes)
+  // ORDENAR POR DEMANDA TOTAL (igual que Europa)
   const ordered = airports
     .filter(a => a.icao !== userBase)
-    .sort((a,b) => {
+    .sort((a, b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
       const bd = b.demand.Y + b.demand.C + b.demand.F;
       return bd - ad;
     });
 
-  // COUNTRY SELECTOR
+  // CONSTRUIR SELECTOR DE PAÍSES
   const selector = document.getElementById("countrySelect");
   if (selector) {
     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
@@ -692,17 +693,18 @@ function loadAirports() {
     });
   }
 
-   // CONSTRUIR TABLA
+  // CONSTRUIR TABLA COMPLETA
   ordered.forEach(a => {
 
+    // ✔ DISTANCIA DESDE BASE GLOBAL
     let dist = "-";
     if (baseLat !== null && baseLon !== null) {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
-    // 🔥 DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
+    // ✔ DEMANDA HISTÓRICA
     const d = adjustPassengerClasses(a.demand);
-    const total = d.Y + d.C + d.F || 1; // evitar /0
+    const total = d.Y + d.C + d.F || 1;
     const ecoPct = (d.Y / total) * 100;
     const bizPct = ((d.Y + d.C) / total) * 100;
 
