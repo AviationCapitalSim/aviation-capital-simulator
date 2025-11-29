@@ -424,7 +424,12 @@ tr:hover {
   transition: 0.25s ease;
   box-shadow: 0 0 10px rgba(255,179,0,0.25);
 }
-
+       
+.continent-btn {
+  display: inline-block;     /* <-- añadir */
+  text-decoration: none;     /* <-- añadir */
+}
+       
 .continent-btn:hover {
   background: #ffb300;
   color: #081530;
@@ -480,16 +485,23 @@ tr:hover {
     </div>
 
      <!-- ===== CONTINENT QUICK ACCESS (QATAR LUXURY) ===== -->
-    
-     <div class="continent-access">
-      <button onclick="goContinent('europe.html')" class="continent-btn">Europe</button>
-      <button onclick="goContinent('asia.html')" class="continent-btn">Asia</button>
-      <button onclick="goContinent('africa.html')" class="continent-btn">Africa</button>
-      <button onclick="goContinent('northamerica.html')" class="continent-btn">North America</button>
-      <button onclick="goContinent('oceania.html')" class="continent-btn">Oceania</button>
-      <button onclick="goContinent('middleeast.html')" class="continent-btn">Middle East</button>
-    </div>    
        
+    <div class="continent-access">
+
+     <a href="airport_list_europe.html" class="continent-btn">Europe</a>
+
+     <a href="airport_list_asia.html" class="continent-btn">Asia</a>
+
+     <a href="airport_list_africa.html" class="continent-btn">Africa</a>
+
+     <a href="airport_list_northamerica.html" class="continent-btn">North America</a>
+
+     <a href="airport_list_oceania.html" class="continent-btn">Oceania</a>
+
+     <a href="airport_list_middleeast.html" class="continent-btn">Middle East</a>
+
+    </div>
+ 
      <!-- TABLE -->
        
     <table id="airportTable">
@@ -1016,12 +1028,6 @@ function goToSchedule(destICAO) {
   }
 
   window.location.href = `schedule_table.html?from=${base}&to=${destICAO}`;
-}
-     
-/* ===== CONTINENT QUICK ACCESS REDIRECT ===== */
-
-function goContinent(page) {
-  window.location.href = page;
 }
      
 </script>
