@@ -584,6 +584,29 @@ function adjustPassengerClasses(demand) {
 
   return { Y, C, F };
 }
+
+/* =============================================================
+   === HISTORICAL AIRPORT ENGINE — AFRICA SAFE MODE ============
+   ============================================================= */
+function getAirportsAfricaSafe() {
+  try {
+    if (window.ACS_World &&
+        ACS_World.ready &&
+        ACS_World.BY_CONTINENT &&
+        Array.isArray(ACS_World.BY_CONTINENT["Africa"]) &&
+        ACS_World.BY_CONTINENT["Africa"].length > 0) {
+
+      console.log("🟦 Using ACS_World (historical mode) — Africa");
+      return ACS_World.BY_CONTINENT["Africa"];
+    }
+  } catch (err) {
+    console.warn("ACS_World failed (Africa):", err);
+  }
+
+  console.log("🟧 Fallback → Using WorldAirportsACS (standard mode) — Africa");
+  return WorldAirportsACS["Africa"] || [];
+}
+
 /* ============================================================
    === LOAD AIRPORTS (ÁFRICA — DISTANCIA DESDE BASE GLOBAL) ====
    ============================================================ */
