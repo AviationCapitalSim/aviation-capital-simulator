@@ -880,29 +880,38 @@ function handleLogout() {
 /* =============================================================
    === INITIALIZATION (SEGURO) ================================
    ============================================================= */
+/* ============================================================
+   === INITIALIZATION (AFRICA — CONTINENT SAFE MODE) ===========
+   ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Cargar aeropuertos (modo histórico + fallback)
+  // 1) Cargar aeropuertos (histórico + fallback)
   loadAirports();
 
-  // 2) Banner de origen seguro
+  // 2) Cargar la base desde localStorage
   const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (baseIcao) {
-    const airports = getAirportsEuropeSafe();
-    const base = airports.find(a => a.icao === baseIcao);
+  if (!baseIcao) return;
 
-    if (base) {
-      const flagEmoji = base.country.replace(/./g, c =>
-        String.fromCodePoint(c.charCodeAt(0) + 127397)
-      );
+  // 3) Obtener lista de aeropuertos de África (modo seguro)
+  const airports = getAirportsAfricaSafe();
+  if (!airports || !airports.length) return;
 
-      document.getElementById("originFlag").textContent = flagEmoji;
-      document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent =
-        `— ${base.city}, ${base.region}`;
-    }
-  }
+  // 4) Buscar el aeropuerto base en la lista de África
+  const base = airports.find(a => a.icao === baseIcao);
+  if (!base) return;
+
+  // 5) Convertir el país en bandera (🇪🇬, 🇿🇦, 🇳🇬, etc.)
+  const flagEmoji = base.country.replace(/./g, c =>
+    String.fromCodePoint(c.charCodeAt(0) + 127397)
+  );
+
+  // 6) Actualizar banner de origen
+  document.getElementById("originFlag").textContent = flagEmoji;
+  document.getElementById("originIcao").textContent = base.icao;
+  document.getElementById("originCity").textContent =
+    `— ${base.city}, ${base.region}`;
 });
+
   
   function goToSchedule(destICAO) {
   const base = localStorage.getItem("ACS_baseICAO") || "";
