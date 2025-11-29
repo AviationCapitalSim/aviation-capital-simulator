@@ -993,17 +993,23 @@ function updateGlobalBaseBanner() {
 
 
 /* ============================================================
-   === INITIALIZATION (AFRICA - FINAL VERSION) =================
+   === INITIALIZATION (AFRICA — NM FIX FINAL) ==================
    ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
 
-  document.addEventListener("DOMContentLoaded", () => {
+  // ✔ Esperar a que ACS_World esté completamente listo
+  waitForWorldEngine(() => {
 
-  // 1) Cargar aeropuertos del continente
-  loadAirports();
+    // 1) Actualizar banner con la base REAL
+    updateGlobalBaseBanner();
 
-  // 2) Esperar a que el motor mundial termine y actualizar base
-  updateGlobalBaseBanner();
+    // 2) Cargar aeropuertos con la base REAL del jugador
+    loadAirports();
+
+  });
+
 });
+
 
        
 /* ============================================================
