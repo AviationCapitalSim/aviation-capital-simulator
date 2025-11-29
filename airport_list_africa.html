@@ -988,7 +988,28 @@ function updateGlobalBaseBanner() {
   document.getElementById("originCity").textContent =
     `— ${base.city}, ${base.region}`;
 }
+        
+function ensureBaseBeforeLoad(callback) {
+  const base = localStorage.getItem("ACS_baseICAO");
 
+  // No hay base → no cargamos
+  if (!base) {
+    console.warn("⚠️ No base set yet");
+    return;
+  }
+
+  // Intentar obtener aeropuerto real del motor o del fallback
+  const ap = findBaseAirportGlobal();
+
+  if (ap) {
+    callback(); // ahora sí existe → cargar tabla
+    return;
+  }
+
+  // Aún no está cargada → reintentar
+  setTimeout(() => ensureBaseBeforeLoad(callback), 60);
+}
+        
  function waitForWorldEngine(callback) {
   if (window.ACS_World && ACS_World.ready === true) {
     callback();
@@ -1001,19 +1022,18 @@ function updateGlobalBaseBanner() {
  /* ============================================================
    === INITIALIZATION (AFRICA - SIMPLE, COMO EUROPA) ===========
    ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Primero actualiza la base
+  // 1) Actualizamos el banner (visual)
   updateGlobalBaseBanner();
 
-  // 2) Safari necesita un micro–delay para liberar localStorage
-  setTimeout(() => {
+  // 2) Nos aseguramos que la BASE REAL exista
+  ensureBaseBeforeLoad(() => {
     loadAirports();
-  }, 50);
+  });
 
 });
-
-
        
 /* ============================================================
    === ROUTE CREATION REDIRECT ================================
