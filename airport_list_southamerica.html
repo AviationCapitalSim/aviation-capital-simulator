@@ -401,7 +401,38 @@ tr:hover {
 .country-select {
   width: 160px;
 }
-  </style>
+       
+/* ===== CONTINENT QUICK ACCESS ===== */
+.continent-access {
+  margin-top: 14px;
+  margin-bottom: 22px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.continent-btn {
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid #ffb300;
+  background: rgba(20,40,80,0.45);
+  color: #ffe7a0;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 0 10px rgba(255,179,0,0.25);
+}
+
+.continent-btn:hover {
+  background: #ffb300;
+  color: #081530;
+  transform: scale(1.07);
+  box-shadow: 0 0 18px rgba(255,179,0,0.55);
+}
+
+</style>
 </head>
 
 <body>
@@ -439,7 +470,17 @@ tr:hover {
       <strong id="originIcao">---</strong>
       <span id="originCity">— Loading...</span>
     </div>
-
+ 
+       <!-- ===== CONTINENT QUICK ACCESS (QATAR LUXURY) ===== -->
+    <div class="continent-access">
+      <button onclick="goContinent('europe.html')" class="continent-btn">Europe</button>
+      <button onclick="goContinent('asia.html')" class="continent-btn">Asia</button>
+      <button onclick="goContinent('africa.html')" class="continent-btn">Africa</button>
+      <button onclick="goContinent('northamerica.html')" class="continent-btn">North America</button>
+      <button onclick="goContinent('oceania.html')" class="continent-btn">Oceania</button>
+      <button onclick="goContinent('middleeast.html')" class="continent-btn">Middle East</button>
+    </div>
+       
     <!-- Country selector -->
     <div class="country-filter">
       <select id="countrySelect" class="country-select" onchange="filterByCountry()">
@@ -954,7 +995,12 @@ function goToSchedule(destICAO) {
 
   window.location.href = `schedule_table.html?from=${base}&to=${destICAO}`;
 }
-
+     
+/* ===== CONTINENT QUICK ACCESS REDIRECT ===== */
+function goContinent(page) {
+  window.location.href = page;
+}
+     
 </script>
 
 </body>
