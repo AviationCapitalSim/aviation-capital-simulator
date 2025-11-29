@@ -960,23 +960,41 @@ function updateGlobalBaseBanner() {
     `— ${base.city}, ${base.region}`;
 }
 
+function waitForWorldEngine(callback) {
+  const ready =
+    window.ACS_World &&
+    ACS_World.ready === true &&
+    Array.isArray(ACS_World.ALL_AIRPORTS) &&
+    ACS_World.ALL_AIRPORTS.length > 0;
+
+  if (ready) {
+    callback();
+  } else {
+    setTimeout(() => waitForWorldEngine(callback), 120);
+  }
+}
+
 /* ============================================================
    === INITIALIZATION (AFRICA — NM FIX FINAL) ==================
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ✔ Esperar a que ACS_World esté completamente listo
+  console.log("⏳ Esperando que ACS_World esté listo...");
+
   waitForWorldEngine(() => {
 
-    // 1) Cargar aeropuertos con la base REAL del jugador
+    console.log("🌍 ACS_World listo — cargando aeropuertos de África...");
+
+    // 1) Cargar aeropuertos de África
     loadAirports();
 
-    // 2) Actualizar banner (origen)
+    // 2) Actualizar banner con la base REAL del jugador
     updateGlobalBaseBanner();
 
   });
 
 });
+
 
         
 /* ============================================================
