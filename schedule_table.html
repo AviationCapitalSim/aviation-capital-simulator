@@ -367,7 +367,28 @@ footer {
   width: 300px;
   text-align: center;
 }
+       
+/* === Compact Action Plan Column (Schedule) === */
+       
+.plan-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
 
+.plan-actions .btn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* shrink the Action Plan column */
+#scheduleTable td:last-child,
+#scheduleTable th:last-child {
+  width: 170px; /* ajusta si quieres más compacto: 150, 160, 180 */
+}
+       
 </style>
 </head>
 
@@ -428,7 +449,7 @@ footer {
       <tr>
         <th>Aircraft</th>
         <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th>
-        <th>Plan</th>
+        <th>Action Plan</th>
       </tr>
     </thead>
     <tbody id="scheduleBody"></tbody>
