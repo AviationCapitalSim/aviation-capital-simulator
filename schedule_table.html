@@ -1,203 +1,392 @@
+<!-- ============================================================
+     === SCHEDULE TABLE MODULE — Qatar Luxury Edition ===========
+     ------------------------------------------------------------
+     Version: v1.0 | Date: 30 NOV 2025
+     ============================================================ -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Schedule Table - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== ACS Favicons ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
   <style>
-    /* === SCHEDULE TABLE (ACS Clean 2) === */
-    body {
-      background-color:#081530;
-      color:#fff;
-      font-family:"Segoe UI",sans-serif;
-      margin:0;
-    }
+/* ============================================================
+     === ACS Qatar Luxury — Shared Header Style ================
+   ============================================================ */
 
-    h2 {
-      color:#FFB300;
-      margin-top:6rem; /* header fijo + reloj */
-      text-align:center;
-    }
-    .sub { color:#ccc; text-align:center; margin-bottom:2rem; }
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
 
-    table {
-      width:90%; margin:0 auto;
-      border-collapse:collapse;
-      background:#0e1b3c;
-      border-radius:10px;
-      overflow:hidden;
-      box-shadow:0 0 10px rgba(0,0,0,.4);
-    }
-    th,td {
-      border:1px solid rgba(255,255,255,.1);
-      text-align:center;
-      padding:.8rem;
-      font-size:.95rem;
-      vertical-align:top;
-    }
-    th { background:#102040; color:#FFB300; font-weight:600; }
-    td { background:#0e2048; color:#ccc; }
+/* HEADER */
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
 
-    /* === CHIP AZUL (número de vuelo) === */
-    .chip {
-      display:inline-flex; align-items:center; justify-content:center; gap:4px;
-      background:#0b2b5f; color:#FFB300; border-radius:8px;
-      padding:4px 8px; font-weight:700; font-size:.85rem;
-      margin:3px 0; cursor:pointer; position:relative;
-    }
-    .chip .tooltip {
-      position:absolute; bottom:125%; left:50%; transform:translateX(-50%);
-      background:#FFB300; color:#0b1f3d;
-      padding:6px 10px; border-radius:6px;
-      font-size:.8rem; font-weight:700;
-      white-space:nowrap; display:none; z-index:20;
-      box-shadow:0 3px 10px rgba(0,0,0,.4);
-    }
-    .chip:hover .tooltip { display:block; }
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    .next-slot { margin-top:6px; font-size:.8rem; color:#88c7ff; }
-    .conflict { color:#FFD54F; font-weight:600; }
+.acs-left img {
+  height: 46px;
+}
 
-    .btn {
-      border:none; border-radius:9999px;
-      padding:7px 13px; font-weight:700; letter-spacing:.2px;
-      cursor:pointer; transition:all .15s ease;
-      box-shadow:0 2px 6px rgba(0,0,0,.25); margin:0 4px;
-    }
-    .btn-assign { background:#1ED760; color:#111; }
-    .btn-assign:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(30,215,96,.35); }
-    .btn-maint { background:linear-gradient(180deg,#FFC72C 0%,#FFB300 100%); color:#111; }
-    .btn-maint:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,179,0,.35); }
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
 
-    .plan-actions { display:flex; flex-direction:column; align-items:center; gap:10px; }
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
 
-    .modal {
-      display:none; position:fixed; z-index:10;
-      left:0; top:0; width:100%; height:100%;
-      background:rgba(0,0,0,.7);
-      justify-content:center; align-items:center;
-    }
-    .modal-content {
-      background:#0e1b3c; border-radius:10px;
-      padding:1.5rem 2rem; width:300px;
-      text-align:center; color:#fff;
-    }
-    .modal-content button {
-      background:#1DB954; color:#fff;
-      border:none; padding:.5rem 1.2rem;
-      border-radius:6px; font-weight:600;
-      margin:.5rem; cursor:pointer;
-    }
-    .modal-content button:hover { background:#17a84d; }
+/* NAV LINKS */
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
 
-    .summary { margin-top:2rem; text-align:center; color:#ccc; }
-    .back-btn {
-      display:block; margin:2rem auto;
-      color:#1DB954; background:none;
-      border:1px solid #1DB954; border-radius:6px;
-      padding:.4rem 1rem; cursor:pointer;
-    }
-    .back-btn:hover { background:#1DB954; color:#fff; }
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffb300;
+  text-shadow: 0 0 6px rgba(255,179,0,0.6);
+}
 
-    footer {
-      text-align:center; color:#999;
-      margin-top:2rem; padding:1rem;
-    }
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
 
-    /* ✅ Reloj cockpit Airbus */
-    .acs-clock-header {
-      font-family:'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      font-weight:bold;
-      background:rgba(0,255,128,0.08);
-      padding:0.3rem 0.8rem;
-      border-radius:6px;
-      font-size:0.9rem;
-      margin-left:1rem;
-    }
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+  color: #dfe9ff;
+}
+
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+/* CLOCK */
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* MAIN */
+.acs-main {
+  padding: 110px 2rem 70px;
+  text-align: center;
+}
+
+.sub {
+  margin-top: -0.4rem;
+  color: #cbd6ff;
+  font-size: 1rem;
+}
+
+/* ============================================================
+     === TABLE — Qatar Luxury Panel ============================
+   ============================================================ */
+
+table {
+  width: 90%;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(255,179,0,0.1);
+  border: 1px solid rgba(255,179,0,0.15);
+}
+
+th {
+  background: rgba(255,179,0,0.15);
+  color: #ffca3a;
+  padding: 1rem;
+  font-size: 1rem;
+  text-shadow: 0 0 6px rgba(255,200,80,0.4);
+}
+
+td {
+  background: rgba(10,20,45,0.8);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 0.8rem;
+  color: #dbe4ff;
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+/* CHIPS */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0c2b52;
+  padding: 5px 10px;
+  margin: 2px 0;
+  border-radius: 8px;
+  color: #ffca3a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 0 8px rgba(255,200,60,0.25);
+  cursor: pointer;
+}
+
+/* Tooltip */
+.chip .tooltip {
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: #ffca3a;
+  color: #0c1f3c;
+  border-radius: 6px;
+  display: none;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.chip:hover .tooltip {
+  display: block;
+}
+
+/* BUTTONS */
+.btn {
+  border-radius: 14px;
+  padding: 7px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-assign {
+  background: #00a86b;
+  color: #fff;
+}
+
+.btn-assign:hover {
+  background: #00945f;
+}
+
+.btn-maint {
+  background: #ffb300;
+  color: #0d1b34;
+}
+
+.btn-maint:hover {
+  background: #e6a100;
+}
+
+.back-btn {
+  margin-top: 2rem;
+  padding: 0.6rem 1.6rem;
+  border-radius: 10px;
+  border: 1px solid #ffb300;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.back-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  color: #7c8bb8;
+  padding: 2rem 0;
+  margin-top: 2rem;
+}
   </style>
 </head>
 
 <body>
-  <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
+
+<!-- ============================================================
+     === HEADER QATAR LUXURY (IDÉNTICO A DASHBOARD) =============
+     ============================================================ -->
+<header class="acs-header">
+
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
+    <a href="finance.html">Bank</a>
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html" class="active">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
   </nav>
 
-  <div class="acs-auth">
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
   </div>
 
-  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
 </header>
 
-  <main class="acs-main">
-    <h2>📅 Weekly Flight Schedule</h2>
-    <p class="sub">Automatic schedule monitor with real-time route integration.</p>
+<!-- ============================================================
+     === MAIN CONTENT ===========================================
+     ============================================================ -->
+<main class="acs-main">
 
-    <table id="scheduleTable">
-      <thead>
-        <tr>
-          <th>Aircraft</th>
-          <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th>
-          <th>Plan</th>
-        </tr>
-      </thead>
-      <tbody id="scheduleBody"></tbody>
-    </table>
+  <h2>📅 Weekly Flight Schedule</h2>
+  <p class="sub">Automatic schedule monitor with real-time route integration.</p>
 
-    <div class="summary"><p id="updateTime">Last update: --</p></div>
+  <table id="scheduleTable">
+    <thead>
+      <tr>
+        <th>Aircraft</th>
+        <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th>
+        <th>Plan</th>
+      </tr>
+    </thead>
+    <tbody id="scheduleBody"></tbody>
+  </table>
 
-    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
-  </main>
-
-  <div id="actionModal" class="modal">
-    <div class="modal-content">
-      <h3>Manage Flight</h3>
-      <button onclick="removeItem()">🗑 Remove</button>
-      <button style="background:#e53935;" onclick="closeActionModal()">❌ Cancel</button>
-      <button style="background:#ff9800;" onclick="deleteFlight()">🚮 Delete</button>
-      <button style="background:#1E88E5;" onclick="editFlight()">✏️ Edit</button>
-    </div>
+  <div class="summary">
+    <p id="updateTime">Last update: --</p>
   </div>
 
-  <div id="maintModal" class="modal">
-    <div class="modal-content">
-      <h3>Plan Maintenance</h3>
-      <label>Type</label>
-      <select id="maintType" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
-        <option value="A">A-Check (5 h)</option>
-        <option value="B">B-Check (24 h)</option>
-      </select>
+  <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
 
-      <label style="margin-top:10px;">Day</label>
-      <select id="maintDay" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
-        <option value="mon">Mon</option><option value="tue">Tue</option><option value="wed">Wed</option>
-        <option value="thu">Thu</option><option value="fri">Fri</option><option value="sat">Sat</option><option value="sun">Sun</option>
-      </select>
-
-      <label style="margin-top:10px;">Start Time</label>
-      <input type="time" id="maintStart" value="06:00" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
-
-      <button onclick="applyMaintenance()">Apply</button>
-      <button onclick="closeMaintModal()">❌ Cancel</button>
-    </div>
+</main>
+<!-- ============================================================
+     === MODAL: ACTION MENU =====================================
+     ============================================================ -->
+<div id="actionModal" class="modal">
+  <div class="modal-content">
+    <h3>Manage Flight</h3>
+    <button onclick="removeItem()">🗑 Remove</button>
+    <button style="background:#e53935;" onclick="closeActionModal()">❌ Cancel</button>
+    <button style="background:#ff9800;" onclick="deleteFlight()">🚮 Delete</button>
+    <button style="background:#1E88E5;" onclick="editFlight()">✏️ Edit</button>
   </div>
-  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+</div>
 
-  <script>
+<!-- ============================================================
+     === MODAL: MAINTENANCE =====================================
+     ============================================================ -->
+<div id="maintModal" class="modal">
+  <div class="modal-content">
+    <h3>Plan Maintenance</h3>
+
+    <label>Type</label>
+    <select id="maintType" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
+      <option value="A">A-Check (5 h)</option>
+      <option value="B">B-Check (24 h)</option>
+    </select>
+
+    <label style="margin-top:10px;">Day</label>
+    <select id="maintDay" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
+      <option value="mon">Mon</option><option value="tue">Tue</option><option value="wed">Wed</option>
+      <option value="thu">Thu</option><option value="fri">Fri</option><option value="sat">Sat</option><option value="sun">Sun</option>
+    </select>
+
+    <label style="margin-top:10px;">Start Time</label>
+    <input type="time" id="maintStart" value="06:00" style="width:100%;padding:8px;border-radius:6px;border:none;background:#12224c;color:#fff;">
+
+    <button onclick="applyMaintenance()">Apply</button>
+    <button onclick="closeMaintModal()">❌ Cancel</button>
+  </div>
+</div>
+
+<footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+
+<!-- ============================================================
+     === 🔥 AQUÍ VA *TODO* TU JS ORIGINAL (SIN TOCAR NADA) =====
+     ============================================================ -->
+<script>
     const days = ["mon","tue","wed","thu","fri","sat","sun"];
     const STORE_KEY = "scheduleItems";
     const ROUTE_KEY  = "confirmedRoute";
@@ -283,22 +472,24 @@
             chip.onclick = ()=>openActionModal(chip);
             td.appendChild(chip);
           });
-          // === Maintenance influence on Next Flight ===
-             const maintToday = dayItems.find(x => x.type === "service");
-            if (maintToday) {
+
+          /* === Maintenance influence on Next Flight === */
+          const maintToday = dayItems.find(x => x.type === "service");
+          if (maintToday) {
             if (maintToday.serviceType === "A") {
-            const maintEnd = toMin(maintToday.end);
-            lastEnd = (lastEnd ?? maintEnd) < maintEnd ? maintEnd : lastEnd;
-         }
-           if (maintToday.serviceType === "B") {
-           const nextInfo = document.createElement("div");
-           nextInfo.className = "next-slot";
-           nextInfo.textContent = "Next Flight: N/A (B-Check Day)";
-           td.appendChild(nextInfo);
-           tr.appendChild(td);
-           return; // skip rest for B-check day
-        }
-       }
+              const maintEnd = toMin(maintToday.end);
+              lastEnd = (lastEnd ?? maintEnd) < maintEnd ? maintEnd : lastEnd;
+            }
+            if (maintToday.serviceType === "B") {
+              const nextInfo = document.createElement("div");
+              nextInfo.className = "next-slot";
+              nextInfo.textContent = "Next Flight: N/A (B-Check Day)";
+              td.appendChild(nextInfo);
+              tr.appendChild(td);
+              return; // skip rest for B-check day
+            }
+          }
+
           if(hadFlight){
             const nextInfo = document.createElement("div");
             nextInfo.className = "next-slot";
@@ -306,53 +497,67 @@
             nextInfo.textContent = `Next Flight: ${next}`;
             td.appendChild(nextInfo);
           }
+
           tr.appendChild(td);
         });
 
         const planTd = document.createElement("td");
-        const wrap = document.createElement("div"); wrap.className="plan-actions";
+        const wrap = document.createElement("div"); 
+        wrap.className="plan-actions";
+
         const assignBtn = document.createElement("button");
         assignBtn.className = "btn btn-assign";
         assignBtn.textContent = "Assign Route";
         assignBtn.onclick = ()=>assignRouteToTail(ac);
+
         const maintBtn = document.createElement("button");
         maintBtn.className = "btn btn-maint";
         maintBtn.textContent = "Plan Maintenance";
         maintBtn.onclick = ()=>openMaintModal(ac.tail);
-        wrap.appendChild(assignBtn); wrap.appendChild(maintBtn);
-        planTd.appendChild(wrap); tr.appendChild(planTd);
+
+        wrap.appendChild(assignBtn); 
+        wrap.appendChild(maintBtn);
+        planTd.appendChild(wrap);
+        tr.appendChild(planTd);
         tbody.appendChild(tr);
       });
-      document.getElementById("updateTime").textContent = "Last update: " + new Date().toLocaleTimeString();
+
+      document.getElementById("updateTime").textContent = 
+        "Last update: " + new Date().toLocaleTimeString();
     }
 
     function assignRouteToTail(ac){
       const route = getRoute();
       if(!route){ alert("No confirmed route available."); return; }
       if(route.aircraft !== ac.type){ alert(`⚠ Route is for ${route.aircraft}, but tail ${ac.tail} is ${ac.type}.`); return; }
+
       const items = getItems();
       const daysSel = Array.isArray(route.days) && route.days.length ? route.days : ["mon"];
       const separate = !!route.separateDays;
       const dep = route.departure || "06:00";
       const dur = Number(route.blockTimeMin || 210);
       const arr = toHHMM(toMin(dep) + dur);
+
       const flightOut = route.flightNumberOut || Math.floor(100 + Math.random() * 800);
       const flightIn  = route.flightNumberIn  || flightOut + 1;
-      // === Prevent duplicate flight numbers across aircraft ===
+
       const allFlights = getItems().filter(f => f.type === "flight");
       const isDuplicate = allFlights.some(f =>
-      f.flightNumberOut === flightOut || f.flightNumberIn === flightIn
+        f.flightNumberOut === flightOut || f.flightNumberIn === flightIn
       );
-      // === Prevent reusing deleted flight numbers ===
-     const deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
-     if (deletedFlights.includes(flightOut) || deletedFlights.includes(flightIn)) {
-     alert(`⛔ Flight ${flightOut}/${flightIn} was previously deleted and cannot be reused.`);
-     return;
-     }
+
+      const deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
+
+      if (deletedFlights.includes(flightOut) || deletedFlights.includes(flightIn)) {
+        alert(`⛔ Flight ${flightOut}/${flightIn} was previously deleted and cannot be reused.`);
+        return;
+      }
+
       if (isDuplicate) {
-      alert(`⚠️ Flight number ${flightOut}/${flightIn} already assigned to another aircraft.`);
-      return;
-     }
+        alert(`⚠️ Flight number ${flightOut}/${flightIn} already assigned to another aircraft.`);
+        return;
+      }
+
       const hasConflict = (day)=>{
         const dayItems = items.filter(x=>x.tail===ac.tail && x.day===day && x.type==="flight");
         const newStart = toMin(dep);
@@ -365,8 +570,10 @@
         }
         return false;
       };
+
       const blockId = separate ? null : ("block-"+Math.random().toString(36).slice(2,8));
       let assignedAny = false;
+
       daysSel.forEach(day=>{
         if(hasConflict(day)) return;
         const flight = {
@@ -386,22 +593,35 @@
         items.push(flight);
         assignedAny = true;
       });
-      if(!assignedAny){ alert("⚠ Cannot assign: schedule conflicts on selected days."); return; }
+
+      if(!assignedAny){
+        alert("⚠ Cannot assign: schedule conflicts on selected days.");
+        return;
+      }
+
       setItems(items);
       renderSchedule();
     }
 
     let maintTail=null;
-    function openMaintModal(tail){ maintTail=tail; document.getElementById("maintModal").style.display="flex"; }
-    function closeMaintModal(){ maintTail=null; document.getElementById("maintModal").style.display="none"; }
+    function openMaintModal(tail){
+      maintTail=tail; 
+      document.getElementById("maintModal").style.display="flex";
+    }
+    function closeMaintModal(){
+      maintTail=null; 
+      document.getElementById("maintModal").style.display="none";
+    }
 
     function applyMaintenance(){
       if(!maintTail){ closeMaintModal(); return; }
+
       const t = document.getElementById("maintType").value;
       const d = document.getElementById("maintDay").value;
       const start = document.getElementById("maintStart").value || "06:00";
       const dur = t === "A" ? 300 : 1440;
       const end = toHHMM(toMin(start) + dur);
+
       const items = getItems();
       items.push({
         id:"svc-"+Math.random().toString(36).slice(2,8),
@@ -413,87 +633,96 @@
         start:start,
         end:end
       });
+
       setItems(items);
       closeMaintModal();
       renderSchedule();
-  }  // ✅ cierre correcto
+    }
 
     let selectedChip=null;
     function openActionModal(chip){
-    selectedChip = chip;
-    const modal = document.getElementById("actionModal");
-    const buttons = modal.querySelectorAll("button");
+      selectedChip = chip;
+      const modal = document.getElementById("actionModal");
+      const buttons = modal.querySelectorAll("button");
 
-    // Ocultar o mostrar botones según tipo
-    const type = chip.dataset.type;
-    buttons.forEach(btn => btn.style.display = "inline-block"); // reset
+      const type = chip.dataset.type;
+      buttons.forEach(btn => btn.style.display = "inline-block");
 
-    if (type === "service") {
-     buttons.forEach(btn => {
-      if (btn.textContent.includes("Delete") || btn.textContent.includes("Edit")) {
-        btn.style.display = "none";
+      if (type === "service") {
+        buttons.forEach(btn => {
+          if (btn.textContent.includes("Delete") || btn.textContent.includes("Edit")) {
+            btn.style.display = "none";
+          }
+        });
       }
-    });
-  }
 
-  modal.style.display = "flex";
-}
+      modal.style.display = "flex";
+    }
 
-    function closeActionModal(){ selectedChip=null; document.getElementById("actionModal").style.display="none"; }
+    function closeActionModal(){
+      selectedChip=null;
+      document.getElementById("actionModal").style.display="none";
+    }
 
     function removeItem(){
       if(!selectedChip){ closeActionModal(); return; }
       const id = selectedChip.dataset.id;
       const block = selectedChip.dataset.blockId || "";
       const type = selectedChip.dataset.type;
+
       const items=getItems();
       let filtered;
-      if(type==="flight" && block){ filtered = items.filter(x=>x.blockId!==block); }
-      else{ filtered = items.filter(x=>x.id!==id); }
+
+      if(type==="flight" && block){
+        filtered = items.filter(x=>x.blockId!==block);
+      } else {
+        filtered = items.filter(x=>x.id!==id);
+      }
+
       setItems(filtered);
       closeActionModal();
       renderSchedule();
     }
 
     function deleteFlight(){
-  if(!selectedChip){ closeActionModal(); return; }
-  const id = selectedChip.dataset.id;
-  const block = selectedChip.dataset.blockId || "";
-  let items = getItems();
-  let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-  let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
+      if(!selectedChip){ closeActionModal(); return; }
 
-  // === Buscar vuelo a eliminar ===
-  const flight = items.find(f => f.id === id || f.blockId === block);
-  if (!flight) { 
-    alert("⚠️ Flight not found or already deleted."); 
-    closeActionModal(); 
-    return; 
-  }
+      const id = selectedChip.dataset.id;
+      const block = selectedChip.dataset.blockId || "";
+      let items = getItems();
+      let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+      let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
 
-  // === Añadir a lista negra (no reutilizable) ===
-  if (flight.flightNumberOut) {
-    deletedFlights.push(flight.flightNumberOut, flight.flightNumberIn);
-    localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
-    console.log(`🚫 Blacklisted flights: ${flight.flightNumberOut} / ${flight.flightNumberIn}`);
-  }
+      const flight = items.find(f => f.id === id || f.blockId === block);
+      if (!flight) { 
+        alert("⚠️ Flight not found or already deleted."); 
+        closeActionModal(); 
+        return; 
+      }
 
-  // === Eliminar vuelo o bloque del schedule ===
-  const isBlock = !!block && block.startsWith("block-");
-  const updatedItems = isBlock ? items.filter(f => f.blockId !== block) : items.filter(f => f.id !== id);
-  setItems(updatedItems);
+      if (flight.flightNumberOut) {
+        deletedFlights.push(flight.flightNumberOut, flight.flightNumberIn);
+        localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
+      }
 
-  // === Actualizar lista de vuelos activos ===
-  if (flight.flightNumberOut && flight.flightNumberIn) {
-    usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
-    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-  }
+      const isBlock = !!block && block.startsWith("block-");
+      const updatedItems = isBlock ? 
+        items.filter(f => f.blockId !== block) : 
+        items.filter(f => f.id !== id);
 
-  closeActionModal();
-  renderSchedule();
-  alert(`❌ Flight ${flight.flightNumberOut || ""} deleted permanently (block cleared).`);
-}
+      setItems(updatedItems);
 
+      if (flight.flightNumberOut && flight.flightNumberIn) {
+        usedFlights = usedFlights.filter(n => 
+          n !== flight.flightNumberOut && n !== flight.flightNumberIn
+        );
+        localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+      }
+
+      closeActionModal();
+      renderSchedule();
+      alert(`❌ Flight ${flight.flightNumberOut || ""} deleted permanently (block cleared).`);
+    }
 
     function editFlight(){
       if(!selectedChip){ closeActionModal(); return; }
@@ -508,17 +737,20 @@
     }
 
     window.addEventListener("load", renderSchedule);
-  </script>
+</script>
 
-    <!-- ✅ MOTOR GLOBAL DE TIEMPO ACS -->
-  <script src="time_engine.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof registerTimeListener === "function") {
-        registerTimeListener(updateClockDisplay);
-        updateClockDisplay();
-      }
-    });
-  </script>
+<!-- ============================================================
+     === MOTOR GLOBAL DE TIEMPO ACS =============================
+     ============================================================ -->
+<script src="time_engine.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
+</script>
+
 </body>
 </html>
