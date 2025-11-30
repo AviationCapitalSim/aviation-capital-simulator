@@ -501,8 +501,18 @@ footer {
     <button onclick="closeMaintModal()">❌ Cancel</button>
   </div>
 </div>
-
-<footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+     
+<!-- ============================================================
+     === MODAL: FLIGHT INFO (NEW) ===============================
+     ============================================================ -->
+     
+<div id="flightModal" class="modal">
+  <div class="modal-content">
+    <div id="flightModalContent"></div>
+    <button onclick="closeFlightModal()">❌ Close</button>
+  </div>
+     
+</div><footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
 <!-- ============================================================
      === 🔥 AQUÍ VA *TODO* TU JS ORIGINAL (SIN TOCAR NADA) =====
@@ -1018,7 +1028,13 @@ if (fleet.length === 0) {
       window.location.href="login.html";
     }
 
-    window.addEventListener("load", renderSchedule);
+     // 🔹 NUEVA FUNCIÓN PARA CERRAR EL MODAL DE VUELO
+    function closeFlightModal(){
+    const modal = document.getElementById("flightModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  window.addEventListener("load", renderSchedule);
 
 </script>
 
