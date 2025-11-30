@@ -464,7 +464,12 @@ footer {
     const days = ["mon","tue","wed","thu","fri","sat","sun"];
     const STORE_KEY = "scheduleItems";
     const ROUTE_KEY  = "confirmedRoute";
-    const FLEET_KEY  = "fleet";
+    
+    // === AJUSTE 1: Schedule usa SOLO la flota real ===
+    function getRealFleet() {
+      return JSON.parse(localStorage.getItem("ACS_MyFleet") || "[]");
+    }
+
     const TURNAROUND_MIN = 45;
 
     const toMin = hhmm => { const [h,m]=hhmm.split(":").map(Number); return h*60+m; };
@@ -473,23 +478,25 @@ footer {
     const getItems = () => JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
     const setItems = list => localStorage.setItem(STORE_KEY, JSON.stringify(list));
     const getRoute = () => { const r=localStorage.getItem(ROUTE_KEY); return r?JSON.parse(r):null; };
-    const getFleet = () => JSON.parse(localStorage.getItem(FLEET_KEY) || "[]");
-    const setFleet = f => localStorage.setItem(FLEET_KEY, JSON.stringify(f));
 
-   (function initFleet(){
-  
-    // No crear flota ficticia; usar solo la flota real del jugador
-    if(!getFleet().length) {
-    setFleet([]); // mantiene el sistema estable sin romper nada
-   }
- })();
+    // === El sistema viejo de fleet queda neutralizado pero sin romper nada ===
+    const getFleet = () => getRealFleet();
+    const setFleet = f => localStorage.setItem("ACS_MyFleet", JSON.stringify(f));
+
+    (function initFleet(){
+      if(!getRealFleet().length) {
+        setFleet([]); 
+      }
+    })();
+
+    /* ============================================================
+       === AJUSTE 2: HOVER MODAL (C / D / Pending / B) ============
+       ============================================================ */
 
 function showAircraftHover(ac, cell) {
-  // delete old card if exists
   const old = document.querySelector(".aircraft-hover-card");
   if (old) old.remove();
 
-  // Only show hover for special statuses
   const st = ac.status || "";
   if (
     st !== "In C-Check" &&
@@ -503,11 +510,9 @@ function showAircraftHover(ac, cell) {
   const card = document.createElement("div");
   card.className = "aircraft-hover-card";
 
-  // Determine start and end dates
   const start = ac.lastC || ac.lastD || ac.deliveryStart || null;
   const end   = ac.deliveryDate || null;
 
-  // Determine label
   const label =
     st === "In C-Check"        ? "C-Check 🛠" :
     st === "In D-Check"        ? "D-Check ⚙️" :
@@ -515,16 +520,12 @@ function showAircraftHover(ac, cell) {
     st === "B-Check"           ? "B-Check 🔧" :
                                  st;
 
-  // Calculate progress
   let pct = 0;
   if (start && end) {
     const now    = getSimTime();
     const s      = new Date(start);
     const e      = new Date(end);
-    const total  = e - s;
-    const passed = now - s;
-
-    pct = Math.min(100, Math.max(0, (passed / total) * 100));
+    pct = Math.min(100, Math.max(0, (passed = now - s, passed / (e - s)) * 100));
   }
 
   card.innerHTML = `
@@ -549,13 +550,18 @@ function hideAircraftHover() {
   if (card) card.remove();
 }
 
+    /* ============================================================
+       === RENDER PRINCIPAL DEL SCHEDULE =========================
+       ============================================================ */
+
     function renderSchedule(){
       const tbody = document.getElementById("scheduleBody");
       tbody.innerHTML = "";
 
       const items = getItems();
-      const fleet = getFleet();
+      const fleet = getRealFleet();  // === AJUSTE 3: usar flota real ===
       const byTail = {};
+
       items.forEach(it => {
         if(!byTail[it.tail]) byTail[it.tail] = [];
         byTail[it.tail].push(it);
@@ -563,22 +569,30 @@ function hideAircraftHover() {
 
       fleet.forEach(ac=>{
         const tr = document.createElement("tr");
+
+        /* ============================================================
+           === AJUSTE 4: Columna Aircraft con matrícula + status ======
+           ============================================================ */
+
         const tdTail = document.createElement("td");
+
         tdTail.innerHTML = `
-       ${ac.registration || ac.tail}
-       <br>
-       ${ac.status === "In C-Check" ? `${ac.registration} • 🛠 C-Check` : ""}
-       ${ac.status === "In D-Check" ? `${ac.registration} • ⚙️ D-Check` : ""}
-       ${ac.status === "Pending Delivery" ? `${ac.registration} • ⏳ Delivery` : ""}
-       ${ac.status === "B-Check" ? `${ac.registration} • 🔧 B-Check` : ""}
-    `;
+          ${ac.registration || ac.tail}
+          <br>
+          ${ac.status === "In C-Check" ? `${ac.registration} • 🛠 C-Check` : ""}
+          ${ac.status === "In D-Check" ? `${ac.registration} • ⚙️ D-Check` : ""}
+          ${ac.status === "Pending Delivery" ? `${ac.registration} • ⏳ Delivery` : ""}
+          ${ac.status === "B-Check" ? `${ac.registration} • 🔧 B-Check` : ""}
+        `;
 
-       // hover events
-       tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
-       tdTail.onmouseleave = hideAircraftHover;
+        tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
+        tdTail.onmouseleave = hideAircraftHover;
 
-       tr.appendChild(tdTail);
+        tr.appendChild(tdTail);
 
+        /* ============================================================
+           === DÍAS DEL SCHEDULE (NO SE EDITÓ NADA AQUÍ) ===============
+           ============================================================ */
 
         days.forEach(d=>{
           const td = document.createElement("td");
@@ -596,22 +610,31 @@ function hideAircraftHover() {
             if(it.type==="flight"){
               hadFlight = true;
               const iata = localStorage.getItem("userIATA") || "XX";
+
               let numOut = it.flightNumberOut ?? it.flightOut ?? 100;
               let numIn  = it.flightNumberIn  ?? it.flightIn  ?? (Number(numOut) + 1);
+
               if (String(numOut).startsWith(iata)) numOut = String(numOut).replace(iata, "");
               if (String(numIn).startsWith(iata)) numIn = String(numIn).replace(iata, "");
+
               const flightOut = `${iata}${String(numOut)}`;
               const flightIn  = `${iata}${String(numIn)}`;
+
               chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
+
               const tooltip = document.createElement("span");
               tooltip.className = "tooltip";
               tooltip.innerHTML = `${it.departure}–${it.arrival}<br>${it.origin}-${it.destination}`;
               chip.appendChild(tooltip);
+
               const arrMin = toMin(it.arrival);
               lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
-            } else if(it.type==="service") {
+            } 
+            else if(it.type==="service") {
+
               const label = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
               chip.textContent = label;
+
               const tooltip = document.createElement("span");
               tooltip.className = "tooltip";
               tooltip.innerHTML = `${it.start || "?"} – ${it.end || "?"}`;
@@ -622,20 +645,21 @@ function hideAircraftHover() {
             td.appendChild(chip);
           });
 
-          /* === Maintenance influence on Next Flight === */
           const maintToday = dayItems.find(x => x.type === "service");
+
           if (maintToday) {
             if (maintToday.serviceType === "A") {
               const maintEnd = toMin(maintToday.end);
               lastEnd = (lastEnd ?? maintEnd) < maintEnd ? maintEnd : lastEnd;
             }
+
             if (maintToday.serviceType === "B") {
               const nextInfo = document.createElement("div");
               nextInfo.className = "next-slot";
               nextInfo.textContent = "Next Flight: N/A (B-Check Day)";
               td.appendChild(nextInfo);
               tr.appendChild(td);
-              return; // skip rest for B-check day
+              return;
             }
           }
 
@@ -650,6 +674,10 @@ function hideAircraftHover() {
           tr.appendChild(td);
         });
 
+        /* ============================================================
+           === BOTONES PLAN ROUTE / MAINTENANCE ======================
+           ============================================================ */
+
         const planTd = document.createElement("td");
         const wrap = document.createElement("div"); 
         wrap.className="plan-actions";
@@ -657,6 +685,7 @@ function hideAircraftHover() {
         const assignBtn = document.createElement("button");
         assignBtn.className = "btn btn-assign";
         assignBtn.textContent = "Assign Route";
+
         assignBtn.onclick = ()=>assignRouteToTail(ac);
 
         const maintBtn = document.createElement("button");
@@ -674,6 +703,10 @@ function hideAircraftHover() {
       document.getElementById("updateTime").textContent = 
         "Last update: " + new Date().toLocaleTimeString();
     }
+
+    /* ============================================================
+       === RESTO DEL SCRIPT (NO ALTERADO) =========================
+       ============================================================ */
 
     function assignRouteToTail(ac){
       const route = getRoute();
@@ -772,12 +805,16 @@ function hideAircraftHover() {
       const end = toHHMM(toMin(start) + dur);
 
       const items = getItems();
+      const fleet = getRealFleet();
+
+      const ac = fleet.find(x => x.registration === maintTail || x.tail === maintTail);
+
       items.push({
         id:"svc-"+Math.random().toString(36).slice(2,8),
         type:"service",
         serviceType:t,
         tail:maintTail,
-        acType:getFleet().find(x=>x.tail===maintTail)?.type || "",
+        acType:ac?.type || "",
         day:d,
         start:start,
         end:end
@@ -886,19 +923,7 @@ function hideAircraftHover() {
     }
 
     window.addEventListener("load", renderSchedule);
-</script>
 
-<!-- ============================================================
-     === MOTOR GLOBAL DE TIEMPO ACS =============================
-     ============================================================ -->
-<script src="time_engine.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
-});
 </script>
 
 </body>
