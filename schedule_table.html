@@ -595,7 +595,7 @@ function hideAircraftHover() {
         byTail[it.tail].push(it);
       });
          
-// === Si la flota está vacía → mostrar filas vacías de referencia ===
+// === Si la flota está vacía → mostrar filas vacías con botones ===
          
 if (fleet.length === 0) {
   for (let i = 0; i < 5; i++) {
@@ -613,9 +613,25 @@ if (fleet.length === 0) {
       tr.appendChild(td);
     });
 
-    // Plan
+    // Plan (con botones)
     const planTd = document.createElement("td");
-    planTd.textContent = "—";
+    const wrap = document.createElement("div");
+    wrap.className = "plan-actions";
+
+    const assignBtn = document.createElement("button");
+    assignBtn.className = "btn btn-assign";
+    assignBtn.textContent = "Assign Route";
+    assignBtn.onclick = () => alert("⚠ No aircraft available. Buy one first.");
+
+    const maintBtn = document.createElement("button");
+    maintBtn.className = "btn btn-maint";
+    maintBtn.textContent = "Plan Maintenance";
+    maintBtn.onclick = () => alert("⚠ No aircraft available. Buy one first.");
+
+    wrap.appendChild(assignBtn);
+    wrap.appendChild(maintBtn);
+
+    planTd.appendChild(wrap);
     tr.appendChild(planTd);
 
     tbody.appendChild(tr);
