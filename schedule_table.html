@@ -594,8 +594,39 @@ function hideAircraftHover() {
         if(!byTail[it.tail]) byTail[it.tail] = [];
         byTail[it.tail].push(it);
       });
+         
+// === Si la flota está vacía → mostrar filas vacías de referencia ===
+         
+if (fleet.length === 0) {
+  for (let i = 0; i < 5; i++) {
+    const tr = document.createElement("tr");
 
-      fleet.forEach(ac=>{
+    // Aircraft
+    const tdTail = document.createElement("td");
+    tdTail.textContent = "(empty)";
+    tr.appendChild(tdTail);
+
+    // 7 días vacíos
+    days.forEach(() => {
+      const td = document.createElement("td");
+      td.textContent = "—";
+      tr.appendChild(td);
+    });
+
+    // Plan
+    const planTd = document.createElement("td");
+    planTd.textContent = "—";
+    tr.appendChild(planTd);
+
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById("updateTime").textContent =
+    "Last update: " + new Date().toLocaleTimeString();
+  return;
+}
+
+         fleet.forEach(ac=>{
         const tr = document.createElement("tr");
 
         /* ============================================================
