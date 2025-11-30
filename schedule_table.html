@@ -339,8 +339,36 @@ footer {
   margin-top: 4px;
   color: #ffdd80;
 }
+/* ============================================================
+   === MODAL BASE STYLES (REQUIRED) ============================
+   ============================================================ */
 
-  </style>
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 10, 25, 0.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 6000;
+}
+
+.modal-content {
+  background: #0d1b34;
+  border: 1px solid rgba(255,179,0,0.35);
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 0 18px rgba(255,179,0,0.25);
+  color: #dbe4ff;
+  width: 300px;
+  text-align: center;
+}
+
+</style>
 </head>
 
 <body>
