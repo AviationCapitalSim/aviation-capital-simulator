@@ -784,8 +784,9 @@ function filterByCountry() {
       <td style="display:flex; gap:8px; justify-content:center;">
       <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
 
-      <!-- 🔥 AQUI CAMBIAMOS createRoute → goToSchedule -->
-      <button class="acs-btn" onclick="goToSchedule('${a.icao}')">Create Route</button>
+      <!-- 🔥 AQUI CAMBIAMOS createRoute → openRouteSchedule -->
+      
+      <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
       </td>
     `;
     tableBody.appendChild(row);
