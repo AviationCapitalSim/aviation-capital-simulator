@@ -1029,7 +1029,62 @@ function goToSchedule(destICAO) {
 
   window.location.href = `schedule_table.html?from=${base}&to=${destICAO}`;
 }
+<script>
 
+/* ============================================================
+   === PHASE 2.1 — SEND ORIGIN & DESTINATION TO SCHEDULE ======
+   ------------------------------------------------------------
+   Source: airport_list_*.html  (SouthAmerica, Europe, etc.)
+   Purpose: open route_schedule.html with origin/dest selected
+   ============================================================ */
+
+function ACS_openRouteSchedule(destIcao) {
+  // 1) Recuperar la base global como ORIGIN
+  //    (ajusta esto si tu función se llama distinto)
+  let originIcao = null;
+
+  try {
+    // Si ya usas una función global para la base:
+    if (typeof findBaseAirportGlobal === "function") {
+      const base = findBaseAirportGlobal();
+      if (base && base.icao) {
+        originIcao = base.icao.toUpperCase();
+      }
+    }
+
+    // Fallback: si tienes la base guardada en localStorage
+    if (!originIcao) {
+      const baseIcao = localStorage.getItem("ACS_baseICAO");
+      if (baseIcao) originIcao = baseIcao.toUpperCase();
+    }
+  } catch (e) {
+    console.warn("ACS_openRouteSchedule: cannot resolve base", e);
+  }
+
+  if (!originIcao) {
+    alert("⚠️ No base selected. Please choose a base first.");
+    return;
+  }
+
+  // 2) Normalizar destino
+  const dest = (destIcao || "").toUpperCase();
+  if (!dest) {
+    alert("⚠️ Destination not valid.");
+    return;
+  }
+
+  // 3) Guardar selección en localStorage (canal de transferencia)
+  localStorage.setItem("ACS_selectedOrigin", originIcao);
+  localStorage.setItem("ACS_selectedDestination", dest);
+
+  // 4) Borrar cualquier modo edición previo
+  localStorage.removeItem("editFlightID");
+
+  // 5) Ir a route_schedule
+  window.location.href = "route_schedule.html";
+}
+</script>
+     
 </script>
 
 </body>
