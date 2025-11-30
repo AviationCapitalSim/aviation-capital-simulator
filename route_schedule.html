@@ -1,414 +1,727 @@
+<!-- ============================================================
+     === ROUTE SCHEDULE MODULE — Qatar Luxury Edition ===========
+     ------------------------------------------------------------
+     Version:  v1.0 | Date: 30 NOV 2025
+     ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Route Schedule - Aviation Capital Simulator</title>
+
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
-  <style>
-    body { background-color:#081530; color:white; font-family:"Segoe UI",sans-serif; margin:0; }
-    h2 { color:#FFB300; margin-top:2rem; }
-    .sub { color:#ccc; margin-bottom:2rem; }
-    .schedule-container {
-      width:90%; max-width:800px; margin:0 auto; background:#0e1b3c;
-      border-radius:10px; padding:1.5rem 2rem; box-shadow:0 0 10px rgba(0,0,0,0.4);
-    }
-    label { display:block; margin-top:1rem; font-weight:600; color:#FFB300; }
-    select, input {
-      width:100%; padding:0.5rem; margin-top:0.3rem; border-radius:6px;
-      border:none; background:#12224c; color:white; font-size:1rem; outline:none;
-    }
-    input[type="checkbox"] {
-      appearance:none; width:18px; height:18px; border-radius:4px; border:2px solid #3a4a7a;
-      background-color:#1e2b55; cursor:pointer; position:relative; transition:all 0.2s ease;
-    }
-    input[type="checkbox"]:hover { border-color:#2196F3; box-shadow:0 0 6px #2196F3; }
-    input[type="checkbox"]:checked { background-color:#2196F3; border-color:#2196F3; }
-    input[type="checkbox"]:checked::after {
-      content:"✔"; color:white; position:absolute; top:-2px; left:3px; font-size:0.9rem;
-    }
-    .divider { border:none; height:1px; background:rgba(255,179,0,0.6); margin:0.8rem 0 1.2rem; }
-    .days-row {
-      display:flex; justify-content:center; align-items:center; gap:12px;
-      flex-wrap:wrap; margin-top:0.8rem;
-    }
-    .days-row label { display:flex; align-items:center; gap:6px; color:#ddd; font-size:0.95rem; }
-    .options-center { text-align:center; margin-top:0.5rem; }
-    .tech-list { margin-top:1.5rem; background:#102040; border-radius:8px; padding:1rem; }
-    .tech-item { display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.1); color:#ddd; }
-    .tech-item span { color:#FFB300; font-weight:600; }
-    .status-line { margin-top:0.8rem; text-align:center; font-weight:600; }
-    .status-warning { color:#FFD54F; } .status-ok { color:#00E676; }
-    .result { margin-top:1rem; background:#0e2048; padding:1rem; border-radius:8px; color:#ccc; }
-    .acs-btn {
-      display:block; background-color:#1DB954; color:#fff; border:none; padding:0.7rem 1.4rem;
-      border-radius:8px; cursor:pointer; font-weight:600; margin:1.5rem auto 0.8rem; transition:0.2s;
-    }
-    .acs-btn:hover { background-color:#17a84d; }
-    .back-btn {
-      display:block; margin:0 auto 0.5rem; color:#1DB954; background:none;
-      border:1px solid #1DB954; border-radius:6px; padding:0.4rem 1rem; cursor:pointer;
-    }
-    .back-btn:hover { background-color:#1DB954; color:white; }
-    footer { margin-top:3rem; text-align:center; color:#999; font-size:0.9rem; padding:1rem; }
-  </style>
+
+  <!-- ======== ACS Favicons (A Confirmado) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+<style>
+/* ============================================================
+     === ROUTE SCHEDULE — Qatar Luxury Edition v1.0 ============
+   ============================================================ */
+
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
+
+/* ============================================================
+     === GLOBAL HEADER — EXACT COPY (Dashboard Standard) =======
+   ============================================================ */
+
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-left img {
+  height: 46px;
+}
+
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
+
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffb300;
+  text-shadow: 0 0 6px rgba(255,179,0,0.6);
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+  color: #dfe9ff;
+}
+
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* ============================================================
+     === MAIN CONTENT ==========================================
+   ============================================================ */
+
+.acs-main {
+  padding: 105px 2rem 70px;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+h2 {
+  color: #ffb300;
+  margin-top: 0.2rem;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+
+.sub {
+  color: #cbd6ff;
+  margin-bottom: 2.2rem;
+}
+
+/* ============================================================
+     === CENTRAL SCHEDULE CARD — Qatar Luxury ==================
+   ============================================================ */
+
+.schedule-container {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  border-radius: 22px;
+  padding: 1.8rem 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.42);
+  border: 1px solid rgba(255,179,0,0.18);
+  margin-bottom: 3rem;
+  text-align: left;
+}
+
+/* ============================================================
+     === FORM ELEMENTS — ACS STYLING ===========================
+   ============================================================ */
+
+label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: 600;
+  color: #ffb300;
+}
+
+input, select {
+  width: 100%;
+  padding: 0.7rem;
+  margin-top: 0.3rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,179,0,0.18);
+  background: #0c1a34;
+  color: #fff;
+  font-size: 1rem;
+  transition: 0.2s;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: #ffca50;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+/* Checkboxes cockpit ACS */
+
+input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 2px solid #3a4a7a;
+  background-color: #1e2b55;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #00a86b;
+  border-color: #00a86b;
+}
+
+input[type="checkbox"]:checked::after {
+  content: "✔";
+  color: white;
+  position: absolute;
+  top: -3px;
+  left: 3px;
+  font-size: 0.85rem;
+}
+
+/* Days row */
+.days-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 0.8rem;
+}
+
+.days-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ddd;
+}
+
+/* Dividers */
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, rgba(255,200,60,0.7), rgba(255,200,60,0.3));
+  margin: 1.4rem 0;
+}
+
+/* ============================================================
+     === TECH PANEL — Qatar Luxury =============================
+   ============================================================ */
+
+.tech-list {
+  margin-top: 1.5rem;
+  background: rgba(10,18,40,0.8);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(255,179,0,0.22);
+  box-shadow: 0 4px 22px rgba(0,0,0,0.35);
+}
+
+.tech-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  color: #d7e2ff;
+}
+
+.tech-item span {
+  color: #ffb300;
+  font-weight: 600;
+}
+
+/* ============================================================
+     === BUTTONS — Qatar Luxury ================================
+   ============================================================ */
+
+.acs-btn {
+  display: block;
+  background: #00a86b;
+  color: #fff;
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 1.5rem auto 0.8rem;
+  transition: 0.2s ease;
+  border: none;
+}
+
+.acs-btn:hover {
+  background: #00794f;
+}
+
+.back-btn {
+  display: block;
+  margin: 0 auto 0.5rem;
+  color: #00a86b;
+  background: none;
+  border: 1px solid #00a86b;
+  border-radius: 10px;
+  padding: 0.45rem 1.2rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.back-btn:hover {
+  background: #00a86b;
+  color: #081530;
+}
+
+.result {
+  margin-top: 1rem;
+  background: #0b1838;
+  padding: 1rem;
+  border-radius: 14px;
+  color: #cbd6ff;
+}
+
+.status-line {
+  margin-top: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-ok { color: #00ff80; }
+.status-warning { color: #ffd54f; }
+
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #7c8bb8;
+  font-size: 0.9rem;
+  margin-top: 40px;
+}
+</style>
 </head>
 
 <body>
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
-      <h1>Aviation Capital Simulator</h1>
-    </div>
-    <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html">Finance</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html" class="active">Routes</a>
-      <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
-          <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+
+<!-- ============================================================
+     === HEADER (QATAR LUXURY OFICIAL) ==========================
+     ============================================================ -->
+<header class="acs-header">
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html" class="active">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+    <a href="support.html">Support</a>
   </nav>
 
-  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  <div class="acs-right">
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  </div>
 </header>
 
-  <main class="acs-main">
-    <h2>🧭 Route Schedule Setup</h2>
-    <p class="sub">Plan and evaluate your route performance based on technical parameters and operational constraints.</p>
+<!-- ============================================================
+     === MAIN CONTENT ==========================================
+     ============================================================ -->
 
-    <div class="schedule-container">
-      <label>Origin (ICAO)</label>
-      <input type="text" id="origin" value="LEMD" />
+<main class="acs-main">
 
-      <label>Destination (ICAO)</label>
-      <input type="text" id="destination" placeholder="e.g. EGLL, LFPG, EHAM" />
+  <h2>🧭 Route Schedule Setup</h2>
+  <p class="sub">Plan and evaluate your route performance based on technical parameters and operational constraints.</p>
 
-      <label>Flight Number (Auto)</label>
-      <input type="text" id="flightNumber" readonly />
+  <!-- ============================================================
+       === SCHEDULE CARD (Qatar Luxury) ==========================
+       ============================================================ -->
+  <div class="schedule-container">
 
-      <label>Aircraft Type</label>
-      <select id="aircraft" onchange="autoCalculate()">
-        <option value="">-- Select Aircraft --</option>
-        <option value="B737-200">Boeing 737-200</option>
-        <option value="A320">Airbus A320</option>
-        <option value="B767-300ER">Boeing 767-300ER</option>
-      </select>
+    <label>Origin (ICAO)</label>
+    <input type="text" id="origin" value="LEMD" />
 
-      <label>Departure Time (Local)</label>
-      <select id="departureTime" onchange="autoCalculate()"></select>
+    <label>Destination (ICAO)</label>
+    <input type="text" id="destination" placeholder="e.g. EGLL, LFPG, EHAM" />
 
-      <label style="text-align:center; margin-top:1.2rem;">Days of Operation</label>
-      <div class="days-row">
-        <label><input type="checkbox" id="everyDay" onchange="toggleEveryDay()"> Every Day</label>
-        <label><input type="checkbox" id="mon"> Mo</label>
-        <label><input type="checkbox" id="tue"> Tu</label>
-        <label><input type="checkbox" id="wed"> We</label>
-        <label><input type="checkbox" id="thu"> Th</label>
-        <label><input type="checkbox" id="fri"> Fr</label>
-        <label><input type="checkbox" id="sat"> Sa</label>
-        <label><input type="checkbox" id="sun"> Su</label>
-      </div>
+    <label>Flight Number (Auto)</label>
+    <input type="text" id="flightNumber" readonly />
 
-      <hr class="divider" />
-      <div class="options-center">
-        <label><input type="checkbox" id="separateDays"> Create each day as a separate route</label>
-      </div>
-      <hr class="divider" />
-      <div class="options-center">
-        <label><input type="checkbox" id="optimizeRotation" onchange="toggleOptimization()"> Optimize Rotation (avoid delay & maintenance conflict)</label>
-      </div>
+    <label>Aircraft Type</label>
+    <select id="aircraft" onchange="autoCalculate()">
+      <option value="">-- Select Aircraft --</option>
+      <option value="B737-200">Boeing 737-200</option>
+      <option value="A320">Airbus A320</option>
+      <option value="B767-300ER">Boeing 767-300ER</option>
+    </select>
 
-      <div id="techData" class="tech-list" style="display:none;">
-        <div class="tech-item">Distance (NM): <span id="distance">--</span></div>
-        <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
-        <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
-        <div class="tech-item">Total Rotation: <span id="totalRotation">--</span></div>
-        <div class="tech-item">Time to A-Check (h remaining): <span id="serviceA">--</span></div>
-        <div class="tech-item">Time to B-Check (h remaining): <span id="serviceB">--</span></div>
-        <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
-        <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
-      </div>
+    <label>Departure Time (Local)</label>
+    <select id="departureTime" onchange="autoCalculate()"></select>
 
-      <div class="result" id="result"></div>
-      <div id="optStatus" class="status-line"></div>
-
-      <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
-      <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
+    <label style="text-align:center;margin-top:1.2rem;">Days of Operation</label>
+    <div class="days-row">
+      <label><input type="checkbox" id="everyDay" onchange="toggleEveryDay()"> Every Day</label>
+      <label><input type="checkbox" id="mon"> Mo</label>
+      <label><input type="checkbox" id="tue"> Tu</label>
+      <label><input type="checkbox" id="wed"> We</label>
+      <label><input type="checkbox" id="thu"> Th</label>
+      <label><input type="checkbox" id="fri"> Fr</label>
+      <label><input type="checkbox" id="sat"> Sa</label>
+      <label><input type="checkbox" id="sun"> Su</label>
     </div>
-  </main>
 
-  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+    <hr class="divider" />
 
-  <script>
-    /* === BASE === */
-    const timeSelect = document.getElementById("departureTime");
-    for (let h = 6; h < 24; h++) {
-      for (let m = 0; m < 60; m += 5) {
-        const hh = String(h).padStart(2,"0");
-        const mm = String(m).padStart(2,"0");
-        const opt = document.createElement("option");
-        opt.value = `${hh}:${mm}`; opt.textContent = `${hh}:${mm}`;
-        timeSelect.appendChild(opt);
-      }
+    <div class="options-center" style="text-align:center;">
+      <label><input type="checkbox" id="separateDays"> Create each day as a separate route</label>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="options-center" style="text-align:center;">
+      <label><input type="checkbox" id="optimizeRotation" onchange="toggleOptimization()"> Optimize Rotation (avoid delay & maintenance conflict)</label>
+    </div>
+
+    <div id="techData" class="tech-list" style="display:none;">
+      <div class="tech-item">Distance (NM): <span id="distance">--</span></div>
+      <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
+      <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
+      <div class="tech-item">Total Rotation: <span id="totalRotation">--</span></div>
+      <div class="tech-item">Time to A-Check (h remaining): <span id="serviceA">--</span></div>
+      <div class="tech-item">Time to B-Check (h remaining): <span id="serviceB">--</span></div>
+      <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
+      <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
+    </div>
+
+    <div class="result" id="result"></div>
+    <div id="optStatus" class="status-line"></div>
+
+    <button class="acs-btn" onclick="confirmRoute()">CONFIRM ROUTE</button>
+    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
+  </div>
+</main>
+
+<footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+
+<!-- ============================================================
+     === TU JAVASCRIPT ORIGINAL (NO TOCADO, INTACTO) ============
+     ============================================================ -->
+
+<script>
+/* === BASE === */
+const timeSelect = document.getElementById("departureTime");
+for (let h = 6; h < 24; h++) {
+  for (let m = 0; m < 60; m += 5) {
+    const hh = String(h).padStart(2,"0");
+    const mm = String(m).padStart(2,"0");
+    const opt = document.createElement("option");
+    opt.value = `${hh}:${mm}`; opt.textContent = `${hh}:${mm}`;
+    timeSelect.appendChild(opt);
+  }
+}
+timeSelect.value = "06:00";
+
+const urlParams = new URLSearchParams(window.location.search);
+const toParam = urlParams.get("to");
+if (toParam) document.getElementById("destination").value = toParam.toUpperCase();
+
+function toggleEveryDay() {
+  const all = document.getElementById("everyDay").checked;
+  ["mon","tue","wed","thu","fri","sat","sun"].forEach(id => {
+    document.getElementById(id).checked = all;
+  });
+}
+
+const aircraftData = {
+  "B737-200": { speed: 420 },
+  "A320": { speed: 450 },
+  "B767-300ER": { speed: 470 }
+};
+
+const airportCoords = {
+  LEMD: { lat: 40.472, lon: -3.560 },
+  EGLL: { lat: 51.4775, lon: -0.4614 },
+  LFPG: { lat: 49.0097, lon: 2.5479 },
+  EHAM: { lat: 52.3086, lon: 4.7639 },
+  ESSA: { lat: 59.6498, lon: 17.9238 }
+};
+
+const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+let rotationOptimized = false;
+
+function calcDistanceNM(from,to){
+  if(!airportCoords[from]||!airportCoords[to])return 0;
+  const R=3440,lat1=(airportCoords[from].lat*Math.PI)/180,lat2=(airportCoords[to].lat*Math.PI)/180;
+  const dLat=((airportCoords[to].lat-airportCoords[from].lat)*Math.PI)/180;
+  const dLon=((airportCoords[to].lon-airportCoords[from].lon)*Math.PI)/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+  return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+}
+
+function autoCalculate(){
+  const origin=document.getElementById("origin").value.toUpperCase();
+  const destination=document.getElementById("destination").value.toUpperCase();
+  const aircraft=document.getElementById("aircraft").value;
+  const departure=document.getElementById("departureTime").value;
+  if(!origin||!destination||!aircraft)return;
+
+  document.getElementById("techData").style.display="block";
+  const distance=calcDistanceNM(origin,destination);
+  const speed=aircraftData[aircraft].speed;
+  const turnaround=rotationOptimized?1.0:0.75;
+  const blockTime=distance/speed;
+  const totalRotation=(blockTime*2)+(turnaround*2);
+  const serviceA=5-(totalRotation/2);
+  const serviceB=24-(totalRotation/4);
+  let delayRisk=Math.min(100,(totalRotation/5)*10);
+  let effIndex=Math.max(50,100-delayRisk/1.5);
+  if(rotationOptimized){delayRisk*=0.8; effIndex+=5;}
+
+  document.getElementById("distance").innerText=distance;
+  document.getElementById("blockTime").innerText=`${blockTime.toFixed(2)} h`;
+  document.getElementById("turnaround").innerText=`${turnaround.toFixed(2)} h`;
+  document.getElementById("totalRotation").innerText=`${totalRotation.toFixed(2)} h`;
+  document.getElementById("serviceA").innerText=serviceA.toFixed(1);
+  document.getElementById("serviceB").innerText=serviceB.toFixed(1);
+  document.getElementById("delayRisk").innerText=`${delayRisk.toFixed(1)}%`;
+  document.getElementById("effIndex").innerText=`${effIndex.toFixed(1)}%`;
+
+  const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
+  const resultBox = document.getElementById("result");
+  resultBox.innerHTML = `
+    ✅ Route preview generated.<br>
+    <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
+    Aircraft: <strong>${aircraft}</strong><br>
+    Days: ${selectedDays.length}<br>
+    Departure: ${departure}
+  `;
+  const optStatus = document.getElementById("optStatus");
+  optStatus.className = "status-line " + (rotationOptimized ? "status-ok" : "status-warning");
+  optStatus.innerHTML = rotationOptimized
+    ? "✅ Optimized rotation applied."
+    : "⚠ Non-optimized rotation (45 min ground time)";
+}
+
+function toggleOptimization(){
+  rotationOptimized=document.getElementById("optimizeRotation").checked;
+  autoCalculate();
+}
+
+function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
+
+/* === Flight Number Engine — intacto === */
+const flightNumberInput = document.getElementById("flightNumber");
+const userIATA = localStorage.getItem("userIATA") || "AT";
+let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
+let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+
+function generateFlightPair() {
+  let out = `${userIATA}${lastFlightNumber}`;
+  let inn = `${userIATA}${lastFlightNumber + 1}`;
+  while (usedFlights.includes(out) || usedFlights.includes(inn)) {
+    lastFlightNumber += 2;
+    out = `${userIATA}${lastFlightNumber}`;
+    inn = `${userIATA}${lastFlightNumber + 1}`;
+  }
+  if (flightNumberInput) flightNumberInput.value = `${out} ➜ ${inn}`;
+  return { out, inn };
+}
+function bumpFlightCounter(){ lastFlightNumber += 2; localStorage.setItem("lastFlightNumber", String(lastFlightNumber)); }
+function markNumbersUsed(out, inn){ usedFlights.push(out, inn); localStorage.setItem("flightNumbers", JSON.stringify(usedFlights)); }
+function freeNumbers(out, inn){
+  if(!out || !inn) return;
+  usedFlights = usedFlights.filter(n => n !== out && n !== inn);
+  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+}
+function generateFlightNumbers(){ generateFlightPair(); }
+
+/* === MODO CREACIÓN / EDICIÓN — intacto === */
+document.addEventListener("DOMContentLoaded", () => {
+  const editID = localStorage.getItem("editFlightID");
+  const isEditing = !!editID;
+
+  if (!isEditing) {
+    generateFlightNumbers();
+    autoCalculate();
+    return;
+  }
+
+  const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  const flight = items.find(f => f.id === editID || f.blockId === editID);
+  if (!flight) return;
+
+  const $ = id => document.getElementById(id);
+
+  $("origin").value = flight.origin || "";
+  $("destination").value = flight.destination || "";
+  $("aircraft").value = flight.acType || "";
+  $("departureTime").value = flight.departure || "06:00";
+  (flight.days || []).forEach(d => { const box = document.getElementById(d); if (box) box.checked = true; });
+
+  const notice = document.createElement("div");
+  notice.style.color = "#FFB300";
+  notice.style.marginBottom = "1rem";
+  notice.style.fontWeight = "600";
+  notice.innerHTML = `✏️ Editando vuelo: <strong>${flight.origin} ➜ ${flight.destination}</strong>`;
+  document.querySelector(".schedule-container").prepend(notice);
+
+  if (flight.flightNumberOut && flight.flightNumberIn) {
+    freeNumbers(flight.flightNumberOut, flight.flightNumberIn);
+  }
+
+  const newPair = generateFlightPair();
+
+  autoCalculate();
+
+  const btn = document.querySelector(".acs-btn");
+  if (btn) btn.textContent = "UPDATE FLIGHT";
+
+  btn.onclick = () => {
+    const origin = $("origin").value.trim();
+    const destination = $("destination").value.trim();
+    const aircraft = $("aircraft").value;
+    const departure = $("departureTime").value;
+    const optimized = document.getElementById("optimizeRotation").checked;
+    const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
+
+    if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+      alert("⚠️ Por favor completa todos los campos antes de actualizar.");
+      return;
     }
-    timeSelect.value = "06:00";
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const toParam = urlParams.get("to");
-    if (toParam) document.getElementById("destination").value = toParam.toUpperCase();
+    const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
+    localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
 
-    function toggleEveryDay() {
-      const all = document.getElementById("everyDay").checked;
-      ["mon","tue","wed","thu","fri","sat","sun"].forEach(id => {
-        document.getElementById(id).checked = all;
-      });
-    }
+    const rawFN = (flightNumberInput.value || "");
+    const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+    const flightNumberOut = match[1] || newPair.out;
+    const flightNumberIn  = match[2] || newPair.inn;
 
-    const aircraftData = {
-      "B737-200": { speed: 420 },
-      "A320": { speed: 450 },
-      "B767-300ER": { speed: 470 }
+    const updatedRoute = {
+      origin, destination, aircraft, departure, optimized,
+      days: selectedDays,
+      flightNumberOut, flightNumberIn
     };
+    localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
 
-    const airportCoords = {
-      LEMD: { lat: 40.472, lon: -3.560 },
-      EGLL: { lat: 51.4775, lon: -0.4614 },
-      LFPG: { lat: 49.0097, lon: 2.5479 },
-      EHAM: { lat: 52.3086, lon: 4.7639 },
-      ESSA: { lat: 59.6498, lon: 17.9238 }
-    };
+    markNumbersUsed(flightNumberOut, flightNumberIn);
+    bumpFlightCounter();
 
-    const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-    let rotationOptimized = false;
+    localStorage.removeItem("editFlightID");
+    alert("✅ Vuelo actualizado. Ahora puedes asignarlo desde la tabla.");
+    window.location.href = "schedule_table.html";
+  };
+});
 
-    function calcDistanceNM(from,to){
-      if(!airportCoords[from]||!airportCoords[to])return 0;
-      const R=3440,lat1=(airportCoords[from].lat*Math.PI)/180,lat2=(airportCoords[to].lat*Math.PI)/180;
-      const dLat=((airportCoords[to].lat-airportCoords[from].lat)*Math.PI)/180;
-      const dLon=((airportCoords[to].lon-airportCoords[from].lon)*Math.PI)/180;
-      const a=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
-      return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
-    }
+/* === CONFIRMAR NUEVO VUELO — intacto === */
+function confirmRoute() {
+  const origin = document.getElementById("origin").value.trim();
+  const destination = document.getElementById("destination").value.trim();
+  const aircraft = document.getElementById("aircraft").value;
+  const departure = document.getElementById("departureTime").value;
+  const optimized = document.getElementById("optimizeRotation").checked;
+  const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
 
-    function autoCalculate(){
-      const origin=document.getElementById("origin").value.toUpperCase();
-      const destination=document.getElementById("destination").value.toUpperCase();
-      const aircraft=document.getElementById("aircraft").value;
-      const departure=document.getElementById("departureTime").value;
-      if(!origin||!destination||!aircraft)return;
+  if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+    alert("⚠️ Please complete all required fields and select at least one day before confirming the route.");
+    return;
+  }
 
-      document.getElementById("techData").style.display="block";
-      const distance=calcDistanceNM(origin,destination);
-      const speed=aircraftData[aircraft].speed;
-      const turnaround=rotationOptimized?1.0:0.75;
-      const blockTime=distance/speed;
-      const totalRotation=(blockTime*2)+(turnaround*2);
-      const serviceA=5-(totalRotation/2);
-      const serviceB=24-(totalRotation/4);
-      let delayRisk=Math.min(100,(totalRotation/5)*10);
-      let effIndex=Math.max(50,100-delayRisk/1.5);
-      if(rotationOptimized){delayRisk*=0.8; effIndex+=5;}
+  const rawFN = (document.getElementById("flightNumber").value || "");
+  const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+  const flightNumberOut = match[1];
+  const flightNumberIn  = match[2];
 
-      document.getElementById("distance").innerText=distance;
-      document.getElementById("blockTime").innerText=`${blockTime.toFixed(2)} h`;
-      document.getElementById("turnaround").innerText=`${turnaround.toFixed(2)} h`;
-      document.getElementById("totalRotation").innerText=`${totalRotation.toFixed(2)} h`;
-      document.getElementById("serviceA").innerText=serviceA.toFixed(1);
-      document.getElementById("serviceB").innerText=serviceB.toFixed(1);
-      document.getElementById("delayRisk").innerText=`${delayRisk.toFixed(1)}%`;
-      document.getElementById("effIndex").innerText=`${effIndex.toFixed(1)}%`;
+  localStorage.setItem("confirmedRoute", JSON.stringify({
+    origin, destination, aircraft, departure, optimized,
+    days: selectedDays, flightNumberOut, flightNumberIn
+  }));
 
-      // ✅ Panel informativo y estado de optimize reactivados
-      const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
-      const resultBox = document.getElementById("result");
-      resultBox.innerHTML = `
-        ✅ Route preview generated.<br>
-        <strong>${origin} ➜ ${destination} ➜ ${origin}</strong><br>
-        Aircraft: <strong>${aircraft}</strong><br>
-        Days: ${selectedDays.length}<br>
-        Departure: ${departure}
-      `;
-      const optStatus = document.getElementById("optStatus");
-      optStatus.className = "status-line " + (rotationOptimized ? "status-ok" : "status-warning");
-      optStatus.innerHTML = rotationOptimized
-        ? "✅ Optimized rotation applied."
-        : "⚠ Non-optimized rotation (45 min ground time)";
-    }
+  if (flightNumberOut && flightNumberIn) {
+    markNumbersUsed(flightNumberOut, flightNumberIn);
+    bumpFlightCounter();
+  }
 
-    function toggleOptimization(){
-      rotationOptimized=document.getElementById("optimizeRotation").checked;
-      autoCalculate();
-    }
+  alert(`✅ Route confirmed and saved!\n${flightNumberOut || ""} ${flightNumberIn ? "/ " + flightNumberIn : ""}`);
+  window.location.href = "routes.html";
+}
+</script>
 
-    function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
+<script src="./time_engine.js"></script>
 
-    /* === ✅ CONTROL NÚMEROS DE VUELO — 2025-11-07 === */
-    const flightNumberInput = document.getElementById("flightNumber");
-    const userIATA = localStorage.getItem("userIATA") || "AT";
-    let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
-    let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-
-    function generateFlightPair() {
-      let out = `${userIATA}${lastFlightNumber}`;
-      let inn = `${userIATA}${lastFlightNumber + 1}`;
-      while (usedFlights.includes(out) || usedFlights.includes(inn)) {
-        lastFlightNumber += 2;
-        out = `${userIATA}${lastFlightNumber}`;
-        inn = `${userIATA}${lastFlightNumber + 1}`;
-      }
-      if (flightNumberInput) flightNumberInput.value = `${out} ➜ ${inn}`;
-      return { out, inn };
-    }
-    function bumpFlightCounter(){ lastFlightNumber += 2; localStorage.setItem("lastFlightNumber", String(lastFlightNumber)); }
-    function markNumbersUsed(out, inn){ usedFlights.push(out, inn); localStorage.setItem("flightNumbers", JSON.stringify(usedFlights)); }
-    function freeNumbers(out, inn){
-      if(!out || !inn) return;
-      usedFlights = usedFlights.filter(n => n !== out && n !== inn);
-      localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-    }
-    // Wrapper para crear
-    function generateFlightNumbers(){ generateFlightPair(); }
-
-    /* === ✅ MODO CREACIÓN Y EDICIÓN UNIFICADO — 2025-11-07 === */
-    document.addEventListener("DOMContentLoaded", () => {
-      const editID = localStorage.getItem("editFlightID");
-      const isEditing = !!editID;
-
-      if (!isEditing) {
-        // === CREAR NUEVO VUELO ===
-        generateFlightNumbers();   // genera números para nuevo vuelo
-        autoCalculate();           // muestra panel técnico y estado optimize
-        return;
-      }
-
-      // === EDITAR VUELO EXISTENTE ===
-      const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-      const flight = items.find(f => f.id === editID || f.blockId === editID);
-      if (!flight) return;
-
-      const $ = id => document.getElementById(id);
-
-      // Rellenar formulario
-      $("origin").value = flight.origin || "";
-      $("destination").value = flight.destination || "";
-      $("aircraft").value = flight.acType || "";
-      $("departureTime").value = flight.departure || "06:00";
-      (flight.days || []).forEach(d => { const box = document.getElementById(d); if (box) box.checked = true; });
-
-      // Aviso visual
-      const notice = document.createElement("div");
-      notice.style.color = "#FFB300";
-      notice.style.marginBottom = "1rem";
-      notice.style.fontWeight = "600";
-      notice.innerHTML = `✏️ Editando vuelo: <strong>${flight.origin} ➜ ${flight.destination}</strong>`;
-      document.querySelector(".schedule-container").prepend(notice);
-
-      // Liberar números del vuelo anterior (el vuelo editado "muere")
-      if (flight.flightNumberOut && flight.flightNumberIn) {
-        freeNumbers(flight.flightNumberOut, flight.flightNumberIn);
-      }
-
-      // Generar NUEVOS números para el vuelo actualizado
-      const newPair = generateFlightPair();
-
-      // Panel técnico
-      autoCalculate();
-
-      // Cambiar botón a UPDATE y controlar acción (sin auto-asignar)
-      const btn = document.querySelector(".acs-btn");
-      if (btn) btn.textContent = "UPDATE FLIGHT";
-
-      btn.onclick = () => {
-        const origin = $("origin").value.trim();
-        const destination = $("destination").value.trim();
-        const aircraft = $("aircraft").value;
-        const departure = $("departureTime").value;
-        const optimized = document.getElementById("optimizeRotation").checked;
-        const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
-
-        if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
-          alert("⚠️ Por favor completa todos los campos antes de actualizar.");
-          return;
-        }
-
-        // Eliminar vuelo original de la tabla
-        const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
-        localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
-
-        // Tomar números en UI
-        const rawFN = (flightNumberInput.value || "");
-        // Soporta separador con flecha o espacios
-        const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
-        const flightNumberOut = match[1] || newPair.out;
-        const flightNumberIn  = match[2] || newPair.inn;
-
-        // Guardar ruta actualizada (no asigna nada todavía)
-        const updatedRoute = {
-          origin, destination, aircraft, departure, optimized,
-          days: selectedDays,
-          flightNumberOut, flightNumberIn
-        };
-        localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
-
-        // Marcar números usados y avanzar contador
-        markNumbersUsed(flightNumberOut, flightNumberIn);
-        bumpFlightCounter();
-
-        // Limpiar modo edición y volver a la tabla para asignar
-        localStorage.removeItem("editFlightID");
-        alert("✅ Vuelo actualizado. Ahora puedes asignarlo desde la tabla.");
-        window.location.href = "schedule_table.html";
-      };
-    });
-
-    /* === ✅ CONFIRMAR NUEVO VUELO — 2025-11-07 === */
-    function confirmRoute() {
-      const origin = document.getElementById("origin").value.trim();
-      const destination = document.getElementById("destination").value.trim();
-      const aircraft = document.getElementById("aircraft").value;
-      const departure = document.getElementById("departureTime").value;
-      const optimized = document.getElementById("optimizeRotation").checked;
-      const selectedDays = DAY_IDS.filter(id => document.getElementById(id).checked);
-
-      if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
-        alert("⚠️ Please complete all required fields and select at least one day before confirming the route.");
-        return;
-      }
-
-      const rawFN = (document.getElementById("flightNumber").value || "");
-      const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
-      const flightNumberOut = match[1];
-      const flightNumberIn  = match[2];
-
-      localStorage.setItem("confirmedRoute", JSON.stringify({
-        origin, destination, aircraft, departure, optimized,
-        days: selectedDays, flightNumberOut, flightNumberIn
-      }));
-
-      if (flightNumberOut && flightNumberIn) {
-        markNumbersUsed(flightNumberOut, flightNumberIn);
-        bumpFlightCounter();
-      }
-
-      alert(`✅ Route confirmed and saved!\n${flightNumberOut || ""} ${flightNumberIn ? "/ " + flightNumberIn : ""}`);
-      window.location.href = "routes.html";
-    }
-      </script>
-
-  <!-- ✅ Sincronización global ACS -->
-  <script src="./time_engine.js"></script>
-
-  <script>
-    // 🕐 Reloj cockpit Airbus sincronizado con el motor global de tiempo
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof registerTimeListener === "function") {
-        registerTimeListener(updateClockDisplay);
-        updateClockDisplay();
-      }
-    });
-  </script>
+<script>
+// 🕐 Reloj cockpit Airbus sincronizado
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
+</script>
 
 </body>
 </html>
