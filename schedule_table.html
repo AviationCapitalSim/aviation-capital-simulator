@@ -503,15 +503,17 @@ footer {
 </div>
      
 <!-- ============================================================
-     === MODAL: FLIGHT INFO (NEW) ===============================
+     === FLIGHT INFO MODAL — Qatar Luxury Edition ================
      ============================================================ -->
-     
+
 <div id="flightModal" class="modal">
   <div class="modal-content">
     <div id="flightModalContent"></div>
     <button onclick="closeFlightModal()">❌ Close</button>
   </div>
-     
+</div>
+
+
 </div><footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
 <!-- ============================================================
@@ -713,43 +715,47 @@ if (fleet.length === 0) {
             chip.dataset.blockId = it.blockId || "";
             chip.dataset.type = it.type;
 
-            if(it.type==="flight"){
-              hadFlight = true;
-              const iata = localStorage.getItem("userIATA") || "XX";
+  if(it.type==="flight"){
+  hadFlight = true;
+  const iata = localStorage.getItem("userIATA") || "XX";
 
-              let numOut = it.flightNumberOut ?? it.flightOut ?? 100;
-              let numIn  = it.flightNumberIn  ?? it.flightIn  ?? (Number(numOut) + 1);
+  let numOut = it.flightNumberOut ?? it.flightOut ?? 100;
+  let numIn  = it.flightNumberIn  ?? it.flightIn  ?? (Number(numOut) + 1);
 
-              if (String(numOut).startsWith(iata)) numOut = String(numOut).replace(iata, "");
-              if (String(numIn).startsWith(iata)) numIn = String(numIn).replace(iata, "");
+  if (String(numOut).startsWith(iata)) numOut = String(numOut).replace(iata, "");
+  if (String(numIn).startsWith(iata)) numIn = String(numIn).replace(iata, "");
 
-              const flightOut = `${iata}${String(numOut)}`;
-              const flightIn  = `${iata}${String(numIn)}`;
+  const flightOut = `${iata}${String(numOut)}`;
+  const flightIn  = `${iata}${String(numIn)}`;
 
-              chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
+  chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
 
-              const tooltip = document.createElement("span");
-              tooltip.className = "tooltip";
-              tooltip.innerHTML = `${it.departure}–${it.arrival}<br>${it.origin}-${it.destination}`;
-              chip.appendChild(tooltip);
+  const tooltip = document.createElement("span");
+  tooltip.className = "tooltip";
+  tooltip.innerHTML = `${it.departure}–${it.arrival}<br>${it.origin}-${it.destination}`;
+  chip.appendChild(tooltip);
 
-              const arrMin = toMin(it.arrival);
-              lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
-            } 
-            else if(it.type==="service") {
+  const arrMin = toMin(it.arrival);
+  lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
 
-              const label = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
-              chip.textContent = label;
+  // 🔥 CLICK FINAL: abre modal de info de vuelo
+  chip.onclick = () => openFlightModal(it);
 
-              const tooltip = document.createElement("span");
-              tooltip.className = "tooltip";
-              tooltip.innerHTML = `${it.start || "?"} – ${it.end || "?"}`;
-              chip.appendChild(tooltip);
-            }
+}
+else if(it.type==="service"){
 
-            chip.onclick = ()=>openActionModal(chip);
-            td.appendChild(chip);
-          });
+  const label = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
+  chip.textContent = label;
+
+  const tooltip = document.createElement("span");
+  tooltip.className = "tooltip";
+  tooltip.innerHTML = `${it.start || "?"} – ${it.end || "?"}`;
+  chip.appendChild(tooltip);
+
+  // servicios siguen usando el modal viejo
+  chip.onclick = ()=>openActionModal(chip);
+}
+
 
           const maintToday = dayItems.find(x => x.type === "service");
 
@@ -1028,13 +1034,124 @@ if (fleet.length === 0) {
       window.location.href="login.html";
     }
 
+     /* ============================================================
+   === FLIGHT INFO MODAL (PROFESSIONAL EDITION) ================
+   ============================================================ */
+
+function openFlightModal(flight) {
+  if (!flight) return;
+
+  const iata = localStorage.getItem("userIATA") || "XX";
+
+  // Normalizar números de vuelo
+  let numOut = flight.flightNumberOut;
+  let numIn  = flight.flightNumberIn;
+
+  if (String(numOut).startsWith(iata)) numOut = numOut.replace(iata, "");
+  if (String(numIn).startsWith(iata))  numIn  = numIn.replace(iata, "");
+
+  const fnOut = `${iata}${numOut}`;
+  const fnIn  = `${iata}${numIn}`;
+
+  // Cálculos de tiempo
+  const depMin = toMin(flight.departure);
+  const arrMin = toMin(flight.arrival);
+  const blockMin = arrMin - depMin;
+  const blockHHMM = `${Math.floor(blockMin/60)}h ${blockMin%60}m`;
+
+  const turnaround = 45; // luego lo haremos dinámico según aircraft
+  const nextAvailable = toHHMM(arrMin + turnaround);
+
+  // Determinar bloque completo (cruza días)
+  const items = getItems().filter(x => x.blockId && x.blockId === flight.blockId);
+  const blockDays = [...new Set(items.map(x => x.day.toUpperCase()))].join(" • ");
+
+  const ac = getRealFleet().find(a => a.tail === flight.tail);
+  const acStatus = ac?.status || "Active";
+
+  const modal = document.getElementById("flightModal");
+  const box   = document.getElementById("flightModalContent");
+
+  box.innerHTML = `
+    <h3 style="color:#ffca3a; margin-top:0;">✈️ Flight Information</h3>
+
+    <p><strong>${fnOut} / ${fnIn}</strong></p>
+
+    <p style="margin-top:8px;">
+      <strong>${flight.origin}</strong> ➜ <strong>${flight.destination}</strong>
+      <br>
+      Day(s): <strong>${blockDays || flight.day.toUpperCase()}</strong>
+    </p>
+
+    <hr style="border-color:rgba(255,179,0,0.35);">
+
+    <p>
+      Departure: <strong>${flight.departure}</strong><br>
+      Arrival: <strong>${flight.arrival}</strong><br>
+      Block Time: <strong>${blockHHMM}</strong><br>
+      Ground Time: <strong>${turnaround} min</strong><br>
+      Next Slot Available: <strong>${nextAvailable}</strong>
+    </p>
+
+    <hr style="border-color:rgba(255,179,0,0.35);">
+
+    <p>
+      Aircraft: <strong>${flight.tail}</strong><br>
+      Status: <strong>${acStatus}</strong>
+    </p>
+  `;
+
+  modal.style.display = "flex";
+}
+      
      // 🔹 NUEVA FUNCIÓN PARA CERRAR EL MODAL DE VUELO
+         
     function closeFlightModal(){
     const modal = document.getElementById("flightModal");
     if (modal) modal.style.display = "none";
   }
 
-  window.addEventListener("load", renderSchedule);
+/* ============================================================
+   === MODAL: OPEN FLIGHT INFO =================================
+   ============================================================ */
+
+function openFlightModal(it){
+  const modal = document.getElementById("flightModal");
+  const box   = document.getElementById("flightModalContent");
+  const iata  = localStorage.getItem("userIATA") || "XX";
+
+  const out = `${iata}${it.flightNumberOut}`;
+  const inn = `${iata}${it.flightNumberIn}`;
+
+  box.innerHTML = `
+    <h3 style="color:#ffca3a;margin-bottom:6px;text-shadow:0 0 6px rgba(255,200,60,0.45);">
+      ✈️ ${out} / ${inn}
+    </h3>
+
+    <p style="margin:6px 0 10px; color:#cbd6ff;">
+      ${it.origin} → ${it.destination}<br>
+      Departure: <strong>${it.departure}</strong><br>
+      Arrival: <strong>${it.arrival}</strong>
+    </p>
+
+    <hr style="border-color:rgba(255,179,0,0.3);margin:10px 0;">
+
+    <p style="color:#8ab4ff; font-size:0.9rem;">
+      Block Time: <strong>${it.blockTime || "—"}</strong><br>
+      Turnaround: <strong>45 min base + tipo real</strong><br>
+      Day: <strong>${it.day.toUpperCase()}</strong>
+    </p>
+  `;
+
+  modal.style.display = "flex";
+}
+
+function closeFlightModal(){
+  const modal = document.getElementById("flightModal");
+  modal.style.display = "none";
+}
+
+window.addEventListener("load", renderSchedule);
 
 </script>
 
