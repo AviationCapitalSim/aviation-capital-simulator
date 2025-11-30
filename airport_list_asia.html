@@ -736,7 +736,7 @@ function loadAirports() {
 
       <td style="display:flex; gap:8px; justify-content:center;">
         <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
-        <button class="acs-btn" onclick="goToSchedule('${a.icao}')">Create Route</button>
+        <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
       </td>
     `;
 
@@ -1015,19 +1015,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-/* ============================================================
-   === ROUTE CREATION REDIRECT ================================
-   ============================================================ */
-function goToSchedule(destICAO) {
-  const base = localStorage.getItem("ACS_baseICAO") || "";
-  if (!base) {
-    alert("⚠️ No base selected!");
-    return;
-  }
-
-  window.location.href = `schedule_table.html?from=${base}&to=${destICAO}`;
-}
-     
 <script>
      
 /* ============================================================
