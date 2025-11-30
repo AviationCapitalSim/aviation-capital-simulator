@@ -463,6 +463,7 @@ footer {
    ============================================================ -->
 
 <script>
+     
 /* === BASE === */
 const timeSelect = document.getElementById("departureTime");
 for (let h = 6; h < 24; h++) {
@@ -505,6 +506,7 @@ function toggleOptimization(){
 function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
 
 /* === Flight Number Engine — INTACTO pero NO ejecutado ahora === */
+     
 const flightNumberInput = document.getElementById("flightNumber");
 const userIATA = localStorage.getItem("userIATA") || "AT";
 let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
@@ -530,21 +532,134 @@ function freeNumbers(out, inn){
   localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
 }
 
-// MODO CREACIÓN: Limpio — NO generamos número ni rellenamos nada
+/* ============================================================
+   === PHASE 2.1 — CREATION vs EDIT + ORIGIN/DEST FROM MAPS ===
+   ------------------------------------------------------------
+   - Si hay editFlightID  → modo edición (mantiene tu lógica)
+   - Si NO hay editID     → usa ACS_selectedOrigin/Destination
+   ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  const editID = localStorage.getItem("editFlightID");
+  const originInput = document.getElementById("origin");
+  const destInput   = document.getElementById("destination");
+
+  const editID   = localStorage.getItem("editFlightID");
   const isEditing = !!editID;
 
+  /* ========== MODO CREACIÓN (NUEVA RUTA) ========== */
   if (!isEditing) {
-    // generateFlightNumbers(); ❌ Desactivado
-    // autoCalculate(); ❌ Desactivado
+
+    // 1) Leer lo que viene de los continentes
+    const selOrigin = (localStorage.getItem("ACS_selectedOrigin") || "").toUpperCase();
+    const selDest   = (localStorage.getItem("ACS_selectedDestination") || "").toUpperCase();
+
+    if (selOrigin && selDest) {
+      originInput.value = selOrigin;
+      destInput.value   = selDest;
+    } else {
+      // Fallback: si por alguna razón no llegó nada
+      originInput.value = originInput.value || "";
+      destInput.value   = destInput.value   || "";
+      console.warn("ACS Phase 2.1 — No selection found for origin/destination.");
+    }
+
+    // 2) Bloquear siempre estos campos al jugador
+    originInput.readOnly = true;
+    destInput.readOnly   = true;
+
+    // 3) Limpiar los valores de transferencia para el siguiente uso
+    localStorage.removeItem("ACS_selectedOrigin");
+    localStorage.removeItem("ACS_selectedDestination");
+
+    // 4) NO generar aún flight numbers ni autoCalculate
+    //    (según acordado en Fase 1: se activará más adelante)
     return;
   }
 
-  // Modo edición tampoco aplica hasta Fase 2
+  /* ========== MODO EDICIÓN (RUTA EXISTENTE) ========== */
+
+  const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  const flight = items.find(f => f.id === editID || f.blockId === editID);
+  if (!flight) return;
+
+  const $ = id => document.getElementById(id);
+
+  // Rellenar formulario con datos antiguos
+  $("origin").value       = flight.origin || "";
+  $("destination").value  = flight.destination || "";
+  $("aircraft").value     = flight.acType || "";
+  $("departureTime").value = flight.departure || "06:00";
+  (flight.days || []).forEach(d => {
+    const box = document.getElementById(d);
+    if (box) box.checked = true;
+  });
+
+  // Bloquear también origen/destino en modo edición para el jugador
+  $("origin").readOnly      = true;
+  $("destination").readOnly = true;
+
+  // Aviso visual
+  const notice = document.createElement("div");
+  notice.style.color = "#FFB300";
+  notice.style.marginBottom = "1rem";
+  notice.style.fontWeight = "600";
+  notice.innerHTML = `✏️ Editing flight: <strong>${flight.origin} ➜ ${flight.destination}</strong>`;
+  document.querySelector(".schedule-container").prepend(notice);
+
+  // Liberar números del vuelo anterior
+  if (flight.flightNumberOut && flight.flightNumberIn) {
+    freeNumbers(flight.flightNumberOut, flight.flightNumberIn);
+  }
+
+  // Generar nuevos pares (motor intacto)
+  const newPair = generateFlightPair();
+
+  // Actualizar panel técnico si quieres (puedes dejarlo desactivado por ahora)
+  // autoCalculate();
+
+  // Cambiar botón a UPDATE + lógica de guardado (TU BLOQUE ORIGINAL AQUÍ)
+  const btn = document.querySelector(".acs-btn");
+  if (btn) btn.textContent = "UPDATE FLIGHT";
+
+  btn.onclick = () => {
+    const origin = $("origin").value.trim();
+    const destination = $("destination").value.trim();
+    const aircraft = $("aircraft").value;
+    const departure = $("departureTime").value;
+    const optimized = document.getElementById("optimizeRotation")?.checked || false;
+    const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+    const selectedDays = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+
+    if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
+      alert("⚠️ Please complete all fields before updating.");
+      return;
+    }
+
+    const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
+    localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
+
+    const rawFN = (flightNumberInput.value || "");
+    const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+    const flightNumberOut = match[1] || newPair.out;
+    const flightNumberIn  = match[2] || newPair.inn;
+
+    const updatedRoute = {
+      origin, destination, aircraft, departure, optimized,
+      days: selectedDays,
+      flightNumberOut, flightNumberIn
+    };
+    localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
+
+    markNumbersUsed(flightNumberOut, flightNumberIn);
+    bumpFlightCounter();
+
+    localStorage.removeItem("editFlightID");
+    alert("✅ Flight updated. You can assign it from the table.");
+    window.location.href = "schedule_table.html";
+  };
 });
 
 /* === Confirmar nuevo vuelo (espera Fase 2) === */
+     
 function confirmRoute() {
   alert("⚠️ The system is not ready yet. Phase 2 will activate route creation.");
 }
