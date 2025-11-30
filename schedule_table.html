@@ -611,42 +611,227 @@ function hideAircraftHover() {
   if (card) card.remove();
 }
 
-    /* ============================================================
+   /* ============================================================
        === RENDER PRINCIPAL DEL SCHEDULE =========================
        ============================================================ */
 
-    function renderSchedule(){
-      const tbody = document.getElementById("scheduleBody");
-      tbody.innerHTML = "";
+    function renderSchedule() {
 
-      const items = getItems();
-      const fleet = getRealFleet();  // === AJUSTE 3: usar flota real ===
-      const byTail = {};
+  const tbody = document.getElementById("scheduleBody");
+  tbody.innerHTML = "";
 
-      items.forEach(it => {
-        if(!byTail[it.tail]) byTail[it.tail] = [];
-        byTail[it.tail].push(it);
+  const items = getItems();
+  const fleet = getRealFleet();
+  const byTail = {};
+
+  items.forEach(it => {
+    if(!byTail[it.tail]) byTail[it.tail] = [];
+    byTail[it.tail].push(it);
+  });
+
+  // ============================================================
+  // 1) Si NO hay flota → mostrar filas dummy con botones
+  // ============================================================
+         
+  if (fleet.length === 0) {
+    for (let i = 0; i < 5; i++) {
+      const tr = document.createElement("tr");
+
+      const tdTail = document.createElement("td");
+      tdTail.textContent = "(empty)";
+      tr.appendChild(tdTail);
+
+      days.forEach(() => {
+        const td = document.createElement("td");
+        td.textContent = "—";
+        tr.appendChild(td);
       });
+
+      const planTd = document.createElement("td");
+      const wrap = document.createElement("div");
+      wrap.className = "plan-actions";
+
+      const assignBtn = document.createElement("button");
+      assignBtn.className = "btn btn-assign";
+      assignBtn.textContent = "Assign Route";
+      assignBtn.onclick = () =>
+        alert("⚠ No aircraft available. Buy one first.");
+
+      const maintBtn = document.createElement("button");
+      maintBtn.className = "btn btn-maint";
+      maintBtn.textContent = "Plan Maintenance";
+      maintBtn.onclick = () =>
+        alert("⚠ No aircraft available. Buy one first.");
+
+      wrap.appendChild(assignBtn);
+      wrap.appendChild(maintBtn);
+      planTd.appendChild(wrap);
+      tr.appendChild(planTd);
+
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("updateTime").textContent =
+      "Last update: " + new Date().toLocaleTimeString();
+    return;
+  }
+
+  // ============================================================
+  // 2) HAY FLOTA → procesar cada aeronave
+  // ============================================================
          
-// === Si la flota está vacía → mostrar filas vacías con botones ===
-         
-if (fleet.length === 0) {
-  for (let i = 0; i < 5; i++) {
+  fleet.forEach(ac => {
+
     const tr = document.createElement("tr");
 
-    // Aircraft
+    // ============================================================
+    // MATRICULA Y ESTADO
+    // ============================================================
+       
     const tdTail = document.createElement("td");
-    tdTail.textContent = "(empty)";
+
+    tdTail.innerHTML = `
+      ${ac.registration || ac.tail}
+      <br>
+      ${
+        ac.status === "In C-Check" ? `${ac.registration} • 🛠 C-Check` :
+        ac.status === "In D-Check" ? `${ac.registration} • ⚙️ D-Check` :
+        ac.status === "Pending Delivery" ? `${ac.registration} • ⏳ Delivery` :
+        ac.status === "B-Check" ? `${ac.registration} • 🔧 B-Check` :
+        ""
+      }
+    `;
+
+    tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
+    tdTail.onmouseleave = hideAircraftHover;
+
     tr.appendChild(tdTail);
 
-    // 7 días vacíos
-    days.forEach(() => {
+    // ============================================================
+    // 3) DÍAS DE LA SEMANA
+    // ============================================================
+       
+    days.forEach(day => {
+
       const td = document.createElement("td");
-      td.textContent = "—";
+
+      const dayItems = (byTail[ac.tail] || []).filter(
+        x => x.day === day
+      );
+
+      let lastEnd = null;
+      let hadFlight = false;
+
+      // ============================================================
+      // PINTAR CADA CHIP (FLIGHT o SERVICE)
+      // ============================================================
+         
+      dayItems.forEach(it => {
+
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.dataset.id = it.id;
+        chip.dataset.blockId = it.blockId || "";
+        chip.dataset.type = it.type;
+
+        // ============================================================
+        // A) FLIGHT CHIP
+        // ============================================================
+           
+        if (it.type === "flight") {
+
+          hadFlight = true;
+
+          const iata = localStorage.getItem("userIATA") || "XX";
+
+          let numOut = it.flightNumberOut ?? it.flightOut ?? 100;
+          let numIn = it.flightNumberIn ?? it.flightIn ?? (Number(numOut) + 1);
+
+          if (String(numOut).startsWith(iata))
+            numOut = String(numOut).replace(iata, "");
+          if (String(numIn).startsWith(iata))
+            numIn = String(numIn).replace(iata, "");
+
+          const flightOut = `${iata}${String(numOut)}`;
+          const flightIn = `${iata}${String(numIn)}`;
+
+          chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
+
+          const tooltip = document.createElement("span");
+          tooltip.className = "tooltip";
+          tooltip.innerHTML = `
+            ${it.departure}–${it.arrival}<br>
+            ${it.origin} → ${it.destination}
+          `;
+          chip.appendChild(tooltip);
+
+          const arrMin = toMin(it.arrival);
+          lastEnd = lastEnd === null ? arrMin : Math.max(lastEnd, arrMin);
+        }
+
+        // ============================================================
+        // B) SERVICE CHIP
+        // ============================================================
+             
+        else if (it.type === "service") {
+
+          chip.textContent =
+            it.serviceType === "A" ? "🟡 A-Check" : "⚙️ B-Check";
+
+          const tooltip = document.createElement("span");
+          tooltip.className = "tooltip";
+          tooltip.innerHTML = `${it.start} – ${it.end}`;
+          chip.appendChild(tooltip);
+        }
+
+        // ============================================================
+        // 🔥 CLICKS — REEMPLAZO OFICIAL
+        // ============================================================
+           
+        if (it.type === "flight") {
+          chip.onclick = () => openFlightModal(it); // Nuevo modal
+        } else {
+          chip.onclick = () => openActionModal(chip); // Modal action
+        }
+
+        td.appendChild(chip);
+      });
+
+      // ============================================================
+      // CALCULAR NEXT FLIGHT SLOT
+      // ============================================================
+         
+      const maintToday = dayItems.find(x => x.type === "service");
+
+      if (maintToday) {
+        if (maintToday.serviceType === "B") {
+          const nextInfo = document.createElement("div");
+          nextInfo.className = "next-slot";
+          nextInfo.textContent =
+            "Next Flight: N/A (B-Check Day)";
+          td.appendChild(nextInfo);
+          tr.appendChild(td);
+          return;
+        }
+      }
+
+      if (hadFlight) {
+        const nextInfo = document.createElement("div");
+        nextInfo.className = "next-slot";
+
+        const next = toHHMM((lastEnd ?? 0) + TURNAROUND_MIN);
+        nextInfo.textContent = `Next Flight: ${next}`;
+
+        td.appendChild(nextInfo);
+      }
+
       tr.appendChild(td);
     });
 
-    // Plan (con botones)
+    // ============================================================
+    // 4) ACTION PLAN (Assign / Maintenance)
+    // ============================================================
+       
     const planTd = document.createElement("td");
     const wrap = document.createElement("div");
     wrap.className = "plan-actions";
@@ -654,12 +839,12 @@ if (fleet.length === 0) {
     const assignBtn = document.createElement("button");
     assignBtn.className = "btn btn-assign";
     assignBtn.textContent = "Assign Route";
-    assignBtn.onclick = () => alert("⚠ No aircraft available. Buy one first.");
+    assignBtn.onclick = () => assignRouteToTail(ac);
 
     const maintBtn = document.createElement("button");
     maintBtn.className = "btn btn-maint";
     maintBtn.textContent = "Plan Maintenance";
-    maintBtn.onclick = () => alert("⚠ No aircraft available. Buy one first.");
+    maintBtn.onclick = () => openMaintModal(ac.tail);
 
     wrap.appendChild(assignBtn);
     wrap.appendChild(maintBtn);
@@ -668,123 +853,12 @@ if (fleet.length === 0) {
     tr.appendChild(planTd);
 
     tbody.appendChild(tr);
-  }
+  });
 
   document.getElementById("updateTime").textContent =
     "Last update: " + new Date().toLocaleTimeString();
-  return;
 }
 
-         fleet.forEach(ac=>{
-        const tr = document.createElement("tr");
-
-        /* ============================================================
-           === AJUSTE 4: Columna Aircraft con matrícula + status ======
-           ============================================================ */
-
-        const tdTail = document.createElement("td");
-
-        tdTail.innerHTML = `
-          ${ac.registration || ac.tail}
-          <br>
-          ${ac.status === "In C-Check" ? `${ac.registration} • 🛠 C-Check` : ""}
-          ${ac.status === "In D-Check" ? `${ac.registration} • ⚙️ D-Check` : ""}
-          ${ac.status === "Pending Delivery" ? `${ac.registration} • ⏳ Delivery` : ""}
-          ${ac.status === "B-Check" ? `${ac.registration} • 🔧 B-Check` : ""}
-        `;
-
-        tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
-        tdTail.onmouseleave = hideAircraftHover;
-
-        tr.appendChild(tdTail);
-
-        /* ============================================================
-           === DÍAS DEL SCHEDULE (NO SE EDITÓ NADA AQUÍ) ===============
-           ============================================================ */
-
-        days.forEach(d=>{
-          const td = document.createElement("td");
-          const dayItems = (byTail[ac.tail]||[]).filter(x=>x.day===d);
-          let lastEnd = null;
-          let hadFlight = false;
-
-          dayItems.forEach(it=>{
-            const chip = document.createElement("span");
-            chip.className = "chip";
-            chip.dataset.id = it.id;
-            chip.dataset.blockId = it.blockId || "";
-            chip.dataset.type = it.type;
-
-  if(it.type==="flight"){
-  hadFlight = true;
-  const iata = localStorage.getItem("userIATA") || "XX";
-
-  let numOut = it.flightNumberOut ?? it.flightOut ?? 100;
-  let numIn  = it.flightNumberIn  ?? it.flightIn  ?? (Number(numOut) + 1);
-
-  if (String(numOut).startsWith(iata)) numOut = String(numOut).replace(iata, "");
-  if (String(numIn).startsWith(iata)) numIn = String(numIn).replace(iata, "");
-
-  const flightOut = `${iata}${String(numOut)}`;
-  const flightIn  = `${iata}${String(numIn)}`;
-
-  chip.textContent = `✈️ ${flightOut} / ${flightIn}`;
-
-  const tooltip = document.createElement("span");
-  tooltip.className = "tooltip";
-  tooltip.innerHTML = `${it.departure}–${it.arrival}<br>${it.origin}-${it.destination}`;
-  chip.appendChild(tooltip);
-
-  const arrMin = toMin(it.arrival);
-  lastEnd = lastEnd===null ? arrMin : Math.max(lastEnd, arrMin);
-
-  // 🔥 CLICK FINAL: abre modal de info de vuelo
-  chip.onclick = () => openFlightModal(it);
-
-}
-else if(it.type==="service"){
-
-  const label = it.serviceType==="A" ? "🟡 A-Check" : "⚙️ B-Check";
-  chip.textContent = label;
-
-  const tooltip = document.createElement("span");
-  tooltip.className = "tooltip";
-  tooltip.innerHTML = `${it.start || "?"} – ${it.end || "?"}`;
-  chip.appendChild(tooltip);
-
-  // servicios siguen usando el modal viejo
-  chip.onclick = ()=>openActionModal(chip);
-}
-
-
-          const maintToday = dayItems.find(x => x.type === "service");
-
-          if (maintToday) {
-            if (maintToday.serviceType === "A") {
-              const maintEnd = toMin(maintToday.end);
-              lastEnd = (lastEnd ?? maintEnd) < maintEnd ? maintEnd : lastEnd;
-            }
-
-            if (maintToday.serviceType === "B") {
-              const nextInfo = document.createElement("div");
-              nextInfo.className = "next-slot";
-              nextInfo.textContent = "Next Flight: N/A (B-Check Day)";
-              td.appendChild(nextInfo);
-              tr.appendChild(td);
-              return;
-            }
-          }
-
-          if(hadFlight){
-            const nextInfo = document.createElement("div");
-            nextInfo.className = "next-slot";
-            const next = toHHMM((lastEnd ?? 0) + TURNAROUND_MIN);
-            nextInfo.textContent = `Next Flight: ${next}`;
-            td.appendChild(nextInfo);
-          }
-
-          tr.appendChild(td);
-        });
 
         /* ============================================================
            === BOTONES PLAN ROUTE / MAINTENANCE ======================
