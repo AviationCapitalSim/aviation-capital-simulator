@@ -1,5 +1,5 @@
 <!-- === MY AIRCRAFT MODULE === -->
-<!-- Version: Beta v3 | Date: 01 DEC 2025 -->
+<!-- Version: Beta v1 | Date: 01 DEC 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -531,22 +531,11 @@
   .reg-btn:hover {
     background: #188a39;
   }
-  
 </style>
+
 
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
-
-<!-- === TIME ENGINE (debe ir PRIMERO) === -->
-<script src="time_engine.js"></script>
-
-<!-- === MY AIRCRAFT JS MODULE (debe ir DESPUÉS del motor) === -->
-<script src="engine/my_aircraft.js"></script>
-
-<!-- === REGISTRATION MANAGER (modal logic) === -->
-<script src="acs_reg_manager.js"></script>
-
-
 
 <!-- === LOGOUT FUNCTION === -->
 <script>
@@ -555,6 +544,15 @@ function handleLogout(){
   window.location.href = "login.html";
 }
 </script>
+
+<!-- === TIME ENGINE === -->
+<script src="time_engine.js"></script>
+
+<!-- === MY AIRCRAFT JS MODULE === -->
+<script src="my_aircraft.js?v=1.0"></script>
+
+<!-- === REGISTRATION MANAGER (modal logic) === -->
+<script src="acs_reg_manager.js?v=1.0"></script>
 
 </body>
 </html>
