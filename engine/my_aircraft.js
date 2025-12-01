@@ -218,7 +218,11 @@ document.addEventListener("DOMContentLoaded", () => {
   updatePendingDeliveries();
   populateFilterOptions();
   renderFleetTable();
-  ensureEmptyRows();
+
+  // 🟦 Solo filas vacías cuando NO hay flota
+  if (fleet.length === 0) {
+    ensureEmptyRows();
+  }
 });
 
 // ============================================================
@@ -230,6 +234,10 @@ if (typeof registerTimeListener === "function") {
     fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
     updatePendingDeliveries();
     renderFleetTable();
-    ensureEmptyRows();
+
+    // 🟦 Solo si no hay aviones
+    if (fleet.length === 0) {
+      ensureEmptyRows();
+    }
   });
 }
