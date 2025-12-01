@@ -324,3 +324,48 @@ function ACS_runMonthlyLeasePayments(simDate){
 if (typeof registerTimeListener === "function") {
   registerTimeListener(ACS_runMonthlyLeasePayments);
 }
+
+/* ============================================================
+   === ACS FINANCE — REGISTRO DE COMPRA DE AVIONES USADOS =====
+   ============================================================ */
+
+function ACS_registerUsedAircraftPurchase(amount, model){
+  try {
+    let finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+    // Asegurar estructuras internas
+    finance.capital    = finance.capital    || 0;
+    finance.revenue    = finance.revenue    || 0;
+    finance.expenses   = finance.expenses   || 0;
+    finance.cost       = finance.cost       || {};
+    finance.cost.used_aircraft_purchase = finance.cost.used_aircraft_purchase || 0;
+
+    // Descontar capital
+    finance.capital -= amount;
+
+    // Añadir a gastos generales
+    finance.expenses += amount;
+
+    // Añadir a categoría específica
+    finance.cost.used_aircraft_purchase += amount;
+
+    // Actualizar profit
+    finance.profit = finance.revenue - finance.expenses;
+
+    // Guardar
+    localStorage.setItem("ACS_Finance", JSON.stringify(finance));
+
+    // Log contable
+    let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+    log.push({
+      time: new Date().toLocaleString(),
+      type: "Expense",
+      source: `Purchase Used Aircraft — ${model}`,
+      amount: amount
+    });
+    localStorage.setItem("ACS_Log", JSON.stringify(log));
+
+  } catch(e){
+    console.error("❌ ACS_registerUsedAircraftPurchase ERROR:", e);
+  }
+}
