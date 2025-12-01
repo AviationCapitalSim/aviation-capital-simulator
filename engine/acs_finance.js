@@ -316,6 +316,43 @@ function ACS_runMonthlyLeasePayments(simDate){
   }
 }
 
+/* ============================================================
+   ===  SYNC FINANCE WITH TIME ENGINE (Monthly Close) =========
+   ============================================================ */
+
+function ACS_handleMonthlyFinance(simDate) {
+  try {
+    // simDate = fecha real del juego (Date)
+    const f = loadFinance();
+    if (!f) return;
+
+    // Extraer mes actual del juego
+    const months = ["JAN","FEB","MAR","APR","MAY","JUN",
+                    "JUL","AUG","SEP","OCT","NOV","DEC"];
+    const m = months[simDate.getUTCMonth()] + " " + simDate.getUTCFullYear();
+
+    // Si cambió el mes → cerramos el mes y avanzamos
+    if (f.month !== m) {
+
+      // cerrar el mes
+      ACS_closeMonth();
+
+      // actualizar el mes nuevo
+      const f2 = loadFinance();
+      f2.month = m;
+      saveFinance(f2);
+
+      console.log("📅 Finance advanced to:", m);
+    }
+
+  } catch(e){
+    console.error("❌ Finance monthly sync error:", e);
+  }
+}
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(ACS_handleMonthlyFinance);
+}
 
 /* ============================================================
    === REGISTER TIME ENGINE LISTENER ===========================
