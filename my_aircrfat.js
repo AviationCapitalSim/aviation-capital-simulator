@@ -537,3 +537,22 @@ if (typeof registerTimeListener === "function") {
     console.log("⏱️ Fleet updated via ACS_TIME tick.");
   });
 }
+
+// =============================
+// === EMPTY ROW FALLBACK =====
+// =============================
+
+function ensureEmptyRows() {
+  const tbody = document.getElementById("fleetTableBody");
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  // Si NO hay aviones → aseguramos 4 filas
+  if (fleet.length === 0) {
+    tbody.innerHTML = `
+      <tr class="empty-row"><td>(empty)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="empty-row"><td>(empty)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="empty-row"><td>(empty)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr class="empty-row"><td>(empty)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    `;
+  }
+}
