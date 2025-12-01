@@ -12,23 +12,28 @@
    ============================================================ */
 
 // === STORAGE KEY ===
+
 const ACS_FLEET_KEY = "ACS_MyFleet";
 
 // === Cargar flota o comenzar con lista vacía ===
 let fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
 // === Guardar cambios ===
+
 function saveFleet() {
   localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleet));
 }
 
 // === Obtener tiempo sim actual desde time_engine ===
+
 function getSimTime() {
-  if (window.getSimTime && typeof window.getSimTime === "function") {
-    return new Date(window.getSimTime());
+  // Usamos la función correcta del time engine
+  if (window.ACS_getSimTime && typeof window.ACS_getSimTime === "function") {
+    return new Date(window.ACS_getSimTime());
   }
   return new Date("1940-01-01T00:00:00Z");
 }
+
 
 // ============================================================
 // === PENDING DELIVERY HANDLER (REAL SIM-TIME BASED) =========
