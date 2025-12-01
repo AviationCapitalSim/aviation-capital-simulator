@@ -657,7 +657,36 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "schedule_table.html";
   };
 });
+     
+/* ============================================================
+   === PHASE 2.3 — LOAD AIRCRAFT FOR THIS ROUTE ================
+   ------------------------------------------------------------
+   • Muestra solo aviones del usuario
+   • Activos
+   • En la base correcta (origin)
+   ============================================================ */
 
+function loadAvailableAircraft() {
+  const origin = (document.getElementById("origin").value || "").trim();
+  const select = document.getElementById("aircraft");
+
+  // Limpiar selector
+  select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
+
+  // Leer flota completa
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  fleet
+    .filter(ac => ac.status === "Active")        // solo operativos
+    .filter(ac => ac.base && ac.base === origin) // solo en la base
+    .forEach(ac => {
+      const opt = document.createElement("option");
+      opt.value = ac.registration; // lo que se enviará
+      opt.textContent = `${ac.model} — ${ac.registration}`;
+      select.appendChild(opt);
+    });
+}
+     
 /* ============================================================
    === PHASE 2.2 — REAL CONFIRM ROUTE + FINANCE HOOK ==========
    ------------------------------------------------------------
@@ -665,6 +694,7 @@ document.addEventListener("DOMContentLoaded", () => {
    - Deja un gancho para FINANCE (slot, landing, etc.)
    - Redirige a schedule_table.html para gestión en tabla
    ============================================================ */
+     
 function confirmRoute() {
   const origin       = (document.getElementById("origin").value || "").trim();
   const destination  = (document.getElementById("destination").value || "").trim();
