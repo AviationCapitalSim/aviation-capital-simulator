@@ -212,7 +212,7 @@ function renderUsedMarket(filter = "all") {
       <p>Cycles: ${ac.cycles.toLocaleString()}</p>
       <p>Condition: ${ac.condition}</p>
       <p><b>Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M</b></p>
-      <p style="color:#FFB300">Source: ${ac.source}</p>
+    
 
       <button class="ac-buy" onclick="buyUsed('${ac.id}')">BUY</button>
       <button class="ac-lease" onclick="leaseUsed('${ac.id}')">LEASE</button>
