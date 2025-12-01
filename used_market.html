@@ -528,6 +528,18 @@ function closeInfoModal() {
 
 let selectedUsedID = null;
 
+/* ============================================================
+   Helper — Obtener aeronave usada por ID
+   ============================================================ */
+     
+function getUsedById(id) {
+  const list = (typeof generateUsedMarket === "function")
+    ? generateUsedMarket()
+    : [];
+
+  return list.find(ac => ac.id === id) || null;
+}
+     
 /* --------------------- BUY MODAL ---------------------------- */
 
 function openBuyModal(id) {
