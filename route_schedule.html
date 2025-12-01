@@ -658,12 +658,131 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
-/* === Confirmar nuevo vuelo (espera Fase 2) === */
-     
+/* ============================================================
+   === PHASE 2.2 — REAL CONFIRM ROUTE + FINANCE HOOK ==========
+   ------------------------------------------------------------
+   - Crea la ruta real en scheduleItems (localStorage)
+   - Deja un gancho para FINANCE (slot, landing, etc.)
+   - Redirige a schedule_table.html para gestión en tabla
+   ============================================================ */
 function confirmRoute() {
-  alert("⚠️ The system is not ready yet. Phase 2 will activate route creation.");
+  const origin       = (document.getElementById("origin").value || "").trim();
+  const destination  = (document.getElementById("destination").value || "").trim();
+  const aircraft     = document.getElementById("aircraft").value;
+  const departure    = document.getElementById("departureTime").value;
+  const optimized    = document.getElementById("optimizeRotation").checked;
+
+  // Días seleccionados
+  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+  const days = DAY_IDS.filter(id => {
+    const box = document.getElementById(id);
+    return box && box.checked;
+  });
+
+  // Validaciones básicas
+  if (!origin || !destination) {
+    alert("⚠️ Origin and destination are required.");
+    return;
+  }
+
+  if (!aircraft) {
+    alert("⚠️ Please select an aircraft.");
+    return;
+  }
+
+  if (!departure) {
+    alert("⚠️ Please select a departure time.");
+    return;
+  }
+
+  if (days.length === 0) {
+    alert("⚠️ Please select at least one day of operation.");
+    return;
+  }
+
+  // Números de vuelo (si ya están generados en el campo)
+  const rawFN = (document.getElementById("flightNumber").value || "");
+  const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
+  const flightNumberOut = match[1] || null;
+  const flightNumberIn  = match[2] || null;
+
+  // Datos técnicos (si están visibles)
+  const distance   = document.getElementById("distance")?.textContent || null;
+  const blockTime  = document.getElementById("blockTime")?.textContent || null;
+  const turnaround = document.getElementById("turnaround")?.textContent || null;
+  const totalRot   = document.getElementById("totalRotation")?.textContent || null;
+
+  // ==========================================================
+  // 1) Construir la ruta para el SCHEDULE
+  // ==========================================================
+  const routeId = `RT_${Date.now()}`;
+
+  const newRoute = {
+    id: routeId,
+    origin,
+    destination,
+    aircraft,         // por ahora solo modelo; luego se ligará a un aircraftId real
+    departure,
+    days,
+    optimized,
+    flightNumberOut,
+    flightNumberIn,
+    distanceNM: distance,
+    blockTime,
+    turnaround,
+    totalRotation: totalRot,
+    createdAt: new Date().toISOString()
+  };
+
+  // Guardar en scheduleItems (lista de rutas programadas)
+  const current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  current.push(newRoute);
+  localStorage.setItem("scheduleItems", JSON.stringify(current));
+
+  // Mantener el último "confirmedRoute" también si lo usas en otros módulos
+  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
+
+  // Marcar números de vuelo como usados (si el motor ya está activo)
+  if (flightNumberOut && flightNumberIn &&
+      typeof markNumbersUsed === "function" &&
+      typeof bumpFlightCounter === "function") {
+    markNumbersUsed(flightNumberOut, flightNumberIn);
+    bumpFlightCounter();
+  }
+
+  // ==========================================================
+  // 2) FINANCE HOOK (cobro de slot / landing / etc.)
+  //    Aquí solo dejamos el gancho. La lógica profunda se
+  //    programará con el engine de Finance en el siguiente paso.
+  // ==========================================================
+  try {
+    if (typeof ACS_registerRouteExpense === "function") {
+      // Si ya existe un engine de finance con este nombre:
+      ACS_registerRouteExpense(newRoute);
+    } else if (typeof ACS_registerExpense === "function") {
+      // Alternativa genérica
+      ACS_registerExpense({
+        type: "ROUTE_CREATION",
+        routeId,
+        origin,
+        destination,
+        aircraft,
+        flightNumberOut,
+        flightNumberIn
+      });
+    } else {
+      console.log("💰 [Finance Hook] Route created (pending detailed cost engine):", newRoute);
+    }
+  } catch (err) {
+    console.warn("⚠️ Finance hook failed in confirmRoute:", err);
+  }
+
+  // ==========================================================
+  // 3) Redirigir a la tabla de horarios
+  // ==========================================================
+  alert("✅ Route created successfully. You can manage it in the schedule table.");
+  window.location.href = "schedule_table.html";
 }
-</script>
 
 <script src="./time_engine.js"></script>
 
