@@ -41,8 +41,11 @@ if (!localStorage.getItem("ACS_Finance")) {
       virtual_handling: 0,
       slot_fees: 0,
       penalties: 0,
-      loans: 0
-    },
+      loans: 0,
+
+      /* 🟨 Nuevo costo oficial para compras de usados */
+      used_aircraft_purchase: 0
+},
 
     history: [
       {
