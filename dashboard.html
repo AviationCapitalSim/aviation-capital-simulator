@@ -929,6 +929,32 @@ setInterval(async () => {
   }
 
 }, 10000); // 10,000 ms → 10 segundos
+
+  <script>
+/* ============================================================
+   === DASHBOARD — LIVE FINANCE SYNC (Capital & Credits)  ======
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  const credits = JSON.parse(localStorage.getItem("ACS_Credits") || "{}");
+
+  // === 1) Capital (para mostrar en "Company Value") ===========
+  const capitalEl = document.getElementById("companyValue");
+  if (capitalEl && finance.capital !== undefined) {
+    capitalEl.textContent = "$" + finance.capital.toLocaleString();
+  }
+
+  // === 2) Créditos AC$ ========================================
+  const creditsEl = document.getElementById("creditsAmount");
+  if (creditsEl && credits.amount !== undefined) {
+    creditsEl.textContent = credits.amount.toLocaleString() + " AC$";
+  }
+
+  console.log("💰 Dashboard synced with ACS_Finance + ACS_Credits");
+});
+</script>
   
 </script>
   
