@@ -316,6 +316,16 @@ function ACS_runMonthlyLeasePayments(simDate){
   }
 }
 
+
+
+/* ============================================================
+   === REGISTER TIME ENGINE LISTENER ===========================
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(ACS_runMonthlyLeasePayments);
+}
+
 /* ============================================================
    ===  SYNC FINANCE WITH TIME ENGINE (Monthly Close) =========
    ============================================================ */
@@ -352,14 +362,6 @@ function ACS_handleMonthlyFinance(simDate) {
 
 if (typeof registerTimeListener === "function") {
   registerTimeListener(ACS_handleMonthlyFinance);
-}
-
-/* ============================================================
-   === REGISTER TIME ENGINE LISTENER ===========================
-   ============================================================ */
-
-if (typeof registerTimeListener === "function") {
-  registerTimeListener(ACS_runMonthlyLeasePayments);
 }
 
 /* ============================================================
