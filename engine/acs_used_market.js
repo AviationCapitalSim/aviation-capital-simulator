@@ -223,7 +223,7 @@ function renderUsedMarket(filter = "all") {
 }
 
 /* ============================================================
-   === 6) COMPRAR AVIÓN USADO — VERSIÓN FINAL COMPLETA ========
+   === BUY USED AIRCRAFT — BETA FINAL ==========================
    ============================================================ */
 
 function buyUsed(id) {
@@ -231,7 +231,7 @@ function buyUsed(id) {
   try {
 
     /* --------------------------------------------------------
-       1) Obtener lista de usados y encontrar el avión
+       1) Cargar listado y encontrar avión
        -------------------------------------------------------- */
     let list = JSON.parse(localStorage.getItem("ACS_UsedMarket") || "[]");
     const ac = list.find(x => x.id === id);
@@ -242,7 +242,7 @@ function buyUsed(id) {
     }
 
     /* --------------------------------------------------------
-       2) Cargar Finance y verificar capital
+       2) Finance: verificar capital
        -------------------------------------------------------- */
     const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
     const capital = finance.capital || 0;
@@ -253,7 +253,7 @@ function buyUsed(id) {
     }
 
     /* --------------------------------------------------------
-       3) Calcular la edad del avión según año sim
+       3) Calcular edad del avión
        -------------------------------------------------------- */
     const simYear = (typeof getSimYear === "function")
       ? getSimYear()
@@ -262,56 +262,55 @@ function buyUsed(id) {
     const age = Math.max(0, simYear - ac.year);
 
     /* --------------------------------------------------------
-   4) Calcular próximos C y D según edad real del avión
-      ✔ C-Check cada 12 meses
-      ✔ D-Check cada 96 meses
-      ✔ Basado en la edad real (año sim - año de fabricación)
-      ✔ Fórmula profesional ACS Qatar Luxury — Perfecta
-   -------------------------------------------------------- */
+       4) Calcular servicios C & D
+          - C cada 12 meses
+          - D cada 96 meses
+       -------------------------------------------------------- */
+    const monthsAge = age * 12;
 
-     const ageMonths = age * 12;
+    let nextC = 12 - (monthsAge % 12);
+    if (nextC <= 0) nextC = 12;
 
-     // === C-CHECK (cada 12 meses) ===
-     
-     let nextC = 12 - (ageMonths % 12);
-     if (nextC === 0) nextC = 12;
-     nextC = `${nextC} months`;
-
-     // === D-CHECK (cada 96 meses) ===
-     
-     let nextD = 96 - (ageMonths % 96);
-     if (nextD === 0) nextD = 96;
-     nextD = `${nextD} months`;
+    let nextD = 96 - (monthsAge % 96);
+    if (nextD <= 0) nextD = 96;
 
     /* --------------------------------------------------------
-       5) Obtener base del jugador desde choose_base.html
+       5) Base del jugador (choose_base)
        -------------------------------------------------------- */
     const baseObj = JSON.parse(localStorage.getItem("ACS_BaseAirport") || "{}");
-    const baseICAO = baseObj.icao || "LIRN";
-    const baseCity = baseObj.city || "Naples";
+
+    const baseICAO   = baseObj.icao   || "LIRN";
+    const baseCity   = baseObj.city   || "Naples";
     const baseRegion = baseObj.region || "Italy";
 
     /* --------------------------------------------------------
-       6) Construir el objeto final del avión para My Aircraft
+       6) Registro aleatorio único
        -------------------------------------------------------- */
     const reg = (typeof ACS_generateRegistration === "function")
       ? ACS_generateRegistration()
       : `AC-${Date.now()}`;
 
-    // Datos completos del modelo desde DB real
+    /* --------------------------------------------------------
+       7) Datos completos del modelo desde DB
+       -------------------------------------------------------- */
     const fullData = (typeof ACS_AIRCRAFT_DB !== "undefined")
-      ? ACS_AIRCRAFT_DB.find(m => 
-          m.manufacturer === ac.manufacturer && 
+      ? ACS_AIRCRAFT_DB.find(m =>
+          m.manufacturer === ac.manufacturer &&
           m.model === ac.model
         ) || {}
       : {};
 
+    /* --------------------------------------------------------
+       8) Construcción del avión final para My Aircraft
+       -------------------------------------------------------- */
     const newAircraft = {
       id: "AC-" + Date.now(),
       registration: reg,
+
       manufacturer: ac.manufacturer,
       model: ac.model,
       family: fullData.family || "",
+
       year: ac.year,
       age: age,
       delivered: new Date().toISOString(),
@@ -330,43 +329,42 @@ function buyUsed(id) {
       lastC: null,
       lastD: null,
 
-      nextC: nextC,
-      nextD: nextD,
+      nextC: `${nextC} months`,
+      nextD: `${nextD} months`,
 
       data: fullData
     };
 
     /* --------------------------------------------------------
-       7) Guardar en My Aircraft
+       9) Guardar en My Aircraft
        -------------------------------------------------------- */
     let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
     fleet.push(newAircraft);
     localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
 
     /* --------------------------------------------------------
-       8) Registrar gasto en Finance (solo usados)
+       10) Registrar gasto financiero (solo usados)
        -------------------------------------------------------- */
     if (typeof ACS_registerUsedAircraftPurchase === "function") {
       ACS_registerUsedAircraftPurchase(ac.price_acs_usd, ac.model);
     }
 
     /* --------------------------------------------------------
-       9) Remover el avión del Used Market
+       11) Remover del Used Market
        -------------------------------------------------------- */
     const updatedList = list.filter(x => x.id !== id);
     localStorage.setItem("ACS_UsedMarket", JSON.stringify(updatedList));
 
     /* --------------------------------------------------------
-       10) Confirmación visual
+       12) Confirmación visual
        -------------------------------------------------------- */
     alert(`✅ Purchase Successful!\n${ac.manufacturer} ${ac.model} added to your fleet.`);
 
-  } catch(err) {
+  } catch (err) {
     console.error("❌ ERROR in buyUsed():", err);
     alert("❌ Unexpected error purchasing aircraft.");
   }
 }
-
 
 /* ============================================================
    === 7) LEASE USADO — (SE MANTIENE POR COMPATIBILIDAD) =======
