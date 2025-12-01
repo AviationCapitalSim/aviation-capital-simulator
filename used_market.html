@@ -523,42 +523,49 @@ function closeInfoModal() {
 }
 
 /* ============================================================
-   === USED MARKET MODALS — QATAR LUXURY PREMIUM ===============
+   === USED MARKET MODALS — QATAR LUXURY PREMIUM (FIXED) =======
    ============================================================ */
 
 let selectedUsedID = null;
 
-function getUsedById(id) {
-  try {
-    if (typeof generateUsedMarket === "function") {
-      const list = generateUsedMarket();
-      return list.find(x => x.id === id) || null;
-    }
-  } catch(e) {
-    console.warn("Used lookup error:", e);
-  }
-  return null;
-}
+/* --------------------- BUY MODAL ---------------------------- */
 
-/* ---------- BUY MODAL ---------- */
 function openBuyModal(id) {
   selectedUsedID = id;
+
   const ac = getUsedById(id);
   if (!ac) return;
 
   const titleEl = document.getElementById("buyTitle");
   const detailsEl = document.getElementById("buyDetails");
   const modalEl = document.getElementById("buyUsedModal");
+  const confirmBtn = document.getElementById("confirmBuyBtn");
 
-  if (!titleEl || !detailsEl || !modalEl) return;
+  // Datos de finanzas
+  const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  const capital = finance.capital || 0;
+  const enough = capital >= ac.price_acs_usd;
 
   titleEl.textContent = `Purchase ${ac.manufacturer} ${ac.model}`;
+
   detailsEl.innerHTML = `
-    <b>Price:</b> $${(ac.price_acs_usd/1_000_000).toFixed(2)}M<br>
+    <b>Price:</b> $${(ac.price_acs_usd / 1_000_000).toFixed(2)}M<br>
     <b>Condition:</b> ${ac.condition}<br>
     <b>Hours:</b> ${ac.hours.toLocaleString()}<br>
-    <b>Cycles:</b> ${ac.cycles.toLocaleString()}
+    <b>Cycles:</b> ${ac.cycles.toLocaleString()}<br><br>
+
+    <span style="color:#00ff80; font-weight:600;">
+      Company Capital: $${(capital/1_000_000).toFixed(2)}M
+    </span><br>
+
+    ${!enough 
+      ? `<span style="color:#ff4444; font-weight:700;">❌ Not enough capital to purchase this aircraft.</span>`
+      : ""
+    }
   `;
+
+  // Desactivar si no alcanza el dinero
+  confirmBtn.disabled = !enough;
 
   modalEl.style.display = "flex";
 }
@@ -568,17 +575,17 @@ function closeBuyModal() {
   if (m) m.style.display = "none";
 }
 
-/* ---------- LEASE MODAL ---------- */
+/* ------------------- LEASE MODAL (SIN CAMBIOS) -------------- */
+
 function openLeaseModal(id) {
   selectedUsedID = id;
+
   const ac = getUsedById(id);
   if (!ac) return;
 
   const titleEl = document.getElementById("leaseTitle");
   const detailsEl = document.getElementById("leaseDetails");
   const modalEl = document.getElementById("leaseUsedModal");
-
-  if (!titleEl || !detailsEl || !modalEl) return;
 
   const leaseMonth = Math.floor(ac.price_acs_usd * 0.015);
 
@@ -598,16 +605,26 @@ function closeLeaseModal() {
   if (m) m.style.display = "none";
 }
 
-/* ---------- CONFIRM BUTTONS (usa tu lógica original) ---------- */
+/* ------------------- CONFIRM PURCHASE ----------------------- */
+
 (function(){
   const buyBtn = document.getElementById("confirmBuyBtn");
   if (buyBtn) {
     buyBtn.addEventListener("click", () => {
+
       if (!selectedUsedID) return;
+
+      // Ejecutar compra REAL en acs_used_market.js
       if (typeof buyUsed === "function") {
         buyUsed(selectedUsedID);
       }
+
       closeBuyModal();
+
+      // Redirigir a My Aircraft
+      setTimeout(() => {
+        window.location.href = "my_aircraft.html";
+      }, 300);
     });
   }
 
@@ -623,7 +640,7 @@ function closeLeaseModal() {
   }
 })();
 
-/* ---------- RE-CABLEAR BOTONES DE LAS CARDS ------------------- */
+/* ---------------- WIRE CARD BUTTONS -------------------------- */
 
 function wireUsedMarketButtons() {
   const buyBtns = document.querySelectorAll(".ac-buy");
@@ -635,7 +652,6 @@ function wireUsedMarketButtons() {
       const match = attr.match(/buyUsed\('(.+)'\)/);
       if (match) id = match[1];
     }
-    if (!id) return;
     btn.removeAttribute("onclick");
     btn.dataset.wired = "1";
     btn.addEventListener("click", () => openBuyModal(id));
@@ -650,14 +666,14 @@ function wireUsedMarketButtons() {
       const match = attr.match(/leaseUsed\('(.+)'\)/);
       if (match) id = match[1];
     }
-    if (!id) return;
     btn.removeAttribute("onclick");
     btn.dataset.wired = "1";
     btn.addEventListener("click", () => openLeaseModal(id));
   });
 }
 
-/* ---------- ENVOLVER renderUsedMarket PARA SIEMPRE CABLEAR ---- */
+/* ---- Hook para recablear cada vez que se renderice market ---- */
+
 (function(){
   if (typeof renderUsedMarket === "function") {
     const originalRender = renderUsedMarket;
@@ -667,6 +683,7 @@ function wireUsedMarketButtons() {
     };
   }
 })();
+
 </script>
 
 </body>
