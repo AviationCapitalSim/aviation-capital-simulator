@@ -348,8 +348,20 @@ function buyUsed(id) {
     if (typeof ACS_registerUsedAircraftPurchase === "function") {
       ACS_registerUsedAircraftPurchase(ac.price_acs_usd, ac.model);
     }
-
-    /* --------------------------------------------------------
+   
+     /* ============================================================
+       PARCHE: Descontar capital inmediatamente
+    ============================================================ */
+    try {
+    const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    f.capital = (f.capital || 0) - ac.price_acs_usd;
+    if (f.capital < 0) f.capital = 0;
+    localStorage.setItem("ACS_Finance", JSON.stringify(f));
+    } catch(e) {
+    console.warn("Finance patch error:", e);
+    }
+    
+     /* --------------------------------------------------------
        11) Remover del Used Market
        -------------------------------------------------------- */
     const updatedList = list.filter(x => x.id !== id);
