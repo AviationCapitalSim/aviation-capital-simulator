@@ -1,11 +1,15 @@
 /* ============================================================
-   === ACS USED AIRCRAFT MARKET — FINAL SYNC (v2.1) ==========
+   === ACS USED AIRCRAFT MARKET — FINAL SYNC (v2.1) ============
    ------------------------------------------------------------
    • Integrado con ACS_AIRCRAFT_DB y Buy Aircraft Engine
    • Función de imágenes EXACTA a buy_aircraft.js
    • Filtrado por fabricante
-   • Compra / Leasing de usados
-   • Auto-delivery inmediato para 1ª flota inicial
+   • Compra de usados conectada a:
+       - ACS_MyAircraft
+       - ACS_Finance (capital/expenses/log)
+       - Eliminación del avión del Used Market
+   • Auto-delivery inmediato para flota inicial
+   • Source estándar: BANK
    ============================================================ */
 
 console.log("🟦 ACS Used Aircraft Market — Loaded");
@@ -18,7 +22,6 @@ function buildFilterChips() {
   if (!bar) return;
 
   const list = generateUsedMarket();
-
   const manufacturers = Array.from(
     new Set(list.map(ac => ac.manufacturer))
   ).sort();
@@ -100,9 +103,9 @@ function getAircraftImage(ac) {
 
   const variants = new Set();
   variants.add(base);
-  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));    
-  variants.add(base.replace(/_/g, ""));               
-  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));  
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
+  variants.add(base.replace(/_/g, ""));
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
 
   const candidates = [];
 
@@ -115,25 +118,44 @@ function getAircraftImage(ac) {
   candidates.push(`img/${base}.png`);
   candidates.push(`img/${manuSlug}_${base}.png`);
 
+  // Por ahora NO probamos existencia real, usamos placeholder si falla
   return "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
-   4) GENERACIÓN BASE — 300 AVIONES
+   Helper — leer y guardar Used Market crudo
+   ============================================================ */
+function loadUsedMarketRaw() {
+  return JSON.parse(localStorage.getItem("ACS_UsedMarket") || "[]");
+}
+
+function saveUsedMarketRaw(list) {
+  localStorage.setItem("ACS_UsedMarket", JSON.stringify(list));
+}
+
+/* ============================================================
+   4) GENERACIÓN BASE — 300 AVIONES (UNA SOLA VEZ)
    ============================================================ */
 function generateUsedMarket() {
-  let used = JSON.parse(localStorage.getItem("ACS_UsedMarket") || "[]");
-  if (used.length >= 100) return used;  // ya generado
+  let used = loadUsedMarketRaw();
+
+  // ❗ Una vez generado, nunca se regenera automáticamente
+  if (used.length > 0) return used;
 
   const db = resolveUsedDB();
   const simYear = getCurrentSimYear();
 
   const pool = db.filter(a => a.year <= simYear);
+  if (!pool.length) {
+    console.warn("⚠️ Used Market: pool vacío, revisar ACS_AIRCRAFT_DB.");
+    saveUsedMarketRaw([]);
+    return [];
+  }
 
   const result = [];
   let count = 0;
 
-  while (count < 300) {
+  while (count < 300) { // 300 aviones iniciales
     const ac = pool[Math.floor(Math.random() * pool.length)];
     if (!ac) break;
 
@@ -144,18 +166,18 @@ function generateUsedMarket() {
       year: ac.year,
       seats: ac.seats,
       range_nm: ac.range_nm,
-      price_acs_usd: Math.floor(ac.price_acs_usd * 0.35),
+      price_acs_usd: Math.floor(ac.price_acs_usd * 0.35), // 35% del valor nuevo
       hours: Math.floor(Math.random() * 15000) + 2000,
       cycles: Math.floor(Math.random() * 9000) + 1000,
       condition: ["A", "B", "C"][Math.floor(Math.random() * 3)],
       image: getAircraftImage(ac),
-      source: ["System", "Bank", "Liquidation"][Math.floor(Math.random() * 3)]
+      source: "BANK"  // estándar por ahora
     });
 
     count++;
   }
 
-  localStorage.setItem("ACS_UsedMarket", JSON.stringify(result));
+  saveUsedMarketRaw(result);
   return result;
 }
 
@@ -178,7 +200,7 @@ function renderUsedMarket(filter = "all") {
     card.className = "used-card";
 
     card.innerHTML = `
-      <img src="${ac.image}" 
+      <img src="${ac.image}"
            onerror="this.src='img/placeholder_aircraft.png'" />
 
       <h3>${ac.manufacturer} ${ac.model}</h3>
@@ -190,7 +212,7 @@ function renderUsedMarket(filter = "all") {
       <p>Cycles: ${ac.cycles.toLocaleString()}</p>
       <p>Condition: ${ac.condition}</p>
       <p><b>Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M</b></p>
-      <p style="color:#FFB300">Origin: ${ac.source}</p>
+      <p style="color:#FFB300">Source: ${ac.source}</p>
 
       <button class="ac-buy" onclick="buyUsed('${ac.id}')">BUY</button>
       <button class="ac-lease" onclick="leaseUsed('${ac.id}')">LEASE</button>
@@ -201,77 +223,91 @@ function renderUsedMarket(filter = "all") {
 }
 
 /* ============================================================
-   Registration Generator — Universal for ACS Fleet
+   6) COMPRAR USADO — CONECTADO A MY AIRCRAFT + FINANCE
    ============================================================ */
-
-function ACS_generateRegistration() {
-
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const prefix = "N";  // se puede hacer dinámico después
-
-  const l1 = letters[Math.floor(Math.random() * letters.length)];
-  const l2 = letters[Math.floor(Math.random() * letters.length)];
-
-  const num = Math.floor(100 + Math.random() * 900); // 3 dígitos
-
-  return `${prefix}${num}${l1}${l2}`;
-}
-
-/* ============================================================
-   6) COMPRAR USADO
-   ============================================================ */
-
 function buyUsed(id) {
-  const list = generateUsedMarket();
-  const ac = list.find(x => x.id === id);
-  if (!ac) return alert("❌ Aircraft not found.");
+  // 1) Leer mercado actual
+  let usedList = loadUsedMarketRaw();
+  const ac = usedList.find(x => x.id === id);
+  if (!ac) {
+    alert("❌ Aircraft not found in market.");
+    return;
+  }
 
+  // 2) Verificar capital por seguridad (ya se revisa en el modal, pero doble check)
+  const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  const capital = finance && typeof finance.capital === "number"
+    ? finance.capital
+    : 0;
+
+  if (capital < ac.price_acs_usd) {
+    alert("❌ Not enough capital to purchase this aircraft.");
+    return;
+  }
+
+  // 3) Añadir a MY AIRCRAFT
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  myFleet.push({
-  id: "AC-" + Date.now(),
-  model: ac.model,
-  manufacturer: ac.manufacturer,
-  delivered: new Date().toISOString(),
-  image: ac.image,
-  status: "Active",
-
-  hours: ac.hours,
-  cycles: ac.cycles,
-  condition: ac.condition,
-  registration: ACS_generateRegistration(),
-
-  /* 🟦 DATA COMPLETA DEL MODELO */
-  data: (resolveUsedDB().find(m => 
+  const modelData = (resolveUsedDB().find(m =>
     m.manufacturer === ac.manufacturer && m.model === ac.model
-  ) || {}),
+  ) || {});
 
-  lastC: null,
-  lastD: null,
-  nextC: null,
-  nextD: null
-});
+  const registration = (typeof ACS_generateRegistration === "function")
+    ? ACS_generateRegistration()
+    : "UNREG-" + Math.floor(Math.random() * 99999);
+
+  myFleet.push({
+    id: "AC-" + Date.now(),
+    model: ac.model,
+    manufacturer: ac.manufacturer,
+    delivered: new Date().toISOString(),
+    image: ac.image,
+    status: "Active",
+
+    hours: ac.hours,
+    cycles: ac.cycles,
+    condition: ac.condition,
+    registration: registration,
+
+    data: modelData,
+
+    // Campos de mantenimiento (se rellenarán mejor en la fase C/D-Check)
+    lastC: null,
+    lastD: null,
+    nextC: null,
+    nextD: null
+  });
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
-/* ============================================================
-   === FINANZAS — COMPRA DE AVIÓN USADO ========================
-   ============================================================ */
+  // 4) FINANZAS — DESCUESTO REAL con helper si existe
+  if (typeof ACS_registerExpense === "function") {
+    // costType "aircraft_purchase" (añadido en acs_finance.js)
+    ACS_registerExpense(
+      "aircraft_purchase",
+      ac.price_acs_usd,
+      `Used Market Purchase — ${ac.manufacturer} ${ac.model}`
+    );
+  } else {
+    // Fallback manual por si acaso
+    if (finance && typeof finance.capital === "number") {
+      finance.capital -= ac.price_acs_usd;
+      finance.expenses = (finance.expenses || 0) + ac.price_acs_usd;
+      finance.profit = (finance.revenue || 0) - (finance.expenses || 0);
+      localStorage.setItem("ACS_Finance", JSON.stringify(finance));
+    }
+  }
 
-if (typeof ACS_registerExpense === "function") {
-  ACS_registerExpense(
-    "used_aircraft_purchase",
-    ac.price_acs_usd,
-    `Used Market Purchase — ${ac.manufacturer} ${ac.model}`
-  );
+  // 5) Eliminar avión del Used Market
+  usedList = usedList.filter(x => x.id !== id);
+  saveUsedMarketRaw(usedList);
+
+  // 6) Feedback
+  alert("✅ Aircraft purchased successfully from Used Market.");
 }
 
-alert("✅ Purchased successfully!");
-
-}
-
 /* ============================================================
-   === 7) LEASE USADO — REAL HISTÓRICO 1940–2026 ===============
+   === 7) LEASE USADO — (SE MANTIENE POR COMPATIBILIDAD) =======
    ============================================================ */
 
 function getLeasingUpfront(year){
@@ -295,12 +331,13 @@ function getLeasingMonthlyRate(year){
 }
 
 function leaseUsed(id) {
+  // 🔴 Por ahora mantenemos la lógica existente para no romper nada,
+  // pero en esta fase tú no la usarás (solo BUY). Más adelante afinamos LEASE.
 
-  const list = generateUsedMarket();
-  const ac = list.find(x => x.id === id);
+  let usedList = loadUsedMarketRaw();
+  const ac = usedList.find(x => x.id === id);
   if (!ac) return alert("❌ Aircraft not found.");
 
-  // === Obtener año actual del juego ===
   let year = 1940;
   try {
     if (typeof ACS_TIME !== "undefined") {
@@ -308,11 +345,9 @@ function leaseUsed(id) {
     }
   } catch(e){}
 
-  // === Leasing real histórico ===
   const upfrontRate = getLeasingUpfront(year);
   const monthlyRate = getLeasingMonthlyRate(year);
 
-  // Si el leasing no existía en esa época
   if (upfrontRate === 0 || monthlyRate === 0) {
     return alert("❌ Leasing was not available in this historical period. You must BUY the aircraft.");
   }
@@ -320,58 +355,61 @@ function leaseUsed(id) {
   const upfront = Math.round(ac.price_acs_usd * upfrontRate);
   const monthly = Math.round(ac.price_acs_usd * monthlyRate);
 
-  // === Fecha de próximo pago (un mes) ===
   const nextPayment = new Date();
   nextPayment.setUTCMonth(nextPayment.getUTCMonth() + 1);
 
-  // === Añadir a flota ===
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  myFleet.push({
-  id: "AC-" + Date.now(),
-  model: ac.model,
-  manufacturer: ac.manufacturer,
-  delivered: new Date().toISOString(),
-  image: ac.image,
-  status: "Active",
-
-  hours: ac.hours,
-  cycles: ac.cycles,
-  condition: ac.condition,
-  registration: ACS_generateRegistration(),
-
-  /* 🟦 DATA COMPLETA DEL MODELO */
-  data: (resolveUsedDB().find(m =>
+  const modelData = (resolveUsedDB().find(m =>
     m.manufacturer === ac.manufacturer && m.model === ac.model
-  ) || {}),
+  ) || {});
 
-  leasing: {
-    upfront,
-    monthly,
-    rate: monthlyRate,
-    nextPayment: nextPayment.toISOString(),
-    frequency: "monthly",
-    started: new Date().toISOString()
-  },
+  const registration = (typeof ACS_generateRegistration === "function")
+    ? ACS_generateRegistration()
+    : "UNREG-" + Math.floor(Math.random() * 99999);
 
-  lastC: null,
-  lastD: null,
-  nextC: null,
-  nextD: null
-});
+  myFleet.push({
+    id: "AC-" + Date.now(),
+    model: ac.model,
+    manufacturer: ac.manufacturer,
+    delivered: new Date().toISOString(),
+    image: ac.image,
+    status: "Active",
+
+    hours: ac.hours,
+    cycles: ac.cycles,
+    condition: ac.condition,
+    registration: registration,
+
+    data: modelData,
+
+    leasing: {
+      upfront,
+      monthly,
+      rate: monthlyRate,
+      nextPayment: nextPayment.toISOString(),
+      frequency: "monthly",
+      started: new Date().toISOString()
+    },
+
+    lastC: null,
+    lastD: null,
+    nextC: null,
+    nextD: null
+  });
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
-  // === FINANZAS DE LA EMPRESA ===
+  // === FINANZAS DE LA EMPRESA (upfront) ===
   const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  if (finance.capital !== undefined) {
-    finance.capital -= upfront;          // solo upfront se paga ahora
-    finance.expenses += upfront;         // gasto inicial
-    finance.profit = finance.revenue - finance.expenses;
+  if (finance && typeof finance.capital === "number") {
+    finance.capital -= upfront;
+    finance.expenses = (finance.expenses || 0) + upfront;
+    finance.profit = (finance.revenue || 0) - (finance.expenses || 0);
     localStorage.setItem("ACS_Finance", JSON.stringify(finance));
   }
 
-  // === REGISTRO CONTABLE ===
+  // === REGISTRO CONTABLE BÁSICO ===
   let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
   log.push({
     time: new Date().toLocaleString(),
@@ -381,35 +419,39 @@ function leaseUsed(id) {
   });
   localStorage.setItem("ACS_Log", JSON.stringify(log));
 
+  // Eliminar del Used Market también
+  usedList = usedList.filter(x => x.id !== id);
+  saveUsedMarketRaw(usedList);
+
   alert("📘 Aircraft leased successfully (Historical Real Leasing Applied)");
 }
 
 /* ============================================================
-   8) MODAL
+   8) MODAL INFO (USADO POR used_market.html)
    ============================================================ */
 function openInfo(id) {
   const list = generateUsedMarket();
   const ac = list.find(x => x.id === id);
   if (!ac) return;
 
-  document.getElementById("modalName").textContent =
-    `${ac.manufacturer} ${ac.model}`;
+  const nameEl = document.getElementById("modalName");
+  const detailsEl = document.getElementById("modalDetails");
+  const modalEl = document.getElementById("infoModal");
 
-  document.getElementById("modalDetails").innerHTML = `
+  if (!nameEl || !detailsEl || !modalEl) return;
+
+  nameEl.textContent = `${ac.manufacturer} ${ac.model}`;
+  detailsEl.innerHTML = `
     Seats: ${ac.seats}<br>
     Range: ${ac.range_nm} nm<br>
-    Hours: ${ac.hours}<br>
-    Cycles: ${ac.cycles}<br>
+    Hours: ${ac.hours.toLocaleString()}<br>
+    Cycles: ${ac.cycles.toLocaleString()}<br>
     Condition: ${ac.condition}<br>
     Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M<br>
     Source: ${ac.source}<br>
   `;
 
-  document.getElementById("infoModal").style.display = "flex";
-}
-
-function closeInfoModal() {
-  document.getElementById("infoModal").style.display = "none";
+  modalEl.style.display = "flex";
 }
 
 /* ============================================================
@@ -421,9 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // === EXPOSE FUNCTIONS TO GLOBAL (Safari fix) ===
-// ===== SAFARI onclick FIX =====
 window.buyUsed = buyUsed;
 window.leaseUsed = leaseUsed;
 window.openInfo = openInfo;
-window.closeInfoModal = closeInfoModal;
-
+// closeInfoModal se define en used_market.html
