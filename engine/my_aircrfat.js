@@ -538,15 +538,18 @@ if (typeof registerTimeListener === "function") {
   });
 }
 
-// =============================
-// === EMPTY ROW FALLBACK =====
-// =============================
+/* ============================================================
+   === EMPTY ROW FALLBACK — ACS Qatar Luxury ===================
+   === Muestra 4 filas vacías si no existe aún la flota ========
+   ============================================================ */
 
 function ensureEmptyRows() {
   const tbody = document.getElementById("fleetTableBody");
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  // Si NO hay aviones → aseguramos 4 filas
+  // Leer flota real desde el KEY correcto del sistema
+  const fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+
+  // Si NO hay aviones, mostramos 4 filas placeholder
   if (fleet.length === 0) {
     tbody.innerHTML = `
       <tr class="empty-row"><td>(empty)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
@@ -555,4 +558,25 @@ function ensureEmptyRows() {
       <tr class="empty-row"><td>(empty)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
     `;
   }
+}
+
+/* === Integración con inicialización del módulo === */
+
+document.addEventListener("DOMContentLoaded", () => {
+  updatePendingDeliveries();
+  populateFilterOptions();
+  renderFleetTable();
+  ensureEmptyRows();  // ← ADDED SAFELY
+});
+
+/* === Integración con el motor de tiempo ACS_TIME === */
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+    updatePendingDeliveries();
+    checkMaintenanceCompletion();
+    renderFleetTable();
+    ensureEmptyRows(); // ← ADDED SAFELY
+    checkMaintenanceAlerts();
+  });
 }
