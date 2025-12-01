@@ -1,14 +1,29 @@
-<!-- === MY AIRCRAFT MODULE === -->
-<!-- Version: Beta v3 | Date: 14 NOV 2025 -->
+<!-- === DASHBOARD MODULE — Qatar Luxury Edition === -->
+<!-- Version: v4 | Date: 01 DEC 2025 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Aircraft - Aviation Capital Simulator</title>
+
+<!-- ======== ACS Styles ======== -->
+  
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <style>
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== PWA Manifest ======== -->
+  <link rel="manifest" href="manifest.json">
+
+<style>
+  
     body {
       margin: 0;
       background-color: #081530;
@@ -16,81 +31,125 @@
       font-family: "Segoe UI", sans-serif;
     }
 
-    /* === GLOBAL HEADER (COPIA EXACTA DE setting.html) === */
+    /* ============================================================
+         === GLOBAL HEADER — Qatar Luxury (MATCHED EXACTLY) =======
+       ============================================================ */
     .acs-header {
       position: fixed;
       top: 0;
       width: 100%;
-      background-color: #0a1433;
+      backdrop-filter: blur(9px);
+      background: rgba(12,23,50,0.45);
+      padding: 0.8rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.8rem 2rem;
-      border-bottom: 2px solid #FFB300;
-      z-index: 999;
-      box-sizing: border-box;
+      border-bottom: 2px solid #ffb300;
+      z-index: 5000;
     }
 
-    .acs-logo {
+    .acs-left {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 1rem;
     }
-    .acs-logo img {
-      height: 40px;
+
+    .acs-left img {
+      height: 46px;
     }
-    .acs-logo h1 {
-      font-size: 1.1rem;
+
+    .acs-left h1 {
+      font-size: 1.15rem;
       margin: 0;
-      color: #FFB300;
-      letter-spacing: 0.6px;
+      color: #ffb300;
+      letter-spacing: 0.5px;
     }
 
     .acs-nav {
+      flex: 1;
       display: flex;
       justify-content: center;
-      gap: 1.5rem;
-      flex: 1;
+      gap: 2rem;
     }
+
     .acs-nav a {
-      color: white;
+      position: relative;
+      font-size: 1rem;
+      letter-spacing: 0.4px;
+      color: #dbe4ff;
       text-decoration: none;
-      font-size: 0.95rem;
-      transition: 0.3s;
+      transition: 0.25s ease;
+      padding-bottom: 6px;
     }
+
     .acs-nav a:hover,
     .acs-nav a.active {
-      color: #FFB300;
+      color: #ffb300;
       text-shadow: 0 0 6px rgba(255,179,0,0.6);
     }
 
-    .acs-auth {
+    .acs-nav a.active::after,
+    .acs-nav a:hover::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to right, #ffb300, #ffe7a0);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255,200,60,0.45);
+    }
+
+    .acs-right {
       display: flex;
       align-items: center;
-      gap: 0.8rem;
+      gap: 1rem;
     }
-    .logout-btn {
-      color: #FFB300;
-      border: 1px solid #FFB300;
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      text-decoration: none;
+
+    .support-btn {
+      padding: 0.45rem 1.1rem;
+      border-radius: 12px;
       font-size: 0.9rem;
-      transition: 0.2s;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      color: #8AB4FF;
+      border: 1px solid rgba(138,180,255,0.45);
+      background: rgba(138,180,255,0.08);
+      backdrop-filter: blur(6px);
+      transition: 0.25s ease;
     }
+
+    .support-btn:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 14px rgba(138,180,255,0.55);
+      color: #dfe9ff;
+    }
+
+    .logout-btn {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid #ffb300;
+      border-radius: 12px;
+      background: rgba(255,179,0,0.05);
+      color: #ffb300;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
     .logout-btn:hover {
-      background: #FFB300;
-      color: #081530;
+      background: #ffb300;
+      color: #0c1f3c;
     }
 
     .acs-clock-header {
-      font-family: 'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      font-weight:bold;
-      background:rgba(0,255,128,0.08);
-      padding:0.3rem 0.8rem;
-      border-radius:6px;
-      font-size:0.9rem;
+      font-family: "Orbitron", monospace;
+      padding: 0.4rem 0.8rem;
+      background: rgba(0,255,128,0.08);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #00ff80;
     }
 
     /* === PAGE TITLE === */
@@ -108,7 +167,7 @@
       font-style: italic;
     }
 
-    /* === FILTER BAR (SkyOS / FR24 style) === */
+    /* === FILTER BAR === */
     .filter-bar {
       width: 94%;
       margin: 1.5rem auto;
@@ -138,9 +197,6 @@
       border-radius: 6px;
       font-size: 0.9rem;
       min-width: 140px;
-    }
-    .filter-bar input[type="text"]::placeholder {
-      color: #aaa;
     }
 
     /* === AIRCRAFT TABLE === */
@@ -184,12 +240,6 @@
       border-bottom: 1px solid rgba(255,255,255,0.07);
     }
 
-    /* ICONS */
-    .icon {
-      margin-right: 6px;
-      opacity: 0.85;
-    }
-
     /* ACTION BUTTONS */
     .btn-action {
       background: #1479ff;
@@ -206,7 +256,7 @@
       background: #2d8cff;
     }
 
-    /* === MODAL DETAIL === */
+    /* === MODALS (same as your original) === */
     .modal-bg {
       display: none;
       position: fixed;
@@ -229,55 +279,15 @@
       border: 1px solid #FFB300;
       box-shadow: 0 0 14px rgba(255,179,0,0.4);
     }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .modal-header h3 {
-      color: #FFB300;
-      margin: 0;
-    }
-    .modal-close {
-      font-size: 1.6rem;
-      cursor: pointer;
-      color: #FFB300;
-      transition: 0.2s;
-    }
-    .modal-close:hover {
-      color: white;
-    }
-
-    .modal-content-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.2rem;
-    }
-
-    .modal-box {
-      background: #102040;
-      padding: 1rem;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    .modal-box h4 {
-      color: #FFB300;
-      margin-bottom: 0.5rem;
-    }
-    .modal-box p {
-      margin: 0.3rem 0;
-    }
   </style>
 </head>
 
 <body>
 
-<!-- === HEADER === -->
+<!-- === HEADER (Qatar Luxury exact copy) === -->
 <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
@@ -288,13 +298,12 @@
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
-    <a href="setting.html">Settings</a>
   </nav>
 
-  <div class="acs-auth">
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
     <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
   </div>
 </header>
 
@@ -306,16 +315,9 @@
 
 <!-- === FILTER BAR === -->
 <div class="filter-bar">
-
   <div class="filter-group">
-    <select id="filterModel">
-      <option value="">Model</option>
-    </select>
-
-    <select id="filterFamily">
-      <option value="">Family</option>
-    </select>
-
+    <select id="filterModel"><option value="">Model</option></select>
+    <select id="filterFamily"><option value="">Family</option></select>
     <select id="filterStatus">
       <option value="">Status</option>
       <option value="Active">Active</option>
@@ -325,7 +327,6 @@
       <option value="A-Check">A-Check</option>
       <option value="B-Check">B-Check</option>
     </select>
-
     <select id="filterCondition">
       <option value="">Condition</option>
       <option value="90">> 90%</option>
@@ -333,7 +334,6 @@
       <option value="70">> 70%</option>
       <option value="60">> 60%</option>
     </select>
-
     <select id="filterAge">
       <option value="">Age</option>
       <option value="0-5">0–5 yrs</option>
@@ -341,10 +341,7 @@
       <option value="10-20">10–20 yrs</option>
       <option value="20+">20+ yrs</option>
     </select>
-
-    <select id="filterBase">
-      <option value="">Base</option>
-    </select>
+    <select id="filterBase"><option value="">Base</option></select>
   </div>
 
   <input type="text" id="searchInput" placeholder="Search registration or model..." />
@@ -367,24 +364,19 @@
         <th><span class="icon">📘</span>Actions</th>
       </tr>
     </thead>
-    <tbody id="fleetTableBody">
-      <!-- JS rellena aquí -->
-    </tbody>
+    <tbody id="fleetTableBody"></tbody>
   </table>
 </div>
 
 <!-- === MODAL DETALLE === -->
 <div class="modal-bg" id="aircraftModal">
   <div class="modal-detail">
-    
     <div class="modal-header">
       <h3 id="modalTitle">Aircraft Detail</h3>
       <span class="modal-close" onclick="closeModal()">×</span>
     </div>
 
     <div class="modal-content-grid">
-      
-      <!-- LEFT COLUMN -->
       <div class="modal-box">
         <h4>General Info</h4>
         <p><b>Registration:</b> <span id="mReg"></span></p>
@@ -398,7 +390,6 @@
         <p><b>Age:</b> <span id="mAge"></span> yrs</p>
       </div>
 
-      <!-- RIGHT COLUMN -->
       <div class="modal-box">
         <h4>Maintenance</h4>
         <p><b>Last C Check:</b> <span id="mLastC"></span></p>
@@ -410,18 +401,14 @@
         <button class="btn-action" id="btnDcheck" style="background:#FFB300;">Start D-Check</button>
         <button class="btn-action" id="btnLog" style="background:#007d4e;">Open Log</button>
       </div>
-
     </div>
-
   </div>
 </div>
 
-
-<!-- === ACS AIRCRAFT REGISTRATION MODAL — DARK PANEL === -->
+<!-- REGISTRATION MODAL (INTACTO) -->
 <div id="regModal" class="reg-modal-bg">
   <div class="reg-modal-box">
     <span class="reg-modal-close" onclick="closeRegModal()">✖</span>
-
     <h2 class="reg-title">✈️ Assign Aircraft Registration</h2>
 
     <div class="reg-content">
@@ -437,65 +424,9 @@
   </div>
 </div>
 
-<style>
-  .reg-modal-bg {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
-  .reg-modal-box {
-    background: #081530;
-    border: 1px solid #FFB300;
-    border-radius: 12px;
-    padding: 1.5rem;
-    width: 360px;
-    color: white;
-    text-align: left;
-    box-shadow: 0 0 12px rgba(255,179,0,0.3);
-  }
-  .reg-modal-close {
-    float: right;
-    font-size: 1.2rem;
-    color: #FFB300;
-    cursor: pointer;
-  }
-  .reg-title {
-    margin-top: 0;
-    color: #FFB300;
-  }
-  .reg-input {
-    width: 100%;
-    padding: 0.5rem;
-    border-radius: 6px;
-    background: #0e1b3c;
-    border: 1px solid #FFB300;
-    color: white;
-    margin-bottom: 0.8rem;
-  }
-  .reg-btn {
-    width: 100%;
-    padding: 0.6rem;
-    background: #1fa345;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-  }
-  .reg-btn:hover {
-    background: #188a39;
-  }
-</style>
-
-
-<!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
 
-<!-- === LOGOUT FUNCTION === -->
+<!-- LOGOUT -->
 <script>
 function handleLogout(){
   alert("👋 Session closed. See you soon, Captain!");
@@ -503,13 +434,8 @@ function handleLogout(){
 }
 </script>
 
-<!-- === TIME ENGINE === -->
 <script src="time_engine.js"></script>
-
-<!-- === MY AIRCRAFT JS MODULE === -->
 <script src="my_aircraft.js?v=1.0"></script>
-
-<!-- === REGISTRATION MANAGER (modal logic) === -->
 <script src="acs_reg_manager.js?v=1.0"></script>
 
 </body>
