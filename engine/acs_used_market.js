@@ -507,9 +507,16 @@ function openInfo(id) {
     Hours: ${ac.hours.toLocaleString()}<br>
     Cycles: ${ac.cycles.toLocaleString()}<br>
     Condition: ${ac.condition}<br>
+    <hr style="border-color:#444;">
+    <b>Maintenance Status</b><br>
+    A-Check: ${ac.nextA || "N/A"}<br>
+    B-Check: ${ac.nextB || "N/A"}<br>
+    C-Check: ${ac.nextC || "N/A"}<br>
+    D-Check: ${ac.nextD || "N/A"}<br>
+    <hr style="border-color:#444;">
     Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M<br>
     Source: ${ac.source}<br>
-  `;
+`;
 
   modalEl.style.display = "flex";
 }
