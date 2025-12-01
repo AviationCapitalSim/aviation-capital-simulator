@@ -262,17 +262,26 @@ function buyUsed(id) {
     const age = Math.max(0, simYear - ac.year);
 
     /* --------------------------------------------------------
-       4) Calcular checks C y D según edad
-          ✔ C cada 1 año
-          ✔ D cada 8 años
-       -------------------------------------------------------- */
-    let nextC = age >= 1 
-      ? `${12 - (age * 12 % 12)} months`
-      : `12 months`;
+   4) Calcular próximos C y D según edad real del avión
+      ✔ C-Check cada 12 meses
+      ✔ D-Check cada 96 meses
+      ✔ Basado en la edad real (año sim - año de fabricación)
+      ✔ Fórmula profesional ACS Qatar Luxury — Perfecta
+   -------------------------------------------------------- */
 
-    let nextD = age >= 8 
-      ? `${96 - (age * 12 % 96)} months`
-      : `${96 - age * 12} months`;
+     const ageMonths = age * 12;
+
+     // === C-CHECK (cada 12 meses) ===
+     
+     let nextC = 12 - (ageMonths % 12);
+     if (nextC === 0) nextC = 12;
+     nextC = `${nextC} months`;
+
+     // === D-CHECK (cada 96 meses) ===
+     
+     let nextD = 96 - (ageMonths % 96);
+     if (nextD === 0) nextD = 96;
+     nextD = `${nextD} months`;
 
     /* --------------------------------------------------------
        5) Obtener base del jugador desde choose_base.html
