@@ -18,7 +18,7 @@ if (!localStorage.getItem("ACS_Finance")) {
   const payroll = HR && HR.payroll ? HR.payroll : 0;
 
   const baseFinance = {
-    capital: 3000000,
+    capital: 1000000,
     month: "JAN 1940",
 
     revenue: 0,
