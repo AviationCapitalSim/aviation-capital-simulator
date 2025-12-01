@@ -537,11 +537,15 @@
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
 
-<!-- === TIME ENGINE === -->
-  
-<script src="engine/my_aircraft.js"></script>
+<!-- === TIME ENGINE (debe ir PRIMERO) === -->
 <script src="time_engine.js"></script>
+
+<!-- === MY AIRCRAFT JS MODULE (debe ir DESPUÉS del motor) === -->
+<script src="engine/my_aircraft.js"></script>
+
+<!-- === REGISTRATION MANAGER (modal logic) === -->
 <script src="acs_reg_manager.js"></script>
+
 
 
 <!-- === LOGOUT FUNCTION === -->
