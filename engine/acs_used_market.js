@@ -201,8 +201,26 @@ function renderUsedMarket(filter = "all") {
 }
 
 /* ============================================================
+   Registration Generator — Universal for ACS Fleet
+   ============================================================ */
+
+function ACS_generateRegistration() {
+
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const prefix = "N";  // se puede hacer dinámico después
+
+  const l1 = letters[Math.floor(Math.random() * letters.length)];
+  const l2 = letters[Math.floor(Math.random() * letters.length)];
+
+  const num = Math.floor(100 + Math.random() * 900); // 3 dígitos
+
+  return `${prefix}${num}${l1}${l2}`;
+}
+
+/* ============================================================
    6) COMPRAR USADO
    ============================================================ */
+
 function buyUsed(id) {
   const list = generateUsedMarket();
   const ac = list.find(x => x.id === id);
