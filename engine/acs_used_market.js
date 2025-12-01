@@ -236,16 +236,16 @@ function buyUsed(id) {
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
-  // FINANZAS
-const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-if (finance.capital !== undefined) {
-  finance.capital -= ac.price_acs_usd;
-  localStorage.setItem("ACS_Finance", JSON.stringify(finance));
-}
+/* ============================================================
+   === FINANZAS — COMPRA DE AVIÓN USADO ========================
+   ============================================================ */
 
-// === FINANZAS — REGISTRAR COMPRA REAL ===
-if (typeof ACS_addExpense === "function") {
-    ACS_addExpense("aircraft_purchase", ac.price_acs_usd);
+if (typeof ACS_registerExpense === "function") {
+  ACS_registerExpense(
+    "used_aircraft_purchase",
+    ac.price_acs_usd,
+    `Used Market Purchase — ${ac.manufacturer} ${ac.model}`
+  );
 }
 
 alert("✅ Purchased successfully!");
