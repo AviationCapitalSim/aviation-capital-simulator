@@ -1,7 +1,7 @@
 <!-- ============================================================
      === ROUTE SCHEDULE MODULE — Qatar Luxury Edition ===========
      ------------------------------------------------------------
-     Version:  v1.0 | Date: 30 NOV 2025
+     Version:  v2.0 | Date: 01 DEC 2025
      ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
@@ -406,12 +406,14 @@ footer {
 
     <!-- Aircraft limpia -->
     <label>Aircraft Type</label>
-    <select id="aircraft" onchange="autoCalculate()">
+    <!-- A2: se añade autoGenerateFlightNumber al onchange -->
+    <select id="aircraft" onchange="autoCalculate(); autoGenerateFlightNumber();">
       <option value="">-- Select Aircraft --</option>
     </select>
 
     <label>Departure Time (Local)</label>
-    <select id="departureTime" onchange="autoCalculate()"></select>
+    <!-- A2: se añade autoGenerateFlightNumber al onchange -->
+    <select id="departureTime" onchange="autoCalculate(); autoGenerateFlightNumber();"></select>
 
     <label style="text-align:center;margin-top:1.2rem;">Days of Operation</label>
     <div class="days-row">
@@ -505,6 +507,21 @@ function toggleOptimization(){
 
 function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
 
+/* ============================================================
+   === PHASE 2.4 — AUTO GENERATE FLIGHT NUMBER ================
+   ============================================================ */
+function autoGenerateFlightNumber() {
+  const origin = document.getElementById("origin").value.trim();
+  const dest   = document.getElementById("destination").value.trim();
+  const ac     = document.getElementById("aircraft").value;
+
+  if (!origin || !dest || !ac) return;
+
+  const pair = generateFlightPair();
+  const input = document.getElementById("flightNumber");
+  if (input) input.value = `${pair.out} ➜ ${pair.inn}`;
+}
+
 /* === Flight Number Engine — INTACTO pero NO ejecutado ahora === */
      
 const flightNumberInput = document.getElementById("flightNumber");
@@ -572,6 +589,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 4) NO generar aún flight numbers ni autoCalculate
     //    (según acordado en Fase 1: se activará más adelante)
+    // B2 — Activar motores en modo creación (Opción A)
+    autoCalculate();
+    autoGenerateFlightNumber();
+
     return;
   }
 
@@ -685,6 +706,72 @@ function loadAvailableAircraft() {
       opt.textContent = `${ac.model} — ${ac.registration}`;
       select.appendChild(opt);
     });
+}
+
+/* ============================================================
+   === PHASE 2.5 — TECHNICAL ENGINE (Distance / BlockTime) =====
+   ============================================================ */
+
+function getDistanceNM(origin, dest) {
+  if (!origin || !dest) return 0;
+  let o = null, d = null;
+
+  for (const cont in WorldAirportsACS) {
+    const list = WorldAirportsACS[cont];
+    if (!Array.isArray(list)) continue;
+
+    if (!o) o = list.find(a => a.icao === origin);
+    if (!d) d = list.find(a => a.icao === dest);
+  }
+
+  if (!o || !d) return 0;
+  return distanceNM(o.latitude, o.longitude, d.latitude, d.longitude);
+}
+
+function getBlockTimeMinutes(distanceNM, model) {
+  if (!distanceNM || distanceNM <= 0) return 0;
+
+  let cruise = 440;
+  if (model.includes("ATR") || model.includes("Q400")) cruise = 270;
+
+  const timeH = distanceNM / cruise;
+  return Math.round((timeH * 60) + 20);
+}
+
+function getTurnaroundMinutes(model) {
+  if (model.includes("ATR") || model.includes("Q400")) return 25;
+  return 40;
+}
+
+function autoCalculate() {
+  const origin  = document.getElementById("origin").value.trim();
+  const dest    = document.getElementById("destination").value.trim();
+  const acReg   = document.getElementById("aircraft").value;
+
+  if (!origin || !dest || !acReg) {
+    document.getElementById("techData").style.display = "none";
+    return;
+  }
+
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = fleet.find(x => x.registration === acReg);
+  if (!ac) return;
+
+  const dist = getDistanceNM(origin, dest);
+  const blockMin = getBlockTimeMinutes(dist, ac.model);
+  const turnMin  = getTurnaroundMinutes(ac.model);
+  const totalMin = blockMin * 2 + turnMin;
+
+  document.getElementById("techData").style.display = "block";
+  document.getElementById("distance").textContent      = `${dist} NM`;
+  document.getElementById("blockTime").textContent     = `${Math.floor(blockMin/60)}h ${blockMin%60}m`;
+  document.getElementById("turnaround").textContent    = `${turnMin} min`;
+  document.getElementById("totalRotation").textContent = `${Math.floor(totalMin/60)}h ${totalMin%60}m`;
+
+  document.getElementById("serviceA").textContent = "OK";
+  document.getElementById("serviceB").textContent = "OK";
+  document.getElementById("delayRisk").textContent = "2%";
+  document.getElementById("effIndex").textContent = "92%";
 }
      
 /* ============================================================
