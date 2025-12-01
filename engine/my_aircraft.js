@@ -560,6 +560,7 @@ function ensureEmptyRows() {
   }
 }
 
+
 /* === Integración con inicialización del módulo === */
 
 document.addEventListener("DOMContentLoaded", () => {
