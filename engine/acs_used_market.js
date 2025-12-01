@@ -1,5 +1,5 @@
 /* ============================================================
-   === ACS USED AIRCRAFT MARKET — FINAL SYNC (v2.0) ==========
+   === ACS USED AIRCRAFT MARKET — FINAL SYNC (v2.1) ==========
    ------------------------------------------------------------
    • Integrado con ACS_AIRCRAFT_DB y Buy Aircraft Engine
    • Función de imágenes EXACTA a buy_aircraft.js
