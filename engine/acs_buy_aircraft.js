@@ -220,7 +220,6 @@ function getAircraftImage(ac) {
     .trim()
     .replace(/\s+/g, " ");
 
-  // 🔧 FIX para De Havilland (carpeta real: de_havilland)
   if (ac.manufacturer.toLowerCase() === "de havilland") {
     manuFolder = "de_havilland";
   }
@@ -392,123 +391,111 @@ document.addEventListener("DOMContentLoaded", () => {
   if (leasePct) leasePct.addEventListener("change", updateModalSummary);
 
   if (confirmBtn) {
-   confirmBtn.addEventListener("click", () => {
+    confirmBtn.addEventListener("click", () => {
 
-  const ac = selectedAircraft;
-  if (!ac) return;
+      const ac = selectedAircraft;
+      if (!ac) return;
 
-  const op = document.getElementById("modalOperation").value;
-  const qty = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
+      const op = document.getElementById("modalOperation").value;
+      const qty = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
 
-  const deliveryDate = calculateDeliveryDate(ac, qty);
+      const deliveryDate = calculateDeliveryDate(ac, qty);
 
-  const manu = ac.manufacturer;
-  if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
-  ACS_SLOTS[manu] += qty;
-  saveSlots();
+      const manu = ac.manufacturer;
+      if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
+      ACS_SLOTS[manu] += qty;
+      saveSlots();
 
-  let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+      let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
-  const entry = {
-    id: "order-" + Date.now(),
-    manufacturer: ac.manufacturer,
-    model: ac.model,
-    qty,
-    type: op,
-    price: ac.price_acs_usd || 0,
-    image: selectedAircraftImage,
-    deliveryDate: deliveryDate.toISOString(),
-    created: new Date().toISOString()
-  };
+      const entry = {
+        id: "order-" + Date.now(),
+        manufacturer: ac.manufacturer,
+        model: ac.model,
+        qty,
+        type: op,
+        price: ac.price_acs_usd || 0,
+        image: selectedAircraftImage,
+        deliveryDate: deliveryDate.toISOString(),
+        created: new Date().toISOString()
+      };
 
-  /* ============================================================
-       === BUY (COMPRA DIRECTA) — RESTA CAPITAL ==================
-       ============================================================ */
-  if (op === "BUY") {
-    entry.total = (ac.price_acs_usd || 0) * qty;
+      if (op === "BUY") {
+        entry.total = (ac.price_acs_usd || 0) * qty;
 
-    let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
-    balance -= entry.total;
-    localStorage.setItem("ACS_FinanceBalance", balance.toString());
-  }
+        let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
+        balance -= entry.total;
+        localStorage.setItem("ACS_FinanceBalance", balance.toString());
+      }
 
-  /* ============================================================
-       === LEASE — PARTE 1 (EXISTENTE) ==========================
-       === Cálculo de años, %, inicial y update de capital =======
-       ============================================================ */
-  if (op === "LEASE") {
+      if (op === "LEASE") {
 
-    const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-    const pct = parseInt(document.getElementById("modalInitialPct").value) || 50;
+        const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
+        const pct = parseInt(document.getElementById("modalInitialPct").value) || 50;
 
-    entry.years = years;
-    entry.initialPct = pct;
+        entry.years = years;
+        entry.initialPct = pct;
 
-    const total = (ac.price_acs_usd || 0) * qty;
-    entry.initialPayment = total * (pct / 100);
+        const total = (ac.price_acs_usd || 0) * qty;
+        entry.initialPayment = total * (pct / 100);
 
-    let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
-    balance -= entry.initialPayment;
-    localStorage.setItem("ACS_FinanceBalance", balance.toString());
-  }
+        let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
+        balance -= entry.initialPayment;
+        localStorage.setItem("ACS_FinanceBalance", balance.toString());
+      }
 
-  /* ============================================================
-       === LEASE — PASO B (CONTRATO REAL PARA COMPANY FINANCE) ==
-       ============================================================ */
-  if (op === "LEASE") {
+      if (op === "LEASE") {
 
-    if (typeof ACS_Leasing_createContract === "function") {
+        if (typeof ACS_Leasing_createContract === "function") {
 
-      const years = entry.years || 10;
-      const months = years * 12;
-      const total = (ac.price_acs_usd || 0) * qty;
-      const upfront = entry.initialPayment || 0;
+          const years = entry.years || 10;
+          const months = years * 12;
+          const total = (ac.price_acs_usd || 0) * qty;
+          const upfront = entry.initialPayment || 0;
 
-      // Interés realista contemporáneo
-      const remaining = total - upfront;
-      const monthlyRate = (remaining / months) * 1.11;
+          const remaining = total - upfront;
+          const monthlyRate = (remaining / months) * 1.11;
 
-      const contract = ACS_Leasing_createContract(
-        ac.model,
-        Math.round(monthlyRate),
-        months,
-        "NEW",
-        { hours: 0, cycles: 0 }
-      );
-/* === MANTENIMIENTO INICIAL PARA LEASE NEW === */
-if (typeof ACS_MyAircraft_addLeasedAircraft === "function") {
-    const deliveryDate = new Date();
-    const nextC = new Date(deliveryDate);
-    nextC.setUTCFullYear(nextC.getUTCFullYear() + 1);
+          const contract = ACS_Leasing_createContract(
+            ac.model,
+            Math.round(monthlyRate),
+            months,
+            "NEW",
+            { hours: 0, cycles: 0 }
+          );
 
-    const nextD = new Date(deliveryDate);
-    nextD.setUTCFullYear(nextD.getUTCFullYear() + 8);
+          if (typeof ACS_MyAircraft_addLeasedAircraft === "function") {
+            const deliveryDate = new Date();
+            const nextC = new Date(deliveryDate);
+            nextC.setUTCFullYear(nextC.getUTCFullYear() + 1);
 
-    contract.nextC = nextC.toISOString();
-    contract.nextD = nextD.toISOString();
-}
-      console.log("📦 NEW Leasing contract created:", contract);
-    }
-  }
+            const nextD = new Date(deliveryDate);
+            nextD.setUTCFullYear(nextD.getUTCFullYear() + 8);
 
-  /* ============================================================
-       === GUARDAR ORDEN Y ALERTA ===============================
-       ============================================================ */
-  pending.push(entry);
+            contract.nextC = nextC.toISOString();
+            contract.nextD = nextD.toISOString();
+          }
 
-  if (typeof ACS_addAlert === "function") {
-    ACS_addAlert(
-      "order",
-      "low",
-      `New aircraft order created: ${entry.model} x${entry.qty}`
-    );
-  }
+          console.log("📦 NEW Leasing contract created:", contract);
+        }
+      }
 
-  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+      pending.push(entry);
 
-  alert("✅ Order successfully created!");
-  closeBuyModal();
-});
+      if (typeof ACS_addAlert === "function") {
+        ACS_addAlert(
+          "order",
+          "low",
+          `New aircraft order created: ${entry.model} x${entry.qty}`
+        );
+      }
+
+      localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+
+      alert("✅ Order successfully created!");
+      closeBuyModal();
+    });
+  }  // 🔥 ESTA LLAVE FALTABA Y YA ESTÁ CORREGIDA
 
   /* ---- Card click → open modal ---- */
   document.addEventListener("click", e => {
@@ -550,47 +537,42 @@ function checkDeliveries() {
     if (now >= d) {
       for (let i = 0; i < entry.qty; i++) {
         myFleet.push({
-  id: "AC-" + Date.now() + "-" + i,
-  model: entry.model,
-  manufacturer: entry.manufacturer,
-  year: now.getUTCFullYear(),
-  delivered: d.toISOString(),
-  image: entry.image,
+          id: "AC-" + Date.now() + "-" + i,
+          model: entry.model,
+          manufacturer: entry.manufacturer,
+          year: now.getUTCFullYear(),
+          delivered: d.toISOString(),
+          image: entry.image,
 
-  status: "Active",
-  hours: 0,
-  cycles: 0,
-  condition: 100,
-  registration: ACS_generateRegistration(),
+          status: "Active",
+          hours: 0,
+          cycles: 0,
+          condition: 100,
+          registration: ACS_generateRegistration(),
 
-  /* 🟦 DATA COMPLETA DEL MODELO (ACS_AIRCRAFT_DB) */
-  data: (resolveAircraftDB().find(m => 
-    m.manufacturer === entry.manufacturer && m.model === entry.model
-  ) || {}),
+          data: (resolveAircraftDB().find(m => 
+            m.manufacturer === entry.manufacturer && m.model === entry.model
+          ) || {}),
 
-  lastC: null,
-  lastD: null,
-  nextC: null,
-  nextD: null
-});
+          lastC: null,
+          lastD: null,
+          nextC: null,
+          nextD: null
+        });
 
+        const baseDeliveryDate = new Date(d);
 
-/* === PASO 12 — Calcular próximos mantenimientos C y D === */
-const baseDeliveryDate = new Date(d);
+        const nextCdate = new Date(baseDeliveryDate);
+        nextCdate.setUTCFullYear(nextCdate.getUTCFullYear() + 1);
 
-// C-Check → 12 meses
-const nextCdate = new Date(baseDeliveryDate);
-nextCdate.setUTCFullYear(nextCdate.getUTCFullYear() + 1);
+        const yearsToD = 6 + Math.floor(Math.random() * 3);
+        const nextDdate = new Date(baseDeliveryDate);
+        nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + yearsToD);
 
-// D-Check → 6–8 años
-const yearsToD = 6 + Math.floor(Math.random() * 3);
-const nextDdate = new Date(baseDeliveryDate);
-nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + yearsToD);
-
-myFleet[myFleet.length - 1].nextC = nextCdate.toISOString();
-myFleet[myFleet.length - 1].nextD = nextDdate.toISOString();
-         
+        myFleet[myFleet.length - 1].nextC = nextCdate.toISOString();
+        myFleet[myFleet.length - 1].nextD = nextDdate.toISOString();
       }
+
       if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
       ACS_SLOTS[entry.manufacturer] = Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
     } else {
