@@ -777,24 +777,26 @@ function confirmRoute() {
     console.warn("⚠️ Finance hook failed in confirmRoute:", err);
   }
 
-  // ==========================================================
-  // 3) Redirigir a la tabla de horarios
-  // ==========================================================
-  alert("✅ Route created successfully. You can manage it in the schedule table.");
-  window.location.href = "schedule_table.html";
+/* ==========================================================
+   === 3) Redirigir a la tabla de horarios
+   ========================================================== */
+     
+alert("✅ Route created successfully. You can manage it in the schedule table.");
+window.location.href = "schedule_table.html";
 }
+
+</script>    <!-- ← ESTE CIERRE FALTABA -->
 
 <script src="./time_engine.js"></script>
 
 <script>
-     
-// Reloj cockpit Airbus
 document.addEventListener("DOMContentLoaded", () => {
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
 });
+     
 </script>
 
 </body>
