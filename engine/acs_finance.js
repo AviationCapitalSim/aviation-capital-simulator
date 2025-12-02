@@ -401,10 +401,10 @@ function ACS_registerUsedAircraftPurchase(amount, model){
     // Log contable
     let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
     log.push({
-      time: new Date().toLocaleString(),
-      type: "Expense",
-      source: `Purchase Used Aircraft — ${model}`,
-      amount: amount
+    time: window.ACS_CurrentSimDate, // 🔥 FECHA REAL DEL JUEGO
+    type: "EXPENSE",
+    source: `Used Market Purchase — ${model}`,
+    amount: amount
     });
     localStorage.setItem("ACS_Log", JSON.stringify(log));
 
