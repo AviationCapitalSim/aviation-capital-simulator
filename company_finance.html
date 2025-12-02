@@ -381,33 +381,43 @@ body {
      ============================================================ -->
 
 <header class="acs-header">
-  <div class="acs-left">
-    <img src="acs_logo.png" alt="ACS Logo">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
     <h1>Aviation Capital Simulator</h1>
   </div>
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="finance.html">Bank</a>
+    <a href="finance.html" class="active">Bank</a>
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
+    <a href="support.html">Support</a>
   </nav>
 
-  <div class="acs-right">
-    <a href="support.html" class="support-btn">Support</a>
-    <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+  <div class="acs-auth">
+    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
   </div>
 </header>
+
 
 <!-- ============================================================
      === MAIN ROOT ==============================================
      ============================================================ -->
-<main id="companyFinanceRoot">
 
-  <!-- TOP KPI SUMMARY -->
+<main class="acs-main">
+  <h2>💹 Company Finance</h2>
+  <p class="sub">Access your company's monthly performance overview.</p>
+</main>
+
+<!-- ESTE NO SE TOCA — AQUI RENDERIZA TODO EL MOTOR -->
+
+<main id="companyFinanceRoot"></main>
+
+  
+     <!-- TOP KPI SUMMARY -->
      
   <div class="kpi-grid">
     <div class="kpi-card">
