@@ -639,31 +639,16 @@ function loadLeasing() {
 /* ============================================================
    === SPARKLINES (WEEK + MONTH) ===============================
    ============================================================ */
+
 function renderSparklines() {
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
   const monthly = f.history ? f.history.map(h => h.profit) : [0];
-  const weekly = monthly.slice(-5); // simple placeholder trend
-
-  new Chart(document.getElementById("weeklySpark"), {
-    type: "line",
-    data: {
-      labels: weekly.map((_,i)=>"W"+(i+1)),
-      datasets: [{
-        data: weekly,
-        borderColor: "#FFB300",
-        borderWidth: 2,
-        fill: false,
-        tension: 0.3
-      }]
-    },
-    options: { plugins:{legend:{display:false}}, scales:{x:{display:false},y:{display:false}} }
-  });
 
   new Chart(document.getElementById("monthlySpark"), {
     type: "line",
     data: {
-      labels: f.history ? f.history.map(h=>h.month) : ["Month"],
+      labels: f.history ? f.history.map(h => h.month) : ["Month"],
       datasets: [{
         data: monthly,
         borderColor: "#FFB300",
@@ -672,13 +657,17 @@ function renderSparklines() {
         tension: 0.3
       }]
     },
-    options: { plugins:{legend:{display:false}}, scales:{x:{display:false},y:{display:false}} }
+    options: {
+      plugins: { legend: { display: false }},
+      scales: { x: { display: false }, y: { display: false }}
+    }
   });
 }
 
 /* ============================================================
    === CLOCK ====================================================
    ============================================================ */
+     
 function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
   if(!el) return;
