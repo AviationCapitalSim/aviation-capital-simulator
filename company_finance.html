@@ -208,15 +208,6 @@ body {
 }
 
 /* ============================================================
-   === SPARKLINE CHART ========================================
-   ============================================================ */
-     
-.sparkline {
-  width: 100%;
-  height: 90px;
-}
-
-/* ============================================================
    === BREAKDOWN LIST =========================================
    ============================================================ */
      
@@ -379,6 +370,7 @@ body {
 <main id="companyFinanceRoot">
 
   <!-- TOP KPI SUMMARY -->
+     
   <div class="kpi-grid">
     <div class="kpi-card">
       <small>Capital</small>
@@ -401,21 +393,16 @@ body {
     </div>
   </div>
 
-  <!-- MONTHLY FINANCE -->
-  
-     <div class="finance-section">
-  <h2>Financial Performance (Monthly)</h2>
-
-  <canvas class="sparkline" id="monthlySpark"></canvas>
-  </div>
 
   <!-- BREAKDOWN -->
+     
   <div class="finance-section">
     <h2>Income & Expense Breakdown</h2>
     <div id="breakdownContainer" class="breakdown-list"></div>
   </div>
 
   <!-- MONTHLY HISTORY -->
+     
   <div class="finance-section">
     <h2>Monthly History</h2>
 
@@ -590,34 +577,6 @@ function loadLeasing() {
         <p>Months Left: ${c.monthsRemaining}</p>
         <p>Status: ${c.status}</p>
       </div>`;
-  });
-}
-
-/* ============================================================
-   === SPARKLINES (MONTH) ===============================
-   ============================================================ */
-
-function renderSparklines() {
-  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-
-  const monthly = f.history ? f.history.map(h => h.profit) : [0];
-
-  new Chart(document.getElementById("monthlySpark"), {
-    type: "line",
-    data: {
-      labels: f.history ? f.history.map(h => h.month) : ["Month"],
-      datasets: [{
-        data: monthly,
-        borderColor: "#FFB300",
-        borderWidth: 2,
-        fill: false,
-        tension: 0.3
-      }]
-    },
-    options: {
-      plugins: { legend: { display: false }},
-      scales: { x: { display: false }, y: { display: false }}
-    }
   });
 }
 
