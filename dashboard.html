@@ -526,36 +526,43 @@ function getFlagEmojiFromCountryName(countryName) {
      === LOAD AIRLINE DATA — SIN CAMBIOS =========================
    ============================================================ -->
 <script>
+  
 document.addEventListener("DOMContentLoaded", () => {
 
   const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  const airline    = activeUser.airline || {};
-  const base       = activeUser.airline?.base || {};
+
+  const airline = activeUser.airline || {};
+  const base    = activeUser.base || {};   // ✅ CORREGIDO: la base está AQUÍ
 
   const welcome = document.getElementById("welcomeMessage");
   const sub     = document.getElementById("airlineSub");
   const baseEl  = document.getElementById("baseInfo");
 
+  // === AIRLINE NAME + IATA ===
   if (airline.name && airline.iata) {
     welcome.innerHTML = `Welcome to <span>${airline.name} (${airline.iata})</span>`;
   } else {
     welcome.innerHTML = `Welcome, Captain`;
   }
 
+  // === COUNTRY + FLAG ===
   const country = airline.country || "World";
   const flag = getFlagEmojiFromCountryName(country);
   sub.innerHTML = `${flag} ${country}`;
 
+  // === BASE INFO ===
   const baseCity = base.city || base.municipality || "";
   const baseName = base.name || base.airportName || "";
   const baseCode = base.icao || base.iata || "";
 
-  let label = baseCity && baseName ? `${baseCity} — ${baseName}` :
-              baseCity || baseName || "Unassigned Base";
+  let label = baseCity && baseName
+    ? `${baseCity} — ${baseName}`
+    : baseCity || baseName || "Unassigned Base";
 
   baseEl.innerText = `Base: ${label}${baseCode ? " (" + baseCode + ")" : ""}`;
 
 });
+
 </script>
 
 <!-- ============================================================
