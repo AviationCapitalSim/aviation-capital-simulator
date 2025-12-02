@@ -180,10 +180,13 @@ function ACS_saveLog(arr) {
  * Registra una transacción genérica en ACS_Log
  *  entry = { type: "EXPENSE"|"INCOME"|"INFO", source: "Used Market", amount: 12345 }
  */
+
 function ACS_logTransaction(entry) {
   const log = ACS_getLog();
 
-  const time = entry.time || new Date().toISOString();
+  // 🔥 Usar fecha real del juego (guardada por updateClockDisplay)
+  const time = entry.time || window.ACS_CurrentSimDate;
+
   const type = entry.type || "INFO";
   const source = entry.source || "System";
   const amount = Number(entry.amount) || 0;
@@ -203,6 +206,7 @@ function ACS_logTransaction(entry) {
  * costType: clave dentro de cost{} (ej: "leasing", "maintenance", "fuel")
  * source: texto libre para el origen (ej: "Used Market Purchase")
  */
+
 function ACS_registerExpense(costType, amount, source) {
   const value = Number(amount) || 0;
   if (value <= 0) return;
