@@ -487,7 +487,6 @@ body {
     <table class="log-table">
       <thead>
         <tr>
-          <th>Time</th>
           <th>Type</th>
           <th>Source</th>
           <th>USD</th>
@@ -571,7 +570,6 @@ function loadTransactionLog(filter="all") {
 
     body.innerHTML += `
       <tr>
-        <td>${entry.time}</td>
         <td>${entry.type}</td>
         <td>${entry.source}</td>
         <td>$${entry.amount.toLocaleString()}</td>
