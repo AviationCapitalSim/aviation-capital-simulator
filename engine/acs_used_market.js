@@ -343,11 +343,44 @@ function buyUsed(id) {
     localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
 
     /* --------------------------------------------------------
-       10) Registrar gasto financiero (solo usados)
-       -------------------------------------------------------- */
-    if (typeof ACS_registerUsedAircraftPurchase === "function") {
-      ACS_registerUsedAircraftPurchase(ac.price_acs_usd, ac.model);
-    }
+   10) Registrar gasto financiero (solo usados)
+-------------------------------------------------------- */
+     
+let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+// seguridad: asegurar estructura
+f.capital  = f.capital  || 0;
+f.revenue  = f.revenue  || 0;
+f.expenses = f.expenses || 0;
+f.cost     = f.cost     || {};
+f.cost.used_aircraft_purchase = f.cost.used_aircraft_purchase || 0;
+
+// descontar capital
+f.capital -= ac.price_acs_usd;
+
+// sumar expenses
+f.expenses += ac.price_acs_usd;
+
+// sumar categoría
+f.cost.used_aircraft_purchase += ac.price_acs_usd;
+
+// recalcular profit
+f.profit = f.revenue - f.expenses;
+
+// guardar
+localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+/* registrar log */
+let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+log.push({
+  time: window.ACS_CurrentSimDate,
+  type: "EXPENSE",
+  source: `Used Market Purchase — ${ac.manufacturer} ${ac.model}`,
+  amount: ac.price_acs_usd
+});
+     
+localStorage.setItem("ACS_Log", JSON.stringify(log));
+
    
      /* ============================================================
        PARCHE: Descontar capital inmediatamente
