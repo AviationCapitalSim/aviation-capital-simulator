@@ -695,6 +695,9 @@ function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
   if(!el) return;
 
+  // 🔥 Guardar la fecha real del juego en variable global
+  window.ACS_CurrentSimDate = simTime;
+
   let d = simTime instanceof Date ? simTime : new Date();
   const day = String(d.getUTCDate()).padStart(2,"0");
   const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
