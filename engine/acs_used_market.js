@@ -480,16 +480,18 @@ function leaseUsed(id) {
     finance.profit = (finance.revenue || 0) - (finance.expenses || 0);
     localStorage.setItem("ACS_Finance", JSON.stringify(finance));
   }
-
+   
   // === REGISTRO CONTABLE BÁSICO ===
-  let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-  log.push({
-    time: new Date().toLocaleString(),
-    type: "Expense",
-    source: `Used Aircraft Lease: ${ac.manufacturer} ${ac.model}`,
-    amount: upfront
-  });
-  localStorage.setItem("ACS_Log", JSON.stringify(log));
+   
+let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+log.push({
+  time: window.ACS_CurrentSimDate,   // ✅ FECHA REAL DEL JUEGO
+  type: "EXPENSE",
+  source: `Used Aircraft Lease: ${ac.manufacturer} ${ac.model}`,
+  amount: upfront
+});
+localStorage.setItem("ACS_Log", JSON.stringify(log));
+
 
   // Eliminar del Used Market también
   usedList = usedList.filter(x => x.id !== id);
