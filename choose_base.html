@@ -623,37 +623,43 @@ function setBase(icao) {
     return;
   }
 
-  user.airline.country = airport.region;  // país moderno (para flags actuales de momento)
-  user.airline.base = {
-    icao: airport.icao,
-    iata: airport.iata,
-    city: airport.city,
-    name: airport.name,
-    airportName: airport.name,
-    country: airport.region,
-    continent: selectedContinent,
-    demand_total: (airport.demand?.Y||0)+(airport.demand?.C||0)+(airport.demand?.F||0),
-    slot_capacity: airport.slot_capacity,
-    cost_slot_usd: airport.slot_cost_usd
-  };
-
-  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-  // === GUARDAR BASE COMO CLAVES GLOBALES ===
-  localStorage.setItem("ACS_baseICAO", airport.icao);
-  localStorage.setItem("ACS_baseIATA", airport.iata);
-  localStorage.setItem("ACS_baseCity", airport.city);
-  localStorage.setItem("ACS_baseName", airport.name);
-  localStorage.setItem("ACS_baseCountry", airport.region);
-  localStorage.setItem("ACS_baseContinent", selectedContinent);
+  // 🔥 Guardar país moderno del aeropuerto
   
-  const users = JSON.parse(localStorage.getItem("ACS_users")||"[]");
-  const index = users.findIndex(u => u.email === user.email);
-  if (index !== -1) users[index] = user;
-  localStorage.setItem("ACS_users", JSON.stringify(users));
+   user.airline.country = airport.country || airport.region || "";
 
-  alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
-  window.location.href = "dashboard.html";
-}
+  // 🔥 BASE REAL (estructura moderna ACS)
+  
+  user.base = {
+  icao: airport.icao,
+  iata: airport.iata,
+  city: airport.city,
+  name: airport.name,
+  country: airport.country || airport.region || "",
+  continent: selectedContinent,
+  demand_total: (airport.demand?.Y||0)+(airport.demand?.C||0)+(airport.demand?.F||0),
+  slot_capacity: airport.slot_capacity,
+  slot_cost_usd: airport.slot_cost_usd
+};
+
+// 🔥 COMPATIBILIDAD CON LOS 7 CONTINENTES (no tocar)
+localStorage.setItem("ACS_baseICAO", airport.icao);
+localStorage.setItem("ACS_baseIATA", airport.iata);
+localStorage.setItem("ACS_baseCity", airport.city);
+localStorage.setItem("ACS_baseName", airport.name);
+localStorage.setItem("ACS_baseCountry", airport.country || airport.region || "");
+localStorage.setItem("ACS_baseContinent", selectedContinent);
+
+// 🔥 Guardar en ACS_activeUser y ACS_users
+localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+
+const users = JSON.parse(localStorage.getItem("ACS_users")||"[]");
+const index = users.findIndex(u => u.email === user.email);
+if (index !== -1) users[index] = user;
+localStorage.setItem("ACS_users", JSON.stringify(users));
+
+alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
+window.location.href = "dashboard.html";
+
 
 /* ============================================================
    DEMAND TOOLTIP
