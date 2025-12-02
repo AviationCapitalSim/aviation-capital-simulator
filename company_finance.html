@@ -161,6 +161,27 @@ body {
 }
 
 /* ============================================================
+     === MAIN CONTENT ==========================================
+   ============================================================ */
+
+.acs-main {
+  padding: 105px 2rem 70px;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+h2 {
+  color: #ffb300;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+
+.sub {
+  color: #cbd6ff;
+  margin-bottom: 2.2rem;
+}     
+     
+/* ============================================================
    === KPI CARDS (Top Summary) ================================
    ============================================================ */
 .kpi-grid {
@@ -407,7 +428,15 @@ body {
 <!-- ============================================================
      === MAIN ROOT ==============================================
      ============================================================ -->
-<main id="companyFinanceRoot">
+     
+<main class="acs-main" id="companyFinanceRoot">
+
+  <h2>📊 Company Finance</h2>
+  <p class="sub">Access your company’s monthly and weekly growth overview.</p>
+
+  <!-- TOP KPI SUMMARY -->
+  <div class="kpi-grid">
+    ...
 
   <!-- TOP KPI SUMMARY -->
   <div class="kpi-grid">
