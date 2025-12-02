@@ -724,10 +724,29 @@ document.addEventListener("DOMContentLoaded", () => {
   loadLeasing();
   renderSparklines();
 });
+/* ============================================================
+   === FINANCE UI LIVE REFRESH — FIX v1.0 =====================
+   ============================================================ */
+
+function ACS_subscribeFinanceUIRefresh() {
+  window.addEventListener("storage", (e) => {
+    if (e.key === "ACS_Finance" || e.key === "ACS_Log") {
+      updateCompanyOverview();
+      loadHistory();
+      loadBreakdown();
+      loadTransactionLog();
+      renderSparklines();
+    }
+  });
+}
+
+// Activar refresh en vivo
+ACS_subscribeFinanceUIRefresh();
 
 function handleLogout(){
   window.location.href="login.html";
 }
+     
 </script>
 
 </body>
