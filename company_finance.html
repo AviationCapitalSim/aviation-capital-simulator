@@ -1,6 +1,6 @@
 <!-- ============================================================
-     === ACS COMPANY FINANCE MODULE — Qatar Luxury Pro v2.0 =====
-     === Fully Compatible | Weekly + Monthly | Chart.js =========
+     === ACS COMPANY FINANCE MODULE — Qatar Luxury Standard =====
+     === Version: v1.1 | FIX = 100% Functional =================
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -20,45 +20,68 @@
   <link rel="apple-touch-icon" href="acs_logo_180.png">
   <link rel="manifest" href="manifest.json">
 
-  <style>
+<style>
 /* ============================================================
-   === INTERNAL MAIN WRAPPER (acs-main) ========================
+   === ORIGINAL FINANCE INTERNAL STYLE — RESTORED ==============
    ============================================================ */
-.acs-main {
-  padding: 120px 2rem 60px;
-  background: #081530;
-  min-height: 100vh;
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
+
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
 }
 
-/* ============================================================
-   === FINANCE SECTION STYLES ==================================
-   ============================================================ */
-.finance-section {
+#companyFinanceRoot {
+  padding: 120px 2rem 60px;
+}
+
+/* Section containers */
+#companyFinanceRoot .finance-section {
   background: #0b1638;
   border-radius: 14px;
-  padding: 1.6rem;
+  padding: 1.5rem;
   margin-bottom: 2rem;
   box-shadow: 0 0 14px rgba(0,0,0,0.45);
 }
 
-.finance-section h2 {
+/* Titles */
+#companyFinanceRoot .finance-section h2 {
   text-align: center;
   color: #FFB300;
-  font-size: 1.55rem;
+  font-size: 1.6rem;
   margin-bottom: 1rem;
 }
 
-/* Cards Grid */
-.finance-grid {
+/* Table */
+#companyFinanceRoot .finance-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+#companyFinanceRoot .finance-table th {
+  background: #0a1433;
+  padding: 0.8rem;
+  color: #FFB300;
+}
+
+#companyFinanceRoot .finance-table td {
+  padding: 0.7rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: #ddd;
+}
+
+/* Grid */
+#companyFinanceRoot .finance-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1rem;
 }
 
-.finance-card {
+/* Cards */
+#companyFinanceRoot .finance-card {
   background: #0e1c45;
   padding: 1rem;
   border-radius: 12px;
@@ -66,58 +89,194 @@
   border: 1px solid #FFB30066;
 }
 
-.finance-card h3 {
-  color: #FFB300;
+#companyFinanceRoot .finance-card h3 {
   margin: 0;
   font-size: 1rem;
+  color: #FFB300;
 }
 
-.finance-card p {
+#companyFinanceRoot .finance-card p {
   font-size: 1.4rem;
   margin: 0.4rem 0 0;
   font-weight: 600;
   color: #dbe4ff;
 }
 
-/* Tables */
-.finance-table, .log-table {
+/* Log table */
+#companyFinanceRoot .log-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
 }
 
-.finance-table th,
-.log-table th {
+#companyFinanceRoot .log-table th {
   background: #0a1433;
   padding: 0.8rem;
   color: #FFB300;
 }
 
-.finance-table td,
-.log-table td {
+#companyFinanceRoot .log-table td {
   padding: 0.6rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
   color: #ddd;
+  text-align: center;
 }
 
-#growthChart {
-  margin-top: 1.2rem;
+/* Chart */
+#companyFinanceRoot #growthChart {
   background: rgba(255,255,255,0.05);
   border-radius: 10px;
   padding: 1rem;
 }
-  </style>
+     .acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+.acs-left img {
+  height: 46px;   <-- EL TAMAÑO IDEAL DEL LOGO
+}
+/* ============================================================
+   === GLOBAL HEADER (Exact Copy from dashboard.html) ==========
+   ============================================================ */
+
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-left img {
+  height: 46px;
+}
+
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
+
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+  color: #dfe9ff;
+}
+
+</style>
 </head>
 
 <body>
 
 <!-- ============================================================
-     === GLOBAL HEADER (intacto, no tocar) ======================
+     === QATAR LUXURY HEADER ====================================
      ============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
-    <img src="acs_logo.png" alt="ACS Logo" />
+    <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
@@ -137,42 +296,43 @@
   </div>
 </header>
 
+
 <!-- ============================================================
-     === MAIN CONTENT ===========================================
+     === MAIN WRAPPER — RESTORED ID =============================
      ============================================================ -->
 <main class="acs-main" id="companyFinanceRoot">
 
-  <!-- ================= COMPANY OVERVIEW ================= -->
+  <!-- =================== COMPANY OVERVIEW =================== -->
   <div class="finance-section">
     <h2>Company Financial Overview</h2>
+
     <div class="finance-grid">
-      <div class="finance-card"><h3>Capital</h3><p id="cf-capital">$0</p></div>
-      <div class="finance-card"><h3>Revenue (This Month)</h3><p id="cf-revenue">$0</p></div>
-      <div class="finance-card"><h3>Expenses (This Month)</h3><p id="cf-expenses">$0</p></div>
-      <div class="finance-card"><h3>Profit (This Month)</h3><p id="cf-profit">$0</p></div>
+      <div class="finance-card">
+        <h3>Capital</h3>
+        <p id="cf-capital">$0</p>
+      </div>
+
+      <div class="finance-card">
+        <h3>Revenue (This Month)</h3>
+        <p id="cf-revenue">$0</p>
+      </div>
+
+      <div class="finance-card">
+        <h3>Expenses (This Month)</h3>
+        <p id="cf-expenses">$0</p>
+      </div>
+
+      <div class="finance-card">
+        <h3>Profit (This Month)</h3>
+        <p id="cf-profit">$0</p>
+      </div>
     </div>
   </div>
 
-  <!-- ================= WEEKLY SUMMARY ================= -->
+  <!-- =================== MONTHLY HISTORY ==================== -->
   <div class="finance-section">
-    <h2>Weekly Summary</h2>
-    <table class="finance-table">
-      <thead>
-        <tr>
-          <th>Week</th>
-          <th>Revenue</th>
-          <th>Expenses</th>
-          <th>Profit</th>
-        </tr>
-      </thead>
-      <tbody id="cf-weekly-body"></tbody>
-    </table>
-  </div>
-
-  <!-- ================= MONTHLY HISTORY ================= -->
-  <div class="finance-section">
-    <h2>Monthly Summary</h2>
-
+    <h2>Monthly Growth (History)</h2>
+    
     <table class="finance-table">
       <thead>
         <tr>
@@ -182,51 +342,49 @@
           <th>Profit</th>
         </tr>
       </thead>
+
       <tbody id="cf-history"></tbody>
     </table>
 
     <canvas id="growthChart"></canvas>
   </div>
 
-  <!-- ================ FIXED COSTS ====================== -->
-  <div class="finance-section">
-    <h2>Fixed Operational Costs</h2>
-    <div class="finance-grid">
-      <div class="finance-card"><h3>Salaries (HR)</h3><p id="fc-salaries">$0</p></div>
-      <div class="finance-card"><h3>Office / Management</h3><p id="fc-office">$0</p></div>
-    </div>
-  </div>
-
-  <!-- ================ VARIABLE COSTS =================== -->
-  <div class="finance-section">
-    <h2>Variable Operational Costs</h2>
-    <div class="finance-grid">
-      <div class="finance-card"><h3>Fuel</h3><p id="vc-fuel">$0</p></div>
-      <div class="finance-card"><h3>Ground Handling</h3><p id="vc-ground">$0</p></div>
-      <div class="finance-card"><h3>Virtual Handling</h3><p id="vc-virtual">$0</p></div>
-      <div class="finance-card"><h3>Slot Fees</h3><p id="vc-slots">$0</p></div>
-      <div class="finance-card"><h3>Maintenance</h3><p id="vc-maintenance">$0</p></div>
-      <div class="finance-card"><h3>Penalties</h3><p id="vc-penalties">$0</p></div>
-    </div>
-  </div>
-
-  <!-- ================ AIRCRAFT FINANCE ================= -->
-  <div class="finance-section">
-    <h2>Aircraft Finance</h2>
-    <div class="finance-grid">
-      <div class="finance-card"><h3>Used Aircraft Purchases</h3><p id="af-used">$0</p></div>
-      <div class="finance-card"><h3>Active Leasing Payments</h3><p id="af-leasing">$0</p></div>
-    </div>
-  </div>
-
-  <!-- ================= TRANSACTION LOG ================= -->
+  <!-- =================== TRANSACTION LOG ==================== -->
   <div class="finance-section">
     <h2>Transaction Log</h2>
+
     <table class="log-table">
       <thead>
-        <tr><th>Timestamp</th><th>Type</th><th>Source</th><th>Amount</th></tr>
+        <tr>
+          <th>Timestamp</th>
+          <th>Type</th>
+          <th>Source</th>
+          <th>Amount (USD)</th>
+        </tr>
       </thead>
-      <tbody id="cf-log-body"></tbody>
+
+      <tbody id="cf-log-body">
+      </tbody>
+    </table>
+  </div>
+
+    <!-- =================== ACTIVE LEASING CONTRACTS =================== -->
+  <div class="finance-section">
+    <h2>Active Leasing Contracts</h2>
+
+    <table class="finance-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Type</th>
+          <th>Monthly</th>
+          <th>Months Left</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody id="cf-contracts-body">
+      </tbody>
     </table>
   </div>
 
@@ -236,13 +394,159 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="engine/acs_finance.js"></script>
 <script src="time_engine.js"></script>
-
+<script src="engine/acs_leasing.js"></script>
+     
 <script>
+function updateCompanyOverview() {
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+  document.getElementById("cf-capital").textContent  = "$" + f.capital.toLocaleString();
+  document.getElementById("cf-revenue").textContent  = "$" + f.revenue.toLocaleString();
+  document.getElementById("cf-expenses").textContent = "$" + f.expenses.toLocaleString();
+  document.getElementById("cf-profit").textContent   = "$" + f.profit.toLocaleString();
+}
+
+function loadHistory() {
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  const tbody = document.getElementById("cf-history");
+  tbody.innerHTML = "";
+
+  if (!f.history) return;
+
+  f.history.forEach(row => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${row.month}</td>
+        <td>$${row.revenue.toLocaleString()}</td>
+        <td>$${row.expenses.toLocaleString()}</td>
+        <td>$${row.profit.toLocaleString()}</td>
+      </tr>
+    `;
+  });
+}
+
+function renderChart() {
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+  const labels = f.history.map(h => h.month);
+  const data = f.history.map(h => h.profit);
+
+  const ctx = document.getElementById("growthChart").getContext("2d");
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels.length ? labels : ["Month 1"],
+      datasets: [{
+        label: "Monthly Profit",
+        data: data.length ? data : [0],
+        borderColor: "#FFB300",
+        borderWidth: 2,
+        tension: 0.3,
+        fill: false
+      }]
+    }
+  });
+}
+
+function loadTransactionLog() {
+  const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+  const body = document.getElementById("cf-log-body");
+  body.innerHTML = "";
+
+  log.slice().reverse().forEach(entry => {
+    body.innerHTML += `
+      <tr>
+        <td>${entry.time}</td>
+        <td>${entry.type}</td>
+        <td>${entry.source}</td>
+        <td>$${entry.amount.toLocaleString()}</td>
+      </tr>
+    `;
+  });
+}
+
+/* ============================================================
+   === ACTIVE CONTRACTS (LEASING ENGINE + LEGACY) =============
+   ============================================================ */
+function loadContracts() {
+  const tbody = document.getElementById("cf-contracts-body");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  /* 1) CONTRATOS DEL LEASING ENGINE (ACS_Leasing.contracts) */
+  let leasingContracts = [];
+  try {
+    const store = JSON.parse(localStorage.getItem("ACS_Leasing") || "{}");
+    leasingContracts = store.contracts || [];
+  } catch (e) {
+    console.warn("⚠️ Error leyendo ACS_Leasing:", e);
+  }
+
+  leasingContracts
+    .filter(c => c.status === "ACTIVE")
+    .forEach(c => {
+      const model       = c.model        || "N/A";
+      const type        = c.type         || "LEASE";
+      const monthly     = c.monthlyRate  || 0;
+      const monthsLeft  = (typeof c.monthsRemaining === "number")
+                            ? c.monthsRemaining
+                            : (c.monthsTotal || 0);
+      const status      = c.status       || "ACTIVE";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${model}</td>
+        <td>${type}</td>
+        <td>$${monthly.toLocaleString()}</td>
+        <td>${monthsLeft}</td>
+        <td>${status}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  /* 2) LEGACY: LEASING GUARDADO EN LA FLOTA (USED MARKET) */
+  try {
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+    fleet
+      .filter(ac => ac.leasing)
+      .forEach(ac => {
+        const model   = `${ac.manufacturer || ""} ${ac.model || ""}`.trim() || "N/A";
+        const monthly = ac.leasing.monthly || ac.leasing.monthlyRate || 0;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${model}</td>
+          <td>USED</td>
+          <td>$${monthly.toLocaleString()}</td>
+          <td>-</td>
+          <td>ACTIVE</td>
+        `;
+        tbody.appendChild(tr);
+      });
+  } catch (e) {
+    console.warn("⚠️ Error leyendo ACS_MyAircraft para leasing:", e);
+  }
+
+  /* 3) SI NO HAY NINGÚN CONTRATO ACTIVO */
+  if (!tbody.children.length) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td colspan="5" style="text-align:center; color:#ccc;">
+        No active leasing contracts.
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+
 function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
   if(!el) return;
   let d = simTime instanceof Date ? simTime : new Date();
-  const day   = String(d.getUTCDate()).padStart(2,"0");
+  const day = String(d.getUTCDate()).padStart(2,"0");
   const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
   const month = months[d.getUTCMonth()];
   const year  = d.getUTCFullYear();
@@ -257,10 +561,16 @@ document.addEventListener("DOMContentLoaded", () => {
     updateClockDisplay();
   }
 
-  loadFinanceUI();
+  updateCompanyOverview();
+  loadHistory();
+  renderChart();
+  loadTransactionLog();
+  loadContracts();
 });
 
-function handleLogout(){ window.location.href="login.html"; }
+function handleLogout(){
+  window.location.href="login.html";
+}
 </script>
 
 </body>
