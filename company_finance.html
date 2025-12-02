@@ -1,6 +1,6 @@
 <!-- ============================================================
-     === ACS COMPANY FINANCE — Qatar Luxury Simple Edition ======
-     === Version: v1.0 | Date: 02 DEC 2025 ======================
+     === ACS COMPANY FINANCE MODULE — Qatar Luxury Standard =====
+     === Version: v1.2 | Clean & Stable =========================
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -20,96 +20,93 @@
   <link rel="apple-touch-icon" href="acs_logo_180.png">
   <link rel="manifest" href="manifest.json">
 
-<style>
-/* ============================================================
-   === COMPANY FINANCE SIMPLE STYLES ===========================
-   ============================================================ */
+  <style>
+    /* ============================================================
+       === INTERNAL FINANCE STYLE (ORIGINAL, RESTORED) ============
+       ============================================================ */
+    body {
+      margin: 0;
+      background-color: #081530;
+      color: white;
+      font-family: "Poppins", sans-serif;
+    }
 
-body {
-  margin: 0;
-  background-color: #081530;
-  color: white;
-  font-family: "Poppins", sans-serif;
-}
+    #companyFinanceRoot {
+      padding: 120px 2rem 60px;
+    }
 
-main {
-  padding: 120px 2rem 60px;
-}
+    .finance-section {
+      background: #0b1638;
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 14px rgba(0,0,0,0.45);
+    }
 
-/* Containers */
-.finance-section {
-  background: #0b1638;
-  border-radius: 14px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 0 14px rgba(0,0,0,0.45);
-}
+    .finance-section h2 {
+      text-align: center;
+      color: #FFB300;
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+    }
 
-.finance-section h2 {
-  text-align: center;
-  color: #FFB300;
-  font-size: 1.45rem;
-  margin-bottom: 1rem;
-}
+    .finance-table,
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
 
-/* Cards */
-.finance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1rem;
-}
+    .finance-table th,
+    .log-table th {
+      background: #0a1433;
+      padding: 0.8rem;
+      color: #FFB300;
+    }
 
-.finance-card {
-  background: #0e1c45;
-  padding: 1rem;
-  border-radius: 12px;
-  text-align: center;
-  border: 1px solid #FFB30066;
-}
+    .finance-table td,
+    .log-table td {
+      padding: 0.7rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: #ddd;
+    }
 
-.finance-card h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #FFB300;
-}
+    .finance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+    }
 
-.finance-card p {
-  font-size: 1.4rem;
-  margin: 0.4rem 0 0;
-  font-weight: 600;
-  color: #dbe4ff;
-}
+    .finance-card {
+      background: #0e1c45;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #FFB30066;
+    }
 
-/* Tables */
-.simple-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
+    .finance-card h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #FFB300;
+    }
 
-.simple-table th {
-  background: #0a1433;
-  padding: 0.8rem;
-  color: #FFB300;
-}
+    .finance-card p {
+      font-size: 1.4rem;
+      margin: 0.4rem 0 0;
+      font-weight: 600;
+      color: #dbe4ff;
+    }
 
-.simple-table td {
-  padding: 0.7rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  color: #ddd;
-}
+    #growthChart {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+  </style>
 
-/* Chart */
-#financeChart {
-  background: rgba(255,255,255,0.05);
-  border-radius: 10px;
-  padding: 1rem;
-}
-</style>
 </head>
-
-
 
 <body>
 
@@ -138,21 +135,16 @@ main {
   </div>
 </header>
 
-
-
 <!-- ============================================================
-     === MAIN WRAPPER ==========================================
+     === MAIN CONTENT ===========================================
      ============================================================ -->
-<main>
+<main id="companyFinanceRoot">
 
-  <!-- ============================================================
-       === SECTION 1 — SIMPLE FINANCIAL OVERVIEW ==================
-       ============================================================ -->
+  <!-- =================== COMPANY OVERVIEW =================== -->
   <div class="finance-section">
     <h2>Company Financial Overview</h2>
 
     <div class="finance-grid">
-
       <div class="finance-card">
         <h3>Capital</h3>
         <p id="cf-capital">$0</p>
@@ -172,32 +164,55 @@ main {
         <h3>Profit (This Month)</h3>
         <p id="cf-profit">$0</p>
       </div>
-
     </div>
   </div>
 
-
-
-  <!-- ============================================================
-       === SECTION 2 — SIMPLE TIMELINE (Chart) ====================
-       ============================================================ -->
+  <!-- =================== MONTHLY HISTORY ==================== -->
   <div class="finance-section">
-    <h2>Monthly Financial Timeline</h2>
-    <canvas id="financeChart"></canvas>
+    <h2>Monthly Growth (History)</h2>
+
+    <table class="finance-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Revenue</th>
+          <th>Expenses</th>
+          <th>Profit</th>
+        </tr>
+      </thead>
+      <tbody id="cf-history"></tbody>
+    </table>
+
+    <canvas id="growthChart"></canvas>
   </div>
 
+  <!-- =================== TRANSACTION LOG ==================== -->
+  <div class="finance-section">
+    <h2>Transaction Log</h2>
 
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Type</th>
+          <th>Source</th>
+          <th>Amount (USD)</th>
+        </tr>
+      </thead>
 
-  <!-- ============================================================
-       === SECTION 3 — LEASING CONTRACTS (SIMPLE) ================
-       ============================================================ -->
+      <tbody id="cf-log-body"></tbody>
+    </table>
+  </div>
+
+  <!-- =================== ACTIVE LEASING CONTRACTS ============ -->
   <div class="finance-section">
     <h2>Active Leasing Contracts</h2>
 
-    <table class="simple-table">
+    <table class="finance-table">
       <thead>
         <tr>
           <th>Model</th>
+          <th>Type</th>
           <th>Monthly</th>
           <th>Months Left</th>
           <th>Status</th>
@@ -208,44 +223,31 @@ main {
     </table>
   </div>
 
-
-
-  <!-- ============================================================
-       === SECTION 4 — SIMPLE TRANSACTION LOG ====================
-       ============================================================ -->
-  <div class="finance-section">
-    <h2>Transaction Log</h2>
-
-    <table class="simple-table">
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Type</th>
-          <th>Source</th>
-          <th>Amount</th>
-        </tr>
-      </thead>
-
-      <tbody id="cf-log-body"></tbody>
-    </table>
-  </div>
-
 </main>
 
-
-
-<!-- ============================================================
-     === SCRIPTS (NO MODIFICADOS) ===============================
-     ============================================================ -->
+<!-- ========================== SCRIPTS ========================== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="engine/acs_finance.js"></script>
-<script src="engine/acs_leasing.js"></script>
 <script src="time_engine.js"></script>
+<script src="engine/acs_leasing.js"></script>
 
 <script>
 function handleLogout(){
   window.location.href = "login.html";
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+
+  updateCompanyOverview();
+  loadHistory();
+  renderChart();
+  loadTransactionLog();
+  loadContracts();
+});
 </script>
 
 </body>
