@@ -373,14 +373,16 @@ body {
   color: #dbe4ff;
   font-size: 0.9rem;
 }
-
-/* ======= FIX TÍTULO FINANCE ======= */
-#companyFinanceRoot h2,
-#companyFinanceRoot .sub {
-  margin-top: 40px !important;
-  text-align: center;
-}
      
+/* ============================================================
+   === CONTENEDOR CENTRAL OFICIAL ACS ==========================
+   ============================================================ */
+     
+.acs-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 </style>
 </head>
 
@@ -418,9 +420,14 @@ body {
 
 <main class="acs-main" id="companyFinanceRoot">
 
-  <h2>📊 Company Finance</h2>
-  <p class="sub">Access your company’s monthly and weekly growth overview.</p>
+  <!-- CONTENEDOR CENTRAL OFICIAL ACS -->
+     
+  <div class="acs-container">
 
+    <h2>📊 Company Finance</h2>
+    <p class="sub">Access your company’s monthly and weekly growth overview.</p>
+
+   
   <!-- TOP KPI SUMMARY -->
   <div class="kpi-grid">
 
