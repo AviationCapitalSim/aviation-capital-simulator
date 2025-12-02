@@ -377,15 +377,33 @@ function handleAirlineCreation(event) {
 
   const airline = { name: airlineName, icao, iata, slogan, region, country, businessModel, operationMode };
 
-  let user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-  if (!user) {
+  let user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+if (!user.userId) {
     alert("⚠️ Session not found. Please log in again.");
     window.location.href = "login.html";
     return false;
-  }
+}
 
-  user.airline = airline;
-  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+// 🔥 Force airline to always be an OBJECT
+user.airline = {
+    id: user.airline_id || null,   // o null si no existe
+    name: airline.name,
+    iata: airline.iata,
+    icao: airline.icao,
+    slogan: airline.slogan,
+    region: airline.region,
+    country: airline.country,
+    businessModel: airline.businessModel,
+    operationMode: airline.operationMode
+};
+
+// 🔥 aseguramos que la base existe
+if (typeof user.base === "undefined") {
+    user.base = null;   // choose_base.html lo llenará
+}
+
+localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
   const index = allUsers.findIndex(u => u.email === user.email);
   if (index !== -1) allUsers[index] = user;
