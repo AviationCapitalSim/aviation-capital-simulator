@@ -263,7 +263,44 @@ body {
   color: #ddd;
   font-size: 0.9rem;
 }
+     
+/* ============================================================
+   === FINANCE THERMOMETER BAR (Qatar Luxury) ==================
+   ============================================================ */
 
+.finance-meter {
+  background: #0a1433;
+  border: 1px solid #ffb3003b;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 12px rgba(0,0,0,0.35);
+}
+
+.finance-meter-title {
+  font-size: 0.9rem;
+  color: #ffca5c;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.finance-meter-bar {
+  width: 100%;
+  height: 10px;
+  background: #102049;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #ffb3004d;
+}
+
+.finance-meter-fill {
+  height: 100%;
+  width: 0%;
+  transition: width 0.35s ease-out;
+  background: linear-gradient(90deg, #18ff92, #ffe600, #ff4d4d);
+  border-radius: 10px;
+}
+     
 /* ============================================================
    === LOG SECTION + FILTERS ==================================
    ============================================================ */
@@ -333,6 +370,7 @@ body {
   color: #dbe4ff;
   font-size: 0.9rem;
 }
+     
 </style>
 </head>
 
@@ -394,13 +432,16 @@ body {
   </div>
 
 
-  <!-- BREAKDOWN -->
+ <!-- BREAKDOWN — Qatar Luxury Thermometers -->
      
-  <div class="finance-section">
-    <h2>Income & Expense Breakdown</h2>
-    <div id="breakdownContainer" class="breakdown-list"></div>
+<div class="finance-section">
+  <h2>Income & Expense Breakdown</h2>
+  <div id="breakdownGrid" 
+       style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem;">
   </div>
+</div>
 
+     
   <!-- MONTHLY HISTORY -->
      
   <div class="finance-section">
@@ -522,42 +563,60 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 /* ============================================================
    === BREAKDOWN (Income & Expenses) ===========================
    ============================================================ */
+     
 function loadBreakdown() {
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  const container = document.getElementById("breakdownContainer");
-  container.innerHTML = "";
+  const grid = document.getElementById("breakdownGrid");
 
   if (!f.income || !f.cost) return;
 
-  // Merge categories
+  grid.innerHTML = "";
+
   const categories = [];
 
+  // Income
   Object.keys(f.income).forEach(k => {
-    categories.push({ label: k + " (Income)", value: f.income[k] });
+    categories.push({
+      label: `${k} (Income)`,
+      value: f.income[k]
+    });
   });
 
+  // Cost
   Object.keys(f.cost).forEach(k => {
-    categories.push({ label: k + " (Cost)", value: f.cost[k] });
+    categories.push({
+      label: `${k} (Cost)`,
+      value: f.cost[k]
+    });
   });
 
+  // max value for scaling
   const max = Math.max(...categories.map(c => c.value || 0), 1);
 
-  categories.forEach(c => {
-    const pct = (c.value / max) * 100;
+  categories.forEach(cat => {
+    const pct = (cat.value / max) * 100;
 
-    container.innerHTML += `
-      <div class="breakdown-item">
-        <div class="breakdown-label">${c.label} — $${c.value.toLocaleString()}</div>
-        <div class="breakdown-bar">
-          <div class="breakdown-fill" style="width:${pct}%;"></div>
-        </div>
-      </div>`;
+    const wrapper = document.createElement("div");
+    wrapper.className = "finance-meter";
+
+    wrapper.innerHTML = `
+      <div class="finance-meter-title">
+        ${cat.label} — $${cat.value.toLocaleString()}
+      </div>
+      <div class="finance-meter-bar">
+        <div class="finance-meter-fill"
+             style="width:${pct}%;"></div>
+      </div>
+    `;
+
+    grid.appendChild(wrapper);
   });
 }
 
 /* ============================================================
    === LEASING CARDS ===========================================
    ============================================================ */
+     
 function loadLeasing() {
   const container = document.getElementById("leasingContainer");
   container.innerHTML = "";
