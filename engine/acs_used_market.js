@@ -342,7 +342,7 @@ function buyUsed(id) {
     fleet.push(newAircraft);
     localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
 
-    /* --------------------------------------------------------
+/* --------------------------------------------------------
    10) Registrar gasto financiero (solo usados)
 -------------------------------------------------------- */
      
@@ -378,10 +378,9 @@ log.push({
   source: `Used Market Purchase — ${ac.manufacturer} ${ac.model}`,
   amount: ac.price_acs_usd
 });
-     
+
 localStorage.setItem("ACS_Log", JSON.stringify(log));
 
-   
      /* ============================================================
        PARCHE: Descontar capital inmediatamente
     ============================================================ */
