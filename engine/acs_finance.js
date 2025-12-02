@@ -1,7 +1,7 @@
 /* ============================================================
    === ACS FINANCE ENGINE - CORE v1.5 (Integración HR) ========
    ------------------------------------------------------------
-   ▪ Capital inicial: 3,000,000 USD (Año 1940)
+   ▪ Capital inicial: 1,000,000 USD (Año 1940)
    ▪ Payroll inicial automático desde HR
    ▪ Manejo de ingresos, gastos y profit
    ▪ Historial mensual inicial (Month 1 - JAN 1940)
@@ -256,8 +256,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("💼 Finance synced with HR → payroll actualizado.");
 });
+
 /* ============================================================
-   ===  PAYMENTS ENGINE — LEASING MONTHLY AUTO-PAY  ============
+   === PAYMENTS ENGINE — LEASING MONTHLY AUTO-PAY  ============
    ============================================================ */
 
 function ACS_runMonthlyLeasePayments(simDate){
@@ -296,8 +297,8 @@ function ACS_runMonthlyLeasePayments(simDate){
 
       // === Registrar en log ===
       log.push({
-        time: current.toLocaleString(),
-        type: "Expense",
+        time: window.ACS_CurrentSimDate,   // ✅ FECHA REAL DEL JUEGO
+        type: "EXPENSE",
         source: `Monthly Lease Payment — ${ac.manufacturer} ${ac.model}`,
         amount: amount
       });
@@ -319,8 +320,6 @@ function ACS_runMonthlyLeasePayments(simDate){
     console.log("💳 Monthly lease payments processed.");
   }
 }
-
-
 
 /* ============================================================
    === REGISTER TIME ENGINE LISTENER ===========================
