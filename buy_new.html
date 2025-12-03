@@ -395,9 +395,19 @@
 <!-- MODAL -->
 <div id="buyModal" class="modal">
   <div class="modal-content">
+        <!-- ===================================================== -->
+    <!-- 1️⃣ MODAL BUY / LEASE — CONTENIDO PRINCIPAL           -->
+    <!--     (reemplaza todo lo que había dentro de            -->
+    <!--      <div class="modal-content"> ... </div>)          -->
+    <!-- ===================================================== -->
+       
     <img id="modalImage" src="" alt="" />
     <h3 id="modalTitle"></h3>
 
+    <!-- ============================= -->
+    <!-- 2️⃣ OPERATION TYPE & QUANTITY -->
+    <!-- ============================= -->
+       
     <label>Operation Type:</label>
     <select id="modalOperation">
       <option value="BUY">Buy New</option>
@@ -407,6 +417,25 @@
     <label>Quantity:</label>
     <input type="number" id="modalQty" min="1" value="1" />
 
+    <!-- ============================================= -->
+    <!-- 3️⃣ BUY NEW — INITIAL PAYMENT (%) (50/75/100) -->
+    <!--     🆕 Solo visible cuando Operation = BUY     -->
+    <!-- ============================================= -->
+       
+    <div id="buyInitialPayment" style="display:none;">
+      <label>Initial Payment (%):</label>
+      <select id="modalBuyInitialPct">
+        <option value="50">50%</option>
+        <option value="75">75%</option>
+        <option value="100" selected>100% (Full)</option>
+      </select>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- 4️⃣ LEASE OPTIONS — SOLO PARA LEASE           -->
+    <!--     🆕 SIN initial payment aquí               -->
+    <!-- ============================================= -->
+       
     <div id="leaseOptions" style="display:none;">
       <label>Lease Duration (years):</label>
       <select id="modalLeaseYears">
@@ -414,19 +443,23 @@
         <option value="10" selected>10 years</option>
         <option value="15">15 years</option>
       </select>
-
-      <label>Initial Payment (%):</label>
-      <select id="modalInitialPct">
-        <option value="50">50%</option>
-        <option value="70">70%</option>
-        <option value="100">100% (Full)</option>
-      </select>
+      <!-- ⛔ Aquí ya NO va Initial Payment (%) para lease -->
     </div>
 
-    <p id="modalSummary" style="margin-top:1rem; font-size:0.9rem; color:#ffb300;"></p>
+    <!-- ============================================= -->
+    <!-- 5️⃣ RESUMEN — FECHA, TOTAL, ETC.              -->
+    <!-- ============================================= -->
+       
+    <p id="modalSummary"
+       style="margin-top:1rem; font-size:0.9rem; color:#ffb300;"></p>
 
+    <!-- ============================================= -->
+    <!-- 6️⃣ BOTONES                                   -->
+    <!-- ============================================= -->
+       
     <button id="modalConfirm">Confirm Order</button>
     <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
+
   </div>
 </div>
 
