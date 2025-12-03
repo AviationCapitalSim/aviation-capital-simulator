@@ -348,31 +348,24 @@ function updateModalSummary() {
   const d = deliveryDate.toUTCString().substring(5, 16);
   summary += `Estimated delivery: <b>${d}</b><br>`;
 
-  if (op === "BUY") {
+  // ===============================================================
+// 4️⃣ BUY NEW — RESUMEN COMPLETO CON PAGO INICIAL Y PAGO FINAL
+// ===============================================================
+   
+if (op === "BUY") {
+
+    const pct = parseInt(document.getElementById("modalBuyInitialPct").value) || 100;
     const total = price * qty;
-    summary += `Total: <b>$${(total / 1_000_000).toFixed(2)}M</b>`;
 
-    document.getElementById("leaseOptions").style.display = "none";
-  } else {
-    document.getElementById("leaseOptions").style.display = "block";
-
-    const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-    const pct = parseInt(document.getElementById("modalInitialPct").value) || 50;
-
-    const total = price * qty;
     const initial = total * (pct / 100);
-
-    const months = years * 12;
-    const remaining = total - initial;
-    const monthly = months > 0 ? (remaining / months) * 1.12 : 0;
+    const final = total - initial;
 
     summary += `
-      Initial payment: <b>$${(initial/1_000_000).toFixed(2)}M</b><br>
-      Monthly: <b>$${(monthly/1_000_000).toFixed(2)}M</b> for ${years} years
+        Initial Payment: <b>$${(initial/1_000_000).toFixed(2)}M</b><br>
+        Delivery Payment: <b>$${(final/1_000_000).toFixed(2)}M</b>
     `;
-  }
 
-  document.getElementById("modalSummary").innerHTML = summary;
+    document.getElementById("leaseOptions").style.display = "none";
 }
 
 /* ============================================================
@@ -380,6 +373,31 @@ function updateModalSummary() {
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   const opSel = document.getElementById("modalOperation");
+// ===============================================================
+// 2️⃣ BUY NEW — SHOW/HIDE INITIAL PAYMENT (%) + UPDATE SUMMARY
+//     (Ubicación: dentro del DOMContentLoaded, justo después de
+//      const opSel = document.getElementById("modalOperation"))
+// ===============================================================
+opSel.addEventListener("change", () => {
+
+  const isBuy = (opSel.value === "BUY");
+
+  // Mostrar u ocultar bloques según el tipo de operación
+  document.getElementById("buyInitialPayment").style.display = isBuy ? "block" : "none";
+  document.getElementById("leaseOptions").style.display = isBuy ? "none" : "block";
+
+  updateModalSummary();
+});
+
+// ===============================================================
+// 3️⃣ BUY NEW — CHANGE LISTENER DEL PORCENTAJE INICIAL
+//     (50% / 75% / 100%)
+// ===============================================================
+const buyPctSel = document.getElementById("modalBuyInitialPct");
+if (buyPctSel) {
+  buyPctSel.addEventListener("change", updateModalSummary);
+}
+
   const qtyInp = document.getElementById("modalQty");
   const leaseYears = document.getElementById("modalLeaseYears");
   const leasePct = document.getElementById("modalInitialPct");
