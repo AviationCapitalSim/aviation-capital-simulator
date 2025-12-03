@@ -356,9 +356,27 @@ function calculateDeliveryDate(ac, qty) {
   // 5️⃣ Mezclamos el MES DEL RELOJ + meses del backlog
   const deliveryMonth = currentMonth + addMonths;
 
+  /* 🟦 PASO 3 — Tiempo mínimo de fabricación (2 meses) */
+  const MIN_MONTHS = 2; // ✔ 2 meses mínimo
+
+  let finalYear = deliveryYear;
+  let finalMonth = deliveryMonth;
+
+  // Diferencia total de meses entre now y la entrega calculada
+  const monthsDifference =
+    (deliveryYear - currentYear) * 12 +
+    (deliveryMonth - currentMonth);
+
+  // Si backlog produce menos de 2 meses → aplicar mínimo
+  if (monthsDifference < MIN_MONTHS) {
+    finalYear = currentYear;
+    finalMonth = currentMonth + MIN_MONTHS;
+  }
+
   // 6️⃣ Fecha final (día 15 estable)
-  return new Date(Date.UTC(deliveryYear, deliveryMonth, 15));
+  return new Date(Date.UTC(finalYear, finalMonth, 15));
 }
+
 
 
 /* ============================================================
