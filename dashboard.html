@@ -522,6 +522,74 @@ function getFlagEmojiFromCountryName(countryName) {
 }
 </script> <!-- ✅ CORRECCIÓN: cierre del script faltante -->
 
+<script>
+/* ============================================================
+   === DASHBOARD — BASE RESOLVER (FINAL, ROBUSTO) ===============
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // === 1. Cargar activeUser ===
+  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  // === 2. Intentar leer base desde activeUser ===
+  let base = activeUser.base || {};
+
+  // === 3. Función auxiliar para limpiar "undefined" ===
+  const clean = v => (!v || v === "undefined" || v === undefined) ? "" : v;
+
+  // Limpieza preventiva
+  base.icao    = clean(base.icao);
+  base.city    = clean(base.city);
+  base.country = clean(base.country);
+  base.name    = clean(base.name);
+
+  // === 4. Si no hay ICAO en activeUser.base, usar fallback ===
+  if (!base.icao) {
+    base.icao    = clean(localStorage.getItem("ACS_baseICAO"));
+    base.city    = clean(localStorage.getItem("ACS_baseCity"));
+    base.country = clean(localStorage.getItem("ACS_baseCountry"));
+    base.name    = clean(localStorage.getItem("ACS_baseName"));
+  }
+
+  // === 5. Si NO hay ICAO, el usuario nunca eligió base ===
+  if (!base.icao) {
+    console.warn("⚠ Dashboard: No base ICAO found.");
+    return;
+  }
+
+  // === 6. Evaluar Airport Label Correctamente ===
+
+  // Si tenemos city Y name:
+  let label = "";
+  if (base.city && base.name) {
+    label = `${base.city} — ${base.name}`;
+  }
+  else if (base.city) {
+    label = base.city;
+  }
+  else if (base.name) {
+    label = base.name;
+  }
+  else {
+    label = "Base Selected";
+  }
+
+  // === 7. Escribir en ACS_activeUser.base limpio ===
+  activeUser.base = {
+    icao: base.icao.toUpperCase(),
+    city: base.city,
+    country: base.country,
+    name: base.name
+  };
+
+  localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+
+  console.log("✅ Dashboard Base Resolver →", activeUser.base);
+});
+</script>
+
+  
 <!-- ============================================================
      === LOAD AIRLINE DATA — SIN CAMBIOS =========================
    ============================================================ -->
