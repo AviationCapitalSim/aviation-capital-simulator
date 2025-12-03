@@ -574,6 +574,26 @@ function checkDeliveries() {
       ACS_SLOTS[entry.manufacturer] =
         Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
 
+       /* ============================================================
+          🟦 PASO 4 — PAGO FINAL AL ENTREGAR (BUY NEW)
+      ============================================================ */
+      if (entry.type === "BUY") {
+
+      const finalPay = entry.buy_final_payment || 0;
+
+      if (finalPay > 0) {
+        if (typeof ACS_registerExpense === "function") {
+            ACS_registerExpense(
+                "new_aircraft_final_payment",
+                finalPay,
+                `Final delivery payment — ${entry.model}`
+            );
+        }
+
+        console.log(`💰 Final payment applied for ${entry.model}: $${finalPay}`);
+    }
+}
+       
       /* Pago final — se implementará en PASO 4 */
       // Aquí insertaremos ACS_registerExpense() para el pago final
 
