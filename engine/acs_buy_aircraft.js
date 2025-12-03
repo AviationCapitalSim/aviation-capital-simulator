@@ -548,23 +548,37 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   11) AUTO-DELIVERY ENGINE
+   11) AUTO-DELIVERY ENGINE — (ACS_TIME Sync v3.2)
+   ------------------------------------------------------------
+   • Usa únicamente ACS_TIME.currentTime (nunca fecha real)
+   • Entrega aviones EXACTAMENTE cuando el reloj sim llega
+   • Crea aviones activos correctamente
+   • Reduce backlog sin negativos
+   • Ejecuta pago final al entregar
    ============================================================ */
+
 function checkDeliveries() {
 
+  /* 1) Cargar flota y pending */
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
   let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
-  let now = new Date();
+  /* 2) Tomar tiempo del simulador SIEMPRE */
+  let now;
+
   if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime) {
     now = new Date(ACS_TIME.currentTime);
+  } else {
+    now = new Date(); // fallback mínimo
   }
 
   const remaining = [];
 
+  /* 3) Procesar cada avión pendiente */
   pending.forEach(entry => {
     const d = new Date(entry.deliveryDate);
 
+    /* ======== ENTREGA ======== */
     if (now >= d) {
 
       /* Añadir aviones entregados */
@@ -581,10 +595,13 @@ function checkDeliveries() {
           hours: 0,
           cycles: 0,
           condition: 100,
-          registration: ACS_generateRegistration(),
+          registration: (typeof ACS_generateRegistration === "function")
+            ? ACS_generateRegistration()
+            : ("N" + Math.floor(10000 + Math.random() * 90000)),
 
           data: resolveAircraftDB().find(m =>
-            m.manufacturer === entry.manufacturer && m.model === entry.model
+            m.manufacturer === entry.manufacturer &&
+            m.model === entry.model
           ) || {},
 
           lastC: null,
@@ -594,44 +611,45 @@ function checkDeliveries() {
         });
       }
 
-      /* Reducir backlog */
+      /* Reducir backlog sin negativos */
       if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
       ACS_SLOTS[entry.manufacturer] =
         Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
 
-       /* ============================================================
-          🟦 PASO 4 — PAGO FINAL AL ENTREGAR (BUY NEW)
-      ============================================================ */
+      /* ======== PAGO FINAL (BUY NEW) ======== */
       if (entry.type === "BUY") {
 
-      const finalPay = entry.buy_final_payment || 0;
+        const finalPay = entry.buy_final_payment || 0;
 
-      if (finalPay > 0) {
-        if (typeof ACS_registerExpense === "function") {
-            ACS_registerExpense(
-                "new_aircraft_final_payment",
-                finalPay,
-                `Final delivery payment — ${entry.model}`
-            );
+        if (finalPay > 0 &&
+            typeof ACS_registerExpense === "function") {
+
+          ACS_registerExpense(
+            "new_aircraft_final_payment",
+            finalPay,
+            `Final delivery payment — ${entry.model}`
+          );
         }
 
-        console.log(`💰 Final payment applied for ${entry.model}: $${finalPay}`);
-    }
-}
-       
-      /* Pago final — se implementará en PASO 4 */
-      // Aquí insertaremos ACS_registerExpense() para el pago final
+        console.log(
+          `💰 Final payment applied for ${entry.model}: $${finalPay}`
+        );
+      }
 
     } else {
+      /* Todavía no llega la fecha, mantener en pending */
       remaining.push(entry);
     }
   });
 
+  /* 4) Guardar resultados */
   localStorage.setItem("ACS_PendingAircraft", JSON.stringify(remaining));
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
+  /* 5) Guardar backlog */
   saveSlots();
 }
+
 
 /* ============================================================
    FIX — GENERADOR DE MATRICULAS (si no existe)
