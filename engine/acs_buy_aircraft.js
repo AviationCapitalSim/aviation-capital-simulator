@@ -410,29 +410,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const confirmBtn = document.getElementById("modalConfirm");
 
   if (confirmBtn) {
-    confirmBtn.addEventListener("click", () => {
+    /* ===============================================================
+   10️⃣ PASO 3 — CONFIRMAR ORDEN (BUY NEW / LEASE NEW)
+   ---------------------------------------------------------------
+   • Aplica pago inicial (BUY NEW)
+   • Registra gasto en Finance
+   • Crea entrada en PendingAircraft
+   • Registra pago inicial del lease
+   • Redirige a my_aircraft.html
+   =============================================================== */
+confirmBtn.addEventListener("click", () => {
 
-      const ac = selectedAircraft;
-      if (!ac) return;
+    if (!selectedAircraft) return;
 
-      const op = document.getElementById("modalOperation").value;
-      const qty = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
+    const ac   = selectedAircraft;
+    const op   = document.getElementById("modalOperation").value;
+    const qty  = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
+    const manu = ac.manufacturer;
 
-      // Cálculo de entrega
-      const deliveryDate = calculateDeliveryDate(ac, qty);
+    /* -----------------------------------------------------------
+       1) CÁLCULO DE DELIVERY
+    ----------------------------------------------------------- */
+    const deliveryDate = calculateDeliveryDate(ac, qty);
 
-      const manu = ac.manufacturer;
+    if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
+    ACS_SLOTS[manu] += qty;
+    saveSlots();
 
-      // Actualizar backlog del fabricante
-      if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
-      ACS_SLOTS[manu] += qty;
-      saveSlots();
+    /* -----------------------------------------------------------
+       2) ESTRUCTURA BASE DEL PEDIDO
+    ----------------------------------------------------------- */
+    let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
-      // Cargar pendientes
-      let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
-
-      // Entrada general de orden
-      const entry = {
+    const entry = {
         id: "order-" + Date.now(),
         manufacturer: ac.manufacturer,
         model: ac.model,
@@ -441,8 +451,82 @@ document.addEventListener("DOMContentLoaded", () => {
         price: ac.price_acs_usd || 0,
         image: selectedAircraftImage,
         deliveryDate: deliveryDate.toISOString(),
-        created: new Date().toISOString()
-      };
+        created: new Date().toISOString(),
+
+        // Nuevos campos:
+        buy_initial_pct: null,
+        buy_initial_payment: null,
+        buy_final_payment: null
+    };
+
+    /* ===========================================================
+       3) BUY NEW — PROCESAR PAGO INICIAL (%)
+    ============================================================ */
+    if (op === "BUY") {
+
+        const pct   = parseInt(document.getElementById("modalBuyInitialPct").value) || 100;
+        const total = ac.price_acs_usd * qty;
+
+        const initialPay = total * (pct / 100);
+        const finalPay   = total - initialPay;
+
+        entry.buy_initial_pct     = pct;
+        entry.buy_initial_payment = initialPay;
+        entry.buy_final_payment   = finalPay;
+
+        // 🔥 REGISTRAR GASTO EN FINANCE
+        ACS_registerExpense("used_aircraft_purchase", initialPay, `Buy New Initial — ${ac.model}`);
+
+    }
+
+    /* ===========================================================
+       4) LEASE — PAGO INICIAL (LO QUE YA EXISTÍA)
+    ============================================================ */
+    if (op === "LEASE") {
+
+        const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
+        const pct   = parseInt(document.getElementById("modalInitialPct").value) || 50;
+
+        entry.years       = years;
+        entry.initialPct  = pct;
+
+        const total       = ac.price_acs_usd * qty;
+        const initialPay  = total * (pct / 100);
+
+        entry.initialPayment = initialPay;
+
+        // 🔥 REGISTRAR GASTO EN FINANCE
+        ACS_registerExpense("leasing", initialPay, `Lease Initial — ${ac.model}`);
+    }
+
+    /* ===========================================================
+       5) GUARDAR EN PENDING
+    ============================================================ */
+    pending.push(entry);
+    localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+
+    /* ===========================================================
+       6) ALERTA VISUAL
+    ============================================================ */
+    if (typeof ACS_addAlert === "function") {
+        ACS_addAlert(
+            "order",
+            "low",
+            `New aircraft order: ${entry.model} x${entry.qty}`
+        );
+    }
+
+    /* ===========================================================
+       7) REDIRECCIÓN
+    ============================================================ */
+    alert("✅ Order placed successfully!");
+    closeBuyModal();
+
+    setTimeout(() => {
+        window.location.href = "my_aircraft.html";
+    }, 300);
+
+});
 
       /* ============================================================
          BUY NEW — APLICAR DESCUENTOS Y PAGOS (INICIAL / FINAL)
