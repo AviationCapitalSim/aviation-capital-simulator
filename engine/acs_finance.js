@@ -8,6 +8,7 @@
    ▪ API completa para todos los módulos
    ▪ Ahora sincronizado con ACS_HR
    ▪ Extendido con LOG de transacciones (ACS_Log)
+   ▪ Integrado con Used Market y Buy New (NEW)
    ============================================================ */
 
 // Crear estructura base si no existe
@@ -43,9 +44,12 @@ if (!localStorage.getItem("ACS_Finance")) {
       penalties: 0,
       loans: 0,
 
-      /* 🟨 Nuevo costo oficial para compras de usados */
-      used_aircraft_purchase: 0
-},
+      /* 🟨 Compras de aviones usados */
+      used_aircraft_purchase: 0,
+
+      /* 🟦 Compras de aviones nuevos (Buy New) */
+      new_aircraft_purchase: 0
+    },
 
     history: [
       {
@@ -81,7 +85,7 @@ function ACS_syncPayrollWithHR() {
   if (!f || !HR || !HR.payroll) return;
 
   f.cost.salaries = HR.payroll;
-  f.expenses = HR.payroll; // por ahora solo salarios (resto vendrá luego)
+  f.expenses = HR.payroll; // por ahora solo salarios
   f.profit = f.revenue - f.expenses;
 
   saveFinance(f);
@@ -178,43 +182,32 @@ function ACS_saveLog(arr) {
 
 /**
  * Registra una transacción genérica en ACS_Log
- *  entry = { type: "EXPENSE"|"INCOME"|"INFO", source: "Used Market", amount: 12345 }
+ *  entry = { type: "EXPENSE"|"INCOME"|"INFO", source: "...", amount: 12345 }
  */
-
 function ACS_logTransaction(entry) {
   const log = ACS_getLog();
 
-  // 🔥 Usar fecha real del juego (guardada por updateClockDisplay)
   const time = entry.time || window.ACS_CurrentSimDate;
-
   const type = entry.type || "INFO";
   const source = entry.source || "System";
   const amount = Number(entry.amount) || 0;
 
   log.push({ time, type, source, amount });
 
-  // Mantener el log razonable (últimas 200 transacciones)
-  if (log.length > 200) {
-    log.shift();
-  }
+  if (log.length > 200) log.shift();
 
   ACS_saveLog(log);
 }
 
 /**
- * Helper de gasto: actualiza FINANCE + añade registro al LOG
- * costType: clave dentro de cost{} (ej: "leasing", "maintenance", "fuel")
- * source: texto libre para el origen (ej: "Used Market Purchase")
+ * Helper de gasto
  */
-
 function ACS_registerExpense(costType, amount, source) {
   const value = Number(amount) || 0;
   if (value <= 0) return;
 
-  // Actualizar módulo Finance
   ACS_addExpense(costType, value);
 
-  // Registrar en LOG
   ACS_logTransaction({
     type: "EXPENSE",
     source: source || costType,
@@ -223,8 +216,7 @@ function ACS_registerExpense(costType, amount, source) {
 }
 
 /**
- * Helper de ingreso: actualiza FINANCE + añade registro al LOG
- * incomeType: clave dentro de income{} (ej: "routes", "leasing_income")
+ * Helper de ingreso
  */
 function ACS_registerIncome(incomeType, amount, source) {
   const value = Number(amount) || 0;
@@ -240,7 +232,7 @@ function ACS_registerIncome(incomeType, amount, source) {
 }
 
 /* ============================================================
-   ===  AUTO-SYNC AL ENTRAR AL DASHBOARD ======================
+   === AUTO-SYNC AL ENTRAR AL DASHBOARD =======================
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -250,8 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!isDashboard) return;
 
-  // Cada vez que se entra al Dashboard:
-  // sincronizamos salarios de HR con Finance
   ACS_syncPayrollWithHR();
 
   console.log("💼 Finance synced with HR → payroll actualizado.");
@@ -263,7 +253,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function ACS_runMonthlyLeasePayments(simDate){
 
-  // === Fecha simulada del juego desde ACS_TIME ===
   let current = simDate instanceof Date ? simDate : new Date();
 
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
@@ -285,25 +274,21 @@ function ACS_runMonthlyLeasePayments(simDate){
 
     const nextDue = new Date(ac.leasing.nextPayment);
 
-    // === Si ya es el mes del pago o ya pasó ===
     if (current >= nextDue){
 
       const amount = ac.leasing.monthly;
 
-      // === Actualizar finanzas ===
       finance.capital -= amount;
       finance.expenses += amount;
-      finance.profit = finance.revenue - finance.expenses;
+      finance.profit   = finance.revenue - finance.expenses;
 
-      // === Registrar en log ===
       log.push({
-        time: window.ACS_CurrentSimDate,   // ✅ FECHA REAL DEL JUEGO
+        time: window.ACS_CurrentSimDate,
         type: "EXPENSE",
         source: `Monthly Lease Payment — ${ac.manufacturer} ${ac.model}`,
         amount: amount
       });
 
-      // === Próxima fecha de pago ===
       const next = new Date(nextDue);
       next.setUTCMonth(next.getUTCMonth() + 1);
       ac.leasing.nextPayment = next.toISOString();
@@ -335,22 +320,18 @@ if (typeof registerTimeListener === "function") {
 
 function ACS_handleMonthlyFinance(simDate) {
   try {
-    // simDate = fecha real del juego (Date)
     const f = loadFinance();
     if (!f) return;
 
-    // Extraer mes actual del juego
     const months = ["JAN","FEB","MAR","APR","MAY","JUN",
                     "JUL","AUG","SEP","OCT","NOV","DEC"];
+
     const m = months[simDate.getUTCMonth()] + " " + simDate.getUTCFullYear();
 
-    // Si cambió el mes → cerramos el mes y avanzamos
     if (f.month !== m) {
 
-      // cerrar el mes
       ACS_closeMonth();
 
-      // actualizar el mes nuevo
       const f2 = loadFinance();
       f2.month = m;
       saveFinance(f2);
@@ -398,40 +379,82 @@ function ACS_registerUsedAircraftPurchase(amount, model){
   try {
     let finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-    // Asegurar estructuras internas
     finance.capital    = finance.capital    || 0;
     finance.revenue    = finance.revenue    || 0;
     finance.expenses   = finance.expenses   || 0;
     finance.cost       = finance.cost       || {};
     finance.cost.used_aircraft_purchase = finance.cost.used_aircraft_purchase || 0;
 
-    // Descontar capital
     finance.capital -= amount;
-
-    // Añadir a gastos generales
     finance.expenses += amount;
-
-    // Añadir a categoría específica
     finance.cost.used_aircraft_purchase += amount;
-
-    // Actualizar profit
     finance.profit = finance.revenue - finance.expenses;
 
-    // Guardar
     localStorage.setItem("ACS_Finance", JSON.stringify(finance));
 
-    // Log contable
     let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+
     log.push({
-    time: ACS_formatSimDate(ACS_TIME.currentTime),  // 🟦 Fecha real del juego
-    type: "EXPENSE",
-    source: `Used Market Purchase — ${model}`,
-    amount: amount
+      time: ACS_formatSimDate(ACS_TIME.currentTime),
+      type: "EXPENSE",
+      source: `Used Market Purchase — ${model}`,
+      amount: amount
     });
+
+    if (log.length > 200) log.shift();
 
     localStorage.setItem("ACS_Log", JSON.stringify(log));
 
   } catch(e){
     console.error("❌ ACS_registerUsedAircraftPurchase ERROR:", e);
+  }
+}
+
+/* ============================================================
+   === ACS FINANCE — COMPRA DE AVIONES NUEVOS (BUY NEW) =======
+   ============================================================ */
+
+function ACS_registerNewAircraftPurchase(amount, model, qty){
+  try {
+    let finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+    finance.capital  = finance.capital  || 0;
+    finance.revenue  = finance.revenue  || 0;
+    finance.expenses = finance.expenses || 0;
+    finance.cost     = finance.cost     || {};
+    finance.cost.new_aircraft_purchase =
+      finance.cost.new_aircraft_purchase || 0;
+
+    const value = Number(amount) || 0;
+    if (value <= 0) return;
+
+    finance.capital -= value;
+    finance.expenses += value;
+    finance.cost.new_aircraft_purchase += value;
+
+    finance.profit = finance.revenue - finance.expenses;
+
+    localStorage.setItem("ACS_Finance", JSON.stringify(finance));
+
+    let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+
+    const simTime =
+      (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+        ? ACS_TIME.currentTime
+        : new Date();
+
+    log.push({
+      time: ACS_formatSimDate(simTime),
+      type: "EXPENSE",
+      source: `New Aircraft Purchase — ${model}${qty ? " x" + qty : ""}`,
+      amount: value
+    });
+
+    if (log.length > 200) log.shift();
+
+    localStorage.setItem("ACS_Log", JSON.stringify(log));
+
+  } catch(e){
+    console.error("❌ ACS_registerNewAircraftPurchase ERROR:", e);
   }
 }
