@@ -587,3 +587,17 @@ function checkDeliveries() {
 
   saveSlots();
 }
+
+/* ============================================================
+   FIX — GENERADOR DE MATRICULAS (si no existe)
+   ============================================================ */
+
+if (typeof ACS_generateRegistration !== "function") {
+  function ACS_generateRegistration() {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const n1 = letters[Math.floor(Math.random() * 26)];
+    const n2 = letters[Math.floor(Math.random() * 26)];
+    const num = Math.floor(100 + Math.random() * 900); // 100–999
+    return `N${n1}${n2}-${num}`;
+  }
+}
