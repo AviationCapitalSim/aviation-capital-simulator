@@ -120,6 +120,7 @@
   }
 
   /* MODAL */
+       
   .modal {
     position: fixed;
     inset: 0;
@@ -165,6 +166,134 @@
     margin-top: 0.5rem;
   }
 
+/* ============================================================
+   5️⃣ STEP 5 — QATAR LUXURY MODAL LAYOUT (BUY / LEASE)
+   ============================================================ */
+
+.modal-content {
+  background: radial-gradient(circle at top, #12254a 0%, #091326 60%, #050814 100%);
+  padding: 1.6rem 1.8rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255,179,0,0.45);
+  box-shadow: 0 0 22px rgba(0,0,0,0.7);
+}
+
+/* Header (title + image) */
+.modal-header-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modal-header-text {
+  flex: 1;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #ffb300;
+}
+
+.modal-subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: #a8b4d8;
+}
+
+.modal-image {
+  width: 140px;
+  height: 90px;
+  border-radius: 10px;
+  object-fit: cover;
+  background:#0f1b3d;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* Body layout */
+.modal-body {
+  margin-top: 0.6rem;
+}
+
+.modal-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.modal-col {
+  flex: 1 1 180px;
+}
+
+.modal-label {
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: 0.15rem;
+  color: #d2dcff;
+}
+
+.modal-content select,
+.modal-content input[type="number"] {
+  background: #0c1733;
+  color: #fff;
+  border: 1px solid rgba(255,179,0,0.7);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  width: 100%;
+  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* Summary box */
+.modal-summary-box {
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  background: radial-gradient(circle at left, rgba(255,179,0,0.19), rgba(7,15,32,0.9));
+  border: 1px solid rgba(255,179,0,0.35);
+}
+
+.modal-summary {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #ffe7a0;
+}
+
+/* Footer buttons */
+.modal-footer {
+  margin-top: 1.1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #ffb300, #ffd666);
+  border: none;
+  border-radius: 9px;
+  padding: 0.45rem 1.2rem;
+  font-weight: 600;
+  color: #071022;
+  cursor: pointer;
+  font-size: 0.9rem;
+  box-shadow: 0 0 12px rgba(255,179,0,0.45);
+}
+
+.primary-btn:hover {
+  filter: brightness(1.05);
+}
+
+.close-btn {
+  background: #d33;
+  border-radius: 9px;
+  padding: 0.45rem 1.1rem;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+       
   /* ----------------------------------------------------------- */
   /* NO MODIFICO NADA MÁS - SOLO HEADER Y FAVICONS */
   /* ----------------------------------------------------------- */
@@ -394,76 +523,85 @@
 
 <!-- MODAL -->
 <div id="buyModal" class="modal">
-  <div class="modal-content">
-        <!-- ===================================================== -->
-    <!-- 1️⃣ MODAL BUY / LEASE — CONTENIDO PRINCIPAL           -->
-    <!--     (reemplaza todo lo que había dentro de            -->
+    <div class="modal-content">
+         
+    <!-- ===================================================== -->
+    <!-- 5️⃣ STEP 5 — QATAR LUXURY MODAL BUY / LEASE           -->
+    <!--     (Reemplaza TODO el contenido anterior de          -->
     <!--      <div class="modal-content"> ... </div>)          -->
     <!-- ===================================================== -->
-       
-    <img id="modalImage" src="" alt="" />
-    <h3 id="modalTitle"></h3>
 
-    <!-- ============================= -->
-    <!-- 2️⃣ OPERATION TYPE & QUANTITY -->
-    <!-- ============================= -->
-       
-    <label>Operation Type:</label>
-    <select id="modalOperation">
-      <option value="BUY">Buy New</option>
-      <option value="LEASE">Lease New</option>
-    </select>
-
-    <label>Quantity:</label>
-    <input type="number" id="modalQty" min="1" value="1" />
-
-    <!-- ============================================= -->
-    <!-- 3️⃣ BUY NEW — INITIAL PAYMENT (%) (50/75/100) -->
-    <!--     🆕 Solo visible cuando Operation = BUY     -->
-    <!-- ============================================= -->
-       
-    <div id="buyInitialPayment" style="display:none;">
-      <label>Initial Payment (%):</label>
-      <select id="modalBuyInitialPct">
-        <option value="50">50%</option>
-        <option value="75">75%</option>
-        <option value="100" selected>100% (Full)</option>
-      </select>
+    <div class="modal-header-row">
+      <div class="modal-header-text">
+        <h3 id="modalTitle" class="modal-title"></h3>
+        <p class="modal-subtitle">
+          OEM Production Slots • Initial vs Final Payment • Real Delivery Date
+        </p>
+      </div>
+      <img id="modalImage" src="" alt="" class="modal-image" />
     </div>
 
-    <!-- ============================================= -->
-    <!-- 4️⃣ LEASE OPTIONS — SOLO PARA LEASE           -->
-    <!--     🆕 SIN initial payment aquí               -->
-    <!-- ============================================= -->
-       
-    <div id="leaseOptions" style="display:none;">
-      <label>Lease Duration (years):</label>
-      <select id="modalLeaseYears">
-        <option value="5">5 years</option>
-        <option value="10" selected>10 years</option>
-        <option value="15">15 years</option>
-      </select>
-      <!-- ⛔ Aquí ya NO va Initial Payment (%) para lease -->
+    <div class="modal-body">
+
+      <div class="modal-row">
+        <div class="modal-col">
+          <label class="modal-label">Operation Type</label>
+          <select id="modalOperation">
+            <option value="BUY">Buy New</option>
+            <option value="LEASE">Lease New</option>
+          </select>
+
+          <label class="modal-label">Quantity</label>
+          <input type="number" id="modalQty" min="1" value="1" />
+        </div>
+
+        <div class="modal-col">
+
+          <!-- 🟡 BUY NEW — INITIAL PAYMENT (%) -->
+             
+          <div id="buyInitialPayment">
+            <label class="modal-label">Initial Payment (%)</label>
+            <select id="modalBuyInitialPct">
+              <option value="50">50% — Balanced cash flow</option>
+              <option value="75">75% — Lower final payment</option>
+              <option value="100" selected>100% — Full upfront</option>
+            </select>
+          </div>
+
+          <!-- 🔷 LEASE OPTIONS -->
+             
+          <div id="leaseOptions" style="display:none; margin-top:0.4rem;">
+            <label class="modal-label">Lease Duration (years)</label>
+            <select id="modalLeaseYears">
+              <option value="5">5 years</option>
+              <option value="10" selected>10 years</option>
+              <option value="15">15 years</option>
+            </select>
+
+            <label class="modal-label">Initial Payment (lease %)</label>
+            <select id="modalInitialPct">
+              <option value="30">30% — Light upfront</option>
+              <option value="50" selected>50% — Standard</option>
+              <option value="70">70% — Aggressive equity</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-summary-box">
+        <p id="modalSummary" class="modal-summary"></p>
+      </div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- 5️⃣ RESUMEN — FECHA, TOTAL, ETC.              -->
-    <!-- ============================================= -->
-       
-    <p id="modalSummary"
-       style="margin-top:1rem; font-size:0.9rem; color:#ffb300;"></p>
-
-    <!-- ============================================= -->
-    <!-- 6️⃣ BOTONES                                   -->
-    <!-- ============================================= -->
-       
-    <button id="modalConfirm">Confirm Order</button>
-    <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
-
+    <div class="modal-footer">
+      <button id="modalConfirm" class="primary-btn">Confirm Order</button>
+      <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
+    </div>
   </div>
-</div>
 
 <!-- === SCRIPTS === -->
+     
 <script src="time_engine.js"></script>
 <script src="engine/acs_aircraft_db.js"></script>
 <script src="engine/acs_finance.js"></script> 
