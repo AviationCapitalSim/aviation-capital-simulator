@@ -788,6 +788,40 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
   
+  <script>
+/* ============================================================
+   === DASHBOARD FALLBACK — REBUILD BASE IF MISSING ============
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  // ❗ Si no existe activeUser.base, lo construimos desde los 7 HTML tradicionales
+  if (!activeUser.base || !activeUser.base.icao) {
+
+    const baseIcao    = localStorage.getItem("ACS_baseICAO");
+    const baseCity    = localStorage.getItem("ACS_baseCity");
+    const baseCountry = localStorage.getItem("ACS_baseCountry");
+    const baseName    = localStorage.getItem("ACS_baseName");
+
+    // Solo si existe ICAO (mínimo)
+    if (baseIcao) {
+      activeUser.base = {
+        icao: baseIcao,
+        city: baseCity || "",
+        country: baseCountry || "",
+        name: baseName || "",
+      };
+
+      // Guardar reconstruido
+      localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+      console.log("✅ Dashboard fallback: BASE reconstruida →", activeUser.base);
+    }
+  }
+});
+</script>
+  
  <script>
    
 // ============================================================
