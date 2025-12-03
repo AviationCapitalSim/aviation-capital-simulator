@@ -295,20 +295,20 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   loadAirportScripts(() => {
-  buildAirportIndex();     // loader original
-  ACS_World.initialize();  // <-- ESTA LÍNEA ES LA QUE FALTABA
-  console.log("🌍 Motor mundial listo:", ACS_World.ready);
+    buildAirportIndex();     // loader original
+    ACS_World.initialize();  // <-- ESTA LÍNEA ES LA QUE FALTABA
+    console.log("🌍 Motor mundial listo:", ACS_World.ready);
 
-  document.getElementById("continentSelect")
-    .addEventListener("change", loadCountries);
+    document.getElementById("continentSelect")
+      .addEventListener("change", loadCountries);
 
-  document.getElementById("countrySelect")
-    .addEventListener("change", loadAirports);
-});
+    document.getElementById("countrySelect")
+      .addEventListener("change", loadAirports);
+  });
 
 });
 </script>
-  
+
 <script>
 let selectedContinent = "";
 let selectedCountry = "";
