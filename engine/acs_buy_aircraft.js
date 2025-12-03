@@ -307,15 +307,14 @@ function openBuyModal(ac) {
   document.getElementById("modalImage").src = selectedAircraftImage;
   document.getElementById("modalTitle").textContent = `${ac.manufacturer} ${ac.model}`;
 
-  updateModalSummary();
-
-  // ⬇⬇⬇ PON ESTO AQUÍ
+  // ⬇⬇⬇ CONFIGURAR BUY COMO DEFAULT
   const opSel = document.getElementById("modalOperation");
   opSel.value = "BUY";
   document.getElementById("buyInitialPayment").style.display = "block";
   document.getElementById("leaseOptions").style.display = "none";
+
+  // ⬇⬇⬇ SUMMARY ACTUALIZADO DESPUÉS DE CAMBIAR MODAL
   updateModalSummary();
-  // ⬆⬆⬆
 
   document.getElementById("buyModal").style.display = "flex";
 }
