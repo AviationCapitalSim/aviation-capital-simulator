@@ -349,10 +349,9 @@ function updateModalSummary() {
   summary += `Estimated delivery: <b>${d}</b><br>`;
 
   // ===============================================================
-// 4️⃣ BUY NEW — RESUMEN COMPLETO CON PAGO INICIAL Y PAGO FINAL
-// ===============================================================
-   
-if (op === "BUY") {
+  // 4️⃣ BUY NEW — RESUMEN COMPLETO CON PAGO INICIAL Y PAGO FINAL
+  // ===============================================================
+  if (op === "BUY") {
 
     const pct = parseInt(document.getElementById("modalBuyInitialPct").value) || 100;
     const total = price * qty;
@@ -366,47 +365,49 @@ if (op === "BUY") {
     `;
 
     document.getElementById("leaseOptions").style.display = "none";
-}
+  }
 
+  // 🟩 CIERRE FINAL QUE FALTABA
+  document.getElementById("modalSummary").innerHTML = summary;
+}
 /* ============================================================
    10) CONFIRM BUY / LEASE
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+
   const opSel = document.getElementById("modalOperation");
-// ===============================================================
-// 2️⃣ BUY NEW — SHOW/HIDE INITIAL PAYMENT (%) + UPDATE SUMMARY
-//     (Ubicación: dentro del DOMContentLoaded, justo después de
-//      const opSel = document.getElementById("modalOperation"))
-// ===============================================================
-opSel.addEventListener("change", () => {
 
-  const isBuy = (opSel.value === "BUY");
+  // ===============================================================
+  // 2️⃣ BUY NEW — SHOW/HIDE INITIAL PAYMENT (%) + UPDATE SUMMARY
+  // ===============================================================
+  opSel.addEventListener("change", () => {
 
-  // Mostrar u ocultar bloques según el tipo de operación
-  document.getElementById("buyInitialPayment").style.display = isBuy ? "block" : "none";
-  document.getElementById("leaseOptions").style.display = isBuy ? "none" : "block";
+    const isBuy = (opSel.value === "BUY");
 
-  updateModalSummary();
-});
+    // Mostrar u ocultar bloques según el tipo de operación
+    document.getElementById("buyInitialPayment").style.display = isBuy ? "block" : "none";
+    document.getElementById("leaseOptions").style.display = isBuy ? "none" : "block";
 
-// ===============================================================
-// 3️⃣ BUY NEW — CHANGE LISTENER DEL PORCENTAJE INICIAL
-//     (50% / 75% / 100%)
-// ===============================================================
-const buyPctSel = document.getElementById("modalBuyInitialPct");
-if (buyPctSel) {
-  buyPctSel.addEventListener("change", updateModalSummary);
-}
+    updateModalSummary();
+  });
+
+  // ===============================================================
+  // 3️⃣ BUY NEW — Listener del porcentaje inicial (50 / 75 / 100)
+  // ===============================================================
+  const buyPctSel = document.getElementById("modalBuyInitialPct");
+  if (buyPctSel) {
+    buyPctSel.addEventListener("change", updateModalSummary);
+  }
 
   const qtyInp = document.getElementById("modalQty");
   const leaseYears = document.getElementById("modalLeaseYears");
-  const leasePct = document.getElementById("modalInitialPct");
-  const confirmBtn = document.getElementById("modalConfirm");
 
-  if (opSel) opSel.addEventListener("change", updateModalSummary);
+  // ❌ Eliminado leasePct porque ya NO existe modalInitialPct
+
   if (qtyInp) qtyInp.addEventListener("input", updateModalSummary);
   if (leaseYears) leaseYears.addEventListener("change", updateModalSummary);
-  if (leasePct) leasePct.addEventListener("change", updateModalSummary);
+
+  const confirmBtn = document.getElementById("modalConfirm");
 
   if (confirmBtn) {
     confirmBtn.addEventListener("click", () => {
@@ -417,15 +418,20 @@ if (buyPctSel) {
       const op = document.getElementById("modalOperation").value;
       const qty = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
 
+      // Cálculo de entrega
       const deliveryDate = calculateDeliveryDate(ac, qty);
 
       const manu = ac.manufacturer;
+
+      // Actualizar backlog del fabricante
       if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
       ACS_SLOTS[manu] += qty;
       saveSlots();
 
+      // Cargar pendientes
       let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
+      // Entrada general de orden
       const entry = {
         id: "order-" + Date.now(),
         manufacturer: ac.manufacturer,
@@ -438,39 +444,49 @@ if (buyPctSel) {
         created: new Date().toISOString()
       };
 
+      /* ============================================================
+         BUY NEW — APLICAR DESCUENTOS Y PAGOS (INICIAL / FINAL)
+         ============================================================ */
       if (op === "BUY") {
-        entry.total = (ac.price_acs_usd || 0) * qty;
 
+        const pct = parseInt(document.getElementById("modalBuyInitialPct").value) || 100;
+        const total = (ac.price_acs_usd || 0) * qty;
+
+        entry.total = total;
+        entry.initialPct = pct;
+
+        const initialPayment = total * (pct / 100);
+        entry.initialPayment = initialPayment;
+
+        // Descontar SOLO el pago inicial ahora
         let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
-        balance -= entry.total;
+        balance -= initialPayment;
         localStorage.setItem("ACS_FinanceBalance", balance.toString());
       }
 
+      /* ============================================================
+         LEASE NEW — APLICAR PAGO INICIAL
+         ============================================================ */
       if (op === "LEASE") {
 
         const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-        const pct = parseInt(document.getElementById("modalInitialPct").value) || 50;
-
         entry.years = years;
-        entry.initialPct = pct;
 
         const total = (ac.price_acs_usd || 0) * qty;
-        entry.initialPayment = total * (pct / 100);
 
+        // Pago inicial — default leasing (50%)
+        const upfront = total * 0.50;
+        entry.initialPayment = upfront;
+
+        // Descuento financiero
         let balance = parseFloat(localStorage.getItem("ACS_FinanceBalance") || "0");
-        balance -= entry.initialPayment;
+        balance -= upfront;
         localStorage.setItem("ACS_FinanceBalance", balance.toString());
-      }
 
-      if (op === "LEASE") {
-
+        // Crear contrato de leasing si existe el engine
         if (typeof ACS_Leasing_createContract === "function") {
 
-          const years = entry.years || 10;
           const months = years * 12;
-          const total = (ac.price_acs_usd || 0) * qty;
-          const upfront = entry.initialPayment || 0;
-
           const remaining = total - upfront;
           const monthlyRate = (remaining / months) * 1.11;
 
@@ -482,6 +498,7 @@ if (buyPctSel) {
             { hours: 0, cycles: 0 }
           );
 
+          // Calendarios de C y D
           if (typeof ACS_MyAircraft_addLeasedAircraft === "function") {
             const deliveryDate = new Date();
             const nextC = new Date(deliveryDate);
@@ -496,10 +513,13 @@ if (buyPctSel) {
 
           console.log("📦 NEW Leasing contract created:", contract);
         }
-      }
 
+      } // END LEASE
+
+      // Guardar en pendientes
       pending.push(entry);
 
+      // Alerta opcional
       if (typeof ACS_addAlert === "function") {
         ACS_addAlert(
           "order",
@@ -513,7 +533,7 @@ if (buyPctSel) {
       alert("✅ Order successfully created!");
       closeBuyModal();
     });
-  }  // 🔥 ESTA LLAVE FALTABA Y YA ESTÁ CORREGIDA
+  }
 
   /* ---- Card click → open modal ---- */
   document.addEventListener("click", e => {
@@ -535,11 +555,11 @@ if (buyPctSel) {
 
   console.log("🟩 Buy Aircraft Cards System — Ready");
 });
-
 /* ============================================================
    11) AUTO-DELIVERY ENGINE
    ============================================================ */
 function checkDeliveries() {
+
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
   let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
@@ -552,7 +572,10 @@ function checkDeliveries() {
 
   pending.forEach(entry => {
     const d = new Date(entry.deliveryDate);
+
     if (now >= d) {
+
+      // Por cada unidad del pedido → añadir un avión nuevo al fleet
       for (let i = 0; i < entry.qty; i++) {
         myFleet.push({
           id: "AC-" + Date.now() + "-" + i,
@@ -568,9 +591,11 @@ function checkDeliveries() {
           condition: 100,
           registration: ACS_generateRegistration(),
 
-          data: (resolveAircraftDB().find(m => 
-            m.manufacturer === entry.manufacturer && m.model === entry.model
-          ) || {}),
+          data: (
+            resolveAircraftDB().find(m =>
+              m.manufacturer === entry.manufacturer && m.model === entry.model
+            ) || {}
+          ),
 
           lastC: null,
           lastD: null,
@@ -578,6 +603,7 @@ function checkDeliveries() {
           nextD: null
         });
 
+        // Calendario inicial de mantenimientos
         const baseDeliveryDate = new Date(d);
 
         const nextCdate = new Date(baseDeliveryDate);
@@ -587,18 +613,27 @@ function checkDeliveries() {
         const nextDdate = new Date(baseDeliveryDate);
         nextDdate.setUTCFullYear(nextDdate.getUTCFullYear() + yearsToD);
 
+        // Aplicarlo al último avión añadido
         myFleet[myFleet.length - 1].nextC = nextCdate.toISOString();
         myFleet[myFleet.length - 1].nextD = nextDdate.toISOString();
       }
 
+      // Reducir backlog del fabricante
       if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
-      ACS_SLOTS[entry.manufacturer] = Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
+      ACS_SLOTS[entry.manufacturer] =
+        Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
+
     } else {
+
+      // Todavía no está listo → mantenerlo pendiente
       remaining.push(entry);
     }
   });
 
+  // Guardar flota y pendientes
   localStorage.setItem("ACS_PendingAircraft", JSON.stringify(remaining));
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
+
+  // Guardar backlog actualizado
   saveSlots();
 }
