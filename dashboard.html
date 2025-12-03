@@ -364,47 +364,6 @@ body {
   text-shadow: 0 0 10px rgba(255,180,0,0.25);
 }
   
-/* ============================================================
-   === ACS Dashboard — Premium Pills (Rank / Country / Base) ===
-   ============================================================ */
-
-.acs-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 1.0rem;
-  border-radius: 14px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0 6px;
-  box-shadow: 0 0 12px rgba(0,0,0,0.35);
-  backdrop-filter: blur(6px);
-}
-
-/* 🥇 Rank — único que queda dorado */
-.acs-pill-rank {
-  background: rgba(255, 179, 0, 0.12);
-  border: 1px solid rgba(255, 200, 60, 0.45);
-  color: #ffca3a;
-  text-shadow: 0 0 6px rgba(255,200,60,0.45);
-}
-
-/* 🇮🇹 Country — azul perla */
-.acs-pill-country {
-  background: rgba(24, 36, 58, 0.75);
-  border: 1px solid rgba(130, 170, 255, 0.30);
-  color: #e3ecff;
-  text-shadow: 0 0 4px rgba(180,200,255,0.35);
-}
-
-/* 🛫 Base — navy con bordes dorados suaves */
-.acs-pill-base {
-  background: rgba(12, 18, 30, 0.80);
-  border: 1px solid rgba(255, 200, 60, 0.25);
-  color: #ffe39c;
-  text-shadow: 0 0 4px rgba(255,210,120,0.45);
-}
-
 </style>
 </head>
 
@@ -435,11 +394,8 @@ body {
 <main class="acs-main">
 
   <h2 id="welcomeMessage"></h2>
-  <div id="dashboardPills" style="margin-top: 10px;">
-  <span id="rankPill" class="acs-pill acs-pill-rank">🥇 Carrier Rank</span>
-  <span id="countryPill" class="acs-pill acs-pill-country">🌍 Country</span>
-  <span id="basePill" class="acs-pill acs-pill-base">Base: -</span>
-</div>
+  <p id="airlineSub"></p>
+  <p id="baseInfo" style="color:#ffb300; font-weight:600;"></p>
 
   <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
@@ -697,78 +653,45 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-<!-- ============================================================
-     === LOAD AIRLINE DATA — BLOQUE 3 (ACTUALIZADO) =============
-     ============================================================ -->
   
+<!-- ============================================================
+     === LOAD AIRLINE DATA — SIN CAMBIOS =========================
+   ============================================================ -->
 <script>
-
+  
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ============================================================
-  // 1. Cargar usuario activo desde localStorage
-  // ============================================================
   const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-  // Objetos clave dentro del usuario
   const airline = activeUser.airline || {};
-  const base    = activeUser.base    || {};   // ✅ CORREGIDO: la base está AQUÍ
+  const base    = activeUser.base || {};   // ✅ CORREGIDO: la base está AQUÍ
 
-  // ============================================================
-  // 2. ELEMENTOS DEL DASHBOARD
-  // ============================================================
   const welcome = document.getElementById("welcomeMessage");
+  const sub     = document.getElementById("airlineSub");
+  const baseEl  = document.getElementById("baseInfo");
 
-  // NUEVOS PILLS
-  const rankPill    = document.getElementById("rankPill");
-  const countryPill = document.getElementById("countryPill");
-  const basePill    = document.getElementById("basePill");
-
-
-  // ============================================================
-  // 3. AIRLINE NAME + IATA (Título principal)
-  // ============================================================
+  // === AIRLINE NAME + IATA ===
   if (airline.name && airline.iata) {
     welcome.innerHTML = `Welcome to <span>${airline.name} (${airline.iata})</span>`;
   } else {
     welcome.innerHTML = `Welcome, Captain`;
   }
 
-
-  // ============================================================
-  // 4. RANK (por ahora estático — luego dinámico)
-  // ============================================================
-  rankPill.innerHTML = `🥇 Silver Carrier Rank`;
-
-
-  // ============================================================
-  // 5. COUNTRY + FLAG (Sistema universal de banderas)
-  // ============================================================
+  // === COUNTRY + FLAG ===
   const country = airline.country || "World";
   const flag = getFlagEmojiFromCountryName(country);
+  sub.innerHTML = `${flag} ${country}`;
 
-  countryPill.innerHTML = `${flag} ${country}`;
-
-
-  // ============================================================
-  // 6. BASE INFO PILL (Ciudad + ICAO)
-  // ============================================================
+  // === BASE INFO ===
   const baseCity = base.city || base.municipality || "";
   const baseName = base.name || base.airportName || "";
   const baseCode = base.icao || base.iata || "";
 
-  let label =
-      baseCity && baseName ? `${baseCity} (${baseCode})`
+  let label = baseCity && baseName
+    ? `${baseCity} — ${baseName}`
     : baseCity || baseName || "Unassigned Base";
 
-  basePill.innerHTML = `Base: ${label}`;
-
-
-  // ============================================================
-  // LOG PARA DEPURAR (te ayuda muchísimo al probar)
-  // ============================================================
-  console.log("🟦 Dashboard Loaded → Airline:", airline);
-  console.log("🟩 Dashboard Loaded → Base:", base);
+  baseEl.innerText = `Base: ${label}${baseCode ? " (" + baseCode + ")" : ""}`;
 
 });
 
