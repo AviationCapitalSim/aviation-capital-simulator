@@ -300,6 +300,70 @@ body {
   color: #dfe9ff;
 }
 
+/* ============================================================
+   === ACS PREMIUM HERO HEADER — Qatar Luxury + Rank ==========
+   ============================================================ */
+
+/* ✨ Airline Name Glow (Qatar Gold Pulse) */
+#welcomeMessage {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  background: linear-gradient(90deg, #ffe7a0, #ffb300, #ffd75a);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 10px rgba(255,190,60,0.35);
+  animation: goldPulse 3s ease-in-out infinite;
+}
+
+@keyframes goldPulse {
+  0%   { text-shadow: 0 0 10px rgba(255,190,60,0.3); }
+  50%  { text-shadow: 0 0 20px rgba(255,190,60,0.65); }
+  100% { text-shadow: 0 0 10px rgba(255,190,60,0.3); }
+}
+
+/* 🎖 Rank Badge */
+#airlineRank {
+  margin-top: 0.3rem;
+  display: inline-block;
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffdf70;
+  letter-spacing: 0.4px;
+  backdrop-filter: blur(4px);
+  text-shadow: 0 0 10px rgba(255,190,60,0.3);
+}
+
+/* 🌍 Country Badge (Glass Style) */
+#airlineSub {
+  margin-top: 0.3rem;
+  font-size: 1.25rem;
+  padding: 6px 16px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 14px;
+  display: inline-block;
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 14px rgba(255,255,255,0.05);
+}
+
+/* 📍 Base Card — Elite Membership */
+#baseInfo {
+  margin-top: 0.9rem;
+  font-size: 1.2rem;
+  padding: 8px 18px;
+  background: linear-gradient(180deg, rgba(35,45,80,0.75), rgba(20,28,60,0.95));
+  border: 1px solid rgba(255,179,0,0.35);
+  border-radius: 16px;
+  display: inline-block;
+  box-shadow: 0 0 18px rgba(255,179,0,0.25);
+  text-shadow: 0 0 10px rgba(255,180,0,0.25);
+}
+  
 </style>
 </head>
 
@@ -633,6 +697,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
+<script>
+  
+/* ============================================================
+   === AIRLINE RANK SYSTEM (Phase 1 - Static) ==================
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const rankEl = document.createElement("div");
+  rankEl.id = "airlineRank";
+
+  // ✨ Más adelante será dinámico (según flota/valor).
+  // Por ahora dejamos uno muy limpio:
+  rankEl.innerHTML = "🏅 Silver Carrier Rank";
+
+  // Insertarlo justo debajo del welcomeMessage
+  const welcome = document.getElementById("welcomeMessage");
+  welcome.insertAdjacentElement("afterend", rankEl);
+
+});
+</script>
+  
 <!-- ============================================================
      === TOP 3 ALERTS — BETA REAL ================================
    ============================================================ -->
