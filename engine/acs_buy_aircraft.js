@@ -324,26 +324,43 @@ function closeBuyModal() {
   document.getElementById("buyModal").style.display = "none";
 }
 
-/* ============================================================
-   8) DELIVERY CALCULATION
-   ============================================================ */
+// ============================================================
+// REAL DELIVERY DATE — Fully synchronized with ACS_TIME Engine
+// ============================================================
+
 function calculateDeliveryDate(ac, qty) {
-  const year = getCurrentSimYear();
+
+  // 1️⃣ Tomar la fecha REAL del Sim Engine
+  const now = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+    ? new Date(ACS_TIME.currentTime)
+    : new Date();
+
+  const currentYear  = now.getUTCFullYear();
+  const currentMonth = now.getUTCMonth();   // ⭐ MUY IMPORTANTE
+
+  // 2️⃣ Capacidad del fabricante (slots)
   const manu = ac.manufacturer;
   const capacity = ACS_MANUFACTURER_SLOTS[manu] || 20;
 
   if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
 
+  // 3️⃣ Backlog real
   const backlog = ACS_SLOTS[manu];
   const total = backlog + qty;
+
+  // 4️⃣ Cuántos años toma entregar
   const yearsNeeded = total / capacity;
 
-  const deliveryYear = year + Math.floor(yearsNeeded);
-  const monthsFraction = (yearsNeeded % 1) * 12;
-  const deliveryMonth = Math.floor(monthsFraction);
+  const deliveryYear = currentYear + Math.floor(yearsNeeded);
+  const addMonths = Math.floor((yearsNeeded % 1) * 12);
 
+  // 5️⃣ Mezclamos el MES DEL RELOJ + meses del backlog
+  const deliveryMonth = currentMonth + addMonths;
+
+  // 6️⃣ Fecha final (día 15 estable)
   return new Date(Date.UTC(deliveryYear, deliveryMonth, 15));
 }
+
 
 /* ============================================================
    9) MODAL SUMMARY
