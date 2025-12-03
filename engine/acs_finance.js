@@ -1,7 +1,7 @@
 /* ============================================================
    === ACS FINANCE ENGINE - CORE v1.5 (Integración HR) ========
    ------------------------------------------------------------
-   ▪ Capital inicial: 1,000,000 USD (Año 1940)
+   ▪ Capital inicial: 500,000 USD (Año 1940)
    ▪ Payroll inicial automático desde HR
    ▪ Manejo de ingresos, gastos y profit
    ▪ Historial mensual inicial (Month 1 - JAN 1940)
@@ -19,7 +19,7 @@ if (!localStorage.getItem("ACS_Finance")) {
   const payroll = HR && HR.payroll ? HR.payroll : 0;
 
   const baseFinance = {
-    capital: 1000000,
+    capital: 500000,
     month: "JAN 1940",
 
     revenue: 0,
