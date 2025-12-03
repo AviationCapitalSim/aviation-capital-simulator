@@ -76,8 +76,59 @@ function saveFinance(data) {
 }
 
 /* ============================================================
+   === FINANCE — SPARKLINE UTILITY RESTORE (v1.0) ============
+   ------------------------------------------------------------
+   • Recupera la función que dibuja los micro-gráficos
+   • Evita errores en consola
+   • Se usa en company_finance.html
+   ============================================================ */
+
+function renderSparklines() {
+  const canvases = document.querySelectorAll(".sparkline");
+  if (!canvases.length) return;
+
+  canvases.forEach(canvas => {
+    const ctx = canvas.getContext("2d");
+
+    let data = [];
+    try {
+      data = JSON.parse(canvas.dataset.values || "[]");
+    } catch (e) {
+      data = [0, 0, 0, 0, 0];
+    }
+
+    if (!data.length) data = [0, 0, 0, 0, 0];
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.strokeStyle = "#FFB300";  // Golden ACS line
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    const step = w / (data.length - 1);
+    const maxV = Math.max(...data);
+    const minV = Math.min(...data);
+    const range = maxV - minV || 1;
+
+    data.forEach((v, i) => {
+      const x = i * step;
+      const y = h - ((v - minV) / range) * h;
+
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+
+    ctx.stroke();
+  });
+}
+
+/* ============================================================
    ===  INTEGRACIÓN HR — PAYROLL REAL                         ==
    ============================================================ */
+
 function ACS_syncPayrollWithHR() {
   const f = loadFinance();
   const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
