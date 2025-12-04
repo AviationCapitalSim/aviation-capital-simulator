@@ -478,7 +478,7 @@ const opSel = document.getElementById("modalOperation").value;
   }
 
   document.getElementById("modalSummary").innerHTML = summary;
-}
+
 
 /* ============================================================
    10) CONFIRM BUY / LEASE
