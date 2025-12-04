@@ -242,25 +242,27 @@ function ensureEmptyRows() {
 }
 
 /* ============================================================
-   === INITIALIZATION (SAFE ORDER) ============================
+   === INITIALIZATION =========================================
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Cargar flota
+  // 1) Recargar flota activa
   fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
-  // Primero procesar PENDING
+  // 2) Procesar entregas pendientes
   updatePendingDeliveries();
 
-  // Construir filtros
+  // 3) Filtros
   populateFilterOptions();
 
-  // Render tabla
+  // 4) Render tabla principal
   renderFleetTable();
+
+  // 5) Render tarjetas “Pending Deliveries”
   renderPendingDeliveriesTable();
 
-  // Si no hay flota → filas vacías
+  // 6) Si no hay flota → filas vacías
   if (fleet.length === 0) {
     ensureEmptyRows();
   }
@@ -272,20 +274,23 @@ document.addEventListener("DOMContentLoaded", () => {
    ============================================================ */
 
 if (typeof registerTimeListener === "function") {
+
   registerTimeListener(() => {
 
     // 1) Recargar flota
     fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
-    // 2) Procesar entregas pendientes
+    // 2) Procesar entregas
     updatePendingDeliveries();
 
-    // 3) Actualizar tabla
+    // 3) Render tablas
     renderFleetTable();
+    renderPendingDeliveriesTable();
 
-    // 4) Filas vacías si no hay aviones
+    // 4) Si no hay flota → filas vacías
     if (fleet.length === 0) {
       ensureEmptyRows();
     }
   });
+
 }
