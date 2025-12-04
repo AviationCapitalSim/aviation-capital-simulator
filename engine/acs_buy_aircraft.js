@@ -545,18 +545,22 @@ document.addEventListener("DOMContentLoaded", () => {
   if (op === "LEASE") {
 
   /* 📌 10.2.1 — Datos base */
+     
   const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-  const pct   = parseInt(document.getElementById("modalInitialPct")?.value) || 50;
+  const pctSel = document.getElementById("modalInitialPct");
+  const pct = pctSel ? parseInt(pctSel.value) : 50;
 
   const total      = ac.price_acs_usd * qty;
   const initialPay = total * (pct / 100);
 
   /* 📌 10.2.2 — Guardar en entry (Pending Aircraft) */
+     
   entry.years          = years;
   entry.initialPct     = pct;
   entry.initialPayment = initialPay;
 
   /* 📌 10.2.3 — Registrar pago inicial */
+     
   if (typeof ACS_registerExpense === "function") {
     ACS_registerExpense("leasing", initialPay, `Lease initial — ${ac.model}`);
   }
@@ -567,16 +571,18 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeLeases = JSON.parse(localStorage.getItem("ACS_ACTIVE_LEASES") || "[]");
 
   activeLeases.push({
-    id: entry.id,
-    manufacturer: ac.manufacturer,
-    model: ac.model,
-    qty,
-    years: entry.years,
-    startDate: entry.created,
-    deliveryDate: entry.deliveryDate,
-    monthlyPayment: Math.round((ac.price_acs_usd * 0.01) / 12), // TEMPORAL
-    image: selectedAircraftImage
-  });
+  id: entry.id,
+  manufacturer: ac.manufacturer,
+  model: ac.model,
+  qty,
+  years: years,
+  startDate: entry.created,
+  deliveryDate: entry.deliveryDate,
+  initialPct: pct,
+  initialPayment: initialPay,
+  monthlyPayment: monthlyPayment,
+  image: selectedAircraftImage
+});
 
   localStorage.setItem("ACS_ACTIVE_LEASES", JSON.stringify(activeLeases));
 }
