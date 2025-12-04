@@ -194,6 +194,7 @@ function getAircraftBase() {
 /* ============================================================
    4) CHIPS DE FABRICANTE
    ============================================================ */
+
 function buildFilterChips() {
   const bar = document.getElementById("filterBar");
   if (!bar) return;
@@ -536,23 +537,49 @@ document.addEventListener("DOMContentLoaded", () => {
           ACS_registerExpense("new_aircraft_purchase", initialPay, `Initial payment — ${ac.model}`);
         }
       }
+       
+      /* ============================================================
+     10.2 — LEASE MODULE (Pago inicial + Registro del contrato) 🟦
+   ============================================================ */
 
-      /* LEASE — Pago inicial */
-      if (op === "LEASE") {
-        const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-        const pct   = parseInt(document.getElementById("modalInitialPct")?.value) || 50;
+  if (op === "LEASE") {
 
-        const total      = ac.price_acs_usd * qty;
-        const initialPay = total * (pct / 100);
+  /* 📌 10.2.1 — Datos base */
+  const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
+  const pct   = parseInt(document.getElementById("modalInitialPct")?.value) || 50;
 
-        entry.years          = years;
-        entry.initialPct     = pct;
-        entry.initialPayment = initialPay;
+  const total      = ac.price_acs_usd * qty;
+  const initialPay = total * (pct / 100);
 
-        if (typeof ACS_registerExpense === "function") {
-          ACS_registerExpense("leasing", initialPay, `Lease initial — ${ac.model}`);
-        }
-      }
+  /* 📌 10.2.2 — Guardar en entry (Pending Aircraft) */
+  entry.years          = years;
+  entry.initialPct     = pct;
+  entry.initialPayment = initialPay;
+
+  /* 📌 10.2.3 — Registrar pago inicial */
+  if (typeof ACS_registerExpense === "function") {
+    ACS_registerExpense("leasing", initialPay, `Lease initial — ${ac.model}`);
+  }
+
+  /* ============================================================
+     🟦 A.1 — Registrar contrato activo en sistema financiero
+     ============================================================ */
+  let activeLeases = JSON.parse(localStorage.getItem("ACS_ACTIVE_LEASES") || "[]");
+
+  activeLeases.push({
+    id: entry.id,
+    manufacturer: ac.manufacturer,
+    model: ac.model,
+    qty,
+    years: entry.years,
+    startDate: entry.created,
+    deliveryDate: entry.deliveryDate,
+    monthlyPayment: Math.round((ac.price_acs_usd * 0.01) / 12), // TEMPORAL
+    image: selectedAircraftImage
+  });
+
+  localStorage.setItem("ACS_ACTIVE_LEASES", JSON.stringify(activeLeases));
+}
 
       /* 5) GUARDAR EN PENDING */
       pending.push(entry);
@@ -574,6 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---- Card click → open modal ---- */
+   
   document.addEventListener("click", e => {
     const btn = e.target.closest(".view-options-btn");
     if (!btn) return;
@@ -622,72 +650,75 @@ function checkDeliveries() {
   const remaining = [];
 
   /* 3) Procesar cada avión pendiente */
-  pending.forEach(entry => {
-    const d = new Date(entry.deliveryDate);
+  /* ============================================================
+   🟦 B.1 — Motor de entrega basado en calendario mensual (slots)
+   ============================================================ */
 
-    /* ======== ENTREGA ======== */
-    if (now >= d) {
+pending.forEach(entry => {
+  const d = new Date(entry.deliveryDate);
 
-      /* Añadir aviones entregados */
-      for (let i = 0; i < entry.qty; i++) {
-        myFleet.push({
-          id: "AC-" + Date.now() + "-" + i,
-          model: entry.model,
-          manufacturer: entry.manufacturer,
-          year: now.getUTCFullYear(),
-          delivered: d.toISOString(),
-          image: entry.image,
+  const deliveryYear = d.getUTCFullYear();
+  const deliveryMonth = d.getUTCMonth();
 
-          status: "Active",
-          hours: 0,
-          cycles: 0,
-          condition: 100,
-          registration: (typeof ACS_generateRegistration === "function")
-            ? ACS_generateRegistration()
-            : ("N" + Math.floor(10000 + Math.random() * 90000)),
+  /* ❗ Comprobar si el reloj sim alcanzó el MES de entrega */
+  const nowYear = now.getUTCFullYear();
+  const nowMonth = now.getUTCMonth();
 
-          data: resolveAircraftDB().find(m =>
-            m.manufacturer === entry.manufacturer &&
-            m.model === entry.model
-          ) || {},
+  const reachedDelivery =
+    (nowYear > deliveryYear) ||
+    (nowYear === deliveryYear && nowMonth >= deliveryMonth);
 
-          lastC: null,
-          lastD: null,
-          nextC: null,
-          nextD: null
-        });
-      }
+  if (reachedDelivery) {
 
-      /* Reducir backlog sin negativos */
-      if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
-      ACS_SLOTS[entry.manufacturer] =
-        Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
+    /* 👍 ENTREGAR AVIONES */
+    for (let i = 0; i < entry.qty; i++) {
+      myFleet.push({
+        id: "AC-" + Date.now() + "-" + i,
+        model: entry.model,
+        manufacturer: entry.manufacturer,
+        year: now.getUTCFullYear(),
+        delivered: d.toISOString(),
+        image: entry.image,
+        status: "Active",
+        hours: 0,
+        cycles: 0,
+        condition: 100,
+        registration: (typeof ACS_generateRegistration === "function")
+          ? ACS_generateRegistration()
+          : ("N" + Math.floor(10000 + Math.random() * 90000)),
+        data: resolveAircraftDB().find(m =>
+          m.manufacturer === entry.manufacturer &&
+          m.model === entry.model
+        ) || {},
+        lastC: null,
+        lastD: null,
+        nextC: null,
+        nextD: null
+      });
+    }
 
-      /* ======== PAGO FINAL (BUY NEW) ======== */
-      if (entry.type === "BUY") {
+    /* Reducir backlog (SLOT_CALENDAR ya actualizado en la compra) */
+    if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
+    ACS_SLOTS[entry.manufacturer] =
+      Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
 
-        const finalPay = entry.buy_final_payment || 0;
-
-        if (finalPay > 0 &&
-            typeof ACS_registerExpense === "function") {
-
-          ACS_registerExpense(
-            "new_aircraft_final_payment",
-            finalPay,
-            `Final delivery payment — ${entry.model}`
-          );
-        }
-
-        console.log(
-          `💰 Final payment applied for ${entry.model}: $${finalPay}`
+    /* Pago final si es BUY */
+    if (entry.type === "BUY") {
+      const finalPay = entry.buy_final_payment || 0;
+      if (finalPay > 0 && typeof ACS_registerExpense === "function") {
+        ACS_registerExpense(
+          "new_aircraft_final_payment",
+          finalPay,
+          `Final delivery payment — ${entry.model}`
         );
       }
-
-    } else {
-      /* Todavía no llega la fecha, mantener en pending */
-      remaining.push(entry);
     }
-  });
+
+  } else {
+    /* Mantener pendiente */
+    remaining.push(entry);
+  }
+});
 
   /* 4) Guardar resultados */
   localStorage.setItem("ACS_PendingAircraft", JSON.stringify(remaining));
