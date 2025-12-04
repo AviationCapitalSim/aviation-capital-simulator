@@ -653,7 +653,7 @@ document.addEventListener("click", e => {
   checkDeliveries();
 
   console.log("🟩 Buy Aircraft Cards System — Ready");
-});
+
 
 /* ============================================================
    11) AUTO-DELIVERY ENGINE — (ACS_TIME Sync v3.2)
