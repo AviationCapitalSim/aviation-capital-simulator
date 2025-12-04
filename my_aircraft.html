@@ -314,14 +314,31 @@
       margin: 0.3rem 0;
     }
 
-  /* 🟦 C.1 — Row Style for Pending Deliveries */
+/* ============================================================
+   🟦 Status Colors (Pending / Active)
+   ============================================================ */
 
-  .pending-row {
+/* Pending row: amarillo suave */
+.pending-row {
   background: rgba(255, 179, 0, 0.10);
   border-left: 4px solid #FFB300;
 }
+
+/* Texto Pending */
 .pending-text {
   color: #FFB300;
+  font-weight: 600;
+}
+
+/* Active row: verde suave */
+.active-row {
+  background: rgba(0,255,120,0.10);
+  border-left: 4px solid #00c76a;
+}
+
+/* Texto Active */
+.active-text {
+  color: #00e68a;
   font-weight: 600;
 }
 
@@ -360,12 +377,6 @@
   <p class="acs-subtitle">Your complete fleet overview, synchronized with global time.</p>
 </section>
 
-  <!-- ============================================================
-     🟦 Pending Deliveries Section
-     ============================================================ -->
-
-  <h2 class="sectionTitle">Pending Deliveries</h2>
-<div id="pendingList" class="aircraft-grid"></div>
 
   <!-- === FILTER BAR === -->
 <div class="filter-bar">
