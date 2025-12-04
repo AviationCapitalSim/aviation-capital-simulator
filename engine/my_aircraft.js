@@ -241,22 +241,31 @@ function ensureEmptyRows() {
   `;
 }
 
-// ============================================================
-// === INITIALIZATION =========================================
-// ============================================================
+/* ============================================================
+   === INITIALIZATION (SAFE ORDER) ============================
+   ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  // Cargar flota
   fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+
+  // Primero procesar PENDING
   updatePendingDeliveries();
+
+  // Construir filtros
   populateFilterOptions();
+
+  // Render tabla
   renderFleetTable();
-   
-  // 🟦 Solo filas vacías cuando NO hay flota
-   
+  renderPendingDeliveriesTable();
+
+  // Si no hay flota → filas vacías
   if (fleet.length === 0) {
     ensureEmptyRows();
   }
 });
+
 
 // ============================================================
 // === TIME ENGINE SYNC =======================================
