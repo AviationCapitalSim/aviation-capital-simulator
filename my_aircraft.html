@@ -313,7 +313,19 @@
     .modal-box p {
       margin: 0.3rem 0;
     }
-  </style>
+
+  /* 🟦 C.1 — Row Style for Pending Deliveries */
+
+  .pending-row {
+  background: rgba(255, 179, 0, 0.10);
+  border-left: 4px solid #FFB300;
+}
+.pending-text {
+  color: #FFB300;
+  font-weight: 600;
+}
+
+</style>
 </head>
 
 <body>
@@ -342,12 +354,20 @@
 </header>
 
 <!-- PAGE TITLE -->
+  
 <section class="acs-intro">
   <h2 class="acs-title">🛫 My Aircraft</h2>
   <p class="acs-subtitle">Your complete fleet overview, synchronized with global time.</p>
 </section>
 
-<!-- === FILTER BAR === -->
+  <!-- ============================================================
+     🟦 Pending Deliveries Section
+     ============================================================ -->
+
+  <h2 class="sectionTitle">Pending Deliveries</h2>
+<div id="pendingList" class="aircraft-grid"></div>
+
+  <!-- === FILTER BAR === -->
 <div class="filter-bar">
   <div class="filter-group">
     <select id="filterModel">
@@ -460,6 +480,7 @@
 
 
 <!-- === ACS AIRCRAFT REGISTRATION MODAL — DARK PANEL === -->
+  
 <div id="regModal" class="reg-modal-bg">
   <div class="reg-modal-box">
     <span class="reg-modal-close" onclick="closeRegModal()">✖</span>
