@@ -156,7 +156,10 @@ function renderPendingDeliveriesTable() {
     const d = new Date(entry.deliveryDate).toUTCString().substring(5, 16);
 
     const card = document.createElement("div");
-    card.classList.add("pending-card");
+    card.className = entry.status === "Pending Delivery"
+    ? "pending-card"
+    : "active-card";
+
 
     card.innerHTML = `
       <div class="p-model">${entry.manufacturer} ${entry.model}</div>
