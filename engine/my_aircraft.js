@@ -16,21 +16,21 @@
 
 const ACS_FLEET_KEY = "ACS_MyAircraft";
 
-/* 🟦 C.1 — Cargar flota + pending */
+/* ============================================================
+   🟦 C.1 — Cargar flota activa + pendientes
+   ============================================================ */
 
-const ACS_FLEET_KEY = "ACS_MyAircraft";
-
-let fleetActive = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+let fleetActive  = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 let fleetPending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
-/* Fusionar ambas listas para el render */
+/* Fusionar ambas listas para render */
 
 let fleet = [...fleetActive, ...fleetPending];
 
 // === Guardar cambios ===
 
 function saveFleet() {
-  localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleet));
+  localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetActive));
 }
 
 // === Obtener tiempo sim actual ===
