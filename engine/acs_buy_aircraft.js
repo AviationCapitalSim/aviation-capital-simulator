@@ -621,33 +621,33 @@ document.addEventListener("DOMContentLoaded", () => {
         ACS_addAlert("order", "low", `Aircraft order: ${entry.model} x${entry.qty}`);
       }
 
-      /* 7) REDIRECCIONAR */
+            /* 7) REDIRECCIONAR */
       alert("✅ Order placed successfully!");
       closeBuyModal();
       setTimeout(() => {
         window.location.href = "my_aircraft.html";
       }, 300);
 
-    });
-  }
+    }); // ← Cierra confirmBtn.addEventListener
+  }     // ← Cierra if(confirmBtn)
 
-});  // ← Cierre completo y correcto de DOMContentLoaded
+});    // ← Cierra DOMContentLoaded (ÚNICA Y CORRECTA)
 
+/* ---- Card click → open modal ---- */
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".view-options-btn");
+  if (!btn) return;
 
-  /* ---- Card click → open modal ---- */
-  document.addEventListener("click", e => {
-    const btn = e.target.closest(".view-options-btn");
-    if (!btn) return;
+  const idx = parseInt(btn.dataset.index);
+  const ac = ACS_currentRenderedList[idx];   // LISTA FILTRADA REAL
 
-    const idx = parseInt(btn.dataset.index);
-    const base = getAircraftBase();
-    const ac = base[idx];
-    if (!ac) return;
+  if (!ac) return;
 
-    openBuyModal(ac);
-  });
+  openBuyModal(ac);
+});
 
   /* ---- INIT ---- */
+
   buildFilterChips();
   renderCards("All");
   checkDeliveries();
