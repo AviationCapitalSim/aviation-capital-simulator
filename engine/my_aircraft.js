@@ -267,17 +267,23 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// ============================================================
-// === TIME ENGINE SYNC =======================================
-// ============================================================
+/* ============================================================
+   === TIME ENGINE SYNC =======================================
+   ============================================================ */
 
 if (typeof registerTimeListener === "function") {
   registerTimeListener(() => {
+
+    // 1) Recargar flota
     fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+
+    // 2) Procesar entregas pendientes
     updatePendingDeliveries();
+
+    // 3) Actualizar tabla
     renderFleetTable();
 
-    // 🟦 Solo si no hay aviones
+    // 4) Filas vacías si no hay aviones
     if (fleet.length === 0) {
       ensureEmptyRows();
     }
