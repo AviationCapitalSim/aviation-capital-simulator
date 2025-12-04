@@ -35,6 +35,68 @@ function getSimTime() {
   return new Date("1940-01-01T00:00:00Z");
 }
 
+/* ============================================================
+   🟦 C.2 — Pending Deliveries (sync with Pending DB)
+   ============================================================ */
+
+function updatePendingDeliveries() {
+
+  const now = getSimTime();
+
+  let changed = false;
+  let activeFleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  let pendings = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+  const stillPending = [];
+
+  pendings.forEach(entry => {
+    const d = new Date(entry.deliveryDate);
+
+    if (now >= d) {
+
+      // Convertir PENDING → ACTIVE
+      for (let i = 0; i < entry.qty; i++) {
+        activeFleet.push({
+          registration: "UNASSIGNED",
+          manufacturer: entry.manufacturer,
+          model: entry.model,
+          family: "",
+          status: "Active",
+          hours: 0,
+          cycles: 0,
+          condition: 100,
+          base: "—",
+
+          // 🟦 HERE — fecha final de entrega
+          deliveredDate: d.toISOString(),
+
+          // 🟦 Limpieza
+          deliveryDate: null,
+
+          age: 0
+        });
+      }
+
+      changed = true;
+
+    } else {
+      stillPending.push(entry);
+    }
+  });
+
+  // Guardar cambios
+  if (changed) {
+    localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(activeFleet));
+  }
+
+  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(stillPending));
+
+  // Actualizar listas globales
+  fleetActive  = activeFleet;
+  fleetPending = stillPending;
+
+  fleet = [...fleetActive, ...fleetPending];
+}
 
 /* ============================================================
    🟦 C.3 — Render FULL TABLE (Active + Pending)
