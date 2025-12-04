@@ -316,10 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4) Render tabla principal
   renderFleetTable();
 
-  // 5) Render tarjetas “Pending Deliveries”
-  renderPendingDeliveriesTable();
 
-  // 6) Si no hay flota → filas vacías
+  // 5) Si no hay flota → filas vacías
   if (fleet.length === 0) {
     ensureEmptyRows();
   }
@@ -340,11 +338,8 @@ if (typeof registerTimeListener === "function") {
     // 2) Procesar entregas
     updatePendingDeliveries();
 
-    // 3) Render tablas
-    renderFleetTable();
-    renderPendingDeliveriesTable();
-
-    // 4) Si no hay flota → filas vacías
+  
+    // 3) Si no hay flota → filas vacías
     if (fleet.length === 0) {
       ensureEmptyRows();
     }
