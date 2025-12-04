@@ -269,6 +269,8 @@ function getAircraftImage(ac) {
 /* ============================================================
    6) RENDER DE TARJETAS
    ============================================================ */
+let ACS_currentRenderedList = [];
+
 function renderCards(filterManufacturer = "All") {
   const grid = document.getElementById("cardsGrid");
   if (!grid) return;
@@ -278,7 +280,8 @@ function renderCards(filterManufacturer = "All") {
     filterManufacturer === "All"
       ? base
       : base.filter(a => a.manufacturer === filterManufacturer);
-
+      ACS_currentRenderedList = list;   // <<— GUARDA LA LISTA FILTRADA
+   
   grid.innerHTML = "";
 
   list.forEach((ac, idx) => {
@@ -406,6 +409,7 @@ function calculateDeliveryDate(ac, qty) {
 /* ============================================================
    9) MODAL SUMMARY — BUY + LEASE
    ============================================================ */
+
 function updateModalSummary() {
   if (!selectedAircraft) return;
 
@@ -422,6 +426,7 @@ function updateModalSummary() {
   summary += `Estimated delivery: <b>${d}</b><br>`;
 
   /* BUY NEW */
+   
   if (op === "BUY") {
     const pct = parseInt(document.getElementById("modalBuyInitialPct").value) || 100;
     const total = price * qty;
@@ -437,6 +442,7 @@ function updateModalSummary() {
   }
 
   /* LEASE NEW */
+   
   if (op === "LEASE") {
     const years =
       parseInt(document.getElementById("modalLeaseYears").value) || 10;
@@ -462,9 +468,11 @@ function updateModalSummary() {
 
   document.getElementById("modalSummary").innerHTML = summary;
 }
+
 /* ============================================================
    10) CONFIRM BUY / LEASE
    ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
   const opSel = document.getElementById("modalOperation");
@@ -500,6 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ============================================================
      CONFIRMAR ORDEN
      ============================================================ */
+   
   if (confirmBtn) {
     confirmBtn.addEventListener("click", () => {
 
@@ -538,6 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
       /* ============================================================
          BUY NEW — Registro financiero + entry completo
          ============================================================ */
+       
       if (op === "BUY") {
 
         const pct   = parseInt(document.getElementById("modalBuyInitialPct").value) || 100;
@@ -559,6 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
       /* ============================================================
          LEASE NEW — Registrar contrato activo + pago inicial
          ============================================================ */
+       
       if (op === "LEASE") {
 
         const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
@@ -599,28 +610,29 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       /* ============================================================
-         5) Guardar en PENDING
+         5) GUARDAR EN PENDING
          ============================================================ */
+       
       pending.push(entry);
       localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
 
-      /* ============================================================
-         6) ALERTA VISUAL
-         ============================================================ */
+      /* 6) ALERTA VISUAL */
       if (typeof ACS_addAlert === "function") {
         ACS_addAlert("order", "low", `Aircraft order: ${entry.model} x${entry.qty}`);
       }
 
-      /* ============================================================
-         7) REDIRECCIONAR
-         ============================================================ */
+      /* 7) REDIRECCIONAR */
       alert("✅ Order placed successfully!");
       closeBuyModal();
       setTimeout(() => {
         window.location.href = "my_aircraft.html";
       }, 300);
+
     });
   }
+
+});  // ← Cierre completo y correcto de DOMContentLoaded
+
 
   /* ---- Card click → open modal ---- */
   document.addEventListener("click", e => {
