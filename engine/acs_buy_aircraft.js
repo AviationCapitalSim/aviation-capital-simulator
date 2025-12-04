@@ -448,6 +448,25 @@ function updateModalSummary() {
 
   document.getElementById("modalSummary").innerHTML = summary;
 }
+
+/* LEASE NEW — Summary */
+
+if (op === "LEASE") {
+
+  const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
+
+  const pctSel = document.getElementById("modalInitialPct");
+  const pct = pctSel ? parseInt(pctSel.value) : 50;
+
+  const total = price * qty;
+  const initialPay = total * (pct / 100);
+
+  summary += `
+    Lease Duration: <b>${years} years</b><br>
+    Initial Payment: <b>$${(initialPay / 1_000_000).toFixed(2)}M</b><br>
+  `;
+}
+
 /* ============================================================
    10) CONFIRM BUY / LEASE
    ============================================================ */
@@ -469,11 +488,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* Listener del porcentaje inicial (50 / 75 / 100) */
+   
   const buyPctSel = document.getElementById("modalBuyInitialPct");
   if (buyPctSel) {
     buyPctSel.addEventListener("change", updateModalSummary);
   }
 
+   /* Listener del porcentaje inicial del LEASE */
+   
+  const leasePctSel = document.getElementById("modalInitialPct");
+  if (leasePctSel) {
+  leasePctSel.addEventListener("change", updateModalSummary);
+}
+   
   const qtyInp = document.getElementById("modalQty");
   const leaseYears = document.getElementById("modalLeaseYears");
 
@@ -552,7 +579,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const total      = ac.price_acs_usd * qty;
   const initialPay = total * (pct / 100);
+  /* Cuota mensual realista */
+     
+  let monthlyPayment = 0;
 
+  if (years === 5) {
+  monthlyPayment = Math.round((ac.price_acs_usd * 0.90) / (5 * 12));
+} else if (years === 10) {
+  monthlyPayment = Math.round((ac.price_acs_usd * 0.70) / (10 * 12));
+} else if (years === 15) {
+  monthlyPayment = Math.round((ac.price_acs_usd * 0.55) / (15 * 12));
+}
+     
   /* 📌 10.2.2 — Guardar en entry (Pending Aircraft) */
      
   entry.years          = years;
