@@ -108,6 +108,28 @@ const ACS_ENGINE_SPECS = {
 };
 
 /* ============================================================
+   0) SLOT CALENDAR SYSTEM — v1.0 (Backlog mensual real)
+   ============================================================ */
+
+let ACS_SLOT_CALENDAR = JSON.parse(localStorage.getItem("ACS_SLOT_CALENDAR") || "{}");
+
+function saveSlotCalendar() {
+  localStorage.setItem("ACS_SLOT_CALENDAR", JSON.stringify(ACS_SLOT_CALENDAR));
+}
+
+/* Asegurar estructura */
+function ensureManufacturerCalendar(manu, year) {
+  if (!ACS_SLOT_CALENDAR[manu]) ACS_SLOT_CALENDAR[manu] = {};
+  if (!ACS_SLOT_CALENDAR[manu][year]) ACS_SLOT_CALENDAR[manu][year] = {};
+
+  for (let m = 0; m < 12; m++) {
+    if (typeof ACS_SLOT_CALENDAR[manu][year][m] !== "number") {
+      ACS_SLOT_CALENDAR[manu][year][m] = 0;
+    }
+  }
+}
+
+/* ============================================================
    1) SLOTS POR FABRICANTE
    ============================================================ */
 const ACS_MANUFACTURER_SLOTS = {
@@ -323,61 +345,69 @@ function closeBuyModal() {
   document.getElementById("buyModal").style.display = "none";
 }
 
-// ============================================================
-// REAL DELIVERY DATE — Fully synchronized with ACS_TIME Engine
-// ============================================================
+/* ============================================================
+   8) DELIVERY ENGINE — Month-based backlog v1.0
+   ------------------------------------------------------------
+   • Cada fabricante produce 5 aviones por mes
+   • Mínimo 2 meses para cualquier delivery
+   • Backlog por mes basado en ACS_SLOT_CALENDAR
+   ============================================================ */
 
 function calculateDeliveryDate(ac, qty) {
 
-  // 1️⃣ Tomar la fecha REAL del Sim Engine
+  const manu = ac.manufacturer;
   const now = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
     ? new Date(ACS_TIME.currentTime)
     : new Date();
 
-  const currentYear  = now.getUTCFullYear();
-  const currentMonth = now.getUTCMonth();   // ⭐ MUY IMPORTANTE
+  let year = now.getUTCFullYear();
+  let month = now.getUTCMonth();
 
-  // 2️⃣ Capacidad del fabricante (slots)
-  const manu = ac.manufacturer;
-  const capacity = ACS_MANUFACTURER_SLOTS[manu] || 20;
+  const MIN_MONTHS = 2;
+  const MONTHLY_CAPACITY = 5;
 
-  if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
-
-  // 3️⃣ Backlog real
-  const backlog = ACS_SLOTS[manu];
-  const total = backlog + qty;
-
-  // 4️⃣ Cuántos años toma entregar
-  const yearsNeeded = total / capacity;
-
-  const deliveryYear = currentYear + Math.floor(yearsNeeded);
-  const addMonths = Math.floor((yearsNeeded % 1) * 12);
-
-  // 5️⃣ Mezclamos el MES DEL RELOJ + meses del backlog
-  const deliveryMonth = currentMonth + addMonths;
-
-  /* 🟦 PASO 3 — Tiempo mínimo de fabricación (2 meses) */
-  const MIN_MONTHS = 2; // ✔ 2 meses mínimo
-
-  let finalYear = deliveryYear;
-  let finalMonth = deliveryMonth;
-
-  // Diferencia total de meses entre now y la entrega calculada
-  const monthsDifference =
-    (deliveryYear - currentYear) * 12 +
-    (deliveryMonth - currentMonth);
-
-  // Si backlog produce menos de 2 meses → aplicar mínimo
-  if (monthsDifference < MIN_MONTHS) {
-    finalYear = currentYear;
-    finalMonth = currentMonth + MIN_MONTHS;
+  /* 1) Saltar mínimo 2 meses */
+  month += MIN_MONTHS;
+  if (month >= 12) {
+    year += Math.floor(month / 12);
+    month = month % 12;
   }
 
-  // 6️⃣ Fecha final (día 15 estable)
-  return new Date(Date.UTC(finalYear, finalMonth, 15));
+  /* 2) Buscar un mes con capacidad */
+  let remaining = qty;
+
+  while (remaining > 0) {
+    ensureManufacturerCalendar(manu, year);
+
+    const used = ACS_SLOT_CALENDAR[manu][year][month];
+
+    if (used < MONTHLY_CAPACITY) {
+      const free = MONTHLY_CAPACITY - used;
+
+      if (remaining <= free) {
+        ACS_SLOT_CALENDAR[manu][year][month] += remaining;
+        remaining = 0;
+      } else {
+        ACS_SLOT_CALENDAR[manu][year][month] = MONTHLY_CAPACITY;
+        remaining -= free;
+      }
+
+    } else {
+      /* mes lleno → avanzar */
+      month++;
+      if (month >= 12) {
+        year++;
+        month = 0;
+      }
+      continue;
+    }
+  }
+
+  saveSlotCalendar();
+
+  /* Día 15 fijo */
+  return new Date(Date.UTC(year, month, 15));
 }
-
-
 
 /* ============================================================
    9) MODAL SUMMARY
