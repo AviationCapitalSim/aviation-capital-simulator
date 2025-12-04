@@ -583,49 +583,40 @@ document.addEventListener("DOMContentLoaded", () => {
        
   if (op === "LEASE") {
 
-    // Datos base
-    const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-    const total = ac.price_acs_usd * qty;
+  const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
 
-    // 50% inicial fijo
-    const initialPct  = 50;
-    const initialPay  = total * (initialPct / 100);
+  const pct = 50;
+  const total = ac.price_acs_usd * qty;
+  const initialPay = total * (pct / 100);
 
-    // Resto en cuotas mensuales
-    const remaining   = total - initialPay;
-    const months      = years * 12;
-    const monthlyPay  = Math.round(remaining / months);
+  entry.years = years;
+  entry.initialPct = pct;
+  entry.initialPayment = initialPay;
 
-    // Guardar info básica en el entry (Pending Aircraft)
-    entry.years          = years;
-    entry.initialPct     = initialPct;
-    entry.initialPayment = initialPay;
-    entry.monthlyPayment = monthlyPay;
-
-    // Registrar gasto inicial en Finance
-    if (typeof ACS_registerExpense === "function") {
-      ACS_registerExpense("leasing", initialPay, `Lease initial — ${ac.model}`);
-    }
-
-    // Registrar contrato activo
-    let activeLeases = JSON.parse(localStorage.getItem("ACS_ACTIVE_LEASES") || "[]");
-
-    activeLeases.push({
-      id: entry.id,
-      manufacturer: ac.manufacturer,
-      model: ac.model,
-      qty,
-      years,
-      startDate: entry.created,
-      deliveryDate: entry.deliveryDate,
-      initialPct: initialPct,
-      initialPayment: initialPay,
-      monthlyPayment: monthlyPay,
-      image: selectedAircraftImage
-    });
-
-    localStorage.setItem("ACS_ACTIVE_LEASES", JSON.stringify(activeLeases));
+  if (typeof ACS_registerExpense === "function") {
+    ACS_registerExpense("leasing", initialPay, `Lease initial — ${ac.model}`);
   }
+
+  let activeLeases = JSON.parse(localStorage.getItem("ACS_ACTIVE_LEASES") || "[]");
+
+  const monthlyPayment = (total - initialPay) / (years * 12);
+
+  activeLeases.push({
+    id: entry.id,
+    manufacturer: ac.manufacturer,
+    model: ac.model,
+    qty,
+    years: years,
+    startDate: entry.created,
+    deliveryDate: entry.deliveryDate,
+    initialPct: pct,
+    initialPayment: initialPay,
+    monthlyPayment: monthlyPayment,
+    image: selectedAircraftImage
+  });
+
+  localStorage.setItem("ACS_ACTIVE_LEASES", JSON.stringify(activeLeases));
+}  // ✅ ESTA LLAVE FALTABA
 
   /* ============================================================
      🟦 A.1 — Registrar contrato activo en sistema financiero
