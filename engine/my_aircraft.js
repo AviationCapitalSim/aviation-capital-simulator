@@ -17,24 +17,17 @@
 const ACS_FLEET_KEY = "ACS_MyAircraft";
 
 /* ============================================================
-   🟦 C.1 — Cargar flota activa + pendientes
+   🟦 C.1 — Cargar flota ACTIVA
    ============================================================ */
 
-let fleetActive  = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-let fleetPending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+let fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
-/* Fusionar ambas listas para render */
-
-let fleet = [...fleetActive, ...fleetPending];
-
-// === Guardar cambios ===
-
+/* Guardar cambios correctamente */
 function saveFleet() {
-  localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetActive));
+  localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleet));
 }
 
-// === Obtener tiempo sim actual ===
-
+/* Obtener tiempo sim actual */
 function getSimTime() {
   if (window.ACS_getSimTime && typeof window.ACS_getSimTime === "function") {
     return new Date(window.ACS_getSimTime());
@@ -138,6 +131,40 @@ function renderFleetTable() {
     `;
 
     fleetTableBody.appendChild(row);
+  });
+}
+
+/* ============================================================
+   🟦 C.2 — Render Pending Deliveries (Clean ACS version)
+   ============================================================ */
+
+function renderPendingDeliveriesTable() {
+
+  const container = document.getElementById("pendingList");
+  if (!container) return;
+
+  const pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+  container.innerHTML = "";
+
+  if (pending.length === 0) {
+    container.innerHTML = `<div class="emptyBox">No pending deliveries</div>`;
+    return;
+  }
+
+  pending.forEach(entry => {
+    const d = new Date(entry.deliveryDate).toUTCString().substring(5, 16);
+
+    const card = document.createElement("div");
+    card.classList.add("pending-card");
+
+    card.innerHTML = `
+      <div class="p-model">${entry.manufacturer} ${entry.model}</div>
+      <div class="p-qty">Qty: ${entry.qty}</div>
+      <div class="p-date">Delivery: <b>${d}</b></div>
+    `;
+
+    container.appendChild(card);
   });
 }
 
@@ -266,8 +293,10 @@ document.addEventListener("DOMContentLoaded", () => {
   updatePendingDeliveries();
   populateFilterOptions();
   renderFleetTable();
-
+  renderPendingDeliveriesTable();
+   
   // 🟦 Solo filas vacías cuando NO hay flota
+   
   if (fleet.length === 0) {
     ensureEmptyRows();
   }
