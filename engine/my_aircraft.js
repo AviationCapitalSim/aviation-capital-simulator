@@ -128,7 +128,6 @@ function renderFleetTable() {
 
     const row = document.createElement("tr");
 
-    // === Estilo fila ===
     if (ac.status === "Pending Delivery") {
       row.classList.add("pending-row");
     } else {
@@ -145,6 +144,7 @@ function renderFleetTable() {
 
       <td>${ac.hours}</td>
       <td>${ac.cycles}</td>
+
       <td>${ac.condition}${ac.condition !== "—" ? "%" : ""}</td>
 
       <td>${ac.nextC}</td>
@@ -153,50 +153,11 @@ function renderFleetTable() {
       <td>${ac.base}</td>
 
       <td>
-        ${ac.status === "Pending Delivery"
-          ? "—"
-          : `<button class="btn-action" onclick="openAircraftModal('${ac.registration}')">View</button>`
-        }
+        <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">View</button>
       </td>
     `;
 
     fleetTableBody.appendChild(row);
-  });
-}
-
-
-
-/* ============================================================
-   🟦 C.2 — Render Pending Deliveries (Clean ACS version)
-   ============================================================ */
-
-function renderPendingDeliveriesTable() {
-
-  const container = document.getElementById("pendingList");
-  if (!container) return;
-
-  const pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
-
-  container.innerHTML = "";
-
-  if (pending.length === 0) {
-    container.innerHTML = `<div class="emptyBox">No pending deliveries</div>`;
-    return;
-  }
-
-  pending.forEach(entry => {
-    const d = new Date(entry.deliveryDate).toUTCString().substring(5, 16);
-
-    const card = document.createElement("div");
-    card.classList.add("pending-card");
-
-    card.innerHTML = `
-      <div class="p-model">${entry.manufacturer} ${entry.model}</div>
-      <div class="p-qty">Qty: ${entry.qty}</div>
-      <div class="p-date">Delivery: <b>${d}</b></div>
-    `;
-
-    container.appendChild(card);
   });
 }
 
