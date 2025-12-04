@@ -244,6 +244,27 @@ function openAircraftModal(reg) {
   document.getElementById("mFamily").textContent = ac.family || "—";
   document.getElementById("mBase").textContent = ac.base || "—";
   document.getElementById("mStatus").textContent = ac.status;
+  
+   // Delivery Date (si está pendiente)
+   
+  if (ac.status === "Pending Delivery" && ac.deliveryDate) {
+  const d = new Date(ac.deliveryDate);
+  document.getElementById("mDeliveryDate").textContent =
+    d.toUTCString().substring(5, 16);
+  } else {
+  document.getElementById("mDeliveryDate").textContent = "—";
+}
+
+  // Delivered Date (si ya fue entregado)
+   
+  if (ac.deliveredDate) {
+  const dd = new Date(ac.deliveredDate);
+  document.getElementById("mDeliveredDate").textContent =
+    dd.toUTCString().substring(5, 16);
+  } else {
+  document.getElementById("mDeliveredDate").textContent = "—";
+}
+   
   document.getElementById("mCondition").textContent = ac.condition;
   document.getElementById("mHours").textContent = ac.hours;
   document.getElementById("mCycles").textContent = ac.cycles;
