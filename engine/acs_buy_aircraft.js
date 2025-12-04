@@ -450,24 +450,35 @@ function updateModalSummary() {
 }
 
 /* LEASE NEW — Summary */
+
 const opSel = document.getElementById("modalOperation").value;
 
-if (opSel === "LEASE") {
+  /* LEASE NEW — Summary (50% inicial, resto en cuotas) */
+  if (op === "LEASE") {
+    const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
 
-  const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
+    // Precio total del/los aviones
+    const total = price * qty;
 
-  const pctSel = document.getElementById("modalInitialPct");
-  const pct = pctSel ? parseInt(pctSel.value) : 50;
+    // 50% inicial fijo
+    const initialPct  = 50;
+    const initialPay  = total * (initialPct / 100);
 
-  const total = price * qty;
-  const initialPay = total * (pct / 100);
+    // Resto a pagar en cuotas mensuales
+    const remaining   = total - initialPay;
+    const months      = years * 12;
+    const monthlyPay  = Math.round(remaining / months);
 
-  summary += `
-    Lease Duration: <b>${years} years</b><br>
-    Initial Payment: <b>$${(initialPay / 1_000_000).toFixed(2)}M</b><br>
-  `;
+    summary += `
+      Lease Duration: <b>${years} years</b><br>
+      Initial Payment (50%): <b>$${(initialPay / 1_000_000).toFixed(2)}M</b><br>
+      Monthly Payment (~): <b>$${monthlyPay.toLocaleString()}</b><br>
+      Total Aircraft Value: <b>$${(total / 1_000_000).toFixed(2)}M</b>
+    `;
+  }
+
+  document.getElementById("modalSummary").innerHTML = summary;
 }
-
 
 /* ============================================================
    10) CONFIRM BUY / LEASE
@@ -512,7 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const confirmBtn = document.getElementById("modalConfirm");
 
   /* ============================================================
-     10️⃣ PASO 3 — CONFIRMAR ORDEN (BUY NEW / LEASE NEW)
+     10️ PASO 3 — CONFIRMAR ORDEN (BUY NEW / LEASE NEW)
      ============================================================ */
   if (confirmBtn) {
     confirmBtn.addEventListener("click", () => {
@@ -566,43 +577,54 @@ document.addEventListener("DOMContentLoaded", () => {
           ACS_registerExpense("new_aircraft_purchase", initialPay, `Initial payment — ${ac.model}`);
         }
       }
-       
-      /* ============================================================
-     10.2 — LEASE MODULE (Pago inicial + Registro del contrato) 🟦
-   ============================================================ */
+      
 
+   /* 10.2 — LEASE MODULE (Pago inicial + Registro del contrato) 🟦 */
+       
   if (op === "LEASE") {
 
-  /* 📌 10.2.1 — Datos base */
-     
-  const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-  const pctSel = document.getElementById("modalInitialPct");
-  const pct = pctSel ? parseInt(pctSel.value) : 50;
+    // Datos base
+    const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
+    const total = ac.price_acs_usd * qty;
 
-  const total      = ac.price_acs_usd * qty;
-  const initialPay = total * (pct / 100);
-  /* Cuota mensual realista */
-     
-  let monthlyPayment = 0;
+    // 50% inicial fijo
+    const initialPct  = 50;
+    const initialPay  = total * (initialPct / 100);
 
-  if (years === 5) {
-  monthlyPayment = Math.round((ac.price_acs_usd * 0.90) / (5 * 12));
-} else if (years === 10) {
-  monthlyPayment = Math.round((ac.price_acs_usd * 0.70) / (10 * 12));
-} else if (years === 15) {
-  monthlyPayment = Math.round((ac.price_acs_usd * 0.55) / (15 * 12));
-}
-     
-  /* 📌 10.2.2 — Guardar en entry (Pending Aircraft) */
-     
-  entry.years          = years;
-  entry.initialPct     = pct;
-  entry.initialPayment = initialPay;
+    // Resto en cuotas mensuales
+    const remaining   = total - initialPay;
+    const months      = years * 12;
+    const monthlyPay  = Math.round(remaining / months);
 
-  /* 📌 10.2.3 — Registrar pago inicial */
-     
-  if (typeof ACS_registerExpense === "function") {
-    ACS_registerExpense("leasing", initialPay, `Lease initial — ${ac.model}`);
+    // Guardar info básica en el entry (Pending Aircraft)
+    entry.years          = years;
+    entry.initialPct     = initialPct;
+    entry.initialPayment = initialPay;
+    entry.monthlyPayment = monthlyPay;
+
+    // Registrar gasto inicial en Finance
+    if (typeof ACS_registerExpense === "function") {
+      ACS_registerExpense("leasing", initialPay, `Lease initial — ${ac.model}`);
+    }
+
+    // Registrar contrato activo
+    let activeLeases = JSON.parse(localStorage.getItem("ACS_ACTIVE_LEASES") || "[]");
+
+    activeLeases.push({
+      id: entry.id,
+      manufacturer: ac.manufacturer,
+      model: ac.model,
+      qty,
+      years,
+      startDate: entry.created,
+      deliveryDate: entry.deliveryDate,
+      initialPct: initialPct,
+      initialPayment: initialPay,
+      monthlyPayment: monthlyPay,
+      image: selectedAircraftImage
+    });
+
+    localStorage.setItem("ACS_ACTIVE_LEASES", JSON.stringify(activeLeases));
   }
 
   /* ============================================================
