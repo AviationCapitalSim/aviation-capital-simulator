@@ -450,8 +450,9 @@ function updateModalSummary() {
 }
 
 /* LEASE NEW — Summary */
+const opSel = document.getElementById("modalOperation").value;
 
-if (op === "LEASE") {
+if (opSel === "LEASE") {
 
   const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
 
@@ -466,6 +467,7 @@ if (op === "LEASE") {
     Initial Payment: <b>$${(initialPay / 1_000_000).toFixed(2)}M</b><br>
   `;
 }
+
 
 /* ============================================================
    10) CONFIRM BUY / LEASE
