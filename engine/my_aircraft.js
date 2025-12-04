@@ -66,13 +66,7 @@ function updatePendingDeliveries() {
           cycles: 0,
           condition: 100,
           base: "—",
-
-          // 🟦 HERE — fecha final de entrega
-          deliveredDate: d.toISOString(),
-
-          // 🟦 Limpieza
-          deliveryDate: null,
-
+          delivered: d.toISOString(),
           age: 0
         });
       }
@@ -97,7 +91,6 @@ function updatePendingDeliveries() {
 
   fleet = [...fleetActive, ...fleetPending];
 }
-
 
 /* ============================================================
    🟦 C.3 — Render FULL TABLE (Active + Pending)
@@ -276,39 +269,6 @@ function openAircraftModal(reg) {
   document.getElementById("mCycles").textContent = ac.cycles;
   document.getElementById("mAge").textContent = ac.age || 0;
 
-   // === Delivery / Delivered Visibility ===
-   
-  const boxDeliv     = document.getElementById("mDeliveryDateBox");
-  const boxDelivered = document.getElementById("mDeliveredDateBox");
-  const d1           = document.getElementById("mDeliveryDate");
-  const d2           = document.getElementById("mDeliveredDate");
-
-  // Reset both
-  boxDeliv.style.display = "none";
-  boxDelivered.style.display = "none";
-
-  // PENDING → Mostrar Delivery Date
-   
-  if (ac.status === "Pending Delivery" && ac.deliveryDate) {
-  const d = new Date(ac.deliveryDate)
-              .toUTCString()
-              .substring(5,16);
-
-    d1.textContent = d;
-    boxDeliv.style.display = "block";
-}
-
-  // ACTIVE → Mostrar Delivered Date (si existe)
-   
-  if (ac.status === "Active" && ac.deliveredDate) {
-  const d = new Date(ac.deliveredDate)
-              .toUTCString()
-              .substring(5,16);
-
-  d2.textContent = d;
-  boxDelivered.style.display = "block";
-}
- 
   document.getElementById("mLastC").textContent = ac.lastC || "—";
   document.getElementById("mNextC").textContent = ac.nextC || "—";
   document.getElementById("mLastD").textContent = ac.lastD || "—";
