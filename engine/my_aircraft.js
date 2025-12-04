@@ -18,12 +18,25 @@ const ACS_FLEET_KEY = "ACS_MyAircraft";
 // === Cargar flota ===
 let fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
+/* 🟦 C.1 — Cargar flota + pending */
+
+const ACS_FLEET_KEY = "ACS_MyAircraft";
+
+let fleetActive = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+let fleetPending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+/* Fusionar ambas listas para el render */
+
+let fleet = [...fleetActive, ...fleetPending];
+
 // === Guardar cambios ===
+
 function saveFleet() {
   localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleet));
 }
 
 // === Obtener tiempo sim actual ===
+
 function getSimTime() {
   if (window.ACS_getSimTime && typeof window.ACS_getSimTime === "function") {
     return new Date(window.ACS_getSimTime());
@@ -31,39 +44,65 @@ function getSimTime() {
   return new Date("1940-01-01T00:00:00Z");
 }
 
-// ============================================================
-// === PENDING DELIVERY HANDLER ===============================
-// ============================================================
+/* ============================================================
+   🟦 C.2 — Pending Deliveries (sync with Pending DB)
+   ============================================================ */
 
 function updatePendingDeliveries() {
-  const now = getSimTime();
-  let changed = false;
 
-  fleet.forEach(ac => {
-    if (ac.status === "Pending Delivery" && ac.deliveryDate) {
-      const delivery = new Date(ac.deliveryDate);
-      if (now >= delivery) {
-        ac.status = "Active";
-        ac.deliveryDate = null;
-        changed = true;
+  const now = getSimTime();
+
+  let changed = false;
+  let activeFleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  let pendings = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+  const stillPending = [];
+
+  pendings.forEach(entry => {
+    const d = new Date(entry.deliveryDate);
+
+    if (now >= d) {
+      /* convertir a activo */
+      for (let i = 0; i < entry.qty; i++) {
+        activeFleet.push({
+          registration: "UNASSIGNED",
+          manufacturer: entry.manufacturer,
+          model: entry.model,
+          family: "",
+          status: "Active",
+          hours: 0,
+          cycles: 0,
+          condition: 100,
+          base: "—",
+          delivered: d.toISOString(),
+          age: 0
+        });
       }
+      changed = true;
+    } else {
+      stillPending.push(entry);
     }
   });
 
+  /* Guardar */
   if (changed) {
-    saveFleet();
-    renderFleetTable();
-    populateFilterOptions();
+    localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(activeFleet));
   }
+  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(stillPending));
+
+  /* Actualizar flota fusionada */
+  fleetActive = activeFleet;
+  fleetPending = stillPending;
+  fleet = [...fleetActive, ...fleetPending];
 }
 
-// ============================================================
-// === RENDER TABLE SYSTEM ====================================
-// ============================================================
 
-const fleetTableBody = document.getElementById("fleetTableBody");
+/* ============================================================
+   🟦 C.3 — Render FULL TABLE (Active + Pending)
+   ============================================================ */
 
 function renderFleetTable() {
+
   fleetTableBody.innerHTML = "";
 
   if (fleet.length === 0) {
@@ -72,23 +111,34 @@ function renderFleetTable() {
   }
 
   fleet.forEach(ac => {
+
     if (!passesFilters(ac)) return;
 
+    const isPending = ac.status === "Pending Delivery";
+
     const row = document.createElement("tr");
+
+    if (isPending) row.classList.add("pending-row");
+
+    const deliveryDate = ac.deliveryDate
+      ? new Date(ac.deliveryDate).toUTCString().substring(5, 16)
+      : "—";
+
     row.innerHTML = `
-      <td><span class="icon">✈️</span>${ac.registration || "UNASSIGNED"}</td>
+      <td>${isPending ? "—" : (ac.registration || "UNASSIGNED")}</td>
       <td>${ac.model}</td>
-      <td>${ac.status}</td>
-      <td>${ac.hours}</td>
-      <td>${ac.cycles}</td>
-      <td>${ac.condition}%</td>
-      <td>${ac.nextC || "—"}</td>
-      <td>${ac.nextD || "—"}</td>
-      <td>${ac.base || "—"}</td>
-      <td>
-        <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">View</button>
+      <td class="${isPending ? "pending-text" : ""}">
+        ${isPending ? "Pending Delivery" : ac.status}
       </td>
+      <td>${isPending ? "—" : ac.hours}</td>
+      <td>${isPending ? "—" : ac.cycles}</td>
+      <td>${isPending ? "—" : ac.condition + "%"}</td>
+      <td>${isPending ? "—" : (ac.nextC || "—")}</td>
+      <td>${isPending ? "—" : (ac.nextD || "—")}</td>
+      <td>${isPending ? deliveryDate : (ac.base || "—")}</td>
+      <td>${isPending ? "—" : `<button class="btn-action" onclick="openAircraftModal('${ac.registration}')">View</button>`}</td>
     `;
+
     fleetTableBody.appendChild(row);
   });
 }
