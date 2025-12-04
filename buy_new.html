@@ -624,12 +624,18 @@
           <!-- 🔷 LEASE OPTIONS -->
              
           <div id="leaseOptions" style="display:none; margin-top:0.4rem;">
-            <label class="modal-label">Lease Duration (years)</label>
-            <select id="modalLeaseYears">
-              <option value="5">5 years</option>
-              <option value="10" selected>10 years</option>
-              <option value="15">15 years</option>
-            </select>
+     <!-- ====================================================== -->
+          <!-- HTML-1 ⭐ NUEVO: Initial Lease Payment (%)            -->
+    <!-- Se coloca justo debajo de "Lease Duration (years)"     -->
+   <!-- ====================================================== -->
+
+         <label class="modal-label">Initial Lease Payment (%)</label>
+         <select id="modalInitialPct">
+         <option value="10">10% — Low upfront</option>
+         <option value="25">25% — Standard</option>
+         <option value="50" selected>50% — Balanced</option>
+         </select>
+
           </div>
              
         </div>
