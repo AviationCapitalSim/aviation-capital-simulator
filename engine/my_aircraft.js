@@ -13,10 +13,8 @@
    ============================================================ */
 
 // === STORAGE KEY ===
-const ACS_FLEET_KEY = "ACS_MyAircraft";
 
-// === Cargar flota ===
-let fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+const ACS_FLEET_KEY = "ACS_MyAircraft";
 
 /* 🟦 C.1 — Cargar flota + pending */
 
