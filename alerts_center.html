@@ -1,5 +1,5 @@
 <!-- === ACS ALERT CENTER — Qatar Luxury Edition === -->
-<!-- Version: Beta v1 | Date: 23 NOV 2025 -->
+<!-- Version: Rebuild v2 | Date: 05 DEC 2025 -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -17,7 +17,7 @@
 <style>
 
 /* ============================================================
-   === BASE LAYOUT (COPIED FROM DASHBOARD) =====================
+   === BASE LAYOUT ORIGINAL (NO EDITADO) =======================
    ============================================================ */
 
 body {
@@ -27,6 +27,7 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
+/* header original... */
 .acs-header {
   position: fixed;
   top: 0;
@@ -40,115 +41,52 @@ body {
   border-bottom: 2px solid #ffb300;
   z-index: 5000;
 }
-
-.acs-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.acs-left img {
-  height: 46px;
-}
-
-.acs-left h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  color: #ffb300;
-  letter-spacing: 0.5px;
-}
-
-.acs-nav {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-}
-
-/* Qatar Pearl Glow NAV */
+.acs-left { display:flex; align-items:center; gap:1rem; }
+.acs-left img { height:46px; }
+.acs-left h1 { font-size:1.15rem; margin:0; color:#ffb300; }
+.acs-nav { flex:1; display:flex; justify-content:center; gap:2rem; }
 .acs-nav a {
-  position: relative;
-  font-size: 1rem;
-  letter-spacing: 0.4px;
-  color: #dbe4ff; 
-  text-decoration: none;
-  transition: 0.25s ease;
-  padding-bottom: 6px;
+  position:relative; font-size:1rem; letter-spacing:0.4px;
+  color:#dbe4ff; text-decoration:none; transition:0.25s ease;
+  padding-bottom:6px;
 }
-
 .acs-nav a:hover,
 .acs-nav a.active {
-  color: #ffca3a;
-  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+  color:#ffca3a;
+  text-shadow:0 0 6px rgba(255,179,0,0.45);
 }
-
 .acs-nav a.active::after,
 .acs-nav a:hover::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #ffb300, #ffe7a0);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+  content:""; position:absolute; bottom:-8px; left:0; width:100%; height:2px;
+  background:linear-gradient(to right,#ffb300,#ffe7a0);
+  border-radius:2px; box-shadow:0 0 8px rgba(255,200,60,0.45);
 }
 
-.acs-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
+.acs-right { display:flex; align-items:center; gap:1rem; }
 .logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
+  padding:0.45rem 1.1rem; border:1px solid #ffb300; border-radius:12px;
+  background:rgba(255,179,0,0.05); color:#ffb300; font-weight:600;
 }
-
-.logout-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
-
+.logout-btn:hover { background:#ffb300; color:#0c1f3c; }
 .acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
+  font-family:"Orbitron", monospace; padding:0.4rem 0.8rem;
+  background:rgba(0,255,128,0.08); border-radius:8px;
+  font-size:0.95rem; color:#00ff80;
 }
 
-/* Support button */
 .support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
-  transition: 0.25s ease;
+  padding:0.45rem 1.1rem; border-radius:12px; font-size:0.9rem; font-weight:600;
+  color:#8AB4FF; border:1px solid rgba(138,180,255,0.45);
+  background:rgba(138,180,255,0.08); cursor:pointer;
 }
-
 .support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-  color: #dfe9ff;
+  background:rgba(138,180,255,0.20);
+  box-shadow:0 0 14px rgba(138,180,255,0.55);
+  color:#dfe9ff;
 }
 
 /* ============================================================
-   === ALERT CENTER — MAIN CONTENT =============================
+   === CONTENIDO PRINCIPAL
    ============================================================ */
 
 .alerts-main {
@@ -158,168 +96,109 @@ body {
 }
 
 .alerts-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ffca3a;
-  text-align: center;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 0 12px rgba(255,200,60,0.4);
+  font-size: 2rem; font-weight:700; color:#ffca3a; text-align:center;
+  margin-bottom:0.5rem; text-shadow:0 0 12px rgba(255,200,60,0.4);
 }
 
 .alerts-subtitle {
-  text-align: center;
-  color: #cbd6ff;
-  margin-bottom: 2rem;
+  text-align:center; color:#cbd6ff; margin-bottom:2rem;
 }
 
-/* FILTER BAR */
+/* FILTERS ORIGINAL */
 .alerts-filters {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  display:flex; justify-content:center; flex-wrap:wrap;
+  gap:1rem; margin-bottom:2rem;
 }
-
 .filter-btn {
-  padding: 0.55rem 1.3rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255,179,0,0.35);
-  background: rgba(255,179,0,0.08);
-  color: #ffca3a;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.25s;
+  padding:0.55rem 1.3rem; border-radius:12px;
+  border:1px solid rgba(255,179,0,0.35);
+  background:rgba(255,179,0,0.08); color:#ffca3a; font-weight:600;
 }
-
 .filter-btn:hover,
 .filter-btn.active {
-  background: rgba(255,179,0,0.20);
-  box-shadow: 0 0 14px rgba(255,200,60,0.5);
+  background:rgba(255,179,0,0.20);
+  box-shadow:0 0 14px rgba(255,200,60,0.5);
 }
 
-/* ALERT LIST */
-.alert-card {
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  border: 1px solid rgba(255,179,0,0.15);
-  border-radius: 18px;
-  padding: 1.6rem 1.4rem;
-  margin-bottom: 1.4rem;
-  box-shadow: 0 0 20px rgba(0,0,0,0.35);
-  transition: 0.25s;
-}
-
-.alert-card:hover {
-  transform: translateY(-4px);
-  border: 1px solid rgba(255,179,0,0.35);
-  box-shadow: 0 0 32px rgba(255,179,0,0.25);
-}
-
-.alert-title {
-  font-size: 1.25rem;
-  color: #ffca3a;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
-}
-
-.alert-msg {
-  font-size: 0.98rem;
-  color: #d7e2ff;
-  margin-bottom: 0.8rem;
-}
-
-.alert-time {
-  font-size: 0.85rem;
-  color: #9bb2ff;
-}
-  
 /* ============================================================
-   1️⃣ ALERT TABLE STYLE — Qatar Luxury (importado de My Aircraft)
+   1️⃣ TABLA DE ALERTAS — Qatar Luxury (IMPORTADA DE MY AIRCRAFT)
    ============================================================ */
 
-/* 🟦 Tabla y background */
 .fleet-table-wrapper {
-  width: 94%;
-  margin: 1rem auto 3rem;
-  background: #0d1c3c;
-  border-radius: 10px;
-  border: 1px solid rgba(255,179,0,0.25);
-  box-shadow: 0 0 12px rgba(0,0,0,0.4);
-  overflow-x: auto;
+  width:94%;
+  margin:1rem auto 3rem;
+  background:#0d1c3c;
+  border-radius:10px;
+  border:1px solid rgba(255,179,0,0.25);
+  box-shadow:0 0 12px rgba(0,0,0,0.4);
+  overflow-x:auto;
 }
 
-/* 🟦 Tabla base */
 table.fleet-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  color: white;
+  width:100%;
+  border-collapse:collapse;
+  font-size:0.9rem;
+  color:white;
 }
 
-/* 🟦 Encabezados */
 .fleet-table thead th {
-  position: sticky;
-  top: 0;
-  background: #102040;
-  color: #FFB300;
-  padding: 0.7rem;
-  border-bottom: 1px solid rgba(255,255,255,0.15);
-  text-align: left;
+  position:sticky;
+  top:0;
+  background:#102040;
+  color:#FFB300;
+  padding:0.7rem;
+  border-bottom:1px solid rgba(255,255,255,0.15);
+  text-align:left;
 }
 
-/* 🟦 Filas */
 .fleet-table tbody tr {
-  height: 58px;
-  transition: 0.15s;
+  height:58px;
+  transition:0.15s;
 }
 .fleet-table tbody tr:hover {
-  background: rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.06);
 }
 
-/* 🟦 Celdas */
 .fleet-table td {
-  padding: 0.7rem;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding:0.7rem;
+  border-bottom:1px solid rgba(255,255,255,0.07);
 }
 
-/* 🟦 Iconos */
 .icon {
-  margin-right: 6px;
-  opacity: 0.85;
+  margin-right:6px;
+  opacity:0.85;
 }
 
 /* ============================================================
-   2️⃣ BOTONES DE ACCIÓN — GO → y 🗑 (Qatar Luxury)
+   2️⃣ BOTONES DE ACCIÓN — GO → y 🗑
    ============================================================ */
 
 .alert-go-btn {
-  padding: 4px 10px;
-  border: 1px solid #ffb300;
-  background: rgba(0,255,128,0.15);
-  color: #00ff80;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s;
+  padding:4px 10px;
+  border:1px solid #ffb300;
+  background:rgba(0,255,128,0.15);
+  color:#00ff80;
+  border-radius:8px;
+  cursor:pointer;
 }
 .alert-go-btn:hover {
-  transform: scale(1.05);
-  background: rgba(0,255,128,0.22);
+  transform:scale(1.05);
+  background:rgba(0,255,128,0.22);
 }
 
 .alert-delete-btn {
-  padding: 4px 10px;
-  border: 1px solid #ff5050;
-  background: rgba(255,80,80,0.12);
-  color: #ff8080;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s;
+  padding:4px 10px;
+  border:1px solid #ff5050;
+  background:rgba(255,80,80,0.12);
+  color:#ff8080;
+  border-radius:8px;
+  cursor:pointer;
 }
 .alert-delete-btn:hover {
-  transform: scale(1.05);
-  background: rgba(255,80,80,0.20);
+  transform:scale(1.05);
+  background:rgba(255,80,80,0.20);
 }
-  
+
 </style>
 </head>
 
@@ -332,7 +211,7 @@ table.fleet-table {
   </div>
 
   <nav class="acs-nav">
-    <a href="dashboard.html" class="active">Main</a>
+    <a href="dashboard.html">Main</a>
     <a href="finance.html">Bank</a>
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html">Routes</a>
@@ -353,10 +232,10 @@ table.fleet-table {
 <div class="alerts-main">
 
   <h2 class="alerts-title">Alerts Center</h2>
-  <p class="alerts-subtitle">Manage all operational, financial, HR, and maintenance alerts.</p>
+  <p class="alerts-subtitle">Manage operational, financial, HR, and maintenance alerts.</p>
 
   <!-- FILTER BAR -->
-<div class="alerts-filters">
+  <div class="alerts-filters">
     <button class="filter-btn active" data-filter="all">All</button>
     <button class="filter-btn" data-filter="maintenance">Maintenance</button>
     <button class="filter-btn" data-filter="finance">Finance</button>
@@ -364,52 +243,44 @@ table.fleet-table {
     <button class="filter-btn" data-filter="hr">HR</button>
     <button class="filter-btn" data-filter="routes">Routes</button>
     <button class="filter-btn" data-filter="credits">Credits</button>
-</div>
-
+  </div>
 
   <!-- ============================================================
-     === ALERTS TABLE — Qatar Luxury ACS Edition (FINAL) ========
-     ============================================================ -->
+       3️⃣ TABLA ACS — ALERTS TABLE (REEMPLAZA alertContainer)
+       ============================================================ -->
 
-<div class="alerts-table-wrapper">
-
-  <!-- === TOP COUNTER === -->
-  
-  <div class="alerts-counter" id="alertsCounter"
-       style="font-size:1.3rem; color:#ffca3a; margin-bottom:1rem;
-       text-shadow:0 0 10px rgba(255,200,60,0.4);">
-    Alerts (0 total)
+  <div class="fleet-table-wrapper">
+    <table class="fleet-table" id="alertsTable">
+      <thead>
+        <tr>
+          <th><span class="icon">⚠️</span>Type</th>
+          <th><span class="icon">📌</span>Title</th>
+          <th><span class="icon">💬</span>Message</th>
+          <th><span class="icon">📘</span>Category</th>
+          <th><span class="icon">🔥</span>Level</th>
+          <th><span class="icon">⏱</span>Timestamp</th>
+          <th><span class="icon">🚀</span>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="alertsTableBody">
+        <!-- JS fills here -->
+      </tbody>
+    </table>
   </div>
 
-  <table class="fleet-table alerts-table" id="alertsTable"
-         style="width:100%; border-collapse:collapse;">
-    <thead>
-      <tr>
-        <th><span class="icon">⚠️</span>Type</th>
-        <th><span class="icon">📌</span>Title</th>
-        <th><span class="icon">💬</span>Message</th>
-        <th><span class="icon">📘</span>Category</th>
-        <th><span class="icon">🔥</span>Level</th>
-        <th><span class="icon">⏱</span>Timestamp</th>
-        <th><span class="icon">🚀</span>Actions</th>
-      </tr>
-    </thead>
-
-    <tbody id="alertsTableBody">
-      <!-- JS fills this -->
-    </tbody>
-  </table>
 </div>
 
-  </div>
-</div>
+<!-- ============================================================
+     === ALERT ENGINE JS ========================================
+   ============================================================ -->
 
 <script src="time_engine.js"></script>
 <script src="engine/acs_alerts.js?v=1.0"></script>
-  
+
 <script>
+
 /* ============================================================
-   === ALERT TABLE RENDER ENGINE — Qatar Luxury Edition ========
+   4️⃣ MAPA DE REDIRECCIÓN POR CATEGORÍA
    ============================================================ */
 
 const ALERT_REDIRECT_MAP = {
@@ -422,23 +293,21 @@ const ALERT_REDIRECT_MAP = {
   credits: "buy_credits.html"
 };
 
+/* ============================================================
+   5️⃣ RENDER DE ALERTAS A TABLA — Qatar Luxury
+   ============================================================ */
+
 function renderAlerts(filter = "all") {
 
   const tbody = document.getElementById("alertsTableBody");
-  const counter = document.getElementById("alertsCounter");
   if (!tbody) return;
 
   tbody.innerHTML = "";
 
-  // Recuperar
   let alerts = [];
-  try {
-    alerts = ACS_getAllAlertsMerged();
-  } catch (e) {
-    alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
-  }
+  try { alerts = ACS_getAllAlertsMerged(); }
+  catch { alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]"); }
 
-  // Filtro
   if (filter !== "all") {
     alerts = alerts.filter(a =>
       a.type?.toLowerCase() === filter ||
@@ -446,98 +315,90 @@ function renderAlerts(filter = "all") {
     );
   }
 
-  // Orden
-  alerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  alerts.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
 
-  // Actualizar contador
-  counter.textContent = `Alerts (${alerts.length} total)`;
-
-  // Sin alertas
-  if (alerts.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="7" style="text-align:center; color:#cbd6ff; padding:1rem;">
-          No alerts in this category.
-        </td>
-      </tr>`;
-    return;
-  }
-
-  // Dibujar filas
-  alerts.forEach((alert, index) => {
-    const row = document.createElement("tr");
-
-    const safeMsg = (alert.message || "").length > 60
-      ? `<span title="${alert.message}">${alert.message.substring(0,60)}...</span>`
-      : alert.message || "(no message)";
+  // Render real rows
+  alerts.forEach((alert, idx) => {
 
     const goPage = ALERT_REDIRECT_MAP[alert.type] ||
                    ALERT_REDIRECT_MAP[alert.category] ||
                    "dashboard.html";
 
-    row.innerHTML = `
-      <td>${alert.type || "-"}</td>
-      <td>${alert.title || "-"}</td>
-      <td>${safeMsg}</td>
-      <td>${alert.category || "-"}</td>
-      <td>${alert.level || "-"}</td>
-      <td>${new Date(alert.timestamp).toUTCString()}</td>
+    const message =
+      (alert.message || "").length > 60
+      ? `<span title="${alert.message}">${alert.message.substring(0,60)}...</span>`
+      : alert.message;
 
-      <td>
-        <button class="alert-go-btn"
-          style="padding:4px 10px; margin-right:6px; border:1px solid #ffb300;
-                 background:rgba(0,255,128,0.15); color:#00ff80; border-radius:8px;
-                 cursor:pointer;"
-          onclick="window.location.href='${goPage}'">
-            Go →
-        </button>
+    const row = `
+      <tr>
+        <td>${alert.type || "-"}</td>
+        <td>${alert.title || "-"}</td>
+        <td>${message || "-"}</td>
+        <td>${alert.category || "-"}</td>
+        <td>${alert.level || "-"}</td>
+        <td>${new Date(alert.timestamp).toUTCString()}</td>
 
-        <button class="alert-delete-btn"
-          style="padding:4px 10px; border:1px solid #ff5050;
-                 background:rgba(255,80,80,0.12); color:#ff8080; border-radius:8px;
-                 cursor:pointer;"
-          onclick="deleteAlert(${index})">
-            🗑
-        </button>
-      </td>
+        <td>
+          <button class="alert-go-btn" onclick="window.location.href='${goPage}'">Go →</button>
+          <button class="alert-delete-btn" onclick="deleteAlert(${idx})">🗑</button>
+        </td>
+      </tr>
     `;
 
-    tbody.appendChild(row);
+    tbody.insertAdjacentHTML("beforeend", row);
   });
+
+  /* ============================================================
+     6️⃣ MÍNIMO 4 FILAS VISIBLES (PLACEHOLDERS)
+     ============================================================ */
+  while (tbody.children.length < 4) {
+    tbody.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td style="opacity:0.4;">—</td>
+        <td style="opacity:0.4;">No alerts</td>
+        <td style="opacity:0.4;">—</td>
+        <td style="opacity:0.4;">—</td>
+        <td style="opacity:0.4;">—</td>
+        <td style="opacity:0.4;">—</td>
+        <td style="opacity:0.4;">—</td>
+      </tr>
+    `);
+  }
 }
 
-/* === Delete Alert === */
-function deleteAlert(idx) {
+/* ============================================================
+   7️⃣ ELIMINAR ALERTA
+   ============================================================ */
+
+function deleteAlert(index){
   let alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
-  alerts.splice(idx, 1);
+  alerts.splice(index,1);
   localStorage.setItem("ACS_Alerts", JSON.stringify(alerts));
   renderAlerts(document.querySelector(".filter-btn.active")?.dataset.filter || "all");
 }
 
-</script>
+/* ============================================================
+   8️⃣ INICIALIZACIÓN
+   ============================================================ */
 
-<script>
-// ============================================================
-// === ALERT BADGE IN MAIN NAVIGATION — BETA REAL ==============
-// ============================================================
+document.addEventListener("DOMContentLoaded", async () => {
 
-document.addEventListener("DOMContentLoaded", () => {
+  if (typeof ACS_runAlertScan === "function") {
+    await ACS_runAlertScan();
+  }
 
-  const navAlerts = document.querySelector("a[href='alerts_center.html']");
-  if (!navAlerts) return;
+  const buttons = document.querySelectorAll(".filter-btn");
+  buttons.forEach(btn => {
+    btn.addEventListener("click",()=>{
+      buttons.forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderAlerts(btn.dataset.filter);
+    });
+  });
 
-  const total = window.ACS_ALERTS?.length || 0;
-
-  navAlerts.querySelectorAll(".acs-alert-badge").forEach(b => b.remove());
-
-  if (total === 0) return;
-
-  const badge = document.createElement("span");
-  badge.className = "acs-alert-badge";
-  badge.textContent = total;
-
-  navAlerts.appendChild(badge);
+  renderAlerts("all");
 });
+
 </script>
 
 </body>
