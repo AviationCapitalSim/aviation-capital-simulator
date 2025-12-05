@@ -82,7 +82,7 @@ function getCurrentSimYear() {
 }
 
 /* ============================================================
-   3) FUNCIÓN DE IMÁGENES — COPIADA 1:1 DE BUY AIRCRAFT
+   3) SIMPLE IMAGE RESOLVER — SAME AS BUY NEW (1 path only)
    ============================================================ */
 
 function getAircraftImage(ac) {
@@ -90,34 +90,15 @@ function getAircraftImage(ac) {
     return "img/placeholder_aircraft.png";
   }
 
-  let manuFolder = ac.manufacturer.trim().replace(/\s+/g, " ");
+  const manu = ac.manufacturer.trim().replace(/\s+/g, "_");
+  const model = ac.model
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "_");
 
-  if (ac.manufacturer.toLowerCase() === "de havilland") {
-    manuFolder = "de_havilland";
-  }
-
-  const rawModel = ac.model.toLowerCase().trim();
-  let base = rawModel.replace(/[^a-z0-9]+/g, "_");
-
-  const variants = new Set();
-  variants.add(base);
-  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
-  variants.add(base.replace(/_/g, ""));
-  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
-
-  const candidates = [];
-
-  for (const v of variants) {
-    candidates.push(`img/${manuFolder}/${v}.png`);
-    candidates.push(`img/${manuFolder}/${v}.jpg`);
-  }
-
-  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  candidates.push(`img/${base}.png`);
-  candidates.push(`img/${manuSlug}_${base}.png`);
-
-  return candidates[0] || "img/placeholder_aircraft.png";
+  return `img/${manu}/${model}.png`;
 }
+
 
 /* ============================================================
    Helper — leer y guardar Used Market crudo
