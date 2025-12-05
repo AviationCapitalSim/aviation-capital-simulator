@@ -323,6 +323,102 @@ function ACS_registerIncome(incomeType, amount, source) {
 }
 
 /* ============================================================
+   === BANKRUPTCY ENGINE — v1.0 ================================
+   ------------------------------------------------------------
+   • Detecta capital < 0
+   • Crea alertas financieras automáticas
+   • Repite cada semana simulada
+   • Declara BANKRUPTCY si pasa 1.5 meses sin recuperarse
+   ============================================================ */
+
+function ACS_checkBankruptcy(simDate) {
+
+  let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  if (!f || typeof f.capital !== "number") return;
+
+  const capital = f.capital;
+
+  // === Hora simulada en formato Date ===
+  const now = simDate instanceof Date ? simDate : new Date(simDate);
+
+  // === Cargar estado previo ===
+  let bState = JSON.parse(localStorage.getItem("ACS_BankruptcyState") || "{}");
+
+  // Primera vez con saldo negativo → registrar
+  if (capital < 0 && !bState.start) {
+    bState.start = now.toISOString();
+    bState.lastAlert = now.toISOString();
+  }
+
+  // Si capital vuelve a positivo → limpiar estado
+  if (capital >= 0 && bState.start) {
+    localStorage.removeItem("ACS_BankruptcyState");
+    return;
+  }
+
+  // Si capital está positivo → no hacer nada
+  if (capital >= 0) return;
+
+  // === Enviar alerta cada semana simulada ===
+  if (bState.start) {
+
+    const lastAlert = new Date(bState.lastAlert);
+    const diffDays = Math.floor((now - lastAlert) / (1000 * 60 * 60 * 24));
+
+    if (diffDays >= 7) {
+      ACS_pushAlert({
+        type: "finance",
+        level: "critical",
+        title: "⚠️ CAPITAL NEGATIVO",
+        message: "Your airline is operating with negative capital. Immediate corrective action is required.",
+        timestamp: now.toISOString()
+      });
+
+      bState.lastAlert = now.toISOString();
+    }
+  }
+
+  // === Validar 1.5 meses simulados (45 días) ===
+  const startDate = new Date(bState.start);
+  const diffDaysTotal = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+
+  if (diffDaysTotal >= 45) {
+
+    // ALERTA FINAL
+    ACS_pushAlert({
+      type: "finance",
+      level: "critical",
+      title: "💀 AIRLINE BANKRUPTCY",
+      message: "Your company remained in negative capital for too long. The airline is now closed.",
+      timestamp: now.toISOString()
+    });
+
+    // Limpiar todos los datos del jugador
+    localStorage.removeItem("ACS_Finance");
+    localStorage.removeItem("ACS_MyAircraft");
+    localStorage.removeItem("ACS_UsedMarket");
+    localStorage.removeItem("ACS_BaseAirport");
+    localStorage.removeItem("ACS_activeUser");
+    localStorage.removeItem("ACS_BankruptcyState");
+
+    // START OVER — nueva aerolínea
+    localStorage.setItem("ACS_GameStartDate", now.toISOString());
+
+    // REDIRECT
+    window.location.href = "create_airline.html";
+    return;
+  }
+
+  // Guardar estado
+  localStorage.setItem("ACS_BankruptcyState", JSON.stringify(bState));
+}
+
+/* Registrar listener con el motor de tiempo */
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(ACS_checkBankruptcy);
+}
+
+/* ============================================================
    === AUTO-SYNC AL ENTRAR AL DASHBOARD =======================
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
