@@ -338,13 +338,6 @@ function buyUsed(id) {
 
     localStorage.setItem("ACS_Log", JSON.stringify(log));
 
-    try {
-      const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-      f.capital = (f.capital || 0) - ac.price_acs_usd;
-      if (f.capital < 0) f.capital = 0;
-      localStorage.setItem("ACS_Finance", JSON.stringify(f));
-    } catch(e) {}
-
     const updatedList = list.filter(x => x.id !== id);
     localStorage.setItem("ACS_UsedMarket", JSON.stringify(updatedList));
 
