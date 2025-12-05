@@ -82,22 +82,51 @@ function getCurrentSimYear() {
 }
 
 /* ============================================================
-   3) SIMPLE IMAGE RESOLVER — SAME AS BUY NEW (1 path only)
+   3) FUNCIÓN DE IMÁGENES — IGUAL A BUY AIRCRAFT (FIX v3.1)
    ============================================================ */
 
 function getAircraftImage(ac) {
+
   if (!ac || !ac.model || !ac.manufacturer) {
     return "img/placeholder_aircraft.png";
   }
 
-  const manu = ac.manufacturer.trim().replace(/\s+/g, "_");
-  const model = ac.model
-    .toLowerCase()
+  /* --- FIX 1: Carpeta EXACTA como Buy_New (slug real) --- */
+  let manuFolder = ac.manufacturer
     .trim()
-    .replace(/[^a-z0-9]+/g, "_");
+    .replace(/\s+/g, "_");    // ← BUY NEW USA ESTO ✔️
 
-  return `img/${manu}/${model}.png`;
+  /* Caso especial */
+  if (ac.manufacturer.toLowerCase() === "de havilland") {
+    manuFolder = "de_Havilland";   // ← EXACTO A TU CARPETA REAL
+  }
+
+  /* --- FIX 2: Igual conversion que buy_new.js --- */
+  const rawModel = ac.model.toLowerCase().trim();
+  let base = rawModel.replace(/[^a-z0-9]+/g, "_");
+
+  const variants = new Set();
+  variants.add(base);
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
+  variants.add(base.replace(/_/g, ""));
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
+
+  /* --- FIX 3: Candidatos idénticos a Buy_New --- */
+  const candidates = [];
+
+  for (const v of variants) {
+    candidates.push(`img/${manuFolder}/${v}.png`);
+    candidates.push(`img/${manuFolder}/${v}.jpg`);
+  }
+
+  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  candidates.push(`img/${base}.png`);
+  candidates.push(`img/${manuSlug}_${base}.png`);
+
+  /* --- FIX 4: Igual a Buy New → navegador decide --- */
+  return candidates[0] || "img/placeholder_aircraft.png";
 }
+
 
 
 /* ============================================================
