@@ -105,11 +105,12 @@ body {
 }
 
 /* ============================================================
-   1️⃣ TABLA QATAR LUXURY PREMIUM
+   1️⃣ TABLA QATAR LUXURY PREMIUM — CORREGIDA v3
    ============================================================ */
 
 .alerts-table-wrapper {
-  width: 94%;
+  width: 100% !important;             /* FULL WIDTH */
+  max-width: 1400px;                  /* Qatar Luxury Wide */
   margin: 2rem auto 3rem;
   background: rgba(13, 28, 60, 0.55);
   backdrop-filter: blur(6px);
@@ -126,21 +127,23 @@ table.alerts-table {
   font-size: 0.92rem;
 }
 
+/* HEADER */
 .alerts-table thead th {
   background: #102040;
   color: #FFB300;
   padding: 1rem;
   font-size: 1rem;
   border-bottom: 1px solid rgba(255,255,255,0.12);
-  text-align: left;
+  text-align: center;                 /* CENTRADO */
   letter-spacing: 0.3px;
 }
 
 /* Fila premium */
 .alerts-table tbody tr {
-  height: 75px;
+  height: 75px;                       /* ALTO ELEGANTE */
   transition: 0.18s ease;
 }
+
 .alerts-table tbody tr:hover {
   background: rgba(255,255,255,0.06);
   box-shadow: inset 0 0 6px rgba(255,255,255,0.12);
@@ -149,34 +152,59 @@ table.alerts-table {
 .alerts-table td {
   padding: 0.85rem 1rem;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  vertical-align: middle !important;   /* CENTRADO VERTICAL */
+  text-align: center;                  /* CENTRADO */
 }
 
-/* Chips */
+/* ================================
+      ESPACIADOS ENTRE COLUMNAS
+   ================================ */
+.alerts-table td:nth-child(2) {
+  width: 35%;                          /* Mensaje más amplio */
+}
+
+/* Actions más ancha */
+.alerts-table td:last-child,
+.alerts-table th:last-child {
+  width: 180px;                        /* Espacio para botones */
+}
+
+/* ============================================================
+   CHIPS DE NIVEL
+   ============================================================ */
+
 .alert-chip {
   padding: 6px 12px;
   border-radius: 14px;
   font-size: 0.78rem;
   font-weight: 600;
 }
+
 .alert-low {
   background: rgba(90,140,255,0.15);
   border: 1px solid #5a8cff;
   color: #8ab4ff;
 }
+
 .alert-medium {
   background: rgba(255,179,0,0.15);
   border: 1px solid #ffb300;
   color: #ffca3a;
 }
+
 .alert-critical {
   background: rgba(255,80,80,0.15);
   border: 1px solid #ff5050;
   color: #ff8080;
 }
 
-/* Category badge */
+/* ============================================================
+   CATEGORY BADGE
+   ============================================================ */
+
 .alert-category {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 6px;
   background: rgba(255,255,255,0.06);
@@ -185,39 +213,53 @@ table.alerts-table {
   border: 1px solid rgba(255,255,255,0.12);
   font-size: 0.82rem;
   color: #d0dbff;
+  width: fit-content;
+  margin: 0 auto;
 }
 
-/* Buttons */
+/* ============================================================
+   BOTONES PREMIUM QATAR LUXURY
+   ============================================================ */
+
+/* BOTÓN GO PREMIUM — Verde Qatar */
 .alert-go-btn {
-  padding: 6px 14px;
+  padding: 6px 20px;
   border-radius: 10px;
-  border: 1px solid #00ff80;
-  background: rgba(0,255,128,0.10);
-  color: #00ff80;
+  background: linear-gradient(to bottom, #18e07f, #0dac63);
+  border: 1px solid #0fd47c;
+  color: #003b1f;
+  font-weight: 700;
   font-size: 0.82rem;
   cursor: pointer;
-  margin-right: 8px;
+  box-shadow: 0 0 10px rgba(0,255,128,0.35);
   transition: 0.2s;
-}
-.alert-go-btn:hover {
-  transform: scale(1.05);
-  background: rgba(0,255,128,0.18);
+  margin-right: 10px;                 /* SEPARACIÓN */
 }
 
+.alert-go-btn:hover {
+  transform: scale(0.96);
+  box-shadow: 0 0 14px rgba(0,255,128,0.55);
+}
+
+/* BOTÓN DELETE — Rojo Qatar */
 .alert-delete-btn {
-  padding: 6px 14px;
+  padding: 6px 20px;
   border-radius: 10px;
-  border: 1px solid #ff5050;
-  background: rgba(255,80,80,0.10);
-  color: #ff8080;
+  background: linear-gradient(to bottom, #ff5050, #d62323);
+  border: 1px solid #ff8080;
+  color: #fff;
+  font-weight: 700;
   font-size: 0.82rem;
   cursor: pointer;
+  box-shadow: 0 0 10px rgba(255,80,80,0.35);
   transition: 0.2s;
 }
+
 .alert-delete-btn:hover {
-  transform: scale(1.05);
-  background: rgba(255,80,80,0.20);
+  transform: scale(0.96);
+  box-shadow: 0 0 14px rgba(255,80,80,0.55);
 }
+
 /* === TITLES CENTRADOS SOLO EN HEADER === */
 .th-center {
   text-align: center !important;
