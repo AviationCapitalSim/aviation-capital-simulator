@@ -232,7 +232,94 @@ body {
   font-size: 0.85rem;
   color: #9bb2ff;
 }
+  
+/* ============================================================
+   1️⃣ ALERT TABLE STYLE — Qatar Luxury (importado de My Aircraft)
+   ============================================================ */
 
+/* 🟦 Tabla y background */
+.fleet-table-wrapper {
+  width: 94%;
+  margin: 1rem auto 3rem;
+  background: #0d1c3c;
+  border-radius: 10px;
+  border: 1px solid rgba(255,179,0,0.25);
+  box-shadow: 0 0 12px rgba(0,0,0,0.4);
+  overflow-x: auto;
+}
+
+/* 🟦 Tabla base */
+table.fleet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: white;
+}
+
+/* 🟦 Encabezados */
+.fleet-table thead th {
+  position: sticky;
+  top: 0;
+  background: #102040;
+  color: #FFB300;
+  padding: 0.7rem;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  text-align: left;
+}
+
+/* 🟦 Filas */
+.fleet-table tbody tr {
+  height: 58px;
+  transition: 0.15s;
+}
+.fleet-table tbody tr:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+/* 🟦 Celdas */
+.fleet-table td {
+  padding: 0.7rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+/* 🟦 Iconos */
+.icon {
+  margin-right: 6px;
+  opacity: 0.85;
+}
+
+/* ============================================================
+   2️⃣ BOTONES DE ACCIÓN — GO → y 🗑 (Qatar Luxury)
+   ============================================================ */
+
+.alert-go-btn {
+  padding: 4px 10px;
+  border: 1px solid #ffb300;
+  background: rgba(0,255,128,0.15);
+  color: #00ff80;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.alert-go-btn:hover {
+  transform: scale(1.05);
+  background: rgba(0,255,128,0.22);
+}
+
+.alert-delete-btn {
+  padding: 4px 10px;
+  border: 1px solid #ff5050;
+  background: rgba(255,80,80,0.12);
+  color: #ff8080;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.alert-delete-btn:hover {
+  transform: scale(1.05);
+  background: rgba(255,80,80,0.20);
+}
+  
 </style>
 </head>
 
