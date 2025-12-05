@@ -84,16 +84,14 @@ function getCurrentSimYear() {
 /* ============================================================
    3) FUNCIÓN DE IMÁGENES — COPIADA 1:1 DE BUY AIRCRAFT
    ============================================================ */
+
 function getAircraftImage(ac) {
   if (!ac || !ac.model || !ac.manufacturer) {
     return "img/placeholder_aircraft.png";
   }
 
-  let manuFolder = ac.manufacturer
-    .trim()
-    .replace(/\s+/g, " ");
+  let manuFolder = ac.manufacturer.trim().replace(/\s+/g, " ");
 
-  // 🔧 Carpeta especial para De Havilland
   if (ac.manufacturer.toLowerCase() === "de havilland") {
     manuFolder = "de_havilland";
   }
@@ -103,9 +101,9 @@ function getAircraftImage(ac) {
 
   const variants = new Set();
   variants.add(base);
-  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));    
-  variants.add(base.replace(/_/g, ""));               
-  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));  
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
+  variants.add(base.replace(/_/g, ""));
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
 
   const candidates = [];
 
@@ -118,7 +116,7 @@ function getAircraftImage(ac) {
   candidates.push(`img/${base}.png`);
   candidates.push(`img/${manuSlug}_${base}.png`);
 
-  return "img/placeholder_aircraft.png";
+  return candidates[0] || "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
