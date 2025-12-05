@@ -539,6 +539,38 @@ function updateCompanyOverview() {
 }
 
 /* ============================================================
+   === CAPITAL UI COLOR FIX — NEGATIVE RED =====================
+   === (Colorea capital en rojo si es negativo) ================
+   ============================================================ */
+     
+function ACS_updateCapitalColor() {
+  const el = document.getElementById("cf-capital");
+  if (!el) return;
+
+  // Obtener valor numérico del localStorage
+  let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  let cap = f.capital || 0;
+
+  if (cap < 0) {
+    el.style.color = "#ff4d4d";   // 🔴 rojo
+  } else {
+   el.style.color = "#00ff80";   // 🟢 ACS green
+  }
+}
+
+/* === Activar cambio automático cuando el DOM carga === */
+document.addEventListener("DOMContentLoaded", () => {
+  ACS_updateCapitalColor();
+});
+
+/* === Activar cambio en tiempo real si cambia ACS_Finance === */
+window.addEventListener("storage", (e) => {
+  if (e.key === "ACS_Finance") {
+    ACS_updateCapitalColor();
+  }
+});
+
+/* ============================================================
    === MONTHLY HISTORY =========================================
    ============================================================ */
 function loadHistory() {
