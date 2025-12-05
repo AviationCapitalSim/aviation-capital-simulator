@@ -76,6 +76,46 @@ function saveFinance(data) {
 }
 
 /* ============================================================
+   === 🔒 FINANCE SAFETY GUARD — FIX v1.7 ======================
+   ------------------------------------------------------------
+   • Previene capital negativo causado por otros módulos
+   • Recalcula profit correctamente
+   • Se ejecuta al cargar y cada vez que ACS_Finance cambie
+   ============================================================ */
+
+function ACS_sanitizeFinance() {
+  try {
+    let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+    if (!f || typeof f.capital !== "number") return;
+
+    // 🔐 No permitir capital negativo
+    if (f.capital < 0) {
+      console.warn("⚠️ Finance Safety: capital corregido (era negativo)");
+      f.capital = 0;
+    }
+
+    // Actualizar profit según revenue/expenses
+    f.profit = (f.revenue || 0) - (f.expenses || 0);
+
+    localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+  } catch (e) {
+    console.error("❌ Error en ACS_sanitizeFinance:", e);
+  }
+}
+
+/* Ejecutar al cargar */
+ACS_sanitizeFinance();
+
+/* Ejecutar cada vez que Finance cambie */
+window.addEventListener("storage", (e) => {
+  if (e.key === "ACS_Finance") {
+    ACS_sanitizeFinance();
+  }
+});
+
+/* ============================================================
    === FINANCE — SPARKLINE UTILITY RESTORE (v1.0) ============
    ------------------------------------------------------------
    • Recupera la función que dibuja los micro-gráficos
