@@ -150,9 +150,101 @@ function ACS_getAllAlertsMerged() {
 }
 
 /* ============================================================
+   === ACS BANKRUPTCY ENGINE — v1.0 (GAME TIME REAL) ==========
+   === Author: ACS — 05 DEC 2025 ===============================
+   ============================================================ */
+
+console.log("⚠️ ACS Bankruptcy Engine loaded");
+
+function ACS_checkBankruptcy() {
+
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  if (!activeUser || !activeUser.airline_id) return;
+
+  // Tiempo del juego
+  const simTime = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+    ? new Date(ACS_TIME.currentTime)
+    : new Date();
+
+  // Si capital está OK → limpiar contador
+  if (!f || typeof f.capital !== "number") return;
+  if (f.capital >= 0) {
+    localStorage.removeItem("ACS_BankruptcyStart");
+    return;
+  }
+
+  // Registrar primer día en negativo
+  let start = localStorage.getItem("ACS_BankruptcyStart");
+  if (!start) {
+    localStorage.setItem("ACS_BankruptcyStart", simTime.toISOString());
+
+    ACS_addAlert(
+      "finance",
+      "critical",
+      "❗Your company capital has gone negative. You must resolve this immediately."
+    );
+
+    return;
+  }
+
+  // Calcular días en negativo
+  const startDate = new Date(start);
+  const diffMs = simTime - startDate;
+  const daysNegative = diffMs / (1000 * 60 * 60 * 24);
+
+  // Cada semana: repetir alerta crítica
+  if (daysNegative > 7 && daysNegative % 7 < 0.1) {
+    ACS_addAlert(
+      "finance",
+      "high",
+      `⚠️ Capital has been negative for ${Math.floor(daysNegative)} days. Immediate action required.`
+    );
+  }
+
+  // Si supera 45 días → quiebra automática
+  if (daysNegative >= 45) {
+
+    ACS_addAlert(
+      "finance",
+      "critical",
+      "🛑 COMPANY BANKRUPTCY — Your airline has been terminated after 45 days with negative capital."
+    );
+
+    // Eliminar airline existente
+    localStorage.removeItem("ACS_activeUser");
+    localStorage.removeItem("ACS_Finance");
+    localStorage.removeItem("ACS_HR");
+    localStorage.removeItem("ACS_MyAircraft");
+    localStorage.removeItem("ACS_PendingAircraft");
+    localStorage.removeItem("ACS_GameAlerts");
+    localStorage.removeItem("ACS_BankruptcyStart");
+
+    // Guardar fecha del juego como nuevo inicio sugerido
+    localStorage.setItem("ACS_LastBankruptcyDate", simTime.toISOString());
+
+    // Redirigir al usuario
+    setTimeout(() => {
+      window.location.href = "create_airline.html";
+    }, 2000);
+
+  }
+}
+
+/* ============================================================
    === AUTO INIT — nothing to load (NO SERVER MODE) ===========
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🚀 ALERT ENGINE READY — LOCAL ONLY");
 });
+
+// ============================================================
+// === AUTO-CHECK BANKRUPTCY ON TIMER (GAME DAILY) ============
+// ============================================================
+
+setInterval(() => {
+  try { ACS_checkBankruptcy(); }
+  catch (e) { console.warn("Bankruptcy check failed:", e); }
+}, 3000);  // cada 3 segundos tiempo real (equivale a ~1 día sim, depende del speed)
