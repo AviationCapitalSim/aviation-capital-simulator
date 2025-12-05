@@ -91,17 +91,14 @@ function getAircraftImage(ac) {
     return "img/placeholder_aircraft.png";
   }
 
-  /* --- FIX 1: Carpeta EXACTA como Buy_New (slug real) --- */
   let manuFolder = ac.manufacturer
     .trim()
-    .replace(/\s+/g, "_");    // ← BUY NEW USA ESTO ✔️
+    .replace(/\s+/g, "_");
 
-  /* Caso especial */
   if (ac.manufacturer.toLowerCase() === "de havilland") {
-    manuFolder = "de_Havilland";   // ← EXACTO A TU CARPETA REAL
+    manuFolder = "de_Havilland";
   }
 
-  /* --- FIX 2: Igual conversion que buy_new.js --- */
   const rawModel = ac.model.toLowerCase().trim();
   let base = rawModel.replace(/[^a-z0-9]+/g, "_");
 
@@ -111,7 +108,6 @@ function getAircraftImage(ac) {
   variants.add(base.replace(/_/g, ""));
   variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
 
-  /* --- FIX 3: Candidatos idénticos a Buy_New --- */
   const candidates = [];
 
   for (const v of variants) {
@@ -123,11 +119,8 @@ function getAircraftImage(ac) {
   candidates.push(`img/${base}.png`);
   candidates.push(`img/${manuSlug}_${base}.png`);
 
-  /* --- FIX 4: Igual a Buy New → navegador decide --- */
   return candidates[0] || "img/placeholder_aircraft.png";
 }
-
-
 
 /* ============================================================
    Helper — leer y guardar Used Market crudo
@@ -146,7 +139,6 @@ function saveUsedMarketRaw(list) {
 function generateUsedMarket() {
   let used = loadUsedMarketRaw();
 
-  // ❗ Una vez generado, nunca se regenera automáticamente
   if (used.length > 0) return used;
 
   const db = resolveUsedDB();
@@ -162,7 +154,7 @@ function generateUsedMarket() {
   const result = [];
   let count = 0;
 
-  while (count < 300) { // 300 aviones iniciales
+  while (count < 300) {
     const ac = pool[Math.floor(Math.random() * pool.length)];
     if (!ac) break;
 
@@ -173,12 +165,12 @@ function generateUsedMarket() {
       year: ac.year,
       seats: ac.seats,
       range_nm: ac.range_nm,
-      price_acs_usd: Math.floor(ac.price_acs_usd * 0.35), // 35% del valor nuevo
+      price_acs_usd: Math.floor(ac.price_acs_usd * 0.35),
       hours: Math.floor(Math.random() * 15000) + 2000,
       cycles: Math.floor(Math.random() * 9000) + 1000,
       condition: ["A", "B", "C"][Math.floor(Math.random() * 3)],
       image: getAircraftImage(ac),
-      source: "BANK"  // estándar por ahora
+      source: "BANK"
     });
 
     count++;
@@ -189,7 +181,7 @@ function generateUsedMarket() {
 }
 
 /* ============================================================
-   5) RENDER DE TARJETAS  ✅ FIX v2.2 — Imagen igual que Buy New
+   5) RENDER DE TARJETAS
    ============================================================ */
 
 function renderUsedMarket(filter = "all") {
@@ -230,16 +222,12 @@ function renderUsedMarket(filter = "all") {
 }
 
 /* ============================================================
-   === BUY USED AIRCRAFT — BETA FINAL ==========================
+   === BUY USED AIRCRAFT
    ============================================================ */
 
 function buyUsed(id) {
-
   try {
 
-    /* --------------------------------------------------------
-       1) Cargar listado y encontrar avión
-       -------------------------------------------------------- */
     let list = JSON.parse(localStorage.getItem("ACS_UsedMarket") || "[]");
     const ac = list.find(x => x.id === id);
 
@@ -248,9 +236,6 @@ function buyUsed(id) {
       return;
     }
 
-    /* --------------------------------------------------------
-       2) Finance: verificar capital
-       -------------------------------------------------------- */
     const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
     const capital = finance.capital || 0;
 
@@ -259,20 +244,12 @@ function buyUsed(id) {
       return;
     }
 
-    /* --------------------------------------------------------
-       3) Calcular edad del avión
-       -------------------------------------------------------- */
     const simYear = (typeof getSimYear === "function")
       ? getSimYear()
       : (ACS_TIME?.year || 1940);
 
     const age = Math.max(0, simYear - ac.year);
 
-    /* --------------------------------------------------------
-       4) Calcular servicios C & D
-          - C cada 12 meses
-          - D cada 96 meses
-       -------------------------------------------------------- */
     const monthsAge = age * 12;
 
     let nextC = 12 - (monthsAge % 12);
@@ -281,25 +258,17 @@ function buyUsed(id) {
     let nextD = 96 - (monthsAge % 96);
     if (nextD <= 0) nextD = 96;
 
-    /* --------------------------------------------------------
-       5) Base del jugador (choose_base)
-       -------------------------------------------------------- */
-    const baseObj = JSON.parse(localStorage.getItem("ACS_BaseAirport") || "{}");
+    const baseObj =
+      JSON.parse(localStorage.getItem("ACS_BaseAirport") || "{}");
 
     const baseICAO   = baseObj.icao   || "LIRN";
     const baseCity   = baseObj.city   || "Naples";
     const baseRegion = baseObj.region || "Italy";
 
-    /* --------------------------------------------------------
-       6) Registro aleatorio único
-       -------------------------------------------------------- */
     const reg = (typeof ACS_generateRegistration === "function")
       ? ACS_generateRegistration()
       : `AC-${Date.now()}`;
 
-    /* --------------------------------------------------------
-       7) Datos completos del modelo desde DB
-       -------------------------------------------------------- */
     const fullData = (typeof ACS_AIRCRAFT_DB !== "undefined")
       ? ACS_AIRCRAFT_DB.find(m =>
           m.manufacturer === ac.manufacturer &&
@@ -307,9 +276,6 @@ function buyUsed(id) {
         ) || {}
       : {};
 
-    /* --------------------------------------------------------
-       8) Construcción del avión final para My Aircraft
-       -------------------------------------------------------- */
     const newAircraft = {
       id: "AC-" + Date.now(),
       registration: reg,
@@ -342,74 +308,49 @@ function buyUsed(id) {
       data: fullData
     };
 
-    /* --------------------------------------------------------
-       9) Guardar en My Aircraft
-       -------------------------------------------------------- */
     let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
     fleet.push(newAircraft);
     localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
 
-/* --------------------------------------------------------
-   10) Registrar gasto financiero (solo usados)
--------------------------------------------------------- */
-     
-let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    f.capital  = f.capital  || 0;
+    f.revenue  = f.revenue  || 0;
+    f.expenses = f.expenses || 0;
+    f.cost     = f.cost     || {};
+    f.cost.used_aircraft_purchase =
+      f.cost.used_aircraft_purchase || 0;
 
-// seguridad: asegurar estructura
-f.capital  = f.capital  || 0;
-f.revenue  = f.revenue  || 0;
-f.expenses = f.expenses || 0;
-f.cost     = f.cost     || {};
-f.cost.used_aircraft_purchase = f.cost.used_aircraft_purchase || 0;
+    f.capital -= ac.price_acs_usd;
+    f.expenses += ac.price_acs_usd;
+    f.cost.used_aircraft_purchase += ac.price_acs_usd;
+    f.profit = f.revenue - f.expenses;
 
-// descontar capital
-f.capital -= ac.price_acs_usd;
-
-// sumar expenses
-f.expenses += ac.price_acs_usd;
-
-// sumar categoría
-f.cost.used_aircraft_purchase += ac.price_acs_usd;
-
-// recalcular profit
-f.profit = f.revenue - f.expenses;
-
-// guardar
-localStorage.setItem("ACS_Finance", JSON.stringify(f));
-
-/* registrar log */
-let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-log.push({
-  time: window.ACS_CurrentSimDate,
-  type: "EXPENSE",
-  source: `Used Market Purchase — ${ac.manufacturer} ${ac.model}`,
-  amount: ac.price_acs_usd
-});
-
-localStorage.setItem("ACS_Log", JSON.stringify(log));
-
-     /* ============================================================
-       PARCHE: Descontar capital inmediatamente
-    ============================================================ */
-    try {
-    const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    f.capital = (f.capital || 0) - ac.price_acs_usd;
-    if (f.capital < 0) f.capital = 0;
     localStorage.setItem("ACS_Finance", JSON.stringify(f));
-    } catch(e) {
-    console.warn("Finance patch error:", e);
-    }
-    
-     /* --------------------------------------------------------
-       11) Remover del Used Market
-       -------------------------------------------------------- */
+
+    let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+    log.push({
+      time: window.ACS_CurrentSimDate,
+      type: "EXPENSE",
+      source:
+        `Used Market Purchase — ${ac.manufacturer} ${ac.model}`,
+      amount: ac.price_acs_usd
+    });
+
+    localStorage.setItem("ACS_Log", JSON.stringify(log));
+
+    try {
+      const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+      f.capital = (f.capital || 0) - ac.price_acs_usd;
+      if (f.capital < 0) f.capital = 0;
+      localStorage.setItem("ACS_Finance", JSON.stringify(f));
+    } catch(e) {}
+
     const updatedList = list.filter(x => x.id !== id);
     localStorage.setItem("ACS_UsedMarket", JSON.stringify(updatedList));
 
-    /* --------------------------------------------------------
-       12) Confirmación visual
-       -------------------------------------------------------- */
-    alert(`✅ Purchase Successful!\n${ac.manufacturer} ${ac.model} added to your fleet.`);
+    alert(
+      `✅ Purchase Successful!\n${ac.manufacturer} ${ac.model} added to your fleet.`
+    );
 
   } catch (err) {
     console.error("❌ ERROR in buyUsed():", err);
@@ -418,32 +359,30 @@ localStorage.setItem("ACS_Log", JSON.stringify(log));
 }
 
 /* ============================================================
-   === 7) LEASE USADO — (SE MANTIENE POR COMPATIBILIDAD) =======
+   === 7) LEASE USADO — COMPATIBILIDAD
    ============================================================ */
 
 function getLeasingUpfront(year){
-  if (year < 1960) return 0;          // No leasing
-  if (year < 1970) return 0.35;       // 1960s
-  if (year < 1980) return 0.30;       // 1970s
-  if (year < 1990) return 0.22;       // 1980s
-  if (year < 2000) return 0.18;       // 1990s
-  if (year < 2010) return 0.12;       // 2000s
-  return 0.10;                        // 2010–2026
+  if (year < 1960) return 0;
+  if (year < 1970) return 0.35;
+  if (year < 1980) return 0.30;
+  if (year < 1990) return 0.22;
+  if (year < 2000) return 0.18;
+  if (year < 2010) return 0.12;
+  return 0.10;
 }
 
 function getLeasingMonthlyRate(year){
-  if (year < 1960) return 0;          // No leasing
-  if (year < 1970) return 0.022;      // 2.2%
-  if (year < 1980) return 0.018;      // 1.8%
-  if (year < 1990) return 0.015;      // 1.5%
-  if (year < 2000) return 0.013;      // 1.3%
-  if (year < 2010) return 0.011;      // 1.1%
-  return 0.009;                       // 0.9%
+  if (year < 1960) return 0;
+  if (year < 1970) return 0.022;
+  if (year < 1980) return 0.018;
+  if (year < 1990) return 0.015;
+  if (year < 2000) return 0.013;
+  if (year < 2010) return 0.011;
+  return 0.009;
 }
 
 function leaseUsed(id) {
-  // 🔴 Por ahora mantenemos la lógica existente para no romper nada,
-  // pero en esta fase tú no la usarás (solo BUY). Más adelante afinamos LEASE.
 
   let usedList = loadUsedMarketRaw();
   const ac = usedList.find(x => x.id === id);
@@ -460,7 +399,7 @@ function leaseUsed(id) {
   const monthlyRate = getLeasingMonthlyRate(year);
 
   if (upfrontRate === 0 || monthlyRate === 0) {
-    return alert("❌ Leasing was not available in this historical period. You must BUY the aircraft.");
+    return alert("❌ Leasing was not available in this historical period.");
   }
 
   const upfront = Math.round(ac.price_acs_usd * upfrontRate);
@@ -472,7 +411,8 @@ function leaseUsed(id) {
   let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   const modelData = (resolveUsedDB().find(m =>
-    m.manufacturer === ac.manufacturer && m.model === ac.model
+    m.manufacturer === ac.manufacturer &&
+    m.model === ac.model
   ) || {});
 
   const registration = (typeof ACS_generateRegistration === "function")
@@ -511,36 +451,34 @@ function leaseUsed(id) {
 
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
 
-  // === FINANZAS DE LA EMPRESA (upfront) ===
   const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   if (finance && typeof finance.capital === "number") {
     finance.capital -= upfront;
-    finance.expenses = (finance.expenses || 0) + upfront;
-    finance.profit = (finance.revenue || 0) - (finance.expenses || 0);
+    finance.expenses =
+      (finance.expenses || 0) + upfront;
+    finance.profit =
+      (finance.revenue || 0) - (finance.expenses || 0);
     localStorage.setItem("ACS_Finance", JSON.stringify(finance));
   }
-   
-  // === REGISTRO CONTABLE BÁSICO ===
-   
-let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-log.push({
-  time: window.ACS_CurrentSimDate,   // ✅ FECHA REAL DEL JUEGO
-  type: "EXPENSE",
-  source: `Used Aircraft Lease: ${ac.manufacturer} ${ac.model}`,
-  amount: upfront
-});
-localStorage.setItem("ACS_Log", JSON.stringify(log));
 
+  let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+  log.push({
+    time: window.ACS_CurrentSimDate,
+    type: "EXPENSE",
+    source:
+      `Used Aircraft Lease: ${ac.manufacturer} ${ac.model}`,
+    amount: upfront
+  });
+  localStorage.setItem("ACS_Log", JSON.stringify(log));
 
-  // Eliminar del Used Market también
   usedList = usedList.filter(x => x.id !== id);
   saveUsedMarketRaw(usedList);
 
-  alert("📘 Aircraft leased successfully (Historical Real Leasing Applied)");
+  alert("📘 Aircraft leased successfully.");
 }
 
 /* ============================================================
-   8) MODAL INFO (USADO POR used_market.html)
+   8) MODAL INFO — ACTUALIZADO (Maintenance Patch v1.0)
    ============================================================ */
 function openInfo(id) {
   const list = generateUsedMarket();
@@ -553,7 +491,62 @@ function openInfo(id) {
 
   if (!nameEl || !detailsEl || !modalEl) return;
 
+  /* =======================
+     CALCULAR EDAD REAL
+     ======================= */
+  const simDate =
+    (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+      ? new Date(ACS_TIME.currentTime)
+      : new Date();
+
+  const simYear = simDate.getUTCFullYear();
+  const fabYear = ac.year;
+  const ageYears = Math.max(0, simYear - fabYear);
+  const ageMonths = ageYears * 12;
+  const ageDays = ageMonths * 30;
+
+  /* =======================
+     FRECUENCIAS
+     ======================= */
+  const A_FREQ = 7;
+  const B_FREQ = 30;
+  const C_FREQ = 12;
+  const D_FREQ = 96;
+
+  /* =======================
+     A / B Checks (días)
+     ======================= */
+  const nextA = A_FREQ - (ageDays % A_FREQ);
+  const nextB = B_FREQ - (ageDays % B_FREQ);
+
+  const A_status =
+    (nextA <= 0 || nextA === A_FREQ)
+      ? "Expired"
+      : `${nextA.toFixed(1)} days`;
+
+  const B_status =
+    (nextB <= 0 || nextB === B_FREQ)
+      ? "Expired"
+      : `${nextB.toFixed(1)} days`;
+
+  /* =======================
+     C / D Checks (meses / años)
+     ======================= */
+  const nextC = C_FREQ - (ageMonths % C_FREQ);
+  const nextD = D_FREQ - (ageMonths % D_FREQ);
+
+  const C_status =
+    (nextC <= 0 || nextC === C_FREQ)
+      ? "Expired"
+      : `${nextC.toFixed(1)} months`;
+
+  const D_status =
+    (nextD <= 0 || nextD === D_FREQ)
+      ? "Expired"
+      : `${(nextD / 12).toFixed(1)} years`;
+
   nameEl.textContent = `${ac.manufacturer} ${ac.model}`;
+
   detailsEl.innerHTML = `
     Seats: ${ac.seats}<br>
     Range: ${ac.range_nm} nm<br>
@@ -562,14 +555,14 @@ function openInfo(id) {
     Condition: ${ac.condition}<br>
     <hr style="border-color:#444;">
     <b>Maintenance Status</b><br>
-    A-Check: ${ac.nextA || "N/A"}<br>
-    B-Check: ${ac.nextB || "N/A"}<br>
-    C-Check: ${ac.nextC || "N/A"}<br>
-    D-Check: ${ac.nextD || "N/A"}<br>
+    A-Check: ${A_status}<br>
+    B-Check: ${B_status}<br>
+    C-Check: ${C_status}<br>
+    D-Check: ${D_status}<br>
     <hr style="border-color:#444;">
     Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M<br>
     Source: ${ac.source}<br>
-`;
+  `;
 
   modalEl.style.display = "flex";
 }
@@ -582,8 +575,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderUsedMarket("all");
 });
 
-// === EXPOSE FUNCTIONS TO GLOBAL (Safari fix) ===
 window.buyUsed = buyUsed;
 window.leaseUsed = leaseUsed;
 window.openInfo = openInfo;
-// closeInfoModal se define en used_market.html
