@@ -321,16 +321,6 @@ table.alerts-table {
   <h2 class="alerts-title">Alerts Center</h2>
   <p class="alerts-subtitle">Manage operational, financial, HR, and maintenance alerts.</p>
 
-  <!-- FILTER BAR -->
-  <div class="alerts-filters">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="maintenance">Maintenance</button>
-    <button class="filter-btn" data-filter="finance">Finance</button>
-    <button class="filter-btn" data-filter="operations">Operations</button>
-    <button class="filter-btn" data-filter="hr">HR</button>
-    <button class="filter-btn" data-filter="routes">Routes</button>
-    <button class="filter-btn" data-filter="credits">Credits</button>
-  </div>
 
   <!-- ============================================================
        2️⃣ TABLA QATAR LUXURY PREMIUM (Lugar Correcto)
@@ -391,9 +381,10 @@ function renderAlerts(filter = "all") {
     alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
   }
 
+  // FILTRO
   if (filter !== "all") {
     alerts = alerts.filter(a => 
-      a.type?.toLowerCase() === filter || 
+      a.type?.toLowerCase() === filter ||
       a.category?.toLowerCase() === filter
     );
   }
@@ -403,6 +394,12 @@ function renderAlerts(filter = "all") {
 
   alerts.forEach(alert => {
 
+    // 1️⃣ Limpiar título
+    let cleanTitle = (alert.title || "")
+      .replace("MISSING", "")
+      .trim();
+
+    // 2️⃣ Icono por categoría
     const categoryIcon = {
       hr: "🧍",
       finance: "💰",
@@ -412,42 +409,47 @@ function renderAlerts(filter = "all") {
       credits: "💳"
     }[alert.type?.toLowerCase()] || "📘";
 
+    // 3️⃣ Chip de level
     const levelClass =
       alert.level === "critical" ? "alert-chip alert-critical" :
       alert.level === "medium"   ? "alert-chip alert-medium" :
                                    "alert-chip alert-low";
 
+    // 4️⃣ Fila premium
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${alert.type || "-"}</td>
       <td>${cleanTitle} — ${alert.message || "-"}</td>
+
       <td>
         <div class="alert-category">
           <span>${categoryIcon}</span>
-          <span>${alert.category || alert.type}</span>
+          <span>${alert.category || alert.type || "-"}</span>
         </div>
       </td>
+
       <td><span class="${levelClass}">${alert.level}</span></td>
+
       <td>${new Date(alert.timestamp).toUTCString()}</td>
-      <td>
-        <button class="alert-go-btn" onclick="ACS_jumpToAlert('${alert.type}')">Go →</button>
-        <button class="alert-delete-btn" onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
+
+      <td style="text-align:center;">
+        <button class="alert-go-btn"
+          onclick="ACS_jumpToAlert('${alert.type}')">Go →</button>
+
+        <button class="alert-delete-btn"
+          onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
       </td>
     `;
+
     tbody.appendChild(row);
   });
 
-  let cleanTitle = (alert.title || "").replace("MISSING", "").trim();
- 
-  /* MINIMO 4 FILAS */
-  
+  // 5️⃣ Mínimo 4 filas siempre
   while (tbody.children.length < 4) {
     tbody.insertAdjacentHTML("beforeend", `
-  
       <tr>
         <td style="opacity:0.4;">—</td>
         <td style="opacity:0.4;">No alerts</td>
-        <td style="opacity:0.4;">—</td>
         <td style="opacity:0.4;">—</td>
         <td style="opacity:0.4;">—</td>
         <td style="opacity:0.4;">—</td>
