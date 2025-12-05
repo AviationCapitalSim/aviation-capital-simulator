@@ -310,27 +310,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (!container) return;
 
-  // === NUEVO: obtener TODAS las alertas (server + local + HR) ===
-  function getAllAlerts() {
-    try {
-      return ACS_getAllAlertsMerged();
-    } catch (e) {
-      console.warn("⚠️ Cannot merge alerts:", e);
-      return [];
-    }
-  }
+  /* ============================================================
+     === ALERTS RENDER (Bankruptcy Compatible) — v1.0 ============
+     ============================================================ */
 
-  // === Render principal ===
   function renderAlerts(filter = "all") {
+
+    const container = document.getElementById("alertsContainer");
+    if (!container) return;
 
     container.innerHTML = "";
 
-    // 🔥 AQUÍ SE USA LA FUNCIÓN QUE INCLUYE HR
-    let alerts = getAllAlerts();
+    // 🔥 Recuperar todas las alertas (Server + Local + HR + Bankruptcy)
+    let alerts = [];
+    try {
+      alerts = ACS_getAllAlertsMerged();    // función oficial
+    } catch (e) {
+      console.warn("⚠️ Cannot merge alerts:", e);
+      alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
+    }
 
-    // Filtro por tipo
+    // Filtro por categoría
     if (filter !== "all") {
-      alerts = alerts.filter(a => a.type?.toLowerCase() === filter);
+      alerts = alerts.filter(a =>
+        a.type?.toLowerCase() === filter ||
+        a.category?.toLowerCase() === filter
+      );
     }
 
     // Si no hay alertas
@@ -342,8 +347,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // Crear tarjetas
+    // Ordenar de más reciente a más antigua
+    alerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // Renderizar tarjetas
     alerts.forEach(alert => {
+
+      // Color según nivel o tipo
       const color =
         alert.level === "critical" ? "#ff5050" :
         alert.level === "high"     ? "#ff9944" :
@@ -351,98 +361,40 @@ document.addEventListener("DOMContentLoaded", async () => {
                                      "#a8b8ff";
 
       const card = document.createElement("div");
-      card.className = "panel";
-      card.style.border = `1px solid ${color}55`;
+      card.className = "alert-card";
 
       card.innerHTML = `
-        <h3 style="color:${color}; text-shadow:0 0 6px ${color}88;">
-          ${alert.type?.toUpperCase() || "ALERT"}
-        </h3>
+        <div class="alert-title" style="color:${color};">
+          ${alert.title || alert.type?.toUpperCase() || "ALERT"}
+        </div>
 
-        <p style="font-size:1rem; margin-bottom:0.6rem;">
-          ${alert.message}
-        </p>
+        <div class="alert-msg">
+          ${alert.message || "(no message)"}
+        </div>
 
-        <p style="font-size:0.85rem; color:#9db4ff;">
-          ${new Date(alert.timestamp).toLocaleString()}
-        </p>
+        <div class="alert-time">
+          ${new Date(alert.time || alert.timestamp).toUTCString()}
+        </div>
       `;
 
       container.appendChild(card);
     });
   }
 
-  /* ============================================================
-   === ALERTS RENDER (Bankruptcy Compatible) — v1.0 ============
-   ============================================================ */
+  // === Activar filtros ===
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
 
-function renderAlerts(filter = "all") {
-
-  const container = document.getElementById("alertsContainer");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  // 🔥 Recuperar todas las alertas (Server + Local + HR + Bankruptcy)
-  let alerts = [];
-  try {
-    alerts = ACS_getAllAlertsMerged();    // tu función oficial
-  } catch (e) {
-    console.warn("⚠️ Cannot merge alerts:", e);
-    alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
-  }
-
-  // Filtro por categoría
-  if (filter !== "all") {
-    alerts = alerts.filter(a =>
-      a.type?.toLowerCase() === filter ||
-      a.category?.toLowerCase() === filter
-    );
-  }
-
-  // Si no hay alertas
-  if (alerts.length === 0) {
-    container.innerHTML = `
-      <p style="color:#cbd6ff; text-align:center; margin-top:1rem;">
-        No alerts in this category.
-      </p>`;
-    return;
-  }
-
-  // Ordenar de más reciente a más antigua
-  alerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-  // Renderizar tarjetas
-  alerts.forEach(alert => {
-
-    // Color según nivel o tipo
-    const color =
-      alert.level === "critical" ? "#ff5050" :
-      alert.level === "high"     ? "#ff9944" :
-      alert.level === "medium"   ? "#ffd85c" :
-                                   "#a8b8ff";
-
-    const card = document.createElement("div");
-    card.className = "alert-card";
-
-    card.innerHTML = `
-      <div class="alert-title" style="color:${color};">
-        ${alert.title || alert.type?.toUpperCase() || "ALERT"}
-      </div>
-
-      <div class="alert-msg">
-        ${alert.message || "(no message)"}
-      </div>
-
-      <div class="alert-time">
-        ${new Date(alert.time || alert.timestamp).toUTCString()}
-      </div>
-    `;
-
-    container.appendChild(card);
+      renderAlerts(btn.dataset.filter);
+    });
   });
-}
 
+  // Primera carga
+  renderAlerts("all");
+
+});  // ✅ AQUÍ SE CIERRA DOMContentLoaded CORRECTAMENTE
 </script>
 
 <script>
