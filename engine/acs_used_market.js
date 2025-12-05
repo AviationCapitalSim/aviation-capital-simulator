@@ -189,8 +189,9 @@ function generateUsedMarket() {
 }
 
 /* ============================================================
-   5) RENDER DE TARJETAS
+   5) RENDER DE TARJETAS  ✅ FIX v2.2 — Imagen igual que Buy New
    ============================================================ */
+
 function renderUsedMarket(filter = "all") {
   const grid = document.getElementById("usedGrid");
   if (!grid) return;
@@ -207,7 +208,7 @@ function renderUsedMarket(filter = "all") {
     card.className = "used-card";
 
     card.innerHTML = `
-      <img src="${ac.image}"
+      <img src="${getAircraftImage(ac)}"
            onerror="this.src='img/placeholder_aircraft.png'" />
 
       <h3>${ac.manufacturer} ${ac.model}</h3>
@@ -219,7 +220,6 @@ function renderUsedMarket(filter = "all") {
       <p>Cycles: ${ac.cycles.toLocaleString()}</p>
       <p>Condition: ${ac.condition}</p>
       <p><b>Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M</b></p>
-    
 
       <button class="ac-buy" onclick="buyUsed('${ac.id}')">BUY</button>
       <button class="ac-lease" onclick="leaseUsed('${ac.id}')">LEASE</button>
