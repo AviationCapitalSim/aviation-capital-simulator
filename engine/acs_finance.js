@@ -645,3 +645,137 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
     console.error("❌ ACS_registerNewAircraftPurchase ERROR:", e);
   }
 }
+
+/* ============================================================
+   === ACS BANKRUPTCY ENGINE — PHASE 2 (v1.0) ==================
+   ------------------------------------------------------------
+   • Genera alertas semanales si capital < 0
+   • Lleva un contador de semanas negativas
+   • Si llega a 6 semanas → BANKRUPTCY automática
+   • Redirige al jugador a create_airline.html
+   ============================================================ */
+
+(function(){
+
+  console.log("⚠️ ACS Bankruptcy Engine v1.0 loaded");
+
+  // ----------- KEYS INTERNAS ---------------
+  const NEG_KEY = "ACS_FinanceNegativeWeeks";     // Semanas negativas
+  const LAST_ALERT_KEY = "ACS_LastNegativeAlert"; // Para evitar spam
+
+  // ----------- CARGAR VALORES ---------------
+  function getWeeks() {
+    return parseInt(localStorage.getItem(NEG_KEY) || "0");
+  }
+
+  function setWeeks(n) {
+    localStorage.setItem(NEG_KEY, n.toString());
+  }
+
+  function canSendWeeklyAlert() {
+    const last = localStorage.getItem(LAST_ALERT_KEY);
+    if (!last) return true;
+
+    const lastDate = new Date(last);
+    const now = ACS_TIME.currentTime || new Date();
+
+    const diff = now - lastDate;
+    const weeks = diff / (1000 * 60 * 60 * 24 * 7);
+
+    return weeks >= 1; // 1 semana real del juego
+  }
+
+  function markAlertSent() {
+    const now = ACS_TIME.currentTime || new Date();
+    localStorage.setItem(LAST_ALERT_KEY, now.toISOString());
+  }
+
+  // ============================================================
+  // === MAIN CHECK =============================================
+  // ============================================================
+
+  function ACS_checkBankruptcy() {
+
+    let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    if (!F || typeof F.capital !== "number") return;
+
+    const capital = F.capital;
+    const now = ACS_TIME.currentTime || new Date();
+
+    // ============================================================
+    // === 1) CAPITAL POSITIVO → RESET ============================
+    // ============================================================
+    if (capital >= 0) {
+      setWeeks(0);
+      return;
+    }
+
+    // ============================================================
+    // === 2) CAPITAL NEGATIVO — ALERTA SEMANAL ===================
+    // ============================================================
+    if (canSendWeeklyAlert()) {
+      ACS_addAlert(
+        "finance",
+        "critical",
+        "Capital is NEGATIVE. Airline is operating in financial risk."
+      );
+
+      markAlertSent();
+    }
+
+    // ============================================================
+    // === 3) AUMENTAR SEMANAS NEGATIVAS ==========================
+    // ============================================================
+    let weeks = getWeeks();
+    weeks++;
+    setWeeks(weeks);
+
+    console.warn("⚠️ Negative weeks:", weeks);
+
+    // ============================================================
+    // === 4) BANKRUPTCY AUTÓMATICO ===============================
+    // ============================================================
+    if (weeks >= 6) {
+
+      ACS_addAlert(
+        "finance",
+        "critical",
+        "BANKRUPTCY DECLARED — Airline terminated by ACS System"
+      );
+
+      console.error("💀 BANKRUPTCY TRIGGERED — Airline closed.");
+
+      // ============================================================
+      // === RESET TOTAL DEL SISTEMA ================================
+      // ============================================================
+
+      localStorage.removeItem("ACS_activeUser");
+      localStorage.removeItem("ACS_Finance");
+      localStorage.removeItem("ACS_HR");
+      localStorage.removeItem("ACS_MyAircraft");
+      localStorage.removeItem("ACS_PendingAircraft");
+      localStorage.removeItem("ACS_GameAlerts");
+      localStorage.removeItem("ACS_FinanceNegativeWeeks");
+
+      // Guardar nueva fecha inicial
+      const startDate = now.toISOString();
+      localStorage.setItem("ACS_NewGameStartDate", startDate);
+
+      // Redirigir
+      window.location.href = "create_airline.html";
+    }
+  }
+
+  // ============================================================
+  // === TIMER: EJECUTAR UNA VEZ POR DÍA EN TIEMPO DEL JUEGO ====
+  // ============================================================
+
+  setInterval(() => {
+    try {
+      ACS_checkBankruptcy();
+    } catch (err) {
+      console.error("Bankruptcy Engine error:", err);
+    }
+  }, 3000); // cada 3 segundos REAL → equivale al paso diario del motor ACS_TIME
+
+})();
