@@ -82,51 +82,42 @@ function getCurrentSimYear() {
 }
 
 /* ============================================================
-   3) FUNCIÓN DE IMÁGENES — CORREGIDA (AUTO-DETECT + REAL FOLDERS)
+   3) FUNCIÓN DE IMÁGENES — COPIADA 1:1 DE BUY AIRCRAFT
    ============================================================ */
 function getAircraftImage(ac) {
   if (!ac || !ac.model || !ac.manufacturer) {
     return "img/placeholder_aircraft.png";
   }
 
-  // === Carpeta del fabricante (igual a tu Buy New)
-  let manuFolder = ac.manufacturer.trim();
+  let manuFolder = ac.manufacturer
+    .trim()
+    .replace(/\s+/g, " ");
 
-  // Carpeta especial (tu regla existente)
+  // 🔧 Carpeta especial para De Havilland
   if (ac.manufacturer.toLowerCase() === "de havilland") {
     manuFolder = "de_havilland";
   }
 
-  // Normalización
-  const modelRaw = ac.model.toLowerCase().trim();
+  const rawModel = ac.model.toLowerCase().trim();
+  let base = rawModel.replace(/[^a-z0-9]+/g, "_");
 
-  // === Variantes para cubrir modelos con espacios/hífens
   const variants = new Set();
-  variants.add(modelRaw.replace(/[^a-z0-9]+/g, "_"));   // dc_3
-  variants.add(modelRaw.replace(/[^a-z0-9]+/g, ""));    // dc3
-  variants.add(modelRaw.replace(/\s+/g, "_"));          // dc_3
-  variants.add(modelRaw);                               // "dc-3" o "dc 3"
+  variants.add(base);
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));    
+  variants.add(base.replace(/_/g, ""));               
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));  
 
   const candidates = [];
 
-  // === Crear rutas combinando variantes + extensiones
-  variants.forEach(v => {
+  for (const v of variants) {
     candidates.push(`img/${manuFolder}/${v}.png`);
     candidates.push(`img/${manuFolder}/${v}.jpg`);
-  });
-
-  // === Probar rutas creando un <img> temporal (Safari compatible)
-  for (const src of candidates) {
-    const img = new Image();
-    img.src = src;
-
-    // Si carga correctamente → usarla
-    if (img.complete && img.naturalWidth > 0) {
-      return src;
-    }
   }
 
-  // === Si ninguna existe → placeholder
+  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  candidates.push(`img/${base}.png`);
+  candidates.push(`img/${manuSlug}_${base}.png`);
+
   return "img/placeholder_aircraft.png";
 }
 
