@@ -838,6 +838,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <script>
+  
 // ============================================================
 // === DASHBOARD — Load Operational Alerts Automatically ========
 // ============================================================
@@ -976,39 +977,52 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
   
- <script>
-   
-// ============================================================
-// === DASHBOARD — Operational Alerts Preview + Counter ========
-// ============================================================
+ <!-- ============================================================
+     === ACS DASHBOARD ALERT ENGINE — v3 FINAL (05 DEC 2025) ===
+     === Integrado con ACS_getAllAlertsMerged() ===============
+     ============================================================ -->
 
+<script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Esperar a que ACS_runAlertScan termine
-  function waitForAlerts() {
+  // =============================
+  // 1) Esperar alertas cargadas
+  // =============================
+  function waitAlertsLoaded() {
     if (!window.ACS_ALERTS) {
-      console.log("Dashboard waiting for alert scan...");
-      return setTimeout(waitForAlerts, 150);
+      console.log("⏳ Dashboard waiting for alert scan...");
+      return setTimeout(waitAlertsLoaded, 150);
     }
-    renderDashboardAlerts(window.ACS_ALERTS);
+    renderDashboardAlerts();
   }
 
-  waitForAlerts();
+  waitAlertsLoaded();
 
-  function renderDashboardAlerts(alerts) {
-    const list = document.getElementById("alertsList");
+
+  // ======================================
+  // 2) Render principal de alertas (TOP 3)
+  // ======================================
+  function renderDashboardAlerts() {
+    const list  = document.getElementById("alertsList");
     const title = document.getElementById("dashboardAlertTitle");
 
     if (!list || !title) return;
 
-    list.innerHTML = "";
+    // === Obtener TODAS las alertas unificadas ===
+    let alerts = [];
+    try {
+      alerts = ACS_getAllAlertsMerged();
+    } catch(e) {
+      console.warn("⚠️ Dashboard cannot read merged alerts", e);
+      alerts = [];
+    }
 
-    // === CONTADOR EN EL TÍTULO ===
-    const total = alerts?.length || 0;
-    title.innerHTML = `⚠️ Operational Alerts${total > 0 ? " (" + total + ")" : ""}`;
+    // === CONTADOR ===
+    const total = alerts.length;
+    title.innerHTML = `⚠️ Operational Alerts${ total > 0 ? " (" + total + ")" : "" }`;
 
-    // === SI NO HAY ALERTAS ===
-    if (!alerts || alerts.length === 0) {
+    // === Si no hay alertas ===
+    if (total === 0) {
       list.innerHTML = `
         <li style="color:#cbd6ff; padding:6px 0;">
           No active alerts.
@@ -1016,115 +1030,50 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // === ÍCONOS POR NIVEL ===
-    function icon(level) {
-      return (
-        level === "critical" ? "🛑" :
-        level === "high"     ? "⚠️" :
-        level === "medium"   ? "🔔" :
-                               "ℹ️"
-      );
+    // ================================
+    // Íconos según nivel de alerta
+    // ================================
+    function icon(lvl) {
+      return lvl === "critical" ? "🛑" :
+             lvl === "high"     ? "⚠️" :
+             lvl === "medium"   ? "🔔" :
+                                   "ℹ️";
     }
 
-    // === MOSTRAR 3 PRIMERAS ===
-    alerts.slice(0, 3).forEach(a => {
+    // ================================
+    // Mostrar solo las primeras 3
+    // ================================
+    list.innerHTML = "";
+
+    alerts.slice(0,3).forEach(a => {
       const li = document.createElement("li");
-      li.style = "margin-bottom:6px; color:#dfe8ff; list-style:none;";
+      li.style = "margin-bottom:6px; list-style:none; color:#dbe4ff;";
 
       li.innerHTML = `
         ${icon(a.level)} 
-        <strong>${a.type.toUpperCase()}</strong> — ${a.message}
+        <strong>${a.type.toUpperCase()}</strong> — 
+        ${a.message}
       `;
 
       list.appendChild(li);
     });
 
-    console.log("Dashboard alerts loaded:", alerts);
+    console.log("✔ Dashboard alerts rendered:", alerts);
   }
+
+  // =======================================================
+  // 3) Auto-refresh cada 10 segundos (como alert_center)
+  // =======================================================
+  setInterval(async () => {
+    try {
+      await ACS_runAlertScan();    // servidor + game time
+      renderDashboardAlerts();     // redibujar dashboard
+    } catch(err) {
+      console.warn("⚠️ Dashboard auto-refresh failed:", err);
+    }
+  }, 10000);
+
 });
-</script>
-<script>
-/* ============================================================
-   === DASHBOARD — ALERT CENTER RENDER ENGINE ==================
-   ============================================================ */
-
-function ACS_renderDashboardAlerts() {
-  const container = document.getElementById("alertsContainer");
-  if (!container) return;
-
-  // Cargar alertas mezcladas (local + servidor + game-time)
-  let all = [];
-  try {
-    all = ACS_getAllAlertsMerged().slice(0, 50); // Máx 50 visibles
-  } catch (e) {
-    console.warn("⚠️ Could not load alerts:", e);
-    container.innerHTML = "<p style='color:#aaa;text-align:center;'>No alerts available.</p>";
-    return;
-  }
-
-  container.innerHTML = "";
-
-  if (all.length === 0) {
-    container.innerHTML = `
-      <p style="color:#aaa; text-align:center; font-style:italic;">
-        No alerts yet. Your systems are running smoothly.
-      </p>`;
-    return;
-  }
-
-  // Crear tarjetas
-  all.forEach(alert => {
-    const div = document.createElement("div");
-    div.className = "alert-card";
-
-    // Colores según nivel
-    let border = "#FFB300"; // default medium
-    if (alert.level === "high") border = "#ff4d4d";
-    if (alert.level === "low") border = "#44d9ff";
-
-    div.style.borderLeft = `4px solid ${border}`;
-
-    const t = new Date(alert.timestamp);
-    const ts = t.toUTCString().substring(5, 22);
-
-    div.innerHTML = `
-      <div class="alert-type">${alert.type.toUpperCase()}</div>
-      <div class="alert-msg">${alert.message}</div>
-      <div class="alert-time">${ts}</div>
-    `;
-
-    container.appendChild(div);
-  });
-}
-
-// AUTO-RENDER cada vez que el Dashboard carga
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(ACS_renderDashboardAlerts, 400);
-});
-</script>
-<script>
-/* ============================================================
-   === PASO 16 — AUTO REFRESH DEL ALERT CENTER =================
-   ============================================================ */
-
-// Refresca alertas cada 10 segundos (tiempo real)
-setInterval(async () => {
-  try {
-    const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-    if (!activeUser.airline_id) return;
-
-    // 1) Recargar alertas desde servidor (GAME TIME)
-    await ACS_runAlertScan();
-
-    // 2) Volver a pintar en Dashboard
-    ACS_renderDashboardAlerts();
-
-  } catch (err) {
-    console.warn("⚠️ Auto-refresh alerts failed:", err);
-  }
-
-}, 10000); // 10,000 ms → 10 segundos
-  
 </script>
   
 </body>
