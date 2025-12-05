@@ -280,10 +280,39 @@ body {
 </div>
 
 
-  <!-- ALERT CARDS (these will be loaded dynamically in Phase C) -->
-  
-  <div id="alertsContainer">
+  <!-- ============================================================
+     === ALERTS TABLE — Qatar Luxury ACS Edition (FINAL) ========
+     ============================================================ -->
 
+<div class="alerts-table-wrapper">
+
+  <!-- === TOP COUNTER === -->
+  
+  <div class="alerts-counter" id="alertsCounter"
+       style="font-size:1.3rem; color:#ffca3a; margin-bottom:1rem;
+       text-shadow:0 0 10px rgba(255,200,60,0.4);">
+    Alerts (0 total)
+  </div>
+
+  <table class="fleet-table alerts-table" id="alertsTable"
+         style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th><span class="icon">⚠️</span>Type</th>
+        <th><span class="icon">📌</span>Title</th>
+        <th><span class="icon">💬</span>Message</th>
+        <th><span class="icon">📘</span>Category</th>
+        <th><span class="icon">🔥</span>Level</th>
+        <th><span class="icon">⏱</span>Timestamp</th>
+        <th><span class="icon">🚀</span>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody id="alertsTableBody">
+      <!-- JS fills this -->
+    </tbody>
+  </table>
+</div>
 
   </div>
 </div>
@@ -292,109 +321,112 @@ body {
 <script src="engine/acs_alerts.js?v=1.0"></script>
   
 <script>
-// =====================================================
-// === ALERT CENTER — Dynamic Real-Time Rendering =======
-// =====================================================
+/* ============================================================
+   === ALERT TABLE RENDER ENGINE — Qatar Luxury Edition ========
+   ============================================================ */
 
-document.addEventListener("DOMContentLoaded", async () => {
+const ALERT_REDIRECT_MAP = {
+  finance: "company_finance.html",
+  maintenance: "my_aircraft.html",
+  aircraft: "my_aircraft.html",
+  hr: "hr.html",
+  operations: "schedule_table.html",
+  routes: "routes.html",
+  credits: "buy_credits.html"
+};
 
-  // 1) Escaneo real de alertas del servidor
-  if (typeof ACS_runAlertScan === "function") {
-    console.log("⏳ Waiting alert scan...");
-    await ACS_runAlertScan();
-    console.log("✅ Alert scan completed");
+function renderAlerts(filter = "all") {
+
+  const tbody = document.getElementById("alertsTableBody");
+  const counter = document.getElementById("alertsCounter");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  // Recuperar
+  let alerts = [];
+  try {
+    alerts = ACS_getAllAlertsMerged();
+  } catch (e) {
+    alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
   }
 
-  const container = document.getElementById("alertsContainer");
-  const buttons = document.querySelectorAll(".filter-btn");
+  // Filtro
+  if (filter !== "all") {
+    alerts = alerts.filter(a =>
+      a.type?.toLowerCase() === filter ||
+      a.category?.toLowerCase() === filter
+    );
+  }
 
-  if (!container) return;
+  // Orden
+  alerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-  /* ============================================================
-     === ALERTS RENDER (Bankruptcy Compatible) — v1.0 ============
-     ============================================================ */
+  // Actualizar contador
+  counter.textContent = `Alerts (${alerts.length} total)`;
 
-  function renderAlerts(filter = "all") {
-
-    const container = document.getElementById("alertsContainer");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    // 🔥 Recuperar todas las alertas (Server + Local + HR + Bankruptcy)
-    let alerts = [];
-    try {
-      alerts = ACS_getAllAlertsMerged();    // función oficial
-    } catch (e) {
-      console.warn("⚠️ Cannot merge alerts:", e);
-      alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
-    }
-
-    // Filtro por categoría
-    if (filter !== "all") {
-      alerts = alerts.filter(a =>
-        a.type?.toLowerCase() === filter ||
-        a.category?.toLowerCase() === filter
-      );
-    }
-
-    // Si no hay alertas
-    if (alerts.length === 0) {
-      container.innerHTML = `
-        <p style="color:#cbd6ff; text-align:center; margin-top:1rem;">
+  // Sin alertas
+  if (alerts.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align:center; color:#cbd6ff; padding:1rem;">
           No alerts in this category.
-        </p>`;
-      return;
-    }
-
-    // Ordenar de más reciente a más antigua
-    alerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    // Renderizar tarjetas
-    alerts.forEach(alert => {
-
-      // Color según nivel o tipo
-      const color =
-        alert.level === "critical" ? "#ff5050" :
-        alert.level === "high"     ? "#ff9944" :
-        alert.level === "medium"   ? "#ffd85c" :
-                                     "#a8b8ff";
-
-      const card = document.createElement("div");
-      card.className = "alert-card";
-
-      card.innerHTML = `
-        <div class="alert-title" style="color:${color};">
-          ${alert.title || alert.type?.toUpperCase() || "ALERT"}
-        </div>
-
-        <div class="alert-msg">
-          ${alert.message || "(no message)"}
-        </div>
-
-        <div class="alert-time">
-          ${new Date(alert.time || alert.timestamp).toUTCString()}
-        </div>
-      `;
-
-      container.appendChild(card);
-    });
+        </td>
+      </tr>`;
+    return;
   }
 
-  // === Activar filtros ===
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      buttons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
+  // Dibujar filas
+  alerts.forEach((alert, index) => {
+    const row = document.createElement("tr");
 
-      renderAlerts(btn.dataset.filter);
-    });
+    const safeMsg = (alert.message || "").length > 60
+      ? `<span title="${alert.message}">${alert.message.substring(0,60)}...</span>`
+      : alert.message || "(no message)";
+
+    const goPage = ALERT_REDIRECT_MAP[alert.type] ||
+                   ALERT_REDIRECT_MAP[alert.category] ||
+                   "dashboard.html";
+
+    row.innerHTML = `
+      <td>${alert.type || "-"}</td>
+      <td>${alert.title || "-"}</td>
+      <td>${safeMsg}</td>
+      <td>${alert.category || "-"}</td>
+      <td>${alert.level || "-"}</td>
+      <td>${new Date(alert.timestamp).toUTCString()}</td>
+
+      <td>
+        <button class="alert-go-btn"
+          style="padding:4px 10px; margin-right:6px; border:1px solid #ffb300;
+                 background:rgba(0,255,128,0.15); color:#00ff80; border-radius:8px;
+                 cursor:pointer;"
+          onclick="window.location.href='${goPage}'">
+            Go →
+        </button>
+
+        <button class="alert-delete-btn"
+          style="padding:4px 10px; border:1px solid #ff5050;
+                 background:rgba(255,80,80,0.12); color:#ff8080; border-radius:8px;
+                 cursor:pointer;"
+          onclick="deleteAlert(${index})">
+            🗑
+        </button>
+      </td>
+    `;
+
+    tbody.appendChild(row);
   });
+}
 
-  // Primera carga
-  renderAlerts("all");
+/* === Delete Alert === */
+function deleteAlert(idx) {
+  let alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
+  alerts.splice(idx, 1);
+  localStorage.setItem("ACS_Alerts", JSON.stringify(alerts));
+  renderAlerts(document.querySelector(".filter-btn.active")?.dataset.filter || "all");
+}
 
-});  // ✅ AQUÍ SE CIERRA DOMContentLoaded CORRECTAMENTE
 </script>
 
 <script>
