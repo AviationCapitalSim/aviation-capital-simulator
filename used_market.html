@@ -540,8 +540,10 @@ function getUsedById(id) {
   return list.find(ac => ac.id === id) || null;
 }
      
-/* --------------------- BUY MODAL ---------------------------- */
-
+/* ============================================================
+   === BUY MODAL — FIX v2.4 (Capital Sync Patch) ===============
+   ============================================================ */
+     
 function openBuyModal(id) {
   selectedUsedID = id;
 
@@ -553,11 +555,26 @@ function openBuyModal(id) {
   const modalEl = document.getElementById("buyUsedModal");
   const confirmBtn = document.getElementById("confirmBuyBtn");
 
-  // Datos de finanzas
-  const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  const capital = finance.capital || 0;
+  /* ---------------------------------------------------------
+     🟦 FIX v2.4 — Leer SIEMPRE el capital real del motor
+     --------------------------------------------------------- */
+  let finance = {};
+
+  // 1) Si el motor ACS_Finance está cargado en RAM, úsalo
+  if (typeof ACS_Finance !== "undefined" && ACS_Finance !== null) {
+    finance = ACS_Finance;   // CAPITAL VIVO
+  }
+  // 2) Si aún no está en RAM, trae desde localStorage
+  else {
+    finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  }
+
+  const capital = finance.capital ?? 0;
   const enough = capital >= ac.price_acs_usd;
 
+  /* ---------------------------------------------------------
+     🟦 Información visual
+     --------------------------------------------------------- */
   titleEl.textContent = `Purchase ${ac.manufacturer} ${ac.model}`;
 
   detailsEl.innerHTML = `
@@ -570,13 +587,14 @@ function openBuyModal(id) {
       Company Capital: $${capital.toLocaleString()}
     </span><br>
 
-    ${!enough 
-      ? `<span style="color:#ff4444; font-weight:700;">❌ Not enough capital to purchase this aircraft.</span>`
-      : ""
+    ${
+      !enough
+        ? `<span style="color:#ff4444; font-weight:700;">❌ Not enough capital to purchase this aircraft.</span>`
+        : `<span style="color:#00e676; font-weight:700;">✔ Enough capital</span>`
     }
   `;
 
-  // Desactivar si no alcanza el dinero
+  // Deshabilitar botón si no alcanza
   confirmBtn.disabled = !enough;
 
   modalEl.style.display = "flex";
