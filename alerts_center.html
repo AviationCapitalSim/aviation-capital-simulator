@@ -121,85 +121,7 @@ body {
 }
 
 /* ============================================================
-   1️⃣ TABLA DE ALERTAS — Qatar Luxury (IMPORTADA DE MY AIRCRAFT)
-   ============================================================ */
-
-.fleet-table-wrapper {
-  width:94%;
-  margin:1rem auto 3rem;
-  background:#0d1c3c;
-  border-radius:10px;
-  border:1px solid rgba(255,179,0,0.25);
-  box-shadow:0 0 12px rgba(0,0,0,0.4);
-  overflow-x:auto;
-}
-
-table.fleet-table {
-  width:100%;
-  border-collapse:collapse;
-  font-size:0.9rem;
-  color:white;
-}
-
-.fleet-table thead th {
-  position:sticky;
-  top:0;
-  background:#102040;
-  color:#FFB300;
-  padding:0.7rem;
-  border-bottom:1px solid rgba(255,255,255,0.15);
-  text-align:left;
-}
-
-.fleet-table tbody tr {
-  height:58px;
-  transition:0.15s;
-}
-.fleet-table tbody tr:hover {
-  background:rgba(255,255,255,0.06);
-}
-
-.fleet-table td {
-  padding:0.7rem;
-  border-bottom:1px solid rgba(255,255,255,0.07);
-}
-
-.icon {
-  margin-right:6px;
-  opacity:0.85;
-}
-
-/* ============================================================
-   2️⃣ BOTONES DE ACCIÓN — GO → y 🗑
-   ============================================================ */
-
-.alert-go-btn {
-  padding:4px 10px;
-  border:1px solid #ffb300;
-  background:rgba(0,255,128,0.15);
-  color:#00ff80;
-  border-radius:8px;
-  cursor:pointer;
-}
-.alert-go-btn:hover {
-  transform:scale(1.05);
-  background:rgba(0,255,128,0.22);
-}
-
-.alert-delete-btn {
-  padding:4px 10px;
-  border:1px solid #ff5050;
-  background:rgba(255,80,80,0.12);
-  color:#ff8080;
-  border-radius:8px;
-  cursor:pointer;
-}
-.alert-delete-btn:hover {
-  transform:scale(1.05);
-  background:rgba(255,80,80,0.20);
-}
-/* ============================================================
-   1️⃣ ALERT TABLE — QATAR LUXURY PREMIUM 2.0 (75px row height)
+   1️⃣ TABLA QATAR LUXURY PREMIUM
    ============================================================ */
 
 .alerts-table-wrapper {
@@ -211,7 +133,6 @@ table.fleet-table {
   border: 1px solid rgba(255,179,0,0.25);
   box-shadow: 0 0 18px rgba(0,0,0,0.45);
   overflow-x: auto;
-  padding: 0;
 }
 
 table.alerts-table {
@@ -221,7 +142,6 @@ table.alerts-table {
   font-size: 0.92rem;
 }
 
-/* Header Qatar */
 .alerts-table thead th {
   background: #102040;
   color: #FFB300;
@@ -232,12 +152,11 @@ table.alerts-table {
   letter-spacing: 0.3px;
 }
 
-/* Premium row spacing */
+/* Fila premium */
 .alerts-table tbody tr {
   height: 75px;
   transition: 0.18s ease;
 }
-
 .alerts-table tbody tr:hover {
   background: rgba(255,255,255,0.06);
   box-shadow: inset 0 0 6px rgba(255,255,255,0.12);
@@ -248,39 +167,30 @@ table.alerts-table {
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-/* Icons */
-.icon {
-  margin-right: 6px;
-  opacity: 0.9;
-}
-
-/* Level Chips */
+/* Chips */
 .alert-chip {
   padding: 6px 12px;
   border-radius: 14px;
   font-size: 0.78rem;
   font-weight: 600;
 }
-
 .alert-low {
   background: rgba(90,140,255,0.15);
   border: 1px solid #5a8cff;
   color: #8ab4ff;
 }
-
 .alert-medium {
   background: rgba(255,179,0,0.15);
   border: 1px solid #ffb300;
   color: #ffca3a;
 }
-
 .alert-critical {
   background: rgba(255,80,80,0.15);
   border: 1px solid #ff5050;
   color: #ff8080;
 }
 
-/* Category Badge */
+/* Category badge */
 .alert-category {
   display: flex;
   align-items: center;
@@ -305,7 +215,6 @@ table.alerts-table {
   margin-right: 8px;
   transition: 0.2s;
 }
-
 .alert-go-btn:hover {
   transform: scale(1.05);
   background: rgba(0,255,128,0.18);
@@ -321,12 +230,11 @@ table.alerts-table {
   cursor: pointer;
   transition: 0.2s;
 }
-
 .alert-delete-btn:hover {
   transform: scale(1.05);
   background: rgba(255,80,80,0.20);
 }
-  
+
 </style>
 </head>
 
@@ -373,29 +281,26 @@ table.alerts-table {
     <button class="filter-btn" data-filter="credits">Credits</button>
   </div>
 
-/* ============================================================
-   3 DIV CLASS TABLE
-   ============================================================ */ 
+  <!-- ============================================================
+       2️⃣ TABLA QATAR LUXURY PREMIUM (Lugar Correcto)
+       ============================================================ -->
   
   <div class="alerts-table-wrapper">
-  <table class="alerts-table">
-    <thead>
-      <tr>
-        <th><span class="icon">⚠️</span>Type</th>
-        <th><span class="icon">📌</span>Title</th>
-        <th><span class="icon">💬</span>Message</th>
-        <th><span class="icon">🗂️</span>Category</th>
-        <th><span class="icon">🔥</span>Level</th>
-        <th><span class="icon">🕒</span>Timestamp</th>
-        <th><span class="icon">🚀</span>Actions</th>
-      </tr>
-    </thead>
-
-    <tbody id="alertsTableBody">
-      <!-- JS Premium llenará aquí -->
-    </tbody>
-  </table>
-</div>
+    <table class="alerts-table">
+      <thead>
+        <tr>
+          <th><span class="icon">⚠️</span>Type</th>
+          <th><span class="icon">📌</span>Title</th>
+          <th><span class="icon">💬</span>Message</th>
+          <th><span class="icon">🗂️</span>Category</th>
+          <th><span class="icon">🔥</span>Level</th>
+          <th><span class="icon">🕒</span>Timestamp</th>
+          <th><span class="icon">🚀</span>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="alertsTableBody"></tbody>
+    </table>
+  </div>
 
 </div>
 
@@ -409,7 +314,7 @@ table.alerts-table {
 <script>
 
 /* ============================================================
-   4️⃣ MAPA DE REDIRECCIÓN POR CATEGORÍA
+   3️⃣ MAPA DE REDIRECCIÓN POR CATEGORÍA
    ============================================================ */
 
 const ALERT_REDIRECT_MAP = {
@@ -423,70 +328,66 @@ const ALERT_REDIRECT_MAP = {
 };
 
 /* ============================================================
-   5️⃣ RENDER DE ALERTAS A TABLA — Qatar Luxury
+   4️⃣ RENDER DE ALERTAS PREMIUM — Qatar Luxury
    ============================================================ */
 
 function renderAlerts(filter = "all") {
 
- const tbody = document.getElementById("alertsTableBody");
-tbody.innerHTML = "";
+  let alerts = [];
+  try {
+    alerts = ACS_getAllAlertsMerged();
+  } catch(e) {
+    alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
+  }
 
-alerts.forEach(alert => {
+  if (filter !== "all") {
+    alerts = alerts.filter(a => 
+      a.type?.toLowerCase() === filter || 
+      a.category?.toLowerCase() === filter
+    );
+  }
 
-  // icons per category
-  const categoryIcon = {
-    hr: "🧍",
-    finance: "💰",
-    maintenance: "🛠️",
-    operations: "✈️",
-    routes: "🛣",
-    credits: "💳"
-  }[alert.type?.toLowerCase()] || "📘";
+  const tbody = document.getElementById("alertsTableBody");
+  tbody.innerHTML = "";
 
-  // level chip
-  const levelClass =
-    alert.level === "critical" ? "alert-chip alert-critical" :
-    alert.level === "medium"   ? "alert-chip alert-medium" :
-                                 "alert-chip alert-low";
+  alerts.forEach(alert => {
 
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td>${alert.type || "-"}</td>
+    const categoryIcon = {
+      hr: "🧍",
+      finance: "💰",
+      maintenance: "🛠️",
+      operations: "✈️",
+      routes: "🛣",
+      credits: "💳"
+    }[alert.type?.toLowerCase()] || "📘";
 
-    <td><b>${alert.title || "-"}</b></td>
+    const levelClass =
+      alert.level === "critical" ? "alert-chip alert-critical" :
+      alert.level === "medium"   ? "alert-chip alert-medium" :
+                                   "alert-chip alert-low";
 
-    <td>${alert.message || "-"}</td>
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${alert.type || "-"}</td>
+      <td><b>${alert.title || "-"}</b></td>
+      <td>${alert.message || "-"}</td>
+      <td>
+        <div class="alert-category">
+          <span>${categoryIcon}</span>
+          <span>${alert.category || alert.type}</span>
+        </div>
+      </td>
+      <td><span class="${levelClass}">${alert.level}</span></td>
+      <td>${new Date(alert.timestamp).toUTCString()}</td>
+      <td>
+        <button class="alert-go-btn" onclick="ACS_jumpToAlert('${alert.type}')">Go →</button>
+        <button class="alert-delete-btn" onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
 
-    <td>
-      <div class="alert-category">
-        <span>${categoryIcon}</span>
-        <span>${alert.category || alert.type || "-"}</span>
-      </div>
-    </td>
-
-    <td>
-      <span class="${levelClass}">
-        ${alert.level || "low"}
-      </span>
-    </td>
-
-    <td>${new Date(alert.timestamp).toUTCString()}</td>
-
-    <td>
-      <button class="alert-go-btn"
-        onclick="ACS_jumpToAlert('${alert.type}')">Go →</button>
-
-      <button class="alert-delete-btn"
-        onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
-    </td>
-  `;
-
-  tbody.appendChild(row);
-});
-
-  /* ============================================================
-     6️⃣ MÍNIMO 4 FILAS VISIBLES (PLACEHOLDERS)
-     ============================================================ */
+  /* MINIMO 4 FILAS */
   while (tbody.children.length < 4) {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
@@ -503,18 +404,7 @@ alerts.forEach(alert => {
 }
 
 /* ============================================================
-   7️⃣ ELIMINAR ALERTA
-   ============================================================ */
-
-function deleteAlert(index){
-  let alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
-  alerts.splice(index,1);
-  localStorage.setItem("ACS_Alerts", JSON.stringify(alerts));
-  renderAlerts(document.querySelector(".filter-btn.active")?.dataset.filter || "all");
-}
-
-/* ============================================================
-   8️⃣ INICIALIZACIÓN
+   5️⃣ INICIALIZACIÓN
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
