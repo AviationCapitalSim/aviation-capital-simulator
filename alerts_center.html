@@ -234,7 +234,58 @@ table.alerts-table {
   transform: scale(1.05);
   background: rgba(255,80,80,0.20);
 }
+/* === TITLES CENTRADOS SOLO EN HEADER === */
+.th-center {
+  text-align: center !important;
+}
 
+/* === ENSANCHAMOS TABLA === */
+.alerts-table-wrapper {
+  width: 98% !important;
+}
+
+/* === ANCHOS ADAPTADOS === */
+.alerts-table td:nth-child(2) {
+  width: 35%;
+}
+
+/* === BOTONES PREMIUM QATAR LUXURY === */
+  
+.alert-go-btn {
+  padding: 6px 18px;
+  border-radius: 10px;
+  background: linear-gradient(to bottom, #18e07f, #0dac63);
+  border: 1px solid #0fd47c;
+  color: #003b1f;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,255,128,0.35);
+}
+
+.alert-go-btn:hover {
+  transform: scale(0.97);
+  box-shadow: 0 0 14px rgba(0,255,128,0.55);
+}
+
+.alert-delete-btn {
+  padding: 6px 18px;
+  border-radius: 10px;
+  background: linear-gradient(to bottom, #ff5050, #d62323);
+  border: 1px solid #ff8080;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255,80,80,0.35);
+  margin-left: 6px;
+}
+
+.alert-delete-btn:hover {
+  transform: scale(0.97);
+  box-shadow: 0 0 14px rgba(255,80,80,0.55);
+}
+  
 </style>
 </head>
 
@@ -288,16 +339,16 @@ table.alerts-table {
   <div class="alerts-table-wrapper">
     <table class="alerts-table">
       <thead>
-        <tr>
-          <th><span class="icon">⚠️</span>Type</th>
-          <th><span class="icon">📌</span>Title</th>
-          <th><span class="icon">💬</span>Message</th>
-          <th><span class="icon">🗂️</span>Category</th>
-          <th><span class="icon">🔥</span>Level</th>
-          <th><span class="icon">🕒</span>Timestamp</th>
-          <th><span class="icon">🚀</span>Actions</th>
-        </tr>
-      </thead>
+       <tr>
+       <th class="th-center"><span class="icon">⚠️</span>Type</th>
+       <th class="th-center"><span class="icon">💬</span>Message</th>
+       <th class="th-center"><span class="icon">🗂️</span>Category</th>
+       <th class="th-center"><span class="icon">🔥</span>Level</th>
+       <th class="th-center"><span class="icon">🕒</span>Timestamp</th>
+       <th class="th-center"><span class="icon">🚀</span>Actions</th>
+       </tr>
+     </thead>
+
       <tbody id="alertsTableBody"></tbody>
     </table>
   </div>
@@ -369,8 +420,7 @@ function renderAlerts(filter = "all") {
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${alert.type || "-"}</td>
-      <td><b>${alert.title || "-"}</b></td>
-      <td>${alert.message || "-"}</td>
+      <td>${cleanTitle} — ${alert.message || "-"}</td>
       <td>
         <div class="alert-category">
           <span>${categoryIcon}</span>
@@ -387,9 +437,13 @@ function renderAlerts(filter = "all") {
     tbody.appendChild(row);
   });
 
+  let cleanTitle = (alert.title || "").replace("MISSING", "").trim();
+ 
   /* MINIMO 4 FILAS */
+  
   while (tbody.children.length < 4) {
     tbody.insertAdjacentHTML("beforeend", `
+  
       <tr>
         <td style="opacity:0.4;">—</td>
         <td style="opacity:0.4;">No alerts</td>
