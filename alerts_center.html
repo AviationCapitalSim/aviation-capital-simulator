@@ -198,7 +198,135 @@ table.fleet-table {
   transform:scale(1.05);
   background:rgba(255,80,80,0.20);
 }
+/* ============================================================
+   1️⃣ ALERT TABLE — QATAR LUXURY PREMIUM 2.0 (75px row height)
+   ============================================================ */
 
+.alerts-table-wrapper {
+  width: 94%;
+  margin: 2rem auto 3rem;
+  background: rgba(13, 28, 60, 0.55);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  border: 1px solid rgba(255,179,0,0.25);
+  box-shadow: 0 0 18px rgba(0,0,0,0.45);
+  overflow-x: auto;
+  padding: 0;
+}
+
+table.alerts-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+  font-size: 0.92rem;
+}
+
+/* Header Qatar */
+.alerts-table thead th {
+  background: #102040;
+  color: #FFB300;
+  padding: 1rem;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  text-align: left;
+  letter-spacing: 0.3px;
+}
+
+/* Premium row spacing */
+.alerts-table tbody tr {
+  height: 75px;
+  transition: 0.18s ease;
+}
+
+.alerts-table tbody tr:hover {
+  background: rgba(255,255,255,0.06);
+  box-shadow: inset 0 0 6px rgba(255,255,255,0.12);
+}
+
+.alerts-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Icons */
+.icon {
+  margin-right: 6px;
+  opacity: 0.9;
+}
+
+/* Level Chips */
+.alert-chip {
+  padding: 6px 12px;
+  border-radius: 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.alert-low {
+  background: rgba(90,140,255,0.15);
+  border: 1px solid #5a8cff;
+  color: #8ab4ff;
+}
+
+.alert-medium {
+  background: rgba(255,179,0,0.15);
+  border: 1px solid #ffb300;
+  color: #ffca3a;
+}
+
+.alert-critical {
+  background: rgba(255,80,80,0.15);
+  border: 1px solid #ff5050;
+  color: #ff8080;
+}
+
+/* Category Badge */
+.alert-category {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  font-size: 0.82rem;
+  color: #d0dbff;
+}
+
+/* Buttons */
+.alert-go-btn {
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid #00ff80;
+  background: rgba(0,255,128,0.10);
+  color: #00ff80;
+  font-size: 0.82rem;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: 0.2s;
+}
+
+.alert-go-btn:hover {
+  transform: scale(1.05);
+  background: rgba(0,255,128,0.18);
+}
+
+.alert-delete-btn {
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid #ff5050;
+  background: rgba(255,80,80,0.10);
+  color: #ff8080;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.alert-delete-btn:hover {
+  transform: scale(1.05);
+  background: rgba(255,80,80,0.20);
+}
+  
 </style>
 </head>
 
@@ -245,28 +373,29 @@ table.fleet-table {
     <button class="filter-btn" data-filter="credits">Credits</button>
   </div>
 
-  <!-- ============================================================
-       3️⃣ TABLA ACS — ALERTS TABLE (REEMPLAZA alertContainer)
-       ============================================================ -->
+/* ============================================================
+   3 DIV CLASS TABLE
+   ============================================================ */ 
+  
+  <div class="alerts-table-wrapper">
+  <table class="alerts-table">
+    <thead>
+      <tr>
+        <th><span class="icon">⚠️</span>Type</th>
+        <th><span class="icon">📌</span>Title</th>
+        <th><span class="icon">💬</span>Message</th>
+        <th><span class="icon">🗂️</span>Category</th>
+        <th><span class="icon">🔥</span>Level</th>
+        <th><span class="icon">🕒</span>Timestamp</th>
+        <th><span class="icon">🚀</span>Actions</th>
+      </tr>
+    </thead>
 
-  <div class="fleet-table-wrapper">
-    <table class="fleet-table" id="alertsTable">
-      <thead>
-        <tr>
-          <th><span class="icon">⚠️</span>Type</th>
-          <th><span class="icon">📌</span>Title</th>
-          <th><span class="icon">💬</span>Message</th>
-          <th><span class="icon">📘</span>Category</th>
-          <th><span class="icon">🔥</span>Level</th>
-          <th><span class="icon">⏱</span>Timestamp</th>
-          <th><span class="icon">🚀</span>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="alertsTableBody">
-        <!-- JS fills here -->
-      </tbody>
-    </table>
-  </div>
+    <tbody id="alertsTableBody">
+      <!-- JS Premium llenará aquí -->
+    </tbody>
+  </table>
+</div>
 
 </div>
 
@@ -299,54 +428,61 @@ const ALERT_REDIRECT_MAP = {
 
 function renderAlerts(filter = "all") {
 
-  const tbody = document.getElementById("alertsTableBody");
-  if (!tbody) return;
+ const tbody = document.getElementById("alertsTableBody");
+tbody.innerHTML = "";
 
-  tbody.innerHTML = "";
+alerts.forEach(alert => {
 
-  let alerts = [];
-  try { alerts = ACS_getAllAlertsMerged(); }
-  catch { alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]"); }
+  // icons per category
+  const categoryIcon = {
+    hr: "🧍",
+    finance: "💰",
+    maintenance: "🛠️",
+    operations: "✈️",
+    routes: "🛣",
+    credits: "💳"
+  }[alert.type?.toLowerCase()] || "📘";
 
-  if (filter !== "all") {
-    alerts = alerts.filter(a =>
-      a.type?.toLowerCase() === filter ||
-      a.category?.toLowerCase() === filter
-    );
-  }
+  // level chip
+  const levelClass =
+    alert.level === "critical" ? "alert-chip alert-critical" :
+    alert.level === "medium"   ? "alert-chip alert-medium" :
+                                 "alert-chip alert-low";
 
-  alerts.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${alert.type || "-"}</td>
 
-  // Render real rows
-  alerts.forEach((alert, idx) => {
+    <td><b>${alert.title || "-"}</b></td>
 
-    const goPage = ALERT_REDIRECT_MAP[alert.type] ||
-                   ALERT_REDIRECT_MAP[alert.category] ||
-                   "dashboard.html";
+    <td>${alert.message || "-"}</td>
 
-    const message =
-      (alert.message || "").length > 60
-      ? `<span title="${alert.message}">${alert.message.substring(0,60)}...</span>`
-      : alert.message;
+    <td>
+      <div class="alert-category">
+        <span>${categoryIcon}</span>
+        <span>${alert.category || alert.type || "-"}</span>
+      </div>
+    </td>
 
-    const row = `
-      <tr>
-        <td>${alert.type || "-"}</td>
-        <td>${alert.title || "-"}</td>
-        <td>${message || "-"}</td>
-        <td>${alert.category || "-"}</td>
-        <td>${alert.level || "-"}</td>
-        <td>${new Date(alert.timestamp).toUTCString()}</td>
+    <td>
+      <span class="${levelClass}">
+        ${alert.level || "low"}
+      </span>
+    </td>
 
-        <td>
-          <button class="alert-go-btn" onclick="window.location.href='${goPage}'">Go →</button>
-          <button class="alert-delete-btn" onclick="deleteAlert(${idx})">🗑</button>
-        </td>
-      </tr>
-    `;
+    <td>${new Date(alert.timestamp).toUTCString()}</td>
 
-    tbody.insertAdjacentHTML("beforeend", row);
-  });
+    <td>
+      <button class="alert-go-btn"
+        onclick="ACS_jumpToAlert('${alert.type}')">Go →</button>
+
+      <button class="alert-delete-btn"
+        onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
+    </td>
+  `;
+
+  tbody.appendChild(row);
+});
 
   /* ============================================================
      6️⃣ MÍNIMO 4 FILAS VISIBLES (PLACEHOLDERS)
