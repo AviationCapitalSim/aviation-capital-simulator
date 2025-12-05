@@ -104,22 +104,6 @@ body {
   text-align:center; color:#cbd6ff; margin-bottom:2rem;
 }
 
-/* FILTERS ORIGINAL */
-.alerts-filters {
-  display:flex; justify-content:center; flex-wrap:wrap;
-  gap:1rem; margin-bottom:2rem;
-}
-.filter-btn {
-  padding:0.55rem 1.3rem; border-radius:12px;
-  border:1px solid rgba(255,179,0,0.35);
-  background:rgba(255,179,0,0.08); color:#ffca3a; font-weight:600;
-}
-.filter-btn:hover,
-.filter-btn.active {
-  background:rgba(255,179,0,0.20);
-  box-shadow:0 0 14px rgba(255,200,60,0.5);
-}
-
 /* ============================================================
    1️⃣ TABLA QATAR LUXURY PREMIUM
    ============================================================ */
@@ -468,15 +452,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (typeof ACS_runAlertScan === "function") {
     await ACS_runAlertScan();
   }
-
-  const buttons = document.querySelectorAll(".filter-btn");
-  buttons.forEach(btn => {
-    btn.addEventListener("click",()=>{
-      buttons.forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      renderAlerts(btn.dataset.filter);
-    });
-  });
 
   renderAlerts("all");
 });
