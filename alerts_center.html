@@ -373,23 +373,77 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // === Primera carga REAL ===
-  renderAlerts("all");
+  /* ============================================================
+   === ALERTS RENDER (Bankruptcy Compatible) — v1.0 ============
+   ============================================================ */
 
-  // Activar filtros
-  const allBtn = [...buttons].find(b => b.dataset.filter === "all");
-  if (allBtn) allBtn.classList.add("active");
+function renderAlerts(filter = "all") {
 
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      buttons.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
+  const container = document.getElementById("alertsContainer");
+  if (!container) return;
 
-      const filter = btn.dataset.filter;
-      renderAlerts(filter);
-    });
+  container.innerHTML = "";
+
+  // 🔥 Recuperar todas las alertas (Server + Local + HR + Bankruptcy)
+  let alerts = [];
+  try {
+    alerts = ACS_getAllAlertsMerged();    // tu función oficial
+  } catch (e) {
+    console.warn("⚠️ Cannot merge alerts:", e);
+    alerts = JSON.parse(localStorage.getItem("ACS_Alerts") || "[]");
+  }
+
+  // Filtro por categoría
+  if (filter !== "all") {
+    alerts = alerts.filter(a =>
+      a.type?.toLowerCase() === filter ||
+      a.category?.toLowerCase() === filter
+    );
+  }
+
+  // Si no hay alertas
+  if (alerts.length === 0) {
+    container.innerHTML = `
+      <p style="color:#cbd6ff; text-align:center; margin-top:1rem;">
+        No alerts in this category.
+      </p>`;
+    return;
+  }
+
+  // Ordenar de más reciente a más antigua
+  alerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  // Renderizar tarjetas
+  alerts.forEach(alert => {
+
+    // Color según nivel o tipo
+    const color =
+      alert.level === "critical" ? "#ff5050" :
+      alert.level === "high"     ? "#ff9944" :
+      alert.level === "medium"   ? "#ffd85c" :
+                                   "#a8b8ff";
+
+    const card = document.createElement("div");
+    card.className = "alert-card";
+
+    card.innerHTML = `
+      <div class="alert-title" style="color:${color};">
+        ${alert.title || alert.type?.toUpperCase() || "ALERT"}
+      </div>
+
+      <div class="alert-msg">
+        ${alert.message || "(no message)"}
+      </div>
+
+      <div class="alert-time">
+        ${new Date(alert.time || alert.timestamp).toUTCString()}
+      </div>
+    `;
+
+    container.appendChild(card);
   });
-});
+}
+
 </script>
 
 <script>
