@@ -317,3 +317,11 @@ window.addEventListener("storage", (e) => {
   }
 
 });
+
+/* ============================================================
+   === REGISTER BANKRUPTCY CHECK — v1.0 ========================
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+    registerTimeListener(ACS_checkBankruptcy);
+}
