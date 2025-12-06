@@ -328,6 +328,151 @@ tr:nth-child(even) {
   color: #dbe4ff;
   font-weight: 600;
 }
+
+/* ===============================================================
+   HR FULL MODAL — Qatar Luxury Edition (Buy New Style)
+   ============================================================== */
+
+.hr-full-modal {
+  width: 700px !important;
+  padding: 2.2rem 2rem;
+  border-radius: 22px !important;
+  background: linear-gradient(180deg,#102040,#071120);
+  border: 1px solid rgba(255,179,0,0.35);
+  box-shadow: 0 0 45px rgba(255,179,0,0.25);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.hr-modal-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffca3a;
+  margin-bottom: 0.2rem;
+  text-shadow: 0 0 12px rgba(255,190,60,0.5);
+}
+
+.hr-modal-sub {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: #cdd9ff;
+}
+
+/* BLOCK (cada sección) */
+.hr-block {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,190,60,0.20);
+  padding: 1.2rem 1rem;
+  border-radius: 16px;
+  margin-bottom: 1.6rem;
+  text-align: left;
+}
+
+.hr-block-title {
+  color: #ffb300;
+  font-size: 1.2rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Labels */
+.hr-label {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+  color: #ffca3a;
+}
+
+/* Select */
+.hr-select {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,200,60,0.35);
+  background: rgba(255,255,255,0.07);
+  color: white;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+/* COST */
+.hr-cost {
+  color: #cdd9ff;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Buttons */
+.hr-btn-confirm {
+  width: 100%;
+  padding: 0.8rem;
+  background: #00a86b;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.hr-btn-danger {
+  width: 100%;
+  padding: 0.8rem;
+  background: #ff4747;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.hr-btn-gold {
+  width: 100%;
+  padding: 0.8rem;
+  background: #ffb300;
+  color: #0c1f3c;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.hr-btn-close {
+  width: 100%;
+  padding: 0.9rem;
+  background: #b13f3f;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 0.8rem;
+}
+
+.hr-btn-disabled {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.15);
+  color: #777;
+  border: none;
+  font-size: 1rem;
+}
+
+.hr-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Warning */
+.hr-warning {
+  color: #ff6b6b;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+     
 </style>
 </head>
 
@@ -393,57 +538,121 @@ tr:nth-child(even) {
 
 </main>
 
-<!-- ============================================================
-     === MODALS (SIN CAMBIOS) ===================================
-     ============================================================ -->
+<!-- ============================================================== -->
+<!-- 🔶 HR FULL CONTROL MODAL — Qatar Luxury Edition — BUY NEW Style -->
+<!-- ============================================================== -->
+<div class="acs-modal" id="hrFullModal">
+  <div class="acs-modal-content hr-full-modal">
 
-<!-- BONUS -->
-<div class="acs-modal" id="bonusModal">
-  <div class="acs-modal-content">
-    <button class="close-modal" onclick="closeModal('bonusModal')">✖</button>
-    <h3>Assign Department Bonus</h3>
-    <p id="bonusDeptName">Department</p>
-    <input type="range" min="20" max="100" step="10" value="20" id="bonusRange">
-    <p>Bonus: <span id="bonusValue">20%</span></p>
-    <p>Estimated Cost: <span id="bonusCost">0</span> USD</p>
-    <button class="modal-btn" onclick="confirmBonus()">Confirm Bonus</button>
+    <!-- Close -->
+    <button class="close-modal" onclick="closeHRFullModal()">✖</button>
+
+    <!-- HEADER -->
+    <h2 class="hr-modal-title">
+      <span id="hrModalDeptName">Department</span>
+    </h2>
+    <p class="hr-modal-sub">Department Control Panel</p>
+
+    <!-- ========================================================= -->
+    <!-- SUMMARY BLOCK — Info General del Departamento -->
+    <!-- ========================================================= -->
+    <div class="hr-block">
+      <h3 class="hr-block-title">Department Summary</h3>
+      <p><span>Current Staff:</span> <strong id="sumStaff">0</strong></p>
+      <p><span>Required Staff:</span> <strong id="sumRequired">0</strong></p>
+      <p><span>Difference:</span> <strong id="sumDifference">0</strong></p>
+      <p><span>Morale:</span> <strong id="sumMorale">0%</strong></p>
+      <p><span>Salary per Employee:</span> <strong id="sumSalary">$0</strong></p>
+      <p><span>Monthly Payroll:</span> <strong id="sumPayroll">$0</strong></p>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- HIRE STAFF BLOCK -->
+    <!-- ========================================================= -->
+    <div class="hr-block">
+      <h3 class="hr-block-title">Hire Staff</h3>
+
+      <label class="hr-label">Select Quantity</label>
+      <select id="hireQty" class="hr-select">
+        ${Array.from({length:20}).map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
+      </select>
+
+      <p class="hr-cost">Cost: <strong id="hireCost">$0</strong></p>
+
+      <button class="hr-btn-confirm" onclick="HR_confirmHireFull()">
+        Confirm Hire
+      </button>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- FIRE STAFF BLOCK -->
+    <!-- ========================================================= -->
+    <div class="hr-block">
+      <h3 class="hr-block-title">Fire Staff</h3>
+
+      <label class="hr-label">Select Quantity</label>
+      <select id="fireQty" class="hr-select"></select>
+
+      <p id="fireWarning" class="hr-warning">—</p>
+
+      <button class="hr-btn-danger" onclick="HR_confirmFireFull()">
+        Confirm Dismissal
+      </button>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- SALARY ADJUST BLOCK -->
+    <!-- ========================================================= -->
+    <div class="hr-block">
+      <h3 class="hr-block-title">Adjust Salary</h3>
+
+      <input type="range" min="50" max="150" value="100" step="5" id="salaryRangeFull">
+
+      <p>Adjustment: <strong id="salaryValFull">100%</strong></p>
+      <p>New Salary: <strong id="salaryNewFull">$0</strong></p>
+      <p>Monthly Payroll After Change: <strong id="salaryAfterFull">$0</strong></p>
+
+      <button class="hr-btn-gold" onclick="HR_confirmSalaryFull()">
+        Apply Adjustment
+      </button>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- BONUS (DISABLED) -->
+    <!-- ========================================================= -->
+    <div class="hr-block hr-disabled">
+      <h3 class="hr-block-title">Bonus (Coming Soon)</h3>
+
+      <input type="range" min="20" max="100" disabled>
+
+      <p><em>Bonus system will be activated later.</em></p>
+
+      <button class="hr-btn-disabled" disabled>Bonus Disabled</button>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- AUTO BALANCE STAFF -->
+    <!-- ========================================================= -->
+    <div class="hr-block">
+      <h3 class="hr-block-title">⚖️ Auto-Balance Staff</h3>
+
+      <p><span>Missing / Excess:</span> <strong id="autoDiff">0</strong></p>
+
+      <button class="hr-btn-gold" onclick="HR_autoAdjustFull()">
+        ⚖️ Auto-Balance Staff
+      </button>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- CLOSE BUTTON -->
+    <!-- ========================================================= -->
+    <button class="hr-btn-close" onclick="closeHRFullModal()">
+      Close
+    </button>
+
   </div>
 </div>
 
-<!-- HIRE -->
-<div class="acs-modal" id="hireModal">
-  <div class="acs-modal-content">
-    <button class="close-modal" onclick="closeModal('hireModal')">✖</button>
-    <h3>Hire New Staff</h3>
-    <p id="hireDeptName">Department</p>
-    <input type="number" id="hireCount" min="1" max="50" value="1">
-    <p>Cost: <span id="hireCost">0</span> USD</p>
-    <button class="modal-btn" onclick="confirmHire()">Confirm Hire</button>
-  </div>
-</div>
-
-<!-- ADJUST SALARY -->
-<div class="acs-modal" id="salaryModal">
-  <div class="acs-modal-content">
-    <button class="close-modal" onclick="closeModal('salaryModal')">✖</button>
-    <h3>Adjust Department Salary</h3>
-    <p id="salaryDeptName">Department</p>
-    <input type="range" min="50" max="150" step="5" value="100" id="salaryRange">
-    <p>Adjustment: <span id="salaryValue">100%</span></p>
-    <button class="modal-btn" onclick="confirmSalary()">Apply Adjustment</button>
-  </div>
-</div>
-
-<!-- DISMISS -->
-<div class="acs-modal" id="dismissModal">
-  <div class="acs-modal-content">
-    <button class="close-modal" onclick="closeModal('dismissModal')">✖</button>
-    <h3>Confirm Dismissal</h3>
-    <p id="dismissDeptName">Department</p>
-    <input type="number" id="dismissCount" min="1" max="50" value="1">
-    <button class="modal-btn" onclick="confirmDismiss()">Confirm</button>
-  </div>
-</div>
 
 <footer class="acs-footer">
   © 2025 Aviation Capital Simulator. All rights reserved.
@@ -603,6 +812,126 @@ window.addEventListener("DOMContentLoaded", () => {
     updateClockDisplay();
   }
 });
+
+/* ============================================================
+   HR FULL MODAL — Functions
+   ============================================================ */
+
+let HR_active = null;
+
+function openHRFullModal(id) {
+  HR_active = id;
+  const hr = ACS_HR_load()[id];
+
+  // Header
+  document.getElementById("hrModalDeptName").textContent = hr.name;
+
+  // Summary
+  document.getElementById("sumStaff").textContent = hr.staff;
+  document.getElementById("sumRequired").textContent = hr.required || hr.staff;
+  const diff = (hr.required || hr.staff) - hr.staff;
+  document.getElementById("sumDifference").textContent = diff;
+  document.getElementById("sumMorale").textContent = hr.morale + "%";
+  document.getElementById("sumSalary").textContent = "$" + hr.salary;
+  document.getElementById("sumPayroll").textContent = "$" + hr.payroll;
+
+  // Hire costs
+  updateHireCost(hr);
+
+  // Fire options
+  const fireSel = document.getElementById("fireQty");
+  fireSel.innerHTML = "";
+  for (let i = 1; i <= hr.staff; i++) {
+    fireSel.innerHTML += `<option value="${i}">${i}</option>`;
+  }
+
+  document.getElementById("fireWarning").textContent = "—";
+
+  // Salary slider
+  document.getElementById("salaryRangeFull").value = 100;
+  document.getElementById("salaryValFull").textContent = "100%";
+  document.getElementById("salaryNewFull").textContent = "$" + hr.salary;
+  document.getElementById("salaryAfterFull").textContent = "$" + hr.payroll;
+
+  // Auto-balance
+  document.getElementById("autoDiff").textContent = diff;
+
+  document.getElementById("hrFullModal").style.display = "flex";
+}
+
+/* Update hire cost when changing qty */
+function updateHireCost(hr=null) {
+  if (!hr) hr = ACS_HR_load()[HR_active];
+  const qty = parseInt(document.getElementById("hireQty").value);
+  document.getElementById("hireCost").textContent =
+    "$" + (qty * hr.salary);
+}
+
+/* Confirm hire */
+function HR_confirmHireFull() {
+  const qty = parseInt(document.getElementById("hireQty").value);
+  ACS_HR_hire(HR_active, qty);
+  closeHRFullModal();
+  loadDepartments();
+}
+
+/* Confirm fire */
+function HR_confirmFireFull() {
+  const qty = parseInt(document.getElementById("fireQty").value);
+  ACS_HR_fire(HR_active, qty);
+  closeHRFullModal();
+  loadDepartments();
+}
+
+/* Salary change */
+document.getElementById("salaryRangeFull").addEventListener("input", () => {
+  const hr = ACS_HR_load()[HR_active];
+  const val = parseInt(salaryRangeFull.value);
+  document.getElementById("salaryValFull").textContent = val + "%";
+
+  const newSalary = Math.round(hr.salary * (val / 100));
+  document.getElementById("salaryNewFull").textContent = "$" + newSalary;
+
+  const newPayroll = newSalary * hr.staff;
+  document.getElementById("salaryAfterFull").textContent = "$" + newPayroll;
+});
+
+function HR_confirmSalaryFull() {
+  const val = parseInt(document.getElementById("salaryRangeFull").value);
+  ACS_HR_adjustSalary(HR_active, val);
+  closeHRFullModal();
+  loadDepartments();
+}
+
+/* Auto balance */
+function HR_autoAdjustFull() {
+  const hr = ACS_HR_load()[HR_active];
+  const req = hr.required || hr.staff;
+  const cur = hr.staff;
+  const diff = req - cur;
+
+  if (diff === 0) {
+    alert("Department already balanced.");
+    return;
+  }
+
+  if (diff > 0) {
+    ACS_HR_hire(HR_active, diff);
+  } else {
+    const toFire = Math.abs(diff);
+    const ok = confirm(`⚠️ Are you sure you want to fire ${toFire} employees?`);
+    if (ok) ACS_HR_fire(HR_active, toFire);
+  }
+
+  closeHRFullModal();
+  loadDepartments();
+}
+
+/* Close */
+function closeHRFullModal() {
+  document.getElementById("hrFullModal").style.display = "none";
+}
+     
 </script>
 
 </body>
