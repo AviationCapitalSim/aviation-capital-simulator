@@ -354,16 +354,19 @@ table.alerts-table {
   
   <div class="alerts-table-wrapper">
     <table class="alerts-table">
-      <thead>
-       <tr>
-       <th class="th-center"><span class="icon">⚠️</span>Type</th>
-       <th class="th-center"><span class="icon">💬</span>Message</th>
-       <th class="th-center"><span class="icon">🗂️</span>Category</th>
-       <th class="th-center"><span class="icon">🔥</span>Level</th>
-       <th class="th-center"><span class="icon">🕒</span>Timestamp</th>
-       <th class="th-center"><span class="icon">🚀</span>Actions</th>
-       </tr>
-     </thead>
+      
+      <!-- 🔵 BLOQUE 1 — THEAD SIN TYPE NI EMOJIS -->
+      
+   <thead>
+    <tr>
+       <th class="th-center">Message</th>
+       <th class="th-center">Category</th>
+       <th class="th-center">Level</th>
+       <th class="th-center">Timestamp</th>
+       <th class="th-center">Actions</th>
+    </tr>
+  </thead>
+
 
       <tbody id="alertsTableBody"></tbody>
     </table>
@@ -421,11 +424,13 @@ function renderAlerts(filter = "all") {
   alerts.forEach(alert => {
 
     // 1️⃣ Limpiar título
+    
     let cleanTitle = (alert.title || "")
       .replace("MISSING", "")
       .trim();
 
     // 2️⃣ Icono por categoría
+    
     const categoryIcon = {
       hr: "🧍",
       finance: "💰",
@@ -436,41 +441,46 @@ function renderAlerts(filter = "all") {
     }[alert.type?.toLowerCase()] || "📘";
 
     // 3️⃣ Chip de level
+    
     const levelClass =
       alert.level === "critical" ? "alert-chip alert-critical" :
       alert.level === "medium"   ? "alert-chip alert-medium" :
                                    "alert-chip alert-low";
 
     // 4️⃣ Fila premium
+    
     const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${alert.type || "-"}</td>
-      <td>${cleanTitle} — ${alert.message || "-"}</td>
+   
+    /* 🔵 BLOQUE 1 — TBODY SIN TYPE */
+    
+  row.innerHTML = `
+  <td>${cleanTitle} — ${alert.message || "-"}</td>
 
-      <td>
-        <div class="alert-category">
-          <span>${categoryIcon}</span>
-          <span>${alert.category || alert.type || "-"}</span>
-        </div>
-      </td>
+  <td>
+    <div class="alert-category">
+      <span>${categoryIcon}</span>
+      <span>${alert.category || alert.type || "-"}</span>
+    </div>
+  </td>
 
-      <td><span class="${levelClass}">${alert.level}</span></td>
+  <td><span class="${levelClass}">${alert.level}</span></td>
 
-      <td>${new Date(alert.timestamp).toUTCString()}</td>
+  <td>${new Date(alert.timestamp).toUTCString()}</td>
 
-      <td style="text-align:center;">
-        <button class="alert-go-btn"
-          onclick="ACS_jumpToAlert('${alert.type}')">Go →</button>
+  <td style="text-align:center;">
+    <button class="alert-go-btn"
+      onclick="ACS_jumpToAlert('${alert.type}')">Go →</button>
 
-        <button class="alert-delete-btn"
-          onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
-      </td>
-    `;
-
+    <button class="alert-delete-btn"
+      onclick="ACS_deleteAlert('${alert.id}')">🗑</button>
+  </td>
+`;
+    
     tbody.appendChild(row);
   });
 
   // 5️⃣ Mínimo 4 filas siempre
+  
   while (tbody.children.length < 4) {
     tbody.insertAdjacentHTML("beforeend", `
       <tr>
