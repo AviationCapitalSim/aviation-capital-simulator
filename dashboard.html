@@ -363,6 +363,39 @@ body {
   box-shadow: 0 0 18px rgba(255,179,0,0.25);
   text-shadow: 0 0 10px rgba(255,180,0,0.25);
 }
+/* ============================================================
+   1️⃣ WELCOME MINI CHIPS — Qatar Luxury Premium (v1.0)
+   ============================================================ */
+
+.welcome-badges {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;             /* Aire entre chips */
+  margin-top: 22px;      /* Distancia desde el título Welcome */
+}
+
+.welcome-chip {
+  padding: 6px 14px;     
+  font-size: 0.82rem;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.12);
+  border: 1px solid rgba(255,179,0,0.35);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 6px rgba(0,0,0,0.35);
+}
+
+/* ⭐ Chip: Base en Azul Qatar Royal */
+.welcome-chip.base-chip {
+  background: rgba(0, 102, 204, 0.20);
+  border: 1px solid rgba(0, 135, 255, 0.50);
+  color: #3aaaff;
+  font-weight: 600;
+}
   
 </style>
 </head>
@@ -393,9 +426,32 @@ body {
 
 <main class="acs-main">
 
-  <h2 id="welcomeMessage"></h2>
-  <p id="airlineSub"></p>
-  <p id="baseInfo" style="color:#ffb300; font-weight:600;"></p>
+  <!-- ============================================================
+     2️⃣ WELCOME SECTION — Qatar Luxury Mini Chips (v1.1)
+     Reemplaza: welcomeMessage + airlineSub + baseInfo
+   ============================================================ -->
+
+<h2 id="welcomeMessage"></h2>
+
+<div class="welcome-badges">
+
+  <!-- RANK -->
+  <div class="welcome-chip">
+    🏅 <span id="chipRank">Silver Carrier Rank</span>
+  </div>
+
+  <!-- WORLD / COUNTRY -->
+  <div class="welcome-chip">
+    🌍 <span id="chipWorld">World</span>
+  </div>
+
+  <!-- BASE (AZUL QATAR ROYAL) -->
+  <div class="welcome-chip base-chip">
+    📍 <span id="chipBase">Base: Napoli (LIRN)</span>
+  </div>
+
+</div>
+
 
   <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
@@ -1074,7 +1130,44 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 10000);
 
 });
+  
+/* ============================================================
+   3️⃣ WELCOME CHIP DATA ENGINE — Dashboard Integration v1.2
+   ------------------------------------------------------------
+   Ubicación: encima del BLOQUE 6 (Alert Badge)
+   Objetivo: alimentar Rank, World, Base en los chips Qatar Mini
+   ============================================================ */
 
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Elementos de los chips
+  const chipRank = document.getElementById("chipRank");
+  const chipWorld = document.getElementById("chipWorld");
+  const chipBase = document.getElementById("chipBase");
+
+  // Evitar errores si no existen los chips aún
+  if (!chipRank || !chipWorld || !chipBase) return;
+
+  // Cargar datos del usuario
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  // Rank
+  if (activeUser.airline && activeUser.airline.rank) {
+    chipRank.textContent = activeUser.airline.rank;
+  }
+
+  // País / Mundo
+  if (activeUser.airline && activeUser.airline.country) {
+    chipWorld.textContent = activeUser.airline.country;
+  }
+
+  // Base
+  if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
+    chipBase.textContent = `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
+  }
+
+});
+  
 /* 🟠 BLOQUE 6 — ALERT BADGE (Qatar Luxury)
    ---------------------------------------------------
    Ubicación: al final del dashboard, antes de </body>
@@ -1104,6 +1197,7 @@ document.addEventListener("DOMContentLoaded", () => {
   title.appendChild(badge);
 
   // 3) Función para actualizar el badge
+  
   function updateOperationalBadge() {
     let alerts = [];
 
