@@ -749,32 +749,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
 
-<script>
-  
-/* ============================================================
-   === AIRLINE RANK SYSTEM (Phase 1 - Static) ==================
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const rankEl = document.createElement("div");
-  rankEl.id = "airlineRank";
-
-  // ✨ Más adelante será dinámico (según flota/valor).
-  // Por ahora dejamos uno muy limpio:
-  rankEl.innerHTML = "🏅 Silver Carrier Rank";
-
-  // Insertarlo justo debajo del welcomeMessage
-  const welcome = document.getElementById("welcomeMessage");
-  welcome.insertAdjacentElement("afterend", rankEl);
-
-});
-</script>
-  
 <!-- ============================================================
      === TOP 3 ALERTS — BETA REAL ================================
    ============================================================ -->
+  
 <script>
+  
 document.addEventListener("DOMContentLoaded", () => {
 
   if (typeof ACS_runAlertScan === "function") {
@@ -995,7 +975,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
   
-  <script>
+<script>
 /* ============================================================
    === DASHBOARD FALLBACK — REBUILD BASE IF MISSING ============
    ============================================================ */
@@ -1054,6 +1034,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ======================================
   // 2) Render principal de alertas (TOP 3)
   // ======================================
+  
   function renderDashboardAlerts() {
     const list  = document.getElementById("alertsList");
     const title = document.getElementById("dashboardAlertTitle");
@@ -1116,6 +1097,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =======================================================
   // 3) Auto-refresh cada 10 segundos (como alert_center)
   // =======================================================
+  
   setInterval(async () => {
     try {
       await ACS_runAlertScan();    // servidor + game time
@@ -1242,22 +1224,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (airlineData.country) {
     chipWorld.textContent = airlineData.country;
   }
+  
+  // CHIP BASE — ahora con bandera 
+  
+if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
 
-  // Base
-  if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
-    chipBase.textContent = `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
-  }
+  const flag = getFlagEmojiFromCountryName(activeUser.base.country);
+
+  chipBase.innerHTML =
+    `${flag} Base: ${activeUser.base.city} (${activeUser.base.icao})`;
+}
+
 
 });
 
 <script>
+  
 /* ============================================================
-   3.1 DASHBOARD AIRLINE LOADER — Qatar Luxury v2.0
+   3.1 DASHBOARD AIRLINE LOADER — Qatar Luxury v2.1
    ------------------------------------------------------------
-   Este bloque:
-   ✔ Toma airline_id del ACS_activeUser
-   ✔ Llama al Apps Script → getAirline
-   ✔ Rellena Welcome, World, Base (chips Qatar)
+   ✔ Corrige error de <script> duplicado
+   ✔ Corrige chips duplicados
+   ✔ Añade Bandera a Base
+   ✔ Welcome usa airline real
+   ✔ Elimina rank duplicado
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -1277,9 +1267,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const airlineId = airlineData;
 
     try {
-      // === 2) Llamada al Apps Script ===
       const url =
-        `https://script.google.com/macros/s/AKfycbwYTmVbY6XKxpJYLm11kM302IBvZ7KT9on8IhZXhqpXbXj4CLXAm6499aYjQ6HL_TP/exec` +
+        "https://script.google.com/macros/s/AKfycbwYTmVbY6XKxpJYLm11kM302IBvZ7KT9on8IhZXhqpXbXj4CLXAm6499aYjQ6HL_TP/exec" +
         `?action=getAirline&airline_id=${airlineId}`;
 
       const response = await fetch(url);
@@ -1288,9 +1277,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (result.status === "success") {
         airlineData = result.airline;
 
-        // Guardar en localStorage el objeto completo
+        // Guardar objeto completo
         activeUser.airline = airlineData;
         localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+
       } else {
         console.warn("⚠ Airline not found in sheet.");
       }
@@ -1302,39 +1292,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   /* === 3) Actualizar Welcome + Chips === */
 
-  const welcome = document.getElementById("welcomeMessage");
-  const chipRank = document.getElementById("chipRank");
-  const chipWorld = document.getElementById("chipWorld");
-  const chipBase = document.getElementById("chipBase");
+  const welcome     = document.getElementById("welcomeMessage");
+  const chipRank    = document.getElementById("chipRank");
+  const chipWorld   = document.getElementById("chipWorld");
+  const chipBase    = document.getElementById("chipBase");
 
-  // WELCOME NAME
+  /* --- WELCOME NAME --- */
   if (airlineData && airlineData.name) {
     welcome.textContent = `Welcome, ${airlineData.name}`;
   } else {
     welcome.textContent = "Welcome, Captain";
   }
 
-  // CHIP WORLD — País
+  /* --- RANK (simple, estático por ahora) --- */
+  if (chipRank) {
+    chipRank.textContent = "Silver Carrier Rank";
+  }
+
+  /* --- WORLD CHIP (country) --- */
   if (airlineData && airlineData.country) {
     chipWorld.textContent = airlineData.country;
   }
 
-  // CHIP BASE
+  /* --- BASE CHIP (con bandera) --- */
   if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
-    chipBase.textContent =
-      `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
-  }
 
-  // CHIP RANK (estático por ahora)
-  if (chipRank) {
-    chipRank.textContent = "Silver Carrier Rank";
+    const flag = getFlagEmojiFromCountryName(activeUser.base.country);
+
+    chipBase.innerHTML =
+      `${flag} Base: ${activeUser.base.city} (${activeUser.base.icao})`;
   }
 
 });
 </script>
   
-</script>
-
+<script>
 /* 🟠 BLOQUE 6 — ALERT BADGE (Qatar Luxury)
    ---------------------------------------------------
    Ubicación: al final del dashboard, antes de </body>
@@ -1364,7 +1356,6 @@ document.addEventListener("DOMContentLoaded", () => {
   title.appendChild(badge);
 
   // 3) Función para actualizar el badge
-  
   function updateOperationalBadge() {
     let alerts = [];
 
@@ -1392,8 +1383,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(updateOperationalBadge, 5000);
 
 });
-  
 </script>
-  
+
 </body>
 </html>
