@@ -407,6 +407,61 @@ window.addEventListener("DOMContentLoaded", () => {
     updateClockDisplay();
   }
 });
+
+/* ============================================================
+   🟦 B4 — AUTO-BALANCE STAFF ENGINE (HR_fullModal)
+   ============================================================ */
+
+function HR_autoAdjustFull() {
+    if (!HR_active) return;
+
+    const HR = ACS_HR_load();
+    const d = HR[HR_active];
+    if (!d) return;
+
+    const required = d.required || d.staff;
+    const current = d.staff;
+
+    const diff = required - current;
+
+    // Mostrar diferencia en el modal
+    document.getElementById("autoDiff").textContent = diff;
+
+    // === Caso 1: Falta personal → contratar automáticamente ===
+    if (diff > 0) {
+        ACS_HR_hire(HR_active, diff); 
+        alert(`✅ ${d.name}: Se contrataron automáticamente ${diff} empleados.`);
+    }
+
+    // === Caso 2: Sobra personal → confirmar despido ===
+    else if (diff < 0) {
+
+        const fireCount = Math.abs(diff);
+
+        const ok = confirm(
+            `⚠️ ${d.name}\n\nSobran ${fireCount} empleados.\n\n¿Deseas despedirlos automáticamente?`
+        );
+
+        if (ok) {
+            ACS_HR_fire(HR_active, fireCount);
+            alert(`❌ ${fireCount} empleados despedidos en ${d.name}.`);
+        } else {
+            return; // Cancelado
+        }
+    }
+
+    // === Caso 3: está perfecto ===
+    else {
+        alert(`✔️ ${d.name} ya está perfectamente balanceado.`);
+    }
+
+    // Guardar y refrescar
+    ACS_HR_recalculateAll();
+    ACS_HR_save(HR);
+    loadDepartments(); // refresca tabla grande
+    openHRFullModal(HR_active); // reabre modal actualizado
+}
+     
 </script>
 
 </body>
