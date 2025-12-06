@@ -675,42 +675,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 /* ============================================================
-   ✨ HERO TITLE FORMATER — Qatar Luxury v1.1 (Corregido)
+   ✅ HERO TITLE FIX — WAIT FOR USER (v1.0)
    ------------------------------------------------------------
-   • No toca nada si aún no hay airline cargada
-   • No pisa cuando airline es solo un ID (string)
+   Evita que el Dashboard destruya el Welcome al entrar desde
+   login.html — porque todavía no existe ACS_activeUser.
    ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
-  const welcome = document.getElementById("welcomeMessage");
-  if (!welcome) return;
+  function waitForUser() {
+    const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  const airlineData = activeUser.airline;
+    // ❗ aún NO existe → esperar
+    if (!activeUser || !activeUser.airline) {
+      console.log("⏳ Esperando usuario para HERO...");
+      return setTimeout(waitForUser, 120);
+    }
 
-  // 1) Si todavía no hay airline → no hacemos nada
-  if (!airlineData) {
-    return;
+    // === Ahora sí existe → ejecutar HERO normal
+    const welcome = document.getElementById("welcomeMessage");
+    if (!welcome) return;
+
+    const airline = activeUser.airline;
+    const name = airline.name || "ACS AIRLINES";
+
+    welcome.innerHTML = `
+      <span class="w-welcome">WELCOME TO</span>
+      &nbsp;
+      <span class="w-airline">${name.toUpperCase()}</span>
+    `;
+
+    console.log("✅ HERO listo con usuario:", name);
   }
 
-  // 2) Si airlineData es SOLO un ID (string), esperamos a que el otro loader la cargue
-  if (typeof airlineData === "string") {
-    // Aquí no tocamos el título, lo actualizará el Airline Loader
-    return;
-  }
-
-  // 3) Si ya tenemos objeto completo de airline → ahora sí formateamos el título
-  const name = airlineData.name || "ACS AIRLINES";
-
-  welcome.innerHTML = `
-    <span class="w-welcome">Welcome to</span>
-    &nbsp;
-    <span class="w-airline">${name}</span>
-  `;
-
+  waitForUser();
 });
 </script>
-
   
 <script>
 /* ============================================================
