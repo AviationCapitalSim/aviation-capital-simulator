@@ -109,6 +109,60 @@ body {
   box-shadow: 0 0 8px rgba(255,200,60,0.45);
 }
 
+/* 🟢 1.3 ACS RIGHT HEADER — Support / Logout / Clock */
+  
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* SUPPORT BUTTON — Qatar Luxury */
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+  color: #dfe9ff;
+}
+  
 /* ============================================================
      === MAIN CONTENT ==========================================
    ============================================================ */
@@ -213,18 +267,8 @@ body {
 }
 
 /* ============================================================
-   === WELCOME TITLES + CHIPS =================================
+   === WELCOME CHIPS — Qatar Luxury v2.0 (Actualizado) =========
    ============================================================ */
-
-#welcomeMessage {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 0.2rem;
-  background: linear-gradient(90deg, #ffe7a0, #ffb300, #ffd75a);
-  -webkit-background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 10px rgba(255,190,60,0.35);
-}
 
 .welcome-badges {
   display: flex;
@@ -232,28 +276,32 @@ body {
   align-items: center;
   margin-top: 28px;
   margin-bottom: 28px;
-  gap: 26px;
+  gap: 30px; /* más espacio entre chips */
 }
 
+/* CHIP BASE + COUNTRY + RANK (misma estructura) */
 .welcome-chip {
-  padding: 6px 14px;
-  font-size: 0.82rem;
-  border-radius: 12px;
+  padding: 10px 20px;       /* más grande */
+  font-size: 0.95rem;       /* texto un poco más grande */
+  border-radius: 14px;      /* más premium */
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;                /* más espacio entre icono y texto */
   backdrop-filter: blur(4px);
-  box-shadow: 0 0 6px rgba(0,0,0,0.35);
+  box-shadow: 0 0 8px rgba(0,0,0,0.35);
   background: rgba(255,179,0,0.12);
   border: 1px solid rgba(255,179,0,0.35);
+  font-weight: 600;
+  color: #ffffff;
 }
 
+/* CHIP BASE — Azul Qatar Royal */
 .welcome-chip.base-chip {
-  background: rgba(0,102,204,0.20);
-  border: 1px solid rgba(0,135,255,0.50);
+  background: rgba(0, 102, 204, 0.20);
+  border: 1px solid rgba(0, 135, 255, 0.50);
   color: #3aaaff;
-  font-weight: 600;
 }
+
 </style>
 </head>
 <body>
@@ -291,19 +339,24 @@ body {
   <div class="welcome-badges">
 
     <!-- RANK -->
+    
     <div class="welcome-chip">
       🏅 <span id="chipRank">Silver Carrier Rank</span>
     </div>
 
     <!-- WORLD / COUNTRY -->
+    
     <div class="welcome-chip">
-      🌍 <span id="chipWorld">World</span>
+    <span id="chipWorld">Italy</span>
     </div>
 
+
     <!-- BASE (AZUL QATAR ROYAL) -->
+    
     <div class="welcome-chip base-chip">
-      📍 <span id="chipBase">Base: Napoli (LIRN)</span>
+    <span id="chipBase">Base: Napoli (LIRN)</span>
     </div>
+
 
   </div>
 
@@ -542,11 +595,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
-  <script>
+ <script>
 /* ============================================================
-   4️⃣ WELCOME CHIP ENGINE — Qatar Luxury v1.2
+   🇺🇳 4️⃣ WELCOME CHIP ENGINE — Qatar Luxury v2.1
+   ------------------------------------------------------------
+   • Muestra el país con su bandera
+   • Elimina iconos sobrados en el chip de base
    ============================================================ */
-
 document.addEventListener("DOMContentLoaded", () => {
 
   const chipRank  = document.getElementById("chipRank");
@@ -555,15 +610,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
+  /* === 1) Rank === */
   if (activeUser.airline && activeUser.airline.rank)
     chipRank.textContent = activeUser.airline.rank;
 
-  if (activeUser.airline && activeUser.airline.country)
-    chipWorld.textContent = activeUser.airline.country;
 
+  /* === 2) País + Bandera === */
+  if (activeUser.airline && activeUser.airline.country) {
+    const country = activeUser.airline.country;
+    const flag = getFlagEmojiFromCountryName(country);
+    chipWorld.textContent = `${flag} ${country}`;
+  }
+
+
+  /* === 3) Base (sin iconos) === */
   if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
-    const flag = getFlagEmojiFromCountryName(activeUser.base.country);
-    chipBase.innerHTML = `${flag} Base: ${activeUser.base.city} (${activeUser.base.icao})`;
+    chipBase.textContent =
+      `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
   }
 
 });
@@ -620,6 +683,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
   }
+
+  /* 🔁 Auto-refresh cada 40s:
+     - Vuelve a correr ACS_runAlertScan (si existe)
+     - Vuelve a pintar la tarjeta Operational Alerts
+  */
+  setInterval(async () => {
+    try {
+      if (typeof ACS_runAlertScan === "function") {
+        await ACS_runAlertScan();
+      }
+      renderAlerts();
+    } catch (err) {
+      console.warn("⚠️ Dashboard auto-refresh failed:", err);
+    }
+  }, 40000); // 40,000 ms = 40 segundos
 
 });
 </script>
