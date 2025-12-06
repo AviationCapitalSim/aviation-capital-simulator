@@ -523,6 +523,7 @@ function renderAlerts(filter = "all") {
 */
   
 function ACS_jumpToAlert(type) {
+
   if (!type) return;
 
   const t = type.toLowerCase();
@@ -536,7 +537,8 @@ function ACS_jumpToAlert(type) {
   } else {
     console.warn("No redirect found for:", type);
   }
-}
+} // ← ESTA ES LA QUE FALTABA
+
   
 /* ============================================================
    5️⃣ INICIALIZACIÓN
