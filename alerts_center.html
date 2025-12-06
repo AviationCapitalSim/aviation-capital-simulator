@@ -159,14 +159,36 @@ table.alerts-table {
 /* ================================
       ESPACIADOS ENTRE COLUMNAS
    ================================ */
-.alerts-table td:nth-child(2) {
-  width: 35%;                          /* Mensaje más amplio */
+/* 🟩 BLOQUE 4 — AJUSTE DE ANCHOS SIN TYPE */
+
+/* Ahora la primera columna es Message */
+.alerts-table td:nth-child(1),
+.alerts-table th:nth-child(1) {
+  width: 40%;     /* Mensaje más amplio */
 }
 
-/* Actions más ancha */
-.alerts-table td:last-child,
-.alerts-table th:last-child {
-  width: 180px;                        /* Espacio para botones */
+/* Category */
+.alerts-table td:nth-child(2),
+.alerts-table th:nth-child(2) {
+  width: 18%;
+}
+
+/* Level */
+.alerts-table td:nth-child(3),
+.alerts-table th:nth-child(3) {
+  width: 14%;
+}
+
+/* Timestamp */
+.alerts-table td:nth-child(4),
+.alerts-table th:nth-child(4) {
+  width: 18%;
+}
+
+/* Actions */
+.alerts-table td:nth-child(5),
+.alerts-table th:nth-child(5) {
+  width: 10%;
 }
 
 /* ============================================================
