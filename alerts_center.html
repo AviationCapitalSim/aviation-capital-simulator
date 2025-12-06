@@ -502,44 +502,44 @@ function renderAlerts(filter = "all") {
   });
 
   
-  /* 🟪 BLOQUE 5 — FILAS FANTASMA AJUSTADAS A 5 COLUMNAS */
+  /* 🟪 FILAS FANTASMA (5 columnas) */
   
   while (tbody.children.length < 4) {
-  tbody.insertAdjacentHTML("beforeend", `
-    <tr>
-      <td style="opacity:0.35;">No alerts</td>   <!-- Message -->
-      <td style="opacity:0.35;">—</td>          <!-- Category -->
-      <td style="opacity:0.35;">—</td>          <!-- Level -->
-      <td style="opacity:0.35;">—</td>          <!-- Timestamp -->
-      <td style="opacity:0.35;">—</td>          <!-- Actions -->
-    </tr>
-  `);
-}
+    tbody.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td style="opacity:0.35;">No alerts</td>
+        <td style="opacity:0.35;">—</td>
+        <td style="opacity:0.35;">—</td>
+        <td style="opacity:0.35;">—</td>
+        <td style="opacity:0.35;">—</td>
+      </tr>
+    `);
+  }
+
+}  /* ← ← ← AQUÍ CIERRA BIEN LA FUNCIÓN renderAlerts() */
 
 
-/* 🟢 BLOQUE 3 — FIX REDIRECCIÓN DE ALERTAS
-   ---------------------------------------------------
-   Ubicación: antes de DOMContentLoaded
-*/
-  
+/* ============================================================
+   🟢 FUNCIÓN DE REDIRECCIÓN — GLOBAL (FIX CORRECTO)
+   ============================================================ */
+
 function ACS_jumpToAlert(type) {
-
   if (!type) return;
 
   const t = type.toLowerCase();
 
   const goTo =
     ALERT_REDIRECT_MAP[t] ||
-    ALERT_REDIRECT_MAP["operations"];  // fallback seguro
+    ALERT_REDIRECT_MAP["operations"];
 
   if (goTo) {
     window.location.href = goTo;
   } else {
     console.warn("No redirect found for:", type);
   }
-} // ← ESTA ES LA QUE FALTABA
+}
 
-  
+
 /* ============================================================
    5️⃣ INICIALIZACIÓN
    ============================================================ */
