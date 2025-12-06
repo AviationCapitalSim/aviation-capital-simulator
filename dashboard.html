@@ -1074,6 +1074,64 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 10000);
 
 });
+
+/* 🟠 BLOQUE 6 — ALERT BADGE (Qatar Luxury)
+   ---------------------------------------------------
+   Ubicación: al final del dashboard, antes de </body>
+   Motor oficial: ACS_getAllAlertsMerged()
+*/
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // 1) Target: el título "⚠️ Operational Alerts"
+  const title = document.getElementById("dashboardAlertTitle");
+  if (!title) return;
+
+  // 2) Crear badge (bolita roja)
+  const badge = document.createElement("span");
+  badge.id = "opsAlertBadge";
+  badge.style = `
+    background:#ff5050;
+    color:white;
+    padding:2px 8px;
+    font-size:0.75rem;
+    border-radius:10px;
+    margin-left:8px;
+    font-weight:700;
+    box-shadow:0 0 8px rgba(255,80,80,0.65);
+  `;
+  badge.textContent = "0"; // default
+  title.appendChild(badge);
+
+  // 3) Función para actualizar el badge
+  function updateOperationalBadge() {
+    let alerts = [];
+
+    try {
+      alerts = ACS_getAllAlertsMerged();
+    } catch(err) {
+      console.warn("⚠️ Dashboard cannot read merged alerts:", err);
+      alerts = [];
+    }
+
+    const total = alerts.length;
+
+    if (total > 0) {
+      badge.textContent = total;
+      badge.style.display = "inline-block";
+    } else {
+      badge.style.display = "none"; // ocultar si no hay alertas
+    }
+  }
+
+  // 4) Llamar al iniciar
+  updateOperationalBadge();
+
+  // 5) Refrescar cada 5 segundos
+  setInterval(updateOperationalBadge, 5000);
+
+});
+  
 </script>
   
 </body>
