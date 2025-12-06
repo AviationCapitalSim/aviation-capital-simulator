@@ -495,6 +495,27 @@ function renderAlerts(filter = "all") {
   }
 }
 
+/* 🟢 BLOQUE 3 — FIX REDIRECCIÓN DE ALERTAS
+   ---------------------------------------------------
+   Ubicación: antes de DOMContentLoaded
+*/
+  
+function ACS_jumpToAlert(type) {
+  if (!type) return;
+
+  const t = type.toLowerCase();
+
+  const goTo =
+    ALERT_REDIRECT_MAP[t] ||
+    ALERT_REDIRECT_MAP["operations"];  // fallback seguro
+
+  if (goTo) {
+    window.location.href = goTo;
+  } else {
+    console.warn("No redirect found for:", type);
+  }
+}
+  
 /* ============================================================
    5️⃣ INICIALIZACIÓN
    ============================================================ */
