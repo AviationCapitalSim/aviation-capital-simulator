@@ -508,29 +508,26 @@ async function handleLogin(event) {
       return false;
     }
 
-    /* ============================================================
-       === STATUS: HAS_AIRLINE ====================================
-       ============================================================ */
-    if (result.status === "HAS_AIRLINE") {
+   /* ============================================================
+   === STATUS: HAS_AIRLINE — FIX COMPLETO ======================
+   ============================================================ */
+if (result.status === "HAS_AIRLINE") {
 
-  const fixedUser = {
+  // Guardamos solo userId, email y airline_id correctamente
+  const userPack = {
     userId: result.user.userId,
     email: result.user.email,
-    airline: result.user.airline,
-    airline_id: result.user.airline
+    airline_id: result.user.airline   // << SOLO el ID, limpio
   };
 
-  localStorage.setItem("ACS_activeUser", JSON.stringify(fixedUser));
+  // Guardamos en sesión activa
+  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
+
+  // Pasamos al Dashboard
   window.location.href = "dashboard.html";
   return false;
 }
 
-} catch (err) {
-  alert("❌ Login failed: " + err.message);
-  return false;
-}
-
-}
 </script>
 
 </body>
