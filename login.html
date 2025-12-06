@@ -373,10 +373,10 @@
 <script>
 /* ============================================================
    === ACS LOGIN — GOOGLE SHEETS BACKEND =======================
-   === Version: Stable + AirlineObjectFix | 23 NOV 2025 ========
+   === Version: Stable + AirlineObjectFix | 06 DEC 2025 ========
    ============================================================ */
 
-// Limpiar sesiones viejas
+// Limpiar sesiones viejas al abrir login
 localStorage.removeItem("ACS_activeUser");
 
 const ACS_API_URL = "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec";
@@ -390,54 +390,6 @@ async function hashPassword(password) {
     .join("");
 }
 
-/* ============================================================
-   === RESET PASSWORD MODAL CONTROL ============================
-   ============================================================ */
-
-function openResetModal() {
-  document.getElementById("resetPasswordModal").style.display = "flex";
-}
-
-function closeResetModal() {
-  document.getElementById("resetPasswordModal").style.display = "none";
-}
-
-/* ============================================================
-   === SEND TEMPORARY PASSWORD ================================
-   ============================================================ */
-
-async function sendPasswordReset() {
-  const email = document.getElementById("resetEmail").value.trim().toLowerCase();
-
-  if (!email) {
-    alert("⚠️ Please enter your email.");
-    return;
-  }
-
-  try {
-    const response = await fetch(ACS_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "forgotPassword",
-        email
-      })
-    });
-
-    const result = await response.json();
-
-    if (result.status === "success") {
-      alert("✔ A temporary password was sent to your email.");
-      closeResetModal();
-    } else {
-      alert("❌ " + result.msg);
-    }
-
-  } catch (err) {
-    alert("❌ Error: " + err.message);
-  }
-}
-  
 /* ============================================================
    === HANDLE LOGIN ============================================
    ============================================================ */
@@ -475,26 +427,20 @@ async function handleLogin(event) {
       return false;
     }
 
-    /* ============================================================
-       === STATUS: NO_USER ========================================
-       ============================================================ */
+    // === NO_USER ===
     if (result.status === "NO_USER") {
       alert("❌ This email is not registered.\nPlease create your account.");
       window.location.href = "register.html";
       return false;
     }
 
-    /* ============================================================
-       === STATUS: WRONG_PASSWORD =================================
-       ============================================================ */
+    // === WRONG_PASSWORD ===
     if (result.status === "WRONG_PASSWORD") {
       alert("❌ Incorrect password. Please try again.");
       return false;
     }
 
-    /* ============================================================
-       === STATUS: NO_AIRLINE =====================================
-       ============================================================ */
+    // === NO_AIRLINE ===
     if (result.status === "NO_AIRLINE") {
       const userPack = {
         userId: result.user.userId,
@@ -502,32 +448,49 @@ async function handleLogin(event) {
         airline: null,
         airline_id: null
       };
-
       localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
       window.location.href = "create_airline.html";
       return false;
     }
 
-   /* ============================================================
-   === STATUS: HAS_AIRLINE — FIX COMPLETO ======================
-   ============================================================ */
-if (result.status === "HAS_AIRLINE") {
+    // === HAS_AIRLINE — FIX COMPLETO ==========================
+    if (result.status === "HAS_AIRLINE") {
 
-  // Guardamos solo userId, email y airline_id correctamente
-  const userPack = {
-    userId: result.user.userId,
-    email: result.user.email,
-    airline_id: result.user.airline   // << SOLO el ID, limpio
-  };
+      const userId    = result.user.userId;
+      const userEmail = result.user.email;
+      const airlineId = result.user.airline;  // viene de la hoja USERS (columna airline_id)
 
-  // Guardamos en sesión activa
-  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
+      // Opcional: intentar traer objeto airline completo desde Apps Script
+      let airlineObj = null;
+      try {
+        const urlAir =
+          `${ACS_API_URL}?action=getAirline&airline_id=${encodeURIComponent(airlineId)}`;
+        const respAir = await fetch(urlAir);
+        const dataAir = await respAir.json();
+        if (dataAir.status === "success") {
+          airlineObj = dataAir.airline;
+        }
+      } catch (e) {
+        console.warn("⚠️ Could not load airline object:", e);
+      }
 
-  // Pasamos al Dashboard
-  window.location.href = "dashboard.html";
-  return false;
+      const userPack = {
+        userId: userId,
+        email: userEmail,
+        airline_id: airlineId,
+        airline: airlineObj     // puede ser objeto o null, pero ya no es solo un string loco
+      };
+
+      localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
+      window.location.href = "dashboard.html";
+      return false;
+    }
+
+  } catch (err) {
+    alert("❌ Login failed: " + err.message);
+    return false;
+  }
 }
-
 </script>
 
 </body>
