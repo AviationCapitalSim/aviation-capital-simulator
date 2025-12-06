@@ -1,5 +1,5 @@
 <!-- === DASHBOARD MODULE — Qatar Luxury Edition === -->
-<!-- Version: v4 | Date: 02 DEC 2025 -->
+<!-- Version: v5 FINAL | Date: 06 DEC 2025 -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -109,43 +109,6 @@ body {
   box-shadow: 0 0 8px rgba(255,200,60,0.45);
 }
 
-.acs-nav a:hover,
-.acs-nav a.active {
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.6);
-}
-
-.acs-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.logout-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
-
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
-}
-
 /* ============================================================
      === MAIN CONTENT ==========================================
    ============================================================ */
@@ -250,62 +213,9 @@ body {
 }
 
 /* ============================================================
-   === AIRLINE DATA BLOCK =====================================
+   === WELCOME TITLES + CHIPS =================================
    ============================================================ */
 
-#welcomeMessage {
-  font-size: 1.9rem;
-  font-weight: 600;
-  color: #ffca3a;
-  text-shadow: 0 0 12px rgba(255,190,60,0.55);
-  letter-spacing: 0.6px;
-  margin-top: 0.5rem;
-}
-
-#airlineSub {
-  font-size: 1.25rem;
-  color: #ffca3a;
-  text-shadow: 0 0 8px rgba(255,202,58,0.4);
-}
-
-#baseInfo {
-  font-size: 1.15rem;
-  margin-top: 0.6rem;
-  color: #ffca3a;
-  font-weight: 600;
-  text-shadow: 0 0 10px rgba(255,180,0,0.40);
-}
-
-/* ============================================================
-   === SUPPORT BUTTON ==========================================
-   ============================================================ */
-
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
-  transition: 0.25s ease;
-}
-
-.support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-  color: #dfe9ff;
-}
-
-/* ============================================================
-   === ACS PREMIUM HERO HEADER — Qatar Luxury + Rank ==========
-   ============================================================ */
-
-/* ✨ Airline Name Glow (Qatar Gold Pulse) */
-  
 #welcomeMessage {
   font-size: 2.2rem;
   font-weight: 700;
@@ -314,86 +224,38 @@ body {
   -webkit-background-clip: text;
   color: transparent;
   text-shadow: 0 0 10px rgba(255,190,60,0.35);
-  animation: goldPulse 3s ease-in-out infinite;
 }
-
-@keyframes goldPulse {
-  0%   { text-shadow: 0 0 10px rgba(255,190,60,0.3); }
-  50%  { text-shadow: 0 0 20px rgba(255,190,60,0.65); }
-  100% { text-shadow: 0 0 10px rgba(255,190,60,0.3); }
-}
-
-
-/* 🌍 Country Badge (Glass Style) */
-  
-#airlineSub {
-  margin-top: 0.3rem;
-  font-size: 1.25rem;
-  padding: 6px 16px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 14px;
-  display: inline-block;
-  border: 1px solid rgba(255,255,255,0.10);
-  backdrop-filter: blur(4px);
-  box-shadow: 0 0 14px rgba(255,255,255,0.05);
-}
-
-/* 📍 Base Card — Elite Membership */
-  
-#baseInfo {
-  margin-top: 0.9rem;
-  font-size: 1.2rem;
-  padding: 8px 18px;
-  background: linear-gradient(180deg, rgba(35,45,80,0.75), rgba(20,28,60,0.95));
-  border: 1px solid rgba(255,179,0,0.35);
-  border-radius: 16px;
-  display: inline-block;
-  box-shadow: 0 0 18px rgba(255,179,0,0.25);
-  text-shadow: 0 0 10px rgba(255,180,0,0.25);
-}
-/* ============================================================
-   1️⃣ WELCOME MINI CHIPS — Qatar Luxury Premium (v1.0)
-   ============================================================ */
 
 .welcome-badges {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 18px;             /* Aire entre chips */
-  margin-top: 22px;      /* Distancia desde el título Welcome */
+  margin-top: 28px;
+  margin-bottom: 28px;
+  gap: 26px;
 }
 
 .welcome-chip {
-  padding: 6px 14px;     
+  padding: 6px 14px;
   font-size: 0.82rem;
   border-radius: 12px;
-  background: rgba(255,179,0,0.12);
-  border: 1px solid rgba(255,179,0,0.35);
-  color: #ffffff;
   display: flex;
   align-items: center;
   gap: 6px;
   backdrop-filter: blur(4px);
   box-shadow: 0 0 6px rgba(0,0,0,0.35);
+  background: rgba(255,179,0,0.12);
+  border: 1px solid rgba(255,179,0,0.35);
 }
 
-/* ⭐ Chip: Base en Azul Qatar Royal */
 .welcome-chip.base-chip {
-  background: rgba(0, 102, 204, 0.20);
-  border: 1px solid rgba(0, 135, 255, 0.50);
+  background: rgba(0,102,204,0.20);
+  border: 1px solid rgba(0,135,255,0.50);
   color: #3aaaff;
   font-weight: 600;
 }
-
-.welcome-badges {
-  margin-top: 32px !important;   /* más espacio debajo del título */
-  margin-bottom: 28px !important; /* separa del texto descriptivo */
-  gap: 26px !important;           /* más espacio entre chips */
-}
-  
 </style>
 </head>
-
 <body>
 
 <header class="acs-header">
@@ -421,35 +283,36 @@ body {
 <main class="acs-main">
 
   <!-- ============================================================
-     2️⃣ WELCOME SECTION — Qatar Luxury Mini Chips (v1.1)
-     Reemplaza: welcomeMessage + airlineSub + baseInfo
-   ============================================================ -->
+       2️⃣ WELCOME SECTION — Qatar Luxury Mini Chips (v1.1)
+     ============================================================ -->
 
-<h2 id="welcomeMessage"></h2>
+  <h2 id="welcomeMessage"></h2>
 
-<div class="welcome-badges">
+  <div class="welcome-badges">
 
-  <!-- RANK -->
-  <div class="welcome-chip">
-    🏅 <span id="chipRank">Silver Carrier Rank</span>
+    <!-- RANK -->
+    <div class="welcome-chip">
+      🏅 <span id="chipRank">Silver Carrier Rank</span>
+    </div>
+
+    <!-- WORLD / COUNTRY -->
+    <div class="welcome-chip">
+      🌍 <span id="chipWorld">World</span>
+    </div>
+
+    <!-- BASE (AZUL QATAR ROYAL) -->
+    <div class="welcome-chip base-chip">
+      📍 <span id="chipBase">Base: Napoli (LIRN)</span>
+    </div>
+
   </div>
-
-  <!-- WORLD / COUNTRY -->
-  <div class="welcome-chip">
-    🌍 <span id="chipWorld">World</span>
-  </div>
-
-  <!-- BASE (AZUL QATAR ROYAL) -->
-  <div class="welcome-chip base-chip">
-    📍 <span id="chipBase">Base: Napoli (LIRN)</span>
-  </div>
-
-</div>
-
 
   <p class="sub">Your command center for managing fleets, routes, staff and capital.</p>
 
-  <!-- Business -->
+  <!-- ============================================================
+       BUSINESS SECTION
+     ============================================================ -->
+
   <div class="dashboard-grid row-business">
 
     <div class="panel">
@@ -472,16 +335,17 @@ body {
 
   </div>
 
-  <!-- Operations -->
-    <div class="dashboard-grid row-operations">
+  <!-- ============================================================
+       OPERATIONS SECTION
+     ============================================================ -->
+
+  <div class="dashboard-grid row-operations">
 
     <div class="panel">
-    <h3 id="dashboardAlertTitle">⚠️ Operational Alerts</h3>
-    <ul class="alert-list" id="alertsList">
-    </ul>
-    <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
-  </div>
-
+      <h3 id="dashboardAlertTitle">⚠️ Operational Alerts</h3>
+      <ul class="alert-list" id="alertsList"></ul>
+      <button class="acs-btn" onclick="window.location.href='alerts_center.html'">Open Center</button>
+    </div>
 
     <div class="panel">
       <h3>📰 Global News & Events</h3>
@@ -497,7 +361,10 @@ body {
 
   </div>
 
-  <!-- Capital -->
+  <!-- ============================================================
+       CAPITAL SECTION
+     ============================================================ -->
+
   <div class="dashboard-grid row-capital">
 
     <div class="panel">
@@ -530,100 +397,22 @@ body {
 <script src="engine/acs_alerts.js?v=1.0"></script>
 
 <script>
-// ============================================================
-// === DASHBOARD — LOAD OPERATIONAL ALERTS (Top 3) =============
-// ============================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  // Esperar a que el Alert Engine termine de cargar
-  setTimeout(() => {
-
-    console.log("📌 Dashboard alerts loaded:", window.ACS_ALERTS);
-
-    const list = document.getElementById("alertsList");
-    if (!list) return;
-
-    list.innerHTML = "";
-
-    const alerts = window.ACS_ALERTS || [];
-
-    // SI NO HAY ALERTAS
-    if (alerts.length === 0) {
-      list.innerHTML = `
-        <li style="color:#cbd6ff; list-style:none; padding:6px 0;">
-          No active alerts.
-        </li>`;
-      return;
-    }
-
-    // MOSTRAR SOLO LAS 3 MÁS RECIENTES
-    const top3 = alerts.slice(0, 3);
-
-    top3.forEach(a => {
-      const li = document.createElement("li");
-      li.style.listStyle = "none";
-      li.style.marginBottom = "8px";
-      li.style.padding = "6px 0";
-      li.style.color = "#dbe4ff";
-
-      li.innerHTML = `
-        <strong style="color:#ffca3a;">${a.type.toUpperCase()}</strong>
-        — ${a.message}
-        <br>
-        <span style="font-size:0.8rem; color:#9db4ff;">
-          ${new Date(a.timestamp).toLocaleString()}
-        </span>
-      `;
-
-      list.appendChild(li);
-    });
-
-  }, 400); // Espera para asegurar carga del engine
-
-});
-</script>
-  
-<script>
-  
 /* ============================================================
-   === UNIVERSAL FLAG SYSTEM (195 Countries) ==================
+   1️⃣ UNIVERSAL FLAG ENGINE — Qatar Luxury
    ============================================================ */
 function getFlagEmojiFromCountryName(countryName) {
   if (!countryName) return "🌍";
 
   const isoMap = {
-    "afghanistan":"AF","albania":"AL","algeria":"DZ","andorra":"AD","angola":"AO",
-    "argentina":"AR","armenia":"AM","australia":"AU","austria":"AT","azerbaijan":"AZ",
-    "bahamas":"BS","bahrain":"BH","bangladesh":"BD","belarus":"BY","belgium":"BE",
-    "belize":"BZ","benin":"BJ","bhutan":"BT","bolivia":"BO","bosnia and herzegovina":"BA",
-    "botswana":"BW","brazil":"BR","brunei":"BN","bulgaria":"BG","burkina faso":"BF",
-    "burundi":"BI","cambodia":"KH","cameroon":"CM","canada":"CA","cape verde":"CV",
-    "chad":"TD","chile":"CL","china":"CN","colombia":"CO","congo":"CG",
-    "costa rica":"CR","croatia":"HR","cuba":"CU","cyprus":"CY","czech republic":"CZ",
-    "denmark":"DK","djibouti":"DJ","dominican republic":"DO","ecuador":"EC",
-    "egypt":"EG","el salvador":"SV","estonia":"EE","ethiopia":"ET","fiji":"FJ",
-    "finland":"FI","france":"FR","georgia":"GE","germany":"DE","ghana":"GH",
-    "greece":"GR","guatemala":"GT","haiti":"HT","honduras":"HN","hungary":"HU",
-    "iceland":"IS","india":"IN","indonesia":"ID","iran":"IR","iraq":"IQ",
-    "ireland":"IE","israel":"IL","italy":"IT","jamaica":"JM","japan":"JP",
-    "jordan":"JO","kazakhstan":"KZ","kenya":"KE","kyrgyzstan":"KG","laos":"LA",
-    "latvia":"LV","lebanon":"LB","liberia":"LR","libya":"LY","liechtenstein":"LI",
-    "lithuania":"LT","luxembourg":"LU","madagascar":"MG","malaysia":"MY",
-    "maldives":"MV","mali":"ML","malta":"MT","mexico":"MX","moldova":"MD",
-    "monaco":"MC","mongolia":"MN","montenegro":"ME","morocco":"MA","mozambique":"MZ",
-    "myanmar":"MM","namibia":"NA","nepal":"NP","netherlands":"NL","new zealand":"NZ",
-    "nicaragua":"NI","niger":"NE","nigeria":"NG","north korea":"KP",
-    "north macedonia":"MK","norway":"NO","oman":"OM","pakistan":"PK","panama":"PA",
-    "paraguay":"PY","peru":"PE","philippines":"PH","poland":"PL","portugal":"PT",
-    "qatar":"QA","romania":"RO","russia":"RU","rwanda":"RW","saudi arabia":"SA",
-    "senegal":"SN","serbia":"RS","singapore":"SG","slovakia":"SK","slovenia":"SI",
-    "somalia":"SO","south africa":"ZA","south korea":"KR","spain":"ES","sri lanka":"LK",
-    "sudan":"SD","sweden":"SE","switzerland":"CH","syria":"SY","taiwan":"TW",
-    "tajikistan":"TJ","tanzania":"TZ","thailand":"TH","tunisia":"TN","turkey":"TR",
-    "turkmenistan":"TM","uganda":"UG","ukraine":"UA","united arab emirates":"AE",
-    "united kingdom":"GB","united states":"US","uruguay":"UY","uzbekistan":"UZ",
-    "venezuela":"VE","vietnam":"VN","yemen":"YE","zambia":"ZM","zimbabwe":"ZW"
+    "italy":"IT","spain":"ES","france":"FR","germany":"DE","united states":"US",
+    "united kingdom":"GB","russia":"RU","kazakhstan":"KZ","kyrgyzstan":"KG",
+    "mexico":"MX","argentina":"AR","china":"CN","japan":"JP","brazil":"BR",
+    "canada":"CA","turkey":"TR","qatar":"QA","saudi arabia":"SA",
+    "venezuela":"VE","colombia":"CO","peru":"PE","chile":"CL","netherlands":"NL",
+    "portugal":"PT","sweden":"SE","norway":"NO","finland":"FI","switzerland":"CH",
+    "australia":"AU","new zealand":"NZ","india":"IN","pakistan":"PK","iran":"IR",
+    "iraq":"IQ","egypt":"EG","south africa":"ZA","nigeria":"NG","morocco":"MA",
+    "uae":"AE","singapore":"SG","south korea":"KR","thailand":"TH"
   };
 
   const key = countryName.trim().toLowerCase();
@@ -635,32 +424,27 @@ function getFlagEmojiFromCountryName(countryName) {
     iso.charCodeAt(1) - 65 + 0x1F1E6
   );
 }
-</script> <!-- ✅ CORRECCIÓN: cierre del script faltante -->
+</script>
 
 <script>
-  
 /* ============================================================
-   === DASHBOARD — BASE RESOLVER (FINAL, ROBUSTO) ===============
+   2️⃣ BASE RESOLVER — Qatar Luxury v2.0
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-
-  // === 1. Cargar activeUser ===
+  
   let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  // === 2. Intentar leer base desde activeUser ===
   let base = activeUser.base || {};
 
-  // === 3. Función auxiliar para limpiar "undefined" ===
-  const clean = v => (!v || v === "undefined" || v === undefined) ? "" : v;
+  // Función de limpieza
+  const clean = v => (!v || v === "undefined") ? "" : v;
 
-  // Limpieza preventiva
   base.icao    = clean(base.icao);
   base.city    = clean(base.city);
   base.country = clean(base.country);
   base.name    = clean(base.name);
 
-  // === 4. Si no hay ICAO en activeUser.base, usar fallback ===
+  // Fallback: leer de los 7 HTML tradicionales
   if (!base.icao) {
     base.icao    = clean(localStorage.getItem("ACS_baseICAO"));
     base.city    = clean(localStorage.getItem("ACS_baseCity"));
@@ -668,30 +452,10 @@ document.addEventListener("DOMContentLoaded", () => {
     base.name    = clean(localStorage.getItem("ACS_baseName"));
   }
 
-  // === 5. Si NO hay ICAO, el usuario nunca eligió base ===
-  if (!base.icao) {
-    console.warn("⚠ Dashboard: No base ICAO found.");
-    return;
-  }
+  // Si sigue sin base → salir
+  if (!base.icao) return;
 
-  // === 6. Evaluar Airport Label Correctamente ===
-
-  // Si tenemos city Y name:
-  let label = "";
-  if (base.city && base.name) {
-    label = `${base.city} — ${base.name}`;
-  }
-  else if (base.city) {
-    label = base.city;
-  }
-  else if (base.name) {
-    label = base.name;
-  }
-  else {
-    label = "Base Selected";
-  }
-
-  // === 7. Escribir en ACS_activeUser.base limpio ===
+  // Guardar limpio
   activeUser.base = {
     icao: base.icao.toUpperCase(),
     city: base.city,
@@ -701,473 +465,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
 
-  console.log("✅ Dashboard Base Resolver →", activeUser.base);
-});
-</script>
-
-  
-<!-- ============================================================
-     === LOAD AIRLINE DATA — SIN CAMBIOS =========================
-   ============================================================ -->
-<script>
-  
-document.addEventListener("DOMContentLoaded", () => {
-
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  const airline = activeUser.airline || {};
-  const base    = activeUser.base || {};   // ✅ CORREGIDO: la base está AQUÍ
-
-  const welcome = document.getElementById("welcomeMessage");
-  const sub     = document.getElementById("airlineSub");
-  const baseEl  = document.getElementById("baseInfo");
-
-  // === AIRLINE NAME + IATA ===
-  if (airline.name && airline.iata) {
-    welcome.innerHTML = `Welcome to <span>${airline.name} (${airline.iata})</span>`;
-  } else {
-    welcome.innerHTML = `Welcome, Captain`;
-  }
-
-  // === COUNTRY + FLAG ===
-  const country = airline.country || "World";
-  const flag = getFlagEmojiFromCountryName(country);
-  sub.innerHTML = `${flag} ${country}`;
-
-  // === BASE INFO ===
-  const baseCity = base.city || base.municipality || "";
-  const baseName = base.name || base.airportName || "";
-  const baseCode = base.icao || base.iata || "";
-
-  let label = baseCity && baseName
-    ? `${baseCity} — ${baseName}`
-    : baseCity || baseName || "Unassigned Base";
-
-  baseEl.innerText = `Base: ${label}${baseCode ? " (" + baseCode + ")" : ""}`;
-
-});
-
-</script>
-
-<!-- ============================================================
-     === TOP 3 ALERTS — BETA REAL ================================
-   ============================================================ -->
-  
-<script>
-  
-document.addEventListener("DOMContentLoaded", () => {
-
-  if (typeof ACS_runAlertScan === "function") {
-    ACS_runAlertScan();
-  }
-
-  const list = document.getElementById("alertsList");
-  if (!list) return;
-
-  if (!window.ACS_ALERTS || window.ACS_ALERTS.length === 0) {
-    list.innerHTML = `<li>No active alerts.</li>`;
-    return;
-  }
-
-  const top3 = window.ACS_ALERTS.slice(0, 3);
-  list.innerHTML = "";
-
-  top3.forEach(alert => {
-    const li = document.createElement("li");
-    li.style.marginBottom = "6px";
-
-    const color =
-      alert.level === "critical" ? "#ff5050" :
-      alert.level === "high"     ? "#ff9944" :
-      alert.level === "medium"   ? "#ffd85c" :
-                                   "#c0c6ff";
-
-    li.innerHTML = `
-      <span style="color:${color}; font-weight:600;">${alert.type.toUpperCase()}</span>
-      — ${alert.message}
-    `;
-    list.appendChild(li);
-  });
+  console.log("✅ Base Resolver listo:", activeUser.base);
 
 });
 </script>
 
-<!-- ============================================================
-     === ALERT BADGE IN NAV =====================================
-   ============================================================ -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-  if (typeof ACS_runAlertScan === "function") {
-    ACS_runAlertScan();
-  }
-
-  const navAlerts = document.querySelector("a[href='alerts_center.html']");
-  if (!navAlerts) return;
-
-  const total = window.ACS_ALERTS?.length || 0;
-
-  const oldBadge = navAlerts.querySelector(".acs-alert-badge");
-  if (oldBadge) oldBadge.remove();
-
-  if (total === 0) return;
-
-  const badge = document.createElement("span");
-  badge.className = "acs-alert-badge";
-  badge.textContent = total;
-
-  navAlerts.appendChild(badge);
-});
-</script>
-
-<script>
-// ============================================================
-// === DASHBOARD — Load Alerts Summary (BETA REAL) =============
-// ============================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  // 1. Ejecutar escaneo global de alertas
-  if (typeof ACS_runAlertScan === "function") {
-    ACS_runAlertScan();
-  }
-
-  // 2. Contenedor en dashboard
-  const alertsBox = document.getElementById("dashboard-alerts-box");
-  if (!alertsBox) return;
-
-  const alerts = window.ACS_ALERTS || [];
-
-  // 3. Filtrar: solo mostrar activas (por ahora TODAS)
-  const activeAlerts = alerts;
-
-  // 4. Si NO hay alertas activas
-  if (activeAlerts.length === 0) {
-    alertsBox.innerHTML = `
-      <p style="color:#d0ddff; opacity:0.8;">No active alerts.</p>
-    `;
-    return;
-  }
-
-  // 5. Mostrar solo la primera alerta (resumen)
-  const a = activeAlerts[0];
-  const color =
-      a.level === "critical" ? "#ff5050" :
-      a.level === "high"     ? "#ff9944" :
-      a.level === "medium"   ? "#ffd85c" :
-                               "#a8b8ff";
-
-  alertsBox.innerHTML = `
-      <p style="font-size:1rem; font-weight:600; color:${color}; margin-bottom:0.4rem;">
-        ${a.type.toUpperCase()}
-      </p>
-      <p style="font-size:0.9rem;">${a.message}</p>
-      <p style="font-size:0.75rem; opacity:0.8; margin-top:6px;">
-        ${new Date(a.timestamp).toLocaleString()}
-      </p>
-  `;
-});
-</script>
-
-<script>
-  
-// ============================================================
-// === DASHBOARD — Load Operational Alerts Automatically ========
-// ============================================================
-
-document.addEventListener("DOMContentLoaded", async () => {
-
-  // 1) Asegurar que el motor de alertas ya corrió
-  if (typeof ACS_runAlertScan === "function") {
-    console.log("⏳ Dashboard waiting for alert scan...");
-    await ACS_runAlertScan();     // 🔥 CLAVE: esperamos a que ACS_ALERTS esté listo
-    console.log("✅ Dashboard alerts loaded:", window.ACS_ALERTS);
-  }
-
-  const list = document.getElementById("alertsList");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  const alerts = window.ACS_ALERTS || [];
-
-  // 2) Filtrar sólo "operational" (o cualquier tipo que tú quieras)
-  const ops = alerts.filter(a => a.type.toLowerCase() === "operations");
-
-  // 3) Si no hay alertas
-  if (ops.length === 0) {
-    list.innerHTML = `
-      <li style="color:#cbd6ff; list-style:none; margin-top:0.5rem;">
-        No active alerts.
-      </li>`;
-    return;
-  }
-
-  // 4) Cargar alertas en lista
-  ops.forEach(a => {
-    const li = document.createElement("li");
-    li.style.color = "#ffca3a";
-    li.style.marginBottom = "0.4rem";
-    li.textContent = a.message;
-    list.appendChild(li);
-  });
-});
-</script>
-
-<script>
-// ============================================================
-// === DASHBOARD — Operational Alerts Preview (Auto-load) =====
-// ============================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  // Esperar a que el Alert Engine haya terminado
-  function waitForAlerts() {
-    if (!window.ACS_ALERTS) {
-      console.log("Dashboard waiting for alert scan...");
-      return setTimeout(waitForAlerts, 150);
-    }
-    renderDashboardAlerts(window.ACS_ALERTS);
-  }
-
-  waitForAlerts();
-
-  function renderDashboardAlerts(alerts) {
-    const list = document.getElementById("alertsList");
-    if (!list) return;
-
-    list.innerHTML = ""; // limpiar
-
-    // Si no hay alertas → mensaje
-    if (!alerts || alerts.length === 0) {
-      list.innerHTML = `
-        <li style="color:#cbd6ff; padding:6px 0;">
-          No active alerts.
-        </li>`;
-      return;
-    }
-
-    // Convertir niveles en íconos
-    function icon(level) {
-      return (
-        level === "critical" ? "🛑" :
-        level === "high"     ? "⚠️" :
-        level === "medium"   ? "🔔" :
-                               "ℹ️"
-      );
-    }
-
-    // Mostrar solo las primeras 3 alertas para vista rápida
-    alerts.slice(0, 3).forEach(a => {
-      const li = document.createElement("li");
-      li.style = "margin-bottom:6px; color:#dfe8ff; list-style:none;";
-
-      li.innerHTML = `
-        ${icon(a.level)} 
-        <strong>${a.type.toUpperCase()}</strong> — ${a.message}
-      `;
-
-      list.appendChild(li);
-    });
-
-    console.log("Dashboard alerts loaded:", alerts);
-  }
-});
-</script>
-  
 <script>
 /* ============================================================
-   === DASHBOARD FALLBACK — REBUILD BASE IF MISSING ============
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  // ❗ Si no existe activeUser.base, lo construimos desde los 7 HTML tradicionales
-  if (!activeUser.base || !activeUser.base.icao) {
-
-    const baseIcao    = localStorage.getItem("ACS_baseICAO");
-    const baseCity    = localStorage.getItem("ACS_baseCity");
-    const baseCountry = localStorage.getItem("ACS_baseCountry");
-    const baseName    = localStorage.getItem("ACS_baseName");
-
-    // Solo si existe ICAO (mínimo)
-    if (baseIcao) {
-      activeUser.base = {
-        icao: baseIcao,
-        city: baseCity || "",
-        country: baseCountry || "",
-        name: baseName || "",
-      };
-
-      // Guardar reconstruido
-      localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
-      console.log("✅ Dashboard fallback: BASE reconstruida →", activeUser.base);
-    }
-  }
-});
-</script>
-  
- <!-- ============================================================
-     === ACS DASHBOARD ALERT ENGINE — v3 FINAL (05 DEC 2025) ===
-     === Integrado con ACS_getAllAlertsMerged() ===============
-     ============================================================ -->
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-  // =============================
-  // 1) Esperar alertas cargadas
-  // =============================
-  function waitAlertsLoaded() {
-    if (!window.ACS_ALERTS) {
-      console.log("⏳ Dashboard waiting for alert scan...");
-      return setTimeout(waitAlertsLoaded, 150);
-    }
-    renderDashboardAlerts();
-  }
-
-  waitAlertsLoaded();
-
-
-  // ======================================
-  // 2) Render principal de alertas (TOP 3)
-  // ======================================
-  
-  function renderDashboardAlerts() {
-    const list  = document.getElementById("alertsList");
-    const title = document.getElementById("dashboardAlertTitle");
-
-    if (!list || !title) return;
-
-    // === Obtener TODAS las alertas unificadas ===
-    let alerts = [];
-    try {
-      alerts = ACS_getAllAlertsMerged();
-    } catch(e) {
-      console.warn("⚠️ Dashboard cannot read merged alerts", e);
-      alerts = [];
-    }
-
-    // === CONTADOR ===
-    const total = alerts.length;
-    title.innerHTML = `⚠️ Operational Alerts${ total > 0 ? " (" + total + ")" : "" }`;
-
-    // === Si no hay alertas ===
-    if (total === 0) {
-      list.innerHTML = `
-        <li style="color:#cbd6ff; padding:6px 0;">
-          No active alerts.
-        </li>`;
-      return;
-    }
-
-    // ================================
-    // Íconos según nivel de alerta
-    // ================================
-    function icon(lvl) {
-      return lvl === "critical" ? "🛑" :
-             lvl === "high"     ? "⚠️" :
-             lvl === "medium"   ? "🔔" :
-                                   "ℹ️";
-    }
-
-    // ================================
-    // Mostrar solo las primeras 3
-    // ================================
-    list.innerHTML = "";
-
-    alerts.slice(0,3).forEach(a => {
-      const li = document.createElement("li");
-      li.style = "margin-bottom:6px; list-style:none; color:#dbe4ff;";
-
-      li.innerHTML = `
-        ${icon(a.level)} 
-        <strong>${a.type.toUpperCase()}</strong> — 
-        ${a.message}
-      `;
-
-      list.appendChild(li);
-    });
-
-    console.log("✔ Dashboard alerts rendered:", alerts);
-  }
-
-  // =======================================================
-  // 3) Auto-refresh cada 10 segundos (como alert_center)
-  // =======================================================
-  
-  setInterval(async () => {
-    try {
-      await ACS_runAlertScan();    // servidor + game time
-      renderDashboardAlerts();     // redibujar dashboard
-    } catch(err) {
-      console.warn("⚠️ Dashboard auto-refresh failed:", err);
-    }
-  }, 10000);
-
-});
-  
-/* ============================================================
-   3️⃣ WELCOME CHIP DATA ENGINE — Dashboard Integration v1.2
-   ------------------------------------------------------------
-   Ubicación: encima del BLOQUE 6 (Alert Badge)
-   Objetivo: alimentar Rank, World, Base en los chips Qatar Mini
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  // Elementos de los chips
-  const chipRank = document.getElementById("chipRank");
-  const chipWorld = document.getElementById("chipWorld");
-  const chipBase = document.getElementById("chipBase");
-
-  // Evitar errores si no existen los chips aún
-  if (!chipRank || !chipWorld || !chipBase) return;
-
-  // Cargar datos del usuario
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  // Rank
-  if (activeUser.airline && activeUser.airline.rank) {
-    chipRank.textContent = activeUser.airline.rank;
-  }
-
-  // País / Mundo
-  if (activeUser.airline && activeUser.airline.country) {
-    chipWorld.textContent = activeUser.airline.country;
-  }
-
-  // Base
-  if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
-    chipBase.textContent = `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
-  }
-
-});
-
-<script>  
-  
-<script>
-  
-/* ============================================================
-   === DASHBOARD WELCOME ENGINE — Qatar Luxury v1.0 ============
+   3️⃣ AIRLINE LOADER — SERVER EDITION (v3.0)
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  /* ===========================
-     1) Limpiar basura previa
-     =========================== */
-
-  // Eliminar el Rank duplicado que alguien insertó debajo del Welcome
-  const oldRank = document.getElementById("airlineRank");
-  if (oldRank) oldRank.remove();
-
-
-  /* ===========================
-     2) Cargar usuario
-     =========================== */
+  console.log("🛫 [Dashboard] Airline Loader iniciado…");
 
   let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
@@ -1178,170 +488,152 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let airlineData = activeUser.airline;
 
-
-  /* ===========================
-     3) Si airline es STRING → cargar del servidor
-     =========================== */
-
+  // Si solo es el ID → hay que consultar el servidor
   if (typeof airlineData === "string") {
-    const id = airlineData;
+
+    const airlineId = airlineData;
+
+    const url =
+      "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec" +
+      `?action=getAirline&airline_id=${airlineId}`;
 
     try {
-      const url = `https://script.google.com/macros/s/YOUR_ID/exec?action=getAirline&airline_id=${id}`;
       const resp = await fetch(url);
       const data = await resp.json();
 
       if (data.status === "success") {
+
         airlineData = data.airline;
-        activeUser.airline = airlineData;
-        localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
-      }
-    } catch(err) {
-      console.warn("Cannot load airline:", err);
-    }
-  }
 
-
-  /* ===========================
-     4) Actualizar WELCOME TEXT
-     =========================== */
-
-  const welcome = document.getElementById("welcomeMessage");
-
-  if (airlineData && airlineData.name) {
-    welcome.textContent = `Welcome, ${airlineData.name}`;
-  } else {
-    welcome.textContent = "Welcome, Captain";
-  }
-
-
-  /* ===========================
-     5) Actualizar Chips
-     =========================== */
-
-  const chipWorld = document.getElementById("chipWorld");
-  const chipBase  = document.getElementById("chipBase");
-
-  // País
-  if (airlineData.country) {
-    chipWorld.textContent = airlineData.country;
-  }
-  
-  // CHIP BASE — ahora con bandera 
-  
-if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
-
-  const flag = getFlagEmojiFromCountryName(activeUser.base.country);
-
-  chipBase.innerHTML =
-    `${flag} Base: ${activeUser.base.city} (${activeUser.base.icao})`;
-}
-
-
-});
-
-<script>
-  
-/* ============================================================
-   3.1 DASHBOARD AIRLINE LOADER — Qatar Luxury v2.1
-   ------------------------------------------------------------
-   ✔ Corrige error de <script> duplicado
-   ✔ Corrige chips duplicados
-   ✔ Añade Bandera a Base
-   ✔ Welcome usa airline real
-   ✔ Elimina rank duplicado
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", async () => {
-
-  /* === 1) Cargar usuario activo === */
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  if (!activeUser || !activeUser.airline) {
-    console.warn("❌ No airline found in activeUser.");
-    return;
-  }
-
-  /* airline puede ser string (solo id) o objeto */
-  let airlineData = activeUser.airline;
-
-  if (typeof airlineData === "string") {
-    const airlineId = airlineData;
-
-    try {
-      const url =
-        "https://script.google.com/macros/s/AKfycbwYTmVbY6XKxpJYLm11kM302IBvZ7KT9on8IhZXhqpXbXj4CLXAm6499aYjQ6HL_TP/exec" +
-        `?action=getAirline&airline_id=${airlineId}`;
-
-      const response = await fetch(url);
-      const result = await response.json();
-
-      if (result.status === "success") {
-        airlineData = result.airline;
-
-        // Guardar objeto completo
+        // Guardar nueva información
         activeUser.airline = airlineData;
         localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
 
       } else {
-        console.warn("⚠ Airline not found in sheet.");
+        console.warn("⚠ Airline not found.");
       }
 
     } catch (err) {
-      console.error("❌ Error calling getAirline:", err);
+      console.error("❌ Error fetching airline:", err);
     }
   }
 
-  /* === 3) Actualizar Welcome + Chips === */
-
-  const welcome     = document.getElementById("welcomeMessage");
-  const chipRank    = document.getElementById("chipRank");
-  const chipWorld   = document.getElementById("chipWorld");
-  const chipBase    = document.getElementById("chipBase");
-
-  /* --- WELCOME NAME --- */
+  // === WELCOME MESSAGE ===
+  const welcome = document.getElementById("welcomeMessage");
   if (airlineData && airlineData.name) {
-    welcome.textContent = `Welcome, ${airlineData.name}`;
+    welcome.innerHTML = `Welcome to <strong>${airlineData.name}</strong>`;
   } else {
     welcome.textContent = "Welcome, Captain";
   }
 
-  /* --- RANK (simple, estático por ahora) --- */
-  if (chipRank) {
-    chipRank.textContent = "Silver Carrier Rank";
-  }
+  // === CHIP WORLD ===
+  const chipWorld = document.getElementById("chipWorld");
+  if (airlineData.country) chipWorld.textContent = airlineData.country;
 
-  /* --- WORLD CHIP (country) --- */
-  if (airlineData && airlineData.country) {
-    chipWorld.textContent = airlineData.country;
-  }
-
-  /* --- BASE CHIP (con bandera) --- */
+  // === CHIP BASE ===
+  const chipBase = document.getElementById("chipBase");
   if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
-
     const flag = getFlagEmojiFromCountryName(activeUser.base.country);
+    chipBase.innerHTML = `${flag} Base: ${activeUser.base.city} (${activeUser.base.icao})`;
+  }
 
-    chipBase.innerHTML =
-      `${flag} Base: ${activeUser.base.city} (${activeUser.base.icao})`;
+  console.log("🎯 Airline Loader — COMPLETADO");
+
+});
+</script>
+
+  <script>
+/* ============================================================
+   4️⃣ WELCOME CHIP ENGINE — Qatar Luxury v1.2
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const chipRank  = document.getElementById("chipRank");
+  const chipWorld = document.getElementById("chipWorld");
+  const chipBase  = document.getElementById("chipBase");
+
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  if (activeUser.airline && activeUser.airline.rank)
+    chipRank.textContent = activeUser.airline.rank;
+
+  if (activeUser.airline && activeUser.airline.country)
+    chipWorld.textContent = activeUser.airline.country;
+
+  if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
+    const flag = getFlagEmojiFromCountryName(activeUser.base.country);
+    chipBase.innerHTML = `${flag} Base: ${activeUser.base.city} (${activeUser.base.icao})`;
   }
 
 });
 </script>
-  
+
 <script>
-/* 🟠 BLOQUE 6 — ALERT BADGE (Qatar Luxury)
-   ---------------------------------------------------
-   Ubicación: al final del dashboard, antes de </body>
-   Motor oficial: ACS_getAllAlertsMerged()
-*/
+/* ============================================================
+   5️⃣ ALERT ENGINE — Qatar Luxury v3 FINAL
+   ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Target: el título "⚠️ Operational Alerts"
+  function waitAlerts() {
+    if (!window.ACS_ALERTS) return setTimeout(waitAlerts, 150);
+    renderAlerts();
+  }
+
+  waitAlerts();
+
+  function renderAlerts() {
+
+    let alerts = [];
+    try {
+      alerts = ACS_getAllAlertsMerged();
+    } catch(e) {
+      alerts = window.ACS_ALERTS || [];
+    }
+
+    const list  = document.getElementById("alertsList");
+    const title = document.getElementById("dashboardAlertTitle");
+
+    if (!list) return;
+
+    // título con contador
+    title.innerHTML = `⚠️ Operational Alerts${alerts.length > 0 ? " (" + alerts.length + ")" : ""}`;
+
+    if (alerts.length === 0) {
+      list.innerHTML = `<li style="color:#cbd6ff;">No active alerts.</li>`;
+      return;
+    }
+
+    list.innerHTML = "";
+    alerts.slice(0,3).forEach(a => {
+      const li = document.createElement("li");
+      li.style = "list-style:none; margin-bottom:6px; color:#dbe4ff;";
+      li.innerHTML = `
+        ${a.level === "critical" ? "🛑" :
+           a.level === "high"     ? "⚠️" :
+           a.level === "medium"   ? "🔔" : "ℹ️"
+        }
+        <strong>${a.type.toUpperCase()}</strong> — ${a.message}
+      `;
+      list.appendChild(li);
+    });
+
+  }
+
+});
+</script>
+
+<script>
+/* ============================================================
+   6️⃣ ALERT BADGE — Qatar Luxury
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
   const title = document.getElementById("dashboardAlertTitle");
   if (!title) return;
 
-  // 2) Crear badge (bolita roja)
   const badge = document.createElement("span");
   badge.id = "opsAlertBadge";
   badge.style = `
@@ -1354,38 +646,28 @@ document.addEventListener("DOMContentLoaded", () => {
     font-weight:700;
     box-shadow:0 0 8px rgba(255,80,80,0.65);
   `;
-  badge.textContent = "0"; // default
   title.appendChild(badge);
 
-  // 3) Función para actualizar el badge
-  function updateOperationalBadge() {
+  function refreshBadge() {
     let alerts = [];
 
     try {
       alerts = ACS_getAllAlertsMerged();
-    } catch(err) {
-      console.warn("⚠️ Dashboard cannot read merged alerts:", err);
-      alerts = [];
+    } catch {
+      alerts = window.ACS_ALERTS || [];
     }
 
     const total = alerts.length;
 
-    if (total > 0) {
-      badge.textContent = total;
-      badge.style.display = "inline-block";
-    } else {
-      badge.style.display = "none"; // ocultar si no hay alertas
-    }
+    badge.style.display = total > 0 ? "inline-block" : "none";
+    badge.textContent = total;
   }
 
-  // 4) Llamar al iniciar
-  updateOperationalBadge();
-
-  // 5) Refrescar cada 5 segundos
-  setInterval(updateOperationalBadge, 5000);
+  refreshBadge();
+  setInterval(refreshBadge, 5000);
 
 });
 </script>
 
-</body>
+  </body>
 </html>
