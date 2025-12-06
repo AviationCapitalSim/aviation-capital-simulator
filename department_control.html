@@ -473,6 +473,22 @@ tr:nth-child(even) {
   font-weight: bold;
 }
      
+.btn-control {
+  background: #ffb300;
+  color: #0c1f3c;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,200,60,0.35);
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.btn-control:hover {
+  background: #ffd35c;
+  box-shadow: 0 0 12px rgba(255,190,60,0.5);
+}
+
 </style>
 </head>
 
@@ -721,23 +737,23 @@ function loadDepartments() {
     }
 
     rows.innerHTML += `
-      <tr>
-        <td>${dep.name}</td>
-        <td class="staff">${dep.staff}</td>
+  <tr>
+    <td>${dep.name}</td>
+    <td class="staff">${dep.staff}</td>
 
-        <!-- ⭐ NUEVA COLUMNA LOAD GALÁCTICA -->
-        <td>${ACS_HR_renderLoadBar(dep)}</td>
+    <td>${ACS_HR_renderLoadBar(dep)}</td>
 
-        <td class="salary">$${dep.salary}</td>
-        <td class="morale">${dep.morale}%</td>
-        <td>
-          <button class="btn btn-bonus" disabled title="Bonus system coming soon">💵</button>
-          <button class="btn btn-hire" onclick="openHire('${dep.id}')">🧍</button>
-          <button class="btn btn-adjust" onclick="openSalary('${dep.id}')">📈</button>
-          <button class="btn btn-dismiss" onclick="openDismiss('${dep.id}')">❌</button>
-        </td>
-      </tr>
-    `;
+    <td class="salary">$${dep.salary}</td>
+    <td class="morale">${dep.morale}%</td>
+
+    <td>
+      <button class="btn btn-control" onclick="openHRFullModal('${dep.id}')">
+        ⚙️ Control
+      </button>
+    </td>
+  </tr>
+`;
+
   });
 
   updatePayroll();
