@@ -1164,6 +1164,177 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
   
+<script>
+  
+/* ============================================================
+   === DASHBOARD WELCOME ENGINE — Qatar Luxury v1.0 ============
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  /* ===========================
+     1) Limpiar basura previa
+     =========================== */
+
+  // Eliminar el Rank duplicado que alguien insertó debajo del Welcome
+  const oldRank = document.getElementById("airlineRank");
+  if (oldRank) oldRank.remove();
+
+
+  /* ===========================
+     2) Cargar usuario
+     =========================== */
+
+  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  if (!activeUser || !activeUser.airline) {
+    document.getElementById("welcomeMessage").textContent = "Welcome, Captain";
+    return;
+  }
+
+  let airlineData = activeUser.airline;
+
+
+  /* ===========================
+     3) Si airline es STRING → cargar del servidor
+     =========================== */
+
+  if (typeof airlineData === "string") {
+    const id = airlineData;
+
+    try {
+      const url = `https://script.google.com/macros/s/YOUR_ID/exec?action=getAirline&airline_id=${id}`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      if (data.status === "success") {
+        airlineData = data.airline;
+        activeUser.airline = airlineData;
+        localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+      }
+    } catch(err) {
+      console.warn("Cannot load airline:", err);
+    }
+  }
+
+
+  /* ===========================
+     4) Actualizar WELCOME TEXT
+     =========================== */
+
+  const welcome = document.getElementById("welcomeMessage");
+
+  if (airlineData && airlineData.name) {
+    welcome.textContent = `Welcome, ${airlineData.name}`;
+  } else {
+    welcome.textContent = "Welcome, Captain";
+  }
+
+
+  /* ===========================
+     5) Actualizar Chips
+     =========================== */
+
+  const chipWorld = document.getElementById("chipWorld");
+  const chipBase  = document.getElementById("chipBase");
+
+  // País
+  if (airlineData.country) {
+    chipWorld.textContent = airlineData.country;
+  }
+
+  // Base
+  if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
+    chipBase.textContent = `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
+  }
+
+});
+
+<script>
+/* ============================================================
+   3.1 DASHBOARD AIRLINE LOADER — Qatar Luxury v2.0
+   ------------------------------------------------------------
+   Este bloque:
+   ✔ Toma airline_id del ACS_activeUser
+   ✔ Llama al Apps Script → getAirline
+   ✔ Rellena Welcome, World, Base (chips Qatar)
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  /* === 1) Cargar usuario activo === */
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  if (!activeUser || !activeUser.airline) {
+    console.warn("❌ No airline found in activeUser.");
+    return;
+  }
+
+  /* airline puede ser string (solo id) o objeto */
+  let airlineData = activeUser.airline;
+
+  if (typeof airlineData === "string") {
+    const airlineId = airlineData;
+
+    try {
+      // === 2) Llamada al Apps Script ===
+      const url =
+        `https://script.google.com/macros/s/AKfycbwYTmVbY6XKxpJYLm11kM302IBvZ7KT9on8IhZXhqpXbXj4CLXAm6499aYjQ6HL_TP/exec` +
+        `?action=getAirline&airline_id=${airlineId}`;
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (result.status === "success") {
+        airlineData = result.airline;
+
+        // Guardar en localStorage el objeto completo
+        activeUser.airline = airlineData;
+        localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+      } else {
+        console.warn("⚠ Airline not found in sheet.");
+      }
+
+    } catch (err) {
+      console.error("❌ Error calling getAirline:", err);
+    }
+  }
+
+  /* === 3) Actualizar Welcome + Chips === */
+
+  const welcome = document.getElementById("welcomeMessage");
+  const chipRank = document.getElementById("chipRank");
+  const chipWorld = document.getElementById("chipWorld");
+  const chipBase = document.getElementById("chipBase");
+
+  // WELCOME NAME
+  if (airlineData && airlineData.name) {
+    welcome.textContent = `Welcome, ${airlineData.name}`;
+  } else {
+    welcome.textContent = "Welcome, Captain";
+  }
+
+  // CHIP WORLD — País
+  if (airlineData && airlineData.country) {
+    chipWorld.textContent = airlineData.country;
+  }
+
+  // CHIP BASE
+  if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
+    chipBase.textContent =
+      `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
+  }
+
+  // CHIP RANK (estático por ahora)
+  if (chipRank) {
+    chipRank.textContent = "Silver Carrier Rank";
+  }
+
+});
+</script>
+  
+</script>
+
 /* 🟠 BLOQUE 6 — ALERT BADGE (Qatar Luxury)
    ---------------------------------------------------
    Ubicación: al final del dashboard, antes de </body>
