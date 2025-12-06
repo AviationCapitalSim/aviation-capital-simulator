@@ -675,7 +675,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 /* ============================================================
-   ✨ HERO TITLE FORMATER — Qatar Luxury v1.0
+   ✨ HERO TITLE FORMATER — Qatar Luxury v1.1 (Corregido)
+   ------------------------------------------------------------
+   • No toca nada si aún no hay airline cargada
+   • No pisa cuando airline es solo un ID (string)
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -683,11 +686,21 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!welcome) return;
 
   const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  const airlineData = activeUser.airline;
 
-  const airline = activeUser.airline || {};
+  // 1) Si todavía no hay airline → no hacemos nada
+  if (!airlineData) {
+    return;
+  }
 
-  // Texto base
-  let name = airline.name || "ACS AIRLINES";
+  // 2) Si airlineData es SOLO un ID (string), esperamos a que el otro loader la cargue
+  if (typeof airlineData === "string") {
+    // Aquí no tocamos el título, lo actualizará el Airline Loader
+    return;
+  }
+
+  // 3) Si ya tenemos objeto completo de airline → ahora sí formateamos el título
+  const name = airlineData.name || "ACS AIRLINES";
 
   welcome.innerHTML = `
     <span class="w-welcome">Welcome to</span>
@@ -697,6 +710,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
+
   
 <script>
 /* ============================================================
