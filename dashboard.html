@@ -305,6 +305,7 @@ body {
    ============================================================ */
 
 /* ✨ Airline Name Glow (Qatar Gold Pulse) */
+  
 #welcomeMessage {
   font-size: 2.2rem;
   font-weight: 700;
@@ -322,23 +323,9 @@ body {
   100% { text-shadow: 0 0 10px rgba(255,190,60,0.3); }
 }
 
-/* 🎖 Rank Badge */
-#airlineRank {
-  margin-top: 0.3rem;
-  display: inline-block;
-  padding: 6px 14px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffdf70;
-  letter-spacing: 0.4px;
-  backdrop-filter: blur(4px);
-  text-shadow: 0 0 10px rgba(255,190,60,0.3);
-}
 
 /* 🌍 Country Badge (Glass Style) */
+  
 #airlineSub {
   margin-top: 0.3rem;
   font-size: 1.25rem;
@@ -352,6 +339,7 @@ body {
 }
 
 /* 📍 Base Card — Elite Membership */
+  
 #baseInfo {
   margin-top: 0.9rem;
   font-size: 1.2rem;
@@ -395,6 +383,12 @@ body {
   border: 1px solid rgba(0, 135, 255, 0.50);
   color: #3aaaff;
   font-weight: 600;
+}
+
+.welcome-badges {
+  margin-top: 32px !important;   /* más espacio debajo del título */
+  margin-bottom: 28px !important; /* separa del texto descriptivo */
+  gap: 26px !important;           /* más espacio entre chips */
 }
   
 </style>
@@ -591,6 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
   
 <script>
+  
 /* ============================================================
    === UNIVERSAL FLAG SYSTEM (195 Countries) ==================
    ============================================================ */
@@ -643,6 +638,7 @@ function getFlagEmojiFromCountryName(countryName) {
 </script> <!-- ✅ CORRECCIÓN: cierre del script faltante -->
 
 <script>
+  
 /* ============================================================
    === DASHBOARD — BASE RESOLVER (FINAL, ROBUSTO) ===============
    ============================================================ */
