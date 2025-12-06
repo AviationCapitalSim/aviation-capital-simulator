@@ -301,7 +301,31 @@ body {
   border: 1px solid rgba(0, 135, 255, 0.50);
   color: #3aaaff;
 }
+  
+/* ============================================================
+   === HERO TITLE — Qatar Luxury Premium v2.0 =================
+   ============================================================ */
 
+#welcomeMessage {
+  font-size: 2.8rem;               /* más grande */
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+#welcomeMessage .w-welcome {
+  background: linear-gradient(90deg, #ffe7a0, #ffb300, #ffd75a);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 18px rgba(255,190,60,0.45);
+}
+
+#welcomeMessage .w-airline {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255,255,255,0.35);
+}
+  
 </style>
 </head>
 <body>
@@ -632,6 +656,31 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+<script>
+/* ============================================================
+   ✨ HERO TITLE FORMATER — Qatar Luxury v1.0
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+
+  const welcome = document.getElementById("welcomeMessage");
+  if (!welcome) return;
+
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  const airline = activeUser.airline || {};
+
+  // Texto base
+  let name = airline.name || "ACS AIRLINES";
+
+  welcome.innerHTML = `
+    <span class="w-welcome">Welcome to</span>
+    &nbsp;
+    <span class="w-airline">${name}</span>
+  `;
+
+});
+</script>
+  
 <script>
 /* ============================================================
    5️⃣ ALERT ENGINE — Qatar Luxury v3 FINAL
