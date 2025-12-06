@@ -329,33 +329,47 @@ tr:nth-child(even) {
   font-weight: 600;
 }
 
-/* ===============================================================
-   HR FULL MODAL — Qatar Luxury Edition (Buy New Style)
-   ============================================================== */
+/* ============================================================
+   === HR FULL MODAL FIX — Position, Scroll, Centering  =========
+   ============================================================ */
 
 .hr-full-modal {
-  width: 700px !important;
-  padding: 2.2rem 2rem;
-  border-radius: 22px !important;
-  background: linear-gradient(180deg,#102040,#071120);
-  border: 1px solid rgba(255,179,0,0.35);
-  box-shadow: 0 0 45px rgba(255,179,0,0.25);
-  max-height: 90vh;
-  overflow-y: auto;
+  margin-top: 40px !important;      /* Baja el modal */
+  max-height: 80vh !important;      /* Altura máxima */
+  overflow-y: auto !important;      /* Scroll interno */
+  padding-bottom: 40px !important;  /* Espacio abajo */
 }
 
 .hr-modal-title {
-  font-size: 1.8rem;
-  font-weight: 700;
+  margin-top: 0;
+  padding-top: 10px;
+  font-size: 1.6rem;
+  text-align: center;
   color: #ffca3a;
-  margin-bottom: 0.2rem;
-  text-shadow: 0 0 12px rgba(255,190,60,0.5);
+  text-shadow: 0 0 10px rgba(255,185,50,0.5);
 }
 
 .hr-modal-sub {
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-  color: #cdd9ff;
+  text-align: center;
+  color: #a9b8e8;
+  margin-top: -8px;
+  margin-bottom: 20px;
+}
+
+/* Select fix */
+.hr-select {
+  width: 100%;
+  padding: 10px;
+  background: rgba(20,35,70,0.75);
+  border-radius: 10px;
+  color: white;
+  border: 1px solid rgba(255,200,60,0.35);
+}
+
+/* Remove arrows that stretch layout */
+.hr-select::-webkit-inner-spin-button,
+.hr-select::-webkit-outer-spin-button {
+  -webkit-appearance: none;
 }
 
 /* BLOCK (cada sección) */
@@ -568,19 +582,6 @@ tr:nth-child(even) {
       <span id="hrModalDeptName">Department</span>
     </h2>
     <p class="hr-modal-sub">Department Control Panel</p>
-
-    <!-- ========================================================= -->
-    <!-- SUMMARY BLOCK — Info General del Departamento -->
-    <!-- ========================================================= -->
-    <div class="hr-block">
-      <h3 class="hr-block-title">Department Summary</h3>
-      <p><span>Current Staff:</span> <strong id="sumStaff">0</strong></p>
-      <p><span>Required Staff:</span> <strong id="sumRequired">0</strong></p>
-      <p><span>Difference:</span> <strong id="sumDifference">0</strong></p>
-      <p><span>Morale:</span> <strong id="sumMorale">0%</strong></p>
-      <p><span>Salary per Employee:</span> <strong id="sumSalary">$0</strong></p>
-      <p><span>Monthly Payroll:</span> <strong id="sumPayroll">$0</strong></p>
-    </div>
 
     <!-- ========================================================= -->
     <!-- HIRE STAFF BLOCK -->
@@ -830,48 +831,35 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   HR FULL MODAL — Functions
+   HR FULL MODAL — OPEN
    ============================================================ */
-
 let HR_active = null;
-
+     
 function openHRFullModal(id) {
   HR_active = id;
+
   const hr = ACS_HR_load()[id];
 
-  // Header
+  // Set title
   document.getElementById("hrModalDeptName").textContent = hr.name;
 
-  // Summary
-  document.getElementById("sumStaff").textContent = hr.staff;
-  document.getElementById("sumRequired").textContent = hr.required || hr.staff;
-  const diff = (hr.required || hr.staff) - hr.staff;
-  document.getElementById("sumDifference").textContent = diff;
-  document.getElementById("sumMorale").textContent = hr.morale + "%";
-  document.getElementById("sumSalary").textContent = "$" + hr.salary;
-  document.getElementById("sumPayroll").textContent = "$" + hr.payroll;
+  // Build selects (Hire + Fire) and cost
+  HR_buildSelects(hr);
 
-  // Hire costs
-  updateHireCost(hr);
-
-  // Fire options
-  const fireSel = document.getElementById("fireQty");
-  fireSel.innerHTML = "";
-  for (let i = 1; i <= hr.staff; i++) {
-    fireSel.innerHTML += `<option value="${i}">${i}</option>`;
-  }
-
-  document.getElementById("fireWarning").textContent = "—";
-
-  // Salary slider
+  // Reset salary slider
   document.getElementById("salaryRangeFull").value = 100;
   document.getElementById("salaryValFull").textContent = "100%";
   document.getElementById("salaryNewFull").textContent = "$" + hr.salary;
   document.getElementById("salaryAfterFull").textContent = "$" + hr.payroll;
 
-  // Auto-balance
+  // Auto-Balance diff
+  const diff = (hr.required || hr.staff) - hr.staff;
   document.getElementById("autoDiff").textContent = diff;
 
+  // Scroll modal to top
+  document.querySelector(".hr-full-modal").scrollTop = 0;
+
+  // Show modal
   document.getElementById("hrFullModal").style.display = "flex";
 }
 
@@ -942,7 +930,34 @@ function HR_autoAdjustFull() {
   closeHRFullModal();
   loadDepartments();
 }
+     
+/* ============================================================
+   === HR FULL MODAL — BUILD SELECTS ===========================
+   ============================================================ */
+     
+function HR_buildSelects(hrDept) {
 
+  // Hire 1–20
+  const hireSel = document.getElementById("hireQty");
+  hireSel.innerHTML = "";
+  for (let i = 1; i <= 20; i++) {
+    hireSel.innerHTML += `<option value="${i}">${i}</option>`;
+  }
+
+  // Fire 1–staff actual
+  const fireSel = document.getElementById("fireQty");
+  fireSel.innerHTML = "";
+  for (let i = 1; i <= hrDept.staff; i++) {
+    fireSel.innerHTML += `<option value="${i}">${i}</option>`;
+  }
+
+  // Cost update
+  document.getElementById("hireCost").textContent =
+    "$" + hrDept.salary.toLocaleString();
+
+  document.getElementById("fireWarning").textContent = "—";
+}
+     
 /* Close */
 function closeHRFullModal() {
   document.getElementById("hrFullModal").style.display = "none";
