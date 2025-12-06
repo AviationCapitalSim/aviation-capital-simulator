@@ -79,6 +79,7 @@ function updatePendingDeliveries() {
 
     } else {
       // === Todavía Pendiente → va a la tabla ===
+       
       pendingForTable.push({
         registration: "—",
         model: entry.model,
@@ -108,6 +109,119 @@ function updatePendingDeliveries() {
   fleet = [...pendingForTable, ...fleetActive];
 }
 
+// Actualizar requerimientos HR después de cambios en flota
+
+if (typeof HR_updateRequirementsFromFleet === "function") {
+  HR_updateRequirementsFromFleet();
+}
+
+/* ============================================================
+   🟦 HR SYNC ENGINE — Requirements Based on Fleet
+   ------------------------------------------------------------
+   • Calcula requerimientos de personal por cada avión activo
+   • Actualiza ACS_HR.required para TODOS los departamentos
+   • Compatible con Active / Pending / Future categories
+   ============================================================ */
+
+function HR_updateRequirementsFromFleet() {
+
+  // === Cargar HR actual ===
+  let HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+
+  // === Reset required de todos los departamentos ===
+  for (let dep in HR) {
+    HR[dep].required = 0;
+  }
+
+  // === Procesar flota activa real ===
+  fleet.forEach(ac => {
+
+    if (ac.status !== "Active") return; // solo activos
+
+    const model = ac.model.toLowerCase();
+
+    /* ======================================================
+       ➤ RULESET — Pilots
+       ====================================================== */
+
+    let pilotDept = null;
+
+    if (model.includes("atr") || model.includes("crj") || model.includes("erj") || model.includes("dh8")) {
+      pilotDept = "pilots_small";
+    }
+    else if (model.includes("a320") || model.includes("a319") || model.includes("b737")) {
+      pilotDept = "pilots_medium";
+    }
+    else if (model.includes("a330") || model.includes("b767") || model.includes("a310")) {
+      pilotDept = "pilots_large";
+    }
+    else if (model.includes("a340") || model.includes("a350") || model.includes("b777") || model.includes("b787") || model.includes("a380") || model.includes("b747")) {
+      pilotDept = "pilots_verylarge";
+    }
+
+    if (pilotDept && HR[pilotDept]) {
+      HR[pilotDept].required += 4;  // 2 crew sets
+    }
+
+    /* ======================================================
+       ➤ Cabin Crew
+       ====================================================== */
+
+    let crewNeeded = 0;
+
+    if (model.includes("atr") || model.includes("dh8")) crewNeeded = 3;
+    else if (model.includes("a320") || model.includes("b737")) crewNeeded = 4;
+    else if (model.includes("a330") || model.includes("b767")) crewNeeded = 6;
+    else if (model.includes("a340") || model.includes("b777") || model.includes("a350")) crewNeeded = 8;
+    else if (model.includes("b747") || model.includes("a380")) crewNeeded = 12;
+
+    if (HR["cabin_crew"]) HR["cabin_crew"].required += crewNeeded;
+
+    /* ======================================================
+       ➤ Maintenance
+       ====================================================== */
+
+    let maint = 2;
+
+    if (model.includes("a330") || model.includes("b767")) maint = 3;
+    if (model.includes("a350") || model.includes("b777") || model.includes("b787")) maint = 4;
+
+    if (HR["maintenance"]) HR["maintenance"].required += maint;
+
+    /* ======================================================
+       ➤ Ground Handling
+       ====================================================== */
+
+    if (HR["ground"]) HR["ground"].required += 2;
+
+    /* ======================================================
+       ➤ Flight Ops
+       ====================================================== */
+
+    if (HR["flight_ops"]) HR["flight_ops"].required += 1;
+
+    /* ======================================================
+       ➤ Safety & Security
+       ====================================================== */
+
+    if (HR["safety"]) HR["safety"].required += 1;
+
+    /* ======================================================
+       ➤ Customer Service
+       ====================================================== */
+
+    if (HR["customer"]) HR["customer"].required += 1;
+
+  });
+
+  // === Guardar HR actualizado ===
+  localStorage.setItem("ACS_HR", JSON.stringify(HR));
+
+  // === Refrescar tabla HR si estás en hr.html ===
+  if (typeof HR_renderTable === "function") {
+    HR_renderTable();
+  }
+}
 
 /* ============================================================
    🟦 C.3 — Render Full Fleet Table (Active + Pending)
@@ -161,9 +275,9 @@ function renderFleetTable() {
   });
 }
 
-// ============================================================
-// === FILTERS ================================================
-// ============================================================
+/* ============================================================
+   === FILTERS ================================================
+   ============================================================ */
 
 const fModel   = document.getElementById("filterModel");
 const fFamily  = document.getElementById("filterFamily");
@@ -228,9 +342,9 @@ function passesFilters(ac) {
   el.addEventListener("input", () => renderFleetTable());
 });
 
-// ============================================================
-// === MODAL ===================================================
-// ============================================================
+/* ============================================================
+   === MODAL ===================================================
+   ============================================================ */
 
 const modal = document.getElementById("aircraftModal");
 
@@ -245,26 +359,24 @@ function openAircraftModal(reg) {
   document.getElementById("mBase").textContent = ac.base || "—";
   document.getElementById("mStatus").textContent = ac.status;
   
-   // Delivery Date (si está pendiente)
-   
+  // Delivery Date (si está pendiente)
   if (ac.status === "Pending Delivery" && ac.deliveryDate) {
-  const d = new Date(ac.deliveryDate);
-  document.getElementById("mDeliveryDate").textContent =
-    d.toUTCString().substring(5, 16);
+    const d = new Date(ac.deliveryDate);
+    document.getElementById("mDeliveryDate").textContent =
+      d.toUTCString().substring(5, 16);
   } else {
-  document.getElementById("mDeliveryDate").textContent = "—";
-}
+    document.getElementById("mDeliveryDate").textContent = "—";
+  }
 
   // Delivered Date (si ya fue entregado)
-   
   if (ac.deliveredDate) {
-  const dd = new Date(ac.deliveredDate);
-  document.getElementById("mDeliveredDate").textContent =
-    dd.toUTCString().substring(5, 16);
+    const dd = new Date(ac.deliveredDate);
+    document.getElementById("mDeliveredDate").textContent =
+      dd.toUTCString().substring(5, 16);
   } else {
-  document.getElementById("mDeliveredDate").textContent = "—";
-}
-   
+    document.getElementById("mDeliveredDate").textContent = "—";
+  }
+
   document.getElementById("mCondition").textContent = ac.condition;
   document.getElementById("mHours").textContent = ac.hours;
   document.getElementById("mCycles").textContent = ac.cycles;
@@ -285,9 +397,9 @@ function openAircraftModal(reg) {
 
 function closeModal() { modal.style.display = "none"; }
 
-// ============================================================
-// === EMPTY ROWS (si no hay flota) ============================
-// ============================================================
+/* ============================================================
+   === EMPTY ROWS (si no hay flota) ============================
+   ============================================================ */
 
 function ensureEmptyRows() {
   fleetTableBody.innerHTML = `
@@ -316,13 +428,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // 4) Render tabla principal
   renderFleetTable();
 
-
   // 5) Si no hay flota → filas vacías
   if (fleet.length === 0) {
     ensureEmptyRows();
   }
 });
-
 
 /* ============================================================
    === TIME ENGINE SYNC =======================================
@@ -335,14 +445,22 @@ if (typeof registerTimeListener === "function") {
     // 1) Recargar flota
     fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
-    // 2) Procesar entregas
+    // 2) Procesar entregas pendientes
     updatePendingDeliveries();
 
-  
-    // 3) Si no hay flota → filas vacías
+    // 3) Renderizar tabla
+    renderFleetTable();
+
+    // 4) Si no hay flota → filas vacías
     if (fleet.length === 0) {
       ensureEmptyRows();
     }
+
+    // 5) Actualizar requerimientos HR
+    if (typeof HR_updateRequirementsFromFleet === "function") {
+      HR_updateRequirementsFromFleet();
+    }
+
   });
 
 }
