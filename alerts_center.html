@@ -501,10 +501,11 @@ function renderAlerts(filter = "all") {
     tbody.appendChild(row);
   });
 
+  
   // 5️⃣ Mínimo 4 filas siempre
   
   while (tbody.children.length < 4) {
-    tbody.insertAdjacentHTML("beforeend", `
+  tbody.insertAdjacentHTML("beforeend", `
       <tr>
         <td style="opacity:0.4;">—</td>
         <td style="opacity:0.4;">No alerts</td>
@@ -514,8 +515,8 @@ function renderAlerts(filter = "all") {
         <td style="opacity:0.4;">—</td>
       </tr>
     `);
-  }
 }
+
 
 /* 🟢 BLOQUE 3 — FIX REDIRECCIÓN DE ALERTAS
    ---------------------------------------------------
