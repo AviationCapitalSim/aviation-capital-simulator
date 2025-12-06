@@ -270,30 +270,35 @@ body {
    === WELCOME CHIPS — Qatar Luxury v2.0 (Actualizado) =========
    ============================================================ */
 
+/* ============================================================
+   === WELCOME CHIPS — Qatar Luxury (Igualar tamaño BASE) ======
+   ============================================================ */
+
 .welcome-badges {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 28px;
+  margin-top: 22px;
   margin-bottom: 28px;
-  gap: 30px; /* más espacio entre chips */
+  gap: 26px;
 }
 
-/* CHIP BASE + COUNTRY + RANK (misma estructura) */
+/* TODAS las tarjetas ahora tendrán EXACTAMENTE el tamaño del BASE CHIP */
+  
 .welcome-chip {
-  padding: 10px 20px;       /* más grande */
-  font-size: 0.95rem;       /* texto un poco más grande */
-  border-radius: 14px;      /* más premium */
+  padding: 8px 18px;          /* 👈 MISMO que base-chip */
+  font-size: 0.90rem;         /* 👈 MISMO */
+  border-radius: 12px;        /* 👈 MISMO */
+  font-weight: 600;           /* 👈 MISMO */
   display: flex;
   align-items: center;
-  gap: 10px;                /* más espacio entre icono y texto */
+  gap: 8px;                   /* 👈 MISMO */
   backdrop-filter: blur(4px);
-  box-shadow: 0 0 8px rgba(0,0,0,0.35);
-  background: rgba(255,179,0,0.12);
-  border: 1px solid rgba(255,179,0,0.35);
-  font-weight: 600;
-  color: #ffffff;
+  box-shadow: 0 0 6px rgba(0,0,0,0.35);
 }
+
+/* NO tocamos colores */
+
 
 /* CHIP BASE — Azul Qatar Royal */
 .welcome-chip.base-chip {
@@ -303,28 +308,30 @@ body {
 }
   
 /* ============================================================
-   === HERO TITLE — Qatar Luxury Premium v2.0 =================
+   === HERO TITLE — Qatar Luxury Premium v2.3 (Balanceado) ====
    ============================================================ */
 
 #welcomeMessage {
-  font-size: 2.8rem;               /* más grande */
+  font-size: 2.2rem;               /* tamaño reducido */
   font-weight: 700;
   margin-bottom: 0.3rem;
   letter-spacing: 1px;
   text-transform: uppercase;
+  text-align: center;
 }
 
 #welcomeMessage .w-welcome {
   background: linear-gradient(90deg, #ffe7a0, #ffb300, #ffd75a);
   -webkit-background-clip: text;
   color: transparent;
-  text-shadow: 0 0 18px rgba(255,190,60,0.45);
+  text-shadow: 0 0 14px rgba(255,190,60,0.35);
 }
 
 #welcomeMessage .w-airline {
   color: #ffffff;
-  text-shadow: 0 0 12px rgba(255,255,255,0.35);
+  text-shadow: 0 0 12px rgba(255,255,255,0.25);
 }
+
   
 </style>
 </head>
