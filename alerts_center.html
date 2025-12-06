@@ -502,19 +502,18 @@ function renderAlerts(filter = "all") {
   });
 
   
-  // 5️⃣ Mínimo 4 filas siempre
+  /* 🟪 BLOQUE 5 — FILAS FANTASMA AJUSTADAS A 5 COLUMNAS */
   
   while (tbody.children.length < 4) {
   tbody.insertAdjacentHTML("beforeend", `
-      <tr>
-        <td style="opacity:0.4;">—</td>
-        <td style="opacity:0.4;">No alerts</td>
-        <td style="opacity:0.4;">—</td>
-        <td style="opacity:0.4;">—</td>
-        <td style="opacity:0.4;">—</td>
-        <td style="opacity:0.4;">—</td>
-      </tr>
-    `);
+    <tr>
+      <td style="opacity:0.35;">No alerts</td>   <!-- Message -->
+      <td style="opacity:0.35;">—</td>          <!-- Category -->
+      <td style="opacity:0.35;">—</td>          <!-- Level -->
+      <td style="opacity:0.35;">—</td>          <!-- Timestamp -->
+      <td style="opacity:0.35;">—</td>          <!-- Actions -->
+    </tr>
+  `);
 }
 
 
