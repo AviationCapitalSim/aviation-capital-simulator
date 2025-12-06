@@ -502,7 +502,14 @@ tr:nth-child(even) {
   background: #ffd35c;
   box-shadow: 0 0 12px rgba(255,190,60,0.5);
 }
-
+     
+#deptSelector {
+  background: rgba(20,35,70,0.75);
+  border: 1px solid rgba(255,200,60,0.35);
+  color: #ffca3a;
+  font-weight: 600;
+}
+     
 </style>
 </head>
 
@@ -583,6 +590,14 @@ tr:nth-child(even) {
     </h2>
     <p class="hr-modal-sub">Department Control Panel</p>
 
+    <div class="hr-block">
+      <h3 class="hr-block-title">Department</h3>
+
+    <select id="deptSelector" class="hr-select" disabled>
+    <option id="deptSelectorValue">Loading...</option>
+    </select>
+    </div>
+       
     <!-- ========================================================= -->
     <!-- HIRE STAFF BLOCK -->
     <!-- ========================================================= -->
@@ -851,19 +866,24 @@ function openHRFullModal(id) {
   document.getElementById("salaryValFull").textContent = "100%";
   document.getElementById("salaryNewFull").textContent = "$" + hr.salary;
   document.getElementById("salaryAfterFull").textContent = "$" + hr.payroll;
-
+  document.getElementById("deptSelectorValue").textContent = hr.name;
+  
   // Auto-Balance diff
+     
   const diff = (hr.required || hr.staff) - hr.staff;
   document.getElementById("autoDiff").textContent = diff;
 
   // Scroll modal to top
+     
   document.querySelector(".hr-full-modal").scrollTop = 0;
 
   // Show modal
+     
   document.getElementById("hrFullModal").style.display = "flex";
 }
 
 /* Update hire cost when changing qty */
+     
 function updateHireCost(hr=null) {
   if (!hr) hr = ACS_HR_load()[HR_active];
   const qty = parseInt(document.getElementById("hireQty").value);
