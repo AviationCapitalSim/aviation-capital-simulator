@@ -675,40 +675,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 /* ============================================================
-   ✅ HERO TITLE FIX — WAIT FOR USER (v1.0)
-   ------------------------------------------------------------
-   Evita que el Dashboard destruya el Welcome al entrar desde
-   login.html — porque todavía no existe ACS_activeUser.
+   DASHBOARD FIX — LOAD FULL AIRLINE OBJECT (v1.0)
+   Opción A — LocalStorage mantiene solo user activo,
+   backend entrega airline completa.
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
-  function waitForUser() {
-    const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-    // ❗ aún NO existe → esperar
-    if (!activeUser || !activeUser.airline) {
-      console.log("⏳ Esperando usuario para HERO...");
-      return setTimeout(waitForUser, 120);
-    }
-
-    // === Ahora sí existe → ejecutar HERO normal
-    const welcome = document.getElementById("welcomeMessage");
-    if (!welcome) return;
-
-    const airline = activeUser.airline;
-    const name = airline.name || "ACS AIRLINES";
-
-    welcome.innerHTML = `
-      <span class="w-welcome">WELCOME TO</span>
-      &nbsp;
-      <span class="w-airline">${name.toUpperCase()}</span>
-    `;
-
-    console.log("✅ HERO listo con usuario:", name);
+  // Si no hay usuario → volver al login
+  if (!activeUser || !activeUser.airline_id) {
+    window.location.href = "login.html";
+    return;
   }
 
-  waitForUser();
+  const airlineId = activeUser.airline_id;
+
+  try {
+    const url =
+      `https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec` +
+      `?action=getAirline&airline_id=${airlineId}`;
+
+    const response = await fetch(url);
+    const result = await response.json();
+
+    if (result.status === "success") {
+
+      // Guardar objeto real en sesión
+      activeUser.airline = result.airline;
+      localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+
+      // Actualizar Welcome
+      const welcome = document.getElementById("welcomeMessage");
+      if (welcome) {
+        welcome.innerHTML = `
+          <span class="w-welcome">WELCOME TO</span>
+          &nbsp;
+          <span class="w-airline">${result.airline.name.toUpperCase()}</span>
+        `;
+      }
+
+      // Actualizar Chip País
+      const chipWorld = document.getElementById("chipWorld");
+      if (chipWorld) chipWorld.textContent = result.airline.country;
+
+    } else {
+      console.warn("⚠ Airline not found in backend");
+    }
+
+  } catch(err) {
+    console.error("❌ Error loading airline:", err);
+  }
+
 });
 </script>
   
