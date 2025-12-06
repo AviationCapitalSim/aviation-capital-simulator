@@ -267,11 +267,7 @@ body {
 }
 
 /* ============================================================
-   === WELCOME CHIPS — Qatar Luxury v2.0 (Actualizado) =========
-   ============================================================ */
-
-/* ============================================================
-   === WELCOME CHIPS — Qatar Luxury (Igualar tamaño BASE) ======
+   === WELCOME CHIPS — Qatar Luxury (Tamaño unificado) ========
    ============================================================ */
 
 .welcome-badges {
@@ -283,22 +279,21 @@ body {
   gap: 26px;
 }
 
-/* TODAS las tarjetas ahora tendrán EXACTAMENTE el tamaño del BASE CHIP */
-  
+/* 👉 Todos con el MISMO tamaño (clonado del Base),
+      pero Rank y País conservan su recuadro dorado original */
 .welcome-chip {
-  padding: 8px 18px;          /* 👈 MISMO que base-chip */
-  font-size: 0.90rem;         /* 👈 MISMO */
-  border-radius: 12px;        /* 👈 MISMO */
-  font-weight: 600;           /* 👈 MISMO */
+  padding: 8px 18px;          /* más grande que el original */
+  font-size: 0.90rem;         /* texto un poco más grande */
+  border-radius: 12px;
+  background: rgba(255,179,0,0.12);       /* recuadro dorado original */
+  border: 1px solid rgba(255,179,0,0.35); /* recuadro dorado original */
+  color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 8px;                   /* 👈 MISMO */
+  gap: 8px;
   backdrop-filter: blur(4px);
   box-shadow: 0 0 6px rgba(0,0,0,0.35);
 }
-
-/* NO tocamos colores */
-
 
 /* CHIP BASE — Azul Qatar Royal */
 .welcome-chip.base-chip {
