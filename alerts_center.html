@@ -105,12 +105,12 @@ body {
 }
 
 /* ============================================================
-   1️⃣ TABLA QATAR LUXURY PREMIUM — CORREGIDA v3
+   1️⃣ TABLA QATAR LUXURY PREMIUM — CORREGIDA v4 FINAL
    ============================================================ */
 
 .alerts-table-wrapper {
   width: 100% !important;             /* FULL WIDTH */
-  max-width: 1700px;                  /* Qatar Luxury Wide */
+  max-width: 1800px !important;       /* Qatar Luxury Wide */
   margin: 2rem auto 3rem;
   background: rgba(13, 28, 60, 0.55);
   backdrop-filter: blur(6px);
@@ -120,14 +120,18 @@ body {
   overflow-x: auto;
 }
 
-table.alerts-table {
+/* 🚀 Bloque clave: evitar compresión en Safari y Firefox */
+.alerts-table {
   width: 100%;
+  min-width: 1400px;                  /* OBLIGA a mantener ancho mínimo */
   border-collapse: collapse;
   color: white;
   font-size: 0.92rem;
 }
 
-/* HEADER */
+/* ============================================================
+   HEADER
+   ============================================================ */
   
 .alerts-table thead th {
   background: #102040;
@@ -135,14 +139,16 @@ table.alerts-table {
   padding: 1rem;
   font-size: 1rem;
   border-bottom: 1px solid rgba(255,255,255,0.12);
-  text-align: center;                 /* CENTRADO */
+  text-align: center;
   letter-spacing: 0.3px;
 }
 
-/* Fila premium */
-  
+/* ============================================================
+   FILAS
+   ============================================================ */
+
 .alerts-table tbody tr {
-  height: 75px;                       /* ALTO ELEGANTE */
+  height: 75px;
   transition: 0.18s ease;
 }
 
@@ -154,20 +160,19 @@ table.alerts-table {
 .alerts-table td {
   padding: 0.85rem 1rem;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  vertical-align: middle !important;   /* CENTRADO VERTICAL */
-  text-align: center;                  /* CENTRADO */
+  vertical-align: middle !important;
+  text-align: center;
 }
 
-/* ================================
-      ESPACIADOS ENTRE COLUMNAS
-   ================================ */
-/* 🟩 BLOQUE 4 — AJUSTE DE ANCHOS SIN TYPE */
+/* ============================================================
+   ESPACIADOS ENTRE COLUMNAS (Sin TYPE)
+   ============================================================ */
 
-/* Ahora la primera columna es Message */
+/* Message */
   
 .alerts-table td:nth-child(1),
 .alerts-table th:nth-child(1) {
-  width: 40%;     /* Mensaje más amplio */
+  width: 36%;            /* Ajuste necesario para que Actions respire */
 }
 
 /* Category */
@@ -188,25 +193,27 @@ table.alerts-table {
   
 .alerts-table td:nth-child(4),
 .alerts-table th:nth-child(4) {
-  width: 18%;
+  width: 16%;
 }
 
-/* Actions */
+/* Actions — ampliado para caber botones premium */
   
 .alerts-table td:nth-child(5),
 .alerts-table th:nth-child(5) {
-  width: 20%;
+  width: 16%;
 }
 
-/* Alinear los botones horizontalmente */
-  
+/* ============================================================
+   Alineación Correcta de Botones (Safari FIX)
+   ============================================================ */
+
 .alerts-table td:nth-child(5) {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;   /* espacio entre Go y trash */
+  gap: 12px;      /* separación entre GO y Delete */
 }
-  
+
 /* ============================================================
    CHIPS DE NIVEL
    ============================================================ */
