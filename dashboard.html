@@ -566,166 +566,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 /* ============================================================
-   3️⃣ AIRLINE LOADER — SERVER EDITION (v3.0)
+   3 DASHBOARD MASTER LOADER — Qatar Luxury v5.0 (OFICIAL)
+   ------------------------------------------------------------
+   • Carga airline desde Google Sheet si hace falta
+   • Muestra Welcome con estilo Qatar
+   • Carga País + Bandera
+   • Carga Base
+   • Carga Rank (si existe)
+   • Evita sobrescrituras (un solo motor)
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
-
-  console.log("🛫 [Dashboard] Airline Loader iniciado…");
 
   let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-  if (!activeUser || !activeUser.airline) {
-    document.getElementById("welcomeMessage").textContent = "Welcome, Captain";
-    return;
-  }
-
-  let airlineData = activeUser.airline;
-
-  // Si solo es el ID → hay que consultar el servidor
-  if (typeof airlineData === "string") {
-
-    const airlineId = airlineData;
-
-    const url =
-      "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec" +
-      `?action=getAirline&airline_id=${airlineId}`;
-
-    try {
-      const resp = await fetch(url);
-      const data = await resp.json();
-
-      if (data.status === "success") {
-
-        airlineData = data.airline;
-
-        // Guardar nueva información
-        activeUser.airline = airlineData;
-        localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
-
-      } else {
-        console.warn("⚠ Airline not found.");
-      }
-
-    } catch (err) {
-      console.error("❌ Error fetching airline:", err);
-    }
-  }
-
-  // === WELCOME MESSAGE ===
-  const welcome = document.getElementById("welcomeMessage");
-  if (airlineData && airlineData.name) {
-    welcome.innerHTML = `Welcome to <strong>${airlineData.name}</strong>`;
-  } else {
-    welcome.textContent = "Welcome, Captain";
-  }
-
-  // === CHIP WORLD ===
-  const chipWorld = document.getElementById("chipWorld");
-  if (airlineData.country) chipWorld.textContent = airlineData.country;
-
-  // === CHIP BASE ===
-  const chipBase = document.getElementById("chipBase");
-  if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
-    const flag = getFlagEmojiFromCountryName(activeUser.base.country);
-    chipBase.innerHTML = `${flag} Base: ${activeUser.base.city} (${activeUser.base.icao})`;
-  }
-
-  console.log("🎯 Airline Loader — COMPLETADO");
-
-});
-</script>
-
- <script>
-/* ============================================================
-   🇺🇳 4️⃣ WELCOME CHIP ENGINE — Qatar Luxury v2.1
-   ------------------------------------------------------------
-   • Muestra el país con su bandera
-   • Elimina iconos sobrados en el chip de base
-   ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-
-  const chipRank  = document.getElementById("chipRank");
-  const chipWorld = document.getElementById("chipWorld");
-  const chipBase  = document.getElementById("chipBase");
-
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  /* === 1) Rank === */
-  if (activeUser.airline && activeUser.airline.rank)
-    chipRank.textContent = activeUser.airline.rank;
-
-
-  /* === 2) País + Bandera === */
-  if (activeUser.airline && activeUser.airline.country) {
-    const country = activeUser.airline.country;
-    const flag = getFlagEmojiFromCountryName(country);
-    chipWorld.textContent = `${flag} ${country}`;
-  }
-
-
-  /* === 3) Base (sin iconos) === */
-  if (activeUser.base && activeUser.base.city && activeUser.base.icao) {
-    chipBase.textContent =
-      `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
-  }
-
-});
-</script>
-
-<script>
-/* ============================================================
-   DASHBOARD FIX — LOAD FULL AIRLINE OBJECT (v1.0)
-   Opción A — LocalStorage mantiene solo user activo,
-   backend entrega airline completa.
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", async () => {
-
-  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-  // Si no hay usuario → volver al login
   if (!activeUser || !activeUser.airline_id) {
     window.location.href = "login.html";
     return;
   }
 
   const airlineId = activeUser.airline_id;
+  let airlineObj = activeUser.airline || null;
 
-  try {
-    const url =
-      `https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec` +
-      `?action=getAirline&airline_id=${airlineId}`;
+  // 1️⃣ Si airlineObj no existe → traerlo del servidor
+  if (!airlineObj) {
+    try {
+      const url =
+        "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec" +
+        `?action=getAirline&airline_id=${airlineId}`;
 
-    const response = await fetch(url);
-    const result = await response.json();
+      const resp = await fetch(url);
+      const data = await resp.json();
 
-    if (result.status === "success") {
-
-      // Guardar objeto real en sesión
-      activeUser.airline = result.airline;
-      localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
-
-      // Actualizar Welcome
-      const welcome = document.getElementById("welcomeMessage");
-      if (welcome) {
-        welcome.innerHTML = `
-          <span class="w-welcome">WELCOME TO</span>
-          &nbsp;
-          <span class="w-airline">${result.airline.name.toUpperCase()}</span>
-        `;
+      if (data.status === "success") {
+        airlineObj = data.airline;
+        activeUser.airline = airlineObj;
+        localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
       }
-
-      // Actualizar Chip País
-      const chipWorld = document.getElementById("chipWorld");
-      if (chipWorld) chipWorld.textContent = result.airline.country;
-
-    } else {
-      console.warn("⚠ Airline not found in backend");
+    } catch (err) {
+      console.error("❌ Error loading airline:", err);
     }
+  }
 
-  } catch(err) {
-    console.error("❌ Error loading airline:", err);
+  // 2️⃣ WELCOME TITLE
+  const welcome = document.getElementById("welcomeMessage");
+  if (welcome) {
+    welcome.innerHTML = `
+      <span class="w-welcome">WELCOME TO</span>
+      &nbsp;
+      <span class="w-airline">${airlineObj.name}</span>
+    `;
+  }
+
+  // 3️⃣ COUNTRY + FLAG
+  const chipWorld = document.getElementById("chipWorld");
+  if (chipWorld && airlineObj.country) {
+    const flag = getFlagEmojiFromCountryName(airlineObj.country);
+    chipWorld.textContent = `${flag} ${airlineObj.country}`;
+  }
+
+  // 4️⃣ BASE
+  const chipBase = document.getElementById("chipBase");
+  if (chipBase && activeUser.base && activeUser.base.city && activeUser.base.icao) {
+    chipBase.textContent =
+      `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
+  }
+
+  // 5️⃣ RANK
+  const chipRank = document.getElementById("chipRank");
+  if (chipRank && airlineObj.rank) {
+    chipRank.textContent = airlineObj.rank;
   }
 
 });
@@ -733,7 +643,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   
 <script>
 /* ============================================================
-   5️⃣ ALERT ENGINE — Qatar Luxury v3 FINAL
+   4 ALERT ENGINE — Qatar Luxury v3 FINAL
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -803,7 +713,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script>
 /* ============================================================
-   6️⃣ ALERT BADGE — Qatar Luxury
+   5 ALERT BADGE — Qatar Luxury
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
