@@ -938,11 +938,6 @@ function openHRFullModal(id) {
   const sel = document.getElementById("hrDeptSelector");
   if (sel) sel.value = id;
      
-  // Auto-Balance diff
-     
-  const diff = (hr.required || hr.staff) - hr.staff;
-  document.getElementById("autoDiff").textContent = diff;
-
   // Scroll modal to top
      
   document.querySelector(".hr-full-modal").scrollTop = 0;
