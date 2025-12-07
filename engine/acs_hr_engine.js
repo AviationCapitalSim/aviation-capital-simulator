@@ -292,7 +292,10 @@ registerTimeListener((time) => {
         ACS_HR_save(hr);
         ACS_HR_recalculateAll();
     }
+// ⭐ Reaplicar sueldos históricos al cambiar de año
 
+ACS_HR_applyHistoricalSalaries();
+   
     __HR_lastYear = year;
 });
 
