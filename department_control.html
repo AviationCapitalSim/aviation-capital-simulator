@@ -510,6 +510,41 @@ tr:nth-child(even) {
   font-weight: 600;
 }
      
+/* ===== HR DEPARTMENT SELECTOR (Qatar Luxury) ===== */
+
+.hr-box {
+    background: #0d1c3c;
+    border: 1px solid rgba(255,179,0,0.35);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.2rem;
+}
+
+.hr-label {
+    color: #FFB300;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 1rem;
+}
+
+.hr-select {
+    width: 100%;
+    padding: 0.45rem;
+    font-size: 1rem;
+    color: #FFB300;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,179,0,0.35);
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+}
+.hr-select option {
+    background: #0c1a38;
+    color: white;
+    padding: 6px;
+}
+
 </style>
 </head>
 
@@ -590,13 +625,20 @@ tr:nth-child(even) {
     </h2>
     <p class="hr-modal-sub">Department Control Panel</p>
 
-    <div class="hr-block">
-      <h3 class="hr-block-title">Department</h3>
+    <!-- ============================
+     HR DEPARTMENT SELECTOR
+     (Qatar Luxury)
+     ============================ -->
+       
+     <div class="hr-box">
+     <label class="hr-label">Department</label>
 
-    <select id="deptSelector" class="hr-select" disabled>
-    <option id="deptSelectorValue">Loading...</option>
+     <select id="hrDeptSelector" class="hr-select">
+      
+          <!-- JS insertará las opciones -->
     </select>
-    </div>
+  </div>
+
        
     <!-- ========================================================= -->
     <!-- HIRE STAFF BLOCK -->
