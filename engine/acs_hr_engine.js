@@ -47,19 +47,28 @@ const ACS_HR_DEPARTMENTS = [
 ];
 
 /* ============================================================
-   3) CREAR ESTRUCTURA HR SI NO EXISTE
+   3 — CREAR ESTRUCTURA HR INICIAL (AHORA CON ROLE)
    ============================================================ */
+
 if (!localStorage.getItem("ACS_HR")) {
+
     const hr = {};
 
     ACS_HR_DEPARTMENTS.forEach(dep => {
+
         hr[dep.id] = {
             name: dep.name,
-            base: dep.base,
+            base: dep.base,         // categoría del departamento
+            role: dep.base,         // 🔥 NUEVO: define el tipo de rol real
             staff: dep.initial,
             morale: 100,
-            salary: ACS_HR_SALARY[dep.base],
-            payroll: dep.initial * ACS_HR_SALARY[dep.base]
+
+            salary: ACS_HR_SALARY[dep.base],   // salario base 1940
+            payroll: dep.initial * ACS_HR_SALARY[dep.base],
+
+            required: dep.initial,  // por ahora igual al inicial (luego HR_update lo cambia)
+            years: 0,               // años de servicio
+            bonus: 0                // placeholder
         };
     });
 
@@ -69,6 +78,7 @@ if (!localStorage.getItem("ACS_HR")) {
 /* ============================================================
    Helpers
    ============================================================ */
+
 function ACS_HR_load() {
     return JSON.parse(localStorage.getItem("ACS_HR"));
 }
