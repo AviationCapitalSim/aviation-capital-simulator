@@ -528,6 +528,36 @@ const DECADES = {
   }
 }
 
+/* ============================================================
+   B1.1 — APLICAR SALARIO HISTÓRICO SEGÚN AÑO Y ROL
+   ============================================================ */
+function ACS_HR_applyHistoricalSalaries() {
+
+    const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+
+    const year = window.ACS_getYear ? ACS_getYear() : 1940;
+
+    Object.keys(HR).forEach(id => {
+
+        const dep = HR[id];
+
+        // Rol para calcular el salario
+        const role = dep.base || "admin";
+
+        // Salario histórico según año + rol
+        const newSalary = ACS_HR_getBaseSalary(year, role);
+
+        dep.salary = newSalary;
+        dep.payroll = dep.staff * newSalary;
+    });
+
+    localStorage.setItem("ACS_HR", JSON.stringify(HR));
+
+    // Refresh si estamos en HR.html
+    if (typeof HR_renderTable === "function") {
+        HR_renderTable();
+    }
+}
 
 /* ============================================================
    4) CALCULAR REQUIREMENTS (FLOTA + RUTAS)
@@ -583,37 +613,6 @@ function ACS_HR_calculateRequirements(fleet, totalRoutes, year) {
   return req;
 }
 
-
-/* ============================================================
-   5) ACTUALIZAR HR (USADO POR My Aircraft + Routes)
-   ============================================================ */
-
-function HR_updateRequirementsFromFleet() {
-
-  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const ROUTES = JSON.parse(localStorage.getItem("ACS_Routes") || "[]");
-
-  const year = window.ACS_getYear ? ACS_getYear() : 1940;
-
-  const totalRoutes = ROUTES.length;
-
-  const req = ACS_HR_calculateRequirements(fleet, totalRoutes, year);
-
-  // Actualizar HR.required
-  Object.keys(req).forEach(k => {
-    if (HR[k]) {
-      HR[k].required = Math.ceil(req[k]);
-      HR[k].salary = ACS_HR_getBaseSalary(year, HR[k].role);
-    }
-  });
-
-  localStorage.setItem("ACS_HR", JSON.stringify(HR));
-
-  if (typeof HR_renderTable === "function") {
-    HR_renderTable();
-  }
-}
 /* ============================================================
    🟦 B1 — HR UPDATE REQUIREMENTS FROM FLEET v2.0
    ------------------------------------------------------------
@@ -662,6 +661,8 @@ function HR_updateRequirementsFromFleet() {
         HR_renderTable();
     }
 }
+
+
 /* ============================================================
    ⭐ E1 — Llenar Selector Qatar Luxury del Modal HR
    ============================================================ */
