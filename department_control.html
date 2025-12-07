@@ -707,15 +707,16 @@ tr:nth-child(even) {
     <!-- ========================================================= -->
     <!-- AUTO BALANCE STAFF -->
     <!-- ========================================================= -->
-    <div class="hr-block">
-      <h3 class="hr-block-title">⚖️ Auto-Balance Staff</h3>
+       
+    <div class="hr-block hr-disabled">
+    <h3 class="hr-block-title">⚖️ Auto-Balance Staff (Coming Soon)</h3>
 
-      <p><span>Missing / Excess:</span> <strong id="autoDiff">0</strong></p>
+    <p><em>This feature will automatically level staff to required numbers.</em></p>
 
-      <button class="hr-btn-gold" onclick="HR_autoAdjustFull()">
-        ⚖️ Auto-Balance Staff
-      </button>
-    </div>
+    <button class="hr-btn-disabled" disabled>
+    ⚖️ Auto-Balance (Disabled)
+    </button>
+   </div>
 
     <!-- ========================================================= -->
     <!-- CLOSE BUTTON -->
@@ -746,6 +747,7 @@ let activeDept = null;
 /* ============================================================
    === GALACTIC LOAD BAR BUILDER ==============================
    ============================================================ */
+     
 function ACS_HR_renderLoadBar(dep) {
   const staff = dep.staff;
   const required = dep.required || dep.min || 0;
@@ -908,6 +910,7 @@ function HR_fillDepartmentSelector() {
 /* ============================================================
    HR FULL MODAL — OPEN
    ============================================================ */
+     
 let HR_active = null;
      
 function openHRFullModal(id) {
@@ -990,30 +993,6 @@ document.getElementById("salaryRangeFull").addEventListener("input", () => {
 function HR_confirmSalaryFull() {
   const val = parseInt(document.getElementById("salaryRangeFull").value);
   ACS_HR_adjustSalary(HR_active, val);
-  closeHRFullModal();
-  loadDepartments();
-}
-
-/* Auto balance */
-function HR_autoAdjustFull() {
-  const hr = ACS_HR_load()[HR_active];
-  const req = hr.required || hr.staff;
-  const cur = hr.staff;
-  const diff = req - cur;
-
-  if (diff === 0) {
-    alert("Department already balanced.");
-    return;
-  }
-
-  if (diff > 0) {
-    ACS_HR_hire(HR_active, diff);
-  } else {
-    const toFire = Math.abs(diff);
-    const ok = confirm(`⚠️ Are you sure you want to fire ${toFire} employees?`);
-    if (ok) ACS_HR_fire(HR_active, toFire);
-  }
-
   closeHRFullModal();
   loadDepartments();
 }
