@@ -30,7 +30,7 @@ const ACS_HR_DEPARTMENTS = [
     { id: "pilots_small",  name: "Pilots (Small A/C)",  base: "pilot_small",  initial: 0 },
     { id: "pilots_medium", name: "Pilots (Medium A/C)", base: "pilot_medium", initial: 0 },
     { id: "pilots_large",  name: "Pilots (Large A/C)",  base: "pilot_large",  initial: 0 },
-    { id: "pilots_vlarge", name: "Pilots (Very Large A/C)", base: "pilot_vlarge", initial: 0 },
+    { id: "pilots_vlarge", name: "Pilots (V Large A/C)", base: "pilot_vlarge", initial: 0 },
 
     { id: "cabin", name: "Cabin Crew", base: "cabin", initial: 0 }
 ];
