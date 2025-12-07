@@ -73,10 +73,6 @@ if (!localStorage.getItem("ACS_HR")) {
 function ACS_HR_getBaseSalary(year, role) {
 
 /* ============================================================
-   3) TABLA SALARIOS HISTÓRICOS (REAL 1940–2026)
-   ============================================================ */
-
-/* ============================================================
    🔵 ACS HR — REALISTIC 5-YEAR SALARY SYSTEM
    Version: 07 DEC 2025 — Qatar Luxury Premium
    Ubicación: Sustituye el motor "DECADES" antiguo
@@ -162,11 +158,12 @@ function ACS_HR_getBaseSalary5Y(year, role){
 }
 
 /* ============================================================
-   3-BIS) WRAPPER GENERAL — FUNCIÓN PRINCIPAL QUE USA EL ENGINE
+   3) TABLA SALARIOS HISTÓRICOS (REAL 1940–2026)
    ============================================================ */
-   
 function ACS_HR_getBaseSalary(year, role) {
-  return ACS_HR_getBaseSalary5Y(year, role);
+
+    return ACS_HR_getBaseSalary5Y(year, role);
+
 }
 
 /* ============================================================
