@@ -914,8 +914,10 @@ function loadDepartments() {
 
     if (dep.id === "ceo") {
 
+});   // 🔥 CIERRE DEL forEach (FALTABA)
+
 // === KPI UPDATE ===
-         
+     
 document.getElementById("kpiTotalStaff").textContent =
   depts.reduce((sum, d) => sum + d.staff, 0);
 
@@ -927,6 +929,9 @@ const avgMorale =
 
 document.getElementById("kpiAvgMorale").textContent =
   avgMorale.toFixed(0) + "%";
+
+}  // 🔥 CIERRE CORRECTO DE loadDepartments()
+
 
 /* ============================================================
    🟨 B2 — RENDER Qatar Luxury v4 (tbody)
