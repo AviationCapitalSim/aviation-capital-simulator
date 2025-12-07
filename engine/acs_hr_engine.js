@@ -71,142 +71,105 @@ if (!localStorage.getItem("ACS_HR")) {
    ============================================================ */
 function ACS_HR_getBaseSalary(year, role) {
 
-/* ============================================================
-   🔵 ACS HR — REALISTIC 5-YEAR SALARY SYSTEM
-   Version: 07 DEC 2025 — Qatar Luxury Premium
-   Ubicación: Sustituye el motor "DECADES" antiguo
-   ============================================================ */
-
-/* ============================================================
-   1) TABLA SALARIAL COMPLETA (1940 → 2025)
-   Valores reales aproximados, ajustados para ACS gameplay
-   ============================================================ */
-const ACS_HR_SALARY_5Y = {
-  1940:{pilot:650, cabin:180, tech:260, ground:120, admin:200, flightops:230, security:170, exec:900},
-  1945:{pilot:720, cabin:200, tech:300, ground:140, admin:220, flightops:250, security:190, exec:1000},
-  1950:{pilot:820, cabin:230, tech:350, ground:160, admin:250, flightops:290, security:210, exec:1200},
-  1955:{pilot:950, cabin:260, tech:420, ground:190, admin:290, flightops:330, security:240, exec:1500},
-  1960:{pilot:1100,cabin:300, tech:500, ground:220, admin:340, flightops:380, security:280, exec:1800},
-  1965:{pilot:1300,cabin:360, tech:580, ground:260, admin:400, flightops:450, security:330, exec:2100},
-  1970:{pilot:1550,cabin:430, tech:700, ground:300, admin:470, flightops:530, security:390, exec:2500},
-  1975:{pilot:1800,cabin:520, tech:850, ground:350, admin:550, flightops:620, security:450, exec:3000},
-  1980:{pilot:2100,cabin:620, tech:1000,ground:420, admin:650, flightops:730, security:520, exec:3600},
-  1985:{pilot:2400,cabin:730, tech:1150,ground:500, admin:750, flightops:850, security:600, exec:4200},
-  1990:{pilot:2800,cabin:860, tech:1300,ground:580, admin:900, flightops:1000,security:700, exec:5000},
-  1995:{pilot:3200,cabin:1000,tech:1500,ground:680, admin:1100,flightops:1200,security:800, exec:5800},
-  2000:{pilot:3600,cabin:1150,tech:1700,ground:780, admin:1300,flightops:1400,security:900, exec:6500},
-  2005:{pilot:4000,cabin:1300,tech:1900,ground:900, admin:1500,flightops:1600,security:1000,exec:7200},
-  2010:{pilot:4500,cabin:1500,tech:2200,ground:1050,admin:1800,flightops:1900,security:1150,exec:8000},
-  2015:{pilot:5000,cabin:1750,tech:2500,ground:1250,admin:2100,flightops:2200,security:1300,exec:9000},
-  2020:{pilot:5500,cabin:2000,tech:2800,ground:1450,admin:2400,flightops:2500,security:1450,exec:10000},
-  2025:{pilot:6000,cabin:2200,tech:3100,ground:1600,admin:2600,flightops:2700,security:1600,exec:11000}
+const DECADES = {
+  1940:{pilot:380,cabin:70,tech:120,ground:45,admin:85,exec:250},
+  1950:{pilot:520,cabin:110,tech:180,ground:75,admin:120,exec:350},
+  1960:{pilot:900,cabin:185,tech:280,ground:120,admin:190,exec:500},
+  1970:{pilot:1600,cabin:320,tech:450,ground:190,admin:320,exec:900},
+  1980:{pilot:2600,cabin:550,tech:750,ground:350,admin:500,exec:1500},
+  1990:{pilot:3600,cabin:750,tech:950,ground:450,admin:700,exec:2300},
+  2000:{pilot:4700,cabin:1000,tech:1300,ground:650,admin:1000,exec:3100},
+  2010:{pilot:6200,cabin:1500,tech:1850,ground:950,admin:1500,exec:4500},
+  2020:{pilot:8300,cabin:2300,tech:2600,ground:1300,admin:2100,exec:6500},
+  2030:{pilot:9000,cabin:2600,tech:2900,ground:1500,admin:2400,exec:7500}
 };
 
-/* ============================================================
-   2) Obtener bloque 5-year real
-   ============================================================ */
-function ACS_HR_get5YBlock(year){
-  return year - (year % 5);
-}
+const decade = Math.max(...Object.keys(DECADES).map(Number).filter(d => year >= d));
+const S = DECADES[decade];
 
-/* ============================================================
-   3) Salario BASE por rol según 5-year
-   ============================================================ */
-function ACS_HR_getBaseSalary5Y(year, role){
-
-  const block = ACS_HR_get5YBlock(year);
-  const S = ACS_HR_SALARY_5Y[block] || ACS_HR_SALARY_5Y[2025];
-
-  switch(role){
-    case "pilot":
-    case "pilot_small":
-    case "pilot_medium":
-    case "pilot_large":
-    case "pilot_vlarge":
+switch(role){
+  case "pilot_small":
+  case "pilot_medium":
+  case "pilot_large":
+  case "pilot_vlarge":
+  case "pilot":
       return S.pilot;
 
-    case "cabin":
-      return S.cabin;
+  case "cabin":       return S.cabin;
+  case "maintenance": return S.tech;
+  case "ground":      return S.ground;
 
-    case "maintenance":
-      return S.tech;
-
-    case "ground":
-      return S.ground;
-
-    case "admin":
-    case "finance_admin":
-    case "comms":
-    case "hr":
-    case "quality":
+  case "admin":
+  case "finance_admin":
+  case "economics":
+  case "comms":
+  case "hr":
+  case "quality":
+  case "security":
       return S.admin;
 
-    case "flight_ops":
-      return S.flightops;
-
-    case "security":
-      return S.security;
-
-    case "ceo":
-    case "vp":
+  case "ceo":
+  case "vp":
       return S.exec;
 
-    default:
-      return S.admin;
-  }
+  default:
+      return 100;
+}
 }
 
+
 /* ============================================================
-   🔵 4) PILOTOS — SALARIO por TAMAÑO usando 5-YEAR TABLE
+   4) PILOTS — MULTIPLICADORES POR TAMAÑO (REPARADO)
    ============================================================ */
-function ACS_HR_getPilotSalarySized(year, size) {
+function ACS_HR_getPilotSalarySized(year, size){
 
-  const base = ACS_HR_getBaseSalary5Y(year, "pilot");
+  const base = ACS_HR_getBaseSalary(year, "pilot");
 
-  const MULT = {
+  const FACTOR = {
     small: 0.55,
     medium:0.75,
     large: 1.00,
     vlarge:1.40
   };
 
-  return Math.round(base * (MULT[size] || 1));
+  return Math.round(base * (FACTOR[size] || 1));
 }
+
 
 /* ============================================================
-   🔵 5) APPLY 5-YEAR SALARIES (Reemplaza motor viejo)
+   5) APPLY HISTORICAL SALARIES — FIXED
    ============================================================ */
-function ACS_HR_applyHistoricalSalaries(){
+function ACS_HR_applyHistoricalSalaries() {
 
-  const HR = ACS_HR_load();
-  const year = window.ACS_getYear ? ACS_getYear() : 1940;
+    const HR = JSON.parse(localStorage.getItem("ACS_HR")||"{}");
+    const year = window.ACS_getYear ? ACS_getYear() : 1940;
 
-  Object.keys(HR).forEach(id => {
+    Object.keys(HR).forEach(id => {
+        const dep = HR[id];
+        let finalSalary = 0;
 
-    const dep = HR[id];
-    let salary = 0;
+        // ---- Pilotos (4 grupos) ----
+        if (id.startsWith("pilots_")) {
 
-    if (id.startsWith("pilots_")) {
+            let size="medium";
+            if(id==="pilots_small") size="small";
+            if(id==="pilots_medium") size="medium";
+            if(id==="pilots_large") size="large";
+            if(id==="pilots_vlarge") size="vlarge";
 
-      let size="medium";
-      if(id.includes("small")) size="small";
-      if(id.includes("medium"))size="medium";
-      if(id.includes("large")) size="large";
-      if(id.includes("vlarge"))size="vlarge";
+            finalSalary = ACS_HR_getPilotSalarySized(year, size);
 
-      salary = ACS_HR_getPilotSalarySized(year, size);
+        } else {
+            // ---- Demás roles ----
+            finalSalary = ACS_HR_getBaseSalary(year, dep.base);
+        }
 
-    } else {
-      salary = ACS_HR_getBaseSalary5Y(year, dep.base);
-    }
+        dep.salary = finalSalary;
+        dep.payroll = dep.staff * finalSalary;
+    });
 
-    dep.salary  = salary;
-    dep.payroll = salary * dep.staff;
-  });
-
-  ACS_HR_save(HR);
+    localStorage.setItem("ACS_HR", JSON.stringify(HR));
 }
-
 /* ============================================================
    === HELPERS ==================================================
    ============================================================ */
@@ -675,160 +638,187 @@ document.addEventListener("change", (e) => {
         }
     }
 });
-   
 /* ============================================================
-   🔵 ACS HR — 5-Year Adjustment + Alert System (07 DEC 2025)
-   Ubicación: Final del archivo acs_hr_engine.js
+   🔵 B1 — INDUSTRY PILOT BASE SALARY TABLE (5-Year Blocks)
    ============================================================ */
+const ACS_HR_PILOT_BASE_5Y = {
+  1940: 350,
+  1945: 420,
+  1950: 520,
+  1955: 650,
+  1960: 850,
+  1965: 1100,
+  1970: 1500,
+  1975: 2000,
+  1980: 2600,
+  1985: 3400,
+  1990: 4500,
+  1995: 5500,
+  2000: 6500,
+  2005: 7200,
+  2010: 8200,
+  2015: 9000,
+  2020: 9600,
+  2025: 10200
+};
 
-/* ------------------------------------------------------------
-   🟩 1) Comparar salarios contra estándar ACS
-   ------------------------------------------------------------ */
-function ACS_HR_checkSalaryGaps() {
+
+/* ============================================================
+   🔵 B2 — Obtener bloque 5-year del año real
+   ============================================================ */
+function ACS_get5YearBlock(year) {
+    return year - (year % 5);
+}
+
+
+/* ============================================================
+   🔵 B3 — Salario base piloto según bloque 5-year
+   ============================================================ */
+function ACS_HR_getPilotBase5Y(year) {
+  const block = ACS_get5YearBlock(year);
+  return ACS_HR_PILOT_BASE_5Y[block] || ACS_HR_PILOT_BASE_5Y[2025];
+}
+
+
+/* ============================================================
+   🔵 B4 — Comparar salario actual vs industria (5Y)
+   ============================================================ */
+function ACS_HR_compareToIndustryStandard() {
 
     const HR = ACS_HR_load();
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
 
-    const block = ACS_HR_get5YBlock(year);
-    const S = ACS_HR_SALARY_5Y[block];
-
-    let issues = [];
+    let totalDiff = 0;
+    let items = 0;
 
     Object.keys(HR).forEach(id => {
         const dep = HR[id];
-        let std = 0;
 
-        // Pilotos por tamaño
+        // Solo pilotos
         if (id.startsWith("pilots_")) {
 
             let size="medium";
-            if(id.includes("small")) size="small";
-            if(id.includes("medium"))size="medium";
-            if(id.includes("large")) size="large";
-            if(id.includes("vlarge"))size="vlarge";
+            if(id==="pilots_small")  size="small";
+            if(id==="pilots_medium") size="medium";
+            if(id==="pilots_large")  size="large";
+            if(id==="pilots_vlarge") size="vlarge";
 
-            std = ACS_HR_getPilotSalarySized(year, size);
+            const base5Y = ACS_HR_getPilotBase5Y(year);
+            const std = ACS_HR_getPilotSalarySized(year, size);
 
-        } else {
-            std = ACS_HR_getBaseSalary5Y(year, dep.base);
+            const current = dep.salary;
+
+            totalDiff += ((current - std) / std);
+            items++;
         }
-
-        const diff = (dep.salary - std) / std;
-
-        issues.push({ id, name: dep.name, diff });
     });
 
-    return issues;
+    return (items > 0) ? (totalDiff / items) : 0;
 }
 
-/* ------------------------------------------------------------
-   🟧 2) Sistema de Alertas Moderno
-   ------------------------------------------------------------ */
-function ACS_HR_triggerSalaryAlerts() {
 
-    const items = ACS_HR_checkSalaryGaps();
+/* ============================================================
+   🟠 C2 — Enviar alerta automática al Alert Center
+   ============================================================ */
+function ACS_HR_triggerIndustryAlert() {
 
-    items.forEach(x => {
+    const diff = ACS_HR_compareToIndustryStandard();
 
-        if (x.diff <= -0.40) {
-            ACS_addAlert({
-                type: "HR",
-                severity: "CRITICAL",
-                title: `Critical Salary Gap – ${x.name}`,
-                message: `Salary for ${x.name} is 40% below ACS standard.`,
-                action: "Open HR",
-                link: "hr.html"
-            });
-        }
-        else if (x.diff <= -0.25) {
-            ACS_addAlert({
-                type: "HR",
-                severity: "HIGH",
-                title: `Salary Below Standard – ${x.name}`,
-                message: `${x.name} is 25% under industry levels.`,
-                action: "Open HR",
-                link: "hr.html"
-            });
-        }
-        else if (x.diff <= -0.15) {
-            ACS_addAlert({
-                type: "HR",
-                severity: "MEDIUM",
-                title: `Salary Adjustment Recommended – ${x.name}`,
-                message: `${x.name} is 15% under ACS standard.`,
-                action: "Open HR",
-                link: "hr.html"
-            });
-        }
-    });
-}
+    // Si el salario está más de 5% por debajo del estándar → alerta
+    if (diff <= -0.05) {
 
-/* ------------------------------------------------------------
-   🟨 3) Nuevo botón Apply 5-Year Adjustment
-   ------------------------------------------------------------ */
-function ACS_HR_applySalaryCycle() {
-
-    const HR = ACS_HR_load();
-    const year = window.ACS_getYear ? ACS_getYear() : 1940;
-
-    // Aplicar tabla nueva
-    Object.keys(HR).forEach(id => {
-
-        const dep = HR[id];
-        let salary = 0;
-
-        if (id.startsWith("pilots_")) {
-
-            let size="medium";
-            if(id.includes("small")) size="small";
-            if(id.includes("medium"))size="medium";
-            if(id.includes("large")) size="large";
-            if(id.includes("vlarge"))size="vlarge";
-
-            salary = ACS_HR_getPilotSalarySized(year, size);
-
-        } else {
-            salary = ACS_HR_getBaseSalary5Y(year, dep.base);
-        }
-
-        dep.salary  = salary;
-        dep.payroll = dep.staff * salary;
-
-        // morale boost
-        dep.morale = Math.min(100, dep.morale + 8);
-    });
-
-    ACS_HR_save(HR);
-    ACS_HR_recalculateAll();
-
-    // 🔵 Info Alert
-    ACS_addAlert({
-        type: "HR",
-        severity: "INFO",
-        title: "5-Year Salary Cycle Applied",
-        message: "All departmental salaries updated to the ACS standard.",
-        action: "Open HR",
-        link: "hr.html"
-    });
-
-    if (typeof loadDepartments === "function") loadDepartments();
-}
-
-/* ------------------------------------------------------------
-   🟪 4) Conectar el botón del Modal
-   ------------------------------------------------------------ */
-setTimeout(() => {
-    const btn = document.getElementById("btnAutoAdjust5Y");
-    if (btn) {
-        btn.addEventListener("click", () => {
-            ACS_HR_applySalaryCycle();
+        ACS_addAlert({
+          type: "HR",
+          severity: "MEDIUM",
+          title: "Crew Contract Update Required (5-Year Cycle)",
+          message: "Industry salary cycle active. Crew morale may decrease unless payroll is updated.",
+          action: "Open HR",
+          link: "hr.html"
         });
     }
-}, 800);
+}
 
-/* ------------------------------------------------------------
-   🟦 5) Lanzar chequeo de alertas al cargar HR
-   ------------------------------------------------------------ */
+
+/* ============================================================
+   🟨 D1 — AUTO-ADJUST SALARY (Aplicar estándar 5Y)
+   ============================================================ */
+function ACS_HR_autoAdjust5Y() {
+
+  const HR = ACS_HR_load();
+  const year = window.ACS_getYear ? ACS_getYear() : 1940;
+
+  Object.keys(HR).forEach(id => {
+
+      const dep = HR[id];
+      let newSalary = dep.salary;
+
+      // PILOTOS según tamaño
+      if (id.startsWith("pilots_")) {
+
+         let size="medium";
+         if(id==="pilots_small")  size="small";
+         if(id==="pilots_medium") size="medium";
+         if(id==="pilots_large")  size="large";
+         if(id==="pilots_vlarge") size="vlarge";
+
+         const base5Y = ACS_HR_getPilotBase5Y(year);
+         const baseSalary = ACS_HR_getPilotSalarySized(year, size);
+         newSalary = baseSalary;
+
+      } else {
+         // Otros departamentos según motor histórico normal
+         const role = dep.base || "admin";
+         newSalary = ACS_HR_getBaseSalary(year, role);
+      }
+
+      dep.salary = newSalary;
+      dep.payroll = dep.staff * newSalary;
+
+      // Boost moral al actualizar correctamente
+      dep.morale = Math.min(100, dep.morale + 10);
+  });
+
+  ACS_HR_save(HR);
+
+  if (typeof HR_renderTable === "function") HR_renderTable();
+}
+
+
+/* ============================================================
+   🟧 E1 — Conectar panel Salary Cycle del HTML
+   ============================================================ */
+function HR_updateIndustryPanel() {
+
+    const year = window.ACS_getYear ? ACS_getYear() : 1940;
+    const block = ACS_get5YearBlock(year);
+
+    const info = document.getElementById("hrIndustryInfo");
+    if (!info) return;
+
+    info.textContent = `Current Industry Cycle: ${block}–${block+5}`;
+}
+
+
+/* ============================================================
+   🟧 E2 — Conectar botón “Apply 5-Year Adjustment”
+   ============================================================ */
+const __btnAdjust = setTimeout(() => {
+  const btn = document.getElementById("btnAutoAdjust5Y");
+  if (btn) {
+    btn.addEventListener("click", () => {
+        ACS_HR_autoAdjust5Y();
+        HR_updateIndustryPanel();
+    });
+  }
+}, 600);
+
+
+/* ============================================================
+   🟧 E3 — Ejecutar panel + alerta al cargar HR
+   ============================================================ */
 setTimeout(() => {
-    ACS_HR_triggerSalaryAlerts();
-}, 1000);
+
+    HR_updateIndustryPanel();
+    ACS_HR_triggerIndustryAlert();
+
+}, 800);
