@@ -642,7 +642,7 @@ tr:nth-child(even) {
 
   <section class="control-panel">
 
-     <!-- ============================================================
+   <!-- ============================================================
      🟦 A1 — KPI SUPERIOR (Qatar Luxury)
      Ubicación: Dentro de .control-panel, ANTES de la tabla
      ============================================================ -->
@@ -665,10 +665,37 @@ tr:nth-child(even) {
   </div>
 
 </div>
-    <table id="deptTable">
-      <!-- ============================================================
-     🟧 B1 — NUEVO THEAD (Qatar Luxury v4)
-     ============================================================ -->
+
+<!-- ============================================================
+   🟨 A1 — HR INDUSTRY 5-YEAR ADJUSTMENT PANEL
+   ============================================================ -->
+
+<div id="hrIndustryPanel" class="kpi-card" style="
+     margin-top:1.5rem; 
+     background:rgba(255,179,0,0.10);
+     border:1px solid rgba(255,179,0,0.25);
+     padding:1.2rem; 
+     border-radius:14px;">
+
+  <h3 style="margin:0; color:#ffca3a;">
+    ⚖️ Industry Salary Cycle (5-Year)
+  </h3>
+
+  <p id="hrIndustryInfo" style="margin:0.6rem 0; font-size:1rem; color:#fff;">
+    Checking industry standard...
+  </p>
+
+  <button id="btnAutoAdjust5Y" class="btn-control" style="margin-top:0.6rem;">
+    Apply 5-Year Industry Adjustment
+  </button>
+
+</div>
+
+<!-- ============================================================
+   🟧 B1 — NUEVO THEAD (Qatar Luxury v4)
+   ============================================================ -->
+
+<table id="deptTable">
 <thead>
   <tr>
     <th>Department</th>
@@ -685,17 +712,14 @@ tr:nth-child(even) {
   </tr>
 </thead>
 
-      <tbody id="departmentRows"></tbody>
+<tbody id="departmentRows"></tbody>
+</table>
 
-    </table>
-
-  </section>
-
-</main>
 
 <!-- ============================================================== -->
 <!-- 🔶 HR FULL CONTROL MODAL — Qatar Luxury Edition — BUY NEW Style -->
 <!-- ============================================================== -->
+       
 <div class="acs-modal" id="hrFullModal">
   <div class="acs-modal-content hr-full-modal">
 
