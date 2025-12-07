@@ -775,7 +775,6 @@ function ACS_HR_applySalaryCycle() {
     const HR = ACS_HR_load();
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
 
-    // Aplicar tabla nueva
     Object.keys(HR).forEach(id => {
 
         const dep = HR[id];
@@ -798,14 +797,12 @@ function ACS_HR_applySalaryCycle() {
         dep.salary  = salary;
         dep.payroll = dep.staff * salary;
 
-        // morale boost
         dep.morale = Math.min(100, dep.morale + 8);
     });
 
     ACS_HR_save(HR);
     ACS_HR_recalculateAll();
 
-    // 🔵 Info Alert
     ACS_addAlert({
         type: "HR",
         severity: "INFO",
