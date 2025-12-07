@@ -11,7 +11,6 @@
 /* ============================================================
    1) LISTADO OFICIAL DE LOS 18 DEPARTAMENTOS VISIBLES
    ============================================================ */
-
 const ACS_HR_DEPARTMENTS = [
     { id: "ceo", name: "Airline CEO", base: "ceo", initial: 1 },
     { id: "vp", name: "High Level Management (VP)", base: "ceo", initial: 0 },
@@ -66,10 +65,10 @@ if (!localStorage.getItem("ACS_HR")) {
     localStorage.setItem("ACS_HR", JSON.stringify(hr));
 }
 
+
 /* ============================================================
    3) TABLA SALARIOS HISTÓRICOS (REAL 1940–2026)
    ============================================================ */
-
 function ACS_HR_getBaseSalary(year, role) {
 
 /* ============================================================
@@ -155,15 +154,6 @@ function ACS_HR_getBaseSalary5Y(year, role){
     default:
       return S.admin;
   }
-}
-
-/* ============================================================
-   3) TABLA SALARIOS HISTÓRICOS (REAL 1940–2026)
-   ============================================================ */
-function ACS_HR_getBaseSalary(year, role) {
-
-    return ACS_HR_getBaseSalary5Y(year, role);
-
 }
 
 /* ============================================================
@@ -781,6 +771,7 @@ function ACS_HR_applySalaryCycle() {
     const HR = ACS_HR_load();
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
 
+    // Aplicar tabla nueva
     Object.keys(HR).forEach(id => {
 
         const dep = HR[id];
@@ -803,12 +794,14 @@ function ACS_HR_applySalaryCycle() {
         dep.salary  = salary;
         dep.payroll = dep.staff * salary;
 
+        // morale boost
         dep.morale = Math.min(100, dep.morale + 8);
     });
 
     ACS_HR_save(HR);
     ACS_HR_recalculateAll();
 
+    // 🔵 Info Alert
     ACS_addAlert({
         type: "HR",
         severity: "INFO",
