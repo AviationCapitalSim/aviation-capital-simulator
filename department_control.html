@@ -777,9 +777,7 @@ tr:nth-child(even) {
       <h3 class="hr-block-title">Hire Staff</h3>
 
       <label class="hr-label">Select Quantity</label>
-      <select id="hireQty" class="hr-select">
-        ${Array.from({length:20}).map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}
-      </select>
+      <select id="hireQty" class="hr-select"></select>
 
       <p class="hr-cost">Cost: <strong id="hireCost">$0</strong></p>
 
@@ -936,7 +934,16 @@ function loadDepartments() {
       <tr>
         <td>${dep.name}</td>
 
-        <td><span class="role-tag">${dep.base}</span></td>
+      <td>
+    <span class="role-tag">${
+      dep.id.includes("pilots_small")  ? "Pilots — Small"  :
+      dep.id.includes("pilots_medium") ? "Pilots — Medium" :
+      dep.id.includes("pilots_large")  ? "Pilots — Large"  :
+      dep.id.includes("pilots_vlarge") ? "Pilots — Very Large" :
+      dep.base
+     }</span>
+     </td>
+
 
         <td class="staff">${dep.staff}</td>
 
@@ -1054,6 +1061,15 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
+     /* ============================================================
+   🟩 B1 — Activar botón “Apply 5-Year Industry Adjustment”
+   ============================================================ */
+     
+document.getElementById("btnAutoAdjust5Y").addEventListener("click", () => {
+    ACS_HR_autoAdjust5Y();   // ejecutar ajuste
+    loadDepartments();       // refrescar tabla
+});
+     
 window.addEventListener("DOMContentLoaded", () => {
   loadDepartments();
   if (typeof registerTimeListener === "function") {
@@ -1131,6 +1147,7 @@ function updateHireCost(hr=null) {
 }
 
 /* Confirm hire */
+     
 function HR_confirmHireFull() {
   const qty = parseInt(document.getElementById("hireQty").value);
   ACS_HR_hire(HR_active, qty);
@@ -1139,6 +1156,7 @@ function HR_confirmHireFull() {
 }
 
 /* Confirm fire */
+     
 function HR_confirmFireFull() {
   const qty = parseInt(document.getElementById("fireQty").value);
   ACS_HR_fire(HR_active, qty);
@@ -1147,6 +1165,7 @@ function HR_confirmFireFull() {
 }
 
 /* Salary change */
+     
 document.getElementById("salaryRangeFull").addEventListener("input", () => {
   const hr = ACS_HR_load()[HR_active];
   const val = parseInt(salaryRangeFull.value);
@@ -1266,15 +1285,11 @@ function HR_reloadModalDepartment(id) {
     // 🔄 Actualizar moral
     document.getElementById("hrMorale").textContent = `${hr.morale}%`;
 
-    // 🔄 Auto-fill para BONUS (aunque esté desactivado)
-    const bonusSel = document.getElementById("bonusPercent");
-    if (bonusSel) bonusSel.value = "0";
 
     // 🔄 Mantener el modal arriba
     document.querySelector(".hr-full-modal").scrollTop = 0;
 }
-
-     
+    
 </script>
 
 </body>
