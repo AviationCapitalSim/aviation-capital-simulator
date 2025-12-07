@@ -900,9 +900,9 @@ function HR_prepareTableData(dep) {
 }
      
 /* ============================================================
-   === LOAD DEPARTMENTS — FIXED VERSION ========================
+   === LOAD DEPARTMENTS — FIXED + CLEAN PREMIUM VERSION ========
    ============================================================ */
-
+     
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
   rows.innerHTML = "";
@@ -910,76 +910,66 @@ function loadDepartments() {
   const depts = ACS_HR_getDepartmentsView();
 
   depts.forEach(d => {
-  const dep = HR_prepareTableData(d);
 
-    if (dep.id === "ceo") {
+    const dep = HR_prepareTableData(d);
 
-});   // 🔥 CIERRE DEL forEach (FALTABA)
+    // === RENDER DEPARTAMENTO ===
+    rows.innerHTML += `
+      <tr>
+        <td>${dep.name}</td>
 
-// === KPI UPDATE ===
-     
-document.getElementById("kpiTotalStaff").textContent =
-  depts.reduce((sum, d) => sum + d.staff, 0);
+        <td><span class="role-tag">${dep.base}</span></td>
 
-document.getElementById("kpiTotalPayroll").textContent =
-  "$" + depts.reduce((sum, d) => sum + d.payroll, 0).toLocaleString();
+        <td class="staff">${dep.staff}</td>
 
-const avgMorale = 
-  depts.reduce((sum, d) => sum + d.morale, 0) / depts.length;
+        <td>${dep.required}</td>
 
-document.getElementById("kpiAvgMorale").textContent =
-  avgMorale.toFixed(0) + "%";
+        <td class="diff" style="color:${
+          dep.diff > 0 ? '#ff4d4d' :
+          dep.diff < 0 ? '#00ff99' :
+          '#ffe38a'
+        }">
+          ${dep.diff}
+        </td>
 
-}  // 🔥 CIERRE CORRECTO DE loadDepartments()
+        <td class="efficiency" style="color:${
+          dep.efficiency >= 0.85 ? '#3bff9d' :
+          dep.efficiency >= 0.65 ? '#ffe38a' :
+          dep.efficiency >= 0.40 ? '#ff8c3b' :
+          '#ff4d4d'
+        }">
+          ${(dep.efficiency * 100).toFixed(0)}%
+        </td>
 
+        <td class="salary">$${dep.salary}</td>
 
-/* ============================================================
-   🟨 B2 — RENDER Qatar Luxury v4 (tbody)
-   ============================================================ */
+        <td class="payroll">$${dep.payroll.toLocaleString()}</td>
 
-rows.innerHTML += `
-  <tr>
-    <td>${dep.name}</td>
+        <td class="morale">${dep.morale}%</td>
 
-    <td><span class="role-tag">${dep.base}</span></td>
+        <td class="bonus-disabled">0%</td>
 
-    <td class="staff">${dep.staff}</td>
-
-    <td>${dep.required}</td>
-
-    <td class="diff" style="color:${
-      dep.required - dep.staff > 0 ? '#ff4d4d' :
-      dep.required - dep.staff < 0 ? '#00ff99' :
-      '#ffe38a'
-    }">
-      ${dep.required - dep.staff}
-    </td>
-
-    <td class="efficiency" style="color:${
-      dep.efficiency >= 0.85 ? '#3bff9d' :
-      dep.efficiency >= 0.65 ? '#ffe38a' :
-      dep.efficiency >= 0.40 ? '#ff8c3b' : '#ff4d4d'
-    }">
-      ${(dep.efficiency * 100).toFixed(0)}%
-    </td>
-
-    <td class="salary">$${dep.salary}</td>
-
-    <td class="payroll">$${dep.payroll.toLocaleString()}</td>
-
-    <td class="morale">${dep.morale}%</td>
-
-    <td class="bonus-disabled">0%</td>
-
-    <td>
-      <button class="btn btn-control" onclick="openHRFullModal('${dep.id}')">
-        ⚙️ Control
-      </button>
-    </td>
-  </tr>
-`;
-
+        <td>
+          <button class="btn btn-control" onclick="openHRFullModal('${dep.id}')">
+            ⚙️ Control
+          </button>
+        </td>
+      </tr>
+    `;
   });
+
+  // === KPI UPDATE ===
+  document.getElementById("kpiTotalStaff").textContent =
+    depts.reduce((sum, d) => sum + d.staff, 0);
+
+  document.getElementById("kpiTotalPayroll").textContent =
+    "$" + depts.reduce((sum, d) => sum + d.payroll, 0).toLocaleString();
+
+  const avgMorale =
+    depts.reduce((sum, d) => sum + d.morale, 0) / depts.length;
+
+  document.getElementById("kpiAvgMorale").textContent =
+    avgMorale.toFixed(0) + "%";
 
   updatePayroll();
 }
