@@ -1049,6 +1049,82 @@ function HR_buildSelects(hrDept) {
 function closeHRFullModal() {
   document.getElementById("hrFullModal").style.display = "none";
 }
+
+/* ============================================================
+   🟪 F — DYNAMIC MODAL REFRESH ENGINE v1.0
+   ------------------------------------------------------------
+   • Opción A: NO cierra el modal
+   • Cambiar de departamento refresca todo:
+     - Título
+     - Staff actual
+     - Required
+     - Hire options
+     - Fire options
+     - Costos
+     - Auto-Balance
+   • No afecta nada fuera del modal
+   ============================================================ */
+
+// === Evento principal del selector ===
+document.getElementById("hrDeptSelector").addEventListener("change", function () {
+    const newID = this.value;
+    if (!newID) return;
+
+    HR_reloadModalDepartment(newID);
+});
+
+
+// === Función que recarga el modal sin cerrarlo ===
+function HR_reloadModalDepartment(id) {
+
+    HR_active = id;
+
+    const hr = ACS_HR_load()[id];
+    if (!hr) return;
+
+    // 🔄 Título dinámico
+    document.getElementById("hrModalDeptName").textContent = hr.name;
+
+    // 🔄 Recalcular selects (Hire / Fire)
+    HR_buildSelects(hr);
+
+    // 🔄 Recalcular costos de hire
+    updateHireCost(hr);
+
+    // 🔄 Fire options (cantidad disponible)
+    const fireSel = document.getElementById("fireQty");
+    fireSel.innerHTML = "";
+    for (let i = 1; i <= hr.staff; i++) {
+        fireSel.innerHTML += `<option value="${i}">${i}</option>`;
+    }
+
+    // 🔄 Mostrar staff actual
+    document.getElementById("hrCurrentStaff").textContent = hr.staff;
+
+    // 🔄 Mostrar required
+    document.getElementById("hrRequiredStaff").textContent = hr.required ?? hr.staff;
+
+    // 🔄 Mostrar diferencia
+    const diff = (hr.required ?? hr.staff) - hr.staff;
+    const diffEl = document.getElementById("hrDifference");
+    diffEl.textContent = diff;
+
+    diffEl.style.color = diff > 0 ? "#ff4d4d" : diff < 0 ? "#00ff99" : "#ffe38a";
+
+    // 🔄 Actualizar salario mostrado
+    document.getElementById("hrSalary").textContent = `$${hr.salary}`;
+
+    // 🔄 Actualizar moral
+    document.getElementById("hrMorale").textContent = `${hr.morale}%`;
+
+    // 🔄 Auto-fill para BONUS (aunque esté desactivado)
+    const bonusSel = document.getElementById("bonusPercent");
+    if (bonusSel) bonusSel.value = "0";
+
+    // 🔄 Mantener el modal arriba
+    document.querySelector(".hr-full-modal").scrollTop = 0;
+}
+
      
 </script>
 
