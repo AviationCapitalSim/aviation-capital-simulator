@@ -73,6 +73,10 @@ if (!localStorage.getItem("ACS_HR")) {
 function ACS_HR_getBaseSalary(year, role) {
 
 /* ============================================================
+   3) TABLA SALARIOS HISTÓRICOS (REAL 1940–2026)
+   ============================================================ */
+
+/* ============================================================
    🔵 ACS HR — REALISTIC 5-YEAR SALARY SYSTEM
    Version: 07 DEC 2025 — Qatar Luxury Premium
    Ubicación: Sustituye el motor "DECADES" antiguo
@@ -82,7 +86,6 @@ function ACS_HR_getBaseSalary(year, role) {
    1) TABLA SALARIAL COMPLETA (1940 → 2025)
    Valores reales aproximados, ajustados para ACS gameplay
    ============================================================ */
-   
 const ACS_HR_SALARY_5Y = {
   1940:{pilot:650, cabin:180, tech:260, ground:120, admin:200, flightops:230, security:170, exec:900},
   1945:{pilot:720, cabin:200, tech:300, ground:140, admin:220, flightops:250, security:190, exec:1000},
@@ -107,7 +110,6 @@ const ACS_HR_SALARY_5Y = {
 /* ============================================================
    2) Obtener bloque 5-year real
    ============================================================ */
-   
 function ACS_HR_get5YBlock(year){
   return year - (year % 5);
 }
@@ -115,7 +117,6 @@ function ACS_HR_get5YBlock(year){
 /* ============================================================
    3) Salario BASE por rol según 5-year
    ============================================================ */
-   
 function ACS_HR_getBaseSalary5Y(year, role){
 
   const block = ACS_HR_get5YBlock(year);
@@ -158,6 +159,14 @@ function ACS_HR_getBaseSalary5Y(year, role){
     default:
       return S.admin;
   }
+}
+
+/* ============================================================
+   3-BIS) WRAPPER GENERAL — FUNCIÓN PRINCIPAL QUE USA EL ENGINE
+   ============================================================ */
+   
+function ACS_HR_getBaseSalary(year, role) {
+  return ACS_HR_getBaseSalary5Y(year, role);
 }
 
 /* ============================================================
