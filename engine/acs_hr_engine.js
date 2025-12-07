@@ -833,3 +833,4 @@ setTimeout(() => {
 setTimeout(() => {
     ACS_HR_triggerSalaryAlerts();
 }, 1000);
+}
