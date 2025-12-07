@@ -888,6 +888,24 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
+   🟦 E1 — Department Selector Fill (HR Modal)
+   ============================================================ */
+function HR_fillDepartmentSelector() {
+    const sel = document.getElementById("hrDeptSelector");
+    if (!sel) return;
+
+    sel.innerHTML = "";
+
+    // Agregar todos los departamentos visibles
+    ACS_HR_DEPARTMENTS.forEach(dep => {
+        const opt = document.createElement("option");
+        opt.value = dep.id;
+        opt.textContent = dep.name;
+        sel.appendChild(opt);
+    });
+}
+     
+/* ============================================================
    HR FULL MODAL — OPEN
    ============================================================ */
 let HR_active = null;
@@ -896,7 +914,9 @@ function openHRFullModal(id) {
   HR_active = id;
 
   const hr = ACS_HR_load()[id];
-
+  
+  HR_fillDepartmentSelector();
+     
   // Set title
   document.getElementById("hrModalDeptName").textContent = hr.name;
 
