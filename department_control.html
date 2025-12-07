@@ -587,10 +587,11 @@ tr:nth-child(even) {
 .role-tag {
   background: rgba(255,179,0,0.15);
   color: #ffca3a;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.82rem;
+  padding: 6px 12px;      /* antes 4px 10px */
+  border-radius: 14px;    /* un poco más redondo */
+  font-size: 0.8rem;
   font-weight: 600;
+  white-space: nowrap;    /* 🔥 evita que se divida */
 }
 
 .payroll {
