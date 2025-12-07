@@ -544,6 +544,64 @@ tr:nth-child(even) {
     color: white;
     padding: 6px;
 }
+     
+/* ============================================================
+   🟩 A2 — KPI CARDS (Qatar Luxury Premium)
+   ============================================================ */
+
+.kpi-wrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  flex: 1;
+  background: rgba(15,25,55,0.70);
+  border: 1px solid rgba(255,179,0,0.35);
+  border-radius: 16px;
+  padding: 1.2rem 1rem;
+  text-align: center;
+  box-shadow: 0 0 12px rgba(0,0,0,0.35);
+}
+
+.kpi-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #ffca3a;
+  letter-spacing: 0.5px;
+}
+
+.kpi-card p {
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* ============================================================
+   🟦 B3 — COLUMNA EXTRA / TAGS
+   ============================================================ */
+
+.role-tag {
+  background: rgba(255,179,0,0.15);
+  color: #ffca3a;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.payroll {
+  color: #dbe4ff;
+  font-weight: 600;
+}
+
+.bonus-disabled {
+  color: #777;
+  font-style: italic;
+}
 
 </style>
 </head>
@@ -584,17 +642,48 @@ tr:nth-child(even) {
 
   <section class="control-panel">
 
+     <!-- ============================================================
+     🟦 A1 — KPI SUPERIOR (Qatar Luxury)
+     Ubicación: Dentro de .control-panel, ANTES de la tabla
+     ============================================================ -->
+
+<div class="kpi-wrapper">
+
+  <div class="kpi-card">
+    <h3>Total Staff</h3>
+    <p id="kpiTotalStaff">0</p>
+  </div>
+
+  <div class="kpi-card">
+    <h3>Monthly Payroll</h3>
+    <p id="kpiTotalPayroll">$0</p>
+  </div>
+
+  <div class="kpi-card">
+    <h3>Average Morale</h3>
+    <p id="kpiAvgMorale">0%</p>
+  </div>
+
+</div>
     <table id="deptTable">
-      <thead>
-        <tr>
-          <th>Department</th>
-          <th>Staff</th>
-          <th>Load</th>
-          <th>Salary</th>
-          <th>Morale</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+      <!-- ============================================================
+     🟧 B1 — NUEVO THEAD (Qatar Luxury v4)
+     ============================================================ -->
+<thead>
+  <tr>
+    <th>Department</th>
+    <th>Role</th>
+    <th>Staff</th>
+    <th>Required</th>
+    <th>Diff</th>
+    <th>Efficiency</th>
+    <th>Salary</th>
+    <th>Payroll</th>
+    <th>Morale</th>
+    <th>Bonus</th>
+    <th>Actions</th>
+  </tr>
+</thead>
 
       <tbody id="departmentRows"></tbody>
 
@@ -665,6 +754,7 @@ tr:nth-child(even) {
     <!-- ========================================================= -->
     <!-- HIRE STAFF BLOCK -->
     <!-- ========================================================= -->
+       
     <div class="hr-block">
       <h3 class="hr-block-title">Hire Staff</h3>
 
@@ -791,7 +881,24 @@ function ACS_HR_renderLoadBar(dep) {
     </div>
   `;
 }
+     
+/* ============================================================
+   🟥 C1 — CALCULAR (efficiency / diff / payroll / bonus)
+   ============================================================ */
 
+function HR_prepareTableData(dep) {
+  const diff = dep.required - dep.staff;
+  const efficiency = dep.required > 0
+    ? (dep.staff / dep.required) * (dep.morale / 100)
+    : 1;
+
+  return {
+    ...dep,
+    diff,
+    efficiency
+  };
+}
+     
 /* ============================================================
    === LOAD DEPARTMENTS — FIXED VERSION ========================
    ============================================================ */
@@ -802,31 +909,62 @@ function loadDepartments() {
 
   const depts = ACS_HR_getDepartmentsView();
 
-  depts.forEach(dep => {
+  depts.forEach(d => {
+  const dep = HR_prepareTableData(d);
 
     if (dep.id === "ceo") {
-      rows.innerHTML += `
-        <tr>
-          <td>${dep.name}</td>
-          <td class="staff">${dep.staff}</td>
-          <td>—</td>
-          <td class="salary">$${dep.salary}</td>
-          <td class="morale">${dep.morale}%</td>
-          <td><em style="color:#aaa;">No actions available</em></td>
-        </tr>
-      `;
-      return;
-    }
 
-    rows.innerHTML += `
+// === KPI UPDATE ===
+         
+document.getElementById("kpiTotalStaff").textContent =
+  depts.reduce((sum, d) => sum + d.staff, 0);
+
+document.getElementById("kpiTotalPayroll").textContent =
+  "$" + depts.reduce((sum, d) => sum + d.payroll, 0).toLocaleString();
+
+const avgMorale = 
+  depts.reduce((sum, d) => sum + d.morale, 0) / depts.length;
+
+document.getElementById("kpiAvgMorale").textContent =
+  avgMorale.toFixed(0) + "%";
+
+/* ============================================================
+   🟨 B2 — RENDER Qatar Luxury v4 (tbody)
+   ============================================================ */
+
+rows.innerHTML += `
   <tr>
     <td>${dep.name}</td>
+
+    <td><span class="role-tag">${dep.base}</span></td>
+
     <td class="staff">${dep.staff}</td>
 
-    <td>${ACS_HR_renderLoadBar(dep)}</td>
+    <td>${dep.required}</td>
+
+    <td class="diff" style="color:${
+      dep.required - dep.staff > 0 ? '#ff4d4d' :
+      dep.required - dep.staff < 0 ? '#00ff99' :
+      '#ffe38a'
+    }">
+      ${dep.required - dep.staff}
+    </td>
+
+    <td class="efficiency" style="color:${
+      dep.efficiency >= 0.85 ? '#3bff9d' :
+      dep.efficiency >= 0.65 ? '#ffe38a' :
+      dep.efficiency >= 0.40 ? '#ff8c3b' : '#ff4d4d'
+    }">
+      ${(dep.efficiency * 100).toFixed(0)}%
+    </td>
 
     <td class="salary">$${dep.salary}</td>
+
+    <td class="payroll">$${dep.payroll.toLocaleString()}</td>
+
     <td class="morale">${dep.morale}%</td>
+
+    <td class="bonus-disabled">0%</td>
 
     <td>
       <button class="btn btn-control" onclick="openHRFullModal('${dep.id}')">
