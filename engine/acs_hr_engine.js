@@ -536,31 +536,82 @@ const DECADES = {
 }
 
 /* ============================================================
-   B1.1 — APLICAR SALARIO HISTÓRICO SEGÚN AÑO Y ROL
+   🟩 PILOT SALARY BY YEAR + SIZE (1940–2026)
+   ============================================================ */
+
+function ACS_HR_getPilotSalaryForYear(size, year) {
+
+  // 1) Salario base de PILOT según año (tu motor histórico)
+  const base = ACS_HR_getBaseSalary(year, "pilot");
+
+  // 2) Multiplicadores por tamaño
+  const FACTOR = {
+    small: 0.55,   // regional / avioneta
+    medium: 0.75,  // turboprop / regional jet
+    large: 1.00,   // 737 / A320 / narrowbody
+    vlarge: 1.40   // widebody + ultra heavy (747 / A380, etc.)
+  };
+
+  return Math.round(base * (FACTOR[size] || 1));
+}
+
+/* ============================================================
+   B1.1 — APLICAR SALARIO HISTÓRICO SEGÚN AÑO, ROL Y TAMAÑO
+   — Ahora usa base histórica (1940–2026)
+   — Diferencia pilotos por tamaño (small / medium / large / vlarge)
    ============================================================ */
 function ACS_HR_applyHistoricalSalaries() {
 
     const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
 
     Object.keys(HR).forEach(id => {
 
         const dep = HR[id];
+        let newSalary = 0;
 
-        // Rol para calcular el salario
-        const role = dep.base || "admin";
+        /* ----------------------------------------------
+           1) CASO ESPECIAL: PILOTOS
+           (4 departamentos: small/medium/large/vlarge)
+        ---------------------------------------------- */
+        if (id === "pilots_small" ||
+            id === "pilots_medium" ||
+            id === "pilots_large" ||
+            id === "pilots_vlarge") {
 
-        // Salario histórico según año + rol
-        const newSalary = ACS_HR_getBaseSalary(year, role);
+            // Determinar tamaño exacto
+            let size = "medium";
+            if (id === "pilots_small")  size = "small";
+            if (id === "pilots_medium") size = "medium";
+            if (id === "pilots_large")  size = "large";
+            if (id === "pilots_vlarge") size = "vlarge";
 
+            // Salario base histórico → función oficial
+            const basePilot = ACS_HR_getBaseSalary(year, "pilot");
+
+            // Aplicar multiplicador por tamaño
+            newSalary = ACS_HR_getPilotSalary(size, basePilot);
+
+        } else {
+
+            /* ----------------------------------------------
+               2) RESTO DE DEPARTAMENTOS (admin, cabin, tech…)
+               Usan el motor histórico normal por rol
+            ---------------------------------------------- */
+
+            const role = dep.base || "admin";
+            newSalary = ACS_HR_getBaseSalary(year, role);
+        }
+
+        // Aplicar salario final
         dep.salary = newSalary;
         dep.payroll = dep.staff * newSalary;
     });
 
+    // Guardar cambios globales
     localStorage.setItem("ACS_HR", JSON.stringify(HR));
 
-    // Refresh si estamos en HR.html
+    // Refrescar tabla si estás en HR.html
     if (typeof HR_renderTable === "function") {
         HR_renderTable();
     }
