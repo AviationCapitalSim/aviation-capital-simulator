@@ -759,3 +759,134 @@ document.addEventListener("change", (e) => {
         }
     }
 });
+/* ============================================================
+   🔵 B1 — INDUSTRY PILOT BASE SALARY TABLE (5-Year Blocks)
+   ============================================================ */
+
+const ACS_HR_PILOT_BASE_5Y = {
+  1940: 350,
+  1945: 420,
+  1950: 520,
+  1955: 650,
+  1960: 850,
+  1965: 1100,
+  1970: 1500,
+  1975: 2000,
+  1980: 2600,
+  1985: 3400,
+  1990: 4500,
+  1995: 5500,
+  2000: 6500,
+  2005: 7200,
+  2010: 8200,
+  2015: 9000,
+  2020: 9600,
+  2025: 10200
+};
+
+/* ============================================================
+   🔵 B2 — Obtener el bloque de 5 años 
+   ============================================================ */
+function ACS_get5YearBlock(year) {
+    return year - (year % 5);
+}
+
+/* ============================================================
+   🔵 B3 — Salario base piloto según bloque de 5 años
+   ============================================================ */
+function ACS_HR_getPilotBase5Y(year) {
+  const block = ACS_get5YearBlock(year);
+  return ACS_HR_PILOT_BASE_5Y[block] || ACS_HR_PILOT_BASE_5Y[2025];
+}
+/* ============================================================
+   🔵 B4 — Comparar salario actual con estándar 5Y
+   ============================================================ */
+function ACS_HR_compareToIndustryStandard() {
+
+    const HR = ACS_HR_load();
+    const year = window.ACS_getYear ? ACS_getYear() : 1940;
+    const block = ACS_get5YearBlock(year);
+
+    let totalDiff = 0;
+    let items = 0;
+
+    Object.keys(HR).forEach(id => {
+        const dep = HR[id];
+
+        // Solo pilotos por ahora (es lo más crítico)
+        if (id.includes("pilots")) {
+            let size = "medium";
+            if (id === "pilots_small") size = "small";
+            else if (id === "pilots_large") size = "large";
+            else if (id === "pilots_vlarge") size = "vlarge";
+
+            const base5Y = ACS_HR_getPilotBase5Y(year);
+            const std = ACS_HR_getPilotSalary(size, base5Y);
+
+            const current = dep.salary;
+
+            totalDiff += ((current - std) / std);
+            items++;
+        }
+    });
+
+    return (items > 0) ? (totalDiff / items) : 0;
+}
+
+/* ============================================================
+   🟠 C2 — Alerta automática en el Alert Center
+   ============================================================ */
+function ACS_HR_triggerIndustryAlert() {
+
+    const diff = ACS_HR_compareToIndustryStandard();
+
+    if (diff >= -0.05) return; // No alert needed
+
+    ACS_addAlert({
+      type: "HR",
+      severity: "MEDIUM",
+      title: "Crew Contract Update Required (5-Year Cycle)",
+      message: "Industry salary update active. Your payroll is outdated. Crew morale is decreasing.",
+      action: "Open HR",
+      link: "hr.html"
+    });
+}
+/* ============================================================
+   🟨 D1 — Auto-Adjust Salary (Aplicar estándar 5-Year)
+   ============================================================ */
+function ACS_HR_autoAdjust5Y() {
+
+  const HR = ACS_HR_load();
+  const year = window.ACS_getYear ? ACS_getYear() : 1940;
+
+  Object.keys(HR).forEach(id => {
+
+      const dep = HR[id];
+      let newSalary = dep.salary;
+
+      // PILOTOS por tamaño
+      if (id.includes("pilots")) {
+
+         let size = "medium";
+         if (id === "pilots_small") size = "small";
+         else if (id === "pilots_large") size = "large";
+         else if (id === "pilots_vlarge") size = "vlarge";
+
+         const base5Y = ACS_HR_getPilotBase5Y(year);
+         newSalary = ACS_HR_getPilotSalary(size, base5Y);
+
+      } else {
+         // Otros departamentos usan tu motor base por rol
+         const role = dep.base || "admin";
+         newSalary = ACS_HR_getBaseSalary(year, role);
+      }
+
+      dep.salary = newSalary;
+      dep.payroll = dep.staff * newSalary;
+      dep.morale = Math.min(100, dep.morale + 8); // morale boost
+  });
+
+  ACS_HR_save(HR);
+
+  if (typeof HR_renderTable === "function") HR_renderTable();
+}
