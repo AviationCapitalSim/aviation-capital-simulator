@@ -62,6 +62,10 @@ if (!localStorage.getItem("ACS_HR")) {
     localStorage.setItem("ACS_HR", JSON.stringify(hr));
 }
 
+// ⭐ Ejecutar sueldos históricos (primer arranque)
+
+    ACS_HR_applyHistoricalSalaries();
+
 /* ============================================================
    Helpers
    ============================================================ */
