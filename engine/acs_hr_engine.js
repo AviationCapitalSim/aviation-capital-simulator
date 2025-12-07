@@ -583,3 +583,41 @@ function HR_updateRequirementsFromFleet() {
         HR_renderTable();
     }
 }
+/* ============================================================
+   ⭐ E1 — Llenar Selector Qatar Luxury del Modal HR
+   ============================================================ */
+
+function HR_fillDepartmentSelector() {
+
+    const hrData = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+    const selector = document.getElementById("hrDeptSelector");
+
+    if (!selector) return;
+
+    selector.innerHTML = "";
+
+    // Crear opciones dinámicamente
+    Object.keys(hrData).forEach(id => {
+        const dep = hrData[id];
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = dep.name;
+        selector.appendChild(opt);
+    });
+}
+
+/* ============================================================
+   ⭐ E2 — Activar cambio de departamento dentro del modal
+   ============================================================ */
+
+document.addEventListener("change", (e) => {
+
+    if (e.target && e.target.id === "hrDeptSelector") {
+
+        const newID = e.target.value;
+
+        if (typeof openHRFullModal === "function") {
+            openHRFullModal(newID);  // recargar modal con el nuevo dept
+        }
+    }
+});
