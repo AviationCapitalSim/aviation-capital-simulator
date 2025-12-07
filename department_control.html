@@ -667,31 +667,6 @@ tr:nth-child(even) {
 </div>
 
 <!-- ============================================================
-   🟨 A1 — HR INDUSTRY 5-YEAR ADJUSTMENT PANEL
-   ============================================================ -->
-
-<div id="hrIndustryPanel" class="kpi-card" style="
-     margin-top:1.5rem; 
-     background:rgba(255,179,0,0.10);
-     border:1px solid rgba(255,179,0,0.25);
-     padding:1.2rem; 
-     border-radius:14px;">
-
-  <h3 style="margin:0; color:#ffca3a;">
-    ⚖️ Industry Salary Cycle (5-Year)
-  </h3>
-
-  <p id="hrIndustryInfo" style="margin:0.6rem 0; font-size:1rem; color:#fff;">
-    Checking industry standard...
-  </p>
-
-  <button id="btnAutoAdjust5Y" class="btn-control" style="margin-top:0.6rem;">
-    Apply 5-Year Industry Adjustment
-  </button>
-
-</div>
-
-<!-- ============================================================
    🟧 B1 — NUEVO THEAD (Qatar Luxury v4)
    ============================================================ -->
 
@@ -832,19 +807,18 @@ tr:nth-child(even) {
       <button class="hr-btn-disabled" disabled>Bonus Disabled</button>
     </div>
 
-    <!-- ========================================================= -->
-    <!-- AUTO BALANCE STAFF -->
-    <!-- ========================================================= -->
        
-    <div class="hr-block hr-disabled">
-    <h3 class="hr-block-title">⚖️ Auto-Balance Staff (Coming Soon)</h3>
+    <!-- ========================================================= -->
+<!-- 🔄 AUTO-ADJUST SALARY (REPLACES AUTO-BALANCE STAFF)       -->
+<!-- ========================================================= -->
+<div class="hr-block">
+  <h3 class="hr-block-title">Auto-Adjust Salary</h3>
 
-    <p><em>This feature will automatically level staff to required numbers.</em></p>
+  <button class="hr-btn-gold" onclick="HR_applyAutoAdjust()">
+    Auto-Adjust Salary
+  </button>
+</div>
 
-    <button class="hr-btn-disabled" disabled>
-    ⚖️ Auto-Balance (Disabled)
-    </button>
-   </div>
 
     <!-- ========================================================= -->
     <!-- CLOSE BUTTON -->
@@ -984,6 +958,7 @@ function loadDepartments() {
   });
 
   // === KPI UPDATE ===
+     
   document.getElementById("kpiTotalStaff").textContent =
     depts.reduce((sum, d) => sum + d.staff, 0);
 
@@ -995,14 +970,6 @@ function loadDepartments() {
 
   document.getElementById("kpiAvgMorale").textContent =
     avgMorale.toFixed(0) + "%";
-
-  updatePayroll();
-}
-
-function updatePayroll() {
-  const total = ACS_HR_getTotalPayroll();
-  document.getElementById("totalPayroll").textContent =
-    "Total Monthly Payroll: $" + total.toLocaleString();
 }
 
 function openHire(id) {
@@ -1061,14 +1028,6 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
-     /* ============================================================
-   🟩 B1 — Activar botón “Apply 5-Year Industry Adjustment”
-   ============================================================ */
-     
-document.getElementById("btnAutoAdjust5Y").addEventListener("click", () => {
-    ACS_HR_autoAdjust5Y();   // ejecutar ajuste
-    loadDepartments();       // refrescar tabla
-});
      
 window.addEventListener("DOMContentLoaded", () => {
   loadDepartments();
@@ -1289,7 +1248,15 @@ function HR_reloadModalDepartment(id) {
     // 🔄 Mantener el modal arriba
     document.querySelector(".hr-full-modal").scrollTop = 0;
 }
-    
+
+function HR_applyAutoAdjust() {
+    if (typeof ACS_HR_autoAdjust5Y === "function") {
+        ACS_HR_autoAdjust5Y();     // usa tu función real de ajuste
+        loadDepartments();         // refresca tabla
+        HR_reloadModalDepartment(HR_active); // refresca modal sin cerrarlo
+    }
+}
+
 </script>
 
 </body>
