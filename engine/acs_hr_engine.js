@@ -8,22 +8,9 @@
    • Payroll mensual real (integrado con Finance)
    ============================================================ */
 
-/* ============================================================
-   1) DEFINICIÓN OFICIAL DE SALARIOS BASE — Año 1940
-   ============================================================ */
-const ACS_HR_SALARY = {
-    ceo: 90,
-    finance_admin: 55,
-    flight_ops: 75,
-    ground: 25,
-    maintenance: 70,
-    pilots: 120,
-    copilots: 90,
-    cabin: 45
-};
 
 /* ============================================================
-   2) LISTADO OFICIAL DE LOS 18 DEPARTAMENTOS VISIBLES
+   1) LISTADO OFICIAL DE LOS 18 DEPARTAMENTOS VISIBLES
    ============================================================ */
 const ACS_HR_DEPARTMENTS = [
     { id: "ceo", name: "Airline CEO", base: "ceo", initial: 1 },
@@ -47,7 +34,7 @@ const ACS_HR_DEPARTMENTS = [
 ];
 
 /* ============================================================
-   3 — CREAR ESTRUCTURA HR INICIAL (AHORA CON ROLE)
+   2 — CREAR ESTRUCTURA HR INICIAL (AHORA CON ROLE)
    ============================================================ */
 
 if (!localStorage.getItem("ACS_HR")) {
@@ -364,7 +351,7 @@ function ACS_classifyAircraft(model) {
 
 
 /* ============================================================
-   2) TABLA REALISTA DE STAFF POR TIPO DE AVIÓN
+   4) TABLA REALISTA DE STAFF POR TIPO DE AVIÓN
    ============================================================ */
 
 const ACS_HR_STAFF_BY_TYPE = {
@@ -418,18 +405,100 @@ const ACS_HR_STAFF_BY_TYPE = {
 
 function ACS_HR_getBaseSalary(year, role) {
 
-  // === Salarios base por década (USD mensual) ===
-  const DECADES = {
-    1940: { pilot:400, cabin:80, tech:120, ground:60, admin:90, exec:250 },
-    1950: { pilot:550, cabin:120, tech:180, ground:90, admin:140, exec:320 },
-    1960: { pilot:900, cabin:200, tech:300, ground:150, admin:220, exec:500 },
-    1970: { pilot:1500,cabin:350, tech:500, ground:220, admin:350, exec:900 },
-    1980: { pilot:2500,cabin:600, tech:800, ground:380, admin:600, exec:1400 },
-    1990: { pilot:3500,cabin:800, tech:1000,ground:500, admin:900, exec:2000 },
-    2000: { pilot:4500,cabin:1100,tech:1500,ground:700, admin:1300,exec:2600 },
-    2010: { pilot:6000,cabin:1500,tech:2200,ground:900, admin:1800,exec:3500 },
-    2020: { pilot:8000,cabin:2000,tech:3000,ground:1250,admin:2600,exec:4500 },
-  };
+// === Salarios base por década (USD mensual) ===
+ 
+const DECADES = {
+
+  1940: { 
+    pilot: 380, 
+    cabin: 70, 
+    tech: 120, 
+    ground: 45, 
+    admin: 85, 
+    exec: 250 
+  },
+
+  1950: { 
+    pilot: 520, 
+    cabin: 110, 
+    tech: 180, 
+    ground: 75, 
+    admin: 120, 
+    exec: 350 
+  },
+
+  1960: { 
+    pilot: 900, 
+    cabin: 185, 
+    tech: 280, 
+    ground: 120, 
+    admin: 190, 
+    exec: 500 
+  },
+
+  1970: { 
+    pilot: 1600, 
+    cabin: 320, 
+    tech: 450, 
+    ground: 190, 
+    admin: 320, 
+    exec: 900 
+  },
+
+  1980: { 
+    pilot: 2600, 
+    cabin: 550, 
+    tech: 750, 
+    ground: 350, 
+    admin: 500, 
+    exec: 1500 
+  },
+
+  1990: { 
+    pilot: 3600, 
+    cabin: 750, 
+    tech: 950, 
+    ground: 450, 
+    admin: 700, 
+    exec: 2300 
+  },
+
+  2000: { 
+    pilot: 4700, 
+    cabin: 1000, 
+    tech: 1300, 
+    ground: 650, 
+    admin: 1000, 
+    exec: 3100 
+  },
+
+  2010: { 
+    pilot: 6200, 
+    cabin: 1500, 
+    tech: 1850, 
+    ground: 950, 
+    admin: 1500, 
+    exec: 4500 
+  },
+
+  2020: { 
+    pilot: 8300, 
+    cabin: 2300, 
+    tech: 2600, 
+    ground: 1300, 
+    admin: 2100, 
+    exec: 6500 
+  },
+
+  2030: { 
+    pilot: 9000, 
+    cabin: 2600, 
+    tech: 2900, 
+    ground: 1500, 
+    admin: 2400, 
+    exec: 7500 
+  }
+};
 
   // Elegir década base
   const keys = Object.keys(DECADES).map(Number);
