@@ -736,9 +736,9 @@ tr:nth-child(even) {
      === SCRIPTS — SIN CAMBIOS (FUNCIONALIDAD ORIGINAL) =========
      ============================================================ -->
 
+<script src="time_engine.js"></script>
 <script src="engine/acs_finance.js"></script>
 <script src="engine/acs_hr_engine.js"></script>
-<script src="time_engine.js"></script>
 
 <script>
 let activeDept = null;
@@ -908,7 +908,7 @@ function openHRFullModal(id) {
   document.getElementById("salaryValFull").textContent = "100%";
   document.getElementById("salaryNewFull").textContent = "$" + hr.salary;
   document.getElementById("salaryAfterFull").textContent = "$" + hr.payroll;
-  document.getElementById("deptSelectorValue").textContent = hr.name;
+ 
 
   // Seleccionar departamento actual en el selector
      
