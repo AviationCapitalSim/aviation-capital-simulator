@@ -719,11 +719,29 @@ function updateClockDisplay(simTime){
 
   el.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
 }
-
+     
+/* ============================================================
+   🔄 SYNC FINANCE WITH HR ON PAGE LOAD
+   ============================================================ */
+     
+if (typeof ACS_syncPayrollWithHR === "function") {
+    ACS_syncPayrollWithHR();
+    console.log("💼 Company Finance synced with HR → payroll actualizado.");
+}
+     
 /* ============================================================
    === INIT =====================================================
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
+
+  /* ============================================================
+     🔄 SYNC FINANCE WITH HR ON PAGE LOAD
+     ============================================================ */
+     
+  if (typeof ACS_syncPayrollWithHR === "function") {
+      ACS_syncPayrollWithHR();
+      console.log("💼 Company Finance synced with HR → payroll actualizado.");
+  }
 
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
@@ -737,6 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadLeasing();
   renderSparklines();
 });
+
 /* ============================================================
    === FINANCE UI LIVE REFRESH — FIX v1.0 =====================
    ============================================================ */
