@@ -959,7 +959,19 @@ function loadDepartments() {
       </tr>
     `;
   });
-
+     
+// ========================================================
+// ⭐ SYNC HR → LOCALSTORAGE (Payroll, Staff, Morale)
+// ========================================================
+     
+try {
+    const HR = ACS_HR_recalculateAll();   // recalcula payroll real
+    ACS_HR_save(HR);                      // guarda en ACS_HR del localStorage
+    console.log("💾 HR actualizado en localStorage:", HR);
+} catch (e) {
+    console.warn("⚠️ No se pudo actualizar HR:", e);
+}
+     
   // === KPI UPDATE ===
      
   document.getElementById("kpiTotalStaff").textContent =
