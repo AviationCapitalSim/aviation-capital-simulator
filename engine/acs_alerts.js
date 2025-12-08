@@ -84,6 +84,51 @@ function ACS_pushAlert({ type, level, title, message, timestamp }) {
 }
 
 /* ============================================================
+   🔵 NORMALIZACIÓN UNIVERSAL DE NIVELES — ACS v5
+   ------------------------------------------------------------
+   • Acepta: "CRITICAL", "Critical", "critical"
+   • Convierte: High, HIGH → high
+   • Convierte: Medium → medium, Low → low
+   • Garantiza nivel válido: info, low, medium, high, critical
+   ============================================================ */
+
+function ACS_normalizeLevel(level) {
+
+  if (!level) return "info";
+
+  const L = String(level).trim().toLowerCase();
+
+  if (L.includes("crit")) return "critical";
+  if (L.includes("high")) return "high";
+  if (L.includes("med")) return "medium";
+  if (L.includes("low")) return "low";
+
+  return "info";
+}
+
+/* ============================================================
+   🔵 WRAPPER — INTERCEPTA Y NORMALIZA LLAMADAS ANTIGUAS
+   ============================================================ */
+
+const __ACS_pushAlert = ACS_pushAlert;
+
+function ACS_addAlert(type, level, title, message) {
+
+  console.log("⚠️ ALERTA INTERCEPTADA — NORMALIZADA:", {
+    type, level, title, message
+  });
+
+  __ACS_pushAlert({
+    type: type || "system",
+    level: ACS_normalizeLevel(level),
+    title: title || "Alert",
+    message: message || "",
+    timestamp: ACS_simTimestamp()
+  });
+}
+
+
+/* ============================================================
    === 🟧 HR SNAPSHOT ALERTS (Local Only) ======================
    === Solo genera alertas en tiempo real por staff = 0
    ============================================================ */
