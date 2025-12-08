@@ -998,20 +998,42 @@ try {
     console.warn("⚠️ No se pudo actualizar HR:", e);
 }
      
-  // === KPI UPDATE ===
+ /* ============================================================
+   KPI — Monthly Payroll (Exacto desde HR Engine)
+   ============================================================ */
      
-  document.getElementById("kpiTotalStaff").textContent =
-    depts.reduce((sum, d) => sum + d.staff, 0);
+function HR_updateKPI() {
 
-  document.getElementById("kpiTotalPayroll").textContent =
-    "$" + depts.reduce((sum, d) => sum + d.payroll, 0).toLocaleString();
+    const kpiStaff   = document.getElementById("kpiTotalStaff");
+    const kpiPayroll = document.getElementById("kpiTotalPayroll");
+    const kpiMorale  = document.getElementById("kpiAvgMorale");
 
-  const avgMorale =
-    depts.reduce((sum, d) => sum + d.morale, 0) / depts.length;
+    const hr = ACS_HR_load();
 
-  document.getElementById("kpiAvgMorale").textContent =
-    avgMorale.toFixed(0) + "%";
+    // Total staff real
+    const totalStaff = Object.values(hr)
+        .reduce((sum, d) => sum + (d.staff || 0), 0);
+
+    // Payroll REAL
+    const payroll = ACS_HR_getTotalPayroll();
+
+    // Morale promedio
+    const morale = Math.round(
+        Object.values(hr)
+            .reduce((sum, d) => sum + (d.morale || 0), 0) /
+        Object.keys(hr).length
+    );
+
+    if (kpiStaff)   kpiStaff.textContent   = totalStaff;
+    if (kpiPayroll) kpiPayroll.textContent = "$" + payroll.toLocaleString();
+    if (kpiMorale)  kpiMorale.textContent  = morale + "%";
 }
+
+// Ejecutar después de que cargue la tabla
+setTimeout(() => {
+    HR_updateKPI();
+}, 300);
+
 
 function openHire(id) {
   activeDept = id;
