@@ -70,6 +70,51 @@ if (!localStorage.getItem("ACS_HR")) {
    ============================================================ */
 function ACS_HR_getBaseSalary(year, role) {
 
+  const DECADES = {
+    1940:{pilot:380,cabin:70,tech:120,ground:45,admin:85,exec:250},
+    1950:{pilot:520,cabin:110,tech:180,ground:75,admin:120,exec:350},
+    1960:{pilot:900,cabin:185,tech:280,ground:120,admin:190,exec:500},
+    1970:{pilot:1600,cabin:320,tech:450,ground:190,admin:320,exec:900},
+    1980:{pilot:2600,cabin:550,tech:750,ground:350,admin:500,exec:1500},
+    1990:{pilot:3600,cabin:750,tech:950,ground:450,admin:700,exec:2300},
+    2000:{pilot:4700,cabin:1000,tech:1300,ground:650,admin:1000,exec:3100},
+    2010:{pilot:6200,cabin:1500,tech:1850,ground:950,admin:1500,exec:4500},
+    2020:{pilot:8300,cabin:2300,tech:2600,ground:1300,admin:2100,exec:6500},
+    2030:{pilot:9000,cabin:2600,tech:2900,ground:1500,admin:2400,exec:7500}
+  };
+
+  const decade = Math.max(...Object.keys(DECADES).map(Number).filter(d => year >= d));
+  const S = DECADES[decade];
+
+  switch(role){
+    case "pilot":
+    case "pilot_small":
+    case "pilot_medium":
+    case "pilot_large":
+    case "pilot_vlarge":
+      return S.pilot;
+
+    case "cabin":       return S.cabin;
+    case "maintenance": return S.tech;
+    case "ground":      return S.ground;
+
+    case "admin":
+    case "economics":
+    case "comms":
+    case "hr":
+    case "quality":
+    case "security":
+      return S.admin;
+
+    case "ceo":
+    case "vp":
+      return S.exec;
+
+    default:
+      return 100;
+  }
+}
+
 /* ============================================================
    🔵 ACS SALARY TABLE (5-YEAR REALISTIC) — COMPLETO
    ============================================================ */
@@ -94,28 +139,11 @@ const ACS_HR_SALARY_5Y = {
   2025:{pilot:6000,cabin:2200,tech:3100,ground:1600,admin:2600,flightops:2700,security:1600,exec:11000}
 };
 
-/* ============================================================
-   WRAPPER FINAL — Usa motor 5Y sin romper DECADES
-   ============================================================ */
-function ACS_HR_getBaseSalary(year, role) {
-
-  try {
-    return ACS_HR_getBaseSalary5Y(year, role);
-  } catch(e){
-    // fallback seguro al motor DECADES
-    return ACS_HR_getBaseSalary(year, role);
-  }
-}
-/* ============================================================
-   5-YEAR BASE SALARY ENGINE
-   ============================================================ */
-   
 function ACS_HR_get5YBlock(year){
     return year - (year % 5);
 }
 
 function ACS_HR_getBaseSalary5Y(year, role){
-
   const block = ACS_HR_get5YBlock(year);
   const S = ACS_HR_SALARY_5Y[block] || ACS_HR_SALARY_5Y[2025];
 
@@ -148,6 +176,17 @@ function ACS_HR_getBaseSalary5Y(year, role){
       return S.admin;
   }
 }
+
+/* WRAPPER — usar 5Y sin romper el motor viejo */
+const __oldBaseSalary = ACS_HR_getBaseSalary;
+
+ACS_HR_getBaseSalary = function(year, role){
+  try {
+    return ACS_HR_getBaseSalary5Y(year, role);
+  } catch(e){
+    return __oldBaseSalary(year, role);
+  }
+};
 
 /* ============================================================
    4) PILOTS — MULTIPLICADORES POR TAMAÑO (REPARADO)
