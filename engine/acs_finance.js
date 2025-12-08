@@ -231,6 +231,39 @@ function ACS_syncPayrollWithHR() {
   }
 }
 
+/* ============================================================
+   === INTEGRACIÓN HR — PAYROLL EN TIEMPO REAL (v2.0) =========
+   ============================================================ */
+
+function ACS_syncPayrollWithHR() {
+
+  const f = loadFinance();
+  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+
+  if (!f || !HR || typeof HR.payroll !== "number") return;
+
+  // Nuevo payroll (HR recalculado)
+  const newPayroll = HR.payroll;
+
+  // Payroll previo para calcular diferencia
+  const oldPayroll = f.cost.salaries || 0;
+
+  // Diferencia necesaria para ajustar
+  const diff = newPayroll - oldPayroll;
+
+  // Aplicar inmediatamente al capital
+  f.capital -= diff;
+
+  // Actualizar partes internas
+  f.cost.salaries = newPayroll;
+  f.expenses = newPayroll;
+  f.profit = f.revenue - f.expenses;
+
+  saveFinance(f);
+
+  console.log("💼 Payroll aplicado inmediatamente:", newPayroll,
+              "| Ajuste capital:", diff);
+}
 
 /* ============================================================
    === API PRINCIPAL (módulos pueden llamar estos métodos) ====
