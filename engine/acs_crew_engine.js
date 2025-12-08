@@ -12,7 +12,135 @@
         - My Aircraft (model-based logic)
    • Namespace global: window.ACS_CrewEngine
    ============================================================ */
+/* ============================================================
+   🟦 A) CREW RESOLVER — Por modelo exacto (Universal + Soviético)
+   ============================================================ */
 
+window.ACS_CrewEngine = window.ACS_CrewEngine || {};
+
+/**
+ * Devuelve el crew REAL por modelo exacto.
+ * Entrada: "A300B4-200", "Do 328JET", "Tu-154B-2"
+ * Salida:
+ * {
+ *    pilots: 2,
+ *    flight_engineers: 1,
+ *    navigators: 0,
+ *    radio_ops: 0,
+ *    cabin: 6,
+ *    total: 9
+ * }
+ */
+ACS_CrewEngine.getCrewByModel = function(model) {
+
+  if (!model) {
+    return {
+      pilots: 2,
+      flight_engineers: 0,
+      navigators: 0,
+      radio_ops: 0,
+      cabin: 2,
+      total: 4
+    };
+  }
+
+  const m = model.toLowerCase();
+
+  // ------------------------------------------------------------
+  // 🛫 SOVIÉTICOS — FE / NAV / RO (configuraciones reales)
+  // ------------------------------------------------------------
+
+  // Tupolev
+  if (m.includes("tu-154"))  return { pilots:2, flight_engineers:1, navigators:1, radio_ops:0, cabin:4, total:8 };
+  if (m.includes("tu-134"))  return { pilots:2, flight_engineers:1, navigators:1, radio_ops:0, cabin:3, total:7 };
+  if (m.includes("tu-104"))  return { pilots:2, flight_engineers:1, navigators:1, radio_ops:1, cabin:3, total:8 };
+
+  // Ilyushin
+  if (m.includes("il-62"))   return { pilots:2, flight_engineers:1, navigators:1, radio_ops:1, cabin:6, total:11 };
+  if (m.includes("il-18"))   return { pilots:2, flight_engineers:1, navigators:1, radio_ops:1, cabin:3, total:8 };
+  if (m.includes("il-14"))   return { pilots:2, flight_engineers:1, navigators:1, radio_ops:0, cabin:1, total:5 };
+
+  // Antonov
+  if (m.includes("an-24"))   return { pilots:2, flight_engineers:1, navigators:0, radio_ops:0, cabin:2, total:5 };
+  if (m.includes("an-26"))   return { pilots:2, flight_engineers:1, navigators:0, radio_ops:0, cabin:2, total:5 };
+  if (m.includes("an-12"))   return { pilots:2, flight_engineers:1, navigators:1, radio_ops:1, cabin:1, total:6 };
+
+  // Yakovlev
+  if (m.includes("yak-40")) return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:1, total:3 };
+  if (m.includes("yak-42")) return { pilots:2, flight_engineers:1, navigators:0, radio_ops:0, cabin:3, total:6 };
+
+
+  // ------------------------------------------------------------
+  // 🛫 OCCIDENTAL — Widebody (FE en generaciones antiguas)
+  // ------------------------------------------------------------
+
+  // Boeing widebody
+  if (m.includes("747-100") || m.includes("747-200"))
+      return { pilots:2, flight_engineers:1, navigators:0, radio_ops:0, cabin:13, total:16 };
+
+  if (m.includes("747-300"))
+      return { pilots:2, flight_engineers:1, navigators:0, radio_ops:0, cabin:12, total:15 };
+
+  if (m.includes("747-400"))
+      return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:12, total:14 };
+
+  if (m.includes("767")) 
+      return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:7, total:9 };
+
+  // Airbus widebody
+  if (m.includes("a300"))
+      return { pilots:2, flight_engineers:1, navigators:0, radio_ops:0, cabin:7, total:10 };
+
+  if (m.includes("a310"))
+      return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:6, total:8 };
+
+  if (m.includes("a330")) 
+      return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:8, total:10 };
+
+  // McDonnell Douglas widebody
+  if (m.includes("dc-10"))
+      return { pilots:2, flight_engineers:1, navigators:0, radio_ops:0, cabin:9, total:12 };
+
+  if (m.includes("md-11"))
+      return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:9, total:11 };
+
+
+  // ------------------------------------------------------------
+  // 🛫 NARROWBODY modernos
+  // ------------------------------------------------------------
+
+  if (m.includes("737")) return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:4, total:6 };
+  if (m.includes("a320")) return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:4, total:6 };
+  if (m.includes("md-80")) return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:4, total:6 };
+  if (m.includes("dc-9")) return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:3, total:5 };
+
+
+  // ------------------------------------------------------------
+  // 🛫 TURBOPROP / REGIONAL
+  // ------------------------------------------------------------
+
+  if (m.includes("atr"))
+      return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:2, total:4 };
+
+  if (m.includes("do 328") || m.includes("dornier"))
+      return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:1, total:3 };
+
+  if (m.includes("jetstream") || m.includes("l-410"))
+      return { pilots:2, flight_engineers:0, navigators:0, radio_ops:0, cabin:1, total:3 };
+
+
+  // ------------------------------------------------------------
+  // 🛩 PISTÓN / COMMUTER 1940–1970 (mínimo 2 pilotos)
+  // ------------------------------------------------------------
+  return {
+    pilots: 2,
+    flight_engineers: 0,
+    navigators: 0,
+    radio_ops: 0,
+    cabin: 1,
+    total: 3
+  };
+};
 window.ACS_CrewEngine = (() => {
 
   /* ============================================================
@@ -46,7 +174,28 @@ window.ACS_CrewEngine = (() => {
     "AN-72": { pilots: 2, fe: 1, nav: 0, radio: 0 },
     "AN-74": { pilots: 2, fe: 1, nav: 0, radio: 0 }
   };
+   
+/* ============================================================
+   🟧 B) CREW MAPPER — Usa ACS_AIRCRAFT_DB → Crew Resolver
+   ============================================================ */
 
+ACS_CrewEngine.getCrewFromDatabase = function(model) {
+
+  if (!model) return ACS_CrewEngine.getCrewByModel(null);
+
+  // Buscar avión exacto en la base
+  const dbItem = (window.ACS_AIRCRAFT_DB || []).find(
+    a => a.model.toLowerCase() === model.toLowerCase()
+  );
+
+  // Si no existe, usar resoluciones por reglas globales
+  if (!dbItem)
+    return ACS_CrewEngine.getCrewByModel(model);
+
+  // Si existe → usar crew especial por modelo
+  return ACS_CrewEngine.getCrewByModel(dbItem.model);
+};
+   
   /* ============================================================
      🟦 2) Motor Universal — Crew según capacidad / categoría
      ============================================================ */
