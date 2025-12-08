@@ -1001,7 +1001,7 @@ try {
  /* ============================================================
    KPI — Monthly Payroll (Exacto desde HR Engine)
    ============================================================ */
-     
+
 function HR_updateKPI() {
 
     const kpiStaff   = document.getElementById("kpiTotalStaff");
@@ -1009,6 +1009,7 @@ function HR_updateKPI() {
     const kpiMorale  = document.getElementById("kpiAvgMorale");
 
     const hr = ACS_HR_load();
+    if (!hr) return;
 
     // Total staff real
     const totalStaff = Object.values(hr)
@@ -1029,11 +1030,10 @@ function HR_updateKPI() {
     if (kpiMorale)  kpiMorale.textContent  = morale + "%";
 }
 
-// Ejecutar después de que cargue la tabla
+/* Ejecutar después de renderizar la tabla */
 setTimeout(() => {
     HR_updateKPI();
-}, 300);
-
+}, 350);
 
 function openHire(id) {
   activeDept = id;
