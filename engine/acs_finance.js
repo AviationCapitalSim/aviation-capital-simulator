@@ -204,12 +204,19 @@ function ACS_syncPayrollWithHR() {
 
   if (!f || !HR || !HR.payroll) return;
 
-  f.cost.salaries = HR.payroll;
-  f.expenses = HR.payroll; // por ahora solo salarios
-  f.profit = f.revenue - f.expenses;
+ // 🟦 Descontar salarios del capital inmediatamente
+f.capital -= HR.payroll;
 
-  saveFinance(f);
-}
+// 🟧 Actualizar expenses reales
+f.cost.salaries = HR.payroll;
+f.expenses = HR.payroll;
+
+// 🟩 Recalcular profit
+f.profit = f.revenue - f.expenses;
+
+saveFinance(f);
+console.log("💸 Capital actualizado por HR →", f.capital);
+
 
 /* ============================================================
    === API PRINCIPAL (módulos pueden llamar estos métodos) ====
