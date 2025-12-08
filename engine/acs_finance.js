@@ -195,27 +195,41 @@ function renderSparklines() {
 }
 
 /* ============================================================
-   ===  INTEGRACIÓN HR — PAYROLL REAL                         ==
+   === INTEGRACIÓN HR — PAYROLL REAL (v2.0) ====================
    ============================================================ */
 
 function ACS_syncPayrollWithHR() {
-  const f = loadFinance();
-  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+  try {
 
-  if (!f || !HR || !HR.payroll) return;
+    let f = loadFinance();
+    let HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
 
- // 🟦 Descontar salarios del capital inmediatamente
-f.capital -= HR.payroll;
+    if (!f || !HR || typeof HR.payroll !== "number") {
+      console.warn("⚠️ HR o Finance no inicializado todavía.");
+      return;
+    }
 
-// 🟧 Actualizar expenses reales
-f.cost.salaries = HR.payroll;
-f.expenses = HR.payroll;
+    const payroll = HR.payroll;
 
-// 🟩 Recalcular profit
-f.profit = f.revenue - f.expenses;
+    // 🟦 Descontar salarios del capital
+    f.capital -= payroll;
 
-saveFinance(f);
-console.log("💸 Capital actualizado por HR →", f.capital);
+    // 🟧 Reflejar gastos reales en salary
+    f.cost.salaries = payroll;
+    f.expenses      = payroll;
+
+    // 🟩 Actualizar profit
+    f.profit        = f.revenue - f.expenses;
+
+    saveFinance(f);
+
+    console.log("💸 Finance synced with HR → Payroll aplicado:", payroll);
+    console.log("💰 Capital actualizado:", f.capital);
+
+  } catch (err) {
+    console.error("❌ ERROR en ACS_syncPayrollWithHR:", err);
+  }
+}
 
 
 /* ============================================================
