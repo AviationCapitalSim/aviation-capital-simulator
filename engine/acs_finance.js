@@ -116,6 +116,35 @@ window.addEventListener("storage", (e) => {
 });
 
 /* ============================================================
+   === AUTO-SYNC HR → FINANCE (cada 1.2 seg) — FIX 08DEC25 ====
+   ============================================================ */
+
+setInterval(() => {
+    try {
+        const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+        const f  = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+        if (!HR || !f) return;
+        if (typeof HR.payroll === "undefined") return;
+
+        // Si hay un cambio REAL en payroll
+        if (f.cost && f.cost.salaries !== HR.payroll) {
+
+            f.cost.salaries = HR.payroll;
+            f.expenses = HR.payroll;
+            f.profit = f.revenue - f.expenses;
+
+            localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+            console.log("🔄 Finance ← HR sync (auto):", HR.payroll);
+        }
+
+    } catch(e){
+        console.warn("Auto-Finance Sync Error:", e);
+    }
+}, 1200);
+
+/* ============================================================
    === FINANCE — SPARKLINE UTILITY RESTORE (v1.0) ============
    ------------------------------------------------------------
    • Recupera la función que dibuja los micro-gráficos
