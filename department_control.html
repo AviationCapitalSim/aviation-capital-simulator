@@ -897,7 +897,7 @@ function HR_prepareTableData(d) {
     return {
         id: d.id,
         name: d.name,
-        base: d.base,
+        base: d.base || "N/A",
         staff: staff,
         required: required,
         diff: diff,
