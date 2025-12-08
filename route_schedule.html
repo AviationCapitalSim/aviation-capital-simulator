@@ -518,41 +518,6 @@ function autoGenerateFlightNumber() {
     }
 }
 
-/* === Flight Number Engine — INTACTO ========================= */
-     
-const flightNumberInput = document.getElementById("flightNumber");
-const userIATA = localStorage.getItem("userIATA") || "AT";
-let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
-let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-
-/* 🟧 A3 — ROUTE SCHEDULE: Safe Flight Pair Generator */
-     
-function generateFlightPair() {
-
-    let num = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
-    let used = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-
-    let out = `${userIATA}${num}`;
-    let inn = `${userIATA}${num + 1}`;
-
-    while (used.includes(out) || used.includes(inn)) {
-        num += 2;
-        out = `${userIATA}${num}`;
-        inn = `${userIATA}${num + 1}`;
-    }
-
-    // Actualizar valores globales
-    lastFlightNumber = num;
-    usedFlights = used;
-
-    // Asignar al input
-    if (flightNumberInput) {
-        flightNumberInput.value = `${out} ➜ ${inn}`;
-    }
-
-    return { out, inn };
-}
-     
 /* ============================================================
    🟦 FLIGHT NUMBER ENGINE — IATA CONNECTED v1.0
    ------------------------------------------------------------
@@ -563,7 +528,7 @@ function generateFlightPair() {
 
 const flightNumberInput = document.getElementById("flightNumber");
 
-// IATA de la aerolínea (creado en create_airline)
+// Código IATA de la aerolínea
 let userIATA = localStorage.getItem("userIATA") || "AT";
 if (!localStorage.getItem("userIATA")) {
   console.warn("⚠️ No userIATA in localStorage, using default 'AT'.");
@@ -581,22 +546,22 @@ let usedFlights = JSON.parse(
 /* 🟧 A3 — ROUTE SCHEDULE: Safe Flight Pair Generator */
 function generateFlightPair() {
 
-  // Empezamos desde el último número guardado
+  // Empezamos desde el último número asignado
   let num  = lastFlightNumber;
   let out  = `${userIATA}${num}`;
   let inn  = `${userIATA}${num + 1}`;
 
-  // Evitar colisiones
+  // Evitar colisiones con vuelos ya existentes
   while (usedFlights.includes(out) || usedFlights.includes(inn)) {
     num += 2;
     out = `${userIATA}${num}`;
     inn = `${userIATA}${num + 1}`;
   }
 
-  // Actualizar valor global
+  // Guardar nuevo valor global
   lastFlightNumber = num;
 
-  // Pintar en el input
+  // Pintar en el input del formulario
   if (flightNumberInput) {
     flightNumberInput.value = `${out} ➜ ${inn}`;
   }
