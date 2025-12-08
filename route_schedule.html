@@ -224,9 +224,9 @@ input[readonly] {
   cursor: not-allowed;
 }
 
-/* Clean Aircraft select */
-select#aircraft option:not(:first-child) {
-  display: none;
+/* Clean Aircraft select — FIXED (all aircraft visible) */
+select#aircraft option {
+  display: block;
 }
 
 /* Checkboxes cockpit ACS */
