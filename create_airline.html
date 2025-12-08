@@ -94,12 +94,12 @@
       color: #8AB4FF;
       border-color: rgba(138,180,255,0.45);
     }
-      /* === FIX: Home button color (only this page) === */
-        
-      a[href="index.html"].nav-btn {
+
+    a[href="index.html"].nav-btn {
       color: #FFB300 !important;
       border-color: rgba(255,179,0,0.45) !important;
     }
+
     .nav-btn:hover {
       background: rgba(138,180,255,0.20);
       box-shadow: 0 0 12px rgba(138,180,255,0.55);
@@ -109,22 +109,18 @@
        === QATAR LUXURY A + B + C — PREMIUM UI UPGRADE ===========
        ============================================================ */
 
-    /* --- A: Glass Royale Premium Card --- */
     .form-container {
       background: linear-gradient(145deg, #102040 0%, #0b1a33 100%);
       max-width: 600px;
       margin: 0 auto;
       padding: 2.4rem;
       border-radius: 22px;
-
       border: 1px solid rgba(255, 179, 0, 0.22);
       box-shadow:
         0 0 30px rgba(0,0,0,0.55),
         inset 0 0 25px rgba(255,255,255,0.04);
-
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-
       animation: floatCard 1.2s ease forwards;
     }
 
@@ -133,7 +129,6 @@
       to   { opacity:1; transform: translateY(0) scale(1); }
     }
 
-    /* --- BONUS: Golden Title Line --- */
     h2 {
       color: #FFB300;
       font-size: 1.7rem;
@@ -151,7 +146,6 @@
       background: linear-gradient(90deg, transparent, #ffb300, transparent);
     }
 
-    /* --- B: Qatar Royal Inputs --- */
     input, select {
       width: 100%;
       padding: 0.9rem;
@@ -177,7 +171,6 @@
         inset 0 0 5px rgba(255,179,0,0.2);
     }
 
-    /* --- C: Gulf Premium Gold Button --- */
     button {
       background: linear-gradient(135deg, #ffb300 0%, #ffcf53 100%);
       color: #0C1F3C;
@@ -224,7 +217,6 @@
 </head>
 
 <body>
-
   <!-- ================= Qatar Luxury Header ================= -->
   <header class="acs-header">
     <div class="acs-logo">
@@ -251,7 +243,7 @@
       <input type="text" id="iata" placeholder="IATA Code (auto)" maxlength="2" readonly />
       <input type="text" id="slogan" placeholder="Airline Slogan (optional)" />
 
-        <select id="region" required>
+      <select id="region" required>
         <option value="">Select World Area</option>
         <option value="Europe">Europe</option>
         <option value="Asia">Asia</option>
@@ -289,12 +281,12 @@
 <!-- ❗AQUIE EMPIEZA SCRIPT -->
      
 <script>
-    const realAirlines = [
-      "American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
-      "Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
-      "Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
-      "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
-    ];
+const realAirlines = [
+  "American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
+  "Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
+  "Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
+  "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
+];
      
 /* ============================================================
    UPDATE COUNTRIES (HISTORICAL REAL-WORLD)
@@ -346,6 +338,12 @@ function generateUniqueCodes() {
 
 document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
 
+
+
+
+/* ============================================================
+   HANDLE AIRLINE CREATION
+   ============================================================ */
 function handleAirlineCreation(event) {
   event.preventDefault();
 
@@ -379,15 +377,15 @@ function handleAirlineCreation(event) {
 
   let user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-if (!user.userId) {
+  if (!user.userId) {
     alert("⚠️ Session not found. Please log in again.");
     window.location.href = "login.html";
     return false;
-}
+  }
 
-// 🔥 Force airline to always be an OBJECT
-user.airline = {
-    id: user.airline_id || null,   // o null si no existe
+  // 🔥 Force airline to always be an OBJECT
+  user.airline = {
+    id: user.airline_id || null,
     name: airline.name,
     iata: airline.iata,
     icao: airline.icao,
@@ -396,49 +394,70 @@ user.airline = {
     country: airline.country,
     businessModel: airline.businessModel,
     operationMode: airline.operationMode
-};
+  };
 
-// 🔥 aseguramos que la base existe
-if (typeof user.base === "undefined") {
-    user.base = null;   // choose_base.html lo llenará
-}
+  // 🔥 aseguramos que la base existe
+  if (typeof user.base === "undefined") {
+    user.base = null;
+  }
 
-localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
   const index = allUsers.findIndex(u => u.email === user.email);
   if (index !== -1) allUsers[index] = user;
   localStorage.setItem("ACS_users", JSON.stringify(allUsers));
   localStorage.setItem("ACS_Airline", JSON.stringify(airline));
-     
-  // ============================================================
-  //  SEND AIRLINE TO GOOGLE SHEET (Minimal Version)
-  // ============================================================
- const ACS_API_URL =
-  "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec";
 
-fetch(ACS_API_URL, {
-  method: "POST",
-  body: JSON.stringify({
-    action: "createAirline",
-    user_id: user.userId,
-    airline_name: airlineName,
-    country: country
+
+
+  /* ============================================================
+     🟦 🔥🔥🔥 PARCHE OFICIAL — RESTAURAR SISTEMA DE VUELOS 🔥🔥🔥
+     ------------------------------------------------------------
+     Esto re-activa:
+       • userIATA
+       • contador de vuelos
+       • lista de vuelos usados
+     Para que Route Schedule genere automáticamente:
+       AC100 ➜ AC101
+  ============================================================ */
+
+  localStorage.setItem("userIATA", airline.iata);        // prefijo
+  localStorage.setItem("lastFlightNumber", "100");        // reinicio seguro
+  localStorage.setItem("flightNumbers", JSON.stringify([])); // vuelos usados
+
+  console.log("🟩 Flight Number System initialized:", airline.iata);
+
+
+
+  // ============================================================
+  // SEND AIRLINE TO GOOGLE SHEET
+  // ============================================================
+  const ACS_API_URL =
+    "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec";
+
+  fetch(ACS_API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "createAirline",
+      user_id: user.userId,
+      airline_name: airlineName,
+      country: country
+    })
   })
-})
-.then(res => res.text())
-.then(raw => {
-  const result = JSON.parse(raw);
+  .then(res => res.text())
+  .then(raw => {
+    const result = JSON.parse(raw);
 
-  if (result.ok) {
-    alert("✔ Airline synced with server!");
-    window.location.href = "choose_base.html";   // 🔥 REDIRECCIÓN INMEDIATA
-  } else {
-    alert("❌ Server error: " + (result.error || "unknown"));
-  }
-})
-.catch(err => {
-  alert("❌ Error connecting to ACS server: " + err);
-});
+    if (result.ok) {
+      alert("✔ Airline synced with server!");
+      window.location.href = "choose_base.html";
+    } else {
+      alert("❌ Server error: " + (result.error || "unknown"));
+    }
+  })
+  .catch(err => {
+    alert("❌ Error connecting to ACS server: " + err);
+  });
 
   return false;
 }
