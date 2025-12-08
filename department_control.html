@@ -876,30 +876,40 @@ function ACS_HR_renderLoadBar(dep) {
 }
      
 /* ============================================================
-   🟦 FIX 1 — Protección total dentro de HR_prepareTableData
-   Ubicación: Reemplaza el bloque roto previo
+   === HR_prepareTableData — RECONSTRUIDA PREMIUM v2 ============
    ============================================================ */
+function HR_prepareTableData(d) {
 
-function HR_prepareTableData(dep) {
+    const staff    = d.staff || 0;
+    const required = (typeof d.required === "number") ? d.required : staff;
 
-  // Protección total para evitar crashes
-  if (!dep || typeof dep !== "object") {
-      console.warn("⚠ Departamento inválido:", dep);
-      return {
-        id: "N/A",
-        name: "Invalid",
-        staff: 0,
-        required: 0,
-        diff: 0,
-        morale: 0,
-        efficiency: 0,
-        salary: 0,
-        payroll: 0,
-        base: "N/A"
-      };
-  }
+    // Dif = staff - required
+    const diff = staff - required;
+
+    // Eficiencia normalizada entre 0 y 1
+    let efficiency = 1;
+    if (required > 0) {
+        efficiency = staff / required;
+        if (efficiency > 1) efficiency = 1;
+        if (efficiency < 0) efficiency = 0;
+    }
+
+    return {
+        id: d.id,
+        name: d.name,
+        base: d.base,
+        staff: staff,
+        required: required,
+        diff: diff,
+        efficiency: efficiency,
+        salary: d.salary || 0,
+        payroll: d.payroll || 0,
+        morale: d.morale || 0
+    };
+}
 
   // Campos obligatorios con valores por defecto
+     
   dep.required   = dep.required   || 0;
   dep.morale     = dep.morale     || 0;
   dep.salary     = dep.salary     || 0;
