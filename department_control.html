@@ -905,29 +905,10 @@ function HR_prepareTableData(d) {
     };
 }
      
-  // Campos obligatorios con valores por defecto
-     
-  dep.required   = dep.required   || 0;
-  dep.morale     = dep.morale     || 0;
-  dep.salary     = dep.salary     || 0;
-  dep.payroll    = dep.payroll    || 0;
-  dep.base       = dep.base       || "N/A";
-
-  // Cálculo del diff y eficiencia (igual que antes)
-  const diff = dep.required - dep.staff;
-  const efficiency =
-    dep.required > 0 ? (dep.staff / dep.required) * (dep.morale / 100) : 1;
-
-  return {
-      ...dep,
-      diff,
-      efficiency
-  };
-}
-
 /* ============================================================
    === LOAD DEPARTMENTS — FIXED + CLEAN PREMIUM VERSION ========
    ============================================================ */
+     
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
   rows.innerHTML = "";
