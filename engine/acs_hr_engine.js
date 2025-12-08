@@ -46,9 +46,18 @@ if (!localStorage.getItem("ACS_HR")) {
        ============================================================ */
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
 
-    function __getBase(role) {
-        return ACS_HR_getBaseSalary5Y(year, role);
-    }
+    /* 🟦 FIX 4 — Scope seguro para __getBase() — FULL SAFARI SAFE */
+    const __getBase = (role) => {
+
+        // Safari recalcula año cada llamada
+        const y = window.ACS_getYear ? ACS_getYear() : 1940;
+
+        try {
+            return ACS_HR_getBaseSalary5Y(y, role);   // Motor 5Y
+        } catch (e) {
+            return ACS_HR_getBaseSalary(y, role);     // Fallback motor viejo
+        }
+    };
 
     const PILOT_MULT = {
         small: 0.55,
@@ -95,28 +104,6 @@ if (!localStorage.getItem("ACS_HR")) {
     localStorage.setItem("ACS_HR_InitialSetup", "DONE");
 
     console.log("✔ Initial HR Salary Setup Applied");
-
-
-    // 🔻🔻🔻 DESPUÉS DE ESTO VIENE TU CÓDIGO ORIGINAL 🔻🔻🔻
-
-    const hr = {};
-
-    ACS_HR_DEPARTMENTS.forEach(dep => {
-        hr[dep.id] = {
-            name: dep.name,
-            base: dep.base,
-            role: dep.base,
-            staff: dep.initial,
-            morale: 100,
-            salary: 0,
-            payroll: 0,
-            required: dep.initial,
-            years: 0,
-            bonus: 0
-        };
-    });
-
-    localStorage.setItem("ACS_HR", JSON.stringify(hr));
 }
 
 /* ============================================================
