@@ -921,7 +921,6 @@ function HR_prepareTableData(dep) {
 /* ============================================================
    === LOAD DEPARTMENTS — FIXED + CLEAN PREMIUM VERSION ========
    ============================================================ */
-     
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
   rows.innerHTML = "";
@@ -932,47 +931,38 @@ function loadDepartments() {
 
     const dep = HR_prepareTableData(d);
 
-    // === RENDER DEPARTAMENTO ===
     rows.innerHTML += `
       <tr>
         <td>${dep.name}</td>
 
-      <td>
-    <span class="role-tag">${
-      dep.id.includes("pilots_small")  ? "Pilots — Small"  :
-      dep.id.includes("pilots_medium") ? "Pilots — Medium" :
-      dep.id.includes("pilots_large")  ? "Pilots — Large"  :
-      dep.id.includes("pilots_vlarge") ? "Pilots — Very Large" :
-      dep.base
-     }</span>
-     </td>
-
+        <td>
+          <span class="role-tag">${
+            dep.id.includes("pilots_small")  ? "Pilots — Small"  :
+            dep.id.includes("pilots_medium") ? "Pilots — Medium" :
+            dep.id.includes("pilots_large")  ? "Pilots — Large"  :
+            dep.id.includes("pilots_vlarge") ? "Pilots — Very Large" :
+            dep.base
+          }</span>
+        </td>
 
         <td class="staff">${dep.staff}</td>
-
         <td>${dep.required}</td>
 
         <td class="diff" style="color:${
           dep.diff > 0 ? '#ff4d4d' :
           dep.diff < 0 ? '#00ff99' :
           '#ffe38a'
-        }">
-          ${dep.diff}
-        </td>
+        }">${dep.diff}</td>
 
         <td class="efficiency" style="color:${
           dep.efficiency >= 0.85 ? '#3bff9d' :
           dep.efficiency >= 0.65 ? '#ffe38a' :
           dep.efficiency >= 0.40 ? '#ff8c3b' :
           '#ff4d4d'
-        }">
-          ${(dep.efficiency * 100).toFixed(0)}%
-        </td>
+        }">${(dep.efficiency * 100).toFixed(0)}%</td>
 
         <td class="salary">$${dep.salary}</td>
-
         <td class="payroll">$${dep.payroll.toLocaleString()}</td>
-
         <td class="morale">${dep.morale}%</td>
 
         <td class="bonus-disabled">0%</td>
@@ -985,23 +975,21 @@ function loadDepartments() {
       </tr>
     `;
   });
-     
-// ========================================================
-// ⭐ SYNC HR → LOCALSTORAGE (Payroll, Staff, Morale)
-// ========================================================
-     
-try {
-    const HR = ACS_HR_recalculateAll();   // recalcula payroll real
-    ACS_HR_save(HR);                      // guarda en ACS_HR del localStorage
-    console.log("💾 HR actualizado en localStorage:", HR);
-} catch (e) {
-    console.warn("⚠️ No se pudo actualizar HR:", e);
-}
-     
- /* ============================================================
+
+  // === SYNC LOCAL STORAGE ===
+  try {
+      const HR = ACS_HR_recalculateAll();
+      ACS_HR_save(HR);
+      console.log("💾 HR actualizado en localStorage:", HR);
+  } catch (e) {
+      console.warn("⚠️ No se pudo actualizar HR:", e);
+  }
+
+} // 🔥 ESTA LLAVE ES LA QUE FALTABA
+
+/* ============================================================
    KPI — Monthly Payroll (Exacto desde HR Engine)
    ============================================================ */
-
 function HR_updateKPI() {
 
     const kpiStaff   = document.getElementById("kpiTotalStaff");
@@ -1011,29 +999,24 @@ function HR_updateKPI() {
     const hr = ACS_HR_load();
     if (!hr) return;
 
-    // Total staff real
     const totalStaff = Object.values(hr)
         .reduce((sum, d) => sum + (d.staff || 0), 0);
 
-    // Payroll REAL
     const payroll = ACS_HR_getTotalPayroll();
 
-    // Morale promedio
     const morale = Math.round(
         Object.values(hr)
             .reduce((sum, d) => sum + (d.morale || 0), 0) /
         Object.keys(hr).length
     );
 
-    if (kpiStaff)   kpiStaff.textContent   = totalStaff;
-    if (kpiPayroll) kpiPayroll.textContent = "$" + payroll.toLocaleString();
-    if (kpiMorale)  kpiMorale.textContent  = morale + "%";
+    kpiStaff.textContent   = totalStaff;
+    kpiPayroll.textContent = "$" + payroll.toLocaleString();
+    kpiMorale.textContent  = morale + "%";
 }
 
-/* Ejecutar después de renderizar la tabla */
-setTimeout(() => {
-    HR_updateKPI();
-}, 350);
+setTimeout(HR_updateKPI, 350);
+
 
 function openHire(id) {
   activeDept = id;
