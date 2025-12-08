@@ -541,6 +541,16 @@ function ACS_HR_recalculateAll() {
     return payroll;
 }
 
+// ► Sincronizar con Finance (si está cargado el motor)
+
+if (typeof ACS_updatePayrollFromHR === "function") {
+    try {
+        ACS_updatePayrollFromHR();
+        console.log("💰 Finance synced with new HR payroll.");
+    } catch (e) {
+        console.warn("⚠️ Finance sync failed:", e);
+    }
+}
 
 /* ============================================================
    OVERRIDES — (Mantener pero reparado)
