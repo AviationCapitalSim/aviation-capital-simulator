@@ -195,9 +195,8 @@ function renderSparklines() {
 }
 
 /* ============================================================
-   === INTEGRACIÓN HR — PAYROLL REAL (v2.0) ====================
+   === INTEGRACIÓN HR — PAYROLL REAL (v2.1 FINAL) =============
    ============================================================ */
-
 function ACS_syncPayrollWithHR() {
   try {
 
@@ -211,58 +210,22 @@ function ACS_syncPayrollWithHR() {
 
     const payroll = HR.payroll;
 
-    // 🟦 Descontar salarios del capital
+    // RESTAR payroll inmediatamente
     f.capital -= payroll;
 
-    // 🟧 Reflejar gastos reales en salary
+    // Actualizar gastos y profit
     f.cost.salaries = payroll;
     f.expenses      = payroll;
-
-    // 🟩 Actualizar profit
     f.profit        = f.revenue - f.expenses;
 
     saveFinance(f);
 
-    console.log("💸 Finance synced with HR → Payroll aplicado:", payroll);
+    console.log("💸 Payroll aplicado de inmediato:", payroll);
     console.log("💰 Capital actualizado:", f.capital);
 
   } catch (err) {
     console.error("❌ ERROR en ACS_syncPayrollWithHR:", err);
   }
-}
-
-/* ============================================================
-   === INTEGRACIÓN HR — PAYROLL EN TIEMPO REAL (v2.0) =========
-   ============================================================ */
-
-function ACS_syncPayrollWithHR() {
-
-  const f = loadFinance();
-  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-
-  if (!f || !HR || typeof HR.payroll !== "number") return;
-
-  // Nuevo payroll (HR recalculado)
-  const newPayroll = HR.payroll;
-
-  // Payroll previo para calcular diferencia
-  const oldPayroll = f.cost.salaries || 0;
-
-  // Diferencia necesaria para ajustar
-  const diff = newPayroll - oldPayroll;
-
-  // Aplicar inmediatamente al capital
-  f.capital -= diff;
-
-  // Actualizar partes internas
-  f.cost.salaries = newPayroll;
-  f.expenses = newPayroll;
-  f.profit = f.revenue - f.expenses;
-
-  saveFinance(f);
-
-  console.log("💼 Payroll aplicado inmediatamente:", newPayroll,
-              "| Ajuste capital:", diff);
 }
 
 /* ============================================================
