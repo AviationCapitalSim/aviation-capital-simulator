@@ -973,21 +973,41 @@ function confirmRoute() {
 
 </script>
 
+<!-- ===========================================================
+     🟦 ACS SCRIPT ORDER — ROUTE SCHEDULE (FINAL v1.0)
+     -----------------------------------------------------------
+     ESTE ORDEN ES OBLIGATORIO PARA QUE LOS 4000+ AEROPUERTOS
+     SE CARGUEN SIN ERRORES. NO CAMBIARLO NUNCA.
+     =========================================================== -->
+
+<!-- 1) ENGINE BASES -->
 <script src="./time_engine.js"></script>
 <script src="./engine/acs_crew_engine.js"></script>
-     
-<!-- === AIRPORT ENGINE (REQUIRED) === -->
-<script src="engine/airports/world_airports_na.js"></script>
-<script src="engine/airports/world_airports_sa.js"></script>
-<script src="engine/airports/world_airports_eu.js"></script>
-<script src="engine/airports/world_airports_me.js"></script>
-<script src="engine/airports/world_airports_af.js"></script>
-<script src="engine/airports/world_airports_as.js"></script>
-<script src="engine/airports/world_airports_oc.js"></script>
+<script src="./engine/acs_finance.js"></script>
 
-<script src="engine/airports_loader.js"></script>
+<!-- ===========================================================
+     2) AIRPORT LOADER — CREA WorldAirportsACS
+     Debe cargarse ANTES que los continent scripts
+     =========================================================== -->
+<script src="engine/airports_loader.js?v=1.0"></script>
 
-<script src="engine/acs_world_engine.js"></script>
+<!-- ===========================================================
+     3) WORLD ENGINE — USA los datos cargados por el loader
+     Genera índices ICAO/IATA, filtros históricos, etc.
+     =========================================================== -->
+<script src="engine/acs_world_engine.js?v=1.0"></script>
+
+<!-- ===========================================================
+     4) CONTINENTS — AHORA SÍ
+     Estos archivos dependen de que WorldAirportsACS YA exista.
+     =========================================================== -->
+<script src="engine/airports/world_airports_na.js?v=1.0"></script>
+<script src="engine/airports/world_airports_sa.js?v=1.0"></script>
+<script src="engine/airports/world_airports_eu.js?v=1.0"></script>
+<script src="engine/airports/world_airports_me.js?v=1.0"></script>
+<script src="engine/airports/world_airports_af.js?v=1.0"></script>
+<script src="engine/airports/world_airports_as.js?v=1.0"></script>
+<script src="engine/airports/world_airports_oc.js?v=1.0"></script>
 
 <script>
      
