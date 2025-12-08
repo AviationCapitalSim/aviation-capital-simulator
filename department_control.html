@@ -978,9 +978,10 @@ function loadDepartments() {
 
   // === SYNC LOCAL STORAGE ===
   try {
-      const HR = ACS_HR_recalculateAll();
-      ACS_HR_save(HR);
-      console.log("💾 HR actualizado en localStorage:", HR);
+      // ⬇️ Esta función YA guarda el objeto HR internamente.
+      // Devuelve solo el número de payroll mensual.
+      const payroll = ACS_HR_recalculateAll();
+      console.log("💾 HR recalculado. Payroll mensual:", payroll);
   } catch (e) {
       console.warn("⚠️ No se pudo actualizar HR:", e);
   }
@@ -999,16 +1000,18 @@ function HR_updateKPI() {
     const hr = ACS_HR_load();
     if (!hr) return;
 
-    const totalStaff = Object.values(hr)
+    const values = Object.values(hr);
+    const len = values.length;
+
+    const totalStaff = values
         .reduce((sum, d) => sum + (d.staff || 0), 0);
 
     const payroll = ACS_HR_getTotalPayroll();
 
-    const morale = Math.round(
-        Object.values(hr)
-            .reduce((sum, d) => sum + (d.morale || 0), 0) /
-        Object.keys(hr).length
-    );
+    const totalMorale = values
+        .reduce((sum, d) => sum + (d.morale || 0), 0);
+
+    const morale = len > 0 ? Math.round(totalMorale / len) : 0;
 
     kpiStaff.textContent   = totalStaff;
     kpiPayroll.textContent = "$" + payroll.toLocaleString();
@@ -1016,7 +1019,6 @@ function HR_updateKPI() {
 }
 
 setTimeout(HR_updateKPI, 350);
-
 
 function openHire(id) {
   activeDept = id;
