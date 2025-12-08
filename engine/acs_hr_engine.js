@@ -529,16 +529,20 @@ function ACS_HR_recalculateAll() {
 
         dep.payroll = dep.salary * dep.staff;
 
-        // years
-        if (!dep.years) dep.years = 0;
+// years
+if (!dep.years) dep.years = 0;
 
-        payroll += dep.payroll;
-    });
+payroll += dep.payroll;
+});
 
-    ACS_HR_save(hr);
-    localStorage.setItem("ACS_Payroll_Monthly", payroll);
+// === Payroll final dentro del objeto HR ===
+hr.payroll = payroll;
 
-    return payroll;
+ACS_HR_save(hr);
+localStorage.setItem("ACS_Payroll_Monthly", payroll);
+
+return payroll;
+
 }
 
 // ► Sincronizar con Finance (si está cargado el motor)
