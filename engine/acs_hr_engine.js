@@ -96,27 +96,6 @@ if (!localStorage.getItem("ACS_HR")) {
 
     console.log("✔ Initial HR Salary Setup Applied");
 
-
-    // 🔻🔻🔻 DESPUÉS DE ESTO VIENE TU CÓDIGO ORIGINAL 🔻🔻🔻
-
-    const hr = {};
-
-    ACS_HR_DEPARTMENTS.forEach(dep => {
-        hr[dep.id] = {
-            name: dep.name,
-            base: dep.base,
-            role: dep.base,
-            staff: dep.initial,
-            morale: 100,
-            salary: 0,
-            payroll: 0,
-            required: dep.initial,
-            years: 0,
-            bonus: 0
-        };
-    });
-
-    localStorage.setItem("ACS_HR", JSON.stringify(hr));
 }
 
 /* ============================================================
