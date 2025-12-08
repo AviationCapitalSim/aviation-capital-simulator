@@ -563,6 +563,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const isEditing = !!editID;
 
   /* ----------------- MODO CREACIÓN ----------------- */
+     
   if (!isEditing) {
 
     const selOrigin = (localStorage.getItem("ACS_selectedOrigin") || "").toUpperCase();
@@ -577,11 +578,19 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("ACS_selectedOrigin");
     localStorage.removeItem("ACS_selectedDestination");
 
+    /* 🟦 CARGAR FLOTA ACTIVA */
+    loadAvailableAircraft();
+
+    /* 🟦 Recalcular al cambiar avión */
+    document.getElementById("aircraft").addEventListener("change", autoCalculate);
+
     autoGenerateFlightNumber();
     return;
-  }
+}
+
 
   /* ------------------ MODO EDICIÓN ------------------ */
+     
   const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   const flight = items.find(f => f.id === editID || f.blockId === editID);
   if (!flight) return;
@@ -593,6 +602,9 @@ document.addEventListener("DOMContentLoaded", () => {
   $("aircraft").value     = flight.acType || "";
   $("departureTime").value = flight.departure || "06:00";
 
+  loadAvailableAircraft();
+  document.getElementById("aircraft").addEventListener("change", autoCalculate);
+     
   (flight.days || []).forEach(d => {
     if (document.getElementById(d)) document.getElementById(d).checked = true;
   });
