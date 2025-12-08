@@ -680,30 +680,38 @@ document.addEventListener("DOMContentLoaded", () => {
 });
      
 /* ============================================================
-   === PHASE 2.3 — LOAD AIRCRAFT FOR THIS ROUTE ================
+   🟦 FASE 1 — LOAD AVAILABLE AIRCRAFT (with dataset support)
    ------------------------------------------------------------
-   • Muestra solo aviones del usuario
-   • Activos
-   • En la base correcta (origin)
+   • Muestra solo aviones activos en la base
+   • Guarda info técnica en dataset para FASE 2
+   • No cambia nada visual (Qatar Luxury intacto)
    ============================================================ */
 
 function loadAvailableAircraft() {
   const origin = (document.getElementById("origin").value || "").trim();
   const select = document.getElementById("aircraft");
 
-  // Limpiar selector
   select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-  // Leer flota completa
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   fleet
-    .filter(ac => ac.status === "Active")        // solo operativos
-    .filter(ac => ac.base && ac.base === origin) // solo en la base
+    .filter(ac => ac.status === "Active")
+    .filter(ac => ac.base && ac.base === origin)
     .forEach(ac => {
+
       const opt = document.createElement("option");
-      opt.value = ac.registration; // lo que se enviará
+      opt.value = ac.registration;
       opt.textContent = `${ac.model} — ${ac.registration}`;
+
+      // 🟦 Guardar info técnica para FASE 2
+      opt.dataset.model    = ac.model || "";
+      opt.dataset.category = ac.category || "";
+      opt.dataset.speed    = ac.speed || 440;
+      opt.dataset.range    = ac.range || 1500;
+      opt.dataset.crew     = ac.crew || 0;
+      opt.dataset.fuelBurn = ac.fuelBurn || 0;
+
       select.appendChild(opt);
     });
 }
@@ -742,8 +750,111 @@ function getTurnaroundMinutes(model) {
   if (model.includes("ATR") || model.includes("Q400")) return 25;
   return 40;
 }
+     
+/* ============================================================
+   🟦 FASE 2 — TECH ENGINE CORE (Distance, Fuel, Crew, Cost)
+   ------------------------------------------------------------
+   • Cálculo real de distancia (NM)
+   • Block Time basado en velocidad del modelo
+   • Fuel Burn promedio por categoría
+   • Crew requerido (Pilotos + TCP)
+   • Costos estimados (Fuel + Handling + Maintenance Cycle)
+   ============================================================ */
 
+// === 1) DISTANCIA REAL (NM) ===============================
+
+function rs_getDistanceNM(origin, dest) {
+  if (!origin || !dest) return 0;
+
+  let O = null, D = null;
+
+  for (const cont in WorldAirportsACS) {
+    const list = WorldAirportsACS[cont];
+    if (!Array.isArray(list)) continue;
+
+    O = O || list.find(a => a.icao === origin);
+    D = D || list.find(a => a.icao === dest);
+  }
+
+  if (!O || !D) return 0;
+
+  return distanceNM(O.latitude, O.longitude, D.latitude, D.longitude);
+}
+
+
+// === 2) BLOCK TIME (min) ==================================
+
+function rs_getBlockTime(distance, speed) {
+  if (!distance || !speed) return 0;
+
+  const cruise = distance / speed; // horas
+  const climbDescent = 0.25;       // ~15 min
+  const totalH = cruise + climbDescent;
+
+  return Math.round(totalH * 60);
+}
+
+
+// === 3) TURNAROUND TIME (min) =============================
+
+function rs_getTurnaround(category) {
+  if (!category) return 40;
+
+  if (category.includes("ATR") || category.includes("TURBO")) return 25;
+  if (category.includes("REGIONAL")) return 30;
+
+  return 40; // default narrowbody
+}
+
+
+// === 4) FUEL BURN CALC (kg/h) =============================
+
+function rs_getFuelBurn(category) {
+  if (!category) return 2400; // promedio A320/B737
+
+  const c = category.toUpperCase();
+
+  if (c.includes("ATR")) return 900;
+  if (c.includes("TURBO")) return 1100;
+  if (c.includes("REGIONAL")) return 1800;
+
+  return 2500; // narrowbody jet default
+}
+
+
+// === 5) CREW REQUIREMENT ================================
+
+function rs_getCrewNeeded(category) {
+  if (!category) return { pilots: 2, cabin: 3 };
+
+  const c = category.toUpperCase();
+
+  if (c.includes("ATR")) return { pilots: 2, cabin: 2 };
+  if (c.includes("REGIONAL")) return { pilots: 2, cabin: 2 };
+
+  return { pilots: 2, cabin: 3 }; // A320/B737
+}
+
+
+// === 6) TRIP COST ESTIMATION =============================
+
+function rs_getTripCost(distance, blockMin, category) {
+  const fuelKG = rs_getFuelBurn(category) * (blockMin / 60);
+  const fuelCost = fuelKG * 0.85; // precio estimado por kg
+
+  const handling = 350;
+  const cycleMaintenance = 180;
+
+  return {
+    fuelCost: Math.round(fuelCost),
+    handling,
+    maintenance: cycleMaintenance,
+    total: Math.round(fuelCost + handling + cycleMaintenance)
+  };
+}
+     
 function autoCalculate() {
+
   const origin  = document.getElementById("origin").value.trim();
   const dest    = document.getElementById("destination").value.trim();
   const acReg   = document.getElementById("aircraft").value;
@@ -757,21 +868,45 @@ function autoCalculate() {
   const ac = fleet.find(x => x.registration === acReg);
   if (!ac) return;
 
-  const dist = getDistanceNM(origin, dest);
-  const blockMin = getBlockTimeMinutes(dist, ac.model);
-  const turnMin  = getTurnaroundMinutes(ac.model);
-  const totalMin = blockMin * 2 + turnMin;
+  // === Datos técnicos del dataset ===
+  const speed    = Number(document.querySelector(`#aircraft option[value="${acReg}"]`).dataset.speed || 440);
+  const category = document.querySelector(`#aircraft option[value="${acReg}"]`).dataset.category || "";
 
+  // === Calcular distancia y tiempos ===
+  const distNM = rs_getDistanceNM(origin, dest);
+  const block  = rs_getBlockTime(distNM, speed);
+  const turn   = rs_getTurnaround(category);
+  const total  = block + turn + block;
+
+  // === Crew requerido ===
+  const crew = rs_getCrewNeeded(category);
+
+  // === Costos ===
+  const cost = rs_getTripCost(distNM, block, category);
+
+  // === Mostrar en UI ===
   document.getElementById("techData").style.display = "block";
-  document.getElementById("distance").textContent      = `${dist} NM`;
-  document.getElementById("blockTime").textContent     = `${Math.floor(blockMin/60)}h ${blockMin%60}m`;
-  document.getElementById("turnaround").textContent    = `${turnMin} min`;
-  document.getElementById("totalRotation").textContent = `${Math.floor(totalMin/60)}h ${totalMin%60}m`;
 
+  document.getElementById("distance").textContent      = distNM;
+  document.getElementById("blockTime").textContent     = `${Math.floor(block/60)}h ${block%60}m`;
+  document.getElementById("turnaround").textContent    = `${turn} min`;
+  document.getElementById("totalRotation").textContent = `${Math.floor(total/60)}h ${total%60}m`;
+
+  // Simulados por ahora
   document.getElementById("serviceA").textContent = "OK";
   document.getElementById("serviceB").textContent = "OK";
-  document.getElementById("delayRisk").textContent = "2%";
-  document.getElementById("effIndex").textContent = "92%";
+  document.getElementById("delayRisk").textContent = "3%";
+  document.getElementById("effIndex").textContent  = "90%";
+
+  // También dejamos esta información para Finance / HR (FASE 3)
+  window.ACS_RouteTechData = {
+    distNM,
+    blockMin: block,
+    turnMin: turn,
+    totalMin: total,
+    crew,
+    cost
+  };
 }
      
 /* ============================================================
