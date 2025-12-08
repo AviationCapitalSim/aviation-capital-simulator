@@ -876,36 +876,47 @@ function ACS_HR_renderLoadBar(dep) {
 }
      
 /* ============================================================
-   🟥 C1 — CALCULAR (efficiency / diff / payroll / bonus)
+   🟦 FIX 1 — Protección total dentro de HR_prepareTableData
+   Ubicación: Reemplaza el bloque roto previo
    ============================================================ */
 
 function HR_prepareTableData(dep) {
+
+  // Protección total para evitar crashes
+  if (!dep || typeof dep !== "object") {
+      console.warn("⚠ Departamento inválido:", dep);
+      return {
+        id: "N/A",
+        name: "Invalid",
+        staff: 0,
+        required: 0,
+        diff: 0,
+        morale: 0,
+        efficiency: 0,
+        salary: 0,
+        payroll: 0,
+        base: "N/A"
+      };
+  }
+
+  // Campos obligatorios con valores por defecto
+  dep.required   = dep.required   || 0;
+  dep.morale     = dep.morale     || 0;
+  dep.salary     = dep.salary     || 0;
+  dep.payroll    = dep.payroll    || 0;
+  dep.base       = dep.base       || "N/A";
+
+  // Cálculo del diff y eficiencia (igual que antes)
   const diff = dep.required - dep.staff;
-  const efficiency = dep.required > 0
-    ? (dep.staff / dep.required) * (dep.morale / 100)
-    : 1;
+  const efficiency =
+    dep.required > 0 ? (dep.staff / dep.required) * (dep.morale / 100) : 1;
 
   return {
-    ...dep,
-    diff,
-    efficiency
+      ...dep,
+      diff,
+      efficiency
   };
 }
-
-// === Protección total para evitar crashes ===
-     
-if (!dep || typeof dep !== "object") {
-    console.warn("⚠ Departamento inválido:", d);
-    return;
-}
-
-// Campos obligatorios con valores por defecto
-dep.required   = dep.required   || 0;
-dep.morale     = dep.morale     || 0;
-dep.efficiency = dep.efficiency || 0;
-dep.salary     = dep.salary     || 0;
-dep.payroll    = dep.payroll    || 0;
-dep.base       = dep.base       || "N/A";
 
 /* ============================================================
    === LOAD DEPARTMENTS — FIXED + CLEAN PREMIUM VERSION ========
