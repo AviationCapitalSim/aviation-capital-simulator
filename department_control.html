@@ -879,14 +879,11 @@ function ACS_HR_renderLoadBar(dep) {
    === HR_prepareTableData — RECONSTRUIDA PREMIUM v2 ============
    ============================================================ */
 function HR_prepareTableData(d) {
-
     const staff    = d.staff || 0;
     const required = (typeof d.required === "number") ? d.required : staff;
 
-    // Dif = staff - required
     const diff = staff - required;
 
-    // Eficiencia normalizada entre 0 y 1
     let efficiency = 1;
     if (required > 0) {
         efficiency = staff / required;
@@ -897,7 +894,7 @@ function HR_prepareTableData(d) {
     return {
         id: d.id,
         name: d.name,
-        base: d.base || "N/A",
+        base: d.base,
         staff: staff,
         required: required,
         diff: diff,
@@ -907,7 +904,7 @@ function HR_prepareTableData(d) {
         morale: d.morale || 0
     };
 }
-
+     
   // Campos obligatorios con valores por defecto
      
   dep.required   = dep.required   || 0;
