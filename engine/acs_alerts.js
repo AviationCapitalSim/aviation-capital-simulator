@@ -293,3 +293,45 @@ setInterval(() => {
   try { ACS_checkBankruptcy(); }
   catch (e) { console.warn("Bankruptcy check failed:", e); }
 }, 3000);  // cada 3 segundos tiempo real (equivale a ~1 día sim, depende del speed)
+
+/* ============================================================
+   🟦 ACS ALERTS — UNIVERSAL LEGACY WRAPPER v5 (07 DEC 2025)
+   ------------------------------------------------------------
+   🔧 Función: Permitir compatibilidad con módulos antiguos (HR,
+   Finance, Bankruptcy, etc.) que aún llaman ACS_addAlert().
+   🔁 Internamente convierte todo a ACS_pushAlert() v4.
+   ============================================================ */
+
+function ACS_normalizeLevel(level) {
+  if (!level) return "info";
+  const L = String(level).trim().toLowerCase();
+  if (L.includes("crit")) return "critical";
+  if (L.includes("high")) return "high";
+  if (L.includes("med"))  return "medium";
+  if (L.includes("low"))  return "low";
+  return "info";
+}
+
+function ACS_addAlert(type, level, title, message) {
+  try {
+    const normalized = {
+      type: typeof type === "string" ? type : "system",
+      level: ACS_normalizeLevel(level),
+      title: title || "System Alert",
+      message: message || "",
+      timestamp: ACS_simTimestamp()
+    };
+
+    console.log("⚙️ [ACS_addAlert] Intercepted legacy alert → normalized:", normalized);
+
+    // Redirige al motor actual (ACS_pushAlert)
+    if (typeof ACS_pushAlert === "function") {
+      ACS_pushAlert(normalized);
+    } else {
+      console.warn("⚠️ ACS_pushAlert() not found — fallback active.");
+    }
+
+  } catch (err) {
+    console.error("❌ ACS_addAlert() wrapper failed:", err);
+  }
+}
