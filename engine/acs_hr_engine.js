@@ -1,5 +1,5 @@
 /* ============================================================
-   === ACS HUMAN RESOURCES ENGINE v2 07DEC25 — MULTI-DEPARTMENT ==
+   === ACS HUMAN RESOURCES ENGINE v2 08DEC25 — MULTI-DEPARTMENT ==
    ------------------------------------------------------------
    • Conserva TODA la arquitectura original
    • Corrige salarios históricos 1940–2026
@@ -46,11 +46,9 @@ if (!localStorage.getItem("ACS_HR")) {
        ============================================================ */
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
 
-    /* 🟦 FIX 4 — Scope seguro para __getBase() */
-function __getBase(role) {
-    const y = window.ACS_getYear ? ACS_getYear() : 1940;
-    return ACS_HR_getBaseSalary5Y(y, role);
-}
+    function __getBase(role) {
+        return ACS_HR_getBaseSalary5Y(year, role);
+    }
 
     const PILOT_MULT = {
         small: 0.55,
@@ -98,6 +96,27 @@ function __getBase(role) {
 
     console.log("✔ Initial HR Salary Setup Applied");
 
+
+    // 🔻🔻🔻 DESPUÉS DE ESTO VIENE TU CÓDIGO ORIGINAL 🔻🔻🔻
+
+    const hr = {};
+
+    ACS_HR_DEPARTMENTS.forEach(dep => {
+        hr[dep.id] = {
+            name: dep.name,
+            base: dep.base,
+            role: dep.base,
+            staff: dep.initial,
+            morale: 100,
+            salary: 0,
+            payroll: 0,
+            required: dep.initial,
+            years: 0,
+            bonus: 0
+        };
+    });
+
+    localStorage.setItem("ACS_HR", JSON.stringify(hr));
 }
 
 /* ============================================================
@@ -179,41 +198,35 @@ function ACS_HR_get5YBlock(year){
     return year - (year % 5);
 }
 
-/* ============================================================
-   🚑 FIX DEFINITIVO SAFARI — ROLE SAFE WRAPPER
-   ============================================================ */
 function ACS_HR_getBaseSalary5Y(year, role){
-
-  // Mapear roles equivalentes para evitar que Safari explote
-  const normalize = {
-    "pilot_small":"pilot",
-    "pilot_medium":"pilot",
-    "pilot_large":"pilot",
-    "pilot_vlarge":"pilot",
-    "flight_ops":"flightops",   // ← PROBLEMA REAL
-    "economics":"admin",
-    "comms":"admin",
-    "hr":"admin",
-    "quality":"admin",
-    "security":"security"
-  };
-
-  // Safari → corrige null, undefined o strings no mapeadas
-  const r = normalize[role] || role || "admin";
-
   const block = ACS_HR_get5YBlock(year);
   const S = ACS_HR_SALARY_5Y[block] || ACS_HR_SALARY_5Y[2025];
 
-  switch(r){
-    case "pilot":     return S.pilot;
-    case "cabin":     return S.cabin;
-    case "maintenance":return S.tech;
-    case "ground":    return S.ground;
-    case "flightops": return S.flightops;
-    case "security":  return S.security;
-    case "ceo":
-    case "vp":        return S.exec;
+  switch(role){
+    case "pilot":
+    case "pilot_small":
+    case "pilot_medium":
+    case "pilot_large":
+    case "pilot_vlarge":
+      return S.pilot;
+
+    case "cabin":       return S.cabin;
+    case "maintenance": return S.tech;
+    case "ground":      return S.ground;
+    case "flight_ops":  return S.flightops;
+    case "security":    return S.security;
+
     case "admin":
+    case "economics":
+    case "comms":
+    case "hr":
+    case "quality":
+      return S.admin;
+
+    case "ceo":
+    case "vp":
+      return S.exec;
+
     default:
       return S.admin;
   }
@@ -516,20 +529,16 @@ function ACS_HR_recalculateAll() {
 
         dep.payroll = dep.salary * dep.staff;
 
-// years
-if (!dep.years) dep.years = 0;
+        // years
+        if (!dep.years) dep.years = 0;
 
-payroll += dep.payroll;
-});
+        payroll += dep.payroll;
+    });
 
-// === Payroll final dentro del objeto HR ===
-hr.payroll = payroll;
+    ACS_HR_save(hr);
+    localStorage.setItem("ACS_Payroll_Monthly", payroll);
 
-ACS_HR_save(hr);
-localStorage.setItem("ACS_Payroll_Monthly", payroll);
-
-return payroll;
-
+    return payroll;
 }
 
 // ► Sincronizar con Finance (si está cargado el motor)
