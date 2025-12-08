@@ -752,7 +752,46 @@ function rs_getTripCost(distance, blockMin, category) {
   };
 }
 
+/* ============================================================
+   🟦 C) CREW ENGINE — Reemplazo para Route Schedule
+   ------------------------------------------------------------
+   Usa ACS_CrewEngine.getCrewFromDatabase(modelo_exacto)
+   ============================================================ */
 
+/**
+ * Devuelve crew REAL a partir del REG del avión seleccionado.
+ * Entrada: registration (ej: "N123AA")
+ * Salida: { pilots, flight_engineers, navigators, radio_ops, cabin, total }
+ */
+function rs_getCrewReal(registration) {
+
+  // Fallback universal si algo falla
+  const fallback = {
+    pilots: 2,
+    flight_engineers: 0,
+    navigators: 0,
+    radio_ops: 0,
+    cabin: 2,
+    total: 4
+  };
+
+  if (!registration) return fallback;
+
+  // Obtener flota
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = fleet.find(a => a.registration === registration);
+
+  if (!ac || !ac.model) return fallback;
+
+  // Crew REAL según el modelo exacto (A300, Tu-154, DC-10, MD-80, Do328…)
+  try {
+    return ACS_CrewEngine.getCrewFromDatabase(ac.model);
+  } catch (e) {
+    console.warn("CrewEngine error:", e);
+    return fallback;
+  }
+}
+     
 /* ============================================================
    === autoCalculate (FASE 2 REAL) =============================
    ============================================================ */
