@@ -1240,50 +1240,50 @@ document.getElementById("hrDeptSelector").addEventListener("change", function ()
      
 function HR_reloadModalDepartment(id) {
 
-    HR_active = id;
+    // 🛑 FIX SAFARI — HR aún no cargado
+    if (!id) return;
 
-    const hr = ACS_HR_load()[id];
-    if (!hr) return;
+    const full = ACS_HR_load();
+    if (!full || !full[id]) {
+        console.warn("⛔ HR_reloadModalDepartment: HR vacío / no cargado todavía", id);
+        return;
+    }
+
+    const hr = full[id];
 
     // 🔄 Título dinámico
     document.getElementById("hrModalDeptName").textContent = hr.name;
 
-    // 🔄 Recalcular selects (Hire / Fire)
+    // 🔄 Selects
     HR_buildSelects(hr);
 
-    // 🔄 Recalcular costos de hire
+    // 🔄 Costos
     updateHireCost(hr);
 
-    // 🔄 Fire options (cantidad disponible)
+    // 🔄 Fire options
     const fireSel = document.getElementById("fireQty");
     fireSel.innerHTML = "";
     for (let i = 1; i <= hr.staff; i++) {
         fireSel.innerHTML += `<option value="${i}">${i}</option>`;
     }
 
-    // 🔄 Mostrar staff actual
+    // 🔄 Summary Block
     document.getElementById("hrCurrentStaff").textContent = hr.staff;
-
-    // 🔄 Mostrar required
     document.getElementById("hrRequiredStaff").textContent = hr.required ?? hr.staff;
 
-    // 🔄 Mostrar diferencia
-    const diff = (hr.required ?? hr.staff) - hr.staff;
+    const diff = hr.staff - (hr.required ?? hr.staff);
     const diffEl = document.getElementById("hrDifference");
     diffEl.textContent = diff;
+    diffEl.style.color = diff > 0 ? "#00ff99" : diff < 0 ? "#ff4d4d" : "#ffe38a";
 
-    diffEl.style.color = diff > 0 ? "#ff4d4d" : diff < 0 ? "#00ff99" : "#ffe38a";
-
-    // 🔄 Actualizar salario mostrado
+    // 🔄 Salary + morale
     document.getElementById("hrSalary").textContent = `$${hr.salary}`;
-
-    // 🔄 Actualizar moral
     document.getElementById("hrMorale").textContent = `${hr.morale}%`;
 
-
-    // 🔄 Mantener el modal arriba
+    // 🔄 Mantener modal arriba
     document.querySelector(".hr-full-modal").scrollTop = 0;
 }
+
 
 function HR_applyAutoAdjust() {
     if (typeof ACS_HR_autoAdjust5Y === "function") {
