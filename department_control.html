@@ -891,7 +891,22 @@ function HR_prepareTableData(dep) {
     efficiency
   };
 }
+
+// === Protección total para evitar crashes ===
      
+if (!dep || typeof dep !== "object") {
+    console.warn("⚠ Departamento inválido:", d);
+    return;
+}
+
+// Campos obligatorios con valores por defecto
+dep.required   = dep.required   || 0;
+dep.morale     = dep.morale     || 0;
+dep.efficiency = dep.efficiency || 0;
+dep.salary     = dep.salary     || 0;
+dep.payroll    = dep.payroll    || 0;
+dep.base       = dep.base       || "N/A";
+
 /* ============================================================
    === LOAD DEPARTMENTS — FIXED + CLEAN PREMIUM VERSION ========
    ============================================================ */
