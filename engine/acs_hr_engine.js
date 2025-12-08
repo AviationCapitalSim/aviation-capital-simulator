@@ -557,10 +557,12 @@ function ACS_HR_recalculateAll() {
         payroll += dep.payroll;
     });
 
-    ACS_HR_save(hr);
+    hr.payroll = payroll;              // 🟩 ACTUALIZA payroll real dentro de HR
+    ACS_HR_save(hr);                   // 🟩 Guarda HR completo (con payroll)
     localStorage.setItem("ACS_Payroll_Monthly", payroll);
 
     return payroll;
+
 }
 
 // ► Sincronizar con Finance (si está cargado el motor)
