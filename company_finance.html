@@ -737,10 +737,10 @@ function ACS_syncPayrollWithHR() {
   const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
   const f  = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-  if (!HR || typeof HR.payroll !== "number") {
-    console.warn("⚠ HR Payroll missing:", HR);
+  if (!HR || HR.payroll === undefined) {
+    // HR aún no cargó completamente → esperar
     return;
-  }
+}
 
   f.cost = f.cost || {};
   f.income = f.income || {};
