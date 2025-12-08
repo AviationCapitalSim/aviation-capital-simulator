@@ -46,9 +46,11 @@ if (!localStorage.getItem("ACS_HR")) {
        ============================================================ */
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
 
-    function __getBase(role) {
-        return ACS_HR_getBaseSalary5Y(year, role);
-    }
+    /* 🟦 FIX 4 — Scope seguro para __getBase() */
+function __getBase(role) {
+    const y = window.ACS_getYear ? ACS_getYear() : 1940;
+    return ACS_HR_getBaseSalary5Y(y, role);
+}
 
     const PILOT_MULT = {
         small: 0.55,
