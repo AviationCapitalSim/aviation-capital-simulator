@@ -179,17 +179,18 @@ function ACS_HR_get5YBlock(year){
     return year - (year % 5);
 }
 
-/* 🟦 FIX 5 — Role Normalizer para Safari */
-
+/* ============================================================
+   🚑 FIX DEFINITIVO SAFARI — ROLE SAFE WRAPPER
+   ============================================================ */
 function ACS_HR_getBaseSalary5Y(year, role){
 
-  // Normalización de roles equivalentes
-  const map = {
+  // Mapear roles equivalentes para evitar que Safari explote
+  const normalize = {
     "pilot_small":"pilot",
     "pilot_medium":"pilot",
     "pilot_large":"pilot",
     "pilot_vlarge":"pilot",
-    "flight_ops":"flightops",
+    "flight_ops":"flightops",   // ← PROBLEMA REAL
     "economics":"admin",
     "comms":"admin",
     "hr":"admin",
@@ -197,7 +198,8 @@ function ACS_HR_getBaseSalary5Y(year, role){
     "security":"security"
   };
 
-  const r = map[role] || role || "admin";
+  // Safari → corrige null, undefined o strings no mapeadas
+  const r = normalize[role] || role || "admin";
 
   const block = ACS_HR_get5YBlock(year);
   const S = ACS_HR_SALARY_5Y[block] || ACS_HR_SALARY_5Y[2025];
@@ -205,13 +207,12 @@ function ACS_HR_getBaseSalary5Y(year, role){
   switch(r){
     case "pilot":     return S.pilot;
     case "cabin":     return S.cabin;
-    case "maintenance": return S.tech;
+    case "maintenance":return S.tech;
     case "ground":    return S.ground;
     case "flightops": return S.flightops;
     case "security":  return S.security;
     case "ceo":
-    case "vp":
-      return S.exec;
+    case "vp":        return S.exec;
     case "admin":
     default:
       return S.admin;
