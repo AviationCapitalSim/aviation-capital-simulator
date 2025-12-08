@@ -65,58 +65,89 @@ if (!localStorage.getItem("ACS_HR")) {
     localStorage.setItem("ACS_HR", JSON.stringify(hr));
 }
 
-
 /* ============================================================
    3) TABLA SALARIOS HISTÓRICOS (REAL 1940–2026)
    ============================================================ */
 function ACS_HR_getBaseSalary(year, role) {
 
-const DECADES = {
-  1940:{pilot:380,cabin:70,tech:120,ground:45,admin:85,exec:250},
-  1950:{pilot:520,cabin:110,tech:180,ground:75,admin:120,exec:350},
-  1960:{pilot:900,cabin:185,tech:280,ground:120,admin:190,exec:500},
-  1970:{pilot:1600,cabin:320,tech:450,ground:190,admin:320,exec:900},
-  1980:{pilot:2600,cabin:550,tech:750,ground:350,admin:500,exec:1500},
-  1990:{pilot:3600,cabin:750,tech:950,ground:450,admin:700,exec:2300},
-  2000:{pilot:4700,cabin:1000,tech:1300,ground:650,admin:1000,exec:3100},
-  2010:{pilot:6200,cabin:1500,tech:1850,ground:950,admin:1500,exec:4500},
-  2020:{pilot:8300,cabin:2300,tech:2600,ground:1300,admin:2100,exec:6500},
-  2030:{pilot:9000,cabin:2600,tech:2900,ground:1500,admin:2400,exec:7500}
+/* ============================================================
+   🔵 ACS SALARY TABLE (5-YEAR REALISTIC) — COMPLETO
+   ============================================================ */
+const ACS_HR_SALARY_5Y = {
+  1940:{pilot:650, cabin:180, tech:260, ground:120, admin:200, flightops:230, security:170, exec:900},
+  1945:{pilot:720, cabin:200, tech:300, ground:140, admin:220, flightops:250, security:190, exec:1000},
+  1950:{pilot:820, cabin:230, tech:350, ground:160, admin:250, flightops:290, security:210, exec:1200},
+  1955:{pilot:950, cabin:260, tech:420, ground:190, admin:290, flightops:330, security:240, exec:1500},
+  1960:{pilot:1100,cabin:300, tech:500, ground:220, admin:340, flightops:380, security:280, exec:1800},
+  1965:{pilot:1300,cabin:360, tech:580, ground:260, admin:400, flightops:450, security:330, exec:2100},
+  1970:{pilot:1550,cabin:430, tech:700, ground:300, admin:470, flightops:530, security:390, exec:2500},
+  1975:{pilot:1800,cabin:520, tech:850, ground:350, admin:550, flightops:620, security:450, exec:3000},
+  1980:{pilot:2100,cabin:620, tech:1000,ground:420, admin:650, flightops:730, security:520, exec:3600},
+  1985:{pilot:2400,cabin:730, tech:1150,ground:500, admin:750, flightops:850, security:600, exec:4200},
+  1990:{pilot:2800,cabin:860, tech:1300,ground:580, admin:900, flightops:1000,security:700, exec:5000},
+  1995:{pilot:3200,cabin:1000,tech:1500,ground:680, admin:1100,flightops:1200,security:800, exec:5800},
+  2000:{pilot:3600,cabin:1150,tech:1700,ground:780, admin:1300,flightops:1400,security:900, exec:6500},
+  2005:{pilot:4000,cabin:1300,tech:1900,ground:900, admin:1500,flightops:1600,security:1000,exec:7200},
+  2010:{pilot:4500,cabin:1500,tech:2200,ground:1050,admin:1800,flightops:1900,security:1150,exec:8000},
+  2015:{pilot:5000,cabin:1750,tech:2500,ground:1250,admin:2100,flightops:2200,security:1300,exec:9000},
+  2020:{pilot:5500,cabin:2000,tech:2800,ground:1450,admin:2400,flightops:2500,security:1450,exec:10000},
+  2025:{pilot:6000,cabin:2200,tech:3100,ground:1600,admin:2600,flightops:2700,security:1600,exec:11000}
 };
 
-const decade = Math.max(...Object.keys(DECADES).map(Number).filter(d => year >= d));
-const S = DECADES[decade];
+/* ============================================================
+   WRAPPER FINAL — Usa motor 5Y sin romper DECADES
+   ============================================================ */
+function ACS_HR_getBaseSalary(year, role) {
 
-switch(role){
-  case "pilot_small":
-  case "pilot_medium":
-  case "pilot_large":
-  case "pilot_vlarge":
-  case "pilot":
+  try {
+    return ACS_HR_getBaseSalary5Y(year, role);
+  } catch(e){
+    // fallback seguro al motor DECADES
+    return ACS_HR_getBaseSalary(year, role);
+  }
+}
+/* ============================================================
+   5-YEAR BASE SALARY ENGINE
+   ============================================================ */
+   
+function ACS_HR_get5YBlock(year){
+    return year - (year % 5);
+}
+
+function ACS_HR_getBaseSalary5Y(year, role){
+
+  const block = ACS_HR_get5YBlock(year);
+  const S = ACS_HR_SALARY_5Y[block] || ACS_HR_SALARY_5Y[2025];
+
+  switch(role){
+    case "pilot":
+    case "pilot_small":
+    case "pilot_medium":
+    case "pilot_large":
+    case "pilot_vlarge":
       return S.pilot;
 
-  case "cabin":       return S.cabin;
-  case "maintenance": return S.tech;
-  case "ground":      return S.ground;
+    case "cabin":       return S.cabin;
+    case "maintenance": return S.tech;
+    case "ground":      return S.ground;
+    case "flight_ops":  return S.flightops;
+    case "security":    return S.security;
 
-  case "admin":
-  case "finance_admin":
-  case "economics":
-  case "comms":
-  case "hr":
-  case "quality":
-  case "security":
+    case "admin":
+    case "economics":
+    case "comms":
+    case "hr":
+    case "quality":
       return S.admin;
 
-  case "ceo":
-  case "vp":
+    case "ceo":
+    case "vp":
       return S.exec;
 
-  default:
-      return 100;
+    default:
+      return S.admin;
+  }
 }
-}
-
 
 /* ============================================================
    4) PILOTS — MULTIPLICADORES POR TAMAÑO (REPARADO)
@@ -212,6 +243,7 @@ function ACS_HR_hire(deptID, amount) {
 /* ============================================================
    API: DESPEDIR PERSONAL (Reparado)
    ============================================================ */
+   
 function ACS_HR_fire(deptID, amount) {
     const hr = ACS_HR_load();
     const d = hr[deptID];
@@ -264,6 +296,7 @@ function ACS_HR_adjustSalary(deptID, percentage) {
 /* ============================================================
    API: BONUS DEPARTAMENTAL — Reparado
    ============================================================ */
+   
 function ACS_HR_applyBonus(deptID, percent) {
     const hr = ACS_HR_load();
     const d = hr[deptID];
@@ -326,6 +359,7 @@ const ACS_HR_ANNUAL_RAISE = {
 /* ============================================================
    CALCULAR SALARIO DINÁMICO — REPARADO
    ============================================================ */
+   
 function ACS_HR_calcDynamic(dep) {
 
     const base = ACS_HR_getBaseSalary(
@@ -347,6 +381,7 @@ function ACS_HR_calcDynamic(dep) {
 /* ============================================================
    RECÁLCULO GENERAL (se mantiene intacto + FIX pilot)
    ============================================================ */
+   
 function ACS_HR_recalculateAll() {
 
     const hr = ACS_HR_load();
@@ -416,6 +451,7 @@ function ACS_HR_recalculateAll() {
 /* ============================================================
    OVERRIDES — (Mantener pero reparado)
    ============================================================ */
+   
 const __hr_hire = ACS_HR_hire;
 ACS_HR_hire = function(d, amount){
     __hr_hire(d, amount);
