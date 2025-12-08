@@ -464,23 +464,24 @@ footer {
      === JAVASCRIPT ORIGINAL — MOTOR INTACTO ===================
    ============================================================ -->
 
+
 <script>
-     
-/* === BASE === */
+
+/* ============================================================
+   === BASE: GENERAR HORARIOS DE SALIDA ========================
+   ============================================================ */
 const timeSelect = document.getElementById("departureTime");
 for (let h = 6; h < 24; h++) {
   for (let m = 0; m < 60; m += 5) {
     const hh = String(h).padStart(2,"0");
     const mm = String(m).padStart(2,"0");
     const opt = document.createElement("option");
-    opt.value = `${hh}:${mm}`; opt.textContent = `${hh}:${mm}`;
+    opt.value = `${hh}:${mm}`;
+    opt.textContent = `${hh}:${mm}`;
     timeSelect.appendChild(opt);
   }
 }
 timeSelect.value = "06:00";
-
-// Removido: Rellenado automático de destino y flightNumber.
-// Este módulo recibirá data desde los continentes en Fase 2.
 
 function toggleEveryDay() {
   const all = document.getElementById("everyDay").checked;
@@ -489,26 +490,18 @@ function toggleEveryDay() {
   });
 }
 
-const aircraftData = {}; // Limpio por ahora — se llenará en Fase 2.
-
-function calcDistanceNM(from,to){
-  if(!from || !to) return 0;
-  return 0; // Se reemplazará en Fase 2
+function toggleOptimization() {
+  window.rotationOptimized = document.getElementById("optimizeRotation").checked;
 }
 
-function autoCalculate(){
-  // Desactivado hasta que se reciba aircraft, coords y data real.
-  document.getElementById("techData").style.display="none";
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
 }
 
-function toggleOptimization(){
-  rotationOptimized = document.getElementById("optimizeRotation").checked;
-}
-
-function handleLogout(){alert("👋 Session closed. See you soon, Captain!");window.location.href="login.html";}
 
 /* ============================================================
-   === PHASE 2.4 — AUTO GENERATE FLIGHT NUMBER ================
+   === PHASE 2.4 — AUTO GENERATE FLIGHT NUMBER =================
    ============================================================ */
 function autoGenerateFlightNumber() {
   const origin = document.getElementById("origin").value.trim();
@@ -522,8 +515,7 @@ function autoGenerateFlightNumber() {
   if (input) input.value = `${pair.out} ➜ ${pair.inn}`;
 }
 
-/* === Flight Number Engine — INTACTO pero NO ejecutado ahora === */
-     
+/* === Flight Number Engine — INTACTO ========================= */
 const flightNumberInput = document.getElementById("flightNumber");
 const userIATA = localStorage.getItem("userIATA") || "AT";
 let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
@@ -532,93 +524,82 @@ let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
 function generateFlightPair() {
   let out = `${userIATA}${lastFlightNumber}`;
   let inn = `${userIATA}${lastFlightNumber + 1}`;
+
   while (usedFlights.includes(out) || usedFlights.includes(inn)) {
     lastFlightNumber += 2;
     out = `${userIATA}${lastFlightNumber}`;
     inn = `${userIATA}${lastFlightNumber + 1}`;
   }
+
   if (flightNumberInput) flightNumberInput.value = `${out} ➜ ${inn}`;
   return { out, inn };
 }
 
-function bumpFlightCounter(){ lastFlightNumber += 2; localStorage.setItem("lastFlightNumber", String(lastFlightNumber)); }
-function markNumbersUsed(out, inn){ usedFlights.push(out, inn); localStorage.setItem("flightNumbers", JSON.stringify(usedFlights)); }
-function freeNumbers(out, inn){
-  if(!out || !inn) return;
+function bumpFlightCounter() {
+  lastFlightNumber += 2;
+  localStorage.setItem("lastFlightNumber", String(lastFlightNumber));
+}
+
+function markNumbersUsed(out, inn) {
+  usedFlights.push(out, inn);
+  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+}
+
+function freeNumbers(out, inn) {
+  if (!out || !inn) return;
   usedFlights = usedFlights.filter(n => n !== out && n !== inn);
   localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
 }
 
+
 /* ============================================================
-   === PHASE 2.1 — CREATION vs EDIT + ORIGIN/DEST FROM MAPS ===
-   ------------------------------------------------------------
-   - Si hay editFlightID  → modo edición (mantiene tu lógica)
-   - Si NO hay editID     → usa ACS_selectedOrigin/Destination
+   === PHASE 2.1 — CREATION vs EDIT ============================
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   const originInput = document.getElementById("origin");
   const destInput   = document.getElementById("destination");
 
-  const editID   = localStorage.getItem("editFlightID");
+  const editID = localStorage.getItem("editFlightID");
   const isEditing = !!editID;
 
-  /* ========== MODO CREACIÓN (NUEVA RUTA) ========== */
+  /* ----------------- MODO CREACIÓN ----------------- */
   if (!isEditing) {
 
-    // 1) Leer lo que viene de los continentes
     const selOrigin = (localStorage.getItem("ACS_selectedOrigin") || "").toUpperCase();
     const selDest   = (localStorage.getItem("ACS_selectedDestination") || "").toUpperCase();
 
-    if (selOrigin && selDest) {
-      originInput.value = selOrigin;
-      destInput.value   = selDest;
-    } else {
-      // Fallback: si por alguna razón no llegó nada
-      originInput.value = originInput.value || "";
-      destInput.value   = destInput.value   || "";
-      console.warn("ACS Phase 2.1 — No selection found for origin/destination.");
-    }
+    originInput.value = selOrigin || originInput.value;
+    destInput.value   = selDest   || destInput.value;
 
-    // 2) Bloquear siempre estos campos al jugador
     originInput.readOnly = true;
     destInput.readOnly   = true;
 
-    // 3) Limpiar los valores de transferencia para el siguiente uso
     localStorage.removeItem("ACS_selectedOrigin");
     localStorage.removeItem("ACS_selectedDestination");
 
-    // 4) NO generar aún flight numbers ni autoCalculate
-    //    (según acordado en Fase 1: se activará más adelante)
-    // B2 — Activar motores en modo creación (Opción A)
-    autoCalculate();
     autoGenerateFlightNumber();
-
     return;
   }
 
-  /* ========== MODO EDICIÓN (RUTA EXISTENTE) ========== */
-
+  /* ------------------ MODO EDICIÓN ------------------ */
   const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   const flight = items.find(f => f.id === editID || f.blockId === editID);
   if (!flight) return;
 
   const $ = id => document.getElementById(id);
 
-  // Rellenar formulario con datos antiguos
   $("origin").value       = flight.origin || "";
   $("destination").value  = flight.destination || "";
   $("aircraft").value     = flight.acType || "";
   $("departureTime").value = flight.departure || "06:00";
+
   (flight.days || []).forEach(d => {
-    const box = document.getElementById(d);
-    if (box) box.checked = true;
+    if (document.getElementById(d)) document.getElementById(d).checked = true;
   });
 
-  // Bloquear también origen/destino en modo edición para el jugador
   $("origin").readOnly      = true;
   $("destination").readOnly = true;
 
-  // Aviso visual
   const notice = document.createElement("div");
   notice.style.color = "#FFB300";
   notice.style.marginBottom = "1rem";
@@ -626,20 +607,14 @@ document.addEventListener("DOMContentLoaded", () => {
   notice.innerHTML = `✏️ Editing flight: <strong>${flight.origin} ➜ ${flight.destination}</strong>`;
   document.querySelector(".schedule-container").prepend(notice);
 
-  // Liberar números del vuelo anterior
   if (flight.flightNumberOut && flight.flightNumberIn) {
     freeNumbers(flight.flightNumberOut, flight.flightNumberIn);
   }
 
-  // Generar nuevos pares (motor intacto)
-  const newPair = generateFlightPair();
+  generateFlightPair();
 
-  // Actualizar panel técnico si quieres (puedes dejarlo desactivado por ahora)
-  // autoCalculate();
-
-  // Cambiar botón a UPDATE + lógica de guardado (TU BLOQUE ORIGINAL AQUÍ)
   const btn = document.querySelector(".acs-btn");
-  if (btn) btn.textContent = "UPDATE FLIGHT";
+  btn.textContent = "UPDATE FLIGHT";
 
   btn.onclick = () => {
     const origin = $("origin").value.trim();
@@ -659,34 +634,31 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
 
     const rawFN = (flightNumberInput.value || "");
-    const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
-    const flightNumberOut = match[1] || newPair.out;
-    const flightNumberIn  = match[2] || newPair.inn;
+    const match = rawFN.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/) || [];
+    const flightOut = match[1] || null;
+    const flightIn  = match[2] || null;
 
     const updatedRoute = {
-      origin, destination, aircraft, departure, optimized,
-      days: selectedDays,
-      flightNumberOut, flightNumberIn
+      origin, destination, aircraft, departure,
+      optimized, days: selectedDays,
+      flightNumberOut: flightOut,
+      flightNumberIn: flightIn
     };
-    localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
 
-    markNumbersUsed(flightNumberOut, flightNumberIn);
+    localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
+    markNumbersUsed(flightOut, flightIn);
     bumpFlightCounter();
 
     localStorage.removeItem("editFlightID");
-    alert("✅ Flight updated. You can assign it from the table.");
+    alert("✅ Flight updated.");
     window.location.href = "schedule_table.html";
   };
 });
-     
-/* ============================================================
-   🟦 FASE 1 — LOAD AVAILABLE AIRCRAFT (with dataset support)
-   ------------------------------------------------------------
-   • Muestra solo aviones activos en la base
-   • Guarda info técnica en dataset para FASE 2
-   • No cambia nada visual (Qatar Luxury intacto)
-   ============================================================ */
 
+
+/* ============================================================
+   🟦 FASE 1 — LOAD AVAILABLE AIRCRAFT ==========================
+   ============================================================ */
 function loadAvailableAircraft() {
   const origin = (document.getElementById("origin").value || "").trim();
   const select = document.getElementById("aircraft");
@@ -697,162 +669,93 @@ function loadAvailableAircraft() {
 
   fleet
     .filter(ac => ac.status === "Active")
-    .filter(ac => ac.base && ac.base === origin)
+    .filter(ac => ac.base === origin)
     .forEach(ac => {
-
       const opt = document.createElement("option");
       opt.value = ac.registration;
       opt.textContent = `${ac.model} — ${ac.registration}`;
 
-      // 🟦 Guardar info técnica para FASE 2
       opt.dataset.model    = ac.model || "";
       opt.dataset.category = ac.category || "";
       opt.dataset.speed    = ac.speed || 440;
       opt.dataset.range    = ac.range || 1500;
-      opt.dataset.crew     = ac.crew || 0;
       opt.dataset.fuelBurn = ac.fuelBurn || 0;
 
       select.appendChild(opt);
     });
 }
 
+
 /* ============================================================
-   === PHASE 2.5 — TECHNICAL ENGINE (Distance / BlockTime) =====
+   🟦 FASE 2 — TECH ENGINE (Distance / Time / Cost / Crew)
    ============================================================ */
 
-function getDistanceNM(origin, dest) {
-  if (!origin || !dest) return 0;
-  let o = null, d = null;
-
-  for (const cont in WorldAirportsACS) {
-    const list = WorldAirportsACS[cont];
-    if (!Array.isArray(list)) continue;
-
-    if (!o) o = list.find(a => a.icao === origin);
-    if (!d) d = list.find(a => a.icao === dest);
-  }
-
-  if (!o || !d) return 0;
-  return distanceNM(o.latitude, o.longitude, d.latitude, d.longitude);
-}
-
-function getBlockTimeMinutes(distanceNM, model) {
-  if (!distanceNM || distanceNM <= 0) return 0;
-
-  let cruise = 440;
-  if (model.includes("ATR") || model.includes("Q400")) cruise = 270;
-
-  const timeH = distanceNM / cruise;
-  return Math.round((timeH * 60) + 20);
-}
-
-function getTurnaroundMinutes(model) {
-  if (model.includes("ATR") || model.includes("Q400")) return 25;
-  return 40;
-}
-     
-/* ============================================================
-   🟦 FASE 2 — TECH ENGINE CORE (Distance, Fuel, Crew, Cost)
-   ------------------------------------------------------------
-   • Cálculo real de distancia (NM)
-   • Block Time basado en velocidad del modelo
-   • Fuel Burn promedio por categoría
-   • Crew requerido (Pilotos + TCP)
-   • Costos estimados (Fuel + Handling + Maintenance Cycle)
-   ============================================================ */
-
-// === 1) DISTANCIA REAL (NM) ===============================
-
+// 1) Distancia (NM)
 function rs_getDistanceNM(origin, dest) {
   if (!origin || !dest) return 0;
-
   let O = null, D = null;
 
   for (const cont in WorldAirportsACS) {
     const list = WorldAirportsACS[cont];
     if (!Array.isArray(list)) continue;
-
     O = O || list.find(a => a.icao === origin);
     D = D || list.find(a => a.icao === dest);
   }
 
   if (!O || !D) return 0;
-
   return distanceNM(O.latitude, O.longitude, D.latitude, D.longitude);
 }
 
-
-// === 2) BLOCK TIME (min) ==================================
-
+// 2) Block Time
 function rs_getBlockTime(distance, speed) {
   if (!distance || !speed) return 0;
-
-  const cruise = distance / speed; // horas
-  const climbDescent = 0.25;       // ~15 min
-  const totalH = cruise + climbDescent;
-
-  return Math.round(totalH * 60);
+  const cruise = distance / speed;
+  const climbDesc = 0.25;
+  return Math.round((cruise + climbDesc) * 60);
 }
 
-
-// === 3) TURNAROUND TIME (min) =============================
-
+// 3) Turnaround
 function rs_getTurnaround(category) {
   if (!category) return 40;
-
-  if (category.includes("ATR") || category.includes("TURBO")) return 25;
-  if (category.includes("REGIONAL")) return 30;
-
-  return 40; // default narrowbody
+  const c = category.toUpperCase();
+  if (c.includes("ATR") || c.includes("TURBO")) return 25;
+  if (c.includes("REGIONAL")) return 30;
+  return 40;
 }
 
-
-// === 4) FUEL BURN CALC (kg/h) =============================
-
+// 4) Fuel
 function rs_getFuelBurn(category) {
-  if (!category) return 2400; // promedio A320/B737
-
+  if (!category) return 2400;
   const c = category.toUpperCase();
-
   if (c.includes("ATR")) return 900;
-  if (c.includes("TURBO")) return 1100;
   if (c.includes("REGIONAL")) return 1800;
-
-  return 2500; // narrowbody jet default
+  return 2500;
 }
 
-
-// === 5) CREW REQUIREMENT ================================
-
+// 5) Crew
 function rs_getCrewNeeded(category) {
-  if (!category) return { pilots: 2, cabin: 3 };
-
-  const c = category.toUpperCase();
-
+  const c = (category || "").toUpperCase();
   if (c.includes("ATR")) return { pilots: 2, cabin: 2 };
   if (c.includes("REGIONAL")) return { pilots: 2, cabin: 2 };
-
-  return { pilots: 2, cabin: 3 }; // A320/B737
+  return { pilots: 2, cabin: 3 };
 }
 
-
-// === 6) TRIP COST ESTIMATION =============================
-
+// 6) Costos
 function rs_getTripCost(distance, blockMin, category) {
   const fuelKG = rs_getFuelBurn(category) * (blockMin / 60);
-  const fuelCost = fuelKG * 0.85; // precio estimado por kg
-
-  const handling = 350;
-  const cycleMaintenance = 180;
-
+  const fuelCost = fuelKG * 0.85;
   return {
     fuelCost: Math.round(fuelCost),
-    handling,
-    maintenance: cycleMaintenance,
-    total: Math.round(fuelCost + handling + cycleMaintenance)
+    handling: 350,
+    maintenance: 180,
+    total: Math.round(fuelCost + 350 + 180)
   };
 }
-     
+
+
+/* ============================================================
+   === autoCalculate (FASE 2 REAL) =============================
+   ============================================================ */
 function autoCalculate() {
 
   const origin  = document.getElementById("origin").value.trim();
@@ -868,23 +771,18 @@ function autoCalculate() {
   const ac = fleet.find(x => x.registration === acReg);
   if (!ac) return;
 
-  // === Datos técnicos del dataset ===
-  const speed    = Number(document.querySelector(`#aircraft option[value="${acReg}"]`).dataset.speed || 440);
-  const category = document.querySelector(`#aircraft option[value="${acReg}"]`).dataset.category || "";
+  const opt = document.querySelector(`#aircraft option[value="${acReg}"]`);
+  const speed    = Number(opt.dataset.speed || 440);
+  const category = opt.dataset.category || "";
 
-  // === Calcular distancia y tiempos ===
   const distNM = rs_getDistanceNM(origin, dest);
   const block  = rs_getBlockTime(distNM, speed);
   const turn   = rs_getTurnaround(category);
   const total  = block + turn + block;
 
-  // === Crew requerido ===
   const crew = rs_getCrewNeeded(category);
-
-  // === Costos ===
   const cost = rs_getTripCost(distNM, block, category);
 
-  // === Mostrar en UI ===
   document.getElementById("techData").style.display = "block";
 
   document.getElementById("distance").textContent      = distNM;
@@ -892,13 +790,11 @@ function autoCalculate() {
   document.getElementById("turnaround").textContent    = `${turn} min`;
   document.getElementById("totalRotation").textContent = `${Math.floor(total/60)}h ${total%60}m`;
 
-  // Simulados por ahora
   document.getElementById("serviceA").textContent = "OK";
   document.getElementById("serviceB").textContent = "OK";
   document.getElementById("delayRisk").textContent = "3%";
   document.getElementById("effIndex").textContent  = "90%";
 
-  // También dejamos esta información para Finance / HR (FASE 3)
   window.ACS_RouteTechData = {
     distNM,
     blockMin: block,
@@ -908,136 +804,62 @@ function autoCalculate() {
     cost
   };
 }
-     
+
+
 /* ============================================================
-   === PHASE 2.2 — REAL CONFIRM ROUTE + FINANCE HOOK ==========
-   ------------------------------------------------------------
-   - Crea la ruta real en scheduleItems (localStorage)
-   - Deja un gancho para FINANCE (slot, landing, etc.)
-   - Redirige a schedule_table.html para gestión en tabla
+   === PHASE 2.2 — CONFIRM ROUTE ===============================
    ============================================================ */
-     
 function confirmRoute() {
-  const origin       = (document.getElementById("origin").value || "").trim();
-  const destination  = (document.getElementById("destination").value || "").trim();
+  const origin       = document.getElementById("origin").value.trim();
+  const destination  = document.getElementById("destination").value.trim();
   const aircraft     = document.getElementById("aircraft").value;
   const departure    = document.getElementById("departureTime").value;
-  const optimized    = document.getElementById("optimizeRotation").checked;
 
-  // Días seleccionados
   const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-  const days = DAY_IDS.filter(id => {
-    const box = document.getElementById(id);
-    return box && box.checked;
-  });
+  const days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
 
-  // Validaciones básicas
-  if (!origin || !destination) {
-    alert("⚠️ Origin and destination are required.");
+  if (!origin || !destination || !aircraft || !departure || days.length === 0) {
+    alert("⚠️ Please complete all fields.");
     return;
   }
 
-  if (!aircraft) {
-    alert("⚠️ Please select an aircraft.");
-    return;
-  }
+  const rawFN = document.getElementById("flightNumber").value || "";
+  const m = rawFN.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/) || [];
+  const fnOut = m[1] || null;
+  const fnIn  = m[2] || null;
 
-  if (!departure) {
-    alert("⚠️ Please select a departure time.");
-    return;
-  }
-
-  if (days.length === 0) {
-    alert("⚠️ Please select at least one day of operation.");
-    return;
-  }
-
-  // Números de vuelo (si ya están generados en el campo)
-  const rawFN = (document.getElementById("flightNumber").value || "");
-  const match = rawFN.match(/^([A-Z]{2}\d+)\s*[\u2192\u279C\u27A1\-\>]*\s*([A-Z]{2}\d+)$/) || [];
-  const flightNumberOut = match[1] || null;
-  const flightNumberIn  = match[2] || null;
-
-  // Datos técnicos (si están visibles)
-  const distance   = document.getElementById("distance")?.textContent || null;
-  const blockTime  = document.getElementById("blockTime")?.textContent || null;
-  const turnaround = document.getElementById("turnaround")?.textContent || null;
-  const totalRot   = document.getElementById("totalRotation")?.textContent || null;
-
-  // ==========================================================
-  // 1) Construir la ruta para el SCHEDULE
-  // ==========================================================
-  const routeId = `RT_${Date.now()}`;
+  const tech = window.ACS_RouteTechData || {};
 
   const newRoute = {
-    id: routeId,
+    id: `RT_${Date.now()}`,
     origin,
     destination,
-    aircraft,         // por ahora solo modelo; luego se ligará a un aircraftId real
+    aircraft,
     departure,
     days,
-    optimized,
-    flightNumberOut,
-    flightNumberIn,
-    distanceNM: distance,
-    blockTime,
-    turnaround,
-    totalRotation: totalRot,
+    flightNumberOut: fnOut,
+    flightNumberIn: fnIn,
+    distanceNM: tech.distNM,
+    blockTime: tech.blockMin,
+    turnaround: tech.turnMin,
+    totalRotation: tech.totalMin,
+    crew: tech.crew,
+    cost: tech.cost,
     createdAt: new Date().toISOString()
   };
 
-  // Guardar en scheduleItems (lista de rutas programadas)
-  const current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  current.push(newRoute);
-  localStorage.setItem("scheduleItems", JSON.stringify(current));
+  const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  list.push(newRoute);
+  localStorage.setItem("scheduleItems", JSON.stringify(list));
 
-  // Mantener el último "confirmedRoute" también si lo usas en otros módulos
-  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
+  markNumbersUsed(fnOut, fnIn);
+  bumpFlightCounter();
 
-  // Marcar números de vuelo como usados (si el motor ya está activo)
-  if (flightNumberOut && flightNumberIn &&
-      typeof markNumbersUsed === "function" &&
-      typeof bumpFlightCounter === "function") {
-    markNumbersUsed(flightNumberOut, flightNumberIn);
-    bumpFlightCounter();
-  }
-
-  // ==========================================================
-  // 2) FINANCE HOOK (cobro de slot / landing / etc.)
-  //    Aquí solo dejamos el gancho. La lógica profunda se
-  //    programará con el engine de Finance en el siguiente paso.
-  // ==========================================================
-  try {
-    if (typeof ACS_registerRouteExpense === "function") {
-      // Si ya existe un engine de finance con este nombre:
-      ACS_registerRouteExpense(newRoute);
-    } else if (typeof ACS_registerExpense === "function") {
-      // Alternativa genérica
-      ACS_registerExpense({
-        type: "ROUTE_CREATION",
-        routeId,
-        origin,
-        destination,
-        aircraft,
-        flightNumberOut,
-        flightNumberIn
-      });
-    } else {
-      console.log("💰 [Finance Hook] Route created (pending detailed cost engine):", newRoute);
-    }
-  } catch (err) {
-    console.warn("⚠️ Finance hook failed in confirmRoute:", err);
-  }
-
-/* ==========================================================
-   === 3) Redirigir a la tabla de horarios
-   ========================================================== */
-     
-alert("✅ Route created successfully. You can manage it in the schedule table.");
-window.location.href = "schedule_table.html";
+  alert("✅ Route created successfully.");
+  window.location.href = "schedule_table.html";
 }
 
-</script>    <!-- ← ESTE CIERRE FALTABA -->
+</script>
 
 <script src="./time_engine.js"></script>
 
