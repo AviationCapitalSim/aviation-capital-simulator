@@ -41,21 +41,75 @@ const ACS_HR_DEPARTMENTS = [
    ============================================================ */
 if (!localStorage.getItem("ACS_HR")) {
 
-    const hr = {};
+    /* ============================================================
+       🟦 INITIAL HR SALARY SETUP (Runs Only Once)
+       ============================================================ */
+    const year = window.ACS_getYear ? ACS_getYear() : 1940;
+
+    function __getBase(role) {
+        return ACS_HR_getBaseSalary5Y(year, role);
+    }
+
+    const PILOT_MULT = {
+        small: 0.55,
+        medium: 0.75,
+        large: 1.00,
+        vlarge: 1.40
+    };
+
+    let initialHR = {};
 
     ACS_HR_DEPARTMENTS.forEach(dep => {
 
+        let salary = 0;
+
+        if (dep.id.startsWith("pilots_")) {
+            let size = "medium";
+            if (dep.id === "pilots_small")  size = "small";
+            if (dep.id === "pilots_medium") size = "medium";
+            if (dep.id === "pilots_large")  size = "large";
+            if (dep.id === "pilots_vlarge") size = "vlarge";
+
+            const basePilot = __getBase("pilot");
+            salary = Math.round(basePilot * PILOT_MULT[size]);
+
+        } else {
+            salary = __getBase(dep.base);
+        }
+
+        initialHR[dep.id] = {
+            name: dep.name,
+            base: dep.base,
+            role: dep.base,
+            staff: dep.initial,
+            required: dep.initial,
+            morale: 100,
+            years: 0,
+            bonus: 0,
+            salary: salary,
+            payroll: dep.initial * salary
+        };
+    });
+
+    localStorage.setItem("ACS_HR", JSON.stringify(initialHR));
+    localStorage.setItem("ACS_HR_InitialSetup", "DONE");
+
+    console.log("✔ Initial HR Salary Setup Applied");
+
+
+    // 🔻🔻🔻 DESPUÉS DE ESTO VIENE TU CÓDIGO ORIGINAL 🔻🔻🔻
+
+    const hr = {};
+
+    ACS_HR_DEPARTMENTS.forEach(dep => {
         hr[dep.id] = {
             name: dep.name,
             base: dep.base,
             role: dep.base,
             staff: dep.initial,
             morale: 100,
-
-            // ⚠️ YA NO SE USA ACS_HR_SALARY (NO EXISTE EN TU ENGINE)
             salary: 0,
             payroll: 0,
-
             required: dep.initial,
             years: 0,
             bonus: 0
@@ -68,6 +122,7 @@ if (!localStorage.getItem("ACS_HR")) {
 /* ============================================================
    3) TABLA SALARIOS HISTÓRICOS (REAL 1940–2026)
    ============================================================ */
+
 function ACS_HR_getBaseSalary(year, role) {
 
   const DECADES = {
