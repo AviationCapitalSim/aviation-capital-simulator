@@ -405,9 +405,40 @@ function ACS_HR_getDepartmentsView() {
     const hr = ACS_HR_load();
 
     return ACS_HR_DEPARTMENTS.map(d => {
+
         const dep = hr[d.id];
 
-        const required = 
+        // 🔥 Protección total — si falta en localStorage, lo recrea
+        if (!dep) {
+            console.warn("⚠️ HR missing department:", d.id, "→ recreando…");
+
+            hr[d.id] = {
+                name: d.name,
+                base: d.base,
+                staff: d.initial || 0,
+                required: d.initial || 0,
+                morale: 100,
+                salary: 0,
+                payroll: 0,
+                bonus: 0,
+                years: 0
+            };
+
+            ACS_HR_save(hr);
+
+            return {
+                id: d.id,
+                name: d.name,
+                base: d.base,
+                staff: hr[d.id].staff,
+                required: hr[d.id].required,
+                morale: hr[d.id].morale,
+                salary: hr[d.id].salary,
+                payroll: hr[d.id].payroll
+            };
+        }
+
+        const required =
             (typeof dep.required === "number") ? dep.required : dep.staff;
 
         return {
@@ -422,6 +453,7 @@ function ACS_HR_getDepartmentsView() {
         };
     });
 }
+
 
 
 /* ============================================================
