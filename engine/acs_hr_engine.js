@@ -39,7 +39,10 @@ const ACS_HR_DEPARTMENTS = [
 /* ============================================================
    2) INICIALIZAR HR — FIX SALARIO BASE (NUEVO MOTOR)
    ============================================================ */
-if (!localStorage.getItem("ACS_HR")) {
+
+const rawHR = localStorage.getItem("ACS_HR");
+if (!rawHR || rawHR === "null" || rawHR === "{}") {
+
 
     /* ============================================================
        🟦 INITIAL HR SALARY SETUP (Runs Only Once)
