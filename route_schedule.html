@@ -467,6 +467,31 @@ footer {
 
 <script>
 
+/* 🟦 A1 — ROUTE SCHEDULE: Load IATA after DOM Ready (Safari Fix) */
+let userIATA = "AT";  // Valor por defecto (no se usará si existe en LS)
+
+document.addEventListener("DOMContentLoaded", () => {
+    const stored = localStorage.getItem("userIATA");
+    if (stored && stored.length === 2) {
+        userIATA = stored;
+        console.log("🟦 IATA Loaded:", userIATA);
+    } else {
+        console.warn("⚠️ No IATA found. Using default 'AT'.");
+    }
+});
+     
+/* 🟩 A2 — ROUTE SCHEDULE: Fix flightNumberInput after DOM Ready */
+let flightNumberInput = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+    flightNumberInput = document.getElementById("flightNumber");
+    if (!flightNumberInput) {
+        console.warn("⚠️ flightNumberInput not found.");
+    } else {
+        console.log("🟩 Flight Number Input Ready.");
+    }
+});
+
 /* ============================================================
    === BASE: GENERAR HORARIOS DE SALIDA ========================
    ============================================================ */
@@ -499,41 +524,59 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
-
-/* ============================================================
-   === PHASE 2.4 — AUTO GENERATE FLIGHT NUMBER =================
-   ============================================================ */
+/* 🟦 A4 — ROUTE SCHEDULE: Auto Flight Number AFTER selecting aircraft */
+     
 function autoGenerateFlightNumber() {
-  const origin = document.getElementById("origin").value.trim();
-  const dest   = document.getElementById("destination").value.trim();
-  const ac     = document.getElementById("aircraft").value;
 
-  if (!origin || !dest || !ac) return;
+    if (!userIATA || userIATA.length !== 2) return;
 
-  const pair = generateFlightPair();
-  const input = document.getElementById("flightNumber");
-  if (input) input.value = `${pair.out} ➜ ${pair.inn}`;
+    const origin = document.getElementById("origin").value.trim();
+    const dest   = document.getElementById("destination").value.trim();
+    const ac     = document.getElementById("aircraft").value;
+
+    if (!origin || !dest || !ac) return;
+
+    const pair = generateFlightPair();
+    if (flightNumberInput) {
+        flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
+    }
 }
 
 /* === Flight Number Engine — INTACTO ========================= */
+     
 const flightNumberInput = document.getElementById("flightNumber");
 const userIATA = localStorage.getItem("userIATA") || "AT";
 let lastFlightNumber = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
 let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
 
+/* 🟧 A3 — ROUTE SCHEDULE: Safe Flight Pair Generator */
+     
 function generateFlightPair() {
-  let out = `${userIATA}${lastFlightNumber}`;
-  let inn = `${userIATA}${lastFlightNumber + 1}`;
 
-  while (usedFlights.includes(out) || usedFlights.includes(inn)) {
-    lastFlightNumber += 2;
-    out = `${userIATA}${lastFlightNumber}`;
-    inn = `${userIATA}${lastFlightNumber + 1}`;
-  }
+    let num = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
+    let used = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
 
-  if (flightNumberInput) flightNumberInput.value = `${out} ➜ ${inn}`;
-  return { out, inn };
+    let out = `${userIATA}${num}`;
+    let inn = `${userIATA}${num + 1}`;
+
+    while (used.includes(out) || used.includes(inn)) {
+        num += 2;
+        out = `${userIATA}${num}`;
+        inn = `${userIATA}${num + 1}`;
+    }
+
+    // Actualizar valores globales
+    lastFlightNumber = num;
+    usedFlights = used;
+
+    // Asignar al input
+    if (flightNumberInput) {
+        flightNumberInput.value = `${out} ➜ ${inn}`;
+    }
+
+    return { out, inn };
 }
+
 
 function bumpFlightCounter() {
   lastFlightNumber += 2;
