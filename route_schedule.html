@@ -1129,45 +1129,84 @@ document.addEventListener("DOMContentLoaded", () => {
      
 </script>
      
-<!-- ================================================
-     🟦 (A1) AUTO FLIGHT NUMBER ENGINE — FIX v2
-     Ubicación: justo antes de </body>
-     ================================================ -->
-     
 <script>
+/* ============================================================
+   🛫 FINAL FLIGHT NUMBER ENGINE — PERFECTO v3
+   • Nunca repite números
+   • Genera OUT/IN
+   • Se actualiza al seleccionar aircraft
+   ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
-    // 1. Cargar user IATA desde localStorage
+    // === 1) Obtener IATA del usuario ===
     const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
     const userIATA = (activeUser?.airline?.iata || "").toUpperCase();
 
     if (!userIATA) {
-        console.warn("⚠ No se pudo obtener IATA del usuario.");
+        console.warn("⚠ No IATA found — aborting Flight Engine");
         return;
     }
 
-    // 2. Traer último número ya usado
+    // === 2) Traer últimos valores guardados ===
+     
     let lastFlightNumber = Number(localStorage.getItem("ACS_LastFlightNumber")) || 100;
+    let usedFlights = JSON.parse(localStorage.getItem("ACS_UsedFlights") || "[]");
 
-    // 3. Función generadora final
+    // === 3) Guardar usados ===
+     
+    function markUsed(out, inn) {
+        usedFlights.push(out, inn);
+        localStorage.setItem("ACS_UsedFlights", JSON.stringify(usedFlights));
+    }
+
+    // === 4) Generador seguro OUT/IN ===
+     
     function generateFlightPair() {
-        const out = `${userIATA}${lastFlightNumber}`;
-        const inn = `${userIATA}${lastFlightNumber + 1}`;
+
+        let out = `${userIATA}${lastFlightNumber}`;
+        let inn = `${userIATA}${lastFlightNumber + 1}`;
+
+        // evitar duplicados
+        while (usedFlights.includes(out) || usedFlights.includes(inn)) {
+            lastFlightNumber += 2;
+            out = `${userIATA}${lastFlightNumber}`;
+            inn = `${userIATA}${lastFlightNumber + 1}`;
+        }
+
+        // actualizar contador global
         lastFlightNumber += 2;
         localStorage.setItem("ACS_LastFlightNumber", lastFlightNumber);
+
         return { out, inn };
     }
 
-    // 4. Insertar automáticamente en el campo
-    const pair = generateFlightPair();
-    const fld = document.getElementById("flightNumber");
+    // === 5) Auto-insertar al seleccionar avión ===
+    window.autoGenerateFlightNumber = function () {
+        const ac = document.getElementById("aircraft").value;
+        if (!ac) return;
 
-    if (fld) {
-        fld.value = pair.out;   // 👈 YA SALE EN EL FORMULARIO
-    }
+        const { out, inn } = generateFlightPair();
 
-    // 5. Exponerlo si deseas llamarlo en consola
-    window.ACS_generateFlightPair = generateFlightPair;
+        const fld = document.getElementById("flightNumber");
+        fld.value = `${out} ➜ ${inn}`;
+    };
+
+    // === 6) Al CONFIRM ROUTE — guardamos los números ===
+    window.markFlightNumbersUsed = function () {
+
+        const raw = document.getElementById("flightNumber").value || "";
+        const m = raw.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/);
+
+        if (!m) return;
+
+        const out = m[1];
+        const inn = m[2];
+
+        markUsed(out, inn);
+    };
+
+    console.log("🟢 Flight Engine v3 loaded — secure & unique numbers");
 });
 </script>
      
