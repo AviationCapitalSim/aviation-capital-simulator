@@ -296,7 +296,21 @@ input[type="checkbox"]:checked::after {
   color: #ffb300;
   font-weight: 600;
 }
+     
+/* 🅰️1 — ALIGN RIGHT FOR TECH VALUES — v1.0 | 09 DEC 2025 */
+.tech-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
+.tech-item span {
+    margin-left: auto;
+    text-align: right;
+    min-width: 120px;   /* asegura columna derecha alineada */
+    display: inline-block;
+}
+     
 /* ============================================================
      === BUTTONS ===============================================
    ============================================================ */
@@ -1043,7 +1057,7 @@ function rs_getCrewReal(registration) {
 }
      
 /* ============================================================
-   === autoCalculate — FINAL TURNAROUND PANEL v4 (A)
+   🅱️2 — AUTO CALCULATE + CONDITIONAL OPTIMIZATION VIEW — v2.0
    ============================================================ */
 
 function autoCalculate() {
@@ -1066,42 +1080,94 @@ function autoCalculate() {
     const category = opt.dataset.category || "";
     const range    = Number(opt.dataset.range || 1500);
 
+    const optimizeON = document.getElementById("optimizeRotation").checked;
+
+    /* ===========================
+       DISTANCE + BLOCK
+       =========================== */
+     
     const distNM = rs_getDistanceNM(origin, dest);
     const block  = rs_getBlockTime(distNM, speed);
 
+    /* ===========================
+       TURNAROUND BASE + OPT
+       =========================== */
+     
     const baseTurn = rs_getTurnaround(category);
-    const optTurn  = rs_getOptimizedTurnaround(baseTurn, category);
 
+    // SOLO si la casilla está marcada aplicamos el buffer categoría real
+    const optTurn = optimizeON
+        ? rs_getOptimizedTurnaround(baseTurn, category)
+        : baseTurn;
+
+    /* ===========================
+       TOTAL ROTATION
+       =========================== */
+     
     const totalBase = block + baseTurn + block;
-    const totalOpt  = block + optTurn + block;
+    const totalOpt  = block + optTurn  + block;
 
     document.getElementById("techData").style.display = "block";
 
+    /* ===========================
+       PRINT DISTANCE & BLOCK
+       =========================== */
+     
     document.getElementById("distance").textContent = distNM;
     document.getElementById("blockTime").textContent = `${Math.floor(block/60)}h ${block%60}m`;
 
-    // A) Mostrar ambos valores REAL + Optimized
-    document.getElementById("turnaround").innerHTML = `
-        ${baseTurn} min<br>
-        <span style="color:#ffd54f">Optimized: ${optTurn} min (+${optTurn - baseTurn})</span>
-    `;
+    /* ===========================
+       TURNAROUND PANEL (dynamic)
+       =========================== */
+     
+    if (!optimizeON) {
+        // SOLO base
+        document.getElementById("turnaround").innerHTML = `
+            ${baseTurn} min
+        `;
+    } else {
+        // BASE + OPT
+        document.getElementById("turnaround").innerHTML = `
+            ${baseTurn} min<br>
+            <span style="color:#ffd54f">Optimized: ${optTurn} min (+${optTurn - baseTurn})</span>
+        `;
+    }
 
-    document.getElementById("totalRotation").innerHTML = `
-        ${Math.floor(totalBase/60)}h ${totalBase%60}m<br>
-        <span style="color:#ffd54f">Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m</span>
-    `;
+    /* ===========================
+       TOTAL ROTATION PANEL
+       =========================== */
+     
+    if (!optimizeON) {
+        document.getElementById("totalRotation").innerHTML = `
+            ${Math.floor(totalBase/60)}h ${totalBase%60}m
+        `;
+    } else {
+        document.getElementById("totalRotation").innerHTML = `
+            ${Math.floor(totalBase/60)}h ${totalBase%60}m<br>
+            <span style="color:#ffd54f">Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m</span>
+        `;
+    }
 
+    /* ===========================
+       RISK & EFFICIENCY (STATIC)
+       =========================== */
+     
     document.getElementById("delayRisk").textContent = "3%";
     document.getElementById("effIndex").textContent  = "90%";
 
+    /* ===========================
+       SAVE FOR CONFIRM ROUTE
+       =========================== */
+     
     window.ACS_RouteTechData = {
         distNM,
         blockMin: block,
         turnMin: baseTurn,
         turnMinOptimized: optTurn,
-        totalMin: totalOpt
+        totalMin: optimizeON ? totalOpt : totalBase
     };
 }
+
 
 /* ============================================================
    === PHASE 2.2 — CONFIRM ROUTE ===============================
