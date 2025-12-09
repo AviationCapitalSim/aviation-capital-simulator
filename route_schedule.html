@@ -941,6 +941,7 @@ function rs_getCrewReal(registration) {
 /* ============================================================
    === autoCalculate (FASE 2 REAL) =============================
    ============================================================ */
+     
 function autoCalculate() {
 
   const origin  = document.getElementById("origin").value.trim();
@@ -952,6 +953,7 @@ function autoCalculate() {
     return;
   }
 
+  // --- Obtener aeronave seleccionada ---
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
   const ac = fleet.find(x => x.registration === acReg);
   if (!ac) return;
@@ -959,47 +961,42 @@ function autoCalculate() {
   const opt = document.querySelector(`#aircraft option[value="${acReg}"]`);
   const speed    = Number(opt.dataset.speed || 440);
   const category = opt.dataset.category || "";
+  const rangeNM  = Number(opt.dataset.range || 500);
 
+  // --- Distancia ---
   const distNM = rs_getDistanceNM(origin, dest);
 
-     /* ===== RANGE CHECK (NEW v2.0) ===== */
-  const publishedRange = Number(opt.dataset.range || 0);
-  const rangeCheck = ACS_checkRangeSimple(distNM, publishedRange);
+  // --- Penalización por operar al límite ---
+  let paxPenalty = 0;
+  let penaltyMsg = "";
 
-  let penaltyInfo = "";
+  if (distNM > rangeNM) {
+    paxPenalty = 999;   // ruta imposible
+    penaltyMsg = `❌ Aircraft range exceeded (${distNM} NM vs ${rangeNM} NM)`;
+  }
+  else if (distNM >= rangeNM - 20) {
+    paxPenalty = 0.30;  // 30% menos pax
+    penaltyMsg = `⚠ Operating near max range → Passenger capacity reduced by 30%`;
+  }
+  else if (distNM >= rangeNM - 50) {
+    paxPenalty = 0.15;  // 15% menos pax
+    penaltyMsg = `⚠ Operating close to limits → Passenger capacity reduced by 15%`;
+  }
+  else {
+    paxPenalty = 0;
+    penaltyMsg = `✔ Range OK`;
+  }
 
-  // 🔴 Bloqueado
-  if (!rangeCheck.ok) {
-    penaltyInfo = `<span style="color:#ff6b6b;font-weight:600;">${rangeCheck.msg}</span>`;
-    document.getElementById("result").innerHTML = penaltyInfo;
-    document.getElementById("techData").style.display = "none";
-    return;
-}
-
-  // 🟡 Permitido pero con penalización
-     
-  if (rangeCheck.penalty > 0) {
-    penaltyInfo = `<span style="color:#ffd54f;font-weight:600;">${rangeCheck.msg}</span>`;
-    document.getElementById("result").innerHTML = penaltyInfo;
-
-    // 🔻 Reducir pasajeros para este vuelo
-       
-    if (!ac.maxPaxAdjusted) {
-        ac.maxPaxAdjusted = Math.round(ac.maxPax * (1 - rangeCheck.penalty));
-    }
-} else {
-       
-    // Limpio
-       get
-    document.getElementById("result").innerHTML = "";
-}
+  // --- Block Time ---
   const block  = rs_getBlockTime(distNM, speed);
   const turn   = rs_getTurnaround(category);
   const total  = block + turn + block;
 
+  // --- Crew & Costs ---
   const crew = rs_getCrewNeeded(category);
   const cost = rs_getTripCost(distNM, block, category);
 
+  // --- Mostrar panel ---
   document.getElementById("techData").style.display = "block";
 
   document.getElementById("distance").textContent      = distNM;
@@ -1009,31 +1006,30 @@ function autoCalculate() {
 
   document.getElementById("serviceA").textContent = "OK";
   document.getElementById("serviceB").textContent = "OK";
-  document.getElementById("delayRisk").textContent = "3%";
-  document.getElementById("effIndex").textContent  = "90%";
+  document.getElementById("delayRisk").textContent = paxPenalty > 0 ? "12%" : "3%";
+  document.getElementById("effIndex").textContent  = paxPenalty > 0 ? "72%" : "90%";
 
-     // Mostrar pasajeros ajustados si hay penalización
-     
-  if (typeof ac.maxPaxAdjusted !== "undefined") {
-    const paxLine = document.createElement("div");
-    paxLine.className = "tech-item";
-    paxLine.innerHTML = `Adjusted Pax Capacity: <span>${ac.maxPaxAdjusted}</span>`;
-    document.getElementById("techData").appendChild(paxLine);
-}
+  // --- Guardar datos globales para el confirmRoute() ---
   window.ACS_RouteTechData = {
     distNM,
     blockMin: block,
     turnMin: turn,
     totalMin: total,
     crew,
-    cost
+    cost,
+    paxPenalty,
+    penaltyMsg
   };
-}
 
+  // Mostrar penalización (si aplica)
+  const result = document.getElementById("result");
+  result.innerHTML = penaltyMsg;
+}
 
 /* ============================================================
    === PHASE 2.2 — CONFIRM ROUTE ===============================
    ============================================================ */
+     
 function confirmRoute() {
   const origin       = document.getElementById("origin").value.trim();
   const destination  = document.getElementById("destination").value.trim();
