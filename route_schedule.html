@@ -1133,13 +1133,35 @@ function autoCalculate() {
   // Asignar valores
   document.getElementById("distance").textContent      = distNM;
   document.getElementById("blockTime").textContent     = `${Math.floor(block/60)}h ${block%60}m`;
-  document.getElementById("turnaround").textContent    = `${turnNormal} min`;
-  document.getElementById("turnaroundOpt").textContent = `Optimized: ${turnOpt} min (+${turnOpt-turnNormal})`;
+ 
+// ============================================================
+// === B2: Render Technical Panel (Turnaround & Rotation) =====
+// ============================================================
 
-  document.getElementById("totalRotation").textContent =
-      `${Math.floor(totalNormal/60)}h ${totalNormal%60}m`;
-  document.getElementById("totalRotationOpt").textContent =
-      `Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m`;
+// TURNAROUND (alineado a la derecha)
+document.getElementById("rs_turnaround").innerHTML = `
+    <div style="display:flex; justify-content:space-between; width:100%;">
+        <span>Turnaround Time:</span>
+        <span style="text-align:right;">${turn} min</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; width:100%; opacity:0.75;">
+        <span>Optimized:</span>
+        <span style="text-align:right;">${optTurn} min (${extra >= 0 ? "+"+extra : extra})</span>
+    </div>
+`;
+
+// TOTAL FLIGHT TIME (alineado a la derecha)
+document.getElementById("rs_totalRotation").innerHTML = `
+    <div style="display:flex; justify-content:space-between; width:100%;">
+        <span>Total Flight Time:</span>
+        <span style="text-align:right;">${totalH}</span>
+    </div>
+    <div style="display:flex; justify-content:space-between; width:100%; opacity:0.75;">
+        <span>Optimized:</span>
+        <span style="text-align:right;">${optTotalH}</span>
+    </div>
+`;
+
 
   // Guardar para confirmRoute
   window.ACS_RouteTechData = {
@@ -1280,14 +1302,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
      
 /* ============================================================
-   🟦 ROUTE PERSISTENCE ENGINE — FINAL v3
-   • Mantiene ORIGIN y DEST después de refresh
-   • Mantiene AIRCRAFT elegido
-   • Recalcula tabla automáticamente
-   • No selecciona avión por defecto al cargar ruta
+   🟦 PERSISTENCIA EXACTA — ORIGEN / DESTINO / AIRCRAFT
    ============================================================ */
 
-// Guardar ORIGIN + DEST cada vez que cambien
+// Guardar ORIGEN y DESTINO
 function persistOriginDest() {
     const O = document.getElementById("origin")?.value || "";
     const D = document.getElementById("destination")?.value || "";
@@ -1295,48 +1313,43 @@ function persistOriginDest() {
     localStorage.setItem("ACS_Route_LastDest", D);
 }
 
-// Guardar AIRCRAFT cada vez que cambie
+// Guardar avión seleccionado
 function persistAircraft() {
     const ac = document.getElementById("aircraft")?.value || "";
     localStorage.setItem("ACS_Route_LastAircraft", ac);
 }
 
-// Restaurar valores al cargar
 document.addEventListener("DOMContentLoaded", () => {
 
-    const storedO = localStorage.getItem("ACS_Route_LastOrigin") || "";
-    const storedD = localStorage.getItem("ACS_Route_LastDest") || "";
+    // Restaurar ORIGEN / DESTINO
+    document.getElementById("origin").value =
+        localStorage.getItem("ACS_Route_LastOrigin") || "";
+    document.getElementById("destination").value =
+        localStorage.getItem("ACS_Route_LastDest") || "";
 
-    if (storedO) document.getElementById("origin").value = storedO;
-    if (storedD) document.getElementById("destination").value = storedD;
+    // Detectar si el usuario viene desde Routes.html
+    const fromRoutes = document.referrer.includes("routes.html");
 
-    // Esperar a que la flota cargue
+    // Guardar valor previo del avión antes de refrescar
+    const storedAC = localStorage.getItem("ACS_Route_LastAircraft") || "";
+
+    // Si viene desde Routes → NO restaurar avión
+    if (fromRoutes) return;
+
+    // SI refrescó la página → restaurar el avión
     setTimeout(() => {
-        const storedAC = localStorage.getItem("ACS_Route_LastAircraft") || "";
-
-        // NO seleccionar avión si venimos entrando por primera vez
-        if (!storedO && !storedD) return;
-
         const sel = document.getElementById("aircraft");
-        if (!sel) return;
 
-        // Restaurar avión si existe en la lista
-        const exists = [...sel.options].some(o => o.value === storedAC);
-
-        if (exists && storedAC !== "") {
+        if (storedAC && sel && [...sel.options].some(o => o.value === storedAC)) {
             sel.value = storedAC;
-
-            autoCalculate();            // recalcular datos técnicos
-            autoGenerateFlightNumber(); // regenerar OUT/IN
+            autoCalculate();
         }
     }, 250);
 });
 
-// Guardar cuando cambia
-document.addEventListener("input", persistOriginDest);
+// Detectar cambios
 document.addEventListener("change", persistOriginDest);
-
-// Guardar avión siempre
+document.addEventListener("input", persistOriginDest);
 document.getElementById("aircraft").addEventListener("change", persistAircraft);
 
 /* ============================================================
