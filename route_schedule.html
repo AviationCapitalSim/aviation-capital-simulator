@@ -826,6 +826,55 @@ function rs_getTripCost(distance, blockMin, category) {
 }
 
 /* ============================================================
+   🛫 ACS RANGE CHECK — SIMPLE & REALISTIC v2.0
+   ============================================================ */
+/*
+    REGLAS:
+    - Hasta (range - 15 NM) → sin penalización (normal ops)
+    - De (range - 15) a range → penalización proporcional (máx 35%)
+    - > range → NO permitido
+*/
+function ACS_checkRangeSimple(distNM, publishedRange) {
+
+    if (!distNM || !publishedRange) {
+        return { ok: true, penalty: 0, msg: "No range data" };
+    }
+
+    // Nuevo rango libre sin penalización
+    const freeLimit = publishedRange - 15;   // Ej: 510 → 495
+
+    // 🟩 1) Perfectamente dentro del rango operativo
+    if (distNM <= freeLimit) {
+        return {
+            ok: true,
+            penalty: 0,
+            msg: "✔ Within safe operational range"
+        };
+    }
+
+    // 🟨 2) Cerca del límite → penalización suave
+    if (distNM <= publishedRange) {
+
+        const ratio = (distNM - freeLimit) / (publishedRange - freeLimit);  // 0 → 1 lineal
+        const penalty = Math.min(0.35, ratio);  // Máximo 35%
+
+        return {
+            ok: true,
+            penalty,
+            msg: `⚠ Near max range — payload reduced by ${(penalty * 100).toFixed(0)}%`
+        };
+    }
+
+    // 🟥 3) Excedido → no permitido
+    return {
+        ok: false,
+        penalty: 1,
+        msg: "❌ Route exceeds aircraft maximum published range"
+    };
+}
+
+     
+/* ============================================================
    🟦 C) CREW ENGINE — Reemplazo para Route Schedule
    ------------------------------------------------------------
    Usa ACS_CrewEngine.getCrewFromDatabase(modelo_exacto)
@@ -888,6 +937,38 @@ function autoCalculate() {
   const category = opt.dataset.category || "";
 
   const distNM = rs_getDistanceNM(origin, dest);
+
+     /* ===== RANGE CHECK (NEW v2.0) ===== */
+  const publishedRange = Number(opt.dataset.range || 0);
+  const rangeCheck = ACS_checkRangeSimple(distNM, publishedRange);
+
+  let penaltyInfo = "";
+
+  // 🔴 Bloqueado
+  if (!rangeCheck.ok) {
+    penaltyInfo = `<span style="color:#ff6b6b;font-weight:600;">${rangeCheck.msg}</span>`;
+    document.getElementById("result").innerHTML = penaltyInfo;
+    document.getElementById("techData").style.display = "none";
+    return;
+}
+
+  // 🟡 Permitido pero con penalización
+     
+  if (rangeCheck.penalty > 0) {
+    penaltyInfo = `<span style="color:#ffd54f;font-weight:600;">${rangeCheck.msg}</span>`;
+    document.getElementById("result").innerHTML = penaltyInfo;
+
+    // 🔻 Reducir pasajeros para este vuelo
+       
+    if (!ac.maxPaxAdjusted) {
+        ac.maxPaxAdjusted = Math.round(ac.maxPax * (1 - rangeCheck.penalty));
+    }
+} else {
+       
+    // Limpio
+       get
+    document.getElementById("result").innerHTML = "";
+}
   const block  = rs_getBlockTime(distNM, speed);
   const turn   = rs_getTurnaround(category);
   const total  = block + turn + block;
@@ -907,6 +988,14 @@ function autoCalculate() {
   document.getElementById("delayRisk").textContent = "3%";
   document.getElementById("effIndex").textContent  = "90%";
 
+     // Mostrar pasajeros ajustados si hay penalización
+     
+  if (typeof ac.maxPaxAdjusted !== "undefined") {
+    const paxLine = document.createElement("div");
+    paxLine.className = "tech-item";
+    paxLine.innerHTML = `Adjusted Pax Capacity: <span>${ac.maxPaxAdjusted}</span>`;
+    document.getElementById("techData").appendChild(paxLine);
+}
   window.ACS_RouteTechData = {
     distNM,
     blockMin: block,
