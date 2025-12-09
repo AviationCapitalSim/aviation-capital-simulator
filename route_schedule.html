@@ -1267,8 +1267,14 @@ function persistOriginDest() {
     localStorage.setItem("ACS_Route_LastOrigin", O);
     localStorage.setItem("ACS_Route_LastDest", D);
 }
-
+     
+function persistAircraft() {
+    const ac = document.getElementById("aircraft")?.value || "";
+    localStorage.setItem("ACS_Route_LastAircraft", ac);
+}
+     
 // Restaurar valores al cargar
+     
 document.addEventListener("DOMContentLoaded", () => {
     const storedO = localStorage.getItem("ACS_Route_LastOrigin") || "";
     const storedD = localStorage.getItem("ACS_Route_LastDest") || "";
@@ -1277,10 +1283,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (storedD) document.getElementById("destination").value = storedD;
 });
 
+const storedAC = localStorage.getItem("ACS_Route_LastAircraft") || "";
+
+// Restaurar avión (tras cargar la flota)
+setTimeout(() => {
+    if (storedAC) {
+        const sel = document.getElementById("aircraft");
+        if (sel && [...sel.options].some(o => o.value === storedAC)) {
+            sel.value = storedAC;
+            autoCalculate();           // recalcular datos técnicos
+            autoGenerateFlightNumber(); // restaurar número
+        }
+    }
+}, 200);  // pequeño delay para que loadAvailableAircraft termine
+     
 // Escuchar cambios y guardar
 document.addEventListener("change", persistOriginDest);
 document.addEventListener("input", persistOriginDest);
-
+document.getElementById("aircraft").addEventListener("change", persistAircraft);
 
 /* ============================================================
    🛫 FINAL FLIGHT NUMBER ENGINE — PERFECTO v3
