@@ -359,6 +359,39 @@ footer {
   font-size: 0.9rem;
   margin-top: 40px;
 }
+     
+/* ============================================================
+   🟦 TECH PANEL — Qatar Luxury Aligned v3
+   ============================================================ */
+
+.tech-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.tech-label {
+  color: #d7e2ff;
+  font-size: 0.95rem;
+}
+
+.tech-value {
+  color: #ffb300;
+  font-weight: 600;
+  text-align: right;
+  min-width: 180px;
+}
+
+/* línea optimizada */
+.tech-optimized {
+  color: #ffd966;
+  font-size: 0.9rem;
+  text-align: right;
+  margin-top: -4px;
+}
+     
 </style>
 </head>
 
@@ -444,31 +477,17 @@ footer {
       <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
       <div class="tech-item">
      
-     Turnaround Time:
-     
-     <span id="turnaround" style="float:right;">--</span>
-    </div>
-
-     <div class="tech-item" id="turnOptRow" style="display:none;">
-
-     Optimized:
-     
-     <span id="turnaroundOpt" style="float:right;color:#ffd65c;">--</span>
+     <div class="tech-item">
+     <div class="tech-label">Turnaround Time:</div>
+     <div class="tech-value" id="turnaround">--</div>
    </div>
+     <div class="tech-optimized" id="turnaroundOpt">Optimized: --</div>
 
    <div class="tech-item">
-    
-     Total Rotation:
-        
-    <span id="totalRotation" style="float:right;">--</span>
-   </div>
-
-   <div class="tech-item" id="rotOptRow" style="display:none;">
-    
-     Optimized:
-        
-    <span id="totalRotationOpt" style="float:right;color:#ffd65c;">--</span>
-   </div>
+     <div class="tech-label">Total Flight Time:</div>
+     <div class="tech-value" id="totalRotation">--</div>
+  </div>
+    <div class="tech-optimized" id="totalRotationOpt">Optimized: --</div>
 
       <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
       <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
@@ -1070,7 +1089,9 @@ function rs_getCrewReal(registration) {
 }
      
 /* ============================================================
-   === autoCalculate — FINAL TURNAROUND PANEL v4 (A)
+   🟦 AUTO CALCULATE — FIX v3
+   • No autoejecutar al cargar
+   • Solo ejecuta cuando el jugador selecciona avión
    ============================================================ */
 
 function autoCalculate() {
@@ -1079,6 +1100,7 @@ function autoCalculate() {
   const dest    = document.getElementById("destination").value.trim();
   const acReg   = document.getElementById("aircraft").value;
 
+  // Si no hay avión → ocultar panel
   if (!origin || !dest || !acReg) {
     document.getElementById("techData").style.display = "none";
     return;
@@ -1092,50 +1114,47 @@ function autoCalculate() {
   const speed    = Number(opt.dataset.speed || 440);
   const category = opt.dataset.category || "";
 
-  // ✔ DISTANCIA
   const distNM = rs_getDistanceNM(origin, dest);
+  const block  = rs_getBlockTime(distNM, speed);
 
-  // ✔ BLOCK TIME
-  const blockMin = rs_getBlockTime(distNM, speed);
+  // Base Turnaround estándar (normal)
+  const turnNormal = rs_getTurnaround(category);
 
-  // ✔ TURNAROUND BASE
-  const turnBase = rs_getTurnaround(category);
+  // ¿Optimización ON?
+  const optimizedON = document.getElementById("optimizeRotation").checked;
+  const turnOpt     = optimizedON ? turnNormal + 15 : turnNormal;
 
-  // ✔ TURNAROUND OPTIMIZADO
-  const optimized = document.getElementById("optimizeRotation").checked;
+  const totalNormal = block + turnNormal + block;
+  const totalOpt    = block + turnOpt + block;
 
-  let turnFinal = turnBase;
-  if (optimized) {
-      turnFinal = turnBase + 15; // +15 minutos por optimización
-  }
-
-  // ✔ TOTAL ROTATION
-  const totalRot = blockMin + turnFinal + blockMin;
-
-  // ✔ Mostrar panel
+  // Mostrar panel
   document.getElementById("techData").style.display = "block";
 
-  // ==== ESCRIBIR EN PANTALLA ====
+  // Asignar valores
+  document.getElementById("distance").textContent      = distNM;
+  document.getElementById("blockTime").textContent     = `${Math.floor(block/60)}h ${block%60}m`;
+  document.getElementById("turnaround").textContent    = `${turnNormal} min`;
+  document.getElementById("turnaroundOpt").textContent = `Optimized: ${turnOpt} min (+${turnOpt-turnNormal})`;
 
-  document.getElementById("distance").textContent = distNM;
-  document.getElementById("blockTime").textContent =
-      `${Math.floor(blockMin/60)}h ${blockMin%60}m`;
+  document.getElementById("totalRotation").textContent =
+      `${Math.floor(totalNormal/60)}h ${totalNormal%60}m`;
+  document.getElementById("totalRotationOpt").textContent =
+      `Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m`;
 
-  document.getElementById("turnaround").innerHTML =
-      `${turnBase} min<br><span style="color:#FFD54F;">Optimized: ${turnFinal} min (+${turnFinal-turnBase})</span>`;
-
-  document.getElementById("totalRotation").innerHTML =
-      `${Math.floor(totalRot/60)}h ${totalRot%60}m<br>
-       <span style="color:#FFD54F;">Optimized: ${Math.floor(totalRot/60)}h ${totalRot%60}m</span>`;
-
-  // Mantener valores
+  // Guardar para confirmRoute
   window.ACS_RouteTechData = {
-      distNM,
-      blockMin,
-      turnMin: turnFinal,
-      totalMin: totalRot
+    distNM,
+    blockMin: block,
+    turnMin: turnOpt,
+    totalMin: totalOpt
   };
 }
+
+// Cuando cambia optimizeRotation → recalcular (si ya hay avión)
+document.getElementById("optimizeRotation").addEventListener("change", () => {
+  if (document.getElementById("aircraft").value) autoCalculate();
+});
+
   
 function applyOptimization(baseTurn, block) {
     // +15 minutos por política ACS
@@ -1259,50 +1278,65 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
      
 <script>
+     
 /* ============================================================
-   🟦 KEEP ORIGIN & DESTINATION AFTER REFRESH — v1.0
+   🟦 ROUTE PERSISTENCE ENGINE — FINAL v3
+   • Mantiene ORIGIN y DEST después de refresh
+   • Mantiene AIRCRAFT elegido
+   • Recalcula tabla automáticamente
+   • No selecciona avión por defecto al cargar ruta
    ============================================================ */
 
-// Guardar cada vez que se cambie ORIGIN o DEST
+// Guardar ORIGIN + DEST cada vez que cambien
 function persistOriginDest() {
     const O = document.getElementById("origin")?.value || "";
     const D = document.getElementById("destination")?.value || "";
     localStorage.setItem("ACS_Route_LastOrigin", O);
     localStorage.setItem("ACS_Route_LastDest", D);
 }
-     
+
+// Guardar AIRCRAFT cada vez que cambie
 function persistAircraft() {
     const ac = document.getElementById("aircraft")?.value || "";
     localStorage.setItem("ACS_Route_LastAircraft", ac);
 }
-     
+
 // Restaurar valores al cargar
-     
 document.addEventListener("DOMContentLoaded", () => {
+
     const storedO = localStorage.getItem("ACS_Route_LastOrigin") || "";
     const storedD = localStorage.getItem("ACS_Route_LastDest") || "";
 
     if (storedO) document.getElementById("origin").value = storedO;
     if (storedD) document.getElementById("destination").value = storedD;
+
+    // Esperar a que la flota cargue
+    setTimeout(() => {
+        const storedAC = localStorage.getItem("ACS_Route_LastAircraft") || "";
+
+        // NO seleccionar avión si venimos entrando por primera vez
+        if (!storedO && !storedD) return;
+
+        const sel = document.getElementById("aircraft");
+        if (!sel) return;
+
+        // Restaurar avión si existe en la lista
+        const exists = [...sel.options].some(o => o.value === storedAC);
+
+        if (exists && storedAC !== "") {
+            sel.value = storedAC;
+
+            autoCalculate();            // recalcular datos técnicos
+            autoGenerateFlightNumber(); // regenerar OUT/IN
+        }
+    }, 250);
 });
 
-const storedAC = localStorage.getItem("ACS_Route_LastAircraft") || "";
-
-// Restaurar avión (tras cargar la flota)
-setTimeout(() => {
-    if (storedAC) {
-        const sel = document.getElementById("aircraft");
-        if (sel && [...sel.options].some(o => o.value === storedAC)) {
-            sel.value = storedAC;
-            autoCalculate();           // recalcular datos técnicos
-            autoGenerateFlightNumber(); // restaurar número
-        }
-    }
-}, 200);  // pequeño delay para que loadAvailableAircraft termine
-     
-// Escuchar cambios y guardar
-document.addEventListener("change", persistOriginDest);
+// Guardar cuando cambia
 document.addEventListener("input", persistOriginDest);
+document.addEventListener("change", persistOriginDest);
+
+// Guardar avión siempre
 document.getElementById("aircraft").addEventListener("change", persistAircraft);
 
 /* ============================================================
