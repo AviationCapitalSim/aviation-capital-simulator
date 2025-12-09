@@ -1131,43 +1131,66 @@ document.addEventListener("DOMContentLoaded", () => {
      
 <script>
 /* ============================================================
+   🟦 KEEP ORIGIN & DESTINATION AFTER REFRESH — v1.0
+   ============================================================ */
+
+// Guardar cada vez que se cambie ORIGIN o DEST
+function persistOriginDest() {
+    const O = document.getElementById("origin")?.value || "";
+    const D = document.getElementById("destination")?.value || "";
+    localStorage.setItem("ACS_Route_LastOrigin", O);
+    localStorage.setItem("ACS_Route_LastDest", D);
+}
+
+// Restaurar valores al cargar
+document.addEventListener("DOMContentLoaded", () => {
+    const storedO = localStorage.getItem("ACS_Route_LastOrigin") || "";
+    const storedD = localStorage.getItem("ACS_Route_LastDest") || "";
+
+    if (storedO) document.getElementById("origin").value = storedO;
+    if (storedD) document.getElementById("destination").value = storedD;
+});
+
+// Escuchar cambios y guardar
+document.addEventListener("change", persistOriginDest);
+document.addEventListener("input", persistOriginDest);
+
+
+/* ============================================================
    🛫 FINAL FLIGHT NUMBER ENGINE — PERFECTO v3
-   • Nunca repite números
-   • Genera OUT/IN
-   • Se actualiza al seleccionar aircraft
+   - Nunca repite números
+   - OUT / IN siempre vinculados
+   - Se genera al seleccionar Aircraft
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // === 1) Obtener IATA del usuario ===
+    // 1) Obtener IATA del usuario
     const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
     const userIATA = (activeUser?.airline?.iata || "").toUpperCase();
 
     if (!userIATA) {
-        console.warn("⚠ No IATA found — aborting Flight Engine");
+        console.warn("⚠ No IATA found — skipping Flight Engine");
         return;
     }
 
-    // === 2) Traer últimos valores guardados ===
-     
+    // 2) Traer último número global y la lista de ya usados
     let lastFlightNumber = Number(localStorage.getItem("ACS_LastFlightNumber")) || 100;
     let usedFlights = JSON.parse(localStorage.getItem("ACS_UsedFlights") || "[]");
 
-    // === 3) Guardar usados ===
-     
+    // 3) Guardar números usados
     function markUsed(out, inn) {
         usedFlights.push(out, inn);
         localStorage.setItem("ACS_UsedFlights", JSON.stringify(usedFlights));
     }
 
-    // === 4) Generador seguro OUT/IN ===
-     
+    // 4) Generar nuevo par OUT → IN sin duplicados
     function generateFlightPair() {
 
         let out = `${userIATA}${lastFlightNumber}`;
         let inn = `${userIATA}${lastFlightNumber + 1}`;
 
-        // evitar duplicados
+        // si ya existen, saltar al siguiente par disponible
         while (usedFlights.includes(out) || usedFlights.includes(inn)) {
             lastFlightNumber += 2;
             out = `${userIATA}${lastFlightNumber}`;
@@ -1181,32 +1204,27 @@ document.addEventListener("DOMContentLoaded", () => {
         return { out, inn };
     }
 
-    // === 5) Auto-insertar al seleccionar avión ===
+    // 5) Exponer función global: se ejecuta cuando se selecciona el avión
     window.autoGenerateFlightNumber = function () {
         const ac = document.getElementById("aircraft").value;
         if (!ac) return;
 
         const { out, inn } = generateFlightPair();
-
         const fld = document.getElementById("flightNumber");
+
         fld.value = `${out} ➜ ${inn}`;
     };
 
-    // === 6) Al CONFIRM ROUTE — guardamos los números ===
+    // 6) Al confirmar ruta — guardar OUT e IN en lista de usados
     window.markFlightNumbersUsed = function () {
-
         const raw = document.getElementById("flightNumber").value || "";
         const m = raw.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/);
 
         if (!m) return;
-
-        const out = m[1];
-        const inn = m[2];
-
-        markUsed(out, inn);
+        markUsed(m[1], m[2]);
     };
 
-    console.log("🟢 Flight Engine v3 loaded — secure & unique numbers");
+    console.log("🟢 Flight Number Engine v3 ready");
 });
 </script>
      
