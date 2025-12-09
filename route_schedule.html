@@ -1019,6 +1019,48 @@ document.addEventListener("DOMContentLoaded", () => {
 });
      
 </script>
+     
+<!-- ================================================
+     🟦 (A1) AUTO FLIGHT NUMBER ENGINE — FIX v2
+     Ubicación: justo antes de </body>
+     ================================================ -->
+     
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
+    // 1. Cargar user IATA desde localStorage
+    const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+    const userIATA = (activeUser?.airline?.iata || "").toUpperCase();
+
+    if (!userIATA) {
+        console.warn("⚠ No se pudo obtener IATA del usuario.");
+        return;
+    }
+
+    // 2. Traer último número ya usado
+    let lastFlightNumber = Number(localStorage.getItem("ACS_LastFlightNumber")) || 100;
+
+    // 3. Función generadora final
+    function generateFlightPair() {
+        const out = `${userIATA}${lastFlightNumber}`;
+        const inn = `${userIATA}${lastFlightNumber + 1}`;
+        lastFlightNumber += 2;
+        localStorage.setItem("ACS_LastFlightNumber", lastFlightNumber);
+        return { out, inn };
+    }
+
+    // 4. Insertar automáticamente en el campo
+    const pair = generateFlightPair();
+    const fld = document.getElementById("flightNumber");
+
+    if (fld) {
+        fld.value = pair.out;   // 👈 YA SALE EN EL FORMULARIO
+    }
+
+    // 5. Exponerlo si deseas llamarlo en consola
+    window.ACS_generateFlightPair = generateFlightPair;
+});
+</script>
+     
 </body>
 </html>
