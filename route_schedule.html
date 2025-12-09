@@ -444,8 +444,6 @@ footer {
       <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
       <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
       <div class="tech-item">Total Rotation: <span id="totalRotation">--</span></div>
-      <div class="tech-item">Time to A-Check (h remaining): <span id="serviceA">--</span></div>
-      <div class="tech-item">Time to B-Check (h remaining): <span id="serviceB">--</span></div>
       <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
       <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
     </div>
@@ -804,6 +802,7 @@ function rs_getDistanceNM(origin, dest) {
 }
 
 // 2) Block Time
+     
 function rs_getBlockTime(distance, speed) {
   if (!distance || !speed) return 0;
   const cruise = distance / speed;
@@ -812,15 +811,120 @@ function rs_getBlockTime(distance, speed) {
 }
 
 // 3) Turnaround
+     
+/* ============================================================
+   🛫 TURNAROUND REAL (1940–2026) — FINAL v4
+   ============================================================ */
+     
 function rs_getTurnaround(category) {
-  if (!category) return 40;
-  const c = category.toUpperCase();
-  if (c.includes("ATR") || c.includes("TURBO")) return 25;
-  if (c.includes("REGIONAL")) return 30;
-  return 40;
+
+    if (!category) return 45; // default seguro
+
+    const c = category.toUpperCase();
+
+    // ============================
+    // 1) LIGHT / SMALL (DC-3, Cessna, Beech)
+    // ============================
+    if (c.includes("SMALL") || c.includes("LIGHT") ||
+        c.includes("DC-3") || c.includes("PIPER") || c.includes("CESSNA")) {
+        return 35;  
+    }
+
+    // ============================
+    // 2) TURBOPROP / ATR / Regional Early
+    // ============================
+    if (c.includes("ATR") || c.includes("TURBO") ||
+        c.includes("REGIONAL")) {
+        return 45;
+    }
+
+    // ============================
+    // 3) Narrow-body Jets (A320, 737, 727, MD-80, Tu-154)
+    // ============================
+    if (c.includes("NARROW") || 
+        c.includes("A320") || c.includes("A318") || c.includes("A319") ||
+        c.includes("A321") ||
+        c.includes("737")  || c.includes("727")  ||
+        c.includes("MD-80") || c.includes("TU-154") || c.includes("DC-9")) {
+        return 50;
+    }
+
+    // ============================
+    // 4) Wide-body Jets (A300, A310, 767, L-1011, DC-10, 787)
+    // ============================
+    if (c.includes("WIDE")  ||
+        c.includes("A300")  || c.includes("A310") ||
+        c.includes("767")   || c.includes("787")  ||
+        c.includes("L-1011") || c.includes("DC-10")) {
+        return 60;
+    }
+
+    // ============================
+    // 5) Large Heavy Jets (747, A340, DC-8, 707)
+    // ============================
+    if (c.includes("HEAVY") ||
+        c.includes("747") || c.includes("A340") ||
+        c.includes("707") || c.includes("DC-8")) {
+        return 75;
+    }
+
+    // ============================
+    // 6) A380 (Ultra Heavy)
+    // ============================
+    if (c.includes("A380")) {
+        return 90;
+    }
+
+    // Default
+    return 50;
+}
+     
+/* ============================================================
+   🟦 OPTIMIZATION BUFFER — FINAL v2
+   ============================================================ */
+     
+function rs_getOptimizedTurnaround(baseTurn, category) {
+    if (!document.getElementById("optimizeRotation").checked) {
+        return baseTurn; // sin optimización
+    }
+
+    const c = (category || "").toUpperCase();
+
+    // Light / Small
+    if (c.includes("SMALL") || c.includes("DC-3") || c.includes("PIPER")) {
+        return baseTurn + 10;
+    }
+
+    // Turboprop / Regional
+    if (c.includes("ATR") || c.includes("TURBO") || c.includes("REGIONAL")) {
+        return baseTurn + 10;
+    }
+
+    // Narrow-body
+    if (c.includes("A320") || c.includes("737") || c.includes("MD-80") || c.includes("TU-154")) {
+        return baseTurn + 15;
+    }
+
+    // Wide-body
+    if (c.includes("A300") || c.includes("767") || c.includes("DC-10") || c.includes("L-1011")) {
+        return baseTurn + 20;
+    }
+
+    // Heavy / 747 / DC-8 / 707
+    if (c.includes("747") || c.includes("A340") || c.includes("707") || c.includes("DC-8")) {
+        return baseTurn + 25;
+    }
+
+    // A380
+    if (c.includes("A380")) {
+        return baseTurn + 30;
+    }
+
+    return baseTurn + 15;
 }
 
 // 4) Fuel
+     
 function rs_getFuelBurn(category) {
   if (!category) return 2400;
   const c = category.toUpperCase();
@@ -939,91 +1043,64 @@ function rs_getCrewReal(registration) {
 }
      
 /* ============================================================
-   === autoCalculate (FASE 2 REAL) =============================
+   === autoCalculate — FINAL TURNAROUND PANEL v4 (A)
    ============================================================ */
-     
+
 function autoCalculate() {
 
-  const origin  = document.getElementById("origin").value.trim();
-  const dest    = document.getElementById("destination").value.trim();
-  const acReg   = document.getElementById("aircraft").value;
+    const origin  = document.getElementById("origin").value.trim();
+    const dest    = document.getElementById("destination").value.trim();
+    const acReg   = document.getElementById("aircraft").value;
 
-  if (!origin || !dest || !acReg) {
-    document.getElementById("techData").style.display = "none";
-    return;
-  }
+    if (!origin || !dest || !acReg) {
+        document.getElementById("techData").style.display = "none";
+        return;
+    }
 
-  // --- Obtener aeronave seleccionada ---
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const ac = fleet.find(x => x.registration === acReg);
-  if (!ac) return;
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    const ac = fleet.find(x => x.registration === acReg);
+    if (!ac) return;
 
-  const opt = document.querySelector(`#aircraft option[value="${acReg}"]`);
-  const speed    = Number(opt.dataset.speed || 440);
-  const category = opt.dataset.category || "";
-  const rangeNM  = Number(opt.dataset.range || 500);
+    const opt = document.querySelector(`#aircraft option[value="${acReg}"]`);
+    const speed    = Number(opt.dataset.speed || 440);
+    const category = opt.dataset.category || "";
+    const range    = Number(opt.dataset.range || 1500);
 
-  // --- Distancia ---
-  const distNM = rs_getDistanceNM(origin, dest);
+    const distNM = rs_getDistanceNM(origin, dest);
+    const block  = rs_getBlockTime(distNM, speed);
 
-  // --- Penalización por operar al límite ---
-  let paxPenalty = 0;
-  let penaltyMsg = "";
+    const baseTurn = rs_getTurnaround(category);
+    const optTurn  = rs_getOptimizedTurnaround(baseTurn, category);
 
-  if (distNM > rangeNM) {
-    paxPenalty = 999;   // ruta imposible
-    penaltyMsg = `❌ Aircraft range exceeded (${distNM} NM vs ${rangeNM} NM)`;
-  }
-  else if (distNM >= rangeNM - 20) {
-    paxPenalty = 0.30;  // 30% menos pax
-    penaltyMsg = `⚠ Operating near max range → Passenger capacity reduced by 30%`;
-  }
-  else if (distNM >= rangeNM - 50) {
-    paxPenalty = 0.15;  // 15% menos pax
-    penaltyMsg = `⚠ Operating close to limits → Passenger capacity reduced by 15%`;
-  }
-  else {
-    paxPenalty = 0;
-    penaltyMsg = `✔ Range OK`;
-  }
+    const totalBase = block + baseTurn + block;
+    const totalOpt  = block + optTurn + block;
 
-  // --- Block Time ---
-  const block  = rs_getBlockTime(distNM, speed);
-  const turn   = rs_getTurnaround(category);
-  const total  = block + turn + block;
+    document.getElementById("techData").style.display = "block";
 
-  // --- Crew & Costs ---
-  const crew = rs_getCrewNeeded(category);
-  const cost = rs_getTripCost(distNM, block, category);
+    document.getElementById("distance").textContent = distNM;
+    document.getElementById("blockTime").textContent = `${Math.floor(block/60)}h ${block%60}m`;
 
-  // --- Mostrar panel ---
-  document.getElementById("techData").style.display = "block";
+    // A) Mostrar ambos valores REAL + Optimized
+    document.getElementById("turnaround").innerHTML = `
+        ${baseTurn} min<br>
+        <span style="color:#ffd54f">Optimized: ${optTurn} min (+${optTurn - baseTurn})</span>
+    `;
 
-  document.getElementById("distance").textContent      = distNM;
-  document.getElementById("blockTime").textContent     = `${Math.floor(block/60)}h ${block%60}m`;
-  document.getElementById("turnaround").textContent    = `${turn} min`;
-  document.getElementById("totalRotation").textContent = `${Math.floor(total/60)}h ${total%60}m`;
+    document.getElementById("totalRotation").innerHTML = `
+        ${Math.floor(totalBase/60)}h ${totalBase%60}m<br>
+        <span style="color:#ffd54f">Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m</span>
+    `;
 
-  document.getElementById("serviceA").textContent = "OK";
-  document.getElementById("serviceB").textContent = "OK";
-  document.getElementById("delayRisk").textContent = paxPenalty > 0 ? "12%" : "3%";
-  document.getElementById("effIndex").textContent  = paxPenalty > 0 ? "72%" : "90%";
+    document.getElementById("delayRisk").textContent = "3%";
+    document.getElementById("effIndex").textContent  = "90%";
 
-  // --- Guardar datos globales para el confirmRoute() ---
-  window.ACS_RouteTechData = {
-    distNM,
-    blockMin: block,
-    turnMin: turn,
-    totalMin: total,
-    crew,
-    cost,
-    paxPenalty,
-    penaltyMsg
-  };
-
-  // Mostrar penalización (si aplica)
-  const result = document.getElementById("result");
-  result.innerHTML = penaltyMsg;
+    window.ACS_RouteTechData = {
+        distNM,
+        blockMin: block,
+        turnMin: baseTurn,
+        turnMinOptimized: optTurn,
+        totalMin: totalOpt
+    };
 }
 
 /* ============================================================
@@ -1063,11 +1140,10 @@ function confirmRoute() {
     distanceNM: tech.distNM,
     blockTime: tech.blockMin,
     turnaround: tech.turnMin,
+    optimizedTurnaround: tech.turnMinOptimized,
     totalRotation: tech.totalMin,
-    crew: tech.crew,
-    cost: tech.cost,
     createdAt: new Date().toISOString()
-  };
+};
 
   const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   list.push(newRoute);
