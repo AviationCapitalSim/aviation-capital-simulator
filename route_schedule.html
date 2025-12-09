@@ -1075,63 +1075,66 @@ function rs_getCrewReal(registration) {
 
 function autoCalculate() {
 
-    const origin  = document.getElementById("origin").value.trim();
-    const dest    = document.getElementById("destination").value.trim();
-    const acReg   = document.getElementById("aircraft").value;
+  const origin  = document.getElementById("origin").value.trim();
+  const dest    = document.getElementById("destination").value.trim();
+  const acReg   = document.getElementById("aircraft").value;
 
-    if (!origin || !dest || !acReg) {
-        document.getElementById("techData").style.display = "none";
-        return;
-    }
+  if (!origin || !dest || !acReg) {
+    document.getElementById("techData").style.display = "none";
+    return;
+  }
 
-    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    const ac = fleet.find(x => x.registration === acReg);
-    if (!ac) return;
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = fleet.find(x => x.registration === acReg);
+  if (!ac) return;
 
-    const opt = document.querySelector(`#aircraft option[value="${acReg}"]`);
-    const speed    = Number(opt.dataset.speed || 440);
-    const category = opt.dataset.category || "";
-    const range    = Number(opt.dataset.range || 1500);
+  const opt = document.querySelector(`#aircraft option[value="${acReg}"]`);
+  const speed    = Number(opt.dataset.speed || 440);
+  const category = opt.dataset.category || "";
 
-    const distNM = rs_getDistanceNM(origin, dest);
-    const block  = rs_getBlockTime(distNM, speed);
+  // ✔ DISTANCIA
+  const distNM = rs_getDistanceNM(origin, dest);
 
-    const baseTurn = rs_getTurnaround(category);
-    const optTurn  = rs_getOptimizedTurnaround(baseTurn, category);
+  // ✔ BLOCK TIME
+  const blockMin = rs_getBlockTime(distNM, speed);
 
-    const totalBase = block + baseTurn + block;
-    const totalOpt  = block + optTurn + block;
+  // ✔ TURNAROUND BASE
+  const turnBase = rs_getTurnaround(category);
 
-    document.getElementById("techData").style.display = "block";
+  // ✔ TURNAROUND OPTIMIZADO
+  const optimized = document.getElementById("optimizeRotation").checked;
 
-    document.getElementById("distance").textContent = distNM;
-    document.getElementById("blockTime").textContent = `${Math.floor(block/60)}h ${block%60}m`;
+  let turnFinal = turnBase;
+  if (optimized) {
+      turnFinal = turnBase + 15; // +15 minutos por optimización
+  }
 
-    // A) Mostrar ambos valores REAL + Optimized
-     
-    document.getElementById("turnaround").textContent = `${turn} min`;
-    document.getElementById("totalRotation").textContent =
-    `${Math.floor(total/60)}h ${total%60}m`;
+  // ✔ TOTAL ROTATION
+  const totalRot = blockMin + turnFinal + blockMin;
 
-   // RESET optimized rows
-   document.getElementById("turnOptRow").style.display = "none";
-   document.getElementById("rotOptRow").style.display = "none";
+  // ✔ Mostrar panel
+  document.getElementById("techData").style.display = "block";
 
-   // Si está activado el checkbox — aplicar optimización
-   if (document.getElementById("optimizeRotation").checked) {
-    applyOptimization(turn, block);
-}
+  // ==== ESCRIBIR EN PANTALLA ====
 
-    document.getElementById("delayRisk").textContent = "3%";
-    document.getElementById("effIndex").textContent  = "90%";
+  document.getElementById("distance").textContent = distNM;
+  document.getElementById("blockTime").textContent =
+      `${Math.floor(blockMin/60)}h ${blockMin%60}m`;
 
-    window.ACS_RouteTechData = {
-        distNM,
-        blockMin: block,
-        turnMin: baseTurn,
-        turnMinOptimized: optTurn,
-        totalMin: totalOpt
-    };
+  document.getElementById("turnaround").innerHTML =
+      `${turnBase} min<br><span style="color:#FFD54F;">Optimized: ${turnFinal} min (+${turnFinal-turnBase})</span>`;
+
+  document.getElementById("totalRotation").innerHTML =
+      `${Math.floor(totalRot/60)}h ${totalRot%60}m<br>
+       <span style="color:#FFD54F;">Optimized: ${Math.floor(totalRot/60)}h ${totalRot%60}m</span>`;
+
+  // Mantener valores
+  window.ACS_RouteTechData = {
+      distNM,
+      blockMin,
+      turnMin: turnFinal,
+      totalMin: totalRot
+  };
 }
   
 function applyOptimization(baseTurn, block) {
