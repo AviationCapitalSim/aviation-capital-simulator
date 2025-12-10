@@ -16,6 +16,53 @@ if (typeof WorldAirportsACS === "undefined") {
   };
 }
 
+/* ============================================================
+   🟦 A2 — AUTO-INIT SLOTS WHEN AIRPORTS LOAD | v1.0
+   ------------------------------------------------------------
+   - Se ejecuta justo después de que WorldAirportsACS existe
+   - Inicializa slots por categoría de aeropuerto
+   - Evita volver a inicializar si ya existen
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    if (typeof WorldAirportsACS === "undefined") {
+        console.warn("⚠ WorldAirportsACS not ready — skipping Slot Init");
+        return;
+    }
+
+    // Leer estructura actual de slots
+    const EXISTING = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
+
+    // Recorrer todos los continentes cargados
+    for (const cont in WorldAirportsACS) {
+        const list = WorldAirportsACS[cont];
+        if (!Array.isArray(list)) continue;
+
+        list.forEach(ap => {
+
+            const ICAO = ap.icao;
+            const CAT  = ap.category || ap.Category || "";
+
+            // Evitar re-inicializar aeropuertos ya creados
+            if (EXISTING[ICAO]) {
+                return;
+            }
+
+            // Inicializar slots para este aeropuerto
+            try {
+                ACS_initAirportSlots(ICAO, CAT);
+                console.log(`🛫 Slots Init → ${ICAO} (${CAT})`);
+            } catch (e) {
+                console.warn("Slot Init Error:", ICAO, e);
+            }
+        });
+    }
+
+    console.log("🟢 A2 — Airport Slot Initialization complete.");
+});
+
+
 /* =============================================================
    === AUTO IMPORT DE LOS CONTINENTES (SECUENCIAL) =============
    ============================================================= */
