@@ -1157,6 +1157,41 @@ function autoCalculate() {
     };
 }
 
+/* ============================================================
+   🅱️3 — ROUTE SCHEDULE EVENT LINKER (CRITICAL) — v1.0
+   ------------------------------------------------------------
+   Re-conecta todos los eventos que disparan autoCalculate()
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const acSel = document.getElementById("aircraft");
+    const depSel = document.getElementById("departureTime");
+    const optBox = document.getElementById("optimizeRotation");
+
+    if (acSel) {
+        acSel.addEventListener("change", () => {
+            autoCalculate();
+            if (typeof autoGenerateFlightNumber === "function") {
+                autoGenerateFlightNumber();
+            }
+        });
+    }
+
+    if (depSel) {
+        depSel.addEventListener("change", () => {
+            autoCalculate();
+        });
+    }
+
+    if (optBox) {
+        optBox.addEventListener("change", () => {
+            autoCalculate();
+        });
+    }
+
+});
+
 
 /* ============================================================
    === PHASE 2.2 — CONFIRM ROUTE ===============================
