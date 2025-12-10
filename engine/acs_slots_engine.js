@@ -39,50 +39,96 @@ function ACS_getMaxSlotsByCategory(category = "") {
 }
 
 /* ============================================================
-   🟦 A1.2 — Inicializar slots por aeropuerto
+   🟦 A1.1B — Inicializar Slots ON-DEMAND (NO masivo)
+   ------------------------------------------------------------
+   • Solo crea la estructura básica por aeropuerto
+   • NO crea 288 slots por día → Safari no colapsa
+   • Los minutos exactos se crean solo al reservar un vuelo
    ============================================================ */
+function ACS_initAirportSlots_onDemand(icao, category) {
 
-function ACS_initAirportSlots(icao, category) {
+    // Si ya existe → no recrear
+    if (ACS_SLOTS[icao]) return;
 
     const max = ACS_getMaxSlotsByCategory(category);
-    if (!ACS_SLOTS[icao]) ACS_SLOTS[icao] = {};
 
-    const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
+    ACS_SLOTS[icao] = {};
+
+    const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
     DAYS.forEach(day => {
-        if (!ACS_SLOTS[icao][day]) ACS_SLOTS[icao][day] = {};
-
-        for (let h = 0; h < 24; h++) {
-            for (let m = 0; m < 60; m += 5) {
-
-                const hh = String(h).padStart(2, "0");
-                const mm = String(m).padStart(2, "0");
-                const key = `${hh}:${mm}`;
-
-                if (!ACS_SLOTS[icao][day][key]) {
-                    ACS_SLOTS[icao][day][key] = {
-                        used: 0,
-                        max: max
-                    };
-                }
+        ACS_SLOTS[icao][day] = {
+            // Se inicia vacío, los slots se generarán dinámicamente
+            // cuando se reserven rutas (ACS_bookRoute).
+            __meta: {
+                maxSlots: max
             }
-        }
+        };
     });
 
     ACS_saveSlots();
 }
 
 /* ============================================================
-   🟦 A1.3 — Obtener disponibilidad real
+   🟦 A1.2 — Inicializar slots por aeropuerto (LIGERO)
+   ------------------------------------------------------------
+   • Solo guarda la categoría y crea los días vacíos
+   • NO crea 288 slots por día
+   • Los horarios se crean luego, al reservar rutas
+   ============================================================ */
+function ACS_initAirportSlots(icao, category) {
+
+    // Si ya existe, no hacemos nada
+    if (ACS_SLOTS[icao]) return;
+
+    const max = ACS_getMaxSlotsByCategory(category);
+
+    // Nodo principal del aeropuerto
+    ACS_SLOTS[icao] = {
+        __meta: {
+            maxSlots: max    // capacidad máxima por hora para este aeropuerto
+        }
+    };
+
+    const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+    // Creamos los días vacíos; los horarios se generarán más tarde
+    DAYS.forEach(day => {
+        ACS_SLOTS[icao][day] = {};
+    });
+
+    ACS_saveSlots();
+}
+
+/* ============================================================
+   🟦 A1.3 — Obtener disponibilidad real (con meta)
+   ------------------------------------------------------------
+   • Si no existe el horario -> se considera FULL libre
+   • Usa maxSlots guardado en __meta
    ============================================================ */
 
 function ACS_getSlotAvailability(icao, day, time) {
-    if (!ACS_SLOTS[icao] || !ACS_SLOTS[icao][day]) {
+
+    const airportSlots = ACS_SLOTS[icao];
+    if (!airportSlots) {
         return { used: 0, max: 0, free: 0 };
     }
 
-    const slot = ACS_SLOTS[icao][day][time];
-    if (!slot) return { used: 0, max: 0, free: 0 };
+    const meta = airportSlots.__meta || {};
+    const defaultMax =
+        typeof meta.maxSlots === "number" && meta.maxSlots > 0
+            ? meta.maxSlots
+            : 6; // fallback
+
+    const daySlots = airportSlots[day];
+    if (!daySlots) {
+        return { used: 0, max: defaultMax, free: defaultMax };
+    }
+
+    const slot = daySlots[time];
+    if (!slot) {
+        return { used: 0, max: defaultMax, free: defaultMax };
+    }
 
     return {
         used: slot.used,
@@ -90,6 +136,7 @@ function ACS_getSlotAvailability(icao, day, time) {
         free: Math.max(0, slot.max - slot.used)
     };
 }
+
 
 /* ============================================================
    🟦 B1 — RELEASE SLOTS FOR ROUTE — v1.0
@@ -272,7 +319,10 @@ function ACS_buildSlotsForRoute(route) {
 }
 
 /* ============================================================
-   🅱️2 — BOOK ROUTE — v1.0
+   🅱️2 — BOOK ROUTE — v1.1 (CREA HORARIOS ON-DEMAND)
+   ------------------------------------------------------------
+   • Si el slot (hora) no existe → se crea con maxSlots del aeropuerto
+   • Evita fallar por slots inexistentes
    ============================================================ */
 
 function ACS_bookRoute(route) {
@@ -290,20 +340,38 @@ function ACS_bookRoute(route) {
 
     let success = true;
 
+    // 1️⃣ PRIMER PASO — verificar capacidad, creando slots si faltan
     for (const s of route.slotsBooked) {
 
         const ap   = s.airport;
         const day  = s.day;
         const time = s.time;
 
-        if (!slotsData[ap] || !slotsData[ap][day] || !slotsData[ap][day][time]) {
-            console.warn(`⚠️ Slot inexistente: ${ap} ${day} ${time}`);
-            success = false;
-            continue;
+        if (!slotsData[ap]) {
+            console.warn(`⚠️ bookRoute: aeropuerto sin slots inicializados: ${ap}`);
+            continue; // en teoría no debería ocurrir si ACS_initAirportSlots ya corrió
+        }
+
+        const meta = slotsData[ap].__meta || {};
+        const capDefault =
+            typeof meta.maxSlots === "number" && meta.maxSlots > 0
+                ? meta.maxSlots
+                : 6;
+
+        if (!slotsData[ap][day]) {
+            slotsData[ap][day] = {};
+        }
+
+        if (!slotsData[ap][day][time]) {
+            // Creamos el slot en este momento
+            slotsData[ap][day][time] = {
+                used: 0,
+                max: capDefault
+            };
         }
 
         const slot = slotsData[ap][day][time];
-        const cap  = slot.max;  // 🔹 corregido
+        const cap  = slot.max;
         const used = slot.used;
 
         if (used >= cap) {
@@ -327,6 +395,7 @@ function ACS_bookRoute(route) {
         return false;
     }
 
+    // 2️⃣ SEGUNDO PASO — reservar realmente (used++)
     let changed = false;
 
     for (const s of route.slotsBooked) {
@@ -335,8 +404,11 @@ function ACS_bookRoute(route) {
         const day  = s.day;
         const time = s.time;
 
-        const slot = slotsData[ap][day][time];
+        if (!slotsData[ap] || !slotsData[ap][day] || !slotsData[ap][day][time]) {
+            continue; // por seguridad, aunque ya lo creamos arriba
+        }
 
+        const slot = slotsData[ap][day][time];
         slot.used = (slot.used || 0) + 1;
         changed = true;
     }
@@ -348,6 +420,7 @@ function ACS_bookRoute(route) {
     console.log("🟩 Slots reservados para la ruta:", route.slotsBooked);
     return true;
 }
+
 
 /* ============================================================
    🅱️3 — RELEASE ROUTE (LIBERAR SLOTS) — v1.2
