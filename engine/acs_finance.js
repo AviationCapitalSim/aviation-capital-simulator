@@ -65,6 +65,210 @@ if (!localStorage.getItem("ACS_Finance")) {
 }
 
 /* ============================================================
+   🛫 C2.A — GET AIRPORT CATEGORY — v1.0
+   ------------------------------------------------------------
+   • Obtiene la categoría ACS del aeropuerto (Primary, Major…)
+   • Usa WorldAirportsACS cargado por airports_loader.js
+   ============================================================ */
+
+function ACS_getAirportCategory(icao) {
+
+    if (!icao || typeof WorldAirportsACS !== "object") return "Small";
+
+    const key = icao.trim().toUpperCase();
+
+    for (const cont in WorldAirportsACS) {
+        const list = WorldAirportsACS[cont];
+        if (!Array.isArray(list)) continue;
+
+        const ap = list.find(a => a.icao === key);
+        if (ap && ap.category) {
+            return ap.category;   // "Primary", "Major", "Regional", "Small"
+        }
+    }
+
+    return "Small"; // fallback
+}
+
+/* ============================================================
+   💰 C2.B — BASE SLOT FEES (Año 1940)
+   ============================================================ */
+
+const ACS_SLOT_BASE_FEES = {
+    confirm : {
+        Primary  : 105,
+        Major    : 75,
+        Regional : 35,
+        Small    : 15
+    },
+    operation : {
+        Primary  : 105,
+        Major    : 75,
+        Regional : 35,
+        Small    : 15
+    },
+    weekly : {
+        Primary  : 22,
+        Major    : 16,
+        Regional : 8,
+        Small    : 4
+    }
+};
+
+/* ============================================================
+   📈 C2.C — DYNAMIC SLOT FEE (1940 → 2026)
+   ------------------------------------------------------------
+   • factor = escala lineal 1.0 → 9.0
+   • aplica sobre la tarifa base de 1940
+   • modos: confirm, operation, weekly
+   ============================================================ */
+function ACS_getSlotFeeDynamic(icao, mode = "operation") {
+
+    const category = ACS_getAirportCategory(icao);
+    const base = ACS_SLOT_BASE_FEES[mode][category] || 10;
+
+    // Año simulado
+    const simTime = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+        ? ACS_TIME.currentTime
+        : new Date("1940-01-01");
+
+    const year = simTime.getUTCFullYear();
+
+    // Escala: 1940 → 1.0     2026 → 9.0
+    const factor = 1 + ((year - 1940) / (2026 - 1940)) * 8;
+
+    return Math.round(base * factor);
+}
+
+/* ============================================================
+   💵 C2.D — CHARGE SLOT CONFIRMATION FEE — v1.0
+   ------------------------------------------------------------
+   • Se usa al confirmar una ruta
+   • Cobra salida + llegada
+   • Registra en ACS_Finance + ACS_Log
+   ============================================================ */
+
+function ACS_finance_chargeSlotConfirmFee(route) {
+
+    if (!route) return;
+
+    const origin = route.origin;
+    const dest   = route.destination;
+
+    const feeOut = ACS_getSlotFeeDynamic(origin, "confirm");
+    const feeIn  = ACS_getSlotFeeDynamic(dest, "confirm");
+
+    const total  = feeOut + feeIn;
+
+    // 1) Debitar de capital
+    const F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    if (F && typeof F.capital === "number") {
+        F.capital -= total;
+        F.expenses += total;
+        F.profit = F.revenue - F.expenses;
+        localStorage.setItem("ACS_Finance", JSON.stringify(F));
+    }
+
+    // 2) Registrar en LOG financiero
+    const LOG = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+    LOG.unshift({
+        id: "LOG-" + Date.now(),
+        type: "slot_confirm",
+        route: `${origin}→${dest}`,
+        amount: -total,
+        feeOut,
+        feeIn,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem("ACS_Log", JSON.stringify(LOG));
+
+    console.log(`💵 Slot confirm fee charged: ${total} USD`);
+}
+
+/* ============================================================
+   💵 C2.E — CHARGE SLOT OPERATION FEE — v1.0
+   ------------------------------------------------------------
+   • Se cobra cada vez que el vuelo despegue/aterrice
+   • slotFee = origin(operation) + dest(operation)
+   ============================================================ */
+function ACS_finance_chargeSlotOperation(route) {
+
+    if (!route) return;
+
+    const origin = route.origin;
+    const dest   = route.destination;
+
+    const feeOut = ACS_getSlotFeeDynamic(origin, "operation");
+    const feeIn  = ACS_getSlotFeeDynamic(dest, "operation");
+
+    const total  = feeOut + feeIn;
+
+    const F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    if (F && typeof F.capital === "number") {
+        F.capital -= total;
+        F.expenses += total;
+        F.profit = F.revenue - F.expenses;
+        localStorage.setItem("ACS_Finance", JSON.stringify(F));
+    }
+
+    const LOG = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+    LOG.unshift({
+        id: "LOG-" + Date.now(),
+        type: "slot_operation",
+        route: `${origin}→${dest}`,
+        amount: -total,
+        feeOut,
+        feeIn,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem("ACS_Log", JSON.stringify(LOG));
+
+    console.log(`🛫 Slot operation fee charged: ${total} USD`);
+}
+
+/* ============================================================
+   💵 C2.F — CHARGE WEEKLY HOLDING FEE — v1.0
+   ------------------------------------------------------------
+   • Se cobra si la ruta está suspendida
+   • slotFee = origin(weekly) + dest(weekly)
+   ============================================================ */
+
+function ACS_finance_chargeSlotHoldingFee(route) {
+
+    if (!route) return;
+
+    const origin = route.origin;
+    const dest   = route.destination;
+
+    const feeOut = ACS_getSlotFeeDynamic(origin, "weekly");
+    const feeIn  = ACS_getSlotFeeDynamic(dest, "weekly");
+
+    const total  = feeOut + feeIn;
+
+    const F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    if (F && typeof F.capital === "number") {
+        F.capital -= total;
+        F.expenses += total;
+        F.profit = F.revenue - F.expenses;
+        localStorage.setItem("ACS_Finance", JSON.stringify(F));
+    }
+
+    const LOG = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+    LOG.unshift({
+        id: "LOG-" + Date.now(),
+        type: "slot_weekly",
+        route: `${origin}→${dest}`,
+        amount: -total,
+        feeOut,
+        feeIn,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem("ACS_Log", JSON.stringify(LOG));
+
+    console.log(`📆 Weekly slot holding fee charged: ${total} USD`);
+}
+
+/* ============================================================
    === HELPERS LOAD / SAVE ====================================
    ============================================================ */
 function loadFinance() {
