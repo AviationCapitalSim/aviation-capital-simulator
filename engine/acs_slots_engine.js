@@ -96,3 +96,163 @@ function ACS_getSlotAvailability(icao, day, time) {
         free: Math.max(0, slot.max - slot.used)
     };
 }
+
+/* ============================================================
+   🟦 B1 — RELEASE SLOTS FOR ROUTE — v1.0
+   ------------------------------------------------------------
+   - Usa route.slotsBooked = [ { airport, day, time }, ... ]
+   - Resta 1 en "used" por cada slot reservado
+   - No baja de 0
+   ============================================================ */
+
+function ACS_releaseSlotsForRoute(route) {
+
+    if (!route || !Array.isArray(route.slotsBooked) || route.slotsBooked.length === 0) {
+        return;
+    }
+
+    const slotsData = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
+    let changed = false;
+
+    route.slotsBooked.forEach(entry => {
+        if (!entry) return;
+
+        const ap   = entry.airport;
+        const day  = entry.day;   // "mon","tue","wed"...
+        const time = entry.time;  // "06:00"
+
+        if (
+            slotsData[ap] &&
+            slotsData[ap][day] &&
+            slotsData[ap][day][time]
+        ) {
+            const slot = slotsData[ap][day][time];
+            slot.used = Math.max(0, (slot.used || 0) - 1);
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        localStorage.setItem("ACS_SLOTS", JSON.stringify(slotsData));
+    }
+}
+/* ============================================================
+   🟦 B2 — SIMPLE ALERT LOGGER FOR SLOT SYSTEM — v1.0
+   ------------------------------------------------------------
+   - Guarda mensajes en localStorage.ACS_Alerts
+   - Luego se puede leer desde alerts_center.html
+   ============================================================ */
+
+function ACS_pushAlert(message, type = "info") {
+    const now = new Date().toISOString();
+
+    const raw = localStorage.getItem("ACS_Alerts") || "[]";
+    const list = JSON.parse(raw);
+
+    list.push({
+        id: `ALRT_${Date.now()}_${Math.floor(Math.random()*9999)}`,
+        type,             // "info" | "warning" | "critical"
+        message,
+        createdAt: now
+    });
+
+    localStorage.setItem("ACS_Alerts", JSON.stringify(list));
+}
+/* ============================================================
+   🟥 B3 — SLOT RETENTION SYSTEM (3-WEEK RULE) — v1.0
+   ------------------------------------------------------------
+   - Se ejecuta 1 vez por SEMANA de juego
+   - Busca rutas "suspendidas" / sin operar
+   - Suma unusedWeeks
+   - Semana 1 → aviso
+   - Semana 2 → aviso crítico
+   - Semana 3 → libera slots + elimina ruta
+   ============================================================ */
+
+function ACS_checkUnusedSlotsWeekly() {
+
+    const raw = localStorage.getItem("scheduleItems") || "[]";
+    const routes = JSON.parse(raw);
+
+    if (!Array.isArray(routes) || routes.length === 0) {
+        return;
+    }
+
+    const keptRoutes = [];
+
+    routes.forEach(route => {
+
+        // Estado base / fallback
+        const status = route.status || "active";
+
+        // Solo aplicamos la regla a rutas SUSPENDIDAS / NO OPERANDO
+        const isSuspended =
+            status === "suspended" ||
+            status === "no_aircraft" ||
+            status === "paused";
+
+        if (!isSuspended) {
+            // Ruta activa: reseteamos contador y la mantenemos
+            route.unusedWeeks = 0;
+            keptRoutes.push(route);
+            return;
+        }
+
+        // Inicializar contador si no existe
+        if (typeof route.unusedWeeks !== "number") {
+            route.unusedWeeks = 0;
+        }
+
+        route.unusedWeeks += 1;
+
+        const fnOut = route.flightNumberOut || "";
+        const fnIn  = route.flightNumberIn  || "";
+        const label = fnOut && fnIn
+            ? `${fnOut} / ${fnIn}`
+            : `${route.origin || "XXX"} → ${route.destination || "YYY"}`;
+
+        // Semana 1 — aviso normal
+        if (route.unusedWeeks === 1) {
+            ACS_pushAlert(
+                `⚠️ Ruta ${label}: 1ª semana sin operar. Slot reservado pero sin aeronave asignada.`,
+                "warning"
+            );
+            keptRoutes.push(route);
+            return;
+        }
+
+        // Semana 2 — aviso crítico
+        if (route.unusedWeeks === 2) {
+            ACS_pushAlert(
+                `⚠️⚠️ Ruta ${label}: 2ª semana sin operar. Riesgo de perder el slot si no se asigna un avión.`,
+                "critical"
+            );
+            keptRoutes.push(route);
+            return;
+        }
+
+        // Semana 3 — eliminar ruta + liberar slots
+        if (route.unusedWeeks >= 3) {
+
+            // 1) Liberar slots
+            try {
+                ACS_releaseSlotsForRoute(route);
+            } catch (e) {
+                console.warn("Error releasing slots for route:", label, e);
+            }
+
+            // 2) Alerta de eliminación
+            ACS_pushAlert(
+                `❌ Ruta ${label}: slots eliminados automáticamente tras 3 semanas sin operar.`,
+                "critical"
+            );
+
+            // 3) NO la añadimos a keptRoutes → queda eliminada
+            return;
+        }
+
+    });
+
+    // Guardar solo rutas que se mantienen vivas
+    localStorage.setItem("scheduleItems", JSON.stringify(keptRoutes));
+}
