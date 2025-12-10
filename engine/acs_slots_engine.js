@@ -410,3 +410,53 @@ function ACS_slotAlert({ level = "info", airport, day, time, message }) {
         timestamp: ACS_simTimestamp()
     });
 }
+/* ============================================================
+   🟦 B5 — WEEKLY SLOT WATCHER — Qatar Luxury v1.0
+   ------------------------------------------------------------
+   • Se ejecuta UNA VEZ por semana simulada
+   • Usa ACS_TIME + registerTimeListener
+   • Llama ACS_checkUnusedSlotsWeekly()
+   ============================================================ */
+
+(function(){
+
+    let lastSimWeek = null;
+
+    // Función para obtener número de semana (ISO week)
+    function getSimWeek(date) {
+        const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const start = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - start) / 86400000) + 1)/7);
+    }
+
+    // Listener oficial del motor ACS_TIME
+    registerTimeListener((simTime) => {
+
+        if (!simTime) return;
+
+        const currentWeek = getSimWeek(simTime);
+
+        // Primera vez → inicializar
+        if (lastSimWeek === null) {
+            lastSimWeek = currentWeek;
+            return;
+        }
+
+        // Si no ha cambiado la semana → nada que hacer
+        if (currentWeek === lastSimWeek) return;
+
+        // Semana cambió → registrar nueva semana
+        lastSimWeek = currentWeek;
+
+        console.log(`🟦 Weekly Slot Watcher: Week ${currentWeek} started — checking unused slots…`);
+
+        try {
+            ACS_checkUnusedSlotsWeekly();
+        } catch (e) {
+            console.warn("⚠️ Weekly Slot Watcher error:", e);
+        }
+    });
+
+})();
