@@ -1198,6 +1198,7 @@ document.addEventListener("DOMContentLoaded", () => {
    ============================================================ */
      
 function confirmRoute() {
+
   const origin       = document.getElementById("origin").value.trim();
   const destination  = document.getElementById("destination").value.trim();
   const aircraft     = document.getElementById("aircraft").value;
@@ -1211,13 +1212,19 @@ function confirmRoute() {
     return;
   }
 
+  // Flight numbers (OUT/IN)
   const rawFN = document.getElementById("flightNumber").value || "";
   const m = rawFN.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/) || [];
   const fnOut = m[1] || null;
   const fnIn  = m[2] || null;
 
+  // Technical block data (dist, block time, turnaround…)
   const tech = window.ACS_RouteTechData || {};
 
+  /* ============================================================
+     🟦 STEP 1 — Construir objeto base de ruta
+     ============================================================ */
+     
   const newRoute = {
     id: `RT_${Date.now()}`,
     origin,
@@ -1233,8 +1240,33 @@ function confirmRoute() {
     optimizedTurnaround: tech.turnMinOptimized,
     totalRotation: tech.totalMin,
     createdAt: new Date().toISOString()
-};
+  };
 
+  /* ============================================================
+     🟩 STEP 2 — B1: Construir lista de slots usados
+     ============================================================ */
+     
+  ACS_buildSlotsForRoute(newRoute);
+
+  /* ============================================================
+     🟧 STEP 3 — B2: Reservar slots (used++)
+     ============================================================ */
+     
+  const success = ACS_bookRoute(newRoute);
+
+  if (!success) {
+    alert("❌ Route cannot be created. Slot unavailable.");
+    return;
+  }
+
+  /* ============================================================
+     🟨 STEP 4 — C2.D: Cobrar tarifa por confirmación
+     ============================================================ */
+  ACS_finance_chargeSlotConfirmFee(newRoute);
+
+  /* ============================================================
+     🟦 STEP 5 — Guardar ruta en scheduleItems
+     ============================================================ */
   const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   list.push(newRoute);
   localStorage.setItem("scheduleItems", JSON.stringify(list));
