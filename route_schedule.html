@@ -1057,7 +1057,7 @@ function rs_getCrewReal(registration) {
 }
      
 /* ============================================================
-   🅱️2 — AUTO CALCULATE + CONDITIONAL OPTIMIZATION VIEW — v2.0
+   🅱️2 — AUTO CALCULATE + CONDITIONAL OPTIMIZATION DISPLAY v2.1
    ============================================================ */
 
 function autoCalculate() {
@@ -1082,61 +1082,52 @@ function autoCalculate() {
 
     const optimizeON = document.getElementById("optimizeRotation").checked;
 
-    /* ===========================
-       DISTANCE + BLOCK
-       =========================== */
-     
+    /* ============================================================
+       1) DISTANCE + BLOCK TIME
+       ============================================================ */
     const distNM = rs_getDistanceNM(origin, dest);
     const block  = rs_getBlockTime(distNM, speed);
 
-    /* ===========================
-       TURNAROUND BASE + OPT
-       =========================== */
-     
+    /* ============================================================
+       2) TURNAROUND BASE + OPT (por categoría REAL)
+       ============================================================ */
     const baseTurn = rs_getTurnaround(category);
 
-    // SOLO si la casilla está marcada aplicamos el buffer categoría real
     const optTurn = optimizeON
         ? rs_getOptimizedTurnaround(baseTurn, category)
         : baseTurn;
 
-    /* ===========================
-       TOTAL ROTATION
-       =========================== */
-     
+    /* ============================================================
+       3) TOTAL ROTATION (ida + t/a + vuelta)
+       ============================================================ */
     const totalBase = block + baseTurn + block;
     const totalOpt  = block + optTurn  + block;
 
     document.getElementById("techData").style.display = "block";
 
-    /* ===========================
-       PRINT DISTANCE & BLOCK
-       =========================== */
-     
+    /* ============================================================
+       4) DISTANCE & BLOCK
+       ============================================================ */
     document.getElementById("distance").textContent = distNM;
     document.getElementById("blockTime").textContent = `${Math.floor(block/60)}h ${block%60}m`;
 
-    /* ===========================
-       TURNAROUND PANEL (dynamic)
-       =========================== */
-     
+    /* ============================================================
+       5) TURNAROUND PANEL — SHOW OPTIMIZED ONLY WHEN ON
+       ============================================================ */
     if (!optimizeON) {
-        // SOLO base
         document.getElementById("turnaround").innerHTML = `
             ${baseTurn} min
         `;
     } else {
-        // BASE + OPT
         document.getElementById("turnaround").innerHTML = `
             ${baseTurn} min<br>
             <span style="color:#ffd54f">Optimized: ${optTurn} min (+${optTurn - baseTurn})</span>
         `;
     }
 
-    /* ===========================
-       TOTAL ROTATION PANEL
-       =========================== */
-     
+    /* ============================================================
+       6) TOTAL ROTATION PANEL — SHOW OPTIMIZED ONLY WHEN ON
+       ============================================================ */
     if (!optimizeON) {
         document.getElementById("totalRotation").innerHTML = `
             ${Math.floor(totalBase/60)}h ${totalBase%60}m
@@ -1148,17 +1139,15 @@ function autoCalculate() {
         `;
     }
 
-    /* ===========================
-       RISK & EFFICIENCY (STATIC)
-       =========================== */
-     
+    /* ============================================================
+       7) STATIC: RISK & EFFICIENCY
+       ============================================================ */
     document.getElementById("delayRisk").textContent = "3%";
     document.getElementById("effIndex").textContent  = "90%";
 
-    /* ===========================
-       SAVE FOR CONFIRM ROUTE
-       =========================== */
-     
+    /* ============================================================
+       8) SAVE FOR CONFIRM ROUTE
+       ============================================================ */
     window.ACS_RouteTechData = {
         distNM,
         blockMin: block,
