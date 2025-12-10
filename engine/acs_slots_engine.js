@@ -1,24 +1,27 @@
 /* ============================================================
-   🛫 ACS SLOT ENGINE — BASE MODEL v1.0
+   🛫 ACS SLOT ENGINE — BASE MODEL v2.0 (FULL CONSOLIDATED)
    ------------------------------------------------------------
-   • Define slot capacity por aeropuerto
-   • Define slots usados por día y hora
-   • Guarda en localStorage
+   • Motor oficial de Slots ACS
+   • B1/B2/B3/B4 integrados
+   • Compatible con Alert Engine Qatar Luxury
+   ============================================================ */
+
+/* ============================================================
+   === STORAGE BASE ============================================
    ============================================================ */
 
 if (!localStorage.getItem("ACS_SLOTS")) {
     localStorage.setItem("ACS_SLOTS", JSON.stringify({}));
 }
 
-const ACS_SLOTS = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
+let ACS_SLOTS = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
+
+function ACS_saveSlots() {
+    localStorage.setItem("ACS_SLOTS", JSON.stringify(ACS_SLOTS));
+}
 
 /* ============================================================
    🟦 A1.1 — Max Slots por Categoría
-   ------------------------------------------------------------
-   Primary Hub ........ 36/hr
-   Major International . 24/hr
-   Regional Airport .....12/hr
-   Small Airport ........ 6/hr
    ============================================================ */
 
 function ACS_getMaxSlotsByCategory(category = "") {
@@ -37,15 +40,11 @@ function ACS_getMaxSlotsByCategory(category = "") {
 
 /* ============================================================
    🟦 A1.2 — Inicializar slots por aeropuerto
-   ------------------------------------------------------------
-   - Crea estructura:
-     ACS_SLOTS[ICAO][DAY][HH:MM] = { used, max }
    ============================================================ */
 
 function ACS_initAirportSlots(icao, category) {
 
     const max = ACS_getMaxSlotsByCategory(category);
-
     if (!ACS_SLOTS[icao]) ACS_SLOTS[icao] = {};
 
     const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
@@ -73,22 +72,17 @@ function ACS_initAirportSlots(icao, category) {
     ACS_saveSlots();
 }
 
-function ACS_saveSlots() {
-    localStorage.setItem("ACS_SLOTS", JSON.stringify(ACS_SLOTS));
-}
-
 /* ============================================================
    🟦 A1.3 — Obtener disponibilidad real
    ============================================================ */
 
 function ACS_getSlotAvailability(icao, day, time) {
     if (!ACS_SLOTS[icao] || !ACS_SLOTS[icao][day]) {
-        return { used: 0, max: 0 };
+        return { used: 0, max: 0, free: 0 };
     }
 
     const slot = ACS_SLOTS[icao][day][time];
-
-    if (!slot) return { used: 0, max: 0 };
+    if (!slot) return { used: 0, max: 0, free: 0 };
 
     return {
         used: slot.used,
@@ -99,10 +93,6 @@ function ACS_getSlotAvailability(icao, day, time) {
 
 /* ============================================================
    🟦 B1 — RELEASE SLOTS FOR ROUTE — v1.0
-   ------------------------------------------------------------
-   - Usa route.slotsBooked = [ { airport, day, time }, ... ]
-   - Resta 1 en "used" por cada slot reservado
-   - No baja de 0
    ============================================================ */
 
 function ACS_releaseSlotsForRoute(route) {
@@ -118,8 +108,8 @@ function ACS_releaseSlotsForRoute(route) {
         if (!entry) return;
 
         const ap   = entry.airport;
-        const day  = entry.day;   // "mon","tue","wed"...
-        const time = entry.time;  // "06:00"
+        const day  = entry.day;
+        const time = entry.time;
 
         if (
             slotsData[ap] &&
@@ -136,11 +126,9 @@ function ACS_releaseSlotsForRoute(route) {
         localStorage.setItem("ACS_SLOTS", JSON.stringify(slotsData));
     }
 }
+
 /* ============================================================
    🟦 B2 — SIMPLE ALERT LOGGER FOR SLOT SYSTEM — v1.0
-   ------------------------------------------------------------
-   - Guarda mensajes en localStorage.ACS_Alerts
-   - Luego se puede leer desde alerts_center.html
    ============================================================ */
 
 function ACS_pushAlert(message, type = "info") {
@@ -151,22 +139,16 @@ function ACS_pushAlert(message, type = "info") {
 
     list.push({
         id: `ALRT_${Date.now()}_${Math.floor(Math.random()*9999)}`,
-        type,             // "info" | "warning" | "critical"
+        type,
         message,
         createdAt: now
     });
 
     localStorage.setItem("ACS_Alerts", JSON.stringify(list));
 }
+
 /* ============================================================
    🟥 B3 — SLOT RETENTION SYSTEM (3-WEEK RULE) — v1.0
-   ------------------------------------------------------------
-   - Se ejecuta 1 vez por SEMANA de juego
-   - Busca rutas "suspendidas" / sin operar
-   - Suma unusedWeeks
-   - Semana 1 → aviso
-   - Semana 2 → aviso crítico
-   - Semana 3 → libera slots + elimina ruta
    ============================================================ */
 
 function ACS_checkUnusedSlotsWeekly() {
@@ -182,23 +164,19 @@ function ACS_checkUnusedSlotsWeekly() {
 
     routes.forEach(route => {
 
-        // Estado base / fallback
         const status = route.status || "active";
 
-        // Solo aplicamos la regla a rutas SUSPENDIDAS / NO OPERANDO
         const isSuspended =
             status === "suspended" ||
             status === "no_aircraft" ||
             status === "paused";
 
         if (!isSuspended) {
-            // Ruta activa: reseteamos contador y la mantenemos
             route.unusedWeeks = 0;
             keptRoutes.push(route);
             return;
         }
 
-        // Inicializar contador si no existe
         if (typeof route.unusedWeeks !== "number") {
             route.unusedWeeks = 0;
         }
@@ -211,7 +189,6 @@ function ACS_checkUnusedSlotsWeekly() {
             ? `${fnOut} / ${fnIn}`
             : `${route.origin || "XXX"} → ${route.destination || "YYY"}`;
 
-        // Semana 1 — aviso normal
         if (route.unusedWeeks === 1) {
             ACS_pushAlert(
                 `⚠️ Ruta ${label}: 1ª semana sin operar. Slot reservado pero sin aeronave asignada.`,
@@ -221,7 +198,6 @@ function ACS_checkUnusedSlotsWeekly() {
             return;
         }
 
-        // Semana 2 — aviso crítico
         if (route.unusedWeeks === 2) {
             ACS_pushAlert(
                 `⚠️⚠️ Ruta ${label}: 2ª semana sin operar. Riesgo de perder el slot si no se asigna un avión.`,
@@ -231,39 +207,29 @@ function ACS_checkUnusedSlotsWeekly() {
             return;
         }
 
-        // Semana 3 — eliminar ruta + liberar slots
         if (route.unusedWeeks >= 3) {
 
-            // 1) Liberar slots
             try {
                 ACS_releaseSlotsForRoute(route);
             } catch (e) {
                 console.warn("Error releasing slots for route:", label, e);
             }
 
-            // 2) Alerta de eliminación
             ACS_pushAlert(
                 `❌ Ruta ${label}: slots eliminados automáticamente tras 3 semanas sin operar.`,
                 "critical"
             );
 
-            // 3) NO la añadimos a keptRoutes → queda eliminada
             return;
         }
 
     });
 
-    // Guardar solo rutas que se mantienen vivas
     localStorage.setItem("scheduleItems", JSON.stringify(keptRoutes));
 }
+
 /* ============================================================
-   🅱️1 — BUILD SLOTS FOR ROUTE — v1.0 (ORIGIN + DEST ONLY)
-   ------------------------------------------------------------
-   • Genera estructura route.slotsBooked
-   • Por cada día seleccionado
-   • ORIGIN → horario de salida
-   • DEST   → horario de llegada
-   • NO modifica slots aún (solo genera la lista)
+   🅱️1 — BUILD SLOTS FOR ROUTE — v1.0
    ============================================================ */
 
 function ACS_buildSlotsForRoute(route) {
@@ -273,9 +239,9 @@ function ACS_buildSlotsForRoute(route) {
     const origin = route.origin;
     const dest   = route.destination;
 
-    const days   = Array.isArray(route.weekdays) ? route.weekdays : [];
-    const dep    = route.departureUTC;  // "06:15"
-    const arr    = route.arrivalUTC;    // "09:42"
+    const days = Array.isArray(route.weekdays) ? route.weekdays : [];
+    const dep  = route.departureUTC;
+    const arr  = route.arrivalUTC;
 
     if (!origin || !dest || days.length === 0 || !dep || !arr) {
         console.warn("⚠️ buildSlotsForRoute: Missing required route fields");
@@ -286,14 +252,12 @@ function ACS_buildSlotsForRoute(route) {
 
     days.forEach(day => {
 
-        // ORIGIN slot → SALIDA
         booked.push({
             airport : origin,
             day     : day.toLowerCase(),
             time    : dep
         });
 
-        // DESTINATION slot → LLEGADA
         booked.push({
             airport : dest,
             day     : day.toLowerCase(),
@@ -302,19 +266,13 @@ function ACS_buildSlotsForRoute(route) {
 
     });
 
-    // Guardar lista en la propia ruta
     route.slotsBooked = booked;
 
     return booked;
 }
+
 /* ============================================================
-   🅱️2 — BOOK ROUTE (RESERVAR SLOTS) — v1.0
-   ------------------------------------------------------------
-   • Usa route.slotsBooked generado en B1
-   • Revisa disponibilidad
-   • used++ en cada slot
-   • Si algún slot está lleno → alerta Qatar Luxury + cancelar
-   • Retorna true/false según éxito
+   🅱️2 — BOOK ROUTE — v1.0
    ============================================================ */
 
 function ACS_bookRoute(route) {
@@ -332,7 +290,6 @@ function ACS_bookRoute(route) {
 
     let success = true;
 
-    // Primero verificar TODOS los slots antes de reservar
     for (const s of route.slotsBooked) {
 
         const ap   = s.airport;
@@ -346,19 +303,18 @@ function ACS_bookRoute(route) {
         }
 
         const slot = slotsData[ap][day][time];
-        const cap  = slot.capacity || 1;
-        const used = slot.used || 0;
+        const cap  = slot.max;  // 🔹 corregido
+        const used = slot.used;
 
-        // Si NO hay capacidad → alerta y cancelar toda la reserva
         if (used >= cap) {
 
             ACS_slotAlert({
-    level: "warning",
-    airport: ap,
-    day: day,
-    time: time,
-    message: `❌ No hay slots disponibles en ${ap} — ${day.toUpperCase()} ${time}.`
-});
+                level: "warning",
+                airport: ap,
+                day: day,
+                time: time,
+                message: `❌ No hay slots disponibles en ${ap} — ${day.toUpperCase()} ${time}.`
+            });
 
             console.error(`❌ Slot lleno — ${ap} ${day} ${time}`);
             success = false;
@@ -366,13 +322,11 @@ function ACS_bookRoute(route) {
         }
     }
 
-    // Si encontramos un slot lleno → cancelamos
     if (!success) {
         console.warn("❌ bookRoute: Cancelado por falta de slots.");
         return false;
     }
 
-    // Ahora sí, reservar (used++)
     let changed = false;
 
     for (const s of route.slotsBooked) {
@@ -394,13 +348,9 @@ function ACS_bookRoute(route) {
     console.log("🟩 Slots reservados para la ruta:", route.slotsBooked);
     return true;
 }
+
 /* ============================================================
    🅱️3 — RELEASE ROUTE (LIBERAR SLOTS) — v1.2
-   ------------------------------------------------------------
-   • Recorre route.slotsBooked
-   • used-- en cada slot
-   • No baja de 0
-   • Devuelve true si libera algo
    ============================================================ */
 
 function ACS_releaseRoute(route) {
@@ -431,10 +381,7 @@ function ACS_releaseRoute(route) {
             slotsData[ap][day][time]
         ) {
             const slot = slotsData[ap][day][time];
-
-            // Asegurar que no baja de 0
             slot.used = Math.max(0, (slot.used || 0) - 1);
-
             changed = true;
         }
     });
@@ -442,17 +389,14 @@ function ACS_releaseRoute(route) {
     if (changed) {
         localStorage.setItem("ACS_SLOTS", JSON.stringify(slotsData));
         console.log("🟩 Slots liberados:", route.slotsBooked);
-       
         return true;
     }
 
     return false;
 }
+
 /* ============================================================
    🅱️4 — SLOT ALERT INTEGRATION — Qatar Luxury Edition v2.0
-   ------------------------------------------------------------
-   • Formatea alertas de slots con ACS_pushAlert()
-   • Estándar corporativo ACS (title, level, type)
    ============================================================ */
 
 function ACS_slotAlert({ level = "info", airport, day, time, message }) {
