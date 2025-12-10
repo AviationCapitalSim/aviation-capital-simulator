@@ -256,3 +256,213 @@ function ACS_checkUnusedSlotsWeekly() {
     // Guardar solo rutas que se mantienen vivas
     localStorage.setItem("scheduleItems", JSON.stringify(keptRoutes));
 }
+/* ============================================================
+   🅱️1 — BUILD SLOTS FOR ROUTE — v1.0 (ORIGIN + DEST ONLY)
+   ------------------------------------------------------------
+   • Genera estructura route.slotsBooked
+   • Por cada día seleccionado
+   • ORIGIN → horario de salida
+   • DEST   → horario de llegada
+   • NO modifica slots aún (solo genera la lista)
+   ============================================================ */
+
+function ACS_buildSlotsForRoute(route) {
+
+    if (!route) return [];
+
+    const origin = route.origin;
+    const dest   = route.destination;
+
+    const days   = Array.isArray(route.weekdays) ? route.weekdays : [];
+    const dep    = route.departureUTC;  // "06:15"
+    const arr    = route.arrivalUTC;    // "09:42"
+
+    if (!origin || !dest || days.length === 0 || !dep || !arr) {
+        console.warn("⚠️ buildSlotsForRoute: Missing required route fields");
+        return [];
+    }
+
+    const booked = [];
+
+    days.forEach(day => {
+
+        // ORIGIN slot → SALIDA
+        booked.push({
+            airport : origin,
+            day     : day.toLowerCase(),
+            time    : dep
+        });
+
+        // DESTINATION slot → LLEGADA
+        booked.push({
+            airport : dest,
+            day     : day.toLowerCase(),
+            time    : arr
+        });
+
+    });
+
+    // Guardar lista en la propia ruta
+    route.slotsBooked = booked;
+
+    return booked;
+}
+/* ============================================================
+   🅱️2 — BOOK ROUTE (RESERVAR SLOTS) — v1.0
+   ------------------------------------------------------------
+   • Usa route.slotsBooked generado en B1
+   • Revisa disponibilidad
+   • used++ en cada slot
+   • Si algún slot está lleno → alerta Qatar Luxury + cancelar
+   • Retorna true/false según éxito
+   ============================================================ */
+
+function ACS_bookRoute(route) {
+
+    if (!route || !Array.isArray(route.slotsBooked) || route.slotsBooked.length === 0) {
+        console.warn("⚠️ bookRoute: route.slotsBooked está vacío.");
+        return false;
+    }
+
+    let slotsData = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
+    if (!slotsData || typeof slotsData !== "object") {
+        console.error("❌ bookRoute: No ACS_SLOTS found.");
+        return false;
+    }
+
+    let success = true;
+
+    // Primero verificar TODOS los slots antes de reservar
+    for (const s of route.slotsBooked) {
+
+        const ap   = s.airport;
+        const day  = s.day;
+        const time = s.time;
+
+        if (!slotsData[ap] || !slotsData[ap][day] || !slotsData[ap][day][time]) {
+            console.warn(`⚠️ Slot inexistente: ${ap} ${day} ${time}`);
+            success = false;
+            continue;
+        }
+
+        const slot = slotsData[ap][day][time];
+        const cap  = slot.capacity || 1;
+        const used = slot.used || 0;
+
+        // Si NO hay capacidad → alerta y cancelar toda la reserva
+        if (used >= cap) {
+
+            ACS_slotAlert({
+    level: "warning",
+    airport: ap,
+    day: day,
+    time: time,
+    message: `❌ No hay slots disponibles en ${ap} — ${day.toUpperCase()} ${time}.`
+});
+
+            console.error(`❌ Slot lleno — ${ap} ${day} ${time}`);
+            success = false;
+            break;
+        }
+    }
+
+    // Si encontramos un slot lleno → cancelamos
+    if (!success) {
+        console.warn("❌ bookRoute: Cancelado por falta de slots.");
+        return false;
+    }
+
+    // Ahora sí, reservar (used++)
+    let changed = false;
+
+    for (const s of route.slotsBooked) {
+
+        const ap   = s.airport;
+        const day  = s.day;
+        const time = s.time;
+
+        const slot = slotsData[ap][day][time];
+
+        slot.used = (slot.used || 0) + 1;
+        changed = true;
+    }
+
+    if (changed) {
+        localStorage.setItem("ACS_SLOTS", JSON.stringify(slotsData));
+    }
+
+    console.log("🟩 Slots reservados para la ruta:", route.slotsBooked);
+    return true;
+}
+/* ============================================================
+   🅱️3 — RELEASE ROUTE (LIBERAR SLOTS) — v1.2
+   ------------------------------------------------------------
+   • Recorre route.slotsBooked
+   • used-- en cada slot
+   • No baja de 0
+   • Devuelve true si libera algo
+   ============================================================ */
+
+function ACS_releaseRoute(route) {
+
+    if (!route || !Array.isArray(route.slotsBooked) || route.slotsBooked.length === 0) {
+        console.warn("⚠️ releaseRoute: nada que liberar.");
+        return false;
+    }
+
+    let slotsData = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
+    if (!slotsData || typeof slotsData !== "object") {
+        console.error("❌ releaseRoute: ACS_SLOTS inexistente.");
+        return false;
+    }
+
+    let changed = false;
+
+    route.slotsBooked.forEach(entry => {
+        if (!entry) return;
+
+        const ap   = entry.airport;
+        const day  = entry.day;
+        const time = entry.time;
+
+        if (
+            slotsData[ap] &&
+            slotsData[ap][day] &&
+            slotsData[ap][day][time]
+        ) {
+            const slot = slotsData[ap][day][time];
+
+            // Asegurar que no baja de 0
+            slot.used = Math.max(0, (slot.used || 0) - 1);
+
+            changed = true;
+        }
+    });
+
+    if (changed) {
+        localStorage.setItem("ACS_SLOTS", JSON.stringify(slotsData));
+        console.log("🟩 Slots liberados:", route.slotsBooked);
+       
+        return true;
+    }
+
+    return false;
+}
+/* ============================================================
+   🅱️4 — SLOT ALERT INTEGRATION — Qatar Luxury Edition v2.0
+   ------------------------------------------------------------
+   • Formatea alertas de slots con ACS_pushAlert()
+   • Estándar corporativo ACS (title, level, type)
+   ============================================================ */
+
+function ACS_slotAlert({ level = "info", airport, day, time, message }) {
+
+    ACS_pushAlert({
+        type: "slots",
+        level: level,
+        title: "Airport Slot Notification",
+        message: message || 
+            `Slot event at ${airport} — ${day.toUpperCase()} ${time}.`,
+        timestamp: ACS_simTimestamp()
+    });
+}
