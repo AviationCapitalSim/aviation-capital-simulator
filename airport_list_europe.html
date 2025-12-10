@@ -567,20 +567,25 @@ tr:hover {
     </div>
   </div>
 
-  <!-- SCRIPTS -->
-     
+ <!-- SCRIPTS -->
 <script>
   window.WorldAirportsACS = window.WorldAirportsACS || {};
 </script>
 
+<!-- 1) Base de datos del continente -->
 <script src="engine/airports/world_airports_eu.js"></script>
+
+<!-- 2) Motor de tiempo -->
 <script src="time_engine.js?v=1.2"></script>
 
-<!-- 🔵 SLOT ENGINE — DEBE IR ANTES DE airports_loader.js -->
-<script src="engine/slot_engine.js?v=1.0"></script>
+<!-- 3) 🔵 Slot Engine (DEBE IR ANTES DE airports_loader.js) -->
+<script src="engine/slot_engine.js?v=2.0"></script>
 
-<script src="engine/airports_loader.js"></script>
-<script src="engine/acs_world_engine.js"></script>
+<!-- 4) Loader de aeropuertos (usa slots, así que debe ir después) -->
+<script src="engine/airports_loader.js?v=1.0"></script>
+
+<!-- 5) Motor mundial (usa datos ya cargados) -->
+<script src="engine/acs_world_engine.js?v=1.0"></script>
 
 <script>
 
