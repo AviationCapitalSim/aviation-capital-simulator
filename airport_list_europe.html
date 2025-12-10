@@ -444,7 +444,27 @@ tr:hover {
   box-shadow: 0 0 18px rgba(255,179,0,0.55);
 }
        
-  </style>
+/* ============================================================
+   === ACS SLOT BAR — Qatar Luxury Edition ======================
+   ============================================================ */
+
+.slot-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.slot-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width .25s ease;
+  box-shadow: 0 0 6px rgba(255,255,255,0.28);
+}
+
+</style>
 </head>
 
 <body>
@@ -514,14 +534,19 @@ tr:hover {
        
     <table id="airportTable">
       <thead>
-        <tr>
-          <th onclick="sortTable(0)">Airport (ICAO)</th>
-          <th onclick="sortTable(1)">Country</th>
-          <th onclick="sortTable(2)">Distance (NM)</th>
-          <th onclick="sortTable(3)">Demand (Y/C/F)</th>
-          <th>Action</th>
-        </tr>
-      </thead>
+    <tr>
+      <th onclick="sortTable(0)">Airport (ICAO)</th>
+      <th onclick="sortTable(1)">Country</th>
+      <th onclick="sortTable(2)">Distance (NM)</th>
+      <th onclick="sortTable(3)">Demand (Y/C/F)</th>
+
+      <!-- 🟦 NUEVA COLUMNA -->
+      <th onclick="sortTable(4)">Slots</th>
+
+      <th>Action</th>
+    </tr>
+     </thead>
+
       <tbody id="airportTableBody"></tbody>
     </table>
 
@@ -644,6 +669,51 @@ function adjustPassengerClasses(demand) {
   return { Y, C, F };
 }
 
+/* ============================================================
+   === GET SLOT HTML (bar + values) — v1.0 ======================
+   ============================================================ */
+
+function ACS_buildSlotCell(icao, category) {
+
+  // 🔵 1. Determinar max slots por categoría
+  const max = ACS_getMaxSlotsByCategory(category);  
+  if (!max) return "—"; 
+
+  // 🔵 2. Calcular slots usados en la semana (promedio)
+  let usedTotal = 0;
+  let count = 0;
+
+  const slots = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
+  if (slots) {
+    const days = Object.keys(slots);
+    days.forEach(day => {
+      const times = Object.keys(slots[day]);
+      times.forEach(time => {
+        usedTotal += slots[day][time].used || 0;
+        count++;
+      });
+    });
+  }
+
+  const usedAvg = count > 0 ? Math.round(usedTotal / count) : 0;
+  const free = Math.max(0, max - usedAvg);
+  const pct = Math.max(0, Math.min(100, (free / max) * 100));
+
+  // 🔵 3. Color dinámico
+  let color = "#00FF80"; // green
+  if (pct < 50 && pct >= 20) color = "#FFB300"; // yellow
+  if (pct < 20) color = "#FF2E2E"; // red
+
+  // 🔵 4. HTML final Qatar Luxury
+  return `
+    ${free} / ${max}
+    <div class="slot-bar">
+      <div class="slot-bar-fill"
+           style="width:${pct}%; background:${color};"></div>
+    </div>
+  `;
+}
+       
 // ============================================================
 // === A PARTIR DE AQUÍ TU CÓDIGO TAL CUAL LO ENVIASTE =========
 // ============================================================
@@ -706,7 +776,8 @@ function loadAirports() {
     const bizPct = ((d.Y + d.C) / total) * 100;
 
     const row = document.createElement("tr");
-
+    const slotHTML = ACS_buildSlotCell(a.icao, a.category);
+       
     row.innerHTML = `
       <td><strong>${a.city}</strong> (${a.icao})</td>
       <td>${a.region}</td>
@@ -717,7 +788,9 @@ function loadAirports() {
         ${d.Y}/${d.C}/${d.F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
-
+      
+     <td>${slotHTML}</td>
+     
       <td style="display:flex; gap:8px; justify-content:center;">
         <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
         <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
