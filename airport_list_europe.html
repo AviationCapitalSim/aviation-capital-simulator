@@ -568,16 +568,22 @@ tr:hover {
   </div>
 
   <!-- SCRIPTS -->
-  <script>
-    window.WorldAirportsACS = window.WorldAirportsACS || {};
-  </script>
+     
+<script>
+  window.WorldAirportsACS = window.WorldAirportsACS || {};
+</script>
 
-  <script src="engine/airports/world_airports_eu.js"></script>
-  <script src="time_engine.js?v=1.2"></script>
-  <script src="engine/airports_loader.js"></script>
-  <script src="engine/acs_world_engine.js"></script>
+<script src="engine/airports/world_airports_eu.js"></script>
+<script src="time_engine.js?v=1.2"></script>
 
-  <script>
+<!-- 🔵 SLOT ENGINE — DEBE IR ANTES DE airports_loader.js -->
+<script src="engine/slot_engine.js?v=1.0"></script>
+
+<script src="engine/airports_loader.js"></script>
+<script src="engine/acs_world_engine.js"></script>
+
+<script>
+
 /* ============================================================
    === DISTANCE ENGINE =============================
    ============================================================ */
