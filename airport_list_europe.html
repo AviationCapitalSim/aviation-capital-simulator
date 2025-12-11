@@ -532,11 +532,6 @@ table.airport-table td:nth-child(6) {
 .col-demand   { text-align: center; }
 .col-slots    { text-align: center; }
 .col-action   { text-align: center; }
-
-/* A1 — Force header titles centered (no other changes) */
-table#airportTable thead th {
-  text-align: center !important;
-}
        
 </style>
 </head>
@@ -606,8 +601,7 @@ table#airportTable thead th {
       
     <!-- TABLE -->
        
-    <table id="airportTable" class="airport-table">
-
+    <table id="airportTable">
       <thead>
     <tr>
       <th onclick="sortTable(0)">Airport (ICAO)</th>
