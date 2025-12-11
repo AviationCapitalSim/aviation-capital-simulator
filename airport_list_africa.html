@@ -734,19 +734,51 @@ function loadAirports() {
     return;
   }
 
-  // Base guardada por el usuario en localStorage
-  const userBase = localStorage.getItem("ACS_baseICAO") || null;
-  const base = airports.find(a => a.icao === userBase);
+  // ============================================================
+// BASE GLOBAL — MISMO COMPORTAMIENTO DE EUROPA
+// ============================================================
 
-  let baseLat = null;
-  let baseLon = null;
+let baseLat = null;
+let baseLon = null;
+let baseIcao = null;
+let baseCity = null;
+let baseRegion = null;
 
-  if (base) {
-    baseLat = base.latitude;
-    baseLon = base.longitude;
+try {
+  if (typeof findBaseAirportGlobal === "function") {
+    const baseGlobal = findBaseAirportGlobal();
+
+    if (baseGlobal &&
+        typeof baseGlobal.latitude === "number" &&
+        typeof baseGlobal.longitude === "number") {
+
+      baseLat = baseGlobal.latitude;
+      baseLon = baseGlobal.longitude;
+      baseIcao = baseGlobal.icao;
+      baseCity = baseGlobal.city;
+      baseRegion = baseGlobal.region;
+    }
   }
+} catch (err) {
+  console.warn("Africa: findBaseAirportGlobal failed:", err);
+}
+
+// Fallback solo si la base global no existe
+if (baseLat === null || baseLon === null) {
+  const userBase = localStorage.getItem("ACS_baseICAO") || null;
+  const baseLocal = airports.find(a => a.icao === userBase);
+
+  if (baseLocal) {
+    baseLat = baseLocal.latitude;
+    baseLon = baseLocal.longitude;
+    baseIcao = baseLocal.icao;
+    baseCity = baseLocal.city;
+    baseRegion = baseLocal.region;
+  }
+}
 
   // Ordenar por demanda como en Europa
+     
   const ordered = airports
     .filter(a => a.icao !== userBase)
     .sort((a, b) => {
@@ -1030,30 +1062,45 @@ function handleLogout() {
 
 
 /* =============================================================
-   === INITIALIZATION ==========================================
+   === INITIALIZATION — BASE GLOBAL (MISMO QUE EUROPA) =========
    ============================================================= */
 document.addEventListener("DOMContentLoaded", () => {
 
+  // 1) Cargar tabla
   loadAirports();
 
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (baseIcao) {
-    const airports = getAirportsAfricaSafe();
-    const base = airports.find(a => a.icao === baseIcao);
+  // 2) Resolver base global primero
+  let baseGlobal = null;
 
-    if (base) {
-      const flagEmoji = base.country.replace(/./g, c =>
-        String.fromCodePoint(c.charCodeAt(0) + 127397)
-      );
+  try {
+    if (typeof findBaseAirportGlobal === "function") {
+      baseGlobal = findBaseAirportGlobal();
+    }
+  } catch (err) {
+    console.warn("Africa: findBaseAirportGlobal fallo:", err);
+  }
 
-      document.getElementById("originFlag").textContent = flagEmoji;
-      document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent =
-        `— ${base.city}, ${base.region}`;
+  // 3) Si no existe base global, fallback al continente
+  if (!baseGlobal) {
+    const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+    if (baseIcao) {
+      const airports = getAirportsAfricaSafe();
+      baseGlobal = airports.find(a => a.icao === baseIcao) || null;
     }
   }
-});
 
+  // 4) Si encontramos base, actualizar banner
+  if (baseGlobal) {
+    const flagEmoji = baseGlobal.country.replace(/./g, c =>
+      String.fromCodePoint(c.charCodeAt(0) + 127397)
+    );
+
+    document.getElementById("originFlag").textContent = flagEmoji;
+    document.getElementById("originIcao").textContent = baseGlobal.icao;
+    document.getElementById("originCity").textContent =
+      `— ${baseGlobal.city}, ${baseGlobal.region}`;
+  }
+});
 
 /* =============================================================
    === SEND ORIGIN & DESTINATION TO SCHEDULE ===================
