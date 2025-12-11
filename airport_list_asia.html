@@ -433,8 +433,28 @@ tr:hover {
   transform: scale(1.07);
   box-shadow: 0 0 18px rgba(255,179,0,0.55);
 }
+       
+/* ============================================================
+   === SLOT BAR (AGREGADO, COLUMNA 5) — v1.0 ===================
+   ============================================================ */
 
-  </style>
+.slot-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.10);
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.slot-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width .25s ease;
+  box-shadow: 0 0 6px rgba(255,255,255,0.28);
+}
+       
+</style>
 </head>
 
 <body>
@@ -508,6 +528,7 @@ tr:hover {
           <th onclick="sortTable(1)">Country</th>
           <th onclick="sortTable(2)">Distance (NM)</th>
           <th onclick="sortTable(3)">Demand (Y/C/F)</th>
+          <th onclick="sortTable(4)">Slots</th>          
           <th>Action</th>
         </tr>
       </thead>
@@ -540,7 +561,10 @@ tr:hover {
 
   <!-- Time Engine -->
   <script src="time_engine.js?v=1.2"></script>
-
+  
+  <!--  🔵 A4 — Slot Engine (DEBE IR ANTES DE airports_loader.js) -->
+  <script src="engine/acs_slots_engine.js?v=2.0"></script>
+     
   <!-- World + Loader + ACS Engines -->
   <script src="engine/airports_loader.js"></script>
   <script src="engine/acs_world_engine.js"></script>
@@ -659,10 +683,60 @@ function adjustPassengerClasses(demand) {
 
   return { Y, C, F };
 }
+     
+/* ============================================================
+   === GET SLOT HTML (bar + values) — v1.0 ======================
+   ============================================================ */
+function ACS_buildSlotCell(icao, category) {
 
+  // Obtener el máximo de slots según categoría
+  const max = ACS_getMaxSlotsByCategory(category);  
+  if (!max) return "—"; 
+
+  let usedTotal = 0;
+  let count = 0;
+
+  // Leer slots usados desde localStorage
+  const slots = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
+  if (slots) {
+    const days = Object.keys(slots);
+    days.forEach(day => {
+      const times = Object.keys(slots[day]);
+      times.forEach(time => {
+        usedTotal += slots[day][time].used || 0;
+        count++;
+      });
+    });
+  }
+
+  // Promedio de uso
+  const usedAvg = count > 0 ? Math.round(usedTotal / count) : 0;
+
+  // Slots libres
+  const free = Math.max(0, max - usedAvg);
+
+  // Porcentaje visual de la barra
+  const pct = Math.max(0, Math.min(100, (free / max) * 100));
+
+  // Color según disponibilidad
+  let color = "#00FF80";        // Verde
+  if (pct < 50 && pct >= 20) color = "#FFB300";  // Amarillo
+  if (pct < 20) color = "#FF2E2E";               // Rojo
+
+  // Retorno del HTML embebido
+  return `
+    ${free} / ${max}
+    <div class="slot-bar">
+      <div class="slot-bar-fill"
+           style="width:${pct}%; background:${color};"></div>
+    </div>
+  `;
+}
+     
 /* ============================================================
    === LOAD AIRPORTS (ASIA — NM FIX FINAL) =====================
    ============================================================ */
+     
 function loadAirports() {
 
   const tableBody = document.getElementById("airportTableBody");
@@ -724,22 +798,26 @@ function loadAirports() {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-      <td><strong>${a.city}</strong> (${a.icao})</td>
-      <td>${a.region}</td>
-      <td>${dist} NM</td>
+  <td><strong>${a.city}</strong> (${a.icao})</td>
+  <td>${a.region}</td>
+  <td>${dist} NM</td>
 
-      <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
-          onmouseout="hideDemandTooltip()">
-        ${d.Y}/${d.C}/${d.F}
-        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-      </td>
+  <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
+      onmouseout="hideDemandTooltip()">
+    ${d.Y}/${d.C}/${d.F}
+    <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+  </td>
 
-      <td style="display:flex; gap:8px; justify-content:center;">
-        <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
-        <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
-      </td>
-    `;
+  <!-- 🔵 A6 — Nueva columna Slots -->
+  <td class="col-slots">
+    ${ACS_buildSlotCell(a.icao, a.category)}
+  </td>
 
+  <td style="display:flex; gap:8px; justify-content:center;">
+    <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
+    <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
+  </td>
+`;
     tableBody.appendChild(row);
   });
 }
@@ -797,27 +875,27 @@ function filterByCountry() {
 
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td><strong>${a.city}</strong> (${a.icao})</td>
-      <td>${a.region}</td>
-      <td>${dist} NM</td>
+  <td><strong>${a.city}</strong> (${a.icao})</td>
+  <td>${a.region}</td>
+  <td>${dist} NM</td>
 
-      <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
-          onmouseout="hideDemandTooltip()">
-        ${d.Y}/${d.C}/${d.F}
-        <div class="demand-bar"
-             style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-      </td>
+  <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
+      onmouseout="hideDemandTooltip()">
+    ${d.Y}/${d.C}/${d.F}
+    <div class="demand-bar"
+         style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+  </td>
 
-      <td style="display:flex; gap:8px; justify-content:center;">
-        <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">
-          Info
-        </button>
+  <!-- 🔵 A7 — Nueva columna Slots en filtrado -->
+  <td class="col-slots">
+    ${ACS_buildSlotCell(a.icao, a.category)}
+  </td>
 
-        <button class="acs-btn" onclick="goToSchedule('${a.icao}')">
-          Create Route
-        </button>
-      </td>
-    `;
+  <td style="display:flex; gap:8px; justify-content:center;">
+    <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
+    <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
+  </td>
+`;
 
     tableBody.appendChild(row);
   });
