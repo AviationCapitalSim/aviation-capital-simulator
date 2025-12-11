@@ -863,58 +863,62 @@ if (selector) {
 }
 
   // ============================================================
-// 🟦 TABLE BUILDER — ALL COUNTRIES (Balanced Edition v2.0)
-// ============================================================
-ordered.forEach(a => {
+  // 🟦 TABLE BUILDER — ALL COUNTRIES (Balanced Edition v2.0)
+  // ============================================================
+  ordered.forEach(a => {
 
-  let dist = "-";
-  if (baseLat !== null && baseLon !== null) {
-    dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
-  }
+    let dist = "-";
+    if (baseLat !== null && baseLon !== null) {
+      dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
+    }
 
-  // DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
-  const d = adjustPassengerClasses(a.demand);
-  const total = d.Y + d.C + d.F || 1;
-  const ecoPct = (d.Y / total) * 100;
-  const bizPct = ((d.Y + d.C) / total) * 100;
+    // DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
+    const d = adjustPassengerClasses(a.demand);
+    const total = d.Y + d.C + d.F || 1;
+    const ecoPct = (d.Y / total) * 100;
+    const bizPct = ((d.Y + d.C) / total) * 100;
 
-  // SLOT CELL
-  const slotHTML = ACS_buildSlotCell(a.icao, a.category);
+    // SLOT CELL
+    const slotHTML = ACS_buildSlotCell(a.icao, a.category);
 
-  // CREAR FILA
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td class="col-airport">
-      <strong>${a.city}</strong> (${a.icao})
-    </td>
+    // CREAR FILA
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td class="col-airport">
+        <strong>${a.city}</strong> (${a.icao})
+      </td>
 
-    <td class="col-country">
-      ${a.region}
-    </td>
+      <td class="col-country">
+        ${a.region}
+      </td>
 
-    <td class="col-distance">
-      ${dist} NM
-    </td>
+      <td class="col-distance">
+        ${dist} NM
+      </td>
 
-    <td class="col-demand"
-        onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
-        onmouseout="hideDemandTooltip()">
-      ${d.Y}/${d.C}/${d.F}
-      <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-    </td>
+      <td class="col-demand"
+          onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
+          onmouseout="hideDemandTooltip()">
+        ${d.Y}/${d.C}/${d.F}
+        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+      </td>
 
-    <td class="col-slots">
-      ${slotHTML}
-    </td>
+      <td class="col-slots">
+        ${slotHTML}
+      </td>
 
-    <td class="col-action">
-      <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
-      <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
-    </td>
-  `;
+      <td class="col-action">
+        <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
+        <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
+      </td>
+    `;
 
-  tableBody.appendChild(row);
-});
+    tableBody.appendChild(row);
+  });   // ← cierra ordered.forEach
+
+}        // ← cierra function loadAirports()
+
+
 
 /* ============================================================
    🟦 FILTER BY COUNTRY — Qatar Luxury v2.0 (Slots Integrated)
