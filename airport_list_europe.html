@@ -539,6 +539,26 @@ table.airport-table td:nth-child(6) {
 #airportTable thead th {
   text-align: center !important;
 }
+
+/* ============================================================
+   🟦 FIX DEFINITIVO — HEADERS 100% CENTRADOS AL CARGAR
+   ------------------------------------------------------------
+   • Fuerza a Safari/Chrome a calcular TODAS las columnas igual
+   • Centra los encabezados incluso antes de que JS renderice
+   • No toca botones, no afecta filas, no destruye nada
+   ============================================================ */
+
+#airportTable {
+    width: 100%;
+    table-layout: auto !important;  /* usa contenido real */
+    border-collapse: collapse;
+}
+
+#airportTable thead th {
+    text-align: center !important;
+    width: auto !important;
+    white-space: nowrap;
+}
        
 </style>
 </head>
