@@ -520,6 +520,62 @@ body {
   box-shadow: 0 0 6px rgba(255,255,255,0.28);
 }
 
+/* ============================================================
+   💎 FINAL ACTION COLUMN FIX — Compact Edition v1.0
+   ============================================================ */
+
+/* 🔹 Columnas originales restauradas */
+#airportTable th:nth-child(1), #airportTable td:nth-child(1) { width: 22%; }
+#airportTable th:nth-child(2), #airportTable td:nth-child(2) { width: 18%; }
+#airportTable th:nth-child(3), #airportTable td:nth-child(3) { width: 15%; }
+#airportTable th:nth-child(4), #airportTable td:nth-child(4) { width: 20%; }
+#airportTable th:nth-child(5), #airportTable td:nth-child(5) { width: 10%; }
+
+/* 🔹 ACTION — FIJO Y CENTRADO */
+#airportTable th:nth-child(6),
+#airportTable td:nth-child(6) {
+  width: 140px !important;
+  max-width: 140px !important;
+  text-align: center !important;
+  padding: 0 !important;
+}
+
+/* 🔹 Contenedor interno siempre estable */
+#airportTable td:nth-child(6) {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+  overflow: visible !important;
+}
+
+/* ============================================================
+   💎 BOTONES — versión COMPACTA “A”
+   ============================================================ */
+
+.acs-btn-info {
+  width: 60px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  font-size: 0.8rem !important;
+  border-radius: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+.acs-btn {
+  width: 80px !important;     /* Create Route */
+  height: 32px !important;
+  padding: 0 !important;
+  font-size: 0.8rem !important;
+  border-radius: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Mantener ancho estable en Safari */
+#airportTable {
+  table-layout: fixed !important;
+}
+     
 </style>
 
 </head>
