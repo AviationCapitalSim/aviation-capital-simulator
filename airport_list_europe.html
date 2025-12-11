@@ -518,7 +518,56 @@ body {
     margin-right: auto;
   }
 }
+/* ============================================================
+   💎 FIX — ACTION BUTTONS PERFECT ALIGNMENT (Safari/iPhone)
+   ============================================================ */
+
+#airportTable td.col-action,
+#airportTable td:nth-child(6) {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+/* Tamaño unificado */
+.acs-btn,
+.acs-btn-info {
+  height: 36px !important;
+  padding: 0 18px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+}
+
+/* Botón INFO */
      
+.acs-btn-info {
+  min-width: 68px !important;       /* ✔ Tamaño estable */
+  background: rgba(20,40,85,0.85) !important;
+  border: 1px solid #ffb300 !important;
+  color: #ffb300 !important;
+}
+.acs-btn-info:hover {
+  background: #ffb300 !important;
+  color: #081530 !important;
+}
+
+/* Botón CREATE ROUTE */
+     
+.acs-btn {
+  min-width: 118px !important;      /* ✔ Misma base */
+  background-color: #00a86b !important;
+  color: #fff !important;
+}
+.acs-btn:hover {
+  background-color: #00794f !important;
+}
+
 </style>
 
 </head>
