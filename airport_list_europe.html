@@ -238,49 +238,53 @@ body {
   box-shadow: 0 0 14px rgba(255,179,0,0.35) inset;
 }
 
-/* 🔹 Column widths (balanced + ACTION 17%) */
-#airportTable th:nth-child(1),
-#airportTable td:nth-child(1) {
-  width: 22%;
-  text-align: left;
-  padding-left: 18px;
-}
+/* ============================================================
+   💎 OFFICIAL FIX — ACTION COLUMN (Safari/Desktop)
+   ============================================================ */
 
-#airportTable th:nth-child(2),
-#airportTable td:nth-child(2) {
-  width: 18%;
-  text-align: left;
-  padding-left: 14px;
-}
-
-#airportTable th:nth-child(3),
-#airportTable td:nth-child(3) {
-  width: 15%;
-}
-
-#airportTable th:nth-child(4),
-#airportTable td:nth-child(4) {
-  width: 20%;
-}
-
-#airportTable th:nth-child(5),
-#airportTable td:nth-child(5) {
-  width: 10%;
-}
-
-/* Action column — now 17% TOTAL */
+/* Acción: define un ancho real y estable */
 #airportTable th:nth-child(6),
 #airportTable td:nth-child(6) {
-  width: 17%;
-  text-align: center;
+  width: 150px !important;
+  max-width: 150px !important;
+  text-align: center !important;
+  padding: 0 !important;
 }
 
-/* Alineación horizontal para los botones */
-#airportTable td:nth-child(6) {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
+/* Contenedor FLEX limpio */
+.col-action {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Tamaño uniforme de los botones */
+.acs-btn,
+.acs-btn-info {
+  height: 32px !important;
+  font-size: 0.82rem !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Botón INFO */
+.acs-btn-info {
+  min-width: 58px !important;
+}
+
+/* Botón CREATE ROUTE */
+.acs-btn {
+  min-width: 105px !important;
+}
+
+/* Estructura estable de la tabla */
+#airportTable {
+  table-layout: fixed !important;
+  width: 96% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 /* Demand bar */
@@ -377,6 +381,7 @@ body {
 }
 
 /* ================= Qatar Luxury Modal ================= */
+     
 .acs-modal {
   display: none;
   position: fixed;
@@ -434,6 +439,7 @@ body {
 }
 
 /* Country selector */
+     
 .country-select {
   background: linear-gradient(180deg, #2e3f6e, #1e2d55);
   color: #ffffff;
@@ -463,6 +469,7 @@ body {
 }
 
 /* ===== CONTINENT QUICK ACCESS ===== */
+     
 .continent-access {
   margin-top: 32px;
   margin-bottom: 38px;
@@ -606,7 +613,9 @@ body {
       <button class="acs-modal-close" onclick="closeAirportInfo()">Close</button>
     </div>
   </div>
+     
   <!-- SCRIPTS -->
+     
 <script>
   window.WorldAirportsACS = window.WorldAirportsACS || {};
 </script>
