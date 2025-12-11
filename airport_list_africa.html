@@ -721,7 +721,9 @@ function ACS_buildSlotCell(icao, category) {
 
 /* ============================================================
    === TABLE BUILDER — ALL COUNTRIES (Balanced v2.0) ===========
+   === (AFRICA + BASE GLOBAL) ==================================
    ============================================================ */
+     
 function loadAirports() {
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
@@ -732,24 +734,45 @@ function loadAirports() {
     return;
   }
 
-  const userBase = localStorage.getItem("ACS_baseICAO") || null;
-  const base = airports.find(a => a.icao === userBase);
-  let baseLat = null, baseLon = null;
+  // 🔹 1) Intentar obtener la base GLOBAL (puede estar en Europa, etc.)
+  let baseLat = null;
+  let baseLon = null;
 
-  if (base) {
-    baseLat = base.latitude;
-    baseLon = base.longitude;
+  try {
+    if (typeof findBaseAirportGlobal === "function") {
+      const baseGlobal = findBaseAirportGlobal();
+      if (baseGlobal &&
+          typeof baseGlobal.latitude === "number" &&
+          typeof baseGlobal.longitude === "number") {
+        baseLat = baseGlobal.latitude;
+        baseLon = baseGlobal.longitude;
+      }
+    }
+  } catch (e) {
+    console.warn("Africa loadAirports: findBaseAirportGlobal fallo:", e);
   }
 
+  // 🔹 2) Si no encontramos base global, usamos la del propio continente
+  if (baseLat === null || baseLon === null) {
+    const userBase = localStorage.getItem("ACS_baseICAO") || null;
+    const base = airports.find(a => a.icao === userBase);
+    if (base) {
+      baseLat = base.latitude;
+      baseLon = base.longitude;
+    }
+  }
+
+  // 🔹 3) Ordenar por demanda total
+  const userBaseIcao = localStorage.getItem("ACS_baseICAO") || null;
   const ordered = airports
-    .filter(a => a.icao !== userBase)
-    .sort((a,b) => {
+    .filter(a => a.icao !== userBaseIcao)
+    .sort((a, b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
       const bd = b.demand.Y + b.demand.C + b.demand.F;
       return bd - ad;
     });
 
-  /* Country filter clean build */
+  // 🔹 4) Selector de país (region)
   const selector = document.getElementById("countrySelect");
   if (selector) {
     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
@@ -765,7 +788,7 @@ function loadAirports() {
     });
   }
 
-  // Build rows
+  // 🔹 5) Construir filas
   ordered.forEach(a => {
 
     let dist = "-";
@@ -806,10 +829,10 @@ function loadAirports() {
   setTimeout(() => { table.style.visibility = "visible"; }, 50);
 }
 
-
 /* ============================================================
-   === FILTER BY COUNTRY =======================================
+   === FILTER BY COUNTRY (AFRICA + BASE GLOBAL) ================
    ============================================================ */
+     
 function filterByCountry() {
   const selected  = document.getElementById("countrySelect").value;
   const tableBody = document.getElementById("airportTableBody");
@@ -818,17 +841,37 @@ function filterByCountry() {
   const airports = getAirportsAfricaSafe();
   if (!airports || airports.length === 0) return;
 
-  const userBase = localStorage.getItem("ACS_baseICAO") || null;
-  const base = airports.find(a => a.icao === userBase);
+  // 🔹 1) Base global primero
+  let baseLat = null;
+  let baseLon = null;
 
-  let baseLat = null, baseLon = null;
-  if (base) {
-    baseLat = base.latitude;
-    baseLon = base.longitude;
+  try {
+    if (typeof findBaseAirportGlobal === "function") {
+      const baseGlobal = findBaseAirportGlobal();
+      if (baseGlobal &&
+          typeof baseGlobal.latitude === "number" &&
+          typeof baseGlobal.longitude === "number") {
+        baseLat = baseGlobal.latitude;
+        baseLon = baseGlobal.longitude;
+      }
+    }
+  } catch (e) {
+    console.warn("Africa filterByCountry: findBaseAirportGlobal fallo:", e);
   }
 
+  // 🔹 2) Fallback: base dentro del continente
+  if (baseLat === null || baseLon === null) {
+    const userBase = localStorage.getItem("ACS_baseICAO") || null;
+    const base = airports.find(a => a.icao === userBase);
+    if (base) {
+      baseLat = base.latitude;
+      baseLon = base.longitude;
+    }
+  }
+
+  const userBaseIcao = localStorage.getItem("ACS_baseICAO") || null;
   const filtered = airports
-    .filter(a => a.icao !== userBase)
+    .filter(a => a.icao !== userBaseIcao)
     .filter(a => selected === "ALL" || a.region === selected)
     .sort((a, b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
@@ -851,20 +894,22 @@ function filterByCountry() {
     const total = d.Y + d.C + d.F || 1;
     const ecoPct = (d.Y / total) * 100;
     const bizPct = ((d.Y + d.C) / total) * 100;
+
     const slotHTML = ACS_buildSlotCell(a.icao, a.category);
 
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td><strong>${a.city}</strong> (${a.icao})</td>
-      <td>${a.region}</td>
-      <td>${dist} NM</td>
-      <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
+      <td class="col-airport"><strong>${a.city}</strong> (${a.icao})</td>
+      <td class="col-country">${a.region}</td>
+      <td class="col-distance">${dist} NM</td>
+      <td class="col-demand"
+          onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
           onmouseout="hideDemandTooltip()">
         ${d.Y}/${d.C}/${d.F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
-      <td>${slotHTML}</td>
-      <td style="display:flex; gap:8px; justify-content:center;">
+      <td class="col-slots">${slotHTML}</td>
+      <td class="col-action" style="display:flex; gap:8px; justify-content:center;">
         <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
         <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
       </td>
@@ -873,10 +918,10 @@ function filterByCountry() {
   });
 }
 
-
 /* =============================================================
    === SORT TABLE ==============================================
    ============================================================= */
+     
 function sortTable(n) {
   const table = document.getElementById("airportTable");
   let switching = true, dir = "asc", switchcount = 0;
