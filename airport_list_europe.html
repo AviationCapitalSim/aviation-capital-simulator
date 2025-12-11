@@ -880,52 +880,63 @@ ordered.forEach(a => {
   }
 
   // DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
+     
   const d = adjustPassengerClasses(a.demand);
   const total = d.Y + d.C + d.F || 1;
   const ecoPct = (d.Y / total) * 100;
   const bizPct = ((d.Y + d.C) / total) * 100;
 
   // SLOT CELL
+     
   const slotHTML = ACS_buildSlotCell(a.icao, a.category);
 
   // CREAR FILA
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td class="col-airport">
-      <strong>${a.city}</strong> (${a.icao})
-    </td>
-
-    <td class="col-country">
-      ${a.region}
-    </td>
-
-    <td class="col-distance">
-      ${dist} NM
-    </td>
-
-    <td class="col-demand"
-        onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
-        onmouseout="hideDemandTooltip()">
-      ${d.Y}/${d.C}/${d.F}
-      <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-    </td>
-
-    <td class="col-slots">
-      ${slotHTML}
-    </td>
-
-    <td class="col-action">
-      <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
-      <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
-    </td>
-  `;
-
-  tableBody.appendChild(row);
      
+const row = document.createElement("tr");
+row.innerHTML = `
+  <td class="col-airport">
+    <strong>${a.city}</strong> (${a.icao})
+  </td>
+
+  <td class="col-country">
+    ${a.region}
+  </td>
+
+  <td class="col-distance">
+    ${dist} NM
+  </td>
+
+  <td class="col-demand"
+      onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
+      onmouseout="hideDemandTooltip()">
+    ${d.Y}/${d.C}/${d.F}
+    <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+  </td>
+
+  <td class="col-slots">
+    ${slotHTML}
+  </td>
+
+  <td class="col-action">
+    <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
+    <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
+  </td>
+`;
+
+tableBody.appendChild(row);
+
 });
-     
-document.getElementById("airportTable").style.display = "table";
-     
+
+// ============================================================
+// 🟦 SAFARI TABLE RENDER FIX — Redibuja columnas correctamente
+// ============================================================
+const table = document.getElementById("airportTable");
+table.style.visibility = "hidden";
+
+setTimeout(() => {
+  table.style.visibility = "visible";
+}, 50);
+
 }
      
 /* ============================================================
