@@ -611,9 +611,11 @@ function distanceNM(lat1, lon1, lat2, lon2) {
 }
 
 
-/* ==========================================================================
-   === AFRICA SAFE LOADER (VERSIÓN ESPEJO DE getAirportsEuropeSafe()) =======
-   ========================================================================== */
+/* =============================================================
+   === HISTORICAL AIRPORT ENGINE — WITH SAFE FALLBACK ==========
+   === (AFRICA ESPEJO DE EUROPA) ================================
+   ============================================================= */
+     
 function getAirportsAfricaSafe() {
   try {
     if (window.ACS_World &&
@@ -632,7 +634,6 @@ function getAirportsAfricaSafe() {
   console.log("🟧 Fallback → Using WorldAirportsACS (standard mode) — Africa");
   return WorldAirportsACS["Africa"] || [];
 }
-
 
 /* ============================================================
    === BLOQUE 3 — HISTORICAL DEMAND CURVE ======================
@@ -720,8 +721,7 @@ function ACS_buildSlotCell(icao, category) {
 
 
 /* ============================================================
-   === TABLE BUILDER — ALL COUNTRIES (Balanced v2.0) ===========
-   === AFRICA (ESPEJO DE EUROPA, SIN findBaseAirportGlobal) ====
+   === TABLE BUILDER — AFRICA (ESPEJO EXACTO DE EUROPA) ========
    ============================================================ */
      
 function loadAirports() {
@@ -730,21 +730,23 @@ function loadAirports() {
 
   const airports = getAirportsAfricaSafe();
   if (!airports || airports.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="5">No airports available.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="6">No airports available.</td></tr>`;
     return;
   }
 
-  // 🔹 BASE EXACTAMENTE IGUAL QUE EUROPA (simple, directa)
+  // Base guardada por el usuario en localStorage
   const userBase = localStorage.getItem("ACS_baseICAO") || null;
   const base = airports.find(a => a.icao === userBase);
 
-  let baseLat = null, baseLon = null;
+  let baseLat = null;
+  let baseLon = null;
+
   if (base) {
     baseLat = base.latitude;
     baseLon = base.longitude;
   }
 
-  // 🔹 ORDENAR POR DEMANDA TOTAL (Y+C+F) — MISMO CRITERIO
+  // Ordenar por demanda como en Europa
   const ordered = airports
     .filter(a => a.icao !== userBase)
     .sort((a, b) => {
@@ -753,14 +755,12 @@ function loadAirports() {
       return bd - ad;
     });
 
-  // 🔹 SELECTOR DE PAÍSES (REGION) — CLON DE EUROPA
+  // Selector de país (region)
   const selector = document.getElementById("countrySelect");
   if (selector) {
     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
     const uniqueCountries = [
-      ...new Set(
-        ordered.map(a => a.region).filter(c => c && c.trim() !== "")
-      )
+      ...new Set(ordered.map(a => a.region).filter(c => c && c.trim() !== ""))
     ].sort();
 
     uniqueCountries.forEach(country => {
@@ -771,8 +771,9 @@ function loadAirports() {
     });
   }
 
-  // 🔹 CONSTRUIR FILAS
+  // Construcción de filas (ESPEJO)
   ordered.forEach(a => {
+
     let dist = "-";
     if (baseLat !== null && baseLon !== null) {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
@@ -782,6 +783,7 @@ function loadAirports() {
     const total = d.Y + d.C + d.F || 1;
     const ecoPct = (d.Y / total) * 100;
     const bizPct = ((d.Y + d.C) / total) * 100;
+
     const slotHTML = ACS_buildSlotCell(a.icao, a.category);
 
     const row = document.createElement("tr");
