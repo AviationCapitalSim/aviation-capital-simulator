@@ -465,73 +465,88 @@ tr:hover {
 }
 
 /* ============================================================
-   🟦 TABLE BALANCE FIX — Qatar Luxury v3
+   🟦 A1 — QATAR LUXURY TABLE FIX (Balanced Edition v3.5)
    ------------------------------------------------------------
-   • Centra toda la tabla
-   • Espacia columnas proporcionalmente
-   • Country más a la izquierda
-   • Alineación limpia y equilibrada
+   • Equilibra todas las columnas
+   • Centra visualmente la tabla completa
+   • Airea filas y columnas
+   • Country alineado a la izquierda
+   • Compatible con las 6 versiones continentales
    ============================================================ */
 
 table.airport-table {
-    width: 100%;
+    width: 96%;
+    max-width: 1600px;
+    margin: 2rem auto 0 auto;       /* tabla centrada */
     border-collapse: collapse;
-    table-layout: fixed;           /* 🔥 Celdas proporcionadas */
+    table-layout: fixed;            /* columnas proporcionales */
+    background: rgba(14,27,70,0.65);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 0 22px rgba(0,0,0,0.45);
 }
 
 table.airport-table th,
 table.airport-table td {
+    padding: 16px 10px;             /* más aire */
     text-align: center;
-    padding: 12px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.92rem;
 }
 
-/* 🔹 Ajuste de anchos: más balanceado */
+/* ===== Column Widths (Balance) ===== */
+
 table.airport-table th:nth-child(1),
 table.airport-table td:nth-child(1) {
-    width: 22%;                    /* AIRPORT */
+    width: 24%;                     /* AIRPORT */
+    text-align: left;
+    padding-left: 14px;
 }
 
 table.airport-table th:nth-child(2),
 table.airport-table td:nth-child(2) {
-    width: 18%;                    /* COUNTRY — más a la izquierda */
+    width: 18%;                     /* COUNTRY */
     text-align: left;
-    padding-left: 18px;
+    padding-left: 12px;
 }
 
 table.airport-table th:nth-child(3),
 table.airport-table td:nth-child(3) {
-    width: 15%;                    /* DISTANCE */
+    width: 14%;                     /* DISTANCE */
 }
 
 table.airport-table th:nth-child(4),
 table.airport-table td:nth-child(4) {
-    width: 20%;                    /* DEMAND + BARS */
+    width: 20%;                     /* DEMAND */
 }
 
 table.airport-table th:nth-child(5),
 table.airport-table td:nth-child(5) {
-    width: 10%;                    /* SLOTS */
+    width: 10%;                     /* SLOTS */
 }
 
 table.airport-table th:nth-child(6),
 table.airport-table td:nth-child(6) {
-    width: 15%;                    /* ACTION BUTTONS */
+    width: 14%;                     /* ACTION BUTTONS */
 }
 
-/* 🔹 Botones centrados perfectamente */
+/* ===== Action Buttons Centered ===== */
+
 .airport-table td:nth-child(6) {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
 }
 
-/* COLUMN ALIGNMENT — Balanced table */
-.col-airport  { padding-left: 14px; text-align: left; }
-.col-country  { text-align: left; }
+/* ===== Column Classes ===== */
+
+.col-airport  { text-align: left !important; padding-left: 14px; }
+.col-country  { text-align: left !important; padding-left: 12px; }
 .col-distance { text-align: center; }
 .col-demand   { text-align: center; }
 .col-slots    { text-align: center; }
 .col-action   { text-align: center; }
+
        
 </style>
 </head>
