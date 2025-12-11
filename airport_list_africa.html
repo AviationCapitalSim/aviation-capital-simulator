@@ -721,7 +721,7 @@ function ACS_buildSlotCell(icao, category) {
 
 /* ============================================================
    === TABLE BUILDER — ALL COUNTRIES (Balanced v2.0) ===========
-   === (AFRICA + BASE GLOBAL) ==================================
+   === AFRICA (ESPEJO DE EUROPA, SIN findBaseAirportGlobal) ====
    ============================================================ */
      
 function loadAirports() {
@@ -734,50 +734,33 @@ function loadAirports() {
     return;
   }
 
-  // 🔹 1) Intentar obtener la base GLOBAL (puede estar en Europa, etc.)
-  let baseLat = null;
-  let baseLon = null;
+  // 🔹 BASE EXACTAMENTE IGUAL QUE EUROPA (simple, directa)
+  const userBase = localStorage.getItem("ACS_baseICAO") || null;
+  const base = airports.find(a => a.icao === userBase);
 
-  try {
-    if (typeof findBaseAirportGlobal === "function") {
-      const baseGlobal = findBaseAirportGlobal();
-      if (baseGlobal &&
-          typeof baseGlobal.latitude === "number" &&
-          typeof baseGlobal.longitude === "number") {
-        baseLat = baseGlobal.latitude;
-        baseLon = baseGlobal.longitude;
-      }
-    }
-  } catch (e) {
-    console.warn("Africa loadAirports: findBaseAirportGlobal fallo:", e);
+  let baseLat = null, baseLon = null;
+  if (base) {
+    baseLat = base.latitude;
+    baseLon = base.longitude;
   }
 
-  // 🔹 2) Si no encontramos base global, usamos la del propio continente
-  if (baseLat === null || baseLon === null) {
-    const userBase = localStorage.getItem("ACS_baseICAO") || null;
-    const base = airports.find(a => a.icao === userBase);
-    if (base) {
-      baseLat = base.latitude;
-      baseLon = base.longitude;
-    }
-  }
-
-  // 🔹 3) Ordenar por demanda total
-  const userBaseIcao = localStorage.getItem("ACS_baseICAO") || null;
+  // 🔹 ORDENAR POR DEMANDA TOTAL (Y+C+F) — MISMO CRITERIO
   const ordered = airports
-    .filter(a => a.icao !== userBaseIcao)
+    .filter(a => a.icao !== userBase)
     .sort((a, b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
       const bd = b.demand.Y + b.demand.C + b.demand.F;
       return bd - ad;
     });
 
-  // 🔹 4) Selector de país (region)
+  // 🔹 SELECTOR DE PAÍSES (REGION) — CLON DE EUROPA
   const selector = document.getElementById("countrySelect");
   if (selector) {
     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
     const uniqueCountries = [
-      ...new Set(ordered.map(a => a.region).filter(c => c && c.trim() !== ""))
+      ...new Set(
+        ordered.map(a => a.region).filter(c => c && c.trim() !== "")
+      )
     ].sort();
 
     uniqueCountries.forEach(country => {
@@ -788,9 +771,8 @@ function loadAirports() {
     });
   }
 
-  // 🔹 5) Construir filas
+  // 🔹 CONSTRUIR FILAS
   ordered.forEach(a => {
-
     let dist = "-";
     if (baseLat !== null && baseLon !== null) {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
@@ -800,7 +782,6 @@ function loadAirports() {
     const total = d.Y + d.C + d.F || 1;
     const ecoPct = (d.Y / total) * 100;
     const bizPct = ((d.Y + d.C) / total) * 100;
-
     const slotHTML = ACS_buildSlotCell(a.icao, a.category);
 
     const row = document.createElement("tr");
@@ -830,7 +811,7 @@ function loadAirports() {
 }
 
 /* ============================================================
-   === FILTER BY COUNTRY (AFRICA + BASE GLOBAL) ================
+   === FILTER BY COUNTRY (AFRICA — ESPEJO DE EUROPA) ===========
    ============================================================ */
      
 function filterByCountry() {
@@ -841,37 +822,18 @@ function filterByCountry() {
   const airports = getAirportsAfricaSafe();
   if (!airports || airports.length === 0) return;
 
-  // 🔹 1) Base global primero
-  let baseLat = null;
-  let baseLon = null;
+  // 🔹 BASE IGUAL QUE EUROPA
+  const userBase = localStorage.getItem("ACS_baseICAO") || null;
+  const base = airports.find(a => a.icao === userBase);
 
-  try {
-    if (typeof findBaseAirportGlobal === "function") {
-      const baseGlobal = findBaseAirportGlobal();
-      if (baseGlobal &&
-          typeof baseGlobal.latitude === "number" &&
-          typeof baseGlobal.longitude === "number") {
-        baseLat = baseGlobal.latitude;
-        baseLon = baseGlobal.longitude;
-      }
-    }
-  } catch (e) {
-    console.warn("Africa filterByCountry: findBaseAirportGlobal fallo:", e);
+  let baseLat = null, baseLon = null;
+  if (base) {
+    baseLat = base.latitude;
+    baseLon = base.longitude;
   }
 
-  // 🔹 2) Fallback: base dentro del continente
-  if (baseLat === null || baseLon === null) {
-    const userBase = localStorage.getItem("ACS_baseICAO") || null;
-    const base = airports.find(a => a.icao === userBase);
-    if (base) {
-      baseLat = base.latitude;
-      baseLon = base.longitude;
-    }
-  }
-
-  const userBaseIcao = localStorage.getItem("ACS_baseICAO") || null;
   const filtered = airports
-    .filter(a => a.icao !== userBaseIcao)
+    .filter(a => a.icao !== userBase)
     .filter(a => selected === "ALL" || a.region === selected)
     .sort((a, b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
@@ -894,7 +856,6 @@ function filterByCountry() {
     const total = d.Y + d.C + d.F || 1;
     const ecoPct = (d.Y / total) * 100;
     const bizPct = ((d.Y + d.C) / total) * 100;
-
     const slotHTML = ACS_buildSlotCell(a.icao, a.category);
 
     const row = document.createElement("tr");
