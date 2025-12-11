@@ -189,11 +189,7 @@ body {
 }
 
 /* ============================================================
-   💎 QATAR LUXURY ULTRA PREMIUM TABLE v4
-   ------------------------------------------------------------
-   • Centrada 100%
-   • Fondo glass / borde dorado
-   • Columnas equilibradas
+   💎 ULTRA PREMIUM TABLE — CLEAN v1
    ============================================================ */
 
 #airportTable {
@@ -242,7 +238,7 @@ body {
   box-shadow: 0 0 14px rgba(255,179,0,0.35) inset;
 }
 
-/* 🔹 Equilibrio de columnas */
+/* 🔹 Column widths (balanced + ACTION 17%) */
 #airportTable th:nth-child(1),
 #airportTable td:nth-child(1) {
   width: 22%;
@@ -272,15 +268,18 @@ body {
   width: 10%;
 }
 
+/* Action column — now 17% TOTAL */
 #airportTable th:nth-child(6),
 #airportTable td:nth-child(6) {
-  width: 15%;
+  width: 17%;
+  text-align: center;
 }
 
-/* Botones centrados en ACTION */
+/* Alineación horizontal para los botones */
 #airportTable td:nth-child(6) {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 10px;
 }
 
@@ -299,16 +298,18 @@ body {
   margin-top: 6px;
 }
 
-/* Buttons */
+/* ================== BUTTONS CLEAN v1 ================== */
+
+/* Botón verde */
 .acs-btn {
   background-color: #00a86b;
   color: #fff;
   border: none;
-  padding: 7px 16px;
+  padding: 7px 14px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   transition: .25s;
 }
 
@@ -317,15 +318,16 @@ body {
   transform: scale(1.05);
 }
 
+/* Botón info */
 .acs-btn-info {
   background: rgba(20,40,85,0.85);
   color: #ffb300;
   border: 1px solid #ffb300;
-  padding: 7px 14px;
+  padding: 7px 12px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   transition: .25s;
 }
 
@@ -352,7 +354,7 @@ body {
   color: #081530;
 }
 
-/* Pie chart dentro del tooltip de Passenger Demand */
+/* Pie chart inside tooltip */
 .demand-pie {
   width: 58px;
   height: 58px;
@@ -493,7 +495,7 @@ body {
 }
 
 /* ============================================================
-   === ACS SLOT BAR — Qatar Luxury Edition ====================
+   === ACS SLOT BAR ==========================================
    ============================================================ */
 .slot-bar {
   width: 100%;
@@ -509,154 +511,6 @@ body {
   border-radius: 6px;
   transition: width .25s ease;
   box-shadow: 0 0 6px rgba(255,255,255,0.28);
-}
-
-/* Safari / iPhone extra fix */
-@supports (-webkit-touch-callout: none) {
-  #airportTable {
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-/* ============================================================
-   💎 FIX — ACTION BUTTONS PERFECT ALIGNMENT (Safari/iPhone)
-   ============================================================ */
-
-#airportTable td.col-action,
-#airportTable td:nth-child(6) {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 14px !important;
-}
-
-/* Tamaño unificado */
-.acs-btn,
-.acs-btn-info {
-  height: 36px !important;
-  padding: 0 18px !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  white-space: nowrap !important;
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  border-radius: 10px !important;
-}
-
-/* Botón INFO */
-     
-.acs-btn-info {
-  min-width: 68px !important;       /* ✔ Tamaño estable */
-  background: rgba(20,40,85,0.85) !important;
-  border: 1px solid #ffb300 !important;
-  color: #ffb300 !important;
-}
-.acs-btn-info:hover {
-  background: #ffb300 !important;
-  color: #081530 !important;
-}
-
-/* Botón CREATE ROUTE */
-     
-.acs-btn {
-  min-width: 118px !important;      /* ✔ Misma base */
-  background-color: #00a86b !important;
-  color: #fff !important;
-}
-.acs-btn:hover {
-  background-color: #00794f !important;
-}
-
-/* ============================================================
-   💎 FIX DEFINITIVO — COLUMNA ACTION CORRECTAMENTE CENTRADA
-   ============================================================ */
-
-/* Asegurar que la columna ACTION tenga espacio suficiente */
-#airportTable th:nth-child(6),
-#airportTable td:nth-child(6) {
-  width: 180px !important;        /* 🔥 Ancho REAL y amplio */
-  max-width: 180px !important;
-  text-align: center !important;
-  padding-right: 0 !important;
-}
-
-/* Contenedor FLEX siempre centrado */
-#airportTable td:nth-child(6) {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 10px !important;
-}
-
-/* Botones tamaño fijo y centrados */
-.acs-btn,
-.acs-btn-info {
-  flex-shrink: 0 !important;       /* 🔥 NO se encogen */
-}
-
-/* Limitar ancho interno para que nunca salgan del borde */
-#airportTable td:nth-child(6) {
-  overflow: visible !important;
-}
-
-/* ============================================================
-   💎 ULTRA PREMIUM BUTTON SIZE FIX — Compact Edition
-   ============================================================ */
-
-/* Contenedor alineado */
-#airportTable td:nth-child(6) {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 8px !important;
-}
-
-/* Botón INFO — compacto */
-.acs-btn-info {
-  width: 60px !important;       /* 🔥 FIX REAL */
-  height: 32px !important;
-  font-size: 0.8rem !important;
-  padding: 0 !important;
-  border-radius: 8px !important;
-}
-
-/* Botón CREATE ROUTE — compacto */
-.acs-btn {
-  width: 110px !important;      /* 🔥 FIX REAL */
-  height: 32px !important;
-  font-size: 0.8rem !important;
-  padding: 0 !important;
-  border-radius: 8px !important;
-}
-
-/* Evitar que Safari rompa la celda */
-#airportTable th:nth-child(6),
-#airportTable td:nth-child(6) {
-  width: 150px !important;      /* 🔥 suficiente para ambos botones */
-  max-width: 150px !important;
-}
-     
-/* ============================================================
-   💎 SUPER FIX — RESTAURAR ANCHO REAL DE LA TABLA EN SAFARI
-   ============================================================ */
-
-#airportTable {
-  width: 96% !important;
-  max-width: 96% !important;
-  min-width: 96% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  table-layout: fixed !important;
-  display: table !important;
-}
-
-/* Safari móvil y desktop */
-@supports (-webkit-overflow-scrolling: touch) {
-  #airportTable {
-    width: 96% !important;
-    max-width: 96% !important;
-  }
 }
 
 </style>
