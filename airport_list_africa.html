@@ -810,10 +810,9 @@ function loadAirports() {
 
     tableBody.appendChild(row);
   });
-
-}
-
+     
   // Safari fix
+     
   const table = document.getElementById("airportTable");
   table.style.visibility = "hidden";
   setTimeout(() => { table.style.visibility = "visible"; }, 50);
@@ -822,6 +821,7 @@ function loadAirports() {
 /* ============================================================
    === FILTER BY COUNTRY =======================================
    ============================================================ */
+     
 function filterByCountry() {
   const selected  = document.getElementById("countrySelect").value;
   const tableBody = document.getElementById("airportTableBody");
