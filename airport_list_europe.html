@@ -465,88 +465,73 @@ tr:hover {
 }
 
 /* ============================================================
-   🟦 A3 — RESET DE ESTILOS GLOBALES PARA AIRPORT TABLE
+   🟦 TABLE BALANCE FIX — Qatar Luxury v3
    ------------------------------------------------------------
-   • Evita conflicto con el estilo global `table { }`
-   • Garantiza centrado perfecto
-   • Mantiene estructura Qatar Luxury original
+   • Centra toda la tabla
+   • Espacia columnas proporcionalmente
+   • Country más a la izquierda
+   • Alineación limpia y equilibrada
    ============================================================ */
 
 table.airport-table {
-    all: unset;                    /* 🔥 Limpia TODO lo heredado */
-    display: table;                /* Restaura comportamiento tabla */
-    width: 96%;
-    max-width: 1600px;
-    margin: 2rem auto 0 auto;
+    width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
-    background: rgba(14,27,70,0.65);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 0 22px rgba(0,0,0,0.45);
+    table-layout: fixed;           /* 🔥 Celdas proporcionadas */
 }
 
 table.airport-table th,
 table.airport-table td {
-    padding: 16px 10px;             /* más aire */
     text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    font-size: 0.92rem;
+    padding: 12px 6px;
 }
 
-/* ===== Column Widths (Balance) ===== */
-
+/* 🔹 Ajuste de anchos: más balanceado */
 table.airport-table th:nth-child(1),
 table.airport-table td:nth-child(1) {
-    width: 24%;                     /* AIRPORT */
-    text-align: left;
-    padding-left: 14px;
+    width: 22%;                    /* AIRPORT */
 }
 
 table.airport-table th:nth-child(2),
 table.airport-table td:nth-child(2) {
-    width: 18%;                     /* COUNTRY */
+    width: 18%;                    /* COUNTRY — más a la izquierda */
     text-align: left;
-    padding-left: 12px;
+    padding-left: 18px;
 }
 
 table.airport-table th:nth-child(3),
 table.airport-table td:nth-child(3) {
-    width: 14%;                     /* DISTANCE */
+    width: 15%;                    /* DISTANCE */
 }
 
 table.airport-table th:nth-child(4),
 table.airport-table td:nth-child(4) {
-    width: 20%;                     /* DEMAND */
+    width: 20%;                    /* DEMAND + BARS */
 }
 
 table.airport-table th:nth-child(5),
 table.airport-table td:nth-child(5) {
-    width: 10%;                     /* SLOTS */
+    width: 10%;                    /* SLOTS */
 }
 
 table.airport-table th:nth-child(6),
 table.airport-table td:nth-child(6) {
-    width: 14%;                     /* ACTION BUTTONS */
+    width: 15%;                    /* ACTION BUTTONS */
 }
 
-/* ===== Action Buttons Centered ===== */
-
+/* 🔹 Botones centrados perfectamente */
 .airport-table td:nth-child(6) {
     display: flex;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
 }
 
-/* ===== Column Classes ===== */
-
-.col-airport  { text-align: left !important; padding-left: 14px; }
-.col-country  { text-align: left !important; padding-left: 12px; }
+/* COLUMN ALIGNMENT — Balanced table */
+.col-airport  { padding-left: 14px; text-align: left; }
+.col-country  { text-align: left; }
 .col-distance { text-align: center; }
 .col-demand   { text-align: center; }
 .col-slots    { text-align: center; }
 .col-action   { text-align: center; }
-
        
 </style>
 </head>
@@ -616,7 +601,7 @@ table.airport-table td:nth-child(6) {
       
     <!-- TABLE -->
        
-    <table id="airportTable" class="airport-table">
+    <table id="airportTable">
       <thead>
     <tr>
       <th onclick="sortTable(0)">Airport (ICAO)</th>
@@ -878,62 +863,58 @@ if (selector) {
 }
 
   // ============================================================
-  // 🟦 TABLE BUILDER — ALL COUNTRIES (Balanced Edition v2.0)
-  // ============================================================
-  ordered.forEach(a => {
+// 🟦 TABLE BUILDER — ALL COUNTRIES (Balanced Edition v2.0)
+// ============================================================
+ordered.forEach(a => {
 
-    let dist = "-";
-    if (baseLat !== null && baseLon !== null) {
-      dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
-    }
+  let dist = "-";
+  if (baseLat !== null && baseLon !== null) {
+    dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
+  }
 
-    // DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
-    const d = adjustPassengerClasses(a.demand);
-    const total = d.Y + d.C + d.F || 1;
-    const ecoPct = (d.Y / total) * 100;
-    const bizPct = ((d.Y + d.C) / total) * 100;
+  // DEMANDA HISTÓRICA (Y/C/F) SEGÚN AÑO
+  const d = adjustPassengerClasses(a.demand);
+  const total = d.Y + d.C + d.F || 1;
+  const ecoPct = (d.Y / total) * 100;
+  const bizPct = ((d.Y + d.C) / total) * 100;
 
-    // SLOT CELL
-    const slotHTML = ACS_buildSlotCell(a.icao, a.category);
+  // SLOT CELL
+  const slotHTML = ACS_buildSlotCell(a.icao, a.category);
 
-    // CREAR FILA
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td class="col-airport">
-        <strong>${a.city}</strong> (${a.icao})
-      </td>
+  // CREAR FILA
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td class="col-airport">
+      <strong>${a.city}</strong> (${a.icao})
+    </td>
 
-      <td class="col-country">
-        ${a.region}
-      </td>
+    <td class="col-country">
+      ${a.region}
+    </td>
 
-      <td class="col-distance">
-        ${dist} NM
-      </td>
+    <td class="col-distance">
+      ${dist} NM
+    </td>
 
-      <td class="col-demand"
-          onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
-          onmouseout="hideDemandTooltip()">
-        ${d.Y}/${d.C}/${d.F}
-        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-      </td>
+    <td class="col-demand"
+        onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
+        onmouseout="hideDemandTooltip()">
+      ${d.Y}/${d.C}/${d.F}
+      <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+    </td>
 
-      <td class="col-slots">
-        ${slotHTML}
-      </td>
+    <td class="col-slots">
+      ${slotHTML}
+    </td>
 
-      <td class="col-action">
-        <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
-        <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
-      </td>
-    `;
+    <td class="col-action">
+      <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
+      <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
+    </td>
+  `;
 
-    tableBody.appendChild(row);
-  });   // ← cierra ordered.forEach
-
-}        // ← cierra function loadAirports()
-
-
+  tableBody.appendChild(row);
+});
 
 /* ============================================================
    🟦 FILTER BY COUNTRY — Qatar Luxury v2.0 (Slots Integrated)
