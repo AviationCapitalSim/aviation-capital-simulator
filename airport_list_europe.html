@@ -189,7 +189,11 @@ body {
 }
 
 /* ============================================================
-   💎 ULTRA PREMIUM TABLE — CLEAN v1
+   💎 QATAR LUXURY ULTRA PREMIUM TABLE v4
+   ------------------------------------------------------------
+   • Centrada 100%
+   • Fondo glass / borde dorado
+   • Columnas equilibradas
    ============================================================ */
 
 #airportTable {
@@ -238,53 +242,46 @@ body {
   box-shadow: 0 0 14px rgba(255,179,0,0.35) inset;
 }
 
-/* ============================================================
-   💎 OFFICIAL FIX — ACTION COLUMN (Safari/Desktop)
-   ============================================================ */
+/* 🔹 Equilibrio de columnas */
+#airportTable th:nth-child(1),
+#airportTable td:nth-child(1) {
+  width: 22%;
+  text-align: left;
+  padding-left: 18px;
+}
 
-/* Acción: define un ancho real y estable */
+#airportTable th:nth-child(2),
+#airportTable td:nth-child(2) {
+  width: 18%;
+  text-align: left;
+  padding-left: 14px;
+}
+
+#airportTable th:nth-child(3),
+#airportTable td:nth-child(3) {
+  width: 15%;
+}
+
+#airportTable th:nth-child(4),
+#airportTable td:nth-child(4) {
+  width: 20%;
+}
+
+#airportTable th:nth-child(5),
+#airportTable td:nth-child(5) {
+  width: 10%;
+}
+
 #airportTable th:nth-child(6),
 #airportTable td:nth-child(6) {
-  width: 150px !important;
-  max-width: 150px !important;
-  text-align: center !important;
-  padding: 0 !important;
+  width: 15%;
 }
 
-/* Contenedor FLEX limpio */
-.col-action {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 10px !important;
-}
-
-/* Tamaño uniforme de los botones */
-.acs-btn,
-.acs-btn-info {
-  height: 32px !important;
-  font-size: 0.82rem !important;
-  padding: 0 14px !important;
-  border-radius: 8px !important;
-  flex-shrink: 0 !important;
-}
-
-/* Botón INFO */
-.acs-btn-info {
-  min-width: 58px !important;
-}
-
-/* Botón CREATE ROUTE */
-.acs-btn {
-  min-width: 105px !important;
-}
-
-/* Estructura estable de la tabla */
-#airportTable {
-  table-layout: fixed !important;
-  width: 96% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
+/* Botones centrados en ACTION */
+#airportTable td:nth-child(6) {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* Demand bar */
@@ -302,18 +299,16 @@ body {
   margin-top: 6px;
 }
 
-/* ================== BUTTONS CLEAN v1 ================== */
-
-/* Botón verde */
+/* Buttons */
 .acs-btn {
   background-color: #00a86b;
   color: #fff;
   border: none;
-  padding: 7px 14px;
+  padding: 7px 16px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   transition: .25s;
 }
 
@@ -322,16 +317,15 @@ body {
   transform: scale(1.05);
 }
 
-/* Botón info */
 .acs-btn-info {
   background: rgba(20,40,85,0.85);
   color: #ffb300;
   border: 1px solid #ffb300;
-  padding: 7px 12px;
+  padding: 7px 14px;
   border-radius: 10px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   transition: .25s;
 }
 
@@ -358,7 +352,7 @@ body {
   color: #081530;
 }
 
-/* Pie chart inside tooltip */
+/* Pie chart dentro del tooltip de Passenger Demand */
 .demand-pie {
   width: 58px;
   height: 58px;
@@ -381,7 +375,6 @@ body {
 }
 
 /* ================= Qatar Luxury Modal ================= */
-     
 .acs-modal {
   display: none;
   position: fixed;
@@ -439,7 +432,6 @@ body {
 }
 
 /* Country selector */
-     
 .country-select {
   background: linear-gradient(180deg, #2e3f6e, #1e2d55);
   color: #ffffff;
@@ -469,7 +461,6 @@ body {
 }
 
 /* ===== CONTINENT QUICK ACCESS ===== */
-     
 .continent-access {
   margin-top: 32px;
   margin-bottom: 38px;
@@ -502,7 +493,7 @@ body {
 }
 
 /* ============================================================
-   === ACS SLOT BAR ==========================================
+   === ACS SLOT BAR — Qatar Luxury Edition ====================
    ============================================================ */
 .slot-bar {
   width: 100%;
@@ -520,60 +511,12 @@ body {
   box-shadow: 0 0 6px rgba(255,255,255,0.28);
 }
 
-/* ============================================================
-   💎 FINAL ACTION COLUMN FIX — Compact Edition v1.0
-   ============================================================ */
-
-/* 🔹 Columnas originales restauradas */
-#airportTable th:nth-child(1), #airportTable td:nth-child(1) { width: 22%; }
-#airportTable th:nth-child(2), #airportTable td:nth-child(2) { width: 18%; }
-#airportTable th:nth-child(3), #airportTable td:nth-child(3) { width: 15%; }
-#airportTable th:nth-child(4), #airportTable td:nth-child(4) { width: 20%; }
-#airportTable th:nth-child(5), #airportTable td:nth-child(5) { width: 10%; }
-
-/* 🔹 ACTION — FIJO Y CENTRADO */
-#airportTable th:nth-child(6),
-#airportTable td:nth-child(6) {
-  width: 140px !important;
-  max-width: 140px !important;
-  text-align: center !important;
-  padding: 0 !important;
-}
-
-/* 🔹 Contenedor interno siempre estable */
-#airportTable td:nth-child(6) {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 8px !important;
-  overflow: visible !important;
-}
-
-/* ============================================================
-   💎 BOTONES — versión COMPACTA “A”
-   ============================================================ */
-
-.acs-btn-info {
-  width: 60px !important;
-  height: 32px !important;
-  padding: 0 !important;
-  font-size: 0.8rem !important;
-  border-radius: 8px !important;
-  flex-shrink: 0 !important;
-}
-
-.acs-btn {
-  width: 80px !important;     /* Create Route */
-  height: 32px !important;
-  padding: 0 !important;
-  font-size: 0.8rem !important;
-  border-radius: 8px !important;
-  flex-shrink: 0 !important;
-}
-
-/* Mantener ancho estable en Safari */
-#airportTable {
-  table-layout: fixed !important;
+/* Safari / iPhone extra fix */
+@supports (-webkit-touch-callout: none) {
+  #airportTable {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
      
 </style>
@@ -669,9 +612,7 @@ body {
       <button class="acs-modal-close" onclick="closeAirportInfo()">Close</button>
     </div>
   </div>
-     
   <!-- SCRIPTS -->
-     
 <script>
   window.WorldAirportsACS = window.WorldAirportsACS || {};
 </script>
