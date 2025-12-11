@@ -281,19 +281,19 @@ body {
 }
 
 /* ============================================================
-   🎯 FIX DEFINITIVO: BOTONES CENTRADOS EN "ACTION"
+   🎯 MOVE ACTION BUTTONS TO THE RIGHT
    ============================================================ */
 #airportTable td:nth-child(6),
 #airportTable .col-action {
   display: flex !important;
   flex-direction: row;
-  justify-content: center !important;
+  justify-content: flex-end !important; /* ⬅ Aquí se mueve */
   align-items: center !important;
   gap: 12px !important;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  padding-right: 24px !important;        /* ⬅ Más o menos según prefieras */
   white-space: nowrap;
 }
+
 
 /* Demand bar */
 .demand-bar {
