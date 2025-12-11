@@ -166,32 +166,64 @@ body {
   gap: 0.45rem;
 }
 
+.origin-banner .label {
+  color: #ffe7a0;
+  font-weight: 700;
+}
+
+.origin-banner strong {
+  color: #ffca3a;
+  font-size: 1.2rem;
+}
+
+.origin-banner #originCity {
+  color: #dbe4ff;
+  opacity: 0.95;
+  font-weight: 400;
+  margin-left: 0.3rem;
+}
+
+.origin-banner .icon {
+  font-size: 1.25rem;
+  margin-right: 0.3rem;
+}
+
 /* ============================================================
-   💎 A2 — QATAR LUXURY ULTRA PREMIUM TABLE v4 (CSS COMPLETO)
+   💎 QATAR LUXURY ULTRA PREMIUM TABLE v4
+   ------------------------------------------------------------
+   • Centrada 100%
+   • Fondo glass / borde dorado
+   • Columnas equilibradas
    ============================================================ */
 
-table#airportTable {
+#airportTable {
   width: 96%;
   margin: 2.5rem auto;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: rgba(12, 23, 50, 0.55);
+  border-collapse: collapse;
+  background: rgba(14,27,70,0.72);
   backdrop-filter: blur(10px);
   border-radius: 18px;
-  border: 1px solid rgba(255,179,0,0.28);
+  overflow: hidden;
   box-shadow: 0 0 28px rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,179,0,0.28);
+  table-layout: fixed;
+}
+
+#airportTable thead {
+  background: rgba(20,40,85,0.95);
 }
 
 #airportTable thead th {
-  padding: 16px;
+  padding: 16px 10px;
   color: #ffb300;
-  background: rgba(20,40,85,0.85);
-  text-transform: uppercase;
-  font-size: 0.92rem;
+  cursor: pointer;
   font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.9rem;
   text-align: center;
   border-bottom: 1px solid rgba(255,255,255,0.10);
   letter-spacing: 0.6px;
+  white-space: nowrap;
 }
 
 #airportTable tbody td {
@@ -201,54 +233,55 @@ table#airportTable {
 }
 
 #airportTable tbody tr:nth-child(even) {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.035);
 }
 
 #airportTable tbody tr:hover {
   background: rgba(255,179,0,0.12);
-  box-shadow: inset 0 0 20px rgba(255,179,0,0.25);
-  transition: 0.2s ease;
+  transition: 0.18s ease;
+  box-shadow: 0 0 14px rgba(255,179,0,0.35) inset;
 }
 
-/* Perfect column balance */
-#airportTable th:nth-child(1), #airportTable td:nth-child(1) { width: 22%; text-align:left; padding-left:18px; }
-#airportTable th:nth-child(2), #airportTable td:nth-child(2) { width: 18%; text-align:left; padding-left:14px; }
-#airportTable th:nth-child(3), #airportTable td:nth-child(3) { width: 15%; }
-#airportTable th:nth-child(4), #airportTable td:nth-child(4) { width: 20%; }
-#airportTable th:nth-child(5), #airportTable td:nth-child(5) { width: 10%; }
-#airportTable th:nth-child(6), #airportTable td:nth-child(6) { width: 15%; }
-
-/* Buttons */
-.acs-btn {
-  background-color: #00a86b;
-  color: white;
-  border: none;
-  padding: 7px 16px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.25s;
+/* 🔹 Equilibrio de columnas */
+#airportTable th:nth-child(1),
+#airportTable td:nth-child(1) {
+  width: 22%;
+  text-align: left;
+  padding-left: 18px;
 }
 
-.acs-btn:hover {
-  transform: scale(1.05);
-  background:#00794f;
+#airportTable th:nth-child(2),
+#airportTable td:nth-child(2) {
+  width: 18%;
+  text-align: left;
+  padding-left: 14px;
 }
 
-.acs-btn-info {
-  background:rgba(20,40,85,0.9);
-  border:1px solid #ffb300;
-  color:#ffb300;
-  padding:7px 14px;
-  border-radius:10px;
-  cursor:pointer;
-  transition:0.25s;
+#airportTable th:nth-child(3),
+#airportTable td:nth-child(3) {
+  width: 15%;
 }
 
-.acs-btn-info:hover {
-  background:#ffb300;
-  color:#081530;
-  transform:scale(1.05);
+#airportTable th:nth-child(4),
+#airportTable td:nth-child(4) {
+  width: 20%;
+}
+
+#airportTable th:nth-child(5),
+#airportTable td:nth-child(5) {
+  width: 10%;
+}
+
+#airportTable th:nth-child(6),
+#airportTable td:nth-child(6) {
+  width: 15%;
+}
+
+/* Botones centrados en ACTION */
+#airportTable td:nth-child(6) {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* Demand bar */
@@ -266,12 +299,209 @@ table#airportTable {
   margin-top: 6px;
 }
 
-/* Slot Bar */
+/* Buttons */
+.acs-btn {
+  background-color: #00a86b;
+  color: #fff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: .25s;
+}
+
+.acs-btn:hover {
+  background-color: #00794f;
+  transform: scale(1.05);
+}
+
+.acs-btn-info {
+  background: rgba(20,40,85,0.85);
+  color: #ffb300;
+  border: 1px solid #ffb300;
+  padding: 7px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: .25s;
+}
+
+.acs-btn-info:hover {
+  background: #ffb300;
+  color: #081530;
+  transform: scale(1.05);
+}
+
+/* Back Button */
+.back-btn {
+  margin: 2.5rem auto;
+  background: none;
+  border: 1px solid #ffb300;
+  color: #ffb300;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.back-btn:hover {
+  background: #ffb300;
+  color: #081530;
+}
+
+/* Pie chart dentro del tooltip de Passenger Demand */
+.demand-pie {
+  width: 58px;
+  height: 58px;
+  margin: 8px auto 0 auto;
+  border-radius: 50%;
+  position: relative;
+  background: conic-gradient(
+    #1DB954 0deg var(--eco),
+    #FFB300 var(--eco) var(--biz),
+    #FF6F00 var(--biz) 360deg
+  );
+  box-shadow: 0 0 10px rgba(255,179,0,0.45);
+}
+
+.demand-pie .slice {
+  position: absolute;
+  inset: 9px;
+  background: #081530;
+  border-radius: 50%;
+}
+
+/* ================= Qatar Luxury Modal ================= */
+.acs-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  z-index: 9000;
+}
+
+.acs-modal-box {
+  background: rgba(12,23,50,0.92);
+  border: 2px solid #ffb300;
+  border-radius: 18px;
+  padding: 20px 26px;
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  color: #fff;
+  box-shadow: 0 0 25px rgba(255,179,0,0.35);
+  animation: fadeIn .25s ease;
+}
+
+.acs-modal-box h3 {
+  color: #ffca3a;
+  margin-top: 0;
+  text-align: center;
+  font-size: 1.4rem;
+  letter-spacing: 0.5px;
+}
+
+.acs-modal-close {
+  margin-top: 18px;
+  width: 100%;
+  background: none;
+  border: 1px solid #ffb300;
+  border-radius: 10px;
+  color: #ffb300;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: .25s;
+}
+
+.acs-modal-close:hover {
+  background: #ffb300;
+  color: #081530;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Country selector */
+.country-select {
+  background: linear-gradient(180deg, #2e3f6e, #1e2d55);
+  color: #ffffff;
+  border: 2px solid #ffb300;
+  padding: 5px 28px 5px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: 0 0 12px rgba(255,179,0,0.25);
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffffff' height='16' width='16' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 13px;
+}
+
+.country-filter {
+  margin: 4px auto 26px auto;
+  display: flex;
+  justify-content: center;
+}
+
+.country-select {
+  width: 160px;
+}
+
+/* ===== CONTINENT QUICK ACCESS ===== */
+.continent-access {
+  margin-top: 32px;
+  margin-bottom: 38px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.continent-btn {
+  display: inline-block;
+  text-decoration: none;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid #ffb300;
+  background: rgba(20,40,80,0.45);
+  color: #ffe7a0;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 0 10px rgba(255,179,0,0.25);
+}
+
+.continent-btn:hover {
+  background: #ffb300;
+  color: #081530;
+  transform: scale(1.07);
+  box-shadow: 0 0 18px rgba(255,179,0,0.55);
+}
+
+/* ============================================================
+   === ACS SLOT BAR — Qatar Luxury Edition ====================
+   ============================================================ */
 .slot-bar {
   width: 100%;
   height: 8px;
   border-radius: 6px;
   background: rgba(255,255,255,0.08);
+  margin-top: 6px;
+  overflow: hidden;
 }
 
 .slot-bar-fill {
@@ -281,16 +511,16 @@ table#airportTable {
   box-shadow: 0 0 6px rgba(255,255,255,0.28);
 }
 
-/* Safari Fix — Ultra Premium */
-#airportTable {
-  table-layout: auto !important;
+/* Safari / iPhone extra fix */
+@supports (-webkit-touch-callout: none) {
+  #airportTable {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
-
-#airportTable thead th {
-  white-space: nowrap;
-  text-align: center !important;
-}
+     
 </style>
+
 </head>
 <body>
 
