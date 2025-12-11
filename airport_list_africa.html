@@ -1,6 +1,6 @@
 <!-- ===========================================================
      === AIRPORT LIST (AFRICA) — AVIATION CAPITAL SIMULATOR ===
-     Qatar Luxury Ultra Premium Edition v4 (Mirror Europe + Slots)
+     Qatar Luxury Ultra Premium Edition v4 — MIRROR OF EUROPE
      =========================================================== -->
 <!DOCTYPE html>
 <html lang="en">
@@ -74,7 +74,7 @@ body {
   position: relative;
   font-size: 1rem;
   letter-letter-spacing: 0.4px;
-  color: #dbe4ff; 
+  color: #dbe4ff;
   text-decoration: none;
   transition: 0.25s ease;
   padding-bottom: 6px;
@@ -215,6 +215,10 @@ th, td {
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
+td.col-action {
+  text-align: center !important;
+}
+
 th {
   color: #ffb300;
   cursor: pointer;
@@ -324,7 +328,7 @@ tr:hover {
 }
 
 /* ============================================================
-   === SLOT BAR (AGREGADO, COLUMNA 5) ==========================
+   === SLOT BAR ================================================
    ============================================================ */
 
 .slot-bar {
@@ -344,7 +348,7 @@ tr:hover {
 }
 
 /* ============================================================
-   === COUNTRY SELECTOR — ORIGINAL STYLE RESTORE ===============
+   === COUNTRY SELECTOR ========================================
    ============================================================ */
 
 .country-select {
@@ -376,7 +380,7 @@ tr:hover {
 }
 
 /* ============================================================
-   === CONTINENT BUTTONS — ORIGINAL STYLE RESTORE ==============
+   === CONTINENT BUTTONS =======================================
    ============================================================ */
 
 .continent-access {
@@ -410,7 +414,10 @@ tr:hover {
   box-shadow: 0 0 18px rgba(255,179,0,0.55);
 }
 
-/* Tooltip demand */
+/* ============================================================
+   === TOOLTIP ==================================================
+   ============================================================ */
+
 #demandTooltip {
   position: absolute;
   display: none;
@@ -425,42 +432,40 @@ tr:hover {
   box-shadow: 0 0 18px rgba(0,0,0,0.7);
 }
 
-/* Modal */
+/* ============================================================
+   === MODAL ====================================================
+   ============================================================ */
+
 .acs-modal {
-  display: none;
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(4px);
-  justify-content: center;
+  inset: 0;
+  display: none;
   align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
   z-index: 9000;
 }
 
 .acs-modal-box {
-  background: rgba(12,23,50,0.92);
-  border: 2px solid #ffb300;
-  border-radius: 18px;
-  padding: 20px 26px;
-  width: 420px;
-  max-height: 80vh;
-  overflow-y: auto;
-  color: #fff;
-  box-shadow: 0 0 25px rgba(255,179,0,0.35);
+  background: #0d1c3c;
+  border-radius: 16px;
+  padding: 20px 24px 18px 24px;
+  max-width: 520px;
+  width: 90%;
+  border: 1px solid rgba(255,179,0,0.7);
+  box-shadow: 0 0 28px rgba(0,0,0,0.85);
 }
 
 .acs-modal-close {
-  margin-top: 18px;
-  width: 100%;
-  background: none;
-  border: 1px solid #ffb300;
+  margin-top: 16px;
+  padding: 8px 16px;
   border-radius: 10px;
+  border: 1px solid #ffb300;
+  background: rgba(255,179,0,0.04);
   color: #ffb300;
-  padding: 10px;
-  cursor: pointer;
   font-weight: 600;
-  transition: .25s;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .acs-modal-close:hover {
@@ -472,114 +477,108 @@ tr:hover {
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
-      <h1>Aviation Capital Simulator</h1>
-    </div>
-
-    <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html">Finance</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html" class="active">Routes</a>
-      <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
-    </nav>
-
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </header>
-
-  <!-- MAIN -->
-  <main class="acs-main">
-    <h2>🌍 African Airports</h2>
-    <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
-
-    <div class="origin-banner">
-      <span class="icon">🛫</span>
-      <span class="label">Base:</span>
-      <span id="originFlag">🏳️</span>
-      <strong id="originIcao">---</strong>
-      <span id="originCity">— Loading...</span>
-    </div>
-
-    <!-- Country selector -->
-    <div class="country-filter">
-      <select id="countrySelect" class="country-select" onchange="filterByCountry()">
-        <option value="ALL">🌍 All Countries</option>
-      </select>
-    </div>
-
-    <!-- ===== CONTINENT QUICK ACCESS (QATAR LUXURY) ===== -->
-    <div class="continent-access">
-     <a href="airport_list_europe.html" class="continent-btn">Europe</a>
-     <a href="airport_list_asia.html" class="continent-btn">Asia</a>
-     <a href="airport_list_northamerica.html" class="continent-btn">North America</a>
-     <a href="airport_list_southamerica.html" class="continent-btn">South America</a>
-     <a href="airport_list_oceania.html" class="continent-btn">Oceania</a>
-     <a href="airport_list_middleeast.html" class="continent-btn">Middle East</a>
-    </div>
-
-    <!-- ============================================================
-         💎 A1 — ULTRA PREMIUM TABLE (HTML COMPLETO)
-         ============================================================ -->
-
-    <table id="airportTable">
-      <thead>
-        <tr>
-          <th onclick="sortTable(0)">Airport (ICAO)</th>
-          <th onclick="sortTable(1)">Country</th>
-          <th onclick="sortTable(2)">Distance (NM)</th>
-          <th onclick="sortTable(3)">Demand (Y/C/F)</th>
-          <th onclick="sortTable(4)">Slots</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-
-      <tbody id="airportTableBody">
-        <!-- Rows are injected dynamically by JS -->
-      </tbody>
-    </table>
-
-    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back</button>
-  </main>
-
-  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
-
-  <!-- Tooltip -->
-  <div id="demandTooltip"></div>
-
-  <!-- MODAL -->
-  <div id="airportInfoModal" class="acs-modal">
-    <div class="acs-modal-box">
-      <h3 id="modalTitle">Airport Info</h3>
-      <div id="modalContent">Loading...</div>
-      <button class="acs-modal-close" onclick="closeAirportInfo()">Close</button>
-    </div>
+<!-- HEADER -->
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
+    <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <!-- SCRIPTS -->
-  <script>
-    window.WorldAirportsACS = window.WorldAirportsACS || {};
-  </script>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Finance</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html" class="active">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+    <a href="support.html">Support</a>
+  </nav>
 
-  <!-- 1) Base de datos del continente AFRICA -->
-  <script src="engine/airports/world_airports_af.js"></script>
+  <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+  <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+</header>
 
-  <!-- 2) Motor de tiempo -->
-  <script src="time_engine.js?v=1.2"></script>
+<!-- MAIN -->
+<main class="acs-main">
+  <h2>🌍 African Airports</h2>
+  <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
 
-  <!-- 3) 🔵 Slot Engine (DEBE IR ANTES DE airports_loader.js) -->
-  <script src="engine/acs_slots_engine.js?v=2.0"></script>
+  <div class="origin-banner">
+    <span class="icon">🛫</span>
+    <span class="label">Base:</span>
+    <span id="originFlag">🏳️</span>
+    <strong id="originIcao">---</strong>
+    <span id="originCity">— Loading...</span>
+  </div>
 
-  <!-- 4) Loader de aeropuertos (usa slots, así que debe ir después) -->
-  <script src="engine/airports_loader.js?v=1.0"></script>
+  <!-- Country selector -->
+  <div class="country-filter">
+    <select id="countrySelect" class="country-select" onchange="filterByCountry()">
+      <option value="ALL">🌍 All Countries</option>
+    </select>
+  </div>
 
-  <!-- 5) Motor mundial (usa datos ya cargados) -->
-  <script src="engine/acs_world_engine.js?v=1.0"></script>
+  <!-- CONTINENT BUTTONS -->
+  <div class="continent-access">
+    <a href="airport_list_europe.html" class="continent-btn">Europe</a>
+    <a href="airport_list_asia.html" class="continent-btn">Asia</a>
+    <a href="airport_list_northamerica.html" class="continent-btn">North America</a>
+    <a href="airport_list_southamerica.html" class="continent-btn">South America</a>
+    <a href="airport_list_oceania.html" class="continent-btn">Oceania</a>
+    <a href="airport_list_middleeast.html" class="continent-btn">Middle East</a>
+  </div>
+
+  <!-- TABLE -->
+  <table id="airportTable">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">Airport (ICAO)</th>
+        <th onclick="sortTable(1)">Country</th>
+        <th onclick="sortTable(2)">Distance (NM)</th>
+        <th onclick="sortTable(3)">Demand (Y/C/F)</th>
+        <th onclick="sortTable(4)">Slots</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="airportTableBody"></tbody>
+  </table>
+
+  <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back</button>
+</main>
+
+<footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+
+<!-- Tooltip -->
+<div id="demandTooltip"></div>
+
+<!-- MODAL -->
+<div id="airportInfoModal" class="acs-modal">
+  <div class="acs-modal-box">
+    <h3 id="modalTitle">Airport Info</h3>
+    <div id="modalContent">Loading...</div>
+    <button class="acs-modal-close" onclick="closeAirportInfo()">Close</button>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script>
+  window.WorldAirportsACS = window.WorldAirportsACS || {};
+</script>
+
+<!-- DATASET AFRICA -->
+<script src="engine/airports/world_airports_af.js"></script>
+
+<!-- MOTOR TIEMPO -->
+<script src="time_engine.js?v=1.2"></script>
+
+<!-- SLOT ENGINE -->
+<script src="engine/acs_slots_engine.js?v=2.0"></script>
+
+<!-- AIRPORT LOADER -->
+<script src="engine/airports_loader.js?v=1.0"></script>
+
+<!-- WORLD ENGINE -->
+<script src="engine/acs_world_engine.js?v=1.0"></script>
 
 <script>
 /* ============================================================
@@ -590,7 +589,7 @@ function distanceNM(lat1, lon1, lat2, lon2) {
   const toRad = deg => deg * Math.PI / 180;
 
   const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lat2 - lon1);
+  const dLon = toRad(lon2 - lon1);
 
   const a =
     Math.sin(dLat / 2) ** 2 +
@@ -601,9 +600,9 @@ function distanceNM(lat1, lon1, lat2, lon2) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-/* =============================================================
-   === HISTORICAL AIRPORT ENGINE — AFRICA SAFE MODE ============
-   ============================================================= */
+/* ============================================================
+   === AFRICA SAFE MODE ========================================
+   ============================================================ */
 function getAirportsAfricaSafe() {
   try {
     if (window.ACS_World &&
@@ -623,8 +622,9 @@ function getAirportsAfricaSafe() {
   return WorldAirportsACS["Africa"] || [];
 }
 
-// ============================================================
-// === BLOQUE 3 — HISTORICAL DEMAND CURVE ======================
+/* ============================================================
+   === HISTORICAL ENGINE =======================================
+   ============================================================ */
 function getHistoricalFactor(year) {
   if (year < 1940) return 0.05;
   if (year < 1950) return 0.10;
@@ -635,8 +635,6 @@ function getHistoricalFactor(year) {
   return 1.00;
 }
 
-// ============================================================
-// === BLOQUE 4 — HISTORICAL CLASS ENGINE ======================
 function adjustPassengerClasses(demand) {
   const year =
     window.ACS_TIME &&
@@ -644,51 +642,41 @@ function adjustPassengerClasses(demand) {
       ? window.ACS_TIME.currentTime.getFullYear()
       : 1940;
 
-  let Y = demand.Y;
-  let C = demand.C;
-  let F = demand.F;
-
+  let { Y, C, F } = demand;
   const factor = getHistoricalFactor(year);
+
   Y = Math.round(Y * factor);
   C = Math.round(C * factor);
   F = Math.round(F * factor);
 
-  if (year < 1955) {
-    C = 0;
-    F = 0;
-  } else if (year < 1975) {
-    F = 0;
-  }
+  if (year < 1955) { C = 0; F = 0; }
+  else if (year < 1975) { F = 0; }
 
   return { Y, C, F };
 }
 
 /* ============================================================
-   === GET SLOT HTML (bar + values) — v1.0 =====================
+   === SLOT CELL ===============================================
    ============================================================ */
 function ACS_buildSlotCell(icao, category) {
+  const max = ACS_getMaxSlotsByCategory(category);
+  if (!max) return "—";
 
-  const max = ACS_getMaxSlotsByCategory(category);  
-  if (!max) return "—"; 
-
-  let usedTotal = 0;
-  let count = 0;
-
+  let usedTotal = 0, count = 0;
   const slots = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
+
   if (slots) {
-    const days = Object.keys(slots);
-    days.forEach(day => {
-      const times = Object.keys(slots[day]);
-      times.forEach(time => {
+    for (const day in slots) {
+      for (const time in slots[day]) {
         usedTotal += slots[day][time].used || 0;
         count++;
-      });
-    });
+      }
+    }
   }
 
   const usedAvg = count > 0 ? Math.round(usedTotal / count) : 0;
   const free = Math.max(0, max - usedAvg);
-  const pct = Math.max(0, Math.min(100, (free / max) * 100));
+  const pct = Math.min(100, Math.max(0, (free / max) * 100));
 
   let color = "#00FF80";
   if (pct < 50 && pct >= 20) color = "#FFB300";
@@ -697,48 +685,26 @@ function ACS_buildSlotCell(icao, category) {
   return `
     ${free} / ${max}
     <div class="slot-bar">
-      <div class="slot-bar-fill"
-           style="width:${pct}%; background:${color};"></div>
+      <div class="slot-bar-fill" style="width:${pct}%; background:${color};"></div>
     </div>
   `;
 }
 
 /* ============================================================
-   === LOAD AIRPORTS (ÁFRICA — NM FIX FINAL) ===================
+   === TABLE BUILDER ===========================================
    ============================================================ */
 function loadAirports() {
-
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
 
   const airports = getAirportsAfricaSafe();
   if (!airports || airports.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="5">No airports available.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="6">No airports available.</td></tr>`;
     return;
   }
 
-  // ✔ BASE REAL DEL JUGADOR (GLOBAL)
   const userBase = localStorage.getItem("ACS_baseICAO") || null;
-
-  // 🔵 BLOQUE QUE FALTABA (TRAIDO DE EUROPA, ADAPTADO TAL CUAL)
-  let base = null;
-
-  try {
-    if (typeof findBaseAirportGlobal === "function") {
-      const b = findBaseAirportGlobal();
-      if (b && b.icao) {
-        // buscar ese ICAO dentro de África
-        base = airports.find(a => a.icao === b.icao) || null;
-      }
-    }
-  } catch (e) {
-    console.warn("Africa loadAirports → no global base", e);
-  }
-
-  // Fallback si no encontró por método global
-  if (!base && userBase) {
-    base = airports.find(a => a.icao === userBase) || null;
-  }
+  const base = airports.find(a => a.icao === userBase);
 
   let baseLat = null, baseLon = null;
   if (base) {
@@ -746,38 +712,32 @@ function loadAirports() {
     baseLon = base.longitude;
   }
 
-  // ORDENAR POR DEMANDA TOTAL (igual que Europa)
   const ordered = airports
     .filter(a => a.icao !== userBase)
-    .sort((a, b) => {
-      const ad = a.demand.Y + a.demand.C + a.demand.F;
-      const bd = b.demand.Y + b.demand.C + b.demand.F;
-      return bd - ad;
-    });
+    .sort((a, b) =>
+      (b.demand.Y + b.demand.C + b.demand.F) -
+      (a.demand.Y + a.demand.C + a.demand.F)
+    );
 
-  // CONSTRUIR SELECTOR DE PAÍSES (FIX)
+  /* Country Selector */
   const selector = document.getElementById("countrySelect");
-  if (selector) {
-    selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
+  selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
 
-    const uniqueCountries = [...new Set(
-      ordered.map(a => a.region).filter(r => r && r.trim() !== "")
-    )].sort();
+  const uniqueCountries = [
+    ...new Set(ordered.map(a => a.region).filter(c => c && c.trim() !== ""))
+  ].sort();
 
-    uniqueCountries.forEach(country => {
-      const opt = document.createElement("option");
-      opt.value = country;
-      opt.textContent = country;
-      selector.appendChild(opt);
-    });
-  }
+  uniqueCountries.forEach(country => {
+    const opt = document.createElement("option");
+    opt.value = country;
+    opt.textContent = country;
+    selector.appendChild(opt);
+  });
 
-  // CONSTRUIR TABLA COMPLETA
+  /* Rows */
   ordered.forEach(a => {
-
-    // DISTANCIA DESDE BASE GLOBAL (YA FUNCIONA)
     let dist = "-";
-    if (baseLat !== null && baseLon !== null) {
+    if (baseLat && baseLon) {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
@@ -790,29 +750,25 @@ function loadAirports() {
 
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td><strong>${a.city}</strong> (${a.icao})</td>
-      <td>${a.region}</td>
-      <td>${dist} NM</td>
-
-      <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
+      <td class="col-airport"><strong>${a.city}</strong> (${a.icao})</td>
+      <td class="col-country">${a.region}</td>
+      <td class="col-distance">${dist} NM</td>
+      <td class="col-demand"
+          onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
           onmouseout="hideDemandTooltip()">
         ${d.Y}/${d.C}/${d.F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
-
-      <td>${slotHTML}</td>
-
-      <td style="display:flex; gap:8px; justify-content:center;">
+      <td class="col-slots">${slotHTML}</td>
+      <td class="col-action" style="display:flex; gap:10px; justify-content:center;">
         <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
         <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
       </td>
     `;
-
     tableBody.appendChild(row);
   });
-     
+
   // Safari fix
-     
   const table = document.getElementById("airportTable");
   table.style.visibility = "hidden";
   setTimeout(() => { table.style.visibility = "visible"; }, 50);
@@ -821,9 +777,8 @@ function loadAirports() {
 /* ============================================================
    === FILTER BY COUNTRY =======================================
    ============================================================ */
-     
 function filterByCountry() {
-  const selected  = document.getElementById("countrySelect").value;
+  const selected = document.getElementById("countrySelect").value;
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
 
@@ -842,11 +797,10 @@ function filterByCountry() {
   const filtered = airports
     .filter(a => a.icao !== userBase)
     .filter(a => selected === "ALL" || a.region === selected)
-    .sort((a, b) => {
-      const ad = a.demand.Y + a.demand.C + a.demand.F;
-      const bd = b.demand.Y + b.demand.C + b.demand.F;
-      return bd - ad;
-    });
+    .sort((a, b) =>
+      (b.demand.Y + b.demand.C + b.demand.F) -
+      (a.demand.Y + a.demand.C + a.demand.F)
+    );
 
   if (filtered.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="6">No airports for this country.</td></tr>`;
@@ -855,7 +809,7 @@ function filterByCountry() {
 
   filtered.forEach(a => {
     let dist = "-";
-    if (baseLat !== null && baseLon !== null) {
+    if (baseLat && baseLon) {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
     }
 
@@ -863,6 +817,7 @@ function filterByCountry() {
     const total = d.Y + d.C + d.F || 1;
     const ecoPct = (d.Y / total) * 100;
     const bizPct = ((d.Y + d.C) / total) * 100;
+
     const slotHTML = ACS_buildSlotCell(a.icao, a.category);
 
     const row = document.createElement("tr");
@@ -886,9 +841,9 @@ function filterByCountry() {
   });
 }
 
-/* =============================================================
+/* ============================================================
    === SORT TABLE ==============================================
-   ============================================================= */
+   ============================================================ */
 function sortTable(n) {
   const table = document.getElementById("airportTable");
   let switching = true, dir = "asc", switchcount = 0;
@@ -897,14 +852,22 @@ function sortTable(n) {
     switching = false;
     const rows = table.rows;
 
-    for (let i = 1; i < (rows.length - 1); i++) {
+    for (let i = 1; i < rows.length - 1; i++) {
       let shouldSwitch = false;
+
       const x = rows[i].getElementsByTagName("TD")[n];
       const y = rows[i + 1].getElementsByTagName("TD")[n];
-      const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
-      const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
 
-      if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
+      const xVal = isNaN(parseFloat(x.textContent))
+        ? x.textContent.toLowerCase()
+        : parseFloat(x.textContent);
+
+      const yVal = isNaN(parseFloat(y.textContent))
+        ? y.textContent.toLowerCase()
+        : parseFloat(y.textContent);
+
+      if ((dir === "asc" && xVal > yVal) ||
+          (dir === "desc" && xVal < yVal)) {
         shouldSwitch = true;
         break;
       }
@@ -921,12 +884,11 @@ function sortTable(n) {
   }
 }
 
-/* =============================================================
-   === TOOLTIP PIE CHART =======================================
-   ============================================================= */
+/* ============================================================
+   === TOOLTIP PIE =============================================
+   ============================================================ */
 function showDemandTooltip(e, Y, C, F) {
   const total = Y + C + F || 1;
-
   const ecoDeg = (Y / total) * 360;
   const bizDeg = ((Y + C) / total) * 360;
 
@@ -952,9 +914,9 @@ function hideDemandTooltip() {
   document.getElementById("demandTooltip").style.display = "none";
 }
 
-/* =============================================================
+/* ============================================================
    === MODAL ====================================================
-   ============================================================= */
+   ============================================================ */
 function openAirportInfo(icao) {
   const airports = getAirportsAfricaSafe();
   const ap = airports.find(a => a.icao === icao);
@@ -1016,24 +978,23 @@ function closeAirportInfo() {
   document.getElementById("airportInfoModal").style.display = "none";
 }
 
-window.addEventListener("click", (e) => {
+window.addEventListener("click", e => {
   const modal = document.getElementById("airportInfoModal");
   if (e.target === modal) modal.style.display = "none";
 });
 
-/* =============================================================
+/* ============================================================
    === LOGOUT ===================================================
-   ============================================================= */
+   ============================================================ */
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
 
-/* =============================================================
+/* ============================================================
    === INITIALIZATION ==========================================
-   ============================================================= */
+   ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-
   loadAirports();
 
   const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
@@ -1048,27 +1009,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       document.getElementById("originFlag").textContent = flagEmoji;
       document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent =
-        `— ${base.city}, ${base.region}`;
+      document.getElementById("originCity").textContent = `— ${base.city}, ${base.region}`;
     }
   }
 });
 
 /* ============================================================
-   === SEND ORIGIN & DESTINATION TO SCHEDULE ===================
+   === SEND ORIGIN/DEST TO SCHEDULE ============================
    ============================================================ */
 function ACS_openRouteSchedule(destIcao) {
-
-  let originIcao = null;
-
-  try {
-    if (!originIcao) {
-      const baseIcao = localStorage.getItem("ACS_baseICAO");
-      if (baseIcao) originIcao = baseIcao.toUpperCase();
-    }
-  } catch (e) {
-    console.warn("ACS_openRouteSchedule: cannot resolve base", e);
-  }
+  let originIcao = localStorage.getItem("ACS_baseICAO") || null;
 
   if (!originIcao) {
     alert("⚠️ No base selected. Please choose a base first.");
@@ -1081,9 +1031,8 @@ function ACS_openRouteSchedule(destIcao) {
     return;
   }
 
-  localStorage.setItem("ACS_selectedOrigin", originIcao);
+  localStorage.setItem("ACS_selectedOrigin", originIcao.toUpperCase());
   localStorage.setItem("ACS_selectedDestination", dest);
-
   localStorage.removeItem("editFlightID");
 
   window.location.href = "route_schedule.html";
