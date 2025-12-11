@@ -189,11 +189,13 @@ body {
 }
 
 /* ============================================================
-   💎 QATAR LUXURY ULTRA PREMIUM TABLE v4
+   💎 QATAR LUXURY ULTRA PREMIUM TABLE v4 — FIX A2
    ------------------------------------------------------------
    • Centrada 100%
    • Fondo glass / borde dorado
    • Columnas equilibradas
+   • Filas más bajas (compactas)
+   • Acción alineada (Info + Create Route)
    ============================================================ */
 
 #airportTable {
@@ -214,7 +216,7 @@ body {
 }
 
 #airportTable thead th {
-  padding: 16px 10px;
+  padding: 12px 8px; /* ⬅ ligero ajuste para bajar altura */
   color: #ffb300;
   cursor: pointer;
   font-weight: 700;
@@ -227,7 +229,7 @@ body {
 }
 
 #airportTable tbody td {
-  padding: 15px 12px;
+  padding: 10px 10px; /* ⬅ filas más bajas compactas */
   text-align: center;
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
@@ -277,11 +279,19 @@ body {
   width: 15%;
 }
 
-/* Botones centrados en ACTION */
-#airportTable td:nth-child(6) {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
+/* ============================================================
+   🎯 FIX DEFINITIVO: BOTONES CENTRADOS EN "ACTION"
+   ============================================================ */
+#airportTable td:nth-child(6),
+#airportTable .col-action {
+  display: flex !important;
+  flex-direction: row;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  white-space: nowrap;
 }
 
 /* Demand bar */
