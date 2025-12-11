@@ -637,6 +637,28 @@ body {
   max-width: 150px !important;
 }
      
+/* ============================================================
+   💎 SUPER FIX — RESTAURAR ANCHO REAL DE LA TABLA EN SAFARI
+   ============================================================ */
+
+#airportTable {
+  width: 96% !important;
+  max-width: 96% !important;
+  min-width: 96% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  table-layout: fixed !important;
+  display: table !important;
+}
+
+/* Safari móvil y desktop */
+@supports (-webkit-overflow-scrolling: touch) {
+  #airportTable {
+    width: 96% !important;
+    max-width: 96% !important;
+  }
+}
+
 </style>
 
 </head>
