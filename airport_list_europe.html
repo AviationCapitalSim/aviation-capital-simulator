@@ -568,6 +568,38 @@ body {
   background-color: #00794f !important;
 }
 
+/* ============================================================
+   💎 FIX DEFINITIVO — COLUMNA ACTION CORRECTAMENTE CENTRADA
+   ============================================================ */
+
+/* Asegurar que la columna ACTION tenga espacio suficiente */
+#airportTable th:nth-child(6),
+#airportTable td:nth-child(6) {
+  width: 180px !important;        /* 🔥 Ancho REAL y amplio */
+  max-width: 180px !important;
+  text-align: center !important;
+  padding-right: 0 !important;
+}
+
+/* Contenedor FLEX siempre centrado */
+#airportTable td:nth-child(6) {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Botones tamaño fijo y centrados */
+.acs-btn,
+.acs-btn-info {
+  flex-shrink: 0 !important;       /* 🔥 NO se encogen */
+}
+
+/* Limitar ancho interno para que nunca salgan del borde */
+#airportTable td:nth-child(6) {
+  overflow: visible !important;
+}
+     
 </style>
 
 </head>
