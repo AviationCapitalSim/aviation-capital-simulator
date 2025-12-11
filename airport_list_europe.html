@@ -465,21 +465,21 @@ tr:hover {
 }
 
 /* ============================================================
-   🟦 A1 — QATAR LUXURY TABLE FIX (Balanced Edition v3.5)
+   🟦 A3 — RESET DE ESTILOS GLOBALES PARA AIRPORT TABLE
    ------------------------------------------------------------
-   • Equilibra todas las columnas
-   • Centra visualmente la tabla completa
-   • Airea filas y columnas
-   • Country alineado a la izquierda
-   • Compatible con las 6 versiones continentales
+   • Evita conflicto con el estilo global `table { }`
+   • Garantiza centrado perfecto
+   • Mantiene estructura Qatar Luxury original
    ============================================================ */
 
 table.airport-table {
+    all: unset;                    /* 🔥 Limpia TODO lo heredado */
+    display: table;                /* Restaura comportamiento tabla */
     width: 96%;
     max-width: 1600px;
-    margin: 2rem auto 0 auto;       /* tabla centrada */
+    margin: 2rem auto 0 auto;
     border-collapse: collapse;
-    table-layout: fixed;            /* columnas proporcionales */
+    table-layout: fixed;
     background: rgba(14,27,70,0.65);
     border-radius: 20px;
     overflow: hidden;
