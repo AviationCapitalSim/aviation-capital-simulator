@@ -704,42 +704,65 @@ function ACS_buildSlotCell(icao, category) {
 }
 
 /* ============================================================
-   === TABLE BUILDER — ALL COUNTRIES (Balanced v2.0) ===========
+   === LOAD AIRPORTS (ÁFRICA — NM FIX FINAL) ===================
    ============================================================ */
 function loadAirports() {
+
   const tableBody = document.getElementById("airportTableBody");
   tableBody.innerHTML = "";
 
   const airports = getAirportsAfricaSafe();
   if (!airports || airports.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="6">No airports available.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="5">No airports available.</td></tr>`;
     return;
   }
 
+  // ✔ BASE REAL DEL JUGADOR (GLOBAL)
   const userBase = localStorage.getItem("ACS_baseICAO") || null;
-  const base = airports.find(a => a.icao === userBase);
-  let baseLat = null, baseLon = null;
 
+  // 🔵 BLOQUE QUE FALTABA (TRAIDO DE EUROPA, ADAPTADO TAL CUAL)
+  let base = null;
+
+  try {
+    if (typeof findBaseAirportGlobal === "function") {
+      const b = findBaseAirportGlobal();
+      if (b && b.icao) {
+        // buscar ese ICAO dentro de África
+        base = airports.find(a => a.icao === b.icao) || null;
+      }
+    }
+  } catch (e) {
+    console.warn("Africa loadAirports → no global base", e);
+  }
+
+  // Fallback si no encontró por método global
+  if (!base && userBase) {
+    base = airports.find(a => a.icao === userBase) || null;
+  }
+
+  let baseLat = null, baseLon = null;
   if (base) {
     baseLat = base.latitude;
     baseLon = base.longitude;
   }
 
+  // ORDENAR POR DEMANDA TOTAL (igual que Europa)
   const ordered = airports
     .filter(a => a.icao !== userBase)
-    .sort((a,b) => {
+    .sort((a, b) => {
       const ad = a.demand.Y + a.demand.C + a.demand.F;
       const bd = b.demand.Y + b.demand.C + b.demand.F;
       return bd - ad;
     });
 
-  /* Country filter clean build */
+  // CONSTRUIR SELECTOR DE PAÍSES (FIX)
   const selector = document.getElementById("countrySelect");
   if (selector) {
     selector.innerHTML = `<option value="ALL">🌍 All Countries</option>`;
-    const uniqueCountries = [
-      ...new Set(ordered.map(a => a.region).filter(c => c && c.trim() !== ""))
-    ].sort();
+
+    const uniqueCountries = [...new Set(
+      ordered.map(a => a.region).filter(r => r && r.trim() !== "")
+    )].sort();
 
     uniqueCountries.forEach(country => {
       const opt = document.createElement("option");
@@ -749,9 +772,10 @@ function loadAirports() {
     });
   }
 
-  // Build rows
+  // CONSTRUIR TABLA COMPLETA
   ordered.forEach(a => {
 
+    // DISTANCIA DESDE BASE GLOBAL (YA FUNCIONA)
     let dist = "-";
     if (baseLat !== null && baseLon !== null) {
       dist = distanceNM(baseLat, baseLon, a.latitude, a.longitude);
@@ -766,23 +790,28 @@ function loadAirports() {
 
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td class="col-airport"><strong>${a.city}</strong> (${a.icao})</td>
-      <td class="col-country">${a.region}</td>
-      <td class="col-distance">${dist} NM</td>
-      <td class="col-demand"
-          onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
+      <td><strong>${a.city}</strong> (${a.icao})</td>
+      <td>${a.region}</td>
+      <td>${dist} NM</td>
+
+      <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
           onmouseout="hideDemandTooltip()">
         ${d.Y}/${d.C}/${d.F}
         <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
-      <td class="col-slots">${slotHTML}</td>
-      <td class="col-action" style="display:flex; gap:10px; justify-content:center;">
+
+      <td>${slotHTML}</td>
+
+      <td style="display:flex; gap:8px; justify-content:center;">
         <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
         <button class="acs-btn" onclick="ACS_openRouteSchedule('${a.icao}')">Create Route</button>
       </td>
     `;
+
     tableBody.appendChild(row);
   });
+
+}
 
   // Safari fix
   const table = document.getElementById("airportTable");
