@@ -1371,29 +1371,6 @@ function ACS_createScheduleFlights() {
   return true;
 }
 
-
-/* ============================================================
-   🟦 MASTER FLOW — confirmRoute()
-   ------------------------------------------------------------
-   • Ejecutado por el botón:
-   <button onclick="confirmRoute()">CONFIRM ROUTE</button>
-   ============================================================ */
-     
-async function confirmRoute() {
-
-  const route = ACS_buildRouteObject();     
-  if (!route) return;
-
-  const okSlot = await ACS_applySlotsToRoute();
-  if (!okSlot) return;
-
-  const okFlights = ACS_createScheduleFlights();
-  if (!okFlights) return;
-
-  window.location.href = "schedule_table.html";
-}
-
-     
 /* ============================================================
    === PHASE 2.2 — CONFIRM ROUTE ===============================
    ============================================================ */
