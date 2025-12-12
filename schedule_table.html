@@ -389,7 +389,18 @@ footer {
 #scheduleTable th:last-child {
   width: 170px;
 }
-  </style>
+
+.row-maint td {
+  opacity: 0.45;
+  background-color: rgba(200,80,0,0.15) !important;
+}
+
+.row-pending td {
+  opacity: 0.35;
+  background-color: rgba(150,150,150,0.12) !important;
+}
+      
+</style>
 </head>
 <body>
 
@@ -654,10 +665,10 @@ function hideAircraftHover(){
   if (c) c.remove();
 }
 
-
 // ============================================================
 // === RENDER PRINCIPAL DEL SCHEDULE ==========================
 // ============================================================
+     
 function renderSchedule() {
 
   const tbody = document.getElementById("scheduleBody");
@@ -675,6 +686,7 @@ function renderSchedule() {
   // ============================================================
   // SIN FLOTA — filas dummy
   // ============================================================
+     
   if (fleet.length === 0) {
     for (let i = 0; i < 5; i++) {
       const tr = document.createElement("tr");
@@ -726,21 +738,42 @@ function renderSchedule() {
 
     const tr = document.createElement("tr");
 
-    // MATRÍCULA + STATUS
+    // ============================================================
+    // MATRÍCULA + MODELO + ESTADO (VERSIÓN NUEVA)
+    // ============================================================
+
     const tdTail = document.createElement("td");
+
+    const st = ac.status || "";
+    let maintIcon = "";
+    let rowClass = "";
+    let modelLine = ac.type || ac.model || "";
+
+    if (st === "In C-Check" || st === "In D-Check" || st === "B-Check") {
+      maintIcon = " 🛠";
+      rowClass = "row-maint";
+    }
+
+    if (st === "Pending Delivery") {
+      maintIcon = " ⏳";
+      rowClass = "row-pending";
+    }
+
+    if (rowClass) {
+      tr.classList.add(rowClass);
+    }
+
     tdTail.innerHTML = `
-      ${ac.registration || ac.tail}
-      <br>
-      ${
-        ac.status === "In C-Check" ? `${ac.registration} • 🛠 C-Check` :
-        ac.status === "In D-Check" ? `${ac.registration} • ⚙️ D-Check` :
-        ac.status === "Pending Delivery" ? `${ac.registration} • ⏳ Delivery` :
-        ac.status === "B-Check" ? `${ac.registration} • 🔧 B-Check` :
-        ""
-      }
+      <div style="line-height:1.1;">
+        <strong>${ac.registration || ac.tail}</strong><br>
+        ${modelLine}${maintIcon}
+      </div>
     `;
+
+    // HOVER CARD (NO SE TOCA)
     tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
     tdTail.onmouseleave = hideAircraftHover;
+
     tr.appendChild(tdTail);
 
     // ============================================================
