@@ -1341,6 +1341,118 @@ function applyLongChipBehavior(){
 })();
 
 /* ============================================================
+   🟦 B3-C — OPERATING COST ENGINE (por vuelo) — Qatar Luxury v1.0
+   ------------------------------------------------------------
+   - Cobra combustible, handling y mantenimiento
+   - Solo cuando el vuelo "arranca"
+   - Se ejecuta según ACS_TIME (motor global)
+   ============================================================ */
+
+(function(){
+
+    // Registro para no cobrar dos veces el mismo vuelo en el mismo día sim
+    function hasFlightBeenChargedToday(flightID, simDate){
+        const key = `ACS_FlightCharge_${flightID}_${simDate}`;
+        return localStorage.getItem(key) === "YES";
+    }
+
+    function markFlightCharged(flightID, simDate){
+        const key = `ACS_FlightCharge_${flightID}_${simDate}`;
+        localStorage.setItem(key, "YES");
+    }
+
+    // 🔥 EVENTO: cada vez que ACS_TIME avanza
+    if (typeof registerTimeListener === "function") {
+
+        registerTimeListener(function(){
+
+            const items  = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+            const fleet  = JSON.parse(localStorage.getItem("ACS_MyFleet") || "[]");
+
+            // Fecha simulada YYYY-MM-DD
+            const simDate = (typeof ACS_TIME !== "undefined" && ACS_TIME.simDate)
+                           ? ACS_TIME.simDate
+                           : new Date().toISOString().slice(0,10);
+
+            // Hora simulada HH:MM
+            const simTime = (typeof ACS_TIME !== "undefined" && ACS_TIME.simClock)
+                           ? ACS_TIME.simClock
+                           : "00:00";
+
+            const toMin = t => {
+                const [h,m] = t.split(":").map(Number);
+                return h*60 + m;
+            };
+
+            const simMin = toMin(simTime);
+
+            items.forEach(f => {
+
+                if (f.type !== "flight") return;
+
+                // ¿FANTASMA?
+                const ac = fleet.find(a => a.tail === f.tail);
+                if (!ac) return;  // sin avión → no se opera
+
+                // ¿Mantenimiento?
+                if (ac.status === "In C-Check" || ac.status === "In D-Check" || ac.status === "B-Check"){
+                    return;
+                }
+
+                // ¿Coincide hora de salida?
+                const depMin = toMin(f.departure);
+                if (depMin !== simMin) return;
+
+                // ¿Ya cobrado hoy?
+                if (hasFlightBeenChargedToday(f.id, simDate)) return;
+
+                // =============== COSTOS DE OPERACIÓN ===============
+                const dist   = Number(f.distanceNM || 0);
+                const block  = Number(f.blockTime || 0);
+                const acType = f.acType || "";
+
+                // Buscar categoría/modelo para fuel burn
+                const acOpt = fleet.find(a => a.tail === f.tail);
+                const category = acOpt?.category || "JET";
+
+                // Fuel burn ~ optimizado (kg por hora)
+                const fuelBurnPerHour =
+                      category.includes("ATR")     ? 900 :
+                      category.includes("REGIONAL")? 1800 :
+                      2500;
+
+                const flightHours = block / 60;
+                const fuelKG = fuelBurnPerHour * flightHours;
+                const fuelUSD = fuelKG * 0.85;
+
+                const handlingUSD     = 350;
+                const maintenanceUSD  = 180;
+
+                const totalUSD = Math.round(fuelUSD + handlingUSD + maintenanceUSD);
+
+                // Registrar en Finance Engine
+                if (typeof ACS_Finance === "object" &&
+                    typeof ACS_Finance.registerExpense === "function") {
+
+                    ACS_Finance.registerExpense({
+                        amount: totalUSD,
+                        category: "Operational Cost",
+                        description: `Flight ${f.flightNumberOut} — Fuel/Handling/Maint @ ${f.origin}`,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+
+                console.log(`✈️💰 B3-C charged: $${totalUSD} (flight ${f.flightNumberOut})`);
+
+                // Marcar cobrado
+                markFlightCharged(f.id, simDate);
+            });
+        });
+    }
+
+})();
+     
+/* ============================================================
    6) INTEGRACIÓN FUTURA ===> acs_schedule_engine.js
    ============================================================ */
 
