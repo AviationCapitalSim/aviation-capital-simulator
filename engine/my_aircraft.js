@@ -182,7 +182,15 @@ if (typeof HR_updateRequirementsFromFleet === "function") {
 function HR_updateRequirementsFromFleet() {
 
   // === Cargar HR actual ===
-  let HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+   
+  let HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}") || {};
+
+// === Reset required de todos los departamentos ===
+   
+for (let dep in HR) {
+    if (!HR[dep] || typeof HR[dep] !== "object") continue;
+    HR[dep].required = 0;
+}
 
   // === Reset required de todos los departamentos ===
   for (let dep in HR) {
