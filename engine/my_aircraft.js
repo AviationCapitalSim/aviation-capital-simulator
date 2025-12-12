@@ -116,6 +116,62 @@ if (typeof HR_updateRequirementsFromFleet === "function") {
 }
 
 /* ============================================================
+   🟦 HR SAFETY INIT — Garantizar estructura ACS_HR
+   ------------------------------------------------------------
+   • Evita errores cuando ACS_HR no existe
+   • Crea todos los departamentos con default = 0
+   ============================================================ */
+
+(function ensureHRexists() {
+
+  const templateHR = {
+    pilots_small:       { required: 0, hired: 0 },
+    pilots_medium:      { required: 0, hired: 0 },
+    pilots_large:       { required: 0, hired: 0 },
+    pilots_verylarge:   { required: 0, hired: 0 },
+
+    cabin_crew:         { required: 0, hired: 0 },
+    maintenance:        { required: 0, hired: 0 },
+    ground:             { required: 0, hired: 0 },
+    flight_ops:         { required: 0, hired: 0 },
+    safety:             { required: 0, hired: 0 },
+    customer:           { required: 0, hired: 0 },
+
+    // administrativos
+    ceo:                { required: 0, hired: 1 },
+    vp:                 { required: 0, hired: 0 },
+    middle:             { required: 0, hired: 0 },
+    economics:          { required: 0, hired: 0 },
+    comms:              { required: 0, hired: 0 },
+    admin:              { required: 0, hired: 0 }
+  };
+
+  let HR = JSON.parse(localStorage.getItem("ACS_HR") || "null");
+
+  // Si no existe → lo creamos
+  if (!HR || typeof HR !== "object") {
+    localStorage.setItem("ACS_HR", JSON.stringify(templateHR));
+    console.log("🟢 HR INIT: ACS_HR creado desde cero.");
+    return;
+  }
+
+  // Si existe pero está incompleto → agregar faltantes
+  let changed = false;
+  for (let dep in templateHR) {
+    if (!HR[dep]) {
+      HR[dep] = templateHR[dep];
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    localStorage.setItem("ACS_HR", JSON.stringify(HR));
+    console.log("🟡 HR INIT: ACS_HR actualizado (faltantes agregados).");
+  }
+
+})();
+
+/* ============================================================
    🟦 HR SYNC ENGINE — Requirements Based on Fleet
    ------------------------------------------------------------
    • Calcula requerimientos de personal por cada avión activo
