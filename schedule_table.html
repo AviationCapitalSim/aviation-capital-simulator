@@ -605,49 +605,58 @@ const setFleet = f => localStorage.setItem("ACS_MyFleet", JSON.stringify(f));
 
 
 // ============================================================
-// === AIRCRAFT HOVER (CHECKS / DELIVERY) =====================
+// === AIRCRAFT HOVER CARD — Qatar Luxury v3 ==================
 // ============================================================
 function showAircraftHover(ac, cell) {
 
+  // Remover card anterior si existe
   const old = document.querySelector(".aircraft-hover-card");
   if (old) old.remove();
 
+  // Ocultar hover si el avión no está en servicio especial
   const st = ac.status || "";
+  const activeStatuses = [
+    "In C-Check",
+    "In D-Check",
+    "Pending Delivery",
+    "B-Check"
+  ];
+  if (!activeStatuses.includes(st)) return;
 
-  if (
-    st !== "In C-Check" &&
-    st !== "In D-Check" &&
-    st !== "Pending Delivery" &&
-    st !== "B-Check"
-  ) {
-    return;
-  }
-
+  // Crear card
   const card = document.createElement("div");
   card.className = "aircraft-hover-card";
 
+  // Fechas para progreso
   const start = ac.lastC || ac.lastD || ac.deliveryStart || null;
-  const end   = ac.deliveryDate || null;
-
-  const label =
-    st === "In C-Check"        ? "C-Check 🛠" :
-    st === "In D-Check"        ? "D-Check ⚙️" :
-    st === "Pending Delivery"  ? "Pending Delivery ⏳" :
-    st === "B-Check"           ? "B-Check 🔧" :
-                                 st;
+  const end   = ac.deliveryDate || ac.nextC || ac.nextD || null;
 
   let pct = 0;
   if (start && end) {
     const now = new Date();
     const s = new Date(start);
     const e = new Date(end);
-    pct = Math.min(100, Math.max(0, (now - s) / (e - s) * 100));
+    pct = Math.min(100, Math.max(0, ((now - s) / (e - s)) * 100));
   }
 
+  // Icono según servicio
+  const icon =
+    st === "In C-Check"       ? "🛠" :
+    st === "In D-Check"       ? "⚙️" :
+    st === "Pending Delivery" ? "⏳" :
+    st === "B-Check"          ? "🔧" : "";
+
+  // Construcción del contenido
   card.innerHTML = `
-    <h4>${ac.registration} — ${label}</h4>
-    <p>Started: ${start ? new Date(start).toDateString() : "—"}</p>
-    <p>Ends:    ${end ? new Date(end).toDateString() : "—"}</p>
+    <h4>${ac.registration}</h4>
+    <p style="margin-top:-4px; font-size:0.85rem; color:#ffdd80;">
+      ${ac.model || "—"} — ${icon}
+    </p>
+
+    <p style="margin:6px 0 10px; color:#cbd6ff;">
+      Started: ${start ? new Date(start).toDateString() : "—"}<br>
+      Ends: ${end ? new Date(end).toDateString() : "—"}
+    </p>
 
     <div class="progress-bar">
       <div class="progress-fill" style="width:${pct.toFixed(0)}%"></div>
@@ -655,6 +664,7 @@ function showAircraftHover(ac, cell) {
     <span class="progress-label">${pct.toFixed(0)}%</span>
   `;
 
+  // Mostrar en la celda
   cell.style.position = "relative";
   cell.appendChild(card);
   setTimeout(() => card.classList.add("visible"), 10);
