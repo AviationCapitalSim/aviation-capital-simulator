@@ -1192,7 +1192,212 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
+/* ============================================================
+   🟦 FASE 1 — ROUTE_OBJECT BUILDER (Master Object v1.0)
+   ------------------------------------------------------------
+   • Se ejecuta al presionar "CONFIRM ROUTE"
+   • NO crea items de schedule
+   • NO inserta vuelos
+   • Prepara la ruta 100% lista para Slot Engine + Tabla
+   ============================================================ */
 
+function ACS_buildRouteObject() {
+
+  // 1) Leer campos del formulario
+  const origin       = document.getElementById("origin")?.value || "";
+  const destination  = document.getElementById("destination")?.value || "";
+  const depUTC       = document.getElementById("depTime")?.value || "06:00";
+
+  // 2) Datos técnicos generados por el motor
+  const distanceNM   = Number(localStorage.getItem("tmp_distanceNM") || 0);
+  const blockTimeMin = Number(localStorage.getItem("tmp_blockTime") || 0);
+  const arrivalUTC   = localStorage.getItem("tmp_arrivalUTC") || "00:00";
+
+  // 3) Avión seleccionado
+  const aircraftModel    = document.getElementById("aircraftSelect")?.value || "";
+  const aircraftCategory = localStorage.getItem("tmp_ac_category") || "";
+  const aircraftSpeed    = Number(localStorage.getItem("tmp_ac_speed") || 0);
+  const fuelBurn         = Number(localStorage.getItem("tmp_ac_fuelBurn") || 0);
+  const runwayRequired   = Number(localStorage.getItem("tmp_ac_runway") || 0);
+
+  // 4) Frecuencias seleccionadas
+  const daysSelected = [...document.querySelectorAll(".day-btn.active")]
+    .map(btn => btn.dataset.day);
+
+  const separateDays = document.getElementById("eachDay")?.checked || false;
+
+  // 5) Flight numbers generados previamente
+  const fnOut = Number(localStorage.getItem("tmp_fn_out") || 0);
+  const fnIn  = Number(localStorage.getItem("tmp_fn_in")  || 0);
+
+  // 6) Construcción del bloque multi-día (EVERY DAY)
+  const blockId = separateDays
+    ? null
+    : `block-${Math.random().toString(36).slice(2,8)}`;
+
+  // 7) Construcción final del objeto maestro
+  const ROUTE_OBJECT = {
+    id: `route-${Math.random().toString(36).slice(2,8)}`,
+    mode: separateDays ? "EACH" : "EVERY",
+
+    // Datos base
+    origin,
+    destination,
+    distanceNM,
+    departureUTC: depUTC,
+    arrivalUTC,
+    blockTimeMin,
+
+    // Datos del avión
+    aircraftModel,
+    aircraftCategory,
+    aircraftSpeed,
+    fuelBurn,
+    runwayRequired,
+
+    // Frecuencias
+    days: daysSelected,
+    separateDays,
+
+    // Flight numbers
+    flightNumberOut: fnOut,
+    flightNumberIn: fnIn,
+
+    // Slots (aún vacío, FASE 2 los creará)
+    slotsBooked: [],
+
+    // Costos
+    fuelGallons: 0,
+    operatingCost: 0,
+    landingFees: 0,
+    slotCosts: 0,
+
+    // Meta de tabla
+    blockId,
+    status: "active",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  // 8) Guardar como ruta pendiente de confirmación
+  localStorage.setItem("ROUTE_KEY", JSON.stringify(ROUTE_OBJECT));
+
+  return ROUTE_OBJECT;
+}
+
+/* ============================================================
+   🟦 FASE 2 — SLOT ENGINE CONNECTOR (build + book)
+   ------------------------------------------------------------
+   • Usa el ROUTE_OBJECT creado en FASE 1
+   • Genera slots por día
+   • Verifica disponibilidad
+   • Reserva slots
+   • Actualiza ROUTE_KEY
+   ============================================================ */
+
+async function ACS_applySlotsToRoute() {
+
+  // 1) Traer la ruta generada por FASE 1
+  const raw = localStorage.getItem("ROUTE_KEY");
+  if (!raw) {
+    alert("⚠ Ruta no encontrada.");
+    return false;
+  }
+
+  const route = JSON.parse(raw);
+
+  // 2) Construir slots (FASE 2-A)
+  const slots = ACS_buildSlotsForRoute({
+    origin: route.origin,
+    destination: route.destination,
+    weekdays: route.days,
+    departureUTC: route.departureUTC,
+    arrivalUTC: route.arrivalUTC
+  });
+
+  if (!slots || slots.length === 0) {
+    alert("⚠ No se pudieron generar los slots.");
+    return false;
+  }
+
+  route.slotsBooked = slots;
+
+  // 3) Intentar reservar (FASE 2-B)
+  const success = ACS_bookRoute(route);
+
+  if (!success) {
+    alert("❌ No se pudo reservar slots. Intente otro horario.");
+    return false;
+  }
+
+  // 4) Guardar ruta actualizada con slots aplicados
+  localStorage.setItem("ROUTE_KEY", JSON.stringify(route));
+
+  console.log("🟩 FASE 2: Ruta después de asignar slots:", route);
+
+  return true;
+}
+
+/* ============================================================
+   🟦 FASE 3 — CREATE SCHEDULE ITEMS (Flights Generator v1.0)
+   ------------------------------------------------------------
+   • Crea los elementos que schedule_table usa para pintar vuelos
+   • Funciona con EVERY DAY y EACH DAY
+   • Usa ROUTE_OBJECT y sus slots
+   ============================================================ */
+
+function ACS_createScheduleFlights() {
+
+  const raw = localStorage.getItem("ROUTE_KEY");
+  if (!raw) {
+    alert("⚠ Ruta no encontrada.");
+    return false;
+  }
+
+  const R = JSON.parse(raw);
+
+  // Leer lista actual
+  const existing = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+  let newItems = [];
+
+  // Cada día seleccionado se convierte en un flight
+  R.days.forEach(day => {
+
+    const flt = {
+      id: `flt-${Math.random().toString(36).slice(2,8)}`,
+      blockId: R.separateDays ? "" : R.blockId,
+      type: "flight",
+
+      tail: "",                    // se asigna en la tabla
+      acType: R.aircraftModel,
+
+      day: day,
+      origin: R.origin,
+      destination: R.destination,
+
+      departure: R.departureUTC,
+      arrival:   R.arrivalUTC,
+
+      distanceNM: R.distanceNM,
+      blockTime:  R.blockTimeMin,
+
+      flightNumberOut: R.flightNumberOut,
+      flightNumberIn:  R.flightNumberIn
+    };
+
+    newItems.push(flt);
+  });
+
+  // Merge con lo existente
+  const result = [...existing, ...newItems];
+
+  localStorage.setItem("scheduleItems", JSON.stringify(result));
+
+  console.log("🟩 FASE 3 — Flights creados:", newItems);
+  return true;
+}
+     
 /* ============================================================
    === PHASE 2.2 — CONFIRM ROUTE ===============================
    ============================================================ */
