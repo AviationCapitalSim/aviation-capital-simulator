@@ -512,24 +512,6 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
-/* 🟦 A4 — ROUTE SCHEDULE: Auto Flight Number AFTER selecting aircraft */
-     
-function autoGenerateFlightNumber() {
-
-    if (!userIATA || userIATA.length !== 2) return;
-
-    const origin = document.getElementById("origin").value.trim();
-    const dest   = document.getElementById("destination").value.trim();
-    const ac     = document.getElementById("aircraft").value;
-
-    if (!origin || !dest || !ac) return;
-
-    const pair = generateFlightPair();
-    if (flightNumberInput) {
-        flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
-    }
-}
-
 /* ============================================================
    🟦 FLIGHT NUMBER ENGINE — IATA CONNECTED v1.1 (COMPLETO)
    ============================================================ */
