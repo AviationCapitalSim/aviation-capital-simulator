@@ -565,6 +565,9 @@ tr:hover {
   <!-- Time Engine -->
   <script src="time_engine.js?v=1.2"></script>
 
+  <!-- 🔵 B1 — Historical Airport Cost Engine -->
+  <script src="engine/acs_airport_costs_engine.js?v=1.0"></script>
+
   <!--  🔵 A4 — Slot Engine (DEBE IR ANTES DE airports_loader.js) -->
   <script src="engine/acs_slots_engine.js?v=2.0"></script>
      
@@ -977,11 +980,22 @@ function openAirportInfo(icao) {
   const ap = airports.find(a => a.icao === icao);
   if (!ap) return;
 
-  const modal = document.getElementById("airportInfoModal");
-  const title = document.getElementById("modalTitle");
+   const modal   = document.getElementById("airportInfoModal");
+  const title   = document.getElementById("modalTitle");
   const content = document.getElementById("modalContent");
 
   title.textContent = `${ap.city} (${ap.icao})`;
+
+  /* 🟦 B2 — Obtener valores históricos según el año actual */
+  let year = 1940;
+  try {
+    year = ACS_TIME.currentTime.getFullYear();
+  } catch(e) {
+    console.warn("ACS_TIME not ready, fallback to 1940");
+  }
+
+  // Ajustar tarifas según historia
+  const hist = ACS_adjustAirportFees(ap, year);
 
   content.innerHTML = `
     <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
@@ -1006,16 +1020,22 @@ function openAirportInfo(icao) {
     <hr style="border-color:rgba(255,179,0,0.35); margin:14px 0;">
 
     <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
-      💰 Costs
+      💰 Costs (Historical)
     </div>
-    <div><strong style="color:#ffe7a0;">Slot Cost:</strong> <span style="color:#dbe4ff;">$${ap.slot_cost_usd}</span></div>
-    <div><strong style="color:#ffe7a0;">Landing Fee:</strong> <span style="color:#dbe4ff;">$${ap.landing_fee_usd}</span></div>
-    <div><strong style="color:#ffe7a0;">Fuel Price:</strong> <span style="color:#dbe4ff;">$${ap.fuel_usd_gal}/gal</span></div>
+    <div><strong style="color:#ffe7a0;">Slot Cost:</strong> 
+      <span style="color:#dbe4ff;">$${hist.slot_cost.toLocaleString()}</span>
+    </div>
+    <div><strong style="color:#ffe7a0;">Landing Fee:</strong> 
+      <span style="color:#dbe4ff;">$${hist.landing_fee.toLocaleString()}</span>
+    </div>
+    <div><strong style="color:#ffe7a0;">Fuel Price:</strong> 
+      <span style="color:#dbe4ff;">$${hist.fuel_price}/gal</span>
+    </div>
     <div><strong style="color:#ffe7a0;">Ticket %:</strong> 
-      <span style="color:#dbe4ff;">${(ap.ticket_fee_percent * 100).toFixed(1)}%</span>
+      <span style="color:#dbe4ff;">${hist.ticket_fee}%</span>
     </div>
     <div><strong style="color:#ffe7a0;">Growth:</strong>
-      <span style="color:#dbe4ff;">+${((ap.pax_growth_factor - 1) * 100).toFixed(1)}%</span>
+      <span style="color:#dbe4ff;">+${hist.growth}%</span>
     </div>
 
     <hr style="border-color:rgba(255,179,0,0.35); margin:14px 0;">
@@ -1028,7 +1048,6 @@ function openAirportInfo(icao) {
 
   modal.style.display = "flex";
 }
-
 
 function closeAirportInfo() {
   document.getElementById("airportInfoModal").style.display = "none";
