@@ -192,12 +192,8 @@ for (let dep in HR) {
     HR[dep].required = 0;
 }
 
-  // === Reset required de todos los departamentos ===
-  for (let dep in HR) {
-    HR[dep].required = 0;
-  }
-
   // === Procesar flota activa real ===
+   
   fleet.forEach(ac => {
 
     if (ac.status !== "Active") return; // solo activos
