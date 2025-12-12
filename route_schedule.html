@@ -1242,21 +1242,50 @@ function confirmRoute() {
   };
 
   /* ============================================================
-     🟩 STEP 2 — B1: Construir lista de slots usados
-     ============================================================ */
-     
-  ACS_buildSlotsForRoute(newRoute);
+   🟩 STEP 2 — SLOT ENGINE FIX (Build + Reserve)
+   ============================================================ */
 
-  /* ============================================================
-     🟧 STEP 3 — B2: Reservar slots (used++)
-     ============================================================ */
-     
-  const success = ACS_bookRoute(newRoute);
+/* 1) Convertir departure + blockTime → arrivalUTC */
+function ACS_convertDepartureToArrival(dep, blockMin) {
+  if (!dep || !blockMin) return "00:00";
+  const [h, m] = dep.split(":").map(Number);
+  const total = h * 60 + m + blockMin;
+  const ah = String(Math.floor(total / 60) % 24).padStart(2, "0");
+  const am = String(total % 60).padStart(2, "0");
+  return `${ah}:${am}`;
+}
 
-  if (!success) {
-    alert("❌ Route cannot be created. Slot unavailable.");
-    return;
-  }
+/* 2) Construir OBJETO SLOT-READY */
+const slotRoute = {
+  origin: newRoute.origin,
+  destination: newRoute.destination,
+  weekdays: newRoute.days,             // el motor de slots exige "weekdays"
+  departureUTC: newRoute.departure,    // compatible con Slot Engine
+  arrivalUTC: ACS_convertDepartureToArrival(
+    newRoute.departure,
+    newRoute.blockTime
+  )
+};
+
+/* 3) Generar slots */
+const slotsCreated = ACS_buildSlotsForRoute(slotRoute);
+
+if (!slotsCreated || slotsCreated.length === 0) {
+  alert("⚠️ Slots could not be generated. Check schedule.");
+  return;
+}
+
+/* 4) Intentar reservar */
+const success = ACS_bookRoute(slotRoute);
+
+if (!success) {
+  alert("❌ Route cannot be created. Slot unavailable.");
+  return;
+}
+
+/* Guardamos los slots en la ruta final */
+newRoute.slotsBooked = slotsCreated;
+
 
   /* ============================================================
      🟨 STEP 4 — C2.D: Cobrar tarifa por confirmación
