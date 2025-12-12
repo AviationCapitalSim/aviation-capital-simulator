@@ -715,6 +715,98 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    /* ============================================================
+       🟦 B3-B — COBRO POR CAMBIO DE HORA > 5 MIN — Qatar Luxury v1.0
+       ============================================================ */
+       
+    (function(){
+        const editID = localStorage.getItem("editFlightID");
+        if (!editID) return; // no estamos en modo edición
+
+        const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+        const oldFlight = items.find(f => f.id === editID || f.blockId === editID);
+        if (!oldFlight) return;
+
+        const oldDep = oldFlight.departure;   // "HH:MM"
+        const newDep = departure;             // "HH:MM"
+
+        if (!oldDep || !newDep) return;
+
+        const toMin = t => {
+            const [h,m] = t.split(":").map(Number);
+            return h*60 + m;
+        };
+
+        const diff = Math.abs(toMin(newDep) - toMin(oldDep));
+
+        // SOLO si pasa de 5 min → cobro
+        if (diff > 5) {
+
+            console.log("🟡 B3-B triggered — hour change detected (+5 min).");
+
+            // 1) Buscar aeropuerto del ORIGEN
+            let airport = null;
+            for (const cont in WorldAirportsACS) {
+                const list = WorldAirportsACS[cont];
+                if (!Array.isArray(list)) continue;
+                airport = airport || list.find(a => a.icao === origin);
+            }
+
+            if (!airport) {
+                console.warn("⚠ No airport found for slot fee.");
+                return;
+            }
+
+            const slotFee = Number(airport.slot_cost_usd || 0);
+
+            // 2) Cobrar a Finance Engine
+            if (typeof ACS_Finance === "object" &&
+                typeof ACS_Finance.registerExpense === "function") {
+
+                ACS_Finance.registerExpense({
+                    amount: slotFee,
+                    category: "Slot Change Fee",
+                    description: `Change time ${oldDep} → ${newDep} at ${airport.icao}`,
+                    timestamp: new Date().toISOString()
+                });
+
+                console.log(`💰 Slot Change Fee charged: $${slotFee}`);
+            }
+
+            // 3) Marcar como cobrado (evita cobros dobles)
+            localStorage.setItem("ACS_lastHourChargeID", editID);
+            localStorage.setItem("ACS_lastHourOldTime", oldDep);
+            localStorage.setItem("ACS_lastHourNewTime", newDep);
+        }
+    })();
+    /* ============================================================
+       🟦 FIN BLOQUE B3-B
+       ============================================================ */
+
+    const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
+    localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
+
+    const rawFN = (flightNumberInput.value || "");
+    const match = rawFN.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/) || [];
+    const flightOut = match[1] || null;
+    const flightIn  = match[2] || null;
+
+    const updatedRoute = {
+      origin, destination, aircraft, departure,
+      optimized, days: selectedDays,
+      flightNumberOut: flightOut,
+      flightNumberIn: flightIn
+    };
+
+    localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
+    markNumbersUsed(flightOut, flightIn);
+    bumpFlightCounter();
+
+    localStorage.removeItem("editFlightID");
+    alert("✅ Flight updated.");
+    window.location.href = "schedule_table.html";
+};
+
     const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
     localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
 
