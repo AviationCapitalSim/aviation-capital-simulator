@@ -805,36 +805,12 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("editFlightID");
     alert("✅ Flight updated.");
     window.location.href = "schedule_table.html";
-};
-
-    const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
-    localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
-
-    const rawFN = (flightNumberInput.value || "");
-    const match = rawFN.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/) || [];
-    const flightOut = match[1] || null;
-    const flightIn  = match[2] || null;
-
-    const updatedRoute = {
-      origin, destination, aircraft, departure,
-      optimized, days: selectedDays,
-      flightNumberOut: flightOut,
-      flightNumberIn: flightIn
-    };
-
-    localStorage.setItem("confirmedRoute", JSON.stringify(updatedRoute));
-    markNumbersUsed(flightOut, flightIn);
-    bumpFlightCounter();
-
-    localStorage.removeItem("editFlightID");
-    alert("✅ Flight updated.");
-    window.location.href = "schedule_table.html";
-  };
 
 /* ============================================================
    🟦 FASE 1 — LOAD AVAILABLE AIRCRAFT ==========================
    ============================================================ */
 function loadAvailableAircraft() {
+
   const origin = (document.getElementById("origin").value || "").trim();
   const select = document.getElementById("aircraft");
 
