@@ -512,6 +512,24 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
+/* 🟦 A4 — ROUTE SCHEDULE: Auto Flight Number AFTER selecting aircraft */
+     
+function autoGenerateFlightNumber() {
+
+    if (!userIATA || userIATA.length !== 2) return;
+
+    const origin = document.getElementById("origin").value.trim();
+    const dest   = document.getElementById("destination").value.trim();
+    const ac     = document.getElementById("aircraft").value;
+
+    if (!origin || !dest || !ac) return;
+
+    const pair = generateFlightPair();
+    if (flightNumberInput) {
+        flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
+    }
+}
+
 /* ============================================================
    🟦 FLIGHT NUMBER ENGINE — IATA CONNECTED v1.1 (COMPLETO)
    ============================================================ */
@@ -697,74 +715,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    /* ============================================================
-       🟦 B3-B — COBRO POR CAMBIO DE HORA > 5 MIN — Qatar Luxury v1.0
-       ============================================================ */
-       
-    (function(){
-        const editID = localStorage.getItem("editFlightID");
-        if (!editID) return; // no estamos en modo edición
-
-        const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-        const oldFlight = items.find(f => f.id === editID || f.blockId === editID);
-        if (!oldFlight) return;
-
-        const oldDep = oldFlight.departure;   // "HH:MM"
-        const newDep = departure;             // "HH:MM"
-
-        if (!oldDep || !newDep) return;
-
-        const toMin = t => {
-            const [h,m] = t.split(":").map(Number);
-            return h*60 + m;
-        };
-
-        const diff = Math.abs(toMin(newDep) - toMin(oldDep));
-
-        // SOLO si pasa de 5 min → cobro
-        if (diff > 5) {
-
-            console.log("🟡 B3-B triggered — hour change detected (+5 min).");
-
-            // 1) Buscar aeropuerto del ORIGEN
-            let airport = null;
-            for (const cont in WorldAirportsACS) {
-                const list = WorldAirportsACS[cont];
-                if (!Array.isArray(list)) continue;
-                airport = airport || list.find(a => a.icao === origin);
-            }
-
-            if (!airport) {
-                console.warn("⚠ No airport found for slot fee.");
-                return;
-            }
-
-            const slotFee = Number(airport.slot_cost_usd || 0);
-
-            // 2) Cobrar a Finance Engine
-            if (typeof ACS_Finance === "object" &&
-                typeof ACS_Finance.registerExpense === "function") {
-
-                ACS_Finance.registerExpense({
-                    amount: slotFee,
-                    category: "Slot Change Fee",
-                    description: `Change time ${oldDep} → ${newDep} at ${airport.icao}`,
-                    timestamp: new Date().toISOString()
-                });
-
-                console.log(`💰 Slot Change Fee charged: $${slotFee}`);
-            }
-
-            // 3) Marcar como cobrado (evita cobros dobles)
-            localStorage.setItem("ACS_lastHourChargeID", editID);
-            localStorage.setItem("ACS_lastHourOldTime", oldDep);
-            localStorage.setItem("ACS_lastHourNewTime", newDep);
-        }
-    })();
-    /* ============================================================
-       🟦 FIN BLOQUE B3-B
-       ============================================================ */
-
     const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
     localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
 
@@ -787,13 +737,14 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.removeItem("editFlightID");
     alert("✅ Flight updated.");
     window.location.href = "schedule_table.html";
-  };  // ← ESTE ES EL CIERRE QUE FALTABA
+  };
+});
+
 
 /* ============================================================
    🟦 FASE 1 — LOAD AVAILABLE AIRCRAFT ==========================
    ============================================================ */
 function loadAvailableAircraft() {
-
   const origin = (document.getElementById("origin").value || "").trim();
   const select = document.getElementById("aircraft");
 
