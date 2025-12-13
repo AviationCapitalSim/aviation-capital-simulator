@@ -222,6 +222,38 @@ function renderUsedMarket(filter = "all") {
 }
 
 /* ============================================================
+   === AUTO-REGISTRATION FOR USED MARKET — v1.0 (MODEL A) ======
+   ------------------------------------------------------------
+   • Usa getRegistrationPrefix() del Registration Manager
+   • Formato automático 100% realista
+   • USA = N123AB
+   • Otros = EC-ABC / EX-XYZ / G-PLM / etc.
+   ============================================================ */
+function ACS_assignUsedRegistration() {
+
+  const prefix = (typeof getRegistrationPrefix === "function")
+    ? getRegistrationPrefix()        // EC-, EX-, N-, G-, JA-, etc.
+    : "XX-";
+
+  // 🇺🇸 USA — formato especial FAA
+  if (prefix === "N-") {
+    const num = Math.floor(100 + Math.random() * 900);  // N123
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const L1 = letters[Math.floor(Math.random() * 26)];
+    const L2 = letters[Math.floor(Math.random() * 26)];
+    return `N${num}${L1}${L2}`; 
+  }
+
+  // 🌍 RESTO DEL MUNDO
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const s1 = alphabet[Math.floor(Math.random() * 26)];
+  const s2 = alphabet[Math.floor(Math.random() * 26)];
+  const s3 = alphabet[Math.floor(Math.random() * 26)];
+  return `${prefix}${s1}${s2}${s3}`;
+}
+
+
+/* ============================================================
    === BUY USED AIRCRAFT
    ============================================================ */
 
@@ -265,9 +297,7 @@ function buyUsed(id) {
     const baseCity   = baseObj.city   || "Naples";
     const baseRegion = baseObj.region || "Italy";
 
-    const reg = (typeof ACS_generateRegistration === "function")
-      ? ACS_generateRegistration()
-      : `AC-${Date.now()}`;
+    const reg = ACS_assignUsedRegistration();
 
     const fullData = (typeof ACS_AIRCRAFT_DB !== "undefined")
       ? ACS_AIRCRAFT_DB.find(m =>
