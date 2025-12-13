@@ -899,6 +899,7 @@ function renderSchedule() {
     // ============================================================
     // ACTION PLAN
     // ============================================================
+       
     const planTd = document.createElement("td");
     const wrap = document.createElement("div");
     wrap.className = "plan-actions";
@@ -919,16 +920,65 @@ function renderSchedule() {
 
     tr.appendChild(planTd);
     tbody.appendChild(tr);
+       
   });
 
+  // ============================================================
+  // === EXTRA EMPTY ROWS (Always show 5 additional rows) ========
+  // ============================================================
+  for (let i = 0; i < 5; i++) {
+
+    const tr = document.createElement("tr");
+
+    // Aircraft column
+    const tdTail = document.createElement("td");
+    tdTail.textContent = "(empty)";
+    tr.appendChild(tdTail);
+
+    // 7 day columns
+    days.forEach(() => {
+      const td = document.createElement("td");
+      td.textContent = "—";
+      tr.appendChild(td);
+    });
+
+    // Action Plan column (fake buttons)
+    const planTd = document.createElement("td");
+    const wrap = document.createElement("div");
+    wrap.className = "plan-actions";
+
+    const assignBtn = document.createElement("button");
+    assignBtn.className = "btn btn-assign";
+    assignBtn.textContent = "Assign Route";
+    assignBtn.onclick = () =>
+      alert("⚠ Select a real aircraft row above.");
+
+    const maintBtn = document.createElement("button");
+    maintBtn.className = "btn btn-maint";
+    maintBtn.textContent = "Plan Maintenance";
+    maintBtn.onclick = () =>
+      alert("⚠ Select a real aircraft row above.");
+
+    wrap.appendChild(assignBtn);
+    wrap.appendChild(maintBtn);
+
+    planTd.appendChild(wrap);
+    tr.appendChild(planTd);
+
+    tbody.appendChild(tr);
+  }
+
+  // ============================================================
+  // === UPDATE TIME (TU BLOQUE ORIGINAL - NO TOCAR) =============
+  // ============================================================
   document.getElementById("updateTime").textContent =
     "Last update: " + new Date().toLocaleTimeString();
 }
 
-
 // ============================================================
 // ASSIGN ROUTE
 // ============================================================
+     
 function assignRouteToTail(ac){
 
   const route = getRoute();
