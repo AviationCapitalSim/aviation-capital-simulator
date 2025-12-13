@@ -619,3 +619,14 @@ document.addEventListener("DOMContentLoaded", () => {
 window.buyUsed = buyUsed;
 window.leaseUsed = leaseUsed;
 window.openInfo = openInfo;
+
+// =====================================================
+// 🔥 UNIVERSAL — Generar matrícula real por país base
+// =====================================================
+
+function ACS_assignRegistration() {
+    if (typeof ACS_generateRegistration === "function") {
+        return ACS_generateRegistration();
+    }
+    return "UNASSIGNED";
+}
