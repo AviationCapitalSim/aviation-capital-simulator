@@ -479,6 +479,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // 1) Recargar flota activa
   fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
+  // Normalize aircraft data (registration + maintenance fields)
+  if (typeof ACS_normalizeAircraft === "function") {
+  fleet = fleet.map(ac => ACS_normalizeAircraft(ac));
+}
+   
   // 2) Procesar entregas pendientes
   updatePendingDeliveries();
 
