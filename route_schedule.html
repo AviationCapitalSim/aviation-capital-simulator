@@ -742,9 +742,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* ============================================================
-   🟦 FASE 1 — LOAD AVAILABLE AIRCRAFT ==========================
+   🟦 FASE 1 — LOAD AVAILABLE AIRCRAFT (SIN MATRÍCULA VISUAL) ==
    ============================================================ */
+     
 function loadAvailableAircraft() {
+
   const origin = (document.getElementById("origin").value || "").trim();
   const select = document.getElementById("aircraft");
 
@@ -756,14 +758,20 @@ function loadAvailableAircraft() {
     .filter(ac => ac.status === "Active")
     .filter(ac => ac.base === origin)
     .forEach(ac => {
-      const opt = document.createElement("option");
-      opt.value = ac.registration;
-      opt.textContent = `${ac.model} — ${ac.registration}`;
 
-      opt.dataset.model    = ac.model || "";
+      // 🔥 SOLO MODELO — SIN MATRÍCULA 🔥
+      const label = ac.model;  
+
+      const opt = document.createElement("option");
+      opt.value = ac.registration;   // esto SIEMPRE debe ser REG para trabajar bien
+      opt.textContent = label;
+
+      // Dataset para confirmRoute()
+      opt.dataset.model = ac.model || "";
+      opt.dataset.brand = ac.brand || ac.manufacturer || "";
       opt.dataset.category = ac.category || "";
-      opt.dataset.speed    = ac.speed || 440;
-      opt.dataset.range    = ac.range || 1500;
+      opt.dataset.speed = ac.speed || 440;
+      opt.dataset.range = ac.range || 1500;
       opt.dataset.fuelBurn = ac.fuelBurn || 0;
 
       select.appendChild(opt);
