@@ -157,3 +157,36 @@ function ACS_normalizeAircraft(ac) {
 
   return ac;
 }
+
+/* ============================================================
+   ACS REGISTRATION GENERATOR — v2.0
+   ✔ Usa getRegistrationPrefix()
+   ✔ Genera matrícula según país de base
+   ✔ Compatible con Italia (I-ABC), USA, Brasil, etc.
+   ============================================================ */
+
+function ACS_generateRegistration() {
+
+  const prefix = getRegistrationPrefix();  // ejemplo: "I-"
+
+  // === Formatos especiales por país ===
+  if (prefix === "N-") {
+    // USA: N123AB
+    const num = Math.floor(100 + Math.random() * 900);
+    const letters = randomLetters(2);
+    return `N${num}${letters}`;
+  }
+
+  if (prefix === "I-") {
+    // Italia: I-ABC
+    return `I-${randomLetters(3)}`;
+  }
+
+  if (prefix === "PR-") {
+    // Brasil: PR-ABC
+    return `PR-${randomLetters(3)}`;
+  }
+
+  // === Default global ===
+  return prefix + randomLetters(3);
+}
