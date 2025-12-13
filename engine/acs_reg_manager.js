@@ -190,3 +190,16 @@ function ACS_generateRegistration() {
   // === Default global ===
   return prefix + randomLetters(3);
 }
+
+/* ============================================================
+   Helper — Random Letters (A–Z)
+   ============================================================ */
+
+function randomLetters(n) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let s = "";
+  for (let i = 0; i < n; i++) {
+    s += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return s;
+}
