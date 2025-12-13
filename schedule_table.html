@@ -755,43 +755,58 @@ function renderSchedule() {
 
     const tr = document.createElement("tr");
 
-    // ============================================================
-    // MATRÍCULA + MODELO + ESTADO (VERSIÓN NUEVA)
-    // ============================================================
+// ============================================================
+// MATRÍCULA + MODELO + FABRICANTE (VERSIÓN FINAL DEFINITIVA)
+// ============================================================
 
-    const tdTail = document.createElement("td");
+const tdTail = document.createElement("td");
 
-    const st = ac.status || "";
-    let maintIcon = "";
-    let rowClass = "";
-    let modelLine = ac.type || ac.model || "";
+// Estado de mantenimiento (no se toca)
+const st = ac.status || "";
+let maintIcon = "";
+let rowClass = "";
+let modelLine = ac.model || ac.type || "";
 
-    if (st === "In C-Check" || st === "In D-Check" || st === "B-Check") {
-      maintIcon = " 🛠";
-      rowClass = "row-maint";
-    }
+if (st === "In C-Check" || st === "In D-Check" || st === "B-Check") {
+  maintIcon = " 🛠";
+  rowClass = "row-maint";
+}
 
-    if (st === "Pending Delivery") {
-      maintIcon = " ⏳";
-      rowClass = "row-pending";
-    }
+if (st === "Pending Delivery") {
+  maintIcon = " ⏳";
+  rowClass = "row-pending";
+}
 
-    if (rowClass) {
-      tr.classList.add(rowClass);
-    }
+if (rowClass) {
+  tr.classList.add(rowClass);
+}
 
-    tdTail.innerHTML = `
-      <div style="line-height:1.1;">
-        <strong>${ac.registration || ac.tail}</strong><br>
-        ${modelLine}${maintIcon}
-      </div>
-    `;
+// ===========================
+// VALORES DEFINITIVOS
+// ===========================
+       
+const reg  = ac.registration || ac.tail || "UNKNOWN";
+const model = ac.model || ac.type || "UNKNOWN";
+const manufacturer = ac.manufacturer || "FORD"; // ← Como lo pediste, fijo.
 
-    // HOVER CARD (NO SE TOCA)
-    tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
-    tdTail.onmouseleave = hideAircraftHover;
+// ===========================
+// DISPLAY FINAL EXACTO
+// ===========================
+       
+tdTail.innerHTML = `
+  <div style="line-height:1.15; text-align:left;">
+    <strong>${reg}</strong><br>
+    ${model}<br>
+    <span style="color:#ffca3a; font-weight:600;">${manufacturer.toUpperCase()}</span>
+    ${maintIcon ? `<br>${maintIcon}` : ""}
+  </div>
+`;
 
-    tr.appendChild(tdTail);
+// Hover card (NO SE TOCA)
+tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
+tdTail.onmouseleave = hideAircraftHover;
+
+tr.appendChild(tdTail);
 
     // ============================================================
     // DÍAS
@@ -984,10 +999,12 @@ function assignRouteToTail(ac){
   const route = getRoute();
   if (!route) { alert("No confirmed route available."); return; }
 
-  if (route.aircraft !== ac.type) {
-    alert(`⚠ Route is for ${route.aircraft}, but ${ac.tail} is ${ac.type}.`);
+  const acType = ac.type || ac.model || ac.category || "UNKNOWN";
+
+  if (route.aircraft !== acType) {
+    alert(`⚠ Route is for ${route.aircraft}, but ${ac.registration} is ${acType}.`);
     return;
-  }
+}
 
   const items = getItems();
   const daysSel = Array.isArray(route.days) && route.days.length ? route.days : ["mon"];
