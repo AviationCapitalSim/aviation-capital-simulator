@@ -1193,23 +1193,31 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   === PHASE 2.2 — CONFIRM ROUTE ===============================
+   === PHASE 2.2 — CONFIRM ROUTE (CORREGIDO v2 — 13 DEC 2025) ==
    ============================================================ */
-     
+
 function confirmRoute() {
 
   const origin       = document.getElementById("origin").value.trim();
   const destination  = document.getElementById("destination").value.trim();
-  const aircraft     = document.getElementById("aircraft").value;
+  const aircraftReg  = document.getElementById("aircraft").value;   // AHORA GUARDAMOS EL REGISTRO
   const departure    = document.getElementById("departureTime").value;
 
   const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
   const days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
 
-  if (!origin || !destination || !aircraft || !departure || days.length === 0) {
+  if (!origin || !destination || !aircraftReg || !departure || days.length === 0) {
     alert("⚠️ Please complete all fields.");
     return;
   }
+
+  /* ============================================================
+     EXTRAEMOS MODELO Y FABRICANTE DESDE EL OPTION SELECCIONADO
+     ============================================================ */
+
+  const opt = document.querySelector(`#aircraft option[value="${aircraftReg}"]`);
+  const aircraftModel = opt?.dataset.model || "";
+  const aircraftBrand = opt?.dataset.brand || "";
 
   // Flight numbers (OUT/IN)
   const rawFN = document.getElementById("flightNumber").value || "";
@@ -1221,14 +1229,19 @@ function confirmRoute() {
   const tech = window.ACS_RouteTechData || {};
 
   /* ============================================================
-     🟦 STEP 1 — Construir objeto base de ruta
+     🟦 STEP 1 — Construir objeto base de ruta (ACTUALIZADO)
      ============================================================ */
-     
+
   const newRoute = {
     id: `RT_${Date.now()}`,
     origin,
     destination,
-    aircraft,
+
+    // 🔥 AHORA SE GUARDA TODO CORRECTO Y COMPLETO 🔥
+    aircraftReg,        
+    aircraftModel,      
+    aircraftBrand,      
+
     departure,
     days,
     flightNumberOut: fnOut,
@@ -1242,58 +1255,52 @@ function confirmRoute() {
   };
 
   /* ============================================================
-   🟩 STEP 2 — SLOT ENGINE FIX (Build + Reserve)
-   ============================================================ */
+     🟦 STEP 2 — SLOT ENGINE (igual como lo tienes)
+     ============================================================ */
 
-/* 1) Convertir departure + blockTime → arrivalUTC */
-function ACS_convertDepartureToArrival(dep, blockMin) {
-  if (!dep || !blockMin) return "00:00";
-  const [h, m] = dep.split(":").map(Number);
-  const total = h * 60 + m + blockMin;
-  const ah = String(Math.floor(total / 60) % 24).padStart(2, "0");
-  const am = String(total % 60).padStart(2, "0");
-  return `${ah}:${am}`;
-}
+  function ACS_convertDepartureToArrival(dep, blockMin) {
+    if (!dep || !blockMin) return "00:00";
+    const [h, m] = dep.split(":").map(Number);
+    const total = h * 60 + m + blockMin;
+    const ah = String(Math.floor(total / 60) % 24).padStart(2, "0");
+    const am = String(total % 60).padStart(2, "0");
+    return `${ah}:${am}`;
+  }
 
-/* 2) Construir OBJETO SLOT-READY */
-const slotRoute = {
-  origin: newRoute.origin,
-  destination: newRoute.destination,
-  weekdays: newRoute.days,             // el motor de slots exige "weekdays"
-  departureUTC: newRoute.departure,    // compatible con Slot Engine
-  arrivalUTC: ACS_convertDepartureToArrival(
-    newRoute.departure,
-    newRoute.blockTime
-  )
-};
+  const slotRoute = {
+    origin: newRoute.origin,
+    destination: newRoute.destination,
+    weekdays: newRoute.days,             
+    departureUTC: newRoute.departure,    
+    arrivalUTC: ACS_convertDepartureToArrival(
+      newRoute.departure,
+      newRoute.blockTime
+    )
+  };
 
-/* 3) Generar slots */
-const slotsCreated = ACS_buildSlotsForRoute(slotRoute);
+  const slotsCreated = ACS_buildSlotsForRoute(slotRoute);
 
-if (!slotsCreated || slotsCreated.length === 0) {
-  alert("⚠️ Slots could not be generated. Check schedule.");
-  return;
-}
+  if (!slotsCreated || slotsCreated.length === 0) {
+    alert("⚠️ Slots could not be generated. Check schedule.");
+    return;
+  }
 
-/* 4) Intentar reservar */
-const success = ACS_bookRoute(slotRoute);
+  const success = ACS_bookRoute(slotRoute);
 
-if (!success) {
-  alert("❌ Route cannot be created. Slot unavailable.");
-  return;
-}
+  if (!success) {
+    alert("❌ Route cannot be created. Slot unavailable.");
+    return;
+  }
 
-/* Guardamos los slots en la ruta final */
-newRoute.slotsBooked = slotsCreated;
-
+  newRoute.slotsBooked = slotsCreated;
 
   /* ============================================================
-     🟨 STEP 4 — C2.D: Cobrar tarifa por confirmación
+     🟨 STEP 4 — FINANCE FEE
      ============================================================ */
   ACS_finance_chargeSlotConfirmFee(newRoute);
 
   /* ============================================================
-     🟦 STEP 5 — Guardar ruta en scheduleItems
+     🟦 STEP 5 — SAVE
      ============================================================ */
   const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   list.push(newRoute);
