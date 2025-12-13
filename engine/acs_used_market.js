@@ -438,9 +438,27 @@ function leaseUsed(id) {
     m.model === ac.model
   ) || {});
 
-  const registration = (typeof ACS_generateRegistration === "function")
-    ? ACS_generateRegistration()
-    : "UNREG-" + Math.floor(Math.random() * 99999);
+  // ✔ Registro realista basado en país — Registration Manager
+   
+const prefix = (typeof getRegistrationPrefix === "function")
+  ? getRegistrationPrefix()
+  : "XX-";
+
+let reg = "";
+if (prefix === "N-") {
+  // Formato FAA
+  const num = Math.floor(100 + Math.random() * 900);
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const la = letters[Math.floor(Math.random() * 26)];
+  const lb = letters[Math.floor(Math.random() * 26)];
+  reg = `N${num}${la}${lb}`;
+} else {
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const a = letters[Math.floor(Math.random() * 26)];
+  const b = letters[Math.floor(Math.random() * 26)];
+  const c = letters[Math.floor(Math.random() * 26)];
+  reg = prefix + a + b + c;
+}
 
   myFleet.push({
     id: "AC-" + Date.now(),
