@@ -568,10 +568,12 @@ const STORE_KEY = "scheduleItems";
 const ROUTE_KEY  = "confirmedRoute";
 
 // ============================================================
-// === REAL FLEET (NO SE TOCA) ================================
+// === REAL FLEET — Unified with My Aircraft ==================
+// === Source: ACS_MyAircraft (official fleet key) ============
 // ============================================================
+     
 function getRealFleet() {
-  return JSON.parse(localStorage.getItem("ACS_MyFleet") || "[]");
+  return JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 }
 
 const TURNAROUND_MIN = 45;
@@ -594,15 +596,20 @@ const getRoute = () => {
 };
 
 // ============================================================
-// FLEET
+// FLEET — Helper wrappers (compatibilidad legacy) =============
 // ============================================================
+     
 const getFleet = () => getRealFleet();
-const setFleet = f => localStorage.setItem("ACS_MyFleet", JSON.stringify(f));
+const setFleet = f => localStorage.setItem("ACS_MyAircraft", JSON.stringify(f));
 
 (function initFleet(){
-  if (!getRealFleet().length) setFleet([]);
-})();
+  const current = getRealFleet();
 
+  // Si por alguna razón la clave no es un array, la normalizamos
+  if (!Array.isArray(current)) {
+    localStorage.setItem("ACS_MyAircraft", "[]");
+  }
+})();
 
 // ============================================================
 // === AIRCRAFT HOVER CARD — Qatar Luxury v3 ==================
@@ -1410,7 +1417,7 @@ function applyLongChipBehavior(){
         registerTimeListener(function(){
 
             const items  = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-            const fleet  = JSON.parse(localStorage.getItem("ACS_MyFleet") || "[]");
+            const fleet  = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
             // Fecha simulada YYYY-MM-DD
             const simDate = (typeof ACS_TIME !== "undefined" && ACS_TIME.simDate)
@@ -1434,7 +1441,7 @@ function applyLongChipBehavior(){
                 if (f.type !== "flight") return;
 
                 // ¿FANTASMA?
-                const ac = fleet.find(a => a.tail === f.tail);
+                const ac = fleet.find(a => a.tail === f.tail || a.registration === f.tail);
                 if (!ac) return;  // sin avión → no se opera
 
                 // ¿Mantenimiento?
@@ -1455,7 +1462,7 @@ function applyLongChipBehavior(){
                 const acType = f.acType || "";
 
                 // Buscar categoría/modelo para fuel burn
-                const acOpt = fleet.find(a => a.tail === f.tail);
+                const acOpt = fleet.find(a => a.tail === f.tail || a.registration === f.tail);
                 const category = acOpt?.category || "JET";
 
                 // Fuel burn ~ optimizado (kg por hora)
