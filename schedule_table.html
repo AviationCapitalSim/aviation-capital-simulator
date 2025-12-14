@@ -1641,8 +1641,9 @@ function ACS_mapAircraftRows() {
 }
 
 /* ============================================================
-   🟦 STEP C — PAINT ROUTES (SOLO MODELO)
+   🟦 STEP C — PAINT ROUTES (MODELO, NO MATRÍCULA)
    ============================================================ */
+     
 function ACS_paintRoutesStepC() {
 
   console.log("🟦 STEP C — Painting routes...");
@@ -1657,23 +1658,41 @@ function ACS_paintRoutesStepC() {
 
   routes.forEach(route => {
 
-    const tr = rowMap[route.aircraft];   // SOLO MODELO
+    // -----------------------------------------------------------
+    // 🔥 CLAVE: USAR SOLO MODELO, NUNCA REGISTRATION
+    // -----------------------------------------------------------
+    const modelKey = route.aircraftModel || route.model || route.acType || "";
 
-    if (!tr) {
-      console.warn(`⚠ No row found for aircraft model: ${route.aircraft}`);
+    if (!modelKey) {
+      console.warn("⚠ Route has no valid modelKey:", route);
       return;
     }
 
-    const dayCells = {
-      mon: tr.querySelector("td[data-day='mon']"),
-      tue: tr.querySelector("td[data-day='tue']"),
-      wed: tr.querySelector("td[data-day='wed']"),
-      thu: tr.querySelector("td[data-day='thu']"),
-      fri: tr.querySelector("td[data-day='fri']"),
-      sat: tr.querySelector("td[data-day='sat']"),
-      sun: tr.querySelector("td[data-day='sun']")
+    const tr = rowMap[modelKey];
+
+    if (!tr) {
+      console.warn(`⚠ No row found for aircraft model: ${modelKey}`);
+      return;
+    }
+
+    // -----------------------------------------------------------
+    // MAPA DE CELDAS POR DÍA
+    // -----------------------------------------------------------
+    const cells = tr.querySelectorAll("td");
+
+    const map = {
+      mon: cells[1],
+      tue: cells[2],
+      wed: cells[3],
+      thu: cells[4],
+      fri: cells[5],
+      sat: cells[6],
+      sun: cells[7]
     };
 
+    // -----------------------------------------------------------
+    // CONTENIDO VISUAL DEL FLIGHT
+    // -----------------------------------------------------------
     const cellHTML = `
       <div class="acs-flight-cell">
         ✈ ${route.origin} → ${route.destination}<br>
@@ -1681,15 +1700,17 @@ function ACS_paintRoutesStepC() {
       </div>
     `;
 
+    // -----------------------------------------------------------
+    // PINTAR EN CADA DÍA
+    // -----------------------------------------------------------
     (route.days || []).forEach(dayID => {
-      const cell = dayCells[dayID];
-      if (cell) cell.innerHTML = cellHTML;
+      const td = map[dayID];
+      if (td) td.innerHTML = cellHTML;
     });
 
   });
 
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
   ACS_loadRoutesStepA();
