@@ -1591,11 +1591,8 @@ window.ACS_SCHEDULE = {
 console.log("🟦 ACS Schedule Module — FINALIZED (PART 5 / 5) — Qatar Luxury Edition");
 
 /* ============================================================
-   🟦 A) LOAD ROUTES FROM localStorage — STEP A ONLY
-   ------------------------------------------------------------
-   No dibuja nada, solo carga y muestra los datos.
+   🟦 STEP A — LOAD ROUTES (14 DEC 2025)
    ============================================================ */
-
 function ACS_loadRoutesStepA() {
 
   console.log("🟦 STEP A — Loading routes...");
@@ -1604,30 +1601,19 @@ function ACS_loadRoutesStepA() {
 
   if (!Array.isArray(routes)) {
     console.warn("⚠ scheduleItems no es un array. Valor:", routes);
+    window.ACS_Routes_Stored = [];
     return;
   }
 
   console.log(`🔍 Encontradas ${routes.length} rutas guardadas:`);
+  routes.forEach((rt, i) => console.log(`— Ruta #${i+1}:`, rt));
 
-  routes.forEach((rt, i) => {
-    console.log(`— Ruta #${i+1}:`, rt);
-  });
-
-  // Guardamos global
   window.ACS_Routes_Stored = routes;
 }
 
-/* Ejecutar STEP A al cargar la tabla */
-document.addEventListener("DOMContentLoaded", () => {
-  ACS_loadRoutesStepA();
-});
-
 /* ============================================================
-   🟦 B) MAP AIRCRAFT ROWS — FINAL FIX (14 DEC 2025)
-   ------------------------------------------------------------
-   Ahora mapeamos por MODELO (no matrícula).
+   🟦 STEP B — MAP AIRCRAFT ROWS (SOLO MODELO)
    ============================================================ */
-
 function ACS_mapAircraftRows() {
 
   console.log("🟦 STEP B — Mapping aircraft rows...");
@@ -1639,14 +1625,14 @@ function ACS_mapAircraftRows() {
     const col = tr.querySelector(".col-airport");
     if (!col) return;
 
-    // Primera línea: modelo del avión (ej: "307 Stratoliner")
-    const lines = col.innerText.trim().split("\n").map(t => t.trim());
+    const lines = col.innerText.trim().split("\n");
 
-    const rawModel = lines[1] || "";   // segunda línea = modelo puro
+    if (lines.length < 2) return;
 
-    // Evitar filas vacías
-    if (rawModel && rawModel !== "(empty)") {
-      map[rawModel] = tr;
+    const model = lines[1].trim();   // EJ: "307 Stratoliner"
+
+    if (model && model !== "(empty)") {
+      map[model] = tr;
     }
   });
 
@@ -1654,16 +1640,9 @@ function ACS_mapAircraftRows() {
   console.log("🟦 Mapped rows:", map);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  ACS_mapAircraftRows();
-});
-
 /* ============================================================
-   🟦 C) PAINT ROUTES INTO TABLE — STEP C (FULL FIX)
-   ------------------------------------------------------------
-   Pinta cada ruta de acuerdo al MODELO del avión.
+   🟦 STEP C — PAINT ROUTES (SOLO MODELO)
    ============================================================ */
-
 function ACS_paintRoutesStepC() {
 
   console.log("🟦 STEP C — Painting routes...");
@@ -1678,15 +1657,13 @@ function ACS_paintRoutesStepC() {
 
   routes.forEach(route => {
 
-    // 🔥 FIX: ahora buscamos por el modelo guardado en confirmRoute()
-    const tr = rowMap[route.aircraft];
+    const tr = rowMap[route.aircraft];   // SOLO MODELO
 
     if (!tr) {
       console.warn(`⚠ No row found for aircraft model: ${route.aircraft}`);
       return;
     }
 
-    // Identificar celdas de días
     const dayCells = {
       mon: tr.querySelector("td[data-day='mon']"),
       tue: tr.querySelector("td[data-day='tue']"),
@@ -1697,31 +1674,29 @@ function ACS_paintRoutesStepC() {
       sun: tr.querySelector("td[data-day='sun']")
     };
 
-    // Contenido ACS de la ruta
     const cellHTML = `
       <div class="acs-flight-cell">
         ✈ ${route.origin} → ${route.destination}<br>
-        ${route.departure} — <strong>${route.flightNumberOut}</strong>
+        ${route.departure} — <strong>${route.flightNumberOut || ""}</strong>
       </div>
     `;
 
-    // Pintar según los días seleccionados
     (route.days || []).forEach(dayID => {
       const cell = dayCells[dayID];
-      if (cell) {
-        cell.innerHTML = cellHTML;
-      }
+      if (cell) cell.innerHTML = cellHTML;
     });
 
   });
 
 }
- 
-/* Ejecutar STEP C al cargar la tabla */
-     
+
+
 document.addEventListener("DOMContentLoaded", () => {
+  ACS_loadRoutesStepA();
+  ACS_mapAircraftRows();
   ACS_paintRoutesStepC();
 });
+
 
 </script>
      
