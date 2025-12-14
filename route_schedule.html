@@ -415,15 +415,52 @@ footer {
     <input type="text" id="destination" readonly />
 
     <!-- Número de vuelo — VACÍO, motor intacto pero no se ejecuta -->
+       
     <label>Flight Number (Auto)</label>
     <input type="text" id="flightNumber" readonly />
 
     <!-- Aircraft limpia -->
+       
     <label>Aircraft Type</label>
+       
     <!-- A2: se añade autoGenerateFlightNumber al onchange -->
+       
     <select id="aircraft" onchange="autoCalculate(); autoGenerateFlightNumber();">
-      <option value="">-- Select Aircraft --</option>
-    </select>
+  <option value="">-- Select Aircraft --</option>
+</select>
+
+<script>
+     
+/* ============================================================
+   LOAD AIRCRAFT MODELS INTO SELECTOR — FINAL VERSION
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadAircraftModels();
+});
+
+/* ============================================================
+   A) LOAD ONLY UNIQUE MODELS — NO REGISTRATION
+   ============================================================ */
+     
+function loadAircraftModels() {
+    const sel = document.getElementById("aircraft");
+    sel.innerHTML = `<option value="">-- Select Aircraft --</option>`;
+
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyFleet") || "[]");
+
+    // Extraemos solo modelos únicos
+    const uniqueModels = [...new Set(fleet.map(ac => ac.model))];
+
+    uniqueModels.forEach(model => {
+        const opt = document.createElement("option");
+        opt.value = model;
+        opt.textContent = model;
+        sel.appendChild(opt);
+    });
+}
+</script>
+
 
     <label>Departure Time (Local)</label>
     <!-- A2: se añade autoGenerateFlightNumber al onchange -->
