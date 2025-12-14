@@ -1238,7 +1238,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   CONFIRM ROUTE — Versión Definitiva (14 DEC 2025)
+   CONFIRM ROUTE — FIX Oficial (14 DEC 2025)
+   Compatibilidad total con Schedule Table 30-NOV
    ============================================================ */
 
 function confirmRoute() {
@@ -1247,11 +1248,11 @@ function confirmRoute() {
 
     const origin       = document.getElementById("origin").value.trim();
     const destination  = document.getElementById("destination").value.trim();
-    const aircraft     = document.getElementById("aircraft").value.trim();  // SOLO MODELO
+    const aircraft     = document.getElementById("aircraft").value.trim();  // SOLO MODELO (correcto)
     const departure    = document.getElementById("departureTime").value.trim();
     const blockMin     = window.currentBlockTimeMin || 0;
 
-    // Días
+    // Días seleccionados
     const daysSelected = [];
     if (document.getElementById("mon").checked) daysSelected.push("mon");
     if (document.getElementById("tue").checked) daysSelected.push("tue");
@@ -1261,18 +1262,17 @@ function confirmRoute() {
     if (document.getElementById("sat").checked) daysSelected.push("sat");
     if (document.getElementById("sun").checked) daysSelected.push("sun");
 
-    // Validación simple
     if (!origin || !destination || !aircraft || !departure || !daysSelected.length) {
         alert("⚠ Please complete the route correctly before confirming.");
         return;
     }
 
-    // Crear ruta final
+    // Crear ruta FINAL — SOLO MODELO, como 30-NOV
     const newRoute = {
         id: "RT_" + Date.now(),
         origin,
         destination,
-        aircraft,          // SOLO MODELO — SIN MATRÍCULA
+        aircraft,          // ✔ MODELO — el Schedule Table lo espera así
         days: daysSelected,
         departure,
         blockTimeMin: blockMin,
@@ -1283,19 +1283,13 @@ function confirmRoute() {
 
     console.log("💾 Guardando confirmedRoute:", newRoute);
 
-    // 1) Guardar confirmedRoute (EL MÁS IMPORTANTE)
+    // Guardar ruta FINAL
     localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
-    // 2) Guardar scheduleItems (soporte para tabla antigua)
-    let legacy = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-    legacy.push({
-        id: newRoute.id,
-        origin: newRoute.origin,
-        destination: newRoute.destination,
-        aircraftModel: newRoute.aircraft,
-        departure: newRoute.departure
-    });
-    localStorage.setItem("scheduleItems", JSON.stringify(legacy));
+    // ❗❗ IMPORTANTÍSIMO:
+    // NO TOCAR "scheduleItems"
+    // Ya no se inserta basura aquí — Schedule Table gestiona su propio storage.
+}
 
     /* ============================================================
        🟦 STEP 2 — SLOT ENGINE (igual como lo tienes)
