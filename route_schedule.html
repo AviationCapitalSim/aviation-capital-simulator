@@ -1289,7 +1289,6 @@ function confirmRoute() {
     // ❗❗ IMPORTANTÍSIMO:
     // NO TOCAR "scheduleItems"
     // Ya no se inserta basura aquí — Schedule Table gestiona su propio storage.
-}
 
     /* ============================================================
        🟦 STEP 2 — SLOT ENGINE (igual como lo tienes)
@@ -1336,17 +1335,17 @@ function confirmRoute() {
        ============================================================ */
     ACS_finance_chargeSlotConfirmFee(newRoute);
 
- /* ============================================================
-   🟦 STEP 5 — SAVE
-   ============================================================ */
+    /* ============================================================
+       🟦 STEP 5 — SAVE
+       ============================================================ */
 
-markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
-bumpFlightCounter();
+    markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
+    bumpFlightCounter();
 
-alert("✅ Route created successfully.");
-window.location.href = "schedule_table.html";
-}
+    alert("✅ Route created successfully.");
+    window.location.href = "schedule_table.html";
 
+}  // ← ESTA ES LA LLAVE QUE FALTABA AL FINAL
 
 </script>
 
