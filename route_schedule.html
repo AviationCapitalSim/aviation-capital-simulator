@@ -1238,66 +1238,70 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   === PHASE 2.2 — CONFIRM ROUTE (CORREGIDO v2 — 13 DEC 2025) ==
+   CONFIRM ROUTE — Versión Definitiva (14 DEC 2025)
    ============================================================ */
 
 function confirmRoute() {
 
-  const origin       = document.getElementById("origin").value.trim();
-  const destination  = document.getElementById("destination").value.trim();
-  const aircraftReg  = document.getElementById("aircraft").value;   // AHORA GUARDAMOS EL REGISTRO
-  const departure    = document.getElementById("departureTime").value;
+    console.log("▶️ confirmRoute() ejecutada…");
 
-  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-  const days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+    const origin       = document.getElementById("origin").value.trim();
+    const destination  = document.getElementById("destination").value.trim();
+    const aircraft     = document.getElementById("aircraft").value.trim();  // SOLO MODELO
+    const departure    = document.getElementById("departureTime").value.trim();
+    const blockMin     = window.currentBlockTimeMin || 0;
 
-  if (!origin || !destination || !aircraftReg || !departure || days.length === 0) {
-    alert("⚠️ Please complete all fields.");
-    return;
-  }
+    // Días
+    const daysSelected = [];
+    if (document.getElementById("mon").checked) daysSelected.push("mon");
+    if (document.getElementById("tue").checked) daysSelected.push("tue");
+    if (document.getElementById("wed").checked) daysSelected.push("wed");
+    if (document.getElementById("thu").checked) daysSelected.push("thu");
+    if (document.getElementById("fri").checked) daysSelected.push("fri");
+    if (document.getElementById("sat").checked) daysSelected.push("sat");
+    if (document.getElementById("sun").checked) daysSelected.push("sun");
 
-  /* ============================================================
-     EXTRAEMOS MODELO Y FABRICANTE DESDE EL OPTION SELECCIONADO
-     ============================================================ */
+    // Validación simple
+    if (!origin || !destination || !aircraft || !departure || !daysSelected.length) {
+        alert("⚠ Please complete the route correctly before confirming.");
+        return;
+    }
 
-  const opt = document.querySelector(`#aircraft option[value="${aircraftReg}"]`);
-  const aircraftModel = opt?.dataset.model || "";
-  const aircraftBrand = opt?.dataset.brand || "";
+    // Crear ruta final
+    const newRoute = {
+        id: "RT_" + Date.now(),
+        origin,
+        destination,
+        aircraft,          // SOLO MODELO — SIN MATRÍCULA
+        days: daysSelected,
+        departure,
+        blockTimeMin: blockMin,
+        flightNumberOut: window.currentFN_Out || null,
+        flightNumberIn:  window.currentFN_In  || null,
+        separateDays: document.getElementById("separateDays")?.checked || false
+    };
 
-  // Flight numbers (OUT/IN)
-  const rawFN = document.getElementById("flightNumber").value || "";
-  const m = rawFN.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/) || [];
-  const fnOut = m[1] || null;
-  const fnIn  = m[2] || null;
+    console.log("💾 Guardando confirmedRoute:", newRoute);
 
-  // Technical block data (dist, block time, turnaround…)
-  const tech = window.ACS_RouteTechData || {};
+    // 1) Guardar confirmedRoute (EL MÁS IMPORTANTE)
+    localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
-  /* ============================================================
-     🟦 STEP 1 — Construir objeto base de ruta (ACTUALIZADO)
-     ============================================================ */
+    // 2) Guardar scheduleItems (soporte para tabla antigua)
+    let legacy = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    legacy.push({
+        id: newRoute.id,
+        origin: newRoute.origin,
+        destination: newRoute.destination,
+        aircraftModel: newRoute.aircraft,
+        departure: newRoute.departure
+    });
+    localStorage.setItem("scheduleItems", JSON.stringify(legacy));
 
-  const newRoute = {
-    id: `RT_${Date.now()}`,
-    origin,
-    destination,
+    alert("✅ Route confirmed successfully.");
 
-    // 🔥 AHORA SE GUARDA TODO CORRECTO Y COMPLETO 🔥
-    aircraftReg,        
-    aircraftModel,      
-    aircraftBrand,      
-
-    departure,
-    days,
-    flightNumberOut: fnOut,
-    flightNumberIn: fnIn,
-    distanceNM: tech.distNM,
-    blockTime: tech.blockMin,
-    turnaround: tech.turnMin,
-    optimizedTurnaround: tech.turnMinOptimized,
-    totalRotation: tech.totalMin,
-    createdAt: new Date().toISOString()
-  };
+    // Ir al Schedule Table
+    window.location.href = "schedule_table.html";
+}
 
   /* ============================================================
      🟦 STEP 2 — SLOT ENGINE (igual como lo tienes)
