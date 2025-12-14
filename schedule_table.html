@@ -1623,36 +1623,36 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   🟦 B) IDENTIFICAR FILAS DE AVIONES — STEP B ONLY
-   ------------------------------------------------------------
-   Construye un mapa: matrícula → fila <tr>
+   🟦 B) MAP AIRCRAFT ROWS — FINAL FIX (14 DEC 2025)
    ============================================================ */
-
 function ACS_mapAircraftRows() {
 
   console.log("🟦 STEP B — Mapping aircraft rows...");
 
-  const rows = document.querySelectorAll("tr[data-reg]");
   const map = {};
+  const rows = document.querySelectorAll("#scheduleTable tbody tr");
 
-  rows.forEach(row => {
-    const reg = (row.dataset.reg || "").trim();
+  rows.forEach(tr => {
+    const col = tr.querySelector(".col-airport");
+    if (!col) return;
 
-    if (reg) {
-      map[reg] = row;     // asociamos matrícula → <tr>
-      console.log(`✔ Row mapped: ${reg}`);
-    } else {
-      console.log("• Empty row (no reg)");
+    // Obtener PRIMERA línea del TD
+    const raw = col.innerText.trim().split("\n")[0].trim();
+
+    // Evitar filas vacías
+    if (raw && raw !== "(empty)") {
+      map[raw] = tr;
     }
   });
 
   window.ACS_RowMap = map;
+  console.log("🟦 Mapped rows:", map);
 }
 
-/* Ejecutar STEP B al cargar la tabla */
 document.addEventListener("DOMContentLoaded", () => {
   ACS_mapAircraftRows();
 });
+
      
 /* ============================================================
    🟦 C) PAINT ROUTES INTO TABLE — STEP C (FIRST VERSION)
