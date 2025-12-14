@@ -1425,6 +1425,25 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("change", persistOriginDest);
 document.addEventListener("input", persistOriginDest);
 
+/* ============================================================
+   🔄 RESTORE AIRCRAFT SELECTION ON PAGE LOAD
+   ============================================================ */
+window.addEventListener("DOMContentLoaded", () => {
+    const saved = localStorage.getItem("routeSelectedAircraft");
+    if (saved) {
+        document.getElementById("aircraft").value = saved;
+    }
+});
+
+/* ============================================================
+   💾 SAVE AIRCRAFT SELECTION WHEN USER CHANGES IT
+   ============================================================ */
+document.getElementById("aircraft").addEventListener("change", () => {
+    localStorage.setItem("routeSelectedAircraft",
+        document.getElementById("aircraft").value
+    );
+});
+     
 </script>
      
 </body>
