@@ -1336,19 +1336,17 @@ function confirmRoute() {
        ============================================================ */
     ACS_finance_chargeSlotConfirmFee(newRoute);
 
-    /* ============================================================
-       🟦 STEP 5 — SAVE
-       ============================================================ */
-    const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-    list.push(newRoute);
-    localStorage.setItem("scheduleItems", JSON.stringify(list));
+ /* ============================================================
+   🟦 STEP 5 — SAVE
+   ============================================================ */
 
-    markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
-    bumpFlightCounter();
+markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
+bumpFlightCounter();
 
-    alert("✅ Route created successfully.");
-    window.location.href = "schedule_table.html";
+alert("✅ Route created successfully.");
+window.location.href = "schedule_table.html";
 }
+
 
 </script>
 
