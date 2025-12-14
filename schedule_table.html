@@ -1595,7 +1595,7 @@ console.log("🟦 ACS Schedule Module — FINALIZED (PART 5 / 5) — Qatar Luxur
    ------------------------------------------------------------
    No dibuja nada, solo carga y muestra los datos.
    ============================================================ */
-     
+
 function ACS_loadRoutesStepA() {
 
   console.log("🟦 STEP A — Loading routes...");
@@ -1624,7 +1624,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ============================================================
    🟦 B) MAP AIRCRAFT ROWS — FINAL FIX (14 DEC 2025)
+   ------------------------------------------------------------
+   Ahora mapeamos por MODELO (no matrícula).
    ============================================================ */
+
 function ACS_mapAircraftRows() {
 
   console.log("🟦 STEP B — Mapping aircraft rows...");
@@ -1636,12 +1639,14 @@ function ACS_mapAircraftRows() {
     const col = tr.querySelector(".col-airport");
     if (!col) return;
 
-    // Obtener PRIMERA línea del TD
-    const raw = col.innerText.trim().split("\n")[0].trim();
+    // Primera línea: modelo del avión (ej: "307 Stratoliner")
+    const lines = col.innerText.trim().split("\n").map(t => t.trim());
+
+    const rawModel = lines[1] || "";   // segunda línea = modelo puro
 
     // Evitar filas vacías
-    if (raw && raw !== "(empty)") {
-      map[raw] = tr;
+    if (rawModel && rawModel !== "(empty)") {
+      map[rawModel] = tr;
     }
   });
 
@@ -1653,11 +1658,10 @@ document.addEventListener("DOMContentLoaded", () => {
   ACS_mapAircraftRows();
 });
 
-     
 /* ============================================================
-   🟦 C) PAINT ROUTES INTO TABLE — STEP C (FIRST VERSION)
+   🟦 C) PAINT ROUTES INTO TABLE — STEP C (FULL FIX)
    ------------------------------------------------------------
-   Pinta cada ruta en la celda correspondiente según los días.
+   Pinta cada ruta de acuerdo al MODELO del avión.
    ============================================================ */
 
 function ACS_paintRoutesStepC() {
@@ -1674,14 +1678,15 @@ function ACS_paintRoutesStepC() {
 
   routes.forEach(route => {
 
-    const tr = rowMap[route.aircraftReg];
+    // 🔥 FIX: ahora buscamos por el modelo guardado en confirmRoute()
+    const tr = rowMap[route.aircraft];
 
     if (!tr) {
-      console.warn(`⚠ No row found for aircraft ${route.aircraftReg}`);
+      console.warn(`⚠ No row found for aircraft model: ${route.aircraft}`);
       return;
     }
 
-    // Identificar celdas de días:
+    // Identificar celdas de días
     const dayCells = {
       mon: tr.querySelector("td[data-day='mon']"),
       tue: tr.querySelector("td[data-day='tue']"),
@@ -1713,6 +1718,7 @@ function ACS_paintRoutesStepC() {
 }
  
 /* Ejecutar STEP C al cargar la tabla */
+     
 document.addEventListener("DOMContentLoaded", () => {
   ACS_paintRoutesStepC();
 });
