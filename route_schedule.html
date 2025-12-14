@@ -1268,6 +1268,7 @@ function confirmRoute() {
     }
 
     // Crear ruta FINAL — SOLO MODELO, como 30-NOV
+     
     const newRoute = {
         id: "RT_" + Date.now(),
         origin,
@@ -1281,6 +1282,28 @@ function confirmRoute() {
         separateDays: document.getElementById("separateDays")?.checked || false
     };
 
+/* ============================================================
+   🔧 FIX DEFINITIVO — INYECTAR modelKey REAL DESDE MyAircraft
+   ============================================================ */
+
+// 1. Traer flota real
+const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+// 2. Modelo que seleccionaste en route_schedule (texto visible)
+const selectedModel = newRoute.aircraft;   // Ej: "307 Stratoliner"
+
+// 3. Buscar en flota el modelKey correcto
+let modelKey = "";
+for (const ac of fleet) {
+    if (ac.model === selectedModel || ac.type === selectedModel) {
+        modelKey = ac.modelKey || "";
+        break;
+    }
+}
+
+// 4. Si existe, lo añadimos a la ruta
+newRoute.modelKey = modelKey || "";
+     
     console.log("💾 Guardando confirmedRoute:", newRoute);
 
     // Guardar ruta FINAL
