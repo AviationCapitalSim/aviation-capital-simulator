@@ -1426,22 +1426,44 @@ document.addEventListener("change", persistOriginDest);
 document.addEventListener("input", persistOriginDest);
 
 /* ============================================================
-   🔄 RESTORE AIRCRAFT SELECTION ON PAGE LOAD
+   🔄 AIRCRAFT SELECTION — KEEP ON RELOAD, RESET ON NEW VISIT
    ============================================================ */
-window.addEventListener("DOMContentLoaded", () => {
-    const saved = localStorage.getItem("routeSelectedAircraft");
-    if (saved) {
-        document.getElementById("aircraft").value = saved;
-    }
-});
 
-/* ============================================================
-   💾 SAVE AIRCRAFT SELECTION WHEN USER CHANGES IT
-   ============================================================ */
-document.getElementById("aircraft").addEventListener("change", () => {
-    localStorage.setItem("routeSelectedAircraft",
-        document.getElementById("aircraft").value
-    );
+window.addEventListener("DOMContentLoaded", () => {
+    const sel = document.getElementById("aircraft");
+    if (!sel) return;
+
+    // Detectar si llegamos por REFRESH o por navegación normal
+    let isReload = false;
+
+    try {
+        const navEntry = performance.getEntriesByType("navigation")[0];
+        if (navEntry && navEntry.type === "reload") {
+            isReload = true;
+        } else if (performance.navigation && performance.navigation.type === 1) {
+            // Fallback Safari viejo
+            isReload = true;
+        }
+    } catch (e) {
+        // Si algo falla, asumimos navegación normal
+        isReload = false;
+    }
+
+    if (isReload) {
+        // 🔁 REFRESH: restaurar selección previa
+        const saved = localStorage.getItem("routeSelectedAircraft");
+        if (saved) {
+            sel.value = saved;
+        }
+    } else {
+        // 🆕 Visita nueva: limpiar borrador y dejar "-- Select Aircraft --"
+        localStorage.removeItem("routeSelectedAircraft");
+    }
+
+    // 💾 Guardar cada vez que el jugador cambie el avión
+    sel.addEventListener("change", () => {
+        localStorage.setItem("routeSelectedAircraft", sel.value || "");
+    });
 });
      
 </script>
