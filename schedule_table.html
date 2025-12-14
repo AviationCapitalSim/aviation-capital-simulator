@@ -1590,6 +1590,38 @@ window.ACS_SCHEDULE = {
 
 console.log("🟦 ACS Schedule Module — FINALIZED (PART 5 / 5) — Qatar Luxury Edition");
 
+/* ============================================================
+   🟦 A) LOAD ROUTES FROM localStorage — STEP A ONLY
+   ------------------------------------------------------------
+   No dibuja nada, solo carga y muestra los datos.
+   ============================================================ */
+     
+function ACS_loadRoutesStepA() {
+
+  console.log("🟦 STEP A — Loading routes...");
+
+  const routes = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+  if (!Array.isArray(routes)) {
+    console.warn("⚠ scheduleItems no es un array. Valor:", routes);
+    return;
+  }
+
+  console.log(`🔍 Encontradas ${routes.length} rutas guardadas:`);
+
+  routes.forEach((rt, i) => {
+    console.log(`— Ruta #${i+1}:`, rt);
+  });
+
+  // Guardamos global
+  window.ACS_Routes_Stored = routes;
+}
+
+/* Ejecutar STEP A al cargar la tabla */
+document.addEventListener("DOMContentLoaded", () => {
+  ACS_loadRoutesStepA();
+});
+     
 </script>
      
 </body>
