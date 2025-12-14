@@ -760,6 +760,7 @@ function renderSchedule() {
 // ============================================================
 
 const tdTail = document.createElement("td");
+tdTail.classList.add("col-airport");   // <<<<<< AÑADIDO — FIX DEFINITIVO
 
 // Estado de mantenimiento (no se toca)
 const st = ac.status || "";
@@ -781,17 +782,13 @@ if (rowClass) {
   tr.classList.add(rowClass);
 }
 
-// ===========================
 // VALORES DEFINITIVOS
-// ===========================
        
 const reg  = ac.registration || ac.tail || "UNKNOWN";
 const model = ac.model || ac.type || "UNKNOWN";
-const manufacturer = ac.manufacturer || "FORD"; // ← Como lo pediste, fijo.
+const manufacturer = ac.manufacturer || "FORD";
 
-// ===========================
 // DISPLAY FINAL EXACTO
-// ===========================
        
 tdTail.innerHTML = `
   <div style="line-height:1.15; text-align:left;">
@@ -802,11 +799,13 @@ tdTail.innerHTML = `
   </div>
 `;
 
-// Hover card (NO SE TOCA)
+// Hover card
+       
 tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
 tdTail.onmouseleave = hideAircraftHover;
 
 tr.appendChild(tdTail);
+
 
     // ============================================================
     // DÍAS
