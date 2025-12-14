@@ -998,10 +998,11 @@ function assignRouteToTail(ac){
   const route = getRoute();
   if (!route) { alert("No confirmed route available."); return; }
 
-  const acType = ac.type || ac.model || ac.category || "UNKNOWN";
+  const routeModel = route.aircraftModel || route.aircraft || "";
+  const acModel = ac.model || ac.type || "";
 
-  if (route.aircraft !== acType) {
-    alert(`⚠ Route is for ${route.aircraft}, but ${ac.registration} is ${acType}.`);
+  if (routeModel !== acModel) {
+    alert(`⚠ Route is for ${routeModel}, but ${acModel} is selected.`);
     return;
 }
 
