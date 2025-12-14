@@ -1335,17 +1335,41 @@ function confirmRoute() {
        ============================================================ */
     ACS_finance_chargeSlotConfirmFee(newRoute);
 
-    /* ============================================================
-       🟦 STEP 5 — SAVE
-       ============================================================ */
+/* ============================================================
+   🟦 STEP 5 — SAVE (RESTORED — FULL COMPATIBILITY)
+   ============================================================ */
 
-    markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
-    bumpFlightCounter();
+// 1. Guardar ruta PRINCIPAL (confirmRoute) — igual que ahora
+localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
-    alert("✅ Route created successfully.");
-    window.location.href = "schedule_table.html";
+// 2. Guardar en scheduleItems (lo que SIEMPRE usó tu tabla)
+const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
-}  // ← ESTA ES LA LLAVE QUE FALTABA AL FINAL
+// Añadir solo la ruta BASE sin slots ni duplicados
+list.push({
+    id: newRoute.id,
+    origin: newRoute.origin,
+    destination: newRoute.destination,
+    aircraft: newRoute.aircraft,   // SOLO MODELO — correcto 30NOV
+    days: newRoute.days,
+    departure: newRoute.departure,
+    blockTimeMin: newRoute.blockTimeMin,
+    flightNumberOut: newRoute.flightNumberOut,
+    flightNumberIn: newRoute.flightNumberIn,
+    separateDays: newRoute.separateDays
+});
+
+localStorage.setItem("scheduleItems", JSON.stringify(list));
+
+// 3. Gestionar números de vuelo
+markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
+bumpFlightCounter();
+
+// 4. Confirmación y redirección
+alert("✅ Route created successfully.");
+window.location.href = "schedule_table.html";
+
+}  
 
 </script>
 
