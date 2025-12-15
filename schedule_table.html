@@ -1712,6 +1712,23 @@ function ACS_mapAircraftRows() {
   console.log("🟦 Mapped rows (MODEL KEYS):", map);
 }
 
+// -----------------------------------------------------------
+// 🟦 PAINT FLIGHT OVAL — v2.0 (REAL ROUTE NUMBERS)
+// -----------------------------------------------------------
+function buildFlightOval(route) {
+
+  const fnOut = route.flightNumberOut || "";
+  const fnIn  = route.flightNumberIn  || "";
+
+  const fnText = (fnOut && fnIn) ? `${fnOut} - ${fnIn}` : "—";
+
+  return `
+      <div class="flightChip" onclick="openFlightModal('${route.id}')">
+         ${fnText}
+      </div>
+  `;
+}
+     
 /* ============================================================
    🟦 STEP C — PAINT ROUTES (MODELO, NO MATRÍCULA)
    ============================================================ */
@@ -1731,13 +1748,13 @@ function ACS_paintRoutesStepC() {
   routes.forEach(route => {
 
     // -----------------------------------------------------------
-    // 🔥 CLAVE REAL: usar SIEMPRE route.modelKey si existe
+    // 🔥 MODELO REAL — LLAVE DE BÚSQUEDA
     // -----------------------------------------------------------
     const modelKey =
-        route.modelKey               // ✔ la verdadera llave desde route_schedule
-        || route.aircraftModel       // fallback 1
-        || route.acType              // fallback 2
-        || route.aircraft            // fallback 3 (modelo visible)
+        route.modelKey               // ✔ modelKey oficial
+        || route.aircraftModel       // fallback
+        || route.acType              // fallback
+        || route.aircraft            // modelo visible
         || "";
 
     if (!modelKey) {
@@ -1768,26 +1785,22 @@ function ACS_paintRoutesStepC() {
     };
 
     // -----------------------------------------------------------
-    // CONTENIDO VISUAL DEL FLIGHT
+    // 🔥 OVALO REAL — SOLO NÚMEROS DE VUELO (IT112 - IT113)
     // -----------------------------------------------------------
-    const cellHTML = `
-      <div class="acs-flight-cell">
-        ✈ ${route.origin} → ${route.destination}<br>
-        ${route.departure} — <strong>${route.flightNumberOut || ""}</strong>
-      </div>
-    `;
+    const flightOval = buildFlightOval(route);
 
     // -----------------------------------------------------------
-    // PINTAR EN CADA DÍA
+    // PINTAR EN CADA DÍA REALMENTE SELECCIONADO
     // -----------------------------------------------------------
     (route.days || []).forEach(dayID => {
       const td = map[dayID];
-      if (td) td.insertAdjacentHTML("beforeend", cellHTML);
+      if (td) td.insertAdjacentHTML("beforeend", flightOval);
     });
 
   });
 
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   ACS_loadRoutesStepA();
