@@ -891,38 +891,50 @@ days.forEach(day => {
     chip.dataset.blockId = it.blockId || "";
     chip.dataset.type = it.type;
 
-    // ✈️ FLIGHT
+    // ----------------------
+// FLIGHT (Chip Limpio)
+// ----------------------
+
     if (it.type === "flight") {
 
-      hadFlight = true;
+    hadFlight = true;
 
-      const iata = localStorage.getItem("userIATA") || "XX";
+    const iata = localStorage.getItem("userIATA") || "XX";
 
-      let numOut = it.flightNumberOut;
-      let numIn  = it.flightNumberIn;
+    let numOut = it.flightNumberOut;
+    let numIn  = it.flightNumberIn;
 
-      if (String(numOut).startsWith(iata)) numOut = numOut.replace(iata, "");
-      if (String(numIn).startsWith(iata)) numIn  = numIn.replace(iata, "");
+    // limpiar prefijo IATA
+    if (String(numOut).startsWith(iata)) numOut = numOut.replace(iata, "");
+    if (String(numIn).startsWith(iata)) numIn  = numIn.replace(iata, "");
 
-      const fnOut = `${iata}${numOut}`;
-      const fnIn  = `${iata}${numIn}`;
+    // Formato final del chip → SOLO números como antes
+    const fnOut = `${numOut}`;
+    const fnIn  = `${numIn}`;
 
-     chip.textContent = `${fnOut}-${fnIn}`;
-     chip.className = "flightChip";
+    // CHIP PEQUEÑO, CENTRADO, SIN HORAS, SIN ORIGEN
+    const chip = document.createElement("span");
+    chip.className = "chip flight-chip";
+    chip.dataset.id = it.id;
+    chip.dataset.blockId = it.blockId || "";
+    chip.dataset.type = "flight";
 
-      const tooltip = document.createElement("span");
-      tooltip.className = "tooltip";
-      tooltip.innerHTML = `
-        ${it.departure}–${it.arrival}<br>
-        ${it.origin} → ${it.destination}
-      `;
-      chip.appendChild(tooltip);
+    chip.textContent = `${fnOut} - ${fnIn}`;
 
-      const arrMin = toMin(it.arrival);
-      lastEnd = lastEnd === null ? arrMin : Math.max(lastEnd, arrMin);
+    // Tooltip para ver TODA la info (como antes)
+    const tooltip = document.createElement("span");
+    tooltip.className = "tooltip";
+    tooltip.innerHTML = `
+        ${it.origin} → ${it.destination}<br>
+        DEP: ${it.departure}<br>
+        ARR: ${it.arrival}
+    `;
+    chip.appendChild(tooltip);
 
-      chip.onclick = () => openFlightModal(it);
-    }
+    chip.onclick = () => openFlightModal(it);
+
+    td.appendChild(chip);
+}
 
     // 🟡 SERVICE
     else if (it.type === "service") {
