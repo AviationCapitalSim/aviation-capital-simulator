@@ -1981,12 +1981,7 @@ function ACS_paintRoutesStepC() {
     // -----------------------------------------------------------
     // 🔥 MODELO REAL — LLAVE DE BÚSQUEDA
     // -----------------------------------------------------------
-    const modelKey =
-        route.modelKey               // ✔ modelKey oficial
-        || route.aircraftModel       // fallback
-        || route.acType              // fallback
-        || route.aircraft            // modelo visible
-        || "";
+    const modelKey = route.aircraft || "";
 
     if (!modelKey) {
       console.warn("⚠ Route has no valid modelKey:", route);
