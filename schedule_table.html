@@ -929,17 +929,37 @@ else if (status === "In D-Check")  maintIcon = "⚙️ D-Check";
 else if (status === "Pending Delivery") maintIcon = "⏳ Delivery";
 else if (status === "B-Check")     maintIcon = "🔧 B-Check";
 
-// 4. UI Visual
-tdTail.innerHTML = `
-  <div style="line-height:1.2; text-align:left;">
-      <strong>${reg}</strong><br>
-      ${model}<br>
-      <span style="color:#ffca3a; font-weight:600;">
-          ${manufacturer.toUpperCase()}
-      </span>
-      ${maintIcon ? `<br>${maintIcon}` : ""}
-  </div>
-`;
+// --- SAFE MODE (NO destruye dataset ni eventos) ---
+     
+const wrapper = document.createElement("div");
+wrapper.style.lineHeight = "1.2";
+wrapper.style.textAlign = "left";
+
+const strongEl = document.createElement("strong");
+strongEl.textContent = reg;
+
+const modelEl = document.createElement("span");
+modelEl.textContent = model;
+
+const manuEl = document.createElement("span");
+manuEl.style.color = "#ffca3a";
+manuEl.style.fontWeight = "600";
+manuEl.textContent = manufacturer.toUpperCase();
+
+wrapper.appendChild(strongEl);
+wrapper.appendChild(document.createElement("br"));
+wrapper.appendChild(modelEl);
+wrapper.appendChild(document.createElement("br"));
+wrapper.appendChild(manuEl);
+
+if (maintIcon) {
+  wrapper.appendChild(document.createElement("br"));
+  const mi = document.createElement("span");
+  mi.textContent = maintIcon;
+  wrapper.appendChild(mi);
+}
+
+tdTail.appendChild(wrapper);
 
 // Hover
 tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
