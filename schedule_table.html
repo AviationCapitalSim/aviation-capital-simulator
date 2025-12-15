@@ -749,11 +749,19 @@ function renderSchedule() {
   }
 
   // ============================================================
-  // CON FLOTA
-  // ============================================================
-  fleet.forEach(ac => {
+// CON FLOTA
+// ============================================================
+
+   fleet.forEach(ac => {
+
+    // 🛠️ A5 — FORCE DATASET.MODEL FOR EACH ROW — v1.0
+    const safeModel = normalizeModel(ac.model || ac.data?.model || "");
+    ac.model = safeModel;    
 
     const tr = document.createElement("tr");
+
+    // ... luego sigue tu row.innerHTML y demás contenido
+
 
 // ============================================================
 // MATRÍCULA + MODELO + FABRICANTE + MODELO REAL (data-model)
