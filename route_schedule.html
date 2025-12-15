@@ -1517,6 +1517,13 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 });
      
+/* ============================================================
+   DOM READY FIX (Safari)
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+    window.confirmRoute = confirmRoute;
+});
+
 </script>
      
 </body>
