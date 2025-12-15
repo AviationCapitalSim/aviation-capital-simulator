@@ -600,13 +600,28 @@ const toHHMM = min => {
   const m = min%60;
   return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
 };
+     
+* ============================================================
+   🔧 B1 — DÍAS DEL SCHEDULE (OBLIGATORIO)
+   ============================================================ */
+
+const days = ["mon","tue","wed","thu","fri","sat","sun"];
+
+/* ============================================================
+   🔧 B2 — RESTAURAR STORE KEYS (OBLIGATORIO)
+   ============================================================ *//
+     
+const STORE_KEY = "scheduleItems";
+const ROUTE_KEY = "confirmedRoute";
 
 const getItems = () => JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
 const setItems = list => localStorage.setItem(STORE_KEY, JSON.stringify(list));
+
 const getRoute = () => {
   const r = localStorage.getItem(ROUTE_KEY);
   return r ? JSON.parse(r) : null;
 };
+
 
 // ============================================================
 // FLEET — Helper wrappers (compatibilidad legacy) =============
