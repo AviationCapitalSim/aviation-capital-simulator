@@ -1918,9 +1918,8 @@ function ACS_loadRoutesStepA() {
 }
 
 /* ============================================================
-   🟦 STEP B — MAP AIRCRAFT ROWS (USAR DATASET.MODEL)
+   🟦 STEP B — MAP AIRCRAFT ROWS (NORMALIZED)
    ============================================================ */
-     
 function ACS_mapAircraftRows() {
 
   console.log("🟦 STEP B — Mapping aircraft rows...");
@@ -1929,19 +1928,22 @@ function ACS_mapAircraftRows() {
   const rows = document.querySelectorAll("#scheduleTable tbody tr");
 
   rows.forEach(tr => {
-    const col = tr.querySelector(".col-aircraft");   // ✅ FIX CLAVE
+
+    const col = tr.querySelector(".col-aircraft");
     if (!col) return;
 
-    const model = col.dataset.model || "";           // SIN NORMALIZAR
-    if (model && model !== "(empty)") {
-      map[model] = tr;
+    // 🔥 NORMALIZAR SIEMPRE LA CLAVE
+    const rawModel = col.dataset.model || "";
+    const modelKey = normalizeModel(rawModel);
+
+    if (modelKey && rawModel !== "(empty)") {
+      map[modelKey] = tr;
     }
   });
 
   window.ACS_RowMap = map;
   console.log("🟦 Mapped rows (MODEL KEYS):", map);
 }
-
 
 // -----------------------------------------------------------
 // 🟦 PAINT FLIGHT OVAL — v2.0 (REAL ROUTE NUMBERS)
@@ -1961,9 +1963,8 @@ function buildFlightOval(route) {
 }
      
 /* ============================================================
-   🟦 STEP C — PAINT ROUTES (MODELO, NO MATRÍCULA)
+   🟦 STEP C — PAINT ROUTES (NORMALIZED MODEL KEY)
    ============================================================ */
-     
 function ACS_paintRoutesStepC() {
 
   console.log("🟦 STEP C — Painting routes...");
@@ -1979,9 +1980,9 @@ function ACS_paintRoutesStepC() {
   routes.forEach(route => {
 
     // -----------------------------------------------------------
-    // 🔥 MODELO REAL — LLAVE DE BÚSQUEDA
+    // 🔥 NORMALIZAR EL MODELO PARA BUSCAR LA FILA CORRECTA
     // -----------------------------------------------------------
-    const modelKey = route.aircraft || "";
+    const modelKey = normalizeModel(route.aircraft || "");
 
     if (!modelKey) {
       console.warn("⚠ Route has no valid modelKey:", route);
@@ -2011,12 +2012,12 @@ function ACS_paintRoutesStepC() {
     };
 
     // -----------------------------------------------------------
-    // 🔥 OVALO REAL — SOLO NÚMEROS DE VUELO (IT112 - IT113)
+    // OVALO (CHIP) DEL VUELO
     // -----------------------------------------------------------
     const flightOval = buildFlightOval(route);
 
     // -----------------------------------------------------------
-    // PINTAR EN CADA DÍA REALMENTE SELECCIONADO
+    // PINTAR EN CADA DÍA SELECCIONADO
     // -----------------------------------------------------------
     (route.days || []).forEach(dayID => {
       const td = map[dayID];
