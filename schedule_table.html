@@ -1607,7 +1607,7 @@ function ACS_loadRoutesStepA() {
 }
 
 /* ============================================================
-   🟦 STEP B — MAP AIRCRAFT ROWS (SOLO MODELO)
+   🟦 STEP B — MAP AIRCRAFT ROWS (MODELO CORRECTO)
    ============================================================ */
 function ACS_mapAircraftRows() {
 
@@ -1620,19 +1620,25 @@ function ACS_mapAircraftRows() {
     const col = tr.querySelector(".col-airport");
     if (!col) return;
 
-    const lines = col.innerText.trim().split("\n");
+    // Extraer líneas, limpiando vacíos
+    let lines = col.innerText
+          .split("\n")
+          .map(l => l.trim())
+          .filter(l => l.length > 0);
 
     if (lines.length < 2) return;
 
-    const model = lines[1].trim();   // EJ: "307 Stratoliner"
+    const reg = lines[0];   // matrícula
+    const model = lines[1]; // modelo REAL correcto
 
+    // Guardar modelo como key
     if (model && model !== "(empty)") {
       map[model] = tr;
     }
   });
 
   window.ACS_RowMap = map;
-  console.log("🟦 Mapped rows:", map);
+  console.log("🟦 Mapped rows (MODEL KEYS):", map);
 }
 
 /* ============================================================
