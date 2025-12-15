@@ -417,7 +417,67 @@ footer {
   width: fit-content;             /* ajustado al texto */
   white-space: nowrap;            /* no dividir */
 }
+
+/* ============================================================
+   === B-CHECK DAY BACKGROUND — Qatar Luxury A2 Premium ========
+   ============================================================ */
+.bcheck-day {
+  background: rgba(135, 145, 165, 0.26) !important;
+  border: 1px solid rgba(135, 145, 165, 0.38) !important;
+  border-radius: 10px;
+}
        
+/* === MODAL ERROR — Qatar Luxury Style === */
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.error-modal {
+  background: linear-gradient(180deg, #0a1c33 0%, #162b45 100%);
+  padding: 25px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 18px rgba(0,0,0,0.45);
+  width: 340px;
+  text-align: center;
+}
+
+.modal-title {
+  color: #ffb300;
+  font-size: 20px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.modal-text {
+  color: #d1d9e6;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.modal-button {
+  background: #ffb300;
+  color: #000;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.modal-button:hover {
+  background: #ffca47;
+}
+
 </style>
 </head>
 <body>
@@ -572,6 +632,27 @@ footer {
   </div>
 </div>
 
+<!-- FLIGHT INFO MODAL — Qatar Luxury Edition -->
+<div id="flightModal" class="modal">
+  <div class="modal-content">
+    <div id="flightModalContent"></div>
+    <button onclick="closeFlightModal()">❌ Close</button>
+  </div>
+</div>
+
+<!-- === MODAL ERROR — MAINTENANCE A (Qatar Luxury) === -->
+<div id="maintenanceErrorModal" class="modal-overlay">
+  <div class="modal-content error-modal">
+    <h2 class="modal-title">❌ Invalid Maintenance Time</h2>
+    <p id="maintenanceErrorText" class="modal-text"></p>
+    <button class="modal-button" onclick="closeMaintenanceErrorModal()">OK</button>
+  </div>
+</div>
+
+<footer>
+  © 2025 Aviation Capital Simulator. All rights reserved.
+</footer>
+     
 <footer>
   © 2025 Aviation Capital Simulator. All rights reserved.
 </footer>
@@ -1221,6 +1302,48 @@ function closeMaintModal(){
   document.getElementById("maintModal").style.display="none";
 }
 
+/* ============================================================
+   === A-CHECK VALIDATION — Qatar Luxury =======================
+   ============================================================ */
+     
+function validateACheck(ac, day, startHHMM, endHHMM) {
+  const items = getItems();
+
+  // Convertir a minutos
+  const startMin = toMin(startHHMM);
+  const endMin   = toMin(endHHMM);
+
+  // Buscar vuelos de ese modelo y ese día
+  const flights = items.filter(f =>
+    f.type === "flight" &&
+    (f.tail === ac.model || f.acType === ac.model) &&
+    f.day === day
+  );
+
+  for (const f of flights) {
+    const fStart = toMin(f.departure);
+    const fEnd   = toMin(f.arrival);
+
+    // Conflicto si se solapa con el servicio A
+    const overlap =
+      (startMin >= fStart && startMin < fEnd) ||   // servicio empieza dentro del vuelo
+      (endMin > fStart && endMin <= fEnd)     ||   // servicio termina dentro del vuelo
+      (startMin <= fStart && endMin >= fEnd);      // servicio cubre el vuelo completo
+
+    if (overlap) {
+      const msg =
+        `The selected A-Check conflicts with flight ${f.flightNumberOut} – ${f.flightNumberIn}<br>` +
+        `Flight time: ${f.departure} → ${f.arrival}<br>` +
+        `A-Check: ${startHHMM} → ${endHHMM}`;
+
+      showMaintenanceErrorModal(msg);
+      return false;
+    }
+  }
+
+  return true;
+}
+     
 function applyMaintenance(){
   if(!maintTail){ closeMaintModal(); return; }
 
@@ -1238,21 +1361,68 @@ function applyMaintenance(){
     (x.model && normalizeModel(x.model) === normalizeModel(maintTail)) ||
     (x.type  && normalizeModel(x.type)  === normalizeModel(maintTail))
   );
+     
+  /* === VALIDATE A-CHECK BEFORE APPLYING === */
+     
+  if (t === "A") {
+    const isValid = validateACheck(ac, d, start, end);
+    if (!isValid) {
+      closeMaintModal();
+      return;
+    }
+  }
+     
+/* === SERVICE B (24h full block) — Qatar Luxury === */
+     
+if (t === "B") {
 
-  // 🔥 Guardar maintenance por modelo REAL
-  items.push({
-    id:"svc-"+Math.random().toString(36).slice(2,8),
-    type:"service",
-    serviceType:t,
+  // Cobro del servicio B (24h)
+  try {
+    let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    if (F.capital) {
+      const costB = 18000; // Ajustable
+      F.capital -= costB;
+      if (!F.expenses) F.expenses = 0;
+      F.expenses += costB;
 
-    // MODELO como key (igual que los vuelos)
-    tail: normalizeModel(ac.model || ac.type),
+      if (!F.log) F.log = [];
+      F.log.push({
+        type: "B_CHECK",
+        aircraft: ac.registration || ac.tail || ac.model,
+        day: d.toUpperCase(),
+        amount: costB,
+        date: new Date().toISOString()
+      });
 
-    acType: ac?.type || "",
-    day: d,
-    start: start,
-    end: end
+      localStorage.setItem("ACS_Finance", JSON.stringify(F));
+    }
+  } catch(e){ console.warn("Finance B error:", e); }
+
+  // Marcar día completo
+  const rowModel = normalizeModel(ac.model || ac.type);
+  const rows = document.querySelectorAll("#scheduleTable tbody tr");
+
+  rows.forEach(r=>{
+    if (normalizeModel(r.dataset.model || "") === rowModel) {
+      const cells = r.querySelectorAll("td");
+      const map = {mon:1, tue:2, wed:3, thu:4, fri:5, sat:6, sun:7};
+      const td = cells[ map[d] ];
+      if (td) td.classList.add("bcheck-day");
+    }
   });
+}
+
+  items.push({
+  id:"svc-"+Math.random().toString(36).slice(2,8),
+  type:"service",
+  serviceType:t,
+  tail: normalizeModel(ac.model || ac.type),
+  acType: ac?.type || "",
+  day: d,
+  start: start,
+  end: end,
+  durationMin: (t === "B" ? 1440 : 300) // A=5h, B=24h
+});
 
   setItems(items);
   closeMaintModal();
@@ -1363,33 +1533,105 @@ function editFlight(){
 }
 
 
-// ============================================================
-// FLIGHT INFO MODAL (VERSIÓN FINAL APROBADA)
-// ============================================================
+/* ============================================================
+   === FLIGHT MODAL — Qatar Luxury v3 (A/B integrated) =========
+   ============================================================ */
 function openFlightModal(it){
+
   const modal = document.getElementById("flightModal");
   const box   = document.getElementById("flightModalContent");
-  const iata  = localStorage.getItem("userIATA") || "XX";
 
-  let out = it.flightNumberOut;
-  let inn = it.flightNumberIn;
+  const items = getItems();
+  const fleet = getRealFleet();
 
-  if (String(out).startsWith(iata)) out = out.replace(iata, "");
-  if (String(inn).startsWith(iata)) inn = inn.replace(iata, "");
+  const modelKey = it.tail || it.acType;
+  const day      = it.day;
 
-  const fnOut = `${iata}${out}`;
-  const fnIn  = `${iata}${inn}`;
+  // vuelos del mismo modelo en ese día
+  const flights = items.filter(x =>
+    x.type === "flight" &&
+    (x.tail === modelKey || x.acType === modelKey) &&
+    x.day === day
+  ).sort((a,b)=> toMin(a.departure)-toMin(b.departure));
 
-  box.innerHTML = `
-  <div class="route-info-box">
-    <div class="flight-num">${route.flightOut} / ${route.flightBack}</div>
-    <div class="modal-line">${route.origin} → ${route.destination}</div>
-    <div class="modal-line">DEP: ${route.dep}</div>
-    <div class="modal-line">ARR: ${route.arr}</div>
-    <div class="modal-next">Next Flight: ${route.nextFlight}</div>
-  </div>
-`;
+  // servicios del mismo modelo en ese día
+  const services = items.filter(x =>
+    x.type === "service" &&
+    (x.tail === modelKey || x.acType === modelKey) &&
+    x.day === day
+  );
 
+  let html = `<div class="route-info-box">`;
+
+  /* === 1) LISTA DE VUELOS (ORDENADOS) === */
+  flights.forEach(f => {
+    html += `
+      <div class="modal-line">
+        ✈️ ${f.flightNumberOut} – ${f.flightNumberIn}
+        &nbsp;&nbsp;(${f.departure} → ${f.arrival})
+      </div>
+    `;
+  });
+
+  /* === 2) LISTA DE SERVICIOS === */
+  services.forEach(s => {
+
+    if (s.serviceType === "A") {
+      html += `
+        <div class="modal-line" style="color:#ffca3a;">
+          🟡 A-Check (${s.start} → ${s.end})
+        </div>
+      `;
+    }
+
+    if (s.serviceType === "B") {
+      html += `
+        <div class="modal-line" style="color:#98a0b8;">
+          ⚙️ B-Check (24h)
+        </div>
+      `;
+    }
+  });
+
+  /* === 3) NEXT FLIGHT CALCULADO === */
+
+  // calcular último evento que afecta next flight
+  let lastEventEnd = null;
+
+  // vuelos → ARR + turnaround
+  flights.forEach(f=>{
+    const end = toMin(f.arrival) + TURNAROUND_MIN;
+    if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
+  });
+
+  // servicio A → empuja next flight
+  services.forEach(s=>{
+    if (s.serviceType === "A") {
+      const end = toMin(s.end);
+      if (end > lastEventEnd) lastEventEnd = end;
+    }
+  });
+
+  // servicio B → ocupa TODO el día
+  const hasB = services.some(s=> s.serviceType === "B");
+
+  let nextFlightText = "";
+
+  if (hasB) {
+    nextFlightText = `<strong style="color:#98a0b8;">Next Flight: After B-Check (24h)</strong>`;
+  } else {
+    nextFlightText = `<strong>Next Flight: ${toHHMM(lastEventEnd)}</strong>`;
+  }
+
+  html += `
+    <div class="modal-next" style="margin-top:12px;">
+      ${nextFlightText}
+    </div>
+  `;
+
+  html += `</div>`;
+
+  box.innerHTML = html;
   modal.style.display = "flex";
 }
 
@@ -1804,13 +2046,22 @@ function ACS_paintRoutesStepC() {
 
 }
 
-
 document.addEventListener("DOMContentLoaded", () => {
   ACS_loadRoutesStepA();
   ACS_mapAircraftRows();
   ACS_paintRoutesStepC();
 });
 
+/* === MODAL ERROR FUNCTIONS — Qatar Luxury === */
+
+function showMaintenanceErrorModal(message) {
+  document.getElementById("maintenanceErrorText").textContent = message;
+  document.getElementById("maintenanceErrorModal").style.display = "flex";
+}
+
+function closeMaintenanceErrorModal() {
+  document.getElementById("maintenanceErrorModal").style.display = "none";
+}
 
 </script>
      
