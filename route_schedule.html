@@ -447,7 +447,10 @@ function loadAircraftModels() {
     const sel = document.getElementById("aircraft");
     sel.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-    const fleet = JSON.parse(localStorage.getItem("ACS_MyFleet") || "[]");
+    // 🛠️ A1 — FIX FLEET SOURCE — v1.0
+    // Cargar la flota REAL desde ACS_MyAircraft (no ACS_MyFleet)
+     
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
     // Extraemos solo modelos únicos
     const uniqueModels = [...new Set(fleet.map(ac => ac.model))];
