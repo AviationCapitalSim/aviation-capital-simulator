@@ -1262,17 +1262,17 @@ document.addEventListener("DOMContentLoaded", () => {
    ============================================================ */
      
 function confirmRoute() {
-  /* ================================
-     1. Capturar valores del formulario
-     ================================ */
-  const aircraft = document.getElementById("aircraft").value;
-  const origin = document.getElementById("origin").value;
-  const destination = document.getElementById("destination").value;
-  const departure = document.getElementById("departure").value;
-  const blockTimeMin = parseInt(document.getElementById("blockTimeMin").value, 10);
+ /* ================================
+   1. Capturar valores del formulario
+   ================================ */
+const aircraft  = document.getElementById("aircraft").value;
+const origin    = document.getElementById("origin").value;
+const destination = document.getElementById("destination").value;
+const departure = document.getElementById("departureTime").value;   // ✅ FIX
+const blockTimeMin = parseInt(ACS_RouteTechData.blockMin, 10);      // ✅ FIX
 
-  const flightNumberOut = window.currentFN_Out || null;
-  const flightNumberIn = window.currentFN_In || null;
+const flightNumberOut = window.currentFN_Out || null;
+const flightNumberIn  = window.currentFN_In  || null;
 
   /* ================================
      2. Capturar días seleccionados
