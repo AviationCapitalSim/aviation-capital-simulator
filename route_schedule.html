@@ -1109,6 +1109,18 @@ function rs_getCrewReal(registration) {
     return fallback;
   }
 }
+
+// 🛠️ A2 — MODEL NORMALIZER — v1.0
+// Normaliza cualquier modelo a formato seguro
+     
+function normalizeModel(model) {
+    if (!model) return "";
+    return model
+        .normalize("NFKC")        // corrige Unicode raro
+        .replace(/\s+/g, " ")     // colapsa espacios múltiples
+        .replace(/\u00A0/g, " ")  // elimina espacios no separables
+        .trim();                  // limpia izquierda/derecha
+}
      
 /* ============================================================
    🔵 B — AUTO CALCULATE (NO REGISTRATIONS)
@@ -1254,7 +1266,7 @@ function confirmRoute() {
 
     const origin      = document.getElementById("origin").value.trim();
     const destination = document.getElementById("destination").value.trim();
-    const model       = document.getElementById("aircraft").value.trim();
+    const model = normalizeModel(document.getElementById("aircraft").value);
     const departure   = document.getElementById("departureTime").value.trim();
 
     const days = [];
