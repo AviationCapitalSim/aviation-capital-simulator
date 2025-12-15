@@ -755,7 +755,7 @@ fleet.forEach(ac => {
 
     const tr = document.createElement("tr");
 
-    // 🛠️ A5 — FORCE DATASET.MODEL FOR EACH ROW — v1.0
+    // 🛠️ A5 — FORCE DATASET.MODEL FOR EACH ROW — v1.1 (SAFE)
     const safeModel = normalizeModel(ac.model || ac.data?.model || "");
     tr.dataset.model = safeModel;
     ac.model = safeModel;
