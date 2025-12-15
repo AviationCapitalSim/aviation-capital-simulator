@@ -1654,9 +1654,14 @@ function ACS_paintRoutesStepC() {
   routes.forEach(route => {
 
     // -----------------------------------------------------------
-    // 🔥 CLAVE: USAR SOLO MODELO, NUNCA REGISTRATION
+    // 🔥 CLAVE REAL: usar SIEMPRE route.modelKey si existe
     // -----------------------------------------------------------
-    const modelKey = route.aircraftModel || route.model || route.acType || "";
+    const modelKey =
+        route.modelKey               // ✔ la verdadera llave desde route_schedule
+        || route.aircraftModel       // fallback 1
+        || route.acType              // fallback 2
+        || route.aircraft            // fallback 3 (modelo visible)
+        || "";
 
     if (!modelKey) {
       console.warn("⚠ Route has no valid modelKey:", route);
