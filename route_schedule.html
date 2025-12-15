@@ -1257,53 +1257,93 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   🔵 C — CONFIRM ROUTE (NO REGISTRATIONS) — FINAL
+   === CONFIRM ROUTE (ACS v5 — Qatar Luxury Edition) ==========
+   === Reemplazo completo, limpio y estable ===================
    ============================================================ */
-
+     
 function confirmRoute() {
+  // ================================
+  // 1. Capturar valores del formulario
+  // ================================
+  const aircraft = document.getElementById("aircraft").value;
+  const origin = document.getElementById("origin").value;
+  const destination = document.getElementById("destination").value;
+  const departure = document.getElementById("departure").value;
+  const blockTimeMin = parseInt(document.getElementById("blockTimeMin").value, 10);
 
-    console.log("▶️ confirmRoute() ejecutada…");
+  const flightNumberOut = window.currentFN_Out || null;
+  const flightNumberIn = window.currentFN_In || null;
 
-    const origin      = document.getElementById("origin").value.trim();
-    const destination = document.getElementById("destination").value.trim();
-    const model = normalizeModel(document.getElementById("aircraft").value);
-    const departure   = document.getElementById("departureTime").value.trim();
+  // ================================
+  // 2. Capturar días seleccionados
+  // ================================
+  const dayInputs = document.querySelectorAll(".dayCheckbox:checked");
+  const days = Array.from(dayInputs).map(input => input.value);
 
-    const days = [];
-    ["mon","tue","wed","thu","fri","sat","sun"]
-        .forEach(id => { if (document.getElementById(id).checked) days.push(id); });
+  if (days.length === 0) {
+    alert("Please select at least one day.");
+    return;
+  }
 
-    if (!origin || !destination || !model || !departure || days.length === 0) {
-        alert("⚠ Please complete all fields.");
-        return;
-    }
+  // ================================
+  // 3. Cálculo de hora de llegada
+  // ================================
+  const [depH, depM] = departure.split(":").map(Number);
+  const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
+  const arrH = Math.floor(arrivalTotalMin / 60) % 24;
+  const arrM = arrivalTotalMin % 60;
+  const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
 
-    /* 🔥 Crear ruta BASE (solo modelo de avión) */
-    const newRoute = {
-        id: "RT_" + Date.now(),
-        origin,
-        destination,
-        aircraft: model,     
-        modelKey: model,     
-        days,
-        departure,
-        blockTimeMin: window.ACS_RouteTechData?.blockMin || 0,
-        flightNumberOut: window.currentFN_Out || null,
-        flightNumberIn:  window.currentFN_In  || null,
-        separateDays: document.getElementById("separateDays")?.checked || false
-    };
+  // ================================
+  // 4. ID único ACS
+  // ================================
+  const routeId = "RT_" + Math.floor(100000 + Math.random() * 900000);
 
-    console.log("💾 Route saved:", newRoute);
+  // ================================
+  // 5. Crear estructura de ruta ACS v5
+  // ================================
+  const newRoute = {
+    id: routeId,
+    origin: origin,
+    destination: destination,
+    aircraft: aircraft,       // modelo REAL
+    modelKey: aircraft,       // NO normalizado (Schedule usa modelo real)
+    departure: departure,
+    arrival: arrival,
+    blockTimeMin: blockTimeMin,
+    days: days,
+    flightNumberOut: flightNumberOut,
+    flightNumberIn: flightNumberIn,
+    separateDays: false
+  };
 
-    // Guardar ruta principal
-    localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
+  // ================================
+  // 6. Guardar en localStorage
+  // ================================
+  const stored = localStorage.getItem("ACS_scheduleItems");
+  let items = stored ? JSON.parse(stored) : [];
 
-    /* 🔥 Insertar en scheduleItems (tabla) */
-    const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-    list.push(newRoute);
-    localStorage.setItem("scheduleItems", JSON.stringify(list));
+  // Eliminar duplicados del mismo id si existen (limpieza)
+  items = items.filter(r => r.id !== routeId);
 
-    /* ============================================================
+  items.push(newRoute);
+  localStorage.setItem("ACS_scheduleItems", JSON.stringify(items));
+
+  // ================================
+  // 7. Cerrar modal y refrescar UI
+  // ================================
+  const modal = document.getElementById("routeModal");
+  if (modal) modal.style.display = "none";
+
+  // Si existe esta función en tu HTML, la llama:
+  if (typeof loadRoutes === "function") {
+    loadRoutes();
+  }
+
+  alert("Route successfully added to Schedule.");
+}
+
+     /* ============================================================
        🟦 STEP 2 — SLOT ENGINE (igual como lo tienes)
        ============================================================ */
 
