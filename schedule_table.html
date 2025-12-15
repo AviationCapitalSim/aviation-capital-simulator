@@ -925,7 +925,7 @@ days.forEach(day => {
     const maintBtn = document.createElement("button");
     maintBtn.className = "btn btn-maint";
     maintBtn.textContent = "Plan Maintenance";
-    maintBtn.onclick = () => openMaintModal(ac.tail);
+    maintBtn.onclick = () => openMaintModal(ac.model || ac.type);
 
     wrap.appendChild(assignBtn);
     wrap.appendChild(maintBtn);
@@ -1159,17 +1159,25 @@ function applyMaintenance(){
   const items = getItems();
   const fleet = getRealFleet();
 
-  const ac = fleet.find(x => x.registration === maintTail || x.tail === maintTail);
+  // 🔥 Buscar avión por MODELO (nunca matrícula)
+  const ac = fleet.find(x =>
+    (x.model && normalizeModel(x.model) === normalizeModel(maintTail)) ||
+    (x.type  && normalizeModel(x.type)  === normalizeModel(maintTail))
+  );
 
+  // 🔥 Guardar maintenance por modelo REAL
   items.push({
     id:"svc-"+Math.random().toString(36).slice(2,8),
     type:"service",
     serviceType:t,
-    tail:maintTail,
-    acType:ac?.type || "",
-    day:d,
-    start:start,
-    end:end
+
+    // MODELO como key (igual que los vuelos)
+    tail: normalizeModel(ac.model || ac.type),
+
+    acType: ac?.type || "",
+    day: d,
+    start: start,
+    end: end
   });
 
   setItems(items);
@@ -1177,10 +1185,10 @@ function applyMaintenance(){
   renderSchedule();
 }
 
-
 // ============================================================
 // ACTION MODAL
 // ============================================================
+     
 let selectedChip=null;
 
 function openActionModal(chip){
