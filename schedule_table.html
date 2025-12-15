@@ -880,22 +880,15 @@ days.forEach(day => {
   let hadFlight = false;
 
   // ----------------------------
-  // PAINT ITEMS (FLIGHTS/SERVICE)
-  // ----------------------------
+// PAINT ITEMS (FLIGHTS/SERVICE)
+// ----------------------------
      
-  dayItems.forEach(it => {
+dayItems.forEach(it => {
 
-    const chip = document.createElement("span");
-    chip.className = "chip";
-    chip.dataset.id = it.id;
-    chip.dataset.blockId = it.blockId || "";
-    chip.dataset.type = it.type;
-
-    // ----------------------
-// FLIGHT (Chip Limpio)
-// ----------------------
-
-    if (it.type === "flight") {
+  // ----------------------
+  // FLIGHT (Chip Limpio)
+  // ----------------------
+  if (it.type === "flight") {
 
     hadFlight = true;
 
@@ -912,7 +905,7 @@ days.forEach(day => {
     const fnOut = `${numOut}`;
     const fnIn  = `${numIn}`;
 
-    // CHIP PEQUEÑO, CENTRADO, SIN HORAS, SIN ORIGEN
+    // CHIP ÚNICO — SIN FANTASMAS
     const chip = document.createElement("span");
     chip.className = "chip flight-chip";
     chip.dataset.id = it.id;
@@ -922,47 +915,55 @@ days.forEach(day => {
     chip.textContent = `${fnOut} - ${fnIn}`;
 
     /* 🟨 B2 — TOOLTIP AMARILLO CON NEXT FLIGHT REAL — Qatar Luxury */
-         
-const tooltip = document.createElement("span");
-tooltip.className = "tooltip";
+    const tooltip = document.createElement("span");
+    tooltip.className = "tooltip";
 
-/* === CALCULAR NEXT FLIGHT REAL === */
-const depMin   = toMin(it.departure);
-const arrMin   = toMin(it.arrival);
-const nextMin  = arrMin + TURNAROUND_MIN;
-const nextHHMM = toHHMM(nextMin);
+    /* === CALCULAR NEXT FLIGHT REAL === */
+    const depMin   = toMin(it.departure);
+    const arrMin   = toMin(it.arrival);
+    const nextMin  = arrMin + TURNAROUND_MIN;
+    const nextHHMM = toHHMM(nextMin);
 
-/* === CONTENIDO FINAL DEL TOOLTIP === */
-tooltip.innerHTML = `
-    ${it.origin} → ${it.destination}<br>
-    DEP: ${it.departure}<br>
-    ARR: ${it.arrival}<br>
-    <strong>Next Flight: ${nextHHMM}</strong>
-`;
+    /* === CONTENIDO FINAL DEL TOOLTIP === */
+    tooltip.innerHTML = `
+        ${it.origin} → ${it.destination}<br>
+        DEP: ${it.departure}<br>
+        ARR: ${it.arrival}<br>
+        <strong>Next Flight: ${nextHHMM}</strong>
+    `;
 
-chip.appendChild(tooltip);
+    chip.appendChild(tooltip);
 
     chip.onclick = () => openFlightModal(it);
 
     td.appendChild(chip);
-}
+  }
 
-    // 🟡 SERVICE
-    else if (it.type === "service") {
+  // ----------------------
+  // SERVICE (A / B Check)
+  // ----------------------
+  else if (it.type === "service") {
 
-      chip.textContent =
-        it.serviceType === "A" ? "🟡 A-Check" : "⚙️ B-Check";
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.dataset.id = it.id;
+    chip.dataset.blockId = it.blockId || "";
+    chip.dataset.type = it.type;
 
-      const tooltip = document.createElement("span");
-      tooltip.className = "tooltip";
-      tooltip.innerHTML = `${it.start} – ${it.end}`;
-      chip.appendChild(tooltip);
+    chip.textContent =
+      it.serviceType === "A" ? "🟡 A-Check" : "⚙️ B-Check";
 
-      chip.onclick = () => openActionModal(chip);
-    }
+    const tooltip = document.createElement("span");
+    tooltip.className = "tooltip";
+    tooltip.innerHTML = `${it.start} – ${it.end}`;
+    chip.appendChild(tooltip);
+
+    chip.onclick = () => openActionModal(chip);
 
     td.appendChild(chip);
-  });
+  }
+
+});
 
   // ----------------------------
   // NEXT FLIGHT SLOT
