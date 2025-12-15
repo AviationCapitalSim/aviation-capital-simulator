@@ -878,6 +878,7 @@ function renderSchedule() {
 // ============================================================
 // CON FLOTA
 // ============================================================
+     
 fleet.forEach(ac => {
 
     const tr = document.createElement("tr");
@@ -888,15 +889,19 @@ fleet.forEach(ac => {
 // ============================================================
 
 // Modelo REAL (tal como viene desde My Aircraft)
+     
 const realModel = ac.model || ac.data?.model || "";
 
 // Modelo normalizado SOLO para comparaciones internas
+     
 const modelKey = normalizeModel(realModel);
 
 // Vinculamos el key normalizado a la fila (para búsqueda)
+     
 tr.dataset.model = modelKey;
 
 // Mantenemos el modelo REAL para visualización
+     
 ac.model = realModel;
 
    
@@ -905,21 +910,19 @@ ac.model = realModel;
 // ============================================================
 
 const tdTail = document.createElement("td");
-tdTail.classList.add("col-airport");
+tdTail.classList.add("col-aircraft");   // FIX PRINCIPAL
 
 // 1. Extraer datos REALES del avión
 const reg          = ac.registration || ac.tail || "UNKNOWN";
 const model        = ac.model || ac.type || "UNKNOWN";  // Modelo REAL
 const manufacturer = ac.manufacturer || "—";
 const status       = ac.status || "";
-
-  // 2. Guardar modelo normalizado como clave lógica
      
-  const modelKeyForRow = normalizeModel(model || "");
-  tdTail.dataset.model = modelKeyForRow;
-
+ // 2. Guardar el modelo REAL como clave (My Aircraft usa este formato)
+tdTail.dataset.model = model;
 
 // 3. Icono (si aplica)
+     
 let maintIcon = "";
 if (status === "In C-Check")       maintIcon = "🛠 C-Check";
 else if (status === "In D-Check")  maintIcon = "⚙️ D-Check";
