@@ -990,22 +990,21 @@ function assignRouteToTail(ac){
       return; 
   }
 
-  /* ============================================================
+ /* ============================================================
    🟦 MODEL VALIDATION — FINAL (NO TAIL, NO REGISTRATION)
    ============================================================ */
 
 // Modelo que trae la ruta desde route_schedule (ej: "307 Stratoliner")
-const routeModel = route.aircraftModel || route.aircraft || "";
+const routeModel = route.aircraft || route.aircraftModel || "";  
 
 // Modelo REAL del avión en la tabla (solo modelo, nunca tail)
-const acModel = ac.model || ac.type || "";
+const acModel = ac.model || ac.type || "";  
 
 // Validación estrictamente por MODELO
-if (routeModel !== acModel) {
+if (routeModel && routeModel !== acModel) {
     alert(`⚠ Route is for ${routeModel}, but selected aircraft is ${acModel}.`);
     return;
 }
-
 
   const items = getItems();
 
