@@ -783,12 +783,24 @@ fleet.forEach(ac => {
 
     const tr = document.createElement("tr");
 
-    // 🛠️ A5 — FORCE DATASET.MODEL FOR EACH ROW — v1.1 (SAFE)
-    const safeModel = normalizeModel(ac.model || ac.data?.model || "");
-    tr.dataset.model = safeModel;
-    ac.model = safeModel;
+// ============================================================
+// 🛠️ B4 — FIX DEFINITIVO: NO DESTRUIR EL MODELO REAL
+//      Usamos normalizeModel SOLO para comparar, no para mostrar.
+// ============================================================
 
-    
+// Modelo REAL (tal como viene desde My Aircraft)
+const realModel = ac.model || ac.data?.model || "";
+
+// Modelo normalizado SOLO para comparaciones internas
+const modelKey = normalizeModel(realModel);
+
+// Vinculamos el key normalizado a la fila (para búsqueda)
+tr.dataset.model = modelKey;
+
+// Mantenemos el modelo REAL para visualización
+ac.model = realModel;
+
+   
 // ============================================================
 // MATRÍCULA + MODELO + FABRICANTE + MODELO REAL (data-model)
 // ============================================================
