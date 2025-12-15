@@ -913,8 +913,11 @@ const model        = ac.model || ac.type || "UNKNOWN";  // Modelo REAL
 const manufacturer = ac.manufacturer || "—";
 const status       = ac.status || "";
 
-// 2. Guardar el modelo REAL (clave lógica)
-tdTail.dataset.model = model;
+  // 2. Guardar modelo normalizado como clave lógica
+     
+  const modelKeyForRow = normalizeModel(model || "");
+  tdTail.dataset.model = modelKeyForRow;
+
 
 // 3. Icono (si aplica)
 let maintIcon = "";
