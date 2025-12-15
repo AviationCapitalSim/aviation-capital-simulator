@@ -563,6 +563,21 @@ footer {
      ============================================================ -->
 <script>
 
+// ============================================================
+// 🔧 normalizeModel — B2.1 FIX
+// Unifica nombres de modelos como claves universales
+// Ej: "A320-232" → "A320"
+// ============================================================
+     
+function normalizeModel(m){
+  if(!m) return "";
+  return String(m)
+    .replace(/-/g,"")   // quitar guiones
+    .replace(/\s+/g,"") // quitar espacios
+    .toUpperCase()      // mayúsculas
+    .trim();
+}
+     
 const days = ["mon","tue","wed","thu","fri","sat","sun"];
 const STORE_KEY = "scheduleItems";
 const ROUTE_KEY  = "confirmedRoute";
