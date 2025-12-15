@@ -1606,8 +1606,9 @@ function ACS_loadRoutesStepA() {
 }
 
 /* ============================================================
-   🟦 STEP B — MAP AIRCRAFT ROWS (MODELO CORRECTO)
+   🟦 STEP B — MAP AIRCRAFT ROWS (USAR DATASET.MODEL)
    ============================================================ */
+     
 function ACS_mapAircraftRows() {
 
   console.log("🟦 STEP B — Mapping aircraft rows...");
@@ -1619,18 +1620,9 @@ function ACS_mapAircraftRows() {
     const col = tr.querySelector(".col-airport");
     if (!col) return;
 
-    // Extraer líneas, limpiando vacíos
-    let lines = col.innerText
-          .split("\n")
-          .map(l => l.trim())
-          .filter(l => l.length > 0);
+    // 🔥 LEER MODELO REAL DESDE EL DATASET, NO TEXTO
+    const model = col.dataset.model?.trim() || "";
 
-    if (lines.length < 2) return;
-
-    const reg = lines[0];   // matrícula
-    const model = lines[1]; // modelo REAL correcto
-
-    // Guardar modelo como key
     if (model && model !== "(empty)") {
       map[model] = tr;
     }
