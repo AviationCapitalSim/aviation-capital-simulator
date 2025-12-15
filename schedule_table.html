@@ -1909,12 +1909,10 @@ function ACS_mapAircraftRows() {
   const rows = document.querySelectorAll("#scheduleTable tbody tr");
 
   rows.forEach(tr => {
-    const col = tr.querySelector(".col-airport");
+    const col = tr.querySelector(".col-aircraft");   // ✅ FIX CLAVE
     if (!col) return;
 
-    // 🛠️ A4 — Model normalizer on read
-    const model = normalizeModel(col.dataset.model || "");
-
+    const model = col.dataset.model || "";           // SIN NORMALIZAR
     if (model && model !== "(empty)") {
       map[model] = tr;
     }
@@ -1923,6 +1921,7 @@ function ACS_mapAircraftRows() {
   window.ACS_RowMap = map;
   console.log("🟦 Mapped rows (MODEL KEYS):", map);
 }
+
 
 // -----------------------------------------------------------
 // 🟦 PAINT FLIGHT OVAL — v2.0 (REAL ROUTE NUMBERS)
