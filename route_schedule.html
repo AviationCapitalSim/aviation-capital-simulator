@@ -1370,11 +1370,13 @@ localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
 // Añadir solo la ruta BASE sin slots ni duplicados
+     
 list.push({
     id: newRoute.id,
     origin: newRoute.origin,
     destination: newRoute.destination,
-    aircraft: newRoute.aircraft,   // SOLO MODELO — correcto 30NOV
+    aircraft: newRoute.aircraft,        // modelo visible (está bien)
+    modelKey: newRoute.modelKey || "",  // 🔥 NECESARIO PARA schedule_table
     days: newRoute.days,
     departure: newRoute.departure,
     blockTimeMin: newRoute.blockTimeMin,
