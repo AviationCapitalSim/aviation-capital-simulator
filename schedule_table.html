@@ -748,20 +748,30 @@ function renderSchedule() {
     return;
   }
 
-  // ============================================================
+// ============================================================
 // CON FLOTA
 // ============================================================
-
-   fleet.forEach(ac => {
-
-    // 🛠️ A5 — FORCE DATASET.MODEL FOR EACH ROW — v1.0
-    const safeModel = normalizeModel(ac.model || ac.data?.model || "");
-    ac.model = safeModel;    
+fleet.forEach(ac => {
 
     const tr = document.createElement("tr");
 
-    // ... luego sigue tu row.innerHTML y demás contenido
+    // 🛠️ A5 — FORCE DATASET.MODEL FOR EACH ROW — v1.0
+    const safeModel = normalizeModel(ac.model || ac.data?.model || "");
+    tr.dataset.model = safeModel;
+    ac.model = safeModel;
 
+    // ============================================================
+    // MATRÍCULA + MODELO + FABRICANTE + MODELO REAL (data-model)
+    // ============================================================
+    const tdTail = document.createElement("td");
+    tdTail.classList.add("col-airport");
+
+    const reg          = ac.registration || ac.tail || "UNKNOWN";
+    const model        = ac.model || ac.type || "UNKNOWN";
+    const manufacturer = ac.manufacturer || "—";
+    const status       = ac.status || "";
+
+    tdTail.dataset.model = model;
 
 // ============================================================
 // MATRÍCULA + MODELO + FABRICANTE + MODELO REAL (data-model)
