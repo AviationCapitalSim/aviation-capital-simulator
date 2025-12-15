@@ -756,56 +756,45 @@ function renderSchedule() {
     const tr = document.createElement("tr");
 
 // ============================================================
-// MATRÍCULA + MODELO + FABRICANTE (VERSIÓN FINAL DEFINITIVA)
+// MATRÍCULA + MODELO + FABRICANTE + MODELO REAL (data-model)
 // ============================================================
 
 const tdTail = document.createElement("td");
-tdTail.classList.add("col-airport");   // <<<<<< AÑADIDO — FIX DEFINITIVO
+tdTail.classList.add("col-airport");
 
-// Estado de mantenimiento (no se toca)
-const st = ac.status || "";
+// 1. Extraer datos REALES del objeto del avión
+const reg          = ac.registration || ac.tail || "UNKNOWN";
+const model        = ac.model || ac.type || "UNKNOWN";      // Modelo REAL
+const manufacturer = ac.manufacturer || "—";
+const status       = ac.status || "";
+
+// 2. Guardar el modelo REAL en un atributo profesional y estable
+tdTail.dataset.model = model;  // ⭐ SOLUCIÓN PROFESIONAL ⭐
+
+// 3. Icono mantenimiento (si aplica)
 let maintIcon = "";
-let rowClass = "";
-let modelLine = ac.model || ac.type || "";
+if (status === "In C-Check")       maintIcon = "🛠 C-Check";
+else if (status === "In D-Check")  maintIcon = "⚙️ D-Check";
+else if (status === "Pending Delivery") maintIcon = "⏳ Delivery";
+else if (status === "B-Check")     maintIcon = "🔧 B-Check";
 
-if (st === "In C-Check" || st === "In D-Check" || st === "B-Check") {
-  maintIcon = " 🛠";
-  rowClass = "row-maint";
-}
-
-if (st === "Pending Delivery") {
-  maintIcon = " ⏳";
-  rowClass = "row-pending";
-}
-
-if (rowClass) {
-  tr.classList.add(rowClass);
-}
-
-// VALORES DEFINITIVOS
-       
-const reg  = ac.registration || ac.tail || "UNKNOWN";
-const model = ac.model || ac.type || "UNKNOWN";
-const manufacturer = ac.manufacturer || "FORD";
-
-// DISPLAY FINAL EXACTO
-       
+// 4. Mostrar solo visual (esto es solo UI, no para lógica)
 tdTail.innerHTML = `
-  <div style="line-height:1.15; text-align:left;">
-    <strong>${reg}</strong><br>
-    ${model}<br>
-    <span style="color:#ffca3a; font-weight:600;">${manufacturer.toUpperCase()}</span>
-    ${maintIcon ? `<br>${maintIcon}` : ""}
+  <div style="line-height:1.2; text-align:left;">
+      <strong>${reg}</strong><br>
+      ${model}<br>
+      <span style="color:#ffca3a; font-weight:600;">
+          ${manufacturer.toUpperCase()}
+      </span>
+      ${maintIcon ? `<br>${maintIcon}` : ""}
   </div>
 `;
 
-// Hover card
-       
+// Hover
 tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
 tdTail.onmouseleave = hideAircraftHover;
 
 tr.appendChild(tdTail);
-
 
     // ============================================================
     // DÍAS
@@ -1001,14 +990,22 @@ function assignRouteToTail(ac){
       return; 
   }
 
-  // 🔥 COMPARACIÓN SOLO POR MODELO (30-NOV original)
-  const routeModel = route.aircraft;        // viene de route_schedule
-  const acModel    = ac.model || ac.type;   // viene de my_aircraft
+  // 🔥 COMPARACIÓN SOLO POR MODELO (15-DEC FIX)
+     
+ // Ruta trae modelo real desde confirmedRoute
+     
+   const routeModel = route.aircraft || "";
 
-  if (routeModel !== acModel) {
-      alert(`⚠ Route is for ${routeModel}, but selected aircraft is ${acModel}.`);
-      return;
-  }
+  // Tomar modelo REAL del avión desde el dataset (PROFESIONAL)
+     
+   const acModel = ac.model || ac.type || "";
+
+  // Comparar SOLO MODELOS (NO matrícula)
+     
+   if (routeModel !== acModel) {
+    alert(`⚠ Route is for ${routeModel}, but aircraft is ${acModel}.`);
+    return;
+}
 
   const items = getItems();
 
