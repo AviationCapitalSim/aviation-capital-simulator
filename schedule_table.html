@@ -990,22 +990,22 @@ function assignRouteToTail(ac){
       return; 
   }
 
-  // 🔥 COMPARACIÓN SOLO POR MODELO (15-DEC FIX)
-     
- // Ruta trae modelo real desde confirmedRoute
-     
-   const routeModel = route.aircraft || "";
+  /* ============================================================
+   🟦 MODEL VALIDATION — FINAL (NO TAIL, NO REGISTRATION)
+   ============================================================ */
 
-  // Tomar modelo REAL del avión desde el dataset (PROFESIONAL)
-     
-   const acModel = ac.model || ac.type || "";
+// Modelo que trae la ruta desde route_schedule (ej: "307 Stratoliner")
+const routeModel = route.aircraftModel || route.aircraft || "";
 
-  // Comparar SOLO MODELOS (NO matrícula)
-     
-   if (routeModel !== acModel) {
-    alert(`⚠ Route is for ${routeModel}, but aircraft is ${acModel}.`);
+// Modelo REAL del avión en la tabla (solo modelo, nunca tail)
+const acModel = ac.model || ac.type || "";
+
+// Validación estrictamente por MODELO
+if (routeModel !== acModel) {
+    alert(`⚠ Route is for ${routeModel}, but selected aircraft is ${acModel}.`);
     return;
 }
+
 
   const items = getItems();
 
