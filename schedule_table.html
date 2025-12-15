@@ -1587,6 +1587,7 @@ console.log("🟦 ACS Schedule Module — FINALIZED (PART 5 / 5) — Qatar Luxur
 /* ============================================================
    🟦 STEP A — LOAD ROUTES (14 DEC 2025)
    ============================================================ */
+     
 function ACS_loadRoutesStepA() {
 
   console.log("🟦 STEP A — Loading routes...");
@@ -1702,7 +1703,7 @@ function ACS_paintRoutesStepC() {
     // -----------------------------------------------------------
     (route.days || []).forEach(dayID => {
       const td = map[dayID];
-      if (td) td.innerHTML = cellHTML;
+      if (td) td.insertAdjacentHTML("beforeend", cellHTML);
     });
 
   });
