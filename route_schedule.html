@@ -1268,8 +1268,8 @@ function confirmRoute() {
         id: "RT_" + Date.now(),
         origin,
         destination,
-        aircraft: model,     // ✔ modelo visible
-        modelKey: model,     // ✔ clave única
+        aircraft: model,     
+        modelKey: model,     
         days,
         departure,
         blockTimeMin: window.ACS_RouteTechData?.blockMin || 0,
@@ -1287,16 +1287,6 @@ function confirmRoute() {
     const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
     list.push(newRoute);
     localStorage.setItem("scheduleItems", JSON.stringify(list));
-
-    /* Flight numbers */
-    if (window.currentFN_Out && window.currentFN_In) {
-        markNumbersUsed(window.currentFN_Out, window.currentFN_In);
-        bumpFlightCounter();
-    }
-
-    alert("✅ Route created successfully.");
-    window.location.href = "schedule_table.html";
-}
 
     /* ============================================================
        🟦 STEP 2 — SLOT ENGINE (igual como lo tienes)
@@ -1318,7 +1308,7 @@ function confirmRoute() {
         departureUTC: newRoute.departure,    
         arrivalUTC: ACS_convertDepartureToArrival(
             newRoute.departure,
-            newRoute.blockTimeMin   // ← CORREGIDO
+            newRoute.blockTimeMin   
         )
     };
 
@@ -1326,14 +1316,14 @@ function confirmRoute() {
 
     if (!slotsCreated || slotsCreated.length === 0) {
         alert("⚠️ Slots could not be generated. Check schedule.");
-        return;
+        return;   // ← ahora sí dentro de confirmRoute()
     }
 
     const success = ACS_bookRoute(slotRoute);
 
     if (!success) {
         alert("❌ Route cannot be created. Slot unavailable.");
-        return;
+        return;   // ← ahora sí dentro de confirmRoute()
     }
 
     newRoute.slotsBooked = slotsCreated;
@@ -1343,43 +1333,41 @@ function confirmRoute() {
        ============================================================ */
     ACS_finance_chargeSlotConfirmFee(newRoute);
 
-/* ============================================================
-   🟦 STEP 5 — SAVE (RESTORED — FULL COMPATIBILITY)
-   ============================================================ */
+    /* ============================================================
+       🟦 STEP 5 — SAVE (RESTORED — FULL COMPATIBILITY)
+       ============================================================ */
 
-// 1. Guardar ruta PRINCIPAL (confirmRoute) — igual que ahora
-localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
+    // 1. Guardar ruta PRINCIPAL
+    localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
-// 2. Guardar en scheduleItems (lo que SIEMPRE usó tu tabla)
-const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    // 2. Guardar en scheduleItems
+    const list2 = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
-// Añadir solo la ruta BASE sin slots ni duplicados
-     
-list.push({
-    id: newRoute.id,
-    origin: newRoute.origin,
-    destination: newRoute.destination,
-    aircraft: newRoute.aircraft,        // modelo visible (está bien)
-    modelKey: newRoute.modelKey || "",  // 🔥 NECESARIO PARA schedule_table
-    days: newRoute.days,
-    departure: newRoute.departure,
-    blockTimeMin: newRoute.blockTimeMin,
-    flightNumberOut: newRoute.flightNumberOut,
-    flightNumberIn: newRoute.flightNumberIn,
-    separateDays: newRoute.separateDays
-});
+    list2.push({
+        id: newRoute.id,
+        origin: newRoute.origin,
+        destination: newRoute.destination,
+        aircraft: newRoute.aircraft,
+        modelKey: newRoute.modelKey || "",
+        days: newRoute.days,
+        departure: newRoute.departure,
+        blockTimeMin: newRoute.blockTimeMin,
+        flightNumberOut: newRoute.flightNumberOut,
+        flightNumberIn: newRoute.flightNumberIn,
+        separateDays: newRoute.separateDays
+    });
 
-localStorage.setItem("scheduleItems", JSON.stringify(list));
+    localStorage.setItem("scheduleItems", JSON.stringify(list2));
 
-// 3. Gestionar números de vuelo
-markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
-bumpFlightCounter();
+    // 3. Gestionar números de vuelo
+    markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
+    bumpFlightCounter();
 
-// 4. Confirmación y redirección
-alert("✅ Route created successfully.");
-window.location.href = "schedule_table.html";
+    // 4. Final
+    alert("✅ Route created successfully.");
+    window.location.href = "schedule_table.html";
 
-}  
+}  // ← ESTE ES EL ÚNICO CIERRE VÁLIDO
 
 </script>
 
