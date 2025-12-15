@@ -1274,16 +1274,22 @@ const blockTimeMin = parseInt(ACS_RouteTechData.blockMin, 10);      // ✅ FIX
 const flightNumberOut = window.currentFN_Out || null;
 const flightNumberIn  = window.currentFN_In  || null;
 
-  /* ================================
-     2. Capturar días seleccionados
-     ================================ */
-  const dayInputs = document.querySelectorAll(".dayCheckbox:checked");
-  const days = Array.from(dayInputs).map(input => input.value);
+ /* ================================
+   2. Capturar días seleccionados
+   ================================ */
 
-  if (days.length === 0) {
+const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+let days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+
+// Si el jugador marcó "Every Day" → forzar los 7 días
+if (document.getElementById("everyDay")?.checked) {
+    days = ["mon","tue","wed","thu","fri","sat","sun"];
+}
+
+if (days.length === 0) {
     alert("Please select at least one day.");
     return;
-  }
+}
 
   /* ================================
      3. Cálculo de hora de llegada
