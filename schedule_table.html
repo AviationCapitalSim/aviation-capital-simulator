@@ -921,15 +921,26 @@ days.forEach(day => {
 
     chip.textContent = `${fnOut} - ${fnIn}`;
 
-    // Tooltip para ver TODA la info (como antes)
-    const tooltip = document.createElement("span");
-    tooltip.className = "tooltip";
-    tooltip.innerHTML = `
-        ${it.origin} → ${it.destination}<br>
-        DEP: ${it.departure}<br>
-        ARR: ${it.arrival}
-    `;
-    chip.appendChild(tooltip);
+    /* 🟨 B2 — TOOLTIP AMARILLO CON NEXT FLIGHT REAL — Qatar Luxury */
+         
+const tooltip = document.createElement("span");
+tooltip.className = "tooltip";
+
+/* === CALCULAR NEXT FLIGHT REAL === */
+const depMin   = toMin(it.departure);
+const arrMin   = toMin(it.arrival);
+const nextMin  = arrMin + TURNAROUND_MIN;
+const nextHHMM = toHHMM(nextMin);
+
+/* === CONTENIDO FINAL DEL TOOLTIP === */
+tooltip.innerHTML = `
+    ${it.origin} → ${it.destination}<br>
+    DEP: ${it.departure}<br>
+    ARR: ${it.arrival}<br>
+    <strong>Next Flight: ${nextHHMM}</strong>
+`;
+
+chip.appendChild(tooltip);
 
     chip.onclick = () => openFlightModal(it);
 
@@ -966,15 +977,6 @@ days.forEach(day => {
     td.appendChild(nextInfo);
     tr.appendChild(td);
     return;
-  }
-
-  if (hadFlight) {
-    const nextInfo = document.createElement("div");
-    nextInfo.className = "next-slot";
-
-    const next = toHHMM((lastEnd ?? 0) + TURNAROUND_MIN);
-    nextInfo.textContent = `Next Flight: ${next}`;
-    td.appendChild(nextInfo);
   }
 
   tr.appendChild(td);
