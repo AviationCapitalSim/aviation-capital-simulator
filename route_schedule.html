@@ -778,7 +778,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   🟦 FIX DEFINITIVO — VALUE = MODEL (NO MATRICULA)
+   🔵 A — LOAD AVAILABLE AIRCRAFT (NO REGISTRATIONS)
    ============================================================ */
 
 function loadAvailableAircraft() {
@@ -790,30 +790,35 @@ function loadAvailableAircraft() {
 
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  fleet
-    .filter(ac => ac.status === "Active")
-    .filter(ac => ac.base === origin)
-    .forEach(ac => {
+  // 🔥 SOLO AVIONES ACTIVOS Y BASADOS EN EL ORIGEN
+  const filtered = fleet.filter(ac =>
+      ac.status === "Active" && ac.base === origin
+  );
+
+  // 🔥 SOLO MODELOS ÚNICOS
+  const uniqueModels = [...new Set(filtered.map(ac => ac.model))];
+
+  uniqueModels.forEach(model => {
+      const ac = filtered.find(f => f.model === model);
 
       const opt = document.createElement("option");
 
-      // 🟦 AQUI EL FIX — value = modelo REAL
-      opt.value = ac.model;          // ✔ modelo, nunca matrícula
-      opt.textContent = ac.model;    // ✔ visible el modelo
+      // ✔ CLAVE ÚNICA = MODELO (NO MATRÍCULA)
+      opt.value = model;
+      opt.textContent = model;
 
-      // Mantener datasets (info técnica)
-      opt.dataset.model    = ac.model || "";
+      // ✔ DATOS TÉCNICOS
+      opt.dataset.model    = ac.model;
       opt.dataset.brand    = ac.brand || ac.manufacturer || "";
       opt.dataset.category = ac.category || "";
       opt.dataset.speed    = ac.speed || 440;
       opt.dataset.range    = ac.range || 1500;
-      opt.dataset.fuelBurn = ac.fuelBurn || 0;
 
-      // 🔧 Guardamos matrícula dentro del option (NO como value)
-      opt.dataset.registration = ac.registration; // ✔ usable cuando haga falta
+      // ❌ ELIMINADO: matrícula, reg, registration
+      // opt.dataset.registration = ac.registration;
 
       select.appendChild(opt);
-    });
+  });
 }
 
 /* ============================================================
@@ -1103,97 +1108,77 @@ function rs_getCrewReal(registration) {
 }
      
 /* ============================================================
-   🅱️2 — AUTO CALCULATE + CONDITIONAL OPTIMIZATION DISPLAY v2.1
+   🔵 B — AUTO CALCULATE (NO REGISTRATIONS)
    ============================================================ */
 
 function autoCalculate() {
 
-    const origin  = document.getElementById("origin").value.trim();
-    const dest    = document.getElementById("destination").value.trim();
-    const acReg   = document.getElementById("aircraft").value;
+    const origin = document.getElementById("origin").value.trim();
+    const dest   = document.getElementById("destination").value.trim();
+    const model  = document.getElementById("aircraft").value;
 
-    if (!origin || !dest || !acReg) {
+    if (!origin || !dest || !model) {
         document.getElementById("techData").style.display = "none";
         return;
     }
 
+    // ✔ Buscar avión por MODELO (no matrícula)
     const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    const ac = fleet.find(x => x.registration === acReg);
+    const ac = fleet.find(a => a.model === model);
+
     if (!ac) return;
 
-    const opt = document.querySelector(`#aircraft option[value="${acReg}"]`);
-    const speed    = Number(opt.dataset.speed || 440);
-    const category = opt.dataset.category || "";
-    const range    = Number(opt.dataset.range || 1500);
+    // ✔ Obtener datos desde dataset
+    const opt = document.querySelector(`#aircraft option[value="${model}"]`);
 
-    const optimizeON = document.getElementById("optimizeRotation").checked;
+    const speed    = Number(opt.dataset.speed || ac.speed || 440);
+    const category = opt.dataset.category || ac.category || "";
+    const range    = Number(opt.dataset.range || ac.range || 1500);
 
-    /* ============================================================
-       1) DISTANCE + BLOCK TIME
-       ============================================================ */
+    // 🔹 Distancia
     const distNM = rs_getDistanceNM(origin, dest);
-    const block  = rs_getBlockTime(distNM, speed);
 
-    /* ============================================================
-       2) TURNAROUND BASE + OPT (por categoría REAL)
-       ============================================================ */
+    // 🔹 Block time
+    const block = rs_getBlockTime(distNM, speed);
+
+    // 🔹 Turnaround
     const baseTurn = rs_getTurnaround(category);
+    const optimizeON = document.getElementById("optimizeRotation")?.checked || false;
 
     const optTurn = optimizeON
         ? rs_getOptimizedTurnaround(baseTurn, category)
         : baseTurn;
 
-    /* ============================================================
-       3) TOTAL ROTATION (ida + t/a + vuelta)
-       ============================================================ */
     const totalBase = block + baseTurn + block;
     const totalOpt  = block + optTurn  + block;
 
+    // 🔥 Mostrar bloque técnico
     document.getElementById("techData").style.display = "block";
 
-    /* ============================================================
-       4) DISTANCE & BLOCK
-       ============================================================ */
     document.getElementById("distance").textContent = distNM;
-    document.getElementById("blockTime").textContent = `${Math.floor(block/60)}h ${block%60}m`;
+    document.getElementById("blockTime").textContent =
+        `${Math.floor(block/60)}h ${block%60}m`;
 
-    /* ============================================================
-       5) TURNAROUND PANEL — SHOW OPTIMIZED ONLY WHEN ON
-       ============================================================ */
     if (!optimizeON) {
-        document.getElementById("turnaround").innerHTML = `
-            ${baseTurn} min
-        `;
+        document.getElementById("turnaround").innerHTML = `${baseTurn} min`;
     } else {
-        document.getElementById("turnaround").innerHTML = `
-            ${baseTurn} min<br>
-            <span style="color:#ffd54f">Optimized: ${optTurn} min (+${optTurn - baseTurn})</span>
-        `;
+        document.getElementById("turnaround").innerHTML =
+            `${baseTurn} min<br><span style="color:#ffd54f">Optimized: ${optTurn} min</span>`;
     }
 
-    /* ============================================================
-       6) TOTAL ROTATION PANEL — SHOW OPTIMIZED ONLY WHEN ON
-       ============================================================ */
     if (!optimizeON) {
-        document.getElementById("totalRotation").innerHTML = `
-            ${Math.floor(totalBase/60)}h ${totalBase%60}m
-        `;
+        document.getElementById("totalRotation").innerHTML =
+            `${Math.floor(totalBase/60)}h ${totalBase%60}m`;
     } else {
-        document.getElementById("totalRotation").innerHTML = `
-            ${Math.floor(totalBase/60)}h ${totalBase%60}m<br>
-            <span style="color:#ffd54f">Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m</span>
-        `;
+        document.getElementById("totalRotation").innerHTML =
+            `${Math.floor(totalBase/60)}h ${totalBase%60}m<br>
+             <span style="color:#ffd54f">Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m</span>`;
     }
 
-    /* ============================================================
-       7) STATIC: RISK & EFFICIENCY
-       ============================================================ */
     document.getElementById("delayRisk").textContent = "3%";
     document.getElementById("effIndex").textContent  = "90%";
 
-    /* ============================================================
-       8) SAVE FOR CONFIRM ROUTE
-       ============================================================ */
+    // Guardar para confirmRoute
     window.ACS_RouteTechData = {
         distNM,
         blockMin: block,
@@ -1204,115 +1189,114 @@ function autoCalculate() {
 }
 
 /* ============================================================
-   🅱️3 — ROUTE SCHEDULE EVENT LINKER (CRITICAL) — v1.0
-   ------------------------------------------------------------
-   Re-conecta todos los eventos que disparan autoCalculate()
+   🔵 D — ROUTE SCHEDULE EVENT LINKER — FINAL VERSION
+   ============================================================
+   Mantiene toda la lógica viva al cambiar:
+   • Avión (model)
+   • Hora de salida
+   • Optimized Rotation
+   • Reload / Safari FIX
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    const acSel = document.getElementById("aircraft");
+    const acSel  = document.getElementById("aircraft");
     const depSel = document.getElementById("departureTime");
     const optBox = document.getElementById("optimizeRotation");
 
+    /* 🔹 Evento: cambio de avión */
     if (acSel) {
         acSel.addEventListener("change", () => {
-            autoCalculate();
-            if (typeof autoGenerateFlightNumber === "function") {
-                autoGenerateFlightNumber();
-            }
+            autoCalculate();                       // 🔥 recalcular
+            autoGenerateFlightNumber();            // 🔥 regenerar OUT/IN
         });
     }
 
+    /* 🔹 Evento: cambio de hora */
     if (depSel) {
         depSel.addEventListener("change", () => {
             autoCalculate();
         });
     }
 
+    /* 🔹 Evento: activar Optimized Rotation */
     if (optBox) {
         optBox.addEventListener("change", () => {
             autoCalculate();
         });
     }
 
+    /* ========================================================
+       🔹 SAFARI / CHROME RELOAD FIX
+       Al recargar, el avión queda seleccionado,
+       pero sin recalcular. Aquí se recalcula SOLO si
+       hay modelo seleccionado.
+       ======================================================== */
+    setTimeout(() => {
+        const model = acSel?.value || "";
+        if (model) {
+            autoCalculate();
+            autoGenerateFlightNumber();
+        }
+    }, 60);
 });
 
 /* ============================================================
-   CONFIRM ROUTE — FIX Oficial (14 DEC 2025)
-   Compatibilidad total con Schedule Table 30-NOV
+   🔵 C — CONFIRM ROUTE (NO REGISTRATIONS) — FINAL
    ============================================================ */
 
 function confirmRoute() {
 
     console.log("▶️ confirmRoute() ejecutada…");
 
-    const origin       = document.getElementById("origin").value.trim();
-    const destination  = document.getElementById("destination").value.trim();
-    const aircraft     = document.getElementById("aircraft").value.trim();  // SOLO MODELO (correcto)
-    const departure    = document.getElementById("departureTime").value.trim();
-    const blockMin     = window.currentBlockTimeMin || 0;
+    const origin      = document.getElementById("origin").value.trim();
+    const destination = document.getElementById("destination").value.trim();
+    const model       = document.getElementById("aircraft").value.trim();
+    const departure   = document.getElementById("departureTime").value.trim();
 
-    // Días seleccionados
-    const daysSelected = [];
-    if (document.getElementById("mon").checked) daysSelected.push("mon");
-    if (document.getElementById("tue").checked) daysSelected.push("tue");
-    if (document.getElementById("wed").checked) daysSelected.push("wed");
-    if (document.getElementById("thu").checked) daysSelected.push("thu");
-    if (document.getElementById("fri").checked) daysSelected.push("fri");
-    if (document.getElementById("sat").checked) daysSelected.push("sat");
-    if (document.getElementById("sun").checked) daysSelected.push("sun");
+    const days = [];
+    ["mon","tue","wed","thu","fri","sat","sun"]
+        .forEach(id => { if (document.getElementById(id).checked) days.push(id); });
 
-    if (!origin || !destination || !aircraft || !departure || !daysSelected.length) {
-        alert("⚠ Please complete the route correctly before confirming.");
+    if (!origin || !destination || !model || !departure || days.length === 0) {
+        alert("⚠ Please complete all fields.");
         return;
     }
 
-    // Crear ruta FINAL — SOLO MODELO, como 30-NOV
-     
+    /* 🔥 Crear ruta BASE (solo modelo de avión) */
     const newRoute = {
         id: "RT_" + Date.now(),
         origin,
         destination,
-        aircraft,          // ✔ MODELO — el Schedule Table lo espera así
-        days: daysSelected,
+        aircraft: model,     // ✔ modelo visible
+        modelKey: model,     // ✔ clave única
+        days,
         departure,
-        blockTimeMin: blockMin,
+        blockTimeMin: window.ACS_RouteTechData?.blockMin || 0,
         flightNumberOut: window.currentFN_Out || null,
         flightNumberIn:  window.currentFN_In  || null,
         separateDays: document.getElementById("separateDays")?.checked || false
     };
 
-/* ============================================================
-   🔧 FIX DEFINITIVO — INYECTAR modelKey REAL DESDE MyAircraft
-   ============================================================ */
+    console.log("💾 Route saved:", newRoute);
 
-// 1. Traer flota real
-const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-// 2. Modelo que seleccionaste en route_schedule (texto visible)
-const selectedModel = newRoute.aircraft;   // Ej: "307 Stratoliner"
-
-// 3. Buscar en flota el modelKey correcto
-let modelKey = "";
-for (const ac of fleet) {
-    if (ac.model === selectedModel || ac.type === selectedModel) {
-        modelKey = ac.modelKey || "";
-        break;
-    }
-}
-
-// 4. Si existe, lo añadimos a la ruta
-newRoute.modelKey = modelKey || "";
-     
-    console.log("💾 Guardando confirmedRoute:", newRoute);
-
-    // Guardar ruta FINAL
+    // Guardar ruta principal
     localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
-    // ❗❗ IMPORTANTÍSIMO:
-    // NO TOCAR "scheduleItems"
-    // Ya no se inserta basura aquí — Schedule Table gestiona su propio storage.
+    /* 🔥 Insertar en scheduleItems (tabla) */
+    const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    list.push(newRoute);
+    localStorage.setItem("scheduleItems", JSON.stringify(list));
+
+    /* Flight numbers */
+    if (window.currentFN_Out && window.currentFN_In) {
+        markNumbersUsed(window.currentFN_Out, window.currentFN_In);
+        bumpFlightCounter();
+    }
+
+    alert("✅ Route created successfully.");
+    window.location.href = "schedule_table.html";
+}
 
     /* ============================================================
        🟦 STEP 2 — SLOT ENGINE (igual como lo tienes)
