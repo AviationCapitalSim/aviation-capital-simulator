@@ -1355,72 +1355,52 @@ function confirmRoute() {
     return;
   }
 
-  newRoute.slotsBooked = slotsCreated;
-
-  /* ================================
-     6. Guardar en localStorage
-     ================================ */
-  const stored = localStorage.getItem("ACS_scheduleItems");
-  let items = stored ? JSON.parse(stored) : [];
-
-  items = items.filter(r => r.id !== routeId); // limpieza previa
-  items.push(newRoute);
-
-  localStorage.setItem("ACS_scheduleItems", JSON.stringify(items));
-
-  /* ================================
-     7. Cerrar modal + refrescar UI
-     ================================ */
-  const modal = document.getElementById("routeModal");
-  if (modal) modal.style.display = "none";
-
-  if (typeof loadRoutes === "function") {
-    loadRoutes();
+    /* ============================================================
+     6. FINANCE FEE — Slot Confirmation (ACS Engine)
+     ============================================================ */
+  if (typeof ACS_finance_chargeSlotConfirmFee === "function") {
+    ACS_finance_chargeSlotConfirmFee(newRoute);
   }
 
+  /* ============================================================
+     7. SAVE (full ACS compatibility)
+     ============================================================ */
+
+  // Guardar ruta principal (para schedule_table)
+  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
+
+  // Guardar en scheduleItems legacy (v3 compatibility)
+  const list2 = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+  list2.push({
+    id: newRoute.id,
+    origin: newRoute.origin,
+    destination: newRoute.destination,
+    aircraft: newRoute.aircraft,
+    modelKey: newRoute.modelKey || "",
+    days: newRoute.days,
+    departure: newRoute.departure,
+    blockTimeMin: newRoute.blockTimeMin,
+    flightNumberOut: newRoute.flightNumberOut,
+    flightNumberIn: newRoute.flightNumberIn,
+    separateDays: newRoute.separateDays
+  });
+
+  localStorage.setItem("scheduleItems", JSON.stringify(list2));
+
+  /* ============================================================
+     8. Flight Number Management
+     ============================================================ */
+  markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
+  bumpFlightCounter();
+
+  /* ============================================================
+     9. Final
+     ============================================================ */
   alert("Route successfully added to Schedule.");
-}
+  window.location.href = "schedule_table.html";
 
-    /* ============================================================
-       🟨 STEP 4 — FINANCE FEE
-       ============================================================ */
-    ACS_finance_chargeSlotConfirmFee(newRoute);
-
-    /* ============================================================
-       🟦 STEP 5 — SAVE (RESTORED — FULL COMPATIBILITY)
-       ============================================================ */
-
-    // 1. Guardar ruta PRINCIPAL
-    localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
-
-    // 2. Guardar en scheduleItems
-    const list2 = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-    list2.push({
-        id: newRoute.id,
-        origin: newRoute.origin,
-        destination: newRoute.destination,
-        aircraft: newRoute.aircraft,
-        modelKey: newRoute.modelKey || "",
-        days: newRoute.days,
-        departure: newRoute.departure,
-        blockTimeMin: newRoute.blockTimeMin,
-        flightNumberOut: newRoute.flightNumberOut,
-        flightNumberIn: newRoute.flightNumberIn,
-        separateDays: newRoute.separateDays
-    });
-
-    localStorage.setItem("scheduleItems", JSON.stringify(list2));
-
-    // 3. Gestionar números de vuelo
-    markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
-    bumpFlightCounter();
-
-    // 4. Final
-    alert("✅ Route created successfully.");
-    window.location.href = "schedule_table.html";
-
-}  // ← ESTE ES EL ÚNICO CIERRE VÁLIDO
+} // ← cierre correcto de confirmRoute()
 
 </script>
 
