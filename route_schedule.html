@@ -1258,13 +1258,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ============================================================
    === CONFIRM ROUTE (ACS v5 — Qatar Luxury Edition) ==========
-   === Reemplazo completo, limpio y estable ===================
+   === Integrado con SLOT ENGINE interno ======================
    ============================================================ */
      
 function confirmRoute() {
-  // ================================
-  // 1. Capturar valores del formulario
-  // ================================
+  /* ================================
+     1. Capturar valores del formulario
+     ================================ */
   const aircraft = document.getElementById("aircraft").value;
   const origin = document.getElementById("origin").value;
   const destination = document.getElementById("destination").value;
@@ -1274,9 +1274,9 @@ function confirmRoute() {
   const flightNumberOut = window.currentFN_Out || null;
   const flightNumberIn = window.currentFN_In || null;
 
-  // ================================
-  // 2. Capturar días seleccionados
-  // ================================
+  /* ================================
+     2. Capturar días seleccionados
+     ================================ */
   const dayInputs = document.querySelectorAll(".dayCheckbox:checked");
   const days = Array.from(dayInputs).map(input => input.value);
 
@@ -1285,29 +1285,30 @@ function confirmRoute() {
     return;
   }
 
-  // ================================
-  // 3. Cálculo de hora de llegada
-  // ================================
+  /* ================================
+     3. Cálculo de hora de llegada
+     ================================ */
+     
   const [depH, depM] = departure.split(":").map(Number);
   const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
   const arrH = Math.floor(arrivalTotalMin / 60) % 24;
   const arrM = arrivalTotalMin % 60;
   const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
 
-  // ================================
-  // 4. ID único ACS
-  // ================================
+  /* ================================
+     4. ID único ACS
+     ================================ */
   const routeId = "RT_" + Math.floor(100000 + Math.random() * 900000);
 
-  // ================================
-  // 5. Crear estructura de ruta ACS v5
-  // ================================
+  /* ================================
+     5. Crear estructura de ruta ACS v5
+     ================================ */
   const newRoute = {
     id: routeId,
     origin: origin,
     destination: destination,
     aircraft: aircraft,       // modelo REAL
-    modelKey: aircraft,       // NO normalizado (Schedule usa modelo real)
+    modelKey: aircraft,       // igual al modelo
     departure: departure,
     arrival: arrival,
     blockTimeMin: blockTimeMin,
@@ -1317,71 +1318,68 @@ function confirmRoute() {
     separateDays: false
   };
 
-  // ================================
-  // 6. Guardar en localStorage
-  // ================================
+  /* ============================================================
+     === SLOT ENGINE — Integrado correctamente ==================
+     ============================================================ */
+  function ACS_convertDepartureToArrival(dep, blockMin) {
+    if (!dep || !blockMin) return "00:00";
+    const [h, m] = dep.split(":").map(Number);
+    const total = h * 60 + m + blockMin;
+    const ah = String(Math.floor(total / 60) % 24).padStart(2, "0");
+    const am = String(total % 60).padStart(2, "0");
+    return `${ah}:${am}`;
+  }
+
+  const slotRoute = {
+    origin: newRoute.origin,
+    destination: newRoute.destination,
+    weekdays: newRoute.days,
+    departureUTC: newRoute.departure,
+    arrivalUTC: ACS_convertDepartureToArrival(
+      newRoute.departure,
+      newRoute.blockTimeMin
+    )
+  };
+
+  const slotsCreated = ACS_buildSlotsForRoute(slotRoute);
+
+  if (!slotsCreated || slotsCreated.length === 0) {
+    alert("⚠️ Slots could not be generated. Check schedule.");
+    return;
+  }
+
+  const success = ACS_bookRoute(slotRoute);
+
+  if (!success) {
+    alert("❌ Route cannot be created. Slot unavailable.");
+    return;
+  }
+
+  newRoute.slotsBooked = slotsCreated;
+
+  /* ================================
+     6. Guardar en localStorage
+     ================================ */
   const stored = localStorage.getItem("ACS_scheduleItems");
   let items = stored ? JSON.parse(stored) : [];
 
-  // Eliminar duplicados del mismo id si existen (limpieza)
-  items = items.filter(r => r.id !== routeId);
-
+  items = items.filter(r => r.id !== routeId); // limpieza previa
   items.push(newRoute);
+
   localStorage.setItem("ACS_scheduleItems", JSON.stringify(items));
 
-  // ================================
-  // 7. Cerrar modal y refrescar UI
-  // ================================
+  /* ================================
+     7. Cerrar modal + refrescar UI
+     ================================ */
   const modal = document.getElementById("routeModal");
   if (modal) modal.style.display = "none";
 
-  // Si existe esta función en tu HTML, la llama:
   if (typeof loadRoutes === "function") {
     loadRoutes();
   }
 
   alert("Route successfully added to Schedule.");
 }
-
-     /* ============================================================
-       🟦 STEP 2 — SLOT ENGINE (igual como lo tienes)
-       ============================================================ */
-
-    function ACS_convertDepartureToArrival(dep, blockMin) {
-        if (!dep || !blockMin) return "00:00";
-        const [h, m] = dep.split(":").map(Number);
-        const total = h * 60 + m + blockMin;
-        const ah = String(Math.floor(total / 60) % 24).padStart(2, "0");
-        const am = String(total % 60).padStart(2, "0");
-        return `${ah}:${am}`;
-    }
-
-    const slotRoute = {
-        origin: newRoute.origin,
-        destination: newRoute.destination,
-        weekdays: newRoute.days,             
-        departureUTC: newRoute.departure,    
-        arrivalUTC: ACS_convertDepartureToArrival(
-            newRoute.departure,
-            newRoute.blockTimeMin   
-        )
-    };
-
-    const slotsCreated = ACS_buildSlotsForRoute(slotRoute);
-
-    if (!slotsCreated || slotsCreated.length === 0) {
-        alert("⚠️ Slots could not be generated. Check schedule.");
-        return;   // ← ahora sí dentro de confirmRoute()
-    }
-
-    const success = ACS_bookRoute(slotRoute);
-
-    if (!success) {
-        alert("❌ Route cannot be created. Slot unavailable.");
-        return;   // ← ahora sí dentro de confirmRoute()
-    }
-
-    newRoute.slotsBooked = slotsCreated;
 
     /* ============================================================
        🟨 STEP 4 — FINANCE FEE
