@@ -1378,24 +1378,14 @@ function openFlightModal(it){
   const fnIn  = `${iata}${inn}`;
 
   box.innerHTML = `
-    <h3 style="color:#ffca3a;margin-bottom:6px;text-shadow:0 0 6px rgba(255,200,60,0.45);">
-      ✈️ ${fnOut} / ${fnIn}
-    </h3>
-
-    <p style="margin:6px 0 10px; color:#cbd6ff;">
-      ${it.origin} → ${it.destination}<br>
-      Departure: <strong>${it.departure}</strong><br>
-      Arrival: <strong>${it.arrival}</strong>
-    </p>
-
-    <hr style="border-color:rgba(255,179,0,0.3);margin:10px 0;">
-
-    <p style="color:#8ab4ff; font-size:0.9rem;">
-      Block Time: <strong>${it.blockTime || "—"}</strong><br>
-      Turnaround: <strong>45 min base</strong><br>
-      Day: <strong>${it.day.toUpperCase()}</strong>
-    </p>
-  `;
+  <div class="route-info-box">
+    <div class="flight-num">${route.flightOut} / ${route.flightBack}</div>
+    <div class="modal-line">${route.origin} → ${route.destination}</div>
+    <div class="modal-line">DEP: ${route.dep}</div>
+    <div class="modal-line">ARR: ${route.arr}</div>
+    <div class="modal-next">Next Flight: ${route.nextFlight}</div>
+  </div>
+`;
 
   modal.style.display = "flex";
 }
