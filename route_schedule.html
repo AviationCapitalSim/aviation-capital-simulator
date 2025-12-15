@@ -1422,30 +1422,26 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
      
 <script>
+     
 /* ============================================================
-   🟦 KEEP ORIGIN & DESTINATION AFTER REFRESH — v1.0
+   🟦 KEEP ORIGIN & DESTINATION AFTER REFRESH — FIX v2
    ============================================================ */
 
-// Guardar cada vez que se cambie ORIGIN o DEST
+// ⛔ YA NO guardamos destination — solo origin
 function persistOriginDest() {
     const O = document.getElementById("origin")?.value || "";
-    const D = document.getElementById("destination")?.value || "";
     localStorage.setItem("ACS_Route_LastOrigin", O);
-    localStorage.setItem("ACS_Route_LastDest", D);
 }
 
-// Restaurar valores al cargar
+// Restaurar ORIGIN al cargar, pero NO DESTINATION
 document.addEventListener("DOMContentLoaded", () => {
     const storedO = localStorage.getItem("ACS_Route_LastOrigin") || "";
-    const storedD = localStorage.getItem("ACS_Route_LastDest") || "";
-
     if (storedO) document.getElementById("origin").value = storedO;
-    if (storedD) document.getElementById("destination").value = storedD;
 });
 
-// Escuchar cambios y guardar
-document.addEventListener("change", persistOriginDest);
-document.addEventListener("input", persistOriginDest);
+// Solo escuchar cambios de ORIGIN
+document.getElementById("origin")?.addEventListener("input", persistOriginDest);
+document.getElementById("origin")?.addEventListener("change", persistOriginDest);
 
 /* ============================================================
    🔄 AIRCRAFT SELECTION — KEEP ON RELOAD, RESET ON NEW VISIT
