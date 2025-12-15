@@ -777,11 +777,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
-
 /* ============================================================
-   🟦 FASE 1 — LOAD AVAILABLE AIRCRAFT (SIN MATRÍCULA VISUAL) ==
+   🟦 FIX DEFINITIVO — VALUE = MODEL (NO MATRICULA)
    ============================================================ */
-     
+
 function loadAvailableAircraft() {
 
   const origin = (document.getElementById("origin").value || "").trim();
@@ -796,20 +795,22 @@ function loadAvailableAircraft() {
     .filter(ac => ac.base === origin)
     .forEach(ac => {
 
-      // 🔥 SOLO MODELO — SIN MATRÍCULA 🔥
-      const label = ac.model;  
-
       const opt = document.createElement("option");
-      opt.value = ac.registration;   // esto SIEMPRE debe ser REG para trabajar bien
-      opt.textContent = label;
 
-      // Dataset para confirmRoute()
-      opt.dataset.model = ac.model || "";
-      opt.dataset.brand = ac.brand || ac.manufacturer || "";
+      // 🟦 AQUI EL FIX — value = modelo REAL
+      opt.value = ac.model;          // ✔ modelo, nunca matrícula
+      opt.textContent = ac.model;    // ✔ visible el modelo
+
+      // Mantener datasets (info técnica)
+      opt.dataset.model    = ac.model || "";
+      opt.dataset.brand    = ac.brand || ac.manufacturer || "";
       opt.dataset.category = ac.category || "";
-      opt.dataset.speed = ac.speed || 440;
-      opt.dataset.range = ac.range || 1500;
+      opt.dataset.speed    = ac.speed || 440;
+      opt.dataset.range    = ac.range || 1500;
       opt.dataset.fuelBurn = ac.fuelBurn || 0;
+
+      // 🔧 Guardamos matrícula dentro del option (NO como value)
+      opt.dataset.registration = ac.registration; // ✔ usable cuando haga falta
 
       select.appendChild(opt);
     });
