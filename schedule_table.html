@@ -894,10 +894,7 @@ const realModel = ac.model || ac.data?.model || "";
 
 // Modelo normalizado SOLO para comparaciones internas
      
-const modelKey = normalizeModel(realModel);
-
-// Vinculamos el key normalizado a la fila (para búsqueda)
-     
+const modelKey = realModel;   // ✔ usar el modelo real como clave universal
 tr.dataset.model = modelKey;
 
 // Mantenemos el modelo REAL para visualización
