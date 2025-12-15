@@ -1593,41 +1593,46 @@ function openFlightModal(it){
     }
   });
 
-  /* === 3) NEXT FLIGHT CALCULADO === */
+ /* === 3) NEXT FLIGHT CALCULADO — Qatar Luxury FINAL === */
 
-  // calcular último evento que afecta next flight
-  let lastEventEnd = null;
+let nextFlightText = "";
+let lastEventEnd = null;
 
-  // vuelos → ARR + turnaround
-  flights.forEach(f=>{
-    const end = toMin(f.arrival) + TURNAROUND_MIN;
-    if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
-  });
-
-  // servicio A → empuja next flight
-  services.forEach(s=>{
-    if (s.serviceType === "A") {
-      const end = toMin(s.end);
-      if (end > lastEventEnd) lastEventEnd = end;
-    }
-  });
-
-  // servicio B → ocupa TODO el día
-  const hasB = services.some(s=> s.serviceType === "B");
-
-  let nextFlightText = "";
-
-  if (hasB) {
-    nextFlightText = `<strong style="color:#98a0b8;">Next Flight: After B-Check (24h)</strong>`;
-  } else {
-    nextFlightText = `<strong>Next Flight: ${toHHMM(lastEventEnd)}</strong>`;
+// 1) vuelos → ARR + turnaround
+flights.forEach(f=>{
+  const end = toMin(f.arrival) + TURNAROUND_MIN;
+  if (lastEventEnd === null || end > lastEventEnd) {
+    lastEventEnd = end;
   }
+});
 
-  html += `
-    <div class="modal-next" style="margin-top:12px;">
-      ${nextFlightText}
-    </div>
-  `;
+// 2) A-Checks → empujan el next flight
+services.forEach(s=>{
+  if (s.serviceType === "A") {
+    const end = toMin(s.end);
+    if (end > lastEventEnd) {
+      lastEventEnd = end;
+    }
+  }
+});
+
+// 3) B-Check → domina todo el día
+const hasB = services.some(s=> s.serviceType === "B");
+
+if (hasB) {
+  nextFlightText =
+    `<strong style="color:#98a0b8;">Next Flight: After B-Check (24h)</strong>`;
+} else {
+  nextFlightText =
+    `<strong>Next Flight: ${toHHMM(lastEventEnd)}</strong>`;
+}
+
+// insertar en modal
+html += `
+  <div class="modal-next" style="margin-top:12px;">
+    ${nextFlightText}
+  </div>
+`;
 
   html += `</div>`;
 
@@ -1715,63 +1720,22 @@ window.onload = renderSchedule;
 
 })();
 
-/* ============================================================
-   3) CLASES FINALES PARA BLOQUES MULTI-DÍA (NO ROMPER OVALO)
-   ============================================================ */
+/* === DISABLED MULTI-DAY CHIP SUPPORT PER NEW RULES === */
+     
+(function multiDayChipSupport(){})();
 
-(function multiDayChipSupport(){
-
-  const style = document.createElement("style");
-  style.innerHTML = `
-    .chip-long {
-      width: 95%;
-      text-align: center;
-      border-left: 3px solid #ffca3a;
-      border-right: 3px solid #ffca3a;
-    }
-  `;
-  document.head.appendChild(style);
-
-})();
-
-/* ============================================================
-   4) FUNCIÓN GLOBAL: marcar chips multi-día automáticamente
-   ============================================================ */
 
 function applyLongChipBehavior(){
-
-  const items = getItems();
-
-  const multiBlocks = {};
-  items.forEach(it=>{
-    if(it.blockId){
-      if(!multiBlocks[it.blockId]) multiBlocks[it.blockId] = [];
-      multiBlocks[it.blockId].push(it.day);
-    }
-  });
-
-  Object.values(multiBlocks).forEach(days=>{
-    if(days.length > 1){
-      days.forEach(day=>{
-        const chips = document.querySelectorAll(
-          `td:nth-child(${1 + days.indexOf(day) + 1}) .chip`
-        );
-        chips.forEach(c => c.classList.add("chip-long"));
-      });
-    }
-  });
-
+  /* disabled per new Qatar rules */
 }
 
-/* ============================================================
-   5) ACTIVAR BEHAVIOR DESPUÉS DEL RENDER
-   ============================================================ */
-
+/* === DISABLED CHIP-LONG MONITOR === */
+     
 (function monitorSchedule(){
   const orig = renderSchedule;
   window.renderSchedule = function(){
     orig();
-    applyLongChipBehavior();
+    // chip-long disabled
   };
 })();
 
