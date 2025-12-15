@@ -1323,7 +1323,28 @@ if (days.length === 0) {
     flightNumberIn: flightNumberIn,
     separateDays: false
   };
+     
+/* ============================================================
+   FIX — FORCE MODELKEY FOR SCHEDULE TABLE
+   ============================================================ */
 
+const aircraftRaw = document.getElementById("aircraft").value || "";
+const modelKey = aircraftRaw.trim().toUpperCase();
+
+// STOP si no hay modelo
+if (!modelKey) {
+    alert("Please select an aircraft.");
+    return;
+}
+
+// Injerta el modelo corregido en newRoute
+newRoute.modelKey = modelKey;
+
+// Normaliza campos que la Table NECESITA
+newRoute.aircraft = modelKey;
+newRoute.type = "flight";                 
+newRoute.blockId = "block-" + Date.now(); 
+     
   /* ============================================================
      === SLOT ENGINE — Integrado correctamente ==================
      ============================================================ */
