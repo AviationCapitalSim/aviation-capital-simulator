@@ -1752,8 +1752,9 @@ function ACS_loadRoutesStepA() {
 }
 
 /* ============================================================
-   🟦 STEP B — MAP AIRCRAFT ROWS (NORMALIZED)
-   ============================================================ */
+   🟦 STEP B — MAP AICRAFT
+   ============================================================ */ 
+     
 function ACS_mapAircraftRows() {
 
   console.log("🟦 STEP B — Mapping aircraft rows...");
@@ -1763,15 +1764,25 @@ function ACS_mapAircraftRows() {
 
   rows.forEach(tr => {
 
+    // Preferimos el TD con clase .col-aircraft (tu estándar)
     const col = tr.querySelector(".col-aircraft");
-    if (!col) return;
 
-    // 🔥 NORMALIZAR SIEMPRE LA CLAVE
-    const rawModel = col.dataset.model || "";
-    const modelKey = normalizeModel(rawModel);
+    // 🔥 Tomar modelo desde TODOS los sitios posibles
+    const rawModel =
+      (col?.dataset.modelRaw || "") ||
+      (col?.dataset.model || "") ||
+      (tr.dataset.modelRaw || "") ||
+      (tr.dataset.model || "");
 
-    if (modelKey && rawModel !== "(empty)") {
-      map[modelKey] = tr;
+    const cleanedRaw = String(rawModel || "").trim();
+
+    // Evitar filas vacías
+    if (!cleanedRaw || cleanedRaw === "(empty)") return;
+
+    const key = normalizeModel(cleanedRaw);
+
+    if (key) {
+      map[key] = tr;
     }
   });
 
@@ -1811,12 +1822,25 @@ function ACS_paintRoutesStepC() {
     return;
   }
 
+  // 🔥 helper: sacar modelo de la ruta con fallback real
+  function getRouteModelKey(route) {
+    const raw =
+      route?.modelKey ||
+      route?.aircraft ||
+      route?.acType ||
+      route?.tail ||
+      route?.model ||
+      "";
+
+    return normalizeModel(String(raw || ""));
+  }
+
   routes.forEach(route => {
 
-    // -----------------------------------------------------------
-    // 🔥 NORMALIZAR EL MODELO PARA BUSCAR LA FILA CORRECTA
-    // -----------------------------------------------------------
-    const modelKey = normalizeModel(route.aircraft || "");
+    // (opcional) si quieres pintar SOLO flights, descomenta:
+    // if (route.type && route.type !== "flight") return;
+
+    const modelKey = getRouteModelKey(route);
 
     if (!modelKey) {
       console.warn("⚠ Route has no valid modelKey:", route);
@@ -1830,11 +1854,8 @@ function ACS_paintRoutesStepC() {
       return;
     }
 
-    // -----------------------------------------------------------
     // MAPA DE CELDAS POR DÍA
-    // -----------------------------------------------------------
     const cells = tr.querySelectorAll("td");
-
     const map = {
       mon: cells[1],
       tue: cells[2],
@@ -1845,14 +1866,10 @@ function ACS_paintRoutesStepC() {
       sun: cells[7]
     };
 
-    // -----------------------------------------------------------
     // OVALO (CHIP) DEL VUELO
-    // -----------------------------------------------------------
     const flightOval = buildFlightOval(route);
 
-    // -----------------------------------------------------------
-    // PINTAR EN CADA DÍA SELECCIONADO
-    // -----------------------------------------------------------
+    // Pintar en días
     (route.days || []).forEach(dayID => {
       const td = map[dayID];
       if (td) td.insertAdjacentHTML("beforeend", flightOval);
@@ -1863,9 +1880,23 @@ function ACS_paintRoutesStepC() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+
+  // 0) Asegurar que la tabla (filas) exista ANTES de mapear
+  if (typeof renderSchedule === "function") {
+    renderSchedule();
+  } else {
+    console.warn("⚠ renderSchedule no está disponible aún.");
+  }
+
+  // 1) Cargar rutas guardadas
   ACS_loadRoutesStepA();
-  ACS_mapAircraftRows();
-  ACS_paintRoutesStepC();
+
+  // 2) Esperar un instante para que el DOM tenga las filas creadas por renderSchedule()
+  setTimeout(() => {
+    ACS_mapAircraftRows();
+    ACS_paintRoutesStepC();
+  }, 80);
+
 });
 
 /* === MODAL ERROR FUNCTIONS — Qatar Luxury === */
