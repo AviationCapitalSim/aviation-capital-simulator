@@ -718,32 +718,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const isEditing = !!editID;
 
   /* ----------------- MODO CREACIÓN ----------------- */
-     
-  if (!isEditing) {
 
-    const selOrigin = (localStorage.getItem("ACS_selectedOrigin") || "").toUpperCase();
-    const selDest   = (localStorage.getItem("ACS_selectedDestination") || "").toUpperCase();
+if (!isEditing) {
 
-    originInput.value = selOrigin || originInput.value;
-    destInput.value   = selDest   || destInput.value;
+  const selOrigin = (localStorage.getItem("ACS_selectedOrigin") || "").toUpperCase();
+  const selDest   = (localStorage.getItem("ACS_selectedDestination") || "").toUpperCase();
 
-    originInput.readOnly = true;
-    destInput.readOnly   = true;
+  originInput.value = selOrigin || originInput.value;
+  destInput.value   = selDest   || destInput.value;
 
-    localStorage.removeItem("ACS_selectedOrigin");
-    localStorage.removeItem("ACS_selectedDestination");
+  originInput.readOnly = true;
+  destInput.readOnly   = true;
 
-    /* 🟦 CARGAR FLOTA ACTIVA */
-    loadAvailableAircraft();
+  localStorage.removeItem("ACS_selectedOrigin");
+  localStorage.removeItem("ACS_selectedDestination");
 
-    /* 🟦 Recalcular al cambiar avión */
-    document.getElementById("aircraft").addEventListener("change", autoCalculate);
+  // ❌ LEGACY — NO USAR (model-based)
+  // loadAvailableAircraft();
 
-    autoGenerateFlightNumber();
-    return;
+  // ✅ NUEVO — aircraftId architecture
+  loadAircraftById();
+
+  /* 🟦 Recalcular al cambiar avión */
+  document.getElementById("aircraft").addEventListener("change", autoCalculate);
+
+  autoGenerateFlightNumber();
+  return;
 }
-
-
+     
   /* ------------------ MODO EDICIÓN ------------------ */
      
   const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
