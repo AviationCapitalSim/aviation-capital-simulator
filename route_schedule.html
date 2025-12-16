@@ -485,8 +485,26 @@ function loadAircraftById() {
    ============================================================ */
      
 document.addEventListener("DOMContentLoaded", () => {
-  loadAircraftById();
+
+  const originInput = document.getElementById("origin");
+
+  // Si origin ya viene seteado (caso normal)
+  if (originInput && originInput.value) {
+    loadAircraftById();
+    return;
+  }
+
+  // Si origin se setea un poco después (Safari / flujo edición)
+  const observer = new MutationObserver(() => {
+    if (originInput.value) {
+      loadAircraftById();
+      observer.disconnect();
+    }
+  });
+
+  observer.observe(originInput, { attributes: true, attributeFilter: ["value"] });
 });
+
 </script>
 
     <label>Departure Time (Local)</label>
