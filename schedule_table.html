@@ -935,14 +935,22 @@ function renderSchedule() {
       dayItems.forEach(it => {
 
         // ---------------- FLIGHT ----------------
+           
         if (it.type === "flight") {
 
-          const chip = document.createElement("span");
-          chip.className = "chip flight-chip";
-          chip.dataset.id = it.id;
-          chip.dataset.blockId = it.blockId || "";
-          chip.dataset.type = "flight";
-          chip.textContent = `${it.flightNumberOut} - ${it.flightNumberIn}`;
+         // CHIP ÚNICO — FORMATO IATA CORRECTO
+             
+      const chip = document.createElement("span");
+      chip.className = "chip flight-chip";
+      chip.dataset.id = it.id;
+      chip.dataset.blockId = it.blockId || "";
+      chip.dataset.type = "flight";
+
+      // Prefijo IATA visible
+      const iataCode = localStorage.getItem("userIATA") || "IT";
+
+      chip.textContent = `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`;
+
 
           const tooltip = document.createElement("span");
           tooltip.className = "tooltip";
