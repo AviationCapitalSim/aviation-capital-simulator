@@ -430,37 +430,63 @@ footer {
 </select>
 
 <script>
-     
 /* ============================================================
-   🟦 FINAL — LOAD AIRCRAFT AFTER FORM IS READY
-   Route Schedule (single execution, safe)
+   🟦 ROUTE SCHEDULE — AIRCRAFT SELECTOR (FINAL)
+   Single source of truth: aircraftId (AC_xxx)
    ============================================================ */
 
-function ACS_initAircraftSelectorOnce() {
-  const originInput = document.getElementById("origin");
-  const aircraftSelect = document.getElementById("aircraft");
+function loadAircraftById() {
 
-  if (!originInput || !aircraftSelect) return;
+  const origin = document.getElementById("origin")?.value?.trim();
+  const select = document.getElementById("aircraft");
+  if (!select) return;
 
-  // Solo ejecutar cuando origin ya está definido
-  if (!originInput.value) return;
+  select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-  // Evitar doble ejecución
-  if (aircraftSelect.dataset.loaded === "true") return;
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  loadAircraftById();
-  aircraftSelect.dataset.loaded = "true";
+  const available = fleet.filter(ac =>
+    ac.id &&
+    ac.id.startsWith("AC_") &&
+    String(ac.status).toLowerCase() === "active"
+  );
+
+  if (available.length === 0) {
+    console.warn("⚠ No active aircraft available");
+    return;
+  }
+
+  available.forEach(ac => {
+    const opt = document.createElement("option");
+    opt.value = ac.id;                                  // 🔑 ÚNICO ID
+    opt.textContent = `${ac.model} · ${ac.registration || ac.id}`;
+    select.appendChild(opt);
+  });
 }
 
-// 🔥 Punto ÚNICO de entrada
+/* ============================================================
+   🟦 SINGLE INIT POINT — NO DUPLICATES
+   ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Esperar a que TODA la inicialización del formulario termine
-  setTimeout(() => {
-    ACS_initAircraftSelectorOnce();
-  }, 0);
+  // Origin/Destination desde Routes
+  const originInput = document.getElementById("origin");
+  const destInput   = document.getElementById("destination");
 
+  originInput.value = (localStorage.getItem("ACS_selectedOrigin") || "").toUpperCase();
+  destInput.value   = (localStorage.getItem("ACS_selectedDestination") || "").toUpperCase();
+
+  originInput.readOnly = true;
+  destInput.readOnly   = true;
+
+  localStorage.removeItem("ACS_selectedOrigin");
+  localStorage.removeItem("ACS_selectedDestination");
+
+  // 🔥 Cargar aviones UNA SOLA VEZ
+  loadAircraftById();
 });
+     
 </script>
 
     <label>Departure Time (Local)</label>
