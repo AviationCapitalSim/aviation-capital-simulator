@@ -432,38 +432,40 @@ footer {
 <script>
      
 /* ============================================================
-   LOAD AIRCRAFT MODELS INTO SELECTOR — FINAL VERSION
+   🔵 ROUTE SCHEDULE — LOAD AIRCRAFT BY ID (FINAL)
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadAircraftModels();
-});
+document.addEventListener("DOMContentLoaded", loadAircraftById);
 
-/* ============================================================
-   A) LOAD ONLY UNIQUE MODELS — NO REGISTRATION
-   ============================================================ */
-     
-function loadAircraftModels() {
-    const sel = document.getElementById("aircraft");
-    sel.innerHTML = `<option value="">-- Select Aircraft --</option>`;
+function loadAircraftById() {
 
-    // 🛠️ A1 — FIX FLEET SOURCE — v1.0
-    // Cargar la flota REAL desde ACS_MyAircraft (no ACS_MyFleet)
-     
-    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const origin = document.getElementById("origin").value.trim();
+  const sel = document.getElementById("aircraft");
 
-    // Extraemos solo modelos únicos
-    const uniqueModels = [...new Set(fleet.map(ac => ac.model))];
+  sel.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-    uniqueModels.forEach(model => {
-        const opt = document.createElement("option");
-        opt.value = model;
-        opt.textContent = model;
-        sel.appendChild(opt);
-    });
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  const available = fleet.filter(ac =>
+    ac.status === "Active" &&
+    ac.base === origin
+  );
+
+  available.forEach(ac => {
+    const opt = document.createElement("option");
+
+    opt.value = ac.id; // 🔥 aircraftId
+    opt.textContent = `${ac.model} · ${ac.registration}`;
+
+    // Guardamos datos técnicos SOLO para cálculo visual
+    opt.dataset.speed    = ac.speed;
+    opt.dataset.range    = ac.range;
+    opt.dataset.category = ac.category;
+
+    sel.appendChild(opt);
+  });
 }
 </script>
-
 
     <label>Departure Time (Local)</label>
     <!-- A2: se añade autoGenerateFlightNumber al onchange -->
@@ -1128,27 +1130,27 @@ function normalizeModel(model) {
 
 function autoCalculate() {
 
-    const origin = document.getElementById("origin").value.trim();
-    const dest   = document.getElementById("destination").value.trim();
-    const model  = document.getElementById("aircraft").value;
+  const origin = document.getElementById("origin").value.trim();
+  const dest   = document.getElementById("destination").value.trim();
+  const aircraftId = document.getElementById("aircraft").value;
 
-    if (!origin || !dest || !model) {
-        document.getElementById("techData").style.display = "none";
-        return;
-    }
+  if (!origin || !dest || !aircraftId) {
+    document.getElementById("techData").style.display = "none";
+    return;
+  }
 
-    // ✔ Buscar avión por MODELO (no matrícula)
-    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    const ac = fleet.find(a => a.model === model);
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = fleet.find(a => a.id === aircraftId);
 
-    if (!ac) return;
+  if (!ac) {
+    console.warn("Aircraft not found:", aircraftId);
+    return;
+  }
 
-    // ✔ Obtener datos desde dataset
-    const opt = document.querySelector(`#aircraft option[value="${model}"]`);
+  const speed    = ac.speed || 440;
+  const category = ac.category || "";
+  const range    = ac.range || 1500;
 
-    const speed    = Number(opt.dataset.speed || ac.speed || 440);
-    const category = opt.dataset.category || ac.category || "";
-    const range    = Number(opt.dataset.range || ac.range || 1500);
 
     // 🔹 Distancia
     const distNM = rs_getDistanceNM(origin, dest);
@@ -1309,21 +1311,28 @@ if (days.length === 0) {
   /* ================================
      5. Crear estructura de ruta ACS v5
      ================================ */
-  const newRoute = {
-    id: routeId,
-    origin: origin,
-    destination: destination,
-    aircraft: aircraft,       // modelo REAL
-    modelKey: aircraft,       // igual al modelo
-    departure: departure,
-    arrival: arrival,
-    blockTimeMin: blockTimeMin,
-    days: days,
-    flightNumberOut: flightNumberOut,
-    flightNumberIn: flightNumberIn,
-    separateDays: false
-  };
      
+ const aircraftId = document.getElementById("aircraft").value;
+
+if (!aircraftId || !aircraftId.startsWith("AC_")) {
+  alert("Please select a valid aircraft.");
+  return;
+}
+
+const newRoute = {
+  id: routeId,
+  aircraftId: aircraftId,      // 🔥 ÚNICO
+  origin,
+  destination,
+  departure,
+  arrival,
+  blockTimeMin,
+  days,
+  flightNumberOut,
+  flightNumberIn,
+  type: "flight"
+};
+    
 /* ============================================================
    FIX — FORCE MODELKEY FOR SCHEDULE TABLE
    ============================================================ */
@@ -1390,30 +1399,17 @@ newRoute.blockId = "block-" + Date.now();
   }
 
   /* ============================================================
-     7. SAVE (full ACS compatibility)
-     ============================================================ */
+   7. SAVE — ROUTE (aircraftId architecture)
+   ============================================================ */
 
-  // Guardar ruta principal (para schedule_table)
-  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
+// Guardar ruta activa (opcional, para handoff inmediato)
+localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
-  // Guardar en scheduleItems legacy (v3 compatibility)
-  const list2 = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+// Guardar en Schedule Table (source of truth)
+const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+list.push(newRoute);
+localStorage.setItem("scheduleItems", JSON.stringify(list));
 
-  list2.push({
-    id: newRoute.id,
-    origin: newRoute.origin,
-    destination: newRoute.destination,
-    aircraft: newRoute.aircraft,
-    modelKey: newRoute.modelKey || "",
-    days: newRoute.days,
-    departure: newRoute.departure,
-    blockTimeMin: newRoute.blockTimeMin,
-    flightNumberOut: newRoute.flightNumberOut,
-    flightNumberIn: newRoute.flightNumberIn,
-    separateDays: newRoute.separateDays
-  });
-
-  localStorage.setItem("scheduleItems", JSON.stringify(list2));
 
   /* ============================================================
      8. Flight Number Management
