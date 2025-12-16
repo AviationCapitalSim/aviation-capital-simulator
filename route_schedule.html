@@ -432,81 +432,35 @@ footer {
 <script>
      
 /* ============================================================
-   🟦 3.3.1 — ROUTE SCHEDULE
-   LOAD AIRCRAFT SELECTOR BY AIRCRAFT ID (AC_xxx)
+   🟦 FINAL — LOAD AIRCRAFT AFTER FORM IS READY
+   Route Schedule (single execution, safe)
    ============================================================ */
 
-function loadAircraftById() {
-
+function ACS_initAircraftSelectorOnce() {
   const originInput = document.getElementById("origin");
-  const select = document.getElementById("aircraft");
+  const aircraftSelect = document.getElementById("aircraft");
 
-  if (!select || !originInput) {
-    console.warn("⚠ Aircraft select or origin not found");
-    return;
-  }
+  if (!originInput || !aircraftSelect) return;
 
-  const origin = originInput.value.trim();
-  if (!origin) {
-    return; // ⛔ no cargar si no hay origin
-  }
+  // Solo ejecutar cuando origin ya está definido
+  if (!originInput.value) return;
 
-  // 🔄 limpiar solo cuando el origin es válido
-  select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
+  // Evitar doble ejecución
+  if (aircraftSelect.dataset.loaded === "true") return;
 
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-  // 🔥 Aviones reales y activos (base se valida después, no aquí)
-     
-  const available = fleet.filter(ac =>
-  ac.id &&
-  ac.id.startsWith("AC_")
-);
-
-  if (available.length === 0) {
-    console.warn("⚠ No active aircraft available");
-    return;
-  }
-
-  available.forEach(ac => {
-    const opt = document.createElement("option");
-
-    // 🔑 CLAVE ABSOLUTA
-    opt.value = ac.id;
-
-    // UI amigable
-    opt.textContent = `${ac.model} · ${ac.registration || ac.id}`;
-
-    // Dataset SOLO para cálculo visual (NO identidad)
-    opt.dataset.speed    = ac.speed || 440;
-    opt.dataset.range    = ac.range || 1500;
-    opt.dataset.category = ac.category || "";
-
-    select.appendChild(opt);
-  });
+  loadAircraftById();
+  aircraftSelect.dataset.loaded = "true";
 }
 
-/* ============================================================
-   🟦 AUTO LOAD — ORIGIN DRIVEN (FINAL)
-   ============================================================ */
-     
+// 🔥 Punto ÚNICO de entrada
 document.addEventListener("DOMContentLoaded", () => {
 
-  const originInput = document.getElementById("origin");
-  if (!originInput) return;
-
-  // 1️⃣ Caso normal: origin ya está definido
-  if (originInput.value) {
-    loadAircraftById();
-  }
-
-  // 2️⃣ Caso usuario / autofill / edición
-  originInput.addEventListener("change", () => {
-    loadAircraftById();
-  });
+  // Esperar a que TODA la inicialización del formulario termine
+  setTimeout(() => {
+    ACS_initAircraftSelectorOnce();
+  }, 0);
 
 });
-
 </script>
 
     <label>Departure Time (Local)</label>
