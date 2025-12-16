@@ -820,18 +820,22 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
-  const byTail = {};
+  const byModel = {};
 
+  // ============================================================
+  // INDEXAR ITEMS POR MODELO NORMALIZADO
+  // ============================================================
   items.forEach(it => {
-    if (!byTail[it.tail]) byTail[it.tail] = [];
-    byTail[it.tail].push(it);
+    const key = normalizeModel(it.tail || it.acType || "");
+    if (!byModel[key]) byModel[key] = [];
+    byModel[key].push(it);
   });
 
   // ============================================================
   // SIN FLOTA — filas dummy
   // ============================================================
-     
-  if (fleet.length === 0) {
+  if (!fleet.length) {
+
     for (let i = 0; i < 5; i++) {
       const tr = document.createElement("tr");
 
@@ -875,110 +879,106 @@ function renderSchedule() {
     return;
   }
 
-// ============================================================
-// CON FLOTA
-// ============================================================
-
-fleet.forEach(ac => {
+  // ============================================================
+  // CON FLOTA
+  // ============================================================
+  fleet.forEach(ac => {
 
     const tr = document.createElement("tr");
 
     // ============================================================
-    // 🛠️ B4 — FIX DEFINITIVO: NO DESTRUIR EL MODELO REAL
-    //      Usamos normalizeModel SOLO para comparar, no para mostrar.
+    // MODELO REAL + MODELO NORMALIZADO
     // ============================================================
+    const realModel = ac.model || ac.type || ac.data?.model || "";
+    const modelKey  = normalizeModel(realModel);
 
-    // Modelo REAL (tal como viene desde My Aircraft)
-    const realModel = ac.model || ac.data?.model || "";
-
-    // Modelo normalizado SOLO para comparaciones internas
-    const modelKey = normalizeModel(realModel);   // ← ESTA es la clave correcta
-
-    // Guardamos clave normalizada en la fila
     tr.dataset.model = modelKey;
 
-    // Mantenemos el modelo REAL para visualización
-    ac.model = realModel;
-
-
     // ============================================================
-    // MATRÍCULA + MODELO + FABRICANTE + MODELO REAL (data-model)
+    // COLUMNA AIRCRAFT
     // ============================================================
-
     const tdTail = document.createElement("td");
-    tdTail.classList.add("col-aircraft");   // FIX PRINCIPAL
+    tdTail.classList.add("col-aircraft");
+    tdTail.dataset.model = modelKey;
 
-    // Guardar modelo real y normalizado dentro de la celda
-    tdTail.dataset.model    = modelKey;
-    tdTail.dataset.modelRaw = realModel;
+    const reg  = ac.registration || ac.tail || "UNKNOWN";
+    const manu = ac.manufacturer || "—";
+    const stat = ac.status || "";
 
-    // 1. Extraer datos REALES del avión
-    const reg          = ac.registration || ac.tail || "UNKNOWN";
-    const model        = ac.model || ac.type || "UNKNOWN";  // Modelo REAL
-    const manufacturer = ac.manufacturer || "—";
-    const status       = ac.status || "";
+    const wrapInfo = document.createElement("div");
+    wrapInfo.style.lineHeight = "1.2";
+    wrapInfo.style.textAlign = "left";
+    wrapInfo.innerHTML = `
+      <strong>${reg}</strong><br>
+      <span>${realModel}</span><br>
+      <span style="color:#ffca3a;font-weight:600;">${manu.toUpperCase()}</span>
+      ${stat ? `<br><span>${stat}</span>` : ""}
+    `;
 
-    // 3. Icono (si aplica)
-    let maintIcon = "";
-    if (status === "In C-Check")            maintIcon = "🛠 C-Check";
-    else if (status === "In D-Check")       maintIcon = "⚙️ D-Check";
-    else if (status === "Pending Delivery") maintIcon = "⏳ Delivery";
-    else if (status === "B-Check")          maintIcon = "🔧 B-Check";
-
-    // --- SAFE MODE (NO destruye dataset ni eventos) ---
-    const wrapper = document.createElement("div");
-    wrapper.style.lineHeight = "1.2";
-    wrapper.style.textAlign = "left";
-
-    const strongEl = document.createElement("strong");
-    strongEl.textContent = reg;
-
-    const modelEl = document.createElement("span");
-    modelEl.textContent = model;
-
-    const manuEl = document.createElement("span");
-    manuEl.style.color = "#ffca3a";
-    manuEl.style.fontWeight = "600";
-    manuEl.textContent = manufacturer.toUpperCase();
-
-    wrapper.appendChild(strongEl);
-    wrapper.appendChild(document.createElement("br"));
-    wrapper.appendChild(modelEl);
-    wrapper.appendChild(document.createElement("br"));
-    wrapper.appendChild(manuEl);
-
-    if (maintIcon) {
-      wrapper.appendChild(document.createElement("br"));
-      const mi = document.createElement("span");
-      mi.textContent = maintIcon;
-      wrapper.appendChild(mi);
-    }
-
-    tdTail.appendChild(wrapper);
-
-    // Hover
+    tdTail.appendChild(wrapInfo);
     tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
     tdTail.onmouseleave = hideAircraftHover;
 
     tr.appendChild(tdTail);
 
-
     // ============================================================
     // COLUMNAS DE DÍAS
     // ============================================================
-
     days.forEach(day => {
+
       const td = document.createElement("td");
 
-      // guardar la misma clave normalizada para que route_schedule lo encuentre
-      td.dataset.model = modelKey;
+      const dayItems = (byModel[modelKey] || []).filter(
+        x => x.day === day
+      );
+
+      dayItems.forEach(it => {
+
+        // ---------------- FLIGHT ----------------
+        if (it.type === "flight") {
+
+          const chip = document.createElement("span");
+          chip.className = "chip flight-chip";
+          chip.dataset.id = it.id;
+          chip.dataset.blockId = it.blockId || "";
+          chip.dataset.type = "flight";
+          chip.textContent = `${it.flightNumberOut} - ${it.flightNumberIn}`;
+
+          const tooltip = document.createElement("span");
+          tooltip.className = "tooltip";
+
+          const next = toHHMM(toMin(it.arrival) + TURNAROUND_MIN);
+          tooltip.innerHTML = `
+            ${it.origin} → ${it.destination}<br>
+            DEP: ${it.departure}<br>
+            ARR: ${it.arrival}<br>
+            <strong>Next Flight: ${next}</strong>
+          `;
+
+          chip.appendChild(tooltip);
+          chip.onclick = () => openFlightModal(it);
+          td.appendChild(chip);
+        }
+
+        // ---------------- SERVICE ----------------
+        if (it.type === "service") {
+
+          const chip = document.createElement("span");
+          chip.className = "chip";
+          chip.dataset.id = it.id;
+          chip.dataset.type = "service";
+          chip.textContent =
+            it.serviceType === "A" ? "🟡 A-Check" : "⚙️ B-Check";
+
+          td.appendChild(chip);
+        }
+      });
 
       tr.appendChild(td);
     });
 
-
     // ============================================================
-    // COLUMNA ACTION PLAN
+    // ACTION PLAN
     // ============================================================
     const planTd = document.createElement("td");
     const wrap = document.createElement("div");
@@ -997,217 +997,17 @@ fleet.forEach(ac => {
     wrap.appendChild(assignBtn);
     wrap.appendChild(maintBtn);
     planTd.appendChild(wrap);
-
-    tr.appendChild(planTd);
-
-    // AGREGAR FILA A LA TABLA
-    tbody.appendChild(tr);
-
-});
-
-    // ============================================================
-// === B1 — FIX: BUSCAR VUELOS POR MODELO, NO POR MATRÍCULA ===
-// ============================================================
-     
-days.forEach(day => {
-
-  const td = document.createElement("td");
-
-  // 🔥 CLAVE REAL DEL AVIÓN (modelo normalizado)
-  const modelKey = ac.model || ac.type || ac.data?.model || "";
-
-  // 🔥 BUSCAR LOS VUELOS POR MODELO
-  const dayItems = (byTail[modelKey] || []).filter(
-      x => x.day === day
-  );
-
-  let lastEnd = null;
-  let hadFlight = false;
-
-  // ----------------------------
-// PAINT ITEMS (FLIGHTS/SERVICE)
-// ----------------------------
-     
-dayItems.forEach(it => {
-
-  // ----------------------
-  // FLIGHT (Chip Limpio)
-  // ----------------------
-  if (it.type === "flight") {
-
-    hadFlight = true;
-
-    const iata = localStorage.getItem("userIATA") || "XX";
-
-    let numOut = it.flightNumberOut;
-    let numIn  = it.flightNumberIn;
-
-    // limpiar prefijo IATA
-    if (String(numOut).startsWith(iata)) numOut = numOut.replace(iata, "");
-    if (String(numIn).startsWith(iata)) numIn  = numIn.replace(iata, "");
-
-    // Formato final del chip → SOLO números como antes
-    const fnOut = `${numOut}`;
-    const fnIn  = `${numIn}`;
-
-    // CHIP ÚNICO — SIN FANTASMAS
-    const chip = document.createElement("span");
-    chip.className = "chip flight-chip";
-    chip.dataset.id = it.id;
-    chip.dataset.blockId = it.blockId || "";
-    chip.dataset.type = "flight";
-
-    chip.textContent = `${fnOut} - ${fnIn}`;
-
-    /* 🟨 B2 — TOOLTIP AMARILLO CON NEXT FLIGHT REAL — Qatar Luxury */
-    const tooltip = document.createElement("span");
-    tooltip.className = "tooltip";
-
-    /* === CALCULAR NEXT FLIGHT REAL === */
-    const depMin   = toMin(it.departure);
-    const arrMin   = toMin(it.arrival);
-    const nextMin  = arrMin + TURNAROUND_MIN;
-    const nextHHMM = toHHMM(nextMin);
-
-    /* === CONTENIDO FINAL DEL TOOLTIP === */
-    tooltip.innerHTML = `
-        ${it.origin} → ${it.destination}<br>
-        DEP: ${it.departure}<br>
-        ARR: ${it.arrival}<br>
-        <strong>Next Flight: ${nextHHMM}</strong>
-    `;
-
-    chip.appendChild(tooltip);
-
-    chip.onclick = () => openFlightModal(it);
-
-    td.appendChild(chip);
-  }
-
-  // ----------------------
-  // SERVICE (A / B Check)
-  // ----------------------
-  else if (it.type === "service") {
-
-    const chip = document.createElement("span");
-    chip.className = "chip";
-    chip.dataset.id = it.id;
-    chip.dataset.blockId = it.blockId || "";
-    chip.dataset.type = it.type;
-
-    chip.textContent =
-      it.serviceType === "A" ? "🟡 A-Check" : "⚙️ B-Check";
-
-    const tooltip = document.createElement("span");
-    tooltip.className = "tooltip";
-    tooltip.innerHTML = `${it.start} – ${it.end}`;
-    chip.appendChild(tooltip);
-
-    chip.onclick = () => openActionModal(chip);
-
-    td.appendChild(chip);
-  }
-
-});
-
-  // ----------------------------
-  // NEXT FLIGHT SLOT
-  // ----------------------------
-     
-  const maintToday = dayItems.find(x => x.type === "service");
-
-  if (maintToday && maintToday.serviceType === "B") {
-    const nextInfo = document.createElement("div");
-    nextInfo.className = "next-slot";
-    nextInfo.textContent = "Next Flight: N/A (B-Check Day)";
-    td.appendChild(nextInfo);
-    tr.appendChild(td);
-    return;
-  }
-
-  tr.appendChild(td);
-});
-
-    // ============================================================
-    // ACTION PLAN
-    // ============================================================
-       
-    const planTd = document.createElement("td");
-    const wrap = document.createElement("div");
-    wrap.className = "plan-actions";
-
-    const assignBtn = document.createElement("button");
-    assignBtn.className = "btn btn-assign";
-    assignBtn.textContent = "Assign Route";
-    assignBtn.onclick = () => assignRouteToTail(ac);
-
-    const maintBtn = document.createElement("button");
-    maintBtn.className = "btn btn-maint";
-    maintBtn.textContent = "Plan Maintenance";
-    maintBtn.onclick = () => openMaintModal(ac.model || ac.type);
-
-    wrap.appendChild(assignBtn);
-    wrap.appendChild(maintBtn);
-    planTd.appendChild(wrap);
-
-    tr.appendChild(planTd);
-    tbody.appendChild(tr);
-       
- }
-
-  // ============================================================
-  // === EXTRA EMPTY ROWS (Always show 5 additional rows) ========
-  // ============================================================
-  for (let i = 0; i < 5; i++) {
-
-    const tr = document.createElement("tr");
-
-    // Aircraft column
-    const tdTail = document.createElement("td");
-    tdTail.textContent = "(empty)";
-    tr.appendChild(tdTail);
-
-    // 7 day columns
-    days.forEach(() => {
-      const td = document.createElement("td");
-      td.textContent = "—";
-      tr.appendChild(td);
-    });
-
-    // Action Plan column (fake buttons)
-    const planTd = document.createElement("td");
-    const wrap = document.createElement("div");
-    wrap.className = "plan-actions";
-
-    const assignBtn = document.createElement("button");
-    assignBtn.className = "btn btn-assign";
-    assignBtn.textContent = "Assign Route";
-    assignBtn.onclick = () =>
-      alert("⚠ Select a real aircraft row above.");
-
-    const maintBtn = document.createElement("button");
-    maintBtn.className = "btn btn-maint";
-    maintBtn.textContent = "Plan Maintenance";
-    maintBtn.onclick = () =>
-      alert("⚠ Select a real aircraft row above.");
-
-       wrap.appendChild(assignBtn);
-    wrap.appendChild(maintBtn);
-
-    planTd.appendChild(wrap);
     tr.appendChild(planTd);
 
     tbody.appendChild(tr);
-
-  }); // ← CIERRE CORRECTO del fleet.forEach(ac => { ... })
+  });
 
   // ============================================================
-  // === UPDATE TIME (TU BLOQUE ORIGINAL - NO TOCAR) =============
+  // UPDATE TIME (NO TOCAR)
   // ============================================================
   document.getElementById("updateTime").textContent =
     "Last update: " + new Date().toLocaleTimeString();
-
-} // ← CIERRE CORRECTO de renderSchedule()
+}
 
 // ============================================================
 // ASSIGN ROUTE
