@@ -500,6 +500,30 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
+   🟦 ACS — ENSURE AIRCRAFT ID (AC_xxx)
+   Source of truth: ACS_MyAircraft
+   ============================================================ */
+
+(function normalizeAircraftIds() {
+
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  let changed = false;
+
+  fleet.forEach((ac, index) => {
+    if (!ac.id) {
+      ac.id = `AC_${String(index + 1).padStart(4, "0")}`;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+    console.warn("🛠 Aircraft IDs normalized (AC_xxxx assigned)");
+  }
+
+})();
+
+/* ============================================================
    === TIME ENGINE SYNC =======================================
    ============================================================ */
 
