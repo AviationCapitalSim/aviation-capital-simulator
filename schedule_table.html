@@ -1116,9 +1116,9 @@ function ACS_applyInitialFlightCosts(route, ac){
     const origin = route.origin;
     let airport = null;
 
-    if (origin.startsWith("E")) airport = getAirportsEuropeSafe()?.find(a=>a.icao===origin);
-    if (origin.startsWith("D") || origin.startsWith("G")) airport = getAirportsAfricaSafe()?.find(a=>a.icao===origin);
-    if (origin.startsWith("V") || origin.startsWith("R")) airport = getAirportsAsiaSafe()?.find(a=>a.icao===origin);
+    if (origin?.startsWith("E")) airport = getAirportsEuropeSafe()?.find(a => a.icao === origin);
+    if (origin?.startsWith("D") || origin?.startsWith("G")) airport = getAirportsAfricaSafe()?.find(a => a.icao === origin);
+    if (origin?.startsWith("V") || origin?.startsWith("R")) airport = getAirportsAsiaSafe()?.find(a => a.icao === origin);
 
     if (!airport) return;
 
@@ -1128,19 +1128,18 @@ function ACS_applyInitialFlightCosts(route, ac){
 
     // 2) Sumar al Finance Engine (si existe)
     let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    if (!F.capital) return;
+    if (!F || typeof F.capital !== "number") return;
 
-    const totalCost = slot + fee + (fuel * 120); // TEMPORAL hasta definir consumo real
+    const totalCost = slot + fee + (fuel * 120); // TEMPORAL
     F.capital -= totalCost;
 
-    if (!F.expenses) F.expenses = 0;
-    F.expenses += totalCost;
+    F.expenses = (F.expenses || 0) + totalCost;
 
-    if (!F.log) F.log = [];
+    F.log = F.log || [];
     F.log.push({
       type: "ROUTE_ASSIGN_COST",
       route: `${route.origin}-${route.destination}`,
-      aircraft: ac.registration || ac.tail,
+      aircraft: ac.registration || ac.tail || ac.model,
       amount: totalCost,
       date: new Date().toISOString()
     });
@@ -1156,16 +1155,16 @@ function ACS_applyInitialFlightCosts(route, ac){
 // ============================================================
 // MAINTENANCE
 // ============================================================
-let maintTail=null;
+let maintTail = null;
 
 function openMaintModal(tail){
-  maintTail=tail;
-  document.getElementById("maintModal").style.display="flex";
+  maintTail = tail;
+  document.getElementById("maintModal").style.display = "flex";
 }
 
 function closeMaintModal(){
-  maintTail=null;
-  document.getElementById("maintModal").style.display="none";
+  maintTail = null;
+  document.getElementById("maintModal").style.display = "none";
 }
 
 /* ============================================================
@@ -1173,16 +1172,18 @@ function closeMaintModal(){
    ============================================================ */
      
 function validateACheck(ac, day, startHHMM, endHHMM) {
+  if (!ac) return false;
+
   const items = getItems();
 
-  // Convertir a minutos
   const startMin = toMin(startHHMM);
   const endMin   = toMin(endHHMM);
 
-  // Buscar vuelos de ese modelo y ese día
+  const acKey = normalizeModel(ac.model || ac.type || "");
+
   const flights = items.filter(f =>
     f.type === "flight" &&
-    (f.tail === ac.model || f.acType === ac.model) &&
+    normalizeModel(f.tail || f.acType || "") === acKey &&
     f.day === day
   );
 
@@ -1190,11 +1191,10 @@ function validateACheck(ac, day, startHHMM, endHHMM) {
     const fStart = toMin(f.departure);
     const fEnd   = toMin(f.arrival);
 
-    // Conflicto si se solapa con el servicio A
     const overlap =
-      (startMin >= fStart && startMin < fEnd) ||   // servicio empieza dentro del vuelo
-      (endMin > fStart && endMin <= fEnd)     ||   // servicio termina dentro del vuelo
-      (startMin <= fStart && endMin >= fEnd);      // servicio cubre el vuelo completo
+      (startMin >= fStart && startMin < fEnd) ||
+      (endMin > fStart && endMin <= fEnd) ||
+      (startMin <= fStart && endMin >= fEnd);
 
     if (overlap) {
       const msg =
@@ -1211,7 +1211,11 @@ function validateACheck(ac, day, startHHMM, endHHMM) {
 }
      
 function applyMaintenance(){
-  if(!maintTail){ closeMaintModal(); return; }
+
+  if (!maintTail) {
+    closeMaintModal();
+    return;
+  }
 
   const t = document.getElementById("maintType").value;
   const d = document.getElementById("maintDay").value;
@@ -1222,14 +1226,16 @@ function applyMaintenance(){
   const items = getItems();
   const fleet = getRealFleet();
 
-  // 🔥 Buscar avión por MODELO (nunca matrícula)
   const ac = fleet.find(x =>
-    (x.model && normalizeModel(x.model) === normalizeModel(maintTail)) ||
-    (x.type  && normalizeModel(x.type)  === normalizeModel(maintTail))
+    normalizeModel(x.model || x.type || "") === normalizeModel(maintTail)
   );
-     
-  /* === VALIDATE A-CHECK BEFORE APPLYING === */
-     
+
+  if (!ac) {
+    alert("⚠ Aircraft not found for maintenance.");
+    closeMaintModal();
+    return;
+  }
+
   if (t === "A") {
     const isValid = validateACheck(ac, d, start, end);
     if (!isValid) {
@@ -1237,58 +1243,43 @@ function applyMaintenance(){
       return;
     }
   }
-     
-/* === SERVICE B (24h full block) — Qatar Luxury === */
-     
-if (t === "B") {
 
-  // Cobro del servicio B (24h)
-  try {
-    let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    if (F.capital) {
-      const costB = 18000; // Ajustable
-      F.capital -= costB;
-      if (!F.expenses) F.expenses = 0;
-      F.expenses += costB;
+  /* === SERVICE B (24h full block) — Qatar Luxury === */
+  if (t === "B") {
+    try {
+      let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+      if (typeof F.capital === "number") {
+        const costB = 18000;
+        F.capital -= costB;
+        F.expenses = (F.expenses || 0) + costB;
 
-      if (!F.log) F.log = [];
-      F.log.push({
-        type: "B_CHECK",
-        aircraft: ac.registration || ac.tail || ac.model,
-        day: d.toUpperCase(),
-        amount: costB,
-        date: new Date().toISOString()
-      });
+        F.log = F.log || [];
+        F.log.push({
+          type: "B_CHECK",
+          aircraft: ac.registration || ac.tail || ac.model,
+          day: d.toUpperCase(),
+          amount: costB,
+          date: new Date().toISOString()
+        });
 
-      localStorage.setItem("ACS_Finance", JSON.stringify(F));
+        localStorage.setItem("ACS_Finance", JSON.stringify(F));
+      }
+    } catch(e){
+      console.warn("Finance B error:", e);
     }
-  } catch(e){ console.warn("Finance B error:", e); }
-
-  // Marcar día completo
-  const rowModel = normalizeModel(ac.model || ac.type);
-  const rows = document.querySelectorAll("#scheduleTable tbody tr");
-
-  rows.forEach(r=>{
-    if (normalizeModel(r.dataset.model || "") === rowModel) {
-      const cells = r.querySelectorAll("td");
-      const map = {mon:1, tue:2, wed:3, thu:4, fri:5, sat:6, sun:7};
-      const td = cells[ map[d] ];
-      if (td) td.classList.add("bcheck-day");
-    }
-  });
-}
+  }
 
   items.push({
-  id:"svc-"+Math.random().toString(36).slice(2,8),
-  type:"service",
-  serviceType:t,
-  tail: normalizeModel(ac.model || ac.type),
-  acType: ac?.type || "",
-  day: d,
-  start: start,
-  end: end,
-  durationMin: (t === "B" ? 1440 : 300) // A=5h, B=24h
-});
+    id: "svc-" + Math.random().toString(36).slice(2,8),
+    type: "service",
+    serviceType: t,
+    tail: normalizeModel(ac.model || ac.type),
+    acType: ac.type || "",
+    day: d,
+    start,
+    end,
+    durationMin: (t === "B" ? 1440 : 300)
+  });
 
   setItems(items);
   closeMaintModal();
@@ -1299,14 +1290,14 @@ if (t === "B") {
 // ACTION MODAL
 // ============================================================
      
-let selectedChip=null;
+let selectedChip = null;
 
 function openActionModal(chip){
   selectedChip = chip;
   const modal = document.getElementById("actionModal");
   const buttons = modal.querySelectorAll("button");
 
-  buttons.forEach(btn => btn.style.display="inline-block");
+  buttons.forEach(btn => btn.style.display = "inline-block");
 
   if (chip.dataset.type === "service") {
     buttons.forEach(btn => {
@@ -1321,8 +1312,8 @@ function openActionModal(chip){
 }
 
 function closeActionModal(){
-  selectedChip=null;
-  document.getElementById("actionModal").style.display="none";
+  selectedChip = null;
+  document.getElementById("actionModal").style.display = "none";
 }
 
 function removeItem(){
