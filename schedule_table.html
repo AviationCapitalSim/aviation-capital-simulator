@@ -820,16 +820,24 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
-  const byModel = {};
+ 
+// ============================================================
+// 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (AC_xxx) — FINAL
+// ============================================================
+     
+const byAircraftId = {};
 
-  // ============================================================
-  // INDEXAR ITEMS POR MODELO NORMALIZADO
-  // ============================================================
-  items.forEach(it => {
-    const key = normalizeModel(it.tail || it.acType || "");
-    if (!byModel[key]) byModel[key] = [];
-    byModel[key].push(it);
-  });
+// NOTE:
+// - flights/services deben venir con it.aircraftId = "AC_0007"
+// - day debe existir (mon..sun) para pintar en tabla semanal
+
+items.forEach(it => {
+  const key = String(it.aircraftId || "").trim();
+  if (!key) return;
+  if (!byAircraftId[key]) byAircraftId[key] = [];
+  byAircraftId[key].push(it);
+});
+
 
   // ============================================================
   // SIN FLOTA — filas dummy
@@ -885,7 +893,9 @@ function renderSchedule() {
   fleet.forEach(ac => {
 
     const tr = document.createElement("tr");
-
+    // 🟦 3B.1 — Aircraft Row Identity (AC_xxx)
+    tr.dataset.aircraftId = ac.id || "";
+       
     // ============================================================
     // MODELO REAL + MODELO NORMALIZADO
     // ============================================================
@@ -928,9 +938,11 @@ function renderSchedule() {
 
       const td = document.createElement("td");
 
-      const dayItems = (byModel[modelKey] || []).filter(
-        x => x.day === day
-      );
+     const aircraftId = String(ac.id || "").trim();
+
+     const dayItems = (byAircraftId[aircraftId] || []).filter(
+      x => x.day === day
+    );
 
       dayItems.forEach(it => {
 
@@ -1887,23 +1899,23 @@ function ACS_paintRoutesStepC() {
 
 }
 
+// ============================================================
+// 🟦 3D.2 — DOM READY (Schedule Table — aircraftId ONLY)
+// ============================================================
+     
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 0) Asegurar que la tabla (filas) exista ANTES de mapear
+  // Render principal de la tabla
   if (typeof renderSchedule === "function") {
     renderSchedule();
   } else {
-    console.warn("⚠ renderSchedule no está disponible aún.");
+    console.warn("⚠ renderSchedule no está disponible.");
   }
 
-  // 1) Cargar rutas guardadas
-  ACS_loadRoutesStepA();
-
-  // 2) Esperar un instante para que el DOM tenga las filas creadas por renderSchedule()
-  setTimeout(() => {
-    ACS_mapAircraftRows();
-    ACS_paintRoutesStepC();
-  }, 80);
+  // ❌ LEGACY DISABLED (modelKey architecture)
+  // ACS_loadRoutesStepA();
+  // ACS_mapAircraftRows();
+  // ACS_paintRoutesStepC();
 
 });
 
