@@ -459,7 +459,7 @@ function loadAircraftById() {
   available.forEach(ac => {
     const opt = document.createElement("option");
     opt.value = ac.id;                                  // 🔑 ÚNICO ID
-    opt.textContent = `${ac.model} · ${ac.registration || ac.id}`;
+    opt.textContent = ac.model;
     select.appendChild(opt);
   });
 }
