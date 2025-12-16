@@ -451,12 +451,12 @@ function loadAircraftById() {
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   // 🔥 Solo aviones reales, activos y basados en el origen
+     
   const available = fleet.filter(ac =>
-    ac.id &&
-    ac.id.startsWith("AC_") &&
-    ac.status === "Active" &&
-    ac.base === origin
-  );
+  ac.id &&
+  ac.id.startsWith("AC_") &&
+  String(ac.status).toLowerCase().includes("active")
+);
 
   if (available.length === 0) {
     console.warn("⚠ No active aircraft for base:", origin);
