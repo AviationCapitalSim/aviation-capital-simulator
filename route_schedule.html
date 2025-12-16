@@ -438,28 +438,34 @@ footer {
 
 function loadAircraftById() {
 
-  const origin = document.getElementById("origin")?.value?.trim();
+  const originInput = document.getElementById("origin");
   const select = document.getElementById("aircraft");
 
-  if (!select) {
-    console.warn("⚠ Aircraft select not found");
+  if (!select || !originInput) {
+    console.warn("⚠ Aircraft select or origin not found");
     return;
   }
 
+  const origin = originInput.value.trim();
+  if (!origin) {
+    return; // ⛔ no cargar si no hay origin
+  }
+
+  // 🔄 limpiar solo cuando el origin es válido
   select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  // 🔥 Solo aviones reales, activos y basados en el origen
-     
+  // 🔥 Aviones reales y activos (base se valida después, no aquí)
   const available = fleet.filter(ac =>
-  ac.id &&
-  ac.id.startsWith("AC_") &&
-  String(ac.status).toLowerCase().includes("active")
-);
+    ac.id &&
+    ac.id.startsWith("AC_") &&
+    String(ac.status).toLowerCase().includes("active")
+  );
 
   if (available.length === 0) {
-    console.warn("⚠ No active aircraft for base:", origin);
+    console.warn("⚠ No active aircraft available");
+    return;
   }
 
   available.forEach(ac => {
@@ -481,28 +487,24 @@ function loadAircraftById() {
 }
 
 /* ============================================================
-   🟦 AUTO LOAD ON DOM READY
+   🟦 AUTO LOAD — ORIGIN DRIVEN (FINAL)
    ============================================================ */
      
 document.addEventListener("DOMContentLoaded", () => {
 
   const originInput = document.getElementById("origin");
+  if (!originInput) return;
 
-  // Si origin ya viene seteado (caso normal)
-  if (originInput && originInput.value) {
+  // 1️⃣ Caso normal: origin ya está definido
+  if (originInput.value) {
     loadAircraftById();
-    return;
   }
 
-  // Si origin se setea un poco después (Safari / flujo edición)
-  const observer = new MutationObserver(() => {
-    if (originInput.value) {
-      loadAircraftById();
-      observer.disconnect();
-    }
+  // 2️⃣ Caso usuario / autofill / edición
+  originInput.addEventListener("change", () => {
+    loadAircraftById();
   });
 
-  observer.observe(originInput, { attributes: true, attributeFilter: ["value"] });
 });
 
 </script>
