@@ -1191,21 +1191,23 @@ dayItems.forEach(it => {
     maintBtn.onclick = () =>
       alert("⚠ Select a real aircraft row above.");
 
-    wrap.appendChild(assignBtn);
+       wrap.appendChild(assignBtn);
     wrap.appendChild(maintBtn);
 
     planTd.appendChild(wrap);
     tr.appendChild(planTd);
 
     tbody.appendChild(tr);
-  }
+
+  }); // ← CIERRE CORRECTO del fleet.forEach(ac => { ... })
 
   // ============================================================
   // === UPDATE TIME (TU BLOQUE ORIGINAL - NO TOCAR) =============
   // ============================================================
   document.getElementById("updateTime").textContent =
     "Last update: " + new Date().toLocaleTimeString();
-}
+
+} // ← CIERRE CORRECTO de renderSchedule()
 
 // ============================================================
 // ASSIGN ROUTE
