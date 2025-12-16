@@ -807,46 +807,49 @@ if (!isEditing) {
 });
 
 /* ============================================================
-   🔵 A — LOAD AVAILABLE AIRCRAFT (NO REGISTRATIONS)
+   🟢 FIX DEFINITIVO — LOAD AIRCRAFT BY aircraftId (AC_xxx)
+   Compatible con Schedule Table y Route Schedule
    ============================================================ */
 
 function loadAvailableAircraft() {
 
-  const origin = (document.getElementById("origin").value || "").trim();
+  const origin = (document.getElementById("origin")?.value || "").trim();
   const select = document.getElementById("aircraft");
+
+  if (!select) return;
 
   select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  // 🔥 SOLO AVIONES ACTIVOS Y BASADOS EN EL ORIGEN
-  const filtered = fleet.filter(ac =>
-      ac.status === "Active" && ac.base === origin
+  // 🔥 AVIONES REALES (UNO = UN ID)
+  const available = fleet.filter(ac =>
+    ac.id &&
+    ac.id.startsWith("AC_") &&
+    String(ac.status).toUpperCase() === "ACTIVE" &&
+    ac.base === origin
   );
 
-  // 🔥 SOLO MODELOS ÚNICOS
-  const uniqueModels = [...new Set(filtered.map(ac => ac.model))];
+  if (available.length === 0) {
+    console.warn("⚠ No active aircraft available for base:", origin);
+    return;
+  }
 
-  uniqueModels.forEach(model => {
-      const ac = filtered.find(f => f.model === model);
+  available.forEach(ac => {
+    const opt = document.createElement("option");
 
-      const opt = document.createElement("option");
+    // 🔑 IDENTIDAD REAL
+    opt.value = ac.id; // AC_xxxx
 
-      // ✔ CLAVE ÚNICA = MODELO (NO MATRÍCULA)
-      opt.value = model;
-      opt.textContent = model;
+    // UI amigable
+    opt.textContent = `${ac.model} · ${ac.registration || ac.id}`;
 
-      // ✔ DATOS TÉCNICOS
-      opt.dataset.model    = ac.model;
-      opt.dataset.brand    = ac.brand || ac.manufacturer || "";
-      opt.dataset.category = ac.category || "";
-      opt.dataset.speed    = ac.speed || 440;
-      opt.dataset.range    = ac.range || 1500;
+    // Datos técnicos SOLO para cálculo
+    opt.dataset.speed    = ac.speed || 440;
+    opt.dataset.range    = ac.range || 1500;
+    opt.dataset.category = ac.category || "";
 
-      // ❌ ELIMINADO: matrícula, reg, registration
-      // opt.dataset.registration = ac.registration;
-
-      select.appendChild(opt);
+    select.appendChild(opt);
   });
 }
 
