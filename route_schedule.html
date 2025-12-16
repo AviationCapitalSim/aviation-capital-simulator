@@ -432,39 +432,61 @@ footer {
 <script>
      
 /* ============================================================
-   🔵 ROUTE SCHEDULE — LOAD AIRCRAFT BY ID (FINAL)
+   🟦 3.3.1 — ROUTE SCHEDULE
+   LOAD AIRCRAFT SELECTOR BY AIRCRAFT ID (AC_xxx)
    ============================================================ */
-
-document.addEventListener("DOMContentLoaded", loadAircraftById);
 
 function loadAircraftById() {
 
-  const origin = document.getElementById("origin").value.trim();
-  const sel = document.getElementById("aircraft");
+  const origin = document.getElementById("origin")?.value?.trim();
+  const select = document.getElementById("aircraft");
 
-  sel.innerHTML = `<option value="">-- Select Aircraft --</option>`;
+  if (!select) {
+    console.warn("⚠ Aircraft select not found");
+    return;
+  }
+
+  select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
+  // 🔥 Solo aviones reales, activos y basados en el origen
   const available = fleet.filter(ac =>
+    ac.id &&
+    ac.id.startsWith("AC_") &&
     ac.status === "Active" &&
     ac.base === origin
   );
 
+  if (available.length === 0) {
+    console.warn("⚠ No active aircraft for base:", origin);
+  }
+
   available.forEach(ac => {
     const opt = document.createElement("option");
 
-    opt.value = ac.id; // 🔥 aircraftId
-    opt.textContent = `${ac.model} · ${ac.registration}`;
+    // 🔑 CLAVE ABSOLUTA
+    opt.value = ac.id;
 
-    // Guardamos datos técnicos SOLO para cálculo visual
-    opt.dataset.speed    = ac.speed;
-    opt.dataset.range    = ac.range;
-    opt.dataset.category = ac.category;
+    // UI amigable
+    opt.textContent = `${ac.model} · ${ac.registration || ac.id}`;
 
-    sel.appendChild(opt);
+    // Dataset SOLO para cálculo visual (NO identidad)
+    opt.dataset.speed    = ac.speed || 440;
+    opt.dataset.range    = ac.range || 1500;
+    opt.dataset.category = ac.category || "";
+
+    select.appendChild(opt);
   });
 }
+
+/* ============================================================
+   🟦 AUTO LOAD ON DOM READY
+   ============================================================ */
+     
+document.addEventListener("DOMContentLoaded", () => {
+  loadAircraftById();
+});
 </script>
 
     <label>Departure Time (Local)</label>
