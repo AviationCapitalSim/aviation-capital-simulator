@@ -638,25 +638,26 @@ footer {
      ============================================================ -->
      
 <div id="flightModal" class="acs-modal hidden">
-
-  <div class="acs-modal-card">
-
+  <div class="acs-modal-card qatar">
+    
     <div class="acs-modal-header">
-      ✈️ Flight Actions
+      <h3 id="flightModalTitle">Flight</h3>
+      <button class="btn-close" onclick="closeFlightModal()">✕</button>
     </div>
 
-    <div class="acs-modal-actions">
-      <button class="btn btn-edit">✏️ Edit</button>
-      <button class="btn btn-remove">🧹 Remove</button>
-      <button class="btn btn-delete">🗑 Delete</button>
-    </div>
+    <!-- 🔴 ESTE ES EL ELEMENTO QUE FALTA -->
+    <div id="flightModalContent" class="acs-modal-body"></div>
 
     <div class="acs-modal-footer">
-      <button class="btn btn-close">Close</button>
+      <button class="btn-edit">✏️ Edit</button>
+      <button class="btn-remove">🧹 Remove</button>
+      <button class="btn-delete">🗑 Delete</button>
+      <button class="btn-secondary" onclick="closeFlightModal()">Close</button>
     </div>
 
   </div>
 </div>
+
 
 <!-- ============================================================
      === MODAL: MAINTENANCE =====================================
@@ -1449,36 +1450,6 @@ function applyMaintenance(){
   setItems(items);
   closeMaintModal();
   renderSchedule();
-}
-
-// ============================================================
-// ACTION MODAL
-// ============================================================
-     
-let selectedChip = null;
-
-function openActionModal(chip){
-  selectedChip = chip;
-  const modal = document.getElementById("actionModal");
-  const buttons = modal.querySelectorAll("button");
-
-  buttons.forEach(btn => btn.style.display = "inline-block");
-
-  if (chip.dataset.type === "service") {
-    buttons.forEach(btn => {
-      if (btn.textContent.includes("Delete") ||
-          btn.textContent.includes("Edit")) {
-        btn.style.display = "none";
-      }
-    });
-  }
-
-  modal.style.display = "flex";
-}
-
-function closeActionModal(){
-  selectedChip = null;
-  document.getElementById("actionModal").style.display = "none";
 }
 
 function removeItem(){
