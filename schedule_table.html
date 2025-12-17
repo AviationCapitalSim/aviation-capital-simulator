@@ -958,10 +958,18 @@ items.forEach(it => {
       chip.dataset.blockId = it.blockId || "";
       chip.dataset.type = "flight";
 
-      // Prefijo IATA visible
-      const iataCode = localStorage.getItem("userIATA") || "IT";
+     // Prefijo IATA visible
+             
+    const iataCode = localStorage.getItem("userIATA") || "IT";
 
-      chip.textContent = `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`;
+    // ✅ TOMAR LOS NÚMEROS DESDE EL ITEM REAL (it)
+    const fnOut = it.flightNumberOut || "";
+    const fnIn  = it.flightNumberIn  || "";
+
+    // Si faltan, no rompe el render
+    chip.textContent = (fnOut && fnIn)
+     ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
+     : `${iataCode}-— / ${iataCode}-—`;
 
 
           const tooltip = document.createElement("span");
