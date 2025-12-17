@@ -709,21 +709,7 @@ footer {
 <!-- ============================================================
      === FLIGHT INFO MODAL — Qatar Luxury Edition ================
      ============================================================ -->
-<div id="flightModal" class="modal">
-  <div class="modal-content">
-    <div id="flightModalContent"></div>
-    <button onclick="closeFlightModal()">❌ Close</button>
-  </div>
-</div>
-
-<!-- FLIGHT INFO MODAL — Qatar Luxury Edition -->
-<div id="flightModal" class="modal">
-  <div class="modal-content">
-    <div id="flightModalContent"></div>
-    <button onclick="closeFlightModal()">❌ Close</button>
-  </div>
-</div>
-
+     
 <!-- === MODAL ERROR — MAINTENANCE A (Qatar Luxury) === -->
 <div id="maintenanceErrorModal" class="modal-overlay">
   <div class="modal-content error-modal">
@@ -2075,18 +2061,6 @@ function showMaintenanceErrorModal(message) {
 
 function closeMaintenanceErrorModal() {
   document.getElementById("maintenanceErrorModal").style.display = "none";
-}
-     
-/* ============================================================
-   ✨ FLIGHT MODAL — BASIC CONTROL
-   ============================================================ */
-
-function openFlightModal() {
-  document.getElementById("flightModal")?.classList.remove("hidden");
-}
-
-function closeFlightModal() {
-  document.getElementById("flightModal")?.classList.add("hidden");
 }
      
 </script>
