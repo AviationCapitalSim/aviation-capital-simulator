@@ -1753,16 +1753,22 @@ function applyMaintenance(){
   }
 
   items.push({
-    id: "svc-" + Math.random().toString(36).slice(2,8),
-    type: "service",
-    serviceType: t,
-    tail: normalizeModel(ac.model || ac.type),
-    acType: ac.type || "",
-    day: d,
-    start,
-    end,
-    durationMin: (t === "B" ? 1440 : 300)
-  });
+  id: "svc-" + Math.random().toString(36).slice(2,8),
+  type: "service",
+  serviceType: t,
+
+  // 🔑 CLAVE — IDENTIDAD REAL DEL AVIÓN
+  aircraftId: ac.id,          // ← ESTO ES LO QUE FALTABA
+
+  // legacy / UI
+  tail: normalizeModel(ac.model || ac.type),
+  acType: ac.type || "",
+
+  day: d,
+  start,
+  end,
+  durationMin: (t === "B" ? 1440 : 300)
+});
 
   setItems(items);
   closeMaintModal();
