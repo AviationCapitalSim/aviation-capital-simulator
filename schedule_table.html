@@ -831,7 +831,21 @@ footer {
 
   box-shadow: 0 0 6px rgba(255, 204, 0, 0.35);
 }
+       
+/* ============================================================
+   🟫 PASO 2 — B-CHECK DAY STYLE (GRAY CELL) — 17DEC25
+   ============================================================ */
 
+.bcheck-day {
+  background: rgba(120, 120, 120, 0.35) !important;
+  box-shadow: inset 0 0 0 1px rgba(160, 160, 160, 0.45);
+}
+
+.bcheck-day .chip,
+.bcheck-day .service-chip {
+  opacity: 0.85;
+}
+       
 </style>
 </head>
 <body>
@@ -960,7 +974,7 @@ footer {
       <div class="maint-field">
         <label>Maintenance Type</label>
         <select id="maintType">
-          <option value="A">🟡 A-Check (5 hours)</option>
+          <option value="A">🔧 A-Check (5 hours)</option>
           <option value="B">⚙️ B-Check (24 hours)</option>
         </select>
       </div>
@@ -1295,10 +1309,23 @@ items.forEach(it => {
 
      const aircraftId = String(ac.id || "").trim();
 
-     const dayItems = (byAircraftId[aircraftId] || []).filter(
-      x => x.day === day
-    );
+     const rawDayItems = (byAircraftId[aircraftId] || []).filter(
+  x => x.day === day
+);
 
+const dayItems = ACS_sortDayEvents(rawDayItems);
+         
+/* ============================================================
+   🟫 PASO 2 — DETECT B-CHECK FOR DAY — 17DEC25
+   ============================================================ */
+
+const hasBCheck = dayItems.some(it =>
+  it.type === "service" && it.serviceType === "B"
+);
+
+if (hasBCheck) {
+  td.classList.add("bcheck-day");
+}
       dayItems.forEach(it => {
 
         // ---------------- FLIGHT ----------------
@@ -1348,16 +1375,20 @@ items.forEach(it => {
         if (it.type === "service") {
 
           const chip = document.createElement("span");
-          chip.className = "service-chip";
-          chip.dataset.id = it.id;
-          chip.dataset.type = "service";
+chip.className = "service-chip";
+chip.dataset.id = it.id;
+chip.dataset.type = "service";
 
-          chip.textContent =
-          it.serviceType === "A"
-            ? "🟡 A-Check"
-            : "⚙️ B-Check";
+chip.textContent =
+  it.serviceType === "A"
+    ? "🔧 A-Check"
+    : "⚙️ B-Check";
 
-         td.appendChild(chip);
+// 👉 abrir el MISMO modal, pero en modo SERVICE
+chip.onclick = () => openFlightModal(it, chip);
+
+td.appendChild(chip);
+
 
         }
       });
@@ -1735,6 +1766,23 @@ function applyMaintenance(){
   const items = getItems();
   const fleet = getRealFleet();
 
+/* ============================================================
+   🛑 PASO 1 — BLOCK DUPLICATE MAINTENANCE PER DAY — 17DEC25
+   Rule: Only ONE service (A or B) per aircraft per day
+   ============================================================ */
+
+const serviceAlreadyExists = items.some(it =>
+  it.type === "service" &&
+  it.aircraftId === ac.id &&
+  it.day === d
+);
+
+if (serviceAlreadyExists) {
+  alert("⚠ A maintenance service is already scheduled for this aircraft on this day.");
+  closeMaintModal();
+  return;
+}
+     
   const ac = fleet.find(x =>
     normalizeModel(x.model || x.type || "") === normalizeModel(maintTail)
   );
@@ -1902,8 +1950,74 @@ function openFlightModal(it, chipEl){
   ACS_selectedFlightItem = it || null;
   ACS_selectedChipEl = chipEl || null;
 
+/* ============================================================
+   🛠 PASO 4 — SERVICE CONTEXT (MODAL) — 17DEC25
+   ============================================================ */
+
+if (it && it.type === "service") {
+
+  const modal = document.getElementById("flightModal");
+  const box   = document.getElementById("flightModalContent");
+  const title = document.getElementById("flightModalTitle");
+
+  const dayName = it.day ? it.day.toUpperCase() : "—";
+  const start   = it.start || "—";
+  const end     = it.end || "—";
+
+  const isB = it.serviceType === "B";
+  const serviceLabel = isB ? "⚙️ B-Check" : "🔧 A-Check";
+  const durationText =
+    isB ? "24 hours (full day)" : `${it.durationMin || 300} minutes`;
+
+  title.textContent = serviceLabel;
+
+  box.innerHTML = `
+    <div class="flight-kicker">
+      <strong>Maintenance Service</strong> · ${dayName}
+    </div>
+
+    <div class="flight-hero">
+      <div class="route">${serviceLabel}</div>
+      <div class="times">${start} → ${end}</div>
+    </div>
+
+    <div class="flight-meta">
+      <div class="meta-card">
+        <span class="label">Type</span>
+        <span class="value">${isB ? "B-Check" : "A-Check"}</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Duration</span>
+        <span class="value">${durationText}</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Scheduled Day</span>
+        <span class="value">${dayName}</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Status</span>
+        <span class="value">Scheduled</span>
+      </div>
+    </div>
+  `;
+
+  // 👉 Ajuste de botones: solo CANCEL + CLOSE
+  const footer = modal.querySelector(".acs-modal-footer");
+  if (footer) {
+    footer.innerHTML = `
+      <button class="btn-modal red" onclick="cancelSelectedService()">❌ Cancel Service</button>
+      <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
+    `;
+  }
+
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
+  return; // ⛔ IMPORTANTE: no continuar con lógica de vuelos
+}
+     
   // También mantenemos compatibilidad con tu lógica vieja
   // (por si luego quieres reutilizar removeItem/deleteFlight/editFlight)
+     
   if (chipEl) {
     selectedChip = chipEl;
   }
@@ -2023,7 +2137,32 @@ function openFlightModal(it, chipEl){
   modal.classList.remove("hidden");
   modal.style.display = "flex";
 }
+     
+/* ============================================================
+   ❌ PASO 4 — CANCEL SERVICE — 17DEC25
+   ============================================================ */
 
+function cancelSelectedService(){
+
+  if (!ACS_selectedChipEl) {
+    closeFlightModal();
+    return;
+  }
+
+  const id = ACS_selectedChipEl.dataset.id || "";
+  if (!id) {
+    closeFlightModal();
+    return;
+  }
+
+  const items = getItems();
+  const filtered = items.filter(it => it.id !== id);
+
+  setItems(filtered);
+  closeFlightModal();
+  renderSchedule();
+}
+     
 function closeFlightModal(){
   const modal = document.getElementById("flightModal");
   if (modal) {
@@ -2506,7 +2645,19 @@ function closeActionModal(){
   selectedChip = null;
   document.getElementById("actionModal").style.display = "none";
 }
+     
+/* ============================================================
+   ⏱ PASO 3 — SORT DAY EVENTS BY START TIME — 17DEC25
+   ============================================================ */
 
+function ACS_sortDayEvents(events) {
+  return events.slice().sort((a, b) => {
+    const aMin = a.start ? toMin(a.start) : 0;
+    const bMin = b.start ? toMin(b.start) : 0;
+    return aMin - bMin;
+  });
+}
+     
 </script>
      
 </body>
