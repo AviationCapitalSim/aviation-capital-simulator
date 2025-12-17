@@ -1210,12 +1210,8 @@ daysSel.forEach(day => {
   assignedAny = true;
 });
 
-
-/* ============================================================
-   🟢 DUPLICATE CHECK — AFTER REAL ASSIGN
-   ============================================================ */
-if (flightNumberExists(flightOut, flightIn)) {
-  alert(`⚠ Flight ${flightOut}/${flightIn} already exists.`);
+if (!assignedAny){
+  alert("⚠ Cannot assign: schedule conflicts.");
   return;
 }
 
