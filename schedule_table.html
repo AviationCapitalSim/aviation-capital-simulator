@@ -704,6 +704,112 @@ footer {
 }
 
 .btn-modal:hover { filter: brightness(1.06); transform: translateY(-1px); }
+
+/* ============================================================
+   🦄 M1 — MAINTENANCE MODAL (Qatar Luxury Unicorn) — 17DEC25
+   ============================================================ */
+
+.acs-maint-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.acs-maint-card {
+  width: min(420px, 92vw);
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b132b 0%, #020617 100%);
+  border: 2px solid rgba(255, 204, 51, 0.65);
+  box-shadow: 0 0 42px rgba(255,204,51,0.22);
+}
+
+.acs-maint-header {
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,179,0,0.12);
+  border-bottom: 1px solid rgba(255,204,51,0.35);
+}
+
+.acs-maint-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #ffcc33;
+  letter-spacing: 0.4px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.acs-maint-body {
+  padding: 18px;
+  color: #dbe4ff;
+}
+
+.maint-field {
+  margin-bottom: 14px;
+}
+
+.maint-field label {
+  display: block;
+  font-size: 0.8rem;
+  color: #cbd6ff;
+  margin-bottom: 6px;
+}
+
+.maint-field select,
+.maint-field input[type="time"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,204,51,0.25);
+  background: rgba(16,43,77,0.45);
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.maint-field input[type="time"] {
+  font-family: "Orbitron", monospace;
+}
+
+.acs-maint-footer {
+  padding: 14px 18px 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  border-top: 1px solid rgba(255,204,51,0.25);
+}
+
+.maint-btn {
+  padding: 10px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.maint-btn.apply {
+  background: #ffcc33;
+  color: #000;
+}
+
+.maint-btn.cancel {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.maint-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
        
 </style>
 </head>
@@ -815,52 +921,59 @@ footer {
   </div>
 </div>
 
-
-
 <!-- ============================================================
-     === MODAL: MAINTENANCE =====================================
+     🦄 M2 — MAINTENANCE MODAL (Qatar Luxury Unicorn) — 17DEC25
+     REEMPLAZA COMPLETO #maintModal
      ============================================================ -->
-<div id="maintModal" class="modal">
-  <div class="modal-content">
 
-    <h3>Plan Maintenance</h3>
+<div id="maintModal" class="acs-maint-modal">
+  <div class="acs-maint-card">
 
-    <label>Type</label>
-    <select
-      id="maintType"
-      style="width:100%; padding:8px; border-radius:6px; border:none;
-             background:#12224c; color:#fff;"
-    >
-      <option value="A">A-Check (5 h)</option>
-      <option value="B">B-Check (24 h)</option>
-    </select>
+    <div class="acs-maint-header">
+      <h3>🛠 Plan Maintenance</h3>
+      <button class="btn-close" onclick="closeMaintModal()">✕</button>
+    </div>
 
-    <label style="margin-top:10px;">Day</label>
-    <select
-      id="maintDay"
-      style="width:100%; padding:8px; border-radius:6px; border:none;
-             background:#12224c; color:#fff;"
-    >
-      <option value="mon">Mon</option>
-      <option value="tue">Tue</option>
-      <option value="wed">Wed</option>
-      <option value="thu">Thu</option>
-      <option value="fri">Fri</option>
-      <option value="sat">Sat</option>
-      <option value="sun">Sun</option>
-    </select>
+    <div class="acs-maint-body">
 
-    <label style="margin-top:10px;">Start Time</label>
-    <input
-      type="time"
-      id="maintStart"
-      value="06:00"
-      style="width:100%; padding:8px; border-radius:6px; border:none;
-             background:#12224c; color:#fff;"
-    >
+      <div class="maint-field">
+        <label>Maintenance Type</label>
+        <select id="maintType">
+          <option value="A">🟡 A-Check (5 hours)</option>
+          <option value="B">⚙️ B-Check (24 hours)</option>
+        </select>
+      </div>
 
-    <button onclick="applyMaintenance()">Apply</button>
-    <button onclick="closeMaintModal()">❌ Cancel</button>
+      <div class="maint-field">
+        <label>Day</label>
+        <select id="maintDay">
+          <option value="mon">Monday</option>
+          <option value="tue">Tuesday</option>
+          <option value="wed">Wednesday</option>
+          <option value="thu">Thursday</option>
+          <option value="fri">Friday</option>
+          <option value="sat">Saturday</option>
+          <option value="sun">Sunday</option>
+        </select>
+      </div>
+
+      <div class="maint-field">
+        <label>Start Time</label>
+        <!-- ⏰ Native time picker (iOS / desktop friendly) -->
+        <input
+          type="time"
+          id="maintStart"
+          value="06:00"
+          step="300"
+        >
+      </div>
+
+    </div>
+
+    <div class="acs-maint-footer">
+      <button class="maint-btn apply" onclick="applyMaintenance()">Apply</button>
+      <button class="maint-btn cancel" onclick="closeMaintModal()">Cancel</button>
+    </div>
 
   </div>
 </div>
