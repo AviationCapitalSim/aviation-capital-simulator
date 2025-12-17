@@ -1828,11 +1828,12 @@ function buildFlightOval(route) {
 }
      
 /* ============================================================
-   🟦 STEP C — PAINT ROUTES (NORMALIZED MODEL KEY)
+   🟢 STEP C — PAINT ROUTES (AIRCRAFT ID ARCHITECTURE)
    ============================================================ */
+     
 function ACS_paintRoutesStepC() {
 
-  console.log("🟦 STEP C — Painting routes...");
+  console.log("🟢 STEP C — Painting routes by aircraftId...");
 
   const routes = window.ACS_Routes_Stored || [];
   const rowMap = window.ACS_RowMap || {};
@@ -1842,39 +1843,26 @@ function ACS_paintRoutesStepC() {
     return;
   }
 
-  // 🔥 helper: sacar modelo de la ruta con fallback real
-  function getRouteModelKey(route) {
-    const raw =
-      route?.modelKey ||
-      route?.aircraft ||
-      route?.acType ||
-      route?.tail ||
-      route?.model ||
-      "";
-
-    return normalizeModel(String(raw || ""));
-  }
-
   routes.forEach(route => {
 
-    // (opcional) si quieres pintar SOLO flights, descomenta:
+    // (opcional) solo vuelos
     // if (route.type && route.type !== "flight") return;
 
-    const modelKey = getRouteModelKey(route);
+    const aircraftId = route.aircraftId || "";
 
-    if (!modelKey) {
-      console.warn("⚠ Route has no valid modelKey:", route);
+    if (!aircraftId) {
+      console.warn("⚠ Route has no aircraftId:", route);
       return;
     }
 
-    const tr = rowMap[modelKey];
+    const tr = rowMap[aircraftId];
 
     if (!tr) {
-      console.warn(`⚠ No row found for aircraft model: ${modelKey}`);
+      console.warn(`⚠ No row found for aircraftId: ${aircraftId}`);
       return;
     }
 
-    // MAPA DE CELDAS POR DÍA
+    // MAPA DE CELDAS POR DÍA (MISMO ORDEN QUE YA TIENES)
     const cells = tr.querySelectorAll("td");
     const map = {
       mon: cells[1],
