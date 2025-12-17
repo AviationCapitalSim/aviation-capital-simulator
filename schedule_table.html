@@ -1215,16 +1215,21 @@ if (!assignedAny){
   return;
 }
 
-setItems(items);
-
 /* ============================================================
-   🟢 S2 — FLIGHT NUMBER CONSUMPTION (REAL ASSIGN ONLY)
+   🟢 DUPLICATE CHECK — AFTER REAL ASSIGN
    ============================================================ */
+if (flightNumberExists(flightOut, flightIn)) {
+  alert(`⚠ Flight ${flightOut}/${flightIn} already exists.`);
+  return;
+}
+
+setItems(items);
 
 markNumbersUsed(flightOut, flightIn);
 bumpFlightCounter();
 
 renderSchedule();
+
 }    
      
 /* ============================================================
