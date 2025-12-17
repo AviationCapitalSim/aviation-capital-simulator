@@ -1029,10 +1029,61 @@ items.forEach(it => {
 
     tbody.appendChild(tr);
   });
+     
+/* ============================================================
+   🟢 B4 — EMPTY BUFFER ROWS (3 ALWAYS)
+   Se renderizan siempre, con o sin flota
+   ============================================================ */
 
+const EMPTY_ROWS = 3;
+
+for (let i = 0; i < EMPTY_ROWS; i++) {
+
+  const tr = document.createElement("tr");
+  tr.classList.add("row-pending");
+
+  // Aircraft
+  const tdTail = document.createElement("td");
+  tdTail.textContent = "(empty)";
+  tdTail.style.opacity = "0.6";
+  tr.appendChild(tdTail);
+
+  // Days
+  days.forEach(() => {
+    const td = document.createElement("td");
+    td.textContent = "—";
+    tr.appendChild(td);
+  });
+
+  // Action Plan
+  const planTd = document.createElement("td");
+  const wrap = document.createElement("div");
+  wrap.className = "plan-actions";
+
+  const assignBtn = document.createElement("button");
+  assignBtn.className = "btn btn-assign";
+  assignBtn.textContent = "Assign Route";
+  assignBtn.onclick = () =>
+    alert("⚠ This slot is reserved for a future aircraft.");
+
+  const maintBtn = document.createElement("button");
+  maintBtn.className = "btn btn-maint";
+  maintBtn.textContent = "Plan Maintenance";
+  maintBtn.onclick = () =>
+    alert("⚠ No aircraft assigned to this slot.");
+
+  wrap.appendChild(assignBtn);
+  wrap.appendChild(maintBtn);
+  planTd.appendChild(wrap);
+  tr.appendChild(planTd);
+
+  tbody.appendChild(tr);
+}
+     
   // ============================================================
   // UPDATE TIME (NO TOCAR)
   // ============================================================
+     
   document.getElementById("updateTime").textContent =
     "Last update: " + new Date().toLocaleTimeString();
 }
