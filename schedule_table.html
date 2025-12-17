@@ -1086,8 +1086,16 @@ const dep  = route.departure || "06:00";
 const dur  = Number(route.blockTimeMin || 210);
 const arr  = toHHMM(toMin(dep) + dur);
 
-const flightOut = route.flightNumberOut || Math.floor(100 + Math.random() * 800);
-const flightIn  = route.flightNumberIn  || (flightOut + 1);
+// 🔒 BLOQUEO ABSOLUTO — no inventar vuelos
+     
+if (!route.flightNumberOut || !route.flightNumberIn) {
+  alert("⛔ This route has no valid flight numbers. Please define them in Route Schedule.");
+  return;
+}
+
+const flightOut = route.flightNumberOut;
+const flightIn  = route.flightNumberIn;
+
 
 const isDuplicate = items.some(f =>
   f.type === "flight" &&
