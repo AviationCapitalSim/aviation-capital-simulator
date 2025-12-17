@@ -1137,6 +1137,22 @@ const dep  = route.departure || "06:00";
 const dur  = Number(route.blockTimeMin || 210);
 const arr  = toHHMM(toMin(dep) + dur);
 
+/* ============================================================
+   🟢 S1 — FLIGHT NUMBER FALLBACK (LEGACY + SAFE)
+   ============================================================ */
+
+if ((!route.flightNumberOut || !route.flightNumberIn) && route.flightNumber) {
+
+  const raw = String(route.flightNumber);
+
+  const match = raw.match(/([A-Z]{2}\d+)[^\d]+([A-Z]{2}\d+)/);
+
+  if (match) {
+    route.flightNumberOut = match[1];
+    route.flightNumberIn  = match[2];
+  }
+}
+     
 // 🔒 BLOQUEO ABSOLUTO — no inventar vuelos
      
 if (!route.flightNumberOut || !route.flightNumberIn) {
