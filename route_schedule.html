@@ -821,10 +821,6 @@ const confirmedRoute = {
 // ✅ ÚNICA escritura válida
 localStorage.setItem("confirmedRoute", JSON.stringify(confirmedRoute));
 
-// 🔢 Gestión de números de vuelo
-markNumbersUsed(flightNumberOut, flightNumberIn);
-bumpFlightCounter();
-
 // 🧼 Limpieza modo edición
 localStorage.removeItem("editFlightID");
 
