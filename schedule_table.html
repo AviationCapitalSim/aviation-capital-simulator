@@ -1163,23 +1163,6 @@ if (!route.flightNumberOut || !route.flightNumberIn) {
 const flightOut = route.flightNumberOut;
 const flightIn  = route.flightNumberIn;
 
-
-const isDuplicate = items.some(f =>
-  f.type === "flight" &&
-  (f.flightNumberOut === flightOut || f.flightNumberIn === flightIn)
-);
-
-const deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
-if (deletedFlights.includes(flightOut) || deletedFlights.includes(flightIn)) {
-  alert(`⛔ Flight ${flightOut}/${flightIn} was deleted before. Cannot reuse.`);
-  return;
-}
-
-if (isDuplicate) {
-  alert(`⚠ Flight ${flightOut}/${flightIn} already exists.`);
-  return;
-}
-
 const blockId = separate ? null : ("block-"+Math.random().toString(36).slice(2,8));
 let assignedAny = false;
 
