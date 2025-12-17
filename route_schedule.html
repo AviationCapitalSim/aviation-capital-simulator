@@ -1303,8 +1303,36 @@ const destination = document.getElementById("destination").value;
 const departure = document.getElementById("departureTime").value;   // ✅ FIX
 const blockTimeMin = parseInt(ACS_RouteTechData.blockMin, 10);      // ✅ FIX
 
-const flightNumberOut = window.currentFN_Out || null;
-const flightNumberIn  = window.currentFN_In  || null;
+/* ============================================================
+   🟢 PATCH A1 — FLIGHT NUMBER SYNC (UI → ENGINE)
+   Garantiza flightNumberOut / flightNumberIn
+   ============================================================ */
+
+let flightNumberOut = window.currentFN_Out || null;
+let flightNumberIn  = window.currentFN_In  || null;
+
+// 🔒 Fallback definitivo: leer desde el INPUT visible
+if (!flightNumberOut || !flightNumberIn) {
+
+  const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
+
+  // Formato esperado: IT106 ➜ IT107
+  const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
+
+  if (!match) {
+    alert("⛔ Invalid flight number. Please regenerate the flight number.");
+    return;
+  }
+
+  flightNumberOut = match[1];
+  flightNumberIn  = match[2];
+}
+
+// 🔐 Refuerzo: nunca permitir nulls
+if (!flightNumberOut || !flightNumberIn) {
+  alert("⛔ Flight numbers missing. Cannot confirm route.");
+  return;
+}
 
  /* ================================
    2. Capturar días seleccionados
