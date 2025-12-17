@@ -2095,12 +2095,11 @@ window.onload = renderSchedule;
 
 (function validateModals(){
   const required = [
-    "actionModal",
-    "maintModal",
-    "flightModal",
-    "scheduleTable",
-    "scheduleBody"
-  ];
+  "maintModal",
+  "flightModal",
+  "scheduleTable",
+  "scheduleBody"
+];
 
   required.forEach(id=>{
     if(!document.getElementById(id)){
