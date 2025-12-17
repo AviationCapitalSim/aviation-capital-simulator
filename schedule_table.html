@@ -958,15 +958,11 @@ footer {
       </div>
 
       <div class="maint-field">
-        <label>Start Time</label>
-        <!-- ⏰ Native time picker (iOS / desktop friendly) -->
-        <input
-          type="time"
-          id="maintStart"
-          value="06:00"
-          step="300"
-        >
-      </div>
+  <label>Start Time</label>
+  <select id="maintStart">
+    <!-- opciones generadas por JS -->
+  </select>
+</div>
 
     </div>
 
@@ -1615,9 +1611,40 @@ let maintTail = null;
 
 function openMaintModal(tail){
   maintTail = tail;
+  ACS_populateMaintenanceTimes();
   document.getElementById("maintModal").style.display = "flex";
 }
+     
+/* ============================================================
+   🕒 M5 — MAINTENANCE TIME SELECTOR (5 MIN STEPS) — 17DEC25
+   ============================================================ */
 
+function ACS_populateMaintenanceTimes() {
+
+  const select = document.getElementById("maintStart");
+  if (!select) return;
+
+  select.innerHTML = "";
+
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 5) {
+
+      const hh = String(h).padStart(2, "0");
+      const mm = String(m).padStart(2, "0");
+      const val = `${hh}:${mm}`;
+
+      const opt = document.createElement("option");
+      opt.value = val;
+      opt.textContent = val;
+
+      // Default = 06:00
+      if (val === "06:00") opt.selected = true;
+
+      select.appendChild(opt);
+    }
+  }
+}
+     
 function closeMaintModal(){
   maintTail = null;
   document.getElementById("maintModal").style.display = "none";
