@@ -1042,86 +1042,98 @@ function assignRouteToTail(ac){
   }
 
  /* ============================================================
-   🟦 MODEL VALIDATION — FINAL (NO TAIL, NO REGISTRATION)
+   🟢 AIRCRAFT ID VALIDATION — FINAL (AC_xxx ONLY)
    ============================================================ */
 
-// Modelo que trae la ruta desde route_schedule (ej: "307 Stratoliner")
-const routeModel = route.aircraft || route.aircraftModel || "";  
+// 🔑 ID REAL del avión de ESTA fila (Schedule Table)
+const aircraftId = ac.id || "";
 
-// Modelo REAL del avión en la tabla (solo modelo, nunca tail)
-const acModel = ac.model || ac.type || "";  
+// 🔑 ID REAL que trae la ruta desde Route Schedule
+const routeAircraftId = route.aircraftId || "";
 
-// Validación estrictamente por MODELO
-if (routeModel && routeModel !== acModel) {
-    alert(`⚠ Route is for ${routeModel}, but selected aircraft is ${acModel}.`);
-    return;
+if (!aircraftId || !aircraftId.startsWith("AC_")) {
+  alert("⚠ Invalid aircraftId on Schedule Table row.");
+  return;
 }
 
-  const items = getItems();
+if (!routeAircraftId || !routeAircraftId.startsWith("AC_")) {
+  alert("⚠ Route has no valid aircraftId. Recreate the route in Route Schedule.");
+  return;
+}
 
-  const daysSel = Array.isArray(route.days) && route.days.length 
-                  ? route.days 
-                  : ["mon"];
+// ✅ Validación estricta por AIRCRAFT ID (NO modelos)
+if (routeAircraftId !== aircraftId) {
+  alert(`⚠ Route is for ${routeAircraftId}, but this row is ${aircraftId}.`);
+  return;
+}
 
-  const separate = !!route.separateDays;
-  const dep  = route.departure || "06:00";
-  const dur  = Number(route.blockTimeMin || 210);
-  const arr  = toHHMM(toMin(dep) + dur);
+const items = getItems();
 
-  const flightOut = route.flightNumberOut || Math.floor(100 + Math.random() * 800);
-  const flightIn  = route.flightNumberIn  || (flightOut + 1);
+const daysSel = Array.isArray(route.days) && route.days.length
+                ? route.days
+                : ["mon"];
 
-  const isDuplicate = items.some(f =>
-      f.type === "flight" &&
-      (f.flightNumberOut === flightOut || f.flightNumberIn === flightIn)
-  );
+const separate = !!route.separateDays;
+const dep  = route.departure || "06:00";
+const dur  = Number(route.blockTimeMin || 210);
+const arr  = toHHMM(toMin(dep) + dur);
 
-  const deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
-  if (deletedFlights.includes(flightOut) || deletedFlights.includes(flightIn)) {
-      alert(`⛔ Flight ${flightOut}/${flightIn} was deleted before. Cannot reuse.`);
-      return;
-  }
+const flightOut = route.flightNumberOut || Math.floor(100 + Math.random() * 800);
+const flightIn  = route.flightNumberIn  || (flightOut + 1);
 
-  if (isDuplicate) {
-      alert(`⚠ Flight ${flightOut}/${flightIn} already exists.`);
-      return;
-  }
+const isDuplicate = items.some(f =>
+  f.type === "flight" &&
+  (f.flightNumberOut === flightOut || f.flightNumberIn === flightIn)
+);
 
-  const blockId = separate ? null : ("block-"+Math.random().toString(36).slice(2,8));
-  let assignedAny = false;
+const deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
+if (deletedFlights.includes(flightOut) || deletedFlights.includes(flightIn)) {
+  alert(`⛔ Flight ${flightOut}/${flightIn} was deleted before. Cannot reuse.`);
+  return;
+}
 
-  // 🔥 YA NO COMPARA MATRÍCULAS → ahora solo aplica modelo
-  daysSel.forEach(day => {
+if (isDuplicate) {
+  alert(`⚠ Flight ${flightOut}/${flightIn} already exists.`);
+  return;
+}
 
-      items.push({
-          id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
-          blockId: separate ? "" : blockId,
-          type: "flight",
+const blockId = separate ? null : ("block-"+Math.random().toString(36).slice(2,8));
+let assignedAny = false;
 
-          // 🔥 SOLO MODELO (sin tail)
-          tail: acModel,           
-          acType: acModel,
+// ✅ Ya NO compara modelos → ahora aplica aircraftId
+daysSel.forEach(day => {
 
-          day,
-          origin: route.origin,
-          destination: route.destination,
-          departure: dep,
-          arrival: arr,
+  items.push({
+    id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
+    blockId: separate ? "" : blockId,
+    type: "flight",
 
-          flightNumberOut: flightOut,
-          flightNumberIn:  flightIn
-      });
+    // 🔥 IDENTIDAD ÚNICA (FINAL)
+    aircraftId: aircraftId,
 
-      assignedAny = true;
+    // (Opcional) display para UI/labels si lo usas en render:
+    acType: ac.model || ac.type || "",
+
+    day,
+    origin: route.origin,
+    destination: route.destination,
+    departure: dep,
+    arrival: arr,
+
+    flightNumberOut: flightOut,
+    flightNumberIn:  flightIn
   });
 
-  if (!assignedAny){
-      alert("⚠ Cannot assign: schedule conflicts.");
-      return;
-  }
+  assignedAny = true;
+});
 
-  setItems(items);
-  renderSchedule();
+if (!assignedAny){
+  alert("⚠ Cannot assign: schedule conflicts.");
+  return;
+}
+
+setItems(items);
+renderSchedule();
 }
      
 /* ============================================================
