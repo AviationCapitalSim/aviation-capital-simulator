@@ -1352,7 +1352,26 @@ if (routeAircraftId !== aircraftId) {
 }
 
 const items = getItems();
+     
+/* ============================================================
+   🛑 A1 — PREVENT DUPLICATE ROUTE ASSIGNMENT — 17DEC25
+   ============================================================ */
 
+// 🔒 Regla: una ruta confirmada solo se asigna una vez
+const existing = items.some(it =>
+  it.type === "flight" &&
+  it.aircraftId === aircraftId &&
+  (
+    it.flightNumberOut === route.flightNumberOut ||
+    it.blockId === route.blockId
+  )
+);
+
+if (existing) {
+  alert("⚠ This route is already assigned to this aircraft.");
+  return;
+}
+     
 const daysSel = Array.isArray(route.days) && route.days.length
                 ? route.days
                 : ["mon"];
@@ -1638,7 +1657,21 @@ function deleteFlight(){
   const block = selectedChip.dataset.blockId || "";
 
   let items = getItems();
-  let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+     
+  /* ============================================================
+   🧹 B1 — RELEASE FLIGHT NUMBERS (FINAL DELETE) — 17DEC25
+   ============================================================ */
+
+let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+
+if (flight.flightNumberOut && flight.flightNumberIn) {
+  usedFlights = usedFlights.filter(n =>
+    n !== flight.flightNumberOut &&
+    n !== flight.flightNumberIn
+  );
+  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+}
+
   let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
 
   const flight = items.find(f =>
