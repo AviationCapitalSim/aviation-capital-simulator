@@ -800,9 +800,41 @@ if (!isEditing) {
     markNumbersUsed(flightOut, flightIn);
     bumpFlightCounter();
 
-    localStorage.removeItem("editFlightID");
-    alert("✅ Flight updated.");
-    window.location.href = "schedule_table.html";
+/* ============================================================
+   🟢 PATCH A2 — FORCE CONFIRMED ROUTE (FINAL)
+   ============================================================ */
+
+const confirmedRoute = {
+  id: routeId,
+  aircraftId,
+  origin,
+  destination,
+  departure,
+  arrival,
+  blockTimeMin,
+  days,
+
+  // 🔥 CAMPOS CRÍTICOS (OBLIGATORIOS)
+  flightNumberOut,
+  flightNumberIn,
+
+  type: "flight"
+};
+
+// ✅ ÚNICA escritura válida
+localStorage.setItem("confirmedRoute", JSON.stringify(confirmedRoute));
+
+// 🔢 Gestión de números de vuelo
+markNumbersUsed(flightNumberOut, flightNumberIn);
+bumpFlightCounter();
+
+// 🧼 Limpieza modo edición
+localStorage.removeItem("editFlightID");
+
+// ✅ Feedback + navegación
+alert("✅ Flight updated.");
+window.location.href = "schedule_table.html";
+
   };
 });
 
