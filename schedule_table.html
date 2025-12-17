@@ -1216,8 +1216,16 @@ if (!assignedAny){
 }
 
 setItems(items);
+
+/* ============================================================
+   🟢 S2 — FLIGHT NUMBER CONSUMPTION (REAL ASSIGN ONLY)
+   ============================================================ */
+
+markNumbersUsed(flightOut, flightIn);
+bumpFlightCounter();
+
 renderSchedule();
-}
+
      
 /* ============================================================
    === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
