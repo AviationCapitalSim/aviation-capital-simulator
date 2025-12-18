@@ -247,6 +247,36 @@ function ACS_evaluateBCheck(ac, now) {
 }
 
 /* ============================================================
+   🔁 PASO 5-D — B-CHECK ENGINE LISTENER — 17DEC25
+   ============================================================ */
+
+registerTimeListener((currentTime) => {
+
+  // Convertir a timestamp del juego
+  const nowTs = currentTime.getTime();
+
+  const fleet = getRealFleet();
+  if (!fleet || !fleet.length) return;
+
+  let changed = false;
+
+  fleet.forEach(ac => {
+    const prevStatus = ac.bCheckStatus;
+    const prevGround = ac.isGrounded;
+
+    ACS_evaluateBCheck(ac, nowTs);
+
+    if (ac.bCheckStatus !== prevStatus || ac.isGrounded !== prevGround) {
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    saveFleet(fleet);
+  }
+});
+
+/* ============================================================
    === LISTENER SYSTEM =========================================
    ============================================================ */
 
