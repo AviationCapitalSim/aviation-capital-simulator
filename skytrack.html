@@ -241,7 +241,7 @@ function renderActiveFlight() {
 
 if (typeof registerTimeListener === "function") {
   registerTimeListener(() => {
-    renderActiveFlight();
+  updateActiveFlight();
   });
 }
 
