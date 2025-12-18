@@ -123,6 +123,10 @@
   <main class="acs-main">
     <h2>ACS SkyTrack — Live Fleet View</h2>
     <p class="sub">Active flight tracking for your airline.</p>
+    
+    <!-- ✅ SKYTRACK MAP CONTAINER -->
+    <div id="map"></div>
+    <div class="flight-info" id="flightStatus">Waiting for active flight…</div>
   </main>
 
   <!-- ===== FOOTER ===== -->
@@ -139,94 +143,85 @@
       attribution:'&copy; OpenStreetMap — ACS SkyTrack'
     }).addTo(map);
 
-    /* ============================================================
-   🛰 SKYTRACK — RENDER ACTIVE FLIGHT FROM ENGINE
+  <script>
+/* ============================================================
+   🛰 SKYTRACK — MAP INIT + RENDER ACTIVE FLIGHT (SINGLE SOURCE)
    ============================================================ */
 
+let map = null;
 let planeMarker = null;
 let flightTrace = null;
 
-function renderActiveFlight() {
-  const execRaw = localStorage.getItem("ACS_FLIGHT_EXEC");
-  if (!execRaw) return;
+function initSkyTrackMap() {
+  if (map) return; // ✅ prevent double init
 
-  const exec = JSON.parse(execRaw);
-  if (!exec.currentLat || !exec.currentLng) return;
+  map = L.map("map").setView([33.0, 68.0], 5);
 
-  if (!planeMarker) {
-    const icon = L.divIcon({
-      html:`<div class="acs-diamond"></div>
-            <div class="acs-label">${exec.aircraftId}</div>`,
-      className:"acs-plane",
-      iconSize:[20,20],
-      iconAnchor:[10,10]
-    });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 10,
+    attribution: "&copy; OpenStreetMap — ACS SkyTrack",
+  }).addTo(map);
 
-    planeMarker = L.marker(
-      [exec.currentLat, exec.currentLng],
-      { icon }
-    ).addTo(map);
-
-    flightTrace = L.polyline([],{
-      color:"#00E0FF",
-      weight:2.2,
-      opacity:0.85
-    }).addTo(map);
-  }
-
-  planeMarker.setLatLng([exec.currentLat, exec.currentLng]);
-  flightTrace.addLatLng([exec.currentLat, exec.currentLng]);
+  flightTrace = L.polyline([], {
+    weight: 2.2,
+    opacity: 0.85,
+  }).addTo(map);
 }
-   
-    // === Markers & route ===
-    
-    L.marker([origin.lat,origin.lon]).addTo(map).bindPopup(`<b>${origin.name}</b><br>Departure`);
-    L.marker([destination.lat,destination.lon]).addTo(map).bindPopup(`<b>${destination.name}</b><br>Arrival`);
 
-    const routeLine = L.polyline([[origin.lat,origin.lon],[destination.lat,destination.lon]],{
-      color:'#FFB300',weight:2.5,opacity:0.8,dashArray:'5,6'
-    }).addTo(map);
-
-    // === Ruta dinámica (traza del vuelo) ===
-    const flightTrace = L.polyline([],{
-      color:"#00E0FF",weight:2.2,opacity:0.85
-    }).addTo(map);
-
-    let progress=0; const steps=400; const updateInterval=50;
-
-    function interpolatePosition(a,b,t){ return [a.lat+(b.lat-a.lat)*t, a.lon+(b.lon-a.lon)*t]; }
-    function getBearing(lat1,lon1,lat2,lon2){
-      const r=Math.PI/180;
-      const y=Math.sin((lon2-lon1)*r)*Math.cos(lat2*r);
-      const x=Math.cos(lat1*r)*Math.sin(lat2*r)-Math.sin(lat1*r)*Math.cos(lat2*r)*Math.cos((lon2-lon1)*r);
-      return ((Math.atan2(y,x)*180/Math.PI)+360)%360;
+function renderActiveFlight() {
+  try {
+    const execRaw = localStorage.getItem("ACS_FLIGHT_EXEC");
+    if (!execRaw) {
+      const st = document.getElementById("flightStatus");
+      if (st) st.textContent = "🛰 No active flight (ACS_FLIGHT_EXEC not found).";
+      return;
     }
 
-    function updatePlane(){
-      progress+=1/steps;
-      if(progress>1){
-        progress=1;
-        document.getElementById("flightStatus").innerHTML="✅ Flight completed: Arrived in Dubai (OMDB)";
-      }
-      const [lat,lon]=interpolatePosition(origin,destination,progress);
-      planeMarker.setLatLng([lat,lon]);
-      flightTrace.addLatLng([lat,lon]);
+    const exec = JSON.parse(execRaw);
+    if (exec.currentLat == null || exec.currentLng == null) return;
 
-      const bearing=getBearing(origin.lat,origin.lon,lat,lon);
-      const diamond=planeMarker.getElement()?.querySelector(".acs-diamond");
-      if(diamond) diamond.style.transform=`rotate(${bearing+45}deg)`;
+    // ✅ create marker once
+    if (!planeMarker) {
+      const icon = L.divIcon({
+        html: `
+          <div class="acs-diamond"></div>
+          <div class="acs-label">${exec.aircraftId || "AC"}</div>
+        `,
+        className: "acs-plane",
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
 
-      if(progress<1) setTimeout(updatePlane,updateInterval);
+      planeMarker = L.marker([exec.currentLat, exec.currentLng], { icon }).addTo(map);
     }
-    updatePlane();
 
-    function handleLogout(){
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href="login.html";
+    planeMarker.setLatLng([exec.currentLat, exec.currentLng]);
+    if (flightTrace) flightTrace.addLatLng([exec.currentLat, exec.currentLng]);
+
+    // ✅ status line
+    const st = document.getElementById("flightStatus");
+    if (st) {
+      st.textContent = `✅ Tracking: ${exec.aircraftId || "AC"} — ${exec.currentLat.toFixed(3)}, ${exec.currentLng.toFixed(3)}`;
     }
-  </script>
+  } catch (e) {
+    console.error("SkyTrack renderActiveFlight error:", e);
+  }
+}
+
+// ✅ init when DOM is ready (map div exists)
+document.addEventListener("DOMContentLoaded", () => {
+  initSkyTrackMap();
+  renderActiveFlight();
+});
+
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
+</script>
   
   <!-- ================= TIME ENGINE ================= -->
+  
 <script src="time_engine.js"></script>
 
 <!-- ================= SKYTRACK LOGIC ================= -->
@@ -237,8 +232,8 @@ function renderActiveFlight() {
 
 if (typeof registerTimeListener === "function") {
   registerTimeListener(() => {
-  updateActiveFlight();
-  });
+  renderActiveFlight();
+});
 }
 
 /* ============================================================
