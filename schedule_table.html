@@ -1468,7 +1468,37 @@ if (isFlying) {
   chip.classList.add("flying-now");
   chip.title = "✈️ Flight in progress";
 }
+
+/* ============================================================
+   🛰 PASO 4.1 — PUBLISH ACTIVE FLIGHT TO SKYTRACK
+   ============================================================ */
+
+const skytrackFlight = {
+  aircraftId: it.aircraftId,
+  flightOut: it.flightNumberOut,
+  flightIn: it.flightNumberIn,
+  origin: it.origin,
+  destination: it.destination,
+  departure: it.departure,
+  arrival: it.arrival,
+  depMin,
+  arrMin,
+  day: it.day
+};
+
+localStorage.setItem("ACS_ACTIVE_FLIGHT", JSON.stringify(skytrackFlight));
      
+/* ============================================================
+   🧹 PASO 4.2 — CLEAR SKYTRACK WHEN NO ACTIVE FLIGHT
+   ============================================================ */
+
+if (!isFlying) {
+  const current = localStorage.getItem("ACS_ACTIVE_FLIGHT");
+  if (current) {
+    localStorage.removeItem("ACS_ACTIVE_FLIGHT");
+  }
+}
+
   // ---------------- FLIGHT ----------------
   if (it.type === "flight") {
 
