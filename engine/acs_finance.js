@@ -752,6 +752,50 @@ if (typeof registerTimeListener === "function") {
 }
 
 /* ============================================================
+   ✈️ PASO 5 — FLIGHT EXECUTION ENGINE (TIME-BASED)
+   ------------------------------------------------------------
+   • Ejecuta vuelos activos en tiempo real
+   • Suma minutos volados al avión
+   • Bloquea mantenimiento durante vuelo
+   • No duplica ejecución
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener((currentTime) => {
+
+    const execRaw = localStorage.getItem("ACS_FLIGHT_EXEC");
+    if (!execRaw) return;
+
+    const exec = JSON.parse(execRaw);
+    if (!exec || !exec.aircraftId) return;
+
+    const nowMin =
+      currentTime.getUTCHours() * 60 + currentTime.getUTCMinutes();
+
+    // Ejecutar solo dentro del rango del vuelo
+    if (nowMin < exec.depMin || nowMin >= exec.arrMin) return;
+
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    const ac = fleet.find(a => a.id === exec.aircraftId);
+    if (!ac) return;
+
+    // No ejecutar si está grounded (B-check, etc.)
+    if (ac.isGrounded) return;
+
+    // ⏱ Control de delta (anti-duplicación)
+    ac._lastFlightTick = ac._lastFlightTick ?? nowMin;
+    const delta = Math.max(0, nowMin - ac._lastFlightTick);
+
+    if (delta > 0) {
+      ac.flightMinutes = (ac.flightMinutes || 0) + delta;
+      ac._lastFlightTick = nowMin;
+
+      localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+    }
+  });
+}
+
+/* ============================================================
    ===  SYNC FINANCE WITH TIME ENGINE (Monthly Close) =========
    ============================================================ */
 
