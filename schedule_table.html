@@ -1864,8 +1864,6 @@ if (t === "B") {
    🚫 RULE — ONLY ONE PENDING SERVICE PER TYPE (A / B)
    ============================================================ */
 
-const items = getItems();
-
 const sameServiceAlreadyPlanned = items.some(it =>
   it.type === "service" &&
   it.aircraftId === ac.id &&
