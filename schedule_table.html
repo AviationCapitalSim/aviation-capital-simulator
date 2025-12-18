@@ -2285,23 +2285,40 @@ function deleteSelectedFlights(){
   }
      
 /* ============================================================
-   🔓 UNASSIGN ROUTE FROM AIRCRAFT (CRITICAL FIX)
+   🔓 UNASSIGN ROUTE FROM AIRCRAFT — FINAL & SAFE
    ============================================================ */
 
-const fleet = JSON.parse(localStorage.getItem("ACS_Fleet") || "[]");
+function unassignRouteFromAircraft(aircraftId) {
 
-const idx = fleet.findIndex(a => a.id === aircraftId);
-if (idx !== -1) {
-  fleet[idx].routeId = null;
-  fleet[idx].assignedRoute = null;
-  fleet[idx].route = null;
-}
+  if (!aircraftId) return;
 
-localStorage.setItem("ACS_Fleet", JSON.stringify(fleet));
+  // 1️⃣ Limpiar vuelos de scheduleItems
+  let items = getItems();
+  items = items.filter(it =>
+    !(it.type === "flight" && it.aircraftId === aircraftId)
+  );
+  setItems(items);
 
-closeFlightModal();
+  // 2️⃣ Limpiar confirmedRoute si pertenece a este avión
+  const route = getRoute();
+  if (route && route.aircraftId === aircraftId) {
+    localStorage.removeItem("confirmedRoute");
+  }
 
-if (typeof renderSchedule === "function") {
+  // 3️⃣ Limpiar avión en la flota REAL
+  const fleet = getRealFleet();
+  const idx = fleet.findIndex(a => a.id === aircraftId);
+
+  if (idx !== -1) {
+    fleet[idx].routeId = null;
+    fleet[idx].assignedRoute = null;
+    fleet[idx].route = null;
+  }
+
+  setFleet(fleet);
+
+  // 4️⃣ Redibujar
+  closeFlightModal();
   renderSchedule();
 }
 
