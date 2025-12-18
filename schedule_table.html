@@ -1429,7 +1429,21 @@ dayItems.sort((a, b) => {
 });
          
 dayItems.forEach(it => {
+     
+/* ============================================================
+   ✈️ PASO 2 — DETECT ACTIVE FLIGHT (REAL TIME)
+   ============================================================ */
 
+// ⏱ Hora actual del simulador (desde el listener)
+const nowMin = ACS_TABLE_TIME.minute;
+
+// ⏱ Convertir horas del vuelo
+const depMin = toMin(it.departure);
+const arrMin = toMin(it.arrival);
+
+// ✈️ ¿Está volando ahora?
+const isFlying = nowMin >= depMin && nowMin < arrMin;
+     
   // ---------------- FLIGHT ----------------
   if (it.type === "flight") {
 
