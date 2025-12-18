@@ -2689,23 +2689,13 @@ function closeActionModal(){
 
 function ACS_sortDayEvents(events) {
   return events.slice().sort((a, b) => {
-
-    // vuelos → departure (HH:MM)
-    const aMin =
-      a.type === "flight" ? toMin(a.departure || "00:00") :
-      a.type === "service" ? (a.startMinute || 0) :
-      0;
-
-    const bMin =
-      b.type === "flight" ? toMin(b.departure || "00:00") :
-      b.type === "service" ? (b.startMinute || 0) :
-      0;
-
+    const aMin = a.start ? toMin(a.start) : 0;
+    const bMin = b.start ? toMin(b.start) : 0;
     return aMin - bMin;
   });
 }
      
 </script>
-
+     
 </body>
 </html>
