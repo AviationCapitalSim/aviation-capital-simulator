@@ -1766,23 +1766,9 @@ function applyMaintenance(){
   const items = getItems();
   const fleet = getRealFleet();
 
-/* ============================================================
-   🛑 PASO 1 — BLOCK DUPLICATE MAINTENANCE PER DAY — 17DEC25
-   Rule: Only ONE service (A or B) per aircraft per day
-   ============================================================ */
-
-const serviceAlreadyExists = items.some(it =>
-  it.type === "service" &&
-  it.aircraftId === ac.id &&
-  it.day === d
-);
-
-if (serviceAlreadyExists) {
-  alert("⚠ A maintenance service is already scheduled for this aircraft on this day.");
-  closeMaintModal();
-  return;
-}
-     
+  // ============================================================
+  // 🔑 1️⃣ IDENTIFICAR AVIÓN (OBLIGATORIO PRIMERO)
+  // ============================================================
   const ac = fleet.find(x =>
     normalizeModel(x.model || x.type || "") === normalizeModel(maintTail)
   );
@@ -1793,6 +1779,24 @@ if (serviceAlreadyExists) {
     return;
   }
 
+  // ============================================================
+  // 🛑 2️⃣ BLOQUEAR SERVICIO DUPLICADO EN EL MISMO DÍA
+  // ============================================================
+  const serviceAlreadyExists = items.some(it =>
+    it.type === "service" &&
+    it.aircraftId === ac.id &&
+    it.day === d
+  );
+
+  if (serviceAlreadyExists) {
+    alert("⚠ A maintenance service is already scheduled for this aircraft on this day.");
+    closeMaintModal();
+    return;
+  }
+
+  // ============================================================
+  // 🟢 3️⃣ VALIDAR A-CHECK (CONFLICTOS CON VUELOS)
+  // ============================================================
   if (t === "A") {
     const isValid = validateACheck(ac, d, start, end);
     if (!isValid) {
@@ -1801,62 +1805,61 @@ if (serviceAlreadyExists) {
     }
   }
 
-/* ============================================================
-   🛠 SERVICE B (if applicable)
-   ============================================================ */
-
-if (t === "B") {
-  try {
-    let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    if (typeof F.capital === "number") {
-      const costB = 18000;
-      F.capital -= costB;
-      F.expenses = (F.expenses || 0) + costB;
-      F.log = F.log || [];
-      F.log.push({
-        type: "B_CHECK",
-        aircraft: ac.registration || ac.tail || ac.model,
-        day: d.toUpperCase(),
-        amount: costB,
-        date: new Date().toISOString()
-      });
-      localStorage.setItem("ACS_Finance", JSON.stringify(F));
+  // ============================================================
+  // 💰 4️⃣ COSTO B-CHECK (SOLO SI ES B)
+  // ============================================================
+  if (t === "B") {
+    try {
+      let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+      if (typeof F.capital === "number") {
+        const costB = 18000;
+        F.capital -= costB;
+        F.expenses = (F.expenses || 0) + costB;
+        F.log = F.log || [];
+        F.log.push({
+          type: "B_CHECK",
+          aircraft: ac.registration || ac.tail || ac.model,
+          day: d.toUpperCase(),
+          amount: costB,
+          date: new Date().toISOString()
+        });
+        localStorage.setItem("ACS_Finance", JSON.stringify(F));
+      }
+    } catch (e) {
+      console.warn("Finance B error:", e);
     }
-  } catch (e) {
-    console.warn("Finance B error:", e);
   }
-}
 
-/* ============================================================
-   🧩 REGISTER B-CHECK PLAN
-   ============================================================ */
+  // ============================================================
+  // 🧩 5️⃣ REGISTRAR PLAN B-CHECK (NO EJECUTA, SOLO PLANEA)
+  // ============================================================
+  if (t === "B") {
+    ac.bCheckPlanned = true;
+    ac.bCheckPlannedAt = ACS_TIME.now;
+  }
 
-if (t === "B") {
-  ac.bCheckPlanned = true;
-  ac.bCheckPlannedAt = ACS_TIME.now;
-}
+  // ============================================================
+  // 📦 6️⃣ INSERTAR SERVICE ITEM
+  // ============================================================
+  items.push({
+    id: "svc-" + Math.random().toString(36).slice(2, 8),
+    type: "service",
+    serviceType: t,
+    aircraftId: ac.id,
+    tail: normalizeModel(ac.model || ac.type),
+    acType: ac.type || "",
+    day: d,
+    start,
+    end,
+    durationMin: (t === "B" ? 1440 : 300)
+  });
 
-/* ============================================================
-   📦 PUSH SERVICE ITEM
-   ============================================================ */
-
-items.push({
-  id: "svc-" + Math.random().toString(36).slice(2, 8),
-  type: "service",
-  serviceType: t,
-  aircraftId: ac.id,
-  tail: normalizeModel(ac.model || ac.type),
-  acType: ac.type || "",
-  day: d,
-  start,
-  end,
-  durationMin: (t === "B" ? 1440 : 300)
-});
-
-setItems(items);
-closeMaintModal();
-renderSchedule();
-
+  // ============================================================
+  // ✅ 7️⃣ FINAL
+  // ============================================================
+  setItems(items);
+  closeMaintModal();
+  renderSchedule();
 }
 
 function removeItem(){
