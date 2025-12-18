@@ -878,6 +878,22 @@ footer {
   opacity: 0.85;
 }
        
+/* ============================================================
+   🟦 PASO 3 — FLIGHT ACTIVE VISUAL (SAFE)
+   ============================================================ */
+
+.flying-now {
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 6px rgba(0, 255, 204, 0.8);
+  animation: flyingPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes flyingPulse {
+  0%   { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
+  50%  { box-shadow: 0 0 10px rgba(0, 255, 204, 1); }
+  100% { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
+}
+
 </style>
 </head>
 <body>
@@ -1443,6 +1459,15 @@ const arrMin = toMin(it.arrival);
 
 // ✈️ ¿Está volando ahora?
 const isFlying = nowMin >= depMin && nowMin < arrMin;
+
+/* ============================================================
+   🟦 PASO 3 — VISUAL MARK: FLIGHT IN PROGRESS
+   ============================================================ */
+
+if (isFlying) {
+  chip.classList.add("flying-now");
+  chip.title = "✈️ Flight in progress";
+}
      
   // ---------------- FLIGHT ----------------
   if (it.type === "flight") {
