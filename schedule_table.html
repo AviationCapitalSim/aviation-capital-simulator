@@ -404,6 +404,16 @@ footer {
   gap: 4px;
 }
        
+/* HOTFIX — revertir flex global y proteger columna Aircraft */
+#scheduleTable td { 
+  display: table-cell; 
+  vertical-align: middle; 
+}
+
+#scheduleTable td:not(:first-child) {
+  vertical-align: top;
+}
+
 .row-maint td {
   opacity: 0.45;
   background-color: rgba(200,80,0,0.15) !important;
