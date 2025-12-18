@@ -55,27 +55,36 @@ function updatePendingDeliveries() {
 
     if (now >= d) {
 
-      // === Convertir a ACTIVO ===
-      for (let i = 0; i < entry.qty; i++) {
-        fleetActive.push({
-          registration: "UNASSIGNED",
-          manufacturer: entry.manufacturer,
-          model: entry.model,
-          family: entry.family || "",
-          status: "Active",
-          hours: 0,
-          cycles: 0,
-          condition: 100,
-          nextC: "—",
-          nextD: "—",
-          base: "—",
-          deliveredDate: d.toISOString(),
-          deliveryDate: null,
-          age: 0
-        });
-      }
+     // === Convertir a ACTIVO ===
+       
+  for (let i = 0; i < entry.qty; i++) {
+  fleetActive.push({
+    registration: "UNASSIGNED",
+    manufacturer: entry.manufacturer,
+    model: entry.model,
+    family: entry.family || "",
+    status: "Active",
+    hours: 0,
+    cycles: 0,
+    condition: 100,
+    nextC: "—",
+    nextD: "—",
+    base: "—",
+    deliveredDate: d.toISOString(),
+    deliveryDate: null,
+    age: 0,
 
-      changed = true;
+    /* ======================================================
+       🛠 P5-A — B-CHECK INITIALIZATION (ON FLEET ENTRY)
+       ====================================================== */
+    enteredFleetAt: now.getTime(),
+    bCheckDueAt:    now.getTime() + (7 * 24 * 60 * 60 * 1000),
+    bCheckStatus:   "ok",
+    bCheckPlanned:  false
+  });
+}
+
+changed = true;
 
     } else {
       // === Todavía Pendiente → va a la tabla ===
