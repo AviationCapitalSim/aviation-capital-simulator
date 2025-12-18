@@ -1831,14 +1831,34 @@ function applyMaintenance(){
   }
 
   /* ============================================================
-   🧩 PASO 5B — REGISTER B-CHECK PLAN
+   🧩 PASO 5B — REGISTER B-CHECK PLAN (SAFE TIME)
    ============================================================ */
 
-   if (t === "B") {
-   const nowTs = getSimTime().getTime();  // ⏱ tiempo del juego
-   ac.bCheckPlanned = true;
-   ac.bCheckPlannedAt = nowTs;
+if (t === "B") {
+
+  let nowTs = Date.now(); // fallback final
+
+  // 1️⃣ Preferido: helper si existe
+  if (typeof getSimTime === "function") {
+    nowTs = getSimTime().getTime();
+
+  // 2️⃣ Motor expuesto (si existe)
+  } else if (window.ACS_TIME && ACS_TIME.currentTime) {
+    nowTs = ACS_TIME.currentTime.getTime();
+
+  // 3️⃣ Storage (arquitectura actual segura)
+  } else {
+    try {
+      const T = JSON.parse(localStorage.getItem("ACS_TIME_STATE") || "{}");
+      if (T.currentTime) {
+        nowTs = new Date(T.currentTime).getTime();
+      }
+    } catch(e){}
   }
+
+  ac.bCheckPlanned = true;
+  ac.bCheckPlannedAt = nowTs;
+}
 
   // ============================================================
   // 📦 6️⃣ INSERTAR SERVICE ITEM
