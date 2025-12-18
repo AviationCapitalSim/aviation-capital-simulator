@@ -198,6 +198,43 @@
       updateClockDisplay();
     }
   });
+
+/* ============================================================
+   🛰 PASO 4.4 — READ ACTIVE FLIGHT FROM SCHEDULE
+   ============================================================ */
+
+const activeFlightRaw = localStorage.getItem("ACS_ACTIVE_FLIGHT");
+
+if (!activeFlightRaw) {
+  console.log("🛰 SkyTrack: No active flight");
+  return;
+}
+
+const activeFlight = JSON.parse(activeFlightRaw);
+    
+/* ============================================================
+   ✈️ PASO 4.5 — REAL FLIGHT PROGRESS (TIME-BASED)
+   ============================================================ */
+
+// Tiempo actual del simulador
+let nowMin = null;
+
+if (typeof ACS_TABLE_TIME !== "undefined") {
+  nowMin = ACS_TABLE_TIME.minute;
+} else if (typeof getSimMinute === "function") {
+  nowMin = getSimMinute();
+}
+
+if (nowMin === null) {
+  console.warn("SkyTrack: No sim time available");
+  return;
+}
+
+// Progreso 0 → 1
+const progress =
+  (nowMin - activeFlight.depMin) /
+  (activeFlight.arrMin - activeFlight.depMin);
+
 </script>
 </body>
 </html>
