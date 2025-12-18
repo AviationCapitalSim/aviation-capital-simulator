@@ -1925,63 +1925,66 @@ function removeItem(){
   renderSchedule();
 }
 
-function deleteFlight(){
-  if(!selectedChip){ closeActionModal(); return; }
-
-  const id = selectedChip.dataset.id;
-  const block = selectedChip.dataset.blockId || "";
-
-  let items = getItems();
-     
-  /* ============================================================
-   🧹 B1 — RELEASE FLIGHT NUMBERS (FINAL DELETE) — 17DEC25
+/* ============================================================
+   🔥 D1 — DELETE FLIGHT (FULL RELEASE · BLOCK / INDIVIDUAL)
    ============================================================ */
 
-let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+function deleteSelectedFlights(){
 
-if (flight.flightNumberOut && flight.flightNumberIn) {
-  usedFlights = usedFlights.filter(n =>
-    n !== flight.flightNumberOut &&
-    n !== flight.flightNumberIn
-  );
-  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-}
-
-  let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
-
-  const flight = items.find(f =>
-    f.id === id || f.blockId === block
-  );
-  if (!flight) {
-    alert("⚠ Flight not found.");
-    closeActionModal();
+  if (!ACS_selectedChipEl) {
+    closeFlightModal();
     return;
   }
 
-  if (flight.flightNumberOut) {
-    deletedFlights.push(flight.flightNumberOut, flight.flightNumberIn);
-    localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
+  const id    = ACS_selectedChipEl.dataset.id || "";
+  const block = ACS_selectedChipEl.dataset.blockId || "";
+
+  let items = getItems();
+
+  // --- vuelos a eliminar ---
+  let flightsToDelete = [];
+
+  if (block && block.startsWith("block-")) {
+    // 🟢 CASO EVERY DAY (BLOCK)
+    flightsToDelete = items.filter(it =>
+      it.type === "flight" && it.blockId === block
+    );
+  } else {
+    // 🟢 CASO EACH DAY (INDIVIDUAL)
+    flightsToDelete = items.filter(it =>
+      it.type === "flight" && it.id === id
+    );
   }
 
-  const isBlock = !!block && block.startsWith("block-");
+  if (!flightsToDelete.length) {
+    closeFlightModal();
+    return;
+  }
 
-  items = isBlock ?
-    items.filter(f => f.blockId !== block) :
-    items.filter(f => f.id !== id);
+  // --- LIBERAR FLIGHT NUMBERS ---
+  let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+  let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
 
+  flightsToDelete.forEach(f => {
+    if (f.flightNumberOut) {
+      deletedFlights.push(f.flightNumberOut, f.flightNumberIn);
+      usedFlights = usedFlights.filter(n =>
+        n !== f.flightNumberOut && n !== f.flightNumberIn
+      );
+    }
+  });
+
+  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+  localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
+
+  // --- ELIMINAR DEL SCHEDULE ---
+  items = items.filter(it => !flightsToDelete.includes(it));
   setItems(items);
 
-  if (flight.flightNumberOut && flight.flightNumberIn){
-    usedFlights = usedFlights.filter(n =>
-      n !== flight.flightNumberOut && n !== flight.flightNumberIn
-    );
-    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-  }
-
-  closeActionModal();
+  closeFlightModal();
   renderSchedule();
 
-  alert(`❌ Flight ${flight.flightNumberOut} deleted permanently.`);
+  alert("❌ Flight(s) deleted and slots fully released.");
 }
 
 function editFlight(){
