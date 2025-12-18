@@ -1859,7 +1859,29 @@ if (t === "B") {
   ac.bCheckPlanned = true;
   ac.bCheckPlannedAt = nowTs;
 }
+     
+/* ============================================================
+   🚫 RULE — ONLY ONE PENDING SERVICE PER TYPE (A / B)
+   ============================================================ */
 
+const items = getItems();
+
+const sameServiceAlreadyPlanned = items.some(it =>
+  it.type === "service" &&
+  it.aircraftId === ac.id &&
+  it.serviceType === t
+);
+
+if (sameServiceAlreadyPlanned) {
+  alert(
+    t === "A"
+      ? "This aircraft already has an A-Check scheduled."
+      : "This aircraft already has a B-Check scheduled."
+  );
+  closeMaintModal();
+  return;
+}
+     
   // ============================================================
   // 📦 6️⃣ INSERTAR SERVICE ITEM
   // ============================================================
