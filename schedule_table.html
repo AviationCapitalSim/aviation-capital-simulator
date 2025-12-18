@@ -2683,44 +2683,32 @@ function closeActionModal(){
   document.getElementById("actionModal").style.display = "none";
 }
      
+<!-- 1) ENGINE BASES -->
+<script src="./time_engine.js"></script>
+
+<script>
 /* ============================================================
    ⏱ PASO 3 — SORT DAY EVENTS BY START TIME — 17DEC25
    ============================================================ */
 
 function ACS_sortDayEvents(events) {
   return events.slice().sort((a, b) => {
-    const aMin = a.start ? toMin(a.start) : 0;
-    const bMin = b.start ? toMin(b.start) : 0;
+
+    // vuelos → departure (HH:MM)
+    const aMin =
+      a.type === "flight" ? toMin(a.departure || "00:00") :
+      a.type === "service" ? (a.startMinute || 0) :
+      0;
+
+    const bMin =
+      b.type === "flight" ? toMin(b.departure || "00:00") :
+      b.type === "service" ? (b.startMinute || 0) :
+      0;
+
     return aMin - bMin;
   });
 }
-     
-<!-- ===========================================================
-     🟦 ACS SCRIPT ORDER — ROUTE SCHEDULE (FINAL v1.0)
-     =========================================================== -->
-
-<!-- 1) ENGINE BASES -->
-<script src="./time_engine.js"></script>
-<script src="./engine/acs_crew_engine.js"></script>
-<script src="./engine/acs_finance.js"></script>
-
-<!-- SLOT ENGINE -->
-<script src="./engine/acs_slots_engine.js?v=2.0"></script>
-
-<!-- AIRPORT LOADER -->
-<script src="engine/airports_loader.js?v=1.0"></script>
-
-<!-- WORLD ENGINE -->
-<script src="engine/acs_world_engine.js?v=1.0"></script>
-
-<!-- 4) TIME → UI BRIDGE (RELOJ) -->
-<script src="./engine/acs_clock_ui.js"></script>
-<!-- o el que ya usas en Dashboard / Finance -->
-
-<!-- 5) SCHEDULE LOGIC (ESTE HTML) -->
-<script src="./schedule_table.js"></script>
-
 </script>
-     
+
 </body>
 </html>
