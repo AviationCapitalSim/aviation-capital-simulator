@@ -1830,12 +1830,14 @@ function applyMaintenance(){
     }
   }
 
-  // ============================================================
-  // 🧩 5️⃣ REGISTRAR PLAN B-CHECK (NO EJECUTA, SOLO PLANEA)
-  // ============================================================
-  if (t === "B") {
-    ac.bCheckPlanned = true;
-    ac.bCheckPlannedAt = ACS_TIME.now;
+  /* ============================================================
+   🧩 PASO 5B — REGISTER B-CHECK PLAN
+   ============================================================ */
+
+   if (t === "B") {
+   const nowTs = getSimTime().getTime();  // ⏱ tiempo del juego
+   ac.bCheckPlanned = true;
+   ac.bCheckPlannedAt = nowTs;
   }
 
   // ============================================================
