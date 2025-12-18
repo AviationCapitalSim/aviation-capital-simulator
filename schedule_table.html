@@ -2283,8 +2283,25 @@ function deleteSelectedFlights(){
     usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
     localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
   }
+     
+/* ============================================================
+   🔓 UNASSIGN ROUTE FROM AIRCRAFT (CRITICAL FIX)
+   ============================================================ */
 
-  closeFlightModal();
+const fleet = JSON.parse(localStorage.getItem("ACS_Fleet") || "[]");
+
+const idx = fleet.findIndex(a => a.id === aircraftId);
+if (idx !== -1) {
+  fleet[idx].routeId = null;
+  fleet[idx].assignedRoute = null;
+  fleet[idx].route = null;
+}
+
+localStorage.setItem("ACS_Fleet", JSON.stringify(fleet));
+
+closeFlightModal();
+
+if (typeof renderSchedule === "function") {
   renderSchedule();
 }
 
