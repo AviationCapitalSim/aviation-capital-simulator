@@ -201,6 +201,52 @@ function updateClockDisplay() {
 }
 
 /* ============================================================
+   ⚙️ PASO 5-C — B-CHECK ENGINE (GAME TIME) — 17DEC25
+   ============================================================ */
+
+function ACS_evaluateBCheck(ac, now) {
+
+  // ⛔ Aviones antiguos o mal inicializados
+  if (!ac.enteredFleetAt || !ac.bCheckDueAt) return;
+
+  const DAY_MIN = 24 * 60;
+  const WEEK_MIN = 7 * DAY_MIN;
+
+  // 1️⃣ Aún no vence
+  if (now < ac.bCheckDueAt) {
+    ac.bCheckStatus = "ok";
+    ac.isGrounded = false;
+    return;
+  }
+
+  // 2️⃣ Venció y NO está planificado
+  if (now >= ac.bCheckDueAt && !ac.bCheckPlanned) {
+    ac.bCheckStatus = "overdue";
+    ac.isGrounded = true;
+    return;
+  }
+
+  // 3️⃣ Ejecutando B-Check (24h de juego)
+  const execEnd = ac.bCheckDueAt + DAY_MIN;
+
+  if (now >= ac.bCheckDueAt && now < execEnd) {
+    ac.bCheckStatus = "in_progress";
+    ac.isGrounded = true;
+    return;
+  }
+
+  // 4️⃣ Finalizó B-Check
+  if (now >= execEnd) {
+    ac.bCheckStatus = "ok";
+    ac.isGrounded = false;
+    ac.bCheckPlanned = false;
+
+    // Próximo B-Check automático
+    ac.bCheckDueAt = execEnd + WEEK_MIN;
+  }
+}
+
+/* ============================================================
    === LISTENER SYSTEM =========================================
    ============================================================ */
 
