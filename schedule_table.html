@@ -389,7 +389,16 @@ footer {
 #scheduleTable th:last-child {
   width: 170px;
 }
+       
+/* ============================================================
+   🟦 PASO 2 — TOP ALIGN DAY EVENTS (SAFE)
+   ============================================================ */
 
+.schedule-table td {
+  vertical-align: top;
+  padding-top: 6px;
+}
+       
 .row-maint td {
   opacity: 0.45;
   background-color: rgba(200,80,0,0.15) !important;
@@ -1339,6 +1348,31 @@ if (hasActiveBCheck) {
   td.classList.add("bcheck-day");
 }
 
+/* ============================================================
+   ⏱ PASO 1 — ORDER DAY EVENTS BY START TIME (SAFE)
+   ============================================================ */
+
+dayItems.sort((a, b) => {
+
+  // Hora inicio del evento A
+  const aStart =
+    a.type === "flight"
+      ? toMin(a.departure || "00:00")
+      : a.type === "service"
+        ? (a.startMinute ?? 0)
+        : 0;
+
+  // Hora inicio del evento B
+  const bStart =
+    b.type === "flight"
+      ? toMin(b.departure || "00:00")
+      : b.type === "service"
+        ? (b.startMinute ?? 0)
+        : 0;
+
+  return aStart - bStart;
+});
+         
 dayItems.forEach(it => {
 
   // ---------------- FLIGHT ----------------
