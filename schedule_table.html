@@ -1801,47 +1801,56 @@ if (serviceAlreadyExists) {
     }
   }
 
-  /* === SERVICE B (24h full block) — Qatar Luxury === */
-  if (t === "B") {
-    try {
-      let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-      if (typeof F.capital === "number") {
-        const costB = 18000;
-        F.capital -= costB;
-        F.expenses = (F.expenses || 0) + costB;
+  /* ============================================================
+   🛠 SERVICE B (24h full block) — Qatar Luxury
+   ============================================================ */
 
-        F.log = F.log || [];
-        F.log.push({
-          type: "B_CHECK",
-          aircraft: ac.registration || ac.tail || ac.model,
-          day: d.toUpperCase(),
-          amount: costB,
-          date: new Date().toISOString()
-        });
+if (t === "B") {
+  try {
+    let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-        localStorage.setItem("ACS_Finance", JSON.stringify(F));
-      }
-    } catch(e){
-      console.warn("Finance B error:", e);
+    if (typeof F.capital === "number") {
+      const costB = 18000;
+
+      F.capital -= costB;
+      F.expenses = (F.expenses || 0) + costB;
+
+      F.log = F.log || [];
+      F.log.push({
+        type: "B_CHECK",
+        aircraft: ac.registration || ac.tail || ac.model,
+        day: d.toUpperCase(),
+        amount: costB,
+        date: new Date().toISOString()
+      });
+
+      localStorage.setItem("ACS_Finance", JSON.stringify(F));
     }
+  } catch (e) {
+    console.warn("Finance B error:", e);
   }
-
-  items.push({
-  id: "svc-" + Math.random().toString(36).slice(2,8),
-  type: "service",
-  serviceType: t,
+}
 
 /* ============================================================
-   🧩 PASO 5B — REGISTER B-CHECK PLAN — 17DEC25
+   🧩 PASO 5B — REGISTER B-CHECK PLAN — 18DEC25
    ============================================================ */
 
 if (t === "B") {
   ac.bCheckPlanned = true;
   ac.bCheckPlannedAt = ACS_TIME.now;
 }
-       
+
+/* ============================================================
+   📦 PUSH SERVICE ITEM TO SCHEDULE
+   ============================================================ */
+
+items.push({
+  id: "svc-" + Math.random().toString(36).slice(2, 8),
+  type: "service",
+  serviceType: t,
+
   // 🔑 CLAVE — IDENTIDAD REAL DEL AVIÓN
-  aircraftId: ac.id,          // ← ESTO ES LO QUE FALTABA
+  aircraftId: ac.id,
 
   // legacy / UI
   tail: normalizeModel(ac.model || ac.type),
@@ -1853,9 +1862,9 @@ if (t === "B") {
   durationMin: (t === "B" ? 1440 : 300)
 });
 
-  setItems(items);
-  closeMaintModal();
-  renderSchedule();
+setItems(items);
+closeMaintModal();
+renderSchedule();
 }
 
 function removeItem(){
