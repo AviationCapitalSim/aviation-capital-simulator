@@ -413,7 +413,15 @@ footer {
 #scheduleTable td:not(:first-child) {
   vertical-align: top;
 }
+       
+/* ============================================================
+   🟦 FIX — KEEP ACTION PLAN CENTERED
+   ============================================================ */
 
+#scheduleTable td:last-child,
+#scheduleTable th:last-child {
+  vertical-align: middle !important;
+}
 .row-maint td {
   opacity: 0.45;
   background-color: rgba(200,80,0,0.15) !important;
