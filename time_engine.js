@@ -255,8 +255,13 @@ registerTimeListener((currentTime) => {
   // Convertir a timestamp del juego
   const nowTs = currentTime.getTime();
 
-  const fleet = getRealFleet();
-  if (!fleet || !fleet.length) return;
+  let fleet = [];
+  if (typeof getRealFleet === "function") {
+  fleet = getRealFleet();
+  } else {
+  // 🔕 Evitar crash del Time Engine
+  fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+}
 
   let changed = false;
 
