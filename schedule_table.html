@@ -2505,7 +2505,7 @@ function applyLongChipBehavior(){
 })();
      
 /* ============================================================
-   6) INTEGRACIÓN FUTURA ===> acs_schedule_engine.js
+   6) INTEGRACIÓN FUTURA ==> acs_schedule_engine.js
    ============================================================ */
 
 window.ACS_SCHEDULE = {
@@ -2514,8 +2514,10 @@ window.ACS_SCHEDULE = {
   refresh: renderSchedule,
   assignRouteToTail,
   applyMaintenance,
-  deleteFlight,
-  removeItem,
+
+  // ✅ NUEVO DELETE OPERATIVO REAL
+  deleteFlight: deleteSelectedFlights,
+
   getFleet: getRealFleet
 };
 
