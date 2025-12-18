@@ -2283,38 +2283,8 @@ function deleteSelectedFlights(){
     usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
     localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
   }
-     
-/* ============================================================
-   🔓 UNASSIGN ROUTE FROM AIRCRAFT — FINAL & SAFE
-   ============================================================ */
 
-function unassignRouteFromAircraft(aircraftId) {
-
-  if (!aircraftId) return;
-
-  // 1️⃣ Limpiar vuelos del schedule
-  let items = getItems();
-  items = items.filter(it =>
-    !(it.type === "flight" && it.aircraftId === aircraftId)
-  );
-  setItems(items);
-
-  // 2️⃣ Limpiar ruta confirmada si pertenece a este avión
-  const route = getRoute();
-  if (route && route.aircraftId === aircraftId) {
-    localStorage.removeItem("confirmedRoute");
-  }
-
-  // 3️⃣ Limpiar estado en flota
-  const fleet = getRealFleet();
-  const idx = fleet.findIndex(a => a.id === aircraftId);
-  if (idx !== -1) {
-    fleet[idx].routeId = null;
-    fleet[idx].assignedRoute = null;
-    fleet[idx].route = null;
-  }
-  setFleet(fleet);
-
+  closeFlightModal();
   renderSchedule();
 }
 
@@ -2341,6 +2311,11 @@ function handleLogout(){
 // ============================================================
 window.onload = renderSchedule;
 
+</script>
+<!-- ============================================================
+     === SCHEDULE ENGINE — FINAL SETUP (PART 5 / 5) ============
+     ============================================================ -->
+<script>
 
 /* ============================================================
    1) VALIDACIÓN FINAL DE MODALES EXISTENTES
@@ -2739,13 +2714,8 @@ function ACS_sortDayEvents(events) {
     return aMin - bMin;
   });
 }
-
-// ============================================================
-// FINAL INIT
-// ============================================================
-     
-window.onload = renderSchedule;
      
 </script>
+     
 </body>
 </html>
