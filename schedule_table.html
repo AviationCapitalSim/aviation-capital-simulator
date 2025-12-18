@@ -1482,117 +1482,128 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 // ============================================================
 // ASSIGN ROUTE
 // ============================================================
-     
+
 function assignRouteToTail(ac){
 
+  // 1️⃣ Obtener ruta confirmada
   const route = getRoute();
   if (!route) { 
-      alert("No confirmed route available."); 
-      return; 
+    alert("No confirmed route available."); 
+    return; 
   }
 
- /* ============================================================
-   🟢 AIRCRAFT ID VALIDATION — FINAL (AC_xxx ONLY)
-   ============================================================ */
+  /* ============================================================
+     🟢 AIRCRAFT ID VALIDATION — FINAL (AC_xxx ONLY)
+     ============================================================ */
 
-// 🔑 ID REAL del avión de ESTA fila (Schedule Table)
-const aircraftId = ac.id || "";
+  // ID del avión de esta fila
+  const aircraftId = ac.id || "";
 
-// 🔑 ID REAL que trae la ruta desde Route Schedule
-const routeAircraftId = route.aircraftId || "";
+  // ID del avión que trae la ruta
+  const routeAircraftId = route.aircraftId || "";
 
-if (!aircraftId || !aircraftId.startsWith("AC_")) {
-  alert("⚠ Invalid aircraftId on Schedule Table row.");
-  return;
-}
-
-if (!routeAircraftId || !routeAircraftId.startsWith("AC_")) {
-  alert("⚠ Route has no valid aircraftId. Recreate the route in Route Schedule.");
-  return;
-}
-
-// ✅ Validación estricta por AIRCRAFT ID (NO modelos)
-if (routeAircraftId !== aircraftId) {
-  alert(`⚠ Route is for ${routeAircraftId}, but this row is ${aircraftId}.`);
-  return;
-}
-
-const items = getItems();
-          
-const daysSel = Array.isArray(route.days) && route.days.length
-                ? route.days
-                : ["mon"];
-
-const separate = !!route.separateDays;
-const dep  = route.departure || "06:00";
-const dur  = Number(route.blockTimeMin || 210);
-const arr  = toHHMM(toMin(dep) + dur);
-
-/* ============================================================
-   🟢 S1 — FLIGHT NUMBER FALLBACK (LEGACY + SAFE)
-   ============================================================ */
-
-if ((!route.flightNumberOut || !route.flightNumberIn) && route.flightNumber) {
-
-  const raw = String(route.flightNumber);
-
-  const match = raw.match(/([A-Z]{2}\d+)[^\d]+([A-Z]{2}\d+)/);
-
-  if (match) {
-    route.flightNumberOut = match[1];
-    route.flightNumberIn  = match[2];
+  if (!aircraftId || !aircraftId.startsWith("AC_")) {
+    alert("⚠ Invalid aircraftId on Schedule Table row.");
+    return;
   }
-}
-     
-// 🔒 BLOQUEO ABSOLUTO — no inventar vuelos
-     
-if (!route.flightNumberOut || !route.flightNumberIn) {
-  alert("⛔ This route has no valid flight numbers. Please define them in Route Schedule.");
-  return;
-}
 
-const flightOut = route.flightNumberOut;
-const flightIn  = route.flightNumberIn;
+  if (!routeAircraftId || !routeAircraftId.startsWith("AC_")) {
+    alert("⚠ Route has no valid aircraftId. Recreate the route in Route Schedule.");
+    return;
+  }
 
-const blockId = separate ? null : ("block-"+Math.random().toString(36).slice(2,8));
-let assignedAny = false;
+  if (routeAircraftId !== aircraftId) {
+    alert(`⚠ Route is for ${routeAircraftId}, but this row is ${aircraftId}.`);
+    return;
+  }
 
-// ✅ Ya NO compara modelos → ahora aplica aircraftId
-daysSel.forEach(day => {
+  // 2️⃣ Obtener schedule actual
+  const items = getItems();
 
-  items.push({
-    id: separate ? ("flt-"+Math.random().toString(36).slice(2,8)) : blockId,
-    blockId: separate ? "" : blockId,
-    type: "flight",
+  /* ============================================================
+     🛑 A1 — PREVENT MULTIPLE ACTIVE SCHEDULES PER AIRCRAFT
+     ============================================================ */
 
-    // 🔥 IDENTIDAD ÚNICA (FINAL)
-    aircraftId: aircraftId,
+  const hasActiveFlights = items.some(it =>
+    it.type === "flight" &&
+    it.aircraftId === aircraftId
+  );
 
-    // (Opcional) display para UI/labels si lo usas en render:
-    acType: ac.model || ac.type || "",
+  if (hasActiveFlights) {
+    alert("⚠ This aircraft already has a weekly schedule. Delete it before assigning a new one.");
+    return;
+  }
 
-    day,
-    origin: route.origin,
-    destination: route.destination,
-    departure: dep,
-    arrival: arr,
+  // 3️⃣ Preparar datos de la ruta
+  const daysSel = Array.isArray(route.days) && route.days.length
+                  ? route.days
+                  : ["mon"];
 
-    flightNumberOut: flightOut,
-    flightNumberIn:  flightIn
+  const separate = !!route.separateDays;
+  const dep  = route.departure || "06:00";
+  const dur  = Number(route.blockTimeMin || 210);
+  const arr  = toHHMM(toMin(dep) + dur);
+
+  /* ============================================================
+     🟢 S1 — FLIGHT NUMBER FALLBACK (LEGACY + SAFE)
+     ============================================================ */
+
+  if ((!route.flightNumberOut || !route.flightNumberIn) && route.flightNumber) {
+
+    const raw = String(route.flightNumber);
+    const match = raw.match(/([A-Z]{2}\d+)[^\d]+([A-Z]{2}\d+)/);
+
+    if (match) {
+      route.flightNumberOut = match[1];
+      route.flightNumberIn  = match[2];
+    }
+  }
+
+  // 🔒 No inventar vuelos
+  if (!route.flightNumberOut || !route.flightNumberIn) {
+    alert("⛔ This route has no valid flight numbers. Please define them in Route Schedule.");
+    return;
+  }
+
+  const flightOut = route.flightNumberOut;
+  const flightIn  = route.flightNumberIn;
+
+  // 4️⃣ Crear vuelos
+  const blockId = separate ? null : ("block-" + Math.random().toString(36).slice(2,8));
+  let assignedAny = false;
+
+  daysSel.forEach(day => {
+
+    items.push({
+      id: separate ? ("flt-" + Math.random().toString(36).slice(2,8)) : blockId,
+      blockId: separate ? "" : blockId,
+      type: "flight",
+
+      aircraftId: aircraftId,
+      acType: ac.model || ac.type || "",
+
+      day,
+      origin: route.origin,
+      destination: route.destination,
+      departure: dep,
+      arrival: arr,
+
+      flightNumberOut: flightOut,
+      flightNumberIn:  flightIn
+    });
+
+    assignedAny = true;
   });
 
-  assignedAny = true;
-});
+  if (!assignedAny){
+    alert("⚠ Cannot assign: schedule conflicts.");
+    return;
+  }
 
-if (!assignedAny){
-  alert("⚠ Cannot assign: schedule conflicts.");
-  return;
+  // 5️⃣ Guardar y renderizar
+  setItems(items);
+  renderSchedule();
 }
-
-setItems(items);
-renderSchedule();
-
-}    
      
 /* ============================================================
    === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
