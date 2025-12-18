@@ -1065,6 +1065,38 @@ footer {
      
 <script>
 
+/* ============================================================
+   ⏱ PASO 1 — SCHEDULE TABLE TIME LISTENER (FINAL)
+   Conecta Schedule Table al Time Engine ACS
+   ============================================================ */
+
+// ⏱ Tiempo local del módulo (NO global)
+let ACS_TABLE_TIME = {
+  minute: 0,
+  day: null,
+  date: null
+};
+
+// 🔌 Conexión oficial al Time Engine
+if (typeof registerTimeListener === "function") {
+  registerTimeListener((currentTime) => {
+
+    // currentTime es Date del simulador
+    ACS_TABLE_TIME.minute =
+      currentTime.getHours() * 60 + currentTime.getMinutes();
+
+    ACS_TABLE_TIME.day = currentTime.getDay(); // 0–6
+    ACS_TABLE_TIME.date = currentTime;
+
+    // 🔄 Re-render seguro (solo si la tabla ya existe)
+    if (typeof renderSchedule === "function") {
+      renderSchedule();
+    }
+  });
+} else {
+  console.warn("⛔ Time Engine not available for Schedule Table");
+}
+     
 // ============================================================
 // 🔧 B3 — normalizeModel EXTENDIDO
 // Unifica nombres: mayúsculas, sin espacios, sin guiones,
