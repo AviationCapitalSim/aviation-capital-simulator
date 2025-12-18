@@ -1523,18 +1523,18 @@ const items = getItems();
    🛑 A1 — PREVENT DUPLICATE ROUTE ASSIGNMENT — 17DEC25
    ============================================================ */
 
-// 🔒 Regla: una ruta confirmada solo se asigna una vez
+/* ============================================================
+   🛑 A1 — PREVENT DUPLICATE ACTIVE ASSIGNMENT (FINAL)
+   Bloquea SOLO si aún existen vuelos activos del avión
+   ============================================================ */
+
 const existing = items.some(it =>
   it.type === "flight" &&
-  it.aircraftId === aircraftId &&
-  (
-    it.flightNumberOut === route.flightNumberOut ||
-    it.blockId === route.blockId
-  )
+  it.aircraftId === aircraftId
 );
 
 if (existing) {
-  alert("⚠ This route is already assigned to this aircraft.");
+  alert("⚠ This aircraft already has active flights assigned. Delete them first.");
   return;
 }
      
