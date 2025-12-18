@@ -1468,7 +1468,27 @@ if (isFlying) {
   chip.classList.add("flying-now");
   chip.title = "✈️ Flight in progress";
 }
+     
+/* ============================================================
+   🛫 PASO 5.1 — DISPATCH FLIGHT EXECUTION (SIM CORE)
+   ============================================================ */
 
+const execPayload = {
+  aircraftId: it.aircraftId,
+  flightOut: it.flightNumberOut,
+  origin: it.origin,
+  destination: it.destination,
+  depMin,
+  arrMin,
+  day: it.day,
+  nowMin: ACS_TABLE_TIME.minute
+};
+
+localStorage.setItem(
+  "ACS_FLIGHT_EXEC",
+  JSON.stringify(execPayload)
+);
+     
 /* ============================================================
    🛰 PASO 4.1 — PUBLISH ACTIVE FLIGHT TO SKYTRACK
    ============================================================ */
