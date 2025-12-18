@@ -142,12 +142,47 @@
       attribution:'&copy; OpenStreetMap — ACS SkyTrack'
     }).addTo(map);
 
-    // === Airports ===
-    
-    const origin = { name:"Bishkek (UCFM)", lat:42.866, lon:74.529 };
-    const destination = { name:"Dubai (OMDB)", lat:25.253, lon:55.365 };
+    /* ============================================================
+   🛰 SKYTRACK — RENDER ACTIVE FLIGHT FROM ENGINE
+   ============================================================ */
 
+let planeMarker = null;
+let flightTrace = null;
+
+function renderActiveFlight() {
+  const execRaw = localStorage.getItem("ACS_FLIGHT_EXEC");
+  if (!execRaw) return;
+
+  const exec = JSON.parse(execRaw);
+  if (!exec.currentLat || !exec.currentLng) return;
+
+  if (!planeMarker) {
+    const icon = L.divIcon({
+      html:`<div class="acs-diamond"></div>
+            <div class="acs-label">${exec.aircraftId}</div>`,
+      className:"acs-plane",
+      iconSize:[20,20],
+      iconAnchor:[10,10]
+    });
+
+    planeMarker = L.marker(
+      [exec.currentLat, exec.currentLng],
+      { icon }
+    ).addTo(map);
+
+    flightTrace = L.polyline([],{
+      color:"#00E0FF",
+      weight:2.2,
+      opacity:0.85
+    }).addTo(map);
+  }
+
+  planeMarker.setLatLng([exec.currentLat, exec.currentLng]);
+  flightTrace.addLatLng([exec.currentLat, exec.currentLng]);
+}
+   
     // === Markers & route ===
+    
     L.marker([origin.lat,origin.lon]).addTo(map).bindPopup(`<b>${origin.name}</b><br>Departure`);
     L.marker([destination.lat,destination.lon]).addTo(map).bindPopup(`<b>${destination.name}</b><br>Arrival`);
 
@@ -157,10 +192,6 @@
 
     // === ✳️ Radar Diamond Marker ===
     
-    const planeIcon = L.divIcon({
-      html:`<div class="acs-diamond"></div><div class="acs-label">A320 | N388PP</div>`,
-      className:"acs-plane",iconSize:[20,20],iconAnchor:[10,10]
-    });
     const planeMarker = L.marker([origin.lat,origin.lon],{icon:planeIcon}).addTo(map);
 
     // === Ruta dinámica (traza del vuelo) ===
@@ -201,56 +232,45 @@
       window.location.href="login.html";
     }
   </script>
+  
+  <!-- ================= TIME ENGINE ================= -->
+<script src="time_engine.js"></script>
 
-  <!-- ✅ Reloj cockpit Airbus sincronizado -->
-  
-  <script src="time_engine.js"></script>
-  
-  <script>
-  // 🕐 Reloj cockpit Airbus sincronizado con el motor global ACS
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(updateClockDisplay);
-      updateClockDisplay();
-    }
+<!-- ================= SKYTRACK LOGIC ================= -->
+<script>
+/* ============================================================
+   ⏱ SKYTRACK TIME LISTENER
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+    renderActiveFlight();
   });
+}
 
 /* ============================================================
-   🛰 PASO 4.4 — READ ACTIVE FLIGHT FROM SCHEDULE
+   🕐 Reloj cockpit Airbus sincronizado con ACS
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
+
+/* ============================================================
+   🛰 READ ACTIVE FLIGHT FROM SCHEDULE
    ============================================================ */
 
 const activeFlightRaw = localStorage.getItem("ACS_ACTIVE_FLIGHT");
 
 if (!activeFlightRaw) {
   console.log("🛰 SkyTrack: No active flight");
-  return;
+} else {
+  const activeFlight = JSON.parse(activeFlightRaw);
 }
-
-const activeFlight = JSON.parse(activeFlightRaw);
-    
-/* ============================================================
-   ✈️ PASO 4.5 — REAL FLIGHT PROGRESS (TIME-BASED)
-   ============================================================ */
-
-// Tiempo actual del simulador
-let nowMin = null;
-
-if (typeof ACS_TABLE_TIME !== "undefined") {
-  nowMin = ACS_TABLE_TIME.minute;
-} else if (typeof getSimMinute === "function") {
-  nowMin = getSimMinute();
-}
-
-if (nowMin === null) {
-  console.warn("SkyTrack: No sim time available");
-  return;
-}
-
-// Progreso 0 → 1
-const progress =
-  (nowMin - activeFlight.depMin) /
-  (activeFlight.arrMin - activeFlight.depMin);
-
 </script>
+
 </body>
 </html>
