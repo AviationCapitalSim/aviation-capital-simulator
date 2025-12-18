@@ -121,14 +121,11 @@
   <!-- ===== FOOTER ===== -->
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
-<!-- ============================================================
-     ⏱ ACS TIME ENGINE — REQUIRED FOR SCHEDULE TABLE
-     ============================================================ -->
-  
-  <script src="./time_engine.js"></script>
-        
+
   <script>
+    
     // === Initialize map ===
+    
     const map = L.map('map').setView([33.0, 68.0], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom:10,
@@ -136,6 +133,7 @@
     }).addTo(map);
 
     // === Airports ===
+    
     const origin = { name:"Bishkek (UCFM)", lat:42.866, lon:74.529 };
     const destination = { name:"Dubai (OMDB)", lat:25.253, lon:55.365 };
 
@@ -148,6 +146,7 @@
     }).addTo(map);
 
     // === ✳️ Radar Diamond Marker ===
+    
     const planeIcon = L.divIcon({
       html:`<div class="acs-diamond"></div><div class="acs-label">A320 | N388PP</div>`,
       className:"acs-plane",iconSize:[20,20],iconAnchor:[10,10]
@@ -194,7 +193,9 @@
   </script>
 
   <!-- ✅ Reloj cockpit Airbus sincronizado -->
+  
   <script src="time_engine.js"></script>
+  
   <script>
   // 🕐 Reloj cockpit Airbus sincronizado con el motor global ACS
   document.addEventListener("DOMContentLoaded", () => {
