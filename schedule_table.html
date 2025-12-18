@@ -1831,6 +1831,15 @@ if (serviceAlreadyExists) {
   type: "service",
   serviceType: t,
 
+/* ============================================================
+   🧩 PASO 5B — REGISTER B-CHECK PLAN — 17DEC25
+   ============================================================ */
+
+if (t === "B") {
+  ac.bCheckPlanned = true;
+  ac.bCheckPlannedAt = ACS_TIME.now;
+}
+       
   // 🔑 CLAVE — IDENTIDAD REAL DEL AVIÓN
   aircraftId: ac.id,          // ← ESTO ES LO QUE FALTABA
 
