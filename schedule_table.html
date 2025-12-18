@@ -2292,33 +2292,29 @@ function unassignRouteFromAircraft(aircraftId) {
 
   if (!aircraftId) return;
 
-  // 1️⃣ Limpiar vuelos de scheduleItems
+  // 1️⃣ Limpiar vuelos del schedule
   let items = getItems();
   items = items.filter(it =>
     !(it.type === "flight" && it.aircraftId === aircraftId)
   );
   setItems(items);
 
-  // 2️⃣ Limpiar confirmedRoute si pertenece a este avión
+  // 2️⃣ Limpiar ruta confirmada si pertenece a este avión
   const route = getRoute();
   if (route && route.aircraftId === aircraftId) {
     localStorage.removeItem("confirmedRoute");
   }
 
-  // 3️⃣ Limpiar avión en la flota REAL
+  // 3️⃣ Limpiar estado en flota
   const fleet = getRealFleet();
   const idx = fleet.findIndex(a => a.id === aircraftId);
-
   if (idx !== -1) {
     fleet[idx].routeId = null;
     fleet[idx].assignedRoute = null;
     fleet[idx].route = null;
   }
-
   setFleet(fleet);
 
-  // 4️⃣ Redibujar
-  closeFlightModal();
   renderSchedule();
 }
 
@@ -2744,7 +2740,10 @@ function ACS_sortDayEvents(events) {
   });
 }
      
-</script>
+<script>
      
+window.onload = renderSchedule;
+     
+</script>
 </body>
 </html>
