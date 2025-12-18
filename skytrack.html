@@ -187,10 +187,6 @@ function renderActiveFlight() {
       color:'#FFB300',weight:2.5,opacity:0.8,dashArray:'5,6'
     }).addTo(map);
 
-    // === ✳️ Radar Diamond Marker ===
-    
-    const planeMarker = L.marker([origin.lat,origin.lon],{icon:planeIcon}).addTo(map);
-
     // === Ruta dinámica (traza del vuelo) ===
     const flightTrace = L.polyline([],{
       color:"#00E0FF",weight:2.2,opacity:0.85
