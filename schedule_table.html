@@ -2001,8 +2001,10 @@ if (it && it.type === "service") {
 
   const isB = it.serviceType === "B";
   const serviceLabel = isB ? "⚙️ B-Check" : "🔧 A-Check";
-  const durationText =
-    isB ? "24 hours (full day)" : `${it.durationMin || 300} minutes`;
+  const durationText = isB
+  ? "24 hours (full day)"
+  : "5 hours";
+
 
   title.textContent = serviceLabel;
 
