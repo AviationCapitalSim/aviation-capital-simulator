@@ -1926,7 +1926,7 @@ function removeItem(){
 }
 
 /* ============================================================
-   🔥 D1 — DELETE FLIGHT (FULL RELEASE · BLOCK / INDIVIDUAL)
+   🔥 D1 — DELETE FLIGHT (FINAL · NO FLIGHT NUMBER LOGIC)
    ============================================================ */
 
 function deleteSelectedFlights(){
@@ -1941,16 +1941,16 @@ function deleteSelectedFlights(){
 
   let items = getItems();
 
-  // --- vuelos a eliminar ---
+  // 🟢 Determinar vuelos a eliminar
   let flightsToDelete = [];
 
   if (block && block.startsWith("block-")) {
-    // 🟢 CASO EVERY DAY (BLOCK)
+    // EVERY DAY → eliminar todo el bloque
     flightsToDelete = items.filter(it =>
       it.type === "flight" && it.blockId === block
     );
   } else {
-    // 🟢 CASO EACH DAY (INDIVIDUAL)
+    // EACH DAY → solo este vuelo
     flightsToDelete = items.filter(it =>
       it.type === "flight" && it.id === id
     );
@@ -1961,31 +1961,16 @@ function deleteSelectedFlights(){
     return;
   }
 
-  // --- LIBERAR FLIGHT NUMBERS ---
-  let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-  let deletedFlights = JSON.parse(localStorage.getItem("deletedFlights") || "[]");
-
-  flightsToDelete.forEach(f => {
-    if (f.flightNumberOut) {
-      deletedFlights.push(f.flightNumberOut, f.flightNumberIn);
-      usedFlights = usedFlights.filter(n =>
-        n !== f.flightNumberOut && n !== f.flightNumberIn
-      );
-    }
-  });
-
-  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-  localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
-
-  // --- ELIMINAR DEL SCHEDULE ---
+  // 🧹 Eliminar vuelos del schedule
   items = items.filter(it => !flightsToDelete.includes(it));
   setItems(items);
 
   closeFlightModal();
   renderSchedule();
 
-  alert("❌ Flight(s) deleted and slots fully released.");
+  alert("❌ Flight(s) deleted.");
 }
+
 
 function editFlight(){
   if(!selectedChip){ closeActionModal(); return; }
