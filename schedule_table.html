@@ -1731,7 +1731,7 @@ if (arrNew <= depNew) arrNew += 1440;
 const hasOverlap = items.some(it => {
   if (it.type !== "flight") return false;
   if (it.aircraftId !== aircraftId) return false;
-  if (it.day !== day) return false;
+  if (it.day !== d) return false;
 
   if (!it.departure || !it.arrival) return false;
 
