@@ -1813,6 +1813,30 @@ if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
 
   daysSel.forEach(day => {
 
+/* ============================================================
+   🛑 FINAL GUARD — PREVENT DUPLICATE FLIGHT (SAME CLICK / SAME ROUTE)
+   ============================================================ */
+
+const duplicateFlight = items.some(it =>
+  it.type === "flight" &&
+  it.aircraftId === aircraftId &&
+  it.day === day &&
+  it.departure === route.departure &&
+  (
+    it.blockTimeMin === route.blockTimeMin ||
+    it.arrival === route.arrival
+  )
+);
+
+if (duplicateFlight) {
+  console.warn("⛔ Duplicate flight prevented", {
+    aircraftId,
+    day,
+    departure: route.departure
+  });
+  return;
+}
+       
     items.push({
       id: separate ? ("flt-" + Math.random().toString(36).slice(2,8)) : blockId,
       blockId: separate ? "" : blockId,
