@@ -605,24 +605,28 @@ tr:hover {
    ============================================================ */
      
 function getACSBaseResolved() {
+
+  // 1️⃣ Fuente oficial
   try {
-    const userRaw = localStorage.getItem("ACS_activeUser");
-    if (userRaw) {
-      const user = JSON.parse(userRaw);
-      if (user.base && user.base.icao) {
-        return user.base;
-      }
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+    if (user.base && user.base.icao) {
+      return {
+        icao: user.base.icao.toUpperCase(),
+        city: user.base.city || "",
+        country: user.base.country || "",
+        name: user.base.name || ""
+      };
     }
   } catch (e) {
-    console.warn("Base resolver user parse failed", e);
+    console.warn("ACS base parse error", e);
   }
 
-  // Legacy fallback
+  // 2️⃣ Legacy fallback (NO recursivo)
   const legacyICAO = localStorage.getItem("ACS_baseICAO");
   if (!legacyICAO) return null;
 
   return {
-    icao: legacyICAO,
+    icao: legacyICAO.toUpperCase(),
     city: localStorage.getItem("ACS_baseCity") || "",
     country: localStorage.getItem("ACS_baseCountry") || "",
     name: localStorage.getItem("ACS_baseName") || ""
