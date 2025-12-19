@@ -2400,7 +2400,7 @@ function removeSelectedFlights(){
 }
 
 function deleteSelectedFlights(){
-  // Delete = borra el/los vuelos y libera números (igual filosofía que tu deleteFlight)
+  // Delete = borra el/los vuelos y libera números (alineado con OPCIÓN A)
   if (!ACS_selectedChipEl) { closeFlightModal(); return; }
 
   const id = ACS_selectedChipEl.dataset.id || "";
@@ -2413,19 +2413,38 @@ function deleteSelectedFlights(){
   const flight = items.find(f => f.id === id || (block && f.blockId === block));
   if (!flight) { closeFlightModal(); return; }
 
-  if (flight.flightNumberOut) {
-    deletedFlights.push(flight.flightNumberOut, flight.flightNumberIn);
-    localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
-  }
+  // ============================================================
+  // 🟦 DELETE POR BLOQUE (REGLA FINAL)
+  // ============================================================
 
-  const isBlock = !!block && block.startsWith("block-");
-  items = isBlock ? items.filter(f => f.blockId !== block) : items.filter(f => f.id !== id);
+  const blockKey = block || id;
+
+  // 1️⃣ Marcar TODOS los vuelos del bloque como eliminados (por ID)
+  items.forEach(f => {
+    if (f.blockId === blockKey || f.id === blockKey) {
+      if (!deletedFlights.includes(f.id)) {
+        deletedFlights.push(f.id);
+      }
+
+      // Liberar números de vuelo asociados
+      if (f.flightNumberOut && f.flightNumberIn) {
+        usedFlights = usedFlights.filter(
+          n => n !== f.flightNumberOut && n !== f.flightNumberIn
+        );
+      }
+    }
+  });
+
+  // 2️⃣ Eliminar TODOS los vuelos del bloque
+  items = items.filter(f => f.blockId !== blockKey && f.id !== blockKey);
+
+  // ============================================================
+  // 💾 PERSISTENCIA
+  // ============================================================
+
+  localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
+  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
   setItems(items);
-
-  if (flight.flightNumberOut && flight.flightNumberIn){
-    usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
-    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-  }
 
   closeFlightModal();
   renderSchedule();
