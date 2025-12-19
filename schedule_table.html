@@ -1710,41 +1710,48 @@ function assignRouteToTail(ac){
   const items = getItems();
 
 /* ============================================================
-   🛑 A1 — PREVENT OVERLAP (DAY + TURNAROUND AWARE)
+   🛑 A1 — PREVENT OVERLAP (TIME-ONLY, PER AIRCRAFT)
    ============================================================ */
 
-// ⏱ Nuevo vuelo
-const depNew = toMin(route.departure || "00:00");
-const durNew = Number(route.blockTimeMin || 0);
-const arrNew = depNew + durNew;
+// ⏱ Nuevo vuelo (intervalo)
+const depNew = toMin(dep);
+if (depNew == null) {
+  alert("⚠ Invalid departure time.");
+  return;
+}
 
-// 🗓️ Día del nuevo vuelo (clave)
-const newDay = route.day;
+let arrNew = depNew + dur;
 
-// 🔍 Detectar solape REAL (mismo avión + mismo día + turnaround)
+// overnight safe (si cruza medianoche)
+if (arrNew <= depNew) arrNew += 1440;
+
+// 🔍 Comparar SOLO contra vuelos del MISMO AVIÓN y MISMO DÍA
 const hasOverlap = items.some(it => {
   if (it.type !== "flight") return false;
   if (it.aircraftId !== aircraftId) return false;
-
-  // ⛔ vuelos en otros días NO solapan
-  if (it.day !== newDay) return false;
+  if (it.day !== day) return false;
 
   if (!it.departure || !it.arrival) return false;
 
-  const depOld = toMin(it.departure);
-  const arrOld = toMin(it.arrival);
+  const depOld0 = toMin(it.departure);
+  const arrOld0 = toMin(it.arrival);
+  if (depOld0 == null || arrOld0 == null) return false;
 
-  if (depOld === null || arrOld === null) return false;
+  let depOld = depOld0;
+  let arrOld = arrOld0;
 
-  // ⏱ considerar turnaround real
+  // overnight safe
+  if (arrOld <= depOld) arrOld += 1440;
+
+  // considerar turnaround SOLO del vuelo viejo
   const arrOldWithTurn = arrOld + TURNAROUND_MIN;
 
-  // ❌ overlap real
+  // ❌ overlap real por intersección de intervalos
   return depNew < arrOldWithTurn && arrNew > depOld;
 });
 
 if (hasOverlap) {
-  alert("⚠ This flight overlaps with an existing flight for this aircraft on the same day.");
+  alert("⚠ This flight overlaps in time with another flight for this aircraft.");
   return;
 }
 
