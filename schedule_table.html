@@ -2894,8 +2894,13 @@ function openActionModal(chip){
 
 function closeActionModal(){
   selectedChip = null;
-  document.getElementById("actionModal").style.display = "none";
+
+  const modal = document.getElementById("actionModal");
+  if (!modal) return; // ✅ evita el crash cuando estás en flightModal
+
+  modal.style.display = "none";
 }
+
      
 /* ============================================================
    ⏱ PASO 3 — SORT DAY EVENTS BY START TIME — 17DEC25
