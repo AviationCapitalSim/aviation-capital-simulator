@@ -599,6 +599,30 @@ tr:hover {
 <script src="engine/acs_world_engine.js?v=1.0"></script>
 
 <script>
+     
+/* ============================================================
+   🧭 BASE RESOLVER — GLOBAL (ACS STANDARD)
+   ============================================================ */
+function resolveACSBase() {
+  try {
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser")) || {};
+    if (user.base && user.base.icao) return user.base;
+  } catch {}
+
+  // Legacy fallback (old system)
+  const legacyICAO = localStorage.getItem("ACS_baseICAO");
+  if (!legacyICAO) return null;
+
+  return {
+    icao: legacyICAO,
+    city: localStorage.getItem("ACS_baseCity") || "",
+    country: localStorage.getItem("ACS_baseCountry") || "",
+    name: localStorage.getItem("ACS_baseName") || ""
+  };
+}
+</script>
+     
+<script>
 
 /* ============================================================
    === DISTANCE ENGINE =============================
