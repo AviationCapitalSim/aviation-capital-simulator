@@ -857,7 +857,9 @@ function filterByCountry() {
   const airports = getAirportsEuropeSafe();
   if (!airports || airports.length === 0) return;
 
-  const userBase = localStorage.getItem("ACS_baseICAO") || null;
+  const baseObj = getACSBaseResolved();
+  const userBase = baseObj ? baseObj.icao : null;
+
   const base = airports.find(a => a.icao === userBase);
 
   let baseLat = null, baseLon = null;
