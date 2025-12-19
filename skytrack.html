@@ -135,16 +135,28 @@
   <script>
 
 /* ============================================================
-   🧭 SKYTRACK — GET BASE (ACS OFFICIAL)
+   🧭 SKYTRACK — GET BASE (ACS OFFICIAL + FALLBACK)
    ============================================================ */
     
 function getACSBase(){
   try {
     const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-    return user?.base || null;
-  } catch {
-    return null;
-  }
+    if (user?.base?.icao) {
+      return user.base;
+    }
+  } catch {}
+
+  // 🔁 Fallback legacy (choose_base.html)
+  const icao = localStorage.getItem("ACS_baseICAO");
+  if (!icao) return null;
+
+  return {
+    icao,
+    iata: localStorage.getItem("ACS_baseIATA"),
+    city: localStorage.getItem("ACS_baseCity"),
+    country: localStorage.getItem("ACS_baseCountry"),
+    continent: localStorage.getItem("ACS_baseContinent")
+  };
 }
 
 /* ============================================================
@@ -341,7 +353,14 @@ if (!activeFlightRaw) {
 } else {
   const activeFlight = JSON.parse(activeFlightRaw);
 }
-
+  
+/* ============================================================
+   ⏱ SKYTRACK — START TIME ENGINE
+   ============================================================ */
+if (typeof ACS_startTimeEngine === "function") {
+  ACS_startTimeEngine();
+}
+  
 /* ============================================================
    ⏱ SKYTRACK — TIME SYNC
    ============================================================ */
