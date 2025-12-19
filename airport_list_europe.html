@@ -603,22 +603,23 @@ tr:hover {
 /* ============================================================
    🧭 BASE RESOLVER — GLOBAL (ACS STANDARD)
    ============================================================ */
-function resolveACSBase() {
+     
+function getACSBaseResolved() {
   try {
-    const user = JSON.parse(localStorage.getItem("ACS_activeUser")) || {};
-    if (user.base && user.base.icao) return user.base;
-  } catch {}
+    const userRaw = localStorage.getItem("ACS_activeUser");
+    if (userRaw) {
+      const user = JSON.parse(userRaw);
+      if (user.base && user.base.icao) {
+        return user.base;
+      }
+    }
+  } catch (e) {
+    console.warn("Base resolver user parse failed", e);
+  }
 
-  // Legacy fallback (old system)
-  const base = resolveACSBase();
-
-if (!base || !base.icao) {
-  console.warn("⚠ Base not found (ACS)");
-  return;
-}
-
-const baseICAO = base.icao;
-
+  // Legacy fallback
+  const legacyICAO = localStorage.getItem("ACS_baseICAO");
+  if (!legacyICAO) return null;
 
   return {
     icao: legacyICAO,
@@ -627,6 +628,7 @@ const baseICAO = base.icao;
     name: localStorage.getItem("ACS_baseName") || ""
   };
 }
+
 </script>
      
 <script>
