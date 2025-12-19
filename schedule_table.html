@@ -1270,7 +1270,7 @@ function hideAircraftHover(){
 // ============================================================
 // === RENDER PRINCIPAL DEL SCHEDULE ==========================
 // ============================================================
-
+     
 function renderSchedule() {
 
   const tbody = document.getElementById("scheduleBody");
@@ -1278,46 +1278,28 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
+ 
+// ============================================================
+// 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (AC_xxx) — FINAL
+// ============================================================
+     
+const byAircraftId = {};
 
-  /* ============================================================
-     🛑 PASO 1.1 — BLOCK DELETED FLIGHTS (ABSOLUTE RULE)
-     A deleted flight MUST NEVER be rendered again
-     ============================================================ */
+// NOTE:
+// - flights/services deben venir con it.aircraftId = "AC_0007"
+// - day debe existir (mon..sun) para pintar en tabla semanal
 
-  const deletedFlights = JSON.parse(
-    localStorage.getItem("deletedFlights") || "[]"
-  );
+items.forEach(it => {
+  const key = String(it.aircraftId || "").trim();
+  if (!key) return;
+  if (!byAircraftId[key]) byAircraftId[key] = [];
+  byAircraftId[key].push(it);
+});
 
-  const filteredItems = items.filter(it => {
-    if (it.type !== "flight") return true;
-    if (!it.id) return true;
-    return !deletedFlights.includes(it.id);
-  });
-
-  // ============================================================
-  // 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (AC_xxx) — FINAL
-  // ============================================================
-
-  const byAircraftId = {};
-
-  // 🟦 PASO 2 — GLOBAL ACTIVE FLIGHT TRACKER
-  let ACS_foundActiveFlight = null;
-
-  // NOTE:
-  // - flights/services deben venir con it.aircraftId = "AC_0007"
-  // - day debe existir (mon..sun) para pintar en tabla semanal
-
-  filteredItems.forEach(it => {
-    const key = String(it.aircraftId || "").trim();
-    if (!key) return;
-    if (!byAircraftId[key]) byAircraftId[key] = [];
-    byAircraftId[key].push(it);
-  });
 
   // ============================================================
   // SIN FLOTA — filas dummy
   // ============================================================
-
   if (!fleet.length) {
 
     for (let i = 0; i < 5; i++) {
@@ -1366,20 +1348,23 @@ function renderSchedule() {
   // ============================================================
   // CON FLOTA
   // ============================================================
-
   fleet.forEach(ac => {
 
     const tr = document.createElement("tr");
+    // 🟦 3B.1 — Aircraft Row Identity (AC_xxx)
     tr.dataset.aircraftId = ac.id || "";
-
+       
+    // ============================================================
+    // MODELO REAL + MODELO NORMALIZADO
+    // ============================================================
     const realModel = ac.model || ac.type || ac.data?.model || "";
     const modelKey  = normalizeModel(realModel);
+
     tr.dataset.model = modelKey;
 
     // ============================================================
     // COLUMNA AIRCRAFT
     // ============================================================
-
     const tdTail = document.createElement("td");
     tdTail.classList.add("col-aircraft");
     tdTail.dataset.model = modelKey;
@@ -1388,161 +1373,221 @@ function renderSchedule() {
     const manu = ac.manufacturer || "—";
     const stat = ac.status || "";
 
-    tdTail.innerHTML = `
+    const wrapInfo = document.createElement("div");
+    wrapInfo.style.lineHeight = "1.2";
+    wrapInfo.style.textAlign = "left";
+    wrapInfo.innerHTML = `
       <strong>${reg}</strong><br>
       <span>${realModel}</span><br>
       <span style="color:#ffca3a;font-weight:600;">${manu.toUpperCase()}</span>
       ${stat ? `<br><span>${stat}</span>` : ""}
     `;
 
+    tdTail.appendChild(wrapInfo);
     tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
     tdTail.onmouseleave = hideAircraftHover;
+
     tr.appendChild(tdTail);
 
     // ============================================================
     // COLUMNAS DE DÍAS
     // ============================================================
-
     days.forEach(day => {
 
       const td = document.createElement("td");
-      const aircraftId = String(ac.id || "").trim();
 
-      const rawDayItems = (byAircraftId[aircraftId] || []).filter(
-        x => x.day === day
-      );
+     const aircraftId = String(ac.id || "").trim();
 
-      const dayItems = ACS_sortDayEvents(rawDayItems);
+     const rawDayItems = (byAircraftId[aircraftId] || []).filter(
+  x => x.day === day
+);
 
-      /* ============================================================
-         🟫 PASO 2 — DETECT B-CHECK FOR DAY
-         ============================================================ */
+const dayItems = ACS_sortDayEvents(rawDayItems);
+         
+/* ============================================================
+   🟫 PASO 2 — DETECT B-CHECK FOR DAY — 17DEC25
+   ============================================================ */
 
-      const nowMinB = ACS_TIME.currentMinute;
+// ⏱ minuto actual del simulador (YA EXISTE EN ACS)
+const nowMin = ACS_TIME.currentMinute;
 
-      const hasActiveBCheck = dayItems.some(it => {
-        if (it.type !== "service" || it.serviceType !== "B") return false;
-        const start = it.startMinute;
-        const end   = it.endMinute;
-        return nowMinB >= start && nowMinB < end;
-      });
+// Buscar B-Check ACTIVO en este día
+const hasActiveBCheck = dayItems.some(it => {
+  if (it.type !== "service" || it.serviceType !== "B") return false;
 
-      if (hasActiveBCheck) {
-        td.classList.add("bcheck-day");
-      }
+  const start = it.startMinute; // ya existe en el service
+  const end   = it.endMinute;
 
-      /* ============================================================
-         ⏱ ORDER DAY EVENTS
-         ============================================================ */
+  return nowMin >= start && nowMin < end;
+});
 
-      dayItems.sort((a, b) => {
-        const aStart =
-          a.type === "flight"
-            ? toMin(a.departure || "00:00")
-            : a.type === "service"
-              ? (a.startMinute ?? 0)
-              : 0;
+// 👉 SOLO si el B-Check está ACTIVO → gris
+if (hasActiveBCheck) {
+  td.classList.add("bcheck-day");
+}
 
-        const bStart =
-          b.type === "flight"
-            ? toMin(b.departure || "00:00")
-            : b.type === "service"
-              ? (b.startMinute ?? 0)
-              : 0;
+/* ============================================================
+   ⏱ PASO 1 — ORDER DAY EVENTS BY START TIME (SAFE)
+   ============================================================ */
 
-        return aStart - bStart;
-      });
+dayItems.sort((a, b) => {
 
-      dayItems.forEach(it => {
+  // Hora inicio del evento A
+  const aStart =
+    a.type === "flight"
+      ? toMin(a.departure || "00:00")
+      : a.type === "service"
+        ? (a.startMinute ?? 0)
+        : 0;
 
-        /* ============================================================
-           ✈️ DETECT ACTIVE FLIGHT
-           ============================================================ */
+  // Hora inicio del evento B
+  const bStart =
+    b.type === "flight"
+      ? toMin(b.departure || "00:00")
+      : b.type === "service"
+        ? (b.startMinute ?? 0)
+        : 0;
 
-        const nowMin = ACS_TABLE_TIME.minute;
-        const depMin = toMin(it.departure) ?? -1;
-        const arrMin = toMin(it.arrival) ?? -1;
+  return aStart - bStart;
+});
+         
+dayItems.forEach(it => {
+     
+/* ============================================================
+   ✈️ PASO 2 — DETECT ACTIVE FLIGHT (SAFE)
+   ============================================================ */
 
-        const isFlying =
-          depMin >= 0 &&
-          arrMin >= 0 &&
-          nowMin >= depMin &&
-          nowMin < arrMin;
+// ⏱ Hora actual del simulador
+const nowMin = ACS_TABLE_TIME.minute;
 
-        // 🟦 PASO 2 — REGISTER ACTIVE FLIGHT (MEMORY ONLY)
-        if (isFlying && !ACS_foundActiveFlight) {
-          ACS_foundActiveFlight = {
-            aircraftId: it.aircraftId,
-            flightOut: it.flightNumberOut,
-            flightIn: it.flightNumberIn,
-            origin: it.origin,
-            destination: it.destination,
-            departure: it.departure,
-            arrival: it.arrival,
-            depMin,
-            arrMin,
-            day: it.day
-          };
-        }
+// ⏱ Convertir horas del vuelo (SAFE)
+const depMin = toMin(it.departure) ?? -1;
+const arrMin = toMin(it.arrival) ?? -1;
 
-        // ---------------- FLIGHT ----------------
-        if (it.type === "flight") {
+// ✈️ ¿Está volando ahora?
+const isFlying =
+  depMin >= 0 &&
+  arrMin >= 0 &&
+  nowMin >= depMin &&
+  nowMin < arrMin;
 
-          const chip = document.createElement("span");
-          chip.className = "chip flight-chip";
-          chip.dataset.id = it.id;
-          chip.dataset.blockId = it.blockId || "";
-          chip.dataset.type = "flight";
+/* ============================================================
+   ✈️ VISUAL MARK — FLIGHT IN PROGRESS (SAFE)
+   ============================================================ */
 
-          const iataCode = localStorage.getItem("userIATA") || "IT";
-          const fnOut = it.flightNumberOut || "";
-          const fnIn  = it.flightNumberIn  || "";
+if (isFlying && typeof chip !== "undefined" && chip) {
+  chip.classList.add("flying-now");
+  chip.title = "✈️ Flight in progress";
+}
+     
+/* ============================================================
+   🛫 PASO 5.1 — DISPATCH FLIGHT EXECUTION (SIM CORE)
+   ============================================================ */
 
-          chip.textContent = (fnOut && fnIn)
-            ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
-            : `${iataCode}-— / ${iataCode}-—`;
+const execPayload = {
+  aircraftId: it.aircraftId,
+  flightOut: it.flightNumberOut,
+  origin: it.origin,
+  destination: it.destination,
+  depMin,
+  arrMin,
+  day: it.day,
+  nowMin: ACS_TABLE_TIME.minute
+};
 
-          const tooltip = document.createElement("span");
-          tooltip.className = "tooltip";
+localStorage.setItem(
+  "ACS_FLIGHT_EXEC",
+  JSON.stringify(execPayload)
+);
+     
+/* ============================================================
+   🛰 PASO 4.1 — PUBLISH ACTIVE FLIGHT TO SKYTRACK
+   ============================================================ */
 
-          const next = toHHMM(toMin(it.arrival) + TURNAROUND_MIN);
-          tooltip.innerHTML = `
-            ${it.origin} → ${it.destination}<br>
-            DEP: ${it.departure}<br>
-            ARR: ${it.arrival}<br>
-            <strong>Next Flight: ${next}</strong>
-          `;
+const skytrackFlight = {
+  aircraftId: it.aircraftId,
+  flightOut: it.flightNumberOut,
+  flightIn: it.flightNumberIn,
+  origin: it.origin,
+  destination: it.destination,
+  departure: it.departure,
+  arrival: it.arrival,
+  depMin,
+  arrMin,
+  day: it.day
+};
 
-          chip.appendChild(tooltip);
-          chip.onclick = () => openFlightModal(it, chip);
-          td.appendChild(chip);
-        }
+localStorage.setItem("ACS_ACTIVE_FLIGHT", JSON.stringify(skytrackFlight));
+     
+/* ============================================================
+   🧹 PASO 4.2 — CLEAR SKYTRACK WHEN NO ACTIVE FLIGHT
+   ============================================================ */
 
-        // ---------------- SERVICE ----------------
-        if (it.type === "service") {
+if (!isFlying) {
+  const current = localStorage.getItem("ACS_ACTIVE_FLIGHT");
+  if (current) {
+    localStorage.removeItem("ACS_ACTIVE_FLIGHT");
+  }
+}
 
-          const chip = document.createElement("span");
-          chip.className = "service-chip";
-          chip.dataset.id = it.id;
-          chip.dataset.type = "service";
+  // ---------------- FLIGHT ----------------
+  if (it.type === "flight") {
 
-          chip.textContent =
-            it.serviceType === "A"
-              ? "🔧 A-Check"
-              : "⚙️ B-Check";
+    const chip = document.createElement("span");
+    chip.className = "chip flight-chip";
+    chip.dataset.id = it.id;
+    chip.dataset.blockId = it.blockId || "";
+    chip.dataset.type = "flight";
 
-          chip.onclick = () => openFlightModal(it, chip);
-          td.appendChild(chip);
-        }
-      });
+    const iataCode = localStorage.getItem("userIATA") || "IT";
+    const fnOut = it.flightNumberOut || "";
+    const fnIn  = it.flightNumberIn  || "";
 
-      tr.appendChild(td);
+    chip.textContent = (fnOut && fnIn)
+      ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
+      : `${iataCode}-— / ${iataCode}-—`;
+
+    const tooltip = document.createElement("span");
+    tooltip.className = "tooltip";
+
+    const next = toHHMM(toMin(it.arrival) + TURNAROUND_MIN);
+    tooltip.innerHTML = `
+      ${it.origin} → ${it.destination}<br>
+      DEP: ${it.departure}<br>
+      ARR: ${it.arrival}<br>
+      <strong>Next Flight: ${next}</strong>
+    `;
+
+    chip.appendChild(tooltip);
+    chip.onclick = () => openFlightModal(it, chip);
+    td.appendChild(chip);
+  }
+
+  // ---------------- SERVICE ----------------
+  if (it.type === "service") {
+
+    const chip = document.createElement("span");
+    chip.className = "service-chip";
+    chip.dataset.id = it.id;
+    chip.dataset.type = "service";
+
+    chip.textContent =
+      it.serviceType === "A"
+        ? "🔧 A-Check"
+        : "⚙️ B-Check";
+
+    chip.onclick = () => openFlightModal(it, chip);
+    td.appendChild(chip);
+  }
+});
+
+tr.appendChild(td);
+
     });
 
     // ============================================================
     // ACTION PLAN
     // ============================================================
-
     const planTd = document.createElement("td");
     const wrap = document.createElement("div");
     wrap.className = "plan-actions";
@@ -1564,20 +1609,61 @@ function renderSchedule() {
 
     tbody.appendChild(tr);
   });
+     
+/* ============================================================
+   🟢 B4 — EMPTY BUFFER ROWS (3 ALWAYS)
+   Se renderizan siempre, con o sin flota
+   ============================================================ */
 
-  /* ============================================================
-     🟦 PASO 2 — FINAL PUBLISH ACTIVE FLIGHT (ONCE)
-     ============================================================ */
+const EMPTY_ROWS = 3;
 
-  if (ACS_foundActiveFlight) {
-    localStorage.setItem(
-      "ACS_ACTIVE_FLIGHT",
-      JSON.stringify(ACS_foundActiveFlight)
-    );
-  } else {
-    localStorage.removeItem("ACS_ACTIVE_FLIGHT");
-  }
+for (let i = 0; i < EMPTY_ROWS; i++) {
 
+  const tr = document.createElement("tr");
+  tr.classList.add("row-pending");
+
+  // Aircraft
+  const tdTail = document.createElement("td");
+  tdTail.textContent = "(empty)";
+  tdTail.style.opacity = "0.6";
+  tr.appendChild(tdTail);
+
+  // Days
+  days.forEach(() => {
+    const td = document.createElement("td");
+    td.textContent = "—";
+    tr.appendChild(td);
+  });
+
+  // Action Plan
+  const planTd = document.createElement("td");
+  const wrap = document.createElement("div");
+  wrap.className = "plan-actions";
+
+  const assignBtn = document.createElement("button");
+  assignBtn.className = "btn btn-assign";
+  assignBtn.textContent = "Assign Route";
+  assignBtn.onclick = () =>
+    alert("⚠ This slot is reserved for a future aircraft.");
+
+  const maintBtn = document.createElement("button");
+  maintBtn.className = "btn btn-maint";
+  maintBtn.textContent = "Plan Maintenance";
+  maintBtn.onclick = () =>
+    alert("⚠ No aircraft assigned to this slot.");
+
+  wrap.appendChild(assignBtn);
+  wrap.appendChild(maintBtn);
+  planTd.appendChild(wrap);
+  tr.appendChild(planTd);
+
+  tbody.appendChild(tr);
+}
+     
+  // ============================================================
+  // UPDATE TIME (NO TOCAR)
+  // ============================================================
+     
   document.getElementById("updateTime").textContent =
     "Last update: " + new Date().toLocaleTimeString();
 }
@@ -1713,7 +1799,6 @@ if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
   }
 
   // 🔒 No inventar vuelos
-     
   if (!route.flightNumberOut || !route.flightNumberIn) {
     alert("⛔ This route has no valid flight numbers. Please define them in Route Schedule.");
     return;
@@ -1722,34 +1807,56 @@ if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
   const flightOut = route.flightNumberOut;
   const flightIn  = route.flightNumberIn;
 
+  // 4️⃣ Crear vuelos
+  const blockId = separate ? null : ("block-" + Math.random().toString(36).slice(2,8));
   let assignedAny = false;
 
   daysSel.forEach(day => {
 
-  // 🟦 OPCIÓN A — SIEMPRE NUEVO ID DE VUELO
-       
-  const flightId = "FL_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+/* ============================================================
+   🛑 FINAL GUARD — PREVENT DUPLICATE FLIGHT (SAME CLICK / SAME ROUTE)
+   ============================================================ */
 
-  items.push({
-    id: flightId,
-    blockId: flightId, // mismo id, identidad única SIEMPRE
-    type: "flight",
+const duplicateFlight = items.some(it =>
+  it.type === "flight" &&
+  it.aircraftId === aircraftId &&
+  it.day === day &&
+  it.departure === route.departure &&
+  (
+    it.blockTimeMin === route.blockTimeMin ||
+    it.arrival === route.arrival
+  )
+);
 
-    aircraftId: aircraftId,
-    acType: ac.model || ac.type || "",
-
+if (duplicateFlight) {
+  console.warn("⛔ Duplicate flight prevented", {
+    aircraftId,
     day,
-    origin: route.origin,
-    destination: route.destination,
-    departure: dep,
-    arrival: arr,
-
-    flightNumberOut: flightOut,
-    flightNumberIn:  flightIn
+    departure: route.departure
   });
+  return;
+}
+       
+    items.push({
+      id: separate ? ("flt-" + Math.random().toString(36).slice(2,8)) : blockId,
+      blockId: separate ? "" : blockId,
+      type: "flight",
 
-  assignedAny = true;
-});
+      aircraftId: aircraftId,
+      acType: ac.model || ac.type || "",
+
+      day,
+      origin: route.origin,
+      destination: route.destination,
+      departure: dep,
+      arrival: arr,
+
+      flightNumberOut: flightOut,
+      flightNumberIn:  flightIn
+    });
+
+    assignedAny = true;
+  });
 
   if (!assignedAny){
     alert("⚠ Cannot assign: schedule conflicts.");
@@ -2400,7 +2507,7 @@ function removeSelectedFlights(){
 }
 
 function deleteSelectedFlights(){
-  // Delete = borra el/los vuelos y libera números (alineado con OPCIÓN A)
+  // Delete = borra el/los vuelos y libera números (igual filosofía que tu deleteFlight)
   if (!ACS_selectedChipEl) { closeFlightModal(); return; }
 
   const id = ACS_selectedChipEl.dataset.id || "";
@@ -2413,38 +2520,19 @@ function deleteSelectedFlights(){
   const flight = items.find(f => f.id === id || (block && f.blockId === block));
   if (!flight) { closeFlightModal(); return; }
 
-  // ============================================================
-  // 🟦 DELETE POR BLOQUE (REGLA FINAL)
-  // ============================================================
+  if (flight.flightNumberOut) {
+    deletedFlights.push(flight.flightNumberOut, flight.flightNumberIn);
+    localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
+  }
 
-  const blockKey = block || id;
-
-  // 1️⃣ Marcar TODOS los vuelos del bloque como eliminados (por ID)
-  items.forEach(f => {
-    if (f.blockId === blockKey || f.id === blockKey) {
-      if (!deletedFlights.includes(f.id)) {
-        deletedFlights.push(f.id);
-      }
-
-      // Liberar números de vuelo asociados
-      if (f.flightNumberOut && f.flightNumberIn) {
-        usedFlights = usedFlights.filter(
-          n => n !== f.flightNumberOut && n !== f.flightNumberIn
-        );
-      }
-    }
-  });
-
-  // 2️⃣ Eliminar TODOS los vuelos del bloque
-  items = items.filter(f => f.blockId !== blockKey && f.id !== blockKey);
-
-  // ============================================================
-  // 💾 PERSISTENCIA
-  // ============================================================
-
-  localStorage.setItem("deletedFlights", JSON.stringify(deletedFlights));
-  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+  const isBlock = !!block && block.startsWith("block-");
+  items = isBlock ? items.filter(f => f.blockId !== block) : items.filter(f => f.id !== id);
   setItems(items);
+
+  if (flight.flightNumberOut && flight.flightNumberIn){
+    usedFlights = usedFlights.filter(n => n !== flight.flightNumberOut && n !== flight.flightNumberIn);
+    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+  }
 
   closeFlightModal();
   renderSchedule();
