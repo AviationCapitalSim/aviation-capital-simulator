@@ -1418,7 +1418,7 @@ const dayItems = ACS_sortDayEvents(rawDayItems);
    ============================================================ */
 
 // ⏱ minuto actual del simulador (YA EXISTE EN ACS)
-const nowMin = ACS_TIME.currentMinute;
+const nowMin = ACS_TABLE_TIME.minute;
 
 // Buscar B-Check ACTIVO en este día
 const hasActiveBCheck = dayItems.some(it => {
