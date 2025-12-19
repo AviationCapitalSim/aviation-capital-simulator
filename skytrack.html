@@ -135,28 +135,42 @@
   <script>
 
 /* ============================================================
-   🧭 SKYTRACK — GET BASE (ACS OFFICIAL + FALLBACK)
+   🧭 SKYTRACK — BASE RESOLVER (SAME AS DASHBOARD)
    ============================================================ */
     
-function getACSBase(){
-  try {
-    const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-    if (user?.base?.icao) {
-      return user.base;
-    }
-  } catch {}
+function resolveACSBase() {
 
-  // 🔁 Fallback legacy (choose_base.html)
-  const icao = localStorage.getItem("ACS_baseICAO");
-  if (!icao) return null;
+  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  let base = activeUser.base || {};
 
-  return {
-    icao,
-    iata: localStorage.getItem("ACS_baseIATA"),
-    city: localStorage.getItem("ACS_baseCity"),
-    country: localStorage.getItem("ACS_baseCountry"),
-    continent: localStorage.getItem("ACS_baseContinent")
+  const clean = v => (!v || v === "undefined") ? "" : v;
+
+  base.icao    = clean(base.icao);
+  base.city    = clean(base.city);
+  base.country = clean(base.country);
+  base.name    = clean(base.name);
+
+  // 🔁 Fallback legacy (7 continent HTMLs)
+  if (!base.icao) {
+    base.icao    = clean(localStorage.getItem("ACS_baseICAO"));
+    base.city    = clean(localStorage.getItem("ACS_baseCity"));
+    base.country = clean(localStorage.getItem("ACS_baseCountry"));
+    base.name    = clean(localStorage.getItem("ACS_baseName"));
+  }
+
+  if (!base.icao) return null;
+
+  // 🔒 Normalizar y persistir (igual que dashboard)
+  activeUser.base = {
+    icao: base.icao.toUpperCase(),
+    city: base.city,
+    country: base.country,
+    name: base.name
   };
+
+  localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+
+  return activeUser.base;
 }
 
 /* ============================================================
@@ -170,6 +184,7 @@ let flightTrace = null;   // (se mantiene aunque ya no se use)
 /* ============================================================
    🛰 SKYTRACK — MAP INIT (CENTERED AT BASE)
    ============================================================ */
+    
 function initSkyTrackMap() {
   if (map) return; // ✅ prevent double init
 
@@ -178,7 +193,7 @@ function initSkyTrackMap() {
   let centerLng = 68.0;
   let zoom = 5;
 
-  const base = getACSBase();
+  const base = resolveACSBase();
 
   if (base?.icao && window.WorldAirportsACS) {
     const baseAirport = Object.values(WorldAirportsACS).flat()
