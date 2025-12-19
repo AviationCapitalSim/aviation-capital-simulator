@@ -1710,55 +1710,68 @@ function assignRouteToTail(ac){
   const items = getItems();
 
 /* ============================================================
-   🛑 A1 FINAL FIX — TRUE OVERLAP (AIRCRAFT + DAY + TIME)
+   🛑 B1 — OVERLAP ROBUSTO (AIRCRAFT + DAY + TIME) — NO FALSE POSITIVES
    ============================================================ */
 
-// 🗓️ día del vuelo (FUENTE REAL, no global)
-const day = route.day;
+// ✅ Día del vuelo: si no existe, NO bloqueamos (porque tu data está incompleta)
+const dayNew = (route.day ?? route.weekday ?? route.dayKey ?? null);
 
 // ⏱️ nuevo vuelo
 const depNew = toMin(route.departure);
-let arrNew = depNew + Number(route.blockTimeMin || 0);
+const durNew = Number(route.blockTimeMin || 0);
 
-// overnight safe (vuelo cruza medianoche)
-if (arrNew <= depNew) arrNew += 1440;
+if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
+  // si falta data crítica, no hacemos overlap (evita bloqueos infinitos)
+  console.warn("⚠ Overlap skipped: invalid dep/blockTime", { depNew, durNew, route });
+} else {
 
-// 🔍 detectar solape REAL
-const hasOverlap = items.some(it => {
-
-  // solo vuelos
-  if (it.type !== "flight") return false;
-
-  // solo mismo avión
-  if (it.aircraftId !== aircraftId) return false;
-
-  // solo mismo día
-  if (it.day !== day) return false;
-
-  // datos válidos
-  if (!it.departure || !it.arrival) return false;
-
-  const depOld = toMin(it.departure);
-  let arrOld = toMin(it.arrival);
-
-  if (depOld == null || arrOld == null) return false;
+  let arrNew = depNew + durNew;
+  if (!Number.isFinite(arrNew)) arrNew = depNew; // ultra-safe
 
   // overnight safe
-  if (arrOld <= depOld) arrOld += 1440;
+  if (arrNew <= depNew) arrNew += 1440;
 
-  // ⏱ turnaround real
-  arrOld += TURNAROUND_MIN;
+  // 🔑 clave del vuelo nuevo (para ignorar duplicados del mismo vuelo)
+  const newKey = `${aircraftId}|${dayNew ?? "NO_DAY"}|${depNew}|${durNew}`;
 
-  // 🚫 overlap REAL
-  return depNew < arrOld && arrNew > depOld;
-});
+  const hasOverlap = items.some(it => {
+    if (it.type !== "flight") return false;
+    if (it.aircraftId !== aircraftId) return false;
 
-// 🚨 bloqueo solo si es real
-if (hasOverlap) {
-  alert("⚠ This flight overlaps in time with another flight for this aircraft.");
-  return;
+    // ✅ si alguno NO tiene día válido, NO bloqueamos (evita falso positivo global)
+    const dayOld = (it.day ?? it.weekday ?? it.dayKey ?? null);
+    if (!dayNew || !dayOld) return false;
+    if (dayOld !== dayNew) return false;
+
+    // ✅ ignorar el MISMO vuelo (duplicado exacto)
+    const depOld0 = toMin(it.departure);
+    const arrOld0 = toMin(it.arrival);
+    const durOld = Number(it.blockTimeMin || 0);
+
+    if (depOld0 == null || arrOld0 == null) return false;
+    if (!Number.isFinite(depOld0) || !Number.isFinite(arrOld0)) return false;
+
+    const oldKey = `${it.aircraftId}|${dayOld}|${depOld0}|${durOld}`;
+    if (oldKey === newKey) return false;
+
+    let depOld = depOld0;
+    let arrOld = arrOld0;
+
+    // overnight safe
+    if (arrOld <= depOld) arrOld += 1440;
+
+    // turnaround real
+    const arrOldWithTurn = arrOld + TURNAROUND_MIN;
+
+    // overlap REAL
+    return depNew < arrOldWithTurn && arrNew > depOld;
+  });
+
+  if (hasOverlap) {
+    alert("⚠ This flight overlaps in time with another flight for this aircraft.");
+    return;
+  }
 }
-
 
   // 3️⃣ Preparar datos de la ruta
   const daysSel = Array.isArray(route.days) && route.days.length
