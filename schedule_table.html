@@ -2242,7 +2242,7 @@ function editFlight(){
 
 let ACS_selectedFlightItem = null;   // item lógico (scheduleItems)
 let ACS_selectedChipEl = null;       // chip DOM real (dataset.id / blockId)
-let selectedChip = null;             // legacy (usado por removeItem)
+// ⚠️ selectedChip YA EXISTE ARRIBA EN EL ARCHIVO → NO SE DECLARA AQUÍ
 
 /* ============================================================
    ✈️ OPEN FLIGHT MODAL — UNIFIED ENGINE
@@ -2255,7 +2255,11 @@ function openFlightModal(it, chipEl){
   // ===============================
   ACS_selectedFlightItem = it || null;
   ACS_selectedChipEl = chipEl || null;
-  selectedChip = chipEl || null;   // 🔥 FIX CRÍTICO
+
+  // 🔥 FIX REAL (PUENTE CON SISTEMA LEGACY)
+  selectedChip = chipEl || null;
+
+  // ⬇️ TODO LO DEMÁS QUEDA EXACTAMENTE COMO ESTABA ⬇️
 
   const modal = document.getElementById("flightModal");
   const box   = document.getElementById("flightModalContent");
