@@ -133,18 +133,53 @@
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
   <script>
+
+/* ============================================================
+   🧭 SKYTRACK — GET BASE (ACS OFFICIAL)
+   ============================================================ */
+    
+function getACSBase(){
+  try {
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+    return user?.base || null;
+  } catch {
+    return null;
+  }
+}
+
 /* ============================================================
    🛰 SKYTRACK — MAP INIT + RENDER ACTIVE FLIGHT (SINGLE SOURCE)
    ============================================================ */
 
 let map = null;
-let planeMarker = null;
-let flightTrace = null;
+let planeMarker = null;   // (se mantiene aunque ya no se use)
+let flightTrace = null;   // (se mantiene aunque ya no se use)
 
+/* ============================================================
+   🛰 SKYTRACK — MAP INIT (CENTERED AT BASE)
+   ============================================================ */
 function initSkyTrackMap() {
   if (map) return; // ✅ prevent double init
 
-  map = L.map("map").setView([33.0, 68.0], 5);
+  // 🔹 fallback seguro
+  let centerLat = 33.0;
+  let centerLng = 68.0;
+  let zoom = 5;
+
+  const base = getACSBase();
+
+  if (base?.icao && window.WorldAirportsACS) {
+    const baseAirport = Object.values(WorldAirportsACS).flat()
+      .find(a => a.icao === base.icao);
+
+    if (baseAirport) {
+      centerLat = baseAirport.latitude;
+      centerLng = baseAirport.longitude;
+      zoom = 6;
+    }
+  }
+
+  map = L.map("map").setView([centerLat, centerLng], zoom);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 10,
@@ -156,7 +191,61 @@ function initSkyTrackMap() {
     opacity: 0.85,
   }).addTo(map);
 }
+    
+/* ============================================================
+   ✈️ SKYTRACK — LIVE FLIGHTS LAYER
+   ============================================================ */
+let liveFlightMarkers = {};
 
+function renderLiveFlights(){
+
+  if (!map) return; // ⛔ seguridad
+
+  let flights = [];
+  try {
+    flights = JSON.parse(localStorage.getItem("ACS_LIVE_FLIGHTS")) || [];
+  } catch {}
+
+  const activeIds = new Set();
+
+  flights.forEach(f => {
+    if (typeof f.lat !== "number" || typeof f.lng !== "number") return;
+
+    activeIds.add(f.aircraftId);
+
+    // Crear marker si no existe
+    if (!liveFlightMarkers[f.aircraftId]) {
+      liveFlightMarkers[f.aircraftId] = L.marker(
+        [f.lat, f.lng],
+        { title: f.flightOut || f.aircraftId }
+      ).addTo(map);
+    }
+
+    // Actualizar posición
+    liveFlightMarkers[f.aircraftId].setLatLng([f.lat, f.lng]);
+  });
+
+  // Eliminar vuelos que ya no están activos
+  Object.keys(liveFlightMarkers).forEach(id => {
+    if (!activeIds.has(id)) {
+      map.removeLayer(liveFlightMarkers[id]);
+      delete liveFlightMarkers[id];
+    }
+  });
+}
+
+/* ============================================================
+   ⏱ SKYTRACK — INIT + TIME SYNC
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  initSkyTrackMap();
+
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(renderLiveFlights);
+  }
+});
+
+    
 function renderActiveFlight() {
   try {
     const execRaw = localStorage.getItem("ACS_FLIGHT_EXEC");
@@ -209,10 +298,13 @@ function handleLogout() {
 }
 </script>
   
-  <!-- ================= TIME ENGINE ================= -->
-  
+<!-- ⏱ TIME ENGINE -->
 <script src="time_engine.js"></script>
+
+<!-- 🌍 WORLD / AIRPORT ENGINE -->
 <script src="engine/acs_world_engine.js"></script>
+
+<!-- ✈️ FLIGHT RUNTIME (LIVE FLIGHTS) -->
 <script src="engine/acs_flight_runtime.js"></script>
 
   
@@ -249,6 +341,14 @@ if (!activeFlightRaw) {
 } else {
   const activeFlight = JSON.parse(activeFlightRaw);
 }
+
+/* ============================================================
+   ⏱ SKYTRACK — TIME SYNC
+   ============================================================ */
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(renderLiveFlights);
+}
+  
 </script>
 
 </body>
