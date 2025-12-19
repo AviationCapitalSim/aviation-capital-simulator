@@ -143,7 +143,7 @@
       attribution:'&copy; OpenStreetMap — ACS SkyTrack'
     }).addTo(map);
 
-  <script>
+ <script>
 /* ============================================================
    🛰 SKYTRACK — MAP INIT + RENDER ACTIVE FLIGHT (SINGLE SOURCE)
    ============================================================ */
@@ -153,7 +153,7 @@ let planeMarker = null;
 let flightTrace = null;
 
 function initSkyTrackMap() {
-  if (map) return; // ✅ prevent double init
+  if (map) return;
 
   map = L.map("map").setView([33.0, 68.0], 5);
 
@@ -180,7 +180,6 @@ function renderActiveFlight() {
     const exec = JSON.parse(execRaw);
     if (exec.currentLat == null || exec.currentLng == null) return;
 
-    // ✅ create marker once
     if (!planeMarker) {
       const icon = L.divIcon({
         html: `
@@ -198,7 +197,6 @@ function renderActiveFlight() {
     planeMarker.setLatLng([exec.currentLat, exec.currentLng]);
     if (flightTrace) flightTrace.addLatLng([exec.currentLat, exec.currentLng]);
 
-    // ✅ status line
     const st = document.getElementById("flightStatus");
     if (st) {
       st.textContent = `✅ Tracking: ${exec.aircraftId || "AC"} — ${exec.currentLat.toFixed(3)}, ${exec.currentLng.toFixed(3)}`;
@@ -208,7 +206,6 @@ function renderActiveFlight() {
   }
 }
 
-// ✅ init when DOM is ready (map div exists)
 document.addEventListener("DOMContentLoaded", () => {
   initSkyTrackMap();
   renderActiveFlight();
@@ -219,46 +216,7 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 </script>
-  
-  <!-- ================= TIME ENGINE ================= -->
-  
-<script src="time_engine.js"></script>
 
-<!-- ================= SKYTRACK LOGIC ================= -->
-<script>
-/* ============================================================
-   ⏱ SKYTRACK TIME LISTENER
-   ============================================================ */
-
-if (typeof registerTimeListener === "function") {
-  registerTimeListener(() => {
-  renderActiveFlight();
-});
-}
-
-/* ============================================================
-   🕐 Reloj cockpit Airbus sincronizado con ACS
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
-});
-
-/* ============================================================
-   🛰 READ ACTIVE FLIGHT FROM SCHEDULE
-   ============================================================ */
-
-const activeFlightRaw = localStorage.getItem("ACS_ACTIVE_FLIGHT");
-
-if (!activeFlightRaw) {
-  console.log("🛰 SkyTrack: No active flight");
-} else {
-  const activeFlight = JSON.parse(activeFlightRaw);
-}
-</script>
 
 </body>
 </html>
