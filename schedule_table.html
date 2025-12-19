@@ -1710,16 +1710,22 @@ function assignRouteToTail(ac){
   const items = getItems();
 
 /* ============================================================
-   🛑 FINAL FIX — TRUE OVERLAP (AIRCRAFT + DAY + TIME)
+   🛑 A1 FINAL FIX — TRUE OVERLAP (AIRCRAFT + DAY + TIME)
    ============================================================ */
 
+// 🗓️ día del vuelo (FUENTE REAL, no global)
+const day = route.day;
+
+// ⏱️ nuevo vuelo
 const depNew = toMin(route.departure);
 let arrNew = depNew + Number(route.blockTimeMin || 0);
 
-// overnight safe
+// overnight safe (vuelo cruza medianoche)
 if (arrNew <= depNew) arrNew += 1440;
 
+// 🔍 detectar solape REAL
 const hasOverlap = items.some(it => {
+
   // solo vuelos
   if (it.type !== "flight") return false;
 
@@ -1747,10 +1753,12 @@ const hasOverlap = items.some(it => {
   return depNew < arrOld && arrNew > depOld;
 });
 
+// 🚨 bloqueo solo si es real
 if (hasOverlap) {
   alert("⚠ This flight overlaps in time with another flight for this aircraft.");
   return;
 }
+
 
   // 3️⃣ Preparar datos de la ruta
   const daysSel = Array.isArray(route.days) && route.days.length
