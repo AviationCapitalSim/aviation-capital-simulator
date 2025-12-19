@@ -1710,10 +1710,10 @@ function assignRouteToTail(ac){
   const items = getItems();
 
 /* ============================================================
-   🛑 A1 — PREVENT OVERLAP (TIME-ONLY, PER AIRCRAFT)
+   🛑 A1 — PREVENT OVERLAP (HOURS ONLY / SAME AIRCRAFT)
    ============================================================ */
 
-// ⏱ Nuevo vuelo (intervalo REAL)
+// ⏱ Nuevo vuelo
 const depNew = toMin(route.departure);
 const durNew = Number(route.blockTimeMin || 0);
 
@@ -1723,15 +1723,12 @@ if (depNew == null || durNew <= 0) {
 }
 
 let arrNew = depNew + durNew;
-
-// overnight safe
-if (arrNew <= depNew) arrNew += 1440;
+if (arrNew <= depNew) arrNew += 1440; // overnight safe
 
 // 🔍 Comparar SOLO contra vuelos del MISMO AVIÓN
 const hasOverlap = items.some(it => {
   if (it.type !== "flight") return false;
   if (it.aircraftId !== aircraftId) return false;
-  if (it.day !== d) return false;
 
   if (!it.departure || !it.arrival) return false;
 
@@ -1742,13 +1739,10 @@ const hasOverlap = items.some(it => {
   let depOld = depOld0;
   let arrOld = arrOld0;
 
-  // overnight safe
-  if (arrOld <= depOld) arrOld += 1440;
+  if (arrOld <= depOld) arrOld += 1440; // overnight
 
-  // turnaround
   const arrOldWithTurn = arrOld + TURNAROUND_MIN;
 
-  // ❌ overlap real
   return depNew < arrOldWithTurn && arrNew > depOld;
 });
 
