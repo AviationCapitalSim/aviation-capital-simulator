@@ -1472,10 +1472,10 @@ const isFlying =
   nowMin < arrMin;
 
 /* ============================================================
-   🟦 PASO 3 — VISUAL MARK: FLIGHT IN PROGRESS
+   ✈️ VISUAL MARK — FLIGHT IN PROGRESS (SAFE)
    ============================================================ */
 
-if (isFlying) {
+if (isFlying && typeof chip !== "undefined" && chip) {
   chip.classList.add("flying-now");
   chip.title = "✈️ Flight in progress";
 }
