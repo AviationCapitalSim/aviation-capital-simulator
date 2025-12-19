@@ -1710,37 +1710,41 @@ function assignRouteToTail(ac){
   const items = getItems();
 
 /* ============================================================
-   🛑 A1 — PREVENT OVERLAP (STABLE / PER AIRCRAFT)
+   🛑 FINAL FIX — TRUE OVERLAP (AIRCRAFT + DAY + TIME)
    ============================================================ */
 
 const depNew = toMin(route.departure);
-const durNew = Number(route.blockTimeMin || 0);
+let arrNew = depNew + Number(route.blockTimeMin || 0);
 
-if (depNew == null || durNew <= 0) {
-  alert("⚠ Invalid departure time or block time.");
-  return;
-}
-
-let arrNew = depNew + durNew;
-if (arrNew <= depNew) arrNew += 1440; // overnight safe
+// overnight safe
+if (arrNew <= depNew) arrNew += 1440;
 
 const hasOverlap = items.some(it => {
+  // solo vuelos
   if (it.type !== "flight") return false;
+
+  // solo mismo avión
   if (it.aircraftId !== aircraftId) return false;
 
+  // solo mismo día
+  if (it.day !== day) return false;
+
+  // datos válidos
   if (!it.departure || !it.arrival) return false;
 
-  const depOld0 = toMin(it.departure);
-  const arrOld0 = toMin(it.arrival);
-  if (depOld0 == null || arrOld0 == null) return false;
+  const depOld = toMin(it.departure);
+  let arrOld = toMin(it.arrival);
 
-  let depOld = depOld0;
-  let arrOld = arrOld0;
+  if (depOld == null || arrOld == null) return false;
+
+  // overnight safe
   if (arrOld <= depOld) arrOld += 1440;
 
-  const arrOldWithTurn = arrOld + TURNAROUND_MIN;
+  // ⏱ turnaround real
+  arrOld += TURNAROUND_MIN;
 
-  return depNew < arrOldWithTurn && arrNew > depOld;
+  // 🚫 overlap REAL
+  return depNew < arrOld && arrNew > depOld;
 });
 
 if (hasOverlap) {
