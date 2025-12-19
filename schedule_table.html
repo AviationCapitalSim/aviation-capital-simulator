@@ -2181,36 +2181,50 @@ function removeItem(){
 }
 
 /* ============================================================
-   🗑️ DELETE ROUTE — FINAL & DEFINITIVE
+   🗑️ DELETE ROUTE — PRECISE (BY routeId ONLY)
    ============================================================ */
 
 function deleteCurrentRoute() {
 
-  // 1️⃣ Confirmación dura
-  if (!confirm("⚠ Delete this route permanently?\nAll associated flights will be erased.")) {
+  if (!ACS_selectedChipEl) {
+    closeFlightModal();
     return;
   }
 
-  // 2️⃣ BORRAR RUTA (FUENTE MADRE)
-  localStorage.removeItem("confirmedRoute");
+  const routeId = ACS_selectedChipEl.dataset.routeId;
 
-  // 3️⃣ BORRAR TODOS LOS VUELOS DERIVADOS
+  if (!routeId) {
+    alert("❌ No routeId found. Cannot delete route.");
+    closeFlightModal();
+    return;
+  }
+
+  // ⚠ Confirmación
+  if (!confirm("⚠ Delete this route permanently?\nAll flights of this route will be erased.")) {
+    return;
+  }
+
+  /* ------------------------------------------------------------
+     1️⃣ BORRAR RUTA (FUENTE MADRE)
+     ------------------------------------------------------------ */
+  let routes = JSON.parse(localStorage.getItem("ACS_ROUTES") || "[]");
+  routes = routes.filter(r => r.id !== routeId);
+  localStorage.setItem("ACS_ROUTES", JSON.stringify(routes));
+
+  /* ------------------------------------------------------------
+     2️⃣ BORRAR SOLO LOS VUELOS DE ESTA RUTA
+     ------------------------------------------------------------ */
   let items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-  items = items.filter(it => it.type !== "flight");
-
+  items = items.filter(it => it.routeId !== routeId);
   localStorage.setItem("scheduleItems", JSON.stringify(items));
 
-  // 4️⃣ LIMPIEZA VISUAL Y ESTADO
-  closeFlightModal?.();
-  renderSchedule?.();
+  /* ------------------------------------------------------------
+     3️⃣ LIMPIEZA VISUAL
+     ------------------------------------------------------------ */
+  closeFlightModal();
+  renderSchedule();
 
-  alert("✅ Route and all flights deleted permanently.");
-
-  // 5️⃣ REINICIO SUAVE (opcional pero recomendado)
-  setTimeout(() => {
-    location.reload();
-  }, 300);
+  alert("✅ Route deleted successfully.");
 }
      
 function editFlight(){
