@@ -1710,18 +1710,32 @@ function assignRouteToTail(ac){
   const items = getItems();
 
   /* ============================================================
-     🛑 A1 — PREVENT MULTIPLE ACTIVE SCHEDULES PER AIRCRAFT
-     ============================================================ */
+   🛑 A1 — PREVENT OVERLAPPING FLIGHTS (SMART)
+   ============================================================ */
 
-  const hasActiveFlights = items.some(it =>
-    it.type === "flight" &&
-    it.aircraftId === aircraftId
-  );
+const depNew = toMin(route.departure || "00:00");
+const durNew = Number(route.blockTimeMin || 0);
+const arrNew = depNew + durNew;
 
-  if (hasActiveFlights) {
-    alert("⚠ This aircraft already has a weekly schedule. Delete it before assigning a new one.");
-    return;
-  }
+// Buscar SOLO conflictos reales de tiempo
+     
+const hasOverlap = items.some(it => {
+  if (it.type !== "flight") return false;
+  if (it.aircraftId !== aircraftId) return false;
+  if (!it.departure || !it.arrival) return false;
+
+  const depOld = toMin(it.departure);
+  const arrOld = toMin(it.arrival);
+
+  // overlap real
+     
+  return depNew < arrOld && arrNew > depOld;
+});
+
+if (hasOverlap) {
+  alert("⚠ This flight overlaps with an existing flight for this aircraft.");
+  return;
+}
 
   // 3️⃣ Preparar datos de la ruta
   const daysSel = Array.isArray(route.days) && route.days.length
