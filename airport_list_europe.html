@@ -632,7 +632,34 @@ function getACSBaseResolved() {
     name: localStorage.getItem("ACS_baseName") || ""
   };
 }
+     
+// ============================================================
+// 🧭 ACS — BASE AUTO-RESTORE (COMPAT MODE)
+// ============================================================
 
+(function restoreBaseOnce() {
+  try {
+    let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+    if (activeUser.base && activeUser.base.icao) return;
+
+    // ESTE baseICAO ya existía antes del refactor
+    if (typeof baseICAO === "string" && baseICAO.length === 4) {
+      activeUser.base = {
+        icao: baseICAO,
+        city: baseCity || "",
+        country: baseCountry || "",
+        name: baseName || ""
+      };
+
+      localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+      console.log("🧭 ACS base restored from airport_list (compat)");
+    }
+  } catch (e) {
+    console.warn("ACS base restore failed", e);
+  }
+})();
+     
 </script>
      
 <script>
