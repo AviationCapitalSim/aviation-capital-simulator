@@ -610,8 +610,15 @@ function resolveACSBase() {
   } catch {}
 
   // Legacy fallback (old system)
-  const legacyICAO = localStorage.getItem("ACS_baseICAO");
-  if (!legacyICAO) return null;
+  const base = resolveACSBase();
+
+if (!base || !base.icao) {
+  console.warn("⚠ Base not found (ACS)");
+  return;
+}
+
+const baseICAO = base.icao;
+
 
   return {
     icao: legacyICAO,
