@@ -1538,7 +1538,9 @@ if (!isFlying) {
     chip.dataset.id = it.id;
     chip.dataset.blockId = it.blockId || "";
     chip.dataset.type = "flight";
+    chip.dataset.routeId = it.routeId;
 
+       
     const iataCode = localStorage.getItem("userIATA") || "IT";
     const fnOut = it.flightNumberOut || "";
     const fnIn  = it.flightNumberIn  || "";
