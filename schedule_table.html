@@ -1141,10 +1141,17 @@ function getRealFleet() {
 
 const TURNAROUND_MIN = 45;
 
+/* ============================================================
+   ⏱ SAFE toMin — prevents undefined hh:mm crashes
+   ============================================================ */
 const toMin = hhmm => {
-  const [h,m] = hhmm.split(":").map(Number);
-  return h*60 + m;
+  if (!hhmm || typeof hhmm !== "string" || !hhmm.includes(":")) {
+    return null;
+  }
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
 };
+
 const toHHMM = min => {
   const h = Math.floor(min/60)%24;
   const m = min%60;
@@ -1447,18 +1454,22 @@ dayItems.sort((a, b) => {
 dayItems.forEach(it => {
      
 /* ============================================================
-   ✈️ PASO 2 — DETECT ACTIVE FLIGHT (REAL TIME)
+   ✈️ PASO 2 — DETECT ACTIVE FLIGHT (SAFE)
    ============================================================ */
 
-// ⏱ Hora actual del simulador (desde el listener)
+// ⏱ Hora actual del simulador
 const nowMin = ACS_TABLE_TIME.minute;
 
-// ⏱ Convertir horas del vuelo
-const depMin = toMin(it.departure);
-const arrMin = toMin(it.arrival);
+// ⏱ Convertir horas del vuelo (SAFE)
+const depMin = toMin(it.departure) ?? -1;
+const arrMin = toMin(it.arrival) ?? -1;
 
 // ✈️ ¿Está volando ahora?
-const isFlying = nowMin >= depMin && nowMin < arrMin;
+const isFlying =
+  depMin >= 0 &&
+  arrMin >= 0 &&
+  nowMin >= depMin &&
+  nowMin < arrMin;
 
 /* ============================================================
    🟦 PASO 3 — VISUAL MARK: FLIGHT IN PROGRESS
