@@ -2236,210 +2236,153 @@ function editFlight(){
   window.location.href = "route_schedule.html";
 }
 
-
 /* ============================================================
    🦄 B3 — FLIGHT MODAL ENGINE (Unicorn) — 17DEC25
-   REEMPLAZA COMPLETO: openFlightModal(it) + closeFlightModal()
    ============================================================ */
 
-let ACS_selectedFlightItem = null;   // el item (it)
-let ACS_selectedChipEl = null;       // el chip HTML real (para ids/blockId/type)
+let ACS_selectedFlightItem = null;   // item lógico (scheduleItems)
+let ACS_selectedChipEl = null;       // chip DOM real (dataset.id / blockId)
+let selectedChip = null;             // legacy (usado por removeItem)
+
+/* ============================================================
+   ✈️ OPEN FLIGHT MODAL — UNIFIED ENGINE
+   ============================================================ */
 
 function openFlightModal(it, chipEl){
 
+  // ===============================
+  // 🔑 SINCRONIZACIÓN DE SELECCIÓN
+  // ===============================
   ACS_selectedFlightItem = it || null;
   ACS_selectedChipEl = chipEl || null;
-
-/* ============================================================
-   🛠 PASO 4 — SERVICE CONTEXT (MODAL) — 17DEC25
-   ============================================================ */
-
-if (it && it.type === "service") {
+  selectedChip = chipEl || null;   // 🔥 FIX CRÍTICO
 
   const modal = document.getElementById("flightModal");
   const box   = document.getElementById("flightModalContent");
   const title = document.getElementById("flightModalTitle");
 
-  const dayName = it.day ? it.day.toUpperCase() : "—";
-  const start   = it.start || "—";
-  const end     = it.end || "—";
+  if (!modal || !box || !title) return;
 
-  const isB = it.serviceType === "B";
-  const serviceLabel = isB ? "⚙️ B-Check" : "🔧 A-Check";
-  const durationText = isB
-  ? "24 hours (full day)"
-  : "5 hours";
+  /* ============================================================
+     🛠 SERVICE CONTEXT (A / B CHECK)
+     ============================================================ */
+  if (it && it.type === "service") {
 
+    const dayName = it.day ? it.day.toUpperCase() : "—";
+    const start   = it.start || "—";
+    const end     = it.end || "—";
 
-  title.textContent = serviceLabel;
+    const isB = it.serviceType === "B";
+    const serviceLabel = isB ? "⚙️ B-Check" : "🔧 A-Check";
+    const durationText = isB ? "24 hours (full day)" : "5 hours";
+
+    title.textContent = serviceLabel;
+
+    box.innerHTML = `
+      <div class="flight-kicker">
+        <strong>Maintenance Service</strong> · ${dayName}
+      </div>
+
+      <div class="flight-hero">
+        <div class="route">${serviceLabel}</div>
+        <div class="times">${start} → ${end}</div>
+      </div>
+
+      <div class="flight-meta">
+        <div class="meta-card">
+          <span class="label">Type</span>
+          <span class="value">${isB ? "B-Check" : "A-Check"}</span>
+        </div>
+        <div class="meta-card">
+          <span class="label">Duration</span>
+          <span class="value">${durationText}</span>
+        </div>
+        <div class="meta-card">
+          <span class="label">Scheduled Day</span>
+          <span class="value">${dayName}</span>
+        </div>
+        <div class="meta-card">
+          <span class="label">Status</span>
+          <span class="value">Scheduled</span>
+        </div>
+      </div>
+    `;
+
+    const footer = modal.querySelector(".acs-modal-footer");
+    if (footer) {
+      footer.innerHTML = `
+        <button class="btn-modal red" onclick="removeItem()">🗑 DELETE</button>
+        <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
+      `;
+    }
+
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+    return;
+  }
+
+  /* ============================================================
+     ✈️ FLIGHT CONTEXT (NORMAL FLIGHT)
+     ============================================================ */
+
+  const dep = it.departure || "—";
+  const arr = it.arrival || "—";
+  const day = it.day ? it.day.toUpperCase() : "—";
+
+  title.textContent = "✈️ Flight";
 
   box.innerHTML = `
     <div class="flight-kicker">
-      <strong>Maintenance Service</strong> · ${dayName}
+      <strong>Scheduled Flight</strong> · ${day}
     </div>
 
     <div class="flight-hero">
-      <div class="route">${serviceLabel}</div>
-      <div class="times">${start} → ${end}</div>
+      <div class="route">${it.origin} → ${it.destination}</div>
+      <div class="times">${dep} → ${arr}</div>
     </div>
 
     <div class="flight-meta">
       <div class="meta-card">
-        <span class="label">Type</span>
-        <span class="value">${isB ? "B-Check" : "A-Check"}</span>
+        <span class="label">Flight Out</span>
+        <span class="value">${it.flightNumberOut || "—"}</span>
       </div>
       <div class="meta-card">
-        <span class="label">Duration</span>
-        <span class="value">${durationText}</span>
+        <span class="label">Flight In</span>
+        <span class="value">${it.flightNumberIn || "—"}</span>
       </div>
       <div class="meta-card">
-        <span class="label">Scheduled Day</span>
-        <span class="value">${dayName}</span>
+        <span class="label">Aircraft</span>
+        <span class="value">${it.aircraftId || "—"}</span>
       </div>
       <div class="meta-card">
-        <span class="label">Status</span>
-        <span class="value">Scheduled</span>
+        <span class="label">Block</span>
+        <span class="value">${it.blockId || "Single"}</span>
       </div>
     </div>
   `;
 
-  // 👉 Ajuste de botones: solo CANCEL + CLOSE
   const footer = modal.querySelector(".acs-modal-footer");
   if (footer) {
     footer.innerHTML = `
-      <button class="btn-modal red" onclick="cancelSelectedService()">❌ Cancel Service</button>
+      <button class="btn-modal red" onclick="removeItem()">🗑 DELETE</button>
       <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
     `;
   }
 
   modal.classList.remove("hidden");
   modal.style.display = "flex";
-  return; // ⛔ IMPORTANTE: no continuar con lógica de vuelos
 }
-     
-  // También mantenemos compatibilidad con tu lógica vieja
-  // (por si luego quieres reutilizar removeItem/deleteFlight/editFlight)
-     
-  if (chipEl) {
-    selectedChip = chipEl;
-  }
 
+/* ============================================================
+   ✖ CLOSE MODAL
+   ============================================================ */
+function closeFlightModal(){
   const modal = document.getElementById("flightModal");
-  const box   = document.getElementById("flightModalContent");
-  const title = document.getElementById("flightModalTitle");
-
-  if (!modal || !box || !title) {
-    console.warn("⚠ flightModal elements missing.");
-    return;
-  }
-
-  const items = getItems();
-
-  // Para compatibilidad: si existen tail/acType legacy
-  const modelKey = it?.tail || it?.acType || "";
-  const day      = it?.day || "";
-
-  // vuelos “relacionados” del mismo día (legacy) — mantiene tu lógica
-  const flights = items.filter(x =>
-    x.type === "flight" &&
-    (x.tail === modelKey || x.acType === modelKey) &&
-    x.day === day
-  ).sort((a,b)=> toMin(a.departure)-toMin(b.departure));
-
-  // servicios “relacionados” del mismo día (legacy)
-  const services = items.filter(x =>
-    x.type === "service" &&
-    (x.tail === modelKey || x.acType === modelKey) &&
-    x.day === day
-  );
-
-  // Datos UI
-  const iataCode = localStorage.getItem("userIATA") || "IT";
-  const fnOut = it?.flightNumberOut || "";
-  const fnIn  = it?.flightNumberIn  || "";
-
-  const flightLabel = (fnOut && fnIn)
-    ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
-    : `${iataCode}-— / ${iataCode}-—`;
-
-  const origin = it?.origin || "—";
-  const dest   = it?.destination || "—";
-  const dep    = it?.departure || "—";
-  const arr    = it?.arrival || "—";
-
-  // Next flight (tu lógica, robusta)
-  let nextFlightText = "—";
-  let lastEventEnd = null;
-
-  flights.forEach(f=>{
-    const end = toMin(f.arrival) + TURNAROUND_MIN;
-    if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
-  });
-
-  services.forEach(s=>{
-    if (s.serviceType === "A") {
-      const end = toMin(s.end);
-      if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
-    }
-  });
-
-  const hasB = services.some(s=> s.serviceType === "B");
-  if (hasB) nextFlightText = "After B-Check (24h)";
-  else if (lastEventEnd !== null) nextFlightText = toHHMM(lastEventEnd);
-
-  title.textContent = `✈️ ${flightLabel}`;
-
-  // Construcción del contenido (Unicorn layout)
-  let maintText = "None";
-  if (hasB) maintText = "B-Check (24h)";
-  else if (services.some(s=> s.serviceType === "A")) maintText = "A-Check";
-
-  // Block time (si existe)
-  let blockText = "—";
-  try {
-    if (dep !== "—" && arr !== "—") {
-      const mins = Math.max(0, toMin(arr) - toMin(dep));
-      const h = Math.floor(mins/60);
-      const m = mins % 60;
-      blockText = `${h}h${String(m).padStart(2,"0")}`;
-    }
-  } catch(e){}
-
-  box.innerHTML = `
-    <div class="flight-kicker">
-      <strong>${origin}</strong> → <strong>${dest}</strong>
-      ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
-    </div>
-
-    <div class="flight-hero">
-      <div class="route">Napoli style · Route Panel</div>
-      <div class="times">DEP ${dep} · ARR ${arr}</div>
-    </div>
-
-    <div class="flight-meta">
-      <div class="meta-card">
-        <span class="label">Block Time</span>
-        <span class="value">${blockText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Turnaround</span>
-        <span class="value">${TURNAROUND_MIN} min</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Maintenance</span>
-        <span class="value">${maintText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Next Flight</span>
-        <span class="value">${nextFlightText}</span>
-      </div>
-    </div>
-  `;
-
-  modal.classList.remove("hidden");
-  modal.style.display = "flex";
+  if (!modal) return;
+  modal.classList.add("hidden");
+  modal.style.display = "none";
 }
-     
+
 /* ============================================================
    ❌ PASO 4 — CANCEL SERVICE — 17DEC25
    ============================================================ */
