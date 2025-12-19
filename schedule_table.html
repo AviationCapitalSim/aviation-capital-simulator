@@ -1713,6 +1713,7 @@ if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
   }
 
   // 🔒 No inventar vuelos
+     
   if (!route.flightNumberOut || !route.flightNumberIn) {
     alert("⛔ This route has no valid flight numbers. Please define them in Route Schedule.");
     return;
@@ -1721,56 +1722,34 @@ if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
   const flightOut = route.flightNumberOut;
   const flightIn  = route.flightNumberIn;
 
-  // 4️⃣ Crear vuelos
-  const blockId = separate ? null : ("block-" + Math.random().toString(36).slice(2,8));
   let assignedAny = false;
 
   daysSel.forEach(day => {
 
-/* ============================================================
-   🛑 FINAL GUARD — PREVENT DUPLICATE FLIGHT (SAME CLICK / SAME ROUTE)
-   ============================================================ */
-
-const duplicateFlight = items.some(it =>
-  it.type === "flight" &&
-  it.aircraftId === aircraftId &&
-  it.day === day &&
-  it.departure === route.departure &&
-  (
-    it.blockTimeMin === route.blockTimeMin ||
-    it.arrival === route.arrival
-  )
-);
-
-if (duplicateFlight) {
-  console.warn("⛔ Duplicate flight prevented", {
-    aircraftId,
-    day,
-    departure: route.departure
-  });
-  return;
-}
+  // 🟦 OPCIÓN A — SIEMPRE NUEVO ID DE VUELO
        
-    items.push({
-      id: separate ? ("flt-" + Math.random().toString(36).slice(2,8)) : blockId,
-      blockId: separate ? "" : blockId,
-      type: "flight",
+  const flightId = "FL_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
 
-      aircraftId: aircraftId,
-      acType: ac.model || ac.type || "",
+  items.push({
+    id: flightId,
+    blockId: flightId, // mismo id, identidad única SIEMPRE
+    type: "flight",
 
-      day,
-      origin: route.origin,
-      destination: route.destination,
-      departure: dep,
-      arrival: arr,
+    aircraftId: aircraftId,
+    acType: ac.model || ac.type || "",
 
-      flightNumberOut: flightOut,
-      flightNumberIn:  flightIn
-    });
+    day,
+    origin: route.origin,
+    destination: route.destination,
+    departure: dep,
+    arrival: arr,
 
-    assignedAny = true;
+    flightNumberOut: flightOut,
+    flightNumberIn:  flightIn
   });
+
+  assignedAny = true;
+});
 
   if (!assignedAny){
     alert("⚠ Cannot assign: schedule conflicts.");
