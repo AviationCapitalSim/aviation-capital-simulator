@@ -1726,7 +1726,7 @@ let arrNew = depNew + durNew;
 if (arrNew <= depNew) arrNew += 1440; // overnight safe
 
 // 🔍 Comparar SOLO contra vuelos del MISMO AVIÓN
-const hasOverlap = items.some(it => {
+const hasOverlap = existingFlights.some(it => {
   if (it.type !== "flight") return false;
   if (it.aircraftId !== aircraftId) return false;
 
