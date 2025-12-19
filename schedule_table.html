@@ -1278,7 +1278,24 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
- 
+     
+/* ============================================================
+   🛑 PASO 1.1 — BLOCK DELETED FLIGHTS (ABSOLUTE RULE)
+   A deleted flight MUST NEVER be rendered again
+   ============================================================ */
+
+// Cargar vuelos eliminados (registro permanente)
+const deletedFlights = JSON.parse(
+  localStorage.getItem("deletedFlights") || "[]"
+);
+
+// Filtrar items: excluir vuelos marcados como DELETE
+const filteredItems = items.filter(it => {
+  if (it.type !== "flight") return true;   // servicios no se bloquean aquí
+  if (!it.id) return true;                 // ultra-safe
+  return !deletedFlights.includes(it.id); // ❌ bloque definitivo
+});
+
 // ============================================================
 // 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (AC_xxx) — FINAL
 // ============================================================
