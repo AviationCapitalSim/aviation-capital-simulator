@@ -2181,7 +2181,7 @@ function removeItem(){
 }
 
 /* ============================================================
-   🛑 D1 — DELETE FLIGHT (ERASE + CLEAN REBUILD)
+   🛑 D1 — DELETE FLIGHT (STORAGE + MEMORY CLEAN)
    ============================================================ */
 
 function deleteSelectedFlights() {
@@ -2192,34 +2192,48 @@ function deleteSelectedFlights() {
   }
 
   const flightId = ACS_selectedChipEl.dataset.id || "";
+  const routeId  = ACS_selectedChipEl.dataset.routeId || "";
 
   if (!flightId) {
     closeFlightModal();
     return;
   }
 
-  // 📦 Leer schedule (fuente de verdad)
+  /* ===============================
+     1️⃣ BORRAR DE LOCALSTORAGE
+     =============================== */
+
   let items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-  // ❌ Eliminar SOLO este vuelo
   items = items.filter(it => it.id !== flightId);
-
-  // 💾 Guardar estado definitivo
   localStorage.setItem("scheduleItems", JSON.stringify(items));
 
-  // 🧹 Limpieza visual inmediata
+  /* ===============================
+     2️⃣ BORRAR DE MEMORIA (ASSIGN)
+     =============================== */
+
+  if (window.routeSchedule && Array.isArray(window.routeSchedule)) {
+    window.routeSchedule = window.routeSchedule.filter(r =>
+      r.id !== flightId && r.routeId !== routeId
+    );
+  }
+
+  if (window.routes && Array.isArray(window.routes)) {
+    window.routes = window.routes.filter(r =>
+      r.id !== flightId && r.routeId !== routeId
+    );
+  }
+
+  /* ===============================
+     3️⃣ LIMPIEZA Y RENDER
+     =============================== */
+
+  ACS_selectedChipEl = null;
   closeFlightModal();
   renderSchedule();
 
   alert("❌ Flight deleted permanently.");
-
-  // 🔄 PASO CLAVE:
-  // limpiar estado en memoria (routes / assign / ui)
-  setTimeout(() => {
-    location.reload();
-  }, 300);
 }
-
+     
 function editFlight(){
   if(!selectedChip){ closeActionModal(); return; }
   localStorage.setItem("editFlightID", selectedChip.dataset.id);
