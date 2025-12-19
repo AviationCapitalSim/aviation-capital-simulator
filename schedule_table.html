@@ -1710,7 +1710,7 @@ function assignRouteToTail(ac){
   const items = getItems();
 
 /* ============================================================
-   🛑 A1 — PREVENT OVERLAP (TURNAROUND AWARE)
+   🛑 A1 — PREVENT OVERLAP (DAY + TURNAROUND AWARE)
    ============================================================ */
 
 // ⏱ Nuevo vuelo
@@ -1718,10 +1718,17 @@ const depNew = toMin(route.departure || "00:00");
 const durNew = Number(route.blockTimeMin || 0);
 const arrNew = depNew + durNew;
 
-// 🔍 Detectar solape real considerando turnaround
+// 🗓️ Día del nuevo vuelo (clave)
+const newDay = route.day;
+
+// 🔍 Detectar solape REAL (mismo avión + mismo día + turnaround)
 const hasOverlap = items.some(it => {
   if (it.type !== "flight") return false;
   if (it.aircraftId !== aircraftId) return false;
+
+  // ⛔ vuelos en otros días NO solapan
+  if (it.day !== newDay) return false;
+
   if (!it.departure || !it.arrival) return false;
 
   const depOld = toMin(it.departure);
@@ -1737,7 +1744,7 @@ const hasOverlap = items.some(it => {
 });
 
 if (hasOverlap) {
-  alert("⚠ This flight overlaps with an existing flight for this aircraft.");
+  alert("⚠ This flight overlaps with an existing flight for this aircraft on the same day.");
   return;
 }
 
