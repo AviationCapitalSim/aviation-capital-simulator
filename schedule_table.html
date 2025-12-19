@@ -2181,7 +2181,7 @@ function removeItem(){
 }
 
 /* ============================================================
-   🛑 D1 — DELETE ROUTE (HARD DELETE · NO REGENERATION)
+   🛑 D1 — DELETE ROUTE (HARD ERASE · DELETE = DELETE ROUTE)
    ============================================================ */
 
 function deleteSelectedFlights() {
@@ -2200,22 +2200,17 @@ function deleteSelectedFlights() {
     return;
   }
 
-  // 📦 Obtener schedule actual
+  // 📦 Obtener TODOS los items del schedule (fuente de verdad)
   let items = getItems();
 
-  // 🧨 HARD DELETE:
-  // un vuelo ES una ruta → se elimina TODO lo que pertenezca a esa ruta
-  items = items.filter(it => {
-    if (it.type !== "flight") return true;
-
-    // prioridad: borrar por routeId
-    if (routeId && it.routeId === routeId) return false;
-
-    // fallback: vuelo suelto sin routeId
-    if (!routeId && it.id === id) return false;
-
-    return true;
-  });
+  // 🧨 HARD ERASE:
+  // Un vuelo ES una ruta → se elimina TODO lo que pertenezca a esa ruta
+  if (routeId) {
+    items = items.filter(it => !(it.type === "flight" && it.routeId === routeId));
+  } else {
+    // fallback ultra defensivo (vuelo sin routeId)
+    items = items.filter(it => !(it.type === "flight" && it.id === id));
+  }
 
   // 💾 Guardar estado DEFINITIVO
   setItems(items);
@@ -2223,17 +2218,16 @@ function deleteSelectedFlights() {
   // 🧹 Limpiar selección
   ACS_selectedChipEl = null;
 
+  // 🛰️ Limpiar SkyTrack activo si existiera
+  localStorage.removeItem("ACS_ACTIVE_FLIGHT");
+
   // 🔄 Render global
   closeFlightModal();
   renderSchedule();
 
-  // 🛰️ SkyTrack: si existe vuelo activo, limpiarlo
-  if (localStorage.getItem("ACS_ACTIVE_FLIGHT")) {
-    localStorage.removeItem("ACS_ACTIVE_FLIGHT");
-  }
-
   alert("❌ Route permanently deleted.");
 }
+
 
 function editFlight(){
   if(!selectedChip){ closeActionModal(); return; }
