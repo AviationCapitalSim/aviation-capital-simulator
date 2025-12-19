@@ -2181,7 +2181,7 @@ function removeItem(){
 }
 
 /* ============================================================
-   🛑 D1 — DELETE ROUTE (HARD ERASE · DELETE = DELETE ROUTE)
+   🛑 D1 — DELETE FLIGHT (ERASE + CLEAN REBUILD)
    ============================================================ */
 
 function deleteSelectedFlights() {
@@ -2191,43 +2191,34 @@ function deleteSelectedFlights() {
     return;
   }
 
-  // 🔑 Identificadores del vuelo seleccionado
-  const routeId = ACS_selectedChipEl.dataset.routeId || "";
-  const id      = ACS_selectedChipEl.dataset.id || "";
+  const flightId = ACS_selectedChipEl.dataset.id || "";
 
-  if (!routeId && !id) {
+  if (!flightId) {
     closeFlightModal();
     return;
   }
 
-  // 📦 Obtener TODOS los items del schedule (fuente de verdad)
-  let items = getItems();
+  // 📦 Leer schedule (fuente de verdad)
+  let items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
-  // 🧨 HARD ERASE:
-  // Un vuelo ES una ruta → se elimina TODO lo que pertenezca a esa ruta
-  if (routeId) {
-    items = items.filter(it => !(it.type === "flight" && it.routeId === routeId));
-  } else {
-    // fallback ultra defensivo (vuelo sin routeId)
-    items = items.filter(it => !(it.type === "flight" && it.id === id));
-  }
+  // ❌ Eliminar SOLO este vuelo
+  items = items.filter(it => it.id !== flightId);
 
-  // 💾 Guardar estado DEFINITIVO
-  setItems(items);
+  // 💾 Guardar estado definitivo
+  localStorage.setItem("scheduleItems", JSON.stringify(items));
 
-  // 🧹 Limpiar selección
-  ACS_selectedChipEl = null;
-
-  // 🛰️ Limpiar SkyTrack activo si existiera
-  localStorage.removeItem("ACS_ACTIVE_FLIGHT");
-
-  // 🔄 Render global
+  // 🧹 Limpieza visual inmediata
   closeFlightModal();
   renderSchedule();
 
-  alert("❌ Route permanently deleted.");
-}
+  alert("❌ Flight deleted permanently.");
 
+  // 🔄 PASO CLAVE:
+  // limpiar estado en memoria (routes / assign / ui)
+  setTimeout(() => {
+    location.reload();
+  }, 300);
+}
 
 function editFlight(){
   if(!selectedChip){ closeActionModal(); return; }
