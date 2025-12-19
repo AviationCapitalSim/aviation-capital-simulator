@@ -144,7 +144,27 @@
 
 <!-- ✈️ FLIGHT RUNTIME (LIVE FLIGHTS) -->
 <script src="engine/acs_flight_runtime.js"></script>
-
+  
+<script>
+  
+/* ============================================================
+   ⏱ SKYTRACK — RESUME GLOBAL TIME ENGINE
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    const savedClock = localStorage.getItem("ACS_CLOCK_STATE");
+    if (savedClock) {
+      const clockEl = document.getElementById("acs-clock");
+      if (clockEl) {
+        clockEl.innerText = savedClock;
+      }
+    }
+  } catch (e) {
+    console.warn("SkyTrack clock resume failed", e);
+  }
+});
+</script>
+  
  <script>
   
 /* ============================================================
