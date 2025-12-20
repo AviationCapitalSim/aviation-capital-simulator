@@ -130,8 +130,9 @@ function updateLiveFlights() {
       status
     });
   }
+window.ACS_LIVE_FLIGHTS = liveFlights;
+localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
 
-  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
 }
 
 /* ============================================================
