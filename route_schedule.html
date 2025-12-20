@@ -432,78 +432,103 @@ footer {
 <script>
      
 /* ============================================================
-   ✅ ROUTE SCHEDULE — AIRCRAFT SELECTOR (ROBUST / LEGACY SAFE)
+   🛫 ACS ROUTE SCHEDULE — AIRCRAFT SOURCE (ACTIVE + PENDING)
    ------------------------------------------------------------
-   Single source of truth: aircraftId (AC_xxx)
-   - Lista TODOS los Active aunque haya base legacy inconsistente
-   - Mantiene datasets técnicos para autoCalculate()
-   - No filtra por base (fase siguiente: normalización)
+   PASO 1 DEFINITIVO:
+   - Fuente operativa: Active + Pending
+   - Clave lógica: aircraftId
+   - UI: model + registration + status
    ============================================================ */
 
-function rs_getFleet() {
+function RS_getOperationalFleet() {
+
+  let active = [];
+  let pending = [];
+
   try {
-    return JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    active = JSON.parse(localStorage.getItem("ACS_ActiveAircraft") || "[]");
   } catch (e) {
-    console.warn("⚠ ACS_MyAircraft parse error:", e);
-    return [];
+    console.warn("ACS_ActiveAircraft parse error", e);
   }
+
+  try {
+    pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+  } catch (e) {
+    console.warn("ACS_PendingAircraft parse error", e);
+  }
+
+  // Unificar por aircraftId (evitar duplicados)
+  const map = new Map();
+
+  [...active, ...pending].forEach(ac => {
+    if (!ac || !ac.id) return;
+    map.set(ac.id, ac);
+  });
+
+  return Array.from(map.values());
 }
 
-function rs_isActive(ac) {
-  const st = String(ac?.status || "").trim().toLowerCase();
-  return st === "active";
-}
+/* ============================================================
+   🧭 POPULATE AIRCRAFT SELECTOR — FINAL
+   ============================================================ */
+function RS_populateAircraftSelector() {
 
-function rs_isValidId(ac) {
-  const id = String(ac?.id || "");
-  return id.startsWith("AC_");
-}
-
-function rs_populateAircraftSelect(preselectId = "") {
   const select = document.getElementById("aircraft");
   if (!select) return;
 
-  // Reset
   select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-  const fleet = rs_getFleet();
+  const fleet = RS_getOperationalFleet();
 
-  // ✅ ROBUST: solo requiere AC_ + Active
-  const available = fleet.filter(ac => rs_isValidId(ac) && rs_isActive(ac));
-
-  if (!available.length) {
-    console.warn("⚠ No active aircraft found in ACS_MyAircraft");
+  if (!fleet.length) {
+    console.warn("⚠ No operational aircraft (Active or Pending) found");
     return;
   }
 
-  available.forEach(ac => {
+  fleet.forEach(ac => {
+
+    const aircraftId = ac.id;
+    const model = ac.model || "Unknown";
+    const reg = ac.registration || "N/A";
+    const status = (ac.status || "").toLowerCase().includes("pending")
+      ? "Pending delivery"
+      : "Active";
+
     const opt = document.createElement("option");
 
-    // 🔑 IDENTIDAD ÚNICA
-    opt.value = ac.id;
+    // 🔑 Lógica interna
+    opt.value = aircraftId;
 
-    // UI amigable (no matrícula)
-    // (incluye base solo como info visual, no como filtro)
-    const baseInfo = ac.base ? ` • Base: ${ac.base}` : "";
-    opt.textContent = `${ac.model || ac.id}${baseInfo}`;
+    // 🖥️ UI clara (modelo + matrícula + estado)
+    opt.textContent = `${model} • ${reg} • ${status}`;
 
-    // ✅ datasets técnicos para autoCalculate()
-    opt.dataset.speed    = ac.speed || 440;
-    opt.dataset.range    = ac.range || 1500;
+    // Datos técnicos para autoCalculate
+    opt.dataset.speed = ac.speed || 440;
+    opt.dataset.range = ac.range || 1500;
     opt.dataset.category = ac.category || "";
 
     select.appendChild(opt);
   });
+}
 
-  // Preselect si aplica
-  if (preselectId) {
-    const exists = Array.from(select.options).some(o => o.value === preselectId);
-    if (exists) select.value = preselectId;
+/* ============================================================
+   🧩 SINGLE INIT POINT — ROUTE SCHEDULE
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Origin / Destination ya vienen desde Routes
+  const originInput = document.getElementById("origin");
+  const destInput   = document.getElementById("destination");
+
+  if (originInput && destInput) {
+    originInput.readOnly = true;
+    destInput.readOnly   = true;
   }
 
-  // Si no hay preselect válido: mantener placeholder
-  if (!select.value) select.selectedIndex = 0;
-}
+  // ✅ Cargar flota operativa
+  RS_populateAircraftSelector();
+
+});
 
 /* ============================================================
    ✅ COMPAT LAYER — NO ROMPER llamadas viejas
