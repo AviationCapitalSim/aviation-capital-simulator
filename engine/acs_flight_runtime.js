@@ -53,7 +53,26 @@ function updateLiveFlights() {
 
   const exec = getExecFlight();
   const liveFlights = [];
+   
+// ============================================================
+// 🔍 DEBUG — FORCE GROUND STATE (TEMP)
+// ============================================================
 
+if (exec) {
+  liveFlights.push({
+    id: "DEBUG_GROUND",
+    phase: "GROUND",
+    aircraftId: exec.aircraftId || "UNKNOWN",
+    origin: exec.origin,
+    destination: exec.destination,
+    lat: getAirportByICAO(exec.origin)?.lat,
+    lon: getAirportByICAO(exec.origin)?.lon
+  });
+
+  window.ACS_LIVE_FLIGHTS = liveFlights;
+  console.warn("🟡 SKYTRACK DEBUG — GROUND FORCED", liveFlights);
+  return;
+}
   if (
     exec &&
     typeof exec.depMin === "number" &&
