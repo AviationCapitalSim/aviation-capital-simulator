@@ -257,3 +257,51 @@
      ACS_World.initialize();   // AQUI
    });
    ============================================================= */
+
+// ============================================================
+// 🧭 ACS — BASE GUARANTEE (GLOBAL SAFETY NET)
+// ============================================================
+
+(function ensureACSBaseExists() {
+  try {
+    let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+    // Si ya hay base, no tocar
+    if (activeUser.base && activeUser.base.icao) return;
+
+    // Intentar deducir base desde airline country
+    if (!activeUser.airline?.country || !window.WorldAirportsACS) return;
+
+    const airports = Object.values(WorldAirportsACS).flat();
+
+    // Preferir aeropuertos grandes / internacionales
+    const candidate =
+      airports.find(a =>
+        a.country === activeUser.airline.country &&
+        (a.isHub || a.isInternational || a.size >= 3)
+      ) ||
+      airports.find(a => a.country === activeUser.airline.country);
+
+    if (!candidate) return;
+
+    activeUser.base = {
+      icao: candidate.icao,
+      city: candidate.city || "",
+      country: candidate.country || "",
+      name: candidate.name || ""
+    };
+
+    localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+
+    console.log(
+      "🧭 ACS base auto-created:",
+      candidate.icao,
+      "for",
+      activeUser.airline.country
+    );
+
+  } catch (e) {
+    console.warn("ACS base guarantee failed", e);
+  }
+})();
+
