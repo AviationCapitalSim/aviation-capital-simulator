@@ -430,63 +430,139 @@ footer {
 </select>
 
 <script>
+     
 /* ============================================================
-   🟦 ROUTE SCHEDULE — AIRCRAFT SELECTOR (FINAL)
+   ✅ ROUTE SCHEDULE — AIRCRAFT SELECTOR (ROBUST / LEGACY SAFE)
+   ------------------------------------------------------------
    Single source of truth: aircraftId (AC_xxx)
+   - Lista TODOS los Active aunque haya base legacy inconsistente
+   - Mantiene datasets técnicos para autoCalculate()
+   - No filtra por base (fase siguiente: normalización)
    ============================================================ */
 
-function loadAircraftById() {
+function rs_getFleet() {
+  try {
+    return JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  } catch (e) {
+    console.warn("⚠ ACS_MyAircraft parse error:", e);
+    return [];
+  }
+}
 
-  const origin = document.getElementById("origin")?.value?.trim();
+function rs_isActive(ac) {
+  const st = String(ac?.status || "").trim().toLowerCase();
+  return st === "active";
+}
+
+function rs_isValidId(ac) {
+  const id = String(ac?.id || "");
+  return id.startsWith("AC_");
+}
+
+function rs_populateAircraftSelect(preselectId = "") {
   const select = document.getElementById("aircraft");
   if (!select) return;
 
+  // Reset
   select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const fleet = rs_getFleet();
 
-  const available = fleet.filter(ac =>
-    ac.id &&
-    ac.id.startsWith("AC_") &&
-    String(ac.status).toLowerCase() === "active"
-  );
+  // ✅ ROBUST: solo requiere AC_ + Active
+  const available = fleet.filter(ac => rs_isValidId(ac) && rs_isActive(ac));
 
-  if (available.length === 0) {
-    console.warn("⚠ No active aircraft available");
+  if (!available.length) {
+    console.warn("⚠ No active aircraft found in ACS_MyAircraft");
     return;
   }
 
   available.forEach(ac => {
     const opt = document.createElement("option");
-    opt.value = ac.id;                                  // 🔑 ÚNICO ID
-    opt.textContent = ac.model;
+
+    // 🔑 IDENTIDAD ÚNICA
+    opt.value = ac.id;
+
+    // UI amigable (no matrícula)
+    // (incluye base solo como info visual, no como filtro)
+    const baseInfo = ac.base ? ` • Base: ${ac.base}` : "";
+    opt.textContent = `${ac.model || ac.id}${baseInfo}`;
+
+    // ✅ datasets técnicos para autoCalculate()
+    opt.dataset.speed    = ac.speed || 440;
+    opt.dataset.range    = ac.range || 1500;
+    opt.dataset.category = ac.category || "";
+
     select.appendChild(opt);
   });
+
+  // Preselect si aplica
+  if (preselectId) {
+    const exists = Array.from(select.options).some(o => o.value === preselectId);
+    if (exists) select.value = preselectId;
+  }
+
+  // Si no hay preselect válido: mantener placeholder
+  if (!select.value) select.selectedIndex = 0;
 }
 
 /* ============================================================
-   🟦 SINGLE INIT POINT — NO DUPLICATES
+   ✅ COMPAT LAYER — NO ROMPER llamadas viejas
+   ------------------------------------------------------------
+   En tu HTML hay llamadas mezcladas a:
+   - loadAircraftById()
+   - loadAvailableAircraft()
+   Las unificamos a un solo motor robusto.
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+function loadAircraftById() {
+  rs_populateAircraftSelect("");
+}
 
-  // Origin/Destination desde Routes
+function loadAvailableAircraft() {
+  // Legacy name — ahora robusto (NO filtra por base)
+  rs_populateAircraftSelect("");
+}
+
+/* ============================================================
+   🟦 SINGLE INIT POINT (GUARD) — evita doble init destructivo
+   ------------------------------------------------------------
+   Tu archivo tiene varios DOMContentLoaded.
+   Este guard asegura que la parte crítica (origin/dest + aircraft)
+   se ejecute de forma segura.
+   ============================================================ */
+
+function RS_initCoreOnce() {
+  if (window.__RS_CORE_INIT_DONE) return;
+  window.__RS_CORE_INIT_DONE = true;
+
   const originInput = document.getElementById("origin");
   const destInput   = document.getElementById("destination");
 
-  originInput.value = (localStorage.getItem("ACS_selectedOrigin") || "").toUpperCase();
-  destInput.value   = (localStorage.getItem("ACS_selectedDestination") || "").toUpperCase();
+  if (originInput && destInput) {
+    originInput.value = (localStorage.getItem("ACS_selectedOrigin") || originInput.value || "").toUpperCase();
+    destInput.value   = (localStorage.getItem("ACS_selectedDestination") || destInput.value || "").toUpperCase();
 
-  originInput.readOnly = true;
-  destInput.readOnly   = true;
+    originInput.readOnly = true;
+    destInput.readOnly   = true;
 
-  localStorage.removeItem("ACS_selectedOrigin");
-  localStorage.removeItem("ACS_selectedDestination");
+    localStorage.removeItem("ACS_selectedOrigin");
+    localStorage.removeItem("ACS_selectedDestination");
+  }
 
-  // ✅ Cargar aviones — SOLO el loader correcto
-  loadAvailableAircraft();
+  // ✅ Siempre cargar selector (robusto)
+  rs_populateAircraftSelect(localStorage.getItem("routeSelectedAircraft") || "");
 
-});
+  // 💾 Persistencia de selección (ya tienes otro bloque, esto no estorba)
+  const sel = document.getElementById("aircraft");
+  if (sel) {
+    sel.addEventListener("change", () => {
+      localStorage.setItem("routeSelectedAircraft", sel.value || "");
+    });
+  }
+}
+
+// Ejecutar
+document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
      
 </script>
 
@@ -833,53 +909,53 @@ window.location.href = "schedule_table.html";
 });
 
 /* ============================================================
-   🟢 FIX DEFINITIVO — LOAD AIRCRAFT BY aircraftId (AC_xxx)
-   Compatible con Schedule Table y Route Schedule
+   ✅ FIX DEFINITIVO — loadAvailableAircraft (ROBUST / NO BASE)
+   ------------------------------------------------------------
+   Antes: ac.base === origin  (rompía por datos legacy)
+   Ahora: Active + AC_ (sin filtrar por base aún)
    ============================================================ */
-
 function loadAvailableAircraft() {
 
-  const origin = (document.getElementById("origin")?.value || "").trim();
   const select = document.getElementById("aircraft");
-
   if (!select) return;
 
   select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  let fleet = [];
+  try {
+    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  } catch (e) {
+    console.warn("⚠ ACS_MyAircraft parse error:", e);
+    fleet = [];
+  }
 
-  // 🔥 AVIONES REALES (UNO = UN ID)
   const available = fleet.filter(ac =>
-    ac.id &&
-    ac.id.startsWith("AC_") &&
-    String(ac.status).toUpperCase() === "ACTIVE" &&
-    ac.base === origin
+    ac?.id &&
+    String(ac.id).startsWith("AC_") &&
+    String(ac.status || "").trim().toLowerCase() === "active"
   );
 
-  if (available.length === 0) {
-    console.warn("⚠ No active aircraft available for base:", origin);
+  if (!available.length) {
+    console.warn("⚠ No active aircraft available (robust mode)");
     return;
   }
 
   available.forEach(ac => {
-  const opt = document.createElement("option");
+    const opt = document.createElement("option");
+    opt.value = ac.id;
+    const baseInfo = ac.base ? ` • Base: ${ac.base}` : "";
+    opt.textContent = `${ac.model || ac.id}${baseInfo}`;
 
-  // 🔑 IDENTIDAD REAL
-  opt.value = ac.id; // AC_xxxx
+    // datasets técnicos
+    opt.dataset.speed    = ac.speed || 440;
+    opt.dataset.range    = ac.range || 1500;
+    opt.dataset.category = ac.category || "";
 
-  // UI amigable (SIN matrícula)
-  opt.textContent = ac.model;
+    select.appendChild(opt);
+  });
 
-  // Datos técnicos SOLO para cálculo
-  opt.dataset.speed    = ac.speed || 440;
-  opt.dataset.range    = ac.range || 1500;
-  opt.dataset.category = ac.category || "";
-
-  select.appendChild(opt);
-});
-
-// 🧼 EVITAR AUTO-SELECCIÓN DEL AVIÓN
-select.selectedIndex = 0;
+  // Mantener placeholder si no hay selección válida
+  select.selectedIndex = 0;
 }
 
 /* ============================================================
@@ -1418,25 +1494,40 @@ const newRoute = {
 };
     
 /* ============================================================
-   FIX — FORCE MODELKEY FOR SCHEDULE TABLE
+   ✅ FIX — FORCE MODELKEY FOR SCHEDULE TABLE (CORRECT)
+   ------------------------------------------------------------
+   modelKey = MODELO (ej: "A320-200"), NO aircraftId (AC_123)
+   Mantiene compatibilidad con schedule_table.html legacy.
    ============================================================ */
 
-const aircraftRaw = document.getElementById("aircraft").value || "";
-const modelKey = aircraftRaw.trim().toUpperCase();
-
-// STOP si no hay modelo
-if (!modelKey) {
-    alert("Please select an aircraft.");
-    return;
+const aircraftIdSelected = document.getElementById("aircraft").value || "";
+if (!aircraftIdSelected || !aircraftIdSelected.startsWith("AC_")) {
+  alert("Please select a valid aircraft.");
+  return;
 }
 
-// Injerta el modelo corregido en newRoute
-newRoute.modelKey = modelKey;
+let fleet = [];
+try {
+  fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+} catch(e) {
+  fleet = [];
+}
 
-// Normaliza campos que la Table NECESITA
-newRoute.aircraft = modelKey;
-newRoute.type = "flight";                 
-newRoute.blockId = "block-" + Date.now(); 
+const acObj = fleet.find(a => a.id === aircraftIdSelected) || null;
+const modelKey = (acObj?.model || "").toString().trim();
+
+if (!modelKey) {
+  alert("⚠ Aircraft model not found in fleet. Please reselect aircraft.");
+  return;
+}
+
+// Injerta el modelo REAL
+newRoute.modelKey = modelKey.toUpperCase();
+newRoute.aircraft = modelKey.toUpperCase();
+
+// Campos legacy que tu Table parece esperar
+newRoute.type = "flight";
+newRoute.blockId = "block-" + Date.now();
      
   /* ============================================================
      === SLOT ENGINE — Integrado correctamente ==================
