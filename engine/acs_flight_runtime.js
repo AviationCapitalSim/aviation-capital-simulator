@@ -51,7 +51,13 @@ function updateLiveFlights() {
 
   const nowMin = window.ACS_TIME?.minute;
   const exec = getExecFlight();
-
+   
+  // 🔧 Garantizar arrMin si no existe (fallback temporal)
+   
+  if (exec && typeof exec.depMin === "number" && typeof exec.arrMin !== "number") {
+  exec.arrMin = exec.depMin + 120; // 2h default
+}
+   
   if (
     typeof nowMin === "number" &&
     exec &&
