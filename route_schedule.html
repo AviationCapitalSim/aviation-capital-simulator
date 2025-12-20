@@ -1497,9 +1497,14 @@ if (days.length === 0) {
      5. Crear estructura de ruta ACS v5
      ================================ */
      
- const aircraftId = document.getElementById("aircraft").value;
+ // ============================================================
+// ✈️ AIRCRAFT VALIDATION — aircraftId (PASO 1)
+// ============================================================
 
-if (!aircraftId || !aircraftId.startsWith("AC_")) {
+const aircraftSelect = document.getElementById("aircraft");
+const selectedAircraftId = aircraftSelect ? aircraftSelect.value : "";
+
+if (!selectedAircraftId || !selectedAircraftId.startsWith("AC-")) {
   alert("Please select a valid aircraft.");
   return;
 }
