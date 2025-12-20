@@ -1804,6 +1804,28 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 });
+
+// ============================================================
+// 🔗 CONFIRM ROUTE BUTTON BIND (PASO 1)
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+  const confirmBtn = document.querySelector("button.confirm-route, #confirmRouteBtn");
+
+  if (!confirmBtn) {
+    console.warn("⚠ Confirm Route button not found");
+    return;
+  }
+
+  confirmBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (typeof confirmRoute === "function") {
+      confirmRoute();
+    } else {
+      console.error("❌ confirmRoute() is not defined");
+    }
+  });
+});
+
 </script>
      
 </script>
