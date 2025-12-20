@@ -228,17 +228,19 @@ function initSkyTrackMap() {
 
   const base = resolveACSBase();
 
+  // 🔒 Intento 1: centrar inmediatamente si ya está todo cargado
   if (base?.icao && window.WorldAirportsACS) {
     const baseAirport = Object.values(WorldAirportsACS).flat()
       .find(a => a.icao === base.icao);
 
-    if (baseAirport) {
+    if (baseAirport && typeof baseAirport.latitude === "number" && typeof baseAirport.longitude === "number") {
       centerLat = baseAirport.latitude;
       centerLng = baseAirport.longitude;
       zoom = 6;
     }
   }
 
+  // 🔹 Init map
   map = L.map("map").setView([centerLat, centerLng], zoom);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -250,6 +252,32 @@ function initSkyTrackMap() {
     weight: 2.2,
     opacity: 0.85,
   }).addTo(map);
+
+  // ============================================================
+  // 🧭 AJUSTE CLAVE — RECENTRAR EN BASE CUANDO TODO ESTÉ LISTO
+  // ============================================================
+
+  setTimeout(() => {
+    if (!map) return;
+
+    const baseLater = resolveACSBase();
+    if (!baseLater?.icao || !window.WorldAirportsACS) return;
+
+    const baseAirportLater = Object.values(WorldAirportsACS).flat()
+      .find(a => a.icao === baseLater.icao);
+
+    if (!baseAirportLater ||
+        typeof baseAirportLater.latitude !== "number" ||
+        typeof baseAirportLater.longitude !== "number") return;
+
+    map.setView(
+      [baseAirportLater.latitude, baseAirportLater.longitude],
+      6
+    );
+
+    console.log("🧭 SkyTrack centered at base:", baseLater.icao);
+
+  }, 300); // 🔹 delay corto, seguro, no bloqueante
 }
     
 /* ============================================================
@@ -304,6 +332,47 @@ document.addEventListener("DOMContentLoaded", () => {
     registerTimeListener(renderLiveFlights);
   }
 });
+
+/* ============================================================
+   🧭 SKYTRACK — GET BASE (ACS OFFICIAL)
+   ============================================================ */
+   
+function getACSBase(){
+  try {
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "null");
+    return user?.base || null;
+  } catch {
+    return null;
+  }
+}
+
+/* ============================================================
+   🧭 SKYTRACK — CENTER MAP AT BASE (SAFE)
+   ============================================================ */
+   
+function centerMapAtBase(){
+  if (!map) return;
+
+  const base = getACSBase();
+  if (!base || !base.icao) return;
+
+  // WorldAirportsACS debe estar cargado
+  if (!window.WorldAirportsACS) {
+    console.warn("⚠ WorldAirportsACS not loaded yet — cannot center at base");
+    return;
+  }
+
+  const baseAirport = Object.values(WorldAirportsACS).flat()
+    .find(a => a.icao === base.icao);
+
+  if (!baseAirport || typeof baseAirport.latitude !== "number" || typeof baseAirport.longitude !== "number") {
+    console.warn("⚠ Base airport not found in WorldAirportsACS:", base.icao);
+    return;
+  }
+
+  map.setView([baseAirport.latitude, baseAirport.longitude], 6);
+  console.log("🧭 SkyTrack centered at base:", base.icao);
+}
 
     
 function renderActiveFlight() {
