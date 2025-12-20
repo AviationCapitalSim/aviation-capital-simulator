@@ -83,7 +83,48 @@
     ACS_World.ready = true;
     console.log("✅ ACS_WorldEngine listo ::", ALL.length, "aeropuertos indexados");
   };
+   
+// ============================================================
+// 🧭 ACS — BASE GUARANTEE (POST WORLD INIT)
+// ============================================================
 
+try {
+  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+  if (!activeUser.base || !activeUser.base.icao) {
+
+    if (activeUser.airline?.country) {
+
+      const airports = ACS_World.ALL_AIRPORTS;
+
+      const candidate =
+        airports.find(a =>
+          a.country === activeUser.airline.country &&
+          isMajorAirport(a)
+        ) ||
+        airports.find(a => a.country === activeUser.airline.country);
+
+      if (candidate) {
+        activeUser.base = {
+          icao: candidate.icao,
+          city: candidate.city || "",
+          country: candidate.country || "",
+          name: candidate.name || ""
+        };
+
+        localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+
+        console.log(
+          "🧭 ACS base auto-created after world init:",
+          candidate.icao
+        );
+      }
+    }
+  }
+} catch (e) {
+  console.warn("ACS base guarantee failed", e);
+}
+   
   /* ===========================================================
      FECHAS HISTÓRICAS — open_year / close_year
      =========================================================== */
@@ -257,51 +298,4 @@
      ACS_World.initialize();   // AQUI
    });
    ============================================================= */
-
-// ============================================================
-// 🧭 ACS — BASE GUARANTEE (GLOBAL SAFETY NET)
-// ============================================================
-
-(function ensureACSBaseExists() {
-  try {
-    let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-    // Si ya hay base, no tocar
-    if (activeUser.base && activeUser.base.icao) return;
-
-    // Intentar deducir base desde airline country
-    if (!activeUser.airline?.country || !window.WorldAirportsACS) return;
-
-    const airports = Object.values(WorldAirportsACS).flat();
-
-    // Preferir aeropuertos grandes / internacionales
-    const candidate =
-      airports.find(a =>
-        a.country === activeUser.airline.country &&
-        (a.isHub || a.isInternational || a.size >= 3)
-      ) ||
-      airports.find(a => a.country === activeUser.airline.country);
-
-    if (!candidate) return;
-
-    activeUser.base = {
-      icao: candidate.icao,
-      city: candidate.city || "",
-      country: candidate.country || "",
-      name: candidate.name || ""
-    };
-
-    localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
-
-    console.log(
-      "🧭 ACS base auto-created:",
-      candidate.icao,
-      "for",
-      activeUser.airline.country
-    );
-
-  } catch (e) {
-    console.warn("ACS base guarantee failed", e);
-  }
-})();
 
