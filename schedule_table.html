@@ -1700,10 +1700,21 @@ function assignRouteToTail(ac){
   // ID del avión que trae la ruta
   const routeAircraftId = route.aircraftId || "";
 
-  if (!aircraftId || !aircraftId.startsWith("AC_")) {
-    alert("⚠ Invalid aircraftId on Schedule Table row.");
-    return;
-  }
+  // ============================================================
+// 🧪 TEMP PATCH — ASSIGN BY FLIGHT NUMBER ONLY (TEST PHASE)
+// ------------------------------------------------------------
+// Durante la prueba funcional completa:
+// - La tabla opera por flight numbers
+// - aircraftId NO bloquea la asignación
+// ============================================================
+
+if (!route.flightNumberOut || !route.flightNumberIn) {
+  alert("⚠ Invalid route: missing flight numbers.");
+  return;
+}
+
+// ⛔ aircraftId check intentionally bypassed (test phase)
+// if (route.aircraftId !== aircraftId) return;
 
   if (!routeAircraftId || !routeAircraftId.startsWith("AC_")) {
     alert("⚠ Route has no valid aircraftId. Recreate the route in Route Schedule.");
