@@ -288,6 +288,32 @@
 <script src="engine/acs_country_history.js"></script> <!-- si lo usas -->
 <script src="engine/acs_world_engine.js"></script>    <!-- 👈 NUEVO -->
 
+<script>
+
+/* ============================================================
+   🧭 BASE RESTORE — Choose Base Safe Guard (ONE TIME)
+   ============================================================ */
+
+(function restoreBaseIfExists(){
+
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  if (!user || !user.base || !user.base.icao) return;
+
+  // 🔹 Reinyectar legacy keys si faltan
+  if (!localStorage.getItem("ACS_baseICAO")) {
+    localStorage.setItem("ACS_baseICAO", user.base.icao);
+    localStorage.setItem("ACS_baseCity", user.base.city || "");
+    localStorage.setItem("ACS_baseName", user.base.name || "");
+    localStorage.setItem("ACS_baseCountry", user.base.country || "");
+    localStorage.setItem("ACS_baseContinent", user.base.continent || "");
+  }
+
+  console.log("🧭 Base restaurada desde ACS_activeUser:", user.base);
+
+})();
+  
+</script>
+  
 <!-- ============================================================
      === INITIALIZER (ÚNICO BLOQUE CORRECTO) ====================
      ============================================================ -->
