@@ -48,13 +48,13 @@
 
 function updateLiveFlights() {
 
-  const nowMin = window.ACS_TIME?.minute;
-  if (typeof nowMin !== "number") return;
-
-  const exec = getExecFlight();
   const liveFlights = [];
-   
+
+  const nowMin = window.ACS_TIME?.minute;
+  const exec = getExecFlight();
+
   if (
+    typeof nowMin === "number" &&
     exec &&
     typeof exec.depMin === "number" &&
     typeof exec.arrMin === "number" &&
@@ -64,75 +64,64 @@ function updateLiveFlights() {
 
     const origin = getAirportByICAO(exec.origin);
     const dest   = getAirportByICAO(exec.destination);
-    if (!origin || !dest) return;
 
-    const dep = exec.depMin;
-    const arr = exec.arrMin;
+    if (origin && dest) {
 
-    let progress = 0;
-    let lat = origin.latitude;
-    let lng = origin.longitude;
-    let status = "ground";
+      const dep = exec.depMin;
+      const arr = exec.arrMin;
 
-    // --------------------------------------------------------
-    // 🛬 1️⃣ EN TIERRA (BASE / ORIGEN)
-    // --------------------------------------------------------
-    if (nowMin < dep) {
-      progress = 0;
-      lat = origin.latitude;
-      lng = origin.longitude;
-      status = "ground";
+      let progress = 0;
+      let lat = origin.latitude;
+      let lng = origin.longitude;
+      let status = "ground";
+
+      if (nowMin < dep) {
+        progress = 0;
+        lat = origin.latitude;
+        lng = origin.longitude;
+        status = "ground";
+      }
+      else if (nowMin >= dep && nowMin <= arr) {
+        progress = (nowMin - dep) / (arr - dep);
+        progress = Math.min(Math.max(progress, 0), 1);
+
+        const pos = interpolateGC(
+          origin.latitude,
+          origin.longitude,
+          dest.latitude,
+          dest.longitude,
+          progress
+        );
+
+        lat = pos.lat;
+        lng = pos.lng;
+        status = "enroute";
+      }
+      else if (nowMin > arr) {
+        progress = 1;
+        lat = dest.latitude;
+        lng = dest.longitude;
+        status = "arrived";
+      }
+
+      liveFlights.push({
+        aircraftId: exec.aircraftId || "",
+        flightOut: exec.flightOut || "",
+        origin: exec.origin,
+        destination: exec.destination,
+        depMin: dep,
+        arrMin: arr,
+        progress,
+        lat,
+        lng,
+        status
+      });
     }
-
-    // --------------------------------------------------------
-    // ✈️ 2️⃣ EN VUELO
-    // --------------------------------------------------------
-    else if (nowMin >= dep && nowMin <= arr) {
-      progress = (nowMin - dep) / (arr - dep);
-      progress = Math.min(Math.max(progress, 0), 1);
-
-      const pos = interpolateGC(
-        origin.latitude,
-        origin.longitude,
-        dest.latitude,
-        dest.longitude,
-        progress
-      );
-
-      lat = pos.lat;
-      lng = pos.lng;
-      status = "enroute";
-    }
-
-    // --------------------------------------------------------
-    // 🛬 3️⃣ EN DESTINO (POST ARRIVAL)
-    // --------------------------------------------------------
-    else if (nowMin > arr) {
-      progress = 1;
-      lat = dest.latitude;
-      lng = dest.longitude;
-      status = "arrived";
-    }
-
-    // --------------------------------------------------------
-    // 📍 PUBLICAR SIEMPRE
-    // --------------------------------------------------------
-    liveFlights.push({
-      aircraftId: exec.aircraftId || "",
-      flightOut:  exec.flightOut || "",
-      origin:     exec.origin,
-      destination:exec.destination,
-      depMin:     dep,
-      arrMin:     arr,
-      progress,
-      lat,
-      lng,
-      status
-    });
   }
-window.ACS_LIVE_FLIGHTS = liveFlights;
-localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
 
+  // 🔒 PUBLICAR SIEMPRE (SIN EXCEPCIONES)
+  window.ACS_LIVE_FLIGHTS = liveFlights;
+  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
 }
 
 /* ============================================================
