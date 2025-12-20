@@ -1715,13 +1715,52 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 });
      
+<script>
 /* ============================================================
    DOM READY FIX (Safari)
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
     window.confirmRoute = confirmRoute;
 });
+</script>
 
+<script>
+/* ============================================================
+   🔒 ACS ROUTE SCHEDULE — AIRCRAFT SELECTOR LOCK
+   ------------------------------------------------------------
+   Evita que código legacy vuelva a vaciar el <select id="aircraft">
+   después de haber sido poblado correctamente.
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const sel = document.getElementById("aircraft");
+  if (!sel) return;
+
+  const proto = HTMLSelectElement.prototype;
+  const desc = Object.getOwnPropertyDescriptor(proto, "innerHTML");
+  if (!desc || !desc.set || !desc.get) return;
+
+  Object.defineProperty(sel, "innerHTML", {
+    set(value) {
+      if (
+        typeof value === "string" &&
+        value.includes("-- Select Aircraft --") &&
+        sel.options.length > 1
+      ) {
+        console.warn("🛑 Aircraft selector reset blocked (legacy code)");
+        return;
+      }
+      desc.set.call(this, value);
+    },
+    get() {
+      return desc.get.call(this);
+    }
+  });
+
+});
+</script>
+     
 </script>
      
 </body>
