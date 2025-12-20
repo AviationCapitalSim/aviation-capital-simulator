@@ -138,7 +138,21 @@
     
 <!-- ⏱ TIME ENGINE -->
 <script src="time_engine.js"></script>
+  
+<script>
+/* ============================================================
+   ⏱ ACS TIME ENGINE — SKYTRACK INIT
+   ------------------------------------------------------------
+   Garantiza que ACS_TIME exista en SkyTrack
+   ============================================================ */
 
+if (typeof initACSTime === "function") {
+  initACSTime();
+} else {
+  console.warn("⛔ initACSTime() not found in SkyTrack");
+}
+  
+</script>
 <!-- 🌍 WORLD / AIRPORT ENGINE -->
 <script src="engine/acs_world_engine.js"></script>
 
