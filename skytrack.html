@@ -136,46 +136,66 @@
   <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
 
     
-<!-- ⏱ TIME ENGINE -->
+<!-- ============================================================
+     ⏱ TIME ENGINE
+     ============================================================ -->
 <script src="time_engine.js"></script>
-  
-<script>
-  
-/* ============================================================
-   ⏱ SKYTRACK LOCAL TIME ENGINE (OPTION B)
-   ------------------------------------------------------------
-   Tiempo independiente SOLO para SkyTrack
-   ============================================================ */
 
+<script>
+/* ============================================================
+   ⏱ SKYTRACK LOCAL TIME ENGINE (FALLBACK)
+   ------------------------------------------------------------
+   Se usa SOLO si no existe ACS_TIME global
+   ============================================================ */
 (function () {
 
   if (window.ACS_TIME) return;
 
-  // Inicialización básica
   window.ACS_TIME = {
     day: "sun",
     minute: 0
   };
 
-  // Avanza 1 minuto ACS cada segundo real
   setInterval(() => {
-    window.ACS_TIME.minute++;
-
-    if (window.ACS_TIME.minute >= 1440) {
-      window.ACS_TIME.minute = 0;
-    }
+    window.ACS_TIME.minute = (window.ACS_TIME.minute + 1) % 1440;
   }, 1000);
 
-  console.log("⏱ SkyTrack local ACS_TIME started");
+  console.log("SkyTrack local ACS_TIME started");
 
 })();
 </script>
-  
-<!-- 🌍 WORLD / AIRPORT ENGINE -->
+
+<!-- ============================================================
+     🌍 WORLD ENGINE (CONTENEDOR)
+     ============================================================ -->
 <script src="engine/acs_world_engine.js"></script>
 
-<!-- ✈️ FLIGHT RUNTIME (LIVE FLIGHTS) -->
+<!-- ============================================================
+     🌍 WORLD AIRPORT DATA (POR CONTINENTE)
+     ============================================================ -->
+<script src="engine/airports/world_airports_na.js?v=1.0"></script>
+<script src="engine/airports/world_airports_sa.js?v=1.0"></script>
+<script src="engine/airports/world_airports_eu.js?v=1.0"></script>
+<script src="engine/airports/world_airports_me.js?v=1.0"></script>
+<script src="engine/airports/world_airports_af.js?v=1.0"></script>
+<script src="engine/airports/world_airports_as.js?v=1.0"></script>
+<script src="engine/airports/world_airports_oc.js?v=1.0"></script>
+
+<!-- ============================================================
+     🧭 SKYTRACK AIRPORT ADAPTER (LIGERO, ICAO → COORDS)
+     ============================================================ -->
+<script src="engine/skytrack/skytrack_airport_adapter.js?v=1.0"></script>
+
+<!-- ============================================================
+     ✈️ FLIGHT RUNTIME (LIVE FLIGHTS)
+     ============================================================ -->
 <script src="engine/acs_flight_runtime.js"></script>
+
+<!-- ============================================================
+     🗺 SKYTRACK MAP / RENDER
+     ============================================================ -->
+<script src="engine/skytrack/skytrack_map.js"></script>
+
   
 <script>
   
