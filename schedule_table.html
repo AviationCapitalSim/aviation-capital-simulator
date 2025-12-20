@@ -1690,22 +1690,26 @@ function assignRouteToTail(ac){
     return; 
   }
 
-  /* ============================================================
-     🟢 AIRCRAFT ID VALIDATION — FINAL (AC_xxx ONLY)
-     ============================================================ */
+ /* ============================================================
+   🟢 AIRCRAFT / ROUTE VALIDATION — TEST PHASE (MODEL SAFE)
+   ------------------------------------------------------------
+   Reglas activas en fase de prueba:
+   ✔ La ruta DEBE tener flight numbers
+   ✔ La ruta SOLO puede asignarse a un avión del MISMO MODELO
+   ✖ aircraftId se validará en fase de normalización
+   ============================================================ */
 
-  // ID del avión de esta fila
-  const aircraftId = ac.id || "";
+// ID del avión de esta fila (se conserva para futuro)
+const aircraftId = ac.id || "";
 
-  // ID del avión que trae la ruta
-  const routeAircraftId = route.aircraftId || "";
+// Modelo del avión de esta fila
+const aircraftModel = (ac.model || ac.modelKey || "").toString().toUpperCase();
 
-  // ============================================================
-// 🧪 TEMP PATCH — ASSIGN BY FLIGHT NUMBER ONLY (TEST PHASE)
-// ------------------------------------------------------------
-// Durante la prueba funcional completa:
-// - La tabla opera por flight numbers
-// - aircraftId NO bloquea la asignación
+// Modelo que trae la ruta
+const routeModel = (route.modelKey || route.aircraft || "").toString().toUpperCase();
+
+// ============================================================
+// 🧪 VALIDACIÓN POR FLIGHT NUMBER (OBLIGATORIA)
 // ============================================================
 
 if (!route.flightNumberOut || !route.flightNumberIn) {
@@ -1713,18 +1717,20 @@ if (!route.flightNumberOut || !route.flightNumberIn) {
   return;
 }
 
-// ⛔ aircraftId check intentionally bypassed (test phase)
-// if (route.aircraftId !== aircraftId) return;
+// ============================================================
+// 🔒 PROTECCIÓN LÓGICA CORRECTA — MODELO COMPATIBLE
+// ============================================================
 
-  if (!routeAircraftId || !routeAircraftId.startsWith("AC_")) {
-    alert("⚠ Route has no valid aircraftId. Recreate the route in Route Schedule.");
-    return;
-  }
+if (routeModel && aircraftModel && routeModel !== aircraftModel) {
+  alert(`⚠ This route is for ${routeModel}, not for ${aircraftModel}.`);
+  return;
+}
 
-  if (routeAircraftId !== aircraftId) {
-    alert(`⚠ Route is for ${routeAircraftId}, but this row is ${aircraftId}.`);
-    return;
-  }
+// ============================================================
+// ⛔ aircraftId VALIDATION DESACTIVATED (TEST PHASE)
+// ------------------------------------------------------------
+// if (!route.aircraftId || route.aircraftId !== aircraftId) return;
+// ============================================================
 
   // 2️⃣ Obtener schedule actual
   const items = getItems();
