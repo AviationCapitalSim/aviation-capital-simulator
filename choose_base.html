@@ -672,7 +672,7 @@ const ISO2_TO_COUNTRY = {
    SET BASE — SE MANTIENE MODERNO (GUARDA a.region)
    (Luego el Dashboard hará la magia histórica con banderas)
 ============================================================ */
-  
+
 function setBase(icao) {
   const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
   if (!airport) return alert("⚠️ Airport not found.");
@@ -685,10 +685,8 @@ function setBase(icao) {
   }
 
   // 🔥 Guardar país moderno del aeropuerto
-  
   const raw = (airport.country || airport.region || "").toUpperCase();
   user.airline.country = ISO2_TO_COUNTRY[raw] || raw;
-
 
   // 🔥 BASE REAL (estructura moderna ACS)
   user.base = {
@@ -698,31 +696,38 @@ function setBase(icao) {
     name: airport.name,
     country: airport.country || airport.region || "",
     continent: selectedContinent,
-    demand_total: (airport.demand?.Y||0)+(airport.demand?.C||0)+(airport.demand?.F||0),
+    demand_total:
+      (airport.demand?.Y || 0) +
+      (airport.demand?.C || 0) +
+      (airport.demand?.F || 0),
     slot_capacity: airport.slot_capacity,
     slot_cost_usd: airport.slot_cost_usd
   };
 
-  // 🔥 COMPATIBILIDAD CON LOS 7 CONTINENTES
+  // 🔥 COMPATIBILIDAD CON LOS 7 CONTINENTES (FORZADA)
   localStorage.setItem("ACS_baseICAO", airport.icao);
-  localStorage.setItem("ACS_baseIATA", airport.iata);
-  localStorage.setItem("ACS_baseCity", airport.city);
-  localStorage.setItem("ACS_baseName", airport.name);
+  localStorage.setItem("ACS_baseIATA", airport.iata || "");
+  localStorage.setItem("ACS_baseCity", airport.city || "");
+  localStorage.setItem("ACS_baseName", airport.name || "");
   localStorage.setItem("ACS_baseCountry", airport.country || airport.region || "");
-  localStorage.setItem("ACS_baseContinent", selectedContinent);
+  localStorage.setItem("ACS_baseContinent", selectedContinent || "");
+
+  // 🔒 MARCA EXPLÍCITA DE BASE VÁLIDA (AJUSTE CLAVE)
+  localStorage.setItem("ACS_baseReady", "1");
 
   // 🔥 Guardar en ACS_activeUser y ACS_users
   localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
-  const users = JSON.parse(localStorage.getItem("ACS_users")||"[]");
+  const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
   const index = users.findIndex(u => u.email === user.email);
   if (index !== -1) users[index] = user;
   localStorage.setItem("ACS_users", JSON.stringify(users));
 
+  console.log("✅ Base establecida correctamente:", user.base);
+
   alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
   window.location.href = "dashboard.html";
-}  
-
+}
 
 /* ============================================================
    DEMAND TOOLTIP
