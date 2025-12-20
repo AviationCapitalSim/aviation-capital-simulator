@@ -132,11 +132,24 @@ function updateLiveFlights() {
   window.ACS_LIVE_FLIGHTS = liveFlights;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
 }
+   
+// ============================================================
+// 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
+// ============================================================
 
+function waitForWorldAirports(cb) {
+  if (window.WorldAirportsACS && Object.keys(WorldAirportsACS).length > 0) {
+    cb();
+  } else {
+    setTimeout(() => waitForWorldAirports(cb), 200);
+  }
+}
+   
 /* ============================================================
    ⏱ TIME ENGINE HOOK
    ============================================================ */
 
-registerTimeListener(updateLiveFlights);
-
-})();
+  waitForWorldAirports(() => {
+  registerTimeListener(updateLiveFlights);
+  console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
+});
