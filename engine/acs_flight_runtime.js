@@ -152,4 +152,7 @@ function waitForWorldAirports(cb) {
   waitForWorldAirports(() => {
   registerTimeListener(updateLiveFlights);
   console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
+     
 });
+
+})();
