@@ -274,7 +274,8 @@ function initSkyTrackMap() {
 
   // 🔹 Init map
   map = L.map("map").setView([centerLat, centerLng], zoom);
-
+  window.ACS_SKYTRACK_MAP = map;
+  
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 10,
     attribution: "&copy; OpenStreetMap — ACS SkyTrack",
