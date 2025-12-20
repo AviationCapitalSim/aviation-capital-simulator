@@ -415,20 +415,12 @@ function renderActiveFlight() {
   }
 }
 
-// ✅ init when DOM is ready (map div exists)
-document.addEventListener("DOMContentLoaded", () => {
-  initSkyTrackMap();
-  renderActiveFlight();
-});
-
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
 </script>
-  
-
-  
+    
 <script>
 /* ============================================================
    ⏱ SKYTRACK TIME LISTENER
