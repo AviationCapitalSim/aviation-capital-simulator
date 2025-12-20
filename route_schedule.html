@@ -483,8 +483,9 @@ document.addEventListener("DOMContentLoaded", () => {
   localStorage.removeItem("ACS_selectedOrigin");
   localStorage.removeItem("ACS_selectedDestination");
 
-  // 🔥 Cargar aviones UNA SOLA VEZ
-  loadAircraftById();
+  // ✅ Cargar aviones — SOLO el loader correcto
+  loadAvailableAircraft();
+
 });
      
 </script>
