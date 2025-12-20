@@ -41,7 +41,6 @@
     };
   }
 
-
  /* ============================================================
    ✈️ RUNTIME LOOP — 3 PHASES (GROUND / AIR / DESTINATION)
    ============================================================ */
@@ -63,67 +62,57 @@ function updateLiveFlights() {
   ) {
 
     const origin = getAirportByICAO(exec.origin);
-    const dest   = getAirportByICAO(exec.destination);
+const dest   = getAirportByICAO(exec.destination);
 
-    if (!origin || !dest) {
-       
-    // WorldAirportsACS aún no cargado → esperar próximo tick
-       
-    window.ACS_LIVE_FLIGHTS = [];
-    localStorage.setItem("ACS_LIVE_FLIGHTS", "[]");
-    return;
- }
+// Si WorldAirportsACS aún no está listo, salir y esperar próximo tick
+if (!origin || !dest) return;
 
-    if (origin && dest) {
+// A partir de aquí origin y dest existen seguro
+const dep = exec.depMin;
+const arr = exec.arrMin;
 
-      const dep = exec.depMin;
-      const arr = exec.arrMin;
+let progress = 0;
+let lat = origin.latitude;
+let lng = origin.longitude;
+let status = "ground";
 
-      let progress = 0;
-      let lat = origin.latitude;
-      let lng = origin.longitude;
-      let status = "ground";
+if (nowMin < dep) {
+  status = "ground";
+}
+else if (nowMin >= dep && nowMin <= arr) {
+  progress = (nowMin - dep) / (arr - dep);
+  progress = Math.min(Math.max(progress, 0), 1);
 
-      if (nowMin < dep) {
-        progress = 0;
-        lat = origin.latitude;
-        lng = origin.longitude;
-        status = "ground";
-      }
-      else if (nowMin >= dep && nowMin <= arr) {
-        progress = (nowMin - dep) / (arr - dep);
-        progress = Math.min(Math.max(progress, 0), 1);
+  const pos = interpolateGC(
+    origin.latitude,
+    origin.longitude,
+    dest.latitude,
+    dest.longitude,
+    progress
+  );
 
-        const pos = interpolateGC(
-          origin.latitude,
-          origin.longitude,
-          dest.latitude,
-          dest.longitude,
-          progress
-        );
+  lat = pos.lat;
+  lng = pos.lng;
+  status = "enroute";
+}
+else {
+  lat = dest.latitude;
+  lng = dest.longitude;
+  status = "arrived";
+}
 
-        lat = pos.lat;
-        lng = pos.lng;
-        status = "enroute";
-      }
-      else if (nowMin > arr) {
-        progress = 1;
-        lat = dest.latitude;
-        lng = dest.longitude;
-        status = "arrived";
-      }
+liveFlights.push({
+  aircraftId: exec.aircraftId || "",
+  flightOut: exec.flightOut || "",
+  origin: exec.origin,
+  destination: exec.destination,
+  depMin: dep,
+  arrMin: arr,
+  progress,
+  lat,
+  lng,
+  status
 
-      liveFlights.push({
-        aircraftId: exec.aircraftId || "",
-        flightOut: exec.flightOut || "",
-        origin: exec.origin,
-        destination: exec.destination,
-        depMin: dep,
-        arrMin: arr,
-        progress,
-        lat,
-        lng,
-        status
       });
     }
   }
