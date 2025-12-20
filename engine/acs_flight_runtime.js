@@ -112,57 +112,69 @@ if (exec && typeof exec.depMin === "number" && typeof exec.arrMin === "number") 
     const schedule = getScheduleItems();
     const liveFlights = [];
 
-   schedule.forEach(it => {
+  schedule.forEach(it => {
 
   if (!it.origin || !it.destination) return;
-
-  /* ============================================================
-     🛟 FALLBACK — startMin / endMin FROM depMin / arrMin
-     ============================================================ */
-  if (typeof it.startMin !== "number" || typeof it.endMin !== "number") {
-    if (typeof it.depMin !== "number" || typeof it.arrMin !== "number") {
-      return;
-    }
-    it.startMin = it.depMin;
-    it.endMin   = it.arrMin;
-  }
-
-  // ¿Está volando ahora?
-  if (nowMin < it.startMin || nowMin > it.endMin) return;
 
   const origin = getAirportByICAO(it.origin);
   const dest   = getAirportByICAO(it.destination);
   if (!origin || !dest) return;
 
-  const duration = it.endMin - it.startMin;
-  const elapsed  = nowMin - it.startMin;
-  const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+  const startMin = Number(it.startMin);
+  const endMin   = Number(it.endMin);
+  if (!Number.isFinite(startMin) || !Number.isFinite(endMin)) return;
 
-  const pos = interpolateGC(
-    origin.latitude,
-    origin.longitude,
-    dest.latitude,
-    dest.longitude,
-    progress
-  );
+  let progress = 0;
+  let lat = origin.latitude;
+  let lng = origin.longitude;
+
+  // 🟢 EN TIERRA (ANTES DE DESPEGAR)
+  if (nowMin < startMin) {
+    progress = 0;
+  }
+
+  // ✈️ EN VUELO
+  else if (nowMin >= startMin && nowMin <= endMin) {
+    const duration = endMin - startMin;
+    const elapsed  = nowMin - startMin;
+    progress = Math.min(Math.max(elapsed / duration, 0), 1);
+
+    const pos = interpolateGC(
+      origin.latitude,
+      origin.longitude,
+      dest.latitude,
+      dest.longitude,
+      progress
+    );
+
+    lat = pos.lat;
+    lng = pos.lng;
+  }
+
+  // 🛬 LLEGADO — QUEDA FIJO EN DESTINO
+  else if (nowMin > endMin) {
+    progress = 1;
+    lat = dest.latitude;
+    lng = dest.longitude;
+  }
 
   liveFlights.push({
     aircraftId: it.aircraftId || "",
     flightOut:  it.flightOut || "",
     origin:     it.origin,
     destination:it.destination,
-    startMin:   it.startMin,
-    endMin:     it.endMin,
+    startMin,
+    endMin,
     progress,
-    lat: pos.lat,
-    lng: pos.lng
+    lat,
+    lng
   });
 
 });
 
 localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
 
-  }
+}
 
   /* ============================================================
      ⏱ REGISTER WITH TIME ENGINE
