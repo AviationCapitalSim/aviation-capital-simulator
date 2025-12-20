@@ -322,29 +322,38 @@ function renderLiveFlights(){
 
   if (!map) return; // ⛔ seguridad
 
-  let flights = [];
-  try {
-    flights = JSON.parse(localStorage.getItem("ACS_LIVE_FLIGHTS")) || [];
-  } catch {}
+  // ============================================================
+// ✈️ SKYTRACK — READ LIVE FLIGHTS (RUNTIME SOURCE)
+// ============================================================
 
-  const activeIds = new Set();
+let flights = [];
 
-  flights.forEach(f => {
-    if (typeof f.lat !== "number" || typeof f.lng !== "number") return;
+try {
+  flights = Array.isArray(window.ACS_LIVE_FLIGHTS)
+    ? window.ACS_LIVE_FLIGHTS
+    : [];
+} catch (e) {
+  flights = [];
+}
 
-    activeIds.add(f.aircraftId);
+const activeIds = new Set();
 
-    // Crear marker si no existe
-    if (!liveFlightMarkers[f.aircraftId]) {
-      liveFlightMarkers[f.aircraftId] = L.marker(
-        [f.lat, f.lng],
-        { title: f.flightOut || f.aircraftId }
-      ).addTo(map);
-    }
+flights.forEach(f => {
+  if (typeof f.lat !== "number" || typeof f.lng !== "number") return;
 
-    // Actualizar posición
-    liveFlightMarkers[f.aircraftId].setLatLng([f.lat, f.lng]);
-  });
+  activeIds.add(f.aircraftId);
+
+  // Crear marker si no existe
+  if (!liveFlightMarkers[f.aircraftId]) {
+    liveFlightMarkers[f.aircraftId] = L.marker(
+      [f.lat, f.lng],
+      { title: `${f.aircraftId || "AC"} — ${f.status || "unknown"}` }
+    ).addTo(map);
+  }
+
+  // Actualizar posición SIEMPRE
+  liveFlightMarkers[f.aircraftId].setLatLng([f.lat, f.lng]);
+});
 
   // Eliminar vuelos que ya no están activos
   Object.keys(liveFlightMarkers).forEach(id => {
