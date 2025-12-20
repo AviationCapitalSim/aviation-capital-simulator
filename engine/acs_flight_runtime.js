@@ -65,6 +65,15 @@ function updateLiveFlights() {
     const origin = getAirportByICAO(exec.origin);
     const dest   = getAirportByICAO(exec.destination);
 
+    if (!origin || !dest) {
+       
+    // WorldAirportsACS aún no cargado → esperar próximo tick
+       
+    window.ACS_LIVE_FLIGHTS = [];
+    localStorage.setItem("ACS_LIVE_FLIGHTS", "[]");
+    return;
+ }
+
     if (origin && dest) {
 
       const dep = exec.depMin;
