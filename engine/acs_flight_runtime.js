@@ -63,7 +63,49 @@
 
     const nowMin = window.ACS_TIME?.minute;
     if (typeof nowMin !== "number") return;
+     
+// ============================================================
+// 🛫 SINGLE ACTIVE FLIGHT (FROM ACS_FLIGHT_EXEC)
+// ============================================================
 
+if (exec && typeof exec.depMin === "number" && typeof exec.arrMin === "number") {
+
+  if (nowMin >= exec.depMin && nowMin <= exec.arrMin) {
+
+    const origin = getAirportByICAO(exec.origin);
+    const dest   = getAirportByICAO(exec.destination);
+
+    if (origin && dest) {
+
+      const duration = exec.arrMin - exec.depMin;
+      const elapsed  = nowMin - exec.depMin;
+      const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+
+      const pos = interpolateGC(
+        origin.latitude,
+        origin.longitude,
+        dest.latitude,
+        dest.longitude,
+        progress
+      );
+
+      localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify([{
+        aircraftId: exec.aircraftId || "",
+        flightOut:  exec.flightOut || "",
+        origin:     exec.origin,
+        destination:exec.destination,
+        startMin:   exec.depMin,
+        endMin:     exec.arrMin,
+        progress,
+        lat: pos.lat,
+        lng: pos.lng
+      }]));
+
+      return; // ⛔ NO procesar scheduleItems
+    }
+  }
+}
+     
     const base = getActiveUserBase();
     if (!base) return;
 
