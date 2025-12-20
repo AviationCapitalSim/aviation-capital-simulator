@@ -112,45 +112,56 @@ if (exec && typeof exec.depMin === "number" && typeof exec.arrMin === "number") 
     const schedule = getScheduleItems();
     const liveFlights = [];
 
-    schedule.forEach(it => {
+   schedule.forEach(it => {
 
-      if (!it.origin || !it.destination) return;
-      if (typeof it.startMin !== "number" || typeof it.endMin !== "number") return;
+  if (!it.origin || !it.destination) return;
 
-      // ¿Está volando ahora?
-      if (nowMin < it.startMin || nowMin > it.endMin) return;
+  /* ============================================================
+     🛟 FALLBACK — startMin / endMin FROM depMin / arrMin
+     ============================================================ */
+  if (typeof it.startMin !== "number" || typeof it.endMin !== "number") {
+    if (typeof it.depMin !== "number" || typeof it.arrMin !== "number") {
+      return;
+    }
+    it.startMin = it.depMin;
+    it.endMin   = it.arrMin;
+  }
 
-      const origin = getAirportByICAO(it.origin);
-      const dest   = getAirportByICAO(it.destination);
-      if (!origin || !dest) return;
+  // ¿Está volando ahora?
+  if (nowMin < it.startMin || nowMin > it.endMin) return;
 
-      const duration = it.endMin - it.startMin;
-      const elapsed  = nowMin - it.startMin;
-      const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+  const origin = getAirportByICAO(it.origin);
+  const dest   = getAirportByICAO(it.destination);
+  if (!origin || !dest) return;
 
-      const pos = interpolateGC(
-        origin.latitude,
-        origin.longitude,
-        dest.latitude,
-        dest.longitude,
-        progress
-      );
+  const duration = it.endMin - it.startMin;
+  const elapsed  = nowMin - it.startMin;
+  const progress = Math.min(Math.max(elapsed / duration, 0), 1);
 
-      liveFlights.push({
-        aircraftId: it.aircraftId || "",
-        flightOut:  it.flightOut || "",
-        origin:     it.origin,
-        destination:it.destination,
-        startMin:   it.startMin,
-        endMin:     it.endMin,
-        progress,
-        lat: pos.lat,
-        lng: pos.lng
-      });
+  const pos = interpolateGC(
+    origin.latitude,
+    origin.longitude,
+    dest.latitude,
+    dest.longitude,
+    progress
+  );
 
-    });
+  liveFlights.push({
+    aircraftId: it.aircraftId || "",
+    flightOut:  it.flightOut || "",
+    origin:     it.origin,
+    destination:it.destination,
+    startMin:   it.startMin,
+    endMin:     it.endMin,
+    progress,
+    lat: pos.lat,
+    lng: pos.lng
+  });
 
-    localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
+});
+
+localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
+
   }
 
   /* ============================================================
