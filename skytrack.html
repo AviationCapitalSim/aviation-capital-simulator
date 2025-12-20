@@ -138,7 +138,39 @@
     
 <!-- ⏱ TIME ENGINE -->
 <script src="time_engine.js"></script>
+  
+<script>
+  
+/* ============================================================
+   ⏱ SKYTRACK LOCAL TIME ENGINE (OPTION B)
+   ------------------------------------------------------------
+   Tiempo independiente SOLO para SkyTrack
+   ============================================================ */
 
+(function () {
+
+  if (window.ACS_TIME) return;
+
+  // Inicialización básica
+  window.ACS_TIME = {
+    day: "sun",
+    minute: 0
+  };
+
+  // Avanza 1 minuto ACS cada segundo real
+  setInterval(() => {
+    window.ACS_TIME.minute++;
+
+    if (window.ACS_TIME.minute >= 1440) {
+      window.ACS_TIME.minute = 0;
+    }
+  }, 1000);
+
+  console.log("⏱ SkyTrack local ACS_TIME started");
+
+})();
+</script>
+  
 <!-- 🌍 WORLD / AIRPORT ENGINE -->
 <script src="engine/acs_world_engine.js"></script>
 
