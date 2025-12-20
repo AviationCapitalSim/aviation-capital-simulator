@@ -138,21 +138,35 @@
     
 <!-- ⏱ TIME ENGINE -->
 <script src="time_engine.js"></script>
-  
+
 <script>
 /* ============================================================
-   ⏱ ACS TIME ENGINE — SKYTRACK INIT
+   ⏱ ACS TIME ENGINE — SKYTRACK BOOTSTRAP
    ------------------------------------------------------------
-   Garantiza que ACS_TIME exista en SkyTrack
+   Garantiza que ACS_TIME exista en SkyTrack.
+   No crea duplicados.
    ============================================================ */
+(function () {
 
-if (typeof initACSTime === "function") {
-  initACSTime();
-} else {
-  console.warn("⛔ initACSTime() not found in SkyTrack");
-}
-  
+  // Si el reloj ya existe, no hacer nada
+  if (window.ACS_TIME && typeof window.ACS_TIME.minute === "number") {
+    return;
+  }
+
+  // Algunos módulos arrancan el reloj al registrar el primer listener
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(() => {});
+  }
+
+  // Fallback defensivo: crear reloj mínimo si sigue sin existir
+  if (!window.ACS_TIME) {
+    console.warn("⚠ ACS_TIME not initialized — forcing bootstrap");
+    window.ACS_TIME = { day: "sun", minute: 0 };
+  }
+
+})();
 </script>
+
 <!-- 🌍 WORLD / AIRPORT ENGINE -->
 <script src="engine/acs_world_engine.js"></script>
 
