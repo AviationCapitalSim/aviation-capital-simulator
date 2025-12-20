@@ -116,47 +116,42 @@ if (exec && typeof exec.depMin === "number" && typeof exec.arrMin === "number") 
 
   if (!it.origin || !it.destination) return;
 
+  // ✅ NORMALIZACIÓN DE TIEMPOS (FIX REAL)
+     
+  const startMin =
+    typeof it.startMin === "number"
+      ? it.startMin
+      : typeof it.depMin === "number"
+      ? it.depMin
+      : null;
+
+  const endMin =
+    typeof it.endMin === "number"
+      ? it.endMin
+      : typeof it.arrMin === "number"
+      ? it.arrMin
+      : null;
+
+  if (typeof startMin !== "number" || typeof endMin !== "number") return;
+
+  // ¿Está volando ahora?
+  if (nowMin < startMin || nowMin > endMin) return;
+
   const origin = getAirportByICAO(it.origin);
   const dest   = getAirportByICAO(it.destination);
   if (!origin || !dest) return;
 
-  const startMin = Number(it.startMin);
-  const endMin   = Number(it.endMin);
-  if (!Number.isFinite(startMin) || !Number.isFinite(endMin)) return;
+  const duration = endMin - startMin;
+  const elapsed  = nowMin - startMin;
+  const progress = Math.min(Math.max(elapsed / duration, 0), 1);
 
-  let progress = 0;
-  let lat = origin.latitude;
-  let lng = origin.longitude;
-
-  // 🟢 EN TIERRA (ANTES DE DESPEGAR)
-  if (nowMin < startMin) {
-    progress = 0;
-  }
-
-  // ✈️ EN VUELO
-  else if (nowMin >= startMin && nowMin <= endMin) {
-    const duration = endMin - startMin;
-    const elapsed  = nowMin - startMin;
-    progress = Math.min(Math.max(elapsed / duration, 0), 1);
-
-    const pos = interpolateGC(
-      origin.latitude,
-      origin.longitude,
-      dest.latitude,
-      dest.longitude,
-      progress
-    );
-
-    lat = pos.lat;
-    lng = pos.lng;
-  }
-
-  // 🛬 LLEGADO — QUEDA FIJO EN DESTINO
-  else if (nowMin > endMin) {
-    progress = 1;
-    lat = dest.latitude;
-    lng = dest.longitude;
-  }
+  const pos = interpolateGC(
+    origin.latitude,
+    origin.longitude,
+    dest.latitude,
+    dest.longitude,
+    progress
+  );
 
   liveFlights.push({
     aircraftId: it.aircraftId || "",
@@ -166,8 +161,8 @@ if (exec && typeof exec.depMin === "number" && typeof exec.arrMin === "number") 
     startMin,
     endMin,
     progress,
-    lat,
-    lng
+    lat: pos.lat,
+    lng: pos.lng
   });
 
 });
