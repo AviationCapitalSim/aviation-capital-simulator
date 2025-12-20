@@ -45,7 +45,7 @@
    ✈️ RUNTIME LOOP — 3 PHASES (GROUND / AIR / DESTINATION)
    ============================================================ */
 
-function updateLiveFlight() {
+function updateLiveFlights() {
 
   const nowMin = window.ACS_TIME?.minute;
   if (typeof nowMin !== "number") return;
