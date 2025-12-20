@@ -1,3 +1,21 @@
+/* ============================================================
+   🌍 ACS WORLD ENGINE — BASE CONTAINER
+   ------------------------------------------------------------
+   Purpose:
+   - Define WorldAirportsACS global container
+   - Required by world_airports_*.js
+   - No logic, no loops, no listeners
+   ============================================================ */
+
+(function () {
+
+  if (!window.WorldAirportsACS) {
+    window.WorldAirportsACS = {};
+    console.log("🌍 WorldAirportsACS container created");
+  }
+
+})();
+
 /* =============================================================
    === ACS WORLD ENGINE — HISTORICAL CORE v2.3 =================
    -------------------------------------------------------------
