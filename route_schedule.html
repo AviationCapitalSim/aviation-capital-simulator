@@ -1743,21 +1743,35 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!desc || !desc.set || !desc.get) return;
 
   Object.defineProperty(sel, "innerHTML", {
-    set(value) {
-      if (
-        typeof value === "string" &&
-        value.includes("-- Select Aircraft --") &&
-        sel.options.length > 1
-      ) {
-        console.warn("🛑 Aircraft selector reset blocked (legacy code)");
-        return;
-      }
+  set(value) {
+
+    // ✅ PERMITIR el reset inicial legítimo (primer llenado)
+    if (
+      typeof value === "string" &&
+      value.includes("-- Select Aircraft --") &&
+      sel.options.length === 0
+    ) {
       desc.set.call(this, value);
-    },
-    get() {
-      return desc.get.call(this);
+      return;
     }
-  });
+
+    // ❌ BLOQUEAR solo resets destructivos posteriores
+    if (
+      typeof value === "string" &&
+      value.includes("-- Select Aircraft --") &&
+      sel.options.length > 1
+    ) {
+      console.warn("🛑 Aircraft selector reset blocked (legacy code)");
+      return;
+    }
+
+    // Default
+    desc.set.call(this, value);
+  },
+  get() {
+    return desc.get.call(this);
+  }
+});
 
 });
 </script>
