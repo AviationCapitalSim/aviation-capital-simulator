@@ -442,15 +442,34 @@ function renderLiveFlights() {
       }
     }
 
-    // ------------------------------------------------------------
-    // 🧭 FLIGHT PLAN (DOTTED LINE) — only while enroute
-    // ------------------------------------------------------------
-    if (!liveFlightPlans[id] && f.status === "enroute" && typeof oLat === "number" && typeof dLat === "number") {
-      liveFlightPlans[id] = L.polyline(
-        [[oLat, oLng], [dLat, dLng]],
-        { weight: 1, dashArray: "4,6", opacity: 0.8 }
-      ).addTo(map);
-    }
+   // ------------------------------------------------------------
+// 🧭 FLIGHT PLAN (DOTTED LINE) — Great Circle aligned
+// ------------------------------------------------------------
+    
+if (
+  !liveFlightPlans[id] &&
+  f.status === "enroute" &&
+  typeof oLat === "number" &&
+  typeof dLat === "number"
+) {
+
+  const planPoints = [];
+
+  const STEPS = 32; // suavidad visual (no pesado)
+
+  for (let i = 0; i <= STEPS; i++) {
+    const t = i / STEPS;
+    const p = interpolateGC(oLat, oLng, dLat, dLng, t);
+    planPoints.push([p.lat, p.lng]);
+  }
+
+  liveFlightPlans[id] = L.polyline(planPoints, {
+    color: "#000000",      // negro ATC
+    weight: 1,
+    dashArray: "4,6",
+    opacity: 0.8
+  }).addTo(map);
+}
 
     // ------------------------------------------------------------
     // 🧵 FLIGHT TRACE (SOLID) — only while enroute
