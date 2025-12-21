@@ -95,23 +95,34 @@
   position: relative;
 }
 
-.atc-box {
-  width: 7px;
-  height: 7px;
-  background: #1e90ff;
-  border: 1px solid #a9d7ff;
-  box-sizing: border-box;
+.atc-marker {
+  position: relative;
 }
 
+/* 🟦 Radar square */
+.atc-box {
+  width: 9px;
+  height: 9px;
+  background: #0b2a4a;           /* azul marino */
+  border: 1px solid #4da3ff;     /* borde radar */
+  box-sizing: border-box;
+  box-shadow: 0 0 4px rgba(77,163,255,0.6);
+}
+
+/* 🔢 Flight number */
 .atc-label {
   position: absolute;
-  top: -12px;
-  left: 10px;
-  font-size: 10px;
-  color: #a9d7ff;
+  top: -14px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #111;                   /* negro/gris oscuro */
+  background: rgba(255,255,255,0.85);
+  padding: 1px 4px;
+  border-radius: 3px;
   white-space: nowrap;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 }
 
 </style>
