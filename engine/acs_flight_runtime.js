@@ -110,13 +110,16 @@ function updateLiveFlights() {
     progress = (nowMin - dep) / (arr - dep);
     progress = Math.min(Math.max(progress, 0), 1);
 
-    const pos = interpolateGC(
-      origin.lat,
-      origin.lng,
-      dest.lat,
-      dest.lng,
-      progress
-    );
+   const startLat = exec._lastPos?.lat ?? origin.lat;
+   const startLng = exec._lastPos?.lng ?? origin.lng;
+
+  const pos = interpolateGC(
+  startLat,
+  startLng,
+  dest.lat,
+  dest.lng,
+  progress
+);
 
     lat = pos.lat;
     lng = pos.lng;
@@ -135,6 +138,14 @@ function updateLiveFlights() {
 
   const TURNAROUND_MIN = 50;
 
+   // --------------------------------------------------------
+  // 🧷 STORE LAST POSITION FOR SMOOTH RETURN TRANSITION
+  // --------------------------------------------------------
+
+  if (status === "arrived" && !exec._returnArmed) {
+  exec._lastPos = { lat, lng };
+}
+   
   if (status === "arrived" && !exec._returnArmed) {
 
     exec._returnArmed = true;
