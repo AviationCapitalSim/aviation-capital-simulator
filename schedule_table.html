@@ -1538,7 +1538,6 @@ if (!isFlying) {
 }
 
 // ---------------- FLIGHT ----------------
-     
 if (it.type === "flight") {
 
   const chip = document.createElement("span");
@@ -1566,14 +1565,8 @@ if (it.type === "flight") {
   const depMinSafe = toMin(it.departure);
   let nextLabel = "—";
 
-  if (Number.isFinite(depMinSafe)) {
-
-    // 🟢 CORRECCIÓN: fallback seguro si aún no existe totalRotationMin
-    if (Number.isFinite(it.totalRotationMin)) {
-      nextLabel = toHHMM(depMinSafe + it.totalRotationMin);
-    } else {
-      nextLabel = toHHMM(toMin(it.arrival) + TURNAROUND_MIN);
-    }
+  if (Number.isFinite(depMinSafe) && Number.isFinite(it.totalRotationMin)) {
+    nextLabel = toHHMM(depMinSafe + it.totalRotationMin);
   }
 
   tooltip.innerHTML = `
