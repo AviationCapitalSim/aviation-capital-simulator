@@ -1524,31 +1524,52 @@ function confirmRoute() {
     return;
   }
 
-  /* ================================
-     6) Crear ruta ACS (source of truth)
-     ================================ */
-  const newRoute = {
-    id: routeId,
+  /* ============================================================
+   🟢 ROUTE OBJECT — FULL ROTATION DATA (FINAL)
+   ------------------------------------------------------------
+   Source: Route Schedule
+   Consumer: Schedule Table / Runtime
+   ============================================================ */
 
-    // ✅ IDENTIDAD ÚNICA
-    aircraftId: selectedAircraftId,
+const newRoute = {
+  id: routeId,
 
-    // ✅ Para UI / debug / legacy
-    modelKey: modelKey.toUpperCase(),
-    aircraft: modelKey.toUpperCase(),
+  // 🔑 Identidad
+  aircraftId: selectedAircraftId,
 
-    origin,
-    destination,
-    departure,
-    arrival,
-    blockTimeMin,
-    days,
-    flightNumberOut,
-    flightNumberIn,
+  // 🔎 UI / legacy
+  modelKey: modelKey.toUpperCase(),
+  aircraft: modelKey.toUpperCase(),
 
-    type: "flight",
-    blockId: "block-" + Date.now()
-  };
+  // ✈️ Ruta base
+  origin,
+  destination,
+  departure,
+  arrival,
+
+  // ⏱ Tiempos base
+  blockTimeMin,                 // ida (min)
+
+  // 🔄 ROTATION DATA (CLAVE DEL FIX)
+  turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
+  turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
+  totalRotationMin: window.ACS_RouteTechData?.totalMin
+    ?? (blockTimeMin * 2 + 45),
+
+  // ⚙️ Flags operativos
+  optimized: document.getElementById("optimizeRotation")?.checked || false,
+
+  // 📆 Operación
+  days,
+
+  // 🔢 Números de vuelo
+  flightNumberOut,
+  flightNumberIn,
+
+  // 🧾 Metadata
+  type: "flight",
+  blockId: "block-" + Date.now()
+};
 
   /* ============================================================
      SLOT ENGINE — (si existe)
