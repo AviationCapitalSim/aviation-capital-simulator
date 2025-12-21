@@ -1148,6 +1148,9 @@ function getRealFleet() {
   return JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 }
 
+const TURNAROUND_MIN = 45;
+
+
 /* ============================================================
    ⏱ SAFE toMin — prevents undefined hh:mm crashes
    ============================================================ */
