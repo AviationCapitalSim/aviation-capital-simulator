@@ -427,7 +427,36 @@ function createATCMarkerIcon(f) {
     }
   ).addTo(map);
 }
+    
+const percent = Math.round((f.progress || 0) * 100);
 
+const remainingMin = Math.max(
+  0,
+  (f.arrMin || 0) - (window.ACS_TIME?.minute || 0)
+);
+
+const remH = Math.floor(remainingMin / 60);
+const remM = remainingMin % 60;
+
+const remainingTxt =
+  f.status === "enroute"
+    ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} restante`
+    : "";
+
+const chipText = `
+${f.flightOut}
+DC-3 · ${f.aircraftId}
+${f.status === "enroute" ? "En ruta" : f.status === "ground" ? "En tierra" : "En destino"}
+${f.origin} → ${f.destination}
+${remainingTxt}
+`.trim();
+
+liveFlightMarkers[f.aircraftId].bindTooltip(chipText, {
+  direction: "top",
+  offset: [0, -6],
+  opacity: 0.95
+});
+    
   // Actualizar posición SIEMPRE
   liveFlightMarkers[f.aircraftId].setLatLng([f.lat, f.lng]);
 });
