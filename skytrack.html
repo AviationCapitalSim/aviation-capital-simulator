@@ -174,23 +174,27 @@
 
 <script>
   
-  /* ============================================================
-   ⏱ SKYTRACK — SAFE TIME FALLBACK (DO NOT DRIVE SCHEDULE)
+/* ============================================================
+   ⏱ SKYTRACK LOCAL TIME ENGINE (FALLBACK)
+   ------------------------------------------------------------
+   Se usa SOLO si no existe ACS_TIME global
    ============================================================ */
 (function () {
 
-  // 🔒 Si el motor global ya existe, NO tocar nada
-  if (window.ACS_TIME && typeof window.ACS_TIME.minute === "number") {
-    console.log("⏱ SkyTrack using GLOBAL ACS_TIME:", window.ACS_TIME.minute);
-    return;
-  }
+  if (window.ACS_TIME) return;
 
-  console.warn("⚠ ACS_TIME not found — SkyTrack fallback engaged");
+  let startMinute = 0;
 
-  // 🔹 Fallback neutro: mediodía (NO fuerza vuelos)
+  try {
+    const exec = JSON.parse(localStorage.getItem("ACS_FLIGHT_EXEC"));
+    if (exec && typeof exec.depMin === "number") {
+      startMinute = Math.max(exec.depMin - 10, 0);
+    }
+  } catch {}
+
   window.ACS_TIME = {
     day: "sun",
-    minute: 720 // 12:00
+    minute: startMinute
   };
 
   setInterval(() => {
@@ -201,12 +205,12 @@
     }
   }, 1000);
 
-  console.log("⏱ SkyTrack fallback ACS_TIME started at minute:", window.ACS_TIME.minute);
+  console.log("⏱ SkyTrack ACS_TIME synced at minute:", startMinute);
 
 })();
-  
-<script>
-  
+
+</script>
+
 <!-- ============================================================
      🌍 WORLD ENGINE (CONTENEDOR)
      ============================================================ -->
