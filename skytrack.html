@@ -485,20 +485,21 @@ function renderLiveFlights() {
       }
     }
 
-   // ------------------------------------------------------------
-// 🧭 FLIGHT PLAN (DOTTED LINE) — Great Circle aligned
 // ------------------------------------------------------------
-    
+// 🧭 FLIGHT PLAN (DOTTED LINE) — Great Circle aligned (BLACK)
+// ------------------------------------------------------------
+
 if (
   !liveFlightPlans[id] &&
   f.status === "enroute" &&
   typeof oLat === "number" &&
-  typeof dLat === "number"
+  typeof oLng === "number" &&
+  typeof dLat === "number" &&
+  typeof dLng === "number"
 ) {
 
   const planPoints = [];
-
-  const STEPS = 32; // suavidad visual (no pesado)
+  const STEPS = 32; // suficiente suavidad, ligero
 
   for (let i = 0; i <= STEPS; i++) {
     const t = i / STEPS;
@@ -507,10 +508,11 @@ if (
   }
 
   liveFlightPlans[id] = L.polyline(planPoints, {
-    color: "#000000",      // negro ATC
+    color: "#000000",     // ✅ negro ATC
     weight: 1,
     dashArray: "4,6",
-    opacity: 0.8
+    opacity: 0.85,
+    interactive: false   // no interfiere con clicks
   }).addTo(map);
 }
 
