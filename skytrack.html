@@ -381,10 +381,6 @@ const liveFlightMarkers = {};
 const liveFlightTraces  = {};
 const liveFlightPlans   = {};
 
-/* ============================================================
-   ✈️ SKYTRACK — LIVE FLIGHTS LAYER
-   ============================================================ */
-let liveFlightMarkers = {};
 
 function renderLiveFlights() {
 
@@ -566,7 +562,8 @@ ${remainingTxt}
 /* ============================================================
    ⏱ SKYTRACK — INIT + TIME SYNC
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
+   
+  document.addEventListener("DOMContentLoaded", () => {
   initSkyTrackMap();
 
   if (typeof registerTimeListener === "function") {
