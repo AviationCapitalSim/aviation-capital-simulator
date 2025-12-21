@@ -99,30 +99,33 @@
   position: relative;
 }
 
-/* 🟦 Radar square */
-.atc-box {
-  width: 9px;
-  height: 9px;
-  background: #0b2a4a;           /* azul marino */
-  border: 1px solid #4da3ff;     /* borde radar */
-  box-sizing: border-box;
-  box-shadow: 0 0 4px rgba(77,163,255,0.6);
+.atc-marker {
+  position: relative;
 }
 
-/* 🔢 Flight number */
-.atc-label {
-  position: absolute;
-  top: -14px;
-  left: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #111;                   /* negro/gris oscuro */
-  background: rgba(255,255,255,0.85);
-  padding: 1px 4px;
+/* 🟦 Qatar Radar Blip */
+.atc-box {
+  min-width: 22px;
+  height: 16px;
+  background: linear-gradient(145deg, #0b2a4a, #081c33);
+  border: 1px solid rgba(255,215,120,0.8);
   border-radius: 3px;
-  white-space: nowrap;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  box-shadow:
+    0 0 6px rgba(255,215,120,0.35),
+    inset 0 0 4px rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✈️ Flight number */
+.atc-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #f6d98c; /* dorado suave */
+  letter-spacing: 0.5px;
+  font-family: "Orbitron", ui-monospace, sans-serif;
+  text-shadow: 0 0 2px rgba(255,215,120,0.6);
 }
 
 </style>
