@@ -372,7 +372,15 @@ function initSkyTrackMap() {
 
   }, 300); // 🔹 delay corto, seguro, no bloqueante
 }
-    
+   
+// ============================================================
+// ✈️ SKYTRACK VISUAL LAYERS
+// ============================================================
+
+const liveFlightMarkers = {};
+const liveFlightTraces  = {};
+const liveFlightPlans   = {};
+
 /* ============================================================
    ✈️ SKYTRACK — LIVE FLIGHTS LAYER
    ============================================================ */
@@ -415,6 +423,40 @@ function createATCMarkerIcon(f) {
   if (typeof f.lat !== "number" || typeof f.lng !== "number") return;
 
   activeIds.add(f.aircraftId);
+    
+// ------------------------------------------------------------
+// 🧭 FLIGHT PLAN (DOTTED LINE)
+// ------------------------------------------------------------
+
+if (!liveFlightPlans[f.aircraftId] && f.status === "enroute") {
+
+  liveFlightPlans[f.aircraftId] = L.polyline(
+    [
+      [f.originLat, f.originLng],
+      [f.destLat, f.destLng]
+    ],
+    {
+      color: "#6aaed6",
+      weight: 1,
+      dashArray: "4,6",
+      opacity: 0.8
+    }
+  ).addTo(map);
+}
+    
+// ------------------------------------------------------------
+// 🧵 FLIGHT TRACE (SOLID)
+// ------------------------------------------------------------
+
+if (!liveFlightTraces[f.aircraftId]) {
+  liveFlightTraces[f.aircraftId] = L.polyline([], {
+    color: "#1e88e5",
+    weight: 2,
+    opacity: 0.9
+  }).addTo(map);
+}
+
+liveFlightTraces[f.aircraftId].addLatLng([f.lat, f.lng]);
 
   // Crear marker si no existe (ATC square + flight number)
   
@@ -469,7 +511,24 @@ liveFlightMarkers[f.aircraftId].bindTooltip(chipText, {
     }
   });
 }
+   
+// ------------------------------------------------------------
+// 🧹 CLEANUP ON ARRIVAL
+// ------------------------------------------------------------
 
+if (f.status === "arrived") {
+
+  if (liveFlightTraces[f.aircraftId]) {
+    map.removeLayer(liveFlightTraces[f.aircraftId]);
+    delete liveFlightTraces[f.aircraftId];
+  }
+
+  if (liveFlightPlans[f.aircraftId]) {
+    map.removeLayer(liveFlightPlans[f.aircraftId]);
+    delete liveFlightPlans[f.aircraftId];
+  }
+}
+   
 /* ============================================================
    ⏱ SKYTRACK — INIT + TIME SYNC
    ============================================================ */
