@@ -297,7 +297,50 @@ function resolveACSBase() {
 
   return activeUser.base;
 }
+   
+/* ============================================================
+   🌍 GREAT CIRCLE INTERPOLATION (SKYTRACK LOCAL)
+   ============================================================ */
 
+function interpolateGC(lat1, lon1, lat2, lon2, t) {
+  const toRad = d => d * Math.PI / 180;
+  const toDeg = r => r * 180 / Math.PI;
+
+  const φ1 = toRad(lat1);
+  const λ1 = toRad(lon1);
+  const φ2 = toRad(lat2);
+  const λ2 = toRad(lon2);
+
+  const sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1);
+  const sinφ2 = Math.sin(φ2), cosφ2 = Math.cos(φ2);
+
+  const Δλ = λ2 - λ1;
+
+  const a = Math.sin((φ2 - φ1) / 2) ** 2 +
+            cosφ1 * cosφ2 * Math.sin(Δλ / 2) ** 2;
+
+  const δ = 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+
+  if (δ === 0) {
+    return { lat: lat1, lng: lon1 };
+  }
+
+  const A = Math.sin((1 - t) * δ) / Math.sin(δ);
+  const B = Math.sin(t * δ) / Math.sin(δ);
+
+  const x = A * cosφ1 * Math.cos(λ1) + B * cosφ2 * Math.cos(λ2);
+  const y = A * cosφ1 * Math.sin(λ1) + B * cosφ2 * Math.sin(λ2);
+  const z = A * sinφ1 + B * sinφ2;
+
+  const φi = Math.atan2(z, Math.sqrt(x * x + y * y));
+  const λi = Math.atan2(y, x);
+
+  return {
+    lat: toDeg(φi),
+    lng: toDeg(λi)
+  };
+}
+   
 /* ============================================================
    🛰 SKYTRACK — MAP INIT + RENDER ACTIVE FLIGHT (SINGLE SOURCE)
    ============================================================ */
