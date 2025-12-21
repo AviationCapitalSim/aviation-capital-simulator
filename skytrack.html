@@ -486,46 +486,42 @@ function renderLiveFlights() {
     }
 
 // ------------------------------------------------------------
-// 🧭 FLIGHT PLAN (DOTTED LINE) — Great Circle aligned (BLACK)
+// 🧭 FLIGHT PLAN (DOTTED) — derived from ACTUAL flight path
 // ------------------------------------------------------------
 
-if (
-  !liveFlightPlans[id] &&
-  f.status === "enroute" &&
-  typeof oLat === "number" &&
-  typeof oLng === "number" &&
-  typeof dLat === "number" &&
-  typeof dLng === "number"
-) {
+if (!liveFlightPlans[id] && f.status === "enroute") {
 
-  const planPoints = [];
-  const STEPS = 32; // suficiente suavidad, ligero
-
-  for (let i = 0; i <= STEPS; i++) {
-    const t = i / STEPS;
-    const p = interpolateGC(oLat, oLng, dLat, dLng, t);
-    planPoints.push([p.lat, p.lng]);
-  }
-
-  liveFlightPlans[id] = L.polyline(planPoints, {
-    color: "#000000",     // ✅ negro ATC
+  liveFlightPlans[id] = L.polyline([], {
+    color: "#000000",      // negro ATC
     weight: 1,
     dashArray: "4,6",
     opacity: 0.85,
-    interactive: false   // no interfiere con clicks
+    interactive: false
   }).addTo(map);
 }
 
-    // ------------------------------------------------------------
-    // 🧵 FLIGHT TRACE (SOLID) — only while enroute
-    // ------------------------------------------------------------
-    if (!liveFlightTraces[id] && f.status === "enroute") {
-      liveFlightTraces[id] = L.polyline([], { weight: 2, opacity: 0.9 }).addTo(map);
-    }
+// ------------------------------------------------------------
+// 🧵 UPDATE PLAN + TRACE FROM SAME SOURCE
+// ------------------------------------------------------------
 
-    if (liveFlightTraces[id] && f.status === "enroute") {
-      liveFlightTraces[id].addLatLng([f.lat, f.lng]);
-    }
+if (f.status === "enroute") {
+
+  // Plan punteado (delante del avión)
+  if (liveFlightPlans[id]) {
+    liveFlightPlans[id].addLatLng([f.lat, f.lng]);
+  }
+
+  // Traza sólida (detrás del avión)
+  if (!liveFlightTraces[id]) {
+    liveFlightTraces[id] = L.polyline([], {
+      color: "#1e88e5",
+      weight: 2,
+      opacity: 0.9
+    }).addTo(map);
+  }
+
+  liveFlightTraces[id].addLatLng([f.lat, f.lng]);
+}
 
     // ------------------------------------------------------------
     // 🟦 MARKER (ATC square)
