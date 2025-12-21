@@ -1537,66 +1537,74 @@ if (!isFlying) {
   }
 }
 
-  // ---------------- FLIGHT ----------------
-  if (it.type === "flight") {
+// ---------------- FLIGHT ----------------
+     
+if (it.type === "flight") {
 
-    const chip = document.createElement("span");
-    chip.className = "chip flight-chip";
-    chip.dataset.id = it.id;
-    chip.dataset.blockId = it.blockId || "";
-    chip.dataset.type = "flight";
+  const chip = document.createElement("span");
+  chip.className = "chip flight-chip";
+  chip.dataset.id = it.id;
+  chip.dataset.blockId = it.blockId || "";
+  chip.dataset.type = "flight";
 
-    const iataCode = localStorage.getItem("userIATA") || "IT";
-    const fnOut = it.flightNumberOut || "";
-    const fnIn  = it.flightNumberIn  || "";
+  const iataCode = localStorage.getItem("userIATA") || "IT";
+  const fnOut = it.flightNumberOut || "";
+  const fnIn  = it.flightNumberIn  || "";
 
-    chip.textContent = (fnOut && fnIn)
-      ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
-      : `${iataCode}-— / ${iataCode}-—`;
+  chip.textContent = (fnOut && fnIn)
+    ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
+    : `${iataCode}-— / ${iataCode}-—`;
 
-    const tooltip = document.createElement("span");
-    tooltip.className = "tooltip";
+  const tooltip = document.createElement("span");
+  tooltip.className = "tooltip";
 
-    /* ============================================================
-   🟢 NEXT FLIGHT — FULL ROTATION (FIX)
-   Source: route_schedule (totalRotationMin)
-   ============================================================ */
+  /* ============================================================
+     🟢 NEXT FLIGHT — FULL ROTATION (FIX)
+     Source: route_schedule (totalRotationMin)
+     ============================================================ */
 
-const depMinSafe = toMin(it.departure);
-let nextLabel = "—";
+  const depMinSafe = toMin(it.departure);
+  let nextLabel = "—";
 
-if (Number.isFinite(depMinSafe) && Number.isFinite(it.totalRotationMin)) {
-  nextLabel = toHHMM(depMinSafe + it.totalRotationMin);
+  if (Number.isFinite(depMinSafe)) {
+
+    // 🟢 CORRECCIÓN: fallback seguro si aún no existe totalRotationMin
+    if (Number.isFinite(it.totalRotationMin)) {
+      nextLabel = toHHMM(depMinSafe + it.totalRotationMin);
+    } else {
+      nextLabel = toHHMM(toMin(it.arrival) + TURNAROUND_MIN);
+    }
+  }
+
+  tooltip.innerHTML = `
+    ${it.origin} → ${it.destination}<br>
+    DEP: ${it.departure}<br>
+    ARR: ${it.arrival}<br>
+    <strong>Next Flight: ${nextLabel}</strong>
+  `;
+
+  chip.appendChild(tooltip);
+  chip.onclick = () => openFlightModal(it, chip);
+  td.appendChild(chip);
 }
 
-tooltip.innerHTML = `
-  ${it.origin} → ${it.destination}<br>
-  DEP: ${it.departure}<br>
-  ARR: ${it.arrival}<br>
-  <strong>Next Flight: ${nextLabel}</strong>
-`;
+// ---------------- SERVICE ----------------
+if (it.type === "service") {
 
-    chip.appendChild(tooltip);
-    chip.onclick = () => openFlightModal(it, chip);
-    td.appendChild(chip);
-  }
+  const chip = document.createElement("span");
+  chip.className = "service-chip";
+  chip.dataset.id = it.id;
+  chip.dataset.type = "service";
 
-  // ---------------- SERVICE ----------------
-  if (it.type === "service") {
+  chip.textContent =
+    it.serviceType === "A"
+      ? "🔧 A-Check"
+      : "⚙️ B-Check";
 
-    const chip = document.createElement("span");
-    chip.className = "service-chip";
-    chip.dataset.id = it.id;
-    chip.dataset.type = "service";
+  chip.onclick = () => openFlightModal(it, chip);
+  td.appendChild(chip);
+}
 
-    chip.textContent =
-      it.serviceType === "A"
-        ? "🔧 A-Check"
-        : "⚙️ B-Check";
-
-    chip.onclick = () => openFlightModal(it, chip);
-    td.appendChild(chip);
-  }
 });
 
 tr.appendChild(td);
