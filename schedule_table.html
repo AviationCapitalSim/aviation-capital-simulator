@@ -1148,8 +1148,6 @@ function getRealFleet() {
   return JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 }
 
-const TURNAROUND_MIN = 45;
-
 /* ============================================================
    ⏱ SAFE toMin — prevents undefined hh:mm crashes
    ============================================================ */
@@ -1559,13 +1557,24 @@ if (!isFlying) {
     const tooltip = document.createElement("span");
     tooltip.className = "tooltip";
 
-    const next = toHHMM(toMin(it.arrival) + TURNAROUND_MIN);
-    tooltip.innerHTML = `
-      ${it.origin} → ${it.destination}<br>
-      DEP: ${it.departure}<br>
-      ARR: ${it.arrival}<br>
-      <strong>Next Flight: ${next}</strong>
-    `;
+    /* ============================================================
+   🟢 NEXT FLIGHT — FULL ROTATION (FIX)
+   Source: route_schedule (totalRotationMin)
+   ============================================================ */
+
+const depMinSafe = toMin(it.departure);
+let nextLabel = "—";
+
+if (Number.isFinite(depMinSafe) && Number.isFinite(it.totalRotationMin)) {
+  nextLabel = toHHMM(depMinSafe + it.totalRotationMin);
+}
+
+tooltip.innerHTML = `
+  ${it.origin} → ${it.destination}<br>
+  DEP: ${it.departure}<br>
+  ARR: ${it.arrival}<br>
+  <strong>Next Flight: ${nextLabel}</strong>
+`;
 
     chip.appendChild(tooltip);
     chip.onclick = () => openFlightModal(it, chip);
