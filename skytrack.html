@@ -172,45 +172,6 @@
      ============================================================ -->
 <script src="time_engine.js"></script>
 
-<script>
-  
-/* ============================================================
-   ⏱ SKYTRACK LOCAL TIME ENGINE (FALLBACK)
-   ------------------------------------------------------------
-   Se usa SOLO si no existe ACS_TIME global
-   ============================================================ */
-(function () {
-
-  if (window.ACS_TIME) return;
-
-  let startMinute = 0;
-
-  try {
-    const exec = JSON.parse(localStorage.getItem("ACS_FLIGHT_EXEC"));
-    if (exec && typeof exec.depMin === "number") {
-      startMinute = Math.max(exec.depMin - 10, 0);
-    }
-  } catch {}
-
-  window.ACS_TIME = {
-    day: "sun",
-    minute: startMinute
-  };
-
-  setInterval(() => {
-    window.ACS_TIME.minute++;
-
-    if (window.ACS_TIME.minute >= 1440) {
-      window.ACS_TIME.minute = 0;
-    }
-  }, 1000);
-
-  console.log("⏱ SkyTrack ACS_TIME synced at minute:", startMinute);
-
-})();
-
-</script>
-
 <!-- ============================================================
      🌍 WORLD ENGINE (CONTENEDOR)
      ============================================================ -->
