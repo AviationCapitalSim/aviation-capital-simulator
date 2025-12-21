@@ -511,38 +511,30 @@ footer {
 }
 
 /* ============================================================
-   🟢 FIX — ALLOW TOOLTIP OVERFLOW IN TABLE (FINAL)
+   🟡 FLIGHT TOOLTIP (FIX CLIPPING)
    ============================================================ */
 
-/* permitir overflow vertical en la tabla */
-#scheduleTable {
-  overflow: visible;
-}
-
-/* permitir overflow en filas */
-#scheduleTable tr {
-  overflow: visible;
-}
-
-/* permitir overflow en celdas */
-#scheduleTable td {
-  overflow: visible !important;
-  position: relative; /* ancla del tooltip */
-}
-
-/* asegurar que el chip no limite */
-.flight-chip {
-  position: relative;
-  z-index: 10;
-}
-
-/* tooltip arriba del chip, sin corte */
 .flight-tooltip {
-  position: absolute;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
+  max-width: 280px;
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.35;
+}
+       
+/* ============================================================
+   ✈️ FLIGHT CHIP — COMPACT (ONE LINE)
+   ============================================================ */
+
+.flight-chip {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 14px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.flight-chip strong {
+  font-weight: 600;
 }
        
 /* ============================================================
@@ -1567,24 +1559,13 @@ if (!isFlying) {
     const tooltip = document.createElement("span");
     tooltip.className = "tooltip";
 
-    /* ============================================================
-   🟢 NEXT FLIGHT — FULL ROTATION (FIX)
-   Source: route_schedule (totalRotationMin)
-   ============================================================ */
-
-const depMinSafe = toMin(it.departure);
-let nextLabel = "—";
-
-if (Number.isFinite(depMinSafe) && Number.isFinite(it.totalRotationMin)) {
-  nextLabel = toHHMM(depMinSafe + it.totalRotationMin);
-}
-
-tooltip.innerHTML = `
-  ${it.origin} → ${it.destination}<br>
-  DEP: ${it.departure}<br>
-  ARR: ${it.arrival}<br>
-  <strong>Next Flight: ${nextLabel}</strong>
-`;
+    const next = toHHMM(toMin(it.arrival) + TURNAROUND_MIN);
+    tooltip.innerHTML = `
+      ${it.origin} → ${it.destination}<br>
+      DEP: ${it.departure}<br>
+      ARR: ${it.arrival}<br>
+      <strong>Next Flight: ${next}</strong>
+    `;
 
     chip.appendChild(tooltip);
     chip.onclick = () => openFlightModal(it, chip);
