@@ -90,7 +90,31 @@
       font-size:0.9rem;
       margin-left:1rem;
     }
-  </style>
+    
+.atc-marker {
+  position: relative;
+}
+
+.atc-box {
+  width: 7px;
+  height: 7px;
+  background: #1e90ff;
+  border: 1px solid #a9d7ff;
+  box-sizing: border-box;
+}
+
+.atc-label {
+  position: absolute;
+  top: -12px;
+  left: 10px;
+  font-size: 10px;
+  color: #a9d7ff;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+</style>
 </head>
 
 <body>
@@ -366,19 +390,36 @@ try {
 }
 
 const activeIds = new Set();
-
-flights.forEach(f => {
+  
+function createATCMarkerIcon(f) {
+  const label = (f.flightOut || f.aircraftId || "").toString();
+  return L.divIcon({
+    className: "atc-marker",
+    html: `
+      <div class="atc-box"></div>
+      <div class="atc-label">${label}</div>
+    `,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11]
+  });
+}
+  
+  flights.forEach(f => {
   if (typeof f.lat !== "number" || typeof f.lng !== "number") return;
 
   activeIds.add(f.aircraftId);
 
-  // Crear marker si no existe
+  // Crear marker si no existe (ATC square + flight number)
+  
   if (!liveFlightMarkers[f.aircraftId]) {
-    liveFlightMarkers[f.aircraftId] = L.marker(
-      [f.lat, f.lng],
-      { title: `${f.aircraftId || "AC"} — ${f.status || "unknown"}` }
-    ).addTo(map);
-  }
+  liveFlightMarkers[f.aircraftId] = L.marker(
+    [f.lat, f.lng],
+    {
+      icon: createATCMarkerIcon(f),
+      title: `${f.flightOut || f.aircraftId || "FLIGHT"}`
+    }
+  ).addTo(map);
+}
 
   // Actualizar posición SIEMPRE
   liveFlightMarkers[f.aircraftId].setLatLng([f.lat, f.lng]);
