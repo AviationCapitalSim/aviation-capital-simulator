@@ -2460,71 +2460,48 @@ if (it && it.type === "service") {
     return `${h}h ${String(mm).padStart(2,"0")}m`;
   };
 
-  /* ===============================
-     MAINTENANCE
-     =============================== */
+ // next flight ya viene calculado por la table
+const nextFlightText = chipEl.dataset.nextFlight || "—";
 
-  let maintText = "NONE";
-  if (services.some(s => s.serviceType === "B")) maintText = "B-Check · 24h";
-  else if (services.some(s => s.serviceType === "A")) maintText = "A-Check · 5h";
+box.innerHTML = `
+  <div class="flight-kicker">
+    <strong>${origin}</strong> → <strong>${dest}</strong> → <strong>${origin}</strong>
+    ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
+  </div>
 
-  /* ===============================
-     NEXT FLIGHT (LEGACY SAFE)
-     =============================== */
+  <div class="flight-hero">
+    <div class="route">Round Trip Summary</div>
+    <div class="times">DEP ${dep} · ARR ${arr}</div>
+  </div>
 
-  let nextFlightText = "—";
-  let lastEnd = null;
-
-  flights.forEach(f=>{
-    const end = toMin(f.arrival) + TURNAROUND_MIN;
-    if (lastEnd === null || end > lastEnd) lastEnd = end;
-  });
-
-  if (services.some(s=>s.serviceType==="B")) {
-    nextFlightText = "After B-Check (24h)";
-  } else if (lastEnd !== null) {
-    nextFlightText = toHHMM(lastEnd);
-  }
-
-  box.innerHTML = `
-    <div class="flight-kicker">
-      <strong>${origin}</strong> → <strong>${dest}</strong> → <strong>${origin}</strong>
-      ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
+  <div class="flight-meta">
+    <div class="meta-card">
+      <span class="label">Total Flight Time</span>
+      <span class="value">${fmt(totalBlockMin)}</span>
     </div>
-
-    <div class="flight-hero">
-      <div class="route">Round Trip Summary</div>
-      <div class="times">DEP ${dep} · ARR ${arr}</div>
+    <div class="meta-card">
+      <span class="label">Total Turnaround</span>
+      <span class="value">${fmt(totalTurnMin)}</span>
     </div>
-
-    <div class="flight-meta">
-      <div class="meta-card">
-        <span class="label">Total Flight Time</span>
-        <span class="value">${fmt(totalBlockMin)}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Total Turnaround</span>
-        <span class="value">${fmt(totalTurnMin)}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Total Operation</span>
-        <span class="value">${fmt(totalOpMin)}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Maintenance</span>
-        <span class="value">${maintText}</span>
-      </div>
-      <div class="meta-card" style="grid-column:span 2;">
-        <span class="label">Next Flight</span>
-        <span class="value">${nextFlightText}</span>
-      </div>
+    <div class="meta-card">
+      <span class="label">Total Operation</span>
+      <span class="value">${fmt(totalOpMin)}</span>
     </div>
-  `;
+    <div class="meta-card">
+      <span class="label">Maintenance</span>
+      <span class="value">${maintText}</span>
+    </div>
+    <div class="meta-card" style="grid-column:span 2;">
+      <span class="label">Next Flight</span>
+      <span class="value">${nextFlightText}</span>
+    </div>
+  </div>
+`;
 
-  modal.classList.remove("hidden");
-  modal.style.display = "flex";
+modal.classList.remove("hidden");
+modal.style.display = "flex";
 }
-
+     
 /* ============================================================
    ❌ CANCEL SERVICE (INTACTO)
    ============================================================ */
