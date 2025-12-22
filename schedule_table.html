@@ -1540,8 +1540,7 @@ if (!isFlying) {
   }
 }
 
-// ✈️ ---------------- FLIGHT ---------------- ✈️
-     
+// ---------------- FLIGHT ----------------
 if (it.type === "flight") {
 
   const chip = document.createElement("span");
@@ -1560,60 +1559,17 @@ if (it.type === "flight") {
 
   const tooltip = document.createElement("span");
   tooltip.className = "tooltip";
-     
-// ============================================================
-// 📦 PASS CALCULATED TOTALS TO MODAL (SOURCE: TABLE)
-// ============================================================
 
-// Estos valores YA fueron calculados arriba en la table
-// aquí SOLO los exponemos para el modal
-
-chip.dataset.blockOutMin  = blockOutMin;
-chip.dataset.blockBackMin = blockBackMin;
-chip.dataset.turnMin      = turnMin;
-chip.dataset.totalOpMin   = totalCycleMin;
-chip.dataset.nextFlight   = nextLabel;
-     
   /* ============================================================
-     🟢 NEXT FLIGHT — TABLE CALCULATES FULL ROTATION (OPTION 1)
-     ida + turnaround + regreso + turnaround
+     🟢 NEXT FLIGHT — FULL ROTATION (FIX)
+     Source: route_schedule (totalRotationMin)
      ============================================================ */
 
-  // helpers locales (no ensucian fuera)
-  const wrapDiff = (aMin, bMin) => {
-    if (!Number.isFinite(aMin) || !Number.isFinite(bMin)) return NaN;
-    let d = bMin - aMin;
-    if (d < 0) d += 1440;          // cruza medianoche
-    return d;
-  };
-
   const depMinSafe = toMin(it.departure);
-  const arrMinSafe = toMin(it.arrival);
-
-  // Block time: usar el guardado si existe; si no, calcular por horario
-  const blockOutMin = Number.isFinite(it.blockTimeMin)
-    ? it.blockTimeMin
-    : wrapDiff(depMinSafe, arrMinSafe);
-
-  // Turnaround: por ahora usamos TURNAROUND_MIN como base segura
-  // (si luego quieres por avión + optimize, lo conectamos aquí)
-  const turnBaseMin = (typeof TURNAROUND_MIN === "number") ? TURNAROUND_MIN : 45;
-
-  // Optimización (si el route trae flag optimized)
-  const turnMin = it.optimized ? Math.max(30, Math.round(turnBaseMin * 0.75)) : turnBaseMin;
-
-  // Regreso: por defecto igual al block out (si luego tienes blockTimeReturnMin, se conecta)
-  const blockBackMin = Number.isFinite(it.blockTimeReturnMin)
-    ? it.blockTimeReturnMin
-    : blockOutMin;
-
-  // Ciclo completo
-  const totalCycleMin = blockOutMin + turnMin + blockBackMin + turnMin;
-
-  // Next Flight (slot disponible)
   let nextLabel = "—";
-  if (Number.isFinite(depMinSafe) && Number.isFinite(totalCycleMin)) {
-    nextLabel = toHHMM((depMinSafe + totalCycleMin) % 1440);
+
+  if (Number.isFinite(depMinSafe) && Number.isFinite(it.totalRotationMin)) {
+    nextLabel = toHHMM(depMinSafe + it.totalRotationMin);
   }
 
   tooltip.innerHTML = `
@@ -1649,7 +1605,7 @@ if (it.type === "service") {
 
 tr.appendChild(td);
 
-});
+    });
 
     // ============================================================
     // ACTION PLAN
@@ -2326,12 +2282,12 @@ function editFlight(){
 
 
 /* ============================================================
-   🦄 B3 — FLIGHT MODAL ENGINE (Unicorn → TOTALS) — 22DEC25
-   AJUSTE: mostrar IDA + VUELTA + TOTALES
+   🦄 B3 — FLIGHT MODAL ENGINE (Unicorn) — 17DEC25
+   REEMPLAZA COMPLETO: openFlightModal(it) + closeFlightModal()
    ============================================================ */
 
-let ACS_selectedFlightItem = null;
-let ACS_selectedChipEl = null;
+let ACS_selectedFlightItem = null;   // el item (it)
+let ACS_selectedChipEl = null;       // el chip HTML real (para ids/blockId/type)
 
 function openFlightModal(it, chipEl){
 
@@ -2339,7 +2295,7 @@ function openFlightModal(it, chipEl){
   ACS_selectedChipEl = chipEl || null;
 
 /* ============================================================
-   🛠 SERVICE CONTEXT (INTACTO)
+   🛠 PASO 4 — SERVICE CONTEXT (MODAL) — 17DEC25
    ============================================================ */
 
 if (it && it.type === "service") {
@@ -2354,7 +2310,10 @@ if (it && it.type === "service") {
 
   const isB = it.serviceType === "B";
   const serviceLabel = isB ? "⚙️ B-Check" : "🔧 A-Check";
-  const durationText = isB ? "24 hours (full day)" : "5 hours";
+  const durationText = isB
+  ? "24 hours (full day)"
+  : "5 hours";
+
 
   title.textContent = serviceLabel;
 
@@ -2388,6 +2347,7 @@ if (it && it.type === "service") {
     </div>
   `;
 
+  // 👉 Ajuste de botones: solo CANCEL + CLOSE
   const footer = modal.querySelector(".acs-modal-footer");
   if (footer) {
     footer.innerHTML = `
@@ -2398,128 +2358,122 @@ if (it && it.type === "service") {
 
   modal.classList.remove("hidden");
   modal.style.display = "flex";
-  return;
+  return; // ⛔ IMPORTANTE: no continuar con lógica de vuelos
 }
-
-/* ============================================================
-   ✈️ FLIGHT CONTEXT (AJUSTADO A TOTALES)
-   ============================================================ */
-
-  if (chipEl) selectedChip = chipEl;
+     
+  // También mantenemos compatibilidad con tu lógica vieja
+  // (por si luego quieres reutilizar removeItem/deleteFlight/editFlight)
+     
+  if (chipEl) {
+    selectedChip = chipEl;
+  }
 
   const modal = document.getElementById("flightModal");
   const box   = document.getElementById("flightModalContent");
   const title = document.getElementById("flightModalTitle");
-  if (!modal || !box || !title) return;
+
+  if (!modal || !box || !title) {
+    console.warn("⚠ flightModal elements missing.");
+    return;
+  }
 
   const items = getItems();
 
+  // Para compatibilidad: si existen tail/acType legacy
   const modelKey = it?.tail || it?.acType || "";
   const day      = it?.day || "";
 
+  // vuelos “relacionados” del mismo día (legacy) — mantiene tu lógica
   const flights = items.filter(x =>
     x.type === "flight" &&
     (x.tail === modelKey || x.acType === modelKey) &&
     x.day === day
-  );
+  ).sort((a,b)=> toMin(a.departure)-toMin(b.departure));
 
+  // servicios “relacionados” del mismo día (legacy)
   const services = items.filter(x =>
     x.type === "service" &&
     (x.tail === modelKey || x.acType === modelKey) &&
     x.day === day
   );
 
-  const iata = localStorage.getItem("userIATA") || "IT";
-  const fnOut = it?.flightNumberOut || "—";
-  const fnIn  = it?.flightNumberIn  || "—";
+  // Datos UI
+  const iataCode = localStorage.getItem("userIATA") || "IT";
+  const fnOut = it?.flightNumberOut || "";
+  const fnIn  = it?.flightNumberIn  || "";
 
-  title.textContent = `✈️ ${iata}-${fnOut} / ${iata}-${fnIn}`;
+  const flightLabel = (fnOut && fnIn)
+    ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
+    : `${iataCode}-— / ${iataCode}-—`;
 
   const origin = it?.origin || "—";
   const dest   = it?.destination || "—";
   const dep    = it?.departure || "—";
   const arr    = it?.arrival || "—";
 
-  /* ===============================
-     TOTALES (IDA + VUELTA)
-     =============================== */
-
-  const blockOutMin  = Number(chipEl?.dataset?.blockOutMin || 0);
-  const blockBackMin = Number(chipEl?.dataset?.blockBackMin || 0);
-  const turnMin      = Number(chipEl?.dataset?.turnMin || TURNAROUND_MIN);
-  const totalOpMin   = Number(chipEl?.dataset?.totalOpMin || 0);
-  const nextFlightText = chipEl?.dataset?.nextFlight || "—";
-
-  const totalBlockMin = blockOutMin + blockBackMin;
-
-  const turnBase = typeof TURNAROUND_MIN === "number" ? TURNAROUND_MIN : 45;
-  const turnMin  = it.optimized ? Math.max(30, Math.round(turnBase * 0.75)) : turnBase;
-  const totalTurnMin = turnMin * 2;
-
-  const totalOpMin = totalBlockMin + totalTurnMin;
-
-  const fmt = m => {
-    if (!Number.isFinite(m) || m <= 0) return "—";
-    const h = Math.floor(m / 60);
-    const mm = m % 60;
-    return `${h}h ${String(mm).padStart(2,"0")}m`;
-  };
-
-  /* ===============================
-     MAINTENANCE
-     =============================== */
-
-  let maintText = "NONE";
-  if (services.some(s => s.serviceType === "B")) maintText = "B-Check · 24h";
-  else if (services.some(s => s.serviceType === "A")) maintText = "A-Check · 5h";
-
-  /* ===============================
-     NEXT FLIGHT (LEGACY SAFE)
-     =============================== */
-
+  // Next flight (tu lógica, robusta)
   let nextFlightText = "—";
-  let lastEnd = null;
+  let lastEventEnd = null;
 
   flights.forEach(f=>{
     const end = toMin(f.arrival) + TURNAROUND_MIN;
-    if (lastEnd === null || end > lastEnd) lastEnd = end;
+    if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
   });
 
-  if (services.some(s=>s.serviceType==="B")) {
-    nextFlightText = "After B-Check (24h)";
-  } else if (lastEnd !== null) {
-    nextFlightText = toHHMM(lastEnd);
-  }
+  services.forEach(s=>{
+    if (s.serviceType === "A") {
+      const end = toMin(s.end);
+      if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
+    }
+  });
+
+  const hasB = services.some(s=> s.serviceType === "B");
+  if (hasB) nextFlightText = "After B-Check (24h)";
+  else if (lastEventEnd !== null) nextFlightText = toHHMM(lastEventEnd);
+
+  title.textContent = `✈️ ${flightLabel}`;
+
+  // Construcción del contenido (Unicorn layout)
+  let maintText = "None";
+  if (hasB) maintText = "B-Check (24h)";
+  else if (services.some(s=> s.serviceType === "A")) maintText = "A-Check";
+
+  // Block time (si existe)
+  let blockText = "—";
+  try {
+    if (dep !== "—" && arr !== "—") {
+      const mins = Math.max(0, toMin(arr) - toMin(dep));
+      const h = Math.floor(mins/60);
+      const m = mins % 60;
+      blockText = `${h}h${String(m).padStart(2,"0")}`;
+    }
+  } catch(e){}
 
   box.innerHTML = `
     <div class="flight-kicker">
-      <strong>${origin}</strong> → <strong>${dest}</strong> → <strong>${origin}</strong>
+      <strong>${origin}</strong> → <strong>${dest}</strong>
       ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
     </div>
 
     <div class="flight-hero">
-      <div class="route">Round Trip Summary</div>
+      <div class="route">Napoli style · Route Panel</div>
       <div class="times">DEP ${dep} · ARR ${arr}</div>
     </div>
 
     <div class="flight-meta">
       <div class="meta-card">
-        <span class="label">Total Flight Time</span>
-        <span class="value">${fmt(totalBlockMin)}</span>
+        <span class="label">Block Time</span>
+        <span class="value">${blockText}</span>
       </div>
       <div class="meta-card">
-        <span class="label">Total Turnaround</span>
-        <span class="value">${fmt(totalTurnMin)}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Total Operation</span>
-        <span class="value">${fmt(totalOpMin)}</span>
+        <span class="label">Turnaround</span>
+        <span class="value">${TURNAROUND_MIN} min</span>
       </div>
       <div class="meta-card">
         <span class="label">Maintenance</span>
         <span class="value">${maintText}</span>
       </div>
-      <div class="meta-card" style="grid-column:span 2;">
+      <div class="meta-card">
         <span class="label">Next Flight</span>
         <span class="value">${nextFlightText}</span>
       </div>
@@ -2529,21 +2483,32 @@ if (it && it.type === "service") {
   modal.classList.remove("hidden");
   modal.style.display = "flex";
 }
-
+     
 /* ============================================================
-   ❌ CANCEL SERVICE (INTACTO)
+   ❌ PASO 4 — CANCEL SERVICE — 17DEC25
    ============================================================ */
 
 function cancelSelectedService(){
-  if (!ACS_selectedChipEl) return closeFlightModal();
+
+  if (!ACS_selectedChipEl) {
+    closeFlightModal();
+    return;
+  }
+
   const id = ACS_selectedChipEl.dataset.id || "";
-  if (!id) return closeFlightModal();
-  const items = getItems().filter(it => it.id !== id);
-  setItems(items);
+  if (!id) {
+    closeFlightModal();
+    return;
+  }
+
+  const items = getItems();
+  const filtered = items.filter(it => it.id !== id);
+
+  setItems(filtered);
   closeFlightModal();
   renderSchedule();
 }
-
+     
 function closeFlightModal(){
   const modal = document.getElementById("flightModal");
   if (modal) {
@@ -2553,7 +2518,6 @@ function closeFlightModal(){
   ACS_selectedFlightItem = null;
   ACS_selectedChipEl = null;
 }
-
 /* ============================================================
    🦄 B3-B — MODAL ACTIONS (Remove/Edit/Delete) — 17DEC25
    ============================================================ */
