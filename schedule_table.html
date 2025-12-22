@@ -1560,7 +1560,20 @@ if (it.type === "flight") {
 
   const tooltip = document.createElement("span");
   tooltip.className = "tooltip";
+     
+// ============================================================
+// 📦 PASS CALCULATED TOTALS TO MODAL (SOURCE: TABLE)
+// ============================================================
 
+// Estos valores YA fueron calculados arriba en la table
+// aquí SOLO los exponemos para el modal
+
+chip.dataset.blockOutMin  = blockOutMin;
+chip.dataset.blockBackMin = blockBackMin;
+chip.dataset.turnMin      = turnMin;
+chip.dataset.totalOpMin   = totalCycleMin;
+chip.dataset.nextFlight   = nextLabel;
+     
   /* ============================================================
      🟢 NEXT FLIGHT — TABLE CALCULATES FULL ROTATION (OPTION 1)
      ida + turnaround + regreso + turnaround
