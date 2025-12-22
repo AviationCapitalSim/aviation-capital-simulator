@@ -1558,9 +1558,6 @@ if (it.type === "flight") {
     ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
     : `${iataCode}-— / ${iataCode}-—`;
 
-  const tooltip = document.createElement("span");
-  tooltip.className = "tooltip";
-     
 // ============================================================
 // 📦 PASS CALCULATED TOTALS TO MODAL (SOURCE: TABLE)
 // ============================================================
@@ -1616,14 +1613,6 @@ chip.dataset.nextFlight   = nextLabel;
     nextLabel = toHHMM((depMinSafe + totalCycleMin) % 1440);
   }
 
-  tooltip.innerHTML = `
-    ${it.origin} → ${it.destination}<br>
-    DEP: ${it.departure}<br>
-    ARR: ${it.arrival}<br>
-    <strong>Next Flight: ${nextLabel}</strong>
-  `;
-
-  chip.appendChild(tooltip);
   chip.onclick = () => openFlightModal(it, chip);
   td.appendChild(chip);
 }
