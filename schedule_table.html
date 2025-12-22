@@ -1558,13 +1558,28 @@ if (it.type === "flight") {
     ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
     : `${iataCode}-— / ${iataCode}-—`;
 
-  // ============================================================
-  // 🟢 NEXT FLIGHT — TABLE CALCULATES FULL ROTATION (OPTION 1)
-  // ida + turnaround + regreso + turnaround
-  // ============================================================
+  const tooltip = document.createElement("span");
+  tooltip.className = "tooltip";
+     
+// ============================================================
+// 📦 PASS CALCULATED TOTALS TO MODAL (SOURCE: TABLE)
+// ============================================================
+
+// Estos valores YA fueron calculados arriba en la table
+// aquí SOLO los exponemos para el modal
+
+chip.dataset.blockOutMin  = blockOutMin;
+chip.dataset.blockBackMin = blockBackMin;
+chip.dataset.turnMin      = turnMin;
+chip.dataset.totalOpMin   = totalCycleMin;
+chip.dataset.nextFlight   = nextLabel;
+     
+  /* ============================================================
+     🟢 NEXT FLIGHT — TABLE CALCULATES FULL ROTATION (OPTION 1)
+     ida + turnaround + regreso + turnaround
+     ============================================================ */
 
   // helpers locales (no ensucian fuera)
-     
   const wrapDiff = (aMin, bMin) => {
     if (!Number.isFinite(aMin) || !Number.isFinite(bMin)) return NaN;
     let d = bMin - aMin;
@@ -1576,49 +1591,39 @@ if (it.type === "flight") {
   const arrMinSafe = toMin(it.arrival);
 
   // Block time: usar el guardado si existe; si no, calcular por horario
-     
   const blockOutMin = Number.isFinite(it.blockTimeMin)
     ? it.blockTimeMin
     : wrapDiff(depMinSafe, arrMinSafe);
 
   // Turnaround: por ahora usamos TURNAROUND_MIN como base segura
   // (si luego quieres por avión + optimize, lo conectamos aquí)
-     
   const turnBaseMin = (typeof TURNAROUND_MIN === "number") ? TURNAROUND_MIN : 45;
 
   // Optimización (si el route trae flag optimized)
-     
-  const turnMinCalc = it.optimized
-    ? Math.max(30, Math.round(turnBaseMin * 0.75))
-    : turnBaseMin;
+  const turnMin = it.optimized ? Math.max(30, Math.round(turnBaseMin * 0.75)) : turnBaseMin;
 
   // Regreso: por defecto igual al block out (si luego tienes blockTimeReturnMin, se conecta)
-     
   const blockBackMin = Number.isFinite(it.blockTimeReturnMin)
     ? it.blockTimeReturnMin
     : blockOutMin;
 
   // Ciclo completo
-     
-  const totalCycleMin = blockOutMin + turnMinCalc + blockBackMin + turnMinCalc;
+  const totalCycleMin = blockOutMin + turnMin + blockBackMin + turnMin;
 
   // Next Flight (slot disponible)
-     
   let nextLabel = "—";
   if (Number.isFinite(depMinSafe) && Number.isFinite(totalCycleMin)) {
     nextLabel = toHHMM((depMinSafe + totalCycleMin) % 1440);
   }
 
-  // ============================================================
-  // 📦 PASS CALCULATED TOTALS TO MODAL (SOURCE: TABLE)
-  // ============================================================
+  tooltip.innerHTML = `
+    ${it.origin} → ${it.destination}<br>
+    DEP: ${it.departure}<br>
+    ARR: ${it.arrival}<br>
+    <strong>Next Flight: ${nextLabel}</strong>
+  `;
 
-  chip.dataset.blockOutMin  = blockOutMin;
-  chip.dataset.blockBackMin = blockBackMin;
-  chip.dataset.turnMin      = turnMinCalc;
-  chip.dataset.totalOpMin   = totalCycleMin;
-  chip.dataset.nextFlight   = nextLabel;
-     
+  chip.appendChild(tooltip);
   chip.onclick = () => openFlightModal(it, chip);
   td.appendChild(chip);
 }
@@ -2441,17 +2446,17 @@ if (it && it.type === "service") {
 
   const blockOutMin  = Number(chipEl?.dataset?.blockOutMin || 0);
   const blockBackMin = Number(chipEl?.dataset?.blockBackMin || 0);
-  const turnMinFromChip = Number(chipEl?.dataset?.turnMin || TURNAROUND_MIN);
-  const totalOpMinFromChip = Number(chipEl?.dataset?.totalOpMin || 0);
+  const turnMin      = Number(chipEl?.dataset?.turnMin || TURNAROUND_MIN);
+  const totalOpMin   = Number(chipEl?.dataset?.totalOpMin || 0);
   const nextFlightText = chipEl?.dataset?.nextFlight || "—";
 
   const totalBlockMin = blockOutMin + blockBackMin;
 
-  const totalTurnMin = turnMinFromChip * 2;
+  const turnBase = typeof TURNAROUND_MIN === "number" ? TURNAROUND_MIN : 45;
+  const turnMin  = it.optimized ? Math.max(30, Math.round(turnBase * 0.75)) : turnBase;
+  const totalTurnMin = turnMin * 2;
 
-  const totalOpMin = totalOpMinFromChip > 0
-    ? totalOpMinFromChip
-    : (totalBlockMin + totalTurnMin);
+  const totalOpMin = totalBlockMin + totalTurnMin;
 
   const fmt = m => {
     if (!Number.isFinite(m) || m <= 0) return "—";
@@ -2460,48 +2465,71 @@ if (it && it.type === "service") {
     return `${h}h ${String(mm).padStart(2,"0")}m`;
   };
 
- // next flight ya viene calculado por la table
-const nextFlightText = chipEl.dataset.nextFlight || "—";
+  /* ===============================
+     MAINTENANCE
+     =============================== */
 
-box.innerHTML = `
-  <div class="flight-kicker">
-    <strong>${origin}</strong> → <strong>${dest}</strong> → <strong>${origin}</strong>
-    ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
-  </div>
+  let maintText = "NONE";
+  if (services.some(s => s.serviceType === "B")) maintText = "B-Check · 24h";
+  else if (services.some(s => s.serviceType === "A")) maintText = "A-Check · 5h";
 
-  <div class="flight-hero">
-    <div class="route">Round Trip Summary</div>
-    <div class="times">DEP ${dep} · ARR ${arr}</div>
-  </div>
+  /* ===============================
+     NEXT FLIGHT (LEGACY SAFE)
+     =============================== */
 
-  <div class="flight-meta">
-    <div class="meta-card">
-      <span class="label">Total Flight Time</span>
-      <span class="value">${fmt(totalBlockMin)}</span>
-    </div>
-    <div class="meta-card">
-      <span class="label">Total Turnaround</span>
-      <span class="value">${fmt(totalTurnMin)}</span>
-    </div>
-    <div class="meta-card">
-      <span class="label">Total Operation</span>
-      <span class="value">${fmt(totalOpMin)}</span>
-    </div>
-    <div class="meta-card">
-      <span class="label">Maintenance</span>
-      <span class="value">${maintText}</span>
-    </div>
-    <div class="meta-card" style="grid-column:span 2;">
-      <span class="label">Next Flight</span>
-      <span class="value">${nextFlightText}</span>
-    </div>
-  </div>
-`;
+  let nextFlightText = "—";
+  let lastEnd = null;
 
-modal.classList.remove("hidden");
-modal.style.display = "flex";
+  flights.forEach(f=>{
+    const end = toMin(f.arrival) + TURNAROUND_MIN;
+    if (lastEnd === null || end > lastEnd) lastEnd = end;
+  });
+
+  if (services.some(s=>s.serviceType==="B")) {
+    nextFlightText = "After B-Check (24h)";
+  } else if (lastEnd !== null) {
+    nextFlightText = toHHMM(lastEnd);
+  }
+
+  box.innerHTML = `
+    <div class="flight-kicker">
+      <strong>${origin}</strong> → <strong>${dest}</strong> → <strong>${origin}</strong>
+      ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
+    </div>
+
+    <div class="flight-hero">
+      <div class="route">Round Trip Summary</div>
+      <div class="times">DEP ${dep} · ARR ${arr}</div>
+    </div>
+
+    <div class="flight-meta">
+      <div class="meta-card">
+        <span class="label">Total Flight Time</span>
+        <span class="value">${fmt(totalBlockMin)}</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Total Turnaround</span>
+        <span class="value">${fmt(totalTurnMin)}</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Total Operation</span>
+        <span class="value">${fmt(totalOpMin)}</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Maintenance</span>
+        <span class="value">${maintText}</span>
+      </div>
+      <div class="meta-card" style="grid-column:span 2;">
+        <span class="label">Next Flight</span>
+        <span class="value">${nextFlightText}</span>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
 }
-     
+
 /* ============================================================
    ❌ CANCEL SERVICE (INTACTO)
    ============================================================ */
