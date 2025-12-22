@@ -385,9 +385,15 @@ footer {
   white-space: nowrap;
 }
 
+/* ============================================================
+   🅱️ B2 — ACTION PLAN WIDTH (FLEX SAFE)
+   ============================================================ */
+
 #scheduleTable td:last-child,
 #scheduleTable th:last-child {
-  width: 170px;
+  min-width: 160px;
+  max-width: 180px;
+  white-space: nowrap;
 }
        
 /* ============================================================
@@ -405,6 +411,7 @@ footer {
 }
        
 /* HOTFIX — revertir flex global y proteger columna Aircraft */
+       
 #scheduleTable td { 
   display: table-cell; 
   vertical-align: middle; 
@@ -893,6 +900,36 @@ footer {
   50%  { box-shadow: 0 0 10px rgba(0, 255, 204, 1); }
   100% { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
 }
+       
+/* ============================================================
+   🅰️ A2 — SCHEDULE TABLE WRAPPER (NO DESIGN CHANGE)
+   Date: 22 DEC 2025
+   ============================================================ */
+
+.schedule-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px; /* evita corte del scroll */
+}
+
+/* scrollbar discreto (Safari friendly) */
+.schedule-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.schedule-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255,179,0,0.35);
+  border-radius: 6px;
+}
+       
+/* ============================================================
+   🅱️ B1 — TABLE WIDTH STABILITY (SAFARI SAFE)
+   ============================================================ */
+
+#scheduleTable {
+  min-width: 1100px; /* cálculo real: 9 columnas */
+}
 
 </style>
 </head>
@@ -950,6 +987,9 @@ footer {
     Automatic schedule monitor with real-time route integration.
   </p>
 
+  <!-- 🅰️ A1 — TABLE WRAPPER (SAFE) — 22DEC25 -->
+     
+<div class="schedule-table-wrapper">
   <table id="scheduleTable">
     <thead>
       <tr>
@@ -966,6 +1006,7 @@ footer {
     </thead>
     <tbody id="scheduleBody"></tbody>
   </table>
+</div>
 
   <div class="summary">
     <p id="updateTime">Last update: --</p>
