@@ -2446,10 +2446,10 @@ if (it && it.type === "service") {
   const nextFlightText = chipEl?.dataset?.nextFlight || "—";
 
   const totalBlockMin = blockOutMin + blockBackMin;
-  const totalTurnMin  = turnMinFromChip * 2;
 
-  // Modal NO recalcula: si el chip trae totalOpMin lo usamos; si no, fallback seguro
-  const totalOpMinFinal = totalOpMinFromChip > 0
+  const totalTurnMin = turnMinFromChip * 2;
+
+  const totalOpMin = totalOpMinFromChip > 0
     ? totalOpMinFromChip
     : (totalBlockMin + totalTurnMin);
 
@@ -2459,7 +2459,6 @@ if (it && it.type === "service") {
     const mm = m % 60;
     return `${h}h ${String(mm).padStart(2,"0")}m`;
   };
-
 
   /* ===============================
      MAINTENANCE
