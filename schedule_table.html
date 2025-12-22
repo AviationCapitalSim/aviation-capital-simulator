@@ -20,7 +20,7 @@
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
-  <style>
+ <style>
 /* ============================================================
    === GLOBAL PAGE STYLE =======================================
    ============================================================ */
@@ -112,10 +112,11 @@ body {
   border-radius: 12px;
   font-size: 0.9rem;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
   color: #8AB4FF;
   border: 1px solid rgba(138,180,255,0.45);
   background: rgba(138,180,255,0.08);
-  text-decoration: none;
 }
 
 .logout-btn {
@@ -150,40 +151,22 @@ body {
   color: #cbd6ff;
   font-size: 1rem;
 }
-
 /* ============================================================
-   === SCHEDULE TABLE =========================================
+   === SCHEDULE TABLE (Qatar Luxury) ===========================
    ============================================================ */
 
-.schedule-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 6px;
-}
-
-.schedule-table-wrapper::-webkit-scrollbar {
-  height: 8px;
-}
-
-.schedule-table-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(255,179,0,0.35);
-  border-radius: 6px;
-}
-
-#scheduleTable {
+table {
   width: 90%;
-  min-width: 1100px;
   margin: 0 auto;
   border-collapse: collapse;
-  table-layout: fixed;
   background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
   border-radius: 18px;
+  overflow: hidden;
   box-shadow: 0 0 20px rgba(255,179,0,0.1);
   border: 1px solid rgba(255,179,0,0.15);
 }
 
-#scheduleTable th {
+th {
   background: rgba(255,179,0,0.15);
   color: #ffca3a;
   padding: 1rem;
@@ -191,103 +174,33 @@ body {
   text-shadow: 0 0 6px rgba(255,200,80,0.4);
 }
 
-#scheduleTable td {
+td {
   background: rgba(10,20,45,0.8);
   border: 1px solid rgba(255,255,255,0.05);
   padding: 0.8rem;
   color: #dbe4ff;
-  font-size: 0.92rem;
   text-align: center;
-  vertical-align: top;
-  overflow: hidden;
-}
-
-#scheduleTable th:last-child,
-#scheduleTable td:last-child {
-  min-width: 160px;
-  max-width: 180px;
-  vertical-align: middle;
+  font-size: 0.92rem;
 }
 
 /* ============================================================
-   === ACTION PLAN ============================================
+   === FLIGHT CHIPS ============================================
    ============================================================ */
 
-.plan-actions {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.plan-actions .btn {
-  padding: 4px 10px;
-  font-size: 0.75rem;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-
-/* ============================================================
-   === BUTTONS ================================================
-   ============================================================ */
-
-.btn {
-  border-radius: 14px;
-  padding: 7px 12px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-assign {
-  background: #00a86b;
-  color: #fff;
-}
-
-.btn-maint {
-  background: #ffb300;
-  color: #0d1b34;
-}
-
-.back-btn {
-  margin-top: 2rem;
-  padding: 0.6rem 1.6rem;
-  border-radius: 10px;
-  border: 1px solid #ffb300;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  cursor: pointer;
-}
-
-/* ============================================================
-   === FLIGHT & SERVICE CHIPS ================================
-   ============================================================ */
-
-.chip,
-.flight-chip,
-.service-chip {
+.chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.chip,
-.flight-chip {
+  justify-content: center;
   background: #0c2b52;
+  padding: 5px 10px;
+  margin: 2px 0;
+  border-radius: 8px;
   color: #ffca3a;
+  font-weight: 700;
+  font-size: 0.85rem;
   box-shadow: 0 0 8px rgba(255,200,60,0.25);
-}
-
-.service-chip {
-  background: rgba(255,204,0,0.18);
-  border: 1px solid rgba(255,204,0,0.45);
-  color: #FFD54F;
+  cursor: pointer;
+  position: relative;
 }
 
 /* Tooltip */
@@ -302,8 +215,8 @@ body {
   border-radius: 6px;
   display: none;
   font-size: 0.75rem;
-  font-weight: 700;
   white-space: nowrap;
+  font-weight: 700;
   z-index: 99999;
 }
 
@@ -312,34 +225,49 @@ body {
 }
 
 /* ============================================================
-   === STATES ================================================
+   === BUTTONS =================================================
    ============================================================ */
 
-.row-pending td {
-  opacity: 0.35;
-  background-color: rgba(150,150,150,0.12) !important;
+.btn {
+  border-radius: 14px;
+  padding: 7px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
 }
 
-.row-maint td {
-  opacity: 0.45;
-  background-color: rgba(200,80,0,0.15) !important;
+.btn-assign {
+  background: #00a86b;
+  color: #fff;
 }
 
-.bcheck-day {
-  background: rgba(120,120,120,0.35) !important;
-  box-shadow: inset 0 0 0 1px rgba(160,160,160,0.45);
+.btn-assign:hover {
+  background: #00945f;
 }
 
-.flying-now {
-  border: 2px solid #00ffcc;
-  box-shadow: 0 0 6px rgba(0,255,204,0.8);
-  animation: flyingPulse 1.4s ease-in-out infinite;
+.btn-maint {
+  background: #ffb300;
+  color: #0d1b34;
 }
 
-@keyframes flyingPulse {
-  0%   { box-shadow: 0 0 4px rgba(0,255,204,0.6); }
-  50%  { box-shadow: 0 0 10px rgba(0,255,204,1); }
-  100% { box-shadow: 0 0 4px rgba(0,255,204,0.6); }
+.btn-maint:hover {
+  background: #e6a100;
+}
+
+.back-btn {
+  margin-top: 2rem;
+  padding: 0.6rem 1.6rem;
+  border-radius: 10px;
+  border: 1px solid #ffb300;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.back-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
 }
 
 /* ============================================================
@@ -350,7 +278,622 @@ footer {
   text-align: center;
   color: #7c8bb8;
   padding: 2rem 0;
+  margin-top: 2rem;
 }
+
+/* ============================================================
+   === AIRCRAFT HOVER CARD — Qatar Luxury ======================
+   ============================================================ */
+
+.aircraft-hover-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -115%);
+  background: rgba(14, 27, 60, 0.95);
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  border: 1px solid #ffb300;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  color: #ffe9b3;
+  z-index: 9999;
+  width: 260px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.20s ease-in-out;
+}
+
+.aircraft-hover-card.visible {
+  opacity: 1;
+}
+
+.aircraft-hover-card h4 {
+  margin: 0 0 0.4rem 0;
+  font-size: 1rem;
+  color: #ffb300;
+  text-shadow: 0 0 6px rgba(255,179,0,0.5);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,200,60,0.35);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffb300, #ffdd80);
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+.progress-label {
+  display: block;
+  text-align: right;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  color: #ffdd80;
+}
+
+/* ============================================================
+   === BASE MODAL STYLE ========================================
+   ============================================================ */
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 10, 25, 0.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 6000;
+}
+
+.modal-content {
+  background: #0d1b34;
+  border: 1px solid rgba(255,179,0,0.35);
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 0 18px rgba(255,179,0,0.25);
+  color: #dbe4ff;
+  width: 300px;
+  text-align: center;
+}
+
+/* ============================================================
+   === ACTION PLAN COLUMN (SMALLER) ============================
+   ============================================================ */
+
+.plan-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.plan-actions .btn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+#scheduleTable td:last-child,
+#scheduleTable th:last-child {
+  width: 170px;
+}
+       
+/* ============================================================
+   🟦 PASO 2 — TOP ALIGN + CHRONO STACK (FINAL)
+   ============================================================ */
+
+#scheduleTable td {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+
+  padding-top: 6px;
+  gap: 4px;
+}
+       
+/* HOTFIX — revertir flex global y proteger columna Aircraft */
+#scheduleTable td { 
+  display: table-cell; 
+  vertical-align: middle; 
+}
+
+#scheduleTable td:not(:first-child) {
+  vertical-align: top;
+}
+       
+/* ============================================================
+   🟦 FIX — KEEP ACTION PLAN CENTERED
+   ============================================================ */
+
+#scheduleTable td:last-child,
+#scheduleTable th:last-child {
+  vertical-align: middle !important;
+}
+.row-maint td {
+  opacity: 0.45;
+  background-color: rgba(200,80,0,0.15) !important;
+}
+
+.row-pending td {
+  opacity: 0.35;
+  background-color: rgba(150,150,150,0.12) !important;
+}
+
+/* ============================================================
+   MINI CHIP QATAR — ULTRA COMPACTO + CENTRADO
+   ============================================================ */
+       
+.flightChip {
+  display: block;                 /* uno debajo del otro */
+  margin: 2px auto;               /* centrado */
+  padding: 1px 5px;               /* ultra compacto */
+  font-size: 10px;                /* tamaño mini */
+  font-weight: 600;
+  color: #FFD54F;                 /* oro brillante */
+  background: rgba(255, 204, 0, 0.15); 
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  border-radius: 6px;             /* óvalo pequeño */
+  width: fit-content;             /* ajustado al texto */
+  white-space: nowrap;            /* no dividir */
+}
+
+/* ============================================================
+   === B-CHECK DAY BACKGROUND — Qatar Luxury A2 Premium ========
+   ============================================================ */
+.bcheck-day {
+  background: rgba(135, 145, 165, 0.26) !important;
+  border: 1px solid rgba(135, 145, 165, 0.38) !important;
+  border-radius: 10px;
+}
+       
+/* === MODAL ERROR — Qatar Luxury Style === */
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.error-modal {
+  background: linear-gradient(180deg, #0a1c33 0%, #162b45 100%);
+  padding: 25px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 18px rgba(0,0,0,0.45);
+  width: 340px;
+  text-align: center;
+}
+
+.modal-title {
+  color: #ffb300;
+  font-size: 20px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.modal-text {
+  color: #d1d9e6;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.modal-button {
+  background: #ffb300;
+  color: #000;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.modal-button:hover {
+  background: #ffca47;
+}
+
+/* ============================================================
+   🟡 FLIGHT TOOLTIP (FIX CLIPPING)
+   ============================================================ */
+
+.flight-tooltip {
+  max-width: 280px;
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.35;
+}
+       
+/* ============================================================
+   ✈️ FLIGHT CHIP — COMPACT (ONE LINE)
+   ============================================================ */
+
+.flight-chip {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 14px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.flight-chip strong {
+  font-weight: 600;
+}
+       
+/* ============================================================
+   ✨ ACS MODAL — QATAR LUXURY
+   ============================================================ */
+
+.acs-action-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.acs-action-box {
+  background: linear-gradient(180deg, #0b132b, #020617);
+  border: 2px solid #ffcc33;
+  border-radius: 20px;
+  padding: 22px;
+  display: flex;
+  gap: 14px;
+  box-shadow: 0 0 40px rgba(255,204,51,0.25);
+}
+
+.acs-action-btn {
+  min-width: 90px;
+  padding: 10px 0;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acs-action-btn.gold { background: #ffcc33; color: #000; }
+.acs-action-btn.amber { background: #f59e0b; color: #000; }
+.acs-action-btn.red   { background: #dc2626; color: #fff; }
+
+.acs-action-btn.ghost {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #334155;
+}
+
+/* ============================================================
+   🦄 B1 — FLIGHT MODAL (Qatar Luxury Unicorn) — 17DEC25
+   ============================================================ */
+
+.acs-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.66);
+  backdrop-filter: blur(6px);
+  display: none; /* se abre con JS */
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.acs-modal.hidden { display: none; }
+
+.acs-modal-card.qatar {
+  width: min(520px, 92vw);
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b132b 0%, #020617 100%);
+  border: 2px solid rgba(255, 204, 51, 0.70);
+  box-shadow: 0 0 42px rgba(255,204,51,0.20);
+}
+
+.acs-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(255,179,0,0.10);
+  border-bottom: 1px solid rgba(255, 204, 51, 0.35);
+}
+
+.acs-modal-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #ffcc33;
+  letter-spacing: 0.4px;
+  text-shadow: 0 0 10px rgba(255,204,51,0.25);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-close {
+  border: 1px solid rgba(255,204,51,0.45);
+  background: rgba(255,204,51,0.06);
+  color: #ffcc33;
+  width: 40px;
+  height: 36px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.btn-close:hover {
+  background: rgba(255,204,51,0.14);
+}
+
+.acs-modal-body {
+  padding: 14px 16px 6px;
+  color: #dbe4ff;
+  text-align: left;
+}
+
+.flight-kicker {
+  font-size: 0.85rem;
+  color: #cbd6ff;
+  opacity: 0.95;
+  margin-bottom: 10px;
+}
+
+.flight-hero {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,204,51,0.25);
+  background: rgba(16,43,77,0.35);
+  box-shadow: inset 0 0 18px rgba(0,0,0,0.35);
+  margin-bottom: 10px;
+}
+
+.flight-hero .route {
+  font-weight: 800;
+  color: #ffe7a0;
+  letter-spacing: 0.2px;
+}
+
+.flight-hero .times {
+  font-family: "Orbitron", monospace;
+  color: #00ff80;
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
+.flight-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.meta-card {
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.meta-card .label {
+  display: block;
+  font-size: 0.78rem;
+  color: #cbd6ff;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.meta-card .value {
+  font-weight: 700;
+  color: #ffdd80;
+}
+
+.acs-modal-footer {
+  padding: 12px 16px 16px;
+  border-top: 1px solid rgba(255, 204, 51, 0.20);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.acs-modal-footer .btn-modal {
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.btn-modal.gold { background: #ffcc33; color: #000; }
+.btn-modal.amber { background: #f59e0b; color: #000; }
+.btn-modal.red { background: #dc2626; color: #fff; }
+
+.btn-modal.ghost {
+  background: rgba(255,255,255,0.05);
+  color: #dbe4ff;
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.btn-modal:hover { filter: brightness(1.06); transform: translateY(-1px); }
+
+/* ============================================================
+   🦄 M1 — MAINTENANCE MODAL (Qatar Luxury Unicorn) — 17DEC25
+   ============================================================ */
+
+.acs-maint-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.acs-maint-card {
+  width: min(420px, 92vw);
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0b132b 0%, #020617 100%);
+  border: 2px solid rgba(255, 204, 51, 0.65);
+  box-shadow: 0 0 42px rgba(255,204,51,0.22);
+}
+
+.acs-maint-header {
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,179,0,0.12);
+  border-bottom: 1px solid rgba(255,204,51,0.35);
+}
+
+.acs-maint-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #ffcc33;
+  letter-spacing: 0.4px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.acs-maint-body {
+  padding: 18px;
+  color: #dbe4ff;
+}
+
+.maint-field {
+  margin-bottom: 14px;
+}
+
+.maint-field label {
+  display: block;
+  font-size: 0.8rem;
+  color: #cbd6ff;
+  margin-bottom: 6px;
+}
+
+.maint-field select,
+.maint-field input[type="time"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,204,51,0.25);
+  background: rgba(16,43,77,0.45);
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.maint-field input[type="time"] {
+  font-family: "Orbitron", monospace;
+}
+
+.acs-maint-footer {
+  padding: 14px 18px 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  border-top: 1px solid rgba(255,204,51,0.25);
+}
+
+.maint-btn {
+  padding: 10px;
+  border-radius: 14px;
+  border: none;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.maint-btn.apply {
+  background: #ffcc33;
+  color: #000;
+}
+
+.maint-btn.cancel {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.maint-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+       
+/* ============================================================
+   🛠 S1 — SERVICE CHIP (COMPACT · QATAR LUXURY) — 17DEC25
+   ============================================================ */
+
+.service-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  white-space: nowrap;
+
+  background: rgba(255, 204, 0, 0.18);
+  border: 1px solid rgba(255, 204, 0, 0.45);
+  color: #FFD54F;
+
+  box-shadow: 0 0 6px rgba(255, 204, 0, 0.35);
+}
+       
+/* ============================================================
+   🟫 PASO 2 — B-CHECK DAY STYLE (GRAY CELL) — 17DEC25
+   ============================================================ */
+
+.bcheck-day {
+  background: rgba(120, 120, 120, 0.35) !important;
+  box-shadow: inset 0 0 0 1px rgba(160, 160, 160, 0.45);
+}
+
+.bcheck-day .chip,
+.bcheck-day .service-chip {
+  opacity: 0.85;
+}
+       
+/* ============================================================
+   🟦 PASO 3 — FLIGHT ACTIVE VISUAL (SAFE)
+   ============================================================ */
+
+.flying-now {
+  border: 2px solid #00ffcc;
+  box-shadow: 0 0 6px rgba(0, 255, 204, 0.8);
+  animation: flyingPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes flyingPulse {
+  0%   { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
+  50%  { box-shadow: 0 0 10px rgba(0, 255, 204, 1); }
+  100% { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
+}
+
 </style>
 
 </head>
