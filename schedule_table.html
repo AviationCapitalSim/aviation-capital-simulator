@@ -2441,7 +2441,7 @@ if (it && it.type === "service") {
 
   const blockOutMin  = Number(chipEl?.dataset?.blockOutMin || 0);
   const blockBackMin = Number(chipEl?.dataset?.blockBackMin || 0);
-  const turnMin      = Number(chipEl?.dataset?.turnMin || TURNAROUND_MIN);
+  const turnMinFromChip = Number(chipEl?.dataset?.turnMin || TURNAROUND_MIN);
   const totalOpMin   = Number(chipEl?.dataset?.totalOpMin || 0);
   const nextFlightText = chipEl?.dataset?.nextFlight || "—";
 
@@ -2449,7 +2449,7 @@ if (it && it.type === "service") {
 
   const turnBase = typeof TURNAROUND_MIN === "number" ? TURNAROUND_MIN : 45;
   const turnMin  = it.optimized ? Math.max(30, Math.round(turnBase * 0.75)) : turnBase;
-  const totalTurnMin = turnMin * 2;
+  const totalTurnMin = turnMinFromChip * 2;
 
   const totalOpMin = totalBlockMin + totalTurnMin;
 
