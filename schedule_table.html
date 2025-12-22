@@ -156,7 +156,8 @@ body {
    ============================================================ */
 
 table {
-  width: 90%;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
   border-collapse: collapse;
   background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
@@ -376,6 +377,7 @@ footer {
   display: flex;
   gap: 6px;
   justify-content: center;
++ flex-wrap: wrap;
 }
 
 .plan-actions .btn {
@@ -387,7 +389,8 @@ footer {
 
 #scheduleTable td:last-child,
 #scheduleTable th:last-child {
-  width: 170px;
+  min-width: 150px;
+  max-width: 180px;
 }
        
 /* ============================================================
