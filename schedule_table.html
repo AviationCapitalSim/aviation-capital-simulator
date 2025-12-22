@@ -896,7 +896,23 @@ footer {
   50%  { box-shadow: 0 0 10px rgba(0, 255, 204, 1); }
   100% { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
 }
+      
+/* ============================================================
+   🟦 TABLE WRAPPER — OVERFLOW CONTROL (FINAL)
+   ============================================================ */
+      
+.schedule-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
 
+/* evita que Action Plan empuje */
+#scheduleTable {
+  width: 100%;
+  min-width: 1200px;
+}
+      
 </style>
 
 </head>
@@ -932,6 +948,7 @@ footer {
 <!-- ============================================================
      === MAIN CONTENT ===========================================
      ============================================================ -->
+     
 <main class="acs-main">
 
   <h2
