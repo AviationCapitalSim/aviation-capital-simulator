@@ -2444,8 +2444,12 @@ if (it && it.type === "service") {
      TOTALES (IDA + VUELTA)
      =============================== */
 
-  let blockOutMin = Number(it.blockTimeMin || 0);
-  let blockBackMin = Number(it.blockTimeReturnMin || blockOutMin || 0);
+  const blockOutMin  = Number(chipEl?.dataset?.blockOutMin || 0);
+  const blockBackMin = Number(chipEl?.dataset?.blockBackMin || 0);
+  const turnMin      = Number(chipEl?.dataset?.turnMin || TURNAROUND_MIN);
+  const totalOpMin   = Number(chipEl?.dataset?.totalOpMin || 0);
+  const nextFlightText = chipEl?.dataset?.nextFlight || "—";
+
   const totalBlockMin = blockOutMin + blockBackMin;
 
   const turnBase = typeof TURNAROUND_MIN === "number" ? TURNAROUND_MIN : 45;
