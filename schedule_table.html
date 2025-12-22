@@ -1558,25 +1558,13 @@ if (it.type === "flight") {
     ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
     : `${iataCode}-— / ${iataCode}-—`;
 
-// ============================================================
-// 📦 PASS CALCULATED TOTALS TO MODAL (SOURCE: TABLE)
-// ============================================================
-
-// Estos valores YA fueron calculados arriba en la table
-// aquí SOLO los exponemos para el modal
-
-chip.dataset.blockOutMin  = blockOutMin;
-chip.dataset.blockBackMin = blockBackMin;
-chip.dataset.turnMin      = turnMin;
-chip.dataset.totalOpMin   = totalCycleMin;
-chip.dataset.nextFlight   = nextLabel;
-     
-  /* ============================================================
-     🟢 NEXT FLIGHT — TABLE CALCULATES FULL ROTATION (OPTION 1)
-     ida + turnaround + regreso + turnaround
-     ============================================================ */
+  // ============================================================
+  // 🟢 NEXT FLIGHT — TABLE CALCULATES FULL ROTATION (OPTION 1)
+  // ida + turnaround + regreso + turnaround
+  // ============================================================
 
   // helpers locales (no ensucian fuera)
+     
   const wrapDiff = (aMin, bMin) => {
     if (!Number.isFinite(aMin) || !Number.isFinite(bMin)) return NaN;
     let d = bMin - aMin;
@@ -1588,31 +1576,49 @@ chip.dataset.nextFlight   = nextLabel;
   const arrMinSafe = toMin(it.arrival);
 
   // Block time: usar el guardado si existe; si no, calcular por horario
+     
   const blockOutMin = Number.isFinite(it.blockTimeMin)
     ? it.blockTimeMin
     : wrapDiff(depMinSafe, arrMinSafe);
 
   // Turnaround: por ahora usamos TURNAROUND_MIN como base segura
   // (si luego quieres por avión + optimize, lo conectamos aquí)
+     
   const turnBaseMin = (typeof TURNAROUND_MIN === "number") ? TURNAROUND_MIN : 45;
 
   // Optimización (si el route trae flag optimized)
-  const turnMin = it.optimized ? Math.max(30, Math.round(turnBaseMin * 0.75)) : turnBaseMin;
+     
+  const turnMinCalc = it.optimized
+    ? Math.max(30, Math.round(turnBaseMin * 0.75))
+    : turnBaseMin;
 
   // Regreso: por defecto igual al block out (si luego tienes blockTimeReturnMin, se conecta)
+     
   const blockBackMin = Number.isFinite(it.blockTimeReturnMin)
     ? it.blockTimeReturnMin
     : blockOutMin;
 
   // Ciclo completo
-  const totalCycleMin = blockOutMin + turnMin + blockBackMin + turnMin;
+     
+  const totalCycleMin = blockOutMin + turnMinCalc + blockBackMin + turnMinCalc;
 
   // Next Flight (slot disponible)
+     
   let nextLabel = "—";
   if (Number.isFinite(depMinSafe) && Number.isFinite(totalCycleMin)) {
     nextLabel = toHHMM((depMinSafe + totalCycleMin) % 1440);
   }
 
+  // ============================================================
+  // 📦 PASS CALCULATED TOTALS TO MODAL (SOURCE: TABLE)
+  // ============================================================
+
+  chip.dataset.blockOutMin  = blockOutMin;
+  chip.dataset.blockBackMin = blockBackMin;
+  chip.dataset.turnMin      = turnMinCalc;
+  chip.dataset.totalOpMin   = totalCycleMin;
+  chip.dataset.nextFlight   = nextLabel;
+     
   chip.onclick = () => openFlightModal(it, chip);
   td.appendChild(chip);
 }
