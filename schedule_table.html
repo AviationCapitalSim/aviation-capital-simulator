@@ -2442,16 +2442,16 @@ if (it && it.type === "service") {
   const blockOutMin  = Number(chipEl?.dataset?.blockOutMin || 0);
   const blockBackMin = Number(chipEl?.dataset?.blockBackMin || 0);
   const turnMinFromChip = Number(chipEl?.dataset?.turnMin || TURNAROUND_MIN);
-  const totalOpMin   = Number(chipEl?.dataset?.totalOpMin || 0);
+  const totalOpMinFromChip = Number(chipEl?.dataset?.totalOpMin || 0);
   const nextFlightText = chipEl?.dataset?.nextFlight || "—";
 
   const totalBlockMin = blockOutMin + blockBackMin;
+  const totalTurnMin  = turnMinFromChip * 2;
 
-  const turnBase = typeof TURNAROUND_MIN === "number" ? TURNAROUND_MIN : 45;
-  const turnMin  = it.optimized ? Math.max(30, Math.round(turnBase * 0.75)) : turnBase;
-  const totalTurnMin = turnMinFromChip * 2;
-
-  const totalOpMin = totalBlockMin + totalTurnMin;
+  // Modal NO recalcula: si el chip trae totalOpMin lo usamos; si no, fallback seguro
+  const totalOpMinFinal = totalOpMinFromChip > 0
+    ? totalOpMinFromChip
+    : (totalBlockMin + totalTurnMin);
 
   const fmt = m => {
     if (!Number.isFinite(m) || m <= 0) return "—";
@@ -2459,6 +2459,7 @@ if (it && it.type === "service") {
     const mm = m % 60;
     return `${h}h ${String(mm).padStart(2,"0")}m`;
   };
+
 
   /* ===============================
      MAINTENANCE
