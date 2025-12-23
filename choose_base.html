@@ -725,6 +725,52 @@ function setBase(icao) {
 
   console.log("✅ Base establecida correctamente:", user.base);
 
+/* ============================================================
+   🟦 PASO 1 — FLIGHT SYSTEM CONTEXT SYNC (SAFE / NON-BREAKING)
+   ------------------------------------------------------------
+   • Fuente de verdad: ACS_activeUser.airline.iata
+   • Mantiene compatibilidad con módulos legacy
+   • Solo corrige si hay inconsistencia
+   ============================================================ */
+
+(function syncFlightSystemWithAirline(){
+
+  try {
+    const airlineIATA = (user.airline && user.airline.iata || "").toUpperCase();
+    const storedIATA  = (localStorage.getItem("userIATA") || "").toUpperCase();
+
+    // Si no hay airline válida, no hacemos nada
+    if (!airlineIATA) {
+      console.warn("⚠️ Flight Sync skipped — no airline IATA found.");
+      return;
+    }
+
+    // Si el sistema de vuelos está desalineado → sincronizar
+    if (!storedIATA || storedIATA !== airlineIATA) {
+
+      console.log("🔁 Syncing Flight System IATA:", {
+        previous: storedIATA || "(none)",
+        current: airlineIATA
+      });
+
+      // Prefijo correcto de vuelos
+      localStorage.setItem("userIATA", airlineIATA);
+
+      // Reinicio seguro del sistema de numeración
+      localStorage.setItem("lastFlightNumber", "100");
+      localStorage.setItem("flightNumbers", JSON.stringify([]));
+
+      console.log("🟩 Flight System synchronized successfully.");
+    } else {
+      console.log("🟢 Flight System already in sync:", airlineIATA);
+    }
+
+  } catch (err) {
+    console.error("❌ Flight System Sync Error:", err);
+  }
+
+})();
+  
   alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
   window.location.href = "dashboard.html";
 }
