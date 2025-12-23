@@ -678,29 +678,22 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
-/* ============================================================
-   🟧 A6 — AUTO-GENERATE FLIGHT NUMBER (LABEL-SAFE)
-   ============================================================ */
+/* 🟦 A4 — ROUTE SCHEDULE: Auto Flight Number AFTER selecting aircraft */
+     
 function autoGenerateFlightNumber() {
 
-  if (!userIATA || userIATA.length !== 2) return;
+    if (!userIATA || userIATA.length !== 2) return;
 
-  const origin = document.getElementById("origin")?.value.trim();
-  const dest   = document.getElementById("destination")?.value.trim();
-  const ac     = document.getElementById("aircraft")?.value;
+    const origin = document.getElementById("origin").value.trim();
+    const dest   = document.getElementById("destination").value.trim();
+    const ac     = document.getElementById("aircraft").value;
 
-  if (!origin || !dest || !ac) return;
+    if (!origin || !dest || !ac) return;
 
-  const pair = generateFlightPair();
-
-  // 🔑 sincronizar engine (confirmRoute)
-  window.currentFN_Out = pair.out;
-  window.currentFN_In  = pair.inn;
-
-  // 🖥️ UI — SOLO labels
-  if (flightNumberInput) {
-    flightNumberInput.value = `${pair.labelOut} ➜ ${pair.labelIn}`;
-  }
+    const pair = generateFlightPair();
+    if (flightNumberInput) {
+        flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
+    }
 }
 
 /* ============================================================
@@ -726,37 +719,31 @@ let usedFlights = JSON.parse(
 );
 
 /* ============================================================
-   🟦 PASO 5 — FLIGHT NUMBER ENGINE (ID vs DISPLAY)
-   ------------------------------------------------------------
-   • ID interno: sin guiones (WM100)
-   • Label UI: corto y estable (WM-100)
-   • Schedule Table SOLO debe usar el label
+   🟧 A3 — Safe Flight Pair Generator (OUT → IN)
    ============================================================ */
+function generateFlightPair() {
 
-/* ============================================================
-   🟧 A0 — Global Airline IATA (SINGLE SOURCE)
-   ============================================================ */
-     
-var userIATA =
-  localStorage.getItem("userIATA") ||
-  JSON.parse(localStorage.getItem("ACS_activeUser"))?.airline?.iata ||
-  "XX";
+  let num  = lastFlightNumber;
+  let out  = `${userIATA}${num}`;
+  let inn  = `${userIATA}${num + 1}`;
 
+  // Evitar números ya usados
+  while (usedFlights.includes(out) || usedFlights.includes(inn)) {
+    num += 2;
+    out = `${userIATA}${num}`;
+    inn = `${userIATA}${num + 1}`;
+  }
 
-// Base del contador
-let num = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
+  // Actualizar el contador global
+  lastFlightNumber = num;
 
-// 🔢 IDs internos (lógica)
-const flightNumberOut = `${userIATA}${num}`;
-const flightNumberIn  = `${userIATA}${num + 1}`;
+  // Pintar en input
+  if (flightNumberInput) {
+    flightNumberInput.value = `${out} ➜ ${inn}`;
+  }
 
-// 🏷️ Labels visuales (UI)
-const flightLabelOut = `${userIATA}-${num}`;
-const flightLabelIn  = `${userIATA}-${num + 1}`;
-
-// Persistencia del contador
-localStorage.setItem("lastFlightNumber", (num + 2).toString());
-
+  return { out, inn };
+}
 
 /* ============================================================
    🟦 AUTO-GENERATE FLIGHT NUMBER (LLAMADO DESDE EL SELECT)
@@ -836,13 +823,8 @@ if (!isEditing) {
   // ✅ NUEVO — aircraftId architecture
   loadAircraftById();
 
-  /* ============================================================
-   🟧 A7 — Aircraft Change → Auto Flight Number + Recalc
-   ============================================================ */
-document.getElementById("aircraft").addEventListener("change", () => {
-  autoGenerateFlightNumber(); // genera WM-100 ➜ WM-101 (labels)
-  autoCalculate();            // mantiene cálculos existentes
-});
+  /* 🟦 Recalcular al cambiar avión */
+  document.getElementById("aircraft").addEventListener("change", autoCalculate);
 
   autoGenerateFlightNumber();
   return;
