@@ -451,58 +451,91 @@ function handleAirlineCreation(event) {
   localStorage.setItem("ACS_users", JSON.stringify(allUsers));
   localStorage.setItem("ACS_Airline", JSON.stringify(airline));
 
+ /* ============================================================
+   🟦 PASO 3 — CREATE AIRLINE · ESTADO ACTIVO + VUELOS (FINAL)
+   ------------------------------------------------------------
+   • Google Sheet = registro / backend
+   • localStorage = estado activo del simulador
+   • airline.iata garantizado
+   ============================================================ */
 
+try {
 
-  /* ============================================================
-     🟦 🔥🔥🔥 PARCHE OFICIAL — RESTAURAR SISTEMA DE VUELOS 🔥🔥🔥
-     ------------------------------------------------------------
-     Esto re-activa:
-       • userIATA
-       • contador de vuelos
-       • lista de vuelos usados
-     Para que Route Schedule genere automáticamente:
-       AC100 ➜ AC101
-  ============================================================ */
+  // ------------------------------------------------------------
+  // 1️⃣ GARANTIZAR IATA DE AIRLINE (OBLIGATORIO)
+  // ------------------------------------------------------------
+  if (!airline.iata || typeof airline.iata !== "string") {
+    const cleanName = (airlineName || "ACS").toUpperCase().replace(/[^A-Z]/g, "");
+    airline.iata = cleanName.slice(0, 2) || "XX";
+    console.warn("⚠️ Airline IATA missing — generated:", airline.iata);
+  } else {
+    airline.iata = airline.iata.toUpperCase().trim();
+  }
 
-  localStorage.setItem("userIATA", airline.iata);        // prefijo
-  localStorage.setItem("lastFlightNumber", "100");        // reinicio seguro
-  localStorage.setItem("flightNumbers", JSON.stringify([])); // vuelos usados
+  // ------------------------------------------------------------
+  // 2️⃣ GUARDAR USUARIO ACTIVO (FUENTE DE VERDAD DEL JUEGO)
+  // ------------------------------------------------------------
+  const activeUser = {
+    userId: user.userId,
+    airline: {
+      name: airlineName,
+      iata: airline.iata,
+      country: country
+    },
+    createdAt: new Date().toISOString()
+  };
+
+  localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+  console.log("🟢 ACS_activeUser stored:", activeUser);
+
+  // ------------------------------------------------------------
+  // 3️⃣ INICIALIZAR SISTEMA DE VUELOS (USANDO IATA CORRECTO)
+  // ------------------------------------------------------------
+  localStorage.setItem("userIATA", airline.iata);
+  localStorage.setItem("lastFlightNumber", "100");
+  localStorage.setItem("flightNumbers", JSON.stringify([]));
 
   console.log("🟩 Flight Number System initialized:", airline.iata);
 
+} catch (e) {
+  console.error("❌ CREATE AIRLINE INIT FAILED:", e);
+}
 
 
-  // ============================================================
-  // SEND AIRLINE TO GOOGLE SHEET
-  // ============================================================
-  const ACS_API_URL =
-    "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec";
+/* ============================================================
+   SEND AIRLINE TO GOOGLE SHEET (REGISTRO / BACKEND)
+   ============================================================ */
 
-  fetch(ACS_API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "createAirline",
-      user_id: user.userId,
-      airline_name: airlineName,
-      country: country
-    })
+const ACS_API_URL =
+  "https://script.google.com/macros/s/AKfycbzzhyG15J2nf-pGyXN0aF1jW4h7ip4xO-eyRxXOYmsNirl6UO4XaZTq8SM7ayzzEib1Zw/exec";
+
+fetch(ACS_API_URL, {
+  method: "POST",
+  body: JSON.stringify({
+    action: "createAirline",
+    user_id: user.userId,
+    airline_name: airlineName,
+    airline_iata: airline.iata,
+    country: country
   })
-  .then(res => res.text())
-  .then(raw => {
-    const result = JSON.parse(raw);
+})
+.then(res => res.text())
+.then(raw => {
+  const result = JSON.parse(raw);
 
-    if (result.ok) {
-      alert("✔ Airline synced with server!");
-      window.location.href = "choose_base.html";
-    } else {
-      alert("❌ Server error: " + (result.error || "unknown"));
-    }
-  })
-  .catch(err => {
-    alert("❌ Error connecting to ACS server: " + err);
-  });
+  if (result.ok) {
+    alert("✔ Airline synced with server!");
+    window.location.href = "choose_base.html";
+  } else {
+    alert("❌ Server error: " + (result.error || "unknown"));
+  }
+})
+.catch(err => {
+  alert("❌ Error connecting to ACS server: " + err);
+});
 
-  return false;
+return false;
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {
