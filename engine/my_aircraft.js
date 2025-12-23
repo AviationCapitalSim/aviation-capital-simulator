@@ -58,21 +58,29 @@ function updatePendingDeliveries() {
      // === Convertir a ACTIVO ===
        
   for (let i = 0; i < entry.qty; i++) {
+  /* ============================================================
+   🟧 MYA-A1 — ASSIGN REGISTRATION ON FLEET ENTRY
+   Source: ACS Registration Manager
+   ============================================================ */
   fleetActive.push({
-    registration: "UNASSIGNED",
-    manufacturer: entry.manufacturer,
-    model: entry.model,
-    family: entry.family || "",
-    status: "Active",
-    hours: 0,
-    cycles: 0,
-    condition: 100,
-    nextC: "—",
-    nextD: "—",
-    base: "—",
-    deliveredDate: d.toISOString(),
-    deliveryDate: null,
-    age: 0,
+  registration: (typeof ACS_generateRegistration === "function")
+    ? ACS_generateRegistration()
+    : "—",
+
+  manufacturer: entry.manufacturer,
+  model: entry.model,
+  family: entry.family || "",
+  status: "Active",
+  hours: 0,
+  cycles: 0,
+  condition: 100,
+  nextC: "—",
+  nextD: "—",
+  base: JSON.parse(localStorage.getItem("ACS_Base"))?.icao || "—",
+  deliveredDate: d.toISOString(),
+  deliveryDate: null,
+  age: 0,
+
 
     /* ======================================================
        🛠 P5-A — B-CHECK INITIALIZATION (ON FLEET ENTRY)
