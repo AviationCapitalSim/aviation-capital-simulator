@@ -678,22 +678,29 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
-/* 🟦 A4 — ROUTE SCHEDULE: Auto Flight Number AFTER selecting aircraft */
-     
+/* ============================================================
+   🟧 A6 — AUTO-GENERATE FLIGHT NUMBER (LABEL-SAFE)
+   ============================================================ */
 function autoGenerateFlightNumber() {
 
-    if (!userIATA || userIATA.length !== 2) return;
+  if (!userIATA || userIATA.length !== 2) return;
 
-    const origin = document.getElementById("origin").value.trim();
-    const dest   = document.getElementById("destination").value.trim();
-    const ac     = document.getElementById("aircraft").value;
+  const origin = document.getElementById("origin")?.value.trim();
+  const dest   = document.getElementById("destination")?.value.trim();
+  const ac     = document.getElementById("aircraft")?.value;
 
-    if (!origin || !dest || !ac) return;
+  if (!origin || !dest || !ac) return;
 
-    const pair = generateFlightPair();
-    if (flightNumberInput) {
-        flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
-    }
+  const pair = generateFlightPair();
+
+  // 🔑 sincronizar engine (confirmRoute)
+  window.currentFN_Out = pair.out;
+  window.currentFN_In  = pair.inn;
+
+  // 🖥️ UI — SOLO labels
+  if (flightNumberInput) {
+    flightNumberInput.value = `${pair.labelOut} ➜ ${pair.labelIn}`;
+  }
 }
 
 /* ============================================================
