@@ -20,7 +20,7 @@
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
- <style>
+  <style>
 /* ============================================================
    === GLOBAL PAGE STYLE =======================================
    ============================================================ */
@@ -156,8 +156,7 @@ body {
    ============================================================ */
 
 table {
-  width: calc(100% - 4rem); /* 🔑 respeta padding lateral de .acs-main */
-  max-width: 1400px;
+  width: 90%;
   margin: 0 auto;
   border-collapse: collapse;
   background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
@@ -377,7 +376,6 @@ footer {
   display: flex;
   gap: 6px;
   justify-content: center;
-+ flex-wrap: wrap;
 }
 
 .plan-actions .btn {
@@ -389,8 +387,7 @@ footer {
 
 #scheduleTable td:last-child,
 #scheduleTable th:last-child {
-  min-width: 150px;
-  max-width: 180px;
+  width: 170px;
 }
        
 /* ============================================================
@@ -896,23 +893,7 @@ footer {
   50%  { box-shadow: 0 0 10px rgba(0, 255, 204, 1); }
   100% { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
 }
-      
-/* ============================================================
-   🟦 TABLE WRAPPER — OVERFLOW CONTROL (FINAL)
-   ============================================================ */
-      
-.schedule-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-}
 
-/* evita que Action Plan empuje */
-#scheduleTable {
-  width: 100%;
-  min-width: 1200px;
-}
-      
 </style>
 
 </head>
@@ -964,16 +945,13 @@ footer {
       gap:10px;
     "
   >
-    📅 Weekly Flight Schedule
+      📅 Weekly Flight Schedule
   </h2>
 
   <p class="sub" style="font-size:1rem; color:#cbd6ff;">
     Automatic schedule monitor with real-time route integration.
   </p>
 
-  <!-- 🅰️ A1 — TABLE WRAPPER (SAFE) — 22DEC25 -->
-     
-<div class="schedule-table-wrapper">
   <table id="scheduleTable">
     <thead>
       <tr>
