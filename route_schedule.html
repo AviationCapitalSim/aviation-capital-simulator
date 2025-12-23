@@ -440,32 +440,29 @@ footer {
    - UI: model + registration + status
    ============================================================ */
 
+/* ============================================================
+   🟧 A8 — GET OPERATIONAL FLEET (FIXED)
+   ============================================================ */
 function RS_getOperationalFleet() {
 
-  let active = [];
-  let pending = [];
+  const raw = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
+  if (!Array.isArray(raw)) return [];
 
-  try {
-    active = JSON.parse(localStorage.getItem("ACS_ActiveAircraft") || "[]");
-  } catch (e) {
-    console.warn("ACS_ActiveAircraft parse error", e);
-  }
+  const base = JSON.parse(localStorage.getItem("ACS_activeUser"))?.base?.icao
+            || JSON.parse(localStorage.getItem("ACS_activeUser"))?.airline?.base
+            || null;
 
-  try {
-    pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
-  } catch (e) {
-    console.warn("ACS_PendingAircraft parse error", e);
-  }
+  return raw.filter(ac => {
 
-  // Unificar por aircraftId (evitar duplicados)
-  const map = new Map();
+    // ✅ SOLO condiciones REALES
+    const isActive =
+      (ac.status || "").toLowerCase() === "active";
 
-  [...active, ...pending].forEach(ac => {
-    if (!ac || !ac.id) return;
-    map.set(ac.id, ac);
+    const sameBase =
+      !base || ac.base === base;
+
+    return isActive && sameBase;
   });
-
-  return Array.from(map.values());
 }
 
 /* ============================================================
