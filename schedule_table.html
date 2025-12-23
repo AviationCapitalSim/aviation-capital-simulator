@@ -1568,30 +1568,6 @@ if (it.type === "flight") {
 
   chip.textContent = `${labelOut} / ${labelIn}`;
 
-
-  const tooltip = document.createElement("span");
-  tooltip.className = "tooltip";
-
-  /* ============================================================
-     🟢 NEXT FLIGHT — FULL ROTATION (FIX)
-     Source: route_schedule (totalRotationMin)
-     ============================================================ */
-
-  const depMinSafe = toMin(it.departure);
-  let nextLabel = "—";
-
-  if (Number.isFinite(depMinSafe) && Number.isFinite(it.totalRotationMin)) {
-    nextLabel = toHHMM(depMinSafe + it.totalRotationMin);
-  }
-
-  tooltip.innerHTML = `
-    ${it.origin} → ${it.destination}<br>
-    DEP: ${it.departure}<br>
-    ARR: ${it.arrival}<br>
-    <strong>Next Flight: ${nextLabel}</strong>
-  `;
-
-  chip.appendChild(tooltip);
   chip.onclick = () => openFlightModal(it, chip);
   td.appendChild(chip);
 }
