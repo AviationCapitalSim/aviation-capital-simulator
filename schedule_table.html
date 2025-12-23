@@ -2399,88 +2399,79 @@ if (it && it.type === "service") {
   const dep    = it?.departure || "—";
   const arr    = it?.arrival || "—";
 
- /* ============================================================
-   🟧 B3-A — ROTATION LOGIC (IDA ⇄ VUELTA) — FINAL
-   Source: route_schedule (it) + my_aircraft
-   ============================================================ */
+  // Next flight (tu lógica, robusta)
+  let nextFlightText = "—";
+  let lastEventEnd = null;
 
-// ---------- ROTATION TIMES ----------
-const blockOutMin = Number(it.blockOutMin || it.blockOut || 0);
-const blockInMin  = Number(it.blockInMin  || it.blockIn  || blockOutMin);
-const turnaroundMin = Number(it.turnaroundMin || TURNAROUND_MIN || 0);
+  flights.forEach(f=>{
+    const end = toMin(f.arrival) + TURNAROUND_MIN;
+    if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
+  });
 
-const totalRotationMin = blockOutMin + turnaroundMin + blockInMin;
+  services.forEach(s=>{
+    if (s.serviceType === "A") {
+      const end = toMin(s.end);
+      if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
+    }
+  });
 
-// ---------- NEXT FLIGHT ----------
-let nextFlightText = "—";
-const depMin = toMin(it.departure);
+  const hasB = services.some(s=> s.serviceType === "B");
+  if (hasB) nextFlightText = "After B-Check (24h)";
+  else if (lastEventEnd !== null) nextFlightText = toHHMM(lastEventEnd);
 
-if (Number.isFinite(depMin) && Number.isFinite(totalRotationMin)) {
-  nextFlightText = toHHMM(depMin + totalRotationMin);
+  title.textContent = `✈️ ${flightLabel}`;
+
+  // Construcción del contenido (Unicorn layout)
+  let maintText = "None";
+  if (hasB) maintText = "B-Check (24h)";
+  else if (services.some(s=> s.serviceType === "A")) maintText = "A-Check";
+
+  // Block time (si existe)
+  let blockText = "—";
+  try {
+    if (dep !== "—" && arr !== "—") {
+      const mins = Math.max(0, toMin(arr) - toMin(dep));
+      const h = Math.floor(mins/60);
+      const m = mins % 60;
+      blockText = `${h}h${String(m).padStart(2,"0")}`;
+    }
+  } catch(e){}
+
+  box.innerHTML = `
+    <div class="flight-kicker">
+      <strong>${origin}</strong> → <strong>${dest}</strong>
+      ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
+    </div>
+
+    <div class="flight-hero">
+      <div class="route">Napoli style · Route Panel</div>
+      <div class="times">DEP ${dep} · ARR ${arr}</div>
+    </div>
+
+    <div class="flight-meta">
+      <div class="meta-card">
+        <span class="label">Block Time</span>
+        <span class="value">${blockText}</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Turnaround</span>
+        <span class="value">${TURNAROUND_MIN} min</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Maintenance</span>
+        <span class="value">${maintText}</span>
+      </div>
+      <div class="meta-card">
+        <span class="label">Next Flight</span>
+        <span class="value">${nextFlightText}</span>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
 }
-
-// ---------- MAINTENANCE (PRIORITY) ----------
-let maintText = "None";
-
-// A / B from schedule
-if (it.serviceType === "B") maintText = "B-Check";
-else if (it.serviceType === "A") maintText = "A-Check";
-
-// C / D from My Aircraft override
-const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
-const ac = fleet.find(a => a.id === it.aircraftId);
-
-if (ac?.maintenance?.type === "D") maintText = "D-Check";
-else if (ac?.maintenance?.type === "C") maintText = "C-Check";
-
-// ---------- UI FORMAT ----------
-const fmt = m => {
-  const h = Math.floor(m/60);
-  const min = m % 60;
-  return `${h}h${String(min).padStart(2,"0")}`;
-};
-
-const blockText = blockOutMin ? fmt(blockOutMin) : "—";
-const rotationText = totalRotationMin ? fmt(totalRotationMin) : "—";
-
- box.innerHTML = `
-  <div class="flight-kicker">
-    <strong>${origin}</strong> → <strong>${dest}</strong>
-    ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
-  </div>
-
-  <div class="flight-hero">
-    <div class="route">Napoli style · Route Panel</div>
-    <div class="times">DEP ${dep} · ARR ${arr}</div>
-  </div>
-
-  <div class="flight-meta">
-    <div class="meta-card">
-      <span class="label">Block Time</span>
-      <span class="value">${blockTimeText}</span>
-    </div>
-
-    <div class="meta-card">
-      <span class="label">Turnaround</span>
-      <span class="value">${turnaroundText}</span>
-    </div>
-
-    <div class="meta-card">
-      <span class="label">Maintenance</span>
-      <span class="value">${maintText}</span>
-    </div>
-
-    <div class="meta-card">
-      <span class="label">Next Flight</span>
-      <span class="value">${nextFlightText}</span>
-    </div>
-  </div>
-`;
-
-modal.classList.remove("hidden");
-modal.style.display = "flex";
-}
-
+     
 /* ============================================================
    ❌ PASO 4 — CANCEL SERVICE — 17DEC25
    ============================================================ */
