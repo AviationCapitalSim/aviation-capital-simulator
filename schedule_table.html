@@ -1382,7 +1382,14 @@ items.forEach(it => {
     tdTail.classList.add("col-aircraft");
     tdTail.dataset.model = modelKey;
 
-    const reg  = ac.registration || ac.tail || "UNKNOWN";
+    /* ============================================================
+   🟧 SCHED-A1 — AIRCRAFT REGISTRATION (SINGLE SOURCE OF TRUTH)
+   Source: ACS_MyAircraft.registration
+   ============================================================ */
+    const reg = ac.registration && ac.registration.trim()
+    ? ac.registration
+    : "—";
+
     const manu = ac.manufacturer || "—";
     const stat = ac.status || "";
 
