@@ -831,8 +831,13 @@ if (!isEditing) {
   // ✅ NUEVO — aircraftId architecture
   loadAircraftById();
 
-  /* 🟦 Recalcular al cambiar avión */
-  document.getElementById("aircraft").addEventListener("change", autoCalculate);
+  /* ============================================================
+   🟧 A7 — Aircraft Change → Auto Flight Number + Recalc
+   ============================================================ */
+document.getElementById("aircraft").addEventListener("change", () => {
+  autoGenerateFlightNumber(); // genera WM-100 ➜ WM-101 (labels)
+  autoCalculate();            // mantiene cálculos existentes
+});
 
   autoGenerateFlightNumber();
   return;
