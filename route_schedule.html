@@ -733,10 +733,15 @@ let usedFlights = JSON.parse(
    • Schedule Table SOLO debe usar el label
    ============================================================ */
 
-const userIATA =
+/* ============================================================
+   🟧 A0 — Global Airline IATA (SINGLE SOURCE)
+   ============================================================ */
+     
+var userIATA =
   localStorage.getItem("userIATA") ||
   JSON.parse(localStorage.getItem("ACS_activeUser"))?.airline?.iata ||
   "XX";
+
 
 // Base del contador
 let num = parseInt(localStorage.getItem("lastFlightNumber") || "100", 10);
