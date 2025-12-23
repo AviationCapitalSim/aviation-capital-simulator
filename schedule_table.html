@@ -1552,13 +1552,15 @@ if (it.type === "flight") {
   chip.dataset.blockId = it.blockId || "";
   chip.dataset.type = "flight";
 
-  const iataCode = localStorage.getItem("userIATA") || "IT";
-  const fnOut = it.flightNumberOut || "";
-  const fnIn  = it.flightNumberIn  || "";
+  /* ============================================================
+   🟧 A4 — Flight Chip Label (UI ONLY · SAFE)
+   ============================================================ */
 
-  chip.textContent = (fnOut && fnIn)
-    ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
-    : `${iataCode}-— / ${iataCode}-—`;
+  const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
+  const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
+
+  chip.textContent = `${labelOut} / ${labelIn}`;
+
 
   const tooltip = document.createElement("span");
   tooltip.className = "tooltip";
