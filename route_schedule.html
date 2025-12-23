@@ -469,54 +469,10 @@ function RS_getOperationalFleet() {
 }
 
 /* ============================================================
-   🧭 POPULATE AIRCRAFT SELECTOR — FINAL
-   ============================================================ */
-function RS_populateAircraftSelector() {
-
-  const select = document.getElementById("aircraft");
-  if (!select) return;
-
-  select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
-
-  const fleet = RS_getOperationalFleet();
-
-  if (!fleet.length) {
-    console.warn("⚠ No operational aircraft (Active or Pending) found");
-    return;
-  }
-
-  fleet.forEach(ac => {
-
-    const aircraftId = ac.id;
-    const model = ac.model || "Unknown";
-    const reg = ac.registration || "N/A";
-    const status = (ac.status || "").toLowerCase().includes("pending")
-      ? "Pending delivery"
-      : "Active";
-
-    const opt = document.createElement("option");
-
-    // 🔑 Lógica interna
-    opt.value = aircraftId;
-
-    // 🖥️ UI clara (modelo + matrícula + estado)
-    opt.textContent = `${model} • ${reg} • ${status}`;
-
-    // Datos técnicos para autoCalculate
-    opt.dataset.speed = ac.speed || 440;
-    opt.dataset.range = ac.range || 1500;
-    opt.dataset.category = ac.category || "";
-
-    select.appendChild(opt);
-  });
-}
-
-/* ============================================================
    🧩 SINGLE INIT POINT — ROUTE SCHEDULE
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Origin / Destination ya vienen desde Routes
   const originInput = document.getElementById("origin");
   const destInput   = document.getElementById("destination");
 
@@ -525,11 +481,25 @@ document.addEventListener("DOMContentLoaded", () => {
     destInput.readOnly   = true;
   }
 
-  // ✅ Cargar flota operativa
-  RS_populateAircraftSelector();
+  // ✅ Usar SIEMPRE el alias
+  rs_populateAircraftSelect();
 
 });
 
+/* ============================================================
+   🟧 A9 — rs_populateAircraftSelect (ALIAS COMPATIBILITY)
+   ============================================================ */
+function rs_populateAircraftSelect(selectedId = "") {
+
+  // ✅ Llamar al MOTOR REAL
+  RS_populateAircraftSelector();
+
+  const sel = document.getElementById("aircraft");
+  if (sel && selectedId) {
+    sel.value = selectedId;
+  }
+}
+     
 /* ============================================================
    ✅ COMPAT LAYER — NO ROMPER llamadas viejas
    ------------------------------------------------------------
