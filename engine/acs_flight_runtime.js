@@ -103,7 +103,62 @@ function saveActiveFlights(flights) {
       lng: lng1 + (lng2 - lng1) * t
     };
   }
+   
+/* ============================================================
+   🟦 PASO 3.1.5 — INITIALIZE AIRCRAFT ON GROUND (BOOTSTRAP)
+   ------------------------------------------------------------
+   - Garantiza que TODOS los aviones existen en el mundo
+   - Estado inicial = GROUND
+   - Base = último aeropuerto conocido o base asignada
+   ============================================================ */
 
+function bootstrapGroundAircraft() {
+  try {
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    if (!Array.isArray(fleet) || !fleet.length) return;
+
+    const state = getFlightState();
+    let changed = false;
+
+    fleet.forEach(ac => {
+      if (!ac.id) return;
+
+      let existing = state.find(s => s.aircraftId === ac.id);
+      if (existing) return;
+
+      // Determinar aeropuerto base
+      const base =
+        ac.baseAirport ||
+        ac.currentAirport ||
+        ac.homeBase ||
+        ac.base ||
+        null;
+
+      state.push({
+        aircraftId: ac.id,
+        status: "GROUND",
+        airport: base,
+        route: null,
+        depMin: null,
+        arrMin: null,
+        lat: null,
+        lng: null,
+        lastUpdateMin: null
+      });
+
+      changed = true;
+    });
+
+    if (changed) {
+      saveFlightState(state);
+      console.log("🛬 Ground aircraft bootstrapped:", state.length);
+    }
+
+  } catch (e) {
+    console.warn("⚠ bootstrapGroundAircraft error:", e);
+  }
+}
+   
 /* ============================================================
    🟦 PASO 3.2 — UPDATE WORLD (GROUND / AIRBORNE / TURNAROUND)
    ============================================================ */
