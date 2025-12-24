@@ -2445,8 +2445,8 @@ if (it && it.type === "service") {
   // ============================================================
   // ✅ ROTATION END / NEXT FLIGHT (ROTATION BASED)
   // ============================================================
-  const rotEnd = ACS_calcRotEndByRotation(dep, it?.totalRotationMin);
-  const nextByRotation = ACS_calcNextByRotation(dep, it?.totalRotationMin, maintFlag);
+  const rotEnd = ACS_calcRotationEnd(it);
+  const nextByRotation = ACS_calcNextFlight(it);
 
   // Fallback legacy (solo si faltara totalRotationMin)
   let nextFlightText = "—";
