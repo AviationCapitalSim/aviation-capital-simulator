@@ -160,6 +160,45 @@ function bootstrapGroundAircraft() {
 }
    
 /* ============================================================
+   🟦 PASO 3.6.1 — BUILD FLIGHTS FROM SCHEDULE (PLAN → WORLD)
+   ============================================================ */
+
+function buildFlightsFromSchedule() {
+  try {
+    const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    if (!Array.isArray(items) || !items.length) return [];
+
+    const flights = [];
+
+    items.forEach(it => {
+      if (it.type !== "flight") return;
+      if (!it.aircraftId) return;
+      if (!it.departure || !it.arrival) return;
+
+      const depMin = toMin(it.departure);
+      const arrMin = toMin(it.arrival);
+      if (depMin == null || arrMin == null) return;
+
+      flights.push({
+        aircraftId: it.aircraftId,
+        flightOut: it.flightNumberOut,
+        origin: it.origin,
+        destination: it.destination,
+        depMin,
+        arrMin,
+        day: it.day
+      });
+    });
+
+    return flights;
+
+  } catch (e) {
+    console.warn("⚠ buildFlightsFromSchedule error:", e);
+    return [];
+  }
+}
+
+/* ============================================================
    🟦 PASO 3.2 — UPDATE WORLD (GROUND / AIRBORNE / TURNAROUND)
    ============================================================ */
 
@@ -168,7 +207,7 @@ function updateWorldFlights() {
   const nowMin = window.ACS_TIME?.minute;
   if (typeof nowMin !== "number") return;
 
-  const flights = getActiveFlights();   // planes programados (ida / vuelta)
+  const flights = buildFlightsFromSchedule();
   const state   = getFlightState();
   const live    = [];
 
