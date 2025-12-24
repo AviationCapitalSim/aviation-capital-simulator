@@ -2269,34 +2269,39 @@ function editFlight(){
 }
 
 /* ============================================================
-   🟦 NEXT FLIGHT TIME — MODAL ONLY (ROTATION BASED)
-   ------------------------------------------------------------
-   schedule_table.html
-   → 🟦 ACTION MODAL
-   → función auxiliar (NO dentro del modal)
+   🟦 ROTATION / NEXT FLIGHT HELPERS — MODAL
    ============================================================ */
 
-function ACS_calcNextFlightTime(flight) {
+function ACS_calcRotationEnd(it) {
+  if (!it || !it.departure || !Number.isFinite(it.totalRotationMin)) return "—";
 
-  if (!flight || !flight.departure || !Number.isFinite(flight.totalRotationMin)) {
-    return "--:--";
-  }
+  const [h, m] = it.departure.split(":").map(Number);
+  let min = h * 60 + m + it.totalRotationMin;
+  min = min % 1440;
 
-  const [h, m] = flight.departure.split(":").map(Number);
-  let nextMin = h * 60 + m + flight.totalRotationMin;
+  return (
+    String(Math.floor(min / 60)).padStart(2, "0") +
+    ":" +
+    String(min % 60).padStart(2, "0")
+  );
+}
 
-  if (flight.maintenance === "A") {
-    nextMin += 300; // 5h
-  } else if (flight.maintenance === "B") {
-    nextMin += 1440; // 24h
-  }
+function ACS_calcNextFlight(it) {
+  if (!it || !it.departure || !Number.isFinite(it.totalRotationMin)) return "—";
 
-  nextMin = nextMin % 1440;
+  const [h, m] = it.departure.split(":").map(Number);
+  let min = h * 60 + m + it.totalRotationMin;
 
-  const nh = String(Math.floor(nextMin / 60)).padStart(2, "0");
-  const nm = String(nextMin % 60).padStart(2, "0");
+  if (it.maintenance === "A") min += 300;
+  if (it.maintenance === "B") min += 1440;
 
-  return `${nh}:${nm}`;
+  min = min % 1440;
+
+  return (
+    String(Math.floor(min / 60)).padStart(2, "0") +
+    ":" +
+    String(min % 60).padStart(2, "0")
+  );
 }
      
 /* ============================================================
@@ -2366,6 +2371,7 @@ if (it && it.type === "service") {
   `;
 
   // 👉 Ajuste de botones: solo CANCEL + CLOSE
+     
   const footer = modal.querySelector(".acs-modal-footer");
   if (footer) {
     footer.innerHTML = `
