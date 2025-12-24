@@ -28,6 +28,50 @@
   }
    
 /* ============================================================
+   🟦 PASO 3.1 — GLOBAL FLIGHT STATE (PERSISTENT WORLD)
+   ============================================================ */
+
+const FLIGHT_STATE_KEY = "ACS_FLIGHT_STATE";
+
+function getFlightState() {
+  try {
+    const raw = localStorage.getItem(FLIGHT_STATE_KEY);
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFlightState(arr) {
+  if (!Array.isArray(arr)) return;
+  localStorage.setItem(FLIGHT_STATE_KEY, JSON.stringify(arr));
+}
+
+function getOrCreateAircraftState(aircraftId, baseAirport = null) {
+  const state = getFlightState();
+  let ac = state.find(a => a.aircraftId === aircraftId);
+
+  if (!ac) {
+    ac = {
+      aircraftId,
+      status: "GROUND",
+      airport: baseAirport,
+      route: null,
+      depMin: null,
+      arrMin: null,
+      lat: null,
+      lng: null,
+      lastUpdateMin: null
+    };
+    state.push(ac);
+    saveFlightState(state);
+  }
+
+  return ac;
+}
+
+/* ============================================================
    🆕 MULTI-FLIGHT SUPPORT — ACTIVE FLIGHTS ARRAY
    ============================================================ */
 
@@ -61,85 +105,81 @@ function saveActiveFlights(flights) {
   }
 
 /* ============================================================
-   ✈️ ACS — UPDATE LIVE FLIGHTS (MULTI AIRCRAFT ENGINE)
+   🟦 PASO 3.2 — UPDATE WORLD (GROUND / AIRBORNE / TURNAROUND)
    ============================================================ */
 
-function updateLiveFlights() {
+function updateWorldFlights() {
 
   const nowMin = window.ACS_TIME?.minute;
   if (typeof nowMin !== "number") return;
 
-  const flights = getActiveFlights(); // 👈 TODOS los vuelos
-  const live = [];
+  const flights = getActiveFlights();   // planes programados (ida / vuelta)
+  const state   = getFlightState();
+  const live    = [];
 
   flights.forEach(f => {
 
-    if (
-      typeof f.depMin !== "number" ||
-      typeof f.arrMin !== "number" ||
-      !f.origin || !f.destination
-    ) return;
+    const ac = getOrCreateAircraftState(f.aircraftId, f.origin);
 
-    const origin = getSkyTrackAirportByICAO(f.origin);
-    const dest   = getSkyTrackAirportByICAO(f.destination);
-    if (!origin || !dest) return;
-
-    let status   = "ground";
-    let progress = 0;
-    let lat      = origin.lat;
-    let lng      = origin.lng;
-
-    // ⏱️ BEFORE DEPARTURE — GROUND
+    // BEFORE DEPARTURE — GROUND
     if (nowMin < f.depMin) {
-      status = "ground";
+      ac.status  = "GROUND";
+      ac.airport = f.origin;
+      ac.lat     = null;
+      ac.lng     = null;
     }
 
-    // ✈️ ENROUTE
+    // ENROUTE
     else if (nowMin >= f.depMin && nowMin <= f.arrMin) {
-      status = "enroute";
-      progress = (nowMin - f.depMin) / (f.arrMin - f.depMin);
-      progress = Math.min(Math.max(progress, 0), 1);
+
+      const origin = getSkyTrackAirportByICAO(f.origin);
+      const dest   = getSkyTrackAirportByICAO(f.destination);
+      if (!origin || !dest) return;
+
+      const progress = Math.min(
+        Math.max((nowMin - f.depMin) / (f.arrMin - f.depMin), 0),
+        1
+      );
 
       const pos = interpolateGC(
-        origin.lat,
-        origin.lng,
-        dest.lat,
-        dest.lng,
+        origin.lat, origin.lng,
+        dest.lat,   dest.lng,
         progress
       );
 
-      lat = pos.lat;
-      lng = pos.lng;
+      ac.status = "AIRBORNE";
+      ac.route  = { origin: f.origin, destination: f.destination };
+      ac.depMin = f.depMin;
+      ac.arrMin = f.arrMin;
+      ac.lat    = pos.lat;
+      ac.lng    = pos.lng;
+
+      live.push({
+        aircraftId: f.aircraftId,
+        status: "AIRBORNE",
+        lat: pos.lat,
+        lng: pos.lng,
+        progress
+      });
     }
 
-    // 🏁 ARRIVED
+    // ARRIVED — TURNAROUND
     else if (nowMin > f.arrMin) {
-      status = "arrived";
-      lat = dest.lat;
-      lng = dest.lng;
-      progress = 1;
+      ac.status  = "TURNAROUND";
+      ac.airport = f.destination;
+      ac.lat     = null;
+      ac.lng     = null;
     }
 
-    // 🔒 PUBLICAR SIEMPRE
-    live.push({
-      aircraftId: f.aircraftId,
-      flightOut:  f.flightOut,
-      origin:     f.origin,
-      destination:f.destination,
-      depMin:     f.depMin,
-      arrMin:     f.arrMin,
-      status,
-      lat,
-      lng,
-      progress
-    });
-
+    ac.lastUpdateMin = nowMin;
   });
 
+  saveFlightState(state);
+
+  // 🔒 PUBLIC OUTPUT (SkyTrack)
   window.ACS_LIVE_FLIGHTS = live;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 }
-
 
 /* ============================================================
    🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
@@ -203,15 +243,15 @@ function waitForWorldAirports(cb) {
 }
    
 /* ============================================================
-   ⏱ TIME ENGINE HOOK
+   🟦 PASO 3.3 — TIME ENGINE HOOK (WORLD ONLY)
    ============================================================ */
 
 waitForWorldAirports(() => {
   registerTimeListener(() => {
-    updateLiveFlights();
+    updateWorldFlights();
     generateReturnFlights();
   });
-  console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
+  console.log("🌍 ACS World Runtime ACTIVE (24/7)");
 });
 
 })();
