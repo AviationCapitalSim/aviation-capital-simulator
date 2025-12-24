@@ -1501,54 +1501,24 @@ if (isFlying && typeof chip !== "undefined" && chip) {
 }
      
 /* ============================================================
-   🛫 PASO 5.1 — DISPATCH FLIGHT EXECUTION (SIM CORE)
+   🟢 PASO 5 — READ ONLY MODE (SCHEDULE TABLE)
+   ------------------------------------------------------------
+   - Schedule Table NO ejecuta vuelos
+   - NO escribe ACS_FLIGHT_EXEC
+   - NO publica en SkyTrack
+   - Solo calcula VISUAL STATE
    ============================================================ */
 
-const execPayload = {
-  aircraftId: it.aircraftId,
-  flightOut: it.flightNumberOut,
-  origin: it.origin,
-  destination: it.destination,
-  depMin,
-  arrMin,
-  day: it.day,
-  nowMin: ACS_TABLE_TIME.minute
-};
-
-localStorage.setItem(
-  "ACS_FLIGHT_EXEC",
-  JSON.stringify(execPayload)
-);
-     
-/* ============================================================
-   🛰 PASO 4.1 — PUBLISH ACTIVE FLIGHT TO SKYTRACK
-   ============================================================ */
-
-const skytrackFlight = {
-  aircraftId: it.aircraftId,
-  flightOut: it.flightNumberOut,
-  flightIn: it.flightNumberIn,
-  origin: it.origin,
-  destination: it.destination,
-  departure: it.departure,
-  arrival: it.arrival,
-  depMin,
-  arrMin,
-  day: it.day
-};
-
-localStorage.setItem("ACS_ACTIVE_FLIGHT", JSON.stringify(skytrackFlight));
-     
-/* ============================================================
-   🧹 PASO 4.2 — CLEAR SKYTRACK WHEN NO ACTIVE FLIGHT
-   ============================================================ */
-
-if (!isFlying) {
-  const current = localStorage.getItem("ACS_ACTIVE_FLIGHT");
-  if (current) {
-    localStorage.removeItem("ACS_ACTIVE_FLIGHT");
-  }
+// ✈️ VISUAL ONLY — marcar vuelo activo en tabla
+if (isFlying && typeof chip !== "undefined" && chip) {
+  chip.classList.add("flying-now");
+  chip.title = "✈️ Flight in progress";
 }
+
+// ⛔ NO DISPATCH
+// ⛔ NO SKYTRACK WRITE
+// ⛔ NO CLEAR STATE
+
 
 // ---------------- FLIGHT ----------------
 if (it.type === "flight") {
