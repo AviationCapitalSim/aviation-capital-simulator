@@ -159,7 +159,55 @@ function updateLiveFlights() {
   window.ACS_LIVE_FLIGHTS = liveFlights;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
 }
+   
+/* ============================================================
+   🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
+   ============================================================ */
 
+function generateReturnFlights() {
+
+  const TURNAROUND_MIN = 50;
+
+  const activeFlights = getActiveFlights();
+  let changed = false;
+
+  activeFlights.forEach(flight => {
+
+    // Solo vuelos completados de ida
+    if (
+      flight.completed !== true ||
+      flight.leg === "return" ||
+      flight.returnGenerated === true
+    ) {
+      return;
+    }
+
+    // Crear vuelo de retorno
+    const returnFlight = {
+      aircraftId: flight.aircraftId,
+      flightOut: (flight.flightOut || "") + "R",
+      origin: flight.destination,
+      destination: flight.origin,
+      depMin: flight.arrMin + TURNAROUND_MIN,
+      arrMin: flight.arrMin + TURNAROUND_MIN + (flight.arrMin - flight.depMin),
+      leg: "return",
+      status: "ground",
+      started: false,
+      completed: false,
+      returnGenerated: false
+    };
+
+    flight.returnGenerated = true;
+    activeFlights.push(returnFlight);
+    changed = true;
+
+    console.log("🔁 Return flight generated:", returnFlight);
+  });
+
+  if (changed) {
+    saveActiveFlights(activeFlights);
+  }
+}
    
 // ============================================================
 // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
@@ -178,7 +226,10 @@ function waitForWorldAirports(cb) {
    ============================================================ */
 
 waitForWorldAirports(() => {
-  registerTimeListener(updateLiveFlights);
+  registerTimeListener(() => {
+    updateLiveFlights();
+    generateReturnFlights();
+  });
   console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
 });
 
