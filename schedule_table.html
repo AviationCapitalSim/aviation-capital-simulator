@@ -2562,7 +2562,7 @@ if (it && it.type === "service") {
 
   title.textContent = `✈️ ${flightLabel}`;
 
-  let maintText = "None";
+  maintText = "None";
   if (hasB) maintText = "B-Check (24h)";
   else if (hasA) maintText = "A-Check";
 
@@ -2798,12 +2798,21 @@ function applyLongChipBehavior(){
 /* === DISABLED CHIP-LONG MONITOR === */
      
 (function monitorSchedule(){
-  const orig = renderSchedule;
+
+  if (typeof window.renderSchedule !== "function") {
+    console.warn("⚠ renderSchedule not found, monitor skipped");
+    return;
+  }
+
+  const orig = window.renderSchedule;
+
   window.renderSchedule = function(){
     orig();
     // chip-long disabled
   };
+
 })();
+
 
 /* ============================================================
    🟦 B3-C — OPERATING COST ENGINE (por vuelo) — Qatar Luxury v1.0
