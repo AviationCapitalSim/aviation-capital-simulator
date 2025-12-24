@@ -2267,23 +2267,47 @@ function editFlight(){
   closeActionModal();
   window.location.href = "route_schedule.html";
 }
-
+     
 /* ============================================================
-   🟦 ROTATION / NEXT FLIGHT HELPERS — MODAL
+   🟦 ROUTE ROTATION SOURCE (SINGLE SOURCE OF TRUTH)
    ============================================================ */
 
-function ACS_calcRotationEnd(it) {
-  if (!it || !it.departure || !Number.isFinite(it.totalRotationMin)) return "—";
+function ACS_getRouteRotationMin(){
+  try {
+    const r = JSON.parse(localStorage.getItem("confirmedRoute"));
+    if (r && Number.isFinite(r.totalRotationMin)) {
+      return r.totalRotationMin;
+    }
+  } catch(e){}
+  return null;
+}
+     
+/* ============================================================
+   🟦 ROTATION / NEXT FLIGHT — MODAL (ROUTE BASED)
+   ============================================================ */
 
-  const [h, m] = it.departure.split(":").map(Number);
-  let min = h * 60 + m + it.totalRotationMin;
+function ACS_calcRotationEnd(departure){
+  const rotMin = ACS_getRouteRotationMin();
+  if (!departure || !Number.isFinite(rotMin)) return "—";
+
+  const [h,m] = departure.split(":").map(Number);
+  let min = h*60 + m + rotMin;
   min = min % 1440;
 
-  return (
-    String(Math.floor(min / 60)).padStart(2, "0") +
-    ":" +
-    String(min % 60).padStart(2, "0")
-  );
+  return `${String(Math.floor(min/60)).padStart(2,"0")}:${String(min%60).padStart(2,"0")}`;
+}
+
+function ACS_calcNextFlight(departure, maintenance){
+  const rotMin = ACS_getRouteRotationMin();
+  if (!departure || !Number.isFinite(rotMin)) return "—";
+
+  let min = toMin(departure) + rotMin;
+
+  if (maintenance === "A") min += 300;
+  if (maintenance === "B") min += 1440;
+
+  min = min % 1440;
+  return toHHMM(min);
 }
 
 function ACS_calcNextFlight(it) {
@@ -2337,7 +2361,6 @@ if (it && it.type === "service") {
   ? "24 hours (full day)"
   : "5 hours";
 
-
   title.textContent = serviceLabel;
 
   box.innerHTML = `
@@ -2370,8 +2393,6 @@ if (it && it.type === "service") {
     </div>
   `;
 
-  // 👉 Ajuste de botones: solo CANCEL + CLOSE
-     
   const footer = modal.querySelector(".acs-modal-footer");
   if (footer) {
     footer.innerHTML = `
@@ -2382,12 +2403,9 @@ if (it && it.type === "service") {
 
   modal.classList.remove("hidden");
   modal.style.display = "flex";
-  return; // ⛔ IMPORTANTE: no continuar con lógica de vuelos
+  return;
 }
-     
-  // También mantenemos compatibilidad con tu lógica vieja
-  // (por si luego quieres reutilizar removeItem/deleteFlight/editFlight)
-     
+
   if (chipEl) {
     selectedChip = chipEl;
   }
@@ -2403,25 +2421,21 @@ if (it && it.type === "service") {
 
   const items = getItems();
 
-  // Para compatibilidad: si existen tail/acType legacy
   const modelKey = it?.tail || it?.acType || "";
   const day      = it?.day || "";
 
-  // vuelos “relacionados” del mismo día (legacy) — mantiene tu lógica
   const flights = items.filter(x =>
     x.type === "flight" &&
     (x.tail === modelKey || x.acType === modelKey) &&
     x.day === day
   ).sort((a,b)=> toMin(a.departure)-toMin(b.departure));
 
-  // servicios “relacionados” del mismo día (legacy)
   const services = items.filter(x =>
     x.type === "service" &&
     (x.tail === modelKey || x.acType === modelKey) &&
     x.day === day
   );
 
-  // Datos UI
   const iataCode = localStorage.getItem("userIATA") || "IT";
   const fnOut = it?.flightNumberOut || "";
   const fnIn  = it?.flightNumberIn  || "";
@@ -2430,10 +2444,10 @@ if (it && it.type === "service") {
     ? `${iataCode}-${fnOut} / ${iataCode}-${fnIn}`
     : `${iataCode}-— / ${iataCode}-—`;
 
-    const origin = it?.origin || "—";
+  const origin = it?.origin || "—";
   const dest   = it?.destination || "—";
   const dep    = it?.departure || "—";
-  const arr    = it?.arrival || "—"; // (se deja por compatibilidad, pero NO se usará en el header)
+  const arr    = it?.arrival || "—";
 
   // ============================================================
   // ✅ MAINT FLAG (Schedule Table controla A/B, aquí solo lectura)
@@ -2443,17 +2457,35 @@ if (it && it.type === "service") {
   const maintFlag = hasB ? "B" : (hasA ? "A" : null);
 
   // ============================================================
-  // ✅ ROTATION END / NEXT FLIGHT (ROTATION BASED)
+  // ✅ ROTATION END / NEXT FLIGHT (ROUTE SCHEDULE SOURCE)
   // ============================================================
-  const rotEnd = ACS_calcRotationEnd(it);
-  const nextByRotation = ACS_calcNextFlight(it);
+  let routeRotationMin = null;
 
-  // Fallback legacy (solo si faltara totalRotationMin)
+  try {
+    const route = JSON.parse(localStorage.getItem("confirmedRoute"));
+    if (route && Number.isFinite(route.totalRotationMin)) {
+      routeRotationMin = route.totalRotationMin;
+    }
+  } catch(e){}
+
+  let rotEnd = null;
   let nextFlightText = "—";
-  if (nextByRotation) {
-    nextFlightText = maintFlag === "B" ? "After B-Check (24h)" : nextByRotation;
+
+  if (routeRotationMin !== null && dep !== "—") {
+
+    const baseMin = (toMin(dep) + routeRotationMin) % 1440;
+    rotEnd = toHHMM(baseMin);
+
+    let nextMin = baseMin;
+    if (maintFlag === "A") nextMin = (nextMin + 300) % 1440;
+    if (maintFlag === "B") nextMin = (nextMin + 1440) % 1440;
+
+    nextFlightText = maintFlag === "B"
+      ? "After B-Check (24h)"
+      : toHHMM(nextMin);
+
   } else {
-    // legacy: fin del último evento del día (como estaba)
+    // legacy fallback (TU lógica original intacta)
     let lastEventEnd = null;
 
     flights.forEach(f=>{
@@ -2474,12 +2506,10 @@ if (it && it.type === "service") {
 
   title.textContent = `✈️ ${flightLabel}`;
 
-  // Construcción del contenido (Unicorn layout)
   let maintText = "None";
   if (hasB) maintText = "B-Check (24h)";
-  else if (services.some(s=> s.serviceType === "A")) maintText = "A-Check";
+  else if (hasA) maintText = "A-Check";
 
-  // Block time (si existe)
   let blockText = "—";
   try {
     if (dep !== "—" && arr !== "—") {
