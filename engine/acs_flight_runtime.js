@@ -181,7 +181,22 @@ function toHHMM(min) {
   const m = min % 60;
   return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
 }
+   
+/* ============================================================
+   🟦 PASO 3.7.1 — WEEK DAY OFFSET (RUNTIME)
+   ============================================================ */
 
+const WEEK_DAYS = ["sun","mon","tue","wed","thu","fri","sat"];
+
+function getWeekOffsetMin(flightDayKey, nowDayIndex) {
+  const flightDayIndex = WEEK_DAYS.indexOf(flightDayKey);
+  if (flightDayIndex < 0) return 0;
+
+  let delta = flightDayIndex - nowDayIndex;
+  if (delta < 0) delta += 7;
+
+  return delta * 1440; // minutos
+}
 /* ============================================================
    🟦 PASO 3.6.1 — BUILD FLIGHTS FROM SCHEDULE (PLAN → WORLD)
    ============================================================ */
@@ -198,20 +213,56 @@ function buildFlightsFromSchedule() {
       if (!it.aircraftId) return;
       if (!it.departure || !it.arrival) return;
 
-      const depMin = toMin(it.departure);
-      const arrMin = toMin(it.arrival);
-      if (depMin == null || arrMin == null) return;
+      const now = window.ACS_TIME?.currentTime;
+if (!now) return;
 
-      flights.push({
-        aircraftId: it.aircraftId,
-        flightOut: it.flightNumberOut,
-        origin: it.origin,
-        destination: it.destination,
-        depMin,
-        arrMin,
-        day: it.day
-      });
-    });
+const nowDayIndex = now.getDay();
+
+const baseDep = toMin(it.departure);
+const baseArr = toMin(it.arrival);
+if (baseDep == null || baseArr == null) return;
+
+const dayOffset = getWeekOffsetMin(it.day, nowDayIndex);
+
+const depMin = baseDep + dayOffset;
+const arrMin = baseArr + dayOffset;
+
+
+     /* ============================================================
+   🟦 PASO 3.7.2b — FLIGHT CARD (MODEL DISPLAY, NO ID)
+   ============================================================ */
+
+const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+const acReal = fleet.find(a => a.id === it.aircraftId);
+
+flights.push({
+  // 🔑 Internal reference (NO UI)
+  aircraftId: it.aircraftId,
+
+  // ✈️ Aircraft display (UI friendly)
+  aircraftModel:
+    acReal?.model ||
+    acReal?.type ||
+    acReal?.family ||
+    "Unknown Aircraft",
+
+  // ✈️ Flight numbers
+  flightNumberOut: it.flightNumberOut || "",
+  flightNumberIn: it.flightNumberIn || "",
+  label: `${it.flightNumberOut || ""} / ${it.flightNumberIn || ""}`.trim(),
+
+  // 🌍 Route
+  origin: it.origin,
+  destination: it.destination,
+
+  // ⏱ Schedule (already day-adjusted)
+  depMin,
+  arrMin,
+
+  // 📅 Planning info
+  day: it.day,
+  leg: "outbound"
+});
 
     return flights;
 
@@ -237,7 +288,20 @@ function updateWorldFlights() {
   flights.forEach(f => {
 
     const ac = getOrCreateAircraftState(f.aircraftId, f.origin);
+   
+     // 🧠 Enriquecer metadata del avión (una sola vez)
+    if (!ac.meta) {
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    const real = fleet.find(x => x.id === f.aircraftId);
 
+  if (real) {
+    ac.meta = {
+      registration: real.registration || real.tail || f.aircraftId,
+      model: real.model || real.type || "Unknown",
+      manufacturer: real.manufacturer || ""
+    };
+  }
+}
     // BEFORE DEPARTURE — GROUND
     if (nowMin < f.depMin) {
       ac.status  = "GROUND";
