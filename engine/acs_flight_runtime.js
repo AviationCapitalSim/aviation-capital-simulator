@@ -69,30 +69,19 @@ function updateLiveFlights() {
   const nowMin = window.ACS_TIME?.minute;
   if (typeof nowMin !== "number") return;
 
-  // 🔹 Fuente ÚNICA de verdad
-  let activeFlights = [];
-  try {
-    activeFlights = JSON.parse(localStorage.getItem("ACS_ACTIVE_FLIGHTS") || "[]");
-  } catch {
-    activeFlights = [];
-  }
+  const flights = getActiveFlights(); // 👈 TODOS los vuelos
+  const live = [];
 
-  const liveFlights = [];
-
-  activeFlights.forEach(f => {
+  flights.forEach(f => {
 
     if (
       typeof f.depMin !== "number" ||
       typeof f.arrMin !== "number" ||
-      !f.origin ||
-      !f.destination
-    ) {
-      return;
-    }
+      !f.origin || !f.destination
+    ) return;
 
     const origin = getSkyTrackAirportByICAO(f.origin);
     const dest   = getSkyTrackAirportByICAO(f.destination);
-
     if (!origin || !dest) return;
 
     let status   = "ground";
@@ -100,14 +89,13 @@ function updateLiveFlights() {
     let lat      = origin.lat;
     let lng      = origin.lng;
 
-    // 🟦 EN TIERRA (ANTES DE DEP)
+    // ⏱️ BEFORE DEPARTURE — GROUND
     if (nowMin < f.depMin) {
       status = "ground";
     }
 
-    // 🟨 EN RUTA
+    // ✈️ ENROUTE
     else if (nowMin >= f.depMin && nowMin <= f.arrMin) {
-
       status = "enroute";
       progress = (nowMin - f.depMin) / (f.arrMin - f.depMin);
       progress = Math.min(Math.max(progress, 0), 1);
@@ -124,7 +112,7 @@ function updateLiveFlights() {
       lng = pos.lng;
     }
 
-    // 🟥 ARRIBADO
+    // 🏁 ARRIVED
     else if (nowMin > f.arrMin) {
       status = "arrived";
       lat = dest.lat;
@@ -132,31 +120,26 @@ function updateLiveFlights() {
       progress = 1;
     }
 
-    // 🔁 ACTUALIZAR ESTADO PERSISTENTE
-    f.status   = status;
-    f.progress = progress;
-    f.lat      = lat;
-    f.lng      = lng;
-
-    liveFlights.push({
-      aircraftId: f.aircraftId || "",
-      flightOut:  f.flightOut  || "",
+    // 🔒 PUBLICAR SIEMPRE
+    live.push({
+      aircraftId: f.aircraftId,
+      flightOut:  f.flightOut,
       origin:     f.origin,
-      destination: f.destination,
+      destination:f.destination,
       depMin:     f.depMin,
       arrMin:     f.arrMin,
       status,
-      progress,
       lat,
-      lng
+      lng,
+      progress
     });
+
   });
 
-  // 🔒 PUBLICAR SIEMPRE
-  window.ACS_LIVE_FLIGHTS = liveFlights;
-  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
-  localStorage.setItem("ACS_ACTIVE_FLIGHTS", JSON.stringify(activeFlights));
+  window.ACS_LIVE_FLIGHTS = live;
+  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 }
+
 
 /* ============================================================
    🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
