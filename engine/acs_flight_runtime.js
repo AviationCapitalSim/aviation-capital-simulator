@@ -160,6 +160,29 @@ function bootstrapGroundAircraft() {
 }
    
 /* ============================================================
+   🟦 PASO 3.6.3 — TIME HELPERS (RUNTIME LOCAL)
+   ------------------------------------------------------------
+   - NO depende de Schedule Table
+   - Fuente única: strings HH:mm
+   ============================================================ */
+
+function toMin(hhmm) {
+  if (!hhmm || typeof hhmm !== "string" || !hhmm.includes(":")) {
+    return null;
+  }
+  const [h, m] = hhmm.split(":").map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+  return h * 60 + m;
+}
+
+function toHHMM(min) {
+  if (!Number.isFinite(min)) return "00:00";
+  const h = Math.floor(min / 60) % 24;
+  const m = min % 60;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+}
+
+/* ============================================================
    🟦 PASO 3.6.1 — BUILD FLIGHTS FROM SCHEDULE (PLAN → WORLD)
    ============================================================ */
 
