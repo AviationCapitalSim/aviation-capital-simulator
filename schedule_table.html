@@ -2268,7 +2268,37 @@ function editFlight(){
   window.location.href = "route_schedule.html";
 }
 
+/* ============================================================
+   🟦 NEXT FLIGHT TIME — MODAL ONLY (ROTATION BASED)
+   ------------------------------------------------------------
+   schedule_table.html
+   → 🟦 ACTION MODAL
+   → función auxiliar (NO dentro del modal)
+   ============================================================ */
 
+function ACS_calcNextFlightTime(flight) {
+
+  if (!flight || !flight.departure || !Number.isFinite(flight.totalRotationMin)) {
+    return "--:--";
+  }
+
+  const [h, m] = flight.departure.split(":").map(Number);
+  let nextMin = h * 60 + m + flight.totalRotationMin;
+
+  if (flight.maintenance === "A") {
+    nextMin += 300; // 5h
+  } else if (flight.maintenance === "B") {
+    nextMin += 1440; // 24h
+  }
+
+  nextMin = nextMin % 1440;
+
+  const nh = String(Math.floor(nextMin / 60)).padStart(2, "0");
+  const nm = String(nextMin % 60).padStart(2, "0");
+
+  return `${nh}:${nm}`;
+}
+     
 /* ============================================================
    🦄 B3 — FLIGHT MODAL ENGINE (Unicorn) — 17DEC25
    REEMPLAZA COMPLETO: openFlightModal(it) + closeFlightModal()
