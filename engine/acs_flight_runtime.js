@@ -197,8 +197,9 @@ function getWeekOffsetMin(flightDayKey, nowDayIndex) {
 
   return delta * 1440; // minutos
 }
+   
 /* ============================================================
-   🟦 PASO 3.6.1 — BUILD FLIGHTS FROM SCHEDULE (PLAN → WORLD)
+   🟦 PASO 3.6.1 / 3.7 — BUILD FLIGHTS FROM SCHEDULE (SAFE)
    ============================================================ */
 
 function buildFlightsFromSchedule() {
@@ -206,6 +207,11 @@ function buildFlightsFromSchedule() {
     const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
     if (!Array.isArray(items) || !items.length) return [];
 
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    const now = window.ACS_TIME?.currentTime;
+    if (!now) return [];
+
+    const nowDayIndex = now.getDay();
     const flights = [];
 
     items.forEach(it => {
@@ -213,56 +219,46 @@ function buildFlightsFromSchedule() {
       if (!it.aircraftId) return;
       if (!it.departure || !it.arrival) return;
 
-      const now = window.ACS_TIME?.currentTime;
-if (!now) return;
+      const baseDep = toMin(it.departure);
+      const baseArr = toMin(it.arrival);
+      if (baseDep == null || baseArr == null) return;
 
-const nowDayIndex = now.getDay();
+      const dayOffset = getWeekOffsetMin(it.day, nowDayIndex);
 
-const baseDep = toMin(it.departure);
-const baseArr = toMin(it.arrival);
-if (baseDep == null || baseArr == null) return;
+      const depMin = baseDep + dayOffset;
+      const arrMin = baseArr + dayOffset;
 
-const dayOffset = getWeekOffsetMin(it.day, nowDayIndex);
+      const acReal = fleet.find(a => a.id === it.aircraftId);
 
-const depMin = baseDep + dayOffset;
-const arrMin = baseArr + dayOffset;
+      flights.push({
+        // 🔑 Internal
+        aircraftId: it.aircraftId,
 
+        // ✈️ Display
+        aircraftModel:
+          acReal?.model ||
+          acReal?.type ||
+          acReal?.family ||
+          "Unknown Aircraft",
 
-     /* ============================================================
-   🟦 PASO 3.7.2b — FLIGHT CARD (MODEL DISPLAY, NO ID)
-   ============================================================ */
+        // ✈️ Flight numbers
+        flightNumberOut: it.flightNumberOut || "",
+        flightNumberIn: it.flightNumberIn || "",
+        label: `${it.flightNumberOut || ""} / ${it.flightNumberIn || ""}`.trim(),
 
-const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-const acReal = fleet.find(a => a.id === it.aircraftId);
+        // 🌍 Route
+        origin: it.origin,
+        destination: it.destination,
 
-flights.push({
-  // 🔑 Internal reference (NO UI)
-  aircraftId: it.aircraftId,
+        // ⏱ Schedule
+        depMin,
+        arrMin,
 
-  // ✈️ Aircraft display (UI friendly)
-  aircraftModel:
-    acReal?.model ||
-    acReal?.type ||
-    acReal?.family ||
-    "Unknown Aircraft",
-
-  // ✈️ Flight numbers
-  flightNumberOut: it.flightNumberOut || "",
-  flightNumberIn: it.flightNumberIn || "",
-  label: `${it.flightNumberOut || ""} / ${it.flightNumberIn || ""}`.trim(),
-
-  // 🌍 Route
-  origin: it.origin,
-  destination: it.destination,
-
-  // ⏱ Schedule (already day-adjusted)
-  depMin,
-  arrMin,
-
-  // 📅 Planning info
-  day: it.day,
-  leg: "outbound"
-});
+        // 📅 Planning
+        day: it.day,
+        leg: "outbound"
+      });
+    });
 
     return flights;
 
