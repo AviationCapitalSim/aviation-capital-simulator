@@ -223,7 +223,12 @@ function buildFlightsFromSchedule() {
       const baseArr = toMin(it.arrival);
       if (baseDep == null || baseArr == null) return;
 
-      const dayOffset = getWeekOffsetMin(it.day, nowDayIndex);
+      /* ============================================================
+   🟦 PASO 3.9 — DAILY FLIGHT NORMALIZATION (FR24 MODE)
+   ============================================================ */
+
+      // Forzar que el vuelo exista HOY
+      const dayOffset = 0;(it.day, nowDayIndex);
 
       const depMin = baseDep + dayOffset;
       const arrMin = baseArr + dayOffset;
