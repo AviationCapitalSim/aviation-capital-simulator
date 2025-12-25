@@ -461,7 +461,12 @@ waitForWorldAirports(() => {
 })();
 
 /* ============================================================
-   🟦 PASO 3.1.6 — RUNTIME BOOTSTRAP (MANDATORY)
+   🟦 PASO 3.1.6 — RUNTIME BOOTSTRAP (SAFE CALL)
    ============================================================ */
 
-bootstrapGroundAircraft();
+if (typeof bootstrapGroundAircraft === "function") {
+  bootstrapGroundAircraft();
+} else {
+  console.warn("⚠ bootstrapGroundAircraft not available at runtime load");
+}
+
