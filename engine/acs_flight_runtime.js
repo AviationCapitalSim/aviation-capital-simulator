@@ -207,7 +207,6 @@ function buildFlightsFromSchedule() {
 
   if (!baseICAO || !Array.isArray(schedule)) return flights;
 
-  // HH:MM → minutos absolutos
   function toMin(hhmm) {
     if (!hhmm || typeof hhmm !== "string") return null;
     const [h, m] = hhmm.split(":").map(Number);
@@ -222,16 +221,7 @@ function buildFlightsFromSchedule() {
 
     const depMin = toMin(item.departure);
     const arrMin = toMin(item.arrival);
-
-    // ✅ NUEVA LÓGICA 24/7 — NO FILTRA, SOLO CLASIFICA
-    let state;
-    if (now < depMin) {
-    state = "ground";
-  } else if (now <= arrMin) {
-    state = "air";
-  } else {
-    state = "done";
-}
+    if (depMin === null || arrMin === null) return;
 
     flights.push({
       id: item.id || crypto.randomUUID(),
@@ -243,7 +233,7 @@ function buildFlightsFromSchedule() {
       depMin,
       arrMin,
 
-      status: "ground",        // ⬅️ el runtime lo actualizará
+      status: "ground",   // ⬅️ estado inicial neutro
       started: false,
       completed: false,
 
@@ -253,8 +243,7 @@ function buildFlightsFromSchedule() {
   });
 
   return flights;
- }
-    
+}
 
   /* ============================================================
    🟦 PASO 4.1 — UPDATE WORLD FLIGHTS (FORCED GROUND VISIBILITY)
