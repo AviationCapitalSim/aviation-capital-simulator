@@ -489,12 +489,3 @@ waitForWorldAirports(() => {
 
   console.log("🌍 ACS World Runtime ACTIVE (24/7)");
 });
-
-/* ============================================================
-   🟦 PASO 3.99 — END RUNTIME WRAPPER (IIFE CLOSE)
-   ------------------------------------------------------------
-   - Cierra el wrapper principal del archivo
-   - Previene: "Unexpected end of script"
-   ============================================================ */
-
-})(); // ✅ CIERRE FINAL DEL IIFE
