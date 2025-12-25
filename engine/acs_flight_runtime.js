@@ -223,7 +223,15 @@ function buildFlightsFromSchedule() {
     const depMin = toMin(item.departure);
     const arrMin = toMin(item.arrival);
 
-    if (depMin === null || arrMin === null) return;
+    // ✅ NUEVA LÓGICA 24/7 — NO FILTRA, SOLO CLASIFICA
+    let state;
+    if (now < depMin) {
+    state = "ground";
+  } else if (now <= arrMin) {
+    state = "air";
+  } else {
+    state = "done";
+}
 
     flights.push({
       id: item.id || crypto.randomUUID(),
