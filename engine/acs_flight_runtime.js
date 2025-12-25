@@ -246,7 +246,7 @@ function buildFlightsFromSchedule() {
 
   return flights;
  }
-    }
+    
 
   /* ============================================================
    🟦 PASO 4.1 — UPDATE WORLD FLIGHTS (FORCED GROUND VISIBILITY)
