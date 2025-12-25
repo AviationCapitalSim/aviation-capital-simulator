@@ -105,54 +105,52 @@
   }
 
   /* ============================================================
-     🟦 PASO 3.1.5 — INITIALIZE AIRCRAFT ON GROUND (BOOTSTRAP)
-     ============================================================ */
+   🟧 A4 — BOOTSTRAP GROUND AIRCRAFT (ID SAFE)
+   ============================================================ */
 
-  function bootstrapGroundAircraft() {
-    try {
-      const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-      if (!Array.isArray(fleet) || !fleet.length) return;
+function bootstrapGroundAircraft() {
+  const baseICAO = localStorage.getItem("ACS_baseICAO") || null;
 
-      const state = getFlightState();
-      let changed = false;
-
-      fleet.forEach(ac => {
-        if (!ac.id) return;
-
-        const existing = state.find(s => s.aircraftId === ac.id);
-        if (existing) return;
-
-        const base =
-          ac.baseAirport ||
-          ac.currentAirport ||
-          ac.homeBase ||
-          ac.base ||
-          null;
-
-        state.push({
-          aircraftId: ac.id,
-          status: "GROUND",
-          airport: base,
-          route: null,
-          depMin: null,
-          arrMin: null,
-          lat: null,
-          lng: null,
-          lastUpdateMin: null,
-          meta: null
-        });
-
-        changed = true;
-      });
-
-      if (changed) {
-        saveFlightState(state);
-        console.log("🛬 Ground aircraft bootstrapped:", state.length);
-      }
-    } catch (e) {
-      console.warn("⚠ bootstrapGroundAircraft error:", e);
-    }
+  let fleet = [];
+  try {
+    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
+  } catch {
+    fleet = [];
   }
+
+  if (!Array.isArray(fleet) || fleet.length === 0) return;
+
+  const state = getFlightState();
+  let changed = false;
+
+  fleet.forEach(ac => {
+    const acId = ac?.id || ac?.aircraftId || ac?.aircraftID;
+    if (!acId) return;
+
+    const exists = state.some(s => s && s.aircraftId === acId);
+    if (exists) return;
+
+    state.push({
+      aircraftId: acId,
+      status: "GROUND",
+      airport: ac?.baseAirport || baseICAO,
+      route: null,
+      depMin: null,
+      arrMin: null,
+      lat: null,
+      lng: null,
+      lastUpdateMin: null,
+      meta: { source: "bootstrap" }
+    });
+
+    changed = true;
+  });
+
+  if (changed) {
+    saveFlightState(state);
+    console.log("🛬 Bootstrapped ground aircraft from MyAircraft:", fleet.length);
+  }
+}
 
   // Exponer (debug/manual)
   window.bootstrapGroundAircraft = bootstrapGroundAircraft;
@@ -338,12 +336,26 @@ function updateWorldFlights() {
     // 📡 PUBLICAR
     // =====================================
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
-      live.push({
-        aircraftId: ac.aircraftId,
-        status,
-        lat,
-        lng
-      });
+   
+   // ✅ Normaliza status para que SkyTrack lo pinte
+    const publishStatus =
+      status === "AIRBORNE" ? "air" :
+      status === "GROUND"   ? "ground" :
+                              "done";
+
+    live.push({
+      aircraftId: ac.aircraftId,
+      status: publishStatus,   // 👈 clave
+      airport: ac.airport || null,
+      origin,
+      destination,
+      depMin,
+      arrMin,
+      lat: ac.lat,
+      lng: ac.lng,
+      updatedMin: nowMin
+    });
+
     }
 
     ac.status = status;
@@ -408,33 +420,94 @@ function updateWorldFlights() {
       setTimeout(() => waitForWorldAirports(cb), 200);
     }
   }
+   
+/* ============================================================
+   🟧 A1 — SEED FLIGHT STATE FROM SCHEDULE (24/7)
+   - Garantiza que SIEMPRE haya aviones en tierra si hay vuelos
+   - Crea ACS_FLIGHT_STATE aunque MyAircraft no esté disponible
+   ============================================================ */
 
-  /* ============================================================
-     🟦 PASO 3.3 — TIME ENGINE HOOK (WORLD ONLY)
-     ============================================================ */
+function seedFlightStateFromSchedule() {
+  const baseICAO = localStorage.getItem("ACS_baseICAO") || null;
 
-  waitForWorldAirports(() => {
-    // ✅ Bootstrapea UNA sola vez ya con mundo listo
-    if (typeof bootstrapGroundAircraft === "function") {
-      bootstrapGroundAircraft();
-    }
+  let schedule = [];
+  try {
+    schedule = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  } catch {
+    schedule = [];
+  }
 
-    // ✅ Primera pintura inmediata
-    updateWorldFlights();
-    generateReturnFlights();
+  if (!Array.isArray(schedule) || schedule.length === 0) return;
 
-    // ✅ Loop 24/7
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(() => {
-        updateWorldFlights();
-        generateReturnFlights();
+  // AircraftIds únicos SOLO de vuelos
+  const ids = Array.from(
+    new Set(
+      schedule
+        .filter(it => it && it.type === "flight" && it.aircraftId)
+        .map(it => it.aircraftId)
+    )
+  );
+
+  if (ids.length === 0) return;
+
+  const state = getFlightState(); // (tu función existente)
+  let changed = false;
+
+  ids.forEach(id => {
+    const exists = state.some(s => s && s.aircraftId === id);
+    if (!exists) {
+      state.push({
+        aircraftId: id,
+        status: "GROUND",
+        airport: baseICAO,
+        route: null,
+        depMin: null,
+        arrMin: null,
+        lat: null,
+        lng: null,
+        lastUpdateMin: null,
+        meta: null
       });
-    } else {
-      console.warn("⚠ registerTimeListener not available for flight runtime");
+      changed = true;
     }
-
-    console.log("🌍 ACS World Runtime ACTIVE (24/7)");
   });
+
+  if (changed) {
+    saveFlightState(state); // (tu función existente)
+    console.log("🧩 Seeded ACS_FLIGHT_STATE from schedule:", ids.length, "aircraft");
+  }
+}
+   
+  /* ============================================================
+   🟦 PASO 3.3 — TIME ENGINE HOOK (WORLD ONLY)
+   ============================================================ */
+
+waitForWorldAirports(() => {
+
+  // ✅ 1) Seed desde schedule (garantiza aviones en tierra)
+  try { seedFlightStateFromSchedule(); } catch(e) { console.warn(e); }
+
+  // ✅ 2) Bootstrapea desde MyAircraft si existe (extra)
+  if (typeof bootstrapGroundAircraft === "function") {
+    try { bootstrapGroundAircraft(); } catch(e) { console.warn(e); }
+  }
+
+  // ✅ 3) Primera pintura inmediata
+  updateWorldFlights();
+  generateReturnFlights();
+
+  // ✅ 4) Loop 24/7
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(() => {
+      updateWorldFlights();
+      generateReturnFlights();
+    });
+  } else {
+    console.warn("⚠ registerTimeListener not available for flight runtime");
+  }
+
+  console.log("🌍 ACS World Runtime ACTIVE (24/7)");
+});
    
 // 🔓 Expose runtime API (REQUIRED)
 window.buildFlightsFromSchedule = buildFlightsFromSchedule;
