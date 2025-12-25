@@ -440,7 +440,19 @@ function generateReturnFlights() {
 
 // Inicializar aviones en tierra UNA SOLA VEZ
 bootstrapGroundAircraft();
+   
+/* ============================================================
+   🟦 PASO 3.8 — RUNTIME UPDATE LOOP (TIME ENGINE HOOK)
+   ============================================================ */
 
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+    updateWorldFlights();
+  });
+} else {
+  console.warn("⚠ registerTimeListener not available for flight runtime");
+}
+   
 // ============================================================
 // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
 // ============================================================
