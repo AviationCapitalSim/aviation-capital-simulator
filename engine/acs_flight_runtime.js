@@ -217,7 +217,7 @@ function buildFlightsFromSchedule() {
     items.forEach(it => {
       if (it.type !== "flight") return;
       if (!it.aircraftId) return;
-      if (!it.departure || !it.arrival) return;
+      if (!it.origin || !it.destination) return;
 
       const baseDep = toMin(it.departure);
       const baseArr = toMin(it.arrival);
