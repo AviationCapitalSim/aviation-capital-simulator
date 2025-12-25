@@ -192,68 +192,61 @@
   }
 
   /* ============================================================
-     🟦 PASO 3.6.1 / 3.7 — BUILD FLIGHTS FROM SCHEDULE (SAFE)
-     ============================================================ */
+   🟧 A4 — BUILD FLIGHTS FROM SCHEDULE (SOURCE OF TRUTH)
+   ------------------------------------------------------------
+   - NO filtra por tiempo actual
+   - SIEMPRE crea vuelos (pasados, activos y futuros)
+   - El runtime decide estado (GROUND / AIRBORNE / COMPLETED)
+   ============================================================ */
 
-  function buildFlightsFromSchedule() {
-    try {
-      const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-      if (!Array.isArray(items) || !items.length) return [];
+function buildFlightsFromSchedule() {
 
-      const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-      const now = window.ACS_TIME?.currentTime;
-      if (!now) return [];
+  const schedule = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  const baseICAO = localStorage.getItem("ACS_baseICAO");
+  const flights = [];
 
-      const nowDayIndex = now.getDay();
-      const flights = [];
+  if (!baseICAO || !Array.isArray(schedule)) return flights;
 
-      items.forEach(it => {
-        if (it.type !== "flight") return;
-        if (!it.aircraftId) return;
-        if (!it.origin || !it.destination) return;
-
-        const baseDep = toMin(it.departure);
-        const baseArr = toMin(it.arrival);
-        if (baseDep == null || baseArr == null) return;
-
-        const dayOffset = getWeekOffsetMin(it.day, nowDayIndex);
-
-        const depMin = baseDep + dayOffset;
-        const arrMin = baseArr + dayOffset;
-
-        const acReal = fleet.find(a => a.id === it.aircraftId);
-
-        flights.push({
-          aircraftId: it.aircraftId,
-
-          // ✅ DISPLAY: modelo (NO ID)
-          aircraftModel:
-            acReal?.model ||
-            acReal?.type ||
-            acReal?.family ||
-            "Unknown Aircraft",
-
-          flightNumberOut: it.flightNumberOut || "",
-          flightNumberIn: it.flightNumberIn || "",
-          label: `${it.flightNumberOut || ""} / ${it.flightNumberIn || ""}`.trim(),
-
-          origin: it.origin,
-          destination: it.destination,
-
-          depMin,
-          arrMin,
-
-          day: it.day,
-          leg: "outbound"
-        });
-      });
-
-      return flights;
-    } catch (e) {
-      console.warn("⚠ buildFlightsFromSchedule error:", e);
-      return [];
-    }
+  // HH:MM → minutos absolutos
+  function toMin(hhmm) {
+    if (!hhmm || typeof hhmm !== "string") return null;
+    const [h, m] = hhmm.split(":").map(Number);
+    if (isNaN(h) || isNaN(m)) return null;
+    return h * 60 + m;
   }
+
+  schedule.forEach(item => {
+
+    if (item.type !== "flight") return;
+    if (!item.aircraftId) return;
+
+    const depMin = toMin(item.departure);
+    const arrMin = toMin(item.arrival);
+
+    if (depMin === null || arrMin === null) return;
+
+    flights.push({
+      id: item.id || crypto.randomUUID(),
+      aircraftId: item.aircraftId,
+
+      origin: item.origin || baseICAO,
+      destination: item.destination,
+
+      depMin,
+      arrMin,
+
+      status: "ground",        // ⬅️ el runtime lo actualizará
+      started: false,
+      completed: false,
+
+      leg: "outbound",
+      source: "schedule"
+    });
+  });
+
+  return flights;
+ }
+    }
 
   /* ============================================================
    🟦 PASO 4.1 — UPDATE WORLD FLIGHTS (FORCED GROUND VISIBILITY)
