@@ -434,6 +434,13 @@ function generateReturnFlights() {
   }
 }
    
+/* ============================================================
+   🟦 PASO 3.1.6 — BOOTSTRAP WORLD (INSIDE RUNTIME)
+   ============================================================ */
+
+// Inicializar aviones en tierra UNA SOLA VEZ
+bootstrapGroundAircraft();
+
 // ============================================================
 // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
 // ============================================================
@@ -459,18 +466,3 @@ waitForWorldAirports(() => {
 });
 
 })();
-
-/* ============================================================
-   🟦 PASO 3.1.6 — RUNTIME BOOTSTRAP (SAFE CALL)
-   ============================================================ */
-
-if (typeof bootstrapGroundAircraft === "function") {
-  bootstrapGroundAircraft();
-} else {
-  console.warn("⚠ bootstrapGroundAircraft not available at runtime load");
-}
-/* ============================================================
-   🟦 PASO 3.1.5b — EXPOSE BOOTSTRAP TO RUNTIME (MODULE SAFE)
-   ============================================================ */
-
-window.bootstrapGroundAircraft = bootstrapGroundAircraft;
