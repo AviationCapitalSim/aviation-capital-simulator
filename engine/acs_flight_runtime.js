@@ -486,7 +486,6 @@ waitForWorldAirports(() => {
     updateWorldFlights();
     generateReturnFlights();
   });
+
   console.log("🌍 ACS World Runtime ACTIVE (24/7)");
 });
-
-})();
