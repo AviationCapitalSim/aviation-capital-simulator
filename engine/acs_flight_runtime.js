@@ -228,7 +228,7 @@ function buildFlightsFromSchedule() {
    ============================================================ */
 
       // Forzar que el vuelo exista HOY
-      const dayOffset = 0;(it.day, nowDayIndex);
+      const dayOffset = getWeekOffsetMin(it.day, nowDayIndex);
 
       const depMin = baseDep + dayOffset;
       const arrMin = baseArr + dayOffset;
