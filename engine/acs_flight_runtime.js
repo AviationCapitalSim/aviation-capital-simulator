@@ -256,11 +256,11 @@
   }
 
   /* ============================================================
-   🟦 PASO 4 — UPDATE WORLD FLIGHTS (GROUND + AIRBORNE)
+   🟦 PASO 4.1 — UPDATE WORLD FLIGHTS (FORCED GROUND VISIBILITY)
    ------------------------------------------------------------
-   - Publica TODOS los aviones del mundo
-   - En tierra, en vuelo o turnaround
-   - SkyTrack 24/7 (FlightRadar style)
+   - SIEMPRE publica aviones
+   - Aunque no haya vuelos
+   - Aunque el estado esté incompleto
    ============================================================ */
 
 function updateWorldFlights() {
@@ -280,15 +280,18 @@ function updateWorldFlights() {
     });
   }
 
+  // Fleet real (fuente de verdad)
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
   state.forEach(ac => {
 
     let lat = null;
     let lng = null;
     let status = ac.status || "GROUND";
 
-    // ==========================
-    // ✈️ CHECK ACTIVE FLIGHT
-    // ==========================
+    // =====================================
+    // ✈️ VUELO ACTIVO
+    // =====================================
     const f = flights.find(fl =>
       fl.aircraftId === ac.aircraftId &&
       nowMin >= fl.depMin &&
@@ -296,7 +299,6 @@ function updateWorldFlights() {
     );
 
     if (f) {
-      // EN VUELO
       const origin = airportIndex[f.origin];
       const dest   = airportIndex[f.destination];
       if (origin && dest) {
@@ -315,25 +317,36 @@ function updateWorldFlights() {
         lng = pos.lng;
         status = "AIRBORNE";
       }
-    } else {
-      // ==========================
-      // 🛬 EN TIERRA / TURNAROUND
-      // ==========================
-      const ap =
-        airportIndex[ac.airport] ||
-        airportIndex[ac.route?.destination] ||
-        airportIndex[ac.route?.origin];
+    }
+
+    // =====================================
+    // 🛬 EN TIERRA — FORZADO
+    // =====================================
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+
+      // Buscar base real del avión
+      const real = fleet.find(x => x.id === ac.aircraftId);
+
+      const baseIcao =
+        ac.airport ||
+        real?.baseAirport ||
+        real?.currentAirport ||
+        real?.homeBase ||
+        localStorage.getItem("ACS_baseICAO");
+
+      const ap = airportIndex[baseIcao];
 
       if (ap) {
         lat = ap.lat;
         lng = ap.lng;
-        status = ac.status || "GROUND";
+        status = "GROUND";
+        ac.airport = baseIcao;
       }
     }
 
-    // ==========================
-    // 📡 PUBLICAR A SKYTRACK
-    // ==========================
+    // =====================================
+    // 📡 PUBLICAR
+    // =====================================
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
       live.push({
         aircraftId: ac.aircraftId,
@@ -343,17 +356,15 @@ function updateWorldFlights() {
       });
     }
 
-    ac.lastUpdateMin = nowMin;
     ac.status = status;
+    ac.lastUpdateMin = nowMin;
   });
 
   saveFlightState(state);
 
-  // 🌍 OUTPUT GLOBAL
   window.ACS_LIVE_FLIGHTS = live;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 }
-
 
   /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
