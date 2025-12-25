@@ -323,13 +323,13 @@ function updateWorldFlights() {
 
       const ap = airportIndex[baseIcao];
 
-      if (ap) {
-        lat = ap.lat;
-        lng = ap.lng;
-        status = "GROUND";
-        ac.airport = baseIcao;
-      }
+      if (ap && Number.isFinite(ap.latitude) && Number.isFinite(ap.longitude)) {
+      lat = ap.latitude;
+      lng = ap.longitude;
+      status = "GROUND";
+      ac.airport = baseIcao;
     }
+  }
 
     // =====================================
     // 📡 PUBLICAR
