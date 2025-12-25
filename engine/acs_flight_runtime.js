@@ -445,26 +445,17 @@ function generateReturnFlights() {
     saveActiveFlights(activeFlights);
   }
 }
-   
+
 /* ============================================================
-   🟦 PASO 3.1.6 — BOOTSTRAP WORLD (INSIDE RUNTIME)
+   🟦 PASO 3.1.6 — RUNTIME BOOTSTRAP + WORLD HOOK (SINGLE SOURCE)
+   ------------------------------------------------------------
+   - 1 SOLO listener (sin duplicados)
+   - 1 SOLO cierre IIFE (al final)
    ============================================================ */
 
-// Inicializar aviones en tierra UNA SOLA VEZ
-bootstrapGroundAircraft();
-   
-/* ============================================================
-   🟦 PASO 3.8 — RUNTIME UPDATE LOOP (TIME ENGINE HOOK)
-   ============================================================ */
+// Exponer por si SkyTrack quiere llamarlo (debug / manual)
+window.bootstrapGroundAircraft = bootstrapGroundAircraft;
 
-if (typeof registerTimeListener === "function") {
-  registerTimeListener(() => {
-    updateWorldFlights();
-  });
-} else {
-  console.warn("⚠ registerTimeListener not available for flight runtime");
-}
-   
 // ============================================================
 // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
 // ============================================================
@@ -476,18 +467,37 @@ function waitForWorldAirports(cb) {
     setTimeout(() => waitForWorldAirports(cb), 200);
   }
 }
-   
+
 /* ============================================================
    🟦 PASO 3.3 — TIME ENGINE HOOK (WORLD ONLY)
    ============================================================ */
 
 waitForWorldAirports(() => {
-  registerTimeListener(() => {
-    updateWorldFlights();
-    generateReturnFlights();
-  });
+
+  // ✅ Bootstrapea una sola vez al cargar runtime (ya con mundo listo)
+  if (typeof bootstrapGroundAircraft === "function") {
+    bootstrapGroundAircraft();
+  }
+
+  // ✅ Primera pintura inmediata
+  updateWorldFlights();
+  generateReturnFlights();
+
+  // ✅ Loop 24/7
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(() => {
+      updateWorldFlights();
+      generateReturnFlights();
+    });
+  } else {
+    console.warn("⚠ registerTimeListener not available for flight runtime");
+  }
 
   console.log("🌍 ACS World Runtime ACTIVE (24/7)");
 });
 
-})();
+/* ============================================================
+   🟦 PASO 3.99 — END RUNTIME WRAPPER (IIFE CLOSE)
+   ============================================================ */
+
+})(); // ✅ ÚNICO CIERRE FINAL DEL IIFE
