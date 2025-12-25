@@ -256,118 +256,104 @@
   }
 
   /* ============================================================
-     🟦 PASO 3.2 — UPDATE WORLD (GROUND / AIRBORNE / TURNAROUND)
-     ============================================================ */
+   🟦 PASO 4 — UPDATE WORLD FLIGHTS (GROUND + AIRBORNE)
+   ------------------------------------------------------------
+   - Publica TODOS los aviones del mundo
+   - En tierra, en vuelo o turnaround
+   - SkyTrack 24/7 (FlightRadar style)
+   ============================================================ */
 
-  function updateWorldFlights() {
-    const nowMin = window.ACS_TIME?.minute;
-    if (typeof nowMin !== "number") return;
+function updateWorldFlights() {
 
-    const flights = buildFlightsFromSchedule();
-    const state = getFlightState();
-    const live = [];
+  const nowMin = window.ACS_TIME?.minute;
+  if (typeof nowMin !== "number") return;
 
-    // 🗺 Airport index (rápido)
-    const airportIndex = {};
-    Object.values(window.WorldAirportsACS || {})
-      .flat()
-      .forEach(a => (airportIndex[a.icao] = a));
+  const flights = buildFlightsFromSchedule();
+  const state   = getFlightState();
+  const live    = [];
 
-    flights.forEach(f => {
-      const ac = getOrCreateAircraftState(f.aircraftId, f.origin);
+  // Índice rápido de aeropuertos
+  const airportIndex = {};
+  if (window.WorldAirportsACS) {
+    Object.values(WorldAirportsACS).flat().forEach(ap => {
+      if (ap.icao) airportIndex[ap.icao] = ap;
+    });
+  }
 
-      // 🧠 metadata del avión (una sola vez)
-      if (!ac.meta) {
-        const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-        const real = fleet.find(x => x.id === f.aircraftId);
-        if (real) {
-          ac.meta = {
-            model: real.model || real.type || "Unknown",
-            displayName: real.model || real.type || "Aircraft"
-          };
-        } else {
-          ac.meta = { model: f.aircraftModel || "Unknown", displayName: f.aircraftModel || "Aircraft" };
-        }
-      }
+  state.forEach(ac => {
 
-      let lat = null;
-      let lng = null;
-      let status = ac.status;
+    let lat = null;
+    let lng = null;
+    let status = ac.status || "GROUND";
 
-      // BEFORE DEPARTURE — GROUND
-      if (nowMin < f.depMin) {
-        status = "GROUND";
-        ac.status = "GROUND";
-        ac.airport = f.origin;
-      }
-      // ENROUTE
-      else if (nowMin >= f.depMin && nowMin <= f.arrMin) {
-        const origin = airportIndex[f.origin];
-        const dest = airportIndex[f.destination];
-        if (!origin || !dest) return;
+    // ==========================
+    // ✈️ CHECK ACTIVE FLIGHT
+    // ==========================
+    const f = flights.find(fl =>
+      fl.aircraftId === ac.aircraftId &&
+      nowMin >= fl.depMin &&
+      nowMin <= fl.arrMin
+    );
 
-        const denom = (f.arrMin - f.depMin) || 1;
-        const progress = Math.min(Math.max((nowMin - f.depMin) / denom, 0), 1);
+    if (f) {
+      // EN VUELO
+      const origin = airportIndex[f.origin];
+      const dest   = airportIndex[f.destination];
+      if (origin && dest) {
+        const progress = Math.min(
+          Math.max((nowMin - f.depMin) / (f.arrMin - f.depMin), 0),
+          1
+        );
 
         const pos = interpolateGC(
           origin.lat, origin.lng,
-          dest.lat, dest.lng,
+          dest.lat,   dest.lng,
           progress
         );
 
-        status = "AIRBORNE";
-        ac.status = "AIRBORNE";
-        ac.route = { origin: f.origin, destination: f.destination };
-        ac.depMin = f.depMin;
-        ac.arrMin = f.arrMin;
-        ac.lat = pos.lat;
-        ac.lng = pos.lng;
-
         lat = pos.lat;
         lng = pos.lng;
+        status = "AIRBORNE";
       }
-      // ARRIVED — TURNAROUND
-      else {
-        status = "TURNAROUND";
-        ac.status = "TURNAROUND";
-        ac.airport = f.destination;
+    } else {
+      // ==========================
+      // 🛬 EN TIERRA / TURNAROUND
+      // ==========================
+      const ap =
+        airportIndex[ac.airport] ||
+        airportIndex[ac.route?.destination] ||
+        airportIndex[ac.route?.origin];
+
+      if (ap) {
+        lat = ap.lat;
+        lng = ap.lng;
+        status = ac.status || "GROUND";
       }
+    }
 
-      // 📍 Posición para GROUND / TURNAROUND
-      if ((status === "GROUND" || status === "TURNAROUND") && ac.airport) {
-        const ap = airportIndex[ac.airport];
-        if (ap) {
-          lat = ap.lat;
-          lng = ap.lng;
-        }
-      }
+    // ==========================
+    // 📡 PUBLICAR A SKYTRACK
+    // ==========================
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      live.push({
+        aircraftId: ac.aircraftId,
+        status,
+        lat,
+        lng
+      });
+    }
 
-      ac.lastUpdateMin = nowMin;
+    ac.lastUpdateMin = nowMin;
+    ac.status = status;
+  });
 
-      // ✅ PUBLICAR SIEMPRE (AIR + GROUND + TURNAROUND)
-      if (lat != null && lng != null) {
-        live.push({
-          aircraftId: f.aircraftId, // interno
-          aircraftModel: ac.meta?.displayName || ac.meta?.model || "Aircraft",
-          status,
-          flightNumberOut: f.flightNumberOut || "",
-          flightNumberIn: f.flightNumberIn || "",
-          label: f.label || "",
-          origin: f.origin,
-          destination: f.destination,
-          depMin: f.depMin,
-          arrMin: f.arrMin,
-          lat,
-          lng
-        });
-      }
-    });
+  saveFlightState(state);
 
-    saveFlightState(state);
+  // 🌍 OUTPUT GLOBAL
+  window.ACS_LIVE_FLIGHTS = live;
+  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
+}
 
-    window.ACS_LIVE_FLIGHTS = live;
-    localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
-  } // ✅ CIERRE CORRECTO DE updateWorldFlights()
 
   /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
