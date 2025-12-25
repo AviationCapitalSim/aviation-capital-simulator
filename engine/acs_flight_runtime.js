@@ -287,17 +287,17 @@ function updateWorldFlights() {
     );
 
     if (f) {
-      const origin = airportIndex[f.origin];
-      const dest   = airportIndex[f.destination];
-      if (origin && dest) {
+      const originAp = airportIndex[f.origin];
+      const destAp   = airportIndex[f.destination];
+      if (originAp && destAp) {
         const progress = Math.min(
           Math.max((nowMin - f.depMin) / (f.arrMin - f.depMin), 0),
           1
         );
 
         const pos = interpolateGC(
-          origin.lat, origin.lng,
-          dest.lat,   dest.lng,
+          originAp.lat, originAp.lng,
+          destAp.lat,   destAp.lng,
           progress
         );
 
@@ -312,7 +312,6 @@ function updateWorldFlights() {
     // =====================================
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
 
-      // Buscar base real del avión
       const real = fleet.find(x => x.id === ac.aircraftId);
 
       const baseIcao =
@@ -332,38 +331,43 @@ function updateWorldFlights() {
       }
     }
 
-// =====================================
-// 📡 PUBLICAR
-// =====================================
-if (Number.isFinite(lat) && Number.isFinite(lng)) {
+    // =====================================
+    // 📡 PUBLICAR
+    // =====================================
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
-  // ✅ Normaliza status para que SkyTrack lo pinte
-  const publishStatus =
-    status === "AIRBORNE" ? "air" :
-    status === "GROUND"   ? "ground" :
-                            "done";
+      const publishStatus =
+        status === "AIRBORNE" ? "air" :
+        status === "GROUND"   ? "ground" :
+                                "done";
 
-  // Datos del vuelo activo (si existe)
-  const origin      = f ? f.origin      : null;
-  const destination = f ? f.destination : null;
-  const depMin      = f ? f.depMin      : null;
-  const arrMin      = f ? f.arrMin      : null;
+      live.push({
+        aircraftId: ac.aircraftId,
+        status: publishStatus,
+        airport: ac.airport || null,
 
-  live.push({
-    aircraftId: ac.aircraftId,
-    status: publishStatus,
-    airport: ac.airport || null,
+        origin:      f ? f.origin      : null,
+        destination: f ? f.destination : null,
+        depMin:      f ? f.depMin      : null,
+        arrMin:      f ? f.arrMin      : null,
 
-    origin,
-    destination,
-    depMin,
-    arrMin,
+        lat: lat,
+        lng: lng,
+        updatedMin: nowMin
+      });
+    }
 
-    lat: lat,        // ✅ usar lat calculado
-    lng: lng,        // ✅ usar lng calculado
-    updatedMin: nowMin
-  });
-}
+    ac.status = status;
+    ac.lastUpdateMin = nowMin;
+
+  }); // ✅ cierre state.forEach
+
+  saveFlightState(state);
+
+  window.ACS_LIVE_FLIGHTS = live;
+  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
+
+} // ✅ cierre updateWorldFlights
 
   /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
