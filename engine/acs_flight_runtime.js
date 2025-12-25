@@ -445,5 +445,11 @@ function updateWorldFlights() {
 
     console.log("🌍 ACS World Runtime ACTIVE (24/7)");
   });
-
+   
+// 🔓 Expose runtime API (REQUIRED)
+window.buildFlightsFromSchedule = buildFlightsFromSchedule;
+window.updateWorldFlights       = updateWorldFlights;
+window.generateReturnFlights    = generateReturnFlights;
+window.bootstrapGroundAircraft  = bootstrapGroundAircraft;
+   
 })(); // ✅ ÚNICO CIERRE FINAL DEL IIFE
