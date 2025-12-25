@@ -332,40 +332,37 @@ function updateWorldFlights() {
       }
     }
 
-    // =====================================
-    // 📡 PUBLICAR
-    // =====================================
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
-   
-   // ✅ Normaliza status para que SkyTrack lo pinte
-    const publishStatus =
-      status === "AIRBORNE" ? "air" :
-      status === "GROUND"   ? "ground" :
-                              "done";
+// =====================================
+// 📡 PUBLICAR
+// =====================================
+if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
-    live.push({
-      aircraftId: ac.aircraftId,
-      status: publishStatus,   // 👈 clave
-      airport: ac.airport || null,
-      origin,
-      destination,
-      depMin,
-      arrMin,
-      lat: ac.lat,
-      lng: ac.lng,
-      updatedMin: nowMin
-    });
+  // ✅ Normaliza status para que SkyTrack lo pinte
+  const publishStatus =
+    status === "AIRBORNE" ? "air" :
+    status === "GROUND"   ? "ground" :
+                            "done";
 
-    }
+  // Datos del vuelo activo (si existe)
+  const origin      = f ? f.origin      : null;
+  const destination = f ? f.destination : null;
+  const depMin      = f ? f.depMin      : null;
+  const arrMin      = f ? f.arrMin      : null;
 
-    ac.status = status;
-    ac.lastUpdateMin = nowMin;
+  live.push({
+    aircraftId: ac.aircraftId,
+    status: publishStatus,
+    airport: ac.airport || null,
+
+    origin,
+    destination,
+    depMin,
+    arrMin,
+
+    lat: lat,        // ✅ usar lat calculado
+    lng: lng,        // ✅ usar lng calculado
+    updatedMin: nowMin
   });
-
-  saveFlightState(state);
-
-  window.ACS_LIVE_FLIGHTS = live;
-  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 }
 
   /* ============================================================
