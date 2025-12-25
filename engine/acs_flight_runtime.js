@@ -5,7 +5,13 @@
    Time source: ACS_TIME (NO bootstrap, NO override)
    Publishes: ACS_LIVE_FLIGHTS[]
    ============================================================ */
+/* ============================================================
+   🚀 ACS FLIGHT RUNTIME — IIFE WRAPPER
+   ============================================================ */
 
+(() => {
+  "use strict";
+   
 (function () {
 
   if (typeof registerTimeListener !== "function") {
@@ -468,40 +474,34 @@ function waitForWorldAirports(cb) {
   }
 }
 
-/* ============================================================
-   🚀 ACS FLIGHT RUNTIME — IIFE WRAPPER
-   ============================================================ */
-
-(() => {
-  "use strict";
 
 /* ============================================================
    🟦 PASO 3.3 — TIME ENGINE HOOK (WORLD ONLY)
    ============================================================ */
 
-  waitForWorldAirports(() => {
+waitForWorldAirports(() => {
 
-    // ✅ Bootstrapea una sola vez al cargar runtime (ya con mundo listo)
-    if (typeof bootstrapGroundAircraft === "function") {
-      bootstrapGroundAircraft();
-    }
+  // ✅ Bootstrapea una sola vez al cargar runtime (ya con mundo listo)
+  if (typeof bootstrapGroundAircraft === "function") {
+    bootstrapGroundAircraft();
+  }
 
-    // ✅ Primera pintura inmediata
-    updateWorldFlights();
-    generateReturnFlights();
+  // ✅ Primera pintura inmediata
+  updateWorldFlights();
+  generateReturnFlights();
 
-    // ✅ Loop 24/7
-    if (typeof registerTimeListener === "function") {
-      registerTimeListener(() => {
-        updateWorldFlights();
-        generateReturnFlights();
-      });
-    } else {
-      console.warn("⚠ registerTimeListener not available for flight runtime");
-    }
+  // ✅ Loop 24/7
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(() => {
+      updateWorldFlights();
+      generateReturnFlights();
+    });
+  } else {
+    console.warn("⚠ registerTimeListener not available for flight runtime");
+  }
 
-    console.log("🌍 ACS World Runtime ACTIVE (24/7)");
-  });
+  console.log("🌍 ACS World Runtime ACTIVE (24/7)");
+});
 
 /* ============================================================
    🟦 PASO 3.99 — END RUNTIME WRAPPER (IIFE CLOSE)
