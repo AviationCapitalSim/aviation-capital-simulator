@@ -469,4 +469,8 @@ if (typeof bootstrapGroundAircraft === "function") {
 } else {
   console.warn("⚠ bootstrapGroundAircraft not available at runtime load");
 }
+/* ============================================================
+   🟦 PASO 3.1.5b — EXPOSE BOOTSTRAP TO RUNTIME (MODULE SAFE)
+   ============================================================ */
 
+window.bootstrapGroundAircraft = bootstrapGroundAircraft;
