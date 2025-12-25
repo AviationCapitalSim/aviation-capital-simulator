@@ -386,8 +386,15 @@ function updateWorldFlights() {
   saveFlightState(state);
 
   // 🔒 PUBLIC OUTPUT (SkyTrack)
-  window.ACS_LIVE_FLIGHTS = live;
-  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
+// - AIRBORNE flights go to ACS_LIVE_FLIGHTS
+// - GROUND & TURNAROUND remain in ACS_FLIGHT_STATE
+
+window.ACS_LIVE_FLIGHTS = live;
+localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
+
+// 🔎 DEBUG VISIBILITY
+if (!live.length) {
+  console.info("🟡 No airborne flights right now — aircraft remain on ground/turnaround");
 }
 
 /* ============================================================
