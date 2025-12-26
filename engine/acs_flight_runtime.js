@@ -114,13 +114,17 @@
       days.forEach(d => {
         const off = d ? (dayMap[d] ?? 0) * 1440 : 0;
         flights.push({
-          aircraftId: it.aircraftId,
-          origin: it.origin,
-          destination: it.destination,
-          flightOut: it.flightOut || null,
-          depMin: dep + off,
-          arrMin: arr + off
-        });
+  aircraftId: it.aircraftId,
+  origin: it.origin,
+  destination: it.destination,
+
+  // ✅ toma cualquier naming que venga del schedule_table
+  flightOut: it.flightOut || it.flightNumber || it.code || it.callsign || null,
+
+  depMin: dep + off,
+  arrMin: arr + off
+});
+
       });
     });
 
