@@ -489,14 +489,10 @@ function renderLiveFlights() {
 // 🧭 FLIGHT PLAN (DOTTED) — derived from ACTUAL flight path
 // ------------------------------------------------------------
 
-// 🟦 B2.1 — NORMALIZE FLIGHT STATUS (SINGLE DECLARATION)
-const isEnroute = (f.status === "air" || f.status === "air");
-const isArrived = (f.status === "done" || f.status === "arrived");
+if (!liveFlightPlans[id] && f.status === "air") {
 
-// Crear el plan punteado solo si está en ruta
-if (!liveFlightPlans[id] && isEnroute) {
   liveFlightPlans[id] = L.polyline([], {
-    color: "#000000",      // negro ATC
+    color: "#000000",
     weight: 1,
     dashArray: "4,6",
     opacity: 0.85,
@@ -508,13 +504,12 @@ if (!liveFlightPlans[id] && isEnroute) {
 // 🧵 UPDATE PLAN + TRACE FROM SAME SOURCE
 // ------------------------------------------------------------
 
-if (isEnroute) {
-  // Plan punteado (delante del avión)
+if (f.status === "air") {
+
   if (liveFlightPlans[id]) {
     liveFlightPlans[id].addLatLng([f.lat, f.lng]);
   }
 
-  // Traza sólida (detrás del avión)
   if (!liveFlightTraces[id]) {
     liveFlightTraces[id] = L.polyline([], {
       color: "#1e88e5",
@@ -524,22 +519,6 @@ if (isEnroute) {
   }
 
   liveFlightTraces[id].addLatLng([f.lat, f.lng]);
-}
-
-// ------------------------------------------------------------
-// 🧹 CLEANUP ON ARRIVAL (delete trace + plan)
-// ------------------------------------------------------------
-if (isArrived) {
-
-  if (liveFlightTraces[id]) {
-    map.removeLayer(liveFlightTraces[id]);
-    delete liveFlightTraces[id];
-  }
-
-  if (liveFlightPlans[id]) {
-    map.removeLayer(liveFlightPlans[id]);
-    delete liveFlightPlans[id];
-  }
 }
 
     // ------------------------------------------------------------
@@ -564,19 +543,17 @@ if (isArrived) {
     const remH = Math.floor(remainingMin / 60);
     const remM = remainingMin % 60;
 
-// 🟦 B2 — REMAINING TIME (AIR ONLY)
-const remainingTxt = isEnroute
-  ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} remaining`
-  : "";
+    const remainingTxt =
+  f.status === "air"
+    ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} remaining`
+    : "";
 
-// 🟦 B2 — STATUS TEXT
 const statusTxt =
-  isEnroute             ? "En route" :
-  f.status === "ground" ? "On Ground" :
-                          "Arrived";
+  f.status === "air"     ? "En route" :
+  f.status === "ground"  ? "On ground" :
+  "Arrived";
 
 
-  
     const chipText = `
 <strong>${f.flightOut || id}</strong><br>
 ${"DC-3"} · ${id}<br>
@@ -601,7 +578,8 @@ ${remainingTxt}
     // ------------------------------------------------------------
     // 🧹 CLEANUP ON ARRIVAL (delete trace + plan)
     // ------------------------------------------------------------
-    if (f.status === "arrived") {
+    
+    if (f.status === "arrived" || f.status === "done") {
 
       if (liveFlightTraces[id]) {
         map.removeLayer(liveFlightTraces[id]);
