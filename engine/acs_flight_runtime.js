@@ -243,6 +243,8 @@ function buildFlightsFromSchedule() {
   source: "schedule"
 });
 
+});
+   
   return flights;
 }
 
