@@ -190,11 +190,11 @@ function bootstrapGroundAircraft() {
   }
 
   /* ============================================================
-   🟧 A4 — BUILD FLIGHTS FROM SCHEDULE (SOURCE OF TRUTH)
+   🟧 A5.1 — BUILD FLIGHTS FROM SCHEDULE (ABSOLUTE WEEK TIME)
    ------------------------------------------------------------
-   - NO filtra por tiempo actual
-   - SIEMPRE crea vuelos (pasados, activos y futuros)
-   - El runtime decide estado (GROUND / AIRBORNE / COMPLETED)
+   - Genera vuelos SIEMPRE (pasados, activos y futuros)
+   - Ancla cada vuelo a un minuto absoluto de la semana
+   - El runtime decide estado (GROUND / ENROUTE / ARRIVED)
    ============================================================ */
 
 function buildFlightsFromSchedule() {
@@ -205,6 +205,7 @@ function buildFlightsFromSchedule() {
 
   if (!baseICAO || !Array.isArray(schedule)) return flights;
 
+  // HH:MM → minutos del día
   function toMin(hhmm) {
     if (!hhmm || typeof hhmm !== "string") return null;
     const [h, m] = hhmm.split(":").map(Number);
@@ -212,39 +213,69 @@ function buildFlightsFromSchedule() {
     return h * 60 + m;
   }
 
+  // Día → índice semanal
+  const dayIndex = {
+    mon: 0,
+    tue: 1,
+    wed: 2,
+    thu: 3,
+    fri: 4,
+    sat: 5,
+    sun: 6
+  };
+
   schedule.forEach(item => {
 
     if (item.type !== "flight") return;
     if (!item.aircraftId) return;
 
-    const depMin = toMin(item.departure);
-    const arrMin = toMin(item.arrival);
-    if (depMin === null || arrMin === null) return;
+    const depLocalMin = toMin(item.departure);
+    const arrLocalMin = toMin(item.arrival);
+    if (depLocalMin === null || arrLocalMin === null) return;
 
-    flights.push({
-  id: item.id || crypto.randomUUID(),
-  aircraftId: item.aircraftId,
+    // Duración (permite cruces de medianoche)
+    let durationMin = arrLocalMin - depLocalMin;
+    if (durationMin <= 0) durationMin += 1440;
 
-  flightOut: item.flightOut || item.flightNumber || item.code || null,
-  aircraftType: item.aircraftType || item.model || null,
+    const days = Array.isArray(item.days) && item.days.length > 0
+      ? item.days
+      : [null];
 
-  origin: item.origin || baseICAO,
-  destination: item.destination,
+    // 🔁 Genera UN vuelo por cada día programado
+    days.forEach(day => {
 
-  depMin,
-  arrMin,
+      const dayOffset =
+        day && dayIndex[day] !== undefined
+          ? dayIndex[day] * 1440
+          : 0;
 
-  days: Array.isArray(item.days) ? item.days : null,
+      const depMin = depLocalMin + dayOffset;
+      const arrMin = depMin + durationMin;
 
-  status: "ground",
-  started: false,
-  completed: false,
-  leg: "outbound",
-  source: "schedule"
-});
+      flights.push({
+        id: item.id || crypto.randomUUID(),
+        aircraftId: item.aircraftId,
 
-});
-   
+        flightOut: item.flightOut || item.flightNumber || item.code || null,
+        aircraftType: item.aircraftType || item.model || null,
+
+        origin: item.origin || baseICAO,
+        destination: item.destination,
+
+        depMin,   // ⏱ minuto absoluto semana
+        arrMin,   // ⏱ minuto absoluto semana
+
+        days: Array.isArray(item.days) ? item.days : null,
+
+        status: "ground",
+        started: false,
+        completed: false,
+        leg: "outbound",
+        source: "schedule"
+      });
+    });
+  });
+
   return flights;
 }
 
@@ -258,7 +289,7 @@ function buildFlightsFromSchedule() {
 
 function updateWorldFlights() {
 
-  const nowMin = window.ACS_TIME?.minute;
+  const nowMin = window.ACS_TIME?.absoluteMinute;
   const today  = window.ACS_TIME?.day; // "mon", "tue", etc.
   if (typeof nowMin !== "number") return;
 
