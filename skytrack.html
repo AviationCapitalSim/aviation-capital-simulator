@@ -489,7 +489,12 @@ function renderLiveFlights() {
 // 🧭 FLIGHT PLAN (DOTTED) — derived from ACTUAL flight path
 // ------------------------------------------------------------
 
-if (!liveFlightPlans[id] && f.status === "enroute") {
+// 🟦 B1 — NORMALIZE FLIGHT STATUS (AIR = ENROUTE)
+    
+const isEnroute = (f.status === "air" || f.status === "enroute");
+
+if (!liveFlightPlans[id] && isEnroute) {
+
 
   liveFlightPlans[id] = L.polyline([], {
     color: "#000000",      // negro ATC
@@ -504,7 +509,12 @@ if (!liveFlightPlans[id] && f.status === "enroute") {
 // 🧵 UPDATE PLAN + TRACE FROM SAME SOURCE
 // ------------------------------------------------------------
 
-if (f.status === "enroute") {
+// 🟦 B2 — NORMALIZED FLIGHT STATUS
+const isEnroute = (f.status === "air" || f.status === "enroute");
+
+if (isEnroute) {
+  // dibuja plan
+}
 
   // Plan punteado (delante del avión)
   if (liveFlightPlans[id]) {
