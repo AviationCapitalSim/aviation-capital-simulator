@@ -555,10 +555,13 @@ if (isEnroute) {
     const remH = Math.floor(remainingMin / 60);
     const remM = remainingMin % 60;
 
-    const remainingTxt =
-      f.status === "enroute"
-        ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} restante`
-        : "";
+    // 🟦 B2 — REMAINING TIME (ENROUTE ONLY)
+    const isEnroute = (f.status === "air" || f.status === "enroute");
+
+    const remainingTxt = isEnroute
+    ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} restante`
+    : "";
+
 
    // 🟦 B2 — NORMALIZED STATUS TEXT
   
