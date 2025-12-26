@@ -341,21 +341,40 @@ function updateWorldFlights() {
       status === "GROUND"   ? "ground"  :
                               "arrived";
 
-      live.push({
-        aircraftId: ac.aircraftId,
-        status: publishStatus,
-        airport: ac.airport || null,
+      // Resolver modelo de aeronave (prioridad: schedule → MyAircraft)
+       
+let aircraftType = null;
 
-        origin:      f ? f.origin      : null,
-        destination: f ? f.destination : null,
-        depMin:      f ? f.depMin      : null,
-        arrMin:      f ? f.arrMin      : null,
+// 1️⃣ Desde schedule table (si existe)
+if (f && f.aircraftType) {
+  aircraftType = f.aircraftType;
+}
 
-        lat: lat,
-        lng: lng,
-        updatedMin: nowMin
-      });
-    }
+// 2️⃣ Fallback: desde MyAircraft
+if (!aircraftType) {
+  const real = fleet.find(x => x.id === ac.aircraftId);
+  if (real && real.model) {
+    aircraftType = real.model;
+  }
+}
+
+live.push({
+  aircraftId: ac.aircraftId,
+  flightOut: f?.flightOut || null,
+  aircraftType: aircraftType || "UNKNOWN",
+
+  status: publishStatus,
+  airport: ac.airport || null,
+
+  origin:      f ? f.origin      : null,
+  destination: f ? f.destination : null,
+  depMin:      f ? f.depMin      : null,
+  arrMin:      f ? f.arrMin      : null,
+
+  lat: lat,
+  lng: lng,
+  updatedMin: nowMin
+});
 
     ac.status = status;
     ac.lastUpdateMin = nowMin;
