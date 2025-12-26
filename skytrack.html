@@ -489,13 +489,12 @@ function renderLiveFlights() {
 // 🧭 FLIGHT PLAN (DOTTED) — derived from ACTUAL flight path
 // ------------------------------------------------------------
 
-// 🟦 B1 — NORMALIZE FLIGHT STATUS (AIR = ENROUTE)
-    
+// 🟦 B2.1 — NORMALIZE FLIGHT STATUS (SINGLE DECLARATION)
 const isEnroute = (f.status === "air" || f.status === "enroute");
+const isArrived = (f.status === "done" || f.status === "arrived");
 
+// Crear el plan punteado solo si está en ruta
 if (!liveFlightPlans[id] && isEnroute) {
-
-
   liveFlightPlans[id] = L.polyline([], {
     color: "#000000",      // negro ATC
     weight: 1,
@@ -509,13 +508,7 @@ if (!liveFlightPlans[id] && isEnroute) {
 // 🧵 UPDATE PLAN + TRACE FROM SAME SOURCE
 // ------------------------------------------------------------
 
-// 🟦 B2 — NORMALIZED FLIGHT STATUS
-const isEnroute = (f.status === "air" || f.status === "enroute");
-
 if (isEnroute) {
-  // dibuja plan
-}
-
   // Plan punteado (delante del avión)
   if (liveFlightPlans[id]) {
     liveFlightPlans[id].addLatLng([f.lat, f.lng]);
@@ -531,6 +524,22 @@ if (isEnroute) {
   }
 
   liveFlightTraces[id].addLatLng([f.lat, f.lng]);
+}
+
+// ------------------------------------------------------------
+// 🧹 CLEANUP ON ARRIVAL (delete trace + plan)
+// ------------------------------------------------------------
+if (isArrived) {
+
+  if (liveFlightTraces[id]) {
+    map.removeLayer(liveFlightTraces[id]);
+    delete liveFlightTraces[id];
+  }
+
+  if (liveFlightPlans[id]) {
+    map.removeLayer(liveFlightPlans[id]);
+    delete liveFlightPlans[id];
+  }
 }
 
     // ------------------------------------------------------------
@@ -555,22 +564,20 @@ if (isEnroute) {
     const remH = Math.floor(remainingMin / 60);
     const remM = remainingMin % 60;
 
-    // 🟦 B2 — REMAINING TIME (ENROUTE ONLY)
-    const isEnroute = (f.status === "air" || f.status === "enroute");
+    // 🟦 B2 — NORMALIZED FLIGHT STATUS (SINGLE SOURCE)
+const isEnroute = (f.status === "air" || f.status === "enroute");
 
-    const remainingTxt = isEnroute
-    ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} restante`
-    : "";
+// 🟦 B2 — REMAINING TIME (ENROUTE ONLY)
+const remainingTxt = isEnroute
+  ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} restante`
+  : "";
 
+// 🟦 B2 — NORMALIZED STATUS TEXT
+const statusTxt =
+  isEnroute              ? "En route" :
+  f.status === "ground"  ? "Ground" :
+                            "Arrived";
 
-   // 🟦 B2 — NORMALIZED STATUS TEXT
-  
-    const isEnroute = (f.status === "air" || f.status === "enroute");
-
-    const statusTxt =
-    isEnroute           ? "En route" :
-    f.status === "ground" ? "Ground" :
-    "Arrived";
   
     const chipText = `
 <strong>${f.flightOut || id}</strong><br>
