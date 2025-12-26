@@ -14,97 +14,123 @@
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
-  <style>
-    body {
-      background:#081530;
-      color:white;
-      font-family:"Segoe UI",sans-serif;
-      margin:0;
-    }
+  <!-- ============================================================
+     🟧 S8 — SKYTRACK LAYOUT FIX (MATCH HR.html)
+     ============================================================ -->
+  
+<style>
+  
+  /* ============================================================
+     BASE
+     ============================================================ */
+  
+  body {
+    margin: 0;
+    color: white;
+    font-family: "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #0b1f3a, #040b17) !important;
+    overflow-x: hidden;
+  }
 
-    h2 {
-      color:#FFB300;
-      margin-top:6rem;
-      text-align:center;
-    }
+  /* 🔥 Desactiva cualquier hero / background global */
+  body::before,
+  .main-hero,
+  .hero,
+  .hero-bg {
+    display: none !important;
+    content: none !important;
+  }
 
-    .sub {
-      text-align:center;
-      color:#ccc;
-      margin-bottom:1rem;
-    }
+  h2 {
+    color: #FFB300;
+    text-align: center;
+    margin: 0.5rem 0 0.2rem;
+  }
 
-    #map {
-      height:85vh;
-      width:90%;
-      margin:1.5rem auto;
-      border-radius:12px;
-      border:1px solid rgba(255,179,0,0.3);
-      box-shadow:0 4px 16px rgba(0,0,0,0.4);
-    }
+  .acs-subtitle {
+    text-align: center;
+    color: #ccc;
+    margin-bottom: 1rem;
+  }
 
-    footer {
-      text-align:center;
-      color:#999;
-      font-size:0.9rem;
-      padding:1rem;
-    }
+  /* ============================================================
+     APP STRUCTURE (IGUAL A HR)
+     ============================================================ */
+  .acs-app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
 
-    /* ATC marker */
-    .atc-box {
-      width:9px;
-      height:9px;
-      background:#0b2a4a;
-      border:1px solid #4da3ff;
-      box-shadow:0 0 4px rgba(77,163,255,0.6);
-    }
+  .acs-main {
+    flex: 1;
+    padding: 110px 40px 40px;
+  }
 
-    .atc-label {
-      position:absolute;
-      top:-14px;
-      left:12px;
-      font-size:11px;
-      font-weight:600;
-      color:#111;
-      background:rgba(255,255,255,0.85);
-      padding:1px 4px;
-      border-radius:3px;
-      white-space:nowrap;
-      font-family:ui-monospace,monospace;
-      box-shadow:0 1px 3px rgba(0,0,0,0.35);
-    }
+  .acs-panel {
+    background: rgba(10, 20, 40, 0.55);
+    border-radius: 18px;
+    padding: 20px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+  }
 
-    .atc-marker {
-      position:relative;
-    }
-    
-.acs-app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: radial-gradient(circle at top, #0b1f3a, #040b17);
-}
+  /* ============================================================
+     MAP
+     ============================================================ */
+  #map,
+  .acs-map {
+    width: 100%;
+    height: 70vh;
+    margin: 0 auto;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 179, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    position: relative;
+  }
 
-.acs-main {
-  flex: 1;
-  padding: 110px 40px 40px; /* espacio para el header */
-}
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  footer {
+    text-align: center;
+    color: #999;
+    font-size: 0.9rem;
+    padding: 12px 0;
+    background: transparent;
+  }
 
-.acs-panel {
-  background: rgba(10,20,40,0.55);
-  border-radius: 18px;
-  padding: 20px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 40px rgba(0,0,0,0.4);
-}
+  /* ============================================================
+     ATC MARKERS
+     ============================================================ */
+  .atc-box {
+    width: 9px;
+    height: 9px;
+    background: #0b2a4a;
+    border: 1px solid #4da3ff;
+    box-shadow: 0 0 4px rgba(77, 163, 255, 0.6);
+  }
 
-.acs-map {
-  width: 100%;
-  height: 70vh;
-  border-radius: 16px;
-  overflow: hidden;
-}
-    
+  .atc-label {
+    position: absolute;
+    top: -14px;
+    left: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #111;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-family: ui-monospace, monospace;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
+
+  .atc-marker {
+    position: relative;
+  }
 </style>
 </head>
 
@@ -112,8 +138,7 @@
 
 <div class="acs-app">
 
-  <!-- ===== HEADER (YA CORREGIDO) ===== -->
-  
+  <!-- ===== HEADER (QATAR LUXURY · HR MATCH) ===== -->
   <header class="acs-header">
     <div class="acs-left">
       <img src="acs_logo.png" alt="ACS Logo">
@@ -135,22 +160,20 @@
     </div>
   </header>
 
-  <!-- ===== MAIN CONTENT (CRÍTICO) ===== -->
-  
+  <!-- ===== MAIN CONTENT ===== -->
   <main class="acs-main">
-
     <section class="acs-panel">
-      <h2 class="acs-title">SkyTrack — Live Fleet View</h2>
+      <h2>SkyTrack — Live Fleet View</h2>
       <p class="acs-subtitle">Real-time fleet tracking (FR24-style)</p>
-
       <div id="map" class="acs-map"></div>
     </section>
-
   </main>
+
+  <!-- ===== FOOTER (DENTRO DEL APP) ===== -->
+  <footer>© 2025 Aviation Capital Simulator</footer>
 
 </div>
 
-<footer>© 2025 Aviation Capital Simulator</footer>
 
 <!-- ============================================================
      ⏱ GLOBAL TIME ENGINE (SINGLE SOURCE)
