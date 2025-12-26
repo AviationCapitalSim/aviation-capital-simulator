@@ -259,14 +259,16 @@ function buildFlightsFromSchedule() {
 function updateWorldFlights() {
 
   const nowMin = window.ACS_TIME?.minute;
+  const today  = window.ACS_TIME?.day; // "mon", "tue", etc.
   if (typeof nowMin !== "number") return;
 
   const flights = buildFlightsFromSchedule();
   const state   = getFlightState();
   const live    = [];
 
+  // ===============================
   // Índice rápido de aeropuertos
-   
+  // ===============================
   const airportIndex = {};
   if (window.WorldAirportsACS) {
     Object.values(WorldAirportsACS).flat().forEach(ap => {
@@ -274,47 +276,46 @@ function updateWorldFlights() {
     });
   }
 
-  // Fleet real (fuente de verdad)
-   
+  // Fleet real
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   state.forEach(ac => {
 
     let lat = null;
     let lng = null;
-    let status = ac.status || "GROUND";
+    let status = "GROUND";
 
     // =====================================
-    // ✈️ VUELO ACTIVO
+    // ✈️ VUELO ACTIVO (día + hora)
     // =====================================
-     
-   const today = window.ACS_TIME?.day; // "mon", "tue", etc.
+    const f = flights.find(fl => {
 
-   const f = flights.find(fl => {
+      if (fl.aircraftId !== ac.aircraftId) return false;
 
-   if (fl.aircraftId !== ac.aircraftId) return false;
+      if (Array.isArray(fl.days) && fl.days.length > 0) {
+        if (!today || !fl.days.includes(today)) return false;
+      }
 
-  // 🗓 Check día de la semana si existe
-      
-    if (Array.isArray(fl.days) && fl.days.length > 0) {
-    if (!today || !fl.days.includes(today)) return false;
-  }
-
-  return nowMin >= fl.depMin && nowMin <= fl.arrMin;
-});
+      return nowMin >= fl.depMin && nowMin <= fl.arrMin;
+    });
 
     if (f) {
       const originAp = airportIndex[f.origin];
       const destAp   = airportIndex[f.destination];
-      if (originAp && destAp) {
+
+      if (
+        originAp && destAp &&
+        Number.isFinite(originAp.latitude) &&
+        Number.isFinite(destAp.latitude)
+      ) {
         const progress = Math.min(
           Math.max((nowMin - f.depMin) / (f.arrMin - f.depMin), 0),
           1
         );
 
         const pos = interpolateGC(
-          originAp.lat, originAp.lng,
-          destAp.lat,   destAp.lng,
+          originAp.latitude, originAp.longitude,
+          destAp.latitude,   destAp.longitude,
           progress
         );
 
@@ -325,7 +326,7 @@ function updateWorldFlights() {
     }
 
     // =====================================
-    // 🛬 EN TIERRA — FORZADO
+    // 🛬 EN TIERRA (fallback seguro)
     // =====================================
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
 
@@ -341,12 +342,12 @@ function updateWorldFlights() {
       const ap = airportIndex[baseIcao];
 
       if (ap && Number.isFinite(ap.latitude) && Number.isFinite(ap.longitude)) {
-      lat = ap.latitude;
-      lng = ap.longitude;
-      status = "GROUND";
-      ac.airport = baseIcao;
+        lat = ap.latitude;
+        lng = ap.longitude;
+        status = "GROUND";
+        ac.airport = baseIcao;
+      }
     }
-  }
 
     // =====================================
     // 📡 PUBLICAR
@@ -354,56 +355,46 @@ function updateWorldFlights() {
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
       const publishStatus =
-      status === "AIRBORNE" ? "enroute" :
-      status === "GROUND"   ? "ground"  :
-                              "arrived";
+        status === "AIRBORNE" ? "enroute" :
+        status === "GROUND"   ? "ground"  :
+                                "arrived";
 
-      // Resolver modelo de aeronave (prioridad: schedule → MyAircraft)
-       
-let aircraftType = null;
+      let aircraftType = null;
 
-// 1️⃣ Desde schedule table (si existe)
-if (f && f.aircraftType) {
-  aircraftType = f.aircraftType;
-}
+      if (f && f.aircraftType) {
+        aircraftType = f.aircraftType;
+      }
 
-// 2️⃣ Fallback: desde MyAircraft
-if (!aircraftType) {
-  const real = fleet.find(x => x.id === ac.aircraftId);
-  if (real && real.model) {
-    aircraftType = real.model;
-  }
-}
+      if (!aircraftType) {
+        const real = fleet.find(x => x.id === ac.aircraftId);
+        if (real && real.model) aircraftType = real.model;
+      }
 
-live.push({
-  aircraftId: ac.aircraftId,
-  flightOut: f?.flightOut || null,
-  aircraftType: aircraftType || "UNKNOWN",
+      live.push({
+        aircraftId: ac.aircraftId,
+        flightOut: f?.flightOut || null,
+        aircraftType: aircraftType || "UNKNOWN",
 
-  status: publishStatus,
-  airport: ac.airport || null,
+        status: publishStatus,
+        airport: ac.airport || null,
 
-  origin:      f ? f.origin      : null,
-  destination: f ? f.destination : null,
-  depMin:      f ? f.depMin      : null,
-  arrMin:      f ? f.arrMin      : null,
+        origin:      f ? f.origin      : null,
+        destination: f ? f.destination : null,
+        depMin:      f ? f.depMin      : null,
+        arrMin:      f ? f.arrMin      : null,
 
-  lat: lat,
-  lng: lng,
-  updatedMin: nowMin
-});
+        lat,
+        lng,
+        updatedMin: nowMin
+      });
+    }
 
-    ac.status = status;
-    ac.lastUpdateMin = nowMin;
-
-  }); // ✅ cierre state.forEach
-
-  saveFlightState(state);
+  });
 
   window.ACS_LIVE_FLIGHTS = live;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
+}
 
-} // ✅ cierre updateWorldFlights
 
   /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
