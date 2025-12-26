@@ -636,13 +636,15 @@ function closeFlightPanel() {
 }
 
 /* ============================================================
-   🟧 A10.6 — SAFE MAP CLICK HANDLER
+   🟧 A10.6 — MAP CLICK HANDLER (REGISTER ONCE)
    ============================================================ */
-  
-if (!map.__flightPanelClickBound) {
-  map.on("click", closeFlightPanel);
-  map.__flightPanelClickBound = true;
-}
+
+map.on("click", () => {
+  if (typeof closeFlightPanel === "function") {
+    closeFlightPanel();
+  }
+});
+
   
 /* ============================================================
    ⏱ INIT + TIME HOOK
