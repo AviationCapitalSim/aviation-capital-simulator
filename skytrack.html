@@ -635,8 +635,14 @@ function closeFlightPanel() {
   panel.classList.add("hidden");
 }
 
-/* Close on map click */
-map.on("click", closeFlightPanel);
+/* ============================================================
+   🟧 A10.6 — SAFE MAP CLICK HANDLER
+   ============================================================ */
+  
+if (!map.__flightPanelClickBound) {
+  map.on("click", closeFlightPanel);
+  map.__flightPanelClickBound = true;
+}
   
 /* ============================================================
    ⏱ INIT + TIME HOOK
