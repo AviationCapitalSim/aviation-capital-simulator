@@ -222,23 +222,26 @@ function buildFlightsFromSchedule() {
     if (depMin === null || arrMin === null) return;
 
     flights.push({
-      id: item.id || crypto.randomUUID(),
-      aircraftId: item.aircraftId,
+  id: item.id || crypto.randomUUID(),
+  aircraftId: item.aircraftId,
 
-      origin: item.origin || baseICAO,
-      destination: item.destination,
+  flightOut: item.flightOut || item.flightNumber || item.code || null,
+  aircraftType: item.aircraftType || item.model || null,
 
-      depMin,
-      arrMin,
+  origin: item.origin || baseICAO,
+  destination: item.destination,
 
-      status: "ground",   // ⬅️ estado inicial neutro
-      started: false,
-      completed: false,
+  depMin,
+  arrMin,
 
-      leg: "outbound",
-      source: "schedule"
-    });
-  });
+  days: Array.isArray(item.days) ? item.days : null,
+
+  status: "ground",
+  started: false,
+  completed: false,
+  leg: "outbound",
+  source: "schedule"
+});
 
   return flights;
 }
@@ -261,6 +264,7 @@ function updateWorldFlights() {
   const live    = [];
 
   // Índice rápido de aeropuertos
+   
   const airportIndex = {};
   if (window.WorldAirportsACS) {
     Object.values(WorldAirportsACS).flat().forEach(ap => {
@@ -269,6 +273,7 @@ function updateWorldFlights() {
   }
 
   // Fleet real (fuente de verdad)
+   
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   state.forEach(ac => {
@@ -280,11 +285,21 @@ function updateWorldFlights() {
     // =====================================
     // ✈️ VUELO ACTIVO
     // =====================================
-    const f = flights.find(fl =>
-      fl.aircraftId === ac.aircraftId &&
-      nowMin >= fl.depMin &&
-      nowMin <= fl.arrMin
-    );
+     
+   const today = window.ACS_TIME?.day; // "mon", "tue", etc.
+
+   const f = flights.find(fl => {
+
+   if (fl.aircraftId !== ac.aircraftId) return false;
+
+  // 🗓 Check día de la semana si existe
+      
+    if (Array.isArray(fl.days) && fl.days.length > 0) {
+    if (!today || !fl.days.includes(today)) return false;
+  }
+
+  return nowMin >= fl.depMin && nowMin <= fl.arrMin;
+});
 
     if (f) {
       const originAp = airportIndex[f.origin];
