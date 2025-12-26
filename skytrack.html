@@ -560,11 +560,15 @@ if (isEnroute) {
         ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} restante`
         : "";
 
-    const statusTxt =
-      f.status === "enroute" ? "En ruta" :
-      f.status === "ground"  ? "En tierra" :
-      "En destino";
+   // 🟦 B2 — NORMALIZED STATUS TEXT
+  
+    const isEnroute = (f.status === "air" || f.status === "enroute");
 
+    const statusTxt =
+    isEnroute           ? "En route" :
+    f.status === "ground" ? "Ground" :
+    "Arrived";
+  
     const chipText = `
 <strong>${f.flightOut || id}</strong><br>
 ${"DC-3"} · ${id}<br>
