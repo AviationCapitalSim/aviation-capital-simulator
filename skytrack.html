@@ -105,7 +105,7 @@
 
 <main class="acs-main">
   <h2>ACS SkyTrack — Live Fleet View</h2>
-  <p class="sub">Real-time fleet tracking (FR24-style)</p>
+  <p class="sub">Real-time fleet tracking</p>
   <div id="map"></div>
 </main>
 
@@ -220,6 +220,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderSkyTrack(); // first paint
 });
+  
+/* ============================================================
+   🕐 ACS CLOCK SYNC (Qatar Luxury)
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
+  
 </script>
 
 </body>
