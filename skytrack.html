@@ -509,13 +509,23 @@ function renderSkyTrack() {
     const id = f.aircraftId;
     active.add(id);
 
-    if (!markers[id]) {
-      markers[id] = L.marker([f.lat, f.lng], {
-        icon: atcIcon(f.flightOut || id)
-      }).addTo(map);
-    } else {
-      markers[id].setLatLng([f.lat, f.lng]);
-    }
+   /* ============================================================
+   🟧 A10.4 — MARKER CREATION + FLIGHT INFO CLICK
+   ============================================================ */
+
+if (!markers[id]) {
+  markers[id] = L.marker([f.lat, f.lng], {
+    icon: atcIcon(f) // 👈 PASAMOS EL OBJETO COMPLETO
+  }).addTo(map);
+
+  // 🖱️ Click → abrir mini info chip
+  markers[id].on("click", () => {
+    openFlightPanel(f, markers[id].getLatLng());
+  });
+
+} else {
+  markers[id].setLatLng([f.lat, f.lng]);
+}
 
     if (f.status === "enroute") {
       if (!traces[id]) {
@@ -544,6 +554,19 @@ function renderSkyTrack() {
   });
 }
   
+/* ============================================================
+   🟧 A10.5 — UPDATE OPEN FLIGHT PANEL (LIVE)
+   ============================================================ */
+  
+if (selectedFlightId) {
+  const activeFlight = window.ACS_LIVE_FLIGHTS
+    .find(x => x.aircraftId === selectedFlightId);
+
+  if (activeFlight) {
+    updateFlightPanelData(activeFlight);
+  }
+}
+
 /* ============================================================
    🟧 A10.3 — FLIGHT INFO PANEL LOGIC
    ============================================================ */
