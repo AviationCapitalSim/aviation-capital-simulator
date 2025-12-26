@@ -558,17 +558,20 @@ if (f.status === "enroute") {
         : "";
 
     const statusTxt =
-      f.status === "enroute" ? "En ruta" :
-      f.status === "ground"  ? "En tierra" :
-      "En destino";
+    f.status === "enroute" ? "En Route" :
+    f.status === "ground"  ? "On Ground" :
+    "Arrived";
+
+    const aircraftType = f.aircraftType || "DC-3";
 
     const chipText = `
-<strong>${f.flightOut || id}</strong><br>
-${"DC-3"} · ${id}<br>
-${statusTxt}<br>
-${f.origin} → ${f.destination}<br>
-${remainingTxt}
-`.trim();
+    <strong>${f.flightOut || ""}</strong><br>
+    ${aircraftType}<br>
+    ${statusTxt}<br>
+    ${f.origin} → ${f.destination}<br>
+    ${remainingTxt}
+    `.trim();
+
 
     // ✅ bindPopup once
     if (!liveFlightMarkers[id].getPopup()) {
