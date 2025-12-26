@@ -489,10 +489,10 @@ function renderLiveFlights() {
 // 🧭 FLIGHT PLAN (DOTTED) — derived from ACTUAL flight path
 // ------------------------------------------------------------
 
-if (!liveFlightPlans[id] && f.status === "enroute") {
+if (!liveFlightPlans[id] && f.status === "air") {
 
   liveFlightPlans[id] = L.polyline([], {
-    color: "#000000",      // negro ATC
+    color: "#000000",
     weight: 1,
     dashArray: "4,6",
     opacity: 0.85,
@@ -504,14 +504,12 @@ if (!liveFlightPlans[id] && f.status === "enroute") {
 // 🧵 UPDATE PLAN + TRACE FROM SAME SOURCE
 // ------------------------------------------------------------
 
-if (f.status === "enroute") {
+if (f.status === "air") {
 
-  // Plan punteado (delante del avión)
   if (liveFlightPlans[id]) {
     liveFlightPlans[id].addLatLng([f.lat, f.lng]);
   }
 
-  // Traza sólida (detrás del avión)
   if (!liveFlightTraces[id]) {
     liveFlightTraces[id] = L.polyline([], {
       color: "#1e88e5",
@@ -546,14 +544,15 @@ if (f.status === "enroute") {
     const remM = remainingMin % 60;
 
     const remainingTxt =
-      f.status === "enroute"
-        ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} restante`
-        : "";
+  f.status === "air"
+    ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} remaining`
+    : "";
 
-    const statusTxt =
-      f.status === "enroute" ? "En ruta" :
-      f.status === "ground"  ? "En tierra" :
-      "En destino";
+const statusTxt =
+  f.status === "air"     ? "En route" :
+  f.status === "ground"  ? "On ground" :
+  "Arrived";
+
 
     const chipText = `
 <strong>${f.flightOut || id}</strong><br>
@@ -579,7 +578,8 @@ ${remainingTxt}
     // ------------------------------------------------------------
     // 🧹 CLEANUP ON ARRIVAL (delete trace + plan)
     // ------------------------------------------------------------
-    if (f.status === "arrived") {
+    
+    if (f.status === "arrived" || f.status === "done") {
 
       if (liveFlightTraces[id]) {
         map.removeLayer(liveFlightTraces[id]);
