@@ -564,19 +564,17 @@ if (isArrived) {
     const remH = Math.floor(remainingMin / 60);
     const remM = remainingMin % 60;
 
-    // 🟦 B2 — NORMALIZED FLIGHT STATUS (SINGLE SOURCE)
-const isEnroute = (f.status === "air" || f.status === "air");
-
-// 🟦 B2 — REMAINING TIME (ENROUTE ONLY)
+// 🟦 B2 — REMAINING TIME (AIR ONLY)
 const remainingTxt = isEnroute
-  ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} restante`
+  ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} remaining`
   : "";
 
-// 🟦 B2 — NORMALIZED STATUS TEXT
+// 🟦 B2 — STATUS TEXT
 const statusTxt =
-  isEnroute              ? "En route" :
-  f.status === "ground"  ? "On Ground" :
-                            "Arrived";
+  isEnroute             ? "En route" :
+  f.status === "ground" ? "On Ground" :
+                          "Arrived";
+
 
   
     const chipText = `
