@@ -1279,7 +1279,87 @@ function hideAircraftHover(){
   const c = document.querySelector(".aircraft-hover-card");
   if (c) c.remove();
 }
+     
+/* ============================================================
+   🟧 A6 — MIGRATE LEGACY SCHEDULE ITEMS (ONE-TIME)
+   ------------------------------------------------------------
+   - Detecta vuelos sin aircraftId
+   - Resuelve aircraftId desde ACS_MyAircraft
+   - Preserva todos los demás campos
+   - Ejecuta una sola vez (flag protegido)
+   ============================================================ */
 
+(function migrateLegacyScheduleItems(){
+
+  const FLAG_KEY = "ACS_schedule_migrated_v1";
+  if (localStorage.getItem(FLAG_KEY)) return;
+
+  let items = [];
+  let fleet = [];
+
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  } catch {
+    items = [];
+  }
+
+  try {
+    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
+  } catch {
+    fleet = [];
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    localStorage.setItem(FLAG_KEY, "1");
+    return;
+  }
+
+  if (!Array.isArray(fleet) || fleet.length === 0) {
+    console.warn("🟧 A6: Fleet empty — migration skipped");
+    return;
+  }
+
+  let migratedCount = 0;
+
+  items.forEach(it => {
+
+    if (!it || it.type !== "flight") return;
+
+    // Ya está normalizado
+    if (it.aircraftId) return;
+
+    // Intentar resolver por modelo / tipo
+    const modelKey =
+      it.acType ||
+      it.aircraftModel ||
+      it.modelKey ||
+      it.aircraft ||
+      "";
+
+    if (!modelKey) return;
+
+    const match = fleet.find(ac =>
+      ac &&
+      ac.model === modelKey &&
+      ac.status === "Active"
+    );
+
+    if (!match || !match.id) return;
+
+    it.aircraftId = match.id;
+    it.acType = match.model || it.acType || "";
+    migratedCount++;
+  });
+
+  if (migratedCount > 0) {
+    localStorage.setItem("scheduleItems", JSON.stringify(items));
+    console.log(`🟧 A6: Migrated ${migratedCount} legacy flight(s)`);
+  }
+
+  localStorage.setItem(FLAG_KEY, "1");
+
+})();
+     
 // ============================================================
 // === RENDER PRINCIPAL DEL SCHEDULE ==========================
 // ============================================================
