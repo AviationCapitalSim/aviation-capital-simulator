@@ -280,17 +280,17 @@ function buildFlightsFromSchedule() {
 }
 
   /* ============================================================
-   🟦 PASO 4.1 — UPDATE WORLD FLIGHTS (STABLE + ABSOLUTE TIME)
+   🟦 PASO 4.2 — UPDATE WORLD FLIGHTS (FR24 BEHAVIOR)
    ------------------------------------------------------------
-   - SIEMPRE publica aviones (GROUND o ENROUTE)
-   - Usa tiempo absoluto semanal
-   - Nunca deja ACS_LIVE_FLIGHTS vacío
+   - LOS AVIONES SIEMPRE EXISTEN (como FlightRadar24)
+   - El schedule SOLO define el estado (GROUND / ENROUTE)
+   - Nunca deja el mapa vacío
    ============================================================ */
 
 function updateWorldFlights() {
 
   const nowMin = window.ACS_TIME?.absoluteMinute;
-  const today  = window.ACS_TIME?.day; // "mon", "tue", etc.
+  const today  = window.ACS_TIME?.day;
   if (typeof nowMin !== "number") return;
 
   const flights = buildFlightsFromSchedule();
@@ -307,8 +307,11 @@ function updateWorldFlights() {
     });
   }
 
-  // Fleet real
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  // ============================================================
+  // 🚨 REGLA FR24: SIEMPRE ITERAMOS AVIONES, NO VUELOS
+  // ============================================================
 
   state.forEach(ac => {
 
@@ -318,13 +321,12 @@ function updateWorldFlights() {
     let activeFlight = null;
 
     // =====================================
-    // ✈️ VUELO ACTIVO (día + hora absoluta)
+    // ✈️ ¿TIENE VUELO ACTIVO AHORA?
     // =====================================
     activeFlight = flights.find(fl => {
 
       if (fl.aircraftId !== ac.aircraftId) return false;
 
-      // Día de la semana (si aplica)
       if (Array.isArray(fl.days) && fl.days.length > 0) {
         if (!today || !fl.days.includes(today)) return false;
       }
@@ -332,16 +334,20 @@ function updateWorldFlights() {
       return nowMin >= fl.depMin && nowMin <= fl.arrMin;
     });
 
+    // =====================================
+    // ✈️ EN RUTA (si corresponde)
+    // =====================================
     if (activeFlight) {
-      const originAp = airportIndex[activeFlight.origin];
-      const destAp   = airportIndex[activeFlight.destination];
+
+      const o = airportIndex[activeFlight.origin];
+      const d = airportIndex[activeFlight.destination];
 
       if (
-        originAp && destAp &&
-        Number.isFinite(originAp.latitude) &&
-        Number.isFinite(originAp.longitude) &&
-        Number.isFinite(destAp.latitude) &&
-        Number.isFinite(destAp.longitude)
+        o && d &&
+        Number.isFinite(o.latitude) &&
+        Number.isFinite(o.longitude) &&
+        Number.isFinite(d.latitude) &&
+        Number.isFinite(d.longitude)
       ) {
         const progress = Math.min(
           Math.max((nowMin - activeFlight.depMin) /
@@ -350,8 +356,8 @@ function updateWorldFlights() {
         );
 
         const pos = interpolateGC(
-          originAp.latitude, originAp.longitude,
-          destAp.latitude,   destAp.longitude,
+          o.latitude, o.longitude,
+          d.latitude, d.longitude,
           progress
         );
 
@@ -362,7 +368,7 @@ function updateWorldFlights() {
     }
 
     // =====================================
-    // 🛬 EN TIERRA — VISIBILIDAD GARANTIZADA
+    // 🛬 EN TIERRA (SIEMPRE, SI NO VUELA)
     // =====================================
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
 
@@ -370,8 +376,8 @@ function updateWorldFlights() {
 
       const baseIcao =
         ac.airport ||
-        real?.baseAirport ||
         real?.currentAirport ||
+        real?.baseAirport ||
         real?.homeBase ||
         localStorage.getItem("ACS_baseICAO");
 
@@ -386,16 +392,10 @@ function updateWorldFlights() {
     }
 
     // =====================================
-    // 📡 PUBLICAR (SIEMPRE)
+    // 📡 PUBLICAR — SIEMPRE
     // =====================================
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
-      const publishStatus =
-        status === "AIRBORNE" ? "enroute" :
-        status === "GROUND"   ? "ground"  :
-                                "arrived";
-
-      // Resolver modelo de aeronave
       let aircraftType = null;
 
       if (activeFlight && activeFlight.aircraftType) {
@@ -410,7 +410,10 @@ function updateWorldFlights() {
         flightOut: activeFlight?.flightOut || null,
         aircraftType: aircraftType || "UNKNOWN",
 
-        status: publishStatus,
+        status:
+          status === "AIRBORNE" ? "enroute" :
+          "ground",
+
         airport: ac.airport || null,
 
         origin:      activeFlight ? activeFlight.origin      : null,
@@ -423,10 +426,8 @@ function updateWorldFlights() {
         updatedMin: nowMin
       });
     }
-
   });
 
-  // Publicación final
   window.ACS_LIVE_FLIGHTS = live;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 }
