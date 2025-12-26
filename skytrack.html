@@ -83,19 +83,25 @@
 <body>
 
 <header class="acs-header">
-  <div class="acs-logo">
+  <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="aircraft.html">Aircraft</a>
+    <a href="aircraft.html"class="active">Aircraft</a>
     <a href="routes.html">Routes</a>
-    <a href="skytrack.html" class="active">SkyTrack</a>
     <a href="hr.html">HR</a>
   </nav>
+
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+  </div>
 </header>
+
 
 <main class="acs-main">
   <h2>ACS SkyTrack — Live Fleet View</h2>
