@@ -294,7 +294,18 @@ function updateWorldFlights() {
   if (typeof nowMin !== "number") return;
 
   const flights = buildFlightsFromSchedule();
-  const state   = getFlightState();
+  let state = getFlightState();
+
+  // 🛬 FALLBACK FR24:
+  // si no hay estado, usamos la flota como fuente mínima
+  if (!Array.isArray(state) || state.length === 0) {
+  const fleetFallback = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  state = fleetFallback.map(ac => ({
+    aircraftId: ac.id,
+    airport: ac.currentAirport || ac.baseAirport || ac.homeBase || localStorage.getItem("ACS_baseICAO")
+  }));
+}
+
   const live    = [];
 
   // ===============================
