@@ -1851,44 +1851,44 @@ if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
 }
 
   // 3️⃣ Preparar datos de la ruta
-  const daysSel = Array.isArray(route.days) && route.days.length
-                  ? route.days
-                  : ["mon"];
+const daysSel = Array.isArray(route.days) && route.days.length
+                ? route.days
+                : ["mon"];
 
-  const separate = !!route.separateDays;
-  const dep  = route.departure || "06:00";
-  const dur  = Number(route.blockTimeMin || 210);
-  const arr  = toHHMM(toMin(dep) + dur);
+const separate = !!route.separateDays;
+const dep  = route.departure || "06:00";
+const dur  = Number(route.blockTimeMin || 210);
+const arr  = toHHMM(toMin(dep) + dur);
 
-  /* ============================================================
-     🟢 S1 — FLIGHT NUMBER FALLBACK (LEGACY + SAFE)
-     ============================================================ */
+/* ============================================================
+   🟢 S1 — FLIGHT NUMBER FALLBACK (LEGACY + SAFE)
+   ============================================================ */
 
-  if ((!route.flightNumberOut || !route.flightNumberIn) && route.flightNumber) {
+if ((!route.flightNumberOut || !route.flightNumberIn) && route.flightNumber) {
 
-    const raw = String(route.flightNumber);
-    const match = raw.match(/([A-Z]{2}\d+)[^\d]+([A-Z]{2}\d+)/);
+  const raw = String(route.flightNumber);
+  const match = raw.match(/([A-Z]{2}\d+)[^\d]+([A-Z]{2}\d+)/);
 
-    if (match) {
-      route.flightNumberOut = match[1];
-      route.flightNumberIn  = match[2];
-    }
+  if (match) {
+    route.flightNumberOut = match[1];
+    route.flightNumberIn  = match[2];
   }
+}
 
-  // 🔒 No inventar vuelos
-  if (!route.flightNumberOut || !route.flightNumberIn) {
-    alert("⛔ This route has no valid flight numbers. Please define them in Route Schedule.");
-    return;
-  }
+// 🔒 No inventar vuelos
+if (!route.flightNumberOut || !route.flightNumberIn) {
+  alert("⛔ This route has no valid flight numbers. Please define them in Route Schedule.");
+  return;
+}
 
-  const flightOut = route.flightNumberOut;
-  const flightIn  = route.flightNumberIn;
+const flightOut = route.flightNumberOut;
+const flightIn  = route.flightNumberIn;
 
-  // 4️⃣ Crear vuelos
-  const blockId = separate ? null : ("block-" + Math.random().toString(36).slice(2,8));
-  let assignedAny = false;
+// 4️⃣ Crear vuelos
+const blockId = separate ? null : ("block-" + Math.random().toString(36).slice(2,8));
+let assignedAny = false;
 
-  daysSel.forEach(day => {
+daysSel.forEach(day => {
 
 /* ============================================================
    🛑 FINAL GUARD — PREVENT DUPLICATE FLIGHT (SAME CLICK / SAME ROUTE)
@@ -1913,38 +1913,68 @@ if (duplicateFlight) {
   });
   return;
 }
-       
-    items.push({
-      id: separate ? ("flt-" + Math.random().toString(36).slice(2,8)) : blockId,
-      blockId: separate ? "" : blockId,
-      type: "flight",
 
-      aircraftId: aircraftId,
-      acType: ac.model || ac.type || "",
+/* ============================================================
+   ⏱️ A1 — ABSOLUTE TIME CALCULATION (SCHEDULE → SKYTRACK)
+   ============================================================ */
 
-      day,
-      origin: route.origin,
-      destination: route.destination,
-      departure: dep,
-      arrival: arr,
+// 🔑 fuente única del tiempo absoluto del simulador
+const nowAbsMin =
+  typeof getSimAbsMin === "function"
+    ? getSimAbsMin()
+    : (window.ACS_TIME?.absMin ?? 0);
 
-      flightNumberOut: flightOut,
-      flightNumberIn:  flightIn
-    });
+// día actual del simulador (MON = 0)
+const todayIdx = (ACS_TABLE_TIME.day + 6) % 7;
+const dayIdx   = days.indexOf(day);
 
-    assignedAny = true;
-  });
+// diferencia de días (sin inventar semanas)
+let deltaDays = dayIdx - todayIdx;
+if (deltaDays < 0) deltaDays += 7;
 
-  if (!assignedAny){
-    alert("⚠ Cannot assign: schedule conflicts.");
-    return;
-  }
+// minutos del día
+const depMin = toMin(dep);
+let arrMin = toMin(arr);
+if (arrMin <= depMin) arrMin += 1440;
 
-  // 5️⃣ Guardar y renderizar
-  setItems(items);
-  renderSchedule();
+// tiempos absolutos
+const depAbsMin = nowAbsMin - ACS_TABLE_TIME.minute + (deltaDays * 1440) + depMin;
+const arrAbsMin = depAbsMin + (arrMin - depMin);
+
+items.push({
+  id: separate ? ("flt-" + Math.random().toString(36).slice(2,8)) : blockId,
+  blockId: separate ? "" : blockId,
+  type: "flight",
+
+  aircraftId: aircraftId,
+  acType: ac.model || ac.type || "",
+
+  day,
+  origin: route.origin,
+  destination: route.destination,
+  departure: dep,
+  arrival: arr,
+
+  depAbsMin,
+  arrAbsMin,
+
+  flightNumberOut: flightOut,
+  flightNumberIn:  flightIn
+});
+
+assignedAny = true;
+});
+
+if (!assignedAny){
+  alert("⚠ Cannot assign: schedule conflicts.");
+  return;
 }
-     
+
+// 5️⃣ Guardar y renderizar
+setItems(items);
+renderSchedule();
+}
+
 /* ============================================================
    === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
    ============================================================ */
