@@ -446,18 +446,25 @@ function renderLiveFlights() {
   // ------------------------------------------------------------
   // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
   // ------------------------------------------------------------
+  
   function createATCMarkerIcon(f) {
-    const label = (f.flightOut || f.aircraftId || "").toString();
-    return L.divIcon({
-      className: "atc-marker",
-      html: `
-        <div class="atc-box"></div>
-        <div class="atc-label">${label}</div>
-      `,
-      iconSize: [22, 22],
-      iconAnchor: [11, 11]
-    });
-  }
+
+  // Prioridad: flight number → fallback aircraftId
+  const label =
+    (f.flightOut && f.flightOut !== "undefined")
+      ? f.flightOut
+      : (f.flightNumber || "");
+
+  return L.divIcon({
+    className: "atc-marker",
+    html: `
+      <div class="atc-box"></div>
+      <div class="atc-label">${label}</div>
+    `,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11]
+  });
+}
 
   // ------------------------------------------------------------
   // 🔁 RENDER EACH FLIGHT
