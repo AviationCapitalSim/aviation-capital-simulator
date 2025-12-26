@@ -498,6 +498,18 @@ function atcIcon(flight) {
 }
 
 
+/* ============================================================
+   🟧 A10.3 — FLIGHT INFO PANEL STATE (DEBE IR ANTES)
+   ============================================================ */
+
+let selectedFlightId = null;
+const panel = document.getElementById("flightInfoPanel");
+
+
+/* ============================================================
+   🟧 A10 — SKYTRACK MAIN RENDER
+   ============================================================ */
+
 function renderSkyTrack() {
   if (!map || !Array.isArray(window.ACS_LIVE_FLIGHTS)) return;
 
@@ -509,30 +521,31 @@ function renderSkyTrack() {
     const id = f.aircraftId;
     active.add(id);
 
-   /* ============================================================
-   🟧 A10.4 — MARKER CREATION + FLIGHT INFO CLICK
-   ============================================================ */
+    /* ============================================================
+       🟧 A10.4 — MARKER CREATION + FLIGHT INFO CLICK
+       ============================================================ */
+    if (!markers[id]) {
+      markers[id] = L.marker([f.lat, f.lng], {
+        icon: atcIcon(f) // 👈 objeto completo
+      }).addTo(map);
 
-if (!markers[id]) {
-  markers[id] = L.marker([f.lat, f.lng], {
-    icon: atcIcon(f) // 👈 PASAMOS EL OBJETO COMPLETO
-  }).addTo(map);
+      markers[id].on("click", () => {
+        openFlightPanel(f, markers[id].getLatLng());
+      });
 
-  // 🖱️ Click → abrir mini info chip
-  markers[id].on("click", () => {
-    openFlightPanel(f, markers[id].getLatLng());
-  });
+    } else {
+      markers[id].setLatLng([f.lat, f.lng]);
+    }
 
-} else {
-  markers[id].setLatLng([f.lat, f.lng]);
-}
-
+    /* ============================================================
+       TRAIL (ENROUTE)
+       ============================================================ */
     if (f.status === "enroute") {
       if (!traces[id]) {
         traces[id] = L.polyline([], {
-          color:"#1e88e5",
-          weight:2,
-          opacity:0.9
+          color: "#1e88e5",
+          weight: 2,
+          opacity: 0.9
         }).addTo(map);
       }
       traces[id].addLatLng([f.lat, f.lng]);
@@ -542,37 +555,38 @@ if (!markers[id]) {
     }
   });
 
+  /* ============================================================
+     CLEANUP INACTIVE AIRCRAFT
+     ============================================================ */
   Object.keys(markers).forEach(id => {
     if (!active.has(id)) {
       map.removeLayer(markers[id]);
       delete markers[id];
+
       if (traces[id]) {
         map.removeLayer(traces[id]);
         delete traces[id];
       }
     }
   });
-}
-  
-/* ============================================================
-   🟧 A10.5 — UPDATE OPEN FLIGHT PANEL (LIVE)
-   ============================================================ */
-  
-if (selectedFlightId) {
-  const activeFlight = window.ACS_LIVE_FLIGHTS
-    .find(x => x.aircraftId === selectedFlightId);
 
-  if (activeFlight) {
-    updateFlightPanelData(activeFlight);
+  /* ============================================================
+     🟧 A10.5 — UPDATE OPEN FLIGHT PANEL (LIVE)
+     ============================================================ */
+  if (selectedFlightId) {
+    const activeFlight = window.ACS_LIVE_FLIGHTS
+      .find(x => x.aircraftId === selectedFlightId);
+
+    if (activeFlight) {
+      updateFlightPanelData(activeFlight);
+    }
   }
 }
+
 
 /* ============================================================
    🟧 A10.3 — FLIGHT INFO PANEL LOGIC
    ============================================================ */
-
-let selectedFlightId = null;
-const panel = document.getElementById("flightInfoPanel");
 
 function openFlightPanel(flight, latlng) {
   if (!flight) return;
