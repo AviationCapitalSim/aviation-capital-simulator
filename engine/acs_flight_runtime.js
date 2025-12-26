@@ -149,24 +149,69 @@
 
     state.forEach(ac => {
       let lat=null, lng=null, status="ground";
-      const active = flights.find(f =>
-        f.aircraftId === ac.aircraftId &&
-        absoluteMinute >= f.depMin &&
-        absoluteMinute <= f.arrMin
-      );
+      /* ============================================================
+   🟧 A11.1 — ACTIVE FLIGHT (DAY/WEEK NORMALIZATION) — FIX
+   ------------------------------------------------------------
+   absoluteMinute = tiempo global del sim
+   depMin/arrMin  = minutos en día (0..1439) o semana (>=1440)
+   ============================================================ */
 
-      if (active) {
-        const o = airports[active.origin];
-        const d = airports[active.destination];
-        if (o && d) {
-          const t = (absoluteMinute - active.depMin) /
-                    (active.arrMin - active.depMin);
-          lat = o.latitude + (d.latitude - o.latitude)*t;
-          lng = o.longitude + (d.longitude - o.longitude)*t;
-          status = "enroute";
-        }
-      }
+const MIN_DAY  = 1440;
+const MIN_WEEK = 10080;
 
+const mod = (n, m) => ((n % m) + m) % m;
+
+const nowDay  = mod(absoluteMinute, MIN_DAY);
+const nowWeek = mod(absoluteMinute, MIN_WEEK);
+
+function isActiveWindow(now, dep, arr, wrapMod) {
+  if (!Number.isFinite(dep) || !Number.isFinite(arr)) return false;
+
+  let d = dep;
+  let a = arr;
+  let n = now;
+
+  // Cruce (ej: 23:00 -> 01:00) o wrap semanal
+  if (a <= d) a += wrapMod;
+  if (n < d)  n += wrapMod;
+
+  return n >= d && n <= a;
+}
+
+const active = flights.find(f => {
+  if (f.aircraftId !== ac.aircraftId) return false;
+
+  // Si depMin >= 1440 => vuelo “anclado a semana” (tiene offset por dayMap)
+  if (Number.isFinite(f.depMin) && f.depMin >= MIN_DAY) {
+    return isActiveWindow(nowWeek, f.depMin, f.arrMin, MIN_WEEK);
+  }
+
+  // Si depMin < 1440 => vuelo diario (sin offset semanal)
+  return isActiveWindow(nowDay, f.depMin, f.arrMin, MIN_DAY);
+});
+
+if (active) {
+  const o = airports[active.origin];
+  const d = airports[active.destination];
+
+  if (o && d) {
+    const wrapMod = (Number.isFinite(active.depMin) && active.depMin >= MIN_DAY) ? MIN_WEEK : MIN_DAY;
+
+    let dep = active.depMin;
+    let arr = active.arrMin;
+    let now = (wrapMod === MIN_WEEK) ? nowWeek : nowDay;
+
+    if (arr <= dep) arr += wrapMod;
+    if (now < dep)  now += wrapMod;
+
+    const tRaw = (now - dep) / (arr - dep);
+    const t = Math.min(Math.max(tRaw, 0), 1);
+
+    lat = o.latitude  + (d.latitude  - o.latitude)  * t;
+    lng = o.longitude + (d.longitude - o.longitude) * t;
+    status = "enroute";
+  }
+}
       if (!Number.isFinite(lat)) {
         const ap = airports[ac.airport];
         if (ap) {
