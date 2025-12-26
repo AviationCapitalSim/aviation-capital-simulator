@@ -107,23 +107,29 @@
       let arr = h2*60 + m2;
       if (arr <= dep) arr += 1440;
 
-      const days = Array.isArray(it.days) && it.days.length ? it.days : [null];
+      // 🟧 A11.3 — FIX: distinguir “weekly” por existencia de days[] (NO por depMin>=1440)
+const hasDays = Array.isArray(it.days) && it.days.length;
+const days = hasDays ? it.days : [null];
 
-      days.forEach(d => {
-        const off = d ? (dayMap[d] ?? 0) * 1440 : 0;
+days.forEach(d => {
+  const off = d ? (dayMap[d] ?? 0) * 1440 : 0;
 
-        flights.push({
-          aircraftId: it.aircraftId,
-          origin: it.origin,
-          destination: it.destination,
+  flights.push({
+    aircraftId: it.aircraftId,
+    origin: it.origin,
+    destination: it.destination,
 
-          // 🟧 A11.2 — FLIGHT NUMBER FALLBACK
-          flightOut: it.flightOut || it.flightNumber || it.code || it.callsign || null,
+    // ✅ A11.2 — FLIGHT NUMBER FALLBACK (igual)
+    flightOut: it.flightOut || it.flightNumber || it.code || it.callsign || null,
 
-          depMin: dep + off,
-          arrMin: arr + off
-        });
-      });
+    // ✅ A11.3 — weekly mode (aunque sea Sunday=0 y off=0)
+    weekMode: hasDays,
+
+    depMin: dep + off,
+    arrMin: arr + off
+  });
+});
+
     });
 
     return flights;
@@ -167,18 +173,24 @@
       let lat=null, lng=null, status="ground";
 
       const active = flights.find(f => {
-        if (f.aircraftId !== ac.aircraftId) return false;
-        return (f.depMin >= MIN_DAY)
-          ? isActiveWindow(nowWeek, f.depMin, f.arrMin, MIN_WEEK)
-          : isActiveWindow(nowDay,  f.depMin, f.arrMin, MIN_DAY);
-      });
+  if (f.aircraftId !== ac.aircraftId) return false;
+
+  // ✅ A11.3 — weekly si weekMode=true (aunque depMin<1440 por Sunday)
+  if (f.weekMode) {
+    return isActiveWindow(nowWeek, f.depMin, f.arrMin, MIN_WEEK);
+  }
+
+  // daily
+  return isActiveWindow(nowDay, f.depMin, f.arrMin, MIN_DAY);
+});
+
 
       if (active) {
         const o = airports[active.origin];
         const d = airports[active.destination];
 
         if (o && d) {
-          const wrap = active.depMin >= MIN_DAY ? MIN_WEEK : MIN_DAY;
+          const wrap = active.weekMode ? MIN_WEEK : MIN_DAY;
           let dep = active.depMin, arr = active.arrMin;
           let now = wrap === MIN_WEEK ? nowWeek : nowDay;
 
