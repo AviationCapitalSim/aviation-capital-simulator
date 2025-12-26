@@ -14,7 +14,6 @@
      ============================================================ */
 
   function getSafeTime() {
-    // 1) Ideal: ACS_TIME absoluto
     if (window.ACS_TIME && Number.isFinite(window.ACS_TIME.absoluteMinute)) {
       return {
         absoluteMinute: window.ACS_TIME.absoluteMinute,
@@ -22,7 +21,6 @@
       };
     }
 
-    // 2) Fallback: reloj simple (minutos desde carga)
     if (!window.__ACS_RUNTIME_FALLBACK_TIME__) {
       const start = Date.now();
       window.__ACS_RUNTIME_FALLBACK_TIME__ = () =>
@@ -113,18 +111,18 @@
 
       days.forEach(d => {
         const off = d ? (dayMap[d] ?? 0) * 1440 : 0;
+
         flights.push({
-  aircraftId: it.aircraftId,
-  origin: it.origin,
-  destination: it.destination,
+          aircraftId: it.aircraftId,
+          origin: it.origin,
+          destination: it.destination,
 
-  // ✅ toma cualquier naming que venga del schedule_table
-  flightOut: it.flightOut || it.flightNumber || it.code || it.callsign || null,
+          // 🟧 A11.2 — FLIGHT NUMBER FALLBACK
+          flightOut: it.flightOut || it.flightNumber || it.code || it.callsign || null,
 
-  depMin: dep + off,
-  arrMin: arr + off
-});
-
+          depMin: dep + off,
+          arrMin: arr + off
+        });
       });
     });
 
@@ -136,7 +134,7 @@
      ============================================================ */
 
   function updateWorld() {
-    const { absoluteMinute, day } = getSafeTime();
+    const { absoluteMinute } = getSafeTime();
 
     bootstrapAircraft();
 
@@ -151,71 +149,50 @@
       });
     }
 
+    const MIN_DAY  = 1440;
+    const MIN_WEEK = 10080;
+    const mod = (n, m) => ((n % m) + m) % m;
+
+    const nowDay  = mod(absoluteMinute, MIN_DAY);
+    const nowWeek = mod(absoluteMinute, MIN_WEEK);
+
+    function isActiveWindow(now, dep, arr, wrap) {
+      let d = dep, a = arr, n = now;
+      if (a <= d) a += wrap;
+      if (n < d)  n += wrap;
+      return n >= d && n <= a;
+    }
+
     state.forEach(ac => {
       let lat=null, lng=null, status="ground";
-      /* ============================================================
-   🟧 A11.1 — ACTIVE FLIGHT (DAY/WEEK NORMALIZATION) — FIX
-   ------------------------------------------------------------
-   absoluteMinute = tiempo global del sim
-   depMin/arrMin  = minutos en día (0..1439) o semana (>=1440)
-   ============================================================ */
 
-const MIN_DAY  = 1440;
-const MIN_WEEK = 10080;
+      const active = flights.find(f => {
+        if (f.aircraftId !== ac.aircraftId) return false;
+        return (f.depMin >= MIN_DAY)
+          ? isActiveWindow(nowWeek, f.depMin, f.arrMin, MIN_WEEK)
+          : isActiveWindow(nowDay,  f.depMin, f.arrMin, MIN_DAY);
+      });
 
-const mod = (n, m) => ((n % m) + m) % m;
+      if (active) {
+        const o = airports[active.origin];
+        const d = airports[active.destination];
 
-const nowDay  = mod(absoluteMinute, MIN_DAY);
-const nowWeek = mod(absoluteMinute, MIN_WEEK);
+        if (o && d) {
+          const wrap = active.depMin >= MIN_DAY ? MIN_WEEK : MIN_DAY;
+          let dep = active.depMin, arr = active.arrMin;
+          let now = wrap === MIN_WEEK ? nowWeek : nowDay;
 
-function isActiveWindow(now, dep, arr, wrapMod) {
-  if (!Number.isFinite(dep) || !Number.isFinite(arr)) return false;
+          if (arr <= dep) arr += wrap;
+          if (now < dep)  now += wrap;
 
-  let d = dep;
-  let a = arr;
-  let n = now;
+          const t = Math.min(Math.max((now - dep) / (arr - dep), 0), 1);
 
-  // Cruce (ej: 23:00 -> 01:00) o wrap semanal
-  if (a <= d) a += wrapMod;
-  if (n < d)  n += wrapMod;
+          lat = o.latitude  + (d.latitude  - o.latitude)  * t;
+          lng = o.longitude + (d.longitude - o.longitude) * t;
+          status = "enroute";
+        }
+      }
 
-  return n >= d && n <= a;
-}
-
-const active = flights.find(f => {
-  if (f.aircraftId !== ac.aircraftId) return false;
-
-  // Si depMin >= 1440 => vuelo “anclado a semana” (tiene offset por dayMap)
-  if (Number.isFinite(f.depMin) && f.depMin >= MIN_DAY) {
-    return isActiveWindow(nowWeek, f.depMin, f.arrMin, MIN_WEEK);
-  }
-
-  // Si depMin < 1440 => vuelo diario (sin offset semanal)
-  return isActiveWindow(nowDay, f.depMin, f.arrMin, MIN_DAY);
-});
-
-if (active) {
-  const o = airports[active.origin];
-  const d = airports[active.destination];
-
-  if (o && d) {
-    const wrapMod = (Number.isFinite(active.depMin) && active.depMin >= MIN_DAY) ? MIN_WEEK : MIN_DAY;
-
-    let dep = active.depMin;
-    let arr = active.arrMin;
-    let now = (wrapMod === MIN_WEEK) ? nowWeek : nowDay;
-
-    if (arr <= dep) arr += wrapMod;
-    if (now < dep)  now += wrapMod;
-
-    const tRaw = (now - dep) / (arr - dep);
-    const t = Math.min(Math.max(tRaw, 0), 1);
-
-    lat = o.latitude  + (d.latitude  - o.latitude)  * t;
-    lng = o.longitude + (d.longitude - o.longitude) * t;
-    status = "enroute";
-  }
-}
       if (!Number.isFinite(lat)) {
         const ap = airports[ac.airport];
         if (ap) {
