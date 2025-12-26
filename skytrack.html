@@ -490,7 +490,7 @@ function renderLiveFlights() {
 // ------------------------------------------------------------
 
 // 🟦 B2.1 — NORMALIZE FLIGHT STATUS (SINGLE DECLARATION)
-const isEnroute = (f.status === "air" || f.status === "enroute");
+const isEnroute = (f.status === "air" || f.status === "air");
 const isArrived = (f.status === "done" || f.status === "arrived");
 
 // Crear el plan punteado solo si está en ruta
@@ -565,7 +565,7 @@ if (isArrived) {
     const remM = remainingMin % 60;
 
     // 🟦 B2 — NORMALIZED FLIGHT STATUS (SINGLE SOURCE)
-const isEnroute = (f.status === "air" || f.status === "enroute");
+const isEnroute = (f.status === "air" || f.status === "air");
 
 // 🟦 B2 — REMAINING TIME (ENROUTE ONLY)
 const remainingTxt = isEnroute
@@ -575,7 +575,7 @@ const remainingTxt = isEnroute
 // 🟦 B2 — NORMALIZED STATUS TEXT
 const statusTxt =
   isEnroute              ? "En route" :
-  f.status === "ground"  ? "Ground" :
+  f.status === "ground"  ? "On Ground" :
                             "Arrived";
 
   
