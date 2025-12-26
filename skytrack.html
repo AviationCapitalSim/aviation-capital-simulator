@@ -77,37 +77,78 @@
     .atc-marker {
       position:relative;
     }
-  </style>
+    
+.acs-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at top, #0b1f3a, #040b17);
+}
+
+.acs-main {
+  flex: 1;
+  padding: 110px 40px 40px; /* espacio para el header */
+}
+
+.acs-panel {
+  background: rgba(10,20,40,0.55);
+  border-radius: 18px;
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 40px rgba(0,0,0,0.4);
+}
+
+.acs-map {
+  width: 100%;
+  height: 70vh;
+  border-radius: 16px;
+  overflow: hidden;
+}
+    
+</style>
 </head>
 
 <body>
 
-<header class="acs-header">
-  <div class="acs-left">
-    <img src="acs_logo.png" alt="ACS Logo">
-    <h1>Aviation Capital Simulator</h1>
-  </div>
+<div class="acs-app">
 
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="aircraft.html"class="active">Aircraft</a>
-    <a href="routes.html">Routes</a>
-    <a href="hr.html">HR</a>
-  </nav>
+  <!-- ===== HEADER (YA CORREGIDO) ===== -->
+  
+  <header class="acs-header">
+    <div class="acs-left">
+      <img src="acs_logo.png" alt="ACS Logo">
+      <h1>Aviation Capital Simulator</h1>
+    </div>
 
-  <div class="acs-right">
-    <a href="support.html" class="support-btn">Support</a>
-    <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
-  </div>
-</header>
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="skytrack.html" class="active">SkyTrack</a>
+      <a href="hr.html">HR</a>
+    </nav>
 
+    <div class="acs-right">
+      <a href="support.html" class="support-btn">Support</a>
+      <a class="logout-btn" onclick="handleLogout()">Logout</a>
+      <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+    </div>
+  </header>
 
-<main class="acs-main">
-  <h2>ACS SkyTrack — Live Fleet View</h2>
-  <p class="sub">Real-time fleet tracking</p>
-  <div id="map"></div>
-</main>
+  <!-- ===== MAIN CONTENT (CRÍTICO) ===== -->
+  
+  <main class="acs-main">
+
+    <section class="acs-panel">
+      <h2 class="acs-title">SkyTrack — Live Fleet View</h2>
+      <p class="acs-subtitle">Real-time fleet tracking (FR24-style)</p>
+
+      <div id="map" class="acs-map"></div>
+    </section>
+
+  </main>
+
+</div>
 
 <footer>© 2025 Aviation Capital Simulator</footer>
 
