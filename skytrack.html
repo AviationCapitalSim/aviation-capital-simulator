@@ -334,6 +334,7 @@
   /* ============================================================
    🟧 A10.2 — FLIGHT INFO PANEL STYLE
    ============================================================ */
+  
 .flight-info {
   position: absolute;
   min-width: 220px;
@@ -416,18 +417,24 @@
   </main>
   
 <!-- ============================================================
-     🟧 A10.1 — FLIGHT INFO PANEL (FLOATING)
+     🟧 FLIGHT INFO PANEL (STABLE VERSION)
      ============================================================ -->
   
 <div id="flightInfoPanel" class="flight-info hidden">
-  <div class="flight-info-title" id="fi-flight">—</div>
+  <div class="flight-info-header">
+    <span id="fi-flight">—</span>
+    <button class="fi-close" onclick="closeFlightPanel()">✕</button>
+  </div>
+
   <div class="flight-info-row" id="fi-aircraft">—</div>
   <div class="flight-info-row" id="fi-route">—</div>
   <div class="flight-info-row" id="fi-eta">—</div>
+
   <div class="flight-progress">
     <div class="flight-progress-bar" id="fi-progress"></div>
   </div>
 </div>
+
   
   <!-- ===== FOOTER (DENTRO DEL APP) ===== -->
   <footer>© 2025 Aviation Capital Simulator</footer>
