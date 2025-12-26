@@ -280,11 +280,11 @@ function buildFlightsFromSchedule() {
 }
 
   /* ============================================================
-   🟦 PASO 4.1 — UPDATE WORLD FLIGHTS (FORCED GROUND VISIBILITY)
+   🟦 PASO 4.1 — UPDATE WORLD FLIGHTS (STABLE + ABSOLUTE TIME)
    ------------------------------------------------------------
-   - SIEMPRE publica aviones
-   - Aunque no haya vuelos
-   - Aunque el estado esté incompleto
+   - SIEMPRE publica aviones (GROUND o ENROUTE)
+   - Usa tiempo absoluto semanal
+   - Nunca deja ACS_LIVE_FLIGHTS vacío
    ============================================================ */
 
 function updateWorldFlights() {
@@ -315,14 +315,16 @@ function updateWorldFlights() {
     let lat = null;
     let lng = null;
     let status = "GROUND";
+    let activeFlight = null;
 
     // =====================================
-    // ✈️ VUELO ACTIVO (día + hora)
+    // ✈️ VUELO ACTIVO (día + hora absoluta)
     // =====================================
-    const f = flights.find(fl => {
+    activeFlight = flights.find(fl => {
 
       if (fl.aircraftId !== ac.aircraftId) return false;
 
+      // Día de la semana (si aplica)
       if (Array.isArray(fl.days) && fl.days.length > 0) {
         if (!today || !fl.days.includes(today)) return false;
       }
@@ -330,17 +332,20 @@ function updateWorldFlights() {
       return nowMin >= fl.depMin && nowMin <= fl.arrMin;
     });
 
-    if (f) {
-      const originAp = airportIndex[f.origin];
-      const destAp   = airportIndex[f.destination];
+    if (activeFlight) {
+      const originAp = airportIndex[activeFlight.origin];
+      const destAp   = airportIndex[activeFlight.destination];
 
       if (
         originAp && destAp &&
         Number.isFinite(originAp.latitude) &&
-        Number.isFinite(destAp.latitude)
+        Number.isFinite(originAp.longitude) &&
+        Number.isFinite(destAp.latitude) &&
+        Number.isFinite(destAp.longitude)
       ) {
         const progress = Math.min(
-          Math.max((nowMin - f.depMin) / (f.arrMin - f.depMin), 0),
+          Math.max((nowMin - activeFlight.depMin) /
+                   (activeFlight.arrMin - activeFlight.depMin), 0),
           1
         );
 
@@ -357,7 +362,7 @@ function updateWorldFlights() {
     }
 
     // =====================================
-    // 🛬 EN TIERRA (fallback seguro)
+    // 🛬 EN TIERRA — VISIBILIDAD GARANTIZADA
     // =====================================
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
 
@@ -381,7 +386,7 @@ function updateWorldFlights() {
     }
 
     // =====================================
-    // 📡 PUBLICAR
+    // 📡 PUBLICAR (SIEMPRE)
     // =====================================
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
@@ -390,29 +395,28 @@ function updateWorldFlights() {
         status === "GROUND"   ? "ground"  :
                                 "arrived";
 
+      // Resolver modelo de aeronave
       let aircraftType = null;
 
-      if (f && f.aircraftType) {
-        aircraftType = f.aircraftType;
-      }
-
-      if (!aircraftType) {
+      if (activeFlight && activeFlight.aircraftType) {
+        aircraftType = activeFlight.aircraftType;
+      } else {
         const real = fleet.find(x => x.id === ac.aircraftId);
         if (real && real.model) aircraftType = real.model;
       }
 
       live.push({
         aircraftId: ac.aircraftId,
-        flightOut: f?.flightOut || null,
+        flightOut: activeFlight?.flightOut || null,
         aircraftType: aircraftType || "UNKNOWN",
 
         status: publishStatus,
         airport: ac.airport || null,
 
-        origin:      f ? f.origin      : null,
-        destination: f ? f.destination : null,
-        depMin:      f ? f.depMin      : null,
-        arrMin:      f ? f.arrMin      : null,
+        origin:      activeFlight ? activeFlight.origin      : null,
+        destination: activeFlight ? activeFlight.destination : null,
+        depMin:      activeFlight ? activeFlight.depMin      : null,
+        arrMin:      activeFlight ? activeFlight.arrMin      : null,
 
         lat,
         lng,
@@ -422,10 +426,10 @@ function updateWorldFlights() {
 
   });
 
+  // Publicación final
   window.ACS_LIVE_FLIGHTS = live;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 }
-
 
   /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
