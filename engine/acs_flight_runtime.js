@@ -337,9 +337,9 @@ function updateWorldFlights() {
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
       const publishStatus =
-        status === "AIRBORNE" ? "air" :
-        status === "GROUND"   ? "ground" :
-                                "done";
+      status === "AIRBORNE" ? "enroute" :
+      status === "GROUND"   ? "ground"  :
+                              "arrived";
 
       live.push({
         aircraftId: ac.aircraftId,
