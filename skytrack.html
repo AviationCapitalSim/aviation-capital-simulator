@@ -559,9 +559,12 @@ function initMap() {
    ============================================================ */
 
 function atcIcon(flight) {
+  // ✅ Ajuste: nunca dejar label vacío (tierra incluida)
   const labelText =
     flight?.flightOut ||
     flight?.flightNumber ||
+    flight?.registration ||
+    flight?.aircraftId ||
     "";
 
   return L.divIcon({
@@ -604,7 +607,7 @@ function renderSkyTrack() {
        ============================================================ */
     if (!markers[id]) {
       markers[id] = L.marker([f.lat, f.lng], {
-        icon: atcIcon(f) // 👈 objeto completo
+        icon: atcIcon(f)
       }).addTo(map);
 
       markers[id].on("click", () => {
@@ -636,7 +639,6 @@ function renderSkyTrack() {
   /* ============================================================
      CLEANUP INACTIVE AIRCRAFT
      ============================================================ */
-  
   Object.keys(markers).forEach(id => {
     if (!active.has(id)) {
       map.removeLayer(markers[id]);
@@ -652,7 +654,6 @@ function renderSkyTrack() {
   /* ============================================================
      🟧 A10.5 — UPDATE OPEN FLIGHT PANEL (LIVE)
      ============================================================ */
-  
   if (selectedFlightId) {
     const activeFlight = window.ACS_LIVE_FLIGHTS
       .find(x => x.aircraftId === selectedFlightId);
@@ -663,44 +664,63 @@ function renderSkyTrack() {
   }
 }
 
+
 /* ============================================================
    🟧 A10.3 — FLIGHT INFO PANEL LOGIC
    ============================================================ */
 
 function openFlightPanel(flight, latlng) {
-  if (!flight) return;
+  if (!flight || !map || !panel) return;
 
   selectedFlightId = flight.aircraftId;
 
-  document.getElementById("fi-flight").textContent =
-    flight.flightOut || "FLIGHT";
+  // ✅ Ajuste: textos seguros (sin null)
+  const flightLabel =
+    flight.flightOut ||
+    flight.flightNumber ||
+    flight.registration ||
+    flight.aircraftId ||
+    "FLIGHT";
+
+  const origin = flight.origin || "—";
+  const destination = flight.destination || "—";
+
+  document.getElementById("fi-flight").textContent = flightLabel;
 
   document.getElementById("fi-aircraft").textContent =
-    flight.aircraftType || "";
+    flight.aircraftType || flight.acType || "—";
 
   document.getElementById("fi-route").textContent =
-    `${flight.origin} → ${flight.destination}`;
+    `${origin} → ${destination}`;
 
   updateFlightPanelData(flight);
 
+  // ✅ Ajuste CRÍTICO: el panel está fuera del #map,
+  // así que lo posicionamos en coordenadas de página.
+  const mapRect = map.getContainer().getBoundingClientRect();
   const p = map.latLngToContainerPoint(latlng);
-  panel.style.left = `${p.x + 12}px`;
-  panel.style.top  = `${p.y - 12}px`;
+
+  panel.style.left = `${Math.round(mapRect.left + p.x + 12 + window.scrollX)}px`;
+  panel.style.top  = `${Math.round(mapRect.top  + p.y - 12 + window.scrollY)}px`;
+
   panel.classList.remove("hidden");
 }
 
 function updateFlightPanelData(flight) {
-  
+  // ✅ Ajuste: tierra = info clara, sin romper
   if (!flight || flight.status !== "enroute") {
-    document.getElementById("fi-eta").textContent = "On ground";
+    document.getElementById("fi-eta").textContent = "Status: Ground";
     document.getElementById("fi-progress").style.width = "0%";
     return;
   }
 
   const now = window.ACS_TIME?.absoluteMinute;
-  if (typeof now !== "number") return;
+  if (typeof now !== "number" || !Number.isFinite(flight.depMin) || !Number.isFinite(flight.arrMin)) {
+    document.getElementById("fi-eta").textContent = "Status: En route";
+    return;
+  }
 
-  const total = flight.arrMin - flight.depMin;
+  const total = Math.max(1, flight.arrMin - flight.depMin);
   const left  = Math.max(0, flight.arrMin - now);
   const pct   = Math.min(100, Math.max(0, ((total - left) / total) * 100));
 
@@ -712,7 +732,7 @@ function updateFlightPanelData(flight) {
 
 function closeFlightPanel() {
   selectedFlightId = null;
-  panel.classList.add("hidden");
+  if (panel) panel.classList.add("hidden");
 }
   
 /* ============================================================
