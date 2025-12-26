@@ -253,8 +253,13 @@ function buildFlightsFromSchedule() {
 
 function updateWorldFlights() {
 
-  const nowMin = window.ACS_TIME?.minute;
-  if (typeof nowMin !== "number") return;
+  // 🟧 A1 — NORMALIZE GAME MINUTE (0–1439)
+let nowMin = window.ACS_TIME?.minute;
+
+if (!Number.isFinite(nowMin)) return;
+
+// 🔁 Normalizar minutos negativos o overflow
+nowMin = ((nowMin % 1440) + 1440) % 1440;
 
   const flights = buildFlightsFromSchedule();
   const state   = getFlightState();
