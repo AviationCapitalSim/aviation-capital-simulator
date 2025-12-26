@@ -331,6 +331,53 @@
     position: relative;
   }
   
+  /* ============================================================
+   🟧 A10.2 — FLIGHT INFO PANEL STYLE
+   ============================================================ */
+.flight-info {
+  position: absolute;
+  min-width: 220px;
+  background: rgba(10,20,40,0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,179,0,0.35);
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+  color: #fff;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+.flight-info.hidden {
+  display: none;
+}
+
+.flight-info-title {
+  font-weight: 700;
+  color: #FFB300;
+  margin-bottom: 4px;
+}
+
+.flight-info-row {
+  font-size: 13px;
+  margin-bottom: 2px;
+  color: #ddd;
+}
+
+.flight-progress {
+  height: 6px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.flight-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #FFB300, #FFD65A);
+}
+  
 </style>
 </head>
 
@@ -367,7 +414,21 @@
       <div id="map" class="acs-map"></div>
     </section>
   </main>
-
+  
+<!-- ============================================================
+     🟧 A10.1 — FLIGHT INFO PANEL (FLOATING)
+     ============================================================ -->
+  
+<div id="flightInfoPanel" class="flight-info hidden">
+  <div class="flight-info-title" id="fi-flight">—</div>
+  <div class="flight-info-row" id="fi-aircraft">—</div>
+  <div class="flight-info-row" id="fi-route">—</div>
+  <div class="flight-info-row" id="fi-eta">—</div>
+  <div class="flight-progress">
+    <div class="flight-progress-bar" id="fi-progress"></div>
+  </div>
+</div>
+  
   <!-- ===== FOOTER (DENTRO DEL APP) ===== -->
   <footer>© 2025 Aviation Capital Simulator</footer>
 
@@ -415,14 +476,27 @@ function initMap() {
   }).addTo(map);
 }
 
-function atcIcon(label) {
+/* ============================================================
+   🟧 S9 — ATC ICON (FLIGHT NUMBER PRIORITY)
+   ============================================================ */
+
+function atcIcon(flight) {
+  const labelText =
+    flight?.flightOut ||
+    flight?.flightNumber ||
+    "";
+
   return L.divIcon({
-    className:"atc-marker",
-    html:`<div class="atc-box"></div><div class="atc-label">${label || ""}</div>`,
-    iconSize:[22,22],
-    iconAnchor:[11,11]
+    className: "atc-marker",
+    html: `
+      <div class="atc-box"></div>
+      <div class="atc-label">${labelText}</div>
+    `,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11]
   });
 }
+
 
 function renderSkyTrack() {
   if (!map || !Array.isArray(window.ACS_LIVE_FLIGHTS)) return;
@@ -469,7 +543,64 @@ function renderSkyTrack() {
     }
   });
 }
+  
+/* ============================================================
+   🟧 A10.3 — FLIGHT INFO PANEL LOGIC
+   ============================================================ */
 
+let selectedFlightId = null;
+const panel = document.getElementById("flightInfoPanel");
+
+function openFlightPanel(flight, latlng) {
+  if (!flight) return;
+
+  selectedFlightId = flight.aircraftId;
+
+  document.getElementById("fi-flight").textContent =
+    flight.flightOut || "FLIGHT";
+
+  document.getElementById("fi-aircraft").textContent =
+    flight.aircraftType || "";
+
+  document.getElementById("fi-route").textContent =
+    `${flight.origin} → ${flight.destination}`;
+
+  updateFlightPanelData(flight);
+
+  const p = map.latLngToContainerPoint(latlng);
+  panel.style.left = `${p.x + 12}px`;
+  panel.style.top  = `${p.y - 12}px`;
+  panel.classList.remove("hidden");
+}
+
+function updateFlightPanelData(flight) {
+  if (!flight || flight.status !== "enroute") {
+    document.getElementById("fi-eta").textContent = "On ground";
+    document.getElementById("fi-progress").style.width = "0%";
+    return;
+  }
+
+  const now = window.ACS_TIME?.absoluteMinute;
+  if (typeof now !== "number") return;
+
+  const total = flight.arrMin - flight.depMin;
+  const left  = Math.max(0, flight.arrMin - now);
+  const pct   = Math.min(100, Math.max(0, ((total - left) / total) * 100));
+
+  document.getElementById("fi-eta").textContent =
+    `ETA ${Math.floor(left / 60)}h ${left % 60}m`;
+
+  document.getElementById("fi-progress").style.width = `${pct}%`;
+}
+
+function closeFlightPanel() {
+  selectedFlightId = null;
+  panel.classList.add("hidden");
+}
+
+/* Close on map click */
+map.on("click", closeFlightPanel);
+  
 /* ============================================================
    ⏱ INIT + TIME HOOK
    ============================================================ */
