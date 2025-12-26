@@ -256,6 +256,9 @@ function updateWorldFlights() {
   const nowMin = window.ACS_TIME?.minute;
   if (typeof nowMin !== "number") return;
 
+  // 🔧 FIX — minuto del día (0–1439)
+  const dayMin = nowMin % 1440;
+
   const flights = buildFlightsFromSchedule();
   const state   = getFlightState();
   const live    = [];
@@ -280,18 +283,23 @@ function updateWorldFlights() {
     // =====================================
     // ✈️ VUELO ACTIVO
     // =====================================
+     
     const f = flights.find(fl =>
       fl.aircraftId === ac.aircraftId &&
-      nowMin >= fl.depMin &&
-      nowMin <= fl.arrMin
+      dayMin >= fl.depMin &&
+      dayMin <= fl.arrMin
     );
 
     if (f) {
       const originAp = airportIndex[f.origin];
       const destAp   = airportIndex[f.destination];
       if (originAp && destAp) {
+
+        // 🔧 FIX — proteger duración
+        const duration = Math.max(f.arrMin - f.depMin, 1);
+
         const progress = Math.min(
-          Math.max((nowMin - f.depMin) / (f.arrMin - f.depMin), 0),
+          Math.max((dayMin - f.depMin) / duration, 0),
           1
         );
 
@@ -310,6 +318,7 @@ function updateWorldFlights() {
     // =====================================
     // 🛬 EN TIERRA — FORZADO
     // =====================================
+     
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
 
       const real = fleet.find(x => x.id === ac.aircraftId);
@@ -324,16 +333,17 @@ function updateWorldFlights() {
       const ap = airportIndex[baseIcao];
 
       if (ap && Number.isFinite(ap.latitude) && Number.isFinite(ap.longitude)) {
-      lat = ap.latitude;
-      lng = ap.longitude;
-      status = "GROUND";
-      ac.airport = baseIcao;
+        lat = ap.latitude;
+        lng = ap.longitude;
+        status = "GROUND";
+        ac.airport = baseIcao;
+      }
     }
-  }
 
     // =====================================
     // 📡 PUBLICAR
     // =====================================
+     
     if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
       const publishStatus =
