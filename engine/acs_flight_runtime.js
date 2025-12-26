@@ -14,24 +14,29 @@
      ============================================================ */
 
   function getSafeTime() {
-    if (window.ACS_TIME && Number.isFinite(window.ACS_TIME.absoluteMinute)) {
-      return {
-        absoluteMinute: window.ACS_TIME.absoluteMinute,
-        day: window.ACS_TIME.day || null
-      };
-    }
+  if (window.ACS_TIME && ACS_TIME.currentTime instanceof Date) {
 
-    if (!window.__ACS_RUNTIME_FALLBACK_TIME__) {
-      const start = Date.now();
-      window.__ACS_RUNTIME_FALLBACK_TIME__ = () =>
-        Math.floor((Date.now() - start) / 60000);
-    }
+    const d = ACS_TIME.currentTime;
+    const absMin = Math.floor(d.getTime() / 60000);
 
     return {
-      absoluteMinute: window.__ACS_RUNTIME_FALLBACK_TIME__(),
-      day: null
+      absoluteMinute: absMin,
+      day: d.getDay() // 0–6
     };
   }
+
+  // fallback extremo (solo si ACS_TIME aún no existe)
+  if (!window.__ACS_RUNTIME_FALLBACK_TIME__) {
+    const start = Date.now();
+    window.__ACS_RUNTIME_FALLBACK_TIME__ = () =>
+      Math.floor((Date.now() - start) / 60000);
+  }
+
+  return {
+    absoluteMinute: window.__ACS_RUNTIME_FALLBACK_TIME__(),
+    day: null
+  };
+}
 
   /* ============================================================
      🛬 STATE STORAGE
