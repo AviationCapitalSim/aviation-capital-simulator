@@ -379,6 +379,65 @@
   background: linear-gradient(90deg, #FFB300, #FFD65A);
 }
   
+/* ============================================================
+   🟧 A12.2 — FLIGHT INFO PANEL (QATAR LUXURY, SOLID)
+   ============================================================ */
+#mapWrap { position: relative; }
+
+.flight-info{
+  position: absolute;
+  min-width: 240px;
+  max-width: 320px;
+  background: rgba(8, 14, 28, 0.96); /* sólido (no transparente) */
+  border: 1px solid rgba(255,179,0,0.45);
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  z-index: 99999;
+  pointer-events: auto;
+}
+
+.flight-info.hidden{ display:none; }
+
+.flight-info-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:#FFB300;
+  font-weight:800;
+  margin-bottom:6px;
+}
+
+.fi-close{
+  background: transparent;
+  border: none;
+  color: #cfcfcf;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.fi-close:hover{ color:#FFB300; }
+
+.flight-info-row{
+  font-size: 12.5px;
+  color:#e6e6e6;
+  margin: 2px 0;
+}
+
+.flight-progress{
+  height: 7px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 6px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.flight-progress-bar{
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #FFB300, #FFD65A);
+}
+
 </style>
 </head>
 
@@ -417,25 +476,28 @@
   </main>
   
 <!-- ============================================================
-     🟧 FLIGHT INFO PANEL (STABLE VERSION)
+     🟧 A12.1 — FLIGHT INFO PANEL (MUST LIVE INSIDE MAP)
      ============================================================ -->
   
-<div id="flightInfoPanel" class="flight-info hidden">
-  <div class="flight-info-header">
-    <span id="fi-flight">—</span>
-    <button class="fi-close" onclick="closeFlightPanel()">✕</button>
-  </div>
+<div id="mapWrap" style="position:relative;">
+  <div id="map" class="acs-map"></div>
 
-  <div class="flight-info-row" id="fi-aircraft">—</div>
-  <div class="flight-info-row" id="fi-route">—</div>
-  <div class="flight-info-row" id="fi-eta">—</div>
+  <div id="flightInfoPanel" class="flight-info hidden">
+    <div class="flight-info-header">
+      <span id="fi-flight">—</span>
+      <button class="fi-close" onclick="closeFlightPanel()">✕</button>
+    </div>
 
-  <div class="flight-progress">
-    <div class="flight-progress-bar" id="fi-progress"></div>
+    <div class="flight-info-row" id="fi-aircraft">—</div>
+    <div class="flight-info-row" id="fi-route">—</div>
+    <div class="flight-info-row" id="fi-eta">—</div>
+
+    <div class="flight-progress">
+      <div class="flight-progress-bar" id="fi-progress"></div>
+    </div>
   </div>
 </div>
-
-  
+ 
   <!-- ===== FOOTER (DENTRO DEL APP) ===== -->
   <footer>© 2025 Aviation Capital Simulator</footer>
 
