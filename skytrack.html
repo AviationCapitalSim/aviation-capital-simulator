@@ -19,62 +19,261 @@
      ============================================================ -->
   
 <style>
-  
   /* ============================================================
-     BASE
+       === ACS Qatar Luxury Dashboard — Base Design ============
      ============================================================ */
-  
+
   body {
     margin: 0;
+    background-color: #081530;
     color: white;
-    font-family: "Segoe UI", sans-serif;
-    background: radial-gradient(circle at top, #0b1f3a, #040b17) !important;
-    overflow-x: hidden;
-  }
-
-  /* 🔥 Desactiva cualquier hero / background global */
-  body::before,
-  .main-hero,
-  .hero,
-  .hero-bg {
-    display: none !important;
-    content: none !important;
-  }
-
-  h2 {
-    color: #FFB300;
-    text-align: center;
-    margin: 0.5rem 0 0.2rem;
-  }
-
-  .acs-subtitle {
-    text-align: center;
-    color: #ccc;
-    margin-bottom: 1rem;
+    font-family: "Poppins", sans-serif;
   }
 
   /* ============================================================
-     APP STRUCTURE (IGUAL A HR)
+       === GLOBAL HEADER (Exact Copy from index/dashboard) =====
      ============================================================ */
-  .acs-app {
-    min-height: 100vh;
+
+  .acs-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    backdrop-filter: blur(9px);
+    background: rgba(12,23,50,0.45);
+    padding: 0.8rem 2rem;
     display: flex;
-    flex-direction: column;
-    max-width: 100vw;
-    overflow-x: hidden;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #ffb300;
+    z-index: 5000;
   }
+
+  .acs-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .acs-left img {
+    height: 46px;
+  }
+
+  .acs-left h1 {
+    font-size: 1.15rem;
+    margin: 0;
+    color: #ffb300;
+    letter-spacing: 0.5px;
+  }
+
+  .acs-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  /* ============================================================
+       === NAVIGATION — QATAR PEARL GLOW STYLE =================
+     ============================================================ */
+
+  .acs-nav a {
+    position: relative;
+    font-size: 1rem;
+    letter-spacing: 0.4px;
+    color: #dbe4ff;
+    text-decoration: none;
+    transition: 0.25s ease;
+    padding-bottom: 6px;
+  }
+
+  .acs-nav a:hover,
+  .acs-nav a.active {
+    color: #ffca3a;
+    text-shadow: 0 0 6px rgba(255,179,0,0.45);
+  }
+
+  .acs-nav a.active::after,
+  .acs-nav a:hover::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, #ffb300, #ffe7a0);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(255,200,60,0.45);
+  }
+
+  .acs-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* LOGOUT BUTTON (Qatar style) */
+  .logout-btn {
+    padding: 0.45rem 1.1rem;
+    border: 1px solid #ffb300;
+    border-radius: 12px;
+    background: rgba(255,179,0,0.05);
+    color: #ffb300;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .logout-btn:hover {
+    background: #ffb300;
+    color: #0c1f3c;
+  }
+
+  /* CLOCK (same as dashboard) */
+  .acs-clock-header {
+    font-family: "Orbitron", monospace;
+    padding: 0.4rem 0.8rem;
+    background: rgba(0,255,128,0.08);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #00ff80;
+  }
+
+  /* ============================================================
+       === SUPPORT BUTTON (igual dashboard) =====================
+     ============================================================ */
+
+  .support-btn {
+    padding: 0.45rem 1.1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    color: #8AB4FF;
+    border: 1px solid rgba(138,180,255,0.45);
+    background: rgba(138,180,255,0.08);
+    backdrop-filter: blur(6px);
+    transition: 0.25s ease;
+  }
+
+  .support-btn:hover {
+    background: rgba(138,180,255,0.20);
+    box-shadow: 0 0 14px rgba(138,180,255,0.55);
+    color: #dfe9ff;
+  }
+
+  /* ============================================================
+       === MAIN CONTENT (igual dashboard) ======================
+     ============================================================ */
 
   .acs-main {
-    flex: 1;
-    padding: 110px 40px 40px;
+    padding: 105px 2rem 70px;
+    text-align: center;
   }
 
-  .acs-panel {
-    background: rgba(10, 20, 40, 0.55);
-    border-radius: 18px;
+  .acs-main h2 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #ffca3a;
+    text-shadow: 0 0 12px rgba(255,190,60,0.55);
+    letter-spacing: 0.6px;
+    margin-top: 0.5rem;
+  }
+
+  .acs-main .sub {
+    margin-top: 0.4rem;
+    color: #cbd6ff;
+    font-size: 1rem;
+  }
+
+  /* ============================================================
+       === PANEL GRID (reuso dashboard-grid) ===================
+     ============================================================ */
+
+  .dashboard-grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .row-business {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  /* Panel base (mismo que dashboard) */
+  .panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 1.6rem 1.5rem;
+  border-radius: 22px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  transition: 0.25s;
+  border: 1px solid rgba(255,179,0,0.15);
+  text-align: center;     /* 🔥 todo centrado */
+  align-items: center;     /* 🔥 asegura centro vertical si se usa flex */
+}
+
+  .panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+    border: 1px solid rgba(255,179,0,0.35);
+  }
+
+  .panel h3 {
+    font-size: 1.25rem;
+    color: #ffb300;
+    margin-bottom: 0.9rem;
+    text-shadow: 0 0 6px rgba(255,179,0,0.4);
+  }
+
+  .panel p {
+    color: #d7e2ff;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin: 0.15rem 0;
+  }
+
+  /* ============================================================
+       === HR-SPECIFIC STYLES ==================================
+     ============================================================ */
+
+  .inactive-panel {
+    opacity: 0.45;
+    filter: grayscale(100%);
+    pointer-events: none;
+    position: relative;
+  }
+
+  .inactive-note {
+    margin-top: 1rem;
+    color: #aaa;
+    font-style: italic;
+    text-align: center;
+  }
+
+  /* Standard ACS button */
+  .acs-btn {
+    margin-top: 1rem;
+    background: #00a86b;
+    border: none;
+    padding: 0.7rem 1.1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.25s;
+    color: white;
+  }
+
+  .acs-btn:hover {
+    background: #00794f;
+  }
+
+  /* Footer igual dashboard */
+  .acs-footer {
+    text-align: center;
     padding: 20px;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+    margin-top: 50px;
+    color: #7c8bb8;
+    font-size: 0.9rem;
   }
 
   /* ============================================================
@@ -131,6 +330,7 @@
   .atc-marker {
     position: relative;
   }
+  
 </style>
 </head>
 
