@@ -1,45 +1,20 @@
 /* ============================================================
-   ✈️ ACS FLIGHT RUNTIME ENGINE — ROBUST MODE
+   ✈️ ACS FLIGHT RUNTIME ENGINE — SINGLE EXEC MODE (RESTORED)
    ------------------------------------------------------------
-   - Source: scheduleItems + ACS_MyAircraft
-   - Time: ACS_TIME (or internal fallback)
-   - Publishes: window.ACS_LIVE_FLIGHTS (ALWAYS)
+   ✔ Source of truth: scheduleItems + ACS_MyAircraft
+   ✔ Time source: ACS_TIME.minute (ONLY)
+   ✔ Always-visible aircraft (GROUND or AIR)
+   ✔ No absolute time
+   ✔ No weekly math
+   ✔ No fallback clocks
+   ✔ SkyTrack is OBSERVER ONLY
    ============================================================ */
 
 (() => {
   "use strict";
 
   /* ============================================================
-     🕒 SAFE TIME ACCESS (CRITICAL FIX)
-     ============================================================ */
-
-  function getSafeTime() {
-  if (window.ACS_TIME && ACS_TIME.currentTime instanceof Date) {
-
-    const d = ACS_TIME.currentTime;
-    const absMin = Math.floor(d.getTime() / 60000);
-
-    return {
-      absoluteMinute: absMin,
-      day: d.getDay() // 0–6
-    };
-  }
-
-  // fallback extremo (solo si ACS_TIME aún no existe)
-  if (!window.__ACS_RUNTIME_FALLBACK_TIME__) {
-    const start = Date.now();
-    window.__ACS_RUNTIME_FALLBACK_TIME__ = () =>
-      Math.floor((Date.now() - start) / 60000);
-  }
-
-  return {
-    absoluteMinute: window.__ACS_RUNTIME_FALLBACK_TIME__(),
-    day: null
-  };
-}
-
-  /* ============================================================
-     🛬 STATE STORAGE
+     🧱 GLOBAL STATE (PERSISTENT WORLD)
      ============================================================ */
 
   const STATE_KEY = "ACS_FLIGHT_STATE";
@@ -58,7 +33,7 @@
   }
 
   /* ============================================================
-     🧩 BOOTSTRAP GROUND AIRCRAFT
+     🛬 BOOTSTRAP AIRCRAFT (ALWAYS EXISTS)
      ============================================================ */
 
   function bootstrapAircraft() {
@@ -69,18 +44,19 @@
 
     if (!fleet.length) return;
 
-    const base = localStorage.getItem("ACS_baseICAO");
+    const baseICAO = localStorage.getItem("ACS_baseICAO");
     const state = loadState();
     let changed = false;
 
     fleet.forEach(ac => {
       if (!ac?.id) return;
+
       if (state.some(s => s.aircraftId === ac.id)) return;
 
       state.push({
         aircraftId: ac.id,
-        airport: ac.baseAirport || base,
-        status: "ground"
+        airport: ac.baseAirport || baseICAO,
+        status: "GROUND"
       });
       changed = true;
     });
@@ -89,124 +65,92 @@
   }
 
   /* ============================================================
-     🗓 BUILD FLIGHTS FROM SCHEDULE
+     🗓 BUILD FLIGHTS FROM SCHEDULE (SOURCE OF TRUTH)
      ============================================================ */
 
-  function buildFlights() {
-    let items = [];
+  function toMin(hhmm) {
+    if (!hhmm || typeof hhmm !== "string") return null;
+    const [h, m] = hhmm.split(":").map(Number);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+    return h * 60 + m;
+  }
+
+  function buildFlightsFromSchedule() {
+    let schedule = [];
     try {
-      items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+      schedule = JSON.parse(localStorage.getItem("scheduleItems")) || [];
     } catch {}
 
+    const baseICAO = localStorage.getItem("ACS_baseICAO");
     const flights = [];
-    const dayMap = { sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6 };
 
-    items.forEach(it => {
-      if (it.type !== "flight" || !it.aircraftId) return;
+    schedule.forEach(item => {
+      if (item.type !== "flight") return;
+      if (!item.aircraftId) return;
 
-      const [h1,m1] = (it.departure||"").split(":").map(Number);
-      const [h2,m2] = (it.arrival||"").split(":").map(Number);
-      if (!Number.isFinite(h1) || !Number.isFinite(h2)) return;
+      const depMin = toMin(item.departure);
+      const arrMin = toMin(item.arrival);
+      if (depMin == null || arrMin == null) return;
 
-      let dep = h1*60 + m1;
-      let arr = h2*60 + m2;
-      if (arr <= dep) arr += 1440;
+      let a = arrMin;
+      if (a <= depMin) a += 1440;
 
-      // 🟧 A11.3 — FIX: distinguir “weekly” por existencia de days[] (NO por depMin>=1440)
-const hasDays = Array.isArray(it.days) && it.days.length;
-const days = hasDays ? it.days : [null];
-
-days.forEach(d => {
-  const off = d ? (dayMap[d] ?? 0) * 1440 : 0;
-
-  flights.push({
-    aircraftId: it.aircraftId,
-    origin: it.origin,
-    destination: it.destination,
-
-    // ✅ A11.2 — FLIGHT NUMBER FALLBACK (igual)
-    flightOut: it.flightOut || it.flightNumber || it.code || it.callsign || null,
-
-    // ✅ A11.3 — weekly mode (aunque sea Sunday=0 y off=0)
-    weekMode: hasDays,
-
-    depMin: dep + off,
-    arrMin: arr + off
-  });
-});
-
+      flights.push({
+        aircraftId: item.aircraftId,
+        origin: item.origin || baseICAO,
+        destination: item.destination,
+        depMin,
+        arrMin: a,
+        flightOut: item.flightNumberOut || item.flightOut || null
+      });
     });
 
     return flights;
   }
 
   /* ============================================================
-     🌍 UPDATE WORLD (ALWAYS PUBLISH)
+     🌍 UPDATE WORLD (SIMPLE, REAL, 24/7)
      ============================================================ */
 
-  function updateWorld() {
-    const { absoluteMinute } = getSafeTime();
+  function updateWorldFlights() {
+
+    const nowMin = window.ACS_TIME?.minute;
+    if (typeof nowMin !== "number") return;
 
     bootstrapAircraft();
 
     const state = loadState();
-    const flights = buildFlights();
+    const flights = buildFlightsFromSchedule();
     const live = [];
 
-    let airports = {};
+    const airports = {};
     if (window.WorldAirportsACS) {
       Object.values(WorldAirportsACS).flat().forEach(a => {
         if (a.icao) airports[a.icao] = a;
       });
     }
 
-    const MIN_DAY  = 1440;
-    const MIN_WEEK = 10080;
-    const mod = (n, m) => ((n % m) + m) % m;
-
-    const nowDay  = mod(absoluteMinute, MIN_DAY);
-    const nowWeek = mod(absoluteMinute, MIN_WEEK);
-
-    function isActiveWindow(now, dep, arr, wrap) {
-      let d = dep, a = arr, n = now;
-      if (a <= d) a += wrap;
-      if (n < d)  n += wrap;
-      return n >= d && n <= a;
-    }
-
     state.forEach(ac => {
-      let lat=null, lng=null, status="ground";
 
-      const active = flights.find(f => {
-  if (f.aircraftId !== ac.aircraftId) return false;
+      let lat = null;
+      let lng = null;
+      let status = "GROUND";
 
-  // ✅ A11.3 — weekly si weekMode=true (aunque depMin<1440 por Sunday)
-  if (f.weekMode) {
-    return isActiveWindow(nowWeek, f.depMin, f.arrMin, MIN_WEEK);
-  }
+      const f = flights.find(fl =>
+        fl.aircraftId === ac.aircraftId &&
+        nowMin >= fl.depMin &&
+        nowMin <= fl.arrMin
+      );
 
-  // daily
-  return isActiveWindow(nowDay, f.depMin, f.arrMin, MIN_DAY);
-});
-
-
-      if (active) {
-        const o = airports[active.origin];
-        const d = airports[active.destination];
+      if (f) {
+        const o = airports[f.origin];
+        const d = airports[f.destination];
 
         if (o && d) {
-          const wrap = active.weekMode ? MIN_WEEK : MIN_DAY;
-          let dep = active.depMin, arr = active.arrMin;
-          let now = wrap === MIN_WEEK ? nowWeek : nowDay;
-
-          if (arr <= dep) arr += wrap;
-          if (now < dep)  now += wrap;
-
-          const t = Math.min(Math.max((now - dep) / (arr - dep), 0), 1);
-
+          const t = (nowMin - f.depMin) / (f.arrMin - f.depMin);
           lat = o.latitude  + (d.latitude  - o.latitude)  * t;
           lng = o.longitude + (d.longitude - o.longitude) * t;
-          status = "enroute";
+          status = "AIR";
         }
       }
 
@@ -215,37 +159,45 @@ days.forEach(d => {
         if (ap) {
           lat = ap.latitude;
           lng = ap.longitude;
+          status = "GROUND";
         }
       }
 
       if (Number.isFinite(lat)) {
         live.push({
           aircraftId: ac.aircraftId,
-          status,
-          lat, lng,
-          origin: active?.origin || null,
-          destination: active?.destination || null,
-          flightOut: active?.flightOut || null
+          status: status === "AIR" ? "air" : "ground",
+          lat,
+          lng,
+          origin: f?.origin || null,
+          destination: f?.destination || null,
+          flightOut: f?.flightOut || null,
+          depMin: f?.depMin || null,
+          arrMin: f?.arrMin || null
         });
       }
+
+      ac.status = status;
     });
+
+    saveState(state);
 
     window.ACS_LIVE_FLIGHTS = live;
     localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
   }
 
   /* ============================================================
-     🔁 START LOOP (ROBUST)
+     🔁 START (TIME ENGINE DRIVEN)
      ============================================================ */
 
-  updateWorld();
+  updateWorldFlights();
 
   if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateWorld);
+    registerTimeListener(updateWorldFlights);
   } else {
-    setInterval(updateWorld, 1000);
+    setInterval(updateWorldFlights, 1000);
   }
 
-  console.log("🌍 ACS Runtime READY (robust mode)");
+  console.log("✈️ ACS Flight Runtime ACTIVE — SINGLE EXEC MODE");
 
 })();
