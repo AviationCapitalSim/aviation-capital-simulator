@@ -1850,7 +1850,7 @@ if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
   }
 }
 
-  // 3️⃣ Preparar datos de la ruta
+// 3️⃣ Preparar datos de la ruta
 const daysSel = Array.isArray(route.days) && route.days.length
                 ? route.days
                 : ["mon"];
@@ -1914,31 +1914,26 @@ if (duplicateFlight) {
   return;
 }
 
-/* ============================================================
-   ⏱️ A1 — ABSOLUTE TIME CALCULATION (SCHEDULE → SKYTRACK)
-   ============================================================ */
+/* === ABS TIME FIX (USING ACS_TIME.currentTime) === */
 
-// 🔑 fuente única del tiempo absoluto del simulador
-const nowAbsMin =
-  typeof getSimAbsMin === "function"
-    ? getSimAbsMin()
-    : (window.ACS_TIME?.absMin ?? 0);
+if (!window.ACS_TIME || !ACS_TIME.currentTime) return;
 
-// día actual del simulador (MON = 0)
-const todayIdx = (ACS_TABLE_TIME.day + 6) % 7;
+const nowDate = new Date(ACS_TIME.currentTime);
+const todayIdx = (nowDate.getDay() + 6) % 7;
 const dayIdx   = days.indexOf(day);
 
-// diferencia de días (sin inventar semanas)
 let deltaDays = dayIdx - todayIdx;
 if (deltaDays < 0) deltaDays += 7;
 
-// minutos del día
+const nowMinOfDay = nowDate.getHours() * 60 + nowDate.getMinutes();
+
 const depMin = toMin(dep);
 let arrMin = toMin(arr);
 if (arrMin <= depMin) arrMin += 1440;
 
-// tiempos absolutos
-const depAbsMin = nowAbsMin - ACS_TABLE_TIME.minute + (deltaDays * 1440) + depMin;
+const depAbsMin =
+  ((nowDate.getTime() / 60000) | 0) - nowMinOfDay + (deltaDays * 1440) + depMin;
+
 const arrAbsMin = depAbsMin + (arrMin - depMin);
 
 items.push({
