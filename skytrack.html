@@ -441,32 +441,17 @@ function renderLiveFlights() {
   if (!map) return; // ⛔ seguridad
 
   // 🧨 HARD SYNC — NO CONDITIONS, NO MERCY
-  try {
-    const raw = localStorage.getItem("ACS_LIVE_FLIGHTS");
-    window.ACS_LIVE_FLIGHTS = raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    window.ACS_LIVE_FLIGHTS = [];
-  }
-
-  // ============================================================
-  // ✈️ SKYTRACK — READ LIVE FLIGHTS (RUNTIME SOURCE)
-  // ============================================================
-
   let flights = [];
   try {
-    flights = Array.isArray(window.ACS_LIVE_FLIGHTS)
-      ? window.ACS_LIVE_FLIGHTS
-      : [];
+    const raw = localStorage.getItem("ACS_LIVE_FLIGHTS");
+    flights = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(flights)) flights = [];
   } catch (e) {
     flights = [];
   }
 
-  // ============================================================
   // 🕒 HARD TIME FALLBACK — SkyTrack NO depende de ACS_TIME
-  // ============================================================
-
   let nowMin = 0;
-
   try {
     const rawTime =
       localStorage.getItem("ACS_TIME") ||
@@ -476,43 +461,16 @@ function renderLiveFlights() {
 
     if (rawTime) {
       const t = JSON.parse(rawTime);
-
-      if (typeof t.minute === "number") {
-        nowMin = t.minute % 1440;
-      } else if (typeof t.totalMinutes === "number") {
-        nowMin = t.totalMinutes % 1440;
-      } else if (typeof t.absMinute === "number") {
-        nowMin = t.absMinute % 1440;
-      } else if (typeof t.cycleMinute === "number") {
-        nowMin = t.cycleMinute % 1440;
-      }
+      if (typeof t.minute === "number") nowMin = t.minute % 1440;
+      else if (typeof t.totalMinutes === "number") nowMin = t.totalMinutes % 1440;
+      else if (typeof t.absMinute === "number") nowMin = t.absMinute % 1440;
+      else if (typeof t.cycleMinute === "number") nowMin = t.cycleMinute % 1440;
     }
   } catch (e) {
     nowMin = 0;
   }
 
   const activeIds = new Set();
-
-  // ⚠️ A PARTIR DE AQUÍ, TU CÓDIGO ORIGINAL SIGUE
-  // (loops, markers, polylines, status checks, etc.)
-}
-
-
-  // ------------------------------------------------------------
-  // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
-  // ------------------------------------------------------------
-  function createATCMarkerIcon(f) {
-    const label = (f.flightOut || f.aircraftId || "").toString();
-    return L.divIcon({
-      className: "atc-marker",
-      html: `
-        <div class="atc-box"></div>
-        <div class="atc-label">${label}</div>
-      `,
-      iconSize: [22, 22],
-      iconAnchor: [11, 11]
-    });
-  }
 
   // ------------------------------------------------------------
   // 🔁 RENDER EACH FLIGHT
@@ -525,99 +483,63 @@ function renderLiveFlights() {
 
     activeIds.add(id);
 
-    // ✅ fallback coords for plan line if runtime didn’t publish them
-    let oLat = f.originLat, oLng = f.originLng, dLat = f.destLat, dLng = f.destLng;
-
-    if (
-      typeof oLat !== "number" || typeof oLng !== "number" ||
-      typeof dLat !== "number" || typeof dLng !== "number"
-    ) {
-      const o = (typeof getSkyTrackAirportByICAO === "function") ? getSkyTrackAirportByICAO(f.origin) : null;
-      const d = (typeof getSkyTrackAirportByICAO === "function") ? getSkyTrackAirportByICAO(f.destination) : null;
-      if (o && d) {
-        oLat = o.lat; oLng = o.lng;
-        dLat = d.lat; dLng = d.lng;
-      }
-    }
-
-// ------------------------------------------------------------
-// 🧭 FLIGHT PLAN (DOTTED) — derived from ACTUAL flight path
-// ------------------------------------------------------------
-
-if (!liveFlightPlans[id] && f.status === "air") {
-
-  liveFlightPlans[id] = L.polyline([], {
-    color: "#000000",
-    weight: 1,
-    dashArray: "4,6",
-    opacity: 0.85,
-    interactive: false
-  }).addTo(map);
-}
-
-// ------------------------------------------------------------
-// 🧵 UPDATE PLAN + TRACE FROM SAME SOURCE
-// ------------------------------------------------------------
-
-if (f.status === "air") {
-
-  if (liveFlightPlans[id]) {
-    liveFlightPlans[id].addLatLng([f.lat, f.lng]);
-  }
-
-  if (!liveFlightTraces[id]) {
-    liveFlightTraces[id] = L.polyline([], {
-      color: "#1e88e5",
-      weight: 2,
-      opacity: 0.9
-    }).addTo(map);
-  }
-
-  liveFlightTraces[id].addLatLng([f.lat, f.lng]);
-}
-
-    // ------------------------------------------------------------
-    // 🟦 MARKER (ATC square)
-    // ------------------------------------------------------------
+    // 🟦 MARKER
     if (!liveFlightMarkers[id]) {
       liveFlightMarkers[id] = L.marker([f.lat, f.lng], {
         icon: createATCMarkerIcon(f),
         title: `${f.flightOut || id}`
       }).addTo(map);
     }
-
-    // ✅ update position always
     liveFlightMarkers[id].setLatLng([f.lat, f.lng]);
 
-    // ------------------------------------------------------------
-    // 🧾 CHIP TEXT (CLICK POPUP) — not tooltip (va muy rápido)
-    // ------------------------------------------------------------
-    const percent = Math.round((f.progress || 0) * 100);
+    // 🧭 PLAN + TRACE
+    if (f.status === "air") {
 
+      if (!liveFlightPlans[id]) {
+        liveFlightPlans[id] = L.polyline([], {
+          color: "#000000",
+          weight: 1,
+          dashArray: "4,6",
+          opacity: 0.85,
+          interactive: false
+        }).addTo(map);
+      }
+      liveFlightPlans[id].addLatLng([f.lat, f.lng]);
+
+      if (!liveFlightTraces[id]) {
+        liveFlightTraces[id] = L.polyline([], {
+          color: "#1e88e5",
+          weight: 2,
+          opacity: 0.9
+        }).addTo(map);
+      }
+      liveFlightTraces[id].addLatLng([f.lat, f.lng]);
+    }
+
+    // 🧾 POPUP
+    const percent = Math.round((f.progress || 0) * 100);
     const remainingMin = Math.max(0, (f.arrMin || 0) - nowMin);
     const remH = Math.floor(remainingMin / 60);
     const remM = remainingMin % 60;
 
+    const statusTxt =
+      f.status === "air" ? "En route" :
+      f.status === "ground" ? "On ground" :
+      "Arrived";
+
     const remainingTxt =
-  f.status === "air"
-    ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} remaining`
-    : "";
-
-const statusTxt =
-  f.status === "air"     ? "En route" :
-  f.status === "ground"  ? "On ground" :
-  "Arrived";
-
+      f.status === "air"
+        ? `${percent}% · ${String(remH).padStart(2, "0")}:${String(remM).padStart(2, "0")} remaining`
+        : "";
 
     const chipText = `
 <strong>${f.flightOut || id}</strong><br>
-${"DC-3"} · ${id}<br>
+DC-3 · ${id}<br>
 ${statusTxt}<br>
 ${f.origin} → ${f.destination}<br>
 ${remainingTxt}
 `.trim();
 
-    // ✅ bindPopup once
     if (!liveFlightMarkers[id].getPopup()) {
       liveFlightMarkers[id].bindPopup(chipText, {
         closeButton: true,
@@ -626,28 +548,21 @@ ${remainingTxt}
         offset: [0, -10]
       });
     } else {
-      // ✅ keep content updated
       liveFlightMarkers[id].setPopupContent(chipText);
     }
 
-    // ------------------------------------------------------------
-    // 🧹 CLEANUP ON ARRIVAL (delete trace + plan)
-    // ------------------------------------------------------------
-    
+    // 🧹 CLEANUP ON ARRIVAL
     if (f.status === "arrived" || f.status === "done") {
-
       if (liveFlightTraces[id]) {
         map.removeLayer(liveFlightTraces[id]);
         delete liveFlightTraces[id];
       }
-
       if (liveFlightPlans[id]) {
         map.removeLayer(liveFlightPlans[id]);
         delete liveFlightPlans[id];
       }
     }
-
-  }); // ✅ end forEach
+  });
 
   // ------------------------------------------------------------
   // 🧹 REMOVE MARKERS NOT ACTIVE ANYMORE
@@ -671,6 +586,8 @@ ${remainingTxt}
       }
     }
   });
+}
+
    
 /* ============================================================
    ⏱ SKYTRACK — INIT + TIME SYNC
