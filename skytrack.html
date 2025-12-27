@@ -462,7 +462,7 @@ function renderLiveFlights() {
   }
 
   // ============================================================
-  // 🕒 HARD TIME FALLBACK — ACS_TIME DOES NOT EXIST HERE
+  // 🕒 HARD TIME FALLBACK — SkyTrack NO depende de ACS_TIME
   // ============================================================
 
   let nowMin = 0;
@@ -493,7 +493,10 @@ function renderLiveFlights() {
 
   const activeIds = new Set();
 
+  // ⚠️ A PARTIR DE AQUÍ, TU CÓDIGO ORIGINAL SIGUE
+  // (loops, markers, polylines, status checks, etc.)
 }
+
 
   // ------------------------------------------------------------
   // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
