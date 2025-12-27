@@ -243,12 +243,11 @@ function buildFlightsFromSchedule() {
   return flights;
 }
 
-  /* ============================================================
-   🟦 PASO 4.1 — UPDATE WORLD FLIGHTS (FORCED GROUND VISIBILITY)
-   ------------------------------------------------------------
-   - SIEMPRE publica aviones
-   - Aunque no haya vuelos
-   - Aunque el estado esté incompleto
+ /* ============================================================
+   🟧 A5 — FIX ACTIVACIÓN AIRBORNE (NOW DAY vs NOW GAME)
+   - nowDayMin (0–1439) = comparaciones dep/arr
+   - nowGameMin (minuto global) = persistencia / updatedMin
+   - Soporta vuelos que cruzan medianoche (arr < dep)
    ============================================================ */
 
 function updateWorldFlights() {
@@ -256,12 +255,13 @@ function updateWorldFlights() {
   const time = window.ACS_TIME?.currentTime;
   if (!(time instanceof Date)) return;
 
-   // ⏱ minuto absoluto del día (0–1439)
-  const dayMin = time.getHours() * 60 + time.getMinutes();
+  // ⏱ minuto absoluto del día (0–1439) — PARA COMPARAR con depMin/arrMin
+  const nowDayMin = time.getHours() * 60 + time.getMinutes();
 
-  // ⏱ minuto global del juego (para persistencia)
-  const nowMin = dayMin;
-
+  // ⏱ minuto global del juego — PARA persistencia / updatedMin
+  const nowGameMin = Number.isFinite(window.ACS_TIME?.minute)
+    ? window.ACS_TIME.minute
+    : nowDayMin;
 
   const flights = buildFlightsFromSchedule();
   const state   = getFlightState();
@@ -278,122 +278,141 @@ function updateWorldFlights() {
   // Fleet real (fuente de verdad)
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
+  // Helper: ventana de vuelo con soporte medianoche
+  function resolveWindow(nowMinDay, depMin, arrMin) {
+    if (!Number.isFinite(nowMinDay) || !Number.isFinite(depMin) || !Number.isFinite(arrMin)) return null;
+
+    // Normal (no cruza medianoche)
+    if (arrMin >= depMin) {
+      return {
+        inWindow: nowMinDay >= depMin && nowMinDay <= arrMin,
+        nowAdj: nowMinDay,
+        depAdj: depMin,
+        arrAdj: arrMin
+      };
+    }
+
+    // Cruza medianoche: ej dep 23:30 (1410), arr 01:20 (80)
+    const arrAdj = arrMin + 1440;
+    const nowAdj = (nowMinDay < depMin) ? (nowMinDay + 1440) : nowMinDay;
+
+    return {
+      inWindow: nowAdj >= depMin && nowAdj <= arrAdj,
+      nowAdj,
+      depAdj: depMin,
+      arrAdj
+    };
+  }
+
   state.forEach(ac => {
 
-  let lat = null;
-  let lng = null;
-  let status = ac.status || "GROUND";
+    let lat = null;
+    let lng = null;
+    let status = ac.status || "GROUND";
 
-  // =========================================================
-  // ⏱️ TIEMPO REAL DEL JUEGO (CLAVE DEL SISTEMA)
-  // =========================================================
-  const nowMin = Number.isFinite(ACS_TIME?.minute)
-    ? ACS_TIME.minute
-    : null;
+    // =========================================================
+    // ✈️ VUELO ACTIVO (comparación SIEMPRE contra nowDayMin)
+    // =========================================================
 
-  // =========================================================
-  // ✈️ VUELO ACTIVO
-  // =========================================================
+    let f = null;
+    let win = null;
 
-  let f = null;
-
-  if (nowMin !== null) {
-    f = flights.find(fl =>
-      fl.aircraftId === ac.aircraftId &&
-      nowMin >= fl.depMin &&
-      nowMin <= fl.arrMin
-    );
-  }
-
-  if (f) {
-    const originAp = airportIndex[f.origin];
-    const destAp   = airportIndex[f.destination];
-
-    if (originAp && destAp) {
-
-      // 🔧 proteger duración
-      const duration = Math.max(f.arrMin - f.depMin, 1);
-
-      const progress = Math.min(
-        Math.max((nowMin - f.depMin) / duration, 0),
-        1
-      );
-
-      const pos = interpolateGC(
-        originAp.lat, originAp.lng,
-        destAp.lat,   destAp.lng,
-        progress
-      );
-
-      lat = pos.lat;
-      lng = pos.lng;
-      status = "AIRBORNE";
-    }
-  }
-
-  // =========================================================
-  // 🛬 EN TIERRA — FORZADO Y SEGURO
-  // =========================================================
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-
-    const real = fleet.find(x => x.id === ac.aircraftId);
-
-    const baseIcao =
-      ac.airport ||
-      real?.baseAirport ||
-      real?.currentAirport ||
-      real?.homeBase ||
-      localStorage.getItem("ACS_baseICAO");
-
-    const ap = airportIndex[baseIcao];
-
-    if (ap && Number.isFinite(ap.latitude) && Number.isFinite(ap.longitude)) {
-      lat = ap.latitude;
-      lng = ap.longitude;
-      status = "GROUND";
-      ac.airport = baseIcao;
-    }
-  }
-
-  // =========================================================
-  // 📡 PUBLICAR
-  // =========================================================
-
-  if (Number.isFinite(lat) && Number.isFinite(lng)) {
-
-    const publishStatus =
-      status === "AIRBORNE" ? "air" :
-      status === "GROUND"   ? "ground" :
-                              "done";
-
-    live.push({
-      aircraftId: ac.aircraftId,
-      status: publishStatus,
-      airport: ac.airport || null,
-
-      origin:      f ? f.origin      : null,
-      destination: f ? f.destination : null,
-      depMin:      f ? f.depMin      : null,
-      arrMin:      f ? f.arrMin      : null,
-
-      lat: lat,
-      lng: lng,
-      updatedMin: nowMin
+    f = flights.find(fl => {
+      if (fl.aircraftId !== ac.aircraftId) return false;
+      win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
+      return !!win && win.inWindow === true;
     });
-  }
 
-  ac.status = status;
-  ac.lastUpdateMin = nowMin;
+    if (f && win) {
+      const originAp = airportIndex[f.origin];
+      const destAp   = airportIndex[f.destination];
 
-}); // ✅ cierre state.forEach
+      if (originAp && destAp) {
 
-saveFlightState(state);
+        // 🔧 proteger duración (con ventana ajustada)
+        const duration = Math.max(win.arrAdj - win.depAdj, 1);
 
-window.ACS_LIVE_FLIGHTS = live;
-localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
+        const progress = Math.min(
+          Math.max((win.nowAdj - win.depAdj) / duration, 0),
+          1
+        );
+
+        const pos = interpolateGC(
+          originAp.lat, originAp.lng,
+          destAp.lat,   destAp.lng,
+          progress
+        );
+
+        lat = pos.lat;
+        lng = pos.lng;
+        status = "AIRBORNE";
+      }
+    }
+
+    // =========================================================
+    // 🛬 EN TIERRA — FORZADO Y SEGURO
+    // =========================================================
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+
+      const real = fleet.find(x => x.id === ac.aircraftId);
+
+      const baseIcao =
+        ac.airport ||
+        real?.baseAirport ||
+        real?.currentAirport ||
+        real?.homeBase ||
+        localStorage.getItem("ACS_baseICAO");
+
+      const ap = airportIndex[baseIcao];
+
+      if (ap && Number.isFinite(ap.latitude) && Number.isFinite(ap.longitude)) {
+        lat = ap.latitude;
+        lng = ap.longitude;
+        status = "GROUND";
+        ac.airport = baseIcao;
+      }
+    }
+
+    // =========================================================
+    // 📡 PUBLICAR
+    // =========================================================
+
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+
+      const publishStatus =
+        status === "AIRBORNE" ? "air" :
+        status === "GROUND"   ? "ground" :
+                                "done";
+
+      live.push({
+        aircraftId: ac.aircraftId,
+        status: publishStatus,
+        airport: ac.airport || null,
+
+        origin:      f ? f.origin      : null,
+        destination: f ? f.destination : null,
+        depMin:      f ? f.depMin      : null,
+        arrMin:      f ? f.arrMin      : null,
+
+        lat: lat,
+        lng: lng,
+        updatedMin: nowGameMin
+      });
+    }
+
+    ac.status = status;
+    ac.lastUpdateMin = nowGameMin;
+
+  }); // ✅ cierre state.forEach
+
+  saveFlightState(state);
+
+  window.ACS_LIVE_FLIGHTS = live;
+  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 
 } // ✅ cierre updateWorldFlights
+
 
   /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
