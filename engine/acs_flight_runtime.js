@@ -455,17 +455,31 @@ function updateWorldFlights() {
     if (changed) saveActiveFlights(activeFlights);
   }
 
-  // ============================================================
-  // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
-  // ============================================================
+  /* ============================================================
+   🟧 A9 — WORLD AIRPORTS READY GATE (ROBUST)
+   ------------------------------------------------------------
+   Espera a que existan aeropuertos REALES con coordenadas
+   Evita arranque prematuro del Runtime
+   ============================================================ */
+   
+function waitForWorldAirports(cb) {
 
-  function waitForWorldAirports(cb) {
-    if (window.WorldAirportsACS && Object.keys(WorldAirportsACS).length > 0) {
-      cb();
-    } else {
-      setTimeout(() => waitForWorldAirports(cb), 200);
-    }
+  if (
+    window.WorldAirportsACS &&
+    Object.values(WorldAirportsACS)
+      .flat()
+      .some(a =>
+        a &&
+        typeof a.latitude === "number" &&
+        typeof a.longitude === "number"
+      )
+  ) {
+    cb();
+    return;
   }
+
+  setTimeout(() => waitForWorldAirports(cb), 200);
+}
    
 /* ============================================================
    🟧 A1 — SEED FLIGHT STATE FROM SCHEDULE (24/7)
