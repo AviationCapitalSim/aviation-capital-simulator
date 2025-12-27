@@ -417,7 +417,25 @@ const liveFlightMarkers = {};
 const liveFlightTraces  = {};
 const liveFlightPlans   = {};
 
-
+/* ============================================================
+   🟧 FIX FINAL — SYNC ACS_LIVE_FLIGHTS
+   ============================================================ */
+   
+function syncLiveFlights() {
+  if (!Array.isArray(window.ACS_LIVE_FLIGHTS)) {
+    try {
+      const raw = localStorage.getItem("ACS_LIVE_FLIGHTS");
+      if (raw) {
+        window.ACS_LIVE_FLIGHTS = JSON.parse(raw);
+      } else {
+        window.ACS_LIVE_FLIGHTS = [];
+      }
+    } catch (e) {
+      window.ACS_LIVE_FLIGHTS = [];
+    }
+  }
+}
+  
 function renderLiveFlights() {
 
   if (!map) return; // ⛔ seguridad
