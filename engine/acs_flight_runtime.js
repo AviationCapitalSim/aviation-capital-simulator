@@ -338,10 +338,11 @@ function updateWorldFlights() {
         );
 
         const pos = interpolateGC(
-          originAp.lat, originAp.lng,
-          destAp.lat,   destAp.lng,
-          progress
-        );
+        originAp.latitude,  originAp.longitude,
+        destAp.latitude,    destAp.longitude,
+        progress
+     );
+
 
         lat = pos.lat;
         lng = pos.lng;
