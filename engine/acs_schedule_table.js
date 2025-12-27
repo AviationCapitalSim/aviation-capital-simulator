@@ -36,23 +36,45 @@
 
   // Filtrar SOLO vuelos reales ejecutables
   const activeFlights = items
-    .filter(it =>
-      it.origin &&
-      it.destination &&
-      typeof it.depAbsMin === "number" &&
-      typeof it.arrAbsMin === "number" &&
-      it.aircraftId &&
-      activeAircraftIds.has(it.aircraftId)
+  .filter(it =>
+    it.aircraftId &&
+    it.origin &&
+    it.destination &&
+    it.origin !== it.destination &&
+    (
+      typeof it.depAbsMin === "number" ||
+      typeof it.depMin === "number" ||
+      typeof it.blockOut === "number"
     )
-    .map(it => ({
-      flightId: it.id,                 // RT_843383
-      aircraftId: it.aircraftId,       // AC-1766...
-      aircraftType: it.modelKey || it.aircraft,
+  )
+  .map(it => {
+
+    // Resolver tiempos reales
+    const depMin =
+      typeof it.depAbsMin === "number" ? it.depAbsMin :
+      typeof it.depMin === "number"    ? it.depMin :
+      it.blockOut;
+
+    const arrMin =
+      typeof it.arrAbsMin === "number" ? it.arrAbsMin :
+      typeof it.arrMin === "number"    ? it.arrMin :
+      it.blockIn;
+
+    if (typeof depMin !== "number" || typeof arrMin !== "number") {
+      return null;
+    }
+
+    return {
+      flightId: it.id,
+      aircraftId: it.aircraftId,
+      aircraftType: it.modelKey || it.aircraft || "UNKNOWN",
       origin: it.origin,
       destination: it.destination,
-      depMin: it.depAbsMin,
-      arrMin: it.arrAbsMin
-    }));
+      depMin,
+      arrMin
+    };
+  })
+  .filter(Boolean);
 
   // Publicar para Runtime
   localStorage.setItem(
