@@ -439,7 +439,15 @@ function syncLiveFlights() {
 function renderLiveFlights() {
 
   if (!map) return; // ⛔ seguridad
-
+  
+  // 🧨 HARD SYNC — NO CONDITIONS, NO MERCY
+  try {
+  const raw = localStorage.getItem("ACS_LIVE_FLIGHTS");
+  window.ACS_LIVE_FLIGHTS = raw ? JSON.parse(raw) : [];
+} catch (e) {
+  window.ACS_LIVE_FLIGHTS = [];
+}
+  
   // ============================================================
   // ✈️ SKYTRACK — READ LIVE FLIGHTS (RUNTIME SOURCE)
   // ============================================================
