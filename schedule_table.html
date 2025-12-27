@@ -1331,6 +1331,48 @@ function hideAircraftHover(){
     // Ya está normalizado
     if (it.aircraftId) return;
 
+     // =====================================
+    // ⏱ NORMALIZE LEGACY TIME (CRITICAL)
+    // =====================================
+
+    const timeToAbsMin = (hhmm) => {
+      if (!hhmm || typeof hhmm !== "string") return null;
+      const p = hhmm.split(":");
+      if (p.length !== 2) return null;
+      const h = parseInt(p[0], 10);
+      const m = parseInt(p[1], 10);
+      if (isNaN(h) || isNaN(m)) return null;
+      return (h * 60) + m;
+    };
+
+    // Departure
+    if (typeof it.depAbsMin !== "number") {
+      const depSrc =
+        it.depTime ||
+        it.dep ||
+        it.blockOut ||
+        null;
+
+      const depMin = timeToAbsMin(depSrc);
+      if (typeof depMin === "number") {
+        it.depAbsMin = depMin;
+      }
+    }
+
+    // Arrival
+    if (typeof it.arrAbsMin !== "number") {
+      const arrSrc =
+        it.arrTime ||
+        it.arr ||
+        it.blockIn ||
+        null;
+
+      const arrMin = timeToAbsMin(arrSrc);
+      if (typeof arrMin === "number") {
+        it.arrAbsMin = arrMin;
+      }
+    }
+       
     // Intentar resolver por modelo / tipo
     const modelKey =
       it.acType ||
