@@ -439,33 +439,61 @@ function syncLiveFlights() {
 function renderLiveFlights() {
 
   if (!map) return; // ⛔ seguridad
-  
+
   // 🧨 HARD SYNC — NO CONDITIONS, NO MERCY
   try {
-  const raw = localStorage.getItem("ACS_LIVE_FLIGHTS");
-  window.ACS_LIVE_FLIGHTS = raw ? JSON.parse(raw) : [];
-} catch (e) {
-  window.ACS_LIVE_FLIGHTS = [];
-}
-  
+    const raw = localStorage.getItem("ACS_LIVE_FLIGHTS");
+    window.ACS_LIVE_FLIGHTS = raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    window.ACS_LIVE_FLIGHTS = [];
+  }
+
   // ============================================================
   // ✈️ SKYTRACK — READ LIVE FLIGHTS (RUNTIME SOURCE)
   // ============================================================
 
   let flights = [];
   try {
-    flights = Array.isArray(window.ACS_LIVE_FLIGHTS) ? window.ACS_LIVE_FLIGHTS : [];
+    flights = Array.isArray(window.ACS_LIVE_FLIGHTS)
+      ? window.ACS_LIVE_FLIGHTS
+      : [];
   } catch (e) {
     flights = [];
   }
 
-  const nowMin =
-  typeof window.ACS_TIME === "object" &&
-  typeof window.ACS_TIME.minute === "number"
-    ? window.ACS_TIME.minute
-    : 0;
+  // ============================================================
+  // 🕒 HARD TIME FALLBACK — ACS_TIME DOES NOT EXIST HERE
+  // ============================================================
+
+  let nowMin = 0;
+
+  try {
+    const rawTime =
+      localStorage.getItem("ACS_TIME") ||
+      localStorage.getItem("ACS_Time") ||
+      localStorage.getItem("ACS_TIME_STATE") ||
+      localStorage.getItem("ACS_Cycle");
+
+    if (rawTime) {
+      const t = JSON.parse(rawTime);
+
+      if (typeof t.minute === "number") {
+        nowMin = t.minute % 1440;
+      } else if (typeof t.totalMinutes === "number") {
+        nowMin = t.totalMinutes % 1440;
+      } else if (typeof t.absMinute === "number") {
+        nowMin = t.absMinute % 1440;
+      } else if (typeof t.cycleMinute === "number") {
+        nowMin = t.cycleMinute % 1440;
+      }
+    }
+  } catch (e) {
+    nowMin = 0;
+  }
 
   const activeIds = new Set();
+
+}
 
   // ------------------------------------------------------------
   // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
