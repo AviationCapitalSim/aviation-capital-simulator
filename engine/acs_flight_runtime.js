@@ -252,16 +252,19 @@ function buildFlightsFromSchedule() {
 
 function updateWorldFlights() {
 
-  const time = window.ACS_TIME?.currentTime;
-  if (!(time instanceof Date)) return;
+  if (
+  !window.ACS_TIME ||
+  !Number.isFinite(window.ACS_TIME.minute) ||
+  !Number.isFinite(window.ACS_TIME.dayIndex)
+) {
+  return;
+}
 
-  // ⏱ minuto absoluto del día (0–1439) — PARA COMPARAR con depMin/arrMin
-  const nowDayMin = time.getHours() * 60 + time.getMinutes();
+// ⏱ minuto absoluto del día (0–1439)
+const nowDayMin = window.ACS_TIME.minute % 1440;
 
-  // ⏱ minuto global del juego — PARA persistencia / updatedMin
-  const nowGameMin = Number.isFinite(window.ACS_TIME?.minute)
-    ? window.ACS_TIME.minute
-    : nowDayMin;
+// ⏱ minuto global del juego (persistencia)
+const nowGameMin = window.ACS_TIME.minute;
 
   const flights = buildFlightsFromSchedule();
   const state   = getFlightState();
