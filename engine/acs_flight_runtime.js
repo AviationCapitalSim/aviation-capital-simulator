@@ -284,15 +284,26 @@ function updateWorldFlights() {
   let lng = null;
   let status = ac.status || "GROUND";
 
-  // =====================================
-  // ✈️ ACTIVE FLIGHT (TIME-SYNC FIX)
-  // =====================================
+  // =========================================================
+  // ⏱️ TIEMPO REAL DEL JUEGO (CLAVE DEL SISTEMA)
+  // =========================================================
+  const nowMin = Number.isFinite(ACS_TIME?.minute)
+    ? ACS_TIME.minute
+    : null;
 
-  const f = flights.find(fl =>
-    fl.aircraftId === ac.aircraftId &&
-    nowMin >= fl.depMin &&
-    nowMin <= fl.arrMin
-  );
+  // =========================================================
+  // ✈️ VUELO ACTIVO
+  // =========================================================
+
+  let f = null;
+
+  if (nowMin !== null) {
+    f = flights.find(fl =>
+      fl.aircraftId === ac.aircraftId &&
+      nowMin >= fl.depMin &&
+      nowMin <= fl.arrMin
+    );
+  }
 
   if (f) {
     const originAp = airportIndex[f.origin];
@@ -300,7 +311,7 @@ function updateWorldFlights() {
 
     if (originAp && destAp) {
 
-      // 🔧 FIX — protect duration
+      // 🔧 proteger duración
       const duration = Math.max(f.arrMin - f.depMin, 1);
 
       const progress = Math.min(
@@ -320,9 +331,9 @@ function updateWorldFlights() {
     }
   }
 
-  // =====================================
-  // 🛬 FORCED GROUND VISIBILITY
-  // =====================================
+  // =========================================================
+  // 🛬 EN TIERRA — FORZADO Y SEGURO
+  // =========================================================
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
 
@@ -345,9 +356,9 @@ function updateWorldFlights() {
     }
   }
 
-  // =====================================
-  // 📡 PUBLISH LIVE FLIGHT
-  // =====================================
+  // =========================================================
+  // 📡 PUBLICAR
+  // =========================================================
 
   if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
@@ -366,8 +377,8 @@ function updateWorldFlights() {
       depMin:      f ? f.depMin      : null,
       arrMin:      f ? f.arrMin      : null,
 
-      lat,
-      lng,
+      lat: lat,
+      lng: lng,
       updatedMin: nowMin
     });
   }
@@ -375,12 +386,12 @@ function updateWorldFlights() {
   ac.status = status;
   ac.lastUpdateMin = nowMin;
 
-}); // ✅ end state.forEach
+}); // ✅ cierre state.forEach
 
-  saveFlightState(state);
+saveFlightState(state);
 
-  window.ACS_LIVE_FLIGHTS = live;
-  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
+window.ACS_LIVE_FLIGHTS = live;
+localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 
 } // ✅ cierre updateWorldFlights
 
