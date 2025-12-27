@@ -473,59 +473,50 @@ function renderLiveFlights() {
   const activeIds = new Set();
 
   // ------------------------------------------------------------
-  // 🔁 RENDER EACH FLIGHT
-  // ------------------------------------------------------------
-  flights.forEach(f => {
-    if (!f || typeof f.lat !== "number" || typeof f.lng !== "number") return;
+// 🔁 RENDER EACH FLIGHT
+// ------------------------------------------------------------
+flights.forEach(f => {
+  if (!f || typeof f.lat !== "number" || typeof f.lng !== "number") return;
 
-    const id = (f.aircraftId || "").toString();
-    if (!id) return;
+  const id = (f.aircraftId || "").toString();
+  if (!id) return;
 
-    activeIds.add(id);
+  activeIds.add(id);
 
-    // 🟦 MARKER
-    if (!liveFlightMarkers[id]) {
-      liveFlightMarkers[id] = L.marker([f.lat, f.lng], {
-        icon: (typeof createATCMarkerIcon === "function"
-       ? createATCMarkerIcon(f)
-      : L.icon({
-      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      shadowSize: [41, 41]
-    })
-),
+  // 🟦 MARKER — FR24 STYLE (CUADRADO)
+  if (!liveFlightMarkers[id]) {
+    liveFlightMarkers[id] = L.marker([f.lat, f.lng], {
+      icon: createATCMarkerIcon(f),
+      title: `${f.flightOut || id}`
+    }).addTo(map);
+  }
 
-        title: `${f.flightOut || id}`
+  liveFlightMarkers[id].setLatLng([f.lat, f.lng]);
+
+  // 🧭 PLAN + TRACE
+  if (f.status === "air") {
+
+    if (!liveFlightPlans[id]) {
+      liveFlightPlans[id] = L.polyline([], {
+        color: "#000000",
+        weight: 1,
+        dashArray: "4,6",
+        opacity: 0.85,
+        interactive: false
       }).addTo(map);
     }
-    liveFlightMarkers[id].setLatLng([f.lat, f.lng]);
+    liveFlightPlans[id].addLatLng([f.lat, f.lng]);
 
-    // 🧭 PLAN + TRACE
-    if (f.status === "air") {
-
-      if (!liveFlightPlans[id]) {
-        liveFlightPlans[id] = L.polyline([], {
-          color: "#000000",
-          weight: 1,
-          dashArray: "4,6",
-          opacity: 0.85,
-          interactive: false
-        }).addTo(map);
-      }
-      liveFlightPlans[id].addLatLng([f.lat, f.lng]);
-
-      if (!liveFlightTraces[id]) {
-        liveFlightTraces[id] = L.polyline([], {
-          color: "#1e88e5",
-          weight: 2,
-          opacity: 0.9
-        }).addTo(map);
-      }
-      liveFlightTraces[id].addLatLng([f.lat, f.lng]);
+    if (!liveFlightTraces[id]) {
+      liveFlightTraces[id] = L.polyline([], {
+        color: "#1e88e5",
+        weight: 2,
+        opacity: 0.9
+      }).addTo(map);
     }
+    liveFlightTraces[id].addLatLng([f.lat, f.lng]);
+  }
+});
 
     // 🧾 POPUP
     const percent = Math.round((f.progress || 0) * 100);
@@ -599,7 +590,31 @@ ${remainingTxt}
   });
 }
 
-   
+// ============================================================
+// 🟦 SKYTRACK — MARKER ICON (FR24 STYLE)
+// ============================================================
+function createATCMarkerIcon(f) {
+  const color =
+    f.status === "air" ? "#1e88e5" :
+    f.status === "ground" ? "#455a64" :
+    "#2e7d32";
+
+  return L.divIcon({
+    className: "acs-fr24-icon",
+    html: `
+      <div style="
+        width:8px;
+        height:8px;
+        background:${color};
+        border-radius:2px;
+        box-shadow:0 0 4px rgba(0,0,0,0.6);
+      "></div>
+    `,
+    iconSize: [8, 8],
+    iconAnchor: [4, 4]
+  });
+}
+
 /* ============================================================
    ⏱ SKYTRACK — INIT + TIME SYNC
    ============================================================ */
