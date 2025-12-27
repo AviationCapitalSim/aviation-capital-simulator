@@ -276,115 +276,102 @@ function updateWorldFlights() {
 
   state.forEach(ac => {
 
-    let lat = null;
-    let lng = null;
-    let status = ac.status || "GROUND";
+  let lat = null;
+  let lng = null;
+  let status = ac.status || "GROUND";
 
-    // =====================================
-    // ✈️ VUELO (FR24 LOGIC — SIEMPRE EXISTE)
-    // =====================================
-     
-    const f = flights.find(fl =>
-      fl.aircraftId === ac.aircraftId
-    );
+  // =====================================
+  // ✈️ ACTIVE FLIGHT (TIME-SYNC FIX)
+  // =====================================
 
-    if (f) {
+  const f = flights.find(fl =>
+    fl.aircraftId === ac.aircraftId &&
+    nowMin >= fl.depMin &&
+    nowMin <= fl.arrMin
+  );
 
-      // 🕒 FUTURO / PROGRAMADO → EN TIERRA
-      if (dayMin < f.depMin) {
-        status = "GROUND";
-      }
+  if (f) {
+    const originAp = airportIndex[f.origin];
+    const destAp   = airportIndex[f.destination];
 
-      // ✈️ EN VUELO
-      else if (dayMin >= f.depMin && dayMin <= f.arrMin) {
+    if (originAp && destAp) {
 
-        const originAp = airportIndex[f.origin];
-        const destAp   = airportIndex[f.destination];
+      // 🔧 FIX — protect duration
+      const duration = Math.max(f.arrMin - f.depMin, 1);
 
-        if (originAp && destAp) {
+      const progress = Math.min(
+        Math.max((nowMin - f.depMin) / duration, 0),
+        1
+      );
 
-          // 🔧 FIX — proteger duración
-          const duration = Math.max(f.arrMin - f.depMin, 1);
+      const pos = interpolateGC(
+        originAp.lat, originAp.lng,
+        destAp.lat,   destAp.lng,
+        progress
+      );
 
-          const progress = Math.min(
-            Math.max((dayMin - f.depMin) / duration, 0),
-            1
-          );
-
-          const pos = interpolateGC(
-            originAp.lat, originAp.lng,
-            destAp.lat,   destAp.lng,
-            progress
-          );
-
-          lat = pos.lat;
-          lng = pos.lng;
-          status = "AIRBORNE";
-        }
-      }
-
-      // 🛬 LLEGADO
-      else if (dayMin > f.arrMin) {
-        status = "DONE";
-      }
+      lat = pos.lat;
+      lng = pos.lng;
+      status = "AIRBORNE";
     }
+  }
 
-    // =====================================
-    // 🛬 EN TIERRA — FORZADO (BASE)
-    // =====================================
-     
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+  // =====================================
+  // 🛬 FORCED GROUND VISIBILITY
+  // =====================================
 
-      const real = fleet.find(x => x.id === ac.aircraftId);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
 
-      const baseIcao =
-        ac.airport ||
-        real?.baseAirport ||
-        real?.currentAirport ||
-        real?.homeBase ||
-        localStorage.getItem("ACS_baseICAO");
+    const real = fleet.find(x => x.id === ac.aircraftId);
 
-      const ap = airportIndex[baseIcao];
+    const baseIcao =
+      ac.airport ||
+      real?.baseAirport ||
+      real?.currentAirport ||
+      real?.homeBase ||
+      localStorage.getItem("ACS_baseICAO");
 
-      if (ap && Number.isFinite(ap.latitude) && Number.isFinite(ap.longitude)) {
-        lat = ap.latitude;
-        lng = ap.longitude;
-        if (status !== "AIRBORNE") status = "GROUND";
-        ac.airport = baseIcao;
-      }
+    const ap = airportIndex[baseIcao];
+
+    if (ap && Number.isFinite(ap.latitude) && Number.isFinite(ap.longitude)) {
+      lat = ap.latitude;
+      lng = ap.longitude;
+      status = "GROUND";
+      ac.airport = baseIcao;
     }
+  }
 
-    // =====================================
-    // 📡 PUBLICAR
-    // =====================================
-     
-    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+  // =====================================
+  // 📡 PUBLISH LIVE FLIGHT
+  // =====================================
 
-      const publishStatus =
-        status === "AIRBORNE" ? "air" :
-        status === "GROUND"   ? "ground" :
-                                "done";
+  if (Number.isFinite(lat) && Number.isFinite(lng)) {
 
-      live.push({
-        aircraftId: ac.aircraftId,
-        status: publishStatus,
-        airport: ac.airport || null,
+    const publishStatus =
+      status === "AIRBORNE" ? "air" :
+      status === "GROUND"   ? "ground" :
+                              "done";
 
-        origin:      f ? f.origin      : null,
-        destination: f ? f.destination : null,
-        depMin:      f ? f.depMin      : null,
-        arrMin:      f ? f.arrMin      : null,
+    live.push({
+      aircraftId: ac.aircraftId,
+      status: publishStatus,
+      airport: ac.airport || null,
 
-        lat: lat,
-        lng: lng,
-        updatedMin: nowMin
-      });
-    }
+      origin:      f ? f.origin      : null,
+      destination: f ? f.destination : null,
+      depMin:      f ? f.depMin      : null,
+      arrMin:      f ? f.arrMin      : null,
 
-    ac.status = status;
-    ac.lastUpdateMin = nowMin;
+      lat,
+      lng,
+      updatedMin: nowMin
+    });
+  }
 
-  }); // ✅ cierre state.forEach
+  ac.status = status;
+  ac.lastUpdateMin = nowMin;
+
+}); // ✅ end state.forEach
 
   saveFlightState(state);
 
