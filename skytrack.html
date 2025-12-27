@@ -459,7 +459,7 @@ function renderLiveFlights() {
     flights = [];
   }
 
-  const nowMin = window.ACS_TIME?.minute || 0;
+  const nowMin = window.ACS_TIME.minute % 1440;
   const activeIds = new Set();
 
   // ------------------------------------------------------------
