@@ -172,48 +172,37 @@
      ============================================================ -->
 <script src="time_engine.js"></script>
 
-<!-- ============================================================
-     🛑 SKYTRACK LOCAL TIME ENGINE — TEMPORARILY DISABLED
-     ------------------------------------------------------------
-     Fecha: 27 DEC 2025
-     Motivo: Debug sincronización Runtime ↔ SkyTrack
-     Nota: Este bloque EXISTÍA cuando funcionaba,
-           se comenta SOLO para aislar causa.
-     ============================================================
-
 <script>
+/* ============================================================
+   🟧 A8 — SKYTRACK TIME BRIDGE (SAFE)
+   ------------------------------------------------------------
+   Garantiza que ACS_TIME.currentTime exista para Runtime
+   NO crea motor nuevo
+   NO altera el Global Time Engine
+   SOLO expone currentTime si falta
+   ============================================================ */
+  
 (function () {
 
-  if (window.ACS_TIME) return;
+  if (!window.ACS_TIME) return;
 
-  let startMinute = 0;
+  // Si ya existe currentTime válido, no tocar
+  if (window.ACS_TIME.currentTime instanceof Date) return;
 
+  // Crear currentTime derivado del reloj visual
   try {
-    const exec = JSON.parse(localStorage.getItem("ACS_FLIGHT_EXEC"));
-    if (exec && typeof exec.depMin === "number") {
-      startMinute = Math.max(exec.depMin - 10, 0);
-    }
-  } catch {}
+    const clockEl = document.getElementById("acs-clock");
+    if (!clockEl) return;
 
-  window.ACS_TIME = {
-    day: "sun",
-    minute: startMinute
-  };
-
-  setInterval(() => {
-    window.ACS_TIME.minute++;
-
-    if (window.ACS_TIME.minute >= 1440) {
-      window.ACS_TIME.minute = 0;
-    }
-  }, 1000);
-
-  console.log("⏱ SkyTrack ACS_TIME synced at minute:", startMinute);
+    // Fallback seguro: usar Date actual UTC
+    window.ACS_TIME.currentTime = new Date();
+    console.warn("⚠ SkyTrack: ACS_TIME.currentTime bridged from Date()");
+  } catch (e) {
+    console.warn("SkyTrack time bridge failed", e);
+  }
 
 })();
 </script>
-
-============================================================ -->
 
 <!-- ============================================================
      🌍 WORLD ENGINE (CONTENEDOR)
