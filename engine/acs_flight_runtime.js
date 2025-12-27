@@ -281,42 +281,56 @@ function updateWorldFlights() {
     let status = ac.status || "GROUND";
 
     // =====================================
-    // ✈️ VUELO ACTIVO
+    // ✈️ VUELO (FR24 LOGIC — SIEMPRE EXISTE)
     // =====================================
      
     const f = flights.find(fl =>
-      fl.aircraftId === ac.aircraftId &&
-      dayMin >= fl.depMin &&
-      dayMin <= fl.arrMin
+      fl.aircraftId === ac.aircraftId
     );
 
     if (f) {
-      const originAp = airportIndex[f.origin];
-      const destAp   = airportIndex[f.destination];
-      if (originAp && destAp) {
 
-        // 🔧 FIX — proteger duración
-        const duration = Math.max(f.arrMin - f.depMin, 1);
+      // 🕒 FUTURO / PROGRAMADO → EN TIERRA
+      if (dayMin < f.depMin) {
+        status = "GROUND";
+      }
 
-        const progress = Math.min(
-          Math.max((dayMin - f.depMin) / duration, 0),
-          1
-        );
+      // ✈️ EN VUELO
+      else if (dayMin >= f.depMin && dayMin <= f.arrMin) {
 
-        const pos = interpolateGC(
-          originAp.lat, originAp.lng,
-          destAp.lat,   destAp.lng,
-          progress
-        );
+        const originAp = airportIndex[f.origin];
+        const destAp   = airportIndex[f.destination];
 
-        lat = pos.lat;
-        lng = pos.lng;
-        status = "AIRBORNE";
+        if (originAp && destAp) {
+
+          // 🔧 FIX — proteger duración
+          const duration = Math.max(f.arrMin - f.depMin, 1);
+
+          const progress = Math.min(
+            Math.max((dayMin - f.depMin) / duration, 0),
+            1
+          );
+
+          const pos = interpolateGC(
+            originAp.lat, originAp.lng,
+            destAp.lat,   destAp.lng,
+            progress
+          );
+
+          lat = pos.lat;
+          lng = pos.lng;
+          status = "AIRBORNE";
+        }
+      }
+
+      // 🛬 LLEGADO
+      else if (dayMin > f.arrMin) {
+        status = "DONE";
       }
     }
 
     // =====================================
-    // 🛬 EN TIERRA — FORZADO
+    // 🛬 EN TIERRA — FORZADO (BASE)
     // =====================================
      
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
@@ -335,7 +349,7 @@ function updateWorldFlights() {
       if (ap && Number.isFinite(ap.latitude) && Number.isFinite(ap.longitude)) {
         lat = ap.latitude;
         lng = ap.longitude;
-        status = "GROUND";
+        if (status !== "AIRBORNE") status = "GROUND";
         ac.airport = baseIcao;
       }
     }
