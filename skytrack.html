@@ -172,13 +172,16 @@
      ============================================================ -->
 <script src="time_engine.js"></script>
 
+<!-- ============================================================
+     🛑 SKYTRACK LOCAL TIME ENGINE — TEMPORARILY DISABLED
+     ------------------------------------------------------------
+     Fecha: 27 DEC 2025
+     Motivo: Debug sincronización Runtime ↔ SkyTrack
+     Nota: Este bloque EXISTÍA cuando funcionaba,
+           se comenta SOLO para aislar causa.
+     ============================================================
+
 <script>
-  
-/* ============================================================
-   ⏱ SKYTRACK LOCAL TIME ENGINE (FALLBACK)
-   ------------------------------------------------------------
-   Se usa SOLO si no existe ACS_TIME global
-   ============================================================ */
 (function () {
 
   if (window.ACS_TIME) return;
@@ -208,8 +211,9 @@
   console.log("⏱ SkyTrack ACS_TIME synced at minute:", startMinute);
 
 })();
-
 </script>
+
+============================================================ -->
 
 <!-- ============================================================
      🌍 WORLD ENGINE (CONTENEDOR)
