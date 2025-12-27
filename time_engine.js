@@ -13,11 +13,22 @@
 const SIM_START = new Date("1940-01-01T00:00:00Z");
 const SIM_END = new Date("2026-01-01T00:00:00Z"); // end exactly at 31 DEC 2025 23:59 UTC
 
-/* === GLOBAL TIME OBJECT === */
+/* ============================================================
+   🟧 A6 — GAME MINUTE NORMALIZATION (GLOBAL)
+   - Define ACS_TIME.minute oficialmente
+   - Minutos absolutos desde SIM_START
+   - Fuente única para Runtime / SkyTrack / Maintenance
+   ============================================================ */
+
 const ACS_TIME = {
   currentTime: new Date(SIM_START),
   tickInterval: null,
   listeners: [],
+
+  get minute() {
+    if (!(this.currentTime instanceof Date)) return 0;
+    return Math.floor((this.currentTime - SIM_START) / 60000);
+  }
 };
 
 /* === LOAD OR INIT CYCLE === */
