@@ -30,9 +30,9 @@
 
   // Leer flota real (solo aviones activos)
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const activeAircraftIds = new Set(
-    fleet.filter(a => a.status === "active").map(a => a.aircraftId)
-  );
+  const allowedAircraftIds = new Set(
+  fleet.map(a => a.aircraftId)
+);
 
   // Filtrar SOLO vuelos reales ejecutables
   const activeFlights = items
