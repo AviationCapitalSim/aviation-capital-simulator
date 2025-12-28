@@ -252,19 +252,27 @@ function buildFlightsFromSchedule() {
 
 function updateWorldFlights() {
 
-  if (
-  !window.ACS_TIME ||
-  !Number.isFinite(window.ACS_TIME.minute) ||
-  !Number.isFinite(window.ACS_TIME.dayIndex)
+  let nowDayMin;
+let nowGameMin;
+
+// ✅ 1) ACS_TIME disponible (modo ideal)
+if (
+  window.ACS_TIME &&
+  Number.isFinite(window.ACS_TIME.minute)
 ) {
-  return;
+  nowDayMin  = window.ACS_TIME.minute % 1440;
+  nowGameMin = window.ACS_TIME.minute;
 }
 
-// ⏱ minuto absoluto del día (0–1439)
-const nowDayMin = window.ACS_TIME.minute % 1440;
+// ⚠️ 2) FALLBACK REAL — NUNCA BLOQUEA EL RUNTIME
+else {
+  const d = new Date();
+  nowDayMin  = d.getHours() * 60 + d.getMinutes();
+  nowGameMin = nowDayMin;
 
-// ⏱ minuto global del juego (persistencia)
-const nowGameMin = window.ACS_TIME.minute;
+  console.warn("⏱ ACS_TIME missing — using browser clock");
+}
+
 
   const flights = buildFlightsFromSchedule();
   const state   = getFlightState();
