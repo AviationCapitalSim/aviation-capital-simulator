@@ -2537,12 +2537,12 @@ function openFlightModal(it, chipEl){
 
   title.textContent = `✈️ ${fnOut} / ${fnIn}`;
 
-  /* ============================================================
+ /* ============================================================
    ⏱ TIME MODEL — SIMPLE & CORRECT
    (según RESUMEN VISUAL)
    ============================================================ */
 
-// Datos ya calculados (no inventar nada)
+// Datos ya calculados (NO inventar nada)
 const blockOneWayMin = Number(it.blockTimeMin) || 0;     // ida
 const blockTotalMin = blockOneWayMin * 2;                // ida + vuelta
 
@@ -2551,7 +2551,10 @@ const turnOpt  = Number(it.turnaroundMinOptimized);
 const isOpt    = !!it.optimized;
 const turnUsed = (isOpt && Number.isFinite(turnOpt)) ? turnOpt : turnBase;
 
+// ============================================================
 // DEP / END = ida + turnaround destino + vuelta
+// ============================================================
+
 let rotEnd = "—";
 if (dep !== "—") {
   rotEnd = toHHMM(
@@ -2562,7 +2565,10 @@ if (dep !== "—") {
   );
 }
 
+// ============================================================
 // NEXT FLIGHT = ida + turn + vuelta + turn
+// ============================================================
+
 let nextFlight = "—";
 if (dep !== "—") {
   let nextMin =
@@ -2580,26 +2586,26 @@ if (dep !== "—") {
     : toHHMM(nextMin);
 }
 
+// ============================================================
 // DISPLAY
+// ============================================================
+
+// BLOCK TIME = ida + vuelta (solo vuelo)
 const blockText =
   `${Math.floor(blockTotalMin / 60)}h ${String(blockTotalMin % 60).padStart(2,"0")}m`;
 
-let turnText = `${turnBase} min`;
+// TURNAROUND = uno solo (destino)
+let turnText = `${turnUsed} min`;
 if (isOpt && Number.isFinite(turnOpt) && turnOpt !== turnBase) {
   turnText = `${turnBase} min (Opt ${turnOpt} min)`;
 }
 
-  // TURNAROUND = uno solo (destino)
-  let turnText = `${turnBase} min`;
-  if (isOpt && Number.isFinite(turnOpt) && turnOpt !== turnBase) {
-    turnText = `${turnBase} min (Opt ${turnOpt} min)`;
-  }
-
-  const maintText = it.maintenance === "B"
-    ? "B-Check (24h)"
-    : it.maintenance === "A"
-      ? "A-Check"
-      : "None";
+// MAINTENANCE
+const maintText = it.maintenance === "B"
+  ? "B-Check (24h)"
+  : it.maintenance === "A"
+    ? "A-Check"
+    : "None";
 
   /* ============================================================
      🧾 MODAL HTML
