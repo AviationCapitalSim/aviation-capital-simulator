@@ -287,28 +287,24 @@ if (
   console.warn("⚠ ACS_TIME.minute missing — using currentTime fallback");
    
 } else {
-  
-   // 🔒 ÚLTIMO fallback (NUNCA return)
-   
   const d = new Date();
 
-// ⏱ Minutos + fracción por segundos (movimiento continuo)
-nowGameMin =
-  d.getUTCHours() * 60 +
-  d.getUTCMinutes() +
-  (d.getUTCSeconds() / 60);
+  nowGameMin =
+    d.getUTCHours() * 60 +
+    d.getUTCMinutes() +
+    (d.getUTCSeconds() / 60);
 
-nowDayMin = nowGameMin % 1440;
+  nowDayMin = nowGameMin % 1440;
 
-// ⚠ avisar una sola vez
-if (!window.__ACS_TIME_FALLBACK_WARNED__) {
-  console.warn("⚠ ACS_TIME missing — using UTC fallback");
-  window.__ACS_TIME_FALLBACK_WARNED__ = true;
-}
+  if (!window.__ACS_TIME_FALLBACK_WARNED__) {
+    console.warn("⚠ ACS_TIME missing — using UTC fallback");
+    window.__ACS_TIME_FALLBACK_WARNED__ = true;
+  }
+} // ✅ ESTA LLAVE FALTABA
 
-  const flights = buildFlightsFromSchedule();
-  const state   = getFlightState();
-  const live    = [];
+const flights = buildFlightsFromSchedule();
+const state   = getFlightState();
+const live    = [];
 
   // Índice rápido de aeropuertos
   const airportIndex = {};
