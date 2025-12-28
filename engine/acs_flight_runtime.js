@@ -335,31 +335,37 @@ else {
     });
 
     if (f && win) {
-      const originAp = airportIndex[f.origin];
-      const destAp   = airportIndex[f.destination];
+  const originAp = airportIndex[f.origin];
+  const destAp   = airportIndex[f.destination];
 
-      if (originAp && destAp) {
+  if (
+    originAp && destAp &&
+    Number.isFinite(originAp.latitude) &&
+    Number.isFinite(originAp.longitude) &&
+    Number.isFinite(destAp.latitude) &&
+    Number.isFinite(destAp.longitude)
+  ) {
+    const duration = Math.max(win.arrAdj - win.depAdj, 1);
+    const progress = Math.min(
+      Math.max((win.nowAdj - win.depAdj) / duration, 0),
+      1
+    );
 
-        // 🔧 proteger duración (con ventana ajustada)
-        const duration = Math.max(win.arrAdj - win.depAdj, 1);
+    const pos = interpolateGC(
+      originAp.latitude, originAp.longitude,
+      destAp.latitude,   destAp.longitude,
+      progress
+    );
 
-        const progress = Math.min(
-          Math.max((win.nowAdj - win.depAdj) / duration, 0),
-          1
-        );
+    lat = pos.lat;
+    lng = pos.lng;
+    status = "AIRBORNE";
 
-        const pos = interpolateGC(
-        originAp.latitude,  originAp.longitude,
-        destAp.latitude,    destAp.longitude,
-        progress
-     );
-
-
-        lat = pos.lat;
-        lng = pos.lng;
-        status = "AIRBORNE";
-      }
-    }
+  } else if (win && win.inWindow) {
+    // 🔧 FALLBACK CORRECTO
+    status = "AIRBORNE";
+  }
+}
 
     // =========================================================
     // 🛬 EN TIERRA — FORZADO Y SEGURO
