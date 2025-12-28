@@ -547,15 +547,31 @@ ${percent}%
 }
 
 /* ============================================================
-   ⏱ SKYTRACK — INIT + TIME SYNC
+   🟧 SKYTRACK — RENDER LOOP FINAL (DEFINITIVO)
+   ------------------------------------------------------------
+   - Garantiza render inicial
+   - Garantiza render continuo
+   - NO depende del runtime
    ============================================================ */
-   
-  document.addEventListener("DOMContentLoaded", () => {
+
+document.addEventListener("DOMContentLoaded", () => {
   initSkyTrackMap();
 
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(renderLiveFlights);
+  // 🟢 Primer render inmediato
+  try {
+    renderLiveFlights();
+  } catch (e) {
+    console.warn("SkyTrack initial render error:", e);
   }
+
+  // 🟢 Loop de render independiente (24/7)
+  setInterval(() => {
+    try {
+      renderLiveFlights();
+    } catch (e) {
+      console.warn("SkyTrack render loop error:", e);
+    }
+  }, 1000);
 });
 
 /* ============================================================
