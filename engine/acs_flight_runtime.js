@@ -581,18 +581,26 @@ waitForWorldAirports(() => {
   updateWorldFlights();
   generateReturnFlights();
 
-  // ✅ 4) Loop 24/7
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(() => {
-      updateWorldFlights();
-      generateReturnFlights();
-    });
-  } else {
-    console.warn("⚠ registerTimeListener not available for flight runtime");
-  }
+/* ============================================================
+   🟧 A10 — RUNTIME LOOP 24/7 REAL (DEFINITIVO)
+   ------------------------------------------------------------
+   - NO depende de registerTimeListener
+   - NO depende de eventos
+   - Runtime calcula siempre
+   - SkyTrack solo dibuja
+   ============================================================ */
 
-  console.log("🌍 ACS World Runtime ACTIVE (24/7)");
-});
+// ⏱ Loop fijo del runtime (1 Hz)
+setInterval(() => {
+  try {
+    updateWorldFlights();
+    generateReturnFlights();
+  } catch (e) {
+    console.warn("ACS Runtime loop error:", e);
+  }
+}, 1000);
+
+console.log("🌍 ACS World Runtime ACTIVE (24/7)");
    
 // 🔓 Expose runtime API (REQUIRED)
 window.buildFlightsFromSchedule = buildFlightsFromSchedule;
