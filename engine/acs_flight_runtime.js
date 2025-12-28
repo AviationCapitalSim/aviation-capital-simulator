@@ -288,10 +288,21 @@ if (
 } else {
   // 🔒 ÚLTIMO fallback (NUNCA return)
   const d = new Date();
-  nowGameMin = d.getUTCHours() * 60 + d.getUTCMinutes();
-  nowDayMin  = nowGameMin % 1440;
 
+const d = new Date();
+
+// ⏱ Minutos + fracción por segundos (movimiento continuo)
+nowGameMin =
+  d.getUTCHours() * 60 +
+  d.getUTCMinutes() +
+  (d.getUTCSeconds() / 60);
+
+nowDayMin = nowGameMin % 1440;
+
+// ⚠ avisar una sola vez
+if (!window.__ACS_TIME_FALLBACK_WARNED__) {
   console.warn("⚠ ACS_TIME missing — using UTC fallback");
+  window.__ACS_TIME_FALLBACK_WARNED__ = true;
 }
 
   const flights = buildFlightsFromSchedule();
