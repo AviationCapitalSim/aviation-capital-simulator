@@ -602,6 +602,8 @@ setInterval(() => {
 
 console.log("🌍 ACS World Runtime ACTIVE (24/7)");
    
+}); // ✅ cierre correcto de waitForWorldAirports
+
 // 🔓 Expose runtime API (REQUIRED)
 window.buildFlightsFromSchedule = buildFlightsFromSchedule;
 window.updateWorldFlights       = updateWorldFlights;
