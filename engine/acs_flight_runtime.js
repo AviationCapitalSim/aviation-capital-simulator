@@ -355,33 +355,18 @@ return {
   let status = ac.status || "GROUND";
   let progress = 0;
 
-  // =========================================================
-  // ✈️ VUELO ACTIVO (comparación SIEMPRE contra nowDayMin)
-  // =========================================================
-
   let f = null;
   let win = null;
-
-  /* ============================================================
-     🟧 A6 — FIX SELECCIÓN DE VUELO ACTIVO (DEFINITIVO)
-     ------------------------------------------------------------
-     - El runtime decide estado, NO el filtro
-     - Permite progreso continuo
-     ============================================================ */
 
   f = flights.find(fl => {
     if (fl.aircraftId !== ac.aircraftId) return false;
     win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
-    return !!win; // ❗ NO filtrar por inWindow
+    return !!win;
   });
 
   if (f && win) {
     const originAp = airportIndex[f.origin];
     const destAp   = airportIndex[f.destination];
-
-    // ================================
-    // ✈️ AIRBORNE (MOVIMIENTO REAL)
-    // ================================
 
     if (
       originAp && destAp &&
@@ -390,9 +375,7 @@ return {
       Number.isFinite(destAp.latitude) &&
       Number.isFinite(destAp.longitude)
     ) {
-
       const duration = Math.max(win.arrAdj - win.depAdj, 1);
-
       progress = (win.nowAdj - win.depAdj) / duration;
       progress = Math.min(Math.max(progress, 0), 1);
 
@@ -405,27 +388,27 @@ return {
       lat = pos.lat;
       lng = pos.lng;
       status = "AIRBORNE";
-
-    }
-    // ================================
-    // 🛬 COMPLETED
-    // ================================
-    else if (win.nowAdj > win.arrAdj) {
+    } else if (win.nowAdj > win.arrAdj) {
       status = "COMPLETED";
       progress = 1;
     }
-    // ================================
-    // 🛫 GROUND (ANTES DEL DEP)
-    // ================================
-    else {
-      status = "GROUND";
-      progress = 0;
-    }
   }
 
-  // =========================================================
-  // 📡 PUBLICACIÓN RUNTIME
-  // =========================================================
+  // fallback tierra
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    const real = fleet.find(x => x.id === ac.aircraftId);
+    const baseIcao =
+      ac.airport ||
+      real?.baseAirport ||
+      localStorage.getItem("ACS_baseICAO");
+
+    const ap = airportIndex[baseIcao];
+    if (ap) {
+      lat = ap.latitude;
+      lng = ap.longitude;
+      status = "GROUND";
+    }
+  }
 
   live.push({
     aircraftId: ac.aircraftId,
@@ -439,9 +422,7 @@ return {
 
   ac.status = status;
   ac.lastUpdateMin = nowGameMin;
-
-}); // ✅ cierre state.forEach
-
+});
 
     // =========================================================
     // 🛬 EN TIERRA — FORZADO Y SEGURO
