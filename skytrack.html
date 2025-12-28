@@ -493,14 +493,16 @@ function renderLiveFlights() {
     activeIds.add(id);
 
     // 🟦 MARKER
-    if (!liveFlightMarkers[id]) {
-      liveFlightMarkers[id] = L.marker(
-        [f.lat, f.lng],
-        { icon: createATCMarkerIcon(f) }
-      ).addTo(map);
-    } else {
-      liveFlightMarkers[id].setLatLng([f.lat, f.lng]);
-    }
+if (!liveFlightMarkers[id]) {
+  liveFlightMarkers[id] = L.marker(
+    [f.lat, f.lng],
+    { icon: createATCMarkerIcon(f) }
+  ).addTo(map);
+}
+
+// ✈️ MOVIMIENTO SIEMPRE (CLAVE)
+liveFlightMarkers[id].setLatLng([f.lat, f.lng]);
+}
 
     // 🧭 TRACE (solo en vuelo)
     if (f.status === "air") {
