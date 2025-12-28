@@ -1961,7 +1961,14 @@ if (duplicateFlight) {
 
 /* === ABS TIME FIX (USING ACS_TIME.currentTime) === */
 
-if (!window.ACS_TIME || !ACS_TIME.currentTime) return;
+let nowDate;
+
+if (window.ACS_TIME && ACS_TIME.currentTime) {
+  nowDate = new Date(ACS_TIME.currentTime);
+} else {
+  // fallback seguro, NO bloquea asignación
+  nowDate = new Date();
+}
 
 const nowDate = new Date(ACS_TIME.currentTime);
 const todayIdx = (nowDate.getDay() + 6) % 7;
