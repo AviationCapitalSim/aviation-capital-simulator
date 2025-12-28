@@ -260,20 +260,38 @@ function updateWorldFlights() {
    - Garantiza progreso continuo
    ============================================================ */
 
+/* ============================================================
+   🟧 A13 — TIME RESOLUTION SAFE (NUNCA DETIENE RUNTIME)
+   ------------------------------------------------------------
+   - NO retorna
+   - Garantiza tiempo válido SIEMPRE
+   ============================================================ */
+
 let nowGameMin;
 let nowDayMin;
 
-// ⏱️ Fuente única y obligatoria
 if (
   window.ACS_TIME &&
   Number.isFinite(window.ACS_TIME.minute)
 ) {
   nowGameMin = window.ACS_TIME.minute;
   nowDayMin  = nowGameMin % 1440;
+} else if (
+  window.ACS_TIME &&
+  window.ACS_TIME.currentTime instanceof Date
+) {
+  const d = window.ACS_TIME.currentTime;
+  nowGameMin = d.getUTCHours() * 60 + d.getUTCMinutes();
+  nowDayMin  = nowGameMin % 1440;
+
+  console.warn("⚠ ACS_TIME.minute missing — using currentTime fallback");
 } else {
-  // 🔒 FAIL HARD CONTROLADO (no movimiento fantasma)
-  console.warn("⛔ ACS_TIME.minute no disponible — runtime detenido");
-  return;
+  // 🔒 ÚLTIMO fallback (NUNCA return)
+  const d = new Date();
+  nowGameMin = d.getUTCHours() * 60 + d.getUTCMinutes();
+  nowDayMin  = nowGameMin % 1440;
+
+  console.warn("⚠ ACS_TIME missing — using UTC fallback");
 }
 
   const flights = buildFlightsFromSchedule();
