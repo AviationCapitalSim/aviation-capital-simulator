@@ -252,27 +252,29 @@ function buildFlightsFromSchedule() {
 
 function updateWorldFlights() {
 
-  let nowDayMin;
-let nowGameMin;
+/* ============================================================
+   🟧 A5.1 — TIME SOURCE UNIFICADO (B DEFINITIVO)
+   ------------------------------------------------------------
+   - Fuente ÚNICA: ACS_TIME
+   - Nunca usa Date.now()
+   - Garantiza progreso continuo
+   ============================================================ */
 
-// ✅ 1) ACS_TIME disponible (modo ideal)
+let nowGameMin;
+let nowDayMin;
+
+// ⏱️ Fuente única y obligatoria
 if (
   window.ACS_TIME &&
   Number.isFinite(window.ACS_TIME.minute)
 ) {
-  nowDayMin  = window.ACS_TIME.minute % 1440;
   nowGameMin = window.ACS_TIME.minute;
+  nowDayMin  = nowGameMin % 1440;
+} else {
+  // 🔒 FAIL HARD CONTROLADO (no movimiento fantasma)
+  console.warn("⛔ ACS_TIME.minute no disponible — runtime detenido");
+  return;
 }
-
-// ⚠️ 2) FALLBACK REAL — NUNCA BLOQUEA EL RUNTIME
-else {
-  const d = new Date();
-  nowDayMin  = d.getHours() * 60 + d.getMinutes();
-  nowGameMin = nowDayMin;
-
-  console.warn("⏱ ACS_TIME missing — using browser clock");
-}
-
 
   const flights = buildFlightsFromSchedule();
   const state   = getFlightState();
