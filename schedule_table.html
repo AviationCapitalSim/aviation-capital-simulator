@@ -2524,45 +2524,62 @@ function openFlightModal(it, chipEl){
   const dep    = it?.departure || "—";
 
   /* ============================================================
-     🔢 FLIGHT NUMBER
+     🔢 FLIGHT NUMBER (NO DOUBLE IATA)
      ============================================================ */
 
-  const iataCode = localStorage.getItem("userIATA") || "XX";
-  const fnOut = it?.flightNumberOut || "—";
-  const fnIn  = it?.flightNumberIn  || "—";
-  title.textContent = `✈️ ${iataCode}${fnOut} / ${iataCode}${fnIn}`;
+  const iataCode = (localStorage.getItem("userIATA") || "XX").toUpperCase();
+
+  const fnOutRaw = String(it?.flightNumberOut || "").toUpperCase();
+  const fnInRaw  = String(it?.flightNumberIn  || "").toUpperCase();
+
+  const fnOut = fnOutRaw.startsWith(iataCode) ? fnOutRaw : `${iataCode}${fnOutRaw}`;
+  const fnIn  = fnInRaw.startsWith(iataCode)  ? fnInRaw  : `${iataCode}${fnInRaw}`;
+
+  title.textContent = `✈️ ${fnOut} / ${fnIn}`;
 
   /* ============================================================
-     🔄 ROUTE SCHEDULE — SOURCE OF TRUTH
+     🔄 ROUTE SCHEDULE — SOURCE OF TRUTH (SE MANTIENE)
      ============================================================ */
 
   let route = null;
   try { route = JSON.parse(localStorage.getItem("confirmedRoute")); } catch(e){}
 
-  const blockMin   = Number(route?.blockTimeMin) || 0;
-  const turnBase   = Number(route?.turnaroundMin) || TURNAROUND_MIN;
-  const turnOpt    = Number(route?.turnaroundMinOptimized);
-  const isOpt      = !!route?.optimized;
-  const totalRot   = Number(route?.totalRotationMin) || (blockMin * 2 + turnBase);
+  const blockOneWayMin = Number(route?.blockTimeMin) || 0; // ida
+  const turnBase       = Number(route?.turnaroundMin) || TURNAROUND_MIN;
+  const turnOpt        = Number(route?.turnaroundMinOptimized);
+  const isOpt          = !!route?.optimized;
+
+  // Turnaround efectivo (destino)
+  const turnUsed = (isOpt && Number.isFinite(turnOpt)) ? turnOpt : turnBase;
 
   /* ============================================================
-     ⏱ DEP / END (ROTATION END)
+     ⏱ DEP / END
+     DEP + ida + turnaround destino + vuelta
      ============================================================ */
 
   let rotEnd = "—";
   if (dep !== "—") {
-    rotEnd = toHHMM(toMin(dep) + totalRot);
+    rotEnd = toHHMM(
+      toMin(dep) +
+      blockOneWayMin +
+      turnUsed +
+      blockOneWayMin
+    );
   }
 
   /* ============================================================
-     ⏭ NEXT FLIGHT (ROT END + FINAL TURNAROUND + MAINT)
+     ⏭ NEXT FLIGHT
+     ida + turnaround destino + vuelta + turnaround final
      ============================================================ */
 
-  const turnFinal = (isOpt && Number.isFinite(turnOpt)) ? turnOpt : turnBase;
   let nextFlight = "—";
-
   if (dep !== "—") {
-    let nextMin = toMin(dep) + totalRot + turnFinal;
+    let nextMin =
+      toMin(dep) +
+      blockOneWayMin +
+      turnUsed +
+      blockOneWayMin +
+      turnUsed;
 
     if (it.maintenance === "A") nextMin += 300;
     if (it.maintenance === "B") nextMin += 1440;
@@ -2576,9 +2593,11 @@ function openFlightModal(it, chipEl){
      📊 DISPLAY VALUES
      ============================================================ */
 
-  const blockTotalMin = blockMin * 2;
+  // BLOCK TIME = ida + vuelta (solo vuelo)
+  const blockTotalMin = blockOneWayMin * 2;
   const blockText = `${Math.floor(blockTotalMin/60)}h ${String(blockTotalMin%60).padStart(2,"0")}m`;
 
+  // TURNAROUND = uno solo (destino)
   let turnText = `${turnBase} min`;
   if (isOpt && Number.isFinite(turnOpt) && turnOpt !== turnBase) {
     turnText = `${turnBase} min (Opt ${turnOpt} min)`;
