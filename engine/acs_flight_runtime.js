@@ -350,84 +350,62 @@ return {
 
   state.forEach(ac => {
 
-  let lat = ac.lat;
-  let lng = ac.lng;
-  let status = "GROUND";
-  let progress = 0;
+    let lat = null;
+    let lng = null;
+    let status = ac.status || "GROUND";
 
-  let f = null;
-  let win = null;
+    // =========================================================
+    // ✈️ VUELO ACTIVO (comparación SIEMPRE contra nowDayMin)
+    // =========================================================
 
-  f = flights.find(fl => {
-    if (fl.aircraftId !== ac.aircraftId) return false;
-    win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
-    return !!win;
-  });
+    let f = null;
+    let win = null;
 
-  if (f && win) {
+    /* ============================================================
+   🟧 A6 — FIX SELECCIÓN DE VUELO ACTIVO (DEFINITIVO)
+   ------------------------------------------------------------
+   - El runtime decide estado, NO el filtro
+   - Permite progreso continuo
+   ============================================================ */
 
-    const originAp = airportIndex[f.origin];
-    const destAp   = airportIndex[f.destination];
+f = flights.find(fl => {
+  if (fl.aircraftId !== ac.aircraftId) return false;
+  win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
+  return !!win; // ⬅️ NO filtrar por inWindow
+});
 
-    if (
-      originAp && destAp &&
-      Number.isFinite(originAp.latitude) &&
-      Number.isFinite(originAp.longitude) &&
-      Number.isFinite(destAp.latitude) &&
-      Number.isFinite(destAp.longitude)
-    ) {
+    if (f && win) {
+  const originAp = airportIndex[f.origin];
+  const destAp   = airportIndex[f.destination];
 
-      const duration = Math.max(win.arrAdj - win.depAdj, 1);
-      progress = (win.nowAdj - win.depAdj) / duration;
-      progress = Math.min(Math.max(progress, 0), 1);
+  if (
+    originAp && destAp &&
+    Number.isFinite(originAp.latitude) &&
+    Number.isFinite(originAp.longitude) &&
+    Number.isFinite(destAp.latitude) &&
+    Number.isFinite(destAp.longitude)
+  ) {
+    const duration = Math.max(win.arrAdj - win.depAdj, 1);
+    const progress = Math.min(
+      Math.max((win.nowAdj - win.depAdj) / duration, 0),
+      1
+    );
 
-      const pos = interpolateGC(
-        originAp.latitude, originAp.longitude,
-        destAp.latitude,   destAp.longitude,
-        progress
-      );
+    const pos = interpolateGC(
+      originAp.latitude, originAp.longitude,
+      destAp.latitude,   destAp.longitude,
+      progress
+    );
 
-      lat = pos.lat;
-      lng = pos.lng;
-      status = "AIRBORNE";
+    lat = pos.lat;
+    lng = pos.lng;
+    status = "AIRBORNE";
 
-    } else if (win.nowAdj > win.arrAdj) {
-      status = "COMPLETED";
-      progress = 1;
-    }
+  } else if (win && win.inWindow) {
+    // 🔧 FALLBACK CORRECTO
+    status = "AIRBORNE";
   }
-
-  // 🔒 fallback a base SIEMPRE
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-
-    const real = fleet.find(x => x.id === ac.aircraftId);
-    const baseIcao =
-      ac.airport ||
-      real?.baseAirport ||
-      localStorage.getItem("ACS_baseICAO");
-
-    const ap = airportIndex[baseIcao];
-    if (ap) {
-      lat = ap.latitude;
-      lng = ap.longitude;
-      status = "GROUND";
-    }
-  }
-
-  live.push({
-    aircraftId: ac.aircraftId,
-    flightNumber: f ? f.flightNumber : null,
-    lat,
-    lng,
-    status,
-    progress,
-    updatedMin: nowGameMin
-  });
-
-  ac.status = status;
-  ac.lastUpdateMin = nowGameMin;
-
-}); // ✅ CIERRE ÚNICO Y CORRECTO
+}
 
     // =========================================================
     // 🛬 EN TIERRA — FORZADO Y SEGURO
@@ -465,43 +443,33 @@ return {
         status === "GROUND"   ? "ground" :
                                 "done";
 
-      /* ============================================================
-   🟧 A18 — PUBLISH AIRCRAFT STATE (CONTRATO SKYTRACK)
-   ------------------------------------------------------------
-   - Publica SIEMPRE aircraft (no solo vuelos)
-   - Status NORMALIZADO
-   - Progress SIEMPRE presente
-   ============================================================ */
+      live.push({
+        aircraftId: ac.aircraftId,
+        status: publishStatus,
+        airport: ac.airport || null,
 
-live.push({
-  aircraftId: f.aircraftId || f.id,
-  flightNumber: f.flightNumber || null,
+        origin:      f ? f.origin      : null,
+        destination: f ? f.destination : null,
+        depMin:      f ? f.depMin      : null,
+        arrMin:      f ? f.arrMin      : null,
 
-  lat,
-  lng,
+        lat: lat,
+        lng: lng,
+        updatedMin: nowGameMin
+      });
+    }
 
-  status:
-    status === "AIRBORNE" ? "AIRBORNE" :
-    status === "COMPLETED" ? "COMPLETED" :
-    "GROUND",
+    ac.status = status;
+    ac.lastUpdateMin = nowGameMin;
 
-  progress:
-    status === "AIRBORNE" && Number.isFinite(progress)
-      ? Math.min(Math.max(progress, 0), 1)
-      : (status === "COMPLETED" ? 1 : 0),
+  }); // ✅ cierre state.forEach
 
-  updatedMin: nowGameMin
-});
+  saveFlightState(state);
 
+  window.ACS_LIVE_FLIGHTS = live;
+  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 
-   ac.status = status;
-ac.lastUpdateMin = nowGameMin;
-       
-saveFlightState(state);
-window.ACS_LIVE_FLIGHTS = live;
-localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
-   
-} // cierre updateWorldFlights
+} // ✅ cierre updateWorldFlights
 
 
   /* ============================================================
