@@ -318,6 +318,7 @@ return {
   depAdj: depMin,
   arrAdj
 };
+} // 🔴 CIERRE CORRECTO DE resolveWindow
 
   state.forEach(ac => {
 
