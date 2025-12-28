@@ -352,7 +352,7 @@ return {
 
   let lat = ac.lat;
   let lng = ac.lng;
-  let status = ac.status || "GROUND";
+  let status = "GROUND";
   let progress = 0;
 
   let f = null;
@@ -365,6 +365,7 @@ return {
   });
 
   if (f && win) {
+
     const originAp = airportIndex[f.origin];
     const destAp   = airportIndex[f.destination];
 
@@ -375,6 +376,7 @@ return {
       Number.isFinite(destAp.latitude) &&
       Number.isFinite(destAp.longitude)
     ) {
+
       const duration = Math.max(win.arrAdj - win.depAdj, 1);
       progress = (win.nowAdj - win.depAdj) / duration;
       progress = Math.min(Math.max(progress, 0), 1);
@@ -388,14 +390,16 @@ return {
       lat = pos.lat;
       lng = pos.lng;
       status = "AIRBORNE";
+
     } else if (win.nowAdj > win.arrAdj) {
       status = "COMPLETED";
       progress = 1;
     }
   }
 
-  // fallback tierra
+  // 🔒 fallback a base SIEMPRE
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+
     const real = fleet.find(x => x.id === ac.aircraftId);
     const baseIcao =
       ac.airport ||
@@ -422,7 +426,8 @@ return {
 
   ac.status = status;
   ac.lastUpdateMin = nowGameMin;
-});
+
+}); // ✅ CIERRE ÚNICO Y CORRECTO
 
     // =========================================================
     // 🛬 EN TIERRA — FORZADO Y SEGURO
