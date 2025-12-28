@@ -443,21 +443,34 @@ f = flights.find(fl => {
         status === "GROUND"   ? "ground" :
                                 "done";
 
-      live.push({
-        aircraftId: ac.aircraftId,
-        status: publishStatus,
-        airport: ac.airport || null,
+      /* ============================================================
+   🟧 A18 — PUBLISH AIRCRAFT STATE (CONTRATO SKYTRACK)
+   ------------------------------------------------------------
+   - Publica SIEMPRE aircraft (no solo vuelos)
+   - Status NORMALIZADO
+   - Progress SIEMPRE presente
+   ============================================================ */
 
-        origin:      f ? f.origin      : null,
-        destination: f ? f.destination : null,
-        depMin:      f ? f.depMin      : null,
-        arrMin:      f ? f.arrMin      : null,
+live.push({
+  aircraftId: f.aircraftId || f.id,
+  flightNumber: f.flightNumber || null,
 
-        lat: lat,
-        lng: lng,
-        updatedMin: nowGameMin
-      });
-    }
+  lat,
+  lng,
+
+  status:
+    status === "AIRBORNE" ? "AIRBORNE" :
+    status === "COMPLETED" ? "COMPLETED" :
+    "GROUND",
+
+  progress:
+    status === "AIRBORNE" && Number.isFinite(progress)
+      ? Math.min(Math.max(progress, 0), 1)
+      : (status === "COMPLETED" ? 1 : 0),
+
+  updatedMin: nowGameMin
+});
+
 
     ac.status = status;
     ac.lastUpdateMin = nowGameMin;
