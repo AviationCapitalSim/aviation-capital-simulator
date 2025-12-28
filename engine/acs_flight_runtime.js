@@ -361,11 +361,18 @@ return {
     let f = null;
     let win = null;
 
-    f = flights.find(fl => {
-      if (fl.aircraftId !== ac.aircraftId) return false;
-      win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
-      return !!win && win.inWindow === true;
-    });
+    /* ============================================================
+   🟧 A6 — FIX SELECCIÓN DE VUELO ACTIVO (DEFINITIVO)
+   ------------------------------------------------------------
+   - El runtime decide estado, NO el filtro
+   - Permite progreso continuo
+   ============================================================ */
+
+f = flights.find(fl => {
+  if (fl.aircraftId !== ac.aircraftId) return false;
+  win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
+  return !!win; // ⬅️ NO filtrar por inWindow
+});
 
     if (f && win) {
   const originAp = airportIndex[f.origin];
