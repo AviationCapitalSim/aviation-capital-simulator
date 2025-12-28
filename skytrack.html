@@ -504,7 +504,7 @@ if (!liveFlightMarkers[id]) {
 liveFlightMarkers[id].setLatLng([f.lat, f.lng]);
 
 // 🧭 TRACE (solo en vuelo)
-if (f.status === "air") {
+if (String(f.status).toUpperCase() === "AIRBORNE") {
 
   if (!liveFlightTraces[id]) {
     liveFlightTraces[id] = L.polyline([], {
