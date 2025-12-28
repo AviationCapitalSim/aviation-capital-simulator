@@ -1961,6 +1961,8 @@ if (duplicateFlight) {
 
 /* === ABS TIME FIX (USING ACS_TIME.currentTime) === */
 
+/* === ABS TIME FIX (USING ACS_TIME.currentTime) === */
+
 let nowDate;
 
 if (window.ACS_TIME && ACS_TIME.currentTime) {
@@ -1970,7 +1972,6 @@ if (window.ACS_TIME && ACS_TIME.currentTime) {
   nowDate = new Date();
 }
 
-const nowDate = new Date(ACS_TIME.currentTime);
 const todayIdx = (nowDate.getDay() + 6) % 7;
 const dayIdx   = days.indexOf(day);
 
