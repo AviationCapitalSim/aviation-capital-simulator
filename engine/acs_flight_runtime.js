@@ -350,62 +350,98 @@ return {
 
   state.forEach(ac => {
 
-    let lat = null;
-    let lng = null;
-    let status = ac.status || "GROUND";
+  let lat = ac.lat;
+  let lng = ac.lng;
+  let status = ac.status || "GROUND";
+  let progress = 0;
 
-    // =========================================================
-    // ✈️ VUELO ACTIVO (comparación SIEMPRE contra nowDayMin)
-    // =========================================================
+  // =========================================================
+  // ✈️ VUELO ACTIVO (comparación SIEMPRE contra nowDayMin)
+  // =========================================================
 
-    let f = null;
-    let win = null;
+  let f = null;
+  let win = null;
 
-    /* ============================================================
-   🟧 A6 — FIX SELECCIÓN DE VUELO ACTIVO (DEFINITIVO)
-   ------------------------------------------------------------
-   - El runtime decide estado, NO el filtro
-   - Permite progreso continuo
-   ============================================================ */
+  /* ============================================================
+     🟧 A6 — FIX SELECCIÓN DE VUELO ACTIVO (DEFINITIVO)
+     ------------------------------------------------------------
+     - El runtime decide estado, NO el filtro
+     - Permite progreso continuo
+     ============================================================ */
 
-f = flights.find(fl => {
-  if (fl.aircraftId !== ac.aircraftId) return false;
-  win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
-  return !!win; // ⬅️ NO filtrar por inWindow
-});
+  f = flights.find(fl => {
+    if (fl.aircraftId !== ac.aircraftId) return false;
+    win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
+    return !!win; // ❗ NO filtrar por inWindow
+  });
 
-    if (f && win) {
-  const originAp = airportIndex[f.origin];
-  const destAp   = airportIndex[f.destination];
+  if (f && win) {
+    const originAp = airportIndex[f.origin];
+    const destAp   = airportIndex[f.destination];
 
-  if (
-    originAp && destAp &&
-    Number.isFinite(originAp.latitude) &&
-    Number.isFinite(originAp.longitude) &&
-    Number.isFinite(destAp.latitude) &&
-    Number.isFinite(destAp.longitude)
-  ) {
-    const duration = Math.max(win.arrAdj - win.depAdj, 1);
-    const progress = Math.min(
-      Math.max((win.nowAdj - win.depAdj) / duration, 0),
-      1
-    );
+    // ================================
+    // ✈️ AIRBORNE (MOVIMIENTO REAL)
+    // ================================
 
-    const pos = interpolateGC(
-      originAp.latitude, originAp.longitude,
-      destAp.latitude,   destAp.longitude,
-      progress
-    );
+    if (
+      originAp && destAp &&
+      Number.isFinite(originAp.latitude) &&
+      Number.isFinite(originAp.longitude) &&
+      Number.isFinite(destAp.latitude) &&
+      Number.isFinite(destAp.longitude)
+    ) {
 
-    lat = pos.lat;
-    lng = pos.lng;
-    status = "AIRBORNE";
+      const duration = Math.max(win.arrAdj - win.depAdj, 1);
 
-  } else if (win && win.inWindow) {
-    // 🔧 FALLBACK CORRECTO
-    status = "AIRBORNE";
+      progress = (win.nowAdj - win.depAdj) / duration;
+      progress = Math.min(Math.max(progress, 0), 1);
+
+      const pos = interpolateGC(
+        originAp.latitude, originAp.longitude,
+        destAp.latitude,   destAp.longitude,
+        progress
+      );
+
+      lat = pos.lat;
+      lng = pos.lng;
+      status = "AIRBORNE";
+
+    }
+    // ================================
+    // 🛬 COMPLETED
+    // ================================
+    else if (win.nowAdj > win.arrAdj) {
+      status = "COMPLETED";
+      progress = 1;
+    }
+    // ================================
+    // 🛫 GROUND (ANTES DEL DEP)
+    // ================================
+    else {
+      status = "GROUND";
+      progress = 0;
+    }
   }
-}
+
+  // =========================================================
+  // 📡 PUBLICACIÓN RUNTIME
+  // =========================================================
+
+  live.push({
+    aircraftId: ac.aircraftId,
+    flightNumber: f ? f.flightNumber : null,
+    lat,
+    lng,
+    status,
+    progress,
+    updatedMin: nowGameMin
+  });
+
+  ac.status = status;
+  ac.lastUpdateMin = nowGameMin;
+
+}); // ✅ cierre state.forEach
+
 
     // =========================================================
     // 🛬 EN TIERRA — FORZADO Y SEGURO
