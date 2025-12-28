@@ -563,7 +563,7 @@ function seedFlightStateFromSchedule() {
   }
 }
    
-  /* ============================================================
+/* ============================================================
    🟦 PASO 3.3 — TIME ENGINE HOOK (WORLD ONLY)
    ============================================================ */
 
@@ -578,30 +578,35 @@ waitForWorldAirports(() => {
   }
 
   // ✅ 3) Primera pintura inmediata
-  updateWorldFlights();
-  generateReturnFlights();
-
-/* ============================================================
-   🟧 A10 — RUNTIME LOOP 24/7 REAL (DEFINITIVO)
-   ------------------------------------------------------------
-   - NO depende de registerTimeListener
-   - NO depende de eventos
-   - Runtime calcula siempre
-   - SkyTrack solo dibuja
-   ============================================================ */
-
-// ⏱ Loop fijo del runtime (1 Hz)
-setInterval(() => {
   try {
     updateWorldFlights();
     generateReturnFlights();
-  } catch (e) {
-    console.warn("ACS Runtime loop error:", e);
+  } catch(e) {
+    console.warn("ACS initial paint error:", e);
   }
-}, 1000);
 
-console.log("🌍 ACS World Runtime ACTIVE (24/7)");
-   
+  /* ============================================================
+     🟧 A10 — RUNTIME LOOP 24/7 REAL (DEFINITIVO)
+     ------------------------------------------------------------
+     - NO depende de registerTimeListener
+     - Evita intervalos duplicados
+     ============================================================ */
+
+  if (!window.__ACS_RUNTIME_LOOP__) {
+    window.__ACS_RUNTIME_LOOP__ = setInterval(() => {
+      try {
+        updateWorldFlights();
+        generateReturnFlights();
+      } catch (e) {
+        console.warn("ACS Runtime loop error:", e);
+      }
+    }, 1000);
+
+    console.log("🌍 ACS World Runtime ACTIVE (24/7)");
+  } else {
+    console.log("ℹ️ ACS World Runtime loop already running");
+  }
+
 }); // ✅ cierre correcto de waitForWorldAirports
 
 // 🔓 Expose runtime API (REQUIRED)
@@ -609,5 +614,5 @@ window.buildFlightsFromSchedule = buildFlightsFromSchedule;
 window.updateWorldFlights       = updateWorldFlights;
 window.generateReturnFlights    = generateReturnFlights;
 window.bootstrapGroundAircraft  = bootstrapGroundAircraft;
-   
+
 })(); // ✅ ÚNICO CIERRE FINAL DEL IIFE
