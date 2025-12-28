@@ -2330,52 +2330,55 @@ function removeItem(){
 /* ============================================================
    🛑 D1 — DELETE FLIGHT (STORAGE + MEMORY CLEAN)
    ============================================================ */
-     
-function deleteSelectedFlights(){
 
-  if (!ACS_selectedFlightItem) {
+function deleteSelectedFlights() {
+
+  if (!ACS_selectedChipEl) {
     closeFlightModal();
     return;
   }
 
-  // 🔴 CONFIRMATION ALERT
-  const confirmDelete = confirm(
-    "⚠️ This flight will be permanently deleted.\n\nThis action cannot be undone.\n\nDo you want to continue?"
-  );
+  const flightId = ACS_selectedChipEl.dataset.id || "";
+  const routeId  = ACS_selectedChipEl.dataset.routeId || "";
 
-  if (!confirmDelete) {
-    return; // user cancelled
+  if (!flightId) {
+    closeFlightModal();
+    return;
   }
 
-  const flightId = ACS_selectedFlightItem.id;
+  /* ===============================
+     1️⃣ BORRAR DE LOCALSTORAGE
+     =============================== */
 
-  // 1️⃣ Read scheduleItems
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch(e){
-    items = [];
+  let items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  items = items.filter(it => it.id !== flightId);
+  localStorage.setItem("scheduleItems", JSON.stringify(items));
+
+  /* ===============================
+     2️⃣ BORRAR DE MEMORIA (ASSIGN)
+     =============================== */
+
+  if (window.routeSchedule && Array.isArray(window.routeSchedule)) {
+    window.routeSchedule = window.routeSchedule.filter(r =>
+      r.id !== flightId && r.routeId !== routeId
+    );
   }
 
-  // 2️⃣ Remove the flight permanently
-  const newItems = items.filter(it => it.id !== flightId);
+  if (window.routes && Array.isArray(window.routes)) {
+    window.routes = window.routes.filter(r =>
+      r.id !== flightId && r.routeId !== routeId
+    );
+  }
 
-  // 3️⃣ Save back to localStorage
-  localStorage.setItem("scheduleItems", JSON.stringify(newItems));
+  /* ===============================
+     3️⃣ LIMPIEZA Y RENDER
+     =============================== */
 
-  // 4️⃣ Clear selection
-  ACS_selectedFlightItem = null;
   ACS_selectedChipEl = null;
-
-  // 5️⃣ Close modal
   closeFlightModal();
+  renderSchedule();
 
-  // 6️⃣ Re-render schedule
-  if (typeof renderSchedule === "function") {
-    renderSchedule();
-  }
-
-  console.log("✈️ Flight permanently deleted:", flightId);
+  alert("❌ Flight deleted permanently.");
 }
      
 function editFlight(){
