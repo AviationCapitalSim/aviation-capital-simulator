@@ -2538,64 +2538,56 @@ function openFlightModal(it, chipEl){
   title.textContent = `✈️ ${fnOut} / ${fnIn}`;
 
   /* ============================================================
-     🔄 ROUTE SCHEDULE — SOURCE OF TRUTH (SE MANTIENE)
-     ============================================================ */
+   ⏱ TIME MODEL — SIMPLE & CORRECT
+   (según RESUMEN VISUAL)
+   ============================================================ */
 
-  let route = null;
-  try { route = JSON.parse(localStorage.getItem("confirmedRoute")); } catch(e){}
+// Datos ya calculados (no inventar nada)
+const blockOneWayMin = Number(it.blockTimeMin) || 0;     // ida
+const blockTotalMin = blockOneWayMin * 2;                // ida + vuelta
 
-  const blockOneWayMin = Number(route?.blockTimeMin) || 0; // ida
-  const turnBase       = Number(route?.turnaroundMin) || TURNAROUND_MIN;
-  const turnOpt        = Number(route?.turnaroundMinOptimized);
-  const isOpt          = !!route?.optimized;
+const turnBase = Number(it.turnaroundMin) || TURNAROUND_MIN;
+const turnOpt  = Number(it.turnaroundMinOptimized);
+const isOpt    = !!it.optimized;
+const turnUsed = (isOpt && Number.isFinite(turnOpt)) ? turnOpt : turnBase;
 
-  // Turnaround efectivo (destino)
-  const turnUsed = (isOpt && Number.isFinite(turnOpt)) ? turnOpt : turnBase;
+// DEP / END = ida + turnaround destino + vuelta
+let rotEnd = "—";
+if (dep !== "—") {
+  rotEnd = toHHMM(
+    toMin(dep) +
+    blockOneWayMin +
+    turnUsed +
+    blockOneWayMin
+  );
+}
 
-  /* ============================================================
-     ⏱ DEP / END
-     DEP + ida + turnaround destino + vuelta
-     ============================================================ */
+// NEXT FLIGHT = ida + turn + vuelta + turn
+let nextFlight = "—";
+if (dep !== "—") {
+  let nextMin =
+    toMin(dep) +
+    blockOneWayMin +
+    turnUsed +
+    blockOneWayMin +
+    turnUsed;
 
-  let rotEnd = "—";
-  if (dep !== "—") {
-    rotEnd = toHHMM(
-      toMin(dep) +
-      blockOneWayMin +
-      turnUsed +
-      blockOneWayMin
-    );
-  }
+  if (it.maintenance === "A") nextMin += 300;
+  if (it.maintenance === "B") nextMin += 1440;
 
-  /* ============================================================
-     ⏭ NEXT FLIGHT
-     ida + turnaround destino + vuelta + turnaround final
-     ============================================================ */
+  nextFlight = it.maintenance === "B"
+    ? "After B-Check (24h)"
+    : toHHMM(nextMin);
+}
 
-  let nextFlight = "—";
-  if (dep !== "—") {
-    let nextMin =
-      toMin(dep) +
-      blockOneWayMin +
-      turnUsed +
-      blockOneWayMin +
-      turnUsed;
+// DISPLAY
+const blockText =
+  `${Math.floor(blockTotalMin / 60)}h ${String(blockTotalMin % 60).padStart(2,"0")}m`;
 
-    if (it.maintenance === "A") nextMin += 300;
-    if (it.maintenance === "B") nextMin += 1440;
-
-    nextFlight = it.maintenance === "B"
-      ? "After B-Check (24h)"
-      : toHHMM(nextMin);
-  }
-
-  /* ============================================================
-     📊 DISPLAY VALUES
-     ============================================================ */
-
-  // BLOCK TIME = ida + vuelta (solo vuelo)
-  const blockTotalMin = blockOneWayMin * 2;
-  const blockText = `${Math.floor(blockTotalMin/60)}h ${String(blockTotalMin%60).padStart(2,"0")}m`;
+let turnText = `${turnBase} min`;
+if (isOpt && Number.isFinite(turnOpt) && turnOpt !== turnBase) {
+  turnText = `${turnBase} min (Opt ${turnOpt} min)`;
+}
 
   // TURNAROUND = uno solo (destino)
   let turnText = `${turnBase} min`;
