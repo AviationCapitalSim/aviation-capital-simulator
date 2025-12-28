@@ -2556,18 +2556,15 @@ if (it && it.type === "service") {
     x.day === day
   );
 
-    const iataCode = localStorage.getItem("userIATA") || "IT";
+  const iataCode = localStorage.getItem("userIATA") || "IT";
   const fnOutRaw = it?.flightNumberOut || "";
   const fnInRaw  = it?.flightNumberIn  || "";
 
-  // ------------------------------------------------------------
-  // ✅ Normalize flight numbers (fix WM-WM100 repetition)
-  // ------------------------------------------------------------
   const normFlight = (v) => {
     const s = String(v || "").trim().toUpperCase();
     if (!s) return "";
     const code = String(iataCode || "").trim().toUpperCase();
-    if (code && s.startsWith(code)) return s.slice(code.length); // WM100 -> 100
+    if (code && s.startsWith(code)) return s.slice(code.length);
     return s;
   };
 
@@ -2584,117 +2581,36 @@ if (it && it.type === "service") {
   const arr    = it?.arrival || "—";
 
   // ============================================================
-  // ✅ MAINT FLAG (Schedule Table controla A/B, aquí solo lectura)
+  // 🔧 FLIGHT PANEL — ÚNICA CORRECCIÓN
   // ============================================================
-  const hasB = services.some(s=> s.serviceType === "B");
-  const hasA = services.some(s=> s.serviceType === "A");
-  const maintFlag = hasB ? "B" : (hasA ? "A" : null);
 
-  // ============================================================
-  // ✅ READ ROUTE SCHEDULE (source of truth for totals + optimizer)
-  // ============================================================
   let route = null;
-  try { route = JSON.parse(localStorage.getItem("confirmedRoute")); } catch(e){ route = null; }
+  try { route = JSON.parse(localStorage.getItem("confirmedRoute")); } catch(e){}
 
-  const rotMinBase = (route && Number.isFinite(route.totalRotationMin)) ? route.totalRotationMin : null;
+  const oneWayMin = route && Number.isFinite(route.blockTimeMin)
+    ? route.blockTimeMin
+    : (dep !== "—" && arr !== "—" ? Math.max(0, toMin(arr) - toMin(dep)) : 0);
 
-  const turnBase = (route && Number.isFinite(route.turnaroundMin)) ? route.turnaroundMin : TURNAROUND_MIN;
-  const turnOpt  = (route && Number.isFinite(route.turnaroundMinOptimized)) ? route.turnaroundMinOptimized : null;
+  const blockTotalMin = oneWayMin * 2;
 
-  const isOptimized = !!(route && route.optimized);
-  const turnPerLeg = (isOptimized && Number.isFinite(turnOpt)) ? turnOpt : turnBase;
+  const turnBase = route && Number.isFinite(route.turnaroundMin)
+    ? route.turnaroundMin
+    : TURNAROUND_MIN;
 
-  // ============================================================
-  // ✅ ROT END + NEXT FLIGHT (Next = ROT END + final turnaround + A/B)
-  // ============================================================
-  let rotEnd = null;
-  let nextFlightText = "—";
+  let rotEnd = dep !== "—"
+    ? toHHMM(toMin(dep) + oneWayMin + turnBase + oneWayMin)
+    : arr;
 
-  if (rotMinBase !== null && dep !== "—") {
+  let nextFlightText = dep !== "—"
+    ? toHHMM(toMin(dep) + oneWayMin + turnBase + oneWayMin + turnBase)
+    : "—";
 
-    const baseEndMin = (toMin(dep) + rotMinBase) % 1440;
-    rotEnd = toHHMM(baseEndMin);
+  const blockText =
+    `${Math.floor(blockTotalMin / 60)}h${String(blockTotalMin % 60).padStart(2,"0")}`;
 
-    // Next flight availability: add final turnaround (real ops)
-    let nextMin = (baseEndMin + turnPerLeg) % 1440;
-
-    // Maintenance impact (Schedule Table)
-    if (maintFlag === "A") nextMin = (nextMin + 300) % 1440;
-    if (maintFlag === "B") nextMin = (nextMin + 1440) % 1440;
-
-    nextFlightText = maintFlag === "B" ? "After B-Check (24h)" : toHHMM(nextMin);
-
-  } else {
-    // legacy fallback (TU lógica original intacta)
-    let lastEventEnd = null;
-
-    flights.forEach(f=>{
-      const end = toMin(f.arrival) + TURNAROUND_MIN;
-      if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
-    });
-
-    services.forEach(s=>{
-      if (s.serviceType === "A") {
-        const end = toMin(s.end);
-        if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
-      }
-    });
-
-    if (hasB) nextFlightText = "After B-Check (24h)";
-    else if (lastEventEnd !== null) nextFlightText = toHHMM(lastEventEnd);
-  }
-
-  // ============================================================
-  // ✅ TOTAL TIME (ida + vuelta) from Route Schedule
-  // ============================================================
-  let totalTimeText = "—";
-  if (route && Number.isFinite(route.blockTimeMin)) {
-    const totalMin = Math.max(0, route.blockTimeMin * 2);
-    const h = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
-    totalTimeText = `${h}h${String(m).padStart(2,"0")}`;
-  } else {
-    // fallback: at least keep previous block calc (outbound)
-    try {
-      if (dep !== "—" && arr !== "—") {
-        const mins = Math.max(0, toMin(arr) - toMin(dep));
-        const h = Math.floor(mins/60);
-        const m = mins % 60;
-        totalTimeText = `${h}h${String(m).padStart(2,"0")}`;
-      }
-    } catch(e){}
-  }
-
-  // ============================================================
-  // ✅ Maintenance text
-  // ============================================================
-  let maintText = "None";
-  if (hasB) maintText = "B-Check (24h)";
-  else if (hasA) maintText = "A-Check";
-
-  // ============================================================
-  // ✅ Turnaround display (show optimizer if exists)
-  // ============================================================
-  let turnText = `${turnBase} min`;
-  if (isOptimized && Number.isFinite(turnOpt) && turnOpt !== turnBase) {
-    turnText = `${turnBase} min (Opt ${turnOpt} min)`;
-  }
+  const turnText = `${turnBase} min`;
 
   title.textContent = `✈️ ${flightLabel}`;
-
-  maintText = "None";
-  if (hasB) maintText = "B-Check (24h)";
-  else if (hasA) maintText = "A-Check";
-
-  let blockText = "—";
-  try {
-    if (dep !== "—" && arr !== "—") {
-      const mins = Math.max(0, toMin(arr) - toMin(dep));
-      const h = Math.floor(mins/60);
-      const m = mins % 60;
-      blockText = `${h}h${String(m).padStart(2,"0")}`;
-    }
-  } catch(e){}
 
   box.innerHTML = `
     <div class="flight-kicker">
@@ -2704,7 +2620,7 @@ if (it && it.type === "service") {
 
     <div class="flight-hero">
       <div class="route">Route Panel</div>
-      <div class="times">DEP ${dep} · END ${rotEnd || arr}</div>
+      <div class="times">DEP ${dep} · END ${rotEnd}</div>
     </div>
 
     <div class="flight-meta">
@@ -2714,11 +2630,11 @@ if (it && it.type === "service") {
       </div>
       <div class="meta-card">
         <span class="label">Turnaround</span>
-        <span class="value">${TURNAROUND_MIN} min</span>
+        <span class="value">${turnText}</span>
       </div>
       <div class="meta-card">
         <span class="label">Maintenance</span>
-        <span class="value">${maintText}</span>
+        <span class="value">None</span>
       </div>
       <div class="meta-card">
         <span class="label">Next Flight</span>
@@ -2730,7 +2646,7 @@ if (it && it.type === "service") {
   modal.classList.remove("hidden");
   modal.style.display = "flex";
 }
-     
+
 /* ============================================================
    ❌ PASO 4 — CANCEL SERVICE — 17DEC25
    ============================================================ */
