@@ -460,14 +460,14 @@ function renderLiveFlights() {
 
   if (!map) return;
 
-  let flights = [];
-  try {
-    const raw = localStorage.getItem("ACS_LIVE_FLIGHTS");
-    flights = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(flights)) flights = [];
-  } catch {
-    flights = [];
-  }
+  // 🔥 Fuente viva del runtime (NO localStorage)
+let flights = [];
+
+if (Array.isArray(window.ACS_LIVE_FLIGHTS)) {
+  flights = window.ACS_LIVE_FLIGHTS;
+} else {
+  flights = [];
+}
 
   let nowMin = 0;
   try {
