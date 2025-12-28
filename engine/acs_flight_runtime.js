@@ -305,15 +305,23 @@ else {
 
     // Cruza medianoche: ej dep 23:30 (1410), arr 01:20 (80)
     const arrAdj = arrMin + 1440;
-    const nowAdj = (nowMinDay < depMin) ? (nowMinDay + 1440) : nowMinDay;
 
-    return {
-      inWindow: nowAdj >= depMin && nowAdj <= arrAdj,
-      nowAdj,
-      depAdj: depMin,
-      arrAdj
-    };
-  }
+   // ⏱ FIX SKYTRACK — tiempo absoluto MONÓTONO
+   const nowAbsMin = Math.floor(Date.now() / 60000);
+
+   // Ajustar al mismo marco que dep/arr
+   const depAbs = depMin;
+   const nowAdj = nowAbsMin % 1440 < depMin
+   ? (nowAbsMin % 1440) + 1440
+   : (nowAbsMin % 1440);
+
+   return {
+   inWindow: nowAdj >= depMin && nowAdj <= arrAdj,
+   nowAdj,
+   depAdj: depMin,
+   arrAdj
+};
+
 
   state.forEach(ac => {
 
