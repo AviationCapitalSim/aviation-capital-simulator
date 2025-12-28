@@ -2461,269 +2461,154 @@ function openFlightModal(it, chipEl){
   ACS_selectedFlightItem = it || null;
   ACS_selectedChipEl = chipEl || null;
 
-/* ============================================================
-   🛠 PASO 4 — SERVICE CONTEXT (MODAL) — 17DEC25
-   ============================================================ */
+  /* ============================================================
+     🛠 PASO 4 — SERVICE CONTEXT (MODAL)
+     ============================================================ */
 
-if (it && it.type === "service") {
+  if (it && it.type === "service") {
 
-  const modal = document.getElementById("flightModal");
-  const box   = document.getElementById("flightModalContent");
-  const title = document.getElementById("flightModalTitle");
+    const modal = document.getElementById("flightModal");
+    const box   = document.getElementById("flightModalContent");
+    const title = document.getElementById("flightModalTitle");
 
-  const dayName = it.day ? it.day.toUpperCase() : "—";
-  const start   = it.start || "—";
-  const end     = it.end || "—";
+    const dayName = it.day ? it.day.toUpperCase() : "—";
+    const start   = it.start || "—";
+    const end     = it.end || "—";
 
-  const isB = it.serviceType === "B";
-  const serviceLabel = isB ? "⚙️ B-Check" : "🔧 A-Check";
-  const durationText = isB
-  ? "24 hours (full day)"
-  : "5 hours";
+    const isB = it.serviceType === "B";
+    const serviceLabel = isB ? "⚙️ B-Check" : "🔧 A-Check";
+    const durationText = isB ? "24 hours (full day)" : "5 hours";
 
-  title.textContent = serviceLabel;
+    title.textContent = serviceLabel;
 
-  box.innerHTML = `
-    <div class="flight-kicker">
-      <strong>Maintenance Service</strong> · ${dayName}
-    </div>
-
-    <div class="flight-hero">
-      <div class="route">${serviceLabel}</div>
-      <div class="times">${start} → ${end}</div>
-    </div>
-
-    <div class="flight-meta">
-      <div class="meta-card">
-        <span class="label">Type</span>
-        <span class="value">${isB ? "B-Check" : "A-Check"}</span>
+    box.innerHTML = `
+      <div class="flight-kicker">
+        <strong>Maintenance Service</strong> · ${dayName}
       </div>
-      <div class="meta-card">
-        <span class="label">Duration</span>
-        <span class="value">${durationText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Scheduled Day</span>
-        <span class="value">${dayName}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Status</span>
-        <span class="value">Scheduled</span>
-      </div>
-    </div>
-  `;
 
-  const footer = modal.querySelector(".acs-modal-footer");
-  if (footer) {
-    footer.innerHTML = `
+      <div class="flight-hero">
+        <div class="route">${serviceLabel}</div>
+        <div class="times">${start} → ${end}</div>
+      </div>
+
+      <div class="flight-meta">
+        <div class="meta-card"><span class="label">Type</span><span class="value">${serviceLabel}</span></div>
+        <div class="meta-card"><span class="label">Duration</span><span class="value">${durationText}</span></div>
+        <div class="meta-card"><span class="label">Scheduled Day</span><span class="value">${dayName}</span></div>
+        <div class="meta-card"><span class="label">Status</span><span class="value">Scheduled</span></div>
+      </div>
+    `;
+
+    modal.querySelector(".acs-modal-footer").innerHTML = `
       <button class="btn-modal red" onclick="cancelSelectedService()">❌ Cancel Service</button>
       <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
     `;
+
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+    return;
   }
 
-  modal.classList.remove("hidden");
-  modal.style.display = "flex";
-  return;
-}
-
-  if (chipEl) {
-    selectedChip = chipEl;
-  }
+  /* ============================================================
+     ✈️ FLIGHT CONTEXT
+     ============================================================ */
 
   const modal = document.getElementById("flightModal");
   const box   = document.getElementById("flightModalContent");
   const title = document.getElementById("flightModalTitle");
 
-  if (!modal || !box || !title) {
-    console.warn("⚠ flightModal elements missing.");
-    return;
-  }
-
-  const items = getItems();
-
-  const modelKey = it?.tail || it?.acType || "";
-  const day      = it?.day || "";
-
-  const flights = items.filter(x =>
-    x.type === "flight" &&
-    (x.tail === modelKey || x.acType === modelKey) &&
-    x.day === day
-  ).sort((a,b)=> toMin(a.departure)-toMin(b.departure));
-
-  const services = items.filter(x =>
-    x.type === "service" &&
-    (x.tail === modelKey || x.acType === modelKey) &&
-    x.day === day
-  );
-
-    const iataCode = localStorage.getItem("userIATA") || "IT";
-  const fnOutRaw = it?.flightNumberOut || "";
-  const fnInRaw  = it?.flightNumberIn  || "";
-
-  // ------------------------------------------------------------
-  // ✅ Normalize flight numbers (fix WM-WM100 repetition)
-  // ------------------------------------------------------------
-  const normFlight = (v) => {
-    const s = String(v || "").trim().toUpperCase();
-    if (!s) return "";
-    const code = String(iataCode || "").trim().toUpperCase();
-    if (code && s.startsWith(code)) return s.slice(code.length); // WM100 -> 100
-    return s;
-  };
-
-  const fnOut = normFlight(fnOutRaw);
-  const fnIn  = normFlight(fnInRaw);
-
-  const flightLabel = (fnOut && fnIn)
-    ? `${iataCode}${fnOut} / ${iataCode}${fnIn}`
-    : `${iataCode}— / ${iataCode}—`;
+  if (!modal || !box || !title) return;
 
   const origin = it?.origin || "—";
   const dest   = it?.destination || "—";
   const dep    = it?.departure || "—";
-  const arr    = it?.arrival || "—";
 
-  // ============================================================
-  // ✅ MAINT FLAG (Schedule Table controla A/B, aquí solo lectura)
-  // ============================================================
-  const hasB = services.some(s=> s.serviceType === "B");
-  const hasA = services.some(s=> s.serviceType === "A");
-  const maintFlag = hasB ? "B" : (hasA ? "A" : null);
+  /* ============================================================
+     🔢 FLIGHT NUMBER
+     ============================================================ */
 
-  // ============================================================
-  // ✅ READ ROUTE SCHEDULE (source of truth for totals + optimizer)
-  // ============================================================
+  const iataCode = localStorage.getItem("userIATA") || "XX";
+  const fnOut = it?.flightNumberOut || "—";
+  const fnIn  = it?.flightNumberIn  || "—";
+  title.textContent = `✈️ ${iataCode}${fnOut} / ${iataCode}${fnIn}`;
+
+  /* ============================================================
+     🔄 ROUTE SCHEDULE — SOURCE OF TRUTH
+     ============================================================ */
+
   let route = null;
-  try { route = JSON.parse(localStorage.getItem("confirmedRoute")); } catch(e){ route = null; }
+  try { route = JSON.parse(localStorage.getItem("confirmedRoute")); } catch(e){}
 
-  const rotMinBase = (route && Number.isFinite(route.totalRotationMin)) ? route.totalRotationMin : null;
+  const blockMin   = Number(route?.blockTimeMin) || 0;
+  const turnBase   = Number(route?.turnaroundMin) || TURNAROUND_MIN;
+  const turnOpt    = Number(route?.turnaroundMinOptimized);
+  const isOpt      = !!route?.optimized;
+  const totalRot   = Number(route?.totalRotationMin) || (blockMin * 2 + turnBase);
 
-  const turnBase = (route && Number.isFinite(route.turnaroundMin)) ? route.turnaroundMin : TURNAROUND_MIN;
-  const turnOpt  = (route && Number.isFinite(route.turnaroundMinOptimized)) ? route.turnaroundMinOptimized : null;
+  /* ============================================================
+     ⏱ DEP / END (ROTATION END)
+     ============================================================ */
 
-  const isOptimized = !!(route && route.optimized);
-  const turnPerLeg = (isOptimized && Number.isFinite(turnOpt)) ? turnOpt : turnBase;
-
-  // ============================================================
-  // ✅ ROT END + NEXT FLIGHT (Next = ROT END + final turnaround + A/B)
-  // ============================================================
-  let rotEnd = null;
-  let nextFlightText = "—";
-
-  if (rotMinBase !== null && dep !== "—") {
-
-    const baseEndMin = (toMin(dep) + rotMinBase) % 1440;
-    rotEnd = toHHMM(baseEndMin);
-
-    // Next flight availability: add final turnaround (real ops)
-    let nextMin = (baseEndMin + turnPerLeg) % 1440;
-
-    // Maintenance impact (Schedule Table)
-    if (maintFlag === "A") nextMin = (nextMin + 300) % 1440;
-    if (maintFlag === "B") nextMin = (nextMin + 1440) % 1440;
-
-    nextFlightText = maintFlag === "B" ? "After B-Check (24h)" : toHHMM(nextMin);
-
-  } else {
-    // legacy fallback (TU lógica original intacta)
-    let lastEventEnd = null;
-
-    flights.forEach(f=>{
-      const end = toMin(f.arrival) + TURNAROUND_MIN;
-      if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
-    });
-
-    services.forEach(s=>{
-      if (s.serviceType === "A") {
-        const end = toMin(s.end);
-        if (lastEventEnd === null || end > lastEventEnd) lastEventEnd = end;
-      }
-    });
-
-    if (hasB) nextFlightText = "After B-Check (24h)";
-    else if (lastEventEnd !== null) nextFlightText = toHHMM(lastEventEnd);
+  let rotEnd = "—";
+  if (dep !== "—") {
+    rotEnd = toHHMM(toMin(dep) + totalRot);
   }
 
-  // ============================================================
-  // ✅ TOTAL TIME (ida + vuelta) from Route Schedule
-  // ============================================================
-  let totalTimeText = "—";
-  if (route && Number.isFinite(route.blockTimeMin)) {
-    const totalMin = Math.max(0, route.blockTimeMin * 2);
-    const h = Math.floor(totalMin / 60);
-    const m = totalMin % 60;
-    totalTimeText = `${h}h${String(m).padStart(2,"0")}`;
-  } else {
-    // fallback: at least keep previous block calc (outbound)
-    try {
-      if (dep !== "—" && arr !== "—") {
-        const mins = Math.max(0, toMin(arr) - toMin(dep));
-        const h = Math.floor(mins/60);
-        const m = mins % 60;
-        totalTimeText = `${h}h${String(m).padStart(2,"0")}`;
-      }
-    } catch(e){}
+  /* ============================================================
+     ⏭ NEXT FLIGHT (ROT END + FINAL TURNAROUND + MAINT)
+     ============================================================ */
+
+  const turnFinal = (isOpt && Number.isFinite(turnOpt)) ? turnOpt : turnBase;
+  let nextFlight = "—";
+
+  if (dep !== "—") {
+    let nextMin = toMin(dep) + totalRot + turnFinal;
+
+    if (it.maintenance === "A") nextMin += 300;
+    if (it.maintenance === "B") nextMin += 1440;
+
+    nextFlight = it.maintenance === "B"
+      ? "After B-Check (24h)"
+      : toHHMM(nextMin);
   }
 
-  // ============================================================
-  // ✅ Maintenance text
-  // ============================================================
-  let maintText = "None";
-  if (hasB) maintText = "B-Check (24h)";
-  else if (hasA) maintText = "A-Check";
+  /* ============================================================
+     📊 DISPLAY VALUES
+     ============================================================ */
 
-  // ============================================================
-  // ✅ Turnaround display (show optimizer if exists)
-  // ============================================================
+  const blockTotalMin = blockMin * 2;
+  const blockText = `${Math.floor(blockTotalMin/60)}h ${String(blockTotalMin%60).padStart(2,"0")}m`;
+
   let turnText = `${turnBase} min`;
-  if (isOptimized && Number.isFinite(turnOpt) && turnOpt !== turnBase) {
+  if (isOpt && Number.isFinite(turnOpt) && turnOpt !== turnBase) {
     turnText = `${turnBase} min (Opt ${turnOpt} min)`;
   }
 
-  title.textContent = `✈️ ${flightLabel}`;
+  const maintText = it.maintenance === "B"
+    ? "B-Check (24h)"
+    : it.maintenance === "A"
+      ? "A-Check"
+      : "None";
 
-  maintText = "None";
-  if (hasB) maintText = "B-Check (24h)";
-  else if (hasA) maintText = "A-Check";
-
-  let blockText = "—";
-  try {
-    if (dep !== "—" && arr !== "—") {
-      const mins = Math.max(0, toMin(arr) - toMin(dep));
-      const h = Math.floor(mins/60);
-      const m = mins % 60;
-      blockText = `${h}h${String(m).padStart(2,"0")}`;
-    }
-  } catch(e){}
+  /* ============================================================
+     🧾 MODAL HTML
+     ============================================================ */
 
   box.innerHTML = `
     <div class="flight-kicker">
       <strong>${origin}</strong> ⇄ <strong>${dest}</strong>
-      ${day ? `<span style="opacity:.85;"> · ${day.toUpperCase()}</span>` : ""}
     </div>
 
     <div class="flight-hero">
       <div class="route">Route Panel</div>
-      <div class="times">DEP ${dep} · END ${rotEnd || arr}</div>
+      <div class="times">DEP ${dep} · END ${rotEnd}</div>
     </div>
 
     <div class="flight-meta">
-      <div class="meta-card">
-        <span class="label">Block Time</span>
-        <span class="value">${blockText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Turnaround</span>
-        <span class="value">${TURNAROUND_MIN} min</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Maintenance</span>
-        <span class="value">${maintText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Next Flight</span>
-        <span class="value">${nextFlightText}</span>
-      </div>
+      <div class="meta-card"><span class="label">Block Time</span><span class="value">${blockText}</span></div>
+      <div class="meta-card"><span class="label">Turnaround</span><span class="value">${turnText}</span></div>
+      <div class="meta-card"><span class="label">Maintenance</span><span class="value">${maintText}</span></div>
+      <div class="meta-card"><span class="label">Next Flight</span><span class="value">${nextFlight}</span></div>
     </div>
   `;
 
