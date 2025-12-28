@@ -285,11 +285,12 @@ if (
   nowDayMin  = nowGameMin % 1440;
 
   console.warn("⚠ ACS_TIME.minute missing — using currentTime fallback");
+   
 } else {
-  // 🔒 ÚLTIMO fallback (NUNCA return)
+  
+   // 🔒 ÚLTIMO fallback (NUNCA return)
+   
   const d = new Date();
-
-const d = new Date();
 
 // ⏱ Minutos + fracción por segundos (movimiento continuo)
 nowGameMin =
