@@ -489,17 +489,16 @@ live.push({
 });
 
 
-    ac.status = status;
-    ac.lastUpdateMin = nowGameMin;
+   ac.status = status;
+ac.lastUpdateMin = nowGameMin;
+       
+}); // cierre state.forEach
 
-  }); // ✅ cierre state.forEach
-
-  saveFlightState(state);
-
-  window.ACS_LIVE_FLIGHTS = live;
-  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
-
-} // ✅ cierre updateWorldFlights
+saveFlightState(state);
+window.ACS_LIVE_FLIGHTS = live;
+localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
+   
+} // cierre updateWorldFlights
 
 
   /* ============================================================
