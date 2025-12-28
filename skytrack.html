@@ -502,20 +502,19 @@ if (!liveFlightMarkers[id]) {
 
 // ✈️ MOVIMIENTO SIEMPRE (CLAVE)
 liveFlightMarkers[id].setLatLng([f.lat, f.lng]);
+
+// 🧭 TRACE (solo en vuelo)
+if (f.status === "air") {
+
+  if (!liveFlightTraces[id]) {
+    liveFlightTraces[id] = L.polyline([], {
+      color: "#1e88e5",
+      weight: 2,
+      opacity: 0.9
+    }).addTo(map);
+  }
+  liveFlightTraces[id].addLatLng([f.lat, f.lng]);
 }
-
-    // 🧭 TRACE (solo en vuelo)
-    if (f.status === "air") {
-
-      if (!liveFlightTraces[id]) {
-        liveFlightTraces[id] = L.polyline([], {
-          color: "#1e88e5",
-          weight: 2,
-          opacity: 0.9
-        }).addTo(map);
-      }
-      liveFlightTraces[id].addLatLng([f.lat, f.lng]);
-    }
 
     // 🧾 POPUP
     const percent = Math.round((f.progress || 0) * 100);
