@@ -771,9 +771,11 @@ function handleLogout() {
    ⏱ SKYTRACK TIME LISTENER
    ============================================================ */
 
-if (typeof registerTimeListener === "function") {
-  registerTimeListener(renderLiveFlights);
-}
+registerTimeListener(() => {
+  if (typeof renderLiveFlights === "function") {
+    renderLiveFlights();
+  }
+});
 
 /* ============================================================
    🕐 Reloj cockpit Airbus sincronizado con ACS
