@@ -425,26 +425,70 @@ const liveFlightTraces  = {};
 const liveFlightPlans   = {};
 
 
+/* ============================================================
+   🟦 S1 — SKYTRACK RENDER LIVE FLIGHTS (FED & STABLE)
+   ------------------------------------------------------------
+   - Consumes ACS_LIVE_FLIGHTS[]
+   - Supports ground + enroute
+   - 1 marker per aircraftId
+   - No legacy paths
+   ============================================================ */
 function renderLiveFlights() {
 
-  if (!map) return; // ⛔ seguridad
-
-  // ============================================================
-  // ✈️ SKYTRACK — READ LIVE FLIGHTS (RUNTIME SOURCE)
-  // ============================================================
-
-  let flights = [];
-  try {
-    flights = Array.isArray(window.ACS_LIVE_FLIGHTS) ? window.ACS_LIVE_FLIGHTS : [];
-  } catch (e) {
-    flights = [];
-  }
+  if (!map) return;
+  if (!Array.isArray(window.ACS_LIVE_FLIGHTS)) return;
 
   const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
-  ? window.ACS_TIME.minute
-  : null;
+    ? window.ACS_TIME.minute
+    : null;
   if (nowMin === null) return;
-  const activeIds = new Set();
+
+  // Marker registry (persist between ticks)
+  window.SKYTRACK_MARKERS = window.SKYTRACK_MARKERS || {};
+
+  window.ACS_LIVE_FLIGHTS.forEach(f => {
+    if (!f || !f.aircraftId || !f.origin) return;
+
+    // ============================================================
+    // 📍 RESOLVE POSITION
+    // ============================================================
+    let lat = f.lat;
+    let lng = f.lng;
+
+    // If no lat/lng → place on origin airport
+    if (typeof lat !== "number" || typeof lng !== "number") {
+      const apt = getSkyTrackAirportByICAO(f.origin);
+      if (!apt) return;
+      lat = apt.lat;
+      lng = apt.lng;
+    }
+
+    // ============================================================
+    // ✈️ CREATE / UPDATE MARKER
+    // ============================================================
+    let marker = window.SKYTRACK_MARKERS[f.aircraftId];
+
+    if (!marker) {
+      marker = L.marker([lat, lng], {
+        title: f.flightOut || f.aircraftId
+      }).addTo(map);
+
+      window.SKYTRACK_MARKERS[f.aircraftId] = marker;
+    } else {
+      marker.setLatLng([lat, lng]);
+    }
+
+    // ============================================================
+    // 🧾 POPUP (MINIMAL, SAFE)
+    // ============================================================
+    const label = f.flightOut || f.aircraftId;
+    marker.bindPopup(`
+      <b>${label}</b><br>
+      ${f.origin} → ${f.destination || ""}
+    `);
+
+  });
+}
 
   // ------------------------------------------------------------
   // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
