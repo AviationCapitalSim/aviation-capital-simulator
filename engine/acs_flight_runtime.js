@@ -42,155 +42,142 @@
   }
 
  /* ============================================================
-   🟥 C2 — UPDATE LIVE FLIGHTS (STABLE · MULTI AIRCRAFT + LABEL)
-   ------------------------------------------------------------
-   - 1 marker por aircraftId (2 hoy, 1000 mañana)
-   - En vuelo si nowMin está entre depMin/arrMin
-   - En tierra (turnaround) si ya llegó y no ha salido el próximo
-   - NUNCA muestra IDs internos (block- / flightId)
-   - Publica FUERA del loop (no rompe el archivo)
+   ✈️ RUNTIME LOOP — 3 PHASES (GROUND / AIR / DESTINATION)
    ============================================================ */
+
 function updateLiveFlights() {
 
+  const liveFlights = [];
+
   const nowMin = window.ACS_TIME?.minute;
-  if (typeof nowMin !== "number") {
+  const exec = getExecFlight();
+
+  if (!exec || typeof nowMin !== "number") {
     window.ACS_LIVE_FLIGHTS = [];
     localStorage.setItem("ACS_LIVE_FLIGHTS", "[]");
     return;
   }
 
-  // 1) Fuente primaria: ACS_ACTIVE_FLIGHTS (bridge)
-  let flights = [];
-  try {
-    const raw = localStorage.getItem("ACS_ACTIVE_FLIGHTS");
-    const arr = raw ? JSON.parse(raw) : [];
-    if (Array.isArray(arr) && arr.length > 0) flights = arr;
-  } catch {}
+  // --------------------------------------------------------
+  // 🔧 Garantizar arrMin si no existe (fallback temporal)
+  // --------------------------------------------------------
 
-  // 2) Fallback: EXEC MODE (legacy)
-  if (flights.length === 0) {
-    try {
-      const exec = JSON.parse(localStorage.getItem("ACS_FLIGHT_EXEC"));
-      if (!exec) throw 0;
-
-      flights = [{
-        flightId: "LEGACY",
-        aircraftId: exec.aircraftId || "AC",
-        flightOut: exec.flightOut || exec.flightNumber || exec.routeCode || "",
-        flightNumber: exec.flightNumber || "",
-        routeCode: exec.routeCode || "",
-        origin: exec.origin,
-        destination: exec.destination,
-        depMin: exec.depMin,
-        arrMin: exec.arrMin
-      }];
-    } catch {
-      window.ACS_LIVE_FLIGHTS = [];
-      localStorage.setItem("ACS_LIVE_FLIGHTS", "[]");
-      return;
-    }
+  if (typeof exec.depMin === "number" && typeof exec.arrMin !== "number") {
+    exec.arrMin = exec.depMin + 120; // 2h default
   }
 
-  // Agrupar por avión
-  const byAircraft = {};
-  flights.forEach(f => {
-    if (!f || !f.aircraftId) return;
-    if (typeof f.depMin !== "number" || typeof f.arrMin !== "number") return;
-    if (!f.origin || !f.destination) return;
+  // --------------------------------------------------------
+  // 🔀 ACTIVE LEG (OUTBOUND / RETURN)
+  // --------------------------------------------------------
 
-    if (!byAircraft[f.aircraftId]) byAircraft[f.aircraftId] = [];
-    byAircraft[f.aircraftId].push(f);
+  let activeLeg = {
+    origin: exec.origin,
+    destination: exec.destination,
+    depMin: exec.depMin,
+    arrMin: exec.arrMin
+  };
+
+  if (exec._return && nowMin >= exec._return.depMin) {
+    activeLeg = exec._return;
+  }
+
+  if (
+    typeof activeLeg.depMin !== "number" ||
+    typeof activeLeg.arrMin !== "number" ||
+    !activeLeg.origin ||
+    !activeLeg.destination
+  ) {
+    return;
+  }
+
+  const origin = getSkyTrackAirportByICAO(activeLeg.origin);
+  const dest   = getSkyTrackAirportByICAO(activeLeg.destination);
+
+  if (!origin || !dest) return;
+
+  const dep = activeLeg.depMin;
+  const arr = activeLeg.arrMin;
+
+  let progress = 0;
+  let lat = origin.lat;
+  let lng = origin.lng;
+  let status = "ground";
+
+  if (nowMin < dep) {
+    status = "ground";
+  }
+  else if (nowMin >= dep && nowMin <= arr) {
+    progress = (nowMin - dep) / (arr - dep);
+    progress = Math.min(Math.max(progress, 0), 1);
+
+    const pos = interpolateGC(
+      origin.lat,
+      origin.lng,
+      dest.lat,
+      dest.lng,
+      progress
+    );
+
+    lat = pos.lat;
+    lng = pos.lng;
+    status = "enroute";
+  }
+  else if (nowMin > arr) {
+    progress = 1;
+    lat = dest.lat;
+    lng = dest.lng;
+    status = "arrived";
+  }
+
+  // --------------------------------------------------------
+  // 🔁 TURNAROUND + RETURN FLIGHT (50 MIN)
+  // --------------------------------------------------------
+
+  const TURNAROUND_MIN = 50;
+
+  if (status === "arrived" && !exec._returnArmed) {
+
+    exec._returnArmed = true;
+
+    exec._return = {
+      origin: exec.destination,
+      destination: exec.origin,
+      depMin: arr + TURNAROUND_MIN,
+      arrMin: arr + TURNAROUND_MIN + (arr - dep)
+    };
+
+    localStorage.setItem("ACS_FLIGHT_EXEC", JSON.stringify(exec));
+
+    console.log("🔁 Return flight armed:", exec._return);
+  }
+
+  // --------------------------------------------------------
+  // 🔚 FLIGHT CYCLE COMPLETE (RETURN ARRIVED)
+  // --------------------------------------------------------
+
+  if (exec._return && activeLeg === exec._return && status === "arrived") {
+    console.log("🏁 Flight cycle completed");
+    localStorage.removeItem("ACS_FLIGHT_EXEC");
+  }
+
+  liveFlights.push({
+    aircraftId: exec.aircraftId || "",
+    flightOut: exec.flightOut || "",
+    origin: activeLeg.origin,
+    destination: activeLeg.destination,
+    depMin: dep,
+    arrMin: arr,
+    progress,
+    lat,
+    lng,
+    status
   });
 
-  const liveFlights = [];
-
-  Object.keys(byAircraft).forEach(aircraftId => {
-
-    const list = byAircraft[aircraftId].slice().sort((a, b) => a.depMin - b.depMin);
-
-    // vuelo activo (en ruta)
-    const activeFlight = list.find(f => nowMin >= f.depMin && nowMin <= f.arrMin) || null;
-
-    // último completado
-    const lastArrived = list
-      .filter(f => f.arrMin < nowMin)
-      .sort((a, b) => b.arrMin - a.arrMin)[0] || null;
-
-    // próximo vuelo
-    const nextFlight = list
-      .filter(f => f.depMin > nowMin)
-      .sort((a, b) => a.depMin - b.depMin)[0] || null;
-
-    const refFlight = activeFlight || lastArrived || nextFlight;
-    if (!refFlight) return;
-
-    const o = getSkyTrackAirportByICAO(refFlight.origin);
-    const d = getSkyTrackAirportByICAO(refFlight.destination);
-    if (!o || !d) return;
-
-    // Estado y posición
-    let lat = o.lat;
-    let lng = o.lng;
-    let status = "ground";
-    let progress = 0;
-
-    if (activeFlight) {
-      // ✈️ EN RUTA
-      const denom = (activeFlight.arrMin - activeFlight.depMin);
-      if (denom > 0) {
-        progress = (nowMin - activeFlight.depMin) / denom;
-        progress = Math.min(Math.max(progress, 0), 1);
-      } else {
-        progress = 0;
-      }
-
-      const pos = interpolateGC(o.lat, o.lng, d.lat, d.lng, progress);
-      lat = pos.lat;
-      lng = pos.lng;
-      status = "enroute";
-
-    } else if (lastArrived) {
-      // 🛬 TURNAROUND (EN TIERRA EN DESTINO)
-      lat = d.lat;
-      lng = d.lng;
-      status = "ground";
-      progress = 1;
-
-    } else {
-      // 🛫 AÚN NO SALE (EN TIERRA EN ORIGEN)
-      lat = o.lat;
-      lng = o.lng;
-      status = "ground";
-      progress = 0;
-    }
-
-    // ✅ Label USUARIO (no IDs internos)
-    const userFlightLabel =
-      refFlight.flightOut ||
-      refFlight.flightNumber ||
-      refFlight.routeCode ||
-      aircraftId;
-
-    liveFlights.push({
-      aircraftId,
-      flightOut: userFlightLabel,
-      origin: refFlight.origin,
-      destination: refFlight.destination,
-      depMin: refFlight.depMin,
-      arrMin: refFlight.arrMin,
-      lat,
-      lng,
-      progress,
-      status
-    });
-
-  });
-
-  // 🔒 Publish (FUERA del loop)
+  // 🔒 PUBLICAR SIEMPRE
   window.ACS_LIVE_FLIGHTS = liveFlights;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
 }
-
+   
 // ============================================================
 // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
 // ============================================================
