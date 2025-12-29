@@ -444,34 +444,25 @@ f = flights.find(fl => {
                                 "done";
 
       live.push({
-  aircraftId: ac.aircraftId,
-  status: status,
-  airport: ac.airport || null,
-  origin:      f ? f.origin      : null,
-  destination: f ? f.destination : null,
-  depMin:      f ? f.depMin      : null,
-  arrMin:      f ? f.arrMin      : null,
-  progress: (f && win)
-    ? Math.min(Math.max((win.nowAdj - win.depAdj) / Math.max(win.arrAdj - win.depAdj, 1), 0), 1)
-    : 0,
-  lat: lat,
-  lng: lng,
-  updatedMin: nowGameMin
-});
+        aircraftId: ac.aircraftId,
+        status: publishStatus,
+        airport: ac.airport || null,
 
-ac.status = status;
-ac.lastUpdateMin = nowGameMin;
+        origin:      f ? f.origin      : null,
+        destination: f ? f.destination : null,
+        depMin:      f ? f.depMin      : null,
+        arrMin:      f ? f.arrMin      : null,
 
-} // 🔒 ← ESTA LLAVE FALTABA
+        lat: lat,
+        lng: lng,
+        updatedMin: nowGameMin
+      });
+    }
 
-}); // ✅ cierre state.forEach
+    ac.status = status;
+    ac.lastUpdateMin = nowGameMin;
 
-saveFlightState(state);
-
-window.ACS_LIVE_FLIGHTS = live;
-localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
-
-} // ✅ cierre updateWorldFlights
+  }); // ✅ cierre state.forEach
 
   saveFlightState(state);
 
