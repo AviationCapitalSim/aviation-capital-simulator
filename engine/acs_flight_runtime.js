@@ -256,7 +256,7 @@ function updateWorldFlights() {
   let nowDayMin;
 
   // ============================================================
-  // 🟧 A5 — TIME SOURCE (GAME CLOCK FIRST)
+  // 🟧 TIME SOURCE — GAME CLOCK (computeSimTime)
   // ============================================================
 
   if (typeof computeSimTime === "function") {
@@ -272,7 +272,10 @@ function updateWorldFlights() {
     }
   }
 
-  // ⚠️ Fallback SOLO si computeSimTime no produjo tiempo válido
+  // ============================================================
+  // ⚠️ FALLBACK SOLO SI computeSimTime FALLA
+  // ============================================================
+
   if (typeof nowDayMin !== "number") {
     const d = new Date();
 
@@ -289,10 +292,13 @@ function updateWorldFlights() {
     }
   }
 
-  // ⛔️ si aun así no hay tiempo válido, salimos
+  // ============================================================
+  // ⛔️ SIN TIEMPO → NO SEGUIMOS
+  // ============================================================
+
   if (typeof nowDayMin !== "number") return;
 
-}
+  // ===== A PARTIR DE AQUÍ CONTINÚA TU LÓGICA EXISTENTE =====
 
 // 🟢 FR24 SOURCE OF TRUTH — FLIGHT INSTANCES
    
