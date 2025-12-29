@@ -278,7 +278,7 @@ function updateWorldFlights() {
       nowDayMin = nowGameMin % 1440;
     }
   }
-
+      
   // ============================================================
   // ⚠️ FALLBACK SOLO SI computeSimTime FALLA
   // ============================================================
@@ -530,8 +530,17 @@ function updateWorldFlights() {
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 
 } // ✅ cierre updateWorldFlights
+   
+/* ============================================================
+   🟩 FIX COMPATIBILIDAD — ALIAS RUNTIME
+   ------------------------------------------------------------
+   Permite usar runtime viejo sin reescribir lógica
+   ============================================================ */
 
-  /* ============================================================
+  function updateLiveFlights() {
+  return updateWorldFlights();  
+     
+     /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
      ============================================================ */
 
@@ -571,8 +580,10 @@ function updateWorldFlights() {
 
     if (changed) saveActiveFlights(activeFlights);
   }
-
-  /* ============================================================
+      
+}  
+ 
+ /* ============================================================
    🟧 A9 — WORLD AIRPORTS READY GATE (ROBUST)
    ------------------------------------------------------------
    Espera a que existan aeropuertos REALES con coordenadas
