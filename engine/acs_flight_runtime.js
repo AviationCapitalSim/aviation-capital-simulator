@@ -161,19 +161,34 @@ function updateLiveFlights() {
       progress = 0;
     }
 
-    liveFlights.push({
-      aircraftId,
-      flightOut: refFlight.flightId || "",
-      origin: refFlight.origin,
-      destination: refFlight.destination,
-      depMin: refFlight.depMin,
-      arrMin: refFlight.arrMin,
-      lat,
-      lng,
-      progress,
-      status
-    });
+    // ============================================================
+// 🧾 USER VISIBLE FLIGHT LABEL (NO INTERNAL IDS)
+// ============================================================
+
+const userFlightLabel =
+  active.flightOut ||
+  active.flightNumber ||
+  active.routeCode ||
+  aircraftId;
+
+// ============================================================
+// ✈️ PUBLISH ONE AIRCRAFT STATE
+// ============================================================
+
+liveFlights.push({
+  aircraftId,
+  flightOut: userFlightLabel,   // 👈 SOLO LO QUE VE EL USUARIO
+  origin: active.origin,
+  destination: active.destination,
+  depMin: active.depMin,
+  arrMin: active.arrMin,
+  lat,
+  lng,
+  progress,
+  status
   });
+
+});
 
   // ============================================================
   // 🔒 PUBLISH
