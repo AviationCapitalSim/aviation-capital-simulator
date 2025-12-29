@@ -438,10 +438,19 @@ function syncLiveFlights() {
 // ============================================================
 // 🟦 SKYTRACK — MARKER ICON (FR24 STYLE)
 // ============================================================
-function createATCMarkerIcon(f) {
+
+  function createATCMarkerIcon(f) {
+
+  // 🔁 NORMALIZACIÓN DE STATUS (CONTRATO SKYTRACK)
+    
+  const normStatus =
+    String(f.status).toUpperCase() === "AIRBORNE" ? "air" :
+    String(f.status).toUpperCase() === "GROUND"   ? "ground" :
+    f.status;
+
   const color =
-    f.status === "air" ? "#1e88e5" :
-    f.status === "ground" ? "#455a64" :
+    normStatus === "air" ? "#1e88e5" :
+    normStatus === "ground" ? "#455a64" :
     "#2e7d32";
 
   return L.divIcon({
