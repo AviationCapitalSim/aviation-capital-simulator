@@ -686,19 +686,21 @@ waitForWorldAirports(() => {
      ============================================================ */
 
   if (!window.__ACS_RUNTIME_LOOP__) {
-    window.__ACS_RUNTIME_LOOP__ = setInterval(() => {
-      try {
-        updateLiveFlights();      // 🔧 FIX: función correcta del runtime que volaba
-        generateReturnFlights();
-      } catch (e) {
-        console.warn("ACS Runtime loop error:", e);
-      }
-    }, 1000);
+  window.__ACS_RUNTIME_LOOP__ = setInterval(() => {
+    try {
+      updateWorldFlights(); // ✅ función existente
+    } catch (e) {
+      console.warn("ACS Runtime loop error:", e);
+    }
+  }, 1000);
 
-    console.log("🌍 ACS World Runtime ACTIVE (24/7)");
-  } else {
-    console.log("ℹ️ ACS World Runtime loop already running");
-  }
+  console.log("🌍 ACS World Runtime ACTIVE (24/7)");
+     
+} else {
+     
+  console.log("ℹ️ ACS World Runtime loop already running");
+}
+
 
 }); // ✅ cierre correcto de waitForWorldAirports
 
