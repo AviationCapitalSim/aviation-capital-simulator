@@ -362,14 +362,14 @@ return {
    ============================================================ */
 
 // 🟢 FR24: seleccionar INSTANCIA DE VUELO ACTIVA
-     
 f = flights.find(fl => {
   if (fl.aircraftId !== ac.aircraftId) return false;
   win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
   return win && win.inWindow === true;
 });
 
-    if (f && win) {
+if (f && win) {
+
   const originAp = airportIndex[f.origin];
   const destAp   = airportIndex[f.destination];
 
@@ -380,52 +380,57 @@ f = flights.find(fl => {
     Number.isFinite(destAp.latitude) &&
     Number.isFinite(destAp.longitude)
   ) {
-     
+
     // 🟢 FR24 — progreso por instancia viva
-   const duration = Math.max(win.arrAdj - win.depAdj, 1);
+    const duration = Math.max(win.arrAdj - win.depAdj, 1);
 
-   // Inicializar estado interno del vuelo
-   if (typeof f._progress !== "number") {
-  f._progress = 0;
-  f._lastTick = Date.now();
-}
+    // Inicializar estado interno del vuelo
+    if (typeof f._progress !== "number") {
+      f._progress = 0;
+      f._lastTick = Date.now();
+    }
 
-   // Avance continuo (no depende del repaint del reloj)
-   const now = Date.now();
-   const elapsedSec = (now - f._lastTick) / 1000;
-   f._lastTick = now;
+    // Avance continuo (no depende del repaint del reloj)
+    const now = Date.now();
+    const elapsedSec = (now - f._lastTick) / 1000;
+    f._lastTick = now;
 
-  // Velocidad normalizada: vuelo completo en duración real
-  const speed = 1 / (duration * 60);
-  f._progress = Math.min(f._progress + elapsedSec * speed, 1);
+    // Velocidad normalizada: vuelo completo en duración real
+    const speed = 1 / (duration * 60);
+    f._progress = Math.min(f._progress + elapsedSec * speed, 1);
 
-  const progress = f._progress;
+    const progress = f._progress;
 
-);
-
-   // ✈️ AIRBORNE SOLO SI HAY POSICIÓN REAL (FR24)
-     
+    // ✈️ AIRBORNE SOLO SI HAY POSICIÓN REAL (FR24)
     if (
-     win &&
-     win.inWindow &&
-     originAp &&
-     destAp &&
-     Number.isFinite(progress)
-) {
-     const pos = interpolateGC(
-     originAp.latitude, originAp.longitude,
-     destAp.latitude,   destAp.longitude,
-     progress
-  );
+      win &&
+      win.inWindow &&
+      Number.isFinite(progress)
+    ) {
 
-     lat = pos.lat;
-     lng = pos.lng;
-     status = "AIRBORNE";
+      const pos = interpolateGC(
+        originAp.latitude, originAp.longitude,
+        destAp.latitude,   destAp.longitude,
+        progress
+      );
 
-}    else {
-    // 🛬 NO AIRBORNE SI NO SE MUEVE
+      lat = pos.lat;
+      lng = pos.lng;
+      status = "AIRBORNE";
+
+    } else {
+      // 🛬 NO AIRBORNE SI NO SE MUEVE
+      status = "GROUND";
+    }
+
+  } else {
+    // 🛬 Aeropuertos inválidos
     status = "GROUND";
   }
+
+} else {
+  // 🛬 Sin vuelo activo
+  status = "GROUND";
 }
 
     // =========================================================
