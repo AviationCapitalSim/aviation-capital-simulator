@@ -385,36 +385,28 @@ if (f && win) {
      
     const duration = Math.max(win.arrAdj - win.depAdj, 1);
 
-   // 🟢 FR24 — progreso persistente POR AVIÓN
+   // 🟢 FR24 — progreso persistente POR AVIÓN (ÚNICO MOTOR)
      
-    if (typeof ac._progress !== "number") {
-    ac._progress = 0;
-    ac._lastTick = Date.now();
+if (typeof ac._progress !== "number") {
+  ac._progress = 0;
+  ac._lastTick = Date.now();
 }
 
-    const now = Date.now();
-    const elapsedSec = (now - ac._lastTick) / 1000;
-    ac._lastTick = now;
+const now = Date.now();
+const elapsedSec = (now - ac._lastTick) / 1000;
+ac._lastTick = now;
 
-    const duration = Math.max(win.arrAdj - win.depAdj, 1);
-    const speed = 1 / (duration * 60);
+// ⏱ Duración del vuelo (UNA sola vez)
+const duration = Math.max(win.arrAdj - win.depAdj, 1);
+const speed = 1 / (duration * 60);
 
-    ac._progress = Math.min(ac._progress + elapsedSec * speed, 1);
-    const progress = ac._progress;
+// ➕ Avance continuo
+ac._progress = Math.min(ac._progress + elapsedSec * speed, 1);
+const progress = ac._progress;
 
-    // Avance continuo (no depende del repaint del reloj)
-     
-    const now = Date.now();
-    const elapsedSec = (now - f._lastTick) / 1000;
-    f._lastTick = now;
+// ✈️ AIRBORNE SOLO SI HAY POSICIÓN REAL (FR24)
+// (este progress es el que se usa para interpolateGC)
 
-    // Velocidad normalizada: vuelo completo en duración real
-    const speed = 1 / (duration * 60);
-    f._progress = Math.min(f._progress + elapsedSec * speed, 1);
-
-    const progress = f._progress;
-
-    // ✈️ AIRBORNE SOLO SI HAY POSICIÓN REAL (FR24)
     if (
       win &&
       win.inWindow &&
