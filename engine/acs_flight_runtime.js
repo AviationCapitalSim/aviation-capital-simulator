@@ -488,36 +488,27 @@ function updateWorldFlights() {
         status === "GROUND"   ? "ground" :
                                 "done";
 
-      live.push({
-        aircraftId: ac.aircraftId,
+  live.push({
+  aircraftId: ac.aircraftId,
 
-        // ✅ Status compatible con SkyTrack
-        // - "air" cuando está volando
-        // - "ground" cuando está en tierra
-        // - "done" si aplica
-        status: publishStatus,
+  // 🔥 SkyTrack espera ESTO EXACTO
+  status: status, // "AIRBORNE" | "GROUND" | "COMPLETED"
 
-        // (opcional: mantener raw interno)
-        rawStatus: status,
+  airport: ac.airport || null,
 
-        airport: ac.airport || null,
+  origin:      f ? f.origin      : null,
+  destination: f ? f.destination : null,
+  depMin:      f ? f.depMin      : null,
+  arrMin:      f ? f.arrMin      : null,
 
-        origin:      f ? f.origin      : null,
-        destination: f ? f.destination : null,
-        depMin:      f ? f.depMin      : null,
-        arrMin:      f ? f.arrMin      : null,
+  progress: (f && win && typeof ac._progress === "number")
+    ? Math.min(Math.max(ac._progress, 0), 1)
+    : 0,
 
-        // ✅ Progress real (0..1) si hay vuelo (usa motor persistente)
-        progress: (f && win && typeof ac._progress === "number")
-          ? Math.min(Math.max(ac._progress, 0), 1)
-          : 0,
-
-        lat: lat,
-        lng: lng,
-        updatedMin: nowGameMin
-      });
-
-    }
+  lat: lat,
+  lng: lng,
+  updatedMin: nowGameMin
+});
 
     ac.status = status;
     ac.lastUpdateMin = nowGameMin;
