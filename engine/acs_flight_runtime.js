@@ -67,6 +67,7 @@ function updateLiveFlights() {
       flights = [{
         flightId: "LEGACY",
         aircraftId: exec.aircraftId || "AC",
+        flightOut: exec.flightOut || exec.flightNumber || exec.routeCode || "",  // ✅ NUMERO VUELO LEGACY
         origin: exec.origin,
         destination: exec.destination,
         depMin: exec.depMin,
