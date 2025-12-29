@@ -772,9 +772,7 @@ function handleLogout() {
    ============================================================ */
 
 if (typeof registerTimeListener === "function") {
-  registerTimeListener(() => {
-    renderActiveFlight();
-  });
+  registerTimeListener(renderLiveFlights);
 }
 
 /* ============================================================
