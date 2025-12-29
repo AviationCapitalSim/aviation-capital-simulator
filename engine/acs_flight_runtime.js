@@ -160,18 +160,40 @@ function updateLiveFlights() {
     localStorage.removeItem("ACS_FLIGHT_EXEC");
   }
 
-  liveFlights.push({
-    aircraftId: exec.aircraftId || "",
-    flightOut: exec.flightOut || "",
-    origin: activeLeg.origin,
-    destination: activeLeg.destination,
-    depMin: dep,
-    arrMin: arr,
-    progress,
-    lat,
-    lng,
-    status
-  });
+ // ============================================================
+// 🧾 USER VISIBLE FLIGHT LABEL (NO INTERNAL IDS)
+// ============================================================
+
+const userFlightLabel =
+  active.flightOut ||
+  active.flightNumber ||
+  active.routeCode ||
+  aircraftId;
+
+// ============================================================
+// ✈️ PUBLISH ONE AIRCRAFT STATE
+// ============================================================
+
+liveFlights.push({
+  aircraftId,
+  flightOut: userFlightLabel,   // 👈 SOLO LO QUE VE EL USUARIO
+  origin: active.origin,
+  destination: active.destination,
+  depMin: active.depMin,
+  arrMin: active.arrMin,
+  lat,
+  lng,
+  progress,
+  status
+});
+
+// ============================================================
+// 🔒 PUBLISH
+// ============================================================
+
+window.ACS_LIVE_FLIGHTS = liveFlights;
+localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
+
 
   // 🔒 PUBLICAR SIEMPRE
   window.ACS_LIVE_FLIGHTS = liveFlights;
