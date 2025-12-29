@@ -672,11 +672,12 @@ waitForWorldAirports(() => {
 
   // ✅ 3) Primera pintura inmediata
   try {
-    updateLiveFlights();          // 🔧 FIX: función correcta del runtime que volaba
-    generateReturnFlights();
-  } catch(e) {
-    console.warn("ACS initial paint error:", e);
-  }
+  updateWorldFlights();   // ✅ FUNCIÓN REAL QUE EXISTE
+  generateReturnFlights();
+} catch(e) {
+  console.warn("ACS initial paint error:", e);
+}
+
 
   /* ============================================================
      🟧 A10 — RUNTIME LOOP 24/7 REAL (DEFINITIVO)
