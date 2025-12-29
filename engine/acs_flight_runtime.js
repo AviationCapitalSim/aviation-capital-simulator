@@ -292,7 +292,9 @@ if (
   }
 }
 
-const flights = buildFlightsFromSchedule();
+// 🟢 FR24 SOURCE OF TRUTH — FLIGHT INSTANCES
+   
+const flights = getActiveFlights();
 const state   = getFlightState();
 const live    = [];
 
@@ -308,6 +310,7 @@ const live    = [];
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   // Helper: ventana de vuelo con soporte medianoche
+   
   function resolveWindow(nowMinDay, depMin, arrMin) {
     if (!Number.isFinite(nowMinDay) || !Number.isFinite(depMin) || !Number.isFinite(arrMin)) return null;
 
@@ -358,10 +361,12 @@ return {
    - Permite progreso continuo
    ============================================================ */
 
+// 🟢 FR24: seleccionar INSTANCIA DE VUELO ACTIVA
+     
 f = flights.find(fl => {
   if (fl.aircraftId !== ac.aircraftId) return false;
   win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
-  return !!win; // ⬅️ NO filtrar por inWindow
+  return win && win.inWindow === true;
 });
 
     if (f && win) {
@@ -375,11 +380,28 @@ f = flights.find(fl => {
     Number.isFinite(destAp.latitude) &&
     Number.isFinite(destAp.longitude)
   ) {
-    const duration = Math.max(win.arrAdj - win.depAdj, 1);
-    const progress = Math.min(
-      Math.max((win.nowAdj - win.depAdj) / duration, 0),
-      1
-    );
+     
+    // 🟢 FR24 — progreso por instancia viva
+   const duration = Math.max(win.arrAdj - win.depAdj, 1);
+
+   // Inicializar estado interno del vuelo
+   if (typeof f._progress !== "number") {
+  f._progress = 0;
+  f._lastTick = Date.now();
+}
+
+   // Avance continuo (no depende del repaint del reloj)
+   const now = Date.now();
+   const elapsedSec = (now - f._lastTick) / 1000;
+   f._lastTick = now;
+
+  // Velocidad normalizada: vuelo completo en duración real
+  const speed = 1 / (duration * 60);
+  f._progress = Math.min(f._progress + elapsedSec * speed, 1);
+
+  const progress = f._progress;
+
+);
 
     const pos = interpolateGC(
       originAp.latitude, originAp.longitude,
