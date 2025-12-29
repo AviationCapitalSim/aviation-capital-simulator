@@ -1,7 +1,7 @@
 /* ============================================================
    ✈️ ACS FLIGHT RUNTIME ENGINE — SINGLE EXEC MODE
    ------------------------------------------------------------
-   Source of truth: ACS_FLIGHT_EXEC 20DEC25
+   Source of truth: ACS_FLIGHT_EXEC 21DEC25
    Time source: ACS_TIME (NO bootstrap, NO override)
    Publishes: ACS_LIVE_FLIGHTS[]
    ============================================================ */
@@ -26,26 +26,7 @@
       return null;
     }
   }
-   
-/* ============================================================
-   🆕 MULTI-FLIGHT SUPPORT — ACTIVE FLIGHTS ARRAY
-   ============================================================ */
 
-function getActiveFlights() {
-  try {
-    const raw = localStorage.getItem("ACS_ACTIVE_FLIGHTS");
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveActiveFlights(flights) {
-  if (!Array.isArray(flights)) return;
-  localStorage.setItem("ACS_ACTIVE_FLIGHTS", JSON.stringify(flights));
-   
-}
   function getAirportByICAO(icao) {
     if (!icao || !window.WorldAirportsACS) return null;
     return Object.values(WorldAirportsACS)
@@ -164,26 +145,7 @@ function updateLiveFlights() {
       depMin: arr + TURNAROUND_MIN,
       arrMin: arr + TURNAROUND_MIN + (arr - dep)
     };
-     
-// 🆕 MULTI-FLIGHT: register return flight as independent active flight
-const activeFlights = getActiveFlights();
 
-activeFlights.push({
-  aircraftId: exec.aircraftId,
-  flightOut: exec.flightOut + "R",
-  origin: exec.destination,
-  destination: exec.origin,
-  depMin: exec._return.depMin,
-  arrMin: exec._return.arrMin,
-  leg: "return",
-  status: "ground",
-  started: false,
-  completed: false
-});
-
-saveActiveFlights(activeFlights);
-
-console.log("🆕 Return flight added to ACS_ACTIVE_FLIGHTS");
     localStorage.setItem("ACS_FLIGHT_EXEC", JSON.stringify(exec));
 
     console.log("🔁 Return flight armed:", exec._return);
