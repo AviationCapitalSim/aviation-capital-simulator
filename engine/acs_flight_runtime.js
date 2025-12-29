@@ -443,26 +443,43 @@ f = flights.find(fl => {
         status === "GROUND"   ? "ground" :
                                 "done";
 
-      live.push({
-        aircraftId: ac.aircraftId,
-        status: publishStatus,
-        airport: ac.airport || null,
+       live.push({
+  aircraftId: ac.aircraftId,
 
-        origin:      f ? f.origin      : null,
-        destination: f ? f.destination : null,
-        depMin:      f ? f.depMin      : null,
-        arrMin:      f ? f.arrMin      : null,
+  // ✅ Status compatible con SkyTrack
+  // - "AIRBORNE" cuando está volando
+  // - "GROUND" cuando está en tierra
+  // - "COMPLETED" si aplica
+  status: status,
 
-        lat: lat,
-        lng: lng,
-        updatedMin: nowGameMin
-      });
-    }
+  airport: ac.airport || null,
 
-    ac.status = status;
-    ac.lastUpdateMin = nowGameMin;
+  origin:      f ? f.origin      : null,
+  destination: f ? f.destination : null,
+  depMin:      f ? f.depMin      : null,
+  arrMin:      f ? f.arrMin      : null,
 
-  }); // ✅ cierre state.forEach
+  // ✅ Progress real (0..1) si hay vuelo
+  progress: (f && win)
+    ? Math.min(
+        Math.max(
+          (win.nowAdj - win.depAdj) /
+          Math.max(win.arrAdj - win.depAdj, 1),
+          0
+        ),
+        1
+      )
+    : 0,
+
+  lat: lat,
+  lng: lng,
+  updatedMin: nowGameMin
+});
+
+ac.status = status;
+ac.lastUpdateMin = nowGameMin;
+
+}); // ✅ cierre state.forEach
 
   saveFlightState(state);
 
