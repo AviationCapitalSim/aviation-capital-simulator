@@ -729,8 +729,8 @@ function handleLogout() {
 
 if (typeof registerTimeListener === "function") {
   registerTimeListener(() => {
-  renderActiveFlight();
-});
+    renderActiveFlight();
+  });
 }
 
 /* ============================================================
@@ -758,7 +758,10 @@ if (!activeFlightRaw) {
 if (typeof ACS_startTimeEngine === "function") {
   ACS_startTimeEngine();
 }
-    
+
+/* 🔴 ESTE CIERRE FALTABA */
+});
+
 </script>
 
 </body>
