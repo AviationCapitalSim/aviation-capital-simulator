@@ -440,7 +440,10 @@ function renderLiveFlights() {
     flights = [];
   }
 
-  const nowMin = window.ACS_TIME?.minute || 0;
+  const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
+  ? window.ACS_TIME.minute
+  : null;
+  if (nowMin === null) return;
   const activeIds = new Set();
 
   // ------------------------------------------------------------
@@ -735,11 +738,14 @@ if (typeof registerTimeListener === "function") {
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
-});
+  /*
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+    renderActiveFlight();
+  });
+}
+*/
+
 
 /* ============================================================
    🛰 READ ACTIVE FLIGHT FROM SCHEDULE
