@@ -255,6 +255,10 @@ function updateWorldFlights() {
   let nowGameMin;
   let nowDayMin;
 
+  // ============================================================
+  // 🟧 A5 — TIME SOURCE (GAME CLOCK FIRST)
+  // ============================================================
+
   if (typeof computeSimTime === "function") {
     const d = computeSimTime();
 
@@ -268,24 +272,26 @@ function updateWorldFlights() {
     }
   }
 
-  // ⛔️ si no hay tiempo válido, no seguimos
+  // ⚠️ Fallback SOLO si computeSimTime no produjo tiempo válido
+  if (typeof nowDayMin !== "number") {
+    const d = new Date();
+
+    nowGameMin =
+      d.getUTCHours() * 60 +
+      d.getUTCMinutes() +
+      d.getUTCSeconds() / 60;
+
+    nowDayMin = nowGameMin % 1440;
+
+    if (!window.__ACS_TIME_FALLBACK_WARNED__) {
+      console.warn("⚠ ACS_TIME missing — using UTC fallback");
+      window.__ACS_TIME_FALLBACK_WARNED__ = true;
+    }
+  }
+
+  // ⛔️ si aun así no hay tiempo válido, salimos
   if (typeof nowDayMin !== "number") return;
 
-} else {
-  // ⚠️ Fallback SOLO si ACS_TIME no existe (no debería pasar)
-  const d = new Date();
-
-  nowGameMin =
-    d.getUTCHours() * 60 +
-    d.getUTCMinutes() +
-    d.getUTCSeconds() / 60;
-
-  nowDayMin = nowGameMin % 1440;
-
-  if (!window.__ACS_TIME_FALLBACK_WARNED__) {
-    console.warn("⚠ ACS_TIME missing — using UTC fallback");
-    window.__ACS_TIME_FALLBACK_WARNED__ = true;
-  }
 }
 
 // 🟢 FR24 SOURCE OF TRUTH — FLIGHT INSTANCES
