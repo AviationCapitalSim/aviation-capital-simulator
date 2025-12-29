@@ -381,11 +381,7 @@ if (f && win) {
     Number.isFinite(destAp.longitude)
   ) {
 
-    // 🟢 FR24 — progreso por instancia viva
-     
-    const duration = Math.max(win.arrAdj - win.depAdj, 1);
-
-   // 🟢 FR24 — progreso persistente POR AVIÓN (ÚNICO MOTOR)
+// 🟢 FR24 — PROGRESO PERSISTENTE POR AVIÓN (ÚNICO MOTOR)
      
 if (typeof ac._progress !== "number") {
   ac._progress = 0;
@@ -397,8 +393,8 @@ const elapsedSec = (now - ac._lastTick) / 1000;
 ac._lastTick = now;
 
 // ⏱ Duración del vuelo (UNA sola vez)
-const duration = Math.max(win.arrAdj - win.depAdj, 1);
-const speed = 1 / (duration * 60);
+const durationMin = Math.max(win.arrAdj - win.depAdj, 1);
+const speed = 1 / (durationMin * 60);
 
 // ➕ Avance continuo
 ac._progress = Math.min(ac._progress + elapsedSec * speed, 1);
