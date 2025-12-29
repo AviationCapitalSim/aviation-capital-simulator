@@ -671,7 +671,7 @@ waitForWorldAirports(() => {
 
   // ✅ 3) Primera pintura inmediata
   try {
-    updateWorldFlights();
+    updateLiveFlights();          // 🔧 FIX: función correcta del runtime que volaba
     generateReturnFlights();
   } catch(e) {
     console.warn("ACS initial paint error:", e);
@@ -687,7 +687,7 @@ waitForWorldAirports(() => {
   if (!window.__ACS_RUNTIME_LOOP__) {
     window.__ACS_RUNTIME_LOOP__ = setInterval(() => {
       try {
-        updateWorldFlights();
+        updateLiveFlights();      // 🔧 FIX: función correcta del runtime que volaba
         generateReturnFlights();
       } catch (e) {
         console.warn("ACS Runtime loop error:", e);
