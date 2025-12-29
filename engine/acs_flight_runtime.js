@@ -255,6 +255,9 @@ function updateWorldFlights() {
   let nowGameMin;
   let nowDayMin;
 
+  // ✅ Tick estable (MS) basado en reloj del juego cuando exista
+  let nowTickMs = Date.now();
+
   // ============================================================
   // 🟧 TIME SOURCE — GAME CLOCK (computeSimTime)
   // ============================================================
@@ -263,6 +266,10 @@ function updateWorldFlights() {
     const d = computeSimTime();
 
     if (d instanceof Date) {
+
+      // ✅ usar tiempo real del juego para elapsedSec (no Date.now)
+      nowTickMs = d.getTime();
+
       nowGameMin =
         d.getHours() * 60 +
         d.getMinutes() +
@@ -278,6 +285,9 @@ function updateWorldFlights() {
 
   if (typeof nowDayMin !== "number") {
     const d = new Date();
+
+    // ✅ fallback: también fija tick ms consistente
+    nowTickMs = d.getTime();
 
     nowGameMin =
       d.getUTCHours() * 60 +
@@ -300,11 +310,11 @@ function updateWorldFlights() {
 
   // ===== A PARTIR DE AQUÍ CONTINÚA TU LÓGICA EXISTENTE =====
 
-// 🟢 FR24 SOURCE OF TRUTH — FLIGHT INSTANCES
-   
-const flights = getActiveFlights();
-const state   = getFlightState();
-const live    = [];
+  // 🟢 FR24 SOURCE OF TRUTH — FLIGHT INSTANCES
+
+  const flights = getActiveFlights();
+  const state   = getFlightState();
+  const live    = [];
 
   // Índice rápido de aeropuertos
   const airportIndex = {};
@@ -318,7 +328,7 @@ const live    = [];
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
   // Helper: ventana de vuelo con soporte medianoche
-   
+
   function resolveWindow(nowMinDay, depMin, arrMin) {
     if (!Number.isFinite(nowMinDay) || !Number.isFinite(depMin) || !Number.isFinite(arrMin)) return null;
 
@@ -333,21 +343,21 @@ const live    = [];
     }
 
     // Cruza medianoche: ej dep 23:30 (1410), arr 01:20 (80)
-const arrAdj = arrMin + 1440;
+    const arrAdj = arrMin + 1440;
 
-// 🔁 AJUSTE CORRECTO: usar SOLO tiempo del juego
-const nowAdj =
-  nowMinDay < depMin
-    ? nowMinDay + 1440
-    : nowMinDay;
+    // 🔁 AJUSTE CORRECTO: usar SOLO tiempo del juego
+    const nowAdj =
+      nowMinDay < depMin
+        ? nowMinDay + 1440
+        : nowMinDay;
 
-return {
-  inWindow: nowAdj >= depMin && nowAdj <= arrAdj,
-  nowAdj,
-  depAdj: depMin,
-  arrAdj
-};
-} // 🔴 CIERRE CORRECTO DE resolveWindow
+    return {
+      inWindow: nowAdj >= depMin && nowAdj <= arrAdj,
+      nowAdj,
+      depAdj: depMin,
+      arrAdj
+    };
+  } // 🔴 CIERRE CORRECTO DE resolveWindow
 
   state.forEach(ac => {
 
@@ -363,84 +373,84 @@ return {
     let win = null;
 
     /* ============================================================
-   🟧 A6 — FIX SELECCIÓN DE VUELO ACTIVO (DEFINITIVO)
-   ------------------------------------------------------------
-   - El runtime decide estado, NO el filtro
-   - Permite progreso continuo
-   ============================================================ */
+       🟧 A6 — FIX SELECCIÓN DE VUELO ACTIVO (DEFINITIVO)
+       ------------------------------------------------------------
+       - El runtime decide estado, NO el filtro
+       - Permite progreso continuo
+       ============================================================ */
 
-// 🟢 FR24: seleccionar INSTANCIA DE VUELO ACTIVA
-f = flights.find(fl => {
-  if (fl.aircraftId !== ac.aircraftId) return false;
-  win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
-  return win && win.inWindow === true;
-});
+    // 🟢 FR24: seleccionar INSTANCIA DE VUELO ACTIVA
+    f = flights.find(fl => {
+      if (fl.aircraftId !== ac.aircraftId) return false;
+      win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
+      return win && win.inWindow === true;
+    });
 
-if (f && win) {
+    if (f && win) {
 
-  const originAp = airportIndex[f.origin];
-  const destAp   = airportIndex[f.destination];
+      const originAp = airportIndex[f.origin];
+      const destAp   = airportIndex[f.destination];
 
-  if (
-    originAp && destAp &&
-    Number.isFinite(originAp.latitude) &&
-    Number.isFinite(originAp.longitude) &&
-    Number.isFinite(destAp.latitude) &&
-    Number.isFinite(destAp.longitude)
-  ) {
+      if (
+        originAp && destAp &&
+        Number.isFinite(originAp.latitude) &&
+        Number.isFinite(originAp.longitude) &&
+        Number.isFinite(destAp.latitude) &&
+        Number.isFinite(destAp.longitude)
+      ) {
 
-// 🟢 FR24 — PROGRESO PERSISTENTE POR AVIÓN (ÚNICO MOTOR)
-     
-if (typeof ac._progress !== "number") {
-  ac._progress = 0;
-  ac._lastTick = Date.now();
-}
+        // 🟢 FR24 — PROGRESO PERSISTENTE POR AVIÓN (ÚNICO MOTOR)
 
-const now = Date.now();
-const elapsedSec = (now - ac._lastTick) / 1000;
-ac._lastTick = now;
+        if (typeof ac._progress !== "number") {
+          ac._progress = 0;
+          ac._lastTick = nowTickMs;
+        }
 
-// ⏱ Duración del vuelo (UNA sola vez)
-const durationMin = Math.max(win.arrAdj - win.depAdj, 1);
-const speed = 1 / (durationMin * 60);
+        const now = nowTickMs;
+        const elapsedSec = (now - ac._lastTick) / 1000;
+        ac._lastTick = now;
 
-// ➕ Avance continuo
-ac._progress = Math.min(ac._progress + elapsedSec * speed, 1);
-const progress = ac._progress;
+        // ⏱ Duración del vuelo (UNA sola vez)
+        const durationMin = Math.max(win.arrAdj - win.depAdj, 1);
+        const speed = 1 / (durationMin * 60);
 
-// ✈️ AIRBORNE SOLO SI HAY POSICIÓN REAL (FR24)
-// (este progress es el que se usa para interpolateGC)
+        // ➕ Avance continuo
+        ac._progress = Math.min(ac._progress + elapsedSec * speed, 1);
+        const progress = ac._progress;
 
-    if (
-      win &&
-      win.inWindow &&
-      Number.isFinite(progress)
-    ) {
+        // ✈️ AIRBORNE SOLO SI HAY POSICIÓN REAL (FR24)
+        // (este progress es el que se usa para interpolateGC)
 
-      const pos = interpolateGC(
-        originAp.latitude, originAp.longitude,
-        destAp.latitude,   destAp.longitude,
-        progress
-      );
+        if (
+          win &&
+          win.inWindow &&
+          Number.isFinite(progress)
+        ) {
 
-      lat = pos.lat;
-      lng = pos.lng;
-      status = "AIRBORNE";
+          const pos = interpolateGC(
+            originAp.latitude, originAp.longitude,
+            destAp.latitude,   destAp.longitude,
+            progress
+          );
+
+          lat = pos.lat;
+          lng = pos.lng;
+          status = "AIRBORNE";
+
+        } else {
+          // 🛬 NO AIRBORNE SI NO SE MUEVE
+          status = "GROUND";
+        }
+
+      } else {
+        // 🛬 Aeropuertos inválidos
+        status = "GROUND";
+      }
 
     } else {
-      // 🛬 NO AIRBORNE SI NO SE MUEVE
+      // 🛬 Sin vuelo activo
       status = "GROUND";
     }
-
-  } else {
-    // 🛬 Aeropuertos inválidos
-    status = "GROUND";
-  }
-
-} else {
-  // 🛬 Sin vuelo activo
-  status = "GROUND";
-}
 
     // =========================================================
     // 🛬 EN TIERRA — FORZADO Y SEGURO
@@ -478,14 +488,17 @@ const progress = ac._progress;
         status === "GROUND"   ? "ground" :
                                 "done";
 
-            live.push({
+      live.push({
         aircraftId: ac.aircraftId,
 
         // ✅ Status compatible con SkyTrack
-        // - "AIRBORNE" cuando está volando
-        // - "GROUND" cuando está en tierra
-        // - "COMPLETED" si aplica
-        status: status,
+        // - "air" cuando está volando
+        // - "ground" cuando está en tierra
+        // - "done" si aplica
+        status: publishStatus,
+
+        // (opcional: mantener raw interno)
+        rawStatus: status,
 
         airport: ac.airport || null,
 
@@ -494,9 +507,9 @@ const progress = ac._progress;
         depMin:      f ? f.depMin      : null,
         arrMin:      f ? f.arrMin      : null,
 
-        // ✅ Progress real (0..1) si hay vuelo
-        progress: (f && win)
-          ? Math.min(Math.max((win.nowAdj - win.depAdj) / Math.max(win.arrAdj - win.depAdj, 1), 0), 1)
+        // ✅ Progress real (0..1) si hay vuelo (usa motor persistente)
+        progress: (f && win && typeof ac._progress === "number")
+          ? Math.min(Math.max(ac._progress, 0), 1)
           : 0,
 
         lat: lat,
@@ -517,7 +530,6 @@ const progress = ac._progress;
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 
 } // ✅ cierre updateWorldFlights
-
 
   /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
