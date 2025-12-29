@@ -252,28 +252,24 @@ function buildFlightsFromSchedule() {
 
 function updateWorldFlights() {
 
-/* ============================================================
-   🟧 A5.1 — TIME SOURCE UNIFICADO (FIX DEFINITIVO)
-   ------------------------------------------------------------
-   - Usa el MISMO tiempo que el reloj del juego
-   - NO usa UTC fallback si ACS_TIME existe
-   ============================================================ */
+  let nowGameMin;
+  let nowDayMin;
 
-let nowGameMin;
-let nowDayMin;
+  if (typeof computeSimTime === "function") {
+    const d = computeSimTime();
 
-if (
-  window.ACS_TIME &&
-  window.ACS_TIME.currentTime instanceof Date
-) {
-  const d = window.ACS_TIME.currentTime;
+    if (d instanceof Date) {
+      nowGameMin =
+        d.getHours() * 60 +
+        d.getMinutes() +
+        d.getSeconds() / 60;
 
-  nowGameMin =
-    d.getUTCHours() * 60 +
-    d.getUTCMinutes() +
-    d.getUTCSeconds() / 60;
+      nowDayMin = nowGameMin % 1440;
+    }
+  }
 
-  nowDayMin = nowGameMin % 1440;
+  // ⛔️ si no hay tiempo válido, no seguimos
+  if (typeof nowDayMin !== "number") return;
 
 } else {
   // ⚠️ Fallback SOLO si ACS_TIME no existe (no debería pasar)
