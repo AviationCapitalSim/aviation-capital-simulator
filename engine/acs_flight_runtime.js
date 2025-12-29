@@ -531,28 +531,7 @@ function updateWorldFlights() {
 
 } // ✅ cierre updateWorldFlights
    
-/* ============================================================
-   🟩 FIX COMPATIBILIDAD — ALIAS RUNTIME
-   ------------------------------------------------------------
-   Permite usar runtime viejo sin reescribir lógica
-   ============================================================ */
 
-  function updateLiveFlights() {
-  return updateWorldFlights();  
-     
-}
-   
-   /* ============================================================
-   🟩 FIX COMPATIBILIDAD — ALIAS RETURN FLIGHTS
-   ------------------------------------------------------------
-   Evita crash si el runtime nuevo no define esta función
-   ============================================================ */
-
-  function generateReturnFlights() {
-  // Si no hay lógica de retorno, no hacemos nada
-  return;
-}
-     
      /* ============================================================
      🔁 RETURN FLIGHT GENERATOR — MULTI AIRCRAFT
      ============================================================ */
