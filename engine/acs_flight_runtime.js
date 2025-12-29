@@ -403,19 +403,28 @@ f = flights.find(fl => {
 
 );
 
-    const pos = interpolateGC(
-      originAp.latitude, originAp.longitude,
-      destAp.latitude,   destAp.longitude,
-      progress
-    );
+   // ✈️ AIRBORNE SOLO SI HAY POSICIÓN REAL (FR24)
+     
+    if (
+     win &&
+     win.inWindow &&
+     originAp &&
+     destAp &&
+     Number.isFinite(progress)
+) {
+     const pos = interpolateGC(
+     originAp.latitude, originAp.longitude,
+     destAp.latitude,   destAp.longitude,
+     progress
+  );
 
-    lat = pos.lat;
-    lng = pos.lng;
-    status = "AIRBORNE";
+     lat = pos.lat;
+     lng = pos.lng;
+     status = "AIRBORNE";
 
-  } else if (win && win.inWindow) {
-    // 🔧 FALLBACK CORRECTO
-    status = "AIRBORNE";
+}    else {
+    // 🛬 NO AIRBORNE SI NO SE MUEVE
+    status = "GROUND";
   }
 }
 
