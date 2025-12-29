@@ -382,7 +382,11 @@ function updateWorldFlights() {
     // 🟢 FR24: seleccionar INSTANCIA DE VUELO ACTIVA
     f = flights.find(fl => {
       if (fl.aircraftId !== ac.aircraftId) return false;
-      win = resolveWindow(nowDayMin, fl.depMin, fl.arrMin);
+      const depDayMin = fl.depMin % 1440;
+      const arrDayMin = fl.arrMin % 1440;
+
+      win = resolveWindow(nowDayMin, depDayMin, arrDayMin);
+
       return win && win.inWindow === true;
     });
 
