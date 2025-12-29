@@ -572,8 +572,6 @@ function updateWorldFlights() {
 
     if (changed) saveActiveFlights(activeFlights);
   }
-      
-}  
  
  /* ============================================================
    🟧 A9 — WORLD AIRPORTS READY GATE (ROBUST)
