@@ -382,15 +382,28 @@ if (f && win) {
   ) {
 
     // 🟢 FR24 — progreso por instancia viva
+     
     const duration = Math.max(win.arrAdj - win.depAdj, 1);
 
-    // Inicializar estado interno del vuelo
-    if (typeof f._progress !== "number") {
-      f._progress = 0;
-      f._lastTick = Date.now();
-    }
+   // 🟢 FR24 — progreso persistente POR AVIÓN
+     
+    if (typeof ac._progress !== "number") {
+    ac._progress = 0;
+    ac._lastTick = Date.now();
+}
+
+    const now = Date.now();
+    const elapsedSec = (now - ac._lastTick) / 1000;
+    ac._lastTick = now;
+
+    const duration = Math.max(win.arrAdj - win.depAdj, 1);
+    const speed = 1 / (duration * 60);
+
+    ac._progress = Math.min(ac._progress + elapsedSec * speed, 1);
+    const progress = ac._progress;
 
     // Avance continuo (no depende del repaint del reloj)
+     
     const now = Date.now();
     const elapsedSec = (now - f._lastTick) / 1000;
     f._lastTick = now;
