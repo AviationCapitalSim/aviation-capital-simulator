@@ -477,7 +477,7 @@ function updateWorldFlights() {
       }
     }
 
-    // =========================================================
+      // =========================================================
     // 📡 PUBLICAR
     // =========================================================
 
@@ -513,6 +513,8 @@ function updateWorldFlights() {
     ac.status = status;
     ac.lastUpdateMin = nowGameMin;
 
+    } // ✅ cierre if (Number.isFinite...)
+
   }); // ✅ cierre state.forEach
 
   saveFlightState(state);
@@ -521,6 +523,7 @@ function updateWorldFlights() {
   localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(live));
 
 } // ✅ cierre updateWorldFlights
+
    
 
      /* ============================================================
