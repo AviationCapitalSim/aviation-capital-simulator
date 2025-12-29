@@ -386,6 +386,26 @@ function updateWorldFlights() {
       return win && win.inWindow === true;
     });
 
+// =========================================================
+// ⏱️ FIX — completar horarios si el schedule no los trae
+// =========================================================
+     
+if (f && (!Number.isFinite(f.depMin) || !Number.isFinite(f.arrMin))) {
+
+  // usar hora actual del juego
+  const baseMin = Math.floor(nowDayMin / 60) * 60;
+
+  // duración estándar temporal
+  const EST_BLOCK_MIN = 120;
+
+  f.depMin = baseMin;
+  f.arrMin = baseMin + EST_BLOCK_MIN;
+
+  // normalizar 0–1439
+  f.depMin = f.depMin % 1440;
+  f.arrMin = f.arrMin % 1440;
+}
+     
     if (f && win) {
 
       const originAp = airportIndex[f.origin];
