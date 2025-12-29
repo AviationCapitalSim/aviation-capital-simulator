@@ -161,14 +161,14 @@ function updateLiveFlights() {
       progress = 0;
     }
 
-    // ============================================================
+// ============================================================
 // 🧾 USER VISIBLE FLIGHT LABEL (NO INTERNAL IDS)
 // ============================================================
 
 const userFlightLabel =
-  active.flightOut ||
-  active.flightNumber ||
-  active.routeCode ||
+  refFlight.flightOut ||
+  refFlight.flightNumber ||
+  refFlight.routeCode ||
   aircraftId;
 
 // ============================================================
@@ -178,16 +178,14 @@ const userFlightLabel =
 liveFlights.push({
   aircraftId,
   flightOut: userFlightLabel,   // 👈 SOLO LO QUE VE EL USUARIO
-  origin: active.origin,
-  destination: active.destination,
-  depMin: active.depMin,
-  arrMin: active.arrMin,
+  origin: refFlight.origin,
+  destination: refFlight.destination,
+  depMin: refFlight.depMin,
+  arrMin: refFlight.arrMin,
   lat,
   lng,
   progress,
   status
-  });
-
 });
 
   // ============================================================
