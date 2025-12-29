@@ -253,18 +253,10 @@ function buildFlightsFromSchedule() {
 function updateWorldFlights() {
 
 /* ============================================================
-   🟧 A5.1 — TIME SOURCE UNIFICADO (B DEFINITIVO)
+   🟧 A5.1 — TIME SOURCE UNIFICADO (FIX DEFINITIVO)
    ------------------------------------------------------------
-   - Fuente ÚNICA: ACS_TIME
-   - Nunca usa Date.now()
-   - Garantiza progreso continuo
-   ============================================================ */
-
-/* ============================================================
-   🟧 A13 — TIME RESOLUTION SAFE (NUNCA DETIENE RUNTIME)
-   ------------------------------------------------------------
-   - NO retorna
-   - Garantiza tiempo válido SIEMPRE
+   - Usa el MISMO tiempo que el reloj del juego
+   - NO usa UTC fallback si ACS_TIME existe
    ============================================================ */
 
 let nowGameMin;
@@ -272,27 +264,25 @@ let nowDayMin;
 
 if (
   window.ACS_TIME &&
-  Number.isFinite(window.ACS_TIME.minute)
-) {
-  nowGameMin = window.ACS_TIME.minute;
-  nowDayMin  = nowGameMin % 1440;
-} else if (
-  window.ACS_TIME &&
   window.ACS_TIME.currentTime instanceof Date
 ) {
   const d = window.ACS_TIME.currentTime;
-  nowGameMin = d.getUTCHours() * 60 + d.getUTCMinutes();
-  nowDayMin  = nowGameMin % 1440;
 
-  console.warn("⚠ ACS_TIME.minute missing — using currentTime fallback");
-   
+  nowGameMin =
+    d.getUTCHours() * 60 +
+    d.getUTCMinutes() +
+    d.getUTCSeconds() / 60;
+
+  nowDayMin = nowGameMin % 1440;
+
 } else {
+  // ⚠️ Fallback SOLO si ACS_TIME no existe (no debería pasar)
   const d = new Date();
 
   nowGameMin =
     d.getUTCHours() * 60 +
     d.getUTCMinutes() +
-    (d.getUTCSeconds() / 60);
+    d.getUTCSeconds() / 60;
 
   nowDayMin = nowGameMin % 1440;
 
@@ -300,7 +290,7 @@ if (
     console.warn("⚠ ACS_TIME missing — using UTC fallback");
     window.__ACS_TIME_FALLBACK_WARNED__ = true;
   }
-} // ✅ ESTA LLAVE FALTABA
+}
 
 const flights = buildFlightsFromSchedule();
 const state   = getFlightState();
