@@ -10,9 +10,13 @@
 (function publishScheduleToRuntime_FASE1(){
 
   // 🔒 Requiere tiempo del simulador
+   
   if (!window.ACS_TIME || typeof ACS_TIME.minute !== "number") return;
 
-  const nowMin = ACS_TIME.minute;
+  // ⏱ Tiempo ABS del simulador (en minutos)
+   
+  const nowAbsMin = Math.floor(ACS_TIME.currentTime.getTime() / 60000);
+
 
   // Leer Schedule Table
   const raw = localStorage.getItem("scheduleItems");
@@ -101,18 +105,18 @@
   // ------------------------------------------------------------
   // 🔑 FASE 1 — elegir SOLO 1 vuelo ACTIVO
   // ------------------------------------------------------------
-  const activeExec = flights.find(f => {
-    const lg = f.legs[0];
-    if (!lg) return false;
+     const activeExec = flights.find(f => {
+     const lg = f.legs[0];
+     if (!lg) return false;
 
-    const dep = (lg.depMin + 1440) % 1440;
-    const arr = (lg.arrMin + 1440) % 1440;
-    const now = (nowMin + 1440) % 1440;
-
-    return dep <= arr
-      ? (now >= dep && now <= arr)
-      : (now >= dep || now <= arr); // overnight safe
-  });
+    // ABS MINUTES COMPARISON (CORRECT)
+    return (
+    typeof lg.depMin === "number" &&
+    typeof lg.arrMin === "number" &&
+    nowAbsMin >= lg.depMin &&
+    nowAbsMin <= lg.arrMin
+  );
+});
 
   if (activeExec) {
     localStorage.setItem(
