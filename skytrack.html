@@ -424,7 +424,42 @@ const liveFlightMarkers = {};
 const liveFlightTraces  = {};
 const liveFlightPlans   = {};
 
+/* ============================================================
+   🛬 BUILD GROUND FLEET (STATIC FALLBACK)
+   ============================================================ */
+function buildGroundFleetFromSchedule() {
 
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch (e) {
+    return [];
+  }
+
+  const groundFleet = [];
+
+  items.forEach(f => {
+    if (!f || !f.aircraftId || !f.origin) return;
+
+    const apt = (typeof getSkyTrackAirportByICAO === "function")
+      ? getSkyTrackAirportByICAO(f.origin)
+      : null;
+
+    if (!apt || typeof apt.lat !== "number") return;
+
+    groundFleet.push({
+      aircraftId: f.aircraftId,
+      origin: f.origin,
+      destination: f.destination || "",
+      lat: apt.lat,
+      lng: apt.lng,
+      status: "ground"
+    });
+  });
+
+  return groundFleet;
+}
+   
 /* ============================================================
    🟦 S1 — SKYTRACK RENDER LIVE FLIGHTS (FED & STABLE)
    ------------------------------------------------------------
@@ -436,18 +471,44 @@ const liveFlightPlans   = {};
 function renderLiveFlights() {
 
   if (!map) return;
-  if (!Array.isArray(window.ACS_LIVE_FLIGHTS)) return;
 
   const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
     ? window.ACS_TIME.minute
     : null;
   if (nowMin === null) return;
 
+  // ============================================================
+  // ✈️ SOURCE: LIVE FLIGHTS OR GROUND FALLBACK
+  // ============================================================
+
+  let flights = [];
+  try {
+    flights = Array.isArray(window.ACS_LIVE_FLIGHTS)
+      ? window.ACS_LIVE_FLIGHTS
+      : [];
+  } catch (e) {
+    flights = [];
+  }
+
+  // 🛬 FALLBACK — NO ACTIVE FLIGHTS → SHOW GROUND FLEET
+  if (flights.length === 0 && typeof buildGroundFleetFromSchedule === "function") {
+    flights = buildGroundFleetFromSchedule();
+  }
+
+  if (!Array.isArray(flights) || flights.length === 0) return;
+
   // Marker registry (persist between ticks)
   window.SKYTRACK_MARKERS = window.SKYTRACK_MARKERS || {};
+  const activeIds = new Set();
 
-  window.ACS_LIVE_FLIGHTS.forEach(f => {
+  // ============================================================
+  // 🔁 RENDER EACH FLIGHT
+  // ============================================================
+  flights.forEach(f => {
     if (!f || !f.aircraftId || !f.origin) return;
+
+    const id = f.aircraftId.toString();
+    activeIds.add(id);
 
     // ============================================================
     // 📍 RESOLVE POSITION
@@ -455,9 +516,11 @@ function renderLiveFlights() {
     let lat = f.lat;
     let lng = f.lng;
 
-    // If no lat/lng → place on origin airport
+    // If no lat/lng → place on origin airport (GROUND MODE)
     if (typeof lat !== "number" || typeof lng !== "number") {
-      const apt = getSkyTrackAirportByICAO(f.origin);
+      const apt = (typeof getSkyTrackAirportByICAO === "function")
+        ? getSkyTrackAirportByICAO(f.origin)
+        : null;
       if (!apt) return;
       lat = apt.lat;
       lng = apt.lng;
@@ -466,14 +529,14 @@ function renderLiveFlights() {
     // ============================================================
     // ✈️ CREATE / UPDATE MARKER
     // ============================================================
-    let marker = window.SKYTRACK_MARKERS[f.aircraftId];
+    let marker = window.SKYTRACK_MARKERS[id];
 
     if (!marker) {
       marker = L.marker([lat, lng], {
-        title: f.flightOut || f.aircraftId
+        title: f.flightOut || id
       }).addTo(map);
 
-      window.SKYTRACK_MARKERS[f.aircraftId] = marker;
+      window.SKYTRACK_MARKERS[id] = marker;
     } else {
       marker.setLatLng([lat, lng]);
     }
@@ -481,12 +544,21 @@ function renderLiveFlights() {
     // ============================================================
     // 🧾 POPUP (MINIMAL, SAFE)
     // ============================================================
-    const label = f.flightOut || f.aircraftId;
+    const label = f.flightOut || id;
     marker.bindPopup(`
       <b>${label}</b><br>
       ${f.origin} → ${f.destination || ""}
     `);
+  });
 
+  // ============================================================
+  // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
+  // ============================================================
+  Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
+    if (!activeIds.has(id)) {
+      map.removeLayer(window.SKYTRACK_MARKERS[id]);
+      delete window.SKYTRACK_MARKERS[id];
+    }
   });
 }
 
