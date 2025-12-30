@@ -325,10 +325,6 @@ window.updateWorldFlights = updateWorldFlights;
     localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
   } catch (e) {}
 
-  // Optional: debug line (safe)
-  // console.log("ACS Runtime LIVE:", liveFlights[0]);
-}
-   
 // ============================================================
 // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE (FIXED)
 // ============================================================
