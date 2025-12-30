@@ -163,20 +163,32 @@ function updateWorldFlights() {
   const lng = o.lng + (d.lng - o.lng) * progress;
 
   // ------------------------------------------------------------
-  // Publish LIVE flight (as before)
-  // ------------------------------------------------------------
-  window.ACS_LIVE_FLIGHTS = [{
-    aircraftId: activeFlight.aircraftId,
-    aircraftModel: activeFlight.aircraftModel,
-    flightOut: activeFlight.flightNo,
-    origin: activeFlight.origin,
-    destination: activeFlight.destination,
-    lat,
-    lng,
-    status: "AIRBORNE",
-    updatedAt: Date.now()
-  }];
+// Publish LIVE flight (PERSISTED — REQUIRED FOR SKYTRACK)
+// ------------------------------------------------------------
+const liveFlights = [{
+  aircraftId: activeFlight.aircraftId,
+  aircraftModel: activeFlight.aircraftModel,
+  flightOut: activeFlight.flightNo,
+  origin: activeFlight.origin,
+  destination: activeFlight.destination,
+  lat,
+  lng,
+  status: "AIRBORNE",
+  updatedAt: Date.now()
+}];
+
+window.ACS_LIVE_FLIGHTS = liveFlights;
+
+try {
+  localStorage.setItem(
+    "ACS_LIVE_FLIGHTS",
+    JSON.stringify(liveFlights)
+  );
+} catch (e) {
+  console.warn("ACS_LIVE_FLIGHTS persistence failed", e);
 }
+}
+
 
 // 🔒 Export
 window.updateWorldFlights = updateWorldFlights;
