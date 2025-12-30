@@ -648,41 +648,33 @@ if (!marker) {
   marker.setLatLng([lat, lng]);
 }
 
-    // ============================================================
-    // 🧾 POPUP (MINIMAL, SAFE)
-    // ============================================================
-   const flightLabel =
-  f.registration ||
-  f.aircraftModel ||
-  f.flightNumber ||
-  `AC-${f.aircraftId}`;
+   // ============================================================
+// 🧾 POPUP (MINIMAL, SAFE)
+// ============================================================
 
-    const statusLabel =
-    f.status === "AIRBORNE" ? "✈️ ENROUTE" :
-    f.status === "ARRIVED"  ? "🛬 ARRIVED" :
-    "🅿️ ON GROUND";
+const statusLabel =
+  f.status === "AIRBORNE" ? "✈️ ENROUTE" :
+  f.status === "ARRIVED"  ? "🛬 ARRIVED" :
+  "🅿️ ON GROUND";
 
-
-   if (!marker._acsPopupBound) {
+if (!marker._acsPopupBound) {
   marker.bindPopup(
     `<b>${f.flightNumber || "FLIGHT"}</b><br>
-  ${f.origin} → ${f.destination}<br>
-  <small>
-    ✈️ ${f.aircraftModel || "Aircraft"}<br>
-    🔒 ${f.locked ? "Locked" : "Active"}<br>
-    📡 ${statusLabel}
-  </small>
-
+     ${f.origin} → ${f.destination}<br>
+     <small>
+       ✈️ ${f.aircraftModel || "Aircraft"}<br>
+       🔒 ${f.locked ? "Locked" : "Active"}<br>
+       📡 ${statusLabel}
+     </small>`,
     {
       autoPan: false,
       closeOnClick: false,
       autoClose: false
     }
   );
+
   marker._acsPopupBound = true;
 }
-
-  });
 
   // ============================================================
   // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
