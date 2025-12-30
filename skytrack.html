@@ -596,98 +596,108 @@ if (!Array.isArray(window.ACS_LIVE_FLIGHTS) || window.ACS_LIVE_FLIGHTS.length ==
 // ✈️ SKYTRACK — TIME BASED INTERPOLATION (CRITICAL)
 // ============================================================
 
-if (typeof lat !== "number" || typeof lng !== "number") {
+function renderLiveFlights() {
 
-  const o = getSkyTrackAirportByICAO(f.origin);
-  const d = getSkyTrackAirportByICAO(f.destination);
+  const activeIds = new Set();
 
-  if (!o || !d) return;
+  ACS_LIVE_FLIGHTS.forEach(f => {
 
-  // Required timing
-  const depMin = f.depMin ?? f.departureMin;
-  const arrMin = f.arrMin ?? f.arrivalMin;
+    const id = f.aircraftId || f.flightNumber;
+    activeIds.add(id);
 
-  if (typeof depMin !== "number" || typeof arrMin !== "number") {
-    lat = o.lat;
-    lng = o.lng;
-  } else {
-    const total = arrMin - depMin;
-    const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
-    const p = total > 0 ? elapsed / total : 0;
+    let lat = f.lat;
+    let lng = f.lng;
 
-    lat = o.lat + (d.lat - o.lat) * p;
-    lng = o.lng + (d.lng - o.lng) * p;
-  }
-}
+    if (typeof lat !== "number" || typeof lng !== "number") {
 
-   // ============================================================
-// ✈️ CREATE / UPDATE MARKER
-// ============================================================
+      const o = getSkyTrackAirportByICAO(f.origin);
+      const d = getSkyTrackAirportByICAO(f.destination);
+      if (!o || !d) return;
 
-let marker = window.SKYTRACK_MARKERS[id];
+      const depMin = f.depMin ?? f.departureMin;
+      const arrMin = f.arrMin ?? f.arrivalMin;
 
-if (!marker) {
-  marker = L.marker([lat, lng], {
-    icon: L.divIcon({
-      className: "acs-atc-marker",
-      iconSize: [8, 8],
-      iconAnchor: [4, 4],
-      html: `
-        <div class="acs-hitbox">
-          <div class="skytrack-aircraft-dot"></div>
-          <div class="acs-atc-chip">
-          ${f.flightNumber || f.flightOut || ""}
-          </div>
-        </div>
-      `
-    })
-  }).addTo(map);
+      if (typeof depMin !== "number" || typeof arrMin !== "number") {
+        lat = o.lat;
+        lng = o.lng;
+      } else {
+        const total = arrMin - depMin;
+        const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
+        const p = total > 0 ? elapsed / total : 0;
 
-  window.SKYTRACK_MARKERS[id] = marker;
-} else {
-  marker.setLatLng([lat, lng]);
-}
-
-   // ============================================================
-// 🧾 POPUP (MINIMAL, SAFE)
-// ============================================================
-
-const statusLabel =
-  f.status === "AIRBORNE" ? "✈️ ENROUTE" :
-  f.status === "ARRIVED"  ? "🛬 ARRIVED" :
-  "🅿️ ON GROUND";
-
-if (!marker._acsPopupBound) {
-  marker.bindPopup(
-    `<b>${f.flightNumber || "FLIGHT"}</b><br>
-     ${f.origin} → ${f.destination}<br>
-     <small>
-       ✈️ ${f.aircraftModel || "Aircraft"}<br>
-       🔒 ${f.locked ? "Locked" : "Active"}<br>
-       📡 ${statusLabel}
-     </small>`,
-    {
-      autoPan: false,
-      closeOnClick: false,
-      autoClose: false
+        lat = o.lat + (d.lat - o.lat) * p;
+        lng = o.lng + (d.lng - o.lng) * p;
+      }
     }
-  );
 
-  marker._acsPopupBound = true;
-}
+    // ============================================================
+    // ✈️ CREATE / UPDATE MARKER
+    // ============================================================
+
+    let marker = window.SKYTRACK_MARKERS[id];
+
+    if (!marker) {
+      marker = L.marker([lat, lng], {
+        icon: L.divIcon({
+          className: "acs-atc-marker",
+          iconSize: [8, 8],
+          iconAnchor: [4, 4],
+          html: `
+            <div class="acs-hitbox">
+              <div class="skytrack-aircraft-dot"></div>
+              <div class="acs-atc-chip">
+                ${f.flightNumber || f.flightOut || ""}
+              </div>
+            </div>
+          `
+        })
+      }).addTo(map);
+
+      window.SKYTRACK_MARKERS[id] = marker;
+    } else {
+      marker.setLatLng([lat, lng]);
+    }
+
+    // ============================================================
+    // 🧾 POPUP (MINIMAL, SAFE)
+    // ============================================================
+
+    const statusLabel =
+      f.status === "AIRBORNE" ? "✈️ ENROUTE" :
+      f.status === "ARRIVED"  ? "🛬 ARRIVED" :
+      "🅿️ ON GROUND";
+
+    if (!marker._acsPopupBound) {
+      marker.bindPopup(
+        `<b>${f.flightNumber || "FLIGHT"}</b><br>
+         ${f.origin} → ${f.destination}<br>
+         <small>
+           ✈️ ${f.aircraftModel || "Aircraft"}<br>
+           🔒 ${f.locked ? "Locked" : "Active"}<br>
+           📡 ${statusLabel}
+         </small>`,
+        {
+          autoPan: false,
+          closeOnClick: false,
+          autoClose: false
+        }
+      );
+      marker._acsPopupBound = true;
+    }
+
+  });
 
   // ============================================================
-// 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
-// ============================================================
+  // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
+  // ============================================================
 
-Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
-  if (!activeIds.has(id)) {
-    map.removeLayer(window.SKYTRACK_MARKERS[id]);
-    delete window.SKYTRACK_MARKERS[id];
-  }
-});
-
-} // ⬅️ CIERRE CORRECTO DE renderLiveFlights()
+  Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
+    if (!activeIds.has(id)) {
+      map.removeLayer(window.SKYTRACK_MARKERS[id]);
+      delete window.SKYTRACK_MARKERS[id];
+    }
+  });
+}
 
 // ------------------------------------------------------------
 // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
