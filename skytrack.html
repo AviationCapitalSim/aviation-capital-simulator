@@ -579,6 +579,60 @@ function buildLiveFlightsFromSchedule() {
 
   return window.ACS_LIVE_FLIGHTS;
 }
+
+/* ============================================================
+   🟦 S5.1 — FORCE GROUND FLEET (NO FLIGHT WINDOW)
+   ------------------------------------------------------------
+   - Always show aircraft on ground if no active flights
+   - Prevents empty SkyTrack at night
+   - Does NOT fake enroute flights
+   ============================================================ */
+function ensureGroundFleetVisible() {
+
+  if (!Array.isArray(window.ACS_LIVE_FLIGHTS)) {
+    window.ACS_LIVE_FLIGHTS = [];
+  }
+
+  // If there is at least ONE active/enroute flight → do nothing
+  if (window.ACS_LIVE_FLIGHTS.some(f => f.status === "enroute")) {
+    return;
+  }
+
+  const raw = localStorage.getItem("scheduleItems");
+  if (!raw) return;
+
+  let items = [];
+  try {
+    items = JSON.parse(raw);
+  } catch {
+    return;
+  }
+
+  if (!Array.isArray(items)) return;
+
+  const groundFlights = [];
+
+  items.forEach(f => {
+    if (!f || !f.aircraftId || !f.origin) return;
+
+    const o = getSkyTrackAirportByICAO(f.origin);
+    if (!o) return;
+
+    groundFlights.push({
+      aircraftId: f.aircraftId,
+      flightOut: f.flightOut || f.id || f.aircraftId,
+      origin: f.origin,
+      destination: f.destination || "",
+      depMin: f.depMin ?? f.departureMin ?? null,
+      arrMin: f.arrMin ?? f.arrivalMin ?? null,
+      lat: o.lat,
+      lng: o.lng,
+      status: "ground"
+    });
+  });
+
+  window.ACS_LIVE_FLIGHTS = groundFlights;
+}
    
 /* ============================================================
    🟦 S1 — SKYTRACK RENDER LIVE FLIGHTS (FED & STABLE)
@@ -854,14 +908,23 @@ function handleLogout() {
 </script>
     
 <script>
+  
 /* ============================================================
-   ⏱ SKYTRACK TIME LISTENER
+   ⏱ SKYTRACK TIME LISTENER (MASTER LOOP)
    ============================================================ */
 
 if (typeof registerTimeListener === "function") {
   registerTimeListener(() => {
+
+    // 1️⃣ Build dynamic flights from schedule + time
     buildLiveFlightsFromSchedule();
+
+    // 2️⃣ Ensure planes are visible on ground (night / idle)
+    ensureGroundFleetVisible();
+
+    // 3️⃣ Render markers on map
     renderLiveFlights();
+
   });
 }
 
