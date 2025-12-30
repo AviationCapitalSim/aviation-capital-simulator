@@ -553,8 +553,10 @@ function buildLiveFlightsFromSchedule() {
     });
   });
 
-  window.ACS_LIVE_FLIGHTS = flights;
-  return flights;
+  // 🔒 FORCE DENSE ARRAY (NO HOLES)
+   window.ACS_LIVE_FLIGHTS = flights.filter(Boolean);
+   return window.ACS_LIVE_FLIGHTS;
+
 }
    
 /* ============================================================
