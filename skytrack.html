@@ -600,21 +600,24 @@ if (typeof lat !== "number" || typeof lng !== "number") {
     // ============================================================
     // 🧾 POPUP (MINIMAL, SAFE)
     // ============================================================
-    const flightLabel =
-    f.flightOut ||
-    f.flightNumber ||
-   `AC-${f.aircraftId}`;
+   const flightLabel =
+  f.registration ||
+  f.aircraftModel ||
+  f.flightNumber ||
+  `AC-${f.aircraftId}`;
 
     const statusLabel =
-    f.status === "enroute" ? "✈️ ENROUTE" :
-    f.status === "arrived" ? "🛬 ARRIVED" :
+    f.status === "AIRBORNE" ? "✈️ ENROUTE" :
+    f.status === "ARRIVED"  ? "🛬 ARRIVED" :
     "🅿️ ON GROUND";
 
-     marker.bindPopup(`
-     <b>${flightLabel}</b><br>
-     ${f.origin} → ${f.destination}<br>
-     <small>${statusLabel}</small>
-   `);
+
+     marker.bindPopup(
+   `<b>${flightLabel}</b><br>
+    ${f.origin} → ${f.destination}<br>
+    <small>${statusLabel}</small>`,
+    { autoPan: false }
+);
 
   });
 
