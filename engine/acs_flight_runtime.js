@@ -5,6 +5,18 @@
    Time source: ACS_TIME (NO bootstrap, NO override)
    Publishes: ACS_LIVE_FLIGHTS[]
    ============================================================ */
+/* ============================================================
+   🧩 EXEC FLIGHT SAFE RESOLVER (GLOBAL READ-ONLY)
+   ============================================================ */
+
+function getExecFlightSafe() {
+  try {
+    if (typeof getExecFlight === "function") {
+      return getExecFlight();
+    }
+  } catch (e) {}
+  return null;
+}
 
 (function () {
 
