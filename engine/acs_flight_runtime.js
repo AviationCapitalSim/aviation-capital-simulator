@@ -269,6 +269,9 @@ const liveFlights = [{
   updatedAt: Date.now()
 }];
 
+// ------------------------------------------------------------
+// Publish LIVE flights (PERSISTED — REQUIRED FOR SKYTRACK)
+// ------------------------------------------------------------
 window.ACS_LIVE_FLIGHTS = liveFlights;
 
 try {
@@ -279,50 +282,22 @@ try {
 } catch (e) {
   console.warn("ACS_LIVE_FLIGHTS persistence failed", e);
 }
-}
 
 
 // 🔒 Export
 window.updateWorldFlights = updateWorldFlights;
 
-  // ------------------------------------------------------------
-  // 🧠 Airport resolver (tries multiple sources safely)
-  // ------------------------------------------------------------
-  function resolveAirport(icao) {
-    if (!icao) return null;
-
-    // 1) SkyTrack adapter
-    if (typeof window.getSkyTrackAirportByICAO === "function") {
-      const a = window.getSkyTrackAirportByICAO(icao);
-      if (a && typeof a.lat === "number" && typeof a.lng === "number") return a;
-    }
-
-    // 2) WorldAirportsACS container (common patterns)
-    const wa = window.WorldAirportsACS;
-    if (wa) {
-      if (typeof wa.getByICAO === "function") {
-        const a = wa.getByICAO(icao);
-        if (a && typeof a.lat === "number" && typeof a.lng === "number") return a;
-      }
-      if (typeof wa.findByICAO === "function") {
-        const a = wa.findByICAO(icao);
-        if (a && typeof a.lat === "number" && typeof a.lng === "number") return a;
-      }
-      if (wa[icao] && typeof wa[icao].lat === "number" && typeof wa[icao].lng === "number") {
-        return wa[icao];
-      }
-    }
-
-    return null;
-  }
 
 // ============================================================
 // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE (FIXED)
 // ============================================================
- 
+
 function waitForWorldAirports(cb) {
   try {
-    if (window.WorldAirportsACS && Object.keys(window.WorldAirportsACS).length > 0) {
+    if (
+      window.WorldAirportsACS &&
+      Object.keys(window.WorldAirportsACS).length > 0
+    ) {
       cb();
       return;
     }
@@ -335,26 +310,18 @@ function waitForWorldAirports(cb) {
    ============================================================ */
 
 // ✅ BLINDAJE: si el legacy llama updateLiveFlights, lo mapeamos.
-if (typeof window.updateLiveFlights !== "function" && typeof window.updateWorldFlights === "function") {
+if (
+  typeof window.updateLiveFlights !== "function" &&
+  typeof window.updateWorldFlights === "function"
+) {
   window.updateLiveFlights = window.updateWorldFlights;
 }
 
 waitForWorldAirports(() => {
   if (typeof registerTimeListener === "function") {
     registerTimeListener(() => {
-      // ✅ Prioridad: updateWorldFlights (runtime real)
       if (typeof window.updateWorldFlights === "function") {
         window.updateWorldFlights();
-        return;
-      }
-      // ✅ Fallback: updateLiveFlights (legacy)
-      if (typeof window.updateLiveFlights === "function") {
-        window.updateLiveFlights();
-        return;
-      }
-      // ✅ Último fallback: feeder desde schedule (si existe)
-      if (typeof window.buildLiveFlightsFromSchedule === "function") {
-        window.buildLiveFlightsFromSchedule();
       }
     });
   }
