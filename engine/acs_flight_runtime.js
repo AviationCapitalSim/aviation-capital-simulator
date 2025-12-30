@@ -227,31 +227,49 @@ function updateWorldFlights() {
 }
    
 // ============================================================
-// 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
+// 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE (FIXED)
 // ============================================================
-
+ 
 function waitForWorldAirports(cb) {
-  if (window.WorldAirportsACS && Object.keys(WorldAirportsACS).length > 0) {
-    cb();
-  } else {
-    setTimeout(() => waitForWorldAirports(cb), 200);
-  }
+  try {
+    if (window.WorldAirportsACS && Object.keys(window.WorldAirportsACS).length > 0) {
+      cb();
+      return;
+    }
+  } catch (e) {}
+  setTimeout(() => waitForWorldAirports(cb), 200);
 }
-   
+
 /* ============================================================
-   ⏱ TIME ENGINE HOOK
+   ⏱ TIME ENGINE HOOK (FIXED + BLINDAJE)
    ============================================================ */
 
-   waitForWorldAirports(() => {
+// ✅ BLINDAJE: si el legacy llama updateLiveFlights, lo mapeamos.
+if (typeof window.updateLiveFlights !== "function" && typeof window.updateWorldFlights === "function") {
+  window.updateLiveFlights = window.updateWorldFlights;
+}
 
-  // Register runtime tick
-   
+waitForWorldAirports(() => {
+  if (typeof registerTimeListener === "function") {
     registerTimeListener(() => {
-    updateWorldFlights();
-       
-  });
+      // ✅ Prioridad: updateWorldFlights (runtime real)
+      if (typeof window.updateWorldFlights === "function") {
+        window.updateWorldFlights();
+        return;
+      }
+      // ✅ Fallback: updateLiveFlights (legacy)
+      if (typeof window.updateLiveFlights === "function") {
+        window.updateLiveFlights();
+        return;
+      }
+      // ✅ Último fallback: feeder desde schedule (si existe)
+      if (typeof window.buildLiveFlightsFromSchedule === "function") {
+        window.buildLiveFlightsFromSchedule();
+      }
+    });
+  }
 
-   console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
+  console.log("🌍 WorldAirportsACS ready — Flight runtime armed (FIXED)");
 });
 
 })();
