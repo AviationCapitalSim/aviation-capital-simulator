@@ -536,18 +536,37 @@ function renderLiveFlights() {
     // ============================================================
     // 📍 RESOLVE POSITION
     // ============================================================
+   
     let lat = f.lat;
     let lng = f.lng;
 
-    // If no lat/lng → place on origin airport (GROUND MODE)
-    if (typeof lat !== "number" || typeof lng !== "number") {
-      const apt = (typeof getSkyTrackAirportByICAO === "function")
-        ? getSkyTrackAirportByICAO(f.origin)
-        : null;
-      if (!apt) return;
-      lat = apt.lat;
-      lng = apt.lng;
-    }
+// ============================================================
+// ✈️ SKYTRACK — TIME BASED INTERPOLATION (CRITICAL)
+// ============================================================
+
+if (typeof lat !== "number" || typeof lng !== "number") {
+
+  const o = getSkyTrackAirportByICAO(f.origin);
+  const d = getSkyTrackAirportByICAO(f.destination);
+
+  if (!o || !d) return;
+
+  // Required timing
+  const depMin = f.depMin ?? f.departureMin;
+  const arrMin = f.arrMin ?? f.arrivalMin;
+
+  if (typeof depMin !== "number" || typeof arrMin !== "number") {
+    lat = o.lat;
+    lng = o.lng;
+  } else {
+    const total = arrMin - depMin;
+    const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
+    const p = total > 0 ? elapsed / total : 0;
+
+    lat = o.lat + (d.lat - o.lat) * p;
+    lng = o.lng + (d.lng - o.lng) * p;
+  }
+}
 
     // ============================================================
     // ✈️ CREATE / UPDATE MARKER
