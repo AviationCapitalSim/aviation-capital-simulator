@@ -771,40 +771,41 @@ function handleLogout() {
    ⏱ SKYTRACK TIME LISTENER
    ============================================================ */
 
-registerTimeListener(() => {
-  if (typeof renderLiveFlights === "function") {
-    renderLiveFlights();
-  }
-});
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(renderLiveFlights);
+}
 
 /* ============================================================
-   🕐 Reloj cockpit Airbus sincronizado con ACS
+   🕐 SKYTRACK INIT
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  /* ============================================================
+     🛰 READ ACTIVE FLIGHT FROM SCHEDULE (OPTIONAL)
+     ============================================================ */
 
-/* ============================================================
-   🛰 READ ACTIVE FLIGHT FROM SCHEDULE
-   ============================================================ */
+  const activeFlightRaw = localStorage.getItem("ACS_ACTIVE_FLIGHT");
 
-const activeFlightRaw = localStorage.getItem("ACS_ACTIVE_FLIGHT");
+  if (!activeFlightRaw) {
+    console.log("🛰 SkyTrack: No active flight");
+  } else {
+    try {
+      JSON.parse(activeFlightRaw);
+    } catch (e) {
+      console.warn("⚠️ Invalid ACS_ACTIVE_FLIGHT");
+    }
+  }
 
-if (!activeFlightRaw) {
-  console.log("🛰 SkyTrack: No active flight");
-} else {
-  const activeFlight = JSON.parse(activeFlightRaw);
-}
-  
-/* ============================================================
-   ⏱ SKYTRACK — START TIME ENGINE
-   ============================================================ */
-if (typeof ACS_startTimeEngine === "function") {
-  ACS_startTimeEngine();
-}
+  /* ============================================================
+     ⏱ START TIME ENGINE
+     ============================================================ */
 
-/* 🔴 ESTE CIERRE FALTABA */
-});
+  if (typeof ACS_startTimeEngine === "function") {
+    ACS_startTimeEngine();
+  }
+
+}); // 🔴 ESTE CIERRE ES CRÍTICO — NO QUITAR
 
 </script>
 
