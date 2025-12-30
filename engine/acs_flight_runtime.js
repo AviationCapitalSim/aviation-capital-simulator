@@ -137,11 +137,33 @@ window.getExecFlight = getExecFlight;
         lng = o.lng + (d.lng - o.lng) * progress;
       }
 
-      if (!inAir && !crossesMidnight && nowMin > arrAdj) {
-        status = "ARRIVED";
-        lat = d.lat;
-        lng = d.lng;
-      }
+     if (!inAir && nowMin > arrAdj) {
+
+  // 🔁 ROTATION — auto return
+  const rotMin = it.turnaroundMin || it.turnaround || 45;
+  const returnDep = arrAdj + rotMin;
+  const returnArr = returnDep + (arrAdj - depAdj);
+
+  if (nowMin >= returnDep && nowMin <= returnArr) {
+    status = "AIRBORNE";
+
+    const elapsed = nowMin - returnDep;
+    const duration = returnArr - returnDep;
+    const p = duration > 0 ? elapsed / duration : 0;
+
+    lat = d.lat + (o.lat - d.lat) * p;
+    lng = d.lng + (o.lng - d.lng) * p;
+
+  } else if (nowMin > returnArr) {
+    status = "GROUND";
+    lat = o.lat;
+    lng = o.lng;
+  } else {
+    status = "ARRIVED";
+    lat = d.lat;
+    lng = d.lng;
+  }
+}
 
       liveFlights.push({
         aircraftId   : String(it.aircraftId),
