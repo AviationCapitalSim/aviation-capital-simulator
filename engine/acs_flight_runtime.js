@@ -251,3 +251,5 @@ waitForWorldAirports(() => {
 
   console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
 });
+
+})();
