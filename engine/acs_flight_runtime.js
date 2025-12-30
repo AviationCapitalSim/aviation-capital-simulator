@@ -242,13 +242,16 @@ function waitForWorldAirports(cb) {
    ⏱ TIME ENGINE HOOK
    ============================================================ */
 
-waitForWorldAirports(() => {
+   waitForWorldAirports(() => {
 
   // Register runtime tick
-  registerTimeListener(() => {
+   
+    registerTimeListener(() => {
     updateWorldFlights();
+       
   });
 
-  console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
+   console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
 });
 
+})();
