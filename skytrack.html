@@ -677,31 +677,34 @@ if (!marker._acsPopupBound) {
 }
 
   // ============================================================
-  // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
-  // ============================================================
-  Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
-    if (!activeIds.has(id)) {
-      map.removeLayer(window.SKYTRACK_MARKERS[id]);
-      delete window.SKYTRACK_MARKERS[id];
-    }
+// 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
+// ============================================================
+
+Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
+  if (!activeIds.has(id)) {
+    map.removeLayer(window.SKYTRACK_MARKERS[id]);
+    delete window.SKYTRACK_MARKERS[id];
+  }
+});
+
+} // ⬅️ CIERRE CORRECTO DE renderLiveFlights()
+
+// ------------------------------------------------------------
+// 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
+// ------------------------------------------------------------
+function createATCMarkerIcon(f) {
+  const label = (f.flightNumber || f.flightOut || "").toString();
+
+  return L.divIcon({
+    className: "atc-marker",
+    html: `
+      <div class="atc-box"></div>
+      <div class="atc-label">${label}</div>
+    `,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11]
   });
 }
-
-  // ------------------------------------------------------------
-  // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
-  // ------------------------------------------------------------
-  function createATCMarkerIcon(f) {
-    const label = (f.flightOut || f.aircraftId || "").toString();
-    return L.divIcon({
-      className: "atc-marker",
-      html: `
-        <div class="atc-box"></div>
-        <div class="atc-label">${label}</div>
-      `,
-      iconSize: [22, 22],
-      iconAnchor: [11, 11]
-    });
-  }
 
   // ------------------------------------------------------------
   // 🧹 REMOVE MARKERS NOT ACTIVE ANYMORE
