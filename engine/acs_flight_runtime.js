@@ -9,14 +9,16 @@
    🧩 EXEC FLIGHT SAFE RESOLVER (GLOBAL READ-ONLY)
    ============================================================ */
 
-function getExecFlightSafe() {
+function getExecFlight() {
   try {
-    if (typeof getExecFlight === "function") {
-      return getExecFlight();
-    }
-  } catch (e) {}
-  return null;
+    return JSON.parse(localStorage.getItem("ACS_FLIGHT_EXEC"));
+  } catch {
+    return null;
+  }
 }
+
+// 🔓 EXPORT REAL (CRÍTICO)
+window.getExecFlight = getExecFlight;
 
 (function () {
 
