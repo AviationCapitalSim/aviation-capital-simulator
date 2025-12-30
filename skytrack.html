@@ -482,6 +482,80 @@ const SKYTRACK_AIRCRAFT_ICON = L.divIcon({
   popupAnchor: [0, -6],
   html: `<div class="skytrack-aircraft-dot"></div>`
 });
+
+/* ============================================================
+   🟦 S5 — BUILD LIVE FLIGHTS FROM SCHEDULE (RUNTIME FEEDER)
+   ------------------------------------------------------------
+   - Reads scheduleItems (static)
+   - Uses ACS_TIME.minute
+   - Publishes ACS_LIVE_FLIGHTS (dynamic)
+   ============================================================ */
+function buildLiveFlightsFromSchedule() {
+
+  const nowMin = window.ACS_TIME?.minute;
+  if (typeof nowMin !== "number") return [];
+
+  const raw = localStorage.getItem("scheduleItems");
+  if (!raw) return [];
+
+  let items = [];
+  try {
+    items = JSON.parse(raw);
+  } catch {
+    return [];
+  }
+
+  if (!Array.isArray(items)) return [];
+
+  const flights = [];
+
+  items.forEach(f => {
+    if (!f || !f.aircraftId || !f.origin || !f.destination) return;
+
+    const depMin = f.depMin ?? f.departureMin;
+    const arrMin = f.arrMin ?? f.arrivalMin;
+    if (typeof depMin !== "number" || typeof arrMin !== "number") return;
+
+    const o = getSkyTrackAirportByICAO(f.origin);
+    const d = getSkyTrackAirportByICAO(f.destination);
+    if (!o || !d) return;
+
+    let status = "ground";
+    let lat = o.lat;
+    let lng = o.lng;
+
+    // ✈️ ENROUTE
+    if (nowMin >= depMin && nowMin <= arrMin) {
+      status = "enroute";
+
+      const progress = (nowMin - depMin) / (arrMin - depMin);
+      lat = o.lat + (d.lat - o.lat) * progress;
+      lng = o.lng + (d.lng - o.lng) * progress;
+    }
+
+    // 🛬 ARRIVED (keep at destination)
+    if (nowMin > arrMin) {
+      status = "arrived";
+      lat = d.lat;
+      lng = d.lng;
+    }
+
+    flights.push({
+      aircraftId: f.aircraftId,
+      flightOut: f.flightOut || f.id || f.aircraftId,
+      origin: f.origin,
+      destination: f.destination,
+      depMin,
+      arrMin,
+      lat,
+      lng,
+      status
+    });
+  });
+
+  window.ACS_LIVE_FLIGHTS = flights;
+  return flights;
+}
    
 /* ============================================================
    🟦 S1 — SKYTRACK RENDER LIVE FLIGHTS (FED & STABLE)
@@ -749,7 +823,10 @@ function handleLogout() {
    ============================================================ */
 
 if (typeof registerTimeListener === "function") {
-  registerTimeListener(renderLiveFlights);
+  registerTimeListener(() => {
+    buildLiveFlightsFromSchedule();
+    renderLiveFlights();
+  });
 }
 
 /* ============================================================
