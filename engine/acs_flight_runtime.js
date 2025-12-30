@@ -42,162 +42,198 @@
   }
 
  /* ============================================================
-   ✈️ RUNTIME LOOP — 3 PHASES (GROUND / AIR / DESTINATION)
+   🟥 R1 — ACS FLIGHT RUNTIME ENGINE (EXEC MODE) — FIXED
+   ------------------------------------------------------------
+   - Reads: localStorage.ACS_FLIGHT_EXEC
+   - Uses: ACS_TIME.minute
+   - Publishes: window.ACS_LIVE_FLIGHTS (dense array)
+   - IMPORTANT: Does NOT wipe LIVE_FLIGHTS when no EXEC exists
    ============================================================ */
+function updateWorldFlights() {
 
-function updateLiveFlights() {
+  const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
+    ? window.ACS_TIME.minute
+    : null;
 
-  const liveFlights = [];
+  // If time not ready, do nothing (don't wipe)
+  if (nowMin === null) return;
 
-  const nowMin = window.ACS_TIME?.minute;
-  const exec = getExecFlight();
+  const execRaw = localStorage.getItem("ACS_FLIGHT_EXEC");
 
-  if (!exec || typeof nowMin !== "number") {
-    window.ACS_LIVE_FLIGHTS = [];
-    localStorage.setItem("ACS_LIVE_FLIGHTS", "[]");
+  // ✅ If there is NO EXEC, do nothing (don't wipe)
+  // This prevents SkyTrack going empty forever.
+  if (!execRaw) return;
+
+  let exec;
+  try {
+    exec = JSON.parse(execRaw);
+  } catch (e) {
+    console.warn("ACS Runtime: ACS_FLIGHT_EXEC parse error", e);
     return;
   }
 
-  // --------------------------------------------------------
-  // 🔧 Garantizar arrMin si no existe (fallback temporal)
-  // --------------------------------------------------------
+  if (!exec || !exec.aircraftId) return;
 
-  if (typeof exec.depMin === "number" && typeof exec.arrMin !== "number") {
-    exec.arrMin = exec.depMin + 120; // 2h default
+  // ------------------------------------------------------------
+  // 🧠 Airport resolver (tries multiple sources safely)
+  // ------------------------------------------------------------
+  function resolveAirport(icao) {
+    if (!icao) return null;
+
+    // 1) SkyTrack adapter
+    if (typeof window.getSkyTrackAirportByICAO === "function") {
+      const a = window.getSkyTrackAirportByICAO(icao);
+      if (a && typeof a.lat === "number" && typeof a.lng === "number") return a;
+    }
+
+    // 2) WorldAirportsACS container (common patterns)
+    const wa = window.WorldAirportsACS;
+    if (wa) {
+      if (typeof wa.getByICAO === "function") {
+        const a = wa.getByICAO(icao);
+        if (a && typeof a.lat === "number" && typeof a.lng === "number") return a;
+      }
+      if (typeof wa.findByICAO === "function") {
+        const a = wa.findByICAO(icao);
+        if (a && typeof a.lat === "number" && typeof a.lng === "number") return a;
+      }
+      if (wa[icao] && typeof wa[icao].lat === "number" && typeof wa[icao].lng === "number") {
+        return wa[icao];
+      }
+    }
+
+    return null;
   }
 
-  // --------------------------------------------------------
-  // 🔀 ACTIVE LEG (OUTBOUND / RETURN)
-  // --------------------------------------------------------
+  // ------------------------------------------------------------
+  // 🧩 Normalize legs
+  // ------------------------------------------------------------
+  const legs = Array.isArray(exec.legs) && exec.legs.length
+    ? exec.legs
+    : [{
+        origin: exec.origin,
+        destination: exec.destination,
+        depMin: exec.depMin,
+        arrMin: exec.arrMin
+      }];
 
-  let activeLeg = {
-    origin: exec.origin,
-    destination: exec.destination,
-    depMin: exec.depMin,
-    arrMin: exec.arrMin
-  };
+  if (!Array.isArray(legs) || !legs.length) return;
 
-  if (exec._return && nowMin >= exec._return.depMin) {
-    activeLeg = exec._return;
+  // ------------------------------------------------------------
+  // ✅ Pick active leg / or fallback to nearest state
+  // ------------------------------------------------------------
+  let activeLeg = null;
+
+  for (const lg of legs) {
+    const dep = lg?.depMin;
+    const arr = lg?.arrMin;
+    if (typeof dep !== "number" || typeof arr !== "number") continue;
+
+    // Handles same-day windows (your current system)
+    if (nowMin >= dep && nowMin <= arr) {
+      activeLeg = lg;
+      break;
+    }
   }
 
-  if (
-    typeof activeLeg.depMin !== "number" ||
-    typeof activeLeg.arrMin !== "number" ||
-    !activeLeg.origin ||
-    !activeLeg.destination
-  ) {
-    return;
+  // If none active: place on ground at next origin OR last destination
+  if (!activeLeg) {
+    // next upcoming
+    const upcoming = legs.find(lg => typeof lg?.depMin === "number" && nowMin < lg.depMin);
+    if (upcoming) {
+      activeLeg = {
+        origin: upcoming.origin,
+        destination: upcoming.destination,
+        depMin: upcoming.depMin,
+        arrMin: upcoming.arrMin,
+        __forcedStatus: "ground"
+      };
+    } else {
+      // already finished all legs
+      const last = legs[legs.length - 1];
+      activeLeg = {
+        origin: last.origin,
+        destination: last.destination,
+        depMin: last.depMin,
+        arrMin: last.arrMin,
+        __forcedStatus: "arrived"
+      };
+    }
   }
 
-  const origin = getSkyTrackAirportByICAO(activeLeg.origin);
-  const dest   = getSkyTrackAirportByICAO(activeLeg.destination);
+  const depMin = activeLeg.depMin;
+  const arrMin = activeLeg.arrMin;
 
-  if (!origin || !dest) return;
+  if (typeof depMin !== "number" || typeof arrMin !== "number") return;
 
-  const dep = activeLeg.depMin;
-  const arr = activeLeg.arrMin;
+  const o = resolveAirport(activeLeg.origin);
+  const d = resolveAirport(activeLeg.destination);
+  if (!o || !d) return;
 
-  let progress = 0;
-  let lat = origin.lat;
-  let lng = origin.lng;
+  // ------------------------------------------------------------
+  // ✈️ Status + position
+  // ------------------------------------------------------------
   let status = "ground";
+  let progress = 0;
 
-  if (nowMin < dep) {
-    status = "ground";
-  }
-  else if (nowMin >= dep && nowMin <= arr) {
-    progress = (nowMin - dep) / (arr - dep);
-    progress = Math.min(Math.max(progress, 0), 1);
-
-    const pos = interpolateGC(
-      origin.lat,
-      origin.lng,
-      dest.lat,
-      dest.lng,
-      progress
-    );
-
-    lat = pos.lat;
-    lng = pos.lng;
-    status = "enroute";
-  }
-  else if (nowMin > arr) {
-    progress = 1;
-    lat = dest.lat;
-    lng = dest.lng;
+  if (activeLeg.__forcedStatus === "arrived") {
     status = "arrived";
+    progress = 1;
+  } else if (activeLeg.__forcedStatus === "ground") {
+    status = "ground";
+    progress = 0;
+  } else if (nowMin >= depMin && nowMin <= arrMin) {
+    status = "enroute";
+    progress = (arrMin === depMin) ? 1 : (nowMin - depMin) / (arrMin - depMin);
+    if (!isFinite(progress)) progress = 0;
+    progress = Math.max(0, Math.min(1, progress));
+  } else if (nowMin > arrMin) {
+    status = "arrived";
+    progress = 1;
   }
 
-  // --------------------------------------------------------
-  // 🔁 TURNAROUND + RETURN FLIGHT (50 MIN)
-  // --------------------------------------------------------
+  const lat = o.lat + (d.lat - o.lat) * progress;
+  const lng = o.lng + (d.lng - o.lng) * progress;
 
-  const TURNAROUND_MIN = 50;
+  // ------------------------------------------------------------
+  // 🏷 Label (FIX: no 'active' / no 'aircraftId' undefined)
+  // ------------------------------------------------------------
+  const flightLabel =
+    exec.flightOut ||
+    exec.flightNumber ||
+    exec.routeCode ||
+    exec.aircraftId;
 
-  if (status === "arrived" && !exec._returnArmed) {
+  const aircraftModel =
+    exec.aircraftModel ||
+    exec.model ||
+    exec.aircraft ||
+    "";
 
-    exec._returnArmed = true;
+  // ------------------------------------------------------------
+  // ✅ Publish ONE dense flight (no holes)
+  // ------------------------------------------------------------
+  const liveFlights = [{
+    aircraftId: exec.aircraftId,
+    aircraftModel,
+    flightOut: flightLabel,
+    origin: activeLeg.origin,
+    destination: activeLeg.destination,
+    depMin,
+    arrMin,
+    lat,
+    lng,
+    progress,
+    status
+  }];
 
-    exec._return = {
-      origin: exec.destination,
-      destination: exec.origin,
-      depMin: arr + TURNAROUND_MIN,
-      arrMin: arr + TURNAROUND_MIN + (arr - dep)
-    };
+  window.ACS_LIVE_FLIGHTS = liveFlights; // dense
+  try {
+    localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
+  } catch (e) {}
 
-    localStorage.setItem("ACS_FLIGHT_EXEC", JSON.stringify(exec));
-
-    console.log("🔁 Return flight armed:", exec._return);
-  }
-
-  // --------------------------------------------------------
-  // 🔚 FLIGHT CYCLE COMPLETE (RETURN ARRIVED)
-  // --------------------------------------------------------
-
-  if (exec._return && activeLeg === exec._return && status === "arrived") {
-    console.log("🏁 Flight cycle completed");
-    localStorage.removeItem("ACS_FLIGHT_EXEC");
-  }
-
- // ============================================================
-// 🧾 USER VISIBLE FLIGHT LABEL (NO INTERNAL IDS)
-// ============================================================
-
-const userFlightLabel =
-  active.flightOut ||
-  active.flightNumber ||
-  active.routeCode ||
-  aircraftId;
-
-// ============================================================
-// ✈️ PUBLISH ONE AIRCRAFT STATE
-// ============================================================
-
-liveFlights.push({
-  aircraftId,
-  flightOut: userFlightLabel,   // 👈 SOLO LO QUE VE EL USUARIO
-  origin: active.origin,
-  destination: active.destination,
-  depMin: active.depMin,
-  arrMin: active.arrMin,
-  lat,
-  lng,
-  progress,
-  status
-});
-
-// ============================================================
-// 🔒 PUBLISH
-// ============================================================
-
-window.ACS_LIVE_FLIGHTS = liveFlights;
-localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
-
-
-  // 🔒 PUBLICAR SIEMPRE
-  window.ACS_LIVE_FLIGHTS = liveFlights;
-  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
+  // Optional: debug line (safe)
+  // console.log("ACS Runtime LIVE:", liveFlights[0]);
 }
    
 // ============================================================
