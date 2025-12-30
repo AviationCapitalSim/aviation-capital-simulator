@@ -751,11 +751,22 @@ if (typeof lat !== "number" || typeof lng !== "number") {
     // ============================================================
     // 🧾 POPUP (MINIMAL, SAFE)
     // ============================================================
-    const label = f.flightOut || id;
-    marker.bindPopup(`
-      <b>${label}</b><br>
-      ${f.origin} → ${f.destination || ""}
-    `);
+    const flightLabel =
+    f.flightOut ||
+    f.flightNumber ||
+   `AC-${f.aircraftId}`;
+
+    const statusLabel =
+    f.status === "enroute" ? "✈️ ENROUTE" :
+    f.status === "arrived" ? "🛬 ARRIVED" :
+    "🅿️ ON GROUND";
+
+     marker.bindPopup(`
+     <b>${flightLabel}</b><br>
+     ${f.origin} → ${f.destination}<br>
+     <small>${statusLabel}</small>
+   `);
+
   });
 
   // ============================================================
