@@ -134,7 +134,40 @@
     0 0 3px rgba(77,163,255,0.55),
     inset 0 0 2px rgba(255,255,255,0.15);
 }
-    
+/* ============================================================
+   🟦 ACS SKYTRACK — HITBOX & ATC CHIP
+   ============================================================ */
+
+.acs-hitbox {
+  width: 22px;               /* ⬅️ área de click */
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;      /* ⬅️ crítico */
+}
+
+.skytrack-aircraft-dot {
+  pointer-events: none;      /* ⬅️ evita perder click */
+}
+
+/* 🏷 ATC flight number chip */
+.acs-atc-chip {
+  position: absolute;
+  top: -14px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #111;
+  background: rgba(255,255,255,0.85);
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
+
 </style>
 </head>
 
@@ -479,10 +512,14 @@ function buildGroundFleetFromSchedule() {
    ============================================================ */
 const SKYTRACK_AIRCRAFT_ICON = L.divIcon({
   className: "skytrack-aircraft-icon",
-  iconSize: [8, 8],
+  iconSize: [8, 8],          // 🔹 tamaño visual REAL
   iconAnchor: [4, 4],
-  popupAnchor: [0, -6],
-  html: `<div class="skytrack-aircraft-dot"></div>`
+  popupAnchor: [0, -10],
+  html: `
+    <div class="acs-hitbox">
+      <div class="skytrack-aircraft-dot"></div>
+    </div>
+  `
 });
 
 /* ============================================================
@@ -589,10 +626,24 @@ if (typeof lat !== "number" || typeof lng !== "number") {
     let marker = window.SKYTRACK_MARKERS[id];
 
     if (!marker) {
-      marker = L.marker([lat, lng], {
-      icon: SKYTRACK_AIRCRAFT_ICON,
-      title: f.flightOut || f.aircraftId
-      }).addTo(map);
+  marker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      className: "acs-atc-marker",
+      iconSize: [8, 8],
+      iconAnchor: [4, 4],
+      html: `
+        <div class="acs-hitbox">
+          <div class="skytrack-aircraft-dot"></div>
+          <div class="acs-atc-chip">
+            ${f.flightOut || f.flightNumber || f.aircraftId}
+          </div>
+        </div>
+      `
+    })
+  }).addTo(map);
+} else {
+  marker.setLatLng([lat, lng]);
+}
 
       window.SKYTRACK_MARKERS[id] = marker;
     } else {
