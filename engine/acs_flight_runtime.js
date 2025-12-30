@@ -1,7 +1,7 @@
 /* ============================================================
    ✈️ ACS FLIGHT RUNTIME ENGINE — SINGLE EXEC MODE
    ------------------------------------------------------------
-   Source of truth: ACS_FLIGHT_EXEC 21DEC25
+   Source of truth: ACS_FLIGHT_EXEC 30DEC25
    Time source: ACS_TIME (NO bootstrap, NO override)
    Publishes: ACS_LIVE_FLIGHTS[]
    ============================================================ */
