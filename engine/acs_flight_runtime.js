@@ -56,46 +56,50 @@ window.getExecFlight = getExecFlight;
   }
 
  /* ============================================================
-   ✈️ UPDATE WORLD FLIGHTS — CORE RUNTIME ENGINE (FIXED)
+   ✈️ UPDATE WORLD FLIGHTS — RUNTIME (RESTORED, SCHEDULE-DRIVEN)
+   ------------------------------------------------------------
+   - Source of truth: scheduleItems
+   - Time source: ACS_TIME (minute of day)
+   - NO EXEC MODE
    ============================================================ */
 
 function updateWorldFlights() {
 
   if (!window.ACS_TIME) return;
-  if (!window.getExecFlight) return;
 
-  const exec = getExecFlight();
-  if (!exec) return;
-
-  const nowMin = window.ACS_TIME.minute;
-  const nowAdj = (nowMin + 1440) % 1440;
+  const nowMin = (ACS_TIME.minute + 1440) % 1440;
 
   // ------------------------------------------------------------
-  // Resolve airport coordinates safely
+  // Read Schedule Table (REAL FLIGHTS)
   // ------------------------------------------------------------
-  function resolveAirport(iata) {
-    if (!iata || !window.WorldAirportsACS) return null;
-    const ap = WorldAirportsACS[iata];
-    if (!ap) return null;
-    return {
-      lat: ap.lat,
-      lng: ap.lng
-    };
+  let items;
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch {
+    return;
   }
 
+  if (!Array.isArray(items) || !items.length) return;
+
   // ------------------------------------------------------------
-  // Validate legs
+  // Find ACTIVE flight (as before)
   // ------------------------------------------------------------
-  const legs = exec.legs;
-  if (!Array.isArray(legs) || legs.length === 0) return;
+  let activeFlight = null;
 
-  let activeLeg = null;
+  for (const it of items) {
 
-  for (let i = 0; i < legs.length; i++) {
-    const leg = legs[i];
+    if (!it.aircraftId || !it.origin || !it.destination) continue;
+    if (it.origin === it.destination) continue;
 
-    const depMin = leg.depMin;
-    const arrMin = leg.arrMin;
+    const depMin =
+      typeof it.depMin === "number" ? it.depMin :
+      typeof it.blockOut === "number" ? it.blockOut :
+      null;
+
+    const arrMin =
+      typeof it.arrMin === "number" ? it.arrMin :
+      typeof it.blockIn === "number" ? it.blockIn :
+      null;
 
     if (depMin == null || arrMin == null) continue;
 
@@ -104,82 +108,78 @@ function updateWorldFlights() {
 
     const inWindow =
       depAdj <= arrAdj
-        ? (nowAdj >= depAdj && nowAdj <= arrAdj)
-        : (nowAdj >= depAdj || nowAdj <= arrAdj);
+        ? (nowMin >= depAdj && nowMin <= arrAdj)
+        : (nowMin >= depAdj || nowMin <= arrAdj);
 
     if (inWindow) {
-      activeLeg = leg;
+      activeFlight = {
+        aircraftId: it.aircraftId,
+        aircraftModel: it.aircraftModel || it.model || "",
+        flightNo: it.flightNumber || it.flightOut || null,
+        origin: it.origin,
+        destination: it.destination,
+        depMin,
+        arrMin
+      };
       break;
     }
   }
 
+  if (!activeFlight) return;
+
   // ------------------------------------------------------------
-  // Determine status + position
+  // Resolve airports
   // ------------------------------------------------------------
-  let lat = null;
-  let lng = null;
-  let status = "GROUND";
-
-  if (activeLeg) {
-
-    const origin = resolveAirport(activeLeg.origin);
-    const dest   = resolveAirport(activeLeg.destination);
-
-    if (origin && dest) {
-
-      const depAdj = (activeLeg.depMin + 1440) % 1440;
-      const arrAdj = (activeLeg.arrMin + 1440) % 1440;
-
-      let elapsed;
-      let duration;
-
-      if (depAdj <= arrAdj) {
-        elapsed = nowAdj - depAdj;
-        duration = arrAdj - depAdj;
-      } else {
-        elapsed = nowAdj >= depAdj
-          ? nowAdj - depAdj
-          : nowAdj + 1440 - depAdj;
-        duration = (arrAdj + 1440) - depAdj;
-      }
-
-      const progress = Math.min(Math.max(elapsed / duration, 0), 1);
-
-      lat = origin.lat + (dest.lat - origin.lat) * progress;
-      lng = origin.lng + (dest.lng - origin.lng) * progress;
-      status = "AIRBORNE";
-    }
-
-  } else {
-    // Default grounded at base
-    const base = resolveAirport(exec.baseIATA || exec.base);
-    if (base) {
-      lat = base.lat;
-      lng = base.lng;
-    }
+  function resolveAirport(iata) {
+    if (!iata || !window.WorldAirportsACS) return null;
+    return WorldAirportsACS[iata] || null;
   }
 
+  const o = resolveAirport(activeFlight.origin);
+  const d = resolveAirport(activeFlight.destination);
+  if (!o || !d) return;
+
   // ------------------------------------------------------------
-  // Publish ONE dense flight (no holes)
+  // Position & status
   // ------------------------------------------------------------
-  const liveFlights = [{
-    aircraftId: exec.aircraftId,
-    aircraftModel: exec.aircraftModel || "UNKNOWN",
-    flightOut: activeLeg ? activeLeg.flightNo : null,
-    origin: activeLeg ? activeLeg.origin : exec.base,
-    destination: activeLeg ? activeLeg.destination : null,
+  const depAdj = (activeFlight.depMin + 1440) % 1440;
+  const arrAdj = (activeFlight.arrMin + 1440) % 1440;
+
+  let elapsed, duration;
+
+  if (depAdj <= arrAdj) {
+    elapsed = nowMin - depAdj;
+    duration = arrAdj - depAdj;
+  } else {
+    elapsed = nowMin >= depAdj
+      ? nowMin - depAdj
+      : nowMin + 1440 - depAdj;
+    duration = (arrAdj + 1440) - depAdj;
+  }
+
+  const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+
+  const lat = o.lat + (d.lat - o.lat) * progress;
+  const lng = o.lng + (d.lng - o.lng) * progress;
+
+  // ------------------------------------------------------------
+  // Publish LIVE flight (as before)
+  // ------------------------------------------------------------
+  window.ACS_LIVE_FLIGHTS = [{
+    aircraftId: activeFlight.aircraftId,
+    aircraftModel: activeFlight.aircraftModel,
+    flightOut: activeFlight.flightNo,
+    origin: activeFlight.origin,
+    destination: activeFlight.destination,
     lat,
     lng,
-    status,
+    status: "AIRBORNE",
     updatedAt: Date.now()
   }];
-
-  window.ACS_LIVE_FLIGHTS = liveFlights;
 }
 
-// 🔒 Hard export (no ghosts)
+// 🔒 Export
 window.updateWorldFlights = updateWorldFlights;
-
 
   // ------------------------------------------------------------
   // 🧠 Airport resolver (tries multiple sources safely)
