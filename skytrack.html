@@ -636,7 +636,7 @@ if (!marker) {
         <div class="acs-hitbox">
           <div class="skytrack-aircraft-dot"></div>
           <div class="acs-atc-chip">
-            ${f.flightOut || f.flightNumber || f.aircraftId}
+          ${f.flightNumber || f.flightOut || ""}
           </div>
         </div>
       `
@@ -665,9 +665,14 @@ if (!marker) {
 
    if (!marker._acsPopupBound) {
   marker.bindPopup(
-    `<b>${flightLabel}</b><br>
-     ${f.origin} → ${f.destination}<br>
-     <small>${statusLabel}</small>`,
+    `<b>${f.flightNumber || "FLIGHT"}</b><br>
+  ${f.origin} → ${f.destination}<br>
+  <small>
+    ✈️ ${f.aircraftModel || "Aircraft"}<br>
+    🔒 ${f.locked ? "Locked" : "Active"}<br>
+    📡 ${statusLabel}
+  </small>
+
     {
       autoPan: false,
       closeOnClick: false,
