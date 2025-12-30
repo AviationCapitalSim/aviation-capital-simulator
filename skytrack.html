@@ -644,28 +644,25 @@ ${remainingTxt}
   // ------------------------------------------------------------
   // 🧹 REMOVE MARKERS NOT ACTIVE ANYMORE
   // ------------------------------------------------------------
-  Object.keys(liveFlightMarkers).forEach(id => {
-    if (!activeIds.has(id)) {
-
-      if (liveFlightMarkers[id]) {
-        map.removeLayer(liveFlightMarkers[id]);
-        delete liveFlightMarkers[id];
-      }
-
-      if (liveFlightTraces[id]) {
-        map.removeLayer(liveFlightTraces[id]);
-        delete liveFlightTraces[id];
-      }
-
-      if (liveFlightPlans[id]) {
-        map.removeLayer(liveFlightPlans[id]);
-        delete liveFlightPlans[id];
-      }
-    }
-  });
-
-}
    
+  Object.keys(liveFlightMarkers).forEach(id => {
+
+  if (!activeIds.has(id)) {
+
+    if (liveFlightMarkers[id]) {
+      map.removeLayer(liveFlightMarkers[id]);
+      delete liveFlightMarkers[id];
+    }
+
+    if (liveFlightTraces[id]) {
+      map.removeLayer(liveFlightTraces[id]);
+      delete liveFlightTraces[id];
+    }
+
+  }
+
+});
+
 /* ============================================================
    ⏱ SKYTRACK — INIT + TIME SYNC
    ============================================================ */
