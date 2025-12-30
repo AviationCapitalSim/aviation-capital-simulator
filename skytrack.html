@@ -614,16 +614,19 @@ if (typeof lat !== "number" || typeof lng !== "number") {
     "🅿️ ON GROUND";
 
 
-    marker.bindPopup(
-  `<b>${flightLabel}</b><br>
-   ${f.origin} → ${f.destination}<br>
-   <small>${statusLabel}</small>`,
-  {
-    autoPan: false,
-    closeOnClick: false,
-    autoClose: false
-  }
-);
+   if (!marker._acsPopupBound) {
+  marker.bindPopup(
+    `<b>${flightLabel}</b><br>
+     ${f.origin} → ${f.destination}<br>
+     <small>${statusLabel}</small>`,
+    {
+      autoPan: false,
+      closeOnClick: false,
+      autoClose: false
+    }
+  );
+  marker._acsPopupBound = true;
+}
 
   });
 
