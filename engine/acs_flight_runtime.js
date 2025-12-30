@@ -42,37 +42,27 @@
   }
 
  /* ============================================================
-   🟥 R1 — ACS FLIGHT RUNTIME ENGINE (EXEC MODE) — FIXED
-   ------------------------------------------------------------
-   - Reads: localStorage.ACS_FLIGHT_EXEC
-   - Uses: ACS_TIME.minute
-   - Publishes: window.ACS_LIVE_FLIGHTS (dense array)
-   - IMPORTANT: Does NOT wipe LIVE_FLIGHTS when no EXEC exists
+   🌍 WORLD FLIGHT UPDATE — RUNTIME HEART
    ============================================================ */
+   
 function updateWorldFlights() {
 
-  const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
-    ? window.ACS_TIME.minute
-    : null;
+  // 1️⃣ Rebuild live flights from schedule (THIS WAS MISSING)
+  const flights = buildLiveFlightsFromSchedule();
 
-  // If time not ready, do nothing (don't wipe)
-  if (nowMin === null) return;
-
-  const execRaw = localStorage.getItem("ACS_FLIGHT_EXEC");
-
-  // ✅ If there is NO EXEC, do nothing (don't wipe)
-  // This prevents SkyTrack going empty forever.
-  if (!execRaw) return;
-
-  let exec;
-  try {
-    exec = JSON.parse(execRaw);
-  } catch (e) {
-    console.warn("ACS Runtime: ACS_FLIGHT_EXEC parse error", e);
+  // 2️⃣ Safety: always keep array
+  if (!Array.isArray(flights)) {
+    window.ACS_LIVE_FLIGHTS = [];
     return;
   }
 
-  if (!exec || !exec.aircraftId) return;
+  // 3️⃣ Debug (temporal, luego lo quitamos)
+  const enroute = flights.filter(f => f.status === "enroute");
+  console.log(
+    `✈️ Runtime tick @${window.ACS_TIME.minute} →`,
+    `total: ${flights.length}, enroute: ${enroute.length}`
+  );
+}
 
   // ------------------------------------------------------------
   // 🧠 Airport resolver (tries multiple sources safely)
