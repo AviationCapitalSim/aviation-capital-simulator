@@ -56,76 +56,168 @@ window.getExecFlight = getExecFlight;
   }
 
  /* ============================================================
-   ✈️ UPDATE WORLD FLIGHTS — RUNTIME (RESTORED, SCHEDULE-DRIVEN)
+   ✈️ UPDATE WORLD FLIGHTS — FR24 MODE (MULTI-FLIGHT)
    ------------------------------------------------------------
-   - Source of truth: scheduleItems
-   - Time source: ACS_TIME (minute of day)
-   - NO EXEC MODE
+   Source of truth : scheduleItems
+   Time source     : ACS_TIME.minute
+   Publishes       : window.ACS_LIVE_FLIGHTS[]
    ============================================================ */
 
 function updateWorldFlights() {
 
-  if (!window.ACS_TIME) return;
+  if (!window.ACS_TIME || typeof ACS_TIME.minute !== "number") return;
 
   const nowMin = (ACS_TIME.minute + 1440) % 1440;
 
-  // ------------------------------------------------------------
-  // Read Schedule Table (REAL FLIGHTS)
-  // ------------------------------------------------------------
   let items;
   try {
     items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   } catch {
+    items = [];
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    window.ACS_LIVE_FLIGHTS = [];
     return;
   }
 
-  if (!Array.isArray(items) || !items.length) return;
+  const liveFlights = [];
 
-  // ------------------------------------------------------------
-  // Find ACTIVE flight (as before)
-  // ------------------------------------------------------------
-  let activeFlight = null;
+  items.forEach(it => {
 
-  for (const it of items) {
-
-    if (!it.aircraftId || !it.origin || !it.destination) continue;
-    if (it.origin === it.destination) continue;
+    if (!it || !it.aircraftId || !it.origin || !it.destination) return;
+    if (it.origin === it.destination) return;
 
     const depMin =
-      typeof it.depMin === "number" ? it.depMin :
-      typeof it.blockOut === "number" ? it.blockOut :
+      typeof it.depMin === "number"     ? it.depMin     :
+      typeof it.depAbsMin === "number"  ? it.depAbsMin  :
+      typeof it.blockOut === "number"   ? it.blockOut   :
       null;
 
     const arrMin =
-      typeof it.arrMin === "number" ? it.arrMin :
-      typeof it.blockIn === "number" ? it.blockIn :
+      typeof it.arrMin === "number"     ? it.arrMin     :
+      typeof it.arrAbsMin === "number"  ? it.arrAbsMin  :
+      typeof it.blockIn === "number"    ? it.blockIn    :
       null;
 
-    if (depMin == null || arrMin == null) continue;
+    if (depMin === null || arrMin === null) return;
 
     const depAdj = (depMin + 1440) % 1440;
     const arrAdj = (arrMin + 1440) % 1440;
 
-    const inWindow =
-      depAdj <= arrAdj
-        ? (nowMin >= depAdj && nowMin <= arrAdj)
-        : (nowMin >= depAdj || nowMin <= arrAdj);
+    // --------------------------------------------------------
+    // Resolve airports (SkyTrack adapter → WorldAirportsACS)
+    // --------------------------------------------------------
+    const resolveAirport = (icao) => {
 
-    if (inWindow) {
-      activeFlight = {
-        aircraftId: it.aircraftId,
-        aircraftModel: it.aircraftModel || it.model || "",
-        flightNo: it.flightNumber || it.flightOut || null,
-        origin: it.origin,
-        destination: it.destination,
-        depMin,
-        arrMin
-      };
-      break;
+      if (!icao) return null;
+
+      if (typeof window.getSkyTrackAirportByICAO === "function") {
+        const a = window.getSkyTrackAirportByICAO(icao);
+        if (a && typeof a.lat === "number" && typeof a.lng === "number") {
+          return a;
+        }
+      }
+
+      const wa = window.WorldAirportsACS;
+      if (!wa) return null;
+
+      const found = Object.values(wa)
+        .flat()
+        .find(a => a.icao === icao);
+
+      return found || null;
+    };
+
+    const o = resolveAirport(it.origin);
+    const d = resolveAirport(it.destination);
+    if (!o || !d) return;
+
+    // --------------------------------------------------------
+    // Flight state & position
+    // --------------------------------------------------------
+    let status = "GROUND";
+    let lat = o.lat;
+    let lng = o.lng;
+
+    const crossesMidnight = depAdj > arrAdj;
+
+    const inAir = crossesMidnight
+      ? (nowMin >= depAdj || nowMin <= arrAdj)
+      : (nowMin >= depAdj && nowMin <= arrAdj);
+
+    if (inAir) {
+      status = "AIRBORNE";
+
+      let elapsed, duration;
+
+      if (!crossesMidnight) {
+        elapsed  = nowMin - depAdj;
+        duration = arrAdj - depAdj;
+      } else {
+        elapsed  = nowMin >= depAdj
+          ? nowMin - depAdj
+          : nowMin + 1440 - depAdj;
+        duration = (arrAdj + 1440) - depAdj;
+      }
+
+      const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+
+      lat = o.lat + (d.lat - o.lat) * progress;
+      lng = o.lng + (d.lng - o.lng) * progress;
     }
-  }
 
-  if (!activeFlight) return;
+    if (!inAir && !crossesMidnight && nowMin > arrAdj) {
+      status = "ARRIVED";
+      lat = d.lat;
+      lng = d.lng;
+    }
+
+    liveFlights.push({
+      aircraftId   : String(it.aircraftId),
+      flightNumber : it.flightNumber || it.flightOut || null,
+      origin       : it.origin,
+      destination  : it.destination,
+      depMin,
+      arrMin,
+      lat,
+      lng,
+      status,
+      updatedAt    : Date.now()
+    });
+  });
+
+  // ----------------------------------------------------------
+  // Publish FR24-style live flights
+  // ----------------------------------------------------------
+  window.ACS_LIVE_FLIGHTS = liveFlights;
+
+  try {
+    localStorage.setItem(
+      "ACS_LIVE_FLIGHTS",
+      JSON.stringify(liveFlights)
+    );
+  } catch (e) {
+    console.warn("ACS_LIVE_FLIGHTS persist failed", e);
+  }
+}
+
+// 🔓 EXPORT
+window.updateWorldFlights = updateWorldFlights;
+
+/* ============================================================
+   ⏱ TIME ENGINE HOOK — FR24 LOOP
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+    if (typeof window.updateWorldFlights === "function") {
+      window.updateWorldFlights();
+    }
+  });
+} else {
+  console.warn("⛔ registerTimeListener not available — runtime idle");
+}
 
   // ------------------------------------------------------------
   // Resolve airports
