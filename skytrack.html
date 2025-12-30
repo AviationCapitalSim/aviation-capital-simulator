@@ -122,15 +122,17 @@
 }
     
 /* ============================================================
-   🟦 SKYTRACK AIRCRAFT DOT
+   🟦 ACS SKYTRACK — RADAR DOT (SIGNATURE)
    ============================================================ */
 .skytrack-aircraft-dot {
-  width: 12px;
-  height: 12px;
-  background: #1e88e5;
-  border: 2px solid #ffffff;
-  border-radius: 3px; /* 🔲 cuadrado suave */
-  box-shadow: 0 0 6px rgba(30,136,229,0.9);
+  width: 7px;
+  height: 7px;
+  background: #0b2a4a;                 /* azul radar profundo */
+  border: 1px solid #4da3ff;           /* azul ATC */
+  border-radius: 2px;                  /* cuadrado técnico */
+  box-shadow:
+    0 0 3px rgba(77,163,255,0.55),
+    inset 0 0 2px rgba(255,255,255,0.15);
 }
     
 </style>
@@ -477,8 +479,8 @@ function buildGroundFleetFromSchedule() {
    ============================================================ */
 const SKYTRACK_AIRCRAFT_ICON = L.divIcon({
   className: "skytrack-aircraft-icon",
-  iconSize: [12, 12],
-  iconAnchor: [6, 6],
+  iconSize: [8, 8],
+  iconAnchor: [4, 4],
   popupAnchor: [0, -6],
   html: `<div class="skytrack-aircraft-dot"></div>`
 });
@@ -612,11 +614,15 @@ if (typeof lat !== "number" || typeof lng !== "number") {
     "🅿️ ON GROUND";
 
 
-     marker.bindPopup(
-   `<b>${flightLabel}</b><br>
-    ${f.origin} → ${f.destination}<br>
-    <small>${statusLabel}</small>`,
-    { autoPan: false }
+    marker.bindPopup(
+  `<b>${flightLabel}</b><br>
+   ${f.origin} → ${f.destination}<br>
+   <small>${statusLabel}</small>`,
+  {
+    autoPan: false,
+    closeOnClick: false,
+    autoClose: false
+  }
 );
 
   });
