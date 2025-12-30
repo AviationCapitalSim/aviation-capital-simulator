@@ -620,12 +620,13 @@ if (typeof lat !== "number" || typeof lng !== "number") {
   }
 }
 
-    // ============================================================
-    // ✈️ CREATE / UPDATE MARKER
-    // ============================================================
-    let marker = window.SKYTRACK_MARKERS[id];
+   // ============================================================
+// ✈️ CREATE / UPDATE MARKER
+// ============================================================
 
-    if (!marker) {
+let marker = window.SKYTRACK_MARKERS[id];
+
+if (!marker) {
   marker = L.marker([lat, lng], {
     icon: L.divIcon({
       className: "acs-atc-marker",
@@ -641,14 +642,11 @@ if (typeof lat !== "number" || typeof lng !== "number") {
       `
     })
   }).addTo(map);
+
+  window.SKYTRACK_MARKERS[id] = marker;
 } else {
   marker.setLatLng([lat, lng]);
 }
-
-      window.SKYTRACK_MARKERS[id] = marker;
-    } else {
-      marker.setLatLng([lat, lng]);
-    }
 
     // ============================================================
     // 🧾 POPUP (MINIMAL, SAFE)
