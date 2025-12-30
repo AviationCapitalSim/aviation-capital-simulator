@@ -489,23 +489,39 @@ const SKYTRACK_AIRCRAFT_ICON = L.divIcon({
    - Reads scheduleItems (static)
    - Uses ACS_TIME.minute
    - Publishes ACS_LIVE_FLIGHTS (dynamic)
+   - BLINDED against ghost / stale flights
    ============================================================ */
 function buildLiveFlightsFromSchedule() {
 
-  const nowMin = window.ACS_TIME?.minute;
-  if (typeof nowMin !== "number") return [];
+  // 🔒 BLIND 1 — TIME ENGINE MUST EXIST
+  const nowMin = window.ACS_TIME && typeof window.ACS_TIME.minute === "number"
+    ? window.ACS_TIME.minute
+    : null;
 
+  if (nowMin === null) {
+    window.ACS_LIVE_FLIGHTS = [];
+    return window.ACS_LIVE_FLIGHTS;
+  }
+
+  // 🔒 BLIND 2 — SCHEDULE SOURCE
   const raw = localStorage.getItem("scheduleItems");
-  if (!raw) return [];
+  if (!raw) {
+    window.ACS_LIVE_FLIGHTS = [];
+    return window.ACS_LIVE_FLIGHTS;
+  }
 
-  let items = [];
+  let items;
   try {
     items = JSON.parse(raw);
   } catch {
-    return [];
+    window.ACS_LIVE_FLIGHTS = [];
+    return window.ACS_LIVE_FLIGHTS;
   }
 
-  if (!Array.isArray(items)) return [];
+  if (!Array.isArray(items) || items.length === 0) {
+    window.ACS_LIVE_FLIGHTS = [];
+    return window.ACS_LIVE_FLIGHTS;
+  }
 
   const flights = [];
 
@@ -528,12 +544,15 @@ function buildLiveFlightsFromSchedule() {
     if (nowMin >= depMin && nowMin <= arrMin) {
       status = "enroute";
 
-      const progress = (nowMin - depMin) / (arrMin - depMin);
-      lat = o.lat + (d.lat - o.lat) * progress;
-      lng = o.lng + (d.lng - o.lng) * progress;
+      const span = arrMin - depMin;
+      if (span > 0) {
+        const progress = (nowMin - depMin) / span;
+        lat = o.lat + (d.lat - o.lat) * progress;
+        lng = o.lng + (d.lng - o.lng) * progress;
+      }
     }
 
-    // 🛬 ARRIVED (keep at destination)
+    // 🛬 ARRIVED (park at destination)
     if (nowMin > arrMin) {
       status = "arrived";
       lat = d.lat;
@@ -541,7 +560,7 @@ function buildLiveFlightsFromSchedule() {
     }
 
     flights.push({
-      aircraftId: f.aircraftId,
+      aircraftId: String(f.aircraftId),
       flightOut: f.flightOut || f.id || f.aircraftId,
       origin: f.origin,
       destination: f.destination,
@@ -553,10 +572,12 @@ function buildLiveFlightsFromSchedule() {
     });
   });
 
-  // 🔒 FORCE DENSE ARRAY (NO HOLES)
-   window.ACS_LIVE_FLIGHTS = flights.filter(Boolean);
-   return window.ACS_LIVE_FLIGHTS;
+  // 🔒 BLIND 3 — FORCE CLEAN LIVE STATE
+  window.ACS_LIVE_FLIGHTS = Array.isArray(flights)
+    ? flights.filter(Boolean)
+    : [];
 
+  return window.ACS_LIVE_FLIGHTS;
 }
    
 /* ============================================================
@@ -569,6 +590,19 @@ function buildLiveFlightsFromSchedule() {
    ============================================================ */
 function renderLiveFlights() {
 
+// 🧹 HARD RESET IF NO REAL FLIGHTS
+if (!Array.isArray(window.ACS_LIVE_FLIGHTS) || window.ACS_LIVE_FLIGHTS.length === 0) {
+
+  if (window.SKYTRACK_MARKERS) {
+    Object.values(window.SKYTRACK_MARKERS).forEach(m => {
+      try { map.removeLayer(m); } catch(e){}
+    });
+  }
+
+  window.SKYTRACK_MARKERS = {};
+  return;
+}
+  
   if (!map) return;
 
   const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
