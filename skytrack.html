@@ -120,7 +120,19 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 }
-
+    
+/* ============================================================
+   🟦 SKYTRACK AIRCRAFT DOT
+   ============================================================ */
+.skytrack-aircraft-dot {
+  width: 12px;
+  height: 12px;
+  background: #1e88e5;
+  border: 2px solid #ffffff;
+  border-radius: 3px; /* 🔲 cuadrado suave */
+  box-shadow: 0 0 6px rgba(30,136,229,0.9);
+}
+    
 </style>
 </head>
 
@@ -459,6 +471,17 @@ function buildGroundFleetFromSchedule() {
 
   return groundFleet;
 }
+
+/* ============================================================
+   🟦 SKYTRACK — AIRCRAFT ICON (BLUE SQUARE)
+   ============================================================ */
+const SKYTRACK_AIRCRAFT_ICON = L.divIcon({
+  className: "skytrack-aircraft-icon",
+  iconSize: [12, 12],
+  iconAnchor: [6, 6],
+  popupAnchor: [0, -6],
+  html: `<div class="skytrack-aircraft-dot"></div>`
+});
    
 /* ============================================================
    🟦 S1 — SKYTRACK RENDER LIVE FLIGHTS (FED & STABLE)
@@ -533,7 +556,8 @@ function renderLiveFlights() {
 
     if (!marker) {
       marker = L.marker([lat, lng], {
-        title: f.flightOut || id
+      icon: SKYTRACK_AIRCRAFT_ICON,
+      title: f.flightOut || f.aircraftId
       }).addTo(map);
 
       window.SKYTRACK_MARKERS[id] = marker;
