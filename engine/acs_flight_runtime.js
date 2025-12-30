@@ -306,16 +306,8 @@ function waitForWorldAirports(cb) {
 }
 
 /* ============================================================
-   ⏱ TIME ENGINE HOOK (FIXED + BLINDAJE)
+   ⏱ TIME ENGINE HOOK (FIXED)
    ============================================================ */
-
-// ✅ BLINDAJE: si el legacy llama updateLiveFlights, lo mapeamos.
-if (
-  typeof window.updateLiveFlights !== "function" &&
-  typeof window.updateWorldFlights === "function"
-) {
-  window.updateLiveFlights = window.updateWorldFlights;
-}
 
 waitForWorldAirports(() => {
   if (typeof registerTimeListener === "function") {
@@ -325,8 +317,6 @@ waitForWorldAirports(() => {
       }
     });
   }
-
-  console.log("🌍 WorldAirportsACS ready — Flight runtime armed (FIXED)");
 });
 
 })();
