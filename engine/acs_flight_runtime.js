@@ -156,15 +156,11 @@ function buildDailyFlightQueue() {
     JSON.parse(localStorage.getItem("ACS_SCHEDULE_TABLE") || "[]");
 
   const queue = {};
-  const today = (window.ACS_TIME?.dayOfWeek ?? new Date().getDay());
-
+  
   schedule.forEach(it => {
 
     if (!it || !it.aircraftId) return;
     if (typeof it.depMin !== "number" || typeof it.arrMin !== "number") return;
-
-    // Day filter (weekly schedule)
-    if (typeof it.day === "number" && it.day !== today) return;
 
     if (!queue[it.aircraftId]) {
       queue[it.aircraftId] = [];
