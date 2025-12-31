@@ -80,104 +80,87 @@ window.getExecFlight = getExecFlight;
       return found || null;
     }
 
-    items.forEach(it => {
+    // ============================================================
+// 🟦 FASE 7.4-A — FLIGHT QUEUE EXECUTOR (FR24 STYLE)
+// ============================================================
 
-      if (!it || !it.aircraftId || !it.origin || !it.destination) return;
-      if (it.origin === it.destination) return;
+const flightsByAircraft = {};
+const liveFlights = [];
 
-      const depMin =
-        typeof it.depMin === "number"     ? it.depMin     :
-        typeof it.depAbsMin === "number"  ? it.depAbsMin  :
-        typeof it.blockOut === "number"   ? it.blockOut   :
-        null;
+// 1️⃣ Agrupar schedule por aircraft
+items.forEach(it => {
 
-      const arrMin =
-        typeof it.arrMin === "number"     ? it.arrMin     :
-        typeof it.arrAbsMin === "number"  ? it.arrAbsMin  :
-        typeof it.blockIn === "number"    ? it.blockIn    :
-        null;
+  if (!it.aircraftId || typeof it.depMin !== "number") return;
 
-      if (depMin === null || arrMin === null) return;
-
-      const depAdj = (depMin + 1440) % 1440;
-      const arrAdj = (arrMin + 1440) % 1440;
-
-      const o = resolveAirport(it.origin);
-      const d = resolveAirport(it.destination);
-      if (!o || !d) return;
-
-      let status = "GROUND";
-      let lat = o.lat;
-      let lng = o.lng;
-
-      const crossesMidnight = depAdj > arrAdj;
-
-      const inAir = crossesMidnight
-        ? (nowMin >= depAdj || nowMin <= arrAdj)
-        : (nowMin >= depAdj && nowMin <= arrAdj);
-
-      if (inAir) {
-        status = "AIRBORNE";
-
-        let elapsed, duration;
-
-        if (!crossesMidnight) {
-          elapsed  = nowMin - depAdj;
-          duration = arrAdj - depAdj;
-        } else {
-          elapsed  = nowMin >= depAdj
-            ? nowMin - depAdj
-            : nowMin + 1440 - depAdj;
-          duration = (arrAdj + 1440) - depAdj;
-        }
-
-        const progress = Math.min(Math.max(elapsed / duration, 0), 1);
-
-        lat = o.lat + (d.lat - o.lat) * progress;
-        lng = o.lng + (d.lng - o.lng) * progress;
-      }
-
-     if (!inAir && nowMin > arrAdj) {
-
-  // 🔁 ROTATION — auto return
-  const rotMin = it.turnaroundMin || it.turnaround || 45;
-  const returnDep = arrAdj + rotMin;
-  const returnArr = returnDep + (arrAdj - depAdj);
-
-  if (nowMin >= returnDep && nowMin <= returnArr) {
-    status = "AIRBORNE";
-
-    const elapsed = nowMin - returnDep;
-    const duration = returnArr - returnDep;
-    const p = duration > 0 ? elapsed / duration : 0;
-
-    lat = d.lat + (o.lat - d.lat) * p;
-    lng = d.lng + (o.lng - d.lng) * p;
-
-  } else if (nowMin > returnArr) {
-    status = "GROUND";
-    lat = o.lat;
-    lng = o.lng;
-  } else {
-    status = "ARRIVED";
-    lat = d.lat;
-    lng = d.lng;
+  if (!flightsByAircraft[it.aircraftId]) {
+    flightsByAircraft[it.aircraftId] = [];
   }
-}
 
-      liveFlights.push({
-        aircraftId   : String(it.aircraftId),
-        flightNumber : it.flightNumber || it.flightOut || null,
-        origin       : it.origin,
-        destination  : it.destination,
-        depMin,
-        arrMin,
-        lat,
-        lng,
-        status,
-        updatedAt    : Date.now()
-      });
+  // IDA
+  if (it.flightNumberOut) {
+    flightsByAircraft[it.aircraftId].push({
+      aircraftId: it.aircraftId,
+      flightNumber: it.flightNumberOut,
+      origin: it.origin,
+      destination: it.destination,
+      depMin: it.depMin,
+      arrMin: it.arrMin,
+      leg: "OUT"
     });
+  }
+
+  // VUELTA
+  if (it.flightNumberIn) {
+    const turn = it.turnaroundMin || 45;
+    const block = it.blockMin || (it.arrMin - it.depMin) || 0;
+
+    flightsByAircraft[it.aircraftId].push({
+      aircraftId: it.aircraftId,
+      flightNumber: it.flightNumberIn,
+      origin: it.destination,
+      destination: it.origin,
+      depMin: it.depMinReturn ?? (it.arrMin + turn),
+      arrMin: it.arrMinReturn ?? (it.arrMin + turn + block),
+      leg: "IN"
+    });
+  }
+
+});
+
+// 2️⃣ Ejecutar SOLO 1 vuelo activo por aircraft
+Object.keys(flightsByAircraft).forEach(acId => {
+
+  const queue = flightsByAircraft[acId];
+  if (!queue.length) return;
+
+  // Ordenar por hora
+  queue.sort((a, b) => a.depMin - b.depMin);
+
+  // Seleccionar vuelo activo o próximo
+  let current = queue.find(f =>
+    nowMin >= f.depMin && nowMin <= f.arrMin
+  );
+
+  if (!current) {
+    current = queue.find(f => nowMin < f.depMin) || queue[queue.length - 1];
+  }
+
+  if (!current) return;
+
+  // Estado FR24
+  let status = "GROUND";
+  if (nowMin >= current.depMin && nowMin <= current.arrMin) {
+    status = "AIRBORNE";
+  } else if (nowMin > current.arrMin) {
+    status = "ARRIVED";
+  }
+
+  liveFlights.push({
+    ...current,
+    status
+  });
+
+});
 
     // ----------------------------------------------------------
     // Publish FR24-style live flights
