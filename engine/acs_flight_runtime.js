@@ -112,52 +112,49 @@ function updateWorldFlights() {
     list.sort((a, b) => a.depMin - b.depMin)
   );
 
-  /* ============================================================
+ /* ============================================================
      🟦 STATE RESOLUTION (ONE PER AIRCRAFT)
      ============================================================ */
 
-  Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
+Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
 
-    let selected = null;
-    let status = "GROUND";
+  let selected = null;
+  let status = "GROUND";
 
-    // --------------------------------------------------------
-// ✈️ DAILY ACTIVE FLIGHT WINDOW (FR24 LOGIC)
-// --------------------------------------------------------
-for (const f of flights) {
-  const t = normalizeFlightTime(f);
-  if (!t) continue;
+  // --------------------------------------------------------
+  // ✈️ SEQUENTIAL DAILY FLIGHT WINDOW (FR24 LOGIC)
+  // --------------------------------------------------------
+   
+  for (let i = 0; i < flights.length; i++) {
 
-  const dep = t.dep % 1440;
-  const arr = t.arr % 1440;
+    const f = flights[i];
+    const t = normalizeFlightTime(f);
+    if (!t) continue;
 
-  // ventana normal
-  if (dep <= arr && nowMin >= dep && nowMin <= arr) {
-    selected = f;
-    status = "AIRBORNE";
-    break;
-  }
+    const dep = t.dep % 1440;
+    const arr = t.arr % 1440;
 
-  // ventana cruzando medianoche
-  if (dep > arr && (nowMin >= dep || nowMin <= arr)) {
-    selected = f;
-    status = "AIRBORNE";
-    break;
-  }
-}
-
-    if (!selected) {
-      for (const f of flights) {
-        const t = normalizeFlightTime(f);
-        if (t && nowMin > t.arr) selected = f;
-      }
-      if (selected) status = "ARRIVED";
+    // 🟦 vuelo activo (AIRBORNE)
+    if (
+      (dep <= arr && nowMin >= dep && nowMin <= arr) ||
+      (dep > arr && (nowMin >= dep || nowMin <= arr))
+    ) {
+      selected = f;
+      status = "AIRBORNE";
+      break;
     }
 
-    if (!selected) {
-      selected = flights[0];
+    // 🟦 vuelo aún no iniciado (GROUND)
+    if (nowMin < dep) {
+      selected = f;
       status = "GROUND";
+      break;
     }
+
+    // 🟦 vuelo ya completado (ARRIVED) → posible último
+    selected = f;
+    status = "ARRIVED";
+  }
 
     const t = normalizeFlightTime(selected);
     if (!t) return;
