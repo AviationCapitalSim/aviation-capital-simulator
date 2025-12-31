@@ -598,32 +598,87 @@ if (!Array.isArray(window.ACS_LIVE_FLIGHTS) || window.ACS_LIVE_FLIGHTS.length ==
 
 function renderLiveFlights() {
 
+  // 🧹 HARD RESET IF NO REAL FLIGHTS
+  if (!Array.isArray(window.ACS_LIVE_FLIGHTS) || window.ACS_LIVE_FLIGHTS.length === 0) {
+
+    if (window.SKYTRACK_MARKERS && map) {
+      Object.values(window.SKYTRACK_MARKERS).forEach(m => {
+        try { map.removeLayer(m); } catch(e){}
+      });
+    }
+
+    window.SKYTRACK_MARKERS = {};
+    return;
+  }
+
+  if (!map) return;
+
+  const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
+    ? window.ACS_TIME.minute
+    : null;
+  if (nowMin === null) return;
+
+  // ============================================================
+  // ✈️ SOURCE: LIVE FLIGHTS OR GROUND FALLBACK
+  // ============================================================
+
+  let flights = [];
+  try {
+    flights = Array.isArray(window.ACS_LIVE_FLIGHTS)
+      ? window.ACS_LIVE_FLIGHTS
+      : [];
+  } catch (e) {
+    flights = [];
+  }
+
+  if (flights.length === 0 && typeof buildGroundFleetFromSchedule === "function") {
+    flights = buildGroundFleetFromSchedule();
+  }
+
+  if (!Array.isArray(flights) || flights.length === 0) return;
+
+  // Marker registry (persist between ticks)
+  window.SKYTRACK_MARKERS = window.SKYTRACK_MARKERS || {};
   const activeIds = new Set();
 
-  ACS_LIVE_FLIGHTS.forEach(f => {
+  // ============================================================
+  // 🔁 RENDER EACH FLIGHT
+  // ============================================================
+  flights.forEach(f => {
+    if (!f || !f.aircraftId || !f.origin) return;
 
-    const id = f.aircraftId || f.flightNumber;
+    const id = f.aircraftId.toString();
     activeIds.add(id);
 
+    // ============================================================
+    // 📍 RESOLVE POSITION
+    // ============================================================
     let lat = f.lat;
     let lng = f.lng;
 
     if (typeof lat !== "number" || typeof lng !== "number") {
 
-      const o = getSkyTrackAirportByICAO(f.origin);
-      const d = getSkyTrackAirportByICAO(f.destination);
-      if (!o || !d) return;
+      const o = (typeof getSkyTrackAirportByICAO === "function")
+        ? getSkyTrackAirportByICAO(f.origin)
+        : null;
 
-      const depMin = f.depMin ?? f.departureMin;
-      const arrMin = f.arrMin ?? f.arrivalMin;
+      const d = (typeof getSkyTrackAirportByICAO === "function")
+        ? getSkyTrackAirportByICAO(f.destination)
+        : null;
 
-      if (typeof depMin !== "number" || typeof arrMin !== "number") {
+      if (!o) return;
+
+      const depMin = (typeof f.depMin === "number") ? f.depMin : f.departureMin;
+      const arrMin = (typeof f.arrMin === "number") ? f.arrMin : f.arrivalMin;
+
+      // No timing → keep on origin
+      if (typeof depMin !== "number" || typeof arrMin !== "number" || !d) {
         lat = o.lat;
         lng = o.lng;
       } else {
-        const total = arrMin - depMin;
+        const total = Math.max(1, (arrMin - depMin));
         const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
-        const p = total > 0 ? elapsed / total : 0;
+        const p = Math.max(0, Math.min(elapsed / total, 1));
 
         lat = o.lat + (d.lat - o.lat) * p;
         lng = o.lng + (d.lng - o.lng) * p;
@@ -633,56 +688,87 @@ function renderLiveFlights() {
     // ============================================================
     // ✈️ CREATE / UPDATE MARKER
     // ============================================================
-
     let marker = window.SKYTRACK_MARKERS[id];
 
-    if (!marker) {
-      marker = L.marker([lat, lng], {
-        icon: L.divIcon({
-          className: "acs-atc-marker",
-          iconSize: [8, 8],
-          iconAnchor: [4, 4],
-          html: `
-            <div class="acs-hitbox">
-              <div class="skytrack-aircraft-dot"></div>
-              <div class="acs-atc-chip">
-                ${f.flightNumber || f.flightOut || ""}
-              </div>
-            </div>
-          `
-        })
-      }).addTo(map);
+    const chipLabel = (f.flightNumber || f.flightOut || "").toString();
 
+    const icon = L.divIcon({
+      className: "acs-atc-marker",
+      iconSize: [8, 8],
+      iconAnchor: [4, 4],
+      html: `
+        <div class="acs-hitbox">
+          <div class="skytrack-aircraft-dot"></div>
+          <div class="acs-atc-chip">${chipLabel}</div>
+        </div>
+      `
+    });
+
+    if (!marker) {
+      marker = L.marker([lat, lng], { icon }).addTo(map);
       window.SKYTRACK_MARKERS[id] = marker;
+
+      // ✅ keep popup open on click (no blink)
+      marker.on("click", (e) => {
+        try { e.originalEvent?.stopPropagation?.(); } catch(_){}
+        marker.openPopup();
+      });
+
     } else {
       marker.setLatLng([lat, lng]);
+      // update icon in case label changed
+      marker.setIcon(icon);
     }
 
     // ============================================================
-    // 🧾 POPUP (MINIMAL, SAFE)
+    // 🧾 POPUP (MINIMAL, SAFE + ETA + %)
     // ============================================================
+    const depMin = (typeof f.depMin === "number") ? f.depMin : f.departureMin;
+    const arrMin = (typeof f.arrMin === "number") ? f.arrMin : f.arrivalMin;
+
+    let pctTxt = "—";
+    let etaTxt = "—";
+
+    if (typeof depMin === "number" && typeof arrMin === "number" && arrMin > depMin) {
+      const total = arrMin - depMin;
+      const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
+      const pct = Math.round((elapsed / total) * 100);
+      pctTxt = `${pct}%`;
+
+      const etaMin = Math.max(0, (arrMin - nowMin));
+      const hh = Math.floor(((nowMin + etaMin) % 1440) / 60).toString().padStart(2, "0");
+      const mm = Math.floor(((nowMin + etaMin) % 1440) % 60).toString().padStart(2, "0");
+      etaTxt = `${hh}:${mm}Z`;
+    }
 
     const statusLabel =
       f.status === "AIRBORNE" ? "✈️ ENROUTE" :
       f.status === "ARRIVED"  ? "🛬 ARRIVED" :
       "🅿️ ON GROUND";
 
+    const popupHTML = `<b>${(f.flightNumber || f.flightOut || "FLIGHT")}</b><br>
+${f.origin} → ${f.destination || ""}<br>
+<small>
+  ✈️ ${(f.aircraftModel || "Aircraft")}<br>
+  🔒 ${(f.locked ? "Locked" : "Active")}<br>
+  📡 ${statusLabel}<br>
+  🕒 ETA ${etaTxt} · ${pctTxt}
+</small>`;
+
     if (!marker._acsPopupBound) {
       marker.bindPopup(
-        `<b>${f.flightNumber || "FLIGHT"}</b><br>
-         ${f.origin} → ${f.destination}<br>
-         <small>
-           ✈️ ${f.aircraftModel || "Aircraft"}<br>
-           🔒 ${f.locked ? "Locked" : "Active"}<br>
-           📡 ${statusLabel}
-         </small>`,
+        popupHTML,
         {
           autoPan: false,
           closeOnClick: false,
-          autoClose: false
+          autoClose: false,
+          closeButton: true
         }
       );
       marker._acsPopupBound = true;
+    } else {
+      // update content live
+      try { marker.setPopupContent(popupHTML); } catch(_){}
     }
 
   });
@@ -690,10 +776,10 @@ function renderLiveFlights() {
   // ============================================================
   // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
   // ============================================================
-
+  
   Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
     if (!activeIds.has(id)) {
-      map.removeLayer(window.SKYTRACK_MARKERS[id]);
+      try { map.removeLayer(window.SKYTRACK_MARKERS[id]); } catch(e){}
       delete window.SKYTRACK_MARKERS[id];
     }
   });
@@ -702,6 +788,7 @@ function renderLiveFlights() {
 // ------------------------------------------------------------
 // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
 // ------------------------------------------------------------
+    
 function createATCMarkerIcon(f) {
   const label = (f.flightNumber || f.flightOut || "").toString();
 
@@ -736,18 +823,6 @@ function createATCMarkerIcon(f) {
 
   }
 
-});
-
-/* ============================================================
-   ⏱ SKYTRACK — INIT + TIME SYNC
-   ============================================================ */
-   
-  document.addEventListener("DOMContentLoaded", () => {
-  initSkyTrackMap();
-
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(renderLiveFlights);
-  }
 });
 
 /* ============================================================
@@ -844,15 +919,15 @@ function handleLogout() {
 /* ============================================================
    ⏱ SKYTRACK — INIT + TIME SYNC
    ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
+   
+  document.addEventListener("DOMContentLoaded", () => {
   initSkyTrackMap();
 
   if (typeof registerTimeListener === "function") {
     registerTimeListener(renderLiveFlights);
   }
 });
-
+  
   /* ============================================================
      🛰 READ ACTIVE FLIGHT FROM SCHEDULE (OPTIONAL)
      ============================================================ */
