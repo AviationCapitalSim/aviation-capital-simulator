@@ -29,9 +29,9 @@ window.getExecFlight = getExecFlight;
 
   console.log("✈️ ACS Flight Runtime Engine — ACTIVE (FR24 MODE)");
 
-  /* ============================================================
-     ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP
-     ============================================================ */
+ /* ============================================================
+   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP
+   ============================================================ */
 
 function updateWorldFlights() {
 
@@ -52,6 +52,36 @@ function updateWorldFlights() {
     return;
   }
 
+  /* ============================================================
+     🟦 FASE 7.8 — ABSOLUTE TIME NORMALIZATION
+     ============================================================ */
+
+  function normalizeFlightTime(f) {
+
+    if (
+      typeof f.depAbsMin === "number" &&
+      typeof f.arrAbsMin === "number"
+    ) {
+      return {
+        dep: f.depAbsMin,
+        arr: f.arrAbsMin
+      };
+    }
+
+    // Fallback legacy (single-day schedule)
+    const dep = (f.depMin + 1440) % 1440;
+    const arr = (f.arrMin + 1440) % 1440;
+
+    if (arr < dep) {
+      return {
+        dep,
+        arr: arr + 1440
+      };
+    }
+
+    return { dep, arr };
+  }
+
   const liveFlights = [];
 
   // --------------------------------------------------------
@@ -69,7 +99,7 @@ function updateWorldFlights() {
       }
     }
 
-    // 2) WorldAirportsACS: buscar en el contenedor
+    // 2) WorldAirportsACS container
     const wa = window.WorldAirportsACS;
     if (!wa) return null;
 
@@ -79,73 +109,58 @@ function updateWorldFlights() {
 
     return found || null;
   }
-     
-  // ============================================================
-  // 🟦 FASE 7.7 — EXECUTE DAILY FLIGHT QUEUE (FR24 ENGINE)
-  // ============================================================
 
-  const queue = window.ACS_FLIGHT_QUEUE || {};
-  liveFlights.length = 0;
+  /* ============================================================
+     🟦 FASE 7.9 — FLIGHT STATE RESOLUTION (FR24)
+     ============================================================ */
 
-  Object.keys(queue).forEach(acId => {
+  items.forEach(f => {
 
-    const flights = queue[acId];
-    if (!Array.isArray(flights) || !flights.length) return;
+    if (!f || !f.aircraftId || !f.origin || !f.destination) return;
 
-    // ordenar por salida
-    flights.sort((a, b) => a.depMin - b.depMin);
+    const t = normalizeFlightTime(f);
+    if (typeof t.dep !== "number" || typeof t.arr !== "number") return;
 
-    // vuelo activo
-    let current = flights.find(f =>
-      nowMin >= f.depMin && nowMin <= f.arrMin
-    );
-
-    // si no hay activo, próximo
-    if (!current) {
-      current = flights.find(f => nowMin < f.depMin) || flights[flights.length - 1];
-    }
-
-    if (!current) return;
-
-    const o = resolveAirport(current.origin);
-    const d = resolveAirport(current.destination);
+    const o = resolveAirport(f.origin);
+    const d = resolveAirport(f.destination);
     if (!o || !d) return;
 
     let status = "GROUND";
     let lat = o.lat;
     let lng = o.lng;
 
-    if (nowMin >= current.depMin && nowMin <= current.arrMin) {
+    if (nowMin >= t.dep && nowMin <= t.arr) {
       status = "AIRBORNE";
 
-      const elapsed  = nowMin - current.depMin;
-      const duration = current.arrMin - current.depMin;
-      const progress = duration > 0 ? elapsed / duration : 0;
+      const progress = Math.min(
+        Math.max((nowMin - t.dep) / (t.arr - t.dep), 0),
+        1
+      );
 
       lat = o.lat + (d.lat - o.lat) * progress;
       lng = o.lng + (d.lng - o.lng) * progress;
 
-    } else if (nowMin > current.arrMin) {
+    } else if (nowMin > t.arr) {
       status = "ARRIVED";
       lat = d.lat;
       lng = d.lng;
     }
 
     liveFlights.push({
-      aircraftId   : current.aircraftId,
-      flightNumber : current.flightNumber,
-      origin       : current.origin,
-      destination  : current.destination,
-      depMin       : current.depMin,
-      arrMin       : current.arrMin,
+      aircraftId   : String(f.aircraftId),
+      flightNumber : f.flightNumber || f.flightOut || null,
+      origin       : f.origin,
+      destination  : f.destination,
+      depMin       : t.dep,
+      arrMin       : t.arr,
       lat,
       lng,
-      status       : status,
+      status,
       updatedAt    : Date.now()
     });
 
   });
-     
+
   // ----------------------------------------------------------
   // Publish FR24-style live flights
   // ----------------------------------------------------------
