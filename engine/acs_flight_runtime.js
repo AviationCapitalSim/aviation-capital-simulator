@@ -79,7 +79,55 @@ window.getExecFlight = getExecFlight;
 
       return found || null;
     }
+     
+// ============================================================
+// 🟦 FASE 7.5.3 — SELECT ACTIVE FLIGHT PER AIRCRAFT (FR24)
+// ============================================================
 
+const queue = window.ACS_FLIGHT_QUEUE || {};
+liveFlights.length = 0;
+
+Object.keys(queue).forEach(acId => {
+
+  const flights = queue[acId];
+  if (!Array.isArray(flights) || !flights.length) return;
+
+  // ordenar por salida
+  flights.sort((a, b) => a.depMin - b.depMin);
+
+  // vuelo activo
+  let current = flights.find(f =>
+    nowMin >= f.depMin && nowMin <= f.arrMin
+  );
+
+  // si no hay activo, próximo
+  if (!current) {
+    current = flights.find(f => nowMin < f.depMin) || flights[flights.length - 1];
+  }
+
+  if (!current) return;
+
+  // estado
+  let status = "GROUND";
+  if (nowMin >= current.depMin && nowMin <= current.arrMin) {
+    status = "AIRBORNE";
+  } else if (nowMin > current.arrMin) {
+    status = "ARRIVED";
+  }
+
+  liveFlights.push({
+    aircraftId   : current.aircraftId,
+    flightNumber : current.flightNumber,
+    origin       : current.origin,
+    destination  : current.destination,
+    depMin       : current.depMin,
+    arrMin       : current.arrMin,
+    status       : status,
+    updatedAt    : Date.now()
+  });
+
+});
+     
     // ----------------------------------------------------------
     // Publish FR24-style live flights
     // ----------------------------------------------------------
