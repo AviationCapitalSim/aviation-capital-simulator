@@ -658,7 +658,8 @@ const arrMin = f.arrMin ?? f.arrivalMin;
 let progressPct = "";
 let remainingTxt = "";
 
-if (typeof depMin === "number" && typeof arrMin === "number" && arrMin > depMin) {
+// ✅ SAFE ONLY: si no hay tiempos válidos, no muestra números raros
+if (typeof depMin === "number" && typeof arrMin === "number" && arrMin > depMin && typeof nowMin === "number") {
   const total = arrMin - depMin;
   const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
   const pct = Math.round((elapsed / total) * 100);
@@ -676,15 +677,27 @@ const statusTxt =
   f.status === "ARRIVED"  ? "Arrived" :
   "On ground";
 
+// ✅ Aircraft model fallback (quita Unknown)
+const modelTxt =
+  (f.aircraftModel && String(f.aircraftModel).trim()) ||
+  (f.model && String(f.model).trim()) ||
+  (f.type && String(f.type).trim()) ||
+  "—";
+
+const flightTxt =
+  (f.flightNumber && String(f.flightNumber).trim()) ||
+  (f.flightOut && String(f.flightOut).trim()) ||
+  "FLIGHT";
+
 if (!marker._acsPopupBound) {
   marker.bindPopup(
-    `<b>${f.flightNumber || "FLIGHT"}</b><br>
+    `<b>${flightTxt}</b><br>
      ${f.origin} → ${f.destination}<br>
      <small>
-       Aircraft: ${f.aircraftModel || "Unknown"}<br>
+       Aircraft: ${modelTxt}<br>
        Status: ${statusTxt}<br>
-       ${progressPct}<br>
-       ${remainingTxt}
+       ${progressPct ? progressPct + "<br>" : ""}
+       ${remainingTxt ? remainingTxt : ""}
      </small>`,
     {
       autoPan: false,
