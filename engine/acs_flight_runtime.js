@@ -80,88 +80,6 @@ window.getExecFlight = getExecFlight;
       return found || null;
     }
 
-    // ============================================================
-// 🟦 FASE 7.4-A — FLIGHT QUEUE EXECUTOR (FR24 STYLE)
-// ============================================================
-
-const flightsByAircraft = {};
-liveFlights.length = 0;
-
-// 1️⃣ Agrupar schedule por aircraft
-items.forEach(it => {
-
-  if (!it.aircraftId || typeof it.depMin !== "number") return;
-
-  if (!flightsByAircraft[it.aircraftId]) {
-    flightsByAircraft[it.aircraftId] = [];
-  }
-
-  // IDA
-  if (it.flightNumberOut) {
-    flightsByAircraft[it.aircraftId].push({
-      aircraftId: it.aircraftId,
-      flightNumber: it.flightNumberOut,
-      origin: it.origin,
-      destination: it.destination,
-      depMin: it.depMin,
-      arrMin: it.arrMin,
-      leg: "OUT"
-    });
-  }
-
-  // VUELTA
-  if (it.flightNumberIn) {
-    const turn = it.turnaroundMin || 45;
-    const block = it.blockMin || (it.arrMin - it.depMin) || 0;
-
-    flightsByAircraft[it.aircraftId].push({
-      aircraftId: it.aircraftId,
-      flightNumber: it.flightNumberIn,
-      origin: it.destination,
-      destination: it.origin,
-      depMin: it.depMinReturn ?? (it.arrMin + turn),
-      arrMin: it.arrMinReturn ?? (it.arrMin + turn + block),
-      leg: "IN"
-    });
-  }
-
-});
-
-// 2️⃣ Ejecutar SOLO 1 vuelo activo por aircraft
-Object.keys(flightsByAircraft).forEach(acId => {
-
-  const queue = flightsByAircraft[acId];
-  if (!queue.length) return;
-
-  // Ordenar por hora
-  queue.sort((a, b) => a.depMin - b.depMin);
-
-  // Seleccionar vuelo activo o próximo
-  let current = queue.find(f =>
-    nowMin >= f.depMin && nowMin <= f.arrMin
-  );
-
-  if (!current) {
-    current = queue.find(f => nowMin < f.depMin) || queue[queue.length - 1];
-  }
-
-  if (!current) return;
-
-  // Estado FR24
-  let status = "GROUND";
-  if (nowMin >= current.depMin && nowMin <= current.arrMin) {
-    status = "AIRBORNE";
-  } else if (nowMin > current.arrMin) {
-    status = "ARRIVED";
-  }
-
-  liveFlights.push({
-    ...current,
-    status
-  });
-
-});
-
     // ----------------------------------------------------------
     // Publish FR24-style live flights
     // ----------------------------------------------------------
@@ -179,7 +97,56 @@ Object.keys(flightsByAircraft).forEach(acId => {
 
   // 🔓 EXPORT
   window.updateWorldFlights = updateWorldFlights;
+   
+/* ============================================================
+   🟦 FASE 7.5.2 — DAILY FLIGHT QUEUE BUILDER (AUTHORITATIVE)
+   ============================================================ */
 
+function buildDailyFlightQueue() {
+
+  const schedule =
+    JSON.parse(localStorage.getItem("ACS_SCHEDULE_TABLE") || "[]");
+
+  const queue = {};
+  const today = (window.ACS_TIME?.dayOfWeek ?? new Date().getDay());
+
+  schedule.forEach(it => {
+
+    if (!it || !it.aircraftId) return;
+    if (typeof it.depMin !== "number" || typeof it.arrMin !== "number") return;
+
+    // Day filter (weekly schedule)
+    if (typeof it.day === "number" && it.day !== today) return;
+
+    if (!queue[it.aircraftId]) {
+      queue[it.aircraftId] = [];
+    }
+
+    queue[it.aircraftId].push({
+      aircraftId   : it.aircraftId,
+      flightNumber : it.flightNumber || it.flightOut || null,
+      origin       : it.origin,
+      destination  : it.destination,
+      depMin       : it.depMin,
+      arrMin       : it.arrMin,
+      turnaround   : it.turnaroundMin || it.turnaround || 45
+    });
+
+  });
+
+  // Sort flights per aircraft by departure time
+  Object.keys(queue).forEach(acId => {
+    queue[acId].sort((a, b) => a.depMin - b.depMin);
+  });
+
+  window.ACS_FLIGHT_QUEUE = queue;
+
+  console.log(
+    "[FASE 7.5.2] DAILY FLIGHT QUEUE BUILT",
+    Object.keys(queue)
+  );
+}
+   
   // ============================================================
   // 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
   // ============================================================
