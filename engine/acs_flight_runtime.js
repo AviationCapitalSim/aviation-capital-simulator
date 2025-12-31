@@ -30,7 +30,7 @@ window.getExecFlight = getExecFlight;
   console.log("✈️ ACS Flight Runtime Engine — ACTIVE (FR24 MODE)");
 
 /* ============================================================
-   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP (STABLE + ITINERARY)
+   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP (FINAL, SCHEDULE-DRIVEN)
    ============================================================ */
 
 function updateWorldFlights() {
@@ -53,7 +53,7 @@ function updateWorldFlights() {
   }
 
   /* ============================================================
-     🟦 TIME NORMALIZATION (DAILY SAFE)
+     🟦 TIME NORMALIZATION (ABSOLUTE DAILY WINDOW)
      ============================================================ */
   function normalizeFlightTime(f) {
 
@@ -64,22 +64,9 @@ function updateWorldFlights() {
       return { dep, arr };
     }
 
-    if (
-      typeof f.depAbsMin === "number" &&
-      typeof f.arrAbsMin === "number"
-    ) {
-      const dep = (f.depAbsMin + 1440) % 1440;
-      let arr = (f.arrAbsMin + 1440) % 1440;
-      if (arr < dep) arr += 1440;
-      return { dep, arr };
-    }
-
     return null;
   }
 
-  // --------------------------------------------------------
-  // Resolve airports
-  // --------------------------------------------------------
   function resolveAirport(icao) {
     if (!icao) return null;
 
@@ -97,7 +84,7 @@ function updateWorldFlights() {
   }
 
   /* ============================================================
-     🟦 GROUP BY AIRCRAFT (ORDERED ITINERARY)
+     🟦 GROUP FLIGHTS BY AIRCRAFT (REAL ITINERARY)
      ============================================================ */
 
   const byAircraft = {};
@@ -112,49 +99,41 @@ function updateWorldFlights() {
   );
 
   /* ============================================================
-     🟦 STATE + POSITION RESOLUTION (ONE PER AIRCRAFT)
+     🟦 ITINERARY + STATE + MOTION (PROGRAMMED FLIGHT)
      ============================================================ */
 
   Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
 
     let selected = null;
     let status = "GROUND";
+    let t = null;
 
     for (let i = 0; i < flights.length; i++) {
 
       const f = flights[i];
-      const t = normalizeFlightTime(f);
+      t = normalizeFlightTime(f);
       if (!t) continue;
 
-      const dep = t.dep % 1440;
-      const arr = t.arr % 1440;
+      const dep = t.dep;
+      const arr = t.arr;
 
-      // AIRBORNE (ventana diaria real)
-      if (
-        (dep <= arr && nowMin >= dep && nowMin <= arr) ||
-        (dep > arr && (nowMin >= dep || nowMin <= arr))
-      ) {
+      if (nowMin >= dep && nowMin < arr) {
         selected = f;
         status = "AIRBORNE";
         break;
       }
 
-      // GROUND (próximo vuelo)
       if (nowMin < dep) {
         selected = f;
         status = "GROUND";
         break;
       }
 
-      // ARRIVED (último completado)
       selected = f;
       status = "ARRIVED";
     }
 
-    if (!selected) return;
-
-    const t = normalizeFlightTime(selected);
-    if (!t) return;
+    if (!selected || !t) return;
 
     const o = resolveAirport(selected.origin);
     const d = resolveAirport(selected.destination);
@@ -163,22 +142,14 @@ function updateWorldFlights() {
     let lat = o.lat;
     let lng = o.lng;
     let progress = 0;
+    let remainingMin = null;
+
+    const totalTime = t.arr - t.dep;
 
     if (status === "AIRBORNE") {
-
-      let elapsed, total;
-
-      if (t.dep <= t.arr) {
-        elapsed = nowMin - t.dep;
-        total   = t.arr - t.dep;
-      } else {
-        elapsed = nowMin >= t.dep
-          ? nowMin - t.dep
-          : (1440 - t.dep) + nowMin;
-        total = (1440 - t.dep) + t.arr;
-      }
-
-      progress = Math.min(Math.max(elapsed / total, 0), 1);
+      const elapsed = nowMin - t.dep;
+      progress = Math.min(Math.max(elapsed / totalTime, 0), 1);
+      remainingMin = Math.max(t.arr - nowMin, 0);
 
       lat = o.lat + (d.lat - o.lat) * progress;
       lng = o.lng + (d.lng - o.lng) * progress;
@@ -187,12 +158,13 @@ function updateWorldFlights() {
       lat = d.lat;
       lng = d.lng;
       progress = 1;
+      remainingMin = 0;
     }
 
     liveFlights.push({
       aircraftId    : String(aircraftId),
       flightNumber  : selected.flightNumber || selected.flightOut || null,
-      aircraftModel : selected.aircraftModel || selected.model || null,
+      aircraftModel : selected.aircraftModel || selected.aircraftType || "DC-3",
       origin        : selected.origin,
       destination   : selected.destination,
       depMin        : t.dep,
@@ -201,14 +173,15 @@ function updateWorldFlights() {
       lng,
       status,
       progress,
+      remainingMin,
       updatedAt     : Date.now()
     });
 
   });
 
-  // ----------------------------------------------------------
-  // Publish
-  // ----------------------------------------------------------
+  /* ============================================================
+     🟦 PUBLISH
+     ============================================================ */
 
   window.ACS_LIVE_FLIGHTS = liveFlights;
 
