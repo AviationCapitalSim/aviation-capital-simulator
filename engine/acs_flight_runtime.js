@@ -219,6 +219,49 @@ function updateWorldFlights() {
 
 // 🔓 EXPORT
 window.updateWorldFlights = updateWorldFlights;
+
+/* ============================================================
+   🟦 FASE 8.4 — TIME ENGINE HOOK (CRITICAL)
+   ------------------------------------------------------------
+   Ensures updateWorldFlights() is executed on every game minute
+   ============================================================ */
+
+(function bindWorldFlightsToTimeEngine() {
+
+  // 1️⃣ Preferred: central ACS time listener
+  if (typeof window.registerTimeListener === "function") {
+    window.registerTimeListener(() => {
+      try {
+        updateWorldFlights();
+      } catch (e) {
+        console.error("updateWorldFlights error:", e);
+      }
+    });
+
+    console.log("🟢 updateWorldFlights bound via registerTimeListener");
+    return;
+  }
+
+  // 2️⃣ Fallback: poll ACS_TIME.minute changes
+  let lastMinute = null;
+
+  setInterval(() => {
+    if (!window.ACS_TIME || typeof window.ACS_TIME.minute !== "number") return;
+
+    if (window.ACS_TIME.minute !== lastMinute) {
+      lastMinute = window.ACS_TIME.minute;
+
+      try {
+        updateWorldFlights();
+      } catch (e) {
+        console.error("updateWorldFlights error:", e);
+      }
+    }
+  }, 800); // safe, lightweight
+
+  console.log("🟡 updateWorldFlights bound via fallback interval");
+
+})();
    
 /* ============================================================
    🟦 FASE 7.5.2 — DAILY FLIGHT QUEUE BUILDER (AUTHORITATIVE)
