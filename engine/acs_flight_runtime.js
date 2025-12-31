@@ -121,16 +121,30 @@ function updateWorldFlights() {
     let selected = null;
     let status = "GROUND";
 
-    for (const f of flights) {
-      const t = normalizeFlightTime(f);
-      if (!t) continue;
+    // --------------------------------------------------------
+// ✈️ DAILY ACTIVE FLIGHT WINDOW (FR24 LOGIC)
+// --------------------------------------------------------
+for (const f of flights) {
+  const t = normalizeFlightTime(f);
+  if (!t) continue;
 
-      if (nowMin >= t.dep && nowMin <= t.arr) {
-        selected = f;
-        status = "AIRBORNE";
-        break;
-      }
-    }
+  const dep = t.dep % 1440;
+  const arr = t.arr % 1440;
+
+  // ventana normal
+  if (dep <= arr && nowMin >= dep && nowMin <= arr) {
+    selected = f;
+    status = "AIRBORNE";
+    break;
+  }
+
+  // ventana cruzando medianoche
+  if (dep > arr && (nowMin >= dep || nowMin <= arr)) {
+    selected = f;
+    status = "AIRBORNE";
+    break;
+  }
+}
 
     if (!selected) {
       for (const f of flights) {
