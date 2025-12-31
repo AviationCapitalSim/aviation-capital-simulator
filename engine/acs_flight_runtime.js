@@ -99,85 +99,78 @@ function updateWorldFlights() {
   );
 
   /* ============================================================
-     🟦 ITINERARY + STATE + MOTION (PROGRAMMED FLIGHT)
-     ============================================================ */
+   🟦 STATE RESOLUTION (ONE PER AIRCRAFT — FR24 24/7)
+   ============================================================ */
 
-  Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
+Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
 
-    let selected = null;
-    let status = "GROUND";
-    let t = null;
+  let selected = null;
+  let status = "GROUND";
 
-    for (let i = 0; i < flights.length; i++) {
+  // --------------------------------------------------------
+  // ✈️ ACTIVE FLIGHT WINDOW (FR24)
+  // --------------------------------------------------------
+  for (const f of flights) {
 
-      const f = flights[i];
-      t = normalizeFlightTime(f);
-      if (!t) continue;
+    const t = normalizeFlightTime(f);
+    if (!t) continue;
 
-      const dep = t.dep;
-      const arr = t.arr;
+    const dep = t.dep % 1440;
+    const arr = t.arr % 1440;
 
-      if (nowMin >= dep && nowMin < arr) {
-        selected = f;
-        status = "AIRBORNE";
-        break;
-      }
-
-      if (nowMin < dep) {
-        selected = f;
-        status = "GROUND";
-        break;
-      }
-
+    // vuelo activo
+    if (
+      (dep <= arr && nowMin >= dep && nowMin <= arr) ||
+      (dep > arr && (nowMin >= dep || nowMin <= arr))
+    ) {
       selected = f;
-      status = "ARRIVED";
+      status = "AIRBORNE";
+      break;
     }
+  }
 
-    if (!selected || !t) return;
+  // --------------------------------------------------------
+  // 🅿️ NO ACTIVE FLIGHT → KEEP AIRCRAFT ON GROUND
+  // --------------------------------------------------------
+  if (!selected) {
+    // último vuelo del día (si existe)
+    selected = flights[flights.length - 1] || flights[0];
+    status = "GROUND";
+  }
 
-    const o = resolveAirport(selected.origin);
-    const d = resolveAirport(selected.destination);
-    if (!o || !d) return;
+  const t = normalizeFlightTime(selected);
+  if (!t) return;
 
-    let lat = o.lat;
-    let lng = o.lng;
-    let progress = 0;
-    let remainingMin = null;
+  const o = resolveAirport(selected.origin);
+  const d = resolveAirport(selected.destination);
+  if (!o || !d) return;
 
-    const totalTime = t.arr - t.dep;
+  let lat = o.lat;
+  let lng = o.lng;
 
-    if (status === "AIRBORNE") {
-      const elapsed = nowMin - t.dep;
-      progress = Math.min(Math.max(elapsed / totalTime, 0), 1);
-      remainingMin = Math.max(t.arr - nowMin, 0);
+  if (status === "AIRBORNE") {
+    const p = Math.min(
+      Math.max((nowMin - t.dep) / (t.arr - t.dep), 0),
+      1
+    );
+    lat = o.lat + (d.lat - o.lat) * p;
+    lng = o.lng + (d.lng - o.lng) * p;
+  }
 
-      lat = o.lat + (d.lat - o.lat) * progress;
-      lng = o.lng + (d.lng - o.lng) * progress;
-
-    } else if (status === "ARRIVED") {
-      lat = d.lat;
-      lng = d.lng;
-      progress = 1;
-      remainingMin = 0;
-    }
-
-    liveFlights.push({
-      aircraftId    : String(aircraftId),
-      flightNumber  : selected.flightNumber || selected.flightOut || null,
-      aircraftModel : selected.aircraftModel || selected.aircraftType || "DC-3",
-      origin        : selected.origin,
-      destination   : selected.destination,
-      depMin        : t.dep,
-      arrMin        : t.arr,
-      lat,
-      lng,
-      status,
-      progress,
-      remainingMin,
-      updatedAt     : Date.now()
-    });
-
+  liveFlights.push({
+    aircraftId  : String(aircraftId),
+    flightNumber: selected.flightNumber || selected.flightOut || null,
+    origin      : selected.origin,
+    destination : selected.destination,
+    depMin      : t.dep,
+    arrMin      : t.arr,
+    lat,
+    lng,
+    status,
+    updatedAt   : Date.now()
   });
+
+});
 
   /* ============================================================
      🟦 PUBLISH
