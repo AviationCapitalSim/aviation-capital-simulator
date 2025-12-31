@@ -635,9 +635,9 @@ if (!marker) {
       html: `
         <div class="acs-hitbox">
           <div class="skytrack-aircraft-dot"></div>
-          <div class="acs-atc-chip">
-            ${f.flightOut || f.flightNumber || f.aircraftId}
-          </div>
+         <div class="acs-atc-chip">
+           ${f.flightNumber || f.flightOut || ""}
+         </div>
         </div>
       `
     })
@@ -651,6 +651,7 @@ if (!marker) {
     // ============================================================
     // 🧾 POPUP (MINIMAL, SAFE)
     // ============================================================
+    
    const flightLabel =
   f.registration ||
   f.aircraftModel ||
@@ -664,7 +665,7 @@ if (!marker) {
 
 
    if (!marker._acsPopupBound) {
-  marker.bindPopup(
+   marker.bindPopup(
     `<b>${flightLabel}</b><br>
      ${f.origin} → ${f.destination}<br>
      <small>${statusLabel}</small>`,
@@ -682,6 +683,7 @@ if (!marker) {
   // ============================================================
   // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
   // ============================================================
+  
   Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
     if (!activeIds.has(id)) {
       map.removeLayer(window.SKYTRACK_MARKERS[id]);
