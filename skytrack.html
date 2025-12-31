@@ -252,7 +252,12 @@
     }
   }, 1000);
 
-  console.log("⏱ SkyTrack ACS_TIME synced at minute:", startMinute);
+  console.log(
+  "⏱ SkyTrack ACS_TIME synced at minute:",
+  window.ACS_TIME && typeof window.ACS_TIME.minute === "number"
+    ? window.ACS_TIME.minute
+    : startMinute
+);
 
 })();
 
