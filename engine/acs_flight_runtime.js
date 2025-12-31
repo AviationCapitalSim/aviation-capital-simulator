@@ -85,7 +85,7 @@ window.getExecFlight = getExecFlight;
 // ============================================================
 
 const flightsByAircraft = {};
-const liveFlights = [];
+liveFlights.length = 0;
 
 // 1️⃣ Agrupar schedule por aircraft
 items.forEach(it => {
