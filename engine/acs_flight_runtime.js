@@ -30,12 +30,12 @@ window.getExecFlight = getExecFlight;
   console.log("✈️ ACS Flight Runtime Engine — ACTIVE (FR24 MODE)");
 
 /* ============================================================
-   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP (STABLE)
+   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP (STABLE + ITINERARY)
    ============================================================ */
 
 function updateWorldFlights() {
 
-  if (!window.ACS_TIME || typeof window.ACS_TIME.minute !== "number") return;
+  if (!window.ACS_TIME || typeof ACS_TIME.minute !== "number") return;
 
   const nowMin = (ACS_TIME.minute + 1440) % 1440;
 
@@ -44,7 +44,6 @@ function updateWorldFlights() {
     items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   } catch {}
 
-  // 🔒 DECLARACIÓN ÚNICA Y SEGURA
   const liveFlights = [];
 
   if (!Array.isArray(items) || items.length === 0) {
@@ -98,7 +97,7 @@ function updateWorldFlights() {
   }
 
   /* ============================================================
-     🟦 GROUP BY AIRCRAFT (FR24 WINDOW)
+     🟦 GROUP BY AIRCRAFT (ORDERED ITINERARY)
      ============================================================ */
 
   const byAircraft = {};
@@ -112,49 +111,47 @@ function updateWorldFlights() {
     list.sort((a, b) => a.depMin - b.depMin)
   );
 
- /* ============================================================
-     🟦 STATE RESOLUTION (ONE PER AIRCRAFT)
+  /* ============================================================
+     🟦 STATE + POSITION RESOLUTION (ONE PER AIRCRAFT)
      ============================================================ */
 
-Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
+  Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
 
-  let selected = null;
-  let status = "GROUND";
+    let selected = null;
+    let status = "GROUND";
 
-  // --------------------------------------------------------
-  // ✈️ SEQUENTIAL DAILY FLIGHT WINDOW (FR24 LOGIC)
-  // --------------------------------------------------------
-   
-  for (let i = 0; i < flights.length; i++) {
+    for (let i = 0; i < flights.length; i++) {
 
-    const f = flights[i];
-    const t = normalizeFlightTime(f);
-    if (!t) continue;
+      const f = flights[i];
+      const t = normalizeFlightTime(f);
+      if (!t) continue;
 
-    const dep = t.dep % 1440;
-    const arr = t.arr % 1440;
+      const dep = t.dep % 1440;
+      const arr = t.arr % 1440;
 
-    // 🟦 vuelo activo (AIRBORNE)
-    if (
-      (dep <= arr && nowMin >= dep && nowMin <= arr) ||
-      (dep > arr && (nowMin >= dep || nowMin <= arr))
-    ) {
+      // AIRBORNE (ventana diaria real)
+      if (
+        (dep <= arr && nowMin >= dep && nowMin <= arr) ||
+        (dep > arr && (nowMin >= dep || nowMin <= arr))
+      ) {
+        selected = f;
+        status = "AIRBORNE";
+        break;
+      }
+
+      // GROUND (próximo vuelo)
+      if (nowMin < dep) {
+        selected = f;
+        status = "GROUND";
+        break;
+      }
+
+      // ARRIVED (último completado)
       selected = f;
-      status = "AIRBORNE";
-      break;
+      status = "ARRIVED";
     }
 
-    // 🟦 vuelo aún no iniciado (GROUND)
-    if (nowMin < dep) {
-      selected = f;
-      status = "GROUND";
-      break;
-    }
-
-    // 🟦 vuelo ya completado (ARRIVED) → posible último
-    selected = f;
-    status = "ARRIVED";
-  }
+    if (!selected) return;
 
     const t = normalizeFlightTime(selected);
     if (!t) return;
@@ -165,32 +162,46 @@ Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
 
     let lat = o.lat;
     let lng = o.lng;
+    let progress = 0;
 
     if (status === "AIRBORNE") {
-      const p = Math.min(
-        Math.max((nowMin - t.dep) / (t.arr - t.dep), 0),
-        1
-      );
-      lat = o.lat + (d.lat - o.lat) * p;
-      lng = o.lng + (d.lng - o.lng) * p;
-    }
 
-    if (status === "ARRIVED") {
+      let elapsed, total;
+
+      if (t.dep <= t.arr) {
+        elapsed = nowMin - t.dep;
+        total   = t.arr - t.dep;
+      } else {
+        elapsed = nowMin >= t.dep
+          ? nowMin - t.dep
+          : (1440 - t.dep) + nowMin;
+        total = (1440 - t.dep) + t.arr;
+      }
+
+      progress = Math.min(Math.max(elapsed / total, 0), 1);
+
+      lat = o.lat + (d.lat - o.lat) * progress;
+      lng = o.lng + (d.lng - o.lng) * progress;
+
+    } else if (status === "ARRIVED") {
       lat = d.lat;
       lng = d.lng;
+      progress = 1;
     }
 
     liveFlights.push({
-      aircraftId  : String(aircraftId),
-      flightNumber: selected.flightNumber || selected.flightOut || null,
-      origin      : selected.origin,
-      destination : selected.destination,
-      depMin      : t.dep,
-      arrMin      : t.arr,
+      aircraftId    : String(aircraftId),
+      flightNumber  : selected.flightNumber || selected.flightOut || null,
+      aircraftModel : selected.aircraftModel || selected.model || null,
+      origin        : selected.origin,
+      destination   : selected.destination,
+      depMin        : t.dep,
+      arrMin        : t.arr,
       lat,
       lng,
       status,
-      updatedAt   : Date.now()
+      progress,
+      updatedAt     : Date.now()
     });
 
   });
@@ -198,7 +209,7 @@ Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
   // ----------------------------------------------------------
   // Publish
   // ----------------------------------------------------------
-   
+
   window.ACS_LIVE_FLIGHTS = liveFlights;
 
   try {
