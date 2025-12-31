@@ -58,31 +58,33 @@ function updateWorldFlights() {
 
   function normalizeFlightTime(f) {
 
-    if (
-      typeof f.depAbsMin === "number" &&
-      typeof f.arrAbsMin === "number"
-    ) {
-      return {
-        dep: f.depAbsMin,
-        arr: f.arrAbsMin
-      };
-    }
+  // 🔹 PRIORIDAD: usar tiempo diario SIEMPRE para SkyTrack
+  if (typeof f.depMin === "number" && typeof f.arrMin === "number") {
 
-    // Fallback legacy (single-day schedule)
     const dep = (f.depMin + 1440) % 1440;
-    const arr = (f.arrMin + 1440) % 1440;
+    let arr = (f.arrMin + 1440) % 1440;
 
-    if (arr < dep) {
-      return {
-        dep,
-        arr: arr + 1440
-      };
-    }
+    // Cruce de medianoche
+    if (arr < dep) arr += 1440;
 
     return { dep, arr };
   }
 
-  const liveFlights = [];
+  // 🔹 Fallback absoluto (legacy)
+  if (
+    typeof f.depAbsMin === "number" &&
+    typeof f.arrAbsMin === "number"
+  ) {
+    const dep = (f.depAbsMin + 1440) % 1440;
+    let arr = (f.arrAbsMin + 1440) % 1440;
+
+    if (arr < dep) arr += 1440;
+
+    return { dep, arr };
+  }
+
+  return { dep: null, arr: null };
+}
 
   // --------------------------------------------------------
   // Resolve airports (SkyTrack adapter → WorldAirportsACS)
