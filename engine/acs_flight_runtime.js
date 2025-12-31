@@ -29,71 +29,61 @@ window.getExecFlight = getExecFlight;
 
   console.log("✈️ ACS Flight Runtime Engine — ACTIVE (FR24 MODE)");
 
- /* ============================================================
-   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP
+/* ============================================================
+   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP (STABLE)
    ============================================================ */
 
 function updateWorldFlights() {
 
-  if (!window.ACS_TIME || typeof ACS_TIME.minute !== "number") return;
+  if (!window.ACS_TIME || typeof window.ACS_TIME.minute !== "number") return;
 
   const nowMin = (ACS_TIME.minute + 1440) % 1440;
 
-  let items;
+  let items = [];
   try {
     items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch {
-    items = [];
-  }
+  } catch {}
+
+  // 🔒 DECLARACIÓN ÚNICA Y SEGURA
+  const liveFlights = [];
 
   if (!Array.isArray(items) || items.length === 0) {
-    window.ACS_LIVE_FLIGHTS = [];
+    window.ACS_LIVE_FLIGHTS = liveFlights;
     try { localStorage.setItem("ACS_LIVE_FLIGHTS", "[]"); } catch {}
     return;
   }
 
   /* ============================================================
-     🟦 FASE 7.8 — ABSOLUTE TIME NORMALIZATION
+     🟦 TIME NORMALIZATION (DAILY SAFE)
      ============================================================ */
-
   function normalizeFlightTime(f) {
 
-  // 🔹 PRIORIDAD: usar tiempo diario SIEMPRE para SkyTrack
-  if (typeof f.depMin === "number" && typeof f.arrMin === "number") {
+    if (typeof f.depMin === "number" && typeof f.arrMin === "number") {
+      const dep = (f.depMin + 1440) % 1440;
+      let arr = (f.arrMin + 1440) % 1440;
+      if (arr < dep) arr += 1440;
+      return { dep, arr };
+    }
 
-    const dep = (f.depMin + 1440) % 1440;
-    let arr = (f.arrMin + 1440) % 1440;
+    if (
+      typeof f.depAbsMin === "number" &&
+      typeof f.arrAbsMin === "number"
+    ) {
+      const dep = (f.depAbsMin + 1440) % 1440;
+      let arr = (f.arrAbsMin + 1440) % 1440;
+      if (arr < dep) arr += 1440;
+      return { dep, arr };
+    }
 
-    // Cruce de medianoche
-    if (arr < dep) arr += 1440;
-
-    return { dep, arr };
+    return null;
   }
-
-  // 🔹 Fallback absoluto (legacy)
-  if (
-    typeof f.depAbsMin === "number" &&
-    typeof f.arrAbsMin === "number"
-  ) {
-    const dep = (f.depAbsMin + 1440) % 1440;
-    let arr = (f.arrAbsMin + 1440) % 1440;
-
-    if (arr < dep) arr += 1440;
-
-    return { dep, arr };
-  }
-
-  return { dep: null, arr: null };
-}
 
   // --------------------------------------------------------
-  // Resolve airports (SkyTrack adapter → WorldAirportsACS)
+  // Resolve airports
   // --------------------------------------------------------
   function resolveAirport(icao) {
-
     if (!icao) return null;
 
-    // 1) SkyTrack adapter
     if (typeof window.getSkyTrackAirportByICAO === "function") {
       const a = window.getSkyTrackAirportByICAO(icao);
       if (a && typeof a.lat === "number" && typeof a.lng === "number") {
@@ -101,35 +91,29 @@ function updateWorldFlights() {
       }
     }
 
-    // 2) WorldAirportsACS container
     const wa = window.WorldAirportsACS;
     if (!wa) return null;
 
-    const found = Object.values(wa)
-      .flat()
-      .find(a => a && a.icao === icao);
-
-    return found || null;
+    return Object.values(wa).flat().find(a => a?.icao === icao) || null;
   }
 
   /* ============================================================
-     🟦 FASE 8.2 — GROUP SCHEDULE BY AIRCRAFT (FR24 WINDOW)
+     🟦 GROUP BY AIRCRAFT (FR24 WINDOW)
      ============================================================ */
 
   const byAircraft = {};
-
   items.forEach(f => {
-    if (!f || !f.aircraftId || !f.origin || !f.destination) return;
+    if (!f?.aircraftId || !f.origin || !f.destination) return;
     if (!byAircraft[f.aircraftId]) byAircraft[f.aircraftId] = [];
     byAircraft[f.aircraftId].push(f);
   });
 
-  Object.values(byAircraft).forEach(list => {
-    list.sort((a, b) => a.depMin - b.depMin);
-  });
+  Object.values(byAircraft).forEach(list =>
+    list.sort((a, b) => a.depMin - b.depMin)
+  );
 
   /* ============================================================
-     🟦 FASE 8.3 — FLIGHT STATE RESOLUTION (ONE PER AIRCRAFT)
+     🟦 STATE RESOLUTION (ONE PER AIRCRAFT)
      ============================================================ */
 
   Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
@@ -137,35 +121,32 @@ function updateWorldFlights() {
     let selected = null;
     let status = "GROUND";
 
-    // 1️⃣ En vuelo
-    selected = flights.find(f => {
+    for (const f of flights) {
       const t = normalizeFlightTime(f);
-      return nowMin >= t.dep && nowMin <= t.arr;
-    });
+      if (!t) continue;
 
-    if (selected) {
-      status = "AIRBORNE";
-    } else {
-      // 2️⃣ Último ya volado
-      const past = flights.filter(f => {
-        const t = normalizeFlightTime(f);
-        return nowMin > t.arr;
-      });
-
-      if (past.length) {
-        selected = past[past.length - 1];
-        status = "ARRIVED";
-      } else {
-        // 3️⃣ Próximo vuelo
-        selected = flights[0];
-        status = "GROUND";
+      if (nowMin >= t.dep && nowMin <= t.arr) {
+        selected = f;
+        status = "AIRBORNE";
+        break;
       }
     }
 
-    if (!selected) return;
+    if (!selected) {
+      for (const f of flights) {
+        const t = normalizeFlightTime(f);
+        if (t && nowMin > t.arr) selected = f;
+      }
+      if (selected) status = "ARRIVED";
+    }
+
+    if (!selected) {
+      selected = flights[0];
+      status = "GROUND";
+    }
 
     const t = normalizeFlightTime(selected);
-    if (typeof t.dep !== "number" || typeof t.arr !== "number") return;
+    if (!t) return;
 
     const o = resolveAirport(selected.origin);
     const d = resolveAirport(selected.destination);
@@ -175,38 +156,38 @@ function updateWorldFlights() {
     let lng = o.lng;
 
     if (status === "AIRBORNE") {
-
-      const progress = Math.min(
+      const p = Math.min(
         Math.max((nowMin - t.dep) / (t.arr - t.dep), 0),
         1
       );
+      lat = o.lat + (d.lat - o.lat) * p;
+      lng = o.lng + (d.lng - o.lng) * p;
+    }
 
-      lat = o.lat + (d.lat - o.lat) * progress;
-      lng = o.lng + (d.lng - o.lng) * progress;
-
-    } else if (status === "ARRIVED") {
+    if (status === "ARRIVED") {
       lat = d.lat;
       lng = d.lng;
     }
 
     liveFlights.push({
-      aircraftId   : String(aircraftId),
-      flightNumber : selected.flightNumber || selected.flightOut || null,
-      origin       : selected.origin,
-      destination  : selected.destination,
-      depMin       : t.dep,
-      arrMin       : t.arr,
+      aircraftId  : String(aircraftId),
+      flightNumber: selected.flightNumber || selected.flightOut || null,
+      origin      : selected.origin,
+      destination : selected.destination,
+      depMin      : t.dep,
+      arrMin      : t.arr,
       lat,
       lng,
       status,
-      updatedAt    : Date.now()
+      updatedAt   : Date.now()
     });
 
   });
 
   // ----------------------------------------------------------
-  // Publish FR24-style live flights
+  // Publish
   // ----------------------------------------------------------
+   
   window.ACS_LIVE_FLIGHTS = liveFlights;
 
   try {
