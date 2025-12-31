@@ -620,7 +620,7 @@ if (typeof lat !== "number" || typeof lng !== "number") {
   }
 }
 
-   // ============================================================
+// ============================================================
 // ✈️ CREATE / UPDATE MARKER
 // ============================================================
 
@@ -635,9 +635,9 @@ if (!marker) {
       html: `
         <div class="acs-hitbox">
           <div class="skytrack-aircraft-dot"></div>
-         <div class="acs-atc-chip">
-           ${f.flightNumber || f.flightOut || ""}
-         </div>
+          <div class="acs-atc-chip">
+            ${f.flightNumber || f.flightOut || ""}
+          </div>
         </div>
       `
     })
@@ -648,61 +648,55 @@ if (!marker) {
   marker.setLatLng([lat, lng]);
 }
 
-     // ============================================================
-    // 🧾 POPUP (MINIMAL, SAFE)
-    // ============================================================
+// ============================================================
+// 🧾 POPUP (FR24 STYLE — CLEAN)
+// ============================================================
 
-    const statusLabel =
-    f.status === "AIRBORNE" ? "✈️ ENROUTE" :
-    f.status === "ARRIVED"  ? "🛬 ARRIVED" :
-    "🅿️ ON GROUND";
+const depMin = f.depMin ?? f.departureMin;
+const arrMin = f.arrMin ?? f.arrivalMin;
 
-    // ---- progress + remaining time (SAFE)
-    let progressTxt = "--";
-    let remainingTxt = "--";
+let progressPct = "";
+let remainingTxt = "";
 
-    const depMin = f.depMin ?? f.departureMin;
-    const arrMin = f.arrMin ?? f.arrivalMin;
+if (typeof depMin === "number" && typeof arrMin === "number" && arrMin > depMin) {
+  const total = arrMin - depMin;
+  const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
+  const pct = Math.round((elapsed / total) * 100);
 
-    if (
-      typeof depMin === "number" &&
-      typeof arrMin === "number" &&
-      arrMin > depMin &&
-      typeof nowMin === "number"
-    ) {
-      const total = arrMin - depMin;
-      const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
-      const pct = Math.round((elapsed / total) * 100);
-      const remaining = Math.max(0, arrMin - nowMin);
+  const remaining = Math.max(0, arrMin - nowMin);
+  const h = Math.floor(remaining / 60);
+  const m = remaining % 60;
 
-      progressTxt = `${pct}%`;
+  progressPct = `${pct}% completed`;
+  remainingTxt = `${h}h ${m}m remaining`;
+}
 
-      const hh = Math.floor(remaining / 60);
-      const mm = remaining % 60;
-      remainingTxt = `${hh}h ${mm}m`;
+const statusTxt =
+  f.status === "AIRBORNE" ? "En route" :
+  f.status === "ARRIVED"  ? "Arrived" :
+  "On ground";
+
+if (!marker._acsPopupBound) {
+  marker.bindPopup(
+    `<b>${f.flightNumber || "FLIGHT"}</b><br>
+     ${f.origin} → ${f.destination}<br>
+     <small>
+       Aircraft: ${f.aircraftModel || "Unknown"}<br>
+       Status: ${statusTxt}<br>
+       ${progressPct}<br>
+       ${remainingTxt}
+     </small>`,
+    {
+      autoPan: false,
+      closeOnClick: false,
+      autoClose: false
     }
+  );
 
-    if (!marker._acsPopupBound) {
-      marker.bindPopup(
-        `<b>${f.flightNumber || "FLIGHT"}</b><br>
-         ${f.origin} → ${f.destination}<br>
-         <small>
-           ✈️ ${f.aircraftModel || "Aircraft"}<br>
-           📡 ${statusLabel}<br>
-           📊 ${progressTxt}<br>
-           ⏱ ${remainingTxt}
-         </small>`,
-        {
-          autoPan: false,
-          closeOnClick: false,
-          autoClose: false
-        }
-      );
+  marker._acsPopupBound = true;
+}
 
-      marker._acsPopupBound = true;
-    }
-
-  });
+});
 
   // ============================================================
   // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
