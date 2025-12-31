@@ -523,6 +523,40 @@ const SKYTRACK_AIRCRAFT_ICON = L.divIcon({
 });
 
 /* ============================================================
+   🟦 FASE 7.1 — BUILD WEEKLY FLIGHT QUEUE (BY AIRCRAFT)
+   ============================================================ */
+
+window.ACS_FLIGHT_QUEUE = {};
+
+if (Array.isArray(window.ACS_LIVE_FLIGHTS)) {
+
+  window.ACS_LIVE_FLIGHTS.forEach(f => {
+
+    if (!f.aircraftId || typeof f.depMin !== "number") return;
+
+    if (!window.ACS_FLIGHT_QUEUE[f.aircraftId]) {
+      window.ACS_FLIGHT_QUEUE[f.aircraftId] = [];
+    }
+
+    window.ACS_FLIGHT_QUEUE[f.aircraftId].push(f);
+  });
+
+  // Ordenar vuelos por hora de salida (depMin)
+  Object.keys(window.ACS_FLIGHT_QUEUE).forEach(acId => {
+    window.ACS_FLIGHT_QUEUE[acId].sort((a, b) => a.depMin - b.depMin);
+  });
+
+}
+
+console.log(
+  "[FASE 7.1] ACS_FLIGHT_QUEUE READY",
+  Object.keys(window.ACS_FLIGHT_QUEUE).map(id => ({
+    aircraftId: id,
+    flights: window.ACS_FLIGHT_QUEUE[id].length
+  }))
+);
+   
+/* ============================================================
    🟦 S1 — SKYTRACK RENDER LIVE FLIGHTS (FED & STABLE)
    ------------------------------------------------------------
    - Consumes ACS_LIVE_FLIGHTS[]
