@@ -836,15 +836,22 @@ function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
+    
 </script>
     
 <script>
   
 /* ============================================================
-   🕐 SKYTRACK INIT
+   ⏱ SKYTRACK — INIT + TIME SYNC
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
+  initSkyTrackMap();
+
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(renderLiveFlights);
+  }
+});
 
   /* ============================================================
      🛰 READ ACTIVE FLIGHT FROM SCHEDULE (OPTIONAL)
