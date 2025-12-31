@@ -648,42 +648,66 @@ if (!marker) {
   marker.setLatLng([lat, lng]);
 }
 
-    // ============================================================
+     // ============================================================
     // 🧾 POPUP (MINIMAL, SAFE)
     // ============================================================
-    
-   const flightLabel =
-  f.registration ||
-  f.aircraftModel ||
-  f.flightNumber ||
-  `AC-${f.aircraftId}`;
 
     const statusLabel =
     f.status === "AIRBORNE" ? "✈️ ENROUTE" :
     f.status === "ARRIVED"  ? "🛬 ARRIVED" :
     "🅿️ ON GROUND";
 
+    // ---- progress + remaining time (SAFE)
+    let progressTxt = "--";
+    let remainingTxt = "--";
 
-   if (!marker._acsPopupBound) {
-   marker.bindPopup(
-    `<b>${flightLabel}</b><br>
-     ${f.origin} → ${f.destination}<br>
-     <small>${statusLabel}</small>`,
-    {
-      autoPan: false,
-      closeOnClick: false,
-      autoClose: false
+    const depMin = f.depMin ?? f.departureMin;
+    const arrMin = f.arrMin ?? f.arrivalMin;
+
+    if (
+      typeof depMin === "number" &&
+      typeof arrMin === "number" &&
+      arrMin > depMin &&
+      typeof nowMin === "number"
+    ) {
+      const total = arrMin - depMin;
+      const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
+      const pct = Math.round((elapsed / total) * 100);
+      const remaining = Math.max(0, arrMin - nowMin);
+
+      progressTxt = `${pct}%`;
+
+      const hh = Math.floor(remaining / 60);
+      const mm = remaining % 60;
+      remainingTxt = `${hh}h ${mm}m`;
     }
-  );
-  marker._acsPopupBound = true;
-}
+
+    if (!marker._acsPopupBound) {
+      marker.bindPopup(
+        `<b>${f.flightNumber || "FLIGHT"}</b><br>
+         ${f.origin} → ${f.destination}<br>
+         <small>
+           ✈️ ${f.aircraftModel || "Aircraft"}<br>
+           📡 ${statusLabel}<br>
+           📊 ${progressTxt}<br>
+           ⏱ ${remainingTxt}
+         </small>`,
+        {
+          autoPan: false,
+          closeOnClick: false,
+          autoClose: false
+        }
+      );
+
+      marker._acsPopupBound = true;
+    }
 
   });
 
   // ============================================================
   // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
   // ============================================================
-  
+
   Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
     if (!activeIds.has(id)) {
       map.removeLayer(window.SKYTRACK_MARKERS[id]);
