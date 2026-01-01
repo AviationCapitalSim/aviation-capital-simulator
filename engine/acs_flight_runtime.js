@@ -30,240 +30,144 @@ window.getExecFlight = getExecFlight;
   console.log("✈️ ACS Flight Runtime Engine — ACTIVE (FR24 MODE)");
 
 /* ============================================================
-   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP (24/7 GROUNDED SAFE)
+   ✈️ UPDATE WORLD FLIGHTS — FR24 LOOP (FINAL STABLE)
    ============================================================ */
 
 function updateWorldFlights() {
 
   if (!window.ACS_TIME || typeof window.ACS_TIME.minute !== "number") return;
 
-  const nowMin = (window.ACS_TIME.minute + 1440) % 1440;
+  const nowMin = (ACS_TIME.minute + 1440) % 1440;
 
-  let items = [];
+  let schedule = [];
   try {
-    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch {
-    items = [];
-  }
+    schedule = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch {}
 
   const liveFlights = [];
 
-  // -----------------------------
-  // Helpers
-  // -----------------------------
-  const baseIcao =
-    window.ACS_BASE_ICAO ||
-    localStorage.getItem("ACS_BASE_ICAO") ||
-    localStorage.getItem("ACS_BASE") ||
-    "LEMD";
+  /* ============================================================
+     🟦 NORMALIZE TIME (SCHEDULE TABLE IS SOURCE OF TRUTH)
+     ============================================================ */
+  function normalize(f) {
+    if (typeof f.depMin !== "number" || typeof f.arrMin !== "number") return null;
+    let dep = (f.depMin + 1440) % 1440;
+    let arr = (f.arrMin + 1440) % 1440;
+    if (arr < dep) arr += 1440;
+    return { dep, arr };
+  }
 
-  function resolveAirport(icao) {
+  /* ============================================================
+     🟦 RESOLVE AIRPORT COORDS
+     ============================================================ */
+  function airport(icao) {
     if (!icao) return null;
 
-    if (typeof window.getSkyTrackAirportByICAO === "function") {
+    if (window.getSkyTrackAirportByICAO) {
       const a = window.getSkyTrackAirportByICAO(icao);
-      if (a && typeof a.lat === "number" && typeof a.lng === "number") return a;
+      if (a?.lat && a?.lng) return a;
     }
 
     const wa = window.WorldAirportsACS;
     if (!wa) return null;
-
-    try {
-      return Object.values(wa).flat().find(a => a && a.icao === icao) || null;
-    } catch {
-      return null;
-    }
+    return Object.values(wa).flat().find(a => a?.icao === icao) || null;
   }
 
-  function normalizeFlightTime(f) {
-    const depRaw = (typeof f?.depMin === "number") ? f.depMin : Number(f?.depMin);
-    const arrRaw = (typeof f?.arrMin === "number") ? f.arrMin : Number(f?.arrMin);
-
-    if (!Number.isFinite(depRaw) || !Number.isFinite(arrRaw)) return null;
-
-    const dep = (depRaw + 1440) % 1440;
-    let arr = (arrRaw + 1440) % 1440;
-
-    // if crosses midnight, stretch to next day range
-    if (arr < dep) arr += 1440;
-
-    return { dep, arr };
-  }
-
-  // -----------------------------
-  // If no scheduleItems, publish empty and exit
-  // -----------------------------
-  if (!Array.isArray(items) || items.length === 0) {
-    window.ACS_LIVE_FLIGHTS = liveFlights;
-    try { localStorage.setItem("ACS_LIVE_FLIGHTS", "[]"); } catch {}
-    return;
-  }
-
-  // -----------------------------
-  // Group by aircraft
-  // -----------------------------
+  /* ============================================================
+     🟦 GROUP FLIGHTS BY AIRCRAFT
+     ============================================================ */
   const byAircraft = {};
-  items.forEach(f => {
-    if (!f) return;
-    const acId = f.aircraftId;
-    if (!acId) return;
-    if (!byAircraft[acId]) byAircraft[acId] = [];
-    byAircraft[acId].push(f);
+  schedule.forEach(f => {
+    if (!f.aircraftId || !f.origin || !f.destination) return;
+    if (!byAircraft[f.aircraftId]) byAircraft[f.aircraftId] = [];
+    byAircraft[f.aircraftId].push(f);
   });
 
-  Object.values(byAircraft).forEach(list => {
-    list.sort((a, b) => {
-      const da = (typeof a?.depMin === "number") ? a.depMin : Number(a?.depMin);
-      const db = (typeof b?.depMin === "number") ? b.depMin : Number(b?.depMin);
-      return (Number.isFinite(da) ? da : 0) - (Number.isFinite(db) ? db : 0);
-    });
-  });
+  Object.values(byAircraft).forEach(list =>
+    list.sort((a, b) => a.depMin - b.depMin)
+  );
 
-  // -----------------------------
-  // One aircraft → always one visible entry (24/7)
-  // -----------------------------
-  const baseA = resolveAirport(baseIcao);
-
+  /* ============================================================
+     🟦 ONE AIRCRAFT = ONE STATE (FR24 REALITY)
+     ============================================================ */
   Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
 
-    // pick ACTIVE if any, else NEXT if any, else LAST (still ground)
-    let selected = null;
+    let active = null;
     let status = "GROUND";
 
-    // 1) active
     for (const f of flights) {
-      const t = normalizeFlightTime(f);
+      const t = normalize(f);
       if (!t) continue;
 
-      // active if now within [dep,arr] in stretched space
-      let nowAdj = nowMin;
-      const dep = t.dep;
-      const arr = t.arr;
-
-      if (arr >= 1440 && nowMin < dep) nowAdj = nowMin + 1440;
-
-      if (nowAdj >= dep && nowAdj <= arr) {
-        selected = f;
+      // AIRBORNE WINDOW
+      if (
+        (t.dep <= t.arr && nowMin >= t.dep && nowMin <= t.arr) ||
+        (t.dep > t.arr && (nowMin >= t.dep || nowMin <= t.arr))
+      ) {
+        active = f;
         status = "AIRBORNE";
         break;
       }
-    }
 
-    // 2) next (ground)
-    if (!selected) {
-      for (const f of flights) {
-        const t = normalizeFlightTime(f);
-        if (!t) continue;
-        if (nowMin < (t.dep % 1440)) {
-          selected = f;
-          status = "GROUND";
-          break;
-        }
+      // FUTURE FLIGHT → STILL ON GROUND
+      if (nowMin < t.dep && !active) {
+        active = f;
+        status = "GROUND";
+        break;
       }
-    }
 
-    // 3) last (ground)
-    if (!selected) {
-      selected = flights[flights.length - 1] || flights[0] || null;
+      // PAST FLIGHT → ARRIVED
+      active = f;
       status = "GROUND";
     }
 
-    // If somehow nothing, still publish an aircraft marker at base
-    if (!selected) {
-      const lat0 = baseA?.lat ?? 0;
-      const lng0 = baseA?.lng ?? 0;
+    if (!active) return;
 
-      liveFlights.push({
-        aircraftId    : String(aircraftId),
-        flightNumber  : null,
-        aircraftModel : null,
-        origin        : baseIcao,
-        destination   : baseIcao,
-        depMin        : null,
-        arrMin        : null,
-        lat           : lat0,
-        lng           : lng0,
-        status        : "GROUND",
-        progress      : 0,
-        remainingMin  : null,
-        updatedAt     : Date.now()
-      });
+    const t = normalize(active);
+    if (!t) return;
 
-      return;
+    const o = airport(active.origin);
+    const d = airport(active.destination);
+    if (!o || !d) return;
+
+    let lat = o.lat;
+    let lng = o.lng;
+
+    if (status === "AIRBORNE") {
+      const p = Math.min(Math.max((nowMin - t.dep) / (t.arr - t.dep), 0), 1);
+      lat = o.lat + (d.lat - o.lat) * p;
+      lng = o.lng + (d.lng - o.lng) * p;
     }
 
-    const t = normalizeFlightTime(selected);
-
-    // Airports: if missing, fall back to base so the aircraft never disappears
-    const originIcao = selected.origin || selected.from || baseIcao;
-    const destIcao   = selected.destination || selected.to || baseIcao;
-
-    const o = resolveAirport(originIcao) || baseA;
-    const d = resolveAirport(destIcao) || baseA;
-
-    const latBase = baseA?.lat ?? o?.lat ?? 0;
-    const lngBase = baseA?.lng ?? o?.lng ?? 0;
-
-    let lat = (o?.lat ?? latBase);
-    let lng = (o?.lng ?? lngBase);
-    let progress = 0;
-    let remainingMin = null;
-
-    if (status === "AIRBORNE" && t && o && d) {
-
-      let nowAdj = nowMin;
-      if (t.arr >= 1440 && nowMin < t.dep) nowAdj = nowMin + 1440;
-
-      const total = Math.max(t.arr - t.dep, 1);
-      const elapsed = Math.min(Math.max(nowAdj - t.dep, 0), total);
-
-      progress = Math.min(Math.max(elapsed / total, 0), 1);
-      remainingMin = Math.max(t.arr - nowAdj, 0);
-
-      lat = o.lat + (d.lat - o.lat) * progress;
-      lng = o.lng + (d.lng - o.lng) * progress;
-
-    } else {
-      // ground always visible at origin/base
-      lat = (o?.lat ?? latBase);
-      lng = (o?.lng ?? lngBase);
-      progress = 0;
-      remainingMin = null;
+    if (status === "GROUND" && nowMin > t.arr) {
+      lat = d.lat;
+      lng = d.lng;
     }
 
     liveFlights.push({
-      aircraftId    : String(aircraftId),
-      flightNumber  : selected.flightNumber || selected.flightOut || selected.id || null,
-      aircraftModel : selected.aircraftModel || selected.modelKey || selected.aircraft || selected.model || null,
-      origin        : originIcao,
-      destination   : destIcao,
-      depMin        : t ? t.dep : null,
-      arrMin        : t ? t.arr : null,
+      aircraftId   : String(aircraftId),
+      aircraftType : active.modelKey || active.aircraft || null,
+      flightNumber : active.flightNumber || active.flightOut || null,
+      origin       : active.origin,
+      destination  : active.destination,
+      depMin       : t.dep,
+      arrMin       : t.arr,
       lat,
       lng,
       status,
-      progress,
-      remainingMin,
-      updatedAt     : Date.now()
+      updatedAt    : Date.now()
     });
 
   });
 
-  // -----------------------------
-  // Publish
-  // -----------------------------
   window.ACS_LIVE_FLIGHTS = liveFlights;
 
   try {
     localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
-  } catch (e) {
-    console.warn("ACS_LIVE_FLIGHTS persist failed", e);
-  }
+  } catch {}
 }
 
-// 🔓 EXPORT
 window.updateWorldFlights = updateWorldFlights;
-
 
 /* ============================================================
    🟦 FASE 8.4 — TIME ENGINE HOOK (CRITICAL)
