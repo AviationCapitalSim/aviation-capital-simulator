@@ -70,12 +70,35 @@
             ? f.turnaroundMin
             : (typeof f.turnaround === "number" ? f.turnaround : 45);
 
-        // AIRBORNE
-        if (nowMin >= f.depMin && nowMin <= f.arrMin) {
-          selected = f;
-          status = "AIRBORNE";
-          break;
-        }
+// ============================================================
+// ✈️ AIRBORNE — ABSOLUTE TIME (FASE 7A)
+// ============================================================
+
+// construir tiempos absolutos si no existen
+         
+const depAbs =
+  typeof f.depAbsMin === "number"
+    ? f.depAbsMin
+    : (typeof f.depMin === "number" ? f.depMin : null);
+
+const arrAbs =
+  typeof f.arrAbsMin === "number"
+    ? f.arrAbsMin
+    : (typeof f.arrMin === "number" ? f.arrMin : null);
+
+if (
+  typeof depAbs === "number" &&
+  typeof arrAbs === "number" &&
+  window.ACS_TIME &&
+  typeof ACS_TIME.absMin === "number"
+) {
+  if (ACS_TIME.absMin >= depAbs && ACS_TIME.absMin <= arrAbs) {
+    selected = f;
+    status = "AIRBORNE";
+    break;
+  }
+}
+
 
         // ARRIVED → turnaround en tierra
         if (
