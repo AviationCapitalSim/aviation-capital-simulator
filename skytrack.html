@@ -688,41 +688,48 @@ if (!marker) {
 }
 
 // ============================================================
-// 🧾 POPUP (FR24 STYLE — CLEAN)
+// 🧾 POPUP (FR24 STYLE — CLEAN & SAFE) — FASE 6
 // ============================================================
 
-const depMin = f.depMin ?? f.departureMin;
-const arrMin = f.arrMin ?? f.arrivalMin;
+const depMin = typeof f.depMin === "number" ? f.depMin : null;
+const arrMin = typeof f.arrMin === "number" ? f.arrMin : null;
 
-let progressPct = "";
-let remainingTxt = "";
+let progressPct = "—";
+let remainingTxt = "—";
 
-// ✅ SAFE ONLY: si no hay tiempos válidos, no muestra números raros
-if (typeof depMin === "number" && typeof arrMin === "number" && arrMin > depMin && typeof nowMin === "number") {
+// ✈️ SOLO SI ESTÁ EN VUELO Y LOS TIEMPOS SON VÁLIDOS
+if (
+  f.status === "AIRBORNE" &&
+  depMin !== null &&
+  arrMin !== null &&
+  arrMin > depMin &&
+  typeof nowMin === "number"
+) {
   const total = arrMin - depMin;
-  const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
-  const pct = Math.round((elapsed / total) * 100);
+  const elapsed = Math.min(Math.max(nowMin - depMin, 0), total);
 
-  const remaining = Math.max(0, arrMin - nowMin);
+  const pct = Math.round((elapsed / total) * 100);
+  progressPct = `${pct}%`;
+
+  const remaining = Math.max(arrMin - nowMin, 0);
   const h = Math.floor(remaining / 60);
   const m = remaining % 60;
-
-  progressPct = `${pct}% completed`;
-  remainingTxt = `${h}h ${m}m remaining`;
+  remainingTxt = `${h}h ${m}m`;
 }
 
+// 🧠 STATUS LIMPIO
 const statusTxt =
   f.status === "AIRBORNE" ? "En route" :
   f.status === "ARRIVED"  ? "Arrived" :
   "On ground";
 
-// ✅ Aircraft model fallback (quita Unknown)
+// 🛩 MODELO — FUENTE ÚNICA (runtime)
 const modelTxt =
-  (f.aircraftModel && String(f.aircraftModel).trim()) ||
   (f.model && String(f.model).trim()) ||
-  (f.type && String(f.type).trim()) ||
+  (f.aircraft && String(f.aircraft).trim()) ||
   "—";
 
+// ✈️ NÚMERO DE VUELO
 const flightTxt =
   (f.flightNumber && String(f.flightNumber).trim()) ||
   (f.flightOut && String(f.flightOut).trim()) ||
@@ -735,8 +742,8 @@ if (!marker._acsPopupBound) {
      <small>
        Aircraft: ${modelTxt}<br>
        Status: ${statusTxt}<br>
-       ${progressPct ? progressPct + "<br>" : ""}
-       ${remainingTxt ? remainingTxt : ""}
+       ${f.status === "AIRBORNE" ? `Progress: ${progressPct}<br>` : ""}
+       ${f.status === "AIRBORNE" ? `Remaining: ${remainingTxt}` : ""}
      </small>`,
     {
       autoPan: false,
