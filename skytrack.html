@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ACS SkyTrack v1 — Clean</title>
+<title>ACS SkyTrack</title>
 
 <link
   rel="stylesheet"
@@ -20,7 +20,43 @@
 </head>
 
 <body>
-<div id="map"></div>
+<body>
+
+<!-- ============================================================
+     === GLOBAL HEADER — QATAR LUXURY (EXACT HR COPY) ===========
+     ============================================================ -->
+
+<header class="acs-header">
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Bank</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="skytrack.html" class="active">SkyTrack</a>
+    <a href="forum.html">Forum</a>
+  </nav>
+
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+  </div>
+</header>
+
+<!-- ============================================================
+     === SKYTRACK MAP AREA =====================================
+     ============================================================ -->
+
+<main class="acs-main" style="padding:105px 0 0;">
+  <div id="map" style="height:calc(100vh - 105px); width:100%;"></div>
+</main>
+
+</body>
 
 <script>
 /* ============================================================
