@@ -2,20 +2,331 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>ACS SkyTrack</title>
+<title>ACS_Skytrack - Aviation Capital Simulator</title>
 
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+<!-- ======== ACS Styles ======== -->
+  <link rel="stylesheet" href="styles.css?v=3.1" />
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== PWA Manifest ======== -->
+  <link rel="manifest" href="manifest.json">
+
 
 <style>
-  body { margin:0; background:#0b1220; color:#fff; font-family:Arial }
-  #map { height:100vh; width:100vw }
-  .popup { font-size:13px; }
-  .popup b { font-size:14px; }
+/* ============================================================
+     === ACS Qatar Luxury Dashboard — Visual Redesign ===========
+   ============================================================ */
+
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
+
+/* ============================================================
+     === GLOBAL HEADER (Exact Copy from index.html) ============
+   ============================================================ */
+
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
+
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-left img {
+  height: 46px;
+}
+
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
+
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+/* ============================================================
+   === NAVIGATION — QATAR PEARL GLOW STYLE =====================
+   ============================================================ */
+
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff; 
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
+
+/* 🟢 1.3 ACS RIGHT HEADER — Support / Logout / Clock */
+  
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logout-btn:hover {
+  background: #ffb300;
+  color: #0c1f3c;
+}
+
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* SUPPORT BUTTON — Qatar Luxury */
+.support-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  backdrop-filter: blur(6px);
+  transition: 0.25s ease;
+}
+
+.support-btn:hover {
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.55);
+  color: #dfe9ff;
+}
+  
+/* ============================================================
+     === MAIN CONTENT ==========================================
+   ============================================================ */
+
+.acs-main {
+  padding: 70px 2rem 70px;
+  text-align: center;
+}
+
+.acs-main .sub {
+  margin-top: -0.4rem;
+  color: #cbd6ff;
+  font-size: 1rem;
+}
+
+/* ============================================================
+     === PREMIUM PANEL GRID ====================================
+   ============================================================ */
+
+.dashboard-grid {
+  display: grid;
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.row-business {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.row-operations {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.row-capital {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* ============================================================
+     === PANEL ==================================================
+   ============================================================ */
+
+.panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 1.6rem 1.5rem;
+  border-radius: 22px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  transition: 0.25s;
+  border: 1px solid rgba(255,179,0,0.15);
+}
+
+.panel:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+  border: 1px solid rgba(255,179,0,0.35);
+}
+
+.panel h3 {
+  font-size: 1.25rem;
+  color: #ffb300;
+  margin-bottom: 0.9rem;
+  text-shadow: 0 0 6px rgba(255,179,0,0.4);
+}
+
+.panel p {
+  color: #d7e2ff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.alert-list,
+.aircraft-list {
+  list-style: none;
+  padding: 0;
+}
+
+.alert-list li {
+  color: #ff9b00;
+}
+
+.acs-btn {
+  margin-top: 1rem;
+  background: #00a86b;
+  border: none;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.25s;
+  color: white;
+}
+
+.acs-btn:hover {
+  background: #00794f;
+}
+
+.acs-footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 50px;
+  color: #7c8bb8;
+  font-size: 0.9rem;
+}
+
+/* ============================================================
+   === WELCOME CHIPS — Qatar Luxury (Tamaño unificado) ========
+   ============================================================ */
+
+.welcome-badges {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 22px;
+  margin-bottom: 28px;
+  gap: 26px;
+}
+
+/* 👉 Todos con el MISMO tamaño (clonado del Base),
+      pero Rank y País conservan su recuadro dorado original */
+.welcome-chip {
+  padding: 5px 18px;          /* más grande que el original */
+  font-size: 0.90rem;         /* texto un poco más grande */
+  border-radius: 12px;
+  background: rgba(255,179,0,0.12);       /* recuadro dorado original */
+  border: 1px solid rgba(255,179,0,0.35); /* recuadro dorado original */
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 6px rgba(0,0,0,0.35);
+  height: 28px;
+  line-height: 28px;
+}
+
+/* CHIP BASE — Azul Qatar Royal */
+.welcome-chip.base-chip {
+  background: rgba(0, 102, 204, 0.20);
+  border: 1px solid rgba(0, 135, 255, 0.50);
+  color: #3aaaff;
+}
+  
+/* ============================================================
+   === HERO TITLE — Qatar Luxury Premium v2.3 (Balanceado) ====
+   ============================================================ */
+
+#welcomeMessage {
+  font-size: 2.2rem;               /* tamaño reducido */
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+#welcomeMessage .w-welcome {
+  background: linear-gradient(90deg, #ffe7a0, #ffb300, #ffd75a);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 14px rgba(255,190,60,0.35);
+}
+
+#welcomeMessage .w-airline {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255,255,255,0.25);
+}
+
+  
 </style>
 </head>
 
