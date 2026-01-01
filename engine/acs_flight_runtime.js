@@ -71,34 +71,31 @@
             : (typeof f.turnaround === "number" ? f.turnaround : 45);
 
 // ============================================================
-// ✈️ AIRBORNE — ABSOLUTE TIME (FASE 7A)
+// ✈️ AIRBORNE — DAILY WINDOW (FASE 7A FIX)
 // ============================================================
 
-// construir tiempos absolutos si no existen
-         
-const depAbs =
-  typeof f.depAbsMin === "number"
-    ? f.depAbsMin
-    : (typeof f.depMin === "number" ? f.depMin : null);
-
-const arrAbs =
-  typeof f.arrAbsMin === "number"
-    ? f.arrAbsMin
-    : (typeof f.arrMin === "number" ? f.arrMin : null);
-
 if (
-  typeof depAbs === "number" &&
-  typeof arrAbs === "number" &&
-  window.ACS_TIME &&
-  typeof ACS_TIME.absMin === "number"
+  typeof f.depMin === "number" &&
+  typeof f.arrMin === "number" &&
+  typeof nowMin === "number"
 ) {
-  if (ACS_TIME.absMin >= depAbs && ACS_TIME.absMin <= arrAbs) {
+  const dep = f.depMin;
+  const arr = f.arrMin;
+
+  // 🟦 ventana normal
+  if (dep <= arr && nowMin >= dep && nowMin <= arr) {
+    selected = f;
+    status = "AIRBORNE";
+    break;
+  }
+
+  // 🟦 cruce de medianoche
+  if (dep > arr && (nowMin >= dep || nowMin <= arr)) {
     selected = f;
     status = "AIRBORNE";
     break;
   }
 }
-
 
         // ARRIVED → turnaround en tierra
         if (
