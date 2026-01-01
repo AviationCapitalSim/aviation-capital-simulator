@@ -14,7 +14,20 @@
 
     if (!window.ACS_TIME || typeof ACS_TIME.minute !== "number") return;
 
-    const nowMin = (ACS_TIME.minute + 1440) % 1440;
+    // ============================================================
+// ⏱ SYNC WITH GAME CLOCK (FASE 7A FINAL FIX)
+// ============================================================
+
+const nowMin =
+  typeof window.ACS_TIME?.minute === "number"
+    ? window.ACS_TIME.minute
+    : (
+        typeof window.ACS_NOW_MIN === "number"
+          ? window.ACS_NOW_MIN
+          : null
+      );
+
+if (nowMin === null) return;
 
     let schedule = [];
     try {
