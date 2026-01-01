@@ -1,519 +1,940 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>ACS_Skytrack - Aviation Capital Simulator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACS SkyTrack - Aviation Capital Simulator</title>
 
-<!-- ======== ACS Styles ======== -->
+   <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>  
 
-  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+   <!-- ======== ACS Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">  
+  
 
-  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
-  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <style>
+    /* === SKYTRACK LOCAL STYLES (ACS Clean 2) === */
+    body {
+      background:#081530;
+      color:white;
+      font-family:"Segoe UI",sans-serif;
+      margin:0;
+    }
 
-  <!-- ======== PWA Manifest ======== -->
-  <link rel="manifest" href="manifest.json">
+    h2 {
+      color:#FFB300;
+      margin-top:6rem; /* ✅ header fijo */
+      text-align:center;
+    }
+    .sub { text-align:center; color:#ccc; margin-bottom:1rem; }
 
+    #map {
+      height:85vh;
+      width:90%;
+      border-radius:12px;
+      border:1px solid rgba(255,179,0,0.3);
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+      margin:1.5rem auto;
+    }
 
-<style>
-/* ============================================================
-     === ACS Qatar Luxury Dashboard — Visual Redesign ===========
-   ============================================================ */
+    .flight-info {
+      color:#ddd;
+      text-align:center;
+      font-size:0.95rem;
+      margin-top:0.3rem;
+    }
 
-body {
-  margin: 0;
-  background-color: #081530;
-  color: white;
-  font-family: "Poppins", sans-serif;
-}
+    .leaflet-control-attribution { color:#888 !important; }
 
-/* ============================================================
-     === GLOBAL HEADER (Exact Copy from index.html) ============
-   ============================================================ */
+    /* === Radar Marker Styles === */
+    .acs-diamond {
+      background:#0096FF;
+      width:10px;
+      height:10px;
+      transform:rotate(45deg);
+      border:1px solid white;
+      border-radius:2px;
+    }
+    .acs-label {
+      position:absolute;
+      top:-4px;
+      left:14px;
+      font-size:11px;
+      font-family:'Orbitron',monospace;
+      color:#000;
+      text-shadow:0 0 2px #fff;
+      white-space:nowrap;
+      font-weight:600;
+    }
 
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  backdrop-filter: blur(9px);
-  background: rgba(12,23,50,0.45);
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #ffb300;
-  z-index: 5000;
-}
+    footer {
+      text-align:center;
+      color:#999;
+      font-size:0.9rem;
+      padding:1rem;
+    }
 
-.acs-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.acs-left img {
-  height: 46px;
-}
-
-.acs-left h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  color: #ffb300;
-  letter-spacing: 0.5px;
-}
-
-.acs-nav {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-}
-
-/* ============================================================
-   === NAVIGATION — QATAR PEARL GLOW STYLE =====================
-   ============================================================ */
-
-.acs-nav a {
+    /* ✅ Reloj cockpit Airbus */
+    .acs-clock-header {
+      font-family:'Orbitron','Consolas',monospace;
+      color:#00ff80;
+      font-weight:bold;
+      background:rgba(0,255,128,0.08);
+      padding:0.3rem 0.8rem;
+      border-radius:6px;
+      font-size:0.9rem;
+      margin-left:1rem;
+    }
+    
+.atc-marker {
   position: relative;
-  font-size: 1rem;
-  letter-spacing: 0.4px;
-  color: #dbe4ff; 
-  text-decoration: none;
-  transition: 0.25s ease;
-  padding-bottom: 6px;
 }
 
-.acs-nav a:hover,
-.acs-nav a.active {
-  color: #ffca3a;
-  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+/* 🟦 Radar square */
+.atc-box {
+  width: 9px;
+  height: 9px;
+  background: #0b2a4a;           /* azul marino */
+  border: 1px solid #4da3ff;     /* borde radar */
+  box-sizing: border-box;
+  box-shadow: 0 0 4px rgba(77,163,255,0.6);
 }
 
-.acs-nav a.active::after,
-.acs-nav a:hover::after {
-  content: "";
+/* 🔢 Flight number */
+.atc-label {
   position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #ffb300, #ffe7a0);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+  top: -14px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #111;                   /* negro/gris oscuro */
+  background: rgba(255,255,255,0.85);
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 }
+    
+/* ============================================================
+   🟦 ACS SKYTRACK — RADAR DOT (SIGNATURE)
+   ============================================================ */
+.skytrack-aircraft-dot {
+  width: 7px;
+  height: 7px;
+  background: #0b2a4a;                 /* azul radar profundo */
+  border: 1px solid #4da3ff;           /* azul ATC */
+  border-radius: 2px;                  /* cuadrado técnico */
+  box-shadow:
+    0 0 3px rgba(77,163,255,0.55),
+    inset 0 0 2px rgba(255,255,255,0.15);
+}
+/* ============================================================
+   🟦 ACS SKYTRACK — HITBOX & ATC CHIP
+   ============================================================ */
 
-/* 🟢 1.3 ACS RIGHT HEADER — Support / Logout / Clock */
-  
-.acs-right {
+.acs-hitbox {
+  width: 22px;               /* ⬅️ área de click */
+  height: 22px;
   display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.logout-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
-
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
-}
-
-/* SUPPORT BUTTON — Qatar Luxury */
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
-  transition: 0.25s ease;
-}
-
-.support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-  color: #dfe9ff;
-}
-  
-/* ============================================================
-     === MAIN CONTENT ==========================================
-   ============================================================ */
-
-.acs-main {
-  padding: 70px 2rem 70px;
-  text-align: center;
-}
-
-.acs-main .sub {
-  margin-top: -0.4rem;
-  color: #cbd6ff;
-  font-size: 1rem;
-}
-
-/* ============================================================
-     === PREMIUM PANEL GRID ====================================
-   ============================================================ */
-
-.dashboard-grid {
-  display: grid;
-  gap: 2rem;
-  margin-top: 4rem;
-}
-
-.row-business {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-}
-
-.row-operations {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-}
-
-.row-capital {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
-
-/* ============================================================
-     === PANEL ==================================================
-   ============================================================ */
-
-.panel {
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  padding: 1.6rem 1.5rem;
-  border-radius: 22px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.4);
-  transition: 0.25s;
-  border: 1px solid rgba(255,179,0,0.15);
-}
-
-.panel:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
-  border: 1px solid rgba(255,179,0,0.35);
-}
-
-.panel h3 {
-  font-size: 1.25rem;
-  color: #ffb300;
-  margin-bottom: 0.9rem;
-  text-shadow: 0 0 6px rgba(255,179,0,0.4);
-}
-
-.panel p {
-  color: #d7e2ff;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.alert-list,
-.aircraft-list {
-  list-style: none;
-  padding: 0;
-}
-
-.alert-list li {
-  color: #ff9b00;
-}
-
-.acs-btn {
-  margin-top: 1rem;
-  background: #00a86b;
-  border: none;
-  padding: 0.7rem 1.1rem;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.25s;
-  color: white;
-}
-
-.acs-btn:hover {
-  background: #00794f;
-}
-
-.acs-footer {
-  text-align: center;
-  padding: 20px;
-  margin-top: 50px;
-  color: #7c8bb8;
-  font-size: 0.9rem;
-}
-
-/* ============================================================
-   === WELCOME CHIPS — Qatar Luxury (Tamaño unificado) ========
-   ============================================================ */
-
-.welcome-badges {
-  display: flex;
   justify-content: center;
-  align-items: center;
-  margin-top: 22px;
-  margin-bottom: 28px;
-  gap: 26px;
+  pointer-events: auto;      /* ⬅️ crítico */
 }
 
-/* 👉 Todos con el MISMO tamaño (clonado del Base),
-      pero Rank y País conservan su recuadro dorado original */
-.welcome-chip {
-  padding: 5px 18px;          /* más grande que el original */
-  font-size: 0.90rem;         /* texto un poco más grande */
-  border-radius: 12px;
-  background: rgba(255,179,0,0.12);       /* recuadro dorado original */
-  border: 1px solid rgba(255,179,0,0.35); /* recuadro dorado original */
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 0 6px rgba(0,0,0,0.35);
-  height: 28px;
-  line-height: 28px;
+.skytrack-aircraft-dot {
+  pointer-events: none;      /* ⬅️ evita perder click */
 }
 
-/* CHIP BASE — Azul Qatar Royal */
-.welcome-chip.base-chip {
-  background: rgba(0, 102, 204, 0.20);
-  border: 1px solid rgba(0, 135, 255, 0.50);
-  color: #3aaaff;
-}
-  
-/* ============================================================
-   === HERO TITLE — Qatar Luxury Premium v2.3 (Balanceado) ====
-   ============================================================ */
-
-#welcomeMessage {
-  font-size: 2.2rem;               /* tamaño reducido */
-  font-weight: 700;
-  margin-bottom: 0.3rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  text-align: center;
+/* 🏷 ATC flight number chip */
+.acs-atc-chip {
+  position: absolute;
+  top: -14px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #111;
+  background: rgba(255,255,255,0.85);
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  pointer-events: none;
 }
 
-#welcomeMessage .w-welcome {
-  background: linear-gradient(90deg, #ffe7a0, #ffb300, #ffd75a);
-  -webkit-background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 14px rgba(255,190,60,0.35);
-}
-
-#welcomeMessage .w-airline {
-  color: #ffffff;
-  text-shadow: 0 0 12px rgba(255,255,255,0.25);
-}
- body { margin:0; background:#0b1220; color:#fff; font-family:Arial }
-  #map { height:100vh; width:100vw }
-  .popup { font-size:13px; }
-  .popup b { font-size:14px; }
-  
 </style>
 </head>
 
 <body>
+  <!-- ===== HEADER ===== -->
+  <header class="acs-header">
+    <div class="acs-logo">
+      <img src="acs_logo.png" alt="ACS Logo" />
+      <h1>Aviation Capital Simulator</h1>
+    </div>
 
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="skytrack.html" class="active">SkyTrack</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+      <a href="support.html">Support</a>
+    </nav>
+
+    <div class="acs-auth">
+      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
+    </div>
+    
+  
+    
+    <!-- ✅ Reloj cockpit Airbus -->
+    
+    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="acs-main">
+    <h2>ACS SkyTrack — Live Fleet View</h2>
+    <p class="sub">Active flight tracking for your airline.</p>
+    
+    <!-- ✅ SKYTRACK MAP CONTAINER -->
+    <div id="map"></div>
+    <div class="flight-info" id="flightStatus">Waiting for active flight…</div>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+
+    
 <!-- ============================================================
-     === GLOBAL HEADER — QATAR LUXURY (EXACT HR COPY) ===========
+     ⏱ TIME ENGINE
      ============================================================ -->
-
-<header class="acs-header">
-  <div class="acs-left">
-    <img src="acs_logo.png" alt="ACS Logo">
-    <h1>Aviation Capital Simulator</h1>
-  </div>
-
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="finance.html">Bank</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html">Routes</a>
-    <a href="skytrack.html" class="active">SkyTrack</a>
-    <a href="forum.html">Forum</a>
-  </nav>
-
-  <div class="acs-right">
-    <a href="support.html" class="support-btn">Support</a>
-    <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
-  </div>
-</header>
-
-<!-- ============================================================
-     === SKYTRACK MAP AREA =====================================
-     ============================================================ -->
-
-<main class="acs-main" style="padding:105px 0 0;">
-  <div id="map" style="height:calc(100vh - 105px); width:100%;"></div>
-</main>
-
-</body>
+<script src="time_engine.js"></script>
 
 <script>
+  
 /* ============================================================
-   🟦 SKYTRACK v1 — CLEAN SCHEDULE (TEST DATA)
+   ⏱ SKYTRACK LOCAL TIME ENGINE (FALLBACK)
+   ------------------------------------------------------------
+   Se usa SOLO si no existe ACS_TIME global
    ============================================================ */
+(function () {
 
-const SKYTRACK_SCHEDULE = [
-  {
-    flightNumber: "WM101",
-    model: "DC-3",
-    registration: "EC-FDF",
-    origin: "LEMD",
-    destination: "LEBL",
-    depMin: 600,   // 10:00
-    arrMin: 780    // 13:00
-  },
-  {
-    flightNumber: "WM102",
-    model: "DC-5",
-    registration: "EC-ZPF",
-    origin: "LEBL",
-    destination: "LEMD",
-    depMin: 840,   // 14:00
-    arrMin: 1020   // 17:00
+  if (window.ACS_TIME) return;
+
+  let startMinute = 0;
+
+  try {
+    const exec = JSON.parse(localStorage.getItem("ACS_FLIGHT_EXEC"));
+    if (exec && typeof exec.depMin === "number") {
+      startMinute = Math.max(exec.depMin - 10, 0);
+    }
+  } catch {}
+
+  window.ACS_TIME = {
+    day: "sun",
+    minute: startMinute
+  };
+
+  setInterval(() => {
+    window.ACS_TIME.minute++;
+
+    if (window.ACS_TIME.minute >= 1440) {
+      window.ACS_TIME.minute = 0;
+    }
+  }, 1000);
+
+  console.log(
+  "⏱ SkyTrack ACS_TIME synced at minute:",
+  window.ACS_TIME && typeof window.ACS_TIME.minute === "number"
+    ? window.ACS_TIME.minute
+    : startMinute
+);
+
+})();
+
+</script>
+
+<!-- ============================================================
+     🌍 WORLD ENGINE (CONTENEDOR)
+     ============================================================ -->
+<script src="engine/acs_world_engine.js?v=1.0"></script>
+
+<!-- ============================================================
+     🌍 WORLD AIRPORT DATA (POR CONTINENTE)
+     ============================================================ -->
+<script src="engine/airports/world_airports_na.js?v=1.0"></script>
+<script src="engine/airports/world_airports_sa.js?v=1.0"></script>
+<script src="engine/airports/world_airports_eu.js?v=1.0"></script>
+<script src="engine/airports/world_airports_me.js?v=1.0"></script>
+<script src="engine/airports/world_airports_af.js?v=1.0"></script>
+<script src="engine/airports/world_airports_as.js?v=1.0"></script>
+<script src="engine/airports/world_airports_oc.js?v=1.0"></script>
+
+<!-- ============================================================
+     🧭 SKYTRACK AIRPORT ADAPTER (LIGERO, ICAO → COORDS)
+     ============================================================ -->
+<script src="engine/skytrack/skytrack_airport_adapter.js?v=1.0"></script>
+
+<!-- ============================================================
+     ✈️ FLIGHT RUNTIME (LIVE FLIGHTS)
+     ============================================================ -->
+<script src="engine/acs_flight_runtime.js"></script>
+  
+<script>
+  
+/* ============================================================
+   ⏱ SKYTRACK — RESUME GLOBAL TIME ENGINE
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    const savedClock = localStorage.getItem("ACS_CLOCK_STATE");
+    if (savedClock) {
+      const clockEl = document.getElementById("acs-clock");
+      if (clockEl) {
+        clockEl.innerText = savedClock;
+      }
+    }
+  } catch (e) {
+    console.warn("SkyTrack clock resume failed", e);
   }
-];
-
+});
+</script>
+  
+ <script>
+  
 /* ============================================================
-   🌍 AIRPORT DATABASE (MINIMAL)
+   🧭 SKYTRACK — BASE RESOLVER (SAME AS DASHBOARD)
    ============================================================ */
+    
+function resolveACSBase() {
 
-const AIRPORTS = {
-  LEMD: { lat: 40.4722, lng: -3.5608, name: "Madrid" },
-  LEBL: { lat: 41.2974, lng: 2.0833,  name: "Barcelona" }
-};
+  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  let base = activeUser.base || {};
 
-/* ============================================================
-   ⏱ TIME (REAL CLOCK — SIMPLE)
-   ============================================================ */
+  const clean = v => (!v || v === "undefined") ? "" : v;
 
-function getNowMin() {
-  const d = new Date();
-  return d.getHours() * 60 + d.getMinutes();
+  base.icao    = clean(base.icao);
+  base.city    = clean(base.city);
+  base.country = clean(base.country);
+  base.name    = clean(base.name);
+
+  // 🔁 Fallback legacy (7 continent HTMLs)
+  if (!base.icao) {
+    base.icao    = clean(localStorage.getItem("ACS_baseICAO"));
+    base.city    = clean(localStorage.getItem("ACS_baseCity"));
+    base.country = clean(localStorage.getItem("ACS_baseCountry"));
+    base.name    = clean(localStorage.getItem("ACS_baseName"));
+  }
+
+  if (!base.icao) return null;
+
+  // 🔒 Normalizar y persistir (igual que dashboard)
+  activeUser.base = {
+    icao: base.icao.toUpperCase(),
+    city: base.city,
+    country: base.country,
+    name: base.name
+  };
+
+  localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+
+  return activeUser.base;
 }
-
+   
 /* ============================================================
-   ✈️ RUNTIME v1 — MINIMAL
+   🌍 GREAT CIRCLE INTERPOLATION (SKYTRACK LOCAL)
    ============================================================ */
 
-function buildLiveFlights() {
+function interpolateGC(lat1, lon1, lat2, lon2, t) {
+  const toRad = d => d * Math.PI / 180;
+  const toDeg = r => r * 180 / Math.PI;
 
-  const nowMin = getNowMin();
-  const flights = [];
+  const φ1 = toRad(lat1);
+  const λ1 = toRad(lon1);
+  const φ2 = toRad(lat2);
+  const λ2 = toRad(lon2);
 
-  SKYTRACK_SCHEDULE.forEach(f => {
+  const sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1);
+  const sinφ2 = Math.sin(φ2), cosφ2 = Math.cos(φ2);
 
-    const o = AIRPORTS[f.origin];
-    const d = AIRPORTS[f.destination];
-    if (!o || !d) return;
+  const Δλ = λ2 - λ1;
 
-    let status = "GROUND";
-    let lat = o.lat;
-    let lng = o.lng;
+  const a = Math.sin((φ2 - φ1) / 2) ** 2 +
+            cosφ1 * cosφ2 * Math.sin(Δλ / 2) ** 2;
 
-    // ventana normal
-    if (f.depMin <= f.arrMin && nowMin >= f.depMin && nowMin <= f.arrMin) {
-      status = "AIRBORNE";
+  const δ = 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+
+  if (δ === 0) {
+    return { lat: lat1, lng: lon1 };
+  }
+
+  const A = Math.sin((1 - t) * δ) / Math.sin(δ);
+  const B = Math.sin(t * δ) / Math.sin(δ);
+
+  const x = A * cosφ1 * Math.cos(λ1) + B * cosφ2 * Math.cos(λ2);
+  const y = A * cosφ1 * Math.sin(λ1) + B * cosφ2 * Math.sin(λ2);
+  const z = A * sinφ1 + B * sinφ2;
+
+  const φi = Math.atan2(z, Math.sqrt(x * x + y * y));
+  const λi = Math.atan2(y, x);
+
+  return {
+    lat: toDeg(φi),
+    lng: toDeg(λi)
+  };
+}
+   
+/* ============================================================
+   🛰 SKYTRACK — MAP INIT + RENDER ACTIVE FLIGHT (SINGLE SOURCE)
+   ============================================================ */
+
+let map = null;
+let planeMarker = null;   // (se mantiene aunque ya no se use)
+let flightTrace = null;   // (se mantiene aunque ya no se use)
+
+/* ============================================================
+   🛰 SKYTRACK — MAP INIT (CENTERED AT BASE)
+   ============================================================ */
+    
+function initSkyTrackMap() {
+  if (map) return; // ✅ prevent double init
+
+  // 🔹 fallback seguro
+  let centerLat = 33.0;
+  let centerLng = 68.0;
+  let zoom = 5;
+
+  const base = resolveACSBase();
+
+  // 🔒 Intento 1: centrar inmediatamente si ya está todo cargado
+  if (base?.icao && window.WorldAirportsACS) {
+    const baseAirport = Object.values(WorldAirportsACS).flat()
+      .find(a => a.icao === base.icao);
+
+    if (baseAirport && typeof baseAirport.latitude === "number" && typeof baseAirport.longitude === "number") {
+      centerLat = baseAirport.latitude;
+      centerLng = baseAirport.longitude;
+      zoom = 6;
     }
+  }
 
-    // cruce medianoche (por si acaso)
-    if (f.depMin > f.arrMin && (nowMin >= f.depMin || nowMin <= f.arrMin)) {
-      status = "AIRBORNE";
-    }
+  // 🔹 Init map
+  map = L.map("map").setView([centerLat, centerLng], zoom);
+  window.ACS_SKYTRACK_MAP = map;
+  
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 10,
+    attribution: "&copy; OpenStreetMap — ACS SkyTrack",
+  }).addTo(map);
 
-    if (status === "AIRBORNE") {
-      const total = f.arrMin - f.depMin;
-      const elapsed = Math.min(Math.max(nowMin - f.depMin, 0), total);
-      const p = elapsed / total;
+  flightTrace = L.polyline([], {
+    weight: 2.2,
+    opacity: 0.85,
+  }).addTo(map);
 
-      lat = o.lat + (d.lat - o.lat) * p;
-      lng = o.lng + (d.lng - o.lng) * p;
-    }
+  // ============================================================
+  // 🧭 AJUSTE CLAVE — RECENTRAR EN BASE CUANDO TODO ESTÉ LISTO
+  // ============================================================
 
-    if (nowMin > f.arrMin) {
-      lat = d.lat;
-      lng = d.lng;
-    }
+  setTimeout(() => {
+    if (!map) return;
 
-    flights.push({
-      flightNumber: f.flightNumber,
-      model: f.model,
-      registration: f.registration,
+    const baseLater = resolveACSBase();
+    if (!baseLater?.icao || !window.WorldAirportsACS) return;
+
+    const baseAirportLater = Object.values(WorldAirportsACS).flat()
+      .find(a => a.icao === baseLater.icao);
+
+    if (!baseAirportLater ||
+        typeof baseAirportLater.latitude !== "number" ||
+        typeof baseAirportLater.longitude !== "number") return;
+
+    map.setView(
+      [baseAirportLater.latitude, baseAirportLater.longitude],
+      6
+    );
+
+    console.log("🧭 SkyTrack centered at base:", baseLater.icao);
+
+  }, 300); // 🔹 delay corto, seguro, no bloqueante
+}
+   
+// ============================================================
+// ✈️ SKYTRACK VISUAL LAYERS
+// ============================================================
+
+const liveFlightMarkers = {};
+const liveFlightTraces  = {};
+const liveFlightPlans   = {};
+
+/* ============================================================
+   🛬 BUILD GROUND FLEET (STATIC FALLBACK)
+   ============================================================ */
+function buildGroundFleetFromSchedule() {
+
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch (e) {
+    return [];
+  }
+
+  const groundFleet = [];
+
+  items.forEach(f => {
+    if (!f || !f.aircraftId || !f.origin) return;
+
+    const apt = (typeof getSkyTrackAirportByICAO === "function")
+      ? getSkyTrackAirportByICAO(f.origin)
+      : null;
+
+    if (!apt || typeof apt.lat !== "number") return;
+
+    groundFleet.push({
+      aircraftId: f.aircraftId,
       origin: f.origin,
-      destination: f.destination,
-      lat,
-      lng,
-      status
+      destination: f.destination || "",
+      lat: apt.lat,
+      lng: apt.lng,
+      status: "ground"
     });
   });
 
-  return flights;
+  return groundFleet;
 }
 
 /* ============================================================
-   🗺 MAP
+   🟦 SKYTRACK — AIRCRAFT ICON (BLUE SQUARE)
    ============================================================ */
-
-const map = L.map("map").setView([41, 2], 6);
-
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "&copy; OpenStreetMap"
-}).addTo(map);
-
-const markers = {};
+const SKYTRACK_AIRCRAFT_ICON = L.divIcon({
+  className: "skytrack-aircraft-icon",
+  iconSize: [8, 8],          // 🔹 tamaño visual REAL
+  iconAnchor: [4, 4],
+  popupAnchor: [0, -10],
+  html: `
+    <div class="acs-hitbox">
+      <div class="skytrack-aircraft-dot"></div>
+    </div>
+  `
+});
 
 /* ============================================================
-   🔄 RENDER LOOP
+   🟦 FASE 7.1 — BUILD WEEKLY FLIGHT QUEUE (BY AIRCRAFT)
    ============================================================ */
 
-function render() {
+window.ACS_FLIGHT_QUEUE = {};
 
-  const flights = buildLiveFlights();
+if (Array.isArray(window.ACS_LIVE_FLIGHTS)) {
 
-  flights.forEach(f => {
+  window.ACS_LIVE_FLIGHTS.forEach(f => {
 
-    if (!markers[f.flightNumber]) {
-      markers[f.flightNumber] = L.marker([f.lat, f.lng]).addTo(map);
+    if (!f.aircraftId || typeof f.depMin !== "number") return;
+
+    if (!window.ACS_FLIGHT_QUEUE[f.aircraftId]) {
+      window.ACS_FLIGHT_QUEUE[f.aircraftId] = [];
     }
 
-    markers[f.flightNumber].setLatLng([f.lat, f.lng]);
+    window.ACS_FLIGHT_QUEUE[f.aircraftId].push(f);
+  });
 
-    markers[f.flightNumber].bindPopup(`
-      <div class="popup">
-        <b>${f.flightNumber}</b><br>
-        ${f.model} · ${f.registration}<br>
-        ${f.origin} → ${f.destination}<br>
-        Status: ${f.status}
-      </div>
-    `);
+  // Ordenar vuelos por hora de salida (depMin)
+  Object.keys(window.ACS_FLIGHT_QUEUE).forEach(acId => {
+    window.ACS_FLIGHT_QUEUE[acId].sort((a, b) => a.depMin - b.depMin);
+  });
+
+}
+
+console.log(
+  "[FASE 7.1] ACS_FLIGHT_QUEUE READY",
+  Object.keys(window.ACS_FLIGHT_QUEUE).map(id => ({
+    aircraftId: id,
+    flights: window.ACS_FLIGHT_QUEUE[id].length
+  }))
+);
+   
+/* ============================================================
+   🟦 S1 — SKYTRACK RENDER LIVE FLIGHTS (FED & STABLE)
+   ------------------------------------------------------------
+   - Consumes ACS_LIVE_FLIGHTS[]
+   - Supports ground + enroute
+   - 1 marker per aircraftId
+   - No legacy paths
+   ============================================================ */
+function renderLiveFlights() {
+
+// 🧹 HARD RESET IF NO REAL FLIGHTS
+if (!Array.isArray(window.ACS_LIVE_FLIGHTS) || window.ACS_LIVE_FLIGHTS.length === 0) {
+
+  if (window.SKYTRACK_MARKERS) {
+    Object.values(window.SKYTRACK_MARKERS).forEach(m => {
+      try { map.removeLayer(m); } catch(e){}
+    });
+  }
+
+  window.SKYTRACK_MARKERS = {};
+  return;
+}
+  
+  if (!map) return;
+
+  const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
+    ? window.ACS_TIME.minute
+    : null;
+  if (nowMin === null) return;
+
+  // ============================================================
+  // ✈️ SOURCE: LIVE FLIGHTS OR GROUND FALLBACK
+  // ============================================================
+
+  let flights = [];
+  try {
+    flights = Array.isArray(window.ACS_LIVE_FLIGHTS)
+      ? window.ACS_LIVE_FLIGHTS
+      : [];
+  } catch (e) {
+    flights = [];
+  }
+
+  // 🛬 FALLBACK — NO ACTIVE FLIGHTS → SHOW GROUND FLEET
+  if (flights.length === 0 && typeof buildGroundFleetFromSchedule === "function") {
+    flights = buildGroundFleetFromSchedule();
+  }
+
+  if (!Array.isArray(flights) || flights.length === 0) return;
+
+  // Marker registry (persist between ticks)
+  window.SKYTRACK_MARKERS = window.SKYTRACK_MARKERS || {};
+  const activeIds = new Set();
+
+  // ============================================================
+  // 🔁 RENDER EACH FLIGHT
+  // ============================================================
+  flights.forEach(f => {
+    if (!f || !f.aircraftId || !f.origin) return;
+
+    const id = f.aircraftId.toString();
+    activeIds.add(id);
+
+    // ============================================================
+    // 📍 RESOLVE POSITION
+    // ============================================================
+   
+    let lat = f.lat;
+    let lng = f.lng;
+
+// ============================================================
+// ✈️ SKYTRACK — TIME BASED INTERPOLATION (CRITICAL)
+// ============================================================
+
+if (typeof lat !== "number" || typeof lng !== "number") {
+
+  const o = getSkyTrackAirportByICAO(f.origin);
+  const d = getSkyTrackAirportByICAO(f.destination);
+
+  if (!o || !d) return;
+
+  // Required timing
+  const depMin = f.depMin ?? f.departureMin;
+  const arrMin = f.arrMin ?? f.arrivalMin;
+
+  if (typeof depMin !== "number" || typeof arrMin !== "number") {
+    lat = o.lat;
+    lng = o.lng;
+  } else {
+    const total = arrMin - depMin;
+    const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
+    const p = total > 0 ? elapsed / total : 0;
+
+    lat = o.lat + (d.lat - o.lat) * p;
+    lng = o.lng + (d.lng - o.lng) * p;
+  }
+}
+
+// ============================================================
+// ✈️ CREATE / UPDATE MARKER
+// ============================================================
+
+let marker = window.SKYTRACK_MARKERS[id];
+
+if (!marker) {
+  marker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      className: "acs-atc-marker",
+      iconSize: [8, 8],
+      iconAnchor: [4, 4],
+      html: `
+        <div class="acs-hitbox">
+          <div class="skytrack-aircraft-dot"></div>
+          <div class="acs-atc-chip">
+            ${f.flightNumber || f.flightOut || ""}
+          </div>
+        </div>
+      `
+    })
+  }).addTo(map);
+
+  window.SKYTRACK_MARKERS[id] = marker;
+} else {
+  marker.setLatLng([lat, lng]);
+}
+
+// ============================================================
+// 🧾 POPUP (FR24 STYLE — CLEAN)
+// ============================================================
+
+const depMin = f.depMin ?? f.departureMin;
+const arrMin = f.arrMin ?? f.arrivalMin;
+
+let progressPct = "";
+let remainingTxt = "";
+
+// ✅ SAFE ONLY: si no hay tiempos válidos, no muestra números raros
+if (typeof depMin === "number" && typeof arrMin === "number" && arrMin > depMin && typeof nowMin === "number") {
+  const total = arrMin - depMin;
+  const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
+  const pct = Math.round((elapsed / total) * 100);
+
+  const remaining = Math.max(0, arrMin - nowMin);
+  const h = Math.floor(remaining / 60);
+  const m = remaining % 60;
+
+  progressPct = `${pct}% completed`;
+  remainingTxt = `${h}h ${m}m remaining`;
+}
+
+const statusTxt =
+  f.status === "AIRBORNE" ? "En route" :
+  f.status === "ARRIVED"  ? "Arrived" :
+  "On ground";
+
+// ✅ Aircraft model fallback (quita Unknown)
+const modelTxt =
+  (f.aircraftModel && String(f.aircraftModel).trim()) ||
+  (f.model && String(f.model).trim()) ||
+  (f.type && String(f.type).trim()) ||
+  "—";
+
+const flightTxt =
+  (f.flightNumber && String(f.flightNumber).trim()) ||
+  (f.flightOut && String(f.flightOut).trim()) ||
+  "FLIGHT";
+
+if (!marker._acsPopupBound) {
+  marker.bindPopup(
+    `<b>${flightTxt}</b><br>
+     ${f.origin} → ${f.destination}<br>
+     <small>
+       Aircraft: ${modelTxt}<br>
+       Status: ${statusTxt}<br>
+       ${progressPct ? progressPct + "<br>" : ""}
+       ${remainingTxt ? remainingTxt : ""}
+     </small>`,
+    {
+      autoPan: false,
+      closeOnClick: false,
+      autoClose: false
+    }
+  );
+
+  marker._acsPopupBound = true;
+}
+
+});
+
+  // ============================================================
+  // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
+  // ============================================================
+
+  Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
+    if (!activeIds.has(id)) {
+      map.removeLayer(window.SKYTRACK_MARKERS[id]);
+      delete window.SKYTRACK_MARKERS[id];
+    }
   });
 }
 
-render();
-setInterval(render, 60000);
+  // ------------------------------------------------------------
+  // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
+  // ------------------------------------------------------------
+  function createATCMarkerIcon(f) {
+    const label = (f.flightOut || f.aircraftId || "").toString();
+    return L.divIcon({
+      className: "atc-marker",
+      html: `
+        <div class="atc-box"></div>
+        <div class="atc-label">${label}</div>
+      `,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+  }
+
+  // ------------------------------------------------------------
+  // 🧹 REMOVE MARKERS NOT ACTIVE ANYMORE
+  // ------------------------------------------------------------
+   
+  Object.keys(liveFlightMarkers).forEach(id => {
+
+  if (!activeIds.has(id)) {
+
+    if (liveFlightMarkers[id]) {
+      map.removeLayer(liveFlightMarkers[id]);
+      delete liveFlightMarkers[id];
+    }
+
+    if (liveFlightTraces[id]) {
+      map.removeLayer(liveFlightTraces[id]);
+      delete liveFlightTraces[id];
+    }
+
+  }
+
+});
+
+/* ============================================================
+   ⏱ SKYTRACK — INIT + TIME SYNC
+   ============================================================ */
+   
+  document.addEventListener("DOMContentLoaded", () => {
+  initSkyTrackMap();
+
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(renderLiveFlights);
+  }
+});
+
+/* ============================================================
+   🧭 SKYTRACK — GET BASE (ACS OFFICIAL)
+   ============================================================ */
+   
+function getACSBase(){
+  try {
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "null");
+    return user?.base || null;
+  } catch {
+    return null;
+  }
+}
+
+/* ============================================================
+   🧭 SKYTRACK — CENTER MAP AT BASE (SAFE)
+   ============================================================ */
+   
+function centerMapAtBase(){
+  if (!map) return;
+
+  const base = getACSBase();
+  if (!base || !base.icao) return;
+
+  // WorldAirportsACS debe estar cargado
+  if (!window.WorldAirportsACS) {
+    console.warn("⚠ WorldAirportsACS not loaded yet — cannot center at base");
+    return;
+  }
+
+  const baseAirport = Object.values(WorldAirportsACS).flat()
+    .find(a => a.icao === base.icao);
+
+  if (!baseAirport || typeof baseAirport.latitude !== "number" || typeof baseAirport.longitude !== "number") {
+    console.warn("⚠ Base airport not found in WorldAirportsACS:", base.icao);
+    return;
+  }
+
+  map.setView([baseAirport.latitude, baseAirport.longitude], 6);
+  console.log("🧭 SkyTrack centered at base:", base.icao);
+}
+
+    
+function renderActiveFlight() {
+  try {
+    const execRaw = localStorage.getItem("ACS_FLIGHT_EXEC");
+    if (!execRaw) {
+      const st = document.getElementById("flightStatus");
+      if (st) st.textContent = "🛰 No active flight (ACS_FLIGHT_EXEC not found).";
+      return;
+    }
+
+    const exec = JSON.parse(execRaw);
+    if (exec.currentLat == null || exec.currentLng == null) return;
+
+    // ✅ create marker once
+    if (!planeMarker) {
+      const icon = L.divIcon({
+        html: `
+          <div class="acs-diamond"></div>
+          <div class="acs-label">${exec.aircraftId || "AC"}</div>
+        `,
+        className: "acs-plane",
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      });
+
+      planeMarker = L.marker([exec.currentLat, exec.currentLng], { icon }).addTo(map);
+    }
+
+    planeMarker.setLatLng([exec.currentLat, exec.currentLng]);
+    if (flightTrace) flightTrace.addLatLng([exec.currentLat, exec.currentLng]);
+
+    // ✅ status line
+    const st = document.getElementById("flightStatus");
+    if (st) {
+      st.textContent = `✅ Tracking: ${exec.aircraftId || "AC"} — ${exec.currentLat.toFixed(3)}, ${exec.currentLng.toFixed(3)}`;
+    }
+  } catch (e) {
+    console.error("SkyTrack renderActiveFlight error:", e);
+  }
+}
+
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
 </script>
+    
+<script>
+  
+/* ============================================================
+   🕐 SKYTRACK INIT
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* ============================================================
+     🛰 READ ACTIVE FLIGHT FROM SCHEDULE (OPTIONAL)
+     ============================================================ */
+
+  const activeFlightRaw = localStorage.getItem("ACS_ACTIVE_FLIGHT");
+
+  if (!activeFlightRaw) {
+    console.log("🛰 SkyTrack: No active flight");
+  } else {
+    try {
+      JSON.parse(activeFlightRaw);
+    } catch (e) {
+      console.warn("⚠️ Invalid ACS_ACTIVE_FLIGHT");
+    }
+  }
+
+  /* ============================================================
+     ⏱ START TIME ENGINE
+     ============================================================ */
+
+  if (typeof ACS_startTimeEngine === "function") {
+    ACS_startTimeEngine();
+  }
+
+}); // 🔴 ESTE CIERRE ES CRÍTICO — NO QUITAR
+
+</script>
+
 </body>
 </html>
