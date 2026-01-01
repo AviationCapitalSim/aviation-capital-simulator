@@ -1,16 +1,14 @@
 /* ============================================================
-   🟦 ACS SKYTRACK — MINIMAL RUNTIME v1 (FASE 2)
-   Objetivo:
-   - Leer scheduleItems
-   - Mostrar TODOS los aviones
-   - Si vuelan → AIRBORNE
-   - Si no → GROUND
+   🟦 ACS SKYTRACK — RUNTIME v3 (FASE 4)
+   - FR24 24/7
+   - Ground → Airborne → Arrived → Ground (turnaround)
+   - Turnaround normal / optimizado desde Schedule Table
    - Nunca desaparecen
    ============================================================ */
 
 (function () {
 
-  console.log("🟢 ACS Minimal Runtime v1 — ACTIVE");
+  console.log("🟢 ACS Runtime v3 — FASE 4 ACTIVE");
 
   function updateWorldFlights() {
 
@@ -32,7 +30,9 @@
       return;
     }
 
-    // Agrupar por aircraftId
+    /* --------------------------------------------------------
+       Agrupar vuelos por avión
+       -------------------------------------------------------- */
     const byAircraft = {};
     schedule.forEach(f => {
       if (!f?.aircraftId || !f.origin || !f.destination) return;
@@ -40,33 +40,59 @@
       byAircraft[f.aircraftId].push(f);
     });
 
-    // Resolver aeropuerto
+    /* --------------------------------------------------------
+       Resolver aeropuerto
+       -------------------------------------------------------- */
     function resolveAirport(icao) {
       if (!icao || !window.WorldAirportsACS) return null;
-      return Object.values(WorldAirportsACS).flat().find(a => a.icao === icao) || null;
+      return Object.values(WorldAirportsACS)
+        .flat()
+        .find(a => a?.icao === icao) || null;
     }
 
+    /* --------------------------------------------------------
+       Lógica por avión (rotación real)
+       -------------------------------------------------------- */
     Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
 
-      // ordenar por salida
       flights.sort((a, b) => (a.depMin ?? 0) - (b.depMin ?? 0));
 
-      let activeFlight = null;
+      let selected = flights[0];
+      let status = "GROUND";
 
-      for (const f of flights) {
-        if (
-          typeof f.depMin === "number" &&
-          typeof f.arrMin === "number" &&
-          nowMin >= f.depMin &&
-          nowMin <= f.arrMin
-        ) {
-          activeFlight = f;
+      for (let i = 0; i < flights.length; i++) {
+
+        const f = flights[i];
+        if (typeof f.depMin !== "number" || typeof f.arrMin !== "number") continue;
+
+        const turnaround =
+          typeof f.turnaroundMin === "number"
+            ? f.turnaroundMin
+            : (typeof f.turnaround === "number" ? f.turnaround : 45);
+
+        // AIRBORNE
+        if (nowMin >= f.depMin && nowMin <= f.arrMin) {
+          selected = f;
+          status = "AIRBORNE";
           break;
         }
-      }
 
-      const selected = activeFlight || flights[0];
-      const status = activeFlight ? "AIRBORNE" : "GROUND";
+        // ARRIVED → turnaround en tierra
+        if (
+          nowMin > f.arrMin &&
+          nowMin <= f.arrMin + turnaround
+        ) {
+          selected = f;
+          status = "GROUND";
+          break;
+        }
+
+        // POST-TURNAROUND → esperar próximo vuelo
+        if (nowMin > f.arrMin + turnaround) {
+          selected = f;
+          status = "GROUND";
+        }
+      }
 
       const o = resolveAirport(selected.origin);
       const d = resolveAirport(selected.destination);
@@ -77,22 +103,33 @@
 
       if (status === "AIRBORNE") {
         const p = Math.min(
-          Math.max((nowMin - selected.depMin) / (selected.arrMin - selected.depMin), 0),
+          Math.max(
+            (nowMin - selected.depMin) /
+            (selected.arrMin - selected.depMin),
+            0
+          ),
           1
         );
         lat = o.lat + (d.lat - o.lat) * p;
         lng = o.lng + (d.lng - o.lng) * p;
       }
 
+      if (status === "GROUND" && nowMin > selected.arrMin) {
+        lat = d.lat;
+        lng = d.lng;
+      }
+
       liveFlights.push({
-        aircraftId   : aircraftId,
+        aircraftId,
         model        : selected.modelKey || selected.aircraft || null,
         flightNumber : selected.flightNumber || null,
         origin       : selected.origin,
         destination  : selected.destination,
         lat,
         lng,
-        status
+        status,
+        depMin       : selected.depMin,
+        arrMin       : selected.arrMin
       });
 
     });
@@ -100,12 +137,17 @@
     window.ACS_LIVE_FLIGHTS = liveFlights;
 
     try {
-      localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
+      localStorage.setItem(
+        "ACS_LIVE_FLIGHTS",
+        JSON.stringify(liveFlights)
+      );
     } catch {}
 
   }
 
-  // Hook al reloj del juego
+  /* ----------------------------------------------------------
+     Hook al reloj del juego
+     ---------------------------------------------------------- */
   if (typeof window.registerTimeListener === "function") {
     window.registerTimeListener(updateWorldFlights);
   } else {
