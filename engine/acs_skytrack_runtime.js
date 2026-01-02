@@ -64,16 +64,57 @@ function ACS_SkyTrack_hookTimeEngine() {
 /* ============================================================
    🔄 ON TICK — MAIN LOOP
    ============================================================ */
+/* ============================================================
+   🔄 ON TICK — MAIN LOOP
+   C2: Emit Live Traffic snapshot for UI list (REAL DATA)
+   ============================================================ */
 function ACS_SkyTrack_onTick() {
   if (!Number.isFinite(ACS_SkyTrack.nowAbsMin)) return;
+
+  const snapshot = [];
 
   Object.keys(ACS_SkyTrack.aircraftIndex).forEach(acId => {
     const stateObj = ACS_SkyTrack_resolveState(acId);
     if (!stateObj) return;
 
-    // Debug output only (no UI / no map yet)
-    // console.log(acId, stateObj);
+    const ac = ACS_SkyTrack.aircraftIndex[acId];
+    const items = ACS_SkyTrack.itemsByAircraft[acId] || [];
+
+    let route = null;
+    let flightNumber = null;
+
+    if (stateObj.flight) {
+      route = `${stateObj.flight.origin} → ${stateObj.flight.destination}`;
+      flightNumber = stateObj.flight.flightNumber || null;
+    } else {
+      const now = ACS_SkyTrack.nowAbsMin;
+
+      const future = items
+        .filter(it => it.type === "flight" && Number.isFinite(it.depAbsMin) && it.depAbsMin > now)
+        .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
+
+      const past = items
+        .filter(it => it.type === "flight" && Number.isFinite(it.arrAbsMin) && it.arrAbsMin < now)
+        .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
+
+      const ctx = future || past;
+      if (ctx) route = `${ctx.origin} → ${ctx.destination}`;
+    }
+
+    snapshot.push({
+      aircraftId: acId,               // INTERNAL ONLY
+      registration: ac.registration || ac.reg || "—",
+      model: ac.model || ac.type || "—",
+      state: stateObj.state,           // GROUND | EN_ROUTE | MAINTENANCE
+      route,
+      flightNumber
+    });
   });
+
+  // 🔔 Emit event for SkyTrack UI (list only)
+  window.dispatchEvent(
+    new CustomEvent("ACS_SKYTRACK_LIVE", { detail: snapshot })
+  );
 }
 
 /* ============================================================
