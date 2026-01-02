@@ -47,44 +47,51 @@ function ACS_SkyTrack_init() {
 }
 
 /* ============================================================
-   ⏱ TIME ENGINE HOOK (ABS MINUTES) — SAFE
-   Accepts:
-   - Date
-   - number (absMin)
-   - object with { absMin }
+   ⏱ TIME ENGINE HOOK (ABS MINUTES) — ACS CANONICAL
+   Uses ACS_TIME.minute (game absolute minutes)
    ============================================================ */
 function ACS_SkyTrack_hookTimeEngine() {
-  if (typeof registerTimeListener !== "function") {
-    console.warn("⛔ SkyTrack: Time Engine not available");
+
+  // 1️⃣ Preferred: direct access to ACS_TIME
+  if (window.ACS_TIME && Number.isFinite(ACS_TIME.minute)) {
+
+    // Initial sync
+    ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+
+    // Subscribe to time engine
+    registerTimeListener(() => {
+      ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+      ACS_SkyTrack_onTick();
+    });
+
+    console.log("⏱ SkyTrack hooked to ACS_TIME.minute");
     return;
   }
 
-  registerTimeListener((t) => {
-    let absMin = null;
+  // 2️⃣ Fallback: legacy listener payload with absMin
+  if (typeof registerTimeListener === "function") {
 
-    // Case 1: Date object
-    if (t instanceof Date && !isNaN(t.getTime())) {
-      absMin = Math.floor(t.getTime() / 60000);
-    }
+    registerTimeListener((t) => {
+      let absMin = null;
 
-    // Case 2: direct absMin number
-    else if (Number.isFinite(t)) {
-      absMin = Math.floor(t);
-    }
+      if (t && Number.isFinite(t.absMin)) {
+        absMin = t.absMin;
+      }
 
-    // Case 3: object with absMin
-    else if (t && Number.isFinite(t.absMin)) {
-      absMin = Math.floor(t.absMin);
-    }
+      if (!Number.isFinite(absMin)) {
+        console.warn("SkyTrack: invalid time payload", t);
+        return;
+      }
 
-    if (!Number.isFinite(absMin)) {
-      console.warn("SkyTrack: invalid time payload from Time Engine", t);
-      return;
-    }
+      ACS_SkyTrack.nowAbsMin = absMin;
+      ACS_SkyTrack_onTick();
+    });
 
-    ACS_SkyTrack.nowAbsMin = absMin;
-    ACS_SkyTrack_onTick();
-  });
+    console.log("⏱ SkyTrack hooked via fallback absMin");
+    return;
+  }
+
+  console.warn("⛔ SkyTrack: Time Engine not available");
 }
 
 /* ============================================================
