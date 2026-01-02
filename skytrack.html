@@ -28,70 +28,213 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
-  /* ============================================================
-     SKYTRACK — DASHBOARD INTEGRATION LAYER
-     (solo ajustes mínimos, no diseño nuevo)
-     ============================================================ */
+/* ============================================================
+   ✅ CORE DASHBOARD LAYOUT (COPIA REAL)
+   ============================================================ */
 
-  #skytrack-map {
-    width: 100%;
-    height: 420px;
-    background: #020617;
-    border-radius: 18px;
-  }
+body {
+  margin: 0;
+  background-color: #081530;
+  color: white;
+  font-family: "Poppins", sans-serif;
+}
 
-  .skytrack-grid {
-    display: grid;
-    grid-template-columns: 360px 1fr;
-    gap: 2rem;
-    margin-top: 2rem;
-  }
+/* ===== HEADER (Dashboard exact behaviour) ===== */
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+}
 
-  .skytrack-list {
-    max-height: 420px;
-    overflow-y: auto;
-  }
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.acs-left img { height: 46px; }
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
 
-  .flight-card {
-    background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-    padding: 0.9rem 1rem;
-    border-radius: 16px;
-    border: 1px solid rgba(255,179,0,0.25);
-    margin-bottom: 0.8rem;
-    cursor: pointer;
-    transition: 0.25s;
-  }
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
 
-  .flight-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 22px rgba(255,179,0,0.25);
-  }
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
 
-  .flight-route {
-    color: #ffb300;
-    font-weight: 700;
-  }
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
 
-  .flight-meta {
-    font-size: 0.85rem;
-    color: #cbd6ff;
-    display: flex;
-    justify-content: space-between;
-    margin-top: 4px;
-  }
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+}
 
-  .badge {
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.7rem;
-    font-weight: 700;
-  }
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-  .badge-ground { background: rgba(0,135,255,0.25); color:#9cc9ff; }
-  .badge-air { background: rgba(0,255,160,0.25); color:#8fffd2; }
-  .badge-maint { background: rgba(255,179,0,0.30); color:#ffe7a0; }
+.support-btn {
+  background: rgba(255,179,0,0.12);
+  border: 1px solid rgba(255,179,0,0.35);
+  padding: 6px 12px;
+  border-radius: 10px;
+  color: #ffca3a;
+  text-decoration: none;
+  font-weight: 700;
+}
 
-  </style>
+.logout-btn {
+  background: rgba(255,80,80,0.12);
+  border: 1px solid rgba(255,80,80,0.35);
+  padding: 6px 12px;
+  border-radius: 10px;
+  color: #ffbcbc;
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.acs-clock-header {
+  font-family: "Orbitron", sans-serif;
+  color: #7CFFB2;
+  text-shadow: 0 0 8px rgba(0,255,160,0.35);
+  font-size: 0.95rem;
+}
+
+/* ===== MAIN (Fix “descudrado”) ===== */
+.acs-main {
+  padding-top: 110px; /* CRÍTICO: separa header fijo */
+  width: min(1200px, 92%);
+  margin: 0 auto;
+}
+
+/* ===== Panels (Dashboard feel) ===== */
+.panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  border: 1px solid rgba(255,179,0,0.22);
+  border-radius: 18px;
+  padding: 1.25rem;
+  box-shadow: 0 0 22px rgba(0,0,0,0.35);
+  margin-bottom: 1.4rem;
+}
+
+.panel h3 {
+  margin-top: 0;
+  color: #ffca3a;
+  text-shadow: 0 0 10px rgba(255,200,60,0.35);
+  letter-spacing: 0.4px;
+}
+
+.sub {
+  color: #cbd6ff;
+  text-align: center;
+  margin-top: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+
+/* ===== Footer ===== */
+.acs-footer {
+  text-align: center;
+  padding: 16px 0;
+  color: rgba(255,255,255,0.65);
+}
+
+/* ============================================================
+   ✅ SKYTRACK MINIMAL LAYER (solo lo necesario)
+   ============================================================ */
+
+#skytrack-map {
+  width: 100%;
+  height: 460px;
+  background: #020617;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.skytrack-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 1.6rem;
+}
+
+.skytrack-list {
+  max-height: 460px;
+  overflow-y: auto;
+}
+
+.flight-card {
+  background: rgba(255,255,255,0.04);
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255,179,0,0.18);
+  margin-bottom: 0.8rem;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.flight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(255,179,0,0.20);
+}
+
+.flight-route { color: #ffb300; font-weight: 800; }
+.flight-meta {
+  font-size: 0.85rem;
+  color: #cbd6ff;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.badge-ground { background: rgba(0,135,255,0.25); color:#9cc9ff; }
+.badge-air    { background: rgba(0,255,160,0.25); color:#8fffd2; }
+.badge-maint  { background: rgba(255,179,0,0.30); color:#ffe7a0; }
+
+</style>
+
 </head>
 <body>
 
