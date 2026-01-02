@@ -1,11 +1,15 @@
 <!-- ============================================================
-  ✈️ SKYTRACK — FR24 LAYOUT (QATAR LUXURY)
-  Project: Aviation Capital Simulator (ACS)
-  Module: SkyTrack (UI ONLY — NO LOGIC)
-  Version: v2.0 LAYOUT-ONLY
-  Date: 2026-01-02
-  NOTE: SOLO DISEÑO. Sin lógica de vuelos.
-  ============================================================ -->
+   ✈️ SKYTRACK — QATAR LUXURY (DASHBOARD-ALIGNED)
+   Project: Aviation Capital Simulator (ACS)
+   Module: SkyTrack
+   Version: v3.0 UI UNIFIED WITH DASHBOARD
+   Date: 2026-01-02
+
+   PURPOSE:
+   - Usar EXACTAMENTE el mismo sistema visual que Dashboard
+   - Cero CSS propio innecesario
+   - SkyTrack se comporta como un módulo más (Finance / HR / Alerts)
+   ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,334 +17,178 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ACS SkyTrack</title>
 
-  <!-- =========================
-       QATAR LUXURY CORE STYLE
-       ========================= -->
-  <link rel="stylesheet" href="css/acs-core.css" />
-  <link rel="stylesheet" href="css/acs-header.css" />
+  <!-- ======== ACS GLOBAL STYLE (MISMO QUE DASHBOARD) ======== -->
+  <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <!-- MAP LIB (Leaflet CSS ONLY — JS later) -->
+  <!-- ======== FAVICONS ======== -->
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== LEAFLET CSS (MAP) ======== -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
-    /* ============================================================
-       🌌 PAGE BASE — QATAR LUXURY
-       ============================================================ */
-    body {
-      margin: 0;
-      background: radial-gradient(circle at top, #0c1c3a, #050b1a);
-      color: #fff;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      overflow: hidden;
-    }
+  /* ============================================================
+     SKYTRACK — DASHBOARD INTEGRATION LAYER
+     (solo ajustes mínimos, no diseño nuevo)
+     ============================================================ */
 
-    /* ============================================================
-       🗺️ MAP AREA
-       ============================================================ */
-    #skytrack-map {
-      position: absolute;
-      top: 88px; /* header height */
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 1;
-      background: #061126; /* fallback while map loads */
-    }
+  #skytrack-map {
+    width: 100%;
+    height: 420px;
+    background: #020617;
+    border-radius: 18px;
+  }
 
-    /* ============================================================
-       🟦 LEFT PANEL — FR24 LIST (GLASS ROYALE)
-       ============================================================ */
-    .skytrack-panel {
-      position: absolute;
-      top: 108px;
-      left: 16px;
-      width: 320px;
-      max-height: calc(100vh - 140px);
-      z-index: 5;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: linear-gradient(180deg, rgba(15,30,65,0.88), rgba(8,14,35,0.92));
-      border: 1px solid rgba(255,179,0,0.35);
-      border-radius: 18px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.45);
-      padding: 14px;
-    }
+  .skytrack-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
 
-    .panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
+  .skytrack-list {
+    max-height: 420px;
+    overflow-y: auto;
+  }
 
-    .panel-header h3 {
-      margin: 0;
-      font-size: 1rem;
-      color: #ffcc33;
-      letter-spacing: 0.4px;
-    }
+  .flight-card {
+    background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255,179,0,0.25);
+    margin-bottom: 0.8rem;
+    cursor: pointer;
+    transition: 0.25s;
+  }
 
-    .panel-search input {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.06);
-      color: #fff;
-      outline: none;
-      font-size: 0.9rem;
-    }
+  .flight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(255,179,0,0.25);
+  }
 
-    .panel-filters {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+  .flight-route {
+    color: #ffb300;
+    font-weight: 700;
+  }
 
-    .filter-chip {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid rgba(255,204,51,0.45);
-      background: rgba(255,204,51,0.12);
-      color: #ffdd80;
-    }
+  .flight-meta {
+    font-size: 0.85rem;
+    color: #cbd6ff;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
 
-    .filter-chip.ghost {
-      background: rgba(255,255,255,0.06);
-      border-color: rgba(255,255,255,0.18);
-      color: #cbd6ff;
-    }
+  .badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
 
-    .flight-list {
-      overflow-y: auto;
-      padding-right: 4px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+  .badge-ground { background: rgba(0,135,255,0.25); color:#9cc9ff; }
+  .badge-air { background: rgba(0,255,160,0.25); color:#8fffd2; }
+  .badge-maint { background: rgba(255,179,0,0.30); color:#ffe7a0; }
 
-    .flight-card {
-      border-radius: 14px;
-      padding: 10px 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      cursor: pointer;
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-
-    .flight-card:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-    }
-
-    .flight-route {
-      font-weight: 800;
-      color: #ffe7a0;
-      letter-spacing: 0.2px;
-    }
-
-    .flight-meta {
-      font-size: 0.8rem;
-      color: #cbd6ff;
-      margin-top: 4px;
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-    }
-
-    .status-badge {
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.7rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .status-ground { background: rgba(59,130,246,0.25); color: #c7ddff; }
-    .status-air   { background: rgba(0,255,204,0.25); color: #9fffe8; }
-    .status-maint { background: rgba(255,179,0,0.30); color: #ffe7a0; }
-
-    /* ============================================================
-       🟦 BOTTOM STATUS BAR
-       ============================================================ */
-    .skytrack-footer {
-      position: absolute;
-      left: 50%;
-      bottom: 14px;
-      transform: translateX(-50%);
-      z-index: 6;
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(8,18,45,0.85);
-      border: 1px solid rgba(255,179,0,0.35);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
-      font-size: 0.85rem;
-    }
-
-    .footer-item strong { color: #ffcc33; }
-
-    /* ============================================================
-       🦄 FLIGHT MODAL — QATAR LUXURY (UI ONLY)
-       ============================================================ */
-    .acs-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    .acs-modal-card {
-      width: min(520px, 92vw);
-      border-radius: 20px;
-      overflow: hidden;
-      background: linear-gradient(180deg, #0b132b 0%, #020617 100%);
-      border: 2px solid rgba(255, 204, 51, 0.70);
-      box-shadow: 0 0 42px rgba(255,204,51,0.20);
-    }
-
-    .acs-modal-header {
-      padding: 14px 16px;
-      background: rgba(255,179,0,0.12);
-      border-bottom: 1px solid rgba(255, 204, 51, 0.35);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .acs-modal-header h3 {
-      margin: 0;
-      color: #ffcc33;
-      font-size: 1.05rem;
-    }
-
-    .acs-modal-body {
-      padding: 16px;
-      color: #dbe4ff;
-    }
-
-    .acs-modal-footer {
-      padding: 14px 16px;
-      border-top: 1px solid rgba(255,204,51,0.25);
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-
-    .btn-close {
-      background: rgba(255,204,51,0.08);
-      border: 1px solid rgba(255,204,51,0.45);
-      color: #ffcc33;
-      border-radius: 10px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-weight: 800;
-    }
   </style>
 </head>
 <body>
 
 <!-- ============================================================
-     🟦 ACS HEADER — QATAR LUXURY (SHARED)
+     HEADER — EXACT COPY FROM DASHBOARD
      ============================================================ -->
 <header class="acs-header">
-  <div class="acs-header-left">
-    <img src="assets/logo/acs_logo_gold.png" class="acs-logo" alt="ACS" />
-    <span class="acs-title">SkyTrack</span>
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <div class="acs-header-center">
-    <div id="acs-clock" class="acs-clock-header">00:00 UTC</div>
-  </div>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Bank</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="skytrack.html" class="active">SkyTrack</a>
+  </nav>
 
-  <div class="acs-header-right">
-    <button class="acs-btn">Dashboard</button>
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
   </div>
 </header>
 
 <!-- ============================================================
-     🗺️ MAP CONTAINER
+     MAIN CONTENT — SKYTRACK AS DASHBOARD MODULE
      ============================================================ -->
-<div id="skytrack-map"></div>
+<main class="acs-main">
 
-<!-- ============================================================
-     🟦 LEFT PANEL — FLIGHT LIST (FR24 STYLE)
-     ============================================================ -->
-<aside class="skytrack-panel">
+  <h2 id="welcomeMessage">
+    <span class="w-welcome">SKYTRACK</span>
+    &nbsp;
+    <span class="w-airline">Live World Traffic</span>
+  </h2>
 
-  <div class="panel-header">
-    <h3>Live Traffic</h3>
+  <p class="sub">Real-time aircraft tracking based on your operational schedule.</p>
+
+  <!-- ========================= MAP PANEL ========================= -->
+  <div class="panel">
+    <h3>🌍 World Map</h3>
+    <div id="skytrack-map"></div>
   </div>
 
-  <div class="panel-search">
-    <input type="text" placeholder="Search reg / flight" />
-  </div>
+  <!-- ========================= GRID ========================= -->
+  <div class="skytrack-grid">
 
-  <div class="panel-filters">
-    <span class="filter-chip">All</span>
-    <span class="filter-chip ghost">Ground</span>
-    <span class="filter-chip ghost">En Route</span>
-    <span class="filter-chip ghost">Maintenance</span>
-  </div>
+    <!-- ===== LEFT: LIVE TRAFFIC ===== -->
+    <div class="panel">
+      <h3>✈️ Live Traffic</h3>
+      <div class="skytrack-list">
 
-  <div class="flight-list">
-    <!-- Flight cards rendered by JS later -->
-    <div class="flight-card">
-      <div class="flight-route">LEMD → LIRN</div>
-      <div class="flight-meta">
-        <span>DC-3 · N123ACS</span>
-        <span class="status-badge status-air">EN ROUTE</span>
+        <!-- Example card (rendered later by JS) -->
+        <div class="flight-card">
+          <div class="flight-route">LEMD → LIRN</div>
+          <div class="flight-meta">
+            <span>DC-3 · N123ACS</span>
+            <span class="badge badge-air">EN ROUTE</span>
+          </div>
+        </div>
+
       </div>
     </div>
+
+    <!-- ===== RIGHT: DETAILS / FUTURE ===== -->
+    <div class="panel">
+      <h3>📊 Flight Details</h3>
+      <p>Select a flight to view detailed information.</p>
+    </div>
+
   </div>
 
-</aside>
+</main>
+
+<footer class="acs-footer">
+  © 2026 Aviation Capital Simulator — SkyTrack Module
+</footer>
 
 <!-- ============================================================
-     🟦 BOTTOM STATUS BAR
+     CORE SCRIPTS (SAME BASE AS DASHBOARD)
      ============================================================ -->
-<div class="skytrack-footer">
-  <div class="footer-item">UTC <strong>00:00</strong></div>
-  <div class="footer-item">Airborne <strong>0</strong></div>
-  <div class="footer-item">Ground <strong>0</strong></div>
-</div>
+<script src="time_engine.js"></script>
 
 <!-- ============================================================
-     🦄 FLIGHT MODAL (UI ONLY)
-     ============================================================ -->
-<div id="flightModal" class="acs-modal">
-  <div class="acs-modal-card">
-    <div class="acs-modal-header">
-      <h3>✈️ Flight</h3>
-      <button class="btn-close" onclick="this.closest('.acs-modal').style.display='none'">✕</button>
-    </div>
-    <div class="acs-modal-body">
-      <p>Flight details will be rendered by SkyTrack runtime.</p>
-    </div>
-    <div class="acs-modal-footer">
-      <button class="btn-close" onclick="this.closest('.acs-modal').style.display='none'">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     🟧 SKYTRACK RUNTIME — PLACEHOLDER HOOK
-     NOTE: Logic will be implemented step-by-step.
-     File: engine/acs_skytrack_runtime.js
+     SKYTRACK RUNTIME
      ============================================================ -->
 <script src="engine/acs_skytrack_runtime.js"></script>
+
+<script>
+function handleLogout() {
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
+</script>
 
 </body>
 </html>
