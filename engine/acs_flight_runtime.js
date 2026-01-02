@@ -1,137 +1,202 @@
 /* ============================================================
-   ✈️ ACS FLIGHT RUNTIME — CORE v1 (CLEAN RESET)
-   Source of truth: scheduleItems 01JAN26
+   ✈️ ACS FLIGHT RUNTIME ENGINE — SINGLE EXEC MODE
+   ------------------------------------------------------------
+   Source of truth: ACS_FLIGHT_EXEC 20DEC25
+   Time source: ACS_TIME (NO bootstrap, NO override)
+   Publishes: ACS_LIVE_FLIGHTS[]
    ============================================================ */
 
 (function () {
 
-  console.log("✈️ ACS Runtime v1 — CLEAN MODE ACTIVE");
-
-  function getNowMin() {
-    if (!window.ACS_TIME || typeof ACS_TIME.minute !== "number") return 0;
-    return (ACS_TIME.minute + 1440) % 1440;
+  if (typeof registerTimeListener !== "function") {
+    console.warn("⛔ ACS Runtime: registerTimeListener not found.");
+    return;
   }
 
-  function resolveAirport(icao) {
-    if (!icao || !window.WorldAirportsACS) return null;
-    return Object.values(WorldAirportsACS).flat()
-      .find(a => a && a.icao === icao) || null;
-  }
+  console.log("✈️ ACS Flight Runtime Engine — ACTIVE (EXEC MODE)");
 
-  function normalizeTime(depMin, arrMin) {
-    if (typeof depMin !== "number" || typeof arrMin !== "number") return null;
-    let dep = depMin % 1440;
-    let arr = arrMin % 1440;
-    if (arr < dep) arr += 1440;
-    return { dep, arr };
-  }
+  /* ============================================================
+     🔹 UTILS
+     ============================================================ */
 
-  function updateWorldFlights() {
-
-    const nowMin = getNowMin();
-
-    let items = [];
+  function getExecFlight() {
     try {
-      items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-    } catch {}
-
-    const liveFlights = [];
-
-    if (!Array.isArray(items) || items.length === 0) {
-      window.ACS_LIVE_FLIGHTS = [];
-      return;
+      return JSON.parse(localStorage.getItem("ACS_FLIGHT_EXEC"));
+    } catch {
+      return null;
     }
-
-    // --------------------------------------------------------
-    // GROUP BY AIRCRAFT
-    // --------------------------------------------------------
-    const byAircraft = {};
-    items.forEach(f => {
-      if (!f.aircraftId || !f.origin || !f.destination) return;
-      if (!byAircraft[f.aircraftId]) byAircraft[f.aircraftId] = [];
-      byAircraft[f.aircraftId].push(f);
-    });
-
-    // --------------------------------------------------------
-    // PROCESS EACH AIRCRAFT
-    // --------------------------------------------------------
-    Object.entries(byAircraft).forEach(([aircraftId, flights]) => {
-
-      flights.sort((a, b) => (a.depMin ?? 0) - (b.depMin ?? 0));
-
-      let selected = null;
-      let status = "GROUND";
-
-      for (const f of flights) {
-        const t = normalizeTime(f.depMin, f.arrMin);
-        if (!t) continue;
-
-        if (nowMin >= t.dep && nowMin <= t.arr) {
-          selected = f;
-          status = "ENROUTE";
-          break;
-        }
-
-        if (nowMin < t.dep) {
-          selected = f;
-          status = "GROUND";
-          break;
-        }
-
-        selected = f;
-        status = "ARRIVED";
-      }
-
-      if (!selected) return;
-
-      const t = normalizeTime(selected.depMin, selected.arrMin);
-      if (!t) return;
-
-      const o = resolveAirport(selected.origin);
-      const d = resolveAirport(selected.destination);
-      if (!o || !d) return;
-
-      let lat = o.lat;
-      let lng = o.lng;
-
-      if (status === "ENROUTE") {
-        const p = Math.min(
-          Math.max((nowMin - t.dep) / (t.arr - t.dep), 0),
-          1
-        );
-        lat = o.lat + (d.lat - o.lat) * p;
-        lng = o.lng + (d.lng - o.lng) * p;
-      }
-
-      if (status === "ARRIVED") {
-        lat = d.lat;
-        lng = d.lng;
-      }
-
-      liveFlights.push({
-        flightNumber : selected.flightNumber || selected.flightOut || "",
-        model        : selected.aircraft || selected.modelKey || "",
-        origin       : selected.origin,
-        destination  : selected.destination,
-        lat,
-        lng,
-        status
-      });
-
-    });
-
-    window.ACS_LIVE_FLIGHTS = liveFlights;
   }
 
-  // ----------------------------------------------------------
-  // TIME ENGINE HOOK
-  // ----------------------------------------------------------
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateWorldFlights);
+  function getAirportByICAO(icao) {
+    if (!icao || !window.WorldAirportsACS) return null;
+    return Object.values(WorldAirportsACS)
+      .flat()
+      .find(a => a.icao === icao) || null;
+  }
+
+  function interpolateGC(lat1, lng1, lat2, lng2, t) {
+    return {
+      lat: lat1 + (lat2 - lat1) * t,
+      lng: lng1 + (lng2 - lng1) * t
+    };
+  }
+
+ /* ============================================================
+   ✈️ RUNTIME LOOP — 3 PHASES (GROUND / AIR / DESTINATION)
+   ============================================================ */
+
+function updateLiveFlights() {
+
+  const liveFlights = [];
+
+  const nowMin = window.ACS_TIME?.minute;
+  const exec = getExecFlight();
+
+  if (!exec || typeof nowMin !== "number") {
+    window.ACS_LIVE_FLIGHTS = [];
+    localStorage.setItem("ACS_LIVE_FLIGHTS", "[]");
+    return;
+  }
+
+  // --------------------------------------------------------
+  // 🔧 Garantizar arrMin si no existe (fallback temporal)
+  // --------------------------------------------------------
+
+  if (typeof exec.depMin === "number" && typeof exec.arrMin !== "number") {
+    exec.arrMin = exec.depMin + 120; // 2h default
+  }
+
+  // --------------------------------------------------------
+  // 🔀 ACTIVE LEG (OUTBOUND / RETURN)
+  // --------------------------------------------------------
+
+  let activeLeg = {
+    origin: exec.origin,
+    destination: exec.destination,
+    depMin: exec.depMin,
+    arrMin: exec.arrMin
+  };
+
+  if (exec._return && nowMin >= exec._return.depMin) {
+    activeLeg = exec._return;
+  }
+
+  if (
+    typeof activeLeg.depMin !== "number" ||
+    typeof activeLeg.arrMin !== "number" ||
+    !activeLeg.origin ||
+    !activeLeg.destination
+  ) {
+    return;
+  }
+
+  const origin = getSkyTrackAirportByICAO(activeLeg.origin);
+  const dest   = getSkyTrackAirportByICAO(activeLeg.destination);
+
+  if (!origin || !dest) return;
+
+  const dep = activeLeg.depMin;
+  const arr = activeLeg.arrMin;
+
+  let progress = 0;
+  let lat = origin.lat;
+  let lng = origin.lng;
+  let status = "ground";
+
+  if (nowMin < dep) {
+    status = "ground";
+  }
+  else if (nowMin >= dep && nowMin <= arr) {
+    progress = (nowMin - dep) / (arr - dep);
+    progress = Math.min(Math.max(progress, 0), 1);
+
+    const pos = interpolateGC(
+      origin.lat,
+      origin.lng,
+      dest.lat,
+      dest.lng,
+      progress
+    );
+
+    lat = pos.lat;
+    lng = pos.lng;
+    status = "enroute";
+  }
+  else if (nowMin > arr) {
+    progress = 1;
+    lat = dest.lat;
+    lng = dest.lng;
+    status = "arrived";
+  }
+
+  // --------------------------------------------------------
+  // 🔁 TURNAROUND + RETURN FLIGHT (50 MIN)
+  // --------------------------------------------------------
+
+  const TURNAROUND_MIN = 50;
+
+  if (status === "arrived" && !exec._returnArmed) {
+
+    exec._returnArmed = true;
+
+    exec._return = {
+      origin: exec.destination,
+      destination: exec.origin,
+      depMin: arr + TURNAROUND_MIN,
+      arrMin: arr + TURNAROUND_MIN + (arr - dep)
+    };
+
+    localStorage.setItem("ACS_FLIGHT_EXEC", JSON.stringify(exec));
+
+    console.log("🔁 Return flight armed:", exec._return);
+  }
+
+  // --------------------------------------------------------
+  // 🔚 FLIGHT CYCLE COMPLETE (RETURN ARRIVED)
+  // --------------------------------------------------------
+
+  if (exec._return && activeLeg === exec._return && status === "arrived") {
+    console.log("🏁 Flight cycle completed");
+    localStorage.removeItem("ACS_FLIGHT_EXEC");
+  }
+
+  liveFlights.push({
+    aircraftId: exec.aircraftId || "",
+    flightOut: exec.flightOut || "",
+    origin: activeLeg.origin,
+    destination: activeLeg.destination,
+    depMin: dep,
+    arrMin: arr,
+    progress,
+    lat,
+    lng,
+    status
+  });
+
+  // 🔒 PUBLICAR SIEMPRE
+  window.ACS_LIVE_FLIGHTS = liveFlights;
+  localStorage.setItem("ACS_LIVE_FLIGHTS", JSON.stringify(liveFlights));
+}
+   
+// ============================================================
+// 🔒 WAIT FOR WORLD AIRPORTS — HARD GATE
+// ============================================================
+
+function waitForWorldAirports(cb) {
+  if (window.WorldAirportsACS && Object.keys(WorldAirportsACS).length > 0) {
+    cb();
   } else {
-    setInterval(updateWorldFlights, 60000);
+    setTimeout(() => waitForWorldAirports(cb), 200);
   }
+}
+   
+/* ============================================================
+   ⏱ TIME ENGINE HOOK
+   ============================================================ */
 
-  window.updateWorldFlights = updateWorldFlights;
+waitForWorldAirports(() => {
+  registerTimeListener(updateLiveFlights);
+  console.log("🌍 WorldAirportsACS ready — Flight runtime armed");
+});
 
 })();
