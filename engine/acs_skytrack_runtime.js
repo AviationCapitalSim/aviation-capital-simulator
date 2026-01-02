@@ -62,59 +62,113 @@ function ACS_SkyTrack_hookTimeEngine() {
 }
 
 /* ============================================================
-   🔄 ON TICK — MAIN LOOP
-   ============================================================ */
-/* ============================================================
-   🔄 ON TICK — MAIN LOOP
-   C2: Emit Live Traffic snapshot for UI list (REAL DATA)
+   🟦 PASO A1 — ON TICK (CLEAN SNAPSHOT)
+   - Filters block-* and legacy items without abs times
+   - Eliminates ghost route (e.g. LIRN) from UI
+   - Non-destructive: NO writes to localStorage
+   - Keeps ACS_SKYTRACK_LIVE for compatibility + emits ACS_SKYTRACK_SNAPSHOT
    ============================================================ */
 function ACS_SkyTrack_onTick() {
   if (!Number.isFinite(ACS_SkyTrack.nowAbsMin)) return;
 
-  const snapshot = [];
+  const now = ACS_SkyTrack.nowAbsMin;
+  const liveList = [];      // legacy UI event (current skytrack.html listens to this)
+  const snapshotV2 = [];    // canonical snapshot for next steps (map, FR24, etc.)
 
   Object.keys(ACS_SkyTrack.aircraftIndex).forEach(acId => {
     const stateObj = ACS_SkyTrack_resolveState(acId);
     if (!stateObj) return;
 
     const ac = ACS_SkyTrack.aircraftIndex[acId];
-    const items = ACS_SkyTrack.itemsByAircraft[acId] || [];
+    const itemsRaw = ACS_SkyTrack.itemsByAircraft[acId] || [];
 
-    let route = null;
+    // ✅ HARD FILTER: ignore UI blocks + ignore legacy entries without abs times
+    const flights = itemsRaw
+      .filter(it =>
+        it &&
+        it.type === "flight" &&
+        typeof it.id === "string" &&
+        !it.id.startsWith("block-") &&
+        Number.isFinite(it.depAbsMin) &&
+        Number.isFinite(it.arrAbsMin) &&
+        it.origin &&
+        it.destination
+      )
+      .slice();
+
+    // ----------------------------
+    // Route label (UI only)
+    // ----------------------------
+    let routeLabel = null;
     let flightNumber = null;
+    let originICAO = null;
+    let destinationICAO = null;
 
-    if (stateObj.flight) {
-      route = `${stateObj.flight.origin} → ${stateObj.flight.destination}`;
+    if (stateObj.flight && stateObj.flight.origin && stateObj.flight.destination) {
+      originICAO = stateObj.flight.origin;
+      destinationICAO = stateObj.flight.destination;
+      routeLabel = `${originICAO} → ${destinationICAO}`;
       flightNumber = stateObj.flight.flightNumber || null;
     } else {
-      const now = ACS_SkyTrack.nowAbsMin;
-
-      const future = items
-        .filter(it => it.type === "flight" && Number.isFinite(it.depAbsMin) && it.depAbsMin > now)
+      // Ground context: prefer next upcoming real flight; else last completed
+      const future = flights
+        .filter(it => it.depAbsMin > now)
         .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
 
-      const past = items
-        .filter(it => it.type === "flight" && Number.isFinite(it.arrAbsMin) && it.arrAbsMin < now)
+      const past = flights
+        .filter(it => it.arrAbsMin < now)
         .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
 
       const ctx = future || past;
-      if (ctx) route = `${ctx.origin} → ${ctx.destination}`;
+
+      if (ctx) {
+        originICAO = ctx.origin;
+        destinationICAO = ctx.destination;
+        routeLabel = `${originICAO} → ${destinationICAO}`;
+        flightNumber = ctx.flightNumber || null;
+      } else {
+        // If no flights exist, show airport if resolver gave one
+        const ap = stateObj.position && stateObj.position.airport ? stateObj.position.airport : (ac.baseAirport || null);
+        if (ap) routeLabel = `${ap}`;
+      }
     }
 
-    snapshot.push({
-      aircraftId: acId,               // INTERNAL ONLY
+    // ----------------------------
+    // Canonical snapshot (v2)
+    // ----------------------------
+    snapshotV2.push({
+      aircraftId: acId, // internal
       registration: ac.registration || ac.reg || "—",
       model: ac.model || ac.type || "—",
-      state: stateObj.state,           // GROUND | EN_ROUTE | MAINTENANCE
-      route,
+      state: stateObj.state, // GROUND | EN_ROUTE | MAINTENANCE
+      position: stateObj.position || null, // { airport } or { progress }
+      originICAO,
+      destinationICAO,
+      route: routeLabel,
+      flightNumber
+    });
+
+    // ----------------------------
+    // Legacy live list (kept for your current UI)
+    // ----------------------------
+    liveList.push({
+      aircraftId: acId, // internal
+      registration: ac.registration || ac.reg || "—",
+      model: ac.model || ac.type || "—",
+      state: stateObj.state,
+      route: routeLabel,
       flightNumber
     });
   });
 
-  // 🔔 Emit event for SkyTrack UI (list only)
-  window.dispatchEvent(
-    new CustomEvent("ACS_SKYTRACK_LIVE", { detail: snapshot })
-  );
+  // Optional debug handle (helps your console checks)
+  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshotV2;
+
+  // ✅ Keep current UI working (list)
+  window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_LIVE", { detail: liveList }));
+
+  // ✅ New canonical event (next steps: map markers, interpolation)
+  window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_SNAPSHOT", { detail: snapshotV2 }));
 }
 
 /* ============================================================
