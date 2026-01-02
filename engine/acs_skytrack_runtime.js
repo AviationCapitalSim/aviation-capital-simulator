@@ -47,7 +47,11 @@ function ACS_SkyTrack_init() {
 }
 
 /* ============================================================
-   ⏱ TIME ENGINE HOOK (ABS MINUTES)
+   ⏱ TIME ENGINE HOOK (ABS MINUTES) — SAFE
+   Accepts:
+   - Date
+   - number (absMin)
+   - object with { absMin }
    ============================================================ */
 function ACS_SkyTrack_hookTimeEngine() {
   if (typeof registerTimeListener !== "function") {
@@ -55,8 +59,30 @@ function ACS_SkyTrack_hookTimeEngine() {
     return;
   }
 
-  registerTimeListener((currentTime) => {
-    ACS_SkyTrack.nowAbsMin = Math.floor(currentTime.getTime() / 60000);
+  registerTimeListener((t) => {
+    let absMin = null;
+
+    // Case 1: Date object
+    if (t instanceof Date && !isNaN(t.getTime())) {
+      absMin = Math.floor(t.getTime() / 60000);
+    }
+
+    // Case 2: direct absMin number
+    else if (Number.isFinite(t)) {
+      absMin = Math.floor(t);
+    }
+
+    // Case 3: object with absMin
+    else if (t && Number.isFinite(t.absMin)) {
+      absMin = Math.floor(t.absMin);
+    }
+
+    if (!Number.isFinite(absMin)) {
+      console.warn("SkyTrack: invalid time payload from Time Engine", t);
+      return;
+    }
+
+    ACS_SkyTrack.nowAbsMin = absMin;
     ACS_SkyTrack_onTick();
   });
 }
