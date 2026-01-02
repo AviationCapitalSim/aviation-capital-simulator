@@ -329,6 +329,46 @@ body {
 <script src="engine/airports/world_airports_as.js?v=1.0"></script>
 <script src="engine/airports/world_airports_oc.js?v=1.0"></script>
 
+<script>
+/* ============================================================
+   ⏱ ACS TIME ENGINE BRIDGE — SKYTRACK
+   Purpose:
+   - Guarantee absMin availability for SkyTrack
+   - No recalculation, no duplication
+   ============================================================ */
+
+(function ensureAbsMin() {
+  function tryInit() {
+    if (window.ACS_TIME && Number.isFinite(ACS_TIME.absMin)) {
+      return true;
+    }
+
+    try {
+      const t = JSON.parse(localStorage.getItem("ACS_TIME") || "{}");
+      if (Number.isFinite(t.absMin)) {
+        window.ACS_TIME = window.ACS_TIME || {};
+        window.ACS_TIME.absMin = t.absMin;
+        return true;
+      }
+    } catch (e) {}
+
+    return false;
+  }
+
+  // Try immediately
+  if (tryInit()) return;
+
+  // Retry briefly (page load order safety)
+  let retries = 0;
+  const timer = setInterval(() => {
+    if (tryInit() || retries > 20) {
+      clearInterval(timer);
+    }
+    retries++;
+  }, 100);
+})();
+</script>
+   
 <!-- ============================================================
      SKYTRACK RUNTIME (AL FINAL)
      ============================================================ -->
