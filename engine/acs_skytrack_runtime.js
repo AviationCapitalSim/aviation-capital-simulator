@@ -47,6 +47,89 @@ function ACS_SkyTrack_init() {
 }
 
 /* ============================================================
+   🟦 A4 — POSITION SOLVER + MAP MARKERS (FR24 CORE)
+   ============================================================ */
+
+(function ACS_SkyTrack_PositionSolver(){
+
+  if (!window.ACS_SkyTrack_Map) {
+    console.warn("🟡 SkyTrack Map not ready for markers");
+    return;
+  }
+
+  const map = window.ACS_SkyTrack_Map;
+  const markers = {};
+
+  function getAirportCoords(icao) {
+    if (!window.WorldAirportsACS) return null;
+    const a = WorldAirportsACS[icao];
+    if (!a) return null;
+    return [a.lat, a.lon];
+  }
+
+  function timeToMin(t) {
+    if (!t) return null;
+    const [h,m] = t.split(":").map(Number);
+    return (h*60)+m;
+  }
+
+  function resolvePosition(flight, nowMin) {
+    const dep = timeToMin(flight.departure);
+    const arr = timeToMin(flight.arrival);
+    if (dep === null || arr === null) return null;
+
+    const o = getAirportCoords(flight.origin);
+    const d = getAirportCoords(flight.destination);
+    if (!o || !d) return null;
+
+    if (nowMin < dep) {
+      return { lat:o[0], lon:o[1], state:"GROUND" };
+    }
+
+    if (nowMin >= dep && nowMin <= arr) {
+      const p = (nowMin - dep) / (arr - dep);
+      return {
+        lat: o[0] + (d[0]-o[0]) * p,
+        lon: o[1] + (d[1]-o[1]) * p,
+        state: "AIR"
+      };
+    }
+
+    return { lat:d[0], lon:d[1], state:"GROUND" };
+  }
+
+  function renderFlights() {
+    const raw = localStorage.getItem("scheduleItems");
+    if (!raw) return;
+
+    const flights = JSON.parse(raw);
+    const now = window.ACS_Time?.minutes || 0;
+
+    flights.forEach(f => {
+      const pos = resolvePosition(f, now);
+      if (!pos) return;
+
+      const id = f.id;
+      const icon = L.divIcon({
+        html: pos.state === "AIR" ? "✈️" : "🛬",
+        className: "acs-flight-icon",
+        iconSize: [22,22]
+      });
+
+      if (!markers[id]) {
+        markers[id] = L.marker([pos.lat, pos.lon], { icon }).addTo(map);
+      } else {
+        markers[id].setLatLng([pos.lat, pos.lon]);
+      }
+    });
+  }
+
+  // Run every game minute
+  setInterval(renderFlights, 1000);
+
+})();
+
+/* ============================================================
    ⏱ TIME ENGINE HOOK (ABS MINUTES)
    ============================================================ */
 function ACS_SkyTrack_hookTimeEngine() {
