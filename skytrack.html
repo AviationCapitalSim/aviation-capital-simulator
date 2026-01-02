@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <!-- ============================================================
-     ✈️ C3 — SKYTRACK REAL AIRCRAFT MARKERS (FR24 STYLE)
+     C3 - SKYTRACK REAL AIRCRAFT MARKERS (FR24 STYLE)
      Uses REAL snapshot from runtime
      ============================================================ -->
 <script>
@@ -380,25 +380,12 @@ document.addEventListener("DOMContentLoaded", () => {
     iconAnchor: [10, 10]
   });
 
-  // Resolve position (REAL, not invented)
+  // Resolve position (TEMP - replaced in C3.1)
   function resolvePosition(item) {
-
-    // EN ROUTE → interpolate (for now midpoint, next step improves)
-    if (item.state === "EN_ROUTE" && item.route) {
-      return [20, 0]; // TEMP: world midpoint (real interpolation comes next)
-    }
-
-    // GROUND / MAINT → try base or last known airport
-    if (item.route) {
-      // We will resolve airport coordinates later (C3.1)
-      return [0, 0];
-    }
-
-    return null;
+    return null; // handled by BASE / EN_ROUTE logic later
   }
 
   function updateMarkers(snapshot) {
-
     snapshot.forEach(item => {
       const pos = resolvePosition(item);
       if (!pos) return;
@@ -419,7 +406,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Listen to SAME snapshot as Live Traffic
   window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
     if (Array.isArray(e.detail)) {
       updateMarkers(e.detail);
@@ -427,14 +413,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 })();
-   
+</script>
+
+<!-- ============================================================
+     C3.BASE - RESOLVE COMPANY BASE (SAME AS DASHBOARD)
+     Uses ACS Base Resolver
+     ============================================================ -->
 <script>
-   
 (function () {
 
   function waitForBase(cb) {
     const t = setInterval(() => {
-      if (window.ACS_BaseResolver && typeof window.ACS_BaseResolver.getBase === "function") {
+      if (
+        window.ACS_BaseResolver &&
+        typeof window.ACS_BaseResolver.getBase === "function"
+      ) {
         clearInterval(t);
         cb(window.ACS_BaseResolver.getBase());
       }
@@ -467,7 +460,6 @@ document.addEventListener("DOMContentLoaded", () => {
       iconAnchor: [7, 7]
     });
 
-    // ONE marker = base presence (before flights)
     L.marker([ap.lat, ap.lng], { icon: groundIcon })
       .addTo(map)
       .bindTooltip(
@@ -475,7 +467,6 @@ document.addEventListener("DOMContentLoaded", () => {
         { direction: "top", offset: [0, -6] }
       );
 
-    // Center map nicely on base
     map.setView([ap.lat, ap.lng], 6);
   });
 
