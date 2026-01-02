@@ -593,3 +593,52 @@ document.addEventListener("DOMContentLoaded", ACS_SkyTrack_init);
   });
 
 })();
+
+/* ============================================================
+   🟦 A3.FIX — MAP READY HANDSHAKE + SNAPSHOT REPLAY
+   Purpose:
+   - Esperar a que Leaflet esté listo
+   - Reinyectar el último snapshot de vuelos
+   - Centrar el mapa en la base operativa
+   ============================================================ */
+
+(function ACS_SkyTrack_MapReadyReplay() {
+  let retries = 0;
+  const MAX_RETRIES = 40; // ~4 segundos
+
+  const waitForMap = setInterval(() => {
+    const map = window.ACS_SkyTrack_Map;
+    const snapshot = window.__ACS_LAST_SKYTRACK_SNAPSHOT__;
+
+    if (map && snapshot && Array.isArray(snapshot)) {
+      clearInterval(waitForMap);
+
+      console.log("🗺️ SkyTrack Map READY — Replaying snapshot", snapshot);
+
+      // 🔁 Reinyectar vuelos al runtime
+      if (typeof window.ACS_SkyTrack_RenderFlights === "function") {
+        window.ACS_SkyTrack_RenderFlights(snapshot);
+      }
+
+      // 🎯 Focus en BASE si existe
+      const baseICAO =
+        localStorage.getItem("ACS_BASE_ICAO") ||
+        localStorage.getItem("acs_base") ||
+        "LEMD";
+
+      if (window.ACS_WorldAirports && window.ACS_WorldAirports[baseICAO]) {
+        const { lat, lon } = window.ACS_WorldAirports[baseICAO];
+        map.setView([lat, lon], 6);
+        console.log("🎯 SkyTrack centered on base:", baseICAO);
+      }
+
+      return;
+    }
+
+    retries++;
+    if (retries >= MAX_RETRIES) {
+      clearInterval(waitForMap);
+      console.warn("⚠️ SkyTrack Map handshake timeout");
+    }
+  }, 100);
+})();
