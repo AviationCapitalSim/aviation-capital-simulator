@@ -309,15 +309,31 @@ body {
 </footer>
 
 <!-- ============================================================
-     CORE SCRIPTS (SAME BASE AS DASHBOARD)
+     CORE TIME ENGINE
      ============================================================ -->
 <script src="time_engine.js"></script>
 
 <!-- ============================================================
-     SKYTRACK RUNTIME
+     WORLD CORE (DEBE IR ANTES DEL RUNTIME)
+     ============================================================ -->
+<script src="engine/acs_world_engine.js?v=1.0"></script>
+
+<!-- ============================================================
+     AIRPORT DATABASE (CONTINENTS)
+     ============================================================ -->
+<script src="engine/airports/world_airports_na.js?v=1.0"></script>
+<script src="engine/airports/world_airports_sa.js?v=1.0"></script>
+<script src="engine/airports/world_airports_eu.js?v=1.0"></script>
+<script src="engine/airports/world_airports_me.js?v=1.0"></script>
+<script src="engine/airports/world_airports_af.js?v=1.0"></script>
+<script src="engine/airports/world_airports_as.js?v=1.0"></script>
+<script src="engine/airports/world_airports_oc.js?v=1.0"></script>
+
+<!-- ============================================================
+     SKYTRACK RUNTIME (AL FINAL)
      ============================================================ -->
 <script src="engine/acs_skytrack_runtime.js"></script>
-
+   
 <!-- ============================================================
      🗺️ C1.1 — LEAFLET MAP INIT (WORLD MAP)
      FIX: evita mapa negro en layout Dashboard
@@ -380,10 +396,55 @@ document.addEventListener("DOMContentLoaded", () => {
     iconAnchor: [10, 10]
   });
 
-  // Resolve position (TEMP - replaced in C3.1)
-  function resolvePosition(item) {
-    return null; // handled by BASE / EN_ROUTE logic later
+  // ============================================================
+// C3.1 - RESOLVE REAL POSITION (FR24 LOGIC)
+// ============================================================
+   
+function resolvePosition(item) {
+
+  // ---- 1. EN ROUTE → interpolate real position ----
+  if (item.state === "EN_ROUTE" && item.flight && window.WorldAirportsACS) {
+
+    const org = WorldAirportsACS[item.flight.origin];
+    const dst = WorldAirportsACS[item.flight.destination];
+
+    if (!org || !dst) return null;
+
+    const p = Math.max(0, Math.min(1, item.flight.progress || 0));
+
+    const lat = org.lat + (dst.lat - org.lat) * p;
+    const lng = org.lng + (dst.lng - org.lng) * p;
+
+    return [lat, lng];
   }
+
+  // ---- 2. GROUND → company base (same as Dashboard) ----
+  if (item.state === "GROUND" && window.ACS_BaseResolver && window.WorldAirportsACS) {
+
+    const base = window.ACS_BaseResolver.getBase?.();
+    if (!base || !base.icao) return null;
+
+    const ap = WorldAirportsACS[base.icao];
+    if (!ap) return null;
+
+    return [ap.lat, ap.lng];
+  }
+
+  // ---- 3. MAINTENANCE → base ----
+  if (item.state === "MAINTENANCE" && window.ACS_BaseResolver && window.WorldAirportsACS) {
+
+    const base = window.ACS_BaseResolver.getBase?.();
+    if (!base || !base.icao) return null;
+
+    const ap = WorldAirportsACS[base.icao];
+    if (!ap) return null;
+
+    return [ap.lat, ap.lng];
+  }
+
+  return null;
+}
+
 
   function updateMarkers(snapshot) {
     snapshot.forEach(item => {
