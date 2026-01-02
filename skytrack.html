@@ -335,80 +335,42 @@ body {
 <script src="engine/acs_skytrack_runtime.js"></script>
    
 <!-- ============================================================
-     🗺️ C1.1 — LEAFLET MAP INIT (WORLD MAP)
-     FIX: evita mapa negro en layout Dashboard
+     🗺️ V1 — SKYTRACK VISUAL CORE (SINGLE ENGINE)
+     - Leaflet init
+     - Center base (LEMD)
+     - Render markers from ACS_SKYTRACK_SNAPSHOT ONLY
+     - Render Live Traffic list from ACS_SKYTRACK_SNAPSHOT ONLY
      ============================================================ -->
-   
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const mapEl = document.getElementById("skytrack-map");
-  if (!mapEl || typeof L === "undefined") return;
 
-  // Evitar doble inicialización
-  if (window.ACS_SkyTrack_Map) return;
-
-  const map = L.map("skytrack-map", {
-    center: [20, 0],
-    zoom: 2,
-    zoomControl: true,
-    attributionControl: false
-  });
-
- L.tileLayer(
-  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  {
-    maxZoom: 19,
-    opacity: 0.95
-  }
-).addTo(map);
-
-  // 🔑 FIX CRÍTICO — recalcular tamaño (Dashboard layout)
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 200);
-
-  // Exponer mapa para C3 (markers reales)
-  window.ACS_SkyTrack_Map = map;
-});
-</script>
-
-<!-- ============================================================
-     🟦 C3.1 — SKYTRACK SNAPSHOT → MAP MARKERS (FR24 CORE)
-     Reads window.__ACS_LAST_SKYTRACK_SNAPSHOT__
-     Renders REAL aircraft on Leaflet map
-     ============================================================ -->
 <script>
 (function () {
-
-  function waitForMapAndSnapshot(cb) {
-    const t = setInterval(() => {
-      if (window.ACS_SkyTrack_Map && window.__ACS_LAST_SKYTRACK_SNAPSHOT__) {
-        clearInterval(t);
-        cb();
-      }
-    }, 300);
+  // -----------------------------
+  // Helpers
+  // -----------------------------
+  function getAirport(icao) {
+    return (window.WorldAirportsACS && window.WorldAirportsACS[icao]) ||
+           (window.ACS_WorldAirports && window.ACS_WorldAirports[icao]) ||
+           null;
   }
 
-  waitForMapAndSnapshot(() => {
+  function lerp(a, b, t) { return a + (b - a) * t; }
 
-    const map = window.ACS_SkyTrack_Map;
-    const markers = {};
-
-    // ✈️ Airborne icon
-    const airIcon = L.divIcon({
+  function createAirIcon() {
+    return L.divIcon({
       className: "acs-aircraft-icon",
       html: "✈️",
-      iconSize: [20, 20],
-      iconAnchor: [10, 10]
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
     });
+  }
 
-    // 🟦 Ground icon (FR24-style square)
-    const groundIcon = L.divIcon({
+  function createGroundIcon() {
+    return L.divIcon({
       className: "acs-ground-aircraft",
       html: `<div style="
-        width:14px;
-        height:14px;
+        width:14px;height:14px;
         background:#0b3cff;
         border:2px solid #001a66;
         border-radius:3px;
@@ -417,252 +379,142 @@ document.addEventListener("DOMContentLoaded", () => {
       iconSize: [14, 14],
       iconAnchor: [7, 7]
     });
-
-    function resolveGroundPosition(item) {
-      if (!window.ACS_BaseResolver || !window.WorldAirportsACS) return null;
-      const base = window.ACS_BaseResolver.getBase();
-      if (!base || !base.icao) return null;
-
-      const ap = WorldAirportsACS[base.icao];
-      if (!ap) return null;
-
-      return [ap.lat, ap.lng];
-    }
-
-    function renderSnapshot(snapshot) {
-
-      snapshot.forEach(item => {
-        let pos = null;
-        let icon = groundIcon;
-
-        if (item.state === "EN_ROUTE") {
-          // TEMP: center map until interpolation step
-          pos = [20, 0];
-          icon = airIcon;
-        } else {
-          pos = resolveGroundPosition(item);
-        }
-
-        if (!pos) return;
-
-        let m = markers[item.registration];
-
-        if (!m) {
-          m = L.marker(pos, { icon }).addTo(map);
-          markers[item.registration] = m;
-        } else {
-          m.setLatLng(pos);
-          m.setIcon(icon);
-        }
-
-        m.bindTooltip(
-          `<strong>${item.registration}</strong><br>${item.model}<br>${item.state}`,
-          { direction: "top", offset: [0, -6] }
-        );
-      });
-    }
-
-    // Initial render
-    renderSnapshot(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
-
-    // Live updates
-    window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
-      if (Array.isArray(e.detail)) {
-        window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = e.detail;
-        renderSnapshot(e.detail);
-      }
-    });
-
-  });
-
-})();
-</script>
-   
-<!-- ============================================================
-     C3 - SKYTRACK REAL AIRCRAFT MARKERS (FR24 STYLE)
-     Uses REAL snapshot from runtime
-     ============================================================ -->
-<script>
-(function () {
-
-  if (!window.ACS_SkyTrack_Map) {
-    console.warn("SkyTrack Map not ready for markers");
-    return;
-  }
-
-  const map = window.ACS_SkyTrack_Map;
-  const markers = {};
-
-  // Simple FR24-like aircraft icon
-  const aircraftIcon = L.divIcon({
-    className: "acs-aircraft-icon",
-    html: "✈️",
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-  });
-
-  // ============================================================
-// C3.1 - RESOLVE REAL POSITION (FR24 LOGIC)
-// ============================================================
-   
-function resolvePosition(item) {
-
-  // ---- 1. EN ROUTE → interpolate real position ----
-  if (item.state === "EN_ROUTE" && item.flight && window.WorldAirportsACS) {
-
-    const org = WorldAirportsACS[item.flight.origin];
-    const dst = WorldAirportsACS[item.flight.destination];
-
-    if (!org || !dst) return null;
-
-    const p = Math.max(0, Math.min(1, item.flight.progress || 0));
-
-    const lat = org.lat + (dst.lat - org.lat) * p;
-    const lng = org.lng + (dst.lng - org.lng) * p;
-
-    return [lat, lng];
-  }
-
-  // ---- 2. GROUND → company base (same as Dashboard) ----
-  if (item.state === "GROUND" && window.ACS_BaseResolver && window.WorldAirportsACS) {
-
-    const base = window.ACS_BaseResolver.getBase?.();
-    if (!base || !base.icao) return null;
-
-    const ap = WorldAirportsACS[base.icao];
-    if (!ap) return null;
-
-    return [ap.lat, ap.lng];
-  }
-
-  // ---- 3. MAINTENANCE → base ----
-  if (item.state === "MAINTENANCE" && window.ACS_BaseResolver && window.WorldAirportsACS) {
-
-    const base = window.ACS_BaseResolver.getBase?.();
-    if (!base || !base.icao) return null;
-
-    const ap = WorldAirportsACS[base.icao];
-    if (!ap) return null;
-
-    return [ap.lat, ap.lng];
-  }
-
-  return null;
-}
-
-
-  function updateMarkers(snapshot) {
-    snapshot.forEach(item => {
-      const pos = resolvePosition(item);
-      if (!pos) return;
-
-      let marker = markers[item.registration];
-
-      if (!marker) {
-        marker = L.marker(pos, { icon: aircraftIcon }).addTo(map);
-        markers[item.registration] = marker;
-      } else {
-        marker.setLatLng(pos);
-      }
-
-      marker.bindTooltip(
-        `<strong>${item.registration}</strong><br>${item.state}`,
-        { direction: "top", offset: [0, -8] }
-      );
-    });
-  }
-
-  window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
-    if (Array.isArray(e.detail)) {
-      updateMarkers(e.detail);
-    }
-  });
-
-})();
-</script>
-
-<!-- ============================================================
-     C3.BASE - RESOLVE COMPANY BASE (SAME AS DASHBOARD)
-     Uses ACS Base Resolver
-     ============================================================ -->
-<script>
-(function () {
-
-  function waitForBase(cb) {
-    const t = setInterval(() => {
-      if (
-        window.ACS_BaseResolver &&
-        typeof window.ACS_BaseResolver.getBase === "function"
-      ) {
-        clearInterval(t);
-        cb(window.ACS_BaseResolver.getBase());
-      }
-    }, 200);
-  }
-
-  waitForBase((base) => {
-    if (!base || !base.icao || !window.WorldAirportsACS || !window.ACS_SkyTrack_Map) {
-      console.warn("SkyTrack: base not resolved yet");
-      return;
-    }
-
-    const ap = WorldAirportsACS[base.icao];
-    if (!ap || !Number.isFinite(ap.lat) || !Number.isFinite(ap.lng)) return;
-
-    const map = window.ACS_SkyTrack_Map;
-
-    // FR24-style ground square
-    const groundIcon = L.divIcon({
-      className: "acs-ground-aircraft",
-      html: `<div style="
-        width:14px;
-        height:14px;
-        background:#0b3cff;
-        border:2px solid #001a66;
-        border-radius:3px;
-        box-shadow:0 0 6px rgba(0,0,0,.6);
-      "></div>`,
-      iconSize: [14, 14],
-      iconAnchor: [7, 7]
-    });
-
-    L.marker([ap.lat, ap.lng], { icon: groundIcon })
-      .addTo(map)
-      .bindTooltip(
-        `<strong>BASE</strong><br>${base.city} (${base.icao})<br>GROUND`,
-        { direction: "top", offset: [0, -6] }
-      );
-
-    map.setView([ap.lat, ap.lng], 6);
-  });
-
-})();
-</script>
-      
-<!-- ============================================================
-     🟧 C2.1 — SKYTRACK LIVE TRAFFIC UI
-     (Consumes ACS_SKYTRACK_LIVE events)
-     ============================================================ -->
-<script>
-(function () {
-
-  const listEl = document.getElementById("skytrackLiveList");
-  if (!listEl) {
-    console.warn("SkyTrack: Live list container not found");
-    return;
   }
 
   function renderStateBadge(state) {
-    if (state === "EN_ROUTE") {
-      return '<span class="badge badge-air">EN ROUTE</span>';
-    }
-    if (state === "MAINTENANCE") {
-      return '<span class="badge badge-maint">MAINT</span>';
-    }
+    if (state === "EN_ROUTE") return '<span class="badge badge-air">EN ROUTE</span>';
+    if (state === "MAINTENANCE") return '<span class="badge badge-maint">MAINT</span>';
     return '<span class="badge badge-ground">GROUND</span>';
   }
 
-  function renderList(snapshot) {
+  // -----------------------------
+  // Map init (once)
+  // -----------------------------
+  document.addEventListener("DOMContentLoaded", () => {
+    const mapEl = document.getElementById("skytrack-map");
+    if (!mapEl || typeof L === "undefined") return;
+
+    if (!window.ACS_SkyTrack_Map) {
+      const map = L.map("skytrack-map", {
+        center: [20, 0],
+        zoom: 2,
+        zoomControl: true,
+        attributionControl: false
+      });
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        opacity: 0.95
+      }).addTo(map);
+
+      // Layout fix (header/dashboard)
+      setTimeout(() => map.invalidateSize(), 200);
+
+      window.ACS_SkyTrack_Map = map;
+    }
+
+    // Center base immediately if possible
+    centerOnBase();
+  });
+
+  // -----------------------------
+  // Base centering (LEMD default)
+  // -----------------------------
+  function centerOnBase() {
+    const map = window.ACS_SkyTrack_Map;
+    if (!map) return;
+
+    const baseICAO =
+      localStorage.getItem("ACS_BASE_ICAO") ||
+      localStorage.getItem("acs_base") ||
+      "LEMD";
+
+    const ap = getAirport(baseICAO);
+    if (!ap || !Number.isFinite(ap.lat) || !Number.isFinite(ap.lng)) {
+      console.warn("⚠️ SkyTrack: base coords not ready:", baseICAO);
+      return;
+    }
+
+    map.setView([ap.lat, ap.lng], 6);
+    console.log("🎯 SkyTrack centered on base:", baseICAO);
+  }
+
+  // -----------------------------
+  // Render markers from SNAPSHOT ONLY
+  // -----------------------------
+  const markers = {};
+  function resolveLatLng(item) {
+    // EN_ROUTE → interpolate using position.progress + flight origin/destination
+    if (item.state === "EN_ROUTE" && item.flight && item.position && Number.isFinite(item.position.progress)) {
+      const org = getAirport(item.flight.origin);
+      const dst = getAirport(item.flight.destination);
+      if (!org || !dst) return null;
+
+      const t = Math.max(0, Math.min(1, item.position.progress));
+      return [lerp(org.lat, dst.lat, t), lerp(org.lng, dst.lng, t)];
+    }
+
+    // GROUND/MAINTENANCE → airport in position.airport
+    if (item.position && item.position.airport) {
+      const ap = getAirport(item.position.airport);
+      if (!ap) return null;
+      return [ap.lat, ap.lng];
+    }
+
+    return null;
+  }
+
+  function updateMarkers(snapshot) {
+    const map = window.ACS_SkyTrack_Map;
+    if (!map) return;
+
+    const alive = new Set();
+
+    snapshot.forEach(item => {
+      const pos = resolveLatLng(item);
+      if (!pos) return;
+
+      const id = item.aircraftId || item.registration;
+      if (!id) return;
+      alive.add(id);
+
+      const icon = (item.state === "EN_ROUTE") ? createAirIcon() : createGroundIcon();
+
+      let m = markers[id];
+      if (!m) {
+        m = L.marker(pos, { icon }).addTo(map);
+        markers[id] = m;
+      } else {
+        m.setLatLng(pos);
+        m.setIcon(icon);
+      }
+
+      const route = (item.flight && item.flight.origin && item.flight.destination)
+        ? `${item.flight.origin} → ${item.flight.destination}`
+        : (item.position?.airport ? `${item.position.airport}` : "—");
+
+      m.bindTooltip(
+        `<strong>${item.registration || "—"}</strong><br>${item.model || "—"}<br>${item.state}<br>${route}`,
+        { direction: "top", offset: [0, -8] }
+      );
+    });
+
+    // Cleanup
+    Object.keys(markers).forEach(id => {
+      if (!alive.has(id)) {
+        map.removeLayer(markers[id]);
+        delete markers[id];
+      }
+    });
+  }
+
+  // -----------------------------
+  // Live list from SNAPSHOT ONLY
+  // -----------------------------
+  function renderLiveList(snapshot) {
+    const listEl = document.getElementById("skytrackLiveList");
+    if (!listEl) return;
+
     listEl.innerHTML = "";
 
     if (!Array.isArray(snapshot) || snapshot.length === 0) {
@@ -674,14 +526,14 @@ function resolvePosition(item) {
       const card = document.createElement("div");
       card.className = "flight-card";
 
-      const route = item.route || "—";
-      const reg   = item.registration || "—";
-      const model = item.model || "—";
+      const route = (item.flight && item.flight.origin && item.flight.destination)
+        ? `${item.flight.origin} → ${item.flight.destination}`
+        : (item.position?.airport ? `${item.position.airport}` : "—");
 
       card.innerHTML = `
         <div class="flight-route">${route}</div>
         <div class="flight-meta">
-          <span>${model} · ${reg}</span>
+          <span>${item.model || "—"} · ${item.registration || "—"}</span>
           ${renderStateBadge(item.state)}
         </div>
       `;
@@ -690,15 +542,22 @@ function resolvePosition(item) {
     });
   }
 
-  // Listen to runtime snapshots
-  window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
-    renderList(e.detail);
+  // -----------------------------
+  // SINGLE LISTENER: SNAPSHOT
+  // -----------------------------
+  window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (e) => {
+    const snap = Array.isArray(e.detail) ? e.detail : [];
+    window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snap; // optional debug
+    centerOnBase();              // base may become ready later
+    updateMarkers(snap);
+    renderLiveList(snap);
   });
 
 })();
 </script>
 
 <script>
+   
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
