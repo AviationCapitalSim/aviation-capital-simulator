@@ -48,27 +48,49 @@ function ACS_SkyTrack_hookTimeEngine() {
   }
 
   registerTimeListener((currentTime) => {
-    let abs = null;
+  let abs = null;
 
-    if (currentTime && Number.isFinite(currentTime.absMin)) {
-      abs = currentTime.absMin;
-    } else if (window.ACS_TIME && Number.isFinite(window.ACS_TIME.absMin)) {
-      abs = window.ACS_TIME.absMin;
-    } else {
-      try {
-        const t = JSON.parse(localStorage.getItem("ACS_TIME") || "{}");
-        if (Number.isFinite(t.absMin)) abs = t.absMin;
-      } catch (e) {}
-    }
+  // ✅ Case A: listener sends absMin directly (number)
+  if (typeof currentTime === "number" && Number.isFinite(currentTime)) {
+    abs = currentTime;
+  }
 
-    if (!Number.isFinite(abs)) {
-      console.warn("⛔ SkyTrack: absMin not available from Time Engine");
-      return;
-    }
+  // ✅ Case B: listener sends object with absMin / nowAbsMin
+  if (!Number.isFinite(abs) && currentTime && typeof currentTime === "object") {
+    if (Number.isFinite(currentTime.absMin)) abs = currentTime.absMin;
+    else if (Number.isFinite(currentTime.nowAbsMin)) abs = currentTime.nowAbsMin;
+    else if (Number.isFinite(currentTime.absoluteMin)) abs = currentTime.absoluteMin;
+  }
 
-    ACS_SkyTrack.nowAbsMin = Math.floor(abs);
-    ACS_SkyTrack_onTick();
-  });
+  // ✅ Case C: global ACS_TIME carries absMin
+  if (!Number.isFinite(abs) && window.ACS_TIME && Number.isFinite(window.ACS_TIME.absMin)) {
+    abs = window.ACS_TIME.absMin;
+  }
+  if (!Number.isFinite(abs) && window.ACS_TIME && Number.isFinite(window.ACS_TIME.nowAbsMin)) {
+    abs = window.ACS_TIME.nowAbsMin;
+  }
+
+  // ✅ Case D: localStorage fallback
+  if (!Number.isFinite(abs)) {
+    try {
+      const t = JSON.parse(localStorage.getItem("ACS_TIME") || "{}");
+      if (Number.isFinite(t.absMin)) abs = t.absMin;
+      else if (Number.isFinite(t.nowAbsMin)) abs = t.nowAbsMin;
+    } catch (e) {}
+  }
+
+  if (!Number.isFinite(abs)) {
+    console.warn("⛔ SkyTrack: absMin not available from Time Engine");
+    return;
+  }
+
+  ACS_SkyTrack.nowAbsMin = Math.floor(abs);
+
+  // ✅ IMPORTANT: re-index schedule each tick (see R2)
+  ACS_SkyTrack_refreshScheduleIfNeeded();
+
+  ACS_SkyTrack_onTick();
+});
 }
 
 /* ============================================================
@@ -126,6 +148,54 @@ function ACS_SkyTrack_loadData() {
       ACS_SkyTrack.itemsByAircraft[it.aircraftId].push(it);
     });
   } catch {}
+}
+
+/* ============================================================
+   🔄 SCHEDULE REFRESH (NO LEGACY)
+   Purpose:
+   - Fix "no aircraft / no flights" when localStorage loads late
+   - Support alternative keys without changing architecture
+   ============================================================ */
+function ACS_SkyTrack_refreshScheduleIfNeeded() {
+  // If we already have flights indexed, do nothing
+  const hasAnyAircraft = Object.keys(ACS_SkyTrack.aircraftIndex || {}).length > 0;
+  const hasAnySchedule = Object.keys(ACS_SkyTrack.itemsByAircraft || {}).length > 0;
+
+  // If either is empty, try reloading (late localStorage / different key)
+  if (!hasAnyAircraft || !hasAnySchedule) {
+    // Fleet key variants
+    let fleetRaw = localStorage.getItem("ACS_MyAircraft");
+    if (!fleetRaw) fleetRaw = localStorage.getItem("ACS_MY_AIRCRAFT");
+
+    // Schedule key variants
+    let schedRaw = localStorage.getItem("scheduleItems");
+    if (!schedRaw) schedRaw = localStorage.getItem("ACS_SCHEDULE_TABLE");
+
+    if (fleetRaw) {
+      try {
+        const fleet = JSON.parse(fleetRaw || "[]");
+        const idx = {};
+        fleet.forEach(ac => { if (ac && ac.id) idx[ac.id] = ac; });
+        ACS_SkyTrack.aircraftIndex = idx;
+      } catch (e) {}
+    }
+
+    if (schedRaw) {
+      try {
+        const items = JSON.parse(schedRaw || "[]");
+        const byAircraft = {};
+        items.forEach(it => {
+          if (!it || !it.aircraftId) return;
+          if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
+          byAircraft[it.aircraftId].push(it);
+        });
+        ACS_SkyTrack.itemsByAircraft = byAircraft;
+      } catch (e) {}
+    }
+
+    // Optional: one-time visibility
+    // console.log("🔄 SkyTrack refresh:", Object.keys(ACS_SkyTrack.aircraftIndex).length, Object.keys(ACS_SkyTrack.itemsByAircraft).length);
+  }
 }
 
 /* ============================================================
