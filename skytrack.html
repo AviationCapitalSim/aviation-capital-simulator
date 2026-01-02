@@ -356,6 +356,78 @@ document.addEventListener("DOMContentLoaded", () => {
   window.ACS_SkyTrack_Map = map;
 });
 </script>
+
+<!-- ============================================================
+     ✈️ C3 — SKYTRACK REAL AIRCRAFT MARKERS (FR24 STYLE)
+     Uses REAL snapshot from runtime
+     ============================================================ -->
+<script>
+(function () {
+
+  if (!window.ACS_SkyTrack_Map) {
+    console.warn("SkyTrack Map not ready for markers");
+    return;
+  }
+
+  const map = window.ACS_SkyTrack_Map;
+  const markers = {};
+
+  // Simple FR24-like aircraft icon
+  const aircraftIcon = L.divIcon({
+    className: "acs-aircraft-icon",
+    html: "✈️",
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
+  });
+
+  // Resolve position (REAL, not invented)
+  function resolvePosition(item) {
+
+    // EN ROUTE → interpolate (for now midpoint, next step improves)
+    if (item.state === "EN_ROUTE" && item.route) {
+      return [20, 0]; // TEMP: world midpoint (real interpolation comes next)
+    }
+
+    // GROUND / MAINT → try base or last known airport
+    if (item.route) {
+      // We will resolve airport coordinates later (C3.1)
+      return [0, 0];
+    }
+
+    return null;
+  }
+
+  function updateMarkers(snapshot) {
+
+    snapshot.forEach(item => {
+      const pos = resolvePosition(item);
+      if (!pos) return;
+
+      let marker = markers[item.registration];
+
+      if (!marker) {
+        marker = L.marker(pos, { icon: aircraftIcon }).addTo(map);
+        markers[item.registration] = marker;
+      } else {
+        marker.setLatLng(pos);
+      }
+
+      marker.bindTooltip(
+        `<strong>${item.registration}</strong><br>${item.state}`,
+        { direction: "top", offset: [0, -8] }
+      );
+    });
+  }
+
+  // Listen to SAME snapshot as Live Traffic
+  window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
+    if (Array.isArray(e.detail)) {
+      updateMarkers(e.detail);
+    }
+  });
+
+})();
+</script>
    
 <!-- ============================================================
      🟧 C2.1 — SKYTRACK LIVE TRAFFIC UI
