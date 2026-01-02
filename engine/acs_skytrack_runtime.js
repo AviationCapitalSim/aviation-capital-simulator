@@ -1,17 +1,36 @@
 /* ============================================================
-   ✈️ ACS SKYTRACK RUNTIME — FR24 BASE CORE
+   ✈️ ACS SKYTRACK RUNTIME — FR24 ENGINE (FULL)
    Project: Aviation Capital Simulator (ACS)
-   File: engine/acs_skytrack_runtime.js
-   Mode: REAL scheduleItems + Game Clock
+   Module: SkyTrack Runtime
+   Version: v1.1 FR24 CORE COMPLETE
+   Date: 2026-01-02
+
+   PURPOSE:
+   - READ ONLY engine
+   - Consumes:
+       • ACS_MyAircraft
+       • scheduleItems (Schedule Table)
+       • ACS Time Engine (absolute minutes)
+   - Produces:
+       • Aircraft state: GROUND | EN_ROUTE | MAINTENANCE
+       • Position (lat/lng or airport)
+
+   RULES (APPROVED):
+   - NO pending state
+   - NO writing to localStorage
+   - NO recalculation of schedule
+   - Schedule Table is single source of truth
+   - FR24 behaviour (overnight supported)
    ============================================================ */
 
 /* ============================================================
-   🟦 GLOBAL STATE
+   🟦 RUNTIME NAMESPACE
    ============================================================ */
 window.ACS_SkyTrack = {
   initialized: false,
-  markers: [],
-  lastSnapshot: null
+  nowAbsMin: null,
+  aircraftIndex: {},
+  itemsByAircraft: {},
 };
 
 /* ============================================================
@@ -21,130 +40,605 @@ function ACS_SkyTrack_init() {
   if (ACS_SkyTrack.initialized) return;
   ACS_SkyTrack.initialized = true;
 
-  console.log("✈️ SkyTrack FR24 Core initialized");
+  console.log("✈️ SkyTrack Runtime initialized (FR24 core)");
 
-  if (typeof registerTimeListener !== "function") {
-    console.error("❌ registerTimeListener NOT found");
-    return;
-  }
-
-  registerTimeListener(ACS_SkyTrack_onTick);
+  ACS_SkyTrack_loadData();
+  ACS_SkyTrack_hookTimeEngine();
 }
 
 /* ============================================================
-   🟦 TIME TICK HANDLER (SINGLE SOURCE OF TRUTH)
+   ⏱ TIME ENGINE HOOK (ABS MINUTES)
    ============================================================ */
-function ACS_SkyTrack_onTick(gameDate) {
-  if (!window.ACS_SkyTrack_Map || typeof L === "undefined") {
-    console.warn("🟡 SkyTrack Map not ready for markers");
+function ACS_SkyTrack_hookTimeEngine() {
+  if (typeof registerTimeListener !== "function") {
+    console.warn("⛔ SkyTrack: Time Engine not available");
     return;
   }
 
-  const map = window.ACS_SkyTrack_Map;
+  registerTimeListener((currentTime) => {
+    ACS_SkyTrack.nowAbsMin = Math.floor(currentTime.getTime() / 60000);
+    ACS_SkyTrack_onTick();
+  });
+}
 
-  // Clear previous markers
-  ACS_SkyTrack.markers.forEach(m => map.removeLayer(m));
-  ACS_SkyTrack.markers = [];
+/* ============================================================
+   🟦 PASO A1 — ON TICK (CLEAN SNAPSHOT)
+   - Filters block-* and legacy items without abs times
+   - Eliminates ghost route (e.g. LIRN) from UI
+   - Non-destructive: NO writes to localStorage
+   - Keeps ACS_SKYTRACK_LIVE for compatibility + emits ACS_SKYTRACK_SNAPSHOT
+   ============================================================ */
+function ACS_SkyTrack_onTick() {
+  if (!Number.isFinite(ACS_SkyTrack.nowAbsMin)) return;
 
-  const raw = localStorage.getItem("scheduleItems");
-  if (!raw) {
-    console.warn("🟡 No scheduleItems in localStorage");
-    return;
-  }
+  const now = ACS_SkyTrack.nowAbsMin;
+  const liveList = [];      // legacy UI event (current skytrack.html listens to this)
+  const snapshotV2 = [];    // canonical snapshot for next steps (map, FR24, etc.)
 
-  let flights;
-  try {
-    flights = JSON.parse(raw);
-  } catch (e) {
-    console.error("❌ scheduleItems JSON invalid", e);
-    return;
-  }
+  Object.keys(ACS_SkyTrack.aircraftIndex).forEach(acId => {
+    const stateObj = ACS_SkyTrack_resolveState(acId);
+    if (!stateObj) return;
 
-  if (!Array.isArray(flights) || flights.length === 0) {
-    console.warn("🟡 scheduleItems empty");
-    return;
-  }
+    const ac = ACS_SkyTrack.aircraftIndex[acId];
+    const itemsRaw = ACS_SkyTrack.itemsByAircraft[acId] || [];
 
-  const nowMin =
-    gameDate.getUTCHours() * 60 +
-    gameDate.getUTCMinutes();
+    // ✅ HARD FILTER: ignore UI blocks + ignore legacy entries without abs times
+    const flights = itemsRaw
+      .filter(it =>
+        it &&
+        it.type === "flight" &&
+        typeof it.id === "string" &&
+        !it.id.startsWith("block-") &&
+        Number.isFinite(it.depAbsMin) &&
+        Number.isFinite(it.arrAbsMin) &&
+        it.origin &&
+        it.destination
+      )
+      .slice();
 
-  let visible = 0;
-  let bounds = [];
+    // ----------------------------
+    // Route label (UI only)
+    // ----------------------------
+    let routeLabel = null;
+    let flightNumber = null;
+    let originICAO = null;
+    let destinationICAO = null;
 
-  flights.forEach(f => {
-    if (!f.origin || !f.destination || !f.departure || !f.arrival) return;
+    if (stateObj.flight && stateObj.flight.origin && stateObj.flight.destination) {
+      originICAO = stateObj.flight.origin;
+      destinationICAO = stateObj.flight.destination;
+      routeLabel = `${originICAO} → ${destinationICAO}`;
+      flightNumber = stateObj.flight.flightNumber || null;
+    } else {
+      // Ground context: prefer next upcoming real flight; else last completed
+      const future = flights
+        .filter(it => it.depAbsMin > now)
+        .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
 
-    const dep = timeToMin(f.departure);
-    const arr = timeToMin(f.arrival);
+      const past = flights
+        .filter(it => it.arrAbsMin < now)
+        .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
 
-    let status = null;
-    let latlng = null;
+      const ctx = future || past;
 
-    // 🟢 GROUND
-    if (nowMin < dep) {
-      const ap = getAirport(f.origin);
-      if (!ap) return;
-      status = "GROUND";
-      latlng = [ap.lat, ap.lon];
+      if (ctx) {
+        originICAO = ctx.origin;
+        destinationICAO = ctx.destination;
+        routeLabel = `${originICAO} → ${destinationICAO}`;
+        flightNumber = ctx.flightNumber || null;
+      } else {
+        // If no flights exist, show airport if resolver gave one
+        const ap = stateObj.position && stateObj.position.airport ? stateObj.position.airport : (ac.baseAirport || null);
+        if (ap) routeLabel = `${ap}`;
+      }
     }
 
-    // ✈️ AIR
-    if (nowMin >= dep && nowMin < arr) {
-      const a = getAirport(f.origin);
-      const b = getAirport(f.destination);
-      if (!a || !b) return;
+    // ----------------------------
+    // Canonical snapshot (v2)
+    // ----------------------------
+    snapshotV2.push({
+      aircraftId: acId, // internal
+      registration: ac.registration || ac.reg || "—",
+      model: ac.model || ac.type || "—",
+      state: stateObj.state, // GROUND | EN_ROUTE | MAINTENANCE
+      position: stateObj.position || null, // { airport } or { progress }
+      originICAO,
+      destinationICAO,
+      route: routeLabel,
+      flightNumber
+    });
 
-      const ratio = (nowMin - dep) / (arr - dep);
-      latlng = [
-        a.lat + (b.lat - a.lat) * ratio,
-        a.lon + (b.lon - a.lon) * ratio
-      ];
-      status = "AIR";
-    }
-
-    if (!latlng) return;
-
-    const marker = L.circleMarker(latlng, {
-      radius: status === "AIR" ? 6 : 5,
-      color: status === "AIR" ? "#00ffcc" : "#3b82f6",
-      weight: 2,
-      fillOpacity: 0.9
-    }).addTo(map);
-
-    marker.bindTooltip(
-      `${f.origin} → ${f.destination}<br>${status}`,
-      { direction: "top" }
-    );
-
-    ACS_SkyTrack.markers.push(marker);
-    bounds.push(latlng);
-    visible++;
+    // ----------------------------
+    // Legacy live list (kept for your current UI)
+    // ----------------------------
+    liveList.push({
+      aircraftId: acId, // internal
+      registration: ac.registration || ac.reg || "—",
+      model: ac.model || ac.type || "—",
+      state: stateObj.state,
+      route: routeLabel,
+      flightNumber
+    });
   });
 
-  if (bounds.length > 0) {
-    map.fitBounds(bounds, { padding: [60, 60] });
+  // Optional debug handle (helps your console checks)
+  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshotV2;
+
+  // ✅ Keep current UI working (list)
+  window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_LIVE", { detail: liveList }));
+
+  // ✅ New canonical event (next steps: map markers, interpolation)
+  window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_SNAPSHOT", { detail: snapshotV2 }));
+}
+
+/* ============================================================
+   📦 LOAD DATA (FLEET + SCHEDULE)
+   ============================================================ */
+function ACS_SkyTrack_loadData() {
+  ACS_SkyTrack.aircraftIndex = ACS_SkyTrack_getFleetIndex();
+  ACS_SkyTrack.itemsByAircraft = ACS_SkyTrack_indexScheduleItems();
+}
+
+/* ============================================================
+   🧩 FLEET INDEX (ACS_MyAircraft)
+   ============================================================ */
+function ACS_SkyTrack_getFleetIndex() {
+  let fleet = [];
+
+  try {
+    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  } catch (e) {
+    console.warn("SkyTrack: Invalid ACS_MyAircraft");
   }
 
-  console.log(
-    `[SKYTRACK] ${gameDate.toUTCString()} | visible=${visible}`
-  );
+  const index = {};
+  fleet.forEach(ac => {
+    if (!ac || !ac.id) return;
+    index[ac.id] = ac;
+  });
+
+  return index;
 }
 
 /* ============================================================
-   🟦 HELPERS
+   🧩 SCHEDULE INDEX (scheduleItems)
    ============================================================ */
-function timeToMin(hhmm) {
-  const [h, m] = hhmm.split(":").map(Number);
-  return h * 60 + m;
-}
+function ACS_SkyTrack_indexScheduleItems() {
+  let items = [];
 
-function getAirport(icao) {
-  if (!window.WorldAirportsACS) return null;
-  return WorldAirportsACS[icao] || null;
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch (e) {
+    console.warn("SkyTrack: Invalid scheduleItems");
+  }
+
+  const byAircraft = {};
+  items.forEach(it => {
+    if (!it || !it.aircraftId) return;
+    if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
+    byAircraft[it.aircraftId].push(it);
+  });
+
+  return byAircraft;
 }
 
 /* ============================================================
-   🟦 AUTO INIT
+   🧠 STATE RESOLVER — FR24 LOGIC
+   ============================================================ */
+function ACS_SkyTrack_resolveState(aircraftId) {
+
+  const ac = ACS_SkyTrack.aircraftIndex[aircraftId];
+  const items = ACS_SkyTrack.itemsByAircraft[aircraftId] || [];
+  const now = ACS_SkyTrack.nowAbsMin;
+
+  if (!ac || !Number.isFinite(now)) return null;
+
+  /* ============================================================
+     1️⃣ MAINTENANCE — B-CHECK ONLY
+     ============================================================ */
+  const bCheck = items.find(it => {
+    if (it.type !== "service" || it.serviceType !== "B") return false;
+    if (!it.day || !it.start || !Number.isFinite(it.durationMin)) return false;
+
+    const startAbs = ACS_SkyTrack_dayTimeToAbs(it.day, it.start);
+    const endAbs = startAbs + it.durationMin;
+    return now >= startAbs && now < endAbs;
+  });
+
+  if (bCheck) {
+    return {
+      state: "MAINTENANCE",
+      position: { airport: ac.baseAirport || null },
+      flight: null
+    };
+  }
+
+  /* ============================================================
+     2️⃣ EN ROUTE — ACTIVE FLIGHT
+     ============================================================ */
+  const activeFlight = items.find(it => {
+    if (it.type !== "flight") return false;
+    if (!Number.isFinite(it.depAbsMin) || !Number.isFinite(it.arrAbsMin)) return false;
+    return now >= it.depAbsMin && now < it.arrAbsMin;
+  });
+
+  if (activeFlight) {
+    return {
+      state: "EN_ROUTE",
+      position: ACS_SkyTrack_computePosition(activeFlight, now),
+      flight: activeFlight
+    };
+  }
+
+  /* ============================================================
+     3️⃣ GROUND — FR24 RULES
+     ============================================================ */
+  const pastFlights = items
+    .filter(it => it.type === "flight" && Number.isFinite(it.arrAbsMin) && it.arrAbsMin < now)
+    .sort((a, b) => b.arrAbsMin - a.arrAbsMin);
+
+  if (pastFlights.length) {
+    return {
+      state: "GROUND",
+      position: { airport: pastFlights[0].destination || null },
+      flight: null
+    };
+  }
+
+  const futureFlights = items
+    .filter(it => it.type === "flight" && Number.isFinite(it.depAbsMin) && it.depAbsMin > now)
+    .sort((a, b) => a.depAbsMin - b.depAbsMin);
+
+  if (futureFlights.length) {
+    return {
+      state: "GROUND",
+      position: { airport: futureFlights[0].origin || null },
+      flight: null
+    };
+  }
+
+  return {
+    state: "GROUND",
+    position: { airport: ac.baseAirport || null },
+    flight: null
+  };
+}
+
+/* ============================================================
+   🗺️ POSITION ENGINE — EN ROUTE (LINEAR)
+   ============================================================ */
+function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
+  const { origin, destination, depAbsMin, arrAbsMin } = flight;
+  if (!origin || !destination) return null;
+
+  const p = (nowAbsMin - depAbsMin) / (arrAbsMin - depAbsMin);
+  return { progress: Math.max(0, Math.min(1, p)) };
+}
+
+/* ============================================================
+   🕒 DAY + TIME → ABS MINUTES (HELPER)
+   ============================================================ */
+function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
+  const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const dayIndex = days.indexOf(day.toLowerCase());
+  if (dayIndex < 0) return NaN;
+
+  const [hh, mm] = hhmm.split(":").map(Number);
+  const baseDayMin = dayIndex * 1440;
+  return baseDayMin + (hh * 60 + mm);
+}
+
+/* ============================================================
+   🧪 DEBUG UTILITIES
+   ============================================================ */
+function ACS_SkyTrack_debugDump() {
+  console.table({
+    nowAbsMin: ACS_SkyTrack.nowAbsMin,
+    fleetSize: Object.keys(ACS_SkyTrack.aircraftIndex).length,
+    scheduledAircraft: Object.keys(ACS_SkyTrack.itemsByAircraft).length
+  });
+}
+
+/* ============================================================
+   🚀 AUTO INIT
    ============================================================ */
 document.addEventListener("DOMContentLoaded", ACS_SkyTrack_init);
+
+/* ============================================================
+   🟦 A1 — SKYTRACK FLIGHT STATE RESOLVER (REAL TIME)
+   Source: scheduleItems (localStorage)
+   Time: ACS Time Engine (same as Dashboard)
+   Purpose:
+   - Detect active flights
+   - Determine GROUND / EN_ROUTE
+   - Emit REAL snapshot for map + live traffic
+   ============================================================ */
+
+(function () {
+
+  function getGameMinutes() {
+    // Same logic used across ACS (HH:MM → minutes)
+    if (!window.ACS_TIME || !ACS_TIME.time) return null;
+
+    const [hh, mm] = ACS_TIME.time.split(":").map(Number);
+    return (hh * 60) + mm;
+  }
+
+  function parseHM(str) {
+    if (!str || typeof str !== "string") return null;
+    const [h, m] = str.split(":").map(Number);
+    return (h * 60) + m;
+  }
+
+  function buildSnapshot() {
+    const nowMin = getGameMinutes();
+    if (nowMin === null) return [];
+
+    const raw = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+    // ⛔ Ignore legacy / block flights
+    const flights = raw.filter(f =>
+      f.origin &&
+      f.destination &&
+      f.departure &&
+      f.arrival &&
+      !String(f.id || "").startsWith("block-")
+    );
+
+    const snapshot = [];
+
+    flights.forEach(f => {
+      const dep = parseHM(f.departure);
+      const arr = parseHM(f.arrival);
+      if (dep === null || arr === null) return;
+
+      let state = "GROUND";
+
+      if (nowMin >= dep && nowMin <= arr) {
+        state = "EN_ROUTE";
+      }
+
+      snapshot.push({
+        registration: f.aircraft || f.aircraftId || "UNKNOWN",
+        model: f.modelKey || f.aircraft || "—",
+        state,
+        origin: f.origin,
+        destination: f.destination,
+        route: `${f.origin} → ${f.destination}`,
+        departure: f.departure,
+        arrival: f.arrival
+      });
+    });
+
+    return snapshot;
+  }
+
+  function emitSnapshot() {
+    const snap = buildSnapshot();
+    window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snap;
+
+    window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_LIVE", {
+      detail: snap
+    }));
+  }
+
+  // ⏱ Run every 30 seconds of game time
+  setInterval(emitSnapshot, 30_000);
+
+  // Run once on load
+  setTimeout(emitSnapshot, 1500);
+
+})();
+
+/* ============================================================
+   🟦 A2 — SKYTRACK POSITION INTERPOLATION (FR24 STYLE)
+   Requires:
+   - A1 snapshot active
+   - WorldAirportsACS loaded
+   Purpose:
+   - Compute REAL aircraft lat/lng while EN_ROUTE
+   ============================================================ */
+
+(function () {
+
+  function hmToMin(hm) {
+    const [h, m] = hm.split(":").map(Number);
+    return (h * 60) + m;
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function enrichSnapshotWithPosition(snapshot) {
+    if (!window.WorldAirportsACS || !Array.isArray(snapshot)) return snapshot;
+
+    const now = window.ACS_TIME && ACS_TIME.time
+      ? hmToMin(ACS_TIME.time)
+      : null;
+
+    if (now === null) return snapshot;
+
+    snapshot.forEach(f => {
+
+      const depAp = WorldAirportsACS[f.origin];
+      const arrAp = WorldAirportsACS[f.destination];
+
+      if (!depAp || !arrAp) return;
+
+      // GROUND → stay at origin
+      if (f.state === "GROUND") {
+        f.lat = depAp.lat;
+        f.lng = depAp.lng;
+        return;
+      }
+
+      // EN_ROUTE → interpolate
+      if (f.state === "EN_ROUTE") {
+        const dep = hmToMin(f.departure);
+        const arr = hmToMin(f.arrival);
+
+        if (arr <= dep) return;
+
+        const t = Math.min(
+          Math.max((now - dep) / (arr - dep), 0),
+          1
+        );
+
+        f.lat = lerp(depAp.lat, arrAp.lat, t);
+        f.lng = lerp(depAp.lng, arrAp.lng, t);
+      }
+
+    });
+
+    return snapshot;
+  }
+
+  // 🔁 Hook into A1 emissions
+  window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
+    const enriched = enrichSnapshotWithPosition(e.detail || []);
+
+    // overwrite last snapshot with positions
+    window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = enriched;
+
+    // re-emit enriched snapshot
+    window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_POSITION", {
+      detail: enriched
+    }));
+  });
+
+})();
+
+/* ============================================================
+   🟦 A3 — SKYTRACK MAP MARKERS (FR24 STYLE)
+   Requires:
+   - ACS_SkyTrack_Map
+   - A2 enriched snapshot (lat / lng)
+   Purpose:
+   - Render aircraft markers on map
+   ============================================================ */
+
+(function () {
+
+  const markers = {};
+
+  function createAirIcon() {
+    return L.divIcon({
+      className: "acs-aircraft-icon",
+      html: "✈️",
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+  }
+
+  function createGroundIcon() {
+    return L.divIcon({
+      className: "acs-ground-aircraft",
+      html: `<div style="
+        width:14px;
+        height:14px;
+        background:#0b3cff;
+        border:2px solid #001a66;
+        border-radius:3px;
+        box-shadow:0 0 6px rgba(0,0,0,.6);
+      "></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+  }
+
+  window.addEventListener("ACS_SKYTRACK_POSITION", (e) => {
+
+    const map = window.ACS_SkyTrack_Map;
+    if (!map || !Array.isArray(e.detail)) return;
+
+    const alive = new Set();
+
+    e.detail.forEach(f => {
+      if (!Number.isFinite(f.lat) || !Number.isFinite(f.lng)) return;
+
+      const id = f.registration;
+      alive.add(id);
+
+      let marker = markers[id];
+
+      const icon = f.state === "EN_ROUTE"
+        ? createAirIcon()
+        : createGroundIcon();
+
+      if (!marker) {
+        marker = L.marker([f.lat, f.lng], { icon }).addTo(map);
+        markers[id] = marker;
+      } else {
+        marker.setLatLng([f.lat, f.lng]);
+        marker.setIcon(icon);
+      }
+
+      marker.bindTooltip(
+        `<strong>${f.registration}</strong><br>
+         ${f.route}<br>
+         ${f.state}`,
+        { direction: "top", offset: [0, -8] }
+      );
+    });
+
+    // 🧹 Remove obsolete markers
+    Object.keys(markers).forEach(id => {
+      if (!alive.has(id)) {
+        map.removeLayer(markers[id]);
+        delete markers[id];
+      }
+    });
+
+  });
+
+})();
+
+/* ============================================================
+   🟦 A3.FIX — MAP READY HANDSHAKE + SNAPSHOT REPLAY
+   Purpose:
+   - Esperar a que Leaflet esté listo
+   - Reinyectar el último snapshot de vuelos
+   - Centrar el mapa en la base operativa
+   ============================================================ */
+
+(function ACS_SkyTrack_MapReadyReplay() {
+  let retries = 0;
+  const MAX_RETRIES = 40; // ~4 segundos
+
+  const waitForMap = setInterval(() => {
+    const map = window.ACS_SkyTrack_Map;
+    const snapshot = window.__ACS_LAST_SKYTRACK_SNAPSHOT__;
+
+    if (map && snapshot && Array.isArray(snapshot)) {
+      clearInterval(waitForMap);
+
+      console.log("🗺️ SkyTrack Map READY — Replaying snapshot", snapshot);
+
+      // 🔁 Reinyectar vuelos al runtime
+      if (typeof window.ACS_SkyTrack_RenderFlights === "function") {
+        window.ACS_SkyTrack_RenderFlights(snapshot);
+      }
+
+      // 🎯 Focus en BASE si existe
+      const baseICAO =
+        localStorage.getItem("ACS_BASE_ICAO") ||
+        localStorage.getItem("acs_base") ||
+        "LEMD";
+
+      if (window.ACS_WorldAirports && window.ACS_WorldAirports[baseICAO]) {
+        const { lat, lon } = window.ACS_WorldAirports[baseICAO];
+        map.setView([lat, lon], 6);
+        console.log("🎯 SkyTrack centered on base:", baseICAO);
+      }
+
+      return;
+    }
+
+    retries++;
+    if (retries >= MAX_RETRIES) {
+      clearInterval(waitForMap);
+      console.warn("⚠️ SkyTrack Map handshake timeout");
+    }
+  }, 100);
+})();
