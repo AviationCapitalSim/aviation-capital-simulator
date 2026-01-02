@@ -49,6 +49,7 @@ function ACS_SkyTrack_init() {
 /* ============================================================
    ⏱ TIME ENGINE HOOK (ABS MINUTES)
    ============================================================ */
+
 function ACS_SkyTrack_hookTimeEngine() {
   if (typeof registerTimeListener !== "function") {
     console.warn("⛔ SkyTrack: Time Engine not available");
@@ -56,9 +57,31 @@ function ACS_SkyTrack_hookTimeEngine() {
   }
 
   registerTimeListener((currentTime) => {
-    ACS_SkyTrack.nowAbsMin = Math.floor(currentTime.getTime() / 60000);
-    ACS_SkyTrack_onTick();
-  });
+  // ✅ Use ABS minutes from ACS Time Engine (NOT epoch minutes)
+  // Priority: currentTime.absMin → window.ACS_TIME.absMin → localStorage("ACS_TIME").absMin
+  let abs = null;
+
+  if (currentTime && Number.isFinite(currentTime.absMin)) {
+    abs = currentTime.absMin;
+  } else if (window.ACS_TIME && Number.isFinite(window.ACS_TIME.absMin)) {
+    abs = window.ACS_TIME.absMin;
+  } else {
+    try {
+      const t = JSON.parse(localStorage.getItem("ACS_TIME") || "{}");
+      if (Number.isFinite(t.absMin)) abs = t.absMin;
+      else if (Number.isFinite(t.nowAbsMin)) abs = t.nowAbsMin;
+    } catch (e) {}
+  }
+
+  if (!Number.isFinite(abs)) {
+    console.warn("⛔ SkyTrack: absMin not available from Time Engine");
+    return;
+  }
+
+  ACS_SkyTrack.nowAbsMin = Math.floor(abs);
+  ACS_SkyTrack_onTick();
+});
+
 }
 
 /* ============================================================
