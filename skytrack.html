@@ -95,77 +95,37 @@
   position: relative;
 }
 
-/* 🟦 Radar square */
+.atc-marker {
+  position: relative;
+}
+
+.atc-marker {
+  position: relative;
+}
+
+/* 🟦 Qatar Radar Blip */
 .atc-box {
-  width: 9px;
-  height: 9px;
-  background: #0b2a4a;           /* azul marino */
-  border: 1px solid #4da3ff;     /* borde radar */
-  box-sizing: border-box;
-  box-shadow: 0 0 4px rgba(77,163,255,0.6);
-}
-
-/* 🔢 Flight number */
-.atc-label {
-  position: absolute;
-  top: -14px;
-  left: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #111;                   /* negro/gris oscuro */
-  background: rgba(255,255,255,0.85);
-  padding: 1px 4px;
+  min-width: 22px;
+  height: 16px;
+  background: linear-gradient(145deg, #0b2a4a, #081c33);
+  border: 1px solid rgba(255,215,120,0.8);
   border-radius: 3px;
-  white-space: nowrap;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
-}
-    
-/* ============================================================
-   🟦 ACS SKYTRACK — RADAR DOT (SIGNATURE)
-   ============================================================ */
-.skytrack-aircraft-dot {
-  width: 7px;
-  height: 7px;
-  background: #0b2a4a;                 /* azul radar profundo */
-  border: 1px solid #4da3ff;           /* azul ATC */
-  border-radius: 2px;                  /* cuadrado técnico */
   box-shadow:
-    0 0 3px rgba(77,163,255,0.55),
-    inset 0 0 2px rgba(255,255,255,0.15);
-}
-/* ============================================================
-   🟦 ACS SKYTRACK — HITBOX & ATC CHIP
-   ============================================================ */
-
-.acs-hitbox {
-  width: 22px;               /* ⬅️ área de click */
-  height: 22px;
+    0 0 6px rgba(255,215,120,0.35),
+    inset 0 0 4px rgba(255,255,255,0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto;      /* ⬅️ crítico */
 }
 
-.skytrack-aircraft-dot {
-  pointer-events: none;      /* ⬅️ evita perder click */
-}
-
-/* 🏷 ATC flight number chip */
-.acs-atc-chip {
-  position: absolute;
-  top: -14px;
-  left: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #111;
-  background: rgba(255,255,255,0.85);
-  padding: 1px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
-  pointer-events: none;
+/* ✈️ Flight number */
+.atc-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #f6d98c; /* dorado suave */
+  letter-spacing: 0.5px;
+  font-family: "Orbitron", ui-monospace, sans-serif;
+  text-shadow: 0 0 2px rgba(255,215,120,0.6);
 }
 
 </style>
@@ -252,12 +212,7 @@
     }
   }, 1000);
 
-  console.log(
-  "⏱ SkyTrack ACS_TIME synced at minute:",
-  window.ACS_TIME && typeof window.ACS_TIME.minute === "number"
-    ? window.ACS_TIME.minute
-    : startMinute
-);
+  console.log("⏱ SkyTrack ACS_TIME synced at minute:", startMinute);
 
 })();
 
@@ -349,50 +304,7 @@ function resolveACSBase() {
 
   return activeUser.base;
 }
-   
-/* ============================================================
-   🌍 GREAT CIRCLE INTERPOLATION (SKYTRACK LOCAL)
-   ============================================================ */
 
-function interpolateGC(lat1, lon1, lat2, lon2, t) {
-  const toRad = d => d * Math.PI / 180;
-  const toDeg = r => r * 180 / Math.PI;
-
-  const φ1 = toRad(lat1);
-  const λ1 = toRad(lon1);
-  const φ2 = toRad(lat2);
-  const λ2 = toRad(lon2);
-
-  const sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1);
-  const sinφ2 = Math.sin(φ2), cosφ2 = Math.cos(φ2);
-
-  const Δλ = λ2 - λ1;
-
-  const a = Math.sin((φ2 - φ1) / 2) ** 2 +
-            cosφ1 * cosφ2 * Math.sin(Δλ / 2) ** 2;
-
-  const δ = 2 * Math.asin(Math.min(1, Math.sqrt(a)));
-
-  if (δ === 0) {
-    return { lat: lat1, lng: lon1 };
-  }
-
-  const A = Math.sin((1 - t) * δ) / Math.sin(δ);
-  const B = Math.sin(t * δ) / Math.sin(δ);
-
-  const x = A * cosφ1 * Math.cos(λ1) + B * cosφ2 * Math.cos(λ2);
-  const y = A * cosφ1 * Math.sin(λ1) + B * cosφ2 * Math.sin(λ2);
-  const z = A * sinφ1 + B * sinφ2;
-
-  const φi = Math.atan2(z, Math.sqrt(x * x + y * y));
-  const λi = Math.atan2(y, x);
-
-  return {
-    lat: toDeg(φi),
-    lng: toDeg(λi)
-  };
-}
-   
 /* ============================================================
    🛰 SKYTRACK — MAP INIT + RENDER ACTIVE FLIGHT (SINGLE SOURCE)
    ============================================================ */
@@ -467,344 +379,79 @@ function initSkyTrackMap() {
 
   }, 300); // 🔹 delay corto, seguro, no bloqueante
 }
-   
-// ============================================================
-// ✈️ SKYTRACK VISUAL LAYERS
-// ============================================================
-
-const liveFlightMarkers = {};
-const liveFlightTraces  = {};
-const liveFlightPlans   = {};
-
+    
 /* ============================================================
-   🛬 BUILD GROUND FLEET (STATIC FALLBACK)
+   ✈️ SKYTRACK — LIVE FLIGHTS LAYER
    ============================================================ */
-function buildGroundFleetFromSchedule() {
+let liveFlightMarkers = {};
 
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch (e) {
-    return [];
-  }
+function renderLiveFlights(){
 
-  const groundFleet = [];
+  if (!map) return; // ⛔ seguridad
 
-  items.forEach(f => {
-    if (!f || !f.aircraftId || !f.origin) return;
+  // ============================================================
+// ✈️ SKYTRACK — READ LIVE FLIGHTS (RUNTIME SOURCE)
+// ============================================================
 
-    const apt = (typeof getSkyTrackAirportByICAO === "function")
-      ? getSkyTrackAirportByICAO(f.origin)
-      : null;
+let flights = [];
 
-    if (!apt || typeof apt.lat !== "number") return;
-
-    groundFleet.push({
-      aircraftId: f.aircraftId,
-      origin: f.origin,
-      destination: f.destination || "",
-      lat: apt.lat,
-      lng: apt.lng,
-      status: "ground"
-    });
-  });
-
-  return groundFleet;
+try {
+  flights = Array.isArray(window.ACS_LIVE_FLIGHTS)
+    ? window.ACS_LIVE_FLIGHTS
+    : [];
+} catch (e) {
+  flights = [];
 }
 
-/* ============================================================
-   🟦 SKYTRACK — AIRCRAFT ICON (BLUE SQUARE)
-   ============================================================ */
-const SKYTRACK_AIRCRAFT_ICON = L.divIcon({
-  className: "skytrack-aircraft-icon",
-  iconSize: [8, 8],          // 🔹 tamaño visual REAL
-  iconAnchor: [4, 4],
-  popupAnchor: [0, -10],
-  html: `
-    <div class="acs-hitbox">
-      <div class="skytrack-aircraft-dot"></div>
-    </div>
-  `
-});
-
-/* ============================================================
-   🟦 FASE 7.1 — BUILD WEEKLY FLIGHT QUEUE (BY AIRCRAFT)
-   ============================================================ */
-
-window.ACS_FLIGHT_QUEUE = {};
-
-if (Array.isArray(window.ACS_LIVE_FLIGHTS)) {
-
-  window.ACS_LIVE_FLIGHTS.forEach(f => {
-
-    if (!f.aircraftId || typeof f.depMin !== "number") return;
-
-    if (!window.ACS_FLIGHT_QUEUE[f.aircraftId]) {
-      window.ACS_FLIGHT_QUEUE[f.aircraftId] = [];
-    }
-
-    window.ACS_FLIGHT_QUEUE[f.aircraftId].push(f);
+const activeIds = new Set();
+  
+function createATCMarkerIcon(f) {
+  const label = (f.flightOut || f.aircraftId || "").toString();
+  return L.divIcon({
+    className: "atc-marker",
+    html: `
+      <div class="atc-box"></div>
+      <div class="atc-label">${label}</div>
+    `,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11]
   });
-
-  // Ordenar vuelos por hora de salida (depMin)
-  Object.keys(window.ACS_FLIGHT_QUEUE).forEach(acId => {
-    window.ACS_FLIGHT_QUEUE[acId].sort((a, b) => a.depMin - b.depMin);
-  });
-
-}
-
-console.log(
-  "[FASE 7.1] ACS_FLIGHT_QUEUE READY",
-  Object.keys(window.ACS_FLIGHT_QUEUE).map(id => ({
-    aircraftId: id,
-    flights: window.ACS_FLIGHT_QUEUE[id].length
-  }))
-);
-   
-/* ============================================================
-   🟦 S1 — SKYTRACK RENDER LIVE FLIGHTS (FED & STABLE)
-   ------------------------------------------------------------
-   - Consumes ACS_LIVE_FLIGHTS[]
-   - Supports ground + enroute
-   - 1 marker per aircraftId
-   - No legacy paths
-   ============================================================ */
-function renderLiveFlights() {
-
-// 🧹 HARD RESET IF NO REAL FLIGHTS
-if (!Array.isArray(window.ACS_LIVE_FLIGHTS) || window.ACS_LIVE_FLIGHTS.length === 0) {
-
-  if (window.SKYTRACK_MARKERS) {
-    Object.values(window.SKYTRACK_MARKERS).forEach(m => {
-      try { map.removeLayer(m); } catch(e){}
-    });
-  }
-
-  window.SKYTRACK_MARKERS = {};
-  return;
 }
   
-  if (!map) return;
-
-  const nowMin = (window.ACS_TIME && typeof window.ACS_TIME.minute === "number")
-    ? window.ACS_TIME.minute
-    : null;
-  if (nowMin === null) return;
-
-  // ============================================================
-  // ✈️ SOURCE: LIVE FLIGHTS OR GROUND FALLBACK
-  // ============================================================
-
-  let flights = [];
-  try {
-    flights = Array.isArray(window.ACS_LIVE_FLIGHTS)
-      ? window.ACS_LIVE_FLIGHTS
-      : [];
-  } catch (e) {
-    flights = [];
-  }
-
-  // 🛬 FALLBACK — NO ACTIVE FLIGHTS → SHOW GROUND FLEET
-  if (flights.length === 0 && typeof buildGroundFleetFromSchedule === "function") {
-    flights = buildGroundFleetFromSchedule();
-  }
-
-  if (!Array.isArray(flights) || flights.length === 0) return;
-
-  // Marker registry (persist between ticks)
-  window.SKYTRACK_MARKERS = window.SKYTRACK_MARKERS || {};
-  const activeIds = new Set();
-
-  // ============================================================
-  // 🔁 RENDER EACH FLIGHT
-  // ============================================================
   flights.forEach(f => {
-    if (!f || !f.aircraftId || !f.origin) return;
+  if (typeof f.lat !== "number" || typeof f.lng !== "number") return;
 
-    const id = f.aircraftId.toString();
-    activeIds.add(id);
+  activeIds.add(f.aircraftId);
 
-    // ============================================================
-    // 📍 RESOLVE POSITION
-    // ============================================================
-   
-    let lat = f.lat;
-    let lng = f.lng;
-
-// ============================================================
-// ✈️ SKYTRACK — TIME BASED INTERPOLATION (CRITICAL)
-// ============================================================
-
-if (typeof lat !== "number" || typeof lng !== "number") {
-
-  const o = getSkyTrackAirportByICAO(f.origin);
-  const d = getSkyTrackAirportByICAO(f.destination);
-
-  if (!o || !d) return;
-
-  // Required timing
-  const depMin = f.depMin ?? f.departureMin;
-  const arrMin = f.arrMin ?? f.arrivalMin;
-
-  if (typeof depMin !== "number" || typeof arrMin !== "number") {
-    lat = o.lat;
-    lng = o.lng;
-  } else {
-    const total = arrMin - depMin;
-    const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
-    const p = total > 0 ? elapsed / total : 0;
-
-    lat = o.lat + (d.lat - o.lat) * p;
-    lng = o.lng + (d.lng - o.lng) * p;
-  }
-}
-
-// ============================================================
-// ✈️ CREATE / UPDATE MARKER
-// ============================================================
-
-let marker = window.SKYTRACK_MARKERS[id];
-
-if (!marker) {
-  marker = L.marker([lat, lng], {
-    icon: L.divIcon({
-      className: "acs-atc-marker",
-      iconSize: [8, 8],
-      iconAnchor: [4, 4],
-      html: `
-        <div class="acs-hitbox">
-          <div class="skytrack-aircraft-dot"></div>
-          <div class="acs-atc-chip">
-            ${f.flightNumber || f.flightOut || ""}
-          </div>
-        </div>
-      `
-    })
-  }).addTo(map);
-
-  window.SKYTRACK_MARKERS[id] = marker;
-} else {
-  marker.setLatLng([lat, lng]);
-}
-
-// ============================================================
-// 🧾 POPUP (FR24 STYLE — CLEAN)
-// ============================================================
-
-const depMin = f.depMin ?? f.departureMin;
-const arrMin = f.arrMin ?? f.arrivalMin;
-
-let progressPct = "";
-let remainingTxt = "";
-
-// ✅ SAFE ONLY: si no hay tiempos válidos, no muestra números raros
-if (typeof depMin === "number" && typeof arrMin === "number" && arrMin > depMin && typeof nowMin === "number") {
-  const total = arrMin - depMin;
-  const elapsed = Math.max(0, Math.min(nowMin - depMin, total));
-  const pct = Math.round((elapsed / total) * 100);
-
-  const remaining = Math.max(0, arrMin - nowMin);
-  const h = Math.floor(remaining / 60);
-  const m = remaining % 60;
-
-  progressPct = `${pct}% completed`;
-  remainingTxt = `${h}h ${m}m remaining`;
-}
-
-const statusTxt =
-  f.status === "AIRBORNE" ? "En route" :
-  f.status === "ARRIVED"  ? "Arrived" :
-  "On ground";
-
-// ✅ Aircraft model fallback (quita Unknown)
-const modelTxt =
-  (f.aircraftModel && String(f.aircraftModel).trim()) ||
-  (f.model && String(f.model).trim()) ||
-  (f.type && String(f.type).trim()) ||
-  "—";
-
-const flightTxt =
-  (f.flightNumber && String(f.flightNumber).trim()) ||
-  (f.flightOut && String(f.flightOut).trim()) ||
-  "FLIGHT";
-
-if (!marker._acsPopupBound) {
-  marker.bindPopup(
-    `<b>${flightTxt}</b><br>
-     ${f.origin} → ${f.destination}<br>
-     <small>
-       Aircraft: ${modelTxt}<br>
-       Status: ${statusTxt}<br>
-       ${progressPct ? progressPct + "<br>" : ""}
-       ${remainingTxt ? remainingTxt : ""}
-     </small>`,
+  // Crear marker si no existe (ATC square + flight number)
+  
+  if (!liveFlightMarkers[f.aircraftId]) {
+  liveFlightMarkers[f.aircraftId] = L.marker(
+    [f.lat, f.lng],
     {
-      autoPan: false,
-      closeOnClick: false,
-      autoClose: false
+      icon: createATCMarkerIcon(f),
+      title: `${f.flightOut || f.aircraftId || "FLIGHT"}`
     }
-  );
-
-  marker._acsPopupBound = true;
+  ).addTo(map);
 }
 
+  // Actualizar posición SIEMPRE
+  liveFlightMarkers[f.aircraftId].setLatLng([f.lat, f.lng]);
 });
 
-  // ============================================================
-  // 🧹 CLEANUP — REMOVE MARKERS NOT ACTIVE ANYMORE
-  // ============================================================
-
-  Object.keys(window.SKYTRACK_MARKERS).forEach(id => {
-    if (!activeIds.has(id)) {
-      map.removeLayer(window.SKYTRACK_MARKERS[id]);
-      delete window.SKYTRACK_MARKERS[id];
-    }
-  });
-}
-
-  // ------------------------------------------------------------
-  // 🧩 ATC ICON (SQUARE + FLIGHT NUMBER)
-  // ------------------------------------------------------------
-  function createATCMarkerIcon(f) {
-    const label = (f.flightOut || f.aircraftId || "").toString();
-    return L.divIcon({
-      className: "atc-marker",
-      html: `
-        <div class="atc-box"></div>
-        <div class="atc-label">${label}</div>
-      `,
-      iconSize: [22, 22],
-      iconAnchor: [11, 11]
-    });
-  }
-
-  // ------------------------------------------------------------
-  // 🧹 REMOVE MARKERS NOT ACTIVE ANYMORE
-  // ------------------------------------------------------------
-   
+  // Eliminar vuelos que ya no están activos
   Object.keys(liveFlightMarkers).forEach(id => {
-
-  if (!activeIds.has(id)) {
-
-    if (liveFlightMarkers[id]) {
+    if (!activeIds.has(id)) {
       map.removeLayer(liveFlightMarkers[id]);
       delete liveFlightMarkers[id];
     }
-
-    if (liveFlightTraces[id]) {
-      map.removeLayer(liveFlightTraces[id]);
-      delete liveFlightTraces[id];
-    }
-
-  }
-
-});
+  });
+}
 
 /* ============================================================
    ⏱ SKYTRACK — INIT + TIME SYNC
    ============================================================ */
-   
-  document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
   initSkyTrackMap();
 
   if (typeof registerTimeListener === "function") {
@@ -901,39 +548,46 @@ function handleLogout() {
 </script>
     
 <script>
-  
 /* ============================================================
-   🕐 SKYTRACK INIT
+   ⏱ SKYTRACK TIME LISTENER
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+  renderActiveFlight();
+});
+}
+
+/* ============================================================
+   🕐 Reloj cockpit Airbus sincronizado con ACS
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
-
-  /* ============================================================
-     🛰 READ ACTIVE FLIGHT FROM SCHEDULE (OPTIONAL)
-     ============================================================ */
-
-  const activeFlightRaw = localStorage.getItem("ACS_ACTIVE_FLIGHT");
-
-  if (!activeFlightRaw) {
-    console.log("🛰 SkyTrack: No active flight");
-  } else {
-    try {
-      JSON.parse(activeFlightRaw);
-    } catch (e) {
-      console.warn("⚠️ Invalid ACS_ACTIVE_FLIGHT");
-    }
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
   }
+});
 
-  /* ============================================================
-     ⏱ START TIME ENGINE
-     ============================================================ */
+/* ============================================================
+   🛰 READ ACTIVE FLIGHT FROM SCHEDULE
+   ============================================================ */
 
-  if (typeof ACS_startTimeEngine === "function") {
-    ACS_startTimeEngine();
-  }
+const activeFlightRaw = localStorage.getItem("ACS_ACTIVE_FLIGHT");
 
-}); // 🔴 ESTE CIERRE ES CRÍTICO — NO QUITAR
-
+if (!activeFlightRaw) {
+  console.log("🛰 SkyTrack: No active flight");
+} else {
+  const activeFlight = JSON.parse(activeFlightRaw);
+}
+  
+/* ============================================================
+   ⏱ SKYTRACK — START TIME ENGINE
+   ============================================================ */
+if (typeof ACS_startTimeEngine === "function") {
+  ACS_startTimeEngine();
+}
+    
 </script>
 
 </body>
