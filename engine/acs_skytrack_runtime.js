@@ -429,3 +429,167 @@ document.addEventListener("DOMContentLoaded", ACS_SkyTrack_init);
   setTimeout(emitSnapshot, 1500);
 
 })();
+
+/* ============================================================
+   🟦 A2 — SKYTRACK POSITION INTERPOLATION (FR24 STYLE)
+   Requires:
+   - A1 snapshot active
+   - WorldAirportsACS loaded
+   Purpose:
+   - Compute REAL aircraft lat/lng while EN_ROUTE
+   ============================================================ */
+
+(function () {
+
+  function hmToMin(hm) {
+    const [h, m] = hm.split(":").map(Number);
+    return (h * 60) + m;
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function enrichSnapshotWithPosition(snapshot) {
+    if (!window.WorldAirportsACS || !Array.isArray(snapshot)) return snapshot;
+
+    const now = window.ACS_TIME && ACS_TIME.time
+      ? hmToMin(ACS_TIME.time)
+      : null;
+
+    if (now === null) return snapshot;
+
+    snapshot.forEach(f => {
+
+      const depAp = WorldAirportsACS[f.origin];
+      const arrAp = WorldAirportsACS[f.destination];
+
+      if (!depAp || !arrAp) return;
+
+      // GROUND → stay at origin
+      if (f.state === "GROUND") {
+        f.lat = depAp.lat;
+        f.lng = depAp.lng;
+        return;
+      }
+
+      // EN_ROUTE → interpolate
+      if (f.state === "EN_ROUTE") {
+        const dep = hmToMin(f.departure);
+        const arr = hmToMin(f.arrival);
+
+        if (arr <= dep) return;
+
+        const t = Math.min(
+          Math.max((now - dep) / (arr - dep), 0),
+          1
+        );
+
+        f.lat = lerp(depAp.lat, arrAp.lat, t);
+        f.lng = lerp(depAp.lng, arrAp.lng, t);
+      }
+
+    });
+
+    return snapshot;
+  }
+
+  // 🔁 Hook into A1 emissions
+  window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
+    const enriched = enrichSnapshotWithPosition(e.detail || []);
+
+    // overwrite last snapshot with positions
+    window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = enriched;
+
+    // re-emit enriched snapshot
+    window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_POSITION", {
+      detail: enriched
+    }));
+  });
+
+})();
+
+/* ============================================================
+   🟦 A3 — SKYTRACK MAP MARKERS (FR24 STYLE)
+   Requires:
+   - ACS_SkyTrack_Map
+   - A2 enriched snapshot (lat / lng)
+   Purpose:
+   - Render aircraft markers on map
+   ============================================================ */
+
+(function () {
+
+  const markers = {};
+
+  function createAirIcon() {
+    return L.divIcon({
+      className: "acs-aircraft-icon",
+      html: "✈️",
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
+    });
+  }
+
+  function createGroundIcon() {
+    return L.divIcon({
+      className: "acs-ground-aircraft",
+      html: `<div style="
+        width:14px;
+        height:14px;
+        background:#0b3cff;
+        border:2px solid #001a66;
+        border-radius:3px;
+        box-shadow:0 0 6px rgba(0,0,0,.6);
+      "></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+  }
+
+  window.addEventListener("ACS_SKYTRACK_POSITION", (e) => {
+
+    const map = window.ACS_SkyTrack_Map;
+    if (!map || !Array.isArray(e.detail)) return;
+
+    const alive = new Set();
+
+    e.detail.forEach(f => {
+      if (!Number.isFinite(f.lat) || !Number.isFinite(f.lng)) return;
+
+      const id = f.registration;
+      alive.add(id);
+
+      let marker = markers[id];
+
+      const icon = f.state === "EN_ROUTE"
+        ? createAirIcon()
+        : createGroundIcon();
+
+      if (!marker) {
+        marker = L.marker([f.lat, f.lng], { icon }).addTo(map);
+        markers[id] = marker;
+      } else {
+        marker.setLatLng([f.lat, f.lng]);
+        marker.setIcon(icon);
+      }
+
+      marker.bindTooltip(
+        `<strong>${f.registration}</strong><br>
+         ${f.route}<br>
+         ${f.state}`,
+        { direction: "top", offset: [0, -8] }
+      );
+    });
+
+    // 🧹 Remove obsolete markers
+    Object.keys(markers).forEach(id => {
+      if (!alive.has(id)) {
+        map.removeLayer(markers[id]);
+        delete markers[id];
+      }
+    });
+
+  });
+
+})();
