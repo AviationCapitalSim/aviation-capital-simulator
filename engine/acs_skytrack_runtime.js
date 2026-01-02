@@ -47,47 +47,41 @@ function ACS_SkyTrack_init() {
 }
 
 /* ============================================================
-   ⏱ TIME ENGINE HOOK (ABS MINUTES) — ACS CANONICAL
-   Uses ACS_TIME.minute (game absolute minutes)
+   ⏱ TIME ENGINE HOOK (ABS MINUTES) — ACS CANONICAL (SAFE)
    ============================================================ */
 function ACS_SkyTrack_hookTimeEngine() {
 
-  // 1️⃣ Preferred: direct access to ACS_TIME
-  if (window.ACS_TIME && Number.isFinite(ACS_TIME.minute)) {
+  // 🔑 Case 1: ACS_TIME exists in global scope (correct for ACS)
+  try {
+    if (typeof ACS_TIME !== "undefined" && Number.isFinite(ACS_TIME.minute)) {
 
-    // Initial sync
-    ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
-
-    // Subscribe to time engine
-    registerTimeListener(() => {
+      // Initial sync
       ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
-      ACS_SkyTrack_onTick();
-    });
 
-    console.log("⏱ SkyTrack hooked to ACS_TIME.minute");
-    return;
+      registerTimeListener(() => {
+        ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+        ACS_SkyTrack_onTick();
+      });
+
+      console.log("⏱ SkyTrack hooked to ACS_TIME.minute");
+      return;
+    }
+  } catch (e) {
+    // ignore, fallback below
   }
 
-  // 2️⃣ Fallback: legacy listener payload with absMin
+  // 🧯 Case 2: fallback ONLY if absMin explicitly provided
   if (typeof registerTimeListener === "function") {
 
     registerTimeListener((t) => {
-      let absMin = null;
-
       if (t && Number.isFinite(t.absMin)) {
-        absMin = t.absMin;
-      }
-
-      if (!Number.isFinite(absMin)) {
-        console.warn("SkyTrack: invalid time payload", t);
+        ACS_SkyTrack.nowAbsMin = t.absMin;
+        ACS_SkyTrack_onTick();
         return;
       }
-
-      ACS_SkyTrack.nowAbsMin = absMin;
-      ACS_SkyTrack_onTick();
     });
 
-    console.log("⏱ SkyTrack hooked via fallback absMin");
+    console.warn("⚠️ SkyTrack using fallback time hook");
     return;
   }
 
