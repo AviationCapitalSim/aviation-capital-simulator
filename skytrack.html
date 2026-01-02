@@ -374,6 +374,111 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <!-- ============================================================
+     🟦 C3.1 — SKYTRACK SNAPSHOT → MAP MARKERS (FR24 CORE)
+     Reads window.__ACS_LAST_SKYTRACK_SNAPSHOT__
+     Renders REAL aircraft on Leaflet map
+     ============================================================ -->
+<script>
+(function () {
+
+  function waitForMapAndSnapshot(cb) {
+    const t = setInterval(() => {
+      if (window.ACS_SkyTrack_Map && window.__ACS_LAST_SKYTRACK_SNAPSHOT__) {
+        clearInterval(t);
+        cb();
+      }
+    }, 300);
+  }
+
+  waitForMapAndSnapshot(() => {
+
+    const map = window.ACS_SkyTrack_Map;
+    const markers = {};
+
+    // ✈️ Airborne icon
+    const airIcon = L.divIcon({
+      className: "acs-aircraft-icon",
+      html: "✈️",
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+
+    // 🟦 Ground icon (FR24-style square)
+    const groundIcon = L.divIcon({
+      className: "acs-ground-aircraft",
+      html: `<div style="
+        width:14px;
+        height:14px;
+        background:#0b3cff;
+        border:2px solid #001a66;
+        border-radius:3px;
+        box-shadow:0 0 6px rgba(0,0,0,.6);
+      "></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+
+    function resolveGroundPosition(item) {
+      if (!window.ACS_BaseResolver || !window.WorldAirportsACS) return null;
+      const base = window.ACS_BaseResolver.getBase();
+      if (!base || !base.icao) return null;
+
+      const ap = WorldAirportsACS[base.icao];
+      if (!ap) return null;
+
+      return [ap.lat, ap.lng];
+    }
+
+    function renderSnapshot(snapshot) {
+
+      snapshot.forEach(item => {
+        let pos = null;
+        let icon = groundIcon;
+
+        if (item.state === "EN_ROUTE") {
+          // TEMP: center map until interpolation step
+          pos = [20, 0];
+          icon = airIcon;
+        } else {
+          pos = resolveGroundPosition(item);
+        }
+
+        if (!pos) return;
+
+        let m = markers[item.registration];
+
+        if (!m) {
+          m = L.marker(pos, { icon }).addTo(map);
+          markers[item.registration] = m;
+        } else {
+          m.setLatLng(pos);
+          m.setIcon(icon);
+        }
+
+        m.bindTooltip(
+          `<strong>${item.registration}</strong><br>${item.model}<br>${item.state}`,
+          { direction: "top", offset: [0, -6] }
+        );
+      });
+    }
+
+    // Initial render
+    renderSnapshot(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
+
+    // Live updates
+    window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
+      if (Array.isArray(e.detail)) {
+        window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = e.detail;
+        renderSnapshot(e.detail);
+      }
+    });
+
+  });
+
+})();
+</script>
+   
+<!-- ============================================================
      C3 - SKYTRACK REAL AIRCRAFT MARKERS (FR24 STYLE)
      Uses REAL snapshot from runtime
      ============================================================ -->
