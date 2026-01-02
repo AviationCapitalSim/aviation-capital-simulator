@@ -343,3 +343,89 @@ function ACS_SkyTrack_debugDump() {
    🚀 AUTO INIT
    ============================================================ */
 document.addEventListener("DOMContentLoaded", ACS_SkyTrack_init);
+
+/* ============================================================
+   🟦 A1 — SKYTRACK FLIGHT STATE RESOLVER (REAL TIME)
+   Source: scheduleItems (localStorage)
+   Time: ACS Time Engine (same as Dashboard)
+   Purpose:
+   - Detect active flights
+   - Determine GROUND / EN_ROUTE
+   - Emit REAL snapshot for map + live traffic
+   ============================================================ */
+
+(function () {
+
+  function getGameMinutes() {
+    // Same logic used across ACS (HH:MM → minutes)
+    if (!window.ACS_TIME || !ACS_TIME.time) return null;
+
+    const [hh, mm] = ACS_TIME.time.split(":").map(Number);
+    return (hh * 60) + mm;
+  }
+
+  function parseHM(str) {
+    if (!str || typeof str !== "string") return null;
+    const [h, m] = str.split(":").map(Number);
+    return (h * 60) + m;
+  }
+
+  function buildSnapshot() {
+    const nowMin = getGameMinutes();
+    if (nowMin === null) return [];
+
+    const raw = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+    // ⛔ Ignore legacy / block flights
+    const flights = raw.filter(f =>
+      f.origin &&
+      f.destination &&
+      f.departure &&
+      f.arrival &&
+      !String(f.id || "").startsWith("block-")
+    );
+
+    const snapshot = [];
+
+    flights.forEach(f => {
+      const dep = parseHM(f.departure);
+      const arr = parseHM(f.arrival);
+      if (dep === null || arr === null) return;
+
+      let state = "GROUND";
+
+      if (nowMin >= dep && nowMin <= arr) {
+        state = "EN_ROUTE";
+      }
+
+      snapshot.push({
+        registration: f.aircraft || f.aircraftId || "UNKNOWN",
+        model: f.modelKey || f.aircraft || "—",
+        state,
+        origin: f.origin,
+        destination: f.destination,
+        route: `${f.origin} → ${f.destination}`,
+        departure: f.departure,
+        arrival: f.arrival
+      });
+    });
+
+    return snapshot;
+  }
+
+  function emitSnapshot() {
+    const snap = buildSnapshot();
+    window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snap;
+
+    window.dispatchEvent(new CustomEvent("ACS_SKYTRACK_LIVE", {
+      detail: snap
+    }));
+  }
+
+  // ⏱ Run every 30 seconds of game time
+  setInterval(emitSnapshot, 30_000);
+
+  // Run once on load
+  setTimeout(emitSnapshot, 1500);
+
+})();
