@@ -283,32 +283,24 @@ body {
   </div>
 
   <!-- ========================= GRID ========================= -->
-  <div class="skytrack-grid">
+<div class="skytrack-grid">
 
-    <!-- ===== LEFT: LIVE TRAFFIC ===== -->
-    <div class="panel">
-      <h3>✈️ Live Traffic</h3>
-      <div class="skytrack-list">
+  <!-- ===== LEFT: LIVE TRAFFIC ===== -->
+  <div class="panel">
+    <h3>✈️ Live Traffic</h3>
 
-        <!-- Example card (rendered later by JS) -->
-        <div class="flight-card">
-          <div class="flight-route">LEMD → LIRN</div>
-          <div class="flight-meta">
-            <span>DC-3 · N123ACS</span>
-            <span class="badge badge-air">EN ROUTE</span>
-          </div>
-        </div>
-
-      </div>
+    <div class="skytrack-list" id="skytrackLiveList">
+      <!-- Live traffic rendered by JS -->
     </div>
-
-    <!-- ===== RIGHT: DETAILS / FUTURE ===== -->
-    <div class="panel">
-      <h3>📊 Flight Details</h3>
-      <p>Select a flight to view detailed information.</p>
-    </div>
-
   </div>
+
+  <!-- ===== RIGHT: DETAILS / FUTURE ===== -->
+  <div class="panel">
+    <h3>📊 Flight Details</h3>
+    <p>Select a flight to view detailed information.</p>
+  </div>
+
+</div>
 
 </main>
 
@@ -325,6 +317,65 @@ body {
      SKYTRACK RUNTIME
      ============================================================ -->
 <script src="engine/acs_skytrack_runtime.js"></script>
+
+<!-- ============================================================
+     🟧 C2.1 — SKYTRACK LIVE TRAFFIC UI
+     (Consumes ACS_SKYTRACK_LIVE events)
+     ============================================================ -->
+<script>
+(function () {
+
+  const listEl = document.getElementById("skytrackLiveList");
+  if (!listEl) {
+    console.warn("SkyTrack: Live list container not found");
+    return;
+  }
+
+  function renderStateBadge(state) {
+    if (state === "EN_ROUTE") {
+      return '<span class="badge badge-air">EN ROUTE</span>';
+    }
+    if (state === "MAINTENANCE") {
+      return '<span class="badge badge-maint">MAINT</span>';
+    }
+    return '<span class="badge badge-ground">GROUND</span>';
+  }
+
+  function renderList(snapshot) {
+    listEl.innerHTML = "";
+
+    if (!Array.isArray(snapshot) || snapshot.length === 0) {
+      listEl.innerHTML = "<p style='opacity:.6'>No active aircraft</p>";
+      return;
+    }
+
+    snapshot.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "flight-card";
+
+      const route = item.route || "—";
+      const reg   = item.registration || "—";
+      const model = item.model || "—";
+
+      card.innerHTML = `
+        <div class="flight-route">${route}</div>
+        <div class="flight-meta">
+          <span>${model} · ${reg}</span>
+          ${renderStateBadge(item.state)}
+        </div>
+      `;
+
+      listEl.appendChild(card);
+    });
+  }
+
+  // Listen to runtime snapshots
+  window.addEventListener("ACS_SKYTRACK_LIVE", (e) => {
+    renderList(e.detail);
+  });
+
+})();
+</script>
 
 <script>
 function handleLogout() {
