@@ -427,8 +427,65 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 })();
-</script>
    
+<!-- ============================================================
+     🟦 C3.BASE — RESOLVE COMPANY BASE (SAME AS DASHBOARD)
+     Uses ACS Base Resolver if available
+     ============================================================ -->
+        
+<script>
+(function () {
+
+  function waitForBase(cb) {
+    const t = setInterval(() => {
+      if (window.ACS_BaseResolver && typeof window.ACS_BaseResolver.getBase === "function") {
+        clearInterval(t);
+        cb(window.ACS_BaseResolver.getBase());
+      }
+    }, 200);
+  }
+
+  waitForBase((base) => {
+    if (!base || !base.icao || !window.WorldAirportsACS || !window.ACS_SkyTrack_Map) {
+      console.warn("SkyTrack: base not resolved yet");
+      return;
+    }
+
+    const ap = WorldAirportsACS[base.icao];
+    if (!ap || !Number.isFinite(ap.lat) || !Number.isFinite(ap.lng)) return;
+
+    const map = window.ACS_SkyTrack_Map;
+
+    // FR24-style ground square
+    const groundIcon = L.divIcon({
+      className: "acs-ground-aircraft",
+      html: `<div style="
+        width:14px;
+        height:14px;
+        background:#0b3cff;
+        border:2px solid #001a66;
+        border-radius:3px;
+        box-shadow:0 0 6px rgba(0,0,0,.6);
+      "></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+
+    // ONE marker = base presence (before flights)
+    L.marker([ap.lat, ap.lng], { icon: groundIcon })
+      .addTo(map)
+      .bindTooltip(
+        `<strong>BASE</strong><br>${base.city} (${base.icao})<br>GROUND`,
+        { direction: "top", offset: [0, -6] }
+      );
+
+    // Center map nicely on base
+    map.setView([ap.lat, ap.lng], 6);
+  });
+
+})();
+</script>
+      
 <!-- ============================================================
      🟧 C2.1 — SKYTRACK LIVE TRAFFIC UI
      (Consumes ACS_SKYTRACK_LIVE events)
