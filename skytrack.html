@@ -417,8 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
    
 <!-- ============================================================
-     🟦 A3 — SKYTRACK MARKER ENGINE (FIXED)
-     Solo visualiza — NO calcula
+     🟦 A3 — SKYTRACK MARKER ENGINE (NaN FIX)
 ============================================================ -->
 <script>
 (function () {
@@ -459,24 +458,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function resolvePosition(item) {
+
+      // ✈️ EN RUTA
       if (item.state === "EN_ROUTE" && item.position?.progress != null) {
-        const o = item.originICAO;
-        const d = item.destinationICAO;
-        const org = window.ACS_AIRPORT_INDEX?.[o];
-        const dst = window.ACS_AIRPORT_INDEX?.[d];
+        const org = window.ACS_AIRPORT_INDEX?.[item.originICAO];
+        const dst = window.ACS_AIRPORT_INDEX?.[item.destinationICAO];
         if (!org || !dst) return null;
 
         const p = Math.max(0, Math.min(1, item.position.progress));
         return [
-          org.lat + (dst.lat - org.lat) * p,
-          org.lng + (dst.lng - org.lng) * p
+          org.latitude + (dst.latitude - org.latitude) * p,
+          org.longitude + (dst.longitude - org.longitude) * p
         ];
       }
 
+      // 🟦 EN TIERRA
       if (item.position?.airport) {
         const ap = window.ACS_AIRPORT_INDEX?.[item.position.airport];
         if (!ap) return null;
-        return [ap.lat, ap.lng];
+        return [ap.latitude, ap.longitude];
       }
 
       return null;
@@ -500,7 +500,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           m.bindTooltip(
             `<strong>${model}</strong><br>${route}<br>${state}`,
-            { direction: "top", offset: [0, -6], permanent: false }
+            { direction: "top", offset: [0, -6] }
           );
         } else {
           m.setLatLng(pos);
@@ -509,15 +509,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // Initial render
     render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
 
-    // Live updates
     window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (e) => {
       if (Array.isArray(e.detail)) render(e.detail);
     });
 
-    console.log("🟦 A3 SkyTrack marker engine ready");
+    console.log("🟦 A3 FIXED — Lat/Lng corrected");
 
   });
 
