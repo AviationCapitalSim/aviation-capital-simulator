@@ -520,8 +520,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         m.bindTooltip(
-          `<strong>${item.registration || key}</strong><br>${item.origin} → ${item.destination}<br>${item.state}`,
-          { direction: "top", offset: [0, -6] }
+       `<strong>${item.registration || key}</strong><br>
+        ${item.originICAO} → ${item.destinationICAO}<br>
+        ${item.state}`,
+        { direction: "top", offset: [0, -6] }
         );
 
         // 🟦 ROUTE LINE (ONLY EN_ROUTE)
