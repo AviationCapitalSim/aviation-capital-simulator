@@ -417,7 +417,8 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
    
 <!-- ============================================================
-     🟦 A3 — SKYTRACK MARKER ENGINE (NaN FIX)
+     🟦 A3 — SKYTRACK MARKER ENGINE (NaN FIX + CENTER ONCE)
+     Solo visualiza — NO calcula
 ============================================================ -->
 <script>
 (function () {
@@ -435,6 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const map = window.ACS_SkyTrack_Map;
     const markers = {};
+    let didCenter = false;
 
     const airIcon = L.divIcon({
       className: "acs-aircraft-icon",
@@ -457,6 +459,46 @@ document.addEventListener("DOMContentLoaded", () => {
       iconAnchor: [7, 7]
     });
 
+    function apLatLng(icao) {
+      const ap = window.ACS_AIRPORT_INDEX?.[icao];
+      if (!ap) return null;
+      const lat = Number(ap.latitude);
+      const lng = Number(ap.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      return [lat, lng];
+    }
+
+    function centerMapOnce(snapshot) {
+      if (didCenter) return;
+
+      // 1) Prefer base airport (choose_base.html)
+      const baseICAO = localStorage.getItem("ACS_baseICAO");
+      const baseLL = baseICAO ? apLatLng(baseICAO) : null;
+      if (baseLL) {
+        map.setView(baseLL, 6, { animate: false });
+        didCenter = true;
+        return;
+      }
+
+      // 2) Fallback: first aircraft ground airport
+      const first = Array.isArray(snapshot) ? snapshot[0] : null;
+      const gIcao = first?.position?.airport;
+      const gLL = gIcao ? apLatLng(gIcao) : null;
+      if (gLL) {
+        map.setView(gLL, 6, { animate: false });
+        didCenter = true;
+        return;
+      }
+
+      // 3) Fallback: origin
+      const oIcao = first?.originICAO;
+      const oLL = oIcao ? apLatLng(oIcao) : null;
+      if (oLL) {
+        map.setView(oLL, 6, { animate: false });
+        didCenter = true;
+      }
+    }
+
     function resolvePosition(item) {
 
       // ✈️ EN RUTA
@@ -467,8 +509,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const p = Math.max(0, Math.min(1, item.position.progress));
         return [
-          org.latitude + (dst.latitude - org.latitude) * p,
-          org.longitude + (dst.longitude - org.longitude) * p
+          Number(org.latitude) + (Number(dst.latitude) - Number(org.latitude)) * p,
+          Number(org.longitude) + (Number(dst.longitude) - Number(org.longitude)) * p
         ];
       }
 
@@ -476,16 +518,25 @@ document.addEventListener("DOMContentLoaded", () => {
       if (item.position?.airport) {
         const ap = window.ACS_AIRPORT_INDEX?.[item.position.airport];
         if (!ap) return null;
-        return [ap.latitude, ap.longitude];
+        return [Number(ap.latitude), Number(ap.longitude)];
       }
 
       return null;
     }
 
     function render(snapshot) {
+      if (!Array.isArray(snapshot) || snapshot.length === 0) return;
+
+      // ✅ Center + zoom only once
+      centerMapOnce(snapshot);
+
       snapshot.forEach(item => {
         const pos = resolvePosition(item);
         if (!pos) return;
+
+        const lat = Number(pos[0]);
+        const lng = Number(pos[1]);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
         const icon = item.state === "EN_ROUTE" ? airIcon : groundIcon;
         let m = markers[item.aircraftId];
@@ -495,7 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const state = item.state === "EN_ROUTE" ? "EN ROUTE" : "GROUND";
 
         if (!m) {
-          m = L.marker(pos, { icon }).addTo(map);
+          m = L.marker([lat, lng], { icon }).addTo(map);
           markers[item.aircraftId] = m;
 
           m.bindTooltip(
@@ -503,19 +554,21 @@ document.addEventListener("DOMContentLoaded", () => {
             { direction: "top", offset: [0, -6] }
           );
         } else {
-          m.setLatLng(pos);
+          m.setLatLng([lat, lng]);
           m.setIcon(icon);
         }
       });
     }
 
+    // Initial render
     render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
 
+    // Live updates
     window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (e) => {
       if (Array.isArray(e.detail)) render(e.detail);
     });
 
-    console.log("🟦 A3 FIXED — Lat/Lng corrected");
+    console.log("🟦 A3 FIXED — Lat/Lng corrected + CenterOnce");
 
   });
 
