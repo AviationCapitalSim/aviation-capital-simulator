@@ -364,27 +364,50 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
    
 <!-- ============================================================
-     🟦 2.2.B-FIX-1 — BUILD ICAO AIRPORT INDEX (ONCE)
+     🟦 2.2.B-FIX — BUILD ICAO AIRPORT INDEX (WAIT FOR DATA)
      ============================================================ -->
+   
 <script>
 (function () {
+
   if (window.__ACS_AIRPORT_INDEX__) return;
 
-  const idx = {};
+  const t = setInterval(() => {
 
-  if (window.WorldAirportsACS) {
-    Object.values(WorldAirportsACS).forEach(group => {
-      if (Array.isArray(group)) {
-        group.forEach(ap => {
-          if (ap.icao && Number.isFinite(ap.lat) && Number.isFinite(ap.lng)) {
-            idx[ap.icao] = ap;
-          }
-        });
-      }
-    });
-  }
+    if (
+      window.WorldAirportsACS &&
+      Object.keys(WorldAirportsACS).length &&
+      Array.isArray(WorldAirportsACS[Object.keys(WorldAirportsACS)[0]])
+    ) {
+      clearInterval(t);
 
-  window.__ACS_AIRPORT_INDEX__ = idx;
+      const idx = {};
+
+      Object.values(WorldAirportsACS).forEach(region => {
+        if (Array.isArray(region)) {
+          region.forEach(ap => {
+            if (
+              ap.icao &&
+              Number.isFinite(ap.lat) &&
+              Number.isFinite(ap.lng)
+            ) {
+              idx[ap.icao] = ap;
+            }
+          });
+        }
+      });
+
+      window.__ACS_AIRPORT_INDEX__ = idx;
+
+      console.log(
+        "🧭 ICAO index built:",
+        Object.keys(idx).length,
+        "airports"
+      );
+    }
+
+  }, 200);
+
 })();
 </script>
    
