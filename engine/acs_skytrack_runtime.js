@@ -239,33 +239,190 @@ function ACS_SkyTrack_getFleetIndex() {
 }
 
 /* ============================================================
-   🧩 SCHEDULE INDEX (scheduleItems)
+   🟧 A4.2 — SCHEDULE EXPANDER (ROUND TRIP / FR24)
+   - scheduleItems puede venir como "ruta" (LEMD ⇄ DEST)
+   - Genera 2 legs: OUTBOUND + RETURN con turnaround
+   - Soporta it.days[] (mon..sun) y/o it.day
    ============================================================ */
+
 function ACS_SkyTrack_indexScheduleItems() {
-  let items = [];
+  let raw = [];
 
   try {
-    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    raw = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   } catch (e) {
     console.warn("SkyTrack: Invalid scheduleItems");
   }
 
   const byAircraft = {};
+  const seen = new Set();
 
-  items.forEach(it => {
-    if (!it || !it.aircraftId || it.type !== "flight") return;
+  raw.forEach(it => {
+    if (!it || !it.aircraftId) return;
 
-    // 🔑 calcular minutos absolutos (CANONICAL)
-    if (it.day && it.departure && it.arrival) {
-      it.depAbsMin = ACS_SkyTrack_dayTimeToAbs(it.day, it.departure);
-      it.arrAbsMin = ACS_SkyTrack_dayTimeToAbs(it.day, it.arrival);
+    // Guardar servicios si existen (B-check / etc.)
+    if (it.type === "service") {
+      if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
+      byAircraft[it.aircraftId].push(it);
+      return;
     }
 
-    if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
-    byAircraft[it.aircraftId].push(it);
+    // Solo vuelos/rutas
+    if (it.type !== "flight") return;
+
+    // days source (prefer it.days[]; fallback it.day)
+    let days = [];
+    if (Array.isArray(it.days) && it.days.length) {
+      days = it.days.slice();
+    } else if (typeof it.day === "string" && it.day) {
+      days = [it.day];
+    } else {
+      // si no hay day(s), no podemos indexar por tiempo
+      return;
+    }
+
+    // Turnaround (prioriza optimized si existe)
+    const turn =
+      Number.isFinite(it.turnaroundMinOptimized) ? it.turnaroundMinOptimized :
+      Number.isFinite(it.turnaroundMin) ? it.turnaroundMin :
+      45;
+
+    // Block por pierna (si no viene, deducimos por dep/arr)
+    // (si tampoco se puede, default conservador 60)
+    const blockFallback = 60;
+
+    days.forEach(d => {
+      const dep1 = ACS_SkyTrack_dayTimeToAbs(d, it.departure);
+      let arr1  = ACS_SkyTrack_dayTimeToAbs(d, it.arrival);
+
+      if (!Number.isFinite(dep1) || !Number.isFinite(arr1)) return;
+
+      // Overnight protection (si arr < dep, cruza medianoche)
+      if (arr1 < dep1) arr1 += 1440;
+
+      const block1 =
+        Number.isFinite(it.blockTimeMin) ? it.blockTimeMin :
+        Math.max(1, (arr1 - dep1));
+
+      // OUTBOUND leg (BASE -> DEST)
+      const outFlightNumber = it.flightNumberOut || it.flightNumber || null;
+
+      const outKey = [
+        it.aircraftId, "OUT", d,
+        (it.origin || ""), (it.destination || ""),
+        (it.departure || ""), (it.arrival || ""),
+        (outFlightNumber || "")
+      ].join("|");
+
+      if (!seen.has(outKey)) {
+        seen.add(outKey);
+
+        if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
+        byAircraft[it.aircraftId].push({
+          type: "flight",
+          aircraftId: it.aircraftId,
+
+          origin: it.origin || null,
+          destination: it.destination || null,
+
+          flightNumber: outFlightNumber,
+          modelKey: it.modelKey || it.acType || it.aircraft || null,
+
+          day: (typeof d === "string" ? d.toLowerCase() : d),
+          departure: it.departure,
+          arrival: it.arrival,
+
+          depAbsMin: dep1,
+          arrAbsMin: arr1,
+
+          // meta útil
+          __leg: "OUTBOUND",
+          __turnaroundMin: turn
+        });
+      }
+
+      // RETURN leg (DEST -> BASE)
+      const dep2 = arr1 + turn;
+      const arr2 = dep2 + (Number.isFinite(block1) ? block1 : blockFallback);
+
+      const retFlightNumber = it.flightNumberIn || null;
+
+      const retKey = [
+        it.aircraftId, "RET", d,
+        (it.destination || ""), (it.origin || ""),
+        dep2, arr2,
+        (retFlightNumber || "")
+      ].join("|");
+
+      if (!seen.has(retKey)) {
+        seen.add(retKey);
+
+        if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
+        byAircraft[it.aircraftId].push({
+          type: "flight",
+          aircraftId: it.aircraftId,
+
+          origin: it.destination || null,
+          destination: it.origin || null,
+
+          flightNumber: retFlightNumber,
+          modelKey: it.modelKey || it.acType || it.aircraft || null,
+
+          day: (typeof d === "string" ? d.toLowerCase() : d),
+          departure: null,
+          arrival: null,
+
+          depAbsMin: dep2,
+          arrAbsMin: arr2,
+
+          __leg: "RETURN",
+          __turnaroundMin: turn
+        });
+      }
+    });
+  });
+
+  // Ordenar por tiempo por avión (para resolver contexto mejor)
+  Object.keys(byAircraft).forEach(acId => {
+    byAircraft[acId].sort((a, b) => {
+      const ta =
+        (a.type === "flight" && Number.isFinite(a.depAbsMin)) ? a.depAbsMin :
+        (a.type === "service" && a.day && a.start) ? ACS_SkyTrack_dayTimeToAbs(a.day, a.start) :
+        0;
+
+      const tb =
+        (b.type === "flight" && Number.isFinite(b.depAbsMin)) ? b.depAbsMin :
+        (b.type === "service" && b.day && b.start) ? ACS_SkyTrack_dayTimeToAbs(b.day, b.start) :
+        0;
+
+      return ta - tb;
+    });
   });
 
   return byAircraft;
+}
+
+/* ============================================================
+   🕒 DAY + TIME → ABS MINUTES (HELPER) — robusto
+   - acepta day: "mon".."sun"
+   - devuelve minutos 0..10079 (semana), SIN modulo automático aquí
+   ============================================================ */
+function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
+  const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  if (!day || !hhmm || typeof hhmm !== "string") return NaN;
+
+  const dayIndex = days.indexOf(String(day).toLowerCase());
+  if (dayIndex < 0) return NaN;
+
+  const parts = hhmm.split(":");
+  if (parts.length < 2) return NaN;
+
+  const hh = Number(parts[0]);
+  const mm = Number(parts[1]);
+  if (!Number.isFinite(hh) || !Number.isFinite(mm)) return NaN;
+
+  const baseDayMin = dayIndex * 1440;
+  return baseDayMin + (hh * 60 + mm);
 }
 
 /* ============================================================
