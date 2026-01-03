@@ -418,23 +418,22 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
    
 <!-- ============================================================
-     🟦 2.2.B — SKYTRACK MARKER ENGINE (CANONICAL)
-     Listens ONLY to ACS_SKYTRACK_SNAPSHOT
-     FIX: usa __ACS_AIRPORT_INDEX__ (lat/lng ya normalizados)
+     🟦 A3 — SKYTRACK MARKER + ROUTE ENGINE
+     EN_ROUTE: line + moving aircraft
      ============================================================ -->
 <script>
 (function () {
 
-  if (window.__ACS_SKYTRACK_MARKERS_INIT__) return;
-  window.__ACS_SKYTRACK_MARKERS_INIT__ = true;
+  if (window.__ACS_SKYTRACK_A3_INIT__) return;
+  window.__ACS_SKYTRACK_A3_INIT__ = true;
 
   function waitReady(cb) {
     const t = setInterval(() => {
       if (
         window.ACS_SkyTrack_Map &&
-        window.L &&
-        window.__ACS_AIRPORT_INDEX__ &&
-        Object.keys(window.__ACS_AIRPORT_INDEX__).length > 0
+        window.ACS_AIRPORT_INDEX &&
+        Object.keys(window.ACS_AIRPORT_INDEX).length > 0 &&
+        window.L
       ) {
         clearInterval(t);
         cb();
@@ -445,8 +444,10 @@ document.addEventListener("DOMContentLoaded", () => {
   waitReady(() => {
 
     const map = window.ACS_SkyTrack_Map;
-    const idx = window.__ACS_AIRPORT_INDEX__;
+    const idx = window.ACS_AIRPORT_INDEX;
+
     const markers = {};
+    const routes = {};
 
     const airIcon = L.divIcon({
       className: "acs-aircraft-icon",
@@ -471,24 +472,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function resolvePosition(item) {
 
-      // ✈️ EN ROUTE (interpolación por progress)
-      if (item && item.state === "EN_ROUTE" && item.position && Number.isFinite(item.position.progress)) {
-        const org = idx[item.originICAO];
-        const dst = idx[item.destinationICAO];
+      if (
+        item.state === "EN_ROUTE" &&
+        item.position &&
+        Number.isFinite(item.position.progress)
+      ) {
+        const org = idx[item.origin];
+        const dst = idx[item.destination];
         if (!org || !dst) return null;
 
         const p = Math.max(0, Math.min(1, item.position.progress));
         return [
-          org.lat + (dst.lat - org.lat) * p,
-          org.lng + (dst.lng - org.lng) * p
+          org.latitude + (dst.latitude - org.latitude) * p,
+          org.longitude + (dst.longitude - org.longitude) * p
         ];
       }
 
-      // 🟦 GROUND / MAINTENANCE (airport fijo)
-      if (item && item.position && item.position.airport) {
+      if (item.position && item.position.airport) {
         const ap = idx[item.position.airport];
         if (!ap) return null;
-        return [ap.lat, ap.lng];
+        return [ap.latitude, ap.longitude];
       }
 
       return null;
@@ -498,13 +501,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!Array.isArray(snapshot)) return;
 
       snapshot.forEach(item => {
+
+        const key = item.aircraftId || item.registration;
+        if (!key) return;
+
         const pos = resolvePosition(item);
         if (!pos) return;
 
+        // ✈️ MARKER
         const icon = item.state === "EN_ROUTE" ? airIcon : groundIcon;
-        const key = item.aircraftId || item.registration; // fallback
-        if (!key) return;
-
         let m = markers[key];
 
         if (!m) {
@@ -516,22 +521,51 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         m.bindTooltip(
-          `<strong>${item.registration || key}</strong><br>${item.model || ""}<br>${item.state || ""}`,
+          `<strong>${item.registration || key}</strong><br>${item.origin} → ${item.destination}<br>${item.state}`,
           { direction: "top", offset: [0, -6] }
         );
+
+        // 🟦 ROUTE LINE (ONLY EN_ROUTE)
+        if (item.state === "EN_ROUTE") {
+
+          const org = idx[item.origin];
+          const dst = idx[item.destination];
+          if (!org || !dst) return;
+
+          if (!routes[key]) {
+            routes[key] = L.polyline(
+              [
+                [org.latitude, org.longitude],
+                [dst.latitude, dst.longitude]
+              ],
+              {
+                color: "#00c6ff",
+                weight: 2,
+                opacity: 0.6,
+                dashArray: "6,6"
+              }
+            ).addTo(map);
+          }
+
+        } else {
+          // Remove route if not flying
+          if (routes[key]) {
+            map.removeLayer(routes[key]);
+            delete routes[key];
+          }
+        }
+
       });
 
-       // Auto-center una sola vez cuando existan markers
-        if (!window.__ACS_MAP_CENTERED__ && Object.keys(markers).length > 0) {
+      // 🔑 Auto-center once
+      if (!window.__ACS_MAP_CENTERED__ && Object.keys(markers).length > 0) {
         const group = L.featureGroup(Object.values(markers));
-        map.fitBounds(group.getBounds().pad(0.8), {
-        maxZoom: 6   // 🔑 límite de zoom inicial
-      });
-       window.__ACS_MAP_CENTERED__ = true;
-     }
+        map.fitBounds(group.getBounds().pad(0.8), { maxZoom: 6 });
+        window.__ACS_MAP_CENTERED__ = true;
+      }
     }
 
-    // Initial render (si runtime ya publicó snapshot)
+    // Initial snapshot
     if (Array.isArray(window.__ACS_LAST_SKYTRACK_SNAPSHOT__)) {
       render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
     }
@@ -544,12 +578,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    console.log("✅ SkyTrack Markers ready (ICAO index size:", Object.keys(idx).length + ")");
+    console.log("🟦 A3 SkyTrack route engine ready");
 
   });
 
 })();
-   
 </script>
 
 <script>
