@@ -521,12 +521,14 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       });
 
-      // Auto-center una sola vez cuando existan markers
-      if (!window.__ACS_MAP_CENTERED__ && Object.keys(markers).length > 0) {
+       // Auto-center una sola vez cuando existan markers
+        if (!window.__ACS_MAP_CENTERED__ && Object.keys(markers).length > 0) {
         const group = L.featureGroup(Object.values(markers));
-        map.fitBounds(group.getBounds().pad(0.5));
-        window.__ACS_MAP_CENTERED__ = true;
-      }
+        map.fitBounds(group.getBounds().pad(0.8), {
+        maxZoom: 6   // 🔑 límite de zoom inicial
+      });
+       window.__ACS_MAP_CENTERED__ = true;
+     }
     }
 
     // Initial render (si runtime ya publicó snapshot)
