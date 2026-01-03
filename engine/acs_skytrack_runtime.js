@@ -89,6 +89,52 @@ function ACS_SkyTrack_hookTimeEngine() {
 }
 
 /* ============================================================
+   🟦 A1 — AIRPORT INDEX INIT (SKYTRACK CANONICAL)
+   Fuente: WorldAirportsACS.<continent>
+   ============================================================ */
+
+(function initAirportIndex() {
+
+  if (window.ACS_AIRPORT_INDEX) return;
+
+  const index = {};
+
+  if (!window.WorldAirportsACS) {
+    console.warn("[SkyTrack] WorldAirportsACS not loaded");
+    window.ACS_AIRPORT_INDEX = index;
+    return;
+  }
+
+  Object.values(WorldAirportsACS).forEach(region => {
+    if (!Array.isArray(region)) return;
+
+    region.forEach(ap => {
+      if (
+        ap &&
+        ap.icao &&
+        Number.isFinite(ap.latitude) &&
+        Number.isFinite(ap.longitude)
+      ) {
+        index[ap.icao] = {
+          icao: ap.icao,
+          latitude: ap.latitude,
+          longitude: ap.longitude
+        };
+      }
+    });
+  });
+
+  window.ACS_AIRPORT_INDEX = index;
+
+  console.log(
+    "[SkyTrack] AirportIndex ready:",
+    Object.keys(index).length,
+    "airports"
+  );
+
+})();
+
+/* ============================================================
    🟦 PASO 2.1 — ON TICK (CANONICAL SNAPSHOT ONLY)
    - Uses ACS_TIME.minute (already fixed)
    - Schedule Table is the ONLY source of truth
