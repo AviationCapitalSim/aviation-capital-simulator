@@ -362,7 +362,32 @@ document.addEventListener("DOMContentLoaded", () => {
   window.ACS_SkyTrack_Map = map;
 });
 </script>
+   
+<!-- ============================================================
+     🟦 2.2.B-FIX-1 — BUILD ICAO AIRPORT INDEX (ONCE)
+     ============================================================ -->
+<script>
+(function () {
+  if (window.__ACS_AIRPORT_INDEX__) return;
 
+  const idx = {};
+
+  if (window.WorldAirportsACS) {
+    Object.values(WorldAirportsACS).forEach(group => {
+      if (Array.isArray(group)) {
+        group.forEach(ap => {
+          if (ap.icao && Number.isFinite(ap.lat) && Number.isFinite(ap.lng)) {
+            idx[ap.icao] = ap;
+          }
+        });
+      }
+    });
+  }
+
+  window.__ACS_AIRPORT_INDEX__ = idx;
+})();
+</script>
+   
 <!-- ============================================================
      🟦 2.2.B — SKYTRACK MARKER ENGINE (CANONICAL)
      Listens ONLY to ACS_SKYTRACK_SNAPSHOT
@@ -411,8 +436,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function resolvePosition(item) {
 
       if (item.state === "EN_ROUTE" && item.position && Number.isFinite(item.position.progress)) {
-        const org = WorldAirportsACS[item.originICAO];
-        const dst = WorldAirportsACS[item.destinationICAO];
+        const org = __ACS_AIRPORT_INDEX__[item.originICAO];
+        const dst = __ACS_AIRPORT_INDEX__[item.destinationICAO];
         if (!org || !dst) return null;
 
         const p = Math.max(0, Math.min(1, item.position.progress));
@@ -423,7 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (item.position && item.position.airport) {
-        const ap = WorldAirportsACS[item.position.airport];
+        const ap = __ACS_AIRPORT_INDEX__[item.position.airport];
         if (!ap) return null;
         return [ap.lat, ap.lng];
       }
@@ -431,7 +456,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return null;
     }
 
-    function render(snapshot) {
+     function render(snapshot) {
+
       snapshot.forEach(item => {
         const pos = resolvePosition(item);
         if (!pos) return;
@@ -452,12 +478,21 @@ document.addEventListener("DOMContentLoaded", () => {
           { direction: "top", offset: [0, -6] }
         );
       });
+
+      // 🔑 AUTO-CENTER MAP (ONCE)
+      if (!window.__ACS_MAP_CENTERED__ && Object.keys(markers).length > 0) {
+        const group = L.featureGroup(Object.values(markers));
+        map.fitBounds(group.getBounds().pad(0.5));
+        window.__ACS_MAP_CENTERED__ = true;
+      }
     }
 
+    // Initial render
     if (Array.isArray(window.__ACS_LAST_SKYTRACK_SNAPSHOT__)) {
       render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
     }
 
+    // Live updates
     window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (e) => {
       if (Array.isArray(e.detail)) {
         render(e.detail);
