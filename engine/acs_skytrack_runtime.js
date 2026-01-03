@@ -249,8 +249,16 @@ function ACS_SkyTrack_indexScheduleItems() {
   }
 
   const byAircraft = {};
+
   items.forEach(it => {
-    if (!it || !it.aircraftId) return;
+    if (!it || !it.aircraftId || it.type !== "flight") return;
+
+    // 🔑 calcular minutos absolutos (CANONICAL)
+    if (it.day && it.departure && it.arrival) {
+      it.depAbsMin = ACS_SkyTrack_dayTimeToAbs(it.day, it.departure);
+      it.arrAbsMin = ACS_SkyTrack_dayTimeToAbs(it.day, it.arrival);
+    }
+
     if (!byAircraft[it.aircraftId]) byAircraft[it.aircraftId] = [];
     byAircraft[it.aircraftId].push(it);
   });
