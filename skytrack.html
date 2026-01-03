@@ -417,36 +417,25 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
    
 <!-- ============================================================
-     🟦 A3 — SKYTRACK MARKER + ROUTE ENGINE
-     EN_ROUTE: line + moving aircraft
-     ============================================================ -->
+     🟦 A3 — SKYTRACK MARKER ENGINE (FIXED)
+     Solo visualiza — NO calcula
+============================================================ -->
 <script>
 (function () {
 
-  if (window.__ACS_SKYTRACK_A3_INIT__) return;
-  window.__ACS_SKYTRACK_A3_INIT__ = true;
-
-  function waitReady(cb) {
+  function waitForMap(cb) {
     const t = setInterval(() => {
-      if (
-        window.ACS_SkyTrack_Map &&
-        window.ACS_AIRPORT_INDEX &&
-        Object.keys(window.ACS_AIRPORT_INDEX).length > 0 &&
-        window.L
-      ) {
+      if (window.ACS_SkyTrack_Map && window.__ACS_LAST_SKYTRACK_SNAPSHOT__) {
         clearInterval(t);
         cb();
       }
     }, 300);
   }
 
-  waitReady(() => {
+  waitForMap(() => {
 
     const map = window.ACS_SkyTrack_Map;
-    const idx = window.ACS_AIRPORT_INDEX;
-
     const markers = {};
-    const routes = {};
 
     const airIcon = L.divIcon({
       className: "acs-aircraft-icon",
@@ -470,116 +459,65 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function resolvePosition(item) {
-
-      if (
-        item.state === "EN_ROUTE" &&
-        item.position &&
-        Number.isFinite(item.position.progress)
-      ) {
-        const org = idx[item.origin];
-        const dst = idx[item.destination];
+      if (item.state === "EN_ROUTE" && item.position?.progress != null) {
+        const o = item.originICAO;
+        const d = item.destinationICAO;
+        const org = window.ACS_AIRPORT_INDEX?.[o];
+        const dst = window.ACS_AIRPORT_INDEX?.[d];
         if (!org || !dst) return null;
 
         const p = Math.max(0, Math.min(1, item.position.progress));
         return [
-          org.latitude + (dst.latitude - org.latitude) * p,
-          org.longitude + (dst.longitude - org.longitude) * p
+          org.lat + (dst.lat - org.lat) * p,
+          org.lng + (dst.lng - org.lng) * p
         ];
       }
 
-      if (item.position && item.position.airport) {
-        const ap = idx[item.position.airport];
+      if (item.position?.airport) {
+        const ap = window.ACS_AIRPORT_INDEX?.[item.position.airport];
         if (!ap) return null;
-        return [ap.latitude, ap.longitude];
+        return [ap.lat, ap.lng];
       }
 
       return null;
     }
 
     function render(snapshot) {
-      if (!Array.isArray(snapshot)) return;
-
       snapshot.forEach(item => {
-
-        const key = item.aircraftId || item.registration;
-        if (!key) return;
-
         const pos = resolvePosition(item);
         if (!pos) return;
 
-        // ✈️ MARKER
         const icon = item.state === "EN_ROUTE" ? airIcon : groundIcon;
-        let m = markers[key];
+        let m = markers[item.aircraftId];
+
+        const model = item.aircraftType || item.model || "Aircraft";
+        const route = `${item.originICAO} → ${item.destinationICAO}`;
+        const state = item.state === "EN_ROUTE" ? "EN ROUTE" : "GROUND";
 
         if (!m) {
           m = L.marker(pos, { icon }).addTo(map);
-          markers[key] = m;
+          markers[item.aircraftId] = m;
+
+          m.bindTooltip(
+            `<strong>${model}</strong><br>${route}<br>${state}`,
+            { direction: "top", offset: [0, -6], permanent: false }
+          );
         } else {
           m.setLatLng(pos);
           m.setIcon(icon);
         }
-
-        m.bindTooltip(
-       `<strong>${item.registration || key}</strong><br>
-        ${item.originICAO} → ${item.destinationICAO}<br>
-        ${item.state}`,
-        { direction: "top", offset: [0, -6] }
-        );
-
-        // 🟦 ROUTE LINE (ONLY EN_ROUTE)
-        if (item.state === "EN_ROUTE") {
-
-          const org = idx[item.origin];
-          const dst = idx[item.destination];
-          if (!org || !dst) return;
-
-          if (!routes[key]) {
-            routes[key] = L.polyline(
-              [
-                [org.latitude, org.longitude],
-                [dst.latitude, dst.longitude]
-              ],
-              {
-                color: "#00c6ff",
-                weight: 2,
-                opacity: 0.6,
-                dashArray: "6,6"
-              }
-            ).addTo(map);
-          }
-
-        } else {
-          // Remove route if not flying
-          if (routes[key]) {
-            map.removeLayer(routes[key]);
-            delete routes[key];
-          }
-        }
-
       });
-
-      // 🔑 Auto-center once
-      if (!window.__ACS_MAP_CENTERED__ && Object.keys(markers).length > 0) {
-        const group = L.featureGroup(Object.values(markers));
-        map.fitBounds(group.getBounds().pad(0.8), { maxZoom: 6 });
-        window.__ACS_MAP_CENTERED__ = true;
-      }
     }
 
-    // Initial snapshot
-    if (Array.isArray(window.__ACS_LAST_SKYTRACK_SNAPSHOT__)) {
-      render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
-    }
+    // Initial render
+    render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
 
     // Live updates
     window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (e) => {
-      if (Array.isArray(e.detail)) {
-        window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = e.detail;
-        render(e.detail);
-      }
+      if (Array.isArray(e.detail)) render(e.detail);
     });
 
-    console.log("🟦 A3 SkyTrack route engine ready");
+    console.log("🟦 A3 SkyTrack marker engine ready");
 
   });
 
