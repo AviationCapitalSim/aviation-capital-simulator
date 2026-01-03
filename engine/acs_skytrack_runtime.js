@@ -56,12 +56,14 @@ function ACS_SkyTrack_hookTimeEngine() {
     if (typeof ACS_TIME !== "undefined" && Number.isFinite(ACS_TIME.minute)) {
 
       // Initial sync
-      ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+      // Initial sync (normalize to week-minute)
+ACS_SkyTrack.nowAbsMin = (ACS_TIME.minute % 10080);
 
-      registerTimeListener(() => {
-        ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
-        ACS_SkyTrack_onTick();
-      });
+registerTimeListener(() => {
+  // normalize to week-minute so it matches depAbsMin/arrAbsMin
+  ACS_SkyTrack.nowAbsMin = (ACS_TIME.minute % 10080);
+  ACS_SkyTrack_onTick();
+});
 
       console.log("⏱ SkyTrack hooked to ACS_TIME.minute");
       return;
