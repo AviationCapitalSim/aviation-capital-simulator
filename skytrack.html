@@ -365,8 +365,8 @@ document.addEventListener("DOMContentLoaded", () => {
    
 <!-- ============================================================
      🟦 2.2.B-FIX — BUILD ICAO AIRPORT INDEX (WAIT FOR DATA)
+     (FIX REAL: WorldAirportsACS usa latitude/longitude, no lat/lng)
      ============================================================ -->
-   
 <script>
 (function () {
 
@@ -384,17 +384,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const idx = {};
 
       Object.values(WorldAirportsACS).forEach(region => {
-        if (Array.isArray(region)) {
-          region.forEach(ap => {
-            if (
-              ap.icao &&
-              Number.isFinite(ap.lat) &&
-              Number.isFinite(ap.lng)
-            ) {
-              idx[ap.icao] = ap;
-            }
-          });
-        }
+        if (!Array.isArray(region)) return;
+
+        region.forEach(ap => {
+          if (!ap || !ap.icao) return;
+
+          // ✅ Fuente real: latitude/longitude
+          const lat = Number(ap.latitude);
+          const lng = Number(ap.longitude);
+
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            // Alias de compatibilidad (para motores que esperan lat/lng)
+            ap.lat = lat;
+            ap.lng = lng;
+
+            idx[ap.icao] = ap;
+          }
+        });
       });
 
       window.__ACS_AIRPORT_INDEX__ = idx;
@@ -414,6 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <!-- ============================================================
      🟦 2.2.B — SKYTRACK MARKER ENGINE (CANONICAL)
      Listens ONLY to ACS_SKYTRACK_SNAPSHOT
+     FIX: usa __ACS_AIRPORT_INDEX__ (lat/lng ya normalizados)
      ============================================================ -->
 <script>
 (function () {
@@ -421,18 +428,24 @@ document.addEventListener("DOMContentLoaded", () => {
   if (window.__ACS_SKYTRACK_MARKERS_INIT__) return;
   window.__ACS_SKYTRACK_MARKERS_INIT__ = true;
 
-  function waitForMap(cb) {
+  function waitReady(cb) {
     const t = setInterval(() => {
-      if (window.ACS_SkyTrack_Map && window.WorldAirportsACS) {
+      if (
+        window.ACS_SkyTrack_Map &&
+        window.L &&
+        window.__ACS_AIRPORT_INDEX__ &&
+        Object.keys(window.__ACS_AIRPORT_INDEX__).length > 0
+      ) {
         clearInterval(t);
         cb();
       }
     }, 300);
   }
 
-  waitForMap(() => {
+  waitReady(() => {
 
     const map = window.ACS_SkyTrack_Map;
+    const idx = window.__ACS_AIRPORT_INDEX__;
     const markers = {};
 
     const airIcon = L.divIcon({
@@ -458,9 +471,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function resolvePosition(item) {
 
-      if (item.state === "EN_ROUTE" && item.position && Number.isFinite(item.position.progress)) {
-        const org = __ACS_AIRPORT_INDEX__[item.originICAO];
-        const dst = __ACS_AIRPORT_INDEX__[item.destinationICAO];
+      // ✈️ EN ROUTE (interpolación por progress)
+      if (item && item.state === "EN_ROUTE" && item.position && Number.isFinite(item.position.progress)) {
+        const org = idx[item.originICAO];
+        const dst = idx[item.destinationICAO];
         if (!org || !dst) return null;
 
         const p = Math.max(0, Math.min(1, item.position.progress));
@@ -470,8 +484,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ];
       }
 
-      if (item.position && item.position.airport) {
-        const ap = __ACS_AIRPORT_INDEX__[item.position.airport];
+      // 🟦 GROUND / MAINTENANCE (airport fijo)
+      if (item && item.position && item.position.airport) {
+        const ap = idx[item.position.airport];
         if (!ap) return null;
         return [ap.lat, ap.lng];
       }
@@ -479,30 +494,34 @@ document.addEventListener("DOMContentLoaded", () => {
       return null;
     }
 
-     function render(snapshot) {
+    function render(snapshot) {
+      if (!Array.isArray(snapshot)) return;
 
       snapshot.forEach(item => {
         const pos = resolvePosition(item);
         if (!pos) return;
 
         const icon = item.state === "EN_ROUTE" ? airIcon : groundIcon;
-        let m = markers[item.aircraftId];
+        const key = item.aircraftId || item.registration; // fallback
+        if (!key) return;
+
+        let m = markers[key];
 
         if (!m) {
           m = L.marker(pos, { icon }).addTo(map);
-          markers[item.aircraftId] = m;
+          markers[key] = m;
         } else {
           m.setLatLng(pos);
           m.setIcon(icon);
         }
 
         m.bindTooltip(
-          `<strong>${item.registration}</strong><br>${item.model}<br>${item.state}`,
+          `<strong>${item.registration || key}</strong><br>${item.model || ""}<br>${item.state || ""}`,
           { direction: "top", offset: [0, -6] }
         );
       });
 
-      // 🔑 AUTO-CENTER MAP (ONCE)
+      // Auto-center una sola vez cuando existan markers
       if (!window.__ACS_MAP_CENTERED__ && Object.keys(markers).length > 0) {
         const group = L.featureGroup(Object.values(markers));
         map.fitBounds(group.getBounds().pad(0.5));
@@ -510,7 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Initial render
+    // Initial render (si runtime ya publicó snapshot)
     if (Array.isArray(window.__ACS_LAST_SKYTRACK_SNAPSHOT__)) {
       render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
     }
@@ -518,13 +537,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Live updates
     window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (e) => {
       if (Array.isArray(e.detail)) {
+        window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = e.detail;
         render(e.detail);
       }
     });
 
+    console.log("✅ SkyTrack Markers ready (ICAO index size:", Object.keys(idx).length + ")");
+
   });
 
 })();
+   
 </script>
 
 <script>
