@@ -845,7 +845,7 @@ snapshot.forEach(item => {
     m.setLatLng(pos);
   }
 
-   // 🟦 A8.4 — Highlight active aircraft
+    // 🟦 A8.4 — Highlight active aircraft
   if (window.ACS_ACTIVE_FLIGHT_ID === item.aircraftId) {
     m.setZIndexOffset(1000);
   } else {
@@ -874,7 +874,7 @@ snapshot.forEach(item => {
   }
 
 }); // ⬅️ cierre correcto del snapshot.forEach
-         
+
     render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
 
     window.addEventListener("ACS_SKYTRACK_SNAPSHOT", e => {
