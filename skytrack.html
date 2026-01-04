@@ -555,20 +555,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let m = markers[item.aircraftId];
 
-       if (!m) {
+      if (!m) {
   m = L.marker(pos, { icon: atcIcon }).addTo(map);
   markers[item.aircraftId] = m;
 
-  // 🔒 Bind ONCE
-  m.bindPopup("", {
+  // ✅ Popup creado UNA vez
+  const popup = L.popup({
     autoClose: false,
     closeOnClick: false
   });
 
+  m.bindPopup(popup);
+
   m.on("click", () => {
-    m.setPopupContent(buildATCContent(item));
+    popup.setContent(buildATCContent(item));
     m.openPopup();
   });
+}
 
         } else {
           // 🔁 Reset trace if flight leg changed
