@@ -524,10 +524,16 @@ function ACS_SkyTrack_resolveState(aircraftId) {
 
 /* ============================================================
    🗺️ POSITION ENGINE — EN ROUTE (LINEAR)
+   🟦 A6.2 — FINAL VISUAL CLAMP (NO RETROCESOS)
    ============================================================ */
 function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
   const { origin, destination, depAbsMin, arrAbsMin } = flight;
   if (!origin || !destination) return null;
+
+  // If at or beyond arrival, force final snap (visual stability)
+  if (nowAbsMin >= arrAbsMin - 1) {
+    return { progress: 1 };
+  }
 
   const p = (nowAbsMin - depAbsMin) / (arrAbsMin - depAbsMin);
   return { progress: Math.max(0, Math.min(1, p)) };
