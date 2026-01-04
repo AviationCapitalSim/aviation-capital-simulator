@@ -530,6 +530,33 @@ card.addEventListener("click", () => {
 function renderFlightDetails(snapshot) {
   if (!detailsEl) return;
 
+   // 🟦 A9.4.1 — Resolve Aircraft & Times
+const aircraft =
+  item.aircraft ||
+  item.aircraftModel ||
+  item.aircraftType ||
+  item.model ||
+  item.modelKey ||
+  "—";
+
+const depTime =
+  item.dep ||
+  item.depTime ||
+  (Number.isFinite(item.depAbsMin)
+    ? String(Math.floor(item.depAbsMin / 60)).padStart(2, "0") +
+      ":" +
+      String(item.depAbsMin % 60).padStart(2, "0")
+    : "—");
+
+const arrTime =
+  item.arr ||
+  item.arrTime ||
+  (Number.isFinite(item.arrAbsMin)
+    ? String(Math.floor(item.arrAbsMin / 60)).padStart(2, "0") +
+      ":" +
+      String(item.arrAbsMin % 60).padStart(2, "0")
+    : "—");
+   
   const id = window.ACS_ACTIVE_FLIGHT_ID;
   if (!id) {
     detailsEl.innerHTML = `
@@ -571,10 +598,10 @@ function renderFlightDetails(snapshot) {
     <div style="font-size:0.95rem; line-height:1.5;">
       <strong>Flight:</strong> ${item.flightNumber}<br>
       <strong>Route:</strong> ${item.originICAO} → ${item.destinationICAO}<br>
-      <strong>Aircraft:</strong> ${item.aircraft || item.aircraftModel || "—"}<br>
+      <strong>Aircraft:</strong> ${aircraft}<br>
       <strong>Status:</strong> ${item.state}<br>
-      <strong>Departure:</strong> ${item.dep || "—"}<br>
-      <strong>Arrival:</strong> ${item.arr || "—"}
+      <strong>Departure:</strong> ${depTime}<br>
+      <strong>Arrival:</strong> ${arrTime}
       ${extra}
     </div>
   `;
