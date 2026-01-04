@@ -474,44 +474,34 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     };
   }
 
-    /* ============================================================
-     3️⃣ GROUND — TURNAROUND ANCHOR (FR24 STABLE)
-     🟦 A6.3 — Anchor to NEXT LEG origin
-     ============================================================ */
+  /* ============================================================
+   3️⃣ GROUND — STABLE POST-ARRIVAL (FR24 FIX)
+   - NO pre-anchor al siguiente vuelo
+   - Mantiene el avión en el DESTINO real
+   ============================================================ */
 
-  // 1) Find next upcoming flight (defines turnaround airport)
-  const nextFlight = items
-    .filter(it =>
-      it.type === "flight" &&
-      Number.isFinite(it.depAbsMin) &&
-      it.depAbsMin > now
-    )
-    .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
+const lastFlight = items
+  .filter(it =>
+    it.type === "flight" &&
+    Number.isFinite(it.arrAbsMin) &&
+    it.arrAbsMin <= now
+  )
+  .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
 
-  if (nextFlight) {
-    return {
-      state: "GROUND",
-      position: { airport: nextFlight.origin || null },
-      flight: null
-    };
-  }
+if (lastFlight) {
+  return {
+    state: "GROUND",
+    position: { airport: lastFlight.destination || null },
+    flight: null
+  };
+}
 
-  // 2) Otherwise, stay at last arrived destination
-  const lastFlight = items
-    .filter(it =>
-      it.type === "flight" &&
-      Number.isFinite(it.arrAbsMin) &&
-      it.arrAbsMin <= now
-    )
-    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
-
-  if (lastFlight) {
-    return {
-      state: "GROUND",
-      position: { airport: lastFlight.destination || null },
-      flight: null
-    };
-  }
+// Fallback absoluto (base)
+return {
+  state: "GROUND",
+  position: { airport: ac.baseAirport || null },
+  flight: null
+};
 
   /* ============================================================
      4️⃣ ABSOLUTE FALLBACK — SHOULD NEVER JUMP
@@ -524,20 +514,23 @@ function ACS_SkyTrack_resolveState(aircraftId) {
 }
 
 /* ============================================================
-   🗺️ POSITION ENGINE — EN ROUTE (LINEAR)
-   🟦 A6.2 — FINAL VISUAL CLAMP (NO RETROCESOS)
+   🟦 A6.2 — POSITION ENGINE (EN ROUTE) — FINAL FIX
+   - NO snap anticipado
+   - Snap SOLO cuando cambia el estado
    ============================================================ */
 function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
-  const { origin, destination, depAbsMin, arrAbsMin } = flight;
-  if (!origin || !destination) return null;
+  const { depAbsMin, arrAbsMin } = flight;
 
-  // If at or beyond arrival, force final snap (visual stability)
-  if (nowAbsMin >= arrAbsMin - 1) {
-    return { progress: 1 };
+  if (!Number.isFinite(depAbsMin) || !Number.isFinite(arrAbsMin)) {
+    return null;
   }
 
+  // ⛔ NO snap antes del arribo real
   const p = (nowAbsMin - depAbsMin) / (arrAbsMin - depAbsMin);
-  return { progress: Math.max(0, Math.min(1, p)) };
+
+  return {
+    progress: Math.max(0, Math.min(1, p))
+  };
 }
 
 /* ============================================================
