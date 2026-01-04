@@ -767,6 +767,7 @@ function renderFlightDetails(snapshot) {
       snapshot.forEach(item => {
 
   // 🟦 A6.5.1 — IGNORE OUT-OF-ORDER SNAPSHOTS
+         
   const key = item.aircraftId;
   const logicalTime =
     Number.isFinite(item.depAbsMin) ? item.depAbsMin :
@@ -778,12 +779,36 @@ function renderFlightDetails(snapshot) {
 
   lastSeenSnapshot[key] = logicalTime;
 
-  // 🟦 A6.4.1 — STATE-AWARE POSITION (NO mixed states)
+ snapshot.forEach(item => {
+
+  // 🟦 A6.5.1 — IGNORE OUT-OF-ORDER SNAPSHOTS
+  const key = item.aircraftId;
+  const logicalTime =
+    Number.isFinite(item.depAbsMin) ? item.depAbsMin :
+    Number.isFinite(item.arrAbsMin) ? item.arrAbsMin : 0;
+
+  if (lastSeenSnapshot[key] != null && logicalTime < lastSeenSnapshot[key]) {
+    return; // ⛔ ignore older snapshot
+  }
+
+  lastSeenSnapshot[key] = logicalTime;
+
+  // 🟦 A10.4 — FR24 MAP FREEZE (NO LEG SWITCHING)
+  const now = window.ACS_TIME?.absMin;
   let pos = null;
 
-  if (item.state === "EN_ROUTE") {
+  if (
+    item.state === "EN_ROUTE" &&
+    Number.isFinite(item.depAbsMin) &&
+    Number.isFinite(item.arrAbsMin) &&
+    Number.isFinite(now) &&
+    now < item.arrAbsMin
+  ) {
+    // ✈️ Freeze: mantener ESTE leg hasta llegada real
     pos = resolvePosition(item);
+
   } else if (item.position?.airport) {
+    // 🛬 GROUND confirmado
     pos = resolvePosition(item);
   }
 
@@ -794,6 +819,12 @@ function renderFlightDetails(snapshot) {
   if (!m) {
     m = L.marker(pos, { icon: atcIcon }).addTo(map);
     markers[item.aircraftId] = m;
+  } else {
+    m.setLatLng(pos);
+  }
+
+});
+
 
 // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
      m.bindPopup("", {
