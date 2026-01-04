@@ -567,15 +567,29 @@ const formatTime = min =>
   ":" +
   String(min % 60).padStart(2, "0");
 
+// 🟦 A9.6.1 — Resolve Departure / Arrival (AIR + GROUND, FR24)
+const depMin =
+  item.depAbsMin ??
+  item.nextDepAbsMin ??
+  item.schedDepAbsMin ??
+  null;
+
+const arrMin =
+  item.arrAbsMin ??
+  item.lastArrAbsMin ??
+  item.schedArrAbsMin ??
+  null;
+
 const depTime =
   item.dep ||
   item.depTime ||
-  (Number.isFinite(item.depAbsMin) ? formatTime(item.depAbsMin) : "—");
+  (Number.isFinite(depMin) ? formatTime(depMin) : "—");
 
 const arrTime =
   item.arr ||
   item.arrTime ||
-  (Number.isFinite(item.arrAbsMin) ? formatTime(item.arrAbsMin) : "—");
+  (Number.isFinite(arrMin) ? formatTime(arrMin) : "—");
+
 
   const now = window.ACS_TIME?.absMin;
   let extra = "";
