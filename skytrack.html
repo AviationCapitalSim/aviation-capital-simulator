@@ -541,32 +541,41 @@ function renderFlightDetails(snapshot) {
   const item = snapshot.find(f => f.aircraftId === id);
   if (!item) return;
 
-  // 🟦 A9.4.1 — Resolve Aircraft & Times (AFTER item exists)
-  const aircraft =
-    item.aircraft ||
-    item.aircraftModel ||
-    item.aircraftType ||
-    item.model ||
-    item.modelKey ||
-    "—";
+  // 🟦 A9.5.1 — Resolve Aircraft, Registration & Times (FR24)
+const model =
+  item.aircraft ||
+  item.aircraftModel ||
+  item.aircraftType ||
+  item.model ||
+  item.modelKey ||
+  "—";
 
-  const depTime =
-    item.dep ||
-    item.depTime ||
-    (Number.isFinite(item.depAbsMin)
-      ? String(Math.floor(item.depAbsMin / 60)).padStart(2, "0") +
-        ":" +
-        String(item.depAbsMin % 60).padStart(2, "0")
-      : "—");
+const registration =
+  item.registration ||
+  item.aircraftReg ||
+  item.reg ||
+  item.tail ||
+  item.tailNumber ||
+  "";
 
-  const arrTime =
-    item.arr ||
-    item.arrTime ||
-    (Number.isFinite(item.arrAbsMin)
-      ? String(Math.floor(item.arrAbsMin / 60)).padStart(2, "0") +
-        ":" +
-        String(item.arrAbsMin % 60).padStart(2, "0")
-      : "—");
+const aircraft = registration
+  ? `${model} (${registration})`
+  : model;
+
+const formatTime = min =>
+  String(Math.floor(min / 60)).padStart(2, "0") +
+  ":" +
+  String(min % 60).padStart(2, "0");
+
+const depTime =
+  item.dep ||
+  item.depTime ||
+  (Number.isFinite(item.depAbsMin) ? formatTime(item.depAbsMin) : "—");
+
+const arrTime =
+  item.arr ||
+  item.arrTime ||
+  (Number.isFinite(item.arrAbsMin) ? formatTime(item.arrAbsMin) : "—");
 
   const now = window.ACS_TIME?.absMin;
   let extra = "";
