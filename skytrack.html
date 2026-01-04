@@ -767,7 +767,6 @@ function renderFlightDetails(snapshot) {
       snapshot.forEach(item => {
 
   // 🟦 A6.5.1 — IGNORE OUT-OF-ORDER SNAPSHOTS
-         
   const key = item.aircraftId;
   const logicalTime =
     Number.isFinite(item.depAbsMin) ? item.depAbsMin :
@@ -779,31 +778,10 @@ function renderFlightDetails(snapshot) {
 
   lastSeenSnapshot[key] = logicalTime;
 
-snapshot.forEach(item => {
-
-  // 🟦 A6.5.1 — IGNORE OUT-OF-ORDER SNAPSHOTS
-  const key = item.aircraftId;
-  const logicalTime =
-    Number.isFinite(item.depAbsMin) ? item.depAbsMin :
-    Number.isFinite(item.arrAbsMin) ? item.arrAbsMin : 0;
-
-  if (lastSeenSnapshot[key] != null && logicalTime < lastSeenSnapshot[key]) {
-    return; // ⛔ ignore older snapshot
-  }
-
-  lastSeenSnapshot[key] = logicalTime;
-
-  // 🟦 A10.4 — FR24 MAP FREEZE (NO LEG SWITCHING)
-  const now = window.ACS_TIME?.absMin;
+  // 🟦 A6.4.1 — STATE-AWARE POSITION (NO mixed states)
   let pos = null;
 
-  if (
-    item.state === "EN_ROUTE" &&
-    Number.isFinite(item.depAbsMin) &&
-    Number.isFinite(item.arrAbsMin) &&
-    Number.isFinite(now) &&
-    now < item.arrAbsMin
-  ) {
+  if (item.state === "EN_ROUTE") {
     pos = resolvePosition(item);
   } else if (item.position?.airport) {
     pos = resolvePosition(item);
@@ -814,72 +792,64 @@ snapshot.forEach(item => {
   let m = markers[item.aircraftId];
 
   if (!m) {
-  m = L.marker(pos, { icon: atcIcon }).addTo(map);
-  markers[item.aircraftId] = m;
+    m = L.marker(pos, { icon: atcIcon }).addTo(map);
+    markers[item.aircraftId] = m;
 
-  // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
-  m.bindPopup("", {
-    autoClose: false,
-    closeOnClick: false
-  });
+// 🟦 A6.4.2 — Persistent ATC Popup (bind once)
+     m.bindPopup("", {
+     autoClose: false,
+     closeOnClick: false
+   });
 
-  m.on("click", () => {
-    window.ACS_ACTIVE_FLIGHT_ID = item.aircraftId;
-    m.setPopupContent(buildATCContent(item));
-    m.openPopup();
-  });
+     m.on("click", () => {
+  window.ACS_ACTIVE_FLIGHT_ID = item.aircraftId;
+  m.setPopupContent(buildATCContent(item));
+  m.openPopup();
+});
 
-}  // ✅ ESTA LLAVE FALTABA
+        } else {
+          // 🔁 Reset trace if flight leg changed
+         if (
+          item.flightNumber &&
+          traces[item.aircraftId] &&
+          traces[item.aircraftId].__lastFlight !== item.flightNumber
+        ) {
+         if (map.hasLayer(traces[item.aircraftId])) {
+          map.removeLayer(traces[item.aircraftId]);
+        }
+          delete traces[item.aircraftId];
+        }
 
-else {
-  // 🔁 Reset trace if flight leg changed
-  if (
-    item.flightNumber &&
-    traces[item.aircraftId] &&
-    traces[item.aircraftId].__lastFlight !== item.flightNumber
-  ) {
-    if (map.hasLayer(traces[item.aircraftId])) {
-      map.removeLayer(traces[item.aircraftId]);
+           m.setLatLng(pos);
+
+       // 🟦 A8.4 — Highlight active aircraft
+       if (window.ACS_ACTIVE_FLIGHT_ID === item.aircraftId) {
+       m.setZIndexOffset(1000);
+       } else {
+       m.setZIndexOffset(0);
+      }
+     
+           // 🟦 ATC TRACE — only when airborne
+          if (item.state === "EN_ROUTE") {
+
+          if (!traces[item.aircraftId]) {
+          traces[item.aircraftId] = L.polyline([pos], {
+          color: "#0b3cff",
+          weight: 2,
+          opacity: 0.85
+          }).addTo(map);
+
+          traces[item.aircraftId].__lastFlight = item.flightNumber;
+        } else {
+         traces[item.aircraftId].addLatLng(pos);
+        }
+      }
+          if (m.isPopupOpen()) {
+            m.setPopupContent(buildATCContent(item));
+          }
+        }
+      });
     }
-    delete traces[item.aircraftId];
-  }
-
-  m.setLatLng(pos);
-}
-
-    // 🟦 A8.4 — Highlight active aircraft
-   
-  if (window.ACS_ACTIVE_FLIGHT_ID === item.aircraftId) {
-    m.setZIndexOffset(1000);
-  } else {
-    m.setZIndexOffset(0);
-  }
-
-  // 🟦 ATC TRACE — only when airborne
-   
-  if (item.state === "EN_ROUTE") {
-
-    if (!traces[item.aircraftId]) {
-      traces[item.aircraftId] = L.polyline([pos], {
-        color: "#0b3cff",
-        weight: 2,
-        opacity: 0.85
-      }).addTo(map);
-
-      traces[item.aircraftId].__lastFlight = item.flightNumber;
-    } else {
-      traces[item.aircraftId].addLatLng(pos);
-    }
-  }
-
-  // 🟦 Live popup refresh
-  if (m.isPopupOpen()) {
-    m.setPopupContent(buildATCContent(item));
-  }
-
-}); // ← cierre del snapshot.forEach
-}   // ← cierre de function render(snapshot)
-
 
     render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
 
