@@ -526,37 +526,9 @@ card.addEventListener("click", () => {
     });
      
 // 🟦 A9.2 — Render Flight Details (FR24)
-     
 function renderFlightDetails(snapshot) {
   if (!detailsEl) return;
 
-   // 🟦 A9.4.1 — Resolve Aircraft & Times
-const aircraft =
-  item.aircraft ||
-  item.aircraftModel ||
-  item.aircraftType ||
-  item.model ||
-  item.modelKey ||
-  "—";
-
-const depTime =
-  item.dep ||
-  item.depTime ||
-  (Number.isFinite(item.depAbsMin)
-    ? String(Math.floor(item.depAbsMin / 60)).padStart(2, "0") +
-      ":" +
-      String(item.depAbsMin % 60).padStart(2, "0")
-    : "—");
-
-const arrTime =
-  item.arr ||
-  item.arrTime ||
-  (Number.isFinite(item.arrAbsMin)
-    ? String(Math.floor(item.arrAbsMin / 60)).padStart(2, "0") +
-      ":" +
-      String(item.arrAbsMin % 60).padStart(2, "0")
-    : "—");
-   
   const id = window.ACS_ACTIVE_FLIGHT_ID;
   if (!id) {
     detailsEl.innerHTML = `
@@ -568,6 +540,33 @@ const arrTime =
 
   const item = snapshot.find(f => f.aircraftId === id);
   if (!item) return;
+
+  // 🟦 A9.4.1 — Resolve Aircraft & Times (AFTER item exists)
+  const aircraft =
+    item.aircraft ||
+    item.aircraftModel ||
+    item.aircraftType ||
+    item.model ||
+    item.modelKey ||
+    "—";
+
+  const depTime =
+    item.dep ||
+    item.depTime ||
+    (Number.isFinite(item.depAbsMin)
+      ? String(Math.floor(item.depAbsMin / 60)).padStart(2, "0") +
+        ":" +
+        String(item.depAbsMin % 60).padStart(2, "0")
+      : "—");
+
+  const arrTime =
+    item.arr ||
+    item.arrTime ||
+    (Number.isFinite(item.arrAbsMin)
+      ? String(Math.floor(item.arrAbsMin / 60)).padStart(2, "0") +
+        ":" +
+        String(item.arrAbsMin % 60).padStart(2, "0")
+      : "—");
 
   const now = window.ACS_TIME?.absMin;
   let extra = "";
