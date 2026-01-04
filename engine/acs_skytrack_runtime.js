@@ -474,40 +474,41 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     };
   }
 
-  /* ============================================================
-     3️⃣ GROUND — ARRIVAL / TURNAROUND SAFE LOGIC
+    /* ============================================================
+     3️⃣ GROUND — TURNAROUND ANCHOR (FR24 STABLE)
+     🟦 A6.3 — Anchor to NEXT LEG origin
      ============================================================ */
 
-  // Flights already arrived (<= now is CRITICAL here)
-  const pastFlights = items
-    .filter(it =>
-      it.type === "flight" &&
-      Number.isFinite(it.arrAbsMin) &&
-      it.arrAbsMin <= now
-    )
-    .sort((a, b) => b.arrAbsMin - a.arrAbsMin);
-
-  if (pastFlights.length) {
-    return {
-      state: "GROUND",
-      position: { airport: pastFlights[0].destination || null },
-      flight: null
-    };
-  }
-
-  // Flights not yet departed
-  const futureFlights = items
+  // 1) Find next upcoming flight (defines turnaround airport)
+  const nextFlight = items
     .filter(it =>
       it.type === "flight" &&
       Number.isFinite(it.depAbsMin) &&
       it.depAbsMin > now
     )
-    .sort((a, b) => a.depAbsMin - b.depAbsMin);
+    .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
 
-  if (futureFlights.length) {
+  if (nextFlight) {
     return {
       state: "GROUND",
-      position: { airport: futureFlights[0].origin || null },
+      position: { airport: nextFlight.origin || null },
+      flight: null
+    };
+  }
+
+  // 2) Otherwise, stay at last arrived destination
+  const lastFlight = items
+    .filter(it =>
+      it.type === "flight" &&
+      Number.isFinite(it.arrAbsMin) &&
+      it.arrAbsMin <= now
+    )
+    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
+
+  if (lastFlight) {
+    return {
+      state: "GROUND",
+      position: { airport: lastFlight.destination || null },
       flight: null
     };
   }
