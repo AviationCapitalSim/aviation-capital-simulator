@@ -427,6 +427,7 @@ function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
 
 /* ============================================================
    🧠 STATE RESOLVER — FR24 LOGIC
+   🟦 A6.1 — Arrival / Turnaround Boundary FIX (NO jumps)
    ============================================================ */
 function ACS_SkyTrack_resolveState(aircraftId) {
 
@@ -437,7 +438,7 @@ function ACS_SkyTrack_resolveState(aircraftId) {
   if (!ac || !Number.isFinite(now)) return null;
 
   /* ============================================================
-     1️⃣ MAINTENANCE — B-CHECK ONLY
+     1️⃣ MAINTENANCE — B-CHECK ONLY (NO CHANGE)
      ============================================================ */
   const bCheck = items.find(it => {
     if (it.type !== "service" || it.serviceType !== "B") return false;
@@ -457,7 +458,7 @@ function ACS_SkyTrack_resolveState(aircraftId) {
   }
 
   /* ============================================================
-     2️⃣ EN ROUTE — ACTIVE FLIGHT
+     2️⃣ EN ROUTE — ACTIVE FLIGHT (STABLE)
      ============================================================ */
   const activeFlight = items.find(it => {
     if (it.type !== "flight") return false;
@@ -474,10 +475,16 @@ function ACS_SkyTrack_resolveState(aircraftId) {
   }
 
   /* ============================================================
-     3️⃣ GROUND — FR24 RULES
+     3️⃣ GROUND — ARRIVAL / TURNAROUND SAFE LOGIC
      ============================================================ */
+
+  // Flights already arrived (<= now is CRITICAL here)
   const pastFlights = items
-    .filter(it => it.type === "flight" && Number.isFinite(it.arrAbsMin) && it.arrAbsMin < now)
+    .filter(it =>
+      it.type === "flight" &&
+      Number.isFinite(it.arrAbsMin) &&
+      it.arrAbsMin <= now
+    )
     .sort((a, b) => b.arrAbsMin - a.arrAbsMin);
 
   if (pastFlights.length) {
@@ -488,8 +495,13 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     };
   }
 
+  // Flights not yet departed
   const futureFlights = items
-    .filter(it => it.type === "flight" && Number.isFinite(it.depAbsMin) && it.depAbsMin > now)
+    .filter(it =>
+      it.type === "flight" &&
+      Number.isFinite(it.depAbsMin) &&
+      it.depAbsMin > now
+    )
     .sort((a, b) => a.depAbsMin - b.depAbsMin);
 
   if (futureFlights.length) {
@@ -500,6 +512,9 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     };
   }
 
+  /* ============================================================
+     4️⃣ ABSOLUTE FALLBACK — SHOULD NEVER JUMP
+     ============================================================ */
   return {
     state: "GROUND",
     position: { airport: ac.baseAirport || null },
