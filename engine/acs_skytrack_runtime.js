@@ -433,7 +433,32 @@ function ACS_SkyTrack_resolveState(aircraftId) {
 
   const ac = ACS_SkyTrack.aircraftIndex[aircraftId];
   const items = ACS_SkyTrack.itemsByAircraft[aircraftId] || [];
-  const now = ACS_SkyTrack.nowAbsMin;
+  
+   // 🟦 A6.0 — ARRIVAL LATCH (ANTI TIME-JUMP)
+   
+let now = ACS_SkyTrack.nowAbsMin;
+
+if (!Number.isFinite(ac.__lastNowAbsMin)) {
+  ac.__lastNowAbsMin = now;
+}
+
+// Buscar el vuelo cuya llegada pueda haberse saltado
+const nextArrival = items
+  .filter(it =>
+    it.type === "flight" &&
+    Number.isFinite(it.arrAbsMin) &&
+    ac.__lastNowAbsMin < it.arrAbsMin &&
+    now > it.arrAbsMin
+  )
+  .sort((a, b) => a.arrAbsMin - b.arrAbsMin)[0];
+
+// Si el tiempo saltó sobre la llegada, forzar frame final
+if (nextArrival) {
+  now = nextArrival.arrAbsMin;
+}
+
+// Guardar último tiempo real
+ac.__lastNowAbsMin = ACS_SkyTrack.nowAbsMin;
 
   if (!ac || !Number.isFinite(now)) return null;
 
