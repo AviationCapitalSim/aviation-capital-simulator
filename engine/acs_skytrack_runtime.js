@@ -282,6 +282,7 @@ function ACS_SkyTrack_indexScheduleItems() {
     }
 
     // Turnaround (prioriza optimized si existe)
+     
     const turn =
       Number.isFinite(it.turnaroundMinOptimized) ? it.turnaroundMinOptimized :
       Number.isFinite(it.turnaroundMin) ? it.turnaroundMin :
@@ -289,6 +290,7 @@ function ACS_SkyTrack_indexScheduleItems() {
 
     // Block por pierna (si no viene, deducimos por dep/arr)
     // (si tampoco se puede, default conservador 60)
+     
     const blockFallback = 60;
 
     days.forEach(d => {
@@ -305,6 +307,7 @@ function ACS_SkyTrack_indexScheduleItems() {
         Math.max(1, (arr1 - dep1));
 
       // OUTBOUND leg (BASE -> DEST)
+       
       const outFlightNumber = it.flightNumberOut || it.flightNumber || null;
 
       const outKey = [
@@ -342,6 +345,7 @@ function ACS_SkyTrack_indexScheduleItems() {
       }
 
       // RETURN leg (DEST -> BASE)
+       
       const dep2 = arr1 + turn;
       const arr2 = dep2 + (Number.isFinite(block1) ? block1 : blockFallback);
 
