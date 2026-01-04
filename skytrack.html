@@ -533,7 +533,62 @@ card.addEventListener("click", () => {
       iconSize: [18, 18],
       iconAnchor: [9, 9]
     });
-     
+
+/* ============================================================
+   🟦 A9.4.2 — RESOLVE DEP/ARR FROM RUNTIME (NO snapshot times)
+   Fuente: window.ACS_SkyTrack.itemsByAircraft (Schedule Table expanded)
+   ============================================================ */
+
+function ACS_ST_toHHMM(absMin) {
+  if (!Number.isFinite(absMin)) return "—";
+  const m = ((absMin % 1440) + 1440) % 1440;
+  const hh = String(Math.floor(m / 60)).padStart(2, "0");
+  const mm = String(m % 60).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function ACS_ST_nowAbsMin() {
+  // runtime normaliza a semana (0..10079). Mantenemos igual.
+  if (Number.isFinite(window.ACS_SkyTrack?.nowAbsMin)) return window.ACS_SkyTrack.nowAbsMin;
+  if (Number.isFinite(window.ACS_TIME?.absMin)) return (window.ACS_TIME.absMin % 10080);
+  if (Number.isFinite(window.ACS_TIME?.minute)) return (window.ACS_TIME.minute % 10080);
+  return null;
+}
+
+function ACS_ST_resolveTimesFromRuntime(snapshotItem) {
+  const acId = snapshotItem?.aircraftId;
+  if (!acId) return null;
+
+  const now = ACS_ST_nowAbsMin();
+  const items = window.ACS_SkyTrack?.itemsByAircraft?.[acId];
+  if (!Array.isArray(items) || now == null) return null;
+
+  const flights = items.filter(it => it && it.type === "flight" && Number.isFinite(it.depAbsMin) && Number.isFinite(it.arrAbsMin));
+  if (!flights.length) return null;
+
+  // 1) Si está EN_ROUTE, buscamos el vuelo activo por ventana de tiempo
+  if (snapshotItem.state === "EN_ROUTE") {
+    const active = flights.find(f =>
+      now >= f.depAbsMin && now < f.arrAbsMin &&
+      (!snapshotItem.flightNumber || f.flightNumber === snapshotItem.flightNumber)
+    );
+    if (active) return active;
+  }
+
+  // 2) Si está en GROUND: contexto FR24 (próximo si existe; si no, último)
+  const future = flights
+    .filter(f => f.depAbsMin > now)
+    .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
+
+  if (future) return future;
+
+  const past = flights
+    .filter(f => f.arrAbsMin < now)
+    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
+
+  return past || null;
+}
+        
 // 🟦 A9.2 — Render Flight Details (FR24)
      
 function renderFlightDetails(snapshot) {
@@ -548,38 +603,36 @@ function renderFlightDetails(snapshot) {
     return;
   }
 
-  const item = Array.isArray(snapshot) ? snapshot.find(f => f.aircraftId === id) : null;
+  const item = (snapshot || []).find(f => f.aircraftId === id);
   if (!item) return;
 
-  // ✅ Resolve Aircraft (model + registration)
-  const aircraft = `${item.model || "—"} (${item.registration || "—"})`;
+  // ✅ DEP/ARR desde runtime (NO snapshot)
+  const rt = ACS_ST_resolveTimesFromRuntime(item);
 
-  // ✅ Resolve Times (prefer "HH:MM" strings from schedule_table)
-  const toHHMMfromAbs = (abs) => {
-    if (!Number.isFinite(abs)) return "—";
-    const m = ((abs % 1440) + 1440) % 1440;
-    const hh = String(Math.floor(m / 60)).padStart(2, "0");
-    const mm = String(m % 60).padStart(2, "0");
-    return `${hh}:${mm}`;
-  };
+  const depAbs = rt?.depAbsMin;
+  const arrAbs = rt?.arrAbsMin;
 
-  const depTime = item.departure || toHHMMfromAbs(item.depAbsMin);
-  const arrTime = item.arrival || toHHMMfromAbs(item.arrAbsMin);
+  const depTime = ACS_ST_toHHMM(depAbs);
+  const arrTime = ACS_ST_toHHMM(arrAbs);
 
-  // ✅ Progress / Remaining (EN_ROUTE only)
-  const now = window.ACS_TIME?.absMin;
+  // Aircraft + matrícula (registration)
+  const aircraftLabel = `${item.model || "—"} (${item.registration || "—"})`;
+
+  // Extra EN_ROUTE: % + remaining
+  const now = ACS_ST_nowAbsMin();
   let extra = "";
 
   if (
     item.state === "EN_ROUTE" &&
     Number.isFinite(now) &&
-    Number.isFinite(item.depAbsMin) &&
-    Number.isFinite(item.arrAbsMin)
+    Number.isFinite(depAbs) &&
+    Number.isFinite(arrAbs) &&
+    arrAbs > depAbs
   ) {
-    const total = Math.max(1, item.arrAbsMin - item.depAbsMin);
-    const remaining = Math.max(0, item.arrAbsMin - now);
+    const total = (arrAbs - depAbs);
+    const remaining = Math.max(0, arrAbs - now);
     const done = Math.max(0, total - remaining);
-    const pct = Math.round((done / total) * 100);
+    const pct = Math.max(0, Math.min(100, Math.round((done / total) * 100)));
 
     const hh = String(Math.floor(remaining / 60)).padStart(2, "0");
     const mm = String(remaining % 60).padStart(2, "0");
@@ -596,8 +649,8 @@ function renderFlightDetails(snapshot) {
     <h3>📊 Flight Details</h3>
     <div style="font-size:0.95rem; line-height:1.5;">
       <strong>Flight:</strong> ${item.flightNumber || "—"}<br>
-      <strong>Route:</strong> ${item.originICAO || "—"} → ${item.destinationICAO || "—"}<br>
-      <strong>Aircraft:</strong> ${aircraft}<br>
+      <strong>Route:</strong> ${(item.originICAO || "—")} → ${(item.destinationICAO || "—")}<br>
+      <strong>Aircraft:</strong> ${aircraftLabel}<br>
       <strong>Status:</strong> ${item.state || "—"}<br>
       <strong>Departure:</strong> ${depTime}<br>
       <strong>Arrival:</strong> ${arrTime}
