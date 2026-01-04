@@ -568,8 +568,28 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
         } else {
-          m.setLatLng(pos);
+          // 🔁 Reset trace if flight leg changed
+          if (item.flightNumber && traces[item.aircraftId]?.__lastFlight !== item.flightNumber) {
+          map.removeLayer(traces[item.aircraftId]);
+          delete traces[item.aircraftId];
+          }
+           m.setLatLng(pos);
+           
+           // 🟦 ATC TRACE — only when airborne
+          if (item.state === "EN_ROUTE") {
 
+          if (!traces[item.aircraftId]) {
+          traces[item.aircraftId] = L.polyline([pos], {
+          color: "#0b3cff",
+          weight: 2,
+          opacity: 0.85
+          }).addTo(map);
+
+          traces[item.aircraftId].__lastFlight = item.flightNumber;
+        } else {
+         traces[item.aircraftId].addLatLng(pos);
+        }
+      }
           if (m.isPopupOpen()) {
             m.setPopupContent(buildATCContent(item));
           }
