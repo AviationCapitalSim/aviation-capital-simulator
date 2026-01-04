@@ -845,37 +845,36 @@ snapshot.forEach(item => {
     m.setLatLng(pos);
   }
 
-  // 🟦 A8.4 — Highlight active aircraft
+   // 🟦 A8.4 — Highlight active aircraft
   if (window.ACS_ACTIVE_FLIGHT_ID === item.aircraftId) {
     m.setZIndexOffset(1000);
   } else {
     m.setZIndexOffset(0);
   }
 
-});
-     
-           // 🟦 ATC TRACE — only when airborne
-          if (item.state === "EN_ROUTE") {
+  // 🟦 ATC TRACE — only when airborne
+  if (item.state === "EN_ROUTE") {
 
-          if (!traces[item.aircraftId]) {
-          traces[item.aircraftId] = L.polyline([pos], {
-          color: "#0b3cff",
-          weight: 2,
-          opacity: 0.85
-          }).addTo(map);
+    if (!traces[item.aircraftId]) {
+      traces[item.aircraftId] = L.polyline([pos], {
+        color: "#0b3cff",
+        weight: 2,
+        opacity: 0.85
+      }).addTo(map);
 
-          traces[item.aircraftId].__lastFlight = item.flightNumber;
-        } else {
-         traces[item.aircraftId].addLatLng(pos);
-        }
-      }
-          if (m.isPopupOpen()) {
-            m.setPopupContent(buildATCContent(item));
-          }
-        }
-      });
+      traces[item.aircraftId].__lastFlight = item.flightNumber;
+    } else {
+      traces[item.aircraftId].addLatLng(pos);
     }
+  }
 
+  // 🟦 Live popup refresh
+  if (m.isPopupOpen()) {
+    m.setPopupContent(buildATCContent(item));
+  }
+
+}); // ⬅️ cierre correcto del snapshot.forEach
+         
     render(window.__ACS_LAST_SKYTRACK_SNAPSHOT__);
 
     window.addEventListener("ACS_SKYTRACK_SNAPSHOT", e => {
