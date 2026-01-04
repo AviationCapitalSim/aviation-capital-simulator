@@ -484,16 +484,25 @@ card.addEventListener("click", () => {
     const now = window.ACS_TIME?.absMin;
 
     if (
-      item.state === "EN_ROUTE" &&
-      now != null &&
-      item.depAbsMin != null &&
-      item.arrAbsMin != null
-    ) {
-      const remaining = Math.max(0, item.arrAbsMin - now);
-      const hh = String(Math.floor(remaining / 60)).padStart(2, "0");
-      const mm = String(remaining % 60).padStart(2, "0");
-      extra = `<div class="flight-meta">⏱ ${hh}:${mm} remaining</div>`;
-    }
+  item.state === "EN_ROUTE" &&
+  now != null &&
+  Number.isFinite(item.depAbsMin) &&
+  Number.isFinite(item.arrAbsMin)
+) {
+  const total = Math.max(1, item.arrAbsMin - item.depAbsMin);
+  const remaining = Math.max(0, item.arrAbsMin - now);
+  const done = Math.max(0, total - remaining);
+
+  const pctDone = Math.round((done / total) * 100);
+
+  const hh = String(Math.floor(remaining / 60)).padStart(2, "0");
+  const mm = String(remaining % 60).padStart(2, "0");
+
+  extra = `
+    <div><strong>${pctDone}%</strong> PROGRESS</div>
+    <div><strong>TIME REMAINING:</strong> ${hh}:${mm}</div>
+  `;
+}
 
     card.innerHTML = `
       <div class="flight-route">
@@ -526,6 +535,7 @@ card.addEventListener("click", () => {
     });
      
 // 🟦 A9.2 — Render Flight Details (FR24)
+     
 function renderFlightDetails(snapshot) {
   if (!detailsEl) return;
 
@@ -538,71 +548,38 @@ function renderFlightDetails(snapshot) {
     return;
   }
 
-  const item = snapshot.find(f => f.aircraftId === id);
+  const item = Array.isArray(snapshot) ? snapshot.find(f => f.aircraftId === id) : null;
   if (!item) return;
 
-  // 🟦 A9.5.1 — Resolve Aircraft, Registration & Times (FR24)
-const model =
-  item.aircraft ||
-  item.aircraftModel ||
-  item.aircraftType ||
-  item.model ||
-  item.modelKey ||
-  "—";
+  // ✅ Resolve Aircraft (model + registration)
+  const aircraft = `${item.model || "—"} (${item.registration || "—"})`;
 
-const registration =
-  item.registration ||
-  item.aircraftReg ||
-  item.reg ||
-  item.tail ||
-  item.tailNumber ||
-  "";
+  // ✅ Resolve Times (prefer "HH:MM" strings from schedule_table)
+  const toHHMMfromAbs = (abs) => {
+    if (!Number.isFinite(abs)) return "—";
+    const m = ((abs % 1440) + 1440) % 1440;
+    const hh = String(Math.floor(m / 60)).padStart(2, "0");
+    const mm = String(m % 60).padStart(2, "0");
+    return `${hh}:${mm}`;
+  };
 
-const aircraft = registration
-  ? `${model} (${registration})`
-  : model;
+  const depTime = item.departure || toHHMMfromAbs(item.depAbsMin);
+  const arrTime = item.arrival || toHHMMfromAbs(item.arrAbsMin);
 
-const formatTime = min =>
-  String(Math.floor(min / 60)).padStart(2, "0") +
-  ":" +
-  String(min % 60).padStart(2, "0");
-
-// 🟦 A9.6.1 — Resolve Departure / Arrival (AIR + GROUND, FR24)
-const depMin =
-  item.depAbsMin ??
-  item.nextDepAbsMin ??
-  item.schedDepAbsMin ??
-  null;
-
-const arrMin =
-  item.arrAbsMin ??
-  item.lastArrAbsMin ??
-  item.schedArrAbsMin ??
-  null;
-
-const depTime =
-  item.dep ||
-  item.depTime ||
-  (Number.isFinite(depMin) ? formatTime(depMin) : "—");
-
-const arrTime =
-  item.arr ||
-  item.arrTime ||
-  (Number.isFinite(arrMin) ? formatTime(arrMin) : "—");
-
-
+  // ✅ Progress / Remaining (EN_ROUTE only)
   const now = window.ACS_TIME?.absMin;
   let extra = "";
 
   if (
     item.state === "EN_ROUTE" &&
-    now != null &&
-    item.depAbsMin != null &&
-    item.arrAbsMin != null
+    Number.isFinite(now) &&
+    Number.isFinite(item.depAbsMin) &&
+    Number.isFinite(item.arrAbsMin)
   ) {
-    const total = item.arrAbsMin - item.depAbsMin;
+    const total = Math.max(1, item.arrAbsMin - item.depAbsMin);
     const remaining = Math.max(0, item.arrAbsMin - now);
-    const pct = Math.round(((total - remaining) / total) * 100);
+    const done = Math.max(0, total - remaining);
+    const pct = Math.round((done / total) * 100);
 
     const hh = String(Math.floor(remaining / 60)).padStart(2, "0");
     const mm = String(remaining % 60).padStart(2, "0");
@@ -618,10 +595,10 @@ const arrTime =
   detailsEl.innerHTML = `
     <h3>📊 Flight Details</h3>
     <div style="font-size:0.95rem; line-height:1.5;">
-      <strong>Flight:</strong> ${item.flightNumber}<br>
-      <strong>Route:</strong> ${item.originICAO} → ${item.destinationICAO}<br>
+      <strong>Flight:</strong> ${item.flightNumber || "—"}<br>
+      <strong>Route:</strong> ${item.originICAO || "—"} → ${item.destinationICAO || "—"}<br>
       <strong>Aircraft:</strong> ${aircraft}<br>
-      <strong>Status:</strong> ${item.state}<br>
+      <strong>Status:</strong> ${item.state || "—"}<br>
       <strong>Departure:</strong> ${depTime}<br>
       <strong>Arrival:</strong> ${arrTime}
       ${extra}
