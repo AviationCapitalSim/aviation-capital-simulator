@@ -550,7 +550,14 @@ document.addEventListener("DOMContentLoaded", () => {
       centerMapOnce(snapshot);
 
       snapshot.forEach(item => {
-        const pos = resolvePosition(item);
+        // 🟦 A6.4.1 — STATE-AWARE POSITION (NO mixed states)
+        let pos = null;
+
+       if (item.state === "EN_ROUTE") {
+      pos = resolvePosition(item);
+      } else if (item.position?.airport) {
+     pos = resolvePosition(item);
+    }
         if (!pos) return;
 
         let m = markers[item.aircraftId];
@@ -559,13 +566,16 @@ document.addEventListener("DOMContentLoaded", () => {
           m = L.marker(pos, { icon: atcIcon }).addTo(map);
           markers[item.aircraftId] = m;
 
-          m.on("click", () => {
-            const html = buildATCContent(item);
-            m.bindPopup(html, {
-              autoClose: false,
-              closeOnClick: false
-            }).openPopup();
-          });
+          // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
+m.bindPopup("", {
+  autoClose: false,
+  closeOnClick: false
+});
+
+m.on("click", () => {
+  m.setPopupContent(buildATCContent(item));
+  m.openPopup();
+});
 
         } else {
           // 🔁 Reset trace if flight leg changed
