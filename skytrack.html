@@ -543,39 +543,56 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `;
     }
-
+     
+    // 🟦 A6.5 — MONOTONIC SNAPSHOT GUARD (per aircraft)
+    const lastSeenSnapshot = {}; // aircraftId -> last logical time
+     
     function render(snapshot) {
       if (!Array.isArray(snapshot)) return;
 
       centerMapOnce(snapshot);
 
       snapshot.forEach(item => {
-        // 🟦 A6.4.1 — STATE-AWARE POSITION (NO mixed states)
-        let pos = null;
 
-       if (item.state === "EN_ROUTE") {
-      pos = resolvePosition(item);
-      } else if (item.position?.airport) {
-     pos = resolvePosition(item);
-    }
-        if (!pos) return;
+  // 🟦 A6.5.1 — IGNORE OUT-OF-ORDER SNAPSHOTS
+  const key = item.aircraftId;
+  const logicalTime =
+    Number.isFinite(item.depAbsMin) ? item.depAbsMin :
+    Number.isFinite(item.arrAbsMin) ? item.arrAbsMin : 0;
 
-        let m = markers[item.aircraftId];
+  if (lastSeenSnapshot[key] != null && logicalTime < lastSeenSnapshot[key]) {
+    return; // ⛔ ignore older snapshot
+  }
 
-        if (!m) {
-          m = L.marker(pos, { icon: atcIcon }).addTo(map);
-          markers[item.aircraftId] = m;
+  lastSeenSnapshot[key] = logicalTime;
 
-          // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
-m.bindPopup("", {
-  autoClose: false,
-  closeOnClick: false
-});
+  // 🟦 A6.4.1 — STATE-AWARE POSITION (NO mixed states)
+  let pos = null;
 
-m.on("click", () => {
-  m.setPopupContent(buildATCContent(item));
-  m.openPopup();
-});
+  if (item.state === "EN_ROUTE") {
+    pos = resolvePosition(item);
+  } else if (item.position?.airport) {
+    pos = resolvePosition(item);
+  }
+
+  if (!pos) return;
+
+  let m = markers[item.aircraftId];
+
+  if (!m) {
+    m = L.marker(pos, { icon: atcIcon }).addTo(map);
+    markers[item.aircraftId] = m;
+
+// 🟦 A6.4.2 — Persistent ATC Popup (bind once)
+     m.bindPopup("", {
+     autoClose: false,
+     closeOnClick: false
+   });
+
+     m.on("click", () => {
+     m.setPopupContent(buildATCContent(item));
+     m.openPopup();
+   });
 
         } else {
           // 🔁 Reset trace if flight leg changed
