@@ -438,7 +438,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const markers = {};
     const traces = {}; // aircraftId -> polyline
     let didCenter = false;
-
+     
+    // 🟦 A8.1 — ACTIVE FLIGHT CONTEXT (FR24)
+    window.ACS_ACTIVE_FLIGHT_ID = null;
+     
     // 🟦 A7.1 — LIVE TRACK PANEL RENDER (FR24)
 const liveListEl = document.getElementById("skytrackLiveList");
 
@@ -451,7 +454,21 @@ function renderLiveTrackPanel(snapshot) {
     if (!item.flightNumber) return;
 
     const card = document.createElement("div");
-    card.className = "flight-card";
+card.className = "flight-card";
+
+if (window.ACS_ACTIVE_FLIGHT_ID === item.aircraftId) {
+  card.style.borderColor = "#ffca3a";
+  card.style.boxShadow = "0 0 18px rgba(255,202,58,0.55)";
+}
+
+card.addEventListener("click", () => {
+  window.ACS_ACTIVE_FLIGHT_ID = item.aircraftId;
+
+  const pos = resolvePosition(item);
+  if (pos) {
+    map.flyTo(pos, Math.max(map.getZoom(), 6), { animate: true });
+  }
+});
 
     const stateClass =
       item.state === "EN_ROUTE" ? "badge-air" :
@@ -643,9 +660,10 @@ function renderLiveTrackPanel(snapshot) {
    });
 
      m.on("click", () => {
-     m.setPopupContent(buildATCContent(item));
-     m.openPopup();
-   });
+  window.ACS_ACTIVE_FLIGHT_ID = item.aircraftId;
+  m.setPopupContent(buildATCContent(item));
+  m.openPopup();
+});
 
         } else {
           // 🔁 Reset trace if flight leg changed
@@ -661,7 +679,14 @@ function renderLiveTrackPanel(snapshot) {
         }
 
            m.setLatLng(pos);
-           
+
+       // 🟦 A8.4 — Highlight active aircraft
+       if (window.ACS_ACTIVE_FLIGHT_ID === item.aircraftId) {
+       m.setZIndexOffset(1000);
+       } else {
+       m.setZIndexOffset(0);
+      }
+     
            // 🟦 ATC TRACE — only when airborne
           if (item.state === "EN_ROUTE") {
 
