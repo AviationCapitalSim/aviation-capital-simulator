@@ -814,36 +814,38 @@ snapshot.forEach(item => {
   let m = markers[item.aircraftId];
 
   if (!m) {
-    m = L.marker(pos, { icon: atcIcon }).addTo(map);
-    markers[item.aircraftId] = m;
+  m = L.marker(pos, { icon: atcIcon }).addTo(map);
+  markers[item.aircraftId] = m;
 
-    // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
-    m.bindPopup("", {
-      autoClose: false,
-      closeOnClick: false
-    });
+  // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
+  m.bindPopup("", {
+    autoClose: false,
+    closeOnClick: false
+  });
 
-    m.on("click", () => {
-      window.ACS_ACTIVE_FLIGHT_ID = item.aircraftId;
-      m.setPopupContent(buildATCContent(item));
-      m.openPopup();
-    });
+  m.on("click", () => {
+    window.ACS_ACTIVE_FLIGHT_ID = item.aircraftId;
+    m.setPopupContent(buildATCContent(item));
+    m.openPopup();
+  });
 
-  } else {
-    // 🔁 Reset trace if flight leg changed
-    if (
-      item.flightNumber &&
-      traces[item.aircraftId] &&
-      traces[item.aircraftId].__lastFlight !== item.flightNumber
-    ) {
-      if (map.hasLayer(traces[item.aircraftId])) {
-        map.removeLayer(traces[item.aircraftId]);
-      }
-      delete traces[item.aircraftId];
+}  // ✅ ESTA LLAVE FALTABA
+
+else {
+  // 🔁 Reset trace if flight leg changed
+  if (
+    item.flightNumber &&
+    traces[item.aircraftId] &&
+    traces[item.aircraftId].__lastFlight !== item.flightNumber
+  ) {
+    if (map.hasLayer(traces[item.aircraftId])) {
+      map.removeLayer(traces[item.aircraftId]);
     }
-
-    m.setLatLng(pos);
+    delete traces[item.aircraftId];
   }
+
+  m.setLatLng(pos);
+}
 
     // 🟦 A8.4 — Highlight active aircraft
    
