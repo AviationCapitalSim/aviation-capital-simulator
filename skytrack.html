@@ -501,7 +501,15 @@ document.addEventListener("DOMContentLoaded", () => {
         item.tail ||
         item.callsign ||
         "";
-
+       
+      const model =
+        item.aircraft ||
+        item.aircraftModel ||
+        item.aircraftType ||
+        item.model ||
+        item.modelKey ||
+       "";
+       
       let extra = "";
       const now = window.ACS_TIME?.absMin;
 
@@ -526,7 +534,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       return `
         <div style="font-size:12px; line-height:1.3;">
-          <strong>${item.modelKey} ${reg}</strong><br>
+          <strong>${model} ${reg}</strong><br>
           <strong>${item.flightNumber}</strong><br>
           ${item.originICAO} → ${item.destinationICAO}<br>
           <strong>${item.state}</strong>
