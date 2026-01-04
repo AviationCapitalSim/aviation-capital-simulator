@@ -569,10 +569,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } else {
           // 🔁 Reset trace if flight leg changed
-          if (item.flightNumber && traces[item.aircraftId]?.__lastFlight !== item.flightNumber) {
+         if (
+          item.flightNumber &&
+          traces[item.aircraftId] &&
+          traces[item.aircraftId].__lastFlight !== item.flightNumber
+        ) {
+         if (map.hasLayer(traces[item.aircraftId])) {
           map.removeLayer(traces[item.aircraftId]);
+        }
           delete traces[item.aircraftId];
-          }
+        }
+
            m.setLatLng(pos);
            
            // 🟦 ATC TRACE — only when airborne
