@@ -439,6 +439,55 @@ document.addEventListener("DOMContentLoaded", () => {
     const traces = {}; // aircraftId -> polyline
     let didCenter = false;
 
+    // 🟦 A7.1 — LIVE TRACK PANEL RENDER (FR24)
+const liveListEl = document.getElementById("skytrackLiveList");
+
+function renderLiveTrackPanel(snapshot) {
+  if (!liveListEl || !Array.isArray(snapshot)) return;
+
+  liveListEl.innerHTML = "";
+
+  snapshot.forEach(item => {
+    if (!item.flightNumber) return;
+
+    const card = document.createElement("div");
+    card.className = "flight-card";
+
+    const stateClass =
+      item.state === "EN_ROUTE" ? "badge-air" :
+      item.state === "GROUND" ? "badge-ground" :
+      "badge-maint";
+
+    let extra = "";
+    const now = window.ACS_TIME?.absMin;
+
+    if (
+      item.state === "EN_ROUTE" &&
+      now != null &&
+      item.depAbsMin != null &&
+      item.arrAbsMin != null
+    ) {
+      const remaining = Math.max(0, item.arrAbsMin - now);
+      const hh = String(Math.floor(remaining / 60)).padStart(2, "0");
+      const mm = String(remaining % 60).padStart(2, "0");
+      extra = `<div class="flight-meta">⏱ ${hh}:${mm} remaining</div>`;
+    }
+
+    card.innerHTML = `
+      <div class="flight-route">
+        ${item.originICAO} → ${item.destinationICAO}
+      </div>
+      <div class="flight-meta">
+        <span>${item.flightNumber}</span>
+        <span class="badge ${stateClass}">${item.state}</span>
+      </div>
+      ${extra}
+    `;
+
+    liveListEl.appendChild(card);
+  });
+}
+     
     // 🔵 ATC MARKER — SMALL
     const atcIcon = L.divIcon({
       className: "acs-atc-aircraft",
@@ -548,6 +597,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const lastSeenSnapshot = {}; // aircraftId -> last logical time
      
     function render(snapshot) {
+
+    // 🟦 A7.2 — Update Live Track Panel
+    renderLiveTrackPanel(snapshot);
+       
       if (!Array.isArray(snapshot)) return;
 
       centerMapOnce(snapshot);
