@@ -444,7 +444,12 @@ document.addEventListener("DOMContentLoaded", () => {
      
     // 🟦 A7.1 — LIVE TRACK PANEL RENDER (FR24)
 const liveListEl = document.getElementById("skytrackLiveList");
-
+     
+// 🟦 A9.1 — Flight Details Panel Element
+const detailsEl = document.querySelector(".panel h3 + p")
+  ? document.querySelector(".panel h3 + p").parentElement
+  : null;
+     
 function renderLiveTrackPanel(snapshot) {
   if (!liveListEl || !Array.isArray(snapshot)) return;
 
@@ -519,7 +524,62 @@ card.addEventListener("click", () => {
       iconSize: [18, 18],
       iconAnchor: [9, 9]
     });
+     
+// 🟦 A9.2 — Render Flight Details (FR24)
+     
+function renderFlightDetails(snapshot) {
+  if (!detailsEl) return;
 
+  const id = window.ACS_ACTIVE_FLIGHT_ID;
+  if (!id) {
+    detailsEl.innerHTML = `
+      <h3>📊 Flight Details</h3>
+      <p>Select a flight to view detailed information.</p>
+    `;
+    return;
+  }
+
+  const item = snapshot.find(f => f.aircraftId === id);
+  if (!item) return;
+
+  const now = window.ACS_TIME?.absMin;
+  let extra = "";
+
+  if (
+    item.state === "EN_ROUTE" &&
+    now != null &&
+    item.depAbsMin != null &&
+    item.arrAbsMin != null
+  ) {
+    const total = item.arrAbsMin - item.depAbsMin;
+    const remaining = Math.max(0, item.arrAbsMin - now);
+    const pct = Math.round(((total - remaining) / total) * 100);
+
+    const hh = String(Math.floor(remaining / 60)).padStart(2, "0");
+    const mm = String(remaining % 60).padStart(2, "0");
+
+    extra = `
+      <div style="margin-top:8px;">
+        <strong>Progress:</strong> ${pct}%<br>
+        <strong>Time Remaining:</strong> ${hh}:${mm}
+      </div>
+    `;
+  }
+
+  detailsEl.innerHTML = `
+    <h3>📊 Flight Details</h3>
+    <div style="font-size:0.95rem; line-height:1.5;">
+      <strong>Flight:</strong> ${item.flightNumber}<br>
+      <strong>Route:</strong> ${item.originICAO} → ${item.destinationICAO}<br>
+      <strong>Aircraft:</strong> ${item.aircraft || item.aircraftModel || "—"}<br>
+      <strong>Status:</strong> ${item.state}<br>
+      <strong>Departure:</strong> ${item.dep || "—"}<br>
+      <strong>Arrival:</strong> ${item.arr || "—"}
+      ${extra}
+    </div>
+  `;
+}
+     
     function apLatLng(icao) {
       const ap = window.ACS_AIRPORT_INDEX?.[icao];
       if (!ap) return null;
@@ -618,6 +678,9 @@ card.addEventListener("click", () => {
     // 🟦 A7.2 — Update Live Track Panel
     renderLiveTrackPanel(snapshot);
        
+   // 🟦 A9.3 — Update Flight Details Panel
+    renderFlightDetails(snapshot);
+
       if (!Array.isArray(snapshot)) return;
 
       centerMapOnce(snapshot);
