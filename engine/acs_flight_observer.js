@@ -102,99 +102,121 @@
 })();
 
 /* ============================================================
-   🟦 A10.13 — PASSENGERS + REVENUE (HOOK)
+   🟧 A18 — PROCESS FLIGHT REVENUE & COSTS (STABLE)
+   ------------------------------------------------------------
+   • Called ONLY when flight is completed
+   • No external variables
+   • No SkyTrack dependency changes
+   • Finance-safe
    ============================================================ */
 
 function ACS_processFlightRevenue(flight) {
 
-  if (
-    typeof ACS_PAX === "undefined" ||
-    !flight.origin ||
-    !flight.destination
-  ) return;
+  if (!flight || !flight.aircraftId) return;
 
-  const year = new Date(flight.arrival || Date.now()).getFullYear();
+  const finance = JSON.parse(localStorage.getItem("ACS_Finance_Log") || "[]");
+  const fleet   = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  const airports = window.ACS_AIRPORT_INDEX || {};
-  const A = airports[flight.origin];
-  const B = airports[flight.destination];
-  if (!A || !B) return;
+  const ac = fleet.find(a => a.id === flight.aircraftId || a.registration === flight.aircraftId);
+  if (!ac) return;
 
-  const dist = flight.distance_nm || flight.distance || 500;
+  /* ===============================
+     1. DISTANCE & BLOCK TIME
+     =============================== */
+  const distanceNM = Number(flight.distanceNM || 0);
+  if (distanceNM <= 0) return;
 
-  /* ============================
-     Demand
-     ============================ */
+  const speed = Number(ac.speed_kts || 220);
+  const blockTimeH = distanceNM / speed;
 
-  const dailyDemand = ACS_PAX.getDailyDemand(A, B, dist, year);
+  /* ===============================
+     2. COST CALCULATION
+     =============================== */
+  const fuelBurnKgH = Number(ac.fuel_burn_kgph || 900);
+  const fuelCost   = fuelBurnKgH * blockTimeH * 0.85;
 
-  /* ============================
-     Aircraft capacity
-     ============================ */
+  const crewCost   = blockTimeH * 120;
+  const landingFee = 350;
 
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
-  const ac = fleet.find(a =>
-    a.id === flight.aircraftId ||
-    a.registration === flight.aircraftId
-  );
-  if (!ac || !ac.seats) return;
+  const totalCost  = Math.round(fuelCost + crewCost + landingFee);
 
-  /* ============================
-     Route maturity
-     ============================ */
+  /* ===============================
+     3. PASSENGERS & REVENUE
+     =============================== */
+  let pax = 0;
+  let revenue = 0;
 
-  const routeKey = `${flight.origin}-${flight.destination}`;
-  const maturityKey = "ACS_ROUTE_MATURITY";
+  if (typeof ACS_PAX === "object" &&
+      typeof ACS_PAX.getDailyDemand === "function") {
 
-  const maturityMap = JSON.parse(localStorage.getItem(maturityKey)) || {};
-  maturityMap[routeKey] = (maturityMap[routeKey] || 0) + 1;
-  localStorage.setItem(maturityKey, JSON.stringify(maturityMap));
+    const year = (typeof ACS_TIME !== "undefined" && ACS_TIME.year)
+                 ? ACS_TIME.year
+                 : new Date().getFullYear();
 
-  const n = maturityMap[routeKey];
+    const demand = ACS_PAX.getDailyDemand(
+      flight.originData,
+      flight.destinationData,
+      distanceNM,
+      year
+    );
 
-  let maturityFactor = 0.25;
-  if (n >= 3) maturityFactor = 0.5;
-  if (n >= 5) maturityFactor = 0.65;
-  if (n >= 10) maturityFactor = 0.8;
-  if (n >= 20) maturityFactor = 0.95;
+    const seats = Number(ac.seats || 0);
+    pax = Math.min(seats, demand);
+  }
 
-  /* ============================
-     Pax + Revenue
-     ============================ */
+  let ticketPrice = 120;
+  if (distanceNM > 3000) ticketPrice = 220;
+  else if (distanceNM > 1200) ticketPrice = 140;
 
-  const pax = Math.min(
-    ac.seats,
-    Math.floor(dailyDemand * maturityFactor)
-  );
+  revenue = pax * ticketPrice;
 
-  const pricePerPax = dist * 0.12;
-  const revenue = Math.round(pax * pricePerPax);
+  const profit = Math.round(revenue - totalCost);
 
-  /* ============================
-     Finance log
-     ============================ */
-
-  const financeKey = "ACS_FINANCE_LOG";
-  const finance = JSON.parse(localStorage.getItem(financeKey)) || [];
-
+  /* ===============================
+     4. FINANCE LOG ENTRY
+     =============================== */
   finance.push({
-  type: "FLIGHT_RESULT",
-  aircraftId: flight.aircraftId,
-  route: routeKey,
-  pax,
-  revenue,
-  fuelCost,
-  crewCost,
-  landingFee,
-  totalCost,
-  profit,
-  date: flight.arrival || Date.now()
-});
+    type: "FLIGHT_RESULT",
+    aircraftId: ac.registration,
+    route: `${flight.origin}-${flight.destination}`,
+    pax,
+    revenue,
+    fuelCost: Math.round(fuelCost),
+    crewCost: Math.round(crewCost),
+    landingFee,
+    totalCost,
+    profit,
+    date: flight.arrival || Date.now()
+  });
 
-  localStorage.setItem(financeKey, JSON.stringify(finance));
+  localStorage.setItem("ACS_Finance_Log", JSON.stringify(finance));
+
+  /* ===============================
+     5. COMPANY FINANCE SUMMARY
+     =============================== */
+  if (typeof ACS_Finance === "object") {
+
+    if (revenue > 0 && typeof ACS_Finance.registerIncome === "function") {
+      ACS_Finance.registerIncome({
+        amount: revenue,
+        category: "Flight Revenue",
+        description: `Flight ${flight.flightNumber || ""}`,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (typeof ACS_Finance.registerExpense === "function") {
+      ACS_Finance.registerExpense({
+        amount: totalCost,
+        category: "Operational Cost",
+        description: `Flight ${flight.flightNumber || ""}`,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
 
   console.log(
-    `💰 Revenue generated: ${routeKey} | Pax ${pax} | $${revenue}`
+    `✈️ A18 OK | Pax ${pax} | Revenue $${revenue} | Cost $${totalCost} | Profit $${profit}`
   );
 }
 
