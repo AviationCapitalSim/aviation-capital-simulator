@@ -1,44 +1,43 @@
 /* ============================================================
-   🟦 A10.11b — ACS FLIGHT OBSERVER (SKYTRACK SNAPSHOT BASED)
+   🟦 A10.11c — ACS FLIGHT OBSERVER (GROUND + lastFlight BASED)
    ------------------------------------------------------------
-   • Escucha ACS_SKYTRACK_SNAPSHOT (API oficial)
-   • NO toca SkyTrack
-   • NO recalcula vuelos
-   • NO genera economía (solo detección)
+   • Compatible con SkyTrack snapshot real
+   • NO depende de transición EN_ROUTE → GROUND
+   • Detecta solo vuelos realmente completados
    • Ledger anti-duplicados
+   • SkyTrack permanece READ-ONLY
    ============================================================ */
 
 (function () {
 
   const LEDGER_KEY = "ACS_FLIGHT_LEDGER";
-  const STATE_KEY  = "ACS_FLIGHT_OBSERVER_STATE";
 
   /* ============================
      Storage helpers
      ============================ */
 
-  function loadJSON(key, fallback) {
+  function loadLedger() {
     try {
-      return JSON.parse(localStorage.getItem(key)) || fallback;
+      return JSON.parse(localStorage.getItem(LEDGER_KEY)) || {};
     } catch {
-      return fallback;
+      return {};
     }
   }
 
-  function saveJSON(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+  function saveLedger(ledger) {
+    localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
   }
 
   /* ============================
-     Flight key
+     Flight key (único y estable)
      ============================ */
 
-  function buildFlightKey(acId, f) {
+  function buildFlightKey(acId, lf) {
     return [
       acId,
-      f.originICAO || "UNK",
-      f.destinationICAO || "UNK",
-      f.blockOff || "0"
+      lf.originICAO,
+      lf.destinationICAO,
+      lf.blockOff || lf.departure || "0"
     ].join("|");
   }
 
@@ -51,43 +50,40 @@
     const snapshot = ev.detail;
     if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
 
-    const ledger    = loadJSON(LEDGER_KEY, {});
-    const prevState = loadJSON(STATE_KEY, {});
-    let stateDirty  = false;
+    const ledger = loadLedger();
+    let ledgerDirty = false;
 
     snapshot.aircraft.forEach(ac => {
+
+      if (
+        ac.state !== "GROUND" ||
+        !ac.lastFlight ||
+        !ac.lastFlight.originICAO ||
+        !ac.lastFlight.destinationICAO ||
+        ac.lastFlight.originICAO === ac.lastFlight.destinationICAO
+      ) {
+        return;
+      }
 
       const acId = ac.aircraftId;
       if (!acId) return;
 
-      const current = ac.state;
-      const previous = prevState[acId];
+      const key = buildFlightKey(acId, ac.lastFlight);
 
-      if (
-        previous === "EN_ROUTE" &&
-        current === "GROUND" &&
-        ac.lastFlight
-      ) {
-        const key = buildFlightKey(acId, ac.lastFlight);
+      if (ledger[key]) return;
 
-        if (!ledger[key]) {
-          ledger[key] = true;
+      // === NUEVO VUELO COMPLETADO ===
+      ledger[key] = true;
+      ledgerDirty = true;
 
-          console.log(
-            `✈️ Flight completed: ${acId} ` +
-            `${ac.lastFlight.originICAO} → ${ac.lastFlight.destinationICAO}`
-          );
-        }
-      }
+      console.log(
+        `✈️ Flight completed: ${acId} ` +
+        `${ac.lastFlight.originICAO} → ${ac.lastFlight.destinationICAO}`
+      );
 
-      if (prevState[acId] !== current) {
-        prevState[acId] = current;
-        stateDirty = true;
-      }
     });
 
-    saveJSON(LEDGER_KEY, ledger);
-    if (stateDirty) saveJSON(STATE_KEY, prevState);
+    if (ledgerDirty) saveLedger(ledger);
 
   });
 
