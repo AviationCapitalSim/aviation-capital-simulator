@@ -86,6 +86,64 @@
         `✈️ ACS Flight completed → ${ledger[key].aircraftId} ` +
         `${ledger[key].origin} → ${ledger[key].destination}`
       );
+
+           /* ============================
+         🟦 A10.13.1 — Inject scheduleItems metrics (distanceNM / blockTime)
+         ------------------------------------------------------------
+         ✔ Source of truth: scheduleItems
+         ✔ Observer does NOT recalc distance
+         ✔ Safe: if not found, keeps zeros (A18 will ignore)
+         ============================ */
+
+      try {
+        const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+        // Match by aircraft + route, and (if present) departure close match
+        const lfDep = Number(ac.lastFlight?.departure || ac.lastFlight?.blockOff || 0);
+
+        const match = scheduleItems.find(s => {
+          if (!s) return false;
+
+          const sAc = s.aircraftId || s.aircraftID || s.acId || s.id || "";
+          const sOrg = s.origin || s.from || "";
+          const sDst = s.destination || s.to || "";
+          if (String(sAc) !== String(ledger[key].aircraftId)) return false;
+          if (String(sOrg) !== String(ledger[key].origin)) return false;
+          if (String(sDst) !== String(ledger[key].destination)) return false;
+
+          // If both have departure timestamps, try to match (± 6h) to avoid wrong leg
+          const sDep = Number(s.departure || s.blockOff || s.dep || 0);
+          if (lfDep && sDep) {
+            return Math.abs(sDep - lfDep) <= (6 * 60 * 60 * 1000);
+          }
+          return true;
+        });
+
+        if (match) {
+          // Distance (NM)
+          const dnm = Number(match.distanceNM ?? match.distance_nm ?? match.distNM ?? match.dist_nm ?? 0);
+          ledger[key].distanceNM = Number.isFinite(dnm) ? dnm : 0;
+
+          // Block time (hours)
+          // Accept common shapes: blockTimeH, blockTimeHours, blockTime (hours), blockTimeMin/minutes
+          let btH = Number(match.blockTimeH ?? match.blockTimeHours ?? match.blockTime_h ?? 0);
+
+          if (!btH) {
+            const btMin = Number(match.blockTimeMin ?? match.blockTime_min ?? match.blockTimeMinutes ?? match.blockMinutes ?? 0);
+            if (btMin) btH = btMin / 60;
+          }
+
+          // Some builds store "blockTime" as minutes; we detect large values
+          if (!btH) {
+            const raw = Number(match.blockTime ?? 0);
+            if (raw > 0) btH = (raw > 20) ? (raw / 60) : raw; // 120 => 2h, 2 => 2h
+          }
+
+          ledger[key].blockTimeH = Number.isFinite(btH) ? btH : 0;
+        }
+      } catch (e) {
+        // No throw — observer must continue
+      }
        
      ACS_processFlightRevenue(ledger[key]);
        
@@ -120,15 +178,21 @@ function ACS_processFlightRevenue(flight) {
   const ac = fleet.find(a => a.id === flight.aircraftId || a.registration === flight.aircraftId);
   if (!ac) return;
 
-  /* ===============================
-     1. DISTANCE & BLOCK TIME
+    /* ===============================
+     1. DISTANCE & BLOCK TIME (SOURCE: scheduleItems)
      =============================== */
-   
+
   const distanceNM = Number(flight.distanceNM || 0);
   if (distanceNM <= 0) return;
 
-  const speed = Number(ac.speed_kts || 220);
-  const blockTimeH = distanceNM / speed;
+  // Prefer block time from scheduleItems (Observer injected)
+  let blockTimeH = Number(flight.blockTimeH || 0);
+
+  // Fallback only if missing (keeps system alive, but not the target path)
+  if (!blockTimeH || blockTimeH <= 0) {
+    const speed = Number(ac.speed_kts || 220);
+    blockTimeH = distanceNM / speed;
+  }
 
   /* ===============================
      2. COST CALCULATION
@@ -224,45 +288,16 @@ function ACS_processFlightRevenue(flight) {
 }
 
 /* ============================================================
-   🟦 A10.14 — FLIGHT COSTS
+   🟥 A10.14 — FLIGHT COSTS (DISABLED - GLOBAL SCOPE CRASH)
+   ------------------------------------------------------------
+   This block used variables (f/ac/revenue) outside scope and caused:
+   ReferenceError: Can't find variable: f
+   Costs are already computed safely inside A18.
    ============================================================ */
 
-/* ============================
-   Block time
-   ============================ */
-
-const distance_nm = Number(f.distanceNM || f.distance_nm || 0);
-const blockTime_h = distance_nm / ac.speed_kts;
-
-/* ============================
-   Fuel cost
-   ============================ */
-
-const fuelPricePerKg = 0.45;
-const fuelKg = ac.fuel_burn_kgph * blockTime_h;
-const fuelCost = Math.round(fuelKg * fuelPricePerKg);
-
-/* ============================
-   Crew cost (simplified)
-   ============================ */
-
-let crewHourlyCost = 180;
-if (ac.seats > 80) crewHourlyCost = 350;
-if (ac.seats > 150) crewHourlyCost = 700;
-
-const crewCost = Math.round(blockTime_h * crewHourlyCost);
-
-/* ============================
-   Airport fees (flat v1)
-   ============================ */
-
-const landingFee = 400;
-
-/* ============================
-   Total cost & profit
-   ============================ */
-const totalCost = fuelCost + crewCost + landingFee;
-const profit = revenue - totalCost;
+/*
+   (Legacy block disabled)
+*/
 
 /* ============================================================
    🟦 A10.15 — AIRCRAFT HOURS & CYCLES UPDATE
@@ -300,9 +335,47 @@ if (aircraftIndex !== -1) {
      ============================ */
   fleet[aircraftIndex] = aircraft;
   localStorage.setItem(fleetKey, JSON.stringify(fleet));
-
+  ACS_updateAircraftHoursCycles(flight, blockTimeH);
   console.log(
     `🛠 Aircraft updated: ${aircraft.registration} | ` +
     `Hours ${aircraft.hours.toFixed(1)} | Cycles ${aircraft.cycles}`
   );
+}
+
+/* ============================================================
+   🟦 A10.15.1 — AIRCRAFT HOURS & CYCLES UPDATE (SCOPED)
+   ------------------------------------------------------------
+   ✔ Same logic as A10.15, but inside a function (no global crash)
+   ============================================================ */
+
+function ACS_updateAircraftHoursCycles(flight, blockTimeH) {
+
+  const fleetKey = "ACS_MyAircraft";
+  const fleet = JSON.parse(localStorage.getItem(fleetKey)) || [];
+
+  const aircraftIndex = fleet.findIndex(a =>
+    a.id === flight.aircraftId ||
+    a.registration === flight.aircraftId
+  );
+
+  if (aircraftIndex !== -1) {
+    const aircraft = fleet[aircraftIndex];
+
+    aircraft.hours = Number(aircraft.hours || 0) + Number(blockTimeH || 0);
+    aircraft.cycles = Number(aircraft.cycles || 0) + 1;
+    aircraft.lastFlightAt = flight.arrival || Date.now();
+
+    if (aircraft.enteredFleetAt) {
+      const ageMs = aircraft.lastFlightAt - aircraft.enteredFleetAt;
+      aircraft.age = Number((ageMs / (365.25 * 24 * 60 * 60 * 1000)).toFixed(2));
+    }
+
+    fleet[aircraftIndex] = aircraft;
+    localStorage.setItem(fleetKey, JSON.stringify(fleet));
+
+    console.log(
+      `🛠 Aircraft updated: ${aircraft.registration} | ` +
+      `Hours ${Number(aircraft.hours).toFixed(1)} | Cycles ${aircraft.cycles}`
+    );
+  }
 }
