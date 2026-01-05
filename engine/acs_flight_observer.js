@@ -123,6 +123,7 @@ function ACS_processFlightRevenue(flight) {
   /* ===============================
      1. DISTANCE & BLOCK TIME
      =============================== */
+   
   const distanceNM = Number(flight.distanceNM || 0);
   if (distanceNM <= 0) return;
 
@@ -143,6 +144,7 @@ function ACS_processFlightRevenue(flight) {
   /* ===============================
      3. PASSENGERS & REVENUE
      =============================== */
+   
   let pax = 0;
   let revenue = 0;
 
@@ -175,6 +177,7 @@ function ACS_processFlightRevenue(flight) {
   /* ===============================
      4. FINANCE LOG ENTRY
      =============================== */
+   
   finance.push({
     type: "FLIGHT_RESULT",
     aircraftId: ac.registration,
@@ -227,12 +230,14 @@ function ACS_processFlightRevenue(flight) {
 /* ============================
    Block time
    ============================ */
+
 const distance_nm = dist;
 const blockTime_h = distance_nm / ac.speed_kts;
 
 /* ============================
    Fuel cost
    ============================ */
+
 const fuelPricePerKg = 0.45;
 const fuelKg = ac.fuel_burn_kgph * blockTime_h;
 const fuelCost = Math.round(fuelKg * fuelPricePerKg);
@@ -240,6 +245,7 @@ const fuelCost = Math.round(fuelKg * fuelPricePerKg);
 /* ============================
    Crew cost (simplified)
    ============================ */
+
 let crewHourlyCost = 180;
 if (ac.seats > 80) crewHourlyCost = 350;
 if (ac.seats > 150) crewHourlyCost = 700;
@@ -249,6 +255,7 @@ const crewCost = Math.round(blockTime_h * crewHourlyCost);
 /* ============================
    Airport fees (flat v1)
    ============================ */
+
 const landingFee = 400;
 
 /* ============================
