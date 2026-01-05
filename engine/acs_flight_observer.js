@@ -231,7 +231,7 @@ function ACS_processFlightRevenue(flight) {
    Block time
    ============================ */
 
-const distance_nm = dist;
+const distance_nm = Number(flight.distanceNM || flight.distance_nm || 0);
 const blockTime_h = distance_nm / ac.speed_kts;
 
 /* ============================
