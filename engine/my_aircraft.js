@@ -125,11 +125,13 @@ function updatePendingDeliveries() {
      // === Convertir a ACTIVO ===
        
   for (let i = 0; i < entry.qty; i++) {
+     
   /* ============================================================
    🟧 MYA-A1 — ASSIGN REGISTRATION ON FLEET ENTRY
    Source: ACS Registration Manager
    ============================================================ */
-  fleetActive.push({
+
+let newAircraft = {
   registration: (typeof ACS_generateRegistration === "function")
     ? ACS_generateRegistration()
     : "—",
@@ -148,16 +150,21 @@ function updatePendingDeliveries() {
   deliveryDate: null,
   age: 0,
 
+  /* ======================================================
+     🛠 P5-A — B-CHECK INITIALIZATION (ON FLEET ENTRY)
+     ====================================================== */
+  enteredFleetAt: now.getTime(),
+  bCheckDueAt:    now.getTime() + (7 * 24 * 60 * 60 * 1000),
+  bCheckStatus:   "ok",
+  bCheckPlanned:  false
+};
 
-    /* ======================================================
-       🛠 P5-A — B-CHECK INITIALIZATION (ON FLEET ENTRY)
-       ====================================================== */
-    enteredFleetAt: now.getTime(),
-    bCheckDueAt:    now.getTime() + (7 * 24 * 60 * 60 * 1000),
-    bCheckStatus:   "ok",
-    bCheckPlanned:  false
-  });
+/* 🔗 A9 — ENRICH FROM AIRCRAFT DB (ONE-TIME) */
+if (typeof ACS_enrichAircraftFromDB === "function") {
+  newAircraft = ACS_enrichAircraftFromDB(newAircraft);
 }
+
+fleetActive.push(newAircraft);
 
 changed = true;
 
