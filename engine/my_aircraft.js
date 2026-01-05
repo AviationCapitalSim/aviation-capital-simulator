@@ -165,6 +165,7 @@ if (typeof ACS_enrichAircraftFromDB === "function") {
 }
 
 fleetActive.push(newAircraft);
+}
 
 changed = true;
 
