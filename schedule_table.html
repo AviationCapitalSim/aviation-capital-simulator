@@ -2884,6 +2884,51 @@ function applyLongChipBehavior(){
             const items  = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
             const fleet  = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
+/* ============================================================
+   🟦 A10.17.2 — APPLY MAINTENANCE DUE FLAGS
+   ============================================================ */
+const nowTs = Date.now();
+
+fleet.forEach(ac => {
+  ACS_calculateMaintenanceDue(ac, nowTs);
+});
+             
+/* ============================================================
+   🟦 A10.17.2 — MAINTENANCE DUE CALCULATOR
+   ------------------------------------------------------------
+   • NO inserta servicios
+   • NO bloquea vuelos
+   • SOLO marca aDue / bDue
+   ============================================================ */
+
+function ACS_calculateMaintenanceDue(aircraft, nowTs) {
+
+  if (!aircraft) return aircraft;
+
+  const WEEK_MS  = 7  * 24 * 60 * 60 * 1000;
+  const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+
+  const refA = aircraft.lastACheckAt || aircraft.enteredFleetAt;
+  const refB = aircraft.lastBCheckAt || aircraft.enteredFleetAt;
+
+  if (!aircraft.maintenance) {
+    aircraft.maintenance = {};
+  }
+
+  aircraft.maintenance.aDue = false;
+  aircraft.maintenance.bDue = false;
+
+  if (refA && (nowTs - refA) >= WEEK_MS) {
+    aircraft.maintenance.aDue = true;
+  }
+
+  if (refB && (nowTs - refB) >= MONTH_MS) {
+    aircraft.maintenance.bDue = true;
+  }
+
+  return aircraft;
+}
+             
             // Fecha simulada YYYY-MM-DD
             const simDate = (typeof ACS_TIME !== "undefined" && ACS_TIME.simDate)
                            ? ACS_TIME.simDate
