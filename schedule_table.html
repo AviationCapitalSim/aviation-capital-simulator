@@ -3021,6 +3021,81 @@ function ACS_calculateMaintenanceDue(aircraft, nowTs) {
                     });
                 }
 
+/* ============================================================
+   🟧 A18.1 — PASSENGERS & REVENUE (REALISTIC GROWTH)
+   ------------------------------------------------------------
+   • Growth in 14-day steps
+   • No classes yet
+   • Revenue registered per flight
+   ============================================================ */
+
+// --- Aircraft capacity ---
+const seats = acOpt?.seats || 0;
+if (seats <= 0) return;
+
+// --- Route age (days since first flight on this route) ---
+const routeKey = `${f.origin}-${f.destination}`;
+const routeStartKey = `ACS_ROUTE_START_${routeKey}`;
+
+let routeStartTs = localStorage.getItem(routeStartKey);
+if (!routeStartTs) {
+  routeStartTs = Date.now();
+  localStorage.setItem(routeStartKey, routeStartTs);
+}
+
+const daysActive = Math.floor(
+  (Date.now() - Number(routeStartTs)) / (24 * 60 * 60 * 1000)
+);
+
+// --- Growth factor (14-day steps) ---
+let growthFactor = 0.20;
+if (daysActive >= 56) growthFactor = 0.90;
+else if (daysActive >= 42) growthFactor = 0.75;
+else if (daysActive >= 28) growthFactor = 0.55;
+else if (daysActive >= 14) growthFactor = 0.35;
+
+// --- Daily demand (already realistic engine) ---
+let dailyDemand = 0;
+if (typeof ACS_PAX === "object" &&
+    typeof ACS_PAX.getDailyDemand === "function") {
+
+  dailyDemand = ACS_PAX.getDailyDemand(
+    f.originData,
+    f.destinationData,
+    Number(f.distanceNM || 0),
+    Number(ACS_TIME?.year || new Date().getFullYear())
+  );
+}
+
+// --- Passengers on this flight ---
+let pax = Math.floor(Math.min(seats, dailyDemand * growthFactor));
+if (pax < 0) pax = 0;
+
+// --- Ticket price (simple & distance-based) ---
+let ticketPrice = 120;
+if (f.distanceNM > 3000) ticketPrice = 220;
+else if (f.distanceNM > 1200) ticketPrice = 140;
+
+// --- Revenue ---
+const revenueUSD = pax * ticketPrice;
+
+// --- Register income ---
+if (revenueUSD > 0 &&
+    typeof ACS_Finance === "object" &&
+    typeof ACS_Finance.registerIncome === "function") {
+
+  ACS_Finance.registerIncome({
+    amount: revenueUSD,
+    category: "Flight Revenue",
+    description: `Flight ${f.flightNumberOut} — ${pax} pax`,
+    timestamp: new Date().toISOString()
+  });
+}
+
+console.log(
+  `💰 A18.1 Revenue: $${revenueUSD} | Pax: ${pax}/${seats} | Growth ${(growthFactor*100).toFixed(0)}%`
+);
+                 
                 console.log(`✈️💰 B3-C charged: $${totalUSD} (flight ${f.flightNumberOut})`);
 
                 // Marcar cobrado
