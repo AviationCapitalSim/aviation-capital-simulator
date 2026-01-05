@@ -345,16 +345,11 @@ if (aircraftIndex !== -1) {
 }
 
 /* ============================================================
-   🟥 A10.15 — AIRCRAFT HOURS & CYCLES UPDATE (DISABLED)
+   🟥 A10.15 — AIRCRAFT HOURS & CYCLES UPDATE (REMOVED)
    ------------------------------------------------------------
    FIX:
-   - This legacy block executed in global scope
+   - This block executed in global scope
    - Used undefined variables: flight / blockTime_h
    - Caused fatal crash on load
-   - Logic preserved in A10.15.1 (scoped function)
+   - Replaced by scoped function call inside A18
    ============================================================ */
-
-/*
-   Legacy global block DISABLED.
-   See A10.15.1 — ACS_updateAircraftHoursAndCycles()
-*/
