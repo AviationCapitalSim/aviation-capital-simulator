@@ -172,7 +172,8 @@ if (deliveryDate <= now) {
 
   fleetActive.push(newAircraft);
   changed = true;
-
+}
+     
 } else {
 
   // === Todavía Pendiente → va a la tabla ===
