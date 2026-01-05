@@ -170,30 +170,29 @@ if (deliveryDate <= now) {
     newAircraft = ACS_enrichAircraftFromDB(newAircraft);
   }
 
-   fleetActive.push(newAircraft);
-      changed = true;
-    }
+  fleetActive.push(newAircraft);
+  changed = true;
 
-  } else {
+} else {
 
-    // === Todavía Pendiente → va a la tabla ===
-    pendingForTable.push({
-      registration: "—",
-      model: entry.model,
-      manufacturer: entry.manufacturer,
-      family: entry.family || "",
-      status: "Pending Delivery",
-      hours: "—",
-      cycles: "—",
-      condition: "—",
-      nextC: "—",
-      nextD: "—",
-      base: "—",
-      deliveryDate: entry.deliveryDate
-    });
+  // === Todavía Pendiente → va a la tabla ===
+  pendingForTable.push({
+    registration: "—",
+    model: entry.model,
+    manufacturer: entry.manufacturer,
+    family: entry.family || "",
+    status: "Pending Delivery",
+    hours: "—",
+    cycles: "—",
+    condition: "—",
+    nextC: "—",
+    nextD: "—",
+    base: "—",
+    deliveryDate: entry.deliveryDate
+  });
 
-    stillPending.push(entry);
-  }
+  stillPending.push(entry);
+}
 
 });
 
@@ -214,7 +213,6 @@ fleet = [...pendingForTable, ...fleetActive];
 }
 
 // Actualizar requerimientos HR después de cambios en flota
-
 if (typeof HR_updateRequirementsFromFleet === "function") {
   HR_updateRequirementsFromFleet();
 }
