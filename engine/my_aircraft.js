@@ -36,6 +36,73 @@ function getSimTime() {
 }
 
 /* ============================================================
+   🟦 A8 — AIRCRAFT ENRICHMENT ENGINE (DB → FLEET)
+   ------------------------------------------------------------
+   • Copia specs técnicos desde ACS_AIRCRAFT_DB
+   • Se ejecuta SOLO cuando el avión entra a la flota
+   • No recalcula ni pisa datos existentes
+   • Source of truth: ACS_MyAircraft
+   ============================================================ */
+
+function ACS_enrichAircraftFromDB(aircraft) {
+
+  if (!aircraft || !aircraft.manufacturer || !aircraft.model) {
+    console.warn("⚠️ Enrichment skipped: invalid aircraft object");
+    return aircraft;
+  }
+
+  // Si ya fue enriquecido → NO tocar
+  if (
+    aircraft.seats !== undefined &&
+    aircraft.speed_kts !== undefined &&
+    aircraft.fuel_burn_kgph !== undefined
+  ) {
+    return aircraft;
+  }
+
+  // Buscar match exacto en el DB
+  const match = Array.isArray(window.ACS_AIRCRAFT_DB)
+    ? ACS_AIRCRAFT_DB.find(a =>
+        a.manufacturer === aircraft.manufacturer &&
+        a.model === aircraft.model
+      )
+    : null;
+
+  if (!match) {
+    console.warn(
+      `⚠️ Aircraft DB match NOT FOUND for ${aircraft.manufacturer} ${aircraft.model}. Applying fallback values.`
+    );
+
+    // Fallback seguro (no rompe el juego)
+    aircraft.seats = aircraft.seats ?? 50;
+    aircraft.range_nm = aircraft.range_nm ?? 800;
+    aircraft.speed_kts = aircraft.speed_kts ?? 250;
+    aircraft.fuel_burn_kgph = aircraft.fuel_burn_kgph ?? 500;
+    aircraft.price_acs_usd = aircraft.price_acs_usd ?? 1000000;
+
+    return aircraft;
+  }
+
+  // Copiar SOLO specs técnicos
+  aircraft.seats = aircraft.seats ?? match.seats;
+  aircraft.range_nm = aircraft.range_nm ?? match.range_nm;
+  aircraft.speed_kts = aircraft.speed_kts ?? match.speed_kts;
+  aircraft.fuel_burn_kgph = aircraft.fuel_burn_kgph ?? match.fuel_burn_kgph;
+  aircraft.price_acs_usd = aircraft.price_acs_usd ?? match.price_acs_usd;
+
+  // Campos opcionales (informativos / futuro)
+  aircraft.year = aircraft.year ?? match.year;
+  aircraft.mtow_kg = aircraft.mtow_kg ?? match.mtow_kg;
+  aircraft.engines = aircraft.engines ?? match.engines;
+
+  console.log(
+    `🟢 Aircraft enriched: ${aircraft.manufacturer} ${aircraft.model} — ${aircraft.seats} seats`
+  );
+
+  return aircraft;
+}
+
+/* ============================================================
    🟦 C.2 — Sync Pending Deliveries (Unified Table)
    ============================================================ */
 
