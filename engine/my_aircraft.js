@@ -126,83 +126,91 @@ function updatePendingDeliveries() {
        
   for (let i = 0; i < entry.qty; i++) {
      
- /* ============================================================
-   🟧 A9 — CREATE + ENRICH AIRCRAFT ON FLEET ENTRY
+/* ============================================================
+   🟧 A9 — CREATE + ENRICH AIRCRAFT ON FLEET ENTRY (FIXED)
    ------------------------------------------------------------
-   • Crea el avión activo
-   • Enriquecer inmediatamente desde ACS_AIRCRAFT_DB
-   • NO recalcula specs si ya existen
+   • Mantiene estructura if / else original
+   • Inserta enrichment SIN romper llaves
    ============================================================ */
 
-let newAircraft = {
-  registration: (typeof ACS_generateRegistration === "function")
-    ? ACS_generateRegistration()
-    : "—",
+if (deliveryDate <= now) {
 
-  manufacturer: entry.manufacturer,
-  model: entry.model,
-  family: entry.family || "",
-  status: "Active",
+  let newAircraft = {
+    registration: (typeof ACS_generateRegistration === "function")
+      ? ACS_generateRegistration()
+      : "—",
 
-  hours: 0,
-  cycles: 0,
-  condition: 100,
+    manufacturer: entry.manufacturer,
+    model: entry.model,
+    family: entry.family || "",
+    status: "Active",
 
-  nextC: "—",
-  nextD: "—",
+    hours: 0,
+    cycles: 0,
+    condition: 100,
 
-  base: JSON.parse(localStorage.getItem("ACS_Base"))?.icao || "—",
+    nextC: "—",
+    nextD: "—",
 
-  deliveredDate: d.toISOString(),
-  deliveryDate: null,
-  age: 0,
+    base: JSON.parse(localStorage.getItem("ACS_Base"))?.icao || "—",
 
-  /* Maintenance init */
-  enteredFleetAt: now.getTime(),
-  bCheckDueAt:    now.getTime() + (7 * 24 * 60 * 60 * 1000),
-  bCheckStatus:   "ok",
-  bCheckPlanned:  false
-};
+    deliveredDate: d.toISOString(),
+    deliveryDate: null,
+    age: 0,
 
-/* 🔗 ENRICH FROM AIRCRAFT DB (ONE-TIME) */
-if (typeof ACS_enrichAircraftFromDB === "function") {
-  newAircraft = ACS_enrichAircraftFromDB(newAircraft);
-}
+    /* Maintenance init */
+    enteredFleetAt: now.getTime(),
+    bCheckDueAt:    now.getTime() + (7 * 24 * 60 * 60 * 1000),
+    bCheckStatus:   "ok",
+    bCheckPlanned:  false
+  };
 
-fleetActive.push(newAircraft);
-
-changed = true;
-
-    } else {
-      // === Todavía Pendiente → va a la tabla ===
-       
-      pendingForTable.push({
-        registration: "—",
-        model: entry.model,
-        manufacturer: entry.manufacturer,
-        family: entry.family || "",
-        status: "Pending Delivery",
-        hours: "—",
-        cycles: "—",
-        condition: "—",
-        nextC: "—",
-        nextD: "—",
-        base: "—",
-        deliveryDate: entry.deliveryDate
-      });
-
-      stillPending.push(entry);
-    }
-  });
-
-  if (changed) {
-    localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetActive));
+  /* 🔗 ENRICH FROM AIRCRAFT DB (ONE-TIME) */
+  if (typeof ACS_enrichAircraftFromDB === "function") {
+    newAircraft = ACS_enrichAircraftFromDB(newAircraft);
   }
 
-  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(stillPending));
+  fleetActive.push(newAircraft);
+  changed = true;
 
-  // === UNIFICAR LISTAS ===
-  fleet = [...pendingForTable, ...fleetActive];
+} else {
+
+  // === Todavía Pendiente → va a la tabla ===
+  pendingForTable.push({
+    registration: "—",
+    model: entry.model,
+    manufacturer: entry.manufacturer,
+    family: entry.family || "",
+    status: "Pending Delivery",
+    hours: "—",
+    cycles: "—",
+    condition: "—",
+    nextC: "—",
+    nextD: "—",
+    base: "—",
+    deliveryDate: entry.deliveryDate
+  });
+
+  stillPending.push(entry);
+}
+
+/* === CIERRE DEL forEach(entry) === */
+});
+
+/* === POST-PROCESS === */
+if (changed) {
+  localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetActive));
+}
+
+localStorage.setItem(
+  "ACS_PendingAircraft",
+  JSON.stringify(stillPending)
+);
+
+// === UNIFICAR LISTAS ===
+fleet = [...pendingForTable, ...fleetActive];
+
+/* === CIERRE updatePendingDeliveries() === */
 }
 
 // Actualizar requerimientos HR después de cambios en flota
