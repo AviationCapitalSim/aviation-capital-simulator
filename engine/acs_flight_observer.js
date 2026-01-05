@@ -1,10 +1,11 @@
 /* ============================================================
-   🟦 A10.11 — ACS FLIGHT COMPLETION OBSERVER (READ-ONLY)
+   🟦 A10.11b — ACS FLIGHT OBSERVER (SKYTRACK SNAPSHOT BASED)
    ------------------------------------------------------------
-   • Detecta vuelos completados SIN tocar SkyTrack
-   • No recalcula rutas ni estados
-   • No genera economía (solo logging)
-   • 100% desacoplado
+   • Escucha ACS_SKYTRACK_SNAPSHOT (API oficial)
+   • NO toca SkyTrack
+   • NO recalcula vuelos
+   • NO genera economía (solo detección)
+   • Ledger anti-duplicados
    ============================================================ */
 
 (function () {
@@ -12,90 +13,82 @@
   const LEDGER_KEY = "ACS_FLIGHT_LEDGER";
   const STATE_KEY  = "ACS_FLIGHT_OBSERVER_STATE";
 
-  // Cargar ledger (vuelos ya procesados)
-  function loadLedger() {
+  /* ============================
+     Storage helpers
+     ============================ */
+
+  function loadJSON(key, fallback) {
     try {
-      return JSON.parse(localStorage.getItem(LEDGER_KEY)) || {};
+      return JSON.parse(localStorage.getItem(key)) || fallback;
     } catch {
-      return {};
+      return fallback;
     }
   }
 
-  function saveLedger(ledger) {
-    localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
+  function saveJSON(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
   }
 
-  // Estado previo por aircraftId
-  function loadPrevState() {
-    try {
-      return JSON.parse(localStorage.getItem(STATE_KEY)) || {};
-    } catch {
-      return {};
-    }
-  }
+  /* ============================
+     Flight key
+     ============================ */
 
-  function savePrevState(state) {
-    localStorage.setItem(STATE_KEY, JSON.stringify(state));
-  }
-
-  // Generar clave única de vuelo
-  function buildFlightKey(aircraftId, flight) {
+  function buildFlightKey(acId, f) {
     return [
-      aircraftId,
-      flight.origin || "UNK",
-      flight.destination || "UNK",
-      flight.arrAbsMin
+      acId,
+      f.originICAO || "UNK",
+      f.destinationICAO || "UNK",
+      f.blockOff || "0"
     ].join("|");
   }
 
-  // === OBSERVER CORE ===
-  function observeFlights() {
+  /* ============================
+     OBSERVER
+     ============================ */
 
-    if (!Array.isArray(window.ACS_LIVE_FLIGHTS)) return;
+  window.addEventListener("ACS_SKYTRACK_SNAPSHOT", function (ev) {
 
-    const ledger    = loadLedger();
-    const prevState = loadPrevState();
+    const snapshot = ev.detail;
+    if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
+
+    const ledger    = loadJSON(LEDGER_KEY, {});
+    const prevState = loadJSON(STATE_KEY, {});
     let stateDirty  = false;
 
-    window.ACS_LIVE_FLIGHTS.forEach(f => {
+    snapshot.aircraft.forEach(ac => {
 
-      const aircraftId = f.aircraftId;
-      if (!aircraftId) return;
+      const acId = ac.aircraftId;
+      if (!acId) return;
 
-      const currentState = f.state;
-      const previous     = prevState[aircraftId];
+      const current = ac.state;
+      const previous = prevState[acId];
 
-      // Detectar transición EN_ROUTE → GROUND
       if (
         previous === "EN_ROUTE" &&
-        currentState === "GROUND" &&
-        f.lastFlight &&
-        Number.isFinite(f.lastFlight.arrAbsMin)
+        current === "GROUND" &&
+        ac.lastFlight
       ) {
-        const key = buildFlightKey(aircraftId, f.lastFlight);
+        const key = buildFlightKey(acId, ac.lastFlight);
 
         if (!ledger[key]) {
           ledger[key] = true;
 
           console.log(
-            `✈️ Flight completed: ${aircraftId} ` +
-            `${f.lastFlight.origin} → ${f.lastFlight.destination}`
+            `✈️ Flight completed: ${acId} ` +
+            `${ac.lastFlight.originICAO} → ${ac.lastFlight.destinationICAO}`
           );
         }
       }
 
-      // Guardar estado actual
-      if (prevState[aircraftId] !== currentState) {
-        prevState[aircraftId] = currentState;
+      if (prevState[acId] !== current) {
+        prevState[acId] = current;
         stateDirty = true;
       }
     });
 
-    saveLedger(ledger);
-    if (stateDirty) savePrevState(prevState);
-  }
+    saveJSON(LEDGER_KEY, ledger);
+    if (stateDirty) saveJSON(STATE_KEY, prevState);
 
-  // Ejecutar observer periódicamente
-  setInterval(observeFlights, 30000); // cada 30s (seguro)
+  });
 
 })();
