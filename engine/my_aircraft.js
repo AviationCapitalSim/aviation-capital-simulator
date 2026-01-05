@@ -170,32 +170,31 @@ if (deliveryDate <= now) {
     newAircraft = ACS_enrichAircraftFromDB(newAircraft);
   }
 
-  fleetActive.push(newAircraft);
-  changed = true;
-}
-     
-} else {
+   fleetActive.push(newAircraft);
+      changed = true;
+    }
 
-  // === Todavía Pendiente → va a la tabla ===
-  pendingForTable.push({
-    registration: "—",
-    model: entry.model,
-    manufacturer: entry.manufacturer,
-    family: entry.family || "",
-    status: "Pending Delivery",
-    hours: "—",
-    cycles: "—",
-    condition: "—",
-    nextC: "—",
-    nextD: "—",
-    base: "—",
-    deliveryDate: entry.deliveryDate
-  });
+  } else {
 
-  stillPending.push(entry);
-}
+    // === Todavía Pendiente → va a la tabla ===
+    pendingForTable.push({
+      registration: "—",
+      model: entry.model,
+      manufacturer: entry.manufacturer,
+      family: entry.family || "",
+      status: "Pending Delivery",
+      hours: "—",
+      cycles: "—",
+      condition: "—",
+      nextC: "—",
+      nextD: "—",
+      base: "—",
+      deliveryDate: entry.deliveryDate
+    });
 
-/* === CIERRE DEL forEach(entry) === */
+    stillPending.push(entry);
+  }
+
 });
 
 /* === POST-PROCESS === */
