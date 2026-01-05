@@ -894,6 +894,16 @@ footer {
   100% { box-shadow: 0 0 4px rgba(0, 255, 204, 0.6); }
 }
 
+/* === A17.3 — Maintenance Due Badge === */
+       
+.maintenance-dot{
+  color:#d32f2f;
+  font-size:12px;
+  margin-top:2px;
+  display:inline-block;
+  cursor:default;
+}
+       
 </style>
 
 </head>
@@ -1513,17 +1523,30 @@ items.forEach(it => {
     : "—";
 
     const manu = ac.manufacturer || "—";
-    const stat = ac.status || "";
+    /* ============================================================
+   🟧 A17.3 — MAINTENANCE DUE BADGE (UI ONLY)
+   ============================================================ */
 
-    const wrapInfo = document.createElement("div");
-    wrapInfo.style.lineHeight = "1.2";
-    wrapInfo.style.textAlign = "left";
-    wrapInfo.innerHTML = `
-      <strong>${reg}</strong><br>
-      <span>${realModel}</span><br>
-      <span style="color:#ffca3a;font-weight:600;">${manu.toUpperCase()}</span>
-      ${stat ? `<br><span>${stat}</span>` : ""}
-    `;
+const stat = ac.status || "";
+
+const hasDue = ac.maintenance?.bDue || ac.maintenance?.aDue;
+
+const dueText = ac.maintenance?.bDue
+  ? "B-CHECK DUE"
+  : ac.maintenance?.aDue
+    ? "A-CHECK DUE"
+    : "";
+
+const wrapInfo = document.createElement("div");
+wrapInfo.style.lineHeight = "1.2";
+wrapInfo.style.textAlign = "left";
+wrapInfo.innerHTML = `
+  <strong>${reg}</strong><br>
+  <span>${realModel}</span><br>
+  <span style="color:#ffca3a;font-weight:600;">${manu.toUpperCase()}</span>
+  ${stat ? `<br><span>${stat}</span>` : ""}
+  ${hasDue ? `<br><span class="maintenance-dot" title="${dueText}">●</span>` : ""}
+`;
 
     tdTail.appendChild(wrapInfo);
     tdTail.onmouseenter = () => showAircraftHover(ac, tdTail);
