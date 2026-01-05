@@ -345,52 +345,16 @@ if (aircraftIndex !== -1) {
 }
 
 /* ============================================================
-   🟦 A10.15.1 — AIRCRAFT HOURS & CYCLES UPDATE (SCOPED)
+   🟥 A10.15 — AIRCRAFT HOURS & CYCLES UPDATE (DISABLED)
    ------------------------------------------------------------
    FIX:
-   - Eliminates global scope crash (ReferenceError: flight)
-   - Keeps original logic intact
-   - Called explicitly from A18
+   - This legacy block executed in global scope
+   - Used undefined variables: flight / blockTime_h
+   - Caused fatal crash on load
+   - Logic preserved in A10.15.1 (scoped function)
    ============================================================ */
 
-function ACS_updateAircraftHoursAndCycles(flight, blockTime_h) {
-
-  const fleetKey = "ACS_MyAircraft";
-  const fleet = JSON.parse(localStorage.getItem(fleetKey)) || [];
-
-  // Buscar avión correcto
-  const aircraftIndex = fleet.findIndex(a =>
-    a.id === flight.aircraftId ||
-    a.registration === flight.aircraftId
-  );
-
-  if (aircraftIndex !== -1) {
-    const aircraft = fleet[aircraftIndex];
-
-    /* =========================
-       Update hours & cycles
-       ========================= */
-    aircraft.hours = Number(aircraft.hours || 0) + Number(blockTime_h || 0);
-    aircraft.cycles = Number(aircraft.cycles || 0) + 1;
-    aircraft.lastFlightAt = flight.arrival || Date.now();
-
-    /* =========================
-       Update age (years)
-       ========================= */
-    if (aircraft.enteredFleetAt) {
-      const ageMs = aircraft.lastFlightAt - aircraft.enteredFleetAt;
-      aircraft.age = Number(
-        ageMs / (365.25 * 24 * 60 * 60 * 1000)
-      ).toFixed(2);
-    }
-
-    fleet[aircraftIndex] = aircraft;
-    localStorage.setItem(fleetKey, JSON.stringify(fleet));
-
-    console.log(
-      `🛠 Aircraft updated → ${aircraft.registration || aircraft.id} | ` +
-      `Hours: ${aircraft.hours.toFixed(1)} | Cycles: ${aircraft.cycles}`
-    );
-  }
-}
-
+/*
+   Legacy global block DISABLED.
+   See A10.15.1 — ACS_updateAircraftHoursAndCycles()
+*/
