@@ -288,18 +288,6 @@ function ACS_processFlightRevenue(flight) {
 }
 
 /* ============================================================
-   🟥 A10.14 — FLIGHT COSTS (DISABLED - GLOBAL SCOPE CRASH)
-   ------------------------------------------------------------
-   This block used variables (f/ac/revenue) outside scope and caused:
-   ReferenceError: Can't find variable: f
-   Costs are already computed safely inside A18.
-   ============================================================ */
-
-/*
-   (Legacy block disabled)
-*/
-
-/* ============================================================
    🟦 A10.15 — AIRCRAFT HOURS & CYCLES UPDATE
    ============================================================ */
 
@@ -343,39 +331,3 @@ if (aircraftIndex !== -1) {
     `Hours ${aircraft.hours.toFixed(1)} | Cycles ${aircraft.cycles}`
   );
 }
-
-/* ============================================================
-   🟥 A10.15 — AIRCRAFT HOURS & CYCLES UPDATE (REMOVED)
-   ------------------------------------------------------------
-   ❌ This block executed in GLOBAL scope
-   ❌ Used undefined variables: flight / blockTime_h
-   ❌ Caused fatal crash on load
-   ✔ Logic MUST be called only from inside A18
-   ============================================================ */
-
-/*
-const fleetKey = "ACS_MyAircraft";
-const fleet = JSON.parse(localStorage.getItem(fleetKey)) || [];
-
-// Buscar avión correcto
-const aircraftIndex = fleet.findIndex(a =>
-  a.id === flight.aircraftId ||
-  a.registration === flight.aircraftId
-);
-
-if (aircraftIndex !== -1) {
-  const aircraft = fleet[aircraftIndex];
-
-  aircraft.hours = Number(aircraft.hours || 0) + blockTime_h;
-  aircraft.cycles = Number(aircraft.cycles || 0) + 1;
-  aircraft.lastFlightAt = flight.arrival || Date.now();
-
-  if (aircraft.enteredFleetAt) {
-    const ageMs = aircraft.lastFlightAt - aircraft.enteredFleetAt;
-    aircraft.age = Number((ageMs / (365.25 * 24 * 60 * 60 * 1000)).toFixed(2));
-  }
-
-  fleet[aircraftIndex] = aircraft;
-  localStorage.setItem(fleetKey, JSON.stringify(fleet));
-}
-*/
