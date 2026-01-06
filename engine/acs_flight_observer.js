@@ -55,31 +55,41 @@
 
     snapshot.aircraft.forEach(ac => {
 
-      if (
-        ac.state !== "GROUND" ||
-        !ac.lastFlight ||
-        !ac.lastFlight.origin ||
-        !ac.lastFlight.destination ||
-        ac.lastFlight.origin === ac.lastFlight.destination
-      ) {
-        return;
-      }
+      /* ============================================================
+   🟦 B1 — LEG-BY-LEG FLIGHT COMPLETION TRIGGER
+   ------------------------------------------------------------
+   ✔ Fires on each completed leg
+   ✔ Matches airline real-world accounting
+   ✔ SkyTrack remains READ-ONLY
+   ============================================================ */
 
-      const key = buildFlightKey(ac, ac.lastFlight);
+if (
+  ac.state !== "GROUND" ||
+  !ac.activeLeg ||
+  !ac.activeLeg.origin ||
+  !ac.activeLeg.destination ||
+  ac.activeLeg.origin === ac.activeLeg.destination
+) {
+  return;
+}
+
+     const key = buildFlightKey(ac, ac.activeLeg);
+
       if (ledger[key]) return;
 
       /* ============================
          ✅ FLIGHT COMPLETED
          ============================ */
 
-      ledger[key] = {
-        aircraftId: ac.aircraftId || ac.registration,
-        origin: ac.lastFlight.origin,
-        destination: ac.lastFlight.destination,
-        departure: ac.lastFlight.departure,
-        arrival: ac.lastFlight.arrival,
-        detectedAt: Date.now()
-      };
+     ledger[key] = {
+  aircraftId: ac.aircraftId || ac.registration,
+  origin: ac.activeLeg.origin,
+  destination: ac.activeLeg.destination,
+  departure: ac.activeLeg.departure,
+  arrival: ac.activeLeg.arrival,
+  detectedAt: Date.now()
+};
+
 
       dirty = true;
 
