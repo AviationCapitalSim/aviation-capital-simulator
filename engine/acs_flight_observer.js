@@ -1,16 +1,20 @@
 /* ============================================================
-   🟦 A10.12 — ACS FLIGHT OBSERVER (RUNTIME-ALIGNED)
+   🟦 ACS FLIGHT OBSERVER — LEG-BY-LEG (ROBUST)
    ------------------------------------------------------------
-   ✔ Basado en snapshot REAL de SkyTrack
-   ✔ Usa lastFlight (no transiciones)
-   ✔ Ledger anti-duplicados
-   ✔ SkyTrack permanece READ-ONLY
-   ✔ Schedule Table es la ÚNICA fuente de distance / blockTime
+   ✔ Airline-realistic: per LEG accounting
+   ✔ Robust against race conditions
+   ✔ SkyTrack READ-ONLY
+   ✔ Schedule Table is source of truth
    ============================================================ */
 
 (function () {
 
   const LEDGER_KEY = "ACS_FLIGHT_LEDGER_V1";
+
+  // ============================================================
+  // 🟦 C1 — CACHE LAST ACTIVE LEG (ANTI-RACE)
+  // ============================================================
+  const LAST_ACTIVE_LEG = {};
 
   /* ============================
      Ledger helpers
@@ -29,17 +33,17 @@
   }
 
   /* ============================
-     Build stable flight key
+     Build UNIQUE LEG key
      ============================ */
 
-  function buildFlightKey(ac, lf) {
-  return [
-    ac.aircraftId || ac.registration || "UNK",
-    lf.origin,
-    lf.destination,
-    lf.blockId || lf.legId || lf.departure || Date.now()
-  ].join("|");
-}
+  function buildFlightKey(ac, leg) {
+    return [
+      ac.aircraftId || ac.registration || "UNK",
+      leg.origin,
+      leg.destination,
+      leg.blockId || leg.legId || leg.departure || Date.now()
+    ].join("|");
+  }
 
   /* ============================
      OBSERVER
@@ -55,59 +59,52 @@
 
     snapshot.aircraft.forEach(ac => {
 
-      /* ============================================================
-   🟦 B1 — LEG-BY-LEG FLIGHT COMPLETION TRIGGER
-   ------------------------------------------------------------
-   ✔ Fires on each completed leg
-   ✔ Matches airline real-world accounting
-   ✔ SkyTrack remains READ-ONLY
-   ============================================================ */
+      const acId = ac.aircraftId || ac.registration;
+      if (!acId) return;
 
-if (
-  ac.state !== "GROUND" ||
-  !ac.activeLeg ||
-  !ac.activeLeg.origin ||
-  !ac.activeLeg.destination ||
-  ac.activeLeg.origin === ac.activeLeg.destination
-) {
-  return;
-}
+      // ========================================================
+      // 🟦 C2 — CAPTURE ACTIVE LEG WHILE EN_ROUTE
+      // ========================================================
+      if (ac.state === "EN_ROUTE" && ac.activeLeg) {
+        LAST_ACTIVE_LEG[acId] = ac.activeLeg;
+        return;
+      }
 
-     const key = buildFlightKey(ac, ac.activeLeg);
+      // ========================================================
+      // 🟦 C3 — PROCESS LEG ON GROUND (ROBUST)
+      // ========================================================
+      if (ac.state !== "GROUND") return;
 
-      if (ledger[key]) return;
+      const leg = ac.activeLeg || LAST_ACTIVE_LEG[acId];
+      if (!leg || !leg.origin || !leg.destination) return;
+      if (leg.origin === leg.destination) return;
 
-      /* ============================
-         ✅ FLIGHT COMPLETED
-         ============================ */
+      const key = buildFlightKey(ac, leg);
+      if (ledger[key]) return; // anti-duplicate
 
-     ledger[key] = {
-  aircraftId: ac.aircraftId || ac.registration,
-  origin: ac.activeLeg.origin,
-  destination: ac.activeLeg.destination,
-  departure: ac.activeLeg.departure,
-  arrival: ac.activeLeg.arrival,
-  detectedAt: Date.now()
-};
-
-
+      // ========================================================
+      // ✅ LEG COMPLETED
+      // ========================================================
+      ledger[key] = {
+        aircraftId: acId,
+        origin: leg.origin,
+        destination: leg.destination,
+        departure: leg.departure || leg.blockOff || 0,
+        arrival: leg.arrival || Date.now(),
+        detectedAt: Date.now()
+      };
       dirty = true;
 
       console.log(
-        `✈️ ACS Flight completed → ${ledger[key].aircraftId} ` +
-        `${ledger[key].origin} → ${ledger[key].destination}`
+        `✈️ ACS LEG completed → ${acId} ${leg.origin} → ${leg.destination}`
       );
 
-      /* ============================
-         🟦 A10.13.1 — Inject scheduleItems metrics
-         ------------------------------------------------------------
-         ✔ Source of truth: scheduleItems
-         ✔ Observer does NOT recalc distance
-         ============================ */
-
+      // ========================================================
+      // 🟦 Inject Schedule Table metrics (NO recalculation)
+      // ========================================================
       try {
         const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-        const lfDep = Number(ac.lastFlight?.departure || ac.lastFlight?.blockOff || 0);
+        const dep = Number(ledger[key].departure || 0);
 
         const match = scheduleItems.find(s => {
           if (!s) return false;
@@ -116,19 +113,19 @@ if (
           const sOrg = s.origin || s.from || "";
           const sDst = s.destination || s.to || "";
 
-          if (String(sAc) !== String(ledger[key].aircraftId)) return false;
-          if (String(sOrg) !== String(ledger[key].origin)) return false;
-          if (String(sDst) !== String(ledger[key].destination)) return false;
+          if (String(sAc) !== String(acId)) return false;
+          if (String(sOrg) !== String(leg.origin)) return false;
+          if (String(sDst) !== String(leg.destination)) return false;
 
           const sDep = Number(s.departure || s.blockOff || s.dep || 0);
-          if (lfDep && sDep) {
-            return Math.abs(sDep - lfDep) <= (6 * 60 * 60 * 1000);
+          if (dep && sDep) {
+            return Math.abs(sDep - dep) <= (6 * 60 * 60 * 1000);
           }
           return true;
         });
 
         if (match) {
-          // Distance (NM)
+          // Distance NM
           const dnm = Number(
             match.distanceNM ??
             match.distance_nm ??
@@ -138,7 +135,7 @@ if (
           );
           ledger[key].distanceNM = Number.isFinite(dnm) ? dnm : 0;
 
-          // Block time (hours)
+          // Block time hours
           let btH = Number(
             match.blockTimeH ??
             match.blockTimeHours ??
@@ -166,9 +163,12 @@ if (
         }
 
       } catch (e) {
-        // observer must continue
+        // Observer must continue
       }
 
+      // ========================================================
+      // 🟧 Finance & aircraft updates
+      // ========================================================
       ACS_processFlightRevenue(ledger[key]);
     });
 
@@ -178,10 +178,7 @@ if (
 })();
 
 /* ============================================================
-   🟦 A10.15.1 — AIRCRAFT HOURS & CYCLES UPDATE (SCOPED)
-   ------------------------------------------------------------
-   ✔ Called ONLY from A18
-   ✔ No global variables
+   🟦 AIRCRAFT HOURS & CYCLES (SCOPED)
    ============================================================ */
 
 function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
@@ -213,18 +210,10 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 
   fleet[idx] = aircraft;
   localStorage.setItem(fleetKey, JSON.stringify(fleet));
-
-  console.log(
-    `🛠 Aircraft updated → ${aircraft.registration || aircraft.id} | ` +
-    `Hours ${aircraft.hours.toFixed(1)} | Cycles ${aircraft.cycles}`
-  );
 }
 
 /* ============================================================
-   🟧 A18 — PROCESS FLIGHT REVENUE & COSTS (STABLE)
-   ------------------------------------------------------------
-   • Called ONLY when flight is completed
-   • Uses distance & blockTime from Schedule Table
+   🟧 A18 — PROCESS FLIGHT REVENUE & COSTS (LEG-BY-LEG)
    ============================================================ */
 
 function ACS_processFlightRevenue(flight) {
@@ -240,10 +229,9 @@ function ACS_processFlightRevenue(flight) {
   );
   if (!ac) return;
 
-  /* ===============================
-     1. DISTANCE & BLOCK TIME
-     =============================== */
-
+  // ===============================
+  // Distance & block time
+  // ===============================
   const distanceNM = Number(flight.distanceNM || 0);
   if (distanceNM <= 0) return;
 
@@ -253,10 +241,9 @@ function ACS_processFlightRevenue(flight) {
     blockTimeH = distanceNM / speed;
   }
 
-  /* ===============================
-     2. COST CALCULATION
-     =============================== */
-
+  // ===============================
+  // Costs
+  // ===============================
   const fuelBurnKgH = Number(ac.fuel_burn_kgph || 900);
   const fuelCost   = fuelBurnKgH * blockTimeH * 0.85;
 
@@ -265,10 +252,9 @@ function ACS_processFlightRevenue(flight) {
 
   const totalCost  = Math.round(fuelCost + crewCost + landingFee);
 
-  /* ===============================
-     3. PASSENGERS & REVENUE
-     =============================== */
-
+  // ===============================
+  // Pax & revenue
+  // ===============================
   let pax = 0;
   let revenue = 0;
 
@@ -296,10 +282,9 @@ function ACS_processFlightRevenue(flight) {
   revenue = pax * ticketPrice;
   const profit = Math.round(revenue - totalCost);
 
-  /* ===============================
-     4. FINANCE LOG
-     =============================== */
-
+  // ===============================
+  // Finance log
+  // ===============================
   finance.push({
     type: "FLIGHT_RESULT",
     aircraftId: ac.registration,
@@ -316,10 +301,9 @@ function ACS_processFlightRevenue(flight) {
 
   localStorage.setItem("ACS_Finance_Log", JSON.stringify(finance));
 
-  /* ===============================
-     5. UPDATE AIRCRAFT HOURS
-     =============================== */
-
+  // ===============================
+  // Aircraft update
+  // ===============================
   ACS_updateAircraftHoursAndCycles(flight, blockTimeH);
 
   console.log(
