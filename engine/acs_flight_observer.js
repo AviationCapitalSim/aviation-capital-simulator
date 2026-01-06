@@ -33,13 +33,13 @@
      ============================ */
 
   function buildFlightKey(ac, lf) {
-    return [
-      ac.aircraftId || ac.registration || "UNK",
-      lf.origin,
-      lf.destination,
-      lf.departure || lf.blockOff || "0"
-    ].join("|");
-  }
+  return [
+    ac.aircraftId || ac.registration || "UNK",
+    lf.origin,
+    lf.destination,
+    lf.blockId || lf.legId || lf.departure || Date.now()
+  ].join("|");
+}
 
   /* ============================
      OBSERVER
