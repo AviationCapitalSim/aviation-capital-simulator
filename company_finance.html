@@ -531,13 +531,19 @@ body {
 /* ============================================================
    === KPI OVERVIEW ============================================
    ============================================================ */
+     
 function updateCompanyOverview() {
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-  document.getElementById("cf-capital").textContent = "$" + f.capital.toLocaleString();
-  document.getElementById("cf-revenue").textContent = "$" + f.revenue.toLocaleString();
-  document.getElementById("cf-expenses").textContent = "$" + f.expenses.toLocaleString();
-  document.getElementById("cf-profit").textContent = "$" + f.profit.toLocaleString();
+  const capital  = Number(f.capital  ?? 0);
+  const revenue  = Number(f.revenue  ?? 0);
+  const expenses = Number(f.expenses ?? 0);
+  const profit   = Number(f.profit   ?? 0);
+
+  document.getElementById("cf-capital").textContent  = "$" + capital.toLocaleString();
+  document.getElementById("cf-revenue").textContent  = "$" + revenue.toLocaleString();
+  document.getElementById("cf-expenses").textContent = "$" + expenses.toLocaleString();
+  document.getElementById("cf-profit").textContent   = "$" + profit.toLocaleString();
 }
 
 /* ============================================================
