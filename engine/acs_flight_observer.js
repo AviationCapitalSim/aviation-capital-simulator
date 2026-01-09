@@ -273,25 +273,18 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 
 /* ============================================================
    🟧 F3.4-A — ARRIVAL FINALIZATION (SAFE + ALWAYS VISIBLE)
-   ------------------------------------------------------------
-   • Nunca rompe visibilidad
-   • Revenue protegido (World optional)
-   • Avión SIEMPRE queda visible en tierra
    ============================================================ */
 
 try {
 
-  // 🔑 1) Aircraft identity — SOURCE OF TRUTH
-  const aircraftId =
-    flight?.aircraftId ||
-    exec?.aircraftId ||
-    event?.aircraftId;
+  // 🔑 Aircraft identity — SOURCE OF TRUTH
+  const aircraftId = exec?.aircraftId;
 
   if (!aircraftId) {
     console.warn("⚠️ Arrival without aircraftId — visual preserved, revenue skipped");
   }
 
-  // 🔎 2) Obtener avión desde MyAircraft
+  // 🔎 Obtener avión desde MyAircraft
   let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
   const acIndex = fleet.findIndex(a => a.id === aircraftId);
 
@@ -301,14 +294,13 @@ try {
 
     const ac = fleet[acIndex];
 
-    // 🛬 3) Estado EN TIERRA — SIEMPRE
+    // 🛬 Estado EN TIERRA — SIEMPRE
     ac.status = "Active";
     ac.lastArrival = {
       icao: destination,
       time: new Date().toISOString()
     };
 
-    // ✈️ Posición en tierra (destino)
     ac.ground = true;
     ac.airborne = false;
     ac.currentAirport = destination;
@@ -317,12 +309,10 @@ try {
     localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
   }
 
-  /* ========================================================
-     💰 4) REVENUE — SOLO SI WORLD ESTÁ LISTO
-     ======================================================== */
+  // 💰 REVENUE — SOLO SI WORLD ESTÁ LISTO
   if (window.ACS_World && ACS_World.ready) {
     try {
-      ACS_applyFlightRevenue(flight);
+      ACS_applyFlightRevenue(exec);
     } catch (revErr) {
       console.warn("⚠️ Revenue error (ignored):", revErr);
     }
