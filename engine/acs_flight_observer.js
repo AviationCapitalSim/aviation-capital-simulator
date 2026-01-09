@@ -309,27 +309,33 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   /* ============================================================
      2️⃣ RESOLVE AIRCRAFT
      ============================================================ */
+   
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
   const ac = fleet.find(a =>
     a.id === f.aircraftId || a.registration === f.aircraftId
   );
   if (!ac) return;
 
-  /* ============================================================
-     3️⃣ RESOLVE AIRPORT OBJECTS (🔥 FIX REAL PAX 🔥)
-     ============================================================ */
-  if (!window.WorldAirportsACS || !WorldAirportsACS.byICAO) {
-    console.error("❌ WorldAirportsACS not ready — revenue skipped");
-    return;
-  }
+   /* ============================================================
+   3️⃣ RESOLVE AIRPORT OBJECTS — WORLD ENGINE (FIX)
+   ============================================================ */
 
-  const A = WorldAirportsACS.byICAO[f.origin];
-  const B = WorldAirportsACS.byICAO[f.destination];
+if (!window.ACS_World || !ACS_World.ready) {
+  console.warn("⏳ ACS_World not ready — flight revenue delayed");
+  return;
+}
 
-  if (!A || !B) {
-    console.warn("⚠️ Airport data missing", f.origin, f.destination);
-    return;
-  }
+const A = ACS_World.getByICAO(f.origin);
+const B = ACS_World.getByICAO(f.destination);
+
+if (!A || !B) {
+  console.warn(
+    "⚠️ Airport not found in ACS_World",
+    f.origin,
+    f.destination
+  );
+  return;
+}
 
   /* ============================================================
      4️⃣ DISTANCE & BLOCK TIME (FROM SCHEDULE)
