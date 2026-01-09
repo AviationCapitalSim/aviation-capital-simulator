@@ -337,73 +337,52 @@ function ACS_normalizeFinance() {
 }
 
 /* ============================================================
-   === 🔒 FINANCE SAFETY GUARD — FIX v1.7 ======================
+   🟩 F1 — FINANCE SANITIZER (CANONICAL)
    ------------------------------------------------------------
-   • Previene capital negativo causado por otros módulos
-   • Recalcula profit correctamente
-   • Se ejecuta al cargar y cada vez que ACS_Finance cambie
+   • Nunca fuerza capital a 0
+   • Nunca pisa expenses
+   • Elimina null / NaN
+   • Recalcula profit de forma segura
    ============================================================ */
 
 function ACS_sanitizeFinance() {
   try {
     let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-    if (!f || typeof f.capital !== "number") return;
+    // Estructura base garantizada
+    f.capital  = Number(f.capital)  || 0;
+    f.revenue  = Number(f.revenue)  || 0;
+    f.expenses = Number(f.expenses) || 0;
+    f.profit   = f.revenue - f.expenses;
 
-    // 🔐 No permitir capital negativo
-    if (f.capital < 0) {
-      console.warn("⚠️ Finance Safety: capital corregido (era negativo)");
-      f.capital = 0;
-    }
+    // Subestructuras seguras
+    f.income = f.income || {};
+    f.cost   = f.cost   || {};
 
-    // Actualizar profit según revenue/expenses
-    f.profit = (f.revenue || 0) - (f.expenses || 0);
+    Object.keys(f.cost).forEach(k => {
+      f.cost[k] = Number(f.cost[k]) || 0;
+    });
+
+    Object.keys(f.income).forEach(k => {
+      f.income[k] = Number(f.income[k]) || 0;
+    });
 
     localStorage.setItem("ACS_Finance", JSON.stringify(f));
 
-  } catch (e) {
-    console.error("❌ Error en ACS_sanitizeFinance:", e);
+  } catch (err) {
+    console.error("❌ Finance sanitizer error:", err);
   }
 }
 
-/* Ejecutar al cargar */
-ACS_sanitizeFinance();
+/* Ejecutar una vez al cargar */
+document.addEventListener("DOMContentLoaded", ACS_sanitizeFinance);
 
-/* Ejecutar cada vez que Finance cambie */
+/* Re-sanitizar solo cuando Finance cambie */
 window.addEventListener("storage", (e) => {
   if (e.key === "ACS_Finance") {
     ACS_sanitizeFinance();
   }
 });
-
-/* ============================================================
-   === AUTO-SYNC HR → FINANCE (cada 1.2 seg) — FIX 08DEC25 ====
-   ============================================================ */
-
-setInterval(() => {
-    try {
-        const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-        const f  = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-
-        if (!HR || !f) return;
-        if (typeof HR.payroll === "undefined") return;
-
-        // Si hay un cambio REAL en payroll
-        if (f.cost && f.cost.salaries !== HR.payroll) {
-
-            f.cost.salaries = HR.payroll;
-            f.expenses = HR.payroll;
-            f.profit = f.revenue - f.expenses;
-
-            localStorage.setItem("ACS_Finance", JSON.stringify(f));
-
-            console.log("🔄 Finance ← HR sync (auto):", HR.payroll);
-        }
-
-    } catch(e){
-        console.warn("Auto-Finance Sync Error:", e);
-    }
-}, 1200);
 
 /* ============================================================
    === FINANCE — SPARKLINE UTILITY RESTORE (v1.0) ============
