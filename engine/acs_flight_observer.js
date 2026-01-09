@@ -273,14 +273,6 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 
 /* ============================================================
    🟧 A18 — FLIGHT ARRIVAL OBSERVER (FINANCE & OPS)
-   ------------------------------------------------------------
-   ✔ Triggered by: ACS_FLIGHT_ARRIVED (SkyTrack C3)
-   ✔ Writes:
-       • ACS_FLIGHT_LEDGER_V1
-       • ACS_Finance_Log
-       • ACS_MyAircraft (hours & cycles)
-   ✔ SkyTrack remains READ-ONLY
-   ✔ ONE execution per LEG (anti-duplicate)
    ============================================================ */
 
 window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
@@ -293,16 +285,10 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   );
 
   /* ============================================================
-     1️⃣ LEDGER — ANTI-DUPLICATE (SINGLE SOURCE)
+     1️⃣ LEDGER (ANTI-DUPLICATE)
      ============================================================ */
   const LEDGER_KEY = "ACS_FLIGHT_LEDGER_V1";
-  let ledger = {};
-
-  try {
-    ledger = JSON.parse(localStorage.getItem(LEDGER_KEY)) || {};
-  } catch {
-    ledger = {};
-  }
+  let ledger = JSON.parse(localStorage.getItem(LEDGER_KEY) || "{}");
 
   const legKey = [
     f.aircraftId,
@@ -317,92 +303,69 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     return;
   }
 
-  ledger[legKey] = {
-    aircraftId: f.aircraftId,
-    registration: f.registration,
-    origin: f.origin,
-    destination: f.destination,
-    depAbsMin: f.depAbsMin,
-    arrAbsMin: f.arrAbsMin,
-    detectedAtAbsMin: f.detectedAtAbsMin,
-    detectedAtTs: f.detectedAtTs
-  };
-
+  ledger[legKey] = { ...f };
   localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
 
   /* ============================================================
-     2️⃣ RESOLVE AIRCRAFT (FLEET)
+     2️⃣ RESOLVE AIRCRAFT
      ============================================================ */
-  const fleetKey = "ACS_MyAircraft";
-  const fleet = JSON.parse(localStorage.getItem(fleetKey) || "[]");
-
-  const idx = fleet.findIndex(a =>
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = fleet.find(a =>
     a.id === f.aircraftId || a.registration === f.aircraftId
   );
-  if (idx === -1) return;
-
-  const ac = fleet[idx];
+  if (!ac) return;
 
   /* ============================================================
-     3️⃣ DISTANCE & BLOCK TIME (FROM SCHEDULE TABLE)
+     3️⃣ RESOLVE AIRPORT OBJECTS (🔥 FIX REAL PAX 🔥)
+     ============================================================ */
+  if (!window.WorldAirportsACS || !WorldAirportsACS.byICAO) {
+    console.error("❌ WorldAirportsACS not ready — revenue skipped");
+    return;
+  }
+
+  const A = WorldAirportsACS.byICAO[f.origin];
+  const B = WorldAirportsACS.byICAO[f.destination];
+
+  if (!A || !B) {
+    console.warn("⚠️ Airport data missing", f.origin, f.destination);
+    return;
+  }
+
+  /* ============================================================
+     4️⃣ DISTANCE & BLOCK TIME (FROM SCHEDULE)
      ============================================================ */
   const schedule = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
   const match = schedule.find(s =>
     String(s.aircraftId) === String(f.aircraftId) &&
-    String(s.origin) === String(f.origin) &&
-    String(s.destination) === String(f.destination)
+    s.origin === f.origin &&
+    s.destination === f.destination
   );
 
-  const distanceNM = Number(
-    match?.distanceNM ??
-    match?.distance_nm ??
-    match?.distNM ??
-    0
-  );
-
+  const distanceNM = Number(match?.distanceNM || 0);
   let blockTimeH = Number(match?.blockTimeH || 0);
-  if (!blockTimeH && match?.blockTimeMin) {
-    blockTimeH = match.blockTimeMin / 60;
-  }
 
-  if (!blockTimeH && distanceNM > 0) {
-    const speed = Number(ac.speed_kts || 220);
-    blockTimeH = distanceNM / speed;
+  if (!blockTimeH && distanceNM) {
+    blockTimeH = distanceNM / (ac.speed_kts || 220);
   }
-
-  if (distanceNM <= 0 || blockTimeH <= 0) return;
 
   /* ============================================================
-     4️⃣ COSTS
+     5️⃣ COSTS
      ============================================================ */
-  const fuelBurnKgH = Number(ac.fuel_burn_kgph || 900);
-  const fuelCost   = fuelBurnKgH * blockTimeH * 0.85;
-
+  const fuelCost   = (ac.fuel_burn_kgph || 900) * blockTimeH * 0.85;
   const crewCost   = blockTimeH * 120;
   const landingFee = 350;
-
-  const totalCost  = Math.round(
-    fuelCost + crewCost + landingFee
-  );
+  const totalCost  = Math.round(fuelCost + crewCost + landingFee);
 
   /* ============================================================
-     5️⃣ PAX & REVENUE
+     6️⃣ PAX & REVENUE (🔥 REAL DATA 🔥)
      ============================================================ */
-  let pax = 0;
+  const year = window.ACS_TIME?.year || 1943;
 
-  if (window.ACS_PAX && typeof ACS_PAX.getDailyDemand === "function") {
-    const year = window.ACS_TIME?.year || new Date().getFullYear();
-    pax = Math.min(
-      Number(ac.seats || 0),
-      ACS_PAX.getDailyDemand(
-        f.origin,
-        f.destination,
-        distanceNM,
-        year
-      )
-    );
-  }
+  const pax = Math.min(
+    Number(ac.seats || 0),
+    ACS_PAX.getDailyDemand(A, B, distanceNM, year)
+  );
 
   let ticketPrice = 120;
   if (distanceNM > 3000) ticketPrice = 220;
@@ -412,10 +375,9 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   const profit  = Math.round(revenue - totalCost);
 
   /* ============================================================
-     6️⃣ FINANCE LOG
+     7️⃣ FINANCE LOG
      ============================================================ */
-  const financeKey = "ACS_Finance_Log";
-  const finance = JSON.parse(localStorage.getItem(financeKey) || "[]");
+  const finance = JSON.parse(localStorage.getItem("ACS_Finance_Log") || "[]");
 
   finance.push({
     type: "FLIGHT_RESULT",
@@ -431,20 +393,18 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     date: f.detectedAtTs
   });
 
-  localStorage.setItem(financeKey, JSON.stringify(finance));
+  localStorage.setItem("ACS_Finance_Log", JSON.stringify(finance));
 
   /* ============================================================
-     7️⃣ AIRCRAFT HOURS & CYCLES
+     8️⃣ AIRCRAFT HOURS & CYCLES
      ============================================================ */
-  ac.hours = Number(ac.hours || 0) + blockTimeH;
+  ac.hours  = Number(ac.hours || 0) + blockTimeH;
   ac.cycles = Number(ac.cycles || 0) + 1;
   ac.lastFlightAt = f.detectedAtTs;
 
-  fleet[idx] = ac;
-  localStorage.setItem(fleetKey, JSON.stringify(fleet));
+  localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
 
   console.log(
-    `💰 A18 OK | ${ac.registration} | Pax ${pax} | Revenue $${revenue} | Profit $${profit}`
+    `💰 A18 OK | ${f.origin} → ${f.destination} | Pax ${pax} | Revenue $${revenue} | Profit $${profit}`
   );
-
 });
