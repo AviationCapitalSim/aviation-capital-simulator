@@ -723,65 +723,10 @@ function updateClockDisplay(simTime){
 }
      
 /* ============================================================
-   🔄 SYNC FINANCE WITH HR ON PAGE LOAD
-   ============================================================ */
-     
-if (typeof ACS_syncPayrollWithHR === "function") {
-    ACS_syncPayrollWithHR();
-    console.log("💼 Company Finance synced with HR → payroll actualizado.");
-}
-
-/* ============================================================
-   === SYNC REAL PAYROLL FROM HR → FINANCE (CORRECTO) ==========
-   === 🟩 ACS_syncPayrollWithHR vFINAL — 08 DEC 2025 ============
-   ============================================================ */
-
-function ACS_syncPayrollWithHR() {
-  try {
-
-    let f  = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    let HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-
-    if (!f || !HR || typeof HR.payroll !== "number") {
-      console.warn("⚠️ HR o Finance no inicializado todavía.");
-      return;
-    }
-
-    const payroll = HR.payroll;
-
-    // 🟦 DESCONTAR payroll del capital INMEDIATAMENTE
-    f.capital -= payroll;
-
-    // 🟨 Actualizar gastos y profit
-    f.cost = f.cost || {};
-    f.cost.salaries = payroll;
-
-    f.expenses = payroll;
-    f.profit   = (f.revenue || 0) - (f.expenses || 0);
-
-    localStorage.setItem("ACS_Finance", JSON.stringify(f));
-
-    console.log("💸 Payroll aplicado de inmediato:", payroll);
-    console.log("💰 Capital actualizado:", f.capital);
-
-  } catch (err) {
-    console.error("❌ ERROR en ACS_syncPayrollWithHR:", err);
-  }
-}
-
-/* ============================================================
    === INIT =====================================================
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-
-  /* ============================================================
-     🔄 SYNC FINANCE WITH HR ON PAGE LOAD
-     ============================================================ */
      
-  if (typeof ACS_syncPayrollWithHR === "function") {
-      ACS_syncPayrollWithHR();
-      console.log("💼 Company Finance synced with HR → payroll actualizado.");
-  }
+document.addEventListener("DOMContentLoaded", () => {
 
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
@@ -795,7 +740,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loadLeasing();
   renderSparklines();
 });
-
 
 /* ============================================================
    === FINANCE UI LIVE REFRESH — FIX v1.0 =====================
