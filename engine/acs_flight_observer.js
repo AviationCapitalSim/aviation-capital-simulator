@@ -322,7 +322,7 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
 
 if (!ACS_World || !ACS_World.ready) {
   ACS_enqueueDeferredRevenue({
-    flightId,
+    flightId: aircraftId + "_" + origin + "_" + destination,
     aircraftId,
     origin,
     destination,
