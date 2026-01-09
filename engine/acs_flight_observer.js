@@ -272,156 +272,67 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 }
 
 /* ============================================================
-   🟧 A18 — FLIGHT ARRIVAL OBSERVER (FINANCE & OPS)
+   🟧 F3.4-A — ARRIVAL FINALIZATION (SAFE + ALWAYS VISIBLE)
+   ------------------------------------------------------------
+   • Nunca rompe visibilidad
+   • Revenue protegido (World optional)
+   • Avión SIEMPRE queda visible en tierra
    ============================================================ */
 
-window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
+try {
 
-  const f = ev.detail;
-  if (!f || !f.aircraftId || !f.origin || !f.destination) return;
+  // 🔑 1) Aircraft identity — SOURCE OF TRUTH
+  const aircraftId =
+    flight?.aircraftId ||
+    exec?.aircraftId ||
+    event?.aircraftId;
 
-  console.log(
-    `🧾 A18 RECEIVED | ${f.aircraftId} | ${f.origin} → ${f.destination}`
-  );
-
-  /* ============================================================
-     1️⃣ LEDGER (ANTI-DUPLICATE)
-     ============================================================ */
-  const LEDGER_KEY = "ACS_FLIGHT_LEDGER_V1";
-  let ledger = JSON.parse(localStorage.getItem(LEDGER_KEY) || "{}");
-
-  const legKey = [
-    f.aircraftId,
-    f.origin,
-    f.destination,
-    f.depAbsMin,
-    f.arrAbsMin
-  ].join("|");
-
-  if (ledger[legKey]) {
-    console.log("🟨 A18 DUPLICATE — ignored");
-    return;
+  if (!aircraftId) {
+    console.warn("⚠️ Arrival without aircraftId — visual preserved, revenue skipped");
   }
 
-  ledger[legKey] = { ...f };
-  localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
+  // 🔎 2) Obtener avión desde MyAircraft
+  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const acIndex = fleet.findIndex(a => a.id === aircraftId);
 
-  /* ============================================================
-     2️⃣ RESOLVE AIRCRAFT
-     ============================================================ */
-   
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const ac = fleet.find(a =>
-    a.id === f.aircraftId || a.registration === f.aircraftId
-  );
-  if (!ac) return;
+  if (acIndex === -1) {
+    console.warn("⚠️ Aircraft not found in fleet:", aircraftId);
+  } else {
 
-   /* ============================================================
-   3️⃣ RESOLVE AIRPORT OBJECTS — WORLD ENGINE (FIX)
-   ============================================================ */
+    const ac = fleet[acIndex];
 
-if (!ACS_World || !ACS_World.ready) {
-  ACS_enqueueDeferredRevenue({
-    flightId: aircraftId + "_" + origin + "_" + destination,
-    aircraftId,
-    origin,
-    destination,
-    distance,
-    blockTime,
-    simTime
-  });
-  return;
-}
+    // 🛬 3) Estado EN TIERRA — SIEMPRE
+    ac.status = "Active";
+    ac.lastArrival = {
+      icao: destination,
+      time: new Date().toISOString()
+    };
 
-const A = ACS_World.getByICAO(f.origin);
-const B = ACS_World.getByICAO(f.destination);
+    // ✈️ Posición en tierra (destino)
+    ac.ground = true;
+    ac.airborne = false;
+    ac.currentAirport = destination;
 
-if (!A || !B) {
-  console.warn(
-    "⚠️ Airport not found in ACS_World",
-    f.origin,
-    f.destination
-  );
-  return;
-}
-
-  /* ============================================================
-     4️⃣ DISTANCE & BLOCK TIME (FROM SCHEDULE)
-     ============================================================ */
-  const schedule = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-  const match = schedule.find(s =>
-    String(s.aircraftId) === String(f.aircraftId) &&
-    s.origin === f.origin &&
-    s.destination === f.destination
-  );
-
-  const distanceNM = Number(match?.distanceNM || 0);
-  let blockTimeH = Number(match?.blockTimeH || 0);
-
-  if (!blockTimeH && distanceNM) {
-    blockTimeH = distanceNM / (ac.speed_kts || 220);
+    fleet[acIndex] = ac;
+    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
   }
 
-  /* ============================================================
-     5️⃣ COSTS
-     ============================================================ */
-  const fuelCost   = (ac.fuel_burn_kgph || 900) * blockTimeH * 0.85;
-  const crewCost   = blockTimeH * 120;
-  const landingFee = 350;
-  const totalCost  = Math.round(fuelCost + crewCost + landingFee);
+  /* ========================================================
+     💰 4) REVENUE — SOLO SI WORLD ESTÁ LISTO
+     ======================================================== */
+  if (window.ACS_World && ACS_World.ready) {
+    try {
+      ACS_applyFlightRevenue(flight);
+    } catch (revErr) {
+      console.warn("⚠️ Revenue error (ignored):", revErr);
+    }
+  } else {
+    console.warn("🕒 ACS_World not ready — flight revenue delayed");
+  }
 
-  /* ============================================================
-     6️⃣ PAX & REVENUE (🔥 REAL DATA 🔥)
-     ============================================================ */
-  const year = window.ACS_TIME?.year || 1943;
-
-  const pax = Math.min(
-    Number(ac.seats || 0),
-    ACS_PAX.getDailyDemand(A, B, distanceNM, year)
-  );
-
-  let ticketPrice = 120;
-  if (distanceNM > 3000) ticketPrice = 220;
-  else if (distanceNM > 1200) ticketPrice = 140;
-
-  const revenue = pax * ticketPrice;
-  const profit  = Math.round(revenue - totalCost);
-
-  /* ============================================================
-     7️⃣ FINANCE LOG
-     ============================================================ */
-  const finance = JSON.parse(localStorage.getItem("ACS_Finance_Log") || "[]");
-
-  finance.push({
-    type: "FLIGHT_RESULT",
-    aircraftId: ac.registration,
-    route: `${f.origin}-${f.destination}`,
-    pax,
-    revenue,
-    fuelCost: Math.round(fuelCost),
-    crewCost: Math.round(crewCost),
-    landingFee,
-    totalCost,
-    profit,
-    date: f.detectedAtTs
-  });
-
-  localStorage.setItem("ACS_Finance_Log", JSON.stringify(finance));
-
-  /* ============================================================
-     8️⃣ AIRCRAFT HOURS & CYCLES
-     ============================================================ */
-  ac.hours  = Number(ac.hours || 0) + blockTimeH;
-  ac.cycles = Number(ac.cycles || 0) + 1;
-  ac.lastFlightAt = f.detectedAtTs;
-
-  localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-
-  console.log(
-    `💰 A18 OK | ${f.origin} → ${f.destination} | Pax ${pax} | Revenue $${revenue} | Profit $${profit}`
-  );
-});
+} catch (err) {
+  console.error("❌ Arrival finalization failed — visual state preserved:", err);
+}
 
 /* ============================================================
    🟧 A1 — REVENUE DEFERRED QUEUE (WORLD SYNC)
