@@ -320,8 +320,16 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
    3️⃣ RESOLVE AIRPORT OBJECTS — WORLD ENGINE (FIX)
    ============================================================ */
 
-if (!window.ACS_World || !ACS_World.ready) {
-  console.warn("⏳ ACS_World not ready — flight revenue delayed");
+if (!ACS_World || !ACS_World.ready) {
+  ACS_enqueueDeferredRevenue({
+    flightId,
+    aircraftId,
+    origin,
+    destination,
+    distance,
+    blockTime,
+    simTime
+  });
   return;
 }
 
@@ -414,3 +422,54 @@ if (!A || !B) {
     `💰 A18 OK | ${f.origin} → ${f.destination} | Pax ${pax} | Revenue $${revenue} | Profit $${profit}`
   );
 });
+
+/* ============================================================
+   🟧 A1 — REVENUE DEFERRED QUEUE (WORLD SYNC)
+   ------------------------------------------------------------
+   • Guarda ingresos cuando ACS_World aún no está listo
+   • Se procesan automáticamente al quedar READY
+   • Evita pérdida de revenue histórico
+   ============================================================ */
+
+// Cola global de ingresos pendientes
+window.ACS_DeferredRevenueQueue = window.ACS_DeferredRevenueQueue || [];
+
+// Encolar ingreso diferido
+function ACS_enqueueDeferredRevenue(payload) {
+  window.ACS_DeferredRevenueQueue.push(payload);
+  console.warn(
+    "⏳ Revenue deferred — queued:",
+    payload.flightId,
+    payload.origin,
+    "→",
+    payload.destination
+  );
+}
+
+// Procesar cola cuando el World Engine esté listo
+function ACS_processDeferredRevenueQueue() {
+
+  if (!window.ACS_World || !window.ACS_World.ready) return;
+  if (!window.ACS_DeferredRevenueQueue.length) return;
+
+  console.log(
+    "💰 Processing deferred revenue queue:",
+    window.ACS_DeferredRevenueQueue.length,
+    "items"
+  );
+
+  while (window.ACS_DeferredRevenueQueue.length) {
+    const payload = window.ACS_DeferredRevenueQueue.shift();
+
+    if (typeof ACS_applyFlightRevenue === "function") {
+      ACS_applyFlightRevenue(payload);
+    }
+  }
+}
+
+// Listener pasivo — se ejecuta cada minuto de simulación
+if (typeof registerTimeListener === "function") {
+  registerTimeListener(() => {
+    ACS_processDeferredRevenueQueue();
+  });
+}
