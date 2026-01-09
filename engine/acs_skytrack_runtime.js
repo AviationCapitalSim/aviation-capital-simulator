@@ -24,13 +24,19 @@
    ============================================================ */
 
 /* ============================================================
-   🟦 RUNTIME NAMESPACE
+   🟦 C1 — LAST ACTIVE FLIGHT CACHE (ANTI-STATE-LOSS)
+   - Stores last EN_ROUTE flight per aircraft
+   - Memory-only (NO persistence)
    ============================================================ */
+
 window.ACS_SkyTrack = {
   initialized: false,
   nowAbsMin: null,
   aircraftIndex: {},
   itemsByAircraft: {},
+
+  // 🟦 C1 — cache del último vuelo activo
+  lastActiveFlight: {}
 };
 
 /* ============================================================
@@ -157,6 +163,58 @@ function ACS_SkyTrack_onTick() {
     const stateObj = ACS_SkyTrack_resolveState(acId);
     if (!stateObj) return;
 
+/* ============================================================
+   🟦 C2 + C3 — EN_ROUTE → GROUND + ARRIVAL EVENT (CANONICAL)
+   ============================================================ */
+     
+const prev = ACS_SkyTrack.lastActiveFlight[acId];
+
+// 🛫 Cache mientras vuela
+if (stateObj.state === "EN_ROUTE" && stateObj.flight) {
+  ACS_SkyTrack.lastActiveFlight[acId] = stateObj.flight;
+}
+
+// 🛬 Detectar llegada (TOLERANTE A TICK)
+if (
+  stateObj.state === "GROUND" &&
+  prev &&
+  Number.isFinite(prev.arrAbsMin) &&
+  now >= (prev.arrAbsMin - 1)   // ⬅️ tolerancia crítica
+) {
+
+  console.log(
+    `🛬 C2 DETECTED ARRIVAL | ${acId} | ${prev.origin} → ${prev.destination}`
+  );
+
+  const arrivalPayload = {
+    aircraftId: acId,
+    registration: ac.registration || null,
+
+    origin: prev.origin || null,
+    destination: prev.destination || null,
+
+    depAbsMin: prev.depAbsMin,
+    arrAbsMin: prev.arrAbsMin,
+
+    flightNumber: prev.flightNumber || null,
+    model: ac.model || ac.type || null,
+
+    detectedAtAbsMin: now,
+    detectedAtTs: Date.now()
+  };
+
+  window.dispatchEvent(
+    new CustomEvent("ACS_FLIGHT_ARRIVED", { detail: arrivalPayload })
+  );
+
+  console.log(
+    `📡 C3 EVENT EMITTED | ${acId} | ${arrivalPayload.origin} → ${arrivalPayload.destination}`
+  );
+
+  // 🔒 limpiar cache (ANTI DUPLICADO)
+  ACS_SkyTrack.lastActiveFlight[acId] = null;
+}
+     
     // ----------------------------
     // Resolve route context
     // ----------------------------
