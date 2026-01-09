@@ -555,6 +555,58 @@ function updateCompanyOverview() {
 }
 
 /* ============================================================
+   🟩 FASE 3.3 — A2: APPLY FLIGHT REVENUE TO FINANCE
+   ------------------------------------------------------------
+   • Escucha llegada de vuelos
+   • Calcula ingresos por pax
+   • Actualiza capital, revenue y profit
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
+  try {
+
+    const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    if (!f) return;
+
+    const flight = ev.detail;
+    if (!flight || !flight.aircraftId) return;
+
+    // 🔹 Valores básicos
+    const pax = Number(flight.pax || 0);
+    const ticket = Number(flight.ticketPrice || 120);
+    const revenue = pax * ticket;
+
+    if (revenue <= 0) return;
+
+    // 🔹 Inicializar estructura si falta
+    f.revenue  = Number(f.revenue || 0) + revenue;
+    f.capital  = Number(f.capital || 0) + revenue;
+    f.expenses = Number(f.expenses || 0);
+    f.profit   = f.revenue - f.expenses;
+
+    // 🔹 Income breakdown
+    f.income = f.income || {};
+    f.income.routes = Number(f.income.routes || 0) + revenue;
+
+    localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+    console.log(
+      `💰 FLIGHT REVENUE APPLIED | +$${revenue} | Pax ${pax}`
+    );
+
+    // 🔄 refrescar UI si estamos en finance
+    if (typeof updateCompanyOverview === "function") {
+      updateCompanyOverview();
+      loadHistory();
+      loadBreakdown();
+    }
+
+  } catch (err) {
+    console.error("❌ Revenue Apply Error:", err);
+  }
+});
+     
+/* ============================================================
    === CAPITAL UI COLOR FIX — NEGATIVE RED =====================
    === (Colorea capital en rojo si es negativo) ================
    ============================================================ */
