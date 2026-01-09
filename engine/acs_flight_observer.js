@@ -16,6 +16,22 @@
   // ============================================================
   const LAST_ACTIVE_LEG = {};
 
+     /* ============================================================
+     🟦 D1 — CANONICAL AIRCRAFT KEY (REGISTRATION-FIRST)
+     ------------------------------------------------------------
+     ✔ Ensures EN_ROUTE cache & GROUND lookup use SAME key
+     ✔ Fixes "GROUND but no console log" issue
+     ============================================================ */
+  function getAircraftKey(ac) {
+    return (
+      ac.registration ||
+      ac.aircraftId ||
+      ac.id ||
+      ac.callsign ||
+      null
+    );
+  }
+   
   /* ============================
      Ledger helpers
      ============================ */
@@ -59,7 +75,11 @@
 
     snapshot.aircraft.forEach(ac => {
 
-      const acId = ac.aircraftId || ac.registration;
+       /* ============================================================
+         🟧 D2 — USE CANONICAL KEY EVERYWHERE
+         ============================================================ */
+       
+      const acId = getAircraftKey(ac);
       if (!acId) return;
 
       // ========================================================
