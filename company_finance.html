@@ -529,21 +529,29 @@ body {
 <script>
 
 /* ============================================================
-   === KPI OVERVIEW ============================================
+   ✅ FIX — SAFE NUMBER FORMAT (never crashes)
    ============================================================ */
-     
+function ACS_num(v){ 
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+function ACS_money(v){
+  return "$" + ACS_num(v).toLocaleString();
+}
+
+/* ============================================================
+   === KPI OVERVIEW (SAFE) =====================================
+   ============================================================ */
 function updateCompanyOverview() {
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-  const capital  = Number(f.capital  ?? 0);
-  const revenue  = Number(f.revenue  ?? 0);
-  const expenses = Number(f.expenses ?? 0);
-  const profit   = Number(f.profit   ?? 0);
+  document.getElementById("cf-capital").textContent  = ACS_money(f.capital);
+  document.getElementById("cf-revenue").textContent  = ACS_money(f.revenue);
+  document.getElementById("cf-expenses").textContent = ACS_money(f.expenses);
+  document.getElementById("cf-profit").textContent   = ACS_money(f.profit);
 
-  document.getElementById("cf-capital").textContent  = "$" + capital.toLocaleString();
-  document.getElementById("cf-revenue").textContent  = "$" + revenue.toLocaleString();
-  document.getElementById("cf-expenses").textContent = "$" + expenses.toLocaleString();
-  document.getElementById("cf-profit").textContent   = "$" + profit.toLocaleString();
+  // color capital (green/ red)
+  ACS_updateCapitalColor();
 }
 
 /* ============================================================
@@ -579,25 +587,27 @@ window.addEventListener("storage", (e) => {
 });
 
 /* ============================================================
-   === MONTHLY HISTORY =========================================
+   === MONTHLY HISTORY (SAFE) ==================================
    ============================================================ */
 function loadHistory() {
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const tbody = document.getElementById("cf-history");
   tbody.innerHTML = "";
-  
-  if (!f.history) return;
 
-  f.history.forEach(h => {
+  const hist = Array.isArray(f.history) ? f.history : [];
+  if (!hist.length) return;
+
+  hist.forEach(h => {
     tbody.innerHTML += `
       <tr>
-        <td>${h.month}</td>
-        <td>$${h.revenue.toLocaleString()}</td>
-        <td>$${h.expenses.toLocaleString()}</td>
-        <td>$${h.profit.toLocaleString()}</td>
+        <td>${h.month || "—"}</td>
+        <td>${ACS_money(h.revenue)}</td>
+        <td>${ACS_money(h.expenses)}</td>
+        <td>${ACS_money(h.profit)}</td>
       </tr>`;
   });
 }
+
 
 /* ============================================================
    === TRANSACTION LOG WITH FILTERS ============================
@@ -770,6 +780,33 @@ function handleLogout(){
   window.location.href="login.html";
 }
      
+/* ============================================================
+   ✅ LIVE REFRESH (same-tab) — Finance/UI watcher
+   ============================================================ */
+(function ACS_liveFinanceUI(){
+  let lastFinanceStr = null;
+  let lastLogStr = null;
+
+  setInterval(() => {
+    const fStr = localStorage.getItem("ACS_Finance") || "";
+    const lStr = localStorage.getItem("ACS_Log") || "";
+
+    if (fStr !== lastFinanceStr || lStr !== lastLogStr) {
+      lastFinanceStr = fStr;
+      lastLogStr = lStr;
+
+      // re-render everything safely
+      updateCompanyOverview();
+      loadHistory();
+      loadBreakdown();
+      loadTransactionLog(
+        document.querySelector(".filter-btn.active")?.dataset?.filter || "all"
+      );
+      loadLeasing();
+    }
+  }, 700);
+})();
+
 </script>
 
 </body>
