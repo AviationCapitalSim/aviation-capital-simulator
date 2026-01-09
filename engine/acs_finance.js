@@ -1109,3 +1109,58 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
   }, 3000); // cada 3 segundos REAL → equivale al paso diario del motor ACS_TIME
 
 })();
+
+/* ============================================================
+   🟩 F3.2 — FLIGHT ARRIVAL → REVENUE ENGINE (NM)
+   ------------------------------------------------------------
+   • Escucha eventos de vuelo completado
+   • Calcula ingreso por distancia (NM)
+   • Registra ingreso en Finance + Log
+   • Anti-duplicación por flightId
+   ============================================================ */
+
+const ACS_REVENUE_PER_NM = 12; // USD por NM (base inicial)
+
+// Anti-duplicación de ingresos por vuelo
+const ACS_RevenueProcessedFlights = new Set();
+
+window.addEventListener("ACS_FLIGHT_ARRIVED", (e) => {
+  try {
+    const data = e.detail;
+    if (!data) return;
+
+    const {
+      flightId,
+      aircraftId,
+      origin,
+      destination,
+      distanceNM
+    } = data;
+
+    // Validaciones mínimas
+    if (!flightId || !distanceNM || distanceNM <= 0) return;
+
+    // Evitar duplicar ingresos
+    if (ACS_RevenueProcessedFlights.has(flightId)) return;
+    ACS_RevenueProcessedFlights.add(flightId);
+
+    // === Calcular ingreso ===
+    const revenue = Math.round(distanceNM * ACS_REVENUE_PER_NM);
+
+    // Registrar ingreso en Finance
+    if (typeof ACS_registerIncome === "function") {
+      ACS_registerIncome(
+        "routes",
+        revenue,
+        `Flight ${origin} → ${destination} (${aircraftId})`
+      );
+    }
+
+    console.log(
+      `💰 Flight revenue credited: $${revenue} | ${origin} → ${destination} | ${distanceNM} NM`
+    );
+
+  } catch (err) {
+    console.error("❌ Flight revenue engine error:", err);
+  }
+});
