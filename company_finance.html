@@ -807,6 +807,75 @@ function handleLogout(){
   }, 700);
 })();
 
+/* ============================================================
+   🟦 FASE 3.3 — A1
+   ACS FLIGHT ECONOMICS ENGINE (PASSENGER REVENUE)
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
+
+  const f = ev.detail;
+  if (!f || !f.aircraftId || !f.origin || !f.destination) return;
+
+  console.log(
+    `💰 A1 ECON | Flight arrived ${f.origin} → ${f.destination} | ${f.aircraftId}`
+  );
+
+  const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  const fleet   = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  if (!finance || typeof finance.capital !== "number") return;
+
+  const ac = fleet.find(a =>
+    a.id === f.aircraftId || a.registration === f.aircraftId
+  );
+  if (!ac) return;
+
+  const A = window.ACS_AIRPORT_INDEX?.[f.origin];
+  const B = window.ACS_AIRPORT_INDEX?.[f.destination];
+  if (!A || !B) return;
+
+  const distanceNM = Number(f.distanceNM || 0);
+  if (!distanceNM) return;
+
+  const year = window.ACS_TIME?.year || new Date().getFullYear();
+  const hour = new Date(f.detectedAtTs || Date.now()).getUTCHours();
+
+  const tierA = ACS_PAX.getTier(A);
+  const tierB = ACS_PAX.getTier(B);
+
+  const daily = ACS_PAX.getDailyDemand(A, B, distanceNM, year);
+  const hourly = ACS_PAX.getHourlyDemand(
+    daily,
+    hour,
+    ACS_PAX.isLongHaul(distanceNM, tierA, tierB),
+    Math.min(tierA, tierB)
+  );
+
+  const pax = Math.min(ac.seats || 0, hourly);
+
+  let ticket = 18;
+  if (distanceNM > 500)  ticket = 35;
+  if (distanceNM > 1500) ticket = 75;
+  if (distanceNM > 3000) ticket = 140;
+  if (year < 1960) ticket *= 0.6;
+
+  const revenue = Math.round(pax * ticket);
+  if (revenue <= 0) return;
+
+  finance.revenue = (finance.revenue || 0) + revenue;
+  finance.capital = (finance.capital || 0) + revenue;
+  finance.income  = finance.income || {};
+  finance.income.routes = (finance.income.routes || 0) + revenue;
+  finance.profit  = (finance.revenue || 0) - (finance.expenses || 0);
+
+  localStorage.setItem("ACS_Finance", JSON.stringify(finance));
+
+  console.log(
+    `✅ A1 ECON OK | Pax ${pax} | Revenue $${revenue}`
+  );
+});
+     
 </script>
 
 </body>
