@@ -271,12 +271,69 @@ function ACS_finance_chargeSlotHoldingFee(route) {
 /* ============================================================
    === HELPERS LOAD / SAVE ====================================
    ============================================================ */
+
 function loadFinance() {
+  ACS_normalizeFinance();
   return JSON.parse(localStorage.getItem("ACS_Finance"));
 }
 
 function saveFinance(data) {
   localStorage.setItem("ACS_Finance", JSON.stringify(data));
+  ACS_normalizeFinance();
+}
+
+/* ============================================================
+   🛡️ F2.1 — FINANCE NORMALIZER (ANTI-NULL / SAFE STATE)
+   ------------------------------------------------------------
+   • Garantiza estructura válida de ACS_Finance
+   • Nunca permite null / undefined
+   • Se puede llamar múltiples veces (idempotente)
+   ============================================================ */
+
+function ACS_normalizeFinance() {
+  let f;
+
+  try {
+    f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  } catch {
+    f = {};
+  }
+
+  // === Core numbers ===
+  f.capital  = Number(f.capital  || 0);
+  f.revenue  = Number(f.revenue  || 0);
+  f.expenses = Number(f.expenses || 0);
+  f.profit   = Number(f.profit   || 0);
+
+  // === Income buckets ===
+  f.income = f.income && typeof f.income === "object" ? f.income : {};
+  f.income.routes          = Number(f.income.routes          || 0);
+  f.income.cargo           = Number(f.income.cargo           || 0);
+  f.income.leasing_income  = Number(f.income.leasing_income  || 0);
+  f.income.credits         = Number(f.income.credits         || 0);
+
+  // === Cost buckets ===
+  f.cost = f.cost && typeof f.cost === "object" ? f.cost : {};
+  f.cost.salaries               = Number(f.cost.salaries               || 0);
+  f.cost.maintenance            = Number(f.cost.maintenance            || 0);
+  f.cost.leasing                = Number(f.cost.leasing                || 0);
+  f.cost.fuel                   = Number(f.cost.fuel                   || 0);
+  f.cost.ground_handling        = Number(f.cost.ground_handling        || 0);
+  f.cost.virtual_handling       = Number(f.cost.virtual_handling       || 0);
+  f.cost.slot_fees              = Number(f.cost.slot_fees              || 0);
+  f.cost.penalties              = Number(f.cost.penalties              || 0);
+  f.cost.loans                  = Number(f.cost.loans                  || 0);
+  f.cost.used_aircraft_purchase = Number(f.cost.used_aircraft_purchase || 0);
+  f.cost.new_aircraft_purchase  = Number(f.cost.new_aircraft_purchase  || 0);
+
+  // === History ===
+  f.history = Array.isArray(f.history) ? f.history : [];
+
+  // === Recompute profit (single source of truth) ===
+  f.profit = f.revenue - f.expenses;
+
+  localStorage.setItem("ACS_Finance", JSON.stringify(f));
+  return f;
 }
 
 /* ============================================================
