@@ -272,59 +272,6 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 }
 
 /* ============================================================
-   🟧 F3.4-A — ARRIVAL FINALIZATION (SAFE + ALWAYS VISIBLE)
-   ============================================================ */
-
-try {
-
-  // 🔑 Aircraft identity — SOURCE OF TRUTH
-  const aircraftId = exec?.aircraftId;
-
-  if (!aircraftId) {
-    console.warn("⚠️ Arrival without aircraftId — visual preserved, revenue skipped");
-  }
-
-  // 🔎 Obtener avión desde MyAircraft
-  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const acIndex = fleet.findIndex(a => a.id === aircraftId);
-
-  if (acIndex === -1) {
-    console.warn("⚠️ Aircraft not found in fleet:", aircraftId);
-  } else {
-
-    const ac = fleet[acIndex];
-
-    // 🛬 Estado EN TIERRA — SIEMPRE
-    ac.status = "Active";
-    ac.lastArrival = {
-      icao: destination,
-      time: new Date().toISOString()
-    };
-
-    ac.ground = true;
-    ac.airborne = false;
-    ac.currentAirport = destination;
-
-    fleet[acIndex] = ac;
-    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-  }
-
-  // 💰 REVENUE — SOLO SI WORLD ESTÁ LISTO
-  if (window.ACS_World && ACS_World.ready) {
-    try {
-      ACS_applyFlightRevenue(exec);
-    } catch (revErr) {
-      console.warn("⚠️ Revenue error (ignored):", revErr);
-    }
-  } else {
-    console.warn("🕒 ACS_World not ready — flight revenue delayed");
-  }
-
-} catch (err) {
-  console.error("❌ Arrival finalization failed — visual state preserved:", err);
-}
-
-/* ============================================================
    🟧 A1 — REVENUE DEFERRED QUEUE (WORLD SYNC)
    ------------------------------------------------------------
    • Guarda ingresos cuando ACS_World aún no está listo
