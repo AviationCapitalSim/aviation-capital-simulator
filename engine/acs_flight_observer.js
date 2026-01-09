@@ -79,7 +79,17 @@
       hasLeg: !!a.activeLeg
     }))
   );    
-     
+
+      /* ============================================================
+     🧪 DEBUG STEP 2 — GLOBAL SNAPSHOT PROBE
+     ============================================================ */
+    console.log("🧪 globals probe", {
+    window_snapshot: window.ACS_SKYTRACK_SNAPSHOT,
+    window_live: window.SKYTRACK_LIVE,
+    window_last: window.ACS_SkyTrack_lastSnapshot,
+    window_alt: window.__ACS_SKYTRACK__
+  });
+
      const snapshot = ev.detail;
     if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
 
