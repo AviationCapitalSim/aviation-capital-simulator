@@ -272,82 +272,155 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 }
 
 /* ============================================================
-   🟧 A18 — PROCESS FLIGHT REVENUE & COSTS (LEG-BY-LEG)
+   🟧 A18 — FLIGHT ARRIVAL OBSERVER (FINANCE & OPS)
+   ------------------------------------------------------------
+   ✔ Triggered by: ACS_FLIGHT_ARRIVED (SkyTrack C3)
+   ✔ Writes:
+       • ACS_FLIGHT_LEDGER_V1
+       • ACS_Finance_Log
+       • ACS_MyAircraft (hours & cycles)
+   ✔ SkyTrack remains READ-ONLY
+   ✔ ONE execution per LEG (anti-duplicate)
    ============================================================ */
 
-function ACS_processFlightRevenue(flight) {
+window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
 
-  if (!flight || !flight.aircraftId) return;
+  const f = ev.detail;
+  if (!f || !f.aircraftId || !f.origin || !f.destination) return;
 
-  const finance = JSON.parse(localStorage.getItem("ACS_Finance_Log") || "[]");
-  const fleet   = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-  const ac = fleet.find(a =>
-    a.id === flight.aircraftId ||
-    a.registration === flight.aircraftId
+  console.log(
+    `🧾 A18 RECEIVED | ${f.aircraftId} | ${f.origin} → ${f.destination}`
   );
-  if (!ac) return;
 
-  // ===============================
-  // Distance & block time
-  // ===============================
-  const distanceNM = Number(flight.distanceNM || 0);
-  if (distanceNM <= 0) return;
+  /* ============================================================
+     1️⃣ LEDGER — ANTI-DUPLICATE (SINGLE SOURCE)
+     ============================================================ */
+  const LEDGER_KEY = "ACS_FLIGHT_LEDGER_V1";
+  let ledger = {};
 
-  let blockTimeH = Number(flight.blockTimeH || 0);
-  if (!blockTimeH || blockTimeH <= 0) {
+  try {
+    ledger = JSON.parse(localStorage.getItem(LEDGER_KEY)) || {};
+  } catch {
+    ledger = {};
+  }
+
+  const legKey = [
+    f.aircraftId,
+    f.origin,
+    f.destination,
+    f.depAbsMin,
+    f.arrAbsMin
+  ].join("|");
+
+  if (ledger[legKey]) {
+    console.log("🟨 A18 DUPLICATE — ignored");
+    return;
+  }
+
+  ledger[legKey] = {
+    aircraftId: f.aircraftId,
+    registration: f.registration,
+    origin: f.origin,
+    destination: f.destination,
+    depAbsMin: f.depAbsMin,
+    arrAbsMin: f.arrAbsMin,
+    detectedAtAbsMin: f.detectedAtAbsMin,
+    detectedAtTs: f.detectedAtTs
+  };
+
+  localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
+
+  /* ============================================================
+     2️⃣ RESOLVE AIRCRAFT (FLEET)
+     ============================================================ */
+  const fleetKey = "ACS_MyAircraft";
+  const fleet = JSON.parse(localStorage.getItem(fleetKey) || "[]");
+
+  const idx = fleet.findIndex(a =>
+    a.id === f.aircraftId || a.registration === f.aircraftId
+  );
+  if (idx === -1) return;
+
+  const ac = fleet[idx];
+
+  /* ============================================================
+     3️⃣ DISTANCE & BLOCK TIME (FROM SCHEDULE TABLE)
+     ============================================================ */
+  const schedule = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+  const match = schedule.find(s =>
+    String(s.aircraftId) === String(f.aircraftId) &&
+    String(s.origin) === String(f.origin) &&
+    String(s.destination) === String(f.destination)
+  );
+
+  const distanceNM = Number(
+    match?.distanceNM ??
+    match?.distance_nm ??
+    match?.distNM ??
+    0
+  );
+
+  let blockTimeH = Number(match?.blockTimeH || 0);
+  if (!blockTimeH && match?.blockTimeMin) {
+    blockTimeH = match.blockTimeMin / 60;
+  }
+
+  if (!blockTimeH && distanceNM > 0) {
     const speed = Number(ac.speed_kts || 220);
     blockTimeH = distanceNM / speed;
   }
 
-  // ===============================
-  // Costs
-  // ===============================
+  if (distanceNM <= 0 || blockTimeH <= 0) return;
+
+  /* ============================================================
+     4️⃣ COSTS
+     ============================================================ */
   const fuelBurnKgH = Number(ac.fuel_burn_kgph || 900);
   const fuelCost   = fuelBurnKgH * blockTimeH * 0.85;
 
   const crewCost   = blockTimeH * 120;
   const landingFee = 350;
 
-  const totalCost  = Math.round(fuelCost + crewCost + landingFee);
+  const totalCost  = Math.round(
+    fuelCost + crewCost + landingFee
+  );
 
-  // ===============================
-  // Pax & revenue
-  // ===============================
+  /* ============================================================
+     5️⃣ PAX & REVENUE
+     ============================================================ */
   let pax = 0;
-  let revenue = 0;
 
-  if (typeof ACS_PAX === "object" &&
-      typeof ACS_PAX.getDailyDemand === "function") {
-
-    const year = (typeof ACS_TIME !== "undefined" && ACS_TIME.year)
-      ? ACS_TIME.year
-      : new Date().getFullYear();
-
-    const demand = ACS_PAX.getDailyDemand(
-      flight.originData,
-      flight.destinationData,
-      distanceNM,
-      year
+  if (window.ACS_PAX && typeof ACS_PAX.getDailyDemand === "function") {
+    const year = window.ACS_TIME?.year || new Date().getFullYear();
+    pax = Math.min(
+      Number(ac.seats || 0),
+      ACS_PAX.getDailyDemand(
+        f.origin,
+        f.destination,
+        distanceNM,
+        year
+      )
     );
-
-    pax = Math.min(Number(ac.seats || 0), demand);
   }
 
   let ticketPrice = 120;
   if (distanceNM > 3000) ticketPrice = 220;
   else if (distanceNM > 1200) ticketPrice = 140;
 
-  revenue = pax * ticketPrice;
-  const profit = Math.round(revenue - totalCost);
+  const revenue = pax * ticketPrice;
+  const profit  = Math.round(revenue - totalCost);
 
-  // ===============================
-  // Finance log
-  // ===============================
+  /* ============================================================
+     6️⃣ FINANCE LOG
+     ============================================================ */
+  const financeKey = "ACS_Finance_Log";
+  const finance = JSON.parse(localStorage.getItem(financeKey) || "[]");
+
   finance.push({
     type: "FLIGHT_RESULT",
     aircraftId: ac.registration,
-    route: `${flight.origin}-${flight.destination}`,
+    route: `${f.origin}-${f.destination}`,
     pax,
     revenue,
     fuelCost: Math.round(fuelCost),
@@ -355,17 +428,23 @@ function ACS_processFlightRevenue(flight) {
     landingFee,
     totalCost,
     profit,
-    date: flight.arrival || Date.now()
+    date: f.detectedAtTs
   });
 
-  localStorage.setItem("ACS_Finance_Log", JSON.stringify(finance));
+  localStorage.setItem(financeKey, JSON.stringify(finance));
 
-  // ===============================
-  // Aircraft update
-  // ===============================
-  ACS_updateAircraftHoursAndCycles(flight, blockTimeH);
+  /* ============================================================
+     7️⃣ AIRCRAFT HOURS & CYCLES
+     ============================================================ */
+  ac.hours = Number(ac.hours || 0) + blockTimeH;
+  ac.cycles = Number(ac.cycles || 0) + 1;
+  ac.lastFlightAt = f.detectedAtTs;
+
+  fleet[idx] = ac;
+  localStorage.setItem(fleetKey, JSON.stringify(fleet));
 
   console.log(
-    `✈️ A18 OK | Pax ${pax} | Revenue $${revenue} | Cost $${totalCost} | Profit $${profit}`
+    `💰 A18 OK | ${ac.registration} | Pax ${pax} | Revenue $${revenue} | Profit $${profit}`
   );
-}
+
+});
