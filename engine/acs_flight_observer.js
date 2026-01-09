@@ -11,6 +11,44 @@
 
   const LEDGER_KEY = "ACS_FLIGHT_LEDGER_V1";
 
+  /* ============================================================
+     🟦 A1 — FLIGHT END DETECTOR (STATE TRANSITION ONLY)
+     ------------------------------------------------------------
+     ✔ Detects EN_ROUTE → GROUND transition
+     ✔ Independent from activeLeg
+     ✔ No finance, no ledger, no side effects
+     ✔ Diagnostic & control layer only
+     ============================================================ */
+
+  const A1_LAST_STATE = {};
+
+  function A1_detectFlightEnd(snapshot) {
+    if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
+
+    snapshot.aircraft.forEach(ac => {
+      const acId =
+        ac.registration ||
+        ac.aircraftId ||
+        ac.id ||
+        ac.callsign ||
+        null;
+
+      if (!acId) return;
+
+      const prevState = A1_LAST_STATE[acId];
+      const currState = ac.state;
+
+      // Detect EN_ROUTE → GROUND
+      if (prevState === "EN_ROUTE" && currState === "GROUND") {
+        console.log(
+          `🟦 A1 — Flight finished (state transition): ${acId}`
+        );
+      }
+
+      A1_LAST_STATE[acId] = currState;
+    });
+  }
+   
   // ============================================================
   // 🟦 C1 — CACHE LAST ACTIVE LEG (ANTI-RACE)
   // ============================================================
@@ -67,32 +105,10 @@
 
   window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (ev) => {
      
- /* ============================================================
-     🧪 DEBUG STEP 1 — SNAPSHOT TRACE (TEMP)
-     ============================================================ */
-     
-  console.log(
-    "🧭 SNAPSHOT EVENT",
-    ev.detail?.aircraft?.map(a => ({
-      reg: a.registration,
-      state: a.state,
-      hasLeg: !!a.activeLeg
-    }))
-  );    
-
-      /* ============================================================
-     🧪 DEBUG STEP 2 — GLOBAL SNAPSHOT PROBE
-     ============================================================ */
-    console.log("🧪 globals probe", {
-    window_snapshot: window.ACS_SKYTRACK_SNAPSHOT,
-    window_live: window.SKYTRACK_LIVE,
-    window_last: window.ACS_SkyTrack_lastSnapshot,
-    window_alt: window.__ACS_SKYTRACK__
-  });
-
      const snapshot = ev.detail;
-    if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
-
+     A1_detectFlightEnd(snapshot);
+     if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
+    
     const ledger = loadLedger();
     let dirty = false;
 
