@@ -36,6 +36,33 @@ function getSimTime() {
 }
 
 /* ============================================================
+   🟩 MYA-1 — BASE RESOLVER (Robusto)
+   ------------------------------------------------------------
+   Objetivo:
+   - Evitar “bases fantasma” (ej. LIRN) por claves viejas
+   - Tomar primero base guardada en la compra (pending entry)
+   - Fallback a varias posibles claves de base
+   ============================================================ */
+
+function getCurrentBaseICAO() {
+  // 1) Clave estándar esperada
+  const b1 = JSON.parse(localStorage.getItem("ACS_Base") || "null");
+  if (b1 && typeof b1 === "object" && b1.icao) return String(b1.icao).trim();
+
+  // 2) Fallbacks comunes (por si otro módulo guarda distinto)
+  const b2 = JSON.parse(localStorage.getItem("ACS_SelectedBase") || "null");
+  if (b2 && typeof b2 === "object" && b2.icao) return String(b2.icao).trim();
+
+  const b3 = JSON.parse(localStorage.getItem("ACS_BaseAirport") || "null");
+  if (b3 && typeof b3 === "object" && b3.icao) return String(b3.icao).trim();
+
+  const b4 = localStorage.getItem("ACS_BaseICAO");
+  if (b4 && String(b4).trim()) return String(b4).trim();
+
+  return "—";
+}
+
+/* ============================================================
    🟦 A8 — AIRCRAFT ENRICHMENT ENGINE (DB → FLEET)
    ------------------------------------------------------------
    • Copia specs técnicos desde ACS_AIRCRAFT_DB
@@ -145,7 +172,8 @@ let newAircraft = {
   condition: 100,
   nextC: "—",
   nextD: "—",
-  base: JSON.parse(localStorage.getItem("ACS_Base"))?.icao || "—",
+ // Base: prioridad = base guardada en la COMPRA (entry) > base actual (resolver)
+  base: (entry.baseIcao || entry.base || getCurrentBaseICAO()),
   deliveredDate: d.toISOString(),
   deliveryDate: null,
   age: 0,
