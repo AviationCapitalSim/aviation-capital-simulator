@@ -66,8 +66,21 @@
      ============================ */
 
   window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (ev) => {
-
-    const snapshot = ev.detail;
+     
+ /* ============================================================
+     🧪 DEBUG STEP 1 — SNAPSHOT TRACE (TEMP)
+     ============================================================ */
+     
+  console.log(
+    "🧭 SNAPSHOT EVENT",
+    ev.detail?.aircraft?.map(a => ({
+      reg: a.registration,
+      state: a.state,
+      hasLeg: !!a.activeLeg
+    }))
+  );    
+     
+     const snapshot = ev.detail;
     if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
 
     const ledger = loadLedger();
