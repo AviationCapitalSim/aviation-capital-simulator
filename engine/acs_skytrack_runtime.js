@@ -235,17 +235,45 @@ if (
   stateObj.state === "GROUND" &&
   prev &&
   Number.isFinite(prev.arrAbsMin) &&
-  now >= (prev.arrAbsMin - 1)   // ⬅️ tolerancia crítica
+  now >= (prev.arrAbsMin - 1)
 ) {
 
   console.log(
     `🛬 C2 DETECTED ARRIVAL | ${acId} | ${prev.origin} → ${prev.destination}`
   );
 
+  /* ============================================================
+     🔎 FASE 4.1.B — RESOLVE DISTANCE FROM SCHEDULE TABLE
+     ============================================================ */
+
+  let resolvedDistanceNM = 0;
+
+  try {
+    const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+    const match = scheduleItems.find(s =>
+      String(s.aircraftId) === String(acId) &&
+      String(s.origin) === String(prev.origin) &&
+      String(s.destination) === String(prev.destination)
+    );
+
+    if (match) {
+      resolvedDistanceNM = Number(
+        match.distanceNM ??
+        match.distance_nm ??
+        match.distNM ??
+        match.dist_nm ??
+        0
+      );
+    }
+
+  } catch (e) {
+    console.warn("⚠️ Distance resolve failed", e);
+  }
+
   const arrivalPayload = {
     flightId: `${acId}|${prev.origin}|${prev.destination}|${prev.depAbsMin}`,
     aircraftId: acId,
-    registration: ac.registration || null,
 
     origin: prev.origin || null,
     destination: prev.destination || null,
@@ -253,12 +281,24 @@ if (
     depAbsMin: prev.depAbsMin,
     arrAbsMin: prev.arrAbsMin,
 
-    flightNumber: prev.flightNumber || null,
-    model: ac.model || ac.type || null,
+    distanceNM: resolvedDistanceNM,
 
     detectedAtAbsMin: now,
     detectedAtTs: Date.now()
   };
+
+  // 📡 Emitir evento FINAL
+  window.dispatchEvent(
+    new CustomEvent("ACS_FLIGHT_ARRIVED", { detail: arrivalPayload })
+  );
+
+  console.log(
+    `📡 C3 EVENT EMITTED | ${acId} | ${arrivalPayload.origin} → ${arrivalPayload.destination} | ${resolvedDistanceNM} NM`
+  );
+
+  // 🔒 limpiar cache (ANTI DUPLICADO)
+  ACS_SkyTrack.lastActiveFlight[acId] = null;
+}
 
   /* ============================================================
      🟦 FASE 4.1 — PERSIST ARRIVAL (SkyTrack → localStorage)
