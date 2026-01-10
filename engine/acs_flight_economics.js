@@ -1,10 +1,62 @@
 /* ============================================================
+   🟦 ACS FLIGHT ECONOMICS ENGINE — CORE v1.0
+   ============================================================ */
+
+console.log("🧠 ACS_FLIGHT_ECONOMICS LOADED");
+
+/* ============================
+   🔐 FEATURE FLAGS
+   ============================ */
+const ENABLE_FUEL_COST = false;
+const ENABLE_SLOT_FEES = false;
+
+/* ============================================================
+   🟦 A2 — ECON AIRPORT ADAPTER (MISSING FIX)
+   ============================================================ */
+function ACS_buildEconAirport(icao, distanceNM) {
+
+  if (!icao) return null;
+
+  let tier = 3;
+  if (distanceNM > 2500) tier = 1;
+  else if (distanceNM > 1200) tier = 2;
+  else if (distanceNM < 300) tier = 4;
+
+  return {
+    icao,
+    tier,
+    population: 1_000_000 * (5 - tier),
+    marketSize: (5 - tier) * 10,
+    region: "GEN",
+    demandMultiplier: 1.0
+  };
+}
+
+/* ============================
+   🔒 ANTI-DUPLICATION
+   ============================ */
+window.ACS_ECON_ProcessedFlights =
+  window.ACS_ECON_ProcessedFlights || new Set();
+
+/* ============================
+   💰 BASE TICKET MODEL
+   ============================ */
+function ACS_getBaseTicket(distanceNM, year) {
+  let ticket = 18;
+
+  if (distanceNM > 500) ticket = 35;
+  if (distanceNM > 1500) ticket = 75;
+  if (distanceNM > 3000) ticket = 140;
+
+  if (year && year < 1960) ticket *= 0.6;
+
+  return Math.round(ticket);
+}
+
+/* ============================================================
    🟦 CORE LISTENER — FLIGHT ARRIVED
    DEDUP CANÓNICO: flightId
    ============================================================ */
-
-window.ACS_ECON_ProcessedFlights =
-  window.ACS_ECON_ProcessedFlights || new Set();
 
 window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
 
@@ -12,33 +64,28 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
 
     const f = ev?.detail;
     if (!f) return;
-
     if (!f.flightId || !f.aircraftId) return;
 
-    // 🔒 DEDUP ESTABLE (1 ingreso por vuelo real)
     if (window.ACS_ECON_ProcessedFlights.has(f.flightId)) return;
     window.ACS_ECON_ProcessedFlights.add(f.flightId);
 
     const distanceNM = Number(f.distanceNM || 0);
     if (distanceNM <= 0) return;
 
-    /* ============================================================
-       🟧 A3 — AIRCRAFT ID NORMALIZER (ECON SAFE)
-       ============================================================ */
-
+    /* ============================
+       ✈️ AIRCRAFT RESOLVE
+       ============================ */
     const fleet = JSON.parse(
       localStorage.getItem("ACS_MyAircraft") || "[]"
     );
 
-    const econAircraftIdRaw = String(f.aircraftId || "").trim();
+    const econAircraftIdRaw = String(f.aircraftId).trim();
     const econAircraftIdNorm = econAircraftIdRaw.replace("-", "_");
 
     const ac = fleet.find(a => {
       if (!a) return false;
-
       const fid = String(a.id || "").trim();
       const fidNorm = fid.replace("-", "_");
-
       return (
         fid === econAircraftIdRaw ||
         fidNorm === econAircraftIdNorm ||
@@ -46,28 +93,18 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
       );
     });
 
-    if (!ac) {
-      console.warn(
-        "❌ ECON: Aircraft NOT FOUND in fleet",
-        econAircraftIdRaw,
-        "→ normalized:",
-        econAircraftIdNorm
-      );
-      return;
-    }
+    if (!ac) return;
 
     /* ============================
        🏙 AIRPORTS
        ============================ */
-
     const A = ACS_buildEconAirport(f.origin, distanceNM);
     const B = ACS_buildEconAirport(f.destination, distanceNM);
     if (!A || !B) return;
 
     /* ============================
-       🧮 PAX CALCULATION
+       🧮 PAX
        ============================ */
-
     if (!window.ACS_PAX) return;
 
     const year =
@@ -80,9 +117,6 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
         ? new Date(f.detectedAtTs).getUTCHours()
         : 12;
 
-    const tierA = ACS_PAX.getTier(A);
-    const tierB = ACS_PAX.getTier(B);
-
     const dailyDemand = ACS_PAX.getDailyDemand(
       A, B, distanceNM, year
     );
@@ -90,8 +124,8 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     const hourlyDemand = ACS_PAX.getHourlyDemand(
       dailyDemand,
       hour,
-      ACS_PAX.isLongHaul(distanceNM, tierA, tierB),
-      Math.min(tierA, tierB)
+      ACS_PAX.isLongHaul(distanceNM, A.tier, B.tier),
+      Math.min(A.tier, B.tier)
     );
 
     const pax = Math.min(ac.seats || 0, hourlyDemand);
@@ -100,7 +134,6 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     /* ============================
        💵 REVENUE
        ============================ */
-
     const ticket = ACS_getBaseTicket(distanceNM, year);
     const revenue = Math.round(pax * ticket);
     if (revenue <= 0) return;
