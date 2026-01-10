@@ -503,6 +503,9 @@ function ACS_SkyTrack_indexScheduleItems() {
           origin: it.origin || null,
           destination: it.destination || null,
 
+           // 🔑 DISTANCIA HEREDADA (MISMA DE LA RUTA)
+          distanceNM: Number(it.distanceNM || 0), 
+           
           flightNumber: outFlightNumber,
           modelKey: it.modelKey || it.acType || it.aircraft || null,
 
