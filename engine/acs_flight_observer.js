@@ -225,6 +225,39 @@
         // Observer must continue
       }
 
+         /* ========================================================
+         🟦 F3.1 — EMIT FLIGHT ARRIVAL EVENT (FINANCE BRIDGE)
+         --------------------------------------------------------
+         ✔ Connects Flight Observer → Finance Engine
+         ✔ Emits ONCE per completed LEG
+         ✔ Anti-duplicate guaranteed by ledger key
+         ✔ Does NOT mutate SkyTrack or MyAircraft
+         ======================================================== */
+
+      try {
+        const flightId = key; // ledger key is UNIQUE per LEG
+
+        window.dispatchEvent(new CustomEvent(
+          "ACS_FLIGHT_ARRIVED",
+          {
+            detail: {
+              flightId: flightId,
+              aircraftId: acId,
+              origin: leg.origin,
+              destination: leg.destination,
+              distanceNM: ledger[key].distanceNM || 0
+            }
+          }
+        ));
+
+        console.log(
+          `🔌 Finance event emitted → ${leg.origin} → ${leg.destination} | ${ledger[key].distanceNM || 0} NM`
+        );
+
+      } catch (e) {
+        console.error("❌ Failed to emit ACS_FLIGHT_ARRIVED:", e);
+      }
+       
       // ========================================================
       // 🟧 Finance & aircraft updates
       // ========================================================
