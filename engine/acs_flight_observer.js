@@ -225,83 +225,6 @@
         // Observer must continue
       }
 
-         /* ========================================================
-         🟦 F3.1 — EMIT FLIGHT ARRIVAL EVENT (FINANCE BRIDGE)
-         --------------------------------------------------------
-         ✔ Connects Flight Observer → Finance Engine
-         ✔ Emits ONCE per completed LEG
-         ✔ Anti-duplicate guaranteed by ledger key
-         ✔ Does NOT mutate SkyTrack or MyAircraft
-         ======================================================== */
-
-      try {
-        const flightId = key; // ledger key is UNIQUE per LEG
-
-        window.dispatchEvent(new CustomEvent(
-          "ACS_FLIGHT_ARRIVED",
-          {
-            detail: {
-              flightId: flightId,
-              aircraftId: acId,
-              origin: leg.origin,
-              destination: leg.destination,
-              distanceNM: ledger[key].distanceNM || 0
-            }
-          }
-        ));
-
-        console.log(
-          `🔌 Finance event emitted → ${leg.origin} → ${leg.destination} | ${ledger[key].distanceNM || 0} NM`
-        );
-
-      } catch (e) {
-        console.error("❌ Failed to emit ACS_FLIGHT_ARRIVED:", e);
-      }
-
-         /* ========================================================
-         🟦 F3.FINAL — AUTO ROUTE REVENUE (DIRECT & PERSISTENT)
-         --------------------------------------------------------
-         ✔ Writes revenue directly to ACS_Finance
-         ✔ Applied ONCE per completed LEG
-         ✔ Ledger prevents duplication
-         ✔ Independent from tabs / events
-         ✔ Closes Phase 3 definitively
-         ======================================================== */
-
-      try {
-        const distanceNM = Number(ledger[key].distanceNM || 0);
-
-        if (distanceNM > 0 && typeof ACS_registerIncome === "function") {
-
-          const REVENUE_PER_NM = 12; // Base revenue (Phase 3 constant)
-          const revenue = Math.round(distanceNM * REVENUE_PER_NM);
-
-          ACS_registerIncome(
-            "routes",
-            revenue,
-            `Flight ${leg.origin} → ${leg.destination} (${acId})`
-          );
-
-          console.log(
-            `💰 Route revenue applied: $${revenue} | ${leg.origin} → ${leg.destination} | ${distanceNM} NM`
-          );
-        }
-
-      } catch (e) {
-        console.error("❌ AUTO ROUTE REVENUE error:", e);
-      }
-       
-      // ========================================================
-      // 🟧 Finance & aircraft updates
-      // ========================================================
-      ACS_processFlightRevenue(ledger[key]);
-    });
-
-    if (dirty) saveLedger(ledger);
-  });
-
-})();
-
 /* ============================================================
    🟦 AIRCRAFT HOURS & CYCLES (SCOPED)
    ============================================================ */
@@ -335,29 +258,6 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 
   fleet[idx] = aircraft;
   localStorage.setItem(fleetKey, JSON.stringify(fleet));
-}
-
-/* ============================================================
-   🟧 A1 — REVENUE DEFERRED QUEUE (WORLD SYNC)
-   ------------------------------------------------------------
-   • Guarda ingresos cuando ACS_World aún no está listo
-   • Se procesan automáticamente al quedar READY
-   • Evita pérdida de revenue histórico
-   ============================================================ */
-
-// Cola global de ingresos pendientes
-window.ACS_DeferredRevenueQueue = window.ACS_DeferredRevenueQueue || [];
-
-// Encolar ingreso diferido
-function ACS_enqueueDeferredRevenue(payload) {
-  window.ACS_DeferredRevenueQueue.push(payload);
-  console.warn(
-    "⏳ Revenue deferred — queued:",
-    payload.flightId,
-    payload.origin,
-    "→",
-    payload.destination
-  );
 }
 
 // Procesar cola cuando el World Engine esté listo
