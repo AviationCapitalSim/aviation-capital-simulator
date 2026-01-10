@@ -249,7 +249,9 @@ if (
   let resolvedDistanceNM = 0;
 
   try {
-    const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    const scheduleItems = JSON.parse(
+      localStorage.getItem("scheduleItems") || "[]"
+    );
 
     const match = scheduleItems.find(s =>
       String(s.aircraftId) === String(acId) &&
@@ -287,19 +289,6 @@ if (
     detectedAtTs: Date.now()
   };
 
-  // 📡 Emitir evento FINAL
-  window.dispatchEvent(
-    new CustomEvent("ACS_FLIGHT_ARRIVED", { detail: arrivalPayload })
-  );
-
-  console.log(
-    `📡 C3 EVENT EMITTED | ${acId} | ${arrivalPayload.origin} → ${arrivalPayload.destination} | ${resolvedDistanceNM} NM`
-  );
-
-  // 🔒 limpiar cache (ANTI DUPLICADO)
-  ACS_SkyTrack.lastActiveFlight[acId] = null;
-}
-
   /* ============================================================
      🟦 FASE 4.1 — PERSIST ARRIVAL (SkyTrack → localStorage)
      ------------------------------------------------------------
@@ -315,7 +304,7 @@ if (
       aircraftId: arrivalPayload.aircraftId,
       origin: arrivalPayload.origin,
       destination: arrivalPayload.destination,
-      distanceNM: prev.distanceNM || 0
+      distanceNM: arrivalPayload.distanceNM
     });
   }
 
@@ -328,54 +317,54 @@ if (
   );
 
   console.log(
-    `📡 C3 EVENT EMITTED | ${acId} | ${arrivalPayload.origin} → ${arrivalPayload.destination}`
+    `📡 C3 EVENT EMITTED | ${acId} | ${arrivalPayload.origin} → ${arrivalPayload.destination} | ${resolvedDistanceNM} NM`
   );
 
   // 🔒 limpiar cache (ANTI DUPLICADO)
   ACS_SkyTrack.lastActiveFlight[acId] = null;
 }
-     
-    // ----------------------------
-    // Resolve route context
-    // ----------------------------
-    let originICAO = null;
-    let destinationICAO = null;
-    let flightNumber = null;
 
-    if (stateObj.flight) {
-      originICAO = stateObj.flight.origin || null;
-      destinationICAO = stateObj.flight.destination || null;
-      flightNumber = stateObj.flight.flightNumber || null;
-    } else {
-      // ground context: next upcoming or last completed
-      const future = items
-        .filter(it => it.type === "flight" && Number.isFinite(it.depAbsMin) && it.depAbsMin > now)
-        .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
+/* ----------------------------
+   Resolve route context
+   ---------------------------- */
 
-      const past = items
-        .filter(it => it.type === "flight" && Number.isFinite(it.arrAbsMin) && it.arrAbsMin < now)
-        .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
+let originICAO = null;
+let destinationICAO = null;
+let flightNumber = null;
 
-      const ctx = future || past;
-      if (ctx) {
-        originICAO = ctx.origin || null;
-        destinationICAO = ctx.destination || null;
-        flightNumber = ctx.flightNumber || null;
-      }
-    }
+if (stateObj.flight) {
+  originICAO = stateObj.flight.origin || null;
+  destinationICAO = stateObj.flight.destination || null;
+  flightNumber = stateObj.flight.flightNumber || null;
+} else {
+  const future = items
+    .filter(it => it.type === "flight" && Number.isFinite(it.depAbsMin) && it.depAbsMin > now)
+    .sort((a, b) => a.depAbsMin - b.depAbsMin)[0];
 
-    snapshot.push({
-      aircraftId: acId,
-      registration: ac.registration || ac.reg || "—",
-      model: ac.model || ac.type || "—",
+  const past = items
+    .filter(it => it.type === "flight" && Number.isFinite(it.arrAbsMin) && it.arrAbsMin < now)
+    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
 
-      state: stateObj.state,              // GROUND | EN_ROUTE | MAINTENANCE
-      position: stateObj.position || null,
+  const ctx = future || past;
+  if (ctx) {
+    originICAO = ctx.origin || null;
+    destinationICAO = ctx.destination || null;
+    flightNumber = ctx.flightNumber || null;
+  }
+}
 
-      originICAO,
-      destinationICAO,
-      flightNumber
-    });
+snapshot.push({
+  aircraftId: acId,
+  registration: ac.registration || ac.reg || "—",
+  model: ac.model || ac.type || "—",
+
+  state: stateObj.state,              // GROUND | EN_ROUTE | MAINTENANCE
+  position: stateObj.position || null,
+
+  originICAO,
+  destinationICAO,
+  flightNumber
+   });
 
   });
 
