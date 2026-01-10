@@ -13,11 +13,6 @@
 
   /* ============================================================
      🟦 A1 — FLIGHT END DETECTOR (STATE TRANSITION ONLY)
-     ------------------------------------------------------------
-     ✔ Detects EN_ROUTE → GROUND transition
-     ✔ Independent from activeLeg
-     ✔ No finance, no ledger, no side effects
-     ✔ Diagnostic & control layer only
      ============================================================ */
 
   const A1_LAST_STATE = {};
@@ -38,28 +33,24 @@
       const prevState = A1_LAST_STATE[acId];
       const currState = ac.state;
 
-      // Detect EN_ROUTE → GROUND
       if (prevState === "EN_ROUTE" && currState === "GROUND") {
-        console.log(
-          `🟦 A1 — Flight finished (state transition): ${acId}`
-        );
+        console.log(`🟦 A1 — Flight finished (state transition): ${acId}`);
       }
 
       A1_LAST_STATE[acId] = currState;
     });
   }
-   
-  // ============================================================
-  // 🟦 C1 — CACHE LAST ACTIVE LEG (ANTI-RACE)
-  // ============================================================
+
+  /* ============================================================
+     🟦 C1 — CACHE LAST ACTIVE LEG (ANTI-RACE)
+     ============================================================ */
+
   const LAST_ACTIVE_LEG = {};
 
-     /* ============================================================
-     🟦 D1 — CANONICAL AIRCRAFT KEY (REGISTRATION-FIRST)
-     ------------------------------------------------------------
-     ✔ Ensures EN_ROUTE cache & GROUND lookup use SAME key
-     ✔ Fixes "GROUND but no console log" issue
+  /* ============================================================
+     🟦 D1 — CANONICAL AIRCRAFT KEY
      ============================================================ */
+
   function getAircraftKey(ac) {
     return (
       ac.registration ||
@@ -69,7 +60,7 @@
       null
     );
   }
-   
+
   /* ============================
      Ledger helpers
      ============================ */
@@ -86,10 +77,6 @@
     localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
   }
 
-  /* ============================
-     Build UNIQUE LEG key
-     ============================ */
-
   function buildFlightKey(ac, leg) {
     return [
       ac.aircraftId || ac.registration || "UNK",
@@ -99,39 +86,30 @@
     ].join("|");
   }
 
-  /* ============================
-     OBSERVER
-     ============================ */
+  /* ============================================================
+     🟦 OBSERVER CORE
+     ============================================================ */
 
   window.addEventListener("ACS_SKYTRACK_SNAPSHOT", (ev) => {
-     
-     const snapshot = ev.detail;
-     A1_detectFlightEnd(snapshot);
-     if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
-    
+
+    const snapshot = ev.detail;
+    A1_detectFlightEnd(snapshot);
+
+    if (!snapshot || !Array.isArray(snapshot.aircraft)) return;
+
     const ledger = loadLedger();
     let dirty = false;
 
     snapshot.aircraft.forEach(ac => {
 
-       /* ============================================================
-         🟧 D2 — USE CANONICAL KEY EVERYWHERE
-         ============================================================ */
-       
       const acId = getAircraftKey(ac);
       if (!acId) return;
 
-      // ========================================================
-      // 🟦 C2 — CAPTURE ACTIVE LEG WHILE EN_ROUTE
-      // ========================================================
       if (ac.state === "EN_ROUTE" && ac.activeLeg) {
         LAST_ACTIVE_LEG[acId] = ac.activeLeg;
         return;
       }
 
-      // ========================================================
-      // 🟦 C3 — PROCESS LEG ON GROUND (ROBUST)
-      // ========================================================
       if (ac.state !== "GROUND") return;
 
       const leg = ac.activeLeg || LAST_ACTIVE_LEG[acId];
@@ -139,11 +117,8 @@
       if (leg.origin === leg.destination) return;
 
       const key = buildFlightKey(ac, leg);
-      if (ledger[key]) return; // anti-duplicate
+      if (ledger[key]) return;
 
-      // ========================================================
-      // ✅ LEG COMPLETED
-      // ========================================================
       ledger[key] = {
         aircraftId: acId,
         origin: leg.origin,
@@ -154,13 +129,8 @@
       };
       dirty = true;
 
-      console.log(
-        `✈️ ACS LEG completed → ${acId} ${leg.origin} → ${leg.destination}`
-      );
+      console.log(`✈️ ACS LEG completed → ${acId} ${leg.origin} → ${leg.destination}`);
 
-      // ========================================================
-      // 🟦 Inject Schedule Table metrics (NO recalculation)
-      // ========================================================
       try {
         const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
         const dep = Number(ledger[key].departure || 0);
@@ -184,7 +154,6 @@
         });
 
         if (match) {
-          // Distance NM
           const dnm = Number(
             match.distanceNM ??
             match.distance_nm ??
@@ -194,7 +163,6 @@
           );
           ledger[key].distanceNM = Number.isFinite(dnm) ? dnm : 0;
 
-          // Block time hours
           let btH = Number(
             match.blockTimeH ??
             match.blockTimeHours ??
@@ -222,11 +190,19 @@
         }
 
       } catch (e) {
-        // Observer must continue
+        // observer must never crash
       }
 
+    });
+
+    if (dirty) saveLedger(ledger);
+
+  });
+
+})(); // ✅ IIFE CLOSED CORRECTLY
+
 /* ============================================================
-   🟦 AIRCRAFT HOURS & CYCLES (SCOPED)
+   🟦 AIRCRAFT HOURS & CYCLES
    ============================================================ */
 
 function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
@@ -245,7 +221,7 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 
   const aircraft = fleet[idx];
 
-  aircraft.hours = Number(aircraft.hours || 0) + Number(blockTimeH);
+  aircraft.hours  = Number(aircraft.hours || 0) + Number(blockTimeH);
   aircraft.cycles = Number(aircraft.cycles || 0) + 1;
   aircraft.lastFlightAt = flight.arrival || Date.now();
 
@@ -260,7 +236,12 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
   localStorage.setItem(fleetKey, JSON.stringify(fleet));
 }
 
-// Procesar cola cuando el World Engine esté listo
+/* ============================================================
+   🟦 DEFERRED REVENUE QUEUE (WORLD SYNC)
+   ============================================================ */
+
+window.ACS_DeferredRevenueQueue = window.ACS_DeferredRevenueQueue || [];
+
 function ACS_processDeferredRevenueQueue() {
 
   if (!window.ACS_World || !window.ACS_World.ready) return;
@@ -274,14 +255,12 @@ function ACS_processDeferredRevenueQueue() {
 
   while (window.ACS_DeferredRevenueQueue.length) {
     const payload = window.ACS_DeferredRevenueQueue.shift();
-
     if (typeof ACS_applyFlightRevenue === "function") {
       ACS_applyFlightRevenue(payload);
     }
   }
 }
 
-// Listener pasivo — se ejecuta cada minuto de simulación
 if (typeof registerTimeListener === "function") {
   registerTimeListener(() => {
     ACS_processDeferredRevenueQueue();
