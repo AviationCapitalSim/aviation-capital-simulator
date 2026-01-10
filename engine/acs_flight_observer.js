@@ -257,6 +257,39 @@
       } catch (e) {
         console.error("❌ Failed to emit ACS_FLIGHT_ARRIVED:", e);
       }
+
+         /* ========================================================
+         🟦 F3.FINAL — AUTO ROUTE REVENUE (DIRECT & PERSISTENT)
+         --------------------------------------------------------
+         ✔ Writes revenue directly to ACS_Finance
+         ✔ Applied ONCE per completed LEG
+         ✔ Ledger prevents duplication
+         ✔ Independent from tabs / events
+         ✔ Closes Phase 3 definitively
+         ======================================================== */
+
+      try {
+        const distanceNM = Number(ledger[key].distanceNM || 0);
+
+        if (distanceNM > 0 && typeof ACS_registerIncome === "function") {
+
+          const REVENUE_PER_NM = 12; // Base revenue (Phase 3 constant)
+          const revenue = Math.round(distanceNM * REVENUE_PER_NM);
+
+          ACS_registerIncome(
+            "routes",
+            revenue,
+            `Flight ${leg.origin} → ${leg.destination} (${acId})`
+          );
+
+          console.log(
+            `💰 Route revenue applied: $${revenue} | ${leg.origin} → ${leg.destination} | ${distanceNM} NM`
+          );
+        }
+
+      } catch (e) {
+        console.error("❌ AUTO ROUTE REVENUE error:", e);
+      }
        
       // ========================================================
       // 🟧 Finance & aircraft updates
