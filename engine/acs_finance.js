@@ -1133,6 +1133,36 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 })();
 
 /* ============================================================
+   🟦 FASE 4.1.A — SKYTRACK ARRIVAL MONITOR (DEBUG ONLY)
+   ------------------------------------------------------------
+   ✔ Solo consola
+   ✔ No lógica
+   ✔ No Finance
+   ✔ No efectos secundarios
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ARRIVED", (e) => {
+  try {
+    console.log(
+      "%c✈️ [SKYTRACK → FINANCE] ARRIVAL EVENT RECEIVED",
+      "color:#00bfff;font-weight:bold;"
+    );
+    console.log("Payload completo:", e.detail);
+
+    if (e.detail) {
+      console.log("• flightId:", e.detail.flightId);
+      console.log("• aircraftId:", e.detail.aircraftId);
+      console.log("• route:", `${e.detail.origin} → ${e.detail.destination}`);
+      console.log("• distanceNM:", e.detail.distanceNM);
+    }
+
+  } catch (err) {
+    console.error("❌ Arrival monitor error:", err);
+  }
+});
+
+
+/* ============================================================
    🟩 F3.2 — FLIGHT ARRIVAL → REVENUE ENGINE (NM)
    ------------------------------------------------------------
    • Escucha eventos de vuelo completado
