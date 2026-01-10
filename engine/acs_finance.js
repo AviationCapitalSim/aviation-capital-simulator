@@ -473,16 +473,38 @@ function ACS_syncPayrollWithHR() {
    ============================================================ */
 
 // Agregar ingreso
-function ACS_addIncome(type, amount) {
+
+function ACS_addIncome(type, amount, source = "Unknown") {
+
   const f = loadFinance();
   const value = Number(amount) || 0;
+  if (value <= 0) return;
 
-  if (f.income[type] !== undefined) {
-    f.income[type] += value;
-    f.revenue += value;
-    f.capital += value;
-    saveFinance(f);
-  }
+  if (f.income[type] === undefined) return;
+
+  const beforeCapital = f.capital;
+
+  f.income[type] += value;
+  f.revenue += value;
+  f.capital += value;
+
+  saveFinance(f);
+
+  // ==============================
+  // 🟦 DEBUG — FINANCE VISIBILITY
+  // ==============================
+   
+  console.log(
+    `%c💰 [FINANCE] INCOME RECEIVED`,
+    "color:#00ff80;font-weight:bold;"
+  );
+  console.log("• Type:", type);
+  console.log("• Amount: +$", value.toLocaleString());
+  console.log("• Source:", source);
+  console.log(
+    "• Capital:",
+    `$${beforeCapital.toLocaleString()} → $${f.capital.toLocaleString()}`
+  );
 }
 
 // Agregar gasto
