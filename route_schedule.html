@@ -1532,6 +1532,12 @@ function confirmRoute() {
    Consumer: Schedule Table / Runtime
    ============================================================ */
 
+  // 🟦 FIX DEFINITIVO — DISTANCE SAFETY NET
+  let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
+  if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
+    finalDistanceNM = rs_getDistanceNM(origin, destination);
+  }
+
 const newRoute = {
   id: routeId,
 
@@ -1548,8 +1554,8 @@ const newRoute = {
   departure,
   arrival,
 
-  distanceNM: window.ACS_RouteTechData?.distNM ?? 0,
-     
+  distanceNM: finalDistanceNM,
+
   // ⏱ Tiempos base
   blockTimeMin,                 // ida (min)
 
