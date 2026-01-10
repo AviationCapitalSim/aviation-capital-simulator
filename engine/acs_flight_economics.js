@@ -1,103 +1,73 @@
 /* ============================================================
-   🟦 ACS FLIGHT ECONOMICS ENGINE — CORE v1.0
+   🟦 CORE LISTENER — FLIGHT ARRIVED
+   DEDUP CANÓNICO: flightId
    ============================================================ */
 
-console.log("🧠 ACS_FLIGHT_ECONOMICS LOADED");
-
-/* ============================
-   🔐 FEATURE FLAGS
-   ============================ */
-const ENABLE_FUEL_COST = false;
-const ENABLE_SLOT_FEES = false;
-
-/* ============================================================
-   🟦 A2 — ECON AIRPORT ADAPTER
-   ============================================================ */
-function ACS_buildEconAirport(icao, distanceNM) {
-  if (!icao) return null;
-
-  let tier = 3;
-  if (distanceNM > 2500) tier = 1;
-  else if (distanceNM > 1200) tier = 2;
-  else if (distanceNM < 300) tier = 4;
-
-  return {
-    icao,
-    tier,
-    population: 1_000_000 * (5 - tier),
-    marketSize: (5 - tier) * 10,
-    region: "GEN",
-    demandMultiplier: 1.0
-  };
-}
-
-/* ============================
-   🔒 DEDUP STORAGE
-   ============================ */
 window.ACS_ECON_ProcessedFlights =
   window.ACS_ECON_ProcessedFlights || new Set();
 
-/* ============================
-   💰 BASE TICKET
-   ============================ */
-function ACS_getBaseTicket(distanceNM, year) {
-  let ticket = 18;
-  if (distanceNM > 500) ticket = 35;
-  if (distanceNM > 1500) ticket = 75;
-  if (distanceNM > 3000) ticket = 140;
-  if (year && year < 1960) ticket *= 0.6;
-  return Math.round(ticket);
-}
-
-/* ============================================================
-   🟦 CORE LISTENER — FLIGHT ARRIVED
-   ============================================================ */
 window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
+
   try {
 
     const f = ev?.detail;
     if (!f) return;
-    if (!f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
 
-    const econKey = `${f.aircraftId}|${f.depAbsMin}`;
-    if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
-    window.ACS_ECON_ProcessedFlights.add(econKey);
+    if (!f.flightId || !f.aircraftId) return;
+
+    // 🔒 DEDUP ESTABLE (1 ingreso por vuelo real)
+    if (window.ACS_ECON_ProcessedFlights.has(f.flightId)) return;
+    window.ACS_ECON_ProcessedFlights.add(f.flightId);
 
     const distanceNM = Number(f.distanceNM || 0);
     if (distanceNM <= 0) return;
 
-    /* ============================
-       🟧 A3 — AIRCRAFT MATCH
-       ============================ */
+    /* ============================================================
+       🟧 A3 — AIRCRAFT ID NORMALIZER (ECON SAFE)
+       ============================================================ */
+
     const fleet = JSON.parse(
       localStorage.getItem("ACS_MyAircraft") || "[]"
     );
 
-    const raw = String(f.aircraftId).trim();
-    const norm = raw.replace("-", "_");
+    const econAircraftIdRaw = String(f.aircraftId || "").trim();
+    const econAircraftIdNorm = econAircraftIdRaw.replace("-", "_");
 
     const ac = fleet.find(a => {
       if (!a) return false;
-      const id = String(a.id || "").trim();
-      const idNorm = id.replace("-", "_");
-      return id === raw || idNorm === norm || a.registration === raw;
+
+      const fid = String(a.id || "").trim();
+      const fidNorm = fid.replace("-", "_");
+
+      return (
+        fid === econAircraftIdRaw ||
+        fidNorm === econAircraftIdNorm ||
+        a.registration === econAircraftIdRaw
+      );
     });
 
     if (!ac) {
-      console.warn("❌ ECON Aircraft NOT FOUND:", raw);
+      console.warn(
+        "❌ ECON: Aircraft NOT FOUND in fleet",
+        econAircraftIdRaw,
+        "→ normalized:",
+        econAircraftIdNorm
+      );
       return;
     }
 
     /* ============================
        🏙 AIRPORTS
        ============================ */
+
     const A = ACS_buildEconAirport(f.origin, distanceNM);
     const B = ACS_buildEconAirport(f.destination, distanceNM);
     if (!A || !B) return;
 
     /* ============================
-       🧮 PAX
+       🧮 PAX CALCULATION
        ============================ */
+
     if (!window.ACS_PAX) return;
 
     const year =
@@ -130,6 +100,7 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     /* ============================
        💵 REVENUE
        ============================ */
+
     const ticket = ACS_getBaseTicket(distanceNM, year);
     const revenue = Math.round(pax * ticket);
     if (revenue <= 0) return;
@@ -146,21 +117,8 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
       `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax} | $${revenue}`
     );
 
-    /* ============================
-       ⛽ FUEL (OFF)
-       ============================ */
-    if (ENABLE_FUEL_COST) {
-      // future
-    }
-
-    /* ============================
-       🛂 SLOTS (OFF)
-       ============================ */
-    if (ENABLE_SLOT_FEES) {
-      // future
-    }
-
   } catch (err) {
     console.error("❌ ACS Flight Economics error:", err);
   }
+
 });
