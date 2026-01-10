@@ -17,6 +17,40 @@
 const ENABLE_FUEL_COST  = false;
 const ENABLE_SLOT_FEES  = false;
 
+/* ============================================================
+   🟦 A2 — ECON AIRPORT ADAPTER (PASSENGER ENGINE SAFE INPUT)
+   ------------------------------------------------------------
+   ✔ Generates minimal economic airport object
+   ✔ Guarantees tier & demand > 0
+   ✔ Does NOT touch SkyTrack or World Engine
+   ============================================================ */
+
+function ACS_buildEconAirport(icao, distanceNM) {
+
+  // Fallback safety
+  if (!icao) return null;
+
+  // Very rough tier heuristic (GOOD ENOUGH for v1)
+  let tier = 3; // default regional
+
+  if (distanceNM > 2500) tier = 1;       // intercontinental
+  else if (distanceNM > 1200) tier = 2;  // major trunk
+  else if (distanceNM < 300)  tier = 4;  // regional
+
+  return {
+    icao,
+    tier,
+
+    // Minimal fields used by passenger_engine.js
+    population: 1_000_000 * (5 - tier),
+    marketSize: (5 - tier) * 10,
+    region: "GEN",
+
+    // Safety multipliers
+    demandMultiplier: 1.0
+  };
+}
+
 /* ============================
    🔒 ANTI-DUPLICATION
    ============================ */
@@ -66,8 +100,8 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     // ============================
     // 🏙 AIRPORTS
     // ============================
-    const A = window.ACS_AIRPORT_INDEX?.[f.origin];
-    const B = window.ACS_AIRPORT_INDEX?.[f.destination];
+    const A = ACS_buildEconAirport(f.origin, distanceNM);
+    const B = ACS_buildEconAirport(f.destination, distanceNM);
     if (!A || !B) return;
 
     // ============================
