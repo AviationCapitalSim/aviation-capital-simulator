@@ -513,10 +513,20 @@ function ACS_SkyTrack_indexScheduleItems() {
           depAbsMin: dep1,
           arrAbsMin: arr1,
 
+          // ✅ DISTANCIA CANÓNICA (se guarda en el LEG)
+          distanceNM: Number(
+            it.distanceNM ??
+            it.distance_nm ??
+            it.distNM ??
+            it.dist_nm ??
+            0
+          ),
+
           // meta útil
           __leg: "OUTBOUND",
           __turnaroundMin: turn
         });
+
       }
 
       // RETURN leg (DEST -> BASE)
