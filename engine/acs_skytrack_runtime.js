@@ -40,6 +40,61 @@ window.ACS_SkyTrack = {
 };
 
 /* ============================================================
+   🟦 FASE 4.1 — ARRIVAL REGISTRY (SKYTRACK CANONICAL)
+   ------------------------------------------------------------
+   ✔ Persiste llegadas de vuelo
+   ✔ NO Finance
+   ✔ NO cálculos
+   ✔ Anti-duplicado por flightId
+   ============================================================ */
+
+(function(){
+
+  const KEY = "ACS_FlightArrivals_V1";
+
+  function loadArrivals(){
+    try {
+      return JSON.parse(localStorage.getItem(KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveArrivals(arr){
+    localStorage.setItem(KEY, JSON.stringify(arr));
+  }
+
+  window.ACS_recordFlightArrival = function(payload){
+
+    if (!payload || !payload.flightId) return;
+
+    const list = loadArrivals();
+
+    // 🔒 Anti-duplicado
+    if (list.some(f => f.flightId === payload.flightId)) {
+      return;
+    }
+
+    const record = {
+      flightId: payload.flightId,
+      aircraftId: payload.aircraftId,
+      origin: payload.origin,
+      destination: payload.destination,
+      distanceNM: Number(payload.distanceNM || 0),
+      timestamp: Date.now()
+    };
+
+    list.push(record);
+    saveArrivals(list);
+
+    console.log(
+      `🟦 [ARRIVALS] Saved → ${record.origin} → ${record.destination} | ${record.aircraftId}`
+    );
+  };
+
+})();
+
+/* ============================================================
    🟦 ENTRY POINT
    ============================================================ */
 function ACS_SkyTrack_init() {
