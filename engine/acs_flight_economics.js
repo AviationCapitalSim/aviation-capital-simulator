@@ -76,19 +76,35 @@ function ACS_getBaseTicket(distanceNM, year) {
 
 /* ============================================================
    🟦 CORE LISTENER — FLIGHT ARRIVED
+   DEDUP CANÓNICO: aircraftId + depAbsMin
    ============================================================ */
+
+window.ACS_ECON_ProcessedFlights =
+  window.ACS_ECON_ProcessedFlights || new Set();
+
 window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   try {
 
     const f = ev.detail;
-    if (!f || !f.flightId || !f.aircraftId) return;
+    if (!f || !f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
 
-    // 🔒 Anti-duplicate
-    if (ACS_ECON_ProcessedFlights.has(f.flightId)) return;
-    ACS_ECON_ProcessedFlights.add(f.flightId);
+    // 🔒 DEDUP ESTABLE (1 ingreso por vuelo real)
+    const econKey = `${f.aircraftId}|${f.depAbsMin}`;
+    if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
+    window.ACS_ECON_ProcessedFlights.add(econKey);
 
     const distanceNM = Number(f.distanceNM || 0);
     if (distanceNM <= 0) return;
+
+    // === CALC ECON ===
+    if (typeof ACS_calcFlightEconomics === "function") {
+      ACS_calcFlightEconomics(f);
+    }
+
+  } catch (e) {
+    console.warn("[ECON] FLIGHT ARRIVED handler error", e);
+  }
+});
 
    /* ============================================================
    🟧 A3 — AIRCRAFT ID NORMALIZER (ECON SAFE)
