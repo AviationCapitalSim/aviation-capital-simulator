@@ -83,27 +83,25 @@ window.ACS_ECON_ProcessedFlights =
   window.ACS_ECON_ProcessedFlights || new Set();
 
 window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
-  try {
 
-    const f = ev.detail;
-    if (!f || !f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
+  const f = ev?.detail;
+  if (!f) return;
 
-    // 🔒 DEDUP ESTABLE (1 ingreso por vuelo real)
-    const econKey = `${f.aircraftId}|${f.depAbsMin}`;
-    if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
-    window.ACS_ECON_ProcessedFlights.add(econKey);
+  if (!f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
 
-    const distanceNM = Number(f.distanceNM || 0);
-    if (distanceNM <= 0) return;
+  // 🔒 DEDUP ESTABLE (1 ingreso por vuelo real)
+  const econKey = `${f.aircraftId}|${f.depAbsMin}`;
+  if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
+  window.ACS_ECON_ProcessedFlights.add(econKey);
 
-    // === CALC ECON ===
-    if (typeof ACS_calcFlightEconomics === "function") {
-      ACS_calcFlightEconomics(f);
-    }
+  const distanceNM = Number(f.distanceNM || 0);
+  if (distanceNM <= 0) return;
 
-  } catch (e) {
-    console.warn("[ECON] FLIGHT ARRIVED handler error", e);
+  // === ECON CORE ===
+  if (typeof ACS_calcFlightEconomics === "function") {
+    ACS_calcFlightEconomics(f);
   }
+
 });
 
    /* ============================================================
