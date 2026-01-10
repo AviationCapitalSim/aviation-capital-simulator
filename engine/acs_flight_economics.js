@@ -88,14 +88,51 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     const distanceNM = Number(f.distanceNM || 0);
     if (distanceNM <= 0) return;
 
-    // ============================
-    // ✈️ AIRCRAFT
-    // ============================
-    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    const ac = fleet.find(a =>
-      a.id === f.aircraftId || a.registration === f.aircraftId
-    );
-    if (!ac) return;
+   /* ============================================================
+   🟧 A3 — AIRCRAFT ID NORMALIZER (ECON SAFE)
+   ------------------------------------------------------------
+   ✔ Soporta AC-xxxx y AC_xxxx
+   ✔ NO modifica Fleet
+   ✔ NO modifica SkyTrack
+   ✔ SOLO lectura
+   ============================================================ */
+
+// ============================
+// ✈️ AIRCRAFT (ROBUST MATCH)
+// ============================
+
+const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+// Normalizar aircraftId entrante
+const econAircraftIdRaw = String(f.aircraftId || "").trim();
+const econAircraftIdNorm = econAircraftIdRaw.replace("-", "_");
+
+// Buscar avión por:
+// 1) id exacto
+// 2) id normalizado
+// 3) registration (fallback)
+const ac = fleet.find(a => {
+  if (!a) return false;
+
+  const fid = String(a.id || "").trim();
+  const fidNorm = fid.replace("-", "_");
+
+  return (
+    fid === econAircraftIdRaw ||
+    fidNorm === econAircraftIdNorm ||
+    a.registration === econAircraftIdRaw
+  );
+});
+
+if (!ac) {
+  console.warn(
+    "❌ ECON: Aircraft NOT FOUND in fleet",
+    econAircraftIdRaw,
+    "→ normalized:",
+    econAircraftIdNorm
+  );
+  return;
+}
 
     // ============================
     // 🏙 AIRPORTS
