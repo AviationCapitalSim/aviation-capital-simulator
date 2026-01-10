@@ -1132,3 +1132,62 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 
 })();
 
+/* ============================================================
+   🎧 FINANCE — FLIGHT ECONOMICS LISTENER (v1)
+   Escucha ingresos desde Flight Economics
+   ============================================================ */
+
+(function () {
+
+  console.log("🎧 FINANCE ECON LISTENER INIT");
+
+  window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
+
+    const d = e.detail;
+    if (!d) {
+      console.warn("💰 FINANCE: Empty economics payload");
+      return;
+    }
+
+    console.log("💰 FINANCE RECEIVED ECONOMICS:", d);
+
+    const revenue = Number(d.revenue || 0);
+    if (!Number.isFinite(revenue) || revenue <= 0) {
+      console.warn("💰 FINANCE: Invalid revenue", revenue);
+      return;
+    }
+
+    // ============================
+    // 💰 APPLY REVENUE
+    // ============================
+
+    if (!window.ACS_Finance) {
+      console.error("⛔ ACS_Finance not available");
+      return;
+    }
+
+    if (typeof ACS_Finance.addIncome === "function") {
+      ACS_Finance.addIncome({
+        type: "FLIGHT_REVENUE",
+        amount: revenue,
+        ref: d.flightId || null,
+        meta: {
+          aircraftId: d.aircraftId,
+          origin: d.origin,
+          destination: d.destination,
+          pax: d.pax,
+          distanceNM: d.distanceNM
+        }
+      });
+
+      console.log(
+        `🎶 FINANCE CREDITED: +$${revenue.toFixed(0)} | ${d.origin} → ${d.destination}`
+      );
+
+    } else {
+      console.error("⛔ ACS_Finance.addIncome not implemented");
+    }
+
+  });
+
+})();
