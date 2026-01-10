@@ -165,8 +165,9 @@ function ACS_SkyTrack_onTick() {
 
 /* ============================================================
    🟦 C2 + C3 — EN_ROUTE → GROUND + ARRIVAL EVENT (CANONICAL)
+   + FASE 4.1 — ARRIVAL PERSISTENCE (LOCAL ONLY)
    ============================================================ */
-     
+
 const prev = ACS_SkyTrack.lastActiveFlight[acId];
 
 // 🛫 Cache mientras vuela
@@ -187,6 +188,7 @@ if (
   );
 
   const arrivalPayload = {
+    flightId: `${acId}|${prev.origin}|${prev.destination}|${prev.depAbsMin}`,
     aircraftId: acId,
     registration: ac.registration || null,
 
@@ -202,6 +204,29 @@ if (
     detectedAtAbsMin: now,
     detectedAtTs: Date.now()
   };
+
+  /* ============================================================
+     🟦 FASE 4.1 — PERSIST ARRIVAL (SkyTrack → localStorage)
+     ------------------------------------------------------------
+     ✔ NO Finance
+     ✔ NO calculations
+     ✔ Facts only
+     ✔ Anti-duplicate by flightId
+     ============================================================ */
+
+  if (typeof window.ACS_recordFlightArrival === "function") {
+    window.ACS_recordFlightArrival({
+      flightId: arrivalPayload.flightId,
+      aircraftId: arrivalPayload.aircraftId,
+      origin: arrivalPayload.origin,
+      destination: arrivalPayload.destination,
+      distanceNM: prev.distanceNM || 0
+    });
+  }
+
+  /* ============================================================
+     🟦 C3 — EMIT ARRIVAL EVENT (SYSTEM BUS)
+     ============================================================ */
 
   window.dispatchEvent(
     new CustomEvent("ACS_FLIGHT_ARRIVED", { detail: arrivalPayload })
