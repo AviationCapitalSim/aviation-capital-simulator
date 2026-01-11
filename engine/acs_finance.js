@@ -614,34 +614,82 @@ function ACS_registerExpense(costType, amount, source) {
   });
 }
 
-/**
- * Helper de ingreso
- */
+/* ============================================================
+   ✈️💰 ACS FINANCE — LIVE INCOME BRIDGE (CANONICAL)
+   ------------------------------------------------------------
+   • Punto ÚNICO de entrada de ingresos
+   • Recibe ingresos desde Flight Economics
+   • Rutea ingresos leg-by-leg (Live Flight)
+   • Registra LOG financiero
+   • DEBUG activo (temporal)
+   ============================================================ */
+
 function ACS_registerIncome(incomeType, amount, source) {
+
   const value = Number(amount) || 0;
   if (value <= 0) return;
 
   // ============================================================
-// 🟦 FINANCE — CANONICAL INCOME ROUTER
-// routes → live_flight (LEG-BY-LEG)
-// ============================================================
+  // 🧠 DEBUG — FINANCE ENTRY CONFIRMATION
+  // ============================================================
+   
+  console.log(
+    "%c[FINANCE] registerIncome called",
+    "color:#00ff80;font-weight:bold;",
+    { incomeType, amount, source }
+  );
 
-let targetType = incomeType;
+  // ============================================================
+  // 🔀 FINANCE INCOME ROUTER (SEMANTIC)
+  // routes → cargo (Live Flight Revenue / leg-by-leg)
+  // ============================================================
 
-// 🔁 Redirección semántica
-if (incomeType === "routes") {
-  targetType = "cargo";
+  let targetType = incomeType;
+
+  if (incomeType === "routes") {
+    targetType = "cargo";
+  }
+
+  console.log(
+    "%c[FINANCE] Routing income",
+    "color:#ffd700;font-weight:bold;",
+    {
+      from: incomeType,
+      to: targetType,
+      amount: value
+    }
+  );
+
+  // ============================================================
+  // 💰 APPLY INCOME
+  // ============================================================
+   
+  ACS_addIncome(targetType, value);
+
+  const fCheck = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+  console.log(
+    "%c[FINANCE] Income applied",
+    "color:#00bfff;font-weight:bold;",
+    {
+      bucket: targetType,
+      newValue: fCheck?.income?.[targetType],
+      capital: fCheck?.capital,
+      revenueMonth: fCheck?.revenue
+    }
+  );
+
+  // ============================================================
+  // 🧾 FINANCIAL LOG
+  // ============================================================
+   
+  ACS_logTransaction({
+    type: "INCOME",
+    source: source || targetType,
+    amount: value
+  });
 }
 
-ACS_addIncome(targetType, value);
-
-ACS_logTransaction({
-  type: "INCOME",
-  source: source || targetType,
-  amount: value
-});
-
-}
 
 /* ============================================================
    === BANKRUPTCY ENGINE — v1.0 ================================
