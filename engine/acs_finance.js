@@ -621,13 +621,26 @@ function ACS_registerIncome(incomeType, amount, source) {
   const value = Number(amount) || 0;
   if (value <= 0) return;
 
-  ACS_addIncome(incomeType, value);
+  // ============================================================
+// 🟦 FINANCE — CANONICAL INCOME ROUTER
+// routes → live_flight (LEG-BY-LEG)
+// ============================================================
 
-  ACS_logTransaction({
-    type: "INCOME",
-    source: source || incomeType,
-    amount: value
-  });
+let targetType = incomeType;
+
+// 🔁 Redirección semántica
+if (incomeType === "routes") {
+  targetType = "live_flight";
+}
+
+ACS_addIncome(targetType, value);
+
+ACS_logTransaction({
+  type: "INCOME",
+  source: source || targetType,
+  amount: value
+});
+
 }
 
 /* ============================================================
