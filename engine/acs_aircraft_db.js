@@ -1,5 +1,5 @@
 /* ============================================================
-   === ACS AIRCRAFT DATABASE — FULL EDITION ====================
+   === ACS AIRCRAFT DATABASE — 11JAN26 ====================
    === Clean, Valid JS — Ready for ACS Buy/Lease Engine ========
    ============================================================ */
 
@@ -19,9 +19,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 1950,
     fuel_burn_kgph: 90,
     price_acs_usd: 60000,
-    engines: "BMW IIIa"
-  },
-
+    engines: "BMW IIIa"},
   {
     manufacturer: "Fokker",
     model: "F.VIIb-3m",
@@ -32,9 +30,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 5200,
     fuel_burn_kgph: 220,
     price_acs_usd: 120000,
-    engines: "Wright J-4 / J-5"
-  },
-
+    engines: "Wright J-4 / J-5"},
   {
     manufacturer: "Ford",
     model: "5-AT Trimotor",
@@ -45,9 +41,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 6350,
     fuel_burn_kgph: 260,
     price_acs_usd: 150000,
-    engines: "PW Wasp"
-  },
-
+    engines: "PW Wasp"},
   {
     manufacturer: "Lockheed",
     model: "Vega 5",
@@ -58,9 +52,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 2500,
     fuel_burn_kgph: 200,
     price_acs_usd: 95000,
-    engines: "PW Wasp"
-  },
-
+    engines: "PW Wasp"},
   {
     manufacturer: "Sikorsky",
     model: "S-38",
@@ -71,9 +63,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 4080,
     fuel_burn_kgph: 260,
     price_acs_usd: 130000,
-    engines: "PW R-985"
-  },
-
+    engines: "PW R-985"},
   {
     manufacturer: "Lockheed",
     model: "Model 9 Orion",
@@ -84,9 +74,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 3800,
     fuel_burn_kgph: 230,
     price_acs_usd: 140000,
-    engines: "PW Wasp"
-  },
-
+    engines: "PW Wasp"},
   {
     manufacturer: "de Havilland",
     model: "DH.84 Dragon",
@@ -97,9 +85,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 2000,
     fuel_burn_kgph: 150,
     price_acs_usd: 80000,
-    engines: "DH Gipsy Major"
-  },
-
+    engines: "DH Gipsy Major"},
   {
     manufacturer: "Boeing",
     model: "247",
@@ -110,9 +96,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 8800,
     fuel_burn_kgph: 360,
     price_acs_usd: 280000,
-    engines: "PW R-1340"
-  },
-
+    engines: "PW R-1340"},
   {
     manufacturer: "de Havilland",
     model: "DH.89 Dragon Rapide",
@@ -123,9 +107,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 2700,
     fuel_burn_kgph: 160,
     price_acs_usd: 90000,
-    engines: "DH Gipsy Six"
-  },
-
+    engines: "DH Gipsy Six"},
      // ============================================================
   // 1940 — 1949 (Advanced Pistons & Early Postwar)
   // ============================================================
@@ -140,9 +122,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 16500,
     fuel_burn_kgph: 750,
     price_acs_usd: 1200000,
-    engines: "PW R-2800"
-  },
-
+    engines: "PW R-2800"},
   {
     manufacturer: "Convair",
     model: "CV-340",
@@ -153,9 +133,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 20000,
     fuel_burn_kgph: 850,
     price_acs_usd: 1500000,
-    engines: "PW R-2800"
-  },
-
+    engines: "PW R-2800"},
   {
     manufacturer: "Convair",
     model: "CV-440 Metropolitan",
@@ -166,9 +144,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 20700,
     fuel_burn_kgph: 900,
     price_acs_usd: 1800000,
-    engines: "PW R-2800"
-  },
-
+    engines: "PW R-2800"},
   {
     manufacturer: "Vickers",
     model: "VC.1 Viking",
@@ -179,9 +155,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 18500,
     fuel_burn_kgph: 650,
     price_acs_usd: 950000,
-    engines: "Bristol Hercules"
-  },
-
+    engines: "Bristol Hercules"},
   {
     manufacturer: "de Havilland",
     model: "DH.95 Flamingo",
@@ -192,9 +166,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 6400,
     fuel_burn_kgph: 380,
     price_acs_usd: 600000,
-    engines: "Bristol Perseus"
-  },
-
+    engines: "Bristol Perseus"},
   {
     manufacturer: "Douglas",
     model: "Super DC-3 (R4D-8)",
@@ -205,9 +177,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 13500,
     fuel_burn_kgph: 500,
     price_acs_usd: 900000,
-    engines: "PW R-1830"
-  },
-
+    engines: "PW R-1830"},
   {
     manufacturer: "Avro",
     model: "Lancastrian",
@@ -218,9 +188,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 33000,
     fuel_burn_kgph: 1600,
     price_acs_usd: 1800000,
-    engines: "RR Merlin"
-  },
-
+    engines: "RR Merlin"},
   {
     manufacturer: "Boeing",
     model: "C-97 Stratofreighter",
@@ -231,9 +199,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 66000,
     fuel_burn_kgph: 2600,
     price_acs_usd: 3500000,
-    engines: "PW R-4360"
-  },
-
+    engines: "PW R-4360"},
   {
     manufacturer: "Lockheed",
     model: "Model 18-56 Lodestar (Military C-60)",
@@ -244,9 +210,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 8200,
     fuel_burn_kgph: 580,
     price_acs_usd: 700000,
-    engines: "PW R-1830"
-  },
-
+    engines: "PW R-1830"},
   {
     manufacturer: "Handley Page",
     model: "HP.70 Halton",
@@ -257,8 +221,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 31000,
     fuel_burn_kgph: 1400,
     price_acs_usd: 1300000,
-    engines: "Bristol Hercules"
-  },
+    engines: "Bristol Hercules"},
 // ============================================================
 // 1940 — 1974 (de Havilland Complete + Comet Family + Trident)
 // ============================================================
@@ -273,9 +236,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3900,
   fuel_burn_kgph: 240,
   price_acs_usd: 110000,
-  engines: "DH Gipsy Six (x4)"
-},
-
+  engines: "DH Gipsy Six (x4)"},
 {
   manufacturer: "de Havilland",
   model: "DH.91 Albatross",
@@ -286,9 +247,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 15500,
   fuel_burn_kgph: 850,
   price_acs_usd: 600000,
-  engines: "RR Gipsy Twelve"
-},
-
+  engines: "RR Gipsy Twelve"},
 {
   manufacturer: "de Havilland",
   model: "DH.104 Dove",
@@ -299,9 +258,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3650,
   fuel_burn_kgph: 300,
   price_acs_usd: 450000,
-  engines: "Gipsy Queen 70-3"
-},
-
+  engines: "Gipsy Queen 70-3"},
 {
   manufacturer: "de Havilland",
   model: "DH.114 Heron",
@@ -312,9 +269,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6350,
   fuel_burn_kgph: 360,
   price_acs_usd: 850000,
-  engines: "Gipsy Queen 30 (x4)"
-},
-
+  engines: "Gipsy Queen 30 (x4)"},
 // ======================== COMET FAMILY ========================
 
 {
@@ -327,9 +282,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 48000,
   fuel_burn_kgph: 5000,
   price_acs_usd: 5000000,
-  engines: "Ghost 50 Mk1"
-},
-
+  engines: "Ghost 50 Mk1"},
 {
   manufacturer: "de Havilland",
   model: "Comet 2",
@@ -340,9 +293,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 54000,
   fuel_burn_kgph: 5200,
   price_acs_usd: 6200000,
-  engines: "Ghost 50 Mk2"
-},
-
+  engines: "Ghost 50 Mk2"},
 {
   manufacturer: "de Havilland",
   model: "Comet 3",
@@ -353,9 +304,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 72000,
   fuel_burn_kgph: 5600,
   price_acs_usd: 7000000,
-  engines: "Ghost 50 Mk4"
-},
-
+  engines: "Ghost 50 Mk4"},
 {
   manufacturer: "de Havilland",
   model: "Comet 4",
@@ -366,9 +315,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 73000,
   fuel_burn_kgph: 5800,
   price_acs_usd: 9500000,
-  engines: "Ghost 50 Mk4B"
-},
-
+  engines: "Ghost 50 Mk4B"},
 // ======================== TRIDENT FAMILY ========================
 
 {
@@ -381,9 +328,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 60000,
   fuel_burn_kgph: 5900,
   price_acs_usd: 12000000,
-  engines: "RR Spey 505"
-},
-
+  engines: "RR Spey 505"},
 {
   manufacturer: "Hawker Siddeley",
   model: "Trident 2E",
@@ -394,9 +339,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 66000,
   fuel_burn_kgph: 6200,
   price_acs_usd: 13500000,
-  engines: "RR Spey 512"
-},
-
+  engines: "RR Spey 512"},
 {
   manufacturer: "Hawker Siddeley",
   model: "Trident 3B",
@@ -407,9 +350,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 70000,
   fuel_burn_kgph: 6500,
   price_acs_usd: 15000000,
-  engines: "RR Spey 555-15"
-},
-
+  engines: "RR Spey 555-15"},
 // ============================================================
 // 1950 — 1970 (British Turboprops & Early Europeans)
 // Viscount • Vanguard • Britannia • Others
@@ -425,9 +366,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 31000,
   fuel_burn_kgph: 1450,
   price_acs_usd: 4200000,
-  engines: "RR Dart"
-},
-
+  engines: "RR Dart"},
 {
   manufacturer: "Vickers",
   model: "Viscount 800",
@@ -438,9 +377,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 35000,
   fuel_burn_kgph: 1550,
   price_acs_usd: 5400000,
-  engines: "RR Dart"
-},
-
+  engines: "RR Dart"},
 {
   manufacturer: "Vickers",
   model: "Viscount 810",
@@ -451,9 +388,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 39000,
   fuel_burn_kgph: 1650,
   price_acs_usd: 6800000,
-  engines: "RR Dart"
-},
-
+  engines: "RR Dart"},
 {
   manufacturer: "Vickers",
   model: "Vanguard V.953",
@@ -464,9 +399,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 60000,
   fuel_burn_kgph: 3000,
   price_acs_usd: 15000000,
-  engines: "RR Tyne"
-},
-
+  engines: "RR Tyne"},
 {
   manufacturer: "Vickers",
   model: "Vanguard V.952 (Cargo Merchantman)",
@@ -478,9 +411,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 3100,
   price_acs_usd: 17000000,
   engines: "RR Tyne",
-  status: "cargo"
-},
-
+  status: "cargo"},
 {
   manufacturer: "Bristol",
   model: "Britannia 100",
@@ -491,9 +422,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 57000,
   fuel_burn_kgph: 3000,
   price_acs_usd: 16000000,
-  engines: "Proteus 625"
-},
-
+  engines: "Proteus 625"},
 {
   manufacturer: "Bristol",
   model: "Britannia 300",
@@ -504,9 +433,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 74000,
   fuel_burn_kgph: 3400,
   price_acs_usd: 21000000,
-  engines: "Proteus 755"
-},
-
+  engines: "Proteus 755"},
 {
   manufacturer: "Handley Page",
   model: "HP.81 Hermes",
@@ -517,9 +444,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 30000,
   fuel_burn_kgph: 1600,
   price_acs_usd: 5500000,
-  engines: "Bristol Hercules"
-},
-
+  engines: "Bristol Hercules"},
 {
   manufacturer: "Handley Page",
   model: "HP.137 Jetstream",
@@ -530,9 +455,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5700,
   fuel_burn_kgph: 450,
   price_acs_usd: 3000000,
-  engines: "Astazou XIV"
-},
-
+  engines: "Astazou XIV"},
 {
   manufacturer: "Fokker",
   model: "Fokker F27-500",
@@ -543,9 +466,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 20000,
   fuel_burn_kgph: 950,
   price_acs_usd: 4900000,
-  engines: "RR Dart"
-},
-
+  engines: "RR Dart"},
 {
   manufacturer: "Ilyushin",
   model: "Il-18A",
@@ -556,9 +477,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 64000,
   fuel_burn_kgph: 3200,
   price_acs_usd: 12000000,
-  engines: "Ivchenko AI-20"
-},
-
+  engines: "Ivchenko AI-20"},
 {
   manufacturer: "Ilyushin",
   model: "Il-18D",
@@ -569,9 +488,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 64000,
   fuel_burn_kgph: 3400,
   price_acs_usd: 14500000,
-  engines: "Ivchenko AI-20M"
-},
-
+  engines: "Ivchenko AI-20M"},
 // ============================================================
 // DOUGLAS — FULL PASSENGER SERIES (Clean / No Duplicates)
 // ============================================================
@@ -587,9 +504,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 7050,
   fuel_burn_kgph: 420,
   price_acs_usd: 480000,
-  engines: "PW R-1690"
-},
-
+  engines: "PW R-1690"},
 // === DC-6B (1951) — Versión mejorada de largo alcance ===
 {
   manufacturer: "Douglas",
@@ -601,9 +516,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 49250,
   fuel_burn_kgph: 2400,
   price_acs_usd: 3650000,
-  engines: "PW R-2800"
-},
-
+  engines: "PW R-2800"},
 // === DC-7B (1954) — Más capacidad, mejor economía ===
 {
   manufacturer: "Douglas",
@@ -615,9 +528,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 65000,
   fuel_burn_kgph: 3100,
   price_acs_usd: 5200000,
-  engines: "Wright R-3350"
-},
-
+  engines: "Wright R-3350"},
 // === DC-7C “Seven Seas” (1956) — Transatlántico total ===
 {
   manufacturer: "Douglas",
@@ -629,9 +540,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 68000,
   fuel_burn_kgph: 3300,
   price_acs_usd: 5900000,
-  engines: "Wright R-3350"
-},
-
+  engines: "Wright R-3350"},
 // ============================================================
 // BOEING — FULL PASSENGER SERIES (Clean / No Duplicates)
 // ============================================================
@@ -647,9 +556,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 7250,
   fuel_burn_kgph: 320,
   price_acs_usd: 420000,
-  engines: "PW R-1340"
-},
-
+  engines: "PW R-1340"},
 // === Boeing 377 Stratocruiser (1947) — Doble cubierta ===
 {
   manufacturer: "Boeing",
@@ -661,9 +568,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 61000,
   fuel_burn_kgph: 2350,
   price_acs_usd: 4300000,
-  engines: "PW R-4360"
-},
-
+  engines: "PW R-4360"},
 // === Boeing 720 (1960) — Versión corta del 707 ===
 {
   manufacturer: "Boeing",
@@ -675,9 +580,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 104000,
   fuel_burn_kgph: 6100,
   price_acs_usd: 13500000,
-  engines: "JT3C / JT3D"
-},
-
+  engines: "JT3C / JT3D"},
 // === Boeing 727-200 (1967) — Superventas ===
 {
   manufacturer: "Boeing",
@@ -689,9 +592,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 86000,
   fuel_burn_kgph: 5500,
   price_acs_usd: 16000000,
-  engines: "JT8D-15"
-},
-
+  engines: "JT8D-15"},
 // === Boeing 737-500 (1990) — Classic mejorado ===
 {
   manufacturer: "Boeing",
@@ -703,9 +604,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 60500,
   fuel_burn_kgph: 3000,
   price_acs_usd: 23000000,
-  engines: "CFM56-3C1"
-},
-
+  engines: "CFM56-3C1"},
 // === Boeing 747-300 (1983) — Upper Deck extendido ===
 {
   manufacturer: "Boeing",
@@ -717,9 +616,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 351000,
   fuel_burn_kgph: 24000,
   price_acs_usd: 165000000,
-  engines: "JT9D-7R4G2"
-},
-
+  engines: "JT9D-7R4G2"},
 // === Boeing 747SP (1976) — Ultra long range ===
 {
   manufacturer: "Boeing",
@@ -731,9 +628,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 314000,
   fuel_burn_kgph: 22000,
   price_acs_usd: 155000000,
-  engines: "JT9D-7A"
-},
-
+  engines: "JT9D-7A"},
 // === Boeing 777-200ER (1997) — Extended Range ===
 {
   manufacturer: "Boeing",
@@ -745,9 +640,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 297500,
   fuel_burn_kgph: 9000,
   price_acs_usd: 208000000,
-  engines: "GE90-94B"
-},
-
+  engines: "GE90-94B"},
 // === Boeing 777-200LR (2006) — Ultra Long Range ===
 {
   manufacturer: "Boeing",
@@ -759,23 +652,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 347800,
   fuel_burn_kgph: 9500,
   price_acs_usd: 250000000,
-  engines: "GE90-110B/115B"
-},
-
-// === Boeing 777-300ER (2004) — Widebody líder global ===
-{
-  manufacturer: "Boeing",
-  model: "777-300ER",
-  year: 2004,
-  seats: 396,
-  range_nm: 7370,
-  speed_kts: 560,
-  mtow_kg: 351500,
-  fuel_burn_kgph: 10000,
-  price_acs_usd: 320000000,
-  engines: "GE90-115B"
-},
-
+  engines: "GE90-110B/115B"},
 // ============================================================
 // McDONNELL DOUGLAS — FULL PASSENGER LINEUP (No duplicates)
 // ============================================================
@@ -795,9 +672,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 124000,
   fuel_burn_kgph: 7200,
   price_acs_usd: 16000000,
-  engines: "JT4A"
-},
-
+  engines: "JT4A"},
 // --- DC-8-30 (1960) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -809,9 +684,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 143000,
   fuel_burn_kgph: 7500,
   price_acs_usd: 17500000,
-  engines: "JT4A"
-},
-
+  engines: "JT4A"},
 // --- DC-8-40 (1961) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -823,9 +696,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 147000,
   fuel_burn_kgph: 7000,
   price_acs_usd: 18000000,
-  engines: "RR Conway 509"
-},
-
+  engines: "RR Conway 509"},
 // --- DC-8-60 (1965) — Serie "Super Sixty" ---
 {
   manufacturer: "McDonnell Douglas",
@@ -837,9 +708,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 162000,
   fuel_burn_kgph: 8500,
   price_acs_usd: 19500000,
-  engines: "JT3D"
-},
-
+  engines: "JT3D"},
 {
   manufacturer: "McDonnell Douglas",
   model: "DC-8-62",
@@ -850,9 +719,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 158000,
   fuel_burn_kgph: 8200,
   price_acs_usd: 20500000,
-  engines: "JT3D"
-},
-
+  engines: "JT3D"},
 {
   manufacturer: "McDonnell Douglas",
   model: "DC-8-63",
@@ -863,9 +730,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 162000,
   fuel_burn_kgph: 8500,
   price_acs_usd: 21000000,
-  engines: "JT3D"
-},
-
+  engines: "JT3D"},
 // --- DC-8-70 (1982) — Re-motores CFM56 ---
 {
   manufacturer: "McDonnell Douglas",
@@ -877,9 +742,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 165000,
   fuel_burn_kgph: 6500,
   price_acs_usd: 23000000,
-  engines: "CFM56-2"
-},
-
+  engines: "CFM56-2"},
 {
   manufacturer: "McDonnell Douglas",
   model: "DC-8-72",
@@ -890,9 +753,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 165000,
   fuel_burn_kgph: 6400,
   price_acs_usd: 24000000,
-  engines: "CFM56-2"
-},
-
+  engines: "CFM56-2"},
 {
   manufacturer: "McDonnell Douglas",
   model: "DC-8-73",
@@ -903,10 +764,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 165000,
   fuel_burn_kgph: 6450,
   price_acs_usd: 24500000,
-  engines: "CFM56-2"
-},
-
-
+  engines: "CFM56-2"},
 /* ===========================
    === DC-9 FAMILY (1965–1982)
    =========================== */
@@ -922,9 +780,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 38000,
   fuel_burn_kgph: 2600,
   price_acs_usd: 12000000,
-  engines: "JT8D-1"
-},
-
+  engines: "JT8D-1"},
 // --- DC-9-20 (1969) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -936,9 +792,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 39500,
   fuel_burn_kgph: 2700,
   price_acs_usd: 13000000,
-  engines: "JT8D-11"
-},
-
+  engines: "JT8D-11"},
 // --- DC-9-30 (1967) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -950,9 +804,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 47000,
   fuel_burn_kgph: 2900,
   price_acs_usd: 14000000,
-  engines: "JT8D-7"
-},
-
+  engines: "JT8D-7"},
 // --- DC-9-40 (1968) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -964,9 +816,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 49500,
   fuel_burn_kgph: 3000,
   price_acs_usd: 15000000,
-  engines: "JT8D-9"
-},
-
+  engines: "JT8D-9"},
 // --- DC-9-50 (1975) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -978,10 +828,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 54000,
   fuel_burn_kgph: 3150,
   price_acs_usd: 16500000,
-  engines: "JT8D-17"
-},
-
-
+  engines: "JT8D-17"},
 /* ===========================
    === MD-80 SERIES (1980–1997)
    =========================== */
@@ -997,9 +844,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 63500,
   fuel_burn_kgph: 3500,
   price_acs_usd: 21000000,
-  engines: "JT8D-209"
-},
-
+  engines: "JT8D-209"},
 // --- MD-83 (1985) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -1011,9 +856,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 70800,
   fuel_burn_kgph: 3600,
   price_acs_usd: 22500000,
-  engines: "JT8D-219"
-},
-
+  engines: "JT8D-219"},
 // --- MD-87 (1987) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -1025,9 +868,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 62500,
   fuel_burn_kgph: 3300,
   price_acs_usd: 23000000,
-  engines: "JT8D-217"
-},
-
+  engines: "JT8D-217"},
 // --- MD-88 (1988) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -1039,10 +880,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 67500,
   fuel_burn_kgph: 3500,
   price_acs_usd: 24000000,
-  engines: "JT8D-219"
-},
-
-
+  engines: "JT8D-219"},
 /* ===========================
    === MD-90 FAMILY (1993–1999)
    =========================== */
@@ -1058,10 +896,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 76000,
   fuel_burn_kgph: 3100,
   price_acs_usd: 26000000,
-  engines: "IAE V2500"
-},
-
-
+  engines: "IAE V2500"},
 /* ===========================
    === MD-95 (Boeing 717) — 1999
    =========================== */
@@ -1076,9 +911,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 55000,
   fuel_burn_kgph: 2600,
   price_acs_usd: 30000000,
-  engines: "RR BR715"
-},
-
+  engines: "RR BR715"},
 // ============================================================
 // AIRBUS — FULL PASSENGER SERIES (Missing Models Added)
 // ============================================================
@@ -1098,9 +931,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 132000,
   fuel_burn_kgph: 5200,
   price_acs_usd: 42000000,
-  engines: "GE CF6-50A"
-},
-
+  engines: "GE CF6-50A"},
 // --- A300B2-200 (1976) ---
 {
   manufacturer: "Airbus",
@@ -1112,9 +943,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 142000,
   fuel_burn_kgph: 5400,
   price_acs_usd: 54000000,
-  engines: "GE CF6-50C"
-},
-
+  engines: "GE CF6-50C"},
 // --- A300B4-200 (1979) ---
 {
   manufacturer: "Airbus",
@@ -1126,10 +955,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 157000,
   fuel_burn_kgph: 5600,
   price_acs_usd: 62000000,
-  engines: "GE CF6-50C2"
-},
-
-
+  engines: "GE CF6-50C2"},
 /* =============================
    === A318/A319/A320/A321 FAMILY (1988–2025)
    ============================= */
@@ -1145,9 +971,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 68000,
   fuel_burn_kgph: 2500,
   price_acs_usd: 72000000,
-  engines: "CFM56-5B8"
-},
-
+  engines: "CFM56-5B8"},
 // --- A319neo (2017) ---
 {
   manufacturer: "Airbus",
@@ -1159,10 +983,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 75000,
   fuel_burn_kgph: 2400,
   price_acs_usd: 99000000,
-  engines: "LEAP-1A26"
-},
-
-
+  engines: "LEAP-1A26"},
 /* =============================
    === A330 FAMILY (1994–2025)
    ============================= */
@@ -1185,9 +1006,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 253000,
   fuel_burn_kgph: 7400,
   price_acs_usd: 170000000,
-  engines: "CFM56-5C"
-},
-
+  engines: "CFM56-5C"},
 // --- A340-300 (1993) ---
 {
   manufacturer: "Airbus",
@@ -1199,9 +1018,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 257000,
   fuel_burn_kgph: 7800,
   price_acs_usd: 180000000,
-  engines: "CFM56-5C"
-},
-
+  engines: "CFM56-5C"},
 // ============================================================
 // BOMBARDIER / CANADAIR / DE HAVILLAND — FULL PASSENGER SERIES
 // ============================================================
@@ -1221,9 +1038,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 15600,
   fuel_burn_kgph: 700,
   price_acs_usd: 12500000,
-  engines: "PW120A"
-},
-
+  engines: "PW120A"},
 // --- Dash 8-200 (1995) ---
 {
   manufacturer: "De Havilland Canada",
@@ -1235,9 +1050,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 17000,
   fuel_burn_kgph: 750,
   price_acs_usd: 14500000,
-  engines: "PW123C"
-},
-
+  engines: "PW123C"},
 // --- Dash 8-300 (1989) ---
 {
   manufacturer: "De Havilland Canada",
@@ -1249,10 +1062,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 19000,
   fuel_burn_kgph: 900,
   price_acs_usd: 18500000,
-  engines: "PW123"
-},
-
-
+  engines: "PW123"},
 /* =============================
    === CRJ FAMILY (1991–2010)
    ============================= */
@@ -1268,9 +1078,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 22700,
   fuel_burn_kgph: 1600,
   price_acs_usd: 25500000,
-  engines: "GE CF34-3B1"
-},
-
+  engines: "GE CF34-3B1"},
 // --- CRJ1000 (2010) ---
 {
   manufacturer: "Bombardier",
@@ -1282,9 +1090,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 41800,
   fuel_burn_kgph: 2300,
   price_acs_usd: 46000000,
-  engines: "GE CF34-8C5A1"
-},
-
+  engines: "GE CF34-8C5A1"},
 // ============================================================
 // EMBRAER — FULL PASSENGER SERIES (NO DUPLICADOS)
 // ============================================================
@@ -1304,10 +1110,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 20900,
   fuel_burn_kgph: 1550,
   price_acs_usd: 22500000,
-  engines: "RR AE3007A1"
-},
-
-
+  engines: "RR AE3007A1"},
 /* =============================
    === E-JETS 1st GENERATION (2002–2013)
    ============================= */
@@ -1323,9 +1126,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 36000,
   fuel_burn_kgph: 2400,
   price_acs_usd: 38000000,
-  engines: "GE CF34-8E"
-},
-
+  engines: "GE CF34-8E"},
 // --- E195 (2006) ---
 {
   manufacturer: "Embraer",
@@ -1337,9 +1138,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 50400,
   fuel_burn_kgph: 2600,
   price_acs_usd: 44000000,
-  engines: "GE CF34-10E"
-},
-
+  engines: "GE CF34-10E"},
 // ============================================================
 // FOKKER — PASSENGER AIRCRAFT (COMPLETE, NO DUPLICATES)
 // ============================================================
@@ -1355,9 +1154,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 20500,
   fuel_burn_kgph: 950,
   price_acs_usd: 8000000,
-  engines: "PW125B"
-},
-
+  engines: "PW125B"},
 // ============================================================
 // H — BRITISH PASSENGER AIRCRAFT (HS / BAe / AVRO / BAC)
 // ============================================================
@@ -1378,9 +1175,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 52800,
   fuel_burn_kgph: 4800,
   price_acs_usd: 9000000,
-  engines: "RR Spey"
-},
-
+  engines: "RR Spey"},
 // --- Trident 2E (1968) ---
 {
   manufacturer: "Hawker Siddeley",
@@ -1392,9 +1187,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 56500,
   fuel_burn_kgph: 5100,
   price_acs_usd: 10500000,
-  engines: "RR Spey"
-},
-
+  engines: "RR Spey"},
 // --- Trident 3B (1971) ---
 {
   manufacturer: "Hawker Siddeley",
@@ -1406,10 +1199,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 64000,
   fuel_burn_kgph: 5400,
   price_acs_usd: 12000000,
-  engines: "RR Spey + Booster"
-},
-
-
+  engines: "RR Spey + Booster"},
 /* =============================
    === BAe 146 FAMILY (1983–1993)
    ============================= */
@@ -1425,9 +1215,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 38100,
   fuel_burn_kgph: 3000,
   price_acs_usd: 24000000,
-  engines: "Lycoming ALF 502R-5"
-},
-
+  engines: "Lycoming ALF 502R-5"},
 // --- BAe 146-200 (1982) ---
 {
   manufacturer: "BAe",
@@ -1439,9 +1227,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 42100,
   fuel_burn_kgph: 3200,
   price_acs_usd: 26000000,
-  engines: "Lycoming ALF 502R-5"
-},
-
+  engines: "Lycoming ALF 502R-5"},
 // --- BAe 146-300 (1988) ---
 {
   manufacturer: "BAe",
@@ -1453,10 +1239,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 43800,
   fuel_burn_kgph: 3400,
   price_acs_usd: 28000000,
-  engines: "Lycoming ALF 502R-5"
-},
-
-
+  engines: "Lycoming ALF 502R-5"},
 /* =============================
    === AVRO RJ SERIES (1992–2001)
    ============================= */
@@ -1472,9 +1255,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 42500,
   fuel_burn_kgph: 3100,
   price_acs_usd: 31000000,
-  engines: "Honeywell LF 507"
-},
-
+  engines: "Honeywell LF 507"},
 // --- Avro RJ85 (1993) ---
 {
   manufacturer: "Avro",
@@ -1486,9 +1267,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 44000,
   fuel_burn_kgph: 3300,
   price_acs_usd: 33000000,
-  engines: "Honeywell LF 507"
-},
-
+  engines: "Honeywell LF 507"},
 // --- Avro RJ100 (1993) ---
 {
   manufacturer: "Avro",
@@ -1500,12 +1279,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 46000,
   fuel_burn_kgph: 3500,
   price_acs_usd: 36000000,
-  engines: "Honeywell LF 507"
-},
-
-   
-   
-   
+  engines: "Honeywell LF 507"},
 // ============================================================
 // 1945 — 1980 (Soviet Aircraft Expansion)
 // Ilyushin • Tupolev • Antonov • Yakovlev
@@ -1523,9 +1297,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 18000,
   fuel_burn_kgph: 900,
   price_acs_usd: 1400000,
-  engines: "Shvetsov ASh-82"
-},
-
+  engines: "Shvetsov ASh-82"},
 {
   manufacturer: "Ilyushin",
   model: "Il-14",
@@ -1536,9 +1308,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21000,
   fuel_burn_kgph: 1000,
   price_acs_usd: 1800000,
-  engines: "Shvetsov ASh-82T"
-},
-
+  engines: "Shvetsov ASh-82T"},
 // Il-18 A y D ya añadidos en PARTE 4. Aquí agrego B y V:
 
 {
@@ -1551,9 +1321,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 64000,
   fuel_burn_kgph: 3300,
   price_acs_usd: 13500000,
-  engines: "Ivchenko AI-20"
-},
-
+  engines: "Ivchenko AI-20"},
 {
   manufacturer: "Ilyushin",
   model: "Il-18V",
@@ -1564,9 +1332,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 64000,
   fuel_burn_kgph: 3400,
   price_acs_usd: 15000000,
-  engines: "Ivchenko AI-20M"
-},
-
+  engines: "Ivchenko AI-20M"},
 // ======================= TUPOLEV =======================
 
 {
@@ -1579,9 +1345,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 34000,
   fuel_burn_kgph: 1700,
   price_acs_usd: 3500000,
-  engines: "Shvetsov ASh-73"
-},
-
+  engines: "Shvetsov ASh-73"},
 {
   manufacturer: "Tupolev",
   model: "Tu-104",
@@ -1592,9 +1356,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 62000,
   fuel_burn_kgph: 6200,
   price_acs_usd: 12000000,
-  engines: "Mikulin AM-3"
-},
-
+  engines: "Mikulin AM-3"},
 {
   manufacturer: "Tupolev",
   model: "Tu-114",
@@ -1605,9 +1367,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 164000,
   fuel_burn_kgph: 6800,
   price_acs_usd: 30000000,
-  engines: "NK-12 (turboprop)"
-},
-
+  engines: "NK-12 (turboprop)"},
 {
   manufacturer: "Tupolev",
   model: "Tu-134",
@@ -1618,9 +1378,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 47500,
   fuel_burn_kgph: 5200,
   price_acs_usd: 16000000,
-  engines: "Soloviev D-30"
-},
-
+  engines: "Soloviev D-30"},
 {
   manufacturer: "Tupolev",
   model: "Tu-154",
@@ -1631,9 +1389,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 98000,
   fuel_burn_kgph: 9200,
   price_acs_usd: 28000000,
-  engines: "Soloviev D-30KU-154"
-},
-
+  engines: "Soloviev D-30KU-154"},
 // ======================= ANTONOV =======================
 
 {
@@ -1646,9 +1402,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 56000,
   fuel_burn_kgph: 3400,
   price_acs_usd: 12000000,
-  engines: "Ivchenko AI-20"
-},
-
+  engines: "Ivchenko AI-20"},
 {
   manufacturer: "Antonov",
   model: "An-12",
@@ -1660,9 +1414,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 3500,
   price_acs_usd: 16000000,
   engines: "Ivchenko AI-20M",
-  status: "cargo"
-},
-
+  status: "cargo"},
 {
   manufacturer: "Antonov",
   model: "An-24",
@@ -1673,9 +1425,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21000,
   fuel_burn_kgph: 850,
   price_acs_usd: 6000000,
-  engines: "Ivchenko AI-24"
-},
-
+  engines: "Ivchenko AI-24"},
 {
   manufacturer: "Antonov",
   model: "An-26",
@@ -1687,9 +1437,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 900,
   price_acs_usd: 7000000,
   engines: "Ivchenko AI-24VT",
-  status: "cargo/passenger"
-},
-
+  status: "cargo/passenger"},
 {
   manufacturer: "Antonov",
   model: "An-72",
@@ -1700,9 +1448,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 34000,
   fuel_burn_kgph: 3200,
   price_acs_usd: 17000000,
-  engines: "Lotarev D-36"
-},
-
+  engines: "Lotarev D-36"},
 {
   manufacturer: "Antonov",
   model: "An-74",
@@ -1713,9 +1459,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 36000,
   fuel_burn_kgph: 3300,
   price_acs_usd: 19000000,
-  engines: "Lotarev D-36"
-},
-
+  engines: "Lotarev D-36"},
 // ======================= YAKOVLEV =======================
 
 {
@@ -1728,9 +1472,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 16500,
   fuel_burn_kgph: 1100,
   price_acs_usd: 9000000,
-  engines: "Ivchenko AI-25"
-},
-
+  engines: "Ivchenko AI-25"},
 {
   manufacturer: "Yakovlev",
   model: "Yak-42",
@@ -1741,9 +1483,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 57000,
   fuel_burn_kgph: 6800,
   price_acs_usd: 24000000,
-  engines: "Lotarev D-36"
-},
-
+  engines: "Lotarev D-36"},
 // ============================================================
 // 1950 — 1975 (Convair / Martin / Sud Aviation / USA Rare)
 // ============================================================
@@ -1760,9 +1500,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 16500,
   fuel_burn_kgph: 850,
   price_acs_usd: 3200000,
-  engines: "PW R-2800"
-},
-
+  engines: "PW R-2800"},
 {
   manufacturer: "Convair",
   model: "CV-340",
@@ -1773,9 +1511,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 18500,
   fuel_burn_kgph: 900,
   price_acs_usd: 3500000,
-  engines: "PW R-2800"
-},
-
+  engines: "PW R-2800"},
 {
   manufacturer: "Convair",
   model: "CV-440 Metropolitan",
@@ -1786,9 +1522,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 19500,
   fuel_burn_kgph: 950,
   price_acs_usd: 3800000,
-  engines: "PW R-2800"
-},
-
+  engines: "PW R-2800"},
 // Turboprops
 
 {
@@ -1801,9 +1535,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 20000,
   fuel_burn_kgph: 1100,
   price_acs_usd: 4500000,
-  engines: "Napier Eland"
-},
-
+  engines: "Napier Eland"},
 {
   manufacturer: "Convair",
   model: "CV-580",
@@ -1814,9 +1546,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 20500,
   fuel_burn_kgph: 1200,
   price_acs_usd: 5200000,
-  engines: "Allison 501-D13"
-},
-
+  engines: "Allison 501-D13"},
 {
   manufacturer: "Convair",
   model: "CV-600",
@@ -1827,9 +1557,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 19000,
   fuel_burn_kgph: 1000,
   price_acs_usd: 4800000,
-  engines: "RR Dart 510"
-},
-
+  engines: "RR Dart 510"},
 {
   manufacturer: "Convair",
   model: "CV-640",
@@ -1840,9 +1568,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 20000,
   fuel_burn_kgph: 1100,
   price_acs_usd: 5000000,
-  engines: "RR Dart 510"
-},
-
+  engines: "RR Dart 510"},
 // ======================= MARTIN =======================
 
 {
@@ -1855,9 +1581,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 15500,
   fuel_burn_kgph: 780,
   price_acs_usd: 2900000,
-  engines: "PW R-2800"
-},
-
+  engines: "PW R-2800"},
 {
   manufacturer: "Martin",
   model: "4-0-4",
@@ -1868,9 +1592,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 19000,
   fuel_burn_kgph: 900,
   price_acs_usd: 3400000,
-  engines: "PW R-2800"
-},
-
+  engines: "PW R-2800"},
 // ======================= SUD AVIATION CARAVELLE (EXPANDED) =======================
 // Caravelle ya existe la básica → agregamos variantes importantes
 
@@ -1884,9 +1606,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 52000,
   fuel_burn_kgph: 4600,
   price_acs_usd: 11500000,
-  engines: "RR Avon"
-},
-
+  engines: "RR Avon"},
 {
   manufacturer: "Sud Aviation",
   model: "Caravelle 6R",
@@ -1897,9 +1617,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 53500,
   fuel_burn_kgph: 4900,
   price_acs_usd: 12500000,
-  engines: "RR Avon RA.29"
-},
-
+  engines: "RR Avon RA.29"},
 {
   manufacturer: "Sud Aviation",
   model: "Caravelle 10B",
@@ -1910,9 +1628,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 55000,
   fuel_burn_kgph: 5100,
   price_acs_usd: 14500000,
-  engines: "GE CJ805-23"
-},
-
+  engines: "GE CJ805-23"},
 {
   manufacturer: "Sud Aviation",
   model: "Caravelle 12R",
@@ -1923,9 +1639,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 57500,
   fuel_burn_kgph: 5200,
   price_acs_usd: 16500000,
-  engines: "GE CJ805-23"
-},
-
+  engines: "GE CJ805-23"},
 // ======================= RARE USA / SPECIAL AIRCRAFT =======================
 
 {
@@ -1938,9 +1652,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6800,
   fuel_burn_kgph: 640,
   price_acs_usd: 4500000,
-  engines: "PW R-2800"
-},
-
+  engines: "PW R-2800"},
 {
   manufacturer: "Aero Commander",
   model: "500B",
@@ -1951,9 +1663,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4100,
   fuel_burn_kgph: 300,
   price_acs_usd: 1200000,
-  engines: "Lycoming GO-480"
-},
-
+  engines: "Lycoming GO-480"},
 {
   manufacturer: "Aero Commander",
   model: "680 Super",
@@ -1964,9 +1674,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5200,
   fuel_burn_kgph: 350,
   price_acs_usd: 1800000,
-  engines: "Continental GTSIO-520"
-},
-
+  engines: "Continental GTSIO-520"},
 {
   manufacturer: "Fairchild",
   model: "F-27",
@@ -1977,9 +1685,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 20000,
   fuel_burn_kgph: 900,
   price_acs_usd: 3800000,
-  engines: "RR Dart 6"
-},
-
+  engines: "RR Dart 6"},
 {
   manufacturer: "Beechcraft",
   model: "1900D",
@@ -1990,9 +1696,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 7700,
   fuel_burn_kgph: 370,
   price_acs_usd: 4200000,
-  engines: "PT6A-67D"
-},
-
+  engines: "PT6A-67D"},
 // ============================================================
 // 1970 — 2020 (European Regionals)
 // ============================================================
@@ -2009,9 +1713,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 12900,
   fuel_burn_kgph: 650,
   price_acs_usd: 9500000,
-  engines: "GE CT7-9B"
-},
-
+  engines: "GE CT7-9B"},
 {
   manufacturer: "Saab",
   model: "Saab 2000",
@@ -2022,9 +1724,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 22800,
   fuel_burn_kgph: 900,
   price_acs_usd: 17000000,
-  engines: "RR AE2100A"
-},
-
+  engines: "RR AE2100A"},
 // ======================= DORNIER =======================
 
 {
@@ -2037,9 +1737,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6400,
   fuel_burn_kgph: 300,
   price_acs_usd: 5200000,
-  engines: "Garrett TPE331"
-},
-
+  engines: "Garrett TPE331"},
 {
   manufacturer: "Dornier",
   model: "Do 328-100",
@@ -2050,9 +1748,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 13000,
   fuel_burn_kgph: 620,
   price_acs_usd: 12500000,
-  engines: "PW119B"
-},
-
+  engines: "PW119B"},
 {
   manufacturer: "Dornier",
   model: "Do 328JET",
@@ -2063,9 +1759,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 14500,
   fuel_burn_kgph: 950,
   price_acs_usd: 16500000,
-  engines: "PW306B"
-},
-
+  engines: "PW306B"},
 // ======================= BAe / BRITISH AEROSPACE =======================
 
 {
@@ -2078,9 +1772,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 22700,
   fuel_burn_kgph: 950,
   price_acs_usd: 14000000,
-  engines: "PW126"
-},
-
+  engines: "PW126"},
 {
   manufacturer: "British Aerospace",
   model: "Jetstream 31",
@@ -2091,9 +1783,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6400,
   fuel_burn_kgph: 330,
   price_acs_usd: 3500000,
-  engines: "Garrett TPE331"
-},
-
+  engines: "Garrett TPE331"},
 {
   manufacturer: "British Aerospace",
   model: "Jetstream 32EP",
@@ -2104,9 +1794,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6800,
   fuel_burn_kgph: 360,
   price_acs_usd: 3900000,
-  engines: "Garrett TPE331-12UHR"
-},
-
+  engines: "Garrett TPE331-12UHR"},
 {
   manufacturer: "British Aerospace",
   model: "Jetstream 41",
@@ -2117,9 +1805,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 10900,
   fuel_burn_kgph: 520,
   price_acs_usd: 8500000,
-  engines: "Allison 501-D22"
-},
-
+  engines: "Allison 501-D22"},
 // ======================= LET AIRCRAFT (Czech) =======================
 
 {
@@ -2132,9 +1818,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6600,
   fuel_burn_kgph: 340,
   price_acs_usd: 4800000,
-  engines: "Walter M601F"
-},
-
+  engines: "Walter M601F"},
 {
   manufacturer: "LET",
   model: "L-610",
@@ -2145,9 +1829,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 16500,
   fuel_burn_kgph: 900,
   price_acs_usd: 12000000,
-  engines: "Walter M602"
-},
-
+  engines: "Walter M602"},
 // ======================= SHORTS =======================
 
 {
@@ -2160,9 +1842,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 10000,
   fuel_burn_kgph: 420,
   price_acs_usd: 4500000,
-  engines: "PT6A-45"
-},
-
+  engines: "PT6A-45"},
 {
   manufacturer: "Shorts",
   model: "Shorts 360",
@@ -2173,9 +1853,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 12000,
   fuel_burn_kgph: 460,
   price_acs_usd: 5200000,
-  engines: "PT6A-65"
-},
-
+  engines: "PT6A-65"},
 // ======================= CASA / NURTANIO =======================
 
 {
@@ -2188,9 +1866,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 15500,
   fuel_burn_kgph: 800,
   price_acs_usd: 18000000,
-  engines: "GE CT7-9C"
-},
-
+  engines: "GE CT7-9C"},
 {
   manufacturer: "CASA",
   model: "C-295 (Civil)",
@@ -2201,9 +1877,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 23000,
   fuel_burn_kgph: 900,
   price_acs_usd: 28000000,
-  engines: "PW127G"
-},
-
+  engines: "PW127G"},
 // ======================= FOKKER (Missing Regionals) =======================
 
 {
@@ -2216,9 +1890,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 20500,
   fuel_burn_kgph: 820,
   price_acs_usd: 15000000,
-  engines: "PW125B"
-},
-
+  engines: "PW125B"},
 {
   manufacturer: "Fokker",
   model: "F60",
@@ -2229,9 +1901,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 23000,
   fuel_burn_kgph: 850,
   price_acs_usd: 17500000,
-  engines: "PW127B"
-},
-
+  engines: "PW127B"},
 // ============================================================
 // 1970 — 2020 (American Regionals — Turboprops & Light Commuters)
 // ============================================================
@@ -2248,9 +1918,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5700,
   fuel_burn_kgph: 350,
   price_acs_usd: 3800000,
-  engines: "PT6A-34"
-},
-
+  engines: "PT6A-34"},
 {
   manufacturer: "Embraer",
   model: "EMB 120 Brasilia",
@@ -2261,9 +1929,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 11900,
   fuel_burn_kgph: 700,
   price_acs_usd: 7800000,
-  engines: "PW118"
-},
-
+  engines: "PW118"},
 // ======================= FAIRCHILD SWEARINGEN =======================
 
 {
@@ -2276,9 +1942,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6400,
   fuel_burn_kgph: 380,
   price_acs_usd: 4200000,
-  engines: "Garrett TPE331-11U"
-},
-
+  engines: "Garrett TPE331-11U"},
 {
   manufacturer: "Fairchild Swearingen",
   model: "Metro 23",
@@ -2289,9 +1953,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6650,
   fuel_burn_kgph: 400,
   price_acs_usd: 4900000,
-  engines: "Garrett TPE331-12UHR"
-},
-
+  engines: "Garrett TPE331-12UHR"},
 // ======================= CESSNA =======================
 
 {
@@ -2304,9 +1966,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3629,
   fuel_burn_kgph: 240,
   price_acs_usd: 2900000,
-  engines: "PT6A-114A"
-},
-
+  engines: "PT6A-114A"},
 {
   manufacturer: "Cessna",
   model: "208B Grand Caravan",
@@ -2317,9 +1977,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3970,
   fuel_burn_kgph: 250,
   price_acs_usd: 3400000,
-  engines: "PT6A-114A"
-},
-
+  engines: "PT6A-114A"},
 {
   manufacturer: "Cessna",
   model: "208EX Grand Caravan EX",
@@ -2330,9 +1988,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3970,
   fuel_burn_kgph: 260,
   price_acs_usd: 3800000,
-  engines: "PT6A-140"
-},
-
+  engines: "PT6A-140"},
 // ======================= PIPER =======================
 
 {
@@ -2345,9 +2001,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 2948,
   fuel_burn_kgph: 220,
   price_acs_usd: 1500000,
-  engines: "Lycoming TIO-540"
-},
-
+  engines: "Lycoming TIO-540"},
 {
   manufacturer: "Piper",
   model: "PA-31-350 Chieftain",
@@ -2358,9 +2012,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3175,
   fuel_burn_kgph: 240,
   price_acs_usd: 1750000,
-  engines: "Lycoming TIO-540-J2BD"
-},
-
+  engines: "Lycoming TIO-540-J2BD"},
 // ======================= BEECHCRAFT =======================
 
 {
@@ -2373,9 +2025,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 7170,
   fuel_burn_kgph: 500,
   price_acs_usd: 5800000,
-  engines: "PT6A-65B"
-},
-
+  engines: "PT6A-65B"},
 {
   manufacturer: "Beechcraft",
   model: "1900D",
@@ -2386,9 +2036,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 7550,
   fuel_burn_kgph: 520,
   price_acs_usd: 7200000,
-  engines: "PT6A-67D"
-},
-
+  engines: "PT6A-67D"},
 // ======================= DE HAVILLAND CANADA — TWIN OTTER =======================
 
 {
@@ -2401,9 +2049,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5700,
   fuel_burn_kgph: 300,
   price_acs_usd: 5500000,
-  engines: "PT6A-27"
-},
-
+  engines: "PT6A-27"},
 {
   manufacturer: "De Havilland Canada",
   model: "DHC-6 Twin Otter Series 400",
@@ -2414,9 +2060,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6300,
   fuel_burn_kgph: 320,
   price_acs_usd: 7400000,
-  engines: "PT6A-34"
-},
-
+  engines: "PT6A-34"},
 // ======================= JAPAN — MITSUBISHI =======================
 
 {
@@ -2429,24 +2073,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4800,
   fuel_burn_kgph: 350,
   price_acs_usd: 1900000,
-  engines: "Garrett TPE331-10"
-},
-
-// ======================= GULFSTREAM — G-I =======================
-
-{
-  manufacturer: "Gulfstream",
-  model: "G-159 (Gulfstream I)",
-  year: 1959,
-  seats: 24,
-  range_nm: 2100,
-  speed_kts: 300,
-  mtow_kg: 14000,
-  fuel_burn_kgph: 900,
-  price_acs_usd: 11500000,
-  engines: "RR Dart"
-},
-
+  engines: "Garrett TPE331-10"},
 // ============================================================
 // PARTE 9 — HEAVY CARGO & MILITARY → CIVIL (1940–2025)
 // ============================================================
@@ -2463,9 +2090,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 11800,
   fuel_burn_kgph: 480,
   price_acs_usd: 850000,
-  engines: "PW R-1830"
-},
-
+  engines: "PW R-1830"},
 {
   manufacturer: "Douglas",
   model: "C-54 Skymaster (DC-4 Cargo)",
@@ -2476,9 +2101,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 29700,
   fuel_burn_kgph: 1350,
   price_acs_usd: 1900000,
-  engines: "PW R-2000"
-},
-
+  engines: "PW R-2000"},
 {
   manufacturer: "Basler",
   model: "BT-67 (DC-3 Modernized)",
@@ -2489,9 +2112,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 14000,
   fuel_burn_kgph: 700,
   price_acs_usd: 6200000,
-  engines: "PT6A-67R"
-},
-
+  engines: "PT6A-67R"},
 {
   manufacturer: "Curtiss",
   model: "C-46 Commando",
@@ -2502,9 +2123,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 22365,
   fuel_burn_kgph: 1400,
   price_acs_usd: 1700000,
-  engines: "Wright R-2800"
-},
-
+  engines: "Wright R-2800"},
 // ======================= LOCKHEED HERCULES =======================
 
 {
@@ -2517,9 +2136,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 70300,
   fuel_burn_kgph: 1900,
   price_acs_usd: 38000000,
-  engines: "T56-A-15"
-},
-
+  engines: "T56-A-15"},
 {
   manufacturer: "Lockheed",
   model: "L-100-20",
@@ -2530,9 +2147,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 70300,
   fuel_burn_kgph: 1950,
   price_acs_usd: 42000000,
-  engines: "T56-A-15"
-},
-
+  engines: "T56-A-15"},
 {
   manufacturer: "Lockheed",
   model: "L-100-30",
@@ -2543,9 +2158,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 70300,
   fuel_burn_kgph: 2000,
   price_acs_usd: 45000000,
-  engines: "T56-A-15"
-},
-
+  engines: "T56-A-15"},
 // ======================= DHC CARGO / STOL =======================
 
 {
@@ -2558,9 +2171,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 12700,
   fuel_burn_kgph: 600,
   price_acs_usd: 6500000,
-  engines: "PW R-2000"
-},
-
+  engines: "PW R-2000"},
 {
   manufacturer: "De Havilland Canada",
   model: "DHC-5 Buffalo",
@@ -2571,9 +2182,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21000,
   fuel_burn_kgph: 900,
   price_acs_usd: 9700000,
-  engines: "General Electric CT64"
-},
-
+  engines: "General Electric CT64"},
 // ======================= CASA / AIRBUS DEFENCE =======================
 
 {
@@ -2586,9 +2195,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 7700,
   fuel_burn_kgph: 350,
   price_acs_usd: 6000000,
-  engines: "Garrett TPE331"
-},
-
+  engines: "Garrett TPE331"},
 {
   manufacturer: "Airbus (CASA)",
   model: "CN-235",
@@ -2599,9 +2206,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 16000,
   fuel_burn_kgph: 600,
   price_acs_usd: 21000000,
-  engines: "GE CT7-9C"
-},
-
+  engines: "GE CT7-9C"},
 {
   manufacturer: "Airbus (CASA)",
   model: "C-295",
@@ -2612,9 +2217,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 23000,
   fuel_burn_kgph: 850,
   price_acs_usd: 30000000,
-  engines: "PW127G"
-},
-
+  engines: "PW127G"},
 // ======================= ANTONOV LIGHT/MEDIUM =======================
 
 {
@@ -2627,9 +2230,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21200,
   fuel_burn_kgph: 950,
   price_acs_usd: 4500000,
-  engines: "AI-24"
-},
-
+  engines: "AI-24"},
 {
   manufacturer: "Antonov",
   model: "An-26",
@@ -2640,9 +2241,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 24000,
   fuel_burn_kgph: 1100,
   price_acs_usd: 6000000,
-  engines: "AI-24VT"
-},
-
+  engines: "AI-24VT"},
 {
   manufacturer: "Antonov",
   model: "An-30 (Recon → Civil Cargo)",
@@ -2653,9 +2252,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 24000,
   fuel_burn_kgph: 1150,
   price_acs_usd: 7000000,
-  engines: "AI-24VT"
-},
-
+  engines: "AI-24VT"},
 // ======================= ANTONOV TURBOFAN CARGO =======================
 
 {
@@ -2668,9 +2265,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 34000,
   fuel_burn_kgph: 2600,
   price_acs_usd: 22000000,
-  engines: "D-36"
-},
-
+  engines: "D-36"},
 {
   manufacturer: "Antonov",
   model: "An-74",
@@ -2681,9 +2276,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 36000,
   fuel_burn_kgph: 2700,
   price_acs_usd: 27000000,
-  engines: "D-36"
-},
-
+  engines: "D-36"},
 {
   manufacturer: "Antonov",
   model: "An-32",
@@ -2694,9 +2287,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 27000,
   fuel_burn_kgph: 1200,
   price_acs_usd: 15000000,
-  engines: "AI-20DM"
-},
-
+  engines: "AI-20DM"},
 // ======================= ANTONOV HEAVY =======================
 
 {
@@ -2709,9 +2300,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 61000,
   fuel_burn_kgph: 2600,
   price_acs_usd: 18000000,
-  engines: "AI-20M"
-},
-
+  engines: "AI-20M"},
 {
   manufacturer: "Antonov",
   model: "An-22",
@@ -2722,9 +2311,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 250000,
   fuel_burn_kgph: 5500,
   price_acs_usd: 75000000,
-  engines: "NK-12MA"
-},
-
+  engines: "NK-12MA"},
 {
   manufacturer: "Antonov",
   model: "An-124 Ruslan",
@@ -2735,9 +2322,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 405000,
   fuel_burn_kgph: 9000,
   price_acs_usd: 180000000,
-  engines: "D-18T"
-},
-
+  engines: "D-18T"},
 // ======================= ILYUSHIN HEAVY =======================
 
 {
@@ -2750,9 +2335,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 170000,
   fuel_burn_kgph: 7500,
   price_acs_usd: 52000000,
-  engines: "D-30KP"
-},
-
+  engines: "D-30KP"},
 {
   manufacturer: "Ilyushin",
   model: "Il-76MD-90A",
@@ -2763,9 +2346,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 210000,
   fuel_burn_kgph: 6900,
   price_acs_usd: 78000000,
-  engines: "PS-90A-76"
-},
-
+  engines: "PS-90A-76"},
 // ======================= HEAVY WESTERN CARGO =======================
 
 {
@@ -2778,9 +2359,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 95000,
   fuel_burn_kgph: 6100,
   price_acs_usd: 18000000,
-  engines: "JT8D"
-},
-
+  engines: "JT8D"},
 {
   manufacturer: "Boeing",
   model: "737-300F",
@@ -2791,9 +2370,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 63000,
   fuel_burn_kgph: 3200,
   price_acs_usd: 24000000,
-  engines: "CFM56-3"
-},
-
+  engines: "CFM56-3"},
 {
   manufacturer: "Boeing",
   model: "737-400F",
@@ -2804,9 +2381,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 68000,
   fuel_burn_kgph: 3500,
   price_acs_usd: 26000000,
-  engines: "CFM56-3"
-},
-
+  engines: "CFM56-3"},
 {
   manufacturer: "Boeing",
   model: "737-800BCF",
@@ -2817,9 +2392,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 79000,
   fuel_burn_kgph: 3000,
   price_acs_usd: 42000000,
-  engines: "CFM56-7B"
-},
-
+  engines: "CFM56-7B"},
 {
   manufacturer: "Boeing",
   model: "747-200F",
@@ -2830,9 +2403,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 360000,
   fuel_burn_kgph: 23000,
   price_acs_usd: 65000000,
-  engines: "JT9D"
-},
-
+  engines: "JT9D"},
 {
   manufacturer: "Boeing",
   model: "747-400F",
@@ -2843,9 +2414,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 396000,
   fuel_burn_kgph: 25000,
   price_acs_usd: 150000000,
-  engines: "CF6-80C2 / PW4056 / RB211"
-},
-
+  engines: "CF6-80C2 / PW4056 / RB211"},
 {
   manufacturer: "Boeing",
   model: "747-8F",
@@ -2856,9 +2425,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 447700,
   fuel_burn_kgph: 26000,
   price_acs_usd: 200000000,
-  engines: "GEnx-2B67"
-},
-
+  engines: "GEnx-2B67"},
 {
   manufacturer: "Boeing",
   model: "777F",
@@ -2869,9 +2436,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 347000,
   fuel_burn_kgph: 9700,
   price_acs_usd: 320000000,
-  engines: "GE90-110B1"
-},
-
+  engines: "GE90-110B1"},
 {
   manufacturer: "Airbus",
   model: "A300B4F",
@@ -2882,9 +2447,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 165000,
   fuel_burn_kgph: 9000,
   price_acs_usd: 35000000,
-  engines: "CF6-50"
-},
-
+  engines: "CF6-50"},
 {
   manufacturer: "Airbus",
   model: "A310-300F",
@@ -2895,9 +2458,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 164000,
   fuel_burn_kgph: 8800,
   price_acs_usd: 60000000,
-  engines: "CF6-80C2"
-},
-
+  engines: "CF6-80C2"},
 {
   manufacturer: "Airbus",
   model: "A330-200F",
@@ -2908,9 +2469,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 233000,
   fuel_burn_kgph: 7600,
   price_acs_usd: 235000000,
-  engines: "CF6-80E1"
-},
-
+  engines: "CF6-80E1"},
 {
   manufacturer: "Airbus",
   model: "A330-300P2F",
@@ -2921,9 +2480,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 233000,
   fuel_burn_kgph: 7800,
   price_acs_usd: 180000000,
-  engines: "CF6-80E1"
-},
-
+  engines: "CF6-80E1"},
 {
   manufacturer: "MD",
   model: "MD-11F",
@@ -2934,389 +2491,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 286000,
   fuel_burn_kgph: 10800,
   price_acs_usd: 90000000,
-  engines: "CF6-80C2"
-},
-
-// ============================================================
-// PARTE 10 — BUSINESS JETS (1960–2035)
-// ============================================================
-
-// ======================= LEARJET SERIES =======================
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 23",
-  year: 1964,
-  seats: 6,
-  range_nm: 1700,
-  speed_kts: 440,
-  mtow_kg: 5900,
-  fuel_burn_kgph: 600,
-  price_acs_usd: 5500000,
-  engines: "GE CJ610"
-},
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 35A",
-  year: 1976,
-  seats: 8,
-  range_nm: 2060,
-  speed_kts: 430,
-  mtow_kg: 8165,
-  fuel_burn_kgph: 650,
-  price_acs_usd: 6500000,
-  engines: "Honeywell TFE731"
-},
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 60",
-  year: 1993,
-  seats: 8,
-  range_nm: 2400,
-  speed_kts: 455,
-  mtow_kg: 10700,
-  fuel_burn_kgph: 700,
-  price_acs_usd: 12000000,
-  engines: "PW305A"
-},
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 70",
-  year: 2013,
-  seats: 8,
-  range_nm: 2300,
-  speed_kts: 465,
-  mtow_kg: 10675,
-  fuel_burn_kgph: 720,
-  price_acs_usd: 13500000,
-  engines: "PW305D"
-},
-
-// ======================= CESSNA CITATION SERIES =======================
-
-{
-  manufacturer: "Cessna",
-  model: "Citation I",
-  year: 1972,
-  seats: 6,
-  range_nm: 1100,
-  speed_kts: 350,
-  mtow_kg: 4800,
-  fuel_burn_kgph: 500,
-  price_acs_usd: 4000000,
-  engines: "PW JT15D"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation II",
-  year: 1978,
-  seats: 8,
-  range_nm: 1300,
-  speed_kts: 380,
-  mtow_kg: 6900,
-  fuel_burn_kgph: 580,
-  price_acs_usd: 5500000,
-  engines: "PW JT15D-4"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation V",
-  year: 1987,
-  seats: 8,
-  range_nm: 1900,
-  speed_kts: 420,
-  mtow_kg: 7400,
-  fuel_burn_kgph: 650,
-  price_acs_usd: 7500000,
-  engines: "PW JT15D-5A"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation X+",
-  year: 2012,
-  seats: 12,
-  range_nm: 3600,
-  speed_kts: 525,  // Mach 0.935
-  mtow_kg: 16400,
-  fuel_burn_kgph: 1200,
-  price_acs_usd: 23000000,
-  engines: "RR AE3007C2"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation Latitude",
-  year: 2015,
-  seats: 9,
-  range_nm: 2700,
-  speed_kts: 446,
-  mtow_kg: 13900,
-  fuel_burn_kgph: 1000,
-  price_acs_usd: 17500000,
-  engines: "PW306D1"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation Longitude",
-  year: 2019,
-  seats: 12,
-  range_nm: 3500,
-  speed_kts: 480,
-  mtow_kg: 18600,
-  fuel_burn_kgph: 1100,
-  price_acs_usd: 28500000,
-  engines: "Honeywell HTF7700L"
-},
-
-// ======================= GULFSTREAM SERIES =======================
-
-{
-  manufacturer: "Gulfstream",
-  model: "GII",
-  year: 1967,
-  seats: 12,
-  range_nm: 3000,
-  speed_kts: 480,
-  mtow_kg: 29500,
-  fuel_burn_kgph: 1800,
-  price_acs_usd: 15000000,
-  engines: "RR Spey"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "GIV",
-  year: 1985,
-  seats: 14,
-  range_nm: 4200,
-  speed_kts: 480,
-  mtow_kg: 33400,
-  fuel_burn_kgph: 1400,
-  price_acs_usd: 28000000,
-  engines: "RR Tay 611-8"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "G550",
-  year: 2003,
-  seats: 19,
-  range_nm: 6750,
-  speed_kts: 488,
-  mtow_kg: 41900,
-  fuel_burn_kgph: 1500,
-  price_acs_usd: 55000000,
-  engines: "RR BR710"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "G650",
-  year: 2012,
-  seats: 19,
-  range_nm: 7000,
-  speed_kts: 488,
-  mtow_kg: 45500,
-  fuel_burn_kgph: 1600,
-  price_acs_usd: 70000000,
-  engines: "RR BR725"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "G700",
-  year: 2022,
-  seats: 19,
-  range_nm: 7500,
-  speed_kts: 490,
-  mtow_kg: 47000,
-  fuel_burn_kgph: 1700,
-  price_acs_usd: 78000000,
-  engines: "RR Pearl 700"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "G800",
-  year: 2023,
-  seats: 19,
-  range_nm: 8000,
-  speed_kts: 490,
-  mtow_kg: 47000,
-  fuel_burn_kgph: 1750,
-  price_acs_usd: 82000000,
-  engines: "RR Pearl 700"
-},
-
-// ======================= DASSAULT FALCON SERIES =======================
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 20",
-  year: 1965,
-  seats: 8,
-  range_nm: 1800,
-  speed_kts: 430,
-  mtow_kg: 12000,
-  fuel_burn_kgph: 900,
-  price_acs_usd: 9500000,
-  engines: "GE CF700"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 50",
-  year: 1976,
-  seats: 9,
-  range_nm: 3400,
-  speed_kts: 470,
-  mtow_kg: 18000,
-  fuel_burn_kgph: 1200,
-  price_acs_usd: 18500000,
-  engines: "ATF3-6A"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 900EX",
-  year: 1996,
-  seats: 14,
-  range_nm: 4500,
-  speed_kts: 475,
-  mtow_kg: 22500,
-  fuel_burn_kgph: 1300,
-  price_acs_usd: 36500000,
-  engines: "Honeywell TFE731-60"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 7X",
-  year: 2007,
-  seats: 16,
-  range_nm: 5950,
-  speed_kts: 488,
-  mtow_kg: 31800,
-  fuel_burn_kgph: 1500,
-  price_acs_usd: 52000000,
-  engines: "PW307A"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 10X",
-  year: 2025,
-  seats: 19,
-  range_nm: 7500,
-  speed_kts: 495,
-  mtow_kg: 52000,
-  fuel_burn_kgph: 1750,
-  price_acs_usd: 78000000,
-  engines: "RR Pearl 10X"
-},
-
-// ======================= BOMBARDIER — CHALLENGER / GLOBAL =======================
-
-{
-  manufacturer: "Bombardier",
-  model: "Challenger 300",
-  year: 2003,
-  seats: 9,
-  range_nm: 3100,
-  speed_kts: 470,
-  mtow_kg: 17600,
-  fuel_burn_kgph: 1100,
-  price_acs_usd: 21000000,
-  engines: "HTF7000"
-},
-
-{
-  manufacturer: "Bombardier",
-  model: "Challenger 650",
-  year: 2015,
-  seats: 12,
-  range_nm: 4000,
-  speed_kts: 470,
-  mtow_kg: 21800,
-  fuel_burn_kgph: 1350,
-  price_acs_usd: 32000000,
-  engines: "CF34-3B"
-},
-
-{
-  manufacturer: "Bombardier",
-  model: "Global 6000",
-  year: 2012,
-  seats: 19,
-  range_nm: 6000,
-  speed_kts: 488,
-  mtow_kg: 45000,
-  fuel_burn_kgph: 1750,
-  price_acs_usd: 62000000,
-  engines: "BR710A2-20"
-},
-
-{
-  manufacturer: "Bombardier",
-  model: "Global 7500",
-  year: 2018,
-  seats: 19,
-  range_nm: 7700,
-  speed_kts: 488,
-  mtow_kg: 52100,
-  fuel_burn_kgph: 1800,
-  price_acs_usd: 75000000,
-  engines: "GE Passport"
-},
-
-// ======================= EMBRAER EXECUTIVE =======================
-
-{
-  manufacturer: "Embraer",
-  model: "Phenom 100EV",
-  year: 2017,
-  seats: 6,
-  range_nm: 1178,
-  speed_kts: 390,
-  mtow_kg: 4800,
-  fuel_burn_kgph: 400,
-  price_acs_usd: 4800000,
-  engines: "PW617F1-E"
-},
-
-{
-  manufacturer: "Embraer",
-  model: "Phenom 300E",
-  year: 2018,
-  seats: 9,
-  range_nm: 2000,
-  speed_kts: 453,
-  mtow_kg: 8000,
-  fuel_burn_kgph: 650,
-  price_acs_usd: 9500000,
-  engines: "PW535E1"
-},
-
-{
-  manufacturer: "Embraer",
-  model: "Legacy 500",
-  year: 2015,
-  seats: 12,
-  range_nm: 3125,
-  speed_kts: 470,
-  mtow_kg: 17600,
-  fuel_burn_kgph: 1050,
-  price_acs_usd: 21000000,
-  engines: "HTF7500E"
-},
-
+  engines: "CF6-80C2"},
 {
   manufacturer: "Embraer",
   model: "Praetor 600",
@@ -3327,9 +2502,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 19800,
   fuel_burn_kgph: 1100,
   price_acs_usd: 22000000,
-  engines: "HTF7500E"
-},
-
+  engines: "HTF7500E"},
 // ======================= OTROS EJECUTIVOS =======================
 
 {
@@ -3342,9 +2515,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4800,
   fuel_burn_kgph: 420,
   price_acs_usd: 5200000,
-  engines: "GE Honda HF120"
-},
-
+  engines: "GE Honda HF120"},
 {
   manufacturer: "Pilatus",
   model: "PC-24",
@@ -3355,9 +2526,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 8500,
   fuel_burn_kgph: 620,
   price_acs_usd: 11500000,
-  engines: "Williams FJ44-4A"
-},
-
+  engines: "Williams FJ44-4A"},
 // ======================= FUTURE / SUPERSÓNICOS EJECUTIVOS =======================
 
 {
@@ -3371,9 +2540,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 2800,
   price_acs_usd: 120000000,
   engines: "GE Affinity",
-  status: "cancelled"
-},
-
+  status: "cancelled"},
 // ============================================================
 // PARTE 11 — HELICÓPTEROS (1950–2025)
 // ============================================================
@@ -3391,9 +2558,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1450,
   fuel_burn_kgph: 105,
   price_acs_usd: 900000,
-  engines: "Allison 250-C20"
-},
-
+  engines: "Allison 250-C20"},
 {
   manufacturer: "Bell",
   model: "Bell 212",
@@ -3404,9 +2569,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5080,
   fuel_burn_kgph: 380,
   price_acs_usd: 5500000,
-  engines: "PT6T-3 Twin-Pac"
-},
-
+  engines: "PT6T-3 Twin-Pac"},
 {
   manufacturer: "Bell",
   model: "Bell 412EP",
@@ -3417,10 +2580,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5400,
   fuel_burn_kgph: 440,
   price_acs_usd: 9000000,
-  engines: "PT6T-9 Twin-Pac"
-},
-
-
+  engines: "PT6T-9 Twin-Pac"},
 // ======================= AIRBUS / EUROCOPTER =======================
 
 {
@@ -3433,9 +2593,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1715,
   fuel_burn_kgph: 115,
   price_acs_usd: 2300000,
-  engines: "Turbomeca Arrius 2F"
-},
-
+  engines: "Turbomeca Arrius 2F"},
 {
   manufacturer: "Airbus Helicopters",
   model: "H125 (AS350 Écureuil)",
@@ -3446,9 +2604,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 2250,
   fuel_burn_kgph: 165,
   price_acs_usd: 3100000,
-  engines: "Safran Arriel 2D"
-},
-
+  engines: "Safran Arriel 2D"},
 {
   manufacturer: "Airbus Helicopters",
   model: "H135 (EC135)",
@@ -3459,9 +2615,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 2980,
   fuel_burn_kgph: 280,
   price_acs_usd: 6500000,
-  engines: "PW206B"
-},
-
+  engines: "PW206B"},
 {
   manufacturer: "Airbus Helicopters",
   model: "H145",
@@ -3472,9 +2626,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3800,
   fuel_burn_kgph: 320,
   price_acs_usd: 9500000,
-  engines: "Arriel 2E"
-},
-
+  engines: "Arriel 2E"},
 {
   manufacturer: "Airbus Helicopters",
   model: "H155 (EC155)",
@@ -3485,9 +2637,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4800,
   fuel_burn_kgph: 520,
   price_acs_usd: 11000000,
-  engines: "Arriel 2C2"
-},
-
+  engines: "Arriel 2C2"},
 {
   manufacturer: "Airbus Helicopters",
   model: "H225 Super Puma",
@@ -3498,10 +2648,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 11100,
   fuel_burn_kgph: 900,
   price_acs_usd: 27000000,
-  engines: "Makila 2A1"
-},
-
-
+  engines: "Makila 2A1"},
 // ======================= LEONARDO (AGUSTAWESTLAND) =======================
 
 {
@@ -3514,9 +2661,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3175,
   fuel_burn_kgph: 260,
   price_acs_usd: 6500000,
-  engines: "PW207C"
-},
-
+  engines: "PW207C"},
 {
   manufacturer: "Leonardo",
   model: "AW139",
@@ -3527,9 +2672,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6800,
   fuel_burn_kgph: 520,
   price_acs_usd: 16500000,
-  engines: "PT6C-67C"
-},
-
+  engines: "PT6C-67C"},
 {
   manufacturer: "Leonardo",
   model: "AW169",
@@ -3540,9 +2683,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4600,
   fuel_burn_kgph: 400,
   price_acs_usd: 12000000,
-  engines: "PW210A"
-},
-
+  engines: "PW210A"},
 {
   manufacturer: "Leonardo",
   model: "AW189",
@@ -3553,10 +2694,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 8600,
   fuel_burn_kgph: 720,
   price_acs_usd: 21000000,
-  engines: "CT7-2E1"
-},
-
-
+  engines: "CT7-2E1"},
 // ======================= SIKORSKY =======================
 
 {
@@ -3569,9 +2707,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5300,
   fuel_burn_kgph: 460,
   price_acs_usd: 12500000,
-  engines: "Arriel 2S2"
-},
-
+  engines: "Arriel 2S2"},
 {
   manufacturer: "Sikorsky",
   model: "S-92",
@@ -3582,9 +2718,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 12000,
   fuel_burn_kgph: 780,
   price_acs_usd: 27000000,
-  engines: "CT7-8A"
-},
-
+  engines: "CT7-8A"},
 // Heavy Lift civil-usable
 {
   manufacturer: "Sikorsky",
@@ -3596,10 +2730,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 19000,
   fuel_burn_kgph: 1100,
   price_acs_usd: 24000000,
-  engines: "Pratt & Whitney JFTD12A"
-},
-
-
+  engines: "Pratt & Whitney JFTD12A"},
 // ======================= RUSOS / CIS =======================
 
 {
@@ -3612,9 +2743,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3550,
   fuel_burn_kgph: 420,
   price_acs_usd: 1500000,
-  engines: "GTXD-350"
-},
-
+  engines: "GTXD-350"},
 {
   manufacturer: "Mil",
   model: "Mi-8/17 Hip",
@@ -3625,9 +2754,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 13000,
   fuel_burn_kgph: 900,
   price_acs_usd: 8000000,
-  engines: "TV2-117"
-},
-
+  engines: "TV2-117"},
 {
   manufacturer: "Mil",
   model: "Mi-171A2",
@@ -3638,9 +2765,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 13000,
   fuel_burn_kgph: 920,
   price_acs_usd: 15000000,
-  engines: "VK-2500PS-03"
-},
-
+  engines: "VK-2500PS-03"},
 // Largest civil-capable helicopter
 {
   manufacturer: "Mil",
@@ -3652,10 +2777,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 56000,
   fuel_burn_kgph: 3500,
   price_acs_usd: 36000000,
-  engines: "D-136"
-},
-
-
+  engines: "D-136"},
 // ======================= ROBINSON (AVIACIÓN LIGERA) =======================
 
 {
@@ -3668,9 +2790,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 622,
   fuel_burn_kgph: 55,
   price_acs_usd: 350000,
-  engines: "Lycoming O-360"
-},
-
+  engines: "Lycoming O-360"},
 {
   manufacturer: "Robinson",
   model: "R44 Raven II",
@@ -3681,9 +2801,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1130,
   fuel_burn_kgph: 75,
   price_acs_usd: 550000,
-  engines: "Lycoming IO-540"
-},
-
+  engines: "Lycoming IO-540"},
 {
   manufacturer: "Robinson",
   model: "R66 Turbine",
@@ -3694,9 +2812,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1220,
   fuel_burn_kgph: 110,
   price_acs_usd: 950000,
-  engines: "RR300"
-},
-
+  engines: "RR300"},
 // ============================================================
 // PARTE 12 — AVIACIÓN GENERAL (GA) — 1935–2025
 // ============================================================
@@ -3714,9 +2830,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3800,
   fuel_burn_kgph: 240,
   price_acs_usd: 650000,
-  engines: "PW R-985"
-},
-
+  engines: "PW R-985"},
 {
   manufacturer: "Piper",
   model: "J-3 Cub",
@@ -3727,9 +2841,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 550,
   fuel_burn_kgph: 25,
   price_acs_usd: 120000,
-  engines: "Continental A-65"
-},
-
+  engines: "Continental A-65"},
 {
   manufacturer: "Cessna",
   model: "Cessna 120",
@@ -3740,9 +2852,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 680,
   fuel_burn_kgph: 30,
   price_acs_usd: 140000,
-  engines: "Continental C-85"
-},
-
+  engines: "Continental C-85"},
 {
   manufacturer: "Piper",
   model: "PA-18 Super Cub",
@@ -3753,10 +2863,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 900,
   fuel_burn_kgph: 35,
   price_acs_usd: 180000,
-  engines: "Lycoming O-320"
-},
-
-
+  engines: "Lycoming O-320"},
 // ======================= GENERAL AVIATION MASIVA (1970–1990) =======================
 
 {
@@ -3769,9 +2876,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 725,
   fuel_burn_kgph: 22,
   price_acs_usd: 130000,
-  engines: "Continental O-200"
-},
-
+  engines: "Continental O-200"},
 {
   manufacturer: "Cessna",
   model: "Cessna 152",
@@ -3782,9 +2887,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 760,
   fuel_burn_kgph: 23,
   price_acs_usd: 160000,
-  engines: "Lycoming O-235"
-},
-
+  engines: "Lycoming O-235"},
 {
   manufacturer: "Cessna",
   model: "Cessna 172 Skyhawk",
@@ -3795,9 +2898,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1110,
   fuel_burn_kgph: 35,
   price_acs_usd: 420000,
-  engines: "Lycoming IO-360"
-},
-
+  engines: "Lycoming IO-360"},
 {
   manufacturer: "Piper",
   model: "PA-28 Cherokee",
@@ -3808,9 +2909,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1110,
   fuel_burn_kgph: 33,
   price_acs_usd: 380000,
-  engines: "Lycoming O-320"
-},
-
+  engines: "Lycoming O-320"},
 {
   manufacturer: "Piper",
   model: "PA-32 Cherokee Six",
@@ -3821,9 +2920,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1580,
   fuel_burn_kgph: 55,
   price_acs_usd: 650000,
-  engines: "Lycoming IO-540"
-},
-
+  engines: "Lycoming IO-540"},
 {
   manufacturer: "Beechcraft",
   model: "Bonanza V35",
@@ -3834,9 +2931,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1540,
   fuel_burn_kgph: 60,
   price_acs_usd: 850000,
-  engines: "Continental IO-520"
-},
-
+  engines: "Continental IO-520"},
 {
   manufacturer: "Mooney",
   model: "M20J 201",
@@ -3847,10 +2942,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1335,
   fuel_burn_kgph: 42,
   price_acs_usd: 600000,
-  engines: "Lycoming IO-360"
-},
-
-
+  engines: "Lycoming IO-360"},
 // ======================= TWIN PISTON (BIMOTORES) =======================
 
 {
@@ -3863,9 +2955,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 2150,
   fuel_burn_kgph: 95,
   price_acs_usd: 1100000,
-  engines: "Continental TSIO-360"
-},
-
+  engines: "Continental TSIO-360"},
 {
   manufacturer: "Beechcraft",
   model: "Baron 58",
@@ -3876,9 +2966,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 2490,
   fuel_burn_kgph: 110,
   price_acs_usd: 1600000,
-  engines: "Continental IO-550"
-},
-
+  engines: "Continental IO-550"},
 {
   manufacturer: "Cessna",
   model: "Cessna 310R",
@@ -3889,9 +2977,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 2490,
   fuel_burn_kgph: 105,
   price_acs_usd: 900000,
-  engines: "Continental IO-470"
-},
-
+  engines: "Continental IO-470"},
 {
   manufacturer: "Piper",
   model: "PA-44 Seminole",
@@ -3902,10 +2988,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1715,
   fuel_burn_kgph: 75,
   price_acs_usd: 800000,
-  engines: "Lycoming O-360"
-},
-
-
+  engines: "Lycoming O-360"},
 // ======================= HIGH PERFORMANCE PISTON TOURING =======================
 
 {
@@ -3918,9 +3001,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1400,
   fuel_burn_kgph: 45,
   price_acs_usd: 500000,
-  engines: "Continental IO-360"
-},
-
+  engines: "Continental IO-360"},
 {
   manufacturer: "Cirrus",
   model: "SR22",
@@ -3931,9 +3012,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1600,
   fuel_burn_kgph: 65,
   price_acs_usd: 900000,
-  engines: "Continental IO-550"
-},
-
+  engines: "Continental IO-550"},
 {
   manufacturer: "Diamond",
   model: "DA40 NG",
@@ -3944,9 +3023,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 1310,
   fuel_burn_kgph: 21,
   price_acs_usd: 500000,
-  engines: "Austro AE300 (Diesel)"
-},
-
+  engines: "Austro AE300 (Diesel)"},
 {
   manufacturer: "Diamond",
   model: "DA62",
@@ -3957,10 +3034,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 2300,
   fuel_burn_kgph: 85,
   price_acs_usd: 1350000,
-  engines: "Austro AE330"
-},
-
-
+  engines: "Austro AE330"},
 // ======================= TURBOPROP LIGERO Y EJECUTIVO =======================
 
 {
@@ -3973,9 +3047,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4740,
   fuel_burn_kgph: 270,
   price_acs_usd: 5200000,
-  engines: "PT6A-67P"
-},
-
+  engines: "PT6A-67P"},
 {
   manufacturer: "Pilatus",
   model: "PC-12 NGX",
@@ -3986,9 +3058,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4800,
   fuel_burn_kgph: 260,
   price_acs_usd: 6300000,
-  engines: "PT6E-67XP"
-},
-
+  engines: "PT6E-67XP"},
 {
   manufacturer: "Daher",
   model: "TBM 910",
@@ -3999,9 +3069,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3350,
   fuel_burn_kgph: 225,
   price_acs_usd: 4500000,
-  engines: "PT6A-66D"
-},
-
+  engines: "PT6A-66D"},
 {
   manufacturer: "Daher",
   model: "TBM 960",
@@ -4012,9 +3080,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3380,
   fuel_burn_kgph: 215,
   price_acs_usd: 5200000,
-  engines: "PT6E-66XT"
-},
-
+  engines: "PT6E-66XT"},
 {
   manufacturer: "Beechcraft",
   model: "King Air C90GTx",
@@ -4025,9 +3091,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4580,
   fuel_burn_kgph: 300,
   price_acs_usd: 3500000,
-  engines: "PT6A-135A"
-},
-
+  engines: "PT6A-135A"},
 {
   manufacturer: "Beechcraft",
   model: "King Air 350i",
@@ -4038,9 +3102,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6800,
   fuel_burn_kgph: 360,
   price_acs_usd: 7800000,
-  engines: "PT6A-60A"
-},
-
+  engines: "PT6A-60A"},
 // ============================================================
 // PARTE 13 — COMMUTER / REGIONAL SPECIAL OPS (1950–2025)
 // ============================================================
@@ -4058,9 +3120,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5670,
   fuel_burn_kgph: 320,
   price_acs_usd: 2100000,
-  engines: "PT6A-20"
-},
-
+  engines: "PT6A-20"},
 {
   manufacturer: "De Havilland Canada",
   model: "DHC-6 Twin Otter Series 300",
@@ -4071,9 +3131,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5670,
   fuel_burn_kgph: 340,
   price_acs_usd: 2500000,
-  engines: "PT6A-27"
-},
-
+  engines: "PT6A-27"},
 {
   manufacturer: "Viking Air",
   model: "Twin Otter Series 400",
@@ -4084,10 +3142,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6354,
   fuel_burn_kgph: 360,
   price_acs_usd: 6500000,
-  engines: "PT6A-34"
-},
-
-
+  engines: "PT6A-34"},
 // ======================= ISLANDER / TRISLANDER =======================
 
 {
@@ -4100,9 +3155,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 2990,
   fuel_burn_kgph: 115,
   price_acs_usd: 850000,
-  engines: "Lycoming O-540"
-},
-
+  engines: "Lycoming O-540"},
 {
   manufacturer: "Britten-Norman",
   model: "BN-2B Islander Turbo",
@@ -4113,9 +3166,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 3100,
   fuel_burn_kgph: 160,
   price_acs_usd: 1800000,
-  engines: "Allison 250-B17C"
-},
-
+  engines: "Allison 250-B17C"},
 {
   manufacturer: "Britten-Norman",
   model: "BN-2A Trislander",
@@ -4126,10 +3177,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4800,
   fuel_burn_kgph: 210,
   price_acs_usd: 2200000,
-  engines: "Lycoming IO-540 (x3)"
-},
-
-
+  engines: "Lycoming IO-540 (x3)"},
 // ======================= LET AIRCRAFT =======================
 
 {
@@ -4142,9 +3190,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6400,
   fuel_burn_kgph: 350,
   price_acs_usd: 4900000,
-  engines: "Walter M601"
-},
-
+  engines: "Walter M601"},
 {
   manufacturer: "LET Aircraft",
   model: "L-610",
@@ -4155,10 +3201,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 14000,
   fuel_burn_kgph: 700,
   price_acs_usd: 11000000,
-  engines: "Walter M602"
-},
-
-
+  engines: "Walter M602"},
 // ======================= DORNIER 228 / DO-328 =======================
 
 {
@@ -4171,9 +3214,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6400,
   fuel_burn_kgph: 360,
   price_acs_usd: 5500000,
-  engines: "Garrett TPE331-5"
-},
-
+  engines: "Garrett TPE331-5"},
 {
   manufacturer: "Dornier",
   model: "Do 328-100",
@@ -4184,9 +3225,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 14500,
   fuel_burn_kgph: 750,
   price_acs_usd: 14000000,
-  engines: "PW119B"
-},
-
+  engines: "PW119B"},
 {
   manufacturer: "Dornier",
   model: "Do 328JET",
@@ -4197,10 +3236,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 16000,
   fuel_burn_kgph: 900,
   price_acs_usd: 16000000,
-  engines: "PW306B"
-},
-
-
+  engines: "PW306B"},
 // ======================= SAAB REGIONAL =======================
 
 {
@@ -4213,9 +3249,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 13550,
   fuel_burn_kgph: 600,
   price_acs_usd: 9000000,
-  engines: "GE CT7-9B"
-},
-
+  engines: "GE CT7-9B"},
 {
   manufacturer: "Saab",
   model: "Saab 2000",
@@ -4226,10 +3260,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 22800,
   fuel_burn_kgph: 950,
   price_acs_usd: 18000000,
-  engines: "RR AE2100A"
-},
-
-
+  engines: "RR AE2100A"},
 // ======================= CASA / AIRBUS MILITARY =======================
 
 {
@@ -4242,9 +3273,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 7800,
   fuel_burn_kgph: 330,
   price_acs_usd: 3500000,
-  engines: "Garrett TPE331"
-},
-
+  engines: "Garrett TPE331"},
 {
   manufacturer: "CASA",
   model: "CN-235",
@@ -4255,9 +3284,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 15500,
   fuel_burn_kgph: 680,
   price_acs_usd: 25000000,
-  engines: "GE CT7-9"
-},
-
+  engines: "GE CT7-9"},
 {
   manufacturer: "Airbus Military",
   model: "C-295",
@@ -4268,10 +3295,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 23000,
   fuel_burn_kgph: 840,
   price_acs_usd: 38000000,
-  engines: "PW127G"
-},
-
-
+  engines: "PW127G"},
 // ======================= ANTONOV REGIONAL =======================
 
 {
@@ -4284,9 +3308,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21000,
   fuel_burn_kgph: 900,
   price_acs_usd: 9000000,
-  engines: "AI-24"
-},
-
+  engines: "AI-24"},
 {
   manufacturer: "Antonov",
   model: "An-26",
@@ -4297,9 +3319,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 24000,
   fuel_burn_kgph: 950,
   price_acs_usd: 12000000,
-  engines: "AI-24VT"
-},
-
+  engines: "AI-24VT"},
 {
   manufacturer: "Antonov",
   model: "An-140",
@@ -4310,10 +3330,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21500,
   fuel_burn_kgph: 820,
   price_acs_usd: 18000000,
-  engines: "TV3-117VMA-SBM1"
-},
-
-
+  engines: "TV3-117VMA-SBM1"},
 // ======================= METRO / JETSTREAM / MISC =======================
 
 {
@@ -4326,9 +3343,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 6400,
   fuel_burn_kgph: 420,
   price_acs_usd: 3500000,
-  engines: "Garrett TPE331-11U"
-},
-
+  engines: "Garrett TPE331-11U"},
 {
   manufacturer: "BAe",
   model: "Jetstream 31",
@@ -4339,9 +3354,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 7100,
   fuel_burn_kgph: 400,
   price_acs_usd: 4200000,
-  engines: "Garrett TPE331-10"
-},
-
+  engines: "Garrett TPE331-10"},
 {
   manufacturer: "BAe",
   model: "Jetstream 41",
@@ -4352,10 +3365,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 10400,
   fuel_burn_kgph: 650,
   price_acs_usd: 9000000,
-  engines: "Allison 2500"
-},
-
-
+  engines: "Allison 2500"},
 // ======================= CHINA REGIONAL =======================
 
 {
@@ -4368,9 +3378,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 5700,
   fuel_burn_kgph: 350,
   price_acs_usd: 3500000,
-  engines: "PT6A-34"
-},
-
+  engines: "PT6A-34"},
 {
   manufacturer: "Harbin",
   model: "Y-12F",
@@ -4381,9 +3389,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 8000,
   fuel_burn_kgph: 430,
   price_acs_usd: 6900000,
-  engines: "PW127"
-},
-
+  engines: "PW127"},
 {
   manufacturer: "AVIC",
   model: "MA60",
@@ -4394,9 +3400,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21000,
   fuel_burn_kgph: 950,
   price_acs_usd: 22000000,
-  engines: "PW127J"
-},
-
+  engines: "PW127J"},
 {
   manufacturer: "AVIC",
   model: "MA600",
@@ -4407,9 +3411,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21500,
   fuel_burn_kgph: 920,
   price_acs_usd: 26000000,
-  engines: "PW127J"
-},
-
+  engines: "PW127J"},
 {
   manufacturer: "AVIC",
   model: "MA700",
@@ -4420,473 +3422,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 27500,
   fuel_burn_kgph: 880,
   price_acs_usd: 34000000,
-  engines: "PW150D"
-},
-
-// ============================================================
-// PARTE 14 — BUSINESS JETS (1960–2025)
-// ============================================================
-
-
-// ======================= CESSNA CITATION SERIES =======================
-
-{
-  manufacturer: "Cessna",
-  model: "Citation I (C500)",
-  year: 1972,
-  seats: 7,
-  range_nm: 1100,
-  speed_kts: 350,
-  mtow_kg: 4800,
-  fuel_burn_kgph: 600,
-  price_acs_usd: 3000000,
-  engines: "JT15D-1"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation II (C550)",
-  year: 1978,
-  seats: 8,
-  range_nm: 1500,
-  speed_kts: 390,
-  mtow_kg: 6800,
-  fuel_burn_kgph: 700,
-  price_acs_usd: 4200000,
-  engines: "JT15D-4"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation V (C560)",
-  year: 1987,
-  seats: 9,
-  range_nm: 1800,
-  speed_kts: 405,
-  mtow_kg: 7400,
-  fuel_burn_kgph: 780,
-  price_acs_usd: 6200000,
-  engines: "JT15D-5A"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation VII",
-  year: 1992,
-  seats: 10,
-  range_nm: 1800,
-  speed_kts: 460,
-  mtow_kg: 10300,
-  fuel_burn_kgph: 950,
-  price_acs_usd: 7800000,
-  engines: "TFE731-4R"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation X",
-  year: 1996,
-  seats: 12,
-  range_nm: 3100,
-  speed_kts: 525, // Mach .92
-  mtow_kg: 16000,
-  fuel_burn_kgph: 1400,
-  price_acs_usd: 26000000,
-  engines: "RR AE3007C"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation Excel (560XL)",
-  year: 1998,
-  seats: 9,
-  range_nm: 1850,
-  speed_kts: 430,
-  mtow_kg: 9100,
-  fuel_burn_kgph: 900,
-  price_acs_usd: 12700000,
-  engines: "PW545A"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation Latitude",
-  year: 2015,
-  seats: 9,
-  range_nm: 2850,
-  speed_kts: 440,
-  mtow_kg: 13600,
-  fuel_burn_kgph: 1100,
-  price_acs_usd: 18000000,
-  engines: "PW306D1"
-},
-
-{
-  manufacturer: "Cessna",
-  model: "Citation Longitude",
-  year: 2019,
-  seats: 12,
-  range_nm: 3500,
-  speed_kts: 470,
-  mtow_kg: 17800,
-  fuel_burn_kgph: 1300,
-  price_acs_usd: 28000000,
-  engines: "Honeywell HTF7700L"
-},
-
-
-// ======================= LEARJET SERIES =======================
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 24",
-  year: 1966,
-  seats: 6,
-  range_nm: 1200,
-  speed_kts: 420,
-  mtow_kg: 6100,
-  fuel_burn_kgph: 850,
-  price_acs_usd: 2800000,
-  engines: "GE CJ610"
-},
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 35A",
-  year: 1974,
-  seats: 8,
-  range_nm: 1900,
-  speed_kts: 465,
-  mtow_kg: 8300,
-  fuel_burn_kgph: 1000,
-  price_acs_usd: 4200000,
-  engines: "TFE731-2"
-},
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 55",
-  year: 1981,
-  seats: 10,
-  range_nm: 2200,
-  speed_kts: 455,
-  mtow_kg: 10500,
-  fuel_burn_kgph: 1100,
-  price_acs_usd: 6300000,
-  engines: "TFE731-3A"
-},
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 60",
-  year: 1993,
-  seats: 8,
-  range_nm: 2400,
-  speed_kts: 455,
-  mtow_kg: 10600,
-  fuel_burn_kgph: 1150,
-  price_acs_usd: 12000000,
-  engines: "PW305A"
-},
-
-{
-  manufacturer: "Learjet",
-  model: "Learjet 75",
-  year: 2013,
-  seats: 8,
-  range_nm: 2040,
-  speed_kts: 464,
-  mtow_kg: 9750,
-  fuel_burn_kgph: 950,
-  price_acs_usd: 13500000,
-  engines: "TFE731-40BR"
-},
-
-
-// ======================= GULFSTREAM =======================
-
-{
-  manufacturer: "Gulfstream",
-  model: "GII",
-  year: 1967,
-  seats: 14,
-  range_nm: 2500,
-  speed_kts: 480,
-  mtow_kg: 29300,
-  fuel_burn_kgph: 2300,
-  price_acs_usd: 15000000,
-  engines: "RR Spey 511"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "GIII",
-  year: 1979,
-  seats: 14,
-  range_nm: 3400,
-  speed_kts: 500,
-  mtow_kg: 30300,
-  fuel_burn_kgph: 2600,
-  price_acs_usd: 19000000,
-  engines: "RR Spey 511-8"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "GIV",
-  year: 1985,
-  seats: 14,
-  range_nm: 4200,
-  speed_kts: 500,
-  mtow_kg: 33500,
-  fuel_burn_kgph: 2600,
-  price_acs_usd: 24000000,
-  engines: "RR Tay 611-8"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "GV",
-  year: 1997,
-  seats: 14,
-  range_nm: 6200,
-  speed_kts: 510,
-  mtow_kg: 41600,
-  fuel_burn_kgph: 2900,
-  price_acs_usd: 45000000,
-  engines: "RR BR710"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "G550",
-  year: 2003,
-  seats: 16,
-  range_nm: 6750,
-  speed_kts: 488,
-  mtow_kg: 41900,
-  fuel_burn_kgph: 2700,
-  price_acs_usd: 62000000,
-  engines: "RR BR710"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "G650",
-  year: 2012,
-  seats: 18,
-  range_nm: 7000,
-  speed_kts: 488,
-  mtow_kg: 45700,
-  fuel_burn_kgph: 3100,
-  price_acs_usd: 70000000,
-  engines: "RR BR725"
-},
-
-{
-  manufacturer: "Gulfstream",
-  model: "G700",
-  year: 2022,
-  seats: 19,
-  range_nm: 7500,
-  speed_kts: 488,
-  mtow_kg: 48500,
-  fuel_burn_kgph: 3300,
-  price_acs_usd: 78000000,
-  engines: "RR Pearl 700"
-},
-
-
-// ======================= FALCON (Dassault) =======================
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 10",
-  year: 1973,
-  seats: 7,
-  range_nm: 1600,
-  speed_kts: 480,
-  mtow_kg: 6000,
-  fuel_burn_kgph: 900,
-  price_acs_usd: 3500000,
-  engines: "GE CF700"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 20",
-  year: 1965,
-  seats: 10,
-  range_nm: 1900,
-  speed_kts: 470,
-  mtow_kg: 12700,
-  fuel_burn_kgph: 1200,
-  price_acs_usd: 6000000,
-  engines: "GE CF700"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 50",
-  year: 1976,
-  seats: 9,
-  range_nm: 3100,
-  speed_kts: 475,
-  mtow_kg: 18000,
-  fuel_burn_kgph: 1300,
-  price_acs_usd: 12500000,
-  engines: "TFE731-3"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 2000LXS",
-  year: 2014,
-  seats: 10,
-  range_nm: 4000,
-  speed_kts: 470,
-  mtow_kg: 19400,
-  fuel_burn_kgph: 1150,
-  price_acs_usd: 35000000,
-  engines: "PW308C"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 900LX",
-  year: 2010,
-  seats: 12,
-  range_nm: 4750,
-  speed_kts: 480,
-  mtow_kg: 22000,
-  fuel_burn_kgph: 1400,
-  price_acs_usd: 46000000,
-  engines: "TFE731-60"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 7X",
-  year: 2007,
-  seats: 14,
-  range_nm: 5950,
-  speed_kts: 488,
-  mtow_kg: 31800,
-  fuel_burn_kgph: 2200,
-  price_acs_usd: 52000000,
-  engines: "PW307A"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 8X",
-  year: 2016,
-  seats: 16,
-  range_nm: 6450,
-  speed_kts: 488,
-  mtow_kg: 33000,
-  fuel_burn_kgph: 2400,
-  price_acs_usd: 59000000,
-  engines: "PW307D"
-},
-
-{
-  manufacturer: "Dassault",
-  model: "Falcon 10X",
-  year: 2025,
-  seats: 19,
-  range_nm: 7500,
-  speed_kts: 488,
-  mtow_kg: 52000,
-  fuel_burn_kgph: 3500,
-  price_acs_usd: 78000000,
-  engines: "RR UltraFan"
-},
-
-
-// ======================= BOMBADIER BUSINESS =======================
-
-{
-  manufacturer: "Bombardier",
-  model: "Challenger 350",
-  year: 2014,
-  seats: 10,
-  range_nm: 3200,
-  speed_kts: 460,
-  mtow_kg: 18700,
-  fuel_burn_kgph: 1100,
-  price_acs_usd: 26500000,
-  engines: "Honeywell HTF7350"
-},
-
-{
-  manufacturer: "Bombardier",
-  model: "Global 5000",
-  year: 2005,
-  seats: 16,
-  range_nm: 5200,
-  speed_kts: 488,
-  mtow_kg: 41400,
-  fuel_burn_kgph: 2800,
-  price_acs_usd: 50000000,
-  engines: "RR BR710"
-},
-
-{
-  manufacturer: "Bombardier",
-  model: "Global 7500",
-  year: 2018,
-  seats: 19,
-  range_nm: 7700,
-  speed_kts: 488,
-  mtow_kg: 52000,
-  fuel_burn_kgph: 3600,
-  price_acs_usd: 75000000,
-  engines: "GE Passport"
-},
-
-
-// ======================= EMBRAER EXECUTIVE =======================
-
-{
-  manufacturer: "Embraer",
-  model: "Phenom 100",
-  year: 2008,
-  seats: 6,
-  range_nm: 1100,
-  speed_kts: 380,
-  mtow_kg: 4800,
-  fuel_burn_kgph: 500,
-  price_acs_usd: 4500000,
-  engines: "PW617F1-E"
-},
-
-{
-  manufacturer: "Embraer",
-  model: "Phenom 300E",
-  year: 2018,
-  seats: 7,
-  range_nm: 1970,
-  speed_kts: 450,
-  mtow_kg: 8150,
-  fuel_burn_kgph: 600,
-  price_acs_usd: 9500000,
-  engines: "PW535E1"
-},
-
-{
-  manufacturer: "Embraer",
-  model: "Legacy 650",
-  year: 2010,
-  seats: 14,
-  range_nm: 3900,
-  speed_kts: 455,
-  mtow_kg: 24500,
-  fuel_burn_kgph: 1400,
-  price_acs_usd: 31000000,
-  engines: "RR AE3007A2"
-},
-
+  engines: "PW150D"},
 {
   manufacturer: "Embraer",
   model: "Praetor 500",
@@ -4897,9 +3433,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 17700,
   fuel_burn_kgph: 980,
   price_acs_usd: 21000000,
-  engines: "Honeywell HTF7500E"
-},
-
+  engines: "Honeywell HTF7500E"},
 {
   manufacturer: "Embraer",
   model: "Praetor 600",
@@ -4910,10 +3444,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 21700,
   fuel_burn_kgph: 1100,
   price_acs_usd: 25000000,
-  engines: "Honeywell HTF7500E"
-},
-
-
+  engines: "Honeywell HTF7500E"},
 // ======================= HONDAJET & PILATUS =======================
 
 {
@@ -4926,9 +3457,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 4800,
   fuel_burn_kgph: 450,
   price_acs_usd: 5200000,
-  engines: "GE HF120"
-},
-
+  engines: "GE HF120"},
 {
   manufacturer: "Pilatus",
   model: "PC-24",
@@ -4939,10 +3468,7 @@ const ACS_AIRCRAFT_DB = [
   mtow_kg: 8500,
   fuel_burn_kgph: 700,
   price_acs_usd: 10500000,
-  engines: "Williams FJ44-4A"
-},
-
-   
+  engines: "Williams FJ44-4A"},
   // ============================================================
   // 1935 — 1949  (Propeller Golden Era)
   // ============================================================
@@ -4957,9 +3483,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 4500,
     fuel_burn_kgph: 320,
     price_acs_usd: 350000,
-    engines: "PW R-985"
-  },
-
+    engines: "PW R-985"},
   {
     manufacturer: "Lockheed",
     model: "L-12 Electra Junior",
@@ -4970,9 +3494,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 3500,
     fuel_burn_kgph: 280,
     price_acs_usd: 300000,
-    engines: "PW R-985"
-  },
-
+    engines: "PW R-985"},
   {
     manufacturer: "Lockheed",
     model: "L-14 Super Electra",
@@ -4983,9 +3505,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 8250,
     fuel_burn_kgph: 520,
     price_acs_usd: 520000,
-    engines: "PW R-1690"
-  },
-
+    engines: "PW R-1690"},
   {
     manufacturer: "Lockheed",
     model: "L-18 Lodestar",
@@ -4996,9 +3516,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 8350,
     fuel_burn_kgph: 580,
     price_acs_usd: 650000,
-    engines: "PW R-1820"
-  },
-
+    engines: "PW R-1820"},
   {
     manufacturer: "Douglas",
     model: "DC-2",
@@ -5009,9 +3527,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 8100,
     fuel_burn_kgph: 480,
     price_acs_usd: 600000,
-    engines: "PW R-1690"
-  },
-
+    engines: "PW R-1690"},
   {
     manufacturer: "Douglas",
     model: "DC-3",
@@ -5022,9 +3538,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 11793,
     fuel_burn_kgph: 450,
     price_acs_usd: 700000,
-    engines: "PW R-1830"
-  },
-
+    engines: "PW R-1830"},
   {
     manufacturer: "Douglas",
     model: "DC-4",
@@ -5035,9 +3549,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 29700,
     fuel_burn_kgph: 1350,
     price_acs_usd: 2200000,
-    engines: "PW R-2000"
-  },
-
+    engines: "PW R-2000"},
   {
     manufacturer: "Douglas",
     model: "DC-5",
@@ -5048,9 +3560,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 7600,
     fuel_burn_kgph: 420,
     price_acs_usd: 550000,
-    engines: "PW R-1820"
-  },
-
+    engines: "PW R-1820"},
   {
     manufacturer: "Douglas",
     model: "DC-6",
@@ -5061,9 +3571,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 48800,
     fuel_burn_kgph: 2200,
     price_acs_usd: 3200000,
-    engines: "PW R-2800"
-  },
-
+    engines: "PW R-2800"},
   {
     manufacturer: "Lockheed",
     model: "L-049 Constellation",
@@ -5074,9 +3582,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 43700,
     fuel_burn_kgph: 2000,
     price_acs_usd: 3500000,
-    engines: "Wright R-3350"
-  },
-
+    engines: "Wright R-3350"},
   {
     manufacturer: "Lockheed",
     model: "L-649 Constellation",
@@ -5087,9 +3593,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 49300,
     fuel_burn_kgph: 2400,
     price_acs_usd: 3800000,
-    engines: "Wright R-3350"
-  },
-
+    engines: "Wright R-3350"},
   {
     manufacturer: "Lockheed",
     model: "L-749 Constellation",
@@ -5100,9 +3604,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 51300,
     fuel_burn_kgph: 2550,
     price_acs_usd: 4200000,
-    engines: "Wright R-3350"
-  },
-
+    engines: "Wright R-3350"},
   {
     manufacturer: "Boeing",
     model: "307 Stratoliner",
@@ -5113,8 +3615,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 15500,
     fuel_burn_kgph: 900,
     price_acs_usd: 900000,
-    engines: "Wright R-1820"
-  },
+    engines: "Wright R-1820"},
   // ============================================================
   // 1950 — 1969 (Early Jet Age & Late Pistons)
   // ============================================================
@@ -5129,9 +3630,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 63200,
     fuel_burn_kgph: 3000,
     price_acs_usd: 4800000,
-    engines: "Wright R-3350"
-  },
-
+    engines: "Wright R-3350"},
   {
     manufacturer: "Lockheed",
     model: "L-1049 Super Constellation",
@@ -5142,9 +3641,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 70000,
     fuel_burn_kgph: 3200,
     price_acs_usd: 5200000,
-    engines: "Wright R-3350"
-  },
-
+    engines: "Wright R-3350"},
   {
     manufacturer: "Lockheed",
     model: "L-1649 Starliner",
@@ -5155,9 +3652,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 74000,
     fuel_burn_kgph: 3400,
     price_acs_usd: 5800000,
-    engines: "Wright R-3350"
-  },
-
+    engines: "Wright R-3350"},
   {
     manufacturer: "Boeing",
     model: "707-120",
@@ -5168,9 +3663,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 123000,
     fuel_burn_kgph: 6500,
     price_acs_usd: 16000000,
-    engines: "JT3C"
-  },
-
+    engines: "JT3C"},
   {
     manufacturer: "Boeing",
     model: "707-320",
@@ -5181,9 +3674,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 151000,
     fuel_burn_kgph: 7200,
     price_acs_usd: 18500000,
-    engines: "JT4A"
-  },
-
+    engines: "JT4A"},
   {
     manufacturer: "Douglas",
     model: "DC-8-10",
@@ -5194,9 +3685,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 120000,
     fuel_burn_kgph: 6800,
     price_acs_usd: 15500000,
-    engines: "JT3C"
-  },
-
+    engines: "JT3C"},
   {
     manufacturer: "Douglas",
     model: "DC-8-50",
@@ -5207,9 +3696,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 147000,
     fuel_burn_kgph: 6900,
     price_acs_usd: 17500000,
-    engines: "JT3D"
-  },
-
+    engines: "JT3D"},
   {
     manufacturer: "Sud Aviation",
     model: "Caravelle",
@@ -5220,9 +3707,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 51000,
     fuel_burn_kgph: 4700,
     price_acs_usd: 11000000,
-    engines: "RR Avon"
-  },
-
+    engines: "RR Avon"},
   {
     manufacturer: "BAC",
     model: "One-Eleven",
@@ -5233,9 +3718,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 37500,
     fuel_burn_kgph: 3200,
     price_acs_usd: 9000000,
-    engines: "RR Spey"
-  },
-
+    engines: "RR Spey"},
   {
     manufacturer: "Fokker",
     model: "F27",
@@ -5246,9 +3729,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 20000,
     fuel_burn_kgph: 900,
     price_acs_usd: 3500000,
-    engines: "RR Dart"
-  },
-
+    engines: "RR Dart"},
   {
     manufacturer: "Hawker Siddeley",
     model: "HS-748",
@@ -5259,9 +3740,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 23000,
     fuel_burn_kgph: 1050,
     price_acs_usd: 3800000,
-    engines: "RR Dart"
-  },
-
+    engines: "RR Dart"},
   {
     manufacturer: "Boeing",
     model: "727-100",
@@ -5272,9 +3751,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 77000,
     fuel_burn_kgph: 5100,
     price_acs_usd: 14500000,
-    engines: "JT8D"
-  },
-
+    engines: "JT8D"},
   {
     manufacturer: "Boeing",
     model: "737-100",
@@ -5285,9 +3762,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 50000,
     fuel_burn_kgph: 3800,
     price_acs_usd: 11000000,
-    engines: "JT8D"
-  },
-
+    engines: "JT8D"},
   {
     manufacturer: "Boeing",
     model: "737-200",
@@ -5298,8 +3773,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 52000,
     fuel_burn_kgph: 4000,
     price_acs_usd: 12500000,
-    engines: "JT8D"
-  },
+    engines: "JT8D"},
   // ============================================================
   // 1970 — 1989 (Widebody Boom & Jet Maturity)
   // ============================================================
@@ -5314,9 +3788,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 333000,
     fuel_burn_kgph: 22000,
     price_acs_usd: 35000000,
-    engines: "JT9D"
-  },
-
+    engines: "JT9D"},
   {
     manufacturer: "Boeing",
     model: "747-200",
@@ -5327,9 +3799,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 378000,
     fuel_burn_kgph: 23000,
     price_acs_usd: 38000000,
-    engines: "JT9D"
-  },
-
+    engines: "JT9D"},
   {
     manufacturer: "Douglas",
     model: "DC-10-10",
@@ -5340,9 +3810,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 240000,
     fuel_burn_kgph: 15500,
     price_acs_usd: 29000000,
-    engines: "GE CF6-6"
-  },
-
+    engines: "GE CF6-6"},
   {
     manufacturer: "Lockheed",
     model: "L-1011 TriStar",
@@ -5353,9 +3821,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 231000,
     fuel_burn_kgph: 15000,
     price_acs_usd: 30000000,
-    engines: "RR RB211"
-  },
-
+    engines: "RR RB211"},
   {
     manufacturer: "Airbus",
     model: "A300B2",
@@ -5366,9 +3832,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 142000,
     fuel_burn_kgph: 9000,
     price_acs_usd: 25000000,
-    engines: "GE CF6-50"
-  },
-
+    engines: "GE CF6-50"},
   {
     manufacturer: "Airbus",
     model: "A300B4",
@@ -5379,9 +3843,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 165000,
     fuel_burn_kgph: 9200,
     price_acs_usd: 28000000,
-    engines: "GE CF6-50"
-  },
-
+    engines: "GE CF6-50"},
   {
     manufacturer: "Airbus",
     model: "A310-300",
@@ -5392,9 +3854,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 164000,
     fuel_burn_kgph: 8800,
     price_acs_usd: 32000000,
-    engines: "GE CF6-80C2"
-  },
-
+    engines: "GE CF6-80C2"},
   {
     manufacturer: "McDonnell Douglas",
     model: "MD-80",
@@ -5405,9 +3865,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 63000,
     fuel_burn_kgph: 3500,
     price_acs_usd: 21000000,
-    engines: "JT8D-200"
-  },
-
+    engines: "JT8D-200"},
   {
     manufacturer: "McDonnell Douglas",
     model: "MD-82",
@@ -5418,9 +3876,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 68000,
     fuel_burn_kgph: 3600,
     price_acs_usd: 22500000,
-    engines: "JT8D-217"
-  },
-
+    engines: "JT8D-217"},
   {
     manufacturer: "Boeing",
     model: "737-300",
@@ -5431,9 +3887,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 62000,
     fuel_burn_kgph: 3400,
     price_acs_usd: 23000000,
-    engines: "CFM56-3"
-  },
-
+    engines: "CFM56-3"},
   {
     manufacturer: "Boeing",
     model: "737-400",
@@ -5444,9 +3898,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 68000,
     fuel_burn_kgph: 3550,
     price_acs_usd: 24000000,
-    engines: "CFM56-3"
-  },
-
+    engines: "CFM56-3"},
   {
     manufacturer: "Boeing",
     model: "757-200",
@@ -5457,9 +3909,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 115000,
     fuel_burn_kgph: 5200,
     price_acs_usd: 35000000,
-    engines: "RB211-535"
-  },
-
+    engines: "RB211-535"},
   {
     manufacturer: "Boeing",
     model: "767-200",
@@ -5470,9 +3920,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 135000,
     fuel_burn_kgph: 7000,
     price_acs_usd: 42000000,
-    engines: "JT9D-7R4"
-  },
-
+    engines: "JT9D-7R4"},
   {
     manufacturer: "Boeing",
     model: "767-300",
@@ -5483,9 +3931,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 158000,
     fuel_burn_kgph: 7600,
     price_acs_usd: 51000000,
-    engines: "CF6-80C2"
-  },
-
+    engines: "CF6-80C2"},
   {
     manufacturer: "Tupolev",
     model: "Tu-154",
@@ -5496,9 +3942,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 98000,
     fuel_burn_kgph: 8600,
     price_acs_usd: 15000000,
-    engines: "NK-8"
-  },
-
+    engines: "NK-8"},
   {
     manufacturer: "Fokker",
     model: "F28 Fellowship",
@@ -5509,9 +3953,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 28500,
     fuel_burn_kgph: 2800,
     price_acs_usd: 8500000,
-    engines: "RR Spey"
-  },
-
+    engines: "RR Spey"},
   {
     manufacturer: "Fokker",
     model: "F70",
@@ -5522,9 +3964,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 38000,
     fuel_burn_kgph: 3000,
     price_acs_usd: 12000000,
-    engines: "RR Tay"
-  },
-
+    engines: "RR Tay"},
   {
     manufacturer: "Fokker",
     model: "F100",
@@ -5535,8 +3975,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 45000,
     fuel_burn_kgph: 3200,
     price_acs_usd: 14000000,
-    engines: "RR Tay"
-  },
+    engines: "RR Tay"},
   // ============================================================
   // 1990 — 2009 (Glass Cockpit & Modern Jet Era)
   // ============================================================
@@ -5551,9 +3990,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 65000,
     fuel_burn_kgph: 2600,
     price_acs_usd: 48000000,
-    engines: "CFM56-7B"
-  },
-
+    engines: "CFM56-7B"},
   {
     manufacturer: "Boeing",
     model: "737-700",
@@ -5564,9 +4001,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 70000,
     fuel_burn_kgph: 2700,
     price_acs_usd: 56000000,
-    engines: "CFM56-7B"
-  },
-
+    engines: "CFM56-7B"},
   {
     manufacturer: "Boeing",
     model: "737-800",
@@ -5577,9 +4012,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 79000,
     fuel_burn_kgph: 2900,
     price_acs_usd: 68000000,
-    engines: "CFM56-7B"
-  },
-
+    engines: "CFM56-7B"},
   {
     manufacturer: "Boeing",
     model: "737-900ER",
@@ -5590,9 +4023,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 85000,
     fuel_burn_kgph: 3050,
     price_acs_usd: 75000000,
-    engines: "CFM56-7B"
-  },
-
+    engines: "CFM56-7B"},
   {
     manufacturer: "Boeing",
     model: "747-400",
@@ -5603,9 +4034,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 396900,
     fuel_burn_kgph: 25000,
     price_acs_usd: 180000000,
-    engines: "PW4062 / RB211 / CF6-80"
-  },
-
+    engines: "PW4062 / RB211 / CF6-80"},
   {
     manufacturer: "Boeing",
     model: "757-300",
@@ -5616,9 +4045,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 123000,
     fuel_burn_kgph: 5600,
     price_acs_usd: 80000000,
-    engines: "RB211-535E4"
-  },
-
+    engines: "RB211-535E4"},
   {
     manufacturer: "Boeing",
     model: "767-400ER",
@@ -5629,9 +4056,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 204000,
     fuel_burn_kgph: 8200,
     price_acs_usd: 145000000,
-    engines: "CF6-80C2"
-  },
-
+    engines: "CF6-80C2"},
   {
     manufacturer: "Boeing",
     model: "777-200",
@@ -5642,9 +4067,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 247000,
     fuel_burn_kgph: 9000,
     price_acs_usd: 150000000,
-    engines: "PW4077 / GE90-77"
-  },
-
+    engines: "PW4077 / GE90-77"},
   {
     manufacturer: "Boeing",
     model: "777-300",
@@ -5655,9 +4078,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 263000,
     fuel_burn_kgph: 11000,
     price_acs_usd: 180000000,
-    engines: "GE90-92B"
-  },
-
+    engines: "GE90-92B"},
   {
     manufacturer: "Airbus",
     model: "A318",
@@ -5668,9 +4089,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 68000,
     fuel_burn_kgph: 2600,
     price_acs_usd: 59000000,
-    engines: "CFM56-5B"
-  },
-
+    engines: "CFM56-5B"},
   {
     manufacturer: "Airbus",
     model: "A319",
@@ -5681,9 +4100,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 75500,
     fuel_burn_kgph: 2700,
     price_acs_usd: 72000000,
-    engines: "CFM56-5B"
-  },
-
+    engines: "CFM56-5B"},
   {
     manufacturer: "Airbus",
     model: "A320",
@@ -5694,9 +4111,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 77000,
     fuel_burn_kgph: 2900,
     price_acs_usd: 80000000,
-    engines: "CFM56-5B"
-  },
-
+    engines: "CFM56-5B"},
   {
     manufacturer: "Airbus",
     model: "A321",
@@ -5707,9 +4122,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 89000,
     fuel_burn_kgph: 3100,
     price_acs_usd: 95000000,
-    engines: "CFM56-5B"
-  },
-
+    engines: "CFM56-5B"},
   {
     manufacturer: "Airbus",
     model: "A330-200",
@@ -5720,9 +4133,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 230000,
     fuel_burn_kgph: 8600,
     price_acs_usd: 185000000,
-    engines: "Trent 700"
-  },
-
+    engines: "Trent 700"},
   {
     manufacturer: "Airbus",
     model: "A330-300",
@@ -5733,9 +4144,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 242000,
     fuel_burn_kgph: 9000,
     price_acs_usd: 200000000,
-    engines: "Trent 700"
-  },
-
+    engines: "Trent 700"},
   {
     manufacturer: "Airbus",
     model: "A340-200",
@@ -5746,9 +4155,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 257000,
     fuel_burn_kgph: 10800,
     price_acs_usd: 210000000,
-    engines: "CFM56-5C"
-  },
-
+    engines: "CFM56-5C"},
   {
     manufacturer: "Airbus",
     model: "A340-300",
@@ -5759,9 +4166,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 275000,
     fuel_burn_kgph: 11200,
     price_acs_usd: 230000000,
-    engines: "CFM56-5C"
-  },
-
+    engines: "CFM56-5C"},
   {
     manufacturer: "McDonnell Douglas",
     model: "MD-11",
@@ -5772,9 +4177,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 285000,
     fuel_burn_kgph: 10200,
     price_acs_usd: 135000000,
-    engines: "GE CF6-80C2"
-  },
-
+    engines: "GE CF6-80C2"},
   {
     manufacturer: "Bombardier",
     model: "CRJ100",
@@ -5785,9 +4188,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 21500,
     fuel_burn_kgph: 1600,
     price_acs_usd: 24000000,
-    engines: "GE CF34-3A1"
-  },
-
+    engines: "GE CF34-3A1"},
   {
     manufacturer: "Bombardier",
     model: "CRJ200",
@@ -5798,9 +4199,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 24000,
     fuel_burn_kgph: 1650,
     price_acs_usd: 27000000,
-    engines: "GE CF34-3B1"
-  },
-
+    engines: "GE CF34-3B1"},
   {
     manufacturer: "Bombardier",
     model: "CRJ700",
@@ -5811,9 +4210,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 35000,
     fuel_burn_kgph: 2100,
     price_acs_usd: 32000000,
-    engines: "GE CF34-8C1"
-  },
-
+    engines: "GE CF34-8C1"},
   {
     manufacturer: "Bombardier",
     model: "CRJ900",
@@ -5824,9 +4221,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 38500,
     fuel_burn_kgph: 2300,
     price_acs_usd: 38000000,
-    engines: "GE CF34-8C5"
-  },
-
+    engines: "GE CF34-8C5"},
   {
     manufacturer: "Bombardier",
     model: "Dash 8 Q400",
@@ -5837,9 +4232,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 29000,
     fuel_burn_kgph: 1500,
     price_acs_usd: 34000000,
-    engines: "PW150A"
-  },
-
+    engines: "PW150A"},
   {
     manufacturer: "ATR",
     model: "ATR 42-500",
@@ -5850,9 +4243,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 18500,
     fuel_burn_kgph: 1200,
     price_acs_usd: 18000000,
-    engines: "PW120"
-  },
-
+    engines: "PW120"},
   {
     manufacturer: "ATR",
     model: "ATR 72-500",
@@ -5863,9 +4254,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 22500,
     fuel_burn_kgph: 1300,
     price_acs_usd: 24000000,
-    engines: "PW127"
-  },
-
+    engines: "PW127"},
   {
     manufacturer: "Embraer",
     model: "ERJ-135",
@@ -5876,9 +4265,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 20500,
     fuel_burn_kgph: 1500,
     price_acs_usd: 21000000,
-    engines: "RR AE3007"
-  },
-
+    engines: "RR AE3007"},
   {
     manufacturer: "Embraer",
     model: "ERJ-145",
@@ -5889,9 +4276,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 22500,
     fuel_burn_kgph: 1600,
     price_acs_usd: 24000000,
-    engines: "RR AE3007"
-  },
-
+    engines: "RR AE3007"},
   {
     manufacturer: "Embraer",
     model: "E170",
@@ -5902,9 +4287,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 39000,
     fuel_burn_kgph: 2400,
     price_acs_usd: 38000000,
-    engines: "GE CF34-8E"
-  },
-
+    engines: "GE CF34-8E"},
   {
     manufacturer: "Embraer",
     model: "E190",
@@ -5915,9 +4298,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 51800,
     fuel_burn_kgph: 2600,
     price_acs_usd: 45000000,
-    engines: "GE CF34-10E"
-  },
-
+    engines: "GE CF34-10E"},
   {
     manufacturer: "Tupolev",
     model: "Tu-204",
@@ -5928,9 +4309,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 103000,
     fuel_burn_kgph: 5200,
     price_acs_usd: 35000000,
-    engines: "PS-90A"
-  },
-
+    engines: "PS-90A"},
   {
     manufacturer: "Ilyushin",
     model: "Il-96-300",
@@ -5941,8 +4320,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 250000,
     fuel_burn_kgph: 10500,
     price_acs_usd: 85000000,
-    engines: "PS-90A"
-  },
+    engines: "PS-90A"},
   // ============================================================
   // 2010 — 2025 (Next-Gen Efficiency Era)
   // ============================================================
@@ -5957,9 +4335,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 79000,
     fuel_burn_kgph: 2100,
     price_acs_usd: 49500000,
-    engines: "PW1127G-JM / LEAP-1A"
-  },
-
+    engines: "PW1127G-JM / LEAP-1A"},
   {
     manufacturer: "Airbus",
     model: "A321neo",
@@ -5970,9 +4346,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 89000,
     fuel_burn_kgph: 2300,
     price_acs_usd: 56500000,
-    engines: "PW1130G-JM / LEAP-1A"
-  },
-
+    engines: "PW1130G-JM / LEAP-1A"},
   {
     manufacturer: "Airbus",
     model: "A321LR",
@@ -5983,9 +4357,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 97000,
     fuel_burn_kgph: 2400,
     price_acs_usd: 61000000,
-    engines: "LEAP-1A32"
-  },
-
+    engines: "LEAP-1A32"},
   {
     manufacturer: "Airbus",
     model: "A321XLR",
@@ -5996,9 +4368,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 101000,
     fuel_burn_kgph: 2350,
     price_acs_usd: 68500000,
-    engines: "LEAP-1A35"
-  },
-
+    engines: "LEAP-1A35"},
   {
     manufacturer: "Airbus",
     model: "A350-900",
@@ -6009,9 +4379,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 280000,
     fuel_burn_kgph: 8400,
     price_acs_usd: 317000000,
-    engines: "RR Trent XWB-84"
-  },
-
+    engines: "RR Trent XWB-84"},
   {
     manufacturer: "Airbus",
     model: "A350-900 ULR",
@@ -6022,9 +4390,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 280000,
     fuel_burn_kgph: 8400,
     price_acs_usd: 340000000,
-    engines: "RR Trent XWB-84"
-  },
-
+    engines: "RR Trent XWB-84"},
   {
     manufacturer: "Airbus",
     model: "A350-1000",
@@ -6035,9 +4401,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 308000,
     fuel_burn_kgph: 8950,
     price_acs_usd: 366000000,
-    engines: "RR Trent XWB-97"
-  },
-
+    engines: "RR Trent XWB-97"},
   {
     manufacturer: "Airbus",
     model: "A330-800neo",
@@ -6048,9 +4412,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 251000,
     fuel_burn_kgph: 6600,
     price_acs_usd: 131000000,
-    engines: "RR Trent 7000"
-  },
-
+    engines: "RR Trent 7000"},
   {
     manufacturer: "Airbus",
     model: "A330-900neo",
@@ -6061,9 +4423,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 251000,
     fuel_burn_kgph: 6800,
     price_acs_usd: 131000000,
-    engines: "RR Trent 7000"
-  },
-
+    engines: "RR Trent 7000"},
   {
     manufacturer: "Airbus",
     model: "A220-100",
@@ -6074,9 +4434,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 60000,
     fuel_burn_kgph: 1600,
     price_acs_usd: 82000000,
-    engines: "PW1500G"
-  },
-
+    engines: "PW1500G"},
   {
     manufacturer: "Airbus",
     model: "A220-300",
@@ -6087,9 +4445,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 69000,
     fuel_burn_kgph: 1700,
     price_acs_usd: 89000000,
-    engines: "PW1500G"
-  },
-
+    engines: "PW1500G"},
   {
     manufacturer: "Airbus",
     model: "A220-500",
@@ -6100,9 +4456,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 72000,
     fuel_burn_kgph: 1800,
     price_acs_usd: 98000000,
-    engines: "PW1500G"
-  },
-
+    engines: "PW1500G"},
   {
     manufacturer: "Boeing",
     model: "737 MAX 7",
@@ -6113,9 +4467,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 80100,
     fuel_burn_kgph: 2050,
     price_acs_usd: 61500000,
-    engines: "LEAP-1B"
-  },
-
+    engines: "LEAP-1B"},
   {
     manufacturer: "Boeing",
     model: "737 MAX 8",
@@ -6126,9 +4478,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 82000,
     fuel_burn_kgph: 2150,
     price_acs_usd: 65500000,
-    engines: "LEAP-1B"
-  },
-
+    engines: "LEAP-1B"},
   {
     manufacturer: "Boeing",
     model: "737 MAX 9",
@@ -6139,9 +4489,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 88000,
     fuel_burn_kgph: 2200,
     price_acs_usd: 70000000,
-    engines: "LEAP-1B"
-  },
-
+    engines: "LEAP-1B"},
   {
     manufacturer: "Boeing",
     model: "737 MAX 10",
@@ -6152,9 +4500,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 89200,
     fuel_burn_kgph: 2250,
     price_acs_usd: 75000000,
-    engines: "LEAP-1B"
-  },
-
+    engines: "LEAP-1B"},
   {
     manufacturer: "Boeing",
     model: "787-8 Dreamliner",
@@ -6165,9 +4511,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 228000,
     fuel_burn_kgph: 6200,
     price_acs_usd: 227000000,
-    engines: "GEnx-1B"
-  },
-
+    engines: "GEnx-1B"},
   {
     manufacturer: "Boeing",
     model: "787-9 Dreamliner",
@@ -6178,9 +4522,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 254000,
     fuel_burn_kgph: 6800,
     price_acs_usd: 264000000,
-    engines: "GEnx-1B"
-  },
-
+    engines: "GEnx-1B"},
   {
     manufacturer: "Boeing",
     model: "787-10 Dreamliner",
@@ -6191,9 +4533,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 254000,
     fuel_burn_kgph: 7100,
     price_acs_usd: 306000000,
-    engines: "GEnx-1B"
-  },
-
+    engines: "GEnx-1B"},
   {
     manufacturer: "Boeing",
     model: "787-9 (2025 Update)",
@@ -6204,9 +4544,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 254000,
     fuel_burn_kgph: 6500,
     price_acs_usd: 278000000,
-    engines: "GEnx-1B (PIP)"
-  },
-
+    engines: "GEnx-1B (PIP)"},
   {
     manufacturer: "Embraer",
     model: "E190-E2",
@@ -6217,9 +4555,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 56500,
     fuel_burn_kgph: 1550,
     price_acs_usd: 60000000,
-    engines: "PW1900G"
-  },
-
+    engines: "PW1900G"},
   {
     manufacturer: "Embraer",
     model: "E195-E2",
@@ -6230,9 +4566,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 62000,
     fuel_burn_kgph: 1650,
     price_acs_usd: 67000000,
-    engines: "PW1900G"
-  },
-
+    engines: "PW1900G"},
   {
     manufacturer: "Embraer",
     model: "E175-E2",
@@ -6243,9 +4577,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 41700,
     fuel_burn_kgph: 1350,
     price_acs_usd: 48000000,
-    engines: "PW1715G"
-  },
-
+    engines: "PW1715G"},
   {
     manufacturer: "Bombardier",
     model: "Q400 (Dash 8-400)",
@@ -6256,9 +4588,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 29000,
     fuel_burn_kgph: 900,
     price_acs_usd: 33500000,
-    engines: "PW150A"
-  },
-
+    engines: "PW150A"},
   {
     manufacturer: "ATR",
     model: "ATR 72-600",
@@ -6269,9 +4599,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 23000,
     fuel_burn_kgph: 780,
     price_acs_usd: 21500000,
-    engines: "PW127M"
-  },
-
+    engines: "PW127M"},
   {
     manufacturer: "ATR",
     model: "ATR 72-600 EVO",
@@ -6282,9 +4610,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 23500,
     fuel_burn_kgph: 720,
     price_acs_usd: 24500000,
-    engines: "PW127XT-L"
-  },
-
+    engines: "PW127XT-L"},
   {
     manufacturer: "ATR",
     model: "ATR 42-600S (STOL)",
@@ -6295,9 +4621,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 19500,
     fuel_burn_kgph: 690,
     price_acs_usd: 22500000,
-    engines: "PW127XT-S"
-  },
-
+    engines: "PW127XT-S"},
   {
     manufacturer: "Sukhoi",
     model: "SSJ100-NEW",
@@ -6308,9 +4632,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 48500,
     fuel_burn_kgph: 1650,
     price_acs_usd: 38000000,
-    engines: "PD-8"
-  },
-
+    engines: "PD-8"},
   {
     manufacturer: "Yakovlev",
     model: "MC-21-300",
@@ -6321,9 +4643,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 79000,
     fuel_burn_kgph: 2100,
     price_acs_usd: 65000000,
-    engines: "PD-14 / PW1400G"
-  },
-
+    engines: "PD-14 / PW1400G"},
   {
     manufacturer: "Yakovlev",
     model: "MC-21-200",
@@ -6334,9 +4654,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 72000,
     fuel_burn_kgph: 1800,
     price_acs_usd: 60000000,
-    engines: "PD-14"
-  },
-
+    engines: "PD-14"},
   {
     manufacturer: "Mitsubishi",
     model: "SpaceJet M90",
@@ -6348,9 +4666,7 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 1500,
     price_acs_usd: 52000000,
     engines: "PW1200G",
-    status: "cancelled"
-  },
-
+    status: "cancelled"},
   {
     manufacturer: "COMAC",
     model: "ARJ21-700",
@@ -6361,9 +4677,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 40500,
     fuel_burn_kgph: 2000,
     price_acs_usd: 38000000,
-    engines: "GE CF34-10A"
-  },
-
+    engines: "GE CF34-10A"},
   {
     manufacturer: "COMAC",
     model: "C919",
@@ -6374,8 +4688,7 @@ const ACS_AIRCRAFT_DB = [
     mtow_kg: 72500,
     fuel_burn_kgph: 2300,
     price_acs_usd: 65000000,
-    engines: "LEAP-1C"
-    },
+    engines: "LEAP-1C"},
   // ============================================================
   // FUTURE / PROTOTYPES / ACS FUTURE LAB (2026 — 2035+)
   // ============================================================
@@ -6391,9 +4704,7 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 6000,
     price_acs_usd: 198000000,
     engines: "GEnx-1B",
-    status: "future"
-  },
-
+    status: "future"},
   {
     manufacturer: "Boeing",
     model: "797 (NMA-6X)",
@@ -6405,9 +4716,7 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 5500,
     price_acs_usd: 175000000,
     engines: "GE9Lite (Projected)",
-    status: "future"
-  },
-
+    status: "future"},
   {
     manufacturer: "Boeing",
     model: "Sonic Cruiser",
@@ -6419,9 +4728,7 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 9000,
     price_acs_usd: 290000000,
     engines: "GE Affinity (Concept)",
-    status: "concept"
-  },
-
+    status: "concept"},
   {
     manufacturer: "Boeing",
     model: "777-10X (Concept)",
@@ -6433,9 +4740,7 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 10000,
     price_acs_usd: 460000000,
     engines: "GE9X",
-    status: "prototype"
-  },
-
+    status: "prototype"},
   {
     manufacturer: "Airbus",
     model: "A380F (Freighter)",
@@ -6447,9 +4752,7 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 16000,
     price_acs_usd: 420000000,
     engines: "RR Trent 970",
-    status: "future"
-  },
-
+    status: "future"},
   {
     manufacturer: "Airbus",
     model: "ZEROe Turbofan",
@@ -6461,146 +4764,6 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 0,  // hydrogen-electric
     price_acs_usd: 112000000,
     engines: "Hydrogen Hybrid",
-    status: "future"
-  },
+    status: "future"}
 
-  {
-    manufacturer: "Airbus",
-    model: "A360X (Concept)",
-    year: 2032,
-    seats: 300,
-    range_nm: 6000,
-    speed_kts: 480,
-    mtow_kg: 210000,
-    fuel_burn_kgph: 7500,
-    price_acs_usd: 240000000,
-    engines: "RR UltraFan",
-    status: "concept"
-  },
-
-  {
-    manufacturer: "COMAC",
-    model: "CR929",
-    year: 2030,
-    seats: 280,
-    range_nm: 6300,
-    speed_kts: 475,
-    mtow_kg: 245000,
-    fuel_burn_kgph: 7600,
-    price_acs_usd: 210000000,
-    engines: "PD-35 / RR UltraFan (Projected)",
-    status: "future"
-  },
-
-  {
-    manufacturer: "COMAC",
-    model: "C939 (Concept)",
-    year: 2033,
-    seats: 350,
-    range_nm: 7100,
-    speed_kts: 480,
-    mtow_kg: 290000,
-    fuel_burn_kgph: 8900,
-    price_acs_usd: 260000000,
-    engines: "PD-38 (Projected)",
-    status: "concept"
-  },
-
-  {
-    manufacturer: "McDonnell Douglas",
-    model: "MD-12X",
-    year: 2028,
-    seats: 500,
-    range_nm: 7500,
-    speed_kts: 480,
-    mtow_kg: 500000,
-    fuel_burn_kgph: 15500,
-    price_acs_usd: 335000000,
-    engines: "PW4000 (Concept)",
-    status: "concept"
-  },
-
-  {
-    manufacturer: "Sukhoi",
-    model: "KR-860",
-    year: 2030,
-    seats: 860,
-    range_nm: 9600,
-    speed_kts: 485,
-    mtow_kg: 650000,
-    fuel_burn_kgph: 18500,
-    price_acs_usd: 500000000,
-    engines: "NK-44 (Projected)",
-    status: "future"
-  },
-
-  {
-    manufacturer: "Tupolev",
-    model: "Tu-444",
-    year: 2029,
-    seats: 30,
-    range_nm: 4300,
-    speed_kts: 620,     // Mach 1.8
-    mtow_kg: 60000,
-    fuel_burn_kgph: 3500,
-    price_acs_usd: 95000000,
-    engines: "NK-321 (Supersonic)",
-    status: "prototype"
-  },
-
-  {
-    manufacturer: "Tupolev",
-    model: "Tu-304 (Projected)",
-    year: 2031,
-    seats: 270,
-    range_nm: 5500,
-    speed_kts: 480,
-    mtow_kg: 210000,
-    fuel_burn_kgph: 8200,
-    price_acs_usd: 200000000,
-    engines: "PS-30",
-    status: "future"
-  },
-
-  {
-    manufacturer: "Irkut",
-    model: "IL-106 PAK TA (Cargo)",
-    year: 2030,
-    seats: 0,
-    range_nm: 4500,
-    speed_kts: 450,
-    mtow_kg: 210000,
-    fuel_burn_kgph: 7500,
-    price_acs_usd: 250000000,
-    engines: "PD-35",
-    status: "future"
-  },
-
-  {
-    manufacturer: "Embraer",
-    model: "E3 TurboProp 2028",
-    year: 2028,
-    seats: 90,
-    range_nm: 1500,
-    speed_kts: 330,
-    mtow_kg: 33000,
-    fuel_burn_kgph: 650,
-    price_acs_usd: 39000000,
-    engines: "PW Hybrid-XT",
-    status: "future"
-  },
-
-    {
-    manufacturer: "ATR",
-    model: "ATR 72-700 EVO Max",
-    year: 2029,
-    seats: 78,
-    range_nm: 950,
-    speed_kts: 280,
-    mtow_kg: 24500,
-    fuel_burn_kgph: 680,
-    price_acs_usd: 25500000,
-    engines: "PW127XT-EVO",
-    status: "future"
-  }
-];
+};
