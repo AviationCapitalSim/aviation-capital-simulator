@@ -242,32 +242,6 @@ if (
     `🛬 C2 DETECTED ARRIVAL | ${acId} | ${prev.origin} → ${prev.destination}`
   );
 
-// ============================================================
-// ✈️ SKYTRACK → FINANCE MIRROR (DEBUG ONLY) — FIXED
-// ============================================================
-
-const arrivalPayload = {
-  aircraftId: String(acId),
-  flightId: `${acId}-${prev.origin}-${prev.destination}`,
-  origin: prev.origin,
-  destination: prev.destination,
-  distanceNM: null,            // se resolverá después si hace falta
-  amount: 50,                  // DEBUG VALUE
-  simTime: ACS_TIME?.currentTime || null
-};
-
-window.dispatchEvent(
-  new CustomEvent("ACS_FLIGHT_ARRIVAL_DEBUG", {
-    detail: arrivalPayload
-  })
-);
-
-console.log(
-  "%c✈️ SKYTRACK ARRIVAL → EVENT EMITTED",
-  "color:#00ff80;font-weight:bold;",
-  arrivalPayload
-);
-   
   /* ============================================================
      🔎 FASE 4.1.B — RESOLVE DISTANCE FROM SCHEDULE TABLE
      ============================================================ */
