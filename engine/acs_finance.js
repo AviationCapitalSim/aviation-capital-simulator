@@ -27,11 +27,11 @@ if (!localStorage.getItem("ACS_Finance")) {
     profit: -payroll,
 
     income: {
-      routes: 0,
-      cargo: 0,
-      leasing_income: 0,
-      credits: 0
-    },
+    routes: 0,              // internal — Flight Economics
+    live_flight: 0,         // Live Flight Revenue (per leg)
+    route_weekly: 0,        // Route Weekly Revenue
+    credits: 0
+  },
 
     cost: {
       salaries: payroll,
@@ -307,10 +307,10 @@ function ACS_normalizeFinance() {
 
   // === Income buckets ===
   f.income = f.income && typeof f.income === "object" ? f.income : {};
-  f.income.routes          = Number(f.income.routes          || 0);
-  f.income.cargo           = Number(f.income.cargo           || 0);
-  f.income.leasing_income  = Number(f.income.leasing_income  || 0);
-  f.income.credits         = Number(f.income.credits         || 0);
+  f.income.routes        = Number(f.income.routes        || 0);
+  f.income.live_flight   = Number(f.income.live_flight   || 0);
+  f.income.route_weekly  = Number(f.income.route_weekly  || 0);
+  f.income.credits       = Number(f.income.credits       || 0);
 
   // === Cost buckets ===
   f.cost = f.cost && typeof f.cost === "object" ? f.cost : {};
