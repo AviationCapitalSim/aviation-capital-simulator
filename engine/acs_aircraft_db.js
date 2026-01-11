@@ -4766,4 +4766,4 @@ const ACS_AIRCRAFT_DB = [
     engines: "Hydrogen Hybrid",
     status: "future"}
 
-};
+   ];
