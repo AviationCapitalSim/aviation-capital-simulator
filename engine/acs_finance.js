@@ -1238,3 +1238,36 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
   });
 
 })();
+
+/* ============================================================
+   💰 FINANCE — SKYTRACK ARRIVAL MIRROR (DEBUG)
+   ------------------------------------------------------------
+   • NO suma capital
+   • NO toca buckets
+   • SOLO VISIBILIDAD
+   ============================================================ */
+
+(function () {
+
+  console.log("🎧 [FINANCE] SkyTrack ARRIVAL mirror armed");
+
+  window.addEventListener("ACS_FLIGHT_ARRIVAL_DEBUG", e => {
+
+    const d = e.detail;
+    if (!d) return;
+
+    console.log(
+      "%c💰 ARRIVAL MIRROR → FINANCE",
+      "color:#ffd700;font-weight:bold;",
+      {
+        aircraftId: d.aircraftId,
+        flightId: d.flightId,
+        route: `${d.origin} → ${d.destination}`,
+        fakeAmount: `$${d.amount}`,
+        simTime: d.simTime
+      }
+    );
+
+  });
+
+})();
