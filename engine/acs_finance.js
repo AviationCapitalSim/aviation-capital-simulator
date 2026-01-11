@@ -626,6 +626,17 @@ function ACS_registerExpense(costType, amount, source) {
 
 function ACS_registerIncome(incomeType, amount, source) {
 
+  console.log(
+    "%c💰 [FINANCE] registerIncome() CALLED",
+    "color:#ffd700;font-weight:bold;",
+    {
+      incomeType,
+      amount,
+      source,
+      simTime: window.ACS_CurrentSimDate
+    }
+  );
+   
   const value = Number(amount) || 0;
   if (value <= 0) return;
 
@@ -1194,60 +1205,35 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 })();
 
 /* ============================================================
-   🎧 FINANCE — FLIGHT ECONOMICS LISTENER (v1)
-   Escucha ingresos desde Flight Economics
+   🎧 FINANCE — FLIGHT ECONOMICS MONITOR (LIVE)
+   ------------------------------------------------------------
+   • NO suma dinero
+   • NO cambia buckets
+   • SOLO confirma aterrizajes
    ============================================================ */
 
 (function () {
 
-  console.log("🎧 FINANCE ECON LISTENER INIT");
+  console.log("🎧 [FINANCE] Flight Economics MONITOR armed");
 
   window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
     const d = e.detail;
-    if (!d) {
-      console.warn("💰 FINANCE: Empty economics payload");
-      return;
-    }
 
-    console.log("💰 FINANCE RECEIVED ECONOMICS:", d);
-
-    const revenue = Number(d.revenue || 0);
-    if (!Number.isFinite(revenue) || revenue <= 0) {
-      console.warn("💰 FINANCE: Invalid revenue", revenue);
-      return;
-    }
-
-    // ============================
-    // 💰 APPLY REVENUE
-    // ============================
-
-    if (!window.ACS_Finance) {
-      console.error("⛔ ACS_Finance not available");
-      return;
-    }
-
-    if (typeof ACS_Finance.addIncome === "function") {
-      ACS_Finance.addIncome({
-        type: "FLIGHT_REVENUE",
-        amount: revenue,
-        ref: d.flightId || null,
-        meta: {
-          aircraftId: d.aircraftId,
-          origin: d.origin,
-          destination: d.destination,
-          pax: d.pax,
-          distanceNM: d.distanceNM
-        }
-      });
-
-      console.log(
-        `🎶 FINANCE CREDITED: +$${revenue.toFixed(0)} | ${d.origin} → ${d.destination}`
-      );
-
-    } else {
-      console.error("⛔ ACS_Finance.addIncome not implemented");
-    }
+    console.log(
+      "%c✈️💰 FLIGHT LANDED → FINANCE",
+      "color:#00ff80;font-weight:bold;",
+      {
+        flightId: d?.flightId,
+        aircraftId: d?.aircraftId,
+        origin: d?.origin,
+        destination: d?.destination,
+        pax: d?.pax,
+        distanceNM: d?.distanceNM,
+        revenue: d?.revenue,
+        simTime: window.ACS_CurrentSimDate
+      }
+    );
 
   });
 
