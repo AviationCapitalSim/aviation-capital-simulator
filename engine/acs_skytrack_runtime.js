@@ -249,14 +249,14 @@ if (
 window.dispatchEvent(
   new CustomEvent("ACS_FLIGHT_ARRIVAL_DEBUG", {
     detail: {
-      aircraftId,
-      flightId,
-      origin,
-      destination,
-      distanceNM,
-      amount: 50, // 💵 FAKE VALUE SOLO PARA VER MOVIMIENTO
-      simTime: ACS_TIME?.currentTime
-    }
+  aircraftId: ac?.id || "UNKNOWN_AC",
+  flightId: flight?.id || "UNKNOWN_FLIGHT",
+  origin,
+  destination,
+  distanceNM,
+  amount: 50,
+  simTime: ACS_TIME?.currentTime
+   }
   })
 );
 
