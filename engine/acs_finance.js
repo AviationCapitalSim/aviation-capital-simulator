@@ -630,7 +630,7 @@ let targetType = incomeType;
 
 // 🔁 Redirección semántica
 if (incomeType === "routes") {
-  targetType = "live_flight";
+  targetType = "cargo";
 }
 
 ACS_addIncome(targetType, value);
