@@ -243,27 +243,29 @@ if (
   );
 
 // ============================================================
-// ✈️ SKYTRACK → FINANCE MIRROR (DEBUG ONLY)
+// ✈️ SKYTRACK → FINANCE MIRROR (DEBUG ONLY) — FIXED
 // ============================================================
+
+const arrivalPayload = {
+  aircraftId: String(acId),
+  flightId: `${acId}-${prev.origin}-${prev.destination}`,
+  origin: prev.origin,
+  destination: prev.destination,
+  distanceNM: null,            // se resolverá después si hace falta
+  amount: 50,                  // DEBUG VALUE
+  simTime: ACS_TIME?.currentTime || null
+};
 
 window.dispatchEvent(
   new CustomEvent("ACS_FLIGHT_ARRIVAL_DEBUG", {
-    detail: {
-  aircraftId: ac?.id || "UNKNOWN_AC",
-  flightId: flight?.id || "UNKNOWN_FLIGHT",
-  origin,
-  destination,
-  distanceNM,
-  amount: 50,
-  simTime: ACS_TIME?.currentTime
-   }
+    detail: arrivalPayload
   })
 );
 
 console.log(
   "%c✈️ SKYTRACK ARRIVAL → EVENT EMITTED",
   "color:#00ff80;font-weight:bold;",
-  { aircraftId, flightId, origin, destination, amount: 50 }
+  arrivalPayload
 );
    
   /* ============================================================
