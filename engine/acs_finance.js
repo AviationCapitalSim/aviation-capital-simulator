@@ -305,25 +305,12 @@ function ACS_normalizeFinance() {
   f.expenses = Number(f.expenses || 0);
   f.profit   = Number(f.profit   || 0);
 
-  // ============================================================
-// 🧹 CANONICAL INCOME CLEANUP — STRICT
-// ------------------------------------------------------------
-// • Elimina buckets históricos / inválidos
-// • Garantiza SOLO income oficiales
-// ============================================================
-
-f.income = f.income && typeof f.income === "object" ? f.income : {};
-
-// 🔥 PRESERVAR SOLO LOS CANÓNICOS
-const canonicalIncome = {
-  routes: Number(f.income.routes || 0),
-  cargo: Number(f.income.cargo || 0),
-  leasing_income: Number(f.income.leasing_income || 0),
-  credits: Number(f.income.credits || 0)
-};
-
-// 🔁 REEMPLAZO TOTAL (borra basura histórica)
-f.income = canonicalIncome;
+  // === Income buckets ===
+  f.income = f.income && typeof f.income === "object" ? f.income : {};
+  f.income.routes        = Number(f.income.routes        || 0);
+  f.income.live_flight   = Number(f.income.live_flight   || 0);
+  f.income.route_weekly  = Number(f.income.route_weekly  || 0);
+  f.income.credits       = Number(f.income.credits       || 0);
 
   // === Cost buckets ===
   f.cost = f.cost && typeof f.cost === "object" ? f.cost : {};
