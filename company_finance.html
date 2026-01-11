@@ -652,27 +652,13 @@ function loadBreakdown() {
 
   const categories = [];
 
-// ============================================================
-// 🟦 UI LABEL MAP — INCOME (RENAME ONLY, NO FILTER)
-// ============================================================
-
-const incomeLabelMap = {
-  live_flight:   "Live Flight Revenue",
-  route_weekly:  "Route Weekly Revenue",
-  routes:        "Route Revenue (Internal)",
-  credits:       "Credits"
-};
-
-// Income
-Object.keys(f.income).forEach(k => {
-
-  const label = incomeLabelMap[k] || k;
-
-  categories.push({
-    label: `${label}`,
-    value: f.income[k]
+  // Income
+  Object.keys(f.income).forEach(k => {
+    categories.push({
+      label: `${k} (Income)`,
+      value: f.income[k]
+    });
   });
-});
 
   // Cost
   Object.keys(f.cost).forEach(k => {
