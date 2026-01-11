@@ -74,107 +74,106 @@ window.ACS_ECON_ProcessedFlights =
   window.ACS_ECON_ProcessedFlights || new Set();
 
 window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
+  try {
 
-  const f = ev?.detail;
-  if (!f) return;
+    const f = ev?.detail;
+    if (!f) return;
 
-  /* -------------------------------
-     🔒 Dedup real flight
-  --------------------------------*/
-  if (!f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
+    /* -------------------------------
+       🔒 Dedup real flight
+    --------------------------------*/
+    if (!f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
 
-  const econKey = `${f.aircraftId}|${f.depAbsMin}`;
-  if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
-  window.ACS_ECON_ProcessedFlights.add(econKey);
+    const econKey = `${f.aircraftId}|${f.depAbsMin}`;
+    if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
+    window.ACS_ECON_ProcessedFlights.add(econKey);
 
-  /* -------------------------------
-     ✈️ Aircraft
-  --------------------------------*/
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const ac = fleet.find(a =>
-    a.id === f.aircraftId || a.registration === f.aircraftId
-  );
-  if (!ac) return;
-
-  /* -------------------------------
-     ⏱ Time
-  --------------------------------*/
-  const simTime =
-    window.ACS_TIME?.currentTime instanceof Date
-      ? window.ACS_TIME.currentTime
-      : new Date();
-
-  /* -------------------------------
-     🧍 Passenger calculation
-  --------------------------------*/
-  if (!window.ACS_PAX || typeof ACS_PAX.calculate !== "function") return;
-
-  const paxResult = ACS_PAX.calculate({
-    route: {
-      distanceNM: f.distanceNM,
-      continentA: f.originContinent || "GEN",
-      continentB: f.destinationContinent || "GEN"
-    },
-    time: {
-      hour: simTime.getUTCHours(),
-      year: simTime.getUTCFullYear()
-    },
-    aircraft: {
-      seats: ac.seats || 0,
-      comfortIndex: ac.comfortIndex || 1.0   // FUTURO
-    },
-    pricing: {
-      baseFare: f.baseFare || 120,
-      effectiveFare: f.effectiveFare || 120
-    },
-    airline: {
-      marketingLevel: 1.0,
-      reputation: 1.0
-    },
-    market: {
-      competitors: f.competitors || 1,
-      frequencyFactor: 1.0
-    }
-  });
-
-  const pax = paxResult.pax || 0;
-  if (pax <= 0) return;
-
-  /* -------------------------------
-     💵 Ticket price (historical-safe)
-  --------------------------------*/
-  let ticket = 120;
-  if (f.distanceNM > 3000) ticket = 220;
-  else if (f.distanceNM > 1200) ticket = 150;
-  else if (f.distanceNM > 500)  ticket = 90;
-
-  if (simTime.getUTCFullYear() < 1960) ticket *= 0.6;
-
-  const revenue = Math.round(pax * ticket);
-  if (revenue <= 0) return;
-
-  /* -------------------------------
-     💰 FINANCE — SINGLE ENTRY
-  --------------------------------*/
-  if (typeof ACS_registerIncome === "function") {
-    ACS_registerIncome(
-      "routes",
-      revenue,
-      `Flight ${f.origin} → ${f.destination} | Pax ${pax}`
+    /* -------------------------------
+       ✈️ Aircraft
+    --------------------------------*/
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    const ac = fleet.find(a =>
+      a.id === f.aircraftId || a.registration === f.aircraftId
     );
-  }
+    if (!ac) return;
 
-  console.log(
-  `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax}/${ac.seats} | $${revenue}`
-);
+    /* -------------------------------
+       ⏱ Time
+    --------------------------------*/
+    const simTime =
+      window.ACS_TIME?.currentTime instanceof Date
+        ? window.ACS_TIME.currentTime
+        : new Date();
 
-});
+    /* -------------------------------
+       🧍 Passenger calculation
+    --------------------------------*/
+    if (!window.ACS_PAX || typeof ACS_PAX.calculate !== "function") return;
+
+    const paxResult = ACS_PAX.calculate({
+      route: {
+        distanceNM: f.distanceNM,
+        continentA: f.originContinent || "GEN",
+        continentB: f.destinationContinent || "GEN"
+      },
+      time: {
+        hour: simTime.getUTCHours(),
+        year: simTime.getUTCFullYear()
+      },
+      aircraft: {
+        seats: ac.seats || 0,
+        comfortIndex: ac.comfortIndex || 1.0   // FUTURO
+      },
+      pricing: {
+        baseFare: f.baseFare || 120,
+        effectiveFare: f.effectiveFare || 120
+      },
+      airline: {
+        marketingLevel: 1.0,
+        reputation: 1.0
+      },
+      market: {
+        competitors: f.competitors || 1,
+        frequencyFactor: 1.0
+      }
+    });
+
+    const pax = paxResult.pax || 0;
+    if (pax <= 0) return;
+
+    /* -------------------------------
+       💵 Ticket price (historical-safe)
+    --------------------------------*/
+    let ticket = 120;
+    if (f.distanceNM > 3000) ticket = 220;
+    else if (f.distanceNM > 1200) ticket = 150;
+    else if (f.distanceNM > 500)  ticket = 90;
+
+    if (simTime.getUTCFullYear() < 1960) ticket *= 0.6;
+
+    const revenue = Math.round(pax * ticket);
+    if (revenue <= 0) return;
+
+    /* -------------------------------
+       💰 FINANCE — SINGLE ENTRY
+    --------------------------------*/
+    if (typeof ACS_registerIncome === "function") {
+      ACS_registerIncome(
+        "routes",
+        revenue,
+        `Flight ${f.origin} → ${f.destination} | Pax ${pax}`
+      );
+    }
+
+    console.log(
+      `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax}/${ac.seats} | $${revenue}`
+    );
 
     // ========= FUTURE (OFF) =========
-    if (window.ACS_ECON_FLAGS.ENABLE_FUEL_COST) {
+    if (window.ACS_ECON_FLAGS?.ENABLE_FUEL_COST) {
       // future
     }
-    if (window.ACS_ECON_FLAGS.ENABLE_SLOT_FEES) {
+    if (window.ACS_ECON_FLAGS?.ENABLE_SLOT_FEES) {
       // future
     }
 
