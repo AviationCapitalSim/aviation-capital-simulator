@@ -242,6 +242,30 @@ if (
     `🛬 C2 DETECTED ARRIVAL | ${acId} | ${prev.origin} → ${prev.destination}`
   );
 
+// ============================================================
+// ✈️ SKYTRACK → FINANCE MIRROR (DEBUG ONLY)
+// ============================================================
+
+window.dispatchEvent(
+  new CustomEvent("ACS_FLIGHT_ARRIVAL_DEBUG", {
+    detail: {
+      aircraftId,
+      flightId,
+      origin,
+      destination,
+      distanceNM,
+      amount: 50, // 💵 FAKE VALUE SOLO PARA VER MOVIMIENTO
+      simTime: ACS_TIME?.currentTime
+    }
+  })
+);
+
+console.log(
+  "%c✈️ SKYTRACK ARRIVAL → EVENT EMITTED",
+  "color:#00ff80;font-weight:bold;",
+  { aircraftId, flightId, origin, destination, amount: 50 }
+);
+   
   /* ============================================================
      🔎 FASE 4.1.B — RESOLVE DISTANCE FROM SCHEDULE TABLE
      ============================================================ */
