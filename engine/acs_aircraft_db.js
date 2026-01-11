@@ -2826,17 +2826,7 @@ const ACS_AIRCRAFT_DB = [
   price_acs_usd: 650000,
   engines: "PW R-985"},
 {
-  manufacturer: "Piper",
-  model: "J-3 Cub",
-  year: 1938,
-  seats: 2,
-  range_nm: 190,
-  speed_kts: 65,
-  mtow_kg: 550,
-  fuel_burn_kgph: 25,
-  price_acs_usd: 120000,
-  engines: "Continental A-65"},
-{
+  
   manufacturer: "Cessna",
   model: "Cessna 120",
   year: 1946,
