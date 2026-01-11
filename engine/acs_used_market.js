@@ -91,12 +91,10 @@ function getAircraftImage(ac) {
     return "img/placeholder_aircraft.png";
   }
 
-  let manuFolder = ac.manufacturer
-    .trim()
-    .replace(/\s+/g, "_");
+  let manuFolder = ac.manufacturer.trim().replace(/\s+/g, " ");
 
   if (ac.manufacturer.toLowerCase() === "de havilland") {
-    manuFolder = "de_Havilland";
+  manuFolder = "de_havilland";
   }
 
   const rawModel = ac.model.toLowerCase().trim();
