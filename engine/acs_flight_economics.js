@@ -165,8 +165,8 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   }
 
   console.log(
-    `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax}/${ac.seats} | $${revenue}`
-  );
+  `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax}/${ac.seats} | $${revenue}`
+);
 
 });
 
