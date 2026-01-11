@@ -652,22 +652,19 @@ function loadBreakdown() {
 
   const categories = [];
 
-  // ============================================================
-// 🟦 UI LABEL MAP — INCOME (Finance Breakdown)
+// ============================================================
+// 🟦 UI LABEL MAP — INCOME (RENAME ONLY, NO FILTER)
 // ============================================================
 
 const incomeLabelMap = {
-  live_flight: "Live Flight Revenue",
-  route_weekly: "Route Weekly Revenue",
-  credits: "Credits",
-  routes: null // 🔒 oculto (bucket técnico)
+  live_flight:   "Live Flight Revenue",
+  route_weekly:  "Route Weekly Revenue",
+  routes:        "Route Revenue (Internal)",
+  credits:       "Credits"
 };
 
 // Income
 Object.keys(f.income).forEach(k => {
-
-  // ocultar buckets técnicos
-  if (incomeLabelMap[k] === null) return;
 
   const label = incomeLabelMap[k] || k;
 
@@ -676,7 +673,6 @@ Object.keys(f.income).forEach(k => {
     value: f.income[k]
   });
 });
-
 
   // Cost
   Object.keys(f.cost).forEach(k => {
