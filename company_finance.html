@@ -652,34 +652,13 @@ function loadBreakdown() {
 
   const categories = [];
 
-  // ============================================================
-// 🟦 UI ONLY — RENAME INCOME BUCKETS (NO LOGIC CHANGE)
-// ============================================================
-
-// Income
-Object.keys(f.income).forEach(k => {
-
-  let label = k;
-
-  // 🔁 SOLO CAMBIO DE NOMBRES VISUALES
-     
-  if (k === "routes") {
-    label = "Routes";
-  }
-
-  if (k === "cargo") {
-    label = "Live Flight Revenue";
-  }
-
-  if (k === "leasing_income") {
-    label = "Route Weekly Revenue";
-  }
-
-  categories.push({
-    label: `${label} (Income)`,
-    value: f.income[k]
+  // Income
+  Object.keys(f.income).forEach(k => {
+    categories.push({
+      label: `${k} (Income)`,
+      value: f.income[k]
+    });
   });
-});
 
   // Cost
   Object.keys(f.cost).forEach(k => {
