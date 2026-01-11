@@ -1,156 +1,192 @@
 /* ============================================================
-   === ACS PASSENGER REALITY ENGINE — v1.0 =====================
+   🟦 ACS PASSENGER ENGINE — v2.0 (CANONICAL)
+   ------------------------------------------------------------
+   ✔ Pure demand engine
+   ✔ Deterministic + bounded
+   ✔ No Finance / No Storage / No UI
+   ✔ Scales to 500+ players
+   ------------------------------------------------------------
+   Author: ACS System
+   Date: 2026-01-11
    ============================================================ */
 
-const ACS_PAX = {};
+window.ACS_PAX = {};
 
-/* -----------------------------
-   1. Tier Calculation
---------------------------------*/
-ACS_PAX.getTier = function(ap){
-    let score = 0;
+/* ============================================================
+   🟦 1. SAFE HELPERS
+   ============================================================ */
 
-    if (ap.runway_m > 2600) score++;
-    if (ap.population && ap.population > 1_000_000) score++;
-    if (ap.iata) score++;
-    if (ap.traffic && ap.traffic > 1_000_000) score++;
-    if (ap.internationalRoutes && ap.internationalRoutes > 5) score++;
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
+}
 
-    return Math.max(0, Math.min(score, 5));
+function safeNum(v, fallback = 0) {
+  return Number.isFinite(v) ? v : fallback;
+}
+
+/* ============================================================
+   🟦 2. WORLD DEMAND (BASE)
+   ============================================================ */
+
+ACS_PAX.getBaseDailyDemand = function ({
+  distanceNM,
+  year,
+  continentA,
+  continentB
+}) {
+
+  distanceNM = safeNum(distanceNM);
+  year = safeNum(year, 1970);
+
+  /* -------- distance factor -------- */
+  let distFactor = 1.0;
+  if (distanceNM > 3000) distFactor = 0.45;
+  else if (distanceNM > 1500) distFactor = 0.65;
+  else if (distanceNM > 500)  distFactor = 0.85;
+
+  /* -------- historical factor -------- */
+  let yearFactor = 1.0;
+  if (year < 1950) yearFactor = 0.35;
+  else if (year < 1970) yearFactor = 0.55;
+  else if (year < 1990) yearFactor = 0.75;
+
+  /* -------- continental factor -------- */
+  let contFactor = 0.6;
+  if (continentA && continentA === continentB) contFactor = 1.0;
+
+  /* -------- base global demand -------- */
+  const BASE = 220; // world baseline (per route/day)
+
+  const demand =
+    BASE *
+    distFactor *
+    yearFactor *
+    contFactor;
+
+  return Math.max(0, Math.floor(demand));
 };
 
-/* Tier caps */
-ACS_PAX.tierCaps = {
-    0: { maxDaily: 8, maxHour: 4 },
-    1: { maxDaily: 60, maxHour: 20 },
-    2: { maxDaily: 180, maxHour: 60 },
-    3: { maxDaily: 300, maxHour: 120 },
-    4: { maxDaily: 500, maxHour: 250 },
-    5: { maxDaily: 1200, maxHour: 1000 }
+/* ============================================================
+   🟦 3. HOURLY DISTRIBUTION
+   ============================================================ */
+
+ACS_PAX.getHourlyDemand = function (dailyDemand, hour) {
+
+  dailyDemand = safeNum(dailyDemand);
+  hour = clamp(safeNum(hour), 0, 23);
+
+  const hourlyCurve = [
+    0.02, 0.02, 0.03, 0.04,  // 00–03
+    0.05, 0.07, 0.10, 0.12,  // 04–07
+    0.12, 0.11, 0.10, 0.09,  // 08–11
+    0.08, 0.07, 0.06, 0.06,  // 12–15
+    0.07, 0.08, 0.09, 0.10,  // 16–19
+    0.07, 0.05, 0.03, 0.02   // 20–23
+  ];
+
+  const ratio = hourlyCurve[hour] || 0;
+  return Math.floor(dailyDemand * ratio);
 };
 
-/* -----------------------------
-   2. Long-Haul Detection
---------------------------------*/
-ACS_PAX.isLongHaul = function(dist, tierA, tierB){
-    return (dist > 1800 || tierA >= 4 || tierB >= 4);
+/* ============================================================
+   🟦 4. MARKET SHARE MODEL
+   ============================================================ */
+
+ACS_PAX.getMarketShare = function ({
+  priceFactor = 1.0,
+  comfortFactor = 1.0,
+  marketingFactor = 1.0,
+  reputationFactor = 1.0,
+  frequencyFactor = 1.0,
+  competitors = 1
+}) {
+
+  priceFactor       = safeNum(priceFactor, 1.0);
+  comfortFactor     = safeNum(comfortFactor, 1.0);
+  marketingFactor   = safeNum(marketingFactor, 1.0);
+  reputationFactor  = safeNum(reputationFactor, 1.0);
+  frequencyFactor   = safeNum(frequencyFactor, 1.0);
+  competitors       = Math.max(1, safeNum(competitors, 1));
+
+  const raw =
+    priceFactor *
+    comfortFactor *
+    marketingFactor *
+    reputationFactor *
+    frequencyFactor;
+
+  const share = raw / competitors;
+
+  return clamp(share, 0.05, 1.0);
 };
 
-/* -----------------------------
-   3. Ratios
---------------------------------*/
-ACS_PAX.continentalRatio = function(c1, c2){
-    // tabla real
-    // Europa base
-    if (c1 === "Europe" && c2 === "Europe") return 1.0;
-    if (c1 === "Europe" && c2 === "NorthAmerica") return 0.4;
-    if (c1 === "Europe" && c2 === "SouthAmerica") return 0.15;
-    if (c1 === "Europe" && c2 === "AfricaNorth") return 0.25;
-    if (c1 === "Europe" && c2 === "AfricaSouth") return 0.15;
-    if (c1 === "Europe" && c2 === "Asia") return 0.20;
-    if (c1 === "Europe" && c2 === "Oceania") return 0.05;
+/* ============================================================
+   🟦 5. MAIN ENTRY — CALCULATE PASSENGERS
+   ============================================================ */
 
-    // fallback
-    return 0.2;
-};
+ACS_PAX.calculate = function (input = {}) {
 
-ACS_PAX.distanceRatio = function(nm){
-    if (nm <= 500) return 1.0;
-    if (nm <= 1500) return 0.7;
-    if (nm <= 3000) return 0.4;
-    if (nm <= 7000) return 0.2;
-    return 0.1;
-};
+  try {
 
-ACS_PAX.yearRatio = function(year){
-    if (year < 1960) return 0.3;
-    if (year < 1990) return 0.7;
-    return 1.0;
-};
+    /* -------- destructure safely -------- */
+    const route   = input.route   || {};
+    const time    = input.time    || {};
+    const aircraft= input.aircraft|| {};
+    const pricing = input.pricing || {};
+    const airline = input.airline || {};
+    const market  = input.market  || {};
 
-/* -----------------------------
-   4. Daily demand
---------------------------------*/
-ACS_PAX.getDailyDemand = function(A, B, dist, year){
-    
-    const tierA = this.getTier(A);
-    const tierB = this.getTier(B);
+    const seats = Math.max(0, safeNum(aircraft.seats));
 
-    if (tierA === 0 || tierB === 0){
-        return Math.floor(Math.random() * 8);
+    if (seats === 0) {
+      return { pax: 0, loadFactor: 0, demandUsed: 0 };
     }
 
-    const base = tierA * tierB;
-    const ratioC = this.continentalRatio(A.continent, B.continent);
-    const ratioD = this.distanceRatio(dist);
-    const ratioY = this.yearRatio(year);
-    const variation = 0.8 + Math.random() * 0.4;
+    /* -------- demand -------- */
+    const dailyDemand = this.getBaseDailyDemand({
+      distanceNM: route.distanceNM,
+      year: time.year,
+      continentA: route.continentA,
+      continentB: route.continentB
+    });
 
-    let demand = base * ratioC * ratioD * ratioY * variation;
+    const hourlyDemand =
+      this.getHourlyDemand(dailyDemand, time.hour);
 
-    demand = Math.min(demand, 
-        this.tierCaps[tierA].maxDaily, 
-        this.tierCaps[tierB].maxDaily
+    if (hourlyDemand <= 0) {
+      return { pax: 0, loadFactor: 0, demandUsed: 0 };
+    }
+
+    /* -------- market share -------- */
+    const priceFactor =
+      pricing.baseFare && pricing.effectiveFare
+        ? clamp(pricing.baseFare / pricing.effectiveFare, 0.6, 1.4)
+        : 1.0;
+
+    const share = this.getMarketShare({
+      priceFactor,
+      comfortFactor: aircraft.comfortIndex || 1.0,
+      marketingFactor: airline.marketingLevel || 1.0,
+      reputationFactor: airline.reputation || 1.0,
+      frequencyFactor: market.frequencyFactor || 1.0,
+      competitors: market.competitors || 1
+    });
+
+    /* -------- final pax -------- */
+    const pax = Math.floor(
+      Math.min(seats, hourlyDemand * share)
     );
 
-    return Math.floor(demand);
+    return {
+      pax,
+      loadFactor: pax / seats,
+      demandUsed: pax / hourlyDemand
+    };
+
+  } catch (err) {
+    console.error("❌ ACS_PAX.calculate error:", err);
+    return { pax: 0, loadFactor: 0, demandUsed: 0 };
+  }
 };
 
-/* -----------------------------
-   5. Hourly demand
---------------------------------*/
-ACS_PAX.getHourlyDemand = function(daily, hour, isLongHaul, tier){
-
-    // Tier 0 airport
-    if (tier === 0){
-        return this.tier0Hourly(hour);
-    }
-
-    let minP, maxP;
-
-    if (isLongHaul){
-        [minP, maxP] = this.longHaulPercent(hour);
-    } else {
-        [minP, maxP] = this.domesticPercent(hour);
-    }
-
-    let ratio = minP + Math.random() * (maxP - minP);
-    let hourly = daily * ratio;
-
-    hourly = Math.min(hourly, this.tierCaps[tier].maxHour);
-
-    return Math.floor(hourly);
-};
-
-/* Hour tables */
-ACS_PAX.tier0Hourly = function(hour){
-    if (hour < 6) return 0;
-    if (hour < 9) return Math.floor(Math.random() * 3);
-    if (hour < 14) return Math.floor(Math.random() * 4);
-    if (hour < 19) return 1 + Math.floor(Math.random() * 4);
-    if (hour < 22) return Math.floor(Math.random() * 3);
-    return 0;
-};
-
-ACS_PAX.longHaulPercent = function(hour){
-    if (hour < 2) return [0.15, 0.25];
-    if (hour < 5) return [0.10, 0.20];
-    if (hour < 8) return [0.20, 0.30];
-    if (hour < 11) return [0.15, 0.20];
-    if (hour < 14) return [0.10, 0.15];
-    if (hour < 17) return [0.15, 0.20];
-    if (hour < 20) return [0.20, 0.30];
-    return [0.25, 0.35];
-};
-
-/* Needs continent mapping internally */
-ACS_PAX.domesticPercent = function(hour){
-    // aquí se inserta la tabla normal de continentes
-    // (usamos la versión de Europa como placeholder)
-    if (hour < 5) return [0.00, 0.05];
-    if (hour < 9) return [0.20, 0.25];
-    if (hour < 14) return [0.20, 0.20];
-    if (hour < 18) return [0.25, 0.30];
-    if (hour < 22) return [0.15, 0.20];
-    return [0.02, 0.05];
-};
+console.log("🧍 ACS PASSENGER ENGINE v2.0 — READY");
