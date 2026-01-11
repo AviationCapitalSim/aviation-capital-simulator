@@ -63,115 +63,112 @@ window.ACS_ECON_ProcessedFlights =
   window.ACS_ECON_ProcessedFlights || new Set();
 
 /* ============================================================
-   🟦 CORE LISTENER — FLIGHT ARRIVED
-   DEDUP CANÓNICO: aircraftId + depAbsMin (1 ingreso por vuelo real)
+   🟦 PASO 9 — FLIGHT ECONOMICS CORE (CANONICAL)
+   ------------------------------------------------------------
+   ✔ Single revenue entry point
+   ✔ Uses ACS_PAX v2
+   ✔ Writes to Finance ONLY here
    ============================================================ */
+
+window.ACS_ECON_ProcessedFlights =
+  window.ACS_ECON_ProcessedFlights || new Set();
+
 window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
-  try {
-    const f = ev?.detail;
-    if (!f) return;
 
-    // Campos mínimos desde SkyTrack runtime
-    if (!f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
+  const f = ev?.detail;
+  if (!f) return;
 
-    const econKey = `${String(f.aircraftId)}|${Number(f.depAbsMin)}`;
-    if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
-    window.ACS_ECON_ProcessedFlights.add(econKey);
+  /* -------------------------------
+     🔒 Dedup real flight
+  --------------------------------*/
+  if (!f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
 
-    const distanceNM = Number(f.distanceNM || 0);
-    if (!(distanceNM > 0)) return;
+  const econKey = `${f.aircraftId}|${f.depAbsMin}`;
+  if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
+  window.ACS_ECON_ProcessedFlights.add(econKey);
 
-    // ========= FLEET =========
-    let fleet = [];
-    try {
-      fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    } catch {
-      fleet = [];
+  /* -------------------------------
+     ✈️ Aircraft
+  --------------------------------*/
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = fleet.find(a =>
+    a.id === f.aircraftId || a.registration === f.aircraftId
+  );
+  if (!ac) return;
+
+  /* -------------------------------
+     ⏱ Time
+  --------------------------------*/
+  const simTime =
+    window.ACS_TIME?.currentTime instanceof Date
+      ? window.ACS_TIME.currentTime
+      : new Date();
+
+  /* -------------------------------
+     🧍 Passenger calculation
+  --------------------------------*/
+  if (!window.ACS_PAX || typeof ACS_PAX.calculate !== "function") return;
+
+  const paxResult = ACS_PAX.calculate({
+    route: {
+      distanceNM: f.distanceNM,
+      continentA: f.originContinent || "GEN",
+      continentB: f.destinationContinent || "GEN"
+    },
+    time: {
+      hour: simTime.getUTCHours(),
+      year: simTime.getUTCFullYear()
+    },
+    aircraft: {
+      seats: ac.seats || 0,
+      comfortIndex: ac.comfortIndex || 1.0   // FUTURO
+    },
+    pricing: {
+      baseFare: f.baseFare || 120,
+      effectiveFare: f.effectiveFare || 120
+    },
+    airline: {
+      marketingLevel: 1.0,
+      reputation: 1.0
+    },
+    market: {
+      competitors: f.competitors || 1,
+      frequencyFactor: 1.0
     }
+  });
 
-    const econAircraftIdRaw = String(f.aircraftId || "").trim();
-    const econAircraftIdNorm = econAircraftIdRaw.replace("-", "_");
+  const pax = paxResult.pax || 0;
+  if (pax <= 0) return;
 
-    const ac = (Array.isArray(fleet) ? fleet : []).find(a => {
-      if (!a) return false;
-      const fid = String(a.id || "").trim();
-      const fidNorm = fid.replace("-", "_");
+  /* -------------------------------
+     💵 Ticket price (historical-safe)
+  --------------------------------*/
+  let ticket = 120;
+  if (f.distanceNM > 3000) ticket = 220;
+  else if (f.distanceNM > 1200) ticket = 150;
+  else if (f.distanceNM > 500)  ticket = 90;
 
-      return (
-        fid === econAircraftIdRaw ||
-        fidNorm === econAircraftIdNorm ||
-        String(a.registration || "") === econAircraftIdRaw
-      );
-    });
+  if (simTime.getUTCFullYear() < 1960) ticket *= 0.6;
 
-    if (!ac) {
-      console.warn(
-        "❌ ECON: Aircraft NOT FOUND in fleet",
-        econAircraftIdRaw,
-        "→ normalized:",
-        econAircraftIdNorm
-      );
-      return;
-    }
+  const revenue = Math.round(pax * ticket);
+  if (revenue <= 0) return;
 
-    // ========= AIRPORTS =========
-    const A = window.ACS_buildEconAirport(f.origin, distanceNM);
-    const B = window.ACS_buildEconAirport(f.destination, distanceNM);
-    if (!A || !B) return;
-
-    // ========= PAX =========
-    if (!window.ACS_PAX) {
-      console.warn("⚠️ ECON: ACS_PAX not loaded yet");
-      return;
-    }
-
-    const year =
-      (window.ACS_TIME?.currentTime instanceof Date)
-        ? window.ACS_TIME.currentTime.getUTCFullYear()
-        : new Date().getFullYear();
-
-    const hour =
-      Number.isFinite(f.detectedAtTs)
-        ? new Date(f.detectedAtTs).getUTCHours()
-        : 12;
-
-    const tierA = window.ACS_PAX.getTier(A);
-    const tierB = window.ACS_PAX.getTier(B);
-
-    const dailyDemand = window.ACS_PAX.getDailyDemand(A, B, distanceNM, year);
-
-    const hourlyDemand = window.ACS_PAX.getHourlyDemand(
-      dailyDemand,
-      hour,
-      window.ACS_PAX.isLongHaul(distanceNM, tierA, tierB),
-      Math.min(tierA, tierB)
-    );
-
-    const seats =
-      Number(ac.seats ?? ac.seatCount ?? ac.capacity ?? 0);
-
-    const pax = Math.min(seats, hourlyDemand);
-    if (!(pax > 0)) return;
-
-    // ========= REVENUE =========
-    const ticket = window.ACS_getBaseTicket(distanceNM, year);
-    const revenue = Math.round(pax * ticket);
-    if (!(revenue > 0)) return;
-
-    if (typeof window.ACS_registerIncome !== "function") {
-      console.warn("⛔ ECON: ACS_registerIncome not available (finance not loaded?)");
-      return;
-    }
-
-    window.ACS_registerIncome(
+  /* -------------------------------
+     💰 FINANCE — SINGLE ENTRY
+  --------------------------------*/
+  if (typeof ACS_registerIncome === "function") {
+    ACS_registerIncome(
       "routes",
       revenue,
-      `Flight ${f.origin} → ${f.destination} (${f.aircraftId})`
+      `Flight ${f.origin} → ${f.destination} | Pax ${pax}`
     );
+  }
 
-    console.log(
-      `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax} | $${revenue} | key=${econKey}`
-    );
+  console.log(
+    `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax}/${ac.seats} | $${revenue}`
+  );
+
+});
 
     // ========= FUTURE (OFF) =========
     if (window.ACS_ECON_FLAGS.ENABLE_FUEL_COST) {
