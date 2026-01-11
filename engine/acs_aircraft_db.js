@@ -54,17 +54,7 @@ const ACS_AIRCRAFT_DB = [
     price_acs_usd: 95000,
     engines: "PW Wasp"},
   {
-    manufacturer: "Sikorsky",
-    model: "S-38",
-    year: 1928,
-    seats: 8,
-    range_nm: 600,
-    speed_kts: 105,
-    mtow_kg: 4080,
-    fuel_burn_kgph: 260,
-    price_acs_usd: 130000,
-    engines: "PW R-985"},
-  {
+   
     manufacturer: "Lockheed",
     model: "Model 9 Orion",
     year: 1931,
@@ -108,6 +98,7 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 160,
     price_acs_usd: 90000,
     engines: "DH Gipsy Six"},
+   
      // ============================================================
   // 1940 — 1949 (Advanced Pistons & Early Postwar)
   // ============================================================
@@ -222,6 +213,7 @@ const ACS_AIRCRAFT_DB = [
     fuel_burn_kgph: 1400,
     price_acs_usd: 1300000,
     engines: "Bristol Hercules"},
+   
 // ============================================================
 // 1940 — 1974 (de Havilland Complete + Comet Family + Trident)
 // ============================================================
@@ -270,6 +262,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 360,
   price_acs_usd: 850000,
   engines: "Gipsy Queen 30 (x4)"},
+   
 // ======================== COMET FAMILY ========================
 
 {
@@ -316,6 +309,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 5800,
   price_acs_usd: 9500000,
   engines: "Ghost 50 Mk4B"},
+   
 // ======================== TRIDENT FAMILY ========================
 
 {
