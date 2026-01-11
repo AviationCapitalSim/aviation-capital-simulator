@@ -652,13 +652,31 @@ function loadBreakdown() {
 
   const categories = [];
 
-  // Income
-  Object.keys(f.income).forEach(k => {
-    categories.push({
-      label: `${k} (Income)`,
-      value: f.income[k]
-    });
+  // ============================================================
+// 🟦 UI LABEL MAP — INCOME (Finance Breakdown)
+// ============================================================
+
+const incomeLabelMap = {
+  live_flight: "Live Flight Revenue",
+  route_weekly: "Route Weekly Revenue",
+  credits: "Credits",
+  routes: null // 🔒 oculto (bucket técnico)
+};
+
+// Income
+Object.keys(f.income).forEach(k => {
+
+  // ocultar buckets técnicos
+  if (incomeLabelMap[k] === null) return;
+
+  const label = incomeLabelMap[k] || k;
+
+  categories.push({
+    label: `${label}`,
+    value: f.income[k]
   });
+});
+
 
   // Cost
   Object.keys(f.cost).forEach(k => {
