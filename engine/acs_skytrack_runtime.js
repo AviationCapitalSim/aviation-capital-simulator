@@ -725,13 +725,21 @@ function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
 
   const flightKey = `${aircraftId}|${depAbsMin}`;
 
+  // ⛔ Clamp duro ANTES de calcular
+  if (nowAbsMin <= depAbsMin) {
+    return { progress: 0 };
+  }
+
+  if (nowAbsMin >= arrAbsMin) {
+    return { progress: 1 };
+  }
+
   let progress = (nowAbsMin - depAbsMin) / (arrAbsMin - depAbsMin);
 
-  // 🟦 FIRST EN_ROUTE SPAWN GUARD
-  // Fuerza inicio EXACTO en origen solo en el primer tick
+  // 🟢 Spawn guard SOLO visual (no altera tiempo)
   if (!ACS_SPAWNED_FLIGHTS[flightKey]) {
-    progress = 0;
     ACS_SPAWNED_FLIGHTS[flightKey] = true;
+    progress = 0;
   }
 
   return {
