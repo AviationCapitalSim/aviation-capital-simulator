@@ -108,25 +108,25 @@ function ACS_SkyTrack_init() {
 }
 
 /* ============================================================
-   ⏱ TIME ENGINE HOOK (ABS MINUTES) — ACS CANONICAL (SAFE)
+   ⏱ TIME ENGINE HOOK — WEEKLY (STABLE / COMPATIBLE)
    ============================================================ */
+
 function ACS_SkyTrack_hookTimeEngine() {
 
-  // 🔑 ACS Time Engine es la única fuente válida
   if (typeof ACS_TIME === "undefined" || !Number.isFinite(ACS_TIME.minute)) {
     console.warn("⛔ SkyTrack: ACS_TIME not ready");
     return;
   }
 
-  // 🧠 Minuto absoluto del mundo
-  ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+  // 🔒 SEMANA CANÓNICA (compatible con Schedule Table)
+  ACS_SkyTrack.nowAbsMin = ACS_TIME.minute % 10080;
 
   registerTimeListener(() => {
-    ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+    ACS_SkyTrack.nowAbsMin = ACS_TIME.minute % 10080;
     ACS_SkyTrack_onTick();
   });
 
-  console.log("⏱ SkyTrack hooked to ACS_TIME.minute (ABSOLUTE, NO MODULO)");
+  console.log("⏱ SkyTrack hooked to ACS_TIME.minute (WEEKLY MODE)");
 }
 
 /* ============================================================
