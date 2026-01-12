@@ -2761,7 +2761,67 @@ if (window.ACS_SkyTrack && typeof window.ACS_SkyTrack_indexScheduleItems === "fu
   closeFlightModal();
   renderSchedule();
 }
-          
+
+/* ============================================================
+   🟧 A1 — EDIT ROUTE (Schedule Table → Route Schedule)
+   Source of truth: scheduleItems
+   ============================================================ */
+
+function editSelectedFlight(){
+
+  if (!ACS_selectedFlightItem) {
+    console.warn("⚠ EDIT: No flight item selected");
+    return;
+  }
+
+  const it = ACS_selectedFlightItem;
+
+  // 🔑 CLAVE REAL DE RUTA
+  const routeKey = it.blockId || it.id;
+  if (!routeKey) {
+    alert("⚠ Cannot edit this route (missing route key).");
+    return;
+  }
+
+  // 🧠 CONSTRUIR CONTEXTO DE EDICIÓN
+  const editContext = {
+    mode: "EDIT",
+    source: "SCHEDULE_TABLE",
+
+    routeKey,                // blockId preferido
+    blockId: it.blockId || null,
+    flightId: it.id || null,
+
+    aircraftId: it.aircraftId || null,
+    acType: it.acType || null,
+
+    origin: it.origin || null,
+    destination: it.destination || null,
+
+    days: it.days || (it.day ? [it.day] : []),
+
+    departure: it.departure || null,
+    arrival: it.arrival || null,
+
+    flightNumberOut: it.flightNumberOut || null,
+    flightNumberIn:  it.flightNumberIn  || null,
+
+    blockTimeMin: it.blockTimeMin || null
+  };
+
+  // 💾 GUARDAR CONTEXTO
+  localStorage.setItem(
+    "ACS_ROUTE_EDIT",
+    JSON.stringify(editContext)
+  );
+
+  console.log("🟧 EDIT ROUTE CONTEXT SAVED:", editContext);
+
+  // 🚀 REDIRECCIÓN
+  window.location.href = "route_schedule.html";
+}
+
+     
 // ============================================================
 // LOGOUT
 // ============================================================
