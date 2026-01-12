@@ -112,17 +112,39 @@ function ACS_SkyTrack_init() {
    ============================================================ */
 function ACS_SkyTrack_hookTimeEngine() {
 
-  if (typeof ACS_TIME !== "undefined" && Number.isFinite(ACS_TIME.minute)) {
+  // 🔑 Case 1: ACS_TIME exists in global scope (correct for ACS)
+  try {
+    if (typeof ACS_TIME !== "undefined" && Number.isFinite(ACS_TIME.minute)) {
 
-    // ⛔ NO usar modulo aquí
-    ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+      // Initial sync
+      // Initial sync (normalize to week-minute)
+ACS_SkyTrack.nowAbsMin = (ACS_TIME.minute % 10080);
 
-    registerTimeListener(() => {
-      ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
-      ACS_SkyTrack_onTick();
+registerTimeListener(() => {
+  // normalize to week-minute so it matches depAbsMin/arrAbsMin
+  ACS_SkyTrack.nowAbsMin = (ACS_TIME.minute % 10080);
+  ACS_SkyTrack_onTick();
+});
+
+      console.log("⏱ SkyTrack hooked to ACS_TIME.minute");
+      return;
+    }
+  } catch (e) {
+    // ignore, fallback below
+  }
+
+  // 🧯 Case 2: fallback ONLY if absMin explicitly provided
+  if (typeof registerTimeListener === "function") {
+
+    registerTimeListener((t) => {
+      if (t && Number.isFinite(t.absMin)) {
+        ACS_SkyTrack.nowAbsMin = t.absMin;
+        ACS_SkyTrack_onTick();
+        return;
+      }
     });
 
-    console.log("⏱ SkyTrack hooked to ACS_TIME.minute (ABSOLUTE)");
+    console.warn("⚠️ SkyTrack using fallback time hook");
     return;
   }
 
@@ -625,12 +647,29 @@ function ACS_SkyTrack_resolveState(aircraftId) {
   }
 
  /* ============================================================
-   2️⃣ EN ROUTE — ACTIVE FLIGHT (CANONICAL)
+   2️⃣ EN ROUTE — ACTIVE FLIGHT (STABLE)
    ============================================================ */
 
 const activeFlight = items.find(it => {
   if (it.type !== "flight") return false;
   if (!Number.isFinite(it.depAbsMin) || !Number.isFinite(it.arrAbsMin)) return false;
+
+  // 🔒 TURNAROUND GUARD — basado en vuelo previo REAL
+  const prev = items
+    .filter(f =>
+      f.type === "flight" &&
+      Number.isFinite(f.arrAbsMin) &&
+      f.arrAbsMin <= it.depAbsMin
+    )
+    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
+
+  if (prev) {
+    const turnaround = Number(prev.__turnaroundMin || 0);
+    const minReady = prev.arrAbsMin + turnaround;
+
+    // ⛔ NO despegar antes de cumplir turnaround
+    if (now < minReady) return false;
+  }
 
   return now >= it.depAbsMin && now < it.arrAbsMin;
 });
@@ -708,21 +747,13 @@ function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
 
   const flightKey = `${aircraftId}|${depAbsMin}`;
 
-  // ⛔ Clamp duro ANTES de calcular
-  if (nowAbsMin <= depAbsMin) {
-    return { progress: 0 };
-  }
-
-  if (nowAbsMin >= arrAbsMin) {
-    return { progress: 1 };
-  }
-
   let progress = (nowAbsMin - depAbsMin) / (arrAbsMin - depAbsMin);
 
-  // 🟢 Spawn guard SOLO visual (no altera tiempo)
+  // 🟦 FIRST EN_ROUTE SPAWN GUARD
+  // Fuerza inicio EXACTO en origen solo en el primer tick
   if (!ACS_SPAWNED_FLIGHTS[flightKey]) {
-    ACS_SPAWNED_FLIGHTS[flightKey] = true;
     progress = 0;
+    ACS_SPAWNED_FLIGHTS[flightKey] = true;
   }
 
   return {
