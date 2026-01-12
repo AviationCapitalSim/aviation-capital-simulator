@@ -520,11 +520,13 @@ body {
 
 <!-- SCRIPTS -->
      
-<script src="engine/acs_finance.js"></script>
+<!-- CORE TIME (SIEMPRE PRIMERO) -->
 <script src="time_engine.js"></script>
+
+<!-- SYSTEMS THAT DEPEND ON TIME -->
+<script src="engine/acs_finance.js"></script>
 <script src="engine/acs_leasing.js"></script>
 <script src="engine/acs_hr_engine.js"></script>
-
 
 <script>
 
