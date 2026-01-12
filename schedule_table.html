@@ -2646,7 +2646,94 @@ function closeFlightModal(){
   ACS_selectedChipEl = null;
 }
 
-     
+// ============================================================
+// 🟥 B3-D — DELETE FLIGHT (HARD DELETE · FINAL)
+// ------------------------------------------------------------
+// • Source of truth: scheduleItems
+// • Deletes single flight OR full block (blockId)
+// • Frees flight numbers (if present)
+// • Clears confirmedRoute if it matches
+// • Mandatory confirmation (EN)
+// ============================================================
+
+function deleteSelectedFlights(){
+
+  // 0) Guard
+  if (!ACS_selectedFlightItem || !ACS_selectedChipEl) {
+    closeFlightModal();
+    return;
+  }
+
+  const id      = ACS_selectedChipEl.dataset.id || "";
+  const blockId = ACS_selectedChipEl.dataset.blockId || "";
+  const isBlock = !!blockId;
+
+  // 1) Confirmation (mandatory)
+  const msg = isBlock
+    ? "Are you sure you want to permanently delete this entire route block?\n\nThis action cannot be undone."
+    : "Are you sure you want to permanently delete this flight?\n\nThis action cannot be undone.";
+
+  if (!window.confirm(msg)) return;
+
+  // 2) Load source of truth
+  const items = getItems();
+  if (!Array.isArray(items) || !items.length) {
+    closeFlightModal();
+    return;
+  }
+
+  // 3) Collect targets
+  const targets = isBlock
+    ? items.filter(it => it.blockId === blockId)
+    : items.filter(it => it.id === id);
+
+  if (!targets.length) {
+    closeFlightModal();
+    return;
+  }
+
+  // 4) Free flight numbers (if used)
+  let usedFlights = [];
+  try {
+    usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+  } catch(e){ usedFlights = []; }
+
+  if (Array.isArray(usedFlights) && usedFlights.length) {
+    targets.forEach(t => {
+      if (t.flightNumberOut) {
+        usedFlights = usedFlights.filter(n => n !== t.flightNumberOut);
+      }
+      if (t.flightNumberIn) {
+        usedFlights = usedFlights.filter(n => n !== t.flightNumberIn);
+      }
+    });
+    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+  }
+
+  // 5) Remove from scheduleItems (HARD DELETE)
+  const remaining = isBlock
+    ? items.filter(it => it.blockId !== blockId)
+    : items.filter(it => it.id !== id);
+
+  setItems(remaining);
+
+  // 6) Clear confirmedRoute if it matches any removed flight numbers
+  try {
+    const r = JSON.parse(localStorage.getItem(ROUTE_KEY) || "null");
+    if (r) {
+      const hit = targets.some(t =>
+        (t.flightNumberOut && r.flightNumberOut === t.flightNumberOut) ||
+        (t.flightNumberIn  && r.flightNumberIn  === t.flightNumberIn)
+      );
+      if (hit) localStorage.removeItem(ROUTE_KEY);
+    }
+  } catch(e){}
+
+  // 7) Finalize
+  closeFlightModal();
+  renderSchedule();
+}
+          
 // ============================================================
 // LOGOUT
 // ============================================================
