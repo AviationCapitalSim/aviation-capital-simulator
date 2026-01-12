@@ -646,40 +646,41 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     };
   }
 
-  /* ============================================================
-     2️⃣ EN ROUTE — ACTIVE FLIGHT (STABLE)
-     ============================================================ */
-  const lastArrived = items
-  .filter(it =>
-    it.type === "flight" &&
-    Number.isFinite(it.arrAbsMin) &&
-    it.arrAbsMin <= now
-  )
-  .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
+ /* ============================================================
+   2️⃣ EN ROUTE — ACTIVE FLIGHT (STABLE)
+   ============================================================ */
 
 const activeFlight = items.find(it => {
   if (it.type !== "flight") return false;
   if (!Number.isFinite(it.depAbsMin) || !Number.isFinite(it.arrAbsMin)) return false;
 
-  // 🛑 TURNAROUND LOCK — NO early departure
-  if (lastArrived) {
-    const minReady =
-      lastArrived.arrAbsMin +
-      Number(lastArrived.__turnaroundMin || 0);
+  // 🔒 TURNAROUND GUARD — basado en vuelo previo REAL
+  const prev = items
+    .filter(f =>
+      f.type === "flight" &&
+      Number.isFinite(f.arrAbsMin) &&
+      f.arrAbsMin <= it.depAbsMin
+    )
+    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
 
+  if (prev) {
+    const turnaround = Number(prev.__turnaroundMin || 0);
+    const minReady = prev.arrAbsMin + turnaround;
+
+    // ⛔ NO despegar antes de cumplir turnaround
     if (now < minReady) return false;
   }
 
   return now >= it.depAbsMin && now < it.arrAbsMin;
 });
 
-  if (activeFlight) {
-    return {
-      state: "EN_ROUTE",
-      position: ACS_SkyTrack_computePosition(activeFlight, now),
-      flight: activeFlight
-    };
-  }
+if (activeFlight) {
+  return {
+    state: "EN_ROUTE",
+    position: ACS_SkyTrack_computePosition(activeFlight, now),
+    flight: activeFlight
+  };
+}
 
   /* ============================================================
    3️⃣ GROUND — STABLE POST-ARRIVAL (FR24 FIX)
