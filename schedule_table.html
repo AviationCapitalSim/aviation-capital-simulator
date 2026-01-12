@@ -2352,24 +2352,76 @@ function removeItem(){
 }
 
 // ============================================================
-// 🟥 DELETE FLIGHTS — CONFIRMATION CHIP (STEP 1)
+// 🟥 DELETE FLIGHTS — HARD DELETE WITH CONFIRMATION (STEP 1)
 // ============================================================
 
-function deleteSelectedFlights() {
+function deleteSelectedFlights(){
 
-  const selected = document.querySelectorAll(".flight-checkbox:checked");
-
-  if (selected.length === 0) {
-    showDeleteChip("No flight selected.", false);
+  if (!ACS_selectedChipEl) {
+    closeFlightModal();
     return;
   }
 
-  const msg =
-    selected.length === 1
-      ? "Are you sure you want to delete this route?"
-      : `Are you sure you want to delete ${selected.length} routes?`;
+  const id    = ACS_selectedChipEl.dataset.id || "";
+  const block = ACS_selectedChipEl.dataset.blockId || "";
 
-  showDeleteChip(msg, true);
+  // 🔴 CONFIRMATION (MANDATORY)
+  const isBlock = block && block.startsWith("block-");
+
+  const message = isBlock
+    ? "Are you sure you want to permanently delete this entire route block?\n\nThis action cannot be undone."
+    : "Are you sure you want to permanently delete this flight?\n\nThis action cannot be undone.";
+
+  if (!window.confirm(message)) {
+    return; // user canceled
+  }
+
+  // =========================
+  // 🔥 HARD DELETE
+  // =========================
+
+  let items = getItems();
+  let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+
+  const target = items.find(f =>
+    isBlock ? f.blockId === block : f.id === id
+  );
+
+  if (!target) {
+    closeFlightModal();
+    return;
+  }
+
+  // 1️⃣ REMOVE FROM scheduleItems (SOURCE OF TRUTH)
+  items = isBlock
+    ? items.filter(f => f.blockId !== block)
+    : items.filter(f => f.id !== id);
+
+  setItems(items);
+
+  // 2️⃣ FREE FLIGHT NUMBERS
+  if (target.flightNumberOut && target.flightNumberIn) {
+    usedFlights = usedFlights.filter(n =>
+      n !== target.flightNumberOut &&
+      n !== target.flightNumberIn
+    );
+    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+  }
+
+  // 3️⃣ REMOVE confirmedRoute IF IT MATCHES
+  try {
+    const route = JSON.parse(localStorage.getItem("confirmedRoute"));
+    if (route && (
+        route.flightNumberOut === target.flightNumberOut ||
+        route.flightNumberIn  === target.flightNumberIn
+    )) {
+      localStorage.removeItem("confirmedRoute");
+    }
+  } catch(e){}
+
+  // 4️⃣ FINAL
+  closeFlightModal();
+  renderSchedule();
 }
      
 function editFlight(){
