@@ -112,43 +112,21 @@ function ACS_SkyTrack_init() {
    ============================================================ */
 function ACS_SkyTrack_hookTimeEngine() {
 
-  // 🔑 Case 1: ACS_TIME exists in global scope (correct for ACS)
-  try {
-    if (typeof ACS_TIME !== "undefined" && Number.isFinite(ACS_TIME.minute)) {
-
-      // Initial sync
-      // Initial sync (normalize to week-minute)
-ACS_SkyTrack.nowAbsMin = (ACS_TIME.minute % 10080);
-
-registerTimeListener(() => {
-  // normalize to week-minute so it matches depAbsMin/arrAbsMin
-  ACS_SkyTrack.nowAbsMin = (ACS_TIME.minute % 10080);
-  ACS_SkyTrack_onTick();
-});
-
-      console.log("⏱ SkyTrack hooked to ACS_TIME.minute");
-      return;
-    }
-  } catch (e) {
-    // ignore, fallback below
-  }
-
-  // 🧯 Case 2: fallback ONLY if absMin explicitly provided
-  if (typeof registerTimeListener === "function") {
-
-    registerTimeListener((t) => {
-      if (t && Number.isFinite(t.absMin)) {
-        ACS_SkyTrack.nowAbsMin = t.absMin;
-        ACS_SkyTrack_onTick();
-        return;
-      }
-    });
-
-    console.warn("⚠️ SkyTrack using fallback time hook");
+  // 🔑 ACS Time Engine es la única fuente válida
+  if (typeof ACS_TIME === "undefined" || !Number.isFinite(ACS_TIME.minute)) {
+    console.warn("⛔ SkyTrack: ACS_TIME not ready");
     return;
   }
 
-  console.warn("⛔ SkyTrack: Time Engine not available");
+  // 🧠 Minuto absoluto del mundo
+  ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+
+  registerTimeListener(() => {
+    ACS_SkyTrack.nowAbsMin = ACS_TIME.minute;
+    ACS_SkyTrack_onTick();
+  });
+
+  console.log("⏱ SkyTrack hooked to ACS_TIME.minute (ABSOLUTE, NO MODULO)");
 }
 
 /* ============================================================
