@@ -722,22 +722,42 @@ return {
 }
 
 /* ============================================================
-   🟦 A6.2 — POSITION ENGINE (EN ROUTE) — FINAL FIX
-   - NO snap anticipado
-   - Snap SOLO cuando cambia el estado
+   🟦 A6.2 — POSITION ENGINE (EN_ROUTE) — FINAL (NO JUMPS)
+   ------------------------------------------------------------
+   • Elimina mini-saltos al iniciar vuelo
+   • Respeta horarios reales del Schedule Table
+   • Aplica spawn guard SOLO en el primer tick del vuelo
+   • Memoria local (no localStorage)
    ============================================================ */
-function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
-  const { depAbsMin, arrAbsMin } = flight;
 
-  if (!Number.isFinite(depAbsMin) || !Number.isFinite(arrAbsMin)) {
+// 🔒 Spawn guard por vuelo (aircraftId + depAbsMin)
+const ACS_SPAWNED_FLIGHTS = {};
+
+function ACS_SkyTrack_computePosition(flight, nowAbsMin) {
+
+  const { depAbsMin, arrAbsMin, aircraftId } = flight;
+
+  if (
+    !Number.isFinite(depAbsMin) ||
+    !Number.isFinite(arrAbsMin) ||
+    arrAbsMin <= depAbsMin
+  ) {
     return null;
   }
 
-  // ⛔ NO snap antes del arribo real
-  const p = (nowAbsMin - depAbsMin) / (arrAbsMin - depAbsMin);
+  const flightKey = `${aircraftId}|${depAbsMin}`;
+
+  let progress = (nowAbsMin - depAbsMin) / (arrAbsMin - depAbsMin);
+
+  // 🟦 FIRST EN_ROUTE SPAWN GUARD
+  // Fuerza inicio EXACTO en origen solo en el primer tick
+  if (!ACS_SPAWNED_FLIGHTS[flightKey]) {
+    progress = 0;
+    ACS_SPAWNED_FLIGHTS[flightKey] = true;
+  }
 
   return {
-    progress: Math.max(0, Math.min(1, p))
+    progress: Math.max(0, Math.min(1, progress))
   };
 }
 
