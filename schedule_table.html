@@ -2764,7 +2764,10 @@ if (window.ACS_SkyTrack && typeof window.ACS_SkyTrack_indexScheduleItems === "fu
 
 /* ============================================================
    🟧 A1 — EDIT ROUTE (Schedule Table → Route Schedule)
-   FIX: BLOCK vs EACH DAY (SOURCE OF TRUTH: scheduleItems)
+   FIX FINAL:
+   ✔ BLOCK vs EACH DAY correcto
+   ✔ NO arrastra días individuales
+   ✔ PRESERVA flight numbers SIEMPRE
    ============================================================ */
 function editSelectedFlight(){
 
@@ -2776,53 +2779,63 @@ function editSelectedFlight(){
   const it = ACS_selectedFlightItem;
   const items = getItems();
 
-  const isBlock = !!it.blockId;
+  // 🔑 BLOCK solo si blockId EXISTE y NO es vacío
+  const isBlock =
+    typeof it.blockId === "string" &&
+    it.blockId.trim() !== "";
 
   let days = [];
   let flightNumberOut = it.flightNumberOut || null;
   let flightNumberIn  = it.flightNumberIn  || null;
 
   /* ============================================================
-     🅰️ BLOCK ROUTE (EVERY DAY)
+     🅰️ BLOCK ROUTE (EVERY DAY / GROUPED)
      ============================================================ */
   if (isBlock) {
 
-    const blockItems = items.filter(x => x.blockId === it.blockId);
+    const blockItems = items.filter(
+      x => x.blockId === it.blockId
+    );
 
     if (!blockItems.length) {
-      alert("⚠ Cannot edit this route (block not found).");
+      alert("⚠ Cannot edit this route block.");
       return;
     }
 
-    // 🔹 reconstruir TODOS los días del bloque
+    // 🔹 reconstruir SOLO días del bloque
     const daySet = new Set();
     blockItems.forEach(b => {
       if (b.day) daySet.add(b.day);
     });
+
     days = Array.from(daySet).sort();
 
-    // 🔹 flight numbers del bloque (todos iguales)
+    // 🔹 flight numbers del bloque (homogéneos)
     flightNumberOut = blockItems[0].flightNumberOut || flightNumberOut;
     flightNumberIn  = blockItems[0].flightNumberIn  || flightNumberIn;
 
   } else {
 
     /* ============================================================
-       🅱️ SINGLE ROUTE (EACH DAY)
+       🅱️ EACH DAY (INDIVIDUAL)
        ============================================================ */
     days = it.day ? [it.day] : [];
+
+    // 🔒 FORZAR números existentes (CRÍTICO)
+    flightNumberOut = it.flightNumberOut || null;
+    flightNumberIn  = it.flightNumberIn  || null;
   }
 
   /* ============================================================
-     🧠 EDIT CONTEXT (CANONICAL)
+     🧠 EDIT CONTEXT — SOURCE OF TRUTH
      ============================================================ */
   const editContext = {
     mode: "EDIT",
     source: "SCHEDULE_TABLE",
 
-    routeKey: it.blockId || it.id,
-    blockId: it.blockId || null,
-    flightId: it.id || null,
+    routeKey: isBlock ? it.blockId : it.id,
+    blockId:  isBlock ? it.blockId : null,
+    flightId: isBlock ? null : it.id,
 
     aircraftId: it.aircraftId || null,
     acType: it.acType || null,
@@ -2830,7 +2843,7 @@ function editSelectedFlight(){
     origin: it.origin || null,
     destination: it.destination || null,
 
-    days, // 🔥 AQUÍ VA LA DIFERENCIA REAL
+    days, // ✅ AQUÍ YA NO SE CONTAMINA
 
     departure: it.departure || null,
     arrival: it.arrival || null,
@@ -2850,8 +2863,6 @@ function editSelectedFlight(){
 
   window.location.href = "route_schedule.html";
 }
-
-
      
 // ============================================================
 // LOGOUT
