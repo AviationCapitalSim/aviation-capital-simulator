@@ -2360,55 +2360,79 @@ function removeItem(){
    • Fuente única: scheduleItems
    ============================================================ */
 
- function deleteSelectedFlights() {
+ function deleteSelectedFlights(){
 
   if (!ACS_selectedChipEl) {
     closeFlightModal();
     return;
   }
 
-  const block = ACS_selectedChipEl.dataset.blockId || "";
-  const isBlock = block && block.startsWith("block-");
-
-  const confirmText = isBlock
-    ? "⚠️ WARNING!\n\nYou are about to DELETE an ENTIRE WEEKLY ROUTE (ALL DAYS).\nThis action is PERMANENT.\n\nAre you sure?"
-    : "⚠️ WARNING!\n\nYou are about to DELETE this FLIGHT.\nThis action is PERMANENT.\n\nAre you sure?";
-
-  if (!confirm(confirmText)) {
-    return; // ❌ usuario canceló
-  }
-
-  if (!id && !block) {
-    closeFlightModal();
-    return;
-  }
-
-  let items = getItems();
-  const before = items.length;
-
-  // 🔥 EVERY DAY → borrar bloque completo
-  if (block && block.startsWith("block-")) {
-    items = items.filter(it => it.blockId !== block);
-  }
-  // 🔥 EACH DAY → borrar solo ese vuelo
-  else {
-    items = items.filter(it => it.id !== id);
-  }
-
-  const after = items.length;
-
-  setItems(items);
-
-  console.log(
-    `🗑 DELETE FLIGHT — removed ${before - after} item(s)`,
-    { id, block }
+  // 🔴 CONFIRMACIÓN ROJA (OBLIGATORIA)
+  const ok = confirm(
+    "⛔ DELETE FLIGHT\n\n" +
+    "This action will PERMANENTLY remove this flight or route.\n" +
+    "It will NEVER appear again.\n\n" +
+    "Do you want to continue?"
   );
 
+  if (!ok) return;
+
+  const id    = ACS_selectedChipEl.dataset.id || "";
+  const block = ACS_selectedChipEl.dataset.blockId || "";
+
+  /* ===============================
+     1️⃣ ELIMINAR DE scheduleItems
+     =============================== */
+  let items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+  const isBlock = block && block.startsWith("block-");
+
+  items = isBlock
+    ? items.filter(f => f.blockId !== block)
+    : items.filter(f => f.id !== id);
+
+  localStorage.setItem("scheduleItems", JSON.stringify(items));
+
+  /* ===============================
+     2️⃣ ELIMINAR confirmedRoute
+     =============================== */
+  try {
+    const r = JSON.parse(localStorage.getItem("confirmedRoute"));
+    if (r && (r.id === id || r.blockId === block)) {
+      localStorage.removeItem("confirmedRoute");
+    }
+  } catch(e){}
+
+  /* ===============================
+     3️⃣ LIMPIAR CACHE DE EDICIÓN
+     =============================== */
+  localStorage.removeItem("editFlightID");
+
+  /* ===============================
+     4️⃣ LIBERAR FLIGHT NUMBERS
+     =============================== */
+  let used = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+
+  const removed = [];
+  items.forEach(f => {
+    if (f.flightNumberOut) removed.push(f.flightNumberOut);
+    if (f.flightNumberIn)  removed.push(f.flightNumberIn);
+  });
+
+  used = used.filter(n => !removed.includes(n));
+  localStorage.setItem("flightNumbers", JSON.stringify(used));
+
+  /* ===============================
+     5️⃣ LIMPIEZA FINAL
+     =============================== */
   ACS_selectedChipEl = null;
   ACS_selectedFlightItem = null;
 
   closeFlightModal();
   renderSchedule();
+
+  console.log("🟥 FLIGHT DELETED PERMANENTLY FROM ACS");
+  alert("🗑 Flight deleted permanently.\nIt will never appear again.");
 }
      
 function editFlight(){
