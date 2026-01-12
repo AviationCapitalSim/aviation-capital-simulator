@@ -598,6 +598,39 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof ACS_normalizeAircraft === "function") {
   fleet = fleet.map(ac => ACS_normalizeAircraft(ac));
 }
+
+/* ============================================================
+   🟦 MYA-B1 — FORCE BASE SYNC (COMPANY BASE AUTHORITY)
+   ------------------------------------------------------------
+   • Garantiza que TODOS los aviones usen la base actual
+   • Elimina bases fantasma (LIRN legacy, pruebas antiguas)
+   • Source of truth: ACS_activeUser.base
+   ============================================================ */
+
+function ACS_forceFleetBaseSync() {
+
+  const currentBase = getCurrentBaseICAO();
+  if (!currentBase || currentBase === "—") return;
+
+  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  let changed = false;
+
+  fleet.forEach(ac => {
+    if (!ac.base || ac.base !== currentBase) {
+      ac.base = currentBase;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+    console.log(`🟢 Fleet base synchronized to ${currentBase}`);
+  }
+}
+
+/* ✅ ESTA LÍNEA ES LA QUE FALTABA */
+ACS_forceFleetBaseSync();
+
    
   // 2) Procesar entregas pendientes
   updatePendingDeliveries();
