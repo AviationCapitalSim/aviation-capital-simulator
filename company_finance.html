@@ -727,19 +727,26 @@ function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
   if(!el) return;
 
-  // 🔥 Guardar la fecha real del juego en variable global
   window.ACS_CurrentSimDate = simTime;
 
-  let d = simTime instanceof Date ? simTime : new Date();
+  const d = simTime instanceof Date ? simTime : new Date();
+
+  const weekday = d
+    .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
+    .toUpperCase();
+
   const day = String(d.getUTCDate()).padStart(2,"0");
+
   const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
   const month = months[d.getUTCMonth()];
+
   const year  = d.getUTCFullYear();
   const hh = String(d.getUTCHours()).padStart(2,"0");
   const mm = String(d.getUTCMinutes()).padStart(2,"0");
 
-  el.textContent = `${hh}:${mm} — ${day} ${month} ${year}`;
+  el.textContent = `${hh}:${mm} — ${weekday} ${day} ${month} ${year}`;
 }
+
      
 /* ============================================================
    === INIT =====================================================
