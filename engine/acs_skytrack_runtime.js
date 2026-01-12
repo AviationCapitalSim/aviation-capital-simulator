@@ -649,11 +649,29 @@ function ACS_SkyTrack_resolveState(aircraftId) {
   /* ============================================================
      2️⃣ EN ROUTE — ACTIVE FLIGHT (STABLE)
      ============================================================ */
-  const activeFlight = items.find(it => {
-    if (it.type !== "flight") return false;
-    if (!Number.isFinite(it.depAbsMin) || !Number.isFinite(it.arrAbsMin)) return false;
-    return now >= it.depAbsMin && now < it.arrAbsMin;
-  });
+  const lastArrived = items
+  .filter(it =>
+    it.type === "flight" &&
+    Number.isFinite(it.arrAbsMin) &&
+    it.arrAbsMin <= now
+  )
+  .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
+
+const activeFlight = items.find(it => {
+  if (it.type !== "flight") return false;
+  if (!Number.isFinite(it.depAbsMin) || !Number.isFinite(it.arrAbsMin)) return false;
+
+  // 🛑 TURNAROUND LOCK — NO early departure
+  if (lastArrived) {
+    const minReady =
+      lastArrived.arrAbsMin +
+      Number(lastArrived.__turnaroundMin || 0);
+
+    if (now < minReady) return false;
+  }
+
+  return now >= it.depAbsMin && now < it.arrAbsMin;
+});
 
   if (activeFlight) {
     return {
