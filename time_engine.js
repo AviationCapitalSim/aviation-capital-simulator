@@ -191,10 +191,6 @@ function resetSimulationData() {
   alert("♻️ ACS reset to 1940 — Simulation OFF.");
 }
 
-/* ============================================================
-   === UPDATE COCKPIT CLOCK ===================================
-   ============================================================ */
-
 function updateClockDisplay() {
   const el = document.getElementById("acs-clock");
   if (!el) return;
@@ -203,11 +199,16 @@ function updateClockDisplay() {
 
   const hh = String(t.getUTCHours()).padStart(2, "0");
   const mm = String(t.getUTCMinutes()).padStart(2, "0");
+
+  const weekday = t
+    .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
+    .toUpperCase();
+
   const dd = String(t.getUTCDate()).padStart(2, "0");
-  const mon = t.toLocaleString("en-US", { month: "short" }).toUpperCase();
+  const mon = t.toLocaleString("en-US", { month: "short", timeZone: "UTC" }).toUpperCase();
   const yy = t.getUTCFullYear();
 
-  el.textContent = `${hh}:${mm} — ${dd} ${mon} ${yy}`;
+  el.textContent = `${hh}:${mm} — ${weekday} ${dd} ${mon} ${yy}`;
   el.style.color = "#00ff80";
 }
 
