@@ -799,8 +799,23 @@ function renderFlightDetails(snapshot) {
   let m = markers[item.aircraftId];
 
   if (!m) {
-    m = L.marker(pos, { icon: atcIcon }).addTo(map);
-    markers[item.aircraftId] = m;
+
+  let spawnPos = pos;
+
+  // 🟦 SPAWN GUARD — first appearance always at origin
+     
+  if (
+    item.state === "EN_ROUTE" &&
+    item.originICAO &&
+    window.ACS_AIRPORT_INDEX[item.originICAO]
+  ) {
+    const ap = window.ACS_AIRPORT_INDEX[item.originICAO];
+    spawnPos = [ap.latitude, ap.longitude];
+  }
+
+  m = L.marker(spawnPos, { icon: atcIcon }).addTo(map);
+  markers[item.aircraftId] = m;
+}
 
 // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
      m.bindPopup("", {
