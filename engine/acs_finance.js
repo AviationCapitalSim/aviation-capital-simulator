@@ -967,15 +967,21 @@ function ACS_formatSimDate(d) {
   try {
     if (!(d instanceof Date)) d = new Date(d);
 
+    const weekday = d
+      .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
+      .toUpperCase();
+
     const day = String(d.getUTCDate()).padStart(2, "0");
+
     const months = ["JAN","FEB","MAR","APR","MAY","JUN","JUL",
                     "AUG","SEP","OCT","NOV","DEC"];
     const mon = months[d.getUTCMonth()];
+
     const year = d.getUTCFullYear();
     const hh = String(d.getUTCHours()).padStart(2, "0");
     const mm = String(d.getUTCMinutes()).padStart(2, "0");
 
-    return `${day} ${mon} ${year} — ${hh}:${mm}`;
+    return `${weekday} ${day} ${mon} ${year} — ${hh}:${mm}`;
   } catch (e) {
     console.warn("Date format error:", e);
     return "INVALID DATE";
