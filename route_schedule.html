@@ -793,145 +793,101 @@ function freeNumbers(out, inn) {
 }
 
 /* ============================================================
-   === PHASE 2.1 — CREATION vs EDIT ============================
+   🟧 B1 — ROUTE SCHEDULE MODE DETECTION (NEW CANONICAL)
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
-  const originInput = document.getElementById("origin");
-  const destInput   = document.getElementById("destination");
 
-  const editID = localStorage.getItem("editFlightID");
-  const isEditing = !!editID;
+  const editCtxRaw = localStorage.getItem("ACS_ROUTE_EDIT");
+  if (!editCtxRaw) {
+    // 🟢 NORMAL CREATE MODE — nada que hacer
+    return;
+  }
 
-  /* ----------------- MODO CREACIÓN ----------------- */
+  let editCtx;
+  try {
+    editCtx = JSON.parse(editCtxRaw);
+  } catch (e) {
+    console.warn("⚠ Invalid ACS_ROUTE_EDIT, ignored");
+    return;
+  }
 
-if (!isEditing) {
+  if (!editCtx || editCtx.mode !== "EDIT") return;
 
-  const selOrigin = (localStorage.getItem("ACS_selectedOrigin") || "").toUpperCase();
-  const selDest   = (localStorage.getItem("ACS_selectedDestination") || "").toUpperCase();
-
-  originInput.value = selOrigin || originInput.value;
-  destInput.value   = selDest   || destInput.value;
-
-  originInput.readOnly = true;
-  destInput.readOnly   = true;
-
-  localStorage.removeItem("ACS_selectedOrigin");
-  localStorage.removeItem("ACS_selectedDestination");
-
-  // ❌ LEGACY — NO USAR (model-based)
-  // loadAvailableAircraft();
-
-  // ✅ NUEVO — aircraftId architecture
-  loadAircraftById();
-
-  /* 🟦 Recalcular al cambiar avión */
-  document.getElementById("aircraft").addEventListener("change", autoCalculate);
-
-  autoGenerateFlightNumber();
-  return;
-}
-     
-  /* ------------------ MODO EDICIÓN ------------------ */
-     
-  const items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  const flight = items.find(f => f.id === editID || f.blockId === editID);
-  if (!flight) return;
+  console.log("🟧 ROUTE SCHEDULE — EDIT MODE ACTIVE", editCtx);
 
   const $ = id => document.getElementById(id);
 
-  $("origin").value       = flight.origin || "";
-  $("destination").value  = flight.destination || "";
-  $("aircraft").value     = flight.acType || "";
-  $("departureTime").value = flight.departure || "06:00";
-
-  loadAvailableAircraft();
-  document.getElementById("aircraft").addEventListener("change", autoCalculate);
-     
-  (flight.days || []).forEach(d => {
-    if (document.getElementById(d)) document.getElementById(d).checked = true;
-  });
-
+  /* ===============================
+     1️⃣ PRECARGAR CAMPOS
+     =============================== */
+  $("origin").value      = editCtx.origin || "";
+  $("destination").value = editCtx.destination || "";
   $("origin").readOnly      = true;
   $("destination").readOnly = true;
 
+  if (editCtx.aircraftId) {
+    rs_populateAircraftSelect(editCtx.aircraftId);
+  }
+
+  if (editCtx.departure) {
+    $("departureTime").value = editCtx.departure;
+  }
+
+  // Days
+  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+  DAY_IDS.forEach(d => {
+    if ($(d)) $(d).checked = (editCtx.days || []).includes(d);
+  });
+
+  // Flight numbers (display only)
+  if (editCtx.flightNumberOut && editCtx.flightNumberIn) {
+    $("flightNumber").value =
+      `${editCtx.flightNumberOut} ➜ ${editCtx.flightNumberIn}`;
+  }
+
+  /* ===============================
+     2️⃣ UI — EDIT MODE
+     =============================== */
   const notice = document.createElement("div");
   notice.style.color = "#FFB300";
   notice.style.marginBottom = "1rem";
   notice.style.fontWeight = "600";
-  notice.innerHTML = `✏️ Editing flight: <strong>${flight.origin} ➜ ${flight.destination}</strong>`;
-  document.querySelector(".schedule-container").prepend(notice);
-
-  if (flight.flightNumberOut && flight.flightNumberIn) {
-    freeNumbers(flight.flightNumberOut, flight.flightNumberIn);
-  }
-
-  generateFlightPair();
+  notice.innerHTML =
+    `✏️ Editing route: <strong>${editCtx.origin} ➜ ${editCtx.destination}</strong>`;
+  document.querySelector(".schedule-container")?.prepend(notice);
 
   const btn = document.querySelector(".acs-btn");
-  btn.textContent = "UPDATE FLIGHT";
+  if (btn) btn.textContent = "UPDATE ROUTE";
 
-  btn.onclick = () => {
-    const origin = $("origin").value.trim();
-    const destination = $("destination").value.trim();
-    const aircraft = $("aircraft").value;
-    const departure = $("departureTime").value;
-    const optimized = document.getElementById("optimizeRotation")?.checked || false;
-    const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-    const selectedDays = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+  /* ===============================
+     3️⃣ OVERRIDE CONFIRM ROUTE
+     =============================== */
+  const originalConfirm = window.confirmRoute;
 
-    if (!origin || !destination || !aircraft || !departure || selectedDays.length === 0) {
-      alert("⚠️ Please complete all fields before updating.");
-      return;
+  window.confirmRoute = function () {
+
+    // 🔥 DELETE OLD ROUTE (by blockId / routeKey)
+    const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    const filtered = list.filter(it =>
+      it.blockId !== editCtx.blockId &&
+      it.id !== editCtx.routeKey
+    );
+    localStorage.setItem("scheduleItems", JSON.stringify(filtered));
+
+    // 🔥 LIBERAR NUMEROS DE VUELO (si existen)
+    if (typeof freeNumbers === "function" &&
+        editCtx.flightNumberOut &&
+        editCtx.flightNumberIn) {
+      freeNumbers(editCtx.flightNumberOut, editCtx.flightNumberIn);
     }
 
-    const updatedList = items.filter(f => f.id !== editID && f.blockId !== editID);
-    localStorage.setItem("scheduleItems", JSON.stringify(updatedList));
+    // 🔥 LIMPIAR CONTEXTO EDIT
+    localStorage.removeItem("ACS_ROUTE_EDIT");
 
-    const rawFN = (flightNumberInput.value || "");
-    const match = rawFN.match(/^([A-Z]{2}\d+).*?([A-Z]{2}\d+)$/) || [];
-    const flightOut = match[1] || null;
-    const flightIn  = match[2] || null;
-
-    const updatedRoute = {
-      origin, destination, aircraft, departure,
-      optimized, days: selectedDays,
-      flightNumberOut: flightOut,
-      flightNumberIn: flightIn
-    };
-
-
-/* ============================================================
-   🟢 PATCH A2 — FORCE CONFIRMED ROUTE (FINAL)
-   ============================================================ */
-
-const confirmedRoute = {
-  id: routeId,
-  aircraftId,
-  origin,
-  destination,
-  departure,
-  arrival,
-  blockTimeMin,
-  days,
-
-  // 🔥 CAMPOS CRÍTICOS (OBLIGATORIOS)
-  flightNumberOut,
-  flightNumberIn,
-
-  type: "flight"
-};
-
-// ✅ ÚNICA escritura válida
-localStorage.setItem("confirmedRoute", JSON.stringify(confirmedRoute));
-
-// 🧼 Limpieza modo edición
-localStorage.removeItem("editFlightID");
-
-// ✅ Feedback + navegación
-alert("✅ Flight updated.");
-window.location.href = "schedule_table.html";
-
+    // 🔥 CREAR NUEVA RUTA (reutiliza motor existente)
+    originalConfirm();
   };
+
 });
 
 /* ============================================================
