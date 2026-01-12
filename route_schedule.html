@@ -793,13 +793,19 @@ function freeNumbers(out, inn) {
 }
 
 /* ============================================================
-   🟧 B1 — ROUTE SCHEDULE MODE DETECTION (NEW CANONICAL)
+   🟧 B1 — ROUTE SCHEDULE MODE DETECTION (EDIT · FIX FINAL)
+   ------------------------------------------------------------
+   FIXES:
+   ✔ Restores Every Day correctly
+   ✔ Preserves flight numbers (NO regeneration)
+   ✔ Does NOT free numbers on edit
+   ✔ Uses canonical ACS_ROUTE_EDIT
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
 
   const editCtxRaw = localStorage.getItem("ACS_ROUTE_EDIT");
   if (!editCtxRaw) {
-    // 🟢 NORMAL CREATE MODE — nada que hacer
+    // 🟢 CREATE MODE
     return;
   }
 
@@ -817,37 +823,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const $ = id => document.getElementById(id);
 
-  /* ===============================
-     1️⃣ PRECARGAR CAMPOS
-     =============================== */
+  /* ============================================================
+     1️⃣ BASIC DATA
+     ============================================================ */
   $("origin").value      = editCtx.origin || "";
   $("destination").value = editCtx.destination || "";
+
   $("origin").readOnly      = true;
   $("destination").readOnly = true;
-
-  if (editCtx.aircraftId) {
-    rs_populateAircraftSelect(editCtx.aircraftId);
-  }
 
   if (editCtx.departure) {
     $("departureTime").value = editCtx.departure;
   }
 
-  // Days
-  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-  DAY_IDS.forEach(d => {
-    if ($(d)) $(d).checked = (editCtx.days || []).includes(d);
-  });
-
-  // Flight numbers (display only)
-  if (editCtx.flightNumberOut && editCtx.flightNumberIn) {
-    $("flightNumber").value =
-      `${editCtx.flightNumberOut} ➜ ${editCtx.flightNumberIn}`;
+  /* ============================================================
+     2️⃣ AIRCRAFT (BY aircraftId)
+     ============================================================ */
+  if (editCtx.aircraftId && typeof rs_populateAircraftSelect === "function") {
+    rs_populateAircraftSelect(editCtx.aircraftId);
   }
 
-  /* ===============================
-     2️⃣ UI — EDIT MODE
-     =============================== */
+  document.getElementById("aircraft")
+    ?.addEventListener("change", autoCalculate);
+
+  /* ============================================================
+     3️⃣ FLIGHT NUMBERS — PRESERVE (CRITICAL)
+     ============================================================ */
+  if (editCtx.flightNumberOut && editCtx.flightNumberIn) {
+    const fn = $("flightNumber");
+    if (fn) {
+      fn.value = `${editCtx.flightNumberOut} ➜ ${editCtx.flightNumberIn}`;
+    }
+  }
+
+  /* ============================================================
+     4️⃣ DAYS — REAL LOGIC (EVERY DAY vs INDIVIDUAL)
+     ============================================================ */
+  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+
+  // Reset all first
+  DAY_IDS.forEach(d => {
+    if ($(d)) $(d).checked = false;
+  });
+
+  const everyDayBox = $("everyDay");
+  if (everyDayBox) everyDayBox.checked = false;
+
+  const days = Array.isArray(editCtx.days) ? editCtx.days : [];
+
+  if (days.length === 7) {
+    // ✅ EVERY DAY MODE
+    if (everyDayBox) everyDayBox.checked = true;
+    DAY_IDS.forEach(d => {
+      if ($(d)) $(d).checked = true;
+    });
+  } else {
+    // ✅ INDIVIDUAL DAYS
+    days.forEach(d => {
+      if ($(d)) $(d).checked = true;
+    });
+  }
+
+  /* ============================================================
+     5️⃣ UI — EDIT MODE
+     ============================================================ */
   const notice = document.createElement("div");
   notice.style.color = "#FFB300";
   notice.style.marginBottom = "1rem";
@@ -859,14 +898,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const btn = document.querySelector(".acs-btn");
   if (btn) btn.textContent = "UPDATE ROUTE";
 
-  /* ===============================
-     3️⃣ OVERRIDE CONFIRM ROUTE
-     =============================== */
+  /* ============================================================
+     6️⃣ OVERRIDE CONFIRM ROUTE (SAFE EDIT)
+     ============================================================ */
   const originalConfirm = window.confirmRoute;
 
   window.confirmRoute = function () {
 
-    // 🔥 DELETE OLD ROUTE (by blockId / routeKey)
+    // 🔥 REMOVE OLD ROUTE (block or single)
     const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
     const filtered = list.filter(it =>
       it.blockId !== editCtx.blockId &&
@@ -874,17 +913,13 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     localStorage.setItem("scheduleItems", JSON.stringify(filtered));
 
-    // 🔥 LIBERAR NUMEROS DE VUELO (si existen)
-    if (typeof freeNumbers === "function" &&
-        editCtx.flightNumberOut &&
-        editCtx.flightNumberIn) {
-      freeNumbers(editCtx.flightNumberOut, editCtx.flightNumberIn);
-    }
+    // ⛔ DO NOT FREE FLIGHT NUMBERS
+    // They are preserved intentionally in EDIT mode
 
-    // 🔥 LIMPIAR CONTEXTO EDIT
+    // 🧼 CLEAR EDIT CONTEXT
     localStorage.removeItem("ACS_ROUTE_EDIT");
 
-    // 🔥 CREAR NUEVA RUTA (reutiliza motor existente)
+    // ✅ CREATE UPDATED ROUTE (reuse existing engine)
     originalConfirm();
   };
 
