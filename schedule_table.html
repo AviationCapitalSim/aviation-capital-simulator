@@ -2717,7 +2717,35 @@ function deleteSelectedFlights(){
 
   setItems(remaining);
 
+// ============================================================
+// 🟥 B3-D.1 — SKYTRACK SYNC AFTER DELETE (CANONICAL)
+// ------------------------------------------------------------
+// • Re-index scheduleItems in SkyTrack memory
+// • Clear lastActiveFlight cache for affected aircraft
+// • Force immediate snapshot refresh
+// ============================================================
+
+if (window.ACS_SkyTrack && typeof window.ACS_SkyTrack_indexScheduleItems === "function") {
+
+  // 1️⃣ Rebuild schedule index (memory-only)
+  ACS_SkyTrack.itemsByAircraft = ACS_SkyTrack_indexScheduleItems();
+
+  // 2️⃣ Clear last active flight cache for this aircraft
+  const acId = ACS_selectedFlightItem?.aircraftId;
+  if (acId && ACS_SkyTrack.lastActiveFlight) {
+    delete ACS_SkyTrack.lastActiveFlight[acId];
+  }
+
+  // 3️⃣ Force immediate refresh
+  if (typeof window.ACS_SkyTrack_onTick === "function") {
+    ACS_SkyTrack_onTick();
+  }
+
+  console.log("🟦 SkyTrack synchronized after DELETE");
+}
+     
   // 6) Clear confirmedRoute if it matches any removed flight numbers
+     
   try {
     const r = JSON.parse(localStorage.getItem(ROUTE_KEY) || "null");
     if (r) {
