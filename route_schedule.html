@@ -1532,14 +1532,38 @@ function confirmRoute() {
 const newRoute = {
   id: routeId,
 
-  // 🔑 Identidad
-  aircraftId: selectedAircraftId,
+  /* ============================================================
+   🟧 B2 — CONFIRM ROUTE (IDENTITY FIX + EDIT SAFE)
+   ------------------------------------------------------------
+   FIXES:
+   ✔ Each Day = ruta UNitaria (blockId = null)
+   ✔ Every Day = bloque real
+   ✔ EDIT conserva flight numbers
+   ✔ NO arrastra días incorrectos
+   ============================================================ */
 
-  // 🔎 UI / legacy
+// 🔎 Modo de creación
+const isEachDay  = document.getElementById("separateDays")?.checked === true;
+const isEveryDay = document.getElementById("everyDay")?.checked === true;
+
+// 🔎 Detectar EDIT activo
+const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
+
+/* ============================================================
+   🟢 ROUTE OBJECT — IDENTIDAD CORRECTA
+   ============================================================ */
+const newRoute = {
+  id: routeId,
+
+  // 🔑 IDENTIDAD (CLAVE DEL BUG)
+  blockId: isEveryDay ? ("BLOCK_" + Date.now()) : null,
+
+  // ✈️ Aircraft
+  aircraftId: selectedAircraftId,
   modelKey: modelKey.toUpperCase(),
   aircraft: modelKey.toUpperCase(),
 
-  // ✈️ Ruta base
+  // 📍 Ruta
   origin,
   destination,
   departure,
@@ -1547,29 +1571,44 @@ const newRoute = {
 
   distanceNM: finalDistanceNM,
 
-  // ⏱ Tiempos base
-  blockTimeMin,                 // ida (min)
-
-  // 🔄 ROTATION DATA (CLAVE DEL FIX)
+  // ⏱ Tiempos
+  blockTimeMin,
   turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
   turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-  totalRotationMin: window.ACS_RouteTechData?.totalMin
-    ?? (blockTimeMin * 2 + 45),
+  totalRotationMin:
+    window.ACS_RouteTechData?.totalMin ??
+    (blockTimeMin * 2 + 45),
 
-  // ⚙️ Flags operativos
   optimized: document.getElementById("optimizeRotation")?.checked || false,
 
-  // 📆 Operación
-  days,
+  // 📆 DÍAS (FIX REAL)
+  days: isEachDay ? [days[0]] : days,
 
-  // 🔢 Números de vuelo
+  // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
   flightNumberOut,
   flightNumberIn,
 
-  // 🧾 Metadata
-  type: "flight",
-  blockId: "block-" + Date.now()
+  type: "flight"
 };
+
+/* ============================================================
+   🧠 FLIGHT NUMBER MANAGEMENT — SAFE
+   ------------------------------------------------------------
+   ✔ CREATE: marca + incrementa
+   ✔ EDIT: NO toca números
+   ============================================================ */
+if (!isEditMode) {
+  if (typeof markNumbersUsed === "function") {
+    markNumbersUsed(
+      newRoute.flightNumberOut,
+      newRoute.flightNumberIn
+    );
+  }
+
+  if (typeof bumpFlightCounter === "function") {
+    bumpFlightCounter();
+  }
+}
 
   /* ============================================================
      SLOT ENGINE — (si existe)
