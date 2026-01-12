@@ -625,29 +625,12 @@ function ACS_SkyTrack_resolveState(aircraftId) {
   }
 
  /* ============================================================
-   2️⃣ EN ROUTE — ACTIVE FLIGHT (STABLE)
+   2️⃣ EN ROUTE — ACTIVE FLIGHT (CANONICAL)
    ============================================================ */
 
 const activeFlight = items.find(it => {
   if (it.type !== "flight") return false;
   if (!Number.isFinite(it.depAbsMin) || !Number.isFinite(it.arrAbsMin)) return false;
-
-  // 🔒 TURNAROUND GUARD — basado en vuelo previo REAL
-  const prev = items
-    .filter(f =>
-      f.type === "flight" &&
-      Number.isFinite(f.arrAbsMin) &&
-      f.arrAbsMin <= it.depAbsMin
-    )
-    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
-
-  if (prev) {
-    const turnaround = Number(prev.__turnaroundMin || 0);
-    const minReady = prev.arrAbsMin + turnaround;
-
-    // ⛔ NO despegar antes de cumplir turnaround
-    if (now < minReady) return false;
-  }
 
   return now >= it.depAbsMin && now < it.arrAbsMin;
 });
