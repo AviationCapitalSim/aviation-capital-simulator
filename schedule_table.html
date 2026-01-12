@@ -2352,57 +2352,63 @@ function removeItem(){
 }
 
 /* ============================================================
-   🛑 D1 — DELETE FLIGHT (STORAGE + MEMORY CLEAN)
+   🛑 D1 — DELETE FLIGHT (SCHEDULE TABLE · FINAL FIX)
+   ------------------------------------------------------------
+   Reglas:
+   • Si tiene blockId  → borra TODO el bloque (EVERY DAY)
+   • Si NO tiene block → borra SOLO ese vuelo (EACH DAY)
+   • Fuente única: scheduleItems
    ============================================================ */
 
-function deleteSelectedFlights() {
+ function deleteSelectedFlights() {
 
   if (!ACS_selectedChipEl) {
     closeFlightModal();
     return;
   }
 
-  const flightId = ACS_selectedChipEl.dataset.id || "";
-  const routeId  = ACS_selectedChipEl.dataset.routeId || "";
+  const block = ACS_selectedChipEl.dataset.blockId || "";
+  const isBlock = block && block.startsWith("block-");
 
-  if (!flightId) {
+  const confirmText = isBlock
+    ? "⚠️ WARNING!\n\nYou are about to DELETE an ENTIRE WEEKLY ROUTE (ALL DAYS).\nThis action is PERMANENT.\n\nAre you sure?"
+    : "⚠️ WARNING!\n\nYou are about to DELETE this FLIGHT.\nThis action is PERMANENT.\n\nAre you sure?";
+
+  if (!confirm(confirmText)) {
+    return; // ❌ usuario canceló
+  }
+
+  if (!id && !block) {
     closeFlightModal();
     return;
   }
 
-  /* ===============================
-     1️⃣ BORRAR DE LOCALSTORAGE
-     =============================== */
+  let items = getItems();
+  const before = items.length;
 
-  let items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  items = items.filter(it => it.id !== flightId);
-  localStorage.setItem("scheduleItems", JSON.stringify(items));
-
-  /* ===============================
-     2️⃣ BORRAR DE MEMORIA (ASSIGN)
-     =============================== */
-
-  if (window.routeSchedule && Array.isArray(window.routeSchedule)) {
-    window.routeSchedule = window.routeSchedule.filter(r =>
-      r.id !== flightId && r.routeId !== routeId
-    );
+  // 🔥 EVERY DAY → borrar bloque completo
+  if (block && block.startsWith("block-")) {
+    items = items.filter(it => it.blockId !== block);
+  }
+  // 🔥 EACH DAY → borrar solo ese vuelo
+  else {
+    items = items.filter(it => it.id !== id);
   }
 
-  if (window.routes && Array.isArray(window.routes)) {
-    window.routes = window.routes.filter(r =>
-      r.id !== flightId && r.routeId !== routeId
-    );
-  }
+  const after = items.length;
 
-  /* ===============================
-     3️⃣ LIMPIEZA Y RENDER
-     =============================== */
+  setItems(items);
+
+  console.log(
+    `🗑 DELETE FLIGHT — removed ${before - after} item(s)`,
+    { id, block }
+  );
 
   ACS_selectedChipEl = null;
+  ACS_selectedFlightItem = null;
+
   closeFlightModal();
   renderSchedule();
-
-  alert("❌ Flight deleted permanently.");
 }
      
 function editFlight(){
