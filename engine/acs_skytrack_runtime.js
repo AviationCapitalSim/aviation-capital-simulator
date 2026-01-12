@@ -682,6 +682,14 @@ if (lastFlight) {
   };
 }
 
+/* ============================================================
+   🧷 STICKY POST-EN_ROUTE GUARD (ANTI-JUMP)
+   - Evita salto inmediato a base tras aterrizaje
+   - Usa cache lastActiveFlight (memoria)
+   ============================================================ */
+
+const lastActive = ACS_SkyTrack.lastActiveFlight[aircraftId];
+   
 // Fallback absoluto (base)
 return {
   state: "GROUND",
