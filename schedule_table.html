@@ -2764,9 +2764,8 @@ if (window.ACS_SkyTrack && typeof window.ACS_SkyTrack_indexScheduleItems === "fu
 
 /* ============================================================
    🟧 A1 — EDIT ROUTE (Schedule Table → Route Schedule)
-   Source of truth: scheduleItems
+   FIX: BLOCK vs EACH DAY (SOURCE OF TRUTH: scheduleItems)
    ============================================================ */
-
 function editSelectedFlight(){
 
   if (!ACS_selectedFlightItem) {
@@ -2775,20 +2774,53 @@ function editSelectedFlight(){
   }
 
   const it = ACS_selectedFlightItem;
+  const items = getItems();
 
-  // 🔑 CLAVE REAL DE RUTA
-  const routeKey = it.blockId || it.id;
-  if (!routeKey) {
-    alert("⚠ Cannot edit this route (missing route key).");
-    return;
+  const isBlock = !!it.blockId;
+
+  let days = [];
+  let flightNumberOut = it.flightNumberOut || null;
+  let flightNumberIn  = it.flightNumberIn  || null;
+
+  /* ============================================================
+     🅰️ BLOCK ROUTE (EVERY DAY)
+     ============================================================ */
+  if (isBlock) {
+
+    const blockItems = items.filter(x => x.blockId === it.blockId);
+
+    if (!blockItems.length) {
+      alert("⚠ Cannot edit this route (block not found).");
+      return;
+    }
+
+    // 🔹 reconstruir TODOS los días del bloque
+    const daySet = new Set();
+    blockItems.forEach(b => {
+      if (b.day) daySet.add(b.day);
+    });
+    days = Array.from(daySet).sort();
+
+    // 🔹 flight numbers del bloque (todos iguales)
+    flightNumberOut = blockItems[0].flightNumberOut || flightNumberOut;
+    flightNumberIn  = blockItems[0].flightNumberIn  || flightNumberIn;
+
+  } else {
+
+    /* ============================================================
+       🅱️ SINGLE ROUTE (EACH DAY)
+       ============================================================ */
+    days = it.day ? [it.day] : [];
   }
 
-  // 🧠 CONSTRUIR CONTEXTO DE EDICIÓN
+  /* ============================================================
+     🧠 EDIT CONTEXT (CANONICAL)
+     ============================================================ */
   const editContext = {
     mode: "EDIT",
     source: "SCHEDULE_TABLE",
 
-    routeKey,                // blockId preferido
+    routeKey: it.blockId || it.id,
     blockId: it.blockId || null,
     flightId: it.id || null,
 
@@ -2798,18 +2830,17 @@ function editSelectedFlight(){
     origin: it.origin || null,
     destination: it.destination || null,
 
-    days: it.days || (it.day ? [it.day] : []),
+    days, // 🔥 AQUÍ VA LA DIFERENCIA REAL
 
     departure: it.departure || null,
     arrival: it.arrival || null,
 
-    flightNumberOut: it.flightNumberOut || null,
-    flightNumberIn:  it.flightNumberIn  || null,
+    flightNumberOut,
+    flightNumberIn,
 
     blockTimeMin: it.blockTimeMin || null
   };
 
-  // 💾 GUARDAR CONTEXTO
   localStorage.setItem(
     "ACS_ROUTE_EDIT",
     JSON.stringify(editContext)
@@ -2817,9 +2848,9 @@ function editSelectedFlight(){
 
   console.log("🟧 EDIT ROUTE CONTEXT SAVED:", editContext);
 
-  // 🚀 REDIRECCIÓN
   window.location.href = "route_schedule.html";
 }
+
 
      
 // ============================================================
