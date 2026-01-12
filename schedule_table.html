@@ -2351,50 +2351,40 @@ function removeItem(){
   renderSchedule();
 }
 
-/* ============================================================
-   🛑 D1 — DELETE FLIGHT (SCHEDULE TABLE · FINAL FIX)
-   ------------------------------------------------------------
-   Reglas:
-   • Si tiene blockId  → borra TODO el bloque (EVERY DAY)
-   • Si NO tiene block → borra SOLO ese vuelo (EACH DAY)
-   • Fuente única: scheduleItems
-   ============================================================ */
+// ============================================================
+// 🟥 DELETE FLIGHT — CONFIRMACIÓN OBLIGATORIA (PASO 1)
+// ============================================================
 
- function ACS_deleteFlightDefinitive(route) {
+function deleteSelectedFlights() {
 
-  const ok = confirm(
-    "⛔ DELETE ROUTE\n\n" +
-    "This will permanently remove this route from Aviation Capital Simulator.\n\n" +
-    "This action cannot be undone.\n\n" +
-    "Continue?"
-  );
-  if (!ok) return;
+  const selected = document.querySelectorAll(".flight-checkbox:checked");
 
-  const routeId = route.id || route.blockId;
-
-  // 1️⃣ Eliminar de ROUTE SCHEDULE (RAÍZ)
-  const confirmed = JSON.parse(localStorage.getItem("confirmedRoute") || "null");
-  if (confirmed && confirmed.id === routeId) {
-    localStorage.removeItem("confirmedRoute");
+  if (selected.length === 0) {
+    alert("No flight selected.");
+    return;
   }
 
-  // 2️⃣ Eliminar de SCHEDULE TABLE
-  let items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  items = items.filter(it =>
-    it.id !== routeId &&
-    it.blockId !== routeId
-  );
-  localStorage.setItem("scheduleItems", JSON.stringify(items));
+  const message =
+    selected.length === 1
+      ? "⚠️ ¿Estás seguro de eliminar esta ruta?\n\nEsta acción será definitiva."
+      : `⚠️ ¿Estás seguro de eliminar ${selected.length} rutas?\n\nEsta acción será definitiva.`;
 
-  // 3️⃣ Liberar números de vuelo
-  if (typeof freeNumbers === "function") {
-    freeNumbers(route.flightNumberOut, route.flightNumberIn);
+  const confirmed = window.confirm(message);
+
+  if (!confirmed) {
+    console.log("🟡 DELETE FLIGHT cancelado por el usuario");
+    return;
   }
 
-  alert("✅ Route permanently deleted.");
+  // ⛔ IMPORTANTE
+  // Aquí NO se borra nada todavía.
+  // El delete hard real se implementa en el PASO 2.
 
-  // 4️⃣ Refresh limpio
-  location.reload();
+  console.warn(
+    "🔴 DELETE FLIGHT confirmado — pendiente DELETE HARD (PASO 2)",
+    selected.length,
+    "items"
+  );
 }
      
 function editFlight(){
