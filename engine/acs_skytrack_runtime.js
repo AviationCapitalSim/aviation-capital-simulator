@@ -412,20 +412,6 @@ function ACS_SkyTrack_indexScheduleItems() {
 
   const byAircraft = {};
   const seen = new Set();
-
-    // ============================================================
-  // 🛑 CANONICAL GUARD — NO SCHEDULE = NO SKYTRACK
-  // ------------------------------------------------------------
-  // If there are NO flight items in scheduleItems,
-  // SkyTrack MUST return an empty index.
-  // This prevents historical / observer ghost flights.
-  // ============================================================
-
-  const hasAnyFlight = raw.some(it => it && it.type === "flight");
-
-  if (!hasAnyFlight) {
-    return {};
-  }
    
   raw.forEach(it => {
     if (!it || !it.aircraftId) return;
