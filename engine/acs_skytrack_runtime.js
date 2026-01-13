@@ -775,3 +775,21 @@ function ACS_SkyTrack_debugDump() {
    🚀 AUTO INIT
    ============================================================ */
 document.addEventListener("DOMContentLoaded", ACS_SkyTrack_init);
+
+
+/* ============================================================
+   🟦 SKYTRACK — SCHEDULE CHANGE LISTENER (SAFE RELOAD)
+   ------------------------------------------------------------
+   ✔ Re-indexa scheduleItems
+   ✔ NO toca estados activos
+   ✔ NO reinicia engine
+   ✔ NO recalcula posiciones
+   ============================================================ */
+
+window.addEventListener("ACS_SCHEDULE_CHANGED", () => {
+  if (!ACS_SkyTrack.initialized) return;
+
+  console.log("🔄 SkyTrack detected schedule change → reloading data");
+
+  ACS_SkyTrack.itemsByAircraft = ACS_SkyTrack_indexScheduleItems();
+});
