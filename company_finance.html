@@ -729,9 +729,19 @@ function loadBreakdown() {
       value = weeklyIncome;
     }
 
-    categories.push({
-      label: `${k} (Income)`,
-      value: Number(value) || 0
+    let labelName = k;
+
+  if (k === "cargo") {
+  labelName = "Live Route Revenue";
+}
+
+  if (k === "leasing_income") {
+  labelName = "Weekly Route Revenue";
+}
+
+   categories.push({
+   label: `${labelName} (Income)`,
+   value: Number(value) || 0
     });
   });
 
