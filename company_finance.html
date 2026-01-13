@@ -639,39 +639,73 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
     loadTransactionLog(btn.dataset.filter);
   };
 });
-
-/* ============================================================
-   === BREAKDOWN (Income & Expenses) ===========================
-   ============================================================ */
      
+/* ============================================================
+   🟦 F-UI-1 — LIVE INCOME → CARGO BUCKET (VIEW ONLY)
+   ------------------------------------------------------------
+   • cargo (Income) muestra SOLO el último aterrizaje
+   • NO altera ACS_Finance real
+   • Fuente: último INCOME del ACS_Log
+   ============================================================ */
+
 function loadBreakdown() {
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const grid = document.getElementById("breakdownGrid");
-
-  if (!f.income || !f.cost) return;
+  if (!f || !grid || !f.income || !f.cost) return;
 
   grid.innerHTML = "";
 
+  /* ============================================
+     🔍 EXTRAER LIVE INCOME (ÚLTIMO ATERRIZAJE)
+     ============================================ */
+  let liveIncome = 0;
+
+  try {
+    const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+
+    // buscar el último ingreso real
+    for (let i = log.length - 1; i >= 0; i--) {
+      const e = log[i];
+      if (e && e.type === "INCOME" && Number(e.amount) > 0) {
+        liveIncome = Number(e.amount);
+        break;
+      }
+    }
+  } catch {}
+
+  /* ============================================
+     📊 CONSTRUIR CATEGORÍAS (VIEW ONLY)
+     ============================================ */
   const categories = [];
 
-  // Income
+  // ---------- INCOME ----------
   Object.keys(f.income).forEach(k => {
+
+    let value = f.income[k];
+
+    // 🟢 LIVE INCOME → cargo (Income)
+    if (k === "cargo") {
+      value = liveIncome;
+    }
+
     categories.push({
       label: `${k} (Income)`,
-      value: f.income[k]
+      value: Number(value) || 0
     });
   });
 
-  // Cost
+  // ---------- COST ----------
   Object.keys(f.cost).forEach(k => {
     categories.push({
       label: `${k} (Cost)`,
-      value: f.cost[k]
+      value: Number(f.cost[k]) || 0
     });
   });
 
-  // max value for scaling
-  const max = Math.max(...categories.map(c => c.value || 0), 1);
+  /* ============================================
+     📐 ESCALA VISUAL
+     ============================================ */
+  const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
     const pct = (cat.value / max) * 100;
