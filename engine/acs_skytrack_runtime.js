@@ -193,11 +193,6 @@ function ACS_SkyTrack_onTick() {
   const ac = ACS_SkyTrack.aircraftIndex[acId];
   const items = ACS_SkyTrack.itemsByAircraft[acId] || [];
 
-  // 🚫 SKYTRACK RULE — NO ROUTES, NO AIRCRAFT
-  const hasFlights = items.some(it => it.type === "flight");
-  if (!hasFlights) return;
-
-
     const stateObj = ACS_SkyTrack_resolveState(acId);
     if (!stateObj) return;
 
