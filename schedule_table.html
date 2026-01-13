@@ -2646,36 +2646,47 @@ function closeFlightModal(){
   ACS_selectedChipEl = null;
 }
 
-// ============================================================
-// 🟥 B3-D — DELETE FLIGHT (CANONICAL HARD DELETE)
-// ------------------------------------------------------------
-// ✔ ÚNICA fuente de verdad: localStorage.scheduleItems
-// ✔ Borra vuelo individual o bloque completo (blockId)
-// ✔ Libera flightNumbers
-// ✔ Limpia confirmedRoute si aplica
-// ✔ SkyTrack NO se toca (READ ONLY)
-// ============================================================
+/* ============================================================
+   🟥 B3-D — DELETE CANÓNICO DEFINITIVO (SCHEDULE TABLE)
+   ------------------------------------------------------------
+   ✔ ÚNICA fuente de verdad: localStorage.scheduleItems
+   ✔ Soporta:
+       - Bloques (blockId)
+       - Vuelos individuales
+       - Legacy / orphan items
+   ✔ Garantiza:
+       - scheduleItems = [] o eliminado
+       - SkyTrack se limpia SOLO leyendo
+   ✔ NO toca SkyTrack
+   ✔ NO toca Observer
+   ============================================================ */
 
 function deleteSelectedFlights() {
 
-  // 0️⃣ Guardias
+  // ─────────────────────────────────────────────
+  // 0️⃣ GUARDIAS
+  // ─────────────────────────────────────────────
   if (!ACS_selectedFlightItem || !ACS_selectedChipEl) {
     closeFlightModal();
     return;
   }
 
-  const id      = ACS_selectedChipEl.dataset.id || null;
-  const blockId = ACS_selectedChipEl.dataset.blockId || null;
-  const isBlock = !!blockId;
+  const selId      = ACS_selectedChipEl.dataset.id || null;
+  const selBlockId = ACS_selectedChipEl.dataset.blockId || null;
+  const isBlock    = !!(selBlockId && selBlockId.trim());
 
-  // 1️⃣ Confirmación
+  // ─────────────────────────────────────────────
+  // 1️⃣ CONFIRMACIÓN
+  // ─────────────────────────────────────────────
   const msg = isBlock
-    ? "Are you sure you want to permanently delete this entire route block?\n\nThis action cannot be undone."
-    : "Are you sure you want to permanently delete this flight?\n\nThis action cannot be undone.";
+    ? "Are you sure you want to permanently DELETE this entire route block?\n\nThis action cannot be undone."
+    : "Are you sure you want to permanently DELETE this flight?\n\nThis action cannot be undone.";
 
   if (!window.confirm(msg)) return;
 
-  // 2️⃣ Cargar SOURCE OF TRUTH
+  // ─────────────────────────────────────────────
+  // 2️⃣ CARGAR SOURCE OF TRUTH
+  // ─────────────────────────────────────────────
   let items = [];
   try {
     items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
@@ -2688,44 +2699,73 @@ function deleteSelectedFlights() {
     return;
   }
 
-  // 3️⃣ Determinar objetivos reales
-  const targets = isBlock
-    ? items.filter(it => it.blockId === blockId)
-    : items.filter(it => it.id === id);
+  // ─────────────────────────────────────────────
+  // 3️⃣ RESOLVER OBJETIVOS REALES (ROBUSTO)
+  // ─────────────────────────────────────────────
+  const targets = items.filter(it => {
+    if (!it) return false;
+
+    // 🟥 Bloque completo
+    if (isBlock && it.blockId && it.blockId === selBlockId) return true;
+
+    // 🟥 Vuelo individual por id
+    if (!isBlock && selId && it.id === selId) return true;
+
+    // 🟥 LEGACY / ORPHAN FALLBACK
+    if (!isBlock && selId && ACS_selectedFlightItem) {
+      return (
+        String(it.aircraftId || "") === String(ACS_selectedFlightItem.aircraftId || "") &&
+        String(it.origin || "")     === String(ACS_selectedFlightItem.origin || "") &&
+        String(it.destination || "")=== String(ACS_selectedFlightItem.destination || "") &&
+        Number(it.depAbsMin || -1)  === Number(ACS_selectedFlightItem.depAbsMin || -2)
+      );
+    }
+
+    return false;
+  });
 
   if (!targets.length) {
+    console.warn("🟥 DELETE: No matching targets found");
     closeFlightModal();
     return;
   }
 
-  // 4️⃣ Liberar números de vuelo
-  let usedFlights = [];
+  // ─────────────────────────────────────────────
+  // 4️⃣ LIBERAR FLIGHT NUMBERS (SI EXISTEN)
+  // ─────────────────────────────────────────────
   try {
-    usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-  } catch {
-    usedFlights = [];
+    let usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
+    if (Array.isArray(usedFlights) && usedFlights.length) {
+      targets.forEach(t => {
+        if (t.flightNumberOut) {
+          usedFlights = usedFlights.filter(n => n !== t.flightNumberOut);
+        }
+        if (t.flightNumberIn) {
+          usedFlights = usedFlights.filter(n => n !== t.flightNumberIn);
+        }
+      });
+      localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
+    }
+  } catch {}
+
+  // ─────────────────────────────────────────────
+  // 5️⃣ HARD DELETE REAL (ÚNICO PUNTO VÁLIDO)
+  // ─────────────────────────────────────────────
+  let remaining = items.filter(it => !targets.includes(it));
+
+  // ─────────────────────────────────────────────
+  // 6️⃣ POST-DELETE CANÓNICO (CRÍTICO)
+  // ─────────────────────────────────────────────
+  if (!remaining.length) {
+    // 🔥 CLAVE: eliminar la key (SkyTrack = limpio)
+    localStorage.removeItem("scheduleItems");
+  } else {
+    localStorage.setItem("scheduleItems", JSON.stringify(remaining));
   }
 
-  if (Array.isArray(usedFlights) && usedFlights.length) {
-    targets.forEach(t => {
-      if (t.flightNumberOut) {
-        usedFlights = usedFlights.filter(n => n !== t.flightNumberOut);
-      }
-      if (t.flightNumberIn) {
-        usedFlights = usedFlights.filter(n => n !== t.flightNumberIn);
-      }
-    });
-    localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-  }
-
-  // 5️⃣ HARD DELETE REAL (único punto válido)
-  const remaining = isBlock
-    ? items.filter(it => it.blockId !== blockId)
-    : items.filter(it => it.id !== id);
-
-  localStorage.setItem("scheduleItems", JSON.stringify(remaining));
-
-  // 6️⃣ Limpiar confirmedRoute si coincide
+  // ─────────────────────────────────────────────
+  // 7️⃣ LIMPIEZA ASOCIADA (SOLO SI APLICA)
+  // ─────────────────────────────────────────────
   try {
     const r = JSON.parse(localStorage.getItem("confirmedRoute") || "null");
     if (r) {
@@ -2737,11 +2777,16 @@ function deleteSelectedFlights() {
     }
   } catch {}
 
-  // 7️⃣ Finalizar UI (SkyTrack se limpia SOLO al reload)
+  // ─────────────────────────────────────────────
+  // 8️⃣ FINAL UI
+  // ─────────────────────────────────────────────
   closeFlightModal();
   renderSchedule();
 
-  console.log("🟥 DELETE OK — scheduleItems is now canonical");
+  console.log(
+    "🟥 DELETE OK — scheduleItems canonical state:",
+    remaining.length ? remaining.length : "EMPTY"
+  );
 }
 
 /* ============================================================
