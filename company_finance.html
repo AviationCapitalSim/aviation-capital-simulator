@@ -641,11 +641,11 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 });
      
 /* ============================================================
-   🟦 F-UI-1 — LIVE INCOME → CARGO BUCKET (VIEW ONLY)
+   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY)
    ------------------------------------------------------------
-   • cargo (Income) muestra SOLO el último aterrizaje
+   • cargo (Income)         → último aterrizaje
+   • leasing_income (Income)→ acumulado semana simulada
    • NO altera ACS_Finance real
-   • Fuente: último INCOME del ACS_Log
    ============================================================ */
 
 function loadBreakdown() {
@@ -655,27 +655,59 @@ function loadBreakdown() {
 
   grid.innerHTML = "";
 
-  /* ============================================
-     🔍 EXTRAER LIVE INCOME (ÚLTIMO ATERRIZAJE)
-     ============================================ */
+  /* ============================================================
+     🔍 EXTRAER DATOS DESDE LOG
+     ============================================================ */
   let liveIncome = 0;
+  let weeklyIncome = 0;
 
   try {
     const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
 
-    // buscar el último ingreso real
+    // Semana simulada actual (ISO)
+    const now =
+      window.ACS_TIME?.currentTime instanceof Date
+        ? window.ACS_TIME.currentTime
+        : new Date();
+
+    const getISOWeek = (d) => {
+      const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    };
+
+    const currentWeek = getISOWeek(now);
+
+    // recorrer log de atrás hacia adelante
     for (let i = log.length - 1; i >= 0; i--) {
       const e = log[i];
-      if (e && e.type === "INCOME" && Number(e.amount) > 0) {
-        liveIncome = Number(e.amount);
-        break;
-      }
-    }
-  } catch {}
+      if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
 
-  /* ============================================
+      const ts = new Date(e.createdAt || e.timestamp || Date.now());
+      const week = getISOWeek(ts);
+
+      // último ingreso real
+      if (!liveIncome) {
+        liveIncome = Number(e.amount);
+      }
+
+      // acumulado semanal
+      if (week === currentWeek) {
+        weeklyIncome += Number(e.amount);
+      }
+
+      // optimización: si ya tenemos live + pasamos de semana, seguimos
+      if (liveIncome && week < currentWeek) break;
+    }
+  } catch (e) {
+    console.warn("⚠️ Breakdown log parse error:", e);
+  }
+
+  /* ============================================================
      📊 CONSTRUIR CATEGORÍAS (VIEW ONLY)
-     ============================================ */
+     ============================================================ */
   const categories = [];
 
   // ---------- INCOME ----------
@@ -683,9 +715,14 @@ function loadBreakdown() {
 
     let value = f.income[k];
 
-    // 🟢 LIVE INCOME → cargo (Income)
     if (k === "cargo") {
+      // 🟢 LIVE INCOME
       value = liveIncome;
+    }
+
+    if (k === "leasing_income") {
+      // 🟦 WEEKLY INCOME
+      value = weeklyIncome;
     }
 
     categories.push({
@@ -702,9 +739,9 @@ function loadBreakdown() {
     });
   });
 
-  /* ============================================
+  /* ============================================================
      📐 ESCALA VISUAL
-     ============================================ */
+     ============================================================ */
   const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
