@@ -26,12 +26,17 @@ if (!localStorage.getItem("ACS_Finance")) {
     expenses: payroll,
     profit: -payroll,
 
-    income: {
-    routes: 0,              // internal — Flight Economics
-    live_flight: 0,         // Live Flight Revenue (per leg)
-    route_weekly: 0,        // Route Weekly Revenue
-    credits: 0
-  },
+   income: {
+  routes: 0,
+  live_flight: 0,
+  route_weekly: 0,
+  credits: 0
+},
+
+weekly: {
+  leasing_income: 0,
+  weekNumber: null
+},
 
     cost: {
       salaries: payroll,
@@ -311,6 +316,13 @@ function ACS_normalizeFinance() {
   f.income.live_flight   = Number(f.income.live_flight   || 0);
   f.income.route_weekly  = Number(f.income.route_weekly  || 0);
   f.income.credits       = Number(f.income.credits       || 0);
+
+  // === Weekly buckets ===
+  f.weekly = f.weekly && typeof f.weekly === "object" ? f.weekly : {};
+  f.weekly.leasing_income = Number(f.weekly.leasing_income || 0);
+  f.weekly.weekNumber = Number.isFinite(f.weekly.weekNumber)
+  ? f.weekly.weekNumber
+  : null;
 
   // === Cost buckets ===
   f.cost = f.cost && typeof f.cost === "object" ? f.cost : {};
@@ -677,17 +689,41 @@ function ACS_registerIncome(incomeType, amount, source) {
    
   ACS_addIncome(targetType, value);
 
-  const fCheck = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+// ============================================================
+// 🟦 WEEKLY REAL INCOME (FROM FLIGHTS ONLY)
+// ============================================================
 
-  console.log(
-    "%c[FINANCE] Income applied",
-    "color:#00bfff;font-weight:bold;",
-    {
-      bucket: targetType,
-      newValue: fCheck?.income?.[targetType],
-      capital: fCheck?.capital,
-      revenueMonth: fCheck?.revenue
-    }
+const fWeekly = loadFinance();
+
+if (incomeType === "routes") {
+
+  // Obtener semana ISO simulada
+  const now = window.ACS_CurrentSimDate instanceof Date
+    ? window.ACS_CurrentSimDate
+    : new Date();
+
+  const getISOWeek = (d) => {
+    const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  };
+
+  const currentWeek = getISOWeek(now);
+
+  // Reset automático si cambia la semana
+  if (fWeekly.weekly.weekNumber !== currentWeek) {
+    fWeekly.weekly.leasing_income = 0;
+    fWeekly.weekly.weekNumber = currentWeek;
+  }
+
+  // Sumar ingreso semanal real
+  fWeekly.weekly.leasing_income += value;
+
+    saveFinance(fWeekly);
+   }
+
   );
 
   // ============================================================
@@ -1274,6 +1310,47 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
       }
     );
 
+  });
+
+})();
+
+/* ============================================================
+   🟦 WEEKLY FINANCE RESET — TIME ENGINE
+   ============================================================ */
+
+(function(){
+
+  if (typeof registerTimeListener !== "function") return;
+
+  let lastWeek = null;
+
+  function getISOWeek(d){
+    const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
+
+  registerTimeListener((simTime) => {
+    if (!(simTime instanceof Date)) return;
+
+    const week = getISOWeek(simTime);
+    if (lastWeek === null) {
+      lastWeek = week;
+      return;
+    }
+
+    if (week !== lastWeek) {
+      lastWeek = week;
+
+      const f = loadFinance();
+      f.weekly.leasing_income = 0;
+      f.weekly.weekNumber = week;
+      saveFinance(f);
+
+      console.log(`📆 Weekly Finance Reset → Week ${week}`);
+    }
   });
 
 })();
