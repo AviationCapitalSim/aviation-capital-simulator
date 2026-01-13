@@ -371,6 +371,8 @@ function ACS_SkyTrack_loadData() {
   ACS_SkyTrack.aircraftIndex = ACS_SkyTrack_getFleetIndex();
   ACS_SkyTrack.itemsByAircraft = ACS_SkyTrack_indexScheduleItems();
 
+} // ✅ <<< ESTA LLAVE FALTABA
+
 /* ============================================================
    🧩 FLEET INDEX (ACS_MyAircraft)
    ============================================================ */
