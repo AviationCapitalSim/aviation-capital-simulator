@@ -655,20 +655,21 @@ function loadBreakdown() {
 
   grid.innerHTML = "";
 
-   /* ============================================================
-     🔍 EXTRAER DATOS (REAL FINANCE SOURCE)
+    /* ============================================================
+     🔍 LIVE & WEEKLY ROUTE REVENUE (REAL FLIGHTS ONLY)
+     ------------------------------------------------------------
+     ✔ Fuente única: ACS_Log
+     ✔ Excluye FALLBACK / TEST / MANUAL
+     ✔ Live = último vuelo real
+     ✔ Weekly = suma semana real
      ============================================================ */
 
-  // 🟢 LIVE INCOME — fuente real (último vuelo)
-  let liveIncome = Number(f.income?.cargo || 0);
-
-  // 🟦 WEEKLY INCOME — fuente real semanal
-  let weeklyIncome = Number(f.weekly?.leasing_income || 0);
+  let liveIncome = 0;
+  let weeklyIncome = 0;
 
   try {
     const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
 
-    // Semana simulada actual (ISO)
     const now =
       window.ACS_TIME?.currentTime instanceof Date
         ? window.ACS_TIME.currentTime
@@ -684,25 +685,32 @@ function loadBreakdown() {
 
     const currentWeek = getISOWeek(now);
 
-    // recorrer log de atrás hacia adelante
     for (let i = log.length - 1; i >= 0; i--) {
       const e = log[i];
       if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
 
+      const src = String(e.source || "").toUpperCase();
+
+      // ❌ excluir ingresos no reales
+      if (
+        src.includes("FALLBACK") ||
+        src.includes("TEST") ||
+        src.includes("MANUAL")
+      ) continue;
+
       const ts = new Date(e.createdAt || e.timestamp || Date.now());
       const week = getISOWeek(ts);
 
-      // último ingreso real
+      // 🟢 último vuelo real
       if (!liveIncome) {
         liveIncome = Number(e.amount);
       }
 
-      // acumulado semanal
+      // 🟦 suma semanal real
       if (week === currentWeek) {
         weeklyIncome += Number(e.amount);
       }
 
-      // optimización: si ya tenemos live + pasamos de semana, seguimos
       if (liveIncome && week < currentWeek) break;
     }
   } catch (e) {
