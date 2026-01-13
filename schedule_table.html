@@ -2717,6 +2717,14 @@ function deleteSelectedFlights(){
 
   setItems(remaining);
 
+/* ============================================================
+   🧹 SKYTRACK HARD SYNC AFTER DELETE (FINAL FIX)
+   ============================================================ */
+if (window.ACS_SkyTrack && typeof window.ACS_SkyTrack_loadData === "function") {
+  console.log("🧹 SkyTrack reindex after DELETE");
+  window.ACS_SkyTrack_loadData();
+}
+     
 // ============================================================
 // 🟥 B3-D.1 — SKYTRACK SYNC AFTER DELETE (CANONICAL)
 // ------------------------------------------------------------
