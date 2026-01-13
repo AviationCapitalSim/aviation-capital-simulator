@@ -2647,42 +2647,48 @@ function closeFlightModal(){
 }
 
 // ============================================================
-// 🟥 B3-D — DELETE FLIGHT (HARD DELETE · FINAL)
+// 🟥 B3-D — DELETE FLIGHT (CANONICAL HARD DELETE)
 // ------------------------------------------------------------
-// • Source of truth: scheduleItems
-// • Deletes single flight OR full block (blockId)
-// • Frees flight numbers (if present)
-// • Clears confirmedRoute if it matches
-// • Mandatory confirmation (EN)
+// ✔ ÚNICA fuente de verdad: localStorage.scheduleItems
+// ✔ Borra vuelo individual o bloque completo (blockId)
+// ✔ Libera flightNumbers
+// ✔ Limpia confirmedRoute si aplica
+// ✔ SkyTrack NO se toca (READ ONLY)
 // ============================================================
 
-function deleteSelectedFlights(){
+function deleteSelectedFlights() {
 
-  // 0) Guard
+  // 0️⃣ Guardias
   if (!ACS_selectedFlightItem || !ACS_selectedChipEl) {
     closeFlightModal();
     return;
   }
 
-  const id      = ACS_selectedChipEl.dataset.id || "";
-  const blockId = ACS_selectedChipEl.dataset.blockId || "";
+  const id      = ACS_selectedChipEl.dataset.id || null;
+  const blockId = ACS_selectedChipEl.dataset.blockId || null;
   const isBlock = !!blockId;
 
-  // 1) Confirmation (mandatory)
+  // 1️⃣ Confirmación
   const msg = isBlock
     ? "Are you sure you want to permanently delete this entire route block?\n\nThis action cannot be undone."
     : "Are you sure you want to permanently delete this flight?\n\nThis action cannot be undone.";
 
   if (!window.confirm(msg)) return;
 
-  // 2) Load source of truth
-  const items = getItems();
+  // 2️⃣ Cargar SOURCE OF TRUTH
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch {
+    items = [];
+  }
+
   if (!Array.isArray(items) || !items.length) {
     closeFlightModal();
     return;
   }
 
-  // 3) Collect targets
+  // 3️⃣ Determinar objetivos reales
   const targets = isBlock
     ? items.filter(it => it.blockId === blockId)
     : items.filter(it => it.id === id);
@@ -2692,11 +2698,13 @@ function deleteSelectedFlights(){
     return;
   }
 
-  // 4) Free flight numbers (if used)
+  // 4️⃣ Liberar números de vuelo
   let usedFlights = [];
   try {
     usedFlights = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
-  } catch(e){ usedFlights = []; }
+  } catch {
+    usedFlights = [];
+  }
 
   if (Array.isArray(usedFlights) && usedFlights.length) {
     targets.forEach(t => {
@@ -2710,64 +2718,30 @@ function deleteSelectedFlights(){
     localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
   }
 
-  // 5) Remove from scheduleItems (HARD DELETE)
+  // 5️⃣ HARD DELETE REAL (único punto válido)
   const remaining = isBlock
     ? items.filter(it => it.blockId !== blockId)
     : items.filter(it => it.id !== id);
 
-  setItems(remaining);
+  localStorage.setItem("scheduleItems", JSON.stringify(remaining));
 
-/* ============================================================
-   🧹 SKYTRACK HARD SYNC AFTER DELETE (FINAL FIX)
-   ============================================================ */
-if (window.ACS_SkyTrack && typeof window.ACS_SkyTrack_loadData === "function") {
-  console.log("🧹 SkyTrack reindex after DELETE");
-  window.ACS_SkyTrack_loadData();
-}
-     
-// ============================================================
-// 🟥 B3-D.1 — SKYTRACK SYNC AFTER DELETE (CANONICAL)
-// ------------------------------------------------------------
-// • Re-index scheduleItems in SkyTrack memory
-// • Clear lastActiveFlight cache for affected aircraft
-// • Force immediate snapshot refresh
-// ============================================================
-
-if (window.ACS_SkyTrack && typeof window.ACS_SkyTrack_indexScheduleItems === "function") {
-
-  // 1️⃣ Rebuild schedule index (memory-only)
-  ACS_SkyTrack.itemsByAircraft = ACS_SkyTrack_indexScheduleItems();
-
-  // 2️⃣ Clear last active flight cache for this aircraft
-  const acId = ACS_selectedFlightItem?.aircraftId;
-  if (acId && ACS_SkyTrack.lastActiveFlight) {
-    delete ACS_SkyTrack.lastActiveFlight[acId];
-  }
-
-  // 3️⃣ Force immediate refresh
-  if (typeof window.ACS_SkyTrack_onTick === "function") {
-    ACS_SkyTrack_onTick();
-  }
-
-  console.log("🟦 SkyTrack synchronized after DELETE");
-}
-     
-  // 6) Clear confirmedRoute if it matches any removed flight numbers
-     
+  // 6️⃣ Limpiar confirmedRoute si coincide
   try {
-    const r = JSON.parse(localStorage.getItem(ROUTE_KEY) || "null");
+    const r = JSON.parse(localStorage.getItem("confirmedRoute") || "null");
     if (r) {
       const hit = targets.some(t =>
         (t.flightNumberOut && r.flightNumberOut === t.flightNumberOut) ||
         (t.flightNumberIn  && r.flightNumberIn  === t.flightNumberIn)
       );
-      if (hit) localStorage.removeItem(ROUTE_KEY);
+      if (hit) localStorage.removeItem("confirmedRoute");
     }
-  } catch(e){}
+  } catch {}
 
-  // 7) Finalize
+  // 7️⃣ Finalizar UI (SkyTrack se limpia SOLO al reload)
   closeFlightModal();
   renderSchedule();
+
+  console.log("🟥 DELETE OK — scheduleItems is now canonical");
 }
 
 /* ============================================================
