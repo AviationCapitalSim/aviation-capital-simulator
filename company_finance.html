@@ -620,16 +620,35 @@ function loadTransactionLog(filter="all") {
   const body = document.getElementById("cf-log-body");
   body.innerHTML = "";
 
-  log.slice().reverse().forEach(entry => {
-    if (filter !== "all" && entry.type !== filter) return;
+ log.slice().reverse().forEach(entry => {
+
+  if (filter !== "all" && entry.type !== filter) return;
+
+  // ❌ OCULTAR INGRESOS DE VUELOS (NO UI)
+  if (
+    entry.type === "INCOME" &&
+    typeof entry.source === "string"
+  ) {
+    const src = entry.source.toUpperCase();
+
+    if (
+      src.includes("FLIGHT") ||
+      src.includes("AUTO FLIGHT") ||
+      src.includes("BASE FLIGHT") ||
+      src.includes("FALLBACK")
+    ) {
+      return; // ⛔ NO mostrar vuelos en Transaction Log
+    }
+  }
 
     body.innerHTML += `
-      <tr>
-        <td>${entry.type}</td>
-        <td>${entry.source}</td>
-        <td>$${entry.amount.toLocaleString()}</td>
-      </tr>`;
+    <tr>
+      <td>${entry.type}</td>
+      <td>${entry.source}</td>
+      <td>$${entry.amount.toLocaleString()}</td>
+    </tr>`;
   });
+
 }
 
 document.querySelectorAll(".filter-btn").forEach(btn => {
@@ -722,36 +741,27 @@ function loadBreakdown() {
      ============================================================ */
   const categories = [];
 
-  // ---------- INCOME ----------
-  Object.keys(f.income).forEach(k => {
+  // ---------- INCOME (UI CANONICAL ONLY) ----------
 
-    let value = f.income[k];
+// 🟢 Live Route Revenue (último vuelo real)
+categories.push({
+  label: "Live Route Revenue (Income)",
+  value: Number(liveIncome) || 0
+});
 
-    if (k === "cargo") {
-      // 🟢 LIVE INCOME
-      value = liveIncome;
-    }
+// 🟦 Weekly Route Revenue (acumulado semanal real)
+categories.push({
+  label: "Weekly Route Revenue (Income)",
+  value: Number(weeklyIncome) || 0
+});
 
-    if (k === "leasing_income") {
-      // 🟦 WEEKLY INCOME
-      value = weeklyIncome;
-    }
-
-    let labelName = k;
-
-  if (k === "cargo") {
-  labelName = "Live Route Revenue";
-}
-
-  if (k === "leasing_income") {
-  labelName = "Weekly Route Revenue";
-}
-
-   categories.push({
-   label: `${labelName} (Income)`,
-   value: Number(value) || 0
-    });
+// 💳 Credits (si aplica)
+if (Number(f.income.credits) > 0) {
+  categories.push({
+    label: "Credits (Income)",
+    value: Number(f.income.credits) || 0
   });
+}
 
   // ---------- COST ----------
   Object.keys(f.cost).forEach(k => {
