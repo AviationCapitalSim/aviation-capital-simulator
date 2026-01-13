@@ -363,38 +363,41 @@ snapshot.push({
 }
 
 /* ============================================================
-   📦 LOAD DATA (FLEET + SCHEDULE)
+   📦 LOAD DATA (FLEET + SCHEDULE) — CANONICAL
    ============================================================ */
 function ACS_SkyTrack_loadData() {
+
+  // 1️⃣ Build fleet + schedule index (source of truth)
   ACS_SkyTrack.aircraftIndex = ACS_SkyTrack_getFleetIndex();
   ACS_SkyTrack.itemsByAircraft = ACS_SkyTrack_indexScheduleItems();
+
+  /* ============================================================
+     🧹 PURGE EMPTY AIRCRAFT (ANTI-GHOST FIX)
+     ------------------------------------------------------------
+     Rule:
+     - If an aircraft has NO flight legs
+     - AND no services
+     - It MUST NOT exist in SkyTrack
+     ============================================================ */
+
+  Object.keys(ACS_SkyTrack.itemsByAircraft).forEach(acId => {
+    const arr = ACS_SkyTrack.itemsByAircraft[acId];
+
+    if (!Array.isArray(arr) || arr.length === 0) {
+      delete ACS_SkyTrack.itemsByAircraft[acId];
+      delete ACS_SkyTrack.lastActiveFlight?.[acId];
+      return;
+    }
+
+    const hasFlights  = arr.some(it => it.type === "flight");
+    const hasServices = arr.some(it => it.type === "service");
+
+    if (!hasFlights && !hasServices) {
+      delete ACS_SkyTrack.itemsByAircraft[acId];
+      delete ACS_SkyTrack.lastActiveFlight?.[acId];
+    }
+  });
 }
-
-/* ============================================================
-   🧹 A4.3 — PURGE EMPTY AIRCRAFT (ANTI-GHOST FIX)
-   ------------------------------------------------------------
-   Rule:
-   - If an aircraft has NO flight legs and NO services
-   - It MUST NOT exist in SkyTrack
-   ============================================================ */
-
-Object.keys(ACS_SkyTrack.itemsByAircraft).forEach(acId => {
-  const arr = ACS_SkyTrack.itemsByAircraft[acId];
-
-  if (!Array.isArray(arr) || arr.length === 0) {
-    delete ACS_SkyTrack.itemsByAircraft[acId];
-    delete ACS_SkyTrack.lastActiveFlight?.[acId];
-    return;
-  }
-
-  const hasFlights = arr.some(it => it.type === "flight");
-  const hasServices = arr.some(it => it.type === "service");
-
-  if (!hasFlights && !hasServices) {
-    delete ACS_SkyTrack.itemsByAircraft[acId];
-    delete ACS_SkyTrack.lastActiveFlight?.[acId];
-  }
-});
 
 /* ============================================================
    🧩 FLEET INDEX (ACS_MyAircraft)
