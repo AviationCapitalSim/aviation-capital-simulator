@@ -1516,23 +1516,20 @@ function confirmRoute() {
     return;
   }
 
-  /* ============================================================
+ /* ============================================================
    🟢 ROUTE OBJECT — FULL ROTATION DATA (FINAL)
    ------------------------------------------------------------
    Source: Route Schedule
    Consumer: Schedule Table / Runtime
    ============================================================ */
 
-  // 🟦 FIX DEFINITIVO — DISTANCE SAFETY NET
-  let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
-  if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
-    finalDistanceNM = rs_getDistanceNM(origin, destination);
-  }
+// 🟦 FIX DEFINITIVO — DISTANCE SAFETY NET
+let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
+if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
+  finalDistanceNM = rs_getDistanceNM(origin, destination);
+}
 
-const newRoute = {
-  id: routeId,
-
-  /* ============================================================
+/* ============================================================
    🟧 B2 — CONFIRM ROUTE (IDENTITY FIX + EDIT SAFE)
    ------------------------------------------------------------
    FIXES:
@@ -1542,9 +1539,11 @@ const newRoute = {
    ✔ NO arrastra días incorrectos
    ============================================================ */
 
-// 🔎 Modo de creación
-const isEachDay  = document.getElementById("separateDays")?.checked === true;
+// 🔎 FLAGS DE MODO (DEBEN EXISTIR ANTES DEL OBJETO)
 const isEveryDay = document.getElementById("everyDay")?.checked === true;
+const isEachDay  =
+  document.getElementById("separateDays")?.checked === true &&
+  !isEveryDay;
 
 // 🔎 Detectar EDIT activo
 const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
@@ -1552,6 +1551,7 @@ const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 /* ============================================================
    🟢 ROUTE OBJECT — IDENTIDAD CORRECTA
    ============================================================ */
+     
 const newRoute = {
   id: routeId,
 
@@ -1582,6 +1582,8 @@ const newRoute = {
   optimized: document.getElementById("optimizeRotation")?.checked || false,
 
   // 📆 DÍAS (FIX REAL)
+  // - Each Day → SOLO el día tocado
+  // - Every Day → bloque completo
   days: isEachDay ? [days[0]] : days,
 
   // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
