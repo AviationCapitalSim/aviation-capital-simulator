@@ -655,11 +655,15 @@ function loadBreakdown() {
 
   grid.innerHTML = "";
 
-  /* ============================================================
-     🔍 EXTRAER DATOS DESDE LOG
+   /* ============================================================
+     🔍 EXTRAER DATOS (REAL FINANCE SOURCE)
      ============================================================ */
-  let liveIncome = 0;
-  let weeklyIncome = 0;
+
+  // 🟢 LIVE INCOME — fuente real (último vuelo)
+  let liveIncome = Number(f.income?.cargo || 0);
+
+  // 🟦 WEEKLY INCOME — fuente real semanal
+  let weeklyIncome = Number(f.weekly?.leasing_income || 0);
 
   try {
     const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
