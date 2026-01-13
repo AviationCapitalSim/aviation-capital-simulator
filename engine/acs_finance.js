@@ -719,12 +719,9 @@ if (incomeType === "routes") {
   }
 
   // Sumar ingreso semanal real
-  fWeekly.weekly.leasing_income += value;
-
+    fWeekly.weekly.leasing_income += value;
     saveFinance(fWeekly);
-   }
-
-  );
+}
 
   // ============================================================
   // 🧾 FINANCIAL LOG
