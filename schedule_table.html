@@ -2647,52 +2647,50 @@ function closeFlightModal(){
 }
 
 /* ============================================================
-   🟥 B3-D.1 — DELETE CANÓNICO FINAL (ANTI SKYTRACK GHOST)
+   🟥 B3-D.2 — DELETE CANÓNICO FINAL v2 (FIX REAL)
    ------------------------------------------------------------
+   ✔ Usa variables REALES del módulo:
+       - ACS_selectedFlightItem
+       - ACS_selectedChipEl
    ✔ Fuente única: localStorage.scheduleItems
-   ✔ Elimina:
-       - blockId
-       - id
-       - LEGACY / orphan
-       - FALLBACK DEFINITIVO por aircraftId
-   ✔ Garantiza:
-       - scheduleItems = null | []
-       - SkyTrack queda vacío
-   ✔ NO toca SkyTrack
-   ✔ NO toca Observer
+   ✔ Elimina por:
+       - blockId (si existe)
+       - id (si existe)
+       - fallback: aircraftId (kill-switch anti-fantasma)
+   ✔ Deja scheduleItems en null si queda vacío
+   ✔ NO toca SkyTrack (READ ONLY)
    ============================================================ */
 
 function deleteSelectedFlights() {
 
-  // ─────────────────────────────────────────────
-  // 0️⃣ GUARDIAS
-  // ─────────────────────────────────────────────
-  if (!window.ACS_selectedFlightItem || !window.ACS_selectedChipEl) {
+  // 0) Guardias (USAR LAS VARIABLES REALES, NO window.*)
+  if (!ACS_selectedFlightItem || !ACS_selectedChipEl) {
+    console.warn("🟥 DELETE: no selection (item/chip missing)");
     closeFlightModal();
     return;
   }
 
-  const selItem   = window.ACS_selectedFlightItem;
-  const selChip   = window.ACS_selectedChipEl;
+  const selItem = ACS_selectedFlightItem;
+  const selChip = ACS_selectedChipEl;
 
-  const selId      = selChip.dataset.id || null;
-  const selBlockId = selChip.dataset.blockId || null;
-  const selAcId    = selItem.aircraftId || null;
+  // 1) Identificadores
+  const selId = (selChip.dataset.id || selItem.id || "").trim();
+  const selBlockId = (selChip.dataset.blockId || selItem.blockId || "").trim();
 
-  const isBlock = !!(selBlockId && selBlockId.trim());
+  // aircraftId robusto (tu arquitectura real)
+  const selAcId =
+    (selItem.aircraftId || selItem.aircraftID || selChip.dataset.aircraftId || "").trim();
 
-  // ─────────────────────────────────────────────
-  // 1️⃣ CONFIRMACIÓN
-  // ─────────────────────────────────────────────
+  const isBlock = !!selBlockId;
+
+  // 2) Confirmación
   const msg = isBlock
-    ? "DELETE ENTIRE ROUTE BLOCK?\n\nAll flights for this aircraft will be removed."
-    : "DELETE FLIGHT?\n\nThis action cannot be undone.";
+    ? "Are you sure you want to permanently delete this entire route block?\n\nThis action cannot be undone."
+    : "Are you sure you want to permanently delete this flight?\n\nThis action cannot be undone.";
 
   if (!window.confirm(msg)) return;
 
-  // ─────────────────────────────────────────────
-  // 2️⃣ CARGAR SOURCE OF TRUTH
-  // ─────────────────────────────────────────────
+  // 3) Cargar source of truth
   let items = [];
   try {
     items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
@@ -2707,44 +2705,41 @@ function deleteSelectedFlights() {
     return;
   }
 
-  // ─────────────────────────────────────────────
-  // 3️⃣ RESOLVER TARGETS (ROBUSTO + FALLBACK FINAL)
-  // ─────────────────────────────────────────────
+  // 4) Determinar qué borrar (targets) con fallback REAL
   const targets = items.filter(it => {
     if (!it) return false;
 
-    // 🟥 BLOCK DELETE
-    if (isBlock && it.blockId && it.blockId === selBlockId) return true;
+    // A) blockId (preferido si existe)
+    if (isBlock && it.blockId && String(it.blockId).trim() === selBlockId) return true;
 
-    // 🟥 ID DIRECT
-    if (!isBlock && selId && it.id === selId) return true;
+    // B) id directo
+    if (!isBlock && selId && String(it.id || "").trim() === selId) return true;
 
-    // 🟥 LEGACY MATCH
-    if (!isBlock && selItem) {
+    // C) legacy: match por (aircraftId + origin + dest + depAbsMin) si existe
+    if (!isBlock && selAcId) {
       const sameLeg =
-        String(it.aircraftId || "") === String(selItem.aircraftId || "") &&
-        String(it.origin || "")     === String(selItem.origin || "") &&
-        String(it.destination || "")=== String(selItem.destination || "") &&
-        Number(it.depAbsMin || -1)  === Number(selItem.depAbsMin || -2);
+        String(it.aircraftId || it.aircraftID || "").trim() === selAcId &&
+        String(it.origin || "") === String(selItem.origin || "") &&
+        String(it.destination || "") === String(selItem.destination || "") &&
+        Number(it.depAbsMin || -1) === Number(selItem.depAbsMin || -2);
 
       if (sameLeg) return true;
     }
 
-    // 🟥 FALLBACK DEFINITIVO — AIRCRAFT KILL SWITCH
-    if (selAcId && String(it.aircraftId || "") === String(selAcId)) {
-      return true;
-    }
+    // D) FALLBACK DEFINITIVO: kill-switch por aircraftId (anti-fantasma)
+    if (selAcId && String(it.aircraftId || it.aircraftID || "").trim() === selAcId) return true;
 
     return false;
   });
 
   if (!targets.length) {
-    console.warn("🟥 DELETE B3-D.1: No matching targets found");
+    console.warn("🟥 DELETE: targets = 0 (no match).", { selId, selBlockId, selAcId, selItem });
+    // Si no hay targets, NO hacemos nada destructivo
+    closeFlightModal();
+    return;
   }
 
-  // ─────────────────────────────────────────────
-  // 4️⃣ LIBERAR FLIGHT NUMBERS
-  // ─────────────────────────────────────────────
+  // 5) Liberar flightNumbers (si usas esa key)
   try {
     let used = JSON.parse(localStorage.getItem("flightNumbers") || "[]");
     if (Array.isArray(used)) {
@@ -2754,37 +2749,45 @@ function deleteSelectedFlights() {
       });
       localStorage.setItem("flightNumbers", JSON.stringify(used));
     }
-  } catch {}
+  } catch (e) {}
 
-  // ─────────────────────────────────────────────
-  // 5️⃣ HARD DELETE
-  // ─────────────────────────────────────────────
-  const remaining = items.filter(it => !targets.includes(it));
+  // 6) Hard delete seguro (NO usar includes por referencia; borrar por claves)
+  const targetIds = new Set(targets.map(t => String(t.id || "").trim()).filter(Boolean));
+  const targetBlocks = new Set(targets.map(t => String(t.blockId || "").trim()).filter(Boolean));
+  const targetAc = selAcId; // kill-switch
 
-  // ─────────────────────────────────────────────
-  // 6️⃣ POST-DELETE CANÓNICO
-  // ─────────────────────────────────────────────
-  if (!remaining.length) {
-    localStorage.removeItem("scheduleItems");
-  } else {
-    localStorage.setItem("scheduleItems", JSON.stringify(remaining));
-  }
+  const remaining = items.filter(it => {
+    if (!it) return false;
 
-  // ─────────────────────────────────────────────
-  // 7️⃣ LIMPIEZA ASOCIADA
-  // ─────────────────────────────────────────────
+    const itId = String(it.id || "").trim();
+    const itBlock = String(it.blockId || "").trim();
+    const itAc = String(it.aircraftId || it.aircraftID || "").trim();
+
+    if (isBlock && itBlock && targetBlocks.has(itBlock)) return false;
+    if (!isBlock && itId && targetIds.has(itId)) return false;
+
+    // anti-fantasma: si coincide aircraftId → fuera
+    if (targetAc && itAc === targetAc) return false;
+
+    return true;
+  });
+
+  // 7) Persistencia canónica
+  if (!remaining.length) localStorage.removeItem("scheduleItems");
+  else localStorage.setItem("scheduleItems", JSON.stringify(remaining));
+
+  // (opcional) limpiar ruta confirmada si estás borrando cosas
   localStorage.removeItem("confirmedRoute");
 
-  // ─────────────────────────────────────────────
-  // 8️⃣ UI FINAL
-  // ─────────────────────────────────────────────
+  // 8) UI
   closeFlightModal();
   renderSchedule();
 
-  console.log(
-    "🟥 DELETE B3-D.1 OK — remaining:",
-    remaining.length ? remaining.length : "EMPTY"
-  );
+  console.log("🟥 DELETE OK", {
+    removed: targets.length,
+    remaining: remaining.length,
+    scheduleItems: localStorage.getItem("scheduleItems")
+  });
 }
 
 /* ============================================================
