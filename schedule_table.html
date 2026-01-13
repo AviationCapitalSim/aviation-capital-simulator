@@ -2682,7 +2682,9 @@ function deleteSelectedFlights() {
     (selItem.aircraftId || selItem.aircraftID || selChip.dataset.aircraftId || "").trim();
 
   const isBlock = !!selBlockId;
-
+  // ✅ Kill-switch SOLO si NO tenemos identidad (phantom / legacy sin id ni blockId)
+  const enableKillSwitch = !selId && !selBlockId;
+     
   // 2) Confirmación
   const msg = isBlock
     ? "Are you sure you want to permanently delete this entire route block?\n\nThis action cannot be undone."
@@ -2726,8 +2728,8 @@ function deleteSelectedFlights() {
       if (sameLeg) return true;
     }
 
-    // D) FALLBACK DEFINITIVO: kill-switch por aircraftId (anti-fantasma)
-    if (selAcId && String(it.aircraftId || it.aircraftID || "").trim() === selAcId) return true;
+    // D) Kill-switch SOLO si NO hay id/blockId (phantom)
+    if (enableKillSwitch && selAcId && String(it.aircraftId || it.aircraftID || "").trim() === selAcId) return true;
 
     return false;
   });
@@ -2766,8 +2768,8 @@ function deleteSelectedFlights() {
     if (isBlock && itBlock && targetBlocks.has(itBlock)) return false;
     if (!isBlock && itId && targetIds.has(itId)) return false;
 
-    // anti-fantasma: si coincide aircraftId → fuera
-    if (targetAc && itAc === targetAc) return false;
+    // anti-fantasma SOLO si NO hay id/blockId (phantom)
+    if (enableKillSwitch && targetAc && itAc === targetAc) return false;
 
     return true;
   });
