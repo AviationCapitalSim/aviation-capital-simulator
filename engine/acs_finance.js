@@ -1351,3 +1351,97 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
   });
 
 })();
+
+/* ============================================================
+   🟦 F-LIVE-1 — LIVE & WEEKLY ROUTE INCOME ENGINE (CANONICAL)
+   ------------------------------------------------------------
+   • Fuente ÚNICA: eventos reales de vuelo (SkyTrack)
+   • Live Route Income   → acumulado DIARIO
+   • Weekly Route Income → acumulado SEMANAL (ISO week)
+   • Reset automático:
+     - Live   → cada día 00:00 UTC
+     - Weekly → lunes 00:00 UTC
+   • NO depende de UI
+   • NO depende de ACS_Log
+   ============================================================ */
+
+(function ACS_LiveWeeklyRouteIncomeEngine(){
+
+  console.log("💰 [FINANCE] Live & Weekly Route Income Engine armed");
+
+  function getISOWeek(d){
+    const date = new Date(Date.UTC(
+      d.getUTCFullYear(),
+      d.getUTCMonth(),
+      d.getUTCDate()
+    ));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
+
+  function ensureBuckets(f){
+    f.live_route_income   = Number(f.live_route_income   || 0);
+    f.weekly_route_income = Number(f.weekly_route_income || 0);
+    f._lastLiveDay        = f._lastLiveDay   || null;
+    f._lastWeeklyWeek     = f._lastWeeklyWeek|| null;
+  }
+
+  window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
+
+    const d = e.detail;
+    if (!d || !Number(d.revenue)) return;
+
+    const now = window.ACS_CurrentSimDate instanceof Date
+      ? window.ACS_CurrentSimDate
+      : new Date();
+
+    let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    if (!f) return;
+
+    ensureBuckets(f);
+
+    const todayKey  = now.toISOString().slice(0,10); // YYYY-MM-DD
+    const weekKey   = getISOWeek(now);
+
+    /* ============================
+       🔄 RESET DAILY (LIVE)
+       ============================ */
+    if (f._lastLiveDay !== todayKey){
+      f.live_route_income = 0;
+      f._lastLiveDay = todayKey;
+    }
+
+    /* ============================
+       🔄 RESET WEEKLY
+       ============================ */
+    if (f._lastWeeklyWeek !== weekKey){
+      f.weekly_route_income = 0;
+      f._lastWeeklyWeek = weekKey;
+    }
+
+    /* ============================
+       💰 APPLY REAL FLIGHT REVENUE
+       ============================ */
+    const value = Number(d.revenue) || 0;
+
+    f.live_route_income   += value;
+    f.weekly_route_income += value;
+
+    localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+    console.log(
+      "%c💰 ROUTE INCOME APPLIED",
+      "color:#00ff80;font-weight:bold;",
+      {
+        flightId: d.flightId,
+        amount: value,
+        liveToday: f.live_route_income,
+        weekly: f.weekly_route_income
+      }
+    );
+
+  });
+
+})();
