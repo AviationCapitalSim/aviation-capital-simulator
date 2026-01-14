@@ -537,9 +537,14 @@ body {
 
 <script>
 
+// UI defaults (cold start)
+window.__ACS_UI_LIVE_ROUTE_INCOME__   = 0;
+window.__ACS_UI_WEEKLY_ROUTE_INCOME__ = 0;
+
 /* ============================================================
    ✅ FIX — SAFE NUMBER FORMAT (never crashes)
    ============================================================ */
+     
 function ACS_num(v){ 
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -748,14 +753,14 @@ function loadBreakdown() {
      ============================================================ */
   const categories = [];
 
-  categories.push({
+   categories.push({
     label: "Live Route Revenue (Income)",
-    value: Number(liveIncome) || 0
+    value: Number(window.__ACS_UI_LIVE_ROUTE_INCOME__ || 0)
   });
 
   categories.push({
     label: "Weekly Route Revenue (Income)",
-    value: Number(weeklyIncome) || 0
+    value: Number(window.__ACS_UI_WEEKLY_ROUTE_INCOME__ || 0)
   });
 
   Object.keys(f.cost).forEach(k => {
@@ -785,7 +790,58 @@ function loadBreakdown() {
     grid.appendChild(wrapper);
   });
 }
+     
+/* ============================================================
+   🟩 UI-LIVE-ROUTES — LIVE & WEEKLY (VIEW ONLY)
+   ============================================================ */
+(function ACS_UI_LiveWeeklyRoutes(){
 
+  let liveIncome = 0;
+  let weeklyIncome = 0;
+  let lastDay = null;
+  let lastWeek = null;
+
+  function getISOWeek(d){
+    const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
+
+  window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
+
+    const d = e.detail;
+    if (!d || typeof d.revenue !== "number") return;
+
+    const now = window.ACS_CurrentSimDate instanceof Date
+      ? window.ACS_CurrentSimDate
+      : new Date();
+
+    const todayKey = now.toISOString().slice(0,10);
+    const weekKey  = getISOWeek(now);
+
+    if (lastDay !== todayKey){
+      liveIncome = 0;
+      lastDay = todayKey;
+    }
+
+    if (lastWeek !== weekKey){
+      weeklyIncome = 0;
+      lastWeek = weekKey;
+    }
+
+    liveIncome = d.revenue;
+    weeklyIncome += d.revenue;
+
+    window.__ACS_UI_LIVE_ROUTE_INCOME__   = liveIncome;
+    window.__ACS_UI_WEEKLY_ROUTE_INCOME__ = weeklyIncome;
+
+    loadBreakdown();
+  });
+
+})();
+     
 /* ============================================================
    🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE
    ------------------------------------------------------------
