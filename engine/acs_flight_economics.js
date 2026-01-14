@@ -167,6 +167,30 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
       );
     }
 
+    /* ============================================================
+   🟦 A4 — ECON → FINANCE EVENT EMITTER (CANONICAL)
+   ------------------------------------------------------------
+   • Emite evento económico REAL del vuelo
+   • Fuente ÚNICA para Finance Live & Weekly
+   • NO suma capital aquí
+   • NO duplica lógica
+   ============================================================ */
+
+  window.dispatchEvent(
+  new CustomEvent("ACS_FLIGHT_ECONOMICS", {
+    detail: {
+      flightId: f.flightId,
+      aircraftId: ac.id,
+      origin: f.origin,
+      destination: f.destination,
+      pax: pax,
+      distanceNM: f.distanceNM,
+      revenue: revenue,
+      ts: Date.now()
+    }
+  })
+);
+     
     console.log(
       "%c💰 ECON FLIGHT APPLIED",
       "color:#00ff88;font-weight:bold;",
