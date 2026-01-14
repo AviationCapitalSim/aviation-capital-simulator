@@ -276,3 +276,50 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   }, 1000); // 1s polling — safe & simple
 
 })();
+
+/* ============================================================
+   🟦 A5 — ARRIVAL → ECON BRIDGE (FINAL)
+   ------------------------------------------------------------
+   • Convierte ARRIVED en evento económico REAL
+   • Finance SOLO escucha ACS_FLIGHT_ECONOMICS
+   • NO duplica ingresos
+   • NO toca capital aquí
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ARRIVED", (e) => {
+
+  const d = e.detail;
+  if (!d) return;
+
+  if (
+    typeof d.revenue !== "number" ||
+    d.revenue <= 0
+  ) {
+    console.warn("⚠️ ARRIVED without revenue — ECON skipped", d);
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("ACS_FLIGHT_ECONOMICS", {
+      detail: {
+        flightId: d.flightId,
+        aircraftId: d.aircraftId,
+        origin: d.origin,
+        destination: d.destination,
+        pax: d.pax,
+        distanceNM: d.distanceNM,
+        revenue: d.revenue,
+        ts: Date.now()
+      }
+    })
+  );
+
+  console.log(
+    "%c🟢 ECON EVENT EMITTED → FINANCE",
+    "color:#00ff88;font-weight:bold;",
+    {
+      flightId: d.flightId,
+      revenue: d.revenue
+    }
+  );
+});
