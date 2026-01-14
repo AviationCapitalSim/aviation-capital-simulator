@@ -208,42 +208,6 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   }
 });
 
-
-/* ============================================================
-   🟦 ECON → FINANCE STORAGE BRIDGE (WRITE)
-   ------------------------------------------------------------
-   • Persist flight economic result for Finance module
-   • Cross-page safe
-   ============================================================ */
-
-(function(){
-
-  const econPayload = {
-    flightId: flight?.id,
-    aircraftId: ac?.id,
-    origin,
-    destination,
-    revenue: Number(revenue || 0),
-    pax: Number(pax || 0),
-    simTime: window.ACS_CurrentSimDate || Date.now(),
-    ts: Date.now()
-  };
-
-  if (econPayload.revenue > 0) {
-    localStorage.setItem(
-      "ACS_LAST_FLIGHT_ECON",
-      JSON.stringify(econPayload)
-    );
-
-    console.log(
-      "%c💾 ECON STORED FOR FINANCE",
-      "color:#00ffaa;font-weight:bold;",
-      econPayload
-    );
-  }
-
-})();
-
 /* ============================================================
    🟦 FINANCE ECON STORAGE LISTENER (READ)
    ------------------------------------------------------------
