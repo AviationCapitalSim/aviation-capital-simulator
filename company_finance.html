@@ -537,21 +537,9 @@ body {
 
 <script>
 
-// UI defaults (cold start)
-window.__ACS_UI_LIVE_ROUTE_INCOME__   = 0;
-window.__ACS_UI_WEEKLY_ROUTE_INCOME__ = 0;
-
-// SAFE STUB — avoids crash if sparklines not loaded
-if (typeof renderSparklines !== "function") {
-  function renderSparklines() {
-    // intentionally empty (UI optional)
-  }
-}
-     
 /* ============================================================
    ✅ FIX — SAFE NUMBER FORMAT (never crashes)
    ============================================================ */
-     
 function ACS_num(v){ 
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -758,20 +746,17 @@ function loadBreakdown() {
   /* ============================================================
      📊 BUILD VIEW (NO LOGIC)
      ============================================================ */
-     
-  // ✅ Fuente canónica: ACS_Finance.income (persistente cross-tab)
-const live = Number(f?.income?.live_flight || 0);
-const weekly = Number(f?.income?.route_weekly || 0);
+  const categories = [];
 
-categories.push({
-  label: "Live Route Revenue (Income)",
-  value: live
-});
+  categories.push({
+    label: "Live Route Revenue (Income)",
+    value: Number(liveIncome) || 0
+  });
 
-categories.push({
-  label: "Weekly Route Revenue (Income)",
-  value: weekly
-});
+  categories.push({
+    label: "Weekly Route Revenue (Income)",
+    value: Number(weeklyIncome) || 0
+  });
 
   Object.keys(f.cost).forEach(k => {
     categories.push({
@@ -800,7 +785,7 @@ categories.push({
     grid.appendChild(wrapper);
   });
 }
-     
+
 /* ============================================================
    🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE
    ------------------------------------------------------------
