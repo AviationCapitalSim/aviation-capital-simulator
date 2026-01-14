@@ -636,104 +636,55 @@ function ACS_registerExpense(costType, amount, source) {
    • DEBUG activo (temporal)
    ============================================================ */
 
-function ACS_registerIncome(incomeType, amount, source) {
+function ACS_registerIncome(incomeType, payload, source) {
 
-  console.log(
-    "%c💰 [FINANCE] registerIncome() CALLED",
-    "color:#ffd700;font-weight:bold;",
-    {
-      incomeType,
-      amount,
-      source,
-      simTime: window.ACS_CurrentSimDate
-    }
-  );
-   
-  const value = Number(amount) || 0;
-  if (value <= 0) return;
+  let value = 0;
 
-  // ============================================================
-  // 🧠 DEBUG — FINANCE ENTRY CONFIRMATION
-  // ============================================================
-   
-  console.log(
-    "%c[FINANCE] registerIncome called",
-    "color:#00ff80;font-weight:bold;",
-    { incomeType, amount, source }
-  );
-
-  // ============================================================
-  // 🔀 FINANCE INCOME ROUTER (SEMANTIC)
-  // routes → cargo (Live Flight Revenue / leg-by-leg)
-  // ============================================================
-
-  let targetType = incomeType;
-
-  if (incomeType === "routes") {
-    targetType = "cargo";
+  // ✅ SOPORTE FLEXIBLE
+  if (typeof payload === "number") {
+    value = payload;
+  } else if (payload && typeof payload === "object") {
+    value = Number(payload.amount || payload.income || payload.revenue || 0);
   }
 
-  console.log(
-    "%c[FINANCE] Routing income",
-    "color:#ffd700;font-weight:bold;",
-    {
-      from: incomeType,
-      to: targetType,
-      amount: value
-    }
-  );
-
-  // ============================================================
-  // 💰 APPLY INCOME
-  // ============================================================
-   
-  ACS_addIncome(targetType, value);
-
-// ============================================================
-// 🟦 WEEKLY REAL INCOME (FROM FLIGHTS ONLY)
-// ============================================================
-
-const fWeekly = loadFinance();
-
-if (incomeType === "routes") {
-
-  // Obtener semana ISO simulada
-  const now = window.ACS_CurrentSimDate instanceof Date
-    ? window.ACS_CurrentSimDate
-    : new Date();
-
-  const getISOWeek = (d) => {
-    const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  };
-
-  const currentWeek = getISOWeek(now);
-
-  // Reset automático si cambia la semana
-  if (fWeekly.weekly.weekNumber !== currentWeek) {
-    fWeekly.weekly.leasing_income = 0;
-    fWeekly.weekly.weekNumber = currentWeek;
+  if (value <= 0) {
+    console.warn("[FINANCE] ❌ Invalid income payload:", payload);
+    return;
   }
 
-  // Sumar ingreso semanal real
-    fWeekly.weekly.leasing_income += value;
-    saveFinance(fWeekly);
-}
+  const f = loadFinance();
+  if (!f || !f.income || f.income[incomeType] === undefined) {
+    console.warn("[FINANCE] ❌ Invalid income type:", incomeType);
+    return;
+  }
 
-  // ============================================================
-  // 🧾 FINANCIAL LOG
-  // ============================================================
-   
+  const beforeCapital = f.capital;
+
+  // 💰 APPLY
+  f.income[incomeType] += value;
+  f.revenue += value;
+  f.capital += value;
+  f.profit = f.revenue - f.expenses;
+
+  saveFinance(f);
+
+  // 🧾 LOG
   ACS_logTransaction({
     type: "INCOME",
-    source: source || targetType,
+    source: source || incomeType,
     amount: value
   });
-}
 
+  console.log(
+    `%c💰 [FINANCE] INCOME APPLIED`,
+    "color:#00ff80;font-weight:bold;",
+    {
+      type: incomeType,
+      amount: value,
+      capital: `${beforeCapital} → ${f.capital}`
+    }
+  );
+}
 
 /* ============================================================
    === BANKRUPTCY ENGINE — v1.0 ================================
