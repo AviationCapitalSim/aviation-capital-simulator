@@ -659,41 +659,85 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 });
      
 /* ============================================================
-   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY)
+   🟦 F-UI-2 — LIVE + WEEKLY ROUTE INCOME (VIEW ONLY)
    ------------------------------------------------------------
-   • Live Route Revenue     → último ingreso registrado
-   • Weekly Route Revenue   → acumulado semanal REAL
-   • Fuente ÚNICA           → ACS_Finance.weekly.leasing_income
-   • NO altera ACS_Finance
+   • Live Route Revenue   → último ingreso REAL de routes
+   • Weekly Route Revenue → suma semanal REAL de routes
+   • Fuente ÚNICA: ACS_Finance (CANONICAL)
+   • NO escucha eventos
+   • NO usa ACS_Log
+   • NO genera montos fake
    ============================================================ */
 
 function loadBreakdown() {
+
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const grid = document.getElementById("breakdownGrid");
-  if (!f || !grid || !f.cost) return;
+  if (!f || !grid || !f.income || !f.cost) return;
 
   grid.innerHTML = "";
 
   /* ============================================================
-     🔗 CANONICAL FINANCE SOURCE (REAL, NO FAKE)
-     ------------------------------------------------------------
-     ✔ Escrito solo por ACS_registerIncome
-     ✔ Usado por Flight Economics
-     ✔ Sin logs, sin sesiones, sin inventos
+     🧠 LIVE + WEEKLY ROUTE REVENUE (REAL FINANCE)
      ============================================================ */
 
-  const weeklyData = f.weekly || {};
-  const weeklyIncome = Number(weeklyData.leasing_income || 0);
+  let liveIncome = 0;
+  let weeklyIncome = 0;
 
-  // Live = último valor válido (no acumulado ficticio)
-  const liveIncome = weeklyIncome;
+  try {
+
+    const log = Array.isArray(f.log) ? f.log : [];
+
+    const now =
+      window.ACS_TIME?.currentTime instanceof Date
+        ? window.ACS_TIME.currentTime
+        : new Date();
+
+    const getISOWeek = (d) => {
+      const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    };
+
+    const currentWeek = getISOWeek(now);
+
+    // recorrer log de atrás hacia adelante
+    for (let i = log.length - 1; i >= 0; i--) {
+
+      const e = log[i];
+      if (!e || e.type !== "INCOME" || e.target !== "routes") continue;
+
+      const amount = Number(e.amount || 0);
+      if (!amount) continue;
+
+      const ts = new Date(e.createdAt || Date.now());
+      const week = getISOWeek(ts);
+
+      // 🟢 Live = último ingreso real
+      if (!liveIncome) {
+        liveIncome = amount;
+      }
+
+      // 🟦 Weekly = acumulado semana actual
+      if (week === currentWeek) {
+        weeklyIncome += amount;
+      }
+
+      if (liveIncome && week < currentWeek) break;
+    }
+
+  } catch (err) {
+    console.warn("⚠️ Finance UI breakdown error:", err);
+  }
 
   /* ============================================================
      📊 CONSTRUIR CATEGORÍAS (VIEW ONLY)
      ============================================================ */
+
   const categories = [];
 
-  // ---------- INCOME ----------
   categories.push({
     label: "Live Route Revenue (Income)",
     value: liveIncome
@@ -704,7 +748,13 @@ function loadBreakdown() {
     value: weeklyIncome
   });
 
-  // ---------- COST ----------
+  if (Number(f.income.credits) > 0) {
+    categories.push({
+      label: "Credits (Income)",
+      value: Number(f.income.credits)
+    });
+  }
+
   Object.keys(f.cost).forEach(k => {
     categories.push({
       label: `${k} (Cost)`,
@@ -715,9 +765,11 @@ function loadBreakdown() {
   /* ============================================================
      📐 ESCALA VISUAL
      ============================================================ */
+
   const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
+
     const pct = (cat.value / max) * 100;
 
     const wrapper = document.createElement("div");
@@ -728,8 +780,7 @@ function loadBreakdown() {
         ${cat.label} — $${cat.value.toLocaleString()}
       </div>
       <div class="finance-meter-bar">
-        <div class="finance-meter-fill"
-             style="width:${pct}%;"></div>
+        <div class="finance-meter-fill" style="width:${pct}%;"></div>
       </div>
     `;
 
