@@ -1391,7 +1391,8 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
   window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
 
     const d = e.detail;
-    if (!d || !Number(d.revenue)) return;
+    const value = Number(d.amount || d.income || d.payload?.income || 0);
+    if (!value) return;
 
     const now = window.ACS_CurrentSimDate instanceof Date
       ? window.ACS_CurrentSimDate
@@ -1424,8 +1425,7 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
     /* ============================
        💰 APPLY REAL FLIGHT REVENUE
        ============================ */
-    const value = Number(d.revenue) || 0;
-
+   
    // LIVE = último vuelo (NO acumulado)
     f.live_route_income = value;
 
