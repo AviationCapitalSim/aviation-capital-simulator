@@ -68,6 +68,7 @@ window.ACS_ECON_ProcessedFlights =
    ✔ Single revenue entry point
    ✔ Uses ACS_PAX v2
    ✔ Writes to Finance ONLY here
+   ✔ FIXED: proper payload contract for ACS_registerIncome
    ============================================================ */
 
 window.ACS_ECON_ProcessedFlights =
@@ -77,22 +78,14 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   try {
 
     const f = ev?.detail;
-    if (!f || !f.aircraftId) return;
+    if (!f) return;
 
     /* -------------------------------
-       🧩 NORMALIZE CORE FIELDS
+       🔒 Dedup real flight
     --------------------------------*/
-    const distanceNM =
-      Number(f.distanceNM) ||
-      Number(f.distance) ||
-      0;
+    if (!f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
 
-    if (!distanceNM) return;
-
-    const econKey =
-      f.flightId ||
-      `${f.aircraftId}|${f.origin}|${f.destination}`;
-
+    const econKey = `${f.aircraftId}|${f.depAbsMin}`;
     if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
     window.ACS_ECON_ProcessedFlights.add(econKey);
 
@@ -120,7 +113,7 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
 
     const paxResult = ACS_PAX.calculate({
       route: {
-        distanceNM,
+        distanceNM: f.distanceNM,
         continentA: f.originContinent || "GEN",
         continentB: f.destinationContinent || "GEN"
       },
@@ -133,8 +126,8 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
         comfortIndex: ac.comfortIndex || 1.0
       },
       pricing: {
-        baseFare: 120,
-        effectiveFare: 120
+        baseFare: f.baseFare || 120,
+        effectiveFare: f.effectiveFare || 120
       },
       airline: {
         marketingLevel: 1.0,
@@ -153,9 +146,9 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
        💵 Ticket price (historical-safe)
     --------------------------------*/
     let ticket = 120;
-    if (distanceNM > 3000) ticket = 220;
-    else if (distanceNM > 1200) ticket = 150;
-    else if (distanceNM > 500)  ticket = 90;
+    if (f.distanceNM > 3000) ticket = 220;
+    else if (f.distanceNM > 1200) ticket = 150;
+    else if (f.distanceNM > 500)  ticket = 90;
 
     if (simTime.getUTCFullYear() < 1960) ticket *= 0.6;
 
@@ -163,12 +156,19 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     if (revenue <= 0) return;
 
     /* -------------------------------
-       💰 FINANCE — SINGLE ENTRY
+       💰 FINANCE — SINGLE ENTRY (FIXED)
     --------------------------------*/
     if (typeof ACS_registerIncome === "function") {
       ACS_registerIncome(
         "routes",
-        revenue,
+        {
+          amount: revenue,
+          pax,
+          distanceNM: f.distanceNM,
+          aircraftId: ac.id,
+          origin: f.origin,
+          destination: f.destination
+        },
         `Flight ${f.origin} → ${f.destination} | Pax ${pax}`
       );
     }
