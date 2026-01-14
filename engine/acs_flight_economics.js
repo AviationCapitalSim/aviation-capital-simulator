@@ -173,47 +173,41 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
       );
     }
 
-// ============================================================
-// 🟦 A1 — EMIT FLIGHT ECONOMICS EVENT (CANONICAL)
-// ------------------------------------------------------------
-// • Emite ingreso REAL del vuelo
-// • NO recalcula nada
-// • Finance lo consume para Live / Weekly
-// ============================================================
-
-window.dispatchEvent(
-  new CustomEvent("ACS_FLIGHT_ECONOMICS", {
-    detail: {
+    /* ============================================================
+       🟢 ECON → FINANCE STORAGE BRIDGE (ADDED)
+       ------------------------------------------------------------
+       • Cross-page safe
+       • NO duplicate capital
+       • Source of truth for Live / Weekly
+       ============================================================ */
+    const econPayload = {
       flightId: f.flightId,
       aircraftId: ac.id,
       origin: f.origin,
       destination: f.destination,
+      revenue,
+      pax,
       distanceNM: f.distanceNM,
-      pax: pax,
-      revenue: revenue,
-      simTime: simTime
-    }
-  })
-);
+      simTime: simTime instanceof Date ? simTime.toISOString() : simTime,
+      ts: Date.now()
+    };
 
-console.log(
-  "%c💰 ACS_FLIGHT_ECONOMICS EMITTED",
-  "color:#00ff80;font-weight:bold;",
-  {
-    flightId: f.flightId,
-    revenue,
-    pax
-  }
-);
-     
+    localStorage.setItem(
+      "ACS_LAST_FLIGHT_ECON",
+      JSON.stringify(econPayload)
+    );
+
     console.log(
-      `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax}/${ac.seats} | $${revenue}`
+      "%c💾 ECON STORED FOR FINANCE",
+      "color:#00ffaa;font-weight:bold;",
+      econPayload
     );
 
   } catch (err) {
-    console.error("❌ ACS Flight Economics error:", err);
+    console.error("[ACS_FLIGHT_ECONOMICS] ERROR", err);
   }
 });
+
 
 /* ============================================================
    🟦 ECON → FINANCE STORAGE BRIDGE (WRITE)
