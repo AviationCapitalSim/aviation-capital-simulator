@@ -682,21 +682,30 @@ function loadBreakdown() {
      ✔ Live = último vuelo real
      ✔ Weekly = suma semana real
      ============================================================ */
-
-    // ============================================================
-  // 🧠 UI SESSION ANCHOR (ANTI-FAKE / NO HISTORY)
-  // ------------------------------------------------------------
-  // • Live & Weekly empiezan en 0 al entrar a la página
-  // • Ignora ingresos anteriores (tests / vuelos pasados)
-  // • Comportamiento tipo SkyTrack
+     
   // ============================================================
+// 🧠 UI COLD START — ONE SHOT (PER PAGE LOAD)
+// ------------------------------------------------------------
+// • Live / Weekly arrancan en 0 al entrar a la página
+// • Luego solo reaccionan a vuelos NUEVOS
+// • Se reinicia solo con refresh o nueva entrada
+// ============================================================
 
-  if (!window.ACS_FINANCE_UI_SESSION_START) {
-    window.ACS_FINANCE_UI_SESSION_START =
+if (!window.__ACS_FINANCE_UI_INIT__) {
+
+  window.__ACS_FINANCE_UI_INIT__ = {
+    startedAt:
       window.ACS_TIME?.currentTime instanceof Date
-        ? window.ACS_TIME.currentTime
-        : new Date();
-  }
+        ? new Date(window.ACS_TIME.currentTime)
+        : new Date(),
+    initialized: true
+  };
+
+  console.log("🟦 Finance UI Cold Start initialized");
+}
+
+const SESSION_START = window.__ACS_FINANCE_UI_INIT__.startedAt;
+
 
   const SESSION_START = window.ACS_FINANCE_UI_SESSION_START;
 
