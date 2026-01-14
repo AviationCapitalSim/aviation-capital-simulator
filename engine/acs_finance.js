@@ -1426,7 +1426,10 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
        ============================ */
     const value = Number(d.revenue) || 0;
 
-    f.live_route_income   += value;
+   // LIVE = último vuelo (NO acumulado)
+    f.live_route_income = value;
+
+   // WEEKLY = acumulado semanal (SE QUEDA)
     f.weekly_route_income += value;
 
     localStorage.setItem("ACS_Finance", JSON.stringify(f));
