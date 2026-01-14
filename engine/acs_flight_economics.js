@@ -80,11 +80,13 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     if (!f) return;
 
     /* -------------------------------
-       🔒 Dedup real flight
+       🔒 Dedup real flight (SAFE)
+       → depAbsMin is NOT always present
+       → use flightId + aircraftId
     --------------------------------*/
-    if (!f.aircraftId || !Number.isFinite(f.depAbsMin)) return;
+    if (!f.aircraftId || !f.flightId) return;
 
-    const econKey = `${f.aircraftId}|${f.depAbsMin}`;
+    const econKey = `${f.aircraftId}|${f.flightId}`;
     if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
     window.ACS_ECON_ProcessedFlights.add(econKey);
 
@@ -96,6 +98,12 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
       a.id === f.aircraftId || a.registration === f.aircraftId
     );
     if (!ac) return;
+
+    /* -------------------------------
+       📏 Distance (HARD REQUIREMENT)
+    --------------------------------*/
+    const distanceNM = Number(f.distanceNM);
+    if (!Number.isFinite(distanceNM) || distanceNM <= 0) return;
 
     /* -------------------------------
        ⏱ Time
@@ -112,7 +120,7 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
 
     const paxResult = ACS_PAX.calculate({
       route: {
-        distanceNM: f.distanceNM,
+        distanceNM,
         continentA: f.originContinent || "GEN",
         continentB: f.destinationContinent || "GEN"
       },
@@ -122,7 +130,7 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
       },
       aircraft: {
         seats: ac.seats || 0,
-        comfortIndex: ac.comfortIndex || 1.0   // FUTURO
+        comfortIndex: ac.comfortIndex || 1.0
       },
       pricing: {
         baseFare: f.baseFare || 120,
@@ -138,27 +146,27 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
       }
     });
 
-    const pax = paxResult.pax || 0;
+    const pax = Number(paxResult?.pax || 0);
     if (pax <= 0) return;
 
     /* -------------------------------
        💵 Ticket price (historical-safe)
     --------------------------------*/
     let ticket = 120;
-    if (f.distanceNM > 3000) ticket = 220;
-    else if (f.distanceNM > 1200) ticket = 150;
-    else if (f.distanceNM > 500)  ticket = 90;
+    if (distanceNM > 3000) ticket = 220;
+    else if (distanceNM > 1200) ticket = 150;
+    else if (distanceNM > 500)  ticket = 90;
 
     if (simTime.getUTCFullYear() < 1960) ticket *= 0.6;
 
     const revenue = Math.round(pax * ticket);
-    if (revenue <= 0) return;
+    if (!Number.isFinite(revenue) || revenue <= 0) return;
 
     /* -------------------------------
-       💰 FINANCE — SINGLE ENTRY
+       💰 FINANCE — SINGLE ENTRY (REAL)
     --------------------------------*/
-    if (typeof ACS_registerIncome === "function") {
-      ACS_registerIncome(
+    if (typeof window.ACS_registerIncome === "function") {
+      window.ACS_registerIncome(
         "routes",
         revenue,
         `Flight ${f.origin} → ${f.destination} | Pax ${pax}`
@@ -166,7 +174,8 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
     }
 
     console.log(
-      `💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax}/${ac.seats} | $${revenue}`
+      `%c💰 ECON OK | ${f.origin} → ${f.destination} | Pax ${pax}/${ac.seats} | $${revenue}`,
+      "color:#00ff88;font-weight:bold"
     );
 
     // ========= FUTURE (OFF) =========
