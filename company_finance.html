@@ -683,8 +683,26 @@ function loadBreakdown() {
      ✔ Weekly = suma semana real
      ============================================================ */
 
+    // ============================================================
+  // 🧠 UI SESSION ANCHOR (ANTI-FAKE / NO HISTORY)
+  // ------------------------------------------------------------
+  // • Live & Weekly empiezan en 0 al entrar a la página
+  // • Ignora ingresos anteriores (tests / vuelos pasados)
+  // • Comportamiento tipo SkyTrack
+  // ============================================================
+
+  if (!window.ACS_FINANCE_UI_SESSION_START) {
+    window.ACS_FINANCE_UI_SESSION_START =
+      window.ACS_TIME?.currentTime instanceof Date
+        ? window.ACS_TIME.currentTime
+        : new Date();
+  }
+
+  const SESSION_START = window.ACS_FINANCE_UI_SESSION_START;
+
   let liveIncome = 0;
   let weeklyIncome = 0;
+
 
   try {
     const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
@@ -718,6 +736,8 @@ function loadBreakdown() {
       ) continue;
 
       const ts = new Date(e.createdAt || e.timestamp || Date.now());
+      // ❌ ignorar ingresos anteriores a esta sesión UI
+      if (ts < SESSION_START) continue;
       const week = getISOWeek(ts);
 
       // 🟢 último vuelo real
