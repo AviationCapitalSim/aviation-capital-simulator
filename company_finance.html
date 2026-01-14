@@ -522,8 +522,16 @@ body {
 <!-- CORE TIME (SIEMPRE PRIMERO) -->
 <script src="time_engine.js"></script>
 
-<!-- SYSTEMS THAT DEPEND ON TIME -->
+<!-- CORE FINANCE -->
 <script src="engine/acs_finance.js"></script>
+
+<!-- PASSENGER ENGINE (CRÍTICO) -->
+<script src="engine/passenger_engine.js"></script>
+
+<!-- FLIGHT ECONOMICS (ROUTE REVENUE) -->
+<script src="engine/acs_flight_economics.js"></script>
+
+<!-- OTROS SISTEMAS -->
 <script src="engine/acs_leasing.js"></script>
 <script src="engine/acs_hr_engine.js"></script>
 
