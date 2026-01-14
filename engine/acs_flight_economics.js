@@ -76,7 +76,7 @@ window.ACS_ECON_ProcessedFlights =
    • Mapea cualquier evento real
    ============================================================ */
 
-window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
+window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   try {
 
     const d = ev && ev.detail ? ev.detail : {};
