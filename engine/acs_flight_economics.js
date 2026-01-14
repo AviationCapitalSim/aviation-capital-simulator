@@ -214,3 +214,108 @@ console.log(
     console.error("❌ ACS Flight Economics error:", err);
   }
 });
+
+/* ============================================================
+   🟦 ECON → FINANCE STORAGE BRIDGE (WRITE)
+   ------------------------------------------------------------
+   • Persist flight economic result for Finance module
+   • Cross-page safe
+   ============================================================ */
+
+(function(){
+
+  const econPayload = {
+    flightId: flight?.id,
+    aircraftId: ac?.id,
+    origin,
+    destination,
+    revenue: Number(revenue || 0),
+    pax: Number(pax || 0),
+    simTime: window.ACS_CurrentSimDate || Date.now(),
+    ts: Date.now()
+  };
+
+  if (econPayload.revenue > 0) {
+    localStorage.setItem(
+      "ACS_LAST_FLIGHT_ECON",
+      JSON.stringify(econPayload)
+    );
+
+    console.log(
+      "%c💾 ECON STORED FOR FINANCE",
+      "color:#00ffaa;font-weight:bold;",
+      econPayload
+    );
+  }
+
+})();
+
+/* ============================================================
+   🟦 FINANCE ECON STORAGE LISTENER (READ)
+   ------------------------------------------------------------
+   • Reads economic flight data from localStorage
+   • Updates Live & Weekly Route Revenue
+   ============================================================ */
+
+(function(){
+
+  let lastTS = null;
+
+  function getISOWeek(d){
+    const date = new Date(Date.UTC(
+      d.getUTCFullYear(),
+      d.getUTCMonth(),
+      d.getUTCDate()
+    ));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  }
+
+  setInterval(() => {
+
+    const raw = localStorage.getItem("ACS_LAST_FLIGHT_ECON");
+    if (!raw) return;
+
+    const d = JSON.parse(raw);
+    if (!d || d.ts === lastTS || d.revenue <= 0) return;
+
+    lastTS = d.ts;
+
+    let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    f.income = f.income || {};
+
+    const now = new Date();
+    const todayKey = now.toISOString().slice(0,10);
+    const weekKey  = getISOWeek(now);
+
+    if (f._lastLiveDay !== todayKey){
+      f.income.live_flight = 0;
+      f._lastLiveDay = todayKey;
+    }
+
+    if (f._lastWeeklyWeek !== weekKey){
+      f.income.route_weekly = 0;
+      f._lastWeeklyWeek = weekKey;
+    }
+
+    f.income.live_flight  = d.revenue;
+    f.income.route_weekly += d.revenue;
+
+    localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+    console.log(
+      "%c💰 FINANCE UPDATED FROM STORAGE",
+      "color:#00ff80;font-weight:bold;",
+      {
+        flightId: d.flightId,
+        revenue: d.revenue,
+        live: f.income.live_flight,
+        weekly: f.income.route_weekly
+      }
+    );
+
+  }, 1000); // 1s polling — safe & simple
+
+})();
