@@ -1,5 +1,5 @@
 /* ============================================================
-   === ACS FINANCE ENGINE - CORE v1.5 (Integración HR) ========
+   === ACS FINANCE ENGINE - CORE v1.5 14JAN26 ========
    ------------------------------------------------------------
    ▪ Capital inicial: 500,000 USD (Año 1940)
    ▪ Payroll inicial automático desde HR
