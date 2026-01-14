@@ -1306,19 +1306,17 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 /* ============================================================
    🟦 F-LIVE-1 — LIVE & WEEKLY ROUTE INCOME ENGINE (CANONICAL)
    ------------------------------------------------------------
-   • Fuente ÚNICA: eventos reales de vuelo (SkyTrack)
-   • Live Route Income   → acumulado DIARIO
-   • Weekly Route Income → acumulado SEMANAL (ISO week)
-   • Reset automático:
-     - Live   → cada día 00:00 UTC
-     - Weekly → lunes 00:00 UTC
-   • NO depende de UI
-   • NO depende de ACS_Log
+   • Fuente ÚNICA: eventos económicos reales de vuelo
+   • Evento: ACS_FLIGHT_ECONOMICS
+   • Live Route Income   → último vuelo del día
+   • Weekly Route Income → acumulado semanal (ISO week)
+   • NO duplica capital
+   • NO toca revenue mensual
    ============================================================ */
 
 (function ACS_LiveWeeklyRouteIncomeEngine(){
 
-  console.log("💰 [FINANCE] Live & Weekly Route Income Engine armed");
+  console.log("💰 [FINANCE] Live & Weekly Route Income Engine armed (ECON)");
 
   function getISOWeek(d){
     const date = new Date(Date.UTC(
@@ -1333,41 +1331,19 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
   }
 
   function ensureBuckets(f){
-    f.live_route_income   = Number(f.live_route_income   || 0);
-    f.weekly_route_income = Number(f.weekly_route_income || 0);
-    f._lastLiveDay        = f._lastLiveDay   || null;
-    f._lastWeeklyWeek     = f._lastWeeklyWeek|| null;
+    f.income = f.income || {};
+    f.income.live_flight  = Number(f.income.live_flight  || 0);
+    f.income.route_weekly = Number(f.income.route_weekly || 0);
+
+    f._lastLiveDay    = f._lastLiveDay    || null;
+    f._lastWeeklyWeek = f._lastWeeklyWeek || null;
   }
 
-  window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
-
-    console.log(
-      "%c[FINANCE] ✈️ ARRIVAL EVENT RECEIVED",
-      "color:#00c8ff;font-weight:bold;",
-      e.detail
-    );
-
-    if (!e.detail) {
-      console.warn("[FINANCE] ❌ No detail in ACS_FLIGHT_ARRIVED event");
-      return;
-    }
+  window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
     const d = e.detail;
-
-    console.log(
-      "%c[FINANCE] 💰 RAW INCOME FIELDS",
-      "color:#ffd700;",
-      {
-        amount: d.amount,
-        income: d.income,
-        payloadIncome: d.payload?.income,
-        revenue: d.revenue
-      }
-    );
-
-    const value = Number(d.amount || d.income || d.payload?.income || 0);
-    if (!value) {
-      console.warn("[FINANCE] ⚠️ Income value resolved to 0 — skipped");
+    if (!d || typeof d.revenue !== "number" || d.revenue <= 0) {
+      console.warn("[FINANCE] ⚠️ Invalid ECON payload:", d);
       return;
     }
 
@@ -1380,48 +1356,37 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 
     ensureBuckets(f);
 
-    const todayKey  = now.toISOString().slice(0,10); // YYYY-MM-DD
-    const weekKey   = getISOWeek(now);
+    const todayKey = now.toISOString().slice(0,10); // YYYY-MM-DD
+    const weekKey  = getISOWeek(now);
 
-    /* ============================
-       🔄 RESET DAILY (LIVE)
-       ============================ */
+    /* 🔄 RESET DAILY (LIVE) */
     if (f._lastLiveDay !== todayKey){
-      f.live_route_income = 0;
+      f.income.live_flight = 0;
       f._lastLiveDay = todayKey;
     }
 
-    /* ============================
-       🔄 RESET WEEKLY
-       ============================ */
+    /* 🔄 RESET WEEKLY */
     if (f._lastWeeklyWeek !== weekKey){
-      f.weekly_route_income = 0;
+      f.income.route_weekly = 0;
       f._lastWeeklyWeek = weekKey;
     }
 
-    /* ============================
-       💰 APPLY REAL FLIGHT REVENUE
-       ============================ */
-
-    // LIVE = último vuelo (NO acumulado)
-    f.live_route_income = value;
-
-    // WEEKLY = acumulado semanal (SE QUEDA)
-    f.weekly_route_income += value;
+    /* 💰 APPLY */
+    f.income.live_flight  = d.revenue;
+    f.income.route_weekly += d.revenue;
 
     localStorage.setItem("ACS_Finance", JSON.stringify(f));
 
     console.log(
-      "%c[FINANCE] ✅ INCOME APPLIED",
+      "%c[FINANCE] ✅ LIVE / WEEKLY INCOME UPDATED",
       "color:#00ff80;font-weight:bold;",
       {
         flightId: d.flightId,
-        added: value,
-        liveToday: f.live_route_income,
-        weekly: f.weekly_route_income
+        added: d.revenue,
+        live: f.income.live_flight,
+        weekly: f.income.route_weekly
       }
     );
-
   });
 
 })();
