@@ -659,35 +659,42 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 });
      
 /* ============================================================
-   🟦 F-UI-2 — LIVE + WEEKLY ROUTE INCOME (VIEW ONLY)
+   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY)
    ------------------------------------------------------------
-   • Live Route Revenue   → último ingreso REAL de routes
-   • Weekly Route Revenue → suma semanal REAL de routes
-   • Fuente ÚNICA: ACS_Finance (CANONICAL)
-   • NO escucha eventos
-   • NO usa ACS_Log
-   • NO genera montos fake
+   • Live Route Income   → último ingreso real
+   • Weekly Route Income → suma semana simulada
+   • Fuente REAL: ACS_Finance.history
+   • NO altera ACS_Finance
    ============================================================ */
 
 function loadBreakdown() {
-
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const grid = document.getElementById("breakdownGrid");
-  if (!f || !grid || !f.income || !f.cost) return;
+  if (!f || !grid || !Array.isArray(f.history) || !f.cost) return;
 
   grid.innerHTML = "";
 
   /* ============================================================
-     🧠 LIVE + WEEKLY ROUTE REVENUE (REAL FINANCE)
+     🧠 UI COLD START (ONE SHOT)
      ============================================================ */
+  if (!window.__ACS_FINANCE_UI_INIT__) {
+    window.__ACS_FINANCE_UI_INIT__ = {
+      startedAt:
+        window.ACS_TIME?.currentTime instanceof Date
+          ? new Date(window.ACS_TIME.currentTime)
+          : new Date(),
+      initialized: true
+    };
+
+    console.log("🟦 Finance UI Cold Start initialized");
+  }
+
+  const SESSION_START = window.__ACS_FINANCE_UI_INIT__.startedAt;
 
   let liveIncome = 0;
   let weeklyIncome = 0;
 
   try {
-
-    const log = Array.isArray(f.log) ? f.log : [];
-
     const now =
       window.ACS_TIME?.currentTime instanceof Date
         ? window.ACS_TIME.currentTime
@@ -703,57 +710,45 @@ function loadBreakdown() {
 
     const currentWeek = getISOWeek(now);
 
-    // recorrer log de atrás hacia adelante
-    for (let i = log.length - 1; i >= 0; i--) {
+    for (let i = f.history.length - 1; i >= 0; i--) {
+      const e = f.history[i];
+      if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
 
-      const e = log[i];
-      if (!e || e.type !== "INCOME" || e.target !== "routes") continue;
+      const ts = new Date(e.createdAt || e.timestamp || Date.now());
+      if (ts < SESSION_START) continue;
 
-      const amount = Number(e.amount || 0);
-      if (!amount) continue;
-
-      const ts = new Date(e.createdAt || Date.now());
       const week = getISOWeek(ts);
 
-      // 🟢 Live = último ingreso real
+      // 🟢 último ingreso real
       if (!liveIncome) {
-        liveIncome = amount;
+        liveIncome = Number(e.amount);
       }
 
-      // 🟦 Weekly = acumulado semana actual
+      // 🟦 suma semanal real
       if (week === currentWeek) {
-        weeklyIncome += amount;
+        weeklyIncome += Number(e.amount);
       }
 
       if (liveIncome && week < currentWeek) break;
     }
-
-  } catch (err) {
-    console.warn("⚠️ Finance UI breakdown error:", err);
+  } catch (e) {
+    console.warn("⚠️ Breakdown history parse error:", e);
   }
 
   /* ============================================================
-     📊 CONSTRUIR CATEGORÍAS (VIEW ONLY)
+     📊 BUILD VIEW (NO LOGIC)
      ============================================================ */
-
   const categories = [];
 
   categories.push({
     label: "Live Route Revenue (Income)",
-    value: liveIncome
+    value: Number(liveIncome) || 0
   });
 
   categories.push({
     label: "Weekly Route Revenue (Income)",
-    value: weeklyIncome
+    value: Number(weeklyIncome) || 0
   });
-
-  if (Number(f.income.credits) > 0) {
-    categories.push({
-      label: "Credits (Income)",
-      value: Number(f.income.credits)
-    });
-  }
 
   Object.keys(f.cost).forEach(k => {
     categories.push({
@@ -762,14 +757,9 @@ function loadBreakdown() {
     });
   });
 
-  /* ============================================================
-     📐 ESCALA VISUAL
-     ============================================================ */
-
   const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
-
     const pct = (cat.value / max) * 100;
 
     const wrapper = document.createElement("div");
