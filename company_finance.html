@@ -661,132 +661,48 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 /* ============================================================
    🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY)
    ------------------------------------------------------------
-   • cargo (Income)         → último aterrizaje
-   • leasing_income (Income)→ acumulado semana simulada
-   • NO altera ACS_Finance real
+   • Live Route Revenue     → último ingreso registrado
+   • Weekly Route Revenue   → acumulado semanal REAL
+   • Fuente ÚNICA           → ACS_Finance.weekly.leasing_income
+   • NO altera ACS_Finance
    ============================================================ */
 
 function loadBreakdown() {
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const grid = document.getElementById("breakdownGrid");
-  if (!f || !grid || !f.income || !f.cost) return;
+  if (!f || !grid || !f.cost) return;
 
   grid.innerHTML = "";
 
-    /* ============================================================
-     🔍 LIVE & WEEKLY ROUTE REVENUE (REAL FLIGHTS ONLY)
+  /* ============================================================
+     🔗 CANONICAL FINANCE SOURCE (REAL, NO FAKE)
      ------------------------------------------------------------
-     ✔ Fuente única: ACS_Log
-     ✔ Excluye FALLBACK / TEST / MANUAL
-     ✔ Live = último vuelo real
-     ✔ Weekly = suma semana real
+     ✔ Escrito solo por ACS_registerIncome
+     ✔ Usado por Flight Economics
+     ✔ Sin logs, sin sesiones, sin inventos
      ============================================================ */
-     
-  // ============================================================
-// 🧠 UI COLD START — ONE SHOT (PER PAGE LOAD)
-// ------------------------------------------------------------
-// • Live / Weekly arrancan en 0 al entrar a la página
-// • Luego solo reaccionan a vuelos NUEVOS
-// • Se reinicia solo con refresh o nueva entrada
-// ============================================================
 
-if (!window.__ACS_FINANCE_UI_INIT__) {
+  const weeklyData = f.weekly || {};
+  const weeklyIncome = Number(weeklyData.leasing_income || 0);
 
-  window.__ACS_FINANCE_UI_INIT__ = {
-    startedAt:
-      window.ACS_TIME?.currentTime instanceof Date
-        ? new Date(window.ACS_TIME.currentTime)
-        : new Date(),
-    initialized: true
-  };
-
-  console.log("🟦 Finance UI Cold Start initialized");
-}
-
-  const SESSION_START = window.ACS_FINANCE_UI_SESSION_START;
-
-  let liveIncome = 0;
-  let weeklyIncome = 0;
-
-
-  try {
-    const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-
-    const now =
-      window.ACS_TIME?.currentTime instanceof Date
-        ? window.ACS_TIME.currentTime
-        : new Date();
-
-    const getISOWeek = (d) => {
-      const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-      const dayNum = date.getUTCDay() || 7;
-      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-    };
-
-    const currentWeek = getISOWeek(now);
-
-    for (let i = log.length - 1; i >= 0; i--) {
-      const e = log[i];
-      if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
-
-      const src = String(e.source || "").toUpperCase();
-
-      // ❌ excluir ingresos no reales
-      if (
-        src.includes("FALLBACK") ||
-        src.includes("TEST") ||
-        src.includes("MANUAL")
-      ) continue;
-
-      const ts = new Date(e.createdAt || e.timestamp || Date.now());
-      // ❌ ignorar ingresos anteriores a esta sesión UI
-      if (ts < SESSION_START) continue;
-      const week = getISOWeek(ts);
-
-      // 🟢 último vuelo real
-      if (!liveIncome) {
-        liveIncome = Number(e.amount);
-      }
-
-      // 🟦 suma semanal real
-      if (week === currentWeek) {
-        weeklyIncome += Number(e.amount);
-      }
-
-      if (liveIncome && week < currentWeek) break;
-    }
-  } catch (e) {
-    console.warn("⚠️ Breakdown log parse error:", e);
-  }
+  // Live = último valor válido (no acumulado ficticio)
+  const liveIncome = weeklyIncome;
 
   /* ============================================================
      📊 CONSTRUIR CATEGORÍAS (VIEW ONLY)
      ============================================================ */
   const categories = [];
 
-  // ---------- INCOME (UI CANONICAL ONLY) ----------
-
-// 🟢 Live Route Revenue (último vuelo real)
-categories.push({
-  label: "Live Route Revenue (Income)",
-  value: Number(liveIncome) || 0
-});
-
-// 🟦 Weekly Route Revenue (acumulado semanal real)
-categories.push({
-  label: "Weekly Route Revenue (Income)",
-  value: Number(weeklyIncome) || 0
-});
-
-// 💳 Credits (si aplica)
-if (Number(f.income.credits) > 0) {
+  // ---------- INCOME ----------
   categories.push({
-    label: "Credits (Income)",
-    value: Number(f.income.credits) || 0
+    label: "Live Route Revenue (Income)",
+    value: liveIncome
   });
-}
+
+  categories.push({
+    label: "Weekly Route Revenue (Income)",
+    value: weeklyIncome
+  });
 
   // ---------- COST ----------
   Object.keys(f.cost).forEach(k => {
