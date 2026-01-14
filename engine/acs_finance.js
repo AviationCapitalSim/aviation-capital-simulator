@@ -1390,3 +1390,31 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
   });
 
 })();
+
+
+/* ============================================================
+   🟦 A3 — FINANCE ARRIVAL SAFETY BRIDGE
+   ------------------------------------------------------------
+   • Garantiza señal de aterrizaje SIEMPRE
+   • NO suma dinero
+   • NO toca capital
+   • Solo confirma flujo operativo
+   ============================================================ */
+
+(function(){
+
+  window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
+    if (!e.detail) return;
+
+    console.log(
+      "%c[FINANCE] ✈️ ARRIVAL SIGNAL RECEIVED (SAFETY)",
+      "color:#ffaa00;font-weight:bold;",
+      {
+        flightId: e.detail.flightId,
+        origin: e.detail.origin,
+        destination: e.detail.destination
+      }
+    );
+  });
+
+})();
