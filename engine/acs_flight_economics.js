@@ -57,86 +57,68 @@ window.ACS_getBaseTicket = window.ACS_getBaseTicket || function (distanceNM, yea
 };
 
 /* ============================================================
-   🟦 PASO 9 — FLIGHT ECONOMICS CORE (CANONICAL)
+   🟧 A1 — FLIGHT ECONOMICS LISTENER (CANONICAL)
    ------------------------------------------------------------
-   ✔ Single revenue entry point
-   ✔ Uses ACS_PAX v2
-   ✔ Writes to Finance ONLY here
-   ✔ FIXED: proper payload contract for ACS_registerIncome
+   ✔ ÚNICO evento: ACS_FLIGHT_ARRIVED
+   ✔ aircraftId REAL desde SkyTrack
+   ✔ Dedup por aircraftId + depAbsMin
+   ✔ Finance SOLO vía ACS_registerIncome
    ============================================================ */
 
 window.ACS_ECON_ProcessedFlights =
   window.ACS_ECON_ProcessedFlights || new Set();
 
-/* ============================================================
-   🟧 A1 — FLIGHT ECONOMICS LISTENER (PAYLOAD-SAFE)
-   ------------------------------------------------------------
-   • NO asume nombres
-   • NO retorna por undefined
-   • Mapea cualquier evento real
-   ============================================================ */
-
 window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   try {
 
-    const d = ev && ev.detail ? ev.detail : {};
+    const d = ev?.detail;
     if (!d) return;
 
-    // ============================
-    // 🧩 PAYLOAD NORMALIZATION
-    // ============================
+    /* ============================
+       🧩 PAYLOAD NORMALIZATION
+       ============================ */
     const f = {
-      flightId:
-        d.flightId || d.id || d.flight || d.fid || null,
-
-      aircraftId:
-        d.aircraftId || d.aircraft || d.ac || d.registration || null,
-
-      origin:
-        d.origin || d.from || d.departure || null,
-
-      destination:
-        d.destination || d.to || d.arrival || null,
-
-      distanceNM:
-        Number(d.distanceNM || d.distance || d.dist || 0),
-
-      depAbsMin:
-        Number(d.depAbsMin || d.departureMin || d.depMin || Date.now())
+      flightId: d.flightId || null,
+      aircraftId: d.aircraftId || null,
+      origin: d.origin || null,
+      destination: d.destination || null,
+      distanceNM: Number(d.distanceNM || 0),
+      depAbsMin: Number(d.depAbsMin)
     };
 
-    if (!f.aircraftId || !f.origin || !f.destination || !f.distanceNM) return;
+    if (
+      !f.aircraftId ||
+      !f.origin ||
+      !f.destination ||
+      !Number.isFinite(f.distanceNM) ||
+      !Number.isFinite(f.depAbsMin)
+    ) return;
 
-    // ============================
-    // 🔒 DEDUP
-    // ============================
-    window.ACS_ECON_ProcessedFlights =
-      window.ACS_ECON_ProcessedFlights || new Set();
-
+    /* ============================
+       🔒 DEDUP (REAL FLIGHT)
+       ============================ */
     const econKey = `${f.aircraftId}|${f.depAbsMin}`;
     if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
     window.ACS_ECON_ProcessedFlights.add(econKey);
 
-    // ============================
-    // ✈️ AIRCRAFT
-    // ============================
+    /* ============================
+       ✈️ AIRCRAFT (REAL FLEET)
+       ============================ */
     const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    const ac = fleet.find(a =>
-      a.id === f.aircraftId || a.registration === f.aircraftId
-    );
+    const ac = fleet.find(a => a.id === f.aircraftId);
     if (!ac) return;
 
-    // ============================
-    // ⏱ TIME
-    // ============================
+    /* ============================
+       ⏱ TIME
+       ============================ */
     const simTime =
       window.ACS_TIME?.currentTime instanceof Date
         ? window.ACS_TIME.currentTime
         : new Date();
 
-    // ============================
-    // 🧍 PAX
-    // ============================
+    /* ============================
+       🧍 PASSENGERS
+       ============================ */
     if (!window.ACS_PAX || typeof ACS_PAX.calculate !== "function") return;
 
     const paxResult = ACS_PAX.calculate({
@@ -147,65 +129,59 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
       },
       aircraft: {
         seats: ac.seats || 0,
-        comfortIndex: ac.comfortIndex || 1
+        comfortIndex: ac.comfortIndex || 1.0
       }
     });
 
     const pax = Number(paxResult?.pax || 0);
     if (pax <= 0) return;
 
-    // ============================
-    // 💵 TICKET
-    // ============================
+    /* ============================
+       💵 TICKET MODEL
+       ============================ */
     let ticket = 120;
     if (f.distanceNM > 3000) ticket = 220;
     else if (f.distanceNM > 1200) ticket = 150;
-    else if (f.distanceNM > 500) ticket = 90;
+    else if (f.distanceNM > 500)  ticket = 90;
 
     if (simTime.getUTCFullYear() < 1960) ticket *= 0.6;
 
     const revenue = Math.round(pax * ticket);
     if (revenue <= 0) return;
 
-    // ============================
-    // 💰 FINANCE (ÚNICO ENTRY)
-    // ============================
-    if (typeof ACS_registerIncome === "function") {
+    /* ============================
+       💰 FINANCE (ÚNICO ENTRY)
+       ============================ */
+    if (typeof window.ACS_registerIncome === "function") {
       ACS_registerIncome(
         "routes",
-        { amount: revenue, pax, distanceNM: f.distanceNM },
-        `Flight ${f.origin} → ${f.destination}`
+        {
+          amount: revenue,
+          pax,
+          distanceNM: f.distanceNM,
+          aircraftId: ac.id,
+          origin: f.origin,
+          destination: f.destination
+        },
+        `AUTO FLIGHT ${f.origin} → ${f.destination}`
       );
     }
 
-    // ============================
-    // 💾 STORAGE BRIDGE
-    // ============================
-    localStorage.setItem(
-      "ACS_LAST_FLIGHT_ECON",
-      JSON.stringify({
-        flightId: f.flightId,
-        aircraftId: f.aircraftId,
-        origin: f.origin,
-        destination: f.destination,
-        revenue,
-        pax,
-        distanceNM: f.distanceNM,
-        ts: Date.now()
-      })
-    );
-
     console.log(
-      "%c💾 ECON STORED FOR FINANCE",
-      "color:#00ffaa;font-weight:bold;",
-      { flight: f, revenue, pax }
+      "%c💰 ECON FLIGHT APPLIED",
+      "color:#00ff88;font-weight:bold;",
+      {
+        aircraftId: ac.id,
+        route: `${f.origin} → ${f.destination}`,
+        pax,
+        revenue
+      }
     );
 
   } catch (e) {
-    console.error("ECON LISTENER ERROR", e);
+    console.error("❌ ECON LISTENER ERROR", e);
   }
 });
-
 
 /* ============================================================
    🟦 FINANCE ECON STORAGE LISTENER (READ)
