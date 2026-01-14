@@ -797,6 +797,31 @@ if (Number(f.income.credits) > 0) {
 }
 
 /* ============================================================
+   🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE
+   ------------------------------------------------------------
+   • Refresca Live & Weekly income en tiempo real
+   • Se dispara SOLO con eventos reales
+   • No usa polling
+   • No toca ACS_Finance
+   ============================================================ */
+
+(function ACS_bindLiveBreakdownEvents(){
+
+  // 🟢 Cuando un vuelo aterriza (SkyTrack / Flight Exec)
+  window.addEventListener("ACS_FLIGHT_ECONOMICS", () => {
+    loadBreakdown();
+  });
+
+  // 🟢 Cuando Finance registra un ingreso real
+  window.addEventListener("storage", (e) => {
+    if (e.key === "ACS_Log") {
+      loadBreakdown();
+    }
+  });
+
+})();
+     
+/* ============================================================
    === LEASING CARDS ===========================================
    ============================================================ */
      
