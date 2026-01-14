@@ -1390,9 +1390,35 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 
   window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
 
+    console.log(
+      "%c[FINANCE] ✈️ ARRIVAL EVENT RECEIVED",
+      "color:#00c8ff;font-weight:bold;",
+      e.detail
+    );
+
+    if (!e.detail) {
+      console.warn("[FINANCE] ❌ No detail in ACS_FLIGHT_ARRIVED event");
+      return;
+    }
+
     const d = e.detail;
+
+    console.log(
+      "%c[FINANCE] 💰 RAW INCOME FIELDS",
+      "color:#ffd700;",
+      {
+        amount: d.amount,
+        income: d.income,
+        payloadIncome: d.payload?.income,
+        revenue: d.revenue
+      }
+    );
+
     const value = Number(d.amount || d.income || d.payload?.income || 0);
-    if (!value) return;
+    if (!value) {
+      console.warn("[FINANCE] ⚠️ Income value resolved to 0 — skipped");
+      return;
+    }
 
     const now = window.ACS_CurrentSimDate instanceof Date
       ? window.ACS_CurrentSimDate
@@ -1425,21 +1451,21 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
     /* ============================
        💰 APPLY REAL FLIGHT REVENUE
        ============================ */
-   
-   // LIVE = último vuelo (NO acumulado)
+
+    // LIVE = último vuelo (NO acumulado)
     f.live_route_income = value;
 
-   // WEEKLY = acumulado semanal (SE QUEDA)
+    // WEEKLY = acumulado semanal (SE QUEDA)
     f.weekly_route_income += value;
 
     localStorage.setItem("ACS_Finance", JSON.stringify(f));
 
     console.log(
-      "%c💰 ROUTE INCOME APPLIED",
+      "%c[FINANCE] ✅ INCOME APPLIED",
       "color:#00ff80;font-weight:bold;",
       {
         flightId: d.flightId,
-        amount: value,
+        added: value,
         liveToday: f.live_route_income,
         weekly: f.weekly_route_income
       }
