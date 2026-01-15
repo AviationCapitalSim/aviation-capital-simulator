@@ -723,10 +723,6 @@ if (!window.__ACS_FINANCE_UI_INIT__) {
 
 /* ============================================================
    📥 READ FINANCE SNAPSHOT (CANONICAL)
-   ------------------------------------------------------------
-   • ÚNICA lectura de ACS_Finance
-   • Tiempo real
-   • Sin lógica fantasma
    ============================================================ */
 
 let f = {};
@@ -740,8 +736,8 @@ try {
    ✈️ LIVE & WEEKLY FLIGHT INCOME
    ============================================================ */
 
-let liveIncome   = Number(f?.income?.live_flight || 0);
-let weeklyIncome = Number(f?.income?.route_weekly || 0);
+liveIncome   = Number(f?.income?.live_flight || 0);
+weeklyIncome = Number(f?.income?.route_weekly || 0);
 
 /* ============================================================
    📊 BUILD VIEW (UI — CANONICAL)
