@@ -155,3 +155,76 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", function (ev) {
     console.error("❌ ACS_FLIGHT_ECONOMICS ERROR", err);
   }
 });
+
+/* ============================================================
+   🟧 A3 — ECON → ARRIVAL STORAGE LISTENER (CROSS-TAB)
+   ------------------------------------------------------------
+   • Escucha arrivals vía localStorage (SkyTrack → Finance)
+   • Convierte arrival en evento ECON local
+   • NO suma dinero aquí
+   • SOLO emite ACS_FLIGHT_ECONOMICS
+   ============================================================ */
+
+(function ACS_ECON_StorageArrivalListener(){
+
+  const ARRIVAL_KEYS = [
+    "ACS__FLIGHT_ARRIVED_BRIDGE_V1",
+    "ACS__ARRIVAL_BRIDGE_V1"
+  ];
+
+  function safeNum(v, fb = 0){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fb;
+  }
+
+  function normalizeArrival(raw){
+    if (!raw) return null;
+
+    return {
+      flightId: raw.flightId || raw.id || null,
+      aircraftId: raw.aircraftId || raw.acId || null,
+      origin: raw.origin || raw.from || null,
+      destination: raw.destination || raw.to || null,
+      distanceNM: safeNum(raw.distanceNM ?? raw.distance ?? raw.distNM, 0),
+      pax: safeNum(raw.pax, null),
+      revenue: safeNum(raw.revenue, null),
+      ts: Date.now()
+    };
+  }
+
+  window.addEventListener("storage", (e) => {
+    if (!e || !ARRIVAL_KEYS.includes(e.key) || !e.newValue) return;
+
+    let raw;
+    try {
+      raw = JSON.parse(e.newValue);
+    } catch {
+      return;
+    }
+
+    const arrival = normalizeArrival(raw);
+    if (
+      !arrival ||
+      !arrival.flightId ||
+      !arrival.aircraftId ||
+      !arrival.origin ||
+      !arrival.destination
+    ) return;
+
+    console.log(
+      "%c📡 ECON STORAGE ARRIVAL → EVENT",
+      "color:#00ff80;font-weight:bold;",
+      arrival
+    );
+
+    // 👉 EVENTO ECONÓMICO LOCAL (UI / STATS)
+    window.dispatchEvent(
+      new CustomEvent("ACS_FLIGHT_ECONOMICS", {
+        detail: arrival
+      })
+    );
+  });
+
+  console.log("🟧 [ECON] Storage Arrival Listener armed");
+
+})();
