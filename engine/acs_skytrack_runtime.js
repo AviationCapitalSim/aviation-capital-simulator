@@ -372,7 +372,7 @@ snapshot.push({
 
 (function(){
 
-  if (!arrivalData) return; // usa TU objeto real de arrival
+  if (typeof arrivalData === "undefined" || !arrivalData) return;
 
   const payload = {
     flightId: arrivalData.flightId,
