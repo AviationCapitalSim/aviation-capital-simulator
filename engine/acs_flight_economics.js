@@ -175,22 +175,31 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL_DEBUG", (ev) => {
     if (revenue <= 0) return;
 
     /* ============================
-       💰 FINANCE (ÚNICO ENTRY)
-       ============================ */
-    if (typeof window.ACS_registerIncome === "function") {
-      ACS_registerIncome(
-        "routes",
-        {
-          amount: revenue,
-          pax,
-          distanceNM: f.distanceNM,
-          aircraftId: ac.id,
-          origin: f.origin,
-          destination: f.destination
-        },
-        `AUTO FLIGHT ${f.origin} → ${f.destination}`
-      );
-    }
+   💰 FINANCE (ÚNICO ENTRY)
+   ============================ */
+if (typeof window.ACS_registerIncome === "function") {
+
+  const amount = Number(revenue) || 0;
+
+  if (amount > 0) {
+    ACS_registerIncome(
+      "routes",
+      amount,
+      `AUTO FLIGHT ${f.origin} → ${f.destination}`
+    );
+
+    console.log(
+      "%c💰 ROUTE INCOME COMMITTED (AUTO FLIGHT)",
+      "color:#00ff80;font-weight:bold;",
+      {
+        flightId: f.id,
+        origin: f.origin,
+        destination: f.destination,
+        amount
+      }
+    );
+  }
+}
 
     /* ============================
        🟦 ECON → FINANCE EVENT EMITTER
