@@ -681,6 +681,10 @@ function ACS_registerIncome(incomeType, payload, source) {
     f.revenue += value;
     f.profit = f.revenue - f.expenses;
 
+     // 🔥 SYNC UI KEYS (ESTO FALTABA)
+    f.income.live_flight += value;
+    f.income.route_weekly += value;
+     
     console.log(
       "%c💵 LIVE FINANCE COMMIT (FLIGHT)",
       "color:#00ff80;font-weight:bold;",
