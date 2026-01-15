@@ -363,6 +363,49 @@ snapshot.push({
 }
 
 /* ============================================================
+   🟦 A3 — SKYTRACK → STORAGE ARRIVAL BRIDGE (CANONICAL)
+   ------------------------------------------------------------
+   • Emite llegada REAL cross-page
+   • Usa el objeto REAL de arrival de SkyTrack
+   • NO usa window events
+   • Finance consume vía storage listener
+   ============================================================ */
+
+(function emitArrivalToStorage(arrival) {
+
+  if (!arrival || !arrival.aircraftId || !arrival.origin || !arrival.destination) {
+    return;
+  }
+
+  const payload = {
+    flightId: arrival.flightId || null,
+    aircraftId: arrival.aircraftId,
+    origin: arrival.origin,
+    destination: arrival.destination,
+    distanceNM: Number(arrival.distanceNM || 0),
+    depAbsMin: Number(arrival.depAbsMin || 0),
+    ts: Date.now()
+  };
+
+  try {
+    localStorage.setItem(
+      "ACS_EVENT_ARRIVAL",
+      JSON.stringify(payload)
+    );
+
+    console.log(
+      "%c📦 [SKYTRACK → STORAGE] ARRIVAL EMITTED",
+      "color:#00ccff;font-weight:bold;",
+      payload
+    );
+
+  } catch (e) {
+    console.error("❌ STORAGE ARRIVAL EMIT FAILED", e);
+  }
+
+})(arrival);
+
+/* ============================================================
    🟧 A1 — SKYTRACK → STORAGE BUS (ARRIVAL)
    ------------------------------------------------------------
    • Emite llegada REAL cross-page
