@@ -763,52 +763,51 @@ if (!window.__ACS_FINANCE_UI_INIT__) {
     if (liveIncome && week < currentWeek) break;
   }
 
-  /* ============================================================
-     📊 BUILD VIEW (UI ONLY)
-     ============================================================ */
-  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+ /* ============================================================
+   📊 BUILD VIEW (UI ONLY — READ FROM FINANCE)
+   ============================================================ */
+const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-  const categories = [
-    {
-      label: "Live Route Revenue (Income)",
-      value: Number(liveIncome) || 0
-    },
-    {
-      label: "Weekly Route Revenue (Income)",
-      value: Number(weeklyIncome) || 0
-    }
-  ];
-
-  if (f.cost && typeof f.cost === "object") {
-    Object.keys(f.cost).forEach(k => {
-      categories.push({
-        label: `${k} (Cost)`,
-        value: Number(f.cost[k]) || 0
-      });
-    });
+const categories = [
+  {
+    label: "Live Route Revenue (Income)",
+    value: Number(f?.income?.routes) || 0
+  },
+  {
+    label: "Weekly Route Revenue (Income)",
+    value: Number(f?.income?.route_weekly) || 0
   }
+];
 
-  const max = Math.max(...categories.map(c => c.value), 1);
-
-  categories.forEach(cat => {
-
-    const pct = (cat.value / max) * 100;
-
-    const wrapper = document.createElement("div");
-    wrapper.className = "finance-meter";
-
-    wrapper.innerHTML = `
-      <div class="finance-meter-title">
-        ${cat.label} — $${cat.value.toLocaleString()}
-      </div>
-      <div class="finance-meter-bar">
-        <div class="finance-meter-fill" style="width:${pct}%;"></div>
-      </div>
-    `;
-
-    grid.appendChild(wrapper);
+if (f.cost && typeof f.cost === "object") {
+  Object.keys(f.cost).forEach(k => {
+    categories.push({
+      label: `${k} (Cost)`,
+      value: Number(f.cost[k]) || 0
+    });
   });
 }
+
+const max = Math.max(...categories.map(c => c.value), 1);
+
+categories.forEach(cat => {
+
+  const pct = (cat.value / max) * 100;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "finance-meter";
+
+  wrapper.innerHTML = `
+    <div class="finance-meter-title">
+      ${cat.label} — $${cat.value.toLocaleString()}
+    </div>
+    <div class="finance-meter-bar">
+      <div class="finance-meter-fill" style="width:${pct}%;"></div>
+    </div>
+  `;
+
+  grid.appendChild(wrapper);
+});
 
 /* ============================================================
    🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE — REALTIME FIX
