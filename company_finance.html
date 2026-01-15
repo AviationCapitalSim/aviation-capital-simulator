@@ -721,9 +721,14 @@ if (!window.__ACS_FINANCE_UI_INIT__) {
 
   const currentWeek = getISOWeek(now);
 
-  /* ============================================================
-   📥 READ REAL TRANSACTIONS (ACS_Finance)   ✅ FIX
+/* ============================================================
+   📥 READ FINANCE SNAPSHOT (CANONICAL)
+   ------------------------------------------------------------
+   • ÚNICA lectura de ACS_Finance
+   • Tiempo real
+   • Sin lógica fantasma
    ============================================================ */
+
 let f = {};
 try {
   f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
@@ -732,10 +737,11 @@ try {
 }
 
 /* ============================================================
-   ✈️ CALCULATE LIVE & WEEKLY FLIGHT INCOME
+   ✈️ LIVE & WEEKLY FLIGHT INCOME
    ============================================================ */
-liveIncome   = Number(f?.income?.live_flight || 0);
-weeklyIncome = Number(f?.income?.route_weekly || 0);
+
+let liveIncome   = Number(f?.income?.live_flight || 0);
+let weeklyIncome = Number(f?.income?.route_weekly || 0);
 
 /* ============================================================
    📊 BUILD VIEW (UI — CANONICAL)
@@ -744,11 +750,11 @@ weeklyIncome = Number(f?.income?.route_weekly || 0);
 const categories = [
   {
     label: "Live Route Revenue (Income)",
-    value: Number(f?.income?.routes || 0)
+    value: liveIncome
   },
   {
     label: "Weekly Route Revenue (Income)",
-    value: Number(f?.income?.route_weekly || 0)
+    value: weeklyIncome
   }
 ];
 
