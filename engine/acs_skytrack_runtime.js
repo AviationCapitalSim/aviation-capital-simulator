@@ -299,7 +299,7 @@ if (
      ============================================================ */
 
   window.dispatchEvent(
-    new CustomEvent("ACS_FLIGHT_ARRIVED", { detail: arrivalPayload })
+    new CustomEvent("ACS_FLIGHT_ARRIVAL", { detail: arrivalPayload })
   );
 
   console.log(
