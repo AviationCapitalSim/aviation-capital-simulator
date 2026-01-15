@@ -674,28 +674,39 @@ function ACS_registerIncome(incomeType, payload, source) {
     (typeof source === "string" &&
       (source.includes("FLIGHT") || source.includes("AUTO FLIGHT")));
 
-  if (isFlightIncome) {
+ if (isFlightIncome) {
 
-    // 🔥 COMMIT INMEDIATO (LIVE)
-    f.capital += value;
-    f.revenue += value;
-    f.profit = f.revenue - f.expenses;
+  // 🔒 PROTECCIÓN ABSOLUTA DE ESTRUCTURA
+  f.income = f.income || {};
 
-     // 🔥 SYNC UI KEYS (ESTO FALTABA)
-    f.income.live_flight += value;
-    f.income.route_weekly += value;
-     
-    console.log(
-      "%c💵 LIVE FINANCE COMMIT (FLIGHT)",
-      "color:#00ff80;font-weight:bold;",
-      {
-        amount: value,
-        capital: f.capital,
-        revenue: f.revenue,
-        profit: f.profit
-      }
-    );
+  if (typeof f.income.live_flight !== "number") {
+    f.income.live_flight = 0;
   }
+
+  if (typeof f.income.route_weekly !== "number") {
+    f.income.route_weekly = 0;
+  }
+
+  // 🔥 COMMIT INMEDIATO (LIVE)
+  f.capital += value;
+  f.revenue += value;
+  f.profit = f.revenue - f.expenses;
+
+  // 🔥 TRACKING SEGURO
+  f.income.live_flight += value;
+  f.income.route_weekly += value;
+
+  console.log(
+    "%c💵 LIVE FINANCE COMMIT (FLIGHT)",
+    "color:#00ff80;font-weight:bold;",
+    {
+      amount: value,
+      capital: f.capital,
+      revenue: f.revenue,
+      profit: f.profit
+    }
+  );
+}
 
   // 💰 APPLY (CANONICAL STORAGE)
   f.income[incomeType] += value;
