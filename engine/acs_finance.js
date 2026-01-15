@@ -660,43 +660,11 @@ function ACS_registerIncome(incomeType, payload, source) {
 
   const beforeCapital = f.capital;
 
-  /* ============================================================
-     🟧 B1 — ECONOMICS → LIVE FINANCE COMMIT (OPTION B)
-     ------------------------------------------------------------
-     • Aplica ingresos de vuelos en TIEMPO REAL
-     • Se ejecuta SOLO desde ACS_registerIncome
-     • Impacta Capital / Revenue / Profit inmediatamente
-     • No depende de SkyTrack ni de ARRIVAL
-     ============================================================ */
-
- /* ============================================================
-   🟧 F-3 — LIVE FLIGHT INCOME COMMIT (CANONICAL)
-   ============================================================ */
-
-if (incomeType === "routes") {
-
-  f.income = f.income || {};
-
-  f.income.live_flight   = Number(f.income.live_flight || 0) + value;
-  f.income.route_weekly  = Number(f.income.route_weekly || 0) + value;
-
-  f.capital += value;
-  f.revenue += value;
-  f.profit = f.revenue - f.expenses;
-
-  console.log(
-    "%c💰 FINANCE LIVE FLIGHT COMMIT",
-    "color:#00ff80;font-weight:bold;",
-    {
-      source,
-      value,
-      capital: f.capital
-    }
-  );
-}
-
-  // 💰 APPLY (CANONICAL STORAGE)
+  // 💰 APPLY
   f.income[incomeType] += value;
+  f.revenue += value;
+  f.capital += value;
+  f.profit = f.revenue - f.expenses;
 
   saveFinance(f);
 
@@ -714,12 +682,9 @@ if (incomeType === "routes") {
       type: incomeType,
       amount: value,
       capital: `${beforeCapital} → ${f.capital}`
-    }  
+    }
   );
 }
-
-// 🔄 FORCE FINANCE UI REFRESH
-   window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
 /* ============================================================
    === BANKRUPTCY ENGINE — v1.0 ================================
@@ -1438,7 +1403,7 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 
 (function(){
 
-  window.addEventListener("ACS_FLIGHT_ARRIVAL", e => {
+  window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
     if (!e.detail) return;
 
     console.log(
