@@ -627,48 +627,104 @@ function ACS_registerExpense(costType, amount, source) {
 }
 
 /* ============================================================
-   ✈️💰 ACS FINANCE — LIVE INCOME BRIDGE (CANONICAL)
+   🟧 A3 — ACS_registerIncome (CANONICAL)
    ------------------------------------------------------------
    • Punto ÚNICO de entrada de ingresos
-   • Recibe ingresos desde Flight Economics
-   • Rutea ingresos leg-by-leg (Live Flight)
-   • Registra LOG financiero
-   • DEBUG activo (temporal)
+   • Fuente de verdad para:
+       - income.routes
+       - income.live_flight
+       - income.route_weekly
+   • Actualiza capital, revenue y profit
+   • Maneja reset diario y semanal INTERNAMENTE
    ============================================================ */
 
-function ACS_registerIncome(incomeType, payload, source) {
+function ACS_registerIncome(incomeType, amount, source) {
 
-  let value = 0;
-
-  // ✅ SOPORTE FLEXIBLE
-  if (typeof payload === "number") {
-    value = payload;
-  } else if (payload && typeof payload === "object") {
-    value = Number(payload.amount || payload.income || payload.revenue || 0);
-  }
-
+  const value = Number(amount) || 0;
   if (value <= 0) {
-    console.warn("[FINANCE] ❌ Invalid income payload:", payload);
+    console.warn("[FINANCE] ❌ Invalid income value:", amount);
     return;
   }
 
-  const f = loadFinance();
+  let f = loadFinance();
   if (!f || !f.income || f.income[incomeType] === undefined) {
     console.warn("[FINANCE] ❌ Invalid income type:", incomeType);
     return;
   }
 
+  /* ============================
+     🕒 TIME CONTEXT
+     ============================ */
+  const now =
+    window.ACS_CurrentSimDate instanceof Date
+      ? window.ACS_CurrentSimDate
+      : (window.ACS_TIME?.currentTime instanceof Date
+          ? window.ACS_TIME.currentTime
+          : new Date());
+
+  const todayKey = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  const getISOWeek = (d) => {
+    const date = new Date(Date.UTC(
+      d.getUTCFullYear(),
+      d.getUTCMonth(),
+      d.getUTCDate()
+    ));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  };
+
+  const weekKey = getISOWeek(now);
+
+  /* ============================
+     🔒 ENSURE BUCKETS
+     ============================ */
+  f.income.live_flight  = Number(f.income.live_flight  || 0);
+  f.income.route_weekly = Number(f.income.route_weekly || 0);
+
+  f._lastLiveDay    = f._lastLiveDay    || null;
+  f._lastWeeklyWeek = f._lastWeeklyWeek || null;
+
+  /* ============================
+     🔄 RESET DAILY (LIVE)
+     ============================ */
+  if (f._lastLiveDay !== todayKey) {
+    f.income.live_flight = 0;
+    f._lastLiveDay = todayKey;
+  }
+
+  /* ============================
+     🔄 RESET WEEKLY
+     ============================ */
+  if (f._lastWeeklyWeek !== weekKey) {
+    f.income.route_weekly = 0;
+    f._lastWeeklyWeek = weekKey;
+  }
+
+  /* ============================
+     💰 APPLY INCOME
+     ============================ */
   const beforeCapital = f.capital;
 
-  // 💰 APPLY
+  // Monthly bucket
   f.income[incomeType] += value;
+
+  // Live / Weekly
+  f.income.live_flight  = value;
+  f.income.route_weekly += value;
+
+  // Global totals
   f.revenue += value;
   f.capital += value;
-  f.profit = f.revenue - f.expenses;
+  f.profit   = f.revenue - f.expenses;
 
   saveFinance(f);
 
-  // 🧾 LOG
+  /* ============================
+     🧾 LOG (visibility only)
+     ============================ */
   ACS_logTransaction({
     type: "INCOME",
     source: source || incomeType,
@@ -676,11 +732,13 @@ function ACS_registerIncome(incomeType, payload, source) {
   });
 
   console.log(
-    `%c💰 [FINANCE] INCOME APPLIED`,
+    "%c💰 [FINANCE] INCOME APPLIED (CANONICAL)",
     "color:#00ff80;font-weight:bold;",
     {
       type: incomeType,
       amount: value,
+      live: f.income.live_flight,
+      weekly: f.income.route_weekly,
       capital: `${beforeCapital} → ${f.capital}`
     }
   );
