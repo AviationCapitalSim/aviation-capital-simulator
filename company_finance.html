@@ -814,7 +814,15 @@ categories.forEach(cat => {
 
 }  // 👈 ESTE CIERRE FALTABA (función / if / DOMContentLoaded)
 
-
+/* ============================================================
+   🔄 FINANCE → UI LIVE REFRESH (CANONICAL)
+   ============================================================ */
+     
+window.addEventListener("ACS_FINANCE_UPDATED", () => {
+  console.log("🔄 Finance UI refreshed (event)");
+  loadBreakdown();
+});
+     
 /* ============================================================
    🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE — REALTIME FIX
    ------------------------------------------------------------
