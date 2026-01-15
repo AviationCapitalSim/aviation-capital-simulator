@@ -152,18 +152,12 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
     /* ============================
        💰 FINANCE (ÚNICO ENTRY)
        ============================ */
+     
     if (typeof window.ACS_registerIncome === "function") {
       ACS_registerIncome(
-        "routes",
-        {
-          amount: revenue,
-          pax,
-          distanceNM: f.distanceNM,
-          aircraftId: ac.id,
-          origin: f.origin,
-          destination: f.destination
-        },
-        `AUTO FLIGHT ${f.origin} → ${f.destination}`
+     "routes",
+      revenue,
+     `AUTO FLIGHT ${f.origin} → ${f.destination}`
       );
     }
 
