@@ -669,41 +669,28 @@ function ACS_registerIncome(incomeType, payload, source) {
      • No depende de SkyTrack ni de ARRIVAL
      ============================================================ */
 
-  const isFlightIncome =
-    incomeType === "routes" ||
-    (typeof source === "string" &&
-      (source.includes("FLIGHT") || source.includes("AUTO FLIGHT")));
+ /* ============================================================
+   🟧 F-3 — LIVE FLIGHT INCOME COMMIT (CANONICAL)
+   ============================================================ */
 
- if (isFlightIncome) {
+if (incomeType === "routes") {
 
-  // 🔒 PROTECCIÓN ABSOLUTA DE ESTRUCTURA
   f.income = f.income || {};
 
-  if (typeof f.income.live_flight !== "number") {
-    f.income.live_flight = 0;
-  }
+  f.income.live_flight   = Number(f.income.live_flight || 0) + value;
+  f.income.route_weekly  = Number(f.income.route_weekly || 0) + value;
 
-  if (typeof f.income.route_weekly !== "number") {
-    f.income.route_weekly = 0;
-  }
-
-  // 🔥 COMMIT INMEDIATO (LIVE)
   f.capital += value;
   f.revenue += value;
   f.profit = f.revenue - f.expenses;
 
-  // 🔥 TRACKING SEGURO
-  f.income.live_flight += value;
-  f.income.route_weekly += value;
-
   console.log(
-    "%c💵 LIVE FINANCE COMMIT (FLIGHT)",
+    "%c💰 FINANCE LIVE FLIGHT COMMIT",
     "color:#00ff80;font-weight:bold;",
     {
-      amount: value,
-      capital: f.capital,
-      revenue: f.revenue,
-      profit: f.profit
+      source,
+      value,
+      capital: f.capital
     }
   );
 }
