@@ -809,22 +809,40 @@ function loadBreakdown() {
 }
 
 /* ============================================================
-   🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE
+   🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE — REALTIME FIX
    ------------------------------------------------------------
-   • Refresca Live & Weekly income en tiempo real
-   • Se dispara SOLO con eventos reales
-   • No usa polling
-   • No toca ACS_Finance
+   • Actualiza Live Route Revenue INMEDIATAMENTE al aterrizar
+   • Usa payload real del evento ACS_FLIGHT_ECONOMICS
+   • No espera a ACS_Log ni a storage
+   • UI ONLY — NO escribe en Finance
    ============================================================ */
 
 (function ACS_bindLiveBreakdownEvents(){
 
-  // 🟢 Cuando un vuelo aterriza (SkyTrack / Flight Exec)
-  window.addEventListener("ACS_FLIGHT_ECONOMICS", () => {
-    loadBreakdown();
+  // 🟢 CACHE LIVE VALUE (session only)
+  window.__ACS_LIVE_ROUTE_REVENUE__ = 0;
+
+  // ✈️ Evento REAL emitido por Flight Economics
+  window.addEventListener("ACS_FLIGHT_ECONOMICS", (e) => {
+
+    try {
+      const amount = Number(e?.detail?.amount);
+
+      if (Number.isFinite(amount) && amount > 0) {
+        // actualizar LIVE inmediatamente
+        window.__ACS_LIVE_ROUTE_REVENUE__ = amount;
+
+        // refrescar UI sin esperar storage
+        loadBreakdown();
+      }
+
+    } catch (err) {
+      console.warn("⚠️ Live revenue event parse error", err);
+    }
+
   });
 
-  // 🟢 Cuando Finance registra un ingreso real
+  // 🟢 Fallback: si ACS_Log cambia (otra pestaña / reload)
   window.addEventListener("storage", (e) => {
     if (e.key === "ACS_Log") {
       loadBreakdown();
