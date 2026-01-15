@@ -1403,7 +1403,7 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 
 (function(){
 
-  window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
+  window.addEventListener("ACS_FLIGHT_ARRIVAL", e => {
     if (!e.detail) return;
 
     console.log(
