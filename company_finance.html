@@ -667,95 +667,35 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 });
      
 /* ============================================================
-   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY)
+   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY) — v2.0
    ------------------------------------------------------------
-   • Live Route Income   → último ingreso real
-   • Weekly Route Income → suma semana simulada
-   • Fuente REAL: ACS_Finance.history
-   • NO altera ACS_Finance
+   • Live Route Income   → ACS_Finance.income.live_flight
+   • Weekly Route Income → ACS_Finance.income.route_weekly
+   • Fuente REAL: Finance v2.0
+   • SOLO LECTURA (UI)
    ============================================================ */
 
 function loadBreakdown() {
+
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const grid = document.getElementById("breakdownGrid");
-  if (!f || !grid || !Array.isArray(f.history) || !f.cost) return;
+  if (!f || !grid || !f.income || !f.cost) return;
 
   grid.innerHTML = "";
 
-  /* ============================================================
-     🧠 UI COLD START (ONE SHOT)
-     ============================================================ */
-  if (!window.__ACS_FINANCE_UI_INIT__) {
-    window.__ACS_FINANCE_UI_INIT__ = {
-      startedAt:
-        window.ACS_TIME?.currentTime instanceof Date
-          ? new Date(window.ACS_TIME.currentTime)
-          : new Date(),
-      initialized: true
-    };
+  const liveIncome   = Number(f.income.live_flight   || 0);
+  const weeklyIncome = Number(f.income.route_weekly || 0);
 
-    console.log("🟦 Finance UI Cold Start initialized");
-  }
-
-  const SESSION_START = window.__ACS_FINANCE_UI_INIT__.startedAt;
-
-  let liveIncome = 0;
-  let weeklyIncome = 0;
-
-  try {
-    const now =
-      window.ACS_TIME?.currentTime instanceof Date
-        ? window.ACS_TIME.currentTime
-        : new Date();
-
-    const getISOWeek = (d) => {
-      const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-      const dayNum = date.getUTCDay() || 7;
-      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-    };
-
-    const currentWeek = getISOWeek(now);
-
-    for (let i = f.history.length - 1; i >= 0; i--) {
-      const e = f.history[i];
-      if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
-
-      const ts = new Date(e.createdAt || e.timestamp || Date.now());
-      if (ts < SESSION_START) continue;
-
-      const week = getISOWeek(ts);
-
-      // 🟢 último ingreso real
-      if (!liveIncome) {
-        liveIncome = Number(e.amount);
-      }
-
-      // 🟦 suma semanal real
-      if (week === currentWeek) {
-        weeklyIncome += Number(e.amount);
-      }
-
-      if (liveIncome && week < currentWeek) break;
-    }
-  } catch (e) {
-    console.warn("⚠️ Breakdown history parse error:", e);
-  }
-
-  /* ============================================================
-     📊 BUILD VIEW (NO LOGIC)
-     ============================================================ */
   const categories = [];
 
   categories.push({
     label: "Live Route Revenue (Income)",
-    value: Number(liveIncome) || 0
+    value: liveIncome
   });
 
   categories.push({
     label: "Weekly Route Revenue (Income)",
-    value: Number(weeklyIncome) || 0
+    value: weeklyIncome
   });
 
   Object.keys(f.cost).forEach(k => {
@@ -786,31 +726,35 @@ function loadBreakdown() {
   });
 }
 
+
 /* ============================================================
-   🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE
+   🟦 F-UI-3 — FINANCE UI REAL-TIME REFRESH (v2.0)
    ------------------------------------------------------------
-   • Refresca Live & Weekly income en tiempo real
-   • Se dispara SOLO con eventos reales
-   • No usa polling
-   • No toca ACS_Finance
+   • Refresca UI SOLO desde fuentes reales
+   • Evento económico → refresco inmediato
+   • Cambio en ACS_Finance → refresco inmediato
+   • NO polling
    ============================================================ */
 
-(function ACS_bindLiveBreakdownEvents(){
+(function ACS_bindFinanceUIRealtime(){
 
-  // 🟢 Cuando un vuelo aterriza (SkyTrack / Flight Exec)
+  // 🟢 Vuelo económico real (desde Economics)
   window.addEventListener("ACS_FLIGHT_ECONOMICS", () => {
+    updateCompanyOverview();
     loadBreakdown();
   });
 
-  // 🟢 Cuando Finance registra un ingreso real
+  // 🟢 Cualquier cambio financiero real
   window.addEventListener("storage", (e) => {
-    if (e.key === "ACS_Log") {
+    if (e.key === "ACS_Finance") {
+      updateCompanyOverview();
       loadBreakdown();
+      loadHistory();
     }
   });
 
 })();
-     
+
 /* ============================================================
    === LEASING CARDS ===========================================
    ============================================================ */
@@ -909,8 +853,12 @@ function handleLogout(){
 }
      
 /* ============================================================
-   ✅ LIVE REFRESH (same-tab) — Finance/UI watcher
+   ⛔ DISABLED — LIVE REFRESH (same-tab)
+   ------------------------------------------------------------
+   • Reemplazado por eventos reales
    ============================================================ */
+
+/*
 (function ACS_liveFinanceUI(){
   let lastFinanceStr = null;
   let lastLogStr = null;
@@ -923,7 +871,6 @@ function handleLogout(){
       lastFinanceStr = fStr;
       lastLogStr = lStr;
 
-      // re-render everything safely
       updateCompanyOverview();
       loadHistory();
       loadBreakdown();
@@ -934,6 +881,8 @@ function handleLogout(){
     }
   }, 700);
 })();
+*/
+
      
 </script>
 
