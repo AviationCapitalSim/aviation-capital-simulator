@@ -201,3 +201,12 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
   }
 });
 
+// ============================================================
+// 🌐 EXPORT FLIGHT ECONOMICS ENGINE (GLOBAL)
+// ============================================================
+window.ACS_FLIGHT_ECONOMICS = ACS_FLIGHT_ECONOMICS;
+
+console.log(
+  "%c🌐 ACS_FLIGHT_ECONOMICS EXPOSED TO GLOBAL",
+  "color:#00ffcc;font-weight:bold;"
+);
