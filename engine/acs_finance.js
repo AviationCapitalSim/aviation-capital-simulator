@@ -745,6 +745,36 @@ function ACS_registerIncome(incomeType, amount, source) {
 }
 
 /* ============================================================
+   🟦 A1 — FINANCE → ROUTE ARRIVAL ECONOMICS HANDLER
+   ============================================================ */
+
+function ACS_handleRouteArrivalEconomics(arrival) {
+
+  if (!arrival || !arrival.flightId || !arrival.distanceNM) {
+    console.warn("[FINANCE] Invalid arrival payload", arrival);
+    return;
+  }
+
+  const revenue = ACS_FLIGHT_ECONOMICS.calculateRouteRevenue(arrival);
+
+  ACS_registerIncome({
+    type: "route_income",
+    source: "live_route",
+    flightId: arrival.flightId,
+    origin: arrival.origin,
+    destination: arrival.destination,
+    amount: revenue,
+    ts: arrival.ts || Date.now()
+  });
+
+  console.log(
+    "%c💰 [FINANCE] ROUTE INCOME REGISTERED",
+    "color:#00ff88;font-weight:bold;",
+    revenue
+  );
+}
+
+/* ============================================================
    === BANKRUPTCY ENGINE — v1.0 ================================
    ------------------------------------------------------------
    • Detecta capital < 0
@@ -1451,31 +1481,29 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 
 
 /* ============================================================
-   🟦 A3 — FINANCE ARRIVAL SAFETY BRIDGE
-   ------------------------------------------------------------
-   • Garantiza señal de aterrizaje SIEMPRE
-   • NO suma dinero
-   • NO toca capital
-   • Solo confirma flujo operativo
+   🟧 A2 — FINANCE → STORAGE ARRIVAL CONSUMER
    ============================================================ */
 
-(function(){
+window.addEventListener("storage", e => {
+  if (e.key !== "ACS_EVENT_ARRIVAL") return;
+  if (!e.newValue) return;
 
-  window.addEventListener("ACS_FLIGHT_ARRIVAL", e => {
-    if (!e.detail) return;
+  let payload;
+  try {
+    payload = JSON.parse(e.newValue);
+  } catch (err) {
+    console.error("[FINANCE] Invalid ARRIVAL payload", err);
+    return;
+  }
 
-    console.log(
-      "%c[FINANCE] ✈️ ARRIVAL SIGNAL RECEIVED (SAFETY)",
-      "color:#ffaa00;font-weight:bold;",
-      {
-        flightId: e.detail.flightId,
-        origin: e.detail.origin,
-        destination: e.detail.destination
-      }
-    );
-  });
+  console.log(
+    "%c📥 [FINANCE] ARRIVAL RECEIVED",
+    "color:#ffaa00;font-weight:bold;",
+    payload
+  );
 
-})();
+  ACS_handleRouteArrivalEconomics(payload);
+});
 
 /* ============================================================
    🟧 A2 — FINANCE ← STORAGE BUS (ARRIVAL)
