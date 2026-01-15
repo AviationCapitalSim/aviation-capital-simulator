@@ -322,18 +322,36 @@ body {
 </footer>
 
 <!-- ============================================================
-     CORE TIME ENGINE
+     CORE TIME ENGINE (SIEMPRE PRIMERO)
      ============================================================ -->
 <script src="time_engine.js"></script>
 
 <!-- ============================================================
-     WORLD CORE (DEBE IR ANTES DEL RUNTIME)
+     CORE FINANCE (DEBE EXISTIR ANTES DE ECONOMICS)
+     ============================================================ -->
+<script src="engine/acs_finance.js"></script>
+
+<!-- ============================================================
+     PASSENGER ENGINE (CRÍTICO PARA ECONOMICS)
+     ============================================================ -->
+<script src="engine/passenger_engine.js"></script>
+
+<!-- ============================================================
+     FLIGHT ECONOMICS (CALCULA Y REGISTRA INGRESOS)
+     ============================================================ -->
+<script src="engine/acs_flight_economics.js"></script>
+
+<!-- ============================================================
+     FLIGHT OBSERVER (SI DEPENDE DE ECON / FINANCE)
+     ============================================================ -->
+<script src="engine/acs_flight_observer.js"></script>
+
+<!-- ============================================================
+     WORLD CORE + AIRPORT DATABASES
+     (PUEDEN IR ANTES O DESPUÉS, NO AFECTAN ECONOMICS)
      ============================================================ -->
 <script src="engine/acs_world_engine.js?v=1.0"></script>
 
-<!-- ============================================================
-     AIRPORT DATABASE (CONTINENTS)
-     ============================================================ -->
 <script src="engine/airports/world_airports_na.js?v=1.0"></script>
 <script src="engine/airports/world_airports_sa.js?v=1.0"></script>
 <script src="engine/airports/world_airports_eu.js?v=1.0"></script>
@@ -343,15 +361,10 @@ body {
 <script src="engine/airports/world_airports_oc.js?v=1.0"></script>
 
 <!-- ============================================================
-     SKYTRACK RUNTIME (AL FINAL)
+     SKYTRACK RUNTIME (SIEMPRE AL FINAL)
      ============================================================ -->
 <script src="engine/acs_skytrack_runtime.js"></script>
 
-<script src="engine/acs_flight_observer.js"></script>
-
-<script src="engine/passenger_engine.js"></script>
-<script src="engine/acs_finance.js"></script>
-<script src="engine/acs_flight_economics.js"></script>
 
 
 <!-- ============================================================
