@@ -627,104 +627,48 @@ function ACS_registerExpense(costType, amount, source) {
 }
 
 /* ============================================================
-   🟧 A3 — ACS_registerIncome (CANONICAL)
+   ✈️💰 ACS FINANCE — LIVE INCOME BRIDGE (CANONICAL)
    ------------------------------------------------------------
    • Punto ÚNICO de entrada de ingresos
-   • Fuente de verdad para:
-       - income.routes
-       - income.live_flight
-       - income.route_weekly
-   • Actualiza capital, revenue y profit
-   • Maneja reset diario y semanal INTERNAMENTE
+   • Recibe ingresos desde Flight Economics
+   • Rutea ingresos leg-by-leg (Live Flight)
+   • Registra LOG financiero
+   • DEBUG activo (temporal)
    ============================================================ */
 
-function ACS_registerIncome(incomeType, amount, source) {
+function ACS_registerIncome(incomeType, payload, source) {
 
-  const value = Number(amount) || 0;
+  let value = 0;
+
+  // ✅ SOPORTE FLEXIBLE
+  if (typeof payload === "number") {
+    value = payload;
+  } else if (payload && typeof payload === "object") {
+    value = Number(payload.amount || payload.income || payload.revenue || 0);
+  }
+
   if (value <= 0) {
-    console.warn("[FINANCE] ❌ Invalid income value:", amount);
+    console.warn("[FINANCE] ❌ Invalid income payload:", payload);
     return;
   }
 
-  let f = loadFinance();
+  const f = loadFinance();
   if (!f || !f.income || f.income[incomeType] === undefined) {
     console.warn("[FINANCE] ❌ Invalid income type:", incomeType);
     return;
   }
 
-  /* ============================
-     🕒 TIME CONTEXT
-     ============================ */
-  const now =
-    window.ACS_CurrentSimDate instanceof Date
-      ? window.ACS_CurrentSimDate
-      : (window.ACS_TIME?.currentTime instanceof Date
-          ? window.ACS_TIME.currentTime
-          : new Date());
-
-  const todayKey = now.toISOString().slice(0, 10); // YYYY-MM-DD
-
-  const getISOWeek = (d) => {
-    const date = new Date(Date.UTC(
-      d.getUTCFullYear(),
-      d.getUTCMonth(),
-      d.getUTCDate()
-    ));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  };
-
-  const weekKey = getISOWeek(now);
-
-  /* ============================
-     🔒 ENSURE BUCKETS
-     ============================ */
-  f.income.live_flight  = Number(f.income.live_flight  || 0);
-  f.income.route_weekly = Number(f.income.route_weekly || 0);
-
-  f._lastLiveDay    = f._lastLiveDay    || null;
-  f._lastWeeklyWeek = f._lastWeeklyWeek || null;
-
-  /* ============================
-     🔄 RESET DAILY (LIVE)
-     ============================ */
-  if (f._lastLiveDay !== todayKey) {
-    f.income.live_flight = 0;
-    f._lastLiveDay = todayKey;
-  }
-
-  /* ============================
-     🔄 RESET WEEKLY
-     ============================ */
-  if (f._lastWeeklyWeek !== weekKey) {
-    f.income.route_weekly = 0;
-    f._lastWeeklyWeek = weekKey;
-  }
-
-  /* ============================
-     💰 APPLY INCOME
-     ============================ */
   const beforeCapital = f.capital;
 
-  // Monthly bucket
+  // 💰 APPLY
   f.income[incomeType] += value;
-
-  // Live / Weekly
-  f.income.live_flight  = value;
-  f.income.route_weekly += value;
-
-  // Global totals
   f.revenue += value;
   f.capital += value;
-  f.profit   = f.revenue - f.expenses;
+  f.profit = f.revenue - f.expenses;
 
   saveFinance(f);
 
-  /* ============================
-     🧾 LOG (visibility only)
-     ============================ */
+  // 🧾 LOG
   ACS_logTransaction({
     type: "INCOME",
     source: source || incomeType,
@@ -732,45 +676,13 @@ function ACS_registerIncome(incomeType, amount, source) {
   });
 
   console.log(
-    "%c💰 [FINANCE] INCOME APPLIED (CANONICAL)",
+    `%c💰 [FINANCE] INCOME APPLIED`,
     "color:#00ff80;font-weight:bold;",
     {
       type: incomeType,
       amount: value,
-      live: f.income.live_flight,
-      weekly: f.income.route_weekly,
       capital: `${beforeCapital} → ${f.capital}`
     }
-  );
-}
-
-/* ============================================================
-   🟦 A1 — FINANCE → ROUTE ARRIVAL ECONOMICS HANDLER
-   ============================================================ */
-
-function ACS_handleRouteArrivalEconomics(arrival) {
-
-  if (!arrival || !arrival.flightId || !arrival.distanceNM) {
-    console.warn("[FINANCE] Invalid arrival payload", arrival);
-    return;
-  }
-
-  const revenue = ACS_FLIGHT_ECONOMICS.calculateRouteRevenue(arrival);
-
-  ACS_registerIncome({
-    type: "route_income",
-    source: "live_route",
-    flightId: arrival.flightId,
-    origin: arrival.origin,
-    destination: arrival.destination,
-    amount: revenue,
-    ts: arrival.ts || Date.now()
-  });
-
-  console.log(
-    "%c💰 [FINANCE] ROUTE INCOME REGISTERED",
-    "color:#00ff88;font-weight:bold;",
-    revenue
   );
 }
 
@@ -1481,69 +1393,28 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 
 
 /* ============================================================
-   🟧 A2 — FINANCE → STORAGE ARRIVAL CONSUMER
-   ============================================================ */
-
-window.addEventListener("storage", e => {
-  if (e.key !== "ACS_EVENT_ARRIVAL") return;
-  if (!e.newValue) return;
-
-  let payload;
-  try {
-    payload = JSON.parse(e.newValue);
-  } catch (err) {
-    console.error("[FINANCE] Invalid ARRIVAL payload", err);
-    return;
-  }
-
-  console.log(
-    "%c📥 [FINANCE] ARRIVAL RECEIVED",
-    "color:#ffaa00;font-weight:bold;",
-    payload
-  );
-
-  ACS_handleRouteArrivalEconomics(payload);
-});
-
-/* ============================================================
-   🟧 A2 — FINANCE ← STORAGE BUS (ARRIVAL)
+   🟦 A3 — FINANCE ARRIVAL SAFETY BRIDGE
    ------------------------------------------------------------
-   • Recibe arrivals cross-page
-   • Llama a ACS_registerIncome (NUMÉRICO)
-   • No depende de eventos window
+   • Garantiza señal de aterrizaje SIEMPRE
+   • NO suma dinero
+   • NO toca capital
+   • Solo confirma flujo operativo
    ============================================================ */
 
 (function(){
 
-  console.log("🎧 [FINANCE] Storage ARRIVAL listener armed");
-
-  window.addEventListener("storage", (e) => {
-
-    if (e.key !== "ACS_EVENT_ARRIVAL" || !e.newValue) return;
-
-    let d;
-    try {
-      d = JSON.parse(e.newValue);
-    } catch {
-      return;
-    }
-
-    if (!d || !Number.isFinite(d.distanceNM)) return;
+  window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
+    if (!e.detail) return;
 
     console.log(
-      "%c📦 [FINANCE] ARRIVAL RECEIVED FROM STORAGE",
-      "color:#00ff80;font-weight:bold;",
-      d
+      "%c[FINANCE] ✈️ ARRIVAL SIGNAL RECEIVED (SAFETY)",
+      "color:#ffaa00;font-weight:bold;",
+      {
+        flightId: e.detail.flightId,
+        origin: e.detail.origin,
+        destination: e.detail.destination
+      }
     );
-
-    /* ======================================================
-       💰 ECON → FINANCE (NUMERIC ONLY)
-       ====================================================== */
-
-    // ⚠️ AÚN NO CALCULAMOS AQUÍ
-    // El cálculo sigue siendo en Flight Economics
-    // Aquí SOLO confirmamos que la señal llega
-
   });
 
 })();
