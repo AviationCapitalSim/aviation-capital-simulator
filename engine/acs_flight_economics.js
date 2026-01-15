@@ -1,7 +1,7 @@
 /* ============================================================
    ✈️ ACS FLIGHT ECONOMICS ENGINE — CORE v1.0 (STABLE)
    ------------------------------------------------------------
-   ✔ ÚNICO listener de vuelos (ACS_FLIGHT_ARRIVAL)
+   ✔ ÚNICO listener de vuelos (ACS_FLIGHT_ARRIVED)
    ✔ SkyTrack READ-ONLY
    ✔ Finance via ACS_registerIncome ONLY
    ✔ Passenger engine as source of pax (ACS_PAX)
@@ -59,7 +59,7 @@ window.ACS_getBaseTicket = window.ACS_getBaseTicket || function (distanceNM, yea
 /* ============================================================
    🟧 A1 — FLIGHT ECONOMICS LISTENER (CANONICAL)
    ------------------------------------------------------------
-   ✔ ÚNICO evento: ACS_FLIGHT_ARRIVAL
+   ✔ ÚNICO evento: ACS_FLIGHT_ARRIVED
    ✔ aircraftId REAL desde SkyTrack
    ✔ Dedup por aircraftId + depAbsMin
    ✔ Finance SOLO vía ACS_registerIncome
@@ -68,7 +68,7 @@ window.ACS_getBaseTicket = window.ACS_getBaseTicket || function (distanceNM, yea
 window.ACS_ECON_ProcessedFlights =
   window.ACS_ECON_ProcessedFlights || new Set();
 
-window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
+window.addEventListener("ACS_FLIGHT_ARRIVED", (ev) => {
   try {
 
     const d = ev?.detail;
@@ -152,12 +152,18 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
     /* ============================
        💰 FINANCE (ÚNICO ENTRY)
        ============================ */
-     
     if (typeof window.ACS_registerIncome === "function") {
       ACS_registerIncome(
-     "routes",
-      revenue,
-     `AUTO FLIGHT ${f.origin} → ${f.destination}`
+        "routes",
+        {
+          amount: revenue,
+          pax,
+          distanceNM: f.distanceNM,
+          aircraftId: ac.id,
+          origin: f.origin,
+          destination: f.destination
+        },
+        `AUTO FLIGHT ${f.origin} → ${f.destination}`
       );
     }
 
