@@ -174,19 +174,25 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL_DEBUG", (ev) => {
     const revenue = Math.round(pax * ticket);
     if (revenue <= 0) return;
 
-    /* ============================
+  /* ============================
    💰 FINANCE (ÚNICO ENTRY)
    ============================ */
-if (typeof window.ACS_registerIncome === "function") {
+if (
+  typeof window.ACS_registerIncome === "function" &&
+  !f.__FINANCE_COMMITTED__
+) {
 
   const amount = Number(revenue) || 0;
 
   if (amount > 0) {
+
     ACS_registerIncome(
       "routes",
       amount,
       `AUTO FLIGHT ${f.origin} → ${f.destination}`
     );
+
+    f.__FINANCE_COMMITTED__ = true; // 🔒 anti-duplicado real
 
     console.log(
       "%c💰 ROUTE INCOME COMMITTED (AUTO FLIGHT)",
@@ -200,7 +206,6 @@ if (typeof window.ACS_registerIncome === "function") {
     );
   }
 }
-
     /* ============================
        🟦 ECON → FINANCE EVENT EMITTER
        ============================ */
