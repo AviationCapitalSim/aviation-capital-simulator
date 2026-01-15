@@ -667,18 +667,18 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 });
      
 /* ============================================================
-   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY)
+   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY) — FIXED
    ------------------------------------------------------------
-   • Live Route Income   → último ingreso real
-   • Weekly Route Income → suma semana simulada
-   • Fuente REAL: ACS_Finance.history
-   • NO altera ACS_Finance
+   • Live Route Revenue   → último INCOME real de vuelo
+   • Weekly Route Revenue → suma semanal simulada (ACS_TIME)
+   • Fuente REAL: ACS_Log
+   • UI ONLY — NO escribe en ACS_Finance
    ============================================================ */
 
 function loadBreakdown() {
-  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
   const grid = document.getElementById("breakdownGrid");
-  if (!f || !grid || !Array.isArray(f.history) || !f.cost) return;
+  if (!grid) return;
 
   grid.innerHTML = "";
 
@@ -693,7 +693,6 @@ function loadBreakdown() {
           : new Date(),
       initialized: true
     };
-
     console.log("🟦 Finance UI Cold Start initialized");
   }
 
@@ -702,72 +701,95 @@ function loadBreakdown() {
   let liveIncome = 0;
   let weeklyIncome = 0;
 
+  /* ============================================================
+     🧮 TIME HELPERS (ISO WEEK)
+     ============================================================ */
+  const getISOWeek = (d) => {
+    const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  };
+
+  const now =
+    window.ACS_TIME?.currentTime instanceof Date
+      ? window.ACS_TIME.currentTime
+      : new Date();
+
+  const currentWeek = getISOWeek(now);
+
+  /* ============================================================
+     📥 READ REAL TRANSACTIONS (ACS_Log)
+     ============================================================ */
+  let log = [];
   try {
-    const now =
-      window.ACS_TIME?.currentTime instanceof Date
-        ? window.ACS_TIME.currentTime
-        : new Date();
-
-    const getISOWeek = (d) => {
-      const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-      const dayNum = date.getUTCDay() || 7;
-      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-    };
-
-    const currentWeek = getISOWeek(now);
-
-    for (let i = f.history.length - 1; i >= 0; i--) {
-      const e = f.history[i];
-      if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
-
-      const ts = new Date(e.createdAt || e.timestamp || Date.now());
-      if (ts < SESSION_START) continue;
-
-      const week = getISOWeek(ts);
-
-      // 🟢 último ingreso real
-      if (!liveIncome) {
-        liveIncome = Number(e.amount);
-      }
-
-      // 🟦 suma semanal real
-      if (week === currentWeek) {
-        weeklyIncome += Number(e.amount);
-      }
-
-      if (liveIncome && week < currentWeek) break;
-    }
-  } catch (e) {
-    console.warn("⚠️ Breakdown history parse error:", e);
+    log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+  } catch {
+    log = [];
   }
 
   /* ============================================================
-     📊 BUILD VIEW (NO LOGIC)
+     ✈️ CALCULATE LIVE & WEEKLY FLIGHT INCOME
      ============================================================ */
-  const categories = [];
+  for (let i = log.length - 1; i >= 0; i--) {
 
-  categories.push({
-    label: "Live Route Revenue (Income)",
-    value: Number(liveIncome) || 0
-  });
+    const e = log[i];
+    if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
 
-  categories.push({
-    label: "Weekly Route Revenue (Income)",
-    value: Number(weeklyIncome) || 0
-  });
+    // SOLO ingresos de vuelos
+    if (
+      typeof e.source !== "string" ||
+      !e.source.toUpperCase().includes("FLIGHT")
+    ) continue;
 
-  Object.keys(f.cost).forEach(k => {
-    categories.push({
-      label: `${k} (Cost)`,
-      value: Number(f.cost[k]) || 0
+    const ts = new Date(e.createdAt || e.timestamp || Date.now());
+    if (ts < SESSION_START) continue;
+
+    const week = getISOWeek(ts);
+
+    // 🟢 LIVE = último ingreso real
+    if (!liveIncome) {
+      liveIncome = Number(e.amount);
+    }
+
+    // 🟦 WEEKLY = suma semana simulada
+    if (week === currentWeek) {
+      weeklyIncome += Number(e.amount);
+    }
+
+    if (liveIncome && week < currentWeek) break;
+  }
+
+  /* ============================================================
+     📊 BUILD VIEW (UI ONLY)
+     ============================================================ */
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+  const categories = [
+    {
+      label: "Live Route Revenue (Income)",
+      value: Number(liveIncome) || 0
+    },
+    {
+      label: "Weekly Route Revenue (Income)",
+      value: Number(weeklyIncome) || 0
+    }
+  ];
+
+  if (f.cost && typeof f.cost === "object") {
+    Object.keys(f.cost).forEach(k => {
+      categories.push({
+        label: `${k} (Cost)`,
+        value: Number(f.cost[k]) || 0
+      });
     });
-  });
+  }
 
   const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
+
     const pct = (cat.value / max) * 100;
 
     const wrapper = document.createElement("div");
