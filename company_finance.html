@@ -682,19 +682,21 @@ function loadBreakdown() {
 
   grid.innerHTML = "";
 
-  /* ============================================================
-     🧠 UI COLD START (ONE SHOT)
-     ============================================================ */
-  if (!window.__ACS_FINANCE_UI_INIT__) {
-    window.__ACS_FINANCE_UI_INIT__ = {
-      startedAt:
-        window.ACS_TIME?.currentTime instanceof Date
-          ? new Date(window.ACS_TIME.currentTime)
-          : new Date(),
-      initialized: true
-    };
-    console.log("🟦 Finance UI Cold Start initialized");
-  }
+ /* ============================================================
+   🟦 UI SESSION START — REAL TIME (ANTI-GHOST FIX)
+   ------------------------------------------------------------
+   • Usa tiempo REAL del navegador
+   • Ignora ingresos antiguos (fantasmas)
+   • NO depende de ACS_TIME
+   ============================================================ */
+
+if (!window.__ACS_FINANCE_UI_INIT__) {
+  window.__ACS_FINANCE_UI_INIT__ = {
+    startedAt: new Date(), // ⬅️ CLAVE: TIEMPO REAL
+    initialized: true
+  };
+  console.log("🟢 Finance UI Session Start (REAL TIME)");
+}
 
   const SESSION_START = window.__ACS_FINANCE_UI_INIT__.startedAt;
 
