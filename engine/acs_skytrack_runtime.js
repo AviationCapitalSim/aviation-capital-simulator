@@ -371,7 +371,7 @@ snapshot.push({
    • Finance consume vía storage listener
    ============================================================ */
 
-(function emitArrivalToStorage(arrival) {
+function ACS_emitArrivalToStorage(arrival) {
 
   if (!arrival || !arrival.aircraftId || !arrival.origin || !arrival.destination) {
     return;
@@ -402,8 +402,8 @@ snapshot.push({
   } catch (e) {
     console.error("❌ STORAGE ARRIVAL EMIT FAILED", e);
   }
+}
 
-})(arrival);
 
 /* ============================================================
    📦 LOAD DATA (FLEET + SCHEDULE) — CANONICAL
