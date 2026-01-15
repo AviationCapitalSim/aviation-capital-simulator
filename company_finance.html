@@ -618,242 +618,191 @@ function loadHistory() {
   });
 }
 
+
 /* ============================================================
-   🟧 F-LOG-1 — TRANSACTION LOG (REPAIR DEFINITIVO)
-   ------------------------------------------------------------
-   • NO elimina vuelos del LOG
-   • Resume ingresos de vuelos en 1 sola línea
-   • Finance y Live/Weekly usan LOG completo
+   === TRANSACTION LOG WITH FILTERS ============================
    ============================================================ */
-
-function loadTransactionLog(filter = "all") {
-
+function loadTransactionLog(filter="all") {
   const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
   const body = document.getElementById("cf-log-body");
-  if (!body) return;
-
   body.innerHTML = "";
 
-  let flightTotal = 0;
+ log.slice().reverse().forEach(entry => {
 
-  // 1️⃣ Recorrer TODO el log (sin destruir nada)
-  log.slice().reverse().forEach(entry => {
+  if (filter !== "all" && entry.type !== filter) return;
 
-    if (!entry || entry.type !== "INCOME") return;
+  // ❌ OCULTAR INGRESOS DE VUELOS (NO UI)
+  if (
+    entry.type === "INCOME" &&
+    typeof entry.source === "string"
+  ) {
+    const src = entry.source.toUpperCase();
 
-    const src = String(entry.source || "").toUpperCase();
-
-    // ✈️ CLASIFICACIÓN DE VUELOS
-    const isFlight =
+    if (
       src.includes("FLIGHT") ||
       src.includes("AUTO FLIGHT") ||
       src.includes("BASE FLIGHT") ||
-      src.includes("FALLBACK");
-
-    // 👉 Acumular vuelos (NO mostrar individualmente)
-    if (isFlight) {
-      flightTotal += Number(entry.amount) || 0;
-      return;
+      src.includes("FALLBACK")
+    ) {
+      return; // ⛔ NO mostrar vuelos en Transaction Log
     }
+  }
 
-    // 🔎 Filtro UI normal (manual / otros)
-    if (filter !== "all" && entry.type !== filter) return;
-
-    // 🧾 Mostrar ingresos NO vuelo (manuales, etc.)
     body.innerHTML += `
-      <tr>
-        <td>${entry.type}</td>
-        <td>${entry.source}</td>
-        <td>$${Number(entry.amount || 0).toLocaleString()}</td>
-      </tr>
-    `;
+    <tr>
+      <td>${entry.type}</td>
+      <td>${entry.source}</td>
+      <td>$${entry.amount.toLocaleString()}</td>
+    </tr>`;
   });
 
-  // 2️⃣ INSERTAR RESUMEN ÚNICO DE VUELOS
-  if (flightTotal > 0 && (filter === "all" || filter === "INCOME")) {
-    body.innerHTML = `
-      <tr style="color:#7CFF9A; font-weight:600;">
-        <td>INCOME</td>
-        <td>✈️ Flight Revenue (auto)</td>
-        <td>$${flightTotal.toLocaleString()}</td>
-      </tr>
-    ` + body.innerHTML;
-  }
 }
 
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    loadTransactionLog(btn.dataset.filter);
+  };
+});
      
 /* ============================================================
-   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY) — FIXED
+   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY)
    ------------------------------------------------------------
-   • Live Route Revenue   → último INCOME real de vuelo
-   • Weekly Route Revenue → suma semanal simulada (ACS_TIME)
-   • Fuente REAL: ACS_Log
-   • UI ONLY — NO escribe en ACS_Finance
+   • Live Route Income   → último ingreso real
+   • Weekly Route Income → suma semana simulada
+   • Fuente REAL: ACS_Finance.history
+   • NO altera ACS_Finance
    ============================================================ */
 
 function loadBreakdown() {
-
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const grid = document.getElementById("breakdownGrid");
-  if (!grid) return;
+  if (!f || !grid || !Array.isArray(f.history) || !f.cost) return;
 
   grid.innerHTML = "";
 
-/* ============================================================
-   🟦 UI SESSION START — REAL TIME (ANTI-GHOST FIX)
-   ------------------------------------------------------------
-   • Usa tiempo REAL del navegador
-   • Ignora ingresos antiguos (fantasmas)
-   • NO depende de ACS_TIME
-   ============================================================ */
+  /* ============================================================
+     🧠 UI COLD START (ONE SHOT)
+     ============================================================ */
+  if (!window.__ACS_FINANCE_UI_INIT__) {
+    window.__ACS_FINANCE_UI_INIT__ = {
+      startedAt:
+        window.ACS_TIME?.currentTime instanceof Date
+          ? new Date(window.ACS_TIME.currentTime)
+          : new Date(),
+      initialized: true
+    };
 
-if (!window.__ACS_FINANCE_UI_INIT__) {
-  window.__ACS_FINANCE_UI_INIT__ = {
-    startedAt: new Date(), // ⬅️ CLAVE: TIEMPO REAL
-    initialized: true
-  };
-  console.log("🟢 Finance UI Session Start (REAL TIME)");
-}
+    console.log("🟦 Finance UI Cold Start initialized");
+  }
 
   const SESSION_START = window.__ACS_FINANCE_UI_INIT__.startedAt;
 
   let liveIncome = 0;
   let weeklyIncome = 0;
 
-  /* ============================================================
-     🧮 TIME HELPERS (ISO WEEK)
-     ============================================================ */
-  const getISOWeek = (d) => {
-    const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-    const dayNum = date.getUTCDay() || 7;
-    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-    return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  };
+  try {
+    const now =
+      window.ACS_TIME?.currentTime instanceof Date
+        ? window.ACS_TIME.currentTime
+        : new Date();
 
-  const now =
-    window.ACS_TIME?.currentTime instanceof Date
-      ? window.ACS_TIME.currentTime
-      : new Date();
+    const getISOWeek = (d) => {
+      const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      const dayNum = date.getUTCDay() || 7;
+      date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+      return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    };
 
-  const currentWeek = getISOWeek(now);
+    const currentWeek = getISOWeek(now);
 
-/* ============================================================
-   📥 READ FINANCE SNAPSHOT (CANONICAL)
-   ============================================================ */
+    for (let i = f.history.length - 1; i >= 0; i--) {
+      const e = f.history[i];
+      if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
 
-let f = {};
-try {
-  f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-} catch {
-  f = {};
-}
+      const ts = new Date(e.createdAt || e.timestamp || Date.now());
+      if (ts < SESSION_START) continue;
 
-/* ============================================================
-   ✈️ LIVE & WEEKLY FLIGHT INCOME
-   ============================================================ */
+      const week = getISOWeek(ts);
 
-liveIncome   = Number(f?.income?.live_flight || 0);
-weeklyIncome = Number(f?.income?.route_weekly || 0);
+      // 🟢 último ingreso real
+      if (!liveIncome) {
+        liveIncome = Number(e.amount);
+      }
 
-/* ============================================================
-   📊 BUILD VIEW (UI — CANONICAL)
-   ============================================================ */
+      // 🟦 suma semanal real
+      if (week === currentWeek) {
+        weeklyIncome += Number(e.amount);
+      }
 
-const categories = [
-  {
-    label: "Live Route Revenue (Income)",
-    value: liveIncome
-  },
-  {
-    label: "Weekly Route Revenue (Income)",
-    value: weeklyIncome
+      if (liveIncome && week < currentWeek) break;
+    }
+  } catch (e) {
+    console.warn("⚠️ Breakdown history parse error:", e);
   }
-];
 
-if (f.cost && typeof f.cost === "object") {
+  /* ============================================================
+     📊 BUILD VIEW (NO LOGIC)
+     ============================================================ */
+  const categories = [];
+
+  categories.push({
+    label: "Live Route Revenue (Income)",
+    value: Number(liveIncome) || 0
+  });
+
+  categories.push({
+    label: "Weekly Route Revenue (Income)",
+    value: Number(weeklyIncome) || 0
+  });
+
   Object.keys(f.cost).forEach(k => {
     categories.push({
       label: `${k} (Cost)`,
       value: Number(f.cost[k]) || 0
     });
   });
+
+  const max = Math.max(...categories.map(c => c.value), 1);
+
+  categories.forEach(cat => {
+    const pct = (cat.value / max) * 100;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "finance-meter";
+
+    wrapper.innerHTML = `
+      <div class="finance-meter-title">
+        ${cat.label} — $${cat.value.toLocaleString()}
+      </div>
+      <div class="finance-meter-bar">
+        <div class="finance-meter-fill" style="width:${pct}%;"></div>
+      </div>
+    `;
+
+    grid.appendChild(wrapper);
+  });
 }
 
-const max = Math.max(...categories.map(c => Math.abs(c.value)), 1);
-
-grid.innerHTML = ""; // 🔥 LIMPIEZA TOTAL DEL UI
-
-categories.forEach(cat => {
-
-  const pct = Math.min((Math.abs(cat.value) / max) * 100, 100);
-
-  const wrapper = document.createElement("div");
-  wrapper.className = "finance-meter";
-
-  wrapper.innerHTML = `
-    <div class="finance-meter-title">
-      ${cat.label} — $${cat.value.toLocaleString()}
-    </div>
-    <div class="finance-meter-bar">
-      <div class="finance-meter-fill" style="width:${pct}%;"></div>
-    </div>
-  `;
-
-  grid.appendChild(wrapper);
-});
-
-}  // 👈 ESTE CIERRE FALTABA (función / if / DOMContentLoaded)
-
 /* ============================================================
-   🔄 FINANCE → UI LIVE REFRESH (CANONICAL)
-   ============================================================ */
-     
-window.addEventListener("ACS_FINANCE_UPDATED", () => {
-  console.log("🔄 Finance UI refreshed (event)");
-  loadBreakdown();
-});
-
-/* ============================================================
-   🚀 INITIAL RENDER (CRÍTICO)
-   ============================================================ */
-
-loadBreakdown(); // ⬅️ ESTA LÍNEA ES LA SOLUCIÓN
-     
-/* ============================================================
-   🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE — REALTIME FIX
+   🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE
    ------------------------------------------------------------
-   • Actualiza Live Route Revenue INMEDIATAMENTE al aterrizar
-   • Usa payload real del evento ACS_FLIGHT_ECONOMICS
-   • No espera a ACS_Log ni a storage
-   • UI ONLY — NO escribe en Finance
+   • Refresca Live & Weekly income en tiempo real
+   • Se dispara SOLO con eventos reales
+   • No usa polling
+   • No toca ACS_Finance
    ============================================================ */
 
 (function ACS_bindLiveBreakdownEvents(){
 
-  // 🟢 CACHE LIVE VALUE (session only)
-  window.__ACS_LIVE_ROUTE_REVENUE__ = 0;
-
-  // ✈️ Evento REAL emitido por Flight Economics
-  window.addEventListener("ACS_FLIGHT_ECONOMICS", (e) => {
-
-    try {
-      const amount = Number(e?.detail?.amount);
-
-      if (Number.isFinite(amount) && amount > 0) {
-        // actualizar LIVE inmediatamente
-        window.__ACS_LIVE_ROUTE_REVENUE__ = amount;
-
-        // refrescar UI sin esperar storage
-        loadBreakdown();
-      }
-
-    } catch (err) {
-      console.warn("⚠️ Live revenue event parse error", err);
-    }
-
+  // 🟢 Cuando un vuelo aterriza (SkyTrack / Flight Exec)
+  window.addEventListener("ACS_FLIGHT_ECONOMICS", () => {
+    loadBreakdown();
   });
 
-  // 🟢 Fallback: si ACS_Log cambia (otra pestaña / reload)
+  // 🟢 Cuando Finance registra un ingreso real
   window.addEventListener("storage", (e) => {
     if (e.key === "ACS_Log") {
       loadBreakdown();
