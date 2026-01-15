@@ -1476,3 +1476,46 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
   });
 
 })();
+
+/* ============================================================
+   🟧 A2 — FINANCE ← STORAGE BUS (ARRIVAL)
+   ------------------------------------------------------------
+   • Recibe arrivals cross-page
+   • Llama a ACS_registerIncome (NUMÉRICO)
+   • No depende de eventos window
+   ============================================================ */
+
+(function(){
+
+  console.log("🎧 [FINANCE] Storage ARRIVAL listener armed");
+
+  window.addEventListener("storage", (e) => {
+
+    if (e.key !== "ACS_EVENT_ARRIVAL" || !e.newValue) return;
+
+    let d;
+    try {
+      d = JSON.parse(e.newValue);
+    } catch {
+      return;
+    }
+
+    if (!d || !Number.isFinite(d.distanceNM)) return;
+
+    console.log(
+      "%c📦 [FINANCE] ARRIVAL RECEIVED FROM STORAGE",
+      "color:#00ff80;font-weight:bold;",
+      d
+    );
+
+    /* ======================================================
+       💰 ECON → FINANCE (NUMERIC ONLY)
+       ====================================================== */
+
+    // ⚠️ AÚN NO CALCULAMOS AQUÍ
+    // El cálculo sigue siendo en Flight Economics
+    // Aquí SOLO confirmamos que la señal llega
+
+  });
+
+})();
