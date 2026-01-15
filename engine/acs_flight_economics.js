@@ -57,9 +57,34 @@ window.ACS_getBaseTicket = window.ACS_getBaseTicket || function (distanceNM, yea
 };
 
 /* ============================================================
+   🟧 A0 — CANONICAL ARRIVAL BRIDGE → ECONOMICS
+   ------------------------------------------------------------
+   • Escucha el evento REAL del sistema: ACS_FLIGHT_ARRIVAL
+   • Reinyecta el evento al pipeline económico existente
+   • NO duplica lógica
+   • NO rompe DEBUG ni ECONOMICS internos
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
+  try {
+    if (!ev || !ev.detail) return;
+
+    // Reemitimos hacia el canal que Economics YA procesa
+    window.dispatchEvent(
+      new CustomEvent("ACS_FLIGHT_ARRIVAL_DEBUG", {
+        detail: ev.detail
+      })
+    );
+
+  } catch (err) {
+    console.error("❌ ECON ARRIVAL BRIDGE ERROR", err);
+  }
+});
+
+/* ============================================================
    🟧 A1 — FLIGHT ECONOMICS LISTENER (CANONICAL)
    ------------------------------------------------------------
-   ✔ ÚNICO evento: ACS_FLIGHT_ARRIVAL
+   ✔ ÚNICO evento: ACS_FLIGHT_ARRIVAL_DEBUG (vía bridge)
    ✔ aircraftId REAL desde SkyTrack
    ✔ Dedup por aircraftId + depAbsMin
    ✔ Finance SOLO vía ACS_registerIncome
@@ -68,7 +93,7 @@ window.ACS_getBaseTicket = window.ACS_getBaseTicket || function (distanceNM, yea
 window.ACS_ECON_ProcessedFlights =
   window.ACS_ECON_ProcessedFlights || new Set();
 
-window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
+window.addEventListener("ACS_FLIGHT_ARRIVAL_DEBUG", (ev) => {
   try {
 
     const d = ev?.detail;
@@ -167,67 +192,24 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
       );
     }
 
-/* ============================================================
-   🟧 E1 — FLIGHT ARRIVAL → FINANCE INCOME REGISTRATION
-   ------------------------------------------------------------
-   • Registra ingreso REAL del vuelo
-   • Se ejecuta UNA sola vez (dedup ya validado)
-   • Actualiza Capital / Profit / Revenue
-   • Escribe INCOME en ACS_Log
-   ============================================================ */
+    /* ============================
+       🟦 ECON → FINANCE EVENT EMITTER
+       ============================ */
+    window.dispatchEvent(
+      new CustomEvent("ACS_FLIGHT_ECONOMICS", {
+        detail: {
+          flightId: f.flightId,
+          aircraftId: ac.id,
+          origin: f.origin,
+          destination: f.destination,
+          pax: pax,
+          distanceNM: f.distanceNM,
+          revenue: revenue,
+          ts: Date.now()
+        }
+      })
+    );
 
-if (typeof ACS_registerIncome === "function") {
-
-  ACS_registerIncome({
-    amount: Number(revenue) || 0,
-    source: `FLIGHT ${f.origin} → ${f.destination}`,
-    meta: {
-      flightId: f.flightId,
-      aircraftId: ac.id,
-      distanceNM: f.distanceNM,
-      pax: pax,
-      engine: "ACS_FLIGHT_ECONOMICS"
-    }
-  });
-
-  console.log(
-    "%c💵 FINANCE INCOME REGISTERED",
-    "color:#00ff80;font-weight:bold;",
-    {
-      flightId: f.flightId,
-      revenue: revenue
-    }
-  );
-
-} else {
-  console.warn("⚠️ ACS_registerIncome not available");
-}
-
-     
-    /* ============================================================
-   🟦 A4 — ECON → FINANCE EVENT EMITTER (CANONICAL)
-   ------------------------------------------------------------
-   • Emite evento económico REAL del vuelo
-   • Fuente ÚNICA para Finance Live & Weekly
-   • NO suma capital aquí
-   • NO duplica lógica
-   ============================================================ */
-
-  window.dispatchEvent(
-  new CustomEvent("ACS_FLIGHT_ECONOMICS", {
-    detail: {
-      flightId: f.flightId,
-      aircraftId: ac.id,
-      origin: f.origin,
-      destination: f.destination,
-      pax: pax,
-      distanceNM: f.distanceNM,
-      revenue: revenue,
-      ts: Date.now()
-    }
-  })
-);
-     
     console.log(
       "%c💰 ECON FLIGHT APPLIED",
       "color:#00ff88;font-weight:bold;",
