@@ -796,6 +796,12 @@ window.addEventListener("ACS_FINANCE_UPDATED", () => {
   console.log("🔄 Finance UI refreshed (event)");
   loadBreakdown();
 });
+
+/* ============================================================
+   🚀 INITIAL RENDER (CRÍTICO)
+   ============================================================ */
+
+loadBreakdown(); // ⬅️ ESTA LÍNEA ES LA SOLUCIÓN
      
 /* ============================================================
    🟦 F-UI-3 — LIVE BREAKDOWN EVENT BRIDGE — REALTIME FIX
