@@ -727,10 +727,12 @@ function ACS_registerIncome(incomeType, payload, source) {
       type: incomeType,
       amount: value,
       capital: `${beforeCapital} → ${f.capital}`
-    }
+    }  
   );
 }
 
+// 🔄 FORCE FINANCE UI REFRESH
+   window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
 /* ============================================================
    === BANKRUPTCY ENGINE — v1.0 ================================
