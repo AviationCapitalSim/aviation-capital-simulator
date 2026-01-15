@@ -682,7 +682,7 @@ function loadBreakdown() {
 
   grid.innerHTML = "";
 
- /* ============================================================
+/* ============================================================
    🟦 UI SESSION START — REAL TIME (ANTI-GHOST FIX)
    ------------------------------------------------------------
    • Usa tiempo REAL del navegador
@@ -722,52 +722,24 @@ if (!window.__ACS_FINANCE_UI_INIT__) {
   const currentWeek = getISOWeek(now);
 
   /* ============================================================
-     📥 READ REAL TRANSACTIONS (ACS_Log)
-     ============================================================ */
-  let log = [];
-  try {
-    log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-  } catch {
-    log = [];
-  }
+   📥 READ REAL TRANSACTIONS (ACS_Finance)   ✅ FIX
+   ============================================================ */
+let f = {};
+try {
+  f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+} catch {
+  f = {};
+}
 
-  /* ============================================================
-     ✈️ CALCULATE LIVE & WEEKLY FLIGHT INCOME
-     ============================================================ */
-  for (let i = log.length - 1; i >= 0; i--) {
+/* ============================================================
+   ✈️ CALCULATE LIVE & WEEKLY FLIGHT INCOME
+   ============================================================ */
+liveIncome   = Number(f?.income?.live_flight || 0);
+weeklyIncome = Number(f?.income?.route_weekly || 0);
 
-    const e = log[i];
-    if (!e || e.type !== "INCOME" || !Number(e.amount)) continue;
-
-    // SOLO ingresos de vuelos
-    if (
-      typeof e.source !== "string" ||
-      !e.source.toUpperCase().includes("FLIGHT")
-    ) continue;
-
-    const ts = new Date(e.createdAt || e.timestamp || Date.now());
-    if (ts < SESSION_START) continue;
-
-    const week = getISOWeek(ts);
-
-    // 🟢 LIVE = último ingreso real
-    if (!liveIncome) {
-      liveIncome = Number(e.amount);
-    }
-
-    // 🟦 WEEKLY = suma semana simulada
-    if (week === currentWeek) {
-      weeklyIncome += Number(e.amount);
-    }
-
-    if (liveIncome && week < currentWeek) break;
-  }
-
- /* ============================================================
+/* ============================================================
    📊 BUILD VIEW (UI — CANONICAL)
    ============================================================ */
-
-const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
 const categories = [
   {
