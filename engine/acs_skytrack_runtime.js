@@ -363,6 +363,41 @@ snapshot.push({
 }
 
 /* ============================================================
+   🟧 A1 — SKYTRACK → STORAGE BUS (ARRIVAL)
+   ------------------------------------------------------------
+   • Emite llegada REAL cross-page
+   • No depende de window events
+   • Finance lo consume vía storage listener
+   ============================================================ */
+
+(function(){
+
+  if (!arrivalData) return; // usa TU objeto real de arrival
+
+  const payload = {
+    flightId: arrivalData.flightId,
+    aircraftId: arrivalData.aircraftId,
+    origin: arrivalData.origin,
+    destination: arrivalData.destination,
+    distanceNM: arrivalData.distanceNM,
+    depAbsMin: arrivalData.depAbsMin,
+    ts: Date.now()
+  };
+
+  localStorage.setItem(
+    "ACS_EVENT_ARRIVAL",
+    JSON.stringify(payload)
+  );
+
+  console.log(
+    "%c📦 [SKYTRACK → STORAGE] ARRIVAL EMITTED",
+    "color:#00c8ff;font-weight:bold;",
+    payload
+  );
+
+})();
+
+/* ============================================================
    📦 LOAD DATA (FLEET + SCHEDULE) — CANONICAL
    ============================================================ */
 function ACS_SkyTrack_loadData() {
