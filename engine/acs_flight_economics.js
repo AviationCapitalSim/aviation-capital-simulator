@@ -167,6 +167,43 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
       );
     }
 
+/* ============================================================
+   🟧 E1 — FLIGHT ARRIVAL → FINANCE INCOME REGISTRATION
+   ------------------------------------------------------------
+   • Registra ingreso REAL del vuelo
+   • Se ejecuta UNA sola vez (dedup ya validado)
+   • Actualiza Capital / Profit / Revenue
+   • Escribe INCOME en ACS_Log
+   ============================================================ */
+
+if (typeof ACS_registerIncome === "function") {
+
+  ACS_registerIncome({
+    amount: Number(revenue) || 0,
+    source: `FLIGHT ${f.origin} → ${f.destination}`,
+    meta: {
+      flightId: f.flightId,
+      aircraftId: ac.id,
+      distanceNM: f.distanceNM,
+      pax: pax,
+      engine: "ACS_FLIGHT_ECONOMICS"
+    }
+  });
+
+  console.log(
+    "%c💵 FINANCE INCOME REGISTERED",
+    "color:#00ff80;font-weight:bold;",
+    {
+      flightId: f.flightId,
+      revenue: revenue
+    }
+  );
+
+} else {
+  console.warn("⚠️ ACS_registerIncome not available");
+}
+
+     
     /* ============================================================
    🟦 A4 — ECON → FINANCE EVENT EMITTER (CANONICAL)
    ------------------------------------------------------------
