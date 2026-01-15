@@ -123,24 +123,45 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", (ev) => {
       if (!ac) return;
 
       // ===== PAX =====
-      if (!window.ACS_PAX || typeof window.ACS_PAX.getDailyDemand !== "function") return;
+if (!window.ACS_PAX) return;
 
-      const paxResult = window.ACS_PAX.getDailyDemand({
-        route: { origin, destination, distanceNM },
-        time:  {
-          day: simTime.getUTCDate(),
-          month: simTime.getUTCMonth() + 1,
-          hour: simTime.getUTCHours(),
-          year: simTime.getUTCFullYear()
-        },
-        aircraft: {
-          seats: Number(ac.seats || 0),
-          comfortIndex: Number(ac.comfortIndex || 1)
-        }
-      });
+let paxResult = null;
 
-      const pax = Number(paxResult?.pax || 0);
-      if (!Number.isFinite(pax) || pax <= 0) return;
+// ✅ Preferido (si existe)
+if (typeof window.ACS_PAX.getDailyDemand === "function") {
+  paxResult = window.ACS_PAX.getDailyDemand({
+    route: { origin, destination, distanceNM },
+    time:  {
+      day: simTime.getUTCDate(),
+      month: simTime.getUTCMonth() + 1,
+      hour: simTime.getUTCHours(),
+      year: simTime.getUTCFullYear()
+    },
+    aircraft: {
+      seats: Number(ac.seats || 0),
+      comfortIndex: Number(ac.comfortIndex || 1)
+    }
+  });
+}
+
+// ✅ Fallback (tu motor viejo / alterno)
+else if (typeof window.ACS_PAX.calculate === "function") {
+  paxResult = window.ACS_PAX.calculate({
+    route: { origin, destination, distanceNM },
+    time: {
+      hour: simTime.getUTCHours(),
+      year: simTime.getUTCFullYear()
+    },
+    aircraft: {
+      seats: Number(ac.seats || 0),
+      comfortIndex: Number(ac.comfortIndex || 1)
+    }
+  });
+}
+
+const pax = Number(paxResult?.pax || 0);
+if (!Number.isFinite(pax) || pax <= 0) return;
+
 
       // ===== ticket simple =====
       let ticket = 120;
