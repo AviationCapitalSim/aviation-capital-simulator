@@ -660,11 +660,41 @@ function ACS_registerIncome(incomeType, payload, source) {
 
   const beforeCapital = f.capital;
 
-  // 💰 APPLY
+  /* ============================================================
+     🟧 B1 — ECONOMICS → LIVE FINANCE COMMIT (OPTION B)
+     ------------------------------------------------------------
+     • Aplica ingresos de vuelos en TIEMPO REAL
+     • Se ejecuta SOLO desde ACS_registerIncome
+     • Impacta Capital / Revenue / Profit inmediatamente
+     • No depende de SkyTrack ni de ARRIVAL
+     ============================================================ */
+
+  const isFlightIncome =
+    incomeType === "routes" ||
+    (typeof source === "string" &&
+      (source.includes("FLIGHT") || source.includes("AUTO FLIGHT")));
+
+  if (isFlightIncome) {
+
+    // 🔥 COMMIT INMEDIATO (LIVE)
+    f.capital += value;
+    f.revenue += value;
+    f.profit = f.revenue - f.expenses;
+
+    console.log(
+      "%c💵 LIVE FINANCE COMMIT (FLIGHT)",
+      "color:#00ff80;font-weight:bold;",
+      {
+        amount: value,
+        capital: f.capital,
+        revenue: f.revenue,
+        profit: f.profit
+      }
+    );
+  }
+
+  // 💰 APPLY (CANONICAL STORAGE)
   f.income[incomeType] += value;
-  f.revenue += value;
-  f.capital += value;
-  f.profit = f.revenue - f.expenses;
 
   saveFinance(f);
 
@@ -685,6 +715,7 @@ function ACS_registerIncome(incomeType, payload, source) {
     }
   );
 }
+
 
 /* ============================================================
    === BANKRUPTCY ENGINE — v1.0 ================================
