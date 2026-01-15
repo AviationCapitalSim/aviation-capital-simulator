@@ -1393,28 +1393,67 @@ function ACS_registerNewAircraftPurchase(amount, model, qty){
 
 
 /* ============================================================
-   🟦 A3 — FINANCE ARRIVAL SAFETY BRIDGE
+   🟧 A1 — FINANCE → OFFICIAL ARRIVAL CONSUMER (CROSS-TAB)
    ------------------------------------------------------------
-   • Garantiza señal de aterrizaje SIEMPRE
-   • NO suma dinero
-   • NO toca capital
-   • Solo confirma flujo operativo
+   • ÚNICO punto de entrada de vuelos a Finance
+   • Consume arrivals vía localStorage (cross-tab)
+   • Dispara Economics (NO UI, NO LOG)
+   ------------------------------------------------------------
+   Source key: ACS__ARRIVED_BRIDGE_V1
    ============================================================ */
 
 (function(){
 
-  window.addEventListener("ACS_FLIGHT_ARRIVED", e => {
-    if (!e.detail) return;
+  const ARRIVED_BRIDGE_KEY = "ACS__FLIGHT_ARRIVED_BRIDGE_V1";
+
+  function safeNum(x, fb = 0){
+    const n = Number(x);
+    return Number.isFinite(n) ? n : fb;
+  }
+
+  function normalizeArrival(raw){
+    if (!raw) return null;
+
+    return {
+      flightId: raw.flightId || raw.id || raw.flightNo || null,
+      aircraftId: raw.aircraftId || raw.acId || raw.aircraft || null,
+      origin: raw.origin || raw.from || null,
+      destination: raw.destination || raw.to || null,
+      distanceNM: safeNum(raw.distanceNM ?? raw.distance ?? raw.distNM, 0),
+      depAbsMin:
+        safeNum(raw.depAbsMin, null) ??
+        safeNum(raw.depAbs, null) ??
+        safeNum(raw.absMin, null)
+    };
+  }
+
+  function onArrivalStorage(e){
+    if (!e || e.key !== ARRIVAL_KEY || !e.newValue) return;
+
+    let payload;
+    try {
+      payload = JSON.parse(e.newValue);
+    } catch {
+      return;
+    }
+
+    const arrival = normalizeArrival(payload);
+    if (!arrival || !arrival.flightId || !arrival.aircraftId) return;
 
     console.log(
-      "%c[FINANCE] ✈️ ARRIVAL SIGNAL RECEIVED (SAFETY)",
-      "color:#ffaa00;font-weight:bold;",
-      {
-        flightId: e.detail.flightId,
-        origin: e.detail.origin,
-        destination: e.detail.destination
-      }
+      "%c✈️ [FINANCE] ARRIVAL RECEIVED → sending to ECON",
+      "color:#00ff80;font-weight:bold;",
+      arrival
     );
-  });
+
+    // 👉 DISPARO OFICIAL A ECONOMICS (MISMA PESTAÑA)
+    window.dispatchEvent(
+      new CustomEvent("ACS_FLIGHT_ARRIVED", { detail: arrival })
+    );
+  }
+
+  window.addEventListener("storage", onArrivalStorage);
+
+  console.log("✅ [FINANCE] Official arrival consumer armed");
 
 })();
