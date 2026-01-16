@@ -47,52 +47,85 @@ function ACS_buildFlightEconomics(d) {
   const seats = Number(ac.seats || 0);
   const comfortIndex = Number(ac.comfortIndex || 1);
 
-  /* ============================================================
-     🌍 CONTINENT RESOLUTION
-     ============================================================ */
-  const airportIndex = window.ACS_AIRPORT_INDEX || {};
+/* ============================================================
+   🌍 CONTINENT NORMALIZATION (WORLD → ECONOMICS)
+   ============================================================ */
+function ACS_normalizeContinent(c) {
+  if (!c) return null;
 
-  const continentA = airportIndex[d.origin]?.continent ?? null;
-  const continentB = airportIndex[d.destination]?.continent ?? null;
+  const map = {
+    Europe: "EU",
+    Asia: "AS",
+    Africa: "AF",
+    "North America": "NA",
+    "South America": "SA",
+    Oceania: "OC",
+    Australia: "OC",
+    Antarctica: "AN",
 
-  if (!continentA || !continentB) {
-    console.warn(
-      "⚠️ CONTINENT NOT RESOLVED",
-      d.origin,
-      d.destination,
-      continentA,
-      continentB
-    );
-  }
+    // fallback si ya vienen normalizados
+    EU: "EU",
+    AS: "AS",
+    AF: "AF",
+    NA: "NA",
+    SA: "SA",
+    OC: "OC"
+  };
 
-  /* ============================================================
-     📏 DISTANCE (CANONICAL)
-     ============================================================ */
-  const distanceNM = Number(d.distanceNM);
-  if (!distanceNM || distanceNM <= 0) return null;
+  return map[c] || null;
+}
 
-  /* ============================================================
-     🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
-     ============================================================ */
-  let paxResult = null;
-  try {
-    paxResult = ACS_PAX.calculate({
-      route: { distanceNM, continentA, continentB },
-      time: {
-        year,
-        hour: window.ACS_TIME?.hour ?? 12
-      },
-      aircraft: { seats, comfortIndex },
-      airline: { marketingLevel: 1.0, reputation: 1.0 },
-      market: { frequencyFactor: 1.0, competitors: 1 }
-    });
-  } catch (e) {
-    console.error("❌ PAX CALC FAILED", e);
-  }
+/* ============================================================
+   🌍 CONTINENT RESOLUTION
+   ============================================================ */
+const airportIndex = window.ACS_AIRPORT_INDEX || {};
 
-  const pax = Number(paxResult?.pax ?? 0);
-  const loadFactor =
-    Number(paxResult?.loadFactor ?? (seats > 0 ? pax / seats : 0));
+const continentA = ACS_normalizeContinent(
+  airportIndex[d.origin]?.continent
+);
+
+const continentB = ACS_normalizeContinent(
+  airportIndex[d.destination]?.continent
+);
+
+if (!continentA || !continentB) {
+  console.warn(
+    "⚠️ CONTINENT NOT RESOLVED",
+    d.origin,
+    d.destination,
+    continentA,
+    continentB
+  );
+}
+
+/* ============================================================
+   📏 DISTANCE (CANONICAL)
+   ============================================================ */
+const distanceNM = Number(d.distanceNM);
+if (!distanceNM || distanceNM <= 0) return null;
+
+/* ============================================================
+   🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
+   ============================================================ */
+let paxResult = null;
+try {
+  paxResult = ACS_PAX.calculate({
+    route: { distanceNM, continentA, continentB },
+    time: {
+      year,
+      hour: window.ACS_TIME?.hour ?? 12
+    },
+    aircraft: { seats, comfortIndex },
+    airline: { marketingLevel: 1.0, reputation: 1.0 },
+    market: { frequencyFactor: 1.0, competitors: 1 }
+  });
+} catch (e) {
+  console.error("❌ PAX CALC FAILED", e);
+}
+
+const pax = Number(paxResult?.pax ?? 0);
+const loadFactor =
+  Number(paxResult?.loadFactor ?? (seats > 0 ? pax / seats : 0));
 
   /* ============================================================
      💰 REVENUE (SIMPLE & STABLE)
