@@ -118,14 +118,43 @@ function ACS_registerIncome(type, payload, source){
   if (payload && typeof payload === "object")
     value = Number(payload.amount || payload.revenue || payload.income || 0);
 
-  if (value <= 0 || f.income[type] === undefined) return;
+  // 🔒 validaciones
+  if (value <= 0) return;
+  if (!f.income || typeof f.income !== "object") f.income = {};
+  if (f.income[type] === undefined) f.income[type] = 0;
 
+  /* ============================
+     💰 INCOME BY TYPE
+     ============================ */
   f.income[type] += value;
-  f.revenue += value;
+
+  /* ============================================================
+     ✈️ OPERATING INCOME → MONTHLY REVENUE
+     ------------------------------------------------------------
+     • SOLO ingresos operativos (vuelos)
+     • NO créditos
+     • NO ajustes manuales
+     ============================================================ */
+  if (
+    type === "routes" ||
+    type === "route" ||
+    type === "flight"
+  ) {
+    f.revenue += value;
+  }
+
+  /* ============================
+     💼 CAPITAL
+     ============================ */
   f.capital += value;
+
+  /* ============================
+     📈 PROFIT (MONTH)
+     ============================ */
   f.profit = f.revenue - f.expenses;
 
   saveFinance(f);
+}
 
  // 🧾 LOG
 // ⛔ INCOME NO SE REGISTRA EN ACS_Log
