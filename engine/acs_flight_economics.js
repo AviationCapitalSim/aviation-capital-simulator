@@ -48,21 +48,6 @@ function ACS_buildFlightEconomics(d) {
   const seats = ac.seats || 0;
   const comfortIndex = ac.comfortIndex || 1;
 
-  /* ============================================================
-   🌍 ROUTE CONTEXT — CONTINENT RESOLUTION (FIXED)
-   ============================================================ */
-   
-let continentA = d.continentA || null;
-let continentB = d.continentB || null;
-
-if (!continentA || !continentB) {
-  const idx = window.ACS_AIRPORT_INDEX || {};
-  if (d.origin && d.destination) {
-    continentA = idx[d.origin]?.continent || null;
-    continentB = idx[d.destination]?.continent || null;
-  }
-}
-
 /* ============================================================
    🌍 ROUTE CONTEXT — CONTINENT RESOLUTION (CANONICAL)
    ============================================================ */
