@@ -64,29 +64,39 @@ if (!continentA || !continentB) {
 }
 
 /* ============================================================
+   📏 DISTANCE NORMALIZATION (CRITICAL)
+   ============================================================ */
+const distanceNM = Number(d.distanceNM || d.distance || 0);
+   
+/* ============================================================
    🧑‍🤝‍🧑 PAX (CANONICAL — NORMALIZED)
    ============================================================ */
 const paxResult = ACS_PAX.calculate({
   route: {
-    distanceNM: d.distanceNM,
-    continentA,
-    continentB
-  },
+  distanceNM,
+  continentA,
+  continentB
+}
+
   time: {
     year,
     hour: window.ACS_TIME?.hour ?? 12
+   
   },
   aircraft: {
     seats,
     comfortIndex
+     
   },
   airline: {
     marketingLevel: 1.0,
     reputation: 1.0
+     
   },
   market: {
     frequencyFactor: 1.0,
     competitors: 1
+     
   }
 });
 
