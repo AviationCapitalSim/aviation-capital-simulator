@@ -51,8 +51,11 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", function (ev) {
     ) return;
 
     /* ============================
-       🔒 DEDUP
+       🔒 DEDUP (SAFE)
        ============================ */
+    window.ACS_ECON_ProcessedFlights =
+      window.ACS_ECON_ProcessedFlights || new Set();
+
     const econKey = `${flight.aircraftId}|${flight.depAbsMin}`;
     if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
     window.ACS_ECON_ProcessedFlights.add(econKey);
@@ -93,7 +96,7 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", function (ev) {
     if (pax <= 0) return;
 
     /* ============================
-       💵 TICKET MODEL (SIMPLE)
+       💵 TICKET MODEL
        ============================ */
     let ticket = 90;
     if (flight.distanceNM > 3000) ticket = 220;
@@ -113,17 +116,20 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", function (ev) {
     if (typeof window.ACS_registerIncome === "function") {
       ACS_registerIncome(
         "routes",
-        revenue,
+        {
+          amount: revenue,
+          pax,
+          distanceNM: flight.distanceNM,
+          aircraftId: ac.id,
+          origin: flight.origin,
+          destination: flight.destination
+        },
         `AUTO FLIGHT ${flight.origin} → ${flight.destination}`
       );
     }
 
-    if (typeof window.ACS_updateLiveWeekly === "function") {
-      ACS_updateLiveWeekly(revenue, simTime);
-    }
-
     /* ============================
-       📡 ECON EVENT (FOR UI / STATS)
+       📡 ECON EVENT (UI / STATS)
        ============================ */
     window.dispatchEvent(
       new CustomEvent("ACS_FLIGHT_ECONOMICS", {
@@ -132,10 +138,10 @@ window.addEventListener("ACS_FLIGHT_ARRIVED", function (ev) {
           aircraftId: ac.id,
           origin: flight.origin,
           destination: flight.destination,
-          pax: pax,
+          pax,
           distanceNM: flight.distanceNM,
-          revenue: revenue,
-          simTime: simTime
+          revenue,
+          simTime
         }
       })
     );
