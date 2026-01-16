@@ -52,7 +52,7 @@ function ACS_buildFlightEconomics(d) {
    🧑‍🤝‍🧑 PAX (CANONICAL — NORMALIZED)
    ============================================================ */
 const paxResult = ACS_PAX.calculate({
-  distanceNM: d.distanceNM,
+  distance: d.distanceNM,   // 🔑 CLAVE CORRECTA PARA PAX ENGINE
   seats,
   year,
   comfortIndex
