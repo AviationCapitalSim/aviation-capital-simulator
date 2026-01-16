@@ -428,32 +428,38 @@ const profit = revenue - costTotal;
   /* ============================================================
      📦 FINAL ECONOMICS OBJECT
      ============================================================ */
-  return {
-    flightId: d.flightId,
-    aircraftId: d.aircraftId,
-    origin: d.origin,
-    destination: d.destination,
-    distanceNM,
+ return {
+  flightId: d.flightId,
+  aircraftId: d.aircraftId,
+  origin: d.origin,
+  destination: d.destination,
+  distanceNM,
 
-    pax,
-    loadFactor,
+  pax,
+  loadFactor,
 
-      revenue,
-     fuelCost: costFuel,
-     slotCost: costSlots,
-     costTotal: costFuel + costSlots,
-     profit: revenue - (costFuel + costSlots),
+  revenue,
 
-    paxPerNM,
-    revPerNM,
-    costPerNM: 0,
-    costPerPax: 0,
+  // Costs (desglosados)
+  fuelCost: costFuel,
+  slotCost: costSlots,
+  handlingCost,
 
-    year,
-    arrAbsMin: d.arrAbsMin ?? null,
-    ts: Date.now()
-  };
-}
+  // Totals
+  costTotal: costFuel + costSlots + handlingCost,
+  profit: revenue - (costFuel + costSlots + handlingCost),
+
+  // Metrics
+  paxPerNM,
+  revPerNM,
+  costPerNM: distanceNM > 0 ? (costFuel + costSlots + handlingCost) / distanceNM : 0,
+  costPerPax: pax > 0 ? (costFuel + costSlots + handlingCost) / pax : 0,
+
+  // Meta
+  year,
+  arrAbsMin: d.arrAbsMin ?? null,
+  ts: Date.now()
+};
 
 /* ============================================================
    ✈️ SKYTRACK ARRIVAL LISTENER
