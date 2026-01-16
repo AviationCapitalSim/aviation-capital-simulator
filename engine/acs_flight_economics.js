@@ -1,16 +1,15 @@
 /* ============================================================
-   ✈️ ACS FLIGHT ECONOMICS ENGINE — CORE v3.0 (STABLE)
+   ✈️ ACS FLIGHT ECONOMICS ENGINE — CORE v3.0 (FIXED)
    ------------------------------------------------------------
-   ✔ Trigger: ACS_FLIGHT_ARRIVAL (SkyTrack)
+   ✔ Trigger: ACS_FLIGHT_ARRIVAL
    ✔ PAX source: ACS_PAX (canonical)
-   ✔ Aircraft source: ACS_MyAircraft
    ✔ One flight → one economics object
-   ✔ NO fuel / NO maintenance / NO finance yet
+   ✔ NO duplicate const
    ------------------------------------------------------------
    Date: 16 JAN 2026
    ============================================================ */
 
-console.log("🧠 ACS_FLIGHT_ECONOMICS v3.0 LOADED");
+console.log("🧠 ACS_FLIGHT_ECONOMICS v3.0 FIXED LOADED");
 
 /* ============================================================
    🔒 DEDUP STORE (PER SESSION)
@@ -23,145 +22,143 @@ const ACS_ECO_DEDUP = new Set();
 function ACS_buildFlightEconomics(d) {
 
   if (!d || !d.flightId || !d.aircraftId || !d.distanceNM) {
-    console.warn("⚠️ ECONOMICS aborted — invalid arrival payload", d);
+    console.warn("⚠️ ECONOMICS aborted — invalid payload", d);
     return null;
   }
 
-  const aircraftList = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const aircraftList = JSON.parse(
+    localStorage.getItem("ACS_MyAircraft") || "[]"
+  );
   const ac = aircraftList.find(a => a.id === d.aircraftId);
-
   if (!ac) {
     console.warn("⚠️ ECONOMICS aborted — aircraft not found", d.aircraftId);
     return null;
   }
 
   /* ============================================================
-   🕒 SIM YEAR — SOURCE OF TRUTH: ACS_TIME
-   ============================================================ */
-   
+     🕒 SIM YEAR — SOURCE OF TRUTH
+     ============================================================ */
   const year =
-  d.year ||
-  window.ACS_TIME?.currentYear ||
-  window.ACS_TIME?.year ||
-  1944;
+    d.year ||
+    window.ACS_TIME?.currentYear ||
+    window.ACS_TIME?.year ||
+    1944;
 
-  const seats = ac.seats || 0;
-  const comfortIndex = ac.comfortIndex || 1;
+  const seats = Number(ac.seats || 0);
+  const comfortIndex = Number(ac.comfortIndex || 1);
 
-/* ============================================================
-   🌍 ROUTE CONTEXT — CONTINENT RESOLUTION (CANONICAL)
-   ============================================================ */
+  /* ============================================================
+     🌍 CONTINENT RESOLUTION
+     ============================================================ */
+  const airportIndex = window.ACS_AIRPORT_INDEX || {};
 
-const airportIndex = window.ACS_AIRPORT_INDEX || {};
+  const continentA = airportIndex[d.origin]?.continent ?? null;
+  const continentB = airportIndex[d.destination]?.continent ?? null;
 
-const continentA =
-  airportIndex[d.origin]?.continent ?? null;
+  if (!continentA || !continentB) {
+    console.warn(
+      "⚠️ CONTINENT NOT RESOLVED",
+      d.origin,
+      d.destination,
+      continentA,
+      continentB
+    );
+  }
 
-const continentB =
-  airportIndex[d.destination]?.continent ?? null;
+  /* ============================================================
+     📏 DISTANCE (CANONICAL)
+     ============================================================ */
+  const distanceNM = Number(d.distanceNM);
+  if (!distanceNM || distanceNM <= 0) return null;
 
-if (!continentA || !continentB) {
-  console.warn(
-    "⚠️ CONTINENT NOT RESOLVED",
-    d.origin,
-    d.destination,
-    continentA,
-    continentB
-  );
-}
-   
-/* ============================================================
-   📏 DISTANCE NORMALIZATION (CRITICAL)
-   ============================================================ */
-   
-const distanceNM = Number(d.distanceNM || d.distance || 0);
-   
-/* ============================================================
-   🧑‍🤝‍🧑 PAX — CANONICAL SOURCE (FINAL)
-   ============================================================ */
+  /* ============================================================
+     🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
+     ============================================================ */
+  let paxResult = null;
+  try {
+    paxResult = ACS_PAX.calculate({
+      route: { distanceNM, continentA, continentB },
+      time: {
+        year,
+        hour: window.ACS_TIME?.hour ?? 12
+      },
+      aircraft: { seats, comfortIndex },
+      airline: { marketingLevel: 1.0, reputation: 1.0 },
+      market: { frequencyFactor: 1.0, competitors: 1 }
+    });
+  } catch (e) {
+    console.error("❌ PAX CALC FAILED", e);
+  }
 
-const pax        = Number(paxResult?.pax ?? 0);
-const loadFactor = Number(paxResult?.loadFactor ?? 0);
+  const pax = Number(paxResult?.pax ?? 0);
+  const loadFactor =
+    Number(paxResult?.loadFactor ?? (seats > 0 ? pax / seats : 0));
 
-/* ============================================================
-   💰 REVENUE — BASED ON PAX (SINGLE SOURCE)
-   ============================================================ */
+  /* ============================================================
+     💰 REVENUE (SIMPLE & STABLE)
+     ============================================================ */
+  let ticket;
+  if (distanceNM < 500) ticket = 80;
+  else if (distanceNM < 1500) ticket = 150;
+  else ticket = 300;
 
-const paxPerNM = distanceNM > 0 ? pax / distanceNM : 0;
-const revPerNM = paxPerNM * farePerPaxNM;
-const revenue  = revPerNM * distanceNM;
-
-console.log("✅ ECON FINAL", {
-  pax,
-  loadFactor,
-  revenue
-});
+  const revenue = pax * ticket;
 
   /* ============================================================
      📐 METRICS (NO COSTS YET)
      ============================================================ */
-  const revPerNM   = revenue / d.distanceNM;
-  const paxPerNM   = pax / d.distanceNM;
-  const costTotal  = 0;
-  const costPerNM  = 0;
-  const costPerPax = 0;
-  const profit     = revenue;
+  const paxPerNM = pax / distanceNM;
+  const revPerNM = revenue / distanceNM;
 
   /* ============================================================
-     📦 FINAL ECONOMICS OBJECT (THE MUÑECO)
+     📦 FINAL ECONOMICS OBJECT
      ============================================================ */
   return {
     flightId: d.flightId,
     aircraftId: d.aircraftId,
     origin: d.origin,
     destination: d.destination,
-    distanceNM: d.distanceNM,
+    distanceNM,
 
     pax,
     loadFactor,
 
     revenue,
-    costTotal,
-    profit,
+    costTotal: 0,
+    profit: revenue,
 
     paxPerNM,
     revPerNM,
-    costPerNM,
-    costPerPax,
+    costPerNM: 0,
+    costPerPax: 0,
 
     year,
-    arrAbsMin: d.arrAbsMin || null,
+    arrAbsMin: d.arrAbsMin ?? null,
     ts: Date.now()
   };
 }
 
 /* ============================================================
-   ✈️ LISTENER — SKYTRACK ARRIVAL
+   ✈️ SKYTRACK ARRIVAL LISTENER
    ============================================================ */
 window.addEventListener("ACS_FLIGHT_ARRIVAL", e => {
 
   const d = e.detail;
   if (!d) return;
 
-  const dedupKey = `${d.flightId}_${d.arrAbsMin || "NA"}`;
-  if (ACS_ECO_DEDUP.has(dedupKey)) return;
-  ACS_ECO_DEDUP.add(dedupKey);
+  const key = `${d.flightId}_${d.arrAbsMin ?? "NA"}`;
+  if (ACS_ECO_DEDUP.has(key)) return;
+  ACS_ECO_DEDUP.add(key);
 
   const economics = ACS_buildFlightEconomics(d);
   if (!economics) return;
 
-  /* ============================================================
-     📡 EMIT ECONOMICS EVENT (FOR FINANCE / UI)
-     ============================================================ */
   window.dispatchEvent(
     new CustomEvent("ACS_FLIGHT_ECONOMICS", {
       detail: economics
     })
   );
 
-  /* ============================================================
-     🔥 PER-FLIGHT CONSOLE LOG (VISIBLE, CLEAR)
-     ============================================================ */
   console.log(
     "%c💰 FLIGHT ECONOMICS",
     "color:#00ff88;font-weight:bold;",
