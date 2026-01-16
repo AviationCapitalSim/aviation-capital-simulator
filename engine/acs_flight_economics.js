@@ -174,21 +174,20 @@ const costFuel =
     : 0;
 
 /* ============================================================
-   🟧 A6 — SLOT COSTS (DYNAMIC & HISTORICAL)
+   🟧 A6 — SLOT COSTS (REFINED & HISTORICAL)
    ------------------------------------------------------------
-   • Per departure + arrival
-   • Based on continent + year + operation type
-   • NO external engines
+   • Departure + Arrival
+   • Based on continent, operation type, aircraft size, era
    ============================================================ */
 
-function ACS_getSlotCost(airportICAO, year, isInternational) {
+function ACS_getSlotCost(airportICAO, year, isInternational, seats) {
   const idx = window.ACS_AIRPORT_INDEX || {};
   const ap = idx[airportICAO];
 
-  // Base fallback (very small airfield)
-  let baseSlot = 5;
-
-  // Continent-based baseline
+  /* -----------------------------
+     Base slot by continent
+     ----------------------------- */
+  let baseSlot = 10; // fallback small airfield
   const continent = ap?.continent || "EU";
 
   if (continent === "EU") baseSlot = 20;
@@ -198,26 +197,60 @@ function ACS_getSlotCost(airportICAO, year, isInternational) {
   if (continent === "SA") baseSlot = 18;
   if (continent === "OC") baseSlot = 22;
 
-  // International multiplier
-  if (isInternational) baseSlot *= 1.5;
+  /* -----------------------------
+     Operation type modifier
+     ----------------------------- */
+  let opFactor = isInternational ? 1.5 : 1.0;
 
-  // Historical inflation / complexity
-  if (year >= 1960) baseSlot *= 1.2;
-  if (year >= 1980) baseSlot *= 1.5;
-  if (year >= 2000) baseSlot *= 2.0;
+  /* -----------------------------
+     Aircraft size modifier
+     ----------------------------- */
+  let sizeFactor = 1.0;
+  if (seats <= 30) sizeFactor = 0.6;
+  else if (seats <= 100) sizeFactor = 1.0;
+  else if (seats <= 200) sizeFactor = 1.4;
+  else sizeFactor = 2.0;
 
-  return Math.round(baseSlot);
+  /* -----------------------------
+     Era (soft historical factor)
+     ----------------------------- */
+  let eraFactor = 1.0;
+  if (year <= 1959) eraFactor = 0.5;
+  else if (year <= 1979) eraFactor = 0.8;
+  else if (year <= 1999) eraFactor = 1.0;
+  else eraFactor = 1.3;
+
+  const slotCost =
+    baseSlot * opFactor * sizeFactor * eraFactor;
+
+  return Math.round(slotCost);
 }
 
-// Determine operation type
+/* -----------------------------
+   Determine operation type
+   ----------------------------- */
 const isInternational =
   continentA && continentB && continentA !== continentB;
 
-// Slot costs
-const slotDeparture = ACS_getSlotCost(d.origin, year, isInternational);
-const slotArrival = ACS_getSlotCost(d.destination, year, isInternational);
+/* -----------------------------
+   Slot costs (dep + arr)
+   ----------------------------- */
+const slotDeparture = ACS_getSlotCost(
+  d.origin,
+  year,
+  isInternational,
+  seats
+);
+
+const slotArrival = ACS_getSlotCost(
+  d.destination,
+  year,
+  isInternational,
+  seats
+);
 
 const costSlots = slotDeparture + slotArrival;
+
    
   /* ============================================================
      🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
