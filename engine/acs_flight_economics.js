@@ -64,44 +64,61 @@ if (!continentA || !continentB) {
 }
 
 /* ============================================================
+   🌍 ROUTE CONTEXT — CONTINENT RESOLUTION (CANONICAL)
+   ============================================================ */
+
+const airportIndex = window.ACS_AIRPORT_INDEX || {};
+
+const continentA =
+  airportIndex[d.origin]?.continent ?? null;
+
+const continentB =
+  airportIndex[d.destination]?.continent ?? null;
+
+if (!continentA || !continentB) {
+  console.warn(
+    "⚠️ CONTINENT NOT RESOLVED",
+    d.origin,
+    d.destination,
+    continentA,
+    continentB
+  );
+}
+   
+/* ============================================================
    📏 DISTANCE NORMALIZATION (CRITICAL)
    ============================================================ */
 const distanceNM = Number(d.distanceNM || d.distance || 0);
    
 /* ============================================================
-   🧑‍🤝‍🧑 PAX (CANONICAL — NORMALIZED)
+   🧑‍🤝‍🧑 PAX (CANONICAL — FINAL)
    ============================================================ */
+
 const paxResult = ACS_PAX.calculate({
   route: {
-  distanceNM,
-  continentA,
-  continentB
-},
-
+    distanceNM,
+    continentA,
+    continentB
+  },
   time: {
     year,
     hour: window.ACS_TIME?.hour ?? 12
-   
   },
   aircraft: {
     seats,
     comfortIndex
-     
   },
   airline: {
     marketingLevel: 1.0,
     reputation: 1.0
-     
   },
   market: {
     frequencyFactor: 1.0,
     competitors: 1
-     
   }
 });
 
 const pax =
-  paxResult?.paxFinal ??
   paxResult?.pax ??
   0;
 
