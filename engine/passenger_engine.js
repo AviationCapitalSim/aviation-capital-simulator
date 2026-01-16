@@ -21,7 +21,8 @@ function clamp(v, min, max) {
 }
 
 function safeNum(v, fallback = 0) {
-  return Number.isFinite(v) ? v : fallback;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
 }
 
 /* ============================================================
