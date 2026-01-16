@@ -136,6 +136,15 @@ ACS_PAX.calculate = function (input = {}) {
     const airline = input.airline || {};
     const market  = input.market  || {};
 
+/* ============================================================
+   🕒 BOOTSTRAP YEAR — HISTORICAL SAFETY
+   ============================================================ */
+
+// Ensure simulation year exists (avoid silent fallback to 1970)
+if (typeof time.year !== "number") {
+  time.year = 1944; // default early ACS timeline
+}
+     
     /* ============================================================
    🟡 BOOTSTRAP DEFAULTS — TEMPORARY (ACS EARLY GAME)
    ------------------------------------------------------------
