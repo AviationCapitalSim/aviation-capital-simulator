@@ -49,31 +49,28 @@ function ACS_buildFlightEconomics(d) {
   const comfortIndex = ac.comfortIndex || 1;
 
   /* ============================================================
-   🌍 ROUTE CONTEXT — CONTINENT RESOLUTION
+   🌍 ROUTE CONTEXT — CONTINENT RESOLUTION (FIXED)
    ============================================================ */
-   let continentA = d.continentA;
-   let continentB = d.continentB;
+   
+let continentA = d.continentA || null;
+let continentB = d.continentB || null;
 
-   if (!continentA || !continentB) {
-   try {
-    const idx = window.ACS_AIRPORT_INDEX || {};
+if (!continentA || !continentB) {
+  const idx = window.ACS_AIRPORT_INDEX || {};
+  if (d.origin && d.destination) {
     continentA = idx[d.origin]?.continent || null;
     continentB = idx[d.destination]?.continent || null;
-  } catch {}
+  }
 }
 
-   
-  /* ============================================================
+/* ============================================================
    🧑‍🤝‍🧑 PAX (CANONICAL — NORMALIZED)
    ============================================================ */
-
-  const paxResult = ACS_PAX.calculate({
+const paxResult = ACS_PAX.calculate({
   route: {
-  distanceNM: d.distanceNM,
-  continentA,
-  continentB
-},
-
+    distanceNM: d.distanceNM,
+    continentA,
+    continentB
   },
   time: {
     year,
@@ -84,7 +81,6 @@ function ACS_buildFlightEconomics(d) {
     comfortIndex
   }
 });
-
 
 const pax =
   paxResult?.paxFinal ??
