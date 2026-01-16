@@ -45,109 +45,102 @@ function ACS_buildFlightEconomics(d) {
     1944;
 
   /* ============================================================
-   🟧 E1 — SEAT RESOLVER (ROBUST)
-   ------------------------------------------------------------
-   Fix: PAX = 0 cuando el avión no usa el campo "seats"
-   ============================================================ */
-   
-const seats =
-  Number(
-    ac.seats ??
-    ac.seatCount ??
-    ac.seatsTotal ??
-    ac.capacity ??
-    ac.paxCapacity ??
-    ac.pax ??
-    0
-  ) || 0;
+     🟧 E1 — SEAT RESOLVER (HISTORICAL SAFE)
+     ============================================================ */
+  function ACS_resolveSeats(ac, year) {
+    if (!ac) return 0;
 
-const comfortIndex =
-  Number(
-    ac.comfortIndex ??
-    ac.comfort ??
-    ac.cabinComfort ??
-    1
-  ) || 1;
+    const direct =
+      ac.seats ??
+      ac.seatCount ??
+      ac.seatsTotal ??
+      ac.capacity ??
+      ac.paxCapacity ??
+      ac.pax ??
+      0;
 
-/* ============================================================
-   🌍 CONTINENT NORMALIZATION (WORLD → ECONOMICS)
-   ============================================================ */
-function ACS_normalizeContinent(c) {
-  if (!c) return null;
+    if (Number(direct) > 0) return Number(direct);
 
-  const map = {
-    Europe: "EU",
-    Asia: "AS",
-    Africa: "AF",
-    "North America": "NA",
-    "South America": "SA",
-    Oceania: "OC",
-    Australia: "OC",
-    Antarctica: "AN",
+    // fallback histórico seguro
+    if (year <= 1945) return 30;
+    if (year <= 1955) return 45;
+    if (year <= 1965) return 90;
+    if (year <= 1975) return 120;
+    if (year <= 1990) return 150;
+    if (year <= 2010) return 180;
+    return 200;
+  }
 
-    // fallback si ya vienen normalizados
-    EU: "EU",
-    AS: "AS",
-    AF: "AF",
-    NA: "NA",
-    SA: "SA",
-    OC: "OC"
-  };
+  const seats = ACS_resolveSeats(ac, year);
 
-  return map[c] || null;
-}
+  const comfortIndex =
+    Number(
+      ac.comfortIndex ??
+      ac.comfort ??
+      ac.cabinComfort ??
+      1
+    ) || 1;
 
-/* ============================================================
-   🌍 CONTINENT RESOLUTION
-   ============================================================ */
-const airportIndex = window.ACS_AIRPORT_INDEX || {};
+  /* ============================================================
+     🟧 E2 — CONTINENT RESOLVER (ECONOMICS LOCAL)
+     ============================================================ */
+  function ACS_resolveContinentFromICAO(icao) {
+    if (!icao) return null;
+    const p = icao.substring(0, 2).toUpperCase();
 
-const continentA = ACS_normalizeContinent(
-  airportIndex[d.origin]?.continent
-);
+    if (["LE","LF","LG","LI","ED","EH","EB","LP","LO","LK","LS","LQ","LT","LV","LY"].includes(p)) return "EU";
+    if (["K","C"].includes(p.charAt(0))) return "NA";
+    if (["SA","SB","SC","SD","SE","SG","SH","SK","SL","SM","SN","SO","SP","SS","SU","SV","SY","SZ"].includes(p)) return "SA";
+    if (["RJ","RK","RO","RP","RC","ZS","ZB","ZG","ZH","ZK","ZP","ZY","VT","VV","VA","VI","VO","VR"].includes(p)) return "AS";
+    if (["FA","FB","FC","FD","FE","FG","FH","FI","FJ","FK","FL","FM","FN","FO","FP","FQ","FS","FT","FV","FW","FX","FY","FZ"].includes(p)) return "AF";
+    if (["Y"].includes(p.charAt(0))) return "OC";
 
-const continentB = ACS_normalizeContinent(
-  airportIndex[d.destination]?.continent
-);
+    return null;
+  }
 
-if (!continentA || !continentB) {
-  console.warn(
-    "⚠️ CONTINENT NOT RESOLVED",
-    d.origin,
-    d.destination,
-    continentA,
-    continentB
-  );
-}
+  const continentA = ACS_resolveContinentFromICAO(d.origin);
+  const continentB = ACS_resolveContinentFromICAO(d.destination);
 
-/* ============================================================
-   📏 DISTANCE (CANONICAL)
-   ============================================================ */
-const distanceNM = Number(d.distanceNM);
-if (!distanceNM || distanceNM <= 0) return null;
+  if (!continentA || !continentB) {
+    console.warn(
+      "⚠️ CONTINENT NOT RESOLVED (ECON)",
+      d.origin,
+      d.destination,
+      continentA,
+      continentB
+    );
+  }
 
-/* ============================================================
-   🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
-   ============================================================ */
-let paxResult = null;
-try {
-  paxResult = ACS_PAX.calculate({
-    route: { distanceNM, continentA, continentB },
-    time: {
-      year,
-      hour: window.ACS_TIME?.hour ?? 12
-    },
-    aircraft: { seats, comfortIndex },
-    airline: { marketingLevel: 1.0, reputation: 1.0 },
-    market: { frequencyFactor: 1.0, competitors: 1 }
-  });
-} catch (e) {
-  console.error("❌ PAX CALC FAILED", e);
-}
+  /* ============================================================
+     📏 DISTANCE (CANONICAL)
+     ============================================================ */
+  const distanceNM = Number(d.distanceNM);
+  if (!distanceNM || distanceNM <= 0) return null;
 
-const pax = Number(paxResult?.pax ?? 0);
-const loadFactor =
-  Number(paxResult?.loadFactor ?? (seats > 0 ? pax / seats : 0));
+  /* ============================================================
+     🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
+     ============================================================ */
+  let paxResult = { pax: 0, loadFactor: 0, demandUsed: 0 };
+  try {
+    if (window.ACS_PAX && typeof window.ACS_PAX.calculate === "function") {
+      paxResult = window.ACS_PAX.calculate({
+        route: { distanceNM, continentA, continentB },
+        time: {
+          year,
+          hour: window.ACS_TIME?.hour ?? 12
+        },
+        aircraft: { seats, comfortIndex },
+        airline: { marketingLevel: 1.0, reputation: 1.0 },
+        market: { frequencyFactor: 1.0, competitors: 1 }
+      }) || paxResult;
+    }
+  } catch (e) {
+    console.error("❌ PAX CALC FAILED", e);
+  }
+
+  const pax = Number(paxResult.pax || 0);
+  const loadFactor =
+    Number(paxResult.loadFactor ?? (seats > 0 ? pax / seats : 0));
 
   /* ============================================================
      💰 REVENUE (SIMPLE & STABLE)
