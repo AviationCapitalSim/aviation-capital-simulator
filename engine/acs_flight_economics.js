@@ -76,22 +76,23 @@ if (!continentA || !continentB) {
 const distanceNM = Number(d.distanceNM || d.distance || 0);
    
 /* ============================================================
-   🧑‍🤝‍🧑 PAX (CANONICAL — FINAL)
+   🧑‍🤝‍🧑 PASSENGER CALCULATION — CANONICAL (FIX)
    ============================================================ */
 
+// Ejecutar Passenger Engine AQUÍ (runtime real)
 const paxResult = ACS_PAX.calculate({
   route: {
-    distanceNM,
+    distanceNM: d.distanceNM,
     continentA,
     continentB
   },
   time: {
-    year,
+    year: d.year,
     hour: window.ACS_TIME?.hour ?? 12
   },
   aircraft: {
-    seats,
-    comfortIndex
+    seats: seats,
+    comfortIndex: comfortIndex
   },
   airline: {
     marketingLevel: 1.0,
@@ -103,13 +104,14 @@ const paxResult = ACS_PAX.calculate({
   }
 });
 
-const pax =
-  paxResult?.pax ??
-  0;
+// Inyectar resultados DIRECTAMENTE en economics
+const pax = paxResult?.pax ?? 0;
+const loadFactor = paxResult?.loadFactor ?? 0;
 
-const loadFactor =
-  paxResult?.loadFactor ??
-  (seats > 0 ? pax / seats : 0);
+// Persistencia CANONICAL
+d.pax = pax;
+d.loadFactor = loadFactor;
+d.paxPerNM = d.distanceNM > 0 ? pax / d.distanceNM : 0;
 
   /* ============================================================
      💰 REVENUE (SIMPLE, STABLE)
