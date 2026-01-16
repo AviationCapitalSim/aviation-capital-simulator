@@ -1,7 +1,7 @@
 /* ============================================================
    ✈️ ACS FLIGHT ECONOMICS ENGINE — CORE v2.0 (CLEAN)
    ------------------------------------------------------------
-   ✔ Single event: ACS_FLIGHT_ARRIVED
+   ✔ Single event: ACS_FLIGHT_ARRIVAL
    ✔ Passenger source: ACS_PAX
    ✔ Finance via ACS_registerIncome ONLY
    ✔ Live / Weekly via ACS_updateLiveWeekly
@@ -23,7 +23,7 @@ window.ACS_ECON_ProcessedFlights =
    ✈️ ECON LISTENER — ARRIVED (CANONICAL)
    ============================================================ */
 
-window.addEventListener("ACS_FLIGHT_ARRIVED", function (ev) {
+window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
 
   try {
 
