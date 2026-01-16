@@ -330,8 +330,8 @@ const profit = revenue - costTotal;
     loadFactor,
 
     revenue,
-    costTotal: 0,
-    profit: revenue,
+    costTotal: costFuel,
+    profit: revenue - costFuel,
 
     paxPerNM,
     revPerNM,
