@@ -20,7 +20,7 @@ window.ACS_ECON_ProcessedFlights =
   window.ACS_ECON_ProcessedFlights || new Set();
 
 /* ============================================================
-   ✈️ ECON LISTENER — ARRIVED (CANONICAL)
+   ✈️ ECON LISTENER — ARRIVAL (CANONICAL)
    ============================================================ */
 
 window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
