@@ -73,73 +73,29 @@ if (!continentA || !continentB) {
 /* ============================================================
    📏 DISTANCE NORMALIZATION (CRITICAL)
    ============================================================ */
+   
 const distanceNM = Number(d.distanceNM || d.distance || 0);
    
 /* ============================================================
-   🧑‍🤝‍🧑 PASSENGER ENGINE — CANONICAL BRIDGE (FINAL)
+   🧑‍🤝‍🧑 PAX — CANONICAL SOURCE (FINAL)
    ============================================================ */
 
-let paxResult = null;
-
-try {
-  paxResult = ACS_PAX.calculate({
-    route: {
-      distanceNM,
-      continentA,
-      continentB
-    },
-    time: {
-      year,
-      hour: window.ACS_TIME?.hour ?? 12
-    },
-    aircraft: {
-      seats,
-      comfortIndex
-    },
-    airline: {
-      marketingLevel: 1.0,
-      reputation: 1.0
-    },
-    market: {
-      frequencyFactor: 1.0,
-      competitors: 1
-    }
-  });
-} catch (e) {
-  console.error("❌ PAX CALC FAILED", e);
-}
+const pax        = Number(paxResult?.pax ?? 0);
+const loadFactor = Number(paxResult?.loadFactor ?? 0);
 
 /* ============================================================
-   🧮 PAX NORMALIZATION — SINGLE SOURCE OF TRUTH
+   💰 REVENUE — BASED ON PAX (SINGLE SOURCE)
    ============================================================ */
 
-const pax =
-  paxResult && typeof paxResult.pax === "number"
-    ? paxResult.pax
-    : 0;
+const paxPerNM = distanceNM > 0 ? pax / distanceNM : 0;
+const revPerNM = paxPerNM * farePerPaxNM;
+const revenue  = revPerNM * distanceNM;
 
-const loadFactor =
-  paxResult && typeof paxResult.loadFactor === "number"
-    ? paxResult.loadFactor
-    : (seats > 0 ? pax / seats : 0);
-
-/* DEBUG — DO NOT REMOVE */
-console.log("🧑‍🤝‍🧑 PAX BRIDGE", {
-  paxResult,
+console.log("✅ ECON FINAL", {
   pax,
-  loadFactor
+  loadFactor,
+  revenue
 });
-
-
-  /* ============================================================
-     💰 REVENUE (SIMPLE, STABLE)
-     ============================================================ */
-  let ticket = 0;
-  if (d.distanceNM < 500) ticket = 80;
-  else if (d.distanceNM < 1500) ticket = 150;
-  else ticket = 300;
-
-  const revenue = pax * ticket;
 
   /* ============================================================
      📐 METRICS (NO COSTS YET)
