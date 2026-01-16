@@ -234,3 +234,30 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
   console.log("🟧 [ECON] Storage Arrival Listener armed");
 
 })();
+
+/* ============================================================
+   🔗 SKYTRACK → ECONOMICS BRIDGE (CANONICAL)
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
+
+  const d = ev?.detail;
+  if (!d) return;
+
+  console.log("💰 ECON BRIDGE ARRIVAL", d);
+
+  // Payload mínimo garantizado
+  const payload = {
+    flightId: d.flightId,
+    aircraftId: d.aircraftId,
+    origin: d.origin,
+    destination: d.destination,
+    distanceNM: Number(d.distanceNM || 0),
+    depAbsMin: Number(d.depAbsMin || 0)
+  };
+
+  // Re-emite evento económico REAL
+  window.dispatchEvent(
+    new CustomEvent("ACS_FLIGHT_ECONOMICS", { detail: payload })
+  );
+});
