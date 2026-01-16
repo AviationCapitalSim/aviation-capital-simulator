@@ -44,8 +44,30 @@ function ACS_buildFlightEconomics(d) {
     window.ACS_TIME?.year ||
     1944;
 
-  const seats = Number(ac.seats || 0);
-  const comfortIndex = Number(ac.comfortIndex || 1);
+  /* ============================================================
+   🟧 E1 — SEAT RESOLVER (ROBUST)
+   ------------------------------------------------------------
+   Fix: PAX = 0 cuando el avión no usa el campo "seats"
+   ============================================================ */
+   
+const seats =
+  Number(
+    ac.seats ??
+    ac.seatCount ??
+    ac.seatsTotal ??
+    ac.capacity ??
+    ac.paxCapacity ??
+    ac.pax ??
+    0
+  ) || 0;
+
+const comfortIndex =
+  Number(
+    ac.comfortIndex ??
+    ac.comfort ??
+    ac.cabinComfort ??
+    1
+  ) || 1;
 
 /* ============================================================
    🌍 CONTINENT NORMALIZATION (WORLD → ECONOMICS)
