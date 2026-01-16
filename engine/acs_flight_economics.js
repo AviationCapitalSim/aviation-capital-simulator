@@ -158,6 +158,109 @@ function ACS_buildFlightEconomics(d) {
   const paxPerNM = pax / distanceNM;
   const revPerNM = revenue / distanceNM;
 
+/* ============================================================
+   🟦 E5 — COSTS LAYER (PREP)
+   ------------------------------------------------------------
+   • Fuel (per NM, real aircraft consumption)
+   • Airport costs (landing + slot + handling)
+   • Historical scaling (1940–2026)
+   • NO Finance writes here
+   ============================================================ */
+
+/* ============================================================
+   🟦 E5.1 — FUEL COST (PER NM · HISTORICAL)
+   ============================================================ */
+
+function ACS_resolveFuelBurnPerNM(ac, year) {
+  // prioridad: dato real del avión
+  const direct =
+    ac.fuelBurnPerNM ??
+    ac.fuel_burn_nm ??
+    ac.fuelBurn ??
+    null;
+
+  if (Number(direct) > 0) return Number(direct);
+
+  // fallback histórico por época (kg / NM)
+  if (year <= 1945) return 3.5;   // DC-3 / DC-4
+  if (year <= 1955) return 4.5;   // Constellation
+  if (year <= 1965) return 6.5;   // 707 / DC-8
+  if (year <= 1975) return 7.5;
+  if (year <= 1990) return 8.5;
+  if (year <= 2010) return 9.5;
+  return 10.5;
+}
+
+function ACS_resolveFuelPricePerKg(year) {
+  // precio histórico aproximado (USD / kg)
+  if (year <= 1945) return 0.12;
+  if (year <= 1955) return 0.18;
+  if (year <= 1965) return 0.25;
+  if (year <= 1975) return 0.35;
+  if (year <= 1990) return 0.45;
+  if (year <= 2010) return 0.65;
+  return 0.85;
+}
+
+const fuelBurnPerNM = ACS_resolveFuelBurnPerNM(ac, year);
+const fuelPriceKg = ACS_resolveFuelPricePerKg(year);
+
+const fuelKg = fuelBurnPerNM * distanceNM;
+const costFuel = fuelKg * fuelPriceKg;
+
+/* ============================================================
+   🟦 E5.2 — AIRPORT COSTS (LANDING + SLOT + HANDLING)
+   ------------------------------------------------------------
+   • Economics-local
+   • Airport-based
+   • Historical scaling
+   ============================================================ */
+
+function ACS_resolveAirportCosts(icao, year) {
+  if (!icao) return { landing: 0, slot: 0, handling: 0 };
+
+  // base genérica (USD)
+  let landing = 200;
+  let slot = 150;
+  let handling = 100;
+
+  // histórico
+  if (year <= 1945) {
+    landing *= 0.25;
+    slot *= 0.20;
+    handling *= 0.30;
+  } else if (year <= 1965) {
+    landing *= 0.45;
+    slot *= 0.40;
+    handling *= 0.50;
+  } else if (year <= 1990) {
+    landing *= 0.75;
+    slot *= 0.70;
+    handling *= 0.80;
+  }
+
+  return { landing, slot, handling };
+}
+
+const apCostOrigin = ACS_resolveAirportCosts(d.origin, year);
+const apCostDest   = ACS_resolveAirportCosts(d.destination, year);
+
+const costLanding  = apCostOrigin.landing + apCostDest.landing;
+const costSlot     = apCostOrigin.slot + apCostDest.slot;
+const costHandling = apCostOrigin.handling + apCostDest.handling;
+
+/* ============================================================
+   🟦 E5.3 — COST TOTAL & METRICS
+   ============================================================ */
+
+const costAirport = costLanding + costSlot + costHandling;
+const costTotal = costFuel + costAirport;
+
+const costPerNM = distanceNM > 0 ? costTotal / distanceNM : 0;
+const costPerPax = pax > 0 ? costTotal / pax : 0;
+
+const profit = revenue - costTotal;
+   
   /* ============================================================
      📦 FINAL ECONOMICS OBJECT
      ============================================================ */
