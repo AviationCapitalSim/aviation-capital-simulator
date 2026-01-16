@@ -51,9 +51,19 @@ ACS_PAX.getBaseDailyDemand = function ({
   else if (year < 1970) yearFactor = 0.55;
   else if (year < 1990) yearFactor = 0.75;
 
-  /* -------- continental factor -------- */
-  let contFactor = 0.6;
-  if (continentA && continentA === continentB) contFactor = 1.0;
+  /* -------- continental factor (ROBUST) -------- */
+
+let contFactor = 1.0;
+
+// If both continents exist and are different → reduce demand
+if (continentA && continentB && continentA !== continentB) {
+  contFactor = 0.6;
+}
+
+// If continent data is missing → assume same-continent (EARLY AVIATION)
+if (!continentA || !continentB) {
+  contFactor = 1.0;
+}
 
   /* -------- base global demand -------- */
   const BASE = 220; // world baseline (per route/day)
