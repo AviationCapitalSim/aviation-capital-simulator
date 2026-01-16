@@ -250,6 +250,31 @@ const slotArrival = ACS_getSlotCost(
 );
 
 const costSlots = slotDeparture + slotArrival;
+   
+  /* ============================================================
+     🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
+     ============================================================ */
+  let paxResult = { pax: 0, loadFactor: 0, demandUsed: 0 };
+  try {
+    if (window.ACS_PAX && typeof window.ACS_PAX.calculate === "function") {
+      paxResult = window.ACS_PAX.calculate({
+        route: { distanceNM, continentA, continentB },
+        time: {
+          year,
+          hour: window.ACS_TIME?.hour ?? 12
+        },
+        aircraft: { seats, comfortIndex },
+        airline: { marketingLevel: 1.0, reputation: 1.0 },
+        market: { frequencyFactor: 1.0, competitors: 1 }
+      }) || paxResult;
+    }
+  } catch (e) {
+    console.error("❌ PAX CALC FAILED", e);
+  }
+
+  const pax = Number(paxResult.pax || 0);
+  const loadFactor =
+    Number(paxResult.loadFactor ?? (seats > 0 ? pax / seats : 0));
 
 /* ============================================================
    🧰 HANDLING COST (REALISTIC · CONTINUOUS)
@@ -281,33 +306,7 @@ if (year >= 2010) eraFactor = 2.3;
 // Final handling cost
 const handlingCost = Math.round(
   (handlingBase + pax * paxRate) * eraFactor
-);
-   
-  /* ============================================================
-     🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
-     ============================================================ */
-  let paxResult = { pax: 0, loadFactor: 0, demandUsed: 0 };
-  try {
-    if (window.ACS_PAX && typeof window.ACS_PAX.calculate === "function") {
-      paxResult = window.ACS_PAX.calculate({
-        route: { distanceNM, continentA, continentB },
-        time: {
-          year,
-          hour: window.ACS_TIME?.hour ?? 12
-        },
-        aircraft: { seats, comfortIndex },
-        airline: { marketingLevel: 1.0, reputation: 1.0 },
-        market: { frequencyFactor: 1.0, competitors: 1 }
-      }) || paxResult;
-    }
-  } catch (e) {
-    console.error("❌ PAX CALC FAILED", e);
-  }
-
-  const pax = Number(paxResult.pax || 0);
-  const loadFactor =
-    Number(paxResult.loadFactor ?? (seats > 0 ? pax / seats : 0));
-
+);   
   /* ============================================================
      💰 REVENUE (SIMPLE & STABLE)
      ============================================================ */
