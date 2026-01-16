@@ -109,32 +109,36 @@ document.addEventListener("DOMContentLoaded", normalizeFinance);
    💰 CANONICAL FINANCE API
    ============================================================ */
 
-function ACS_registerIncome(type, payload, source){
+function ACS_registerIncome(type, payload, source) {
 
   const f = normalizeFinance();
 
   let value = 0;
-  if (typeof payload === "number") value = payload;
-  if (payload && typeof payload === "object")
+  if (typeof payload === "number") {
+    value = payload;
+  } else if (payload && typeof payload === "object") {
     value = Number(payload.amount || payload.revenue || payload.income || 0);
+  }
 
   // 🔒 validaciones
   if (value <= 0) return;
-  if (!f.income || typeof f.income !== "object") f.income = {};
-  if (f.income[type] === undefined) f.income[type] = 0;
+
+  if (!f.income || typeof f.income !== "object") {
+    f.income = {};
+  }
+
+  if (f.income[type] === undefined) {
+    f.income[type] = 0;
+  }
 
   /* ============================
      💰 INCOME BY TYPE
      ============================ */
   f.income[type] += value;
 
-  /* ============================================================
-     ✈️ OPERATING INCOME → MONTHLY REVENUE
-     ------------------------------------------------------------
-     • SOLO ingresos operativos (vuelos)
-     • NO créditos
-     • NO ajustes manuales
-     ============================================================ */
+  /* ============================
+     ✈️ OPERATING INCOME
+     ============================ */
   if (
     type === "routes" ||
     type === "route" ||
@@ -149,24 +153,11 @@ function ACS_registerIncome(type, payload, source){
   f.capital += value;
 
   /* ============================
-     📈 PROFIT (MONTH)
+     📈 PROFIT
      ============================ */
   f.profit = f.revenue - f.expenses;
 
   saveFinance(f);
-}
-
- // 🧾 LOG
-// ⛔ INCOME NO SE REGISTRA EN ACS_Log
-// El log es solo para EXPENSE / INFO
-/*
-ACS_logTransaction({
-  type: "INCOME",
-  source: source || incomeType,
-  amount: value
-});
-*/
-
 }
 
 function ACS_registerExpense(type, amount, source){
