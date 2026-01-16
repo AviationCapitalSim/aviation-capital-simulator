@@ -35,7 +35,16 @@ function ACS_buildFlightEconomics(d) {
     return null;
   }
 
-  const year = d.year || new Date().getFullYear();
+  /* ============================================================
+   🕒 SIM YEAR — SOURCE OF TRUTH: ACS_TIME
+   ============================================================ */
+   
+  const year =
+  d.year ||
+  window.ACS_TIME?.currentYear ||
+  window.ACS_TIME?.year ||
+  1944;
+
   const seats = ac.seats || 0;
   const comfortIndex = ac.comfortIndex || 1;
 
