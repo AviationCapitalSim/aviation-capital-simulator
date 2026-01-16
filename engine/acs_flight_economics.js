@@ -79,6 +79,14 @@ const paxResult = ACS_PAX.calculate({
   aircraft: {
     seats,
     comfortIndex
+  },
+  airline: {
+    marketingLevel: 1.0,
+    reputation: 1.0
+  },
+  market: {
+    frequencyFactor: 1.0,
+    competitors: 1
   }
 });
 
