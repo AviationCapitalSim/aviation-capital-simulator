@@ -152,6 +152,7 @@ if (!fuelBurnKgPerHour && seats > 0) {
 }
 
 // 4️⃣ Flight time estimation (NM / kt)
+   
 const cruiseSpeed =
   Number(ac.cruiseSpeed) ||
   Number(ac.speed_kts) ||
@@ -171,6 +172,52 @@ const costFuel =
   fuelBurnKgPerHour && flightHours
     ? fuelBurnKgPerHour * flightHours * fuelPricePerKg
     : 0;
+
+/* ============================================================
+   🟧 A6 — SLOT COSTS (DYNAMIC & HISTORICAL)
+   ------------------------------------------------------------
+   • Per departure + arrival
+   • Based on continent + year + operation type
+   • NO external engines
+   ============================================================ */
+
+function ACS_getSlotCost(airportICAO, year, isInternational) {
+  const idx = window.ACS_AIRPORT_INDEX || {};
+  const ap = idx[airportICAO];
+
+  // Base fallback (very small airfield)
+  let baseSlot = 5;
+
+  // Continent-based baseline
+  const continent = ap?.continent || "EU";
+
+  if (continent === "EU") baseSlot = 20;
+  if (continent === "NA") baseSlot = 25;
+  if (continent === "AS") baseSlot = 30;
+  if (continent === "AF") baseSlot = 15;
+  if (continent === "SA") baseSlot = 18;
+  if (continent === "OC") baseSlot = 22;
+
+  // International multiplier
+  if (isInternational) baseSlot *= 1.5;
+
+  // Historical inflation / complexity
+  if (year >= 1960) baseSlot *= 1.2;
+  if (year >= 1980) baseSlot *= 1.5;
+  if (year >= 2000) baseSlot *= 2.0;
+
+  return Math.round(baseSlot);
+}
+
+// Determine operation type
+const isInternational =
+  continentA && continentB && continentA !== continentB;
+
+// Slot costs
+const slotDeparture = ACS_getSlotCost(d.origin, year, isInternational);
+const slotArrival = ACS_getSlotCost(d.destination, year, isInternational);
+
+const costSlots = slotDeparture + slotArrival;
    
   /* ============================================================
      🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
@@ -329,8 +376,8 @@ const profit = revenue - costTotal;
     loadFactor,
 
     revenue,
-    costTotal: costFuel,
-    profit: revenue - costFuel,
+    costTotal: costFuel + costSlots,
+    profit: revenue - (costFuel + costSlots),
 
     paxPerNM,
     revPerNM,
