@@ -261,7 +261,6 @@ const fuelBurnPerNM = ACS_resolveFuelBurnPerNM(ac, year);
 const fuelPriceKg = ACS_resolveFuelPricePerKg(year);
 
 const fuelKg = fuelBurnPerNM * distanceNM;
-const costFuel = fuelKg * fuelPriceKg;
 
 /* ============================================================
    🟦 E5.2 — AIRPORT COSTS (LANDING + SLOT + HANDLING)
