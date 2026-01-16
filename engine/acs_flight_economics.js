@@ -49,17 +49,23 @@ function ACS_buildFlightEconomics(d) {
   const comfortIndex = ac.comfortIndex || 1;
 
   /* ============================================================
-     🧑‍🤝‍🧑 PAX (CANONICAL)
-     ============================================================ */
-  const paxResult = ACS_PAX.calculate({
-    distanceNM: d.distanceNM,
-    seats,
-    year,
-    comfortIndex
-  });
+   🧑‍🤝‍🧑 PAX (CANONICAL — NORMALIZED)
+   ============================================================ */
+const paxResult = ACS_PAX.calculate({
+  distanceNM: d.distanceNM,
+  seats,
+  year,
+  comfortIndex
+});
 
-  const pax = paxResult?.pax || 0;
-  const loadFactor = paxResult?.loadFactor || 0;
+const pax =
+  paxResult?.paxFinal ??
+  paxResult?.pax ??
+  0;
+
+const loadFactor =
+  paxResult?.loadFactor ??
+  (seats > 0 ? pax / seats : 0);
 
   /* ============================================================
      💰 REVENUE (SIMPLE, STABLE)
