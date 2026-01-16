@@ -76,7 +76,7 @@ const paxResult = ACS_PAX.calculate({
   distanceNM,
   continentA,
   continentB
-}
+},
 
   time: {
     year,
