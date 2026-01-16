@@ -375,9 +375,11 @@ const profit = revenue - costTotal;
     pax,
     loadFactor,
 
-    revenue,
-    costTotal: costFuel + costSlots,
-    profit: revenue - (costFuel + costSlots),
+      revenue,
+     fuelCost: costFuel,
+     slotCost: costSlots,
+     costTotal: costFuel + costSlots,
+     profit: revenue - (costFuel + costSlots),
 
     paxPerNM,
     revPerNM,
