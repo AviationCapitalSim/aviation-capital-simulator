@@ -210,3 +210,43 @@ function ACS_checkBankruptcy(){
 if (typeof registerTimeListener === "function"){
   registerTimeListener(ACS_checkBankruptcy);
 }
+
+/* ============================================================
+   ⏱️ FINANCE ⇄ TIME SYNC (MONTH ROLLOVER)
+   ============================================================ */
+
+function ACS_syncMonthWithTime(simDate){
+  if (!(simDate instanceof Date)) return;
+
+  const f = normalizeFinance();
+
+  const month =
+    simDate.toLocaleString("en-US", {
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC"
+    }).toUpperCase();
+
+  if (f.month !== month){
+
+    // cerrar mes anterior
+    f.history.push({
+      month: f.month,
+      revenue: f.revenue,
+      expenses: f.expenses,
+      profit: f.profit
+    });
+
+    // abrir nuevo mes
+    f.month = month;
+    f.revenue = 0;
+    f.expenses = f.cost.salaries;
+    f.profit = -f.expenses;
+
+    saveFinance(f);
+  }
+}
+
+if (typeof registerTimeListener === "function"){
+  registerTimeListener(ACS_syncMonthWithTime);
+}
