@@ -118,6 +118,61 @@ function ACS_buildFlightEconomics(d) {
   if (!distanceNM || distanceNM <= 0) return null;
 
   /* ============================================================
+   🟧 A5 — FUEL COST (CANONICAL AIRCRAFT DB)
+   ------------------------------------------------------------
+   • Primary: fuel_burn_kgph from Aircraft DB
+   • Fallback: heuristic ONLY if DB missing
+   • Historical safe (1940 → 2026)
+   ============================================================ */
+
+let fuelBurnKgPerHour = null;
+
+// 1️⃣ Try operational aircraft first
+if (ac.fuel_burn_kgph) {
+  fuelBurnKgPerHour = Number(ac.fuel_burn_kgph);
+}
+
+// 2️⃣ Resolve from Aircraft DB (canonical)
+if (!fuelBurnKgPerHour && window.ACS_AIRCRAFT_DB) {
+  const dbMatch = window.ACS_AIRCRAFT_DB.find(
+    a =>
+      a.manufacturer === ac.manufacturer &&
+      a.model === ac.model &&
+      a.year <= year
+  );
+
+  if (dbMatch?.fuel_burn_kgph) {
+    fuelBurnKgPerHour = Number(dbMatch.fuel_burn_kgph);
+  }
+}
+
+// 3️⃣ LAST resort fallback (temporary, safe)
+if (!fuelBurnKgPerHour && seats > 0) {
+  fuelBurnKgPerHour = seats * 2.5; // conservative historical heuristic
+}
+
+// 4️⃣ Flight time estimation (NM / kt)
+const cruiseSpeed =
+  Number(ac.cruiseSpeed) ||
+  Number(ac.speed_kts) ||
+  Number(ac.data?.speed_kts) ||
+  180; // DC-3 safe default
+
+const flightHours = distanceNM / cruiseSpeed;
+
+// 5️⃣ Historical fuel price (USD/kg)
+let fuelPricePerKg = 0.8; // default 1940s
+if (year >= 1960) fuelPricePerKg = 0.6;
+if (year >= 1980) fuelPricePerKg = 0.9;
+if (year >= 2000) fuelPricePerKg = 1.2;
+
+// 6️⃣ Final fuel cost
+const costFuel =
+  fuelBurnKgPerHour && flightHours
+    ? fuelBurnKgPerHour * flightHours * fuelPricePerKg
+    : 0;
+   
+  /* ============================================================
      🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
      ============================================================ */
   let paxResult = { pax: 0, loadFactor: 0, demandUsed: 0 };
