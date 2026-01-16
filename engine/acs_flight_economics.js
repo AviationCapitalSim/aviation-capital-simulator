@@ -261,3 +261,67 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
     new CustomEvent("ACS_FLIGHT_ECONOMICS", { detail: payload })
   );
 });
+
+/* ============================================================
+   ✈️ FLIGHT ECONOMICS — CANONICAL CORE
+   ------------------------------------------------------------
+   • Se ejecuta SOLO al aterrizar
+   • Calcula pax + revenue
+   • Loguea cada vuelo
+   • Alimenta Finance
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
+
+  const d = ev?.detail;
+  if (!d) return;
+
+  // =========================
+  // AIRCRAFT
+  // =========================
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = fleet.find(a => a.id === d.aircraftId);
+  if (!ac) return;
+
+  // =========================
+  // PASSENGERS
+  // =========================
+  const paxData = ACS_PAX.calculate({
+    route: { distanceNM: d.distanceNM },
+    time: { year: ACS_TIME.currentTime.getUTCFullYear() },
+    aircraft: { seats: ac.seats || 0 }
+  });
+
+  const pax = Number(paxData?.pax || 0);
+  if (pax <= 0) return;
+
+  // =========================
+  // TICKET MODEL
+  // =========================
+  let ticket = 90;
+  if (d.distanceNM > 1200) ticket = 150;
+  if (d.distanceNM > 3000) ticket = 220;
+
+  const revenue = Math.round(pax * ticket);
+  if (revenue <= 0) return;
+
+  // =========================
+  // FINANCE
+  // =========================
+  ACS_registerIncome("routes", revenue, `FLIGHT ${d.origin}→${d.destination}`);
+
+  // =========================
+  // 🔥 PER-FLIGHT LOG (LO QUE PEDISTE)
+  // =========================
+  console.log(
+    "%c💰 FLIGHT ECONOMICS",
+    "color:#00ff88;font-weight:bold;",
+    {
+      aircraft: ac.model,
+      route: `${d.origin} → ${d.destination}`,
+      pax,
+      ticket,
+      revenue
+    }
+  );
+});
