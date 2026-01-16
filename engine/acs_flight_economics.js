@@ -251,6 +251,37 @@ const slotArrival = ACS_getSlotCost(
 
 const costSlots = slotDeparture + slotArrival;
 
+/* ============================================================
+   🧰 HANDLING COST (REALISTIC · CONTINUOUS)
+   ------------------------------------------------------------
+   • Per flight (arrival)
+   • Based on aircraft size, pax handled, era
+   • No airport / no hub dependency
+   ============================================================ */
+
+// Aircraft size base cost (USD)
+let handlingBase = 0;
+if (seats <= 30) handlingBase = 10;
+else if (seats <= 100) handlingBase = 25;
+else handlingBase = 60;
+
+// Pax handling rate (historical evolution)
+let paxRate = 0.8;            // pre-jet / manual era
+if (year >= 1960) paxRate = 1.5;
+if (year >= 1980) paxRate = 3.0;
+if (year >= 2000) paxRate = 6.0;
+
+// Era factor (smooth growth, no hard jumps)
+let eraFactor = 0.7;          // pre-1950
+if (year >= 1950) eraFactor = 1.0;
+if (year >= 1970) eraFactor = 1.4;
+if (year >= 1990) eraFactor = 1.8;
+if (year >= 2010) eraFactor = 2.3;
+
+// Final handling cost
+const handlingCost = Math.round(
+  (handlingBase + pax * paxRate) * eraFactor
+);
    
   /* ============================================================
      🧑‍🤝‍🧑 PASSENGER ENGINE (SINGLE CALL)
