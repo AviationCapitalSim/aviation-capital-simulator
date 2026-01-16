@@ -51,12 +51,23 @@ function ACS_buildFlightEconomics(d) {
   /* ============================================================
    🧑‍🤝‍🧑 PAX (CANONICAL — NORMALIZED)
    ============================================================ */
-const paxResult = ACS_PAX.calculate({
-  distance: d.distanceNM,   // 🔑 CLAVE CORRECTA PARA PAX ENGINE
-  seats,
-  year,
-  comfortIndex
+
+  const paxResult = ACS_PAX.calculate({
+  route: {
+    distanceNM: d.distanceNM,
+    continentA: d.continentA || null,
+    continentB: d.continentB || null
+  },
+  time: {
+    year,
+    hour: window.ACS_TIME?.hour ?? 12
+  },
+  aircraft: {
+    seats,
+    comfortIndex
+  }
 });
+
 
 const pax =
   paxResult?.paxFinal ??
