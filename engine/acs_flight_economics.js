@@ -49,14 +49,31 @@ function ACS_buildFlightEconomics(d) {
   const comfortIndex = ac.comfortIndex || 1;
 
   /* ============================================================
+   🌍 ROUTE CONTEXT — CONTINENT RESOLUTION
+   ============================================================ */
+   let continentA = d.continentA;
+   let continentB = d.continentB;
+
+   if (!continentA || !continentB) {
+   try {
+    const idx = window.ACS_AIRPORT_INDEX || {};
+    continentA = idx[d.origin]?.continent || null;
+    continentB = idx[d.destination]?.continent || null;
+  } catch {}
+}
+
+   
+  /* ============================================================
    🧑‍🤝‍🧑 PAX (CANONICAL — NORMALIZED)
    ============================================================ */
 
   const paxResult = ACS_PAX.calculate({
   route: {
-    distanceNM: d.distanceNM,
-    continentA: d.continentA || null,
-    continentB: d.continentB || null
+  distanceNM: d.distanceNM,
+  continentA,
+  continentB
+},
+
   },
   time: {
     year,
