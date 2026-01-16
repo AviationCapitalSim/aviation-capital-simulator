@@ -196,9 +196,13 @@ if (!airline || Object.keys(airline).length === 0) {
     });
 
     /* -------- final pax -------- */
+     
     const pax = Math.floor(
-      Math.min(seats, hourlyDemand * share)
-    );
+    Math.min(
+    seats,
+    hourlyDemand * (share > 0 ? share : 0.3)
+  )
+);
 
     return {
       pax,
