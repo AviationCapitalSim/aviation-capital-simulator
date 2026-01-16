@@ -136,6 +136,29 @@ ACS_PAX.calculate = function (input = {}) {
     const airline = input.airline || {};
     const market  = input.market  || {};
 
+    /* ============================================================
+   🟡 BOOTSTRAP DEFAULTS — TEMPORARY (ACS EARLY GAME)
+   ------------------------------------------------------------
+   Allows passenger flow before full Market/Airline modules
+   ============================================================ */
+
+// Default hour (assume peak hour if not provided)
+if (typeof time.hour !== "number") {
+  time.hour = 12; // midday peak
+}
+
+// Default market (assume low competition / monopoly)
+if (!market || Object.keys(market).length === 0) {
+  market.frequencyFactor = 1.0;
+  market.competitors = 1;
+}
+
+// Default airline (neutral reputation/marketing)
+if (!airline || Object.keys(airline).length === 0) {
+  airline.marketingLevel = 1.0;
+  airline.reputation = 1.0;
+}
+     
     const seats = Math.max(0, safeNum(aircraft.seats));
 
     if (seats === 0) {
