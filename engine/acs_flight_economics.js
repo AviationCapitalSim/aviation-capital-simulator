@@ -174,7 +174,7 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
 (function ACS_ECON_StorageArrivalListener(){
 
   const ARRIVAL_KEYS = [
-    "ACS__FLIGHT_ARRIVED_BRIDGE_V1",
+    "ACS__FLIGHT_ARRIVAL_BRIDGE_V1",
     "ACS__ARRIVAL_BRIDGE_V1"
   ];
 
