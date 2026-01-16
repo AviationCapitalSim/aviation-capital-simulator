@@ -76,42 +76,60 @@ if (!continentA || !continentB) {
 const distanceNM = Number(d.distanceNM || d.distance || 0);
    
 /* ============================================================
-   🧑‍🤝‍🧑 PASSENGER CALCULATION — CANONICAL (FIX)
+   🧑‍🤝‍🧑 PASSENGER ENGINE — CANONICAL BRIDGE (FINAL)
    ============================================================ */
 
-// Ejecutar Passenger Engine AQUÍ (runtime real)
-const paxResult = ACS_PAX.calculate({
-  route: {
-    distanceNM: d.distanceNM,
-    continentA,
-    continentB
-  },
-  time: {
-    year: d.year,
-    hour: window.ACS_TIME?.hour ?? 12
-  },
-  aircraft: {
-    seats: seats,
-    comfortIndex: comfortIndex
-  },
-  airline: {
-    marketingLevel: 1.0,
-    reputation: 1.0
-  },
-  market: {
-    frequencyFactor: 1.0,
-    competitors: 1
-  }
+let paxResult = null;
+
+try {
+  paxResult = ACS_PAX.calculate({
+    route: {
+      distanceNM,
+      continentA,
+      continentB
+    },
+    time: {
+      year,
+      hour: window.ACS_TIME?.hour ?? 12
+    },
+    aircraft: {
+      seats,
+      comfortIndex
+    },
+    airline: {
+      marketingLevel: 1.0,
+      reputation: 1.0
+    },
+    market: {
+      frequencyFactor: 1.0,
+      competitors: 1
+    }
+  });
+} catch (e) {
+  console.error("❌ PAX CALC FAILED", e);
+}
+
+/* ============================================================
+   🧮 PAX NORMALIZATION — SINGLE SOURCE OF TRUTH
+   ============================================================ */
+
+const pax =
+  paxResult && typeof paxResult.pax === "number"
+    ? paxResult.pax
+    : 0;
+
+const loadFactor =
+  paxResult && typeof paxResult.loadFactor === "number"
+    ? paxResult.loadFactor
+    : (seats > 0 ? pax / seats : 0);
+
+/* DEBUG — DO NOT REMOVE */
+console.log("🧑‍🤝‍🧑 PAX BRIDGE", {
+  paxResult,
+  pax,
+  loadFactor
 });
 
-// Inyectar resultados DIRECTAMENTE en economics
-const pax = paxResult?.pax ?? 0;
-const loadFactor = paxResult?.loadFactor ?? 0;
-
-// Persistencia CANONICAL
-d.pax = pax;
-d.loadFactor = loadFactor;
-d.paxPerNM = d.distanceNM > 0 ? pax / d.distanceNM : 0;
 
   /* ============================================================
      💰 REVENUE (SIMPLE, STABLE)
