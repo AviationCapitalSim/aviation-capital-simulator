@@ -1,327 +1,135 @@
 /* ============================================================
-   ✈️ ACS FLIGHT ECONOMICS ENGINE — CORE v2.0 (CLEAN)
+   ✈️ ACS FLIGHT ECONOMICS ENGINE — CORE v3.0 (STABLE)
    ------------------------------------------------------------
-   ✔ Single event: ACS_FLIGHT_ARRIVAL
-   ✔ Passenger source: ACS_PAX
-   ✔ Finance via ACS_registerIncome ONLY
-   ✔ Live / Weekly via ACS_updateLiveWeekly
-   ✔ Dedup by aircraftId + depAbsMin
+   ✔ Trigger: ACS_FLIGHT_ARRIVAL (SkyTrack)
+   ✔ PAX source: ACS_PAX (canonical)
+   ✔ Aircraft source: ACS_MyAircraft
+   ✔ One flight → one economics object
+   ✔ NO fuel / NO maintenance / NO finance yet
    ------------------------------------------------------------
-   Date: 15 JAN 2026
+   Date: 16 JAN 2026
    ============================================================ */
 
-console.log("🧠 ACS_FLIGHT_ECONOMICS v2.0 LOADED");
+console.log("🧠 ACS_FLIGHT_ECONOMICS v3.0 LOADED");
 
 /* ============================================================
-   🔒 DEDUP STORE (GLOBAL SAFE)
+   🔒 DEDUP STORE (PER SESSION)
    ============================================================ */
-
-window.ACS_ECON_ProcessedFlights =
-  window.ACS_ECON_ProcessedFlights || new Set();
+const ACS_ECO_DEDUP = new Set();
 
 /* ============================================================
-   ✈️ ECON LISTENER — ARRIVAL (CANONICAL)
+   🧠 CORE — BUILD FLIGHT ECONOMICS OBJECT
    ============================================================ */
+function ACS_buildFlightEconomics(d) {
 
-window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
-
-  try {
-
-    const d = ev?.detail;
-    if (!d) return;
-
-    /* ============================
-       🧩 NORMALIZE PAYLOAD
-       ============================ */
-    const flight = {
-      flightId: d.flightId || null,
-      aircraftId: d.aircraftId || null,
-      origin: d.origin || null,
-      destination: d.destination || null,
-      distanceNM: Number(d.distanceNM || 0),
-      depAbsMin: Number(d.depAbsMin)
-    };
-
-    if (
-      !flight.aircraftId ||
-      !flight.origin ||
-      !flight.destination ||
-      !Number.isFinite(flight.distanceNM) ||
-      !Number.isFinite(flight.depAbsMin)
-    ) return;
-
-    /* ============================
-       🔒 DEDUP (SAFE)
-       ============================ */
-    window.ACS_ECON_ProcessedFlights =
-      window.ACS_ECON_ProcessedFlights || new Set();
-
-    const econKey = `${flight.aircraftId}|${flight.depAbsMin}`;
-    if (window.ACS_ECON_ProcessedFlights.has(econKey)) return;
-    window.ACS_ECON_ProcessedFlights.add(econKey);
-
-    /* ============================
-       ✈️ AIRCRAFT (REAL FLEET)
-       ============================ */
-    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    const ac = fleet.find(a => a.id === flight.aircraftId);
-    if (!ac) return;
-
-    /* ============================
-       ⏱ SIM TIME
-       ============================ */
-    const simTime =
-      window.ACS_TIME?.currentTime instanceof Date
-        ? window.ACS_TIME.currentTime
-        : new Date();
-
-    /* ============================
-       🧍 PASSENGERS (PAX ENGINE)
-       ============================ */
-    if (!window.ACS_PAX || typeof ACS_PAX.calculate !== "function") return;
-
-    const paxData = ACS_PAX.calculate({
-      route: { distanceNM: flight.distanceNM },
-      time: {
-        hour: simTime.getUTCHours(),
-        year: simTime.getUTCFullYear()
-      },
-      aircraft: {
-        seats: ac.seats || 0,
-        comfortIndex: ac.comfortIndex || 1.0
-      }
-    });
-
-    const pax = Number(paxData?.pax || 0);
-    if (pax <= 0) return;
-
-    /* ============================
-       💵 TICKET MODEL
-       ============================ */
-    let ticket = 90;
-    if (flight.distanceNM > 3000) ticket = 220;
-    else if (flight.distanceNM > 1200) ticket = 150;
-    else if (flight.distanceNM > 500)  ticket = 90;
-
-    if (simTime.getUTCFullYear() < 1960) {
-      ticket = Math.round(ticket * 0.6);
-    }
-
-    const revenue = Math.round(pax * ticket);
-    if (revenue <= 0) return;
-
-    /* ============================
-       💰 FINANCE (CANONICAL)
-       ============================ */
-    if (typeof window.ACS_registerIncome === "function") {
-      ACS_registerIncome(
-        "routes",
-        {
-          amount: revenue,
-          pax,
-          distanceNM: flight.distanceNM,
-          aircraftId: ac.id,
-          origin: flight.origin,
-          destination: flight.destination
-        },
-        `AUTO FLIGHT ${flight.origin} → ${flight.destination}`
-      );
-    }
-
-    /* ============================
-       📡 ECON EVENT (UI / STATS)
-       ============================ */
-    window.dispatchEvent(
-      new CustomEvent("ACS_FLIGHT_ECONOMICS", {
-        detail: {
-          flightId: flight.flightId,
-          aircraftId: ac.id,
-          origin: flight.origin,
-          destination: flight.destination,
-          pax,
-          distanceNM: flight.distanceNM,
-          revenue,
-          simTime
-        }
-      })
-    );
-
-    console.log(
-      "%c💰 ECON FLIGHT PROCESSED",
-      "color:#00ff88;font-weight:bold;",
-      {
-        aircraft: ac.id,
-        route: `${flight.origin} → ${flight.destination}`,
-        pax,
-        revenue
-      }
-    );
-
-  } catch (err) {
-    console.error("❌ ACS_FLIGHT_ECONOMICS ERROR", err);
-  }
-});
-
-/* ============================================================
-   🟧 A3 — ECON → ARRIVAL STORAGE LISTENER (CROSS-TAB)
-   ------------------------------------------------------------
-   • Escucha arrivals vía localStorage (SkyTrack → Finance)
-   • Convierte arrival en evento ECON local
-   • NO suma dinero aquí
-   • SOLO emite ACS_FLIGHT_ECONOMICS
-   ============================================================ */
-
-(function ACS_ECON_StorageArrivalListener(){
-
-  const ARRIVAL_KEYS = [
-    "ACS__FLIGHT_ARRIVAL_BRIDGE_V1",
-    "ACS__ARRIVAL_BRIDGE_V1"
-  ];
-
-  function safeNum(v, fb = 0){
-    const n = Number(v);
-    return Number.isFinite(n) ? n : fb;
+  if (!d || !d.flightId || !d.aircraftId || !d.distanceNM) {
+    console.warn("⚠️ ECONOMICS aborted — invalid arrival payload", d);
+    return null;
   }
 
-  function normalizeArrival(raw){
-    if (!raw) return null;
+  const aircraftList = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = aircraftList.find(a => a.id === d.aircraftId);
 
-    return {
-      flightId: raw.flightId || raw.id || null,
-      aircraftId: raw.aircraftId || raw.acId || null,
-      origin: raw.origin || raw.from || null,
-      destination: raw.destination || raw.to || null,
-      distanceNM: safeNum(raw.distanceNM ?? raw.distance ?? raw.distNM, 0),
-      pax: safeNum(raw.pax, null),
-      revenue: safeNum(raw.revenue, null),
-      ts: Date.now()
-    };
+  if (!ac) {
+    console.warn("⚠️ ECONOMICS aborted — aircraft not found", d.aircraftId);
+    return null;
   }
 
-  window.addEventListener("storage", (e) => {
-    if (!e || !ARRIVAL_KEYS.includes(e.key) || !e.newValue) return;
+  const year = d.year || new Date().getFullYear();
+  const seats = ac.seats || 0;
+  const comfortIndex = ac.comfortIndex || 1;
 
-    let raw;
-    try {
-      raw = JSON.parse(e.newValue);
-    } catch {
-      return;
-    }
-
-    const arrival = normalizeArrival(raw);
-    if (
-      !arrival ||
-      !arrival.flightId ||
-      !arrival.aircraftId ||
-      !arrival.origin ||
-      !arrival.destination
-    ) return;
-
-    console.log(
-      "%c📡 ECON STORAGE ARRIVAL → EVENT",
-      "color:#00ff80;font-weight:bold;",
-      arrival
-    );
-
-    // 👉 EVENTO ECONÓMICO LOCAL (UI / STATS)
-    window.dispatchEvent(
-      new CustomEvent("ACS_FLIGHT_ECONOMICS", {
-        detail: arrival
-      })
-    );
+  /* ============================================================
+     🧑‍🤝‍🧑 PAX (CANONICAL)
+     ============================================================ */
+  const paxResult = ACS_PAX.calculate({
+    distanceNM: d.distanceNM,
+    seats,
+    year,
+    comfortIndex
   });
 
-  console.log("🟧 [ECON] Storage Arrival Listener armed");
+  const pax = paxResult?.pax || 0;
+  const loadFactor = paxResult?.loadFactor || 0;
 
-})();
+  /* ============================================================
+     💰 REVENUE (SIMPLE, STABLE)
+     ============================================================ */
+  let ticket = 0;
+  if (d.distanceNM < 500) ticket = 80;
+  else if (d.distanceNM < 1500) ticket = 150;
+  else ticket = 300;
 
-/* ============================================================
-   🔗 SKYTRACK → ECONOMICS BRIDGE (CANONICAL)
-   ============================================================ */
+  const revenue = pax * ticket;
 
-window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
+  /* ============================================================
+     📐 METRICS (NO COSTS YET)
+     ============================================================ */
+  const revPerNM   = revenue / d.distanceNM;
+  const paxPerNM   = pax / d.distanceNM;
+  const costTotal  = 0;
+  const costPerNM  = 0;
+  const costPerPax = 0;
+  const profit     = revenue;
 
-  const d = ev?.detail;
-  if (!d) return;
-
-  console.log("💰 ECON BRIDGE ARRIVAL", d);
-
-  // Payload mínimo garantizado
-  const payload = {
+  /* ============================================================
+     📦 FINAL ECONOMICS OBJECT (THE MUÑECO)
+     ============================================================ */
+  return {
     flightId: d.flightId,
     aircraftId: d.aircraftId,
     origin: d.origin,
     destination: d.destination,
-    distanceNM: Number(d.distanceNM || 0),
-    depAbsMin: Number(d.depAbsMin || 0)
-  };
+    distanceNM: d.distanceNM,
 
-  // Re-emite evento económico REAL
-  window.dispatchEvent(
-    new CustomEvent("ACS_FLIGHT_ECONOMICS", { detail: payload })
-  );
-});
+    pax,
+    loadFactor,
+
+    revenue,
+    costTotal,
+    profit,
+
+    paxPerNM,
+    revPerNM,
+    costPerNM,
+    costPerPax,
+
+    year,
+    arrAbsMin: d.arrAbsMin || null,
+    ts: Date.now()
+  };
+}
 
 /* ============================================================
-   ✈️ FLIGHT ECONOMICS — CANONICAL CORE
-   ------------------------------------------------------------
-   • Se ejecuta SOLO al aterrizar
-   • Calcula pax + revenue
-   • Loguea cada vuelo
-   • Alimenta Finance
+   ✈️ LISTENER — SKYTRACK ARRIVAL
    ============================================================ */
+window.addEventListener("ACS_FLIGHT_ARRIVAL", e => {
 
-window.addEventListener("ACS_FLIGHT_ARRIVAL", function (ev) {
-
-  const d = ev?.detail;
+  const d = e.detail;
   if (!d) return;
 
-  // =========================
-  // AIRCRAFT
-  // =========================
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const ac = fleet.find(a => a.id === d.aircraftId);
-  if (!ac) return;
+  const dedupKey = `${d.flightId}_${d.arrAbsMin || "NA"}`;
+  if (ACS_ECO_DEDUP.has(dedupKey)) return;
+  ACS_ECO_DEDUP.add(dedupKey);
 
-  // =========================
-  // PASSENGERS
-  // =========================
-  const paxData = ACS_PAX.calculate({
-    route: { distanceNM: d.distanceNM },
-    time: { year: ACS_TIME.currentTime.getUTCFullYear() },
-    aircraft: { seats: ac.seats || 0 }
-  });
+  const economics = ACS_buildFlightEconomics(d);
+  if (!economics) return;
 
-  const pax = Number(paxData?.pax || 0);
-  if (pax <= 0) return;
+  /* ============================================================
+     📡 EMIT ECONOMICS EVENT (FOR FINANCE / UI)
+     ============================================================ */
+  window.dispatchEvent(
+    new CustomEvent("ACS_FLIGHT_ECONOMICS", {
+      detail: economics
+    })
+  );
 
-  // =========================
-  // TICKET MODEL
-  // =========================
-  let ticket = 90;
-  if (d.distanceNM > 1200) ticket = 150;
-  if (d.distanceNM > 3000) ticket = 220;
-
-  const revenue = Math.round(pax * ticket);
-  if (revenue <= 0) return;
-
-  // =========================
-  // FINANCE
-  // =========================
-  ACS_registerIncome("routes", revenue, `FLIGHT ${d.origin}→${d.destination}`);
-
-  // =========================
-  // 🔥 PER-FLIGHT LOG (LO QUE PEDISTE)
-  // =========================
+  /* ============================================================
+     🔥 PER-FLIGHT CONSOLE LOG (VISIBLE, CLEAR)
+     ============================================================ */
   console.log(
     "%c💰 FLIGHT ECONOMICS",
     "color:#00ff88;font-weight:bold;",
-    {
-      aircraft: ac.model,
-      route: `${d.origin} → ${d.destination}`,
-      pax,
-      ticket,
-      revenue
-    }
+    economics
   );
 });
