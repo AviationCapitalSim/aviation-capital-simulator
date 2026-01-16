@@ -127,11 +127,17 @@ function ACS_registerIncome(type, payload, source){
 
   saveFinance(f);
 
-  ACS_logTransaction({
-    type: "INCOME",
-    source: source || type,
-    amount: value
-  });
+ // 🧾 LOG
+// ⛔ INCOME NO SE REGISTRA EN ACS_Log
+// El log es solo para EXPENSE / INFO
+/*
+ACS_logTransaction({
+  type: "INCOME",
+  source: source || incomeType,
+  amount: value
+});
+*/
+
 }
 
 function ACS_registerExpense(type, amount, source){
