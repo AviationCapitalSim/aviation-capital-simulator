@@ -731,28 +731,32 @@ function loadBreakdown() {
 }
 
 /* ============================================================
-   🟦 F-UI-3 — FINANCE UI REAL-TIME REFRESH (v2.0)
+   🟦 F-UI-3 — FINANCE UI LIVE REFRESH (same-tab)
    ------------------------------------------------------------
-   • Refresca UI SOLO desde fuentes reales
-   • Evento económico → refresco inmediato
-   • Cambio en ACS_Finance → refresco inmediato
+   • Trigger: ACS_FINANCE_UPDATED
    • NO polling
+   • NO storage hacks
    ============================================================ */
 
-(function ACS_bindFinanceUIRealtime(){
+(function ACS_bindFinanceUILive(){
 
-  // 🟢 Vuelo económico real (desde Economics)
-  window.addEventListener("ACS_FLIGHT_ECONOMICS", () => {
+  function refreshAll(){
     updateCompanyOverview();
     loadBreakdown();
-  });
+    loadHistory();
+    loadTransactionLog(
+      document.querySelector(".filter-btn.active")?.dataset?.filter || "all"
+    );
+    loadLeasing();
+  }
 
-  // 🟢 Cualquier cambio financiero real
+  // 🔥 Evento financiero real (MISMA PESTAÑA)
+  window.addEventListener("ACS_FINANCE_UPDATED", refreshAll);
+
+  // 🟡 Fallback multi-tab (solo si cambia otra pestaña)
   window.addEventListener("storage", (e) => {
-    if (e.key === "ACS_Finance") {
-      updateCompanyOverview();
-      loadBreakdown();
-      loadHistory();
+    if (e.key === "ACS_Finance" || e.key === "ACS_Log") {
+      refreshAll();
     }
   });
 
