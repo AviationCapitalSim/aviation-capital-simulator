@@ -545,7 +545,8 @@ function ACS_num(v){
   return Number.isFinite(n) ? n : 0;
 }
 function ACS_money(v){
-  return "$" + ACS_num(v).toLocaleString();
+  const n = Math.round(ACS_num(v));
+  return "$" + n.toLocaleString();
 }
 
 /* ============================================================
