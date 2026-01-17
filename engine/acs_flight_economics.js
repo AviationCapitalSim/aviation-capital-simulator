@@ -306,7 +306,41 @@ if (year >= 2010) eraFactor = 2.3;
 // Final handling cost
 const handlingCost = Math.round(
   (handlingBase + pax * paxRate) * eraFactor
-);   
+);  
+
+/* ============================================================
+   ✈️ OVERFLIGHT COST (HISTORICAL · ERA-BASED)
+   ------------------------------------------------------------
+   • Charged per flight
+   • Based on distance + era
+   • Applied mainly to medium / long routes
+   ============================================================ */
+
+let overflightCost = 0;
+
+// Only apply to longer routes (avoid local/regional noise)
+if (distanceNM > 600) {
+
+  // Base rate per 100 NM (USD)
+  let ratePer100NM = 0;
+
+  if (year <= 1949) ratePer100NM = 0;          // practically none
+  else if (year <= 1969) ratePer100NM = 0.5;
+  else if (year <= 1989) ratePer100NM = 1.5;
+  else if (year <= 2009) ratePer100NM = 3.0;
+  else ratePer100NM = 6.0;
+
+  // Continental crossing modifier
+  let continentFactor = 1;
+  if (continentA && continentB && continentA !== continentB) {
+    continentFactor = 1.4; // international / FIR crossing
+  }
+
+  overflightCost = Math.round(
+    (distanceNM / 100) * ratePer100NM * continentFactor
+  );
+}
+   
   /* ============================================================
      💰 REVENUE (SIMPLE & STABLE)
      ============================================================ */
@@ -430,33 +464,35 @@ const profit = revenue - costTotal;
      ============================================================ */
    
    return {
-    flightId: d.flightId,
-    aircraftId: d.aircraftId,
-    origin: d.origin,
-    destination: d.destination,
-    distanceNM,
+  flightId: d.flightId,
+  aircraftId: d.aircraftId,
+  origin: d.origin,
+  destination: d.destination,
+  distanceNM,
 
-    pax,
-    loadFactor,
+  pax,
+  loadFactor,
 
-    revenue,
+  revenue,
 
-    fuelCost: costFuel,
-    slotCost: costSlots,
-    handlingCost,
+  // Costs (desglosados)
+  fuelCost: costFuel,
+  slotCost: costSlots,
+  handlingCost,
+  overflightCost,
 
-    costTotal: costFuel + costSlots + handlingCost,
-    profit: revenue - (costFuel + costSlots + handlingCost),
+  // Totals
+  costTotal: costFuel + costSlots + handlingCost + overflightCost,
+  profit: revenue - (costFuel + costSlots + handlingCost + overflightCost),
 
-    paxPerNM,
-    revPerNM,
-    costPerNM: distanceNM > 0 ? (costFuel + costSlots + handlingCost) / distanceNM : 0,
-    costPerPax: pax > 0 ? (costFuel + costSlots + handlingCost) / pax : 0,
+  paxPerNM,
+  revPerNM,
 
-    year,
-    arrAbsMin: d.arrAbsMin ?? null,
-    ts: Date.now()
-  };
+  year,
+  arrAbsMin: d.arrAbsMin ?? null,
+  ts: Date.now()
+};
+
 } // ✅ ESTA LLAVE CIERRA ACS_buildFlightEconomics (TE FALTABA)
 
 
