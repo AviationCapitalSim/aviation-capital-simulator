@@ -305,7 +305,11 @@ body {
   color: #ffb300;
   margin-bottom: 14px;
 }
-
+     
+.panel{
+  padding: 18px; /* antes era más grande */
+}
+     
 .kv{
   display: grid;
   grid-template-columns: 1fr auto;
@@ -327,6 +331,59 @@ body {
   color: rgba(234,240,255,0.6);
 }
 
+/* ============================================================
+   🟧 A2 — EXECUTIVE VALUE CARDS (QATAR LUXURY • ACS)
+   ============================================================ */
+
+.exec-cards{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.exec-card{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, #0c1a3f, #0a1533);
+  border-radius: 10px;
+  border: 1px solid rgba(255,179,0,0.18);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+
+.exec-card::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #ffb300, #ffdd88);
+  border-radius: 2px;
+  opacity: 0.75;
+}
+
+.exec-card .label{
+  font-size: 13px;
+  font-weight: 500;
+  color: #dbe4ff;
+}
+
+.exec-card .value{
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffb300;
+  white-space: nowrap;
+}
+
+.exec-card .value.negative{
+  color: #ff6b6b;
+}
+
+.exec-card .value.multiplier{
+  color: #9fd3ff;
+}
+     
 </style>
 </head>
 
@@ -365,61 +422,80 @@ body {
 </div>
 
 
-  <section class="hero">
-    <h1>Strategic Airline Valuation</h1>
-    <p>
-      A CEO-level view of your airline’s worth. This metric reflects capital strength,
-      fleet assets and network scale — without forcing you to scroll through long accounting history tables.
-    </p>
+<section class="hero">
+  <h1>Strategic Airline Valuation</h1>
+  <p>
+    A CEO-level view of your airline’s worth. This metric reflects capital strength,
+    fleet assets and network scale — without forcing you to scroll through long accounting history tables.
+  </p>
 
-    <div class="value-kpi">
-      <span class="currency">$</span>
-      <span class="number" id="cvValue">—</span>
-      <span class="note" id="cvNote">Awaiting calculation…</span>
+  <div class="value-kpi">
+    <span class="currency">$</span>
+    <span class="number" id="cvValue">—</span>
+    <span class="note" id="cvNote">Awaiting calculation…</span>
+  </div>
+</section>
+
+<div class="grid">
+
+  <!-- 🔽 AJUSTE APLICADO AQUÍ (Executive Value Cards) -->
+  <section class="panel">
+    <h2>Valuation Breakdown</h2>
+
+    <div class="exec-cards">
+
+      <div class="exec-card">
+        <span class="label">💰 Capital (Cash)</span>
+        <span class="value" id="cvCapital">$—</span>
+      </div>
+
+      <div class="exec-card">
+        <span class="label">✈ Fleet Assets Value</span>
+        <span class="value" id="cvFleet">$—</span>
+      </div>
+
+      <div class="exec-card">
+        <span class="label">🗺 Route Network Value</span>
+        <span class="value" id="cvRoutes">$—</span>
+      </div>
+
+      <div class="exec-card">
+        <span class="label">📉 Fleet Depreciation</span>
+        <span class="value negative" id="cvDepreciation">$—</span>
+      </div>
+
+      <div class="exec-card">
+        <span class="label">🏅 Reputation Multiplier</span>
+        <span class="value multiplier" id="cvRep">×—</span>
+      </div>
+
+      <div class="exec-card">
+        <span class="label">⚖ Liabilities</span>
+        <span class="value negative" id="cvLiab">$—</span>
+      </div>
+
     </div>
   </section>
+  <!-- 🔼 FIN DEL AJUSTE -->
 
-  <div class="grid">
+  <aside class="panel">
+    <h2>Executive Summary</h2>
 
-    <section class="panel">
-      <h2>Valuation Breakdown</h2>
+    <div class="kv">
+      <div class="k">Live Revenue (Week)</div>
+      <div class="v" id="cvLiveWeek">$—</div>
 
-      <div class="kv">
-        <div class="k">💰 Capital (Cash)</div>
-        <div class="v" id="cvCapital">$—</div>
+      <div class="k">Weekly Revenue (Closed)</div>
+      <div class="v" id="cvWeeklyClosed">$—</div>
 
-        <div class="k">✈ Fleet Assets Value</div>
-        <div class="v" id="cvFleet">$—</div>
+      <div class="k">Profit (Month)</div>
+      <div class="v" id="cvProfitMonth">$—</div>
+    </div>
+  </aside>
 
-        <div class="k">🗺 Route Network Value</div>
-        <div class="v" id="cvRoutes">$—</div>
+</div>
 
-        <div class="k">🏅 Reputation Multiplier</div>
-        <div class="v" id="cvRep">×—</div>
-
-        <div class="k">⚖ Liabilities</div>
-        <div class="v" id="cvLiab">$—</div>
-      </div>
-    </section>
-
-    <aside class="panel">
-      <h2>Executive Summary</h2>
-
-      <div class="kv">
-        <div class="k">Live Revenue (Week)</div>
-        <div class="v" id="cvLiveWeek">$—</div>
-
-        <div class="k">Weekly Revenue (Closed)</div>
-        <div class="v" id="cvWeeklyClosed">$—</div>
-
-        <div class="k">Profit (Month)</div>
-        <div class="v" id="cvProfitMonth">$—</div>
-      </div>
-    </aside>
-
-  </div>
-
-  <div class="foot">
+<div class="foot">
   © 2026 Aviation Capital Simulator. All rights reserved.
 </div>
 
