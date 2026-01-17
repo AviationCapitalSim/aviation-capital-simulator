@@ -734,6 +734,34 @@ body {
   });
 
 })();
+
+/* ============================================================
+   💎 COMPANY VALUE — ENGINE AUTO INIT (BASELINE)
+   ------------------------------------------------------------
+   Purpose:
+   - Trigger initial baseline evaluation once
+   - Prepare data for ACS_getCompanyValue()
+   - No live updates
+   - No Finance writes
+   ============================================================ */
+
+(function initCompanyValueOnce() {
+
+  // Prevent double initialization
+  if (window.__ACS_CV_INITIALIZED__) return;
+  window.__ACS_CV_INITIALIZED__ = true;
+
+  try {
+    // Force first evaluation so baseline is populated
+    if (typeof window.ACS_getCompanyValue === "function") {
+      window.ACS_getCompanyValue();
+    }
+  } catch (e) {
+    console.warn("Company Value init failed", e);
+  }
+
+})();
+     
 </script>
      
 </body>
