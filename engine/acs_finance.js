@@ -48,7 +48,14 @@ function ACS_getISOWeekKey(ts){
   return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,"0")}`;
 }
 
-   
+/* ============================================================
+   🗓️ MONTH KEY — YYYY-MM (UTC)
+   ============================================================ */
+function ACS_getMonthKey(ts){
+  const d = new Date(ts);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2,"0")}`;
+}
+
 /* ============================================================
    🔹 INIT STRUCTURE (ONCE)
    ============================================================ */
@@ -66,10 +73,10 @@ function initFinanceIfNeeded(){
     profit: 0,
 
     income: {
-    live_revenue: 0,      // acumulado EN VIVO (semana actual)
-    weekly_revenue: 0,    // total FINAL de la semana anterior
-    current_week_key: null
-   },
+      live_revenue: 0,      // acumulado EN VIVO (semana actual)
+      weekly_revenue: 0,    // total FINAL de la semana anterior
+      current_week_key: null
+    },
 
     cost: {
       fuel: 0,
@@ -85,7 +92,9 @@ function initFinanceIfNeeded(){
       new_aircraft_purchase: 0
     },
 
-    history: []
+    history: [],
+
+    current_month: null   // 🔵 NECESARIO PARA CIERRE MENSUAL
   };
 
   saveFinance(f);
@@ -185,6 +194,43 @@ f.income.live_revenue += payload.revenue;
   window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 };
 
+/* ============================================================
+   📦 MONTHLY CLOSE — RESET MONTH + HISTORY
+   ============================================================ */
+
+const monthKey = ACS_getMonthKey(now);
+
+// 🔁 Cambio de mes detectado
+if (f.current_month !== monthKey) {
+
+  // 🧾 Cerrar mes anterior (si existe)
+  if (f.current_month !== null) {
+
+    const monthRecord = {
+      month: f.current_month,
+      revenue: f.revenue || 0,
+      expenses: f.expenses || 0,
+      profit: (f.revenue || 0) - (f.expenses || 0),
+      cost: { ...f.cost }
+    };
+
+    f.history = Array.isArray(f.history) ? f.history : [];
+    f.history.push(monthRecord);
+  }
+
+  // 🔄 RESET MENSUAL (NUEVO MES)
+  f.revenue = 0;
+  f.expenses = 0;
+  f.profit = 0;
+
+  // Reset TODOS los costos
+  Object.keys(f.cost || {}).forEach(k => {
+    f.cost[k] = 0;
+  });
+
+  f.current_month = monthKey;
+}
+   
 /* ============================================================
    🔹 ECONOMICS → FINANCE BRIDGE (READ ONLY)
    ============================================================ */
