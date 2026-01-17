@@ -654,5 +654,98 @@ body {
 
 </main>
 
+<!-- SCRIPTS -->
+     
+<!-- CORE TIME (SIEMPRE PRIMERO) -->
+<script src="time_engine.js"></script> 
+     
+<script src="engine/acs_company_value.js"></script>
+     
+<script>
+/* ============================================================
+   💎 COMPANY VALUE — FINANCE CONNECTOR (BASELINE)
+   ------------------------------------------------------------
+   • Reads ACS_Finance.capital
+   • Triggers Company Value baseline calculation
+   • One-shot execution (no live updates)
+   ============================================================ */
+
+(function connectCompanyValue() {
+
+  if (!window.ACS_CompanyValue) {
+    console.warn("Company Value engine not loaded");
+    return;
+  }
+
+  let finance;
+  try {
+    finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  } catch {
+    console.warn("ACS_Finance not readable");
+    return;
+  }
+
+  const capital = Number(finance.capital);
+  if (!Number.isFinite(capital)) {
+    console.warn("Invalid Finance capital");
+    return;
+  }
+
+  /* 🔹 Trigger baseline calculation */
+  const baseline = window.ACS_CompanyValue.calculate({
+    capital
+  });
+
+  if (!baseline) {
+    console.warn("Company Value baseline not produced");
+    return;
+  }
+
+  /* ===========================
+     UI — CARD 1
+     =========================== */
+  const v = document.getElementById("cvValue");
+  if (v) v.textContent = baseline.totalFormatted || "—";
+
+  const note = document.getElementById("cvNote");
+  if (note && baseline.note) note.textContent = baseline.note;
+
+  const upd = document.getElementById("cvUpdatedAt");
+  if (upd) upd.textContent = "Baseline updated after strategic event";
+
+  /* ===========================
+     UI — CARD 2
+     =========================== */
+  const map = {
+    cvCapital: baseline.capitalFormatted,
+    cvFleet: baseline.fleetFormatted,
+    cvRoutes: baseline.networkFormatted,
+    cvRep: baseline.reputationFormatted,
+    cvLiab: baseline.liabilitiesFormatted
+  };
+
+  Object.keys(map).forEach(id => {
+    const el = document.getElementById(id);
+    if (el && map[id] !== undefined) el.textContent = map[id];
+  });
+
+  /* ===========================
+     UI — CARD 3
+     =========================== */
+  const ops = {
+    cvLiveWeek: baseline.liveWeekFormatted,
+    cvWeeklyClosed: baseline.weeklyFormatted,
+    cvProfitMonth: baseline.monthlyProfitFormatted
+  };
+
+  Object.keys(ops).forEach(id => {
+    const el = document.getElementById(id);
+    if (el && ops[id] !== undefined) el.textContent = ops[id];
+  });
+
+})();
+</script>
+
+     
 </body>
 </html>
