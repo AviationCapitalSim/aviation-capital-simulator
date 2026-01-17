@@ -425,66 +425,90 @@ body {
 ============================================================ -->
 <section class="dashboard-like-grid">
 
-  <!-- CARD 1 -->
+  <!-- ============================================================
+       🟨 CARD 1 — COMPANY VALUATION (PRIMARY KPI)
+       ============================================================ -->
   <div class="panel">
-    <div class="dash-title">💼 Strategic Airline Valuation</div>
+
+    <div class="dash-title">💼 Company Valuation</div>
+
     <div class="dash-sub">
-      A CEO-level view of your airline’s worth. This metric reflects capital strength,
-      fleet assets and network scale — without forcing you to scroll through long
-      accounting history tables.
+      A strategic CEO-level valuation reflecting capital strength,
+      fleet assets and network scale.
     </div>
-    <div class="dash-value">$<span id="cvValue">—</span></div>
-    <div class="dash-sub" id="cvNote">Awaiting calculation…</div>
+
+    <div class="dash-value">
+      $<span id="cvValue">—</span>
+    </div>
+
+    <div class="dash-sub" id="cvNote">
+      Strategic value — not accounting equity
+    </div>
+
   </div>
 
-  <!-- CARD 2 -->
+  <!-- ============================================================
+       🟦 CARD 2 — VALUATION BREAKDOWN
+       ============================================================ -->
   <div class="panel">
-    <div class="dash-title">✈ Fleet Assets</div>
-    <div class="dash-value small" id="cvFleet">$—</div>
-    <div class="dash-sub">Aircraft assets valuation</div>
+
+    <div class="dash-title">📊 Valuation Breakdown</div>
+
+    <div class="dash-sub">
+      Core components used to compute your airline’s strategic value.
+    </div>
+
+    <div class="dash-list">
+      <div>
+        <span>💰 Capital (Cash)</span>
+        <span id="cvCapital">$—</span>
+      </div>
+      <div>
+        <span>✈ Fleet Assets Value</span>
+        <span id="cvFleet">$—</span>
+      </div>
+      <div>
+        <span>🗺 Route Network Value</span>
+        <span id="cvRoutes">$—</span>
+      </div>
+      <div>
+        <span>🏅 Reputation Multiplier</span>
+        <span id="cvRep">×—</span>
+      </div>
+      <div>
+        <span>⚖ Liabilities</span>
+        <span id="cvLiab">$—</span>
+      </div>
+    </div>
+
   </div>
 
-  <!-- CARD 3 -->
+  <!-- ============================================================
+       🟩 CARD 3 — EXECUTIVE PERFORMANCE SNAPSHOT
+       ============================================================ -->
   <div class="panel">
-    <div class="dash-title">🗺 Route Network</div>
-    <div class="dash-value small" id="cvRoutes">$—</div>
-    <div class="dash-sub">Network & slot strength</div>
-  </div>
 
-  <!-- CARD 4 -->
-  <div class="panel">
-    <div class="dash-title">📉 Depreciation</div>
-    <div class="dash-value small" style="color:#ff6b6b" id="cvDepreciation">$—</div>
-    <div class="dash-sub">Fleet aging impact</div>
-  </div>
+    <div class="dash-title">🧭 Executive Performance Snapshot</div>
 
-  <!-- CARD 5 -->
-  <div class="panel">
-    <div class="dash-title">🏅 Performance Index</div>
-    <div class="dash-value small" style="color:#9fd3ff" id="cvRep">×—</div>
-    <div class="dash-sub">Reputation & operational performance</div>
-  </div>
+    <div class="dash-sub">
+      Operational performance indicators supporting strategic value.
+    </div>
 
-  <!-- CARD 6 -->
-  <div class="panel">
-    <div class="dash-title">⚖ Liabilities</div>
-    <div class="dash-value small" style="color:#ff6b6b" id="cvLiab">$—</div>
-    <div class="dash-sub">Outstanding obligations</div>
-  </div>
-
-  <!-- CARD 7 -->
-  <div class="panel">
-    <div class="dash-title">💵 Cash Flow Pulse</div>
     <div class="dash-list">
       <div>
         <span>Live Revenue (Week)</span>
         <span id="cvLiveWeek">$—</span>
       </div>
       <div>
-        <span>Profit (Month)</span>
+        <span>Weekly Revenue (Closed)</span>
+        <span id="cvWeeklyClosed">$—</span>
+      </div>
+      <div>
+        <span>Monthly Profit</span>
         <span id="cvProfitMonth">$—</span>
       </div>
     </div>
+
   </div>
 
 </section>
