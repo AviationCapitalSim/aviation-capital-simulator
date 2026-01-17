@@ -428,7 +428,6 @@ const profit = revenue - costTotal;
   /* ============================================================
      📦 FINAL ECONOMICS OBJECT
      ============================================================ */
-   
  return {
   flightId: d.flightId,
   aircraftId: d.aircraftId,
@@ -436,11 +435,9 @@ const profit = revenue - costTotal;
   destination: d.destination,
   distanceNM,
 
-  // Pax
   pax,
   loadFactor,
 
-  // Revenue
   revenue,
 
   // Costs (desglosados)
@@ -455,14 +452,8 @@ const profit = revenue - costTotal;
   // Metrics
   paxPerNM,
   revPerNM,
-  costPerNM:
-    distanceNM > 0
-      ? (costFuel + costSlots + handlingCost) / distanceNM
-      : 0,
-  costPerPax:
-    pax > 0
-      ? (costFuel + costSlots + handlingCost) / pax
-      : 0,
+  costPerNM: distanceNM > 0 ? (costFuel + costSlots + handlingCost) / distanceNM : 0,
+  costPerPax: pax > 0 ? (costFuel + costSlots + handlingCost) / pax : 0,
 
   // Meta
   year,
