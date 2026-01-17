@@ -663,49 +663,39 @@ body {
      
 <script>
 /* ============================================================
-   💎 COMPANY VALUE — FINANCE CONNECTOR (BASELINE)
+   💎 COMPANY VALUE — FINANCE CONNECTOR (FINAL FIX)
    ------------------------------------------------------------
-   • Reads ACS_Finance.capital
-   • Triggers Company Value baseline calculation
-   • One-shot execution (no live updates)
+   • Uses existing ACS_getCompanyValue()
+   • No engine rewrite
+   • No Finance rewrite
+   • One-shot baseline render
    ============================================================ */
 
 (function connectCompanyValue() {
 
-  if (!window.ACS_CompanyValue) {
-    console.warn("Company Value engine not loaded");
+  if (typeof window.ACS_getCompanyValue !== "function") {
+    console.warn("ACS_getCompanyValue not available");
     return;
   }
 
-  let finance;
+  let baseline;
   try {
-    finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  } catch {
-    console.warn("ACS_Finance not readable");
+    baseline = window.ACS_getCompanyValue();
+  } catch (e) {
+    console.warn("Error executing ACS_getCompanyValue", e);
     return;
   }
-
-  const capital = Number(finance.capital);
-  if (!Number.isFinite(capital)) {
-    console.warn("Invalid Finance capital");
-    return;
-  }
-
-  /* 🔹 Trigger baseline calculation */
-  const baseline = window.ACS_CompanyValue.calculate({
-    capital
-  });
 
   if (!baseline) {
-    console.warn("Company Value baseline not produced");
+    console.warn("Company Value baseline empty");
     return;
   }
 
   /* ===========================
-     UI — CARD 1
+     CARD 1 — COMPANY VALUATION
      =========================== */
   const v = document.getElementById("cvValue");
-  if (v) v.textContent = baseline.totalFormatted || "—";
+  if (v) v.textContent = baseline.totalFormatted || baseline.total || "—";
 
   const note = document.getElementById("cvNote");
   if (note && baseline.note) note.textContent = baseline.note;
@@ -714,14 +704,14 @@ body {
   if (upd) upd.textContent = "Baseline updated after strategic event";
 
   /* ===========================
-     UI — CARD 2
+     CARD 2 — BREAKDOWN
      =========================== */
   const map = {
-    cvCapital: baseline.capitalFormatted,
-    cvFleet: baseline.fleetFormatted,
-    cvRoutes: baseline.networkFormatted,
-    cvRep: baseline.reputationFormatted,
-    cvLiab: baseline.liabilitiesFormatted
+    cvCapital: baseline.capitalFormatted || baseline.capital,
+    cvFleet: baseline.fleetFormatted || baseline.fleetValue,
+    cvRoutes: baseline.networkFormatted || baseline.networkValue,
+    cvRep: baseline.reputationFormatted || baseline.reputationMultiplier,
+    cvLiab: baseline.liabilitiesFormatted || baseline.liabilities
   };
 
   Object.keys(map).forEach(id => {
@@ -730,12 +720,12 @@ body {
   });
 
   /* ===========================
-     UI — CARD 3
+     CARD 3 — EXECUTIVE SNAPSHOT
      =========================== */
   const ops = {
-    cvLiveWeek: baseline.liveWeekFormatted,
-    cvWeeklyClosed: baseline.weeklyFormatted,
-    cvProfitMonth: baseline.monthlyProfitFormatted
+    cvLiveWeek: baseline.liveWeekFormatted || baseline.liveWeek,
+    cvWeeklyClosed: baseline.weeklyFormatted || baseline.weeklyClosed,
+    cvProfitMonth: baseline.monthlyProfitFormatted || baseline.monthlyProfit
   };
 
   Object.keys(ops).forEach(id => {
@@ -745,7 +735,6 @@ body {
 
 })();
 </script>
-
      
 </body>
 </html>
