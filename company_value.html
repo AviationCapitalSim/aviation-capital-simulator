@@ -1,12 +1,3 @@
-<!-- ============================================================
-     === COMPANY VALUE MODULE — ACS UI ALIGNED ==================
-     ------------------------------------------------------------
-     Project: Aviation Capital Simulator (ACS)
-     File: company_value.html
-     Purpose: Strategic Airline Valuation (UI Only)
-     Status: UI Aligned with Company Finance
-     Date: 17 JAN 2026
-     ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,412 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Company Value — Aviation Capital Simulator</title>
 
-  <!-- ======== ACS Styles ======== -->
-  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <!-- ======== ACS Global Styles ======== -->
+  <link rel="stylesheet" href="styles.css?v=3.1">
 
-  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
-  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
-
-  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
-  <link rel="apple-touch-icon" href="acs_logo_180.png">
-
-  <!-- ======== PWA Manifest ======== -->
-  <link rel="manifest" href="manifest.json">
-     
-<style>
-
-/* ============================================================
-   === ACS Qatar Luxury Dashboard — Company Value (CLEAN) ======
-   ============================================================ */
-
-body {
-  margin: 0;
-  background-color: #081530;
-  color: white;
-  font-family: "Poppins", sans-serif;
-}
-
-/* ============================================================
-   === GLOBAL HEADER (ACS OFFICIAL) ============================
-   ============================================================ */
-
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  backdrop-filter: blur(9px);
-  background: rgba(12,23,50,0.45);
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #ffb300;
-  z-index: 5000;
-}
-
-.acs-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.acs-left img {
-  height: 46px;
-}
-
-.acs-left h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  color: #ffb300;
-  letter-spacing: 0.5px;
-}
-
-.acs-nav {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-}
-
-.acs-nav a {
-  position: relative;
-  font-size: 1rem;
-  letter-spacing: 0.4px;
-  color: #dbe4ff;
-  text-decoration: none;
-  padding-bottom: 6px;
-  transition: 0.25s ease;
-}
-
-.acs-nav a:hover,
-.acs-nav a.active {
-  color: #ffca3a;
-  text-shadow: 0 0 6px rgba(255,179,0,0.45);
-}
-
-.acs-nav a.active::after,
-.acs-nav a:hover::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #ffb300, #ffe7a0);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
-}
-
-.acs-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.logout-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
-
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
-}
-
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
-  transition: 0.25s ease;
-}
-
-.support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-  color: #dfe9ff;
-}
-
-/* ============================================================
-   🟧 PAGE TITLE ===============================================
-   ============================================================ */
-
-.acs-title-wrap{
-  text-align: center;
-  margin: 48px 0 36px;
-}
-
-.acs-page-title{
-  font-size: 32px;
-  font-weight: 600;
-  color: #ffb300;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.acs-page-subtitle{
-  margin-top: 6px;
-  font-size: 15px;
-  color: #cbd6ff;
-  opacity: 0.9;
-}
-
-.title-icon{
-  font-size: 28px;
-}
-
-/* ============================================================
-   🟦 HERO — STRATEGIC VALUE ================================
-   ============================================================ */
-
-.hero{
-  margin-bottom: 32px;
-  padding: 34px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, #0b1736, #060e24);
-  border: 1px solid rgba(255,179,0,0.35);
-  box-shadow: 0 22px 48px rgba(0,0,0,0.65);
-}
-
-/* ============================================================
-   🟦 KPI ================================================
-   ============================================================ */
-
-.value-kpi{
-  margin-top: 22px;
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-}
-
-.value-kpi .currency,
-.value-kpi .number{
-  font-family: "Orbitron", monospace;
-}
-
-.value-kpi .currency{
-  font-size: 20px;
-  color: #dbe4ff;
-}
-
-.value-kpi .number{
-  font-size: 44px;
-  font-weight: 700;
-  color: #ffb300;
-}
-
-.value-kpi .note{
-  font-size: 12px;
-  color: #cbd6ff;
-  margin-bottom: 6px;
-}
-
-/* ============================================================
-     === MAIN CONTENT ==========================================
-   ============================================================ */
-
-.acs-main {
-  padding: 70px 2rem 70px;
-  text-align: center;
-}
-
-.acs-main .sub {
-  margin-top: -0.4rem;
-  color: #cbd6ff;
-  font-size: 1rem;
-}
-     
-/* ============================================================
-   🟦 PANEL (DASHBOARD CARD BASE) ==============================
-   ============================================================ */
-
-.panel{
-  background: #0b1638;
-  border-radius: 16px;
-  padding: 1.1rem 1.15rem;
-  border: 1px solid rgba(255,179,0,0.25);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-}
-     
-/* ============================================================
-     === PANEL ==================================================
-   ============================================================ */
-
-.panel {
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  padding: 1.6rem 1.5rem;
-  border-radius: 22px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.4);
-  transition: 0.25s;
-  border: 1px solid rgba(255,179,0,0.15);
-}
-
-.panel:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
-  border: 1px solid rgba(255,179,0,0.35);
-}
-
-.panel h3 {
-  font-size: 1.25rem;
-  color: #ffb300;
-  margin-bottom: 0.9rem;
-  text-shadow: 0 0 6px rgba(255,179,0,0.4);
-}
-
-.panel p {
-  color: #d7e2ff;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-/* ============================================================
-     === PREMIUM PANEL GRID ====================================
-   ============================================================ */
-
-.dashboard-grid {
-  display: grid;
-  gap: 2rem;
-  margin-top: 4rem;
-}
-
-.row-business {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-}
-
-.row-operations {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-}
-
-.row-capital {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
-     
-/* ============================================================
-   🟧 COMPANY VALUE DASHBOARD (FINAL) ==========================
-   ============================================================ */
-
-.company-value-dashboard{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.4rem;
-  margin-top: 1.2rem;
-}
-
-.cv-main{
-  grid-column: span 2;
-}
-
-@media (max-width: 900px){
-  .cv-main{ grid-column: span 1; }
-}
-
-.cv-title{
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #ffb300;
-  margin-bottom: 0.5rem;
-}
-
-.cv-desc{
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: #cbd6ff;
-  margin-bottom: 0.6rem;
-}
-
-.cv-kpi{
-  display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
-  margin: 0.4rem 0;
-}
-
-.cv-kpi.small{
-  justify-content: center;
-}
-
-.cv-currency{
-  font-size: 1rem;
-  opacity: 0.8;
-}
-
-.cv-number{
-  font-size: 1.6rem;
-  font-weight: 700;
-}
-
-.cv-multiplier{
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #9fd3ff;
-}
-
-.cv-note{
-  font-size: 0.75rem;
-  opacity: 0.7;
-}
-
-.cv-row{
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
-  padding: 0.25rem 0;
-  color: #e3e9ff;
-}
-
-.cv-row.neg{
-  color: #ff6b6b;
-}
-
-/* ============================================================
-   🟦 FOOTER ================================================
-   ============================================================ */
-
-.foot{
-  margin-top: 28px;
-  text-align: center;
-  font-size: 11px;
-  color: rgba(234,240,255,0.6);
-}
-     
-</style>
+  <!-- ======== Favicons ======== -->
+  <link rel="icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/acs_logo_32.png">
+  <link rel="apple-touch-icon" href="/acs_logo_180.png">
 </head>
 
 <body>
 
+<!-- ============================================================
+     ACS HEADER (UNCHANGED — GLOBAL)
+============================================================ -->
 <header class="acs-header">
   <div class="acs-left">
     <img src="acs_logo.png" alt="ACS Logo">
     <h1>Aviation Capital Simulator</h1>
   </div>
 
- <nav class="acs-nav">
-    <a href="dashboard.html" class="active">Main</a>   
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
     <a href="bank.html">Bank</a>
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html">Routes</a>
@@ -434,6 +41,11 @@ body {
   </div>
 </header>
 
+<main class="acs-main">
+
+<!-- ============================================================
+     PAGE TITLE
+============================================================ -->
 <div class="acs-title-wrap">
   <div class="acs-page-title">
     <span class="title-icon">💼</span>
@@ -444,51 +56,83 @@ body {
   </div>
 </div>
 
-</section>
+<!-- ============================================================
+     DASHBOARD MIRROR GRID (EXACT)
+============================================================ -->
+<section class="dashboard-like-grid">
 
- <div class="dashboard-grid row-business">
-
-    <div class="panel">
-      <h3>💼 Strategic Airline Valuation</h3>
-      <div class="cv-desc">
+  <!-- CARD 1 -->
+  <div class="panel">
+    <div class="dash-title">💼 Strategic Airline Valuation</div>
+    <div class="dash-sub">
       A CEO-level view of your airline’s worth. This metric reflects capital strength,
       fleet assets and network scale — without forcing you to scroll through long
       accounting history tables.
     </div>
-
-    <div class="cv-kpi">
-      <span class="cv-currency">$</span>
-      <span class="cv-number" id="cvValue">—</span>
-    </div>
-
-    <div class="cv-note" id="cvNote">Awaiting calculation…</div>
+    <div class="dash-value">$<span id="cvValue">—</span></div>
+    <div class="dash-sub" id="cvNote">Awaiting calculation…</div>
   </div>
-</div>
 
-  </section>
+  <!-- CARD 2 -->
+  <div class="panel">
+    <div class="dash-title">✈ Fleet Assets</div>
+    <div class="dash-value small" id="cvFleet">$—</div>
+    <div class="dash-sub">Aircraft assets valuation</div>
+  </div>
 
-  <aside class="panel">
-    <h2>Executive Summary</h2>
+  <!-- CARD 3 -->
+  <div class="panel">
+    <div class="dash-title">🗺 Route Network</div>
+    <div class="dash-value small" id="cvRoutes">$—</div>
+    <div class="dash-sub">Network & slot strength</div>
+  </div>
 
-    <div class="kv">
-      <div class="k">Live Revenue (Week)</div>
-      <div class="v" id="cvLiveWeek">$—</div>
+  <!-- CARD 4 -->
+  <div class="panel">
+    <div class="dash-title">📉 Depreciation</div>
+    <div class="dash-value small" style="color:#ff6b6b" id="cvDepreciation">$—</div>
+    <div class="dash-sub">Fleet aging impact</div>
+  </div>
 
-      <div class="k">Weekly Revenue (Closed)</div>
-      <div class="v" id="cvWeeklyClosed">$—</div>
+  <!-- CARD 5 -->
+  <div class="panel">
+    <div class="dash-title">🏅 Performance Index</div>
+    <div class="dash-value small" style="color:#9fd3ff" id="cvRep">×—</div>
+    <div class="dash-sub">Reputation & operational performance</div>
+  </div>
 
-      <div class="k">Profit (Month)</div>
-      <div class="v" id="cvProfitMonth">$—</div>
+  <!-- CARD 6 -->
+  <div class="panel">
+    <div class="dash-title">⚖ Liabilities</div>
+    <div class="dash-value small" style="color:#ff6b6b" id="cvLiab">$—</div>
+    <div class="dash-sub">Outstanding obligations</div>
+  </div>
+
+  <!-- CARD 7 -->
+  <div class="panel">
+    <div class="dash-title">💵 Cash Flow Pulse</div>
+    <div class="dash-list">
+      <div>
+        <span>Live Revenue (Week)</span>
+        <span id="cvLiveWeek">$—</span>
+      </div>
+      <div>
+        <span>Profit (Month)</span>
+        <span id="cvProfitMonth">$—</span>
+      </div>
     </div>
-  </aside>
+  </div>
 
-</div>
+</section>
 
+<!-- ============================================================
+     FOOTER
+============================================================ -->
 <div class="foot">
   © 2026 Aviation Capital Simulator. All rights reserved.
 </div>
 
-</div>
+</main>
 
 </body>
 </html>
