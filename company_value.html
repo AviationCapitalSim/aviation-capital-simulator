@@ -378,6 +378,28 @@ body {
   font-size: 11px;
   color: rgba(234,240,255,0.6);
 }
+
+/* ============================================================
+   💎 COMPANY VALUE — DIAMOND BASELINE SIGNAL
+   ============================================================ */
+
+.cv-baseline-note {
+  font-size: 11.5px;
+  letter-spacing: 0.25px;
+  opacity: 0.75;
+}
+
+.cv-diamond-line {
+  margin: 12px 0 14px;
+  height: 1px;
+  width: 60%;
+  background: linear-gradient(
+    90deg,
+    rgba(255,200,80,0),
+    rgba(255,200,80,0.55),
+    rgba(255,200,80,0)
+  );
+}
      
 </style>
 </head>
@@ -440,9 +462,11 @@ body {
     <div class="dash-value">
       $<span id="cvValue">—</span>
     </div>
-
-    <div class="dash-sub" id="cvNote">
-      Strategic value — not accounting equity
+       
+    <div class="cv-diamond-line"></div>
+       
+    <div class="dash-sub cv-baseline-note" id="cvNote">
+      Enterprise valuation baseline — updated only by strategic events
     </div>
 
   </div>
@@ -455,7 +479,7 @@ body {
     <div class="dash-title">📊 Valuation Breakdown</div>
 
     <div class="dash-sub">
-      Core components used to compute your airline’s strategic value.
+     Structural valuation components derived from finance, fleet and network layers.
     </div>
 
     <div class="dash-list">
