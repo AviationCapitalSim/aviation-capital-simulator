@@ -521,6 +521,90 @@ body {
 .dash-list .neg{
   color: #ff6b6b;
 }
+
+/* ============================================================
+   🟧 A2 — COMPANY VALUE · DASHBOARD MIRROR (ACS)
+   ============================================================ */
+
+.company-value-dashboard{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.4rem;
+  margin-top: 1.2rem;
+}
+
+.cv-card{
+  padding: 1.1rem 1.15rem;
+}
+
+.cv-main{
+  grid-column: span 2;
+}
+
+@media (max-width: 900px){
+  .cv-main{
+    grid-column: span 1;
+  }
+}
+
+.cv-title{
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffb300;
+  margin-bottom: 0.5rem;
+}
+
+.cv-desc{
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #cbd6ff;
+  margin-bottom: 0.6rem;
+}
+
+.cv-kpi{
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0.4rem 0;
+}
+
+.cv-kpi.small{
+  justify-content: center;
+  margin-top: 0.6rem;
+}
+
+.cv-currency{
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.cv-number{
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.cv-multiplier{
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #9fd3ff;
+}
+
+.cv-note{
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.cv-row{
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 0.25rem 0;
+  color: #e3e9ff;
+}
+
+.cv-row.neg{
+  color: #ff6b6b;
+}
      
 </style>
 </head>
@@ -571,40 +655,89 @@ body {
     <span class="number" id="cvValue">—</span>
     <span class="note" id="cvNote">Awaiting calculation…</span>
   </div>
+     
 </section>
 
-<div class="value-dashboard-grid">
+<div class="company-value-dashboard">
 
-  <!-- 🟦 CARD 1 — COMPANY VALUE -->
-  <div class="dash-card">
-    <div class="dash-title">💼 Company Value</div>
-    <div class="dash-value" id="cvValue">$—</div>
-    <div class="dash-sub">
-      Total airline valuation including fleet, network, and capital.
+  <!-- 🟦 CARD 1 — STRATEGIC AIRLINE VALUATION -->
+  <div class="panel cv-card cv-main">
+    <div class="cv-title">💼 Strategic Airline Valuation</div>
+    <div class="cv-desc">
+      A CEO-level view of your airline’s worth. This metric reflects capital strength,
+      fleet assets and network scale — without forcing you to scroll through long
+      accounting history tables.
     </div>
+
+    <div class="cv-kpi">
+      <span class="cv-currency">$</span>
+      <span class="cv-number" id="cvValue">—</span>
+    </div>
+
+    <div class="cv-note" id="cvNote">Awaiting calculation…</div>
   </div>
 
   <!-- 🟦 CARD 2 — ASSET STRUCTURE -->
-  <div class="dash-card">
-    <div class="dash-title">✈ Asset Structure</div>
-    <div class="dash-list">
-      <div><span>Fleet Assets</span><span id="cvFleet">$—</span></div>
-      <div><span>Route Network</span><span id="cvRoutes">$—</span></div>
-      <div><span>Depreciation</span><span id="cvDepreciation" class="neg">$—</span></div>
-      <div><span>Liabilities</span><span id="cvLiab" class="neg">$—</span></div>
+  <div class="panel cv-card">
+    <div class="cv-title">✈ Asset Structure</div>
+
+    <div class="cv-row">
+      <span>Fleet Assets</span>
+      <span id="cvFleet">$—</span>
+    </div>
+    <div class="cv-row">
+      <span>Route Network</span>
+      <span id="cvRoutes">$—</span>
+    </div>
+    <div class="cv-row neg">
+      <span>Depreciation</span>
+      <span id="cvDepreciation">$—</span>
     </div>
   </div>
 
   <!-- 🟦 CARD 3 — PERFORMANCE INDEX -->
-  <div class="dash-card">
-    <div class="dash-title">🏅 Performance Index</div>
-    <div class="dash-value small" id="cvRep">×—</div>
-    <div class="dash-sub">
+  <div class="panel cv-card">
+    <div class="cv-title">🏅 Performance Index</div>
+
+    <div class="cv-kpi small">
+      <span class="cv-multiplier" id="cvRep">×—</span>
+    </div>
+
+    <div class="cv-desc">
       Reputation and operational performance multiplier.
     </div>
   </div>
 
+  <!-- 🟦 CARD 4 — RISK & LIABILITIES -->
+  <div class="panel cv-card">
+    <div class="cv-title">⚖ Risk & Liabilities</div>
+
+    <div class="cv-row neg">
+      <span>Total Liabilities</span>
+      <span id="cvLiab">$—</span>
+    </div>
+
+    <div class="cv-desc">
+      Outstanding financial obligations and exposure.
+    </div>
+  </div>
+
+  <!-- 🟦 CARD 5 — CASH FLOW PULSE -->
+  <div class="panel cv-card">
+    <div class="cv-title">💵 Cash Flow Pulse</div>
+
+    <div class="cv-row">
+      <span>Live Revenue (Week)</span>
+      <span id="cvLiveWeek">$—</span>
+    </div>
+    <div class="cv-row">
+      <span>Profit (Month)</span>
+      <span id="cvProfitMonth">$—</span>
+    </div>
+  </div>
+
 </div>
+
 
   </section>
 
