@@ -1,252 +1,179 @@
 /* ============================================================
-   === ACS FINANCE ENGINE — CORE v2.1 (TIME-AWARE) ===
+   💰 ACS FINANCE ENGINE — CANONICAL LEDGER v3.0
    ------------------------------------------------------------
-   ✔ Single source of truth: ACS_Finance
-   ✔ Single income entry: ACS_registerIncome()
-   ✔ Finance synced to ACS_TIME
-   ✔ Monthly rollover automatic
-   ✔ No SkyTrack listeners
+   • Finance = REGISTRO CONTABLE (NO calcula vuelos)
+   • Fuente económica: ACS_FLIGHT_ECONOMICS
+   • UI: company_finance.html (READ ONLY)
    ------------------------------------------------------------
-   Date: 16 JAN 2026
+   Date: 17 JAN 2026
    ============================================================ */
 
-(function initFinance(){
+(function(){
 
-  if (localStorage.getItem("ACS_Finance")) return;
+/* ============================================================
+   🔹 SAFE LOAD / SAVE
+   ============================================================ */
 
-  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-  const payroll = Number(HR.payroll || 0);
+function loadFinance(){
+  try {
+    return JSON.parse(localStorage.getItem("ACS_Finance")) || null;
+  } catch {
+    return null;
+  }
+}
 
-  const base = {
+function saveFinance(f){
+  f.meta = {
+    version: "3.0",
+    lastUpdate: Date.now()
+  };
+  localStorage.setItem("ACS_Finance", JSON.stringify(f));
+}
+
+/* ============================================================
+   🔹 INIT STRUCTURE (ONCE)
+   ============================================================ */
+
+function initFinanceIfNeeded(){
+
+  let f = loadFinance();
+  if (f) return f;
+
+  f = {
     capital: 500000,
-    month: "JAN 1940",
 
     revenue: 0,
-    expenses: payroll,
-    profit: -payroll,
+    expenses: 0,
+    profit: 0,
 
     income: {
-      routes: 0,
       live_flight: 0,
-      route_weekly: 0,
-      credits: 0
-    },
-
-    weekly: {
-      leasing_income: 0,
-      weekNumber: null
+      route_weekly: 0
     },
 
     cost: {
-      salaries: payroll,
-      maintenance: 0,
-      leasing: 0,
       fuel: 0,
       ground_handling: 0,
-      virtual_handling: 0,
       slot_fees: 0,
+      overflight: 0,
+      navigation: 0,
+      leasing: 0,
+      salaries: 0,
+      maintenance: 0,
       penalties: 0,
-      loans: 0,
       used_aircraft_purchase: 0,
       new_aircraft_purchase: 0
     },
 
-    history: [{
-      month: "JAN 1940",
-      revenue: 0,
-      expenses: payroll,
-      profit: -payroll
-    }]
+    history: []
   };
-
-  localStorage.setItem("ACS_Finance", JSON.stringify(base));
-})();
-
-/* ============================================================
-   LOAD / SAVE / NORMALIZE
-   ============================================================ */
-
-function loadFinance(){
-  return JSON.parse(localStorage.getItem("ACS_Finance"));
-}
-
-function saveFinance(f){
-  localStorage.setItem("ACS_Finance", JSON.stringify(f));
-}
-
-function normalizeFinance(){
-  const f = loadFinance();
-
-  f.capital  = Number(f.capital || 0);
-  f.revenue  = Number(f.revenue || 0);
-  f.expenses = Number(f.expenses || 0);
-  f.profit   = f.revenue - f.expenses;
-
-  f.income ||= {};
-  Object.keys(f.income).forEach(k => f.income[k] = Number(f.income[k] || 0));
-
-  f.cost ||= {};
-  Object.keys(f.cost).forEach(k => f.cost[k] = Number(f.cost[k] || 0));
-
-  f.weekly ||= { leasing_income: 0, weekNumber: null };
 
   saveFinance(f);
   return f;
 }
 
+let ACS_Finance = initFinanceIfNeeded();
+
 /* ============================================================
-   CANONICAL API
+   🔹 LOG (CENTRAL)
    ============================================================ */
 
-function ACS_registerIncome(type, payload){
+function pushLog(entry){
+  let log = [];
+  try {
+    log = JSON.parse(localStorage.getItem("ACS_Log")) || [];
+  } catch {}
 
-  const f = normalizeFinance();
+  log.push({
+    ts: Date.now(),
+    ...entry
+  });
 
-  let value = typeof payload === "number"
-    ? payload
-    : Number(payload?.amount || payload?.revenue || payload?.income || 0);
+  localStorage.setItem("ACS_Log", JSON.stringify(log));
+}
 
-  if (value <= 0) return;
+/* ============================================================
+   🔹 PUBLIC API — REGISTER INCOME
+   ============================================================ */
 
-  f.income[type] ??= 0;
-  f.income[type] += value;
+window.ACS_registerIncome = function(payload){
 
-  if (type === "routes" || type === "route" || type === "flight"){
-    f.revenue += value;
+  if (!payload || typeof payload.revenue !== "number") return;
+
+  const f = loadFinance();
+  if (!f) return;
+
+  /* === LIVE ROUTE REVENUE (EVENT) === */
+  f.income.live_flight = payload.revenue;
+
+  /* === TOTALS === */
+  f.revenue  += payload.revenue;
+  f.expenses += payload.costTotal || 0;
+  f.profit   += payload.profit || 0;
+  f.capital  += payload.profit || 0;
+
+  /* === COST BREAKDOWN === */
+  if (payload.costs) {
+
+    if (payload.costs.fuel)
+      f.cost.fuel += payload.costs.fuel;
+
+    if (payload.costs.handling)
+      f.cost.ground_handling += payload.costs.handling;
+
+    if (payload.costs.slot)
+      f.cost.slot_fees += payload.costs.slot;
+
+    if (payload.costs.overflight)
+      f.cost.overflight += payload.costs.overflight;
+
+    if (payload.costs.navigation)
+      f.cost.navigation += payload.costs.navigation;
   }
 
-  f.capital += value;
-  f.profit = f.revenue - f.expenses;
+  /* === LOG ENTRY === */
+  pushLog({
+    type: "INCOME",
+    source: payload.source || "FLIGHT",
+    amount: payload.revenue,
+    meta: payload.meta || {}
+  });
 
   saveFinance(f);
-}
+
+  window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+};
 
 /* ============================================================
-   LIVE / WEEKLY
+   🔹 ECONOMICS → FINANCE BRIDGE (READ ONLY)
    ============================================================ */
 
-function ACS_updateLiveWeekly(revenue, simDate){
+window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
-  const f = normalizeFinance();
-  if (revenue <= 0) return;
+  const eco = e.detail;
+  if (!eco) return;
 
-  const d = simDate instanceof Date ? simDate : new Date();
-  const dayKey  = d.toISOString().slice(0,10);
-  const weekKey = getISOWeek(d);
+  window.ACS_registerIncome({
+    type: "FLIGHT",
+    source: `FLIGHT ${eco.origin} → ${eco.destination}`,
+    revenue: eco.revenue,
+    costTotal: eco.costTotal,
+    profit: eco.profit,
+    costs: {
+      fuel: eco.fuelCost,
+      handling: eco.handlingCost,
+      slot: eco.slotCost,
+      overflight: eco.overflightCost,
+      navigation: eco.navigationCost
+    },
+    meta: {
+      flightId: eco.flightId,
+      aircraftId: eco.aircraftId,
+      year: eco.year,
+      distanceNM: eco.distanceNM
+    }
+  });
 
-  if (f._lastLiveDay !== dayKey){
-    f.income.live_flight = 0;
-    f._lastLiveDay = dayKey;
-  }
+});
 
-  if (f._lastWeeklyWeek !== weekKey){
-    f.income.route_weekly = 0;
-    f._lastWeeklyWeek = weekKey;
-  }
-
-  f.income.live_flight = revenue;
-  f.income.route_weekly += revenue;
-
-  saveFinance(f);
-}
-
-function getISOWeek(d){
-  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-}
-
-/* ============================================================
-   ⏱️ TIME → FINANCE SYNC  (🔥 FIX)
-   ============================================================ */
-
-function ACS_syncMonthWithTime(simDate){
-
-  if (!(simDate instanceof Date)) return;
-
-  const f = normalizeFinance();
-
-  const month =
-    simDate.toLocaleString("en-US", {
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC"
-    }).toUpperCase();
-
-  if (f.month !== month){
-
-    f.history.push({
-      month: f.month,
-      revenue: f.revenue,
-      expenses: f.expenses,
-      profit: f.profit
-    });
-
-    f.month = month;
-    f.revenue = 0;
-    f.expenses = f.cost.salaries;
-    f.profit = -f.expenses;
-
-    saveFinance(f);
-  }
-}
-
-if (typeof registerTimeListener === "function"){
-  registerTimeListener(ACS_syncMonthWithTime);
-}
-
-/* ============================================================
-   BANKRUPTCY
-   ============================================================ */
-
-function ACS_checkBankruptcy(){
-  const f = normalizeFinance();
-  if (f.capital < 0){
-    console.warn("BANKRUPTCY WARNING", f.capital);
-  }
-}
-
-if (typeof registerTimeListener === "function"){
-  registerTimeListener(ACS_checkBankruptcy);
-}
-
-/* ============================================================
-   ⏱️ FINANCE ⇄ TIME SYNC (MONTH ROLLOVER)
-   ============================================================ */
-
-function ACS_syncMonthWithTime(simDate){
-  if (!(simDate instanceof Date)) return;
-
-  const f = normalizeFinance();
-
-  const month =
-    simDate.toLocaleString("en-US", {
-      month: "short",
-      year: "numeric",
-      timeZone: "UTC"
-    }).toUpperCase();
-
-  if (f.month !== month){
-
-    // cerrar mes anterior
-    f.history.push({
-      month: f.month,
-      revenue: f.revenue,
-      expenses: f.expenses,
-      profit: f.profit
-    });
-
-    // abrir nuevo mes
-    f.month = month;
-    f.revenue = 0;
-    f.expenses = f.cost.salaries;
-    f.profit = -f.expenses;
-
-    saveFinance(f);
-  }
-}
-
-if (typeof registerTimeListener === "function"){
-  registerTimeListener(ACS_syncMonthWithTime);
-}
+})();
