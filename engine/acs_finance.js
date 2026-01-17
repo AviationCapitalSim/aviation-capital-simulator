@@ -31,6 +31,25 @@ function saveFinance(f){
 }
 
 /* ============================================================
+   🗓️ WEEK HELPERS — ISO WEEK (MONDAY RESET)
+   ============================================================ */
+
+function ACS_getISOWeekKey(ts){
+  const d = new Date(ts);
+  d.setUTCHours(0,0,0,0);
+
+  // ISO week: Thursday defines the week
+  d.setUTCDate(d.getUTCDate() + 3 - ((d.getUTCDay() + 6) % 7));
+  const week1 = new Date(Date.UTC(d.getUTCFullYear(),0,4));
+  const weekNo = 1 + Math.round(
+    ((d - week1) / 86400000 - 3 + ((week1.getUTCDay() + 6) % 7)) / 7
+  );
+
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,"0")}`;
+}
+
+   
+/* ============================================================
    🔹 INIT STRUCTURE (ONCE)
    ============================================================ */
 
@@ -47,9 +66,10 @@ function initFinanceIfNeeded(){
     profit: 0,
 
     income: {
-      live_flight: 0,
-      route_weekly: 0
-    },
+    live_flight: 0,
+    route_weekly: 0,
+    weekly_key: null
+   },
 
     cost: {
       fuel: 0,
@@ -106,6 +126,18 @@ window.ACS_registerIncome = function(payload){
   /* === LIVE ROUTE REVENUE (EVENT) === */
   f.income.live_flight = payload.revenue;
 
+    /* === WEEKLY ROUTE REVENUE (ACCUMULATIVE) === */
+  const now = Date.now();
+  const currentWeek = ACS_getISOWeekKey(now);
+
+  if (f.income.weekly_key !== currentWeek) {
+    // New week → reset weekly accumulator
+    f.income.weekly_key = currentWeek;
+    f.income.route_weekly = 0;
+  }
+
+  f.income.route_weekly += payload.revenue;
+   
   /* === TOTALS === */
   f.revenue  += payload.revenue;
   f.expenses += payload.costTotal || 0;
