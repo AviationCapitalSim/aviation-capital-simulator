@@ -340,7 +340,40 @@ if (distanceNM > 600) {
     (distanceNM / 100) * ratePer100NM * continentFactor
   );
 }
-   
+
+/* ============================================================
+   🧭 NAVIGATION FEES (EN-ROUTE · HISTORICAL)
+   ------------------------------------------------------------
+   • Per flight
+   • Based on distance flown
+   • Era-dependent (ICAO evolution)
+   • Independent from airport / FIR detail
+   ============================================================ */
+
+// Rate per 100 NM (USD)
+let navRatePer100NM = 0;
+
+// Historical evolution
+if (year <= 1949) {
+  navRatePer100NM = 0;          // No structured ATC fees
+} else if (year <= 1969) {
+  navRatePer100NM = 0.5;        // Early ATC / radio guidance
+} else if (year <= 1989) {
+  navRatePer100NM = 1.5;        // Radar-based en-route services
+} else if (year <= 2009) {
+  navRatePer100NM = 3.0;        // Modern ATC (pre-ADS-B)
+} else {
+  navRatePer100NM = 5.0;        // Full ICAO / RNAV / ADS-B era
+}
+
+// Distance factor
+const navDistanceUnits = distanceNM / 100;
+
+// Final navigation cost
+const navigationCost = Math.round(
+  navDistanceUnits * navRatePer100NM
+);
+
   /* ============================================================
      💰 REVENUE (SIMPLE & STABLE)
      ============================================================ */
@@ -480,10 +513,11 @@ const profit = revenue - costTotal;
   slotCost: costSlots,
   handlingCost,
   overflightCost,
-
+  navigationCost,
+      
   // Totals
-  costTotal: costFuel + costSlots + handlingCost + overflightCost,
-  profit: revenue - (costFuel + costSlots + handlingCost + overflightCost),
+  costTotal: costFuel + costSlots + handlingCost + overflightCost + navigationCost,
+  profit: revenue - (costFuel + costSlots + handlingCost + overflightCost + navigationCost),
 
   paxPerNM,
   revPerNM,
