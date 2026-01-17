@@ -1,10 +1,10 @@
 <!-- ============================================================
-     === COMPANY VALUE MODULE — Qatar Luxury Edition ===========
+     === COMPANY VALUE MODULE — ACS UI ALIGNED ==================
      ------------------------------------------------------------
      Project: Aviation Capital Simulator (ACS)
      File: company_value.html
      Purpose: Strategic Airline Valuation (UI Only)
-     Status: HTML Skeleton (No JS logic yet)
+     Status: UI Aligned with Company Finance
      Date: 17 JAN 2026
      ============================================================ -->
 <!DOCTYPE html>
@@ -17,622 +17,369 @@
   <!-- ===== ACS Base Styles ===== -->
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <!-- ===== Favicons ===== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
-
-  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
   <link rel="apple-touch-icon" href="acs_logo_180.png">
-
-  <!-- ======== PWA Manifest ======== -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- ===== Optional: Fonts (if already used in ACS) ===== -->
+  <!-- ===== Fonts (ACS) ===== -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <style>
-    /* ============================================================
-       🟦 COMPANY VALUE — Qatar Luxury Page Skin (local)
-       (Only styling for this page; does not override global ACS)
-       ============================================================ */
-
-    body{
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      margin: 0;
-      color: #eaf0ff;
-
-      /* ✅ SOLO ajuste de color base ACS (azul Qatar Luxury) */
-      background:
-        radial-gradient(1200px 600px at 20% 10%, rgba(255,186,72,0.18), transparent 55%),
-        radial-gradient(900px 500px at 80% 20%, rgba(67,140,255,0.18), transparent 55%),
-        radial-gradient(900px 700px at 50% 85%, rgba(0,0,0,0.65), rgba(0,0,0,0.88)),
-        #081530;
-
-      min-height: 100vh;
-    }
-
-    .acs-wrap{
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 22px 18px 60px;
-    }
-
-    /* Header */
-    .acs-topbar{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      backdrop-filter: blur(8px);
-    }
-
-    .brand{
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .brand-badge{
-      width: 40px;
-      height: 40px;
-      border-radius: 14px;
-      background: radial-gradient(circle at 30% 30%, rgba(255,215,120,0.95), rgba(255,178,0,0.22));
-      border: 1px solid rgba(255,200,80,0.45);
-      box-shadow: 0 0 18px rgba(255,178,0,0.25);
-      display: grid;
-      place-items: center;
-      font-size: 18px;
-    }
-
-    .brand-title{
-      display: flex;
-      flex-direction: column;
-      line-height: 1.05;
-    }
-
-    .brand-title strong{
-      font-size: 14px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      color: #ffe7a0;
-    }
-
-    .brand-title span{
-      font-size: 12px;
-      color: rgba(234,240,255,0.85);
-    }
-
-    .nav-actions{
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .acs-btn{
-      appearance: none;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.06);
-      color: #eaf0ff;
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 12px;
-      letter-spacing: 0.2px;
-      transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
-      user-select: none;
-    }
-
-    .acs-btn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(255,200,80,0.35);
-      background: rgba(255,200,80,0.10);
-    }
-
-    .acs-btn.primary{
-      border-color: rgba(255,180,0,0.35);
-      background: linear-gradient(135deg, rgba(255,200,80,0.22), rgba(255,180,0,0.08));
-      color: #ffe7a0;
-    }
-
-    /* Hero */
-    .hero{
-      margin-top: 18px;
-      padding: 22px 18px;
-      border-radius: 22px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
-      box-shadow: 0 18px 46px rgba(0,0,0,0.40);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero:before{
-      content:"";
-      position:absolute;
-      inset:-80px -80px auto -80px;
-      height: 260px;
-      background: radial-gradient(circle at 25% 40%, rgba(255,190,60,0.35), transparent 60%);
-      filter: blur(2px);
-      pointer-events:none;
-    }
-
-    .hero-top{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:14px;
-      flex-wrap:wrap;
-    }
-
-    .hero h1{
-      margin:0;
-      font-size: 18px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-      color: #ffe7a0;
-    }
-
-    .hero p{
-      margin: 8px 0 0;
-      max-width: 720px;
-      color: rgba(234,240,255,0.88);
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    .value-kpi{
-      margin-top: 18px;
-      display:flex;
-      align-items:flex-end;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .value-kpi .currency{
-      font-family: Orbitron, monospace;
-      font-size: 20px;
-      color: rgba(255,231,160,0.85);
-      margin-bottom: 6px;
-    }
-
-    .value-kpi .number{
-      font-family: Orbitron, monospace;
-      font-size: 44px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      background: linear-gradient(90deg, #ffe7a0, #ffb300, #ffd75a);
-      -webkit-background-clip: text;
-      color: transparent;
-      text-shadow:
-        0 0 14px rgba(255,190,60,0.40),
-        0 0 30px rgba(255,190,60,0.20);
-    }
-
-    .value-kpi .note{
-      font-size: 12px;
-      color: rgba(234,240,255,0.78);
-      margin-left: 4px;
-      margin-bottom: 8px;
-    }
-
-    /* Grid */
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 14px;
-      margin-top: 14px;
-    }
-
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-    }
-
-    .panel{
-      border-radius: 18px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.10);
-      box-shadow: 0 12px 34px rgba(0,0,0,0.35);
-      backdrop-filter: blur(8px);
-      padding: 14px;
-      overflow:hidden;
-    }
-
-    .panel h2{
-      margin: 0 0 10px;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #ffe7a0;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .chip{
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(255,179,0,0.10);
-      border: 1px solid rgba(255,179,0,0.28);
-      color: #ffe7a0;
-      white-space: nowrap;
-    }
-
-    .kv{
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px 12px;
-      margin-top: 10px;
-    }
-
-    .kv .k{
-      color: rgba(234,240,255,0.80);
-      font-size: 12px;
-    }
-
-    .kv .v{
-      font-family: Orbitron, monospace;
-      font-size: 12px;
-      color: #eaf0ff;
-    }
-
-    .divider{
-      height:1px;
-      background: rgba(255,255,255,0.10);
-      margin: 12px 0;
-    }
-
-    .hint{
-      color: rgba(234,240,255,0.80);
-      font-size: 12px;
-      line-height: 1.55;
-    }
-
-    /* Mini list */
-    .mini-list{
-      margin: 10px 0 0;
-      padding: 0;
-      list-style: none;
-      display:flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .mini-item{
-      display:flex;
-      justify-content:space-between;
-      gap: 10px;
-      padding: 10px 10px;
-      border-radius: 14px;
-      background: rgba(0,0,0,0.22);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .mini-item strong{
-      font-size: 12px;
-      color: rgba(234,240,255,0.90);
-      font-weight: 700;
-    }
-
-    .mini-item span{
-      font-family: Orbitron, monospace;
-      font-size: 12px;
-      color: #ffe7a0;
-    }
-
-    /* Footer */
-    .foot{
-      margin-top: 18px;
-      text-align:center;
-      color: rgba(234,240,255,0.60);
-      font-size: 11px;
-      letter-spacing: 0.2px;
-    }
-
-    /* ============================================================
-         === GLOBAL HEADER (Exact Copy from dashboard.html) =======
-       ============================================================ */
-
-    .acs-header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      backdrop-filter: blur(9px);
-      background: rgba(12,23,50,0.45);
-      padding: 0.8rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 2px solid #ffb300;
-      z-index: 5000;
-      box-sizing: border-box;
-    }
-
-    .acs-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .acs-left img {
-      height: 46px;
-    }
-
-    .acs-left h1 {
-      font-size: 1.15rem;
-      margin: 0;
-      color: #ffb300;
-      letter-spacing: 0.5px;
-    }
-
-    .acs-nav {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-    }
-
-    .acs-nav a {
-      position: relative;
-      font-size: 1rem;
-      letter-spacing: 0.4px;
-      color: #dbe4ff;
-      text-decoration: none;
-      transition: 0.25s ease;
-      padding-bottom: 6px;
-    }
-
-    .acs-nav a:hover,
-    .acs-nav a.active {
-      color: #ffca3a;
-      text-shadow: 0 0 6px rgba(255,179,0,0.45);
-    }
-
-    .acs-nav a.active::after,
-    .acs-nav a:hover::after {
-      content: "";
-      position: absolute;
-      bottom: -8px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(to right, #ffb300, #ffe7a0);
-      border-radius: 2px;
-      box-shadow: 0 0 8px rgba(255,200,60,0.45);
-    }
-
-    .acs-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .logout-btn {
-      padding: 0.45rem 1.1rem;
-      border: 1px solid #ffb300;
-      border-radius: 12px;
-      background: rgba(255,179,0,0.05);
-      color: #ffb300;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
-    .logout-btn:hover {
-      background: #ffb300;
-      color: #0c1f3c;
-    }
-
-    .acs-clock-header {
-      font-family: "Orbitron", monospace;
-      padding: 0.4rem 0.8rem;
-      background: rgba(0,255,128,0.08);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      color: #00ff80;
-      white-space: nowrap;
-    }
-
-    .support-btn {
-      padding: 0.45rem 1.1rem;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      color: #8AB4FF;
-      border: 1px solid rgba(138,180,255,0.45);
-      background: rgba(138,180,255,0.08);
-      backdrop-filter: blur(6px);
-      transition: 0.25s ease;
-    }
-
-    .support-btn:hover {
-      background: rgba(138,180,255,0.20);
-      box-shadow: 0 0 14px rgba(138,180,255,0.55);
-      color: #dfe9ff;
-    }
-
-    /* ✅ Needed so fixed header doesn't cover your content */
-    .acs-wrap{
-      padding-top: 92px;
-    }
+<style>
 
 /* ============================================================
-   🟦 PAGE TITLE — PREMIUM QATAR LUXURY ACS
+   🌐 GLOBAL PAGE SKIN — ACS (Finance Aligned)
+   ============================================================ */
+
+body{
+  margin: 0;
+  font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #eaf0ff;
+  background:
+    radial-gradient(900px 500px at 20% 15%, rgba(138,180,255,0.14), transparent 55%),
+    radial-gradient(700px 400px at 80% 20%, rgba(0,255,128,0.12), transparent 55%),
+    radial-gradient(900px 700px at 50% 85%, rgba(0,0,0,0.65), rgba(0,0,0,0.88)),
+    #081530;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   🔝 GLOBAL HEADER (UNCHANGED)
+   ============================================================ */
+
+.acs-header{
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
+  box-sizing: border-box;
+}
+
+.acs-left{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.acs-left img{ height: 46px; }
+
+.acs-left h1{
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
+}
+
+.acs-nav{
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.acs-nav a{
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active{
+  color: #ffb300;
+}
+
+.acs-nav a.active::after,
+.acs-nav a:hover::after{
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right,#ffb300,#ffe7a0);
+  border-radius: 2px;
+}
+
+.acs-right{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.support-btn{
+  padding: 0.45rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8AB4FF;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.08);
+  text-decoration: none;
+}
+
+.logout-btn{
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #ffb300;
+  border-radius: 12px;
+  background: rgba(255,179,0,0.05);
+  color: #ffb300;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acs-clock-header{
+  font-family: "Orbitron", monospace;
+  padding: 0.4rem 0.8rem;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #00ff80;
+}
+
+/* ============================================================
+   📦 PAGE WRAPPER
+   ============================================================ */
+
+.acs-wrap{
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 120px 20px 70px;
+}
+
+/* ============================================================
+   🟦 PAGE TITLE — ACS FINANCE STYLE
    ============================================================ */
 
 .acs-page-title{
-  margin: 30px 0 14px;
+  margin: 48px 0 36px;
   text-align: center;
-  font-family: Orbitron, monospace;
-  font-size: 30px;
+  font-family: "Orbitron", monospace;
+  font-size: 34px;
+  font-weight: 600;
   letter-spacing: 1.2px;
-  color: #ffd27a;
+  color: #ffb300;
   text-shadow:
-    0 0 12px rgba(255,200,120,0.45),
-    0 0 28px rgba(255,180,80,0.35),
-    0 0 48px rgba(255,160,40,0.20);
+    0 0 10px rgba(255,179,0,0.35),
+    0 0 22px rgba(255,179,0,0.25);
 }
-       
-  </style>
+
+/* ============================================================
+   🟦 HERO
+   ============================================================ */
+
+.hero{
+  background: #0b1638;
+  border-radius: 22px;
+  padding: 26px 22px;
+  border: 1px solid rgba(138,180,255,0.18);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+}
+
+.hero h1{
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #ffb300;
+}
+
+.hero p{
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #cbd6ff;
+}
+
+/* ============================================================
+   🟦 KPI VALUE
+   ============================================================ */
+
+.value-kpi{
+  margin-top: 22px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.value-kpi .currency,
+.value-kpi .number{
+  font-family: "Orbitron", monospace;
+}
+
+.value-kpi .currency{
+  font-size: 20px;
+  color: #dbe4ff;
+}
+
+.value-kpi .number{
+  font-size: 44px;
+  font-weight: 700;
+  color: #ffb300;
+}
+
+.value-kpi .note{
+  font-size: 12px;
+  color: #cbd6ff;
+  margin-bottom: 6px;
+}
+
+/* ============================================================
+   🟦 GRID + PANELS
+   ============================================================ */
+
+.grid{
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+@media (max-width: 980px){
+  .grid{ grid-template-columns: 1fr; }
+}
+
+.panel{
+  background: #0d1a42;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid rgba(255,179,0,0.25);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.45);
+}
+
+.panel h2{
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffb300;
+  margin-bottom: 12px;
+}
+
+.kv{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px 14px;
+  font-size: 12px;
+}
+
+.kv .k{ color: #cbd6ff; }
+.kv .v{ font-family: "Orbitron", monospace; }
+
+/* ============================================================
+   🟦 FOOTER
+   ============================================================ */
+
+.foot{
+  margin-top: 28px;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(234,240,255,0.6);
+}
+
+</style>
 </head>
 
 <body>
 
-  <!-- ✅ GLOBAL HEADER — copied from dashboard.html -->
-  <header class="acs-header">
-    <div class="acs-left">
-      <img src="acs_logo.png" alt="ACS Logo">
-      <h1>Aviation Capital Simulator</h1>
+<header class="acs-header">
+  <div class="acs-left">
+    <img src="acs_logo.png" alt="ACS Logo">
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Bank</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+  </nav>
+
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+  </div>
+</header>
+
+<div class="acs-wrap">
+
+  <div class="acs-page-title">💼 Company Value</div>
+
+  <section class="hero">
+    <h1>Strategic Airline Valuation</h1>
+    <p>
+      A CEO-level view of your airline’s worth. This metric reflects capital strength,
+      fleet assets and network scale — without forcing you to scroll through long accounting history tables.
+    </p>
+
+    <div class="value-kpi">
+      <span class="currency">$</span>
+      <span class="number" id="cvValue">—</span>
+      <span class="note" id="cvNote">Awaiting calculation…</span>
     </div>
+  </section>
 
-    <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html">Bank</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html">Routes</a>
-      <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-    </nav>
+  <div class="grid">
 
-    <div class="acs-right">
-      <a href="support.html" class="support-btn">Support</a>
-      <a class="logout-btn" onclick="handleLogout()">Logout</a>
-      <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
-    </div>
-  </header>
+    <section class="panel">
+      <h2>Valuation Breakdown</h2>
 
-  <div class="acs-wrap">
+      <div class="kv">
+        <div class="k">💰 Capital (Cash)</div>
+        <div class="v" id="cvCapital">$—</div>
 
-<!-- ===========================
-     PAGE TITLE — PREMIUM ACS
-     =========================== -->
-       
-<div class="acs-page-title">
-  💼 Company Value
-</div>
-       
-    <!-- ===========================
-         HERO
-         =========================== -->
-    <section class="hero">
-      <div class="hero-top">
-        <div>
-          <h1>Strategic Airline Valuation</h1>
-          <p>
-            A CEO-level view of your airline’s worth. This metric is designed for gameplay:
-            it reflects capital strength, fleet assets and network scale — without forcing you
-            to scroll through long accounting history tables.
-          </p>
-        </div>
-        <span class="chip">Qatar Luxury • ACS</span>
-      </div>
+        <div class="k">✈ Fleet Assets Value</div>
+        <div class="v" id="cvFleet">$—</div>
 
-      <!-- BIG KPI -->
-      <div class="value-kpi">
-        <span class="currency">$</span>
-        <span class="number" id="cvValue">—</span>
-        <span class="note" id="cvNote">Awaiting calculation…</span>
+        <div class="k">🗺 Route Network Value</div>
+        <div class="v" id="cvRoutes">$—</div>
+
+        <div class="k">🏅 Reputation Multiplier</div>
+        <div class="v" id="cvRep">×—</div>
+
+        <div class="k">⚖ Liabilities</div>
+        <div class="v" id="cvLiab">$—</div>
       </div>
     </section>
 
-    <!-- ===========================
-         CONTENT GRID
-         =========================== -->
-    <div class="grid">
+    <aside class="panel">
+      <h2>Executive Summary</h2>
 
-      <!-- LEFT: Breakdown Demonstration (placeholders) -->
-      <section class="panel">
-        <h2>
-          Valuation Breakdown
-          <span class="chip">v1.0</span>
-        </h2>
+      <div class="kv">
+        <div class="k">Live Revenue (Week)</div>
+        <div class="v" id="cvLiveWeek">$—</div>
 
-        <div class="hint">
-          These components will be populated once we connect the Company Value engine.
-          For now, the layout is ready and Qatar-Luxury styled.
-        </div>
+        <div class="k">Weekly Revenue (Closed)</div>
+        <div class="v" id="cvWeeklyClosed">$—</div>
 
-        <div class="divider"></div>
-
-        <div class="kv">
-          <div class="k">💰 Capital (Cash)</div>
-          <div class="v" id="cvCapital">$—</div>
-
-          <div class="k">✈ Fleet Assets Value</div>
-          <div class="v" id="cvFleet">$—</div>
-
-          <div class="k">🗺 Route Network Value</div>
-          <div class="v" id="cvRoutes">$—</div>
-
-          <div class="k">🏅 Reputation Multiplier</div>
-          <div class="v" id="cvRep">×—</div>
-
-          <div class="k">⚖ Liabilities</div>
-          <div class="v" id="cvLiab">$—</div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="hint">
-          <strong>Next:</strong> connect <code>engine/acs_company_value.js</code> to populate
-          this page live and enable drill-down details when needed.
-        </div>
-      </section>
-
-      <!-- RIGHT: Executive Summary -->
-      <aside class="panel">
-        <h2>
-          Executive Summary
-          <span class="chip">Ops + Finance</span>
-        </h2>
-
-        <ul class="mini-list">
-          <li class="mini-item">
-            <strong>Live Revenue (Week)</strong>
-            <span id="cvLiveWeek">$—</span>
-          </li>
-          <li class="mini-item">
-            <strong>Weekly Revenue (Closed)</strong>
-            <span id="cvWeeklyClosed">$—</span>
-          </li>
-          <li class="mini-item">
-            <strong>Profit (Month)</strong>
-            <span id="cvProfitMonth">$—</span>
-          </li>
-        </ul>
-
-        <div class="divider"></div>
-
-        <div class="hint">
-          Keep your attention on strategic value first. Detailed monthly history remains stored
-          in Finance for reports — but it should not clutter the executive view.
-        </div>
-      </aside>
-    </div>
-
-    <div class="foot">
-      Aviation Capital Simulator (ACS) • Company Value Module • Qatar Luxury UI
-    </div>
+        <div class="k">Profit (Month)</div>
+        <div class="v" id="cvProfitMonth">$—</div>
+      </div>
+    </aside>
 
   </div>
 
-  <!-- ===========================
-       JS hooks (EMPTY for now)
-       We will connect in the next step.
-       =========================== -->
-  <!-- <script src="engine/acs_company_value.js"></script> -->
+  <div class="foot">
+    Aviation Capital Simulator (ACS) • Company Value Module
+  </div>
+
+</div>
+
 </body>
 </html>
