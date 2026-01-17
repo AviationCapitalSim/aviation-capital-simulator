@@ -668,11 +668,11 @@ document.querySelectorAll(".filter-btn").forEach(btn => {
 });
      
 /* ============================================================
-   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY) — v2.0
+   🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY) — v2.1
    ------------------------------------------------------------
-   • Live Route Income   → ACS_Finance.income.live_flight
-   • Weekly Route Income → ACS_Finance.income.route_weekly
-   • Fuente REAL: Finance v2.0
+   • Live Route Income   → ACS_Finance.income.live_revenue
+   • Weekly Route Income → ACS_Finance.income.weekly_revenue
+   • Fuente REAL: Finance (post F8)
    • SOLO LECTURA (UI)
    ============================================================ */
 
@@ -690,16 +690,16 @@ function loadBreakdown() {
   // ===============================
   categories.push({
     label: "Live Route Revenue (Income)",
-    value: Number(f.income?.live_flight || 0)
+    value: Number(f.income?.live_revenue || 0)
   });
 
   categories.push({
     label: "Weekly Route Revenue (Income)",
-    value: Number(f.income?.route_weekly || 0)
+    value: Number(f.income?.weekly_revenue || 0)
   });
 
   // ===============================
-  // 💸 COSTS — FINANCE REAL
+  // 💸 COSTS — FINANCE REAL (MONTH)
   // ===============================
   if (f.cost) {
     Object.keys(f.cost).forEach(k => {
@@ -720,7 +720,7 @@ function loadBreakdown() {
 
     wrapper.innerHTML = `
       <div class="finance-meter-title">
-        ${cat.label} — $${cat.value.toLocaleString()}
+        ${cat.label} — $${Math.round(cat.value).toLocaleString()}
       </div>
       <div class="finance-meter-bar">
         <div class="finance-meter-fill" style="width:${pct}%;"></div>
