@@ -37,20 +37,18 @@ function saveFinance(f){
 function ACS_getISOWeekKey(ts){
   const d = new Date(ts);
   d.setUTCHours(0,0,0,0);
-
-  // ISO week: Thursday defines the week
   d.setUTCDate(d.getUTCDate() + 3 - ((d.getUTCDay() + 6) % 7));
   const week1 = new Date(Date.UTC(d.getUTCFullYear(),0,4));
   const weekNo = 1 + Math.round(
     ((d - week1) / 86400000 - 3 + ((week1.getUTCDay() + 6) % 7)) / 7
   );
-
   return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,"0")}`;
 }
 
 /* ============================================================
    🗓️ MONTH KEY — YYYY-MM (UTC)
    ============================================================ */
+
 function ACS_getMonthKey(ts){
   const d = new Date(ts);
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2,"0")}`;
@@ -73,8 +71,8 @@ function initFinanceIfNeeded(){
     profit: 0,
 
     income: {
-      live_revenue: 0,      // acumulado EN VIVO (semana actual)
-      weekly_revenue: 0,    // total FINAL de la semana anterior
+      live_revenue: 0,
+      weekly_revenue: 0,
       current_week_key: null
     },
 
@@ -93,8 +91,7 @@ function initFinanceIfNeeded(){
     },
 
     history: [],
-
-    current_month: null   // 🔵 NECESARIO PARA CIERRE MENSUAL
+    current_month: null
   };
 
   saveFinance(f);
@@ -113,11 +110,7 @@ function pushLog(entry){
     log = JSON.parse(localStorage.getItem("ACS_Log")) || [];
   } catch {}
 
-  log.push({
-    ts: Date.now(),
-    ...entry
-  });
-
+  log.push({ ts: Date.now(), ...entry });
   localStorage.setItem("ACS_Log", JSON.stringify(log));
 }
 
@@ -132,30 +125,50 @@ window.ACS_registerIncome = function(payload){
   const f = loadFinance();
   if (!f) return;
 
- /* ============================================================
-   🔄 WEEKLY LOGIC — LIVE (IN-WEEK) + WEEK CLOSE
-   ============================================================ */
+  const now = Date.now();
 
-const now = Date.now();
-const weekKey = ACS_getISOWeekKey(now);
+  /* ============================================================
+     🔄 WEEKLY LOGIC — LIVE + WEEK CLOSE
+     ============================================================ */
 
-// 🔁 Cambio de semana detectado
-if (f.income.current_week_key !== weekKey) {
+  const weekKey = ACS_getISOWeekKey(now);
 
-  // 🧾 Cerrar semana anterior (si existe)
-  if (f.income.current_week_key !== null) {
-    f.income.weekly_revenue = f.income.live_revenue;
+  if (f.income.current_week_key !== weekKey) {
+    if (f.income.current_week_key !== null) {
+      f.income.weekly_revenue = f.income.live_revenue;
+    }
+    f.income.live_revenue = 0;
+    f.income.current_week_key = weekKey;
   }
 
-  // 🔄 Reset LIVE para nueva semana
-  f.income.live_revenue = 0;
-  f.income.current_week_key = weekKey;
-}
+  f.income.live_revenue += payload.revenue;
 
-// ➕ Acumular LIVE en tiempo real (semana actual)
-f.income.live_revenue += payload.revenue;
+  /* ============================================================
+     📦 MONTHLY CLOSE — RESET MONTH + HISTORY
+     ============================================================ */
 
-   
+  const monthKey = ACS_getMonthKey(now);
+
+  if (f.current_month !== monthKey) {
+
+    if (f.current_month !== null) {
+      f.history.push({
+        month: f.current_month,
+        revenue: f.revenue || 0,
+        expenses: f.expenses || 0,
+        profit: (f.revenue || 0) - (f.expenses || 0),
+        cost: { ...f.cost }
+      });
+    }
+
+    f.revenue = 0;
+    f.expenses = 0;
+    f.profit = 0;
+
+    Object.keys(f.cost).forEach(k => f.cost[k] = 0);
+    f.current_month = monthKey;
+  }
+
   /* === TOTALS === */
   f.revenue  += payload.revenue;
   f.expenses += payload.costTotal || 0;
@@ -164,24 +177,13 @@ f.income.live_revenue += payload.revenue;
 
   /* === COST BREAKDOWN === */
   if (payload.costs) {
-
-    if (payload.costs.fuel)
-      f.cost.fuel += payload.costs.fuel;
-
-    if (payload.costs.handling)
-      f.cost.ground_handling += payload.costs.handling;
-
-    if (payload.costs.slot)
-      f.cost.slot_fees += payload.costs.slot;
-
-    if (payload.costs.overflight)
-      f.cost.overflight += payload.costs.overflight;
-
-    if (payload.costs.navigation)
-      f.cost.navigation += payload.costs.navigation;
+    if (payload.costs.fuel) f.cost.fuel += payload.costs.fuel;
+    if (payload.costs.handling) f.cost.ground_handling += payload.costs.handling;
+    if (payload.costs.slot) f.cost.slot_fees += payload.costs.slot;
+    if (payload.costs.overflight) f.cost.overflight += payload.costs.overflight;
+    if (payload.costs.navigation) f.cost.navigation += payload.costs.navigation;
   }
 
-  /* === LOG ENTRY === */
   pushLog({
     type: "INCOME",
     source: payload.source || "FLIGHT",
@@ -190,47 +192,9 @@ f.income.live_revenue += payload.revenue;
   });
 
   saveFinance(f);
-
   window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 };
 
-/* ============================================================
-   📦 MONTHLY CLOSE — RESET MONTH + HISTORY
-   ============================================================ */
-
-const monthKey = ACS_getMonthKey(now);
-
-// 🔁 Cambio de mes detectado
-if (f.current_month !== monthKey) {
-
-  // 🧾 Cerrar mes anterior (si existe)
-  if (f.current_month !== null) {
-
-    const monthRecord = {
-      month: f.current_month,
-      revenue: f.revenue || 0,
-      expenses: f.expenses || 0,
-      profit: (f.revenue || 0) - (f.expenses || 0),
-      cost: { ...f.cost }
-    };
-
-    f.history = Array.isArray(f.history) ? f.history : [];
-    f.history.push(monthRecord);
-  }
-
-  // 🔄 RESET MENSUAL (NUEVO MES)
-  f.revenue = 0;
-  f.expenses = 0;
-  f.profit = 0;
-
-  // Reset TODOS los costos
-  Object.keys(f.cost || {}).forEach(k => {
-    f.cost[k] = 0;
-  });
-
-  f.current_month = monthKey;
-}
-   
 /* ============================================================
    🔹 ECONOMICS → FINANCE BRIDGE (READ ONLY)
    ============================================================ */
