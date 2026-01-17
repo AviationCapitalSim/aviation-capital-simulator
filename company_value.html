@@ -17,6 +17,17 @@
   <!-- ===== ACS Base Styles ===== -->
   <link rel="stylesheet" href="styles.css" />
 
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== PWA Manifest ======== -->
+  <link rel="manifest" href="manifest.json">
+
   <!-- ===== Optional: Fonts (if already used in ACS) ===== -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,11 +43,14 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       margin: 0;
       color: #eaf0ff;
+
+      /* ✅ SOLO ajuste de color base ACS (azul Qatar Luxury) */
       background:
         radial-gradient(1200px 600px at 20% 10%, rgba(255,186,72,0.18), transparent 55%),
         radial-gradient(900px 500px at 80% 20%, rgba(67,140,255,0.18), transparent 55%),
         radial-gradient(900px 700px at 50% 85%, rgba(0,0,0,0.65), rgba(0,0,0,0.88)),
-        #050814;
+        #081530;
+
       min-height: 100vh;
     }
 
@@ -325,10 +339,164 @@
       font-size: 11px;
       letter-spacing: 0.2px;
     }
+
+    /* ============================================================
+         === GLOBAL HEADER (Exact Copy from dashboard.html) =======
+       ============================================================ */
+
+    .acs-header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      backdrop-filter: blur(9px);
+      background: rgba(12,23,50,0.45);
+      padding: 0.8rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #ffb300;
+      z-index: 5000;
+      box-sizing: border-box;
+    }
+
+    .acs-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .acs-left img {
+      height: 46px;
+    }
+
+    .acs-left h1 {
+      font-size: 1.15rem;
+      margin: 0;
+      color: #ffb300;
+      letter-spacing: 0.5px;
+    }
+
+    .acs-nav {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    .acs-nav a {
+      position: relative;
+      font-size: 1rem;
+      letter-spacing: 0.4px;
+      color: #dbe4ff;
+      text-decoration: none;
+      transition: 0.25s ease;
+      padding-bottom: 6px;
+    }
+
+    .acs-nav a:hover,
+    .acs-nav a.active {
+      color: #ffca3a;
+      text-shadow: 0 0 6px rgba(255,179,0,0.45);
+    }
+
+    .acs-nav a.active::after,
+    .acs-nav a:hover::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to right, #ffb300, #ffe7a0);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255,200,60,0.45);
+    }
+
+    .acs-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logout-btn {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid #ffb300;
+      border-radius: 12px;
+      background: rgba(255,179,0,0.05);
+      color: #ffb300;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .logout-btn:hover {
+      background: #ffb300;
+      color: #0c1f3c;
+    }
+
+    .acs-clock-header {
+      font-family: "Orbitron", monospace;
+      padding: 0.4rem 0.8rem;
+      background: rgba(0,255,128,0.08);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #00ff80;
+      white-space: nowrap;
+    }
+
+    .support-btn {
+      padding: 0.45rem 1.1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      color: #8AB4FF;
+      border: 1px solid rgba(138,180,255,0.45);
+      background: rgba(138,180,255,0.08);
+      backdrop-filter: blur(6px);
+      transition: 0.25s ease;
+    }
+
+    .support-btn:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 14px rgba(138,180,255,0.55);
+      color: #dfe9ff;
+    }
+
+    /* ✅ Needed so fixed header doesn't cover your content */
+    .acs-wrap{
+      padding-top: 92px;
+    }
+
   </style>
 </head>
 
 <body>
+
+  <!-- ✅ GLOBAL HEADER — copied from dashboard.html -->
+  <header class="acs-header">
+    <div class="acs-left">
+      <img src="acs_logo.png" alt="ACS Logo">
+      <h1>Aviation Capital Simulator</h1>
+    </div>
+
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Bank</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+    </nav>
+
+    <div class="acs-right">
+      <a href="support.html" class="support-btn">Support</a>
+      <a class="logout-btn" onclick="handleLogout()">Logout</a>
+      <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+    </div>
+  </header>
+
   <div class="acs-wrap">
 
     <!-- ===========================
