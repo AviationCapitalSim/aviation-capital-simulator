@@ -383,6 +383,64 @@ body {
 .exec-card .value.multiplier{
   color: #9fd3ff;
 }
+
+/* ============================================================
+   🟧 A2 — COMPANY VALUE DASHBOARD CARDS (ACS)
+   ============================================================ */
+
+.value-cards-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 10px;
+}
+
+.value-card{
+  background: linear-gradient(180deg, #0c1a3f, #0a1533);
+  border-radius: 18px;
+  padding: 20px 18px;
+  border: 1px solid rgba(255,179,0,0.25);
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.45);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.value-card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 20px 46px rgba(0,0,0,0.6);
+}
+
+.value-card.negative{
+  border-color: rgba(255,90,90,0.35);
+}
+
+.vc-title{
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffb300;
+  margin-bottom: 8px;
+}
+
+.vc-value{
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.vc-value.multiplier{
+  color: #9fd3ff;
+}
+
+.value-card.negative .vc-value{
+  color: #ff6b6b;
+}
+
+.vc-sub{
+  font-size: 13px;
+  color: #cbd6ff;
+  opacity: 0.9;
+}
      
 </style>
 </head>
@@ -439,42 +497,50 @@ body {
 <div class="grid">
 
   <!-- 🔽 AJUSTE APLICADO AQUÍ (Executive Value Cards) -->
+     
   <section class="panel">
     <h2>Valuation Breakdown</h2>
 
-    <div class="exec-cards">
+    <div class="value-cards-grid">
 
-      <div class="exec-card">
-        <span class="label">💰 Capital (Cash)</span>
-        <span class="value" id="cvCapital">$—</span>
-      </div>
+  <div class="value-card">
+    <div class="vc-title">💰 Capital</div>
+    <div class="vc-value" id="cvCapital">$—</div>
+    <div class="vc-sub">Available company cash</div>
+  </div>
 
-      <div class="exec-card">
-        <span class="label">✈ Fleet Assets Value</span>
-        <span class="value" id="cvFleet">$—</span>
-      </div>
+  <div class="value-card">
+    <div class="vc-title">✈ Fleet Value</div>
+    <div class="vc-value" id="cvFleet">$—</div>
+    <div class="vc-sub">Aircraft assets valuation</div>
+  </div>
 
-      <div class="exec-card">
-        <span class="label">🗺 Route Network Value</span>
-        <span class="value" id="cvRoutes">$—</span>
-      </div>
+  <div class="value-card">
+    <div class="vc-title">🗺 Route Network</div>
+    <div class="vc-value" id="cvRoutes">$—</div>
+    <div class="vc-sub">Network & slot strength</div>
+  </div>
 
-      <div class="exec-card">
-        <span class="label">📉 Fleet Depreciation</span>
-        <span class="value negative" id="cvDepreciation">$—</span>
-      </div>
+  <div class="value-card negative">
+    <div class="vc-title">📉 Depreciation</div>
+    <div class="vc-value" id="cvDepreciation">$—</div>
+    <div class="vc-sub">Fleet aging impact</div>
+  </div>
 
-      <div class="exec-card">
-        <span class="label">🏅 Reputation Multiplier</span>
-        <span class="value multiplier" id="cvRep">×—</span>
-      </div>
+  <div class="value-card">
+    <div class="vc-title">🏅 Reputation</div>
+    <div class="vc-value multiplier" id="cvRep">×—</div>
+    <div class="vc-sub">Brand & performance index</div>
+  </div>
 
-      <div class="exec-card">
-        <span class="label">⚖ Liabilities</span>
-        <span class="value negative" id="cvLiab">$—</span>
-      </div>
+  <div class="value-card negative">
+    <div class="vc-title">⚖ Liabilities</div>
+    <div class="vc-value" id="cvLiab">$—</div>
+    <div class="vc-sub">Outstanding obligations</div>
+  </div>
 
-    </div>
+</div>
+
   </section>
   <!-- 🔼 FIN DEL AJUSTE -->
 
