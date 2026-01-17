@@ -15,7 +15,7 @@
   <title>Company Value — Aviation Capital Simulator</title>
 
   <!-- ===== ACS Base Styles ===== -->
-  <link rel="stylesheet" href="styles.css" />
+   <link rel="stylesheet" href="styles.css?v=3.1" />
 
   <!-- ===== Favicons ===== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
@@ -152,58 +152,48 @@ body{
 }
 
 /* ============================================================
-   📦 PAGE WRAPPER
+   🟦 PAGE TITLE — AVIATION DATA PLATE STYLE
    ============================================================ */
 
-.acs-wrap{
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 120px 20px 70px;
+.acs-title-wrap{
+  text-align: center;
+  margin: 56px 0 46px;
 }
-
-/* ============================================================
-   🟦 PAGE TITLE — ACS FINANCE STYLE
-   ============================================================ */
 
 .acs-page-title{
-  margin: 48px 0 36px;
-  text-align: center;
   font-family: "Orbitron", monospace;
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 600;
-  letter-spacing: 1.2px;
+  letter-spacing: 2px;
   color: #ffb300;
-  text-shadow:
-    0 0 10px rgba(255,179,0,0.35),
-    0 0 22px rgba(255,179,0,0.25);
+}
+
+.acs-page-subtitle{
+  margin-top: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(200,215,255,0.75);
 }
 
 /* ============================================================
-   🟦 HERO
+   🟦 HERO — STRATEGIC VALUE PLATE (AVIATION)
    ============================================================ */
 
 .hero{
-  background: #0b1638;
-  border-radius: 22px;
-  padding: 26px 22px;
-  border: 1px solid rgba(138,180,255,0.18);
-  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+  margin-bottom: 32px;
+  padding: 34px 34px;
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    #0b1736,
+    #060e24
+  );
+  border: 1px solid rgba(255,179,0,0.35);
+  box-shadow: 0 22px 48px rgba(0,0,0,0.65);
 }
 
-.hero h1{
-  margin: 0;
-  font-size: 15px;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: #ffb300;
-}
-
-.hero p{
-  margin-top: 10px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: #cbd6ff;
-}
 
 /* ============================================================
    🟦 KPI VALUE
@@ -253,20 +243,30 @@ body{
   .grid{ grid-template-columns: 1fr; }
 }
 
+/* ============================================================
+   🟦 PANEL — AEROSPACE INSTITUTIONAL
+   ============================================================ */
+
 .panel{
-  background: #0d1a42;
-  border-radius: 18px;
-  padding: 18px;
-  border: 1px solid rgba(255,179,0,0.25);
-  box-shadow: 0 12px 34px rgba(0,0,0,0.45);
+  background: linear-gradient(
+    180deg,
+    #0d1b3f,
+    #08122b
+  );
+  border-radius: 12px;
+  padding: 22px;
+  border: 1px solid rgba(255,179,0,0.28);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.6);
 }
 
 .panel h2{
+  font-family: "Orbitron", monospace;
   font-size: 13px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #ffb300;
-  margin-bottom: 12px;
+  color: #ffca5c;
+  margin-bottom: 18px;
 }
 
 .kv{
@@ -301,9 +301,9 @@ body{
     <h1>Aviation Capital Simulator</h1>
   </div>
 
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="finance.html">Bank</a>
+ <nav class="acs-nav">
+    <a href="dashboard.html" class="active">Main</a>   
+    <a href="bank.html">Bank</a>
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
@@ -317,9 +317,14 @@ body{
   </div>
 </header>
 
-<div class="acs-wrap">
-
-  <div class="acs-page-title">💼 Company Value</div>
+<div class="acs-title-wrap">
+  <div class="acs-page-title">
+    COMPANY VALUE
+  </div>
+  <div class="acs-page-subtitle">
+    ACS Strategic Airline Valuation Index
+  </div>
+</div>
 
   <section class="hero">
     <h1>Strategic Airline Valuation</h1>
