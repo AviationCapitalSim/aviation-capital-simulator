@@ -429,46 +429,36 @@ const profit = revenue - costTotal;
      📦 FINAL ECONOMICS OBJECT
      ============================================================ */
    
- return {
-  flightId: d.flightId,
-  aircraftId: d.aircraftId,
-  origin: d.origin,
-  destination: d.destination,
-  distanceNM,
+   return {
+    flightId: d.flightId,
+    aircraftId: d.aircraftId,
+    origin: d.origin,
+    destination: d.destination,
+    distanceNM,
 
-  // Pax
-  pax,
-  loadFactor,
+    pax,
+    loadFactor,
 
-  // Revenue
-  revenue,
+    revenue,
 
-  // Costs (desglosados)
-  fuelCost: costFuel,
-  slotCost: costSlots,
-  handlingCost,
+    fuelCost: costFuel,
+    slotCost: costSlots,
+    handlingCost,
 
-  // Totals
-  costTotal: costFuel + costSlots + handlingCost,
-  profit: revenue - (costFuel + costSlots + handlingCost),
+    costTotal: costFuel + costSlots + handlingCost,
+    profit: revenue - (costFuel + costSlots + handlingCost),
 
-  // Metrics
-  paxPerNM,
-  revPerNM,
-  costPerNM:
-    distanceNM > 0
-      ? (costFuel + costSlots + handlingCost) / distanceNM
-      : 0,
-  costPerPax:
-    pax > 0
-      ? (costFuel + costSlots + handlingCost) / pax
-      : 0,
+    paxPerNM,
+    revPerNM,
+    costPerNM: distanceNM > 0 ? (costFuel + costSlots + handlingCost) / distanceNM : 0,
+    costPerPax: pax > 0 ? (costFuel + costSlots + handlingCost) / pax : 0,
 
-  // Meta
-  year,
-  arrAbsMin: d.arrAbsMin ?? null,
-  ts: Date.now()
-};
+    year,
+    arrAbsMin: d.arrAbsMin ?? null,
+    ts: Date.now()
+  };
+} // ✅ ESTA LLAVE CIERRA ACS_buildFlightEconomics (TE FALTABA)
+
 
 /* ============================================================
    ✈️ SKYTRACK ARRIVAL LISTENER
