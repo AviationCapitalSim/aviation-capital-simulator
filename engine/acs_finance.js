@@ -66,9 +66,9 @@ function initFinanceIfNeeded(){
     profit: 0,
 
     income: {
-    live_flight: 0,
-    route_weekly: 0,
-    weekly_key: null
+    live_revenue: 0,      // acumulado EN VIVO (semana actual)
+    weekly_revenue: 0,    // total FINAL de la semana anterior
+    current_week_key: null
    },
 
     cost: {
