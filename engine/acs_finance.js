@@ -123,20 +123,29 @@ window.ACS_registerIncome = function(payload){
   const f = loadFinance();
   if (!f) return;
 
-  /* === LIVE ROUTE REVENUE (EVENT) === */
-  f.income.live_flight = payload.revenue;
+ /* ============================================================
+   🔄 WEEKLY LOGIC — LIVE (IN-WEEK) + WEEK CLOSE
+   ============================================================ */
 
-    /* === WEEKLY ROUTE REVENUE (ACCUMULATIVE) === */
-  const now = Date.now();
-  const currentWeek = ACS_getISOWeekKey(now);
+const now = Date.now();
+const weekKey = ACS_getISOWeekKey(now);
 
-  if (f.income.weekly_key !== currentWeek) {
-    // New week → reset weekly accumulator
-    f.income.weekly_key = currentWeek;
-    f.income.route_weekly = 0;
+// 🔁 Cambio de semana detectado
+if (f.income.current_week_key !== weekKey) {
+
+  // 🧾 Cerrar semana anterior (si existe)
+  if (f.income.current_week_key !== null) {
+    f.income.weekly_revenue = f.income.live_revenue;
   }
 
-  f.income.route_weekly += payload.revenue;
+  // 🔄 Reset LIVE para nueva semana
+  f.income.live_revenue = 0;
+  f.income.current_week_key = weekKey;
+}
+
+// ➕ Acumular LIVE en tiempo real (semana actual)
+f.income.live_revenue += payload.revenue;
+
    
   /* === TOTALS === */
   f.revenue  += payload.revenue;
