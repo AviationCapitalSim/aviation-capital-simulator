@@ -239,6 +239,21 @@ body {
 }
 
 /* ============================================================
+     === MAIN CONTENT ==========================================
+   ============================================================ */
+
+.acs-main {
+  padding: 70px 2rem 70px;
+  text-align: center;
+}
+
+.acs-main .sub {
+  margin-top: -0.4rem;
+  color: #cbd6ff;
+  font-size: 1rem;
+}
+     
+/* ============================================================
    🟦 PANEL (DASHBOARD CARD BASE) ==============================
    ============================================================ */
 
@@ -280,6 +295,28 @@ body {
   color: #d7e2ff;
   font-size: 0.95rem;
   line-height: 1.4;
+}
+
+/* ============================================================
+     === PREMIUM PANEL GRID ====================================
+   ============================================================ */
+
+.dashboard-grid {
+  display: grid;
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.row-business {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.row-operations {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.row-capital {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
      
 /* ============================================================
@@ -407,19 +444,6 @@ body {
   </div>
 </div>
 
-<section class="hero">
-  <h1>Strategic Airline Valuation</h1>
-  <p>
-    A CEO-level view of your airline’s worth. This metric reflects capital strength,
-    fleet assets and network scale — without forcing you to scroll through long accounting history tables.
-  </p>
-
-  <div class="value-kpi">
-    <span class="currency">$</span>
-    <span class="number" id="cvValue">—</span>
-    <span class="note" id="cvNote">Awaiting calculation…</span>
-  </div>
-     
 </section>
 
  <div class="dashboard-grid row-business">
