@@ -441,6 +441,86 @@ body {
   color: #cbd6ff;
   opacity: 0.9;
 }
+
+/* ============================================================
+   🟧 A2 — COMPANY VALUE DASHBOARD CARDS (LUXURY • ACS)
+   ============================================================ */
+
+.value-dashboard-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap: 22px;
+  margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .value-dashboard-grid{
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 620px){
+  .value-dashboard-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-card{
+  background: linear-gradient(180deg, #0c1a3f, #0a1533);
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  border: 1px solid rgba(255,179,0,0.22);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.45);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.dash-card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 20px 46px rgba(0,0,0,0.6);
+}
+
+.dash-title{
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffb300;
+  margin-bottom: 10px;
+}
+
+.dash-value{
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.dash-value.small{
+  font-size: 22px;
+  color: #9fd3ff;
+}
+
+.dash-sub{
+  font-size: 13px;
+  color: #cbd6ff;
+  opacity: 0.9;
+  line-height: 1.45;
+}
+
+/* Asset list inside card */
+.dash-list{
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: #dbe4ff;
+}
+
+.dash-list div{
+  display: flex;
+  justify-content: space-between;
+}
+
+.dash-list .neg{
+  color: #ff6b6b;
+}
      
 </style>
 </head>
@@ -479,7 +559,6 @@ body {
   </div>
 </div>
 
-
 <section class="hero">
   <h1>Strategic Airline Valuation</h1>
   <p>
@@ -494,55 +573,40 @@ body {
   </div>
 </section>
 
-<div class="grid">
+<div class="value-dashboard-grid">
 
-  <!-- 🔽 AJUSTE APLICADO AQUÍ (Executive Value Cards) -->
-     
-  <section class="panel">
-    <h2>Valuation Breakdown</h2>
-
-    <div class="value-cards-grid">
-
-  <div class="value-card">
-    <div class="vc-title">💰 Capital</div>
-    <div class="vc-value" id="cvCapital">$—</div>
-    <div class="vc-sub">Available company cash</div>
+  <!-- 🟦 CARD 1 — COMPANY VALUE -->
+  <div class="dash-card">
+    <div class="dash-title">💼 Company Value</div>
+    <div class="dash-value" id="cvValue">$—</div>
+    <div class="dash-sub">
+      Total airline valuation including fleet, network, and capital.
+    </div>
   </div>
 
-  <div class="value-card">
-    <div class="vc-title">✈ Fleet Value</div>
-    <div class="vc-value" id="cvFleet">$—</div>
-    <div class="vc-sub">Aircraft assets valuation</div>
+  <!-- 🟦 CARD 2 — ASSET STRUCTURE -->
+  <div class="dash-card">
+    <div class="dash-title">✈ Asset Structure</div>
+    <div class="dash-list">
+      <div><span>Fleet Assets</span><span id="cvFleet">$—</span></div>
+      <div><span>Route Network</span><span id="cvRoutes">$—</span></div>
+      <div><span>Depreciation</span><span id="cvDepreciation" class="neg">$—</span></div>
+      <div><span>Liabilities</span><span id="cvLiab" class="neg">$—</span></div>
+    </div>
   </div>
 
-  <div class="value-card">
-    <div class="vc-title">🗺 Route Network</div>
-    <div class="vc-value" id="cvRoutes">$—</div>
-    <div class="vc-sub">Network & slot strength</div>
-  </div>
-
-  <div class="value-card negative">
-    <div class="vc-title">📉 Depreciation</div>
-    <div class="vc-value" id="cvDepreciation">$—</div>
-    <div class="vc-sub">Fleet aging impact</div>
-  </div>
-
-  <div class="value-card">
-    <div class="vc-title">🏅 Reputation</div>
-    <div class="vc-value multiplier" id="cvRep">×—</div>
-    <div class="vc-sub">Brand & performance index</div>
-  </div>
-
-  <div class="value-card negative">
-    <div class="vc-title">⚖ Liabilities</div>
-    <div class="vc-value" id="cvLiab">$—</div>
-    <div class="vc-sub">Outstanding obligations</div>
+  <!-- 🟦 CARD 3 — PERFORMANCE INDEX -->
+  <div class="dash-card">
+    <div class="dash-title">🏅 Performance Index</div>
+    <div class="dash-value small" id="cvRep">×—</div>
+    <div class="dash-sub">
+      Reputation and operational performance multiplier.
+    </div>
   </div>
 
 </div>
 
   </section>
-  <!-- 🔼 FIN DEL AJUSTE -->
 
   <aside class="panel">
     <h2>Executive Summary</h2>
