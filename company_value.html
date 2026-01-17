@@ -254,19 +254,7 @@ body {
 }
      
 /* ============================================================
-   🟦 PANEL (DASHBOARD CARD BASE) ==============================
-   ============================================================ */
-
-.panel{
-  background: #0b1638;
-  border-radius: 16px;
-  padding: 1.1rem 1.15rem;
-  border: 1px solid rgba(255,179,0,0.25);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-}
-     
-/* ============================================================
-     === PANEL ==================================================
+   🟦 PANEL (DASHBOARD CARD — EXACT COPY) ======================
    ============================================================ */
 
 .panel {
@@ -284,41 +272,25 @@ body {
   border: 1px solid rgba(255,179,0,0.35);
 }
 
-.panel h3 {
-  font-size: 1.25rem;
-  color: #ffb300;
-  margin-bottom: 0.9rem;
-  text-shadow: 0 0 6px rgba(255,179,0,0.4);
-}
-
-.panel p {
-  color: #d7e2ff;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
 /* ============================================================
-     === PREMIUM PANEL GRID ====================================
+   🟦 DASHBOARD GRID (MATCH DASHBOARD CARD SIZE) ================
+   - company_value usa <section class="dashboard-like-grid">
+   - aquí lo hacemos CLON del Dashboard
    ============================================================ */
 
-.dashboard-grid {
+.dashboard-like-grid {
   display: grid;
   gap: 2rem;
   margin-top: 4rem;
-}
-
-.row-business {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
-.row-operations {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-}
+/* Opcional: si quieres que la primera tarjeta sea “grande” como hero,
+   descomenta estas 2 líneas y agrega class="cv-main" al CARD 1
+.cv-main { grid-column: span 2; }
+@media (max-width: 900px){ .cv-main{ grid-column: span 1; } }
+*/
 
-.row-capital {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
-     
 /* ============================================================
    🟧 COMPANY VALUE DASHBOARD (FINAL) ==========================
    ============================================================ */
