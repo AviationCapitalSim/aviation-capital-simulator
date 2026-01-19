@@ -72,12 +72,12 @@ function getLiabilities(){
 }
 
 /* ============================================================
-   🟧 CV-ENGINE-1 — FLEET ASSETS VALUE (FROM REAL LEDGER)
+   🟧 CV-ENGINE-1 — FLEET ASSETS VALUE (FROM ACS_Log LEDGER)
    ------------------------------------------------------------
    Source:
    - localStorage: ACS_Log
-   - Only aircraft purchase EXPENSE entries
-   - Survives sell / remove / leasing logic
+   - Aircraft purchases only
+   - Independent from MyAircraft (safe on sell / remove)
    ============================================================ */
 
 function getFleetValue() {
@@ -104,7 +104,7 @@ function getFleetValue() {
     });
 
   } catch (e) {
-    console.warn("Company Value — Fleet ledger read failed", e);
+    console.warn("Company Value — Fleet assets ledger read failed", e);
   }
 
   return total;
