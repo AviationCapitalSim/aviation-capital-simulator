@@ -976,27 +976,25 @@ function connectCompanyValue() {
     // ===============================
     // 🟦 CARD 1 — COMPANY VALUATION
     // ===============================
-   /* ============================================================
-   🟧 CV-UI-8 — COMPANY VALUE MAIN FORMAT (SINGLE $ CLEAN)
-   ------------------------------------------------------------
-   • Removes any previous currency symbols
-   • Formats numeric value cleanly
-   • Adds ONLY one "$"
+ /* ============================================================
+   🟧 CV-UI-11 — CV MAIN VALUE (ANTI-DOUBLE-$, HARD CLEAN)
    ============================================================ */
 
 const cvMain = document.getElementById("cvValue");
 
 if (cvMain) {
-  if (totalValue !== "—") {
 
-    const clean = Number(String(totalValue).replace(/[^0-9.-]/g, ""));
+  // totalValue puede venir como número o como string con "$"
+  if (totalValue !== "—" && totalValue !== undefined && totalValue !== null) {
 
-    cvMain.textContent = "$" + Math.round(clean).toLocaleString("en-US");
+    const cleanNum = Number(String(totalValue).replace(/[^0-9.-]/g, ""));
+    cvMain.textContent = "$" + Math.round(cleanNum).toLocaleString("en-US");
 
   } else {
     cvMain.textContent = "—";
   }
 }
+
 
     // ===============================
     // 🟦 CARD 2 — VALUATION BREAKDOWN
@@ -1023,11 +1021,10 @@ if (document.getElementById("cvFleet")) {
 }
 
 /* ============================================================
-   🟧 CV-UI-6 — ROUTE NETWORK VALUE (DISPLAY FROM ENGINE)
+   🟧 CV-UI-12 — ROUTE NETWORK VALUE (ENGINE DISPLAY ONLY)
    ------------------------------------------------------------
-   • NO recalculation in UI
-   • Reads FINAL value from engine breakdown
-   • Single source of truth = ACS_getCompanyValue engine
+   • No calculation in HTML
+   • Reads getRouteNetworkValue() from acs_company_value-2.js
    ============================================================ */
 
 let routeValue = 0;
@@ -1037,11 +1034,12 @@ try {
     routeValue = window.getRouteNetworkValue();
   }
 } catch (e) {
-  console.warn("UI route value read failed", e);
+  console.warn("UI: getRouteNetworkValue failed", e);
 }
 
-if (document.getElementById("cvRoutes")) {
-  document.getElementById("cvRoutes").textContent =
+const cvRoutesEl = document.getElementById("cvRoutes");
+if (cvRoutesEl) {
+  cvRoutesEl.textContent =
     routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
 }
 
