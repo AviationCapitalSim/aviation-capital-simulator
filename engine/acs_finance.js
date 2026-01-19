@@ -31,6 +31,23 @@ function saveFinance(f){
 }
 
 /* ============================================================
+   🟧 A1 — WEEK CLOSE → DISPATCH COMPANY VALUE UPDATE
+   ------------------------------------------------------------
+   • Se dispara SOLO cuando cierra la semana
+   • Envía Finance completo al sistema estratégico
+   ============================================================ */
+
+try {
+  window.dispatchEvent(
+    new CustomEvent("ACS_WEEK_CLOSED", {
+      detail: finance
+    })
+  );
+} catch (e) {
+  console.warn("ACS_WEEK_CLOSED dispatch failed", e);
+}
+   
+/* ============================================================
    🗓️ WEEK HELPERS — ISO WEEK (MONDAY RESET)
    ============================================================ */
 
