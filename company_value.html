@@ -824,34 +824,31 @@ function connectCompanyValue() {
     if (document.getElementById("cvCapital"))
       document.getElementById("cvCapital").textContent = fmt(finance.capital);
 
-   /* ============================================================
-   🟧 CV-UI-3 — FLEET ASSETS & ROUTE NETWORK VALUE
+  /* ============================================================
+   🟧 CV-UI-4 — FLEET ASSETS VALUE (FROM FINANCE LEDGER)
+   ------------------------------------------------------------
+   Source:
+   - ACS_Finance.used_aircraft_purchase
+   - ACS_Finance.new_aircraft_purchase
    ============================================================ */
 
-// ---------- FLEET ASSETS VALUE ----------
 let fleetValue = 0;
 
 try {
-  const fleetRaw = localStorage.getItem("ACS_MyAircraft");
-  if (fleetRaw) {
-    const fleet = JSON.parse(fleetRaw);
+  if (finance.used_aircraft_purchase)
+    fleetValue += Number(finance.used_aircraft_purchase);
 
-    fleet.forEach(ac => {
-      // Priority: marketValue > purchasePrice > price
-      if (ac.marketValue) fleetValue += Number(ac.marketValue);
-      else if (ac.purchasePrice) fleetValue += Number(ac.purchasePrice);
-      else if (ac.price) fleetValue += Number(ac.price);
-    });
-  }
+  if (finance.new_aircraft_purchase)
+    fleetValue += Number(finance.new_aircraft_purchase);
+
 } catch (e) {
-  console.warn("Fleet assets calculation failed", e);
+  console.warn("Fleet assets (finance) calculation failed", e);
 }
 
 if (document.getElementById("cvFleet")) {
   document.getElementById("cvFleet").textContent =
     fleetValue > 0 ? "$" + Math.round(fleetValue).toLocaleString("en-US") : "—";
 }
-
 
 // ---------- ROUTE NETWORK VALUE ----------
 let routeValue = 0;
