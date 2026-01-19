@@ -853,7 +853,7 @@ try {
     const activeRoutes = routes.filter(r => r && r.status !== "CANCELLED");
 
     /* ============================================================
-       🕰️ HISTORICAL ROUTE BASE VALUE (BY ERA)
+       🕰️ HISTORICAL ROUTE BASE VALUE + CAPS (REALISTIC)
        ============================================================ */
     let year = 2026;
 
@@ -863,17 +863,44 @@ try {
       }
     } catch {}
 
-    let ROUTE_BASE_VALUE = 150000; // default modern
+    let ROUTE_BASE_VALUE = 500;     // per route
+    let ROUTE_MAX_VALUE  = 50000;   // total cap
 
-    if (year <= 1945) ROUTE_BASE_VALUE = 2000;
-    else if (year <= 1950) ROUTE_BASE_VALUE = 5000;
-    else if (year <= 1960) ROUTE_BASE_VALUE = 15000;
-    else if (year <= 1975) ROUTE_BASE_VALUE = 40000;
-    else if (year <= 1990) ROUTE_BASE_VALUE = 80000;
-    else if (year <= 2010) ROUTE_BASE_VALUE = 120000;
-    else ROUTE_BASE_VALUE = 150000;
+    if (year <= 1945) {
+      ROUTE_BASE_VALUE = 500;
+      ROUTE_MAX_VALUE  = 50000;
+    }
+    else if (year <= 1950) {
+      ROUTE_BASE_VALUE = 1500;
+      ROUTE_MAX_VALUE  = 200000;
+    }
+    else if (year <= 1960) {
+      ROUTE_BASE_VALUE = 5000;
+      ROUTE_MAX_VALUE  = 1000000;
+    }
+    else if (year <= 1975) {
+      ROUTE_BASE_VALUE = 15000;
+      ROUTE_MAX_VALUE  = 3000000;
+    }
+    else if (year <= 1990) {
+      ROUTE_BASE_VALUE = 30000;
+      ROUTE_MAX_VALUE  = 6000000;
+    }
+    else if (year <= 2010) {
+      ROUTE_BASE_VALUE = 60000;
+      ROUTE_MAX_VALUE  = 12000000;
+    }
+    else {
+      ROUTE_BASE_VALUE = 100000;
+      ROUTE_MAX_VALUE  = 20000000;
+    }
 
     routeValue = activeRoutes.length * ROUTE_BASE_VALUE;
+
+    // HARD CAP BY ERA (CRITICAL)
+    if (routeValue > ROUTE_MAX_VALUE) {
+      routeValue = ROUTE_MAX_VALUE;
+    }
   }
 } catch (e) {
   console.warn("Route network calculation failed", e);
@@ -883,12 +910,6 @@ if (document.getElementById("cvRoutes")) {
   document.getElementById("cvRoutes").textContent =
     routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
 }
-
-if (document.getElementById("cvRep"))
-  document.getElementById("cvRep").textContent = "×1.00"; // baseline
-
-if (document.getElementById("cvLiab"))
-  document.getElementById("cvLiab").textContent = fmt(finance.expenses || 0);
 
     // ===============================
     // 🟦 CARD 3 — EXECUTIVE SNAPSHOT
