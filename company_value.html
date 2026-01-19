@@ -1045,65 +1045,6 @@ if (document.getElementById("cvRoutes")) {
     routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
 }
 
-    /* ============================================================
-       🕰️ HISTORICAL ROUTE BASE VALUE + CAPS (REALISTIC)
-       ============================================================ */
-    let year = 2026;
-
-    try {
-      if (window.ACS_TIME && ACS_TIME.currentYear) {
-        year = Number(ACS_TIME.currentYear);
-      }
-    } catch {}
-
-    let ROUTE_BASE_VALUE = 500;     // per route
-    let ROUTE_MAX_VALUE  = 50000;   // total cap
-
-    if (year <= 1945) {
-      ROUTE_BASE_VALUE = 500;
-      ROUTE_MAX_VALUE  = 50000;
-    }
-    else if (year <= 1950) {
-      ROUTE_BASE_VALUE = 1500;
-      ROUTE_MAX_VALUE  = 200000;
-    }
-    else if (year <= 1960) {
-      ROUTE_BASE_VALUE = 5000;
-      ROUTE_MAX_VALUE  = 1000000;
-    }
-    else if (year <= 1975) {
-      ROUTE_BASE_VALUE = 15000;
-      ROUTE_MAX_VALUE  = 3000000;
-    }
-    else if (year <= 1990) {
-      ROUTE_BASE_VALUE = 30000;
-      ROUTE_MAX_VALUE  = 6000000;
-    }
-    else if (year <= 2010) {
-      ROUTE_BASE_VALUE = 60000;
-      ROUTE_MAX_VALUE  = 12000000;
-    }
-    else {
-      ROUTE_BASE_VALUE = 100000;
-      ROUTE_MAX_VALUE  = 20000000;
-    }
-
-    routeValue = activeRoutes.length * ROUTE_BASE_VALUE;
-
-    // HARD CAP BY ERA (CRITICAL)
-    if (routeValue > ROUTE_MAX_VALUE) {
-      routeValue = ROUTE_MAX_VALUE;
-    }
-  }
-} catch (e) {
-  console.warn("Route network calculation failed", e);
-}
-
-if (document.getElementById("cvRoutes")) {
-  document.getElementById("cvRoutes").textContent =
-    routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
-}
-
     // ===============================
     // 🟦 CARD 3 — EXECUTIVE SNAPSHOT
     // ===============================
