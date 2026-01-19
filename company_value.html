@@ -764,5 +764,92 @@ body {
      
 </script>
      
+<script>
+/* ============================================================
+   💎 COMPANY VALUE — UI CONNECTOR (BASELINE MODE)
+   ------------------------------------------------------------
+   Reads:
+   - Total Company Value from ACS_getCompanyValue()
+   - Finance data from localStorage (ACS_Finance)
+   Purpose:
+   - Populate the 3 strategic cards
+   - No recalculation
+   - No listeners
+   ============================================================ */
+
+function connectCompanyValue() {
+
+  try {
+
+    // --- Read Finance ---
+    const financeRaw = localStorage.getItem("ACS_Finance");
+    if (!financeRaw) {
+      console.warn("Company Value: Finance not found");
+      return;
+    }
+
+    const finance = JSON.parse(financeRaw);
+
+    // --- Read Company Value (FINAL NUMBER) ---
+    let totalValue = "—";
+    if (typeof window.ACS_getCompanyValue === "function") {
+      totalValue = window.ACS_getCompanyValue();
+    }
+
+    // --- Format helper ---
+    function fmt(v) {
+      if (v === undefined || v === null) return "—";
+      return "$" + Math.round(v).toLocaleString("en-US");
+    }
+
+    // ===============================
+    // 🟦 CARD 1 — COMPANY VALUATION
+    // ===============================
+    const cvMain = document.getElementById("cvValue");
+    if (cvMain) cvMain.textContent = fmt(totalValue);
+
+    // ===============================
+    // 🟦 CARD 2 — VALUATION BREAKDOWN
+    // ===============================
+    if (document.getElementById("cvCapital"))
+      document.getElementById("cvCapital").textContent = fmt(finance.capital);
+
+    if (document.getElementById("cvFleet"))
+      document.getElementById("cvFleet").textContent = "—"; // future engine
+
+    if (document.getElementById("cvRoutes"))
+      document.getElementById("cvRoutes").textContent = "—"; // future engine
+
+    if (document.getElementById("cvRep"))
+      document.getElementById("cvRep").textContent = "×1.00"; // baseline
+
+    if (document.getElementById("cvLiab"))
+      document.getElementById("cvLiab").textContent = fmt(finance.expenses || 0);
+
+    // ===============================
+    // 🟦 CARD 3 — EXECUTIVE SNAPSHOT
+    // ===============================
+    if (document.getElementById("cvLiveWeek"))
+      document.getElementById("cvLiveWeek").textContent = fmt(finance.income?.routes || 0);
+
+    if (document.getElementById("cvWeeklyClosed"))
+      document.getElementById("cvWeeklyClosed").textContent = fmt(finance.revenue || 0);
+
+    if (document.getElementById("cvProfitMonth"))
+      document.getElementById("cvProfitMonth").textContent = fmt(finance.profit || 0);
+
+    console.log("💎 Company Value connected successfully");
+
+  } catch (e) {
+    console.error("Company Value connector failed", e);
+  }
+}
+
+
+// Auto connect once page is ready
+window.addEventListener("load", connectCompanyValue);
+     
+</script>
+
 </body>
 </html>
