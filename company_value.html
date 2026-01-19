@@ -824,25 +824,39 @@ function connectCompanyValue() {
     if (document.getElementById("cvCapital"))
       document.getElementById("cvCapital").textContent = fmt(finance.capital);
 
-  /* ============================================================
-   🟧 CV-UI-4 — FLEET ASSETS VALUE (FROM FINANCE LEDGER)
+ /* ============================================================
+   🟧 CV-UI-5 — FLEET ASSETS VALUE (FROM FINANCE LOG — REAL LEDGER)
    ------------------------------------------------------------
    Source:
-   - ACS_Finance.used_aircraft_purchase
-   - ACS_Finance.new_aircraft_purchase
+   - ACS_Finance.log[]
+   - Filters EXPENSE entries with aircraft purchases
    ============================================================ */
 
 let fleetValue = 0;
 
 try {
-  if (finance.used_aircraft_purchase)
-    fleetValue += Number(finance.used_aircraft_purchase);
 
-  if (finance.new_aircraft_purchase)
-    fleetValue += Number(finance.new_aircraft_purchase);
+  if (Array.isArray(finance.log)) {
+
+    finance.log.forEach(tx => {
+
+      if (
+        tx.type === "EXPENSE" &&
+        typeof tx.source === "string" &&
+        (
+          tx.source.includes("Used Market Purchase") ||
+          tx.source.includes("New Market Purchase")
+        )
+      ) {
+        fleetValue += Number(tx.amount || 0);
+      }
+
+    });
+
+  }
 
 } catch (e) {
-  console.warn("Fleet assets (finance) calculation failed", e);
+  console.warn("Fleet assets (ledger) calculation failed", e);
 }
 
 if (document.getElementById("cvFleet")) {
