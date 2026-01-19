@@ -727,42 +727,118 @@ body {
     }
   } catch {}
 
+  // ============================================================
+// 🟧 CV-R3 — ROUTE NETWORK VALUE (HYBRID: STRUCTURE + FINANCE)
+// ------------------------------------------------------------
+// • Structural value from UNIQUE routes (historical concessions)
+// • Economic value from REAL Finance revenue (weekly → annual)
+// • Fully historical by era (1940 → 2027)
+// • No flights count, no schedule inflation
+// ============================================================
+
+let routeValue = 0;
+
+try {
+
   /* ===========================
-     🔹 ROUTE NETWORK (HISTORICAL REALISTIC)
+     🔹 PART 1 — STRUCTURAL VALUE (UNIQUE ROUTES)
      =========================== */
-  let routeValue = 0;
+
+  let structuralValue = 0;
 
   try {
-    const routes = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    const routesRaw = localStorage.getItem("scheduleItems");
+    if (routesRaw) {
+      const routes = JSON.parse(routesRaw);
 
-    const uniq = new Set();
-    routes.forEach(r => {
-      if (!r || r.status === "CANCELLED") return;
-      const o = String(r.origin || "").trim();
-      const d = String(r.destination || "").trim();
-      if (o && d) uniq.add(o + "→" + d);
-    });
+      const uniq = new Set();
+      routes.forEach(r => {
+        if (!r || r.status === "CANCELLED") return;
+        const o = String(r.origin || "").trim();
+        const d = String(r.destination || "").trim();
+        if (o && d) uniq.add(o + "→" + d);
+      });
 
-    let year = 2026;
-    try { if (window.ACS_TIME?.currentYear) year = Number(window.ACS_TIME.currentYear); } catch {}
+      // Historical base per route (very low in early years)
+      let STRUCT_BASE = 300;
 
-    let BASE = 500;
-    let CAP  = 50000;
+      let year = 1945;
+      try {
+        if (window.ACS_TIME && ACS_TIME.currentYear) {
+          year = Number(ACS_TIME.currentYear);
+        }
+      } catch {}
 
-    if (year <= 1945) { BASE = 500;  CAP = 50000; }
-    else if (year <= 1950) { BASE = 1500; CAP = 200000; }
-    else if (year <= 1960) { BASE = 5000; CAP = 1000000; }
-    else if (year <= 1975) { BASE = 15000; CAP = 3000000; }
-    else if (year <= 1990) { BASE = 30000; CAP = 6000000; }
-    else if (year <= 2010) { BASE = 60000; CAP = 12000000; }
-    else { BASE = 100000; CAP = 20000000; }
+      if (year <= 1945) STRUCT_BASE = 300;
+      else if (year <= 1950) STRUCT_BASE = 600;
+      else if (year <= 1960) STRUCT_BASE = 1200;
+      else if (year <= 1975) STRUCT_BASE = 3000;
+      else if (year <= 1990) STRUCT_BASE = 6000;
+      else if (year <= 2010) STRUCT_BASE = 12000;
+      else STRUCT_BASE = 20000;
 
-    routeValue = uniq.size * BASE;
-    if (routeValue > CAP) routeValue = CAP;
-
+      structuralValue = uniq.size * STRUCT_BASE;
+    }
   } catch (e) {
-    console.warn("Route network calculation failed", e);
+    console.warn("Structural route value failed", e);
   }
+
+  /* ===========================
+     🔹 PART 2 — ECONOMIC VALUE (FROM FINANCE)
+     =========================== */
+
+  let economicValue = 0;
+
+  try {
+    if (finance) {
+
+      // Prefer CLOSED weekly revenue, fallback to LIVE
+      let weeklyRevenue = 0;
+
+      if (finance.weeklyClosed) weeklyRevenue = Number(finance.weeklyClosed || 0);
+      else if (finance.liveWeek) weeklyRevenue = Number(finance.liveWeek || 0);
+
+      // Annualize
+      let annualRevenue = weeklyRevenue * 52;
+
+      // Historical multipliers by era (VERY IMPORTANT)
+      let MULT = 2.0;
+
+      let year = 1945;
+      try {
+        if (window.ACS_TIME && ACS_TIME.currentYear) {
+          year = Number(ACS_TIME.currentYear);
+        }
+      } catch {}
+
+      if (year <= 1945) MULT = 2.0;
+      else if (year <= 1950) MULT = 2.5;
+      else if (year <= 1960) MULT = 3.0;
+      else if (year <= 1975) MULT = 4.0;
+      else if (year <= 1990) MULT = 5.0;
+      else if (year <= 2010) MULT = 6.5;
+      else MULT = 8.0;
+
+      economicValue = annualRevenue * MULT;
+    }
+  } catch (e) {
+    console.warn("Economic route value failed", e);
+  }
+
+  /* ===========================
+     🔹 FINAL HYBRID VALUE
+     =========================== */
+
+  routeValue = structuralValue + economicValue;
+
+} catch (e) {
+  console.warn("Hybrid route network calculation failed", e);
+}
+
+if (document.getElementById("cvRoutes")) {
+  document.getElementById("cvRoutes").textContent =
+    routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
+}
 
   /* ===========================
      🔹 REPUTATION
