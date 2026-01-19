@@ -196,7 +196,7 @@ window.ACS_getCompanyValue = function(){
 const reputation = getReputationMultiplier();
 
 /* ============================================================
-   🕰️ HISTORICAL MULTIPLIER
+   📜 HISTORICAL MULTIPLIER
    ============================================================ */
 const historical = getHistoricalMultiplier();
 
