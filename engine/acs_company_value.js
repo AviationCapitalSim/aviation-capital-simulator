@@ -72,23 +72,24 @@ function getLiabilities(){
 }
 
 /* ============================================================
-   🟧 CV-ENGINE-1 — FLEET ASSETS VALUE (FROM REAL LEDGER)
+   🟧 CV-ENGINE-1 — FLEET ASSETS VALUE (FROM FINANCE LEDGER)
    ------------------------------------------------------------
    Source:
-   - localStorage: ACS_Log
-   - Only aircraft purchase EXPENSE entries
+   - localStorage: ACS_Finance.log[]
+   - Only real aircraft purchase EXPENSE entries
    - Survives sell / remove / leasing logic
    ============================================================ */
 
 function getFleetValue() {
 
+  const finance = safeRead("ACS_Finance", null);
+  if (!finance || !Array.isArray(finance.log)) return 0;
+
   let total = 0;
 
   try {
 
-    const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-
-    log.forEach(tx => {
+    finance.log.forEach(tx => {
 
       if (
         tx.type === "EXPENSE" &&
@@ -105,9 +106,10 @@ function getFleetValue() {
 
   } catch (e) {
     console.warn("Company Value — Fleet ledger read failed", e);
+    return 0;
   }
 
-  return total;
+  return Math.round(total);
 }
    
 /* ============================================================
