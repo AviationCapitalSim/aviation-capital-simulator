@@ -805,8 +805,18 @@ function connectCompanyValue() {
     // ===============================
     // 🟦 CARD 1 — COMPANY VALUATION
     // ===============================
+    /* ============================================================
+   🟧 CV-UI-2 — MAIN VALUE FORMAT (NO DOUBLE $)
+   ============================================================ */
+
     const cvMain = document.getElementById("cvValue");
-    if (cvMain) cvMain.textContent = fmt(totalValue);
+    if (cvMain) {
+    if (totalValue !== "—") {
+    cvMain.textContent = Math.round(totalValue).toLocaleString("en-US");
+  } else {
+    cvMain.textContent = "—";
+  }
+}
 
     // ===============================
     // 🟦 CARD 2 — VALUATION BREAKDOWN
