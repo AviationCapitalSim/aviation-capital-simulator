@@ -998,12 +998,12 @@ window.addEventListener("ACS_WEEK_CLOSED", e => {
     if (typeof window.ACS_getCompanyValue === "function") {
       window.ACS_getCompanyValue();
     }
-   } catch (e) {
+  } catch (e) {
     console.warn("Company Value init failed", e);
   }
 
-}  // ← CIERRA function connectCompanyValue CORRECTAMENTE
- 
+})();   // ✅ CIERRA IIFE CORRECTAMENTE
+
 </script>
 
 <script>
