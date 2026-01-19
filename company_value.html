@@ -850,10 +850,28 @@ try {
   if (routesRaw) {
     const routes = JSON.parse(routesRaw);
 
-    const activeRoutes = routes.filter(r => r.status !== "CANCELLED");
+    const activeRoutes = routes.filter(r => r && r.status !== "CANCELLED");
 
-    // Strategic base value per active route
-    const ROUTE_BASE_VALUE = 250000; // $250k per route (premium scale)
+    /* ============================================================
+       🕰️ HISTORICAL ROUTE BASE VALUE (BY ERA)
+       ============================================================ */
+    let year = 2026;
+
+    try {
+      if (window.ACS_TIME && ACS_TIME.currentYear) {
+        year = Number(ACS_TIME.currentYear);
+      }
+    } catch {}
+
+    let ROUTE_BASE_VALUE = 150000; // default modern
+
+    if (year <= 1945) ROUTE_BASE_VALUE = 2000;
+    else if (year <= 1950) ROUTE_BASE_VALUE = 5000;
+    else if (year <= 1960) ROUTE_BASE_VALUE = 15000;
+    else if (year <= 1975) ROUTE_BASE_VALUE = 40000;
+    else if (year <= 1990) ROUTE_BASE_VALUE = 80000;
+    else if (year <= 2010) ROUTE_BASE_VALUE = 120000;
+    else ROUTE_BASE_VALUE = 150000;
 
     routeValue = activeRoutes.length * ROUTE_BASE_VALUE;
   }
@@ -866,11 +884,11 @@ if (document.getElementById("cvRoutes")) {
     routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
 }
 
-    if (document.getElementById("cvRep"))
-      document.getElementById("cvRep").textContent = "×1.00"; // baseline
+if (document.getElementById("cvRep"))
+  document.getElementById("cvRep").textContent = "×1.00"; // baseline
 
-    if (document.getElementById("cvLiab"))
-      document.getElementById("cvLiab").textContent = fmt(finance.expenses || 0);
+if (document.getElementById("cvLiab"))
+  document.getElementById("cvLiab").textContent = fmt(finance.expenses || 0);
 
     // ===============================
     // 🟦 CARD 3 — EXECUTIVE SNAPSHOT
