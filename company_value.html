@@ -1013,15 +1013,28 @@ if (document.getElementById("cvFleet")) {
     fleetAssets > 0 ? "$" + Math.round(fleetAssets).toLocaleString("en-US") : "—";
 }
 
-// ---------- ROUTE NETWORK VALUE ----------
+/* ============================================================
+   🟧 CV-UI-6 — ROUTE NETWORK VALUE (DISPLAY FROM ENGINE)
+   ------------------------------------------------------------
+   • NO recalculation in UI
+   • Reads FINAL value from engine breakdown
+   • Single source of truth = ACS_getCompanyValue engine
+   ============================================================ */
+
 let routeValue = 0;
 
 try {
-  const routesRaw = localStorage.getItem("scheduleItems");
-  if (routesRaw) {
-    const routes = JSON.parse(routesRaw);
+  if (typeof window.getRouteNetworkValue === "function") {
+    routeValue = window.getRouteNetworkValue();
+  }
+} catch (e) {
+  console.warn("UI route value read failed", e);
+}
 
-    const activeRoutes = routes.filter(r => r && r.status !== "CANCELLED");
+if (document.getElementById("cvRoutes")) {
+  document.getElementById("cvRoutes").textContent =
+    routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
+}
 
     /* ============================================================
        🕰️ HISTORICAL ROUTE BASE VALUE + CAPS (REALISTIC)
