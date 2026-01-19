@@ -89,118 +89,71 @@ function getFleetValue(){
 }
 
 /* ============================================================
-   🟧 CV-E5 — ROUTE NETWORK VALUE (HYBRID HISTORICAL + FINANCE)
+   🟧 B1 — ROUTE NETWORK VALUE (FINANCE DRIVEN, WEEKLY DYNAMIC)
    ------------------------------------------------------------
-   • Structural value from UNIQUE routes (historical concessions)
-   • Economic value from REAL Finance (weeklyClosed → annual)
-   • Fully historical by era (1940 → 2027)
-   • Engine source of truth for Company Value
+   Fuente ÚNICA:
+   • ACS_Finance.monthlyProfit
+   Actualiza:
+   • automáticamente cuando Finance cierra semana
    ============================================================ */
-function getRouteNetworkValue(){
 
-  let routeValue = 0;
+function ACS_updateRouteNetworkFromFinance(finance) {
+
+  if (!finance || !finance.monthlyProfit) return;
+
+  const monthlyProfit = Number(finance.monthlyProfit || 0);
+
+  // multiplicador base estratégico
+  const MULTIPLIER = 6;
+
+  // factor histórico por era
+  let eraFactor = 1.0;
+  let year = 1945;
 
   try {
+    if (finance.year) year = Number(finance.year);
+    else if (window.ACS_TIME && ACS_TIME.currentYear) year = Number(ACS_TIME.currentYear);
+  } catch {}
 
-    /* ===========================
-       🔹 PART 1 — STRUCTURAL VALUE (UNIQUE ROUTES)
-       =========================== */
+  if (year <= 1945) eraFactor = 0.8;
+  else if (year <= 1955) eraFactor = 1.0;
+  else if (year <= 1970) eraFactor = 1.2;
+  else if (year <= 1990) eraFactor = 1.5;
+  else if (year <= 2010) eraFactor = 2.0;
+  else eraFactor = 3.0;
 
-    let structuralValue = 0;
+  const routeValue = Math.round(monthlyProfit * MULTIPLIER * eraFactor);
 
-    try {
-      const routes = safeRead("scheduleItems", []);
+  // guardar valor estratégico (opcional histórico)
+  try {
+    localStorage.setItem("ACS_RouteNetworkValue", JSON.stringify({
+      value: routeValue,
+      monthlyProfit,
+      multiplier: MULTIPLIER,
+      eraFactor,
+      year,
+      timestamp: Date.now()
+    }));
+  } catch {}
 
-      const uniq = new Set();
-      routes.forEach(r => {
-        if (!r || r.cancelled) return;
-        const o = String(r.origin || "").trim();
-        const d = String(r.destination || "").trim();
-        if (o && d) uniq.add(o + "→" + d);
-      });
-
-      let year = 1945;
-      try {
-        if (window.ACS_TIME && ACS_TIME.currentYear) {
-          year = Number(ACS_TIME.currentYear);
-        }
-      } catch {}
-
-      // Very low historical concession value per route
-      let STRUCT_BASE = 300;
-
-      if (year <= 1945) STRUCT_BASE = 300;
-      else if (year <= 1950) STRUCT_BASE = 600;
-      else if (year <= 1960) STRUCT_BASE = 1200;
-      else if (year <= 1975) STRUCT_BASE = 3000;
-      else if (year <= 1990) STRUCT_BASE = 6000;
-      else if (year <= 2010) STRUCT_BASE = 12000;
-      else STRUCT_BASE = 20000;
-
-      structuralValue = uniq.size * STRUCT_BASE;
-
-    } catch (e) {
-      console.warn("Structural route value failed", e);
-    }
-
-    /* ===========================
-       🔹 PART 2 — ECONOMIC VALUE (FROM FINANCE)
-       =========================== */
-
-    let economicValue = 0;
-
-    try {
-
-      const finance = safeRead("ACS_Finance", null);
-
-      if (finance) {
-
-        // Prefer CLOSED weekly revenue (stable), fallback to LIVE
-        let weeklyRevenue = 0;
-
-        if (finance.weeklyClosed) weeklyRevenue = Number(finance.weeklyClosed || 0);
-        else if (finance.liveWeek) weeklyRevenue = Number(finance.liveWeek || 0);
-
-        // Annualize real revenue
-        let annualRevenue = weeklyRevenue * 52;
-
-        let year = 1945;
-        try {
-          if (window.ACS_TIME && ACS_TIME.currentYear) {
-            year = Number(ACS_TIME.currentYear);
-          }
-        } catch {}
-
-        // Historical valuation multipliers by era
-        let MULT = 2.0;
-
-        if (year <= 1945) MULT = 2.0;
-        else if (year <= 1950) MULT = 2.5;
-        else if (year <= 1960) MULT = 3.0;
-        else if (year <= 1975) MULT = 4.0;
-        else if (year <= 1990) MULT = 5.0;
-        else if (year <= 2010) MULT = 6.5;
-        else MULT = 8.0;
-
-        economicValue = annualRevenue * MULT;
-      }
-
-    } catch (e) {
-      console.warn("Economic route value failed", e);
-    }
-
-    /* ===========================
-       🔹 FINAL HYBRID ENGINE VALUE
-       =========================== */
-
-    routeValue = structuralValue + economicValue;
-
-  } catch (e) {
-    console.warn("Hybrid route network engine failed", e);
+  // actualizar UI en vivo
+  const el = document.getElementById("cvRoutes");
+  if (el) {
+    el.textContent = "$" + routeValue.toLocaleString("en-US");
   }
-
-  return routeValue;
 }
+
+/* ============================================================
+   🟧 B2 — LISTENER AUTOMÁTICO AL CIERRE SEMANAL
+   ============================================================ */
+
+window.addEventListener("ACS_WEEK_CLOSED", e => {
+  try {
+    ACS_updateRouteNetworkFromFinance(e.detail);
+  } catch (err) {
+    console.warn("Route Network weekly update failed", err);
+  }
+});
 
 /* ============================================================
    ⚖️ LIABILITIES (v1 placeholder)
