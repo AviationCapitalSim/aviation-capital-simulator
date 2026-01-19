@@ -894,21 +894,88 @@ if (document.getElementById("cvRoutes")) {
     if (el && map[id] !== undefined) el.textContent = map[id];
   });
 
-  /* ===========================
-     CARD 3 — EXECUTIVE SNAPSHOT
-     =========================== */
-  const ops = {
-    cvLiveWeek: finance?.liveWeekFormatted || finance?.liveWeek,
-    cvWeeklyClosed: finance?.weeklyFormatted || finance?.weeklyClosed,
-    cvProfitMonth: finance?.monthlyProfitFormatted || finance?.monthlyProfit
-  };
+ /* ===========================
+   CARD 3 — EXECUTIVE SNAPSHOT (REAL FINANCE MAPPING)
+   =========================== */
 
-  Object.keys(ops).forEach(id => {
-    const el = document.getElementById(id);
-    if (el && ops[id] !== undefined) el.textContent = ops[id];
-  });
+const ops = {
 
-})();
+  // 🔹 LIVE REVENUE (Week) → Live Route Revenue (Income) REAL
+  cvLiveWeek:
+    finance?.liveRouteRevenueFormatted ||
+    (finance?.liveRouteRevenue !== undefined
+      ? "$" + Math.round(finance.liveRouteRevenue).toLocaleString("en-US")
+      : finance?.liveWeekFormatted || finance?.liveWeek || "$—"),
+
+  // 🔹 WEEKLY REVENUE (Closed) → finance.weeklyClosed (SEMANA PASADA REAL)
+  cvWeeklyClosed:
+    finance?.weeklyClosedFormatted ||
+    (finance?.weeklyClosed !== undefined
+      ? "$" + Math.round(finance.weeklyClosed).toLocaleString("en-US")
+      : "$—"),
+
+  // 🔹 MONTHLY PROFIT → finance.monthlyProfit (ESTRATÉGICO)
+  cvProfitMonth:
+    finance?.monthlyProfitFormatted ||
+    (finance?.monthlyProfit !== undefined
+      ? "$" + Math.round(finance.monthlyProfit).toLocaleString("en-US")
+      : "$—")
+};
+
+Object.keys(ops).forEach(id => {
+  const el = document.getElementById(id);
+  if (el && ops[id] !== undefined) el.textContent = ops[id];
+});
+     
+/* ============================================================
+   🟧 D2 — AUTO UPDATE EXECUTIVE SNAPSHOT ON WEEK CLOSE
+   ------------------------------------------------------------
+   • Escucha cierre semanal desde Finance
+   • Actualiza Card 3 SIN REFRESH
+   ============================================================ */
+
+window.addEventListener("ACS_WEEK_CLOSED", e => {
+
+  try {
+    const finance = e.detail;
+    if (!finance) return;
+
+    const ops = {
+
+      // LIVE REVENUE (real time)
+      cvLiveWeek:
+        finance?.liveRouteRevenueFormatted ||
+        (finance?.liveRouteRevenue !== undefined
+          ? "$" + Math.round(finance.liveRouteRevenue).toLocaleString("en-US")
+          : finance?.liveWeekFormatted || finance?.liveWeek || "$—"),
+
+      // WEEKLY CLOSED (semana pasada)
+      cvWeeklyClosed:
+        finance?.weeklyClosedFormatted ||
+        (finance?.weeklyClosed !== undefined
+          ? "$" + Math.round(finance.weeklyClosed).toLocaleString("en-US")
+          : "$—"),
+
+      // MONTHLY PROFIT
+      cvProfitMonth:
+        finance?.monthlyProfitFormatted ||
+        (finance?.monthlyProfit !== undefined
+          ? "$" + Math.round(finance.monthlyProfit).toLocaleString("en-US")
+          : "$—")
+    };
+
+    Object.keys(ops).forEach(id => {
+      const el = document.getElementById(id);
+      if (el && ops[id] !== undefined) el.textContent = ops[id];
+    });
+
+    console.log("📊 Executive Snapshot updated from weekly close");
+
+  } catch (err) {
+    console.warn("Executive Snapshot auto update failed", err);
+  }
+
+});
 
 /* ============================================================
    💎 COMPANY VALUE — ENGINE AUTO INIT (BASELINE)
