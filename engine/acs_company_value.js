@@ -214,9 +214,11 @@ const companyValue =
 // Optional: expose breakdown for UI if needed later
 return Math.round(companyValue);
 
+}; // ✅ CIERRA window.ACS_getCompanyValue
+
 /* ============================================================
    🧪 OPTIONAL DEBUG (SAFE)
    ============================================================ */
 // console.log("ACS Company Value:", window.ACS_getCompanyValue());
 
-})();
+})(); // ✅ CIERRA (function(){ ... })();
