@@ -36,6 +36,42 @@ function getReputationMultiplier(){
 }
 
 /* ============================================================
+   🕰️ HISTORICAL VALUE MULTIPLIER (BY ERA)
+   Fuente: ACS_TIME.currentYear
+   ============================================================ */
+function getHistoricalMultiplier() {
+
+  let year = 2026;
+
+  try {
+    if (window.ACS_TIME && ACS_TIME.currentYear) {
+      year = Number(ACS_TIME.currentYear);
+    }
+  } catch {}
+
+  // Pre-Jet / WW2 era
+  if (year <= 1945) return 0.05;
+
+  // Early post-war expansion
+  if (year <= 1950) return 0.12;
+
+  // Prop golden age
+  if (year <= 1960) return 0.25;
+
+  // Early jet age
+  if (year <= 1975) return 0.45;
+
+  // Deregulation / widebody era
+  if (year <= 1990) return 0.70;
+
+  // Modern era
+  if (year <= 2010) return 1.00;
+
+  // Premium / future era
+  return 1.20;
+}
+   
+/* ============================================================
    ✈️ FLEET VALUE (v1)
    Fuente: ACS_MyAircraft
    ============================================================ */
@@ -53,15 +89,36 @@ function getFleetValue(){
 }
 
 /* ============================================================
-   🗺️ ROUTE NETWORK VALUE (v1)
-   Fuente: scheduleItems
+   🗺️ ROUTE NETWORK VALUE (HISTORICAL SCALE)
+   Fuente: scheduleItems + era dependent value
    ============================================================ */
 function getRouteNetworkValue(){
-  const BASE_ROUTE_VALUE = 50000; // v1 constant
+
+  let year = 2026;
+
+  try {
+    if (window.ACS_TIME && ACS_TIME.currentYear) {
+      year = Number(ACS_TIME.currentYear);
+    }
+  } catch {}
+
+  // Base value per route by era (VERY IMPORTANT)
+  let BASE_ROUTE_VALUE = 250000; // default modern
+
+  if (year <= 1945) BASE_ROUTE_VALUE = 15000;
+  else if (year <= 1950) BASE_ROUTE_VALUE = 30000;
+  else if (year <= 1960) BASE_ROUTE_VALUE = 60000;
+  else if (year <= 1975) BASE_ROUTE_VALUE = 120000;
+  else if (year <= 1990) BASE_ROUTE_VALUE = 180000;
+  else if (year <= 2010) BASE_ROUTE_VALUE = 250000;
+  else BASE_ROUTE_VALUE = 300000;
+
   const routes = safeRead("scheduleItems", []);
   const active = routes.filter(r => r && !r.cancelled);
+
   return active.length * BASE_ROUTE_VALUE;
 }
+
 
 /* ============================================================
    ⚖️ LIABILITIES (v1 placeholder)
@@ -133,25 +190,29 @@ window.ACS_getCompanyValue = function(){
      ============================================================ */
   const routeValue = getRouteNetworkValue();
 
-  /* ============================================================
-     🏅 REPUTATION MULTIPLIER
-     ============================================================ */
-  const reputation = getReputationMultiplier();
+/* ============================================================
+   🏅 REPUTATION MULTIPLIER
+   ============================================================ */
+const reputation = getReputationMultiplier();
 
-  /* ============================================================
-     ⚠️ LIABILITIES
-     ============================================================ */
-  const liabilities = getLiabilities();
+/* ============================================================
+   🕰️ HISTORICAL MULTIPLIER
+   ============================================================ */
+const historical = getHistoricalMultiplier();
 
-  /* ============================================================
-     💎 FINAL COMPANY VALUE FORMULA
-     ============================================================ */
-  const companyValue =
-    (capital + fleetValue + routeValue) * reputation - liabilities;
+/* ============================================================
+   ⚠️ LIABILITIES
+   ============================================================ */
+const liabilities = getLiabilities();
 
-  // Optional: expose breakdown for UI if needed later
-  return Math.round(companyValue);
-};
+/* ============================================================
+   💎 FINAL COMPANY VALUE FORMULA (HISTORICAL ADJUSTED)
+   ============================================================ */
+const companyValue =
+  (capital + fleetValue + routeValue) * reputation * historical - liabilities;
+
+// Optional: expose breakdown for UI if needed later
+return Math.round(companyValue);
 
 /* ============================================================
    🧪 OPTIONAL DEBUG (SAFE)
