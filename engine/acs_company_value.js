@@ -110,7 +110,7 @@ function getFleetValue() {
 
   return Math.round(total);
 }
-   
+
 /* ============================================================
    🧮 PUBLIC API — COMPANY VALUE (WITH REAL FLEET ASSETS)
    ============================================================ */
