@@ -89,47 +89,117 @@ function getFleetValue(){
 }
 
 /* ============================================================
-   🗺️ ROUTE NETWORK VALUE (HISTORICAL REAL SCALE)
-   Fuente: scheduleItems + era dependent value
+   🟧 CV-E5 — ROUTE NETWORK VALUE (HYBRID HISTORICAL + FINANCE)
+   ------------------------------------------------------------
+   • Structural value from UNIQUE routes (historical concessions)
+   • Economic value from REAL Finance (weeklyClosed → annual)
+   • Fully historical by era (1940 → 2027)
+   • Engine source of truth for Company Value
    ============================================================ */
 function getRouteNetworkValue(){
 
-  let year = 2026;
+  let routeValue = 0;
 
   try {
-    if (window.ACS_TIME && ACS_TIME.currentYear) {
-      year = Number(ACS_TIME.currentYear);
+
+    /* ===========================
+       🔹 PART 1 — STRUCTURAL VALUE (UNIQUE ROUTES)
+       =========================== */
+
+    let structuralValue = 0;
+
+    try {
+      const routes = safeRead("scheduleItems", []);
+
+      const uniq = new Set();
+      routes.forEach(r => {
+        if (!r || r.cancelled) return;
+        const o = String(r.origin || "").trim();
+        const d = String(r.destination || "").trim();
+        if (o && d) uniq.add(o + "→" + d);
+      });
+
+      let year = 1945;
+      try {
+        if (window.ACS_TIME && ACS_TIME.currentYear) {
+          year = Number(ACS_TIME.currentYear);
+        }
+      } catch {}
+
+      // Very low historical concession value per route
+      let STRUCT_BASE = 300;
+
+      if (year <= 1945) STRUCT_BASE = 300;
+      else if (year <= 1950) STRUCT_BASE = 600;
+      else if (year <= 1960) STRUCT_BASE = 1200;
+      else if (year <= 1975) STRUCT_BASE = 3000;
+      else if (year <= 1990) STRUCT_BASE = 6000;
+      else if (year <= 2010) STRUCT_BASE = 12000;
+      else STRUCT_BASE = 20000;
+
+      structuralValue = uniq.size * STRUCT_BASE;
+
+    } catch (e) {
+      console.warn("Structural route value failed", e);
     }
-  } catch {}
 
-  // Base value per route by era (REALISTIC SCALE)
-  let BASE_ROUTE_VALUE = 200000; // modern default
+    /* ===========================
+       🔹 PART 2 — ECONOMIC VALUE (FROM FINANCE)
+       =========================== */
 
-  // ✈️ WW2 / Pre-civil era
-  if (year <= 1945) BASE_ROUTE_VALUE = 2000;
+    let economicValue = 0;
 
-  // Early post-war
-  else if (year <= 1950) BASE_ROUTE_VALUE = 6000;
+    try {
 
-  // Prop golden age
-  else if (year <= 1960) BASE_ROUTE_VALUE = 15000;
+      const finance = safeRead("ACS_Finance", null);
 
-  // Early jets
-  else if (year <= 1975) BASE_ROUTE_VALUE = 40000;
+      if (finance) {
 
-  // Widebody expansion
-  else if (year <= 1990) BASE_ROUTE_VALUE = 90000;
+        // Prefer CLOSED weekly revenue (stable), fallback to LIVE
+        let weeklyRevenue = 0;
 
-  // Modern era
-  else if (year <= 2010) BASE_ROUTE_VALUE = 200000;
+        if (finance.weeklyClosed) weeklyRevenue = Number(finance.weeklyClosed || 0);
+        else if (finance.liveWeek) weeklyRevenue = Number(finance.liveWeek || 0);
 
-  // Future
-  else BASE_ROUTE_VALUE = 300000;
+        // Annualize real revenue
+        let annualRevenue = weeklyRevenue * 52;
 
-  const routes = safeRead("scheduleItems", []);
-  const active = routes.filter(r => r && !r.cancelled);
+        let year = 1945;
+        try {
+          if (window.ACS_TIME && ACS_TIME.currentYear) {
+            year = Number(ACS_TIME.currentYear);
+          }
+        } catch {}
 
-  return active.length * BASE_ROUTE_VALUE;
+        // Historical valuation multipliers by era
+        let MULT = 2.0;
+
+        if (year <= 1945) MULT = 2.0;
+        else if (year <= 1950) MULT = 2.5;
+        else if (year <= 1960) MULT = 3.0;
+        else if (year <= 1975) MULT = 4.0;
+        else if (year <= 1990) MULT = 5.0;
+        else if (year <= 2010) MULT = 6.5;
+        else MULT = 8.0;
+
+        economicValue = annualRevenue * MULT;
+      }
+
+    } catch (e) {
+      console.warn("Economic route value failed", e);
+    }
+
+    /* ===========================
+       🔹 FINAL HYBRID ENGINE VALUE
+       =========================== */
+
+    routeValue = structuralValue + economicValue;
+
+  } catch (e) {
+    console.warn("Hybrid route network engine failed", e);
+  }
+
+  return routeValue;
 }
 
 /* ============================================================
