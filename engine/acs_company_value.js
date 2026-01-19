@@ -74,35 +74,31 @@ function getLiabilities(){
 /* ============================================================
    🟧 CV-ENGINE-1 — FLEET ASSETS VALUE (FROM REAL LEDGER)
    ------------------------------------------------------------
-   Source:
-   - localStorage: ACS_Finance.log[]
+   Source REAL (según tu consola): localStorage["ACS_Log"]
    - Only aircraft purchase EXPENSE entries
-   - Survives sell / remove / leasing logic
    ============================================================ */
-
 function getFleetValue() {
 
   let total = 0;
 
   try {
+    const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
 
-    const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "null");
-    if (!finance || !Array.isArray(finance.log)) return 0;
-
-    finance.log.forEach(tx => {
-
-      if (
-        tx.type === "EXPENSE" &&
-        typeof tx.source === "string" &&
-        (
-          tx.source.includes("Used Market Purchase") ||
-          tx.source.includes("New Market Purchase")
-        )
-      ) {
-        total += Number(tx.amount || 0);
-      }
-
-    });
+    if (Array.isArray(log)) {
+      log.forEach(tx => {
+        if (
+          tx &&
+          tx.type === "EXPENSE" &&
+          typeof tx.source === "string" &&
+          (
+            tx.source.includes("Used Market Purchase") ||
+            tx.source.includes("New Market Purchase")
+          )
+        ) {
+          total += Number(tx.amount || 0);
+        }
+      });
+    }
 
   } catch (e) {
     console.warn("Company Value — Fleet ledger read failed", e);
@@ -110,6 +106,9 @@ function getFleetValue() {
 
   return Math.round(total);
 }
+
+/* ✅ EXPOSE GLOBAL (para consola + UI) */
+window.getFleetValue = getFleetValue;
 
 /* ============================================================
    🧮 PUBLIC API — COMPANY VALUE (WITH REAL FLEET ASSETS)
@@ -121,6 +120,10 @@ window.ACS_getCompanyValue = function(){
 
   const capital = Number(finance.capital || 0);
 
+   const fleetValue = (typeof window.getFleetValue === "function")
+  ? window.getFleetValue()
+  : 0;
+   
   /* ============================================================
      ✈️ FLEET ASSETS VALUE — FROM FINANCE LEDGER (REAL PURCHASES)
      ============================================================ */
