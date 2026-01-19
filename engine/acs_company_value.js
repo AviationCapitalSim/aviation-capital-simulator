@@ -36,7 +36,7 @@ function getReputationMultiplier(){
 }
 
 /* ============================================================
-   🕰️ HISTORICAL VALUE MULTIPLIER (BY ERA)
+   🕰️ HISTORICAL VALUE MULTIPLIER (REALISTIC ECONOMIC ERA SCALE)
    Fuente: ACS_TIME.currentYear
    ============================================================ */
 function getHistoricalMultiplier() {
@@ -49,26 +49,26 @@ function getHistoricalMultiplier() {
     }
   } catch {}
 
-  // Pre-Jet / WW2 era
-  if (year <= 1945) return 0.05;
+  // WW2 / very early civil aviation
+  if (year <= 1945) return 0.02;
 
-  // Early post-war expansion
-  if (year <= 1950) return 0.12;
+  // Early reconstruction
+  if (year <= 1950) return 0.05;
 
   // Prop golden age
-  if (year <= 1960) return 0.25;
+  if (year <= 1960) return 0.12;
 
   // Early jet age
-  if (year <= 1975) return 0.45;
+  if (year <= 1975) return 0.25;
 
-  // Deregulation / widebody era
-  if (year <= 1990) return 0.70;
+  // Deregulation / widebody
+  if (year <= 1990) return 0.50;
 
   // Modern era
-  if (year <= 2010) return 1.00;
+  if (year <= 2010) return 0.85;
 
   // Premium / future era
-  return 1.20;
+  return 1.00;
 }
    
 /* ============================================================
@@ -89,7 +89,7 @@ function getFleetValue(){
 }
 
 /* ============================================================
-   🗺️ ROUTE NETWORK VALUE (HISTORICAL SCALE)
+   🗺️ ROUTE NETWORK VALUE (HISTORICAL REAL SCALE)
    Fuente: scheduleItems + era dependent value
    ============================================================ */
 function getRouteNetworkValue(){
@@ -102,15 +102,28 @@ function getRouteNetworkValue(){
     }
   } catch {}
 
-  // Base value per route by era (VERY IMPORTANT)
-  let BASE_ROUTE_VALUE = 250000; // default modern
+  // Base value per route by era (REALISTIC SCALE)
+  let BASE_ROUTE_VALUE = 200000; // modern default
 
-  if (year <= 1945) BASE_ROUTE_VALUE = 15000;
-  else if (year <= 1950) BASE_ROUTE_VALUE = 30000;
-  else if (year <= 1960) BASE_ROUTE_VALUE = 60000;
-  else if (year <= 1975) BASE_ROUTE_VALUE = 120000;
-  else if (year <= 1990) BASE_ROUTE_VALUE = 180000;
-  else if (year <= 2010) BASE_ROUTE_VALUE = 250000;
+  // ✈️ WW2 / Pre-civil era
+  if (year <= 1945) BASE_ROUTE_VALUE = 2000;
+
+  // Early post-war
+  else if (year <= 1950) BASE_ROUTE_VALUE = 6000;
+
+  // Prop golden age
+  else if (year <= 1960) BASE_ROUTE_VALUE = 15000;
+
+  // Early jets
+  else if (year <= 1975) BASE_ROUTE_VALUE = 40000;
+
+  // Widebody expansion
+  else if (year <= 1990) BASE_ROUTE_VALUE = 90000;
+
+  // Modern era
+  else if (year <= 2010) BASE_ROUTE_VALUE = 200000;
+
+  // Future
   else BASE_ROUTE_VALUE = 300000;
 
   const routes = safeRead("scheduleItems", []);
@@ -118,7 +131,6 @@ function getRouteNetworkValue(){
 
   return active.length * BASE_ROUTE_VALUE;
 }
-
 
 /* ============================================================
    ⚖️ LIABILITIES (v1 placeholder)
