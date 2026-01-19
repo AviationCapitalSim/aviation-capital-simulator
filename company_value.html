@@ -824,11 +824,58 @@ function connectCompanyValue() {
     if (document.getElementById("cvCapital"))
       document.getElementById("cvCapital").textContent = fmt(finance.capital);
 
-    if (document.getElementById("cvFleet"))
-      document.getElementById("cvFleet").textContent = "—"; // future engine
+   /* ============================================================
+   🟧 CV-UI-3 — FLEET ASSETS & ROUTE NETWORK VALUE
+   ============================================================ */
 
-    if (document.getElementById("cvRoutes"))
-      document.getElementById("cvRoutes").textContent = "—"; // future engine
+// ---------- FLEET ASSETS VALUE ----------
+let fleetValue = 0;
+
+try {
+  const fleetRaw = localStorage.getItem("ACS_MyAircraft");
+  if (fleetRaw) {
+    const fleet = JSON.parse(fleetRaw);
+
+    fleet.forEach(ac => {
+      // Priority: marketValue > purchasePrice > price
+      if (ac.marketValue) fleetValue += Number(ac.marketValue);
+      else if (ac.purchasePrice) fleetValue += Number(ac.purchasePrice);
+      else if (ac.price) fleetValue += Number(ac.price);
+    });
+  }
+} catch (e) {
+  console.warn("Fleet assets calculation failed", e);
+}
+
+if (document.getElementById("cvFleet")) {
+  document.getElementById("cvFleet").textContent =
+    fleetValue > 0 ? "$" + Math.round(fleetValue).toLocaleString("en-US") : "—";
+}
+
+
+// ---------- ROUTE NETWORK VALUE ----------
+let routeValue = 0;
+
+try {
+  const routesRaw = localStorage.getItem("scheduleItems");
+  if (routesRaw) {
+    const routes = JSON.parse(routesRaw);
+
+    const activeRoutes = routes.filter(r => r.status !== "CANCELLED");
+
+    // Strategic base value per active route
+    const ROUTE_BASE_VALUE = 250000; // $250k per route (premium scale)
+
+    routeValue = activeRoutes.length * ROUTE_BASE_VALUE;
+  }
+} catch (e) {
+  console.warn("Route network calculation failed", e);
+}
+
+if (document.getElementById("cvRoutes")) {
+  document.getElementById("cvRoutes").textContent =
+    routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
+}
 
     if (document.getElementById("cvRep"))
       document.getElementById("cvRep").textContent = "×1.00"; // baseline
