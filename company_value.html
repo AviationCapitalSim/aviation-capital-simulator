@@ -976,25 +976,17 @@ function connectCompanyValue() {
     // ===============================
     // 🟦 CARD 1 — COMPANY VALUATION
     // ===============================
- /* ============================================================
-   🟧 CV-UI-11 — CV MAIN VALUE (ANTI-DOUBLE-$, HARD CLEAN)
+ 🟧 CV-UI-2 — MAIN VALUE FORMAT (NO DOUBLE $)
    ============================================================ */
 
-const cvMain = document.getElementById("cvValue");
-
-if (cvMain) {
-
-  // totalValue puede venir como número o como string con "$"
-  if (totalValue !== "—" && totalValue !== undefined && totalValue !== null) {
-
-    const cleanNum = Number(String(totalValue).replace(/[^0-9.-]/g, ""));
-    cvMain.textContent = "$" + Math.round(cleanNum).toLocaleString("en-US");
-
+    const cvMain = document.getElementById("cvValue");
+    if (cvMain) {
+    if (totalValue !== "—") {
+    cvMain.textContent = Math.round(totalValue).toLocaleString("en-US");
   } else {
     cvMain.textContent = "—";
   }
 }
-
 
     // ===============================
     // 🟦 CARD 2 — VALUATION BREAKDOWN
