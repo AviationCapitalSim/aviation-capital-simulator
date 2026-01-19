@@ -869,7 +869,11 @@ if (document.getElementById("cvRoutes")) {
      CARD 1 — COMPANY VALUATION
      =========================== */
   const v = document.getElementById("cvValue");
-  if (v) v.textContent = "$" + Math.round(baseline).toLocaleString("en-US");
+
+   if (v) {
+  const clean = Number(String(baseline).replace(/[^0-9.-]/g, ""));
+  v.textContent = clean ? "$" + Math.round(clean).toLocaleString("en-US") : "—";
+}
 
   const upd = document.getElementById("cvUpdatedAt");
   if (upd) upd.textContent = "Baseline updated after strategic event";
