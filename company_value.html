@@ -681,7 +681,7 @@ body {
 
   let baseline;
   try {
-    baseline = window.ACS_getCompanyValue();
+    baseline = window.ACS_getCompanyValue(); // ← ahora es SOLO UN NÚMERO
   } catch (e) {
     console.warn("Error executing ACS_getCompanyValue", e);
     return;
@@ -693,27 +693,48 @@ body {
   }
 
   /* ===========================
-     CARD 1 — COMPANY VALUATION
+     🔹 CAPITAL (FROM FINANCE)
      =========================== */
-  const v = document.getElementById("cvValue");
-  if (v) v.textContent = baseline.totalFormatted || baseline.total || "—";
+  let capital = 0;
+  let finance = null;
 
-  const note = document.getElementById("cvNote");
-  if (note && baseline.note) note.textContent = baseline.note;
+  try {
+    finance = JSON.parse(localStorage.getItem("ACS_Finance") || "null");
+    if (finance) capital = Number(finance.capital || 0);
+  } catch {}
 
-  const upd = document.getElementById("cvUpdatedAt");
-  if (upd) upd.textContent = "Baseline updated after strategic event";
+  /* ===========================
+     🔹 FLEET ASSETS (FROM LEDGER)
+     =========================== */
+  let fleetValue = 0;
+
+  try {
+    const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+    if (Array.isArray(log)) {
+      log.forEach(tx => {
+        if (
+          tx &&
+          tx.type === "EXPENSE" &&
+          typeof tx.source === "string" &&
+          (
+            tx.source.includes("Used Market Purchase") ||
+            tx.source.includes("New Market Purchase")
+          )
+        ) {
+          fleetValue += Number(tx.amount || 0);
+        }
+      });
+    }
+  } catch {}
 
   /* ===========================
      🔹 ROUTE NETWORK (HISTORICAL REALISTIC)
      =========================== */
-
   let routeValue = 0;
 
   try {
     const routes = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
-    // Rutas únicas (origen → destino)
     const uniq = new Set();
     routes.forEach(r => {
       if (!r || r.status === "CANCELLED") return;
@@ -722,11 +743,9 @@ body {
       if (o && d) uniq.add(o + "→" + d);
     });
 
-    // Año histórico
     let year = 2026;
     try { if (window.ACS_TIME?.currentYear) year = Number(window.ACS_TIME.currentYear); } catch {}
 
-    // Escala histórica REALISTA
     let BASE = 500;
     let CAP  = 50000;
 
@@ -746,14 +765,48 @@ body {
   }
 
   /* ===========================
+     🔹 REPUTATION
+     =========================== */
+  let reputation = 1.0;
+
+  try {
+    const rank = localStorage.getItem("ACS_Rank") || "Bronze";
+    if (rank === "Silver") reputation = 1.05;
+    else if (rank === "Gold") reputation = 1.15;
+    else if (rank === "Platinum") reputation = 1.30;
+  } catch {}
+
+  /* ===========================
+     🔹 LIABILITIES
+     =========================== */
+  let liabilities = 0;
+
+  try {
+    if (finance && finance.loans) {
+      finance.loans.forEach(l => {
+        liabilities += Number(l.balance || 0);
+      });
+    }
+  } catch {}
+
+  /* ===========================
+     CARD 1 — COMPANY VALUATION
+     =========================== */
+  const v = document.getElementById("cvValue");
+  if (v) v.textContent = "$" + Math.round(baseline).toLocaleString("en-US");
+
+  const upd = document.getElementById("cvUpdatedAt");
+  if (upd) upd.textContent = "Baseline updated after strategic event";
+
+  /* ===========================
      CARD 2 — BREAKDOWN
      =========================== */
   const map = {
-    cvCapital: baseline.capitalFormatted || baseline.capital,
-    cvFleet: baseline.fleetFormatted || baseline.fleetValue,
+    cvCapital: "$" + Math.round(capital).toLocaleString("en-US"),
+    cvFleet: "$" + Math.round(fleetValue).toLocaleString("en-US"),
     cvRoutes: routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—",
-    cvRep: baseline.reputationFormatted || baseline.reputationMultiplier,
-    cvLiab: baseline.liabilitiesFormatted || baseline.liabilities
+    cvRep: "×" + reputation.toFixed(2),
+    cvLiab: liabilities > 0 ? "$" + Math.round(liabilities).toLocaleString("en-US") : "$0"
   };
 
   Object.keys(map).forEach(id => {
@@ -765,9 +818,9 @@ body {
      CARD 3 — EXECUTIVE SNAPSHOT
      =========================== */
   const ops = {
-    cvLiveWeek: baseline.liveWeekFormatted || baseline.liveWeek,
-    cvWeeklyClosed: baseline.weeklyFormatted || baseline.weeklyClosed,
-    cvProfitMonth: baseline.monthlyProfitFormatted || baseline.monthlyProfit
+    cvLiveWeek: finance?.liveWeekFormatted || finance?.liveWeek,
+    cvWeeklyClosed: finance?.weeklyFormatted || finance?.weeklyClosed,
+    cvProfitMonth: finance?.monthlyProfitFormatted || finance?.monthlyProfit
   };
 
   Object.keys(ops).forEach(id => {
