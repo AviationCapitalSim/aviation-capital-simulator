@@ -825,24 +825,24 @@ function connectCompanyValue() {
       document.getElementById("cvCapital").textContent = fmt(finance.capital);
 
  /* ============================================================
-   🟧 CV-2 — FLEET ASSETS VALUE (FROM FINANCE LOG)
-   ------------------------------------------------------------
-   • Fuente: ACS_Finance.log
-   • Suma todas las compras de aviones (Used Market Purchase)
-   • Valor contable inicial de flota
+   🟧 CV-UI-5 — FLEET ASSETS VALUE (FROM ENGINE)
    ============================================================ */
 
-let fleetAssetsValue = 0;
+let fleetValue = 0;
 
-if (finance && Array.isArray(finance.log)) {
-  finance.log.forEach(tx => {
-    if (
-      tx.type === "EXPENSE" &&
-      tx.source &&
-      tx.source.includes("Used Market Purchase")
-    ) {
-      fleetAssetsValue += Number(tx.amount || 0);
-    }
+try {
+  if (typeof window.getFleetValue === "function") {
+    fleetValue = window.getFleetValue();
+  }
+} catch (e) {
+  console.warn("Fleet assets read from engine failed", e);
+}
+
+if (document.getElementById("cvFleet")) {
+  document.getElementById("cvFleet").textContent =
+    fleetValue > 0 ? "$" + fleetValue.toLocaleString("en-US") : "—";
+}
+
   });
 }
 
