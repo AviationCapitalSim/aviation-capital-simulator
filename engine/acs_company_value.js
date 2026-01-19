@@ -120,33 +120,13 @@ window.ACS_getCompanyValue = function(){
 
   const capital = Number(finance.capital || 0);
 
-   const fleetValue = (typeof window.getFleetValue === "function")
-  ? window.getFleetValue()
-  : 0;
-   
-  /* ============================================================
-     ✈️ FLEET ASSETS VALUE — FROM FINANCE LEDGER (REAL PURCHASES)
-     ============================================================ */
-  let fleetValue = 0;
-
-  try {
-    if (Array.isArray(finance.log)) {
-      finance.log.forEach(tx => {
-        if (
-          tx.type === "EXPENSE" &&
-          typeof tx.source === "string" &&
-          (
-            tx.source.includes("Used Market Purchase") ||
-            tx.source.includes("New Market Purchase")
-          )
-        ) {
-          fleetValue += Number(tx.amount || 0);
-        }
-      });
-    }
-  } catch (e) {
-    console.warn("Company Value: Fleet assets calculation failed", e);
-  }
+/* ============================================================
+   ✈️ FLEET ASSETS VALUE — FROM FINANCE LEDGER (REAL PURCHASES)
+   ============================================================ */
+  const fleetValue =
+  (typeof window.getFleetValue === "function")
+    ? window.getFleetValue()
+    : 0;
 
   /* ============================================================
      🗺 ROUTE NETWORK VALUE (STRATEGIC)
