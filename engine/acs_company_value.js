@@ -89,6 +89,30 @@ function getFleetValue(){
 }
 
 /* ============================================================
+   🟧 C1 — ROUTE NETWORK VALUE (COMPATIBILITY BRIDGE)
+   ------------------------------------------------------------
+   • Mantiene compatibilidad con motor legacy
+   • Fuente ÚNICA: valor dinámico guardado desde Finance
+   • NO recalcula nada aquí
+   ============================================================ */
+
+function getRouteNetworkValue() {
+
+  try {
+    const stored = JSON.parse(localStorage.getItem("ACS_RouteNetworkValue") || "null");
+
+    if (stored && stored.value !== undefined) {
+      return Number(stored.value || 0);
+    }
+
+  } catch (e) {
+    console.warn("Route Network bridge failed", e);
+  }
+
+  return 0;
+}
+   
+/* ============================================================
    🟧 B1 — ROUTE NETWORK VALUE (FINANCE DRIVEN, WEEKLY DYNAMIC)
    ------------------------------------------------------------
    Fuente ÚNICA:
