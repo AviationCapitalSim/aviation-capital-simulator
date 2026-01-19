@@ -976,14 +976,23 @@ function connectCompanyValue() {
     // ===============================
     // 🟦 CARD 1 — COMPANY VALUATION
     // ===============================
-    /* ============================================================
-   🟧 CV-UI-2 — MAIN VALUE FORMAT (NO DOUBLE $)
+   /* ============================================================
+   🟧 CV-UI-8 — COMPANY VALUE MAIN FORMAT (SINGLE $ CLEAN)
+   ------------------------------------------------------------
+   • Removes any previous currency symbols
+   • Formats numeric value cleanly
+   • Adds ONLY one "$"
    ============================================================ */
 
-    const cvMain = document.getElementById("cvValue");
-    if (cvMain) {
-    if (totalValue !== "—") {
-    cvMain.textContent = Math.round(totalValue).toLocaleString("en-US");
+const cvMain = document.getElementById("cvValue");
+
+if (cvMain) {
+  if (totalValue !== "—") {
+
+    const clean = Number(String(totalValue).replace(/[^0-9.-]/g, ""));
+
+    cvMain.textContent = "$" + Math.round(clean).toLocaleString("en-US");
+
   } else {
     cvMain.textContent = "—";
   }
