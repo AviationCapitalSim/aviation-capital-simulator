@@ -89,95 +89,54 @@ function getFleetValue(){
 }
 
 /* ============================================================
-   🟧 C1 — ROUTE NETWORK VALUE (COMPATIBILITY BRIDGE)
+   🟩 C1 — ROUTE NETWORK VALUE (REAL REVENUE MODEL)
    ------------------------------------------------------------
-   • Mantiene compatibilidad con motor legacy
-   • Fuente ÚNICA: valor dinámico guardado desde Finance
-   • NO recalcula nada aquí
+   • Modelo estratégico REAL
+   • Basado en Monthly Revenue (NO profit)
+   • Sin localStorage
+   • Sin cierres semanales
+   • Siempre dinámico
    ============================================================ */
 
 function getRouteNetworkValue() {
 
   try {
-    const stored = JSON.parse(localStorage.getItem("ACS_RouteNetworkValue") || "null");
 
-    if (stored && stored.value !== undefined) {
-      return Number(stored.value || 0);
-    }
+    const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "null");
+    if (!finance || !Number.isFinite(finance.revenue)) return 0;
+
+    const monthlyRevenue = Number(finance.revenue || 0);
+
+    // multiplicador estratégico base
+    const MULTIPLIER = 8;
+
+    // factor histórico por era (usa tu sistema existente)
+    let eraFactor = 1.0;
+    let year = 1945;
+
+    try {
+      if (finance.year) year = Number(finance.year);
+      else if (window.ACS_TIME && ACS_TIME.currentYear)
+        year = Number(ACS_TIME.currentYear);
+    } catch {}
+
+    if (year <= 1945) eraFactor = 0.02;
+    else if (year <= 1950) eraFactor = 0.05;
+    else if (year <= 1960) eraFactor = 0.12;
+    else if (year <= 1975) eraFactor = 0.25;
+    else if (year <= 1990) eraFactor = 0.50;
+    else if (year <= 2010) eraFactor = 0.85;
+    else eraFactor = 1.00;
+
+    const routeValue = Math.round(monthlyRevenue * MULTIPLIER * eraFactor);
+
+    return routeValue;
 
   } catch (e) {
-    console.warn("Route Network bridge failed", e);
-  }
-
-  return 0;
-}
-   
-/* ============================================================
-   🟧 B1 — ROUTE NETWORK VALUE (FINANCE DRIVEN, WEEKLY DYNAMIC)
-   ------------------------------------------------------------
-   Fuente ÚNICA:
-   • ACS_Finance.monthlyProfit
-   Actualiza:
-   • automáticamente cuando Finance cierra semana
-   ============================================================ */
-
-function ACS_updateRouteNetworkFromFinance(finance) {
-
-  if (!finance || !finance.monthlyProfit) return;
-
-  const monthlyProfit = Number(finance.monthlyProfit || 0);
-
-  // multiplicador base estratégico
-  const MULTIPLIER = 6;
-
-  // factor histórico por era
-  let eraFactor = 1.0;
-  let year = 1945;
-
-  try {
-    if (finance.year) year = Number(finance.year);
-    else if (window.ACS_TIME && ACS_TIME.currentYear) year = Number(ACS_TIME.currentYear);
-  } catch {}
-
-  if (year <= 1945) eraFactor = 0.8;
-  else if (year <= 1955) eraFactor = 1.0;
-  else if (year <= 1970) eraFactor = 1.2;
-  else if (year <= 1990) eraFactor = 1.5;
-  else if (year <= 2010) eraFactor = 2.0;
-  else eraFactor = 3.0;
-
-  const routeValue = Math.round(monthlyProfit * MULTIPLIER * eraFactor);
-
-  // guardar valor estratégico (opcional histórico)
-  try {
-    localStorage.setItem("ACS_RouteNetworkValue", JSON.stringify({
-      value: routeValue,
-      monthlyProfit,
-      multiplier: MULTIPLIER,
-      eraFactor,
-      year,
-      timestamp: Date.now()
-    }));
-  } catch {}
-
-  // actualizar UI en vivo
-  const el = document.getElementById("cvRoutes");
-  if (el) {
-    el.textContent = "$" + routeValue.toLocaleString("en-US");
+    console.warn("Route Network real model failed", e);
+    return 0;
   }
 }
-
-/* ============================================================
-   🟧 B2 — LISTENER AUTOMÁTICO AL CIERRE SEMANAL
-   ============================================================ */
-
-window.addEventListener("ACS_WEEK_CLOSED", e => {
-  try {
-    ACS_updateRouteNetworkFromFinance(e.detail);
-  } catch (err) {
-    console.warn("Route Network weekly update failed", err);
-  }
-});
 
 /* ============================================================
    ⚖️ LIABILITIES (v1 placeholder)
