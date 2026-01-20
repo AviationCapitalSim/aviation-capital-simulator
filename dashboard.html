@@ -408,11 +408,11 @@ body {
     </div>
 
     <div class="panel">
-      <h3>💼 Company Value</h3>
-      <p>Total assets: <strong id="companyValue">$78.5M</strong></p>
-      <p>Includes fleet, credits, and investments.</p>
-      <button class="acs-btn" onclick="window.location.href='company_value.html'">Open</button>
-    </div>
+  <h3>💼 Company Value</h3>
+  <p>Total assets: <strong id="companyValue">—</strong></p>
+  <p>Includes fleet, credits, and investments.</p>
+  <button class="acs-btn" onclick="window.location.href='company_value.html'">Open</button>
+ </div>
 
   </div>
 
@@ -492,6 +492,50 @@ function handleLogout() {
 <script src="time_engine.js"></script>
 
 <script src="engine/acs_finance.js"></script>
+
+<script>
+/* ============================================================
+   💼 DASHBOARD — COMPANY VALUE (REAL ENGINE MIRROR)
+   ------------------------------------------------------------
+   • Fuente única: ACS_getCompanyValue()
+   • Sin números falsos
+   • Sin duplicados
+   • Siempre consistente con Company Value
+   ============================================================ */
+
+(function connectDashboardCompanyValue(){
+
+  function tryConnect() {
+
+    if (typeof window.ACS_getCompanyValue !== "function") {
+      // esperar a que cargue el engine
+      return setTimeout(tryConnect, 200);
+    }
+
+    try {
+
+      const value = window.ACS_getCompanyValue();
+      const el = document.getElementById("companyValue");
+
+      if (el && Number.isFinite(value)) {
+        el.textContent = "$" + Math.round(value).toLocaleString("en-US");
+      } else if (el) {
+        el.textContent = "—";
+      }
+
+      console.log("💼 Dashboard Company Value connected:", value);
+
+    } catch (e) {
+      console.warn("Dashboard Company Value failed", e);
+    }
+
+  }
+
+  tryConnect();
+
+})();
+</script>
+  
 <script src="engine/acs_alerts.js?v=1.0"></script>
 
 <script>
