@@ -1140,26 +1140,12 @@ if (cvRoutesEl) {
     routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
 }
 
-
-    // ===============================
-    // 🟦 CARD 3 — EXECUTIVE SNAPSHOT
-    // ===============================
-    if (document.getElementById("cvLiveWeek"))
-      document.getElementById("cvLiveWeek").textContent = fmt(finance.income?.routes || 0);
-
-    if (document.getElementById("cvWeeklyClosed"))
-      document.getElementById("cvWeeklyClosed").textContent = fmt(finance.revenue || 0);
-
-    if (document.getElementById("cvProfitMonth"))
-      document.getElementById("cvProfitMonth").textContent = fmt(finance.profit || 0);
-
     console.log("💎 Company Value connected successfully");
 
   } catch (e) {
     console.error("Company Value connector failed", e);
   }
 }
-
 
 // Auto connect once page is ready
 window.addEventListener("load", connectCompanyValue);
