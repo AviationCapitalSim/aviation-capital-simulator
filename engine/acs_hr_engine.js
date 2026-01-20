@@ -986,3 +986,39 @@ setTimeout(() => {
     ACS_HR_triggerIndustryAlert();
 
 }, 800);
+
+/* ============================================================
+   🟧 HR-LINK-2 — FLIGHT ASSIGNED LISTENER (PHASE 1 DEBUG)
+   ------------------------------------------------------------
+   • Escucha vuelos creados desde Schedule Table
+   • No modifica datos todavía
+   • Solo confirma conexión HR ← Ops
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
+
+  try {
+
+    const { flight, aircraft } = e.detail || {};
+
+    if (!flight || !aircraft) {
+      console.warn("HR: Flight assigned event received but incomplete", e.detail);
+      return;
+    }
+
+    console.log(
+      "%c🧭 HR DETECTED NEW FLIGHT ASSIGNMENT",
+      "color:#00ffcc;font-weight:600"
+    );
+
+    console.log("✈ Flight:", flight.origin, "→", flight.destination, "ID:", flight.id);
+    console.log("🛩 Aircraft:", aircraft.model || aircraft.name || aircraft.id);
+
+    // FUTURE (next phase):
+    // ACS_HR_processNewFlight(flight, aircraft);
+
+  } catch (err) {
+    console.warn("HR flight assigned listener failed", err);
+  }
+
+});
