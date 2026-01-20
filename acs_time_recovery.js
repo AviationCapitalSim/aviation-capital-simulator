@@ -4,7 +4,6 @@
    Purpose:
    - Detect offline real time
    - Calculate lost simulated time
-   - NO automatic execution yet
    - Multiplatform safe (iOS / Android / PC / Mac)
    ============================================================ */
 
@@ -14,11 +13,22 @@
 
   const nowReal = Date.now();
 
-  const lastReal = parseInt(localStorage.getItem("ACS_LAST_REAL_TIME") || "0");
-  const lastSim  = parseFloat(localStorage.getItem("ACS_LAST_SIM_TIME") || "0");
+  const rawLastReal = localStorage.getItem("ACS_LAST_REAL_TIME");
+  const rawLastSim  = localStorage.getItem("ACS_LAST_SIM_TIME");
 
-  if (!lastReal || !lastSim) {
+  // TRUE FIRST RUN = both missing
+  if (!rawLastReal && !rawLastSim) {
     console.log("🟡 FIRST RUN — No previous time data found");
+    localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
+    return;
+  }
+
+  // Parse safely
+  const lastReal = parseInt(rawLastReal || "0");
+  const lastSim  = Date.parse(rawLastSim || "0");
+
+  if (!lastReal || !lastSim || isNaN(lastSim)) {
+    console.warn("🟠 TIME DATA CORRUPTED — Resetting REAL anchor only");
     localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
     return;
   }
@@ -46,6 +56,7 @@
   console.log("==========================================");
   console.log("⏳ ACS OFFLINE TIME RECOVERY DETECTED");
   console.log("LAST CLOSE REAL:", new Date(lastReal).toLocaleString());
+  console.log("LAST CLOSE SIM :", new Date(lastSim).toLocaleString());
   console.log("NOW REAL       :", new Date(nowReal).toLocaleString());
   console.log("OFFLINE REAL   :", 
     offlineDays + " days " + 
