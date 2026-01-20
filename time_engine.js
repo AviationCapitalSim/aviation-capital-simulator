@@ -380,22 +380,33 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   🟦 A2 — ACS TIME SNAPSHOT WRITER (24/7 CORE) — FIXED
-   - Saves REAL + SIM time as TIMESTAMPS
+   🟦 A2 — ACS TIME SNAPSHOT WRITER (24/7 CORE)
+   - Saves REAL + SIM time on background / exit
+   - Safari / iOS safe
    ============================================================ */
 
 function ACS_saveTimeSnapshot() {
   try {
+    // 🔵 REAL TIME → siempre número
     localStorage.setItem("ACS_LAST_REAL_TIME", Date.now());
-    localStorage.setItem(
-      "ACS_LAST_SIM_TIME",
-      ACS_TIME.currentTime.getTime()
-    );
-    console.log("🕒 ACS TIME SNAPSHOT SAVED (REAL + SIM)");
+
+    // 🔵 SIM TIME → FORZAR número (timestamp)
+    let simTime = ACS_TIME.currentTime instanceof Date
+      ? ACS_TIME.currentTime.getTime()
+      : Number(ACS_TIME.currentTime);
+
+    localStorage.setItem("ACS_LAST_SIM_TIME", simTime);
+
+    console.log("🕒 ACS TIME SNAPSHOT SAVED (REAL + SIM)", {
+      REAL: Date.now(),
+      SIM: simTime
+    });
+
   } catch (e) {
     console.warn("⚠️ TIME SNAPSHOT FAILED", e);
   }
 }
+
 
 /* ============================================================
    === TAB SYNC ================================================
