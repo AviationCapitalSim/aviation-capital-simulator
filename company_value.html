@@ -628,13 +628,13 @@ body {
 
     <div class="dash-list">
       <div>
-        <span>Live Revenue (Week)</span>
+        <span>Live Revenue</span>
         <span id="cvLiveWeek">$—</span>
       </div>
       <div>
-        <span>Weekly Revenue (Closed)</span>
-        <span id="cvWeeklyClosed">$—</span>
-      </div>
+        <span>Monthly Revenue</span>
+       <span id="cvWeeklyClosed">$—</span>
+     </div>
       <div>
         <span>Monthly Profit</span>
         <span id="cvProfitMonth">$—</span>
@@ -901,20 +901,21 @@ if (document.getElementById("cvRoutes")) {
   });
 
 /* ============================================================
-   🟧 B1 — CARD 3 EXECUTIVE SNAPSHOT (PURE FINANCE MIRROR)
+   🟧 B3 — CARD 3 EXECUTIVE SNAPSHOT (FINAL MIRROR FINANCE)
    ------------------------------------------------------------
-   • Lee SOLO de ACS_Finance
-   • Espejo exacto de Company Finance
-   • Sin eventos, sin weeklyClosed runtime, sin formatted falsos
+   • Live = Live Route Revenue (Income) REAL de Finance
+   • Monthly Revenue = Revenue (Month) REAL de Finance
+   • Monthly Profit = Profit (Month) REAL de Finance
+   • Sin eventos, sin listeners, sin formatted falsos
    ============================================================ */
 
 const ops = {
 
-  // 🔹 LIVE REVENUE (Week) → MISMO valor que “Live Route Revenue (Income)” en Finance
- cvLiveWeek:
-  "$" + Math.round(finance.income?.routes || 0).toLocaleString("en-US"),
+  // 🔹 LIVE REVENUE (Week) → Live Route Revenue (Income) = finance.income.routes
+  cvLiveWeek:
+    "$" + Math.round(finance.income?.routes || 0).toLocaleString("en-US"),
 
-  // 🔹 WEEKLY REVENUE (Closed) → Revenue (Month) REAL de Finance
+  // 🔹 MONTHLY REVENUE → Revenue (Month) REAL de Finance
   cvWeeklyClosed:
     "$" + Math.round(finance.revenue || 0).toLocaleString("en-US"),
 
@@ -927,7 +928,7 @@ Object.keys(ops).forEach(id => {
   const el = document.getElementById(id);
   if (el && ops[id] !== undefined) el.textContent = ops[id];
 });
-     
+
 /* ============================================================
    🟧 D2 — AUTO UPDATE EXECUTIVE SNAPSHOT ON WEEK CLOSE
    ------------------------------------------------------------
