@@ -775,6 +775,27 @@ function ACS_SkyTrack_debugDump() {
 }
 
 /* ============================================================
-   🚀 AUTO INIT
+   🟧 C1 — RUNTIME BOOTSTRAP (HEADLESS + ANTI DOUBLE ENGINE)
+   ------------------------------------------------------------
+   • Permite correr el motor sin SkyTrack (modo headless)
+   • Evita doble motor si SkyTrack + Finance están abiertos
+   • SkyTrack sigue funcionando normal con UI
    ============================================================ */
-document.addEventListener("DOMContentLoaded", ACS_SkyTrack_init);
+
+if (!window.__ACS_RUNTIME_ACTIVE__) {
+
+  window.__ACS_RUNTIME_ACTIVE__ = true;
+
+  // Headless mode (Company Finance, Company Value, etc.)
+  if (window.ACS_RUNTIME_HEADLESS === true) {
+    console.log("✈️ ACS Runtime started in HEADLESS mode");
+    ACS_SkyTrack_init(true);
+
+  } else {
+    // Normal mode (SkyTrack with UI)
+    document.addEventListener("DOMContentLoaded", () => {
+      ACS_SkyTrack_init(false);
+    });
+  }
+
+}
