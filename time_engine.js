@@ -84,6 +84,16 @@ function startACSTime() {
 
     ACS_TIME.currentTime = computeSimTime();
 
+    /* ============================================================
+       🕒 ACS TIME SNAPSHOT SAVE (FOR 24/7 RECOVERY)
+       ============================================================ */
+    try {
+      localStorage.setItem("ACS_LAST_REAL_TIME", Date.now());
+      localStorage.setItem("ACS_LAST_SIM_TIME", ACS_TIME.currentTime);
+    } catch (e) {
+      console.warn("⚠️ ACS TIME SNAPSHOT FAILED:", e);
+    }
+
     // Stop at world end
     if (ACS_TIME.currentTime >= SIM_END) {
       ACS_TIME.currentTime = new Date("2025-12-31T23:59:00Z");
