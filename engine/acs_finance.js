@@ -50,6 +50,48 @@ try {
 } catch (e) {
   console.warn("ACS_WEEK_CLOSED dispatch failed", e);
 }
+
+/* ============================================================
+   🟦 F8 — WEEK CLOSED CONSUMER (OFFICIAL FINANCE BRIDGE)
+   ------------------------------------------------------------
+   • Recibe evento ACS_WEEK_CLOSED desde TIME ENGINE
+   • Guarda weekly revenue real en ACS_Finance
+   • Actualiza breakdown + company value
+   • Fuente CANÓNICA: event.detail.weeklyRevenue
+   ============================================================ */
+
+window.addEventListener("ACS_WEEK_CLOSED", (e) => {
+
+  try {
+
+    const weekly = Number(e.detail?.weeklyRevenue || 0);
+
+    let finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+    if (!finance.income) finance.income = {};
+
+    // 🔥 REGISTRO OFICIAL
+    finance.income.weekly_revenue = weekly;
+
+    // Guardar snapshot semanal también
+    localStorage.setItem("ACS_FINANCE_WEEKLY_CLOSED", weekly);
+
+    // Persistir Finance
+    localStorage.setItem("ACS_Finance", JSON.stringify(finance));
+
+    // Exponer objeto vivo
+    window.ACS_Finance = finance;
+
+    console.log("✅ FINANCE WEEK CLOSED REGISTERED:", weekly);
+
+    // 🔔 Notificar UI + Company Value
+    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+  } catch (err) {
+    console.error("❌ FINANCE WEEK CLOSED FAILED", err);
+  }
+
+});
    
 /* ============================================================
    🗓️ WEEK HELPERS — ISO WEEK (MONDAY RESET)
