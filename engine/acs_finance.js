@@ -52,19 +52,19 @@ try {
 }
 
 /* ============================================================
-   🟦 F8 — WEEK CLOSED CONSUMER (OFFICIAL FINANCE BRIDGE)
+   🟦 F8 — WEEK CLOSED CONSUMER (OFFICIAL FINANCE BRIDGE — FIXED)
    ------------------------------------------------------------
    • Recibe evento ACS_WEEK_CLOSED desde TIME ENGINE
-   • Guarda weekly revenue real en ACS_Finance
-   • Actualiza breakdown + company value
-   • Fuente CANÓNICA: event.detail.weeklyRevenue
+   • Registra weekly revenue real en Finance
+   • Recovery automático si el evento ocurrió antes de cargar
+   • Fuente CANÓNICA: Finance Core (loadFinance)
    ============================================================ */
 
-window.addEventListener("ACS_WEEK_CLOSED", (e) => {
+function ACS_handleWeekClosed(eDetail) {
 
   try {
 
-    const weekly = Number(e.detail?.weeklyRevenue || 0);
+    const weekly = Number(eDetail?.weeklyRevenue || 0);
 
     let finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
@@ -73,10 +73,10 @@ window.addEventListener("ACS_WEEK_CLOSED", (e) => {
     // 🔥 REGISTRO OFICIAL
     finance.income.weekly_revenue = weekly;
 
-    // Guardar snapshot semanal también
+    // Snapshot semanal persistente
     localStorage.setItem("ACS_FINANCE_WEEKLY_CLOSED", weekly);
 
-    // Persistir Finance
+    // Persistir Finance completo
     localStorage.setItem("ACS_Finance", JSON.stringify(finance));
 
     // Exponer objeto vivo
@@ -90,6 +90,30 @@ window.addEventListener("ACS_WEEK_CLOSED", (e) => {
   } catch (err) {
     console.error("❌ FINANCE WEEK CLOSED FAILED", err);
   }
+}
+
+/* 🔹 Listener normal (eventos futuros) */
+window.addEventListener("ACS_WEEK_CLOSED", (e) => {
+  ACS_handleWeekClosed(e.detail);
+});
+
+/* 🔹 RECOVERY: si el evento ya ocurrió antes de que este listener cargara */
+try {
+
+  const recovered = loadFinance();
+
+  if (recovered && recovered.income?.weekly_revenue !== undefined) {
+
+    console.log("🔁 WEEK CLOSE RECOVERED FROM FINANCE CORE");
+
+    ACS_handleWeekClosed({
+      weeklyRevenue: recovered.income.weekly_revenue
+    });
+  }
+
+} catch (e) {
+  console.warn("⚠️ WEEK CLOSE RECOVERY FAILED", e);
+}
 
 });
    
