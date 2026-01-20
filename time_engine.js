@@ -380,26 +380,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   🟦 A2.1 — ACS TIME SNAPSHOT WRITER (SAFE FORMAT)
+   🟦 A2 — ACS TIME SNAPSHOT WRITER (24/7 CORE) — FIXED
+   - Saves REAL + SIM time as TIMESTAMPS
    ============================================================ */
 
 function ACS_saveTimeSnapshot() {
   try {
     localStorage.setItem("ACS_LAST_REAL_TIME", Date.now());
-
-    // Guardar SIM TIME como timestamp numérico (no Date string)
-    const simTimeValue =
-      ACS_TIME.currentTime instanceof Date
-        ? ACS_TIME.currentTime.getTime()
-        : ACS_TIME.currentTime;
-
-    localStorage.setItem("ACS_LAST_SIM_TIME", simTimeValue);
-
-    console.log("🕒 ACS TIME SNAPSHOT SAVED", {
-      REAL: new Date().toLocaleString(),
-      SIM: new Date(simTimeValue).toLocaleString()
-    });
-
+    localStorage.setItem(
+      "ACS_LAST_SIM_TIME",
+      ACS_TIME.currentTime.getTime()
+    );
+    console.log("🕒 ACS TIME SNAPSHOT SAVED (REAL + SIM)");
   } catch (e) {
     console.warn("⚠️ TIME SNAPSHOT FAILED", e);
   }
