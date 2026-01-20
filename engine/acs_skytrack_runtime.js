@@ -97,7 +97,7 @@ window.ACS_SkyTrack = {
 /* ============================================================
    🟦 ENTRY POINT
    ============================================================ */
-function ACS_SkyTrack_init() {
+function ACS_SkyTrack_init(headless = false) {
   if (ACS_SkyTrack.initialized) return;
   ACS_SkyTrack.initialized = true;
 
@@ -329,7 +329,7 @@ if (stateObj.flight) {
 
   const past = items
     .filter(it => it.type === "flight" && Number.isFinite(it.arrAbsMin) && it.arrAbsMin < now)
-    .sort((a, b) => b.arrAbsMin - a.arrAbsMin)[0];
+    .sort((a, b) => b.arrAbsMin - b.arrAbsMin)[0];
 
   const ctx = future || past;
   if (ctx) {
