@@ -380,6 +380,34 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
+   🟦 A2 — ACS TIME SNAPSHOT WRITER (24/7 CORE)
+   - Saves REAL + SIM time on background / exit
+   - Safari / iOS safe
+   ============================================================ */
+
+function ACS_saveTimeSnapshot() {
+  try {
+    localStorage.setItem("ACS_LAST_REAL_TIME", Date.now());
+    localStorage.setItem("ACS_LAST_SIM_TIME", ACS_TIME.currentTime);
+    console.log("🕒 ACS TIME SNAPSHOT SAVED");
+  } catch (e) {
+    console.warn("⚠️ TIME SNAPSHOT FAILED", e);
+  }
+}
+
+// When tab is hidden (mobile, iOS, background)
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    ACS_saveTimeSnapshot();
+  }
+});
+
+// When page is closed / refreshed
+window.addEventListener("beforeunload", () => {
+  ACS_saveTimeSnapshot();
+});
+
+/* ============================================================
    === TAB SYNC ================================================
    ============================================================ */
 window.addEventListener("storage", (e) => {
