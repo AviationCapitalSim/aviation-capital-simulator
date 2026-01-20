@@ -534,6 +534,21 @@ body {
 <!-- FLIGHT ECONOMICS (ROUTE REVENUE) -->
 <script src="engine/acs_flight_economics.js"></script>
 
+<!-- ============================================================
+     🟧 C2 — ACS SKYTRACK RUNTIME (HEADLESS MODE — 24/7 ENGINE)
+     ------------------------------------------------------------
+     • Arranca el motor FR24 sin abrir SkyTrack
+     • Permite vuelos, arrivals y revenue en background
+     • Protegido contra doble motor (__ACS_RUNTIME_ACTIVE__)
+     ============================================================ -->
+
+<script>
+  // 🔒 Activar modo headless ANTES de cargar el runtime
+  window.ACS_RUNTIME_HEADLESS = true;
+</script>
+
+<script src="engine/acs_skytrack_runtime.js"></script>
+     
 <!-- OTROS SISTEMAS -->
 <script src="engine/acs_leasing.js"></script>
 <script src="engine/acs_hr_engine.js"></script>
