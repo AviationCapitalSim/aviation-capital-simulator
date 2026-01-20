@@ -1085,61 +1085,6 @@ if (document.getElementById("cvFleet")) {
     fleetAssets > 0 ? "$" + Math.round(fleetAssets).toLocaleString("en-US") : "—";
 }
 
-/* ============================================================
-   🟧 CV-UI-15 — ROUTE NETWORK VALUE (HISTORICAL REAL, LOCAL)
-   ------------------------------------------------------------
-   • Fuente directa: scheduleItems
-   • Escala histórica por era
-   • Sin depender del engine
-   ============================================================ */
-
-let routeValue = 0;
-
-try {
-
-  const routes = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-  // contar rutas únicas activas
-  const uniq = new Set();
-  routes.forEach(r => {
-    if (!r || r.status === "CANCELLED") return;
-    const o = String(r.origin || "").trim();
-    const d = String(r.destination || "").trim();
-    if (o && d) uniq.add(o + "→" + d);
-  });
-
-  let year = 2026;
-  try {
-    if (window.ACS_TIME && ACS_TIME.currentYear) {
-      year = Number(ACS_TIME.currentYear);
-    }
-  } catch {}
-
-  // valores históricos reales por era
-  let BASE = 500;
-  let CAP  = 50000;
-
-  if (year <= 1945) { BASE = 500;  CAP = 50000; }
-  else if (year <= 1950) { BASE = 1500; CAP = 200000; }
-  else if (year <= 1960) { BASE = 5000; CAP = 1000000; }
-  else if (year <= 1975) { BASE = 15000; CAP = 3000000; }
-  else if (year <= 1990) { BASE = 30000; CAP = 6000000; }
-  else if (year <= 2010) { BASE = 60000; CAP = 12000000; }
-  else { BASE = 100000; CAP = 20000000; }
-
-  routeValue = uniq.size * BASE;
-  if (routeValue > CAP) routeValue = CAP;
-
-} catch (e) {
-  console.warn("Route network calculation failed", e);
-}
-
-const cvRoutesEl = document.getElementById("cvRoutes");
-if (cvRoutesEl) {
-  cvRoutesEl.textContent =
-    routeValue > 0 ? "$" + Math.round(routeValue).toLocaleString("en-US") : "—";
-}
-
     console.log("💎 Company Value connected successfully");
 
   } catch (e) {
