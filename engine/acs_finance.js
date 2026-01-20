@@ -31,18 +31,22 @@ function saveFinance(f){
 }
 
 /* ============================================================
-   🟧 A1 — WEEK CLOSE → DISPATCH COMPANY VALUE UPDATE
-   ------------------------------------------------------------
-   • Se dispara SOLO cuando cierra la semana
-   • Envía Finance completo al sistema estratégico
+   🟧 A1 — WEEK CLOSE DISPATCH (FIXED)
+   - Envía Finance REAL al cerrar semana
    ============================================================ */
 
 try {
+
+  const f = loadFinance();   // ← Finance real desde storage
+
   window.dispatchEvent(
     new CustomEvent("ACS_WEEK_CLOSED", {
-      detail: finance
+      detail: f
     })
   );
+
+  console.log("📅 ACS WEEK CLOSED EVENT DISPATCHED");
+
 } catch (e) {
   console.warn("ACS_WEEK_CLOSED dispatch failed", e);
 }
