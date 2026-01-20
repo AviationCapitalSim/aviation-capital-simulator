@@ -911,10 +911,8 @@ if (document.getElementById("cvRoutes")) {
 const ops = {
 
   // 🔹 LIVE REVENUE (Week) → MISMO valor que “Live Route Revenue (Income)” en Finance
-  cvLiveWeek:
-    finance?.liveRouteRevenue !== undefined
-      ? "$" + Math.round(finance.liveRouteRevenue).toLocaleString("en-US")
-      : "$" + Math.round(finance.income?.routes || 0).toLocaleString("en-US"),
+ cvLiveWeek:
+  "$" + Math.round(finance.income?.routes || 0).toLocaleString("en-US"),
 
   // 🔹 WEEKLY REVENUE (Closed) → Revenue (Month) REAL de Finance
   cvWeeklyClosed:
