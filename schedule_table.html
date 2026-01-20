@@ -2037,17 +2037,19 @@ if (!assignedAny){
   return;
 }
 
-// 5️⃣ Guardar y renderizar
+// 5 Guardar y renderizar
 setItems(items);
 renderSchedule();
-}
 
+// 🟦 EMIT HR / OPS EVENT — FLIGHT ASSIGNED
 window.dispatchEvent(new CustomEvent("ACS_FLIGHT_ASSIGNED", {
   detail: {
     flight: route,
     aircraft: ac
   }
 }));
+
+}
      
 /* ============================================================
    === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
