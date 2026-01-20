@@ -900,32 +900,29 @@ if (document.getElementById("cvRoutes")) {
     if (el && map[id] !== undefined) el.textContent = map[id];
   });
 
- /* ===========================
-   CARD 3 — EXECUTIVE SNAPSHOT (REAL FINANCE MAPPING)
-   =========================== */
+/* ============================================================
+   🟧 B1 — CARD 3 EXECUTIVE SNAPSHOT (PURE FINANCE MIRROR)
+   ------------------------------------------------------------
+   • Lee SOLO de ACS_Finance
+   • Espejo exacto de Company Finance
+   • Sin eventos, sin weeklyClosed runtime, sin formatted falsos
+   ============================================================ */
 
 const ops = {
 
-  // 🔹 LIVE REVENUE (Week) → Live Route Revenue (Income) REAL
+  // 🔹 LIVE REVENUE (Week) → MISMO valor que “Live Route Revenue (Income)” en Finance
   cvLiveWeek:
-    finance?.liveRouteRevenueFormatted ||
-    (finance?.liveRouteRevenue !== undefined
+    finance?.liveRouteRevenue !== undefined
       ? "$" + Math.round(finance.liveRouteRevenue).toLocaleString("en-US")
-      : finance?.liveWeekFormatted || finance?.liveWeek || "$—"),
+      : "$" + Math.round(finance.income?.routes || 0).toLocaleString("en-US"),
 
-  // 🔹 WEEKLY REVENUE (Closed) → finance.weeklyClosed (SEMANA PASADA REAL)
+  // 🔹 WEEKLY REVENUE (Closed) → Revenue (Month) REAL de Finance
   cvWeeklyClosed:
-    finance?.weeklyClosedFormatted ||
-    (finance?.weeklyClosed !== undefined
-      ? "$" + Math.round(finance.weeklyClosed).toLocaleString("en-US")
-      : "$—"),
+    "$" + Math.round(finance.revenue || 0).toLocaleString("en-US"),
 
-  // 🔹 MONTHLY PROFIT → finance.monthlyProfit (ESTRATÉGICO)
+  // 🔹 MONTHLY PROFIT → Profit (Month) REAL de Finance
   cvProfitMonth:
-    finance?.monthlyProfitFormatted ||
-    (finance?.monthlyProfit !== undefined
-      ? "$" + Math.round(finance.monthlyProfit).toLocaleString("en-US")
-      : "$—")
+    "$" + Math.round(finance.profit || 0).toLocaleString("en-US")
 };
 
 Object.keys(ops).forEach(id => {
