@@ -901,25 +901,25 @@ if (document.getElementById("cvRoutes")) {
   });
 
 /* ============================================================
-   🟧 B3 — CARD 3 EXECUTIVE SNAPSHOT (FINAL MIRROR FINANCE)
+   🟧 B4 — CARD 3 EXECUTIVE SNAPSHOT (REAL LIVE REVENUE MIRROR)
    ------------------------------------------------------------
-   • Live = Live Route Revenue (Income) REAL de Finance
-   • Monthly Revenue = Revenue (Month) REAL de Finance
-   • Monthly Profit = Profit (Month) REAL de Finance
-   • Sin eventos, sin listeners, sin formatted falsos
+   • Live Revenue (Week) → finance.income.live_revenue  ✅ REAL
+   • Monthly Revenue    → finance.revenue
+   • Monthly Profit     → finance.profit
+   • Fuente única: ACS_Finance (Company Finance)
    ============================================================ */
 
 const ops = {
 
-  // 🔹 LIVE REVENUE (Week) → Live Route Revenue (Income) = finance.income.routes
+  // 🔹 LIVE REVENUE (Week) → Live Route Revenue (Income) REAL
   cvLiveWeek:
-    "$" + Math.round(finance.income?.routes || 0).toLocaleString("en-US"),
+    "$" + Math.round(finance.income?.live_revenue || 0).toLocaleString("en-US"),
 
-  // 🔹 MONTHLY REVENUE → Revenue (Month) REAL de Finance
+  // 🔹 MONTHLY REVENUE → Revenue (Month) REAL
   cvWeeklyClosed:
     "$" + Math.round(finance.revenue || 0).toLocaleString("en-US"),
 
-  // 🔹 MONTHLY PROFIT → Profit (Month) REAL de Finance
+  // 🔹 MONTHLY PROFIT → Profit (Month) REAL
   cvProfitMonth:
     "$" + Math.round(finance.profit || 0).toLocaleString("en-US")
 };
