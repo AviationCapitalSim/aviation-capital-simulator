@@ -339,6 +339,15 @@ if (stateObj.flight) {
   }
 }
 
+/* ============================================================
+   🟦 B2.2 — SKYTRACK OPS STATUS (READ ONLY SNAPSHOT EXTENSION)
+   ------------------------------------------------------------
+   • Lee flags canónicos del Observer
+   • NO altera estados ni tiempos
+   • NO toca lógica de vuelo
+   • Solo añade campos visuales
+   ============================================================ */
+
 snapshot.push({
   aircraftId: acId,
   registration: ac.registration || ac.reg || "—",
@@ -349,10 +358,18 @@ snapshot.push({
 
   originICAO,
   destinationICAO,
-  flightNumber
-   });
+  flightNumber,
 
+  // ========================================================
+  // ⏱️ OPS DELAY STATUS (READ ONLY)
+  // ========================================================
+
+  opsStatus: (stateObj.flight && stateObj.flight.opsStatus) || "ON_TIME",
+  delayed:   (stateObj.flight && !!stateObj.flight.delayed) || false,
+  delayMinutes: (stateObj.flight && Number(stateObj.flight.delayMinutes || 0)) || 0
   });
+
+});
 
   // 🔑 Single canonical snapshot
   window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshot;
