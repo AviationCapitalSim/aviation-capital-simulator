@@ -327,6 +327,18 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 }
 
 /* ============================================================
+   🟦 B2.3 — OPS FLIGHT STATUS REGISTRY (CANONICAL BRIDGE)
+   ------------------------------------------------------------
+   • Guarda estado operacional por aircraftId
+   • Fuente única para SkyTrack + KPI + UI
+   • NO toca schedule
+   • NO toca vuelos
+   • NO toca runtime
+   ============================================================ */
+
+window.ACS_OPS_FLIGHT_STATUS = window.ACS_OPS_FLIGHT_STATUS || {};
+
+/* ============================================================
    🟦 DEFERRED REVENUE QUEUE (WORLD SYNC)
    ============================================================ */
 
