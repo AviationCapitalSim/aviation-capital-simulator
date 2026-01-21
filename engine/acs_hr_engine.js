@@ -495,9 +495,9 @@ function ACS_HR_calcDynamic(dep) {
 
 
 /* ============================================================
-   RECÁLCULO GENERAL (se mantiene intacto + FIX pilot)
+   RECÁLCULO GENERAL (se mantiene intacto + FIX anti-null/meta)
    ============================================================ */
-   
+
 function ACS_HR_recalculateAll() {
 
     const hr = ACS_HR_load();
@@ -509,6 +509,9 @@ function ACS_HR_recalculateAll() {
     Object.keys(hr).forEach(id => {
 
         const dep = hr[id];
+
+        // ✅ FIX CRÍTICO: ignora entradas no-departamento (ej: payroll numérico)
+        if (!dep || typeof dep !== "object") return;
 
         // Dinámico SIEMPRE se calcula
         dep.dynamic_salary = ACS_HR_calcDynamic(dep);
@@ -533,6 +536,7 @@ function ACS_HR_recalculateAll() {
             }
 
         } else {
+
             // AutoSalary OFF → mantener histórico
             if (id.startsWith("pilots_")) {
 
@@ -557,23 +561,11 @@ function ACS_HR_recalculateAll() {
         payroll += dep.payroll;
     });
 
-    hr.payroll = payroll;              // 🟩 ACTUALIZA payroll real dentro de HR
-    ACS_HR_save(hr);                   // 🟩 Guarda HR completo (con payroll)
+    // ✅ NO meter payroll dentro del objeto HR (evita corrupción)
+    ACS_HR_save(hr);
     localStorage.setItem("ACS_Payroll_Monthly", payroll);
 
     return payroll;
-
-}
-
-// ► Sincronizar con Finance (si está cargado el motor)
-
-if (typeof ACS_updatePayrollFromHR === "function") {
-    try {
-        ACS_updatePayrollFromHR();
-        console.log("💰 Finance synced with new HR payroll.");
-    } catch (e) {
-        console.warn("⚠️ Finance sync failed:", e);
-    }
 }
 
 /* ============================================================
