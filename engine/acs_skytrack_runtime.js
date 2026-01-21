@@ -365,7 +365,16 @@ snapshot.push({
   opsStatus: opsInfo ? opsInfo.opsStatus : "ON_TIME",
   delayed:   opsInfo ? !!opsInfo.delayed : false,
   delayMinutes: opsInfo ? Number(opsInfo.delayMinutes || 0) : 0
-});
+   
+  }); // 🔒 cierre forEach(acId)
+
+  // 📡 Emitir snapshot final del tick
+  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshot;
+  window.dispatchEvent(
+    new CustomEvent("ACS_SKYTRACK_SNAPSHOT", { detail: snapshot })
+  );
+
+} // 🔒 cierre function ACS_SkyTrack_onTick()
 
 /* ============================================================
    📦 LOAD DATA (FLEET + SCHEDULE) — CANONICAL
