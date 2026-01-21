@@ -358,38 +358,47 @@ function ACS_processDeferredRevenueQueue() {
   while (window.ACS_DeferredRevenueQueue.length) {
     const payload = window.ACS_DeferredRevenueQueue.shift();
 
-    // 🟦 OPS IMPACT HOOK + DELAY CONSOLIDATION (CANONICAL)
-    if (payload && payload.flight && typeof payload.revenue === "number") {
+   // 🟦 OPS IMPACT HOOK (REAL PAYLOAD FORMAT)
 
-      const opsResult = ACS_OPS_applyImpactToFlight(payload.flight, payload.revenue);
+if (payload && payload.aircraftId && typeof payload.revenue === "number") {
 
-      // 🔒 Propagar vuelo y revenue (como antes)
-      payload.flight  = opsResult.flight;
-      payload.revenue = opsResult.revenue;
+  const fakeFlight = {
+    aircraftId: payload.aircraftId,
+    origin: payload.origin,
+    destination: payload.destination
+  };
 
-      // ========================================================
-      // ⏱️ CONSOLIDACIÓN CANÓNICA DE DELAY EN EL VUELO
-      // ========================================================
+  const opsResult = ACS_OPS_applyImpactToFlight(fakeFlight, payload.revenue);
 
-      payload.flight.delayed = !!opsResult.delayed;
-      payload.flight.delayMinutes = Number(opsResult.delayMinutes || 0);
-      payload.flight.opsLossPercent = Number(opsResult.lossPercent || 0);
+  // 🔁 Reinyectar estado al payload
+  payload.opsStatus      = opsResult.flight.opsStatus;
+  payload.delayed        = opsResult.flight.delayed;
+  payload.delayMinutes  = opsResult.flight.delayMinutes;
+  payload.opsLossPercent= opsResult.flight.opsLossPercent;
 
-      if (payload.flight.delayed) {
-        payload.flight.opsStatus = "DELAYED";
-      } else {
-        payload.flight.opsStatus = "ON_TIME";
-      }
+  // ========================================================
+  // 🧠 REGISTRAR ESTADO OPERACIONAL POR AVIÓN (CANÓNICO)
+  // ========================================================
 
-      console.log(
-        "%c⏱ OBSERVER FINAL STATUS",
-        "color:#00ffcc;font-weight:700",
-        "Route:", payload.flight.origin, "→", payload.flight.destination,
-        "Status:", payload.flight.opsStatus,
-        "Delay:", payload.flight.delayMinutes, "min",
-        "Loss:", payload.flight.opsLossPercent, "%"
-      );
-    }
+  if (payload.aircraftId) {
+
+    window.ACS_OPS_FLIGHT_STATUS[payload.aircraftId] = {
+      opsStatus: opsResult.flight.opsStatus,
+      delayed: opsResult.flight.delayed,
+      delayMinutes: opsResult.flight.delayMinutes,
+      lossPercent: opsResult.flight.opsLossPercent,
+      updatedAt: Date.now()
+    };
+
+    console.log(
+      "%c🧠 OPS STATUS REGISTERED",
+      "color:#ffaa00;font-weight:700",
+      "Aircraft:", payload.aircraftId,
+      window.ACS_OPS_FLIGHT_STATUS[payload.aircraftId]
+    );
+  }
+}
+
      
 // ========================================================
 // 🧠 REGISTRAR ESTADO OPERACIONAL POR AVIÓN (CANÓNICO)
