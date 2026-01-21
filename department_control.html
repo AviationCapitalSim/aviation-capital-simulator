@@ -675,15 +675,10 @@ tr:nth-child(even) {
 <thead>
   <tr>
     <th>Department</th>
-    <th>Role</th>
     <th>Staff</th>
     <th>Required</th>
-    <th>Diff</th>
-    <th>Efficiency</th>
     <th>Salary</th>
-    <th>Payroll</th>
     <th>Morale</th>
-    <th>Bonus</th>
     <th>Actions</th>
   </tr>
 </thead>
@@ -928,39 +923,10 @@ function loadDepartments() {
     rows.innerHTML += `
       <tr>
         <td>${dep.name}</td>
-
-        <td>
-          <span class="role-tag">${
-            dep.id.includes("pilots_small")  ? "Pilots — Small"  :
-            dep.id.includes("pilots_medium") ? "Pilots — Medium" :
-            dep.id.includes("pilots_large")  ? "Pilots — Large"  :
-            dep.id.includes("pilots_vlarge") ? "Pilots — Very Large" :
-            dep.base
-          }</span>
-        </td>
-
         <td class="staff">${dep.staff}</td>
         <td>${dep.required}</td>
-
-        <td class="diff" style="color:${
-          dep.diff > 0 ? '#ff4d4d' :
-          dep.diff < 0 ? '#00ff99' :
-          '#ffe38a'
-        }">${dep.diff}</td>
-
-        <td class="efficiency" style="color:${
-          dep.efficiency >= 0.85 ? '#3bff9d' :
-          dep.efficiency >= 0.65 ? '#ffe38a' :
-          dep.efficiency >= 0.40 ? '#ff8c3b' :
-          '#ff4d4d'
-        }">${(dep.efficiency * 100).toFixed(0)}%</td>
-
         <td class="salary">$${dep.salary}</td>
-        <td class="payroll">$${dep.payroll.toLocaleString()}</td>
         <td class="morale">${dep.morale}%</td>
-
-        <td class="bonus-disabled">0%</td>
-
         <td>
           <button class="btn btn-control" onclick="openHRFullModal('${dep.id}')">
             ⚙️ Control
@@ -972,15 +938,12 @@ function loadDepartments() {
 
   // === SYNC LOCAL STORAGE ===
   try {
-      // ⬇️ Esta función YA guarda el objeto HR internamente.
-      // Devuelve solo el número de payroll mensual.
-      const payroll = ACS_HR_recalculateAll();
-      console.log("💾 HR recalculado. Payroll mensual:", payroll);
+    const payroll = ACS_HR_recalculateAll();
+    console.log("💾 HR recalculado. Payroll mensual:", payroll);
   } catch (e) {
-      console.warn("⚠️ No se pudo actualizar HR:", e);
+    console.warn("⚠️ No se pudo actualizar HR:", e);
   }
-
-} // 🔥 ESTA LLAVE ES LA QUE FALTABA
+}
 
 /* ============================================================
    KPI — Monthly Payroll (Exacto desde HR Engine)
