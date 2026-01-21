@@ -212,15 +212,22 @@ tr:nth-child(even) {
 
 .required-ok {
   color: #00ff99;
-  font-weight: 700;
+  font-weight: 800;
   text-shadow: 0 0 8px rgba(0,255,160,0.45);
 }
 
 .required-missing {
   color: #ff4d4d;
-  font-weight: 800;
-  text-shadow: 0 0 10px rgba(255,80,80,0.65);
+  font-weight: 900;
+  text-shadow: 0 0 12px rgba(255,80,80,0.75);
   animation: reqPulse 2.2s infinite ease-in-out;
+}
+
+/* 🟡 Excess staff (not critical, but cost attention) */
+.required-excess {
+  color: #ffcf4a;
+  font-weight: 900;
+  text-shadow: 0 0 10px rgba(255,200,60,0.55);
 }
 
 @keyframes reqPulse {
@@ -944,25 +951,45 @@ function loadDepartments() {
 
     const dep = HR_prepareTableData(d);
 
-    // === REQUIRED VISUAL + ALERT LOGIC ===
-    let requiredClass = "required-ok";
-    let requiredText  = dep.required;
+    // ============================================================
+// 🧮 REQUIRED = DELTA (Staff - RequiredAbsolute)
+//   •  0  → perfect balance (green)
+//   • -X  → missing staff (red pulse) + ALERT
+//   • +X  → excess staff (amber) no alert
+// ============================================================
 
-    if (dep.required > 0) {
-      requiredClass = "required-missing";
-      requiredText  = dep.required;
+const staff = dep.staff || 0;
 
-      // 🔔 ALERTA INMEDIATA AL SISTEMA DE ALERTS
-      if (typeof ACS_Alerts_push === "function") {
-        ACS_Alerts_push({
-          type: "HR",
-          level: "WARNING",
-          title: `Department Understaffed`,
-          message: `${dep.name} requires ${dep.required} additional staff.`,
-          source: "Department Control"
-        });
-      }
-    }
+// ⚠️ Nota: en tu HR_prepareTableData hoy required=hr.required (absoluto).
+// Aquí lo tratamos como "requiredAbsolute" (lo que debería haber).
+const requiredAbsolute = (typeof dep.required === "number") ? dep.required : staff;
+
+const delta = staff - requiredAbsolute;  // + = sobra, - = falta
+
+let requiredClass = "required-ok";
+let requiredText  = "0";
+
+if (delta < 0) {
+  requiredClass = "required-missing";
+  requiredText  = `${delta}`; // e.g. -2
+
+  // 🔔 ALERTA SOLO SI FALTA PERSONAL
+  if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+    window.ACS_Alerts.push({
+      title: "Department Understaffed",
+      message: `${dep.name} is missing ${Math.abs(delta)} staff.`,
+      level: "warning",
+      source: "Department Control"
+    });
+  }
+
+} else if (delta > 0) {
+  requiredClass = "required-excess";
+  requiredText  = `+${delta}`; // e.g. +2
+} else {
+  requiredClass = "required-ok";
+  requiredText  = "0";
+}
 
     rows.innerHTML += `
       <tr>
