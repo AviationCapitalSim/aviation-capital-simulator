@@ -201,9 +201,33 @@ tr:nth-child(even) {
 }
 
 /* Staff, Salary, Morale colors */
+/* Staff, Salary, Morale colors */
 .staff { color: #00e28a; font-weight: 600; }
 .salary { color: #ff6464; font-weight: 600; }
 .morale { color: #8ae2ff; font-weight: 600; }
+
+/* ============================================================
+   🟥 REQUIRED INDICATOR — OPERATIONS CORE (Qatar Luxury)
+   ============================================================ */
+
+.required-ok {
+  color: #00ff99;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(0,255,160,0.45);
+}
+
+.required-missing {
+  color: #ff4d4d;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(255,80,80,0.65);
+  animation: reqPulse 2.2s infinite ease-in-out;
+}
+
+@keyframes reqPulse {
+  0%   { opacity: 1;   }
+  50%  { opacity: 0.6; }
+  100% { opacity: 1;   }
+}
 
 /* Action buttons */
 .btn {
@@ -920,11 +944,31 @@ function loadDepartments() {
 
     const dep = HR_prepareTableData(d);
 
+    // === REQUIRED VISUAL + ALERT LOGIC ===
+    let requiredClass = "required-ok";
+    let requiredText  = dep.required;
+
+    if (dep.required > 0) {
+      requiredClass = "required-missing";
+      requiredText  = dep.required;
+
+      // 🔔 ALERTA INMEDIATA AL SISTEMA DE ALERTS
+      if (typeof ACS_Alerts_push === "function") {
+        ACS_Alerts_push({
+          type: "HR",
+          level: "WARNING",
+          title: `Department Understaffed`,
+          message: `${dep.name} requires ${dep.required} additional staff.`,
+          source: "Department Control"
+        });
+      }
+    }
+
     rows.innerHTML += `
       <tr>
         <td>${dep.name}</td>
         <td class="staff">${dep.staff}</td>
-        <td>${dep.required}</td>
+        <td class="${requiredClass}">${requiredText}</td>
         <td class="salary">$${dep.salary}</td>
         <td class="morale">${dep.morale}%</td>
         <td>
@@ -942,6 +986,11 @@ function loadDepartments() {
     console.log("💾 HR recalculado. Payroll mensual:", payroll);
   } catch (e) {
     console.warn("⚠️ No se pudo actualizar HR:", e);
+  }
+
+  // 🔄 KPI refresh
+  if (typeof HR_updateKPI === "function") {
+    HR_updateKPI();
   }
 }
 
