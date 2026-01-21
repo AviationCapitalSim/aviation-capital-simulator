@@ -340,20 +340,18 @@ if (stateObj.flight) {
 }
 
 /* ============================================================
-   🟦 B2.2 — SKYTRACK OPS STATUS (READ ONLY SNAPSHOT EXTENSION)
-   ------------------------------------------------------------
-   • Lee flags canónicos del Observer
-   • NO altera estados ni tiempos
-   • NO toca lógica de vuelo
-   • Solo añade campos visuales
+   🟦 B2.4 — SKYTRACK OPS STATUS (READ FROM CANONICAL REGISTRY)
    ============================================================ */
+
+const opsInfo =
+  (window.ACS_OPS_FLIGHT_STATUS && window.ACS_OPS_FLIGHT_STATUS[acId]) || null;
 
 snapshot.push({
   aircraftId: acId,
   registration: ac.registration || ac.reg || "—",
   model: ac.model || ac.type || "—",
 
-  state: stateObj.state,              // GROUND | EN_ROUTE | MAINTENANCE
+  state: stateObj.state,
   position: stateObj.position || null,
 
   originICAO,
@@ -361,23 +359,13 @@ snapshot.push({
   flightNumber,
 
   // ========================================================
-  // ⏱️ OPS DELAY STATUS (READ ONLY)
+  // ⏱️ OPS STATUS (CANONICAL READ)
   // ========================================================
 
-  opsStatus: (stateObj.flight && stateObj.flight.opsStatus) || "ON_TIME",
-  delayed:   (stateObj.flight && !!stateObj.flight.delayed) || false,
-  delayMinutes: (stateObj.flight && Number(stateObj.flight.delayMinutes || 0)) || 0
-  });
-
+  opsStatus: opsInfo ? opsInfo.opsStatus : "ON_TIME",
+  delayed:   opsInfo ? !!opsInfo.delayed : false,
+  delayMinutes: opsInfo ? Number(opsInfo.delayMinutes || 0) : 0
 });
-
-  // 🔑 Single canonical snapshot
-  window.__ACS_LAST_SKYTRACK_SNAPSHOT__ = snapshot;
-
-  window.dispatchEvent(
-    new CustomEvent("ACS_SKYTRACK_SNAPSHOT", { detail: snapshot })
-  );
-}
 
 /* ============================================================
    📦 LOAD DATA (FLEET + SCHEDULE) — CANONICAL
