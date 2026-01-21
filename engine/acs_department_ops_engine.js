@@ -259,3 +259,337 @@ window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
    • Alert escalation logic
    • Recovery smoothing
    ============================================================ */
+
+/* ============================================================
+   🟦 B2 — DEFICIT TIMERS + MORALE DEGRADATION ENGINE (PHASE A)
+   Ubicación: FINAL DEL ARCHIVO acs_department_ops_engine.js
+   ------------------------------------------------------------
+   • Detecta déficit persistente por departamento
+   • Escala alertas semanalmente
+   • Inicia degradación de moral progresiva
+   • NO aplica delays todavía (Phase B)
+   ============================================================ */
+
+// Storage: estado de déficit por departamento
+function ACS_OPS_loadDeficitState() {
+  return JSON.parse(localStorage.getItem("ACS_OPS_DEFICITS") || "{}");
+}
+
+function ACS_OPS_saveDeficitState(state) {
+  localStorage.setItem("ACS_OPS_DEFICITS", JSON.stringify(state));
+}
+
+// Inicializar estructura si no existe
+if (!localStorage.getItem("ACS_OPS_DEFICITS")) {
+  ACS_OPS_saveDeficitState({});
+}
+
+/* ============================================================
+   🔎 CHECK DEFICITS — ejecutado semanalmente
+   ============================================================ */
+function ACS_OPS_checkDepartmentDeficits() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  const state = ACS_OPS_loadDeficitState();
+
+  Object.keys(HR).forEach(depID => {
+
+    const dep = HR[depID];
+    if (!dep || typeof dep.required !== "number") return;
+
+    const staff = dep.staff || 0;
+    const required = dep.required || 0;
+
+    const deficit = Math.max(0, required - staff);
+
+    // === NO DEFICIT → limpiar estado si existía
+    if (deficit === 0) {
+      if (state[depID]) {
+        delete state[depID];
+      }
+      return;
+    }
+
+    // === DEFICIT ACTIVO
+    if (!state[depID]) {
+      // Primera vez detectado
+      state[depID] = {
+        weeks: 0,
+        lastAlertWeek: -1
+      };
+    }
+
+    const entry = state[depID];
+    entry.weeks++;
+
+    // ========================================================
+    // 🔔 ALERTA SEMANAL
+    // ========================================================
+    if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+
+      if (entry.lastAlertWeek !== entry.weeks) {
+
+        let level = "info";
+        if (entry.weeks >= 2) level = "warning";
+        if (entry.weeks >= 4) level = "danger";
+
+        window.ACS_Alerts.push({
+          title: "Staff Deficit Detected",
+          message: `${dep.name} is missing ${deficit} staff for ${entry.weeks} weeks.`,
+          level: level,
+          source: "Department Ops"
+        });
+
+        entry.lastAlertWeek = entry.weeks;
+      }
+    }
+
+    // ========================================================
+    // 😟 MORALE DEGRADATION LOGIC
+    // ========================================================
+
+    // Semana 0–1 → solo alerta
+    // Semana 2+  → empieza a bajar moral
+
+    if (entry.weeks >= 2) {
+
+      // caída suave pero acumulativa
+      const drop = 1 + Math.floor(deficit / 2);   // más déficit = más caída
+
+      dep.morale = Math.max(40, dep.morale - drop);
+
+      console.log(
+        `%c😟 MORALE DOWN — ${dep.name}`,
+        "color:#ff5555;font-weight:600",
+        "Weeks:", entry.weeks,
+        "Deficit:", deficit,
+        "New morale:", dep.morale
+      );
+    }
+
+  });
+
+  ACS_HR_save(HR);
+  ACS_OPS_saveDeficitState(state);
+
+  // refrescar tabla + KPI si existen
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+}
+
+
+/* ============================================================
+   ⏱️ WEEKLY TICK LISTENER — integrado al TIME ENGINE
+   ============================================================ */
+let __OPS_lastWeek = null;
+
+registerTimeListener((time) => {
+
+  const year  = time.getUTCFullYear();
+  const week  = Math.floor((time - new Date(year,0,1)) / (7 * 24 * 3600 * 1000));
+
+  if (__OPS_lastWeek === null) __OPS_lastWeek = week;
+
+  // Ejecutar solo cuando cambia de semana
+  if (week !== __OPS_lastWeek) {
+
+    console.log("%c🧭 OPS WEEK TICK", "color:#00ffcc;font-weight:600", "Week:", week);
+
+    ACS_OPS_checkDepartmentDeficits();
+
+    __OPS_lastWeek = week;
+  }
+
+});
+
+
+/* ============================================================
+   🟦 PHASE B — DELAY ENGINE + OPERATIONAL IMPACT CORE
+   ------------------------------------------------------------
+   • Activa delays si déficit persiste >= 4 semanas
+   • Penaliza eficiencia y revenue (sin accidentes)
+   • Integración pasiva con Observer / SkyTrack
+   ============================================================ */
+
+// Storage de impacto operacional
+function ACS_OPS_loadImpactState() {
+  return JSON.parse(localStorage.getItem("ACS_OPS_IMPACTS") || "{}");
+}
+
+function ACS_OPS_saveImpactState(state) {
+  localStorage.setItem("ACS_OPS_IMPACTS", JSON.stringify(state));
+}
+
+if (!localStorage.getItem("ACS_OPS_IMPACTS")) {
+  ACS_OPS_saveImpactState({});
+}
+
+/* ============================================================
+   ✈️ OPERATIONAL PENALTY CHECK (semanal)
+   ============================================================ */
+function ACS_OPS_applyOperationalImpact() {
+
+  const HR = ACS_HR_load();
+  const deficits = ACS_OPS_loadDeficitState();
+  const impacts  = ACS_OPS_loadImpactState();
+
+  Object.keys(deficits).forEach(depID => {
+
+    const entry = deficits[depID];
+    if (!entry) return;
+
+    const weeks = entry.weeks || 0;
+
+    // Solo activar impacto después de 4 semanas
+    if (weeks < 4) return;
+
+    if (!impacts[depID]) {
+      impacts[depID] = {
+        delayFactor: 0,
+        revenueLoss: 0
+      };
+    }
+
+    const impact = impacts[depID];
+
+    // Escalado progresivo
+    if (weeks >= 4) impact.delayFactor = 0.05;   // 5% delays
+    if (weeks >= 6) impact.delayFactor = 0.10;   // 10%
+    if (weeks >= 8) impact.delayFactor = 0.20;   // 20%
+
+    // Penalización económica
+    impact.revenueLoss = Math.round(impact.delayFactor * 100);
+
+    // 🔔 ALERTA OPERACIONAL
+    if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+      window.ACS_Alerts.push({
+        title: "Operational Performance Degraded",
+        message: `${HR[depID].name} staffing issues causing delays (${Math.round(impact.delayFactor*100)}%).`,
+        level: "danger",
+        source: "Department Ops"
+      });
+    }
+
+    console.log(
+      `%c⏱ OPS IMPACT — ${HR[depID].name}`,
+      "color:#ffaa00;font-weight:600",
+      "Delay factor:", impact.delayFactor,
+      "Revenue loss %:", impact.revenueLoss
+    );
+  });
+
+  ACS_OPS_saveImpactState(impacts);
+}
+
+
+/* ============================================================
+   🟦 PHASE C — BONUS & RECOVERY ENGINE
+   ------------------------------------------------------------
+   • Máx 2 bonus por departamento
+   • Cooldown 2 semanas
+   • Subida proporcional real de moral
+   ============================================================ */
+
+function ACS_OPS_loadBonusState() {
+  return JSON.parse(localStorage.getItem("ACS_OPS_BONUS") || "{}");
+}
+
+function ACS_OPS_saveBonusState(state) {
+  localStorage.setItem("ACS_OPS_BONUS", JSON.stringify(state));
+}
+
+if (!localStorage.getItem("ACS_OPS_BONUS")) {
+  ACS_OPS_saveBonusState({});
+}
+
+/* ============================================================
+   🎁 APPLY BONUS (API PUBLICA PARA HR MODAL)
+   ============================================================ */
+function ACS_OPS_applyDepartmentBonus(depID, percent) {
+
+  const HR = ACS_HR_load();
+  const bonusState = ACS_OPS_loadBonusState();
+
+  if (!HR[depID]) return false;
+
+  if (!bonusState[depID]) {
+    bonusState[depID] = {
+      used: 0,
+      lastWeek: -999
+    };
+  }
+
+  const entry = bonusState[depID];
+
+  // Máximo 2 bonus
+  if (entry.used >= 2) {
+    alert("⚠️ Bonus limit reached for this department.");
+    return false;
+  }
+
+  // Cooldown 2 semanas
+  const currentWeek = Math.floor(Date.now() / (7 * 24 * 3600 * 1000));
+  if (currentWeek - entry.lastWeek < 2) {
+    alert("⏳ Bonus cooldown active. Wait 2 weeks.");
+    return false;
+  }
+
+  const dep = HR[depID];
+
+  // Cálculo subida moral realista
+  const gain = Math.min(15, Math.round(percent / 2));
+  dep.morale = Math.min(100, dep.morale + gain);
+
+  // Coste económico real
+  const cost = Math.round(dep.staff * dep.salary * (percent / 100));
+
+  ACS_addExpense("bonuses", cost);
+
+  entry.used++;
+  entry.lastWeek = currentWeek;
+
+  ACS_HR_save(HR);
+  ACS_OPS_saveBonusState(bonusState);
+
+  console.log(
+    `%c🎁 BONUS APPLIED — ${dep.name}`,
+    "color:#00ff88;font-weight:600",
+    "Percent:", percent,
+    "Morale gain:", gain,
+    "New morale:", dep.morale,
+    "Cost:", cost
+  );
+
+  return true;
+}
+
+
+/* ============================================================
+   ⏱️ WEEKLY OPS MASTER TICK (PHASE A+B+C)
+   ============================================================ */
+let __OPS_masterWeek = null;
+
+registerTimeListener((time) => {
+
+  const year  = time.getUTCFullYear();
+  const week  = Math.floor((time - new Date(year,0,1)) / (7 * 24 * 3600 * 1000));
+
+  if (__OPS_masterWeek === null) __OPS_masterWeek = week;
+
+  if (week !== __OPS_masterWeek) {
+
+    console.log("%c🧭 OPS MASTER WEEK TICK", "color:#00ffcc;font-weight:600", "Week:", week);
+
+    // Phase A
+    ACS_OPS_checkDepartmentDeficits();
+
+    // Phase B
+    ACS_OPS_applyOperationalImpact();
+
+    __OPS_masterWeek = week;
+  }
+
+});
+
