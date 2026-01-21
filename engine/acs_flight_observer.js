@@ -390,7 +390,29 @@ function ACS_processDeferredRevenueQueue() {
         "Loss:", payload.flight.opsLossPercent, "%"
       );
     }
+     
+// ========================================================
+// 🧠 REGISTRAR ESTADO OPERACIONAL POR AVIÓN (CANÓNICO)
+// ========================================================
 
+if (payload.flight && payload.flight.aircraftId) {
+
+  window.ACS_OPS_FLIGHT_STATUS[payload.flight.aircraftId] = {
+    opsStatus: payload.flight.opsStatus,
+    delayed: payload.flight.delayed,
+    delayMinutes: payload.flight.delayMinutes,
+    lossPercent: payload.flight.opsLossPercent,
+    updatedAt: Date.now()
+  };
+
+  console.log(
+    "%c🧠 OPS STATUS REGISTERED",
+    "color:#ffaa00;font-weight:700",
+    "Aircraft:", payload.flight.aircraftId,
+    window.ACS_OPS_FLIGHT_STATUS[payload.flight.aircraftId]
+  );
+}
+     
     // 🔑 FINANCE CONSUMER (INTOCABLE)
     if (typeof ACS_applyFlightRevenue === "function") {
       ACS_applyFlightRevenue(payload);
