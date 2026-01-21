@@ -332,37 +332,53 @@ function ACS_updateAircraftHoursAndCycles(flight, blockTimeH) {
 
 window.ACS_DeferredRevenueQueue = window.ACS_DeferredRevenueQueue || [];
 
-function ACS_processDeferredRevenueQueue() {
+/* ============================================================
+   🟦 B2.1 — OPS DELAY CONSOLIDATION (CANONICAL FORMAT)
+   ------------------------------------------------------------
+   • Propaga flags de delay al vuelo final
+   • No rompe Finance
+   • No toca revenue logic
+   • Base directa para:
+       - SkyTrack visual
+       - KPI OTP
+       - PAX impact
+   ============================================================ */
 
-  if (!window.ACS_World || !window.ACS_World.ready) return;
-  if (!window.ACS_DeferredRevenueQueue.length) return;
+// 🟦 OPS IMPACT HOOK (NO ROMPE NADA)
+if (payload && payload.flight && typeof payload.revenue === "number") {
+
+  const opsResult = ACS_OPS_applyImpactToFlight(payload.flight, payload.revenue);
+
+  // 🔒 Propagar vuelo y revenue (como antes)
+  payload.flight  = opsResult.flight;
+  payload.revenue = opsResult.revenue;
+
+  // ========================================================
+  // ⏱️ CONSOLIDACIÓN CANÓNICA DE DELAY EN EL VUELO
+  // ========================================================
+
+  // Flag principal
+  payload.flight.delayed = !!opsResult.delayed;
+
+  // Minutos reales de delay (por este leg)
+  payload.flight.delayMinutes = Number(opsResult.delayMinutes || 0);
+
+  // Penalización económica aplicada (info útil para KPI / histórico)
+  payload.flight.opsLossPercent = Number(opsResult.lossPercent || 0);
+
+  // Estado operacional final
+  if (payload.flight.delayed) {
+    payload.flight.opsStatus = "DELAYED";
+  } else {
+    payload.flight.opsStatus = "ON_TIME";
+  }
 
   console.log(
-    "💰 Processing deferred revenue queue:",
-    window.ACS_DeferredRevenueQueue.length,
-    "items"
+    "%c⏱ OBSERVER FINAL STATUS",
+    "color:#00ffcc;font-weight:700",
+    "Route:", payload.flight.origin, "→", payload.flight.destination,
+    "Status:", payload.flight.opsStatus,
+    "Delay:", payload.flight.delayMinutes, "min",
+    "Loss:", payload.flight.opsLossPercent, "%"
   );
-
-  while (window.ACS_DeferredRevenueQueue.length) {
-    const payload = window.ACS_DeferredRevenueQueue.shift();
-
-    // 🟦 OPS IMPACT HOOK (NO ROMPE NADA)
-    if (payload && payload.flight && typeof payload.revenue === "number") {
-
-      const opsResult = ACS_OPS_applyImpactToFlight(payload.flight, payload.revenue);
-
-      payload.flight  = opsResult.flight;
-      payload.revenue = opsResult.revenue;
-    }
-
-    if (typeof ACS_applyFlightRevenue === "function") {
-      ACS_applyFlightRevenue(payload);
-    }
-  }
-}
-
-if (typeof registerTimeListener === "function") {
-  registerTimeListener(() => {
-    ACS_processDeferredRevenueQueue();
-  });
 }
