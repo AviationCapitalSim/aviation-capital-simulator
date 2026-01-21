@@ -960,34 +960,69 @@ function loadDepartments() {
 
     const dep = HR_prepareTableData(d);
 
-    const staff = dep.staff || 0;
+    const staff = Number(dep.staff || 0);
 
-    // 🔧 Required absoluto real:
-    // prioridad: d.required → d.min → 0
+    // 🔧 Required absoluto real desde HR Engine
     const requiredAbsolute =
-      (typeof d.required === "number" ? d.required : null) ??
-      (typeof d.min === "number" ? d.min : null) ??
-      0;
+      (typeof d.required === "number") ? d.required : staff;
 
-    // 🧮 Missing only (nunca mostramos exceso aquí)
-    const missing = Math.max(0, requiredAbsolute - staff);
+    // ============================================================
+    // 🧮 DELTA CANÓNICO ACS
+    //   •  0  → verde (balance perfecto)
+    //   • -X  → rojo (falta personal) + ALERT
+    //   • +X  → amarillo (sobra personal)
+    //   • Estado base: required == staff → siempre 0 verde
+    // ============================================================
+
+    let delta = 0;
+
+    // Solo calcular delta si HR ya fijó requirements reales
+    if (requiredAbsolute !== staff) {
+      delta = staff - requiredAbsolute;
+    }
 
     let requiredClass = "required-ok";
     let requiredText  = "0";
 
-    if (missing > 0) {
-      requiredClass = "required-missing";
-      requiredText  = `${missing}`;
+    // 🔴 FALTA PERSONAL (CRÍTICO)
+    if (delta < 0) {
 
-      // 🔔 ALERTA SOLO SI FALTA PERSONAL
+      requiredClass = "required-missing";
+      requiredText  = `${delta}`;   // ej: -10
+
+      // 🔔 ALERTA SOLO SI FALTA PERSONAL (sin spam)
       if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
-        window.ACS_Alerts.push({
-          title: "Department Understaffed",
-          message: `${dep.name} is missing ${missing} staff.`,
-          level: "warning",
-          source: "Department Control"
-        });
+
+        const alertKey = `HR_MISSING_${dep.id}`;
+
+        if (!window.__ACS_HR_ALERTS) window.__ACS_HR_ALERTS = {};
+
+        if (!window.__ACS_HR_ALERTS[alertKey]) {
+
+          window.__ACS_HR_ALERTS[alertKey] = true;
+
+          window.ACS_Alerts.push({
+            title: "Department Understaffed",
+            message: `${dep.name} is missing ${Math.abs(delta)} staff.`,
+            level: "warning",
+            source: "Department Control"
+          });
+        }
       }
+    }
+
+    // 🟡 SOBRA PERSONAL
+    else if (delta > 0) {
+
+      requiredClass = "required-excess";
+      requiredText  = `+${delta}`;   // ej: +7
+    }
+
+    // 🟢 BALANCE PERFECTO
+    else {
+
+      requiredClass = "required-ok";
+      requiredText  = "0";
     }
 
     rows.innerHTML += `
