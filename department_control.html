@@ -1033,33 +1033,56 @@ function loadDepartments() {
 }
 
 /* ============================================================
-   KPI — Monthly Payroll (Exacto desde HR Engine)
+   === HR KPI UPDATE — SAFE CORE (ANTI-NULL / ANTI-NaN) ========
    ============================================================ */
+
 function HR_updateKPI() {
 
-    const kpiStaff   = document.getElementById("kpiTotalStaff");
-    const kpiPayroll = document.getElementById("kpiTotalPayroll");
-    const kpiMorale  = document.getElementById("kpiAvgMorale");
+  const hr = ACS_HR_load();
+  if (!hr || typeof hr !== "object") return;
 
-    const hr = ACS_HR_load();
-    if (!hr) return;
+  let totalStaff   = 0;
+  let totalPayroll = 0;
+  let moraleSum    = 0;
+  let moraleItems  = 0;
 
-    const values = Object.values(hr);
-    const len = values.length;
+  Object.keys(hr).forEach(id => {
 
-    const totalStaff = values
-        .reduce((sum, d) => sum + (d.staff || 0), 0);
+    const d = hr[id];
 
-    const payroll = ACS_HR_getTotalPayroll();
+    // 🛑 FIX CRÍTICO: ignora cualquier entrada corrupta o meta
+    if (!d || typeof d !== "object") return;
+    if (typeof d.staff !== "number") return;
+    if (typeof d.salary !== "number") return;
+    if (typeof d.morale !== "number") return;
 
-    const totalMorale = values
-        .reduce((sum, d) => sum + (d.morale || 0), 0);
+    totalStaff   += d.staff;
+    totalPayroll += d.staff * d.salary;
 
-    const morale = len > 0 ? Math.round(totalMorale / len) : 0;
+    moraleSum   += d.morale;
+    moraleItems++;
+  });
 
-    kpiStaff.textContent   = totalStaff;
-    kpiPayroll.textContent = "$" + payroll.toLocaleString();
-    kpiMorale.textContent  = morale + "%";
+  const avgMorale = moraleItems > 0
+    ? Math.round(moraleSum / moraleItems)
+    : 100;
+
+  // === UI UPDATE SEGURO ===
+  const staffBox   = document.getElementById("kpiTotalStaff");
+  const payrollBox = document.getElementById("kpiMonthlyPayroll");
+  const moraleBox  = document.getElementById("kpiAverageMorale");
+
+  if (staffBox)   staffBox.textContent   = totalStaff;
+  if (payrollBox) payrollBox.textContent = `$${Math.round(totalPayroll)}`;
+  if (moraleBox)  moraleBox.textContent  = `${avgMorale}%`;
+
+  console.log(
+    "%c📊 HR KPI OK",
+    "color:#00ffcc;font-weight:600",
+    "Staff:", totalStaff,
+    "Payroll:", totalPayroll,
+    "Morale:", avgMorale
+  );
 }
 
 setTimeout(HR_updateKPI, 350);
