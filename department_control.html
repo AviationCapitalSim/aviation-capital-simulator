@@ -1145,7 +1145,18 @@ function handleLogout() {
 
      
 window.addEventListener("DOMContentLoaded", () => {
+
+  // 1️⃣ Cargar tabla + recalcular HR
   loadDepartments();
+
+  // 2️⃣ KPI SIEMPRE DESPUÉS del recalculo real
+  setTimeout(() => {
+    if (typeof HR_updateKPI === "function") {
+      HR_updateKPI();
+    }
+  }, 200);
+
+  // 3️⃣ Clock engine
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
