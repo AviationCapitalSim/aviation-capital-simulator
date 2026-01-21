@@ -951,37 +951,40 @@ function loadDepartments() {
 
     const dep = HR_prepareTableData(d);
 
-    // ============================================================
-// 🧮 REQUIRED = DELTA (Staff - RequiredAbsolute)
-//   •  0  → perfect balance (green)
-//   • -X  → missing staff (red pulse) + ALERT
-//   • +X  → excess staff (amber) no alert
+// ============================================================
+// 🧮 REQUIRED = MISSING ONLY (Recommended ACS Logic)
+//   • 0  → OK (green)  → no falta personal
+//   • X  → MISSING (red pulse) + ALERT
 // ============================================================
 
 const staff = dep.staff || 0;
 
-// ⚠️ Nota: en tu HR_prepareTableData hoy required=hr.required (absoluto).
-// Aquí lo tratamos como "requiredAbsolute" (lo que debería haber).
-const requiredAbsolute = (typeof dep.required === "number") ? dep.required : staff;
+// Required absoluto real (lo que debería haber)
+// ✅ Usamos "d" (objeto original) para poder leer d.min si existe
+const reqAbs =
+  (typeof d.required === "number" ? d.required : 0) ||
+  (typeof d.min === "number" ? d.min : 0) ||
+  0;
 
-const delta = staff - requiredAbsolute;  // + = sobra, - = falta
+const missing = Math.max(0, reqAbs - staff);
 
 let requiredClass = "required-ok";
 let requiredText  = "0";
 
-if (delta < 0) {
+if (missing > 0) {
   requiredClass = "required-missing";
-  requiredText  = `${delta}`; // e.g. -2
+  requiredText  = `${missing}`;
 
   // 🔔 ALERTA SOLO SI FALTA PERSONAL
   if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
     window.ACS_Alerts.push({
       title: "Department Understaffed",
-      message: `${dep.name} is missing ${Math.abs(delta)} staff.`,
+      message: `${dep.name} is missing ${missing} staff.`,
       level: "warning",
       source: "Department Control"
     });
   }
+}
 
 } else if (delta > 0) {
   requiredClass = "required-excess";
