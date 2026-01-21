@@ -7,6 +7,96 @@
    ✔ Schedule Table is source of truth
    ============================================================ */
 
+
+/* ============================================================
+   🟦 OPS IMPACT INJECTOR (OBSERVER HOOK)
+   ------------------------------------------------------------
+   • Lee impactos activos de Department Ops
+   • Decide delays reales
+   • Penaliza revenue si aplica
+   • Emite alertas operacionales
+   • Devuelve flight + revenue modificados
+   ============================================================ */
+
+function ACS_OPS_applyImpactToFlight(flight, revenue) {
+
+  try {
+
+    const impacts = JSON.parse(localStorage.getItem("ACS_OPS_IMPACTS") || "{}");
+    if (!impacts || typeof impacts !== "object") {
+      return { flight, revenue, delayed:false };
+    }
+
+    let delayFactor = 0;
+    let worstDept = null;
+
+    Object.keys(impacts).forEach(depID => {
+      const imp = impacts[depID];
+      if (!imp || typeof imp.delayFactor !== "number") return;
+
+      if (imp.delayFactor > delayFactor) {
+        delayFactor = imp.delayFactor;
+        worstDept = depID;
+      }
+    });
+
+    // 🟢 Sin impacto → vuelo normal
+    if (delayFactor === 0) {
+      return { flight, revenue, delayed:false };
+    }
+
+    // 🎯 Probabilidad real de delay
+    const chance = Math.random();
+
+    if (chance > delayFactor) {
+      // No ocurrió delay esta vez
+      return { flight, revenue, delayed:false };
+    }
+
+    // ⏱️ APLICAR DELAY REAL
+    const delayMinutes = Math.round(15 + (delayFactor * 120));   // 15–150 min
+
+    if (!flight.delay) flight.delay = 0;
+    flight.delay += delayMinutes;
+
+    // 💰 Penalización revenue
+    const lossPercent = Math.min(30, Math.round(delayFactor * 100));
+    const newRevenue = Math.round(revenue * (1 - lossPercent / 100));
+
+    // 🔔 ALERTA OPERACIONAL
+    if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+
+      window.ACS_Alerts.push({
+        title: "Flight Delayed (Operational Issue)",
+        message: `${flight.origin} → ${flight.destination} delayed ${delayMinutes} min due to staffing shortages.`,
+        level: "danger",
+        source: "Department Ops"
+      });
+    }
+
+    console.log(
+      "%c⏱ OPS DELAY APPLIED",
+      "color:#ffaa00;font-weight:700",
+      "Route:", flight.origin, "→", flight.destination,
+      "Delay:", delayMinutes, "min",
+      "Revenue loss:", lossPercent, "%"
+    );
+
+    return {
+      flight,
+      revenue: newRevenue,
+      delayed: true,
+      delayMinutes,
+      lossPercent
+    };
+
+  } catch (err) {
+    console.warn("OPS IMPACT ENGINE FAILED", err);
+    return { flight, revenue, delayed:false };
+  }
+}
+
+
 (function () {
 
   const LEDGER_KEY = "ACS_FLIGHT_LEDGER_V1";
@@ -255,6 +345,16 @@ function ACS_processDeferredRevenueQueue() {
 
   while (window.ACS_DeferredRevenueQueue.length) {
     const payload = window.ACS_DeferredRevenueQueue.shift();
+
+    // 🟦 OPS IMPACT HOOK (NO ROMPE NADA)
+    if (payload && payload.flight && typeof payload.revenue === "number") {
+
+      const opsResult = ACS_OPS_applyImpactToFlight(payload.flight, payload.revenue);
+
+      payload.flight  = opsResult.flight;
+      payload.revenue = opsResult.revenue;
+    }
+
     if (typeof ACS_applyFlightRevenue === "function") {
       ACS_applyFlightRevenue(payload);
     }
