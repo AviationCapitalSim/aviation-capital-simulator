@@ -941,62 +941,63 @@ function HR_prepareTableData(d) {
    === LOAD DEPARTMENTS — FIXED + CLEAN PREMIUM VERSION ========
    ============================================================ */
      
+/* ============================================================
+   === LOAD DEPARTMENTS — FINAL OPERATIONAL CORE (ACS) =========
+   ============================================================ */
+
 function loadDepartments() {
   const rows = document.getElementById("departmentRows");
+  if (!rows) return;
+
   rows.innerHTML = "";
 
   const depts = ACS_HR_getDepartmentsView();
+  if (!depts || !Array.isArray(depts)) {
+    console.warn("⚠️ HR view vacío o inválido");
+    return;
+  }
 
   depts.forEach(d => {
 
+    // 🛑 Protección total
+    if (!d || typeof d !== "object") return;
+
     const dep = HR_prepareTableData(d);
 
-// ============================================================
-// 🧮 REQUIRED = MISSING ONLY (Recommended ACS Logic)
-//   • 0  → OK (green)  → no falta personal
-//   • X  → MISSING (red pulse) + ALERT
-// ============================================================
+    const staff = dep.staff || 0;
 
-const staff = dep.staff || 0;
+    // 🔧 Required absoluto real:
+    // prioridad: d.required → d.min → 0
+    const requiredAbsolute =
+      (typeof d.required === "number" ? d.required : null) ??
+      (typeof d.min === "number" ? d.min : null) ??
+      0;
 
-// Required absoluto real (lo que debería haber)
-// ✅ Usamos "d" (objeto original) para poder leer d.min si existe
-const reqAbs =
-  (typeof d.required === "number" ? d.required : 0) ||
-  (typeof d.min === "number" ? d.min : 0) ||
-  0;
+    // 🧮 Missing only (nunca mostramos exceso aquí)
+    const missing = Math.max(0, requiredAbsolute - staff);
 
-const missing = Math.max(0, reqAbs - staff);
+    let requiredClass = "required-ok";
+    let requiredText  = "0";
 
-let requiredClass = "required-ok";
-let requiredText  = "0";
+    if (missing > 0) {
+      requiredClass = "required-missing";
+      requiredText  = `${missing}`;
 
-if (missing > 0) {
-  requiredClass = "required-missing";
-  requiredText  = `${missing}`;
-
-  // 🔔 ALERTA SOLO SI FALTA PERSONAL
-  if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
-    window.ACS_Alerts.push({
-      title: "Department Understaffed",
-      message: `${dep.name} is missing ${missing} staff.`,
-      level: "warning",
-      source: "Department Control"
-    });
-  }
-
-} else if (delta > 0) {
-  requiredClass = "required-excess";
-  requiredText  = `+${delta}`; // e.g. +2
-} else {
-  requiredClass = "required-ok";
-  requiredText  = "0";
-}
+      // 🔔 ALERTA SOLO SI FALTA PERSONAL
+      if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+        window.ACS_Alerts.push({
+          title: "Department Understaffed",
+          message: `${dep.name} is missing ${missing} staff.`,
+          level: "warning",
+          source: "Department Control"
+        });
+      }
+    }
 
     rows.innerHTML += `
       <tr>
         <td>${dep.name}</td>
-        <td class="staff">${dep.staff}</td>
+        <td class="staff">${staff}</td>
         <td class="${requiredClass}">${requiredText}</td>
         <td class="salary">$${dep.salary}</td>
         <td class="morale">${dep.morale}%</td>
@@ -1009,15 +1010,15 @@ if (missing > 0) {
     `;
   });
 
-  // === SYNC LOCAL STORAGE ===
+  // === SYNC HR CORE ===
   try {
     const payroll = ACS_HR_recalculateAll();
     console.log("💾 HR recalculado. Payroll mensual:", payroll);
   } catch (e) {
-    console.warn("⚠️ No se pudo actualizar HR:", e);
+    console.warn("⚠️ No se pudo recalcular HR:", e);
   }
 
-  // 🔄 KPI refresh
+  // 🔄 KPI refresh seguro
   if (typeof HR_updateKPI === "function") {
     HR_updateKPI();
   }
