@@ -729,167 +729,65 @@ tr:nth-child(even) {
 </table>
 
 
-<!-- ============================================================== -->
-<!-- 🔶 HR FULL CONTROL MODAL — Qatar Luxury Edition — BUY NEW Style -->
-<!-- ============================================================== -->
-       
-<div class="acs-modal" id="hrFullModal">
-  <div class="acs-modal-content hr-full-modal">
+<!-- ============================================================
+     🟥 HR FIRE MINI MODAL — Qatar Luxury Edition (FINAL)
+     Purpose:
+     - Confirmar despido múltiple
+     - Un solo warning
+     - UX limpia (mobile / tablet / desktop)
+     ============================================================ -->
 
-    <!-- Close -->
-    <button class="close-modal" onclick="closeHRFullModal()">✖</button>
+<div class="acs-modal" id="hrFireMiniModal">
+  <div class="acs-modal-content" style="width:380px; text-align:center;">
 
     <!-- HEADER -->
-    <h2 class="hr-modal-title">
-      <span id="hrModalDeptName">Department</span>
-    </h2>
-    <p class="hr-modal-sub">Department Control Panel</p>
+    <h3 style="color:#ffb300; margin-top:0;">
+      ⚠️ Staff Dismissal Confirmation
+    </h3>
 
-    <!-- ============================
-     HR DEPARTMENT SELECTOR
-     (Qatar Luxury)
-     ============================ -->
-       
-     <div class="hr-box">
-     <label class="hr-label">Department</label>
+    <p style="color:#cbd6ff; margin-bottom:14px;">
+      You are about to dismiss
+    </p>
 
-     <select id="hrDeptSelector" class="hr-select">
-      
-          <!-- JS insertará las opciones -->
+    <!-- QUANTITY SELECT -->
+    <select id="fireMiniQty" class="hr-select" style="margin-bottom:14px;">
+      <!-- JS insertará opciones -->
     </select>
-  </div>
 
-<!-- =============================================== -->
-<!-- HR SUMMARY BLOCK (NECESARIO PARA F RELOAD)       -->
-<!-- =============================================== -->
-       
-<div class="hr-block">
-  <h3 class="hr-block-title">Summary</h3>
+    <p style="color:#cbd6ff; margin-bottom:6px;">
+      employees from:
+    </p>
 
-  <p class="hr-label">Current Staff</p>
-  <p id="hrCurrentStaff" class="hr-cost">0</p>
+    <!-- DEPARTMENT NAME -->
+    <p style="font-size:1.05rem; font-weight:700; color:#ffca3a;" id="fireMiniDeptName">
+      Department
+    </p>
 
-  <p class="hr-label">Required Staff</p>
-  <p id="hrRequiredStaff" class="hr-cost">0</p>
+    <p style="color:#ff6b6b; margin-top:14px; font-weight:600;">
+      This action cannot be undone.
+    </p>
 
-  <p class="hr-label">Difference</p>
-  <p id="hrDifference" class="hr-cost">0</p>
+    <!-- BUTTONS -->
+    <div style="display:flex; justify-content:space-between; margin-top:22px; gap:12px;">
 
-  <p class="hr-label">Salary (per employee)</p>
-  <p id="hrSalary" class="hr-cost">$0</p>
-
-  <p class="hr-label">Morale</p>
-  <p id="hrMorale" class="hr-cost">0%</p>
-</div>
-
-    <!-- ========================================================= -->
-    <!-- HIRE STAFF BLOCK -->
-    <!-- ========================================================= -->
-       
-    <div class="hr-block">
-      <h3 class="hr-block-title">Hire Staff</h3>
-
-      <label class="hr-label">Select Quantity</label>
-      <select id="hireQty" class="hr-select"></select>
-
-      <p class="hr-cost">Cost: <strong id="hireCost">$0</strong></p>
-
-      <button class="hr-btn-confirm" onclick="HR_confirmHireFull()">
-        Confirm Hire
+      <button class="hr-btn-close" style="flex:1;"
+        onclick="closeFireMiniModal()">
+        Cancel
       </button>
-    </div>
 
-    <!-- ========================================================= -->
-    <!-- FIRE STAFF BLOCK -->
-    <!-- ========================================================= -->
-    <div class="hr-block">
-      <h3 class="hr-block-title">Fire Staff</h3>
-
-      <label class="hr-label">Select Quantity</label>
-      <select id="fireQty" class="hr-select"></select>
-
-      <p id="fireWarning" class="hr-warning">—</p>
-
-      <button class="hr-btn-danger" onclick="HR_confirmFireFull()">
+      <button class="hr-btn-danger" style="flex:1;"
+        onclick="HR_confirmFireMini()">
         Confirm Dismissal
       </button>
+
     </div>
-
-    <!-- ========================================================= -->
-    <!-- SALARY ADJUST BLOCK -->
-    <!-- ========================================================= -->
-    <div class="hr-block">
-      <h3 class="hr-block-title">Adjust Salary</h3>
-
-      <input type="range" min="50" max="150" value="100" step="5" id="salaryRangeFull">
-
-      <p>Adjustment: <strong id="salaryValFull">100%</strong></p>
-      <p>New Salary: <strong id="salaryNewFull">$0</strong></p>
-      <p>Monthly Payroll After Change: <strong id="salaryAfterFull">$0</strong></p>
-
-      <button class="hr-btn-gold" onclick="HR_confirmSalaryFull()">
-        Apply Adjustment
-      </button>
-    </div>
-
-    <!-- ========================================================= -->
-<!-- BONUS SYSTEM (MANUAL · LIMITED) -->
-<!-- ========================================================= -->
-<div class="hr-block" id="hrBonusBlock">
-
-  <h3 class="hr-block-title">Give Bonus</h3>
-
-  <label class="hr-label">Bonus Percentage</label>
-
-  <!-- 10% → 200% -->
-  <input type="range" 
-         min="10" 
-         max="200" 
-         value="50" 
-         step="10" 
-         id="bonusRangeFull">
-
-  <p>Selected Bonus: <strong id="bonusValFull">50%</strong></p>
-
-  <p>Department Payroll: <strong id="bonusPayroll">$0</strong></p>
-  <p>Bonus Cost: <strong id="bonusCost">$0</strong></p>
-  <p>Morale Increase: <strong id="bonusEffect">+0%</strong></p>
-
-  <p id="bonusUsesInfo" class="hr-cost">
-    Remaining Uses This Week: <strong>2 / 2</strong>
-  </p>
-
-  <button class="hr-btn-confirm" onclick="HR_confirmBonusFull()">
-    Apply Bonus
-  </button>
-
-</div>
-       
-    <!-- ========================================================= -->
-<!-- 🔄 AUTO-ADJUST SALARY (REPLACES AUTO-BALANCE STAFF)       -->
-<!-- ========================================================= -->
-<div class="hr-block">
-  <h3 class="hr-block-title">Auto-Adjust Salary</h3>
-
-  <button class="hr-btn-gold" onclick="HR_applyAutoAdjust()">
-    Auto-Adjust Salary
-  </button>
-</div>
-
-
-    <!-- ========================================================= -->
-    <!-- CLOSE BUTTON -->
-    <!-- ========================================================= -->
-    <button class="hr-btn-close" onclick="closeHRFullModal()">
-      Close
-    </button>
 
   </div>
 </div>
 
 
 <footer class="acs-footer">
-  © 2025 Aviation Capital Simulator. All rights reserved.
+  © 2026 Aviation Capital Simulator. All rights reserved.
 </footer>
 
 <!-- ============================================================
