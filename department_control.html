@@ -19,9 +19,9 @@
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
-<style>
+  <style>
 /* ============================================================
-     === GLOBAL VISUALS — Qatar Luxury ===========================
+   ✅ CORE DASHBOARD LAYOUT (COPIA REAL)
    ============================================================ */
 
 body {
@@ -31,10 +31,7 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
-/* ============================================================
-     === HEADER (Exact Copy from Dashboard) =====================
-   ============================================================ */
-
+/* ===== HEADER (Dashboard exact behaviour) ===== */
 .acs-header {
   position: fixed;
   top: 0;
@@ -54,11 +51,7 @@ body {
   align-items: center;
   gap: 1rem;
 }
-
-.acs-left img {
-  height: 46px;
-}
-
+.acs-left img { height: 46px; }
 .acs-left h1 {
   font-size: 1.15rem;
   margin: 0;
@@ -77,7 +70,7 @@ body {
   position: relative;
   font-size: 1rem;
   letter-spacing: 0.4px;
-  color: #dbe4ff; 
+  color: #dbe4ff;
   text-decoration: none;
   transition: 0.25s ease;
   padding-bottom: 6px;
@@ -85,8 +78,8 @@ body {
 
 .acs-nav a:hover,
 .acs-nav a.active {
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.6);
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
 }
 
 .acs-nav a.active::after,
@@ -99,6 +92,7 @@ body {
   height: 2px;
   background: linear-gradient(to right, #ffb300, #ffe7a0);
   border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
 }
 
 .acs-right {
@@ -142,55 +136,51 @@ body {
       color: #0c1f3c;
     }
      
-
 .acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
+  font-family: "Orbitron", sans-serif;
+  color: #7CFFB2;
+  text-shadow: 0 0 8px rgba(0,255,160,0.35);
   font-size: 0.95rem;
-  color: #00ff80;
 }
 
-/* ============================================================
-     === MAIN LAYOUT ===========================================
-   ============================================================ */
-
+/* ===== MAIN (Fix “descudrado”) ===== */
 .acs-main {
-  padding: 110px 2rem 70px;
-  text-align: center;
+  padding-top: 110px; /* CRÍTICO: separa header fijo */
+  width: min(1200px, 92%);
+  margin: 0 auto;
 }
 
-/* Título estilo Dashboard */
-.acs-title {
-  font-size: 1.9rem;
-  font-weight: 600;
-  color: #ffca3a;
-  text-shadow: 0 0 12px rgba(255,190,60,0.55);
-  letter-spacing: 0.6px;
-  margin-bottom: 0.2rem;
-}
-
-.acs-sub {
-  margin-top: -0.2rem;
-  color: #cbd6ff;
-  font-size: 1rem;
-}
-
-/* ============================================================
-     === PREMIUM PANEL (80% width) =============================
-   ============================================================ */
-
-.control-panel {
-  width: 80%;
-  margin: 2rem auto;
+/* ===== Panels (Dashboard feel) ===== */
+.panel {
   background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  padding: 2rem;
-  border-radius: 22px;
-  border: 1px solid rgba(255,179,0,0.15);
-  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,179,0,0.22);
+  border-radius: 18px;
+  padding: 1.25rem;
+  box-shadow: 0 0 22px rgba(0,0,0,0.35);
+  margin-bottom: 1.4rem;
 }
 
+.panel h3 {
+  margin-top: 0;
+  color: #ffca3a;
+  text-shadow: 0 0 10px rgba(255,200,60,0.35);
+  letter-spacing: 0.4px;
+}
+
+.sub {
+  color: #cbd6ff;
+  text-align: center;
+  margin-top: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+
+/* ===== Footer ===== */
+.acs-footer {
+  text-align: center;
+  padding: 16px 0;
+  color: rgba(255,255,255,0.65);
+}
+       
 /* ============================================================
      === TABLE — Qatar Luxury Dark Premium =====================
    ============================================================ */
