@@ -1022,11 +1022,51 @@ function loadDepartments() {
         <td>${dep.name}</td>
         <td class="staff">${staff}</td>
         <td class="${requiredClass}">${requiredText}</td>
-        <td class="salary">$${dep.salary}</td>
-        <td class="morale">${dep.morale}%</td>
-       <td>
+        <td class="salary">
 
-  <td>
+  <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+
+    <!-- Current salary -->
+    <div>$${dep.salary}</div>
+
+    <!-- Inline slider -->
+    <div style="display:flex; align-items:center; gap:6px; width:100%; justify-content:center;">
+
+      <input type="range"
+             min="50"
+             max="200"
+             step="5"
+             value="100"
+             title="Adjust Salary (%)"
+             style="width:90px;"
+             oninput="HR_previewSalary('${dep.id}', this.value)">
+
+      <span id="salaryPreview_${dep.id}" style="
+            min-width:44px;
+            font-weight:700;
+            color:#ffca3a;
+            font-size:0.8rem;">
+        100%
+      </span>
+
+      <button class="btn btn-adjust"
+              title="Apply Salary"
+              onclick="HR_applySalary('${dep.id}')"
+              style="padding:4px 8px;">
+        ✔
+      </button>
+
+    </div>
+
+  </div>
+
+</td>
+
+<td class="morale">${dep.morale}%</td>
+
+<td style="white-space:nowrap; text-align:center;">
+
+<td>
 
   <!-- Hire -->
   <button class="btn btn-hire" title="Hire Staff (+1)" onclick="HR_hireOne('${dep.id}')">
