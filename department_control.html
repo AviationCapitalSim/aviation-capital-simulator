@@ -266,21 +266,67 @@ tr:nth-child(even) {
   100% { opacity: 1;   }
 }
 
-/* Action buttons */
+/* ============================================================
+   🟦 HR ACTION BUTTON SYSTEM — QATAR LUXURY
+   ============================================================ */
+
 .btn {
   border: none;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-weight: 600;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-weight: 700;
   cursor: pointer;
-  margin-right: 4px;
-  transition: 0.2s;
+  transition: 0.25s ease;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
 }
 
-.btn-bonus { background:#00a86b; color:white; opacity:0.45; cursor:not-allowed; }
-.btn-hire { background:#007bff; color:white; }
-.btn-adjust { background:#ffb300; color:black; }
-.btn-dismiss { background:#000; color:white; }
+/* 🟢 HIRE — STAFF IN */
+.btn-hire {
+  background: linear-gradient(180deg,#00d27a,#00a86b);
+  color: white;
+  box-shadow: 0 0 8px rgba(0,210,120,0.45);
+}
+.btn-hire:hover {
+  background: linear-gradient(180deg,#00e88a,#00c97a);
+  box-shadow: 0 0 14px rgba(0,230,140,0.65);
+}
+
+/* 🔴 FIRE — STAFF OUT */
+.btn-dismiss {
+  background: linear-gradient(180deg,#ff4d4d,#c83232);
+  color: white;
+  box-shadow: 0 0 8px rgba(255,80,80,0.45);
+}
+.btn-dismiss:hover {
+  background: linear-gradient(180deg,#ff6b6b,#e04444);
+  box-shadow: 0 0 14px rgba(255,100,100,0.65);
+}
+
+/* 🟦 SALARY — TECH CONTROL */
+.btn-adjust {
+  background: linear-gradient(180deg,#4da6ff,#1f6fd6);
+  color: white;
+  box-shadow: 0 0 8px rgba(80,160,255,0.45);
+}
+.btn-adjust:hover {
+  background: linear-gradient(180deg,#6bb8ff,#3a8cff);
+  box-shadow: 0 0 14px rgba(120,190,255,0.65);
+}
+
+/* 🟡 BONUS — PREMIUM GOLD */
+.btn-bonus {
+  background: linear-gradient(180deg,#ffcf4a,#ffb300);
+  color: #0c1f3c;
+  box-shadow: 0 0 10px rgba(255,200,60,0.55);
+}
+.btn-bonus:hover {
+  background: linear-gradient(180deg,#ffe27a,#ffd35c);
+  box-shadow: 0 0 16px rgba(255,220,120,0.75);
+}
 
 /* Total Payroll */
 #totalPayroll {
@@ -1036,28 +1082,41 @@ function loadDepartments() {
 
     <td>
 
-      <!-- Hire +1 -->
-      <button class="btn btn-hire" title="Hire Staff" onclick="HR_hireOne('${dep.id}')">
-        👤➕
-      </button>
+  <div style="
+    display:flex;
+    justify-content:center;
+    gap:10px;
+  ">
 
-      <!-- Fire (mini modal) -->
-      <button class="btn btn-dismiss" title="Fire Staff" onclick="openFireMiniModal('${dep.id}')">
-        👤➖
-      </button>
+    <!-- Hire +1 -->
+    <button class="btn btn-hire" title="Hire Staff"
+      onclick="HR_hireOne('${dep.id}')">
+      👤➕
+    </button>
 
-      <!-- Salary (inline próximamente) -->
-      <button class="btn btn-adjust" title="Adjust Salary" onclick="openSalaryInline('${dep.id}')">
-        💰
-      </button>
+    <!-- Fire -->
+    <button class="btn btn-dismiss" title="Fire Staff"
+      onclick="openFireMiniModal('${dep.id}')">
+      👤➖
+    </button>
 
-      <!-- Bonus (limitado semanal) -->
-      <button class="btn btn-bonus" title="Give Bonus" onclick="openBonusModal('${dep.id}')">
-        🎁
-      </button>
+    <!-- Salary -->
+    <button class="btn btn-adjust" title="Adjust Salary"
+      onclick="openSalaryInline('${dep.id}')">
+      💰
+    </button>
 
-    </td>
-  </tr>
+    <!-- Bonus -->
+    <button class="btn btn-bonus" title="Give Bonus"
+      onclick="openBonusModal('${dep.id}')">
+      🎁
+    </button>
+
+  </div>
+
+</td>
+
+</tr>
 `;
 
   });
