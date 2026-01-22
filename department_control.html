@@ -182,30 +182,50 @@ body {
 }
        
 /* ============================================================
-     === TABLE — Qatar Luxury Dark Premium =====================
+   === TABLE — Qatar Luxury Dark Premium (ALIGNED FIX) ========
    ============================================================ */
 
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+  table-layout: fixed;              /* 🔧 columnas estables */
 }
 
 th {
   background: #102040;
   color: #ffb300;
-  padding: 0.9rem;
+  padding: 0.85rem 0.6rem;           /* 🔧 mismo padding que td */
   border-bottom: 2px solid #ffb300;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  text-align: center;               /* 🔧 títulos centrados */
+  vertical-align: middle;
 }
 
 td {
-  padding: 0.8rem;
+  padding: 0.8rem 0.6rem;
   font-size: 0.95rem;
   color: #dbe4ff;
   border-bottom: 1px solid rgba(255,179,0,0.15);
+  text-align: center;               /* 🔧 números alineados */
+  vertical-align: middle;
 }
 
+/* Primera columna (Department) alineada a la izquierda */
+th:first-child,
+td:first-child {
+  text-align: left;
+  padding-left: 1rem;
+}
+
+/* Columna Actions ancho fijo */
+th:last-child,
+td:last-child {
+  width: 180px;                     /* 🔧 fija ancho botones */
+  text-align: center;
+}
+
+/* Zebra suave */
 tr:nth-child(even) {
   background: rgba(255,255,255,0.03);
 }
@@ -1007,40 +1027,39 @@ function loadDepartments() {
     }
 
     rows.innerHTML += `
-      <tr>
-        <td>${dep.name}</td>
-        <td class="staff">${staff}</td>
-        <td class="${requiredClass}">${requiredText}</td>
-        <td class="salary">$${dep.salary}</td>
-        <td class="morale">${dep.morale}%</td>
-       <td>
+  <tr>
+    <td>${dep.name}</td>
+    <td class="staff">${staff}</td>
+    <td class="${requiredClass}">${requiredText}</td>
+    <td class="salary">$${dep.salary}</td>
+    <td class="morale">${dep.morale}%</td>
 
-  <td>
+    <td>
 
-  <!-- Hire +1 -->
-  <button class="btn btn-hire" title="Hire Staff" onclick="HR_hireOne('${dep.id}')">
-    👤➕
-  </button>
+      <!-- Hire +1 -->
+      <button class="btn btn-hire" title="Hire Staff" onclick="HR_hireOne('${dep.id}')">
+        👤➕
+      </button>
 
-  <!-- Fire (mini modal) -->
-  <button class="btn btn-dismiss" title="Fire Staff" onclick="openFireMiniModal('${dep.id}')">
-    👤➖
-  </button>
+      <!-- Fire (mini modal) -->
+      <button class="btn btn-dismiss" title="Fire Staff" onclick="openFireMiniModal('${dep.id}')">
+        👤➖
+      </button>
 
-  <!-- Salary (inline próximamente) -->
-  <button class="btn btn-adjust" title="Adjust Salary" onclick="openSalaryInline('${dep.id}')">
-    💰
-  </button>
+      <!-- Salary (inline próximamente) -->
+      <button class="btn btn-adjust" title="Adjust Salary" onclick="openSalaryInline('${dep.id}')">
+        💰
+      </button>
 
-  <!-- Bonus (limitado semanal) -->
-  <button class="btn btn-bonus" title="Give Bonus" onclick="openBonusModal('${dep.id}')">
-    🎁
-  </button>
+      <!-- Bonus (limitado semanal) -->
+      <button class="btn btn-bonus" title="Give Bonus" onclick="openBonusModal('${dep.id}')">
+        🎁
+      </button>
 
-</td>
+    </td>
+  </tr>
+`;
 
-      </tr>
-    `;
   });
 
   // === SYNC HR CORE ===
