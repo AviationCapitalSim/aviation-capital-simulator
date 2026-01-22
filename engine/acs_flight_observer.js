@@ -358,71 +358,47 @@ function ACS_processDeferredRevenueQueue() {
   while (window.ACS_DeferredRevenueQueue.length) {
     const payload = window.ACS_DeferredRevenueQueue.shift();
 
-   // 🟦 OPS IMPACT HOOK (REAL PAYLOAD FORMAT)
+    // ========================================================
+    // 🟦 OPS IMPACT HOOK (REAL PAYLOAD FORMAT — SAFE FOR FINANCE)
+    // ========================================================
 
-if (payload && payload.aircraftId && typeof payload.revenue === "number") {
+    if (payload && payload.aircraftId && typeof payload.revenue === "number") {
 
-  const fakeFlight = {
-    aircraftId: payload.aircraftId,
-    origin: payload.origin,
-    destination: payload.destination
-  };
+      const fakeFlight = {
+        aircraftId: payload.aircraftId,
+        origin: payload.origin,
+        destination: payload.destination
+      };
 
-  const opsResult = ACS_OPS_applyImpactToFlight(fakeFlight, payload.revenue);
+      const opsResult = ACS_OPS_applyImpactToFlight(fakeFlight, payload.revenue);
 
-  // 🔁 Reinyectar estado al payload
-  payload.opsStatus      = opsResult.flight.opsStatus;
-  payload.delayed        = opsResult.flight.delayed;
-  payload.delayMinutes  = opsResult.flight.delayMinutes;
-  payload.opsLossPercent= opsResult.flight.opsLossPercent;
+      // 🔁 Reinyectar estado OPS al payload (Finance SAFE)
+      payload.opsStatus       = opsResult.flight.opsStatus;
+      payload.delayed         = opsResult.flight.delayed;
+      payload.delayMinutes   = opsResult.flight.delayMinutes;
+      payload.opsLossPercent = opsResult.flight.opsLossPercent;
 
-  // ========================================================
-  // 🧠 REGISTRAR ESTADO OPERACIONAL POR AVIÓN (CANÓNICO)
-  // ========================================================
+      // ========================================================
+      // 🧠 REGISTRAR ESTADO OPERACIONAL POR AVIÓN (CANÓNICO)
+      // ========================================================
 
-  if (payload.aircraftId) {
+      window.ACS_OPS_FLIGHT_STATUS[payload.aircraftId] = {
+        opsStatus: opsResult.flight.opsStatus,
+        delayed: opsResult.flight.delayed,
+        delayMinutes: opsResult.flight.delayMinutes,
+        lossPercent: opsResult.flight.opsLossPercent,
+        updatedAt: Date.now()
+      };
 
-    window.ACS_OPS_FLIGHT_STATUS[payload.aircraftId] = {
-      opsStatus: opsResult.flight.opsStatus,
-      delayed: opsResult.flight.delayed,
-      delayMinutes: opsResult.flight.delayMinutes,
-      lossPercent: opsResult.flight.opsLossPercent,
-      updatedAt: Date.now()
-    };
+      console.log(
+        "%c🧠 OPS STATUS REGISTERED (DEFERRED QUEUE)",
+        "color:#ffaa00;font-weight:700",
+        "Aircraft:", payload.aircraftId,
+        window.ACS_OPS_FLIGHT_STATUS[payload.aircraftId]
+      );
+    }
 
-    console.log(
-      "%c🧠 OPS STATUS REGISTERED",
-      "color:#ffaa00;font-weight:700",
-      "Aircraft:", payload.aircraftId,
-      window.ACS_OPS_FLIGHT_STATUS[payload.aircraftId]
-    );
-  }
-}
-
-     
-// ========================================================
-// 🧠 REGISTRAR ESTADO OPERACIONAL POR AVIÓN (CANÓNICO)
-// ========================================================
-
-if (payload.flight && payload.flight.aircraftId) {
-
-  window.ACS_OPS_FLIGHT_STATUS[payload.flight.aircraftId] = {
-    opsStatus: payload.flight.opsStatus,
-    delayed: payload.flight.delayed,
-    delayMinutes: payload.flight.delayMinutes,
-    lossPercent: payload.flight.opsLossPercent,
-    updatedAt: Date.now()
-  };
-
-  console.log(
-    "%c🧠 OPS STATUS REGISTERED",
-    "color:#ffaa00;font-weight:700",
-    "Aircraft:", payload.flight.aircraftId,
-    window.ACS_OPS_FLIGHT_STATUS[payload.flight.aircraftId]
-  );
-}
-     
-    // 🔑 FINANCE CONSUMER (INTOCABLE)
+    // 🔑 FINANCE CONSUMER (INTOCABLE — ORIGINAL FLOW)
     if (typeof ACS_applyFlightRevenue === "function") {
       ACS_applyFlightRevenue(payload);
     }
