@@ -230,6 +230,35 @@ tr:nth-child(even) {
   background: rgba(255,255,255,0.03);
 }
 
+/* ============================================================
+   🟦 HR TABLE COLUMN SYSTEM — FINAL PROPORTIONS (ACS CORE)
+   ============================================================ */
+
+/* Department amplio, como antes */
+#deptTable th:nth-child(1),
+#deptTable td:nth-child(1) { width: 38%; }
+
+/* Staff compacto */
+#deptTable th:nth-child(2),
+#deptTable td:nth-child(2) { width: 7%; }
+
+/* Required compacto */
+#deptTable th:nth-child(3),
+#deptTable td:nth-child(3) { width: 7%; }
+
+/* Salary medio */
+#deptTable th:nth-child(4),
+#deptTable td:nth-child(4) { width: 12%; }
+
+/* Morale compacto */
+#deptTable th:nth-child(5),
+#deptTable td:nth-child(5) { width: 8%; }
+
+/* Actions amplio y estable */
+#deptTable th:nth-child(6),
+#deptTable td:nth-child(6) { width: 28%; }
+
+       
 /* Staff, Salary, Morale colors */
 /* Staff, Salary, Morale colors */
 .staff { color: #00e28a; font-weight: 600; }
@@ -267,65 +296,69 @@ tr:nth-child(even) {
 }
 
 /* ============================================================
-   🟦 HR ACTION BUTTON SYSTEM — QATAR LUXURY
+   🟦 HR ACTION BUTTONS — ACS NAV STYLE (PROFESSIONAL)
    ============================================================ */
 
 .btn {
-  border: none;
+  padding: 0.45rem 0.75rem;
   border-radius: 10px;
-  padding: 6px 12px;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  color: #dbe4ff;
+  backdrop-filter: blur(6px);
   transition: 0.25s ease;
-  font-size: 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   min-width: 44px;
+  height: 34px;
 }
 
-/* 🟢 HIRE — STAFF IN */
-.btn-hire {
-  background: linear-gradient(180deg,#00d27a,#00a86b);
+/* Hover general */
+.btn:hover {
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 12px rgba(255,255,255,0.25);
   color: white;
-  box-shadow: 0 0 8px rgba(0,210,120,0.45);
+}
+
+/* 🟢 HIRE — verde sutil */
+.btn-hire {
+  border: 1px solid rgba(120,255,160,0.45);
+  color: #7CFFB2;
 }
 .btn-hire:hover {
-  background: linear-gradient(180deg,#00e88a,#00c97a);
-  box-shadow: 0 0 14px rgba(0,230,140,0.65);
+  background: rgba(120,255,160,0.20);
+  box-shadow: 0 0 14px rgba(120,255,160,0.45);
 }
 
-/* 🔴 FIRE — STAFF OUT */
+/* 🔴 FIRE — rojo sutil */
 .btn-dismiss {
-  background: linear-gradient(180deg,#ff4d4d,#c83232);
-  color: white;
-  box-shadow: 0 0 8px rgba(255,80,80,0.45);
+  border: 1px solid rgba(255,120,120,0.45);
+  color: #ff9a9a;
 }
 .btn-dismiss:hover {
-  background: linear-gradient(180deg,#ff6b6b,#e04444);
-  box-shadow: 0 0 14px rgba(255,100,100,0.65);
+  background: rgba(255,120,120,0.20);
+  box-shadow: 0 0 14px rgba(255,120,120,0.45);
 }
 
-/* 🟦 SALARY — TECH CONTROL */
+/* 🟦 SALARY — azul técnico */
 .btn-adjust {
-  background: linear-gradient(180deg,#4da6ff,#1f6fd6);
-  color: white;
-  box-shadow: 0 0 8px rgba(80,160,255,0.45);
+  border: 1px solid rgba(138,180,255,0.45);
+  color: #8AB4FF;
 }
 .btn-adjust:hover {
-  background: linear-gradient(180deg,#6bb8ff,#3a8cff);
-  box-shadow: 0 0 14px rgba(120,190,255,0.65);
+  background: rgba(138,180,255,0.20);
+  box-shadow: 0 0 14px rgba(138,180,255,0.45);
 }
 
-/* 🟡 BONUS — PREMIUM GOLD */
+/* 🟡 BONUS — dorado suave */
 .btn-bonus {
-  background: linear-gradient(180deg,#ffcf4a,#ffb300);
-  color: #0c1f3c;
-  box-shadow: 0 0 10px rgba(255,200,60,0.55);
+  border: 1px solid rgba(255,200,60,0.55);
+  color: #ffca3a;
 }
 .btn-bonus:hover {
-  background: linear-gradient(180deg,#ffe27a,#ffd35c);
-  box-shadow: 0 0 16px rgba(255,220,120,0.75);
+  background: rgba(255,200,60,0.20);
+  box-shadow: 0 0 14px rgba(255,200,60,0.55);
 }
 
 /* Total Payroll */
