@@ -231,32 +231,31 @@ tr:nth-child(even) {
 }
 
 /* ============================================================
-   🟦 HR TABLE COLUMN SYSTEM — FINAL PROPORTIONS (ACS CORE)
+   🟦 HR TABLE COLUMN SYSTEM — CENTER SHIFT BALANCED (FINAL)
+   ------------------------------------------------------------
+   • Reduce Department
+   • Adelanta bloque central
+   • Mantiene Actions intacto
+   • Elimina vacío visual
    ============================================================ */
 
-/* Department amplio, como antes */
 #deptTable th:nth-child(1),
-#deptTable td:nth-child(1) { width: 38%; }
+#deptTable td:nth-child(1) { width: 32%; }   /* Department ↓ */
 
-/* Staff compacto */
 #deptTable th:nth-child(2),
-#deptTable td:nth-child(2) { width: 7%; }
+#deptTable td:nth-child(2) { width: 8%; }    /* Staff ↑ */
 
-/* Required compacto */
 #deptTable th:nth-child(3),
-#deptTable td:nth-child(3) { width: 7%; }
+#deptTable td:nth-child(3) { width: 8%; }    /* Required ↑ */
 
-/* Salary medio */
 #deptTable th:nth-child(4),
-#deptTable td:nth-child(4) { width: 12%; }
+#deptTable td:nth-child(4) { width: 14%; }   /* Salary ↑ */
 
-/* Morale compacto */
 #deptTable th:nth-child(5),
-#deptTable td:nth-child(5) { width: 8%; }
+#deptTable td:nth-child(5) { width: 10%; }   /* Morale ↑ */
 
-/* Actions amplio y estable */
 #deptTable th:nth-child(6),
-#deptTable td:nth-child(6) { width: 28%; }
+#deptTable td:nth-child(6) { width: 28%; }   /* Actions = fijo */
 
        
 /* Staff, Salary, Morale colors */
