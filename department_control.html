@@ -1112,37 +1112,51 @@ function loadDepartments() {
     <td class="salary">$${dep.salary}</td>
     <td class="morale">${dep.morale}%</td>
 
-    <td>
+   <td>
 
   <div style="
     display:flex;
     justify-content:center;
-    gap:10px;
+    align-items:center;
+    gap:12px;
+    width:100%;
   ">
 
-    <!-- Hire +1 -->
-    <button class="btn btn-hire" title="Hire Staff"
-      onclick="HR_hireOne('${dep.id}')">
-      👤➕
-    </button>
+    ${dep.id === "ceo" ? `
 
-    <!-- Fire -->
-    <button class="btn btn-dismiss" title="Fire Staff"
-      onclick="openFireMiniModal('${dep.id}')">
-      👤➖
-    </button>
+      <!-- CEO: SOLO SALARY -->
+      <button class="btn btn-adjust" title="Adjust Salary"
+        onclick="openSalaryInline('${dep.id}')">
+        💰
+      </button>
 
-    <!-- Salary -->
-    <button class="btn btn-adjust" title="Adjust Salary"
-      onclick="openSalaryInline('${dep.id}')">
-      💰
-    </button>
+    ` : `
 
-    <!-- Bonus -->
-    <button class="btn btn-bonus" title="Give Bonus"
-      onclick="openBonusModal('${dep.id}')">
-      🎁
-    </button>
+      <!-- Hire +1 -->
+      <button class="btn btn-hire" title="Hire Staff"
+        onclick="HR_hireOne('${dep.id}')">
+        👤➕
+      </button>
+
+      <!-- Fire -->
+      <button class="btn btn-dismiss" title="Fire Staff"
+        onclick="openFireMiniModal('${dep.id}')">
+        👤➖
+      </button>
+
+      <!-- Salary -->
+      <button class="btn btn-adjust" title="Adjust Salary"
+        onclick="openSalaryInline('${dep.id}')">
+        💰
+      </button>
+
+      <!-- Bonus -->
+      <button class="btn btn-bonus" title="Give Bonus"
+        onclick="openBonusModal('${dep.id}')">
+        🎁
+      </button>
+
+    `}
 
   </div>
 
@@ -1273,6 +1287,52 @@ function confirmSalary() {
   loadDepartments();
 }
 
+/* ============================================================
+   🟦 A1.1 — HIRE ONE ENGINE (ACS CORE SIMPLE)
+   ------------------------------------------------------------
+   • Click = +1 staff inmediato
+   • Sin límite
+   • Sin morale
+   • Sin OPS
+   • Sin alertas
+   • Castigo único = salario mensual
+   ============================================================ */
+
+function HR_hireOne(depId) {
+
+  if (!depId) return;
+
+  try {
+
+    // 🔧 Contratar 1 directamente
+    ACS_HR_hire(depId, 1);
+
+    console.log(
+      "%c🟢 HR HIRE +1",
+      "color:#7CFFB2;font-weight:700",
+      "Department:", depId
+    );
+
+    // 🔄 Recalcular HR completo
+    if (typeof ACS_HR_recalculateAll === "function") {
+      ACS_HR_recalculateAll();
+    }
+
+    // 🔄 Refrescar tabla
+    if (typeof loadDepartments === "function") {
+      loadDepartments();
+    }
+
+    // 🔄 Actualizar KPI
+    if (typeof HR_updateKPI === "function") {
+      HR_updateKPI();
+    }
+
+  } catch (e) {
+    console.warn("⚠️ HR_hireOne failed:", e);
+  }
+}
+     
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
