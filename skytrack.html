@@ -625,7 +625,7 @@ function ACS_ST_resolveTimesFromRuntime(snapshotItem) {
 }
         
 // 🟦 A9.2 — Render Flight Details (FR24)
-     
+
 function renderFlightDetails(snapshot) {
   if (!detailsEl) return;
 
@@ -653,7 +653,32 @@ function renderFlightDetails(snapshot) {
   // Aircraft + matrícula (registration)
   const aircraftLabel = `${item.model || "—"} (${item.registration || "—"})`;
 
-  // Extra EN_ROUTE: % + remaining
+  // ============================================================
+  // ✅ OPS UI (PLAYER-FACING ONLY) — NO $$, NO %, NO Finance data
+  // Fuente: snapshot item (inyectado por runtime desde registry)
+  // ============================================================
+
+  const opsStatusRaw = String(item.opsStatus || "ON_TIME");
+  const delayMin = Number(item.delayMinutes || 0);
+
+  // Reglas visuales:
+  // - ON_TIME o delay 0  → verde
+  // - delay 1..29        → amarillo
+  // - delay >= 30        → rojo
+  let opsLabel = "ON TIME";
+  let opsColor = "#7CFFB2"; // verde (mismo tono del dashboard clock)
+
+  if (opsStatusRaw !== "ON_TIME" || delayMin > 0) {
+    opsLabel = "DELAYED";
+
+    if (delayMin >= 30) {
+      opsColor = "#ff4d4d"; // rojo
+    } else {
+      opsColor = "#ffca3a"; // amarillo
+    }
+  }
+
+  // Extra EN_ROUTE: % + remaining (NO Finance)
   const now = ACS_ST_nowAbsMin();
   let extra = "";
 
@@ -688,11 +713,24 @@ function renderFlightDetails(snapshot) {
       <strong>Aircraft:</strong> ${aircraftLabel}<br>
       <strong>Status:</strong> ${item.state || "—"}<br>
       <strong>Departure:</strong> ${depTime}<br>
-      <strong>Arrival:</strong> ${arrTime}
+      <strong>Arrival:</strong> ${arrTime}<br>
+
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,179,0,0.18);">
+        <strong>OPS Status:</strong>
+        <span style="color:${opsColor}; font-weight:800; letter-spacing:0.4px;">
+          ${opsLabel}
+        </span><br>
+        <strong>Delay:</strong>
+        <span style="color:${opsColor}; font-weight:800;">
+          ${Math.max(0, delayMin)} min
+        </span>
+      </div>
+
       ${extra}
     </div>
   `;
 }
+
      
     function apLatLng(icao) {
       const ap = window.ACS_AIRPORT_INDEX?.[icao];
