@@ -1015,29 +1015,26 @@ function loadDepartments() {
         <td class="morale">${dep.morale}%</td>
        <td>
 
-  <!-- Hire -->
-  <button class="btn btn-hire" title="Hire Staff" onclick="openHRFullModal('${dep.id}')">
+  <td>
+
+  <!-- Hire +1 -->
+  <button class="btn btn-hire" title="Hire Staff" onclick="HR_hireOne('${dep.id}')">
     👤➕
   </button>
 
-  <!-- Fire -->
-  <button class="btn btn-dismiss" title="Fire Staff" onclick="openHRFullModal('${dep.id}')">
+  <!-- Fire (mini modal) -->
+  <button class="btn btn-dismiss" title="Fire Staff" onclick="openFireMiniModal('${dep.id}')">
     👤➖
   </button>
 
-  <!-- Salary -->
-  <button class="btn btn-adjust" title="Adjust Salary" onclick="openHRFullModal('${dep.id}')">
+  <!-- Salary (inline próximamente) -->
+  <button class="btn btn-adjust" title="Adjust Salary" onclick="openSalaryInline('${dep.id}')">
     💰
   </button>
 
-  <!-- Bonus -->
-  <button class="btn btn-bonus" title="Give Bonus" onclick="openHRFullModal('${dep.id}')">
+  <!-- Bonus (limitado semanal) -->
+  <button class="btn btn-bonus" title="Give Bonus" onclick="openBonusModal('${dep.id}')">
     🎁
-  </button>
-
-  <!-- Control -->
-  <button class="btn btn-control" title="Department Control" onclick="openHRFullModal('${dep.id}')">
-    ⚙️
   </button>
 
 </td>
@@ -1210,233 +1207,6 @@ function HR_fillDepartmentSelector() {
     });
 }
      
-/* ============================================================
-   HR FULL MODAL — OPEN
-   ============================================================ */
-     
-let HR_active = null;
-     
-function openHRFullModal(id) {
-  HR_active = id;
-
-  const hr = ACS_HR_load()[id];
-  
-  HR_fillDepartmentSelector();
-     
-  // Set title
-  document.getElementById("hrModalDeptName").textContent = hr.name;
-
-  // Build selects (Hire + Fire) and cost
-  HR_buildSelects(hr);
-
-  // Reset salary slider
-  document.getElementById("salaryRangeFull").value = 100;
-  document.getElementById("salaryValFull").textContent = "100%";
-  document.getElementById("salaryNewFull").textContent = "$" + hr.salary;
-  document.getElementById("salaryAfterFull").textContent = "$" + hr.payroll;
- 
-
-  // Seleccionar departamento actual en el selector
-     
-  const sel = document.getElementById("hrDeptSelector");
-  if (sel) sel.value = id;
-     
-  // Scroll modal to top
-     
-  document.querySelector(".hr-full-modal").scrollTop = 0;
-
-  // Show modal
-     
-  document.getElementById("hrFullModal").style.display = "flex";
-}
-
-/* Update hire cost when changing qty */
-     
-function updateHireCost(hr=null) {
-  if (!hr) hr = ACS_HR_load()[HR_active];
-  const qty = parseInt(document.getElementById("hireQty").value);
-  document.getElementById("hireCost").textContent =
-    "$" + (qty * hr.salary);
-}
-
-/* Confirm hire */
-     
-function HR_confirmHireFull() {
-  const qty = parseInt(document.getElementById("hireQty").value);
-  ACS_HR_hire(HR_active, qty);
-  closeHRFullModal();
-  loadDepartments();
-}
-
-/* Confirm fire */
-     
-function HR_confirmFireFull() {
-  const qty = parseInt(document.getElementById("fireQty").value);
-  ACS_HR_fire(HR_active, qty);
-  closeHRFullModal();
-  loadDepartments();
-}
-
-/* Salary change */
-     
-document.getElementById("salaryRangeFull").addEventListener("input", () => {
-  const hr = ACS_HR_load()[HR_active];
-  const val = parseInt(salaryRangeFull.value);
-  document.getElementById("salaryValFull").textContent = val + "%";
-
-  const newSalary = Math.round(hr.salary * (val / 100));
-  document.getElementById("salaryNewFull").textContent = "$" + newSalary;
-
-  const newPayroll = newSalary * hr.staff;
-  document.getElementById("salaryAfterFull").textContent = "$" + newPayroll;
-});
-
-function HR_confirmSalaryFull() {
-  const val = parseInt(document.getElementById("salaryRangeFull").value);
-  ACS_HR_adjustSalary(HR_active, val);
-  closeHRFullModal();
-  loadDepartments();
-}
-
-/* ============================================================
-   🎁 BONUS LIVE PREVIEW ENGINE (UI ONLY)
-   ============================================================ */
-
-document.getElementById("bonusRangeFull").addEventListener("input", () => {
-
-  const hr = ACS_HR_load()[HR_active];
-  if (!hr) return;
-
-  const percent = parseInt(bonusRangeFull.value);
-
-  document.getElementById("bonusValFull").textContent = percent + "%";
-
-  const payroll = hr.staff * hr.salary;
-  const cost = Math.round(payroll * (percent / 100));
-
-  // efecto moral (30% del bonus)
-  let moraleUp = Math.round(percent * 0.3);
-  if (moraleUp > 20) moraleUp = 20;   // límite duro
-
-  document.getElementById("bonusPayroll").textContent = "$" + payroll;
-  document.getElementById("bonusCost").textContent = "$" + cost;
-  document.getElementById("bonusEffect").textContent = "+" + moraleUp + "%";
-
-});
-     
-/* ============================================================
-   === HR FULL MODAL — BUILD SELECTS ===========================
-   ============================================================ */
-     
-function HR_buildSelects(hrDept) {
-
-  // Hire 1–20
-  const hireSel = document.getElementById("hireQty");
-  hireSel.innerHTML = "";
-  for (let i = 1; i <= 20; i++) {
-    hireSel.innerHTML += `<option value="${i}">${i}</option>`;
-  }
-
-  // Fire 1–staff actual
-  const fireSel = document.getElementById("fireQty");
-  fireSel.innerHTML = "";
-  for (let i = 1; i <= hrDept.staff; i++) {
-    fireSel.innerHTML += `<option value="${i}">${i}</option>`;
-  }
-
-  // Cost update
-  document.getElementById("hireCost").textContent =
-    "$" + hrDept.salary.toLocaleString();
-
-  document.getElementById("fireWarning").textContent = "—";
-}
-     
-/* Close */
-function closeHRFullModal() {
-  document.getElementById("hrFullModal").style.display = "none";
-}
-
-/* ============================================================
-   🟪 F — DYNAMIC MODAL REFRESH ENGINE v1.0
-   ------------------------------------------------------------
-   • Opción A: NO cierra el modal
-   • Cambiar de departamento refresca todo:
-     - Título
-     - Staff actual
-     - Required
-     - Hire options
-     - Fire options
-     - Costos
-     - Auto-Balance
-   • No afecta nada fuera del modal
-   ============================================================ */
-
-// === Evento principal del selector ===
-document.getElementById("hrDeptSelector").addEventListener("change", function () {
-    const newID = this.value;
-    if (!newID) return;
-
-    HR_reloadModalDepartment(newID);
-});
-
-
-// === Función que recarga el modal sin cerrarlo ===
-     
-function HR_reloadModalDepartment(id) {
-
-    // 🛑 FIX SAFARI — HR aún no cargado
-    if (!id) return;
-
-    const full = ACS_HR_load();
-    if (!full || !full[id]) {
-        console.warn("⛔ HR_reloadModalDepartment: HR vacío / no cargado todavía", id);
-        return;
-    }
-
-    const hr = full[id];
-
-    // 🔄 Título dinámico
-    document.getElementById("hrModalDeptName").textContent = hr.name;
-
-    // 🔄 Selects
-    HR_buildSelects(hr);
-
-    // 🔄 Costos
-    updateHireCost(hr);
-
-    // 🔄 Fire options
-    const fireSel = document.getElementById("fireQty");
-    fireSel.innerHTML = "";
-    for (let i = 1; i <= hr.staff; i++) {
-        fireSel.innerHTML += `<option value="${i}">${i}</option>`;
-    }
-
-    // 🔄 Summary Block
-    document.getElementById("hrCurrentStaff").textContent = hr.staff;
-    document.getElementById("hrRequiredStaff").textContent = hr.required ?? hr.staff;
-
-    const diff = hr.staff - (hr.required ?? hr.staff);
-    const diffEl = document.getElementById("hrDifference");
-    diffEl.textContent = diff;
-    diffEl.style.color = diff > 0 ? "#00ff99" : diff < 0 ? "#ff4d4d" : "#ffe38a";
-
-    // 🔄 Salary + morale
-    document.getElementById("hrSalary").textContent = `$${hr.salary}`;
-    document.getElementById("hrMorale").textContent = `${hr.morale}%`;
-
-    // 🔄 Mantener modal arriba
-    document.querySelector(".hr-full-modal").scrollTop = 0;
-}
-
-
-function HR_applyAutoAdjust() {
-    if (typeof ACS_HR_autoAdjust5Y === "function") {
-        ACS_HR_autoAdjust5Y();     // usa tu función real de ajuste
-        loadDepartments();         // refresca tabla
-        HR_reloadModalDepartment(HR_active); // refresca modal sin cerrarlo
-    }
-}
-
 </script>
        
 <script>
