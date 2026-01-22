@@ -1288,32 +1288,51 @@ function confirmSalary() {
 }
 
 /* ============================================================
-   🟦 A1.1 — HIRE ONE ENGINE (ACS CORE SIMPLE)
+   🟦 A1 — HIRE PREMIUM CORE (INLINE SIMPLE)
    ------------------------------------------------------------
-   • Click = +1 staff inmediato
-   • Sin límite
-   • Sin morale
-   • Sin OPS
-   • Sin alertas
-   • Castigo único = salario mensual
+   • Suma +1 staff infinito
+   • NO afecta morale
+   • NO gasto inmediato
+   • Impacto solo vía salario mensual
+   • Recalcula HR + KPI + tabla
    ============================================================ */
 
 function HR_hireOne(depId) {
 
-  if (!depId) return;
-
   try {
 
-    // 🔧 Contratar 1 directamente
-    ACS_HR_hire(depId, 1);
+    const HR = ACS_HR_load();
+    if (!HR || !HR[depId]) {
+      console.warn("❌ HIRE FAILED — Department not found:", depId);
+      return;
+    }
+
+    const dep = HR[depId];
+
+    // 🛑 PROTECCIÓN CEO (no contratar CEO extra)
+    if (dep.id === "ceo" || dep.name?.toLowerCase() === "ceo") {
+      alert("⚠️ Only one CEO is allowed.");
+      return;
+    }
+
+    // 🔧 CONTRATAR +1
+    dep.staff = (dep.staff || 0) + 1;
+
+    // Payroll automático (no gasto inmediato)
+    dep.payroll = dep.staff * dep.salary;
+
+    ACS_HR_save(HR);
 
     console.log(
-      "%c🟢 HR HIRE +1",
+      "%c🟢 HR HIRE OK",
       "color:#7CFFB2;font-weight:700",
-      "Department:", depId
+      dep.name,
+      "New staff:", dep.staff,
+      "Salary:", dep.salary,
+      "Monthly payroll:", dep.payroll
     );
 
-    // 🔄 Recalcular HR completo
+    // 🔄 Recalcular todo HR
     if (typeof ACS_HR_recalculateAll === "function") {
       ACS_HR_recalculateAll();
     }
@@ -1323,13 +1342,13 @@ function HR_hireOne(depId) {
       loadDepartments();
     }
 
-    // 🔄 Actualizar KPI
+    // 🔄 KPI
     if (typeof HR_updateKPI === "function") {
       HR_updateKPI();
     }
 
-  } catch (e) {
-    console.warn("⚠️ HR_hireOne failed:", e);
+  } catch (err) {
+    console.warn("❌ HR_hireOne failed:", err);
   }
 }
      
