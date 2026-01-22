@@ -1463,8 +1463,15 @@ function closeFireMiniModal() {
 }
 
 /* ============================================================
-   🟥 A6.3 — CONFIRM FIRE (MULTIPLE)
+   🟥 A2.1 — FIRE + MORALE DEGRADATION CORE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Despido múltiple real
+   • Moral baja proporcional al impacto
+   • Protege CEO
+   • Clamp mínimo moral = 40%
+   • Refresca tabla + KPI
    ============================================================ */
+
 function HR_confirmFireMini() {
 
   if (!HR_fireTargetDept) return;
@@ -1477,43 +1484,81 @@ function HR_confirmFireMini() {
     return;
   }
 
-  const hr = ACS_HR_load();
-  const dep = hr[HR_fireTargetDept];
+  const HR = ACS_HR_load();
+  const dep = HR[HR_fireTargetDept];
 
   if (!dep) {
     closeFireMiniModal();
     return;
   }
 
-  // 🛑 Protección CEO redundante
+  // 🛑 PROTECCIÓN CEO
   if (dep.id === "ceo" || dep.name?.toLowerCase() === "ceo") {
     alert("⚠️ The CEO cannot be dismissed.");
     closeFireMiniModal();
     return;
   }
 
+  const staffBefore = dep.staff || 0;
+
+  // 🛑 Nada que despedir
+  if (staffBefore <= 0) {
+    closeFireMiniModal();
+    return;
+  }
+
   // 🛑 Clamp seguridad
-  const realQty = Math.min(qty, dep.staff);
+  const realQty = Math.min(qty, staffBefore);
 
   // 🔥 DESPEDIR REAL
   ACS_HR_fire(HR_fireTargetDept, realQty);
+
+  // ============================================================
+  // 😟 MORALE DEGRADATION LOGIC — REALISTIC CORE
+  // ============================================================
+
+  let drop = 2; // mínimo base
+
+  if (staffBefore > 0) {
+    // impacto proporcional al tamaño del equipo
+    drop = Math.round((realQty / staffBefore) * 20);
+
+    // límites realistas
+    if (drop < 2)  drop = 2;
+    if (drop > 20) drop = 20;
+  }
+
+  const oldMorale = dep.morale || 100;
+  dep.morale = Math.max(40, oldMorale - drop);
 
   console.log(
     "%c🟥 HR FIRE CONFIRMED",
     "color:#ff4d4d;font-weight:700",
     dep.name,
-    "Qty:", realQty
+    "Qty:", realQty,
+    "Morale drop:", drop + "%",
+    "New morale:", dep.morale
   );
+
+  // Guardar HR actualizado
+  ACS_HR_save(HR);
 
   closeFireMiniModal();
 
-  // 🔄 REFRESH TOTAL
-  loadDepartments();
+  // 🔄 RECALCULAR Y REFRESCAR TODO
+  if (typeof ACS_HR_recalculateAll === "function") {
+    ACS_HR_recalculateAll();
+  }
+
+  if (typeof loadDepartments === "function") {
+    loadDepartments();
+  }
 
   if (typeof HR_updateKPI === "function") {
     HR_updateKPI();
   }
 }
+
 </script>
        
 </body>
