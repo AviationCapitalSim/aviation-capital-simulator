@@ -144,11 +144,8 @@ body {
 }
 
 /* ===== MAIN (Fix “descudrado”) ===== */
-.acs-main {
-  padding-top: 110px; /* CRÍTICO: separa header fijo */
-  width: min(1200px, 92%);
-  margin: 0 auto;
-}
+ .acs-main {
+  padding-top: 130px;
 
 /* ===== Panels (Dashboard feel) ===== */
 .panel {
@@ -1028,8 +1025,8 @@ function loadDepartments() {
 
   <td>
 
-  <!-- Hire +1 -->
-  <button class="btn btn-hire" title="Hire Staff" onclick="HR_hireOne('${dep.id}')">
+  <!-- Hire -->
+  <button class="btn btn-hire" title="Hire Staff (+1)" onclick="HR_hireOne('${dep.id}')">
     👤➕
   </button>
 
@@ -1038,10 +1035,32 @@ function loadDepartments() {
     👤➖
   </button>
 
-  <!-- Salary (inline próximamente) -->
-  <button class="btn btn-adjust" title="Adjust Salary" onclick="openSalaryInline('${dep.id}')">
-    💰
+ <!-- Salary Inline -->
+<div style="display:flex; align-items:center; gap:6px;">
+
+  <input type="range"
+         min="50"
+         max="200"
+         step="5"
+         value="100"
+         title="Adjust Salary (%)"
+         style="width:90px;"
+         oninput="HR_previewSalary('${dep.id}', this.value)">
+
+  <span id="salaryPreview_${dep.id}" style="
+        min-width:48px;
+        font-weight:700;
+        color:#ffca3a;
+        font-size:0.85rem;">
+    100%
+  </span>
+
+  <button class="btn btn-adjust" title="Apply Salary"
+          onclick="HR_applySalary('${dep.id}')">
+    ✔
   </button>
+
+</div>
 
   <!-- Bonus (limitado semanal) -->
   <button class="btn btn-bonus" title="Give Bonus" onclick="openBonusModal('${dep.id}')">
@@ -1216,6 +1235,173 @@ function HR_fillDepartmentSelector() {
         opt.textContent = dep.name;
         sel.appendChild(opt);
     });
+}
+     
+/* ============================================================
+   🟦 A7 — HIRE DIRECT +1 ENGINE (Qatar Luxury Canonical)
+   ------------------------------------------------------------
+   • Click directo = +1 staff
+   • Sin modal
+   • Protección CEO
+   • Reglas reales de morale
+   • Castigo natural vía salary
+   • Refresh total limpio
+   ============================================================ */
+
+function HR_hireOne(deptId) {
+
+  const hr = ACS_HR_load();
+  if (!hr || !hr[deptId]) return;
+
+  const dep = hr[deptId];
+
+  // 🛑 PROTECCIÓN CEO (solo 1 permitido)
+  if (dep.id === "ceo" || dep.name?.toLowerCase() === "airline ceo") {
+    if (dep.staff >= 1) {
+      alert("⚠️ There can only be one CEO.");
+      return;
+    }
+  }
+
+  // 🔥 CONTRATAR +1 REAL
+  ACS_HR_hire(deptId, 1);
+
+  // ============================
+  // 🧠 MORALE ENGINE — TUS REGLAS
+  // ============================
+
+  const required = (typeof dep.required === "number") ? dep.required : 0;
+  const newStaff = dep.staff + 1;   // staff después de contratar
+  const diff = newStaff - required;
+
+  let moraleDelta = 0;
+
+  /*
+    TUS REGLAS EXACTAS:
+
+    Exacto (0 diff)   → estable
+    +1               → +1%
+    +2               → +2%
+    +3 a +5          → estable
+    +6 o más         → NO baja, solo salary castiga
+  */
+
+  if (diff === 1) moraleDelta = 1;
+  else if (diff === 2) moraleDelta = 2;
+  else moraleDelta = 0;
+
+  // 🔧 Aplicar morale si corresponde
+  if (moraleDelta > 0) {
+
+    const newMorale = Math.min(100, dep.morale + moraleDelta);
+
+    // actualizar directamente en HR core
+    hr[deptId].morale = newMorale;
+
+    console.log(
+      "%c🟦 HR HIRE MORALE BOOST",
+      "color:#00ff99;font-weight:700",
+      dep.name,
+      `+${moraleDelta}% → ${newMorale}%`
+    );
+  }
+
+  console.log(
+    "%c🟦 HR HIRE +1",
+    "color:#00aaff;font-weight:700",
+    dep.name,
+    "Staff:", dep.staff, "→", dep.staff + 1
+  );
+
+  // 🔄 REFRESH TOTAL
+  loadDepartments();
+
+  if (typeof HR_updateKPI === "function") {
+    HR_updateKPI();
+  }
+}
+
+/* ============================================================
+   🟦 A8 — SALARY INLINE SLIDER ENGINE (Qatar Luxury Canonical)
+   ------------------------------------------------------------
+   • Slider inline por departamento
+   • Preview en vivo
+   • Aplicación manual (✔)
+   • Impacto inmediato en payroll
+   • Sin modal
+   • Arquitectura ACS intacta
+   ============================================================ */
+
+let HR_salaryPreview = {};   // cache temporal por depto
+
+/* ============================================================
+   🟦 A8.1 — PREVIEW SALARY (LIVE)
+   ============================================================ */
+function HR_previewSalary(deptId, percent) {
+
+  const hr = ACS_HR_load();
+  if (!hr || !hr[deptId]) return;
+
+  const dep = hr[deptId];
+
+  const pct = parseInt(percent);
+  if (!Number.isFinite(pct)) return;
+
+  // guardar preview
+  HR_salaryPreview[deptId] = pct;
+
+  // mostrar %
+  const span = document.getElementById("salaryPreview_" + deptId);
+  if (span) span.textContent = pct + "%";
+
+  // preview payroll (solo visual, no guarda)
+  const newSalary = Math.round(dep.salary * (pct / 100));
+  const newPayroll = newSalary * dep.staff;
+
+  console.log(
+    "%c🟨 HR SALARY PREVIEW",
+    "color:#ffd35c;font-weight:700",
+    dep.name,
+    `${pct}%`,
+    "New salary:", newSalary,
+    "Payroll:", newPayroll
+  );
+}
+
+/* ============================================================
+   🟦 A8.2 — APPLY SALARY CHANGE (CONFIRM)
+   ============================================================ */
+function HR_applySalary(deptId) {
+
+  const hr = ACS_HR_load();
+  if (!hr || !hr[deptId]) return;
+
+  const dep = hr[deptId];
+
+  const pct = HR_salaryPreview[deptId] ?? 100;
+
+  if (!Number.isFinite(pct)) return;
+
+  // 🔥 APLICAR REAL
+  ACS_HR_adjustSalary(deptId, pct);
+
+  console.log(
+    "%c🟦 HR SALARY APPLIED",
+    "color:#ffb300;font-weight:800",
+    dep.name,
+    `${pct}%`,
+    "New salary:", hr[deptId].salary
+  );
+
+  // limpiar preview cache
+  delete HR_salaryPreview[deptId];
+
+  // 🔄 REFRESH TOTAL
+  loadDepartments();
+
+  if (typeof HR_updateKPI === "function") {
+    HR_updateKPI();
+  }
 }
      
 </script>
