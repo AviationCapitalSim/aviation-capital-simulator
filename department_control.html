@@ -1362,6 +1362,124 @@ function HR_applyAutoAdjust() {
 }
 
 </script>
+       
+<script>
+/* ============================================================
+   🟥 A6 — FIRE MINI MODAL ENGINE (Qatar Luxury)
+   ------------------------------------------------------------
+   • Despido múltiple con confirmación
+   • Un solo warning
+   • Protege CEO
+   • UX limpia
+   • Refresca tabla + KPI
+   ============================================================ */
 
+let HR_fireTargetDept = null;
+
+/* ============================================================
+   🟥 A6.1 — OPEN FIRE MINI MODAL
+   ============================================================ */
+function openFireMiniModal(deptId) {
+
+  const hr = ACS_HR_load();
+  if (!hr || !hr[deptId]) return;
+
+  const dep = hr[deptId];
+
+  // 🛑 PROTECCIÓN CEO
+  if (dep.id === "ceo" || dep.name?.toLowerCase() === "ceo") {
+    alert("⚠️ The CEO cannot be dismissed.");
+    return;
+  }
+
+  // 🛑 Nada que despedir
+  if (dep.staff <= 0) {
+    alert("⚠️ There is no staff to dismiss in this department.");
+    return;
+  }
+
+  HR_fireTargetDept = deptId;
+
+  // Nombre depto
+  const nameEl = document.getElementById("fireMiniDeptName");
+  if (nameEl) nameEl.textContent = dep.name;
+
+  // Build select 1..staff
+  const sel = document.getElementById("fireMiniQty");
+  sel.innerHTML = "";
+
+  for (let i = 1; i <= dep.staff; i++) {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = i + (i === 1 ? " employee" : " employees");
+    sel.appendChild(opt);
+  }
+
+  // Show modal
+  document.getElementById("hrFireMiniModal").style.display = "flex";
+}
+
+/* ============================================================
+   🟥 A6.2 — CLOSE FIRE MINI MODAL
+   ============================================================ */
+function closeFireMiniModal() {
+  HR_fireTargetDept = null;
+  document.getElementById("hrFireMiniModal").style.display = "none";
+}
+
+/* ============================================================
+   🟥 A6.3 — CONFIRM FIRE (MULTIPLE)
+   ============================================================ */
+function HR_confirmFireMini() {
+
+  if (!HR_fireTargetDept) return;
+
+  const sel = document.getElementById("fireMiniQty");
+  const qty = parseInt(sel.value);
+
+  if (!Number.isFinite(qty) || qty <= 0) {
+    alert("⚠️ Invalid dismissal quantity.");
+    return;
+  }
+
+  const hr = ACS_HR_load();
+  const dep = hr[HR_fireTargetDept];
+
+  if (!dep) {
+    closeFireMiniModal();
+    return;
+  }
+
+  // 🛑 Protección CEO redundante
+  if (dep.id === "ceo" || dep.name?.toLowerCase() === "ceo") {
+    alert("⚠️ The CEO cannot be dismissed.");
+    closeFireMiniModal();
+    return;
+  }
+
+  // 🛑 Clamp seguridad
+  const realQty = Math.min(qty, dep.staff);
+
+  // 🔥 DESPEDIR REAL
+  ACS_HR_fire(HR_fireTargetDept, realQty);
+
+  console.log(
+    "%c🟥 HR FIRE CONFIRMED",
+    "color:#ff4d4d;font-weight:700",
+    dep.name,
+    "Qty:", realQty
+  );
+
+  closeFireMiniModal();
+
+  // 🔄 REFRESH TOTAL
+  loadDepartments();
+
+  if (typeof HR_updateKPI === "function") {
+    HR_updateKPI();
+  }
+}
+</script>
+       
 </body>
 </html>
