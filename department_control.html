@@ -822,18 +822,37 @@ tr:nth-child(even) {
     </div>
 
     <!-- ========================================================= -->
-    <!-- BONUS (DISABLED) -->
-    <!-- ========================================================= -->
-    <div class="hr-block hr-disabled">
-      <h3 class="hr-block-title">Bonus (Coming Soon)</h3>
+<!-- BONUS SYSTEM (MANUAL · LIMITED) -->
+<!-- ========================================================= -->
+<div class="hr-block" id="hrBonusBlock">
 
-      <input type="range" min="20" max="100" disabled>
+  <h3 class="hr-block-title">Give Bonus</h3>
 
-      <p><em>Bonus system will be activated later.</em></p>
+  <label class="hr-label">Bonus Percentage</label>
 
-      <button class="hr-btn-disabled" disabled>Bonus Disabled</button>
-    </div>
+  <!-- 10% → 200% -->
+  <input type="range" 
+         min="10" 
+         max="200" 
+         value="50" 
+         step="10" 
+         id="bonusRangeFull">
 
+  <p>Selected Bonus: <strong id="bonusValFull">50%</strong></p>
+
+  <p>Department Payroll: <strong id="bonusPayroll">$0</strong></p>
+  <p>Bonus Cost: <strong id="bonusCost">$0</strong></p>
+  <p>Morale Increase: <strong id="bonusEffect">+0%</strong></p>
+
+  <p id="bonusUsesInfo" class="hr-cost">
+    Remaining Uses This Week: <strong>2 / 2</strong>
+  </p>
+
+  <button class="hr-btn-confirm" onclick="HR_confirmBonusFull()">
+    Apply Bonus
+  </button>
+
+</div>
        
     <!-- ========================================================= -->
 <!-- 🔄 AUTO-ADJUST SALARY (REPLACES AUTO-BALANCE STAFF)       -->
@@ -1009,11 +1028,35 @@ function loadDepartments() {
         <td class="${requiredClass}">${requiredText}</td>
         <td class="salary">$${dep.salary}</td>
         <td class="morale">${dep.morale}%</td>
-        <td>
-          <button class="btn btn-control" onclick="openHRFullModal('${dep.id}')">
-            ⚙️ Control
-          </button>
-        </td>
+       <td>
+
+  <!-- Hire -->
+  <button class="btn btn-hire" title="Hire Staff" onclick="openHRFullModal('${dep.id}')">
+    👤➕
+  </button>
+
+  <!-- Fire -->
+  <button class="btn btn-dismiss" title="Fire Staff" onclick="openHRFullModal('${dep.id}')">
+    👤➖
+  </button>
+
+  <!-- Salary -->
+  <button class="btn btn-adjust" title="Adjust Salary" onclick="openHRFullModal('${dep.id}')">
+    💰
+  </button>
+
+  <!-- Bonus -->
+  <button class="btn btn-bonus" title="Give Bonus" onclick="openHRFullModal('${dep.id}')">
+    🎁
+  </button>
+
+  <!-- Control -->
+  <button class="btn btn-control" title="Department Control" onclick="openHRFullModal('${dep.id}')">
+    ⚙️
+  </button>
+
+</td>
+
       </tr>
     `;
   });
@@ -1269,6 +1312,32 @@ function HR_confirmSalaryFull() {
   closeHRFullModal();
   loadDepartments();
 }
+
+/* ============================================================
+   🎁 BONUS LIVE PREVIEW ENGINE (UI ONLY)
+   ============================================================ */
+
+document.getElementById("bonusRangeFull").addEventListener("input", () => {
+
+  const hr = ACS_HR_load()[HR_active];
+  if (!hr) return;
+
+  const percent = parseInt(bonusRangeFull.value);
+
+  document.getElementById("bonusValFull").textContent = percent + "%";
+
+  const payroll = hr.staff * hr.salary;
+  const cost = Math.round(payroll * (percent / 100));
+
+  // efecto moral (30% del bonus)
+  let moraleUp = Math.round(percent * 0.3);
+  if (moraleUp > 20) moraleUp = 20;   // límite duro
+
+  document.getElementById("bonusPayroll").textContent = "$" + payroll;
+  document.getElementById("bonusCost").textContent = "$" + cost;
+  document.getElementById("bonusEffect").textContent = "+" + moraleUp + "%";
+
+});
      
 /* ============================================================
    === HR FULL MODAL — BUILD SELECTS ===========================
