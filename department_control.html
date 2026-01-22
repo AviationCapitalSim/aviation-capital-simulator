@@ -180,17 +180,6 @@ body {
   padding: 16px 0;
   color: rgba(255,255,255,0.65);
 }
-
-/* ============================================================
-   🟦 TABLE HEADER ALIGN FIX — ACS
-   ------------------------------------------------------------
-   • Evita que el thead se meta bajo el header fijo
-   • Corrige desplazamiento visual
-   ============================================================ */
-
-#deptTable {
-  margin-top: 12px;
-}
        
 /* ============================================================
      === TABLE — Qatar Luxury Dark Premium =====================
@@ -209,13 +198,7 @@ th {
   border-bottom: 2px solid #ffb300;
   font-size: 1rem;
 }
-       
-thead {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-       
+
 td {
   padding: 0.8rem;
   font-size: 0.95rem;
@@ -966,82 +949,102 @@ function loadDepartments() {
   const rows = document.getElementById("departmentRows");
   if (!rows) return;
 
-  rows.innerHTML += `
-  <tr>
-    <td>${dep.name}</td>
+  rows.innerHTML = "";
 
-    <td class="staff">${staff}</td>
+  const depts = ACS_HR_getDepartmentsView();
+  if (!depts || !Array.isArray(depts)) {
+    console.warn("⚠️ HR view vacío o inválido");
+    return;
+  }
 
-    <td class="${requiredClass}">${requiredText}</td>
+  depts.forEach(d => {
 
-    <!-- ===== SALARY COLUMN (INLINE ENGINE ÚNICO) ===== -->
-    <td class="salary">
+    // 🛑 Protección total
+    if (!d || typeof d !== "object") return;
 
-      <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+    const dep = HR_prepareTableData(d);
 
-        <!-- Current salary -->
-        <div>$${dep.salary}</div>
+    const staff = Number(dep.staff || 0);
 
-        <!-- Inline slider -->
-        <div style="display:flex; align-items:center; gap:6px; justify-content:center;">
+    // 🔧 Required absoluto real (desde HR engine)
+    const requiredAbsolute =
+      (typeof d.required === "number") ? d.required : staff;
 
-          <input type="range"
-                 min="50"
-                 max="200"
-                 step="5"
-                 value="100"
-                 title="Adjust Salary (%)"
-                 style="width:90px;"
-                 oninput="HR_previewSalary('${dep.id}', this.value)">
+    // ============================================================
+    // ✅ REQUIRED (MODO CANÓNICO QUE PEDISTE)
+    //   • 0  → 🟢 verde (NO falta personal)
+    //   • -X → 🔴 rojo (FALTA personal) + ALERT
+    //   • NUNCA muestra +X (exceso NO se muestra aquí)
+    // ============================================================
 
-          <span id="salaryPreview_${dep.id}" style="
-                min-width:44px;
-                font-weight:700;
-                color:#ffca3a;
-                font-size:0.8rem;">
-            100%
-          </span>
+    const missing = Math.max(0, requiredAbsolute - staff);
 
-          <button class="btn btn-adjust"
-                  title="Apply Salary"
-                  onclick="HR_applySalary('${dep.id}')">
-            ✔
-          </button>
+    let requiredClass = "required-ok";
+    let requiredText  = "0";
 
-        </div>
+    if (missing > 0) {
 
-      </div>
+      requiredClass = "required-missing";
+      requiredText  = `-${missing}`; // 🔴 ej: -10
 
-    </td>
+      // 🔔 ALERTA SOLO SI FALTA PERSONAL (sin spam)
+      if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
 
-    <td class="morale">${dep.morale}%</td>
+        const alertKey = `HR_MISSING_${dep.id}`;
+        if (!window.__ACS_HR_ALERTS) window.__ACS_HR_ALERTS = {};
 
-    <!-- ===== ACTIONS (SOLO BOTONES) ===== -->
-    <td style="white-space:nowrap; text-align:center;">
+        if (!window.__ACS_HR_ALERTS[alertKey]) {
+          window.__ACS_HR_ALERTS[alertKey] = true;
 
-      <!-- Hire +1 -->
-      <button class="btn btn-hire" title="Hire Staff (+1)"
-        onclick="HR_hireOne('${dep.id}')">
-        👤➕
-      </button>
+          window.ACS_Alerts.push({
+            title: "Department Understaffed",
+            message: `${dep.name} is missing ${missing} staff.`,
+            level: "warning",
+            source: "Department Control"
+          });
+        }
+      }
+    }
 
-      <!-- Fire (mini modal) -->
-      <button class="btn btn-dismiss" title="Fire Staff"
-        onclick="openFireMiniModal('${dep.id}')">
-        👤➖
-      </button>
+    rows.innerHTML += `
+      <tr>
+        <td>${dep.name}</td>
+        <td class="staff">${staff}</td>
+        <td class="${requiredClass}">${requiredText}</td>
+        <td class="salary">$${dep.salary}</td>
+        <td class="morale">${dep.morale}%</td>
+       <td>
 
-      <!-- Bonus -->
-      <button class="btn btn-bonus" title="Give Bonus"
-        onclick="openBonusModal('${dep.id}')">
-        🎁
-      </button>
+  <!-- Hire -->
+  <button class="btn btn-hire" title="Hire Staff" onclick="openHRFullModal('${dep.id}')">
+    👤➕
+  </button>
 
-    </td>
-  </tr>
-`;
+  <!-- Fire -->
+  <button class="btn btn-dismiss" title="Fire Staff" onclick="openHRFullModal('${dep.id}')">
+    👤➖
+  </button>
 
-});
+  <!-- Salary -->
+  <button class="btn btn-adjust" title="Adjust Salary" onclick="openHRFullModal('${dep.id}')">
+    💰
+  </button>
+
+  <!-- Bonus -->
+  <button class="btn btn-bonus" title="Give Bonus" onclick="openHRFullModal('${dep.id}')">
+    🎁
+  </button>
+
+  <!-- Control -->
+  <button class="btn btn-control" title="Department Control" onclick="openHRFullModal('${dep.id}')">
+    ⚙️
+  </button>
+
+</td>
+
+      </tr>
+    `;
+  });
 
   // === SYNC HR CORE ===
   try {
@@ -1208,172 +1211,232 @@ function HR_fillDepartmentSelector() {
 }
      
 /* ============================================================
-   🟦 A7 — HIRE DIRECT +1 ENGINE (Qatar Luxury Canonical)
-   ------------------------------------------------------------
-   • Click directo = +1 staff
-   • Sin modal
-   • Protección CEO
-   • Reglas reales de morale
-   • Castigo natural vía salary
-   • Refresh total limpio
+   HR FULL MODAL — OPEN
    ============================================================ */
+     
+let HR_active = null;
+     
+function openHRFullModal(id) {
+  HR_active = id;
 
-function HR_hireOne(deptId) {
+  const hr = ACS_HR_load()[id];
+  
+  HR_fillDepartmentSelector();
+     
+  // Set title
+  document.getElementById("hrModalDeptName").textContent = hr.name;
 
-  const hr = ACS_HR_load();
-  if (!hr || !hr[deptId]) return;
+  // Build selects (Hire + Fire) and cost
+  HR_buildSelects(hr);
 
-  const dep = hr[deptId];
+  // Reset salary slider
+  document.getElementById("salaryRangeFull").value = 100;
+  document.getElementById("salaryValFull").textContent = "100%";
+  document.getElementById("salaryNewFull").textContent = "$" + hr.salary;
+  document.getElementById("salaryAfterFull").textContent = "$" + hr.payroll;
+ 
 
-  // 🛑 PROTECCIÓN CEO (solo 1 permitido)
-  if (dep.id === "ceo" || dep.name?.toLowerCase() === "airline ceo") {
-    if (dep.staff >= 1) {
-      alert("⚠️ There can only be one CEO.");
-      return;
-    }
-  }
+  // Seleccionar departamento actual en el selector
+     
+  const sel = document.getElementById("hrDeptSelector");
+  if (sel) sel.value = id;
+     
+  // Scroll modal to top
+     
+  document.querySelector(".hr-full-modal").scrollTop = 0;
 
-  // 🔥 CONTRATAR +1 REAL
-  ACS_HR_hire(deptId, 1);
+  // Show modal
+     
+  document.getElementById("hrFullModal").style.display = "flex";
+}
 
-  // ============================
-  // 🧠 MORALE ENGINE — TUS REGLAS
-  // ============================
+/* Update hire cost when changing qty */
+     
+function updateHireCost(hr=null) {
+  if (!hr) hr = ACS_HR_load()[HR_active];
+  const qty = parseInt(document.getElementById("hireQty").value);
+  document.getElementById("hireCost").textContent =
+    "$" + (qty * hr.salary);
+}
 
-  const required = (typeof dep.required === "number") ? dep.required : 0;
-  const newStaff = dep.staff + 1;   // staff después de contratar
-  const diff = newStaff - required;
-
-  let moraleDelta = 0;
-
-  /*
-    TUS REGLAS EXACTAS:
-
-    Exacto (0 diff)   → estable
-    +1               → +1%
-    +2               → +2%
-    +3 a +5          → estable
-    +6 o más         → NO baja, solo salary castiga
-  */
-
-  if (diff === 1) moraleDelta = 1;
-  else if (diff === 2) moraleDelta = 2;
-  else moraleDelta = 0;
-
-  // 🔧 Aplicar morale si corresponde
-  if (moraleDelta > 0) {
-
-    const newMorale = Math.min(100, dep.morale + moraleDelta);
-
-    // actualizar directamente en HR core
-    hr[deptId].morale = newMorale;
-
-    console.log(
-      "%c🟦 HR HIRE MORALE BOOST",
-      "color:#00ff99;font-weight:700",
-      dep.name,
-      `+${moraleDelta}% → ${newMorale}%`
-    );
-  }
-
-  console.log(
-    "%c🟦 HR HIRE +1",
-    "color:#00aaff;font-weight:700",
-    dep.name,
-    "Staff:", dep.staff, "→", dep.staff + 1
-  );
-
-  // 🔄 REFRESH TOTAL
+/* Confirm hire */
+     
+function HR_confirmHireFull() {
+  const qty = parseInt(document.getElementById("hireQty").value);
+  ACS_HR_hire(HR_active, qty);
+  closeHRFullModal();
   loadDepartments();
+}
 
-  if (typeof HR_updateKPI === "function") {
-    HR_updateKPI();
-  }
+/* Confirm fire */
+     
+function HR_confirmFireFull() {
+  const qty = parseInt(document.getElementById("fireQty").value);
+  ACS_HR_fire(HR_active, qty);
+  closeHRFullModal();
+  loadDepartments();
+}
+
+/* Salary change */
+     
+document.getElementById("salaryRangeFull").addEventListener("input", () => {
+  const hr = ACS_HR_load()[HR_active];
+  const val = parseInt(salaryRangeFull.value);
+  document.getElementById("salaryValFull").textContent = val + "%";
+
+  const newSalary = Math.round(hr.salary * (val / 100));
+  document.getElementById("salaryNewFull").textContent = "$" + newSalary;
+
+  const newPayroll = newSalary * hr.staff;
+  document.getElementById("salaryAfterFull").textContent = "$" + newPayroll;
+});
+
+function HR_confirmSalaryFull() {
+  const val = parseInt(document.getElementById("salaryRangeFull").value);
+  ACS_HR_adjustSalary(HR_active, val);
+  closeHRFullModal();
+  loadDepartments();
 }
 
 /* ============================================================
-   🟦 A8 — SALARY INLINE SLIDER ENGINE (Qatar Luxury Canonical)
-   ------------------------------------------------------------
-   • Slider inline por departamento
-   • Preview en vivo
-   • Aplicación manual (✔)
-   • Impacto inmediato en payroll
-   • Sin modal
-   • Arquitectura ACS intacta
+   🎁 BONUS LIVE PREVIEW ENGINE (UI ONLY)
    ============================================================ */
 
-let HR_salaryPreview = {};   // cache temporal por depto
+document.getElementById("bonusRangeFull").addEventListener("input", () => {
 
+  const hr = ACS_HR_load()[HR_active];
+  if (!hr) return;
+
+  const percent = parseInt(bonusRangeFull.value);
+
+  document.getElementById("bonusValFull").textContent = percent + "%";
+
+  const payroll = hr.staff * hr.salary;
+  const cost = Math.round(payroll * (percent / 100));
+
+  // efecto moral (30% del bonus)
+  let moraleUp = Math.round(percent * 0.3);
+  if (moraleUp > 20) moraleUp = 20;   // límite duro
+
+  document.getElementById("bonusPayroll").textContent = "$" + payroll;
+  document.getElementById("bonusCost").textContent = "$" + cost;
+  document.getElementById("bonusEffect").textContent = "+" + moraleUp + "%";
+
+});
+     
 /* ============================================================
-   🟦 A8.1 — PREVIEW SALARY (LIVE)
+   === HR FULL MODAL — BUILD SELECTS ===========================
    ============================================================ */
-function HR_previewSalary(deptId, percent) {
+     
+function HR_buildSelects(hrDept) {
 
-  const hr = ACS_HR_load();
-  if (!hr || !hr[deptId]) return;
-
-  const dep = hr[deptId];
-
-  const pct = parseInt(percent);
-  if (!Number.isFinite(pct)) return;
-
-  // guardar preview
-  HR_salaryPreview[deptId] = pct;
-
-  // mostrar %
-  const span = document.getElementById("salaryPreview_" + deptId);
-  if (span) span.textContent = pct + "%";
-
-  // preview payroll (solo visual, no guarda)
-  const newSalary = Math.round(dep.salary * (pct / 100));
-  const newPayroll = newSalary * dep.staff;
-
-  console.log(
-    "%c🟨 HR SALARY PREVIEW",
-    "color:#ffd35c;font-weight:700",
-    dep.name,
-    `${pct}%`,
-    "New salary:", newSalary,
-    "Payroll:", newPayroll
-  );
-}
-
-/* ============================================================
-   🟦 A8.2 — APPLY SALARY CHANGE (CONFIRM)
-   ============================================================ */
-function HR_applySalary(deptId) {
-
-  const hr = ACS_HR_load();
-  if (!hr || !hr[deptId]) return;
-
-  const dep = hr[deptId];
-
-  const pct = HR_salaryPreview[deptId] ?? 100;
-
-  if (!Number.isFinite(pct)) return;
-
-  // 🔥 APLICAR REAL
-  ACS_HR_adjustSalary(deptId, pct);
-
-  console.log(
-    "%c🟦 HR SALARY APPLIED",
-    "color:#ffb300;font-weight:800",
-    dep.name,
-    `${pct}%`,
-    "New salary:", hr[deptId].salary
-  );
-
-  // limpiar preview cache
-  delete HR_salaryPreview[deptId];
-
-  // 🔄 REFRESH TOTAL
-  loadDepartments();
-
-  if (typeof HR_updateKPI === "function") {
-    HR_updateKPI();
+  // Hire 1–20
+  const hireSel = document.getElementById("hireQty");
+  hireSel.innerHTML = "";
+  for (let i = 1; i <= 20; i++) {
+    hireSel.innerHTML += `<option value="${i}">${i}</option>`;
   }
+
+  // Fire 1–staff actual
+  const fireSel = document.getElementById("fireQty");
+  fireSel.innerHTML = "";
+  for (let i = 1; i <= hrDept.staff; i++) {
+    fireSel.innerHTML += `<option value="${i}">${i}</option>`;
+  }
+
+  // Cost update
+  document.getElementById("hireCost").textContent =
+    "$" + hrDept.salary.toLocaleString();
+
+  document.getElementById("fireWarning").textContent = "—";
 }
      
+/* Close */
+function closeHRFullModal() {
+  document.getElementById("hrFullModal").style.display = "none";
+}
+
+/* ============================================================
+   🟪 F — DYNAMIC MODAL REFRESH ENGINE v1.0
+   ------------------------------------------------------------
+   • Opción A: NO cierra el modal
+   • Cambiar de departamento refresca todo:
+     - Título
+     - Staff actual
+     - Required
+     - Hire options
+     - Fire options
+     - Costos
+     - Auto-Balance
+   • No afecta nada fuera del modal
+   ============================================================ */
+
+// === Evento principal del selector ===
+document.getElementById("hrDeptSelector").addEventListener("change", function () {
+    const newID = this.value;
+    if (!newID) return;
+
+    HR_reloadModalDepartment(newID);
+});
+
+
+// === Función que recarga el modal sin cerrarlo ===
+     
+function HR_reloadModalDepartment(id) {
+
+    // 🛑 FIX SAFARI — HR aún no cargado
+    if (!id) return;
+
+    const full = ACS_HR_load();
+    if (!full || !full[id]) {
+        console.warn("⛔ HR_reloadModalDepartment: HR vacío / no cargado todavía", id);
+        return;
+    }
+
+    const hr = full[id];
+
+    // 🔄 Título dinámico
+    document.getElementById("hrModalDeptName").textContent = hr.name;
+
+    // 🔄 Selects
+    HR_buildSelects(hr);
+
+    // 🔄 Costos
+    updateHireCost(hr);
+
+    // 🔄 Fire options
+    const fireSel = document.getElementById("fireQty");
+    fireSel.innerHTML = "";
+    for (let i = 1; i <= hr.staff; i++) {
+        fireSel.innerHTML += `<option value="${i}">${i}</option>`;
+    }
+
+    // 🔄 Summary Block
+    document.getElementById("hrCurrentStaff").textContent = hr.staff;
+    document.getElementById("hrRequiredStaff").textContent = hr.required ?? hr.staff;
+
+    const diff = hr.staff - (hr.required ?? hr.staff);
+    const diffEl = document.getElementById("hrDifference");
+    diffEl.textContent = diff;
+    diffEl.style.color = diff > 0 ? "#00ff99" : diff < 0 ? "#ff4d4d" : "#ffe38a";
+
+    // 🔄 Salary + morale
+    document.getElementById("hrSalary").textContent = `$${hr.salary}`;
+    document.getElementById("hrMorale").textContent = `${hr.morale}%`;
+
+    // 🔄 Mantener modal arriba
+    document.querySelector(".hr-full-modal").scrollTop = 0;
+}
+
+
+function HR_applyAutoAdjust() {
+    if (typeof ACS_HR_autoAdjust5Y === "function") {
+        ACS_HR_autoAdjust5Y();     // usa tu función real de ajuste
+        loadDepartments();         // refresca tabla
+        HR_reloadModalDepartment(HR_active); // refresca modal sin cerrarlo
+    }
+}
+
 </script>
        
 <script>
