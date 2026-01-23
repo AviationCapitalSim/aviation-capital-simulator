@@ -1396,3 +1396,29 @@ registerTimeListener((time) => {
   }
 
 });
+
+/* ============================================================
+   🟦 A3.7.1 — AUTO SALARY SETTINGS CORE (MASTER AUTHORITY)
+   ------------------------------------------------------------
+   • Define estado oficial de Auto Salary
+   • Default ON al crear jugador
+   • Punto único de lectura del sistema
+   ============================================================ */
+
+function ACS_HR_isAutoSalaryEnabled() {
+
+  let flag = localStorage.getItem("ACS_AutoSalary");
+
+  // 🟢 DEFAULT: ON si no existe aún (jugador nuevo)
+  if (!flag) {
+    localStorage.setItem("ACS_AutoSalary", "ON");
+    flag = "ON";
+
+    console.log(
+      "%c⚙ AUTO SALARY DEFAULT ENABLED",
+      "color:#00ffcc;font-weight:700"
+    );
+  }
+
+  return flag === "ON";
+}
