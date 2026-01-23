@@ -228,18 +228,18 @@ window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
 
     console.log("📊 OPS Demand Result:", result);
 
-    // 🔧 Apply into HR.required
-    ACS_OPS_applyDemandToHR(result);
+    // 🔧 Apply into HR.required (OPS staff)
+ACS_OPS_applyDemandToHR(result);
 
-    // 🟦 AUTO HIRE INSTANT (ROUTE / AIRCRAFT / FREQUENCY CHANGE)
-    if (typeof ACS_HR_applyAutoHire_Instant === "function") {
-    ACS_HR_applyAutoHire_Instant();
-    }
+// 🔧 Recalcular estructura directiva (managers required)
+if (typeof ACS_HR_calculateManagementRequired === "function") {
+  ACS_HR_calculateManagementRequired();
+}
 
-    // 🔧 Recalcular estructura directiva después de OPS
-    if (typeof ACS_HR_calculateManagementRequired === "function") {
-    ACS_HR_calculateManagementRequired();
-    }
+// 🟦 AUTO HIRE INSTANT (cubre TODOS los déficits, incluidos managers)
+if (typeof ACS_HR_applyAutoHire_Instant === "function") {
+  ACS_HR_applyAutoHire_Instant();
+}
      
     if (typeof loadDepartments === "function") {
       loadDepartments();
