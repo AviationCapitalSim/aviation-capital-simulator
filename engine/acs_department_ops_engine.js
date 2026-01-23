@@ -609,3 +609,193 @@ registerTimeListener((time) => {
 
 });
 
+/* ============================================================
+   🟦 A3.1.1 — HISTORICAL SALARY MATRIX (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Define frecuencia de revisión histórica
+   • Define ajuste automático por era
+   ============================================================ */
+
+function ACS_HR_getSalaryEraParams(year) {
+
+  if (year < 1960) {
+    return { reviewInterval: 4, autoRaise: 6 };   // 1940–1959
+  }
+
+  if (year < 1980) {
+    return { reviewInterval: 3, autoRaise: 8 };   // 1960–1979
+  }
+
+  if (year < 2000) {
+    return { reviewInterval: 4, autoRaise: 5 };   // 1980–1999
+  }
+
+  if (year < 2010) {
+    return { reviewInterval: 3, autoRaise: 6 };   // 2000–2009
+  }
+
+  // 2010–2026
+  return { reviewInterval: 2, autoRaise: 4 };
+}
+
+/* ============================================================
+   🟦 A3.1.2 — INIT SALARY METADATA CORE
+   ------------------------------------------------------------
+   • Inicializa lastSalaryReviewYear si no existe
+   • Inicializa salaryStatus = "ok"
+   ============================================================ */
+
+function ACS_HR_initSalaryMetadata() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep || typeof dep !== "object") return;
+
+    // Año base si no existe
+    if (typeof dep.lastSalaryReviewYear !== "number") {
+      dep.lastSalaryReviewYear = currentYear;
+    }
+
+    // Estado inicial
+    if (!dep.salaryStatus) {
+      dep.salaryStatus = "ok"; // ok | review | lagging
+    }
+
+  });
+
+  ACS_HR_save(HR);
+}
+
+/* ============================================================
+   🟦 A3.1.3 — SALARY STATUS DETECTOR CORE
+   ------------------------------------------------------------
+   • Detecta estado salarial por departamento
+   • Define color visual + base de alertas
+   ============================================================ */
+
+function ACS_HR_updateSalaryStatus() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  const eraParams = ACS_HR_getSalaryEraParams(currentYear);
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep || typeof dep.lastSalaryReviewYear !== "number") return;
+
+    const yearsSince = currentYear - dep.lastSalaryReviewYear;
+
+    // Estado normal
+    if (yearsSince < eraParams.reviewInterval) {
+      dep.salaryStatus = "ok";
+      return;
+    }
+
+    // Review disponible
+    if (yearsSince < eraParams.reviewInterval + 2) {
+      dep.salaryStatus = "review";
+      return;
+    }
+
+    // Atraso crítico
+    dep.salaryStatus = "lagging";
+
+  });
+
+  ACS_HR_save(HR);
+}
+
+/* ============================================================
+   🟦 A3.1.4 — AUTO SALARY NORMALIZATION CORE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Ajusta salarios instantáneamente a era actual
+   • Resetea estados salariales
+   • Borra atrasos históricos
+   • Modo recuperación automática
+   ============================================================ */
+
+function ACS_HR_applyAutoSalaryNormalization() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  const eraParams = ACS_HR_getSalaryEraParams(currentYear);
+
+  const raisePercent = eraParams.autoRaise;
+
+  console.log(
+    "%c💰 AUTO SALARY NORMALIZATION",
+    "color:#7CFFB2;font-weight:700",
+    "Year:", currentYear,
+    "Raise:", raisePercent + "%"
+  );
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep || typeof dep.salary !== "number") return;
+
+    // Aplicar subida automática
+    const oldSalary = dep.salary;
+    const newSalary = Math.round(oldSalary * (1 + raisePercent / 100));
+
+    dep.salary = newSalary;
+    dep.payroll = dep.staff * dep.salary;
+
+    // Reset histórico
+    dep.lastSalaryReviewYear = currentYear;
+    dep.salaryStatus = "ok";
+
+    console.log(
+      "🟢 Salary normalized:",
+      dep.name,
+      "Old:", oldSalary,
+      "New:", newSalary
+    );
+  });
+
+  ACS_HR_save(HR);
+
+  // Recalcular HR completo
+  if (typeof ACS_HR_recalculateAll === "function") {
+    ACS_HR_recalculateAll();
+  }
+
+  // Refrescar tabla + KPI
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+}
+
+/* ============================================================
+   🟦 A3.1.5 — HR SALARY ENGINE BOOTSTRAP
+   ------------------------------------------------------------
+   • Inicializa sistema salarial histórico
+   • Auto Salary activo por defecto
+   ============================================================ */
+
+function ACS_HR_salaryEngineBootstrap() {
+
+  // Inicializar metadata si falta
+  ACS_HR_initSalaryMetadata();
+
+  // Actualizar estados salariales
+  ACS_HR_updateSalaryStatus();
+
+  // Por ahora Auto Salary SIEMPRE ON (hasta integrar Settings)
+  const autoSalaryEnabled = true;
+
+  if (autoSalaryEnabled) {
+    ACS_HR_applyAutoSalaryNormalization();
+  }
+}
+
