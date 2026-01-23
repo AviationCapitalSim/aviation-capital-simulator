@@ -957,3 +957,176 @@ function ACS_HR_salaryEngineBootstrap() {
     );
   }
 }
+
+/* ============================================================
+   🟦 SAL-JS-1 — OPEN SALARY POLICY MODAL
+   ============================================================ */
+
+let __SAL_currentDep = null;
+
+function openSalaryInline(depID) {
+
+  const HR = ACS_HR_load();
+  const dep = HR[depID];
+  if (!dep) return;
+
+  __SAL_currentDep = depID;
+
+  const market = ACS_HR_getMarketSalary(depID);
+
+  document.getElementById("sal_depName").textContent = dep.name;
+  document.getElementById("sal_staff").textContent = dep.staff;
+  document.getElementById("sal_current").textContent = dep.salary;
+  document.getElementById("sal_market").textContent = market;
+
+  document.getElementById("sal_slider").value = 0;
+  document.getElementById("sal_percent_label").textContent = "0";
+
+  document.getElementById("salaryModal").style.display = "flex";
+
+  updateSalaryPreview();
+}
+
+function closeSalaryModal() {
+  document.getElementById("salaryModal").style.display = "none";
+}
+
+/* ============================================================
+   🟦 SAL-JS-2 — PREVIEW ENGINE REAL TIME
+   ============================================================ */
+
+document.addEventListener("input", e => {
+  if (e.target.id === "sal_slider") {
+    updateSalaryPreview();
+  }
+});
+
+function updateSalaryPreview() {
+
+  const HR = ACS_HR_load();
+  const dep = HR[__SAL_currentDep];
+  if (!dep) return;
+
+  const percent = Number(document.getElementById("sal_slider").value);
+  document.getElementById("sal_percent_label").textContent = percent;
+
+  const newSalary = Math.round(dep.salary * (1 + percent / 100));
+  const payrollDelta = (newSalary - dep.salary) * dep.staff;
+
+  const market = ACS_HR_getMarketSalary(__SAL_currentDep);
+  const ratio = (newSalary / market).toFixed(2);
+
+  // Ratio color
+  const ratioEl = document.getElementById("sal_ratio");
+  ratioEl.textContent = ratio;
+
+  ratioEl.className = "";
+  if (ratio >= 1.0) ratioEl.classList.add("ok");
+  else if (ratio >= 0.85) ratioEl.classList.add("warning");
+  else ratioEl.classList.add("danger");
+
+  document.getElementById("sal_new").textContent = newSalary;
+  document.getElementById("sal_payroll_delta").textContent =
+    (payrollDelta >= 0 ? "+" : "") + "$" + payrollDelta;
+
+  // Morale forecast
+  let moraleText = "No change";
+  let moraleClass = "neutral";
+
+  if (ratio > 1.10) { moraleText = "+1 / month"; moraleClass = "good"; }
+  if (ratio < 0.85) { moraleText = "-1 / month"; moraleClass = "bad"; }
+  if (ratio < 0.70) { moraleText = "-3 / month"; moraleClass = "bad"; }
+
+  const moraleEl = document.getElementById("sal_morale_effect");
+  moraleEl.textContent = moraleText;
+  moraleEl.className = moraleClass;
+
+  // Auto Salary warning
+  const auto = localStorage.getItem("ACS_AutoSalary") === "ON";
+  if (percent !== 0 && auto) {
+    document.getElementById("sal_auto_warning").style.display = "block";
+  } else {
+    document.getElementById("sal_auto_warning").style.display = "none";
+  }
+}
+
+/* ============================================================
+   🟦 SAL-LOGIC-1 — APPLY SALARY POLICY (FINAL AUTHORITY)
+   ============================================================ */
+
+function applySalaryPolicy() {
+
+  const HR = ACS_HR_load();
+  const dep = HR[__SAL_currentDep];
+  if (!dep) return;
+
+  const percent = Number(document.getElementById("sal_slider").value);
+
+  // Si no hay cambio → salir
+  if (percent === 0) {
+    closeSalaryModal();
+    return;
+  }
+
+  const oldSalary = dep.salary;
+  const newSalary = Math.round(oldSalary * (1 + percent / 100));
+
+  // Aplicar definitivo
+  dep.salary = newSalary;
+  dep.payroll = dep.salary * dep.staff;
+
+  // Registrar revisión salarial
+  const year = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  dep.lastSalaryReviewYear = year;
+  dep.salaryStatus = "ok";
+
+  // 🔴 AUTO SALARY OFF INMEDIATO
+  localStorage.setItem("ACS_AutoSalary", "OFF");
+
+  console.log(
+    "%c💰 SALARY POLICY APPLIED",
+    "color:#00ffcc;font-weight:700",
+    dep.name,
+    "Old:", oldSalary,
+    "New:", newSalary,
+    "AutoSalary OFF"
+  );
+
+  ACS_HR_save(HR);
+
+  // Recalcular sistema
+  if (typeof ACS_HR_recalculateAll === "function") ACS_HR_recalculateAll();
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+  closeSalaryModal();
+}
+
+/* ============================================================
+   🟦 SAL-REF-1 — MARKET SALARY REFERENCE CORE
+   ------------------------------------------------------------
+   Modelo mixto:
+   • Usa salario inicial como baseline
+   • Ajusta por era histórica
+   ============================================================ */
+
+function ACS_HR_getMarketSalary(depID) {
+
+  const HR = ACS_HR_load();
+  const dep = HR[depID];
+  if (!dep) return dep.salary;
+
+  const base = dep.salary;
+
+  const year = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+
+  let factor = 1.0;
+
+  if (year < 1960) factor = 1.0;
+  else if (year < 1980) factor = 1.3;
+  else if (year < 2000) factor = 1.8;
+  else if (year < 2010) factor = 2.2;
+  else factor = 2.6;
+
+  return Math.round(base * factor);
+}
