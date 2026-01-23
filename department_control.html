@@ -886,63 +886,6 @@ tr:nth-child(even) {
 <tbody id="departmentRows"></tbody>
 </table>
 
-
-<!-- ============================================================
-     🟥 HR FIRE MINI MODAL — Qatar Luxury Edition (FINAL)
-     Purpose:
-     - Confirmar despido múltiple
-     - Un solo warning
-     - UX limpia (mobile / tablet / desktop)
-     ============================================================ -->
-
-<div class="acs-modal" id="hrFireMiniModal">
-  <div class="acs-modal-content" style="width:380px; text-align:center;">
-
-    <!-- HEADER -->
-    <h3 style="color:#ffb300; margin-top:0;">
-      ⚠️ Staff Dismissal Confirmation
-    </h3>
-
-    <p style="color:#cbd6ff; margin-bottom:14px;">
-      You are about to dismiss
-    </p>
-
-    <!-- QUANTITY SELECT -->
-    <select id="fireMiniQty" class="hr-select" style="margin-bottom:14px;">
-      <!-- JS insertará opciones -->
-    </select>
-
-    <p style="color:#cbd6ff; margin-bottom:6px;">
-      employees from:
-    </p>
-
-    <!-- DEPARTMENT NAME -->
-    <p style="font-size:1.05rem; font-weight:700; color:#ffca3a;" id="fireMiniDeptName">
-      Department
-    </p>
-
-    <p style="color:#ff6b6b; margin-top:14px; font-weight:600;">
-      This action cannot be undone.
-    </p>
-
-    <!-- BUTTONS -->
-    <div style="display:flex; justify-content:space-between; margin-top:22px; gap:12px;">
-
-      <button class="hr-btn-close" style="flex:1;"
-        onclick="closeFireMiniModal()">
-        Cancel
-      </button>
-
-      <button class="hr-btn-danger" style="flex:1;"
-        onclick="HR_confirmFireMini()">
-        Confirm Dismissal
-      </button>
-
-    </div>
-
-  </div>
-</div>
-
 <!-- ============================================================
    🟥 FIRE MINI MODAL — Qatar Luxury Premium
    Purpose:
