@@ -760,7 +760,7 @@ function ACS_HR_emitSalaryAlerts() {
 
   // ⚙️ Por ahora Auto Salary está SIEMPRE ON → no emitir alertas
   // Cuando conectemos Settings, aquí leeremos ACS_SETTINGS.autoSalary
-  const autoSalaryEnabled = true;
+  const autoSalaryEnabled = (localStorage.getItem("ACS_AutoSalary") !== "OFF");
 
   if (autoSalaryEnabled) return;   // 🔒 NO alertas si auto está activo
 
@@ -944,7 +944,7 @@ function ACS_HR_salaryEngineBootstrap() {
   ACS_HR_updateSalaryStatus();
 
   // Por ahora Auto Salary SIEMPRE ON (hasta integrar Settings)
-  const autoSalaryEnabled = true;
+  const autoSalaryEnabled = (localStorage.getItem("ACS_AutoSalary") !== "OFF");
 
   // 🔒 EJECUCIÓN SEGURA — solo si toca revisión real
   if (autoSalaryEnabled && ACS_HR_shouldRunAutoSalary()) {
