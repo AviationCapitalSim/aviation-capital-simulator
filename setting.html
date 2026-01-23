@@ -404,16 +404,46 @@ function handleLogout(){
 /* ========== LOAD SETTINGS AL ENTRAR ========== */
 document.addEventListener("DOMContentLoaded", () => {
 
-  ["autoCcheck","autoDcheck","autoHire"].forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (localStorage.getItem(id) === "true") el.checked = true;
-  });
+  /* ============================================================
+     🟦 A3.5.1 — DEFAULT COMPANY SETTINGS BOOTSTRAP
+     ------------------------------------------------------------
+     • Primera vez jugador → Auto Hire ON
+     • Primera vez jugador → Auto Salary ON
+     • Persistente por partida
+     ============================================================ */
 
+  // 🔧 Auto Hire default ON
+  if (localStorage.getItem("autoHire") === null) {
+    localStorage.setItem("autoHire", "true");
+  }
+
+  // 🔧 Auto Salary default ON
+  if (localStorage.getItem("ACS_AutoSalary") === null) {
+    localStorage.setItem("ACS_AutoSalary", "ON");
+  }
+  
+ ["autoCcheck","autoDcheck","autoHire"].forEach(id=>{
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (localStorage.getItem(id) === "true") el.checked = true;
+});
+
+  /* ============================================================
+     🟦 A3.5.2 — LOAD COMPANY SETTINGS (CANONICAL)
+     ============================================================ */
+
+  // Auto Hire
+  const autoHireFlag = localStorage.getItem("autoHire");
+  const autoHireCB = document.getElementById("autoHire");
+  if (autoHireCB) {
+    autoHireCB.checked = (autoHireFlag !== "false"); // default true
+  }
+
+  // Auto Salary
   const autoSalaryFlag = localStorage.getItem("ACS_AutoSalary");
-  if (autoSalaryFlag === "ON") {
-    const cb = document.getElementById("autoSalary");
-    if (cb) cb.checked = true;
+  const autoSalaryCB = document.getElementById("autoSalary");
+  if (autoSalaryCB) {
+    autoSalaryCB.checked = (autoSalaryFlag !== "OFF"); // default ON
   }
 
   ["regA320","regB737","regECRJ",
@@ -482,25 +512,53 @@ function resetAircraft(){
   openSaveModal("Aircraft Settings", "Aircraft settings reset to defaults.");
 }
 
-/* ========== SAVE / RESET COMPANY ========== */
+/* ============================================================
+   🟦 A3.5.3 — SAVE COMPANY SETTINGS (AUTO SALARY HOOK)
+   ============================================================ */
+
 function saveCompany(){
-  const autoHire = document.getElementById("autoHire").checked;
+
+  const autoHire   = document.getElementById("autoHire").checked;
   const autoSalary = document.getElementById("autoSalary").checked;
 
-  localStorage.setItem("autoHire", autoHire);
+  // Guardar settings
+  localStorage.setItem("autoHire", autoHire ? "true" : "false");
   localStorage.setItem("ACS_AutoSalary", autoSalary ? "ON" : "OFF");
+
+  // 🔥 Si Auto Salary fue ACTIVADO → normalizar INMEDIATAMENTE
+  if (autoSalary) {
+
+    if (typeof ACS_HR_applyAutoSalaryNormalization === "function") {
+
+      console.log("%c⚙️ AUTO SALARY ENABLED — NORMALIZING NOW",
+        "color:#00ff88;font-weight:700");
+
+      ACS_HR_applyAutoSalaryNormalization();
+    }
+  }
 
   openSaveModal("Company Settings", "Company settings saved successfully.");
 }
 
+/* ============================================================
+   🟦 A3.5.4 — RESET COMPANY SETTINGS (DEFAULT ON)
+   ============================================================ */
+
 function resetCompany(){
-  localStorage.removeItem("autoHire");
-  localStorage.removeItem("ACS_AutoSalary");
 
-  document.getElementById("autoHire").checked = false;
-  document.getElementById("autoSalary").checked = false;
+  // Defaults ON
+  localStorage.setItem("autoHire", "true");
+  localStorage.setItem("ACS_AutoSalary", "ON");
 
-  openSaveModal("Company Settings", "Company settings reset.");
+  document.getElementById("autoHire").checked = true;
+  document.getElementById("autoSalary").checked = true;
+
+  // Normalizar salarios inmediatamente
+  if (typeof ACS_HR_applyAutoSalaryNormalization === "function") {
+    ACS_HR_applyAutoSalaryNormalization();
+  }
+
+  openSaveModal("Company Settings", "Company settings reset to defaults (Auto ON).");
 }
 
 /* ========== ADMIN PANEL ========== */
