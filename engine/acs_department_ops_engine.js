@@ -928,34 +928,37 @@ function ACS_HR_shouldRunAutoSalary() {
 }
 
 /* ============================================================
-   🟦 A3.1.5 — HR SALARY ENGINE BOOTSTRAP (SAFE VERSION)
+   🟦 A3.7.3 — HR SALARY ENGINE BOOTSTRAP (FINAL OFFICIAL)
    ------------------------------------------------------------
-   • Inicializa metadata
-   • Actualiza estados salariales
-   • Ejecuta Auto Salary SOLO si corresponde
+   • Inicializa metadata salarial
+   • Lee Settings reales
+   • Aplica normalización solo si Auto Salary ON
+   • Activa disciplina si OFF
    ============================================================ */
 
 function ACS_HR_salaryEngineBootstrap() {
 
-  // Inicializar metadata si falta
+  // Inicializar metadata base
   ACS_HR_initSalaryMetadata();
 
   // Actualizar estados salariales
   ACS_HR_updateSalaryStatus();
 
-  // Por ahora Auto Salary SIEMPRE ON (hasta integrar Settings)
-  const autoSalaryEnabled = (localStorage.getItem("ACS_AutoSalary") !== "OFF");
+  // Leer estado real desde Settings
+  const autoSalaryEnabled = ACS_HR_isAutoSalaryEnabled();
 
-  // 🔒 EJECUCIÓN SEGURA — solo si toca revisión real
-  if (autoSalaryEnabled && ACS_HR_shouldRunAutoSalary()) {
+  console.log(
+    "%c⚙ HR SALARY ENGINE BOOTSTRAP",
+    "color:#00ffcc;font-weight:700",
+    "AutoSalary:", autoSalaryEnabled ? "ON" : "OFF"
+  );
+
+  // 🟢 AUTO ON → normalizar instantáneo
+  if (autoSalaryEnabled) {
     ACS_HR_applyAutoSalaryNormalization();
-  } else {
-    console.log(
-      "%c💼 AUTO SALARY SKIPPED",
-      "color:#ffaa00;font-weight:600",
-      "Salaries already up to date"
-    );
   }
+
+  // 🔴 AUTO OFF → disciplina activa (alertas + moral ya conectadas)
 }
 
 /* ============================================================
@@ -1080,8 +1083,13 @@ function applySalaryPolicy() {
   dep.lastSalaryReviewYear = year;
   dep.salaryStatus = "ok";
 
-  // 🔴 AUTO SALARY OFF INMEDIATO
+  // 🔴 AUTO SALARY OFF INMEDIATO + SYNC SETTINGS UI
   localStorage.setItem("ACS_AutoSalary", "OFF");
+
+  const cb = document.getElementById("autoSalary");
+  if (cb) cb.checked = false;
+
+  console.log("%c⚠ AUTO SALARY DISABLED BY MANUAL OVERRIDE", "color:#ff4040;font-weight:700");
 
   console.log(
     "%c💰 SALARY POLICY APPLIED",
