@@ -231,9 +231,9 @@ window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
     // 🔧 Apply into HR.required
     ACS_OPS_applyDemandToHR(result);
 
-    // 🔄 Recalculate HR + refresh table if present
-    if (typeof ACS_HR_recalculateAll === "function") {
-      ACS_HR_recalculateAll();
+    // 🟦 AUTO HIRE INSTANT (ROUTE / AIRCRAFT / FREQUENCY CHANGE)
+    if (typeof ACS_HR_applyAutoHire_Instant === "function") {
+    ACS_HR_applyAutoHire_Instant();
     }
 
     if (typeof loadDepartments === "function") {
