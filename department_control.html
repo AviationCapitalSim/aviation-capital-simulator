@@ -1356,25 +1356,47 @@ function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
-
      
+/* ============================================================
+   🟦 A3.1.8 — DOM READY HR BOOTSTRAP ORDER (CRITICAL)
+   ------------------------------------------------------------
+   • Salary engine primero
+   • Luego HR recalculation
+   • Luego tabla
+   • Luego KPI
+   • Luego reloj
+   ============================================================ */
+
 window.addEventListener("DOMContentLoaded", () => {
 
-  // 1️⃣ Cargar tabla + recalcular HR
-  loadDepartments();
+  // 1️⃣ Inicializar Salary Engine (Auto Salary ON por defecto)
+  if (typeof ACS_HR_salaryEngineBootstrap === "function") {
+    ACS_HR_salaryEngineBootstrap();
+  }
 
-  // 2️⃣ KPI SIEMPRE DESPUÉS del recalculo real
+  // 2️⃣ Recalcular HR completo con salarios ya normalizados
+  if (typeof ACS_HR_recalculateAll === "function") {
+    ACS_HR_recalculateAll();
+  }
+
+  // 3️⃣ Cargar tabla YA con salarios correctos
+  if (typeof loadDepartments === "function") {
+    loadDepartments();
+  }
+
+  // 4️⃣ KPI SIEMPRE DESPUÉS del recalculo real
   setTimeout(() => {
     if (typeof HR_updateKPI === "function") {
       HR_updateKPI();
     }
   }, 200);
 
-  // 3️⃣ Clock engine
+  // 5️⃣ Clock engine
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
+
 });
 
 /* ============================================================
