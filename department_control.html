@@ -743,6 +743,32 @@ tr:nth-child(even) {
   font-style: italic;
 }
 
+/* ============================================================
+   🟦 A3.2.1 — SALARY STATUS COLORS (HR TABLE)
+   ------------------------------------------------------------
+   • ok     → verde suave
+   • review → amarillo (auto salary OFF en el futuro)
+   • lagging→ rojo fuerte (atraso crítico)
+   ============================================================ */
+
+.salary-ok {
+  color: #7CFFB2 !important;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(0,255,160,0.22);
+}
+
+.salary-review {
+  color: #ffcf4a !important;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(255,200,60,0.28);
+}
+
+.salary-lagging {
+  color: #ff4d4d !important;
+  font-weight: 900;
+  text-shadow: 0 0 12px rgba(255,80,80,0.55);
+}
+       
 </style>
 </head>
 
@@ -1054,7 +1080,12 @@ function loadDepartments() {
     console.warn("⚠️ HR view vacío o inválido");
     return;
   }
-
+     
+  // 🔧 Salary status refresh (only if needed)
+  if (typeof ACS_HR_updateSalaryStatus === "function") {
+  ACS_HR_updateSalaryStatus();
+  }
+     
   depts.forEach(d => {
 
     // 🛑 Protección total
@@ -1109,7 +1140,8 @@ function loadDepartments() {
     <td>${dep.name}</td>
     <td class="staff">${staff}</td>
     <td class="${requiredClass}">${requiredText}</td>
-    <td class="salary">$${dep.salary}</td>
+    <td class="salary ${dep.salaryStatus === "lagging" ? "salary-lagging" : (dep.salaryStatus === "review" ? "salary-review" : "salary-ok")}">
+     $${dep.salary.toLocaleString()}</td>
     <td class="morale">${dep.morale}%</td>
 
    <td>
