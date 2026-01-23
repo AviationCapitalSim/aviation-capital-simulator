@@ -777,10 +777,43 @@ function ACS_HR_applyAutoSalaryNormalization() {
 }
 
 /* ============================================================
-   🟦 A3.1.5 — HR SALARY ENGINE BOOTSTRAP
+   🟦 A3.1.6 — AUTO SALARY EXECUTION GUARD (ACS OFFICIAL)
    ------------------------------------------------------------
-   • Inicializa sistema salarial histórico
-   • Auto Salary activo por defecto
+   • Evita normalización múltiple
+   • Ejecuta solo cuando toca revisión histórica
+   • Protege economía y Company Value
+   ============================================================ */
+
+function ACS_HR_shouldRunAutoSalary() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return false;
+
+  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+
+  let needsRun = false;
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep || typeof dep.lastSalaryReviewYear !== "number") return;
+
+    // Si algún departamento está atrasado → hay que normalizar
+    if (dep.lastSalaryReviewYear < currentYear) {
+      needsRun = true;
+    }
+
+  });
+
+  return needsRun;
+}
+
+/* ============================================================
+   🟦 A3.1.5 — HR SALARY ENGINE BOOTSTRAP (SAFE VERSION)
+   ------------------------------------------------------------
+   • Inicializa metadata
+   • Actualiza estados salariales
+   • Ejecuta Auto Salary SOLO si corresponde
    ============================================================ */
 
 function ACS_HR_salaryEngineBootstrap() {
@@ -794,8 +827,14 @@ function ACS_HR_salaryEngineBootstrap() {
   // Por ahora Auto Salary SIEMPRE ON (hasta integrar Settings)
   const autoSalaryEnabled = true;
 
-  if (autoSalaryEnabled) {
+  // 🔒 EJECUCIÓN SEGURA — solo si toca revisión real
+  if (autoSalaryEnabled && ACS_HR_shouldRunAutoSalary()) {
     ACS_HR_applyAutoSalaryNormalization();
+  } else {
+    console.log(
+      "%c💼 AUTO SALARY SKIPPED",
+      "color:#ffaa00;font-weight:600",
+      "Salaries already up to date"
+    );
   }
 }
-
