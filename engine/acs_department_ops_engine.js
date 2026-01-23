@@ -294,6 +294,11 @@ if (!localStorage.getItem("ACS_OPS_DEFICITS")) {
 
 function ACS_OPS_checkDepartmentDeficits_Monthly() {
 
+// 💼 Salary alert monthly check
+if (typeof ACS_HR_emitSalaryAlerts === "function") {
+  ACS_HR_emitSalaryAlerts();
+}
+   
   const HR = ACS_HR_load();
   if (!HR) return;
 
@@ -681,6 +686,11 @@ function ACS_HR_initSalaryMetadata() {
 
 function ACS_HR_updateSalaryStatus() {
 
+// 🔔 Emitir alertas salariales si corresponde
+if (typeof ACS_HR_emitSalaryAlerts === "function") {
+  ACS_HR_emitSalaryAlerts();
+}
+   
   const HR = ACS_HR_load();
   if (!HR) return;
 
@@ -712,6 +722,104 @@ function ACS_HR_updateSalaryStatus() {
   });
 
   ACS_HR_save(HR);
+}
+
+/* ============================================================
+   🟦 A3.3.1 — SALARY ALERT STATE STORAGE
+   ------------------------------------------------------------
+   • Evita spam de alertas salariales
+   • 1 alerta por departamento por año
+   ============================================================ */
+
+function ACS_HR_loadSalaryAlertState() {
+  return JSON.parse(localStorage.getItem("ACS_HR_SALARY_ALERTS") || "{}");
+}
+
+function ACS_HR_saveSalaryAlertState(state) {
+  localStorage.setItem("ACS_HR_SALARY_ALERTS", JSON.stringify(state));
+}
+
+if (!localStorage.getItem("ACS_HR_SALARY_ALERTS")) {
+  ACS_HR_saveSalaryAlertState({});
+}
+
+
+/* ============================================================
+   🟦 A3.3.2 — SALARY ALERT EMITTER CORE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Emite alertas SOLO si Auto Salary está OFF
+   • Review  → info
+   • Lagging → warning
+   • Sin spam (1 por año por dept)
+   ============================================================ */
+
+function ACS_HR_emitSalaryAlerts() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  // ⚙️ Por ahora Auto Salary está SIEMPRE ON → no emitir alertas
+  // Cuando conectemos Settings, aquí leeremos ACS_SETTINGS.autoSalary
+  const autoSalaryEnabled = true;
+
+  if (autoSalaryEnabled) return;   // 🔒 NO alertas si auto está activo
+
+  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  const state = ACS_HR_loadSalaryAlertState();
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep || !dep.salaryStatus) return;
+
+    // Solo alertar si hay problema
+    if (dep.salaryStatus === "ok") return;
+
+    const alertKey = `${id}_${currentYear}`;
+
+    // 🔒 Cooldown anual por departamento
+    if (state[alertKey]) return;
+
+    let level   = "info";
+    let message = "";
+
+    if (dep.salaryStatus === "review") {
+      level = "info";
+      message = `${dep.name} salaries due for review. Consider adjusting wages.`;
+    }
+
+    if (dep.salaryStatus === "lagging") {
+      level = "warning";
+      message = `${dep.name} salaries critically outdated. Risk of morale loss and resignations.`;
+    }
+
+    // 🔔 EMITIR ALERTA CENTRAL
+    if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+
+      window.ACS_Alerts.push({
+        title: "Salary Review Required",
+        message: message,
+        level: level,
+        type: "hr",
+        category: "hr",
+        source: "HR Salary Engine"
+      });
+
+      console.log(
+        "%c💼 SALARY ALERT EMITTED",
+        "color:#ffb300;font-weight:700",
+        dep.name,
+        "Status:", dep.salaryStatus,
+        "Level:", level
+      );
+
+      // Guardar cooldown
+      state[alertKey] = true;
+    }
+
+  });
+
+  ACS_HR_saveSalaryAlertState(state);
 }
 
 /* ============================================================
