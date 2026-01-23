@@ -402,6 +402,7 @@ function handleLogout(){
 }
 
 /* ========== LOAD SETTINGS AL ENTRAR ========== */
+  
 document.addEventListener("DOMContentLoaded", () => {
 
   /* ============================================================
@@ -439,12 +440,25 @@ document.addEventListener("DOMContentLoaded", () => {
     autoHireCB.checked = (autoHireFlag !== "false"); // default true
   }
 
-  // Auto Salary
-  const autoSalaryFlag = localStorage.getItem("ACS_AutoSalary");
-  const autoSalaryCB = document.getElementById("autoSalary");
-  if (autoSalaryCB) {
-    autoSalaryCB.checked = (autoSalaryFlag !== "OFF"); // default ON
-  }
+  // 🔧 AUTO SALARY DEFAULT + LOAD STATE
+let autoSalaryFlag = localStorage.getItem("ACS_AutoSalary");
+
+// Default ON si no existe (jugador nuevo)
+if (!autoSalaryFlag) {
+  localStorage.setItem("ACS_AutoSalary", "ON");
+  autoSalaryFlag = "ON";
+}
+
+const autoSalaryCB = document.getElementById("autoSalary");
+if (autoSalaryCB) {
+
+  autoSalaryCB.checked = (autoSalaryFlag === "ON");
+
+  // Listener directo
+  autoSalaryCB.addEventListener("change", () => {
+    syncAutoSalarySetting();
+  });
+}
 
   ["regA320","regB737","regECRJ",
    "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
@@ -540,6 +554,44 @@ function saveCompany(){
   openSaveModal("Company Settings", "Company settings saved successfully.");
 }
 
+/* ============================================================
+   🟦 A3.7.2 — AUTO SALARY SETTINGS SYNC ENGINE
+   ------------------------------------------------------------
+   • Conecta checkbox autoSalary con HR system
+   • Aplica normalización inmediata al activar
+   • NO borra alertas
+   ============================================================ */
+
+function syncAutoSalarySetting() {
+
+  const cb = document.getElementById("autoSalary");
+  if (!cb) return;
+
+  const enabled = cb.checked;
+
+  localStorage.setItem("ACS_AutoSalary", enabled ? "ON" : "OFF");
+
+  console.log(
+    "%c⚙ AUTO SALARY SETTING CHANGED",
+    "color:#ffb300;font-weight:700",
+    enabled ? "ON" : "OFF"
+  );
+
+  // 🟢 Si se activa → aplicar normalización inmediata
+  if (enabled) {
+
+    if (window.ACS_HR_applyAutoSalaryNormalization) {
+
+      window.ACS_HR_applyAutoSalaryNormalization();
+
+      console.log(
+        "%c💰 AUTO SALARY NORMALIZATION APPLIED (FROM SETTINGS)",
+        "color:#00ff88;font-weight:700"
+      );
+    }
+  }
+}
+  
 /* ============================================================
    🟦 A3.5.4 — RESET COMPANY SETTINGS (DEFAULT ON)
    ============================================================ */
