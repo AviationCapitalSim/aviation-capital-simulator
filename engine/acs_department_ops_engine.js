@@ -1130,3 +1130,269 @@ function ACS_HR_getMarketSalary(depID) {
 
   return Math.round(base * factor);
 }
+
+/* ============================================================
+   🟦 A3.5 — SALARY → MORALE MONTHLY ENGINE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Evalúa impacto salarial en moral
+   • Se ejecuta 1 vez por mes de juego
+   • Modelo humano realista
+   • Totalmente independiente de Auto Salary
+   ============================================================ */
+
+function ACS_HR_applySalaryMorale_Monthly() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  const year  = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  const month = ACS_TIME_getMonth ? ACS_TIME_getMonth() : new Date().getUTCMonth();
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep || typeof dep.salary !== "number") return;
+
+    const market = ACS_HR_getMarketSalary(id);
+    if (!market || market <= 0) return;
+
+    const ratio = dep.salary / market;
+
+    let delta = 0;
+
+    // ========================================================
+    // 🧠 HUMAN BEHAVIOR MODEL
+    // ========================================================
+
+    if (ratio >= 1.10) delta = +1;
+    else if (ratio >= 1.00) delta = 0;
+    else if (ratio >= 0.90) delta = -1;
+    else if (ratio >= 0.75) delta = -2;
+    else delta = -3;
+
+    if (delta !== 0) {
+
+      const oldMorale = dep.morale || 100;
+      const newMorale = Math.max(30, Math.min(100, oldMorale + delta));
+
+      dep.morale = newMorale;
+
+      console.log(
+        "%c🧠 SALARY MORALE UPDATE",
+        delta > 0 ? "color:#00ff88;font-weight:600" : "color:#ff5555;font-weight:600",
+        dep.name,
+        "Ratio:", ratio.toFixed(2),
+        "Delta:", delta,
+        "Morale:", oldMorale, "→", newMorale
+      );
+    }
+
+  });
+
+  ACS_HR_save(HR);
+
+  // Refrescar UI
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+}
+
+/* ============================================================
+   🟦 A3.5.1 — MONTHLY TICK — SALARY MORALE ENGINE
+   ------------------------------------------------------------
+   • Ejecuta evaluación salarial 1 vez por mes de juego
+   • Totalmente sincronizado con ACS_TIME
+   ============================================================ */
+
+let __HR_lastSalaryMonth = null;
+
+registerTimeListener((time) => {
+
+  const year  = time.getUTCFullYear();
+  const month = time.getUTCMonth(); // 0–11
+
+  const key = `${year}-${month}`;
+
+  if (__HR_lastSalaryMonth === null) __HR_lastSalaryMonth = key;
+
+  if (key !== __HR_lastSalaryMonth) {
+
+    console.log(
+      "%c🗓 HR MONTH TICK — SALARY MORALE",
+      "color:#00ffcc;font-weight:600",
+      "Year:", year,
+      "Month:", month + 1
+    );
+
+    ACS_HR_applySalaryMorale_Monthly();
+
+    __HR_lastSalaryMonth = key;
+  }
+
+});
+
+/* ============================================================
+   🟦 A3.6.1 — SALARY ALERT STATE ENGINE (ANTI-SPAM CORE)
+   ------------------------------------------------------------
+   • Guarda historial salarial por departamento
+   • Evita spam de alertas
+   • Seguimiento mensual real
+   ============================================================ */
+
+function ACS_HR_loadSalaryAlertTrack() {
+  return JSON.parse(localStorage.getItem("ACS_HR_SALARY_TRACK") || "{}");
+}
+
+function ACS_HR_saveSalaryAlertTrack(state) {
+  localStorage.setItem("ACS_HR_SALARY_TRACK", JSON.stringify(state));
+}
+
+if (!localStorage.getItem("ACS_HR_SALARY_TRACK")) {
+  ACS_HR_saveSalaryAlertTrack({});
+}
+
+/* ============================================================
+   🟦 A3.6.2 — SALARY ALERT EVALUATOR (MONTHLY DISCIPLINE CORE)
+   ------------------------------------------------------------
+   • Evalúa salarios bajos persistentes
+   • Emite alertas progresivas
+   • SOLO si Auto Salary está OFF
+   • 100% compatible con Alerts Center
+   ============================================================ */
+
+function ACS_HR_evaluateSalaryAlerts_Monthly() {
+
+  // 🔒 Si Auto Salary está ON → NO emitir alertas
+  const auto = localStorage.getItem("ACS_AutoSalary") === "ON";
+  if (auto) return;
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  const track = ACS_HR_loadSalaryAlertTrack();
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep || typeof dep.salary !== "number") return;
+
+    const market = ACS_HR_getMarketSalary(id);
+    if (!market || market <= 0) return;
+
+    const ratio = dep.salary / market;
+
+    // Inicializar tracking si no existe
+    if (!track[id]) {
+      track[id] = {
+        lowMonths: 0,
+        lastLevel: null
+      };
+    }
+
+    const entry = track[id];
+
+    // ================================
+    // CONTAR MESES DE SALARIO BAJO
+    // ================================
+
+    if (ratio < 0.95) {
+      entry.lowMonths++;
+    } else {
+      entry.lowMonths = 0;
+      entry.lastLevel = null;
+      return;
+    }
+
+    // ================================
+    // DETERMINAR NIVEL DE ALERTA
+    // ================================
+
+    let level = null;
+    let title = "";
+    let message = "";
+
+    if (ratio < 0.75 && entry.lowMonths >= 2) {
+      level = "danger";
+      title = "Critical Salary Risk";
+      message = `${dep.name} salaries critically below market (${Math.round(ratio*100)}%). High risk of resignations and strikes.`;
+    }
+    else if (ratio < 0.85 && entry.lowMonths >= 2) {
+      level = "warning";
+      title = "Salary Lagging";
+      message = `${dep.name} salaries significantly below market (${Math.round(ratio*100)}%). Morale deterioration expected.`;
+    }
+    else if (ratio < 0.95 && entry.lowMonths >= 2) {
+      level = "info";
+      title = "Salary Review Required";
+      message = `${dep.name} salaries below market reference (${Math.round(ratio*100)}%). Review recommended.`;
+    }
+
+    // ================================
+    // EMITIR ALERTA (ANTI DUPLICADO)
+    // ================================
+
+    if (level && entry.lastLevel !== level) {
+
+      if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+
+        window.ACS_Alerts.push({
+          title: title,
+          message: message,
+          level: level,
+          type: "hr",
+          category: "salary",
+          source: "HR Salary Engine"
+        });
+
+        console.log(
+          "%c💼 SALARY ALERT",
+          level === "danger" ? "color:#ff4040;font-weight:700" :
+          level === "warning" ? "color:#ffae00;font-weight:700" :
+                                "color:#00ccff;font-weight:700",
+          dep.name,
+          "Ratio:", ratio.toFixed(2),
+          "Level:", level
+        );
+
+        entry.lastLevel = level;
+      }
+    }
+
+  });
+
+  ACS_HR_saveSalaryAlertTrack(track);
+}
+
+/* ============================================================
+   🟦 A3.6.3 — MONTHLY TICK — SALARY ALERT ENGINE
+   ------------------------------------------------------------
+   • Ejecuta disciplina salarial 1 vez por mes de juego
+   • SOLO si Auto Salary está OFF
+   • Compatible con Alerts Center
+   ============================================================ */
+
+let __HR_lastSalaryAlertMonth = null;
+
+registerTimeListener((time) => {
+
+  const year  = time.getUTCFullYear();
+  const month = time.getUTCMonth();
+
+  const key = `${year}-${month}`;
+
+  if (__HR_lastSalaryAlertMonth === null) __HR_lastSalaryAlertMonth = key;
+
+  if (key !== __HR_lastSalaryAlertMonth) {
+
+    console.log(
+      "%c🗓 HR MONTH TICK — SALARY ALERT CHECK",
+      "color:#ffb300;font-weight:600",
+      "Year:", year,
+      "Month:", month + 1
+    );
+
+    ACS_HR_evaluateSalaryAlerts_Monthly();
+
+    __HR_lastSalaryAlertMonth = key;
+  }
+
+});
