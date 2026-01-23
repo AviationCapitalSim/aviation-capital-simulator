@@ -1430,3 +1430,81 @@ function ACS_HR_isAutoSalaryEnabled() {
 
   return flag === "ON";
 }
+
+/* ============================================================
+   🟦 A3.8.3 — ROUTE INSTANT AUTO HIRE ENGINE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Ejecuta auto contratación INSTANTÁNEA
+   • Solo cuando OPS recalcula required
+   • Evalúa TODOS los departamentos
+   • Inyecta EXACTAMENTE el personal faltante
+   • NO respeta budget
+   • NO toca moral
+   ============================================================ */
+
+function ACS_HR_applyAutoHire_Instant() {
+
+  // 🔒 Leer estado real desde Settings
+  const autoHire = localStorage.getItem("autoHire") === "true";
+  if (!autoHire) return;
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  let totalHired = 0;
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep) return;
+
+    // Solo departamentos con estructura válida
+    if (typeof dep.required !== "number") return;
+    if (typeof dep.staff !== "number") return;
+
+    const staff    = dep.staff;
+    const required = dep.required;
+
+    const deficit = Math.max(0, required - staff);
+    if (deficit === 0) return;
+
+    // ========================================================
+    // ✅ INYECCIÓN INSTANTÁNEA EXACTA
+    // ========================================================
+
+    dep.staff += deficit;
+    dep.payroll = dep.staff * dep.salary;
+
+    totalHired += deficit;
+
+    console.log(
+      "%c👥 AUTO HIRE INSTANT",
+      "color:#00ff88;font-weight:700",
+      dep.name,
+      "Hired:", deficit,
+      "New staff:", dep.staff,
+      "Required:", required
+    );
+
+  });
+
+  if (totalHired > 0) {
+
+    ACS_HR_save(HR);
+
+    // Recalcular HR completo
+    if (typeof ACS_HR_recalculateAll === "function") {
+      ACS_HR_recalculateAll();
+    }
+
+    // Refrescar UI
+    if (typeof loadDepartments === "function") loadDepartments();
+    if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+    console.log(
+      "%c🧭 AUTO HIRE INSTANT SUMMARY",
+      "color:#00ffcc;font-weight:700",
+      "Total hired:", totalHired
+    );
+  }
+}
