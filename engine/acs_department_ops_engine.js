@@ -1508,3 +1508,93 @@ function ACS_HR_applyAutoHire_Instant() {
     );
   }
 }
+
+/* ============================================================
+   🟦 A4.1 — MANAGEMENT LOAD CALCULATOR (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Calcula required dinámico de managers
+   • Middle Level → por staff operativo
+   • High Level   → por tamaño empresa
+   • Integra con HR.required (no toca staff)
+   ============================================================ */
+
+function ACS_HR_calculateManagementRequired() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  // === CONTAR STAFF OPERATIVO REAL ===
+  let operationalStaff = 0;
+  let totalStaff = 0;
+
+  Object.keys(HR).forEach(id => {
+    const dep = HR[id];
+    if (!dep) return;
+
+    const staff = dep.staff || 0;
+    totalStaff += staff;
+
+    // Departamentos operativos reales
+    if ([
+      "pilots_small","pilots_medium","pilots_large","pilots_vlarge",
+      "cabin",
+      "maintenance",
+      "ground",
+      "security",
+      "flightops",
+      "quality"
+    ].includes(id)) {
+      operationalStaff += staff;
+    }
+  });
+
+  // ============================================================
+  // 🧭 MIDDLE LEVEL MANAGEMENT RULE
+  // ------------------------------------------------------------
+  // 1 middle manager cada 50 empleados operativos
+  // ============================================================
+
+  let middleRequired = Math.ceil(operationalStaff / 50);
+
+  // mínimo 1 si hay operación real
+  if (operationalStaff > 10 && middleRequired < 1) {
+    middleRequired = 1;
+  }
+
+  // ============================================================
+  // 🧭 HIGH LEVEL MANAGEMENT RULE
+  // ------------------------------------------------------------
+  // 1 VP cada 120 empleados totales
+  // Solo empieza a exigir después de cierto tamaño
+  // ============================================================
+
+  let highRequired = 0;
+
+  if (totalStaff >= 60) {
+    highRequired = Math.ceil(totalStaff / 120);
+  }
+
+  // ============================================================
+  // 🔧 APLICAR EN HR.required
+  // ============================================================
+
+  if (HR["middle_management"]) {
+    HR["middle_management"].required = middleRequired;
+  }
+
+  if (HR["high_management"]) {
+    HR["high_management"].required = highRequired;
+  }
+
+  ACS_HR_save(HR);
+
+  console.log(
+    "%c🧭 MANAGEMENT LOAD UPDATED",
+    "color:#00ffcc;font-weight:700",
+    "Operational:", operationalStaff,
+    "Total:", totalStaff,
+    "Middle req:", middleRequired,
+    "High req:", highRequired
+  );
+}
+
