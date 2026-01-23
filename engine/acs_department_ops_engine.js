@@ -23,46 +23,6 @@
    Date: 21 JAN 2026
    ============================================================ */
 
-/* ============================================================
-   🟦 A-UI-1 — FIRE MODAL SAFETY RESET (ACS OFFICIAL)
-   ------------------------------------------------------------
-   • Impide modales de despido activos tras refresh
-   • Resetea cualquier estado fantasma
-   • Garantiza UI limpia al cargar
-   ============================================================ */
-
-(function ACS_resetFireModalState() {
-
-  // Reset variables globales si existieran
-  window.__FIRE_currentDep = null;
-  window.__FIRE_qty = 0;
-  window.__FIRE_active = false;
-
-  // Limpiar flags persistentes si quedaron guardados
-  localStorage.removeItem("ACS_FIRE_ACTIVE");
-  localStorage.removeItem("ACS_FIRE_DEP");
-  localStorage.removeItem("ACS_FIRE_QTY");
-
-  // Cerrar modal si quedó visible en HTML
-  setTimeout(() => {
-
-    const modal = document.getElementById("fireModal");
-    if (modal) {
-      modal.style.display = "none";
-    }
-
-    // Liberar scroll por seguridad
-    document.body.style.overflow = "auto";
-    document.documentElement.style.overflow = "auto";
-
-    console.log(
-      "%c🧹 FIRE MODAL STATE RESET",
-      "color:#00ffcc;font-weight:700"
-    );
-
-  }, 100);
-
-})();
 
 /* ============================================================
    🟦 A1 — DISTANCE CLASSIFICATION ENGINE
