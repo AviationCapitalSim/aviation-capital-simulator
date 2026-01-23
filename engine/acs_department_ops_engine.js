@@ -285,9 +285,14 @@ if (!localStorage.getItem("ACS_OPS_DEFICITS")) {
 }
 
 /* ============================================================
-   🔎 CHECK DEFICITS — ejecutado semanalmente
+   🔎 MONTHLY DEFICIT CHECK + MORALE DEGRADATION (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Se ejecuta 1 vez por mes de juego
+   • Degradación suave y estratégica
+   • Conecta con alertas + OPS impact
    ============================================================ */
-function ACS_OPS_checkDepartmentDeficits() {
+
+function ACS_OPS_checkDepartmentDeficits_Monthly() {
 
   const HR = ACS_HR_load();
   if (!HR) return;
@@ -299,12 +304,12 @@ function ACS_OPS_checkDepartmentDeficits() {
     const dep = HR[depID];
     if (!dep || typeof dep.required !== "number") return;
 
-    const staff = dep.staff || 0;
+    const staff    = dep.staff || 0;
     const required = dep.required || 0;
 
     const deficit = Math.max(0, required - staff);
 
-    // === NO DEFICIT → limpiar estado si existía
+    // === NO DEFICIT → limpiar estado
     if (deficit === 0) {
       if (state[depID]) {
         delete state[depID];
@@ -314,96 +319,107 @@ function ACS_OPS_checkDepartmentDeficits() {
 
     // === DEFICIT ACTIVO
     if (!state[depID]) {
-      // Primera vez detectado
       state[depID] = {
-        weeks: 0,
-        lastAlertWeek: -1
+        months: 0,
+        lastAlertMonth: -1
       };
     }
 
     const entry = state[depID];
-    entry.weeks++;
+    entry.months++;
 
     // ========================================================
-    // 🔔 ALERTA SEMANAL
+    // 🔔 ALERTA MENSUAL
     // ========================================================
     if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
 
-      if (entry.lastAlertWeek !== entry.weeks) {
+      if (entry.lastAlertMonth !== entry.months) {
 
         let level = "info";
-        if (entry.weeks >= 2) level = "warning";
-        if (entry.weeks >= 4) level = "danger";
+        if (entry.months >= 2) level = "warning";
+        if (entry.months >= 4) level = "danger";
 
         window.ACS_Alerts.push({
           title: "Staff Deficit Detected",
-          message: `${dep.name} is missing ${deficit} staff for ${entry.weeks} weeks.`,
+          message: `${dep.name} is missing ${deficit} staff for ${entry.months} months.`,
           level: level,
           source: "Department Ops"
         });
 
-        entry.lastAlertWeek = entry.weeks;
+        entry.lastAlertMonth = entry.months;
       }
     }
 
     // ========================================================
-    // 😟 MORALE DEGRADATION LOGIC
+    // 😟 MORALE DEGRADATION — MONTHLY REALISTIC MODEL
     // ========================================================
 
-    // Semana 0–1 → solo alerta
-    // Semana 2+  → empieza a bajar moral
+    // Fórmula suave proporcional
+    let drop = 1;
 
-    if (entry.weeks >= 2) {
+    if (staff > 0) {
+      drop = Math.round((deficit / staff) * 10);
 
-      // caída suave pero acumulativa
-      const drop = 1 + Math.floor(deficit / 2);   // más déficit = más caída
-
-      dep.morale = Math.max(40, dep.morale - drop);
-
-      console.log(
-        `%c😟 MORALE DOWN — ${dep.name}`,
-        "color:#ff5555;font-weight:600",
-        "Weeks:", entry.weeks,
-        "Deficit:", deficit,
-        "New morale:", dep.morale
-      );
+      if (drop < 1) drop = 1;
+      if (drop > 8) drop = 8;
     }
+
+    const oldMorale = dep.morale || 100;
+    dep.morale = Math.max(40, oldMorale - drop);
+
+    console.log(
+      `%c😟 MONTHLY MORALE DOWN — ${dep.name}`,
+      "color:#ff5555;font-weight:600",
+      "Deficit:", deficit,
+      "Drop:", drop + "%",
+      "New morale:", dep.morale
+    );
 
   });
 
   ACS_HR_save(HR);
   ACS_OPS_saveDeficitState(state);
 
-  // refrescar tabla + KPI si existen
+  // refrescar tabla + KPI
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
 }
 
-
 /* ============================================================
-   ⏱️ WEEKLY TICK LISTENER — integrado al TIME ENGINE
+   ⏱️ MONTHLY DEFICIT MORALE TICK — ACS OFFICIAL
+   ------------------------------------------------------------
+   • Ejecuta degradación SOLO 1 vez por mes de juego
+   • Moral baja lentamente y de forma estratégica
+   • Mucho más jugable en simulación dinámica
    ============================================================ */
-let __OPS_lastWeek = null;
+
+let __OPS_lastMonth = null;
 
 registerTimeListener((time) => {
 
   const year  = time.getUTCFullYear();
-  const week  = Math.floor((time - new Date(year,0,1)) / (7 * 24 * 3600 * 1000));
+  const month = time.getUTCMonth(); // 0–11
 
-  if (__OPS_lastWeek === null) __OPS_lastWeek = week;
+  const key = `${year}-${month}`;
 
-  // Ejecutar solo cuando cambia de semana
-  if (week !== __OPS_lastWeek) {
+  if (__OPS_lastMonth === null) __OPS_lastMonth = key;
 
-    console.log("%c🧭 OPS WEEK TICK", "color:#00ffcc;font-weight:600", "Week:", week);
+  // Ejecutar solo cuando cambia el mes de juego
+  if (key !== __OPS_lastMonth) {
 
-    ACS_OPS_checkDepartmentDeficits();
+    console.log(
+      "%c🗓 OPS MONTH TICK — MORALE CHECK",
+      "color:#00ffcc;font-weight:600",
+      "Year:", year,
+      "Month:", month + 1
+    );
 
-    __OPS_lastWeek = week;
+    ACS_OPS_checkDepartmentDeficits_Monthly();
+
+    __OPS_lastMonth = key;
   }
 
 });
-
 
 /* ============================================================
    🟦 PHASE B — DELAY ENGINE + OPERATIONAL IMPACT CORE
