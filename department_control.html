@@ -1647,6 +1647,52 @@ function HR_confirmFireMini() {
   }
 }
 
+/* ============================================================
+   🟦 A-FIRE-BOOT-RESET — FORCE FIRE MODAL CLOSED ON REFRESH
+   ------------------------------------------------------------
+   • Evita modal pegado al recargar (hard refresh)
+   • NO cambia lógica de fire, solo limpia UI/estado
+   ============================================================ */
+
+(function ACS_forceCloseFireModalOnBoot() {
+
+  function closeFireUI() {
+    const ids = ["fireModal", "dismissModal", "staffDismissModal"]; // por si cambió el id
+    ids.forEach(id => {
+      const m = document.getElementById(id);
+      if (m) m.style.display = "none";
+    });
+
+    // Reset típicos (si existen)
+    const slider = document.getElementById("fire_slider");
+    if (slider) slider.value = 0;
+
+    const label = document.getElementById("fire_qty_label");
+    if (label) label.textContent = "0";
+
+    // Limpieza de estado persistido (si algún bloque lo dejó)
+    localStorage.removeItem("ACS_FIRE_ACTIVE");
+    localStorage.removeItem("ACS_FIRE_DEP");
+    localStorage.removeItem("ACS_FIRE_QTY");
+
+    // Limpieza de globals comunes
+    try {
+      window.__FIRE_currentDep = null;
+      window.__FIRE_currentMax = null;
+      window.__FIRE_pending = false;
+    } catch(e){}
+
+    console.log("%c🔥 FIRE MODAL BOOT RESET (closed)", "color:#00ffcc;font-weight:700");
+  }
+
+  // Cerrar lo antes posible
+  closeFireUI();
+
+  // Y cerrar otra vez cuando el DOM esté listo (por si algo lo reabre)
+  document.addEventListener("DOMContentLoaded", closeFireUI);
+
+})();
+     
 </script>
 
 <!-- ============================================================
