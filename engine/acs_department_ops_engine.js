@@ -789,9 +789,17 @@ function ACS_HR_emitSalaryAlerts() {
     }
 
     if (dep.salaryStatus === "lagging") {
-      level = "warning";
-      message = `${dep.name} salaries critically outdated. Risk of morale loss and resignations.`;
-    }
+
+    const yearsLate = currentYear - dep.lastSalaryReviewYear;
+
+    if (yearsLate >= 3) {
+    level = "danger";
+    message = `${dep.name} salaries extremely outdated for ${yearsLate} years. Severe morale and resignation risk.`;
+    } else {
+    level = "warning";
+    message = `${dep.name} salaries critically outdated. Risk of morale loss and resignations.`;
+  }
+}
 
     // 🔔 EMITIR ALERTA CENTRAL
     if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
@@ -872,6 +880,9 @@ function ACS_HR_applyAutoSalaryNormalization() {
     );
   });
 
+    // 🔄 Reset salary alert cooldown (recovery)
+  ACS_HR_saveSalaryAlertState({});
+   
   ACS_HR_save(HR);
 
   // Recalcular HR completo
