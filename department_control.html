@@ -778,7 +778,7 @@ tr:nth-child(even) {
   top: 0; left: 0;
   width: 100%; height: 100%;
   background: rgba(0,0,0,0.75);
-  display: flex;
+  display: none;              /* 🔒 NUNCA ABIERTO POR DEFECTO */
   align-items: center;
   justify-content: center;
   z-index: 5000;
@@ -1591,48 +1591,31 @@ function HR_confirmFireMini() {
 }
 
 /* ============================================================
-   🟦 A-FIRE-BOOT-RESET — FORCE FIRE MODAL CLOSED ON REFRESH
-   ------------------------------------------------------------
-   • Evita modal pegado al recargar (hard refresh)
-   • NO cambia lógica de fire, solo limpia UI/estado
+   🟦 A-FIRE-BOOT-RESET — FINAL CANONICAL FIX
    ============================================================ */
 
-(function ACS_forceCloseFireModalOnBoot() {
+(function ACS_forceCloseAllModalsOnBoot() {
 
-  function closeFireUI() {
-    const ids = ["fireModal", "dismissModal", "staffDismissModal"]; // por si cambió el id
-    ids.forEach(id => {
-      const m = document.getElementById(id);
-      if (m) m.style.display = "none";
+  function closeAll() {
+
+    // 🔥 Cerrar TODOS los modales reales
+    document.querySelectorAll(".acs-modal").forEach(m => {
+      m.style.display = "none";
     });
 
-    // Reset típicos (si existen)
-    const slider = document.getElementById("fire_slider");
-    if (slider) slider.value = 0;
-
-    const label = document.getElementById("fire_qty_label");
-    if (label) label.textContent = "0";
-
-    // Limpieza de estado persistido (si algún bloque lo dejó)
-    localStorage.removeItem("ACS_FIRE_ACTIVE");
-    localStorage.removeItem("ACS_FIRE_DEP");
-    localStorage.removeItem("ACS_FIRE_QTY");
-
-    // Limpieza de globals comunes
+    // Reset estado fire
     try {
-      window.__FIRE_currentDep = null;
-      window.__FIRE_currentMax = null;
-      window.__FIRE_pending = false;
+      HR_fireTargetDept = null;
     } catch(e){}
 
-    console.log("%c🔥 FIRE MODAL BOOT RESET (closed)", "color:#00ffcc;font-weight:700");
+    console.log("%c🔥 ALL MODALS CLOSED ON BOOT", "color:#00ffcc;font-weight:700");
   }
 
-  // Cerrar lo antes posible
-  closeFireUI();
+  // Ejecutar inmediato
+  closeAll();
 
-  // Y cerrar otra vez cuando el DOM esté listo (por si algo lo reabre)
-  document.addEventListener("DOMContentLoaded", closeFireUI);
+  // Y repetir cuando DOM esté listo
+  document.addEventListener("DOMContentLoaded", closeAll);
 
 })();
      
