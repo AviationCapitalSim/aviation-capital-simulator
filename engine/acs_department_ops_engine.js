@@ -236,6 +236,11 @@ window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
     ACS_HR_applyAutoHire_Instant();
     }
 
+    // 🔧 Recalcular estructura directiva después de OPS
+    if (typeof ACS_HR_calculateManagementRequired === "function") {
+    ACS_HR_calculateManagementRequired();
+    }
+     
     if (typeof loadDepartments === "function") {
       loadDepartments();
     }
