@@ -1579,56 +1579,96 @@ function HR_fillDepartmentSelector() {
 let HR_fireTargetDept = null;
 
 /* ============================================================
-   🟥 A6.1 — OPEN FIRE MINI MODAL
+   🟥 A5.1 — FIRE MINI MODAL (BINDING FIX) — FINAL
+   ------------------------------------------------------------
+   • Registra depId canónico al abrir modal (evita undefined)
+   • Rellena nombre + selector de qty según staff actual
    ============================================================ */
+
 function openFireMiniModal(deptId) {
 
-  const hr = ACS_HR_load();
-  if (!hr || !hr[deptId]) return;
-
-  const dep = hr[deptId];
-
-  // 🛑 PROTECCIÓN CEO
-  if (dep.id === "ceo" || dep.name?.toLowerCase() === "ceo") {
-    alert("⚠️ The CEO cannot be dismissed.");
+  const HR = ACS_HR_load();
+  if (!HR || !HR[deptId]) {
+    console.warn("❌ FIRE MODAL FAILED — Department not found:", deptId);
     return;
   }
 
-  // 🛑 Nada que despedir
-  if (dep.staff <= 0) {
-    alert("⚠️ There is no staff to dismiss in this department.");
+  const dep = HR[deptId];
+
+  // ============================================================
+  // 🟢 REGISTRO CANÓNICO DEL DEPARTAMENTO ACTIVO (CRÍTICO)
+  // ============================================================
+  window.__ACS_ACTIVE_FIRE_DEPT = deptId;
+
+  const modal = document.getElementById("fireMiniModal");
+  if (!modal) {
+    console.warn("❌ FIRE MODAL FAILED — #fireMiniModal not found");
     return;
   }
 
-  HR_fireTargetDept = deptId;
+  // Fill UI
+  const nameEl = document.getElementById("fire_depName");
+  if (nameEl) nameEl.textContent = dep.name || deptId;
 
-  // Nombre depto
-  const nameEl = document.getElementById("fireMiniDeptName");
-  if (nameEl) nameEl.textContent = dep.name;
+  const select = document.getElementById("fire_qty");
+  if (select) {
+    select.innerHTML = "";
+    const max = Math.max(1, Number(dep.staff || 0) || 1);
 
-  // Build select 1..staff
-  const sel = document.getElementById("fireMiniQty");
-  sel.innerHTML = "";
-
-  for (let i = 1; i <= dep.staff; i++) {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = i + (i === 1 ? " employee" : " employees");
-    sel.appendChild(opt);
+    for (let i = 1; i <= max; i++) {
+      const opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = i + " employee" + (i > 1 ? "s" : "");
+      select.appendChild(opt);
+    }
   }
 
-  // Show modal
-  document.getElementById("hrFireMiniModal").style.display = "flex";
+  modal.style.display = "flex";
 }
 
 /* ============================================================
-   🟥 A6.2 — CLOSE FIRE MINI MODAL
+   🟥 A5.2 — FIRE MINI MODAL (CLOSE) — FINAL
    ============================================================ */
+
 function closeFireMiniModal() {
-  HR_fireTargetDept = null;
-  document.getElementById("hrFireMiniModal").style.display = "none";
+  const modal = document.getElementById("fireMiniModal");
+  if (modal) modal.style.display = "none";
 }
 
+/* ============================================================
+   🟥 A5.2.1 — FIRE MODAL DISPATCHER (BINDING CORE)
+   ------------------------------------------------------------
+   • Lee deptId desde registro canónico del modal
+   • Lee qty desde selector
+   • Llama motor real HR_confirmFireMini()
+   • Evita undefined
+   ============================================================ */
+
+function confirmFireMiniModal() {
+
+  const depId = window.__ACS_ACTIVE_FIRE_DEPT;
+
+  if (!depId) {
+    console.warn("❌ FIRE CONFIRM FAILED — No active department bound");
+    alert("Internal error: no department selected.");
+    return;
+  }
+
+  const select = document.getElementById("fire_qty");
+  const qty = Number(select?.value || 1);
+
+  console.log(
+    "%c🔥 FIRE REQUEST DISPATCH",
+    "color:#ff4444;font-weight:800",
+    "Department:", depId,
+    "Qty:", qty
+  );
+
+  HR_confirmFireMini(depId, qty);
+
+  closeFireMiniModal();
+}
+     
 /* ============================================================
    🟥 A5.2 — FIRE ENGINE CORE (FINAL OFFICIAL + AUTOHIRE WARNING)
    ------------------------------------------------------------
