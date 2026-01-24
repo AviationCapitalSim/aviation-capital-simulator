@@ -780,76 +780,68 @@ function ACS_HR_emitSalaryAlerts() {
   const HR = ACS_HR_load();
   if (!HR) return;
 
-  // ⚙️ Por ahora Auto Salary está SIEMPRE ON → no emitir alertas
-  // Cuando conectemos Settings, aquí leeremos ACS_SETTINGS.autoSalary
-  const autoSalaryEnabled = (localStorage.getItem("ACS_AutoSalary") !== "OFF");
+  // ============================================================
+  // 🕒 AÑO CANÓNICO DESDE TIME ENGINE ACS MODERNO
+  // ============================================================
+  let currentYear;
 
-  if (autoSalaryEnabled) return;   // 🔒 NO alertas si auto está activo
-
-  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
-  const state = ACS_HR_loadSalaryAlertState();
+  if (window.ACS_TIME_CURRENT instanceof Date) {
+    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
+  } else {
+    currentYear = new Date().getUTCFullYear(); // fallback seguro
+  }
 
   Object.keys(HR).forEach(id => {
 
     const dep = HR[id];
-    if (!dep || !dep.salaryStatus) return;
+    if (!dep) return;
 
-    // Solo alertar si hay problema
-    if (dep.salaryStatus === "ok") return;
+    const salary = Number(dep.salary || 0);
+    const market = Number(dep.marketReference || dep.market || 0);
 
-    const alertKey = `${id}_${currentYear}`;
+    if (!market || !salary) return;
 
-    // 🔒 Cooldown anual por departamento
-    if (state[alertKey]) return;
+    const ratio = Math.round((salary / market) * 100);
 
-    let level   = "info";
-    let message = "";
-
-    if (dep.salaryStatus === "review") {
-      level = "info";
-      message = `${dep.name} salaries due for review. Consider adjusting wages.`;
+    // ============================================================
+    // 🔒 NO ALERTAR DEPARTAMENTOS MANUALES
+    // ============================================================
+    if (dep.salaryOverride === true || dep.salaryPolicy === "MANUAL") {
+      return;
     }
 
-    if (dep.salaryStatus === "lagging") {
+    // ============================================================
+    // 🔔 GENERACIÓN DE ALERTAS
+    // ============================================================
+    if (ratio < 70) {
 
-    const yearsLate = currentYear - dep.lastSalaryReviewYear;
-
-    if (yearsLate >= 3) {
-    level = "danger";
-    message = `${dep.name} salaries extremely outdated for ${yearsLate} years. Severe morale and resignation risk.`;
-    } else {
-    level = "warning";
-    message = `${dep.name} salaries critically outdated. Risk of morale loss and resignations.`;
-  }
-}
-
-    // 🔔 EMITIR ALERTA CENTRAL
-    if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
-
-      window.ACS_Alerts.push({
-        title: "Salary Review Required",
-        message: message,
-        level: level,
-        type: "hr",
-        category: "hr",
-        source: "HR Salary Engine"
-      });
-
-      console.log(
-        "%c💼 SALARY ALERT EMITTED",
-        "color:#ffb300;font-weight:700",
-        dep.name,
-        "Status:", dep.salaryStatus,
-        "Level:", level
+      ACS_alert(
+        "HR",
+        `⚠ ${dep.name} salaries critically below market (${ratio}%)`,
+        "warning"
       );
 
-      // Guardar cooldown
-      state[alertKey] = true;
+      dep.salaryStatus = "critical";
+
+    } else if (ratio < 85) {
+
+      ACS_alert(
+        "HR",
+        `⚠ ${dep.name} salaries below market (${ratio}%)`,
+        "warning"
+      );
+
+      dep.salaryStatus = "low";
+
+    } else {
+
+      dep.salaryStatus = "ok";
     }
 
+    dep.lastAlertYear = currentYear;
   });
 
-  ACS_HR_saveSalaryAlertState(state);
+  ACS_HR_save(HR);
 }
 
 /* ============================================================
