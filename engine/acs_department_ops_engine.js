@@ -1054,18 +1054,51 @@ function ACS_HR_getMarketSalary(depID) {
 }
 
 /* ============================================================
-   🟦 SAL-JS-1 — OPEN SALARY POLICY MODAL
+   🟦 SAL-JS-1 — OPEN SALARY POLICY MODAL (QATAR LUXURY CORE)
+   ------------------------------------------------------------
+   ✅ Slider SIEMPRE inicia en 0% (centrado)
+   ✅ Preview LIVE (new salary / delta / morale)
+   ✅ Market salary fallback seguro si no existe engine real
+   ✅ Apply escribe HR + payroll y marca review year
    ============================================================ */
 
 let __SAL_currentDep = null;
+let __SAL_bindOnce = false;
 
 /* ============================================================
-   🟦 A3.3.1 — OPEN SALARY MODAL (CANONICAL ZERO-CENTER CORE)
+   🟦 SAL-MKT-1 — MARKET SALARY (SAFE FALLBACK)
    ------------------------------------------------------------
-   • Slider SIEMPRE inicia en 0%
-   • Preview sincronizado al abrir
-   • Ratio y mercado visibles
-   • No activa auto-salary
+   • Si NO existe un motor real de mercado, usa fallback
+   • Mantiene coherencia con “ratio vs market”
+   ============================================================ */
+
+function ACS_HR_getMarketSalary(depId) {
+
+  const HR = ACS_HR_load();
+  if (!HR || !HR[depId]) return 0;
+
+  const dep = HR[depId];
+  const current = Number(dep.salary || 0);
+
+  // Si algún día conectas un motor real, aquí lo reemplazas.
+  // Por ahora: multiplicadores simples por familia.
+  const id = String(depId || "").toLowerCase();
+
+  let mult = 2.6; // default (como tu fallback original)
+
+  if (id.includes("ceo") || id.includes("high_management")) mult = 1.9;
+  else if (id.includes("middle_management")) mult = 2.2;
+  else if (id.includes("pilots")) mult = 1.8;
+  else if (id.includes("maintenance")) mult = 2.3;
+  else if (id.includes("ground")) mult = 2.8;
+  else if (id.includes("security")) mult = 2.7;
+  else if (id.includes("cabin")) mult = 2.5;
+
+  return Math.max(0, Math.round(current * mult));
+}
+
+/* ============================================================
+   🟦 SAL-OPEN-1 — OPEN MODAL (CANONICAL ZERO-CENTER)
    ============================================================ */
 
 function openSalaryInline(depId) {
@@ -1077,58 +1110,61 @@ function openSalaryInline(depId) {
   }
 
   const dep = HR[depId];
+  __SAL_currentDep = depId;
 
-  // === Datos base ===
-  const currentSalary = dep.salary || 0;
-  const staff = dep.staff || 0;
+  const currentSalary = Number(dep.salary || 0);
+  const staff = Number(dep.staff || 0);
 
-  // 🔧 Market reference (canon)
   const market = (typeof ACS_HR_getMarketSalary === "function")
     ? ACS_HR_getMarketSalary(depId)
-    : Math.round(currentSalary * 2.6);   // fallback seguro
+    : Math.round(currentSalary * 2.6);
 
-  const ratio = market > 0
-    ? Math.round((currentSalary / market) * 100)
-    : 100;
+  const ratio = market > 0 ? Math.round((currentSalary / market) * 100) : 100;
 
-  // === UI FILL ===
-  document.getElementById("sal_depName").textContent   = dep.name;
-  document.getElementById("sal_staff").textContent    = staff;
-  document.getElementById("sal_current").textContent  = currentSalary.toLocaleString();
-  document.getElementById("sal_market").textContent   = market.toLocaleString();
+  // === Fill base UI ===
+  document.getElementById("sal_depName").textContent  = dep.name || depId;
+  document.getElementById("sal_staff").textContent   = staff;
+  document.getElementById("sal_current").textContent = currentSalary.toLocaleString();
+  document.getElementById("sal_market").textContent  = market.toLocaleString();
 
-  // Ratio color
+  // Ratio text + color class
   const ratioEl = document.getElementById("sal_ratio");
   ratioEl.textContent = ratio + "%";
-
   ratioEl.className = "";
   if (ratio >= 95 && ratio <= 110) ratioEl.classList.add("ok");
-  else if (ratio >= 80)           ratioEl.classList.add("warning");
-  else                            ratioEl.classList.add("danger");
+  else if (ratio >= 80) ratioEl.classList.add("warning");
+  else ratioEl.classList.add("danger");
 
-  // ============================================================
-  // 🔥 CENTRADO ABSOLUTO EN 0% (LO QUE TÚ QUERÍAS)
-  // ============================================================
-
+  // === Slider: SIEMPRE 0% (centro real) ===
   const slider = document.getElementById("sal_slider");
   const label  = document.getElementById("sal_percent_label");
 
-  slider.value = 0;          // 🔥 CENTRO REAL
-  label.textContent = "0";  // 🔥 0%
+  slider.value = 0;
+  label.textContent = "0";
 
-  // === Preview inicial limpio ===
-  document.getElementById("sal_new").textContent = currentSalary.toLocaleString();
-  document.getElementById("sal_payroll_delta").textContent = "$0";
-  document.getElementById("sal_morale_effect").textContent = "Neutral";
+  // Guardar state base para preview
+  window.__ACS_SAL_STATE = {
+    depId,
+    currentSalary,
+    staff,
+    market
+  };
 
+  // Hide warning (solo se muestra al aplicar manual)
   const warn = document.getElementById("sal_auto_warning");
   if (warn) warn.style.display = "none";
 
-  // Guardar dept activo
-  window.__ACS_ACTIVE_SALARY_DEPT = depId;
+  // Bind slider event una sola vez
+  if (!__SAL_bindOnce) {
+    __SAL_bindOnce = true;
+    slider.addEventListener("input", () => updateSalaryPreview());
+  }
 
-  // Mostrar modal
+  // Show modal
   document.getElementById("salaryModal").style.display = "flex";
+
+  // Preview inicial
+  updateSalaryPreview();
 
   console.log(
     "%c💰 SALARY MODAL OPENED",
@@ -1145,89 +1181,108 @@ function closeSalaryModal() {
 }
 
 /* ============================================================
-   🟦 A5 — SALARY APPLY ENGINE (MANUAL OVERRIDE CORE)
+   🟦 SAL-PREVIEW-1 — LIVE PREVIEW ENGINE
+   ============================================================ */
+
+function updateSalaryPreview() {
+
+  const st = window.__ACS_SAL_STATE;
+  if (!st) return;
+
+  const slider = document.getElementById("sal_slider");
+  const pct = Number(slider.value || 0);
+
+  // Label + línea "Adjustment: X%"
+  document.getElementById("sal_percent_label").textContent = String(pct);
+
+  // New salary
+  const newSalary = Math.max(0, Math.round(st.currentSalary * (1 + pct / 100)));
+
+  // Payroll delta
+  const delta = (newSalary - st.currentSalary) * st.staff;
+
+  document.getElementById("sal_new").textContent = newSalary.toLocaleString();
+
+  const deltaEl = document.getElementById("sal_payroll_delta");
+  const sign = delta > 0 ? "+" : "";
+  deltaEl.textContent = `${sign}$${Math.round(delta).toLocaleString()}`;
+
+  // Morale effect (simple y jugable)
+  // Basado en ratio vs market después del cambio
+  const market = Number(st.market || 0);
+  let ratio2 = 100;
+  if (market > 0) ratio2 = Math.round((newSalary / market) * 100);
+
+  const moraleEl = document.getElementById("sal_morale_effect");
+
+  if (ratio2 >= 95 && ratio2 <= 110) {
+    moraleEl.textContent = "Good";
+    moraleEl.className = "good";
+  } else if (ratio2 >= 80) {
+    moraleEl.textContent = "Neutral";
+    moraleEl.className = "neutral";
+  } else {
+    moraleEl.textContent = "Bad";
+    moraleEl.className = "bad";
+  }
+}
+
+/* ============================================================
+   🟦 SAL-APPLY-1 — APPLY POLICY (MANUAL OVERRIDE)
    ------------------------------------------------------------
-   • Aplica política salarial manual
-   • Apaga Auto Salary inmediatamente
-   • Actualiza payroll, metadata y estados
-   • Recalcula HR + refresca UI
+   • Escribe salary + payroll
+   • lastSalaryReviewYear = año del Time Engine si existe
+   • Marca salaryStatus=ok
+   • Si aplicas manual → desactiva AutoSalary (flag)
    ============================================================ */
 
 function applySalaryPolicy() {
 
-  if (!__SAL_currentDep) {
-    console.warn("SALARY: No department selected");
-    return;
-  }
+  const st = window.__ACS_SAL_STATE;
+  if (!st || !st.depId) return;
 
   const HR = ACS_HR_load();
-  const dep = HR[__SAL_currentDep];
-  if (!dep) return;
+  if (!HR || !HR[st.depId]) return;
 
-  const percent = Number(document.getElementById("sal_slider").value);
+  const slider = document.getElementById("sal_slider");
+  const pct = Number(slider.value || 0);
 
-  // Si no hay cambio → cerrar sin tocar nada
-  if (percent === 0) {
-    closeSalaryModal();
-    return;
-  }
+  const dep = HR[st.depId];
 
-  // 🕒 Año real desde Time Engine ACS
-  let currentYear;
+  const currentSalary = Number(dep.salary || 0);
+  const newSalary = Math.max(0, Math.round(currentSalary * (1 + pct / 100)));
+
+  dep.salary = newSalary;
+  dep.payroll = (Number(dep.staff || 0) * newSalary);
+
+  // Año real desde tu Time Engine si existe
+  let year = new Date().getUTCFullYear();
   if (window.ACS_TIME_CURRENT instanceof Date) {
-    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
-  } else {
-    currentYear = new Date().getUTCFullYear(); // fallback seguro
+    year = window.ACS_TIME_CURRENT.getUTCFullYear();
   }
 
-  const oldSalary = dep.salary;
-  const newSalary = Math.round(oldSalary * (1 + percent / 100));
-
-  // ========================================================
-  // 🔴 MANUAL OVERRIDE → APAGAR AUTO SALARY
-  // ========================================================
-
-  localStorage.setItem("ACS_AutoSalary", "OFF");
-
-  console.log(
-    "%c⚠ AUTO SALARY DISABLED — MANUAL SALARY OVERRIDE",
-    "color:#ff4040;font-weight:700",
-    dep.name
-  );
-
-  // ========================================================
-  // 💰 APLICAR NUEVO SALARIO DEFINITIVO
-  // ========================================================
-
-  dep.salary  = newSalary;
-  dep.payroll = dep.staff * dep.salary;
-
-  // Metadata histórica
-  dep.lastSalaryReviewYear = currentYear;
+  dep.lastSalaryReviewYear = year;
   dep.salaryStatus = "ok";
 
   ACS_HR_save(HR);
 
-  console.log(
-    "%c💰 SALARY POLICY APPLIED",
-    "color:#00ffcc;font-weight:700",
-    dep.name,
-    "Old:", oldSalary,
-    "New:", newSalary,
-    "Percent:", percent + "%",
-    "AutoSalary:", "OFF"
-  );
+  // Manual override: AutoSalary OFF
+  localStorage.setItem("ACS_AutoSalary", "OFF");
+  const warn = document.getElementById("sal_auto_warning");
+  if (warn) warn.style.display = "block";
 
-  // ========================================================
-  // 🔄 RECALCULAR SISTEMA COMPLETO HR
-  // ========================================================
-
-  if (typeof ACS_HR_recalculateAll === "function") {
-    ACS_HR_recalculateAll();
-  }
-
+  // Recalcular + refrescar
+  if (typeof ACS_HR_recalculateAll === "function") ACS_HR_recalculateAll();
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+  console.log(
+    "%c✅ SALARY POLICY APPLIED",
+    "color:#00ff88;font-weight:700",
+    dep.name,
+    "New salary:", newSalary,
+    "Pct:", pct + "%"
+  );
 
   closeSalaryModal();
 }
