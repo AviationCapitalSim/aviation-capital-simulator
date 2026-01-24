@@ -5,133 +5,234 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Settings - Aviation Capital Simulator</title>
+  
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
+  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+
+  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+
+  <!-- ======== PWA Manifest ======== -->
+  <link rel="manifest" href="manifest.json">
+
   <style>
-    /* === BASE === */
-    body {
-      margin: 0;
-      background-color: #081530;
-      color: white;
-      font-family: "Segoe UI", sans-serif;
-    }
+  /* ============================================================
+       === ACS Qatar Luxury Dashboard — Base Design ============
+     ============================================================ */
 
-    /* === GLOBAL HEADER === */
-    .acs-header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background-color: #0a1433;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.8rem 2rem;
-      border-bottom: 2px solid #FFB300;
-      z-index: 999;
-      box-sizing: border-box;
-    }
+  body {
+    margin: 0;
+    background-color: #081530;
+    color: white;
+    font-family: "Poppins", sans-serif;
+  }
 
-    .acs-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .acs-logo img { height: 40px; }
-    .acs-logo h1 {
-      font-size: 1.1rem;
-      margin: 0;
-      color: #FFB300;
-      letter-spacing: 0.6px;
-    }
+  /* ============================================================
+       === GLOBAL HEADER (Exact Copy from index/dashboard) =====
+     ============================================================ */
 
-    .acs-nav {
-      display: flex;
-      justify-content: center;
-      gap: 1.5rem;
-      flex: 1;
-    }
-    .acs-nav a {
-      color: white;
-      text-decoration: none;
-      font-size: 0.95rem;
-      transition: 0.3s;
-    }
-    .acs-nav a:hover,
-    .acs-nav a.active {
-      color: #FFB300;
-      text-shadow: 0 0 6px rgba(255,179,0,0.6);
-    }
+  .acs-header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    backdrop-filter: blur(9px);
+    background: rgba(12,23,50,0.45);
+    padding: 0.8rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #ffb300;
+    z-index: 5000;
+  }
 
-    .acs-auth {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-    }
+  .acs-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
 
-    .logout-btn {
-      color: #FFB300;
-      border: 1px solid #FFB300;
-      padding: 0.3rem 0.8rem;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: 0.2s;
-    }
-    .logout-btn:hover {
-      background: #FFB300;
-      color: #081530;
-    }
+  .acs-left img {
+    height: 46px;
+  }
 
-    .acs-clock-header {
-      font-family: 'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      font-weight:bold;
-      background:rgba(0,255,128,0.08);
-      padding:0.3rem 0.8rem;
-      border-radius:6px;
-      font-size:0.9rem;
-    }
+  .acs-left h1 {
+    font-size: 1.15rem;
+    margin: 0;
+    color: #ffb300;
+    letter-spacing: 0.5px;
+  }
 
-    /* TITLE */
-    .acs-intro {
-      margin-top: 6rem;
-      text-align: center;
-    }
-    .acs-title {
-      color: #FFB300;
-      font-size: 1.6rem;
-      margin-bottom: 0.3rem;
-    }
-    .acs-subtitle {
-      color: #ccc;
-      font-style: italic;
-    }
+  .acs-nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
 
-    /* PANELS GRID */
-    .finance-panels {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
-      gap: 1.5rem;
-      padding: 2rem;
-      margin-top: 1.5rem;
-      box-sizing: border-box;
-    }
+  /* ============================================================
+       === NAVIGATION — QATAR PEARL GLOW STYLE =================
+     ============================================================ */
 
-    .panel {
-      background: #0d1c3c;
-      padding: 1.2rem 1.4rem;
-      border-radius: 10px;
-      border: 1px solid rgba(255,179,0,0.25);
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      transition: 0.2s;
-    }
-    .panel:hover { transform: scale(1.02); }
+  .acs-nav a {
+    position: relative;
+    font-size: 1rem;
+    letter-spacing: 0.4px;
+    color: #dbe4ff;
+    text-decoration: none;
+    transition: 0.25s ease;
+    padding-bottom: 6px;
+  }
 
-    .panel h3 {
-      color: #FFB300;
-      margin-bottom: 0.8rem;
-      letter-spacing: 0.5px;
-    }
+  .acs-nav a:hover,
+  .acs-nav a.active {
+    color: #ffca3a;
+    text-shadow: 0 0 6px rgba(255,179,0,0.45);
+  }
+
+  .acs-nav a.active::after,
+  .acs-nav a:hover::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, #ffb300, #ffe7a0);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(255,200,60,0.45);
+  }
+
+  .acs-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* LOGOUT BUTTON (Qatar style) */
+  .logout-btn {
+    padding: 0.45rem 1.1rem;
+    border: 1px solid #ffb300;
+    border-radius: 12px;
+    background: rgba(255,179,0,0.05);
+    color: #ffb300;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .logout-btn:hover {
+    background: #ffb300;
+    color: #0c1f3c;
+  }
+
+  /* CLOCK (same as dashboard) */
+  .acs-clock-header {
+    font-family: "Orbitron", monospace;
+    padding: 0.4rem 0.8rem;
+    background: rgba(0,255,128,0.08);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #00ff80;
+  }
+
+  /* ============================================================
+       === SUPPORT BUTTON (igual dashboard) =====================
+     ============================================================ */
+
+  .support-btn {
+    padding: 0.45rem 1.1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    color: #8AB4FF;
+    border: 1px solid rgba(138,180,255,0.45);
+    background: rgba(138,180,255,0.08);
+    backdrop-filter: blur(6px);
+    transition: 0.25s ease;
+  }
+
+  .support-btn:hover {
+    background: rgba(138,180,255,0.20);
+    box-shadow: 0 0 14px rgba(138,180,255,0.55);
+    color: #dfe9ff;
+  }
+
+  /* ============================================================
+       === MAIN CONTENT (igual dashboard) ======================
+     ============================================================ */
+
+  .acs-main {
+    padding: 105px 2rem 70px;
+    text-align: center;
+  }
+
+  .acs-main h2 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: #ffca3a;
+    text-shadow: 0 0 12px rgba(255,190,60,0.55);
+    letter-spacing: 0.6px;
+    margin-top: 0.5rem;
+  }
+
+  .acs-main .sub {
+    margin-top: 0.4rem;
+    color: #cbd6ff;
+    font-size: 1rem;
+  }
+
+  /* ============================================================
+       === PANEL GRID (reuso dashboard-grid) ===================
+     ============================================================ */
+
+  .dashboard-grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .row-business {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  /* Panel base (mismo que dashboard) */
+  .panel {
+  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+  padding: 1.6rem 1.5rem;
+  border-radius: 22px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  transition: 0.25s;
+  border: 1px solid rgba(255,179,0,0.15);
+  text-align: center;     /* 🔥 todo centrado */
+  align-items: center;     /* 🔥 asegura centro vertical si se usa flex */
+}
+
+  .panel:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 32px rgba(255,179,0,0.25);
+    border: 1px solid rgba(255,179,0,0.35);
+  }
+
+  .panel h3 {
+    font-size: 1.25rem;
+    color: #ffb300;
+    margin-bottom: 0.9rem;
+    text-shadow: 0 0 6px rgba(255,179,0,0.4);
+  }
+
+  .panel p {
+    color: #d7e2ff;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin: 0.15rem 0;
+  }
 
     label { display:block; margin:0.4rem 0; }
 
