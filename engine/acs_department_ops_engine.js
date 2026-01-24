@@ -866,7 +866,15 @@ function ACS_HR_applyAutoSalaryNormalization() {
   const HR = ACS_HR_load();
   if (!HR) return;
 
-  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  // 🕒 Año real desde Time Engine ACS (canon)
+  let currentYear;
+
+  if (window.ACS_TIME_CURRENT instanceof Date) {
+    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
+  } else {
+    currentYear = new Date().getUTCFullYear(); // fallback seguro
+  }
+
   const eraParams = ACS_HR_getSalaryEraParams(currentYear);
 
   const raisePercent = eraParams.autoRaise;
@@ -902,7 +910,7 @@ function ACS_HR_applyAutoSalaryNormalization() {
     );
   });
 
-    // 🔄 Reset salary alert cooldown (recovery)
+  // 🔄 Reset salary alert cooldown (recovery)
   ACS_HR_saveSalaryAlertState({});
    
   ACS_HR_save(HR);
