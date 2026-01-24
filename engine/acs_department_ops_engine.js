@@ -1280,82 +1280,57 @@ function applySalaryChange() {
 })();
 
 /* ============================================================
-   🟦 SAL-JS-APPLY — APPLY SALARY POLICY (FIX APPLY BUTTON)
+   🟦 SAL-JS-APPLY-1 — APPLY SALARY POLICY (CANONICAL FIX)
    ------------------------------------------------------------
-   • Función REAL para botón Apply
-   • Guarda salario en HR
-   • Actualiza payroll
-   • Recalcula HR
-   • Refresca tabla + KPI
-   • Cierra modal
+   • Usa dept activo real del modal
+   • Aplica salario correctamente
+   • Recalcula payroll + KPI
    ============================================================ */
 
 function applySalaryPolicy() {
 
   const depId = window.__ACS_ACTIVE_SALARY_DEPT;
+
   if (!depId) {
-    console.warn("❌ APPLY SALARY FAILED — No active department");
+    console.error("❌ APPLY SALARY FAILED — No active department");
     return;
   }
 
   const HR = ACS_HR_load();
   if (!HR || !HR[depId]) {
-    console.warn("❌ APPLY SALARY FAILED — Department not found:", depId);
+    console.error("❌ APPLY SALARY FAILED — Department not found:", depId);
     return;
   }
 
   const dep = HR[depId];
 
-  // Leer ajuste del slider
+  // Leer porcentaje del slider
   const percent = parseInt(document.getElementById("sal_slider").value) || 0;
 
   const oldSalary = dep.salary || 0;
-
-  // Nuevo salario real
   const newSalary = Math.round(oldSalary * (1 + percent / 100));
 
   // Aplicar
-  dep.salary  = newSalary;
+  dep.salary = newSalary;
   dep.payroll = dep.staff * dep.salary;
+  dep.salaryStatus = "review";
+  dep.lastSalaryReviewYear = new Date().getUTCFullYear();
 
-  // Marcar revisión hecha
-  let currentYear;
-  if (window.ACS_TIME_CURRENT instanceof Date) {
-    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
-  } else {
-    currentYear = new Date().getUTCFullYear();
-  }
-
-  dep.lastSalaryReviewYear = currentYear;
-  dep.salaryStatus = "ok";
-
-  // Guardar HR
   ACS_HR_save(HR);
 
   console.log(
     "%c💰 SALARY APPLIED",
-    "color:#00ffcc;font-weight:700",
+    "color:#FFD966;font-weight:700",
     dep.name,
     "Old:", oldSalary,
     "New:", newSalary,
     "Percent:", percent + "%"
   );
 
-  // 🔄 Recalcular HR completo
-  if (typeof ACS_HR_recalculateAll === "function") {
-    ACS_HR_recalculateAll();
-  }
+  // Refrescar tabla + KPI
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
 
-  // 🔄 Refrescar UI
-  if (typeof loadDepartments === "function") {
-    loadDepartments();
-  }
-
-  if (typeof HR_updateKPI === "function") {
-    HR_updateKPI();
-  }
-
-  // 🔒 Cerrar modal
   closeSalaryModal();
 }
 
