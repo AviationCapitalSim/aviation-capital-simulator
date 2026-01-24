@@ -1255,17 +1255,6 @@ function applySalaryChange() {
 }
 
 /* ============================================================
-   🟦 SAL-JS-2B — APPLY POLICY ALIAS (HTML COMPATIBILITY)
-   ------------------------------------------------------------
-   • Conecta botón Apply existente
-   • No rompe arquitectura
-   ============================================================ */
-
-function applySalaryPolicy() {
-  applySalaryChange();
-}
-
-/* ============================================================
    🟦 SAL-JS-6 — BIND UI EVENTS (ONE TIME)
    ============================================================ */
 (function ACS_SAL_bindOnce() {
@@ -1291,62 +1280,82 @@ function applySalaryPolicy() {
 })();
 
 /* ============================================================
-   🟦 SAL-APPLY-1 — APPLY POLICY (MANUAL OVERRIDE)
+   🟦 SAL-JS-APPLY — APPLY SALARY POLICY (FIX APPLY BUTTON)
    ------------------------------------------------------------
-   • Escribe salary + payroll
-   • lastSalaryReviewYear = año del Time Engine si existe
-   • Marca salaryStatus=ok
-   • Si aplicas manual → desactiva AutoSalary (flag)
+   • Función REAL para botón Apply
+   • Guarda salario en HR
+   • Actualiza payroll
+   • Recalcula HR
+   • Refresca tabla + KPI
+   • Cierra modal
    ============================================================ */
 
 function applySalaryPolicy() {
 
-  const st = window.__ACS_SAL_STATE;
-  if (!st || !st.depId) return;
-
-  const HR = ACS_HR_load();
-  if (!HR || !HR[st.depId]) return;
-
-  const slider = document.getElementById("sal_slider");
-  const pct = Number(slider.value || 0);
-
-  const dep = HR[st.depId];
-
-  const currentSalary = Number(dep.salary || 0);
-  const newSalary = Math.max(0, Math.round(currentSalary * (1 + pct / 100)));
-
-  dep.salary = newSalary;
-  dep.payroll = (Number(dep.staff || 0) * newSalary);
-
-  // Año real desde tu Time Engine si existe
-  let year = new Date().getUTCFullYear();
-  if (window.ACS_TIME_CURRENT instanceof Date) {
-    year = window.ACS_TIME_CURRENT.getUTCFullYear();
+  const depId = window.__ACS_ACTIVE_SALARY_DEPT;
+  if (!depId) {
+    console.warn("❌ APPLY SALARY FAILED — No active department");
+    return;
   }
 
-  dep.lastSalaryReviewYear = year;
+  const HR = ACS_HR_load();
+  if (!HR || !HR[depId]) {
+    console.warn("❌ APPLY SALARY FAILED — Department not found:", depId);
+    return;
+  }
+
+  const dep = HR[depId];
+
+  // Leer ajuste del slider
+  const percent = parseInt(document.getElementById("sal_slider").value) || 0;
+
+  const oldSalary = dep.salary || 0;
+
+  // Nuevo salario real
+  const newSalary = Math.round(oldSalary * (1 + percent / 100));
+
+  // Aplicar
+  dep.salary  = newSalary;
+  dep.payroll = dep.staff * dep.salary;
+
+  // Marcar revisión hecha
+  let currentYear;
+  if (window.ACS_TIME_CURRENT instanceof Date) {
+    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
+  } else {
+    currentYear = new Date().getUTCFullYear();
+  }
+
+  dep.lastSalaryReviewYear = currentYear;
   dep.salaryStatus = "ok";
 
+  // Guardar HR
   ACS_HR_save(HR);
 
-  // Manual override: AutoSalary OFF
-  localStorage.setItem("ACS_AutoSalary", "OFF");
-  const warn = document.getElementById("sal_auto_warning");
-  if (warn) warn.style.display = "block";
-
-  // Recalcular + refrescar
-  if (typeof ACS_HR_recalculateAll === "function") ACS_HR_recalculateAll();
-  if (typeof loadDepartments === "function") loadDepartments();
-  if (typeof HR_updateKPI === "function") HR_updateKPI();
-
   console.log(
-    "%c✅ SALARY POLICY APPLIED",
-    "color:#00ff88;font-weight:700",
+    "%c💰 SALARY APPLIED",
+    "color:#00ffcc;font-weight:700",
     dep.name,
-    "New salary:", newSalary,
-    "Pct:", pct + "%"
+    "Old:", oldSalary,
+    "New:", newSalary,
+    "Percent:", percent + "%"
   );
 
+  // 🔄 Recalcular HR completo
+  if (typeof ACS_HR_recalculateAll === "function") {
+    ACS_HR_recalculateAll();
+  }
+
+  // 🔄 Refrescar UI
+  if (typeof loadDepartments === "function") {
+    loadDepartments();
+  }
+
+  if (typeof HR_updateKPI === "function") {
+    HR_updateKPI();
+  }
+
+  // 🔒 Cerrar modal
   closeSalaryModal();
 }
 
