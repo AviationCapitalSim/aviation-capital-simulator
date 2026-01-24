@@ -1181,50 +1181,96 @@ function closeSalaryModal() {
 }
 
 /* ============================================================
-   🟦 SAL-PREVIEW-1 — LIVE PREVIEW ENGINE
+   🟦 SAL-JS-2 — SALARY ADJUSTMENT ENGINE (REALISTIC RANGE CORE)
+   ------------------------------------------------------------
+   • Rango permitido: -40% … +200%
+   • Impacto moral realista
+   • Preview económico + psicológico coherente
    ============================================================ */
 
 function updateSalaryPreview() {
 
-  const st = window.__ACS_SAL_STATE;
-  if (!st) return;
+  const HR = ACS_HR_load();
+  const depId = window.__ACS_ACTIVE_SALARY_DEPT;
+  if (!HR || !depId || !HR[depId]) return;
+
+  const dep = HR[depId];
 
   const slider = document.getElementById("sal_slider");
-  const pct = Number(slider.value || 0);
+  const label  = document.getElementById("sal_percent_label");
 
-  // Label + línea "Adjustment: X%"
-  document.getElementById("sal_percent_label").textContent = String(pct);
+  // 🔧 RANGO REALISTA DEFINITIVO
+  const percent = parseInt(slider.value);   // -40 … +200
+  label.textContent = percent;
 
-  // New salary
-  const newSalary = Math.max(0, Math.round(st.currentSalary * (1 + pct / 100)));
+  const baseSalary = dep.salary;
+  const staff      = dep.staff || 0;
 
-  // Payroll delta
-  const delta = (newSalary - st.currentSalary) * st.staff;
+  // 🧮 Nuevo salario
+  const newSalary = Math.max(1, Math.round(baseSalary * (1 + percent / 100)));
 
-  document.getElementById("sal_new").textContent = newSalary.toLocaleString();
+  // 🧮 Cambio de payroll
+  const oldPayroll = baseSalary * staff;
+  const newPayroll = newSalary * staff;
+  const delta      = newPayroll - oldPayroll;
 
-  const deltaEl = document.getElementById("sal_payroll_delta");
-  const sign = delta > 0 ? "+" : "";
-  deltaEl.textContent = `${sign}$${Math.round(delta).toLocaleString()}`;
+  // ============================================================
+  // 😐 IMPACTO MORAL REALISTA (ACS OFFICIAL MODEL)
+  // ============================================================
 
-  // Morale effect (simple y jugable)
-  // Basado en ratio vs market después del cambio
-  const market = Number(st.market || 0);
-  let ratio2 = 100;
-  if (market > 0) ratio2 = Math.round((newSalary / market) * 100);
+  let moraleText = "Neutral";
+  let moraleClass = "neutral";
+
+  if (percent <= -30) {
+    moraleText = "Severe morale loss";
+    moraleClass = "bad";
+  }
+  else if (percent <= -15) {
+    moraleText = "Morale decrease";
+    moraleClass = "bad";
+  }
+  else if (percent < 5) {
+    moraleText = "Neutral";
+    moraleClass = "neutral";
+  }
+  else if (percent < 30) {
+    moraleText = "Positive";
+    moraleClass = "good";
+  }
+  else if (percent < 80) {
+    moraleText = "Strong motivation boost";
+    moraleClass = "good";
+  }
+  else {
+    moraleText = "Overpaid (inefficient)";
+    moraleClass = "warning";
+  }
+
+  // ============================================================
+  // 🔧 UI UPDATE
+  // ============================================================
+
+  document.getElementById("sal_new").textContent =
+    "$" + newSalary.toLocaleString();
+
+  const deltaLabel = delta >= 0 ? "+" + delta.toLocaleString() : delta.toLocaleString();
+
+  document.getElementById("sal_payroll_delta").textContent =
+    "$" + deltaLabel;
 
   const moraleEl = document.getElementById("sal_morale_effect");
+  moraleEl.textContent = moraleText;
+  moraleEl.className = moraleClass;
 
-  if (ratio2 >= 95 && ratio2 <= 110) {
-    moraleEl.textContent = "Good";
-    moraleEl.className = "good";
-  } else if (ratio2 >= 80) {
-    moraleEl.textContent = "Neutral";
-    moraleEl.className = "neutral";
-  } else {
-    moraleEl.textContent = "Bad";
-    moraleEl.className = "bad";
-  }
+  console.log(
+    "%c💰 SALARY PREVIEW",
+    "color:#FFD56A;font-weight:700",
+    dep.name,
+    "Adj:", percent + "%",
+    "New:", newSalary,
+    "ΔPayroll:", delta,
+    "Morale:", moraleText
+  );
 }
 
 /* ============================================================
