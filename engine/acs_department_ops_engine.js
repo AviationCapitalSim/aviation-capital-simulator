@@ -1181,82 +1181,87 @@ function closeSalaryModal() {
 }
 
 /* ============================================================
-   🟦 SAL-JS-2 — SALARY ADJUSTMENT ENGINE (REALISTIC RANGE CORE)
+   🟦 SAL-JS-2 — LIVE SALARY PREVIEW ENGINE (CANONICAL ACS)
    ------------------------------------------------------------
-   • Rango permitido: -40% … +200%
-   • Impacto moral realista
-   • Preview económico + psicológico coherente
+   • Rango realista: -40% a +200%
+   • 0% centrado real
+   • Preview en tiempo real
+   • Impacto moral estratégico
    ============================================================ */
 
 function updateSalaryPreview() {
 
-  const HR = ACS_HR_load();
   const depId = window.__ACS_ACTIVE_SALARY_DEPT;
-  if (!HR || !depId || !HR[depId]) return;
+  if (!depId) return;
 
+  const HR = ACS_HR_load();
   const dep = HR[depId];
+  if (!dep) return;
 
   const slider = document.getElementById("sal_slider");
   const label  = document.getElementById("sal_percent_label");
 
-  // 🔧 RANGO REALISTA DEFINITIVO
-  const percent = parseInt(slider.value);   // -40 … +200
+  const percent = parseInt(slider.value || 0);
   label.textContent = percent;
 
   const baseSalary = dep.salary;
   const staff      = dep.staff || 0;
 
-  // 🧮 Nuevo salario
+  // 🔧 Nuevo salario
   const newSalary = Math.max(1, Math.round(baseSalary * (1 + percent / 100)));
 
-  // 🧮 Cambio de payroll
+  // 🔧 Payroll delta mensual
   const oldPayroll = baseSalary * staff;
   const newPayroll = newSalary * staff;
   const delta      = newPayroll - oldPayroll;
 
   // ============================================================
-  // 😐 IMPACTO MORAL REALISTA (ACS OFFICIAL MODEL)
+  // 😐 MORALE IMPACT MODEL (REALISTA ACS)
+  // ------------------------------------------------------------
+  // Bajadas fuertes → moral cae
+  // Subidas moderadas → mejora ligera
+  // Subidas extremas → inestabilidad
   // ============================================================
 
-  let moraleText = "Neutral";
+  let moraleText  = "Neutral";
   let moraleClass = "neutral";
 
-  if (percent <= -30) {
-    moraleText = "Severe morale loss";
+  if (percent <= -25) {
+    moraleText  = "Very Bad";
     moraleClass = "bad";
   }
-  else if (percent <= -15) {
-    moraleText = "Morale decrease";
+  else if (percent < 0) {
+    moraleText  = "Bad";
     moraleClass = "bad";
   }
-  else if (percent < 5) {
-    moraleText = "Neutral";
+  else if (percent >= 0 && percent <= 20) {
+    moraleText  = "Neutral";
     moraleClass = "neutral";
   }
-  else if (percent < 30) {
-    moraleText = "Positive";
+  else if (percent > 20 && percent <= 80) {
+    moraleText  = "Good";
     moraleClass = "good";
   }
-  else if (percent < 80) {
-    moraleText = "Strong motivation boost";
+  else if (percent > 80 && percent <= 150) {
+    moraleText  = "Very Good";
     moraleClass = "good";
   }
-  else {
-    moraleText = "Overpaid (inefficient)";
-    moraleClass = "warning";
+  else { // >150%
+    moraleText  = "Unstable";
+    moraleClass = "bad";
   }
 
   // ============================================================
-  // 🔧 UI UPDATE
+  // 🔧 ACTUALIZAR UI
   // ============================================================
 
   document.getElementById("sal_new").textContent =
     "$" + newSalary.toLocaleString();
 
-  const deltaLabel = delta >= 0 ? "+" + delta.toLocaleString() : delta.toLocaleString();
+  const deltaEl = document.getElementById("sal_payroll_delta");
 
-  document.getElementById("sal_payroll_delta").textContent =
-    "$" + deltaLabel;
+  const sign = delta >= 0 ? "+" : "-";
+  deltaEl.textContent = sign + "$" + Math.abs(delta).toLocaleString();
 
   const moraleEl = document.getElementById("sal_morale_effect");
   moraleEl.textContent = moraleText;
@@ -1264,9 +1269,9 @@ function updateSalaryPreview() {
 
   console.log(
     "%c💰 SALARY PREVIEW",
-    "color:#FFD56A;font-weight:700",
+    "color:#FFD966;font-weight:700",
     dep.name,
-    "Adj:", percent + "%",
+    "Percent:", percent + "%",
     "New:", newSalary,
     "ΔPayroll:", delta,
     "Morale:", moraleText
