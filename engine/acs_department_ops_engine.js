@@ -950,6 +950,32 @@ function ACS_HR_shouldRunAutoSalary() {
 }
 
 /* ============================================================
+   🟧 A3.7.2 — AUTO SALARY SETTINGS CORE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Define estado oficial de Auto Salary
+   • Default ON al crear jugador
+   • Punto único de lectura del sistema
+   ============================================================ */
+
+function ACS_HR_isAutoSalaryEnabled() {
+
+  let flag = localStorage.getItem("ACS_AutoSalary");
+
+  // 🟢 DEFAULT: ON si no existe aún (jugador nuevo)
+  if (!flag) {
+    localStorage.setItem("ACS_AutoSalary", "ON");
+    flag = "ON";
+
+    console.log(
+      "%c⚙ AUTO SALARY DEFAULT ENABLED",
+      "color:#00ffcc;font-weight:700"
+    );
+  }
+
+  return flag === "ON";
+}
+
+/* ============================================================
    🟦 A3.7.3 — HR SALARY ENGINE BOOTSTRAP (FINAL OFFICIAL)
    ------------------------------------------------------------
    • Inicializa metadata salarial
