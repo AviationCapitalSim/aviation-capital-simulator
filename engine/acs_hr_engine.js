@@ -711,37 +711,146 @@ function ACS_HR_calculateRequirements(fleet, totalRoutes, year) {
 
 
 /* ============================================================
-   7) UPDATE REQUIREMENTS — Reparado
+   🟦 A7 — HR REQUIREMENTS FROM SCHEDULE TABLE (ACS CANONICAL)
+   ------------------------------------------------------------
+   Fuente REAL de operación: scheduleItems
+   • Usa bloques reales por avión
+   • Calcula intensidad por aircraftId
+   • Aplica staff por tipo + multiplicador
+   • Actualiza REQUIRED de TODOS los departamentos
    ============================================================ */
+
 function HR_updateRequirementsFromFleet() {
 
     const HR = ACS_HR_load();
+
+    // 🔹 Flota real
     const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    const ROUTES = JSON.parse(localStorage.getItem("ACS_Routes") || "[]");
+
+    // 🔹 Operación REAL (Schedule Table)
+    const blocks = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
-    const totalRoutes = ROUTES.length;
 
-    const req = ACS_HR_calculateRequirements(fleet, totalRoutes, year);
+    /* ========================================================
+       1️⃣ AGRUPAR BLOQUES POR AIRCRAFT ID (INTENSIDAD REAL)
+       ======================================================== */
+    const usageByAircraft = blocks.reduce((acc, r) => {
+        if (!r.aircraftId) return acc;
+        acc[r.aircraftId] = (acc[r.aircraftId] || 0) + 1;
+        return acc;
+    }, {});
 
+    /* ========================================================
+       2️⃣ RESETEAR REQUERIMIENTOS BASE
+       ======================================================== */
+    const req = {
+        ceo: 1,
+        vp: 1 + Math.floor(fleet.length / 50),
+        middle: 1 + Math.floor(fleet.length / 25),
+        economics: Math.ceil(fleet.length / 20),
+        comms: Math.ceil(fleet.length / 30),
+        hr: 1,
+        quality: 0,
+        security: 0,
+        customers: 0,
+        flightops: Math.ceil(fleet.length / 12),
+        routes: Math.ceil(Object.keys(usageByAircraft).length / 4),
+
+        pilots_small: 0,
+        pilots_medium: 0,
+        pilots_large: 0,
+        pilots_vlarge: 0,
+
+        cabin: 0,
+        maintenance: 0,
+        ground: 0,
+    };
+
+    /* ========================================================
+       3️⃣ MULTIPLICADOR POR INTENSIDAD DE USO
+       ======================================================== */
+    function intensityFactor(blocksPerAircraft) {
+
+        if (blocksPerAircraft <= 16) return 1.0;
+        if (blocksPerAircraft <= 24) return 1.3;
+        if (blocksPerAircraft <= 32) return 1.6;
+        if (blocksPerAircraft <= 40) return 1.9;
+        return 2.2;   // operación muy intensa
+    }
+
+    /* ========================================================
+       4️⃣ PROCESAR CADA AVIÓN REAL
+       ======================================================== */
+    fleet.forEach(ac => {
+
+        const blocksCount = usageByAircraft[ac.id] || 0;
+        if (blocksCount === 0) return; // avión sin operar aún
+
+        const type = ACS_classifyAircraft(ac.model || "");
+        const staffBase = ACS_HR_STAFF_BY_TYPE[type] || ACS_HR_STAFF_BY_TYPE.medium;
+
+        const factor = intensityFactor(blocksCount);
+
+        // 🔹 PILOTOS (por tamaño)
+        if (type === "small")  req.pilots_small  += Math.ceil(staffBase.pilots * factor);
+        if (type === "medium") req.pilots_medium += Math.ceil(staffBase.pilots * factor);
+        if (type === "large")  req.pilots_large  += Math.ceil(staffBase.pilots * factor);
+        if (type === "vlarge") req.pilots_vlarge += Math.ceil(staffBase.pilots * factor);
+
+        // 🔹 CABIN
+        if (type !== "small") {
+            req.cabin += Math.ceil(staffBase.cabin * factor);
+        }
+
+        // 🔹 MANTENIMIENTO
+        req.maintenance += Math.ceil(staffBase.maintenance * factor);
+
+        // 🔹 GROUND
+        req.ground += Math.ceil(staffBase.ground * factor);
+
+        // 🔹 SECURITY
+        req.security += Math.ceil(staffBase.security * factor);
+
+        // 🔹 FLIGHT OPS & QUALITY (proporcional real)
+        req.flightops += Math.ceil(staffBase.flightops * factor);
+        req.quality   += Math.ceil(staffBase.quality   * factor);
+
+    });
+
+    /* ========================================================
+       5️⃣ ADMINISTRATIVOS PROPORCIONALES A OPERACIÓN REAL
+       ======================================================== */
+    const totalBlocks = blocks.length;
+
+    req.customers  = Math.ceil(totalBlocks / 12);
+    req.hr        += Math.ceil(totalBlocks / 40);
+    req.economics += Math.ceil(totalBlocks / 50);
+    req.routes    += Math.ceil(totalBlocks / 30);
+    req.comms     += Math.ceil(totalBlocks / 60);
+
+    /* ========================================================
+       6️⃣ APLICAR REQUIRED AL HR STORAGE
+       ======================================================== */
     Object.keys(HR).forEach(depID => {
 
         if (req[depID] !== undefined) {
-            HR[depID].required = Math.ceil(req[depID]);
+            HR[depID].required = Math.max(0, Math.ceil(req[depID]));
         } else {
+            // Protección: si no participa en cálculo, conservar staff actual
             if (typeof HR[depID].required !== "number") {
                 HR[depID].required = HR[depID].staff;
             }
         }
 
-        // Recalcular salario histórico
+        // 🔹 Recalcular salario histórico correcto
         if (depID.startsWith("pilots_")) {
 
-            let size="medium";
-            if(depID==="pilots_small") size="small";
-            if(depID==="pilots_medium") size="medium";
-            if(depID==="pilots_large") size="large";
-            if(depID==="pilots_vlarge") size="vlarge";
+            let size = "medium";
+            if (depID === "pilots_small")  size = "small";
+            if (depID === "pilots_medium") size = "medium";
+            if (depID === "pilots_large")  size = "large";
+            if (depID === "pilots_vlarge") size = "vlarge";
 
             HR[depID].salary = ACS_HR_getPilotSalarySized(year, size);
 
@@ -754,11 +863,18 @@ function HR_updateRequirementsFromFleet() {
 
     ACS_HR_save(HR);
 
+    // 🔄 Refrescar tabla si existe
     if (typeof HR_renderTable === "function") {
         HR_renderTable();
     }
-}
 
+    console.log(
+      "%c🟢 HR REQUIRED UPDATED FROM SCHEDULE TABLE",
+      "color:#00ff80;font-weight:600"
+    );
+    console.log("📊 Total blocks:", totalBlocks);
+    console.log("✈ Aircraft usage:", usageByAircraft);
+}
 
 /* ============================================================
    8) SELECTOR DEL MODAL — Reparado
