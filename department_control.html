@@ -1043,7 +1043,7 @@ tr:nth-child(even) {
         Cancel
       </button>
 
-      <button class="hr-btn-danger" onclick="HR_confirmFireMini()"
+      <button class="hr-btn-danger" onclick="confirmFireMiniModal()"
         style="flex:1;">
         Confirm Dismissal
       </button>
@@ -1566,31 +1566,28 @@ function HR_fillDepartmentSelector() {
 </script>
        
 <script>
+     
 /* ============================================================
-   🟥 A6 — FIRE MINI MODAL ENGINE (Qatar Luxury)
+   🟥 A5 — FIRE MINI MODAL ENGINE (FINAL CANONICAL — FIXED)
    ------------------------------------------------------------
-   • Despido múltiple con confirmación
-   • Un solo warning
-   • Protege CEO
-   • UX limpia
-   • Refresca tabla + KPI
+   • Usa ID REAL: hrFireMiniModal
+   • Usa select REAL: fireMiniQty
+   • Guarda dept activo correctamente
+   • Un solo open / close
+   • Un solo confirm dispatcher
+   • Compatible 100% con tu HTML actual
    ============================================================ */
 
-let HR_fireTargetDept = null;
+let __ACS_ACTIVE_FIRE_DEPT = null;
 
 /* ============================================================
-   🟥 A5.1 — FIRE MODAL OPEN / CLOSE CORE (SINGLE SOURCE OF TRUTH)
-   ------------------------------------------------------------
-   • UNA sola pareja open/close (NO duplicados)
-   • Usa el ID REAL del modal
-   • Guarda dept activo
-   • No inventa otros modals
+   🟥 A5.1 — OPEN FIRE MODAL (REAL ID)
    ============================================================ */
 
 function openFireMiniModal(depId) {
 
   // 🟢 REGISTRO CANÓNICO DEL DEPARTAMENTO ACTIVO
-  window.__ACS_ACTIVE_FIRE_DEPT = depId;
+  __ACS_ACTIVE_FIRE_DEPT = depId;
 
   console.log(
     "%c🔥 FIRE MODAL OPEN REQUEST",
@@ -1598,21 +1595,53 @@ function openFireMiniModal(depId) {
     "Department:", depId
   );
 
-  // ✅ ID REAL (TU MODAL FIRE)
-  const modal = document.getElementById("fireMiniModal");
+  // ✅ ID REAL DE TU HTML
+  const modal = document.getElementById("hrFireMiniModal");
 
   if (!modal) {
-    console.warn("❌ FIRE MODAL FAILED — #fireMiniModal not found");
-    alert("Fire modal not found. Check modal ID: fireMiniModal");
+    console.warn("❌ FIRE MODAL FAILED — #hrFireMiniModal not found");
+    alert("Fire modal not found. Check modal ID: hrFireMiniModal");
     return;
   }
 
+  // 🔧 Rellenar nombre departamento + selector qty
+  const HR = ACS_HR_load();
+  if (!HR || !HR[depId]) {
+    console.warn("❌ FIRE OPEN FAILED — Department not found:", depId);
+    return;
+  }
+
+  const dep = HR[depId];
+
+  // Nombre visible
+  const nameEl = document.getElementById("fireMiniDeptName");
+  if (nameEl) nameEl.textContent = dep.name;
+
+  // Rellenar selector cantidades
+  const select = document.getElementById("fireMiniQty");
+  if (select) {
+    select.innerHTML = "";
+    const max = Math.max(1, dep.staff || 1);
+    for (let i = 1; i <= max; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = `${i} employee${i > 1 ? "s" : ""}`;
+      select.appendChild(opt);
+    }
+  }
+
+  // Mostrar modal
   modal.style.display = "flex";
 }
 
+
+/* ============================================================
+   🟥 A5.2 — CLOSE FIRE MODAL
+   ============================================================ */
+
 function closeFireMiniModal() {
 
-  const modal = document.getElementById("fireMiniModal");
+  const modal = document.getElementById("hrFireMiniModal");
   if (!modal) return;
 
   modal.style.display = "none";
@@ -1620,18 +1649,14 @@ function closeFireMiniModal() {
   console.log("%c🔥 FIRE MODAL CLOSED", "color:#ffaa00;font-weight:700");
 }
 
+
 /* ============================================================
-   🟥 A5.2.1 — FIRE MODAL DISPATCHER (BINDING CORE)
-   ------------------------------------------------------------
-   • Lee deptId desde registro canónico del modal
-   • Lee qty desde selector
-   • Llama motor real HR_confirmFireMini()
-   • Evita undefined
+   🟥 A5.3 — CONFIRM DISPATCHER (BTN CONFIRM)
    ============================================================ */
 
 function confirmFireMiniModal() {
 
-  const depId = window.__ACS_ACTIVE_FIRE_DEPT;
+  const depId = __ACS_ACTIVE_FIRE_DEPT;
 
   if (!depId) {
     console.warn("❌ FIRE CONFIRM FAILED — No active department bound");
@@ -1639,11 +1664,11 @@ function confirmFireMiniModal() {
     return;
   }
 
-  const select = document.getElementById("fire_qty");
+  const select = document.getElementById("fireMiniQty");
   const qty = Number(select?.value || 1);
 
   console.log(
-    "%c🔥 FIRE REQUEST DISPATCH",
+    "%c🔥 FIRE CONFIRM DISPATCH",
     "color:#ff4444;font-weight:800",
     "Department:", depId,
     "Qty:", qty
@@ -1652,120 +1677,6 @@ function confirmFireMiniModal() {
   HR_confirmFireMini(depId, qty);
 
   closeFireMiniModal();
-}
-     
-/* ============================================================
-   🟥 A5.2 — FIRE ENGINE CORE (FINAL OFFICIAL + AUTOHIRE WARNING)
-   ------------------------------------------------------------
-   • Reduce staff REAL
-   • Recalcula payroll inmediato
-   • Aplica caída de moral realista
-   • ⚠️ WARNING explícito de AutoHire OFF
-   • 🔒 Desactiva AutoHire automáticamente
-   • Refresca tabla + KPI
-   • Nunca auto-contrata después de fire
-   ============================================================ */
-
-function HR_confirmFireMini(depId, qty) {
-
-  // ============================================================
-  // ⚠️ CONFIRMACIÓN CRÍTICA — AUTO HIRE SERÁ DESACTIVADO
-  // ============================================================
-
-  const proceed = confirm(
-    "⚠ Fire Staff Action\n\n" +
-    "This action will DISABLE Auto Hire automation for the company.\n" +
-    "Future hiring must be done manually or Auto Hire must be re-enabled in Settings.\n\n" +
-    "Are you sure you want to proceed?"
-  );
-
-  if (!proceed) {
-    console.log("%c🟡 FIRE CANCELLED BY USER", "color:#ffaa00;font-weight:700");
-    return;
-  }
-
-  const HR = ACS_HR_load();
-  if (!HR || !HR[depId]) {
-    console.warn("❌ FIRE FAILED — Department not found:", depId);
-    return;
-  }
-
-  const dep = HR[depId];
-
-  const currentStaff = Number(dep.staff || 0);
-  const fireQty = Math.min(Number(qty || 1), currentStaff);
-
-  if (fireQty <= 0) {
-    console.warn("❌ FIRE FAILED — No staff to remove");
-    return;
-  }
-
-  // ============================================================
-  // 🔒 DESACTIVAR AUTO HIRE GLOBAL POR ACCIÓN MANUAL
-  // ============================================================
-
-  localStorage.setItem("autoHire", "false");
-
-  console.log(
-    "%c🔒 AUTO HIRE DISABLED — MANUAL FIRE OVERRIDE",
-    "color:#ff5555;font-weight:800",
-    dep.name
-  );
-
-  // ============================================================
-  // 👥 APLICAR DESPIDO REAL
-  // ============================================================
-
-  const oldStaff = currentStaff;
-  dep.staff = Math.max(0, currentStaff - fireQty);
-
-  // ============================================================
-  // 💰 RECALCULAR PAYROLL
-  // ============================================================
-
-  const salary = Number(dep.salary || 0);
-  dep.payroll = Math.round(dep.staff * salary);
-
-  // ============================================================
-  // 😟 IMPACTO DE MORAL REALISTA
-  // ------------------------------------------------------------
-  // 1–2 empleados  → -5%
-  // 3–5 empleados  → -10%
-  // >5 empleados   → -20%
-  // ============================================================
-
-  let moraleDrop = 5;
-  if (fireQty >= 3) moraleDrop = 10;
-  if (fireQty >= 6) moraleDrop = 20;
-
-  const oldMorale = Number(dep.morale || 100);
-  dep.morale = Math.max(40, oldMorale - moraleDrop);
-
-  // ============================================================
-  // 🕒 REGISTRO HISTÓRICO
-  // ============================================================
-
-  dep.lastFireDate = Date.now();
-
-  ACS_HR_save(HR);
-
-  // ============================================================
-  // 🔄 REFRESH TOTAL
-  // ============================================================
-
-  if (typeof loadDepartments === "function") loadDepartments();
-  if (typeof HR_updateKPI === "function") HR_updateKPI();
-
-  console.log(
-    "%c🔥 HR FIRE CONFIRMED",
-    "color:#ff4444;font-weight:800",
-    dep.name,
-    "| Fired:", fireQty,
-    "| Old staff:", oldStaff,
-    "| New staff:", dep.staff,
-    "| Morale drop:", "-" + moraleDrop + "%",
-    "| New morale:", dep.morale
-  );
 }
 
 /* ============================================================
