@@ -1003,13 +1003,51 @@ function ACS_HR_isAutoSalaryEnabled() {
 
 function ACS_HR_salaryEngineBootstrap() {
 
-  // Inicializar metadata base
-  ACS_HR_initSalaryMetadata();
+  const HR = ACS_HR_load();
+  if (!HR) return;
 
-  // Actualizar estados salariales
+  // ============================================================
+  // 🟢 INICIALIZAR METADATA SOLO SI NO EXISTE
+  // (NUNCA RESETEAR SALARIOS EXISTENTES)
+  // ============================================================
+  let needsInit = false;
+
+  Object.keys(HR).forEach(id => {
+    const dep = HR[id];
+    if (!dep) return;
+
+    // Si no existe metadata salarial → inicializar
+    if (!dep.hasOwnProperty("salaryPolicy") ||
+        !dep.hasOwnProperty("salaryStatus")) {
+      needsInit = true;
+    }
+  });
+
+  if (needsInit) {
+
+    console.log(
+      "%c🟡 SALARY METADATA INITIALIZATION (FIRST TIME ONLY)",
+      "color:#ffaa00;font-weight:700"
+    );
+
+    ACS_HR_initSalaryMetadata();
+
+  } else {
+
+    console.log(
+      "%c🟢 SALARY METADATA ALREADY INITIALIZED — NO RESET",
+      "color:#7CFFB2;font-weight:700"
+    );
+  }
+
+  // ============================================================
+  // 🔄 ACTUALIZAR ESTADOS (SIN TOCAR SALARIOS)
+  // ============================================================
   ACS_HR_updateSalaryStatus();
 
-  // Leer estado real desde Settings
+  // ============================================================
+  // 🔍 LEER ESTADO REAL DESDE SETTINGS
+  // ============================================================
   const autoSalaryEnabled = ACS_HR_isAutoSalaryEnabled();
 
   console.log(
