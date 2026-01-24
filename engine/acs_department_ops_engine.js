@@ -1545,3 +1545,122 @@ function ACS_HR_calculateManagementRequired() {
   );
 }
 
+/* ============================================================
+   🟥 A1.9 — LIVE FLIGHT OPS RECONCILIATION ENGINE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Lee vuelos activos desde ACS_LIVE_FLIGHTS
+   • Recalcula required dinámico en tiempo real
+   • No depende de eventos
+   • Fuente única: SkyTrack Runtime
+   • Ejecuta cada minuto de juego
+   • Resetea required antes de recalcular
+   ============================================================ */
+
+function ACS_OPS_recalculateFromLiveFlights() {
+
+  const raw = localStorage.getItem("ACS_LIVE_FLIGHTS");
+  if (!raw) return;
+
+  let flights;
+
+  try {
+    flights = JSON.parse(raw);
+  } catch (e) {
+    console.warn("❌ OPS LIVE READ FAILED — Invalid ACS_LIVE_FLIGHTS");
+    return;
+  }
+
+  if (!Array.isArray(flights) || flights.length === 0) return;
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  // ============================================================
+  // 🔄 RESET REQUIRED COMPLETO ANTES DE RECALCULAR
+  // ============================================================
+
+  Object.keys(HR).forEach(id => {
+    if (HR[id] && typeof HR[id].required === "number") {
+      HR[id].required = 0;
+    }
+  });
+
+  let activeCount = 0;
+
+  flights.forEach(f => {
+
+    if (!f || f.state !== "EN_ROUTE") return;
+
+    const aircraft = ACS_MyAircraft_findById
+      ? ACS_MyAircraft_findById(f.aircraftId)
+      : null;
+
+    const route = {
+      origin: f.origin,
+      destination: f.destination,
+      distance: f.distance || f.routeDistance || 0,
+      flights_per_week: 1
+    };
+
+    if (!aircraft) {
+      console.warn("OPS LIVE — Aircraft not found:", f.aircraftId);
+      return;
+    }
+
+    // 🧮 CALCULAR DEMANDA POR VUELO ACTIVO
+    const result = ACS_OPS_calculateCrewDemand(f, aircraft, route);
+    if (!result) return;
+
+    ACS_OPS_applyDemandToHR(result);
+
+    activeCount++;
+  });
+
+  ACS_HR_save(HR);
+
+  // Recalcular managers dinámicos
+  if (typeof ACS_HR_calculateManagementRequired === "function") {
+    ACS_HR_calculateManagementRequired();
+  }
+
+  // AutoHire si está activo
+  if (typeof ACS_HR_applyAutoHire_Instant === "function") {
+    ACS_HR_applyAutoHire_Instant();
+  }
+
+  // Refresh UI
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+  console.log(
+    "%c🧭 OPS LIVE RECALC COMPLETED",
+    "color:#00ffcc;font-weight:700",
+    "Active flights:", activeCount
+  );
+}
+
+/* ============================================================
+   🟥 A1.10 — LIVE OPS TICK (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Ejecuta reconciliación HR desde vuelos activos
+   • Corre cada minuto de juego
+   • Arquitectura pasiva (no eventos)
+   ============================================================ */
+
+let __OPS_lastLiveTick = null;
+
+registerTimeListener((time) => {
+
+  const minute =
+    time.getUTCFullYear() + "-" +
+    time.getUTCMonth() + "-" +
+    time.getUTCDate() + "-" +
+    time.getUTCHours() + "-" +
+    time.getUTCMinutes();
+
+  if (__OPS_lastLiveTick === minute) return;
+
+  __OPS_lastLiveTick = minute;
+
+  ACS_OPS_recalculateFromLiveFlights();
+});
