@@ -851,9 +851,23 @@ function ACS_HR_emitSalaryAlerts() {
    • Resetea estados salariales
    • Borra atrasos históricos
    • Modo recuperación automática
+   • 🔒 BLINDADO: solo corre si Auto Salary = ON
    ============================================================ */
 
 function ACS_HR_applyAutoSalaryNormalization() {
+
+  // ============================================================
+  // 🔒 PROTECCIÓN GLOBAL — RESPETAR AUTO SALARY OFF
+  // ============================================================
+  const autoSalaryEnabled = ACS_HR_isAutoSalaryEnabled();
+
+  if (!autoSalaryEnabled) {
+    console.log(
+      "%c🔒 AUTO SALARY NORMALIZATION BLOCKED (GLOBAL OFF)",
+      "color:#ff5555;font-weight:800"
+    );
+    return;
+  }
 
   const HR = ACS_HR_load();
   if (!HR) return;
@@ -924,12 +938,17 @@ function ACS_HR_applyAutoSalaryNormalization() {
 
   ACS_HR_save(HR);
 
-  // Recalcular HR completo
-  if (typeof ACS_HR_recalculateAll === "function") {
-    ACS_HR_recalculateAll();
-  }
+  // ============================================================
+  // 🔒 CRÍTICO: NUNCA LLAMAR RECALCULATE DESDE NORMALIZATION
+  // (evita cascadas y destrucción de manual)
+  // ============================================================
 
-  // Refrescar tabla + KPI
+  console.log(
+    "%c🔒 AUTO SALARY NORMALIZATION COMPLETED (NO RECALC CASCADE)",
+    "color:#00ffcc;font-weight:700"
+  );
+
+  // Refrescar UI únicamente
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
 }
