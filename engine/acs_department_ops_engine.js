@@ -876,7 +876,6 @@ function ACS_HR_applyAutoSalaryNormalization() {
   }
 
   const eraParams = ACS_HR_getSalaryEraParams(currentYear);
-
   const raisePercent = eraParams.autoRaise;
 
   console.log(
@@ -891,12 +890,30 @@ function ACS_HR_applyAutoSalaryNormalization() {
     const dep = HR[id];
     if (!dep || typeof dep.salary !== "number") return;
 
-    // Aplicar subida automática
+    // ============================================================
+    // 🔒 SKIP MANUAL OVERRIDE DEPARTMENTS
+    // ============================================================
+    if (dep.salaryOverride === true || dep.salaryPolicy === "MANUAL") {
+
+      console.log(
+        "%c⏭ AUTO SALARY SKIPPED (MANUAL OVERRIDE)",
+        "color:#ffaa00;font-weight:700",
+        dep.name
+      );
+
+      return; // NO tocar este departamento
+    }
+
+    // ============================================================
+    // 🟢 APLICAR SUBIDA AUTOMÁTICA
+    // ============================================================
     const oldSalary = dep.salary;
     const newSalary = Math.round(oldSalary * (1 + raisePercent / 100));
 
     dep.salary = newSalary;
-    dep.payroll = dep.staff * dep.salary;
+
+    const staff = Number(dep.staff || 0);
+    dep.payroll = Math.round(staff * dep.salary);
 
     // Reset histórico
     dep.lastSalaryReviewYear = currentYear;
@@ -912,7 +929,7 @@ function ACS_HR_applyAutoSalaryNormalization() {
 
   // 🔄 Reset salary alert cooldown (recovery)
   ACS_HR_saveSalaryAlertState({});
-   
+
   ACS_HR_save(HR);
 
   // Recalcular HR completo
@@ -1009,12 +1026,25 @@ function ACS_HR_salaryEngineBootstrap() {
     "AutoSalary:", autoSalaryEnabled ? "ON" : "OFF"
   );
 
-  // 🟢 AUTO ON → normalizar instantáneo
+  // ============================================================
+  // 🟢 AUTO SALARY ON → NORMALIZAR SOLO AUTOMÁTICOS
+  // ============================================================
   if (autoSalaryEnabled) {
-    ACS_HR_applyAutoSalaryNormalization();
-  }
 
-  // 🔴 AUTO OFF → disciplina activa (alertas + moral ya conectadas)
+    console.log(
+      "%c⚙ AUTO SALARY BOOTSTRAP ACTIVE",
+      "color:#00ff88;font-weight:700"
+    );
+
+    ACS_HR_applyAutoSalaryNormalization();
+
+  } else {
+
+    console.log(
+      "%c🔒 AUTO SALARY BOOTSTRAP SKIPPED (GLOBAL OFF)",
+      "color:#ff5555;font-weight:800"
+    );
+  }
 }
 
 /* ============================================================
@@ -1225,6 +1255,21 @@ function updateSalaryPreview() {
 function applySalaryPolicy() {
 
   // ============================================================
+  // ⚠️ MANUAL POLICY CONFIRMATION
+  // ============================================================
+  const proceed = confirm(
+    "⚠ Manual Salary Policy\n\n" +
+    "This action will DISABLE Auto Salary automation for the company.\n" +
+    "All future salary adjustments must be done manually.\n\n" +
+    "Are you sure you want to proceed?"
+  );
+
+  if (!proceed) {
+    console.log("%c🟡 SALARY APPLY CANCELLED BY USER", "color:#ffaa00;font-weight:700");
+    return;
+  }
+
+  // ============================================================
   // 🟢 LECTURA CANÓNICA DEL DEPARTAMENTO ACTIVO
   // ============================================================
   const depId = window.__ACS_ACTIVE_SALARY_DEPT;
@@ -1255,7 +1300,24 @@ function applySalaryPolicy() {
   dep.payroll = Math.round(staff * newSalary);
 
   // ============================================================
-  // 🕒 REGISTRO HISTÓRICO CORRECTO
+  // 🔒 MANUAL OVERRIDE MODE ACTIVATED
+  // ============================================================
+  dep.salaryPolicy   = "MANUAL";
+  dep.salaryOverride = true;
+
+  // ============================================================
+  // 🔒 DESACTIVAR AUTO SALARY GLOBAL
+  // ============================================================
+  localStorage.setItem("ACS_AutoSalary", "OFF");
+
+  console.log(
+    "%c🔒 AUTO SALARY DISABLED — MANUAL OVERRIDE ACTIVE",
+    "color:#ff5555;font-weight:800",
+    dep.name
+  );
+
+  // ============================================================
+  // 🕒 REGISTRO HISTÓRICO
   // ============================================================
   const currentYear =
     (window.ACS_TIME_CURRENT instanceof Date)
@@ -1263,7 +1325,7 @@ function applySalaryPolicy() {
       : new Date().getUTCFullYear();
 
   dep.lastSalaryReviewYear = currentYear;
-  dep.salaryStatus = "ok";
+  dep.salaryStatus = "manual";
 
   ACS_HR_save(HR);
 
@@ -1275,7 +1337,7 @@ function applySalaryPolicy() {
   if (typeof HR_updateKPI === "function") HR_updateKPI();
 
   console.log(
-    "%c✅ SALARY APPLIED SUCCESSFULLY",
+    "%c✅ SALARY APPLIED (MANUAL POLICY)",
     "color:#7CFFB2;font-weight:800",
     dep.name,
     "| %:", percent,
