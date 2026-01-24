@@ -1070,12 +1070,13 @@ tr:nth-child(even) {
       Adjustment: <span id="sal_percent_label">0</span>%
     </div>
 
-    <input type="range"
-           id="sal_slider"
-           min="-100"
-           max="100"
-           step="1"
-           value="0">
+   <input type="range"
+       id="sal_slider"
+       min="-40"
+       max="200"
+       step="1"
+       value="0"
+       oninput="updateSalaryPreview()">
 
     <div class="sal-preview">
       <div><b>New Salary:</b> $<span id="sal_new"></span></div>
