@@ -1097,42 +1097,6 @@ function ACS_HR_salaryEngineBootstrap() {
 }
 
 /* ============================================================
-   🟦 A6 — MARKET SALARY REFERENCE CORE (LOCAL FIX)
-   ------------------------------------------------------------
-   • Devuelve salario de referencia de mercado
-   • Usa salario base histórico como baseline
-   • Ajusta por era (1940–2026)
-   • Función requerida por openSalaryInline()
-   ============================================================ */
-
-function ACS_HR_getMarketSalary(depID) {
-
-  const HR = ACS_HR_load();
-  const dep = HR[depID];
-  if (!dep || typeof dep.salary !== "number") return dep?.salary || 0;
-
-  const base = dep.salary;
-
-  // 🕒 Año real desde Time Engine ACS (canon)
-  let currentYear;
-  if (window.ACS_TIME_CURRENT instanceof Date) {
-    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
-  } else {
-    currentYear = new Date().getUTCFullYear(); // fallback seguro
-  }
-
-  let factor = 1.0;
-
-  if (currentYear < 1960) factor = 1.0;
-  else if (currentYear < 1980) factor = 1.3;
-  else if (currentYear < 2000) factor = 1.8;
-  else if (currentYear < 2010) factor = 2.2;
-  else factor = 2.6;
-
-  return Math.round(base * factor);
-}
-
-/* ============================================================
    🟦 SAL-JS-1 — SALARY POLICY MODAL (QATAR LUXURY) — v2
    ------------------------------------------------------------
    ✅ Slider centrado en 0 (UI -100..100)
@@ -1301,6 +1265,15 @@ function updateSalaryPreview() {
   morEl.textContent = impact;
 }
 
+/* ============================================================
+   🟦 SAL-JS-APPLY-FIX — MANUAL SALARY POLICY CORE (FINAL)
+   ------------------------------------------------------------
+   • Aplica salario manual real
+   • Actualiza salario base y referencia
+   • Bloquea Auto Salary global
+   • Sin recálculos destructivos
+   ============================================================ */
+
 function applySalaryPolicy() {
 
   // ============================================================
@@ -1345,7 +1318,13 @@ function applySalaryPolicy() {
 
   const newSalary = Math.max(0, Math.round(currentSalary * (1 + percent / 100)));
 
+  // ============================================================
+  // 🟢 APLICAR SALARIO REAL (CANÓNICO)
+  // ============================================================
   dep.salary = newSalary;
+  dep.baseSalary = newSalary;            // 🔒 CLAVE PARA UI
+  dep.marketReference = Math.round(newSalary * 2.6); // 🔒 CLAVE PARA RATIO
+
   dep.payroll = Math.round(staff * newSalary);
 
   // ============================================================
@@ -1376,17 +1355,19 @@ function applySalaryPolicy() {
   dep.lastSalaryReviewYear = currentYear;
   dep.salaryStatus = "manual";
 
+  // ============================================================
+  // 💾 GUARDADO DEFINITIVO
+  // ============================================================
   ACS_HR_save(HR);
 
   // ============================================================
-  // 🔄 REFRESH TOTAL
+  // 🔄 REFRESH LIMPIO (SIN NORMALIZACIÓN)
   // ============================================================
-  if (typeof ACS_HR_recalculateAll === "function") ACS_HR_recalculateAll();
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
 
   console.log(
-    "%c✅ SALARY APPLIED (MANUAL POLICY)",
+    "%c✅ SALARY APPLIED (MANUAL POLICY — FINAL)",
     "color:#7CFFB2;font-weight:800",
     dep.name,
     "| %:", percent,
