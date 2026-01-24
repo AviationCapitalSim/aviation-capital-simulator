@@ -164,75 +164,46 @@
     color: #dfe9ff;
   }
 
-  /* ============================================================
-       === MAIN CONTENT (igual dashboard) ======================
-     ============================================================ */
+   /* TITLE */
+    .acs-intro {
+      margin-top: 6rem;
+      text-align: center;
+    }
+    .acs-title {
+      color: #FFB300;
+      font-size: 1.6rem;
+      margin-bottom: 0.3rem;
+    }
+    .acs-subtitle {
+      color: #ccc;
+      font-style: italic;
+    }
 
-  .acs-main {
-    padding: 105px 2rem 70px;
-    text-align: center;
-  }
+    /* PANELS GRID */
+    .finance-panels {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+      margin-top: 1.5rem;
+      box-sizing: border-box;
+    }
 
-  .acs-main h2 {
-    font-size: 1.9rem;
-    font-weight: 600;
-    color: #ffca3a;
-    text-shadow: 0 0 12px rgba(255,190,60,0.55);
-    letter-spacing: 0.6px;
-    margin-top: 0.5rem;
-  }
+    .panel {
+      background: #0d1c3c;
+      padding: 1.2rem 1.4rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,179,0,0.25);
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      transition: 0.2s;
+    }
+    .panel:hover { transform: scale(1.02); }
 
-  .acs-main .sub {
-    margin-top: 0.4rem;
-    color: #cbd6ff;
-    font-size: 1rem;
-  }
-
-  /* ============================================================
-       === PANEL GRID (reuso dashboard-grid) ===================
-     ============================================================ */
-
-  .dashboard-grid {
-    display: grid;
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-
-  .row-business {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  }
-
-  /* Panel base (mismo que dashboard) */
-  .panel {
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  padding: 1.6rem 1.5rem;
-  border-radius: 22px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.4);
-  transition: 0.25s;
-  border: 1px solid rgba(255,179,0,0.15);
-  text-align: center;     /* 🔥 todo centrado */
-  align-items: center;     /* 🔥 asegura centro vertical si se usa flex */
-}
-
-  .panel:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 32px rgba(255,179,0,0.25);
-    border: 1px solid rgba(255,179,0,0.35);
-  }
-
-  .panel h3 {
-    font-size: 1.25rem;
-    color: #ffb300;
-    margin-bottom: 0.9rem;
-    text-shadow: 0 0 6px rgba(255,179,0,0.4);
-  }
-
-  .panel p {
-    color: #d7e2ff;
-    font-size: 0.95rem;
-    line-height: 1.4;
-    margin: 0.15rem 0;
-  }
+    .panel h3 {
+      color: #FFB300;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.5px;
+    }
 
     label { display:block; margin:0.4rem 0; }
 
