@@ -1630,100 +1630,117 @@ function closeFireMiniModal() {
 }
 
 /* ============================================================
-   🟥 A2.1 — FIRE + MORALE DEGRADATION CORE (ACS OFFICIAL)
+   🟥 A5.2 — FIRE ENGINE CORE (FINAL OFFICIAL + AUTOHIRE WARNING)
    ------------------------------------------------------------
-   • Despido múltiple real
-   • Moral baja proporcional al impacto
-   • Protege CEO
-   • Clamp mínimo moral = 40%
+   • Reduce staff REAL
+   • Recalcula payroll inmediato
+   • Aplica caída de moral realista
+   • ⚠️ WARNING explícito de AutoHire OFF
+   • 🔒 Desactiva AutoHire automáticamente
    • Refresca tabla + KPI
+   • Nunca auto-contrata después de fire
    ============================================================ */
 
-function HR_confirmFireMini() {
+function HR_confirmFireMini(depId, qty) {
 
-  if (!HR_fireTargetDept) return;
+  // ============================================================
+  // ⚠️ CONFIRMACIÓN CRÍTICA — AUTO HIRE SERÁ DESACTIVADO
+  // ============================================================
 
-  const sel = document.getElementById("fireMiniQty");
-  const qty = parseInt(sel.value);
+  const proceed = confirm(
+    "⚠ Fire Staff Action\n\n" +
+    "This action will DISABLE Auto Hire automation for the company.\n" +
+    "Future hiring must be done manually or Auto Hire must be re-enabled in Settings.\n\n" +
+    "Are you sure you want to proceed?"
+  );
 
-  if (!Number.isFinite(qty) || qty <= 0) {
-    alert("⚠️ Invalid dismissal quantity.");
+  if (!proceed) {
+    console.log("%c🟡 FIRE CANCELLED BY USER", "color:#ffaa00;font-weight:700");
     return;
   }
 
   const HR = ACS_HR_load();
-  const dep = HR[HR_fireTargetDept];
-
-  if (!dep) {
-    closeFireMiniModal();
+  if (!HR || !HR[depId]) {
+    console.warn("❌ FIRE FAILED — Department not found:", depId);
     return;
   }
 
-  // 🛑 PROTECCIÓN CEO
-  if (dep.id === "ceo" || dep.name?.toLowerCase() === "ceo") {
-    alert("⚠️ The CEO cannot be dismissed.");
-    closeFireMiniModal();
+  const dep = HR[depId];
+
+  const currentStaff = Number(dep.staff || 0);
+  const fireQty = Math.min(Number(qty || 1), currentStaff);
+
+  if (fireQty <= 0) {
+    console.warn("❌ FIRE FAILED — No staff to remove");
     return;
   }
-
-  const staffBefore = dep.staff || 0;
-
-  // 🛑 Nada que despedir
-  if (staffBefore <= 0) {
-    closeFireMiniModal();
-    return;
-  }
-
-  // 🛑 Clamp seguridad
-  const realQty = Math.min(qty, staffBefore);
-
-  // 🔥 DESPEDIR REAL
-  ACS_HR_fire(HR_fireTargetDept, realQty);
 
   // ============================================================
-  // 😟 MORALE DEGRADATION LOGIC — REALISTIC CORE
+  // 🔒 DESACTIVAR AUTO HIRE GLOBAL POR ACCIÓN MANUAL
   // ============================================================
 
-  let drop = 2; // mínimo base
-
-  if (staffBefore > 0) {
-    // impacto proporcional al tamaño del equipo
-    drop = Math.round((realQty / staffBefore) * 20);
-
-    // límites realistas
-    if (drop < 2)  drop = 2;
-    if (drop > 20) drop = 20;
-  }
-
-  const oldMorale = dep.morale || 100;
-  dep.morale = Math.max(40, oldMorale - drop);
+  localStorage.setItem("autoHire", "false");
 
   console.log(
-    "%c🟥 HR FIRE CONFIRMED",
-    "color:#ff4d4d;font-weight:700",
-    dep.name,
-    "Qty:", realQty,
-    "Morale drop:", drop + "%",
-    "New morale:", dep.morale
+    "%c🔒 AUTO HIRE DISABLED — MANUAL FIRE OVERRIDE",
+    "color:#ff5555;font-weight:800",
+    dep.name
   );
 
-  // Guardar HR actualizado
+  // ============================================================
+  // 👥 APLICAR DESPIDO REAL
+  // ============================================================
+
+  const oldStaff = currentStaff;
+  dep.staff = Math.max(0, currentStaff - fireQty);
+
+  // ============================================================
+  // 💰 RECALCULAR PAYROLL
+  // ============================================================
+
+  const salary = Number(dep.salary || 0);
+  dep.payroll = Math.round(dep.staff * salary);
+
+  // ============================================================
+  // 😟 IMPACTO DE MORAL REALISTA
+  // ------------------------------------------------------------
+  // 1–2 empleados  → -5%
+  // 3–5 empleados  → -10%
+  // >5 empleados   → -20%
+  // ============================================================
+
+  let moraleDrop = 5;
+  if (fireQty >= 3) moraleDrop = 10;
+  if (fireQty >= 6) moraleDrop = 20;
+
+  const oldMorale = Number(dep.morale || 100);
+  dep.morale = Math.max(40, oldMorale - moraleDrop);
+
+  // ============================================================
+  // 🕒 REGISTRO HISTÓRICO
+  // ============================================================
+
+  dep.lastFireDate = Date.now();
+
   ACS_HR_save(HR);
 
-  closeFireMiniModal();
+  // ============================================================
+  // 🔄 REFRESH TOTAL
+  // ============================================================
 
-  // 🔄 RECALCULAR Y REFRESCAR TODO
-  if (typeof ACS_HR_recalculateAll === "function") {
-    ACS_HR_recalculateAll();
-  }
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
 
-  if (typeof loadDepartments === "function") {
-    loadDepartments();
-  }
-
-  if (typeof HR_updateKPI === "function") {
-    HR_updateKPI();
-  }
+  console.log(
+    "%c🔥 HR FIRE CONFIRMED",
+    "color:#ff4444;font-weight:800",
+    dep.name,
+    "| Fired:", fireQty,
+    "| Old staff:", oldStaff,
+    "| New staff:", dep.staff,
+    "| Morale drop:", "-" + moraleDrop + "%",
+    "| New morale:", dep.morale
+  );
 }
 
 /* ============================================================
