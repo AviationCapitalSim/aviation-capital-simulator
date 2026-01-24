@@ -691,23 +691,32 @@ function ACS_HR_initSalaryMetadata() {
 }
 
 /* ============================================================
-   🟦 A3.1.3 — SALARY STATUS DETECTOR CORE
+   🟦 A3.1.3 — SALARY STATUS DETECTOR CORE (FIX TIME ENGINE)
    ------------------------------------------------------------
    • Detecta estado salarial por departamento
    • Define color visual + base de alertas
+   • Lee año REAL desde Time Engine ACS
    ============================================================ */
 
 function ACS_HR_updateSalaryStatus() {
 
-// 🔔 Emitir alertas salariales si corresponde
-if (typeof ACS_HR_emitSalaryAlerts === "function") {
-  ACS_HR_emitSalaryAlerts();
-}
-   
+  // 🔔 Emitir alertas salariales si corresponde
+  if (typeof ACS_HR_emitSalaryAlerts === "function") {
+    ACS_HR_emitSalaryAlerts();
+  }
+
   const HR = ACS_HR_load();
   if (!HR) return;
 
-  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  // 🕒 Año real desde Time Engine ACS (canon)
+  let currentYear;
+
+  if (window.ACS_TIME_CURRENT instanceof Date) {
+    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
+  } else {
+    currentYear = new Date().getUTCFullYear(); // fallback seguro
+  }
+
   const eraParams = ACS_HR_getSalaryEraParams(currentYear);
 
   Object.keys(HR).forEach(id => {
