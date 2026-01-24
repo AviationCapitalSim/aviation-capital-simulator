@@ -1280,56 +1280,71 @@ function applySalaryChange() {
 })();
 
 /* ============================================================
-   🟦 SAL-JS-APPLY-1 — APPLY SALARY POLICY (CANONICAL FIX)
+   🟦 SAL-JS-APPLY-FIX — APPLY BUTTON (NO ACTIVE DEPT FIX)
    ------------------------------------------------------------
-   • Usa dept activo real del modal
-   • Aplica salario correctamente
-   • Recalcula payroll + KPI
+   ✅ Arregla: "APPLY SALARY FAILED — No active department"
+   • Tolera distintas variables (window.__ACS_ACTIVE_SALARY_DEPT / __SAL_currentDep / dataset)
+   • Aplica el % del slider al salario actual del dept
+   • Guarda HR + refresca UI
    ============================================================ */
 
 function applySalaryPolicy() {
 
-  const depId = window.__ACS_ACTIVE_SALARY_DEPT;
+  const modal = document.getElementById("salaryModal");
+
+  // ✅ Detectar dept activo desde cualquiera de las fuentes
+  const depId =
+    (window.__ACS_ACTIVE_SALARY_DEPT || null) ||
+    (window.__SAL_currentDep || null) ||
+    (modal && modal.dataset ? (modal.dataset.depId || null) : null);
 
   if (!depId) {
-    console.error("❌ APPLY SALARY FAILED — No active department");
+    console.warn("❌ APPLY SALARY FAILED — No active department");
     return;
   }
 
   const HR = ACS_HR_load();
   if (!HR || !HR[depId]) {
-    console.error("❌ APPLY SALARY FAILED — Department not found:", depId);
+    console.warn("❌ APPLY SALARY FAILED — Department not found:", depId);
     return;
   }
 
   const dep = HR[depId];
 
-  // Leer porcentaje del slider
-  const percent = parseInt(document.getElementById("sal_slider").value) || 0;
+  const slider = document.getElementById("sal_slider");
+  const pct = slider ? parseInt(slider.value || "0", 10) : 0;
 
-  const oldSalary = dep.salary || 0;
-  const newSalary = Math.round(oldSalary * (1 + percent / 100));
+  const oldSalary = Number(dep.salary || 0);
+  const staff = Number(dep.staff || 0);
 
-  // Aplicar
+  const newSalary = Math.max(0, Math.round(oldSalary * (1 + pct / 100)));
+
   dep.salary = newSalary;
-  dep.payroll = dep.staff * dep.salary;
-  dep.salaryStatus = "review";
-  dep.lastSalaryReviewYear = new Date().getUTCFullYear();
+  dep.payroll = staff * newSalary;
+
+  // Año real (Time Engine canon si existe)
+  const currentYear =
+    (window.ACS_TIME_CURRENT instanceof Date)
+      ? window.ACS_TIME_CURRENT.getUTCFullYear()
+      : new Date().getUTCFullYear();
+
+  dep.lastSalaryReviewYear = currentYear;
+  dep.salaryStatus = "ok";
 
   ACS_HR_save(HR);
 
-  console.log(
-    "%c💰 SALARY APPLIED",
-    "color:#FFD966;font-weight:700",
-    dep.name,
-    "Old:", oldSalary,
-    "New:", newSalary,
-    "Percent:", percent + "%"
-  );
-
-  // Refrescar tabla + KPI
+  if (typeof ACS_HR_recalculateAll === "function") ACS_HR_recalculateAll();
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+  console.log(
+    "%c✅ SALARY APPLIED",
+    "color:#7CFFB2;font-weight:800",
+    dep.name,
+    "| %:", pct,
+    "| Old:", oldSalary,
+    "| New:", newSalary
+  );
 
   closeSalaryModal();
 }
