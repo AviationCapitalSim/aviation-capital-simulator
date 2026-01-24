@@ -1255,6 +1255,17 @@ function applySalaryChange() {
 }
 
 /* ============================================================
+   🟦 SAL-JS-2B — APPLY POLICY ALIAS (HTML COMPATIBILITY)
+   ------------------------------------------------------------
+   • Conecta botón Apply existente
+   • No rompe arquitectura
+   ============================================================ */
+
+function applySalaryPolicy() {
+  applySalaryChange();
+}
+
+/* ============================================================
    🟦 SAL-JS-6 — BIND UI EVENTS (ONE TIME)
    ============================================================ */
 (function ACS_SAL_bindOnce() {
