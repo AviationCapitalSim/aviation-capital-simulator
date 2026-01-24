@@ -1141,6 +1141,12 @@ function openSalaryInline(depId) {
   slider.value = 0;
   label.textContent = "0";
 
+    // ============================================================
+  // 🟢 REBIND SLIDER EVENTS (SAFARI / MODAL SAFE FIX)
+  // ============================================================
+  slider.oninput = updateSalaryPreview;
+  slider.onchange = updateSalaryPreview;
+   
   // Preview inicial
   modal.style.display = "flex";
   updateSalaryPreview();
