@@ -744,65 +744,155 @@ tr:nth-child(even) {
 }
 
 /* ============================================================
-   🟦 A3.2.1 — SALARY STATUS COLORS (HR TABLE)
-   ------------------------------------------------------------
-   • ok     → verde suave
-   • review → amarillo (auto salary OFF en el futuro)
-   • lagging→ rojo fuerte (atraso crítico)
+   🟦 SAL-CSS-1 — QATAR LUXURY PREMIUM SALARY MODAL
    ============================================================ */
 
-.salary-ok {
-  color: #7CFFB2 !important;
-  font-weight: 700;
-  text-shadow: 0 0 10px rgba(0,255,160,0.22);
-}
-
-.salary-review {
-  color: #ffcf4a !important;
-  font-weight: 800;
-  text-shadow: 0 0 10px rgba(255,200,60,0.28);
-}
-
-.salary-lagging {
-  color: #ff4d4d !important;
-  font-weight: 900;
-  text-shadow: 0 0 12px rgba(255,80,80,0.55);
-}
-
-/* ============================================================
-   🟦 SAL-CSS-1 — SALARY POLICY MODAL (QATAR LUXURY)
-   ============================================================ */
-
-.acs-modal {
+#salaryModal {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.75);
-  display: none;              /* 🔒 NUNCA ABIERTO POR DEFECTO */
+  inset: 0;
+  background: rgba(3, 10, 30, 0.75);
+  backdrop-filter: blur(6px);
+  display: none;
   align-items: center;
   justify-content: center;
-  z-index: 5000;
+  z-index: 9000;
 }
 
-.acs-modal-content {
-  background: #0d1c3c;
-  padding: 1.6rem 2rem;
-  border-radius: 12px;
-  border: 1px solid #FFB300;
-  box-shadow: 0 0 18px rgba(255,179,0,0.4);
-  min-width: 360px;
-  max-width: 420px;
-  color: white;
+/* Panel principal */
+#salaryModal .modal-box {
+  width: 440px;
+  max-width: 92%;
+  background: linear-gradient(180deg, #0b1c3a 0%, #07142c 100%);
+  border-radius: 18px;
+  padding: 28px 30px 26px 30px;
+  box-shadow:
+    0 0 0 1px rgba(255, 200, 90, 0.35),
+    0 0 25px rgba(255, 200, 90, 0.25),
+    0 40px 80px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 215, 120, 0.6);
+  color: #e8f0ff;
+  font-family: "Poppins", sans-serif;
 }
 
-#sal_ratio.ok      { color:#00ff80; }
-#sal_ratio.warning { color:#ffae00; }
-#sal_ratio.danger  { color:#ff4040; }
+/* Título */
+#salaryModal .modal-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffd77a;
+  margin-bottom: 18px;
+}
 
-#sal_morale_effect.good  { color:#00ff80; }
-#sal_morale_effect.bad   { color:#ff4040; }
-#sal_morale_effect.neutral { color:#ccc; }
-       
+/* Líneas de datos */
+#salaryModal .sal-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+#salaryModal .sal-row b {
+  color: #b9c7ff;
+  font-weight: 600;
+}
+
+#salaryModal .sal-row span {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Separador dorado */
+#salaryModal .sal-sep {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #ffd77a, transparent);
+  margin: 16px 0 18px 0;
+}
+
+/* Adjustment label */
+#salaryModal .sal-adjust-label {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffd77a;
+  margin-bottom: 8px;
+}
+
+/* Slider lujo */
+#salaryModal input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 6px;
+  background: linear-gradient(to right, #7c5c1b, #ffd77a, #7c5c1b);
+  outline: none;
+  margin-bottom: 14px;
+}
+
+#salaryModal input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff2c0, #d4a63a);
+  border: 2px solid #ffd77a;
+  box-shadow: 0 0 10px rgba(255, 215, 120, 0.9);
+  cursor: pointer;
+}
+
+/* Preview resultados */
+#salaryModal .sal-preview {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#salaryModal .sal-preview b {
+  color: #ffd77a;
+}
+
+/* Ratio colores */
+#salaryModal #sal_ratio.ok      { color: #00ff9c; }
+#salaryModal #sal_ratio.warning { color: #ffcf66; }
+#salaryModal #sal_ratio.danger  { color: #ff6b6b; }
+
+/* Morale */
+#salaryModal #sal_morale_effect.good    { color: #00ff9c; }
+#salaryModal #sal_morale_effect.neutral { color: #ffd77a; }
+#salaryModal #sal_morale_effect.bad     { color: #ff6b6b; }
+
+/* Botones */
+#salaryModal .sal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 22px;
+}
+
+#salaryModal .btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #cbd6ff;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#salaryModal .btn-apply {
+  background: linear-gradient(135deg, #ffd77a, #caa13b);
+  color: #081530;
+  font-weight: 700;
+  border: none;
+  padding: 7px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(255,215,120,0.6);
+}
+
+#salaryModal .btn-apply:hover {
+  filter: brightness(1.1);
+}
+
 </style>
 </head>
 
@@ -958,6 +1048,48 @@ tr:nth-child(even) {
         Confirm Dismissal
       </button>
 
+    </div>
+
+  </div>
+</div>
+
+<div id="salaryModal">
+  <div class="modal-box">
+
+    <div class="modal-title">💰 Salary Policy</div>
+
+    <div class="sal-row"><b>Department</b><span id="sal_depName"></span></div>
+    <div class="sal-row"><b>Staff</b><span id="sal_staff"></span></div>
+    <div class="sal-row"><b>Current Salary</b><span>$<span id="sal_current"></span></span></div>
+    <div class="sal-row"><b>Market Reference</b><span>$<span id="sal_market"></span></span></div>
+    <div class="sal-row"><b>Ratio vs Market</b><span id="sal_ratio"></span></div>
+
+    <div class="sal-sep"></div>
+
+    <div class="sal-adjust-label">
+      Adjustment: <span id="sal_percent_label">0</span>%
+    </div>
+
+    <input type="range"
+           id="sal_slider"
+           min="-100"
+           max="100"
+           step="1"
+           value="0">
+
+    <div class="sal-preview">
+      <div><b>New Salary:</b> $<span id="sal_new"></span></div>
+      <div><b>Monthly Payroll Change:</b> <span id="sal_payroll_delta"></span></div>
+      <div><b>Expected Morale Impact:</b> <span id="sal_morale_effect"></span></div>
+    </div>
+
+    <div id="sal_auto_warning" style="display:none;color:#ffcf66;text-align:center;margin-top:10px;">
+      ⚠ Manual override — Auto Salary disabled
+    </div>
+
+    <div class="sal-actions">
+      <button class="btn-cancel" onclick="closeSalaryModal()">Cancel</button>
+      <button class="btn-apply" onclick="applySalaryPolicy()">Apply</button>
     </div>
 
   </div>
@@ -1623,62 +1755,6 @@ function HR_confirmFireMini() {
 })();
      
 </script>
-
-<!-- ============================================================
-     🟦 SAL-UI-1 — SALARY POLICY MODAL (ACS OFFICIAL)
-     ============================================================ -->
-<div class="acs-modal" id="salaryModal" style="display:none;">
-  <div class="acs-modal-content">
-
-    <h3 id="salaryModalTitle">💰 Salary Policy</h3>
-
-    <div style="margin-top:10px;font-size:0.95rem;line-height:1.5">
-
-      <div><b>Department:</b> <span id="sal_depName"></span></div>
-      <div><b>Staff:</b> <span id="sal_staff"></span></div>
-      <div><b>Current Salary:</b> $<span id="sal_current"></span></div>
-      <div><b>Market Reference:</b> $<span id="sal_market"></span></div>
-      <div><b>Ratio vs Market:</b> <span id="sal_ratio"></span></div>
-
-    </div>
-
-    <hr style="margin:12px 0;border-color:rgba(255,179,0,0.3)">
-
-    <!-- SLIDER -->
-    <label style="margin-top:6px;">
-      Adjustment: <b><span id="sal_percent_label">0</span>%</b>
-    </label>
-
-    <input type="range"
-           id="sal_slider"
-           min="-40"
-           max="200"
-           step="1"
-           value="0"
-           style="width:100%;margin-top:6px;">
-
-    <!-- PREVIEW -->
-    <div style="margin-top:14px;font-size:0.95rem;line-height:1.6">
-
-      <div><b>New Salary:</b> $<span id="sal_new"></span></div>
-      <div><b>Monthly Payroll Change:</b> <span id="sal_payroll_delta"></span></div>
-      <div><b>Expected Morale Impact:</b> <span id="sal_morale_effect"></span></div>
-
-      <div id="sal_auto_warning"
-           style="margin-top:8px;color:#ffae00;font-weight:600;display:none;">
-        ⚠ Manual override — Auto Salary will be disabled
-      </div>
-
-    </div>
-
-    <div style="margin-top:16px;display:flex;justify-content:center;gap:16px;">
-      <button class="acs-btn secondary" onclick="closeSalaryModal()">Cancel</button>
-      <button class="acs-btn" onclick="applySalaryPolicy()">Apply</button>
-    </div>
-
-  </div>
-</div>
-
        
 </body>
 </html>
