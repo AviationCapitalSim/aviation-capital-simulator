@@ -649,10 +649,11 @@ function ACS_HR_getSalaryEraParams(year) {
 }
 
 /* ============================================================
-   🟦 A3.1.2 — INIT SALARY METADATA CORE
+   🟦 A3.1.2 — INIT SALARY METADATA CORE (FIX TIME ENGINE)
    ------------------------------------------------------------
    • Inicializa lastSalaryReviewYear si no existe
    • Inicializa salaryStatus = "ok"
+   • Lee año REAL desde Time Engine ACS
    ============================================================ */
 
 function ACS_HR_initSalaryMetadata() {
@@ -660,7 +661,14 @@ function ACS_HR_initSalaryMetadata() {
   const HR = ACS_HR_load();
   if (!HR) return;
 
-  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  // 🕒 Año real desde Time Engine ACS (canon)
+  let currentYear;
+
+  if (window.ACS_TIME_CURRENT instanceof Date) {
+    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
+  } else {
+    currentYear = new Date().getUTCFullYear(); // fallback seguro
+  }
 
   Object.keys(HR).forEach(id => {
 
