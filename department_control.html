@@ -1579,51 +1579,65 @@ function HR_fillDepartmentSelector() {
 let HR_fireTargetDept = null;
 
 /* ============================================================
-   🟥 A5.1 — FIRE MINI MODAL (BINDING FIX) — FINAL
+   🟥 A5.1 — FIRE MODAL OPEN / CLOSE CORE (FINAL SAFE)
    ------------------------------------------------------------
-   • Registra depId canónico al abrir modal (evita undefined)
-   • Rellena nombre + selector de qty según staff actual
+   • Registra dept activo correctamente
+   • Soporta múltiples IDs de modal
+   • Evita modal undefined
+   • Arquitectura canónica ACS
    ============================================================ */
 
-function openFireMiniModal(deptId) {
-
-  const HR = ACS_HR_load();
-  if (!HR || !HR[deptId]) {
-    console.warn("❌ FIRE MODAL FAILED — Department not found:", deptId);
-    return;
-  }
-
-  const dep = HR[deptId];
+function openFireMiniModal(depId) {
 
   // ============================================================
-  // 🟢 REGISTRO CANÓNICO DEL DEPARTAMENTO ACTIVO (CRÍTICO)
+  // 🟢 REGISTRO CANÓNICO DEL DEPARTAMENTO ACTIVO
   // ============================================================
-  window.__ACS_ACTIVE_FIRE_DEPT = deptId;
 
-  const modal = document.getElementById("fireMiniModal");
+  window.__ACS_ACTIVE_FIRE_DEPT = depId;
+
+  console.log(
+    "%c🔥 FIRE MODAL OPEN REQUEST",
+    "color:#ff4444;font-weight:800",
+    "Department:", depId
+  );
+
+  // ============================================================
+  // 🔎 BUSCAR MODAL REAL (COMPATIBLE CON TU HTML ACTUAL)
+  // ============================================================
+
+  const modal =
+    document.getElementById("fireMiniModal") ||
+    document.getElementById("fireModal") ||
+    document.getElementById("staffDismissModal") ||
+    document.getElementById("dismissModal");
+
   if (!modal) {
-    console.warn("❌ FIRE MODAL FAILED — #fireMiniModal not found");
+    console.warn("❌ FIRE MODAL FAILED — No fire modal found in DOM");
+    alert("Fire modal not found. Check modal ID.");
     return;
   }
 
-  // Fill UI
-  const nameEl = document.getElementById("fire_depName");
-  if (nameEl) nameEl.textContent = dep.name || deptId;
-
-  const select = document.getElementById("fire_qty");
-  if (select) {
-    select.innerHTML = "";
-    const max = Math.max(1, Number(dep.staff || 0) || 1);
-
-    for (let i = 1; i <= max; i++) {
-      const opt = document.createElement("option");
-      opt.value = String(i);
-      opt.textContent = i + " employee" + (i > 1 ? "s" : "");
-      select.appendChild(opt);
-    }
-  }
+  // ============================================================
+  // 🟢 MOSTRAR MODAL
+  // ============================================================
 
   modal.style.display = "flex";
+}
+
+
+function closeFireMiniModal() {
+
+  const modal =
+    document.getElementById("fireMiniModal") ||
+    document.getElementById("fireModal") ||
+    document.getElementById("staffDismissModal") ||
+    document.getElementById("dismissModal");
+
+  if (!modal) return;
+
+  modal.style.display = "none";
+
+  console.log("%c🔥 FIRE MODAL CLOSED", "color:#ffaa00;font-weight:700");
 }
 
 /* ============================================================
