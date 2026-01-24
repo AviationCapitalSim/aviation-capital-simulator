@@ -1059,27 +1059,85 @@ function ACS_HR_getMarketSalary(depID) {
 
 let __SAL_currentDep = null;
 
-function openSalaryInline(depID) {
+/* ============================================================
+   🟦 A3.3.1 — OPEN SALARY MODAL (CANONICAL ZERO-CENTER CORE)
+   ------------------------------------------------------------
+   • Slider SIEMPRE inicia en 0%
+   • Preview sincronizado al abrir
+   • Ratio y mercado visibles
+   • No activa auto-salary
+   ============================================================ */
+
+function openSalaryInline(depId) {
 
   const HR = ACS_HR_load();
-  const dep = HR[depID];
-  if (!dep) return;
+  if (!HR || !HR[depId]) {
+    console.warn("❌ Salary modal failed — Department not found:", depId);
+    return;
+  }
 
-  __SAL_currentDep = depID;
+  const dep = HR[depId];
 
-  const market = ACS_HR_getMarketSalary(depID);
+  // === Datos base ===
+  const currentSalary = dep.salary || 0;
+  const staff = dep.staff || 0;
 
-  document.getElementById("sal_depName").textContent = dep.name;
-  document.getElementById("sal_staff").textContent = dep.staff;
-  document.getElementById("sal_current").textContent = dep.salary;
-  document.getElementById("sal_market").textContent = market;
+  // 🔧 Market reference (canon)
+  const market = (typeof ACS_HR_getMarketSalary === "function")
+    ? ACS_HR_getMarketSalary(depId)
+    : Math.round(currentSalary * 2.6);   // fallback seguro
 
-  document.getElementById("sal_slider").value = 0;
-  document.getElementById("sal_percent_label").textContent = "0";
+  const ratio = market > 0
+    ? Math.round((currentSalary / market) * 100)
+    : 100;
 
+  // === UI FILL ===
+  document.getElementById("sal_depName").textContent   = dep.name;
+  document.getElementById("sal_staff").textContent    = staff;
+  document.getElementById("sal_current").textContent  = currentSalary.toLocaleString();
+  document.getElementById("sal_market").textContent   = market.toLocaleString();
+
+  // Ratio color
+  const ratioEl = document.getElementById("sal_ratio");
+  ratioEl.textContent = ratio + "%";
+
+  ratioEl.className = "";
+  if (ratio >= 95 && ratio <= 110) ratioEl.classList.add("ok");
+  else if (ratio >= 80)           ratioEl.classList.add("warning");
+  else                            ratioEl.classList.add("danger");
+
+  // ============================================================
+  // 🔥 CENTRADO ABSOLUTO EN 0% (LO QUE TÚ QUERÍAS)
+  // ============================================================
+
+  const slider = document.getElementById("sal_slider");
+  const label  = document.getElementById("sal_percent_label");
+
+  slider.value = 0;          // 🔥 CENTRO REAL
+  label.textContent = "0";  // 🔥 0%
+
+  // === Preview inicial limpio ===
+  document.getElementById("sal_new").textContent = currentSalary.toLocaleString();
+  document.getElementById("sal_payroll_delta").textContent = "$0";
+  document.getElementById("sal_morale_effect").textContent = "Neutral";
+
+  const warn = document.getElementById("sal_auto_warning");
+  if (warn) warn.style.display = "none";
+
+  // Guardar dept activo
+  window.__ACS_ACTIVE_SALARY_DEPT = depId;
+
+  // Mostrar modal
   document.getElementById("salaryModal").style.display = "flex";
 
-  updateSalaryPreview();
+  console.log(
+    "%c💰 SALARY MODAL OPENED",
+    "color:#8AB4FF;font-weight:700",
+    dep.name,
+    "Current:", currentSalary,
+    "Market:", market,
+    "Ratio:", ratio + "%"
+  );
 }
 
 function closeSalaryModal() {
