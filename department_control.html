@@ -1579,20 +1579,17 @@ function HR_fillDepartmentSelector() {
 let HR_fireTargetDept = null;
 
 /* ============================================================
-   🟥 A5.1 — FIRE MODAL OPEN / CLOSE CORE (FINAL SAFE)
+   🟥 A5.1 — FIRE MODAL OPEN / CLOSE CORE (SINGLE SOURCE OF TRUTH)
    ------------------------------------------------------------
-   • Registra dept activo correctamente
-   • Soporta múltiples IDs de modal
-   • Evita modal undefined
-   • Arquitectura canónica ACS
+   • UNA sola pareja open/close (NO duplicados)
+   • Usa el ID REAL del modal
+   • Guarda dept activo
+   • No inventa otros modals
    ============================================================ */
 
 function openFireMiniModal(depId) {
 
-  // ============================================================
   // 🟢 REGISTRO CANÓNICO DEL DEPARTAMENTO ACTIVO
-  // ============================================================
-
   window.__ACS_ACTIVE_FIRE_DEPT = depId;
 
   console.log(
@@ -1601,52 +1598,26 @@ function openFireMiniModal(depId) {
     "Department:", depId
   );
 
-  // ============================================================
-  // 🔎 BUSCAR MODAL REAL (COMPATIBLE CON TU HTML ACTUAL)
-  // ============================================================
-
-  const modal =
-    document.getElementById("fireMiniModal") ||
-    document.getElementById("fireModal") ||
-    document.getElementById("staffDismissModal") ||
-    document.getElementById("dismissModal");
+  // ✅ ID REAL (TU MODAL FIRE)
+  const modal = document.getElementById("fireMiniModal");
 
   if (!modal) {
-    console.warn("❌ FIRE MODAL FAILED — No fire modal found in DOM");
-    alert("Fire modal not found. Check modal ID.");
+    console.warn("❌ FIRE MODAL FAILED — #fireMiniModal not found");
+    alert("Fire modal not found. Check modal ID: fireMiniModal");
     return;
   }
-
-  // ============================================================
-  // 🟢 MOSTRAR MODAL
-  // ============================================================
 
   modal.style.display = "flex";
 }
 
-
 function closeFireMiniModal() {
 
-  const modal =
-    document.getElementById("fireMiniModal") ||
-    document.getElementById("fireModal") ||
-    document.getElementById("staffDismissModal") ||
-    document.getElementById("dismissModal");
-
+  const modal = document.getElementById("fireMiniModal");
   if (!modal) return;
 
   modal.style.display = "none";
 
   console.log("%c🔥 FIRE MODAL CLOSED", "color:#ffaa00;font-weight:700");
-}
-
-/* ============================================================
-   🟥 A5.2 — FIRE MINI MODAL (CLOSE) — FINAL
-   ============================================================ */
-
-function closeFireMiniModal() {
-  const modal = document.getElementById("fireMiniModal");
-  if (modal) modal.style.display = "none";
 }
 
 /* ============================================================
