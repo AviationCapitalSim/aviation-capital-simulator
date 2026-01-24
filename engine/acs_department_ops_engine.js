@@ -1018,6 +1018,42 @@ function ACS_HR_salaryEngineBootstrap() {
 }
 
 /* ============================================================
+   🟦 A6 — MARKET SALARY REFERENCE CORE (LOCAL FIX)
+   ------------------------------------------------------------
+   • Devuelve salario de referencia de mercado
+   • Usa salario base histórico como baseline
+   • Ajusta por era (1940–2026)
+   • Función requerida por openSalaryInline()
+   ============================================================ */
+
+function ACS_HR_getMarketSalary(depID) {
+
+  const HR = ACS_HR_load();
+  const dep = HR[depID];
+  if (!dep || typeof dep.salary !== "number") return dep?.salary || 0;
+
+  const base = dep.salary;
+
+  // 🕒 Año real desde Time Engine ACS (canon)
+  let currentYear;
+  if (window.ACS_TIME_CURRENT instanceof Date) {
+    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
+  } else {
+    currentYear = new Date().getUTCFullYear(); // fallback seguro
+  }
+
+  let factor = 1.0;
+
+  if (currentYear < 1960) factor = 1.0;
+  else if (currentYear < 1980) factor = 1.3;
+  else if (currentYear < 2000) factor = 1.8;
+  else if (currentYear < 2010) factor = 2.2;
+  else factor = 2.6;
+
+  return Math.round(base * factor);
+}
+
+/* ============================================================
    🟦 SAL-JS-1 — OPEN SALARY POLICY MODAL
    ============================================================ */
 
