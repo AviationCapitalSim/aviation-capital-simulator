@@ -1130,3 +1130,26 @@ window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
   }
 
 });
+
+/* ============================================================
+   🟦 A8 — AUTO UPDATE HR REQUIREMENTS ON HR OPEN
+   ------------------------------------------------------------
+   Ejecuta cálculo real cada vez que se entra al módulo HR
+   Fuente: scheduleItems (operación real)
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    // Solo ejecutar si estamos realmente en HR
+    if (!location.href.includes("hr")) return;
+
+    console.log("%c🔵 HR MODULE LOADED — RECALCULATING REQUIREMENTS FROM SCHEDULE",
+        "color:#4fd1ff;font-weight:600");
+
+    try {
+        HR_updateRequirementsFromFleet();
+    } catch (e) {
+        console.warn("⚠ HR auto update failed:", e);
+    }
+
+});
