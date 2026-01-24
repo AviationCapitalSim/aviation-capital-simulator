@@ -1050,6 +1050,93 @@ function closeSalaryModal() {
   document.getElementById("salaryModal").style.display = "none";
 }
 
+/* ============================================================
+   🟦 A5 — SALARY APPLY ENGINE (MANUAL OVERRIDE CORE)
+   ------------------------------------------------------------
+   • Aplica política salarial manual
+   • Apaga Auto Salary inmediatamente
+   • Actualiza payroll, metadata y estados
+   • Recalcula HR + refresca UI
+   ============================================================ */
+
+function applySalaryPolicy() {
+
+  if (!__SAL_currentDep) {
+    console.warn("SALARY: No department selected");
+    return;
+  }
+
+  const HR = ACS_HR_load();
+  const dep = HR[__SAL_currentDep];
+  if (!dep) return;
+
+  const percent = Number(document.getElementById("sal_slider").value);
+
+  // Si no hay cambio → cerrar sin tocar nada
+  if (percent === 0) {
+    closeSalaryModal();
+    return;
+  }
+
+  // 🕒 Año real desde Time Engine ACS
+  let currentYear;
+  if (window.ACS_TIME_CURRENT instanceof Date) {
+    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
+  } else {
+    currentYear = new Date().getUTCFullYear(); // fallback seguro
+  }
+
+  const oldSalary = dep.salary;
+  const newSalary = Math.round(oldSalary * (1 + percent / 100));
+
+  // ========================================================
+  // 🔴 MANUAL OVERRIDE → APAGAR AUTO SALARY
+  // ========================================================
+
+  localStorage.setItem("ACS_AutoSalary", "OFF");
+
+  console.log(
+    "%c⚠ AUTO SALARY DISABLED — MANUAL SALARY OVERRIDE",
+    "color:#ff4040;font-weight:700",
+    dep.name
+  );
+
+  // ========================================================
+  // 💰 APLICAR NUEVO SALARIO DEFINITIVO
+  // ========================================================
+
+  dep.salary  = newSalary;
+  dep.payroll = dep.staff * dep.salary;
+
+  // Metadata histórica
+  dep.lastSalaryReviewYear = currentYear;
+  dep.salaryStatus = "ok";
+
+  ACS_HR_save(HR);
+
+  console.log(
+    "%c💰 SALARY POLICY APPLIED",
+    "color:#00ffcc;font-weight:700",
+    dep.name,
+    "Old:", oldSalary,
+    "New:", newSalary,
+    "Percent:", percent + "%",
+    "AutoSalary:", "OFF"
+  );
+
+  // ========================================================
+  // 🔄 RECALCULAR SISTEMA COMPLETO HR
+  // ========================================================
+
+  if (typeof ACS_HR_recalculateAll === "function") {
+    ACS_HR_recalculateAll();
+  }
+
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+  closeSalaryModal();
+}
 
 /* ============================================================
    🟦 A3.8.3 — ROUTE INSTANT AUTO HIRE ENGINE (ACS OFFICIAL)
