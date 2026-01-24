@@ -375,6 +375,8 @@
 <script src="engine/acs_finance.js"></script>
 <script src="engine/acs_hr_engine.js"></script>
 
+<script src="engine/acs_hr_engine.js"></script>
+     
 <script>
 /* ============================================================
    === HR DASHBOARD — DATA LOADER =============================
@@ -908,6 +910,57 @@ function ACS_HR_isAutoSalaryEnabled() {
 
   return flag === "ON";
 }
+
+/* ============================================================
+   🟧 R5 — ACTIVATE ALL "ADJUST SALARY" BUTTONS (ACS FINAL)
+   ------------------------------------------------------------
+   • Detecta cualquier click en botón con tooltip "Adjust Salary"
+   • Obtiene el departamento real desde data-dep de la fila
+   • Conecta directamente con el motor Salary: openSalaryInline(depId)
+   ============================================================ */
+
+document.addEventListener("click", (e) => {
+
+  // Buscar botón Adjust Salary (por tooltip exacto)
+  const btn = e.target.closest('[title="Adjust Salary"]');
+  if (!btn) return;
+
+  // Buscar depId en la fila contenedora o en el botón
+  const row =
+    btn.closest("[data-dep]") ||
+    btn.closest("[data-depid]");
+
+  const depId =
+    btn.dataset.dep ||
+    btn.dataset.depid ||
+    row?.getAttribute("data-dep") ||
+    row?.getAttribute("data-depid");
+
+  if (!depId) {
+    console.error("❌ SALARY CLICK — depId NOT FOUND");
+    console.log("Button:", btn);
+    console.log("Row:", row);
+    alert("Salary button clicked but department id not found.\nAdd data-dep='customers' (or correct id) to the row.");
+    return;
+  }
+
+  // Verificar que el motor Salary existe
+  if (typeof window.openSalaryInline !== "function") {
+    console.error("❌ openSalaryInline() NOT FOUND — OPS engine not loaded");
+    alert("Salary engine not loaded.\nCheck script order and acs_department_ops_engine-2.js");
+    return;
+  }
+
+  console.log(
+    "%c💰 SALARY BUTTON ACTIVATED",
+    "color:#00ffcc;font-weight:700",
+    "Department:", depId
+  );
+
+  // 🔥 ABRIR SALARY REAL
+  window.openSalaryInline(depId);
+
+});
      
 </script>
 
