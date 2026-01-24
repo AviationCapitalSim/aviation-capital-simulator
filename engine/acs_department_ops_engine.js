@@ -1054,53 +1054,47 @@ function ACS_HR_getMarketSalary(depID) {
 }
 
 /* ============================================================
-   🟦 SAL-JS-1 — OPEN SALARY POLICY MODAL (QATAR LUXURY CORE)
+   🟦 SAL-JS-1 — SALARY POLICY MODAL (QATAR LUXURY) — v2
    ------------------------------------------------------------
-   ✅ Slider SIEMPRE inicia en 0% (centrado)
-   ✅ Preview LIVE (new salary / delta / morale)
-   ✅ Market salary fallback seguro si no existe engine real
-   ✅ Apply escribe HR + payroll y marca review year
+   ✅ Slider centrado en 0 (UI -100..100)
+   ✅ Mapeo REALISTA:
+      - lado negativo:  -100 → -40%
+      - lado positivo:  +100 → +200%
+   ✅ Preview LIVE (New Salary / Payroll Delta / Morale Impact)
+   ✅ Apply guarda en HR + refresca tabla/KPI
+   ✅ Market Reference con fallback seguro (Opción A)
    ============================================================ */
 
 let __SAL_currentDep = null;
-let __SAL_bindOnce = false;
+
+function ACS_HR_getCurrentYear_SAFE() {
+  if (window.ACS_TIME_CURRENT instanceof Date) return window.ACS_TIME_CURRENT.getUTCFullYear();
+  return new Date().getUTCFullYear();
+}
 
 /* ============================================================
-   🟦 SAL-MKT-1 — MARKET SALARY (SAFE FALLBACK)
+   🟦 SAL-JS-A — MARKET SALARY (OPTION A / SAFE FALLBACK)
    ------------------------------------------------------------
-   • Si NO existe un motor real de mercado, usa fallback
-   • Mantiene coherencia con “ratio vs market”
+   • Si existe dep.marketSalary -> usa eso
+   • Si no, estima con multiplicador estable (2.6x)
    ============================================================ */
-
 function ACS_HR_getMarketSalary(depId) {
-
   const HR = ACS_HR_load();
   if (!HR || !HR[depId]) return 0;
 
   const dep = HR[depId];
-  const current = Number(dep.salary || 0);
 
-  // Si algún día conectas un motor real, aquí lo reemplazas.
-  // Por ahora: multiplicadores simples por familia.
-  const id = String(depId || "").toLowerCase();
+  if (typeof dep.marketSalary === "number" && dep.marketSalary > 0) {
+    return Math.round(dep.marketSalary);
+  }
 
-  let mult = 2.6; // default (como tu fallback original)
-
-  if (id.includes("ceo") || id.includes("high_management")) mult = 1.9;
-  else if (id.includes("middle_management")) mult = 2.2;
-  else if (id.includes("pilots")) mult = 1.8;
-  else if (id.includes("maintenance")) mult = 2.3;
-  else if (id.includes("ground")) mult = 2.8;
-  else if (id.includes("security")) mult = 2.7;
-  else if (id.includes("cabin")) mult = 2.5;
-
-  return Math.max(0, Math.round(current * mult));
+  const currentSalary = (typeof dep.salary === "number") ? dep.salary : 0;
+  return Math.max(0, Math.round(currentSalary * 2.6));
 }
 
 /* ============================================================
-   🟦 SAL-OPEN-1 — OPEN MODAL (CANONICAL ZERO-CENTER)
+   🟦 SAL-JS-1 — OPEN SALARY MODAL (ZERO-CENTER)
    ============================================================ */
-
 function openSalaryInline(depId) {
 
   const HR = ACS_HR_load();
@@ -1112,171 +1106,178 @@ function openSalaryInline(depId) {
   const dep = HR[depId];
   __SAL_currentDep = depId;
 
-  const currentSalary = Number(dep.salary || 0);
-  const staff = Number(dep.staff || 0);
+  const currentSalary = (typeof dep.salary === "number") ? dep.salary : 0;
+  const staff = (typeof dep.staff === "number") ? dep.staff : 0;
 
-  const market = (typeof ACS_HR_getMarketSalary === "function")
-    ? ACS_HR_getMarketSalary(depId)
-    : Math.round(currentSalary * 2.6);
+  const market = ACS_HR_getMarketSalary(depId);
 
-  const ratio = market > 0 ? Math.round((currentSalary / market) * 100) : 100;
+  const ratio = (market > 0)
+    ? Math.round((currentSalary / market) * 100)
+    : 100;
 
-  // === Fill base UI ===
+  // === UI fill ===
   document.getElementById("sal_depName").textContent  = dep.name || depId;
-  document.getElementById("sal_staff").textContent   = staff;
-  document.getElementById("sal_current").textContent = currentSalary.toLocaleString();
-  document.getElementById("sal_market").textContent  = market.toLocaleString();
+  document.getElementById("sal_staff").textContent   = staff.toLocaleString();
+  document.getElementById("sal_current").textContent = "$" + currentSalary.toLocaleString();
+  document.getElementById("sal_market").textContent  = "$" + market.toLocaleString();
 
-  // Ratio text + color class
   const ratioEl = document.getElementById("sal_ratio");
   ratioEl.textContent = ratio + "%";
   ratioEl.className = "";
   if (ratio >= 95 && ratio <= 110) ratioEl.classList.add("ok");
-  else if (ratio >= 80) ratioEl.classList.add("warning");
-  else ratioEl.classList.add("danger");
+  else if (ratio >= 80)            ratioEl.classList.add("warning");
+  else                              ratioEl.classList.add("danger");
 
-  // === Slider: SIEMPRE 0% (centro real) ===
+  // === Slider: SIEMPRE centrado en 0 ===
   const slider = document.getElementById("sal_slider");
   const label  = document.getElementById("sal_percent_label");
-
   slider.value = 0;
   label.textContent = "0";
 
-  // Guardar state base para preview
-  window.__ACS_SAL_STATE = {
-    depId,
-    currentSalary,
-    staff,
-    market
-  };
-
-  // Hide warning (solo se muestra al aplicar manual)
-  const warn = document.getElementById("sal_auto_warning");
-  if (warn) warn.style.display = "none";
-
-  // Bind slider event una sola vez
-  if (!__SAL_bindOnce) {
-    __SAL_bindOnce = true;
-    slider.addEventListener("input", () => updateSalaryPreview());
-  }
-
-  // Show modal
-  document.getElementById("salaryModal").style.display = "flex";
-
   // Preview inicial
+  document.getElementById("salaryModal").style.display = "flex";
   updateSalaryPreview();
-
-  console.log(
-    "%c💰 SALARY MODAL OPENED",
-    "color:#8AB4FF;font-weight:700",
-    dep.name,
-    "Current:", currentSalary,
-    "Market:", market,
-    "Ratio:", ratio + "%"
-  );
 }
 
+/* ============================================================
+   🟦 SAL-JS-2 — CLOSE MODAL
+   ============================================================ */
 function closeSalaryModal() {
   document.getElementById("salaryModal").style.display = "none";
 }
 
 /* ============================================================
-   🟦 SAL-JS-2 — LIVE SALARY PREVIEW ENGINE (CANONICAL ACS)
+   🟦 SAL-JS-3 — SLIDER MAPPING (UI -> REALISTIC PERCENT)
    ------------------------------------------------------------
-   • Rango realista: -40% a +200%
-   • 0% centrado real
-   • Preview en tiempo real
-   • Impacto moral estratégico
+   UI: -100..0..+100 (centered)
+   REAL:
+     negative side:  -100 => -40%
+     positive side:  +100 => +200%
    ============================================================ */
+function ACS_SAL_mapSliderToPercent(uiValue) {
+  const v = Number(uiValue) || 0;
+  if (v < 0) return Math.round((v / 100) * 40);    // -40..0
+  return Math.round((v / 100) * 200);              // 0..200
+}
 
+/* ============================================================
+   🟦 SAL-JS-4 — PREVIEW ENGINE
+   ============================================================ */
 function updateSalaryPreview() {
 
-  const depId = window.__ACS_ACTIVE_SALARY_DEPT;
-  if (!depId) return;
-
+  const depId = __SAL_currentDep || window.__ACS_ACTIVE_SALARY_DEPT;
   const HR = ACS_HR_load();
+  if (!HR || !HR[depId]) return;
+
   const dep = HR[depId];
-  if (!dep) return;
+
+  const currentSalary = (typeof dep.salary === "number") ? dep.salary : 0;
+  const staff = (typeof dep.staff === "number") ? dep.staff : 0;
 
   const slider = document.getElementById("sal_slider");
   const label  = document.getElementById("sal_percent_label");
 
-  const percent = parseInt(slider.value || 0);
-  label.textContent = percent;
+  const ui = Number(slider.value) || 0;
+  const percent = ACS_SAL_mapSliderToPercent(ui);
 
-  const baseSalary = dep.salary;
-  const staff      = dep.staff || 0;
+  label.textContent = String(percent);
 
-  // 🔧 Nuevo salario
-  const newSalary = Math.max(1, Math.round(baseSalary * (1 + percent / 100)));
+  const newSalary = Math.max(0, Math.round(currentSalary * (1 + percent / 100)));
+  const payrollDelta = Math.round((newSalary - currentSalary) * staff);
 
-  // 🔧 Payroll delta mensual
-  const oldPayroll = baseSalary * staff;
-  const newPayroll = newSalary * staff;
-  const delta      = newPayroll - oldPayroll;
+  const newEl = document.getElementById("sal_new");
+  const payEl = document.getElementById("sal_payroll_delta");
+  const morEl = document.getElementById("sal_morale_effect");
 
-  // ============================================================
-  // 😐 MORALE IMPACT MODEL (REALISTA ACS)
-  // ------------------------------------------------------------
-  // Bajadas fuertes → moral cae
-  // Subidas moderadas → mejora ligera
-  // Subidas extremas → inestabilidad
-  // ============================================================
+  if (newEl) newEl.textContent = "$" + newSalary.toLocaleString();
 
-  let moraleText  = "Neutral";
-  let moraleClass = "neutral";
-
-  if (percent <= -25) {
-    moraleText  = "Very Bad";
-    moraleClass = "bad";
-  }
-  else if (percent < 0) {
-    moraleText  = "Bad";
-    moraleClass = "bad";
-  }
-  else if (percent >= 0 && percent <= 20) {
-    moraleText  = "Neutral";
-    moraleClass = "neutral";
-  }
-  else if (percent > 20 && percent <= 80) {
-    moraleText  = "Good";
-    moraleClass = "good";
-  }
-  else if (percent > 80 && percent <= 150) {
-    moraleText  = "Very Good";
-    moraleClass = "good";
-  }
-  else { // >150%
-    moraleText  = "Unstable";
-    moraleClass = "bad";
+  if (payEl) {
+    const sign = payrollDelta >= 0 ? "+" : "−";
+    payEl.textContent = sign + "$" + Math.abs(payrollDelta).toLocaleString();
   }
 
-  // ============================================================
-  // 🔧 ACTUALIZAR UI
-  // ============================================================
+  // Morale impact (realista, simple)
+  morEl.className = "";
+  let impact = "Neutral";
 
-  document.getElementById("sal_new").textContent =
-    "$" + newSalary.toLocaleString();
+  if (percent >= 20) { impact = "Good"; morEl.classList.add("good"); }
+  else if (percent >= 5) { impact = "Slightly Good"; morEl.classList.add("good"); }
+  else if (percent <= -15) { impact = "Bad"; morEl.classList.add("bad"); }
+  else if (percent < 0) { impact = "Slightly Bad"; morEl.classList.add("bad"); }
+  else { impact = "Neutral"; morEl.classList.add("neutral"); }
 
-  const deltaEl = document.getElementById("sal_payroll_delta");
+  morEl.textContent = impact;
+}
 
-  const sign = delta >= 0 ? "+" : "-";
-  deltaEl.textContent = sign + "$" + Math.abs(delta).toLocaleString();
+/* ============================================================
+   🟦 SAL-JS-5 — APPLY SALARY CHANGE
+   ============================================================ */
+function applySalaryChange() {
 
-  const moraleEl = document.getElementById("sal_morale_effect");
-  moraleEl.textContent = moraleText;
-  moraleEl.className = moraleClass;
+  const depId = __SAL_currentDep || window.__ACS_ACTIVE_SALARY_DEPT;
+  const HR = ACS_HR_load();
+  if (!HR || !HR[depId]) return;
+
+  const dep = HR[depId];
+
+  const currentSalary = (typeof dep.salary === "number") ? dep.salary : 0;
+  const staff = (typeof dep.staff === "number") ? dep.staff : 0;
+
+  const slider = document.getElementById("sal_slider");
+  const percent = ACS_SAL_mapSliderToPercent(slider.value);
+
+  const newSalary = Math.max(0, Math.round(currentSalary * (1 + percent / 100)));
+  dep.salary = newSalary;
+  dep.payroll = Math.round(staff * newSalary);
+
+  // Marcar revisión hecha este año
+  const y = ACS_HR_getCurrentYear_SAFE();
+  dep.lastSalaryReviewYear = y;
+  dep.salaryStatus = "ok";
+
+  ACS_HR_save(HR);
+
+  // Refresh
+  if (typeof ACS_HR_recalculateAll === "function") ACS_HR_recalculateAll();
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+  closeSalaryModal();
 
   console.log(
-    "%c💰 SALARY PREVIEW",
-    "color:#FFD966;font-weight:700",
+    "%c✅ SALARY APPLIED",
+    "color:#7CFFB2;font-weight:800",
     dep.name,
     "Percent:", percent + "%",
-    "New:", newSalary,
-    "ΔPayroll:", delta,
-    "Morale:", moraleText
+    "Old:", currentSalary,
+    "New:", newSalary
   );
 }
+
+/* ============================================================
+   🟦 SAL-JS-6 — BIND UI EVENTS (ONE TIME)
+   ============================================================ */
+(function ACS_SAL_bindOnce() {
+
+  if (window.__ACS_SALARY_BOUND__) return;
+  window.__ACS_SALARY_BOUND__ = true;
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    const slider = document.getElementById("sal_slider");
+    if (slider) {
+      slider.addEventListener("input", updateSalaryPreview);
+      slider.addEventListener("change", updateSalaryPreview);
+    }
+
+    const btnApply = document.getElementById("sal_apply_btn");
+    if (btnApply) btnApply.addEventListener("click", applySalaryChange);
+
+    const btnCancel = document.getElementById("sal_cancel_btn");
+    if (btnCancel) btnCancel.addEventListener("click", closeSalaryModal);
+  });
+
+})();
 
 /* ============================================================
    🟦 SAL-APPLY-1 — APPLY POLICY (MANUAL OVERRIDE)
