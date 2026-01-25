@@ -1292,3 +1292,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
+/* ============================================================
+   🟧 A7 — AUTO HIRE ENGINE (CORE EXECUTOR)
+   ------------------------------------------------------------
+   • Lee required vs staff por departamento
+   • Contrata exactamente el déficit
+   • Respeta botón autoHire
+   • Se ejecuta bajo demanda o por ciclo
+   ============================================================ */
+
+function ACS_HR_runAutoHire() {
+
+  const flag = localStorage.getItem("autoHire");
+  if (flag !== "true") {
+    console.log("🟡 AUTO HIRE OFF — skipped");
+    return;
+  }
+
+  const HR = ACS_HR_load();
+  let hiredTotal = 0;
+
+  Object.entries(HR).forEach(([dept, obj]) => {
+
+    if (!obj || typeof obj.required !== "number") return;
+
+    const staff    = obj.staff || 0;
+    const required = obj.required || 0;
+    const deficit  = Math.max(0, required - staff);
+
+    if (deficit > 0) {
+      obj.staff += deficit;
+      hiredTotal += deficit;
+
+      console.log(
+        `%c🧑‍✈️ AUTO HIRE — ${dept}: +${deficit} hired`,
+        "color:#00ff88;font-weight:700"
+      );
+    }
+  });
+
+  ACS_HR_save(HR);
+
+  if (hiredTotal > 0) {
+    console.log(
+      `%c✅ AUTO HIRE COMPLETED — TOTAL HIRED: ${hiredTotal}`,
+      "color:#00ff80;font-weight:800"
+    );
+  } else {
+    console.log("%c🟢 AUTO HIRE — No deficit found", "color:#00ff80");
+  }
+
+  // Refrescar HR UI si existe
+  if (typeof loadDepartments === "function") {
+    loadDepartments();
+  }
+
+  if (typeof HR_updateKPI === "function") {
+    HR_updateKPI();
+  }
+}
