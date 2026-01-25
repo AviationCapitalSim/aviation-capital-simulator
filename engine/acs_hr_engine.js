@@ -868,6 +868,154 @@ function HR_updateRequirementsFromFleet() {
 }
 
 /* ============================================================
+   🟦 A8 — HR SANITIZER + REQUIRED CANONICAL WRITER (FINAL)
+   ------------------------------------------------------------
+   • Limpia ACS_HR de claves corruptas
+   • Migra datos válidos
+   • Elimina duplicados históricos
+   • Aplica REQUIRED usando claves canónicas
+   • Arquitectura ACS segura y permanente
+   ============================================================ */
+
+function ACS_HR_sanitizeAndApplyRequirements() {
+
+    console.log("%c🧹 HR SANITIZER START", "color:#00ffaa;font-weight:700");
+
+    const HR_RAW = ACS_HR_load();
+    const CLEAN = {};
+
+    // ============================================================
+    // 🟢 1) LISTA MAESTRA CANÓNICA (ÚNICA VERDAD)
+    // ============================================================
+
+    ACS_HR_DEPARTMENTS.forEach(dep => {
+
+        const id = dep.id;
+        const old = HR_RAW[id];
+
+        // Si existe válido → migrar datos
+        if (old && typeof old === "object") {
+
+            CLEAN[id] = {
+                name: dep.name,
+                base: dep.base,
+                role: dep.base,
+                staff: old.staff || 0,
+                required: old.required || 0,
+                morale: old.morale || 100,
+                salary: old.salary || 0,
+                payroll: old.payroll || 0,
+                bonus: old.bonus || 0,
+                years: old.years || 0
+            };
+
+        } else {
+            // Si no existe → crear limpio
+            CLEAN[id] = {
+                name: dep.name,
+                base: dep.base,
+                role: dep.base,
+                staff: dep.initial || 0,
+                required: dep.initial || 0,
+                morale: 100,
+                salary: 0,
+                payroll: 0,
+                bonus: 0,
+                years: 0
+            };
+        }
+    });
+
+    // ============================================================
+    // 🔴 2) ELIMINAR BASURA HISTÓRICA (LOG)
+    // ============================================================
+
+    Object.keys(HR_RAW).forEach(k => {
+        if (!CLEAN[k]) {
+            console.warn("🗑 HR REMOVED CORRUPT KEY:", k);
+        }
+    });
+
+    // ============================================================
+    // 🟢 3) GUARDAR HR LIMPIO
+    // ============================================================
+
+    ACS_HR_save(CLEAN);
+
+    console.log("%c✔ HR SANITIZED — CANONICAL STRUCTURE RESTORED", "color:#00ff00;font-weight:700");
+
+    // ============================================================
+    // 🟦 4) APLICAR REQUIRED REAL DESDE FLOTA + RUTAS
+    // ============================================================
+
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    const routes = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+    const year = (window.ACS_getYear ? ACS_getYear() : 1945);
+
+    const req = ACS_HR_calculateRequirements(
+        fleet,
+        routes.length,
+        year
+    );
+
+    console.log("%c📊 HR REQUIRED CALCULATED", "color:#00ccff;font-weight:700", req);
+
+    // ============================================================
+    // 🟢 5) ESCRIBIR REQUIRED EN HR (SEGURO)
+    // ============================================================
+
+    Object.keys(CLEAN).forEach(depID => {
+
+        if (req[depID] !== undefined) {
+            CLEAN[depID].required = Math.ceil(req[depID]);
+        } else {
+            // Si no participa en cálculo → mantener staff
+            CLEAN[depID].required = CLEAN[depID].staff;
+        }
+    });
+
+    // ============================================================
+    // 🟢 6) RECALCULAR PAYROLL + GUARDAR
+    // ============================================================
+
+    Object.keys(CLEAN).forEach(id => {
+        const d = CLEAN[id];
+        d.payroll = (d.staff || 0) * (d.salary || 0);
+    });
+
+    ACS_HR_save(CLEAN);
+
+    // ============================================================
+    // 🟢 7) REFRESCAR UI
+    // ============================================================
+
+    if (typeof HR_renderTable === "function") {
+        HR_renderTable();
+    }
+
+    console.log("%c🏁 HR REQUIRED APPLIED SUCCESSFULLY", "color:#00ff88;font-weight:800");
+}
+
+
+/* ============================================================
+   🟦 A8-HOOK — EJECUCIÓN AUTOMÁTICA CONTROLADA
+   ------------------------------------------------------------
+   • Al cargar HR
+   • Al entrar a HR
+   • Al modificar schedule
+   ============================================================ */
+
+// Ejecutar al cargar el módulo HR
+setTimeout(() => {
+    try {
+        ACS_HR_sanitizeAndApplyRequirements();
+    } catch (e) {
+        console.warn("HR SANITIZER FAILED", e);
+    }
+}, 800);
+
+/* ============================================================
    8) SELECTOR DEL MODAL — Reparado
    ============================================================ */
 function HR_fillDepartmentSelector() {
