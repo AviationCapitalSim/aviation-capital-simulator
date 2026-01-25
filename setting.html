@@ -610,23 +610,30 @@ function saveCompany(){
   localStorage.setItem("autoHire", autoHire ? "true" : "false");
   localStorage.setItem("ACS_AutoSalary", autoSalary ? "ON" : "OFF");
 
-  // 🔥 AUTO HIRE — EJECUCIÓN INMEDIATA SI SE ACTIVA
+  /* ============================================================
+     🟦 AUTO HIRE HOOK — EJECUCIÓN INMEDIATA DESDE SETTINGS
+     ============================================================ */
+
   if (autoHire) {
 
-    console.log(
-      "%c👥 AUTO HIRE ENABLED — APPLYING INSTANTLY",
-      "color:#00ff88;font-weight:700"
-    );
+    if (typeof window.ACS_HR_runAutoHire === "function") {
 
-    // Llamada directa al motor HR
-    if (typeof window.ACS_HR_applyAutoHire_Instant === "function") {
-      window.ACS_HR_applyAutoHire_Instant();
-    } else {
-      console.warn("⚠️ AUTO HIRE ENGINE NOT AVAILABLE");
+      console.log(
+        "%c👥 AUTO HIRE ENABLED — RUNNING AUTO HIRE NOW",
+        "color:#00ff88;font-weight:700"
+      );
+
+      window.ACS_HR_runAutoHire();
+    }
+    else {
+      console.warn("⚠️ AUTO HIRE ENABLED BUT ENGINE NOT FOUND");
     }
   }
 
-  // 🔥 AUTO SALARY — NORMALIZACIÓN INMEDIATA
+  /* ============================================================
+     🟦 AUTO SALARY HOOK (YA EXISTENTE)
+     ============================================================ */
+
   if (autoSalary) {
 
     if (typeof ACS_HR_applyAutoSalaryNormalization === "function") {
@@ -640,6 +647,7 @@ function saveCompany(){
 
   openSaveModal("Company Settings", "Company settings saved successfully.");
 }
+
 
 /* ============================================================
    🟦 A3.7.2 — AUTO SALARY SETTINGS SYNC ENGINE
