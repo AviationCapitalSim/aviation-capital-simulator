@@ -235,11 +235,6 @@ ACS_OPS_applyDemandToHR(result);
 if (typeof ACS_HR_calculateManagementRequired === "function") {
   ACS_HR_calculateManagementRequired();
 }
-
-// 🟦 AUTO HIRE INSTANT (cubre TODOS los déficits, incluidos managers)
-if (typeof ACS_HR_applyAutoHire_Instant === "function") {
-  ACS_HR_applyAutoHire_Instant();
-}
      
     if (typeof loadDepartments === "function") {
       loadDepartments();
