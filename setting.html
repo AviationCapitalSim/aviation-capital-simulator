@@ -614,18 +614,20 @@ function saveCompany(){
      🟦 AUTO HIRE HOOK — EJECUCIÓN INMEDIATA DESDE SETTINGS
      ============================================================ */
 
+    // 🔥 SI AUTO HIRE ACTIVADO → EJECUTAR INMEDIATAMENTE
   if (autoHire) {
 
     if (typeof window.ACS_HR_runAutoHire === "function") {
 
       console.log(
-        "%c👥 AUTO HIRE ENABLED — RUNNING AUTO HIRE NOW",
-        "color:#00ff88;font-weight:700"
+        "%c🧑‍✈️ AUTO HIRE ENABLED — RUNNING NOW",
+        "color:#00ff80;font-weight:800"
       );
 
       window.ACS_HR_runAutoHire();
-    }
-    else {
+
+    } else {
+
       console.warn("⚠️ AUTO HIRE ENABLED BUT ENGINE NOT FOUND");
     }
   }
