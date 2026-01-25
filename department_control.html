@@ -1312,6 +1312,31 @@ function loadDepartments() {
 
   });
 
+    /* ============================================================
+     🟧 A7.2 — AUTO HIRE EXECUTION (POST REQUIRED CALC)
+     ------------------------------------------------------------
+     • Corre solo si autoHire ON
+     • Se ejecuta después de dibujar required
+     • Antes de recálculo payroll / KPI
+     ============================================================ */
+
+  if (localStorage.getItem("autoHire") === "true") {
+
+    if (typeof ACS_HR_applyAutoHire_Instant === "function") {
+
+      console.log(
+        "%c🧑‍✈️ AUTO HIRE TRIGGERED FROM HR VIEW",
+        "color:#00ff80;font-weight:800"
+      );
+
+      ACS_HR_applyAutoHire_Instant();
+
+    } else {
+
+      console.warn("❌ AUTO HIRE ENGINE NOT FOUND");
+    }
+  }
+     
   // === SYNC HR CORE ===
   try {
     const payroll = ACS_HR_recalculateAll();
