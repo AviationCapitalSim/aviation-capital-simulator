@@ -356,6 +356,50 @@ window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
    ============================================================ */
 
 /* ============================================================
+   🟦 C2 — AUTO RECALC ON SCHEDULE CHANGE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Detecta cambios en scheduleItems
+   • Recalcula demand inmediatamente
+   • Limpia HR.required cuando se borra la última ruta
+   ============================================================ */
+
+let __OPS_lastScheduleHash = null;
+
+function ACS_OPS_watchScheduleChanges() {
+
+  let flights = [];
+  try {
+    flights = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch (e) {
+    flights = [];
+  }
+
+  const hash = JSON.stringify(flights.map(f => f.aircraftId + "|" + (f.id || f.routeId)));
+
+  // Primera ejecución
+  if (__OPS_lastScheduleHash === null) {
+    __OPS_lastScheduleHash = hash;
+    return;
+  }
+
+  // Cambio detectado
+  if (hash !== __OPS_lastScheduleHash) {
+
+    console.log(
+      "%c🔄 OPS SCHEDULE CHANGED — RECALCULATING DEMAND",
+      "color:#00ffcc;font-weight:700"
+    );
+
+    ACS_OPS_recalculateAllRequired();
+
+    __OPS_lastScheduleHash = hash;
+  }
+}
+
+// Ejecutar watcher cada 2 segundos (ligero, seguro)
+setInterval(ACS_OPS_watchScheduleChanges, 2000);
+
+/* ============================================================
    🟦 C1 — WEEKLY OPS DEMAND RECALCULATOR (ACS OFFICIAL)
    ------------------------------------------------------------
    • Agrupa scheduleItems por aircraftId + routeId
