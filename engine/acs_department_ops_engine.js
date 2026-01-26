@@ -448,8 +448,21 @@ function ACS_OPS_recalculateAllRequired() {
     flights = [];
   }
 
-  // 🔹 Si no hay vuelos → todo perfecto
-  if (!Array.isArray(flights) || flights.length === 0) {
+  // ============================================================
+  // 🔧 FILTRO CANÓNICO DE VUELOS REALES (ANTI VUELO 0 / NODO BASE)
+  // ============================================================
+
+  const activeFlights = Array.isArray(flights)
+    ? flights.filter(f =>
+        f.type === "flight" &&
+        f.day !== undefined &&
+        f.aircraft &&
+        f.aircraftId
+      )
+    : [];
+
+  // 🔹 Si no hay vuelos reales → todo perfecto
+  if (!Array.isArray(activeFlights) || activeFlights.length === 0) {
 
     Object.keys(HR).forEach(id => {
       if (typeof HR[id].required === "number") {
@@ -473,7 +486,7 @@ function ACS_OPS_recalculateAllRequired() {
 
   const operations = {};
 
-  flights.forEach(f => {
+  activeFlights.forEach(f => {
 
     const aircraftId = f.aircraftId;
     const routeId    = f.id || f.routeId || "ROUTE";
