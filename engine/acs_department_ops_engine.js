@@ -225,9 +225,20 @@ function ACS_OPS_applyDemandToHR(demandResult) {
 
   const d = demandResult.demand;
 
-  // Mapping OPS → HR departments
+  // ============================================================
+  // 🧠 OPS → HR MAPPING (REAL AIRCRAFT TYPE ONLY) — 26JAN26
+  // ------------------------------------------------------------
+  // Pilots ONLY applied to matching aircraft category
+  // No cross-contamination between categories
+  // ============================================================
+
   const MAP = {
-    pilots:      ["pilots_small","pilots_medium","pilots_large","pilots_vlarge"],
+    pilots: {
+      small:   ["pilots_small"],
+      medium:  ["pilots_medium"],
+      large:   ["pilots_large"],
+      vlarge:  ["pilots_vlarge"]
+    },
     cabin:       ["cabin"],
     maintenance: ["maintenance"],
     ground:      ["ground"],
@@ -249,8 +260,41 @@ function ACS_OPS_applyDemandToHR(demandResult) {
 
   Object.keys(MAP).forEach(key => {
 
-    const list = MAP[key];
     const idealValue = d[key] || 0;
+
+    // ========================================================
+    // 🟢 PILOTS — SOLO APLICAR AL TIPO REAL DE AVIÓN
+    // ========================================================
+    if (key === "pilots") {
+
+      const type = demandResult.aircraftType;
+      const list = MAP.pilots[type] || [];
+
+      list.forEach(depID => {
+
+        if (!HR[depID]) return;
+
+        const dep = HR[depID];
+
+        const staff = Math.ceil(dep.staff || 0);
+        const ideal = Math.ceil(idealValue || 0);
+
+        // Sin vuelos → balance perfecto
+        if (activeFlights.length === 0) {
+          dep.required = 0;
+          return;
+        }
+
+        dep.required = Math.round(staff - ideal);
+      });
+
+      return;
+    }
+
+    // ========================================================
+    // 🟦 RESTO DE DEPARTAMENTOS (UN SOLO DEP)
+    // ========================================================
+    const list = MAP[key];
 
     list.forEach(depID => {
 
@@ -261,20 +305,14 @@ function ACS_OPS_applyDemandToHR(demandResult) {
       const staff = Math.ceil(dep.staff || 0);
       const ideal = Math.ceil(idealValue || 0);
 
-      // ========================================================
-      // 🟢 SIN VUELOS → BALANCE PERFECTO
-      // ========================================================
       if (activeFlights.length === 0) {
         dep.required = 0;
         return;
       }
 
-      // ========================================================
-      // 🧮 REQUIRED NETO OPERATIVO (STAFF - IDEAL)
-      // ========================================================
       dep.required = Math.round(staff - ideal);
-
     });
+
   });
 
   ACS_HR_save(HR);
