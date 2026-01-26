@@ -51,20 +51,23 @@ function ACS_OPS_getDistanceFactor(nm) {
 
 
 /* ============================================================
-   🟦 A2 — FREQUENCY FACTOR ENGINE
+   🟦 A2 — FREQUENCY FACTOR ENGINE (SOFT REALISTIC) — 26JAN26
+   ------------------------------------------------------------
+   Frequency increases staff softly
+   Real airlines scale minimally with frequency
    ============================================================ */
 
 function ACS_OPS_getFrequencyFactor(flightsPerWeek) {
 
   if (!flightsPerWeek || isNaN(flightsPerWeek)) return 1.0;
 
-  if (flightsPerWeek <= 3)   return 1.0;
-  if (flightsPerWeek <= 7)   return 1.15;
-  if (flightsPerWeek <= 14)  return 1.35;
-  if (flightsPerWeek <= 30)  return 1.60;
-  return 2.00;
-}
+  if (flightsPerWeek <= 3)   return 1.00;
+  if (flightsPerWeek <= 7)   return 1.05;
+  if (flightsPerWeek <= 14)  return 1.10;
+  if (flightsPerWeek <= 30)  return 1.15;
 
+  return 1.20;
+}
 
 /* ============================================================
    🟦 A3 — AIRCRAFT TYPE CLASSIFICATION (REUSE HR LOGIC)
@@ -94,15 +97,60 @@ function ACS_OPS_classifyAircraft(model) {
 
 
 /* ============================================================
-   🟦 A4 — BASE STAFF MATRIX (CANONICAL FROM HR)
+   🟦 A4 — BASE STAFF MATRIX (REALISTIC ACS v2) — 26JAN26
+   ------------------------------------------------------------
+   Base staff PER AIRCRAFT (weekly operation)
+   Includes rotations + rest + reserve
+   Frequency handled softly later
    ============================================================ */
 
 const ACS_OPS_STAFF_BY_TYPE = {
-  small:   { pilots:4,  cabin:0,  maintenance:3,  ground:4,  security:1, flightops:1, quality:1 },
-  medium:  { pilots:9,  cabin:4,  maintenance:5,  ground:6,  security:1, flightops:1, quality:1 },
-  large:   { pilots:12, cabin:10, maintenance:8,  ground:10, security:2, flightops:2, quality:1.5 },
-  vlarge:  { pilots:22, cabin:18, maintenance:12, ground:16, security:3, flightops:3, quality:2 }
+
+  // Light / Regional / Vintage
+  small:   {
+    pilots:        4,
+    cabin:         0,
+    maintenance:   2,
+    ground:        2,
+    security:      1,
+    flightops:     1,
+    quality:       0
+  },
+
+  // A320 / B737 / E190 class
+  medium:  {
+    pilots:        6,
+    cabin:         4,
+    maintenance:   3,
+    ground:        3,
+    security:      1,
+    flightops:     1,
+    quality:       1
+  },
+
+  // A300 / B767 / B787 class
+  large:   {
+    pilots:        10,
+    cabin:         8,
+    maintenance:   5,
+    ground:        5,
+    security:      2,
+    flightops:     2,
+    quality:       1
+  },
+
+  // B747 / DC-10 / A380 class
+  vlarge:  {
+    pilots:        16,
+    cabin:         14,
+    maintenance:   8,
+    ground:        8,
+    security:      3,
+    flightops:     3,
+    quality:       2
+  }
 };
+
 
 
 /* ============================================================
