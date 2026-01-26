@@ -203,7 +203,6 @@ function ACS_OPS_calculateCrewDemand(flight, aircraft, route) {
   };
 }
 
-
 /* ============================================================
    🟧 A1 — APPLY DEMAND INTO HR.REQUIRED (NET MODEL) — 26JAN26
    ------------------------------------------------------------
@@ -247,54 +246,86 @@ function ACS_OPS_applyDemandToHR(demandResult) {
     quality:     ["quality"]
   };
 
-  // 🔹 Leer vuelos activos reales desde Schedule Table
-  let flights = [];
+  // ============================================================
+  // 🔹 Leer vuelos activos REALES desde Schedule Table (SANITIZED)
+  // ------------------------------------------------------------
+  // Evita residuos tipo RT_ con day/acType undefined
+  // ============================================================
 
+  let flights = [];
   try {
     flights = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   } catch (e) {
     flights = [];
   }
 
-  const activeFlights = Array.isArray(flights) ? flights : [];
+  const activeFlights = (Array.isArray(flights) ? flights : []).filter(x =>
+    x &&
+    x.type === "flight" &&
+    x.day &&
+    x.acType &&
+    x.aircraftId &&
+    !String(x.id || "").startsWith("RT_")
+  );
 
-  Object.keys(MAP).forEach(key => {
+  // ============================================================
+  // 🟢 0 VUELOS → RESETEAR TODO A 0 (incluye TODAS las categorías)
+  // ============================================================
+  if (activeFlights.length === 0) {
 
-    const idealValue = d[key] || 0;
-
-    // ========================================================
-    // 🟢 PILOTS — SOLO APLICAR AL TIPO REAL DE AVIÓN
-    // ========================================================
-    if (key === "pilots") {
-
-      const type = demandResult.aircraftType;
-      const list = MAP.pilots[type] || [];
-
-      list.forEach(depID => {
-
-        if (!HR[depID]) return;
-
-        const dep = HR[depID];
-
-        const staff = Math.ceil(dep.staff || 0);
-        const ideal = Math.ceil(idealValue || 0);
-
-        // Sin vuelos → balance perfecto
-        if (activeFlights.length === 0) {
-          dep.required = 0;
-          return;
-        }
-
-        dep.required = Math.round(staff - ideal);
+    // pilots: todas las categorías a 0
+    Object.keys(MAP.pilots).forEach(cat => {
+      (MAP.pilots[cat] || []).forEach(depID => {
+        if (HR[depID]) HR[depID].required = 0;
       });
+    });
 
-      return;
-    }
+    // resto departamentos
+    ["cabin","maintenance","ground","security","flightops","quality"].forEach(k => {
+      (MAP[k] || []).forEach(depID => {
+        if (HR[depID]) HR[depID].required = 0;
+      });
+    });
 
-    // ========================================================
-    // 🟦 RESTO DE DEPARTAMENTOS (UN SOLO DEP)
-    // ========================================================
-    const list = MAP[key];
+    ACS_HR_save(HR);
+    return;
+  }
+
+  // ============================================================
+  // 🟢 PILOTS — RESETEA CATEGORÍAS NO USADAS
+  // ------------------------------------------------------------
+  // Si el avión es "small", entonces medium/large/vlarge = ideal 0
+  // (Esto mata el bug de -36 con DC-3)
+  // ============================================================
+
+  const type = demandResult.aircraftType;
+  const idealPilotsForType = Math.ceil(d.pilots || 0);
+
+  Object.keys(MAP.pilots).forEach(cat => {
+
+    const depList = MAP.pilots[cat] || [];
+
+    depList.forEach(depID => {
+
+      if (!HR[depID]) return;
+
+      const dep = HR[depID];
+
+      const staff = Math.ceil(dep.staff || 0);
+      const ideal = (cat === type) ? idealPilotsForType : 0;
+
+      dep.required = Math.round(staff - ideal);
+    });
+
+  });
+
+  // ============================================================
+  // 🟦 RESTO DE DEPARTAMENTOS (UN SOLO DEP)
+  // ============================================================
+  ["cabin","maintenance","ground","security","flightops","quality"].forEach(key => {
+
+    const list = MAP[key] || [];
+    const idealValue = Math.ceil(d[key] || 0);
 
     list.forEach(depID => {
 
@@ -303,12 +334,7 @@ function ACS_OPS_applyDemandToHR(demandResult) {
       const dep = HR[depID];
 
       const staff = Math.ceil(dep.staff || 0);
-      const ideal = Math.ceil(idealValue || 0);
-
-      if (activeFlights.length === 0) {
-        dep.required = 0;
-        return;
-      }
+      const ideal = idealValue;
 
       dep.required = Math.round(staff - ideal);
     });
