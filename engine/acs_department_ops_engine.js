@@ -157,7 +157,15 @@ function ACS_OPS_calculateCrewDemand(flight, aircraft, route) {
 
 
 /* ============================================================
-   🟦 C1 — APPLY DEMAND INTO HR.REQUIRED
+   🟧 A1 — APPLY DEMAND INTO HR.REQUIRED (NET MODEL) — 26JAN26
+   ------------------------------------------------------------
+   Regla ACS HR v1:
+   • required = staff_actual - staff_ideal
+   • 0 vuelos activos → required = 0
+   • positivo = exceso
+   • negativo = falta
+   • enteros siempre
+   • sin acumuladores / sin históricos
    ============================================================ */
 
 function ACS_OPS_applyDemandToHR(demandResult) {
@@ -180,22 +188,49 @@ function ACS_OPS_applyDemandToHR(demandResult) {
     quality:     ["quality"]
   };
 
+  // 🔹 Leer vuelos activos reales desde Schedule Table
+  let flights = [];
+
+  try {
+    flights = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch (e) {
+    flights = [];
+  }
+
+  const activeFlights = Array.isArray(flights) ? flights : [];
+
   Object.keys(MAP).forEach(key => {
 
     const list = MAP[key];
-    const value = d[key] || 0;
+    const idealValue = d[key] || 0;
 
     list.forEach(depID => {
+
       if (!HR[depID]) return;
 
-      // 🔧 Increment required only (never overwrite staff)
-      HR[depID].required = (HR[depID].required || 0) + value;
+      const dep = HR[depID];
+
+      const staff = Math.ceil(dep.staff || 0);
+      const ideal = Math.ceil(idealValue || 0);
+
+      // ========================================================
+      // 🟢 SIN VUELOS → BALANCE PERFECTO
+      // ========================================================
+      if (activeFlights.length === 0) {
+        dep.required = 0;
+        return;
+      }
+
+      // ========================================================
+      // 🧮 REQUIRED NETO OPERATIVO (STAFF - IDEAL)
+      // ========================================================
+      dep.required = Math.round(staff - ideal);
+
     });
   });
 
   ACS_HR_save(HR);
 }
-
 
 /* ============================================================
    🟦 D1 — FLIGHT ASSIGNED LISTENER (ENTRY POINT)
