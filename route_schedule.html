@@ -1408,12 +1408,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   ✅ CONFIRM ROUTE — FIX v1 (AC- / AC_ safe + aircraftId real)
+   ✅ CONFIRM ROUTE — FIX v2 (ROOT GHOST FIX + HR SAFE)
    ------------------------------------------------------------
-   - Acepta aircraftId con AC- o AC_
-   - Elimina validaciones duplicadas
-   - Guarda aircraftId correcto dentro de newRoute
-   - modelKey se toma del fleet (por aircraftId), NO del value raw
+   - scheduleItems SOLO recibe vuelos reales
+   - NUNCA inserta nodo base
+   - NUNCA inserta objeto sin day
+   - EDIT y CREATE blindados
    ============================================================ */
 
 function confirmRoute() {
@@ -1523,93 +1523,106 @@ function confirmRoute() {
    Consumer: Schedule Table / Runtime
    ============================================================ */
 
-// 🟦 FIX DEFINITIVO — DISTANCE SAFETY NET
-let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
-if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
-  finalDistanceNM = rs_getDistanceNM(origin, destination);
-}
-
-/* ============================================================
-   🟧 B2 — CONFIRM ROUTE (IDENTITY FIX + EDIT SAFE)
-   ------------------------------------------------------------
-   FIXES:
-   ✔ Each Day = ruta UNitaria (blockId = null)
-   ✔ Every Day = bloque real
-   ✔ EDIT conserva flight numbers
-   ✔ NO arrastra días incorrectos
-   ============================================================ */
-
-// 🔎 FLAGS DE MODO (DEBEN EXISTIR ANTES DEL OBJETO)
-const isEveryDay = document.getElementById("everyDay")?.checked === true;
-const isEachDay  =
-  document.getElementById("separateDays")?.checked === true &&
-  !isEveryDay;
-
-// 🔎 Detectar EDIT activo
-const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
-
-/* ============================================================
-   🟢 ROUTE OBJECT — IDENTIDAD CORRECTA
-   ============================================================ */
-     
-const newRoute = {
-  id: routeId,
-
-  // 🔑 IDENTIDAD (CLAVE DEL BUG)
-  blockId: isEveryDay ? ("BLOCK_" + Date.now()) : null,
-
-  // ✈️ Aircraft
-  aircraftId: selectedAircraftId,
-  modelKey: modelKey.toUpperCase(),
-  aircraft: modelKey.toUpperCase(),
-
-  // 📍 Ruta
-  origin,
-  destination,
-  departure,
-  arrival,
-
-  distanceNM: finalDistanceNM,
-
-  // ⏱ Tiempos
-  blockTimeMin,
-  turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
-  turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-  totalRotationMin:
-    window.ACS_RouteTechData?.totalMin ??
-    (blockTimeMin * 2 + 45),
-
-  optimized: document.getElementById("optimizeRotation")?.checked || false,
-
-  // 📆 DÍAS (FIX REAL)
-  // - Each Day → SOLO el día tocado
-  // - Every Day → bloque completo
-  days: days,
-
-  // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
-  flightNumberOut,
-  flightNumberIn,
-
-  type: "flight"
-};
-
-/* ============================================================
-   🧠 FLIGHT NUMBER MANAGEMENT — SAFE
-   ------------------------------------------------------------
-   ✔ CREATE: marca + incrementa
-   ✔ EDIT: NO toca números
-   ============================================================ */
-if (!isEditMode) {
-  if (typeof markNumbersUsed === "function") {
-    markNumbersUsed(
-      newRoute.flightNumberOut,
-      newRoute.flightNumberIn
-    );
+  // 🟦 FIX DEFINITIVO — DISTANCE SAFETY NET
+  let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
+  if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
+    finalDistanceNM = rs_getDistanceNM(origin, destination);
   }
 
-  if (typeof bumpFlightCounter === "function") {
-    bumpFlightCounter();
+  /* ============================================================
+     🟧 B2 — CONFIRM ROUTE (IDENTITY FIX + EDIT SAFE)
+     ============================================================ */
+
+  const isEveryDay = document.getElementById("everyDay")?.checked === true;
+  const isEachDay  =
+    document.getElementById("separateDays")?.checked === true &&
+    !isEveryDay;
+
+  const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
+
+  const blockId = isEveryDay ? ("BLOCK_" + Date.now()) : null;
+
+  /* ============================================================
+     🧠 FLIGHT NUMBER MANAGEMENT — SAFE
+     ============================================================ */
+  if (!isEditMode) {
+    if (typeof markNumbersUsed === "function") {
+      markNumbersUsed(flightNumberOut, flightNumberIn);
+    }
+
+    if (typeof bumpFlightCounter === "function") {
+      bumpFlightCounter();
+    }
   }
+
+  /* ============================================================
+     🔥 A1 — INSERT ONLY REAL FLIGHTS (ROOT GHOST FIX)
+     ------------------------------------------------------------
+     Regla ACS:
+     • scheduleItems SOLO vuelos reales
+     • NUNCA objeto base
+     • NUNCA sin day
+     ============================================================ */
+
+  const newItems = [];
+
+  days.forEach(day => {
+
+    const flight = {
+      type: "flight",                     // 🔥 OBLIGATORIO
+      id: `${routeId}_${day}`,
+      routeId: routeId,
+      blockId: blockId,
+
+      // ✈️ Aircraft
+      aircraftId: selectedAircraftId,
+      aircraft: modelKey.toUpperCase(),
+      acType: modelKey.toUpperCase(),
+
+      // 📍 Ruta
+      origin,
+      destination,
+
+      // ⏱ Horarios
+      departure,
+      arrival,
+      depAbsMin: depH * 60 + depM,
+      arrAbsMin: arrivalTotalMin % (24 * 60),
+
+      // 🔢 Números de vuelo
+      flightNumberOut,
+      flightNumberIn,
+
+      // 📐 Técnica
+      distance: finalDistanceNM,
+      blockTime: blockTimeMin,
+      turnaround: window.ACS_RouteTechData?.turnMin ?? 45,
+
+      // 📆 Día REAL
+      day: day,                          // 🔥 CLAVE DEL FIX
+
+      status: "scheduled"
+    };
+
+    newItems.push(flight);
+  });
+
+  // 🔥 Guardar SOLO vuelos reales en scheduleItems
+  let current = [];
+  try {
+    current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch (e) {
+    current = [];
+  }
+
+  const updated = current.concat(newItems);
+  localStorage.setItem("scheduleItems", JSON.stringify(updated));
+
+  // 🔚 Limpiar modo EDIT
+  localStorage.removeItem("ACS_ROUTE_EDIT");
+
+  alert("✅ Route confirmed successfully.");
+
 }
 
   /* ============================================================
