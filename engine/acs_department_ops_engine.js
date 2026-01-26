@@ -319,56 +319,30 @@ function ACS_OPS_applyDemandToHR(demandResult) {
 }
 
 /* ============================================================
-   🟦 D1 — FLIGHT ASSIGNED LISTENER (ENTRY POINT)
+   🟥 D1 — FLIGHT ASSIGNED LISTENER (DISABLED FOR HR DEMAND)
+   ------------------------------------------------------------
+   Motivo:
+   • scheduleItems genera 1 evento por día
+   • HR demand debe calcularse por semana / por ruta / por avión
+   • Este listener queda solo para debug futuro
    ============================================================ */
 
 window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
 
-  try {
+  const { flight, aircraft, route } = e.detail || {};
+  if (!flight || !aircraft || !route) return;
 
-    const { flight, aircraft, route } = e.detail || {};
+  console.log(
+    "%c🧪 OPS EVENT RECEIVED (IGNORED FOR HR)",
+    "color:#ffaa00;font-weight:700",
+    aircraft.model || aircraft.name,
+    route.id || route.origin + "-" + route.destination,
+    flight.day
+  );
 
-    if (!flight || !aircraft || !route) {
-      console.warn("OPS: Flight assigned event incomplete", e.detail);
-      return;
-    }
-
-    console.log(
-      "%c🧠 OPS ENGINE — NEW FLIGHT RECEIVED",
-      "color:#00ffcc;font-weight:700"
-    );
-
-    console.log("✈ Flight:", flight.origin, "→", flight.destination);
-    console.log("🛩 Aircraft:", aircraft.model || aircraft.name);
-    console.log("🗺 Distance:", route.distance, "nm");
-    console.log("🔁 Frequency:", route.flights_per_week || route.frequency);
-
-    // 🧮 Calculate demand
-    const result = ACS_OPS_calculateCrewDemand(flight, aircraft, route);
-    if (!result) return;
-
-    console.log("📊 OPS Demand Result:", result);
-
-    // 🔧 Apply into HR.required (OPS staff)
-ACS_OPS_applyDemandToHR(result);
-
-// 🔧 Recalcular estructura directiva (managers required)
-if (typeof ACS_HR_calculateManagementRequired === "function") {
-  ACS_HR_calculateManagementRequired();
-}
-     
-    if (typeof loadDepartments === "function") {
-      loadDepartments();
-    }
-
-    console.log("✅ OPS ENGINE applied crew demand successfully");
-
-  } catch (err) {
-    console.warn("OPS ENGINE failure on flight assigned", err);
-  }
-
+  // ❌ NO recalcular HR aquí
+  // HR demand se calcula SOLO desde recálculo semanal consolidado
 });
-
 
 /* ============================================================
    🟦 END OF PHASE B1 — DEMAND CORE ONLY
@@ -380,6 +354,115 @@ if (typeof ACS_HR_calculateManagementRequired === "function") {
    • Alert escalation logic
    • Recovery smoothing
    ============================================================ */
+
+/* ============================================================
+   🟦 C1 — WEEKLY OPS DEMAND RECALCULATOR (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Agrupa scheduleItems por aircraftId + routeId
+   • Calcula demanda UNA VEZ por operación semanal real
+   • Resetea HR.required limpio
+   • Aplica demand consolidado
+   ============================================================ */
+
+function ACS_OPS_recalculateAllRequired() {
+
+  console.log("%c🧠 OPS WEEKLY REBUILD — START", "color:#00ffcc;font-weight:700");
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  let flights = [];
+  try {
+    flights = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch (e) {
+    flights = [];
+  }
+
+  // 🔹 Si no hay vuelos → todo perfecto
+  if (!Array.isArray(flights) || flights.length === 0) {
+
+    Object.keys(HR).forEach(id => {
+      if (typeof HR[id].required === "number") {
+        HR[id].required = 0;
+      }
+    });
+
+    ACS_HR_save(HR);
+
+    if (typeof loadDepartments === "function") loadDepartments();
+    if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+    console.log("%c🟢 OPS WEEKLY REBUILD — NO FLIGHTS (ALL ZERO)", "color:#7CFFB2;font-weight:700");
+    return;
+  }
+
+  // ============================================================
+  // 🔧 AGRUPAR POR OPERACIÓN SEMANAL REAL
+  // clave = aircraftId + routeId
+  // ============================================================
+
+  const operations = {};
+
+  flights.forEach(f => {
+
+    const aircraftId = f.aircraftId;
+    const routeId    = f.id || f.routeId || "ROUTE";
+
+    const key = aircraftId + "|" + routeId;
+
+    if (!operations[key]) {
+      operations[key] = {
+        aircraftId,
+        routeId,
+        acType: f.acType,
+        model:  f.acType,
+        count:  0
+      };
+    }
+
+    operations[key].count++;
+  });
+
+  // ============================================================
+  // 🔧 RESET HR.REQUIRED LIMPIO
+  // ============================================================
+
+  Object.keys(HR).forEach(id => {
+    if (typeof HR[id].required === "number") {
+      HR[id].required = 0;
+    }
+  });
+
+  // ============================================================
+  // 🧮 CALCULAR DEMANDA CONSOLIDADA
+  // ============================================================
+
+  Object.values(operations).forEach(op => {
+
+    const fakeFlight = { distance: 0 };
+    const fakeAircraft = { model: op.model };
+    const fakeRoute = { flights_per_week: op.count };
+
+    const result = ACS_OPS_calculateCrewDemand(fakeFlight, fakeAircraft, fakeRoute);
+    if (!result) return;
+
+    console.log("📊 WEEKLY OPS UNIT:", op.model, "freq:", op.count, result.demand);
+
+    ACS_OPS_applyDemandToHR(result);
+  });
+
+  // 🔧 Managers required
+  if (typeof ACS_HR_calculateManagementRequired === "function") {
+    ACS_HR_calculateManagementRequired();
+  }
+
+  ACS_HR_save(HR);
+
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+  console.log("%c✅ OPS WEEKLY REBUILD — COMPLETED", "color:#00ffcc;font-weight:700");
+}
 
 /* ============================================================
    🟦 B2 — DEFICIT TIMERS + MORALE DEGRADATION ENGINE (PHASE A)
@@ -709,8 +792,13 @@ function ACS_OPS_applyDepartmentBonus(depID, percent) {
 
 
 /* ============================================================
-   ⏱️ WEEKLY OPS MASTER TICK (PHASE A+B+C)
+   ⏱️ WEEKLY OPS MASTER TICK (ACS OFFICIAL FIXED)
+   ------------------------------------------------------------
+   • Recalcula DEMAND semanal consolidado
+   • Luego aplica impactos
+   • Elimina función fantasma rota
    ============================================================ */
+
 let __OPS_masterWeek = null;
 
 registerTimeListener((time) => {
@@ -724,10 +812,10 @@ registerTimeListener((time) => {
 
     console.log("%c🧭 OPS MASTER WEEK TICK", "color:#00ffcc;font-weight:600", "Week:", week);
 
-    // Phase A
-    ACS_OPS_checkDepartmentDeficits();
+    // 🟢 NUEVO: recalcular demand REAL semanal
+    ACS_OPS_recalculateAllRequired();
 
-    // Phase B
+    // Phase B — impactos operativos
     ACS_OPS_applyOperationalImpact();
 
     __OPS_masterWeek = week;
