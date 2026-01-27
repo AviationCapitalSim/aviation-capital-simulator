@@ -1735,10 +1735,31 @@ window.addEventListener("DOMContentLoaded", () => {
 
 <script>
 /* ============================================================
-   DOM READY FIX (Safari)
+   🟦 GLOBAL EXPORT FIX — ROUTE SCHEDULE CORE BINDINGS
+   ------------------------------------------------------------
+   Hace visibles:
+   • confirmRoute
+   • autoCalculate
+   • autoGenerateFlightNumber
+   Para eventos inline y Safari
    ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
+
+  // 🔹 Exponer funciones críticas al scope global
+  if (typeof confirmRoute === "function") {
     window.confirmRoute = confirmRoute;
+  }
+
+  if (typeof autoCalculate === "function") {
+    window.autoCalculate = autoCalculate;
+  }
+
+  if (typeof autoGenerateFlightNumber === "function") {
+    window.autoGenerateFlightNumber = autoGenerateFlightNumber;
+  }
+
+  console.log("🟢 Route Schedule — core functions exported to window");
 });
 </script>
 
@@ -1792,25 +1813,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-// ============================================================
-// 🔗 CONFIRM ROUTE BUTTON BIND (PASO 1)
-// ============================================================
-document.addEventListener("DOMContentLoaded", () => {
-  const confirmBtn = document.querySelector("button.confirm-route, #confirmRouteBtn");
+/* ============================================================
+   🟦 CONFIRM ROUTE BUTTON — FINAL BIND SAFE
+   ============================================================ */
 
-  if (!confirmBtn) {
-    console.warn("⚠ Confirm Route button not found");
+document.addEventListener("DOMContentLoaded", () => {
+
+  const btn = document.querySelector(".acs-btn");
+
+  if (!btn) {
+    console.warn("⚠ Confirm Route button not found (.acs-btn)");
     return;
   }
 
-  confirmBtn.addEventListener("click", (e) => {
+  btn.addEventListener("click", (e) => {
     e.preventDefault();
-    if (typeof confirmRoute === "function") {
-      confirmRoute();
+
+    if (typeof window.confirmRoute === "function") {
+      window.confirmRoute();
     } else {
-      console.error("❌ confirmRoute() is not defined");
+      console.error("❌ confirmRoute() not available on window");
     }
   });
+
+  console.log("🟢 Confirm Route button bound successfully");
 });
 
 </script>
