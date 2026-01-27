@@ -569,6 +569,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("🧭 ROUTE MODE:", isEditMode ? "EDIT" : "CREATE");
 
+// ============================================================
+// 🔒 A14 — KILL STALE EDIT CONTEXT ON CREATE ENTRY (CRITICAL)
+// ------------------------------------------------------------
+// Si NO venimos explícitamente desde botón EDIT,
+// borramos cualquier contexto viejo para evitar falso EDIT MODE
+// ============================================================
+
+const navFromEdit = !!(editCtx && editCtx.from === "SCHEDULE_TABLE");
+
+if (!navFromEdit && editCtx) {
+  console.warn("🧹 Stale ACS_ROUTE_EDIT detected — clearing");
+  localStorage.removeItem("ACS_ROUTE_EDIT");
+}
+     
   // ============================================================
   // 3️⃣ POPULAR AIRCRAFT SELECTOR (SIEMPRE LIMPIO EN CREATE)
   // ============================================================
