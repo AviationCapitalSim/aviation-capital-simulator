@@ -828,11 +828,19 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
 <script>
 
 /* ============================================================
-   === BASE: GENERAR HORARIOS DE SALIDA ========================
+   🟧 A21 — BASE: GENERAR HORARIOS DE SALIDA (FULL DAY UNLOCK)
+   ------------------------------------------------------------
+   REGLAS:
+   - CREATE: default 06:00
+   - EDIT: permitir cualquier hora (00:00 → 23:55)
+   - NO limitar por hora original
    ============================================================ */
-     
+
 const timeSelect = document.getElementById("departureTime");
-for (let h = 6; h < 24; h++) {
+timeSelect.innerHTML = "";
+
+// 🔓 Generar día completo
+for (let h = 0; h < 24; h++) {
   for (let m = 0; m < 60; m += 5) {
     const hh = String(h).padStart(2,"0");
     const mm = String(m).padStart(2,"0");
@@ -842,7 +850,17 @@ for (let h = 6; h < 24; h++) {
     timeSelect.appendChild(opt);
   }
 }
-timeSelect.value = "06:00";
+
+// 🕕 Default SOLO si es CREATE
+let isEditMode = false;
+try {
+  const ctx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT") || "null");
+  if (ctx && ctx.mode === "EDIT") isEditMode = true;
+} catch(e){}
+
+if (!isEditMode) {
+  timeSelect.value = "06:00";
+}
 
 function toggleEveryDay() {
   const all = document.getElementById("everyDay").checked;
