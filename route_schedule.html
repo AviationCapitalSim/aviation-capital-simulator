@@ -1723,11 +1723,12 @@ window.__ACS_CONFIRM_RUNNING = true;
   const updated = current.concat(newItems);
   localStorage.setItem("scheduleItems", JSON.stringify(updated));
 
-  // limpiar edit context
+    // limpiar edit context
   localStorage.removeItem("ACS_ROUTE_EDIT");
 
   window.__ACS_CONFIRM_RUNNING = false;
-     
+}
+
 </script>
 
 <!-- ===========================================================
