@@ -846,24 +846,6 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
-/* 🟦 A4 — ROUTE SCHEDULE: Auto Flight Number AFTER selecting aircraft */
-     
-function autoGenerateFlightNumber() {
-
-    if (!userIATA || userIATA.length !== 2) return;
-
-    const origin = document.getElementById("origin").value.trim();
-    const dest   = document.getElementById("destination").value.trim();
-    const ac     = document.getElementById("aircraft").value;
-
-    if (!origin || !dest || !ac) return;
-
-    const pair = generateFlightPair();
-    if (flightNumberInput) {
-        flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
-    }
-}
-
 /* ============================================================
    🟦 FLIGHT NUMBER ENGINE — IATA CONNECTED v1.1 (COMPLETO)
    ============================================================ */
@@ -1070,56 +1052,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 80);
 
 });
-
-/* ============================================================
-   ✅ FIX DEFINITIVO — loadAvailableAircraft (ROBUST / NO BASE)
-   ------------------------------------------------------------
-   Antes: ac.base === origin  (rompía por datos legacy)
-   Ahora: Active + AC_ (sin filtrar por base aún)
-   ============================================================ */
-function loadAvailableAircraft() {
-
-  const select = document.getElementById("aircraft");
-  if (!select) return;
-
-  select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
-
-  let fleet = [];
-  try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  } catch (e) {
-    console.warn("⚠ ACS_MyAircraft parse error:", e);
-    fleet = [];
-  }
-
-  const available = fleet.filter(ac =>
-    ac?.id &&
-    String(ac.id).startsWith("AC_") &&
-    String(ac.status || "").trim().toLowerCase() === "active"
-  );
-
-  if (!available.length) {
-    console.warn("⚠ No active aircraft available (robust mode)");
-    return;
-  }
-
-  available.forEach(ac => {
-    const opt = document.createElement("option");
-    opt.value = ac.id;
-    const baseInfo = ac.base ? ` • Base: ${ac.base}` : "";
-    opt.textContent = `${ac.model || ac.id}${baseInfo}`;
-
-    // datasets técnicos
-    opt.dataset.speed    = ac.speed || 440;
-    opt.dataset.range    = ac.range || 1500;
-    opt.dataset.category = ac.category || "";
-
-    select.appendChild(opt);
-  });
-
-  // Mantener placeholder si no hay selección válida
-  select.selectedIndex = 0;
-}
 
 /* ============================================================
    === GLOBAL DISTANCE ENGINE — FIX v2 (NM)
@@ -2107,122 +2039,8 @@ document.addEventListener("DOMContentLoaded", () => {
 document.getElementById("origin")?.addEventListener("input", persistOriginDest);
 document.getElementById("origin")?.addEventListener("change", persistOriginDest);
 
-/* ============================================================
-   🔄 AIRCRAFT SELECTION — CANONICAL BEHAVIOR (ACS FINAL)
-   ------------------------------------------------------------
-   REGLAS:
-   - CREATE (entrada normal)  → NUNCA preseleccionar
-   - REFRESH manual          → restaurar selección
-   - EDIT MODE               → lo maneja RS core (NO aquí)
-   ============================================================ */
-
-window.addEventListener("DOMContentLoaded", () => {
-
-    const sel = document.getElementById("aircraft");
-    if (!sel) return;
-
-    // Detectar EDIT MODE
-    let isEditMode = false;
-    try {
-        const editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT") || "null");
-        if (editCtx && editCtx.mode === "EDIT") isEditMode = true;
-    } catch (e) {}
-
-    // Detectar si es RELOAD
-    let isReload = false;
-    try {
-        const navEntry = performance.getEntriesByType("navigation")[0];
-        if (navEntry && navEntry.type === "reload") {
-            isReload = true;
-        } else if (performance.navigation && performance.navigation.type === 1) {
-            // Fallback Safari viejo
-            isReload = true;
-        }
-    } catch (e) {
-        isReload = false;
-    }
-
-    // ================================
-    // CASOS
-    // ================================
-
-    if (isEditMode) {
-        // ✏️ EDIT MODE → NO TOCAR NADA AQUÍ
-        // (RS core ya precarga aircraft correcto)
-        return;
-    }
-
-    if (isReload) {
-        // 🔁 REFRESH → restaurar selección previa
-        const saved = localStorage.getItem("routeSelectedAircraft");
-        if (saved) {
-            sel.value = saved;
-        }
-    } else {
-        // 🆕 VISITA NUEVA (CREATE NORMAL) → LIMPIAR SIEMPRE
-        sel.value = "";
-        localStorage.removeItem("routeSelectedAircraft");
-    }
-
-    // 💾 Guardar selección solo cuando el usuario cambie avión
-    sel.addEventListener("change", () => {
-        localStorage.setItem("routeSelectedAircraft", sel.value || "");
-    });
-});
-
-</script> <!-- ← cierre del script anterior (MUY IMPORTANTE) -->
-
-<script>
-/* ============================================================
-   🔒 ACS ROUTE SCHEDULE — AIRCRAFT SELECTOR LOCK
-   ------------------------------------------------------------
-   Evita que código legacy vuelva a vaciar el <select id="aircraft">
-   después de haber sido poblado correctamente.
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const sel = document.getElementById("aircraft");
-  if (!sel) return;
-
-  const proto = HTMLSelectElement.prototype;
-  const desc = Object.getOwnPropertyDescriptor(proto, "innerHTML");
-  if (!desc || !desc.set || !desc.get) return;
-
-  Object.defineProperty(sel, "innerHTML", {
-  set(value) {
-
-    // ✅ PERMITIR el reset inicial legítimo (primer llenado)
-    if (
-      typeof value === "string" &&
-      value.includes("-- Select Aircraft --") &&
-      sel.options.length === 0
-    ) {
-      desc.set.call(this, value);
-      return;
-    }
-
-    // ❌ BLOQUEAR solo resets destructivos posteriores
-    if (
-      typeof value === "string" &&
-      value.includes("-- Select Aircraft --") &&
-      sel.options.length > 1
-    ) {
-      console.warn("🛑 Aircraft selector reset blocked (legacy code)");
-      return;
-    }
-
-    // Default
-    desc.set.call(this, value);
-  },
-  get() {
-    return desc.get.call(this);
-  }
-});
-
-});
 
 </script> 
-               
+              
 </body>
 </html>
