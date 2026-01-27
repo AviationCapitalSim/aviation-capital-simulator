@@ -2894,24 +2894,12 @@ function editSelectedFlight(){
     blockTimeMin: it.blockTimeMin || null
   };
 
-  /* ============================================================
-   🟧 A20 — EDIT CONTEXT CANONICAL (SCHEDULE TABLE → ROUTE SCHEDULE)
-   ------------------------------------------------------------
-   ✔ Marca origen explícito
-   ✔ Permite distinguir CREATE vs EDIT real
-   ✔ Evita falso EDIT MODE
-   ============================================================ */
+  localStorage.setItem(
+    "ACS_ROUTE_EDIT",
+    JSON.stringify(editContext)
+  );
 
-localStorage.setItem("ACS_ROUTE_EDIT", JSON.stringify({
-  ...editContext,
-  from: "SCHEDULE_TABLE"   // 🔒 CLAVE MAESTRA DE ARQUITECTURA
-}));
-
-console.log("🟧 A20 EDIT CONTEXT SAVED:", {
-  mode: "EDIT",
-  from: "SCHEDULE_TABLE",
-  routeKey: editContext.routeKey
-});
+  console.log("🟧 EDIT ROUTE CONTEXT SAVED:", editContext);
 
   window.location.href = "route_schedule.html";
 }
