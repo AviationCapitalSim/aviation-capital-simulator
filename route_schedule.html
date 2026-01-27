@@ -513,23 +513,190 @@ function rs_populateAircraftSelect(selectedId = "") {
 }
 
 /* ============================================================
-   🧩 SINGLE INIT POINT — ROUTE SCHEDULE
+   🟦 R1 — ROUTE SCHEDULE CORE INIT CANONICAL (ACS OFFICIAL)
+   ------------------------------------------------------------
+   ✔ Un solo punto de init
+   ✔ CREATE limpio (sin aircraft preseleccionado)
+   ✔ EDIT precarga aircraft correcto
+   ✔ AutoCalculate restaurado
+   ✔ AutoGenerateFlightNumber restaurado
+   ✔ Tech panel vuelve a pintar
+   ✔ Safari reload estable
+   ✔ Elimina resets fantasma
    ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
+
+  console.log("🟢 ROUTE SCHEDULE — CORE INIT START");
 
   const originInput = document.getElementById("origin");
   const destInput   = document.getElementById("destination");
+  const acSel       = document.getElementById("aircraft");
+  const depSel      = document.getElementById("departureTime");
+  const optBox      = document.getElementById("optimizeRotation");
+  const fnInput     = document.getElementById("flightNumber");
 
-  if (originInput && destInput) {
-    originInput.readOnly = true;
-    destInput.readOnly   = true;
+  // ============================================================
+  // 1️⃣ ORIGIN / DESTINATION (SOLO DESDE ROUTES → ROUTE_SCHEDULE)
+  // ============================================================
+
+  const storedOrigin = localStorage.getItem("ACS_selectedOrigin");
+  const storedDest   = localStorage.getItem("ACS_selectedDestination");
+
+  if (storedOrigin && storedDest) {
+    originInput.value = storedOrigin.toUpperCase();
+    destInput.value   = storedDest.toUpperCase();
+
+    localStorage.removeItem("ACS_selectedOrigin");
+    localStorage.removeItem("ACS_selectedDestination");
   }
 
-  // ✅ USAR SIEMPRE EL ALIAS (minúsculas)
-  rs_populateAircraftSelect();
+  originInput.readOnly = true;
+  destInput.readOnly   = true;
+
+  // ============================================================
+  // 2️⃣ DETECTAR MODO (CREATE vs EDIT)
+  // ============================================================
+
+  let editCtx = null;
+  try {
+    editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT") || "null");
+  } catch (e) {
+    editCtx = null;
+  }
+
+  const isEditMode = !!(editCtx && editCtx.mode === "EDIT");
+
+  console.log("🧭 ROUTE MODE:", isEditMode ? "EDIT" : "CREATE");
+
+  // ============================================================
+  // 3️⃣ POPULAR AIRCRAFT SELECTOR (SIEMPRE LIMPIO EN CREATE)
+  // ============================================================
+
+  rs_populateAircraftSelect(
+    isEditMode ? (editCtx.aircraftId || "") : ""
+  );
+
+  // En CREATE → forzar placeholder limpio
+  if (!isEditMode && acSel) {
+    acSel.value = "";
+  }
+
+  // ============================================================
+  // 4️⃣ EN EDIT → PRECARGAR DATOS COMPLETOS
+  // ============================================================
+
+  if (isEditMode) {
+
+    // Basic
+    if (editCtx.origin)      originInput.value = editCtx.origin;
+    if (editCtx.destination) destInput.value  = editCtx.destination;
+    if (editCtx.departure)   depSel.value      = editCtx.departure;
+
+    // Aircraft
+    if (editCtx.aircraftId) {
+      acSel.value = editCtx.aircraftId;
+    }
+
+    // Flight numbers (NO regenerar)
+    if (editCtx.flightNumberOut && editCtx.flightNumberIn) {
+      fnInput.value = `${editCtx.flightNumberOut} ➜ ${editCtx.flightNumberIn}`;
+    }
+
+    // Days
+    const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+    DAY_IDS.forEach(d => document.getElementById(d).checked = false);
+    document.getElementById("everyDay").checked = false;
+
+    const days = Array.isArray(editCtx.days) ? editCtx.days : [];
+
+    if (days.length === 7) {
+      document.getElementById("everyDay").checked = true;
+      DAY_IDS.forEach(d => document.getElementById(d).checked = true);
+    } else {
+      days.forEach(d => {
+        if (document.getElementById(d)) {
+          document.getElementById(d).checked = true;
+        }
+      });
+    }
+
+    // UI
+    const notice = document.createElement("div");
+    notice.style.color = "#FFB300";
+    notice.style.marginBottom = "1rem";
+    notice.style.fontWeight = "600";
+    notice.innerHTML =
+      `✏️ Editing route: <strong>${editCtx.origin} ➜ ${editCtx.destination}</strong>`;
+    document.querySelector(".schedule-container")?.prepend(notice);
+
+    const btn = document.querySelector(".acs-btn");
+    if (btn) btn.textContent = "UPDATE ROUTE";
+  }
+
+  // ============================================================
+  // 5️⃣ EVENT LINKER — MOTOR REAL
+  // ============================================================
+
+  if (acSel) {
+    acSel.addEventListener("change", () => {
+      if (typeof autoCalculate === "function") autoCalculate();
+      if (!isEditMode && typeof autoGenerateFlightNumber === "function") {
+        autoGenerateFlightNumber();
+      }
+    });
+  }
+
+  if (depSel) {
+    depSel.addEventListener("change", () => {
+      if (typeof autoCalculate === "function") autoCalculate();
+    });
+  }
+
+  if (optBox) {
+    optBox.addEventListener("change", () => {
+      if (typeof autoCalculate === "function") autoCalculate();
+    });
+  }
+
+  // ============================================================
+  // 6️⃣ RELOAD SAFETY (Safari / Chrome)
+  // ============================================================
+
+  setTimeout(() => {
+
+    const model = acSel?.value || "";
+
+    if (model) {
+      if (typeof autoCalculate === "function") autoCalculate();
+
+      // SOLO generar número si es CREATE
+      if (!isEditMode && typeof autoGenerateFlightNumber === "function") {
+        autoGenerateFlightNumber();
+      }
+    }
+
+  }, 120);
+
+  // ============================================================
+  // 7️⃣ EXPORT CORE FUNCTIONS (INLINE SAFE)
+  // ============================================================
+
+  if (typeof confirmRoute === "function") {
+    window.confirmRoute = confirmRoute;
+  }
+
+  if (typeof autoCalculate === "function") {
+    window.autoCalculate = autoCalculate;
+  }
+
+  if (typeof autoGenerateFlightNumber === "function") {
+    window.autoGenerateFlightNumber = autoGenerateFlightNumber;
+  }
+
+  console.log("🟢 ROUTE SCHEDULE — CORE INIT COMPLETED");
 
 });
-
      
 /* ============================================================
    ✅ COMPAT LAYER — NO ROMPER llamadas viejas
