@@ -1923,8 +1923,173 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
+</script> 
+     
+<script>
 /* ============================================================
-   🟦 CONFIRM ROUTE BUTTON — FINAL BIND SAFE
+   🟦 CONFIRM ROUTE — FINAL CANONICAL + BUTTON BIND
+   ------------------------------------------------------------
+   REGLAS:
+   - confirmRoute existe UNA SOLA VEZ
+   - Se exporta a window
+   - Un solo listener
+   - Sin duplicados
+   ============================================================ */
+
+function confirmRoute() {
+
+  // 🛑 SAFETY LOCK — prevent double execution
+  if (window.__ACS_CONFIRM_RUNNING) {
+    console.warn("🛑 confirmRoute blocked — already running");
+    return;
+  }
+  window.__ACS_CONFIRM_RUNNING = true;
+
+  /* ================================
+     1) Capturar valores del formulario
+     ================================ */
+
+  const origin      = (document.getElementById("origin")?.value || "").trim();
+  const destination = (document.getElementById("destination")?.value || "").trim();
+  const departure   = (document.getElementById("departureTime")?.value || "").trim();
+  const aircraftSel = document.getElementById("aircraft");
+  const selectedAircraftId = aircraftSel ? (aircraftSel.value || "").trim() : "";
+
+  if (!selectedAircraftId || !/^AC[-_]/.test(selectedAircraftId)) {
+    alert("Please select a valid aircraft.");
+    window.__ACS_CONFIRM_RUNNING = false;
+    return;
+  }
+
+  const blockTimeMin = parseInt((window.ACS_RouteTechData?.blockMin ?? ""), 10);
+  if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
+    alert("⛔ Block time invalid. Please recalculate route.");
+    window.__ACS_CONFIRM_RUNNING = false;
+    return;
+  }
+
+  if (!origin || !destination || !departure) {
+    alert("⚠️ Please complete all fields before confirming.");
+    window.__ACS_CONFIRM_RUNNING = false;
+    return;
+  }
+
+  /* ================================
+     Flight Numbers
+     ================================ */
+
+  const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
+  const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
+  if (!match) {
+    alert("⛔ Invalid flight number.");
+    window.__ACS_CONFIRM_RUNNING = false;
+    return;
+  }
+
+  const flightNumberOut = match[1];
+  const flightNumberIn  = match[2];
+
+  /* ================================
+     Days
+     ================================ */
+
+  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+  let days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+
+  if (document.getElementById("everyDay")?.checked) {
+    days = ["mon","tue","wed","thu","fri","sat","sun"];
+  }
+
+  if (!days.length) {
+    alert("Please select at least one day.");
+    window.__ACS_CONFIRM_RUNNING = false;
+    return;
+  }
+
+  /* ================================
+     Arrival
+     ================================ */
+
+  const [depH, depM] = departure.split(":").map(Number);
+  const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
+  const arrH = Math.floor(arrivalTotalMin / 60) % 24;
+  const arrM = arrivalTotalMin % 60;
+  const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
+
+  /* ================================
+     Fleet
+     ================================ */
+
+  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const acObj = fleet.find(a => a.id === selectedAircraftId);
+
+  if (!acObj || !acObj.model) {
+    alert("⚠ Aircraft model not found in fleet.");
+    window.__ACS_CONFIRM_RUNNING = false;
+    return;
+  }
+
+  const modelKey = acObj.model.toUpperCase();
+
+  let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
+  if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
+    finalDistanceNM = rs_getDistanceNM(origin, destination);
+  }
+
+  const isEveryDay = document.getElementById("everyDay")?.checked === true;
+  const blockId = isEveryDay ? ("BLOCK_" + Date.now()) : null;
+
+  /* ================================
+     INSERT ONLY REAL FLIGHTS
+     ================================ */
+
+  const newItems = [];
+
+  days.forEach(day => {
+
+    const flight = {
+      type: "flight",
+      id: `${Date.now()}_${day}`,
+      blockId: blockId,
+
+      aircraftId: selectedAircraftId,
+      aircraft: modelKey,
+
+      origin,
+      destination,
+
+      departure,
+      arrival,
+
+      flightNumberOut,
+      flightNumberIn,
+
+      distance: finalDistanceNM,
+      blockTime: blockTimeMin,
+
+      day: day,
+      status: "scheduled"
+    };
+
+    newItems.push(flight);
+  });
+
+  let current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  const updated = current.concat(newItems);
+  localStorage.setItem("scheduleItems", JSON.stringify(updated));
+
+  // limpiar edit context
+  localStorage.removeItem("ACS_ROUTE_EDIT");
+
+  window.__ACS_CONFIRM_RUNNING = false;
+
+  // 🔁 volver a tabla
+  window.location.href = "schedule_table.html";
+}
+
+
+/* ============================================================
+   🟦 BUTTON BIND — SINGLE SAFE
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1932,21 +2097,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const btn = document.querySelector(".acs-btn");
 
   if (!btn) {
-    console.warn("⚠ Confirm Route button not found (.acs-btn)");
+    console.warn("⚠ Confirm Route button not found");
     return;
   }
 
-  btn.addEventListener("click", (e) => {
+  btn.onclick = null;               // limpiar cualquier handler viejo
+  btn.addEventListener("click", e => {
     e.preventDefault();
-
-    if (typeof window.confirmRoute === "function") {
-      window.confirmRoute();
-    } else {
-      console.error("❌ confirmRoute() not available on window");
-    }
+    confirmRoute();
   });
 
-  console.log("🟢 Confirm Route button bound successfully");
+  console.log("🟢 Confirm Route button bound correctly");
 });
 
 </script>
