@@ -1552,7 +1552,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-<script>
+/* ============================================================
+   🔥 D1 — AIRCRAFT CONFLICT CHECK ENGINE — CANONICAL v1
+   ------------------------------------------------------------
+   REGLAS:
+   - Mismo aircraftId
+   - Mismo día
+   - Solape horario
+   - Bloquea CREATE y EDIT
+   ============================================================ */
+
+function RS_hasAircraftConflict(list, aircraftId, day, depMin, arrMin, ignoreIds = []) {
+
+  return list.some(f => {
+
+    if (f.type !== "flight") return false;
+    if (f.aircraftId !== aircraftId) return false;
+    if (f.day !== day) return false;
+    if (ignoreIds.includes(f.id)) return false;
+
+    const fDep = Number(f.depAbsMin ?? (parseInt(f.departure.split(":")[0]) * 60 + parseInt(f.departure.split(":")[1])));
+    const fArr = Number(f.arrAbsMin ?? (parseInt(f.arrival.split(":")[0]) * 60 + parseInt(f.arrival.split(":")[1])));
+
+    // 🔴 SOLAPE REAL
+    // (nuevo sale antes de que el viejo llegue)  Y
+    // (nuevo llega después de que el viejo sale)
+    if (depMin < fArr && arrMin > fDep) {
+      return true;
+    }
+
+    return false;
+  });
+}
+
 /* ============================================================
    🟧 C1 — CONFIRM ROUTE ROUTER (CREATE vs EDIT) — CANONICAL v1
    ------------------------------------------------------------
@@ -1679,12 +1711,31 @@ function confirmRouteCreate() {
   const blockId = isEveryDay ? ("BLOCK_" + Date.now()) : null;
 
   /* ================================
-     INSERT NEW FLIGHTS
-     ================================ */
+   INSERT NEW FLIGHTS (WITH CONFLICT CHECK)
+   ================================ */
 
+  let current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   const newItems = [];
 
   days.forEach(day => {
+
+    const depAbsMin = depH * 60 + depM;
+    const arrAbsMin = arrivalTotalMin % (24 * 60);
+
+    // 🔥 CHECK CONFLICT
+    const conflict = RS_hasAircraftConflict(
+      current,
+      selectedAircraftId,
+      day,
+      depAbsMin,
+      arrAbsMin
+    );
+
+    if (conflict) {
+      alert(`⛔ Aircraft conflict detected on ${day.toUpperCase()}.\nThis aircraft already has a flight in this time window.`);
+      window.__ACS_CONFIRM_RUNNING = false;
+      throw new Error("Aircraft conflict");
+    }
 
     const flight = {
       type: "flight",
@@ -1699,6 +1750,8 @@ function confirmRouteCreate() {
 
       departure,
       arrival,
+      depAbsMin,
+      arrAbsMin,
 
       flightNumberOut,
       flightNumberIn,
@@ -1713,7 +1766,6 @@ function confirmRouteCreate() {
     newItems.push(flight);
   });
 
-  let current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   const updated = current.concat(newItems);
   localStorage.setItem("scheduleItems", JSON.stringify(updated));
 
@@ -1824,12 +1876,32 @@ function confirmRouteEdit() {
   }
 
   /* ================================
-     Construir nueva versión de vuelos
-     ================================ */
+   Construir nueva versión de vuelos (WITH CONFLICT CHECK)
+   ================================ */
 
   const updatedFlights = [];
+  const ignoreIds = originalFlights.map(f => f.id);
 
   newDays.forEach(day => {
+
+    const depAbsMin = depH * 60 + depM;
+    const arrAbsMin = arrivalTotalMin % (24 * 60);
+
+    // 🔥 CHECK CONFLICT (ignora los propios vuelos)
+    const conflict = RS_hasAircraftConflict(
+      list,
+      aircraftId,
+      day,
+      depAbsMin,
+      arrAbsMin,
+      ignoreIds
+    );
+
+    if (conflict) {
+      alert(`⛔ Aircraft conflict detected on ${day.toUpperCase()}.\nThis aircraft already has a flight in this time window.`);
+      window.__ACS_CONFIRM_RUNNING = false;
+      throw new Error("Aircraft conflict");
+    }
 
     // Buscar vuelo existente para ese día
     let old = originalFlights.find(f => f.day === day);
@@ -1840,6 +1912,8 @@ function confirmRouteEdit() {
       old.destination = destination;
       old.departure   = departure;
       old.arrival     = arrival;
+      old.depAbsMin   = depAbsMin;
+      old.arrAbsMin   = arrAbsMin;
       old.aircraftId  = aircraftId;
       old.flightNumberOut = flightNumberOut;
       old.flightNumberIn  = flightNumberIn;
@@ -1849,18 +1923,23 @@ function confirmRouteEdit() {
       updatedFlights.push(old);
     } else {
       // ➕ NUEVO día agregado
+      const base = originalFlights[0];
+
       const newFlight = {
-        ...originalFlights[0], // hereda identidad base
-        id: `${originalFlights[0].id}_EXT_${day}`,
+        ...base,
+        id: `${base.id}_EXT_${day}`,
         day: day,
         departure,
         arrival,
+        depAbsMin,
+        arrAbsMin,
         aircraftId,
         flightNumberOut,
         flightNumberIn,
         blockTime: blockTimeMin,
         status: "scheduled"
       };
+
       updatedFlights.push(newFlight);
     }
   });
