@@ -1584,10 +1584,19 @@ document.addEventListener("DOMContentLoaded", () => {
    ============================================================ */
 
 function confirmRoute() {
-
+     
+// 🛑 SAFETY LOCK — prevent double execution
+     
+if (window.__ACS_CONFIRM_RUNNING) {
+  console.warn("🛑 confirmRoute blocked — already running");
+  return;
+}
+window.__ACS_CONFIRM_RUNNING = true;
+     
   /* ================================
      1) Capturar valores del formulario
      ================================ */
+     
   const origin      = (document.getElementById("origin")?.value || "").trim();
   const destination = (document.getElementById("destination")?.value || "").trim();
   const departure   = (document.getElementById("departureTime")?.value || "").trim();
@@ -1717,6 +1726,8 @@ function confirmRoute() {
   // limpiar edit context
   localStorage.removeItem("ACS_ROUTE_EDIT");
 
+  window.__ACS_CONFIRM_RUNNING = false;
+     
 </script>
 
 <!-- ===========================================================
@@ -1860,36 +1871,6 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 </script> <!-- ← cierre del script anterior (MUY IMPORTANTE) -->
-
-<script>
-/* ============================================================
-   🟦 GLOBAL EXPORT FIX — ROUTE SCHEDULE CORE BINDINGS
-   ------------------------------------------------------------
-   Hace visibles:
-   • confirmRoute
-   • autoCalculate
-   • autoGenerateFlightNumber
-   Para eventos inline y Safari
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  // 🔹 Exponer funciones críticas al scope global
-  if (typeof confirmRoute === "function") {
-    window.confirmRoute = confirmRoute;
-  }
-
-  if (typeof autoCalculate === "function") {
-    window.autoCalculate = autoCalculate;
-  }
-
-  if (typeof autoGenerateFlightNumber === "function") {
-    window.autoGenerateFlightNumber = autoGenerateFlightNumber;
-  }
-
-  console.log("🟢 Route Schedule — core functions exported to window");
-});
-</script>
 
 <script>
 /* ============================================================
