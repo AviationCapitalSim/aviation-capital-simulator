@@ -1721,28 +1721,28 @@ function confirmRoute() {
   window.location.href = "schedule_table.html";
 }
 
-/* ============================================================
-   🟦 A9 — HR LIVE UPDATE AFTER ROUTE CONFIRM
-   ------------------------------------------------------------
-   Sincroniza HR inmediatamente después de crear rutas
-   ============================================================ */
+  /* ============================================================
+     🟦 A9 — HR LIVE UPDATE AFTER ROUTE CONFIRM
+     ------------------------------------------------------------
+     Sincroniza HR inmediatamente después de crear rutas
+     ============================================================ */
 
-try {
+  try {
     if (typeof HR_updateRequirementsFromFleet === "function") {
-        HR_updateRequirementsFromFleet();
-        console.log("🟢 HR REQUIREMENTS UPDATED AFTER ROUTE CONFIRM");
+      HR_updateRequirementsFromFleet();
+      console.log("🟢 HR REQUIREMENTS UPDATED AFTER ROUTE CONFIRM");
     }
-} catch (e) {
+  } catch (e) {
     console.warn("⚠ HR update after route confirm failed:", e);
-}
-     
+  }
+
   /* ================================
-     9) Final
+     9) FINAL — SINGLE EXIT POINT
      ================================ */
-  alert("Route successfully added to Schedule.");
+
+  alert("✅ Route successfully added to Schedule.");
   window.location.href = "schedule_table.html";
 }
-
 
 </script>
 
