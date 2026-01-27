@@ -1940,6 +1940,56 @@ function showEditSuccessChip() {
 }
 
 /* ============================================================
+   🟧 A13 — CREATE MODE HARD RESET (NO PRESELECT / NO FLIGHT) — v1
+   ------------------------------------------------------------
+   OBJETIVO:
+   - Al entrar desde routes.html:
+       • aircraft VACÍO
+       • flight number VACÍO
+       • tech panel OCULTO
+   - El jugador decide TODO
+   - EDIT MODE NO se toca aquí
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const sel  = document.getElementById("aircraft");
+  const fn   = document.getElementById("flightNumber");
+  const tech = document.getElementById("techData");
+
+  if (!sel) return;
+
+  // Detectar EDIT MODE
+  let isEditMode = false;
+  try {
+    const editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT") || "null");
+    if (editCtx && editCtx.mode === "EDIT") isEditMode = true;
+  } catch (e) {}
+
+  // ============================================================
+  // CREATE MODE → LIMPIAR SIEMPRE
+  // ============================================================
+
+  if (!isEditMode) {
+
+    // 🔹 Aircraft vacío (forzar placeholder)
+    sel.value = "";
+
+    // 🔹 Eliminar persistencias viejas
+    localStorage.removeItem("routeSelectedAircraft");
+
+    // 🔹 Flight number vacío
+    if (fn) fn.value = "";
+
+    // 🔹 Ocultar tech panel
+    if (tech) tech.style.display = "none";
+
+    console.log("🟢 CREATE MODE HARD RESET — aircraft + flight + tech limpio");
+  }
+
+});
+     
+/* ============================================================
    🟦 C5 — BUTTON BIND ÚNICO
    ============================================================ */
 
