@@ -1029,13 +1029,27 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   const container = document.querySelector(".schedule-container");
   if (container) {
-    const notice = document.createElement("div");
-    notice.style.color = "#FFB300";
-    notice.style.marginBottom = "1rem";
-    notice.style.fontWeight = "600";
-    notice.innerHTML = `✏️ Editing route: <strong>${(ctx.origin||"").toUpperCase()} ➜ ${(ctx.destination||"").toUpperCase()}</strong>`;
-    container.prepend(notice);
-  }
+       
+    /* 🟦 EDIT ROUTE HEADER — QATAR LUXURY */
+
+const container = document.querySelector(".schedule-container");
+
+// eliminar avisos previos si existen
+container.querySelectorAll(".acs-edit-banner").forEach(e => e.remove());
+
+const banner = document.createElement("div");
+banner.className = "acs-edit-banner";
+banner.style.textAlign = "center";
+banner.style.fontSize = "1.25rem";
+banner.style.fontWeight = "700";
+banner.style.color = "#ffb300";
+banner.style.marginBottom = "1.2rem";
+banner.style.textShadow = "0 0 8px rgba(255,179,0,0.6)";
+banner.innerHTML = `EDITING ROUTE: ${editCtx.origin} ➜ ${editCtx.destination}`;
+
+container.prepend(banner);
+
+}
 
   const btn = document.querySelector(".acs-btn");
   if (btn) btn.textContent = "UPDATE ROUTE";
