@@ -1422,44 +1422,7 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
-
-/* ============================================================
-   🟦 B1 — CANONICAL REAL FLIGHTS FILTER (ANTI GHOST) — FINAL
-   ------------------------------------------------------------
-   Fuente única para:
-   • Schedule Table
-   • HR OPS Weekly Rebuild
-   • Frequency engine
-   • No vuelos fantasma
-   • No vuelo "0"
-   ============================================================ */
-
-const rawItems = getItems();
-
-// 🔒 SOLO vuelos reales válidos entran al sistema
-const items = rawItems.filter(it =>
-  it &&
-  it.type === "flight" &&
-  it.day !== undefined &&
-  it.day !== null &&
-  it.day !== "" &&
-  it.aircraftId &&
-  typeof it.aircraftId === "string" &&
-  /^AC[-_]/.test(it.aircraftId) &&
-  it.departure &&
-  it.arrival &&
-  (it.flightNumberOut || it.flightNumberIn)
-);
-
-const fleet = getRealFleet();
-
-console.log(
-  "%c🧹 SCHEDULE CANONICAL FILTER",
-  "color:#00ffcc;font-weight:700",
-  "Raw:", rawItems.length,
-  "Valid flights:", items.length
-);
-     
+ 
 // ============================================================
 // 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (AC_xxx) — FINAL
 // ============================================================
