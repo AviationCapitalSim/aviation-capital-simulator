@@ -1355,56 +1355,55 @@ function autoCalculate() {
 }
 
 /* ============================================================
-   🔵 D — ROUTE SCHEDULE EVENT LINKER — FINAL VERSION
-   ============================================================
-   Mantiene toda la lógica viva al cambiar:
-   • Avión (model)
-   • Hora de salida
-   • Optimized Rotation
-   • Reload / Safari FIX
+   🔵 ROUTE SCHEDULE EVENT LINKER — FINAL RESTORE (AUTO + TECH)
+   ------------------------------------------------------------
+   Reactiva:
+   • Auto cálculo técnico
+   • Auto flight number
+   • Recalculo en reload Safari
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    const acSel  = document.getElementById("aircraft");
-    const depSel = document.getElementById("departureTime");
-    const optBox = document.getElementById("optimizeRotation");
+  const acSel  = document.getElementById("aircraft");
+  const depSel = document.getElementById("departureTime");
+  const optBox = document.getElementById("optimizeRotation");
 
-    /* 🔹 Evento: cambio de avión */
-    if (acSel) {
-        acSel.addEventListener("change", () => {
-            autoCalculate();                       // 🔥 recalcular
-            autoGenerateFlightNumber();            // 🔥 regenerar OUT/IN
-        });
+  /* 🔹 Cambio de avión → recalcula + genera flight number */
+     
+  if (acSel) {
+    acSel.addEventListener("change", () => {
+      if (typeof autoCalculate === "function") autoCalculate();
+      if (typeof autoGenerateFlightNumber === "function") autoGenerateFlightNumber();
+    });
+  }
+
+  /* 🔹 Cambio de hora → recalcula */
+     
+  if (depSel) {
+    depSel.addEventListener("change", () => {
+      if (typeof autoCalculate === "function") autoCalculate();
+    });
+  }
+
+  /* 🔹 Cambio optimización */
+     
+  if (optBox) {
+    optBox.addEventListener("change", () => {
+      if (typeof autoCalculate === "function") autoCalculate();
+    });
+  }
+
+  /* 🔹 Reload FIX (Safari / Chrome) */
+     
+  setTimeout(() => {
+    const model = acSel?.value || "";
+    if (model) {
+      if (typeof autoCalculate === "function") autoCalculate();
+      if (typeof autoGenerateFlightNumber === "function") autoGenerateFlightNumber();
     }
+  }, 80);
 
-    /* 🔹 Evento: cambio de hora */
-    if (depSel) {
-        depSel.addEventListener("change", () => {
-            autoCalculate();
-        });
-    }
-
-    /* 🔹 Evento: activar Optimized Rotation */
-    if (optBox) {
-        optBox.addEventListener("change", () => {
-            autoCalculate();
-        });
-    }
-
-    /* ========================================================
-       🔹 SAFARI / CHROME RELOAD FIX
-       Al recargar, el avión queda seleccionado,
-       pero sin recalcular. Aquí se recalcula SOLO si
-       hay modelo seleccionado.
-       ======================================================== */
-    setTimeout(() => {
-        const model = acSel?.value || "";
-        if (model) {
-            autoCalculate();
-            autoGenerateFlightNumber();
-        }
-    }, 60);
 });
 
 /* ============================================================
