@@ -1408,12 +1408,13 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   ✅ CONFIRM ROUTE — FIX v2 (ROOT GHOST FIX + HR SAFE)
+   ✅ CONFIRM ROUTE — FIX v3 (GHOST ROOT REMOVED — FINAL CANON)
    ------------------------------------------------------------
    - scheduleItems SOLO recibe vuelos reales
-   - NUNCA inserta nodo base
-   - NUNCA inserta objeto sin day
-   - EDIT y CREATE blindados
+   - NUNCA inserta newRoute
+   - NUNCA confirmedRoute
+   - NUNCA objeto sin day
+   - HR / OPS / EDIT 100% consistentes
    ============================================================ */
 
 function confirmRoute() {
@@ -1427,13 +1428,11 @@ function confirmRoute() {
   const aircraftSel = document.getElementById("aircraft");
   const selectedAircraftId = aircraftSel ? (aircraftSel.value || "").trim() : "";
 
-  // ✅ aircraftId robusto (AC-xxxx o AC_xxxx)
   if (!selectedAircraftId || !/^AC[-_]/.test(selectedAircraftId)) {
     alert("Please select a valid aircraft.");
     return;
   }
 
-  // ✅ blockTimeMin
   const blockTimeMin = parseInt((window.ACS_RouteTechData?.blockMin ?? ""), 10);
   if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
     alert("⛔ Block time invalid. Please recalculate route.");
@@ -1445,32 +1444,21 @@ function confirmRoute() {
     return;
   }
 
-  /* ============================================================
-     PATCH A1 — FLIGHT NUMBER SYNC (UI → ENGINE)
-     ============================================================ */
-  let flightNumberOut = window.currentFN_Out || null;
-  let flightNumberIn  = window.currentFN_In  || null;
-
-  if (!flightNumberOut || !flightNumberIn) {
-    const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
-    const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
-
-    if (!match) {
-      alert("⛔ Invalid flight number. Please regenerate the flight number.");
-      return;
-    }
-
-    flightNumberOut = match[1];
-    flightNumberIn  = match[2];
-  }
-
-  if (!flightNumberOut || !flightNumberIn) {
-    alert("⛔ Flight numbers missing. Cannot confirm route.");
+  /* ================================
+     Flight Numbers
+     ================================ */
+  const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
+  const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
+  if (!match) {
+    alert("⛔ Invalid flight number.");
     return;
   }
 
+  const flightNumberOut = match[1];
+  const flightNumberIn  = match[2];
+
   /* ================================
-     2) Capturar días seleccionados
+     Days
      ================================ */
   const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
   let days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
@@ -1485,7 +1473,7 @@ function confirmRoute() {
   }
 
   /* ================================
-     3) Calcular llegada (HH:MM)
+     Arrival
      ================================ */
   const [depH, depM] = departure.split(":").map(Number);
   const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
@@ -1494,135 +1482,77 @@ function confirmRoute() {
   const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
 
   /* ================================
-     4) ID único ACS
+     IDs / Fleet
      ================================ */
   const routeId = "RT_" + Math.floor(100000 + Math.random() * 900000);
 
-  /* ============================================================
-     5) Resolver modelKey REAL por aircraftId (fleet)
-     ============================================================ */
-  let fleet = [];
-  try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  } catch (e) {
-    fleet = [];
-  }
+  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const acObj = fleet.find(a => a.id === selectedAircraftId);
 
-  const acObj = fleet.find(a => (a?.id || "") === selectedAircraftId) || null;
-  const modelKey = (acObj?.model || "").toString().trim();
-
-  if (!modelKey) {
-    alert("⚠ Aircraft model not found in fleet. Please reselect aircraft.");
+  if (!acObj || !acObj.model) {
+    alert("⚠ Aircraft model not found in fleet.");
     return;
   }
 
- /* ============================================================
-   🟢 ROUTE OBJECT — FULL ROTATION DATA (FINAL)
-   ------------------------------------------------------------
-   Source: Route Schedule
-   Consumer: Schedule Table / Runtime
-   ============================================================ */
+  const modelKey = acObj.model.toUpperCase();
 
-  // 🟦 FIX DEFINITIVO — DISTANCE SAFETY NET
   let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
   if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
     finalDistanceNM = rs_getDistanceNM(origin, destination);
   }
 
-  /* ============================================================
-     🟧 B2 — CONFIRM ROUTE (IDENTITY FIX + EDIT SAFE)
-     ============================================================ */
-
   const isEveryDay = document.getElementById("everyDay")?.checked === true;
-  const isEachDay  =
-    document.getElementById("separateDays")?.checked === true &&
-    !isEveryDay;
-
-  const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
-
   const blockId = isEveryDay ? ("BLOCK_" + Date.now()) : null;
 
-  /* ============================================================
-     🧠 FLIGHT NUMBER MANAGEMENT — SAFE
-     ============================================================ */
-  if (!isEditMode) {
-    if (typeof markNumbersUsed === "function") {
-      markNumbersUsed(flightNumberOut, flightNumberIn);
-    }
-
-    if (typeof bumpFlightCounter === "function") {
-      bumpFlightCounter();
-    }
-  }
-
-  /* ============================================================
-     🔥 A1 — INSERT ONLY REAL FLIGHTS (ROOT GHOST FIX)
-     ------------------------------------------------------------
-     Regla ACS:
-     • scheduleItems SOLO vuelos reales
-     • NUNCA objeto base
-     • NUNCA sin day
-     ============================================================ */
+  /* ================================
+     INSERT ONLY REAL FLIGHTS (CORE FIX)
+     ================================ */
 
   const newItems = [];
 
   days.forEach(day => {
 
     const flight = {
-      type: "flight",                     // 🔥 OBLIGATORIO
+      type: "flight",
       id: `${routeId}_${day}`,
       routeId: routeId,
       blockId: blockId,
 
-      // ✈️ Aircraft
       aircraftId: selectedAircraftId,
-      aircraft: modelKey.toUpperCase(),
-      acType: modelKey.toUpperCase(),
+      aircraft: modelKey,
+      acType: modelKey,
 
-      // 📍 Ruta
       origin,
       destination,
 
-      // ⏱ Horarios
       departure,
       arrival,
       depAbsMin: depH * 60 + depM,
       arrAbsMin: arrivalTotalMin % (24 * 60),
 
-      // 🔢 Números de vuelo
       flightNumberOut,
       flightNumberIn,
 
-      // 📐 Técnica
       distance: finalDistanceNM,
       blockTime: blockTimeMin,
       turnaround: window.ACS_RouteTechData?.turnMin ?? 45,
 
-      // 📆 Día REAL
-      day: day,                          // 🔥 CLAVE DEL FIX
-
+      day: day,
       status: "scheduled"
     };
 
     newItems.push(flight);
   });
 
-  // 🔥 Guardar SOLO vuelos reales en scheduleItems
-  let current = [];
-  try {
-    current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch (e) {
-    current = [];
-  }
-
+  let current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   const updated = current.concat(newItems);
   localStorage.setItem("scheduleItems", JSON.stringify(updated));
 
-  // 🔚 Limpiar modo EDIT
+  // limpiar edit context
   localStorage.removeItem("ACS_ROUTE_EDIT");
 
   alert("✅ Route confirmed successfully.");
-
+  window.location.href = "schedule_table.html";
 }
 
   /* ============================================================
@@ -1658,21 +1588,6 @@ function confirmRoute() {
       return;
     }
   }
-
-  /* ============================================================
-     7) SAVE — confirmedRoute + scheduleItems
-     ============================================================ */
-  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
-
-  const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  list.push(newRoute);
-  localStorage.setItem("scheduleItems", JSON.stringify(list));
-
-  /* ============================================================
-     8) Flight Number Management (si existe)
-     ============================================================ */
-  if (typeof markNumbersUsed === "function") markNumbersUsed(newRoute.flightNumberOut, newRoute.flightNumberIn);
-  if (typeof bumpFlightCounter === "function") bumpFlightCounter();
 
 /* ============================================================
    🟦 A9 — HR LIVE UPDATE AFTER ROUTE CONFIRM
