@@ -569,20 +569,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("🧭 ROUTE MODE:", isEditMode ? "EDIT" : "CREATE");
 
-// ============================================================
-// 🔒 A14 — KILL STALE EDIT CONTEXT ON CREATE ENTRY (CRITICAL)
-// ------------------------------------------------------------
-// Si NO venimos explícitamente desde botón EDIT,
-// borramos cualquier contexto viejo para evitar falso EDIT MODE
-// ============================================================
-
-const navFromEdit = !!(editCtx && editCtx.from === "SCHEDULE_TABLE");
-
-if (!navFromEdit && editCtx) {
-  console.warn("🧹 Stale ACS_ROUTE_EDIT detected — clearing");
-  localStorage.removeItem("ACS_ROUTE_EDIT");
-}
-     
   // ============================================================
   // 3️⃣ POPULAR AIRCRAFT SELECTOR (SIEMPRE LIMPIO EN CREATE)
   // ============================================================
@@ -828,19 +814,11 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
 <script>
 
 /* ============================================================
-   🟧 A21 — BASE: GENERAR HORARIOS DE SALIDA (FULL DAY UNLOCK)
-   ------------------------------------------------------------
-   REGLAS:
-   - CREATE: default 06:00
-   - EDIT: permitir cualquier hora (00:00 → 23:55)
-   - NO limitar por hora original
+   === BASE: GENERAR HORARIOS DE SALIDA ========================
    ============================================================ */
-
+     
 const timeSelect = document.getElementById("departureTime");
-timeSelect.innerHTML = "";
-
-// 🔓 Generar día completo
-for (let h = 0; h < 24; h++) {
+for (let h = 6; h < 24; h++) {
   for (let m = 0; m < 60; m += 5) {
     const hh = String(h).padStart(2,"0");
     const mm = String(m).padStart(2,"0");
@@ -850,17 +828,7 @@ for (let h = 0; h < 24; h++) {
     timeSelect.appendChild(opt);
   }
 }
-
-// 🕕 Default SOLO si es CREATE
-let isEditMode = false;
-try {
-  const ctx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT") || "null");
-  if (ctx && ctx.mode === "EDIT") isEditMode = true;
-} catch(e){}
-
-if (!isEditMode) {
-  timeSelect.value = "06:00";
-}
+timeSelect.value = "06:00";
 
 function toggleEveryDay() {
   const all = document.getElementById("everyDay").checked;
@@ -1061,27 +1029,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // ============================================================
   const container = document.querySelector(".schedule-container");
   if (container) {
-       
-    /* 🟦 EDIT ROUTE HEADER — QATAR LUXURY */
-
-const container = document.querySelector(".schedule-container");
-
-// eliminar avisos previos si existen
-container.querySelectorAll(".acs-edit-banner").forEach(e => e.remove());
-
-const banner = document.createElement("div");
-banner.className = "acs-edit-banner";
-banner.style.textAlign = "center";
-banner.style.fontSize = "1.25rem";
-banner.style.fontWeight = "700";
-banner.style.color = "#ffb300";
-banner.style.marginBottom = "1.2rem";
-banner.style.textShadow = "0 0 8px rgba(255,179,0,0.6)";
-banner.innerHTML = `EDITING ROUTE: ${editCtx.origin} ➜ ${editCtx.destination}`;
-
-container.prepend(banner);
-
-}
+    const notice = document.createElement("div");
+    notice.style.color = "#FFB300";
+    notice.style.marginBottom = "1rem";
+    notice.style.fontWeight = "600";
+    notice.innerHTML = `✏️ Editing route: <strong>${(ctx.origin||"").toUpperCase()} ➜ ${(ctx.destination||"").toUpperCase()}</strong>`;
+    container.prepend(notice);
+  }
 
   const btn = document.querySelector(".acs-btn");
   if (btn) btn.textContent = "UPDATE ROUTE";
@@ -1589,14 +1543,7 @@ function confirmRoute() {
 }
 
 /* ============================================================
-   🟦 C2 — CONFIRM ROUTE CREATE (CANONICAL ACS FLOW)
-   ------------------------------------------------------------
-   REGLAS:
-   ✅ NO crear vuelos aquí
-   ✅ NO tocar scheduleItems
-   ✅ NO asignar avión en tabla
-   ✅ SOLO preparar confirmedRoute
-   ✅ Assign Route decide todo después
+   🟦 C2 — CONFIRM ROUTE CREATE (TU MOTOR ACTUAL, LIMPIO)
    ============================================================ */
 
 function confirmRouteCreate() {
@@ -1685,6 +1632,8 @@ function confirmRouteCreate() {
     return;
   }
 
+  const modelKey = acObj.model.toUpperCase();
+
   let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
   if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
     finalDistanceNM = rs_getDistanceNM(origin, destination);
@@ -1693,98 +1642,86 @@ function confirmRouteCreate() {
   const isEveryDay = document.getElementById("everyDay")?.checked === true;
   const blockId = isEveryDay ? ("BLOCK_" + Date.now()) : null;
 
-  /* ============================================================
-     🟢 CANONICAL ACS OUTPUT — PREPARE PENDING ROUTE
-     ============================================================ */
+  /* ================================
+   INSERT NEW FLIGHTS (WITH CONFLICT CHECK)
+   ================================ */
 
-  const routeObject = {
-    mode: "CREATE",
+  let current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  const newItems = [];
 
-    origin,
-    destination,
-    departure,
-    arrival,
+  days.forEach(day => {
 
-    aircraftId: selectedAircraftId,
-    aircraftModel: acObj.model,
+    const depAbsMin = depH * 60 + depM;
+    const arrAbsMin = arrivalTotalMin % (24 * 60);
 
-    flightNumberOut,
-    flightNumberIn,
+    // 🔥 CHECK CONFLICT
+    const conflict = RS_hasAircraftConflict(
+      current,
+      selectedAircraftId,
+      day,
+      depAbsMin,
+      arrAbsMin
+    );
 
-    days,
-    blockId,
+    if (conflict) {
+      alert(`⛔ Aircraft conflict detected on ${day.toUpperCase()}.\nThis aircraft already has a flight in this time window.`);
+      window.__ACS_CONFIRM_RUNNING = false;
+      throw new Error("Aircraft conflict");
+    }
 
-    distance: finalDistanceNM,
-    blockTime: blockTimeMin,
+    const flight = {
+      type: "flight",
+      id: `RT_${Date.now()}_${day}`,
+      blockId: blockId,
 
-    tech: window.ACS_RouteTechData || {},
+      aircraftId: selectedAircraftId,
+      aircraft: modelKey,
 
-    createdAt: Date.now()
-  };
+      origin,
+      destination,
 
-  // 🔒 Guardar como ruta pendiente (NO asignada)
-  localStorage.setItem("confirmedRoute", JSON.stringify(routeObject));
+      departure,
+      arrival,
+      depAbsMin,
+      arrAbsMin,
 
-  // Limpiar cualquier contexto previo de edición
-  localStorage.removeItem("ACS_ROUTE_EDIT");
+      flightNumberOut,
+      flightNumberIn,
+
+      distance: finalDistanceNM,
+      blockTime: blockTimeMin,
+
+      day: day,
+      status: "scheduled"
+    };
+
+    newItems.push(flight);
+  });
+
+  const updated = current.concat(newItems);
+  localStorage.setItem("scheduleItems", JSON.stringify(updated));
 
   window.__ACS_CONFIRM_RUNNING = false;
 
-  // 🟢 Mostrar chip y redireccionar cuando el jugador confirme
-  showCreateSuccessChip();
+  // 🔁 volver a tabla
+  window.location.href = "schedule_table.html";
 }
 
 /* ============================================================
-   🟢 CHIP CREATE SUCCESS + OK
-   ============================================================ */
-
-function showCreateSuccessChip() {
-
-  const chip = document.createElement("div");
-  chip.innerHTML = `
-    <div style="font-size:1.1rem;margin-bottom:8px;">✅ Route created successfully</div>
-    <button id="chipOkBtn"
-      style="
-        margin-top:10px;
-        padding:6px 20px;
-        border:none;
-        border-radius:10px;
-        background:#081530;
-        color:#00ff80;
-        font-weight:700;
-        cursor:pointer;">
-      OK
-    </button>
-  `;
-
-  chip.style.position = "fixed";
-  chip.style.top = "120px";
-  zIndex = "9999";
-  chip.style.left = "50%";
-  chip.style.transform = "translateX(-50%)";
-  chip.style.padding = "14px 26px";
-  chip.style.background = "linear-gradient(135deg,#00ff80,#00a86b)";
-  chip.style.color = "#081530";
-  chip.style.borderRadius = "16px";
-  chip.style.boxShadow = "0 0 26px rgba(0,255,128,0.7)";
-
-  document.body.appendChild(chip);
-
-  document.getElementById("chipOkBtn").onclick = () => {
-    chip.remove();
-    window.location.href = "schedule_table.html";
-  };
-}
-     
-/* ============================================================
-   🟨 C3 — CONFIRM ROUTE EDIT (NO DUPLICADOS, REAL UPDATE) — v2
+   🟨 C3 — CONFIRM ROUTE EDIT (UPDATE IN PLACE REAL) — v1
+   ------------------------------------------------------------
+   REGLAS:
+   ✅ NO borrar rutas
+   ✅ NO recrear rutas completas
+   ✅ Modificar vuelos existentes
+   ✅ Mantener flight numbers
    ============================================================ */
 
 function confirmRouteEdit() {
 
   const ctx = window.__RS_EDIT_CTX;
   if (!ctx) {
-    alert("❌ Edit context lost");
+    console.error("❌ EDIT MODE without context");
     window.__ACS_CONFIRM_RUNNING = false;
     return;
   }
@@ -1793,15 +1730,21 @@ function confirmRouteEdit() {
      1) Leer formulario
      ================================ */
 
-  const origin      = document.getElementById("origin").value.trim();
-  const destination = document.getElementById("destination").value.trim();
-  const departure   = document.getElementById("departureTime").value.trim();
-  const aircraftId  = document.getElementById("aircraft").value;
+  const origin      = (document.getElementById("origin")?.value || "").trim();
+  const destination = (document.getElementById("destination")?.value || "").trim();
+  const departure   = (document.getElementById("departureTime")?.value || "").trim();
+  const aircraftId  = document.getElementById("aircraft")?.value || "";
 
-  const rawFN = document.getElementById("flightNumber").value.trim();
+  if (!origin || !destination || !departure || !aircraftId) {
+    alert("⚠️ Please complete all fields before updating.");
+    window.__ACS_CONFIRM_RUNNING = false;
+    return;
+  }
+
+  const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
   const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
   if (!match) {
-    alert("⛔ Invalid flight number");
+    alert("⛔ Invalid flight number.");
     window.__ACS_CONFIRM_RUNNING = false;
     return;
   }
@@ -1809,9 +1752,9 @@ function confirmRouteEdit() {
   const flightNumberOut = match[1];
   const flightNumberIn  = match[2];
 
-  const blockTimeMin = Number(window.ACS_RouteTechData?.blockMin || 0);
-  if (!blockTimeMin) {
-    alert("⛔ Block time invalid");
+  const blockTimeMin = parseInt((window.ACS_RouteTechData?.blockMin ?? ""), 10);
+  if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
+    alert("⛔ Block time invalid. Please recalculate route.");
     window.__ACS_CONFIRM_RUNNING = false;
     return;
   }
@@ -1824,7 +1767,7 @@ function confirmRouteEdit() {
   let newDays = DAY_IDS.filter(id => document.getElementById(id)?.checked);
 
   if (document.getElementById("everyDay")?.checked) {
-    newDays = [...DAY_IDS];
+    newDays = ["mon","tue","wed","thu","fri","sat","sun"];
   }
 
   if (!newDays.length) {
@@ -1834,96 +1777,136 @@ function confirmRouteEdit() {
   }
 
   /* ================================
-     Arrival
+     Arrival recalculado
      ================================ */
 
   const [depH, depM] = departure.split(":").map(Number);
-  const depAbsMin = depH * 60 + depM;
-  const arrAbsMin = depAbsMin + blockTimeMin;
-
-  const arrH = Math.floor(arrAbsMin / 60) % 24;
-  const arrM = arrAbsMin % 60;
-  const arrival = `${String(arrH).padStart(2,"0")}:${String(arrM).padStart(2,"0")}`;
+  const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
+  const arrH = Math.floor(arrivalTotalMin / 60) % 24;
+  const arrM = arrivalTotalMin % 60;
+  const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
 
   /* ================================
-     Cargar tabla
+     Cargar tabla actual
      ================================ */
 
   let list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
-  const routeId = ctx.routeId || null;
-  const blockId = ctx.blockId || null;
+  // Vuelos originales de esta ruta (por routeId o blockId)
+  const routeId  = ctx.routeId || ctx.routeKey || null;
+  const blockId  = ctx.blockId || null;
 
-  const originalFlights = list.filter(f =>
-    (routeId && f.routeId === routeId) ||
-    (blockId && f.blockId === blockId)
+  let originalFlights = list.filter(it =>
+    (routeId && it.routeId === routeId) ||
+    (blockId && it.blockId === blockId)
   );
 
   if (!originalFlights.length) {
-    alert("❌ Original route not found");
+    alert("❌ Original route not found in schedule.");
     window.__ACS_CONFIRM_RUNNING = false;
     return;
   }
 
   /* ================================
-     ELIMINAR COMPLETAMENTE BLOQUE VIEJO
-     ================================ */
+   Construir nueva versión de vuelos (WITH CONFLICT CHECK)
+   ================================ */
 
-  list = list.filter(f => !originalFlights.includes(f));
-
-  /* ================================
-     CREAR NUEVOS VUELOS LIMPIOS
-     ================================ */
-
-  const newFlights = [];
+  const updatedFlights = [];
+  const ignoreIds = originalFlights.map(f => f.id);
 
   newDays.forEach(day => {
 
+    const depAbsMin = depH * 60 + depM;
+    const arrAbsMin = arrivalTotalMin % (24 * 60);
+
+    // 🔥 CHECK CONFLICT (ignora los propios vuelos)
     const conflict = RS_hasAircraftConflict(
       list,
       aircraftId,
       day,
       depAbsMin,
       arrAbsMin,
-      []
+      ignoreIds
     );
 
     if (conflict) {
-      alert(`⛔ Aircraft conflict on ${day.toUpperCase()}`);
+      alert(`⛔ Aircraft conflict detected on ${day.toUpperCase()}.\nThis aircraft already has a flight in this time window.`);
       window.__ACS_CONFIRM_RUNNING = false;
-      throw new Error("Conflict");
+      throw new Error("Aircraft conflict");
     }
 
-    const base = originalFlights[0];
+    // Buscar vuelo existente para ese día
+    let old = originalFlights.find(f => f.day === day);
 
-    newFlights.push({
-      ...base,
-      id: `RT_${Date.now()}_${day}`,
-      day,
-      origin,
-      destination,
-      departure,
-      arrival,
-      depAbsMin,
-      arrAbsMin,
-      aircraftId,
-      flightNumberOut,
-      flightNumberIn,
-      blockTime: blockTimeMin,
-      status: "scheduled"
-    });
+    if (old) {
+      // ✏️ UPDATE IN PLACE
+      old.origin      = origin;
+      old.destination = destination;
+      old.departure   = departure;
+      old.arrival     = arrival;
+      old.depAbsMin   = depAbsMin;
+      old.arrAbsMin   = arrAbsMin;
+      old.aircraftId  = aircraftId;
+      old.flightNumberOut = flightNumberOut;
+      old.flightNumberIn  = flightNumberIn;
+      old.blockTime   = blockTimeMin;
+      old.status      = "scheduled";
+
+      updatedFlights.push(old);
+    } else {
+      // ➕ NUEVO día agregado
+      const base = originalFlights[0];
+
+      const newFlight = {
+        ...base,
+        id: `${base.id}_EXT_${day}`,
+        day: day,
+        departure,
+        arrival,
+        depAbsMin,
+        arrAbsMin,
+        aircraftId,
+        flightNumberOut,
+        flightNumberIn,
+        blockTime: blockTimeMin,
+        status: "scheduled"
+      };
+
+      updatedFlights.push(newFlight);
+    }
   });
 
   /* ================================
-     GUARDAR
+     Eliminar días quitados
      ================================ */
 
-  const finalList = list.concat(newFlights);
+  const keptIds = updatedFlights.map(f => f.id);
+
+  list = list.filter(it => {
+    if (
+      (routeId && it.routeId === routeId) ||
+      (blockId && it.blockId === blockId)
+    ) {
+      return keptIds.includes(it.id);
+    }
+    return true;
+  });
+
+  /* ================================
+     Guardar nueva tabla
+     ================================ */
+
+  const finalList = list.concat(updatedFlights);
   localStorage.setItem("scheduleItems", JSON.stringify(finalList));
 
+  // limpiar edit context
   localStorage.removeItem("ACS_ROUTE_EDIT");
 
   window.__ACS_CONFIRM_RUNNING = false;
+
+  /* ================================
+     CHIP + REDIRECT
+     ================================ */
 
   showEditSuccessChip();
 }
@@ -1956,56 +1939,6 @@ function showEditSuccessChip() {
   }, 750);
 }
 
-/* ============================================================
-   🟧 A13 — CREATE MODE HARD RESET (NO PRESELECT / NO FLIGHT) — v1
-   ------------------------------------------------------------
-   OBJETIVO:
-   - Al entrar desde routes.html:
-       • aircraft VACÍO
-       • flight number VACÍO
-       • tech panel OCULTO
-   - El jugador decide TODO
-   - EDIT MODE NO se toca aquí
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const sel  = document.getElementById("aircraft");
-  const fn   = document.getElementById("flightNumber");
-  const tech = document.getElementById("techData");
-
-  if (!sel) return;
-
-  // Detectar EDIT MODE
-  let isEditMode = false;
-  try {
-    const editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT") || "null");
-    if (editCtx && editCtx.mode === "EDIT") isEditMode = true;
-  } catch (e) {}
-
-  // ============================================================
-  // CREATE MODE → LIMPIAR SIEMPRE
-  // ============================================================
-
-  if (!isEditMode) {
-
-    // 🔹 Aircraft vacío (forzar placeholder)
-    sel.value = "";
-
-    // 🔹 Eliminar persistencias viejas
-    localStorage.removeItem("routeSelectedAircraft");
-
-    // 🔹 Flight number vacío
-    if (fn) fn.value = "";
-
-    // 🔹 Ocultar tech panel
-    if (tech) tech.style.display = "none";
-
-    console.log("🟢 CREATE MODE HARD RESET — aircraft + flight + tech limpio");
-  }
-
-});
-     
 /* ============================================================
    🟦 C5 — BUTTON BIND ÚNICO
    ============================================================ */
