@@ -1589,7 +1589,14 @@ function confirmRoute() {
 }
 
 /* ============================================================
-   🟦 C2 — CONFIRM ROUTE CREATE (TU MOTOR ACTUAL, LIMPIO)
+   🟦 C2 — CONFIRM ROUTE CREATE (CANONICAL ACS FLOW)
+   ------------------------------------------------------------
+   REGLAS:
+   ✅ NO crear vuelos aquí
+   ✅ NO tocar scheduleItems
+   ✅ NO asignar avión en tabla
+   ✅ SOLO preparar confirmedRoute
+   ✅ Assign Route decide todo después
    ============================================================ */
 
 function confirmRouteCreate() {
@@ -1678,8 +1685,6 @@ function confirmRouteCreate() {
     return;
   }
 
-  const modelKey = acObj.model.toUpperCase();
-
   let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
   if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
     finalDistanceNM = rs_getDistanceNM(origin, destination);
@@ -1688,72 +1693,45 @@ function confirmRouteCreate() {
   const isEveryDay = document.getElementById("everyDay")?.checked === true;
   const blockId = isEveryDay ? ("BLOCK_" + Date.now()) : null;
 
-  /* ================================
-   INSERT NEW FLIGHTS (WITH CONFLICT CHECK)
-   ================================ */
+  /* ============================================================
+     🟢 CANONICAL ACS OUTPUT — PREPARE PENDING ROUTE
+     ============================================================ */
 
-  let current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  const newItems = [];
+  const routeObject = {
+    mode: "CREATE",
 
-  days.forEach(day => {
+    origin,
+    destination,
+    departure,
+    arrival,
 
-    const depAbsMin = depH * 60 + depM;
-    const arrAbsMin = arrivalTotalMin % (24 * 60);
+    aircraftId: selectedAircraftId,
+    aircraftModel: acObj.model,
 
-    // 🔥 CHECK CONFLICT
-    const conflict = RS_hasAircraftConflict(
-      current,
-      selectedAircraftId,
-      day,
-      depAbsMin,
-      arrAbsMin
-    );
+    flightNumberOut,
+    flightNumberIn,
 
-    if (conflict) {
-      alert(`⛔ Aircraft conflict detected on ${day.toUpperCase()}.\nThis aircraft already has a flight in this time window.`);
-      window.__ACS_CONFIRM_RUNNING = false;
-      throw new Error("Aircraft conflict");
-    }
+    days,
+    blockId,
 
-    const flight = {
-      type: "flight",
-      id: `RT_${Date.now()}_${day}`,
-      blockId: blockId,
+    distance: finalDistanceNM,
+    blockTime: blockTimeMin,
 
-      aircraftId: selectedAircraftId,
-      aircraft: modelKey,
+    tech: window.ACS_RouteTechData || {},
 
-      origin,
-      destination,
+    createdAt: Date.now()
+  };
 
-      departure,
-      arrival,
-      depAbsMin,
-      arrAbsMin,
+  // 🔒 Guardar como ruta pendiente (NO asignada)
+  localStorage.setItem("confirmedRoute", JSON.stringify(routeObject));
 
-      flightNumberOut,
-      flightNumberIn,
-
-      distance: finalDistanceNM,
-      blockTime: blockTimeMin,
-
-      day: day,
-      status: "scheduled"
-    };
-
-    newItems.push(flight);
-  });
-
-  const updated = current.concat(newItems);
-  localStorage.setItem("scheduleItems", JSON.stringify(updated));
+  // Limpiar cualquier contexto previo de edición
+  localStorage.removeItem("ACS_ROUTE_EDIT");
 
   window.__ACS_CONFIRM_RUNNING = false;
 
+  // 🟢 Mostrar chip y redireccionar cuando el jugador confirme
   showCreateSuccessChip();
-  return;
-     
-  // 🔁 volver a tabla
-  window.location.href = "schedule_table.html";
 }
 
 /* ============================================================
