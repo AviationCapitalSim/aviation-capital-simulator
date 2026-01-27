@@ -1820,16 +1820,28 @@ document.getElementById("origin")?.addEventListener("input", persistOriginDest);
 document.getElementById("origin")?.addEventListener("change", persistOriginDest);
 
 /* ============================================================
-   🔄 AIRCRAFT SELECTION — KEEP ON RELOAD, RESET ON NEW VISIT
+   🔄 AIRCRAFT SELECTION — CANONICAL BEHAVIOR (ACS FINAL)
+   ------------------------------------------------------------
+   REGLAS:
+   - CREATE (entrada normal)  → NUNCA preseleccionar
+   - REFRESH manual          → restaurar selección
+   - EDIT MODE               → lo maneja RS core (NO aquí)
    ============================================================ */
 
 window.addEventListener("DOMContentLoaded", () => {
+
     const sel = document.getElementById("aircraft");
     if (!sel) return;
 
-    // Detectar si llegamos por REFRESH o por navegación normal
-    let isReload = false;
+    // Detectar EDIT MODE
+    let isEditMode = false;
+    try {
+        const editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT") || "null");
+        if (editCtx && editCtx.mode === "EDIT") isEditMode = true;
+    } catch (e) {}
 
+    // Detectar si es RELOAD
+    let isReload = false;
     try {
         const navEntry = performance.getEntriesByType("navigation")[0];
         if (navEntry && navEntry.type === "reload") {
@@ -1839,26 +1851,37 @@ window.addEventListener("DOMContentLoaded", () => {
             isReload = true;
         }
     } catch (e) {
-        // Si algo falla, asumimos navegación normal
         isReload = false;
     }
 
+    // ================================
+    // CASOS
+    // ================================
+
+    if (isEditMode) {
+        // ✏️ EDIT MODE → NO TOCAR NADA AQUÍ
+        // (RS core ya precarga aircraft correcto)
+        return;
+    }
+
     if (isReload) {
-        // 🔁 REFRESH: restaurar selección previa
+        // 🔁 REFRESH → restaurar selección previa
         const saved = localStorage.getItem("routeSelectedAircraft");
         if (saved) {
             sel.value = saved;
         }
     } else {
-        // 🆕 Visita nueva: limpiar borrador y dejar "-- Select Aircraft --"
+        // 🆕 VISITA NUEVA (CREATE NORMAL) → LIMPIAR SIEMPRE
+        sel.value = "";
         localStorage.removeItem("routeSelectedAircraft");
     }
 
-    // 💾 Guardar cada vez que el jugador cambie el avión
+    // 💾 Guardar selección solo cuando el usuario cambie avión
     sel.addEventListener("change", () => {
         localStorage.setItem("routeSelectedAircraft", sel.value || "");
     });
 });
+
 </script> <!-- ← cierre del script anterior (MUY IMPORTANTE) -->
 
 <script>
