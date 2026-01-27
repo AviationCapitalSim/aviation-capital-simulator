@@ -1703,25 +1703,64 @@ function confirmRouteCreate() {
 
   window.__ACS_CONFIRM_RUNNING = false;
 
+  showCreateSuccessChip();
+  return;
+     
   // 🔁 volver a tabla
   window.location.href = "schedule_table.html";
 }
 
 /* ============================================================
-   🟨 C3 — CONFIRM ROUTE EDIT (UPDATE IN PLACE REAL) — v1
-   ------------------------------------------------------------
-   REGLAS:
-   ✅ NO borrar rutas
-   ✅ NO recrear rutas completas
-   ✅ Modificar vuelos existentes
-   ✅ Mantener flight numbers
+   🟢 CHIP CREATE SUCCESS + OK
+   ============================================================ */
+
+function showCreateSuccessChip() {
+
+  const chip = document.createElement("div");
+  chip.innerHTML = `
+    <div style="font-size:1.1rem;margin-bottom:8px;">✅ Route created successfully</div>
+    <button id="chipOkBtn"
+      style="
+        margin-top:10px;
+        padding:6px 20px;
+        border:none;
+        border-radius:10px;
+        background:#081530;
+        color:#00ff80;
+        font-weight:700;
+        cursor:pointer;">
+      OK
+    </button>
+  `;
+
+  chip.style.position = "fixed";
+  chip.style.top = "120px";
+  zIndex = "9999";
+  chip.style.left = "50%";
+  chip.style.transform = "translateX(-50%)";
+  chip.style.padding = "14px 26px";
+  chip.style.background = "linear-gradient(135deg,#00ff80,#00a86b)";
+  chip.style.color = "#081530";
+  chip.style.borderRadius = "16px";
+  chip.style.boxShadow = "0 0 26px rgba(0,255,128,0.7)";
+
+  document.body.appendChild(chip);
+
+  document.getElementById("chipOkBtn").onclick = () => {
+    chip.remove();
+    window.location.href = "schedule_table.html";
+  };
+}
+     
+/* ============================================================
+   🟨 C3 — CONFIRM ROUTE EDIT (NO DUPLICADOS, REAL UPDATE) — v2
    ============================================================ */
 
 function confirmRouteEdit() {
 
   const ctx = window.__RS_EDIT_CTX;
   if (!ctx) {
-    console.error("❌ EDIT MODE without context");
+    alert("❌ Edit context lost");
     window.__ACS_CONFIRM_RUNNING = false;
     return;
   }
@@ -1730,21 +1769,15 @@ function confirmRouteEdit() {
      1) Leer formulario
      ================================ */
 
-  const origin      = (document.getElementById("origin")?.value || "").trim();
-  const destination = (document.getElementById("destination")?.value || "").trim();
-  const departure   = (document.getElementById("departureTime")?.value || "").trim();
-  const aircraftId  = document.getElementById("aircraft")?.value || "";
+  const origin      = document.getElementById("origin").value.trim();
+  const destination = document.getElementById("destination").value.trim();
+  const departure   = document.getElementById("departureTime").value.trim();
+  const aircraftId  = document.getElementById("aircraft").value;
 
-  if (!origin || !destination || !departure || !aircraftId) {
-    alert("⚠️ Please complete all fields before updating.");
-    window.__ACS_CONFIRM_RUNNING = false;
-    return;
-  }
-
-  const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
+  const rawFN = document.getElementById("flightNumber").value.trim();
   const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
   if (!match) {
-    alert("⛔ Invalid flight number.");
+    alert("⛔ Invalid flight number");
     window.__ACS_CONFIRM_RUNNING = false;
     return;
   }
@@ -1752,9 +1785,9 @@ function confirmRouteEdit() {
   const flightNumberOut = match[1];
   const flightNumberIn  = match[2];
 
-  const blockTimeMin = parseInt((window.ACS_RouteTechData?.blockMin ?? ""), 10);
-  if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
-    alert("⛔ Block time invalid. Please recalculate route.");
+  const blockTimeMin = Number(window.ACS_RouteTechData?.blockMin || 0);
+  if (!blockTimeMin) {
+    alert("⛔ Block time invalid");
     window.__ACS_CONFIRM_RUNNING = false;
     return;
   }
@@ -1767,7 +1800,7 @@ function confirmRouteEdit() {
   let newDays = DAY_IDS.filter(id => document.getElementById(id)?.checked);
 
   if (document.getElementById("everyDay")?.checked) {
-    newDays = ["mon","tue","wed","thu","fri","sat","sun"];
+    newDays = [...DAY_IDS];
   }
 
   if (!newDays.length) {
@@ -1777,136 +1810,96 @@ function confirmRouteEdit() {
   }
 
   /* ================================
-     Arrival recalculado
+     Arrival
      ================================ */
 
   const [depH, depM] = departure.split(":").map(Number);
-  const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
-  const arrH = Math.floor(arrivalTotalMin / 60) % 24;
-  const arrM = arrivalTotalMin % 60;
-  const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
+  const depAbsMin = depH * 60 + depM;
+  const arrAbsMin = depAbsMin + blockTimeMin;
+
+  const arrH = Math.floor(arrAbsMin / 60) % 24;
+  const arrM = arrAbsMin % 60;
+  const arrival = `${String(arrH).padStart(2,"0")}:${String(arrM).padStart(2,"0")}`;
 
   /* ================================
-     Cargar tabla actual
+     Cargar tabla
      ================================ */
 
   let list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
-  // Vuelos originales de esta ruta (por routeId o blockId)
-  const routeId  = ctx.routeId || ctx.routeKey || null;
-  const blockId  = ctx.blockId || null;
+  const routeId = ctx.routeId || null;
+  const blockId = ctx.blockId || null;
 
-  let originalFlights = list.filter(it =>
-    (routeId && it.routeId === routeId) ||
-    (blockId && it.blockId === blockId)
+  const originalFlights = list.filter(f =>
+    (routeId && f.routeId === routeId) ||
+    (blockId && f.blockId === blockId)
   );
 
   if (!originalFlights.length) {
-    alert("❌ Original route not found in schedule.");
+    alert("❌ Original route not found");
     window.__ACS_CONFIRM_RUNNING = false;
     return;
   }
 
   /* ================================
-   Construir nueva versión de vuelos (WITH CONFLICT CHECK)
-   ================================ */
+     ELIMINAR COMPLETAMENTE BLOQUE VIEJO
+     ================================ */
 
-  const updatedFlights = [];
-  const ignoreIds = originalFlights.map(f => f.id);
+  list = list.filter(f => !originalFlights.includes(f));
+
+  /* ================================
+     CREAR NUEVOS VUELOS LIMPIOS
+     ================================ */
+
+  const newFlights = [];
 
   newDays.forEach(day => {
 
-    const depAbsMin = depH * 60 + depM;
-    const arrAbsMin = arrivalTotalMin % (24 * 60);
-
-    // 🔥 CHECK CONFLICT (ignora los propios vuelos)
     const conflict = RS_hasAircraftConflict(
       list,
       aircraftId,
       day,
       depAbsMin,
       arrAbsMin,
-      ignoreIds
+      []
     );
 
     if (conflict) {
-      alert(`⛔ Aircraft conflict detected on ${day.toUpperCase()}.\nThis aircraft already has a flight in this time window.`);
+      alert(`⛔ Aircraft conflict on ${day.toUpperCase()}`);
       window.__ACS_CONFIRM_RUNNING = false;
-      throw new Error("Aircraft conflict");
+      throw new Error("Conflict");
     }
 
-    // Buscar vuelo existente para ese día
-    let old = originalFlights.find(f => f.day === day);
+    const base = originalFlights[0];
 
-    if (old) {
-      // ✏️ UPDATE IN PLACE
-      old.origin      = origin;
-      old.destination = destination;
-      old.departure   = departure;
-      old.arrival     = arrival;
-      old.depAbsMin   = depAbsMin;
-      old.arrAbsMin   = arrAbsMin;
-      old.aircraftId  = aircraftId;
-      old.flightNumberOut = flightNumberOut;
-      old.flightNumberIn  = flightNumberIn;
-      old.blockTime   = blockTimeMin;
-      old.status      = "scheduled";
-
-      updatedFlights.push(old);
-    } else {
-      // ➕ NUEVO día agregado
-      const base = originalFlights[0];
-
-      const newFlight = {
-        ...base,
-        id: `${base.id}_EXT_${day}`,
-        day: day,
-        departure,
-        arrival,
-        depAbsMin,
-        arrAbsMin,
-        aircraftId,
-        flightNumberOut,
-        flightNumberIn,
-        blockTime: blockTimeMin,
-        status: "scheduled"
-      };
-
-      updatedFlights.push(newFlight);
-    }
+    newFlights.push({
+      ...base,
+      id: `RT_${Date.now()}_${day}`,
+      day,
+      origin,
+      destination,
+      departure,
+      arrival,
+      depAbsMin,
+      arrAbsMin,
+      aircraftId,
+      flightNumberOut,
+      flightNumberIn,
+      blockTime: blockTimeMin,
+      status: "scheduled"
+    });
   });
 
   /* ================================
-     Eliminar días quitados
+     GUARDAR
      ================================ */
 
-  const keptIds = updatedFlights.map(f => f.id);
-
-  list = list.filter(it => {
-    if (
-      (routeId && it.routeId === routeId) ||
-      (blockId && it.blockId === blockId)
-    ) {
-      return keptIds.includes(it.id);
-    }
-    return true;
-  });
-
-  /* ================================
-     Guardar nueva tabla
-     ================================ */
-
-  const finalList = list.concat(updatedFlights);
+  const finalList = list.concat(newFlights);
   localStorage.setItem("scheduleItems", JSON.stringify(finalList));
 
-  // limpiar edit context
   localStorage.removeItem("ACS_ROUTE_EDIT");
 
   window.__ACS_CONFIRM_RUNNING = false;
-
-  /* ================================
-     CHIP + REDIRECT
-     ================================ */
 
   showEditSuccessChip();
 }
