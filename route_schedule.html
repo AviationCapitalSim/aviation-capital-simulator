@@ -1722,10 +1722,12 @@ localStorage.setItem("ACS_RouteDefinitions", JSON.stringify(routes));
 
 window.__ACS_CONFIRM_RUNNING = false;
 
+localStorage.removeItem("confirmedRoute"); 
+     
 // 🔒 Mostrar confirmación neutral (NO redirección automática)
 const modal = document.getElementById("routeCreatedModal");
 if (modal) modal.style.display = "flex";
-
+     
 } // ✅ CIERRE DE confirmRouteCreate()
 
 /* ============================================================
