@@ -1646,14 +1646,77 @@ if (!isEditMode) {
     }
   }
 
-  /* ============================================================
-     7) SAVE — confirmedRoute + scheduleItems
+    /* ============================================================
+     🟧 A1 — ROUTE SCHEDULE FINAL SAVE (SINGLE WRITE)
+     ------------------------------------------------------------
+     ✔ Guarda UNA sola vez
+     ✔ Nunca crea vuelos sin day
+     ✔ Respeta BLOCK vs EACH DAY
+     ✔ No afecta Schedule Table / SkyTrack
      ============================================================ */
-  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
-  const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  list.push(newRoute);
-  localStorage.setItem("scheduleItems", JSON.stringify(list));
+  let scheduleItems = [];
+  try {
+    scheduleItems = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  } catch {
+    scheduleItems = [];
+  }
+
+  // 🔒 GUARDIA: evitar duplicación del mismo bloque + avión
+  const alreadyExists = scheduleItems.some(it =>
+    it.type === "flight" &&
+    it.blockId &&
+    newRoute.blockId &&
+    it.blockId === newRoute.blockId &&
+    it.aircraftId === newRoute.aircraftId
+  );
+
+  if (alreadyExists) {
+    console.warn("⛔ Duplicate route blocked:", newRoute.blockId);
+  } else {
+
+    // ❌ JAMÁS guardar vuelos sin días válidos
+    if (!Array.isArray(newRoute.days) || newRoute.days.length === 0) {
+      console.error("⛔ Route has no valid days. Abort save.", newRoute);
+      return;
+    }
+
+    // 🧠 CREAR INSTANCIAS REALES (una por día)
+    newRoute.days.forEach(day => {
+
+      if (!day) return; // blindaje final
+
+      scheduleItems.push({
+        id: "FLT_" + Math.random().toString(36).slice(2, 9),
+        type: "flight",
+
+        blockId: newRoute.blockId || null,
+
+        aircraftId: newRoute.aircraftId,
+        aircraft: newRoute.aircraft,
+        modelKey: newRoute.modelKey,
+
+        origin: newRoute.origin,
+        destination: newRoute.destination,
+
+        day: day, // 👈 CLAVE: nunca undefined
+        departure: newRoute.departure,
+        arrival: newRoute.arrival,
+
+        blockTimeMin: newRoute.blockTimeMin,
+        turnaroundMin: newRoute.turnaroundMin,
+        totalRotationMin: newRoute.totalRotationMin,
+
+        flightNumberOut: newRoute.flightNumberOut,
+        flightNumberIn: newRoute.flightNumberIn
+      });
+    });
+
+    localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
+  }
+
+  // Mantener confirmedRoute para compatibilidad
+  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
   /* ============================================================
      8) Flight Number Management (si existe)
