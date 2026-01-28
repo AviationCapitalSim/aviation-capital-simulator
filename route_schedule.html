@@ -667,14 +667,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const model = acSel?.value || "";
 
-    if (model) {
-      if (typeof autoCalculate === "function") autoCalculate();
-
-      // SOLO generar número si es CREATE
-      if (!isEditMode && typeof autoGenerateFlightNumber === "function") {
-        autoGenerateFlightNumber();
-      }
-    }
+    // 🔒 Solo recalcular si el usuario eligió avión manualmente
+       
+   if (model && document.activeElement === acSel) {
+   if (typeof autoCalculate === "function") autoCalculate();
+   if (!isEditMode && typeof autoGenerateFlightNumber === "function") {
+    autoGenerateFlightNumber();
+   }
+ }
 
   }, 120);
 
