@@ -2760,15 +2760,20 @@ function deleteSelectedFlights() {
   });
 
   // 7) Persistencia canónica
-  if (!remaining.length) localStorage.removeItem("scheduleItems");
-  else localStorage.setItem("scheduleItems", JSON.stringify(remaining));
+if (!remaining.length) localStorage.removeItem("scheduleItems");
+else localStorage.setItem("scheduleItems", JSON.stringify(remaining));
 
-  // (opcional) limpiar ruta confirmada si estás borrando cosas
-  localStorage.removeItem("confirmedRoute");
+// limpiar ruta confirmada (storage)
+localStorage.removeItem("confirmedRoute");
 
-  // 8) UI
-  closeFlightModal();
-  renderSchedule();
+// 🔥 RESET ROUTE STATE EN MEMORIA (CRÍTICO)
+if (typeof window.__ACS_ACTIVE_ROUTE === "object") {
+  window.__ACS_ACTIVE_ROUTE.assigned = false;
+}
+
+// 8) UI
+closeFlightModal();
+renderSchedule();
 
   console.log("🟥 DELETE OK", {
     removed: targets.length,
