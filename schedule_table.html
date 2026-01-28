@@ -1850,8 +1850,12 @@ function assignRouteToTail(ac){
   // Modelo del avión de esta fila
   const aircraftModel = (ac.model || ac.modelKey || "").toString().toUpperCase();
 
-  // Modelo que trae la ruta
-  const routeModel = (route.modelKey || route.aircraft || "").toString().toUpperCase();
+  /* ============================================================
+   🟧 ROUTE → AIRCRAFT MODEL — STRICT MATCH (FIX)
+   La ruta SOLO puede asignarse al modelo exacto
+   ============================================================ */
+
+   const routeModel = (route.requiredAircraftType || route.modelKey || "").toString().toUpperCase();
 
   // ============================================================
   // 🧪 VALIDACIÓN POR FLIGHT NUMBER (OBLIGATORIA)
