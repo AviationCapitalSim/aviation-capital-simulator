@@ -573,14 +573,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // 3️⃣ POPULAR AIRCRAFT SELECTOR (SIEMPRE LIMPIO EN CREATE)
   // ============================================================
 
+  // 🔒 CREATE MODE: el jugador decide, nunca el sistema
   rs_populateAircraftSelect(
-    isEditMode ? (editCtx.aircraftId || "") : ""
-  );
+  isEditMode ? (editCtx.aircraftId || "") : null
+ );
 
-  // En CREATE → forzar placeholder limpio
   if (!isEditMode && acSel) {
-    acSel.value = "";
-  }
+  acSel.value = ""; // placeholder obligatorio
+ }
 
   // ============================================================
   // 4️⃣ EN EDIT → PRECARGAR DATOS COMPLETOS
@@ -742,8 +742,8 @@ function RS_initCoreOnce() {
     localStorage.removeItem("ACS_selectedDestination");
   }
 
-  // ✅ Siempre cargar selector (robusto)
-  rs_populateAircraftSelect(localStorage.getItem("routeSelectedAircraft") || "");
+  // ❌ NO persistir aircraft en Route Schedule
+  rs_populateAircraftSelect(null);
 
   // 💾 Persistencia de selección (ya tienes otro bloque, esto no estorba)
   const sel = document.getElementById("aircraft");
