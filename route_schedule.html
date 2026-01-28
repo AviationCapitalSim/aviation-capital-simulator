@@ -807,25 +807,44 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
 <footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
 
 <!-- ============================================================
-     🟦 RS-MODAL — ROUTE CREATED (NEUTRAL)
+     🟦 RS-MODAL — ROUTE CREATED (CENTERED OVERLAY)
      ============================================================ -->
-     
-<div id="routeCreatedModal" class="modal-overlay" style="display:none;">
-  <div class="modal-content" style="
-    background:#0b1838;
-    border-radius:14px;
-    padding:22px;
-    text-align:center;
-    color:#cbd6ff;
-  ">
+<div
+  id="routeCreatedModal"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(5,12,30,0.75);
+    z-index:9999;
+    align-items:center;
+    justify-content:center;
+  "
+>
+  <div
+    style="
+      background:#0b1838;
+      border-radius:14px;
+      padding:22px 26px;
+      max-width:420px;
+      width:90%;
+      text-align:center;
+      color:#cbd6ff;
+      box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    "
+  >
     <h3 style="color:#9aa7c7;margin-bottom:10px;">
       ✔ Route created successfully
     </h3>
-    <p style="font-size:15px;margin-bottom:18px;">
+    <p style="font-size:15px;margin-bottom:18px;line-height:1.4;">
       The route has been saved.<br>
       You can now assign an aircraft from the Schedule Table.
     </p>
-    <button class="modal-button" onclick="goToScheduleTable()">
+    <button
+      class="modal-button"
+      style="min-width:90px"
+      onclick="goToScheduleTable()"
+    >
       OK
     </button>
   </div>
