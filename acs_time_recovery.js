@@ -84,13 +84,18 @@
    - One time only per session
    ============================================================ */
 
-if (window.ACS_TIME_RECOVERY && !window.ACS_TIME_RECOVERY.applied) {
+if (
+  window.ACS_TIME_RECOVERY &&
+  !window.ACS_TIME_RECOVERY.applied &&
+  window.ACS_TIME &&
+  window.ACS_TIME.currentTime
+) {
 
   const rec = window.ACS_TIME_RECOVERY;
 
   try {
 
-    const currentSim = new Date(ACS_TIME.currentTime).getTime();
+    const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
 
     const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
 
@@ -101,7 +106,7 @@ if (window.ACS_TIME_RECOVERY && !window.ACS_TIME_RECOVERY.applied) {
     console.log("RECOVERED +  :", Math.floor(rec.offlineSimMinutes), "sim minutes");
     console.log("NEW SIM TIME :", newSimTime.toLocaleString());
 
-    ACS_TIME.currentTime = newSimTime;
+    window.ACS_TIME.currentTime = newSimTime;
 
     // Save immediately
     localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
@@ -112,4 +117,9 @@ if (window.ACS_TIME_RECOVERY && !window.ACS_TIME_RECOVERY.applied) {
   } catch (e) {
     console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
   }
+
+} else if (window.ACS_TIME_RECOVERY && !window.ACS_TIME) {
+
+  console.warn("⚠️ ACS_TIME not ready yet — offline recovery deferred");
+
 }
