@@ -1671,7 +1671,7 @@ function confirmRouteCreate() {
   const isEveryDay = document.getElementById("everyDay")?.checked === true;
   const blockId = isEveryDay ? ("BLOCK_" + Date.now()) : null;
 
-  /* ================================
+ /* ================================
    SAVE ROUTE DEFINITION ONLY (NO ASSIGN)
    ================================ */
 
@@ -1705,6 +1705,7 @@ window.__ACS_CONFIRM_RUNNING = false;
 const modal = document.getElementById("routeCreatedModal");
 if (modal) modal.style.display = "flex";
 
+} // ✅ CIERRE DE confirmRouteCreate()
 
 /* ============================================================
    🟨 C3 — CONFIRM ROUTE EDIT (UPDATE IN PLACE REAL) — v1
