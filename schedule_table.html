@@ -1197,10 +1197,32 @@ const getItems = () => JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
 const setItems = list => localStorage.setItem(STORE_KEY, JSON.stringify(list));
 
 const getRoute = () => {
-  const r = localStorage.getItem(ROUTE_KEY);
-  return r ? JSON.parse(r) : null;
-};
 
+  /* 1️⃣ LEGACY — confirmedRoute (compatibilidad total) */
+  try {
+    const r = localStorage.getItem(ROUTE_KEY);
+    if (r) {
+      const parsed = JSON.parse(r);
+      if (parsed && typeof parsed === "object") return parsed;
+    }
+  } catch (e) {
+    console.warn("⚠ getRoute: confirmedRoute corrupt", e);
+  }
+
+  /* 2️⃣ NUEVO — Route Schedule (UNASSIGNED ONLY) */
+  try {
+    const defs = JSON.parse(localStorage.getItem("ACS_RouteDefinitions") || "[]");
+    if (Array.isArray(defs)) {
+      const route = defs.find(x => x && x.status === "unassigned");
+      if (route) return route;
+    }
+  } catch (e) {
+    console.warn("⚠ getRoute: ACS_RouteDefinitions corrupt", e);
+  }
+
+  /* 3️⃣ Nada disponible */
+  return null;
+};
 
 // ============================================================
 // FLEET — Helper wrappers (compatibilidad legacy) =============
