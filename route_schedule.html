@@ -804,12 +804,36 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
   </div>
 </main>
 
-<footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+<footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
 
+<!-- ============================================================
+     🟦 RS-MODAL — ROUTE CREATED (NEUTRAL)
+     ============================================================ -->
+     
+<div id="routeCreatedModal" class="modal-overlay" style="display:none;">
+  <div class="modal-content" style="
+    background:#0b1838;
+    border-radius:14px;
+    padding:22px;
+    text-align:center;
+    color:#cbd6ff;
+  ">
+    <h3 style="color:#9aa7c7;margin-bottom:10px;">
+      ✔ Route created successfully
+    </h3>
+    <p style="font-size:15px;margin-bottom:18px;">
+      The route has been saved.<br>
+      You can now assign an aircraft from the Schedule Table.
+    </p>
+    <button class="modal-button" onclick="goToScheduleTable()">
+      OK
+    </button>
+  </div>
+</div>
+     
 <!-- ============================================================
      === JAVASCRIPT ORIGINAL — MOTOR INTACTO ===================
    ============================================================ -->
-
 
 <script>
 
@@ -844,6 +868,11 @@ function toggleOptimization() {
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
+}
+     
+function goToScheduleTable() {
+  document.getElementById("routeCreatedModal").style.display = "none";
+  window.location.href = "schedule_table.html";
 }
 
 /* ============================================================
@@ -1643,69 +1672,39 @@ function confirmRouteCreate() {
   const blockId = isEveryDay ? ("BLOCK_" + Date.now()) : null;
 
   /* ================================
-   INSERT NEW FLIGHTS (WITH CONFLICT CHECK)
+   SAVE ROUTE DEFINITION ONLY (NO ASSIGN)
    ================================ */
 
-  let current = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  const newItems = [];
+let routes = JSON.parse(localStorage.getItem("ACS_RouteDefinitions") || "[]");
 
-  days.forEach(day => {
+const routeDef = {
+  id: `ROUTE_${Date.now()}`,
+  origin,
+  destination,
+  departure,
+  arrival,
+  blockTime: blockTimeMin,
+  distance: finalDistanceNM,
 
-    const depAbsMin = depH * 60 + depM;
-    const arrAbsMin = arrivalTotalMin % (24 * 60);
+  flightNumberOut,
+  flightNumberIn,
 
-    // 🔥 CHECK CONFLICT
-    const conflict = RS_hasAircraftConflict(
-      current,
-      selectedAircraftId,
-      day,
-      depAbsMin,
-      arrAbsMin
-    );
+  days,
+  requiredAircraftType: modelKey,
 
-    if (conflict) {
-      alert(`⛔ Aircraft conflict detected on ${day.toUpperCase()}.\nThis aircraft already has a flight in this time window.`);
-      window.__ACS_CONFIRM_RUNNING = false;
-      throw new Error("Aircraft conflict");
-    }
+  status: "unassigned",
+  createdAt: Date.now()
+};
 
-    const flight = {
-      type: "flight",
-      id: `RT_${Date.now()}_${day}`,
-      blockId: blockId,
+routes.push(routeDef);
+localStorage.setItem("ACS_RouteDefinitions", JSON.stringify(routes));
 
-      aircraftId: selectedAircraftId,
-      aircraft: modelKey,
+window.__ACS_CONFIRM_RUNNING = false;
 
-      origin,
-      destination,
+// 🔒 Mostrar confirmación neutral (NO redirección automática)
+const modal = document.getElementById("routeCreatedModal");
+if (modal) modal.style.display = "flex";
 
-      departure,
-      arrival,
-      depAbsMin,
-      arrAbsMin,
-
-      flightNumberOut,
-      flightNumberIn,
-
-      distance: finalDistanceNM,
-      blockTime: blockTimeMin,
-
-      day: day,
-      status: "scheduled"
-    };
-
-    newItems.push(flight);
-  });
-
-  const updated = current.concat(newItems);
-  localStorage.setItem("scheduleItems", JSON.stringify(updated));
-
-  window.__ACS_CONFIRM_RUNNING = false;
-
-  // 🔁 volver a tabla
-  window.location.href = "schedule_table.html";
-}
 
 /* ============================================================
    🟨 C3 — CONFIRM ROUTE EDIT (UPDATE IN PLACE REAL) — v1
