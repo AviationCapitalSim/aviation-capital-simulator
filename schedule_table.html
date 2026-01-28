@@ -1827,6 +1827,14 @@ function assignRouteToTail(ac){
     return; 
   }
 
+  /* ============================================================
+     🛑 GUARDIA CANÓNICA — ROUTE YA ASIGNADA
+     ============================================================ */
+  if (route.assigned === true) {
+    alert("⚠ This route has already been assigned.");
+    return;
+  }
+
  /* ============================================================
    🟢 AIRCRAFT / ROUTE VALIDATION — TEST PHASE (MODEL SAFE)
    ------------------------------------------------------------
@@ -1836,243 +1844,184 @@ function assignRouteToTail(ac){
    ✖ aircraftId se validará en fase de normalización
    ============================================================ */
 
-// ID del avión de esta fila (se conserva para futuro)
-const aircraftId = ac.id || "";
+  // ID del avión de esta fila (se conserva para futuro)
+  const aircraftId = ac.id || "";
 
-// Modelo del avión de esta fila
-const aircraftModel = (ac.model || ac.modelKey || "").toString().toUpperCase();
+  // Modelo del avión de esta fila
+  const aircraftModel = (ac.model || ac.modelKey || "").toString().toUpperCase();
 
-// Modelo que trae la ruta
-const routeModel = (route.modelKey || route.aircraft || "").toString().toUpperCase();
+  // Modelo que trae la ruta
+  const routeModel = (route.modelKey || route.aircraft || "").toString().toUpperCase();
 
-// ============================================================
-// 🧪 VALIDACIÓN POR FLIGHT NUMBER (OBLIGATORIA)
-// ============================================================
+  // ============================================================
+  // 🧪 VALIDACIÓN POR FLIGHT NUMBER (OBLIGATORIA)
+  // ============================================================
 
-if (!route.flightNumberOut || !route.flightNumberIn) {
-  alert("⚠ Invalid route: missing flight numbers.");
-  return;
-}
-
-// ============================================================
-// 🔒 PROTECCIÓN LÓGICA CORRECTA — MODELO COMPATIBLE
-// ============================================================
-
-if (routeModel && aircraftModel && routeModel !== aircraftModel) {
-  alert(`⚠ This route is for ${routeModel}, not for ${aircraftModel}.`);
-  return;
-}
-
-// ============================================================
-// ⛔ aircraftId VALIDATION DESACTIVATED (TEST PHASE)
-// ------------------------------------------------------------
-// if (!route.aircraftId || route.aircraftId !== aircraftId) return;
-// ============================================================
-
-  // 2️⃣ Obtener schedule actual
-  const items = getItems();
-
-/* ============================================================
-   🛑 B1 — OVERLAP ROBUSTO (AIRCRAFT + DAY + TIME) — NO FALSE POSITIVES
-   ============================================================ */
-
-// ✅ Día del vuelo: si no existe, NO bloqueamos (porque tu data está incompleta)
-const dayNew = (route.day ?? route.weekday ?? route.dayKey ?? null);
-
-// ⏱️ nuevo vuelo
-const depNew = toMin(route.departure);
-const durNew = Number(route.blockTimeMin || 0);
-
-if (depNew == null || !Number.isFinite(depNew) || durNew <= 0) {
-  // si falta data crítica, no hacemos overlap (evita bloqueos infinitos)
-  console.warn("⚠ Overlap skipped: invalid dep/blockTime", { depNew, durNew, route });
-} else {
-
-  let arrNew = depNew + durNew;
-  if (!Number.isFinite(arrNew)) arrNew = depNew; // ultra-safe
-
-  // overnight safe
-  if (arrNew <= depNew) arrNew += 1440;
-
-  // 🔑 clave del vuelo nuevo (para ignorar duplicados del mismo vuelo)
-  const newKey = `${aircraftId}|${dayNew ?? "NO_DAY"}|${depNew}|${durNew}`;
-
-  const hasOverlap = items.some(it => {
-    if (it.type !== "flight") return false;
-    if (it.aircraftId !== aircraftId) return false;
-
-    // ✅ si alguno NO tiene día válido, NO bloqueamos (evita falso positivo global)
-    const dayOld = (it.day ?? it.weekday ?? it.dayKey ?? null);
-    if (!dayNew || !dayOld) return false;
-    if (dayOld !== dayNew) return false;
-
-    // ✅ ignorar el MISMO vuelo (duplicado exacto)
-    const depOld0 = toMin(it.departure);
-    const arrOld0 = toMin(it.arrival);
-    const durOld = Number(it.blockTimeMin || 0);
-
-    if (depOld0 == null || arrOld0 == null) return false;
-    if (!Number.isFinite(depOld0) || !Number.isFinite(arrOld0)) return false;
-
-    const oldKey = `${it.aircraftId}|${dayOld}|${depOld0}|${durOld}`;
-    if (oldKey === newKey) return false;
-
-    let depOld = depOld0;
-    let arrOld = arrOld0;
-
-    // overnight safe
-    if (arrOld <= depOld) arrOld += 1440;
-
-    // turnaround real
-    const arrOldWithTurn = arrOld + TURNAROUND_MIN;
-
-    // overlap REAL
-    return depNew < arrOldWithTurn && arrNew > depOld;
-  });
-
-  if (hasOverlap) {
-    alert("⚠ This flight overlaps in time with another flight for this aircraft.");
+  if (!route.flightNumberOut || !route.flightNumberIn) {
+    alert("⚠ Invalid route: missing flight numbers.");
     return;
   }
-}
 
-// 3️⃣ Preparar datos de la ruta
-const daysSel = Array.isArray(route.days) && route.days.length
-                ? route.days
-                : ["mon"];
+  // ============================================================
+  // 🔒 PROTECCIÓN LÓGICA CORRECTA — MODELO COMPATIBLE
+  // ============================================================
 
-const separate = !!route.separateDays;
-const dep  = route.departure || "06:00";
-const dur  = Number(route.blockTimeMin || 210);
-const arr  = toHHMM(toMin(dep) + dur);
-
-/* ============================================================
-   🟢 S1 — FLIGHT NUMBER FALLBACK (LEGACY + SAFE)
-   ============================================================ */
-
-if ((!route.flightNumberOut || !route.flightNumberIn) && route.flightNumber) {
-
-  const raw = String(route.flightNumber);
-  const match = raw.match(/([A-Z]{2}\d+)[^\d]+([A-Z]{2}\d+)/);
-
-  if (match) {
-    route.flightNumberOut = match[1];
-    route.flightNumberIn  = match[2];
+  if (routeModel && aircraftModel && routeModel !== aircraftModel) {
+    alert(`⚠ This route is for ${routeModel}, not for ${aircraftModel}.`);
+    return;
   }
-}
 
-// 🔒 No inventar vuelos
-if (!route.flightNumberOut || !route.flightNumberIn) {
-  alert("⛔ This route has no valid flight numbers. Please define them in Route Schedule.");
-  return;
-}
+  // ============================================================
+  // 2️⃣ Obtener schedule actual
+  // ============================================================
 
-const flightOut = route.flightNumberOut;
-const flightIn  = route.flightNumberIn;
+  const items = getItems();
 
-// 4️⃣ Crear vuelos
-const blockId = separate ? null : ("block-" + Math.random().toString(36).slice(2,8));
-let assignedAny = false;
+  /* ============================================================
+     🛑 B1 — OVERLAP ROBUSTO (AIRCRAFT + DAY + TIME)
+     ============================================================ */
 
-daysSel.forEach(day => {
+  const dayNew = (route.day ?? route.weekday ?? route.dayKey ?? null);
+  const depNew = toMin(route.departure);
+  const durNew = Number(route.blockTimeMin || 0);
 
-/* ============================================================
-   🛑 FINAL GUARD — PREVENT DUPLICATE FLIGHT (SAME CLICK / SAME ROUTE)
-   ============================================================ */
+  if (depNew != null && Number.isFinite(depNew) && durNew > 0) {
 
-const duplicateFlight = items.some(it =>
-  it.type === "flight" &&
-  it.aircraftId === aircraftId &&
-  it.day === day &&
-  it.departure === route.departure &&
-  (
-    it.blockTimeMin === route.blockTimeMin ||
-    it.arrival === route.arrival
-  )
-);
+    let arrNew = depNew + durNew;
+    if (arrNew <= depNew) arrNew += 1440;
 
-if (duplicateFlight) {
-  console.warn("⛔ Duplicate flight prevented", {
-    aircraftId,
-    day,
-    departure: route.departure
+    const newKey = `${aircraftId}|${dayNew ?? "NO_DAY"}|${depNew}|${durNew}`;
+
+    const hasOverlap = items.some(it => {
+      if (it.type !== "flight") return false;
+      if (it.aircraftId !== aircraftId) return false;
+
+      const dayOld = (it.day ?? it.weekday ?? it.dayKey ?? null);
+      if (!dayNew || !dayOld || dayOld !== dayNew) return false;
+
+      const depOld0 = toMin(it.departure);
+      const arrOld0 = toMin(it.arrival);
+      const durOld  = Number(it.blockTimeMin || 0);
+
+      if (depOld0 == null || arrOld0 == null) return false;
+
+      const oldKey = `${it.aircraftId}|${dayOld}|${depOld0}|${durOld}`;
+      if (oldKey === newKey) return false;
+
+      let depOld = depOld0;
+      let arrOld = arrOld0;
+      if (arrOld <= depOld) arrOld += 1440;
+
+      const arrOldWithTurn = arrOld + TURNAROUND_MIN;
+      return depNew < arrOldWithTurn && arrNew > depOld;
+    });
+
+    if (hasOverlap) {
+      alert("⚠ This flight overlaps in time with another flight for this aircraft.");
+      return;
+    }
+  }
+
+  // ============================================================
+  // 3️⃣ Preparar datos de la ruta
+  // ============================================================
+
+  const daysSel = Array.isArray(route.days) && route.days.length
+    ? route.days
+    : ["mon"];
+
+  const separate = !!route.separateDays;
+  const dep = route.departure || "06:00";
+  const dur = Number(route.blockTimeMin || 210);
+  const arr = toHHMM(toMin(dep) + dur);
+
+  const flightOut = route.flightNumberOut;
+  const flightIn  = route.flightNumberIn;
+
+  // ============================================================
+  // 4️⃣ Crear vuelos
+  // ============================================================
+
+  const blockId = separate ? null : ("block-" + Math.random().toString(36).slice(2,8));
+  let assignedAny = false;
+
+  daysSel.forEach(day => {
+
+    const duplicateFlight = items.some(it =>
+      it.type === "flight" &&
+      it.aircraftId === aircraftId &&
+      it.day === day &&
+      it.departure === dep
+    );
+
+    if (duplicateFlight) return;
+
+    let nowDate = (window.ACS_TIME && ACS_TIME.currentTime)
+      ? new Date(ACS_TIME.currentTime)
+      : new Date();
+
+    const todayIdx = (nowDate.getDay() + 6) % 7;
+    const dayIdx   = ["mon","tue","wed","thu","fri","sat","sun"].indexOf(day);
+
+    let deltaDays = dayIdx - todayIdx;
+    if (deltaDays < 0) deltaDays += 7;
+
+    const nowMinOfDay = nowDate.getHours() * 60 + nowDate.getMinutes();
+    const depMin = toMin(dep);
+    let arrMin = toMin(arr);
+    if (arrMin <= depMin) arrMin += 1440;
+
+    const depAbsMin =
+      ((nowDate.getTime() / 60000) | 0) - nowMinOfDay + (deltaDays * 1440) + depMin;
+
+    const arrAbsMin = depAbsMin + (arrMin - depMin);
+
+    items.push({
+      id: separate ? ("flt-" + Math.random().toString(36).slice(2,8)) : blockId,
+      blockId: separate ? "" : blockId,
+      type: "flight",
+      aircraftId,
+      acType: ac.model || ac.type || "",
+      day,
+      origin: route.origin,
+      destination: route.destination,
+      departure: dep,
+      arrival: arr,
+      depAbsMin,
+      arrAbsMin,
+      flightNumberOut: flightOut,
+      flightNumberIn: flightIn
+    });
+
+    assignedAny = true;
   });
-  return;
-}
 
-/* === ABS TIME FIX (USING ACS_TIME.currentTime) === */
-
-/* === ABS TIME FIX (USING ACS_TIME.currentTime) === */
-
-let nowDate;
-
-if (window.ACS_TIME && ACS_TIME.currentTime) {
-  nowDate = new Date(ACS_TIME.currentTime);
-} else {
-  // fallback seguro, NO bloquea asignación
-  nowDate = new Date();
-}
-
-const todayIdx = (nowDate.getDay() + 6) % 7;
-const dayIdx   = days.indexOf(day);
-
-let deltaDays = dayIdx - todayIdx;
-if (deltaDays < 0) deltaDays += 7;
-
-const nowMinOfDay = nowDate.getHours() * 60 + nowDate.getMinutes();
-
-const depMin = toMin(dep);
-let arrMin = toMin(arr);
-if (arrMin <= depMin) arrMin += 1440;
-
-const depAbsMin =
-  ((nowDate.getTime() / 60000) | 0) - nowMinOfDay + (deltaDays * 1440) + depMin;
-
-const arrAbsMin = depAbsMin + (arrMin - depMin);
-
-items.push({
-  id: separate ? ("flt-" + Math.random().toString(36).slice(2,8)) : blockId,
-  blockId: separate ? "" : blockId,
-  type: "flight",
-
-  aircraftId: aircraftId,
-  acType: ac.model || ac.type || "",
-
-  day,
-  origin: route.origin,
-  destination: route.destination,
-  departure: dep,
-  arrival: arr,
-
-  depAbsMin,
-  arrAbsMin,
-
-  flightNumberOut: flightOut,
-  flightNumberIn:  flightIn
-});
-
-assignedAny = true;
-});
-
-if (!assignedAny){
-  alert("⚠ Cannot assign: schedule conflicts.");
-  return;
-}
-
-// 5 Guardar y renderizar
-setItems(items);
-renderSchedule();
-
-// 🟦 EMIT HR / OPS EVENT — FLIGHT ASSIGNED
-window.dispatchEvent(new CustomEvent("ACS_FLIGHT_ASSIGNED", {
-  detail: {
-    flight: route,
-    aircraft: ac
+  if (!assignedAny){
+    alert("⚠ Cannot assign: schedule conflicts.");
+    return;
   }
-}));
 
+  // ============================================================
+  // ✅ MARCAR RUTA COMO ASIGNADA (CLAVE DEL FIX)
+  // ============================================================
+
+  route.assigned = true;
+  route.assignedAircraftId = aircraftId;
+  localStorage.setItem("confirmedRoute", JSON.stringify(route));
+
+  // 5️⃣ Guardar y renderizar
+  setItems(items);
+  renderSchedule();
+
+  // 🟦 EMIT HR / OPS EVENT — FLIGHT ASSIGNED
+  window.dispatchEvent(new CustomEvent("ACS_FLIGHT_ASSIGNED", {
+    detail: {
+      flight: route,
+      aircraft: ac
+    }
+  }));
 }
-     
+
 /* ============================================================
    === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
    ============================================================ */
