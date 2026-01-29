@@ -1408,7 +1408,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ============================================================
-   ✅ CONFIRM ROUTE — FIX v2 (EACH DAY / EVERY DAY CANONICAL)
+   ✅ CONFIRM ROUTE — FIX v1 (AC- / AC_ safe + aircraftId real)
+   ------------------------------------------------------------
+   - Acepta aircraftId con AC- o AC_
+   - Elimina validaciones duplicadas
+   - Guarda aircraftId correcto dentro de newRoute
+   - modelKey se toma del fleet (por aircraftId), NO del value raw
    ============================================================ */
 
 function confirmRoute() {
@@ -1422,11 +1427,13 @@ function confirmRoute() {
   const aircraftSel = document.getElementById("aircraft");
   const selectedAircraftId = aircraftSel ? (aircraftSel.value || "").trim() : "";
 
+  // ✅ aircraftId robusto (AC-xxxx o AC_xxxx)
   if (!selectedAircraftId || !/^AC[-_]/.test(selectedAircraftId)) {
     alert("Please select a valid aircraft.");
     return;
   }
 
+  // ✅ blockTimeMin
   const blockTimeMin = parseInt((window.ACS_RouteTechData?.blockMin ?? ""), 10);
   if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
     alert("⛔ Block time invalid. Please recalculate route.");
@@ -1438,9 +1445,9 @@ function confirmRoute() {
     return;
   }
 
-  /* ================================
-     2) Flight numbers (SAFE)
-     ================================ */
+  /* ============================================================
+     PATCH A1 — FLIGHT NUMBER SYNC (UI → ENGINE)
+     ============================================================ */
   let flightNumberOut = window.currentFN_Out || null;
   let flightNumberIn  = window.currentFN_In  || null;
 
@@ -1449,26 +1456,27 @@ function confirmRoute() {
     const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
 
     if (!match) {
-      alert("⛔ Invalid flight number.");
+      alert("⛔ Invalid flight number. Please regenerate the flight number.");
       return;
     }
+
     flightNumberOut = match[1];
     flightNumberIn  = match[2];
   }
 
+  if (!flightNumberOut || !flightNumberIn) {
+    alert("⛔ Flight numbers missing. Cannot confirm route.");
+    return;
+  }
+
   /* ================================
-     3) Días seleccionados
+     2) Capturar días seleccionados
      ================================ */
   const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
   let days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
 
-  const isEveryDay = document.getElementById("everyDay")?.checked === true;
-  const isEachDay  =
-    document.getElementById("separateDays")?.checked === true &&
-    !isEveryDay;
-
-  if (isEveryDay) {
-    days = [...DAY_IDS];
+  if (document.getElementById("everyDay")?.checked) {
+    days = ["mon","tue","wed","thu","fri","sat","sun"];
   }
 
   if (!days.length) {
@@ -1477,7 +1485,7 @@ function confirmRoute() {
   }
 
   /* ================================
-     4) Arrival time
+     3) Calcular llegada (HH:MM)
      ================================ */
   const [depH, depM] = departure.split(":").map(Number);
   const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
@@ -1486,162 +1494,157 @@ function confirmRoute() {
   const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
 
   /* ================================
-     5) Aircraft modelKey
+     4) ID único ACS
      ================================ */
+  const routeId = "RT_" + Math.floor(100000 + Math.random() * 900000);
+
+  /* ============================================================
+     5) Resolver modelKey REAL por aircraftId (fleet)
+     ============================================================ */
   let fleet = [];
   try {
     fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  } catch {}
+  } catch (e) {
+    fleet = [];
+  }
 
-  const acObj = fleet.find(a => a?.id === selectedAircraftId);
-  const modelKey = (acObj?.model || "").trim();
+  const acObj = fleet.find(a => (a?.id || "") === selectedAircraftId) || null;
+  const modelKey = (acObj?.model || "").toString().trim();
 
   if (!modelKey) {
-    alert("⚠ Aircraft model not found.");
+    alert("⚠ Aircraft model not found in fleet. Please reselect aircraft.");
     return;
   }
 
-  /* ================================
-     6) Distance safety net
-     ================================ */
-  let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
-  if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
-    finalDistanceNM = rs_getDistanceNM(origin, destination);
+ /* ============================================================
+   🟢 ROUTE OBJECT — FULL ROTATION DATA (FINAL)
+   ------------------------------------------------------------
+   Source: Route Schedule
+   Consumer: Schedule Table / Runtime
+   ============================================================ */
+
+// 🟦 FIX DEFINITIVO — DISTANCE SAFETY NET
+let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
+if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
+  finalDistanceNM = rs_getDistanceNM(origin, destination);
+}
+
+/* ============================================================
+   🟧 B2 — CONFIRM ROUTE (IDENTITY FIX + EDIT SAFE)
+   ------------------------------------------------------------
+   FIXES:
+   ✔ Each Day = ruta UNitaria (blockId = null)
+   ✔ Every Day = bloque real
+   ✔ EDIT conserva flight numbers
+   ✔ NO arrastra días incorrectos
+   ============================================================ */
+
+// 🔎 FLAGS DE MODO (DEBEN EXISTIR ANTES DEL OBJETO)
+const isEveryDay = document.getElementById("everyDay")?.checked === true;
+const isEachDay  =
+  document.getElementById("separateDays")?.checked === true &&
+  !isEveryDay;
+
+// 🔎 Detectar EDIT activo
+const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
+
+/* ============================================================
+   🟢 ROUTE OBJECT — IDENTIDAD CORRECTA
+   ============================================================ */
+     
+const newRoute = {
+  id: routeId,
+
+  // 🔑 IDENTIDAD (CLAVE DEL BUG)
+  blockId: isEveryDay ? ("BLOCK_" + Date.now()) : null,
+
+  // ✈️ Aircraft
+  aircraftId: selectedAircraftId,
+  modelKey: modelKey.toUpperCase(),
+  aircraft: modelKey.toUpperCase(),
+
+  // 📍 Ruta
+  origin,
+  destination,
+  departure,
+  arrival,
+
+  distanceNM: finalDistanceNM,
+
+  // ⏱ Tiempos
+  blockTimeMin,
+  turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
+  turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
+  totalRotationMin:
+    window.ACS_RouteTechData?.totalMin ??
+    (blockTimeMin * 2 + 45),
+
+  optimized: document.getElementById("optimizeRotation")?.checked || false,
+
+  // 📆 DÍAS (FIX REAL)
+  // - Each Day → SOLO el día tocado
+  // - Every Day → bloque completo
+  days: days,
+
+  // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
+  flightNumberOut,
+  flightNumberIn,
+
+  type: "flight"
+};
+
+/* ============================================================
+   🧠 FLIGHT NUMBER MANAGEMENT — SAFE
+   ------------------------------------------------------------
+   ✔ CREATE: marca + incrementa
+   ✔ EDIT: NO toca números
+   ============================================================ */
+if (!isEditMode) {
+  if (typeof markNumbersUsed === "function") {
+    markNumbersUsed(
+      newRoute.flightNumberOut,
+      newRoute.flightNumberIn
+    );
   }
+
+  if (typeof bumpFlightCounter === "function") {
+    bumpFlightCounter();
+  }
+}
 
   /* ============================================================
-     🟧 CANONICAL SAVE ENGINE
+     SLOT ENGINE — (si existe)
      ============================================================ */
-
-  let routesToSave = [];
-
-  // 🔵 EVERY DAY → 1 BLOQUE
-  if (isEveryDay) {
-
-    routesToSave.push({
-      id: "RT_" + Math.floor(100000 + Math.random() * 900000),
-      blockId: "BLOCK_" + Date.now(),
-
-      aircraftId: selectedAircraftId,
-      modelKey: modelKey.toUpperCase(),
-      aircraft: modelKey.toUpperCase(),
-
-      origin,
-      destination,
-      departure,
-      arrival,
-
-      distanceNM: finalDistanceNM,
-
-      blockTimeMin,
-      turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
-      turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-      totalRotationMin:
-        window.ACS_RouteTechData?.totalMin ??
-        (blockTimeMin * 2 + 45),
-
-      optimized: document.getElementById("optimizeRotation")?.checked || false,
-
-      days: [...DAY_IDS],
-
-      flightNumberOut,
-      flightNumberIn,
-
-      type: "flight"
-    });
-
+  function ACS_convertDepartureToArrival(dep, blockMin) {
+    if (!dep || !blockMin) return "00:00";
+    const [h, m] = dep.split(":").map(Number);
+    const total = h * 60 + m + blockMin;
+    const ah = String(Math.floor(total / 60) % 24).padStart(2, "0");
+    const am = String(total % 60).padStart(2, "0");
+    return `${ah}:${am}`;
   }
 
-  // 🟢 EACH DAY → 1 RUTA POR DÍA
-  else if (isEachDay) {
+  const slotRoute = {
+    origin: newRoute.origin,
+    destination: newRoute.destination,
+    weekdays: newRoute.days,
+    departureUTC: newRoute.departure,
+    arrivalUTC: ACS_convertDepartureToArrival(newRoute.departure, newRoute.blockTimeMin)
+  };
 
-    days.forEach(day => {
-      routesToSave.push({
-        id: "RT_" + Math.floor(100000 + Math.random() * 900000),
-        blockId: null,
+  if (typeof ACS_buildSlotsForRoute === "function" && typeof ACS_bookRoute === "function") {
+    const slotsCreated = ACS_buildSlotsForRoute(slotRoute);
+    if (!slotsCreated || !slotsCreated.length) {
+      alert("⚠️ Slots could not be generated. Check schedule.");
+      return;
+    }
 
-        aircraftId: selectedAircraftId,
-        modelKey: modelKey.toUpperCase(),
-        aircraft: modelKey.toUpperCase(),
-
-        origin,
-        destination,
-        departure,
-        arrival,
-
-        distanceNM: finalDistanceNM,
-
-        blockTimeMin,
-        turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
-        turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-        totalRotationMin:
-          window.ACS_RouteTechData?.totalMin ??
-          (blockTimeMin * 2 + 45),
-
-        optimized: document.getElementById("optimizeRotation")?.checked || false,
-
-        days: [day],
-
-        flightNumberOut,
-        flightNumberIn,
-
-        type: "flight"
-      });
-    });
-
+    const success = ACS_bookRoute(slotRoute);
+    if (!success) {
+      alert("❌ Route cannot be created. Slot unavailable.");
+      return;
+    }
   }
-
-  // 🟡 NORMAL (sin each / sin every)
-  else {
-
-    routesToSave.push({
-      id: "RT_" + Math.floor(100000 + Math.random() * 900000),
-      blockId: null,
-
-      aircraftId: selectedAircraftId,
-      modelKey: modelKey.toUpperCase(),
-      aircraft: modelKey.toUpperCase(),
-
-      origin,
-      destination,
-      departure,
-      arrival,
-
-      distanceNM: finalDistanceNM,
-
-      blockTimeMin,
-      turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
-      turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-      totalRotationMin:
-        window.ACS_RouteTechData?.totalMin ??
-        (blockTimeMin * 2 + 45),
-
-      optimized: document.getElementById("optimizeRotation")?.checked || false,
-
-      days: [...days],
-
-      flightNumberOut,
-      flightNumberIn,
-
-      type: "flight"
-    });
-
-  }
-
-  /* ================================
-     7) SAVE (single write)
-     ================================ */
-  let scheduleItems = [];
-  try {
-    scheduleItems = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {}
-
-  routesToSave.forEach(r => scheduleItems.push(r));
-  localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
-
-  alert("Route successfully added to Schedule.");
-  window.location.href = "schedule_table.html";
-}
 
     /* ============================================================
      🟧 A1 — ROUTE SCHEDULE FINAL SAVE (SINGLE WRITE)
