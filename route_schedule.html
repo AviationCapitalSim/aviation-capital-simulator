@@ -1847,10 +1847,16 @@ window.addEventListener("DOMContentLoaded", () => {
 /* ============================================================
    DOM READY FIX (Safari)
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-    window.confirmRoute = confirmRoute;
-});
 
+  document.addEventListener("DOMContentLoaded", () => {
+  if (typeof window.confirmRoute === "function") return;
+
+  if (typeof confirmRoute === "function") {
+    window.confirmRoute = confirmRoute;
+  } else {
+    console.warn("⚠ confirmRoute not available at DOMContentLoaded (script may have failed earlier)");
+  }
+});
 
 /* ============================================================
    🔒 ACS ROUTE SCHEDULE — AIRCRAFT SELECTOR LOCK
