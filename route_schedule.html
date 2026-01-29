@@ -1681,42 +1681,19 @@ if (!isEditMode) {
       return;
     }
 
-    // 🧠 CREAR INSTANCIAS REALES (una por día)
-    newRoute.days.forEach(day => {
+    // 🟢 GUARDAR SOLO LA RUTA (NO FLIGHTS)
+let routesPool = [];
+try {
+  routesPool = JSON.parse(localStorage.getItem("ACS_ROUTES_POOL")) || [];
+} catch {
+  routesPool = [];
+}
 
-      if (!day) return; // blindaje final
+routesPool.push(newRoute);
+localStorage.setItem("ACS_ROUTES_POOL", JSON.stringify(routesPool));
 
-      scheduleItems.push({
-        id: "FLT_" + Math.random().toString(36).slice(2, 9),
-        type: "flight",
-
-        blockId: newRoute.blockId || null,
-
-        aircraftId: newRoute.aircraftId,
-        aircraft: newRoute.aircraft,
-        modelKey: newRoute.modelKey,
-
-        origin: newRoute.origin,
-        destination: newRoute.destination,
-
-        day: day, // 👈 CLAVE: nunca undefined
-        departure: newRoute.departure,
-        arrival: newRoute.arrival,
-
-        blockTimeMin: newRoute.blockTimeMin,
-        turnaroundMin: newRoute.turnaroundMin,
-        totalRotationMin: newRoute.totalRotationMin,
-
-        flightNumberOut: newRoute.flightNumberOut,
-        flightNumberIn: newRoute.flightNumberIn
-      });
-    });
-
-    localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
-  }
-
-  // Mantener confirmedRoute para compatibilidad
-  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
+// Compat visual / chip
+localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
 
   /* ============================================================
      8) Flight Number Management (si existe)
