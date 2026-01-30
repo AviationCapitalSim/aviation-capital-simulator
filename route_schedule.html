@@ -871,7 +871,10 @@ if ($("everyDay")) $("everyDay").checked = false;
 if ($("separateDays")) $("separateDays").checked = false;
 
 // 🔑 USAR scheduleMode GUARDADO
+     
 const mode = editCtx.scheduleMode || "MULTI_DAY";
+
+console.log("🧠 EDIT MODE — scheduleMode:", mode, editCtx.days);
 
 if (mode === "EVERY_DAY") {
   if ($("everyDay")) $("everyDay").checked = true;
@@ -880,14 +883,17 @@ if (mode === "EVERY_DAY") {
   });
 }
 
-if (mode === "MULTI_DAY" || mode === "EACH_DAY") {
+if (mode === "MULTI_DAY") {
   (editCtx.days || []).forEach(d => {
     if ($(d)) $(d).checked = true;
   });
+}
 
-  if (mode === "EACH_DAY" && $("separateDays")) {
-    $("separateDays").checked = true;
-  }
+if (mode === "EACH_DAY") {
+  (editCtx.days || []).forEach(d => {
+    if ($(d)) $(d).checked = true;
+  });
+  if ($("separateDays")) $("separateDays").checked = true;
 }
 
   /* ============================================================
@@ -1398,19 +1404,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* ========================================================
-       🔹 SAFARI / CHROME RELOAD FIX
-       Al recargar, el avión queda seleccionado,
-       pero sin recalcular. Aquí se recalcula SOLO si
-       hay modelo seleccionado.
-       ======================================================== */
-    setTimeout(() => {
-        const model = acSel?.value || "";
-        if (model) {
-            autoCalculate();
-            autoGenerateFlightNumber();
-        }
-    }, 60);
+    /* ============================================================
+   🔹 SAFARI / CHROME RELOAD FIX — SAFE
+   ============================================================ */
+setTimeout(() => {
+
+  const isEdit = !!localStorage.getItem("ACS_ROUTE_EDIT");
+  const model  = acSel?.value || "";
+
+  if (!model) return;
+
+  autoCalculate();
+
+  // ⛔ NO regenerar flight number en EDIT
+  if (!isEdit) {
+    autoGenerateFlightNumber();
+  }
+
+}, 60);
+
 });
 
 /* ============================================================
