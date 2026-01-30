@@ -1540,11 +1540,20 @@ else if (separateChecked) {
     return;
   }
 
-  // ⚠️ IMPORTANTE:
-  // En Option A, confirmRoute se ejecuta UNA VEZ por día
-  // Schedule Table llamará múltiples veces
-  explicitDay  = selectedDays[0];
-  resolvedDays = [explicitDay];
+  // 🟢 EACH DAY REAL: crear UNA ruta por día seleccionado
+  const routesToCreate = [];
+
+  selectedDays.forEach(dayId => {
+
+    routesToCreate.push({
+      explicitDay: dayId,
+      resolvedDays: [dayId]
+    });
+
+  });
+
+  // Guardamos el batch y salimos del flujo normal
+  window.__ACS_EACH_DAY_BATCH = routesToCreate;
 
 }
      
@@ -1631,6 +1640,24 @@ const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 /* ============================================================
    🟢 ROUTE OBJECT — IDENTIDAD CORRECTA
    ============================================================ */
+
+// 🟢 EACH DAY BATCH HANDLER
+if (window.__ACS_EACH_DAY_BATCH) {
+
+  const batch = window.__ACS_EACH_DAY_BATCH;
+  delete window.__ACS_EACH_DAY_BATCH;
+
+  batch.forEach(cfg => {
+
+    explicitDay  = cfg.explicitDay;
+    resolvedDays = cfg.resolvedDays;
+
+    // 🔁 Re-ejecutar creación UNA vez por día
+    confirmRoute();
+  });
+
+  return; // ⛔ cortar ejecución original
+}
      
 const newRoute = {
   id: routeId,
