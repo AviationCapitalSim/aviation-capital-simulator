@@ -1677,48 +1677,56 @@ if (it.type === "flight") {
    🟧 A4 — Flight Chip Label (UI ONLY · SAFE)
    ============================================================ */
 
-// ---------------- FLIGHT ----------------
-if (it.type === "flight") {
+dayItems.forEach(it => {
 
-  const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
-  const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
+  // ---------------- FLIGHT ----------------
+  if (it.type === "flight") {
 
-  chip.textContent = `${labelOut} / ${labelIn}`;
+    const chip = document.createElement("span");
+    chip.className = "chip flight-chip";
+    chip.dataset.id = it.id;
+    chip.dataset.blockId = it.blockId || "";
+    chip.dataset.type = "flight";
 
-  chip.onclick = () => {
-    // 🔑 FIX — asegurar vuelo seleccionado para EDIT / REMOVE
-    window.selectedFlight = {
-      data: it,
-      element: chip
+    const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
+    const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
+
+    chip.textContent = `${labelOut} / ${labelIn}`;
+
+    chip.onclick = () => {
+      window.selectedFlight = {
+        data: it,
+        element: chip
+      };
+      openFlightModal(it, chip);
     };
 
-    openFlightModal(it, chip);
-  };
+    td.appendChild(chip);
+    return;
+  }
 
-  td.appendChild(chip);
-}
+  // ---------------- SERVICE ----------------
+  if (it.type === "service") {
 
-// ---------------- SERVICE ----------------
-if (it.type === "service") {
+    const chip = document.createElement("span");
+    chip.className = "service-chip";
+    chip.dataset.id = it.id;
+    chip.dataset.type = "service";
 
-  const chip = document.createElement("span");
-  chip.className = "service-chip";
-  chip.dataset.id = it.id;
-  chip.dataset.type = "service";
+    chip.textContent =
+      it.serviceType === "A"
+        ? "🔧 A-Check"
+        : "⚙️ B-Check";
 
-  chip.textContent =
-    it.serviceType === "A"
-      ? "🔧 A-Check"
-      : "⚙️ B-Check";
+    chip.onclick = () => {
+      window.selectedFlight = null;
+      openFlightModal(it, chip);
+    };
 
-  chip.onclick = () => {
-    // servicios NO participan en EDIT de rutas
-    window.selectedFlight = null;
-    openFlightModal(it, chip);
-  };
+    td.appendChild(chip);
+  }
 
-  td.appendChild(chip);
-}
+});
 
     // ============================================================
     // ACTION PLAN
