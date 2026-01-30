@@ -513,6 +513,34 @@ function rs_populateAircraftSelect(selectedId = "") {
 }
 
 /* ============================================================
+   🧹 A0 — ROUTE SCHEDULE ENTRY CLEANUP (CRÍTICO)
+   ------------------------------------------------------------
+   Regla:
+   - SI entramos a route_schedule.html SIN intención de editar,
+     ACS_ROUTE_EDIT DEBE SER BORRADO.
+   ============================================================ */
+
+(function () {
+
+  const editRaw = localStorage.getItem("ACS_ROUTE_EDIT");
+  const cameFromEdit = !!editRaw;
+
+  // Si NO venimos explícitamente desde "Edit" en la tabla,
+  // limpiamos cualquier estado residual
+  const ref = document.referrer || "";
+
+  const isFromScheduleTable =
+    ref.includes("schedule_table.html") ||
+    ref.includes("schedule-table");
+
+  if (!isFromScheduleTable && cameFromEdit) {
+    console.warn("🧹 Clearing stale ACS_ROUTE_EDIT (new route)");
+    localStorage.removeItem("ACS_ROUTE_EDIT");
+  }
+
+})();
+     
+/* ============================================================
    🧩 SINGLE INIT POINT — ROUTE SCHEDULE
    ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
