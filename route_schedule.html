@@ -857,32 +857,38 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ============================================================
-     4️⃣ DAYS — REAL LOGIC (EVERY DAY vs INDIVIDUAL)
-     ============================================================ */
-  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+   4️⃣ DAYS — RESTORE EXACT MODE (NO INFERENCE)
+   ============================================================ */
 
-  // Reset all first
+const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+
+// Reset todo
+DAY_IDS.forEach(d => {
+  if ($(d)) $(d).checked = false;
+});
+
+if ($("everyDay")) $("everyDay").checked = false;
+if ($("separateDays")) $("separateDays").checked = false;
+
+// 🔑 USAR scheduleMode GUARDADO
+const mode = editCtx.scheduleMode || "MULTI_DAY";
+
+if (mode === "EVERY_DAY") {
+  if ($("everyDay")) $("everyDay").checked = true;
   DAY_IDS.forEach(d => {
-    if ($(d)) $(d).checked = false;
+    if ($(d)) $(d).checked = true;
+  });
+}
+
+if (mode === "MULTI_DAY" || mode === "EACH_DAY") {
+  (editCtx.days || []).forEach(d => {
+    if ($(d)) $(d).checked = true;
   });
 
-  const everyDayBox = $("everyDay");
-  if (everyDayBox) everyDayBox.checked = false;
-
-  const days = Array.isArray(editCtx.days) ? editCtx.days : [];
-
-  if (days.length === 7) {
-    // ✅ EVERY DAY MODE
-    if (everyDayBox) everyDayBox.checked = true;
-    DAY_IDS.forEach(d => {
-      if ($(d)) $(d).checked = true;
-    });
-  } else {
-    // ✅ INDIVIDUAL DAYS
-    days.forEach(d => {
-      if ($(d)) $(d).checked = true;
-    });
+  if (mode === "EACH_DAY" && $("separateDays")) {
+    $("separateDays").checked = true;
   }
+}
 
   /* ============================================================
      5️⃣ UI — EDIT MODE
@@ -1470,19 +1476,24 @@ function confirmRoute() {
   }
 
   /* ================================
-     2) Capturar días seleccionados
-     ================================ */
-  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-  let days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+   2) Capturar días + scheduleMode (FIX DEFINITIVO)
+   ================================ */
+const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+let days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
 
-  if (document.getElementById("everyDay")?.checked) {
-    days = ["mon","tue","wed","thu","fri","sat","sun"];
-  }
+let scheduleMode = "MULTI_DAY";
 
-  if (!days.length) {
-    alert("Please select at least one day.");
-    return;
-  }
+if (document.getElementById("everyDay")?.checked) {
+  days = [...DAY_IDS];
+  scheduleMode = "EVERY_DAY";
+} else if (document.getElementById("separateDays")?.checked) {
+  scheduleMode = "EACH_DAY";
+}
+
+if (!days.length) {
+  alert("Please select at least one day.");
+  return;
+}
 
   /* ================================
      3) Calcular llegada (HH:MM)
@@ -1584,7 +1595,9 @@ const newRoute = {
   // 📆 DÍAS (FIX REAL)
   // - Each Day → SOLO el día tocado
   // - Every Day → bloque completo
+  scheduleMode: scheduleMode,
   days: days,
+
 
   // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
   flightNumberOut,
