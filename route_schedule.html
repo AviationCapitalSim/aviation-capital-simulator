@@ -1205,6 +1205,7 @@ function rs_getTripCost(distance, blockMin, category) {
     - De (range - 15) a range → penalización proporcional (máx 35%)
     - > range → NO permitido
 */
+     
 function ACS_checkRangeSimple(distNM, publishedRange) {
 
     if (!distNM || !publishedRange) {
@@ -1551,6 +1552,7 @@ else {
   /* ================================
      3) Calcular llegada (HH:MM)
      ================================ */
+     
   const [depH, depM] = departure.split(":").map(Number);
   const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
   const arrH = Math.floor(arrivalTotalMin / 60) % 24;
@@ -1560,7 +1562,13 @@ else {
   /* ================================
      4) ID único ACS
      ================================ */
-  const routeId = "RT_" + Math.floor(100000 + Math.random() * 900000);
+     
+  const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
+
+  const routeId = isEditMode && editCtx?.routeKey
+  ? editCtx.routeKey
+  : "RT_" + Math.floor(100000 + Math.random() * 900000);
+
 
   /* ============================================================
      5) Resolver modelKey REAL por aircraftId (fleet)
