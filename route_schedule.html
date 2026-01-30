@@ -892,33 +892,25 @@ if (days.length === 7) {
   });
 
 }
+     
 /* ============================================================
-   CASE 2 — EACH DAY AS SEPARATE ROUTE (CRITICAL FIX)
+   CASE 2 — EACH DAY (OPTION A · EXPLICIT IDENTITY)
    ------------------------------------------------------------
-   - We are editing ONE daily route
-   - Restore ONLY that specific day
+   Restore ONLY the explicit day
    ============================================================ */
+
 else {
 
   if (separateBox) separateBox.checked = true;
 
-  // Prefer explicit day if present
-  let singleDay = editCtx.day || null;
+  const singleDay = editCtx.day || null;
 
-  // Fallback: infer from routeKey or schedule item (last resort)
-  if (!singleDay && editCtx.routeKey) {
-    const parts = String(editCtx.routeKey).split("_");
-    const maybeDay = parts.find(p => DAY_IDS.includes(p));
-    if (maybeDay) singleDay = maybeDay;
+  if (!singleDay || !DAY_IDS.includes(singleDay)) {
+    console.warn("⚠ EDIT Each Day without explicit day, fallback aborted");
+    return;
   }
 
-  // Final safeguard: if still nothing, take first day only
-  if (!singleDay && days.length === 1) {
-    singleDay = days[0];
-  }
-
-  // Apply ONLY one day
-  if (singleDay && $(singleDay)) {
+  if ($(singleDay)) {
     $(singleDay).checked = true;
   }
 
@@ -1509,55 +1501,63 @@ function confirmRoute() {
     return;
   }
 
-  /* ============================================================
-   🟧 B2 — DAYS RESOLUTION (FINAL · EDIT SAFE)
+ /* ============================================================
+   🟧 B2 — DAYS RESOLUTION (IDENTITY SAFE · OPTION A)
    ------------------------------------------------------------
    RULES:
-   - Every Day → 7 days
-   - Each Day  → ONLY the selected single day
+   - Every Day → 7 days (block)
+   - Each Day  → ONE route PER selected day (explicit identity)
    ============================================================ */
 
 const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
 
-const everyDayChecked  = document.getElementById("everyDay")?.checked === true;
-const separateChecked  = document.getElementById("separateDays")?.checked === true;
+const everyDayChecked = document.getElementById("everyDay")?.checked === true;
+const separateChecked = document.getElementById("separateDays")?.checked === true;
 
-// ⛔ reset
-let days = [];
+// Resultado final
+let resolvedDays = [];
+let explicitDay  = null;
 
 // ============================================================
 // CASE 1 — EVERY DAY (BLOCK ROUTE)
 // ============================================================
 if (everyDayChecked) {
 
-  days = [...DAY_IDS];
+  resolvedDays = [...DAY_IDS];
+
+}
+// ============================================================
+// CASE 2 — EACH DAY (EXPLICIT DAILY IDENTITY)
+// ============================================================
+else if (separateChecked) {
+
+  const selectedDays = DAY_IDS.filter(id =>
+    document.getElementById(id)?.checked
+  );
+
+  if (!selectedDays.length) {
+    alert("⛔ Please select at least one day for separate routes.");
+    return;
+  }
+
+  // ⚠️ IMPORTANTE:
+  // En Option A, confirmRoute se ejecuta UNA VEZ por día
+  // Schedule Table llamará múltiples veces
+  explicitDay  = selectedDays[0];
+  resolvedDays = [explicitDay];
 
 }
      
 // ============================================================
-// CASE 2 — EACH DAY AS SEPARATE ROUTE (CRITICAL FIX)
-// ============================================================
-else if (separateChecked) {
-
-  const selectedDay = DAY_IDS.find(id => document.getElementById(id)?.checked);
-
-  if (!selectedDay) {
-    alert("⛔ No day selected for separate route.");
-    return;
-  }
-
-  // ✅ SOLO UN DÍA
-  days = [selectedDay];
-
-}
-// ============================================================
-// CASE 3 — MULTI-DAY (NO EVERY DAY, NO EACH DAY)
+// CASE 3 — MANUAL MULTI-DAY (NO BLOCK, NO SEPARATE)
 // ============================================================
 else {
 
-  days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+  resolvedDays = DAY_IDS.filter(id =>
+    document.getElementById(id)?.checked
+  );
 
-  if (!days.length) {
+  if (!resolvedDays.length) {
     alert("Please select at least one day.");
     return;
   }
@@ -1664,7 +1664,9 @@ const newRoute = {
   // 📆 DÍAS (FIX REAL)
   // - Each Day → SOLO el día tocado
   // - Every Day → bloque completo
-  days: days,
+  days: resolvedDays,
+  day: explicitDay || null,
+
 
   // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
   flightNumberOut,
