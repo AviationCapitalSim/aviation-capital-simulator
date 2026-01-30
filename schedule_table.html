@@ -2803,107 +2803,74 @@ function deleteSelectedFlights() {
 }
 
 /* ============================================================
-   🟧 A1 — EDIT ROUTE (Schedule Table → Route Schedule)
-   FIX FINAL:
-   ✔ BLOCK vs EACH DAY correcto
-   ✔ NO arrastra días individuales
-   ✔ PRESERVA flight numbers SIEMPRE
+   🟩 B2 — EDIT SELECTED FLIGHT (EACH DAY FIX)
+   ------------------------------------------------------------
+   RULES:
+   - Every Day  → preserve full days block
+   - Each Day  → send ONLY the single day being edited
    ============================================================ */
-function editSelectedFlight(){
 
-  if (!ACS_selectedFlightItem) {
-    console.warn("⚠ EDIT: No flight item selected");
+function editSelectedFlight() {
+
+  if (!window.selectedFlight || !window.selectedFlight.data) {
+    alert("⚠ No flight selected for edit.");
     return;
   }
 
-  const it = ACS_selectedFlightItem;
-  const items = getItems();
+  const it = window.selectedFlight.data;
 
-  // 🔑 BLOCK solo si blockId EXISTE y NO es vacío
-  const isBlock =
-    typeof it.blockId === "string" &&
-    it.blockId.trim() !== "";
+  // Detect if flight comes from "Create each day as a separate route"
+  const isEachDay = !it.blockId || it.blockId === "";
 
-  let days = [];
-  let flightNumberOut = it.flightNumberOut || null;
-  let flightNumberIn  = it.flightNumberIn  || null;
-
-  /* ============================================================
-     🅰️ BLOCK ROUTE (EVERY DAY / GROUPED)
-     ============================================================ */
-  if (isBlock) {
-
-    const blockItems = items.filter(
-      x => x.blockId === it.blockId
-    );
-
-    if (!blockItems.length) {
-      alert("⚠ Cannot edit this route block.");
-      return;
-    }
-
-    // 🔹 reconstruir SOLO días del bloque
-    const daySet = new Set();
-    blockItems.forEach(b => {
-      if (b.day) daySet.add(b.day);
-    });
-
-    days = Array.from(daySet).sort();
-
-    // 🔹 flight numbers del bloque (homogéneos)
-    flightNumberOut = blockItems[0].flightNumberOut || flightNumberOut;
-    flightNumberIn  = blockItems[0].flightNumberIn  || flightNumberIn;
-
-  } else {
-
-    /* ============================================================
-       🅱️ EACH DAY (INDIVIDUAL)
-       ============================================================ */
-    days = it.day ? [it.day] : [];
-
-    // 🔒 FORZAR números existentes (CRÍTICO)
-    flightNumberOut = it.flightNumberOut || null;
-    flightNumberIn  = it.flightNumberIn  || null;
-  }
-
-  /* ============================================================
-     🧠 EDIT CONTEXT — SOURCE OF TRUTH
-     ============================================================ */
-  const editContext = {
+  // Build EDIT context
+  const editCtx = {
     mode: "EDIT",
-    source: "SCHEDULE_TABLE",
 
-    routeKey: isBlock ? it.blockId : it.id,
-    blockId:  isBlock ? it.blockId : null,
-    flightId: isBlock ? null : it.id,
+    origin: it.origin,
+    destination: it.destination,
 
-    aircraftId: it.aircraftId || null,
-    acType: it.acType || null,
+    aircraftId: it.aircraftId || "",
+    aircraft: it.acType || "",
 
-    origin: it.origin || null,
-    destination: it.destination || null,
+    departure: it.departure,
+    arrival: it.arrival,
 
-    days, // ✅ AQUÍ YA NO SE CONTAMINA
+    flightNumberOut: it.flightNumberOut || "",
+    flightNumberIn:  it.flightNumberIn  || "",
 
-    departure: it.departure || null,
-    arrival: it.arrival || null,
+    blockTimeMin: it.blockTimeMin || null,
 
-    flightNumberOut,
-    flightNumberIn,
-
-    blockTimeMin: it.blockTimeMin || null
+    // 🔑 CRITICAL DIFFERENCE
+    separateDays: isEachDay
   };
 
-  localStorage.setItem(
-    "ACS_ROUTE_EDIT",
-    JSON.stringify(editContext)
-  );
+  /* ============================================================
+     EACH DAY → SINGLE DAY ONLY
+     ============================================================ */
+  if (isEachDay) {
 
-  console.log("🟧 EDIT ROUTE CONTEXT SAVED:", editContext);
+    editCtx.day  = it.day;          // 🔑 ONLY THIS DAY
+    editCtx.days = [it.day];        // keep consistent
 
+  }
+  /* ============================================================
+     EVERY DAY → FULL BLOCK
+     ============================================================ */
+  else {
+
+    editCtx.days = Array.isArray(it.days) && it.days.length
+      ? it.days
+      : ["mon","tue","wed","thu","fri","sat","sun"];
+
+  }
+
+  // Persist EDIT context
+  localStorage.setItem("ACS_ROUTE_EDIT", JSON.stringify(editCtx));
+
+  // Go back to Route Schedule
   window.location.href = "route_schedule.html";
 }
-     
+
 // ============================================================
 // LOGOUT
 // ============================================================
