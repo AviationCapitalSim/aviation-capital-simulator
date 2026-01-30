@@ -856,33 +856,73 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* ============================================================
-     4️⃣ DAYS — REAL LOGIC (EVERY DAY vs INDIVIDUAL)
-     ============================================================ */
-  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+ /* ============================================================
+   4️⃣ DAYS — REAL LOGIC (EVERY DAY vs EACH DAY FIX)
+   ------------------------------------------------------------
+   RULES:
+   - Every Day  → restore full block (7 days)
+   - Each Day  → restore ONLY the edited day
+   ============================================================ */
 
-  // Reset all first
+const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+
+// Reset all day checkboxes
+DAY_IDS.forEach(d => {
+  if ($(d)) $(d).checked = false;
+});
+
+const everyDayBox   = $("everyDay");
+const separateBox   = $("separateDays");
+
+if (everyDayBox) everyDayBox.checked = false;
+if (separateBox) separateBox.checked = false;
+
+// Safety
+const days = Array.isArray(editCtx.days) ? editCtx.days : [];
+
+/* ============================================================
+   CASE 1 — EVERY DAY (BLOCK ROUTE)
+   ============================================================ */
+if (days.length === 7) {
+
+  if (everyDayBox) everyDayBox.checked = true;
+
   DAY_IDS.forEach(d => {
-    if ($(d)) $(d).checked = false;
+    if ($(d)) $(d).checked = true;
   });
 
-  const everyDayBox = $("everyDay");
-  if (everyDayBox) everyDayBox.checked = false;
+}
+/* ============================================================
+   CASE 2 — EACH DAY AS SEPARATE ROUTE (CRITICAL FIX)
+   ------------------------------------------------------------
+   - We are editing ONE daily route
+   - Restore ONLY that specific day
+   ============================================================ */
+else {
 
-  const days = Array.isArray(editCtx.days) ? editCtx.days : [];
+  if (separateBox) separateBox.checked = true;
 
-  if (days.length === 7) {
-    // ✅ EVERY DAY MODE
-    if (everyDayBox) everyDayBox.checked = true;
-    DAY_IDS.forEach(d => {
-      if ($(d)) $(d).checked = true;
-    });
-  } else {
-    // ✅ INDIVIDUAL DAYS
-    days.forEach(d => {
-      if ($(d)) $(d).checked = true;
-    });
+  // Prefer explicit day if present
+  let singleDay = editCtx.day || null;
+
+  // Fallback: infer from routeKey or schedule item (last resort)
+  if (!singleDay && editCtx.routeKey) {
+    const parts = String(editCtx.routeKey).split("_");
+    const maybeDay = parts.find(p => DAY_IDS.includes(p));
+    if (maybeDay) singleDay = maybeDay;
   }
+
+  // Final safeguard: if still nothing, take first day only
+  if (!singleDay && days.length === 1) {
+    singleDay = days[0];
+  }
+
+  // Apply ONLY one day
+  if (singleDay && $(singleDay)) {
+    $(singleDay).checked = true;
+  }
+
+}
 
   /* ============================================================
      5️⃣ UI — EDIT MODE
