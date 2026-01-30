@@ -1673,17 +1673,25 @@ if (it.type === "flight") {
   chip.dataset.blockId = it.blockId || "";
   chip.dataset.type = "flight";
 
-  /* ============================================================
+ /* ============================================================
    🟧 A4 — Flight Chip Label (UI ONLY · SAFE)
    ============================================================ */
 
-  const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
-  const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
+const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
+const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
 
-  chip.textContent = `${labelOut} / ${labelIn}`;
+chip.textContent = `${labelOut} / ${labelIn}`;
 
-  chip.onclick = () => openFlightModal(it, chip);
-  td.appendChild(chip);
+chip.onclick = () => {
+  // 🔑 selección real para EDIT / REMOVE
+  window.selectedFlight = {
+    data: it,
+    element: chip
+  };
+  openFlightModal(it, chip);
+};
+
+td.appendChild(chip);
 }
 
 // ---------------- SERVICE ----------------
