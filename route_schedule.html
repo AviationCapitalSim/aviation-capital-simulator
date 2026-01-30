@@ -857,29 +857,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
  /* ============================================================
-   4️⃣ DAYS — EDIT MODE (REAL DATA SOURCE)
-   ------------------------------------------------------------
-   RULE:
-   - If route has `day` → it is EACH DAY
-   - If route has `days[]` → it is BLOCK (Every Day)
+   4️⃣ DAYS — EDIT MODE (AUTHORITATIVE)
    ============================================================ */
 
 const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
 
-// Reset UI
+// Reset TOTAL
 DAY_IDS.forEach(d => {
   if ($(d)) $(d).checked = false;
 });
-
-$("everyDay").checked   = false;
+$("everyDay").checked = false;
 $("separateDays").checked = false;
 
 /* ============================================================
-   CASE 1 — EACH DAY ROUTE (MOST IMPORTANT)
+   CASE A — EDITING SINGLE DAY (FROM SCHEDULE TABLE)
    ============================================================ */
 if (editCtx.day && DAY_IDS.includes(editCtx.day)) {
 
-  // ✅ THIS IS A SINGLE DAILY ROUTE
+  // 🔒 THIS IS THE KEY FIX
   $("separateDays").checked = true;
 
   if ($(editCtx.day)) {
@@ -888,7 +883,7 @@ if (editCtx.day && DAY_IDS.includes(editCtx.day)) {
 
 }
 /* ============================================================
-   CASE 2 — BLOCK ROUTE (EVERY DAY)
+   CASE B — EDITING BLOCK ROUTE (EVERY DAY)
    ============================================================ */
 else if (Array.isArray(editCtx.days) && editCtx.days.length === 7) {
 
@@ -900,12 +895,10 @@ else if (Array.isArray(editCtx.days) && editCtx.days.length === 7) {
 
 }
 /* ============================================================
-   CASE 3 — FALLBACK (SAFETY)
+   CASE C — SAFETY FALLBACK
    ============================================================ */
 else {
-
-  console.warn("⚠️ EDIT DAYS fallback triggered", editCtx);
-
+  console.warn("⚠️ EDIT DAYS fallback", editCtx);
 }
 
   /* ============================================================
@@ -1494,59 +1487,58 @@ function confirmRoute() {
     return;
   }
 
-  /* ============================================================
-   🟧 B2 — DAYS RESOLUTION (FINAL · EDIT SAFE)
-   ------------------------------------------------------------
-   RULES:
-   - Every Day → 7 days
-   - Each Day  → ONLY the selected single day
+ /* ============================================================
+   🟧 B2 — DAYS RESOLUTION (SINGLE SOURCE OF TRUTH)
    ============================================================ */
 
 const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
 
-const everyDayChecked  = document.getElementById("everyDay")?.checked === true;
-const separateChecked  = document.getElementById("separateDays")?.checked === true;
+const everyDayChecked = document.getElementById("everyDay")?.checked === true;
+const separateChecked = document.getElementById("separateDays")?.checked === true;
 
-// ⛔ reset
 let days = [];
 
-// ============================================================
-// CASE 1 — EVERY DAY (BLOCK ROUTE)
-// ============================================================
-if (everyDayChecked) {
+/* ============================================================
+   CASE 1 — EDIT MODE + EACH DAY (CRITICAL)
+   ============================================================ */
+if (isEditMode && separateChecked && editCtx?.day) {
+
+  // 🔒 PRESERVE ORIGINAL DAY — DO NOT RECOMPUTE
+  days = [editCtx.day];
+
+}
+/* ============================================================
+   CASE 2 — EVERY DAY BLOCK
+   ============================================================ */
+else if (everyDayChecked) {
 
   days = [...DAY_IDS];
 
 }
-     
-// ============================================================
-// CASE 2 — EACH DAY AS SEPARATE ROUTE (CRITICAL FIX)
-// ============================================================
+/* ============================================================
+   CASE 3 — CREATE MODE EACH DAY
+   ============================================================ */
 else if (separateChecked) {
 
   const selectedDay = DAY_IDS.find(id => document.getElementById(id)?.checked);
-
   if (!selectedDay) {
     alert("⛔ No day selected for separate route.");
     return;
   }
 
-  // ✅ SOLO UN DÍA
   days = [selectedDay];
 
 }
-// ============================================================
-// CASE 3 — MULTI-DAY (NO EVERY DAY, NO EACH DAY)
-// ============================================================
+/* ============================================================
+   CASE 4 — MULTI DAY
+   ============================================================ */
 else {
 
   days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
-
   if (!days.length) {
     alert("Please select at least one day.");
     return;
   }
-
 }
 
   /* ================================
