@@ -1562,8 +1562,6 @@ else {
   /* ================================
      4) ID único ACS
      ================================ */
-     
-  const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 
   const routeId = isEditMode && editCtx?.routeKey
   ? editCtx.routeKey
@@ -1627,15 +1625,12 @@ const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 const newRoute = {
   id: routeId,
 
-  // 🔑 IDENTIDAD (CLAVE DEL BUG)
   blockId: isEveryDay ? ("BLOCK_" + Date.now()) : null,
 
-  // ✈️ Aircraft
   aircraftId: selectedAircraftId,
   modelKey: modelKey.toUpperCase(),
   aircraft: modelKey.toUpperCase(),
 
-  // 📍 Ruta
   origin,
   destination,
   departure,
@@ -1643,7 +1638,6 @@ const newRoute = {
 
   distanceNM: finalDistanceNM,
 
-  // ⏱ Tiempos
   blockTimeMin,
   turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
   turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
@@ -1653,17 +1647,15 @@ const newRoute = {
 
   optimized: document.getElementById("optimizeRotation")?.checked || false,
 
-  // 📆 DÍAS (FIX REAL)
-  // - Each Day → SOLO el día tocado
-  // - Every Day → bloque completo
+  // 📆 DAYS
   days: days,
 
-  // 🔑 FIX CRÍTICO — preservar contexto de edición
-  day: (isEditMode && isEachDay && days.length === 1)
-  ? days[0]
-  : null,
+  // 🔑 PRESERVE EACH-DAY CONTEXT (CRITICAL)
+  day:
+    isEditMode && isEachDay && days.length === 1
+      ? days[0]
+      : null,
 
-  // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
   flightNumberOut,
   flightNumberIn,
 
