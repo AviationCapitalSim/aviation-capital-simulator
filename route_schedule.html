@@ -1658,6 +1658,11 @@ const newRoute = {
   // - Every Day → bloque completo
   days: days,
 
+  // 🔑 FIX CRÍTICO — preservar contexto de edición
+  day: (isEditMode && isEachDay && days.length === 1)
+  ? days[0]
+  : null,
+
   // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
   flightNumberOut,
   flightNumberIn,
