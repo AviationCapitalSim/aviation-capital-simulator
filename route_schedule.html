@@ -857,37 +857,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
  /* ============================================================
-   4️⃣ DAYS — EDIT MODE (AUTHORITATIVE)
+   4️⃣ DAYS — REAL LOGIC (EVERY DAY vs EACH DAY FIX)
+   ------------------------------------------------------------
+   RULES:
+   - Every Day  → restore full block (7 days)
+   - Each Day  → restore ONLY the edited day
    ============================================================ */
 
 const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
 
-// Reset TOTAL
+// Reset all day checkboxes
 DAY_IDS.forEach(d => {
   if ($(d)) $(d).checked = false;
 });
-$("everyDay").checked = false;
-$("separateDays").checked = false;
+
+const everyDayBox   = $("everyDay");
+const separateBox   = $("separateDays");
+
+if (everyDayBox) everyDayBox.checked = false;
+if (separateBox) separateBox.checked = false;
+
+// Safety
+const days = Array.isArray(editCtx.days) ? editCtx.days : [];
 
 /* ============================================================
-   CASE A — EDITING SINGLE DAY (FROM SCHEDULE TABLE)
+   CASE 1 — EVERY DAY (BLOCK ROUTE)
    ============================================================ */
-if (editCtx.day && DAY_IDS.includes(editCtx.day)) {
+if (days.length === 7) {
 
-  // 🔒 THIS IS THE KEY FIX
-  $("separateDays").checked = true;
-
-  if ($(editCtx.day)) {
-    $(editCtx.day).checked = true;
-  }
-
-}
-/* ============================================================
-   CASE B — EDITING BLOCK ROUTE (EVERY DAY)
-   ============================================================ */
-else if (Array.isArray(editCtx.days) && editCtx.days.length === 7) {
-
-  $("everyDay").checked = true;
+  if (everyDayBox) everyDayBox.checked = true;
 
   DAY_IDS.forEach(d => {
     if ($(d)) $(d).checked = true;
@@ -895,10 +893,35 @@ else if (Array.isArray(editCtx.days) && editCtx.days.length === 7) {
 
 }
 /* ============================================================
-   CASE C — SAFETY FALLBACK
+   CASE 2 — EACH DAY AS SEPARATE ROUTE (CRITICAL FIX)
+   ------------------------------------------------------------
+   - We are editing ONE daily route
+   - Restore ONLY that specific day
    ============================================================ */
 else {
-  console.warn("⚠️ EDIT DAYS fallback", editCtx);
+
+  if (separateBox) separateBox.checked = true;
+
+  // Prefer explicit day if present
+  let singleDay = editCtx.day || null;
+
+  // Fallback: infer from routeKey or schedule item (last resort)
+  if (!singleDay && editCtx.routeKey) {
+    const parts = String(editCtx.routeKey).split("_");
+    const maybeDay = parts.find(p => DAY_IDS.includes(p));
+    if (maybeDay) singleDay = maybeDay;
+  }
+
+  // Final safeguard: if still nothing, take first day only
+  if (!singleDay && days.length === 1) {
+    singleDay = days[0];
+  }
+
+  // Apply ONLY one day
+  if (singleDay && $(singleDay)) {
+    $(singleDay).checked = true;
+  }
+
 }
 
   /* ============================================================
@@ -1198,7 +1221,6 @@ function rs_getTripCost(distance, blockMin, category) {
     - De (range - 15) a range → penalización proporcional (máx 35%)
     - > range → NO permitido
 */
-     
 function ACS_checkRangeSimple(distNM, publishedRange) {
 
     if (!distNM || !publishedRange) {
@@ -1487,64 +1509,64 @@ function confirmRoute() {
     return;
   }
 
- /* ============================================================
-   🟧 B2 — DAYS RESOLUTION (SINGLE SOURCE OF TRUTH)
+  /* ============================================================
+   🟧 B2 — DAYS RESOLUTION (FINAL · EDIT SAFE)
+   ------------------------------------------------------------
+   RULES:
+   - Every Day → 7 days
+   - Each Day  → ONLY the selected single day
    ============================================================ */
 
 const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
 
-const everyDayChecked = document.getElementById("everyDay")?.checked === true;
-const separateChecked = document.getElementById("separateDays")?.checked === true;
+const everyDayChecked  = document.getElementById("everyDay")?.checked === true;
+const separateChecked  = document.getElementById("separateDays")?.checked === true;
 
+// ⛔ reset
 let days = [];
 
-/* ============================================================
-   CASE 1 — EDIT MODE + EACH DAY (CRITICAL)
-   ============================================================ */
-if (isEditMode && separateChecked && editCtx?.day) {
-
-  // 🔒 PRESERVE ORIGINAL DAY — DO NOT RECOMPUTE
-  days = [editCtx.day];
-
-}
-/* ============================================================
-   CASE 2 — EVERY DAY BLOCK
-   ============================================================ */
-else if (everyDayChecked) {
+// ============================================================
+// CASE 1 — EVERY DAY (BLOCK ROUTE)
+// ============================================================
+if (everyDayChecked) {
 
   days = [...DAY_IDS];
 
 }
-/* ============================================================
-   CASE 3 — CREATE MODE EACH DAY
-   ============================================================ */
+     
+// ============================================================
+// CASE 2 — EACH DAY AS SEPARATE ROUTE (CRITICAL FIX)
+// ============================================================
 else if (separateChecked) {
 
   const selectedDay = DAY_IDS.find(id => document.getElementById(id)?.checked);
+
   if (!selectedDay) {
     alert("⛔ No day selected for separate route.");
     return;
   }
 
+  // ✅ SOLO UN DÍA
   days = [selectedDay];
 
 }
-/* ============================================================
-   CASE 4 — MULTI DAY
-   ============================================================ */
+// ============================================================
+// CASE 3 — MULTI-DAY (NO EVERY DAY, NO EACH DAY)
+// ============================================================
 else {
 
   days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+
   if (!days.length) {
     alert("Please select at least one day.");
     return;
   }
+
 }
 
   /* ================================
      3) Calcular llegada (HH:MM)
      ================================ */
-     
   const [depH, depM] = departure.split(":").map(Number);
   const arrivalTotalMin = depH * 60 + depM + blockTimeMin;
   const arrH = Math.floor(arrivalTotalMin / 60) % 24;
@@ -1554,11 +1576,7 @@ else {
   /* ================================
      4) ID único ACS
      ================================ */
-
-  const routeId = isEditMode && editCtx?.routeKey
-  ? editCtx.routeKey
-  : "RT_" + Math.floor(100000 + Math.random() * 900000);
-
+  const routeId = "RT_" + Math.floor(100000 + Math.random() * 900000);
 
   /* ============================================================
      5) Resolver modelKey REAL por aircraftId (fleet)
@@ -1617,12 +1635,15 @@ const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 const newRoute = {
   id: routeId,
 
+  // 🔑 IDENTIDAD (CLAVE DEL BUG)
   blockId: isEveryDay ? ("BLOCK_" + Date.now()) : null,
 
+  // ✈️ Aircraft
   aircraftId: selectedAircraftId,
   modelKey: modelKey.toUpperCase(),
   aircraft: modelKey.toUpperCase(),
 
+  // 📍 Ruta
   origin,
   destination,
   departure,
@@ -1630,6 +1651,7 @@ const newRoute = {
 
   distanceNM: finalDistanceNM,
 
+  // ⏱ Tiempos
   blockTimeMin,
   turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
   turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
@@ -1639,15 +1661,12 @@ const newRoute = {
 
   optimized: document.getElementById("optimizeRotation")?.checked || false,
 
-  // 📆 DAYS
+  // 📆 DÍAS (FIX REAL)
+  // - Each Day → SOLO el día tocado
+  // - Every Day → bloque completo
   days: days,
 
-  // 🔑 PRESERVE EACH-DAY CONTEXT (CRITICAL)
-  day:
-    isEditMode && isEachDay && days.length === 1
-      ? days[0]
-      : null,
-
+  // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
   flightNumberOut,
   flightNumberIn,
 
