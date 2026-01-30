@@ -1677,22 +1677,25 @@ if (it.type === "flight") {
    🟧 A4 — Flight Chip Label (UI ONLY · SAFE)
    ============================================================ */
 
-const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
-const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
+// ---------------- FLIGHT ----------------
+if (it.type === "flight") {
 
-chip.textContent = `${labelOut} / ${labelIn}`;
+  const labelOut = it.labelOut || it.flightLabelOut || it.flightNumberOut || "—";
+  const labelIn  = it.labelIn  || it.flightLabelIn  || it.flightNumberIn  || "—";
 
-chip.onclick = () => {
-  // 🔑 FIX — asegurar vuelo seleccionado para EDIT / REMOVE
-  window.selectedFlight = {
-    data: it,
-    element: chip
+  chip.textContent = `${labelOut} / ${labelIn}`;
+
+  chip.onclick = () => {
+    // 🔑 FIX — asegurar vuelo seleccionado para EDIT / REMOVE
+    window.selectedFlight = {
+      data: it,
+      element: chip
+    };
+
+    openFlightModal(it, chip);
   };
 
-  openFlightModal(it, chip);
-};
-
-td.appendChild(chip);
+  td.appendChild(chip);
 }
 
 // ---------------- SERVICE ----------------
@@ -1715,8 +1718,7 @@ if (it.type === "service") {
   };
 
   td.appendChild(chip);
-     
-}); // 👈 cierre de scheduleItems.forEach
+}
 
     // ============================================================
     // ACTION PLAN
