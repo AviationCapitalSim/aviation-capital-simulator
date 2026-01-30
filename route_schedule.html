@@ -857,35 +857,42 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
  /* ============================================================
-   4️⃣ DAYS — REAL LOGIC (EVERY DAY vs EACH DAY FIX)
+   4️⃣ DAYS — EDIT MODE (REAL DATA SOURCE)
    ------------------------------------------------------------
-   RULES:
-   - Every Day  → restore full block (7 days)
-   - Each Day  → restore ONLY the edited day
+   RULE:
+   - If route has `day` → it is EACH DAY
+   - If route has `days[]` → it is BLOCK (Every Day)
    ============================================================ */
 
 const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
 
-// Reset all day checkboxes
+// Reset UI
 DAY_IDS.forEach(d => {
   if ($(d)) $(d).checked = false;
 });
 
-const everyDayBox   = $("everyDay");
-const separateBox   = $("separateDays");
-
-if (everyDayBox) everyDayBox.checked = false;
-if (separateBox) separateBox.checked = false;
-
-// Safety
-const days = Array.isArray(editCtx.days) ? editCtx.days : [];
+$("everyDay").checked   = false;
+$("separateDays").checked = false;
 
 /* ============================================================
-   CASE 1 — EVERY DAY (BLOCK ROUTE)
+   CASE 1 — EACH DAY ROUTE (MOST IMPORTANT)
    ============================================================ */
-if (days.length === 7) {
+if (editCtx.day && DAY_IDS.includes(editCtx.day)) {
 
-  if (everyDayBox) everyDayBox.checked = true;
+  // ✅ THIS IS A SINGLE DAILY ROUTE
+  $("separateDays").checked = true;
+
+  if ($(editCtx.day)) {
+    $(editCtx.day).checked = true;
+  }
+
+}
+/* ============================================================
+   CASE 2 — BLOCK ROUTE (EVERY DAY)
+   ============================================================ */
+else if (Array.isArray(editCtx.days) && editCtx.days.length === 7) {
+
+  $("everyDay").checked = true;
 
   DAY_IDS.forEach(d => {
     if ($(d)) $(d).checked = true;
@@ -893,34 +900,11 @@ if (days.length === 7) {
 
 }
 /* ============================================================
-   CASE 2 — EACH DAY AS SEPARATE ROUTE (CRITICAL FIX)
-   ------------------------------------------------------------
-   - We are editing ONE daily route
-   - Restore ONLY that specific day
+   CASE 3 — FALLBACK (SAFETY)
    ============================================================ */
 else {
 
-  if (separateBox) separateBox.checked = true;
-
-  // Prefer explicit day if present
-  let singleDay = editCtx.day || null;
-
-  // Fallback: infer from routeKey or schedule item (last resort)
-  if (!singleDay && editCtx.routeKey) {
-    const parts = String(editCtx.routeKey).split("_");
-    const maybeDay = parts.find(p => DAY_IDS.includes(p));
-    if (maybeDay) singleDay = maybeDay;
-  }
-
-  // Final safeguard: if still nothing, take first day only
-  if (!singleDay && days.length === 1) {
-    singleDay = days[0];
-  }
-
-  // Apply ONLY one day
-  if (singleDay && $(singleDay)) {
-    $(singleDay).checked = true;
-  }
+  console.warn("⚠️ EDIT DAYS fallback triggered", editCtx);
 
 }
 
