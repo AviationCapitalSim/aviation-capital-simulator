@@ -581,7 +581,7 @@ footer {
 }
 
 /* ============================================================
-   🦄 B1 — FLIGHT MODAL (Qatar Luxury Unicorn) — 17DEC25
+   🦄 ACS MODAL — VISIBILITY FIX (SINGLE SOURCE)
    ============================================================ */
 
 .acs-modal {
@@ -589,13 +589,16 @@ footer {
   inset: 0;
   background: rgba(0,0,0,0.66);
   backdrop-filter: blur(6px);
-  display: none; /* se abre con JS */
+  display: flex;                /* 🔑 SIEMPRE FLEX */
   align-items: center;
   justify-content: center;
   z-index: 99999;
 }
 
-.acs-modal.hidden { display: none; }
+.acs-modal.hidden {
+  display: none;                /* 🔑 ÚNICO control de ocultación */
+}
+
 
 .acs-modal-card.qatar {
   width: min(520px, 92vw);
