@@ -3414,5 +3414,118 @@ function ACS_sortDayEvents(events) {
           
 </script>
 
+<script>
+/* ============================================================
+   🟦 ACS SLOT ENGINE — SIMPLE v1.0 (PASO 3)
+   ------------------------------------------------------------
+   • Reserva slots por VUELO
+   • Sin optimización
+   • Sin edición
+   • Sin EveryDay
+   ============================================================ */
+
+function ACS_reserveSlotSimple(flight) {
+
+  if (!flight || !flight.origin || !flight.destination || !flight.day) {
+    console.error("⛔ Invalid flight for slot reservation", flight);
+    return false;
+  }
+
+  let slots = [];
+  try {
+    slots = JSON.parse(localStorage.getItem("ACS_SLOTS_SIMPLE")) || [];
+  } catch {
+    slots = [];
+  }
+
+  const depSlot = {
+    airport: flight.origin,
+    day: flight.day,
+    time: flight.departure,
+    flightId: flight.id,
+    type: "DEP"
+  };
+
+  const arrSlot = {
+    airport: flight.destination,
+    day: flight.day,
+    time: flight.arrival,
+    flightId: flight.id,
+    type: "ARR"
+  };
+
+  const conflict = slots.find(s =>
+    s.airport === depSlot.airport &&
+    s.day === depSlot.day &&
+    s.time === depSlot.time
+  );
+
+  if (conflict) {
+    console.warn("⛔ Slot conflict detected:", conflict);
+    return false;
+  }
+
+  slots.push(depSlot, arrSlot);
+  localStorage.setItem("ACS_SLOTS_SIMPLE", JSON.stringify(slots));
+
+  console.log("🟢 Slots reserved:", depSlot, arrSlot);
+  return true;
+}
+</script>
+
+<script>
+/* ============================================================
+   ✈️ ACS — CREATE FLIGHTS FROM ROUTE (PASO 3)
+   ------------------------------------------------------------
+   • 1 flight = 1 day
+   • Slot simple incluido
+   • NO EveryDay
+   ============================================================ */
+
+function ACS_createFlightsFromRoute(route) {
+
+  if (!route || !Array.isArray(route.days)) {
+    console.error("⛔ Invalid route", route);
+    return;
+  }
+
+  let flights = [];
+  try {
+    flights = JSON.parse(localStorage.getItem("ACS_FLIGHTS")) || [];
+  } catch {
+    flights = [];
+  }
+
+  route.days.forEach(day => {
+
+    const flightId = "FL_" + Math.floor(100000 + Math.random() * 900000);
+
+    const flight = {
+      id: flightId,
+      routeId: route.id,
+      aircraftId: route.aircraftId,
+      model: route.model,
+      origin: route.origin,
+      destination: route.destination,
+      day: day,
+      departure: route.departure,
+      arrival: route.arrival,
+      status: "PLANNED"
+    };
+
+    const slotOK = ACS_reserveSlotSimple(flight);
+    if (!slotOK) {
+      alert(`❌ Slot conflict on ${day} ${flight.origin}`);
+      return;
+    }
+
+    flights.push(flight);
+  });
+
+  localStorage.setItem("ACS_FLIGHTS", JSON.stringify(flights));
+  console.log("🟢 Flights created from route:", flights);
+}
+</script>
+     
 </body>
 </html>
