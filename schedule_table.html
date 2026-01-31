@@ -2060,44 +2060,6 @@ function ACS_closeAssignFlightsModal(){
 }
      
 /* ============================================================
-   🟦 CONFIRM ASSIGNMENT
-   ============================================================ */
-
-function ACS_confirmAssignFlights(aircraftId){
-
-  let flights = [];
-  try {
-    flights = JSON.parse(localStorage.getItem("ACS_FLIGHTS")) || [];
-  } catch {
-    flights = [];
-  }
-
-  const checks = document.querySelectorAll(
-    '#flightModalContent input[type="checkbox"]:checked'
-  );
-
-  if (!checks.length) {
-    alert("⚠ No flights selected.");
-    return;
-  }
-
-  const selectedIds = Array.from(checks).map(c => c.dataset.flightId);
-
-  flights.forEach(f => {
-    if (selectedIds.includes(f.id)) {
-      f.aircraftId = aircraftId;
-    }
-  });
-
-  localStorage.setItem("ACS_FLIGHTS", JSON.stringify(flights));
-
-  closeFlightModal();
-  renderSchedule();
-
-  console.log("🟢 Flights assigned:", selectedIds);
-}
-     
-/* ============================================================
    === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
    ============================================================ */
      
