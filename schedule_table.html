@@ -1921,6 +1921,10 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 
 /* ============================================================
    🟦 PASO 2.2-A — ASSIGN ROUTE (SOURCE = scheduleItems)
+   ------------------------------------------------------------
+   • SOLO abre el modal
+   • NO asigna nada aquí
+   • NO valida compatibilidad aquí
    ============================================================ */
 
 function assignRouteToTail(ac){
@@ -1953,17 +1957,19 @@ function assignRouteToTail(ac){
     return;
   }
 
+  // ✅ CONTEXTO DEL MODAL (canónico)
+  ACS_ASSIGN_CTX.aircraft = ac;
+  ACS_ASSIGN_CTX.flightIds = [];
+
   // ✅ Abrir modal con DATOS REALES DEL SCHEDULE
   ACS_openAssignFlightsModal(ac, unassignedFlights);
 }
 
 /* ============================================================
-   🟦 ASSIGN FLIGHTS MODAL ENGINE (Qatar Luxury)
+   🟦 ASSIGN FLIGHTS MODAL CONTEXT (CANÓNICO)
    ------------------------------------------------------------
-   • Fuente de datos: scheduleItems
-   • Contexto temporal del modal (NO persistente)
-   • Compatibilidad estricta por MODELO
-   • No toca SkyTrack runtime
+   • Estado temporal del modal
+   • NO persiste
    ============================================================ */
 
 let ACS_ASSIGN_CTX = {
@@ -2064,23 +2070,6 @@ if (acModelKey && routeModelKey && acModelKey !== routeModelKey) {
   body.innerHTML = `
   
   ${warningHTML}
-
-    <div class="meta-card" style="
-      margin-bottom:10px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      background:rgba(245,158,11,0.12);
-      border:1px solid rgba(245,158,11,0.35);
-    ">
-      <span style="font-weight:900;color:#f59e0b;">⚠</span>
-      <span style="font-weight:700;color:#ffe7a0;">
-        Route restricted to model:
-      </span>
-      <span class="service-chip" style="margin-left:auto;">
-        ${routeModelLabel}
-      </span>
-    </div>
 
     <div class="flight-kicker" style="
   display:flex;
