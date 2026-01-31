@@ -1718,14 +1718,8 @@ window.location.href = "schedule_table.html";
      ✔ No afecta Schedule Table / SkyTrack
      ============================================================ */
 
-  let scheduleItems = [];
-  try {
-    scheduleItems = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {
-    scheduleItems = [];
-  }
-
   // 🔒 GUARDIA: evitar duplicación del mismo bloque + avión
+     
   const alreadyExists = scheduleItems.some(it =>
     it.type === "flight" &&
     it.blockId &&
