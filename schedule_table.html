@@ -1959,7 +1959,7 @@ function ACS_openAssignFlightsModal(ac, unassignedFlights){
   `;
 
   modal.classList.remove("hidden");
-  modal.style.display = "flex";
+ 
 }
 
 function ACS_toggleDayAssign(day, on){
@@ -2052,7 +2052,7 @@ function ACS_confirmAssignFlights(){
 function ACS_closeAssignFlightsModal(){
   const modal = document.getElementById("assignFlightsModal");
   if (modal) {
-    modal.style.display = "none";
+    
     modal.classList.add("hidden");
   }
   ACS_ASSIGN_CTX.aircraft = null;
@@ -2506,7 +2506,7 @@ if (it && it.type === "service") {
   }
 
   modal.classList.remove("hidden");
-  modal.style.display = "flex";
+
   return;
 }
 
@@ -2628,7 +2628,7 @@ if (it && it.type === "service") {
   `;
 
   modal.classList.remove("hidden");
-  modal.style.display = "flex";
+ 
 }
 
 /* ============================================================
@@ -2681,7 +2681,7 @@ function ACS_restoreFlightModalFooterDefault(){
 function closeFlightModal(){
   const modal = document.getElementById("flightModal");
   if (modal) {
-    modal.style.display = "none";
+  
     modal.classList.add("hidden");
   }
 
