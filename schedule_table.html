@@ -906,6 +906,14 @@ footer {
   display:inline-block;
   cursor:default;
 }
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
        
 </style>
 
@@ -2181,32 +2189,26 @@ function ACS_toggleAllVisibleAssign(on){
 }
      
 /* ============================================================
-   🟦 PASO 2.2-B — CONFIRM ASSIGN (WRITE = scheduleItems)
+   🟦 PASO 6 — CONFIRM ASSIGN (UX SAFE + MODEL ENFORCED)
    ============================================================ */
 
 function ACS_confirmAssignFlights(){
 
   const ac = ACS_ASSIGN_CTX.aircraft;
-  if (!ac || !ac.id) {
-    ACS_closeAssignFlightsModal();
-    return;
-  }
+  if (!ac || !ac.id) return;
 
   const modal = document.getElementById("assignFlightsModal");
   if (!modal) return;
 
   const selectedIds = Array.from(
     modal.querySelectorAll("input.acs-assign-check:checked")
-  )
-    .map(x => x.getAttribute("data-flight-id"))
-    .filter(Boolean);
+  ).map(x => x.getAttribute("data-flight-id")).filter(Boolean);
 
   if (!selectedIds.length) {
     alert("⚠ Select at least one flight.");
     return;
   }
 
-  // 🔑 CARGAR scheduleItems
   let items = [];
   try {
     items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
@@ -2214,58 +2216,52 @@ function ACS_confirmAssignFlights(){
     items = [];
   }
 
-  if (!Array.isArray(items) || !items.length) {
-    alert("⛔ scheduleItems empty.");
-    return;
-  }
-
+  const acModelKey = normalizeModel(ac?.model || ac?.type || "");
   let changed = 0;
+  let blocked = false;
 
-  /* ============================================================
-   🟧 PASO 3.2 — MODEL COMPATIBILITY ENFORCEMENT (STRICT)
-   ------------------------------------------------------------
-   • Un vuelo SOLO puede asignarse a un avión del MISMO MODELO
-   • Usa normalizeModel() como fuente canónica
-   ============================================================ */
+  items.forEach(it => {
 
-const acModelKey = normalizeModel(ac?.model || ac?.type || "");
+    if (
+      it.type !== "flight" ||
+      !selectedIds.includes(it.id) ||
+      it.aircraftId
+    ) return;
 
-items.forEach(it => {
+    const flightModelKey = normalizeModel(
+      it.acType || it.model || it.aircraft || ""
+    );
 
-  if (
-    it.type !== "flight" ||
-    !selectedIds.includes(it.id) ||
-    it.aircraftId
-  ) return;
+    if (!acModelKey || !flightModelKey || acModelKey !== flightModelKey) {
+      blocked = true;
+      return;
+    }
 
-  // 🔑 Modelo del vuelo (ruta)
-  const flightModelKey = normalizeModel(
-    it.acType || it.model || it.aircraft || ""
-  );
+    it.aircraftId = ac.id;
+    changed++;
+  });
 
-  // ⛔ Bloqueo por incompatibilidad
-  if (!acModelKey || !flightModelKey || acModelKey !== flightModelKey) {
-    console.warn("⛔ Model mismatch:", {
-      aircraft: acModelKey,
-      flight: flightModelKey,
-      flightId: it.id
-    });
-    return; // NO asignar
+  // ⛔ BLOQUEO UX — NO CERRAR MODAL
+  if (blocked && changed === 0) {
+
+    const warn = modal.querySelector(".meta-card");
+    if (warn) {
+      warn.style.animation = "shake 0.4s ease";
+      warn.style.borderColor = "#ff3b3b";
+      warn.style.background = "rgba(255,59,59,0.15)";
+      setTimeout(() => warn.style.animation = "", 450);
+    }
+
+    return; // 🔴 CLAVE: NO cerrar modal
   }
 
-  // ✅ Compatible → asignar
-  it.aircraftId = ac.id;
-  changed++;
-});
-
-  localStorage.setItem("scheduleItems", JSON.stringify(items));
-
-  ACS_closeAssignFlightsModal();
-
-  // 🔄 REFRESH REAL
-  renderSchedule();
-
-  console.log(`🟢 Assigned ${changed} scheduled flight(s) to ${ac.id}`);
+  // ✅ ÉXITO REAL
+  if (changed > 0) {
+    localStorage.setItem("scheduleItems", JSON.stringify(items));
+    ACS_closeAssignFlightsModal();
+    renderSchedule();
+    console.log(`🟢 Assigned ${changed} flight(s) to ${ac.id}`);
+  }
 }
 
 function ACS_closeAssignFlightsModal(){
