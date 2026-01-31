@@ -3114,11 +3114,14 @@ function deleteSelectedFlights() {
 }
 
 /* ============================================================
-   🟩 B2 — EDIT SELECTED FLIGHT (EACH DAY FIX)
+   🟩 B2 — EDIT SELECTED FLIGHT (EACH DAY + UI CONTEXT FIX)
    ------------------------------------------------------------
    RULES:
    - Every Day  → preserve full days block
-   - Each Day  → send ONLY the single day being edited
+   - Each Day   → send ONLY the single day being edited
+   - UI MUST know:
+     • which day is being edited
+     • if ALL DAYS option should be available
    ============================================================ */
 
 function editSelectedFlight() {
@@ -3133,7 +3136,9 @@ function editSelectedFlight() {
   // Detect if flight comes from "Create each day as a separate route"
   const isEachDay = !it.blockId || it.blockId === "";
 
-  // Build EDIT context
+  /* ============================================================
+     🧠 EDIT CONTEXT (SINGLE SOURCE OF TRUTH FOR EDITOR)
+     ============================================================ */
   const editCtx = {
     mode: "EDIT",
 
@@ -3151,8 +3156,12 @@ function editSelectedFlight() {
 
     blockTimeMin: it.blockTimeMin || null,
 
-    // 🔑 CRITICAL DIFFERENCE
-    separateDays: isEachDay
+    /* ========================================================
+       🔑 UI CONTROL FLAGS (CRITICAL)
+       ======================================================== */
+    separateDays: isEachDay,      // true = Each Day logic
+    allowAllDays: true,           // 🔑 SHOW "ALL DAYS" CHECKBOX
+    editDay: it.day || null,      // 🔑 DAY BEING EDITED (mon..sun)
   };
 
   /* ============================================================
@@ -3160,8 +3169,8 @@ function editSelectedFlight() {
      ============================================================ */
   if (isEachDay) {
 
-    editCtx.day  = it.day;          // 🔑 ONLY THIS DAY
-    editCtx.days = [it.day];        // keep consistent
+    editCtx.day  = it.day;        // 🔑 SINGLE DAY
+    editCtx.days = [it.day];      // consistency
 
   }
   /* ============================================================
@@ -3175,10 +3184,10 @@ function editSelectedFlight() {
 
   }
 
-  // Persist EDIT context
+  // Persist EDIT context (EDITOR READS THIS)
   localStorage.setItem("ACS_ROUTE_EDIT", JSON.stringify(editCtx));
 
-  // Go back to Route Schedule
+  // Go back to Route Schedule (EDIT MODE)
   window.location.href = "route_schedule.html";
 }
 
