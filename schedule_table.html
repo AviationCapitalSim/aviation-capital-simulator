@@ -1984,11 +1984,31 @@ function ACS_openAssignFlightsModal(ac, unassignedFlights){
     return;
   }
 
-  const reg = (ac.registration || ac.tail || "Aircraft").toString().trim();
+  /* ============================================================
+   🟧 PASO 3.1 — MODAL TITLE BY ROUTE MODEL (NOT REGISTRATION)
+   ============================================================ */
 
-  title.textContent = `✈️ Assign Flights — ${reg}`;
+// 🔑 El modelo viene de los vuelos (ruta), no del avión físico
+// Tomamos el modelo del primer vuelo no asignado (fuente real)
+const firstFlight = Array.isArray(unassignedFlights) && unassignedFlights.length
+  ? unassignedFlights[0]
+  : null;
+
+// Normalizamos y mostramos nombre amigable
+const routeModelRaw =
+  firstFlight?.acType ||
+  firstFlight?.model ||
+  firstFlight?.aircraft ||
+  "";
+
+const routeModelLabel = routeModelRaw
+  ? routeModelRaw
+  : "Aircraft Model";
+
+title.textContent = `✈️ Assign Flights — ${routeModelLabel}`;
 
   // Agrupar por día
+     
   const byDay = {};
   unassignedFlights.forEach(f => {
     const d = (f.day || "").toString().trim().toLowerCase();
@@ -2110,16 +2130,42 @@ function ACS_confirmAssignFlights(){
 
   let changed = 0;
 
-  items.forEach(it => {
-    if (
-      it.type === "flight" &&
-      selectedIds.includes(it.id) &&
-      !it.aircraftId
-    ) {
-      it.aircraftId = ac.id;
-      changed++;
-    }
-  });
+  /* ============================================================
+   🟧 PASO 3.2 — MODEL COMPATIBILITY ENFORCEMENT (STRICT)
+   ------------------------------------------------------------
+   • Un vuelo SOLO puede asignarse a un avión del MISMO MODELO
+   • Usa normalizeModel() como fuente canónica
+   ============================================================ */
+
+const acModelKey = normalizeModel(ac?.model || ac?.type || "");
+
+items.forEach(it => {
+
+  if (
+    it.type !== "flight" ||
+    !selectedIds.includes(it.id) ||
+    it.aircraftId
+  ) return;
+
+  // 🔑 Modelo del vuelo (ruta)
+  const flightModelKey = normalizeModel(
+    it.acType || it.model || it.aircraft || ""
+  );
+
+  // ⛔ Bloqueo por incompatibilidad
+  if (!acModelKey || !flightModelKey || acModelKey !== flightModelKey) {
+    console.warn("⛔ Model mismatch:", {
+      aircraft: acModelKey,
+      flight: flightModelKey,
+      flightId: it.id
+    });
+    return; // NO asignar
+  }
+
+  // ✅ Compatible → asignar
+  it.aircraftId = ac.id;
+  changed++;
+});
 
   localStorage.setItem("scheduleItems", JSON.stringify(items));
 
