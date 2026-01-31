@@ -2931,7 +2931,7 @@ function ACS_restoreFlightModalFooterDefault(){
 
   footer.innerHTML = `
     <button class="btn-modal gold"  onclick="editSelectedFlight()">✏️ EDIT</button>
-    <button class="btn-modal amber" onclick="removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
+    <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
     <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
   `;
@@ -2951,6 +2951,74 @@ function closeFlightModal(){
   ACS_selectedChipEl = null;
 }
 
+/* ============================================================
+   🟦 PASO 7 — REMOVE FLIGHTS (UNASSIGN ONLY)
+   ------------------------------------------------------------
+   • NO elimina vuelos
+   • NO borra bloques
+   • SOLO limpia aircraftId
+   • Los vuelos vuelven a UNASSIGNED
+   ============================================================ */
+
+function ACS_removeSelectedFlights(){
+
+  const modal = document.getElementById("flightModal");
+  if (!modal) return;
+
+  if (!ACS_selectedFlightItem) {
+    alert("⚠ No flight selected.");
+    return;
+  }
+
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  } catch {
+    items = [];
+  }
+
+  if (!items.length) return;
+
+  const sel = ACS_selectedFlightItem;
+  const blockId = sel.blockId || null;
+
+  let removed = 0;
+
+  items.forEach(it => {
+
+    if (it.type !== "flight") return;
+
+    // 🟢 Caso 1: bloque completo (Every Day)
+    if (blockId && it.blockId === blockId) {
+      if (it.aircraftId) {
+        it.aircraftId = null;
+        removed++;
+      }
+      return;
+    }
+
+    // 🟢 Caso 2: vuelo individual
+    if (!blockId && it.id === sel.id) {
+      if (it.aircraftId) {
+        it.aircraftId = null;
+        removed++;
+      }
+    }
+  });
+
+  if (removed === 0) {
+    alert("⚠ No flights were removed.");
+    return;
+  }
+
+  localStorage.setItem("scheduleItems", JSON.stringify(items));
+
+  closeFlightModal();
+  renderSchedule();
+
+  console.log(`🟢 Removed (unassigned) ${removed} flight(s)`);
+}
+       
 /* ============================================================
    🟥 B3-D.2 — DELETE CANÓNICO FINAL v2 (FIX REAL)
    ------------------------------------------------------------
