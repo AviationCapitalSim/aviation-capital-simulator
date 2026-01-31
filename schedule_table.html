@@ -1083,8 +1083,34 @@ footer {
   </div>
 </div>
 
+<!-- ============================================================
+     🟦 PASO 4.2 — ASSIGN FLIGHTS MODAL (Qatar Luxury Premium)
+     ------------------------------------------------------------
+     ✅ Modal NUEVO (NO reutiliza #flightModal)
+     ============================================================ -->
+
+<div id="assignFlightsModal" class="acs-modal hidden">
+  <div class="acs-modal-card qatar">
+
+    <div class="acs-modal-header">
+      <h3 id="assignFlightsTitle">✈️ Assign Flights</h3>
+      <button class="btn-close" onclick="ACS_closeAssignFlightsModal()">✕</button>
+    </div>
+
+    <div id="assignFlightsBody" class="acs-modal-body">
+      <!-- contenido dinámico -->
+    </div>
+
+    <div class="acs-modal-footer">
+      <button class="btn-modal gold" onclick="ACS_confirmAssignFlights()">✅ Assign Selected</button>
+      <button class="btn-modal ghost" onclick="ACS_closeAssignFlightsModal()">Cancel</button>
+    </div>
+
+  </div>
+</div>
+     
 <footer>
-  © 2025 Aviation Capital Simulator. All rights reserved.
+  © 2026 Aviation Capital Simulator. All rights reserved.
 </footer>
 
 <!-- ============================================================
@@ -1815,13 +1841,11 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 }
 
 /* ============================================================
-   🟦 PASO 4.1 + 4.2 — ASSIGN FLIGHTS TO AIRCRAFT (QATAR LUXURY)
+   🟦 PASO 4.1 — ASSIGN FLIGHTS TO AIRCRAFT (QATAR LUXURY) — FIX
    ------------------------------------------------------------
-   • NO crea vuelos
-   • NO toca SkyTrack
-   • NO toca slots
-   • SOLO asigna aircraftId a vuelos existentes
-   • FILTRA por modelo exacto
+   ✅ Usa MODAL NUEVO (#assignFlightsModal)
+   ✅ NO toca #flightModal (Edit/Delete/Remove)
+   ✅ SOLO asigna aircraftId en ACS_FLIGHTS
    ============================================================ */
 
 function assignRouteToTail(ac){
@@ -1831,30 +1855,7 @@ function assignRouteToTail(ac){
     return;
   }
 
-  /* ============================================================
-     🧩 HELPERS LOCALES (NO GLOBAL, NO RIESGO)
-     ============================================================ */
-
-  const normalize = v =>
-    String(v || "")
-      .toUpperCase()
-      .replace(/[\s\-\/\.\(\)\_]/g,"")
-      .trim();
-
-  const aircraftModelKey = normalize(ac.model || ac.type || "");
-
-  const isCompatible = (flight) => {
-    const flightModelKey = normalize(
-      flight.model ||
-      flight.acType ||
-      flight.aircraftModel
-    );
-    return aircraftModelKey && flightModelKey && aircraftModelKey === flightModelKey;
-  };
-
-  const isAssigned = (flight) => !!flight.aircraftId;
-
-  // Obtener vuelos existentes
+  // Obtener vuelos existentes (pool operativo)
   let flights = [];
   try {
     flights = JSON.parse(localStorage.getItem("ACS_FLIGHTS")) || [];
@@ -1867,95 +1868,197 @@ function assignRouteToTail(ac){
     return;
   }
 
-  /* ============================================================
-     🦄 USAR FLIGHT MODAL EXISTENTE (QATAR LUXURY)
-     ============================================================ */
+  // Filtrar vuelos NO asignados
+  const unassigned = flights.filter(f => !f.aircraftId);
 
-  const modal  = document.getElementById("flightModal");
-  const title  = document.getElementById("flightModalTitle");
-  const body   = document.getElementById("flightModalContent");
-  const footer = modal.querySelector(".acs-modal-footer");
+  if (!unassigned.length) {
+    alert("⚠ All flights are already assigned.");
+    return;
+  }
 
-  title.textContent = `✈️ Assign Flights — ${ac.registration}`;
+  // ✅ Abrir modal nuevo (NO flightModal)
+  ACS_openAssignFlightsModal(ac, unassigned);
+}
 
-  // Agrupar por día (SOLO vuelos NO asignados)
+/* ============================================================
+   🟦 PASO 4.3 — ASSIGN FLIGHTS MODAL ENGINE (Qatar Luxury)
+   ------------------------------------------------------------
+   ✅ Lee ACS_FLIGHTS
+   ✅ Asigna aircraftId solo a seleccionados
+   ✅ No toca scheduleItems / SkyTrack
+   ============================================================ */
+
+let ACS_ASSIGN_CTX = {
+  aircraft: null,
+  flightIds: []
+};
+
+function ACS_openAssignFlightsModal(ac, unassignedFlights){
+
+  ACS_ASSIGN_CTX.aircraft = ac;
+  ACS_ASSIGN_CTX.flightIds = [];
+
+  const modal = document.getElementById("assignFlightsModal");
+  const title = document.getElementById("assignFlightsTitle");
+  const body  = document.getElementById("assignFlightsBody");
+
+  if (!modal || !title || !body) {
+    alert("⛔ Assign modal missing in HTML.");
+    return;
+  }
+
+  const reg = (ac.registration || ac.tail || "Aircraft").toString().trim();
+
+  title.textContent = `✈️ Assign Flights — ${reg}`;
+
+  // Agrupar por día
   const byDay = {};
-  flights.forEach(f => {
-    if (!byDay[f.day]) byDay[f.day] = [];
-    byDay[f.day].push(f);
+  unassignedFlights.forEach(f => {
+    const d = (f.day || "").toString().trim().toLowerCase();
+    if (!d) return;
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(f);
   });
+
+  const dayOrder = ["mon","tue","wed","thu","fri","sat","sun"];
+  const dayLabel = { mon:"MON", tue:"TUE", wed:"WED", thu:"THU", fri:"FRI", sat:"SAT", sun:"SUN" };
+
+  const daysSorted = Object.keys(byDay).sort((a,b)=> dayOrder.indexOf(a)-dayOrder.indexOf(b));
 
   body.innerHTML = `
     <div class="flight-kicker">
-      Select which flights you want to assign to this aircraft.
+      Select the flights you want to assign to this aircraft.
     </div>
 
-    ${Object.keys(byDay).sort().map(day => `
+    ${daysSorted.map(d => `
       <div class="meta-card" style="margin-bottom:10px;">
-        <strong>${day.toUpperCase()}</strong>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
+          <button
+            class="btn-modal ghost"
+            style="padding:6px 10px;border-radius:12px;font-weight:800;"
+            onclick="ACS_toggleDayAssign('${d}', true)"
+          >Select all</button>
+        </div>
 
-        ${byDay[day].map(f => {
-
-          const compatible = isCompatible(f);
-          const assigned   = isAssigned(f);
-          const disabled   = (!compatible || assigned) ? "disabled" : "";
-
-          const badge = assigned
-            ? "🔒 Assigned"
-            : !compatible
-              ? "⛔ Incompatible"
-              : "✔ Available";
-
-          const badgeColor = assigned
-            ? "#94a3b8"
-            : !compatible
-              ? "#ef4444"
-              : "#22c55e";
-
-          return `
-            <label style="
-              display:flex;
-              gap:8px;
-              align-items:center;
-              margin-top:6px;
-              opacity:${disabled ? 0.55 : 1};
-            ">
-              <input type="checkbox"
-                     data-flight-id="${f.id}"
-                     ${disabled}>
-              ${f.origin} → ${f.destination}
-              <span style="margin-left:auto;font-family:Orbitron;">
-                ${f.departure}–${f.arrival}
-              </span>
-              <span style="
-                margin-left:10px;
-                font-size:0.75rem;
-                font-weight:700;
-                color:${badgeColor};
-              ">
-                ${badge}
+        <div style="margin-top:8px;display:grid;gap:8px;">
+          ${byDay[d].map(f => `
+            <label style="display:flex;gap:10px;align-items:center;">
+              <input class="acs-assign-check" type="checkbox" data-flight-id="${f.id}">
+              <span style="font-weight:800;color:#ffe7a0;">${f.origin || "—"} → ${f.destination || "—"}</span>
+              <span style="margin-left:auto;font-family:Orbitron,monospace;color:#00ff80;">
+                ${(f.departure || "—")}–${(f.arrival || "—")}
               </span>
             </label>
-          `;
-        }).join("")}
-
+          `).join("")}
+        </div>
       </div>
     `).join("")}
-  `;
 
-  footer.innerHTML = `
-    <button class="btn-modal gold" onclick="ACS_confirmAssignFlights('${ac.id}')">
-      ✅ Assign Selected
-    </button>
-    <button class="btn-modal ghost" onclick="closeFlightModal()">
-      Cancel
-    </button>
+    ${!daysSorted.length ? `<div class="meta-card"><strong>No unassigned flights found.</strong></div>` : ``}
   `;
 
   modal.classList.remove("hidden");
   modal.style.display = "flex";
 }
 
+function ACS_toggleDayAssign(day, on){
+  const modal = document.getElementById("assignFlightsModal");
+  if (!modal) return;
+
+  const checks = modal.querySelectorAll(`input.acs-assign-check`);
+  checks.forEach(ch => {
+    // solo los del día buscado: subimos al meta-card y leemos el título
+    const card = ch.closest(".meta-card");
+    if (!card) return;
+
+    const head = card.querySelector("strong");
+    const label = (head?.textContent || "").toLowerCase();
+
+    const map = { mon:"mon", tue:"tue", wed:"wed", thu:"thu", fri:"fri", sat:"sat", sun:"sun" };
+    const want = (map[day] || day).toLowerCase();
+
+    // label viene "MON" etc; convertimos
+    const labelDay =
+      label.includes("mon") ? "mon" :
+      label.includes("tue") ? "tue" :
+      label.includes("wed") ? "wed" :
+      label.includes("thu") ? "thu" :
+      label.includes("fri") ? "fri" :
+      label.includes("sat") ? "sat" :
+      label.includes("sun") ? "sun" : "";
+
+    if (labelDay === want) ch.checked = !!on;
+  });
+}
+
+function ACS_confirmAssignFlights(){
+
+  const ac = ACS_ASSIGN_CTX.aircraft;
+  if (!ac || !ac.id) {
+    ACS_closeAssignFlightsModal();
+    return;
+  }
+
+  const modal = document.getElementById("assignFlightsModal");
+  if (!modal) return;
+
+  const selectedIds = Array.from(modal.querySelectorAll("input.acs-assign-check:checked"))
+    .map(x => x.getAttribute("data-flight-id"))
+    .filter(Boolean);
+
+  if (!selectedIds.length) {
+    alert("⚠ Select at least one flight.");
+    return;
+  }
+
+  // Cargar flights
+  let flights = [];
+  try {
+    flights = JSON.parse(localStorage.getItem("ACS_FLIGHTS")) || [];
+  } catch {
+    flights = [];
+  }
+
+  if (!Array.isArray(flights) || !flights.length) {
+    alert("⛔ ACS_FLIGHTS empty.");
+    return;
+  }
+
+  // Asignar aircraftId SOLO a los seleccionados (si aún no tienen)
+  const acId = ac.id;
+  let changed = 0;
+
+  flights.forEach(f => {
+    if (!f || !f.id) return;
+    if (!selectedIds.includes(f.id)) return;
+
+    if (!f.aircraftId) {
+      f.aircraftId = acId;
+      changed++;
+    }
+  });
+
+  localStorage.setItem("ACS_FLIGHTS", JSON.stringify(flights));
+
+  ACS_closeAssignFlightsModal();
+
+  // ✅ Refresh UI (tu tabla actual)
+  if (typeof renderSchedule === "function") renderSchedule();
+
+  console.log(`🟢 Assigned ${changed} flight(s) to ${acId}`);
+}
+
+function ACS_closeAssignFlightsModal(){
+  const modal = document.getElementById("assignFlightsModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.classList.add("hidden");
+  }
+  ACS_ASSIGN_CTX.aircraft = null;
+  ACS_ASSIGN_CTX.flightIds = [];
+}
+     
 /* ============================================================
    🟦 CONFIRM ASSIGNMENT
    ============================================================ */
