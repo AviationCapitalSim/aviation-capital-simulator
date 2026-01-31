@@ -881,8 +881,6 @@ document.addEventListener("DOMContentLoaded", () => {
    4️⃣ DAYS — RESTORE EXACT MODE (NO INFERENCE)
    ============================================================ */
 
-const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-
 // Reset todo
 DAY_IDS.forEach(d => {
   if ($(d)) $(d).checked = false;
@@ -1511,7 +1509,7 @@ function confirmRoute() {
   /* ================================
    2) Capturar días + scheduleMode (FIX DEFINITIVO)
    ================================ */
-const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+
 let days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
 
 let scheduleMode = "MULTI_DAY";
