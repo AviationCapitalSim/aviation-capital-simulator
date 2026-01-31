@@ -1958,17 +1958,27 @@ function assignRouteToTail(ac){
 }
 
 /* ============================================================
-   🟦 PASO 4.3 — ASSIGN FLIGHTS MODAL ENGINE (Qatar Luxury)
+   🟦 ASSIGN FLIGHTS MODAL ENGINE (Qatar Luxury)
    ------------------------------------------------------------
-   ✅ Lee ACS_FLIGHTS
-   ✅ Asigna aircraftId solo a seleccionados
-   ✅ No toca scheduleItems / SkyTrack
+   • Fuente de datos: scheduleItems
+   • Contexto temporal del modal (NO persistente)
+   • Compatibilidad estricta por MODELO
+   • No toca SkyTrack runtime
    ============================================================ */
 
 let ACS_ASSIGN_CTX = {
   aircraft: null,
   flightIds: []
 };
+
+/* ============================================================
+   🟦 ACS ASSIGN FLIGHTS MODAL — MODEL AWARE + UX CLEAN
+   ------------------------------------------------------------
+   • Título por MODELO (no matrícula)
+   • Chip informativo de compatibilidad
+   • Select all GLOBAL
+   • Sin Select all por día
+   ============================================================ */
 
 function ACS_openAssignFlightsModal(ac, unassignedFlights){
 
@@ -1984,31 +1994,20 @@ function ACS_openAssignFlightsModal(ac, unassignedFlights){
     return;
   }
 
-  /* ============================================================
-   🟧 PASO 3.1 — MODAL TITLE BY ROUTE MODEL (NOT REGISTRATION)
-   ============================================================ */
+  // ===== MODELO DE LA RUTA (fuente real)
+  const firstFlight = Array.isArray(unassignedFlights) && unassignedFlights.length
+    ? unassignedFlights[0]
+    : null;
 
-// 🔑 El modelo viene de los vuelos (ruta), no del avión físico
-// Tomamos el modelo del primer vuelo no asignado (fuente real)
-const firstFlight = Array.isArray(unassignedFlights) && unassignedFlights.length
-  ? unassignedFlights[0]
-  : null;
+  const routeModelLabel =
+    firstFlight?.acType ||
+    firstFlight?.model ||
+    firstFlight?.aircraft ||
+    "Aircraft Model";
 
-// Normalizamos y mostramos nombre amigable
-const routeModelRaw =
-  firstFlight?.acType ||
-  firstFlight?.model ||
-  firstFlight?.aircraft ||
-  "";
+  title.textContent = `✈️ Assign Flights — ${routeModelLabel}`;
 
-const routeModelLabel = routeModelRaw
-  ? routeModelRaw
-  : "Aircraft Model";
-
-title.textContent = `✈️ Assign Flights — ${routeModelLabel}`;
-
-  // Agrupar por día
-     
+  // ===== Agrupar vuelos por día
   const byDay = {};
   unassignedFlights.forEach(f => {
     const d = (f.day || "").toString().trim().toLowerCase();
@@ -2019,30 +2018,56 @@ title.textContent = `✈️ Assign Flights — ${routeModelLabel}`;
 
   const dayOrder = ["mon","tue","wed","thu","fri","sat","sun"];
   const dayLabel = { mon:"MON", tue:"TUE", wed:"WED", thu:"THU", fri:"FRI", sat:"SAT", sun:"SUN" };
+  const daysSorted = Object.keys(byDay).sort(
+    (a,b)=> dayOrder.indexOf(a)-dayOrder.indexOf(b)
+  );
 
-  const daysSorted = Object.keys(byDay).sort((a,b)=> dayOrder.indexOf(a)-dayOrder.indexOf(b));
-
+  // ===== CHIP INFORMATIVO + SELECT ALL GLOBAL
   body.innerHTML = `
-    <div class="flight-kicker">
-      Select the flights you want to assign to this aircraft.
+    <div class="meta-card" style="
+      margin-bottom:10px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(245,158,11,0.12);
+      border:1px solid rgba(245,158,11,0.35);
+    ">
+      <span style="font-weight:900;color:#f59e0b;">⚠</span>
+      <span style="font-weight:700;color:#ffe7a0;">
+        Route restricted to model:
+      </span>
+      <span class="service-chip" style="margin-left:auto;">
+        ${routeModelLabel}
+      </span>
+    </div>
+
+    <div class="flight-kicker" style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    ">
+      <span>Select the flights you want to assign to this aircraft.</span>
+      <button
+        class="btn-modal ghost"
+        style="padding:6px 10px;border-radius:12px;font-weight:800;"
+        onclick="ACS_toggleAllVisibleAssign(true)"
+      >
+        Select all
+      </button>
     </div>
 
     ${daysSorted.map(d => `
       <div class="meta-card" style="margin-bottom:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-          <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
-          <button
-            class="btn-modal ghost"
-            style="padding:6px 10px;border-radius:12px;font-weight:800;"
-            onclick="ACS_toggleDayAssign('${d}', true)"
-          >Select all</button>
-        </div>
+        <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
 
         <div style="margin-top:8px;display:grid;gap:8px;">
           ${byDay[d].map(f => `
             <label style="display:flex;gap:10px;align-items:center;">
               <input class="acs-assign-check" type="checkbox" data-flight-id="${f.id}">
-              <span style="font-weight:800;color:#ffe7a0;">${f.origin || "—"} → ${f.destination || "—"}</span>
+              <span style="font-weight:800;color:#ffe7a0;">
+                ${f.origin || "—"} → ${f.destination || "—"}
+              </span>
               <span style="margin-left:auto;font-family:Orbitron,monospace;color:#00ff80;">
                 ${(f.departure || "—")}–${(f.arrival || "—")}
               </span>
@@ -2052,11 +2077,12 @@ title.textContent = `✈️ Assign Flights — ${routeModelLabel}`;
       </div>
     `).join("")}
 
-    ${!daysSorted.length ? `<div class="meta-card"><strong>No unassigned flights found.</strong></div>` : ``}
+    ${!daysSorted.length
+      ? `<div class="meta-card"><strong>No unassigned flights found.</strong></div>`
+      : ``}
   `;
 
   modal.classList.remove("hidden");
- 
 }
 
 function ACS_toggleDayAssign(day, on){
