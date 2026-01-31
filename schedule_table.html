@@ -2090,6 +2090,20 @@ function ACS_toggleDayAssign(day, on){
 }
 
 /* ============================================================
+   🟧 PASO 4.3 — GLOBAL SELECT ALL (VISIBLE CHECKS)
+   ============================================================ */
+
+function ACS_toggleAllVisibleAssign(on){
+  const modal = document.getElementById("assignFlightsModal");
+  if (!modal) return;
+
+  const checks = modal.querySelectorAll("input.acs-assign-check");
+  checks.forEach(ch => {
+    if (!ch.disabled) ch.checked = !!on;
+  });
+}
+     
+/* ============================================================
    🟦 PASO 2.2-B — CONFIRM ASSIGN (WRITE = scheduleItems)
    ============================================================ */
 
