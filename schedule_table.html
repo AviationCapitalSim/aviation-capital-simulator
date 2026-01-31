@@ -2595,35 +2595,79 @@ if (it && it.type === "service") {
 
   title.textContent = serviceLabel;
 
-  box.innerHTML = `
-    <div class="flight-kicker">
-      <strong>Maintenance Service</strong> · ${dayName}
-    </div>
+/* ============================================================
+   🟧 PASO 4.1 — ROUTE MODEL INFO CHIP (UX)
+   ------------------------------------------------------------
+   • Informa la restricción por modelo (antes de asignar)
+   ============================================================ */
 
-    <div class="flight-hero">
-      <div class="route">${serviceLabel}</div>
-      <div class="times">${start} → ${end}</div>
-    </div>
+// Modelo de la ruta (fuente real: vuelos mostrados)
+const routeModelKey = normalizeModel(
+  firstFlight?.acType || firstFlight?.model || firstFlight?.aircraft || ""
+);
+const routeModelLabelChip =
+  (firstFlight?.acType || firstFlight?.model || firstFlight?.aircraft || "Unknown Model");
 
-    <div class="flight-meta">
-      <div class="meta-card">
-        <span class="label">Type</span>
-        <span class="value">${isB ? "B-Check" : "A-Check"}</span>
+// Prepara chip informativo
+const routeInfoChipHTML = `
+  <div class="meta-card" style="
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(245,158,11,0.12);
+    border:1px solid rgba(245,158,11,0.35);
+  ">
+    <span style="font-weight:900;color:#f59e0b;">⚠</span>
+    <span style="font-weight:700;color:#ffe7a0;">
+      Route restricted to model:
+    </span>
+    <span class="service-chip" style="margin-left:auto;">
+      ${routeModelLabelChip}
+    </span>
+  </div>
+`;
+     
+ /* ============================================================
+   🟧 PASO 4.2 — ASSIGN MODAL BODY (GLOBAL SELECT ALL)
+   ============================================================ */
+
+body.innerHTML = `
+  ${routeInfoChipHTML}
+
+  <div class="flight-kicker" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <span>Select the flights you want to assign to this aircraft.</span>
+    <button
+      class="btn-modal ghost"
+      style="padding:6px 10px;border-radius:12px;font-weight:800;"
+      onclick="ACS_toggleAllVisibleAssign(true)"
+    >
+      Select all
+    </button>
+  </div>
+
+  ${daysSorted.map(d => `
+    <div class="meta-card" style="margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
       </div>
-      <div class="meta-card">
-        <span class="label">Duration</span>
-        <span class="value">${durationText}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Scheduled Day</span>
-        <span class="value">${dayName}</span>
-      </div>
-      <div class="meta-card">
-        <span class="label">Status</span>
-        <span class="value">Scheduled</span>
+
+      <div style="margin-top:8px;display:grid;gap:8px;">
+        ${byDay[d].map(f => `
+          <label style="display:flex;gap:10px;align-items:center;">
+            <input class="acs-assign-check" type="checkbox" data-flight-id="${f.id}">
+            <span style="font-weight:800;color:#ffe7a0;">${f.origin || "—"} → ${f.destination || "—"}</span>
+            <span style="margin-left:auto;font-family:Orbitron,monospace;color:#00ff80;">
+              ${(f.departure || "—")}–${(f.arrival || "—")}
+            </span>
+          </label>
+        `).join("")}
       </div>
     </div>
-  `;
+  `).join("")}
+
+  ${!daysSorted.length ? `<div class="meta-card"><strong>No unassigned flights found.</strong></div>` : ``}
+`;
 
   const footer = modal.querySelector(".acs-modal-footer");
   if (footer) {
