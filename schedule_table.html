@@ -2999,7 +2999,11 @@ function handleLogout(){
 // ============================================================
 // LOAD
 // ============================================================
-window.onload = renderSchedule;
+     
+window.onload = () => {
+  ACS_createScheduleFlightsFromConfirmedRoute();
+  renderSchedule();
+};
 
 </script>
 <!-- ============================================================
