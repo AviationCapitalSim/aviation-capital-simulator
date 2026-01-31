@@ -1151,6 +1151,20 @@ function normalizeModel(m){
     .trim();
 }
 
+/* ============================================================
+   🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
+   ============================================================ */
+
+function ACS_isFlightCompatibleWithAircraft(flight, ac){
+  const acKey = normalizeModel(ac?.model || ac?.type || "");
+  const fKey  = normalizeModel(flight?.model || flight?.acType || flight?.aircraftModel || "");
+  return !!acKey && !!fKey && (acKey === fKey);
+}
+
+function ACS_isFlightAlreadyAssigned(flight){
+  return !!(flight && flight.aircraftId);
+}
+     
 // ============================================================
 // === REAL FLEET — Unified with My Aircraft ==================
 // === Source: ACS_MyAircraft (official fleet key) ============
@@ -1801,12 +1815,13 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 }
 
 /* ============================================================
-   🟦 PASO 4.1 — ASSIGN FLIGHTS TO AIRCRAFT (QATAR LUXURY)
+   🟦 PASO 4.1 + 4.2 — ASSIGN FLIGHTS TO AIRCRAFT (QATAR LUXURY)
    ------------------------------------------------------------
    • NO crea vuelos
    • NO toca SkyTrack
    • NO toca slots
    • SOLO asigna aircraftId a vuelos existentes
+   • FILTRA por modelo exacto
    ============================================================ */
 
 function assignRouteToTail(ac){
@@ -1816,7 +1831,30 @@ function assignRouteToTail(ac){
     return;
   }
 
-  // Obtener vuelos existentes (pool operativo)
+  /* ============================================================
+     🧩 HELPERS LOCALES (NO GLOBAL, NO RIESGO)
+     ============================================================ */
+
+  const normalize = v =>
+    String(v || "")
+      .toUpperCase()
+      .replace(/[\s\-\/\.\(\)\_]/g,"")
+      .trim();
+
+  const aircraftModelKey = normalize(ac.model || ac.type || "");
+
+  const isCompatible = (flight) => {
+    const flightModelKey = normalize(
+      flight.model ||
+      flight.acType ||
+      flight.aircraftModel
+    );
+    return aircraftModelKey && flightModelKey && aircraftModelKey === flightModelKey;
+  };
+
+  const isAssigned = (flight) => !!flight.aircraftId;
+
+  // Obtener vuelos existentes
   let flights = [];
   try {
     flights = JSON.parse(localStorage.getItem("ACS_FLIGHTS")) || [];
@@ -1826,14 +1864,6 @@ function assignRouteToTail(ac){
 
   if (!Array.isArray(flights) || !flights.length) {
     alert("⚠ No available flights to assign.");
-    return;
-  }
-
-  // Filtrar vuelos NO asignados
-  const unassigned = flights.filter(f => !f.aircraftId);
-
-  if (!unassigned.length) {
-    alert("⚠ All flights are already assigned.");
     return;
   }
 
@@ -1848,9 +1878,9 @@ function assignRouteToTail(ac){
 
   title.textContent = `✈️ Assign Flights — ${ac.registration}`;
 
-  // Agrupar por día
+  // Agrupar por día (SOLO vuelos NO asignados)
   const byDay = {};
-  unassigned.forEach(f => {
+  flights.forEach(f => {
     if (!byDay[f.day]) byDay[f.day] = [];
     byDay[f.day].push(f);
   });
@@ -1859,18 +1889,56 @@ function assignRouteToTail(ac){
     <div class="flight-kicker">
       Select which flights you want to assign to this aircraft.
     </div>
-    ${Object.keys(byDay).map(day => `
+
+    ${Object.keys(byDay).sort().map(day => `
       <div class="meta-card" style="margin-bottom:10px;">
         <strong>${day.toUpperCase()}</strong>
-        ${byDay[day].map(f => `
-          <label style="display:flex;gap:8px;align-items:center;margin-top:6px;">
-            <input type="checkbox" data-flight-id="${f.id}">
-            ${f.origin} → ${f.destination}
-            <span style="margin-left:auto;font-family:Orbitron;">
-              ${f.departure}–${f.arrival}
-            </span>
-          </label>
-        `).join("")}
+
+        ${byDay[day].map(f => {
+
+          const compatible = isCompatible(f);
+          const assigned   = isAssigned(f);
+          const disabled   = (!compatible || assigned) ? "disabled" : "";
+
+          const badge = assigned
+            ? "🔒 Assigned"
+            : !compatible
+              ? "⛔ Incompatible"
+              : "✔ Available";
+
+          const badgeColor = assigned
+            ? "#94a3b8"
+            : !compatible
+              ? "#ef4444"
+              : "#22c55e";
+
+          return `
+            <label style="
+              display:flex;
+              gap:8px;
+              align-items:center;
+              margin-top:6px;
+              opacity:${disabled ? 0.55 : 1};
+            ">
+              <input type="checkbox"
+                     data-flight-id="${f.id}"
+                     ${disabled}>
+              ${f.origin} → ${f.destination}
+              <span style="margin-left:auto;font-family:Orbitron;">
+                ${f.departure}–${f.arrival}
+              </span>
+              <span style="
+                margin-left:10px;
+                font-size:0.75rem;
+                font-weight:700;
+                color:${badgeColor};
+              ">
+                ${badge}
+              </span>
+            </label>
+          `;
+        }).join("")}
+
       </div>
     `).join("")}
   `;
