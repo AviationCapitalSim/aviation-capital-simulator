@@ -2694,12 +2694,38 @@ function cancelSelectedService(){
   renderSchedule();
 }
      
+/* ============================================================
+   🟥 HOTFIX — RESTORE flightModal FOOTER (Edit/Remove/Delete)
+   ------------------------------------------------------------
+   ✅ Si antes se machacó el footer (por Assign), lo repara al cerrar
+   ============================================================ */
+
+function ACS_restoreFlightModalFooterDefault(){
+
+  const modal = document.getElementById("flightModal");
+  if (!modal) return;
+
+  const footer = modal.querySelector(".acs-modal-footer");
+  if (!footer) return;
+
+  footer.innerHTML = `
+    <button class="btn-modal gold"  onclick="editSelectedFlight()">✏️ EDIT</button>
+    <button class="btn-modal amber" onclick="removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
+    <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
+    <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
+  `;
+}
+
 function closeFlightModal(){
   const modal = document.getElementById("flightModal");
   if (modal) {
     modal.style.display = "none";
     modal.classList.add("hidden");
   }
+
+  // ✅ restaurar botones originales siempre
+  ACS_restoreFlightModalFooterDefault();
+
   ACS_selectedFlightItem = null;
   ACS_selectedChipEl = null;
 }
