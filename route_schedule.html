@@ -878,25 +878,40 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 /* ============================================================
-   🟢 EDIT — RESTORE SINGLE DAY (FINAL FIX)
+   🟢 EDIT — RESTORE SINGLE DAY (FINAL FIX v2)
    ------------------------------------------------------------
-   Regla:
-   • EDIT = 1 vuelo = 1 día
-   • NO usar scheduleMode
-   • NO usar days[]
+   • Soporta editCtx.editDay (canónico)
+   • Soporta editCtx.day (legacy)
+   • Limpia residuos visuales antes de restaurar
    ============================================================ */
+(() => {
+  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
 
-if (editCtx.day) {
-  const dayId = editCtx.day.toLowerCase();
-  const dayEl = document.getElementById(dayId);
+  // 1) limpiar todos los checks primero
+  DAY_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = false;
+  });
 
+  // 2) obtener día desde el contexto de edición
+  const rawDay = (
+    editCtx &&
+    (editCtx.editDay || editCtx.day) || ""
+  ).toString().trim().toLowerCase();
+
+  if (!rawDay) {
+    console.warn("⚠ EDIT day missing (editDay/day)", editCtx);
+    return;
+  }
+
+  const dayEl = document.getElementById(rawDay);
   if (dayEl) {
     dayEl.checked = true;
-    console.log("🟢 EDIT day restored:", dayId);
+    console.log("🟢 EDIT day restored:", rawDay);
   } else {
-    console.warn("⚠ EDIT day checkbox not found:", dayId);
+    console.warn("⚠ EDIT checkbox not found for:", rawDay);
   }
-}
+})();
      
   /* ============================================================
      5️⃣ UI — EDIT MODE
@@ -1489,22 +1504,20 @@ function confirmRoute() {
     return;
   }
 
-  /* ================================
-   2) Capturar días + scheduleMode (FIX DEFINITIVO)
-   ================================ */
+/* ============================================================
+   2) CAPTURA DE DÍAS — FIX CRÍTICO
+   ------------------------------------------------------------
+   • Define DAY_IDS ANTES de usarlo
+   • Evita ReferenceError que mata CONFIRM ROUTE
+   • Compatible con modo single-day actual
+   ============================================================ */
 
-let days = DAY_IDS.filter(id => document.getElementById(id)?.checked);
+const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+const selectedDaysUI = DAY_IDS.filter(id =>
+  document.getElementById(id)?.checked
+);
 
-let scheduleMode = "MULTI_DAY";
-
-if (document.getElementById("everyDay")?.checked) {
-  days = [...DAY_IDS];
-  scheduleMode = "EVERY_DAY";
-} else if (document.getElementById("separateDays")?.checked) {
-  scheduleMode = "EACH_DAY";
-}
-
-if (!days.length) {
+if (!selectedDaysUI.length) {
   alert("Please select at least one day.");
   return;
 }
