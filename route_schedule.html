@@ -1505,14 +1505,12 @@ function confirmRoute() {
   }
 
 /* ============================================================
-   2) CAPTURA DE DÍAS — FIX CRÍTICO
+   2) CAPTURA DE DÍAS — FIX SEGURO (SIN REDECLARAR)
    ------------------------------------------------------------
-   • Define DAY_IDS ANTES de usarlo
-   • Evita ReferenceError que mata CONFIRM ROUTE
-   • Compatible con modo single-day actual
+   • Usa DAY_IDS existente
+   • Evita SyntaxError
    ============================================================ */
 
-const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
 const selectedDaysUI = DAY_IDS.filter(id =>
   document.getElementById(id)?.checked
 );
