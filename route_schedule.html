@@ -1593,70 +1593,92 @@ const isEachDay  =
 const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 
 /* ============================================================
-   🟢 ROUTE OBJECT — IDENTIDAD CORRECTA
-   ============================================================ */
-     
-const newRoute = {
-  id: routeId,
-
-  // 🔑 IDENTIDAD (CLAVE DEL BUG)
-  blockId: isEveryDay ? ("BLOCK_" + Date.now()) : null,
-
-  // ✈️ Aircraft
-  aircraftId: selectedAircraftId,
-  modelKey: modelKey.toUpperCase(),
-  aircraft: modelKey.toUpperCase(),
-
-  // 📍 Ruta
-  origin,
-  destination,
-  departure,
-  arrival,
-
-  distanceNM: finalDistanceNM,
-
-  // ⏱ Tiempos
-  blockTimeMin,
-  turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
-  turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-  totalRotationMin:
-    window.ACS_RouteTechData?.totalMin ??
-    (blockTimeMin * 2 + 45),
-
-  optimized: document.getElementById("optimizeRotation")?.checked || false,
-
-  // 📆 DÍAS (FIX REAL)
-  // - Each Day → SOLO el día tocado
-  // - Every Day → bloque completo
-  scheduleMode: scheduleMode,
-  days: days,
-
-
-  // 🔢 Números de vuelo (PRESERVADOS EN EDIT)
-  flightNumberOut,
-  flightNumberIn,
-
-  type: "flight"
-};
-
-/* ============================================================
-   🧠 FLIGHT NUMBER MANAGEMENT — SAFE
+   🟢 PASO B.1 — EXPANSIÓN CANÓNICA POR DÍA
    ------------------------------------------------------------
-   ✔ CREATE: marca + incrementa
-   ✔ EDIT: NO toca números
+   • 1 día = 1 vuelo
+   • Sin blockId
+   • Sin scheduleMode
+   • Compatible con EDIT
    ============================================================ */
-if (!isEditMode) {
-  if (typeof markNumbersUsed === "function") {
-    markNumbersUsed(
-      newRoute.flightNumberOut,
-      newRoute.flightNumberIn
-    );
-  }
 
-  if (typeof bumpFlightCounter === "function") {
-    bumpFlightCounter();
-  }
+const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+const selectedDays = DAY_IDS.filter(d => document.getElementById(d)?.checked);
+
+if (!selectedDays.length) {
+  alert("Please select at least one day.");
+  return;
 }
+
+// Cargar pool actual
+let scheduleItems = [];
+try {
+  scheduleItems = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+} catch {
+  scheduleItems = [];
+}
+
+// 🔎 EDIT activo
+const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
+
+// 🧹 En EDIT: eliminar SOLO el vuelo que se está editando
+if (isEditMode) {
+  const editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT"));
+  scheduleItems = scheduleItems.filter(it => it.id !== editCtx.routeKey);
+  localStorage.removeItem("ACS_ROUTE_EDIT");
+}
+
+// 🚀 Crear vuelos por día
+selectedDays.forEach(day => {
+
+  const flightId = "FL_" + Math.floor(100000 + Math.random() * 900000);
+
+  const flight = {
+    id: flightId,
+    type: "flight",
+
+    // Aircraft
+    aircraftId: selectedAircraftId,
+    modelKey: modelKey.toUpperCase(),
+    aircraft: modelKey.toUpperCase(),
+
+    // Route
+    origin,
+    destination,
+    day,
+    departure,
+    arrival,
+
+    // Performance
+    distanceNM: finalDistanceNM,
+    blockTimeMin,
+    turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
+    turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
+    totalRotationMin:
+      window.ACS_RouteTechData?.totalMin ??
+      (blockTimeMin * 2 + 45),
+
+    optimized: document.getElementById("optimizeRotation")?.checked || false,
+
+    // Flight Numbers (idénticos en todos los días)
+    flightNumberOut,
+    flightNumberIn
+  };
+
+  scheduleItems.push(flight);
+});
+
+// 💾 Persistencia FINAL
+localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
+
+// 🔢 Flight numbers (SOLO en CREATE)
+if (!isEditMode) {
+  markNumbersUsed(flightNumberOut, flightNumberIn);
+  bumpFlightCounter();
+}
+
+// UI
+alert("Route successfully added to Schedule.");
+window.location.href = "schedule_table.html";
 
   /* ============================================================
      SLOT ENGINE — (si existe)
