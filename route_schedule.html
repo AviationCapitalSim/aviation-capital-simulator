@@ -877,44 +877,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /* ============================================================
-   4️⃣ DAYS — RESTORE EXACT MODE (NO INFERENCE)
+/* ============================================================
+   🟢 EDIT — RESTORE SINGLE DAY (FINAL FIX)
+   ------------------------------------------------------------
+   Regla:
+   • EDIT = 1 vuelo = 1 día
+   • NO usar scheduleMode
+   • NO usar days[]
    ============================================================ */
 
-// Reset todo
-DAY_IDS.forEach(d => {
-  if ($(d)) $(d).checked = false;
-});
+if (editCtx.day) {
+  const dayId = editCtx.day.toLowerCase();
+  const dayEl = document.getElementById(dayId);
 
-if ($("everyDay")) $("everyDay").checked = false;
-if ($("separateDays")) $("separateDays").checked = false;
-
-// 🔑 USAR scheduleMode GUARDADO
+  if (dayEl) {
+    dayEl.checked = true;
+    console.log("🟢 EDIT day restored:", dayId);
+  } else {
+    console.warn("⚠ EDIT day checkbox not found:", dayId);
+  }
+}
      
-const mode = editCtx.scheduleMode || "MULTI_DAY";
-
-console.log("🧠 EDIT MODE — scheduleMode:", mode, editCtx.days);
-
-if (mode === "EVERY_DAY") {
-  if ($("everyDay")) $("everyDay").checked = true;
-  DAY_IDS.forEach(d => {
-    if ($(d)) $(d).checked = true;
-  });
-}
-
-if (mode === "MULTI_DAY") {
-  (editCtx.days || []).forEach(d => {
-    if ($(d)) $(d).checked = true;
-  });
-}
-
-if (mode === "EACH_DAY") {
-  (editCtx.days || []).forEach(d => {
-    if ($(d)) $(d).checked = true;
-  });
-  if ($("separateDays")) $("separateDays").checked = true;
-}
-
   /* ============================================================
      5️⃣ UI — EDIT MODE
      ============================================================ */
