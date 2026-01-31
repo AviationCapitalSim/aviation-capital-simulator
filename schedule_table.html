@@ -1851,6 +1851,10 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
    ✅ SOLO asigna aircraftId en ACS_FLIGHTS
    ============================================================ */
 
+/* ============================================================
+   🟦 PASO 2.2-A — ASSIGN ROUTE (SOURCE = scheduleItems)
+   ============================================================ */
+
 function assignRouteToTail(ac){
 
   if (!ac || !ac.id) {
@@ -1858,29 +1862,31 @@ function assignRouteToTail(ac){
     return;
   }
 
-  // Obtener vuelos existentes (pool operativo)
-  let flights = [];
+  // 🔑 FUENTE ÚNICA: scheduleItems
+  let items = [];
   try {
-    flights = JSON.parse(localStorage.getItem("ACS_FLIGHTS")) || [];
+    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
   } catch {
-    flights = [];
+    items = [];
   }
 
-  if (!Array.isArray(flights) || !flights.length) {
-    alert("⚠ No available flights to assign.");
+  if (!Array.isArray(items) || !items.length) {
+    alert("⚠ No scheduled flights found.");
     return;
   }
 
-  // Filtrar vuelos NO asignados
-  const unassigned = flights.filter(f => !f.aircraftId);
+  // 👉 SOLO vuelos NO asignados
+  const unassignedFlights = items.filter(it =>
+    it.type === "flight" && !it.aircraftId
+  );
 
-  if (!unassigned.length) {
-    alert("⚠ All flights are already assigned.");
+  if (!unassignedFlights.length) {
+    alert("⚠ All scheduled flights are already assigned.");
     return;
   }
 
-  // ✅ Abrir modal nuevo (NO flightModal)
-  ACS_openAssignFlightsModal(ac, unassigned);
+  // ✅ Abrir modal con DATOS REALES DEL SCHEDULE
+  ACS_openAssignFlightsModal(ac, unassignedFlights);
 }
 
 /* ============================================================
@@ -1995,6 +2001,10 @@ function ACS_toggleDayAssign(day, on){
   });
 }
 
+/* ============================================================
+   🟦 PASO 2.2-B — CONFIRM ASSIGN (WRITE = scheduleItems)
+   ============================================================ */
+
 function ACS_confirmAssignFlights(){
 
   const ac = ACS_ASSIGN_CTX.aircraft;
@@ -2006,7 +2016,9 @@ function ACS_confirmAssignFlights(){
   const modal = document.getElementById("assignFlightsModal");
   if (!modal) return;
 
-  const selectedIds = Array.from(modal.querySelectorAll("input.acs-assign-check:checked"))
+  const selectedIds = Array.from(
+    modal.querySelectorAll("input.acs-assign-check:checked")
+  )
     .map(x => x.getAttribute("data-flight-id"))
     .filter(Boolean);
 
@@ -2015,41 +2027,40 @@ function ACS_confirmAssignFlights(){
     return;
   }
 
-  // Cargar flights
-  let flights = [];
+  // 🔑 CARGAR scheduleItems
+  let items = [];
   try {
-    flights = JSON.parse(localStorage.getItem("ACS_FLIGHTS")) || [];
+    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
   } catch {
-    flights = [];
+    items = [];
   }
 
-  if (!Array.isArray(flights) || !flights.length) {
-    alert("⛔ ACS_FLIGHTS empty.");
+  if (!Array.isArray(items) || !items.length) {
+    alert("⛔ scheduleItems empty.");
     return;
   }
 
-  // Asignar aircraftId SOLO a los seleccionados (si aún no tienen)
-  const acId = ac.id;
   let changed = 0;
 
-  flights.forEach(f => {
-    if (!f || !f.id) return;
-    if (!selectedIds.includes(f.id)) return;
-
-    if (!f.aircraftId) {
-      f.aircraftId = acId;
+  items.forEach(it => {
+    if (
+      it.type === "flight" &&
+      selectedIds.includes(it.id) &&
+      !it.aircraftId
+    ) {
+      it.aircraftId = ac.id;
       changed++;
     }
   });
 
-  localStorage.setItem("ACS_FLIGHTS", JSON.stringify(flights));
+  localStorage.setItem("scheduleItems", JSON.stringify(items));
 
   ACS_closeAssignFlightsModal();
 
-  // ✅ Refresh UI (tu tabla actual)
-  if (typeof renderSchedule === "function") renderSchedule();
+  // 🔄 REFRESH REAL
+  renderSchedule();
 
-  console.log(`🟢 Assigned ${changed} flight(s) to ${acId}`);
+  console.log(`🟢 Assigned ${changed} scheduled flight(s) to ${ac.id}`);
 }
 
 function ACS_closeAssignFlightsModal(){
