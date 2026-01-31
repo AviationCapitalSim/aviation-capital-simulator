@@ -625,18 +625,17 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
     <select id="departureTime" onchange="autoCalculate(); autoGenerateFlightNumber();"></select>
 
     <label style="text-align:center;margin-top:1.2rem;">Days of Operation</label>
-    <div class="days-row">
-      <label><input type="checkbox" id="everyDay" onchange="toggleEveryDay()"> Every Day</label>
-      <label><input type="checkbox" id="mon"> Mo</label>
-      <label><input type="checkbox" id="tue"> Tu</label>
-      <label><input type="checkbox" id="wed"> We</label>
-      <label><input type="checkbox" id="thu"> Th</label>
-      <label><input type="checkbox" id="fri"> Fr</label>
-      <label><input type="checkbox" id="sat"> Sa</label>
-      <label><input type="checkbox" id="sun"> Su</label>
-    </div>
+<div class="days-row">
+  <label><input type="checkbox" id="mon"> Mo</label>
+  <label><input type="checkbox" id="tue"> Tu</label>
+  <label><input type="checkbox" id="wed"> We</label>
+  <label><input type="checkbox" id="thu"> Th</label>
+  <label><input type="checkbox" id="fri"> Fr</label>
+  <label><input type="checkbox" id="sat"> Sa</label>
+  <label><input type="checkbox" id="sun"> Su</label>
+</div>
 
-    <hr class="divider" />
+<hr class="divider" />
 
     <div class="options-center" style="text-align:center;">
       <label><input type="checkbox" id="separateDays"> Create each day as a separate route</label>
