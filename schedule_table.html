@@ -2007,6 +2007,36 @@ function ACS_openAssignFlightsModal(ac, unassignedFlights){
 
   title.textContent = `✈️ Assign Flights — ${routeModelLabel}`;
 
+  /* ============================================================
+   🟧 PASO 4.1 — MODEL COMPATIBILITY WARNING (CONTEXTUAL)
+   ------------------------------------------------------------
+   • SOLO aparece si el avión NO coincide con el modelo de ruta
+   • NO aparece en casos correctos
+   ============================================================ */
+
+const acModelRaw =
+  ac?.model ||
+  ac?.type ||
+  ac?.aircraft ||
+  "";
+
+const acModelKey   = normalizeModel(acModelRaw);
+const routeModelKey = normalizeModel(routeModelRaw);
+
+let warningHTML = "";
+
+if (acModelKey && routeModelKey && acModelKey !== routeModelKey) {
+  warningHTML = `
+    <div class="meta-card" style="
+      margin-bottom:12px;
+      border:1px solid rgba(255,179,0,0.55);
+      background:rgba(255,179,0,0.10);
+    ">
+      ⚠️ This route is restricted to <strong>${routeModelLabel}</strong> aircraft
+    </div>
+  `;
+}
+     
   // ===== Agrupar vuelos por día
   const byDay = {};
   unassignedFlights.forEach(f => {
@@ -2023,6 +2053,7 @@ function ACS_openAssignFlightsModal(ac, unassignedFlights){
   );
 
   // ===== CHIP INFORMATIVO + SELECT ALL GLOBAL
+     
   body.innerHTML = `
     <div class="meta-card" style="
       margin-bottom:10px;
@@ -2042,20 +2073,21 @@ function ACS_openAssignFlightsModal(ac, unassignedFlights){
     </div>
 
     <div class="flight-kicker" style="
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    ">
-      <span>Select the flights you want to assign to this aircraft.</span>
-      <button
-        class="btn-modal ghost"
-        style="padding:6px 10px;border-radius:12px;font-weight:800;"
-        onclick="ACS_toggleAllVisibleAssign(true)"
-      >
-        Select all
-      </button>
-    </div>
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+">
+  <span>Select the flights you want to assign to this aircraft.</span>
+
+  <button
+    class="btn-modal ghost"
+    style="padding:6px 14px;border-radius:12px;font-weight:800;"
+    onclick="ACS_toggleSelectAllGlobal()"
+  >
+    Select all
+  </button>
+</div>
 
     ${daysSorted.map(d => `
       <div class="meta-card" style="margin-bottom:10px;">
@@ -2115,6 +2147,26 @@ function ACS_toggleDayAssign(day, on){
   });
 }
 
+/* ============================================================
+   🟦 PASO 4.2 — SELECT ALL GLOBAL (TOGGLE)
+   ============================================================ */
+
+function ACS_toggleSelectAllGlobal(){
+
+  const modal = document.getElementById("assignFlightsModal");
+  if (!modal) return;
+
+  const checks = [...modal.querySelectorAll("input.acs-assign-check")];
+  if (!checks.length) return;
+
+  const allChecked = checks.every(ch => ch.checked === true);
+
+  checks.forEach(ch => {
+    ch.checked = !allChecked;
+  });
+
+}
+     
 /* ============================================================
    🟧 PASO 4.3 — GLOBAL SELECT ALL (VISIBLE CHECKS)
    ============================================================ */
