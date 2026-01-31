@@ -1453,6 +1453,73 @@ function hideAircraftHover(){
   localStorage.setItem(FLAG_KEY, "1");
 
 })();
+
+/* ============================================================
+   🟦 PASO 2.2 — CREATE FLIGHTS FROM confirmedRoute (CANONICAL)
+   ------------------------------------------------------------
+   • Fuente: localStorage.confirmedRoute
+   • Destino: localStorage.scheduleItems
+   • Schedule Table SOLO LEE scheduleItems
+   ============================================================ */
+
+function ACS_createScheduleFlightsFromConfirmedRoute() {
+
+  let route = null;
+  try {
+    route = JSON.parse(localStorage.getItem("confirmedRoute"));
+  } catch (e) {
+    route = null;
+  }
+
+  if (!route || !Array.isArray(route.days) || !route.days.length) {
+    return; // nada que crear
+  }
+
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  } catch {
+    items = [];
+  }
+
+  // 🔒 evitar duplicar el mismo bloque
+  const blockId = route.blockId || route.blockID || null;
+  if (blockId && items.some(it => it.blockId === blockId)) {
+    return;
+  }
+
+  route.days.forEach(day => {
+
+    const flightId = "FLT_" + Math.random().toString(36).slice(2, 9);
+
+    items.push({
+      id: flightId,
+      blockId: blockId || "",
+      type: "flight",
+
+      origin: route.origin,
+      destination: route.destination,
+
+      day: day,
+
+      departure: route.departure,
+      arrival: route.arrival,
+
+      flightNumberOut: route.flightNumberOut || "",
+      flightNumberIn:  route.flightNumberIn  || "",
+
+      aircraftId: null,              // 🔑 SE ASIGNA DESPUÉS
+      acType: route.aircraft || route.modelKey || "",
+
+      blockTimeMin: route.blockTimeMin || null,
+      totalRotationMin: route.totalRotationMin || null
+    });
+  });
+
+  localStorage.setItem("scheduleItems", JSON.stringify(items));
+
+  console.log("🟢 Schedule flights created:", items.length);
+}
      
 // ============================================================
 // === RENDER PRINCIPAL DEL SCHEDULE ==========================
@@ -1565,6 +1632,7 @@ items.forEach(it => {
     : "—";
 
     const manu = ac.manufacturer || "—";
+       
     /* ============================================================
    🟧 A17.3 — MAINTENANCE DUE BADGE (UI ONLY)
    ============================================================ */
