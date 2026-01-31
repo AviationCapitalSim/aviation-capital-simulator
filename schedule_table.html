@@ -2020,7 +2020,13 @@ const acModelRaw =
   ac?.aircraft ||
   "";
 
-const acModelKey   = normalizeModel(acModelRaw);
+const routeModelRaw =
+  firstFlight?.acType ||
+  firstFlight?.model ||
+  firstFlight?.aircraft ||
+  "";
+
+const acModelKey    = normalizeModel(acModelRaw);
 const routeModelKey = normalizeModel(routeModelRaw);
 
 let warningHTML = "";
@@ -2032,12 +2038,13 @@ if (acModelKey && routeModelKey && acModelKey !== routeModelKey) {
       border:1px solid rgba(255,179,0,0.55);
       background:rgba(255,179,0,0.10);
     ">
-      ⚠️ This route is restricted to <strong>${routeModelLabel}</strong> aircraft
+      ⚠️ This route is restricted to <strong>${routeModelRaw}</strong> aircraft
     </div>
   `;
 }
      
   // ===== Agrupar vuelos por día
+     
   const byDay = {};
   unassignedFlights.forEach(f => {
     const d = (f.day || "").toString().trim().toLowerCase();
