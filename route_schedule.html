@@ -1453,6 +1453,9 @@ setTimeout(() => {
 
 function confirmRoute() {
 
+  // 🔧 FIX 1 — DECLARACIÓN ÚNICA (antes de usar DAY_IDS)
+  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
+
   /* ================================
      1) Capturar valores del formulario
      ================================ */
@@ -1504,21 +1507,17 @@ function confirmRoute() {
     return;
   }
 
-/* ============================================================
-   2) CAPTURA DE DÍAS — FIX SEGURO (SIN REDECLARAR)
-   ------------------------------------------------------------
-   • Usa DAY_IDS existente
-   • Evita SyntaxError
-   ============================================================ */
+  /* ============================================================
+     2) CAPTURA DE DÍAS — FIX SEGURO
+     ============================================================ */
+  const selectedDaysUI = DAY_IDS.filter(id =>
+    document.getElementById(id)?.checked
+  );
 
-const selectedDaysUI = DAY_IDS.filter(id =>
-  document.getElementById(id)?.checked
-);
-
-if (!selectedDaysUI.length) {
-  alert("Please select at least one day.");
-  return;
-}
+  if (!selectedDaysUI.length) {
+    alert("Please select at least one day.");
+    return;
+  }
 
   /* ================================
      3) Calcular llegada (HH:MM)
@@ -1590,13 +1589,12 @@ const isEachDay  =
    • Compatible con EDIT
    ============================================================ */
 
-const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-const selectedDays = DAY_IDS.filter(d => document.getElementById(d)?.checked);
+  const selectedDays = DAY_IDS.filter(d => document.getElementById(d)?.checked);
 
-if (!selectedDays.length) {
-  alert("Please select at least one day.");
-  return;
-}
+  if (!selectedDays.length) {
+    alert("Please select at least one day.");
+    return;
+  }
 
 // Cargar pool actual
 let scheduleItems = [];
