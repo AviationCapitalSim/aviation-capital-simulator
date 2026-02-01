@@ -539,6 +539,8 @@ function rs_populateAircraftSelect(selectedId = "") {
   }
 
 })();
+
+
      
 /* ============================================================
    🧩 SINGLE INIT POINT — ROUTE SCHEDULE
@@ -558,7 +560,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-     
+/* ============================================================
+   🟧 RS-01 — RESET AIRCRAFT SELECTION ON LOAD
+   ------------------------------------------------------------
+   • Nunca preseleccionar avión
+   • El usuario SIEMPRE decide
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const aircraftSelect = document.getElementById("aircraft");
+  if (aircraftSelect) {
+    aircraftSelect.value = "";
+  }
+});
+
 /* ============================================================
    ✅ COMPAT LAYER — NO ROMPER llamadas viejas
    ------------------------------------------------------------
