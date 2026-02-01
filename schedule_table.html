@@ -1616,9 +1616,8 @@ wrapInfo.innerHTML = `
      const aircraftId = String(ac.id || "").trim();
 
      const rawDayItems = (byAircraftId[aircraftId] || []).filter(
-     x => x.day === day && x.assigned === true
-   );
-
+     x => x.day === day && (x.assigned === true || x.assigned === undefined)
+     );
 
     const dayItems = ACS_sortDayEvents(rawDayItems);
          
