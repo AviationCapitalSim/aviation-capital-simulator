@@ -1645,35 +1645,35 @@ f.aircraft = modelKey.toUpperCase();
     const flightId = "FL_" + Math.floor(100000 + Math.random() * 900000);
 
     const flight = {
-      id: flightId,
-      type: "flight",
+  id: flightId,
+  type: "flight",
 
-      aircraftId: null,
-      modelKey: modelKey.toUpperCase(),
-      aircraft: modelKey.toUpperCase(),
+  aircraftId: null,
+  modelKey: modelKey.toUpperCase(),
+  aircraft: modelKey.toUpperCase(),
 
-      origin,
-      destination,
-      day,
-      departure,
-      arrival,
+  origin,
+  destination,
+  day,
+  departure,
+  arrival,
 
-      distanceNM: finalDistanceNM,
-      blockTimeMin,
+  distanceNM: finalDistanceNM,
+  blockTimeMin,
 
-      turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
-      turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-      totalRotationMin: window.ACS_RouteTechData?.totalMin ?? (blockTimeMin * 2 + 45),
+  turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
+  turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
+  totalRotationMin: window.ACS_RouteTechData?.totalMin ?? (blockTimeMin * 2 + 45),
 
-      optimized: document.getElementById("optimizeRotation")?.checked || false,
+  optimized: document.getElementById("optimizeRotation")?.checked || false,
 
-      flightNumberOut,
-      flightNumberIn
-    };
+  flightNumberOut,
+  flightNumberIn
+};
 
-    scheduleItems.push(flight);
-    createdFlights.push(flight);
-  });
+scheduleItems.push(flight);
+createdFlights.push(flight);
+});
 
   // 11) Guardar scheduleItems (SOURCE OF TRUTH)
   localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
