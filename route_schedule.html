@@ -1604,22 +1604,22 @@ try {
   scheduleItems = [];
 }
 
-// 🔎 EDIT activo
+// 🔎 EDIT MODE — CANONICAL (BY FLIGHT ID)
+     
 const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 
 if (isEditMode) {
   const editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT"));
 
-  scheduleItems = scheduleItems.filter(it =>
-    !(
-      it.origin === editCtx.origin &&
-      it.destination === editCtx.destination &&
-      it.aircraftId === editCtx.aircraftId &&
-      it.day === (editCtx.day || editCtx.editDay) &&
-      it.departure === editCtx.departure
-    )
-  );
+  if (!editCtx?.flightId) {
+    alert("EDIT error: flightId missing.");
+    return;
+  }
 
+  // 🧹 Eliminar SOLO el vuelo original (1-a-1)
+  scheduleItems = scheduleItems.filter(it => it.id !== editCtx.flightId);
+
+  // Limpiar contexto de edición
   localStorage.removeItem("ACS_ROUTE_EDIT");
 }
 
