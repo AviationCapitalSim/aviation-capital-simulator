@@ -2154,28 +2154,43 @@ function ACS_confirmAssignFlights(){
   let changed = 0;
   let blocked = false;
 
-  items.forEach(it => {
+ items.forEach(it => {
 
-    if (
-      it.type !== "flight" ||
-      !selectedIds.includes(it.id) ||
-      it.aircraftId
-    ) return;
+  if (
+    it.type !== "flight" ||
+    !selectedIds.includes(it.id) ||
+    it.aircraftId
+  ) return;
 
-    const flightModelKey = normalizeModel(
-      it.acType || it.model || it.aircraft || ""
+  // 🔒 BLOQUEO DE SOLAPAMIENTO (MISMO AVIÓN · MISMO DÍA)
+  const conflict = items.some(other =>
+    other.type === "flight" &&
+    other.aircraftId === ac.id &&
+    other.day === it.day &&
+    other.id !== it.id &&
+    (
+      toMin(it.departure) < toMin(other.arrival) &&
+      toMin(it.arrival)   > toMin(other.departure)
+    )
+  );
+
+  if (conflict) {
+    alert(
+      `⛔ Schedule conflict\n\n` +
+      `Aircraft: ${ac.registration}\n` +
+      `Day: ${it.day.toUpperCase()}\n` +
+      `Time: ${it.departure}–${it.arrival}\n\n` +
+      `Another flight already occupies this slot.`
     );
+    blocked = true;
+    return;
+  }
 
-    if (!acModelKey || !flightModelKey || acModelKey !== flightModelKey) {
-      blocked = true;
-      return;
-    }
-
-    it.aircraftId = String(ac.id).trim();
-    it.assigned = true; // bandera explícita para la tabla
-    
-    changed++;
-  });
+  // ✅ ASIGNACIÓN SEGURA
+  it.aircraftId = ac.id;
+  it.assigned = true;
+  changed++;
+});
 
   // ⛔ BLOQUEO UX — NO CERRAR MODAL
   if (blocked && changed === 0) {
