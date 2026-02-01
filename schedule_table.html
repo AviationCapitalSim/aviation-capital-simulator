@@ -3070,9 +3070,10 @@ function editSelectedFlight() {
   const isEachDay = !it.blockId || it.blockId === "";
 
   // Build EDIT context
+     
   const editCtx = {
     mode: "EDIT",
-
+    flightId: flight.id
     origin: it.origin,
     destination: it.destination,
 
