@@ -3540,10 +3540,7 @@ function ACS_paintRoutesStepC() {
 
     const aircraftId = route.aircraftId || "";
 
-    if (!aircraftId) {
-      console.warn("⚠ Route has no aircraftId:", route);
-      return;
-    }
+    if (!aircraftId) return; // aún no asignado → no pintar
 
     const tr = rowMap[aircraftId];
 
