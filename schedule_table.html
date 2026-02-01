@@ -3142,6 +3142,9 @@ function editSelectedFlight() {
   const editCtx = {
     mode: "EDIT",
 
+     // 🔑 CANONICAL ID (EDIT BY ID)
+    flightId: it.id,   // ✅ AÑADIR ESTA LÍNEA 
+       
     origin: it.origin,
     destination: it.destination,
 
