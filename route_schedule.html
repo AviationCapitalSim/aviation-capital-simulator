@@ -945,7 +945,8 @@ window.confirmRoute = function () {
     items = [];
   }
 
-  const idx = scheduleItems.findIndex(f => f.id === editCtx.flightId);
+  // ✅ OJO: aquí se usa items (NO scheduleItems)
+  const idx = items.findIndex(f => f.id === editCtx.flightId);
 
   if (idx === -1) {
     alert("⛔ Flight to edit not found.");
