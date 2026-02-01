@@ -1663,18 +1663,31 @@ selectedDays.forEach(day => {
   scheduleItems.push(flight);
 });
 
-// 💾 Persistencia FINAL
-localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
+/* ============================================================
+   🟩 A1 — ROUTE DRAFT (NO DIRECT COMMIT)
+   ------------------------------------------------------------
+   • Route Schedule NO escribe en scheduleItems
+   • Solo genera borrador pendiente
+   • El commit final se hace en Schedule Table
+   ============================================================ */
 
-// 🔢 Flight numbers (SOLO en CREATE)
+// 💾 Guardar BORRADOR de ruta (pendiente de asignación)
+localStorage.setItem("ACS_ROUTE_DRAFT", JSON.stringify({
+  mode: isEditMode ? "EDIT" : "CREATE",
+  editFlightId: isEditMode ? editCtx.flightId : null,
+  proposedFlights: scheduleItems
+}));
+
+// 🔢 Flight numbers (SOLO en CREATE, se reservan aquí)
 if (!isEditMode) {
   markNumbersUsed(flightNumberOut, flightNumberIn);
   bumpFlightCounter();
 }
 
 // UI
-alert("Route successfully added to Schedule.");
+alert("Route draft created. Please assign route in Schedule Table.");
 window.location.href = "schedule_table.html";
+
 
   /* ============================================================
      SLOT ENGINE — (si existe)
