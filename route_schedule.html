@@ -1682,11 +1682,16 @@ if (isEditMode) {
   }
 
   const f = scheduleItems[idx];
-
+     
 // 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES
      
 f.departure = departure;
 f.arrival   = arrival;
+
+// 🔒 EDIT INVALIDA ASIGNACIÓN (OBLIGATORIO)
+     
+f.aircraftId = null;
+f.assigned   = false;
 
 // ⚠️ SOLO asignar avión si el usuario lo cambió explícitamente
      
