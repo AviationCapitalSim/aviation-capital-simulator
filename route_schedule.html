@@ -927,32 +927,51 @@ if (editCtx.day) {
   const btn = document.querySelector(".acs-btn");
   if (btn) btn.textContent = "UPDATE ROUTE";
 
-  /* ============================================================
-     6️⃣ OVERRIDE CONFIRM ROUTE (SAFE EDIT)
-     ============================================================ */
-  const originalConfirm = window.confirmRoute;
+ /* ============================================================
+   🟢 EDIT CONFIRM ROUTE — SINGLE FLIGHT ONLY (FINAL)
+   ------------------------------------------------------------
+   ✔ EDIT = modificar SOLO 1 vuelo
+   ✔ NO blockId
+   ✔ NO recrear vuelos
+   ✔ NO tocar otros días
+   ============================================================ */
 
-  window.confirmRoute = function () {
+window.confirmRoute = function () {
 
-    // 🔥 REMOVE OLD ROUTE (block or single)
-    const list = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-    const filtered = list.filter(it =>
-      it.blockId !== editCtx.blockId &&
-      it.id !== editCtx.routeKey
-    );
-    localStorage.setItem("scheduleItems", JSON.stringify(filtered));
+  let items = [];
+  try {
+    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  } catch {
+    items = [];
+  }
 
-    // ⛔ DO NOT FREE FLIGHT NUMBERS
-    // They are preserved intentionally in EDIT mode
+  const idx = items.findIndex(f => f.id === editCtx.routeKey);
 
-    // 🧼 CLEAR EDIT CONTEXT
-    localStorage.removeItem("ACS_ROUTE_EDIT");
+  if (idx === -1) {
+    alert("⛔ Flight to edit not found.");
+    return;
+  }
 
-    // ✅ CREATE UPDATED ROUTE (reuse existing engine)
-    originalConfirm();
-  };
+  const flight = items[idx];
 
-});
+  // 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES
+  flight.departure = document.getElementById("departureTime")?.value || flight.departure;
+  flight.aircraftId = document.getElementById("aircraft")?.value || flight.aircraftId;
+  flight.optimized = document.getElementById("optimizeRotation")?.checked || false;
+
+  // ⚠ NO TOCAR:
+  // flight.day
+  // flight.id
+  // flight.flightNumberOut / In
+
+  items[idx] = flight;
+
+  localStorage.setItem("scheduleItems", JSON.stringify(items));
+  localStorage.removeItem("ACS_ROUTE_EDIT");
+
+  alert("Flight updated successfully.");
+  window.location.href = "schedule_table.html";
+};
 
 /* ============================================================
    ✅ FIX DEFINITIVO — loadAvailableAircraft (ROBUST / NO BASE)
