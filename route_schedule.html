@@ -1600,12 +1600,20 @@ if (isEditMode) {
 
   const f = scheduleItems[idx];
 
-  // 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES
-  f.departure = departure;
-  f.arrival   = arrival;
+// 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES
+     
+f.departure = departure;
+f.arrival   = arrival;
+
+// ⚠️ SOLO asignar avión si el usuario lo cambió explícitamente
+     
+if (selectedAircraftId && selectedAircraftId !== f.aircraftId) {
   f.aircraftId = selectedAircraftId;
-  f.modelKey   = modelKey.toUpperCase();
-  f.aircraft   = modelKey.toUpperCase();
+}
+
+// Metadata técnica (NO asigna)
+f.modelKey = modelKey.toUpperCase();
+f.aircraft = modelKey.toUpperCase();
 
   f.blockTimeMin = blockTimeMin;
   f.turnaroundMin = window.ACS_RouteTechData?.turnMin ?? f.turnaroundMin;
