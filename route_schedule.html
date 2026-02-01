@@ -1605,11 +1605,8 @@ try {
 }
 
 // 🔎 EDIT activo
-     
 const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 
-// 🧹 FIX EDIT — reemplazo 1-a-1 (vuelo individual)
-     
 if (isEditMode) {
   const editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT"));
 
@@ -1618,7 +1615,8 @@ if (isEditMode) {
       it.origin === editCtx.origin &&
       it.destination === editCtx.destination &&
       it.aircraftId === editCtx.aircraftId &&
-      it.day === (editCtx.day || editCtx.editDay)
+      it.day === (editCtx.day || editCtx.editDay) &&
+      it.departure === editCtx.departure
     )
   );
 
