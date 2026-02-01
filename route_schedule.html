@@ -1590,40 +1590,6 @@ function confirmRoute() {
   window.location.href = "schedule_table.html";
 }
 
-  /* ============================================================
-     SLOT ENGINE — (si existe)
-     ============================================================ */
-  function ACS_convertDepartureToArrival(dep, blockMin) {
-    if (!dep || !blockMin) return "00:00";
-    const [h, m] = dep.split(":").map(Number);
-    const total = h * 60 + m + blockMin;
-    const ah = String(Math.floor(total / 60) % 24).padStart(2, "0");
-    const am = String(total % 60).padStart(2, "0");
-    return `${ah}:${am}`;
-  }
-
-  const slotRoute = {
-    origin: newRoute.origin,
-    destination: newRoute.destination,
-    weekdays: newRoute.days,
-    departureUTC: newRoute.departure,
-    arrivalUTC: ACS_convertDepartureToArrival(newRoute.departure, newRoute.blockTimeMin)
-  };
-
-  if (typeof ACS_buildSlotsForRoute === "function" && typeof ACS_bookRoute === "function") {
-    const slotsCreated = ACS_buildSlotsForRoute(slotRoute);
-    if (!slotsCreated || !slotsCreated.length) {
-      alert("⚠️ Slots could not be generated. Check schedule.");
-      return;
-    }
-
-    const success = ACS_bookRoute(slotRoute);
-    if (!success) {
-      alert("❌ Route cannot be created. Slot unavailable.");
-      return;
-    }
-  }
-
     /* ============================================================
      🟧 A1 — ROUTE SCHEDULE FINAL SAVE (SINGLE WRITE)
      ------------------------------------------------------------
