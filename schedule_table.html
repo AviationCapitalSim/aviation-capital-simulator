@@ -2172,7 +2172,9 @@ function ACS_confirmAssignFlights(){
       return;
     }
 
-    it.aircraftId = ac.id;
+    it.aircraftId = String(ac.id).trim();
+    it.assigned = true; // bandera explícita para la tabla
+    
     changed++;
   });
 
