@@ -1549,21 +1549,64 @@ function confirmRoute() {
   let scheduleItems = [];
   try { scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]"); } catch { scheduleItems = []; }
 
-  // 9) EDIT mode: borrar SOLO el routeKey anterior (si existe)
-  const editRaw = localStorage.getItem("ACS_ROUTE_EDIT");
-  const isEditMode = !!editRaw;
+  // ============================================================
+// 🟧 EDIT MODE — SINGLE FLIGHT UPDATE (FINAL)
+// ------------------------------------------------------------
+// ✔ NO crea vuelos
+// ✔ NO borra otros vuelos
+// ✔ NO toca el day
+// ✔ NO regenera flight number
+// ============================================================
 
-  if (isEditMode) {
-    try {
-      const editCtx = JSON.parse(editRaw);
-      if (editCtx?.routeKey) {
-        scheduleItems = scheduleItems.filter(it => it.id !== editCtx.routeKey);
-      }
-    } catch (e) {
-      console.warn("⚠ ACS_ROUTE_EDIT parse error:", e);
-    }
-    localStorage.removeItem("ACS_ROUTE_EDIT");
+const editRaw = localStorage.getItem("ACS_ROUTE_EDIT");
+const isEditMode = !!editRaw;
+
+if (isEditMode) {
+
+  let editCtx;
+  try {
+    editCtx = JSON.parse(editRaw);
+  } catch {
+    alert("⛔ Edit context corrupted");
+    return;
   }
+
+  const idx = scheduleItems.findIndex(f => f.id === editCtx.routeKey);
+  if (idx === -1) {
+    alert("⛔ Flight to edit not found");
+    return;
+  }
+
+  const f = scheduleItems[idx];
+
+  // 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES
+  f.departure = departure;
+  f.arrival   = arrival;
+  f.aircraftId = selectedAircraftId;
+  f.modelKey   = modelKey.toUpperCase();
+  f.aircraft   = modelKey.toUpperCase();
+
+  f.blockTimeMin = blockTimeMin;
+  f.turnaroundMin = window.ACS_RouteTechData?.turnMin ?? f.turnaroundMin;
+  f.turnaroundMinOptimized = window.ACS_RouteTechData?.turnMinOptimized ?? f.turnaroundMinOptimized;
+  f.totalRotationMin = window.ACS_RouteTechData?.totalMin ?? f.totalRotationMin;
+
+  f.optimized = document.getElementById("optimizeRotation")?.checked || false;
+
+  // ❌ NO tocar:
+  // f.day
+  // f.id
+  // f.flightNumberOut / In
+
+  scheduleItems[idx] = f;
+  localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
+
+  localStorage.removeItem("ACS_ROUTE_EDIT");
+
+  alert("Flight updated successfully.");
+  window.location.href = "schedule_table.html";
+  return;
+}
 
   // 10) Crear vuelos por día (1 día = 1 vuelo)
   const createdFlights = [];
