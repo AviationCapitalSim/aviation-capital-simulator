@@ -3066,13 +3066,14 @@ function editSelectedFlight() {
 
   const it = window.selectedFlight.data;
 
-  // Detect if flight comes from "Create each day as a separate route"
   const isEachDay = !it.blockId || it.blockId === "";
 
-  // Build EDIT context
   const editCtx = {
     mode: "EDIT",
-    flightId: it.id,          // ✅ FIX CRÍTICO (antes flight.id)
+
+    // ✅ FIX CRÍTICO — ESTE ERA EL PROBLEMA
+    flightId: it.id,
+
     origin: it.origin,
     destination: it.destination,
 
@@ -3087,34 +3088,19 @@ function editSelectedFlight() {
 
     blockTimeMin: it.blockTimeMin || null,
 
-    // 🔑 CRITICAL DIFFERENCE
     separateDays: isEachDay
   };
 
-  /* ============================================================
-     EACH DAY → SINGLE DAY ONLY
-     ============================================================ */
   if (isEachDay) {
-
-    editCtx.day  = it.day;          // 🔑 ONLY THIS DAY
-    editCtx.days = [it.day];        // keep consistent
-
-  }
-  /* ============================================================
-     EVERY DAY → FULL BLOCK
-     ============================================================ */
-  else {
-
+    editCtx.day  = it.day;
+    editCtx.days = [it.day];
+  } else {
     editCtx.days = Array.isArray(it.days) && it.days.length
       ? it.days
       : ["mon","tue","wed","thu","fri","sat","sun"];
-
   }
 
-  // Persist EDIT context
   localStorage.setItem("ACS_ROUTE_EDIT", JSON.stringify(editCtx));
-
-  // Go back to Route Schedule
   window.location.href = "route_schedule.html";
 }
 
