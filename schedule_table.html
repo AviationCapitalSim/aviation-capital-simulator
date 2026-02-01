@@ -1019,7 +1019,7 @@ footer {
     </div>
 
     <div class="acs-modal-footer">
-     <button class="btn-modal gold"  onclick="editSelectedFlight()">✏️ EDIT</button>
+     <button class="btn-modal gold" onclick="editSelectedFlight('${flight.id}')">✏️ EDIT</button>
      <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
      <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
      <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
@@ -2870,7 +2870,7 @@ function ACS_restoreFlightModalFooterDefault(){
   if (!footer) return;
 
   footer.innerHTML = `
-    <button class="btn-modal gold"  onclick="editSelectedFlight()">✏️ EDIT</button>
+    <button class="btn-modal gold" onclick="editSelectedFlight('${flight.id}')">✏️ EDIT</button>
     <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
     <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
@@ -3070,10 +3070,9 @@ function editSelectedFlight() {
   const isEachDay = !it.blockId || it.blockId === "";
 
   // Build EDIT context
-     
   const editCtx = {
     mode: "EDIT",
-    flightId: flight.id,
+    flightId: it.id,          // ✅ FIX CRÍTICO (antes flight.id)
     origin: it.origin,
     destination: it.destination,
 
