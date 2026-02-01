@@ -2316,11 +2316,13 @@ function validateACheck(ac, day, startHHMM, endHHMM) {
 
   const acKey = normalizeModel(ac.model || ac.type || "");
 
-  const flights = items.filter(f =>
-    f.type === "flight" &&
-    normalizeModel(f.tail || f.acType || "") === acKey &&
-    f.day === day
-  );
+  // 🔎 USAMOS SOLO EL VUELO ACTUAL
+     
+  const flight = it;
+  if (!flight || flight.type !== "flight") {
+  alert("⚠ Invalid flight.");
+  return;
+  }
 
   for (const f of flights) {
     const fStart = toMin(f.departure);
