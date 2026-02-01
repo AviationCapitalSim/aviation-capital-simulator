@@ -1605,12 +1605,23 @@ try {
 }
 
 // 🔎 EDIT activo
+     
 const isEditMode = !!localStorage.getItem("ACS_ROUTE_EDIT");
 
-// 🧹 En EDIT: eliminar SOLO el vuelo que se está editando
+// 🧹 FIX EDIT — reemplazo 1-a-1 (vuelo individual)
+     
 if (isEditMode) {
   const editCtx = JSON.parse(localStorage.getItem("ACS_ROUTE_EDIT"));
-  scheduleItems = scheduleItems.filter(it => it.id !== editCtx.routeKey);
+
+  scheduleItems = scheduleItems.filter(it =>
+    !(
+      it.origin === editCtx.origin &&
+      it.destination === editCtx.destination &&
+      it.aircraftId === editCtx.aircraftId &&
+      it.day === (editCtx.day || editCtx.editDay)
+    )
+  );
+
   localStorage.removeItem("ACS_ROUTE_EDIT");
 }
 
