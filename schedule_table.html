@@ -1019,7 +1019,7 @@ footer {
     </div>
 
     <div class="acs-modal-footer">
-     <button class="btn-modal gold" onclick="editSelectedFlight('${flight.id}')">✏️ EDIT</button>
+     <button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
      <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
      <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
      <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
@@ -2921,7 +2921,7 @@ function ACS_restoreFlightModalFooterDefault(){
 
   footer.innerHTML = `
     ${canEdit
-      ? `<button class="btn-modal gold" onclick="editSelectedFlight('${selected[0].id}')">✏️ EDIT</button>`
+      ? `<button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
       : `<button class="btn-modal gold disabled" disabled>✏️ EDIT</button>`
     }
     <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
