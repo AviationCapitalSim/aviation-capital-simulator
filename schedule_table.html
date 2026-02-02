@@ -3122,7 +3122,8 @@ function deleteSelectedFlights() {
   // 8) UI
   closeFlightModal();
   renderSchedule();
-
+  bindEditButtons();
+     
   console.log("🟥 DELETE SINGLE OK", {
     deletedId: selId,
     remaining: remaining.length
