@@ -1125,6 +1125,10 @@ footer {
 </footer>
 
 <!-- ============================================================
+     ⏱ ACS TIME ENGINE — REQUIRED FOR SCHEDULE TABLE
+     ============================================================ -->
+
+<!-- ============================================================
      ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
      ============================================================ -->
 <script src="acs_time_recovery.js"></script>
@@ -1161,7 +1165,6 @@ if (typeof registerTimeListener === "function") {
     // 🔄 Re-render seguro (solo si la tabla ya existe)
     if (typeof renderSchedule === "function") {
       renderSchedule();
-      bindEditButtons();
     }
   });
 } else {
@@ -2258,7 +2261,6 @@ function ACS_confirmAssignFlights(){
     localStorage.setItem("scheduleItems", JSON.stringify(items));
     ACS_closeAssignFlightsModal();
     renderSchedule();
-    bindEditButtons();
     console.log(`🟢 Assigned ${changed} flight(s) to ${ac.id}`);
   }
 }
@@ -2559,13 +2561,11 @@ if (sameServiceAlreadyPlanned) {
   });
 
   // ============================================================
-// ✅ 7️⃣ FINAL
-// ============================================================
-     
-setItems(items);
-closeMaintModal();
-renderSchedule();
-bindEditButtons();   // 🔑 REENGANCHAR EDIT DESPUÉS DEL RENDER
+  // ✅ 7️⃣ FINAL
+  // ============================================================
+  setItems(items);
+  closeMaintModal();
+  renderSchedule();
 }
 
 function removeItem(){
@@ -2587,7 +2587,6 @@ function removeItem(){
   setItems(filtered);
   closeActionModal();
   renderSchedule();
-  bindEditButtons();
 }
 
 
@@ -2921,7 +2920,6 @@ function cancelSelectedService(){
   setItems(filtered);
   closeFlightModal();
   renderSchedule();
-  bindEditButtons();
 }
      
 /* ============================================================
@@ -3022,8 +3020,7 @@ function ACS_removeSelectedFlights(){
 
   closeFlightModal();
   renderSchedule();
-  bindEditButtons();
-     
+
   console.log(`🟢 Removed (unassigned) flight ${sel.id}`);
 }
 
@@ -3076,8 +3073,6 @@ function deleteSelectedFlights() {
     localStorage.removeItem("scheduleItems");
     closeFlightModal();
     renderSchedule();
-    bindEditButtons();
-     
     return;
   }
 
@@ -3125,8 +3120,7 @@ function deleteSelectedFlights() {
   // 8) UI
   closeFlightModal();
   renderSchedule();
-  bindEditButtons();
-     
+
   console.log("🟥 DELETE SINGLE OK", {
     deletedId: selId,
     remaining: remaining.length
