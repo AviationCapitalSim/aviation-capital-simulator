@@ -456,91 +456,29 @@ function ACS_OPS_classifyAircraftFromDB(aircraft) {
   };
 }
 
-/* ============================================================
-   🟦 C2 — AUTO RECALC ON SCHEDULE CHANGE (ACS OFFICIAL)
-   ------------------------------------------------------------
-   • Detecta cambios en scheduleItems
-   • Recalcula demand inmediatamente
-   • Limpia HR.required cuando se borra la última ruta
-   ============================================================ */
-
-let __OPS_lastScheduleHash = null;
-
-function ACS_OPS_watchScheduleChanges() {
-
-  let flights = [];
-  try {
-    flights = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch (e) {
-    flights = [];
-  }
-
-  const hash = JSON.stringify(flights.map(f => f.aircraftId + "|" + (f.id || f.routeId)));
-
-  // Primera ejecución
-  if (__OPS_lastScheduleHash === null) {
-    __OPS_lastScheduleHash = hash;
-    return;
-  }
-
-  // Cambio detectado
-  if (hash !== __OPS_lastScheduleHash) {
-
-    console.log(
-      "%c🔄 OPS SCHEDULE CHANGED — RECALCULATING DEMAND",
-      "color:#00ffcc;font-weight:700"
-    );
-
-    ACS_OPS_recalculateAllRequired();
-
-    __OPS_lastScheduleHash = hash;
-  }
-}
-
-// Ejecutar watcher cada 2 segundos (ligero, seguro)
-setInterval(ACS_OPS_watchScheduleChanges, 2000);
-
-/* ============================================================
-   🟦 C1 — WEEKLY OPS DEMAND RECALCULATOR (ACS OFFICIAL)
-   ------------------------------------------------------------
-   • Agrupa scheduleItems por aircraftId + routeId
-   • Calcula demanda UNA VEZ por operación semanal real
-   • Resetea HR.required limpio
-   • Aplica demand consolidado
-   ============================================================ */
-
 function ACS_OPS_recalculateAllRequired() {
 
-  console.log("%c🧠 OPS WEEKLY REBUILD — START", "color:#00ffcc;font-weight:700");
+  console.log("%c🧠 OPS REQUIRED REBUILD — START", "color:#00ffcc;font-weight:700");
 
   const HR = ACS_HR_load();
   if (!HR) return;
 
-  let flights = [];
+  let scheduleItems = [];
   try {
-    flights = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   } catch (e) {
-    flights = [];
+    scheduleItems = [];
   }
 
-  // ============================================================
-  // 🔧 FILTRO CANÓNICO DE VUELOS REALES (ANTI VUELO 0 / NODO BASE)
-  // ============================================================
-
-  const activeFlights = Array.isArray(flights)
-    ? flights.filter(f =>
-        f.type === "flight" &&
-        f.day !== undefined &&
-        f.aircraft &&
-        f.aircraftId
-      )
+  const activeFlights = Array.isArray(scheduleItems)
+    ? scheduleItems.filter(f => f && f.assigned === true && f.aircraftId && f.day)
     : [];
 
-  // 🔹 Si no hay vuelos reales → todo perfecto
-  if (!Array.isArray(activeFlights) || activeFlights.length === 0) {
+  // 🟢 Si no hay vuelos → required = 0 en todo
+  if (activeFlights.length === 0) {
 
     Object.keys(HR).forEach(id => {
-      if (typeof HR[id].required === "number") {
+      if (HR[id] && typeof HR[id].required === "number") {
         HR[id].required = 0;
       }
     });
@@ -550,66 +488,45 @@ function ACS_OPS_recalculateAllRequired() {
     if (typeof loadDepartments === "function") loadDepartments();
     if (typeof HR_updateKPI === "function") HR_updateKPI();
 
-    console.log("%c🟢 OPS WEEKLY REBUILD — NO FLIGHTS (ALL ZERO)", "color:#7CFFB2;font-weight:700");
+    console.log("%c🟢 OPS REQUIRED REBUILD — NO FLIGHTS (ALL ZERO)", "color:#7CFFB2;font-weight:700");
+    return;
+  }
+
+  // ✅ CANON: calcular ideal staff desde tu función REAL existente
+  const ideal = calculateRequiredStaff();
+  if (!ideal) {
+    console.warn("❌ OPS REQUIRED REBUILD — calculateRequiredStaff returned null/undefined");
     return;
   }
 
   // ============================================================
-  // 🔧 AGRUPAR POR OPERACIÓN SEMANAL REAL
-  // clave = aircraftId + routeId
+  // APPLY: required = staff - ideal   (negativo = falta)
   // ============================================================
 
-  const operations = {};
+  const MAP = [
+    ["pilots_small",      ideal.pilotsSmall],
+    ["pilots_medium",     ideal.pilotsMedium],
+    ["pilots_large",      ideal.pilotsLarge],
+    ["pilots_vlarge",     ideal.pilotsVeryLarge],
+    ["cabin",             ideal.cabinCrew],
+    ["maintenance",       ideal.technicalMaintenance],
+    ["ground",            ideal.groundHandling],
+    ["flightops",         ideal.flightOpsDivision],
+    ["route_strategy",    ideal.routeStrategies],
+    ["flight_engineers",  ideal.flightEngineers]
+  ];
 
-  activeFlights.forEach(f => {
+  MAP.forEach(([depId, idealValue]) => {
 
-    const aircraftId = f.aircraftId;
-    const routeId    = f.id || f.routeId || "ROUTE";
+    if (!HR[depId]) return;
 
-    const key = aircraftId + "|" + routeId;
+    const staff = Number(HR[depId].staff || 0);
+    const needed = Number(idealValue || 0);
 
-    if (!operations[key]) {
-      operations[key] = {
-        aircraftId,
-        routeId,
-        acType: f.acType,
-        model:  f.acType,
-        count:  0
-      };
-    }
-
-    operations[key].count++;
+    HR[depId].required = Math.round(staff - needed);
   });
 
-  // ============================================================
-  // 🔧 RESET HR.REQUIRED LIMPIO
-  // ============================================================
-
-  Object.keys(HR).forEach(id => {
-    if (typeof HR[id].required === "number") {
-      HR[id].required = 0;
-    }
-  });
-
-  // ============================================================
-  // 🧮 CALCULAR DEMANDA CONSOLIDADA
-  // ============================================================
-
-  Object.values(operations).forEach(op => {
-
-    const fakeFlight = { distance: 0 };
-    const fakeAircraft = { model: op.model };
-    const fakeRoute = { flights_per_week: op.count };
-
-    const result = ACS_OPS_calculateCrewDemand(fakeFlight, fakeAircraft, fakeRoute);
-    if (!result) return;
-
-    console.log("📊 WEEKLY OPS UNIT:", op.model, "freq:", op.count, result.demand);
-
-    ACS_OPS_applyDemandToHR(result);
-  });
-
-  // 🔧 Managers required
+  // Managers required (si existe)
   if (typeof ACS_HR_calculateManagementRequired === "function") {
     ACS_HR_calculateManagementRequired();
   }
@@ -619,7 +536,7 @@ function ACS_OPS_recalculateAllRequired() {
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
 
-  console.log("%c✅ OPS WEEKLY REBUILD — COMPLETED", "color:#00ffcc;font-weight:700");
+  console.log("%c✅ OPS REQUIRED REBUILD — COMPLETED", "color:#00ffcc;font-weight:700");
 }
 
 /* ============================================================
