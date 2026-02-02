@@ -1650,6 +1650,7 @@ wrapInfo.innerHTML = `
      x =>
      x.day === day &&
      x.assigned === true &&
+     x.__edited !== true &&        // 🔴 CLAVE: NO pintar vuelos editados
      ACS_isFlightCompatibleWithAircraft(x, ac)
     );
      
