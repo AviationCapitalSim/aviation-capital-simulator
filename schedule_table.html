@@ -1018,12 +1018,7 @@ footer {
       <!-- contenido dinámico por JS -->
     </div>
 
-    <div class="acs-modal-footer">
-     <button class="btn-modal gold" onclick="editSelectedFlight('${flight.id}')">✏️ EDIT</button>
-     <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
-     <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
-     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
-   </div>
+    <div class="acs-modal-footer" id="flightModalFooter"></div>
 
   </div>
 </div>
