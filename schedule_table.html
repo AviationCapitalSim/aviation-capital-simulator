@@ -1616,9 +1616,12 @@ wrapInfo.innerHTML = `
      const aircraftId = String(ac.id || "").trim();
 
      const rawDayItems = (byAircraftId[aircraftId] || []).filter(
-     x => x.day === day && x.aircraftId && x.assigned !== false
-     );
-       
+     x =>
+     x.day === day &&
+     x.assigned === true &&
+     ACS_isFlightCompatibleWithAircraft(x, ac)
+    );
+     
     const dayItems = ACS_sortDayEvents(rawDayItems);
          
 /* ============================================================
