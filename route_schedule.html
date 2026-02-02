@@ -1687,22 +1687,19 @@ if (isEditMode) {
 // === EDIT ROUTE — SAFE BLOCK ===
 // ===============================
 
-// Tiempos
+// Tiempos (OK)
 f.departure = departure;
 f.arrival   = arrival;
 
-// 🚫 EDIT NO DEBE tocar intención de asignación
-// ❌ NO pendingAircraftId
-// ❌ NO aircraftId
-// ❌ NO assigned
+// ✅ EDIT NO toca asignación (NO TOCAR)
+// f.assigned
+// f.aircraftId
 
+// (Opcional y seguro) limpiar intención vieja si existía
 delete f.pendingAircraftId;
-f.assigned   = false;
-f.aircraftId = null;
 
-// Metadata técnica (solo descriptiva, NO asigna)
+// Metadata técnica (solo descriptiva)
 f.modelKey = (modelKey || f.modelKey || "").toString().trim().toUpperCase();
-f.aircraft = f.modelKey;
 
 // Datos técnicos
 f.blockTimeMin = blockTimeMin;
