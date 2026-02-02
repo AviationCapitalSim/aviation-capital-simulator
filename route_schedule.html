@@ -1685,23 +1685,27 @@ if (isEditMode) {
      
 // 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES
      
+// 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES (EDIT NO AUTO-ASIGNA)
+
+// Tiempos
 f.departure = departure;
 f.arrival   = arrival;
 
-// 🔒 EDIT INVALIDA ASIGNACIÓN (OBLIGATORIO)
-     
-f.aircraftId = null;
-f.assigned   = false;
-
-// ⚠️ SOLO asignar avión si el usuario lo cambió explícitamente
-     
-if (selectedAircraftId && selectedAircraftId !== f.aircraftId) {
-  f.aircraftId = selectedAircraftId;
+// ✅ Si el usuario eligió un avión, lo guardamos como "pendiente"
+//    (pero NO lo asignamos en la tabla).
+const chosenAircraftId = (selectedAircraftId || "").trim();
+if (chosenAircraftId) {
+  f.pendingAircraftId = chosenAircraftId;   // recuerda la intención del usuario
 }
 
+// 🔥 CLAVE DEL FIX:
+// EDIT SIEMPRE deja el vuelo SIN asignar para forzar "Assignments"
+f.assigned  = false;
+f.aircraftId = null;
+
 // Metadata técnica (NO asigna)
-f.modelKey = modelKey.toUpperCase();
-f.aircraft = modelKey.toUpperCase();
+f.modelKey = (modelKey || f.modelKey || "").toString().trim().toUpperCase();
+f.aircraft = f.modelKey;
 
   f.blockTimeMin = blockTimeMin;
   f.turnaroundMin = window.ACS_RouteTechData?.turnMin ?? f.turnaroundMin;
