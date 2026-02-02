@@ -1161,6 +1161,7 @@ if (typeof registerTimeListener === "function") {
     // 🔄 Re-render seguro (solo si la tabla ya existe)
     if (typeof renderSchedule === "function") {
       renderSchedule();
+      bindEditButtons();
     }
   });
 } else {
