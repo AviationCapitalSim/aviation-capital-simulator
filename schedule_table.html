@@ -1504,16 +1504,21 @@ const byAircraftId = {};
 // - day debe existir (mon..sun) para pintar en tabla semanal
 
 items.forEach(it => {
+
+  // ⛔ NO indexar vuelos editados
+  if (it.__edited === true) return;
+
   const key = String(it.aircraftId || "").trim();
   if (!key) return;
+
   if (!byAircraftId[key]) byAircraftId[key] = [];
   byAircraftId[key].push(it);
 });
 
-
   // ============================================================
   // SIN FLOTA — filas dummy
   // ============================================================
+     
   if (!fleet.length) {
 
     for (let i = 0; i < 5; i++) {
