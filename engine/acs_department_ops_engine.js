@@ -154,232 +154,141 @@ const ACS_OPS_STAFF_BY_TYPE = {
 
 
 /* ============================================================
-   🟦 B1 — CREW DEMAND CALCULATOR (MASTER FORMULA)
-   ============================================================ */
-
-function ACS_OPS_calculateCrewDemand(flight, aircraft, route) {
-
-  // 🛑 Protection layer
-  if (!flight || !aircraft || !route) {
-    console.warn("OPS: Missing flight / aircraft / route data", flight, aircraft, route);
-    return null;
-  }
-
-  const model = aircraft.model || aircraft.name || "";
-  const type  = ACS_OPS_classifyAircraft(model);
-
-  const base = ACS_OPS_STAFF_BY_TYPE[type];
-  if (!base) {
-    console.warn("OPS: Unknown aircraft type", model);
-    return null;
-  }
-
-  // 🔧 Distance
-  const distanceNM = route.distance || flight.distance || 0;
-  const distanceFactor = ACS_OPS_getDistanceFactor(distanceNM);
-
-  // 🔧 Frequency
-  const flightsPerWeek = route.flights_per_week || route.frequency || 1;
-  const frequencyFactor = ACS_OPS_getFrequencyFactor(flightsPerWeek);
-
-  // 🧮 Final demand
-  const demand = {
-    pilots:      Math.ceil(base.pilots      * distanceFactor * frequencyFactor),
-    cabin:       Math.ceil(base.cabin       * distanceFactor * frequencyFactor),
-    maintenance: Math.ceil(base.maintenance * distanceFactor * (1 + (frequencyFactor - 1) * 0.5)),
-    ground:      Math.ceil(base.ground      * frequencyFactor),
-    security:    Math.ceil(base.security    * (1 + (frequencyFactor - 1) * 0.3)),
-    flightops:   Math.ceil(base.flightops   * distanceFactor * frequencyFactor),
-    quality:     Math.ceil(base.quality     * (1 + (frequencyFactor - 1) * 0.3))
-  };
-
-  return {
-    aircraftType: type,
-    distanceNM,
-    flightsPerWeek,
-    distanceFactor,
-    frequencyFactor,
-    demand
-  };
-}
-
-/* ============================================================
-   🟧 A1 — APPLY DEMAND INTO HR.REQUIRED (NET MODEL) — 26JAN26
+   🟧 A1 — HR REQUIRED STAFF ENGINE (REALISTIC / HISTORICAL)
    ------------------------------------------------------------
-   Regla ACS HR v1:
-   • required = staff_actual - staff_ideal
-   • 0 vuelos activos → required = 0
-   • positivo = exceso
-   • negativo = falta
-   • enteros siempre
-   • sin acumuladores / sin históricos
+   • Fuente única: scheduleItems + ACS_MyAircraft
+   • Sin duplicados
+   • Con Flight Engineer (histórico)
+   • Escala realista 1940–2026
    ============================================================ */
 
-function ACS_OPS_applyDemandToHR(demandResult) {
+function calculateRequiredStaff() {
 
-  if (!demandResult || !demandResult.demand) return;
+  const scheduleItems =
+    JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
-  const HR = ACS_HR_load();
-  if (!HR) return;
+  const aircraftList =
+    JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  const d = demandResult.demand;
-
-  // ============================================================
-  // 🧠 OPS → HR MAPPING (REAL AIRCRAFT TYPE ONLY) — 26JAN26
   // ------------------------------------------------------------
-  // Pilots ONLY applied to matching aircraft category
-  // No cross-contamination between categories
-  // ============================================================
-
-  const MAP = {
-    pilots: {
-      small:   ["pilots_small"],
-      medium:  ["pilots_medium"],
-      large:   ["pilots_large"],
-      vlarge:  ["pilots_vlarge"]
-    },
-    cabin:       ["cabin"],
-    maintenance: ["maintenance"],
-    ground:      ["ground"],
-    security:    ["security"],
-    flightops:   ["flightops"],
-    quality:     ["quality"]
-  };
-
-  // ============================================================
-  // 🔹 Leer vuelos activos REALES desde Schedule Table (SANITIZED)
+  // 1️⃣ Mapear aviones por ID
   // ------------------------------------------------------------
-  // Evita residuos tipo RT_ con day/acType undefined
-  // ============================================================
-
-  let flights = [];
-  try {
-    flights = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch (e) {
-    flights = [];
-  }
-
-  const activeFlights = (Array.isArray(flights) ? flights : []).filter(x =>
-    x &&
-    x.type === "flight" &&
-    x.day &&
-    x.acType &&
-    x.aircraftId &&
-    !String(x.id || "").startsWith("RT_")
-  );
-
-  // ============================================================
-  // 🟢 0 VUELOS → RESETEAR TODO A 0 (incluye TODAS las categorías)
-  // ============================================================
-  if (activeFlights.length === 0) {
-
-    // pilots: todas las categorías a 0
-    Object.keys(MAP.pilots).forEach(cat => {
-      (MAP.pilots[cat] || []).forEach(depID => {
-        if (HR[depID]) HR[depID].required = 0;
-      });
-    });
-
-    // resto departamentos
-    ["cabin","maintenance","ground","security","flightops","quality"].forEach(k => {
-      (MAP[k] || []).forEach(depID => {
-        if (HR[depID]) HR[depID].required = 0;
-      });
-    });
-
-    ACS_HR_save(HR);
-    return;
-  }
-
-  // ============================================================
-  // 🟢 PILOTS — RESETEA CATEGORÍAS NO USADAS
-  // ------------------------------------------------------------
-  // Si el avión es "small", entonces medium/large/vlarge = ideal 0
-  // (Esto mata el bug de -36 con DC-3)
-  // ============================================================
-
-  const type = demandResult.aircraftType;
-  const idealPilotsForType = Math.ceil(d.pilots || 0);
-
-  Object.keys(MAP.pilots).forEach(cat => {
-
-    const depList = MAP.pilots[cat] || [];
-
-    depList.forEach(depID => {
-
-      if (!HR[depID]) return;
-
-      const dep = HR[depID];
-
-      const staff = Math.ceil(dep.staff || 0);
-      const ideal = (cat === type) ? idealPilotsForType : 0;
-
-      dep.required = Math.round(staff - ideal);
-    });
-
+  const aircraftById = {};
+  aircraftList.forEach(ac => {
+    if (ac.id) aircraftById[ac.id] = ac;
   });
 
-  // ============================================================
-  // 🟦 RESTO DE DEPARTAMENTOS (UN SOLO DEP)
-  // ============================================================
-  ["cabin","maintenance","ground","security","flightops","quality"].forEach(key => {
-
-    const list = MAP[key] || [];
-    const idealValue = Math.ceil(d[key] || 0);
-
-    list.forEach(depID => {
-
-      if (!HR[depID]) return;
-
-      const dep = HR[depID];
-
-      const staff = Math.ceil(dep.staff || 0);
-      const ideal = idealValue;
-
-      dep.required = Math.round(staff - ideal);
-    });
-
-  });
-
-  ACS_HR_save(HR);
-}
-
-/* ============================================================
-   🟥 D1 — FLIGHT ASSIGNED LISTENER (DISABLED FOR HR DEMAND)
-   ------------------------------------------------------------
-   Motivo:
-   • scheduleItems genera 1 evento por día
-   • HR demand debe calcularse por semana / por ruta / por avión
-   • Este listener queda solo para debug futuro
-   ============================================================ */
-
-window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
-
-  const { flight, aircraft, route } = e.detail || {};
-  if (!flight || !aircraft || !route) return;
-
-  console.log(
-    "%c🧪 OPS EVENT RECEIVED (IGNORED FOR HR)",
-    "color:#ffaa00;font-weight:700",
-    aircraft.model || aircraft.name,
-    route.id || route.origin + "-" + route.destination,
-    flight.day
+  // ------------------------------------------------------------
+  // 2️⃣ Filtrar vuelos ACTIVOS reales
+  // ------------------------------------------------------------
+  const activeFlights = scheduleItems.filter(f =>
+    f.assigned === true &&
+    f.aircraftId &&
+    f.day
   );
 
-  // ❌ NO recalcular HR aquí
-  // HR demand se calcula SOLO desde recálculo semanal consolidado
-});
+  // ------------------------------------------------------------
+  // 3️⃣ Utilidades de clasificación
+  // ------------------------------------------------------------
+  function classifyAircraft(seats = 0) {
+    if (seats <= 19) return "SMALL";
+    if (seats <= 70) return "MEDIUM";
+    if (seats <= 150) return "LARGE";
+    return "VERY_LARGE";
+  }
 
-/* ============================================================
-   🟦 END OF PHASE B1 — DEMAND CORE ONLY
-   ------------------------------------------------------------
-   NEXT PHASES (NOT YET IMPLEMENTED):
-   • Deficit timers
-   • Delay risk engine
-   • Weekly morale degradation
-   • Alert escalation logic
-   • Recovery smoothing
-   ============================================================ */
+  function requiresFlightEngineer(ac) {
+    if (!ac || !ac.data) return false;
+    const year = ac.data.year || ac.year || 9999;
+    // Histórico: FE hasta ~1970 en aviones complejos
+    return year <= 1970;
+  }
+
+  // ------------------------------------------------------------
+  // 4️⃣ Contadores base
+  // ------------------------------------------------------------
+  let pilots = {
+    SMALL: 0,
+    MEDIUM: 0,
+    LARGE: 0,
+    VERY_LARGE: 0
+  };
+
+  let flightEngineers = 0;
+  let cabinCrew = 0;
+
+  const activeAircraftIds = new Set();
+
+  // ------------------------------------------------------------
+  // 5️⃣ Calcular por vuelo activo
+  // ------------------------------------------------------------
+  activeFlights.forEach(f => {
+    const ac = aircraftById[f.aircraftId];
+    if (!ac || !ac.data) return;
+
+    activeAircraftIds.add(ac.id);
+
+    const seats = ac.data.seats || 0;
+    const type = classifyAircraft(seats);
+
+    // Pilotos por vuelo
+    if (type === "SMALL") pilots.SMALL += 2;
+    if (type === "MEDIUM") pilots.MEDIUM += 2;
+    if (type === "LARGE") pilots.LARGE += 3;
+    if (type === "VERY_LARGE") pilots.VERY_LARGE += 4;
+
+    // Cabin Crew por vuelo
+    if (type === "SMALL") cabinCrew += 1;
+    if (type === "MEDIUM") cabinCrew += 2;
+    if (type === "LARGE") cabinCrew += 4;
+    if (type === "VERY_LARGE") cabinCrew += 8;
+
+    // Flight Engineer (histórico)
+    if (requiresFlightEngineer(ac)) {
+      flightEngineers += 1;
+    }
+  });
+
+  const totalFlights = activeFlights.length;
+  const totalAircraft = activeAircraftIds.size;
+
+  // ------------------------------------------------------------
+  // 6️⃣ Personal NO lineal (operacional)
+  // ------------------------------------------------------------
+  const technicalMaintenance =
+    Math.max(1, Math.ceil(totalAircraft / 2.5));
+
+  const groundHandling =
+    Math.max(1, Math.ceil(totalFlights / 2));
+
+  const flightOps =
+    Math.max(1, Math.ceil(totalFlights / 6));
+
+  const routeStrategy =
+    Math.max(1, Math.ceil(totalFlights / 10));
+
+  // ------------------------------------------------------------
+  // 7️⃣ Resultado final por departamento
+  // ------------------------------------------------------------
+  const requiredStaff = {
+    pilotsSmall: pilots.SMALL,
+    pilotsMedium: pilots.MEDIUM,
+    pilotsLarge: pilots.LARGE,
+    pilotsVeryLarge: pilots.VERY_LARGE,
+
+    flightEngineers: flightEngineers,
+    cabinCrew: cabinCrew,
+
+    technicalMaintenance: technicalMaintenance,
+    groundHandling: groundHandling,
+    flightOpsDivision: flightOps,
+    routeStrategies: routeStrategy
+  };
+
+  console.log("🟢 HR REQUIRED STAFF (FINAL):", requiredStaff);
+
+  return requiredStaff;
+}
 
 /* ============================================================
    🟦 C2 — AUTO RECALC ON SCHEDULE CHANGE (ACS OFFICIAL)
