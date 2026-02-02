@@ -1683,50 +1683,63 @@ if (isEditMode) {
 
   const f = scheduleItems[idx];
      
-// ===============================
-// === EDIT ROUTE — SAFE BLOCK ===
-// ===============================
+// ============================================================
+// 🟢 EDIT ROUTE — CREATE NEW FLIGHT INSTANCE (CANONICAL ACS)
+// Regla: EDIT = NUEVO VUELO OPERATIVO
+// ============================================================
 
-// Tiempos (OK)
-f.departure = departure;
-f.arrival   = arrival;
+if (isEditMode === true && f && f.id) {
 
-// 🟡 MARCAR COMO EDITADO
-// Regla: EDIT no auto-asigna → debe volver a Assign Route
-f.__edited = true;
+  // 1️⃣ Crear NUEVO vuelo a partir del original
+  const newFlight = {
+    ...f,
 
-// ✅ EDIT NO toca asignación (NO TOCAR)
-// f.assigned
-// f.aircraftId
+    // 🔑 NUEVA identidad
+    id: `FL_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
 
-// (Opcional y seguro) limpiar intención vieja si existía
-delete f.pendingAircraftId;
+    // 🕓 Nuevos datos operativos (del formulario)
+    day: day,
+    departure: departure,
+    arrival: arrival,
 
-// Metadata técnica (solo descriptiva)
-f.modelKey = (modelKey || f.modelKey || "").toString().trim().toUpperCase();
+    // 🔁 RESET TOTAL DE ASIGNACIÓN
+    aircraftId: null,
+    assigned: false,
 
-// Datos técnicos
-f.blockTimeMin = blockTimeMin;
-f.turnaroundMin = window.ACS_RouteTechData?.turnMin ?? f.turnaroundMin;
-f.turnaroundMinOptimized =
-  window.ACS_RouteTechData?.turnMinOptimized ?? f.turnaroundMinOptimized;
-f.totalRotationMin =
-  window.ACS_RouteTechData?.totalMin ?? f.totalRotationMin;
+    // 🧹 Limpiar estado runtime
+    depAbsMin: null,
+    arrAbsMin: null,
+    pendingAircraftId: null,
 
-f.optimized =
-  document.getElementById("optimizeRotation")?.checked || false;
+    // 🧠 Metadata técnica (se recalcula)
+    modelKey: (modelKey || f.modelKey || "").toString().trim().toUpperCase(),
+    blockTimeMin: blockTimeMin,
+    turnaroundMin: window.ACS_RouteTechData?.turnMin ?? f.turnaroundMin,
+    turnaroundMinOptimized:
+      window.ACS_RouteTechData?.turnMinOptimized ?? f.turnaroundMinOptimized,
+    totalRotationMin:
+      window.ACS_RouteTechData?.totalMin ?? f.totalRotationMin,
 
-// ❌ NO tocar:
-// f.day
-// f.id
-// f.flightNumberOut / In
+    optimized:
+      document.getElementById("optimizeRotation")?.checked || false,
 
-  scheduleItems[idx] = f;
-  localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
+    // 📎 Marca informativa (opcional)
+    recreatedFromEdit: true
+  };
 
+  // 2️⃣ Eliminar vuelo anterior
+  const updatedItems = scheduleItems.filter(it => it.id !== f.id);
+
+  // 3️⃣ Insertar nuevo vuelo
+  updatedItems.push(newFlight);
+
+  // 4️⃣ Guardar
+  localStorage.setItem("scheduleItems", JSON.stringify(updatedItems));
+
+  // 5️⃣ Limpiar estado de edición
   localStorage.removeItem("ACS_ROUTE_EDIT");
 
-  alert("Flight updated successfully.");
+  alert("Flight re-planned successfully.");
   window.location.href = "schedule_table.html";
   return;
 }
