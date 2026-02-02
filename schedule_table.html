@@ -2920,14 +2920,15 @@ function ACS_restoreFlightModalFooterDefault(){
   const canEdit = selected.length === 1;
 
   footer.innerHTML = `
-    ${canEdit
-      ? `<button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>
-      : `<button class="btn-modal gold disabled" disabled>✏️ EDIT</button>`
-    }
-    <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
-    <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
-    <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
-  `;
+  ${canEdit
+    ? `<button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>`
+    : `<button class="btn-modal gold disabled" disabled>✏️ EDIT</button>`
+  }
+  <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
+  <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
+  <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
+`;
+
 }
 
 function closeFlightModal(){
