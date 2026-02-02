@@ -9,7 +9,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Create Airline - Aviation Capital Simulator</title>
+  
+<!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== ACS Favicons ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
 
    <style>
 
@@ -471,22 +479,6 @@ try {
   } else {
     airline.iata = airline.iata.toUpperCase().trim();
   }
-
-  // ------------------------------------------------------------
-  // 2️⃣ GUARDAR USUARIO ACTIVO (FUENTE DE VERDAD DEL JUEGO)
-  // ------------------------------------------------------------
-  const activeUser = {
-    userId: user.userId,
-    airline: {
-      name: airlineName,
-      iata: airline.iata,
-      country: country
-    },
-    createdAt: new Date().toISOString()
-  };
-
-  localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
-  console.log("🟢 ACS_activeUser stored:", activeUser);
 
   // ------------------------------------------------------------
   // 3️⃣ INICIALIZAR SISTEMA DE VUELOS (USANDO IATA CORRECTO)
