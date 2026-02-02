@@ -2561,11 +2561,13 @@ if (sameServiceAlreadyPlanned) {
   });
 
   // ============================================================
-  // ✅ 7️⃣ FINAL
-  // ============================================================
-  setItems(items);
-  closeMaintModal();
-  renderSchedule();
+// ✅ 7️⃣ FINAL
+// ============================================================
+     
+setItems(items);
+closeMaintModal();
+renderSchedule();
+bindEditButtons();   // 🔑 REENGANCHAR EDIT DESPUÉS DEL RENDER
 }
 
 function removeItem(){
