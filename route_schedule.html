@@ -1742,9 +1742,10 @@ if (isEditMode === true && f && f.id) {
   alert("Flight re-planned successfully.");
   window.location.href = "schedule_table.html";
   return;
+ }
 }
-
-  // 10) Crear vuelos por día (1 día = 1 vuelo)
+     
+// 10) Crear vuelos por día (1 día = 1 vuelo)
   const createdFlights = [];
 
   selectedDays.forEach(day => {
