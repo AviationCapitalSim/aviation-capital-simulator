@@ -1691,6 +1691,10 @@ if (isEditMode) {
 f.departure = departure;
 f.arrival   = arrival;
 
+// 🟡 MARCAR COMO EDITADO
+// Regla: EDIT no auto-asigna → debe volver a Assign Route
+f.__edited = true;
+
 // ✅ EDIT NO toca asignación (NO TOCAR)
 // f.assigned
 // f.aircraftId
