@@ -2912,8 +2912,18 @@ function ACS_restoreFlightModalFooterDefault(){
   const footer = modal.querySelector(".acs-modal-footer");
   if (!footer) return;
 
+  // 🧠 Usar selección real (source of truth)
+  const selected = Array.isArray(window.selectedFlights)
+    ? window.selectedFlights
+    : [];
+
+  const canEdit = selected.length === 1;
+
   footer.innerHTML = `
-    <button class="btn-modal gold" onclick="editSelectedFlight('${flight.id}')">✏️ EDIT</button>
+    ${canEdit
+      ? `<button class="btn-modal gold" onclick="editSelectedFlight('${selected[0].id}')">✏️ EDIT</button>`
+      : `<button class="btn-modal gold disabled" disabled>✏️ EDIT</button>`
+    }
     <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
     <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
