@@ -1683,41 +1683,42 @@ if (isEditMode) {
 
   const f = scheduleItems[idx];
      
-// 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES
-     
-// 🔧 ACTUALIZAR SOLO CAMPOS EDITABLES (EDIT NO AUTO-ASIGNA)
+// ===============================
+// === EDIT ROUTE — SAFE BLOCK ===
+// ===============================
 
 // Tiempos
 f.departure = departure;
 f.arrival   = arrival;
 
-// ✅ Si el usuario eligió un avión, lo guardamos como "pendiente"
-//    (pero NO lo asignamos en la tabla).
-const chosenAircraftId = (selectedAircraftId || "").trim();
-if (chosenAircraftId) {
-  f.pendingAircraftId = chosenAircraftId;   // recuerda la intención del usuario
-}
+// 🚫 EDIT NO DEBE tocar intención de asignación
+// ❌ NO pendingAircraftId
+// ❌ NO aircraftId
+// ❌ NO assigned
 
-// 🔥 CLAVE DEL FIX:
-// EDIT SIEMPRE deja el vuelo SIN asignar para forzar "Assignments"
-f.assigned  = false;
+delete f.pendingAircraftId;
+f.assigned   = false;
 f.aircraftId = null;
 
-// Metadata técnica (NO asigna)
+// Metadata técnica (solo descriptiva, NO asigna)
 f.modelKey = (modelKey || f.modelKey || "").toString().trim().toUpperCase();
 f.aircraft = f.modelKey;
 
-  f.blockTimeMin = blockTimeMin;
-  f.turnaroundMin = window.ACS_RouteTechData?.turnMin ?? f.turnaroundMin;
-  f.turnaroundMinOptimized = window.ACS_RouteTechData?.turnMinOptimized ?? f.turnaroundMinOptimized;
-  f.totalRotationMin = window.ACS_RouteTechData?.totalMin ?? f.totalRotationMin;
+// Datos técnicos
+f.blockTimeMin = blockTimeMin;
+f.turnaroundMin = window.ACS_RouteTechData?.turnMin ?? f.turnaroundMin;
+f.turnaroundMinOptimized =
+  window.ACS_RouteTechData?.turnMinOptimized ?? f.turnaroundMinOptimized;
+f.totalRotationMin =
+  window.ACS_RouteTechData?.totalMin ?? f.totalRotationMin;
 
-  f.optimized = document.getElementById("optimizeRotation")?.checked || false;
+f.optimized =
+  document.getElementById("optimizeRotation")?.checked || false;
 
-  // ❌ NO tocar:
-  // f.day
-  // f.id
-  // f.flightNumberOut / In
+// ❌ NO tocar:
+// f.day
+// f.id
+// f.flightNumberOut / In
 
   scheduleItems[idx] = f;
   localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
