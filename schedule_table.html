@@ -1911,9 +1911,14 @@ function assignRouteToTail(ac){
   }
 
   // 👉 SOLO vuelos NO asignados
-  const unassignedFlights = items.filter(it =>
-    it.type === "flight" && !it.aircraftId
-  );
+     
+  const unassignedFlights = items
+  .filter(it => it && it.type === "flight" && !it.aircraftId)
+  .filter(it => {
+    if (typeof ACS_isFlightCompatibleWithAircraft !== "function") return true;
+    return ACS_isFlightCompatibleWithAircraft(it, ac);
+  });
+
 
   if (!unassignedFlights.length) {
     alert("⚠ All scheduled flights are already assigned.");
