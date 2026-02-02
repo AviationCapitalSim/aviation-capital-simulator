@@ -1505,11 +1505,19 @@ const byAircraftId = {};
 
 items.forEach(it => {
 
+  // 🔴 SOLO vuelos reales
+  if (!it || it.type !== "flight") return;
+
   // ⛔ NO indexar vuelos editados
   if (it.__edited === true) return;
 
+  // 🔴 Requiere aircraftId válido
   const key = String(it.aircraftId || "").trim();
   if (!key) return;
+
+  // 🔴 Requiere día válido (mon..sun)
+  const day = String(it.day || "").toLowerCase();
+  if (!["mon","tue","wed","thu","fri","sat","sun"].includes(day)) return;
 
   if (!byAircraftId[key]) byAircraftId[key] = [];
   byAircraftId[key].push(it);
