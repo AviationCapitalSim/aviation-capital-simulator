@@ -500,31 +500,38 @@ function ACS_OPS_recalculateAllRequired() {
   }
 
   // ============================================================
-  // APPLY: required = staff - ideal   (negativo = falta)
-  // ============================================================
+// ✅ APPLY (CANONICAL UI MODEL)
+// ------------------------------------------------------------
+// required = IDEAL ABSOLUTO (positivo)
+// UI calcula missing = required - staff
+// ============================================================
 
-  const MAP = [
-    ["pilots_small",      ideal.pilotsSmall],
-    ["pilots_medium",     ideal.pilotsMedium],
-    ["pilots_large",      ideal.pilotsLarge],
-    ["pilots_vlarge",     ideal.pilotsVeryLarge],
-    ["cabin",             ideal.cabinCrew],
-    ["maintenance",       ideal.technicalMaintenance],
-    ["ground",            ideal.groundHandling],
-    ["flightops",         ideal.flightOpsDivision],
-    ["route_strategy",    ideal.routeStrategies],
-    ["flight_engineers",  ideal.flightEngineers]
-  ];
+const MAP = [
+  ["pilots_small",   ideal.pilotsSmall],
+  ["pilots_medium",  ideal.pilotsMedium],
+  ["pilots_large",   ideal.pilotsLarge],
+  ["pilots_vlarge",  ideal.pilotsVeryLarge],
+  ["cabin",          ideal.cabinCrew],
+  ["maintenance",    ideal.technicalMaintenance],
+  ["ground",         ideal.groundHandling],
+  ["flightops",      ideal.flightOpsDivision],
 
-  MAP.forEach(([depId, idealValue]) => {
+  // ✅ TU HR usa "routes" (no "route_strategy")
+  ["routes",         ideal.routeStrategies],
 
-    if (!HR[depId]) return;
+  // opcional (solo aplica si existe el dep)
+  ["flight_engineers", ideal.flightEngineers]
+];
 
-    const staff = Number(HR[depId].staff || 0);
-    const needed = Number(idealValue || 0);
+MAP.forEach(([depId, idealValue]) => {
 
-    HR[depId].required = Math.round(staff - needed);
-  });
+  if (!HR[depId]) return;
+
+  const needed = Number(idealValue || 0);
+
+  // ✅ REQUIRED = IDEAL ABSOLUTO
+  HR[depId].required = Math.max(0, Math.ceil(needed));
+});
 
   // Managers required (si existe)
   if (typeof ACS_HR_calculateManagementRequired === "function") {
