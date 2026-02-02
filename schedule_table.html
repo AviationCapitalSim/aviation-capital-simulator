@@ -1192,10 +1192,28 @@ function normalizeModel(m){
    🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
    ============================================================ */
 
-function ACS_isFlightCompatibleWithAircraft(flight, ac){
-  const acKey = normalizeModel(ac?.model || ac?.type || "");
-  const fKey  = normalizeModel(flight?.model || flight?.acType || flight?.aircraftModel || "");
-  return !!acKey && !!fKey && (acKey === fKey);
+function ACS_isFlightCompatibleWithAircraft(flight, aircraft) {
+
+  // Normalizador seguro
+  const norm = (v) => String(v || "")
+    .normalize("NFKC")
+    .replace(/\s+/g, " ")
+    .replace(/\u00A0/g, " ")
+    .trim()
+    .toUpperCase();
+
+  if (!flight || !aircraft) return false;
+
+  // ✅ Vuelo: usar SIEMPRE modelKey (o aircraft) como fuente real
+  const fKey = norm(flight.modelKey || flight.aircraft || flight.model || flight.aircraftModel);
+
+  // ✅ Avión: usar model real del fleet
+  const aKey = norm(aircraft.model || aircraft.modelKey || aircraft.aircraft || aircraft.name);
+
+  if (!fKey || !aKey) return false;
+
+  // Compatibilidad estricta por modelo
+  return fKey === aKey;
 }
 
 function ACS_isFlightAlreadyAssigned(flight){
