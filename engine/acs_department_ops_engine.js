@@ -531,6 +531,59 @@ function ACS_OPS_recalculateAllRequired() {
     ACS_HR_calculateManagementRequired();
   }
 
+  /* ============================================================
+   🟦 A5 — HISTORICAL STARTUP OPERATION SCALER (1940–REALISTIC)
+   ------------------------------------------------------------
+   • Evita exigir estructura completa con pocos vuelos
+   • Aplica SOLO cuando la operación es pequeña
+   • No rompe escalado futuro
+   ============================================================ */
+
+(function applyStartupCaps(){
+
+  const totalFlights = activeFlights.length;
+
+  // 🔹 Startup mode: muy pocos vuelos
+  if (totalFlights <= 3) {
+
+    const STARTUP_CAPS = {
+      pilots_small:   2,
+      pilots_medium:  2,
+      pilots_large:   3,
+      pilots_vlarge:  4,
+
+      cabin:          1,
+      maintenance:    1,
+      ground:         1,
+      flightops:      1,
+      quality:        0,
+      security:       0,
+      route_strategies: 0
+    };
+
+    Object.keys(HR).forEach(depID => {
+
+      const dep = HR[depID];
+      if (!dep || typeof dep.required !== "number") return;
+
+      const cap = STARTUP_CAPS[depID];
+      if (typeof cap !== "number") return;
+
+      // Limitar REQUIRED al cap histórico
+      if (dep.required > cap) {
+        dep.required = cap;
+      }
+    });
+
+    console.log(
+      "%c🟢 STARTUP OPERATION MODE ACTIVE",
+      "color:#7CFFB2;font-weight:700",
+      "Flights:", totalFlights
+    );
+  }
+
+})();
+   
   ACS_HR_save(HR);
 
   if (typeof loadDepartments === "function") loadDepartments();
