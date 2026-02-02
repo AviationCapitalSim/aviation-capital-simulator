@@ -618,20 +618,6 @@ registerTimeListener((time) => {
     __HR_lastYear = year;
 });
 
-
-/* ============================================================
-   4) TABLA REALISTA DE STAFF POR TIPO DE AVIÓN
-   (SIN MODIFICAR, SOLO ORDENADO)
-   ============================================================ */
-const ACS_HR_STAFF_BY_TYPE = {
-
-  small:   { pilots:4,  cabin:0,  maintenance:3,  ground:4,  security:1, flightops:1, quality:1 },
-  medium:  { pilots:9,  cabin:4,  maintenance:5,  ground:6,  security:1, flightops:1, quality:1 },
-  large:   { pilots:12, cabin:10, maintenance:8,  ground:10, security:2, flightops:2, quality:1.5 },
-  vlarge:  { pilots:22, cabin:18, maintenance:12, ground:16, security:3, flightops:3, quality:2 }
-};
-
-
 /* ============================================================
    5) CLASSIFY AIRCRAFT (Sin cambios)
    ============================================================ */
