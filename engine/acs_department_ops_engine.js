@@ -151,7 +151,72 @@ const ACS_OPS_STAFF_BY_TYPE = {
   }
 };
 
+/* ============================================================
+   🟧 A2-1 — AIRCRAFT CLASSIFIER (REAL OPS / HISTORICAL)
+   ------------------------------------------------------------
+   • Usa datos reales del avión (seats / year / mtow)
+   • Define clase, era y Flight Engineer
+   • NO calcula HR
+   • Función pura (sin efectos secundarios)
+   ============================================================ */
 
+function ACS_OPS_classifyAircraftReal(ac) {
+
+  if (!ac || !ac.data) {
+    return {
+      class: "UNKNOWN",
+      era: "UNKNOWN",
+      requiresFE: false
+    };
+  }
+
+  const seats = Number(ac.data.seats || 0);
+  const year  = Number(ac.data.year  || 9999);
+  const mtow  = Number(ac.data.mtow_kg || 0);
+
+  // ------------------------------------------------------------
+  // 1️⃣ Clasificación por tamaño (PRIMARY = seats)
+  // ------------------------------------------------------------
+  let aircraftClass = "SMALL";
+
+  if (seats <= 19) aircraftClass = "SMALL";
+  else if (seats <= 70) aircraftClass = "MEDIUM";
+  else if (seats <= 150) aircraftClass = "LARGE";
+  else aircraftClass = "VERY_LARGE";
+
+  // ------------------------------------------------------------
+  // 2️⃣ Era operativa (histórica)
+  // ------------------------------------------------------------
+  let era = "MODERN";
+
+  if (year <= 1955) era = "EARLY_PISTON";
+  else if (year <= 1975) era = "TRANSITIONAL";
+  else era = "MODERN";
+
+  // ------------------------------------------------------------
+  // 3️⃣ Flight Engineer (histórico real)
+  // ------------------------------------------------------------
+  let requiresFE = false;
+
+  // Regla realista:
+  // - Antes de ~1970
+  // - Aviones medianos o grandes
+  // - Sistemas no automatizados
+  if (year <= 1970 && (aircraftClass === "MEDIUM" || aircraftClass === "LARGE" || aircraftClass === "VERY_LARGE")) {
+    requiresFE = true;
+  }
+
+  // Algunos SMALL antiguos complejos (ej: DC-5)
+  if (year <= 1945 && aircraftClass === "SMALL" && mtow >= 8000) {
+    requiresFE = true;
+  }
+
+  return {
+    class: aircraftClass,
+    era: era,
+    requiresFE: requiresFE
+  };
+}
 
 /* ============================================================
    🟧 A1 — HR REQUIRED STAFF ENGINE (REALISTIC / HISTORICAL)
@@ -288,6 +353,107 @@ function calculateRequiredStaff() {
   console.log("🟢 HR REQUIRED STAFF (FINAL):", requiredStaff);
 
   return requiredStaff;
+}
+
+/* ============================================================
+   🟦 A2-3 — AIRCRAFT CLASSIFIER (CANONICAL)
+   ------------------------------------------------------------
+   • Source of truth: ACS_AIRCRAFT_DB
+   • Period correct: 1940–2026
+   • NO HR logic here
+   • NO schedule logic here
+   • Returns PURE classification data
+   ============================================================ */
+
+function ACS_OPS_classifyAircraftFromDB(aircraft) {
+
+  if (!aircraft || !aircraft.model) {
+    console.warn("A2-3: Invalid aircraft input", aircraft);
+    return null;
+  }
+
+  // 🔑 Buscar en DB canónica
+  const db = Array.isArray(window.ACS_AIRCRAFT_DB)
+    ? window.ACS_AIRCRAFT_DB
+    : [];
+
+  const entry = db.find(a =>
+    a &&
+    a.model &&
+    String(a.model).toUpperCase() === String(aircraft.model).toUpperCase()
+  );
+
+  if (!entry) {
+    console.warn("A2-3: Aircraft not found in DB", aircraft.model);
+    return null;
+  }
+
+  const seats = Number(entry.seats || 0);
+  const mtow  = Number(entry.mtow_kg || 0);
+  const year  = Number(entry.year || 0);
+  const enginesRaw = String(entry.engines || "").toUpperCase();
+
+  // ============================================================
+  // ✈️ SIZE CLASSIFICATION (REAL WORLD)
+  // ============================================================
+
+  let size = "small";
+
+  if (seats >= 250) size = "vlarge";
+  else if (seats >= 100) size = "large";
+  else if (seats >= 20)  size = "medium";
+  else size = "small";
+
+  // ============================================================
+  // 🧑‍✈️ BASE PILOTS PER FLIGHT
+  // ============================================================
+
+  let basePilots = 2;
+
+  if (size === "vlarge") {
+    basePilots = 3; // long-haul realism
+  }
+
+  // ============================================================
+  // 🧠 FLIGHT ENGINEER (HISTORICAL LOGIC)
+  // ============================================================
+
+  let requiresFE = false;
+
+  // Count engines (best effort)
+  let engineCount = 0;
+  if (enginesRaw.includes("4")) engineCount = 4;
+  else if (enginesRaw.includes("3")) engineCount = 3;
+  else if (enginesRaw.includes("2")) engineCount = 2;
+
+  // Seen patterns like "JT3D x4", "RB211-22B x3"
+  if (engineCount === 0) {
+    const match = enginesRaw.match(/X\s*(\d)/);
+    if (match) engineCount = parseInt(match[1], 10);
+  }
+
+  // Historical rule:
+  // • Pre-1990 AND >=3 engines → Flight Engineer
+  if (year < 1990 && engineCount >= 3) {
+    requiresFE = true;
+  }
+
+  // ============================================================
+  // 🧾 FINAL CLASSIFICATION OBJECT
+  // ============================================================
+
+  return {
+    model: entry.model,
+    manufacturer: entry.manufacturer || "—",
+    year,
+    seats,
+    mtow_kg: mtow,
+
+    size,              // small | medium | large | vlarge
+    basePilots,        // 2 or 3
+    requiresFE,        // true / false
+    engineCount
+  };
 }
 
 /* ============================================================
