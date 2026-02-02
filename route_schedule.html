@@ -928,14 +928,14 @@ if (editCtx.day) {
   if (btn) btn.textContent = "UPDATE ROUTE";
 
 /* ============================================================
-   🟧 B1.1 — EDIT CONFIRM ROUTE (SINGLE FLIGHT) — FIX DAY CHANGE
+   🟧 B1.2 — EDIT CONFIRM ROUTE (SINGLE FLIGHT) — NO AUTO ASSIGN ✅
    ------------------------------------------------------------
-   FIX:
-   ✅ Permite mover 1 vuelo a OTRO DÍA (SAT → SUN, etc.)
-   ✅ EDIT = 1 vuelo = 1 día (solo 1 checkbox permitido)
-   ✅ Actualiza departure + arrival
-   ✅ Actualiza slots simples (ACS_SLOTS_SIMPLE) si existen
-   ✅ Persiste en scheduleItems (source of truth)
+   REGLA FINAL (la tuya):
+   - EDIT = vuelve como vuelo NUEVO
+   - NO auto-asignar
+   - aircraftId = null
+   - assigned = false
+   - id NUEVO
    ============================================================ */
 
 window.confirmRoute = function () {
@@ -956,73 +956,51 @@ window.confirmRoute = function () {
   }
 
   const flight = items[idx];
+  const oldFlightId = String(flight.id || "");
 
-  // 1) Capturar día seleccionado (EDIT = 1 SOLO día)
-  const selectedDays = DAY_IDS.filter(id => document.getElementById(id)?.checked);
-
+  // 1) Día seleccionado (solo 1)
+  const selectedDays = DAY_IDS.filter(d => document.getElementById(d)?.checked);
   if (!selectedDays.length) {
-    alert("⚠️ Please select exactly ONE day for this flight.");
+    alert("⚠️ Select one day.");
     return;
   }
-
   if (selectedDays.length > 1) {
-    alert("⛔ EDIT mode supports only ONE day (1 flight = 1 day). Please select only one.");
+    alert("⚠️ EDIT = only 1 day allowed.");
     return;
   }
-
   const newDay = selectedDays[0];
 
-  // 2) Capturar times
+  // 2) Departure
   const newDeparture = (document.getElementById("departureTime")?.value || flight.departure || "").trim();
   if (!newDeparture) {
     alert("⚠️ Departure time missing.");
     return;
   }
 
-  // arrival: recalcular si hay blockTimeMin (preferimos el del vuelo)
+  // 3) Arrival (recalcular si se puede)
   const blockMin = Number(flight.blockTimeMin || window.ACS_RouteTechData?.blockMin || 0);
   let newArrival = flight.arrival;
 
   if (Number.isFinite(blockMin) && blockMin > 0 && typeof ACS_convertDepartureToArrival === "function") {
     newArrival = ACS_convertDepartureToArrival(newDeparture, blockMin);
   } else {
-    // fallback: si no se puede recalcular, al menos mantiene arrival existente
     newArrival = flight.arrival || newArrival;
   }
 
-  // 3) Aircraft + flags
-  const newAircraftId = (document.getElementById("aircraft")?.value || flight.aircraftId || "").trim();
-
-  // 4) Aplicar cambios
-  flight.day = newDay;                               // ✅ AHORA SÍ mueve el vuelo de día
-  flight.departure = newDeparture;
-  flight.arrival = newArrival;
-  flight.aircraftId = newAircraftId;
-  flight.optimized = document.getElementById("optimizeRotation")?.checked || false;
-
-  // ⚠ NO TOCAR:
-  // flight.id
-  // flight.flightNumberOut / flight.flightNumberIn
-
-  items[idx] = flight;
-  localStorage.setItem("scheduleItems", JSON.stringify(items));
-
-  /* ============================================================
-     5) SLOTS SIMPLE — mover slots del mismo flightId (si existen)
-     ============================================================ */
+  // 4) Antes de cambiar ID: mover/limpiar slots del vuelo viejo
   try {
     let slots = JSON.parse(localStorage.getItem("ACS_SLOTS_SIMPLE") || "[]");
     if (Array.isArray(slots) && slots.length) {
 
-      // quitar slots anteriores de este vuelo
-      slots = slots.filter(s => String(s?.flightId || "") !== String(flight.id || ""));
+      // quitar slots anteriores de este vuelo (OLD id)
+      slots = slots.filter(s => String(s?.flightId || "") !== oldFlightId);
 
       // detectar conflicto (DEP) en nuevo día/hora/origen
       const depConflict = slots.find(s =>
         s?.type === "DEP" &&
         String(s?.airport || "") === String(flight.origin || "") &&
-        String(s?.day || "") === String(flight.day || "") &&
-        String(s?.time || "") === String(flight.departure || "")
+        String(s?.day || "") === String(newDay || "") &&
+        String(s?.time || "") === String(newDeparture || "")
       );
 
       if (depConflict) {
@@ -1030,22 +1008,55 @@ window.confirmRoute = function () {
         return;
       }
 
-      // reinsertar slots nuevos
+      // reinsertar slots nuevos (todavía sin asignación, pero slot sí reserva el horario)
+      const newTempId = "FL_" + Math.floor(100000 + Math.random() * 900000);
+
       slots.push(
-        { airport: flight.origin,      day: flight.day, time: flight.departure, flightId: flight.id, type: "DEP" },
-        { airport: flight.destination, day: flight.day, time: flight.arrival,   flightId: flight.id, type: "ARR" }
+        { airport: flight.origin,      day: newDay, time: newDeparture, flightId: newTempId, type: "DEP" },
+        { airport: flight.destination, day: newDay, time: newArrival,   flightId: newTempId, type: "ARR" }
       );
 
       localStorage.setItem("ACS_SLOTS_SIMPLE", JSON.stringify(slots));
+
+      // aplicar ese nuevo id al vuelo
+      flight.id = newTempId;
+
+    } else {
+      // si no hay slots, igual generamos id nuevo
+      flight.id = "FL_" + Math.floor(100000 + Math.random() * 900000);
     }
   } catch (e) {
     console.warn("⚠ Slots update skipped (error):", e);
+    // aunque falle slots, igual hacemos el comportamiento “nuevo”
+    flight.id = "FL_" + Math.floor(100000 + Math.random() * 900000);
   }
+
+  // 5) Aplicar cambios (EDIT = vuelve como NUEVO)
+  flight.day = newDay;
+  flight.departure = newDeparture;
+  flight.arrival = newArrival;
+
+  // ✅ REGLA CRÍTICA: NO AUTO ASSIGN
+  flight.aircraftId = null;
+  flight.assigned = false;
+
+  // Marca técnica para que la tabla lo trate como pendiente
+  flight.__edited = true;
+
+  // Limpieza
+  delete flight.pendingAircraftId;
+
+  // Opcional (solo flags)
+  flight.optimized = document.getElementById("optimizeRotation")?.checked || false;
+
+  // Persistir
+  items[idx] = flight;
+  localStorage.setItem("scheduleItems", JSON.stringify(items));
 
   // 6) Limpiar contexto de edición
   localStorage.removeItem("ACS_ROUTE_EDIT");
 
-  alert("✅ Flight updated successfully.");
+  alert("Flight re-planned successfully (requires Assign Route).");
   window.location.href = "schedule_table.html";
 };
      
