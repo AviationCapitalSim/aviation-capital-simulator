@@ -1125,10 +1125,6 @@ footer {
 </footer>
 
 <!-- ============================================================
-     ⏱ ACS TIME ENGINE — REQUIRED FOR SCHEDULE TABLE
-     ============================================================ -->
-
-<!-- ============================================================
      ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
      ============================================================ -->
 <script src="acs_time_recovery.js"></script>
@@ -2261,6 +2257,7 @@ function ACS_confirmAssignFlights(){
     localStorage.setItem("scheduleItems", JSON.stringify(items));
     ACS_closeAssignFlightsModal();
     renderSchedule();
+    bindEditButtons();
     console.log(`🟢 Assigned ${changed} flight(s) to ${ac.id}`);
   }
 }
@@ -2589,6 +2586,7 @@ function removeItem(){
   setItems(filtered);
   closeActionModal();
   renderSchedule();
+  bindEditButtons();
 }
 
 
@@ -2922,6 +2920,7 @@ function cancelSelectedService(){
   setItems(filtered);
   closeFlightModal();
   renderSchedule();
+  bindEditButtons();
 }
      
 /* ============================================================
@@ -3022,7 +3021,8 @@ function ACS_removeSelectedFlights(){
 
   closeFlightModal();
   renderSchedule();
-
+  bindEditButtons();
+     
   console.log(`🟢 Removed (unassigned) flight ${sel.id}`);
 }
 
