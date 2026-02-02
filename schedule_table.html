@@ -3075,6 +3075,8 @@ function deleteSelectedFlights() {
     localStorage.removeItem("scheduleItems");
     closeFlightModal();
     renderSchedule();
+    bindEditButtons();
+     
     return;
   }
 
