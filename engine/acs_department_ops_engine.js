@@ -1712,28 +1712,32 @@ if (HR_FINANCE_METRICS) {
 }
 
 /* ============================================================
-   🟦 OPS → HR MARKET SALARY SYNC (FIXED + TIME SAFE)
+   🟦 OPS → HR MARKET SALARY SYNC (FIXED + GLOBAL SAFE)
    ============================================================ */
 
-const HR = ACS_HR_load();
-if (!HR) return;
+(function () {
 
-const year = ACS_HR_getGameYear();
-if (!year) return;
+  const HR = ACS_HR_load();
+  if (!HR) return;
 
-Object.keys(HR).forEach(id => {
+  const year = ACS_HR_getGameYear();
+  if (!year) return;
 
-  const dep = HR[id];
-  if (!dep || typeof dep !== "object") return;
+  Object.keys(HR).forEach(id => {
 
-  const market = ACS_HR_getHistoricalMarketBase(id, year);
+    const dep = HR[id];
+    if (!dep || typeof dep !== "object") return;
 
-  if (typeof market === "number") {
-    dep.marketSalary = market;
-  }
-});
+    const market = ACS_HR_getHistoricalMarketBase(id, year);
 
-ACS_HR_save(HR);
+    if (typeof market === "number") {
+      dep.marketSalary = market;
+    }
+  });
+
+  ACS_HR_save(HR);
+
+})();
 
 /* ============================================================
    🟦 SAL-JS-1 — SALARY POLICY MODAL (QATAR LUXURY) — v2
