@@ -261,141 +261,67 @@ function OPS_calculateAircraftUtilization(scheduleItems) {
   return utilization;
 }
 
-/* ============================================================
-   🟧 A1 — HR REQUIRED STAFF ENGINE (REALISTIC / HISTORICAL)
-   ------------------------------------------------------------
-   • Fuente única: scheduleItems + ACS_MyAircraft
-   • Sin duplicados
-   • Con Flight Engineer (histórico)
-   • Escala realista 1940–2026
-   ============================================================ */
-
+// ============================================================
+// 🧮 CALCULATE REQUIRED STAFF — CANONICAL AIRLINE MODEL (FASE 2)
+// ============================================================
 function calculateRequiredStaff() {
 
-  const scheduleItems =
-    JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  const utilization = JSON.parse(localStorage.getItem("ACS_AIRCRAFT_UTILIZATION") || "{}");
 
-  const aircraftList =
-    JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-  // ------------------------------------------------------------
-  // 1️⃣ Mapear aviones por ID
-  // ------------------------------------------------------------
-  const aircraftById = {};
-  aircraftList.forEach(ac => {
-    if (ac.id) aircraftById[ac.id] = ac;
-  });
-
-  // ------------------------------------------------------------
-  // 2️⃣ Filtrar vuelos ACTIVOS reales
-  // ------------------------------------------------------------
-  const activeFlights = scheduleItems.filter(f =>
-    f.assigned === true &&
-    f.aircraftId &&
-    f.day
+  const aircraftSet = new Set(
+    scheduleItems
+      .filter(f => f && f.assigned === true && f.aircraftId)
+      .map(f => f.aircraftId)
   );
 
-  // ------------------------------------------------------------
-  // 3️⃣ Utilidades de clasificación
-  // ------------------------------------------------------------
-  function classifyAircraft(seats = 0) {
-    if (seats <= 19) return "SMALL";
-    if (seats <= 70) return "MEDIUM";
-    if (seats <= 150) return "LARGE";
-    return "VERY_LARGE";
-  }
-
-  function requiresFlightEngineer(ac) {
-    if (!ac || !ac.data) return false;
-    const year = ac.data.year || ac.year || 9999;
-    // Histórico: FE hasta ~1970 en aviones complejos
-    return year <= 1970;
-  }
-
-  // ------------------------------------------------------------
-  // 4️⃣ Contadores base
-  // ------------------------------------------------------------
-  let pilots = {
-    SMALL: 0,
-    MEDIUM: 0,
-    LARGE: 0,
-    VERY_LARGE: 0
+  let totals = {
+    pilotsSmall: 0,
+    pilotsMedium: 0,
+    pilotsLarge: 0,
+    pilotsVeryLarge: 0,
+    cabinCrew: 0,
+    flightEngineers: 0,
+    groundHandling: 0,
+    technicalMaintenance: 0,
+    flightOpsDivision: 0,
+    routeStrategies: 0
   };
 
-  let flightEngineers = 0;
-  let cabinCrew = 0;
+  aircraftSet.forEach(aircraftId => {
 
-  const activeAircraftIds = new Set();
+    const u = utilization[aircraftId];
+    if (!u) return;
 
-  // ------------------------------------------------------------
-  // 5️⃣ Calcular por vuelo activo
-  // ------------------------------------------------------------
-  activeFlights.forEach(f => {
-    const ac = aircraftById[f.aircraftId];
-    if (!ac || !ac.data) return;
+    let crews = 2;
+    if (u.utilizationLevel === "MEDIUM") crews = 3;
+    if (u.utilizationLevel === "HIGH") crews = 4;
 
-    activeAircraftIds.add(ac.id);
+    // ✈️ SMALL AIRCRAFT — 1940 MODEL
+    totals.pilotsSmall += crews * 2;
+    totals.cabinCrew += crews * 2;
+    totals.flightEngineers += crews * 1;
 
-    const seats = ac.data.seats || 0;
-    const type = classifyAircraft(seats);
-
-    // Pilotos por vuelo
-    if (type === "SMALL") pilots.SMALL += 2;
-    if (type === "MEDIUM") pilots.MEDIUM += 2;
-    if (type === "LARGE") pilots.LARGE += 3;
-    if (type === "VERY_LARGE") pilots.VERY_LARGE += 4;
-
-    // Cabin Crew por vuelo
-    if (type === "SMALL") cabinCrew += 1;
-    if (type === "MEDIUM") cabinCrew += 2;
-    if (type === "LARGE") cabinCrew += 4;
-    if (type === "VERY_LARGE") cabinCrew += 8;
-
-    // Flight Engineer (histórico)
-    if (requiresFlightEngineer(ac)) {
-      flightEngineers += 1;
-    }
+    totals.groundHandling += crews * 0.5;
+    totals.technicalMaintenance += crews * 0.25;
+    totals.flightOpsDivision += crews * 0.25;
   });
 
-  const totalFlights = activeFlights.length;
-  const totalAircraft = activeAircraftIds.size;
+  // Route strategy is company-wide, not per aircraft
+  totals.routeStrategies = Math.max(1, Math.ceil(aircraftSet.size / 2));
 
-  // ------------------------------------------------------------
-  // 6️⃣ Personal NO lineal (operacional)
-  // ------------------------------------------------------------
-  const technicalMaintenance =
-    Math.max(1, Math.ceil(totalAircraft / 2.5));
+  // 🔒 Round & normalize
+  Object.keys(totals).forEach(k => {
+    totals[k] = Math.max(0, Math.ceil(totals[k]));
+  });
 
-  const groundHandling =
-    Math.max(1, Math.ceil(totalFlights / 2));
+  console.log(
+    "%c🟢 HR REQUIRED STAFF (CANONICAL):",
+    "color:#00ffcc;font-weight:700",
+    totals
+  );
 
-  const flightOps =
-    Math.max(1, Math.ceil(totalFlights / 6));
-
-  const routeStrategy =
-    Math.max(1, Math.ceil(totalFlights / 10));
-
-  // ------------------------------------------------------------
-  // 7️⃣ Resultado final por departamento
-  // ------------------------------------------------------------
-  const requiredStaff = {
-    pilotsSmall: pilots.SMALL,
-    pilotsMedium: pilots.MEDIUM,
-    pilotsLarge: pilots.LARGE,
-    pilotsVeryLarge: pilots.VERY_LARGE,
-
-    flightEngineers: flightEngineers,
-    cabinCrew: cabinCrew,
-
-    technicalMaintenance: technicalMaintenance,
-    groundHandling: groundHandling,
-    flightOpsDivision: flightOps,
-    routeStrategies: routeStrategy
-  };
-
-  console.log("🟢 HR REQUIRED STAFF (FINAL):", requiredStaff);
-
-  return requiredStaff;
+  return totals;
 }
 
 /* ============================================================
