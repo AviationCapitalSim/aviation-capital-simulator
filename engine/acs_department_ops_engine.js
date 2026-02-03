@@ -1036,6 +1036,66 @@ function ACS_HR_getSalaryEraParams(year) {
 }
 
 /* ============================================================
+   🟦 A3B.4 — HISTORICAL MARKET SALARY BASE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   • Define salario de mercado base por rol (REALISMO)
+   • Ajusta dinámicamente por era (JUGABILIDAD)
+   • Fuente ÚNICA de marketSalary
+   ============================================================ */
+
+function ACS_HR_getHistoricalMarketBase(depId, year) {
+
+  // =========================
+  // 🕒 ERA ADJUSTMENT
+  // =========================
+  const era = ACS_HR_getSalaryEraParams(year);
+  const eraFactor = 1 + (era.autoRaise / 100);
+
+  // =========================
+  // 📜 HISTORICAL BASE (1940s)
+  // Valores base mensuales
+  // =========================
+  const BASE_1940 = {
+
+    // ✈️ PILOTS
+    pilots_small:       600,
+    pilots_medium:      750,
+    pilots_large:       900,
+    pilots_very_large:  1100,
+
+    // 👩‍✈️ CABIN
+    cabin_crew:         180,
+
+    // 🛠️ OPS & TECH
+    technical_maintenance: 260,
+    ground_handling:       120,
+    flight_ops:            240,
+
+    // 🧠 MANAGEMENT
+    route_strategies: 240,
+    customer_services: 230,
+
+    // 👔 EXEC / ADMIN
+    human_resources: 210,
+    quality_department: 130,
+    safety_security: 130,
+    economics_finance: 210,
+    corporate_comms: 210,
+
+    // 👑 CEO / VP
+    ceo: 950,
+    vp_management: 950
+  };
+
+  const base = BASE_1940[depId];
+
+  if (!base) return null;
+
+  return Math.round(base * eraFactor);
+}
+
+
+/* ============================================================
    🟦 A3A.1 — PILOT SALARY ORDER (CANONICAL)
    ------------------------------------------------------------
    Purpose:
@@ -1585,6 +1645,22 @@ function ACS_HR_salaryEngineBootstrap() {
     );
   }
 
+Object.keys(HR).forEach(id => {
+
+  const dep = HR[id];
+  if (!dep || typeof dep !== "object") return;
+
+  const year = window.ACS_TIME_CURRENT instanceof Date
+    ? window.ACS_TIME_CURRENT.getUTCFullYear()
+    : new Date().getUTCFullYear();
+
+  const market = ACS_HR_getHistoricalMarketBase(id, year);
+
+  if (typeof market === "number") {
+    dep.marketSalary = market;
+  }
+});
+   
 /* ============================================================
    🟦 A3A.4 — APPLY PILOT SALARY COHERENCE CLAMP
    ------------------------------------------------------------
