@@ -1036,6 +1036,63 @@ function ACS_HR_getSalaryEraParams(year) {
 }
 
 /* ============================================================
+   🟦 A3A.1 — PILOT SALARY ORDER (CANONICAL)
+   ------------------------------------------------------------
+   Purpose:
+   • Define hierarchy for salary coherence
+   • Used ONLY for market reference clamp
+   • Does NOT touch player salary
+   ============================================================ */
+
+const ACS_PILOT_SALARY_ORDER = [
+  "pilots_small",
+  "pilots_medium",
+  "pilots_large",
+  "pilots_very_large"
+];
+
+/* ============================================================
+   🟦 A3A.2 — PILOT MARKET SALARY CLAMP (SOFT)
+   ------------------------------------------------------------
+   • Enforces Small < Medium < Large < Very Large
+   • Adjusts ONLY market reference
+   • Leaves player salary untouched
+   • Silent & OPS-safe
+   ============================================================ */
+
+function ACS_HR_applyPilotSalaryCoherenceClamp(hr) {
+
+  if (!hr || typeof hr !== "object") return;
+
+  let lastMarket = 0;
+
+  ACS_PILOT_SALARY_ORDER.forEach(id => {
+
+    const dep = hr[id];
+    if (!dep || typeof dep.marketSalary !== "number") return;
+
+    // Si rompe jerarquía, ajustar suavemente
+    if (dep.marketSalary <= lastMarket) {
+
+      const corrected = Math.round(lastMarket * 1.15); // +15% escalón mínimo
+
+      console.warn(
+        "🧠 Pilot salary coherence clamp applied:",
+        dep.name,
+        "Market:",
+        dep.marketSalary,
+        "→",
+        corrected
+      );
+
+      dep.marketSalary = corrected;
+    }
+
+    lastMarket = dep.marketSalary;
+  });
+}
+
+/* ============================================================
    🟦 A3.1.2 — INIT SALARY METADATA CORE (FIX TIME ENGINE)
    ------------------------------------------------------------
    • Inicializa lastSalaryReviewYear si no existe
