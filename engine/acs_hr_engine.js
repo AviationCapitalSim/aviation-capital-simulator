@@ -11,24 +11,20 @@
    🟦 F4.1 — TIME AUTHORITY LOCK (ACS CANONICAL)
    ------------------------------------------------------------
    • ÚNICA fuente de tiempo para HR
-   • PROHÍBE new Date(), ACS_getYear(), fallbacks
+   • NO grita error durante BOOT
+   • SOLO válida cuando el Time Engine está listo
    ============================================================ */
 function ACS_HR_getGameYear() {
 
   if (
-    window.ACS_TIME_CURRENT &&
     window.ACS_TIME_CURRENT instanceof Date &&
     !isNaN(window.ACS_TIME_CURRENT)
   ) {
     return window.ACS_TIME_CURRENT.getUTCFullYear();
   }
 
-  console.error(
-    "⛔ HR TIME LOCK — INVALID OR MISSING GAME TIME",
-    window.ACS_TIME_CURRENT
-  );
-
-  return null;
+  // ⏸️ Boot phase → tiempo aún no publicado (estado NORMAL)
+  return undefined;
 }
 
 /* ============================================================
