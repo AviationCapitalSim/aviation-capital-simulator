@@ -1711,14 +1711,20 @@ if (HR_FINANCE_METRICS) {
   }
 }
 
+/* ============================================================
+   🟦 OPS → HR MARKET SALARY SYNC (FIXED + TIME SAFE)
+   ============================================================ */
+
+const HR = ACS_HR_load();
+if (!HR) return;
+
+const year = ACS_HR_getGameYear();
+if (!year) return;
+
 Object.keys(HR).forEach(id => {
 
   const dep = HR[id];
   if (!dep || typeof dep !== "object") return;
-
-  const year = window.ACS_TIME_CURRENT instanceof Date
-    ? window.ACS_TIME_CURRENT.getUTCFullYear()
-    : new Date().getUTCFullYear();
 
   const market = ACS_HR_getHistoricalMarketBase(id, year);
 
@@ -1726,6 +1732,8 @@ Object.keys(HR).forEach(id => {
     dep.marketSalary = market;
   }
 });
+
+ACS_HR_save(HR);
 
 /* ============================================================
    🟦 SAL-JS-1 — SALARY POLICY MODAL (QATAR LUXURY) — v2
