@@ -499,28 +499,6 @@ function ACS_OPS_classifyAircraftFromDB(aircraft) {
   };
 }
 
-// ============================================================
-// 🟢 FASE 1.2 — EXECUTE AIRCRAFT UTILIZATION CALCULATION (SAFE)
-// ============================================================
-const _scheduleItems =
-  Array.isArray(scheduleItems)
-    ? scheduleItems
-    : JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-const aircraftUtilization =
-  OPS_calculateAircraftUtilization(_scheduleItems);
-
-localStorage.setItem(
-  "ACS_AIRCRAFT_UTILIZATION",
-  JSON.stringify(aircraftUtilization)
-);
-
-console.log(
-  "%c🟢 OPS AUL UPDATED",
-  "color:#00ffcc;font-weight:700",
-  aircraftUtilization
-);
-
 function ACS_OPS_recalculateAllRequired() {
 
   console.log("%c🧠 OPS REQUIRED REBUILD — START", "color:#00ffcc;font-weight:700");
@@ -558,23 +536,27 @@ function ACS_OPS_recalculateAllRequired() {
   }
 
   // ============================================================
-// 🟢 FASE 1.2 — EXECUTE AIRCRAFT UTILIZATION CALCULATION (AUL)
-// Hooked into OPS weekly recalculation
-// ============================================================
-const aircraftUtilization =
-  OPS_calculateAircraftUtilization(scheduleItems);
+  // 🟢 FASE 1.2 — EXECUTE AIRCRAFT UTILIZATION CALCULATION (SAFE)
+  // ============================================================
+  const _scheduleItems =
+    Array.isArray(scheduleItems)
+      ? scheduleItems
+      : [];
 
-localStorage.setItem(
-  "ACS_AIRCRAFT_UTILIZATION",
-  JSON.stringify(aircraftUtilization)
-);
+  const aircraftUtilization =
+    OPS_calculateAircraftUtilization(_scheduleItems);
 
-console.log(
-  "%c🟢 OPS AUL UPDATED",
-  "color:#00ffcc;font-weight:700",
-  aircraftUtilization
-);
-   
+  localStorage.setItem(
+    "ACS_AIRCRAFT_UTILIZATION",
+    JSON.stringify(aircraftUtilization)
+  );
+
+  console.log(
+    "%c🟢 OPS AUL UPDATED",
+    "color:#00ffcc;font-weight:700",
+    aircraftUtilization
+  );
+
   // ✅ CANON: calcular ideal staff desde tu función REAL existente
   const ideal = calculateRequiredStaff();
   if (!ideal) {
@@ -583,43 +565,38 @@ console.log(
   }
 
   // ============================================================
-// ✅ APPLY (CANONICAL UI MODEL)
-// ------------------------------------------------------------
-// required = IDEAL ABSOLUTO (positivo)
-// UI calcula missing = required - staff
-// ============================================================
+  // ✅ APPLY (CANONICAL UI MODEL)
+  // ------------------------------------------------------------
+  // required = IDEAL ABSOLUTO (positivo)
+  // UI calcula missing = required - staff
+  // ============================================================
 
-const MAP = [
-  ["pilots_small",   ideal.pilotsSmall],
-  ["pilots_medium",  ideal.pilotsMedium],
-  ["pilots_large",   ideal.pilotsLarge],
-  ["pilots_vlarge",  ideal.pilotsVeryLarge],
-  ["cabin",          ideal.cabinCrew],
-  ["maintenance",    ideal.technicalMaintenance],
-  ["ground",         ideal.groundHandling],
-  ["flightops",      ideal.flightOpsDivision],
+  const MAP = [
+    ["pilots_small",   ideal.pilotsSmall],
+    ["pilots_medium",  ideal.pilotsMedium],
+    ["pilots_large",   ideal.pilotsLarge],
+    ["pilots_vlarge",  ideal.pilotsVeryLarge],
+    ["cabin",          ideal.cabinCrew],
+    ["maintenance",    ideal.technicalMaintenance],
+    ["ground",         ideal.groundHandling],
+    ["flightops",      ideal.flightOpsDivision],
+    ["routes",         ideal.routeStrategies],
+    ["flight_engineers", ideal.flightEngineers]
+  ];
 
-  // ✅ TU HR usa "routes" (no "route_strategy")
-  ["routes",         ideal.routeStrategies],
+  MAP.forEach(([depId, idealValue]) => {
 
-  // opcional (solo aplica si existe el dep)
-  ["flight_engineers", ideal.flightEngineers]
-];
+    if (!HR[depId]) return;
 
-MAP.forEach(([depId, idealValue]) => {
-
-  if (!HR[depId]) return;
-
-  const needed = Number(idealValue || 0);
-
-  // ✅ REQUIRED = IDEAL ABSOLUTO
-  HR[depId].required = Math.max(0, Math.ceil(needed));
-});
+    const needed = Number(idealValue || 0);
+    HR[depId].required = Math.max(0, Math.ceil(needed));
+  });
 
   // Managers required (si existe)
   if (typeof ACS_HR_calculateManagementRequired === "function") {
     ACS_HR_calculateManagementRequired();
   }
+}
 
   /* ============================================================
    🟦 A5 — HISTORICAL STARTUP OPERATION SCALER (1940–REALISTIC)
