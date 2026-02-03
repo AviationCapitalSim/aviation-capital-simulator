@@ -1191,6 +1191,88 @@ function ACS_HR_updateSalaryStatus() {
 }
 
 /* ============================================================
+   🟦 B3.1 — MARKET REFERENCE NORMALIZER (PURE)
+   ------------------------------------------------------------
+   Purpose:
+   • Define qué significa "marketSalary"
+   • Garantiza valor estable y usable por Finance
+   • NO toca salary del jugador
+   ============================================================ */
+
+function ACS_HR_normalizeMarketReference(dep) {
+
+  if (!dep || typeof dep !== "object") return null;
+
+  const market = Number(dep.marketSalary || 0);
+  const salary = Number(dep.salary || 0);
+
+  if (market <= 0) {
+    return {
+      marketSalary: salary,   // fallback seguro
+      ratio: 1,
+      deviation: 0
+    };
+  }
+
+  const ratio = salary / market;
+  const deviation = salary - market;
+
+  return {
+    marketSalary: market,
+    ratio: Number(ratio.toFixed(2)),
+    deviation: Math.round(deviation)
+  };
+}
+
+/* ============================================================
+   🟦 B3.2 — HR → FINANCE METRICS BUILDER
+   ------------------------------------------------------------
+   Purpose:
+   • Construye métricas limpias para Finance
+   • No recalcula HR
+   • No depende de UI
+   ============================================================ */
+
+function ACS_HR_buildFinanceMetrics() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return null;
+
+  let totalMarketPayroll = 0;
+  let totalRealPayroll   = 0;
+  let totalDeviation     = 0;
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep || typeof dep.staff !== "number") return;
+
+    const norm = ACS_HR_normalizeMarketReference(dep);
+    if (!norm) return;
+
+    const staff = dep.staff;
+
+    const marketPayroll = staff * norm.marketSalary;
+    const realPayroll   = staff * dep.salary;
+
+    dep.marketPayroll    = Math.round(marketPayroll);
+    dep.payrollDeviation = Math.round(realPayroll - marketPayroll);
+    dep.salaryDeviation  = norm.deviation;
+    dep.salaryRatio      = norm.ratio;
+
+    totalMarketPayroll += marketPayroll;
+    totalRealPayroll   += realPayroll;
+    totalDeviation     += (realPayroll - marketPayroll);
+  });
+
+  return {
+    marketPayroll: Math.round(totalMarketPayroll),
+    realPayroll:   Math.round(totalRealPayroll),
+    deviation:     Math.round(totalDeviation)
+  };
+}
+
+/* ============================================================
    🟦 A3.3.1 — SALARY ALERT STATE STORAGE
    ------------------------------------------------------------
    • Evita spam de alertas salariales
@@ -1519,9 +1601,27 @@ ACS_HR_applyPilotSalaryCoherenceClamp(HR);
   // ============================================================
   ACS_HR_updateSalaryStatus();
 
+/* ============================================================
+   🟦 B3.3 — BUILD FINANCE METRICS (HR SAFE HOOK)
+   ------------------------------------------------------------
+   • Prepara datos para Finance
+   • No afecta HR ni OPS
+   ============================================================ */
+
+const HR_FINANCE_METRICS = ACS_HR_buildFinanceMetrics();
+
+if (HR_FINANCE_METRICS) {
+  console.log(
+    "%c💰 HR → FINANCE METRICS READY",
+    "color:#ffd35c;font-weight:700",
+    HR_FINANCE_METRICS
+  );
+}
+  
   // ============================================================
   // 🔍 LEER ESTADO REAL DESDE SETTINGS
   // ============================================================
+   
   const autoSalaryEnabled = ACS_HR_isAutoSalaryEnabled();
 
   console.log(
