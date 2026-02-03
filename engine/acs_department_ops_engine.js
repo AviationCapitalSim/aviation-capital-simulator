@@ -218,6 +218,49 @@ function ACS_OPS_classifyAircraftReal(ac) {
   };
 }
 
+// ============================================================
+// 🟢 FASE 1.1 — OPS Aircraft Utilization Level (AUL)
+// Calcula intensidad operativa por avión (LOW / MEDIUM / HIGH)
+// ============================================================
+
+function OPS_calculateAircraftUtilization(scheduleItems) {
+  const aircraftStats = {};
+
+  scheduleItems.forEach(item => {
+    if (!item.aircraftId || !item.day) return;
+
+    if (!aircraftStats[item.aircraftId]) {
+      aircraftStats[item.aircraftId] = {
+        legs: 0,
+        days: new Set()
+      };
+    }
+
+    aircraftStats[item.aircraftId].legs += 1;
+    aircraftStats[item.aircraftId].days.add(item.day);
+  });
+
+  const utilization = {};
+
+  Object.entries(aircraftStats).forEach(([aircraftId, data]) => {
+    const daysOperated = data.days.size || 1;
+    const legsPerDay = data.legs / daysOperated;
+
+    let level = "LOW";
+    if (legsPerDay >= 5) level = "HIGH";
+    else if (legsPerDay >= 3) level = "MEDIUM";
+
+    utilization[aircraftId] = {
+      legsTotal: data.legs,
+      daysOperated,
+      legsPerDay: Number(legsPerDay.toFixed(2)),
+      utilizationLevel: level
+    };
+  });
+
+  return utilization;
+}
+
 /* ============================================================
    🟧 A1 — HR REQUIRED STAFF ENGINE (REALISTIC / HISTORICAL)
    ------------------------------------------------------------
@@ -455,6 +498,17 @@ function ACS_OPS_classifyAircraftFromDB(aircraft) {
     engineCount
   };
 }
+
+// ============================================================
+// 🟢 FASE 1.2 — Ejecutar cálculo de utilización operativa
+// ============================================================
+const aircraftUtilization = OPS_calculateAircraftUtilization(scheduleItems);
+
+// Guardamos para uso futuro (HR, Debug, UI)
+localStorage.setItem(
+  "ACS_AIRCRAFT_UTILIZATION",
+  JSON.stringify(aircraftUtilization)
+);
 
 function ACS_OPS_recalculateAllRequired() {
 
