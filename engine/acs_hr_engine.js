@@ -979,3 +979,72 @@ function ACS_HR_runAutoHire() {
     HR_updateKPI();
   }
 }
+
+/* ============================================================
+   🟦 F4.2 — HR BOOTSTRAP WAITING FOR TIME ENGINE (CANONICAL)
+   ------------------------------------------------------------
+   • HR NO arranca sin tiempo válido del juego
+   • Usa SOLO ACS_TIME_CURRENT
+   • Se ejecuta UNA SOLA VEZ
+   • Elimina definitivamente el fallback a año real
+   ============================================================ */
+
+let __HR_BOOTSTRAPPED = false;
+
+registerTimeListener((time) => {
+
+  // ⛔ Seguridad absoluta
+  if (__HR_BOOTSTRAPPED) return;
+
+  // ⛔ Tiempo inválido = no hacer nada
+  if (!(time instanceof Date) || isNaN(time)) {
+    console.warn("⛔ HR WAITING — Game time not ready", time);
+    return;
+  }
+
+  const year = time.getUTCFullYear();
+
+  console.log(
+    "%c🧭 HR TIME AUTHORITY CONFIRMED",
+    "color:#00ffcc;font-weight:800",
+    "Year:", year
+  );
+
+  // ⛔ Prohibido continuar sin año válido
+  if (typeof year !== "number") {
+    console.error("⛔ HR ABORTED — Invalid game year", year);
+    return;
+  }
+
+  // ============================================================
+  // ✅ ARRANQUE OFICIAL DEL MOTOR HR (UNA SOLA VEZ)
+  // ============================================================
+
+  try {
+
+    if (typeof ACS_HR_applyHistoricalSalaries === "function") {
+      ACS_HR_applyHistoricalSalaries();
+    }
+
+    if (typeof ACS_HR_recalculateAll === "function") {
+      ACS_HR_recalculateAll();
+    }
+
+    if (typeof HR_updateKPI === "function") {
+      HR_updateKPI();
+    }
+
+    console.log(
+      "%c✅ HR BOOTSTRAP COMPLETED",
+      "color:#7CFFB2;font-weight:900"
+    );
+
+    __HR_BOOTSTRAPPED = true;
+
+  } catch (err) {
+
+    console.error("⛔ HR BOOTSTRAP FAILED", err);
+
+  }
+
+});
