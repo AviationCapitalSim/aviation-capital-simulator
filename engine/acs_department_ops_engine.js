@@ -1503,6 +1503,17 @@ function ACS_HR_salaryEngineBootstrap() {
     );
   }
 
+/* ============================================================
+   🟦 A3A.4 — APPLY PILOT SALARY COHERENCE CLAMP
+   ------------------------------------------------------------
+   • Ejecuta coherencia salarial SOLO pilotos
+   • Ajusta marketSalary si rompe jerarquía
+   • Salary del jugador permanece intacto
+   ============================================================ */
+
+ACS_HR_applyPilotSalaryCoherenceClamp(HR);
+
+   
   // ============================================================
   // 🔄 ACTUALIZAR ESTADOS (SIN TOCAR SALARIOS)
   // ============================================================
