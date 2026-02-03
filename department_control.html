@@ -1826,6 +1826,46 @@ function confirmFireMiniModal() {
   document.addEventListener("DOMContentLoaded", closeAll);
 
 })();
+
+/* ============================================================
+   🟢 HR LIVE SYNC — VISIBILITY / FOCUS RECALC (CANONICAL)
+   ------------------------------------------------------------
+   Purpose:
+   • Force HR to re-read OPS demand when user returns to HR
+   • Simulates "live" behavior without breaking Routes/Delete
+   • ZERO coupling with Schedule Table
+   ------------------------------------------------------------
+   Triggers:
+   • Tab focus
+   • Page visibility change
+   ============================================================ */
+
+function ACS_HR_liveSync() {
+
+  if (typeof ACS_OPS_recalculateAllRequired === "function") {
+    console.log(
+      "%c🟢 HR LIVE SYNC — OPS RECALC ON FOCUS",
+      "color:#00ffcc;font-weight:700"
+    );
+    ACS_OPS_recalculateAllRequired();
+  }
+
+  if (typeof loadDepartments === "function") {
+    loadDepartments();
+  }
+
+  if (typeof HR_updateKPI === "function") {
+    HR_updateKPI();
+  }
+}
+
+// Cuando vuelves a la pestaña
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) ACS_HR_liveSync();
+});
+
+// Cuando vuelves a la ventana
+window.addEventListener("focus", ACS_HR_liveSync);
      
 </script>
        
