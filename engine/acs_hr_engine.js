@@ -35,13 +35,6 @@ function ACS_HR_getGameYear() {
    1) LISTADO OFICIAL DE LOS 18 DEPARTAMENTOS VISIBLES
    ============================================================ */
 const ACS_HR_DEPARTMENTS = [
-
-
-
-/* ============================================================
-   1) LISTADO OFICIAL DE LOS 18 DEPARTAMENTOS VISIBLES
-   ============================================================ */
-const ACS_HR_DEPARTMENTS = [
     { id: "ceo", name: "Airline CEO", base: "ceo", initial: 1 },
     { id: "vp", name: "High Level Management (VP)", base: "ceo", initial: 0 },
     { id: "middle", name: "Middle Level Management", base: "admin", initial: 1 },
