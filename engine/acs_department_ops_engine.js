@@ -526,6 +526,68 @@ function ACS_OPS_recalculateAllRequired() {
     HR[depId].required = Math.max(0, Math.ceil(Number(value || 0)));
   });
 
+// ============================================================
+// 🟢 FASE 2 — OPS AUTO RECALC WATCHER (SCHEDULE → HR)
+// ------------------------------------------------------------
+// Purpose:
+// • Detect changes in scheduleItems (routes added/removed)
+// • Auto-trigger OPS → HR recalculation
+// • NO dependency on Schedule UI
+// • DOES NOT modify scheduleItems
+// • DOES NOT touch Delete logic
+// ============================================================
+
+(function ACS_OPS_ScheduleWatcher() {
+
+  let _lastScheduleHash = null;
+
+  function hashSchedule(items) {
+    try {
+      return JSON.stringify(items.map(f => f.id)).length;
+    } catch {
+      return null;
+    }
+  }
+
+  setInterval(() => {
+
+    if (typeof ACS_OPS_recalculateAllRequired !== "function") return;
+
+    const raw = localStorage.getItem("scheduleItems");
+    if (!raw) return;
+
+    let items;
+    try {
+      items = JSON.parse(raw);
+    } catch {
+      return;
+    }
+
+    if (!Array.isArray(items)) return;
+
+    const currentHash = hashSchedule(items);
+
+    if (_lastScheduleHash === null) {
+      _lastScheduleHash = currentHash;
+      return;
+    }
+
+    if (currentHash !== _lastScheduleHash) {
+      _lastScheduleHash = currentHash;
+
+      ACS_OPS_recalculateAllRequired();
+
+      console.log(
+        "%c🟢 OPS AUTO RECALC — scheduleItems changed",
+        "color:#00ffcc;font-weight:700",
+        { flights: items.length }
+      );
+    }
+
+  }, 3000); // every 3s — light & safe
+
+})();
+   
   // ============================================================
   // 🟦 A5 — STARTUP OPERATION CAPS (MOVED INSIDE OPS)
   // ============================================================
