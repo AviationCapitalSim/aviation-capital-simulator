@@ -1644,22 +1644,6 @@ function ACS_HR_salaryEngineBootstrap() {
       "color:#7CFFB2;font-weight:700"
     );
   }
-
-Object.keys(HR).forEach(id => {
-
-  const dep = HR[id];
-  if (!dep || typeof dep !== "object") return;
-
-  const year = window.ACS_TIME_CURRENT instanceof Date
-    ? window.ACS_TIME_CURRENT.getUTCFullYear()
-    : new Date().getUTCFullYear();
-
-  const market = ACS_HR_getHistoricalMarketBase(id, year);
-
-  if (typeof market === "number") {
-    dep.marketSalary = market;
-  }
-});
    
 /* ============================================================
    🟦 A3A.4 — APPLY PILOT SALARY COHERENCE CLAMP
@@ -1726,6 +1710,22 @@ if (HR_FINANCE_METRICS) {
     );
   }
 }
+
+Object.keys(HR).forEach(id => {
+
+  const dep = HR[id];
+  if (!dep || typeof dep !== "object") return;
+
+  const year = window.ACS_TIME_CURRENT instanceof Date
+    ? window.ACS_TIME_CURRENT.getUTCFullYear()
+    : new Date().getUTCFullYear();
+
+  const market = ACS_HR_getHistoricalMarketBase(id, year);
+
+  if (typeof market === "number") {
+    dep.marketSalary = market;
+  }
+});
 
 /* ============================================================
    🟦 SAL-JS-1 — SALARY POLICY MODAL (QATAR LUXURY) — v2
