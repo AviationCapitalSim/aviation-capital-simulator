@@ -1458,13 +1458,19 @@ function ACS_HR_applyAutoSalaryNormalization() {
   const HR = ACS_HR_load();
   if (!HR) return;
 
-  // 🕒 Año real desde Time Engine ACS (canon)
-  let currentYear;
+    // 🕒 Año del juego (CANON) — NUNCA usar año del sistema
+  const currentYear = (typeof ACS_HR_getGameYear === "function")
+    ? ACS_HR_getGameYear()
+    : undefined;
 
-  if (window.ACS_TIME_CURRENT instanceof Date) {
-    currentYear = window.ACS_TIME_CURRENT.getUTCFullYear();
-  } else {
-    currentYear = new Date().getUTCFullYear(); // fallback seguro
+  // Si el Time Engine aún no publicó el año del juego, NO normalizar todavía.
+  // (Evita contaminar salarios con 2026 durante BOOT)
+  if (!currentYear || typeof currentYear !== "number") {
+    console.log(
+      "%c⏳ AUTO SALARY WAITING — Game Year not ready (skip normalization)",
+      "color:#ffcf66;font-weight:800"
+    );
+    return;
   }
 
   const eraParams = ACS_HR_getSalaryEraParams(currentYear);
