@@ -546,6 +546,24 @@ function ACS_OPS_recalculateAllRequired() {
     return;
   }
 
+  // ============================================================
+// 🟢 FASE 1.2 — EXECUTE AIRCRAFT UTILIZATION CALCULATION (AUL)
+// Hooked into OPS weekly recalculation
+// ============================================================
+const aircraftUtilization =
+  OPS_calculateAircraftUtilization(scheduleItems);
+
+localStorage.setItem(
+  "ACS_AIRCRAFT_UTILIZATION",
+  JSON.stringify(aircraftUtilization)
+);
+
+console.log(
+  "%c🟢 OPS AUL UPDATED",
+  "color:#00ffcc;font-weight:700",
+  aircraftUtilization
+);
+   
   // ✅ CANON: calcular ideal staff desde tu función REAL existente
   const ideal = calculateRequiredStaff();
   if (!ideal) {
