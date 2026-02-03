@@ -500,14 +500,25 @@ function ACS_OPS_classifyAircraftFromDB(aircraft) {
 }
 
 // ============================================================
-// 🟢 FASE 1.2 — Ejecutar cálculo de utilización operativa
+// 🟢 FASE 1.2 — EXECUTE AIRCRAFT UTILIZATION CALCULATION (SAFE)
 // ============================================================
-const aircraftUtilization = OPS_calculateAircraftUtilization(scheduleItems);
+const _scheduleItems =
+  Array.isArray(scheduleItems)
+    ? scheduleItems
+    : JSON.parse(localStorage.getItem("scheduleItems") || "[]");
 
-// Guardamos para uso futuro (HR, Debug, UI)
+const aircraftUtilization =
+  OPS_calculateAircraftUtilization(_scheduleItems);
+
 localStorage.setItem(
   "ACS_AIRCRAFT_UTILIZATION",
   JSON.stringify(aircraftUtilization)
+);
+
+console.log(
+  "%c🟢 OPS AUL UPDATED",
+  "color:#00ffcc;font-weight:700",
+  aircraftUtilization
 );
 
 function ACS_OPS_recalculateAllRequired() {
