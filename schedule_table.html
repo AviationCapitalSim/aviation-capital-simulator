@@ -3121,6 +3121,25 @@ if (!remaining.length) {
 }
 
 // ============================================================
+// 🟢 FASE A1 — OPS LIVE NOTIFY (ROUTE CHANGE → OPS)
+// ------------------------------------------------------------
+// Purpose:
+// • Notify OPS that scheduleItems changed
+// • Trigger HR recalculation if OPS engine is available
+// ------------------------------------------------------------
+// Safety:
+// • Does NOT modify scheduleItems
+// • Does NOT affect delete logic
+// • Safe if OPS engine not loaded
+// ============================================================
+if (typeof window.ACS_OPS_recalculateAllRequired === "function") {
+  console.log("🟢 OPS NOTIFY: scheduleItems changed (from Schedule Table)");
+  window.ACS_OPS_recalculateAllRequired();
+} else {
+  console.warn("⚠️ OPS engine not loaded — live recalculation skipped");
+}
+     
+// ============================================================
 // 8️⃣ LOG DELETE (DEBUG)
 // ============================================================
 console.log("🟥 DELETE SINGLE OK", {
