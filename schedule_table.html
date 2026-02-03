@@ -3111,7 +3111,7 @@ function deleteSelectedFlights() {
       String(it.id || "").trim() === selId)
   );
 
- // ============================================================
+// ============================================================
 // 7️⃣ PERSISTENCIA
 // ============================================================
 if (!remaining.length) {
@@ -3130,15 +3130,6 @@ console.log("🟥 DELETE SINGLE OK", {
 
 // ============================================================
 // 🟢 FASE 2.1 — OPS LIVE RECALC TRIGGER (DELETE ROUTE → HR)
-// ------------------------------------------------------------
-// Purpose:
-// • Recalculate OPS/HR immediately after route deletion
-// • Keep Department Control synced with live schedule changes
-// ------------------------------------------------------------
-// Safety:
-// • Does NOT modify scheduleItems
-// • Does NOT modify staff
-// • Safe if OPS engine not loaded
 // ============================================================
 try {
   if (typeof ACS_OPS_recalculateAllRequired === "function") {
@@ -3147,6 +3138,8 @@ try {
       "%c🟢 OPS LIVE RECALC TRIGGERED AFTER ROUTE DELETE",
       "color:#00ffcc;font-weight:700"
     );
+  } else {
+    console.warn("⚠️ OPS engine not loaded");
   }
 } catch (e) {
   console.warn("⚠️ OPS LIVE RECALC FAILED:", e);
