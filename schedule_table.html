@@ -2565,33 +2565,8 @@ if (sameServiceAlreadyPlanned) {
   // ============================================================
  
    setItems(items);
-
-  // ============================================================
-// 🟢 FASE 2.1 — OPS LIVE RECALC TRIGGER (SCHEDULE TABLE → HR)
-// ------------------------------------------------------------
-// Purpose:
-// • Trigger OPS/HR recalculation immediately after routes change
-// • Sync Department Control with live route updates
-// ------------------------------------------------------------
-// Safety:
-// • Does NOT modify scheduleItems
-// • Does NOT modify staff
-// • Safe if OPS engine not loaded
-// ============================================================
-try {
-  if (typeof ACS_OPS_recalculateAllRequired === "function") {
-    ACS_OPS_recalculateAllRequired();
-    console.log(
-      "%c🟢 OPS LIVE RECALC TRIGGERED FROM SCHEDULE TABLE",
-      "color:#00ffcc;font-weight:700"
-    );
-  }
-} catch (e) {
-  console.warn("⚠️ OPS LIVE RECALC FAILED:", e);
-}
-     
-  closeMaintModal();
-  renderSchedule();
+   closeMaintModal();
+   renderSchedule();
 }
 
 function removeItem(){
@@ -3136,22 +3111,52 @@ function deleteSelectedFlights() {
       String(it.id || "").trim() === selId)
   );
 
-  // 7) Persistencia
-  if (!remaining.length) {
-    localStorage.removeItem("scheduleItems");
-  } else {
-    localStorage.setItem("scheduleItems", JSON.stringify(remaining));
-  }
-
-  // 8) UI
-  closeFlightModal();
-  renderSchedule();
-
-  console.log("🟥 DELETE SINGLE OK", {
-    deletedId: selId,
-    remaining: remaining.length
-  });
+ // ============================================================
+// 7️⃣ PERSISTENCIA
+// ============================================================
+if (!remaining.length) {
+  localStorage.removeItem("scheduleItems");
+} else {
+  localStorage.setItem("scheduleItems", JSON.stringify(remaining));
 }
+
+// ============================================================
+// 8️⃣ LOG DELETE (DEBUG)
+// ============================================================
+console.log("🟥 DELETE SINGLE OK", {
+  deletedId: selId,
+  remaining: remaining.length
+});
+
+// ============================================================
+// 🟢 FASE 2.1 — OPS LIVE RECALC TRIGGER (DELETE ROUTE → HR)
+// ------------------------------------------------------------
+// Purpose:
+// • Recalculate OPS/HR immediately after route deletion
+// • Keep Department Control synced with live schedule changes
+// ------------------------------------------------------------
+// Safety:
+// • Does NOT modify scheduleItems
+// • Does NOT modify staff
+// • Safe if OPS engine not loaded
+// ============================================================
+try {
+  if (typeof ACS_OPS_recalculateAllRequired === "function") {
+    ACS_OPS_recalculateAllRequired();
+    console.log(
+      "%c🟢 OPS LIVE RECALC TRIGGERED AFTER ROUTE DELETE",
+      "color:#00ffcc;font-weight:700"
+    );
+  }
+} catch (e) {
+  console.warn("⚠️ OPS LIVE RECALC FAILED:", e);
+}
+
+// ============================================================
+// 9️⃣ UI
+// ============================================================
+closeFlightModal();
+renderSchedule();
 
 /* ============================================================
    🟩 B2 — EDIT SELECTED FLIGHT (EACH DAY FIX)
