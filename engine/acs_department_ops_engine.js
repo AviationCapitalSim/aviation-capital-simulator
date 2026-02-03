@@ -499,6 +499,28 @@ function ACS_OPS_classifyAircraftFromDB(aircraft) {
   };
 }
 
+/* ============================================================
+   🟢 PHASE B1 — OPS REQUIRED STAFF REBUILD (CANONICAL CORE)
+   ------------------------------------------------------------
+   Function: ACS_OPS_recalculateAllRequired()
+   Purpose:
+   • Rebuild REQUIRED staff for all departments
+   • Source of truth:
+       - scheduleItems (assigned flights)
+       - ACS_MyAircraft
+   • Applies:
+       - Aircraft Utilization (AUL)
+       - Historical staffing logic (1940–2026)
+       - Startup operation caps
+       - Management load
+   • Does NOT:
+       - Modify staff
+       - Modify Finance
+       - Modify SkyTrack
+   • Output:
+       - HR[dep].required (absolute)
+   ============================================================ */
+
 function ACS_OPS_recalculateAllRequired() {
 
   console.log("%c🧠 OPS REQUIRED REBUILD — START", "color:#00ffcc;font-weight:700");
@@ -536,15 +558,9 @@ function ACS_OPS_recalculateAllRequired() {
   }
 
   // ============================================================
-  // 🟢 FASE 1.2 — EXECUTE AIRCRAFT UTILIZATION CALCULATION (SAFE)
+  // 🟢 FASE 1.2 — AIRCRAFT UTILIZATION (SAFE)
   // ============================================================
-  const _scheduleItems =
-    Array.isArray(scheduleItems)
-      ? scheduleItems
-      : [];
-
-  const aircraftUtilization =
-    OPS_calculateAircraftUtilization(_scheduleItems);
+  const aircraftUtilization = OPS_calculateAircraftUtilization(scheduleItems);
 
   localStorage.setItem(
     "ACS_AIRCRAFT_UTILIZATION",
@@ -557,19 +573,14 @@ function ACS_OPS_recalculateAllRequired() {
     aircraftUtilization
   );
 
-  // ✅ CANON: calcular ideal staff desde tu función REAL existente
+  // ============================================================
+  // ✅ IDEAL STAFF
+  // ============================================================
   const ideal = calculateRequiredStaff();
   if (!ideal) {
-    console.warn("❌ OPS REQUIRED REBUILD — calculateRequiredStaff returned null/undefined");
+    console.warn("❌ OPS REQUIRED REBUILD — calculateRequiredStaff returned null");
     return;
   }
-
-  // ============================================================
-  // ✅ APPLY (CANONICAL UI MODEL)
-  // ------------------------------------------------------------
-  // required = IDEAL ABSOLUTO (positivo)
-  // UI calcula missing = required - staff
-  // ============================================================
 
   const MAP = [
     ["pilots_small",   ideal.pilotsSmall],
@@ -584,73 +595,62 @@ function ACS_OPS_recalculateAllRequired() {
     ["flight_engineers", ideal.flightEngineers]
   ];
 
-  MAP.forEach(([depId, idealValue]) => {
-
+  MAP.forEach(([depId, value]) => {
     if (!HR[depId]) return;
-
-    const needed = Number(idealValue || 0);
-    HR[depId].required = Math.max(0, Math.ceil(needed));
+    HR[depId].required = Math.max(0, Math.ceil(Number(value || 0)));
   });
 
-  // Managers required (si existe)
+  // ============================================================
+  // 🟦 A5 — STARTUP OPERATION CAPS (MOVED INSIDE OPS)
+  // ============================================================
+  (function applyStartupCaps(){
+
+    const totalFlights = activeFlights.length;
+
+    if (totalFlights <= 3) {
+
+      const STARTUP_CAPS = {
+        pilots_small:   2,
+        pilots_medium:  2,
+        pilots_large:   3,
+        pilots_vlarge:  4,
+        cabin:          1,
+        maintenance:    1,
+        ground:         1,
+        flightops:      1,
+        quality:        0,
+        security:       0,
+        routes:         0
+      };
+
+      Object.keys(HR).forEach(depID => {
+        const dep = HR[depID];
+        if (!dep || typeof dep.required !== "number") return;
+
+        const cap = STARTUP_CAPS[depID];
+        if (typeof cap === "number" && dep.required > cap) {
+          dep.required = cap;
+        }
+      });
+
+      console.log(
+        "%c🟢 STARTUP OPERATION MODE ACTIVE",
+        "color:#7CFFB2;font-weight:700",
+        "Flights:", totalFlights
+      );
+    }
+  })();
+
+  // ============================================================
+  // 🧭 MANAGEMENT
+  // ============================================================
   if (typeof ACS_HR_calculateManagementRequired === "function") {
     ACS_HR_calculateManagementRequired();
   }
-}
 
-  /* ============================================================
-   🟦 A5 — HISTORICAL STARTUP OPERATION SCALER (1940–REALISTIC)
-   ------------------------------------------------------------
-   • Evita exigir estructura completa con pocos vuelos
-   • Aplica SOLO cuando la operación es pequeña
-   • No rompe escalado futuro
-   ============================================================ */
-
-(function applyStartupCaps(){
-
-  const totalFlights = activeFlights.length;
-
-  // 🔹 Startup mode: muy pocos vuelos
-  if (totalFlights <= 3) {
-
-    const STARTUP_CAPS = {
-      pilots_small:   2,
-      pilots_medium:  2,
-      pilots_large:   3,
-      pilots_vlarge:  4,
-
-      cabin:          1,
-      maintenance:    1,
-      ground:         1,
-      flightops:      1,
-      quality:        0,
-      security:       0,
-      route_strategies: 0
-    };
-
-    Object.keys(HR).forEach(depID => {
-
-      const dep = HR[depID];
-      if (!dep || typeof dep.required !== "number") return;
-
-      const cap = STARTUP_CAPS[depID];
-      if (typeof cap !== "number") return;
-
-      // Limitar REQUIRED al cap histórico
-      if (dep.required > cap) {
-        dep.required = cap;
-      }
-    });
-
-    console.log(
-      "%c🟢 STARTUP OPERATION MODE ACTIVE",
-      "color:#7CFFB2;font-weight:700",
-      "Flights:", totalFlights
-    );
-  }
-
-})();
-   
+  // ============================================================
+  // 💾 SAVE + UI
+  // ============================================================
   ACS_HR_save(HR);
 
   if (typeof loadDepartments === "function") loadDepartments();
