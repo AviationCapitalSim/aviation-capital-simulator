@@ -1337,13 +1337,26 @@ function loadDepartments() {
     }
   }
      
-  // === SYNC HR CORE ===
-  try {
-    const payroll = ACS_HR_recalculateAll();
-    console.log("💾 HR recalculado. Payroll mensual:", payroll);
-  } catch (e) {
-    console.warn("⚠️ No se pudo recalcular HR:", e);
+  // ============================================================
+// 🟦 HR PAYROLL & KPI REFRESH (OPS-SAFE)
+// ------------------------------------------------------------
+// ❗ CRÍTICO:
+// - HR NO recalcula `required`
+// - OPS es la única fuente de demand
+// - HR solo refresca payroll, morale y KPI
+// ============================================================
+
+try {
+
+  // Recalcular payroll SOLO en base a staff actual
+  if (typeof ACS_HR_recalculatePayroll === "function") {
+    const payroll = ACS_HR_recalculatePayroll();
+    console.log("💾 HR payroll actualizado (OPS-safe):", payroll);
   }
+
+} catch (e) {
+  console.warn("⚠️ HR payroll refresh failed:", e);
+}
 
   // 🔄 KPI refresh seguro
   if (typeof HR_updateKPI === "function") {
