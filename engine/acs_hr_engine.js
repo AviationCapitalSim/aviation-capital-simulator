@@ -183,24 +183,25 @@ function ACS_HR_getBaseSalary(year, role) {
    🔵 ACS SALARY TABLE (5-YEAR REALISTIC) — COMPLETO
    ============================================================ */
 const ACS_HR_SALARY_5Y = {
-  1940:{pilot:650, cabin:180, tech:260, ground:120, admin:200, flightops:230, security:170, exec:900},
-  1945:{pilot:720, cabin:200, tech:300, ground:140, admin:220, flightops:250, security:190, exec:1000},
-  1950:{pilot:820, cabin:230, tech:350, ground:160, admin:250, flightops:290, security:210, exec:1200},
-  1955:{pilot:950, cabin:260, tech:420, ground:190, admin:290, flightops:330, security:240, exec:1500},
-  1960:{pilot:1100,cabin:300, tech:500, ground:220, admin:340, flightops:380, security:280, exec:1800},
-  1965:{pilot:1300,cabin:360, tech:580, ground:260, admin:400, flightops:450, security:330, exec:2100},
-  1970:{pilot:1550,cabin:430, tech:700, ground:300, admin:470, flightops:530, security:390, exec:2500},
-  1975:{pilot:1800,cabin:520, tech:850, ground:350, admin:550, flightops:620, security:450, exec:3000},
-  1980:{pilot:2100,cabin:620, tech:1000,ground:420, admin:650, flightops:730, security:520, exec:3600},
-  1985:{pilot:2400,cabin:730, tech:1150,ground:500, admin:750, flightops:850, security:600, exec:4200},
-  1990:{pilot:2800,cabin:860, tech:1300,ground:580, admin:900, flightops:1000,security:700, exec:5000},
-  1995:{pilot:3200,cabin:1000,tech:1500,ground:680, admin:1100,flightops:1200,security:800, exec:5800},
-  2000:{pilot:3600,cabin:1150,tech:1700,ground:780, admin:1300,flightops:1400,security:900, exec:6500},
-  2005:{pilot:4000,cabin:1300,tech:1900,ground:900, admin:1500,flightops:1600,security:1000,exec:7200},
-  2010:{pilot:4500,cabin:1500,tech:2200,ground:1050,admin:1800,flightops:1900,security:1150,exec:8000},
-  2015:{pilot:5000,cabin:1750,tech:2500,ground:1250,admin:2100,flightops:2200,security:1300,exec:9000},
-  2020:{pilot:5500,cabin:2000,tech:2800,ground:1450,admin:2400,flightops:2500,security:1450,exec:10000},
-  2025:{pilot:6000,cabin:2200,tech:3100,ground:1600,admin:2600,flightops:2700,security:1600,exec:11000}
+  1940:{pilot:380, cabin:140, tech:200, ground:120, admin:180, flightops:220, security:150, exec:650},
+  1945:{pilot:450, cabin:155, tech:220, ground:130, admin:195, flightops:240, security:160, exec:725},
+  1950:{pilot:520, cabin:170, tech:240, ground:140, admin:210, flightops:260, security:170, exec:800},
+  1955:{pilot:710, cabin:205, tech:285, ground:165, admin:245, flightops:300, security:200, exec:1000},
+  1960:{pilot:900, cabin:240, tech:330, ground:190, admin:280, flightops:340, security:230, exec:1200},
+  1965:{pilot:1250,cabin:300, tech:415, ground:235, admin:350, flightops:430, security:285, exec:1700},
+  1970:{pilot:1600,cabin:360, tech:500, ground:280, admin:420, flightops:520, security:340, exec:2200},
+  1975:{pilot:2100,cabin:480, tech:650, ground:350, admin:520, flightops:640, security:430, exec:2900},
+  1980:{pilot:2600,cabin:600, tech:800, ground:420, admin:620, flightops:760, security:520, exec:3600},
+  1985:{pilot:3100,cabin:710, tech:925, ground:470, admin:720, flightops:870, security:590, exec:4400},
+  1990:{pilot:3600,cabin:820, tech:1050,ground:520, admin:820, flightops:980, security:660, exec:5200},
+  1995:{pilot:4150,cabin:960, tech:1225,ground:620, admin:960, flightops:1140,security:755, exec:6200},
+  2000:{pilot:4700,cabin:1100,tech:1400,ground:720, admin:1100,flightops:1300,security:850, exec:7200},
+  2005:{pilot:5450,cabin:1350,tech:1700,ground:885, admin:1350,flightops:1575,security:1025,exec:8500},
+  2010:{pilot:6200,cabin:1600,tech:2000,ground:1050,admin:1600,flightops:1850,security:1200,exec:9800},
+  2015:{pilot:7250,cabin:2000,tech:2400,ground:1250,admin:2000,flightops:2225,security:1450,exec:11650},
+  2020:{pilot:8300,cabin:2400,tech:2800,ground:1450,admin:2300,flightops:2600,security:1700,exec:13500},
+  2025:{pilot:8800,cabin:2600,tech:3000,ground:1600,admin:2500,flightops:2800,security:1850,exec:15000},
+  2030:{pilot:9300,cabin:2800,tech:3200,ground:1750,admin:2700,flightops:3000,security:2000,exec:16500}
 };
 
 function ACS_HR_get5YBlock(year){
