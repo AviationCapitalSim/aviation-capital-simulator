@@ -281,6 +281,114 @@ window.ACS_registerIncome = function(payload){
 };
 
 /* ============================================================
+   🟧 HR → FINANCE MONTHLY PAYROLL BRIDGE (LIVE)
+   ------------------------------------------------------------
+   • Corre EN VIVO al cambio de mes (Time Engine)
+   • Finance absorbe HR payroll como salaries (Cost)
+   • Anti-duplicado: 1 cargo por mes
+   ============================================================ */
+
+function ACS_FIN_readMonthlyPayroll(){
+  const v = Number(localStorage.getItem("ACS_HR_PAYROLL") || 0);
+  return Number.isFinite(v) ? v : 0;
+}
+
+function ACS_FIN_closeMonthIfNeeded(f, monthKey){
+
+  if (f.current_month === monthKey) return;
+
+  // Cerrar mes anterior en history (si existía)
+  if (f.current_month !== null) {
+    f.history.push({
+      month: f.current_month,
+      revenue: f.revenue || 0,
+      expenses: f.expenses || 0,
+      profit: (f.revenue || 0) - (f.expenses || 0),
+      cost: { ...f.cost }
+    });
+  }
+
+  // Reset totals para el nuevo mes
+  f.revenue  = 0;
+  f.expenses = 0;
+  f.profit   = 0;
+
+  Object.keys(f.cost).forEach(k => f.cost[k] = 0);
+  f.current_month = monthKey;
+}
+
+function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
+
+  // Candado: 1 cargo por mes
+  const lockKey = "ACS_FIN_SALARY_CHARGED_MONTH";
+  if (localStorage.getItem(lockKey) === monthKey) return;
+
+  const payroll = ACS_FIN_readMonthlyPayroll();
+  if (payroll <= 0) {
+    localStorage.setItem(lockKey, monthKey); // igual bloquea para no spamear
+    return;
+  }
+
+  // Registrar como costo salarial del mes
+  f.cost.salaries += payroll;
+  f.expenses      += payroll;
+  f.profit        -= payroll;
+  f.capital       -= payroll;
+
+  pushLog({
+    type: "EXPENSE",
+    source: "HR PAYROLL",
+    amount: payroll,
+    meta: { month: monthKey }
+  });
+
+  localStorage.setItem(lockKey, monthKey);
+}
+
+/* ============================================================
+   🗓️ LIVE MONTH CHANGE HOOK (Time Engine)
+   ============================================================ */
+
+if (typeof registerTimeListener === "function") {
+
+  let __FIN_lastMonthKey = null;
+
+  registerTimeListener((time) => {
+
+    if (!time || typeof time.getTime !== "function") return;
+
+    const now = time.getTime();
+    const monthKey = ACS_getMonthKey(now);
+
+    if (__FIN_lastMonthKey === null) {
+      __FIN_lastMonthKey = monthKey;
+      return;
+    }
+
+    // Solo en cambio de mes
+    if (monthKey !== __FIN_lastMonthKey) {
+
+      const f = loadFinance();
+      if (!f) return;
+
+      // 1) Cerrar/abrir mes en Finance (live)
+      ACS_FIN_closeMonthIfNeeded(f, monthKey);
+
+      // 2) Aplicar cargo salarial para el nuevo mes
+      ACS_FIN_applyMonthlyPayrollCharge(f, monthKey);
+
+      saveFinance(f);
+      window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+      __FIN_lastMonthKey = monthKey;
+    }
+  });
+
+} else {
+  console.warn("⚠️ registerTimeListener NOT FOUND — Finance month hook disabled");
+}
+   
+/* ============================================================
    🔹 ECONOMICS → FINANCE BRIDGE (READ ONLY)
    ============================================================ */
 
