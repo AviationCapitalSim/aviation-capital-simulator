@@ -331,6 +331,157 @@ function renderHRFinanceConsistency() {
 /* ▶ Auto render */
 setTimeout(renderHRFinanceConsistency, 600);
 
+/* ============================================================
+   🚨 PHASE 2.6 — ALERT ENGINE (READ ONLY)
+   ============================================================ */
+
+function renderAlertEngine() {
+
+  const out = document.getElementById("outWarnings");
+  if (!out) return;
+
+  let alerts = [];
+
+  /* =========================
+     TIME ENGINE ALERTS
+     ========================= */
+  if (!(window.ACS_TIME_CURRENT instanceof Date)) {
+    alerts.push("⏱️ TIME ENGINE: NOT ACTIVE");
+  }
+
+  /* =========================
+     HR ALERTS
+     ========================= */
+  const HR = (() => {
+    try { return JSON.parse(localStorage.getItem("ACS_HR")); }
+    catch { return null; }
+  })();
+
+  if (!HR) {
+    alerts.push("🧑‍✈️ HR: DATA MISSING");
+  } else {
+    Object.entries(HR).forEach(([k, d]) => {
+      if (d.required > 0 && d.staff < d.required) {
+        alerts.push(`🧑‍✈️ HR: ${k} understaffed (${d.staff}/${d.required})`);
+      }
+    });
+  }
+
+  /* =========================
+     FINANCE ALERTS
+     ========================= */
+  const f = (() => {
+    try { return JSON.parse(localStorage.getItem("ACS_Finance")); }
+    catch { return null; }
+  })();
+
+  if (f && Number(f.profit) < 0) {
+    alerts.push(`💰 FINANCE: Negative profit (${Number(f.profit).toLocaleString()})`);
+  }
+
+  /* =========================
+     OPS ALERTS
+     ========================= */
+  const routes = (() => {
+    try { return JSON.parse(localStorage.getItem("scheduleItems")); }
+    catch { return null; }
+  })();
+
+  if (!routes || routes.length === 0) {
+    alerts.push("🛫 OPS: No active routes");
+  }
+
+  /* =========================
+     OUTPUT
+     ========================= */
+  if (alerts.length === 0) {
+    out.textContent += "\n\n🚦 ALERTS:\n✔ No active alerts";
+  } else {
+    out.textContent += "\n\n🚦 ALERTS:\n" + alerts.map(a => `- ${a}`).join("\n");
+  }
+}
+
+/* ▶ Auto render */
+setTimeout(renderAlertEngine, 700);
+
+/* ============================================================
+   📡 PHASE 2.7 — EVENT TRACE ENGINE (READ ONLY)
+   ============================================================ */
+
+(function initEventTrace(){
+
+  const MAX_EVENTS = 12;
+  const out = document.getElementById("outWarnings");
+  if (!out) return;
+
+  let trace = [];
+
+  function logEvent(type, msg) {
+    const t = window.ACS_TIME_CURRENT instanceof Date
+      ? window.ACS_TIME_CURRENT.toISOString()
+      : new Date().toISOString();
+
+    trace.unshift(`[${t}] ${type} → ${msg}`);
+    if (trace.length > MAX_EVENTS) trace.pop();
+
+    renderTrace();
+  }
+
+  function renderTrace() {
+    const block =
+      "\n\n📡 EVENT TRACE (latest):\n" +
+      trace.map(e => `• ${e}`).join("\n");
+
+    if (!out.textContent.includes("📡 EVENT TRACE")) {
+      out.textContent += block;
+    } else {
+      out.textContent = out.textContent.replace(
+        /📡 EVENT TRACE[\s\S]*$/m,
+        block.trim()
+      );
+    }
+  }
+
+  /* =========================
+     PASSIVE HOOKS
+     ========================= */
+
+  window.addEventListener("ACS_FINANCE_UPDATED", () => {
+    try {
+      const f = JSON.parse(localStorage.getItem("ACS_Finance"));
+      logEvent("FINANCE", `Profit: ${Number(f?.profit || 0).toLocaleString()}`);
+    } catch {}
+  });
+
+  window.addEventListener("ACS_HR_UPDATED", () => {
+    try {
+      const p = Number(localStorage.getItem("ACS_HR_PAYROLL") || 0);
+      logEvent("HR", `Payroll updated: ${p.toLocaleString()}`);
+    } catch {}
+  });
+
+  window.addEventListener("ACS_ROUTE_UPDATED", () => {
+    try {
+      const r = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+      logEvent("OPS", `Routes total: ${r.length}`);
+    } catch {}
+  });
+
+  /* =========================
+     MONTH CHANGE WATCH
+     ========================= */
+  let lastMonth = null;
+
+  setInterval(() => {
+    if (!(window.ACS_TIME_CURRENT instanceof Date)) return;
+    const m = window.ACS_TIME_CURRENT.getUTCMonth();
+    if (lastMonth !== null && m !== lastMonth) {
+      logEvent("TIME", "Month changed");
+    }
+    lastMonth = m;
+  }, 2000);
+
+})();
    
 /* ============================================================
    🛫 PHASE 4 — OPS / ROUTES SNAPSHOT (READ ONLY)
@@ -401,5 +552,81 @@ function renderIntegritySnapshot() {
   write(outWarnings, lines.join("\n"));
 }
 
-})();
+/* ============================================================
+   📦 PHASE 2.8 — FULL SNAPSHOT EXPORT (READ ONLY)
+   ============================================================ */
 
+(function initSnapshotExport(){
+
+  const btn = document.getElementById("btnRefresh");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+
+    const snapshot = {
+      meta: {
+        generated_at: new Date().toISOString(),
+        dev: localStorage.getItem("ACS_DEV") === "true",
+        version: "ACS-BETA"
+      },
+
+      time: (() => {
+        const t = window.ACS_TIME_CURRENT;
+        return t instanceof Date ? {
+          utc: t.toUTCString(),
+          year: t.getUTCFullYear(),
+          month: t.getUTCMonth() + 1,
+          day: t.getUTCDate(),
+          timestamp: t.getTime()
+        } : null;
+      })(),
+
+      hr: (() => {
+        try {
+          return {
+            data: JSON.parse(localStorage.getItem("ACS_HR")),
+            payroll: Number(localStorage.getItem("ACS_HR_PAYROLL") || 0),
+            autoHire: localStorage.getItem("autoHire") === "true",
+            autoSalary: localStorage.getItem("ACS_AutoSalary") === "ON"
+          };
+        } catch {
+          return null;
+        }
+      })(),
+
+      finance: (() => {
+        try {
+          return window.ACS_Finance
+            ? window.ACS_Finance
+            : JSON.parse(localStorage.getItem("ACS_Finance"));
+        } catch {
+          return null;
+        }
+      })(),
+
+      ops: (() => {
+        try {
+          return {
+            routes: JSON.parse(localStorage.getItem("scheduleItems")) || []
+          };
+        } catch {
+          return null;
+        }
+      })()
+    };
+
+    console.group("📦 ACS SNAPSHOT EXPORT");
+    console.log(snapshot);
+    console.groupEnd();
+
+    // guardado temporal (opcional)
+    localStorage.setItem(
+      "ACS_SNAPSHOT_LAST",
+      JSON.stringify(snapshot, null, 2)
+    );
+
+    alert("📦 ACS Snapshot generado.\nRevisa la consola.");
+  });
+
+})();
+   
