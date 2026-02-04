@@ -1,0 +1,135 @@
+<!-- ============================================================
+     🔒 ACS INTERNAL MONITOR — PRIVATE DEV PANEL
+     ------------------------------------------------------------
+     Purpose:
+     - Monitor interno para auditar ACS en vivo (Time/HR/Finance/Ops)
+     - SOLO para el desarrollador (no público)
+     ------------------------------------------------------------
+     Version: v0.1 | Date: 04 FEB 2026
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>ACS Internal Monitor</title>
+
+  <!-- Reusa tu estilo principal si existe (ajusta ruta si tu css está en otro lugar) -->
+  <link rel="stylesheet" href="../styles.css" />
+
+  <style>
+    /* Minimal, readable, Qatar-Luxury compatible */
+    body{ background:#071018; color:#E7EEF8; }
+    .wrap{ max-width:1200px; margin:0 auto; padding:18px; }
+    .top{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:14px 16px; border-radius:16px;
+      background:rgba(10,18,28,0.75);
+      border:1px solid rgba(242,201,76,0.22);
+      box-shadow:0 0 18px rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+    }
+    .brand{ display:flex; flex-direction:column; gap:4px; }
+    .brand h1{ margin:0; font-size:18px; letter-spacing:1.8px; color:#F2C94C; }
+    .brand p{ margin:0; font-size:12px; opacity:0.85; }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.06);
+      font-size:12px;
+      user-select:none;
+    }
+    .grid{ display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:14px; }
+    .card{
+      grid-column:span 6;
+      background:rgba(10,18,28,0.72);
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 0 16px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+    }
+    .card h2{
+      margin:0 0 10px 0;
+      font-size:13px;
+      letter-spacing:1.6px;
+      text-transform:uppercase;
+      color:#F2C94C;
+      display:flex; align-items:center; gap:8px;
+    }
+    pre{
+      margin:0;
+      padding:12px;
+      border-radius:14px;
+      background:rgba(0,0,0,0.28);
+      border:1px solid rgba(255,255,255,0.08);
+      overflow:auto;
+      font-size:12px;
+      line-height:1.35;
+      color:#DDE7F5;
+      min-height:120px;
+    }
+    .wide{ grid-column:span 12; }
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(242,201,76,0.35);
+      background:rgba(242,201,76,0.12);
+      color:#F2C94C;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:700;
+      letter-spacing:1px;
+    }
+    .btn:active{ transform:translateY(1px); }
+    @media(max-width:900px){
+      .card{ grid-column:span 12; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <h1>ACS INTERNAL MONITOR</h1>
+        <p>Private Dev Panel — Time • HR • Finance • Ops • Integrity</p>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div class="chip" id="devChip">DEV: —</div>
+        <button class="btn" id="btnRefresh">REFRESH SNAPSHOT</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="card" id="cardTime">
+        <h2>🕒 TIME ENGINE</h2>
+        <pre id="outTime">Waiting...</pre>
+      </section>
+
+      <section class="card" id="cardHR">
+        <h2>🧑‍✈️ HR LIVE STATE</h2>
+        <pre id="outHR">Waiting...</pre>
+      </section>
+
+      <section class="card" id="cardFinance">
+        <h2>💰 FINANCE LEDGER</h2>
+        <pre id="outFinance">Waiting...</pre>
+      </section>
+
+      <section class="card" id="cardOps">
+        <h2>🧭 OPS / ROUTES</h2>
+        <pre id="outOps">Waiting...</pre>
+      </section>
+
+      <section class="card wide" id="cardWarnings">
+        <h2>⚠️ INTEGRITY & WARNINGS</h2>
+        <pre id="outWarnings">Waiting...</pre>
+      </section>
+    </div>
+  </div>
+
+  <!-- JS del monitor -->
+  <script src="./acs_monitor.js"></script>
+</body>
+</html>
