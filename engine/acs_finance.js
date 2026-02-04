@@ -185,6 +185,36 @@ function initFinanceIfNeeded(){
 
 let ACS_Finance = initFinanceIfNeeded();
 
+(function(){
+
+  function ACS_FIN_applyLivePayrollAccrual(){
+
+    const payroll = Number(localStorage.getItem("ACS_HR_PAYROLL") || 0);
+    if (!Number.isFinite(payroll) || payroll <= 0) return;
+
+    const f = loadFinance();
+    if (!f) return;
+
+    // Mostrar salaries en vivo (informativo)
+    f.cost.salaries = payroll;
+
+    // Recalcular profit en vivo (sin tocar capital)
+    f.profit = (f.revenue || 0) - (f.expenses || 0) - payroll;
+
+    saveFinance(f);
+    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+  }
+
+  // Ejecutar al cargar Finance
+  ACS_FIN_applyLivePayrollAccrual();
+
+  // Re-ejecutar cuando HR cambie algo relevante
+  window.addEventListener("ACS_HR_UPDATED", () => {
+    ACS_FIN_applyLivePayrollAccrual();
+  });
+
+})();
+   
 /* ============================================================
    🔹 LOG (CENTRAL)
    ============================================================ */
