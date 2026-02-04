@@ -1431,13 +1431,13 @@ function ACS_HR_emitSalaryAlerts() {
 }
 
 /* ============================================================
-   🟦 A3.1.4 — AUTO SALARY NORMALIZATION CORE (ACS OFFICIAL)
+   🟧 S2 — AUTO SALARY NORMALIZATION (CANONICAL REBUILD)
    ------------------------------------------------------------
-   • Ajusta salarios instantáneamente a era actual
-   • Resetea estados salariales
-   • Borra atrasos históricos
-   • Modo recuperación automática
-   • 🔒 BLINDADO: solo corre si Auto Salary = ON
+   • NO porcentajes sobre salario viejo
+   • Recalcula desde base histórica por año + base/rol
+   • Pilotos por tamaño usando motor HR
+   • Respeta MANUAL OVERRIDE (no pisa)
+   • Usa SOLO año del juego (Time Authority)
    ============================================================ */
 
 function ACS_HR_applyAutoSalaryNormalization() {
@@ -1446,7 +1446,6 @@ function ACS_HR_applyAutoSalaryNormalization() {
   // 🔒 PROTECCIÓN GLOBAL — RESPETAR AUTO SALARY OFF
   // ============================================================
   const autoSalaryEnabled = ACS_HR_isAutoSalaryEnabled();
-
   if (!autoSalaryEnabled) {
     console.log(
       "%c🔒 AUTO SALARY NORMALIZATION BLOCKED (GLOBAL OFF)",
@@ -1458,13 +1457,13 @@ function ACS_HR_applyAutoSalaryNormalization() {
   const HR = ACS_HR_load();
   if (!HR) return;
 
-    // 🕒 Año del juego (CANON) — NUNCA usar año del sistema
+  // ============================================================
+  // 🕒 AÑO DEL JUEGO (CANON) — NUNCA usar año del sistema
+  // ============================================================
   const currentYear = (typeof ACS_HR_getGameYear === "function")
     ? ACS_HR_getGameYear()
     : undefined;
 
-  // Si el Time Engine aún no publicó el año del juego, NO normalizar todavía.
-  // (Evita contaminar salarios con 2026 durante BOOT)
   if (!currentYear || typeof currentYear !== "number") {
     console.log(
       "%c⏳ AUTO SALARY WAITING — Game Year not ready (skip normalization)",
@@ -1473,84 +1472,95 @@ function ACS_HR_applyAutoSalaryNormalization() {
     return;
   }
 
-  const eraParams = ACS_HR_getSalaryEraParams(currentYear);
-  const raisePercent = eraParams.autoRaise;
-
   console.log(
-    "%c💰 AUTO SALARY NORMALIZATION",
+    "%c💰 AUTO SALARY NORMALIZATION (REBUILD FROM BASE)",
     "color:#7CFFB2;font-weight:700",
-    "Year:", currentYear,
-    "Raise:", raisePercent + "%"
+    "Year:", currentYear
   );
 
   Object.keys(HR).forEach(id => {
 
     const dep = HR[id];
-    if (!dep || typeof dep.salary !== "number") return;
+    if (!dep) return;
 
     // ============================================================
     // 🔒 SKIP MANUAL OVERRIDE DEPARTMENTS
     // ============================================================
     if (dep.salaryOverride === true || dep.salaryPolicy === "MANUAL") {
-
       console.log(
         "%c⏭ AUTO SALARY SKIPPED (MANUAL OVERRIDE)",
         "color:#ffaa00;font-weight:700",
-        dep.name
+        dep.name || id
       );
-
-      return; // NO tocar este departamento
+      return;
     }
 
     // ============================================================
-    // 🟢 APLICAR SUBIDA AUTOMÁTICA
+    // 🧠 TARGET SALARY — DESDE BASE HISTÓRICA
     // ============================================================
-    const oldSalary = dep.salary;
-    const newSalary = Math.round(oldSalary * (1 + raisePercent / 100));
+    let targetSalary = 0;
 
-    dep.salary = newSalary;
+    // Pilotos por tamaño (usa motor HR si existe)
+    if (String(id).startsWith("pilots_") && typeof ACS_HR_getPilotSalarySized === "function") {
+
+      let size = "medium";
+      if (id === "pilots_small")  size = "small";
+      if (id === "pilots_medium") size = "medium";
+      if (id === "pilots_large")  size = "large";
+      if (id === "pilots_vlarge") size = "vlarge";
+
+      targetSalary = Math.round(ACS_HR_getPilotSalarySized(currentYear, size));
+
+    } else {
+
+      // Departamentos normales por base (usa motor HR)
+      const roleBase = dep.base || dep.role || id;
+
+      if (typeof ACS_HR_getBaseSalary === "function") {
+        targetSalary = Math.round(ACS_HR_getBaseSalary(currentYear, roleBase));
+      } else {
+        targetSalary = Number(dep.salary || 0);
+      }
+    }
+
+    if (!targetSalary || !isFinite(targetSalary)) return;
+
+    // ============================================================
+    // ✅ APLICAR SALARIO CANÓNICO
+    // ============================================================
+    dep.salary = targetSalary;
+
+    // Campos extra usados por UI / ratios (si existen)
+    dep.baseSalary = targetSalary;
+    dep.marketReference = Math.round(targetSalary * 2.6);
 
     const staff = Number(dep.staff || 0);
-    dep.payroll = Math.round(staff * dep.salary);
+    dep.payroll = Math.round(staff * targetSalary);
 
-    // Reset histórico
     dep.lastSalaryReviewYear = currentYear;
     dep.salaryStatus = "ok";
 
-    console.log(
-      "🟢 Salary normalized:",
-      dep.name,
-      "Old:", oldSalary,
-      "New:", newSalary
-    );
+    console.log("🟢 Salary rebuilt:", dep.name || id, "=", targetSalary);
   });
 
-  // 🔄 Reset salary alert cooldown (recovery)
   ACS_HR_saveSalaryAlertState({});
-
   ACS_HR_save(HR);
 
-  // ============================================================
-  // 🔒 CRÍTICO: NUNCA LLAMAR RECALCULATE DESDE NORMALIZATION
-  // (evita cascadas y destrucción de manual)
-  // ============================================================
-
   console.log(
-    "%c🔒 AUTO SALARY NORMALIZATION COMPLETED (NO RECALC CASCADE)",
+    "%c✅ AUTO SALARY NORMALIZATION COMPLETED (BASE REBUILD)",
     "color:#00ffcc;font-weight:700"
   );
 
-  // Refrescar UI únicamente
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
 }
 
 /* ============================================================
-   🟦 A3.1.6 — AUTO SALARY EXECUTION GUARD (ACS OFFICIAL)
+   🟧 S3 — AUTO SALARY EXECUTION GUARD (CANONICAL)
    ------------------------------------------------------------
-   • Evita normalización múltiple
-   • Ejecuta solo cuando toca revisión histórica
-   • Protege economía y Company Value
+   • Usa SOLO año del juego
+   • Corre si toca revisión por era
+   • O si detecta DRIFT grande vs salario objetivo (fix estable)
    ============================================================ */
 
 function ACS_HR_shouldRunAutoSalary() {
@@ -1558,20 +1568,69 @@ function ACS_HR_shouldRunAutoSalary() {
   const HR = ACS_HR_load();
   if (!HR) return false;
 
-  const currentYear = ACS_TIME_getYear ? ACS_TIME_getYear() : new Date().getUTCFullYear();
+  const currentYear = (typeof ACS_HR_getGameYear === "function")
+    ? ACS_HR_getGameYear()
+    : undefined;
+
+  if (!currentYear || typeof currentYear !== "number") return false;
+
+  const era = ACS_HR_getSalaryEraParams(currentYear);
+  const interval = Number(era.reviewInterval || 3);
 
   let needsRun = false;
 
   Object.keys(HR).forEach(id => {
 
     const dep = HR[id];
-    if (!dep || typeof dep.lastSalaryReviewYear !== "number") return;
+    if (!dep) return;
 
-    // Si algún departamento está atrasado → hay que normalizar
-    if (dep.lastSalaryReviewYear < currentYear) {
+    // No tocar manual
+    if (dep.salaryOverride === true || dep.salaryPolicy === "MANUAL") return;
+
+    const last = Number(dep.lastSalaryReviewYear || 0);
+
+    // 1) Si nunca fue revisado, correr
+    if (!last || !isFinite(last)) {
       needsRun = true;
+      return;
     }
 
+    // 2) Si ya pasó el intervalo histórico, correr
+    if ((currentYear - last) >= interval) {
+      needsRun = true;
+      return;
+    }
+
+    // 3) DRIFT DETECTOR — si está muy fuera del objetivo, correr
+    let target = 0;
+
+    if (String(id).startsWith("pilots_") && typeof ACS_HR_getPilotSalarySized === "function") {
+
+      let size = "medium";
+      if (id === "pilots_small")  size = "small";
+      if (id === "pilots_medium") size = "medium";
+      if (id === "pilots_large")  size = "large";
+      if (id === "pilots_vlarge") size = "vlarge";
+
+      target = Math.round(ACS_HR_getPilotSalarySized(currentYear, size));
+
+    } else {
+
+      const roleBase = dep.base || dep.role || id;
+      if (typeof ACS_HR_getBaseSalary === "function") {
+        target = Math.round(ACS_HR_getBaseSalary(currentYear, roleBase));
+      }
+    }
+
+    const current = Number(dep.salary || 0);
+
+    if (target > 0 && current > 0) {
+      const diffRatio = Math.abs(current - target) / target;
+      if (diffRatio >= 0.20) { // 20% fuera del objetivo = drift real
+        needsRun = true;
+        return;
+      }
+    }
   });
 
   return needsRun;
