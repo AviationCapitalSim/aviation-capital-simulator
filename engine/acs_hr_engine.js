@@ -360,42 +360,51 @@ function ACS_HR_fire(deptID, amount) {
     ACS_HR_save(hr);
 }
 
-
 /* ============================================================
-   API: AJUSTE SALARIAL (por porcentaje) — Reparado
+   🟧 API: AJUSTE SALARIAL MANUAL (CANONICAL)
+   ------------------------------------------------------------
+   • Mata Auto Salary automáticamente
+   • Congela el salario resultante
+   • NO recalcula por época
    ============================================================ */
 function ACS_HR_adjustSalary(deptID, percentage) {
+
     const hr = ACS_HR_load();
     const d = hr[deptID];
-
     if (!d) return;
 
-    const year = window.ACS_getYear ? ACS_getYear() : 1940;
-
-    // Si es piloto, usar el motor del tamaño
-    if (deptID.startsWith("pilots_")) {
-
-        let size="medium";
-        if(deptID==="pilots_small") size="small";
-        if(deptID==="pilots_medium") size="medium";
-        if(deptID==="pilots_large") size="large";
-        if(deptID==="pilots_vlarge") size="vlarge";
-
-        const base = ACS_HR_getPilotSalarySized(year, size);
-
-        d.salary = Math.round(base * (percentage / 100));
-
-    } else {
-        // No pilotos
-        const base = ACS_HR_getBaseSalary(year, d.base);
-        d.salary = Math.round(base * (percentage / 100));
+    // 🔴 Si Auto Salary estaba ON → apagarlo
+    if (localStorage.getItem("ACS_AutoSalary") === "ON") {
+        localStorage.setItem("ACS_AutoSalary", "OFF");
+        localStorage.setItem("ACS_AutoSalary_Override", "true");
     }
 
-    d.payroll = d.salary * d.staff;
+    const year = (typeof ACS_getYear === "function") ? ACS_getYear() : 1940;
 
+    let baseSalary = 0;
+
+    // Pilotos → por tamaño
+    if (deptID.startsWith("pilots_")) {
+
+        let size = "medium";
+        if (deptID === "pilots_small")  size = "small";
+        if (deptID === "pilots_medium") size = "medium";
+        if (deptID === "pilots_large")  size = "large";
+        if (deptID === "pilots_vlarge") size = "vlarge";
+
+        baseSalary = ACS_HR_getPilotSalarySized(year, size);
+
+    } else {
+        // Otros departamentos
+        baseSalary = ACS_HR_getBaseSalary(year, d.base);
+    }
+
+    // Aplicar porcentaje manual
+    d.salary = Math.round(baseSalary * (percentage / 100));
+
+    // Guardar SIN recalcular payroll aquí
     ACS_HR_save(hr);
 }
-
 
 /* ============================================================
    API: BONUS DEPARTAMENTAL — Reparado
@@ -473,8 +482,6 @@ function ACS_HR_getDepartmentsView() {
         };
     });
 }
-
-
 
 /* ============================================================
    === MOTOR DINÁMICO (SE MANTIENE, PERO REPARADO) ============
@@ -609,7 +616,6 @@ function HR_fillDepartmentSelector() {
     });
 }
 
-
 /* ============================================================
    9) CAMBIO DE DEPARTAMENTO EN MODAL — Reparado
    ============================================================ */
@@ -622,9 +628,11 @@ document.addEventListener("change", (e) => {
         }
     }
 });
+
 /* ============================================================
    🔵 B1 — INDUSTRY PILOT BASE SALARY TABLE (5-Year Blocks)
    ============================================================ */
+
 const ACS_HR_PILOT_BASE_5Y = {
   1940: 350,
   1945: 420,
@@ -646,27 +654,45 @@ const ACS_HR_PILOT_BASE_5Y = {
   2025: 10200
 };
 
+/* ============================================================
+   🟧 AUTO SALARY — YEAR CHANGE HOOK
+   ------------------------------------------------------------
+   • Se ejecuta SOLO si Auto Salary = ON
+   • Corre 1 vez por cambio de año
+   ============================================================ */
+
+registerTimeListener((time) => {
+
+    if (!time || typeof time.getUTCFullYear !== "function") return;
+
+    const year = time.getUTCFullYear();
+
+    if (localStorage.getItem("ACS_AutoSalary") !== "ON") return;
+
+    ACS_HR_runAutoSalaryEngine(year);
+});
 
 /* ============================================================
    🔵 B2 — Obtener bloque 5-year del año real
    ============================================================ */
+
 function ACS_get5YearBlock(year) {
     return year - (year % 5);
 }
 
-
 /* ============================================================
    🔵 B3 — Salario base piloto según bloque 5-year
    ============================================================ */
+
 function ACS_HR_getPilotBase5Y(year) {
   const block = ACS_get5YearBlock(year);
   return ACS_HR_PILOT_BASE_5Y[block] || ACS_HR_PILOT_BASE_5Y[2025];
 }
 
-
 /* ============================================================
    🔵 B4 — Comparar salario actual vs industria (5Y)
    ============================================================ */
+
 function ACS_HR_compareToIndustryStandard() {
 
     const HR = ACS_HR_load();
