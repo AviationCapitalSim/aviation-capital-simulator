@@ -650,13 +650,12 @@ function saveCompany(){
   openSaveModal("Company Settings", "Company settings saved successfully.");
 }
 
-
 /* ============================================================
-   🟦 A3.7.2 — AUTO SALARY SETTINGS SYNC ENGINE
+   🟦 A3.7.2 — AUTO SALARY SETTINGS SYNC ENGINE (CANONICAL)
    ------------------------------------------------------------
-   • Conecta checkbox autoSalary con HR system
-   • Aplica normalización inmediata al activar
-   • NO borra alertas
+   • SOLO guarda estado ON / OFF
+   • NO ejecuta lógica salarial
+   • Muestra warning si hubo override manual
    ============================================================ */
 
 function syncAutoSalarySetting() {
@@ -666,6 +665,7 @@ function syncAutoSalarySetting() {
 
   const enabled = cb.checked;
 
+  // Guardar estado
   localStorage.setItem("ACS_AutoSalary", enabled ? "ON" : "OFF");
 
   console.log(
@@ -674,21 +674,22 @@ function syncAutoSalarySetting() {
     enabled ? "ON" : "OFF"
   );
 
-  // 🟢 Si se activa → aplicar normalización inmediata
-  if (enabled) {
+  /* ============================================================
+     ⚠️ MANUAL SALARY OVERRIDE WARNING
+     ============================================================ */
 
-    if (window.ACS_HR_applyAutoSalaryNormalization) {
+  if (localStorage.getItem("ACS_AutoSalary_Override") === "true") {
 
-      window.ACS_HR_applyAutoSalaryNormalization();
+    alert(
+      "⚠️ Manual Salary Adjustment Detected\n\n" +
+      "Auto Salary was automatically DISABLED to protect your manual changes.\n\n" +
+      "You can re-enable Auto Salary at any time from Settings."
+    );
 
-      console.log(
-        "%c💰 AUTO SALARY NORMALIZATION APPLIED (FROM SETTINGS)",
-        "color:#00ff88;font-weight:700"
-      );
-    }
+    localStorage.removeItem("ACS_AutoSalary_Override");
   }
 }
-  
+
 /* ============================================================
    🟦 A3.5.4 — RESET COMPANY SETTINGS (DEFAULT ON)
    ============================================================ */
