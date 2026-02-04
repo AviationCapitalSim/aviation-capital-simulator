@@ -98,8 +98,6 @@
   renderFinanceSnapshot();
 });
 
-})();
-
 /* ============================================================
    🧑‍✈️ PHASE 2.2 — HR LIVE STATE SNAPSHOT (READ ONLY)
    ============================================================ */
@@ -131,7 +129,7 @@ function renderHRSnapshot() {
   Object.values(HR).forEach(dep => {
     if (!dep || typeof dep.staff !== "number") return;
     totalStaff += dep.staff;
-    totalPayroll += (dep.staff * (dep.salary || 0));
+    totalPayroll += dep.staff * (dep.salary || 0);
     departments++;
   });
 
@@ -157,6 +155,7 @@ function renderHRSnapshot() {
 
   write(outHR, lines.join("\n"));
 }
+
 
 /* ============================================================
    💰 PHASE 3 — FINANCE LEDGER SNAPSHOT (READ ONLY)
@@ -199,12 +198,8 @@ function renderFinanceSnapshot() {
       : `❌ Profit mismatch (calc: ${calcProfit})`
   );
 
-  if (Array.isArray(f.history) && f.history.length > 0) {
-    const last = f.history[f.history.length - 1];
-    lines.push(`LAST CLOSE: ${last.month}`);
-  } else {
-    lines.push("• No monthly history yet");
-  }
-
   write(outFinance, lines.join("\n"));
 }
+   
+})();
+
