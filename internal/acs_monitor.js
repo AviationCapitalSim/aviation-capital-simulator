@@ -36,12 +36,12 @@
   }
 
   function snapshotPlaceholder(){
-    write(outTime, "DEV access OK.\nPhase 1 loaded.\n\nNext: Live diagnostics (Time/HR/Finance/Ops).");
-    write(outHR, "Waiting for Phase 2.");
-    write(outFinance, "Waiting for Phase 2.");
-    write(outOps, "Waiting for Phase 2.");
-    write(outWarnings, "Waiting for Phase 2.");
-  }
+  write(outTime, "DEV access OK.\nPhase 1 loaded.\n\nNext: Live diagnostics (Time/HR/Finance/Ops).");
+  write(outHR, "Waiting for Phase 2.");
+  write(outFinance, "Waiting for Phase 2.");
+  write(outOps, "Waiting for Phase 2.");
+  write(outWarnings, "Waiting for Phase 2.");
+}
 
   /* ============================================================
    🕒 PHASE 2.2 — TIME ENGINE LIVE SNAPSHOT (READ ONLY)
