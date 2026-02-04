@@ -580,8 +580,9 @@ function updateCompanyOverview() {
 
   // color capital (green/ red)
   ACS_updateCapitalColor();
-}
+  ACS_updateProfitColor();
 
+}
 
 /* ============================================================
    === CAPITAL UI COLOR FIX — NEGATIVE RED =====================
@@ -615,6 +616,23 @@ window.addEventListener("storage", (e) => {
   }
 });
 
+/* ============================================================
+   === PROFIT UI COLOR — NEGATIVE RED / POSITIVE GREEN ========
+   ============================================================ */
+function ACS_updateProfitColor() {
+  const el = document.getElementById("cf-profit");
+  if (!el) return;
+
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  const profit = Number(f.profit || 0);
+
+  if (profit < 0) {
+    el.style.color = "#ff4d4d";   // 🔴 rojo pérdidas
+  } else {
+    el.style.color = "#00ff80";   // 🟢 verde ganancias
+  }
+}
+     
 /* ============================================================
    === MONTHLY HISTORY (SAFE) ==================================
    ============================================================ */
