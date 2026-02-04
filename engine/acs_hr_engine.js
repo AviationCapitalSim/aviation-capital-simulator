@@ -1045,3 +1045,36 @@ registerTimeListener((time) => {
   }
 
 });
+
+/* ============================================================
+   🟧 HR → UI SALARY SYNC (CANONICAL FINAL FIX)
+   ------------------------------------------------------------
+   Purpose:
+   - Sync recalculated HR salaries to UI snapshot
+   - Fix frozen salary values in Department Control Center
+   - Must be called AFTER any salary normalization
+   ============================================================ */
+
+function ACS_HR_syncSalaryToView() {
+
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
+  // Reconstruir vista desde HR real
+  const view = Object.keys(HR).map(id => {
+    const d = HR[id];
+    return {
+      ...d,
+      salary: d.salary || 0,
+      payroll: d.payroll || 0,
+      morale: d.morale || 0
+    };
+  });
+
+  window.__ACS_HR_VIEW = view;
+
+  console.log(
+    "%c🔄 HR → UI salary sync completed",
+    "color:#7CFFB2;font-weight:800"
+  );
+}
