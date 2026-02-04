@@ -1447,10 +1447,7 @@ function ACS_HR_applyAutoSalaryNormalization() {
   // ============================================================
   const autoSalaryEnabled = ACS_HR_isAutoSalaryEnabled();
   if (!autoSalaryEnabled) {
-    console.log(
-      "%c🔒 AUTO SALARY NORMALIZATION BLOCKED (GLOBAL OFF)",
-      "color:#ff5555;font-weight:800"
-    );
+    console.log("%c🔒 AUTO SALARY NORMALIZATION BLOCKED (GLOBAL OFF)","color:#ff5555;font-weight:800");
     return;
   }
 
@@ -1458,25 +1455,18 @@ function ACS_HR_applyAutoSalaryNormalization() {
   if (!HR) return;
 
   // ============================================================
-  // 🕒 AÑO DEL JUEGO (CANON) — NUNCA usar año del sistema
+  // 🕒 AÑO DEL JUEGO (CANON) — sin año del sistema
   // ============================================================
   const currentYear = (typeof ACS_HR_getGameYear === "function")
     ? ACS_HR_getGameYear()
-    : undefined;
+    : (window.ACS_TIME_CURRENT instanceof Date ? window.ACS_TIME_CURRENT.getUTCFullYear() : undefined);
 
   if (!currentYear || typeof currentYear !== "number") {
-    console.log(
-      "%c⏳ AUTO SALARY WAITING — Game Year not ready (skip normalization)",
-      "color:#ffcf66;font-weight:800"
-    );
+    console.log("%c⏳ AUTO SALARY WAITING — Game Year not ready (skip)","color:#ffcf66;font-weight:800");
     return;
   }
 
-  console.log(
-    "%c💰 AUTO SALARY NORMALIZATION (REBUILD FROM BASE)",
-    "color:#7CFFB2;font-weight:700",
-    "Year:", currentYear
-  );
+  console.log("%c💰 AUTO SALARY NORMALIZATION (REBUILD FROM HISTORICAL BASE)","color:#7CFFB2;font-weight:700","Year:",currentYear);
 
   Object.keys(HR).forEach(id => {
 
@@ -1484,23 +1474,15 @@ function ACS_HR_applyAutoSalaryNormalization() {
     if (!dep) return;
 
     // ============================================================
-    // 🔒 SKIP MANUAL OVERRIDE DEPARTMENTS
+    // 🔒 SKIP MANUAL OVERRIDE
     // ============================================================
-    if (dep.salaryOverride === true || dep.salaryPolicy === "MANUAL") {
-      console.log(
-        "%c⏭ AUTO SALARY SKIPPED (MANUAL OVERRIDE)",
-        "color:#ffaa00;font-weight:700",
-        dep.name || id
-      );
-      return;
-    }
+    if (dep.salaryOverride === true || dep.salaryPolicy === "MANUAL") return;
 
-    // ============================================================
-    // 🧠 TARGET SALARY — DESDE BASE HISTÓRICA
-    // ============================================================
     let targetSalary = 0;
 
-    // Pilotos por tamaño (usa motor HR si existe)
+    // ============================================================
+    // ✈️ Pilotos por tamaño (usa motor HR)
+    // ============================================================
     if (String(id).startsWith("pilots_") && typeof ACS_HR_getPilotSalarySized === "function") {
 
       let size = "medium";
@@ -1513,46 +1495,33 @@ function ACS_HR_applyAutoSalaryNormalization() {
 
     } else {
 
-      // Departamentos normales por base (usa motor HR)
-      const roleBase = dep.base || dep.role || id;
+      // ============================================================
+      // 👔 Todos los demás: por BASE canónica del departamento
+      // ============================================================
+      const base = dep.base || dep.role || id;
 
       if (typeof ACS_HR_getBaseSalary === "function") {
-        targetSalary = Math.round(ACS_HR_getBaseSalary(currentYear, roleBase));
-      } else {
-        targetSalary = Number(dep.salary || 0);
+        targetSalary = Math.round(ACS_HR_getBaseSalary(currentYear, base));
       }
     }
 
     if (!targetSalary || !isFinite(targetSalary)) return;
 
-    // ============================================================
-    // ✅ APLICAR SALARIO CANÓNICO
-    // ============================================================
     dep.salary = targetSalary;
-
-    // Campos extra usados por UI / ratios (si existen)
-    dep.baseSalary = targetSalary;
-    dep.marketReference = Math.round(targetSalary * 2.6);
 
     const staff = Number(dep.staff || 0);
     dep.payroll = Math.round(staff * targetSalary);
 
     dep.lastSalaryReviewYear = currentYear;
     dep.salaryStatus = "ok";
-
-    console.log("🟢 Salary rebuilt:", dep.name || id, "=", targetSalary);
   });
 
-  ACS_HR_saveSalaryAlertState({});
   ACS_HR_save(HR);
-
-  console.log(
-    "%c✅ AUTO SALARY NORMALIZATION COMPLETED (BASE REBUILD)",
-    "color:#00ffcc;font-weight:700"
-  );
 
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+  console.log("%c✅ AUTO SALARY REBUILD COMPLETED","color:#00ffcc;font-weight:800");
 }
 
 /* ============================================================
