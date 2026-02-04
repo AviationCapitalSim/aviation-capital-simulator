@@ -628,7 +628,6 @@ function renderIntegritySnapshot() {
   });
    
 /* ============================================================
-   /* ============================================================
    📦 PHASE 2.8 — FULL SNAPSHOT EXPORT (READ ONLY)
    ============================================================ */
 
@@ -703,9 +702,7 @@ function renderIntegritySnapshot() {
     alert("📦 ACS Snapshot generado.\nRevisa la consola.");
   });
 
-})();   // ← CIERRA SOLO ESTE BLOQUE
-
-   ============================================================ */
+})(); // ← CIERRE CORRECTO Y ÚNICO
 
 (function ACS_SnapshotDiff(){
 
