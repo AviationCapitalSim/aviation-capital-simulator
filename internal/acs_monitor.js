@@ -619,7 +619,82 @@ function renderIntegritySnapshot() {
     console.log(snapshot);
     console.groupEnd();
 
-    // guardado temporal (opcional)
+    localStorage.setItem(
+      "ACS_SNAPSHOT_LAST",
+      JSON.stringify(snapshot, null, 2)
+    );
+
+    alert("📦 ACS Snapshot generado.\nRevisa la consola.");
+  });
+   
+/* ============================================================
+   /* ============================================================
+   📦 PHASE 2.8 — FULL SNAPSHOT EXPORT (READ ONLY)
+   ============================================================ */
+
+(function initSnapshotExport(){
+
+  const btn = document.getElementById("btnRefresh");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+
+    const snapshot = {
+      meta: {
+        generated_at: new Date().toISOString(),
+        dev: localStorage.getItem("ACS_DEV") === "true",
+        version: "ACS-BETA"
+      },
+
+      time: (() => {
+        const t = window.ACS_TIME_CURRENT;
+        return t instanceof Date ? {
+          utc: t.toUTCString(),
+          year: t.getUTCFullYear(),
+          month: t.getUTCMonth() + 1,
+          day: t.getUTCDate(),
+          timestamp: t.getTime()
+        } : null;
+      })(),
+
+      hr: (() => {
+        try {
+          return {
+            data: JSON.parse(localStorage.getItem("ACS_HR")),
+            payroll: Number(localStorage.getItem("ACS_HR_PAYROLL") || 0),
+            autoHire: localStorage.getItem("autoHire") === "true",
+            autoSalary: localStorage.getItem("ACS_AutoSalary") === "ON"
+          };
+        } catch {
+          return null;
+        }
+      })(),
+
+      finance: (() => {
+        try {
+          return window.ACS_Finance
+            ? window.ACS_Finance
+            : JSON.parse(localStorage.getItem("ACS_Finance"));
+        } catch {
+          return null;
+        }
+      })(),
+
+      ops: (() => {
+        try {
+          return {
+            routes: JSON.parse(localStorage.getItem("scheduleItems")) || []
+          };
+        } catch {
+          return null;
+        }
+      })()
+    };
+
+    console.group("📦 ACS SNAPSHOT EXPORT");
+    console.log(snapshot);
+    console.groupEnd();
+
     localStorage.setItem(
       "ACS_SNAPSHOT_LAST",
       JSON.stringify(snapshot, null, 2)
@@ -628,5 +703,103 @@ function renderIntegritySnapshot() {
     alert("📦 ACS Snapshot generado.\nRevisa la consola.");
   });
 
+})();   // ← CIERRA SOLO ESTE BLOQUE
+
+   ============================================================ */
+
+(function ACS_SnapshotDiff(){
+
+  const STORAGE_KEY_LAST = "ACS_SNAPSHOT_LAST";
+  const STORAGE_KEY_PREV = "ACS_SNAPSHOT_PREV";
+
+  const out = document.getElementById("outWarnings");
+  if (!out) return;
+
+  function diffObjects(prev, curr, path = "") {
+    let diffs = [];
+
+    if (typeof prev !== typeof curr) {
+      diffs.push(`TYPE CHANGED @ ${path}`);
+      return diffs;
+    }
+
+    if (typeof curr !== "object" || curr === null) {
+      if (prev !== curr) {
+        diffs.push(`CHANGED @ ${path}: ${prev} → ${curr}`);
+      }
+      return diffs;
+    }
+
+    const keys = new Set([
+      ...Object.keys(prev || {}),
+      ...Object.keys(curr || {})
+    ]);
+
+    keys.forEach(key => {
+      const p = prev ? prev[key] : undefined;
+      const c = curr ? curr[key] : undefined;
+      const newPath = path ? `${path}.${key}` : key;
+
+      if (p === undefined && c !== undefined) {
+        diffs.push(`ADDED @ ${newPath}`);
+      } else if (p !== undefined && c === undefined) {
+        diffs.push(`REMOVED @ ${newPath}`);
+      } else {
+        diffs = diffs.concat(diffObjects(p, c, newPath));
+      }
+    });
+
+    return diffs;
+  }
+
+  try {
+
+    const lastRaw = localStorage.getItem(STORAGE_KEY_LAST);
+    if (!lastRaw) {
+      out.textContent = "🧪 SNAPSHOT DIFF\n\nNo snapshot available yet.";
+      return;
+    }
+
+    const last = JSON.parse(lastRaw);
+    const prevRaw = localStorage.getItem(STORAGE_KEY_PREV);
+    const prev = prevRaw ? JSON.parse(prevRaw) : null;
+
+    let lines = [];
+    lines.push("🧪 SNAPSHOT DIFF");
+    lines.push("");
+
+    if (!prev) {
+      lines.push("ℹ️ No previous snapshot found.");
+      lines.push("This is the first baseline snapshot.");
+    } else {
+
+      const diffs = diffObjects(prev, last);
+
+      if (diffs.length === 0) {
+        lines.push("✅ NO CHANGES DETECTED");
+      } else {
+        lines.push(`⚠️ CHANGES DETECTED: ${diffs.length}`);
+        lines.push("");
+        diffs.slice(0, 25).forEach(d => lines.push("• " + d));
+        if (diffs.length > 25) {
+          lines.push(`… ${diffs.length - 25} more changes`);
+        }
+      }
+    }
+
+    // mover snapshot actual a PREV para el próximo ciclo
+    localStorage.setItem(STORAGE_KEY_PREV, lastRaw);
+
+    out.textContent = lines.join("\n");
+
+    console.group("🧪 ACS SNAPSHOT DIFF");
+    console.log("PREVIOUS:", prev);
+    console.log("CURRENT :", last);
+    console.groupEnd();
+
+  } catch (err) {
+    out.textContent = "❌ SNAPSHOT DIFF FAILED\n" + err.message;
+    console.error("Snapshot diff error", err);
+  }
+
 })();
-   
