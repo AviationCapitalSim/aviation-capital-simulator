@@ -266,4 +266,112 @@
   setTimeout(renderTimeSnapshot, 300);
   setTimeout(renderFinanceSnapshot, 400);
 
+/* ============================================================
+   🩺 PHASE 3.1 — ACS HEALTH SCORE ENGINE (READ ONLY)
+   ============================================================ */
+
+(function ACS_HealthScore(){
+
+  const score = {
+    total: 0,
+    max: 100,
+    details: [],
+    status: "UNKNOWN"
+  };
+
+  /* =========================
+     TIME ENGINE (20)
+     ========================= */
+  if (window.ACS_TIME_CURRENT instanceof Date) {
+    score.total += 20;
+  } else {
+    score.details.push("⏱️ Time Engine inactive");
+  }
+
+  /* =========================
+     HR HEALTH (20)
+     ========================= */
+  let HR = null;
+  try { HR = JSON.parse(localStorage.getItem("ACS_HR")); } catch {}
+
+  if (HR) {
+    let understaff = false;
+    Object.values(HR).forEach(d => {
+      if (d.required > 0 && d.staff < d.required) understaff = true;
+    });
+
+    if (!understaff) {
+      score.total += 20;
+    } else {
+      score.details.push("🧑‍✈️ HR understaffed");
+    }
+  } else {
+    score.details.push("🧑‍✈️ HR data missing");
+  }
+
+  /* =========================
+     FINANCE HEALTH (20)
+     ========================= */
+  let fin = null;
+  try {
+    fin = window.ACS_Finance || JSON.parse(localStorage.getItem("ACS_Finance"));
+  } catch {}
+
+  if (fin) {
+    if (Number(fin.profit) >= 0) {
+      score.total += 20;
+    } else {
+      score.details.push("💰 Finance negative profit");
+    }
+  } else {
+    score.details.push("💰 Finance data missing");
+  }
+
+  /* =========================
+     OPS HEALTH (20)
+     ========================= */
+  let routes = null;
+  try { routes = JSON.parse(localStorage.getItem("scheduleItems")); } catch {}
+
+  if (routes && routes.length > 0) {
+    const active = routes.filter(r => r.status === "ACTIVE").length;
+    if (active > 0) {
+      score.total += 20;
+    } else {
+      score.details.push("🛫 No active routes");
+    }
+  } else {
+    score.details.push("🛫 Routes missing");
+  }
+
+  /* =========================
+     HR ⇄ FINANCE CONSISTENCY (20)
+     ========================= */
+  const payrollHR = Number(localStorage.getItem("ACS_HR_PAYROLL") || 0);
+  const salaryCost = Number(fin?.cost?.salaries || 0);
+
+  if (payrollHR === salaryCost && payrollHR > 0) {
+    score.total += 20;
+  } else {
+    score.details.push("⚖️ HR ⇄ Finance mismatch");
+  }
+
+  /* =========================
+     STATUS LABEL
+     ========================= */
+  if (score.total >= 80) score.status = "GREEN";
+  else if (score.total >= 50) score.status = "YELLOW";
+  else score.status = "RED";
+
+  /* =========================
+     EXPORT (READ ONLY)
+     ========================= */
+  window.ACS_HEALTH_SCORE = score;
+
+  console.group("🩺 ACS HEALTH SCORE");
+  console.log(score);
+  console.groupEnd();
+
+})();
+   
 })(); // 🔒 CIERRE FINAL ÚNICO Y CORRECTO
