@@ -893,6 +893,49 @@ tr:nth-child(even) {
   filter: brightness(1.1);
 }
 
+/* ============================================================
+   🎨 ACS — SALARY & MORALE COLOR SYSTEM (MAQUILLAJE ONLY)
+   ============================================================ */
+
+/* 💰 SALARIOS — siempre verde */
+.salary {
+  color: #00ff88 !important;
+  font-weight: 700;
+  text-shadow: 0 0 6px rgba(0,255,136,0.35);
+}
+
+/* 😊 MORAL BASE */
+.morale {
+  font-weight: 700;
+}
+
+/* ===== SEMÁFORO DE MORALE ===== */
+.morale-green {
+  color: #00ff88;
+  text-shadow: 0 0 6px rgba(0,255,136,0.35);
+}
+
+.morale-yellow {
+  color: #ffd84d;
+  text-shadow: 0 0 6px rgba(255,216,77,0.35);
+}
+
+.morale-orange {
+  color: #ff9f43;
+  text-shadow: 0 0 6px rgba(255,159,67,0.35);
+}
+
+.morale-red {
+  color: #ff4d4d;
+  text-shadow: 0 0 8px rgba(255,77,77,0.45);
+}
+
+/* KPI Average Morale */
+#kpiAverageMorale {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+       
 </style>
 </head>
 
@@ -1247,7 +1290,7 @@ function loadDepartments() {
         }
       }
     }
-
+       
     rows.innerHTML += `
   <tr>
     <td>${dep.name}</td>
@@ -1255,7 +1298,9 @@ function loadDepartments() {
     <td class="${requiredClass}">${requiredText}</td>
     <td class="salary ${dep.salaryStatus === "lagging" ? "salary-lagging" : (dep.salaryStatus === "review" ? "salary-review" : "salary-ok")}">
      $${dep.salary.toLocaleString()}</td>
-    <td class="morale">${dep.morale}%</td>
+    <td class="morale morale-green" data-morale="${dep.morale}">
+    ${dep.morale}%
+    </td>
 
    <td>
 
@@ -1312,6 +1357,16 @@ function loadDepartments() {
 
   });
 
+/* ============================================================
+   🎯 APPLY MORALE COLORS — POST RENDER (UI ONLY)
+   ============================================================ */
+
+const moraleCells = rows.querySelectorAll("[data-morale]");
+moraleCells.forEach(cell => {
+  const value = Number(cell.dataset.morale);
+  ACS_applyMoraleColor(value, cell);
+});
+     
     /* ============================================================
      🟧 A7.2 — AUTO HIRE EXECUTION (POST REQUIRED CALC)
      ------------------------------------------------------------
@@ -1365,6 +1420,31 @@ try {
 }
 
 /* ============================================================
+   🎯 ACS — MORALE COLOR ENGINE (UI ONLY)
+   ============================================================ */
+
+function ACS_applyMoraleColor(value, el) {
+  if (!el) return;
+
+  el.classList.remove(
+    "morale-green",
+    "morale-yellow",
+    "morale-orange",
+    "morale-red"
+  );
+
+  if (value >= 97) {
+    el.classList.add("morale-green");
+  } else if (value >= 90) {
+    el.classList.add("morale-yellow");
+  } else if (value >= 80) {
+    el.classList.add("morale-orange");
+  } else {
+    el.classList.add("morale-red");
+  }
+}
+     
+/* ============================================================
    === HR KPI UPDATE — SAFE CORE (ANTI-NULL / ANTI-NaN) ========
    ============================================================ */
 
@@ -1406,7 +1486,10 @@ function HR_updateKPI() {
 
   if (staffBox)   staffBox.textContent   = totalStaff;
   if (payrollBox) payrollBox.textContent = `$${Math.round(totalPayroll)}`;
-  if (moraleBox)  moraleBox.textContent  = `${avgMorale}%`;
+  if (moraleBox) {
+  moraleBox.textContent = `${avgMorale}%`;
+  ACS_applyMoraleColor(avgMorale, moraleBox);
+ }
 
   console.log(
     "%c📊 HR KPI OK",
