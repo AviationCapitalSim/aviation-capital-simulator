@@ -513,130 +513,56 @@ function ACS_HR_calcDynamic(dep) {
     return Math.round(base * moraleFactor * bonusFactor * seniority);
 }
 
-
 /* ============================================================
-   RECÁLCULO GENERAL (se mantiene intacto + FIX anti-null/meta)
+   🟧 HR RECALCULATE ALL — PAYROLL ONLY (FIXED)
+   ------------------------------------------------------------
+   • NO modifica salarios
+   • SOLO calcula costos y payroll
    ============================================================ */
 
 function ACS_HR_recalculateAll() {
 
-    const hr = ACS_HR_load();
-    const auto = localStorage.getItem("ACS_AutoSalary") === "ON";
+  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+  let totalPayroll = 0;
 
-    let payroll = 0;
-    const year = window.ACS_getYear ? ACS_getYear() : 1940;
+  Object.values(HR).forEach(dep => {
+    if (!dep || !dep.salary || !dep.count) return;
+    totalPayroll += dep.salary * dep.count;
+  });
 
-    Object.keys(hr).forEach(id => {
-
-        const dep = hr[id];
-
-        // ✅ FIX CRÍTICO: ignora entradas no-departamento (ej: payroll numérico)
-        if (!dep || typeof dep !== "object") return;
-
-        // Dinámico SIEMPRE se calcula
-        dep.dynamic_salary = ACS_HR_calcDynamic(dep);
-
-        if (auto) {
-
-            // Re-interpretar dinámico para PILOTOS por tamaño
-            if (id.startsWith("pilots_")) {
-
-                let size="medium";
-                if(id==="pilots_small") size="small";
-                if(id==="pilots_medium") size="medium";
-                if(id==="pilots_large") size="large";
-                if(id==="pilots_vlarge") size="vlarge";
-
-                const base = ACS_HR_getPilotSalarySized(year, size);
-
-                dep.salary = Math.round(base * (dep.dynamic_salary / base));
-
-            } else {
-                dep.salary = dep.dynamic_salary;
-            }
-
-        } else {
-
-            // AutoSalary OFF → mantener histórico
-            if (id.startsWith("pilots_")) {
-
-                let size="medium";
-                if(id==="pilots_small") size="small";
-                if(id==="pilots_medium") size="medium";
-                if(id==="pilots_large") size="large";
-                if(id==="pilots_vlarge") size="vlarge";
-
-                dep.salary = ACS_HR_getPilotSalarySized(year, size);
-
-            } else {
-                dep.salary = ACS_HR_getBaseSalary(year, dep.base);
-            }
-        }
-
-        dep.payroll = dep.salary * dep.staff;
-
-        // years
-        if (!dep.years) dep.years = 0;
-
-        payroll += dep.payroll;
-    });
-
-    // ✅ NO meter payroll dentro del objeto HR (evita corrupción)
-    ACS_HR_save(hr);
-    localStorage.setItem("ACS_Payroll_Monthly", payroll);
-
-    return payroll;
+  localStorage.setItem("ACS_HR_PAYROLL", totalPayroll);
 }
 
 /* ============================================================
-   OVERRIDES — (Mantener pero reparado)
+   🟧 AUTO SALARY ENGINE — CANONICAL
+   ------------------------------------------------------------
+   • Corre SOLO si Auto Salary = ON
+   • Ajusta por época / año
+   • NO se ejecuta en loops
    ============================================================ */
-   
-const __hr_hire = ACS_HR_hire;
-ACS_HR_hire = function(d, amount){
-    __hr_hire(d, amount);
-    ACS_HR_recalculateAll();
-};
 
-const __hr_fire = ACS_HR_fire;
-ACS_HR_fire = function(d, amount){
-    __hr_fire(d, amount);
-    ACS_HR_recalculateAll();
-};
+function ACS_HR_runAutoSalaryEngine(year) {
 
-const __hr_adj = ACS_HR_adjustSalary;
-ACS_HR_adjustSalary = function(d, p){
-    __hr_adj(d, p);
-    ACS_HR_recalculateAll();
-};
+  const auto = localStorage.getItem("ACS_AutoSalary");
+  if (auto !== "ON") return;
 
+  const HR = JSON.parse(localStorage.getItem("ACS_HR") || {});
+  if (!HR) return;
 
-/* ============================================================
-   LISTENER DE CAMBIO DE AÑO — Reparado
-   ============================================================ */
-let __HR_lastYear = null;
+  Object.entries(HR).forEach(([id, dep]) => {
 
-registerTimeListener((time) => {
+    if (!dep || !dep.base || !dep.count) return;
 
-    const year = time.getUTCFullYear();
-
-    if (__HR_lastYear === null) __HR_lastYear = year;
-
-    if (year !== __HR_lastYear) {
-
-        const hr = ACS_HR_load();
-        Object.values(hr).forEach(dep => dep.years = (dep.years || 0) + 1);
-        ACS_HR_save(hr);
-
-        // Ejecutar salarios históricos
-        ACS_HR_applyHistoricalSalaries();
-
-        // Recalcular payroll
-        ACS_HR_recalculateAll();
+    if (id.startsWith("pilots_")) {
+      const size = dep.size || "small";
+      dep.salary = ACS_HR_getPilotSalarySized(year, size);
+    } else {
+      dep.salary = ACS_HR_getBaseSalary(year, dep.base);
     }
+  });
 
-    __HR_lastYear = year;
-});
+  localStorage.setItem("ACS_HR", JSON.stringify(HR));
+}
 
 /* ============================================================
    5) CLASSIFY AIRCRAFT (Sin cambios)
