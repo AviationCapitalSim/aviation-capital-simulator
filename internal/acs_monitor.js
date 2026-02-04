@@ -176,50 +176,67 @@ function renderHRSnapshot() {
   write(outHR, lines.join("\n"));
 }
 
-
 /* ============================================================
-   💰 PHASE 3 — FINANCE LEDGER SNAPSHOT (READ ONLY)
+   💰 PHASE 2.3 — FINANCE LEDGER SNAPSHOT (READ ONLY)
    ============================================================ */
+
 function renderFinanceSnapshot() {
+
+  const out = document.getElementById("outFinance");
+  if (!out) return;
 
   let lines = [];
 
-  const raw = localStorage.getItem("ACS_FINANCE");
+  const f = window.ACS_Finance || (() => {
+    try {
+      return JSON.parse(localStorage.getItem("ACS_Finance"));
+    } catch {
+      return null;
+    }
+  })();
 
-  if (!raw) {
+  if (!f) {
     lines.push("STATUS: ❌ ACS_FINANCE not found");
-    write(outFinance, lines.join("\n"));
-    return;
-  }
-
-  let f;
-  try {
-    f = JSON.parse(raw);
-  } catch (e) {
-    lines.push("STATUS: ❌ ACS_FINANCE corrupted JSON");
-    write(outFinance, lines.join("\n"));
+    lines.push("Finance engine not loaded or storage missing.");
+    out.textContent = lines.join("\n");
     return;
   }
 
   lines.push("STATUS: OK");
-  lines.push(`CAPITAL  : $${(f.capital || 0).toLocaleString()}`);
-  lines.push(`REVENUE  : $${(f.revenue || 0).toLocaleString()}`);
-  lines.push(`EXPENSES : $${(f.expenses || 0).toLocaleString()}`);
-  lines.push(`PROFIT   : $${(f.profit || 0).toLocaleString()}`);
+  lines.push("");
+  lines.push("TOTALS:");
+  lines.push(`CAPITAL        : $${Number(f.capital || 0).toLocaleString()}`);
+  lines.push(`REVENUE (MONTH): $${Number(f.revenue || 0).toLocaleString()}`);
+  lines.push(`EXPENSES (MON): $${Number(f.expenses || 0).toLocaleString()}`);
+  lines.push(`PROFIT (MONTH): $${Number(f.profit || 0).toLocaleString()}`);
 
   lines.push("");
-  lines.push("CHECKS:");
+  lines.push("COST BREAKDOWN:");
 
-  const calcProfit = (f.revenue || 0) - (f.expenses || 0);
+  if (f.cost) {
+    Object.entries(f.cost).forEach(([k, v]) => {
+      lines.push(`- ${k.padEnd(22)} : $${Number(v || 0).toLocaleString()}`);
+    });
+  } else {
+    lines.push("⚠️ No cost structure found");
+  }
 
-  lines.push(
-    calcProfit === f.profit
-      ? "✔ Profit consistent"
-      : `❌ Profit mismatch (calc: ${calcProfit})`
-  );
+  lines.push("");
+  lines.push("META:");
+  lines.push(`CURRENT MONTH : ${f.current_month || "N/A"}`);
+  lines.push(`HISTORY ENTRIES: ${(f.history || []).length}`);
 
-  write(outFinance, lines.join("\n"));
+  out.textContent = lines.join("\n");
 }
+
+/* 🔄 Refresh button */
+const __btnRefreshFinance = document.getElementById("btnRefresh");
+if (__btnRefreshFinance) {
+  __btnRefreshFinance.addEventListener("click", renderFinanceSnapshot);
+}
+
+/* ▶ Auto-render */
+setTimeout(renderFinanceSnapshot, 400);
 
 /* ============================================================
    🛫 PHASE 4 — OPS / ROUTES SNAPSHOT (READ ONLY)
