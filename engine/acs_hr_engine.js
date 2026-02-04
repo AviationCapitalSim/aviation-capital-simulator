@@ -533,11 +533,17 @@ function ACS_HR_recalculateAll() {
   let totalPayroll = 0;
 
   Object.values(HR).forEach(dep => {
-    if (!dep || !dep.salary || !dep.count) return;
-    totalPayroll += dep.salary * dep.count;
+    if (!dep || typeof dep.staff !== "number" || typeof dep.salary !== "number") return;
+    totalPayroll += dep.staff * dep.salary;
   });
 
+  totalPayroll = Math.round(totalPayroll);
+
+  // 🔴 FUENTE CANÓNICA PARA FINANCE
   localStorage.setItem("ACS_HR_PAYROLL", totalPayroll);
+
+  // 🔔 Avisar a Finance / UI
+  window.dispatchEvent(new Event("ACS_HR_UPDATED"));
 }
 
 /* ============================================================
