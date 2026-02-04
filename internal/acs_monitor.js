@@ -239,6 +239,100 @@ if (__btnRefreshFinance) {
 setTimeout(renderFinanceSnapshot, 400);
 
 /* ============================================================
+   🧑‍✈️ PHASE 2.4 — HR ⇄ FINANCE CONSISTENCY CHECK
+   ============================================================ */
+
+function renderHRFinanceConsistency() {
+
+  const out = document.getElementById("outWarnings");
+  if (!out) return;
+
+  let lines = [];
+  let warnings = 0;
+
+  const HR = (() => {
+    try { return JSON.parse(localStorage.getItem("ACS_HR")); }
+    catch { return null; }
+  })();
+
+  const payrollHR = Number(localStorage.getItem("ACS_HR_PAYROLL") || 0);
+
+  const f = window.ACS_Finance || (() => {
+    try { return JSON.parse(localStorage.getItem("ACS_Finance")); }
+    catch { return null; }
+  })();
+
+  lines.push("HR ⇄ FINANCE CONSISTENCY");
+  lines.push("");
+
+  /* =========================
+     HR CHECK
+     ========================= */
+  if (!HR) {
+    lines.push("❌ HR data missing");
+    warnings++;
+  } else {
+    const staffTotal = Object.values(HR).reduce((s,d)=>s+(d.staff||0),0);
+    lines.push(`✔ HR Departments : ${Object.keys(HR).length}`);
+    lines.push(`✔ HR Staff Total : ${staffTotal}`);
+    lines.push(`✔ HR Payroll     : $${payrollHR.toLocaleString()}`);
+  }
+
+  lines.push("");
+
+  /* =========================
+     FINANCE CHECK
+     ========================= */
+  if (!f) {
+    lines.push("❌ Finance data missing");
+    warnings++;
+  } else {
+    const salaryCost = Number(f.cost?.salaries || 0);
+    lines.push(`✔ Finance Salaries : $${salaryCost.toLocaleString()}`);
+
+    /* =========================
+       CROSS CHECK
+       ========================= */
+    if (salaryCost !== payrollHR) {
+      lines.push("⚠️ MISMATCH DETECTED");
+      lines.push(`   HR Payroll   : $${payrollHR.toLocaleString()}`);
+      lines.push(`   Finance Cost : $${salaryCost.toLocaleString()}`);
+      warnings++;
+    } else {
+      lines.push("✔ Payroll matches Finance salaries");
+    }
+  }
+
+  lines.push("");
+  lines.push("FLAGS:");
+
+  lines.push(
+    localStorage.getItem("autoHire") === "true"
+      ? "✔ AutoHire ENABLED"
+      : "• AutoHire OFF"
+  );
+
+  lines.push(
+    localStorage.getItem("ACS_AutoSalary") === "ON"
+      ? "⚠️ AutoSalary ON"
+      : "✔ AutoSalary OFF"
+  );
+
+  lines.push("");
+  lines.push(
+    warnings === 0
+      ? "✅ SYSTEM CONSISTENT"
+      : `⚠️ WARNINGS DETECTED: ${warnings}`
+  );
+
+  out.textContent = lines.join("\n");
+}
+
+/* ▶ Auto render */
+setTimeout(renderHRFinanceConsistency, 600);
+
+   
+/* ============================================================
    🛫 PHASE 4 — OPS / ROUTES SNAPSHOT (READ ONLY)
    ============================================================ */
 function renderOpsSnapshot() {
