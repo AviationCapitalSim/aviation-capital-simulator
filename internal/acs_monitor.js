@@ -86,11 +86,125 @@
   /* =========================
      INIT
      ========================= */
+   
   snapshotPlaceholder();
-
-  const btn = document.getElementById("btnRefresh");
-  if (btn) btn.addEventListener("click", renderTimeSnapshot);
-
+  renderHRSnapshot();
+  renderFinanceSnapshot();
+   
+ const btn = document.getElementById("btnRefresh");
+ if (btn) btn.addEventListener("click", () => {
   renderTimeSnapshot();
+  renderHRSnapshot();
+  renderFinanceSnapshot();
+});
 
 })();
+
+/* ============================================================
+   🧑‍✈️ PHASE 2.2 — HR LIVE STATE SNAPSHOT (READ ONLY)
+   ============================================================ */
+function renderHRSnapshot() {
+
+  let lines = [];
+
+  const hr = localStorage.getItem("ACS_HR");
+
+  if (!hr) {
+    lines.push("STATUS: ❌ ACS_HR not found");
+    write(outHR, lines.join("\n"));
+    return;
+  }
+
+  let HR;
+  try {
+    HR = JSON.parse(hr);
+  } catch (e) {
+    lines.push("STATUS: ❌ ACS_HR corrupted JSON");
+    write(outHR, lines.join("\n"));
+    return;
+  }
+
+  let totalStaff = 0;
+  let totalPayroll = 0;
+  let departments = 0;
+
+  Object.values(HR).forEach(dep => {
+    if (!dep || typeof dep.staff !== "number") return;
+    totalStaff += dep.staff;
+    totalPayroll += (dep.staff * (dep.salary || 0));
+    departments++;
+  });
+
+  lines.push("STATUS: OK");
+  lines.push(`DEPARTMENTS : ${departments}`);
+  lines.push(`TOTAL STAFF : ${totalStaff}`);
+  lines.push(`PAYROLL     : $${totalPayroll.toLocaleString()}`);
+
+  lines.push("");
+  lines.push("FLAGS:");
+
+  lines.push(
+    localStorage.getItem("autoHire") === "true"
+      ? "✔ AutoHire ENABLED"
+      : "• AutoHire OFF"
+  );
+
+  lines.push(
+    localStorage.getItem("ACS_AutoSalary") === "ON"
+      ? "✔ AutoSalary ENABLED"
+      : "• AutoSalary OFF"
+  );
+
+  write(outHR, lines.join("\n"));
+}
+
+/* ============================================================
+   💰 PHASE 3 — FINANCE LEDGER SNAPSHOT (READ ONLY)
+   ============================================================ */
+function renderFinanceSnapshot() {
+
+  let lines = [];
+
+  const raw = localStorage.getItem("ACS_FINANCE");
+
+  if (!raw) {
+    lines.push("STATUS: ❌ ACS_FINANCE not found");
+    write(outFinance, lines.join("\n"));
+    return;
+  }
+
+  let f;
+  try {
+    f = JSON.parse(raw);
+  } catch (e) {
+    lines.push("STATUS: ❌ ACS_FINANCE corrupted JSON");
+    write(outFinance, lines.join("\n"));
+    return;
+  }
+
+  lines.push("STATUS: OK");
+  lines.push(`CAPITAL  : $${(f.capital || 0).toLocaleString()}`);
+  lines.push(`REVENUE  : $${(f.revenue || 0).toLocaleString()}`);
+  lines.push(`EXPENSES : $${(f.expenses || 0).toLocaleString()}`);
+  lines.push(`PROFIT   : $${(f.profit || 0).toLocaleString()}`);
+
+  lines.push("");
+  lines.push("CHECKS:");
+
+  const calcProfit = (f.revenue || 0) - (f.expenses || 0);
+
+  lines.push(
+    calcProfit === f.profit
+      ? "✔ Profit consistent"
+      : `❌ Profit mismatch (calc: ${calcProfit})`
+  );
+
+  if (Array.isArray(f.history) && f.history.length > 0) {
+    const last = f.history[f.history.length - 1];
+    lines.push(`LAST CLOSE: ${last.month}`);
+  } else {
+    lines.push("• No monthly history yet");
+  }
+
+  write(outFinance, lines.join("\n"));
+}
