@@ -1520,8 +1520,15 @@ function HR_updateKPI() {
   if (payrollBox) payrollBox.textContent = `$${Math.round(totalPayroll)}`;
   if (moraleBox) {
   moraleBox.textContent = `${avgMorale}%`;
-  ACS_applyMoraleColor(avgMorale, moraleBox);
- }
+
+  // 🟢 Morale forzada a estado saludable (maquillaje only)
+  moraleBox.classList.remove(
+    "morale-yellow",
+    "morale-orange",
+    "morale-red"
+  );
+  moraleBox.classList.add("morale-green");
+}
 
   console.log(
     "%c📊 HR KPI OK",
