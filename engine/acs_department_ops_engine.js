@@ -1479,21 +1479,17 @@ function ACS_HR_applyAutoSalaryNormalization() {
     if (dep.salaryOverride === true || dep.salaryPolicy === "MANUAL") return;
 
     let targetSalary = 0;
+  
+    // ✈️ PILOTS — RESOLUCIÓN POR TAMAÑO (CANON)
+     
+     if (dep.base && dep.base.startsWith("pilot_") && typeof ACS_HR_getPilotSalarySized === "function") {
 
-    // ============================================================
-    // ✈️ Pilotos por tamaño (usa motor HR)
-    // ============================================================
-    if (String(id).startsWith("pilots_") && typeof ACS_HR_getPilotSalarySized === "function") {
+     const size = dep.base.replace("pilot_", "");
+     targetSalary = Math.round(
+     ACS_HR_getPilotSalarySized(currentYear, size)
+     );
 
-      let size = "medium";
-      if (id === "pilots_small")  size = "small";
-      if (id === "pilots_medium") size = "medium";
-      if (id === "pilots_large")  size = "large";
-      if (id === "pilots_vlarge") size = "vlarge";
-
-      targetSalary = Math.round(ACS_HR_getPilotSalarySized(currentYear, size));
-
-    } else {
+     } else {
 
       // ============================================================
       // 👔 Todos los demás: por BASE canónica del departamento
