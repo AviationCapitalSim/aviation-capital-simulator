@@ -1514,6 +1514,10 @@ function ACS_HR_applyAutoSalaryNormalization() {
 
   ACS_HR_save(HR);
 
+  if (typeof ACS_HR_syncSalaryToView === "function") {
+  ACS_HR_syncSalaryToView();
+}
+   
   if (typeof loadDepartments === "function") loadDepartments();
   if (typeof HR_updateKPI === "function") HR_updateKPI();
 
