@@ -1,9 +1,9 @@
 /* ============================================================
    🔒 ACS INTERNAL MONITOR JS — v0.1
    ------------------------------------------------------------
-   Phase 1:
-   - DEV gate (localStorage.ACS_DEV === "true")
-   - Render placeholders (no diagnostics yet)
+   Phase 1–2.1:
+   - DEV gate
+   - Time Engine snapshot (read-only)
    ============================================================ */
 
 (function(){
@@ -17,7 +17,6 @@
   if (devChip) devChip.textContent = `DEV: ${isDev ? "ENABLED" : "DISABLED"}`;
 
   if (!isDev) {
-    // acceso denegado → vuelve al home
     window.location.href = "../index.html";
     return;
   }
@@ -44,9 +43,54 @@
     write(outWarnings, "Waiting for Phase 2.");
   }
 
+  /* ============================================================
+     🕒 PHASE 2.1 — TIME ENGINE SNAPSHOT (READ ONLY)
+     ============================================================ */
+  function renderTimeSnapshot() {
+
+    let lines = [];
+
+    const t = window.ACS_TIME_CURRENT;
+
+    if (t instanceof Date && !isNaN(t)) {
+
+      lines.push("STATUS: OK");
+      lines.push(`UTC TIME : ${t.toUTCString()}`);
+      lines.push(`YEAR     : ${t.getUTCFullYear()}`);
+      lines.push(`TIMESTAMP: ${t.getTime()}`);
+
+    } else {
+
+      lines.push("STATUS: ⚠️ NOT READY");
+      lines.push("ACS_TIME_CURRENT is not a valid Date");
+    }
+
+    lines.push("");
+    lines.push("CHECKS:");
+
+    lines.push(
+      typeof registerTimeListener === "function"
+        ? "✔ registerTimeListener available"
+        : "❌ registerTimeListener missing"
+    );
+
+    lines.push(
+      typeof window.ACS_TIME_CURRENT !== "undefined"
+        ? "✔ ACS_TIME_CURRENT defined"
+        : "❌ ACS_TIME_CURRENT undefined"
+    );
+
+    write(outTime, lines.join("\n"));
+  }
+
+  /* =========================
+     INIT
+     ========================= */
   snapshotPlaceholder();
 
   const btn = document.getElementById("btnRefresh");
-  if (btn) btn.addEventListener("click", snapshotPlaceholder);
+  if (btn) btn.addEventListener("click", renderTimeSnapshot);
+
+  renderTimeSnapshot();
 
 })();
