@@ -228,32 +228,6 @@ window.ACS_registerIncome = function(payload){
 
   f.income.live_revenue += payload.revenue;
 
-  /* ============================================================
-     📦 MONTHLY CLOSE — RESET MONTH + HISTORY
-     ============================================================ */
-
-  const monthKey = ACS_getMonthKey(now);
-
-  if (f.current_month !== monthKey) {
-
-    if (f.current_month !== null) {
-      f.history.push({
-        month: f.current_month,
-        revenue: f.revenue || 0,
-        expenses: f.expenses || 0,
-        profit: (f.revenue || 0) - (f.expenses || 0),
-        cost: { ...f.cost }
-      });
-    }
-
-    f.revenue = 0;
-    f.expenses = 0;
-    f.profit = 0;
-
-    Object.keys(f.cost).forEach(k => f.cost[k] = 0);
-    f.current_month = monthKey;
-  }
-
   /* === TOTALS === */
   f.revenue  += payload.revenue;
   f.expenses += payload.costTotal || 0;
