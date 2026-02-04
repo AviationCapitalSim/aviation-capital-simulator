@@ -44,44 +44,59 @@
   }
 
   /* ============================================================
-     🕒 PHASE 2.1 — TIME ENGINE SNAPSHOT (READ ONLY)
-     ============================================================ */
-  function renderTimeSnapshot() {
+   🕒 PHASE 2.2 — TIME ENGINE LIVE SNAPSHOT (READ ONLY)
+   ============================================================ */
 
-    let lines = [];
+function renderTimeSnapshot() {
 
-    const t = window.ACS_TIME_CURRENT;
+  const out = document.getElementById("outTime");
+  if (!out) return;
 
-    if (t instanceof Date && !isNaN(t)) {
+  let lines = [];
 
-      lines.push("STATUS: OK");
-      lines.push(`UTC TIME : ${t.toUTCString()}`);
-      lines.push(`YEAR     : ${t.getUTCFullYear()}`);
-      lines.push(`TIMESTAMP: ${t.getTime()}`);
+  const t = window.ACS_TIME_CURRENT;
 
-    } else {
+  if (t instanceof Date && !isNaN(t)) {
 
-      lines.push("STATUS: ⚠️ NOT READY");
-      lines.push("ACS_TIME_CURRENT is not a valid Date");
-    }
+    lines.push("STATUS: OK");
+    lines.push(`UTC TIME : ${t.toUTCString()}`);
+    lines.push(`YEAR     : ${t.getUTCFullYear()}`);
+    lines.push(`MONTH    : ${t.getUTCMonth() + 1}`);
+    lines.push(`DAY      : ${t.getUTCDate()}`);
+    lines.push(`TIMESTAMP: ${t.getTime()}`);
 
-    lines.push("");
-    lines.push("CHECKS:");
+  } else {
 
-    lines.push(
-      typeof registerTimeListener === "function"
-        ? "✔ registerTimeListener available"
-        : "❌ registerTimeListener missing"
-    );
-
-    lines.push(
-      typeof window.ACS_TIME_CURRENT !== "undefined"
-        ? "✔ ACS_TIME_CURRENT defined"
-        : "❌ ACS_TIME_CURRENT undefined"
-    );
-
-    write(outTime, lines.join("\n"));
+    lines.push("STATUS: ⚠️ NOT READY");
+    lines.push("ACS_TIME_CURRENT is not a valid Date");
   }
+
+  lines.push("");
+  lines.push("CHECKS:");
+
+  lines.push(
+    typeof registerTimeListener === "function"
+      ? "✔ registerTimeListener available"
+      : "❌ registerTimeListener missing"
+  );
+
+  lines.push(
+    typeof window.ACS_TIME_CURRENT !== "undefined"
+      ? "✔ ACS_TIME_CURRENT defined"
+      : "❌ ACS_TIME_CURRENT undefined"
+  );
+
+  out.textContent = lines.join("\n");
+}
+
+/* 🔄 Botón Refresh Snapshot */
+const __btnRefreshTime = document.getElementById("btnRefresh");
+if (__btnRefreshTime) {
+  __btnRefreshTime.addEventListener("click", renderTimeSnapshot);
+}
+
+/* ▶ Auto-render al cargar (si el tiempo ya existe) */
+setTimeout(renderTimeSnapshot, 300);
 
   /* =========================
      INIT
