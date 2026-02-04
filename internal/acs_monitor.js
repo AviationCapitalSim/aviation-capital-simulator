@@ -88,14 +88,19 @@
      ========================= */
    
   snapshotPlaceholder();
+  renderTimeSnapshot();
   renderHRSnapshot();
   renderFinanceSnapshot();
-   
+  renderOpsSnapshot();
+  renderIntegritySnapshot();
+ 
  const btn = document.getElementById("btnRefresh");
  if (btn) btn.addEventListener("click", () => {
   renderTimeSnapshot();
   renderHRSnapshot();
   renderFinanceSnapshot();
+  renderOpsSnapshot();
+  renderIntegritySnapshot();
 });
 
 /* ============================================================
@@ -200,6 +205,75 @@ function renderFinanceSnapshot() {
 
   write(outFinance, lines.join("\n"));
 }
-   
+
+/* ============================================================
+   🛫 PHASE 4 — OPS / ROUTES SNAPSHOT (READ ONLY)
+   ============================================================ */
+function renderOpsSnapshot() {
+
+  let lines = [];
+
+  const raw = localStorage.getItem("scheduleItems");
+
+  if (!raw) {
+    lines.push("STATUS: ❌ No routes scheduled");
+    write(outOps, lines.join("\n"));
+    return;
+  }
+
+  let routes;
+  try {
+    routes = JSON.parse(raw);
+  } catch {
+    lines.push("STATUS: ❌ scheduleItems corrupted");
+    write(outOps, lines.join("\n"));
+    return;
+  }
+
+  const total = routes.length || 0;
+  const active = routes.filter(r => r.status === "ACTIVE").length;
+  const pending = routes.filter(r => r.status === "PENDING").length;
+
+  lines.push("STATUS: OK");
+  lines.push(`TOTAL ROUTES : ${total}`);
+  lines.push(`ACTIVE       : ${active}`);
+  lines.push(`PENDING      : ${pending}`);
+
+  write(outOps, lines.join("\n"));
+}
+/* ============================================================
+   ⚠️ PHASE 5 — INTEGRITY & WARNINGS
+   ============================================================ */
+function renderIntegritySnapshot() {
+
+  let lines = [];
+  let warnings = 0;
+
+  const hr = localStorage.getItem("ACS_HR");
+  const fin = localStorage.getItem("ACS_Finance");
+  const routes = localStorage.getItem("scheduleItems");
+
+  if (!hr) {
+    warnings++;
+    lines.push("❌ HR data missing");
+  }
+
+  if (!fin) {
+    warnings++;
+    lines.push("❌ Finance data missing");
+  }
+
+  if (!routes) {
+    warnings++;
+    lines.push("⚠️ No routes scheduled");
+  }
+
+  if (warnings === 0) {
+    lines.push("✔ SYSTEM INTEGRITY OK");
+  }
+
+  write(outWarnings, lines.join("\n"));
+}
+
 })();
 
