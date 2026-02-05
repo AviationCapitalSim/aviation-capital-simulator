@@ -86,6 +86,67 @@
       .card{ grid-column:span 12; }
     }
 
+/* ============================================================
+   🟡 PHASE 3.3 — SYSTEM HEALTH VISUAL (BADGE + BORDER)
+   ------------------------------------------------------------
+   Purpose:
+   - Indicador claro de estado (GREEN / YELLOW / RED)
+   - Borde izquierdo + badge superior derecho
+   - Estilo ACS / Qatar Luxury
+   ============================================================ */
+
+#healthPanel{
+  position:relative;
+  border-left:4px solid rgba(255,255,255,0.08);
+}
+
+/* ---- Badge base ---- */
+.health-badge{
+  position:absolute;
+  top:14px;
+  right:16px;
+  padding:6px 14px;
+  border-radius:999px;
+  font-size:11px;
+  letter-spacing:2px;
+  font-weight:700;
+  text-transform:uppercase;
+  backdrop-filter: blur(6px);
+  border:1px solid rgba(255,255,255,0.18);
+  background:rgba(255,255,255,0.06);
+  color:#E7EEF8;
+  box-shadow:0 0 10px rgba(0,0,0,0.35);
+}
+
+/* ---- GREEN ---- */
+#healthPanel.health-green{
+  border-left-color:#2ECC71;
+}
+#healthPanel.health-green .health-badge{
+  color:#2ECC71;
+  border-color:rgba(46,204,113,0.65);
+  box-shadow:0 0 14px rgba(46,204,113,0.35);
+}
+
+/* ---- YELLOW ---- */
+#healthPanel.health-yellow{
+  border-left-color:#F2C94C;
+}
+#healthPanel.health-yellow .health-badge{
+  color:#F2C94C;
+  border-color:rgba(242,201,76,0.65);
+  box-shadow:0 0 14px rgba(242,201,76,0.35);
+}
+
+/* ---- RED ---- */
+#healthPanel.health-red{
+  border-left-color:#EB5757;
+}
+#healthPanel.health-red .health-badge{
+  color:#EB5757;
+  border-color:rgba(235,87,87,0.65);
+  box-shadow:0 0 14px rgba(235,87,87,0.35);
+}
        
   </style>
 </head>
@@ -134,10 +195,16 @@
 <!-- ============================================================
      🩺 ACS HEALTH SCORE
      ============================================================ -->
+     
 <section class="card wide" id="healthPanel">
   <h2>🩺 SYSTEM HEALTH</h2>
+     
+  <!-- AGREGA ESTE BADGE JUSTO DEBAJO DEL H2 -->
+     
+  <div class="health-badge" id="healthBadge">—</div>
   <pre id="outHealth">Waiting...</pre>
 </section>
+
          
   <!-- JS del monitor -->
   <script src="./acs_monitor.js"></script>
