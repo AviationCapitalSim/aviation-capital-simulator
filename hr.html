@@ -416,17 +416,30 @@ function loadHRDashboard() {
       )
     : 100;
 
+    // =========================
+  // TOTAL PAYROLL (SAFE)
   // =========================
-  // TOTAL PAYROLL
-  // =========================
+     
   let payroll = 0;
+
+  // 1) Prefer engine total payroll (if available)
   if (typeof ACS_HR_getTotalPayroll === "function") {
     payroll = Number(ACS_HR_getTotalPayroll()) || 0;
+  }
+
+  // 2) Fallback: compute from state (staff * salary)
+  if (payroll <= 0 && departments.length) {
+    payroll = departments.reduce((sum, d) => {
+      const staff = Number(d.staff) || 0;
+      const salary = Number(d.salary) || 0;
+      return sum + (staff * salary);
+    }, 0);
   }
 
   // =========================
   // PAINT UI
   // =========================
+     
   document.getElementById("totalStaff").textContent = totalStaff;
   document.getElementById("totalStaff2").textContent = totalStaff;
 
