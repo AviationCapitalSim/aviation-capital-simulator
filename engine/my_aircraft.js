@@ -17,6 +17,20 @@
 const ACS_FLEET_KEY = "ACS_MyAircraft";
 
 /* ============================================================
+   🟧 MA-8.1 — MAINTENANCE CONSTANTS (CANONICAL)
+   ============================================================ */
+
+const ACS_MAINTENANCE_RULES = {
+  C_CHECK_MONTHS: 12,
+  D_CHECK_MONTHS: 96, // 8 años
+
+  USED_AIRCRAFT_AB_SERVICE_DAYS: 7,
+
+  C_CHECK_RECOVERY: 20,
+  D_CHECK_RECOVERY: 100
+};
+
+/* ============================================================
    🟦 C.1 — Cargar flota ACTIVA
    ============================================================ */
 
@@ -33,6 +47,29 @@ function getSimTime() {
     return new Date(window.ACS_getSimTime());
   }
   return new Date("1940-01-01T00:00:00Z");
+}
+
+/* ============================================================
+   🟧 MA-8.2 — MAINTENANCE DATE HELPERS
+   ============================================================ */
+
+function ACS_getNextCheckDate(lastDateISO, months) {
+  if (!lastDateISO) return null;
+  const d = new Date(lastDateISO);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  return d;
+}
+
+function ACS_getRemainingMonths(targetDate) {
+  if (!targetDate) return "—";
+
+  const now = getSimTime();
+
+  const diff =
+    (targetDate.getUTCFullYear() - now.getUTCFullYear()) * 12 +
+    (targetDate.getUTCMonth() - now.getUTCMonth());
+
+  return diff >= 0 ? `${diff} months` : "OVERDUE";
 }
 
 /* ============================================================
@@ -431,6 +468,37 @@ function ACS_getConditionLetter(percent) {
 }
 
 /* ============================================================
+   🟧 MA-8.3 — MAINTENANCE STATUS RESOLVER (READ ONLY)
+   ============================================================ */
+
+function ACS_resolveMaintenanceStatus(ac) {
+
+  const nextCDate = ACS_getNextCheckDate(
+    ac.lastCCheckDate,
+    ACS_MAINTENANCE_RULES.C_CHECK_MONTHS
+  );
+
+  const nextDDate = ACS_getNextCheckDate(
+    ac.lastDCheckDate,
+    ACS_MAINTENANCE_RULES.D_CHECK_MONTHS
+  );
+
+  return {
+    lastC: ac.lastCCheckDate
+      ? new Date(ac.lastCCheckDate).toISOString().substring(0,10)
+      : "—",
+
+    nextC: ACS_getRemainingMonths(nextCDate),
+
+    lastD: ac.lastDCheckDate
+      ? new Date(ac.lastDCheckDate).toISOString().substring(0,10)
+      : "—",
+
+    nextD: ACS_getRemainingMonths(nextDDate)
+  };
+}
+
+/* ============================================================
    🟦 C.3 — Render Full Fleet Table (Active + Pending)
    ============================================================ */
 
@@ -593,10 +661,13 @@ function openAircraftModal(reg) {
   document.getElementById("mCycles").textContent = ac.cycles;
   document.getElementById("mAge").textContent = ac.age || 0;
 
-  document.getElementById("mLastC").textContent = ac.lastC || "—";
-  document.getElementById("mNextC").textContent = ac.nextC || "—";
-  document.getElementById("mLastD").textContent = ac.lastD || "—";
-  document.getElementById("mNextD").textContent = ac.nextD || "—";
+  const m = ACS_resolveMaintenanceStatus(ac);
+
+  document.getElementById("mLastC").textContent = m.lastC;
+  document.getElementById("mNextC").textContent = m.nextC;
+  document.getElementById("mLastD").textContent = m.lastD;
+  document.getElementById("mNextD").textContent = m.nextD;
+
 
   // Los botones los dejamos desactivados (activarán en parte 2)
   document.getElementById("btnCcheck").disabled = true;
