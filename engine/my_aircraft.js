@@ -466,7 +466,11 @@ function renderFleetTable() {
   <td>${ac.hours}</td>
   <td>${ac.cycles}</td>
 
-  <td>${ACS_getConditionLetter(ac.conditionPercent)}</td>
+  <td>
+  ${typeof ac.conditionPercent === "number"
+    ? ac.conditionPercent + "%"
+    : "—"}
+</td>
 
   <td>${ac.nextC}</td>
   <td>${ac.nextD}</td>
