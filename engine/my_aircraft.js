@@ -692,6 +692,65 @@ function ACS_applyMaintenanceHold(ac) {
   return ac;
 }
 
+/* ============================================================
+   🟩 MA-8.6.D1 — MAINTENANCE EXECUTION ENGINE
+   ------------------------------------------------------------
+   Purpose:
+   - Ejecutar C o D Check (manual / automático)
+   - Resetear baseline
+   - Aplicar downtime
+   - Liberar avión al finalizar
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 05 FEB 2026
+   ============================================================ */
+
+function ACS_executeMaintenance(ac, type = "C") {
+  if (!ac || !type) return ac;
+
+  const now = getSimTime();
+
+  // Duraciones (días de simulación)
+  const C_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.C_CHECK_RECOVERY; // 20
+  const D_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.D_CHECK_RECOVERY; // 100
+
+  if (type === "C") {
+    // Reset baseline C
+    ac.baselineCHours = ac.hours;
+    ac.lastCCheckDate = now.toISOString();
+
+    ac.pendingCCheck = false;
+
+    ac.status = "Maintenance";
+    ac.maintenanceType = "C";
+    ac.maintenanceEndDate = new Date(
+      now.getTime() + C_DOWNTIME_DAYS * 24 * 60 * 60 * 1000
+    ).toISOString();
+  }
+
+  if (type === "D") {
+    // Reset baseline D (y C implícitamente)
+    ac.baselineDHours = ac.hours;
+    ac.baselineCHours = ac.hours;
+
+    ac.lastDCheckDate = now.toISOString();
+    ac.lastCCheckDate = now.toISOString();
+
+    ac.pendingDCheck = false;
+    ac.pendingCCheck = false;
+
+    ac.status = "Maintenance";
+    ac.maintenanceType = "D";
+    ac.maintenanceEndDate = new Date(
+      now.getTime() + D_DOWNTIME_DAYS * 24 * 60 * 60 * 1000
+    ).toISOString();
+  }
+
+  // Limpieza flags
+  ac.maintenanceHold = false;
+  ac.maintenanceOverdue = false;
+
+  return ac;
+}
 
 /* ============================================================
    🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
