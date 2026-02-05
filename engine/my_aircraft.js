@@ -613,17 +613,14 @@ function ACS_checkMaintenanceAutoTrigger(ac) {
 }
 
 /* ============================================================
-   🟦 MA-8.5.B — MAINTENANCE RESOLVER (C & D)
+   🟦 MA-8.5.B — MAINTENANCE RESOLVER (C & D) [READ-ONLY]
    ------------------------------------------------------------
    Purpose:
-   - Resolver estado de mantenimiento usando HORAS reales
-   - Convertir a DÍAS para UI
-   - Detectar OVERDUE y Maintenance Hold
+   - Resolver estado de mantenimiento usando baseline YA EXISTENTE
+   - Convertir horas → días para UI
+   - NO crea ni modifica baseline
    ------------------------------------------------------------
-   Assumptions:
-   - 1 día operativo = 8 horas de vuelo
-   ------------------------------------------------------------
-   Version: v1.0 | Date: 05 FEB 2026
+   Version: v1.1 | Date: 06 FEB 2026
    ============================================================ */
 
 function ACS_resolveMaintenanceStatus(ac) {
@@ -636,15 +633,7 @@ function ACS_resolveMaintenanceStatus(ac) {
     };
   }
 
-  // Intervalos estándar
-  const C_INTERVAL_HOURS = 1200;
-  const D_INTERVAL_HOURS = 6000;
-  const HOURS_PER_DAY = 8;
-
-  // Asegurar baseline
-  ac = ACS_applyMaintenanceBaseline(ac);
-
-  // Fallback de seguridad
+  // ❌ NO crear baseline aquí
   if (
     typeof ac.baselineCHours !== "number" ||
     typeof ac.baselineDHours !== "number"
@@ -657,26 +646,24 @@ function ACS_resolveMaintenanceStatus(ac) {
     };
   }
 
-  // Próximos checks en horas
+  const C_INTERVAL_HOURS = 1200;
+  const D_INTERVAL_HOURS = 6000;
+  const HOURS_PER_DAY = 8;
+
   const nextCHoursAt = ac.baselineCHours + C_INTERVAL_HOURS;
   const nextDHoursAt = ac.baselineDHours + D_INTERVAL_HOURS;
 
   const remainingCHours = nextCHoursAt - ac.hours;
   const remainingDHours = nextDHoursAt - ac.hours;
 
-  // Conversión a días (redondeo conservador)
   const nextC_days = Math.round(remainingCHours / HOURS_PER_DAY);
   const nextD_days = Math.round(remainingDHours / HOURS_PER_DAY);
-
-  // Overdue
-  const isCOverdue = nextC_days <= 0;
-  const isDOverdue = nextD_days <= 0;
 
   return {
     nextC_days,
     nextD_days,
-    isCOverdue,
-    isDOverdue
+    isCOverdue: nextC_days <= 0,
+    isDOverdue: nextD_days <= 0
   };
 }
 
