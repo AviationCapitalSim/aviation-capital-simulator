@@ -498,6 +498,55 @@ function ACS_getConditionLetter(percent) {
 }
 
 /* ============================================================
+   🟧 MA-8.5.A — MAINTENANCE BASELINE ENGINE (C & D)
+   ------------------------------------------------------------
+   Purpose:
+   - Crear baseline técnico de mantenimiento para aviones usados
+   - Basado en horas actuales (NO fechas reales)
+   - Ejecuta SOLO si el avión no tiene baseline previo
+   ------------------------------------------------------------
+   Logic:
+   - Interno en HORAS
+   - UI lo convertirá luego a DÍAS
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 05 FEB 2026
+   ============================================================ */
+
+function ACS_applyMaintenanceBaseline(ac) {
+  if (!ac) return ac;
+
+  // Si ya existe cualquier referencia de C o D, NO tocar
+  if (
+    ac.baselineCHours !== undefined ||
+    ac.baselineDHours !== undefined ||
+    ac.lastCCheckDate ||
+    ac.lastDCheckDate
+  ) {
+    return ac;
+  }
+
+  // Seguridad
+  if (typeof ac.hours !== "number") return ac;
+
+  // 🔧 Intervalos estándar (pueden refinarse luego por tipo/era)
+  const C_INTERVAL_HOURS = 1200;   // C-Check
+  const D_INTERVAL_HOURS = 6000;   // D-Check
+
+  // Calcular último múltiplo técnico
+  const baselineC = Math.floor(ac.hours / C_INTERVAL_HOURS) * C_INTERVAL_HOURS;
+  const baselineD = Math.floor(ac.hours / D_INTERVAL_HOURS) * D_INTERVAL_HOURS;
+
+  // Guardar baseline
+  ac.baselineCHours = baselineC;
+  ac.baselineDHours = baselineD;
+
+  // Flags informativos (opcional, útil para debug/UI)
+  ac.maintenanceBaselineApplied = true;
+
+  return ac;
+}
+
+/* ============================================================
    🟧 MA-8.3 — MAINTENANCE STATUS RESOLVER (READ ONLY)
    ============================================================ */
 
