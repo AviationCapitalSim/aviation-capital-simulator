@@ -198,7 +198,7 @@ function updatePendingDeliveries() {
        
   for (let i = 0; i < entry.qty; i++) {
      
-  /* ============================================================
+ /* ============================================================
    🟧 MYA-A1 — ASSIGN REGISTRATION ON FLEET ENTRY
    Source: ACS Registration Manager
    ============================================================ */
@@ -211,17 +211,47 @@ let newAircraft = {
   manufacturer: entry.manufacturer,
   model: entry.model,
   family: entry.family || "",
-  status: "Active",
-  hours: 0,
-  cycles: 0,
-  condition: 100,
+
+  /* ======================================================
+     🟧 MA-8.5 — DELIVERY & INITIAL MAINTENANCE STATE
+     ------------------------------------------------------
+     • Avión NUEVO  → Active inmediato, condición 100%
+     • Avión USADO  → Maintenance (A & B), 7 días
+     ====================================================== */
+  status: entry.isUsed ? "Maintenance" : "Active",
+
+  hours: entry.isUsed ? (entry.hours || 0) : 0,
+  cycles: entry.isUsed ? (entry.cycles || 0) : 0,
+
+  // Condición ya normalizada antes (A/B/C/D → %)
+  conditionPercent: entry.conditionPercent ?? 100,
+
   nextC: "—",
   nextD: "—",
- // Base: prioridad = base guardada en la COMPRA (entry) > base actual (resolver)
+
+  // Base: prioridad = base guardada en la COMPRA (entry) > base actual (resolver)
   base: (entry.baseIcao || entry.base || getCurrentBaseICAO()),
+
   deliveredDate: d.toISOString(),
   deliveryDate: null,
-  age: 0,
+  age: entry.age || 0,
+
+  /* ======================================================
+     🟧 MA-8.5 — REAL MAINTENANCE REFERENCES
+     ====================================================== */
+  lastCCheckDate: entry.lastCCheckDate || null,
+  lastDCheckDate: entry.lastDCheckDate || null,
+
+  // A & B service window for USED aircraft
+  abServiceEndDate: entry.isUsed
+    ? (() => {
+        const ab = new Date(d);
+        ab.setUTCDate(
+          ab.getUTCDate() + ACS_MAINTENANCE_RULES.USED_AIRCRAFT_AB_SERVICE_DAYS
+        );
+        return ab.toISOString();
+      })()
+    : null,
 
   /* ======================================================
      🛠 P5-A — B-CHECK INITIALIZATION (ON FLEET ENTRY)
@@ -693,6 +723,33 @@ function ensureEmptyRows() {
 }
 
 /* ============================================================
+   🟧 MA-8.6 — AUTO ACTIVATE AFTER A/B SERVICE
+   ============================================================ */
+
+function ACS_processABCompletion() {
+
+  const now = getSimTime();
+  let fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  let changed = false;
+
+  fleet.forEach(ac => {
+    if (
+      ac.status === "Maintenance" &&
+      ac.abServiceEndDate &&
+      new Date(ac.abServiceEndDate) <= now
+    ) {
+      ac.status = "Active";
+      delete ac.abServiceEndDate;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleet));
+  }
+}
+
+/* ============================================================
    === INITIALIZATION =========================================
    ============================================================ */
 
@@ -742,6 +799,8 @@ ACS_forceFleetBaseSync();
   // 2) Procesar entregas pendientes
   updatePendingDeliveries();
 
+  ACS_processABCompletion();
+   
   // 3) Filtros
   populateFilterOptions();
 
