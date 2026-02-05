@@ -546,6 +546,56 @@ function ACS_applyMaintenanceBaseline(ac) {
   return ac;
 }
 
+function ACS_getMaintenancePolicy() {
+  return {
+    autoC: localStorage.getItem("autoCcheck") === "true",
+    autoD: localStorage.getItem("autoDcheck") === "true"
+  };
+}
+
+/* ============================================================
+   🟦 MA-8.6.B — AUTO-EXECUTION HOOK (DAY-0 DETECTOR)
+   ------------------------------------------------------------
+   Purpose:
+   - Detectar llegada EXACTA a día 0 de C o D
+   - Consultar Settings (policy)
+   - Marcar evento pendiente de ejecución
+   ------------------------------------------------------------
+   Notes:
+   - NO ejecuta mantenimiento
+   - NO cambia baseline
+   - NO desbloquea avión
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 05 FEB 2026
+   ============================================================ */
+
+function ACS_checkMaintenanceAutoTrigger(ac) {
+  if (!ac) return ac;
+
+  const status = ACS_resolveMaintenanceStatus(ac);
+  const policy = ACS_getMaintenancePolicy();
+
+  // Inicializar flags si no existen
+  if (!ac.pendingCCheck) ac.pendingCCheck = false;
+  if (!ac.pendingDCheck) ac.pendingDCheck = false;
+
+  // 🔧 C CHECK — llega EXACTO a día 0
+  if (status.nextC_days === 0) {
+    if (policy.autoC) {
+      ac.pendingCCheck = true;
+    }
+  }
+
+  // 🔧 D CHECK — llega EXACTO a día 0
+  if (status.nextD_days === 0) {
+    if (policy.autoD) {
+      ac.pendingDCheck = true;
+    }
+  }
+
+  return ac;
+}
+
 /* ============================================================
    🟦 MA-8.5.B — MAINTENANCE RESOLVER (C & D)
    ------------------------------------------------------------
