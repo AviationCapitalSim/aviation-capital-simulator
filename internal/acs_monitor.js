@@ -253,6 +253,59 @@
 
   })();
 
+  /* ============================================================
+   🩺 PHASE 3.2 — HEALTH SCORE VISUAL PANEL (READ ONLY)
+   ============================================================ */
+
+function renderHealthPanel() {
+
+  const out = document.getElementById("outHealth");
+  if (!out) return;
+
+  const H = window.ACS_HEALTH_SCORE;
+  if (!H) {
+    out.textContent = "❌ HEALTH SCORE NOT AVAILABLE";
+    return;
+  }
+
+  let lines = [];
+
+  lines.push(`SCORE  : ${H.total} / ${H.max}`);
+  lines.push(`STATUS : ${H.status}`);
+  lines.push("");
+
+  if (Array.isArray(H.details) && H.details.length > 0) {
+    lines.push("ISSUES:");
+    H.details.forEach(d => lines.push(`- ${d}`));
+  } else {
+    lines.push("ISSUES:");
+    lines.push("✔ No active issues");
+  }
+
+  out.textContent = lines.join("\n");
+
+  // Visual state (no CSS dependency)
+  out.style.borderLeft =
+    H.status === "GREEN"  ? "4px solid #2ecc71" :
+    H.status === "YELLOW" ? "4px solid #f1c40f" :
+                            "4px solid #e74c3c";
+}
+
+/* ▶ Auto-render */
+setTimeout(renderHealthPanel, 500);
+
+/* 🔄 Re-render on snapshot refresh */
+(function bindHealthRefresh(){
+
+  const btn = document.getElementById("btnRefresh");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    setTimeout(renderHealthPanel, 300);
+  });
+
+})();
+   
   /* =========================
      INIT
      ========================= */
