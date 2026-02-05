@@ -31,6 +31,22 @@ const ACS_MAINTENANCE_RULES = {
 };
 
 /* ============================================================
+   🟦 MA-8.8.A — MAINTENANCE COST TABLE (ERA-BASED)
+   ------------------------------------------------------------
+   Cost unit: USD per seat
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 06 FEB 2026
+   ============================================================ */
+
+const ACS_MAINTENANCE_COSTS_BY_ERA = [
+  { from: 1940, to: 1959, C: 400,  D: 2000 },
+  { from: 1960, to: 1979, C: 700,  D: 3500 },
+  { from: 1980, to: 1999, C: 1000, D: 5000 },
+  { from: 2000, to: 2015, C: 1200, D: 6000 },
+  { from: 2016, to: 2026, C: 1500, D: 7500 }
+];
+
+/* ============================================================
    🟦 C.1 — Cargar flota ACTIVA
    ============================================================ */
 
@@ -701,7 +717,7 @@ function ACS_applyMaintenanceHold(ac) {
    - Aplicar downtime
    - Liberar avión al finalizar
    ------------------------------------------------------------
-   Version: v1.0 | Date: 05 FEB 2026
+   Version: v1.1 | Date: 06 FEB 2026
    ============================================================ */
 
 function ACS_executeMaintenance(ac, type = "C") {
@@ -709,9 +725,38 @@ function ACS_executeMaintenance(ac, type = "C") {
 
   const now = getSimTime();
 
+  // ⚠️ PROTECCIÓN: si ya está en mantenimiento, NO volver a ejecutar ni cobrar
+  if (ac.status === "Maintenance") {
+    return ac;
+  }
+
   // Duraciones (días de simulación)
   const C_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.C_CHECK_RECOVERY; // 20
   const D_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.D_CHECK_RECOVERY; // 100
+
+  /* ============================================================
+     🟧 MA-8.8.C — MAINTENANCE COST CHARGE (ON START)
+     ============================================================ */
+
+  const cost = ACS_calculateMaintenanceCost(ac, type);
+
+  if (cost > 0) {
+    // Hook a Finance (ledger-ready)
+    if (typeof ACS_registerExpense === "function") {
+      ACS_registerExpense({
+        category: "Maintenance",
+        subtype: `${type}-Check`,
+        aircraftId: ac.id,
+        registration: ac.registration,
+        amount: cost,
+        currency: "USD",
+        date: now.toISOString()
+      });
+    }
+
+    // Fallback visual / debug
+    ac.lastMaintenanceCost = cost;
+  }
 
   if (type === "C") {
     // Reset baseline C
@@ -750,6 +795,34 @@ function ACS_executeMaintenance(ac, type = "C") {
   ac.maintenanceOverdue = false;
 
   return ac;
+}
+
+/* ============================================================
+   🟩 MA-8.8.B — MAINTENANCE COST RESOLVER
+   ------------------------------------------------------------
+   Purpose:
+   - Calcular costo real de C / D por avión
+   - Basado en época + número de asientos
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 06 FEB 2026
+   ============================================================ */
+
+function ACS_calculateMaintenanceCost(ac, type = "C") {
+  if (!ac || !type) return 0;
+
+  const year = getSimTime().getUTCFullYear();
+  const seats = ac.seats || 0;
+
+  const era = ACS_MAINTENANCE_COSTS_BY_ERA.find(
+    e => year >= e.from && year <= e.to
+  );
+
+  if (!era) return 0;
+
+  const unitCost = era[type];
+  if (!unitCost) return 0;
+
+  return Math.round(unitCost * seats);
 }
 
 /* ============================================================
