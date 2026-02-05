@@ -66,6 +66,25 @@ function getSimTime() {
 }
 
 /* ============================================================
+   🟦 MA-MON1 — TIME TICK MONITOR (ONCE PER SIM DAY)
+   ------------------------------------------------------------
+   Purpose:
+   - Confirmar que el pipeline corre por día simulado
+   - Evitar spam por ticks/minutos
+   ============================================================ */
+
+function ACS_logMaintenanceTickOncePerDay() {
+  const now = getSimTime();
+  const day = now.toISOString().slice(0, 10); // YYYY-MM-DD
+  const key = "ACS_MA_LAST_LOG_DAY";
+
+  if (localStorage.getItem(key) === day) return;
+
+  localStorage.setItem(key, day);
+  console.log(`🕒 MA TICK OK — ${day} | fleet=${(fleet && fleet.length) || 0}`);
+}
+
+/* ============================================================
    🟧 MA-8.2 — MAINTENANCE DATE HELPERS
    ============================================================ */
 
@@ -1311,7 +1330,8 @@ if (typeof registerTimeListener === "function") {
 });
 
     saveFleet();
-
+    ACS_logMaintenanceTickOncePerDay();
+     
     // 2) Procesar entregas pendientes
     updatePendingDeliveries();
 
