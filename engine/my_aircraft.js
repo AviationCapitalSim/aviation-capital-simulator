@@ -36,25 +36,38 @@ function getSimTime() {
 }
 
 /* ============================================================
-   🟩 MYA-1 — BASE RESOLVER (ACS SINGLE SOURCE OF TRUTH)
+   🟩 MA-1 — BASE RESOLVER (ACS SINGLE SOURCE OF TRUTH)
+   ------------------------------------------------------------
+   Rule:
+   - MyAircraft NEVER invents base
+   - Base MUST come from choose_base (ACS_activeUser)
+   - No silent fallbacks
+   ------------------------------------------------------------
+   Version: v1.1 | Date: 05 FEB 2026
    ============================================================ */
+
 function getCurrentBaseICAO() {
 
-  // 1️⃣ FUENTE OFICIAL (NUEVA)
+  let user;
+
   try {
-    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-    if (user.base && user.base.icao) {
-      return user.base.icao.toUpperCase();
-    }
+    user = JSON.parse(localStorage.getItem("ACS_activeUser"));
   } catch (e) {
-    console.warn("Base resolver: ACS_activeUser error", e);
+    throw new Error("❌ Invalid ACS_activeUser JSON");
   }
 
-  // 2️⃣ LEGACY FALLBACKS (solo para compatibilidad)
-  const legacy = localStorage.getItem("ACS_baseICAO");
-  if (legacy && legacy.length === 4) return legacy.toUpperCase();
+  if (
+    !user ||
+    !user.base ||
+    !user.base.icao ||
+    user.base.icao.length !== 4
+  ) {
+    throw new Error(
+      "❌ COMPANY BASE NOT SET — choose_base.html must be completed first"
+    );
+  }
 
-  return "—";
+  return user.base.icao.toUpperCase();
 }
 
 /* ============================================================
