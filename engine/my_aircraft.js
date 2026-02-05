@@ -864,19 +864,36 @@ function ACS_applyDailyAging(ac) {
 /* ============================================================
    🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
    ------------------------------------------------------------
-   • Mantiene ac.nextC / ac.nextD consistentes con el resolver
-   • No cambia lógica de checks; solo refleja en UI
+   Fix:
+   - Evita undefined: usa nextC_days / nextD_days del resolver
+   - Convierte a strings jugables: "15 days" / "156 days overdue" / "—"
+   ------------------------------------------------------------
+   Version: v1.2 | Date: 06 FEB 2026
    ============================================================ */
+
 function ACS_applyMaintenanceComputedFields(ac) {
   if (!ac) return ac;
 
-  // Normaliza alias mínimo (por si la tabla depende de lastC/lastD antiguos)
+  // Compat: normaliza alias mínimos (legacy)
   if (!ac.lastCCheckDate && ac.lastC) ac.lastCCheckDate = ac.lastC;
   if (!ac.lastDCheckDate && ac.lastD) ac.lastDCheckDate = ac.lastD;
 
   const m = ACS_resolveMaintenanceStatus(ac);
-  ac.nextC = m.nextC;
-  ac.nextD = m.nextD;
+
+  // Guardar también numérico por si lo necesitas luego (UI / lógica)
+  ac.nextC_days = m.nextC_days;
+  ac.nextD_days = m.nextD_days;
+
+  const fmt = (v) => {
+    if (v === "—" || v === null || v === undefined) return "—";
+    if (typeof v !== "number") return "—";
+    if (v < 0) return `${Math.abs(v)} days overdue`;
+    return `${v} days`;
+  };
+
+  // Strings para la tabla (lo que renderFleetTable imprime)
+  ac.nextC = fmt(m.nextC_days);
+  ac.nextD = fmt(m.nextD_days);
 
   return ac;
 }
