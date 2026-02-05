@@ -253,42 +253,71 @@
 
   })();
 
-  /* ============================================================
-   🩺 PHASE 3.2 — HEALTH SCORE VISUAL PANEL (READ ONLY)
+ /* ============================================================
+   🩺 PHASE 3.3 — HEALTH SCORE PANEL (BADGE + BORDER)
+   ------------------------------------------------------------
+   Purpose:
+   - Renderizar Health Score global (window.ACS_HEALTH_SCORE)
+   - Aplicar visual state al panel (#healthPanel) + badge (#healthBadge)
+   - Mantener compatibilidad con fallback (borderLeft en <pre>)
+   ------------------------------------------------------------
+   Version: v1.2 | Date: 05 FEB 2026
    ============================================================ */
 
 function renderHealthPanel() {
 
-  const out = document.getElementById("outHealth");
+  const out   = document.getElementById("outHealth");
+  const panel = document.getElementById("healthPanel");
+  const badge = document.getElementById("healthBadge");
+
   if (!out) return;
 
   const H = window.ACS_HEALTH_SCORE;
+
+  // Reset visual state
+  if (panel) panel.classList.remove("health-green", "health-yellow", "health-red");
+  if (badge) badge.textContent = "—";
+  out.style.borderLeft = ""; // fallback reset
+
   if (!H) {
     out.textContent = "❌ HEALTH SCORE NOT AVAILABLE";
     return;
   }
 
-  let lines = [];
+  // Apply visual state (preferred: panel classes + badge)
+  if (panel && badge) {
+    if (H.status === "GREEN") {
+      panel.classList.add("health-green");
+      badge.textContent = "GREEN";
+    } else if (H.status === "YELLOW") {
+      panel.classList.add("health-yellow");
+      badge.textContent = "YELLOW";
+    } else {
+      panel.classList.add("health-red");
+      badge.textContent = "RED";
+    }
+  } else {
+    // Fallback (no CSS dependency) — keep your original behavior
+    out.style.borderLeft =
+      H.status === "GREEN"  ? "4px solid #2ecc71" :
+      H.status === "YELLOW" ? "4px solid #f1c40f" :
+                              "4px solid #e74c3c";
+  }
 
+  // Render text output
+  const lines = [];
   lines.push(`SCORE  : ${H.total} / ${H.max}`);
   lines.push(`STATUS : ${H.status}`);
   lines.push("");
 
+  lines.push("ISSUES:");
   if (Array.isArray(H.details) && H.details.length > 0) {
-    lines.push("ISSUES:");
     H.details.forEach(d => lines.push(`- ${d}`));
   } else {
-    lines.push("ISSUES:");
     lines.push("✔ No active issues");
   }
 
   out.textContent = lines.join("\n");
-
-  // Visual state (no CSS dependency)
-  out.style.borderLeft =
-    H.status === "GREEN"  ? "4px solid #2ecc71" :
-    H.status === "YELLOW" ? "4px solid #f1c40f" :
-                            "4px solid #e74c3c";
 }
 
 /* ▶ Auto-render */
