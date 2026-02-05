@@ -1162,8 +1162,27 @@ if (typeof registerTimeListener === "function") {
 
   registerTimeListener(() => {
 
-    // 1) Recargar flota
-    fleet = fleet.map(ac => ACS_applyMaintenanceComputedFields(ac));
+    /* ============================================================
+       🟩 MA-8.6.D — MAINTENANCE PIPELINE (TIME TICK)
+       ============================================================ */
+
+    fleet = fleet.map(ac => {
+
+      ac = ACS_applyMaintenanceBaseline(ac);
+      ac = ACS_applyMaintenanceHold(ac);
+      ac = ACS_checkMaintenanceAutoTrigger(ac);
+
+      // 🟩 AUTO / MANUAL MAINTENANCE EXECUTION
+      if (ac.pendingDCheck) {
+        ac = ACS_executeMaintenance(ac, "D");
+      } else if (ac.pendingCCheck) {
+        ac = ACS_executeMaintenance(ac, "C");
+      }
+
+      ac = ACS_applyMaintenanceComputedFields(ac);
+      return ac;
+    });
+
     saveFleet();
 
     // 2) Procesar entregas pendientes
