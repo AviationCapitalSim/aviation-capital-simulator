@@ -380,25 +380,53 @@
 <script src="engine/acs_department_ops_engine.js"></script>
      
 <script>
+     
 /* ============================================================
-   === HR DASHBOARD — DATA LOADER =============================
+   🟩 HR DASHBOARD — DATA LOADER (SAFE & OPS-READY)
+   ------------------------------------------------------------
+   Purpose:
+   - Cargar KPIs HR sin producir NaN
+   - Ser robusto aunque OPS aún no haya calculado
+   ------------------------------------------------------------
+   Version: v1.1 | Date: 05 FEB 2026
    ============================================================ */
+
 function loadHRDashboard() {
-  const hr = ACS_HR_load();
 
-  // Total staff
-  const totalStaff = Object.values(hr).reduce((sum, d) => sum + d.staff, 0);
+  const hr = ACS_HR_load() || {};
+  const departments = Object.values(hr);
 
-  // Average morale
-  const morale = Math.round(
-    Object.values(hr).reduce((sum, d) => sum + d.morale, 0) /
-    Object.values(hr).length
+  // =========================
+  // TOTAL STAFF
+  // =========================
+  const totalStaff = departments.reduce(
+    (sum, d) => sum + (Number(d.staff) || 0),
+    0
   );
 
-  // Total payroll
-  const payroll = ACS_HR_getTotalPayroll();
+  // =========================
+  // AVERAGE MORALE
+  // =========================
+  const morale = departments.length
+    ? Math.round(
+        departments.reduce(
+          (sum, d) => sum + (Number(d.morale) || 100),
+          0
+        ) / departments.length
+      )
+    : 100;
 
-  // Paint UI
+  // =========================
+  // TOTAL PAYROLL
+  // =========================
+  let payroll = 0;
+  if (typeof ACS_HR_getTotalPayroll === "function") {
+    payroll = Number(ACS_HR_getTotalPayroll()) || 0;
+  }
+
+  // =========================
+  // PAINT UI
+  // =========================
   document.getElementById("totalStaff").textContent = totalStaff;
   document.getElementById("totalStaff2").textContent = totalStaff;
 
@@ -412,8 +440,11 @@ function loadHRDashboard() {
     "$" + payroll.toLocaleString();
 }
 
-/* INIT */
+/* ============================================================
+   INIT
+   ============================================================ */
 window.addEventListener("DOMContentLoaded", () => {
+
   loadHRDashboard();
 
   if (typeof registerTimeListener === "function") {
