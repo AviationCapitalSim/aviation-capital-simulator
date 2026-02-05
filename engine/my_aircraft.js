@@ -913,13 +913,35 @@ function openAircraftModal(reg) {
   document.getElementById("mCycles").textContent = ac.cycles;
   document.getElementById("mAge").textContent = ac.age || 0;
 
-  // ✅ 5) Maintenance resolver (usa lastCCheckDate/lastDCheckDate ya normalizados)
-  const m = ACS_resolveMaintenanceStatus(ac);
+  /* ============================================================
+   🟧 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (DAYS)
+   ============================================================ */
 
-  document.getElementById("mLastC").textContent = m.lastC;
-  document.getElementById("mNextC").textContent = m.nextC;
-  document.getElementById("mLastD").textContent = m.lastD;
-  document.getElementById("mNextD").textContent = m.nextD;
+const m = ACS_resolveMaintenanceStatus(ac);
+
+// C CHECK
+if (m.nextC_days === "—") {
+  document.getElementById("mLastC").textContent = "—";
+  document.getElementById("mNextC").textContent = "—";
+} else if (m.nextC_days < 0) {
+  document.getElementById("mLastC").textContent = "OVERDUE";
+  document.getElementById("mNextC").textContent = `${Math.abs(m.nextC_days)} days overdue`;
+} else {
+  document.getElementById("mLastC").textContent = "OK";
+  document.getElementById("mNextC").textContent = `${m.nextC_days} days`;
+}
+
+// D CHECK
+if (m.nextD_days === "—") {
+  document.getElementById("mLastD").textContent = "—";
+  document.getElementById("mNextD").textContent = "—";
+} else if (m.nextD_days < 0) {
+  document.getElementById("mLastD").textContent = "OVERDUE";
+  document.getElementById("mNextD").textContent = `${Math.abs(m.nextD_days)} days overdue`;
+} else {
+  document.getElementById("mLastD").textContent = "OK";
+  document.getElementById("mNextD").textContent = `${m.nextD_days} days`;
+}
 
   // (por ahora, como estaba)
   document.getElementById("btnCcheck").disabled = true;
