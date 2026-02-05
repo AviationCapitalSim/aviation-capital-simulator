@@ -1108,3 +1108,7 @@ function ACS_HR_bootstrap() {
    ============================================================ */
 
 ACS_HR_bootstrap();
+
+/* Declarar HR como listo SOLO después de bootstrap */
+localStorage.setItem("ACS_HR_INITIALIZED", "true");
+console.info("✅ HR INITIALIZED — SYSTEM FLAG SET");
