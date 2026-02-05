@@ -727,29 +727,37 @@ function checkDeliveries() {
       /* ENTREGAR */
       for (let i = 0; i < entry.qty; i++) {
         myFleet.push({
-          id: "AC-" + Date.now() + "-" + i,
-          model: entry.model,
-          manufacturer: entry.manufacturer,
-          year: now.getUTCFullYear(),
-          delivered: d.toISOString(),
-          image: entry.image,
-          status: "Active",
-          hours: 0,
-          cycles: 0,
-          condition: 100,
-          registration: (typeof ACS_generateRegistration === "function")
-            ? ACS_generateRegistration()
-            : ("N" + Math.floor(10000 + Math.random() * 90000)),
-          data: resolveAircraftDB().find(m =>
-            m.manufacturer === entry.manufacturer &&
-            m.model === entry.model
-          ) || {},
-          lastC: null,
-          lastD: null,
-          nextC: null,
-          nextD: null
-        });
-      }
+  id: "AC-" + Date.now() + "-" + i,
+  model: entry.model,
+  manufacturer: entry.manufacturer,
+  year: now.getUTCFullYear(),
+  delivered: d.toISOString(),
+  image: entry.image,
+  status: "Active",
+  hours: 0,
+  cycles: 0,
+
+  // 🟧 MA-3 — condición canónica
+  conditionPercent: ACS_normalizeConditionPercent(
+    entry.condition || "A"
+  ),
+
+  registration: (typeof ACS_generateRegistration === "function")
+    ? ACS_generateRegistration()
+    : ("N" + Math.floor(10000 + Math.random() * 90000)),
+
+  data: resolveAircraftDB().find(m =>
+    m.manufacturer === entry.manufacturer &&
+    m.model === entry.model
+  ) || {},
+
+  lastC: null,
+  lastD: null,
+  nextC: null,
+  nextD: null
+});
+
+}
 
       /* Reducir backlog */
       if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
