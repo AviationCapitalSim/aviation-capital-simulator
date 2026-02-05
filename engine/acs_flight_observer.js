@@ -410,3 +410,57 @@ if (typeof registerTimeListener === "function") {
     ACS_processDeferredRevenueQueue();
   });
 }
+
+/* ============================================================
+   🟧 MA-7 — AIRCRAFT WEAR ENGINE (POST-FLIGHT)
+   ------------------------------------------------------------
+   Purpose:
+   - Degradar conditionPercent tras cada vuelo
+   - Usado SOLO por Flight Observer
+   - NO toca SkyTrack Runtime
+   ------------------------------------------------------------
+   Rules:
+   - 0.15% por hora
+   - 0.10% por ciclo
+   - Variación ±0.05%
+   - Límite mínimo: 40%
+   ============================================================ */
+
+function ACS_applyWearAfterFlight(registration, flightHours = 0, cycles = 1) {
+
+  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const ac = fleet.find(a => a.registration === registration);
+
+  if (!ac) {
+    console.warn("MA-7: Aircraft not found:", registration);
+    return;
+  }
+
+  // Inicializar si no existe
+  if (typeof ac.conditionPercent !== "number") {
+    ac.conditionPercent = 100;
+  }
+
+  const wearFromHours  = flightHours * 0.15;
+  const wearFromCycles = cycles * 0.10;
+  const variation      = (Math.random() * 0.1) - 0.05; // ±0.05
+
+  let totalWear = wearFromHours + wearFromCycles + variation;
+
+  let newCondition = ac.conditionPercent - totalWear;
+
+  // Límite duro mínimo (sin C/D)
+  if (newCondition < 40) newCondition = 40;
+
+  ac.conditionPercent = Math.round(newCondition);
+
+  localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+
+  console.log("✈️ MA-7 wear applied:", {
+    reg: registration,
+    hours: flightHours,
+    cycles,
+    wear: totalWear.toFixed(2),
+    newCondition: ac.conditionPercent + "%"
+  });
+}
