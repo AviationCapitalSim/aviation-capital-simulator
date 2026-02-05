@@ -547,33 +547,70 @@ function ACS_applyMaintenanceBaseline(ac) {
 }
 
 /* ============================================================
-   🟧 MA-8.3 — MAINTENANCE STATUS RESOLVER (READ ONLY)
+   🟦 MA-8.5.B — MAINTENANCE RESOLVER (C & D)
+   ------------------------------------------------------------
+   Purpose:
+   - Resolver estado de mantenimiento usando HORAS reales
+   - Convertir a DÍAS para UI
+   - Detectar OVERDUE y Maintenance Hold
+   ------------------------------------------------------------
+   Assumptions:
+   - 1 día operativo = 8 horas de vuelo
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 05 FEB 2026
    ============================================================ */
 
 function ACS_resolveMaintenanceStatus(ac) {
+  if (!ac || typeof ac.hours !== "number") {
+    return {
+      nextC_days: "—",
+      nextD_days: "—",
+      isCOverdue: false,
+      isDOverdue: false
+    };
+  }
 
-  const nextCDate = ACS_getNextCheckDate(
-    ac.lastCCheckDate,
-    ACS_MAINTENANCE_RULES.C_CHECK_MONTHS
-  );
+  // Intervalos estándar
+  const C_INTERVAL_HOURS = 1200;
+  const D_INTERVAL_HOURS = 6000;
+  const HOURS_PER_DAY = 8;
 
-  const nextDDate = ACS_getNextCheckDate(
-    ac.lastDCheckDate,
-    ACS_MAINTENANCE_RULES.D_CHECK_MONTHS
-  );
+  // Asegurar baseline
+  ac = ACS_applyMaintenanceBaseline(ac);
+
+  // Fallback de seguridad
+  if (
+    typeof ac.baselineCHours !== "number" ||
+    typeof ac.baselineDHours !== "number"
+  ) {
+    return {
+      nextC_days: "—",
+      nextD_days: "—",
+      isCOverdue: false,
+      isDOverdue: false
+    };
+  }
+
+  // Próximos checks en horas
+  const nextCHoursAt = ac.baselineCHours + C_INTERVAL_HOURS;
+  const nextDHoursAt = ac.baselineDHours + D_INTERVAL_HOURS;
+
+  const remainingCHours = nextCHoursAt - ac.hours;
+  const remainingDHours = nextDHoursAt - ac.hours;
+
+  // Conversión a días (redondeo conservador)
+  const nextC_days = Math.round(remainingCHours / HOURS_PER_DAY);
+  const nextD_days = Math.round(remainingDHours / HOURS_PER_DAY);
+
+  // Overdue
+  const isCOverdue = nextC_days <= 0;
+  const isDOverdue = nextD_days <= 0;
 
   return {
-    lastC: ac.lastCCheckDate
-      ? new Date(ac.lastCCheckDate).toISOString().substring(0,10)
-      : "—",
-
-    nextC: ACS_getRemainingMonths(nextCDate),
-
-    lastD: ac.lastDCheckDate
-      ? new Date(ac.lastDCheckDate).toISOString().substring(0,10)
-      : "—",
-
-    nextD: ACS_getRemainingMonths(nextDDate)
+    nextC_days,
+    nextD_days,
+    isCOverdue,
+    isDOverdue
   };
 }
 
