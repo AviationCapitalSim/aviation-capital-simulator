@@ -320,109 +320,120 @@ setTimeout(renderHealthPanel, 500);
   setTimeout(renderFinanceSnapshot, 400);
 
 /* ============================================================
-   🩺 PHASE 3.1 — ACS HEALTH SCORE ENGINE (READ ONLY)
+   🩺 A3.2 — ACS HEALTH SCORE (CONTEXT-AWARE)
+   ------------------------------------------------------------
+   Rules:
+   - CRITICAL  → resta fuerte
+   - WARNING   → resta leve
+   - INFO      → NO resta (estado esperado)
    ============================================================ */
 
 (function ACS_HealthScore(){
 
-  const score = {
-    total: 0,
-    max: 100,
-    details: [],
-    status: "UNKNOWN"
-  };
+  const out = document.getElementById("outHealth");
+  if (!out) return;
+
+  let score = 100;
+
+  const critical = [];
+  const warnings = [];
+  const info = [];
 
   /* =========================
-     TIME ENGINE (20)
+     ⏱️ TIME ENGINE (INFO ONLY)
      ========================= */
-  if (window.ACS_TIME_CURRENT instanceof Date) {
-    score.total += 20;
-  } else {
-    score.details.push("⏱️ Time Engine inactive");
+  if (!(window.ACS_TIME_CURRENT instanceof Date)) {
+    info.push("⏱️ Time Engine not loaded in this module (expected)");
   }
 
   /* =========================
-     HR HEALTH (20)
+     🧑‍✈️ HR CHECKS
      ========================= */
   let HR = null;
   try { HR = JSON.parse(localStorage.getItem("ACS_HR")); } catch {}
 
-  if (HR) {
-    let understaff = false;
-    Object.values(HR).forEach(d => {
-      if (d.required > 0 && d.staff < d.required) understaff = true;
-    });
-
-    if (!understaff) {
-      score.total += 20;
-    } else {
-      score.details.push("🧑‍✈️ HR understaffed");
-    }
+  if (!HR) {
+    critical.push("🧑‍✈️ HR data missing");
+    score -= 30;
   } else {
-    score.details.push("🧑‍✈️ HR data missing");
+    Object.entries(HR).forEach(([k, d]) => {
+      if (d.required > 0 && d.staff < d.required) {
+        warnings.push(`🧑‍✈️ ${k} understaffed (${d.staff}/${d.required})`);
+        score -= 5;
+      }
+    });
   }
 
   /* =========================
-     FINANCE HEALTH (20)
+     💰 FINANCE CHECKS
      ========================= */
-  let fin = null;
+  let f = null;
   try {
-    fin = window.ACS_Finance || JSON.parse(localStorage.getItem("ACS_Finance"));
+    f = window.ACS_Finance || JSON.parse(localStorage.getItem("ACS_Finance"));
   } catch {}
 
-  if (fin) {
-    if (Number(fin.profit) >= 0) {
-      score.total += 20;
-    } else {
-      score.details.push("💰 Finance negative profit");
+  if (!f) {
+    critical.push("💰 Finance data missing");
+    score -= 30;
+  } else {
+    if (Number(f.profit) < 0) {
+      critical.push("💰 Finance negative profit");
+      score -= 20;
     }
-  } else {
-    score.details.push("💰 Finance data missing");
   }
 
   /* =========================
-     OPS HEALTH (20)
+     🛫 OPS / ROUTES
      ========================= */
-  let routes = null;
-  try { routes = JSON.parse(localStorage.getItem("scheduleItems")); } catch {}
+  let routes = [];
+  try { routes = JSON.parse(localStorage.getItem("scheduleItems")) || []; } catch {}
 
-  if (routes && routes.length > 0) {
-    const active = routes.filter(r => r.status === "ACTIVE").length;
-    if (active > 0) {
-      score.total += 20;
-    } else {
-      score.details.push("🛫 No active routes");
-    }
-  } else {
-    score.details.push("🛫 Routes missing");
+  if (routes.length === 0) {
+    warnings.push("🛫 No active routes");
+    score -= 10;
   }
 
   /* =========================
-     HR ⇄ FINANCE CONSISTENCY (20)
+     NORMALIZE SCORE
      ========================= */
-  const payrollHR = Number(localStorage.getItem("ACS_HR_PAYROLL") || 0);
-  const salaryCost = Number(fin?.cost?.salaries || 0);
+  score = Math.max(0, Math.min(100, score));
 
-  if (payrollHR === salaryCost && payrollHR > 0) {
-    score.total += 20;
-  } else {
-    score.details.push("⚖️ HR ⇄ Finance mismatch");
+  /* =========================
+     STATUS
+     ========================= */
+  let status = "GREEN";
+  if (score < 80) status = "YELLOW";
+  if (score < 40) status = "RED";
+
+  /* =========================
+     OUTPUT
+     ========================= */
+  let lines = [];
+  lines.push(`SCORE  : ${score} / 100`);
+  lines.push(`STATUS : ${status}`);
+  lines.push("");
+
+  if (critical.length) {
+    lines.push("CRITICAL:");
+    critical.forEach(i => lines.push(`- ${i}`));
+    lines.push("");
   }
 
-  /* =========================
-     STATUS LABEL
-     ========================= */
-  if (score.total >= 80) score.status = "GREEN";
-  else if (score.total >= 50) score.status = "YELLOW";
-  else score.status = "RED";
+  if (warnings.length) {
+    lines.push("WARNINGS:");
+    warnings.forEach(i => lines.push(`- ${i}`));
+    lines.push("");
+  }
 
-  /* =========================
-     EXPORT (READ ONLY)
-     ========================= */
-  window.ACS_HEALTH_SCORE = score;
+  if (info.length) {
+    lines.push("INFO:");
+    info.forEach(i => lines.push(`- ${i}`));
+  }
+
+  out.textContent = lines.join("\n");
 
   console.group("🩺 ACS HEALTH SCORE");
-  console.log(score);
+  console.log({ score, status, critical, warnings, info });
   console.groupEnd();
 
 })();
