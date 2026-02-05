@@ -753,6 +753,44 @@ function ACS_executeMaintenance(ac, type = "C") {
 }
 
 /* ============================================================
+   🟦 MA-8.7.A — DAILY AGING ENGINE (GROUND DETERIORATION)
+   ------------------------------------------------------------
+   Purpose:
+   - Aplicar envejecimiento técnico diario a aeronaves en tierra
+   - Simular corrosión, inspecciones, fluidos, ambiente
+   ------------------------------------------------------------
+   Rules:
+   - Solo si NO está en vuelo
+   - Solo si NO está en Maintenance
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 06 FEB 2026
+   ============================================================ */
+
+function ACS_applyDailyAging(ac) {
+  if (!ac) return ac;
+
+  // Estados excluidos
+  if (
+    ac.status === "Maintenance" ||
+    ac.status === "Pending Delivery"
+  ) {
+    return ac;
+  }
+
+  // Si el avión NO tiene flag de vuelo activo → aging
+  // (el runtime de vuelos podrá poner ac.isFlying = true)
+  if (!ac.isFlying) {
+    const DAILY_AGING_HOURS = 2;
+
+    if (typeof ac.hours === "number") {
+      ac.hours += DAILY_AGING_HOURS;
+    }
+  }
+
+  return ac;
+}
+
+/* ============================================================
    🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
    ------------------------------------------------------------
    • Mantiene ac.nextC / ac.nextD consistentes con el resolver
@@ -1168,20 +1206,21 @@ if (typeof registerTimeListener === "function") {
 
     fleet = fleet.map(ac => {
 
-      ac = ACS_applyMaintenanceBaseline(ac);
-      ac = ACS_applyMaintenanceHold(ac);
-      ac = ACS_checkMaintenanceAutoTrigger(ac);
+  ac = ACS_applyDailyAging(ac);
 
-      // 🟩 AUTO / MANUAL MAINTENANCE EXECUTION
-      if (ac.pendingDCheck) {
-        ac = ACS_executeMaintenance(ac, "D");
-      } else if (ac.pendingCCheck) {
-        ac = ACS_executeMaintenance(ac, "C");
-      }
+  ac = ACS_applyMaintenanceBaseline(ac);
+  ac = ACS_applyMaintenanceHold(ac);
+  ac = ACS_checkMaintenanceAutoTrigger(ac);
 
-      ac = ACS_applyMaintenanceComputedFields(ac);
-      return ac;
-    });
+  if (ac.pendingDCheck) {
+    ac = ACS_executeMaintenance(ac, "D");
+  } else if (ac.pendingCCheck) {
+    ac = ACS_executeMaintenance(ac, "C");
+  }
+
+  ac = ACS_applyMaintenanceComputedFields(ac);
+  return ac;
+});
 
     saveFleet();
 
