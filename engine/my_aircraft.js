@@ -686,10 +686,14 @@ function openAircraftModal(reg) {
     document.getElementById("mDeliveredDate").textContent = "—";
   }
 
+  // Condition (percent + letter)
+  if (typeof ac.conditionPercent === "number") {
+  const letter = ACS_getConditionLetter(ac.conditionPercent);
   document.getElementById("mCondition").textContent =
-  typeof ac.conditionPercent === "number"
-    ? `${ac.conditionPercent}% (${ACS_getConditionLetter(ac.conditionPercent)})`
-    : "—";
+    `${ac.conditionPercent}% (${letter})`;
+  } else {
+  document.getElementById("mCondition").textContent = "—";
+  }
    
   document.getElementById("mHours").textContent = ac.hours;
   document.getElementById("mCycles").textContent = ac.cycles;
