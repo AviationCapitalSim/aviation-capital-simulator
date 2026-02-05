@@ -425,23 +425,28 @@ function ACS_HR_applyBonus(deptID, percent) {
     return cost;
 }
 
-
 /* ============================================================
-   API: VISTA PARA TABLAS (department_control.html)
+   🟩 HR-B1 — DEPARTMENTS VIEW (STATE-DRIVEN, SAFE)
+   ------------------------------------------------------------
+   Source of Truth: ACS_HR_STATE
+   Compatible with: department_control.html
+   ------------------------------------------------------------
+   Version: v1.2 | Date: 05 FEB 2026
    ============================================================ */
+
 function ACS_HR_getDepartmentsView() {
 
-    const hr = ACS_HR_load();
+    const hr = ACS_HR_load() || {};
 
     return ACS_HR_DEPARTMENTS.map(d => {
 
-        const dep = hr[d.id];
+        // Si el departamento no existe aún en el estado → inicializarlo
+        if (!hr[d.id]) {
 
-        // 🔥 Protección total — si falta en localStorage, lo recrea
-        if (!dep) {
-            console.warn("⚠️ HR missing department:", d.id, "→ recreando…");
+            console.warn("⚠️ HR missing department:", d.id, "→ bootstrap");
 
             hr[d.id] = {
+                id: d.id,
                 name: d.name,
                 base: d.base,
                 staff: d.initial || 0,
@@ -454,31 +459,19 @@ function ACS_HR_getDepartmentsView() {
             };
 
             ACS_HR_save(hr);
-
-            return {
-                id: d.id,
-                name: d.name,
-                base: d.base,
-                staff: hr[d.id].staff,
-                required: hr[d.id].required,
-                morale: hr[d.id].morale,
-                salary: hr[d.id].salary,
-                payroll: hr[d.id].payroll
-            };
         }
 
-        const required =
-            (typeof dep.required === "number") ? dep.required : dep.staff;
+        const dep = hr[d.id];
 
         return {
-            id: d.id,
-            name: d.name,
-            base: d.base,
-            staff: dep.staff,
-            required: required,
-            morale: dep.morale,
-            salary: dep.salary,
-            payroll: dep.payroll
+            id: dep.id,
+            name: dep.name,
+            base: dep.base,
+            staff: Number(dep.staff) || 0,
+            required: Number(dep.required ?? dep.staff) || 0,
+            morale: Number(dep.morale) || 100,
+            salary: Number(dep.salary) || 0,
+            payroll: Number(dep.payroll) || 0
         };
     });
 }
