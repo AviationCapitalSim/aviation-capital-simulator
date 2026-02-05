@@ -686,7 +686,11 @@ function openAircraftModal(reg) {
     document.getElementById("mDeliveredDate").textContent = "—";
   }
 
-  document.getElementById("mCondition").textContent = ac.condition;
+  document.getElementById("mCondition").textContent =
+  typeof ac.conditionPercent === "number"
+    ? `${ac.conditionPercent}% (${ACS_getConditionLetter(ac.conditionPercent)})`
+    : "—";
+   
   document.getElementById("mHours").textContent = ac.hours;
   document.getElementById("mCycles").textContent = ac.cycles;
   document.getElementById("mAge").textContent = ac.age || 0;
