@@ -529,6 +529,26 @@ function ACS_resolveMaintenanceStatus(ac) {
 }
 
 /* ============================================================
+   🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
+   ------------------------------------------------------------
+   • Mantiene ac.nextC / ac.nextD consistentes con el resolver
+   • No cambia lógica de checks; solo refleja en UI
+   ============================================================ */
+function ACS_applyMaintenanceComputedFields(ac) {
+  if (!ac) return ac;
+
+  // Normaliza alias mínimo (por si la tabla depende de lastC/lastD antiguos)
+  if (!ac.lastCCheckDate && ac.lastC) ac.lastCCheckDate = ac.lastC;
+  if (!ac.lastDCheckDate && ac.lastD) ac.lastDCheckDate = ac.lastD;
+
+  const m = ACS_resolveMaintenanceStatus(ac);
+  ac.nextC = m.nextC;
+  ac.nextD = m.nextD;
+
+  return ac;
+}
+
+/* ============================================================
    🟦 C.3 — Render Full Fleet Table (Active + Pending)
    ============================================================ */
 
@@ -625,6 +645,7 @@ function populateFilterOptions() {
 }
 
 function passesFilters(ac) {
+   
   if (fModel.value && ac.model !== fModel.value) return false;
   if (fFamily.value && ac.family !== fFamily.value) return false;
   if (fStatus.value && ac.status !== fStatus.value) return false;
@@ -657,22 +678,52 @@ function passesFilters(ac) {
 
 const modal = document.getElementById("aircraftModal");
 
+/* ============================================================
+   🟧 MA-8.5.1 — MODAL FRESH READ + C/D NORMALIZER
+   ------------------------------------------------------------
+   Fix:
+   - El modal NO usa el objeto viejo en memoria.
+   - Siempre re-lee ACS_MyAircraft desde localStorage.
+   - Normaliza alias típicos de mantenimiento (por compatibilidad).
+   ============================================================ */
 function openAircraftModal(reg) {
-  const ac = fleet.find(a => a.registration === reg);
-  if (!ac) return;
 
+  // ✅ 1) SIEMPRE leer lo último desde localStorage
+  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  const acRaw = fleetLatest.find(a => a.registration === reg);
+  if (!acRaw) return;
+
+  // ✅ 2) Copia segura (no mutar directo el objeto de storage aquí)
+  const ac = { ...acRaw };
+
+  // ✅ 3) Normalización de campos C/D (por si vienen con nombres distintos)
+  // Soportados: lastCCheckDate / lastDCheckDate (canónico)
+  // Compat: lastC / lastD / maintenance.lastCCheckDate / maintenance.lastDCheckDate, etc.
+  if (!ac.lastCCheckDate) {
+    ac.lastCCheckDate =
+      ac.lastC ||
+      (ac.maintenance && (ac.maintenance.lastCCheckDate || ac.maintenance.lastC)) ||
+      null;
+  }
+  if (!ac.lastDCheckDate) {
+    ac.lastDCheckDate =
+      ac.lastD ||
+      (ac.maintenance && (ac.maintenance.lastDCheckDate || ac.maintenance.lastD)) ||
+      null;
+  }
+
+  // ✅ 4) Pintar modal (igual que tu UI actual)
   document.getElementById("modalTitle").textContent = `${ac.model} — ${ac.registration}`;
   document.getElementById("mReg").textContent = ac.registration;
   document.getElementById("mModel").textContent = ac.model;
   document.getElementById("mFamily").textContent = ac.family || "—";
   document.getElementById("mBase").textContent = ac.base || "—";
   document.getElementById("mStatus").textContent = ac.status;
-  
+
   // Delivery Date (si está pendiente)
   if (ac.status === "Pending Delivery" && ac.deliveryDate) {
     const d = new Date(ac.deliveryDate);
-    document.getElementById("mDeliveryDate").textContent =
-      d.toUTCString().substring(5, 16);
+    document.getElementById("mDeliveryDate").textContent = d.toUTCString().substring(5, 16);
   } else {
     document.getElementById("mDeliveryDate").textContent = "—";
   }
@@ -680,25 +731,24 @@ function openAircraftModal(reg) {
   // Delivered Date (si ya fue entregado)
   if (ac.deliveredDate) {
     const dd = new Date(ac.deliveredDate);
-    document.getElementById("mDeliveredDate").textContent =
-      dd.toUTCString().substring(5, 16);
+    document.getElementById("mDeliveredDate").textContent = dd.toUTCString().substring(5, 16);
   } else {
     document.getElementById("mDeliveredDate").textContent = "—";
   }
 
   // Condition (percent + letter)
   if (typeof ac.conditionPercent === "number") {
-  const letter = ACS_getConditionLetter(ac.conditionPercent);
-  document.getElementById("mCondition").textContent =
-    `${ac.conditionPercent}% (${letter})`;
+    const letter = ACS_getConditionLetter(ac.conditionPercent);
+    document.getElementById("mCondition").textContent = `${ac.conditionPercent}% (${letter})`;
   } else {
-  document.getElementById("mCondition").textContent = "—";
+    document.getElementById("mCondition").textContent = "—";
   }
-   
+
   document.getElementById("mHours").textContent = ac.hours;
   document.getElementById("mCycles").textContent = ac.cycles;
   document.getElementById("mAge").textContent = ac.age || 0;
 
+  // ✅ 5) Maintenance resolver (usa lastCCheckDate/lastDCheckDate ya normalizados)
   const m = ACS_resolveMaintenanceStatus(ac);
 
   document.getElementById("mLastC").textContent = m.lastC;
@@ -706,8 +756,7 @@ function openAircraftModal(reg) {
   document.getElementById("mLastD").textContent = m.lastD;
   document.getElementById("mNextD").textContent = m.nextD;
 
-
-  // Los botones los dejamos desactivados (activarán en parte 2)
+  // (por ahora, como estaba)
   document.getElementById("btnCcheck").disabled = true;
   document.getElementById("btnDcheck").disabled = true;
   document.getElementById("btnLog").disabled = true;
@@ -764,7 +813,8 @@ function ACS_processABCompletion() {
 document.addEventListener("DOMContentLoaded", () => {
 
   // 1) Recargar flota activa
-  fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  fleet = fleet.map(ac => ACS_applyMaintenanceComputedFields(ac));
+  saveFleet();
 
   // Normalize aircraft data (registration + maintenance fields)
   if (typeof ACS_normalizeAircraft === "function") {
@@ -854,7 +904,8 @@ if (typeof registerTimeListener === "function") {
   registerTimeListener(() => {
 
     // 1) Recargar flota
-    fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+    fleet = fleet.map(ac => ACS_applyMaintenanceComputedFields(ac));
+    saveFleet();
 
     // 2) Procesar entregas pendientes
     updatePendingDeliveries();
