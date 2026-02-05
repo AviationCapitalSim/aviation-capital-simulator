@@ -412,6 +412,25 @@ for (let dep in HR) {
 }
 
 /* ============================================================
+   🟧 MA-4 — CONDITION LETTER RESOLVER (UI ONLY)
+   ------------------------------------------------------------
+   Purpose:
+   - Traducir conditionPercent a A / B / C / D
+   - SOLO presentación (NO guarda datos)
+   ------------------------------------------------------------
+   Version: v1.0
+   ============================================================ */
+
+function ACS_getConditionLetter(percent) {
+  if (typeof percent !== "number") return "—";
+
+  if (percent >= 90) return "A";
+  if (percent >= 80) return "B";
+  if (percent >= 70) return "C";
+  return "D";
+}
+
+/* ============================================================
    🟦 C.3 — Render Full Fleet Table (Active + Pending)
    ============================================================ */
 
@@ -437,27 +456,27 @@ function renderFleetTable() {
     }
 
     row.innerHTML = `
-      <td>${ac.registration}</td>
-      <td>${ac.model}</td>
+  <td>${ac.registration}</td>
+  <td>${ac.model}</td>
 
-      <td class="${ac.status === "Pending Delivery" ? "pending-text" : "active-text"}">
-        ${ac.status}
-      </td>
+  <td class="${ac.status === "Pending Delivery" ? "pending-text" : "active-text"}">
+    ${ac.status}
+  </td>
 
-      <td>${ac.hours}</td>
-      <td>${ac.cycles}</td>
+  <td>${ac.hours}</td>
+  <td>${ac.cycles}</td>
 
-      <td>${ac.condition}${ac.condition !== "—" ? "%" : ""}</td>
+  <td>${ACS_getConditionLetter(ac.conditionPercent)}</td>
 
-      <td>${ac.nextC}</td>
-      <td>${ac.nextD}</td>
+  <td>${ac.nextC}</td>
+  <td>${ac.nextD}</td>
 
-      <td>${ac.base}</td>
+  <td>${ac.base}</td>
 
-      <td>
-        <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">View</button>
-      </td>
-    `;
+  <td>
+    <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">View</button>
+  </td>
+`;
 
     fleetTableBody.appendChild(row);
   });
