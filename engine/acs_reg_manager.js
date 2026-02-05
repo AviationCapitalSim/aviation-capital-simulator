@@ -18,13 +18,44 @@ function saveMyAircraft(arr) {
   localStorage.setItem("ACS_MyAircraft", JSON.stringify(arr));
 }
 
-/* ========= OBTENER PREFIJO POR PAÍS BASE ==================== */
+/* ============================================================
+   🟧 MA-2.0 — REG PREFIX RESOLVER (BASE-AWARE, SINGLE TRUTH)
+   ------------------------------------------------------------
+   Purpose:
+   - Derivar prefijo de matrícula desde la base REAL del usuario
+   - Prioridad:
+     1) ACS_activeUser.base (nuevo)
+     2) Legacy keys (ACS_baseCountry / ACS_baseICAO)
+     3) Legacy objects (ACS_Base / ACS_Airline)
+   ------------------------------------------------------------
+   Version: v2.1 | Date: 05 FEB 2026
+   ============================================================ */
+
 function getRegistrationPrefix() {
-  const airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}");
-  const base    = JSON.parse(localStorage.getItem("ACS_Base") || "{}");
 
-  const country = base.country || airline.country || "Unknown";
+  // 0) Load legacy objects (safe)
+  let airline = {};
+  let baseObj = {};
+  try { airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}"); } catch(e) {}
+  try { baseObj = JSON.parse(localStorage.getItem("ACS_Base") || "{}"); } catch(e) {}
 
+  // 1) Load activeUser (official new source)
+  let user = {};
+  try { user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}"); } catch(e) {}
+
+  // 2) Resolve base ICAO (strong signal)
+  const baseICAO =
+    (user && user.base && user.base.icao) ? String(user.base.icao).toUpperCase() :
+    (localStorage.getItem("ACS_baseICAO") ? String(localStorage.getItem("ACS_baseICAO")).toUpperCase() : "") ||
+    (baseObj && baseObj.icao ? String(baseObj.icao).toUpperCase() : "");
+
+  // 3) Resolve country name (fallback signal)
+  const country =
+    (user && user.base && (user.base.country || user.base.countryName)) ? (user.base.country || user.base.countryName) :
+    (localStorage.getItem("ACS_baseCountry") || "") ||
+    (baseObj.country || airline.country || "Unknown");
+
+  // 4) Prefix table by country name (your existing logic, preserved)
   const PREFIX_TABLE = {
     "United States": "N-",
     "Spain": "EC-",
@@ -51,7 +82,38 @@ function getRegistrationPrefix() {
     "Unknown": "XX-"
   };
 
-  return PREFIX_TABLE[country] || "XX-";
+  // 5) ICAO-based override (more reliable than legacy country strings)
+  //    Use first 2 letters when possible, else first 1 letter.
+  const ICAO_TO_PREFIX_2 = {
+    "LE": "EC-", // Spain
+    "LI": "I-",  // Italy
+    "LF": "F-",  // France
+    "ED": "D-",  // Germany
+    "EG": "G-",  // UK
+    "RJ": "JA-", // Japan (your format)
+    "FA": "ZS-", // South Africa
+    "SB": "PR-", // Brazil (simplified in your model)
+    "MM": "XA-", // Mexico
+    "SA": "LV-", // Argentina
+    "CC": "CC-", // Chile (not ICAO, kept only if you later use it)
+  };
+
+  const ICAO_TO_PREFIX_1 = {
+    "K": "N-",   // USA
+    "C": "C-",   // Canada
+    "Y": "VH-",  // Australia
+    "Z": "B-"    // China (simplified)
+  };
+
+  if (baseICAO && baseICAO.length === 4) {
+    const k2 = baseICAO.substring(0, 2);
+    const k1 = baseICAO.substring(0, 1);
+    if (ICAO_TO_PREFIX_2[k2]) return ICAO_TO_PREFIX_2[k2];
+    if (ICAO_TO_PREFIX_1[k1]) return ICAO_TO_PREFIX_1[k1];
+  }
+
+  // 6) Country-name fallback
+  return PREFIX_TABLE[country] || PREFIX_TABLE["Unknown"];
 }
 
 /* ========= VARIABLES DEL MODAL ============================== */
