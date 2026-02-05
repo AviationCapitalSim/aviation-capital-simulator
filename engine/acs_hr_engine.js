@@ -1036,3 +1036,82 @@ function ACS_HR_syncSalaryToView() {
     "color:#7CFFB2;font-weight:800"
   );
 }
+
+/* ============================================================
+   🟩 HR-A2 — HR BOOTSTRAP CORE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   Purpose:
+   - Garantizar que HR exista antes de ser usado
+   - Crear estructura mínima si no existe
+   - Ejecutarse SOLO una vez
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 05 FEB 2026
+   ============================================================ */
+
+function ACS_HR_bootstrap() {
+
+  let HR = null;
+
+  try {
+    HR = JSON.parse(localStorage.getItem("ACS_HR_STATE"));
+  } catch (e) {
+    HR = null;
+  }
+
+  // ================================
+  // CASO 1: HR YA EXISTE → salir
+  // ================================
+  if (HR && typeof HR === "object" && Object.keys(HR).length > 0) {
+    return;
+  }
+
+  console.log(
+    "%c🧩 HR BOOTSTRAP — INITIALIZING HR STATE",
+    "color:#ffb300;font-weight:700"
+  );
+
+  // ================================
+  // ESTRUCTURA MÍNIMA DEPARTAMENTAL
+  // ================================
+  HR = {
+
+    operations: {
+      id: "operations",
+      name: "Operations",
+      staff: 0,
+      salary: 120,
+      morale: 100
+    },
+
+    finance: {
+      id: "finance",
+      name: "Finance",
+      staff: 0,
+      salary: 140,
+      morale: 100
+    },
+
+    hr: {
+      id: "hr",
+      name: "Human Resources",
+      staff: 0,
+      salary: 110,
+      morale: 100
+    }
+
+  };
+
+  localStorage.setItem("ACS_HR_STATE", JSON.stringify(HR));
+
+  console.log(
+    "%c✅ HR BOOTSTRAP COMPLETE",
+    "color:#00ff88;font-weight:700",
+    HR
+  );
+}
+
+/* ============================================================
+   🟩 HR-A3 — AUTO BOOTSTRAP ON LOAD
+   ============================================================ */
+
+ACS_HR_bootstrap();
