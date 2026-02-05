@@ -948,9 +948,22 @@ function ACS_processABCompletion() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Recargar flota activa
-  fleet = fleet.map(ac => ACS_applyMaintenanceComputedFields(ac));
-  saveFleet();
+  /* ============================================================
+   🟨 MA-8.6.C — MAINTENANCE PIPELINE (TIME TICK)
+   ============================================================ */
+
+// 1) Recargar flota + pipeline de mantenimiento
+fleet = fleet.map(ac => {
+
+  ac = ACS_applyMaintenanceBaseline(ac);
+  ac = ACS_applyMaintenanceHold(ac);
+  ac = ACS_checkMaintenanceAutoTrigger(ac);
+  ac = ACS_applyMaintenanceComputedFields(ac);
+
+  return ac;
+});
+
+saveFleet();
 
   // Normalize aircraft data (registration + maintenance fields)
   if (typeof ACS_normalizeAircraft === "function") {
