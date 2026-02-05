@@ -108,6 +108,40 @@ const ACS_ENGINE_SPECS = {
 };
 
 /* ============================================================
+   🟧 MA-2 — CONDITION NORMALIZER (GLOBAL)
+   ------------------------------------------------------------
+   Purpose:
+   - Convertir condición de mercado (A/B/C/D) a porcentaje
+   - Usado SOLO al momento de BUY / LEASE
+   - Fuente canónica de conditionPercent
+   ------------------------------------------------------------
+   Version: v1.0 | Mode: SIMULATION CORE
+   ============================================================ */
+
+function ACS_normalizeConditionPercent(input) {
+
+  // ✔️ Si ya viene como porcentaje válido, se respeta
+  if (typeof input === "number" && input >= 0 && input <= 100) {
+    return Math.round(input);
+  }
+
+  // ✔️ Conversión desde condición de mercado
+  switch (String(input).toUpperCase()) {
+    case "A":
+      return Math.floor(92 + Math.random() * 7); // 92–98
+    case "B":
+      return Math.floor(82 + Math.random() * 7); // 82–89
+    case "C":
+      return Math.floor(72 + Math.random() * 7); // 72–79
+    case "D":
+      return Math.floor(60 + Math.random() * 9); // 60–69
+    default:
+      console.warn("Unknown condition input:", input, "→ fallback 85%");
+      return 85;
+  }
+}
+
+/* ============================================================
    0) SLOT CALENDAR SYSTEM — v1.0 (Backlog mensual real)
    ============================================================ */
 
