@@ -813,39 +813,50 @@ function ACS_calculateMaintenanceCost(ac, type = "C") {
 }
 
 /* ============================================================
-   🟦 MA-8.7.A — DAILY AGING ENGINE (GROUND DETERIORATION)
+   🟦 MA-8.7.A — DAILY AGING ENGINE (OPERATIONAL DAY SAFE)
    ------------------------------------------------------------
-   Purpose:
-   - Aplicar envejecimiento técnico diario a aeronaves en tierra
-   - Simular corrosión, inspecciones, fluidos, ambiente
+   Rule:
+   - Aging SOLO cuando cambia el día simulado
+   - NO depende de ticks / minutos / UI
    ------------------------------------------------------------
-   Rules:
-   - Solo si NO está en vuelo
-   - Solo si NO está en Maintenance
-   ------------------------------------------------------------
-   Version: v1.0 | Date: 06 FEB 2026
+   Version: v1.2 | Date: 06 FEB 2026
    ============================================================ */
 
 function ACS_applyDailyAging(ac) {
   if (!ac) return ac;
 
-  // Estados excluidos
+  // Estados que NO envejecen
   if (
     ac.status === "Maintenance" ||
+    ac.status === "Maintenance Hold" ||
     ac.status === "Pending Delivery"
   ) {
     return ac;
   }
 
-  // Si el avión NO tiene flag de vuelo activo → aging
-  // (el runtime de vuelos podrá poner ac.isFlying = true)
-  if (!ac.isFlying) {
-    const DAILY_AGING_HOURS = 2;
+  const now = getSimTime();
+  const simDay = now.toISOString().slice(0, 10); // YYYY-MM-DD
 
-    if (typeof ac.hours === "number") {
-      ac.hours += DAILY_AGING_HOURS;
-    }
+  // Inicializar marcador
+  if (!ac.lastOperationalDay) {
+    ac.lastOperationalDay = simDay;
+    return ac;
   }
+
+  // ⛔ Mismo día → NO hacer nada
+  if (ac.lastOperationalDay === simDay) {
+    return ac;
+  }
+
+  // ✅ Día operativo nuevo
+  // Solo aging si NO está volando
+  if (!ac.isFlying) {
+    const DAILY_AGING_HOURS = 0.5; // << MUY IMPORTANTE
+    ac.hours += DAILY_AGING_HOURS;
+  }
+
+  // Marcar día procesado
+  ac.lastOperationalDay = simDay;
 
   return ac;
 }
