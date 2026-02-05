@@ -374,15 +374,27 @@ setTimeout(renderHealthPanel, 500);
     return;
   }
 
-  /* -------------------------------
-     TIME ENGINE CHECK
-  -------------------------------- */
-  if (!window.ACS_TIME_ENGINE || !window.ACS_TIME_ENGINE.running) {
-    score -= 20;
-    details.push("⏱ Time Engine inactive");
-  } else {
-    details.push("⏱ Time Engine OK");
-  }
+ /* -------------------------------
+   PHASE 4 — TIME ENGINE CONTEXTUAL CHECK
+-------------------------------- */
+   
+const timeEngine = window.ACS_TIME_ENGINE;
+const isPaused   = localStorage.getItem("ACS_TIME_PAUSED") === "true";
+
+if (!timeEngine) {
+  score -= 25;
+  details.push("⏱ Time Engine missing");
+}
+else if (timeEngine.running === true) {
+  details.push("⏱ Time Engine running");
+}
+else if (timeEngine.running === false && isPaused) {
+  details.push("⏸ Time Engine paused (intentional)");
+}
+else {
+  score -= 20;
+  details.push("⏱ Time Engine inactive (unexpected)");
+}
 
   /* -------------------------------
      FINANCE CHECK
