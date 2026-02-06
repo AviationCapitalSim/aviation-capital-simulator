@@ -1070,16 +1070,19 @@ const modal = document.getElementById("aircraftModal");
 function openAircraftModal(reg) {
 
   // ✅ 1) SIEMPRE leer lo último desde localStorage
+   
   const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
   const acRaw = fleetLatest.find(a => a.registration === reg);
   if (!acRaw) return;
 
   // ✅ 2) Copia segura (no mutar directo el objeto de storage aquí)
+   
   const ac = { ...acRaw };
 
   // ✅ 3) Normalización de campos C/D (por si vienen con nombres distintos)
   // Soportados: lastCCheckDate / lastDCheckDate (canónico)
   // Compat: lastC / lastD / maintenance.lastCCheckDate / maintenance.lastDCheckDate, etc.
+   
   if (!ac.lastCCheckDate) {
     ac.lastCCheckDate =
       ac.lastC ||
@@ -1094,6 +1097,7 @@ function openAircraftModal(reg) {
   }
 
   // ✅ 4) Pintar modal (igual que tu UI actual)
+   
   document.getElementById("modalTitle").textContent = `${ac.model} — ${ac.registration}`;
   document.getElementById("mReg").textContent = ac.registration;
   document.getElementById("mModel").textContent = ac.model;
@@ -1102,6 +1106,7 @@ function openAircraftModal(reg) {
   document.getElementById("mStatus").textContent = ac.status;
 
   // Delivery Date (si está pendiente)
+   
   if (ac.status === "Pending Delivery" && ac.deliveryDate) {
     const d = new Date(ac.deliveryDate);
     document.getElementById("mDeliveryDate").textContent = d.toUTCString().substring(5, 16);
@@ -1110,6 +1115,7 @@ function openAircraftModal(reg) {
   }
 
   // Delivered Date (si ya fue entregado)
+   
   if (ac.deliveredDate) {
     const dd = new Date(ac.deliveredDate);
     document.getElementById("mDeliveredDate").textContent = dd.toUTCString().substring(5, 16);
@@ -1118,6 +1124,7 @@ function openAircraftModal(reg) {
   }
 
   // Condition (percent + letter)
+   
   if (typeof ac.conditionPercent === "number") {
     const letter = ACS_getConditionLetter(ac.conditionPercent);
     document.getElementById("mCondition").textContent = `${ac.conditionPercent}% (${letter})`;
@@ -1135,72 +1142,46 @@ function openAircraftModal(reg) {
 
 const m = ACS_resolveMaintenanceStatus(ac);
 
-// C CHECK
-if (m.nextC_days === "—") {
-  document.getElementById("mLastC").textContent = "—";
-  document.getElementById("mNextC").textContent = "—";
-} else if (m.nextC_days < 0) {
-  document.getElementById("mLastC").textContent = "OVERDUE";
-  document.getElementById("mNextC").textContent = `${Math.abs(m.nextC_days)} days overdue`;
-} else {
-  document.getElementById("mLastC").textContent = "OK";
-  document.getElementById("mNextC").textContent = `${m.nextC_days} days`;
-}
-
-// D CHECK
-if (m.nextD_days === "—") {
-  document.getElementById("mLastD").textContent = "—";
-  document.getElementById("mNextD").textContent = "—";
-} else if (m.nextD_days < 0) {
-  document.getElementById("mLastD").textContent = "OVERDUE";
-  document.getElementById("mNextD").textContent = `${Math.abs(m.nextD_days)} days overdue`;
-} else {
-  document.getElementById("mLastD").textContent = "OK";
-  document.getElementById("mNextD").textContent = `${m.nextD_days} days`;
-}
-
- /* ============================================================
-   🟩 MA-9.1 — MANUAL MAINTENANCE BUTTON ENABLE LOGIC
-   ------------------------------------------------------------
-   Rule:
-   - C button → solo si C está due o overdue
-   - D button → solo si D está due o overdue
-   - Nunca ambos a la vez
+/* ============================================================
+   🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (SAFE SCOPE)
    ============================================================ */
 
 const btnC = document.getElementById("btnCcheck");
 const btnD = document.getElementById("btnDcheck");
 
-// Reset seguro
-btnC.disabled = true;
-btnD.disabled = true;
+if (!btnC || !btnD) {
+  console.warn("⚠️ Maintenance buttons not found in modal DOM");
+} else {
 
-// ❌ Si el avión ya está en mantenimiento → nada manual
-if (ac.status === "Maintenance") {
-  // leave disabled
-}
-else if (m.isDOverdue || m.nextD_days === 0) {
+  // Reset absoluto
+  btnC.disabled = true;
+  btnD.disabled = true;
+
+  // ❌ Si ya está en mantenimiento → nada manual
+  if (ac.status === "Maintenance") {
+    // ambos quedan deshabilitados
+  }
   // 🔧 D tiene prioridad absoluta
-  btnD.disabled = false;
-}
-else if (m.isCOverdue || m.nextC_days === 0) {
-  btnC.disabled = false;
+  else if (m.isDOverdue || m.nextD_days === 0) {
+    btnD.disabled = false;
+  }
+  // 🔧 Luego C
+  else if (m.isCOverdue || m.nextC_days === 0) {
+    btnC.disabled = false;
+  }
+
+  // Bind manual (scope seguro)
+  btnC.onclick = () => {
+    ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+  };
+
+  btnD.onclick = () => {
+    ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+  };
 }
 
   modal.style.display = "flex";
 }
-
-/* ============================================================
-   🟩 MA-9.3 — BUTTON BINDING (MANUAL)
-   ============================================================ */
-
-btnC.onclick = () => {
-  ACS_confirmAndExecuteMaintenance(ac.registration, "C");
-};
-
-btnD.onclick = () => {
-  ACS_confirmAndExecuteMaintenance(ac.registration, "D");
-};
 
 function closeModal() { modal.style.display = "none"; }
 
