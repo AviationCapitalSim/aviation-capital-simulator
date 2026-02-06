@@ -922,6 +922,10 @@ function ACS_applyMaintenanceComputedFields(ac) {
   ac.nextC_days = m.nextC_days;
   ac.nextD_days = m.nextD_days;
 
+  // 🔴 FLAGS LÓGICOS (CLAVE PARA UI)
+  ac.nextC_overdue = m.isCOverdue;
+  ac.nextD_overdue = m.isDOverdue;
+
   const fmt = (v) => {
     if (v === "—" || v === null || v === undefined) return "—";
     if (typeof v !== "number") return "—";
@@ -961,30 +965,39 @@ function renderFleetTable() {
       row.classList.add("active-row");
     }
 
-    row.innerHTML = `
+  row.innerHTML = `
   <td>${ac.registration}</td>
   <td>${ac.model}</td>
 
-  <td class="${ac.status === "Pending Delivery" ? "pending-text" : "active-text"}">
-    ${ac.status}
+  <td>
+    <span class="status-badge status-${ac.status.replace(/\s+/g, "-").toLowerCase()}">
+      ${ac.status}
+    </span>
   </td>
 
   <td>${ac.hours}</td>
   <td>${ac.cycles}</td>
 
   <td>
-  ${typeof ac.conditionPercent === "number"
-    ? ac.conditionPercent + "%"
-    : "—"}
-</td>
+    ${typeof ac.conditionPercent === "number"
+      ? ac.conditionPercent + "%"
+      : "—"}
+  </td>
 
-  <td>${ac.nextC}</td>
-  <td>${ac.nextD}</td>
+  <td class="${ac.nextC_overdue ? "overdue-text" : ""}">
+    ${ac.nextC}
+  </td>
+
+  <td class="${ac.nextD_overdue ? "overdue-text" : ""}">
+    ${ac.nextD}
+  </td>
 
   <td>${ac.base}</td>
 
   <td>
-    <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">View</button>
+    <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">
+      View
+    </button>
   </td>
 `;
 
