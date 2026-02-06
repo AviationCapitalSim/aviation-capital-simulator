@@ -1199,43 +1199,7 @@ function openAircraftModal(reg) {
     paint(elNextD, `${m.nextD_days} days`);
   }
 
- /* ============================================================
-   🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE)
-   ============================================================ */
-
-const btnC = document.getElementById("btnCcheck");
-const btnD = document.getElementById("btnDcheck");
-
-if (btnC && btnD) {
-
-  // 🔄 Reset absoluto (CRÍTICO)
-  btnC.onclick = null;
-  btnD.onclick = null;
-  btnC.disabled = true;
-  btnD.disabled = true;
-
-  // ❌ Si ya está en mantenimiento → NO permitir iniciar otro
-  if (ac.status === "Maintenance") {
-    // ambos quedan deshabilitados
-  }
-
-  // 🔴 PRIORIDAD ABSOLUTA: D-CHECK
-  else if (m.isDOverdue || m.nextD_days === 0) {
-    btnD.disabled = false;
-    btnD.onclick = () => {
-      ACS_confirmAndExecuteMaintenance(ac.registration, "D");
-    };
-  }
-
-  // 🟡 SEGUNDO NIVEL: C-CHECK
-  else if (m.isCOverdue || m.nextC_days === 0) {
-    btnC.disabled = false;
-    btnC.onclick = () => {
-      ACS_confirmAndExecuteMaintenance(ac.registration, "C");
-    };
-  }
-}
-
+ 
   /* ============================================================
      🟧 MA-8.5.4 — SERVICE BOX (IN-PROGRESS)
      ============================================================ */
