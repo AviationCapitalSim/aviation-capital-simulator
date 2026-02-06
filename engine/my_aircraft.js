@@ -1263,35 +1263,45 @@ function openAircraftModal(reg) {
     if (box) box.style.display = "none";
   }
 
-  /* ============================================================
-     🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE)
-     ============================================================ */
+ /* ============================================================
+   🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE)
+   ============================================================ */
 
-  const btnC = document.getElementById("btnCcheck");
-  const btnD = document.getElementById("btnDcheck");
+let btnC = document.getElementById("btnCcheck");
+let btnD = document.getElementById("btnDcheck");
 
-  if (btnC && btnD) {
+if (btnC && btnD) {
 
-    // reset UI
-    btnC.disabled = true;
-    btnD.disabled = true;
+  // 🔁 Reset absoluto (crítico)
+  btnC.onclick = null;
+  btnD.onclick = null;
+  btnC.disabled = true;
+  btnD.disabled = true;
 
-    // si ya está en servicio -> no permitir iniciar otro
-    if (ac.status === "Maintenance") {
-      // ambos disabled
-    }
-    // prioridad D
-    else if (m.isDOverdue || m.nextD_days === 0) {
-      btnD.disabled = false;
-    }
-    // luego C
-    else if (m.isCOverdue || m.nextC_days === 0) {
-      btnC.disabled = false;
-    }
-
-    btnC.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "C");
-    btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+  // ❌ Si ya está en mantenimiento → no permitir iniciar otro
+  if (ac.status === "Maintenance") {
+    // ambos quedan deshabilitados
   }
+
+  // 🔧 Prioridad D
+  else if (m.isDOverdue || m.nextD_days === 0) {
+    btnD.disabled = false;
+  }
+
+  // 🔧 Luego C
+  else if (m.isCOverdue || m.nextC_days === 0) {
+    btnC.disabled = false;
+  }
+
+  // ✅ Bind seguro (NO redeclara const)
+  btnC.onclick = () => {
+    ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+  };
+
+  btnD.onclick = () => {
+    ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+  };
+}
    
   modal.style.display = "flex";
 }
