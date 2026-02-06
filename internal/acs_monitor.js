@@ -302,7 +302,6 @@ function runAll(){
   snapshotFinance();
   snapshotOps();
   snapshotIntegrity();
-  snapshotMyAircraft();
   snapshotHealth();
   snapshotMyAircraftFleet();
 }
