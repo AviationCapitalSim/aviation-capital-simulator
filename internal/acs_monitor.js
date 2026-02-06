@@ -177,41 +177,90 @@ function snapshotIntegrity(){
 }
 
 /* ============================================================
-   🛩 MY AIRCRAFT — PASSIVE READ (CRÍTICO)
+   🛩 A2.5 — MY AIRCRAFT AUDITOR (PASSIVE / VITAL)
+   ------------------------------------------------------------
+   Purpose:
+   - Auditoría CRÍTICA del estado de la flota
+   - SOLO lectura (localStorage)
+   - Detectar inconsistencias peligrosas
+   - NO renderiza listas, NO ejecuta lógica
    ============================================================ */
 function snapshotMyAircraft(){
 
-  const out = el("monitorMyAircraft");
+  const out = document.getElementById("monitorMyAircraft");
   if (!out) return;
 
   let fleet;
   try {
     fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
   } catch {
-    out.textContent = "INVALID ACS_MyAircraft DATA";
+    out.textContent = "STATUS: ❌ INVALID ACS_MyAircraft DATA";
     return;
   }
 
-  const snapshot = {
-    fleetCount: fleet.length,
-    aircraft: fleet.map(ac => ({
-      id: ac.id ?? null,
-      registration: ac.registration,
-      model: ac.model,
-      status: ac.status,
-      base: ac.base ?? null,
-      hours: ac.hours ?? null,
-      cycles: ac.cycles ?? null,
-      conditionPercent: ac.conditionPercent ?? null,
-      maintenanceType: ac.maintenanceType ?? null,
-      maintenanceStartDate: ac.maintenanceStartDate ?? null,
-      maintenanceEndDate: ac.maintenanceEndDate ?? null,
-      pendingCCheck: !!ac.pendingCCheck,
-      pendingDCheck: !!ac.pendingDCheck
-    }))
-  };
+  if (!Array.isArray(fleet)) {
+    out.textContent = "STATUS: ❌ ACS_MyAircraft is not an array";
+    return;
+  }
 
-  out.textContent = JSON.stringify(snapshot, null, 2);
+  let total = fleet.length;
+  let active = 0;
+  let maintenance = 0;
+  let hold = 0;
+
+  const issues = [];
+
+  fleet.forEach(ac => {
+
+    if (!ac || !ac.id) {
+      issues.push("Aircraft with missing ID");
+      return;
+    }
+
+    // Status count
+    if (ac.status === "Active") active++;
+    else if (ac.status === "Maintenance") maintenance++;
+    else if (ac.status === "Maintenance Hold") hold++;
+
+    // Critical numeric checks
+    if (typeof ac.hours === "number" && ac.hours < 0)
+      issues.push(`${ac.id} has negative flight hours`);
+
+    if (typeof ac.cycles === "number" && ac.cycles < 0)
+      issues.push(`${ac.id} has negative cycles`);
+
+    if (typeof ac.conditionPercent === "number") {
+      if (ac.conditionPercent < 0 || ac.conditionPercent > 100)
+        issues.push(`${ac.id} conditionPercent out of range`);
+    }
+
+    // Maintenance logic consistency
+    if (ac.maintenanceType && !ac.maintenanceStartDate)
+      issues.push(`${ac.id} maintenanceType set without start date`);
+
+    if (ac.pendingCCheck && ac.pendingDCheck)
+      issues.push(`${ac.id} pending C & D checks simultaneously`);
+  });
+
+  const lines = [];
+
+  lines.push(`STATUS: ${issues.length ? "⚠️ ISSUES DETECTED" : "OK"}`);
+  lines.push("");
+  lines.push(`TOTAL AIRCRAFT : ${total}`);
+  lines.push(`ACTIVE         : ${active}`);
+  lines.push(`MAINTENANCE    : ${maintenance}`);
+  lines.push(`GROUND HOLD   : ${hold}`);
+  lines.push("");
+
+  lines.push("CHECKS:");
+  if (issues.length) {
+    issues.forEach(i => lines.push(`- ${i}`));
+  } else {
+    lines.push("✔ Fleet structure OK");
+    lines.push("✔ No critical inconsistencies detected");
+  }
+
+  out.textContent = lines.join("\n");
 }
 
 /* ============================================================
