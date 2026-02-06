@@ -191,33 +191,23 @@
     <pre id="outWarnings">Waiting...</pre>
   </section>
 
-  <!-- ============================================================
-       🛩 MY AIRCRAFT — LIVE STATE (READ ONLY)
-       Purpose:
-       - Auditoría real de flota
-       - Diagnóstico de mantenimiento / tiempo / estado
-       ============================================================ -->
   <section class="card wide" id="cardMyAircraft">
-    <h2>🛩 My Aircraft — Live State</h2>
+  <h2>🛩 My Aircraft — Fleet Monitor</h2>
 
-    <div class="monitor-subtitle">
-      Source: ACS_MyAircraft (localStorage) · Time-synced
-    </div>
+  <div class="monitor-subtitle">
+    Source: ACS_MyAircraft (localStorage) · Read-Only
+  </div>
 
-    <pre id="monitorMyAircraft"
-         style="
-           max-height: 360px;
-           overflow: auto;
-           background: #0b1424;
-           border: 1px solid #1f3b63;
-           border-radius: 8px;
-           padding: 12px;
-           font-size: 12px;
-           color: #cfe3ff;
-         ">
-Loading fleet data…
-    </pre>
-  </section>
+  <!-- Fleet summary -->
+  <div id="fleetSummary" style="margin:10px 0; font-size:13px; opacity:.9;">
+    Loading fleet summary…
+  </div>
+
+  <!-- Grouped containers -->
+  <div id="fleetGroups" style="display:flex; flex-direction:column; gap:10px;">
+    <!-- Groups injected by JS -->
+  </div>
+</section>
 
   <!-- ============================================================
        🩺 ACS HEALTH SCORE
