@@ -722,15 +722,14 @@ function ACS_applyMaintenanceHold(ac) {
 }
 
 /* ============================================================
-   🟩 MA-8.6.D1 — MAINTENANCE EXECUTION ENGINE
+   🟩 MA-8.6.D1 — MAINTENANCE EXECUTION ENGINE (START ONLY)
    ------------------------------------------------------------
-   Purpose:
-   - Ejecutar C o D Check (manual / automático)
-   - Resetear baseline
-   - Aplicar downtime
-   - Liberar avión al finalizar
+   Fix:
+   - NO resetea baseline/lastCheck al inicio
+   - Solo inicia el servicio y fija maintenanceEndDate
+   - El reset real ocurre al COMPLETAR (ver MA-8.6.D2)
    ------------------------------------------------------------
-   Version: v1.1 | Date: 06 FEB 2026
+   Version: v1.2 | Date: 06 FEB 2026
    ============================================================ */
 
 function ACS_executeMaintenance(ac, type = "C") {
@@ -754,7 +753,6 @@ function ACS_executeMaintenance(ac, type = "C") {
   const cost = ACS_calculateMaintenanceCost(ac, type);
 
   if (cost > 0) {
-    // Hook a Finance (ledger-ready)
     if (typeof ACS_registerExpense === "function") {
       ACS_registerExpense({
         category: "Maintenance",
@@ -766,46 +764,27 @@ function ACS_executeMaintenance(ac, type = "C") {
         date: now.toISOString()
       });
     }
-
-    // Fallback visual / debug
     ac.lastMaintenanceCost = cost;
   }
 
-  if (type === "C") {
-    // Reset baseline C
-    ac.baselineCHours = ac.hours;
-    ac.lastCCheckDate = now.toISOString();
+  // ✅ INICIAR SERVICIO (sin reset aún)
+  ac.status = "Maintenance";
+  ac.maintenanceType = type;
+  ac.maintenanceStartDate = now.toISOString();
 
-    ac.pendingCCheck = false;
+  const days = (type === "D") ? D_DOWNTIME_DAYS : C_DOWNTIME_DAYS;
 
-    ac.status = "Maintenance";
-    ac.maintenanceType = "C";
-    ac.maintenanceEndDate = new Date(
-      now.getTime() + C_DOWNTIME_DAYS * 24 * 60 * 60 * 1000
-    ).toISOString();
-  }
+  ac.maintenanceEndDate = new Date(
+    now.getTime() + days * 24 * 60 * 60 * 1000
+  ).toISOString();
 
-  if (type === "D") {
-    // Reset baseline D (y C implícitamente)
-    ac.baselineDHours = ac.hours;
-    ac.baselineCHours = ac.hours;
-
-    ac.lastDCheckDate = now.toISOString();
-    ac.lastCCheckDate = now.toISOString();
-
-    ac.pendingDCheck = false;
-    ac.pendingCCheck = false;
-
-    ac.status = "Maintenance";
-    ac.maintenanceType = "D";
-    ac.maintenanceEndDate = new Date(
-      now.getTime() + D_DOWNTIME_DAYS * 24 * 60 * 60 * 1000
-    ).toISOString();
-  }
-
-  // Limpieza flags
+  // Limpieza flags (el hold se libera al iniciar servicio)
   ac.maintenanceHold = false;
   ac.maintenanceOverdue = false;
+
+  // Reset pending flags
+  if (type === "C") ac.pendingCCheck = false;
+  if (type === "D") { ac.pendingDCheck = false; ac.pendingCCheck = false; }
 
   return ac;
 }
@@ -903,10 +882,10 @@ function ACS_applyDailyAging(ac) {
    🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
    ------------------------------------------------------------
    Fix:
-   - Evita undefined: usa nextC_days / nextD_days del resolver
-   - Convierte a strings jugables: "15 days" / "156 days overdue" / "—"
+   - Soporta Maintenance in-progress (remaining days + release)
+   - Mantiene overdue como "xxx days overdue"
    ------------------------------------------------------------
-   Version: v1.2 | Date: 06 FEB 2026
+   Version: v1.3 | Date: 06 FEB 2026
    ============================================================ */
 
 function ACS_applyMaintenanceComputedFields(ac) {
@@ -916,26 +895,50 @@ function ACS_applyMaintenanceComputedFields(ac) {
   if (!ac.lastCCheckDate && ac.lastC) ac.lastCCheckDate = ac.lastC;
   if (!ac.lastDCheckDate && ac.lastD) ac.lastDCheckDate = ac.lastD;
 
-  const m = ACS_resolveMaintenanceStatus(ac);
+  const now = getSimTime();
 
-  // Guardar también numérico por si lo necesitas luego (UI / lógica)
-  ac.nextC_days = m.nextC_days;
-  ac.nextD_days = m.nextD_days;
-
-  // 🔴 FLAGS LÓGICOS (CLAVE PARA UI)
-  ac.nextC_overdue = m.isCOverdue;
-  ac.nextD_overdue = m.isDOverdue;
-
-  const fmt = (v) => {
+  const fmtDays = (v) => {
     if (v === "—" || v === null || v === undefined) return "—";
     if (typeof v !== "number") return "—";
     if (v < 0) return `${Math.abs(v)} days overdue`;
     return `${v} days`;
   };
 
-  // Strings para la tabla (lo que renderFleetTable imprime)
-  ac.nextC = fmt(m.nextC_days);
-  ac.nextD = fmt(m.nextD_days);
+  // ✅ Caso 1: Servicio en progreso (C o D)
+  if (ac.status === "Maintenance" && ac.maintenanceEndDate) {
+
+    const end = new Date(ac.maintenanceEndDate);
+    const remaining = Math.max(0, Math.ceil((end - now) / (24 * 60 * 60 * 1000)));
+
+    ac.maintenanceRemainingDays = remaining;
+    ac.maintenanceReleaseISO = end.toISOString();
+
+    // Durante servicio: NO mostrar nextC/nextD normales
+    const t = ac.maintenanceType || "C";
+
+    if (t === "C") {
+      ac.nextC = `${remaining} days remaining`;
+      ac.nextD = "—";
+    } else {
+      ac.nextC = "—";
+      ac.nextD = `${remaining} days remaining`;
+    }
+
+    // Guardar numérico por consistencia
+    ac.nextC_days = "—";
+    ac.nextD_days = "—";
+
+    return ac;
+  }
+
+  // ✅ Caso 2: Normal (usa resolver)
+  const m = ACS_resolveMaintenanceStatus(ac);
+
+  ac.nextC_days = m.nextC_days;
+  ac.nextD_days = m.nextD_days;
+
+  ac.nextC = fmtDays(m.nextC_days);
+  ac.nextD = fmtDays(m.nextD_days);
 
   return ac;
 }
@@ -1307,6 +1310,68 @@ function ACS_processABCompletion() {
 }
 
 /* ============================================================
+   🟦 MA-8.6.D2 — MAINTENANCE COMPLETION ENGINE (FINISH)
+   ------------------------------------------------------------
+   Purpose:
+   - Completar C/D cuando maintenanceEndDate <= simTime
+   - AHÍ resetea baseline y last check dates
+   - Libera avión a Active
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 06 FEB 2026
+   ============================================================ */
+
+function ACS_processMaintenanceCompletion() {
+
+  const now = getSimTime();
+  let fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  let changed = false;
+
+  fleetLatest = fleetLatest.map(ac => {
+
+    if (!ac) return ac;
+
+    if (
+      ac.status === "Maintenance" &&
+      ac.maintenanceEndDate &&
+      new Date(ac.maintenanceEndDate) <= now
+    ) {
+
+      const t = ac.maintenanceType || "C";
+
+      // ✅ Reset REAL al finalizar
+      if (t === "C") {
+        ac.baselineCHours = ac.hours;
+        ac.lastCCheckDate = now.toISOString();
+      }
+
+      if (t === "D") {
+        ac.baselineDHours = ac.hours;
+        ac.baselineCHours = ac.hours;
+        ac.lastDCheckDate = now.toISOString();
+        ac.lastCCheckDate = now.toISOString();
+      }
+
+      // Liberar
+      ac.status = "Active";
+
+      // Limpiar service state
+      delete ac.maintenanceType;
+      delete ac.maintenanceStartDate;
+      delete ac.maintenanceEndDate;
+
+      changed = true;
+    }
+
+    return ac;
+  });
+
+  if (changed) {
+    localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetLatest));
+    fleet = fleetLatest;
+  }
+}
+
+/* ============================================================
    === INITIALIZATION =========================================
    ============================================================ */
 
@@ -1316,6 +1381,8 @@ document.addEventListener("DOMContentLoaded", () => {
    🟨 MA-8.6.C — MAINTENANCE PIPELINE (TIME TICK)
    ============================================================ */
 
+ACS_processMaintenanceCompletion();
+   
 // 1) Recargar flota + pipeline de mantenimiento
 fleet = fleet.map(ac => {
 
