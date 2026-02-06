@@ -1309,6 +1309,107 @@ function openAircraftModal(reg) {
 })();
 
 /* ============================================================
+   🟦 MA-8.5.3B — TECH SUMMARY ENGINE (REAL DATA)
+   ------------------------------------------------------------
+   Purpose:
+   - Mostrar resumen técnico REAL (C & D)
+   - Basado en horas y ciclos reales
+   - READ-ONLY (no modifica estado)
+   - Aviación real (no UI fake)
+   ============================================================ */
+
+(function ACS_renderTechSummary(ac) {
+
+  if (!ac) return;
+
+  /* ===============================
+     INTERVALOS TÉCNICOS (CANON)
+     =============================== */
+  const C_INTERVAL_HOURS = 1200;
+  const D_INTERVAL_HOURS = 6000;
+
+  /* ===============================
+     BASELINES (si no existen → N/A)
+     =============================== */
+  const lastC_hours = (typeof ac.baselineCHours === "number")
+    ? ac.baselineCHours
+    : null;
+
+  const lastD_hours = (typeof ac.baselineDHours === "number")
+    ? ac.baselineDHours
+    : null;
+
+  /* ===============================
+     HORAS DESDE ÚLTIMO CHECK
+     =============================== */
+  const sinceC = (lastC_hours !== null)
+    ? ac.hours - lastC_hours
+    : null;
+
+  const sinceD = (lastD_hours !== null)
+    ? ac.hours - lastD_hours
+    : null;
+
+  /* ===============================
+     REMANENTE
+     =============================== */
+  const remainingC = (sinceC !== null)
+    ? C_INTERVAL_HOURS - sinceC
+    : null;
+
+  const remainingD = (sinceD !== null)
+    ? D_INTERVAL_HOURS - sinceD
+    : null;
+
+  /* ===============================
+     DOM TARGETS (YA EXISTEN EN HTML)
+     =============================== */
+  const elC = document.getElementById("techCsummary");
+  const elD = document.getElementById("techDsummary");
+
+  if (!elC || !elD) return;
+
+  /* ===============================
+     FORMAT HELPERS
+     =============================== */
+  const fmt = (v) => {
+    if (v === null || isNaN(v)) return "—";
+    return `${v.toLocaleString()} FH`;
+  };
+
+  const statusTag = (rem) => {
+    if (rem === null) return "";
+    if (rem < 0) return `<span class="tech-overdue">OVERDUE</span>`;
+    return `<span class="tech-ok">OK</span>`;
+  };
+
+  /* ===============================
+     RENDER C CHECK
+     =============================== */
+  elC.innerHTML = `
+    <div class="tech-title">C-CHECK</div>
+    <div class="tech-line">Interval: ${C_INTERVAL_HOURS.toLocaleString()} FH</div>
+    <div class="tech-line">Since Last C: ${fmt(sinceC)}</div>
+    <div class="tech-line">Remaining: ${fmt(remainingC)}</div>
+    <div class="tech-line">Cycles: ${ac.cycles}</div>
+    <div class="tech-line">${statusTag(remainingC)}</div>
+  `;
+
+  /* ===============================
+     RENDER D CHECK
+     =============================== */
+  elD.innerHTML = `
+    <div class="tech-title">D-CHECK</div>
+    <div class="tech-line">Interval: ${D_INTERVAL_HOURS.toLocaleString()} FH</div>
+    <div class="tech-line">Since Last D: ${fmt(sinceD)}</div>
+    <div class="tech-line">Remaining: ${fmt(remainingD)}</div>
+    <div class="tech-line">Cycles: ${ac.cycles}</div>
+    <div class="tech-line">${statusTag(remainingD)}</div>
+  `;
+
+})(ac);
+   
+/* ============================================================
    🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE) [FIX]
    ------------------------------------------------------------
    Fix:
