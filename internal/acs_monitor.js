@@ -334,19 +334,97 @@ setTimeout(renderHealthPanel, 500);
   });
 
 })();
-   
-  /* =========================
-     INIT
-     ========================= */
-  snapshotPlaceholder();
-  renderTimeSnapshot();
-  renderHRSnapshot();
-  renderFinanceSnapshot();
-  renderOpsSnapshot();
-  renderIntegritySnapshot();
 
-  setTimeout(renderTimeSnapshot, 300);
-  setTimeout(renderFinanceSnapshot, 400);
+/* ============================================================
+   🛩 MONITOR — MY AIRCRAFT LIVE COLLECTOR (READ-ONLY)
+   ------------------------------------------------------------
+   Purpose:
+   - Auditar estado real de ACS_MyAircraft
+   - Ver mantenimiento en vivo vs reloj del juego
+   - NO modifica estado
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 06 FEB 2026
+   ============================================================ */
+
+function ACS_MONITOR_renderMyAircraft() {
+
+  const el = document.getElementById("monitorMyAircraft");
+  if (!el) return;
+
+  let fleet;
+  try {
+    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  } catch (e) {
+    el.textContent = "❌ ERROR: Invalid ACS_MyAircraft JSON";
+    return;
+  }
+
+  const simTime =
+    (typeof window.ACS_getSimTime === "function")
+      ? new Date(window.ACS_getSimTime())
+      : null;
+
+  const snapshot = {
+    simTimeISO: simTime ? simTime.toISOString() : "NO SIM TIME",
+    simYear: simTime ? simTime.getUTCFullYear() : null,
+    fleetCount: fleet.length,
+    aircraft: fleet.map(ac => ({
+      id: ac.id,
+      registration: ac.registration,
+      model: ac.model,
+      status: ac.status,
+
+      // Maintenance core
+      maintenanceType: ac.maintenanceType || null,
+      maintenanceStartDate: ac.maintenanceStartDate || null,
+      maintenanceEndDate: ac.maintenanceEndDate || null,
+
+      // Baselines
+      baselineCHours: ac.baselineCHours ?? null,
+      baselineDHours: ac.baselineDHours ?? null,
+
+      // Usage
+      hours: ac.hours,
+      cycles: ac.cycles,
+
+      // Condition
+      conditionPercent: ac.conditionPercent,
+
+      // Flags
+      maintenanceHold: !!ac.maintenanceHold,
+      pendingCCheck: !!ac.pendingCCheck,
+      pendingDCheck: !!ac.pendingDCheck
+    }))
+  };
+
+  el.textContent = JSON.stringify(snapshot, null, 2);
+}
+
+/* ============================================================
+   🔁 MONITOR REFRESH HOOK — MY AIRCRAFT
+   ------------------------------------------------------------
+   - Se integra al refresco global del monitor si existe
+   - Fallback seguro cada 5s (DEV)
+   ============================================================ */
+
+if (typeof ACS_MONITOR_register === "function") {
+  ACS_MONITOR_register(ACS_MONITOR_renderMyAircraft);
+} else {
+  setInterval(ACS_MONITOR_renderMyAircraft, 5000);
+}
+   
+/* =========================
+   INIT
+   ========================= */
+snapshotPlaceholder();
+renderTimeSnapshot();
+renderHRSnapshot();
+renderFinanceSnapshot();
+renderOpsSnapshot();
+renderIntegritySnapshot();
+
+setTimeout(renderTimeSnapshot, 300);
+setTimeout(renderFinanceSnapshot, 400);
 
 /* ============================================================
    🩺 A3.2 — ACS HEALTH SCORE ENGINE (GLOBAL)
@@ -365,36 +443,32 @@ setTimeout(renderHealthPanel, 500);
   const maxScore = 100;
   const details = [];
 
-  /* -------------------------------
-     DEV GATE
-  -------------------------------- */
   const isDev = localStorage.getItem("ACS_DEV") === "true";
   if (!isDev) {
     window.ACS_HEALTH_SCORE = null;
     return;
   }
 
- /* -------------------------------
-   PHASE 4 — TIME ENGINE CONTEXTUAL CHECK
--------------------------------- */
-   
-const timeEngine = window.ACS_TIME_ENGINE;
-const isPaused   = localStorage.getItem("ACS_TIME_PAUSED") === "true";
+  /* -------------------------------
+     TIME ENGINE CHECK
+  -------------------------------- */
+  const timeEngine = window.ACS_TIME_ENGINE;
+  const isPaused   = localStorage.getItem("ACS_TIME_PAUSED") === "true";
 
-if (!timeEngine) {
-  score -= 25;
-  details.push("⏱ Time Engine missing");
-}
-else if (timeEngine.running === true) {
-  details.push("⏱ Time Engine running");
-}
-else if (timeEngine.running === false && isPaused) {
-  details.push("⏸ Time Engine paused (intentional)");
-}
-else {
-  score -= 20;
-  details.push("⏱ Time Engine inactive (unexpected)");
-}
+  if (!timeEngine) {
+    score -= 25;
+    details.push("⏱ Time Engine missing");
+  }
+  else if (timeEngine.running === true) {
+    details.push("⏱ Time Engine running");
+  }
+  else if (timeEngine.running === false && isPaused) {
+    details.push("⏸ Time Engine paused (intentional)");
+  }
+  else {
+    score -= 20;
+    details.push("⏱ Time Engine inactive (unexpected)");
+  }
 
   /* -------------------------------
      FINANCE CHECK
@@ -407,7 +481,7 @@ else {
     } else {
       details.push("💰 Finance OK");
     }
-  } catch (e) {
+  } catch {
     score -= 25;
     details.push("💰 Finance parse error");
   }
@@ -423,7 +497,7 @@ else {
     } else {
       details.push("🧑‍✈️ HR OK");
     }
-  } catch (e) {
+  } catch {
     score -= 20;
     details.push("🧑‍✈️ HR parse error");
   }
@@ -439,14 +513,11 @@ else {
     } else {
       details.push("🧭 Ops OK");
     }
-  } catch (e) {
+  } catch {
     score -= 10;
     details.push("🧭 Ops parse error");
   }
 
-  /* -------------------------------
-     NORMALIZE SCORE
-  -------------------------------- */
   if (score < 0) score = 0;
   if (score > maxScore) score = maxScore;
 
@@ -454,9 +525,6 @@ else {
   if (score < 70) status = "YELLOW";
   if (score < 40) status = "RED";
 
-  /* -------------------------------
-     PUBLISH GLOBAL STATE
-  -------------------------------- */
   window.ACS_HEALTH_SCORE = {
     total: score,
     max: maxScore,
@@ -466,5 +534,19 @@ else {
   };
 
 })();
-   
-})(); // 🔒 CIERRE FINAL ÚNICO Y CORRECTO
+
+/* ============================================================
+   🩺 PHASE 3.3 — HEALTH PANEL RENDER
+   ============================================================ */
+
+setTimeout(renderHealthPanel, 500);
+
+(function bindHealthRefresh(){
+  const btn = document.getElementById("btnRefresh");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    setTimeout(renderHealthPanel, 300);
+  });
+})();
+
+})(); // 🔒 CIERRE ÚNICO DEL IIFE PRINCIPAL
