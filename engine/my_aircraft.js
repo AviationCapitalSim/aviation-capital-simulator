@@ -1156,17 +1156,16 @@ function openAircraftModal(reg) {
   document.getElementById("mAge").textContent = ac.age || 0;
 
  /* ============================================================
-   🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (LIVE, TIME-SYNC)
+   🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (LIVE + SAFE SCOPE)
    ------------------------------------------------------------
-   Fix definitivo:
-   • El modal NO calcula nada por su cuenta
-   • Lee SIEMPRE estado real del avión
-   • Se actualiza EN VIVO con el reloj del juego
-   • NO requiere refresh
-   • NO toca engine
+   Fixes:
+   • Corrige ReferenceError: m is not defined
+   • El modal SIEMPRE abre (todos los aviones)
+   • Remaining time corre EN VIVO con el reloj del juego
+   • No duplica lógica ni engine
    ============================================================ */
 
-(function bindLiveMaintenanceStatus() {
+(function bindModalMaintenanceLive() {
 
   const elMaintStatus = document.getElementById("mMaintStatus");
   const box           = document.getElementById("maintenanceServiceBox");
@@ -1174,7 +1173,6 @@ function openAircraftModal(reg) {
   const elRemain      = document.getElementById("mServiceRemaining");
   const elRelease     = document.getElementById("mServiceRelease");
 
-  // Seguridad
   if (!elMaintStatus || !box) return;
 
   function render() {
@@ -1185,26 +1183,23 @@ function openAircraftModal(reg) {
     const ac = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
     if (!ac) return;
 
-    // ─────────────────────────────────────────
-    // CASO 1: NO ESTÁ EN MANTENIMIENTO
-    // ─────────────────────────────────────────
+    // Resolver SIEMPRE dentro del scope
+    const m = ACS_resolveMaintenanceStatus(ac);
+
+    // ── NO maintenance ─────────────────────────
     if (ac.status !== "Maintenance" || !ac.maintenanceEndDate) {
       elMaintStatus.textContent = "AIRWORTHY";
       box.style.display = "none";
       return;
     }
 
-    // ─────────────────────────────────────────
-    // CASO 2: MANTENIMIENTO ACTIVO (C / D)
-    // ─────────────────────────────────────────
+    // ── Maintenance activo ─────────────────────
     const now = getSimTime();
     const end = new Date(ac.maintenanceEndDate);
 
     const remainingMs = Math.max(0, end - now);
-    const remainingDays  = Math.floor(remainingMs / (24 * 60 * 60 * 1000));
-    const remainingHours = Math.floor(
-      (remainingMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
-    );
+    const days  = Math.floor(remainingMs / 86400000);
+    const hours = Math.floor((remainingMs % 86400000) / 3600000);
 
     const type = ac.maintenanceType === "D" ? "D-CHECK" : "C-CHECK";
 
@@ -1212,7 +1207,7 @@ function openAircraftModal(reg) {
     box.style.display = "block";
 
     if (elType)   elType.textContent   = type;
-    if (elRemain) elRemain.textContent = `${remainingDays}d ${remainingHours}h`;
+    if (elRemain) elRemain.textContent = `${days}d ${hours}h`;
     if (elRelease) {
       elRelease.textContent = end
         .toUTCString()
@@ -1221,10 +1216,10 @@ function openAircraftModal(reg) {
     }
   }
 
-  // Render inmediato al abrir modal
+  // Render inmediato
   render();
 
-  // 🔗 ENGANCHADO AL TIME ENGINE (VIVO)
+  // 🔗 Time Engine Hook (REAL TIME)
   if (typeof registerTimeListener === "function") {
     registerTimeListener(render);
   }
