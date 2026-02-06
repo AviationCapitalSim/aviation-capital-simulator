@@ -57,13 +57,53 @@ function saveFleet() {
   localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleet));
 }
 
-/* Obtener tiempo sim actual */
+/* ============================================================
+   🟥 MA-0 — SIM TIME ADAPTER (SINGLE SOURCE)
+   ------------------------------------------------------------
+   Fix:
+   - Si ACS_getSimTime no existe, usamos el reloj visible #acs-clock
+   - Garantiza que MODAL + PIPELINE usen el MISMO tiempo del juego
+   ============================================================ */
+
 function getSimTime() {
+
+  // 1) Fuente oficial si existe
   if (window.ACS_getSimTime && typeof window.ACS_getSimTime === "function") {
-    return new Date(window.ACS_getSimTime());
+    const t = window.ACS_getSimTime();
+    return new Date(t);
   }
+
+  // 2) Fallback: parsear el reloj visible del header (AUTORIDAD UI)
+  // Ej: "20:16 — MON 10 FEB 1941"
+  const el = document.getElementById("acs-clock");
+  if (el && typeof el.textContent === "string") {
+    const txt = el.textContent.trim();
+
+    // Extraer "HH:MM" y "DD MON YYYY"
+    // Permitimos variaciones leves
+    const m = txt.match(/(\d{1,2}):(\d{2}).*?(\d{1,2})\s+([A-Z]{3})\s+(\d{4})/i);
+    if (m) {
+      const hh = parseInt(m[1], 10);
+      const mm = parseInt(m[2], 10);
+      const dd = parseInt(m[3], 10);
+      const monStr = String(m[4]).toUpperCase();
+      const yyyy = parseInt(m[5], 10);
+
+      const months = {
+        JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
+        JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11
+      };
+
+      if (months[monStr] !== undefined) {
+        return new Date(Date.UTC(yyyy, months[monStr], dd, hh, mm, 0));
+      }
+    }
+  }
+
+  // 3) Último fallback seguro
   return new Date("1940-01-01T00:00:00Z");
 }
+
 
 /* ============================================================
    🟦 MA-MON1 — TIME TICK MONITOR (ONCE PER SIM DAY)
@@ -1156,17 +1196,17 @@ function openAircraftModal(reg) {
   document.getElementById("mAge").textContent = ac.age || 0;
 
  /* ============================================================
-   🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (LIVE + SAFE SCOPE)
+   🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (LIVE + CLOCK SYNC)
    ------------------------------------------------------------
-   Fixes:
-   • Corrige ReferenceError: m is not defined
-   • El modal SIEMPRE abre (todos los aviones)
-   • Remaining time corre EN VIVO con el reloj del juego
-   • No duplica lógica ni engine
+   Fix:
+   - Remaining / Release usan el MISMO reloj del header
+   - Corre EN VIVO sin refresh
+   - Si el mantenimiento ya expiró en el tiempo actual, fuerza completion
    ============================================================ */
 
-(function bindModalMaintenanceLive() {
+(function ACS_modalMaintenanceLiveBind() {
 
+  // Elementos del modal (según TU HTML Qatar Luxury)
   const elMaintStatus = document.getElementById("mMaintStatus");
   const box           = document.getElementById("maintenanceServiceBox");
   const elType        = document.getElementById("mServiceType");
@@ -1175,95 +1215,129 @@ function openAircraftModal(reg) {
 
   if (!elMaintStatus || !box) return;
 
+  const fmtRelease = (iso) => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    const DD  = String(d.getUTCDate()).padStart(2, "0");
+    const MON = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" }).toUpperCase();
+    const YY  = d.getUTCFullYear();
+    return `${DD} ${MON} ${YY}`;
+  };
+
   function render() {
 
     if (!ACS_ACTIVE_MODAL_REG) return;
 
     const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-    const ac = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
-    if (!ac) return;
+    const acNow = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
+    if (!acNow) return;
 
-    // Resolver SIEMPRE dentro del scope
-    const m = ACS_resolveMaintenanceStatus(ac);
-
-    // ── NO maintenance ─────────────────────────
-    if (ac.status !== "Maintenance" || !ac.maintenanceEndDate) {
+    // Si no está en maintenance -> AIRWORTHY
+    if (acNow.status !== "Maintenance" || !acNow.maintenanceEndDate) {
       elMaintStatus.textContent = "AIRWORTHY";
       box.style.display = "none";
       return;
     }
 
-    // ── Maintenance activo ─────────────────────
     const now = getSimTime();
-    const end = new Date(ac.maintenanceEndDate);
+    const end = new Date(acNow.maintenanceEndDate);
 
+    // Si YA terminó según reloj del juego: forzar completion inmediato
+    if (end <= now) {
+      if (typeof ACS_processMaintenanceCompletion === "function") {
+        ACS_processMaintenanceCompletion();
+      }
+      // re-leer tras completion
+      const fleetAfter = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+      const acAfter = fleetAfter.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
+      if (!acAfter || acAfter.status !== "Maintenance") {
+        elMaintStatus.textContent = "AIRWORTHY";
+        box.style.display = "none";
+        return;
+      }
+    }
+
+    // Calcular remaining (live)
     const remainingMs = Math.max(0, end - now);
     const days  = Math.floor(remainingMs / 86400000);
     const hours = Math.floor((remainingMs % 86400000) / 3600000);
 
-    const type = ac.maintenanceType === "D" ? "D-CHECK" : "C-CHECK";
+    const type = (acNow.maintenanceType === "D") ? "D-CHECK" : "C-CHECK";
 
     elMaintStatus.textContent = `IN ${type}`;
     box.style.display = "block";
 
     if (elType)   elType.textContent   = type;
     if (elRemain) elRemain.textContent = `${days}d ${hours}h`;
-    if (elRelease) {
-      elRelease.textContent = end
-        .toUTCString()
-        .replace(" GMT", "")
-        .substring(5, 16);
-    }
+    if (elRelease) elRelease.textContent = fmtRelease(acNow.maintenanceEndDate);
   }
 
-  // Render inmediato
+  // Pintar una vez al abrir
   render();
 
-  // 🔗 Time Engine Hook (REAL TIME)
+  // Enganche LIVE al time engine (sin refresh)
   if (typeof registerTimeListener === "function") {
     registerTimeListener(render);
   }
 
 })();
 
- /* ============================================================
-   🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE)
+
+/* ============================================================
+   🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE) [FIX]
+   ------------------------------------------------------------
+   Fix:
+   - Nunca depende de variable externa "m"
+   - Evita que un ReferenceError rompa el modal y bloquee los demás
    ============================================================ */
 
-let btnC = document.getElementById("btnCcheck");
-let btnD = document.getElementById("btnDcheck");
+{
+  const btnC = document.getElementById("btnCcheck");
+  const btnD = document.getElementById("btnDcheck");
+  const btnL = document.getElementById("btnLog");
 
-if (btnC && btnD) {
+  // Recalcular SIEMPRE dentro del scope
+  const mLocal = ACS_resolveMaintenanceStatus(ac);
 
-  // 🔁 Reset absoluto (crítico)
-  btnC.onclick = null;
-  btnD.onclick = null;
-  btnC.disabled = true;
-  btnD.disabled = true;
+  if (btnC) {
+    btnC.onclick = null;
+    btnC.disabled = true;
+  }
+  if (btnD) {
+    btnD.onclick = null;
+    btnD.disabled = true;
+  }
+  if (btnL) {
+    btnL.onclick = null;
+  }
 
-  // ❌ Si ya está en mantenimiento → no permitir iniciar otro
+  // Si está en mantenimiento activo -> no iniciar otro
   if (ac.status === "Maintenance") {
-    // ambos quedan deshabilitados
+    // quedan disabled
+  }
+  // Prioridad D
+  else if (mLocal.isDOverdue || mLocal.nextD_days === 0) {
+    if (btnD) btnD.disabled = false;
+  }
+  // Luego C
+  else if (mLocal.isCOverdue || mLocal.nextC_days === 0) {
+    if (btnC) btnC.disabled = false;
   }
 
-  // 🔧 Prioridad D
-  else if (m.isDOverdue || m.nextD_days === 0) {
-    btnD.disabled = false;
+  // Bind acciones
+  if (btnC) {
+    btnC.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+  }
+  if (btnD) {
+    btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
   }
 
-  // 🔧 Luego C
-  else if (m.isCOverdue || m.nextC_days === 0) {
-    btnC.disabled = false;
+  // Log (por ahora placeholder limpio, no rompe)
+  if (btnL) {
+    btnL.onclick = () => {
+      alert("Maintenance Log: pending activation (PASO 4B-2).");
+    };
   }
-
-  // ✅ Bind seguro (NO redeclara const)
-  btnC.onclick = () => {
-    ACS_confirmAndExecuteMaintenance(ac.registration, "C");
-  };
-
-  btnD.onclick = () => {
-    ACS_confirmAndExecuteMaintenance(ac.registration, "D");
-  };
 }
    
   modal.style.display = "flex";
