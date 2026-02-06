@@ -1060,6 +1060,11 @@ function passesFilters(ac) {
 const modal = document.getElementById("aircraftModal");
 
 /* ============================================================
+   🟩 MA-9.G — ACTIVE MODAL AIRCRAFT REG
+   ============================================================ */
+let ACS_ACTIVE_MODAL_REG = null;
+
+/* ============================================================
    🟧 MA-8.5.1 — MODAL FRESH READ + C/D NORMALIZER
    ------------------------------------------------------------
    Fix:
@@ -1070,19 +1075,17 @@ const modal = document.getElementById("aircraftModal");
 function openAircraftModal(reg) {
 
   // ✅ 1) SIEMPRE leer lo último desde localStorage
-   
   const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
   const acRaw = fleetLatest.find(a => a.registration === reg);
   if (!acRaw) return;
 
   // ✅ 2) Copia segura (no mutar directo el objeto de storage aquí)
-   
   const ac = { ...acRaw };
 
-  // ✅ 3) Normalización de campos C/D (por si vienen con nombres distintos)
-  // Soportados: lastCCheckDate / lastDCheckDate (canónico)
-  // Compat: lastC / lastD / maintenance.lastCCheckDate / maintenance.lastDCheckDate, etc.
-   
+  // 🔗 Guardar avión activo del modal (CLAVE PARA BOTONES)
+  ACS_ACTIVE_MODAL_REG = ac.registration;
+
+  // ✅ 3) Normalización de campos C/D
   if (!ac.lastCCheckDate) {
     ac.lastCCheckDate =
       ac.lastC ||
@@ -1096,8 +1099,7 @@ function openAircraftModal(reg) {
       null;
   }
 
-  // ✅ 4) Pintar modal (igual que tu UI actual)
-   
+  // ✅ 4) Pintar modal
   document.getElementById("modalTitle").textContent = `${ac.model} — ${ac.registration}`;
   document.getElementById("mReg").textContent = ac.registration;
   document.getElementById("mModel").textContent = ac.model;
@@ -1105,8 +1107,6 @@ function openAircraftModal(reg) {
   document.getElementById("mBase").textContent = ac.base || "—";
   document.getElementById("mStatus").textContent = ac.status;
 
-  // Delivery Date (si está pendiente)
-   
   if (ac.status === "Pending Delivery" && ac.deliveryDate) {
     const d = new Date(ac.deliveryDate);
     document.getElementById("mDeliveryDate").textContent = d.toUTCString().substring(5, 16);
@@ -1114,8 +1114,6 @@ function openAircraftModal(reg) {
     document.getElementById("mDeliveryDate").textContent = "—";
   }
 
-  // Delivered Date (si ya fue entregado)
-   
   if (ac.deliveredDate) {
     const dd = new Date(ac.deliveredDate);
     document.getElementById("mDeliveredDate").textContent = dd.toUTCString().substring(5, 16);
@@ -1123,8 +1121,6 @@ function openAircraftModal(reg) {
     document.getElementById("mDeliveredDate").textContent = "—";
   }
 
-  // Condition (percent + letter)
-   
   if (typeof ac.conditionPercent === "number") {
     const letter = ACS_getConditionLetter(ac.conditionPercent);
     document.getElementById("mCondition").textContent = `${ac.conditionPercent}% (${letter})`;
@@ -1140,62 +1136,87 @@ function openAircraftModal(reg) {
    🟧 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (DAYS + STATUS)
    ============================================================ */
 
-const m = ACS_resolveMaintenanceStatus(ac);
+  const m = ACS_resolveMaintenanceStatus(ac);
 
-const elLastC = document.getElementById("mLastC");
-const elNextC = document.getElementById("mNextC");
-const elLastD = document.getElementById("mLastD");
-const elNextD = document.getElementById("mNextD");
+  const elLastC = document.getElementById("mLastC");
+  const elNextC = document.getElementById("mNextC");
+  const elLastD = document.getElementById("mLastD");
+  const elNextD = document.getElementById("mNextD");
 
-function paint(el, text, isOverdue = false) {
-  if (!el) return;
-  el.textContent = text;
-  el.style.color = isOverdue ? "#ff4d4d" : "#e6e6e6";
-  el.style.fontWeight = isOverdue ? "700" : "400";
-}
+  function paint(el, text, isOverdue = false) {
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = isOverdue ? "#ff4d4d" : "#e6e6e6";
+    el.style.fontWeight = isOverdue ? "700" : "400";
+  }
 
-/* ===== C CHECK ===== */
+  if (m.nextC_days === "—") {
+    paint(elLastC, "—");
+    paint(elNextC, "—");
+  }
+  else if (m.isCOverdue) {
+    paint(elLastC, "OVERDUE", true);
+    paint(elNextC, `${Math.abs(m.nextC_days)} days overdue`, true);
+  }
+  else {
+    paint(elLastC, "OK");
+    paint(elNextC, `${m.nextC_days} days`);
+  }
 
-if (m.nextC_days === "—") {
-  paint(elLastC, "—");
-  paint(elNextC, "—");
-}
-else if (m.isCOverdue) {
-  paint(elLastC, "OVERDUE", true);
-  paint(elNextC, `${Math.abs(m.nextC_days)} days overdue`, true);
-}
-else {
-  paint(elLastC, "OK");
-  paint(elNextC, `${m.nextC_days} days`);
-}
+  if (m.nextD_days === "—") {
+    paint(elLastD, "—");
+    paint(elNextD, "—");
+  }
+  else if (m.isDOverdue) {
+    paint(elLastD, "OVERDUE", true);
+    paint(elNextD, `${Math.abs(m.nextD_days)} days overdue`, true);
+  }
+  else {
+    paint(elLastD, "OK");
+    paint(elNextD, `${m.nextD_days} days`);
+  }
 
-/* ===== D CHECK ===== */
+  /* ============================================================
+     🟩 MA-9 — MANUAL MAINTENANCE BUTTON BINDING
+     ============================================================ */
 
-if (m.nextD_days === "—") {
-  paint(elLastD, "—");
-  paint(elNextD, "—");
-}
-else if (m.isDOverdue) {
-  paint(elLastD, "OVERDUE", true);
-  paint(elNextD, `${Math.abs(m.nextD_days)} days overdue`, true);
-}
-else {
-  paint(elLastD, "OK");
-  paint(elNextD, `${m.nextD_days} days`);
-}
+  const btnC = document.getElementById("btnCcheck");
+  const btnD = document.getElementById("btnDcheck");
+
+  if (btnC && btnD) {
+
+    btnC.disabled = true;
+    btnD.disabled = true;
+
+    if (ac.status !== "Maintenance") {
+      if (m.isDOverdue || m.nextD_days === 0) {
+        btnD.disabled = false;
+      } else if (m.isCOverdue || m.nextC_days === 0) {
+        btnC.disabled = false;
+      }
+    }
+
+    btnC.onclick = () => {
+      if (!ACS_ACTIVE_MODAL_REG) return;
+      ACS_confirmAndExecuteMaintenance(ACS_ACTIVE_MODAL_REG, "C");
+    };
+
+    btnD.onclick = () => {
+      if (!ACS_ACTIVE_MODAL_REG) return;
+      ACS_confirmAndExecuteMaintenance(ACS_ACTIVE_MODAL_REG, "D");
+    };
+  }
 
   modal.style.display = "flex";
 }
 
-function closeModal() { modal.style.display = "none"; }
+function closeModal() {
+  ACS_ACTIVE_MODAL_REG = null;
+  modal.style.display = "none";
+}
 
 /* ============================================================
    🟩 MA-9.2 — MANUAL MAINTENANCE ACTION HANDLERS
-   ------------------------------------------------------------
-   Purpose:
-   - Ejecutar C / D Check manual desde el modal
-   - Confirmación simple (OK / Cancel)
-   - Usa ACS_executeMaintenance como engine único
    ============================================================ */
 
 function ACS_confirmAndExecuteMaintenance(registration, type) {
@@ -1205,7 +1226,6 @@ function ACS_confirmAndExecuteMaintenance(registration, type) {
   if (idx === -1) return;
 
   const ac = fleetLatest[idx];
-
   const label = type === "D" ? "D-Check" : "C-Check";
 
   const ok = window.confirm(
@@ -1215,16 +1235,13 @@ function ACS_confirmAndExecuteMaintenance(registration, type) {
 
   if (!ok) return;
 
-  // Ejecutar mantenimiento
   const updated = ACS_executeMaintenance(ac, type);
 
   fleetLatest[idx] = updated;
   localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetLatest));
 
-  // Refrescar estado global
   fleet = fleetLatest;
 
-  // Cerrar modal y refrescar tabla
   closeModal();
   renderFleetTable();
 }
