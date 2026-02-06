@@ -45,16 +45,33 @@ function write(id, text){
 function snapshotTime(){
 
   const lines = [];
-  const t = window.ACS_TIME_CURRENT;
 
-  if (t instanceof Date && !isNaN(t)) {
-    lines.push("STATUS: OK");
-    lines.push(`UTC TIME : ${t.toUTCString()}`);
-    lines.push(`YEAR     : ${t.getUTCFullYear()}`);
-    lines.push(`TIMESTAMP: ${t.getTime()}`);
+  // ✅ PASSIVE SOURCE (recomendado)
+  const iso = localStorage.getItem("ACS_SIM_TIME_ISO");
+
+  if (iso) {
+    const t = new Date(iso);
+    if (t instanceof Date && !isNaN(t)) {
+      lines.push("STATUS: OK (PASSIVE)");
+      lines.push(`UTC TIME : ${t.toUTCString()}`);
+      lines.push(`YEAR     : ${t.getUTCFullYear()}`);
+      lines.push(`TIMESTAMP: ${t.getTime()}`);
+      write("outTime", lines.join("\n"));
+      return;
+    }
+  }
+
+  // Fallback (si estás en una página que sí tiene el engine cargado)
+  const t2 = window.ACS_TIME_CURRENT;
+  if (t2 instanceof Date && !isNaN(t2)) {
+    lines.push("STATUS: OK (WINDOW)");
+    lines.push(`UTC TIME : ${t2.toUTCString()}`);
+    lines.push(`YEAR     : ${t2.getUTCFullYear()}`);
+    lines.push(`TIMESTAMP: ${t2.getTime()}`);
   } else {
     lines.push("STATUS: NOT READY");
-    lines.push("ACS_TIME_CURRENT not available");
+    lines.push("No passive time feed found (ACS_SIM_TIME_ISO).");
+    lines.push("Time Engine not loaded on this page (expected in PASSIVE MODE).");
   }
 
   write("outTime", lines.join("\n"));
