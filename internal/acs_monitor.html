@@ -230,8 +230,49 @@ Loading fleet data…
 
 </div>
          
-  <!-- JS del monitor -->
-  <script src="./acs_monitor.js"></script>
+ <!-- ============================================================
+     🧠 ACS GAME RUNTIME — CORE (READ ONLY FOR MONITOR)
+     ============================================================ -->
+
+<!-- 🌍 World / History -->
+<script src="../engine/acs_world_engine.js"></script>
+<script src="../engine/acs_country_history.js"></script>
+
+<!-- 🏟 Airports -->
+<script src="../engine/airports_loader.js"></script>
+<script src="../engine/airports/world_airports_af.js"></script>
+<script src="../engine/airports/world_airports_as.js"></script>
+<script src="../engine/airports/world_airports_eu.js"></script>
+<script src="../engine/airports/world_airports_me.js"></script>
+<script src="../engine/airports/world_airports_na.js"></script>
+<script src="../engine/airports/world_airports_oc.js"></script>
+<script src="../engine/airports/world_airports_sa.js"></script>
+
+<!-- ⏱ Time -->
+<script src="../engine/acs_time_engine.js"></script>
+<script src="../engine/acs_time_recovery.js"></script>
+<script src="../engine/acs_flight_observer.js"></script>
+
+<!-- ✈ Fleet / Aircraft / Maintenance -->
+<script src="../engine/acs_reg_manager.js"></script>
+<script src="../engine/fleet_engine.js"></script>
+<script src="../engine/acs_aircraft_db.js"></script>
+<script src="../engine/acs_aircraft_wear_engine.js"></script>
+<script src="../engine/my_aircraft.js"></script>
+
+<!-- 🧑‍✈️ HR / Ops / Finance -->
+<script src="../engine/acs_hr_engine.js"></script>
+<script src="../engine/acs_department_ops_engine.js"></script>
+<script src="../engine/acs_airport_costs_engine.js"></script>
+<script src="../engine/acs_flightops_engine.js"></script>
+<script src="../engine/acs_slots_engine.js"></script>
+<script src="../engine/acs_flight_economics.js"></script>
+<script src="../engine/acs_finance.js"></script>
+<script src="../engine/acs_company_value.js"></script>
+
+<!-- 🧪 INTERNAL MONITOR (AL FINAL) -->
+<script src="./acs_monitor.js"></script>
+
      
 </body>
 </html>
