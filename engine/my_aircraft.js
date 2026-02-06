@@ -1416,11 +1416,11 @@ if (typeof registerTimeListener === "function") {
       ensureEmptyRows();
     }
 
-    // 5) Actualizar requerimientos HR
-    if (typeof HR_updateRequirementsFromFleet === "function") {
-      HR_updateRequirementsFromFleet();
-    }
+      // 5) Actualizar requerimientos HR
+  if (typeof HR_updateRequirementsFromFleet === "function") {
+    HR_updateRequirementsFromFleet();
+  }
 
-  });
+}); // ⬅️ cierra registerTimeListener
 
-}
+}   // ⬅️ cierra if (typeof registerTimeListener === "function")
