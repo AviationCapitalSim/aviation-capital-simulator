@@ -1230,6 +1230,69 @@ function openAircraftModal(reg) {
     };
   }
 
+  /* ============================================================
+     🟧 MA-8.5.4 — SERVICE BOX (IN-PROGRESS)
+     ============================================================ */
+
+  const box = document.getElementById("mServiceBox");
+  const elS1 = document.getElementById("mServiceStatus");
+  const elS2 = document.getElementById("mServiceRemaining");
+  const elS3 = document.getElementById("mServiceRelease");
+
+  const fmtRelease = (iso) => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    const DD  = String(d.getUTCDate()).padStart(2, "0");
+    const MON = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" }).toUpperCase();
+    const YY  = d.getUTCFullYear();
+    return `${DD} ${MON} ${YY}`;
+  };
+
+  if (box && ac.status === "Maintenance" && ac.maintenanceEndDate) {
+    const now = getSimTime();
+    const end = new Date(ac.maintenanceEndDate);
+    const remaining = Math.max(0, Math.ceil((end - now) / (24 * 60 * 60 * 1000)));
+
+    box.style.display = "block";
+
+    const t = ac.maintenanceType || "C";
+    if (elS1) elS1.textContent = `${t}-Check in progress`;
+    if (elS2) elS2.textContent = `${remaining} days`;
+    if (elS3) elS3.textContent = fmtRelease(ac.maintenanceEndDate);
+  } else {
+    if (box) box.style.display = "none";
+  }
+
+  /* ============================================================
+     🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE)
+     ============================================================ */
+
+  const btnC = document.getElementById("btnCcheck");
+  const btnD = document.getElementById("btnDcheck");
+
+  if (btnC && btnD) {
+
+    // reset UI
+    btnC.disabled = true;
+    btnD.disabled = true;
+
+    // si ya está en servicio -> no permitir iniciar otro
+    if (ac.status === "Maintenance") {
+      // ambos disabled
+    }
+    // prioridad D
+    else if (m.isDOverdue || m.nextD_days === 0) {
+      btnD.disabled = false;
+    }
+    // luego C
+    else if (m.isCOverdue || m.nextC_days === 0) {
+      btnC.disabled = false;
+    }
+
+    btnC.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+    btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+  }
+   
   modal.style.display = "flex";
 }
 
