@@ -1199,36 +1199,42 @@ function openAircraftModal(reg) {
     paint(elNextD, `${m.nextD_days} days`);
   }
 
-  /* ============================================================
-     🟩 MA-9 — MANUAL MAINTENANCE BUTTON BINDING
-     ============================================================ */
+ /* ============================================================
+   🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE)
+   ============================================================ */
 
-  const btnC = document.getElementById("btnCcheck");
-  const btnD = document.getElementById("btnDcheck");
+const btnC = document.getElementById("btnCcheck");
+const btnD = document.getElementById("btnDcheck");
 
-  if (btnC && btnD) {
+if (btnC && btnD) {
 
-    btnC.disabled = true;
-    btnD.disabled = true;
+  // 🔄 Reset absoluto (CRÍTICO)
+  btnC.onclick = null;
+  btnD.onclick = null;
+  btnC.disabled = true;
+  btnD.disabled = true;
 
-    if (ac.status !== "Maintenance") {
-      if (m.isDOverdue || m.nextD_days === 0) {
-        btnD.disabled = false;
-      } else if (m.isCOverdue || m.nextC_days === 0) {
-        btnC.disabled = false;
-      }
-    }
+  // ❌ Si ya está en mantenimiento → NO permitir iniciar otro
+  if (ac.status === "Maintenance") {
+    // ambos quedan deshabilitados
+  }
 
-    btnC.onclick = () => {
-      if (!ACS_ACTIVE_MODAL_REG) return;
-      ACS_confirmAndExecuteMaintenance(ACS_ACTIVE_MODAL_REG, "C");
-    };
-
+  // 🔴 PRIORIDAD ABSOLUTA: D-CHECK
+  else if (m.isDOverdue || m.nextD_days === 0) {
+    btnD.disabled = false;
     btnD.onclick = () => {
-      if (!ACS_ACTIVE_MODAL_REG) return;
-      ACS_confirmAndExecuteMaintenance(ACS_ACTIVE_MODAL_REG, "D");
+      ACS_confirmAndExecuteMaintenance(ac.registration, "D");
     };
   }
+
+  // 🟡 SEGUNDO NIVEL: C-CHECK
+  else if (m.isCOverdue || m.nextC_days === 0) {
+    btnC.disabled = false;
+    btnC.onclick = () => {
+      ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+    };
+  }
+}
 
   /* ============================================================
      🟧 MA-8.5.4 — SERVICE BOX (IN-PROGRESS)
