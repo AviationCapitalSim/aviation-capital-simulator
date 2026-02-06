@@ -163,77 +163,72 @@
         <button class="btn" id="btnRefresh">REFRESH SNAPSHOT</button>
       </div>
     </div>
+       
+<div class="grid">
 
-    <div class="grid">
-      <section class="card" id="cardTime">
-        <h2>🕒 TIME ENGINE</h2>
-        <pre id="outTime">Waiting...</pre>
-      </section>
+  <section class="card" id="cardTime">
+    <h2>🕒 TIME ENGINE</h2>
+    <pre id="outTime">Waiting...</pre>
+  </section>
 
-      <section class="card" id="cardHR">
-        <h2>🧑‍✈️ HR LIVE STATE</h2>
-        <pre id="outHR">Waiting...</pre>
-      </section>
+  <section class="card" id="cardHR">
+    <h2>🧑‍✈️ HR LIVE STATE</h2>
+    <pre id="outHR">Waiting...</pre>
+  </section>
 
-      <section class="card" id="cardFinance">
-        <h2>💰 FINANCE LEDGER</h2>
-        <pre id="outFinance">Waiting...</pre>
-      </section>
+  <section class="card" id="cardFinance">
+    <h2>💰 FINANCE LEDGER</h2>
+    <pre id="outFinance">Waiting...</pre>
+  </section>
 
-      <section class="card" id="cardOps">
-        <h2>🧭 OPS / ROUTES</h2>
-        <pre id="outOps">Waiting...</pre>
-      </section>
+  <section class="card" id="cardOps">
+    <h2>🧭 OPS / ROUTES</h2>
+    <pre id="outOps">Waiting...</pre>
+  </section>
 
-      <section class="card wide" id="cardWarnings">
-        <h2>⚠️ INTEGRITY & WARNINGS</h2>
-        <pre id="outWarnings">Waiting...</pre>
-      </section>
+  <section class="card wide" id="cardWarnings">
+    <h2>⚠️ INTEGRITY & WARNINGS</h2>
+    <pre id="outWarnings">Waiting...</pre>
+  </section>
+
+  <!-- ============================================================
+       🛩 MY AIRCRAFT — LIVE STATE (READ ONLY)
+       Purpose:
+       - Auditoría real de flota
+       - Diagnóstico de mantenimiento / tiempo / estado
+       ============================================================ -->
+  <section class="card wide" id="cardMyAircraft">
+    <h2>🛩 My Aircraft — Live State</h2>
+
+    <div class="monitor-subtitle">
+      Source: ACS_MyAircraft (localStorage) · Time-synced
     </div>
-  </div>
 
-<!-- ============================================================
-     🛩 MY AIRCRAFT — LIVE STATE (READ ONLY)
-     Purpose:
-     - Auditoría real de flota
-     - Diagnóstico de mantenimiento / tiempo / estado
-     ============================================================ -->
-<div class="monitor-card wide">
-  <h3>🛩 My Aircraft — Live State</h3>
-
-  <div class="monitor-subtitle">
-    Source: ACS_MyAircraft (localStorage) · Time-synced
-  </div>
-
-  <pre id="monitorMyAircraft"
-       style="
-         max-height: 360px;
-         overflow: auto;
-         background: #0b1424;
-         border: 1px solid #1f3b63;
-         border-radius: 8px;
-         padding: 12px;
-         font-size: 12px;
-         color: #cfe3ff;
-       ">
+    <pre id="monitorMyAircraft"
+         style="
+           max-height: 360px;
+           overflow: auto;
+           background: #0b1424;
+           border: 1px solid #1f3b63;
+           border-radius: 8px;
+           padding: 12px;
+           font-size: 12px;
+           color: #cfe3ff;
+         ">
 Loading fleet data…
-  </pre>
+    </pre>
+  </section>
+
+  <!-- ============================================================
+       🩺 ACS HEALTH SCORE
+       ============================================================ -->
+  <section class="card wide" id="healthPanel">
+    <h2>🩺 SYSTEM HEALTH</h2>
+    <div class="health-badge" id="healthBadge">—</div>
+    <pre id="outHealth">Waiting...</pre>
+  </section>
+
 </div>
-
-     
-<!-- ============================================================
-     🩺 ACS HEALTH SCORE
-     ============================================================ -->
-     
-<section class="card wide" id="healthPanel">
-  <h2>🩺 SYSTEM HEALTH</h2>
-     
-  <!-- AGREGA ESTE BADGE JUSTO DEBAJO DEL H2 -->
-     
-  <div class="health-badge" id="healthBadge">—</div>
-  <pre id="outHealth">Waiting...</pre>
-</section>
-
          
   <!-- JS del monitor -->
   <script src="./acs_monitor.js"></script>
