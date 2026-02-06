@@ -441,6 +441,157 @@
   background: linear-gradient(180deg, rgba(55,195,135,0.96), rgba(18,110,78,0.96));
   color:#ffffff;
 }
+
+:root {
+  --ql-gold: #d4af37;
+  --ql-gold-soft: rgba(212,175,55,0.35);
+  --ql-blue-dark: #0b1a33;
+  --ql-blue-panel: #0f2347;
+  --ql-text-main: #f5f7fa;
+  --ql-text-muted: #9fb3c8;
+  --ql-red: #c0392b;
+  --ql-amber: #f1b21a;
+}
+
+.ql-modal {
+  background: linear-gradient(180deg, #0c1e3d, #09162d);
+  border: 1px solid var(--ql-gold-soft);
+  box-shadow:
+    0 0 0 1px rgba(212,175,55,0.15),
+    0 30px 80px rgba(0,0,0,0.65);
+}
+
+.ql-box {
+  background: var(--ql-blue-panel);
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.ql-title {
+  color: var(--ql-gold);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.modal-box p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.35rem 0;
+  font-size: 0.92rem;
+}
+
+.modal-box b {
+  color: var(--ql-text-muted);
+  font-weight: 500;
+}
+
+.modal-box span {
+  color: var(--ql-text-main);
+}
+
+.ql-maint-status {
+  padding: 0.8rem;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #132b52, #0c1f3f);
+  border: 1px solid var(--ql-gold-soft);
+  margin-bottom: 0.8rem;
+}
+
+.ql-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--ql-text-muted);
+  text-transform: uppercase;
+}
+
+.ql-status-text {
+  font-size: 1.05rem;
+  color: var(--ql-gold);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+    
+.ql-service-box {
+  margin-top: 0.8rem;
+  padding: 0.9rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #101f3d, #0a1730);
+  border: 1px solid rgba(212,175,55,0.35);
+}
+
+.ql-service-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: var(--ql-gold);
+  margin-bottom: 0.6rem;
+}
+
+.ql-service-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.3rem 0;
+}
+
+.ql-muted {
+  color: var(--ql-text-muted);
+}
+
+.ql-focus span:last-child {
+  color: var(--ql-gold);
+  font-weight: 600;
+}
+
+.ql-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.ql-btn {
+  padding: 0.55rem 1.1rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.ql-btn-gold {
+  background: linear-gradient(180deg, #e0c05a, #b8922e);
+  color: #1b1404;
+}
+
+.ql-btn-amber {
+  background: linear-gradient(180deg, #f6c445, #d99a00);
+  color: #241a00;
+}
+
+.ql-btn-outline {
+  background: transparent;
+  border: 1px solid var(--ql-gold-soft);
+  color: var(--ql-text-main);
+}
+
+.ql-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+/* Overdue */
+.ql-overdue {
+  color: var(--ql-red);
+  border-color: rgba(192,57,43,0.6);
+}
+
+/* Maintenance Hold */
+.ql-hold {
+  color: var(--ql-amber);
+}
+
     
 </style>
 </head>
@@ -549,7 +700,7 @@
 <!-- === MODAL DETALLE === -->
   
 <div class="modal-bg" id="aircraftModal">
-  <div class="modal-detail">
+  <div class="modal-detail ql-modal">
     
     <div class="modal-header">
       <h3 id="modalTitle">Aircraft Detail</h3>
@@ -559,55 +710,72 @@
     <div class="modal-content-grid">
       
       <!-- LEFT COLUMN -->
-      <div class="modal-box">
-        <h4>General Info</h4>
-        <p><b>Registration:</b> <span id="mReg"></span></p>
-        <p><b>Model:</b> <span id="mModel"></span></p>
-        <p><b>Family:</b> <span id="mFamily"></span></p>
-        <p><b>Base:</b> <span id="mBase"></span></p>
-        <p><b>Status:</b> <span id="mStatus"></span></p>
-        <p><b>Delivery Date:</b> <span id="mDeliveryDate">—</span></p>
-        <p><b>Delivered Date:</b> <span id="mDeliveredDate">—</span></p>
-        <p><b>Condition:</b> <span id="mCondition"></span></p>
-        <p><b>Hours:</b> <span id="mHours"></span></p>
-        <p><b>Cycles:</b> <span id="mCycles"></span></p>
-        <p><b>Age:</b> <span id="mAge"></span> yrs</p>
+      <div class="modal-box ql-box">
+        <h4 class="ql-title">General Info</h4>
+
+        <p><b>Registration</b><span id="mReg"></span></p>
+        <p><b>Model</b><span id="mModel"></span></p>
+        <p><b>Family</b><span id="mFamily"></span></p>
+        <p><b>Base</b><span id="mBase"></span></p>
+        <p><b>Status</b><span id="mStatus"></span></p>
+
+        <hr class="ql-sep">
+
+        <p><b>Delivery Date</b><span id="mDeliveryDate">—</span></p>
+        <p><b>Delivered Date</b><span id="mDeliveredDate">—</span></p>
+        <p><b>Condition</b><span id="mCondition"></span></p>
+        <p><b>Hours</b><span id="mHours"></span></p>
+        <p><b>Cycles</b><span id="mCycles"></span></p>
+        <p><b>Age</b><span><span id="mAge"></span> yrs</span></p>
       </div>
 
       <!-- RIGHT COLUMN -->
-      
-      <div class="modal-box">
-        <h4>Maintenance</h4>
+      <div class="modal-box ql-box">
 
-        <p><b>Last C Check:</b> <span id="mLastC"></span></p>
-        <p><b>Next C Check:</b> <span id="mNextC"></span></p>
-        <p><b>Last D Check:</b> <span id="mLastD"></span></p>
-        <p><b>Next D Check:</b> <span id="mNextD"></span></p>
-
-        <!-- Separator -->
-        <hr style="border-color:rgba(255,255,255,0.15); margin:0.8rem 0;">
-
-        <!-- === SERVICE IN PROGRESS BOX (HIDDEN BY DEFAULT) === -->
-        <div id="mServiceBox" style="display:none;">
-          <p><b>Maintenance Status:</b> <span id="mServiceStatus">—</span></p>
-          <p><b>Remaining Time:</b> <span id="mServiceRemaining">—</span></p>
-          <p><b>Expected Release:</b> <span id="mServiceRelease">—</span></p>
+        <!-- MAINTENANCE STATUS -->
+        <div class="ql-maint-status">
+          <div class="ql-label">Maintenance Status</div>
+          <div class="ql-status-text" id="mMaintStatus">—</div>
         </div>
 
-        <!-- Separator -->
-        <hr style="border-color:rgba(255,255,255,0.15); margin:0.8rem 0;">
+        <!-- MAINTENANCE SCHEDULE -->
+        <div class="ql-maint-schedule">
+          <p><b>Last C Check</b><span id="mLastC"></span></p>
+          <p><b>Next C Check</b><span id="mNextC"></span></p>
+          <p><b>Last D Check</b><span id="mLastD"></span></p>
+          <p><b>Next D Check</b><span id="mNextD"></span></p>
+        </div>
 
-        <!-- ACTION BUTTONS (MOVED TO BOTTOM) -->
-        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <button class="btn-action" id="btnCcheck">Start C-Check</button>
-          <button class="btn-action" id="btnDcheck" style="background:#FFB300;">Start D-Check</button>
-          <button class="btn-action" id="btnLog" style="background:#007d4e;">Open Log</button>
+        <!-- ACTIVE SERVICE PANEL -->
+        <div class="ql-service-box" id="maintenanceServiceBox" style="display:none;">
+          <div class="ql-service-title">ACTIVE MAINTENANCE</div>
+
+          <div class="ql-service-row">
+            <span class="ql-muted">Service</span>
+            <span id="mServiceType">—</span>
+          </div>
+
+          <div class="ql-service-row ql-focus">
+            <span class="ql-muted">Remaining Time</span>
+            <span id="mServiceRemaining">—</span>
+          </div>
+
+          <div class="ql-service-row">
+            <span class="ql-muted">Expected Release</span>
+            <span id="mServiceRelease">—</span>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="ql-actions">
+          <button class="ql-btn ql-btn-gold" id="btnCcheck">INITIATE C-CHECK</button>
+          <button class="ql-btn ql-btn-amber" id="btnDcheck">INITIATE D-CHECK</button>
+          <button class="ql-btn ql-btn-outline" id="btnLog">VIEW MAINTENANCE LOG</button>
         </div>
 
       </div>
 
     </div>
-
   </div>
 </div>
 
