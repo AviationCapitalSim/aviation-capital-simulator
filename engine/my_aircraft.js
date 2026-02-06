@@ -832,13 +832,14 @@ function ACS_calculateMaintenanceCost(ac, type = "C") {
 }
 
 /* ============================================================
-   🟦 MA-8.7.A — DAILY AGING ENGINE (OPERATIONAL DAY SAFE)
+   🟦 MA-8.7.A — DAILY GROUND AGING ENGINE (NO HOURS)
    ------------------------------------------------------------
    Rule:
    - Aging SOLO cuando cambia el día simulado
-   - NO depende de ticks / minutos / UI
+   - NUNCA modifica hours ni cycles
+   - Aplica desgaste pasivo en tierra (condición)
    ------------------------------------------------------------
-   Version: v1.2 | Date: 06 FEB 2026
+   Version: v1.3 | Date: 06 FEB 2026
    ============================================================ */
 
 function ACS_applyDailyAging(ac) {
@@ -847,7 +848,6 @@ function ACS_applyDailyAging(ac) {
   // Estados que NO envejecen
   if (
     ac.status === "Maintenance" ||
-    ac.status === "Maintenance Hold" ||
     ac.status === "Pending Delivery"
   ) {
     return ac;
@@ -856,26 +856,38 @@ function ACS_applyDailyAging(ac) {
   const now = getSimTime();
   const simDay = now.toISOString().slice(0, 10); // YYYY-MM-DD
 
-  // Inicializar marcador
-  if (!ac.lastOperationalDay) {
-    ac.lastOperationalDay = simDay;
+  // Inicializar marcador diario
+  if (!ac.lastAgingDay) {
+    ac.lastAgingDay = simDay;
     return ac;
   }
 
-  // ⛔ Mismo día → NO hacer nada
-  if (ac.lastOperationalDay === simDay) {
+  // ⛔ Mismo día → no repetir
+  if (ac.lastAgingDay === simDay) {
     return ac;
   }
 
-  // ✅ Día operativo nuevo
-  // Solo aging si NO está volando
-  if (!ac.isFlying) {
-    const DAILY_AGING_HOURS = 0.5; // << MUY IMPORTANTE
-    ac.hours += DAILY_AGING_HOURS;
+  /* ======================================================
+     Aging PASIVO en tierra (NO horas)
+     ====================================================== */
+
+  if (ac.status === "Maintenance Hold" || !ac.isFlying) {
+
+    // Inicializar contador si no existe
+    ac.groundDays = (ac.groundDays || 0) + 1;
+
+    // Desgaste suave por almacenamiento / clima / corrosión
+    const DAILY_CONDITION_LOSS = 0.05; // % por día (muy leve)
+    if (typeof ac.conditionPercent === "number") {
+      ac.conditionPercent = Math.max(
+        0,
+        ac.conditionPercent - DAILY_CONDITION_LOSS
+      );
+    }
   }
 
   // Marcar día procesado
-  ac.lastOperationalDay = simDay;
+  ac.lastAgingDay = simDay;
 
   return ac;
 }
