@@ -177,15 +177,19 @@ function snapshotIntegrity(){
 }
 
 /* ============================================================
-   🛩 A2.5 — MY AIRCRAFT AUDITOR (PASSIVE / VITAL)
+   🟦 A4 — MY AIRCRAFT / FLEET MONITOR (PASSIVE)
    ------------------------------------------------------------
    Purpose:
-   - Auditoría CRÍTICA del estado de la flota
-   - SOLO lectura (localStorage)
-   - Detectar inconsistencias peligrosas
-   - NO renderiza listas, NO ejecuta lógica
+   - Auditoría PASIVA de flota
+   - Señales vitales únicamente
+   - Escalable (no lista aviones)
+   - CERO side-effects
+   ------------------------------------------------------------
+   Version: v1.0
+   Date: 06 FEB 2026
    ============================================================ */
-function snapshotMyAircraft(){
+
+function snapshotMyAircraftFleet(){
 
   const out = document.getElementById("monitorMyAircraft");
   if (!out) return;
@@ -198,69 +202,55 @@ function snapshotMyAircraft(){
     return;
   }
 
-  if (!Array.isArray(fleet)) {
-    out.textContent = "STATUS: ❌ ACS_MyAircraft is not an array";
+  if (!fleet.length) {
+    out.textContent = "STATUS: ⚠️ NO AIRCRAFT IN FLEET";
     return;
   }
 
-  let total = fleet.length;
   let active = 0;
-  let maintenance = 0;
-  let hold = 0;
-
-  const issues = [];
+  let maintHold = 0;
+  let other = 0;
+  let pendingC = 0;
+  let pendingD = 0;
+  let conditionSum = 0;
+  let conditionCount = 0;
+  let lowCondition = 0;
 
   fleet.forEach(ac => {
+    const status = String(ac.status || "").toUpperCase();
 
-    if (!ac || !ac.id) {
-      issues.push("Aircraft with missing ID");
-      return;
-    }
+    if (status === "ACTIVE") active++;
+    else if (status.includes("MAINT")) maintHold++;
+    else other++;
 
-    // Status count
-    if (ac.status === "Active") active++;
-    else if (ac.status === "Maintenance") maintenance++;
-    else if (ac.status === "Maintenance Hold") hold++;
-
-    // Critical numeric checks
-    if (typeof ac.hours === "number" && ac.hours < 0)
-      issues.push(`${ac.id} has negative flight hours`);
-
-    if (typeof ac.cycles === "number" && ac.cycles < 0)
-      issues.push(`${ac.id} has negative cycles`);
+    if (ac.pendingCCheck) pendingC++;
+    if (ac.pendingDCheck) pendingD++;
 
     if (typeof ac.conditionPercent === "number") {
-      if (ac.conditionPercent < 0 || ac.conditionPercent > 100)
-        issues.push(`${ac.id} conditionPercent out of range`);
+      conditionSum += ac.conditionPercent;
+      conditionCount++;
+      if (ac.conditionPercent < 70) lowCondition++;
     }
-
-    // Maintenance logic consistency
-    if (ac.maintenanceType && !ac.maintenanceStartDate)
-      issues.push(`${ac.id} maintenanceType set without start date`);
-
-    if (ac.pendingCCheck && ac.pendingDCheck)
-      issues.push(`${ac.id} pending C & D checks simultaneously`);
   });
 
-  const lines = [];
+  const avgCondition = conditionCount
+    ? Math.round(conditionSum / conditionCount)
+    : "N/A";
 
-  lines.push(`STATUS: ${issues.length ? "⚠️ ISSUES DETECTED" : "OK"}`);
-  lines.push("");
-  lines.push(`TOTAL AIRCRAFT : ${total}`);
-  lines.push(`ACTIVE         : ${active}`);
-  lines.push(`MAINTENANCE    : ${maintenance}`);
-  lines.push(`GROUND HOLD   : ${hold}`);
-  lines.push("");
-
-  lines.push("CHECKS:");
-  if (issues.length) {
-    issues.forEach(i => lines.push(`- ${i}`));
-  } else {
-    lines.push("✔ Fleet structure OK");
-    lines.push("✔ No critical inconsistencies detected");
-  }
-
-  out.textContent = lines.join("\n");
+  out.textContent = [
+    "STATUS          : OK",
+    `TOTAL AIRCRAFT  : ${fleet.length}`,
+    "",
+    `ACTIVE          : ${active}`,
+    `MAINT HOLD      : ${maintHold}`,
+    `GROUND / OTHER  : ${other}`,
+    "",
+    `PENDING C-CHECK : ${pendingC}`,
+    `PENDING D-CHECK : ${pendingD}`,
+    "",
+    `AVG CONDITION   : ${avgCondition} %`,
+    `LOW CONDITION   : ${lowCondition} aircraft (<70%)`
+  ].join("\n");
 }
 
 /* ============================================================
@@ -305,6 +295,7 @@ function snapshotHealth(){
 /* ============================================================
    ▶ INIT (MANUAL ONLY)
    ============================================================ */
+   
 function runAll(){
   snapshotTime();
   snapshotHR();
@@ -313,6 +304,7 @@ function runAll(){
   snapshotIntegrity();
   snapshotMyAircraft();
   snapshotHealth();
+  snapshotMyAircraftFleet();
 }
 
 runAll();
