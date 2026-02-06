@@ -1159,15 +1159,90 @@ if (m.nextD_days === "—") {
   document.getElementById("mNextD").textContent = `${m.nextD_days} days`;
 }
 
-  // (por ahora, como estaba)
-  document.getElementById("btnCcheck").disabled = true;
-  document.getElementById("btnDcheck").disabled = true;
-  document.getElementById("btnLog").disabled = true;
+ /* ============================================================
+   🟩 MA-9.1 — MANUAL MAINTENANCE BUTTON ENABLE LOGIC
+   ------------------------------------------------------------
+   Rule:
+   - C button → solo si C está due o overdue
+   - D button → solo si D está due o overdue
+   - Nunca ambos a la vez
+   ============================================================ */
+
+const btnC = document.getElementById("btnCcheck");
+const btnD = document.getElementById("btnDcheck");
+
+// Reset seguro
+btnC.disabled = true;
+btnD.disabled = true;
+
+// ❌ Si el avión ya está en mantenimiento → nada manual
+if (ac.status === "Maintenance") {
+  // leave disabled
+}
+else if (m.isDOverdue || m.nextD_days === 0) {
+  // 🔧 D tiene prioridad absoluta
+  btnD.disabled = false;
+}
+else if (m.isCOverdue || m.nextC_days === 0) {
+  btnC.disabled = false;
+}
 
   modal.style.display = "flex";
 }
 
+/* ============================================================
+   🟩 MA-9.3 — BUTTON BINDING (MANUAL)
+   ============================================================ */
+
+btnC.onclick = () => {
+  ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+};
+
+btnD.onclick = () => {
+  ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+};
+
 function closeModal() { modal.style.display = "none"; }
+
+/* ============================================================
+   🟩 MA-9.2 — MANUAL MAINTENANCE ACTION HANDLERS
+   ------------------------------------------------------------
+   Purpose:
+   - Ejecutar C / D Check manual desde el modal
+   - Confirmación simple (OK / Cancel)
+   - Usa ACS_executeMaintenance como engine único
+   ============================================================ */
+
+function ACS_confirmAndExecuteMaintenance(registration, type) {
+
+  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  const idx = fleetLatest.findIndex(a => a.registration === registration);
+  if (idx === -1) return;
+
+  const ac = fleetLatest[idx];
+
+  const label = type === "D" ? "D-Check" : "C-Check";
+
+  const ok = window.confirm(
+    `Confirm ${label} for aircraft ${ac.registration}?\n\n` +
+    `This will ground the aircraft for maintenance.`
+  );
+
+  if (!ok) return;
+
+  // Ejecutar mantenimiento
+  const updated = ACS_executeMaintenance(ac, type);
+
+  fleetLatest[idx] = updated;
+  localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetLatest));
+
+  // Refrescar estado global
+  fleet = fleetLatest;
+
+  // Cerrar modal y refrescar tabla
+  closeModal();
+  renderFleetTable();
+}
 
 /* ============================================================
    === EMPTY ROWS (si no hay flota) ============================
