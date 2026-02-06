@@ -700,7 +700,7 @@
 <!-- === MODAL DETALLE === -->
   
 <div class="modal-bg" id="aircraftModal">
-  <div class="modal-detail ql-modal">
+  <div class="modal-detail">
     
     <div class="modal-header">
       <h3 id="modalTitle">Aircraft Detail</h3>
@@ -710,75 +710,63 @@
     <div class="modal-content-grid">
       
       <!-- LEFT COLUMN -->
-      <div class="modal-box ql-box">
-        <h4 class="ql-title">General Info</h4>
+      <div class="modal-box">
+        <h4>General Info</h4>
 
-        <p><b>Registration</b><span id="mReg"></span></p>
-        <p><b>Model</b><span id="mModel"></span></p>
-        <p><b>Family</b><span id="mFamily"></span></p>
-        <p><b>Base</b><span id="mBase"></span></p>
-        <p><b>Status</b><span id="mStatus"></span></p>
+        <p><b>Registration:</b> <span id="mReg"></span></p>
+        <p><b>Model:</b> <span id="mModel"></span></p>
+        <p><b>Family:</b> <span id="mFamily"></span></p>
+        <p><b>Base:</b> <span id="mBase"></span></p>
+        <p><b>Status:</b> <span id="mStatus"></span></p>
 
-        <hr class="ql-sep">
+        <hr>
 
-        <p><b>Delivery Date</b><span id="mDeliveryDate">—</span></p>
-        <p><b>Delivered Date</b><span id="mDeliveredDate">—</span></p>
-        <p><b>Condition</b><span id="mCondition"></span></p>
-        <p><b>Hours</b><span id="mHours"></span></p>
-        <p><b>Cycles</b><span id="mCycles"></span></p>
-        <p><b>Age</b><span><span id="mAge"></span> yrs</span></p>
+        <p><b>Delivery Date:</b> <span id="mDeliveryDate">—</span></p>
+        <p><b>Delivered Date:</b> <span id="mDeliveredDate">—</span></p>
+
+        <hr>
+
+        <p><b>Condition:</b> <span id="mCondition"></span></p>
+        <p><b>Hours:</b> <span id="mHours"></span></p>
+        <p><b>Cycles:</b> <span id="mCycles"></span></p>
+        <p><b>Age:</b> <span id="mAge"></span> yrs</p>
       </div>
 
       <!-- RIGHT COLUMN -->
-      <div class="modal-box ql-box">
+      <div class="modal-box">
 
-        <!-- MAINTENANCE STATUS -->
-        <div class="ql-maint-status">
-          <div class="ql-label">Maintenance Status</div>
-          <div class="ql-status-text" id="mMaintStatus">—</div>
+        <!-- MAINTENANCE STATUS (PROTAGONISTA) -->
+        <div class="maintenance-status-box" id="maintenanceStatusBox">
+          <h5>Maintenance Status</h5>
+          <p id="mMaintStatus">—</p>
+          <p id="mMaintRemaining">—</p>
+          <p id="mMaintRelease">—</p>
         </div>
 
-        <!-- MAINTENANCE SCHEDULE -->
-        <div class="ql-maint-schedule">
-          <p><b>Last C Check</b><span id="mLastC"></span></p>
-          <p><b>Next C Check</b><span id="mNextC"></span></p>
-          <p><b>Last D Check</b><span id="mLastD"></span></p>
-          <p><b>Next D Check</b><span id="mNextD"></span></p>
-        </div>
+        <hr>
 
-        <!-- ACTIVE SERVICE PANEL -->
-        <div class="ql-service-box" id="maintenanceServiceBox" style="display:none;">
-          <div class="ql-service-title">ACTIVE MAINTENANCE</div>
+        <!-- MAINTENANCE CHECKS -->
+        <h4>Maintenance</h4>
+        <p><b>Last C Check:</b> <span id="mLastC"></span></p>
+        <p><b>Next C Check:</b> <span id="mNextC"></span></p>
+        <p><b>Last D Check:</b> <span id="mLastD"></span></p>
+        <p><b>Next D Check:</b> <span id="mNextD"></span></p>
 
-          <div class="ql-service-row">
-            <span class="ql-muted">Service</span>
-            <span id="mServiceType">—</span>
-          </div>
+        <hr>
 
-          <div class="ql-service-row ql-focus">
-            <span class="ql-muted">Remaining Time</span>
-            <span id="mServiceRemaining">—</span>
-          </div>
-
-          <div class="ql-service-row">
-            <span class="ql-muted">Expected Release</span>
-            <span id="mServiceRelease">—</span>
-          </div>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="ql-actions">
-          <button class="ql-btn ql-btn-gold" id="btnCcheck">INITIATE C-CHECK</button>
-          <button class="ql-btn ql-btn-amber" id="btnDcheck">INITIATE D-CHECK</button>
-          <button class="ql-btn ql-btn-outline" id="btnLog">VIEW MAINTENANCE LOG</button>
+        <!-- ACTION BUTTONS -->
+        <div class="maintenance-actions">
+          <button class="btn-action" id="btnCcheck">Initiate C-Check</button>
+          <button class="btn-action" id="btnDcheck">Initiate D-Check</button>
+          <button class="btn-action" id="btnLog">View Maintenance Log</button>
         </div>
 
       </div>
 
     </div>
+
   </div>
 </div>
-
 
 <!-- === ACS AIRCRAFT REGISTRATION MODAL — DARK PANEL === -->
   
