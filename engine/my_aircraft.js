@@ -1156,82 +1156,80 @@ function openAircraftModal(reg) {
   document.getElementById("mAge").textContent = ac.age || 0;
 
  /* ============================================================
-   🟧 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (DAYS + STATUS)
+   🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (LIVE, TIME-SYNC)
+   ------------------------------------------------------------
+   Fix definitivo:
+   • El modal NO calcula nada por su cuenta
+   • Lee SIEMPRE estado real del avión
+   • Se actualiza EN VIVO con el reloj del juego
+   • NO requiere refresh
+   • NO toca engine
    ============================================================ */
 
-  const m = ACS_resolveMaintenanceStatus(ac);
+(function bindLiveMaintenanceStatus() {
 
-  const elLastC = document.getElementById("mLastC");
-  const elNextC = document.getElementById("mNextC");
-  const elLastD = document.getElementById("mLastD");
-  const elNextD = document.getElementById("mNextD");
+  const elMaintStatus = document.getElementById("mMaintStatus");
+  const box           = document.getElementById("maintenanceServiceBox");
+  const elType        = document.getElementById("mServiceType");
+  const elRemain      = document.getElementById("mServiceRemaining");
+  const elRelease     = document.getElementById("mServiceRelease");
 
-  function paint(el, text, isOverdue = false) {
-    if (!el) return;
-    el.textContent = text;
-    el.style.color = isOverdue ? "#ff4d4d" : "#e6e6e6";
-    el.style.fontWeight = isOverdue ? "700" : "400";
-  }
+  // Seguridad
+  if (!elMaintStatus || !box) return;
 
-  if (m.nextC_days === "—") {
-    paint(elLastC, "—");
-    paint(elNextC, "—");
-  }
-  else if (m.isCOverdue) {
-    paint(elLastC, "OVERDUE", true);
-    paint(elNextC, `${Math.abs(m.nextC_days)} days overdue`, true);
-  }
-  else {
-    paint(elLastC, "OK");
-    paint(elNextC, `${m.nextC_days} days`);
-  }
+  function render() {
 
-  if (m.nextD_days === "—") {
-    paint(elLastD, "—");
-    paint(elNextD, "—");
-  }
-  else if (m.isDOverdue) {
-    paint(elLastD, "OVERDUE", true);
-    paint(elNextD, `${Math.abs(m.nextD_days)} days overdue`, true);
-  }
-  else {
-    paint(elLastD, "OK");
-    paint(elNextD, `${m.nextD_days} days`);
-  }
+    if (!ACS_ACTIVE_MODAL_REG) return;
 
- 
-  /* ============================================================
-     🟧 MA-8.5.4 — SERVICE BOX (IN-PROGRESS)
-     ============================================================ */
+    const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+    const ac = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
+    if (!ac) return;
 
-  const box = document.getElementById("mServiceBox");
-  const elS1 = document.getElementById("mServiceStatus");
-  const elS2 = document.getElementById("mServiceRemaining");
-  const elS3 = document.getElementById("mServiceRelease");
+    // ─────────────────────────────────────────
+    // CASO 1: NO ESTÁ EN MANTENIMIENTO
+    // ─────────────────────────────────────────
+    if (ac.status !== "Maintenance" || !ac.maintenanceEndDate) {
+      elMaintStatus.textContent = "AIRWORTHY";
+      box.style.display = "none";
+      return;
+    }
 
-  const fmtRelease = (iso) => {
-    if (!iso) return "—";
-    const d = new Date(iso);
-    const DD  = String(d.getUTCDate()).padStart(2, "0");
-    const MON = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" }).toUpperCase();
-    const YY  = d.getUTCFullYear();
-    return `${DD} ${MON} ${YY}`;
-  };
-
-  if (box && ac.status === "Maintenance" && ac.maintenanceEndDate) {
+    // ─────────────────────────────────────────
+    // CASO 2: MANTENIMIENTO ACTIVO (C / D)
+    // ─────────────────────────────────────────
     const now = getSimTime();
     const end = new Date(ac.maintenanceEndDate);
-    const remaining = Math.max(0, Math.ceil((end - now) / (24 * 60 * 60 * 1000)));
 
+    const remainingMs = Math.max(0, end - now);
+    const remainingDays  = Math.floor(remainingMs / (24 * 60 * 60 * 1000));
+    const remainingHours = Math.floor(
+      (remainingMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+    );
+
+    const type = ac.maintenanceType === "D" ? "D-CHECK" : "C-CHECK";
+
+    elMaintStatus.textContent = `IN ${type}`;
     box.style.display = "block";
 
-    const t = ac.maintenanceType || "C";
-    if (elS1) elS1.textContent = `${t}-Check in progress`;
-    if (elS2) elS2.textContent = `${remaining} days`;
-    if (elS3) elS3.textContent = fmtRelease(ac.maintenanceEndDate);
-  } else {
-    if (box) box.style.display = "none";
+    if (elType)   elType.textContent   = type;
+    if (elRemain) elRemain.textContent = `${remainingDays}d ${remainingHours}h`;
+    if (elRelease) {
+      elRelease.textContent = end
+        .toUTCString()
+        .replace(" GMT", "")
+        .substring(5, 16);
+    }
   }
+
+  // Render inmediato al abrir modal
+  render();
+
+  // 🔗 ENGANCHADO AL TIME ENGINE (VIVO)
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(render);
+  }
+
+})();
 
  /* ============================================================
    🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE)
