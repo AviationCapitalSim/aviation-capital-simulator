@@ -634,12 +634,9 @@ function ACS_checkMaintenanceAutoTrigger(ac) {
 /* ============================================================
    🟦 MA-8.5.B — MAINTENANCE RESOLVER (C & D) [READ-ONLY]
    ------------------------------------------------------------
-   Purpose:
-   - Resolver estado de mantenimiento usando baseline YA EXISTENTE
-   - Convertir horas → días para UI
-   - NO crea ni modifica baseline
-   ------------------------------------------------------------
-   Version: v1.1 | Date: 06 FEB 2026
+   Fix:
+   - NO muestra Next C/D si está en Maintenance
+   - El recalculo ocurre SOLO tras finalizar el servicio
    ============================================================ */
 
 function ACS_resolveMaintenanceStatus(ac) {
@@ -652,7 +649,17 @@ function ACS_resolveMaintenanceStatus(ac) {
     };
   }
 
-  // ❌ NO crear baseline aquí
+  /* ⛔ EN SERVICIO → NO MOSTRAR NEXT */
+  if (ac.status === "Maintenance") {
+    return {
+      nextC_days: "—",
+      nextD_days: "—",
+      isCOverdue: false,
+      isDOverdue: false,
+      inMaintenance: true
+    };
+  }
+
   if (
     typeof ac.baselineCHours !== "number" ||
     typeof ac.baselineDHours !== "number"
@@ -681,8 +688,8 @@ function ACS_resolveMaintenanceStatus(ac) {
   return {
     nextC_days,
     nextD_days,
-    isCOverdue: nextC_days <= 0,
-    isDOverdue: nextD_days <= 0
+    isCOverdue: nextC_days < 0,
+    isDOverdue: nextD_days < 0
   };
 }
 
