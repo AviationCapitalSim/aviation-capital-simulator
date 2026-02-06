@@ -858,14 +858,13 @@ function ACS_calculateMaintenanceCost(ac, type = "C") {
 }
 
 /* ============================================================
-   🟦 MA-8.7.A — DAILY GROUND AGING ENGINE (NO HOURS)
+   🟦 MA-8.7.A — DAILY GROUND AGING ENGINE (QUANTIZED)
    ------------------------------------------------------------
-   Rule:
-   - Aging SOLO cuando cambia el día simulado
-   - NUNCA modifica hours ni cycles
-   - Aplica desgaste pasivo en tierra (condición)
-   ------------------------------------------------------------
-   Version: v1.3 | Date: 06 FEB 2026
+   Fix:
+   - Evita decimales absurdos (95.86%)
+   - Cuantiza conditionPercent a pasos de 0.5%
+   - Mantiene desgaste realista y estable
+   - NO toca lógica de Maintenance
    ============================================================ */
 
 function ACS_applyDailyAging(ac) {
@@ -899,22 +898,25 @@ function ACS_applyDailyAging(ac) {
 
   if (ac.status === "Maintenance Hold" || !ac.isFlying) {
 
-    // Inicializar contador si no existe
     ac.groundDays = (ac.groundDays || 0) + 1;
 
-    // Desgaste suave por almacenamiento / clima / corrosión
-    const DAILY_CONDITION_LOSS = 0.05; // % por día (muy leve)
+    // Desgaste leve diario
+    const DAILY_CONDITION_LOSS = 0.05; // % real
+
     if (typeof ac.conditionPercent === "number") {
-      ac.conditionPercent = Math.max(
-        0,
-        ac.conditionPercent - DAILY_CONDITION_LOSS
-      );
+
+      let raw = ac.conditionPercent - DAILY_CONDITION_LOSS;
+
+      // 🟨 CUANTIZACIÓN REALISTA (0.5%)
+      const STEP = 0.5;
+      raw = Math.round(raw / STEP) * STEP;
+
+      // Clamp de seguridad
+      ac.conditionPercent = Math.max(0, Math.min(100, raw));
     }
   }
 
-  // Marcar día procesado
   ac.lastAgingDay = simDay;
-
   return ac;
 }
 
@@ -1196,17 +1198,17 @@ function openAircraftModal(reg) {
   document.getElementById("mAge").textContent = ac.age || 0;
 
  /* ============================================================
-   🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (LIVE + CLOCK SYNC)
+   🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (AVIATION CORRECT)
    ------------------------------------------------------------
    Fix:
-   - Remaining / Release usan el MISMO reloj del header
-   - Corre EN VIVO sin refresh
-   - Si el mantenimiento ya expiró en el tiempo actual, fuerza completion
+   - Maintenance Hold NO es Airworthy
+   - Maintenance in-progress muestra IN C/D-CHECK + countdown LIVE
+   - NO auto-complete desde el modal (eso es del pipeline oficial)
+   - Lee SIEMPRE el avión real desde localStorage
    ============================================================ */
 
-(function ACS_modalMaintenanceLiveBind() {
+(function ACS_modalMaintenanceRender() {
 
-  // Elementos del modal (según TU HTML Qatar Luxury)
   const elMaintStatus = document.getElementById("mMaintStatus");
   const box           = document.getElementById("maintenanceServiceBox");
   const elType        = document.getElementById("mServiceType");
@@ -1232,56 +1234,79 @@ function openAircraftModal(reg) {
     const acNow = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
     if (!acNow) return;
 
-    // Si no está en maintenance -> AIRWORTHY
-    if (acNow.status !== "Maintenance" || !acNow.maintenanceEndDate) {
-      elMaintStatus.textContent = "AIRWORTHY";
-      box.style.display = "none";
+    // Resolver “next/overdue” para HOLD / gating (scope local, sin errores)
+    const mLocal = ACS_resolveMaintenanceStatus(acNow);
+
+    // ─────────────────────────────────────────
+    // 1) EN SERVICIO (Maintenance)
+    // ─────────────────────────────────────────
+    if (acNow.status === "Maintenance" && acNow.maintenanceEndDate) {
+
+      const now = getSimTime();
+      const end = new Date(acNow.maintenanceEndDate);
+
+      const remainingMs = Math.max(0, end - now);
+      const days  = Math.floor(remainingMs / 86400000);
+      const hours = Math.floor((remainingMs % 86400000) / 3600000);
+
+      const type = (acNow.maintenanceType === "D") ? "D-CHECK" : "C-CHECK";
+
+      elMaintStatus.textContent = `IN ${type}`;
+      box.style.display = "block";
+
+      if (elType)   elType.textContent   = type;
+      if (elRemain) elRemain.textContent = `${days}d ${hours}h`;
+      if (elRelease) elRelease.textContent = fmtRelease(acNow.maintenanceEndDate);
+
       return;
     }
 
-    const now = getSimTime();
-    const end = new Date(acNow.maintenanceEndDate);
+    // ─────────────────────────────────────────
+    // 2) HOLD (Maintenance Hold) — NO AIRWORTHY
+    // ─────────────────────────────────────────
+    if (acNow.status === "Maintenance Hold") {
 
-    // Si YA terminó según reloj del juego: forzar completion inmediato
-    if (end <= now) {
-      if (typeof ACS_processMaintenanceCompletion === "function") {
-        ACS_processMaintenanceCompletion();
+      // Mostrar HOLD como estado principal
+      elMaintStatus.textContent = "MAINTENANCE HOLD";
+      box.style.display = "none";
+
+      // (Opcional, pero realista): si quieres enfatizar qué check está overdue:
+      // Prioridad D si está overdue
+      // Nota: Esto NO toca el panel de Next C/D (ya lo pintas arriba).
+      if (mLocal && (mLocal.isDOverdue || mLocal.isCOverdue)) {
+        // Si D overdue -> OVERDUE (D), si no -> OVERDUE (C)
+        const tag = mLocal.isDOverdue ? "D" : "C";
+        elMaintStatus.textContent = `MAINTENANCE HOLD — OVERDUE ${tag}`;
       }
-      // re-leer tras completion
-      const fleetAfter = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-      const acAfter = fleetAfter.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
-      if (!acAfter || acAfter.status !== "Maintenance") {
-        elMaintStatus.textContent = "AIRWORTHY";
-        box.style.display = "none";
-        return;
-      }
+
+      return;
     }
 
-    // Calcular remaining (live)
-    const remainingMs = Math.max(0, end - now);
-    const days  = Math.floor(remainingMs / 86400000);
-    const hours = Math.floor((remainingMs % 86400000) / 3600000);
-
-    const type = (acNow.maintenanceType === "D") ? "D-CHECK" : "C-CHECK";
-
-    elMaintStatus.textContent = `IN ${type}`;
-    box.style.display = "block";
-
-    if (elType)   elType.textContent   = type;
-    if (elRemain) elRemain.textContent = `${days}d ${hours}h`;
-    if (elRelease) elRelease.textContent = fmtRelease(acNow.maintenanceEndDate);
+    // ─────────────────────────────────────────
+    // 3) TODO LO DEMÁS — AIRWORTHY (Active, etc.)
+    // ─────────────────────────────────────────
+    elMaintStatus.textContent = "AIRWORTHY";
+    box.style.display = "none";
   }
 
-  // Pintar una vez al abrir
+  // Pintar inmediato al abrir
   render();
 
-  // Enganche LIVE al time engine (sin refresh)
+  // LIVE: enganchar al reloj del juego (sin refresh)
+  // Nota: evitamos duplicar listeners usando un singleton global.
   if (typeof registerTimeListener === "function") {
-    registerTimeListener(render);
+
+    if (!window.__ACS_MA_MODAL_LISTENER_INSTALLED) {
+      window.__ACS_MA_MODAL_LISTENER_INSTALLED = true;
+
+      registerTimeListener(() => {
+        // Solo render si hay modal activo
+        if (ACS_ACTIVE_MODAL_REG) render();
+      });
+    }
   }
 
 })();
-
 
 /* ============================================================
    🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE) [FIX]
