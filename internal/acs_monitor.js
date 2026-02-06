@@ -50,6 +50,103 @@
     write(outWarnings, "Waiting...");
   }
 
+/* ============================================================
+   🟦 BLOQUE 2 — MONITOR REFRESH BUS + MY AIRCRAFT COLLECTOR
+   ------------------------------------------------------------
+   Purpose:
+   - Un solo “bus” de refresh para todos los módulos del monitor
+   - Integración limpia de MyAircraft (READ-ONLY)
+   - Misma ejecución en:
+     1) Botón REFRESH SNAPSHOT
+     2) Tick/intervalo del monitor (si aplica)
+   ============================================================ */
+
+(function ACS_MONITOR_Bus(){
+
+  // Registro global (por si otros módulos se cuelgan aquí)
+  const listeners = [];
+
+  window.ACS_MONITOR_register = function(fn){
+    if (typeof fn !== "function") return;
+    listeners.push(fn);
+  };
+
+  window.ACS_MONITOR_refreshAll = function(){
+    listeners.forEach(fn => {
+      try { fn(); } catch (e) { console.warn("MONITOR listener error:", e); }
+    });
+  };
+
+  /* ============================================================
+     🛩 MONITOR — MY AIRCRAFT LIVE COLLECTOR (READ-ONLY)
+     ============================================================ */
+  function ACS_MONITOR_renderMyAircraft() {
+
+    const el = document.getElementById("monitorMyAircraft");
+    if (!el) return;
+
+    let fleet;
+    try {
+      fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    } catch (e) {
+      el.textContent = "❌ ERROR: Invalid ACS_MyAircraft JSON";
+      return;
+    }
+
+    const simISO =
+      (typeof window.ACS_getSimTime === "function")
+        ? new Date(window.ACS_getSimTime()).toISOString()
+        : "NO SIM TIME";
+
+    const simYear =
+      (typeof window.ACS_getSimTime === "function")
+        ? new Date(window.ACS_getSimTime()).getUTCFullYear()
+        : null;
+
+    const snapshot = {
+      simTimeISO: simISO,
+      simYear: simYear,
+      fleetCount: fleet.length,
+      aircraft: fleet.map(ac => ({
+        id: ac.id || null,
+        registration: ac.registration,
+        model: ac.model,
+        status: ac.status,
+        base: ac.base || null,
+
+        // Maintenance state
+        maintenanceType: ac.maintenanceType || null,
+        maintenanceStartDate: ac.maintenanceStartDate || null,
+        maintenanceEndDate: ac.maintenanceEndDate || null,
+
+        // Baselines
+        baselineCHours: (typeof ac.baselineCHours === "number") ? ac.baselineCHours : null,
+        baselineDHours: (typeof ac.baselineDHours === "number") ? ac.baselineDHours : null,
+
+        // Ops counters
+        hours: (typeof ac.hours === "number") ? ac.hours : null,
+        cycles: (typeof ac.cycles === "number") ? ac.cycles : null,
+
+        // Condition
+        conditionPercent: (typeof ac.conditionPercent === "number")
+          ? Number(ac.conditionPercent.toFixed(2))
+          : null,
+
+        // Flags
+        maintenanceHold: !!ac.maintenanceHold,
+        pendingCCheck: !!ac.pendingCCheck,
+        pendingDCheck: !!ac.pendingDCheck
+      }))
+    };
+
+    el.textContent = JSON.stringify(snapshot, null, 2);
+  }
+
+  // Registrar en el bus
+  window.ACS_MONITOR_register(ACS_MONITOR_renderMyAircraft);
+
+})();
+   
   /* ============================================================
      🕒 PHASE 2.2 — TIME ENGINE SNAPSHOT
      ============================================================ */
