@@ -177,80 +177,80 @@ function snapshotIntegrity(){
 }
 
 /* ============================================================
-   🟦 A4 — MY AIRCRAFT / FLEET MONITOR (PASSIVE)
+   🛩 MY AIRCRAFT — FLEET VITALS (PASSIVE MONITOR)
    ------------------------------------------------------------
    Purpose:
-   - Auditoría PASIVA de flota
-   - Señales vitales únicamente
-   - Escalable (no lista aviones)
-   - CERO side-effects
-   ------------------------------------------------------------
-   Version: v1.0
-   Date: 06 FEB 2026
+   - Resumen CRÍTICO de flota
+   - Detectar estados peligrosos
+   - NO modificar nada
+   - NO depender del core
    ============================================================ */
-
 function snapshotMyAircraftFleet(){
 
   const out = document.getElementById("monitorMyAircraft");
   if (!out) return;
 
-  let fleet;
+  let fleet = [];
   try {
     fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
   } catch {
-    out.textContent = "STATUS: ❌ INVALID ACS_MyAircraft DATA";
+    out.textContent = "❌ INVALID ACS_MyAircraft DATA";
     return;
   }
 
-  if (!fleet.length) {
-    out.textContent = "STATUS: ⚠️ NO AIRCRAFT IN FLEET";
-    return;
-  }
+  const total = fleet.length;
 
   let active = 0;
-  let maintHold = 0;
-  let other = 0;
+  let maintenance = 0;
+  let hold = 0;
   let pendingC = 0;
   let pendingD = 0;
-  let conditionSum = 0;
-  let conditionCount = 0;
-  let lowCondition = 0;
+
+  let hoursSum = 0;
+  let cyclesSum = 0;
+  let hoursCount = 0;
+  let cyclesCount = 0;
 
   fleet.forEach(ac => {
-    const status = String(ac.status || "").toUpperCase();
+    if (!ac) return;
 
-    if (status === "ACTIVE") active++;
-    else if (status.includes("MAINT")) maintHold++;
-    else other++;
+    if (ac.status === "Active") active++;
+    if (ac.status === "Maintenance") maintenance++;
+    if (ac.status === "Maintenance Hold") hold++;
 
     if (ac.pendingCCheck) pendingC++;
     if (ac.pendingDCheck) pendingD++;
 
-    if (typeof ac.conditionPercent === "number") {
-      conditionSum += ac.conditionPercent;
-      conditionCount++;
-      if (ac.conditionPercent < 70) lowCondition++;
+    if (typeof ac.hours === "number") {
+      hoursSum += ac.hours;
+      hoursCount++;
+    }
+
+    if (typeof ac.cycles === "number") {
+      cyclesSum += ac.cycles;
+      cyclesCount++;
     }
   });
 
-  const avgCondition = conditionCount
-    ? Math.round(conditionSum / conditionCount)
-    : "N/A";
+  const avgHours  = hoursCount  ? Math.round(hoursSum / hoursCount)  : "—";
+  const avgCycles = cyclesCount ? Math.round(cyclesSum / cyclesCount) : "—";
 
-  out.textContent = [
-    "STATUS          : OK",
-    `TOTAL AIRCRAFT  : ${fleet.length}`,
+  const lines = [
+    "STATUS: OK",
     "",
-    `ACTIVE          : ${active}`,
-    `MAINT HOLD      : ${maintHold}`,
-    `GROUND / OTHER  : ${other}`,
+    `TOTAL AIRCRAFT     : ${total}`,
+    `ACTIVE             : ${active}`,
+    `MAINTENANCE        : ${maintenance}`,
+    `MAINTENANCE HOLD   : ${hold}`,
     "",
-    `PENDING C-CHECK : ${pendingC}`,
-    `PENDING D-CHECK : ${pendingD}`,
+    `PENDING C-CHECK    : ${pendingC}`,
+    `PENDING D-CHECK    : ${pendingD}`,
     "",
-    `AVG CONDITION   : ${avgCondition} %`,
-    `LOW CONDITION   : ${lowCondition} aircraft (<70%)`
-  ].join("\n");
+    `AVG HOURS          : ${avgHours}`,
+    `AVG CYCLES         : ${avgCycles}`
+  ];
+
+  out.textContent = lines.join("\n");
 }
 
 /* ============================================================
