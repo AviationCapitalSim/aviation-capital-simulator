@@ -177,78 +177,60 @@ function snapshotIntegrity(){
 }
 
 /* ============================================================
-   🛩 MY AIRCRAFT — FLEET MONITOR (VITAL / READ ONLY)
-   ------------------------------------------------------------
-   Purpose:
-   - Resumen de flota (NO JSON crudo)
-   - Solo datos vitales: status + uso + mantenimiento + flags
-   - Lee EXCLUSIVAMENTE: localStorage.ACS_MyAircraft
+   🛩 MY AIRCRAFT — VITAL MONITOR (PASSIVE)
    ============================================================ */
-function snapshotMyAircraftFleet(){
+function snapshotMyAircraft(){
+
+  console.log("SNAPSHOT MY AIRCRAFT RUNNING");
 
   const out = document.getElementById("monitorMyAircraft");
-  if (!out) return;
+  if (!out) {
+    console.error("monitorMyAircraft element NOT FOUND");
+    return;
+  }
 
-  let fleet = [];
+  let fleet;
   try {
     fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
   } catch (e) {
-    out.textContent = "❌ INVALID ACS_MyAircraft JSON";
+    out.textContent = "❌ ACS_MyAircraft INVALID JSON";
     return;
   }
 
-  if (!Array.isArray(fleet) || fleet.length === 0) {
-    out.textContent = "No aircraft found in ACS_MyAircraft.";
+  if (!Array.isArray(fleet)) {
+    out.textContent = "❌ ACS_MyAircraft NOT ARRAY";
     return;
   }
 
-  // Conteos rápidos
-  const countBy = (fn) => fleet.reduce((acc,a)=>{ const k=fn(a); acc[k]=(acc[k]||0)+1; return acc; }, {});
-  const byStatus = countBy(a => (a.status || "UNKNOWN"));
-  const byBase   = countBy(a => (a.base || "—"));
+  const total = fleet.length;
+  let active = 0, maintenance = 0, hold = 0, pC = 0, pD = 0;
+  let h = 0, c = 0, hc = 0, cc = 0;
 
-  // Formato tipo “HR/Finance”, legible
-  const lines = [];
-  lines.push("STATUS: OK");
-  lines.push(`FLEET COUNT : ${fleet.length}`);
-  lines.push("");
-
-  lines.push("BY STATUS:");
-  Object.entries(byStatus).forEach(([k,v]) => lines.push(`- ${String(k).padEnd(16)} : ${v}`));
-
-  lines.push("");
-  lines.push("BY BASE:");
-  Object.entries(byBase).forEach(([k,v]) => lines.push(`- ${String(k).padEnd(16)} : ${v}`));
-
-  lines.push("");
-  lines.push("AIRCRAFT (VITAL):");
-
-  fleet.slice(0, 50).forEach((ac, idx) => {
-    const reg   = ac.registration || "—";
-    const model = ac.model || "—";
-    const st    = ac.status || "—";
-    const hrs   = (typeof ac.hours === "number") ? ac.hours : "—";
-    const cyc   = (typeof ac.cycles === "number") ? ac.cycles : "—";
-    const cond  = (typeof ac.conditionPercent === "number") ? `${ac.conditionPercent}%` : "—";
-
-    const mType = ac.maintenanceType || "—";
-    const hold  = ac.maintenanceHold ? "HOLD" : "";
-    const pC    = ac.pendingCCheck ? "P-C" : "";
-    const pD    = ac.pendingDCheck ? "P-D" : "";
-
-    const flags = [hold, pC, pD].filter(Boolean).join(" ");
-
-    lines.push(
-      `${String(idx+1).padStart(2,"0")}) ${reg} | ${model} | ${st}` +
-      ` | HRS:${hrs} CYC:${cyc} COND:${cond}` +
-      ` | M:${mType}${flags ? " | " + flags : ""}`
-    );
+  fleet.forEach(ac => {
+    if (!ac) return;
+    if (ac.status === "Active") active++;
+    if (ac.status === "Maintenance") maintenance++;
+    if (ac.status === "Maintenance Hold") hold++;
+    if (ac.pendingCCheck) pC++;
+    if (ac.pendingDCheck) pD++;
+    if (typeof ac.hours === "number") { h += ac.hours; hc++; }
+    if (typeof ac.cycles === "number") { c += ac.cycles; cc++; }
   });
 
-  if (fleet.length > 50) {
-    lines.push("");
-    lines.push(`(Showing first 50 of ${fleet.length} for performance)`);
-  }
+  const lines = [
+    "STATUS: OK",
+    "",
+    `TOTAL AIRCRAFT     : ${total}`,
+    `ACTIVE             : ${active}`,
+    `MAINTENANCE        : ${maintenance}`,
+    `MAINTENANCE HOLD   : ${hold}`,
+    "",
+    `PENDING C CHECK    : ${pC}`,
+    `PENDING D CHECK    : ${pD}`,
+    "",
+    `AVG HOURS          : ${hc ? Math.round(h/hc) : "—"}`,
+    `AVG CYCLES         : ${cc ? Math.round(c/cc) : "—"}`
+  ];
 
   out.textContent = lines.join("\n");
 }
@@ -297,6 +279,7 @@ function snapshotHealth(){
    ============================================================ */
    
 function runAll(){
+  console.log("RUNALL START");
   snapshotTime();
   snapshotHR();
   snapshotFinance();
@@ -304,9 +287,7 @@ function runAll(){
   snapshotIntegrity();
   snapshotMyAircraft();
   snapshotHealth();
-  snapshotMyAircraftFleet(); // ✅ ahora SÍ existe
 }
-
 
 runAll();
 
