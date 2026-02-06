@@ -177,13 +177,12 @@ function snapshotIntegrity(){
 }
 
 /* ============================================================
-   🛩 MY AIRCRAFT — FLEET VITALS (PASSIVE MONITOR)
+   🛩 MY AIRCRAFT — FLEET MONITOR (VITAL / READ ONLY)
    ------------------------------------------------------------
    Purpose:
-   - Resumen CRÍTICO de flota
-   - Detectar estados peligrosos
-   - NO modificar nada
-   - NO depender del core
+   - Resumen de flota (NO JSON crudo)
+   - Solo datos vitales: status + uso + mantenimiento + flags
+   - Lee EXCLUSIVAMENTE: localStorage.ACS_MyAircraft
    ============================================================ */
 function snapshotMyAircraftFleet(){
 
@@ -192,63 +191,64 @@ function snapshotMyAircraftFleet(){
 
   let fleet = [];
   try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
-  } catch {
-    out.textContent = "❌ INVALID ACS_MyAircraft DATA";
+    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  } catch (e) {
+    out.textContent = "❌ INVALID ACS_MyAircraft JSON";
     return;
   }
 
-  const total = fleet.length;
+  if (!Array.isArray(fleet) || fleet.length === 0) {
+    out.textContent = "No aircraft found in ACS_MyAircraft.";
+    return;
+  }
 
-  let active = 0;
-  let maintenance = 0;
-  let hold = 0;
-  let pendingC = 0;
-  let pendingD = 0;
+  // Conteos rápidos
+  const countBy = (fn) => fleet.reduce((acc,a)=>{ const k=fn(a); acc[k]=(acc[k]||0)+1; return acc; }, {});
+  const byStatus = countBy(a => (a.status || "UNKNOWN"));
+  const byBase   = countBy(a => (a.base || "—"));
 
-  let hoursSum = 0;
-  let cyclesSum = 0;
-  let hoursCount = 0;
-  let cyclesCount = 0;
+  // Formato tipo “HR/Finance”, legible
+  const lines = [];
+  lines.push("STATUS: OK");
+  lines.push(`FLEET COUNT : ${fleet.length}`);
+  lines.push("");
 
-  fleet.forEach(ac => {
-    if (!ac) return;
+  lines.push("BY STATUS:");
+  Object.entries(byStatus).forEach(([k,v]) => lines.push(`- ${String(k).padEnd(16)} : ${v}`));
 
-    if (ac.status === "Active") active++;
-    if (ac.status === "Maintenance") maintenance++;
-    if (ac.status === "Maintenance Hold") hold++;
+  lines.push("");
+  lines.push("BY BASE:");
+  Object.entries(byBase).forEach(([k,v]) => lines.push(`- ${String(k).padEnd(16)} : ${v}`));
 
-    if (ac.pendingCCheck) pendingC++;
-    if (ac.pendingDCheck) pendingD++;
+  lines.push("");
+  lines.push("AIRCRAFT (VITAL):");
 
-    if (typeof ac.hours === "number") {
-      hoursSum += ac.hours;
-      hoursCount++;
-    }
+  fleet.slice(0, 50).forEach((ac, idx) => {
+    const reg   = ac.registration || "—";
+    const model = ac.model || "—";
+    const st    = ac.status || "—";
+    const hrs   = (typeof ac.hours === "number") ? ac.hours : "—";
+    const cyc   = (typeof ac.cycles === "number") ? ac.cycles : "—";
+    const cond  = (typeof ac.conditionPercent === "number") ? `${ac.conditionPercent}%` : "—";
 
-    if (typeof ac.cycles === "number") {
-      cyclesSum += ac.cycles;
-      cyclesCount++;
-    }
+    const mType = ac.maintenanceType || "—";
+    const hold  = ac.maintenanceHold ? "HOLD" : "";
+    const pC    = ac.pendingCCheck ? "P-C" : "";
+    const pD    = ac.pendingDCheck ? "P-D" : "";
+
+    const flags = [hold, pC, pD].filter(Boolean).join(" ");
+
+    lines.push(
+      `${String(idx+1).padStart(2,"0")}) ${reg} | ${model} | ${st}` +
+      ` | HRS:${hrs} CYC:${cyc} COND:${cond}` +
+      ` | M:${mType}${flags ? " | " + flags : ""}`
+    );
   });
 
-  const avgHours  = hoursCount  ? Math.round(hoursSum / hoursCount)  : "—";
-  const avgCycles = cyclesCount ? Math.round(cyclesSum / cyclesCount) : "—";
-
-  const lines = [
-    "STATUS: OK",
-    "",
-    `TOTAL AIRCRAFT     : ${total}`,
-    `ACTIVE             : ${active}`,
-    `MAINTENANCE        : ${maintenance}`,
-    `MAINTENANCE HOLD   : ${hold}`,
-    "",
-    `PENDING C-CHECK    : ${pendingC}`,
-    `PENDING D-CHECK    : ${pendingD}`,
-    "",
-    `AVG HOURS          : ${avgHours}`,
-    `AVG CYCLES         : ${avgCycles}`
-  ];
+  if (fleet.length > 50) {
+    lines.push("");
+    lines.push(`(Showing first 50 of ${fleet.length} for performance)`);
+  }
 
   out.textContent = lines.join("\n");
 }
@@ -302,9 +302,11 @@ function runAll(){
   snapshotFinance();
   snapshotOps();
   snapshotIntegrity();
+  snapshotMyAircraft();
   snapshotHealth();
-  snapshotMyAircraftFleet();
+  snapshotMyAircraftFleet(); // ✅ ahora SÍ existe
 }
+
 
 runAll();
 
