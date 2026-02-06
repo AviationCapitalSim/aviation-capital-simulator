@@ -1136,51 +1136,56 @@ function openAircraftModal(reg) {
   document.getElementById("mCycles").textContent = ac.cycles;
   document.getElementById("mAge").textContent = ac.age || 0;
 
-  /* ============================================================
-   🟧 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (DAYS)
+/* ============================================================
+   🟧 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (DAYS + STATUS)
    ============================================================ */
 
 const m = ACS_resolveMaintenanceStatus(ac);
 
-/* ============================================================
-   🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (SAFE SCOPE)
-   ============================================================ */
+const elLastC = document.getElementById("mLastC");
+const elNextC = document.getElementById("mNextC");
+const elLastD = document.getElementById("mLastD");
+const elNextD = document.getElementById("mNextD");
 
-const btnC = document.getElementById("btnCcheck");
-const btnD = document.getElementById("btnDcheck");
-
-if (!btnC || !btnD) {
-  console.warn("⚠️ Maintenance buttons not found in modal DOM");
-} else {
-
-  // Reset absoluto
-  btnC.disabled = true;
-  btnD.disabled = true;
-
-  // ❌ Si ya está en mantenimiento → nada manual
-  if (ac.status === "Maintenance") {
-    // ambos quedan deshabilitados
-  }
-  // 🔧 D tiene prioridad absoluta
-  else if (m.isDOverdue || m.nextD_days === 0) {
-    btnD.disabled = false;
-  }
-  // 🔧 Luego C
-  else if (m.isCOverdue || m.nextC_days === 0) {
-    btnC.disabled = false;
-  }
-
-  // Bind manual (scope seguro)
-  btnC.onclick = () => {
-    ACS_confirmAndExecuteMaintenance(ac.registration, "C");
-  };
-
-  btnD.onclick = () => {
-    ACS_confirmAndExecuteMaintenance(ac.registration, "D");
-  };
+// Helper visual
+function paint(el, text, isOverdue = false) {
+  el.textContent = text;
+  el.style.color = isOverdue ? "#ff4d4d" : "#e6e6e6";
+  el.style.fontWeight = isOverdue ? "700" : "400";
 }
 
-  modal.style.display = "flex";
+/* =========================
+   C CHECK
+   ========================= */
+
+if (m.nextC_days === "—") {
+  paint(elLastC, "—");
+  paint(elNextC, "—");
+}
+else if (m.isCOverdue) {
+  paint(elLastC, "OVERDUE", true);
+  paint(elNextC, `${Math.abs(m.nextC_days)} days overdue`, true);
+}
+else {
+  paint(elLastC, "OK");
+  paint(elNextC, `${m.nextC_days} days`);
+}
+
+/* =========================
+   D CHECK
+   ========================= */
+
+if (m.nextD_days === "—") {
+  paint(elLastD, "—");
+  paint(elNextD, "—");
+}
+else if (m.isDOverdue) {
+  paint(elLastD, "OVERDUE", true);
+  paint(elNextD, `${Math.abs(m.nextD_days)} days overdue`, true);
+}
+else {
+  paint(elLastD, "OK");
+  paint(elNextD, `${m.nextD_days} days`);
 }
 
 function closeModal() { modal.style.display = "none"; }
