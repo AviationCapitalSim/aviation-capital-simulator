@@ -1162,21 +1162,16 @@ function ACS_applyCalendarMaintenanceProgress(ac) {
 }
 
 /* ============================================================
-   🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
+   🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (CALENDAR-SAFE)
    ------------------------------------------------------------
-   Fix:
-   - Soporta Maintenance in-progress (remaining days + release)
-   - Mantiene overdue como "xxx days overdue"
-   ------------------------------------------------------------
-   Version: v1.3 | Date: 06 FEB 2026
+   Fix B1:
+   - Maintenance Hold usa SOLO calendario
+   - NO recalcula C/D desde horas cuando está HOLD
+   - Días siguen corriendo aunque el jugador no entre
    ============================================================ */
 
 function ACS_applyMaintenanceComputedFields(ac) {
   if (!ac) return ac;
-
-  // Compat: normaliza alias mínimos (legacy)
-  if (!ac.lastCCheckDate && ac.lastC) ac.lastCCheckDate = ac.lastC;
-  if (!ac.lastDCheckDate && ac.lastD) ac.lastDCheckDate = ac.lastD;
 
   const now = getSimTime();
 
@@ -1187,38 +1182,46 @@ function ACS_applyMaintenanceComputedFields(ac) {
     return `${v} days`;
   };
 
-  // ✅ Caso 1: Servicio en progreso (C o D)
-  if (ac.status === "Maintenance" && ac.maintenanceEndDate) {
+  /* ======================================================
+     🛑 MAINTENANCE HOLD → CALENDAR IS KING
+     ====================================================== */
+  if (ac.status === "Maintenance Hold") {
 
-    const end = new Date(ac.maintenanceEndDate);
-    const remaining = Math.max(0, Math.ceil((end - now) / (24 * 60 * 60 * 1000)));
+    // Inicializar si no existen
+    if (typeof ac.nextC_days !== "number") ac.nextC_days = 0;
+    if (typeof ac.nextD_days !== "number") ac.nextD_days = 0;
 
-    ac.maintenanceRemainingDays = remaining;
-    ac.maintenanceReleaseISO = end.toISOString();
+    // Decrementar SOLO una vez por día simulado
+    const today = now.toISOString().slice(0, 10);
 
-    // Durante servicio: NO mostrar nextC/nextD normales
-    const t = ac.maintenanceType || "C";
-
-    if (t === "C") {
-      ac.nextC = `${remaining} days remaining`;
-      ac.nextD = "—";
-    } else {
-      ac.nextC = "—";
-      ac.nextD = `${remaining} days remaining`;
+    if (ac._lastCalendarTick !== today) {
+      ac.nextC_days -= 1;
+      ac.nextD_days -= 1;
+      ac._lastCalendarTick = today;
     }
 
-    // Guardar numérico por consistencia
-    ac.nextC_days = "—";
-    ac.nextD_days = "—";
+    // Flags overdue
+    ac.nextC_overdue = ac.nextC_days < 0;
+    ac.nextD_overdue = ac.nextD_days < 0;
+
+    // Texto UI
+    ac.nextC = fmtDays(ac.nextC_days);
+    ac.nextD = fmtDays(ac.nextD_days);
 
     return ac;
   }
 
-  // ✅ Caso 2: Normal (usa resolver)
+  /* ======================================================
+     🟢 NORMAL MODE → HOURS-BASED (ACTIVE)
+     ====================================================== */
+
   const m = ACS_resolveMaintenanceStatus(ac);
 
   ac.nextC_days = m.nextC_days;
   ac.nextD_days = m.nextD_days;
+
+  ac.nextC_overdue = m.isCOverdue;
+  ac.nextD_overdue = m.isDOverdue;
 
   ac.nextC = fmtDays(m.nextC_days);
   ac.nextD = fmtDays(m.nextD_days);
