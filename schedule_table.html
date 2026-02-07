@@ -2036,7 +2036,7 @@ tr.appendChild(td);
     const maintBtn = document.createElement("button");
     maintBtn.className = "btn btn-maint";
     maintBtn.textContent = "Plan Maintenance";
-    maintBtn.onclick = () => openMaintModal(realModel);
+    maintBtn.onclick = () => openMaintModal(realModel, null, ac.id);
 
     wrap.appendChild(assignBtn);
     wrap.appendChild(maintBtn);
