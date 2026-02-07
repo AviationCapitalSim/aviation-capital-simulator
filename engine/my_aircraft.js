@@ -1763,3 +1763,66 @@ if (typeof registerTimeListener === "function") {
   });
 
 }
+
+/* ============================================================
+   🧠 MA-1 — TIME ENGINE HOOK (ACS OFFICIAL)
+   ------------------------------------------------------------
+   Purpose:
+   - Conectar My Aircraft al reloj simulado ACS
+   - Forzar actualización de mantenimiento (C / D)
+   - Evitar estados congelados
+   ------------------------------------------------------------
+   SAFE:
+   - No toca UI
+   - No toca estilos
+   - No crea timers paralelos
+   ============================================================ */
+
+(function hookMyAircraftToTimeEngine(){
+
+  // Evitar doble hook
+  if (window.__ACS_MY_AIRCRAFT_TIME_HOOKED__) return;
+  window.__ACS_MY_AIRCRAFT_TIME_HOOKED__ = true;
+
+  // Esperar a que el Time Engine exista
+  function waitForTimeEngine(){
+    if (window.ACS_TIME_ENGINE && typeof window.ACS_TIME_ENGINE.onTick === "function") {
+      bindTimeEngine();
+    } else {
+      setTimeout(waitForTimeEngine, 300);
+    }
+  }
+
+  function bindTimeEngine(){
+
+    console.log("🧠 [MY AIRCRAFT] Time Engine linked");
+
+    window.ACS_TIME_ENGINE.onTick(function(gameDate){
+
+      // Guardar tiempo actual del juego (referencia global)
+      window.ACS_GAME_DATE = gameDate;
+
+      // 🔁 Recalcular mantenimiento basado en tiempo simulado
+      if (typeof updateAircraftMaintenanceTimers === "function") {
+        updateAircraftMaintenanceTimers(gameDate);
+      }
+
+      // 🔄 Refrescar tabla (si existe)
+      if (typeof renderFleetTable === "function") {
+        renderFleetTable();
+      }
+
+      // 🔄 Refrescar modal si está abierto
+      if (
+        window.__ACS_SELECTED_AIRCRAFT__ &&
+        typeof renderAircraftModal === "function"
+      ) {
+        renderAircraftModal(window.__ACS_SELECTED_AIRCRAFT__);
+      }
+
+    });
+  }
+
+  waitForTimeEngine();
+
+})();
