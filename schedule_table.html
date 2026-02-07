@@ -1838,13 +1838,24 @@ wrapInfo.innerHTML = `
 
      const aircraftId = String(ac.id || "").trim();
 
-     const rawDayItems = (byAircraftId[aircraftId] || []).filter(
-     x =>
-     x.day === day &&
-     x.assigned === true &&
-     x.__edited !== true &&        // 🔴 CLAVE: NO pintar vuelos editados
-     ACS_isFlightCompatibleWithAircraft(x, ac)
-    );
+     const rawDayItems = (byAircraftId[aircraftId] || []).filter(x => {
+  if (!x) return false;
+  if (String(x.day || "").toLowerCase() !== day) return false;
+  if (x.__edited === true) return false;
+
+  // ✅ SERVICES: siempre visibles si pertenecen al avión
+  if (x.type === "service") {
+    return true; // (assigned no obligatorio para services)
+  }
+
+  // ✅ FLIGHTS: mantener reglas actuales
+  if (x.type === "flight") {
+    if (x.assigned !== true) return false;
+    return ACS_isFlightCompatibleWithAircraft(x, ac);
+  }
+
+  return false;
+});
      
     const dayItems = ACS_sortDayEvents(rawDayItems);
          
@@ -2752,21 +2763,34 @@ if (sameServiceAlreadyPlanned) {
   return;
 }
      
-  // ============================================================
-  // 📦 6️⃣ INSERTAR SERVICE ITEM
-  // ============================================================
-  items.push({
-    id: "svc-" + Math.random().toString(36).slice(2, 8),
-    type: "service",
-    serviceType: t,
-    aircraftId: ac.id,
-    tail: normalizeModel(ac.model || ac.type),
-    acType: ac.type || "",
-    day: d,
-    start,
-    end,
-    durationMin: (t === "B" ? 1440 : 300)
-  });
+ // ============================================================
+// 📦 6️⃣ INSERTAR SERVICE ITEM (FIX: visible + compatible con UI)
+// ============================================================
+items.push({
+  id: "svc-" + Math.random().toString(36).slice(2, 8),
+  type: "service",
+  serviceType: t,
+
+  aircraftId: ac.id,
+
+  // ✅ requerido por el render semanal
+  day: String(d || "").toLowerCase(),
+  assigned: true,              // 🔑 sin esto, el filtro lo oculta
+
+  // ✅ mantener formato humano
+  start,
+  end,
+
+  // ✅ requerido por bcheck-day + orden cronológico
+  startMinute: toMin(start) ?? 0,
+  endMinute:   toMin(end)   ?? (t === "B" ? 1440 : 300),
+
+  // compat/metadata
+  tail: normalizeModel(ac.model || ac.type),
+  acType: ac.type || "",
+
+  durationMin: (t === "B" ? 1440 : 300)
+});
 
   // ============================================================
   // ✅ 7️⃣ FINAL
