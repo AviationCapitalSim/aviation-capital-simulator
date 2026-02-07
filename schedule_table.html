@@ -1866,15 +1866,28 @@ wrapInfo.innerHTML = `
 
      const aircraftId = String(ac.id || "").trim();
 
-     const rawDayItems = (byAircraftId[aircraftId] || []).filter(
-     x =>
-     x.day === day &&
-     x.assigned === true &&
-     x.__edited !== true &&        // 🔴 CLAVE: NO pintar vuelos editados
-     ACS_isFlightCompatibleWithAircraft(x, ac)
-    );
-     
-    const dayItems = ACS_sortDayEvents(rawDayItems);
+     const rawDayItems = (byAircraftId[aircraftId] || []).filter(x => {
+
+  if (!x) return false;
+
+  // Día
+  if (String(x.day || "").toLowerCase() !== day) return false;
+
+  // FLIGHT: compatibilidad por modelo
+  if (x.type === "flight") {
+    if (x.__edited === true) return false;
+    return ACS_isFlightCompatibleWithAircraft(x, ac);
+  }
+
+  // SERVICE: siempre se pinta (ya viene con aircraftId)
+  if (x.type === "service") {
+    return true;
+  }
+
+  return false;
+});
+
+const dayItems = ACS_sortDayEvents(rawDayItems);
          
 /* ============================================================
    🟫 PASO 2 — DETECT B-CHECK FOR DAY — 17DEC25
