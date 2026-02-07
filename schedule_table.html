@@ -1669,30 +1669,33 @@ fleet.forEach(ac => {
 localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
      
 // ============================================================
-// 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (AC_xxx) — FINAL
+// 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (FLIGHTS + SERVICES)
 // ============================================================
-     
+
 const byAircraftId = {};
 
 // NOTE:
-// - flights/services deben venir con it.aircraftId = "AC_0007"
-// - day debe existir (mon..sun) para pintar en tabla semanal
+// - flights y services conviven (como en v1.5)
+// - aircraftId es la clave única
+// - day DEBE ser mon..sun
 
 items.forEach(it => {
 
-  // 🔴 SOLO vuelos reales
-  if (!it || (it.type !== "flight" && it.type !== "service")) return;
+  if (!it) return;
 
-  // ⛔ NO indexar vuelos editados
+  // ⛔ ignorar items marcados como editados
   if (it.__edited === true) return;
 
-  // 🔴 Requiere aircraftId válido
+  // ⛔ requiere aircraftId válido
   const key = String(it.aircraftId || "").trim();
   if (!key) return;
 
-  // 🔴 Requiere día válido (mon..sun)
+  // ⛔ requiere día válido
   const day = String(it.day || "").toLowerCase();
   if (!["mon","tue","wed","thu","fri","sat","sun"].includes(day)) return;
+
+  // ✅ aceptar SOLO flight o service
+  if (it.type !== "flight" && it.type !== "service") return;
 
   if (!byAircraftId[key]) byAircraftId[key] = [];
   byAircraftId[key].push(it);
