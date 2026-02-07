@@ -1293,6 +1293,58 @@ function ACS_getAircraftStatusBadge(ac){
     class: "badge-unknown"
   };
 }
+
+/* ============================================================
+   🟧 A3.1 — SCHEDULE OPERATIONAL AUTHORITY (ACS)
+   ------------------------------------------------------------
+   Purpose:
+   - Schedule es la ÚNICA autoridad de vuelo
+   - Decide si el avión puede volar o no
+   - SkyTrack solo lee `canFly`
+   ------------------------------------------------------------
+*/
+
+function ACS_EvaluateOperationalStatus(ac) {
+
+  // Default
+  ac.canFly = true;
+  ac.groundReason = null;
+
+  // --- HARD BLOCKERS ---
+  if (ac.nextB_overdue) {
+    ac.canFly = false;
+    ac.groundReason = "B-overdue";
+  }
+
+  if (ac.nextC_overdue) {
+    ac.canFly = false;
+    ac.groundReason = "C-overdue";
+  }
+
+  if (ac.nextD_overdue) {
+    ac.canFly = false;
+    ac.groundReason = "D-overdue";
+  }
+
+  // --- ACTIVE MAINTENANCE ---
+  if (ac.maintenanceStatus === "B") {
+    ac.canFly = false;
+    ac.groundReason = "B-check";
+  }
+
+  if (ac.maintenanceStatus === "C") {
+    ac.canFly = false;
+    ac.groundReason = "C-check";
+  }
+
+  if (ac.maintenanceStatus === "D") {
+    ac.canFly = false;
+    ac.groundReason = "D-check";
+  }
+
+  return ac;
+}
+
      
 /* ============================================================
    🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
