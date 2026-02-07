@@ -2001,7 +2001,17 @@ if (it.type === "service") {
       ? "🔧 A-Check"
       : "⚙️ B-Check";
 
-  chip.onclick = () => openFlightModal(it, chip);
+  chip.onclick = () => {
+    // 🔑 guardar contexto del service seleccionado
+    window.selectedService = it;
+
+    // abrir Maintenance Modal en modo EDIT
+    openMaintModal(
+      ac.model || ac.type,
+      it               // ⬅️ PASAMOS EL SERVICE REAL
+    );
+  };
+
   td.appendChild(chip);
 }
 
@@ -2534,10 +2544,28 @@ function ACS_applyInitialFlightCosts(route, ac){
 // ============================================================
 let maintTail = null;
 
-function openMaintModal(tail){
-  maintTail = tail;
-  ACS_populateMaintenanceTimes();
-  document.getElementById("maintModal").style.display = "flex";
+function openMaintModal(realModel, service = null) {
+
+  // Guardar service activo si existe
+  window.__EDITING_SERVICE__ = service;
+
+  const modal = document.getElementById("maintModal");
+  if (!modal) return;
+
+  modal.style.display = "flex";
+
+  // Si es edición, precargar datos
+  if (service && service.type === "service") {
+
+    document.getElementById("maintType").value =
+      service.serviceType || "A";
+
+    document.getElementById("maintDay").value =
+      service.day || "mon";
+
+    document.getElementById("maintStart").value =
+      service.start || "00:00";
+  }
 }
      
 /* ============================================================
