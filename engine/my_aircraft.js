@@ -985,6 +985,95 @@ function ACS_applyGroundTimeAccrual(ac) {
 }
 
 /* ============================================================
+   🅿️ MA-8.7.C — IDLE CALENDAR DEGRADATION (REAL AVIATION)
+   ------------------------------------------------------------
+   Purpose:
+   - Diferenciar turnaround vs avión realmente parado
+   - Degradar por calendario SOLO si está idle real
+   - Aplica a:
+     • Idle sin rutas
+     • Maintenance Hold
+   - NO suma horas ni ciclos
+   ------------------------------------------------------------
+   Rules (CANON):
+   - Idle = NO voló >= 48h  AND  NO tiene rutas
+   - Turnaround corto NO degrada
+   ============================================================ */
+
+function ACS_applyIdleCalendarDegradation(ac) {
+  if (!ac) return ac;
+
+  const now = getSimTime();
+  const today = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  // Inicializar referencias
+  if (!ac.lastCalendarCheckDay) {
+    ac.lastCalendarCheckDay = today;
+    return ac;
+  }
+
+  // ⛔ Mismo día → no repetir
+  if (ac.lastCalendarCheckDay === today) {
+    return ac;
+  }
+
+  /* ======================================================
+     Determinar IDLE REAL
+     ====================================================== */
+
+  const HOURS_IDLE_THRESHOLD = 48;
+
+  const lastFlight = ac.lastFlightAt
+    ? new Date(ac.lastFlightAt)
+    : null;
+
+  const hoursSinceLastFlight = lastFlight
+    ? (now - lastFlight) / 3600000
+    : Infinity;
+
+  const hasRoutesAssigned =
+    typeof ac.hasRoutes === "boolean"
+      ? ac.hasRoutes
+      : false;
+
+  const isIdleReal =
+    hoursSinceLastFlight >= HOURS_IDLE_THRESHOLD &&
+    hasRoutesAssigned === false;
+
+  const isMaintenanceBlocked =
+    ac.status === "Maintenance Hold" ||
+    ac.status === "Maintenance";
+
+  if (!isIdleReal && !isMaintenanceBlocked) {
+    ac.lastCalendarCheckDay = today;
+    return ac;
+  }
+
+  /* ======================================================
+     Calendar Degradation (SLOW & REAL)
+     ====================================================== */
+
+  // 1) Condición por corrosión / inactividad
+  const DAILY_IDLE_CONDITION_LOSS = 0.03; // % muy lento
+
+  if (typeof ac.conditionPercent === "number") {
+    let raw = ac.conditionPercent - DAILY_IDLE_CONDITION_LOSS;
+
+    // Cuantizar a 0.5%
+    const STEP = 0.5;
+    raw = Math.round(raw / STEP) * STEP;
+
+    ac.conditionPercent = Math.max(0, Math.min(100, raw));
+  }
+
+  // 2) Contadores calendario (para C/D por fecha)
+  ac.calendarIdleDays = (ac.calendarIdleDays || 0) + 1;
+
+  ac.lastCalendarCheckDay = today;
+  return ac;
+}
+
+/* ============================================================
    🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
    ------------------------------------------------------------
    Fix:
@@ -1825,9 +1914,11 @@ if (typeof registerTimeListener === "function") {
 
   ac = ACS_applyDailyAging(ac);
   ac = ACS_applyGroundTimeAccrual(ac);
+  ac = ACS_applyIdleCalendarDegradation(ac); // ← AQUÍ
   ac = ACS_applyMaintenanceBaseline(ac);
   ac = ACS_applyMaintenanceHold(ac);
   ac = ACS_checkMaintenanceAutoTrigger(ac);
+  ac = ACS_applyMaintenanceComputedFields(ac);
 
   if (ac.pendingDCheck) {
     ac = ACS_executeMaintenance(ac, "D");
