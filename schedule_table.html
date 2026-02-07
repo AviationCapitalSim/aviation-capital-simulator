@@ -2674,28 +2674,178 @@ function validateACheck(ac, day, startHHMM, endHHMM) {
   return true;
 }
      
+// ============================================================
+// 🛠 MAINTENANCE (FIX EDIT vs APPLY) — 07 FEB 2026
+// REEMPLAZA COMPLETO el bloque actual "MAINTENANCE"
+// (desde: // ============================================================
+//         // MAINTENANCE
+//  hasta el final de applyMaintenance())
+// ============================================================
+
+let maintTail = null;          // legacy (model string)
+let maintAircraftId = null;    // ✅ ID real del avión (source of truth)
+
+function openMaintModal(realModel, service = null, aircraftId = null) {
+
+  // ============================================================
+  // 🔑 PASO 1 — SETEAR CONTEXTO (CRÍTICO)
+  // ============================================================
+  maintTail = realModel || null;
+  maintAircraftId = aircraftId || null;
+
+  // Guardar service activo si existe (modo EDIT)
+  window.__EDITING_SERVICE__ = (service && service.type === "service") ? service : null;
+
+  // ============================================================
+  // 🕒 START TIME OPTIONS (30 MIN STEPS)
+  // ============================================================
+  const startSel = document.getElementById("maintStart");
+  if (startSel) {
+    startSel.innerHTML = "";
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const hh = String(h).padStart(2, "0");
+        const mm = String(m).padStart(2, "0");
+        const opt = document.createElement("option");
+        opt.value = `${hh}:${mm}`;
+        opt.textContent = `${hh}:${mm}`;
+        startSel.appendChild(opt);
+      }
+    }
+  }
+
+  // ============================================================
+  // 🟣 UI MODE: PLAN vs EDIT (MISMO MODAL, distinto modo)
+  // ============================================================
+  const modal = document.getElementById("maintModal");
+  if (!modal) return;
+
+  // Cambiar título y botón según modo
+  const headerTitle = modal.querySelector(".acs-maint-header h3");
+  const btnApply = modal.querySelector(".maint-btn.apply");
+
+  if (window.__EDITING_SERVICE__) {
+    if (headerTitle) headerTitle.textContent = "🛠 Edit Maintenance";
+    if (btnApply) btnApply.textContent = "Save";
+  } else {
+    if (headerTitle) headerTitle.textContent = "🛠 Plan Maintenance";
+    if (btnApply) btnApply.textContent = "Apply";
+  }
+
+  modal.style.display = "flex";
+
+  // ============================================================
+  // 🟡 MODO EDICIÓN — PRECARGAR DATOS
+  // ============================================================
+  if (window.__EDITING_SERVICE__) {
+    const svc = window.__EDITING_SERVICE__;
+    const typeEl = document.getElementById("maintType");
+    const dayEl  = document.getElementById("maintDay");
+    const stEl   = document.getElementById("maintStart");
+
+    if (typeEl) typeEl.value = svc.serviceType || "A";
+    if (dayEl)  dayEl.value  = svc.day || "mon";
+    if (stEl)   stEl.value   = svc.start || "00:00";
+  }
+}
+
+function closeMaintModal(){
+  maintTail = null;
+  maintAircraftId = null;
+  window.__EDITING_SERVICE__ = null;
+
+  const modal = document.getElementById("maintModal");
+  if (modal) modal.style.display = "none";
+}
+
+/* ============================================================
+   ✅ VALIDATE A-CHECK — overlap vs flights SAME aircraft/day
+   ============================================================ */
+function validateACheck(ac, day, startHHMM, endHHMM) {
+
+  if (!ac || !ac.id) return false;
+
+  const items = getItems();
+
+  const startMin = toMin(startHHMM);
+  const endMin   = toMin(endHHMM);
+
+  if (startMin === null || endMin === null) return false;
+
+  // Solo vuelos asignados a ESTE avión y MISMO día
+  const flights = items.filter(x =>
+    x &&
+    x.type === "flight" &&
+    x.assigned === true &&
+    String(x.aircraftId || "").trim() === String(ac.id || "").trim() &&
+    String(x.day || "").toLowerCase() === String(day || "").toLowerCase()
+  );
+
+  for (const f of flights) {
+    const fStart = toMin(f.departure);
+    const fEnd   = toMin(f.arrival);
+    if (fStart === null || fEnd === null) continue;
+
+    const overlap =
+      (startMin >= fStart && startMin < fEnd) ||
+      (endMin > fStart && endMin <= fEnd) ||
+      (startMin <= fStart && endMin >= fEnd);
+
+    if (overlap) {
+      const msg =
+        `The selected A-Check conflicts with a scheduled flight.<br>` +
+        `Flight: ${f.departure} → ${f.arrival}<br>` +
+        `A-Check: ${startHHMM} → ${endHHMM}`;
+
+      showMaintenanceErrorModal(msg);
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function applyMaintenance(){
 
-  if (!maintTail) {
+  // ============================================================
+  // 0) GUARDIA
+  // ============================================================
+  if (!maintTail && !maintAircraftId) {
     closeMaintModal();
     return;
   }
 
-  const t = document.getElementById("maintType").value;
-  const d = document.getElementById("maintDay").value;
-  const start = document.getElementById("maintStart").value || "06:00";
-  const dur = t === "A" ? 300 : 1440;
-  const end = toHHMM(toMin(start) + dur);
+  const t = document.getElementById("maintType")?.value || "A";
+  const d = document.getElementById("maintDay")?.value || "mon";
+  const start = document.getElementById("maintStart")?.value || "06:00";
+  const dur = (t === "A") ? 300 : 1440;
+
+  const startMin = toMin(start);
+  if (startMin === null) {
+    alert("⚠ Invalid start time.");
+    return;
+  }
+
+  const end = toHHMM(startMin + dur);
 
   const items = getItems();
   const fleet = getRealFleet();
 
   // ============================================================
-  // 🔑 1️⃣ IDENTIFICAR AVIÓN (OBLIGATORIO PRIMERO)
+  // 1) IDENTIFICAR AVIÓN (PRIORIDAD: aircraftId)
   // ============================================================
-  const ac = fleet.find(x =>
-    normalizeModel(x.model || x.type || "") === normalizeModel(maintTail)
-  );
+  let ac = null;
+
+  if (maintAircraftId) {
+    ac = fleet.find(x => String(x.id || "").trim() === String(maintAircraftId).trim()) || null;
+  }
+
+  // fallback legacy por modelo
+  if (!ac && maintTail) {
+    ac = fleet.find(x =>
+      normalizeModel(x.model || x.type || "") === normalizeModel(maintTail)
+    ) || null;
+  }
 
   if (!ac) {
     alert("⚠ Aircraft not found for maintenance.");
@@ -2703,36 +2853,61 @@ function applyMaintenance(){
     return;
   }
 
-  // ============================================================
-  // 🛑 2️⃣ BLOQUEAR SERVICIO DUPLICADO EN EL MISMO DÍA
-  // ============================================================
-  const serviceAlreadyExists = items.some(it =>
-    it.type === "service" &&
-    it.aircraftId === ac.id &&
-    it.day === d
-  );
+  const editingService = window.__EDITING_SERVICE__;
+  const isEditing = !!(editingService && editingService.id);
 
-  if (serviceAlreadyExists) {
-    alert("⚠ A maintenance service is already scheduled for this aircraft on this day.");
-    closeMaintModal();
-    return;
+  // ============================================================
+  // 2) VALIDACIÓN A-CHECK (en ambos modos)
+  // ============================================================
+  if (t === "A") {
+    const ok = validateACheck(ac, d, start, end);
+    if (!ok) return; // NO cerrar: dejar corregir
   }
 
   // ============================================================
-  // 🟢 3️⃣ VALIDAR A-CHECK (CONFLICTOS CON VUELOS)
+  // 3) CREATE: bloquear duplicados (EDIT: NO bloquearse a sí mismo)
   // ============================================================
-  if (t === "A") {
-    const isValid = validateACheck(ac, d, start, end);
-    if (!isValid) {
+  if (!isEditing) {
+
+    const serviceSameDay = items.some(it =>
+      it &&
+      it.type === "service" &&
+      it.aircraftId === ac.id &&
+      String(it.day || "").toLowerCase() === String(d || "").toLowerCase()
+    );
+
+    if (serviceSameDay) {
+      alert("⚠ A maintenance service is already scheduled for this aircraft on this day.");
+      closeMaintModal();
+      return;
+    }
+
+    const sameTypeAlready = items.some(it =>
+      it &&
+      it.type === "service" &&
+      it.aircraftId === ac.id &&
+      it.serviceType === t
+    );
+
+    if (sameTypeAlready) {
+      alert(t === "A"
+        ? "This aircraft already has an A-Check scheduled."
+        : "This aircraft already has a B-Check scheduled."
+      );
       closeMaintModal();
       return;
     }
   }
 
   // ============================================================
-  // 💰 4️⃣ COSTO B-CHECK (SOLO SI ES B)
+  // 4) COSTO B-CHECK (solo si se crea o si cambias a B en EDIT)
   // ============================================================
-  if (t === "B") {
+  const shouldChargeB =
+    (t === "B") && (
+      !isEditing || (editingService.serviceType !== "B")
+    );
+
+  if (shouldChargeB) {
     try {
       let F = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
       if (typeof F.capital === "number") {
@@ -2743,7 +2918,7 @@ function applyMaintenance(){
         F.log.push({
           type: "B_CHECK",
           aircraft: ac.registration || ac.tail || ac.model,
-          day: d.toUpperCase(),
+          day: String(d || "").toUpperCase(),
           amount: costB,
           date: new Date().toISOString()
         });
@@ -2754,108 +2929,76 @@ function applyMaintenance(){
     }
   }
 
-  /* ============================================================
-   🧩 PASO 5B — REGISTER B-CHECK PLAN (SAFE TIME)
-   ============================================================ */
+  // ============================================================
+  // 5) ESCRITURA: EDIT → UPDATE / CREATE → PUSH
+  // ============================================================
+  if (isEditing) {
 
-if (t === "B") {
+    const targetId = String(editingService.id).trim();
+    const idx = items.findIndex(x =>
+      x && x.type === "service" && String(x.id || "").trim() === targetId
+    );
 
-  let nowTs = Date.now(); // fallback final
+    if (idx === -1) {
+      alert("⛔ Service not found to edit.");
+      closeMaintModal();
+      return;
+    }
 
-  // 1️⃣ Preferido: helper si existe
-  if (typeof getSimTime === "function") {
-    nowTs = getSimTime().getTime();
+    const old = items[idx];
 
-  // 2️⃣ Motor expuesto (si existe)
-  } else if (window.ACS_TIME && ACS_TIME.currentTime) {
-    nowTs = ACS_TIME.currentTime.getTime();
+    items[idx] = {
+      ...old,
+      serviceType: t,
+      aircraftId: ac.id,
 
-  // 3️⃣ Storage (arquitectura actual segura)
+      day: String(d || "").toLowerCase(),
+      assigned: true,
+
+      start,
+      end,
+
+      startMinute: toMin(start) ?? 0,
+      endMinute:   (toMin(end) ?? (t === "B" ? 1440 : 300)),
+
+      tail: normalizeModel(ac.model || ac.type),
+      acType: ac.type || "",
+
+      durationMin: (t === "B" ? 1440 : 300)
+    };
+
   } else {
-    try {
-      const T = JSON.parse(localStorage.getItem("ACS_TIME_STATE") || "{}");
-      if (T.currentTime) {
-        nowTs = new Date(T.currentTime).getTime();
-      }
-    } catch(e){}
+
+    items.push({
+      id: "svc-" + Math.random().toString(36).slice(2, 8),
+      type: "service",
+      serviceType: t,
+
+      aircraftId: ac.id,
+
+      day: String(d || "").toLowerCase(),
+      assigned: true,
+
+      start,
+      end,
+
+      startMinute: toMin(start) ?? 0,
+      endMinute:   (toMin(end) ?? (t === "B" ? 1440 : 300)),
+
+      tail: normalizeModel(ac.model || ac.type),
+      acType: ac.type || "",
+
+      durationMin: (t === "B" ? 1440 : 300)
+    });
+
   }
 
-  ac.bCheckPlanned = true;
-  ac.bCheckPlannedAt = nowTs;
-}
-
-/* ============================================================
-   🟧 B-PLAN — PERSIST FLEET (CRITICAL)
-   ------------------------------------------------------------
-   • Garantiza que bCheckPlanned quede guardado en ACS_MyAircraft
-   • Sin esto, SkyTrack no puede bloquear por B mandatory
-   ============================================================ */
-try {
-  if (typeof setFleet === "function") {
-    setFleet(fleet);
-  } else {
-    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-  }
-} catch (e) {
-  console.warn("⚠️ B-PLAN persist failed:", e);
-}
-     
-/* ============================================================
-   🚫 RULE — ONLY ONE PENDING SERVICE PER TYPE (A / B)
-   ============================================================ */
-
-const sameServiceAlreadyPlanned = items.some(it =>
-  it.type === "service" &&
-  it.aircraftId === ac.id &&
-  it.serviceType === t
-);
-
-if (sameServiceAlreadyPlanned) {
-  alert(
-    t === "A"
-      ? "This aircraft already has an A-Check scheduled."
-      : "This aircraft already has a B-Check scheduled."
-  );
+  // ============================================================
+  // 6) FINAL
+  // ============================================================
+  setItems(items);
   closeMaintModal();
-  return;
-}
-     
- // ============================================================
-// 📦 6️⃣ INSERTAR SERVICE ITEM (FIX: visible + compatible con UI)
-// ============================================================
-items.push({
-  id: "svc-" + Math.random().toString(36).slice(2, 8),
-  type: "service",
-  serviceType: t,
-
-  aircraftId: ac.id,
-
-  // ✅ requerido por el render semanal
-  day: String(d || "").toLowerCase(),
-  assigned: true,              // 🔑 sin esto, el filtro lo oculta
-
-  // ✅ mantener formato humano
-  start,
-  end,
-
-  // ✅ requerido por bcheck-day + orden cronológico
-  startMinute: toMin(start) ?? 0,
-  endMinute:   toMin(end)   ?? (t === "B" ? 1440 : 300),
-
-  // compat/metadata
-  tail: normalizeModel(ac.model || ac.type),
-  acType: ac.type || "",
-
-  durationMin: (t === "B" ? 1440 : 300)
-});
-
-  // ============================================================
-  // ✅ 7️⃣ FINAL
-  // ============================================================
- 
-   setItems(items);
-   closeMaintModal();
-   renderSchedule();
+  renderSchedule();
 }
 
 function removeItem(){
