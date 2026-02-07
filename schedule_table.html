@@ -1669,22 +1669,14 @@ fleet.forEach(ac => {
 localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
      
 // ============================================================
-// 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (AC_xxx) — FINAL
+// 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (FLIGHTS + SERVICES) — FIX
 // ============================================================
-     
-const byAircraftId = {};
 
-// NOTE:
-// - flights/services deben venir con it.aircraftId = "AC_0007"
-// - day debe existir (mon..sun) para pintar en tabla semanal
+const byAircraftId = {};
 
 items.forEach(it => {
 
-  // 🔴 SOLO vuelos reales
-  if (!it || (it.type !== "flight" && it.type !== "service")) return;
-
-  // ⛔ NO indexar vuelos editados
-  if (it.__edited === true) return;
+  if (!it) return;
 
   // 🔴 Requiere aircraftId válido
   const key = String(it.aircraftId || "").trim();
@@ -1694,8 +1686,44 @@ items.forEach(it => {
   const day = String(it.day || "").toLowerCase();
   if (!["mon","tue","wed","thu","fri","sat","sun"].includes(day)) return;
 
+  // ✅ crear bucket
   if (!byAircraftId[key]) byAircraftId[key] = [];
-  byAircraftId[key].push(it);
+
+  // ----------------------------
+  // FLIGHTS
+  // ----------------------------
+  if (it.type === "flight") {
+
+    // ⛔ NO indexar vuelos editados
+    if (it.__edited === true) return;
+
+    byAircraftId[key].push(it);
+    return;
+  }
+
+  // ----------------------------
+  // SERVICES (A/B)
+  // ----------------------------
+  if (it.type === "service") {
+
+    // Normalizar minutos para lógica existente (bcheck-day + sort)
+    const sMin = toMin(it.start);
+    const eMin = toMin(it.end);
+
+    it.startMinute = Number.isFinite(sMin) ? sMin : null;
+
+    if (Number.isFinite(eMin)) {
+      it.endMinute = eMin;
+    } else if (Number.isFinite(sMin) && Number.isFinite(it.durationMin)) {
+      it.endMinute = sMin + it.durationMin;
+    } else {
+      it.endMinute = null;
+    }
+
+    byAircraftId[key].push(it);
+    return;
+  }
+
 });
 
   // ============================================================
