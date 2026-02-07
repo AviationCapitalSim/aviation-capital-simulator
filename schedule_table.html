@@ -1650,7 +1650,19 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
- 
+
+// ============================================================
+// 🟦 PASO 2.1 — APPLY OPERATIONAL AUTHORITY (MANDATORY)
+// Schedule es la única autoridad de vuelo
+// ============================================================
+
+fleet.forEach(ac => {
+  ACS_EvaluateOperationalStatus(ac);
+});
+
+// Persistir estado evaluado para SkyTrack / Alerts
+localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+     
 // ============================================================
 // 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (AC_xxx) — FINAL
 // ============================================================
@@ -1700,6 +1712,17 @@ items.forEach(it => {
         tr.appendChild(td);
       });
 
+      // ⛔ PASO 2.2 — HARD STOP: aircraft grounded
+     if (ac.canFly === false) {
+     td.innerHTML = `
+     <span class="acs-status-badge badge-overdue">
+      ⛔ GROUNDED (${ac.groundReason})
+     </span>
+    `;
+     tr.appendChild(td);
+     return;
+     }
+         
       const planTd = document.createElement("td");
       const wrap = document.createElement("div");
       wrap.className = "plan-actions";
