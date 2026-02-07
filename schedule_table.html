@@ -2715,6 +2715,22 @@ if (t === "B") {
   ac.bCheckPlanned = true;
   ac.bCheckPlannedAt = nowTs;
 }
+
+/* ============================================================
+   🟧 B-PLAN — PERSIST FLEET (CRITICAL)
+   ------------------------------------------------------------
+   • Garantiza que bCheckPlanned quede guardado en ACS_MyAircraft
+   • Sin esto, SkyTrack no puede bloquear por B mandatory
+   ============================================================ */
+try {
+  if (typeof setFleet === "function") {
+    setFleet(fleet);
+  } else {
+    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+  }
+} catch (e) {
+  console.warn("⚠️ B-PLAN persist failed:", e);
+}
      
 /* ============================================================
    🚫 RULE — ONLY ONE PENDING SERVICE PER TYPE (A / B)
