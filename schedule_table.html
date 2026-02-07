@@ -1342,6 +1342,11 @@ function ACS_EvaluateOperationalStatus(ac) {
     ac.groundReason = "D-check";
   }
 
+  if (ac.canFly === false && ac.groundReason) {
+  ac.alertRequired = true;
+  ac.alertCode = ac.groundReason;
+}
+     
   return ac;
 }
 
