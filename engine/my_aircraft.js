@@ -921,6 +921,70 @@ function ACS_applyDailyAging(ac) {
 }
 
 /* ============================================================
+   🛫 MA-8.7.B — GROUND TIME ACCRUAL ENGINE (HYBRID)
+   ------------------------------------------------------------
+   Purpose:
+   - Evitar congelamiento de mantenimiento sin vuelos
+   - Simular pruebas en tierra, taxi, ferry, APU
+   - Complementa SkyTrack (NO lo reemplaza)
+   ------------------------------------------------------------
+   Rules:
+   - Solo aviones Active
+   - NO Maintenance / NO Pending
+   - NO en vuelo
+   - Muy lento (realista)
+   ============================================================ */
+
+function ACS_applyGroundTimeAccrual(ac) {
+  if (!ac) return ac;
+
+  // Estados que NO acumulan horas
+  if (
+    ac.status !== "Active" ||
+    ac.isFlying === true
+  ) {
+    return ac;
+  }
+
+  const now = getSimTime();
+  const simDay = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+  // Inicializar marcador diario
+  if (!ac.lastGroundAccrualDay) {
+    ac.lastGroundAccrualDay = simDay;
+    return ac;
+  }
+
+  // ⛔ Mismo día → no repetir
+  if (ac.lastGroundAccrualDay === simDay) {
+    return ac;
+  }
+
+  /* ======================================================
+     Ground Accrual (HYBRID MODE)
+     ====================================================== */
+
+  const GROUND_HOURS_PER_DAY = 0.25; // MUY lento
+  const CYCLE_EVERY_DAYS = 4;        // 1 ciclo cada 4 días
+
+  // Incrementar horas
+  if (typeof ac.hours === "number") {
+    ac.hours = Math.round((ac.hours + GROUND_HOURS_PER_DAY) * 100) / 100;
+  }
+
+  // Incrementar ciclos cada N días
+  ac._groundCycleCounter = (ac._groundCycleCounter || 0) + 1;
+  if (ac._groundCycleCounter >= CYCLE_EVERY_DAYS) {
+    ac.cycles = (ac.cycles || 0) + 1;
+    ac._groundCycleCounter = 0;
+  }
+
+  ac.lastGroundAccrualDay = simDay;
+
+  return ac;
+}
+
+/* ============================================================
    🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
    ------------------------------------------------------------
    Fix:
@@ -1760,7 +1824,7 @@ if (typeof registerTimeListener === "function") {
     fleet = fleet.map(ac => {
 
   ac = ACS_applyDailyAging(ac);
-
+  ac = ACS_applyGroundTimeAccrual(ac);
   ac = ACS_applyMaintenanceBaseline(ac);
   ac = ACS_applyMaintenanceHold(ac);
   ac = ACS_checkMaintenanceAutoTrigger(ac);
