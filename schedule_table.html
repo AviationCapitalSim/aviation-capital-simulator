@@ -2007,9 +2007,11 @@ if (it.type === "service") {
 
     // abrir Maintenance Modal en modo EDIT
     openMaintModal(
-      ac.model || ac.type,
-      it               // ⬅️ PASAMOS EL SERVICE REAL
-    );
+  (ac.model || ac.type || realModel),
+  it,
+  ac.id
+);
+
   };
 
   td.appendChild(chip);
