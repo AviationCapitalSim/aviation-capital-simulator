@@ -1216,9 +1216,13 @@ function renderFleetTable() {
 
   <td>
     ${typeof ac.conditionPercent === "number"
-      ? ac.conditionPercent + "%"
-      : "—"}
+    ? ac.conditionPercent + "%"
+    : "—"}
+    ${ac.idleTag
+    ? `<div class="idle-tag">${ac.idleTag}</div>`
+    : ""}
   </td>
+
 
   <td class="${ac.nextC_overdue ? "overdue-text" : ""}">
     ${ac.nextC}
