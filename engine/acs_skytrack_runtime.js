@@ -682,6 +682,22 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     };
   }
 
+  /* ============================================================
+     🟥 1.5 — HARD MAINTENANCE BLOCK (AUTHORITATIVE)
+     ------------------------------------------------------------
+     • Si el avión NO puede volar, SE PARA AQUÍ
+     • Esto bloquea EN_ROUTE incluso si hay vuelos
+     ============================================================ */
+  const hardBlock = ACS_SkyTrack_getGroundBlock(ac);
+
+  if (hardBlock && hardBlock.blocked) {
+    return {
+      state: "MAINTENANCE",
+      position: { airport: ac.baseAirport || null },
+      flight: null
+    };
+  }
+   
  /* ============================================================
    2️⃣ EN ROUTE — ACTIVE FLIGHT (STABLE)
    ============================================================ */
