@@ -2546,34 +2546,41 @@ let maintTail = null;
 
 function openMaintModal(realModel, service = null) {
 
-// ============================================================
-// 🕒 MAINT START TIME OPTIONS (RESTORE)
-// ============================================================
-const startSel = document.getElementById("maintStart");
-if (startSel) {
-  startSel.innerHTML = "";
+  // ============================================================
+  // 🔑 PASO 1 — SETEAR CONTEXTO DEL AVIÓN (CRÍTICO)
+  // ============================================================
+  maintTail = realModel;   // ⬅️ SIN ESTO, applyMaintenance() NO FUNCIONA
 
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 30) {
-      const hh = String(h).padStart(2, "0");
-      const mm = String(m).padStart(2, "0");
-      const opt = document.createElement("option");
-      opt.value = `${hh}:${mm}`;
-      opt.textContent = `${hh}:${mm}`;
-      startSel.appendChild(opt);
+  // ============================================================
+  // 🕒 MAINT START TIME OPTIONS (RESTORE)
+  // ============================================================
+  const startSel = document.getElementById("maintStart");
+  if (startSel) {
+    startSel.innerHTML = "";
+
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const hh = String(h).padStart(2, "0");
+        const mm = String(m).padStart(2, "0");
+        const opt = document.createElement("option");
+        opt.value = `${hh}:${mm}`;
+        opt.textContent = `${hh}:${mm}`;
+        startSel.appendChild(opt);
+      }
     }
   }
-}
-     
-  // Guardar service activo si existe
-  window.__EDITING_SERVICE__ = service;
+
+  // Guardar service activo si existe (modo EDIT)
+  window.__EDITING_SERVICE__ = service || null;
 
   const modal = document.getElementById("maintModal");
   if (!modal) return;
 
   modal.style.display = "flex";
 
-  // Si es edición, precargar datos
+  // ============================================================
+  // 🟡 MODO EDICIÓN — PRECARGAR DATOS
+  // ============================================================
   if (service && service.type === "service") {
 
     document.getElementById("maintType").value =
