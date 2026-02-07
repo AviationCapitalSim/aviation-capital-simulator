@@ -1074,6 +1074,94 @@ function ACS_applyIdleCalendarDegradation(ac) {
 }
 
 /* ============================================================
+   🟧 MA-B1 — CALENDAR C/D PROGRESSION ENGINE (REAL AVIATION)
+   ------------------------------------------------------------
+   Purpose:
+   - Hacer que C/D avancen por DÍAS cuando el avión está parado
+   - NO usa horas
+   - NO usa ciclos
+   - NO depende del jugador
+   ------------------------------------------------------------
+   Rules:
+   - Aplica si:
+       • Maintenance Hold
+       • Idle real (>=48h sin vuelo y sin rutas)
+   - Se DETIENE solo cuando entra a Maintenance (C/D en curso)
+   ============================================================ */
+
+function ACS_applyCalendarMaintenanceProgress(ac) {
+  if (!ac) return ac;
+
+  const now = getSimTime();
+  const today = now.toISOString().slice(0, 10);
+
+  // Inicializar marcador diario
+  if (!ac.lastCalendarMaintenanceDay) {
+    ac.lastCalendarMaintenanceDay = today;
+    return ac;
+  }
+
+  // ⛔ Mismo día → no repetir
+  if (ac.lastCalendarMaintenanceDay === today) {
+    return ac;
+  }
+
+  // ⛔ Si está en mantenimiento activo, el calendario SE PAUSA
+  if (ac.status === "Maintenance") {
+    ac.lastCalendarMaintenanceDay = today;
+    return ac;
+  }
+
+  /* ===============================
+     Determinar IDLE REAL
+     =============================== */
+
+  const lastFlight = ac.lastFlightAt
+    ? new Date(ac.lastFlightAt)
+    : null;
+
+  const hoursSinceLastFlight = lastFlight
+    ? (now - lastFlight) / 3600000
+    : Infinity;
+
+  const hasRoutesAssigned =
+    typeof ac.hasRoutes === "boolean" ? ac.hasRoutes : false;
+
+  const isIdleReal =
+    hoursSinceLastFlight >= 48 &&
+    hasRoutesAssigned === false;
+
+  const isMaintenanceHold =
+    ac.status === "Maintenance Hold";
+
+  // ❌ No idle real ni hold → no corre calendario
+  if (!isIdleReal && !isMaintenanceHold) {
+    ac.lastCalendarMaintenanceDay = today;
+    return ac;
+  }
+
+  /* ===============================
+     Avanzar calendario técnico
+     =============================== */
+
+  ac.calendarMaintenanceDays =
+    (ac.calendarMaintenanceDays || 0) + 1;
+
+  // Aplicar impacto directo en C/D (por días)
+  if (typeof ac.nextC_days === "number") {
+    ac.nextC_days -= 1;
+  }
+
+  if (typeof ac.nextD_days === "number") {
+    ac.nextD_days -= 1;
+  }
+
+  ac.lastCalendarMaintenanceDay = today;
+
+  return ac;
+}
+
+/* ============================================================
    🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (TABLE SYNC)
    ------------------------------------------------------------
    Fix:
@@ -1962,7 +2050,7 @@ if (typeof registerTimeListener === "function") {
  ac = ACS_applyMaintenanceHold(ac);
  ac = ACS_checkMaintenanceAutoTrigger(ac);
  ac = ACS_applyMaintenanceComputedFields(ac);
-
+ ac = ACS_applyCalendarMaintenanceProgress(ac);
 
   if (ac.pendingDCheck) {
     ac = ACS_executeMaintenance(ac, "D");
