@@ -611,6 +611,46 @@ function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
 }
 
 /* ============================================================
+   🟧 G1 — HARD GROUND BLOCK RESOLVER (SCHEDULE AUTHORITY)
+   ------------------------------------------------------------
+   • SkyTrack NO decide reglas: solo APLICA la autoridad operacional
+   • Bloquea EN_ROUTE cuando el avión está:
+     - "Maintenance Hold" (C/D overdue en MyAircraft)
+     - In C/D Check
+     - B mandatory (sin B planificado / sin lastBCheckAt)
+   ============================================================ */
+function ACS_SkyTrack_getGroundBlock(ac) {
+
+  if (!ac) {
+    return { blocked: false, reason: null, label: null };
+  }
+
+  const st = String(ac.status || "").trim();
+
+  // 1) HARD HOLD / OVERDUE
+  if (st === "Maintenance Hold") {
+    return { blocked: true, reason: "HOLD", label: "MAINTENANCE" };
+  }
+
+  // 2) ACTIVE MAINTENANCE STATES
+  if (st === "In C-Check" || st === "In D-Check" || st === "B-Check" || st === "A-Check") {
+    return { blocked: true, reason: st, label: "MAINTENANCE" };
+  }
+
+  // 3) B MANDATORY RULE
+  //    Si NO hay lastBCheckAt y NO está planificado, se bloquea el vuelo.
+  //    (Esto implementa tu regla: “no debe volar hasta programar B”)
+  const hasLastB = typeof ac.lastBCheckAt === "number" && ac.lastBCheckAt > 0;
+  const hasPlanB = ac.bCheckPlanned === true;
+
+  if (!hasLastB && !hasPlanB) {
+    return { blocked: true, reason: "B-DUE", label: "MAINTENANCE" };
+  }
+
+  return { blocked: false, reason: null, label: null };
+}
+
+/* ============================================================
    🧠 STATE RESOLVER — FR24 LOGIC
    🟦 A6.1 — Arrival / Turnaround Boundary FIX (NO jumps)
    ============================================================ */
