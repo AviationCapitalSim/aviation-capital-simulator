@@ -1246,6 +1246,55 @@ function normalizeModel(m){
 }
 
 /* ============================================================
+   🟦 A3.1 — AIRCRAFT STATUS RESOLVER (SCHEDULE · READ ONLY)
+   ------------------------------------------------------------
+   Source of truth: ACS_MyAircraft
+   Schedule Table NO ejecuta lógica, solo refleja estado
+   ============================================================ */
+
+function ACS_getAircraftStatusBadge(ac){
+
+  if (!ac) {
+    return { label: "UNKNOWN", class: "badge-unknown" };
+  }
+
+  // 🔴 OVERDUE — máxima prioridad
+  if (ac.maintenanceOverdue === true) {
+    return { label: "OVERDUE", class: "badge-overdue" };
+  }
+
+  // 🔧 SERVICIOS MAYORES
+  if (ac.status === "In D-Check") {
+    return { label: "D-CHECK", class: "badge-dcheck" };
+  }
+
+  if (ac.status === "In C-Check") {
+    return { label: "C-CHECK", class: "badge-ccheck" };
+  }
+
+  // ⚙️ B-CHECK
+  if (ac.status === "B-Check") {
+    return { label: "B-CHECK", class: "badge-bcheck" };
+  }
+
+  // 🔧 A-CHECK
+  if (ac.status === "A-Check") {
+    return { label: "A-CHECK", class: "badge-acheck" };
+  }
+
+  // 🟢 OPERATIVO
+  if (ac.status === "Active") {
+    return { label: "ACTIVE", class: "badge-active" };
+  }
+
+  // ⚪ FALLBACK
+  return {
+    label: (ac.status || "UNKNOWN").toUpperCase(),
+    class: "badge-unknown"
+  };
+}
+     
+/* ============================================================
    🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
    ============================================================ */
 
