@@ -1139,6 +1139,44 @@ function ACS_applyMaintenanceComputedFields(ac) {
 }
 
 /* ============================================================
+   🟧 MA-8.7.D — IDLE STATUS VISUAL FEEDBACK (UI ONLY)
+   ------------------------------------------------------------
+   Purpose:
+   - Mostrar feedback visual de avión parado
+   - NO altera lógica, balance ni mantenimiento
+   - Compatible con A & B Service (Schedule Table authority)
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 07 FEB 2026
+   ============================================================ */
+
+function ACS_applyIdleVisualStatus(ac) {
+  if (!ac) return ac;
+
+  // Reset visual tag por defecto
+  ac.idleTag = null;
+
+  // Estados que NO deben mostrar idle
+  if (
+    ac.status === "Pending Delivery" ||
+    ac.status === "Maintenance"
+  ) {
+    return ac;
+  }
+
+  const idleDays =
+    typeof ac.calendarIdleDays === "number"
+      ? ac.calendarIdleDays
+      : (typeof ac.groundDays === "number" ? ac.groundDays : 0);
+
+  // Mostrar solo si realmente relevante
+  if (idleDays >= 7) {
+    ac.idleTag = `IDLE ${idleDays}d`;
+  }
+
+  return ac;
+}
+
+/* ============================================================
    🟦 C.3 — Render Full Fleet Table (Active + Pending)
    ============================================================ */
 
@@ -1912,13 +1950,15 @@ if (typeof registerTimeListener === "function") {
 
     fleet = fleet.map(ac => {
 
-  ac = ACS_applyDailyAging(ac);
-  ac = ACS_applyGroundTimeAccrual(ac);
-  ac = ACS_applyIdleCalendarDegradation(ac); // ← AQUÍ
-  ac = ACS_applyMaintenanceBaseline(ac);
-  ac = ACS_applyMaintenanceHold(ac);
-  ac = ACS_checkMaintenanceAutoTrigger(ac);
-  ac = ACS_applyMaintenanceComputedFields(ac);
+ ac = ACS_applyDailyAging(ac);
+ ac = ACS_applyGroundTimeAccrual(ac);
+ ac = ACS_applyIdleCalendarDegradation(ac);
+ ac = ACS_applyIdleVisualStatus(ac);   // ← AQUÍ
+ ac = ACS_applyMaintenanceBaseline(ac);
+ ac = ACS_applyMaintenanceHold(ac);
+ ac = ACS_checkMaintenanceAutoTrigger(ac);
+ ac = ACS_applyMaintenanceComputedFields(ac);
+
 
   if (ac.pendingDCheck) {
     ac = ACS_executeMaintenance(ac, "D");
