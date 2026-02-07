@@ -1890,24 +1890,14 @@ wrapInfo.innerHTML = `
 const dayItems = ACS_sortDayEvents(rawDayItems);
          
 /* ============================================================
-   🟫 PASO 2 — DETECT B-CHECK FOR DAY — 17DEC25
+   🟫 PASO 2 — DETECT B-CHECK FOR DAY (LEGACY — STABLE)
    ============================================================ */
 
-// ⏱ minuto actual del simulador (YA EXISTE EN ACS)
-const nowMin = ACS_TABLE_TIME.minute;
+const hasBCheck = dayItems.some(it =>
+  it.type === "service" && it.serviceType === "B"
+);
 
-// Buscar B-Check ACTIVO en este día
-const hasActiveBCheck = dayItems.some(it => {
-  if (it.type !== "service" || it.serviceType !== "B") return false;
-
-  const start = it.startMinute; // ya existe en el service
-  const end   = it.endMinute;
-
-  return nowMin >= start && nowMin < end;
-});
-
-// 👉 SOLO si el B-Check está ACTIVO → gris
-if (hasActiveBCheck) {
+if (hasBCheck) {
   td.classList.add("bcheck-day");
 }
 
