@@ -1681,7 +1681,7 @@ const byAircraftId = {};
 items.forEach(it => {
 
   // 🔴 SOLO vuelos reales
-  if (!it || it.type !== "flight") return;
+  if (!it || (it.type !== "flight" && it.type !== "service")) return;
 
   // ⛔ NO indexar vuelos editados
   if (it.__edited === true) return;
