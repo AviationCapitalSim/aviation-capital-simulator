@@ -914,6 +914,63 @@ footer {
   75% { transform: translateX(-4px); }
   100% { transform: translateX(0); }
 }
+
+/* ============================================================
+   🟦 ACS STATUS BADGES — QATAR LUXURY
+   ============================================================ */
+
+.acs-status-badge{
+  margin-top:4px;
+  display:inline-block;
+  padding:2px 10px;
+  font-size:10px;
+  font-weight:800;
+  border-radius:999px;
+  letter-spacing:0.4px;
+}
+
+/* 🟢 ACTIVE */
+.badge-active{
+  background:rgba(0,255,128,0.18);
+  border:1px solid rgba(0,255,128,0.45);
+  color:#00ff80;
+}
+
+/* 🟡 A / B */
+.badge-acheck,
+.badge-bcheck{
+  background:rgba(255,204,0,0.18);
+  border:1px solid rgba(255,204,0,0.45);
+  color:#ffd54f;
+}
+
+/* 🟠 C */
+.badge-ccheck{
+  background:rgba(255,152,0,0.22);
+  border:1px solid rgba(255,152,0,0.55);
+  color:#ffb74d;
+}
+
+/* 🔴 D */
+.badge-dcheck{
+  background:rgba(211,47,47,0.25);
+  border:1px solid rgba(211,47,47,0.6);
+  color:#ff5252;
+}
+
+/* 🔴 OVERDUE */
+.badge-overdue{
+  background:rgba(183,28,28,0.35);
+  border:1px solid rgba(255,0,0,0.75);
+  color:#ff1744;
+}
+
+/* ⚪ UNKNOWN */
+.badge-unknown{
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.2);
+  color:#ccc;
+}
        
 </style>
 
@@ -1620,15 +1677,21 @@ const dueText = ac.maintenance?.bDue
     ? "A-CHECK DUE"
     : "";
 
+const status = ACS_getAircraftStatusBadge(ac);
+
 const wrapInfo = document.createElement("div");
-wrapInfo.style.lineHeight = "1.2";
+wrapInfo.style.lineHeight = "1.25";
 wrapInfo.style.textAlign = "left";
+
 wrapInfo.innerHTML = `
   <strong>${reg}</strong><br>
   <span>${realModel}</span><br>
-  <span style="color:#ffca3a;font-weight:600;">${manu.toUpperCase()}</span>
-  ${stat ? `<br><span>${stat}</span>` : ""}
-  ${hasDue ? `<br><span class="maintenance-dot" title="${dueText}">●</span>` : ""}
+  <span style="color:#ffca3a;font-weight:600;">
+    ${manu.toUpperCase()}
+  </span>
+  <div class="acs-status-badge ${status.class}">
+    ${status.label}
+  </div>
 `;
 
     tdTail.appendChild(wrapInfo);
