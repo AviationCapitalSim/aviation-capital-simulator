@@ -1197,6 +1197,40 @@ function openAircraftModal(reg) {
   document.getElementById("mCycles").textContent = ac.cycles;
   document.getElementById("mAge").textContent = ac.age || 0;
 
+/* ============================================================
+   🟧 MA-8.5.4 — MODAL LAST / NEXT C & D (UI RENDER)
+   ------------------------------------------------------------
+   Purpose:
+   - Pintar Last / Next C & D en el modal
+   - Basado en el pipeline real ACS (NO recalcula lógica)
+   - Respeta Maintenance / Hold / Active
+   ============================================================ */
+
+(function renderModalLastNextCD() {
+
+  const elLastC = document.getElementById("mLastC");
+  const elNextC = document.getElementById("mNextC");
+  const elLastD = document.getElementById("mLastD");
+  const elNextD = document.getElementById("mNextD");
+
+  if (!elLastC || !elNextC || !elLastD || !elNextD) return;
+
+  const fmtDate = (iso) => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return d.toUTCString().substring(5, 16); // "10 FEB 1941"
+  };
+
+  // LAST CHECKS (fechas reales)
+  elLastC.textContent = fmtDate(ac.lastCCheckDate);
+  elLastD.textContent = fmtDate(ac.lastDCheckDate);
+
+  // NEXT CHECKS (ya calculados por el pipeline)
+  elNextC.textContent = ac.nextC ?? "—";
+  elNextD.textContent = ac.nextD ?? "—";
+
+})();
+   
  /* ============================================================
    🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (AVIATION CORRECT)
    ------------------------------------------------------------
