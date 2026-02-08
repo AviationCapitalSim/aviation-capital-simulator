@@ -154,7 +154,7 @@ body {
     }
 
 /* ============================================================
-   === ACS CLOCK — FIXED WIDTH (NO LAYOUT SHIFT) ===============
+   === ACS CLOCK — FINAL POSITION & STABILITY =================
    ============================================================ */
   
 .acs-clock-header {
@@ -166,14 +166,17 @@ body {
   border-radius: 8px;
   padding: 0.4rem 0.6rem;
 
-  /* 🔒 THE REAL FIX */
-  width: 240px;              /* ancho fijo */
+  /* 🔒 ancho fijo (ya probado OK) */
+  width: 240px;
   text-align: center;
   white-space: nowrap;
 
-  /* extra estabilidad */
+  /* estabilidad numérica */
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
+
+  /* 🎯 AJUSTE VISUAL FINO */
+  margin-left: 0.6rem;   /* ← mueve SOLO el reloj a la derecha */
 }
 
 /* ============================================================
