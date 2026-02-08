@@ -1738,9 +1738,10 @@ if (typeof registerTimeListener === "function") {
 /* ============================================================
    🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE) [FIX]
    ------------------------------------------------------------
-   Fix:
-   - Nunca depende de variable externa "m"
-   - Evita que un ReferenceError rompa el modal y bloquee los demás
+   PASO 1:
+   - Activar botón VIEW LOG
+   - Solo abre el modal
+   - Sin lógica, sin histórico, sin costos
    ============================================================ */
 
 {
@@ -1748,9 +1749,10 @@ if (typeof registerTimeListener === "function") {
   const btnD = document.getElementById("btnDcheck");
   const btnL = document.getElementById("btnLog");
 
-  // Recalcular SIEMPRE dentro del scope
+  // Resolver estado SIEMPRE dentro del scope
   const mLocal = ACS_resolveMaintenanceStatus(ac);
 
+  // Reset seguro
   if (btnC) {
     btnC.onclick = null;
     btnC.disabled = true;
@@ -1763,31 +1765,36 @@ if (typeof registerTimeListener === "function") {
     btnL.onclick = null;
   }
 
-  // Si está en mantenimiento activo -> no iniciar otro
+  // ─────────────────────────────────────────
+  // C / D CHECK ENABLE LOGIC (NO TOCADO)
+  // ─────────────────────────────────────────
+
   if (ac.status === "Maintenance") {
-    // quedan disabled
+    // permanece deshabilitado
   }
-  // Prioridad D
   else if (mLocal.isDOverdue || mLocal.nextD_days === 0) {
     if (btnD) btnD.disabled = false;
   }
-  // Luego C
   else if (mLocal.isCOverdue || mLocal.nextC_days === 0) {
     if (btnC) btnC.disabled = false;
   }
 
-  // Bind acciones
   if (btnC) {
-    btnC.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "C");
-  }
-  if (btnD) {
-    btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+    btnC.onclick = () =>
+      ACS_confirmAndExecuteMaintenance(ac.registration, "C");
   }
 
-  // Log (por ahora placeholder limpio, no rompe)
+  if (btnD) {
+    btnD.onclick = () =>
+      ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+  }
+
+  // ─────────────────────────────────────────
+  // 🟦 VIEW LOG — PASO 1 (ACTIVO)
+  // ─────────────────────────────────────────
   if (btnL) {
     btnL.onclick = () => {
-      alert("Maintenance Log: pending activation (PASO 4B-2).");
+      openMaintenanceLog();
     };
   }
 }
