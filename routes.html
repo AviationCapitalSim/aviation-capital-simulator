@@ -154,9 +154,8 @@ body {
     }
 
 /* ============================================================
-   === ACS CLOCK — FINAL POSITION & STABILITY =================
+   === CLOCK TEXT — FINE VISUAL ALIGNMENT =====================
    ============================================================ */
-  
 .acs-clock-header {
   font-family: "Orbitron", monospace;
   font-size: 0.95rem;
@@ -166,17 +165,19 @@ body {
   border-radius: 8px;
   padding: 0.4rem 0.6rem;
 
-  /* 🔒 ancho fijo (ya probado OK) */
   width: 240px;
-  text-align: center;
   white-space: nowrap;
-
-  /* estabilidad numérica */
-  font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 
-  /* 🎯 AJUSTE VISUAL FINO */
-  margin-left: 0.6rem;   /* ← mueve SOLO el reloj a la derecha */
+  font-variant-numeric: tabular-nums;
+
+  /* ❌ ya NO movemos el div */
+  display: flex;
+  align-items: center;
+}
+
+.acs-clock-header .clock-text {
+  margin-left: 0.4rem;   /* ✅ mueve SOLO los números */
 }
 
 /* ============================================================
@@ -302,8 +303,11 @@ footer {
   <div class="acs-right">
     <a href="support.html" class="support-btn">Support</a>
     <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
+   <div id="acs-clock" class="acs-clock-header">
+  <span class="clock-text">20:10 — MON 09 JUN 1941</span>
+</div>
   </div>
+  
 </header>
 
 <main class="acs-main">
