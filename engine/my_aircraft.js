@@ -1789,9 +1789,6 @@ if (btnL) {
   btnL.disabled = false;
   btnL.onclick = openMaintenanceLog;
 }
-
-  }
-}
    
   modal.style.display = "flex";
 }
