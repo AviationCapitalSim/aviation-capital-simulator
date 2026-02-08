@@ -1789,7 +1789,7 @@ if (typeof registerTimeListener === "function") {
       ACS_confirmAndExecuteMaintenance(ac.registration, "D");
   }
 
-  // ─────────────────────────────────────────
+   // ─────────────────────────────────────────
   // Log — abrir Maintenance Log real
   // ─────────────────────────────────────────
   if (btnL) {
@@ -1797,11 +1797,8 @@ if (typeof registerTimeListener === "function") {
     btnL.onclick = openMaintenanceLog;
   }
 
-})();
-
-} // ← CIERRE REAL DE openAircraftModal
-
-modal.style.display = "flex";
+  modal.style.display = "flex";
+}
 
 function closeModal() {
   ACS_ACTIVE_MODAL_REG = null;
