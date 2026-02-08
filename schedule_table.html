@@ -3059,20 +3059,7 @@ function ACS_calcRotationEnd(departure){
 
   return `${String(Math.floor(min/60)).padStart(2,"0")}:${String(min%60).padStart(2,"0")}`;
 }
-
-function ACS_calcNextFlight(departure, maintenance){
-  const rotMin = ACS_getRouteRotationMin();
-  if (!departure || !Number.isFinite(rotMin)) return "—";
-
-  let min = toMin(departure) + rotMin;
-
-  if (maintenance === "A") min += 300;
-  if (maintenance === "B") min += 1440;
-
-  min = min % 1440;
-  return toHHMM(min);
-}
-
+     
 function ACS_calcNextFlight(it) {
   if (!it || !it.departure || !Number.isFinite(it.totalRotationMin)) return "—";
 
