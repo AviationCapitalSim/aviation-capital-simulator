@@ -599,6 +599,43 @@
   opacity: 0.85;
 }
 
+/* ============================================================
+   🟢🟦🟧🔴 A1 — MAINTENANCE STATUS PREMIUM STATES
+   ------------------------------------------------------------
+   Controls visual state of Maintenance Status badge
+   ============================================================ */
+
+/* Base transition for status text */
+# mMaintStatus,
+.ql-status-text{
+  transition: color 0.25s ease, text-shadow 0.25s ease;
+}
+
+/* 🟢 AIRWORTHY */
+.ql-status-airworthy{
+  color: #3ddc97; /* premium green */
+  text-shadow: 0 0 10px rgba(61,220,151,0.35);
+}
+
+/* 🟦 IN C-CHECK */
+.ql-status-ccheck{
+  color: #4da3ff; /* technical blue */
+  text-shadow: 0 0 10px rgba(77,163,255,0.35);
+}
+
+/* 🟧 IN D-CHECK */
+.ql-status-dcheck{
+  color: #f1b21a; /* amber / heavy event */
+  text-shadow: 0 0 12px rgba(241,178,26,0.45);
+}
+
+/* 🔴 OVERDUE */
+.ql-status-overdue{
+  color: #ff4d4d;
+  text-shadow: 0 0 12px rgba(255,77,77,0.55);
+}
+
+    
 </style>
 </head>
 
