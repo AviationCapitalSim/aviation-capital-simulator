@@ -1,0 +1,298 @@
+<!-- ============================================================
+     ✈️ ACS — MY ROUTES & TICKET PRICING (NETWORK PLANNING)
+     ------------------------------------------------------------
+     File: my_route.html
+     Design: Qatar Luxury
+     Version: v1.0
+     Date: 08 FEB 2026
+     ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Routes & Ticket Pricing — ACS</title>
+
+<!-- ===== ACS CORE STYLES ===== -->
+<link rel="stylesheet" href="styles.css?v=3.1" />
+
+<!-- ===== ACS FAVICONS ===== -->
+<link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+<link rel="apple-touch-icon" href="acs_logo_180.png">
+<link rel="manifest" href="manifest.json">
+
+<style>
+/* ============================================================
+   🟦 GLOBAL PAGE
+   ============================================================ */
+body{
+  margin:0;
+  background:#081530;
+  color:#fff;
+  font-family:"Poppins",sans-serif;
+  overflow-x:hidden;
+}
+
+/* ============================================================
+   🟨 QATAR LUXURY HEADER
+   ============================================================ */
+.acs-header{
+  position:fixed;
+  top:0;
+  width:100%;
+  backdrop-filter:blur(9px);
+  background:rgba(12,23,50,0.45);
+  padding:0.8rem 2rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:2px solid #ffb300;
+  z-index:5000;
+}
+.acs-logo{display:flex;align-items:center;gap:1rem;}
+.acs-logo img{height:46px;}
+.acs-logo h1{font-size:1.1rem;color:#ffb300;margin:0;}
+.acs-nav{display:flex;gap:2rem;}
+.acs-nav a{color:#dbe4ff;text-decoration:none;}
+.acs-nav a.active{color:#ffb300;}
+.acs-auth{display:flex;gap:1rem;align-items:center;}
+.logout-btn{
+  border:1px solid #ffb300;
+  padding:.4rem 1rem;
+  border-radius:12px;
+  color:#ffb300;
+  background:transparent;
+  cursor:pointer;
+}
+.acs-clock-header{
+  font-family:"Orbitron",monospace;
+  background:rgba(0,255,128,0.08);
+  padding:.4rem .7rem;
+  border-radius:8px;
+  color:#00ff80;
+}
+
+/* ============================================================
+   🟩 MAIN LAYOUT
+   ============================================================ */
+.acs-main{
+  padding:120px 2rem 2rem;
+}
+.page-title{
+  font-size:2rem;
+  color:#ffca3a;
+  text-shadow:0 0 10px rgba(255,200,80,.5);
+}
+.page-sub{
+  color:#cbd6ff;
+  margin-bottom:1.5rem;
+}
+
+/* ============================================================
+   🟦 KPI STRIP
+   ============================================================ */
+.kpi-strip{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:1rem;
+  margin-bottom:2rem;
+}
+.kpi-card{
+  background:linear-gradient(180deg,rgba(20,35,70,.8),rgba(10,18,40,.9));
+  border-radius:18px;
+  padding:1.2rem;
+  border:1px solid rgba(255,179,0,.18);
+  text-align:center;
+}
+.kpi-card h4{color:#ffb300;margin:.3rem 0;}
+.kpi-card span{font-size:1.4rem;font-weight:600;}
+
+/* ============================================================
+   🟧 ROUTES TABLE
+   ============================================================ */
+.routes-wrapper{
+  display:grid;
+  grid-template-columns:1fr 420px;
+  gap:1.5rem;
+}
+.routes-table{
+  background:linear-gradient(180deg,rgba(20,35,70,.75),rgba(10,18,40,.85));
+  border-radius:22px;
+  padding:1.5rem;
+  border:1px solid rgba(255,179,0,.2);
+}
+.routes-table table{
+  width:100%;
+  border-collapse:collapse;
+}
+.routes-table th,
+.routes-table td{
+  padding:.8rem;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  text-align:center;
+}
+.routes-table th{color:#ffb300;font-size:.9rem;}
+.route-btn{
+  background:#00a86b;
+  border:none;
+  border-radius:8px;
+  padding:.4rem .8rem;
+  color:white;
+  cursor:pointer;
+}
+
+/* ============================================================
+   🟪 SIDE PANEL — TICKET PRICING
+   ============================================================ */
+.side-panel{
+  background:linear-gradient(180deg,rgba(25,40,85,.9),rgba(10,18,40,.95));
+  border-radius:22px;
+  padding:1.6rem;
+  border:1px solid rgba(255,179,0,.25);
+}
+.side-panel h3{
+  color:#ffb300;
+  margin-bottom:.6rem;
+}
+.price-box{
+  background:rgba(0,0,0,.35);
+  padding:1rem;
+  border-radius:14px;
+  margin-bottom:1rem;
+}
+.price-row{
+  display:flex;
+  justify-content:space-between;
+  margin:.4rem 0;
+}
+.price-controls{
+  display:flex;
+  gap:1rem;
+  margin-top:1rem;
+}
+.price-controls button{
+  flex:1;
+  padding:.6rem;
+  border:none;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+}
+.btn-up{background:#00a86b;color:#fff;}
+.btn-down{background:#c0392b;color:#fff;}
+
+footer{
+  margin-top:2rem;
+  text-align:center;
+  color:#888;
+  font-size:.85rem;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     🟨 HEADER
+     ============================================================ -->
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png">
+    <h1>Aviation Capital Simulator</h1>
+  </div>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="finance.html">Bank</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="my_route.html" class="active">My Routes</a>
+    <a href="hr.html">HR</a>
+  </nav>
+  <div class="acs-auth">
+    <button class="logout-btn">Logout</button>
+    <div class="acs-clock-header">00:00 — 01 JAN 1940</div>
+  </div>
+</header>
+
+<!-- ============================================================
+     🟩 MAIN CONTENT
+     ============================================================ -->
+<main class="acs-main">
+<h2 class="page-title">🌍 My Routes & Ticket Pricing</h2>
+<p class="page-sub">Network planning, route performance and pricing control.</p>
+
+<!-- KPI STRIP -->
+<section class="kpi-strip">
+  <div class="kpi-card"><h4>Active Routes</h4><span>12</span></div>
+  <div class="kpi-card"><h4>Network Revenue</h4><span>$2.4M</span></div>
+  <div class="kpi-card"><h4>Avg Load Factor</h4><span>78%</span></div>
+  <div class="kpi-card"><h4>Profitable Routes</h4><span>9</span></div>
+</section>
+
+<div class="routes-wrapper">
+
+<!-- ROUTES TABLE -->
+<section class="routes-table">
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Aircraft</th>
+<th>Freq/Wk</th>
+<th>LF</th>
+<th>Ticket</th>
+<th>Profit</th>
+<th>Pricing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JFK → LHR</td>
+<td>B707</td>
+<td>7</td>
+<td>82%</td>
+<td>$320</td>
+<td style="color:#00ff80;">+$45k</td>
+<td><button class="route-btn">Open</button></td>
+</tr>
+<tr>
+<td>CDG → ROM</td>
+<td>DC-4</td>
+<td>4</td>
+<td>64%</td>
+<td>$210</td>
+<td style="color:#ff7675;">−$8k</td>
+<td><button class="route-btn">Open</button></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+<!-- SIDE PANEL -->
+<aside class="side-panel">
+<h3>🎟️ Ticket Pricing</h3>
+<div class="price-box">
+  <div class="price-row"><span>Route</span><strong>JFK → LHR</strong></div>
+  <div class="price-row"><span>Base Price</span><strong>$300</strong></div>
+  <div class="price-row"><span>Current Price</span><strong>$320</strong></div>
+  <div class="price-row"><span>Era Modifier</span><strong>×1.00</strong></div>
+  <div class="price-row"><span>Demand</span><strong>High</strong></div>
+</div>
+
+<div class="price-controls">
+  <button class="btn-down">⬇ Lower</button>
+  <button class="btn-up">⬆ Increase</button>
+</div>
+
+<p style="margin-top:1rem;font-size:.85rem;color:#aaa;">
+Manual pricing enabled. Dynamic pricing coming soon.
+</p>
+</aside>
+
+</div>
+</main>
+
+<footer>© 2026 Aviation Capital Simulator</footer>
+
+</body>
+</html>
