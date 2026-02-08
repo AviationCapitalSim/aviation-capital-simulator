@@ -1784,11 +1784,12 @@ if (typeof registerTimeListener === "function") {
     btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
   }
 
-  // Log (por ahora placeholder limpio, no rompe)
-  if (btnL) {
-    btnL.onclick = () => {
-      alert("Maintenance Log: pending activation (PASO 4B-2).");
-    };
+  // Log — abrir Maintenance Log real
+if (btnL) {
+  btnL.disabled = false;
+  btnL.onclick = openMaintenanceLog;
+}
+
   }
 }
    
