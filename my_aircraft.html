@@ -700,6 +700,49 @@
   box-shadow: none;
 }
 
+/* ============================================================
+   🅲2 — MAINTENANCE LOG MODAL (QATAR LUXURY)
+   ============================================================ */
+
+.ql-log-modal{
+  max-width: 760px;
+  background: linear-gradient(180deg, #0c1b32, #081425);
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid rgba(255,215,120,0.25);
+}
+
+.ql-log-subtitle{
+  color: #bfa85a;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.ql-log-table{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.ql-log-table th{
+  color: #e6c36a;
+  font-weight: 600;
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.ql-log-table td{
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: #e0e0e0;
+}
+
+.ql-log-empty{
+  text-align: center;
+  padding: 20px;
+  color: #888;
+}
+    
 </style>
 </head>
 
@@ -980,6 +1023,46 @@
   }
 </style>
 
+<!-- =========================================================
+     🅲1 — MAINTENANCE LOG MODAL
+     ========================================================= -->
+<div class="modal-overlay" id="maintenanceLogModal" style="display:none;">
+  <div class="modal-box ql-log-modal">
+
+    <div class="modal-header">
+      <h3>Maintenance Log</h3>
+      <button class="modal-close" onclick="closeMaintenanceLog()">×</button>
+    </div>
+
+    <div class="ql-log-subtitle" id="logAircraftTitle">
+      —
+    </div>
+
+    <div class="ql-log-table-wrapper">
+      <table class="ql-log-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Base</th>
+            <th>Era</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="maintenanceLogBody">
+          <tr>
+            <td colspan="6" class="ql-log-empty">
+              No maintenance records available
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+  
 
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
