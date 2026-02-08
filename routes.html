@@ -152,18 +152,27 @@ body {
       color: #0c1f3c;
     }
 
+/* ============================================================
+   === ACS CLOCK — FIXED WIDTH (NO LAYOUT SHIFT) ===============
+   ============================================================ */
+  
 .acs-clock-header {
   font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
   font-size: 0.95rem;
   color: #00ff80;
 
-  /* 🔒 FIX layout shift */
-  min-width: 220px;
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+
+  /* 🔒 THE REAL FIX */
+  width: 240px;              /* ancho fijo */
   text-align: center;
   white-space: nowrap;
+
+  /* extra estabilidad */
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 /* ============================================================
