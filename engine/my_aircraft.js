@@ -1546,85 +1546,91 @@ function openAircraftModal(reg) {
     return `${DD} ${MON} ${YY}`;
   };
 
-  function render() {
+ function render() {
 
-    if (!ACS_ACTIVE_MODAL_REG) return;
+  if (!ACS_ACTIVE_MODAL_REG) return;
 
-    const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-    const acNow = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
-    if (!acNow) return;
+  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  const acNow = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
+  if (!acNow) return;
 
-    // Resolver “next/overdue” para HOLD / gating (scope local, sin errores)
-    const mLocal = ACS_resolveMaintenanceStatus(acNow);
+  // Limpieza visual previa
+  elMaintStatus.classList.remove(
+    "ql-status-airworthy",
+    "ql-status-ccheck",
+    "ql-status-dcheck",
+    "ql-status-overdue"
+  );
 
-    // ─────────────────────────────────────────
-    // 1) EN SERVICIO (Maintenance)
-    // ─────────────────────────────────────────
-    if (acNow.status === "Maintenance" && acNow.maintenanceEndDate) {
+  // Resolver estado técnico (solo lectura)
+  const mLocal = ACS_resolveMaintenanceStatus(acNow);
 
-      const now = getSimTime();
-      const end = new Date(acNow.maintenanceEndDate);
+  // ─────────────────────────────────────────
+  // 1️⃣ EN SERVICIO (Maintenance C / D)
+  // ─────────────────────────────────────────
+  if (acNow.status === "Maintenance" && acNow.maintenanceEndDate) {
 
-      const remainingMs = Math.max(0, end - now);
-      const days  = Math.floor(remainingMs / 86400000);
-      const hours = Math.floor((remainingMs % 86400000) / 3600000);
+    const now = getSimTime();
+    const end = new Date(acNow.maintenanceEndDate);
 
-      const type = (acNow.maintenanceType === "D") ? "D-CHECK" : "C-CHECK";
+    const remainingMs = Math.max(0, end - now);
+    const days  = Math.floor(remainingMs / 86400000);
+    const hours = Math.floor((remainingMs % 86400000) / 3600000);
 
-      elMaintStatus.textContent = `IN ${type}`;
-      box.style.display = "block";
+    const type = (acNow.maintenanceType === "D") ? "D-CHECK" : "C-CHECK";
 
-      if (elType)   elType.textContent   = type;
-      if (elRemain) elRemain.textContent = `${days}d ${hours}h`;
-      if (elRelease) elRelease.textContent = fmtRelease(acNow.maintenanceEndDate);
+    elMaintStatus.textContent = `IN ${type}`;
+    elMaintStatus.classList.add(
+      acNow.maintenanceType === "D"
+        ? "ql-status-dcheck"
+        : "ql-status-ccheck"
+    );
 
-      return;
-    }
+    box.style.display = "block";
 
-    // ─────────────────────────────────────────
-    // 2) HOLD (Maintenance Hold) — NO AIRWORTHY
-    // ─────────────────────────────────────────
-    if (acNow.status === "Maintenance Hold") {
+    if (elType)    elType.textContent    = type;
+    if (elRemain)  elRemain.textContent  = `${days}d ${hours}h`;
+    if (elRelease) elRelease.textContent = fmtRelease(acNow.maintenanceEndDate);
 
-      // Mostrar HOLD como estado principal
-      elMaintStatus.textContent = "MAINTENANCE HOLD";
-      box.style.display = "none";
+    return;
+  }
 
-      // (Opcional, pero realista): si quieres enfatizar qué check está overdue:
-      // Prioridad D si está overdue
-      // Nota: Esto NO toca el panel de Next C/D (ya lo pintas arriba).
-      if (mLocal && (mLocal.isDOverdue || mLocal.isCOverdue)) {
-        // Si D overdue -> OVERDUE (D), si no -> OVERDUE (C)
-        const tag = mLocal.isDOverdue ? "D" : "C";
-        elMaintStatus.textContent = `MAINTENANCE HOLD — OVERDUE ${tag}`;
-      }
+  // ─────────────────────────────────────────
+  // 2️⃣ MAINTENANCE HOLD / OVERDUE
+  // ─────────────────────────────────────────
+  if (acNow.status === "Maintenance Hold") {
 
-      return;
-    }
-
-    // ─────────────────────────────────────────
-    // 3) TODO LO DEMÁS — AIRWORTHY (Active, etc.)
-    // ─────────────────────────────────────────
-    elMaintStatus.textContent = "AIRWORTHY";
+    elMaintStatus.textContent = "OVERDUE";
+    elMaintStatus.classList.add("ql-status-overdue");
     box.style.display = "none";
+
+    return;
   }
 
-  // Pintar inmediato al abrir
-  render();
+  // ─────────────────────────────────────────
+  // 3️⃣ AIRWORTHY
+  // ─────────────────────────────────────────
+  elMaintStatus.textContent = "AIRWORTHY";
+  elMaintStatus.classList.add("ql-status-airworthy");
+  box.style.display = "none";
+}
 
-  // LIVE: enganchar al reloj del juego (sin refresh)
-  // Nota: evitamos duplicar listeners usando un singleton global.
-  if (typeof registerTimeListener === "function") {
+// Pintar inmediato al abrir
+render();
 
-    if (!window.__ACS_MA_MODAL_LISTENER_INSTALLED) {
-      window.__ACS_MA_MODAL_LISTENER_INSTALLED = true;
+// LIVE: enganchar al reloj del juego (sin refresh)
+// Nota: evitamos duplicar listeners usando un singleton global.
+if (typeof registerTimeListener === "function") {
 
-      registerTimeListener(() => {
-        // Solo render si hay modal activo
-        if (ACS_ACTIVE_MODAL_REG) render();
-      });
-    }
+  if (!window.__ACS_MA_MODAL_LISTENER_INSTALLED) {
+    window.__ACS_MA_MODAL_LISTENER_INSTALLED = true;
+
+    registerTimeListener(() => {
+      // Solo render si hay modal activo
+      if (ACS_ACTIVE_MODAL_REG) render();
+    });
   }
+}
 
 })();
 
