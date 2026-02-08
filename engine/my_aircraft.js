@@ -1743,8 +1743,7 @@ if (typeof registerTimeListener === "function") {
    - Evita que un ReferenceError rompa el modal y bloquee los demás
    ============================================================ */
 
-(function () {
-
+{
   const btnC = document.getElementById("btnCcheck");
   const btnD = document.getElementById("btnDcheck");
   const btnL = document.getElementById("btnLog");
@@ -1762,7 +1761,6 @@ if (typeof registerTimeListener === "function") {
   }
   if (btnL) {
     btnL.onclick = null;
-    btnL.disabled = true;
   }
 
   // Si está en mantenimiento activo -> no iniciar otro
@@ -1780,23 +1778,20 @@ if (typeof registerTimeListener === "function") {
 
   // Bind acciones
   if (btnC) {
-    btnC.onclick = () =>
-      ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+    btnC.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "C");
   }
-
   if (btnD) {
-    btnD.onclick = () =>
-      ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+    btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
   }
 
-   // ─────────────────────────────────────────
-  // Log — abrir Maintenance Log real
-  // ─────────────────────────────────────────
+  // Log (por ahora placeholder limpio, no rompe)
   if (btnL) {
-    btnL.disabled = false;
-    btnL.onclick = openMaintenanceLog;
+    btnL.onclick = () => {
+      alert("Maintenance Log: pending activation (PASO 4B-2).");
+    };
   }
-
+}
+   
   modal.style.display = "flex";
 }
 
