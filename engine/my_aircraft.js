@@ -790,7 +790,43 @@ function ACS_executeMaintenance(ac, type = "C") {
      🟧 MA-8.8.C — MAINTENANCE COST CHARGE (ON START)
      ============================================================ */
 
-  const cost = ACS_calculateMaintenanceCost(ac, type);
+/* ============================================================
+   🟧 MA-LOG-2 — WRITE MAINTENANCE START EVENT
+   ------------------------------------------------------------
+   Trigger:
+   - Called ONLY when a C / D check STARTS
+   - Uses snapshot from MA-LOG-1
+   - Writes immutable START event to log
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 08 FEB 2026
+   ============================================================ */
+
+(function writeMaintenanceStartLog(){
+
+  // Evitar duplicados si algo intenta re-entrar
+  if (ac.__maintenanceLogStarted) return;
+
+  const snapshot = ACS_createMaintenanceSnapshot(ac, type);
+  if (!snapshot) return;
+
+  const LOG_KEY = "ACS_MAINTENANCE_LOG";
+
+  const logs = JSON.parse(localStorage.getItem(LOG_KEY) || "{}");
+
+  if (!logs[ac.registration]) {
+    logs[ac.registration] = [];
+  }
+
+  logs[ac.registration].push(snapshot);
+
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+
+  // Marcar para evitar doble escritura
+  ac.__maintenanceLogStarted = true;
+
+})();
+   
+  const cost = snapshot.totalCost;
 
   if (cost > 0) {
     if (typeof ACS_registerExpense === "function") {
@@ -855,6 +891,71 @@ function ACS_calculateMaintenanceCost(ac, type = "C") {
   if (!unitCost) return 0;
 
   return Math.round(unitCost * seats);
+}
+
+/* ============================================================
+   🟦 MA-LOG-1 — MAINTENANCE SNAPSHOT & ERA RESOLVER (CANON)
+   ------------------------------------------------------------
+   Purpose:
+   - Calcular y CONGELAR el costo real de C / D
+   - Basado en ERA + SEATS
+   - Ejecuta UNA SOLA VEZ (al START)
+   - Devuelve objeto INMUTABLE para Log / Finance
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 08 FEB 2026
+   ============================================================ */
+
+function ACS_createMaintenanceSnapshot(ac, type = "C") {
+  if (!ac || !type) return null;
+
+  const now = getSimTime();
+  const year = now.getUTCFullYear();
+
+  // Resolver ERA activa
+  const eraObj = ACS_MAINTENANCE_COSTS_BY_ERA.find(
+    e => year >= e.from && year <= e.to
+  );
+
+  if (!eraObj) {
+    console.warn("⚠️ MA-LOG: Era not found for year", year);
+    return null;
+  }
+
+  const seats = Number(ac.seats || 0);
+  const unitCost = Number(eraObj[type] || 0);
+  const totalCost = Math.round(seats * unitCost);
+
+  const eraLabel = `${eraObj.from}–${eraObj.to}`;
+
+  const eventId =
+    "MA_" +
+    year +
+    "_" +
+    Math.random().toString(36).substring(2, 8).toUpperCase();
+
+  return {
+    id: eventId,
+    registration: ac.registration,
+    aircraftId: ac.id || null,
+
+    type: type,           // "C" | "D"
+    phase: "START",
+
+    year: year,
+    era: eraLabel,
+
+    seats: seats,
+    unitCost: unitCost,
+    totalCost: totalCost,
+    currency: "USD",
+
+    base: ac.base || "—",
+
+    startDate: now.toISOString(),
+    endDate: null,
+
+    status: "IN_PROGRESS"
+  };
 }
 
 /* ============================================================
