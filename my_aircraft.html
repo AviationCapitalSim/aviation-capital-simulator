@@ -1024,14 +1024,18 @@
 </style>
 
 <!-- =========================================================
-     🅲1 — MAINTENANCE LOG MODAL
+     🅲1 — MAINTENANCE LOG MODAL (QATAR LUXURY | REAL MODAL)
+     PASO 2:
+     - Modal real con overlay
+     - Centrado, fixed, premium
+     - Mismo patrón que aircraftModal
      ========================================================= -->
-<div class="modal-overlay" id="maintenanceLogModal" style="display:none;">
-  <div class="modal-box ql-log-modal">
+<div class="modal-bg" id="maintenanceLogModal" style="display:none;">
+  <div class="modal-detail ql-modal ql-log-modal">
 
     <div class="modal-header">
-      <h3>Maintenance Log</h3>
-      <button class="modal-close" onclick="closeMaintenanceLog()">×</button>
+      <h3 class="ql-title">Maintenance Log</h3>
+      <span class="modal-close" onclick="closeMaintenanceLog()">×</span>
     </div>
 
     <div class="ql-log-subtitle" id="logAircraftTitle">
@@ -1062,7 +1066,7 @@
 
   </div>
 </div>
-  
+
 
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
