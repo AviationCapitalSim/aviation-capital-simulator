@@ -635,7 +635,71 @@
   text-shadow: 0 0 12px rgba(255,77,77,0.55);
 }
 
-    
+/* ============================================================
+   🅱️ B1 — MAINTENANCE SERVICE BUTTONS (QATAR LUXURY)
+   ------------------------------------------------------------
+   Hierarchy:
+   - LOG  → Premium / Gold
+   - C    → Technical Blue
+   - D    → Heavy Event / Amber
+   ============================================================ */
+
+.ql-service-actions{
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* BASE */
+.ql-btn-service{
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: transparent;
+}
+
+/* 🟦 C-CHECK */
+.ql-btn-ccheck{
+  color: #4da3ff;
+  border: 1px solid rgba(77,163,255,0.55);
+}
+.ql-btn-ccheck:hover:not(:disabled){
+  background: rgba(77,163,255,0.12);
+  box-shadow: 0 0 12px rgba(77,163,255,0.35);
+}
+
+/* 🟧 D-CHECK */
+.ql-btn-dcheck{
+  color: #f1b21a;
+  border: 1px solid rgba(241,178,26,0.55);
+}
+.ql-btn-dcheck:hover:not(:disabled){
+  background: rgba(241,178,26,0.14);
+  box-shadow: 0 0 14px rgba(241,178,26,0.45);
+}
+
+/* 🟨 LOG — PREMIUM */
+.ql-btn-log{
+  color: #e6c36a;
+  border: 1px solid rgba(230,195,106,0.65);
+}
+.ql-btn-log:hover{
+  background: rgba(230,195,106,0.12);
+  box-shadow: 0 0 16px rgba(230,195,106,0.45);
+}
+
+/* DISABLED */
+.ql-btn-service:disabled{
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 </style>
 </head>
 
