@@ -1799,6 +1799,8 @@ if (typeof registerTimeListener === "function") {
 
 })();
 
+} // ← CIERRE REAL DE openAircraftModal
+
 modal.style.display = "flex";
 
 function closeModal() {
