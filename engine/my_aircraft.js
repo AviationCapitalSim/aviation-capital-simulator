@@ -1743,7 +1743,8 @@ if (typeof registerTimeListener === "function") {
    - Evita que un ReferenceError rompa el modal y bloquee los demás
    ============================================================ */
 
-{
+(function () {
+
   const btnC = document.getElementById("btnCcheck");
   const btnD = document.getElementById("btnDcheck");
   const btnL = document.getElementById("btnLog");
@@ -1755,45 +1756,63 @@ if (typeof registerTimeListener === "function") {
     btnC.onclick = null;
     btnC.disabled = true;
   }
+
   if (btnD) {
     btnD.onclick = null;
     btnD.disabled = true;
   }
+
   if (btnL) {
     btnL.onclick = null;
+    btnL.disabled = true;
   }
 
-  // Si está en mantenimiento activo -> no iniciar otro
+  // ─────────────────────────────────────────
+  // Estado Maintenance activo → nada habilitado
+  // ─────────────────────────────────────────
   if (ac.status === "Maintenance") {
-    // quedan disabled
+    // todo queda deshabilitado
   }
+
+  // ─────────────────────────────────────────
   // Prioridad D
+  // ─────────────────────────────────────────
   else if (mLocal.isDOverdue || mLocal.nextD_days === 0) {
     if (btnD) btnD.disabled = false;
   }
+
+  // ─────────────────────────────────────────
   // Luego C
+  // ─────────────────────────────────────────
   else if (mLocal.isCOverdue || mLocal.nextC_days === 0) {
     if (btnC) btnC.disabled = false;
   }
 
+  // ─────────────────────────────────────────
   // Bind acciones
+  // ─────────────────────────────────────────
   if (btnC) {
-    btnC.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+    btnC.onclick = () =>
+      ACS_confirmAndExecuteMaintenance(ac.registration, "C");
   }
+
   if (btnD) {
-    btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+    btnD.onclick = () =>
+      ACS_confirmAndExecuteMaintenance(ac.registration, "D");
   }
 
-// Log — abrir Maintenance Log real
-if (btnL) {
-  btnL.disabled = false;
-  btnL.onclick = openMaintenanceLog;
-}
+  // ─────────────────────────────────────────
+  // Log — abrir Maintenance Log real
+  // ─────────────────────────────────────────
+  if (btnL) {
+    btnL.disabled = false;
+    btnL.onclick = openMaintenanceLog;
+  }
 
-modal.style.display = "flex";
-}
+  // Mostrar modal (una sola vez, aquí es correcto)
+  modal.style.display = "flex";
 
-})();
+})(); // ← IIFE CERRADO CORRECTAMENTE
 
 function closeModal() {
   ACS_ACTIVE_MODAL_REG = null;
