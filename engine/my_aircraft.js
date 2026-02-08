@@ -1734,7 +1734,8 @@ if (typeof registerTimeListener === "function") {
   `;
 
 })(ac);
-   /* ============================================================
+   
+/* ============================================================
    🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE) [FIX]
    ------------------------------------------------------------
    Fix:
@@ -1777,22 +1778,22 @@ if (typeof registerTimeListener === "function") {
 
   // Bind acciones
   if (btnC) {
-    btnC.onclick = () =>
-      ACS_confirmAndExecuteMaintenance(ac.registration, "C");
+    btnC.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "C");
   }
-
   if (btnD) {
-    btnD.onclick = () =>
-      ACS_confirmAndExecuteMaintenance(ac.registration, "D");
+    btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
   }
 
-  // ✅ LOG — ÚNICO CAMBIO, SIN TOCAR LLAVES
+  // Log (por ahora placeholder limpio, no rompe)
   if (btnL) {
-    btnL.onclick = openMaintenanceLog;
+    btnL.onclick = () => {
+      alert("Maintenance Log: pending activation (PASO 4B-2).");
+    };
   }
 }
-
-modal.style.display = "flex";
+   
+  modal.style.display = "flex";
+}
 
 function closeModal() {
   ACS_ACTIVE_MODAL_REG = null;
