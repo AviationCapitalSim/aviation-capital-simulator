@@ -57,20 +57,78 @@ body{
 .acs-nav a{color:#dbe4ff;text-decoration:none;}
 .acs-nav a.active{color:#ffb300;}
 .acs-auth{display:flex;gap:1rem;align-items:center;}
-.logout-btn{
-  border:1px solid #ffb300;
-  padding:.4rem 1rem;
-  border-radius:12px;
-  color:#ffb300;
-  background:transparent;
-  cursor:pointer;
+
+     
+.acs-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
 }
-.acs-clock-header{
-  font-family:"Orbitron",monospace;
-  background:rgba(0,255,128,0.08);
-  padding:.4rem .7rem;
-  border-radius:8px;
-  color:#00ff80;
+  
+.support-btn {
+      padding: 0.45rem 1.1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      color: #8AB4FF;
+      border: 1px solid rgba(138,180,255,0.45);
+      background: rgba(138,180,255,0.08);
+      backdrop-filter: blur(6px);
+      transition: 0.25s ease;
+    }
+    .support-btn:hover {
+      background: rgba(138,180,255,0.20);
+      box-shadow: 0 0 14px rgba(138,180,255,0.55);
+      color: #dfe9ff;
+    }
+
+.logout-btn {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid #ffb300;
+      border-radius: 12px;
+      background: rgba(255,179,0,0.05);
+      color: #ffb300;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+ .logout-btn:hover {
+      background: #ffb300;
+      color: #0c1f3c;
+    }
+
+/* ============================================================
+   === ACS CLOCK — FINAL GLOBAL FIX (ALL PAGES) ================
+   ============================================================ */
+
+.acs-clock-header {
+  font-family: "Orbitron", monospace;
+  font-size: 0.95rem;
+  color: #00ff80;
+
+  background: rgba(0,255,128,0.08);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+
+  width: 240px;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  font-variant-numeric: tabular-nums;
+
+  /* 🔒 layout stability */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.acs-clock-header .clock-text {
+  display: inline-block;
+  transform: translateX(4px); /* 🎯 ajuste óptico fino */
 }
 
 /* ============================================================
@@ -208,10 +266,14 @@ footer{
     <a href="my_route.html" class="active">My Routes</a>
     <a href="hr.html">HR</a>
   </nav>
-  <div class="acs-auth">
-    <button class="logout-btn">Logout</button>
-    <div class="acs-clock-header">00:00 — 01 JAN 1940</div>
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+   <div id="acs-clock" class="acs-clock-header">
+  <span class="clock-text">20:10 — MON 09 JUN 1941</span>
   </div>
+</div>
+  
 </header>
 
 <!-- ============================================================
@@ -294,5 +356,11 @@ Manual pricing enabled. Dynamic pricing coming soon.
 
 <footer>© 2026 Aviation Capital Simulator</footer>
 
+<!-- ============================================================
+     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
+     ============================================================ -->
+<script src="acs_time_recovery.js"></script>
+<script src="time_engine.js"></script>
+     
 </body>
 </html>
