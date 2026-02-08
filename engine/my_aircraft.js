@@ -1784,14 +1784,16 @@ if (typeof registerTimeListener === "function") {
     btnD.onclick = () => ACS_confirmAndExecuteMaintenance(ac.registration, "D");
   }
 
-  // Log — abrir Maintenance Log real
+// Log — abrir Maintenance Log real
 if (btnL) {
   btnL.disabled = false;
   btnL.onclick = openMaintenanceLog;
 }
-   
-  modal.style.display = "flex";
+
+modal.style.display = "flex";
 }
+
+})();
 
 function closeModal() {
   ACS_ACTIVE_MODAL_REG = null;
