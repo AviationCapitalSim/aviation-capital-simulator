@@ -154,7 +154,7 @@ body {
     }
 
 /* ============================================================
-   === CLOCK TEXT — FINE VISUAL ALIGNMENT =====================
+   === ACS CLOCK — FINAL GLOBAL FIX (ALL PAGES) ================
    ============================================================ */
 .acs-clock-header {
   font-family: "Orbitron", monospace;
@@ -171,13 +171,15 @@ body {
 
   font-variant-numeric: tabular-nums;
 
-  /* ❌ ya NO movemos el div */
+  /* 🔒 layout stability */
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .acs-clock-header .clock-text {
-  margin-left: 0.4rem;   /* ✅ mueve SOLO los números */
+  display: inline-block;
+  transform: translateX(4px); /* 🎯 ajuste óptico fino */
 }
 
 /* ============================================================
