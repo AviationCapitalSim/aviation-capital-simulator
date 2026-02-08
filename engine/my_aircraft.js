@@ -2062,7 +2062,65 @@ function ACS_processMaintenanceCompletion() {
 
       const t = ac.maintenanceType || "C";
 
-      // ✅ Reset REAL al finalizar
+      /* ============================================================
+         🟧 MA-LOG-3 — WRITE MAINTENANCE END EVENT
+         ------------------------------------------------------------
+         Trigger:
+         - Called ONLY when C / D maintenance COMPLETES
+         - Closes the corresponding START event
+         - Does NOT charge any cost
+         ------------------------------------------------------------
+         Version: v1.0 | Date: 08 FEB 2026
+         ============================================================ */
+
+      (function writeMaintenanceEndLog(){
+
+        const LOG_KEY = "ACS_MAINTENANCE_LOG";
+        const logs = JSON.parse(localStorage.getItem(LOG_KEY) || "{}");
+
+        if (!logs[ac.registration]) return;
+
+        // Buscar el último START IN_PROGRESS del mismo tipo
+        const openEvent = [...logs[ac.registration]]
+          .reverse()
+          .find(e =>
+            e.type === t &&
+            e.phase === "START" &&
+            e.status === "IN_PROGRESS"
+          );
+
+        if (!openEvent) return;
+
+        const endEvent = {
+          id: openEvent.id,
+          registration: openEvent.registration,
+          aircraftId: openEvent.aircraftId,
+
+          type: openEvent.type,
+          phase: "END",
+
+          year: openEvent.year,
+          era: openEvent.era,
+
+          seats: openEvent.seats,
+          unitCost: openEvent.unitCost,
+          totalCost: openEvent.totalCost,
+          currency: openEvent.currency,
+
+          base: openEvent.base,
+
+          startDate: openEvent.startDate,
+          endDate: now.toISOString(),
+
+          status: "COMPLETED"
+        };
+
+        logs[ac.registration].push(endEvent);
+        localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+
+      })();
+
+      // ✅ Reset REAL al finalizar (DESPUÉS del log)
       if (t === "C") {
         ac.baselineCHours = ac.hours;
         ac.lastCCheckDate = now.toISOString();
