@@ -285,6 +285,93 @@ window.ACS_registerIncome = function(payload){
 };
 
 /* ============================================================
+   🔹 PUBLIC API — REGISTER EXPENSE (MAINTENANCE / SERVICES)
+   ------------------------------------------------------------
+   • Canonical expense entry point (NON flight)
+   • Used by:
+     - Maintenance (A / B / C / D)
+     - Penalties
+     - One-off operational services
+   • Updates:
+     - expenses
+     - profit
+     - capital
+     - cost breakdown
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 08 FEB 2026
+   ============================================================ */
+
+window.ACS_registerExpense = function(payload){
+
+  if (!payload || typeof payload.amount !== "number") return;
+
+  const f = loadFinance();
+  if (!f) return;
+
+  const amount   = Number(payload.amount) || 0;
+  const category = payload.category || "unknown";
+  const subtype  = payload.subtype  || null;
+
+  if (amount <= 0) return;
+
+  /* ===============================
+     TOTALS
+     =============================== */
+
+  f.expenses += amount;
+  f.profit   -= amount;
+  f.capital  -= amount;
+
+  /* ===============================
+     COST BREAKDOWN
+     =============================== */
+
+  if (!f.cost) f.cost = {};
+
+  switch (category) {
+
+    /* 🛠 MAINTENANCE (A / B / C / D) */
+    case "Maintenance":
+      f.cost.maintenance = (f.cost.maintenance || 0) + amount;
+      break;
+
+    /* 🚨 PENALTIES / FINES */
+    case "penalties":
+      f.cost.penalties = (f.cost.penalties || 0) + amount;
+      break;
+
+    /* 🧾 FALLBACK */
+    default:
+      // Categoría no mapeada aún → solo afecta totales
+      break;
+  }
+
+  /* ===============================
+     CENTRAL LEDGER LOG
+     =============================== */
+
+  pushLog({
+    type: "EXPENSE",
+    source: category,
+    amount: amount,
+    meta: {
+      subtype: subtype,
+      aircraftId: payload.aircraftId || null,
+      registration: payload.registration || null,
+      currency: payload.currency || "USD",
+      date: payload.date || new Date().toISOString()
+    }
+  });
+
+  /* ===============================
+     SAVE + NOTIFY
+     =============================== */
+
+  saveFinance(f);
+  window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+};
+   
+/* ============================================================
    🟧 HR → FINANCE MONTHLY PAYROLL BRIDGE (LIVE)
    ------------------------------------------------------------
    • Corre EN VIVO al cambio de mes (Time Engine)
