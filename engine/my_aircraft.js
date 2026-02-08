@@ -1801,6 +1801,60 @@ function closeModal() {
 }
 
 /* ============================================================
+   🅲3 — MAINTENANCE LOG MODAL HANDLERS
+   ============================================================ */
+
+function openMaintenanceLog() {
+
+  if (!ACS_ACTIVE_MODAL_REG) return;
+
+  const logModal = document.getElementById("maintenanceLogModal");
+  const title    = document.getElementById("logAircraftTitle");
+  const body     = document.getElementById("maintenanceLogBody");
+
+  if (!logModal || !body) return;
+
+  title.textContent = `Aircraft ${ACS_ACTIVE_MODAL_REG}`;
+
+  // Cargar log (si existe)
+  const logs = JSON.parse(
+    localStorage.getItem("ACS_MAINTENANCE_LOG") || "{}"
+  );
+
+  const records = logs[ACS_ACTIVE_MODAL_REG] || [];
+
+  body.innerHTML = "";
+
+  if (records.length === 0) {
+    body.innerHTML = `
+      <tr>
+        <td colspan="6" class="ql-log-empty">
+          No maintenance records available
+        </td>
+      </tr>`;
+  } else {
+    records.forEach(r => {
+      body.innerHTML += `
+        <tr>
+          <td>${r.type}-CHECK</td>
+          <td>${r.startDate || "—"}</td>
+          <td>${r.endDate || "—"}</td>
+          <td>${r.base || "—"}</td>
+          <td>${r.era || "—"}</td>
+          <td>${r.status || "COMPLETED"}</td>
+        </tr>`;
+    });
+  }
+
+  logModal.style.display = "flex";
+}
+
+function closeMaintenanceLog(){
+  const logModal = document.getElementById("maintenanceLogModal");
+  if (logModal) logModal.style.display = "none";
+}
+
+/* ============================================================
    🟩 MA-9.2 — MANUAL MAINTENANCE ACTION HANDLERS
    ============================================================ */
 
