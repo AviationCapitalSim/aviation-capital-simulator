@@ -186,6 +186,186 @@ const ACS_PRICE_RESET_ENGINE = {
 
 Object.freeze(ACS_PRICE_RESET_ENGINE);
 
+/* ============================================================
+   🟦 A5 — ROUTE MATURITY & DEMAND RAMP ENGINE (REALISTIC)
+   ------------------------------------------------------------
+   Purpose:
+   - Route does NOT fill on day 1
+   - Maturity grows with time + airline image + marketing effects (later)
+   - Demand is computed invisibly (player only sees results in revenue)
+   - NO UI here
+   ------------------------------------------------------------
+   Notes:
+   - Uses timestamps in ms (openedDate/lastUpdate)
+   - Produces a "loadFactor" target (0..1)
+   - Competition hooks are placeholders (future multiplayer 700)
+   ============================================================ */
+
+const ACS_ROUTE_MATURITY_ENGINE = {
+
+  /* ============================================================
+     CONFIG (tune later)
+     ============================================================ */
+  CFG: {
+    // How fast routes mature (realistic ramp)
+    // Example: 12–18 months to become strong if airline image is good
+    MATURITY_MONTHS_TO_PEAK: 18,
+
+    // Initial adoption: route starts low even with good airline
+    INITIAL_LF_FLOOR: 0.18, // 18% on day 1 typical (new route)
+
+    // Ceiling base before modifiers (never guaranteed 100%)
+    BASE_LF_CAP: 0.88, // 88% typical cap; can go higher with strong conditions later
+
+    // How much airline image matters (0..1)
+    AIRLINE_IMAGE_WEIGHT: 0.22, // adds up to +22% LF when image=1
+
+    // Airport demand weight (from airport engine later)
+    AIRPORT_DEMAND_WEIGHT: 0.20, // adds up to +20% LF when demand=1
+
+    // Distance penalty for early eras / long haul adoption lag
+    LONG_HAUL_PENALTY_START_NM: 900,
+    LONG_HAUL_PENALTY_MAX: 0.12, // up to -12% LF
+
+    // Randomness band (kept small, realism)
+    NOISE_BAND: 0.04 // ±4%
+  },
+
+  /* ============================================================
+     HELPERS
+     ============================================================ */
+  clamp01(x){
+    return Math.max(0, Math.min(1, Number(x) || 0));
+  },
+
+  monthsBetween(tsA, tsB){
+    const a = Number(tsA) || 0;
+    const b = Number(tsB) || 0;
+    if (!a || !b || b <= a) return 0;
+    // 30-day month approx (good enough for sim)
+    return (b - a) / (1000 * 60 * 60 * 24 * 30);
+  },
+
+  // Smoothstep (nice curve): 0→1 with soft start/end
+  smooth01(t){
+    t = this.clamp01(t);
+    return t * t * (3 - 2 * t);
+  },
+
+  // Hidden tiny noise (deterministic-ish by route id + day)
+  noise(routeId, seedTs){
+    const s = `${routeId || "R"}_${Math.floor((seedTs||0)/86400000)}`;
+    let h = 2166136261;
+    for (let i=0;i<s.length;i++){
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    const n = (h >>> 0) / 4294967295; // 0..1
+    return (n - 0.5) * 2; // -1..+1
+  },
+
+  /* ============================================================
+     EXTERNAL HOOKS (future engines)
+     ============================================================ */
+  getAirlineImage01(route){
+    // Future: from airline profile + marketing dashboard
+    // For now: use route.routeImage if present, else 0.35 default
+    if (route && Number.isFinite(route.routeImage)) return this.clamp01(route.routeImage);
+    return 0.35;
+  },
+
+  getAirportDemand01(icao){
+    // Future: from airport engine (demand, GDP, tourism, war, etc.)
+    // For now: if engine exists, use it; else neutral 0.50
+    try{
+      if (typeof window.ACS_AIRPORT_DEMAND_ENGINE === "object" &&
+          typeof window.ACS_AIRPORT_DEMAND_ENGINE.getDemand01 === "function") {
+        return this.clamp01(window.ACS_AIRPORT_DEMAND_ENGINE.getDemand01(icao));
+      }
+    }catch(e){}
+    return 0.50;
+  },
+
+  getCompetitionPenalty01(route){
+    // Future: multiplayer + rival airlines on same city-pair
+    // Return 0..1 penalty scale
+    return 0.0;
+  },
+
+  /* ============================================================
+     MAIN: update maturity + compute target load factor
+     ============================================================ */
+  evaluate(route, nowTs){
+
+    if (!route) return { maturity: 0, loadFactor: 0 };
+
+    const now = Number(nowTs) || Date.now();
+
+    // Ensure timestamps exist
+    if (!route.openedDate) route.openedDate = now;
+    if (!route.lastUpdate) route.lastUpdate = route.openedDate;
+
+    // ---- 1) Maturity growth by time (0..1) ----
+    const months = this.monthsBetween(route.openedDate, now);
+    const t = months / this.CFG.MATURITY_MONTHS_TO_PEAK; // 0..~1
+    const maturity = this.smooth01(t); // smooth curve
+
+    // Persist maturity (engine-driven)
+    route.maturity = this.clamp01(maturity);
+    route.lastUpdate = now;
+
+    // ---- 2) Build LF components ----
+    const img = this.getAirlineImage01(route);
+    const oDem = this.getAirportDemand01(route.origin);
+    const dDem = this.getAirportDemand01(route.destination);
+    const airportDemand = this.clamp01((oDem + dDem) / 2);
+
+    // Long-haul adoption penalty (early ramp)
+    const dist = Number(route.distanceNM) || 0;
+    let longPenalty = 0;
+    if (dist > this.CFG.LONG_HAUL_PENALTY_START_NM) {
+      const over = Math.min(1, (dist - this.CFG.LONG_HAUL_PENALTY_START_NM) / 2500);
+      longPenalty = over * this.CFG.LONG_HAUL_PENALTY_MAX;
+    }
+
+    const competitionPenalty = this.clamp01(this.getCompetitionPenalty01(route)); // 0 for now
+
+    // ---- 3) Core LF curve ----
+    // Start at floor, then ramp toward cap by maturity
+    const floor = this.CFG.INITIAL_LF_FLOOR;
+    const capBase = this.CFG.BASE_LF_CAP;
+
+    // Modifiers
+    const cap =
+      capBase +
+      (img * this.CFG.AIRLINE_IMAGE_WEIGHT) +
+      (airportDemand * this.CFG.AIRPORT_DEMAND_WEIGHT) -
+      longPenalty -
+      (competitionPenalty * 0.18); // future
+
+    const capClamped = Math.max(0.25, Math.min(0.98, cap));
+
+    // Ramp
+    let lf = floor + (capClamped - floor) * route.maturity;
+
+    // Noise (small)
+    const n = this.noise(route.id, now) * this.CFG.NOISE_BAND;
+    lf += n;
+
+    // Final clamp
+    lf = Math.max(0.05, Math.min(0.99, lf));
+
+    return {
+      maturity: route.maturity,
+      loadFactor: lf,
+      airlineImage: img,
+      airportDemand
+    };
+  }
+};
+
+Object.freeze(ACS_ROUTE_MATURITY_ENGINE);
+
 
 /* ============================================================
    🟧 ACS ROUTES UI CONTROLLER
