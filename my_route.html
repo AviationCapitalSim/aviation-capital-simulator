@@ -1,8 +1,13 @@
 <!-- ============================================================
-     ✈️ ACS — MY ROUTES & TICKET PRICING
+     ✈️ ACS — MY ROUTES & TICKET PRICING (FUNCTIONAL BASE)
      ------------------------------------------------------------
+     File: my_route.html
+     Purpose:
+     - Functional base (NO fake data)
+     - Ready for Route Maturity, Demand, Slots & Pricing engines
+     - No shortcuts, no auto-optimization
      Design: Qatar Luxury
-     Version: v1.0 (FOUNDATION)
+     Version: v1.1
      Date: 09 FEB 2026
      ============================================================ -->
 
@@ -13,196 +18,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>My Routes & Ticket Pricing — ACS</title>
 
+<!-- ===== ACS CORE STYLES ===== -->
 <link rel="stylesheet" href="styles.css?v=3.1" />
+
+<!-- ===== ACS FAVICONS ===== -->
 <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
 <link rel="apple-touch-icon" href="acs_logo_180.png">
 <link rel="manifest" href="manifest.json">
 
 <style>
-body{
-  margin:0;
-  background:#081530;
-  color:#fff;
-  font-family:"Poppins",sans-serif;
-}
+/* ============================================================
+   GLOBAL
+   ============================================================ */
+body{margin:0;background:#081530;color:#fff;font-family:"Poppins",sans-serif;overflow-x:hidden}
 
-/* ================= HEADER ================= */
+/* ============================================================
+   HEADER — SHARED ACS STANDARD
+   ============================================================ */
+.acs-header{position:fixed;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:.8rem 2rem;background:rgba(12,23,50,.45);backdrop-filter:blur(9px);border-bottom:2px solid #ffb300;z-index:5000}
+.acs-logo{display:flex;align-items:center;gap:1rem}
+.acs-logo img{height:46px}
+.acs-logo h1{margin:0;font-size:1.1rem;color:#ffb300}
+.acs-nav{display:flex;gap:2rem}
+.acs-nav a{text-decoration:none;color:#dbe4ff}
+.acs-nav a.active{color:#ffb300}
+.acs-right{display:flex;align-items:center;gap:1rem;flex-shrink:0}
 
-.acs-header{
-  position:fixed;
-  top:0;
-  width:100%;
-  backdrop-filter:blur(9px);
-  background:rgba(12,23,50,0.45);
-  padding:0.8rem 2rem;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-bottom:2px solid #ffb300;
-  z-index:5000;
-}
-.acs-logo{display:flex;align-items:center;gap:1rem;}
-.acs-logo img{height:46px;}
-.acs-logo h1{margin:0;font-size:1.1rem;color:#ffb300;}
-.acs-nav{display:flex;gap:2rem;}
-.acs-nav a{color:#dbe4ff;text-decoration:none;}
-.acs-nav a.active{color:#ffb300;}
+.support-btn{padding:.45rem 1.1rem;border-radius:12px;font-size:.9rem;font-weight:600;text-decoration:none;color:#8AB4FF;border:1px solid rgba(138,180,255,.45);background:rgba(138,180,255,.08)}
+.logout-btn{padding:.45rem 1.1rem;border:1px solid #ffb300;border-radius:12px;background:rgba(255,179,0,.05);color:#ffb300;font-weight:600;cursor:pointer}
 
-.acs-right{
-  display:flex;
-  align-items:center;
-  gap:1rem;
-}
-.support-btn,
-.logout-btn{
-  padding:.45rem 1.1rem;
-  border-radius:12px;
-  font-weight:600;
-  cursor:pointer;
-  text-decoration:none;
-}
-.support-btn{
-  color:#8AB4FF;
-  border:1px solid rgba(138,180,255,.45);
-  background:rgba(138,180,255,.08);
-}
-.logout-btn{
-  color:#ffb300;
-  border:1px solid #ffb300;
-  background:rgba(255,179,0,.05);
-}
+.acs-clock-header{font-family:"Orbitron",monospace;font-size:.95rem;color:#00ff80;background:rgba(0,255,128,.08);border-radius:8px;padding:.4rem .6rem;width:240px;display:flex;justify-content:center;align-items:center;white-space:nowrap;font-variant-numeric:tabular-nums}
 
-.acs-clock-header{
-  font-family:"Orbitron",monospace;
-  background:rgba(0,255,128,.08);
-  color:#00ff80;
-  padding:.4rem .6rem;
-  border-radius:8px;
-  width:240px;
-  display:flex;
-  justify-content:center;
-  font-variant-numeric:tabular-nums;
-}
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+.acs-main{padding:120px 2rem 2rem}
+.page-title{font-size:2rem;color:#ffca3a;text-shadow:0 0 10px rgba(255,200,80,.5)}
+.page-sub{color:#cbd6ff;margin-bottom:1.5rem}
 
-/* ================= MAIN ================= */
+/* ============================================================
+   KPI STRIP (REAL DATA ONLY)
+   ============================================================ */
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.kpi-card{background:linear-gradient(180deg,rgba(20,35,70,.8),rgba(10,18,40,.9));border-radius:18px;padding:1.2rem;border:1px solid rgba(255,179,0,.18);text-align:center}
+.kpi-card h4{margin:.3rem 0;color:#ffb300}
+.kpi-card span{font-size:1.4rem;font-weight:600}
 
-.acs-main{
-  padding:120px 2rem 2rem;
-}
+/* ============================================================
+   ROUTES + PRICING LAYOUT
+   ============================================================ */
+.routes-wrapper{display:grid;grid-template-columns:1fr 420px;gap:1.5rem}
 
-.page-title{
-  font-size:2rem;
-  color:#ffca3a;
-  text-shadow:0 0 10px rgba(255,200,80,.5);
-}
-.page-sub{
-  color:#cbd6ff;
-  margin-bottom:2rem;
-}
+.routes-table{background:linear-gradient(180deg,rgba(20,35,70,.75),rgba(10,18,40,.85));border-radius:22px;padding:1.5rem;border:1px solid rgba(255,179,0,.2)}
+.routes-table table{width:100%;border-collapse:collapse}
+.routes-table th,.routes-table td{padding:.8rem;border-bottom:1px solid rgba(255,255,255,.08);text-align:center}
+.routes-table th{color:#ffb300;font-size:.9rem}
+.route-btn{background:#00a86b;border:none;border-radius:8px;padding:.4rem .8rem;color:#fff;cursor:pointer}
 
-/* ================= KPI ================= */
+.side-panel{background:linear-gradient(180deg,rgba(25,40,85,.9),rgba(10,18,40,.95));border-radius:22px;padding:1.6rem;border:1px solid rgba(255,179,0,.25)}
+.side-panel h3{color:#ffb300;margin-bottom:.6rem}
+.price-box{background:rgba(0,0,0,.35);padding:1rem;border-radius:14px;margin-bottom:1rem}
+.price-row{display:flex;justify-content:space-between;margin:.4rem 0}
+.price-controls{display:flex;gap:1rem;margin-top:1rem}
+.price-controls button{flex:1;padding:.6rem;border:none;border-radius:10px;font-weight:600;cursor:pointer}
+.btn-reset{background:#f1b93a;color:#081530}
+.btn-manual{background:#444;color:#ccc}
 
-.kpi-strip{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:1rem;
-  margin-bottom:2rem;
-}
-.kpi{
-  background:linear-gradient(180deg,rgba(20,35,70,.8),rgba(10,18,40,.9));
-  border-radius:18px;
-  padding:1.2rem;
-  border:1px solid rgba(255,179,0,.18);
-  text-align:center;
-}
-.kpi h4{margin:.3rem 0;color:#ffb300;}
-.kpi span{font-size:1.4rem;font-weight:600;}
-
-/* ================= ROUTES ================= */
-
-.routes-layout{
-  display:grid;
-  grid-template-columns:1fr 420px;
-  gap:1.5rem;
-}
-
-.routes-table{
-  background:linear-gradient(180deg,rgba(20,35,70,.75),rgba(10,18,40,.85));
-  border-radius:22px;
-  padding:1.5rem;
-  border:1px solid rgba(255,179,0,.2);
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-th,td{
-  padding:.8rem;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  text-align:center;
-}
-th{color:#ffb300;font-size:.85rem;}
-.route-btn{
-  background:#00a86b;
-  border:none;
-  border-radius:8px;
-  padding:.4rem .8rem;
-  color:white;
-  cursor:pointer;
-}
-
-/* ================= SIDE PANEL ================= */
-
-.side-panel{
-  background:linear-gradient(180deg,rgba(25,40,85,.9),rgba(10,18,40,.95));
-  border-radius:22px;
-  padding:1.6rem;
-  border:1px solid rgba(255,179,0,.25);
-}
-.side-panel h3{color:#ffb300;margin-bottom:.6rem;}
-
-.info-box{
-  background:rgba(0,0,0,.35);
-  padding:1rem;
-  border-radius:14px;
-  margin-bottom:1rem;
-}
-.info-row{
-  display:flex;
-  justify-content:space-between;
-  margin:.4rem 0;
-}
-
-.price-actions{
-  display:flex;
-  gap:1rem;
-  margin-top:1rem;
-}
-.price-actions button{
-  flex:1;
-  padding:.7rem;
-  border:none;
-  border-radius:10px;
-  font-weight:600;
-  cursor:pointer;
-}
-.btn-reset{background:#ffb300;color:#0c1f3c;}
-.btn-manual{background:#444;color:#fff;}
-
-.note{
-  font-size:.85rem;
-  color:#aaa;
-  margin-top:1rem;
-}
-
-/* ================= FOOTER ================= */
-
-footer{
-  margin-top:2rem;
-  text-align:center;
-  color:#888;
-  font-size:.85rem;
-}
+footer{text-align:center;color:#888;font-size:.85rem;margin-top:2rem}
 </style>
 </head>
 
@@ -210,7 +92,7 @@ footer{
 
 <header class="acs-header">
   <div class="acs-logo">
-    <img src="acs_logo.png">
+    <img src="acs_logo.png" />
     <h1>Aviation Capital Simulator</h1>
   </div>
 
@@ -225,78 +107,79 @@ footer{
   <div class="acs-right">
     <a href="support.html" class="support-btn">Support</a>
     <a class="logout-btn">Logout</a>
-    <div class="acs-clock-header">
-      <span>20:10 — MON 09 JUN 1941</span>
-    </div>
+    <div class="acs-clock-header"><span id="acs-clock">00:00 — 01 JAN 1940</span></div>
   </div>
 </header>
 
 <main class="acs-main">
+  <h2 class="page-title">🌍 My Routes & Ticket Pricing</h2>
+  <p class="page-sub">Real market behavior. Historical pricing. No shortcuts.</p>
 
-<h2 class="page-title">🌍 My Routes & Ticket Pricing</h2>
-<p class="page-sub">Real market behavior, historical pricing, no shortcuts.</p>
+  <!-- KPI STRIP — WIRED TO ENGINE (NO HARDCODE) -->
+  <section class="kpi-strip">
+    <div class="kpi-card"><h4>Airline Image</h4><span id="kpi-airline-image">—</span></div>
+    <div class="kpi-card"><h4>Active Routes</h4><span id="kpi-routes">—</span></div>
+    <div class="kpi-card"><h4>Avg Load Factor</h4><span id="kpi-lf">—</span></div>
+    <div class="kpi-card"><h4>Profitable Routes</h4><span id="kpi-profit">—</span></div>
+  </section>
 
-<section class="kpi-strip">
-  <div class="kpi"><h4>Airline Image</h4><span>42%</span></div>
-  <div class="kpi"><h4>Active Routes</h4><span>6</span></div>
-  <div class="kpi"><h4>Avg Load Factor</h4><span>61%</span></div>
-  <div class="kpi"><h4>Profitable Routes</h4><span>3</span></div>
-</section>
+  <div class="routes-wrapper">
 
-<div class="routes-layout">
+    <!-- ROUTES TABLE (DATA DRIVEN) -->
+    <section class="routes-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Aircraft</th>
+            <th>Freq/Wk</th>
+            <th>LF</th>
+            <th>Ticket</th>
+            <th>Result</th>
+            <th>Pricing</th>
+          </tr>
+        </thead>
+        <tbody id="routes-table-body">
+          <!-- Injected by Route Engine -->
+        </tbody>
+      </table>
+    </section>
 
-<section class="routes-table">
-<table>
-<thead>
-<tr>
-<th>Route</th>
-<th>Aircraft</th>
-<th>Freq/Wk</th>
-<th>LF</th>
-<th>Ticket</th>
-<th>Result</th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>MAD → BCN</td>
-<td>DC-3</td>
-<td>7</td>
-<td>64%</td>
-<td>$80</td>
-<td style="color:#ff7675;">−$6k</td>
-<td><button class="route-btn">Select</button></td>
-</tr>
-</tbody>
-</table>
-</section>
+    <!-- PRICING PANEL (REAL RESET ONLY) -->
+    <aside class="side-panel">
+      <h3>🎟️ Route Pricing</h3>
+      <div class="price-box">
+        <div class="price-row"><span>Route</span><strong id="p-route">—</strong></div>
+        <div class="price-row"><span>Current Ticket</span><strong id="p-price">—</strong></div>
+        <div class="price-row"><span>Era</span><strong id="p-era">—</strong></div>
+      </div>
 
-<aside class="side-panel">
-<h3>🎟️ Route Pricing</h3>
+      <div class="price-controls">
+        <button class="btn-reset" id="btn-reset-price">RESET PRICE</button>
+        <button class="btn-manual" id="btn-manual-price">Manual Adjust</button>
+      </div>
 
-<div class="info-box">
-  <div class="info-row"><span>Route</span><strong>MAD → BCN</strong></div>
-  <div class="info-row"><span>Current Ticket</span><strong>$80</strong></div>
-  <div class="info-row"><span>Route Image</span><strong>31%</strong></div>
-  <div class="info-row"><span>Airline Image</span><strong>42%</strong></div>
-</div>
+      <p style="margin-top:1rem;font-size:.85rem;color:#aaa">
+        Reset reconciles the ticket with historical market conditions of the era.
+        No preview. No hints. Decisions matter.
+      </p>
+    </aside>
 
-<div class="price-actions">
-  <button class="btn-reset">RESET PRICE</button>
-  <button class="btn-manual">Manual Adjust</button>
-</div>
-
-<p class="note">
-RESET reconciles the ticket with real market conditions of the era.  
-No preview. No hints. Decisions have consequences.
-</p>
-</aside>
-
-</div>
+  </div>
 </main>
 
 <footer>© 2026 Aviation Capital Simulator</footer>
+
+<!-- TIME ENGINE -->
+<script src="acs_time_recovery.js"></script>
+<script src="time_engine.js"></script>
+
+<!-- ROUTE / DEMAND / PRICING ENGINES (HOOKS) -->
+<script src="acs_world_engine.js"></script>
+<script src="acs_airport_costs_engine.js"></script>
+<script src="acs_slots_engine.js"></script>
+<script src="acs_flight_economics.js"></script>
+<script src="passenger_engine.js"></script>
 
 </body>
 </html>
