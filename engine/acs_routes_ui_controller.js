@@ -489,7 +489,117 @@ const ACS_ROUTE_PRICE_ENGINE = {
 
 Object.freeze(ACS_ROUTE_PRICE_ENGINE);
 
+/* ============================================================
+   🟦 A7 — ROUTE REVENUE & COST ENGINE (REAL OPS)
+   ------------------------------------------------------------
+   Purpose:
+   - Compute REAL weekly revenue per route
+   - Apply aircraft + distance + airport costs
+   - Output net weekly result (profit / loss)
+   ------------------------------------------------------------
+   NOTE:
+   - No UI logic
+   - No storage
+   - Pure calculation engine
+   ============================================================ */
 
+const ACS_ROUTE_FINANCIAL_ENGINE = {
+
+  /* ============================================================
+     AIRCRAFT COST PER NM (USD) — HISTORICAL
+     ============================================================ */
+  COST_PER_NM: {
+    "DC-3": 0.22,
+    "DC-4": 0.30,
+    "B707": 0.55
+  },
+
+  /* ============================================================
+     FIXED COST PER FLIGHT (USD)
+     ============================================================ */
+  FIXED_COST_PER_FLIGHT: {
+    "DC-3": 180,
+    "DC-4": 260,
+    "B707": 420
+  },
+
+  /* ============================================================
+     AIRPORT COST (PER MOVEMENT)
+     ============================================================ */
+  AIRPORT_COST: {
+    small: 40,
+    medium: 80,
+    large: 140
+  },
+
+  /* ============================================================
+     HELPERS
+     ============================================================ */
+
+  getAircraftCostNM(type){
+    return this.COST_PER_NM[type] || 0.3;
+  },
+
+  getFixedFlightCost(type){
+    return this.FIXED_COST_PER_FLIGHT[type] || 200;
+  },
+
+  getAirportCost(airportSize){
+    return this.AIRPORT_COST[airportSize] || 80;
+  },
+
+  /* ============================================================
+     MAIN COMPUTE
+     ============================================================ */
+  compute(route){
+    if (!route) return null;
+
+    const {
+      distanceNM,
+      aircraftType,
+      frequencyPerWeek,
+      seatsPerFlight,
+      currentTicketPrice,
+      maturity
+    } = route;
+
+    if (!distanceNM || !aircraftType || !frequencyPerWeek || !seatsPerFlight) {
+      return null;
+    }
+
+    // --- Load Factor grows with maturity ---
+    const loadFactor = Math.min(0.15 + maturity * 0.85, 0.95);
+
+    // --- Passengers ---
+    const paxPerFlight = Math.round(seatsPerFlight * loadFactor);
+    const weeklyPax = paxPerFlight * frequencyPerWeek;
+
+    // --- Revenue ---
+    const weeklyRevenue = weeklyPax * currentTicketPrice;
+
+    // --- Costs ---
+    const costPerNM = this.getAircraftCostNM(aircraftType);
+    const flightCost =
+      distanceNM * costPerNM +
+      this.getFixedFlightCost(aircraftType) +
+      this.getAirportCost("medium") * 2;
+
+    const weeklyCost = flightCost * frequencyPerWeek;
+
+    // --- Result ---
+    const weeklyResult = Math.round(weeklyRevenue - weeklyCost);
+
+    return {
+      loadFactor: Math.round(loadFactor * 100),
+      weeklyPax,
+      weeklyRevenue: Math.round(weeklyRevenue),
+      weeklyCost: Math.round(weeklyCost),
+      weeklyResult
+    };
+  }
+};
+
+Object.freeze(ACS_ROUTE_FINANCIAL_ENGINE);
 
 /* ============================================================
    🟧 ACS ROUTES UI CONTROLLER
@@ -613,7 +723,7 @@ Object.freeze(ACS_ROUTE_PRICE_ENGINE);
      🔹 RESET PRICE (HOOK ONLY)
      ============================================================ */
 
-     function resetPrice() {
+    function resetPrice() {
     const routeId = localStorage.getItem(SELECTED_ROUTE_KEY);
     if (!routeId) return;
 
