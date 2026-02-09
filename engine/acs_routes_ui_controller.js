@@ -366,6 +366,130 @@ const ACS_ROUTE_MATURITY_ENGINE = {
 
 Object.freeze(ACS_ROUTE_MATURITY_ENGINE);
 
+/* ============================================================
+   🟦 A6 — HISTORICAL ROUTE PRICE ENGINE (EVENT-READY)
+   ------------------------------------------------------------
+   Purpose:
+   - Compute REAL ticket price by era & distance
+   - Support future world events (oil, war, crisis)
+   - No preview, no hints, no UI
+   ------------------------------------------------------------
+   Output:
+   - USD ticket price (rounded)
+   ============================================================ */
+
+const ACS_ROUTE_PRICE_ENGINE = {
+
+  /* ============================================================
+     BASE PRICE PER NM (USD) — HISTORICAL
+     ============================================================ */
+  BASE_PRICE_PER_NM: {
+    // Piston era
+    1940: 0.28,
+    1941: 0.30,
+    1942: 0.31,
+    1943: 0.32,
+    1944: 0.33,
+    1945: 0.34,
+
+    // Post-war normalization
+    1946: 0.36,
+    1947: 0.38,
+    1948: 0.40,
+    1949: 0.42,
+    1950: 0.44
+  },
+
+  /* ============================================================
+     CLASS MULTIPLIERS (ERA-AWARE)
+     ============================================================ */
+  CLASS_MULTIPLIER: {
+    Y: 1.0,
+    C: 1.6,   // activated later by era
+    F: 2.4
+  },
+
+  /* ============================================================
+     ERA FEATURES
+     ============================================================ */
+  ERA_RULES: {
+    // only Y allowed
+    pre1955: {
+      allowC: false,
+      allowF: false
+    },
+    jetAge: {
+      allowC: true,
+      allowF: true
+    }
+  },
+
+  /* ============================================================
+     HELPERS
+     ============================================================ */
+  getYear(route){
+    const y = parseInt(route?.era, 10);
+    return Number.isFinite(y) ? y : 1940;
+  },
+
+  getBasePricePerNM(year){
+    return this.BASE_PRICE_PER_NM[year] || this.BASE_PRICE_PER_NM[1940];
+  },
+
+  isClassAllowed(route, cls){
+    const y = this.getYear(route);
+    if (y < 1955) return cls === "Y";
+    return true;
+  },
+
+  /* ============================================================
+     WORLD EVENT MODIFIER (HOOK)
+     ============================================================ */
+  getWorldModifier(route){
+    // Future:
+    // - oil crisis
+    // - wars
+    // - pandemics
+    // - booms
+    // For now: neutral
+    return 1.0;
+  },
+
+  /* ============================================================
+     MAIN COMPUTE
+     ============================================================ */
+  compute(route){
+    if (!route || !route.distanceNM) return null;
+
+    const year = this.getYear(route);
+    const basePerNM = this.getBasePricePerNM(year);
+
+    // Determine service class
+    const cls = Array.isArray(route.serviceClass)
+      ? route.serviceClass[0]
+      : "Y";
+
+    if (!this.isClassAllowed(route, cls)) {
+      // fallback safety
+      route.serviceClass = ["Y"];
+    }
+
+    const classMult = this.CLASS_MULTIPLIER[cls] || 1.0;
+    const worldMult = this.getWorldModifier(route);
+
+    const raw =
+      route.distanceNM *
+      basePerNM *
+      classMult *
+      worldMult;
+
+    return Math.round(raw);
+  }
+};
+
+Object.freeze(ACS_ROUTE_PRICE_ENGINE);
+
+
 
 /* ============================================================
    🟧 ACS ROUTES UI CONTROLLER
@@ -489,7 +613,7 @@ Object.freeze(ACS_ROUTE_MATURITY_ENGINE);
      🔹 RESET PRICE (HOOK ONLY)
      ============================================================ */
 
-   function resetPrice() {
+     function resetPrice() {
     const routeId = localStorage.getItem(SELECTED_ROUTE_KEY);
     if (!routeId) return;
 
@@ -497,13 +621,16 @@ Object.freeze(ACS_ROUTE_MATURITY_ENGINE);
     const route = routes.find(r => r.id === routeId);
     if (!route) return;
 
-    // 🔒 Historical reset (NO preview, NO hints)
-    ACS_PRICE_RESET_ENGINE.reset(route);
+    const newPrice = ACS_ROUTE_PRICE_ENGINE.compute(route);
+    if (!newPrice) return;
+
+    route.currentTicketPrice = newPrice;
+    route.lastPriceReset = Date.now();
 
     saveRoutes(routes);
 
-    // Update pricing panel only
-    priceValue.textContent = `$${route.currentTicketPrice}`;
+    // Update UI (no hint)
+    priceValue.textContent = `$${newPrice}`;
   }
 
   /* ============================================================
