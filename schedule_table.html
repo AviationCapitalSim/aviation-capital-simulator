@@ -847,11 +847,7 @@ footer {
 }
        
 /* ============================================================
-   🛠 SERVICE CHIP — TECH GRAY (QATAR LUXURY)
-   ------------------------------------------------------------
-   • Diferenciado de vuelos
-   • Estilo técnico / mantenimiento
-   • Mantiene identidad ACS (borde ámbar)
+   🛠 SERVICE CHIP — TECH GRAY (QATAR LUXURY + INTERACTIVE)
    ============================================================ */
 
 .service-chip {
@@ -865,20 +861,15 @@ footer {
   border-radius: 999px;
   white-space: nowrap;
 
-  background: rgba(160, 170, 185, 0.22);       /* gris técnico */
-  border: 1px solid rgba(255, 179, 0, 0.55);   /* ámbar ACS */
-  color: #E5E7EB;                              /* texto gris claro */
+  background: rgba(160, 170, 185, 0.22);
+  border: 1px solid rgba(255, 179, 0, 0.55);
+  color: #E5E7EB;
 
   box-shadow:
     0 0 6px rgba(0,0,0,0.25),
     inset 0 0 6px rgba(255,255,255,0.08);
-}
 
-/* ============================================================
-   🟧 SERVICE CHIP — INTERACTIVE (FIX)
-   ============================================================ */
-
-.service-chip {
+  /* 🔥 INTERACTIVO */
   cursor: pointer;
   pointer-events: auto;
   position: relative;
@@ -887,9 +878,11 @@ footer {
 
 .service-chip:hover {
   filter: brightness(1.15);
-  box-shadow: 0 0 0 2px rgba(255, 200, 60, 0.35);
+  box-shadow:
+    0 0 0 2px rgba(255, 200, 60, 0.35),
+    0 0 10px rgba(255, 179, 0, 0.25);
 }
-       
+
 /* ============================================================
    🟫 PASO 2 — B-CHECK DAY STYLE (GRAY CELL) — 17DEC25
    ============================================================ */
