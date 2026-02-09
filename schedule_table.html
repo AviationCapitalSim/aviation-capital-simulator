@@ -1708,65 +1708,58 @@ items.forEach(it => {
   byAircraftId[key].push(it);
 });
 
-  // ============================================================
-  // SIN FLOTA — filas dummy
-  // ============================================================
-     
-  if (!fleet.length) {
+ // ============================================================
+// SIN FLOTA — filas dummy (FIX ac scope)
+// ============================================================
 
-    for (let i = 0; i < 5; i++) {
-      const tr = document.createElement("tr");
+if (!fleet.length) {
 
-      const tdTail = document.createElement("td");
-      tdTail.textContent = "(empty)";
-      tr.appendChild(tdTail);
+  for (let i = 0; i < 5; i++) {
 
-      days.forEach(() => {
-        const td = document.createElement("td");
-        td.textContent = "—";
-        tr.appendChild(td);
-      });
+    const tr = document.createElement("tr");
 
-      // ⛔ PASO 2.2 — HARD STOP: aircraft grounded
-     if (ac.canFly === false) {
-     td.innerHTML = `
-     <span class="acs-status-badge badge-overdue">
-      ⛔ GROUNDED (${ac.groundReason})
-     </span>
-    `;
-     tr.appendChild(td);
-     return;
-     }
-         
-      const planTd = document.createElement("td");
-      const wrap = document.createElement("div");
-      wrap.className = "plan-actions";
+    // Aircraft
+    const tdTail = document.createElement("td");
+    tdTail.textContent = "(empty)";
+    tr.appendChild(tdTail);
 
-      const assignBtn = document.createElement("button");
-      assignBtn.className = "btn btn-assign";
-      assignBtn.textContent = "Assign Route";
-      assignBtn.onclick = () =>
-        alert("⚠ No aircraft available. Buy one first.");
+    // Days
+    days.forEach(() => {
+      const td = document.createElement("td");
+      td.textContent = "—";
+      tr.appendChild(td);
+    });
 
-      const maintBtn = document.createElement("button");
-      maintBtn.className = "btn btn-maint";
-      maintBtn.textContent = "Plan Maintenance";
-      maintBtn.onclick = () =>
-        alert("⚠ No aircraft available. Buy one first.");
+    // Action Plan
+    const planTd = document.createElement("td");
+    const wrap = document.createElement("div");
+    wrap.className = "plan-actions";
 
-      wrap.appendChild(assignBtn);
-      wrap.appendChild(maintBtn);
-      planTd.appendChild(wrap);
-      tr.appendChild(planTd);
+    const assignBtn = document.createElement("button");
+    assignBtn.className = "btn btn-assign";
+    assignBtn.textContent = "Assign Route";
+    assignBtn.onclick = () =>
+      alert("⚠ No aircraft available. Buy one first.");
 
-      tbody.appendChild(tr);
-    }
+    const maintBtn = document.createElement("button");
+    maintBtn.className = "btn btn-maint";
+    maintBtn.textContent = "Plan Maintenance";
+    maintBtn.onclick = () =>
+      alert("⚠ No aircraft available. Buy one first.");
 
-    document.getElementById("updateTime").textContent =
-      "Last update: " + new Date().toLocaleTimeString();
+    wrap.appendChild(assignBtn);
+    wrap.appendChild(maintBtn);
+    planTd.appendChild(wrap);
+    tr.appendChild(planTd);
 
-    return;
+    tbody.appendChild(tr);
   }
+
+  document.getElementById("updateTime").textContent =
+    "Last update: " + new Date().toLocaleTimeString();
+
+  return;
+}
 
   // ============================================================
   // CON FLOTA
