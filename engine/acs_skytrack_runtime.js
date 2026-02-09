@@ -665,15 +665,22 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     return now >= startAbs && now < endAbs;
   });
 
+ if (
+  bCheck &&
+  typeof bCheck.day === "string" &&
+  typeof bCheck.start === "string" &&
+  Number.isFinite(bCheck.durationMin)
+) {
   const startAbs = ACS_SkyTrack_dayTimeToAbs(bCheck.day, bCheck.start);
-const endAbs   = startAbs + Number(bCheck.durationMin || 0);
+  const endAbs   = startAbs + bCheck.durationMin;
 
-if (now >= startAbs && now < endAbs) {
-  return {
-    state: "MAINTENANCE",
-    position: { airport: ac.baseAirport || null },
-    flight: null
-  };
+  if (Number.isFinite(startAbs) && now >= startAbs && now < endAbs) {
+    return {
+      state: "MAINTENANCE",
+      position: { airport: ac.baseAirport || null },
+      flight: null
+    };
+  }
 }
 
   /* ============================================================
