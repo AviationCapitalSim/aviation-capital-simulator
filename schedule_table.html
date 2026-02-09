@@ -1302,58 +1302,41 @@ function ACS_getAircraftStatusBadge(ac){
 }
 
 /* ============================================================
-   🟧 A3.1 — SCHEDULE OPERATIONAL AUTHORITY (ACS)
+   🟧 A3.1 — SCHEDULE VISUAL SERVICE STATE (ACS)
    ------------------------------------------------------------
    Purpose:
-   - Schedule es la ÚNICA autoridad de vuelo
-   - Decide si el avión puede volar o no
-   - SkyTrack solo lee `canFly`
-   ------------------------------------------------------------
-*/
+   - Schedule decide SOLO servicios A / B
+   - NO modifica estado operacional real
+   - NO escribe en ACS_MyAircraft
+   - Estado 100% visual / temporal
+   ============================================================ */
 
-function ACS_EvaluateOperationalStatus(ac) {
+function ACS_EvaluateScheduleServiceState(ac, scheduleItems) {
 
-  // Default
-  ac.canFly = true;
-  ac.groundReason = null;
+  // Estado visual local (NO persistente)
+  ac.__schedule = {
+    hasService: false,
+    type: null,        // "A" | "B"
+    reason: null,      // "A-check" | "B-check"
+    visualOnly: true
+  };
 
-  // --- HARD BLOCKERS ---
-  if (ac.nextB_overdue) {
-    ac.canFly = false;
-    ac.groundReason = "B-overdue";
+  if (!Array.isArray(scheduleItems)) return ac;
+
+  // Buscar servicios A/B activos para esta aeronave
+  const svc = scheduleItems.find(it =>
+    it.type === "service" &&
+    it.aircraftId === ac.id &&
+    (it.serviceType === "A" || it.serviceType === "B") &&
+    it.active === true
+  );
+
+  if (svc) {
+    ac.__schedule.hasService = true;
+    ac.__schedule.type = svc.serviceType;
+    ac.__schedule.reason = svc.serviceType === "A" ? "A-check" : "B-check";
   }
 
-  if (ac.nextC_overdue) {
-    ac.canFly = false;
-    ac.groundReason = "C-overdue";
-  }
-
-  if (ac.nextD_overdue) {
-    ac.canFly = false;
-    ac.groundReason = "D-overdue";
-  }
-
-  // --- ACTIVE MAINTENANCE ---
-  if (ac.maintenanceStatus === "B") {
-    ac.canFly = false;
-    ac.groundReason = "B-check";
-  }
-
-  if (ac.maintenanceStatus === "C") {
-    ac.canFly = false;
-    ac.groundReason = "C-check";
-  }
-
-  if (ac.maintenanceStatus === "D") {
-    ac.canFly = false;
-    ac.groundReason = "D-check";
-  }
-
-  if (ac.canFly === false && ac.groundReason) {
-  ac.alertRequired = true;
-  ac.alertCode = ac.groundReason;
-}
-     
   return ac;
 }
 
