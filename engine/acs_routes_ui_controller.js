@@ -58,6 +58,65 @@ Object.freeze(ACS_ROUTE_SCHEMA);
   }
 
 /* ============================================================
+   🟦 A3 — ROUTE MATURITY ENGINE (FOUNDATION)
+   ------------------------------------------------------------
+   Purpose:
+   - Initialize and update route maturity over time
+   - NO pricing
+   - NO demand
+   - NO economy
+   ------------------------------------------------------------
+   Rules:
+   - New routes start immature
+   - Growth depends on time + frequency
+   - Caps at 1.0
+   ============================================================ */
+
+const ACS_ROUTE_MATURITY = {
+
+  /* === CONFIG (SAFE DEFAULTS) === */
+  MIN_START: 0.15,        // brand new route
+  MAX_VALUE: 1.0,
+
+  /* growth per in-game day at freq = 7 */
+  BASE_DAILY_GROWTH: 0.0008,
+
+  /* ============================================================
+     INIT MATURITY (ON ROUTE CREATION / LOAD)
+     ============================================================ */
+  init(route) {
+    if (typeof route.maturity !== "number") {
+      route.maturity = this.MIN_START;
+    }
+    return route;
+  },
+
+  /* ============================================================
+     UPDATE MATURITY (CALLED BY TIME ENGINE LATER)
+     ============================================================ */
+   
+  update(route, daysElapsed = 1) {
+    if (route.state !== "active") return route;
+
+    const freqFactor = Math.max(0.5, route.frequencyPerWeek / 7);
+    const growth =
+      this.BASE_DAILY_GROWTH *
+      freqFactor *
+      daysElapsed;
+
+    route.maturity = Math.min(
+      this.MAX_VALUE,
+      route.maturity + growth
+    );
+
+    route.lastUpdate = Date.now();
+    return route;
+  }
+};
+
+Object.freeze(ACS_ROUTE_MATURITY);
+
+/* ============================================================
    🟧 ACS ROUTES UI CONTROLLER
    ------------------------------------------------------------
    Purpose:
