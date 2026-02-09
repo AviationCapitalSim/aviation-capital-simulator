@@ -1304,13 +1304,10 @@ function ACS_getAircraftStatusBadge(ac){
 /* ============================================================
    🟧 A3.1 — SCHEDULE VISUAL SERVICE STATE (ACS)
    ------------------------------------------------------------
-   Purpose:
-   - Schedule decide SOLO servicios A / B
-   - NO modifica estado operacional real
-   - NO escribe en ACS_MyAircraft
-   - Estado 100% visual / temporal
+   - Schedule decide SOLO A/B como servicio planificado (visual)
+   - NO modifica estado real (canFly/status/groundReason)
+   - NO persiste en ACS_MyAircraft
    ============================================================ */
-
 function ACS_EvaluateScheduleServiceState(ac, scheduleItems) {
 
   // Estado visual local (NO persistente)
@@ -1321,25 +1318,26 @@ function ACS_EvaluateScheduleServiceState(ac, scheduleItems) {
     visualOnly: true
   };
 
+  if (!ac || !ac.id) return ac;
   if (!Array.isArray(scheduleItems)) return ac;
 
-  // Buscar servicios A/B activos para esta aeronave
+  // Busca A/B ACTIVO para este avión (en scheduleItems)
   const svc = scheduleItems.find(it =>
+    it &&
     it.type === "service" &&
-    it.aircraftId === ac.id &&
+    String(it.aircraftId || "").trim() === String(ac.id || "").trim() &&
     (it.serviceType === "A" || it.serviceType === "B") &&
-    it.active === true
+    it.assigned === true
   );
 
   if (svc) {
     ac.__schedule.hasService = true;
     ac.__schedule.type = svc.serviceType;
-    ac.__schedule.reason = svc.serviceType === "A" ? "A-check" : "B-check";
+    ac.__schedule.reason = (svc.serviceType === "A") ? "A-check" : "B-check";
   }
 
   return ac;
 }
-
      
 /* ============================================================
    🟦 PASO 4.2-A — FLIGHT COMPATIBILITY HELPERS (MODEL EXACT)
