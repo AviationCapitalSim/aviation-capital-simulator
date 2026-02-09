@@ -1146,6 +1146,34 @@ footer {
 </div>
 
 <!-- ============================================================
+     🦄 M3 — MAINTENANCE INFO MODAL (Qatar Luxury)
+     ------------------------------------------------------------
+     • Se abre al tocar un service-chip
+     • Permite EDITAR o REMOVER el servicio
+     ============================================================ -->
+
+<div id="maintenanceInfoModal" class="acs-modal hidden">
+  <div class="acs-modal-card qatar">
+
+    <div class="acs-modal-header">
+      <h3 id="maintInfoTitle">🛠 Maintenance</h3>
+      <button class="btn-close" onclick="closeMaintenanceInfoModal()">✕</button>
+    </div>
+
+    <div id="maintenanceInfoBody" class="acs-modal-body">
+      <!-- contenido dinámico -->
+    </div>
+
+    <div class="acs-modal-footer">
+      <button class="btn-modal gold" onclick="editMaintenanceFromInfo()">✏️ EDIT</button>
+      <button class="btn-modal red"  onclick="removeMaintenanceFromInfo()">🗑 REMOVE</button>
+      <button class="btn-modal ghost" onclick="closeMaintenanceInfoModal()">Close</button>
+    </div>
+
+  </div>
+</div>
+     
+<!-- ============================================================
      === FLIGHT INFO MODAL — Qatar Luxury Edition ================
      ============================================================ -->
      
@@ -2039,12 +2067,11 @@ if (it.type === "service") {
     // 🔑 guardar contexto del service seleccionado
     window.selectedService = it;
 
-    // abrir Maintenance Modal en modo EDIT
-    openMaintModal(
-  (ac.model || ac.type || realModel),
-  it,
-  ac.id
-);
+    chip.onclick = () => {
+  window.ACS_SELECTED_SERVICE = it;
+  openMaintenanceInfoModal(it, ac);
+};
+
 
   };
 
@@ -4069,7 +4096,103 @@ function ACS_sortDayEvents(events) {
     return aMin - bMin;
   });
 }
-          
+
+/* ============================================================
+   🦄 M3 — MAINTENANCE INFO MODAL ENGINE
+   ============================================================ */
+
+let ACS_SELECTED_SERVICE = null;
+
+function openMaintenanceInfoModal(service, aircraft){
+
+  if (!service || service.type !== "service") return;
+
+  ACS_SELECTED_SERVICE = service;
+
+  const modal = document.getElementById("maintenanceInfoModal");
+  const body  = document.getElementById("maintenanceInfoBody");
+  const title = document.getElementById("maintInfoTitle");
+
+  const typeLabel = service.serviceType === "B" ? "⚙️ B-Check" : "🔧 A-Check";
+
+  title.textContent = typeLabel;
+
+  body.innerHTML = `
+    <div class="flight-kicker">
+      <strong>${aircraft.registration || "—"}</strong>
+      · ${aircraft.model || "—"}
+    </div>
+
+    <div class="flight-hero">
+      <div class="route">Maintenance Window</div>
+      <div class="times">
+        ${service.start} → ${service.end}
+      </div>
+    </div>
+
+    <div class="flight-meta">
+      <div class="meta-card">
+        <span class="label">Day</span>
+        <span class="value">${service.day.toUpperCase()}</span>
+      </div>
+
+      <div class="meta-card">
+        <span class="label">Duration</span>
+        <span class="value">
+          ${service.serviceType === "B" ? "24 hours" : "5 hours"}
+        </span>
+      </div>
+
+      <div class="meta-card">
+        <span class="label">Status</span>
+        <span class="value">Scheduled</span>
+      </div>
+
+      <div class="meta-card">
+        <span class="label">Type</span>
+        <span class="value">${typeLabel}</span>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+}
+
+function closeMaintenanceInfoModal(){
+  const modal = document.getElementById("maintenanceInfoModal");
+  if (modal) modal.classList.add("hidden");
+  ACS_SELECTED_SERVICE = null;
+}
+
+function editMaintenanceFromInfo(){
+  if (!ACS_SELECTED_SERVICE) return;
+
+  // Reutilizamos el modal de planificación en modo EDIT
+  openMaintModal(
+    null,
+    ACS_SELECTED_SERVICE,
+    ACS_SELECTED_SERVICE.aircraftId
+  );
+
+  closeMaintenanceInfoModal();
+}
+
+function removeMaintenanceFromInfo(){
+
+  if (!ACS_SELECTED_SERVICE) return;
+
+  const ok = confirm("⛔ Remove this maintenance service?");
+  if (!ok) return;
+
+  const items = getItems().filter(it =>
+    !(it.type === "service" && it.id === ACS_SELECTED_SERVICE.id)
+  );
+
+  setItems(items);
+  closeMaintenanceInfoModal();
+  renderSchedule();
+}
+     
 </script>
 
 <script>
