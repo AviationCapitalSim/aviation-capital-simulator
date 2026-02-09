@@ -2058,7 +2058,6 @@ chip.onclick = () => {
 
 td.appendChild(chip);
 }
-
 // ---------------- SERVICE ----------------
 if (it.type === "service") {
 
@@ -2072,26 +2071,27 @@ if (it.type === "service") {
       ? "🔧 A-Check"
       : "⚙️ B-Check";
 
-  chip.onclick = () => {
-    // 🔑 guardar contexto del service seleccionado
-    window.selectedService = it;
+  // 🔒 FUNCIÓN ÚNICA (DESKTOP + MOBILE)
+  const handleServiceOpen = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-    chip.onclick = () => {
-  window.ACS_SELECTED_SERVICE = it;
-  openMaintenanceInfoModal(it, ac);
-};
+    console.log("🛠 Service chip opened:", it);
 
-
+    window.ACS_SELECTED_SERVICE = it;
+    openMaintenanceInfoModal(it, ac);
   };
+
+  // 🖱️ Desktop
+  chip.addEventListener("mousedown", handleServiceOpen);
+
+  // 📱 Mobile / Touch
+  chip.addEventListener("touchstart", handleServiceOpen, { passive: false });
 
   td.appendChild(chip);
 }
-
-});
-
-tr.appendChild(td);
-
-    });
 
     // ============================================================
     // ACTION PLAN
