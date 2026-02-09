@@ -1302,6 +1302,58 @@ function ACS_getAircraftStatusBadge(ac){
 }
 
 /* ============================================================
+   🟧 A3.2 — READ OPERATIONAL STATE (MyAircraft → Schedule)
+   ------------------------------------------------------------
+   - Lee C/D y grounded REAL desde MyAircraft
+   - READ ONLY (Schedule NO modifica nada real)
+   ============================================================ */
+function ACS_ReadOperationalState(ac) {
+
+  const ops = {
+    grounded: false,
+    reason: null,      // "C-check" | "D-check" | "grounded"
+    level: null,       // "C" | "D" | null
+    source: "MyAircraft"
+  };
+
+  if (!ac) {
+    ac = {};
+  }
+
+  // Grounded real
+  if (ac.canFly === false) {
+    ops.grounded = true;
+    ops.reason = ac.groundReason || "grounded";
+  }
+
+  // C/D real (acepta formatos comunes)
+  const st = String(ac.status || "").trim();
+
+  if (st === "C" || st === "D") {
+    ops.grounded = true;
+    ops.level = st;
+    ops.reason = (st === "C") ? "C-check" : "D-check";
+  }
+
+  if (st === "In C-Check") {
+    ops.grounded = true;
+    ops.level = "C";
+    ops.reason = "C-check";
+  }
+
+  if (st === "In D-Check") {
+    ops.grounded = true;
+    ops.level = "D";
+    ops.reason = "D-check";
+  }
+
+  // Estado local SOLO para render
+  ac.__ops = ops;
+
+  return ac;
+}
+     
+/* ============================================================
    🟧 A3.1 — SCHEDULE VISUAL SERVICE STATE (ACS)
    ------------------------------------------------------------
    - Schedule decide SOLO A/B como servicio planificado (visual)
@@ -1645,17 +1697,18 @@ function renderSchedule() {
   const fleet = getRealFleet();
 
 // ============================================================
-// 🟦 PASO 2.1 — APPLY OPERATIONAL AUTHORITY (MANDATORY)
-// Schedule es la única autoridad de vuelo
+// 🟧 A3.3 — APPLY STATES (READ ONLY + VISUAL ONLY)
+// ------------------------------------------------------------
+// 1) Lee estado REAL (C/D/grounded) desde MyAircraft (READ ONLY)
+// 2) Aplica servicios A/B desde scheduleItems (VISUAL ONLY)
+// ❌ NO persistir ACS_MyAircraft aquí
 // ============================================================
 
 fleet.forEach(ac => {
-  ACS_EvaluateOperationalStatus(ac);
+  ACS_ReadOperationalState(ac);
+  ACS_EvaluateScheduleServiceState(ac, items);
 });
-
-// Persistir estado evaluado para SkyTrack / Alerts
-localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-     
+    
 // ============================================================
 // 🟦 3A.1 — INDEXAR ITEMS POR AIRCRAFT ID (FLIGHTS + SERVICES)
 // ============================================================
