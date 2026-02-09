@@ -402,6 +402,14 @@ Object.freeze(ACS_ROUTE_MATURITY_ENGINE);
     localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
   }
 
+  function ACS_evalRouteLive(route){
+    try{
+      return ACS_ROUTE_MATURITY_ENGINE.evaluate(route, Date.now());
+    }catch(e){
+      return { maturity: route?.maturity || 0, loadFactor: 0.25, airlineImage: 0.35, airportDemand: 0.5 };
+    }
+  }
+   
   /* ============================================================
      🔹 UI REFERENCES
      ============================================================ */
