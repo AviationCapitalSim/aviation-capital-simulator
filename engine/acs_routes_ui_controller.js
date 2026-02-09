@@ -117,6 +117,77 @@ const ACS_ROUTE_MATURITY = {
 Object.freeze(ACS_ROUTE_MATURITY);
 
 /* ============================================================
+   🟦 A4 — PRICE RESET ENGINE (HISTORICAL BASE)
+   ------------------------------------------------------------
+   Purpose:
+   - Reset ticket price to historical baseline
+   - Y class only (early eras)
+   - NO preview
+   - NO hints
+   - NO economy coupling
+   ------------------------------------------------------------
+   Inputs:
+   - route.distanceNM
+   - route.era
+   ------------------------------------------------------------
+   Output:
+   - route.currentTicketPrice (USD)
+   - route.lastPriceReset (timestamp)
+   ============================================================ */
+
+const ACS_PRICE_RESET_ENGINE = {
+
+  /* ============================================================
+     HISTORICAL BASE PRICE PER NM (USD)
+     ------------------------------------------------------------
+     Internal table — NOT exposed to player
+     Conservative, aviation-realistic values
+     ============================================================ */
+  PRICE_PER_NM_BY_ERA: {
+    "1940": 0.30,
+    "1941": 0.30,
+    "1942": 0.31,
+    "1943": 0.32,
+    "1944": 0.33,
+    "1945": 0.34,
+    "1946": 0.36,
+    "1947": 0.38,
+    "1948": 0.40,
+    "1949": 0.42,
+    "1950": 0.44
+  },
+
+  /* ============================================================
+     RESOLVE ERA KEY
+     ============================================================ */
+  resolveEra(route) {
+    if (!route || !route.era) return "1940";
+    const y = String(route.era).substring(0, 4);
+    return this.PRICE_PER_NM_BY_ERA[y] ? y : "1940";
+  },
+
+  /* ============================================================
+     RESET PRICE (CANONICAL)
+     ============================================================ */
+  reset(route) {
+    if (!route || !route.distanceNM) return route;
+
+    const eraKey = this.resolveEra(route);
+    const pricePerNM = this.PRICE_PER_NM_BY_ERA[eraKey];
+
+    const basePrice = Math.round(route.distanceNM * pricePerNM);
+
+    route.currentTicketPrice = basePrice;
+    route.lastPriceReset = Date.now();
+
+    return route;
+  }
+};
+
+Object.freeze(ACS_PRICE_RESET_ENGINE);
+
+
+/* ============================================================
    🟧 ACS ROUTES UI CONTROLLER
    ------------------------------------------------------------
    Purpose:
@@ -230,7 +301,7 @@ Object.freeze(ACS_ROUTE_MATURITY);
      🔹 RESET PRICE (HOOK ONLY)
      ============================================================ */
 
-  function resetPrice() {
+   function resetPrice() {
     const routeId = localStorage.getItem(SELECTED_ROUTE_KEY);
     if (!routeId) return;
 
@@ -238,16 +309,13 @@ Object.freeze(ACS_ROUTE_MATURITY);
     const route = routes.find(r => r.id === routeId);
     if (!route) return;
 
-    // IMPORTANT:
-    // No calculation here.
-    // We only mark reset request and timestamp.
-    route.lastPriceReset = Date.now();
+    // 🔒 Historical reset (NO preview, NO hints)
+    ACS_PRICE_RESET_ENGINE.reset(route);
 
     saveRoutes(routes);
 
-    console.info(
-      `[ACS] Price reset requested for route ${route.origin} → ${route.destination}`
-    );
+    // Update pricing panel only
+    priceValue.textContent = `$${route.currentTicketPrice}`;
   }
 
   /* ============================================================
