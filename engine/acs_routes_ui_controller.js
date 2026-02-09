@@ -658,47 +658,66 @@ Object.freeze(ACS_ROUTE_FINANCIAL_ENGINE);
   const btnManual = document.getElementById("btn-manual-price");
 
   /* ============================================================
-     🔹 RENDER ROUTES TABLE
-     ============================================================ */
+   🔹 RENDER ROUTES TABLE (REAL DATA)
+   ============================================================ */
 
-  function renderRoutesTable() {
-    if (!tableBody) return;
+function renderRoutesTable() {
+  if (!tableBody) return;
 
-    tableBody.innerHTML = "";
+  tableBody.innerHTML = "";
 
-    const routes = getRoutes();
+  const routes = getRoutes();
 
-    if (routes.length === 0) {
-      tableBody.innerHTML = `
-        <tr>
-          <td colspan="7" style="opacity:.5;padding:1.2rem">
-            No active routes
-          </td>
-        </tr>
-      `;
-      return;
+  if (routes.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="7" style="opacity:.5;padding:1.2rem">
+          No active routes
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  routes.forEach(route => {
+
+    // 🟦 A7 — REAL FINANCIAL COMPUTE
+    const fin = ACS_ROUTE_FINANCIAL_ENGINE.compute(route);
+
+    const loadFactorText = fin ? `${fin.loadFactor}%` : "—";
+
+    let resultText = "—";
+    let resultColor = "#999";
+
+    if (fin) {
+      if (fin.weeklyResult >= 0) {
+        resultText = `+$${fin.weeklyResult}`;
+        resultColor = "#00ff80";
+      } else {
+        resultText = `-$${Math.abs(fin.weeklyResult)}`;
+        resultColor = "#ff7675";
+      }
     }
 
-    routes.forEach(route => {
-      const tr = document.createElement("tr");
+    const tr = document.createElement("tr");
 
-      tr.innerHTML = `
-        <td>${route.origin} → ${route.destination}</td>
-        <td>${route.aircraft || "—"}</td>
-        <td>${route.frequency ?? "—"}</td>
-        <td>—</td>
-        <td>${route.currentTicket ? `$${route.currentTicket}` : "—"}</td>
-        <td>—</td>
-        <td>
-          <button class="route-btn" data-id="${route.id}">
-            Select
-          </button>
-        </td>
-      `;
+    tr.innerHTML = `
+      <td>${route.origin} → ${route.destination}</td>
+      <td>${route.aircraftType || "—"}</td>
+      <td>${route.frequencyPerWeek ?? "—"}</td>
+      <td>${loadFactorText}</td>
+      <td>${route.currentTicketPrice ? `$${route.currentTicketPrice}` : "—"}</td>
+      <td style="color:${resultColor}">${resultText}</td>
+      <td>
+        <button class="route-btn" data-id="${route.id}">
+          Select
+        </button>
+      </td>
+    `;
 
-      tableBody.appendChild(tr);
-    });
-  }
+    tableBody.appendChild(tr);
+  });
+}
 
   /* ============================================================
      🔹 ROUTE SELECTION
