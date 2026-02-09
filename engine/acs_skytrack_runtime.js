@@ -627,26 +627,17 @@ function ACS_SkyTrack_getGroundBlock(ac) {
 
   const st = String(ac.status || "").trim();
 
-  // 1) HARD HOLD / OVERDUE
+  // 1) HARD HOLD
   if (st === "Maintenance Hold") {
     return { blocked: true, reason: "HOLD", label: "MAINTENANCE" };
   }
 
-  // 2) ACTIVE MAINTENANCE STATES
-  if (st === "In C-Check" || st === "In D-Check" || st === "B-Check" || st === "A-Check") {
+  // 2) ACTIVE REAL MAINTENANCE (C / D ONLY)
+  if (st === "In C-Check" || st === "In D-Check") {
     return { blocked: true, reason: st, label: "MAINTENANCE" };
   }
 
-  // 3) B MANDATORY RULE
-  //    Si NO hay lastBCheckAt y NO está planificado, se bloquea el vuelo.
-  //    (Esto implementa tu regla: “no debe volar hasta programar B”)
-  const hasLastB = typeof ac.lastBCheckAt === "number" && ac.lastBCheckAt > 0;
-  const hasPlanB = ac.bCheckPlanned === true;
-
-  if (!hasLastB && !hasPlanB) {
-    return { blocked: true, reason: "B-DUE", label: "MAINTENANCE" };
-  }
-
+  // ✅ Nada más aquí
   return { blocked: false, reason: null, label: null };
 }
 
@@ -674,13 +665,16 @@ function ACS_SkyTrack_resolveState(aircraftId) {
     return now >= startAbs && now < endAbs;
   });
 
-  if (bCheck) {
-    return {
-      state: "MAINTENANCE",
-      position: { airport: ac.baseAirport || null },
-      flight: null
-    };
-  }
+  const startAbs = ACS_SkyTrack_dayTimeToAbs(bCheck.day, bCheck.start);
+const endAbs   = startAbs + Number(bCheck.durationMin || 0);
+
+if (now >= startAbs && now < endAbs) {
+  return {
+    state: "MAINTENANCE",
+    position: { airport: ac.baseAirport || null },
+    flight: null
+  };
+}
 
   /* ============================================================
      🟥 1.5 — HARD MAINTENANCE BLOCK (AUTHORITATIVE)
