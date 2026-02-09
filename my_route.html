@@ -1,10 +1,9 @@
 <!-- ============================================================
-     ✈️ ACS — MY ROUTES & TICKET PRICING (NETWORK PLANNING)
+     ✈️ ACS — MY ROUTES & TICKET PRICING
      ------------------------------------------------------------
-     File: my_route.html
      Design: Qatar Luxury
-     Version: v1.0-clean
-     Date: 08 FEB 2026
+     Version: v1.0 (FOUNDATION)
+     Date: 09 FEB 2026
      ============================================================ -->
 
 <!DOCTYPE html>
@@ -15,22 +14,20 @@
 <title>My Routes & Ticket Pricing — ACS</title>
 
 <link rel="stylesheet" href="styles.css?v=3.1" />
-
 <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
 <link rel="apple-touch-icon" href="acs_logo_180.png">
 <link rel="manifest" href="manifest.json">
 
 <style>
-/* ================= GLOBAL ================= */
 body{
   margin:0;
   background:#081530;
   color:#fff;
   font-family:"Poppins",sans-serif;
-  overflow-x:hidden;
 }
 
 /* ================= HEADER ================= */
+
 .acs-header{
   position:fixed;
   top:0;
@@ -46,7 +43,7 @@ body{
 }
 .acs-logo{display:flex;align-items:center;gap:1rem;}
 .acs-logo img{height:46px;}
-.acs-logo h1{font-size:1.1rem;color:#ffb300;margin:0;}
+.acs-logo h1{margin:0;font-size:1.1rem;color:#ffb300;}
 .acs-nav{display:flex;gap:2rem;}
 .acs-nav a{color:#dbe4ff;text-decoration:none;}
 .acs-nav a.active{color:#ffb300;}
@@ -55,54 +52,44 @@ body{
   display:flex;
   align-items:center;
   gap:1rem;
-  flex-shrink:0;
 }
-
-.support-btn{
-  padding:0.45rem 1.1rem;
+.support-btn,
+.logout-btn{
+  padding:.45rem 1.1rem;
   border-radius:12px;
-  font-size:0.9rem;
   font-weight:600;
-  text-decoration:none;
   cursor:pointer;
+  text-decoration:none;
+}
+.support-btn{
   color:#8AB4FF;
-  border:1px solid rgba(138,180,255,0.45);
-  background:rgba(138,180,255,0.08);
+  border:1px solid rgba(138,180,255,.45);
+  background:rgba(138,180,255,.08);
 }
 .logout-btn{
-  padding:0.45rem 1.1rem;
-  border:1px solid #ffb300;
-  border-radius:12px;
-  background:rgba(255,179,0,0.05);
   color:#ffb300;
-  font-weight:600;
-  cursor:pointer;
+  border:1px solid #ffb300;
+  background:rgba(255,179,0,.05);
 }
 
-/* ================= CLOCK ================= */
 .acs-clock-header{
   font-family:"Orbitron",monospace;
-  font-size:0.95rem;
+  background:rgba(0,255,128,.08);
   color:#00ff80;
-  background:rgba(0,255,128,0.08);
+  padding:.4rem .6rem;
   border-radius:8px;
-  padding:0.4rem 0.6rem;
   width:240px;
-  white-space:nowrap;
   display:flex;
-  align-items:center;
   justify-content:center;
   font-variant-numeric:tabular-nums;
 }
-.acs-clock-header .clock-text{
-  display:inline-block;
-  transform:translateX(4px);
-}
 
 /* ================= MAIN ================= */
+
 .acs-main{
   padding:120px 2rem 2rem;
 }
+
 .page-title{
   font-size:2rem;
   color:#ffca3a;
@@ -110,51 +97,62 @@ body{
 }
 .page-sub{
   color:#cbd6ff;
-  margin-bottom:1.5rem;
+  margin-bottom:2rem;
 }
 
 /* ================= KPI ================= */
+
 .kpi-strip{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
   gap:1rem;
   margin-bottom:2rem;
 }
-.kpi-card{
+.kpi{
   background:linear-gradient(180deg,rgba(20,35,70,.8),rgba(10,18,40,.9));
   border-radius:18px;
   padding:1.2rem;
   border:1px solid rgba(255,179,0,.18);
   text-align:center;
 }
-.kpi-card h4{color:#ffb300;margin:.3rem 0;}
-.kpi-card span{font-size:1.4rem;font-weight:600;color:#aaa;}
+.kpi h4{margin:.3rem 0;color:#ffb300;}
+.kpi span{font-size:1.4rem;font-weight:600;}
 
-/* ================= TABLE ================= */
-.routes-wrapper{
+/* ================= ROUTES ================= */
+
+.routes-layout{
   display:grid;
   grid-template-columns:1fr 420px;
   gap:1.5rem;
 }
+
 .routes-table{
   background:linear-gradient(180deg,rgba(20,35,70,.75),rgba(10,18,40,.85));
   border-radius:22px;
   padding:1.5rem;
   border:1px solid rgba(255,179,0,.2);
 }
-.routes-table table{
+table{
   width:100%;
   border-collapse:collapse;
 }
-.routes-table th,
-.routes-table td{
+th,td{
   padding:.8rem;
   border-bottom:1px solid rgba(255,255,255,.08);
   text-align:center;
 }
-.routes-table th{color:#ffb300;font-size:.9rem;}
+th{color:#ffb300;font-size:.85rem;}
+.route-btn{
+  background:#00a86b;
+  border:none;
+  border-radius:8px;
+  padding:.4rem .8rem;
+  color:white;
+  cursor:pointer;
+}
 
 /* ================= SIDE PANEL ================= */
+
 .side-panel{
   background:linear-gradient(180deg,rgba(25,40,85,.9),rgba(10,18,40,.95));
   border-radius:22px;
@@ -162,28 +160,42 @@ body{
   border:1px solid rgba(255,179,0,.25);
 }
 .side-panel h3{color:#ffb300;margin-bottom:.6rem;}
-.price-box{
+
+.info-box{
   background:rgba(0,0,0,.35);
   padding:1rem;
   border-radius:14px;
   margin-bottom:1rem;
-  color:#aaa;
-  text-align:center;
 }
-.price-controls{
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  margin:.4rem 0;
+}
+
+.price-actions{
   display:flex;
   gap:1rem;
   margin-top:1rem;
 }
-.price-controls button{
+.price-actions button{
   flex:1;
-  padding:.6rem;
+  padding:.7rem;
   border:none;
   border-radius:10px;
   font-weight:600;
-  cursor:not-allowed;
-  opacity:0.4;
+  cursor:pointer;
 }
+.btn-reset{background:#ffb300;color:#0c1f3c;}
+.btn-manual{background:#444;color:#fff;}
+
+.note{
+  font-size:.85rem;
+  color:#aaa;
+  margin-top:1rem;
+}
+
+/* ================= FOOTER ================= */
 
 footer{
   margin-top:2rem;
@@ -213,24 +225,25 @@ footer{
   <div class="acs-right">
     <a href="support.html" class="support-btn">Support</a>
     <a class="logout-btn">Logout</a>
-    <div id="acs-clock" class="acs-clock-header">
-      <span class="clock-text">—</span>
+    <div class="acs-clock-header">
+      <span>20:10 — MON 09 JUN 1941</span>
     </div>
   </div>
 </header>
 
 <main class="acs-main">
+
 <h2 class="page-title">🌍 My Routes & Ticket Pricing</h2>
-<p class="page-sub">Network planning, route performance and pricing control.</p>
+<p class="page-sub">Real market behavior, historical pricing, no shortcuts.</p>
 
 <section class="kpi-strip">
-  <div class="kpi-card"><h4>Active Routes</h4><span>—</span></div>
-  <div class="kpi-card"><h4>Network Revenue</h4><span>—</span></div>
-  <div class="kpi-card"><h4>Avg Load Factor</h4><span>—</span></div>
-  <div class="kpi-card"><h4>Profitable Routes</h4><span>—</span></div>
+  <div class="kpi"><h4>Airline Image</h4><span>42%</span></div>
+  <div class="kpi"><h4>Active Routes</h4><span>6</span></div>
+  <div class="kpi"><h4>Avg Load Factor</h4><span>61%</span></div>
+  <div class="kpi"><h4>Profitable Routes</h4><span>3</span></div>
 </section>
 
-<div class="routes-wrapper">
+<div class="routes-layout">
 
 <section class="routes-table">
 <table>
@@ -241,29 +254,42 @@ footer{
 <th>Freq/Wk</th>
 <th>LF</th>
 <th>Ticket</th>
-<th>Profit</th>
-<th>Pricing</th>
+<th>Result</th>
+<th></th>
 </tr>
 </thead>
 <tbody>
-<!-- populated dynamically -->
+<tr>
+<td>MAD → BCN</td>
+<td>DC-3</td>
+<td>7</td>
+<td>64%</td>
+<td>$80</td>
+<td style="color:#ff7675;">−$6k</td>
+<td><button class="route-btn">Select</button></td>
+</tr>
 </tbody>
 </table>
 </section>
 
 <aside class="side-panel">
-<h3>🎟️ Ticket Pricing</h3>
-<div class="price-box">
-  Select a route to view pricing
+<h3>🎟️ Route Pricing</h3>
+
+<div class="info-box">
+  <div class="info-row"><span>Route</span><strong>MAD → BCN</strong></div>
+  <div class="info-row"><span>Current Ticket</span><strong>$80</strong></div>
+  <div class="info-row"><span>Route Image</span><strong>31%</strong></div>
+  <div class="info-row"><span>Airline Image</span><strong>42%</strong></div>
 </div>
 
-<div class="price-controls">
-  <button>⬇ Lower</button>
-  <button>⬆ Increase</button>
+<div class="price-actions">
+  <button class="btn-reset">RESET PRICE</button>
+  <button class="btn-manual">Manual Adjust</button>
 </div>
 
-<p style="margin-top:1rem;font-size:.85rem;color:#aaa;text-align:center;">
-Manual pricing disabled. No route selected.
+<p class="note">
+RESET reconciles the ticket with real market conditions of the era.  
+No preview. No hints. Decisions have consequences.
 </p>
 </aside>
 
@@ -271,9 +297,6 @@ Manual pricing disabled. No route selected.
 </main>
 
 <footer>© 2026 Aviation Capital Simulator</footer>
-
-<script src="acs_time_recovery.js"></script>
-<script src="time_engine.js"></script>
 
 </body>
 </html>
