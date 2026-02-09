@@ -1,4 +1,63 @@
 /* ============================================================
+   🟦 A2 — ACS ROUTE CANONICAL STRUCTURE (CONTRACT)
+   ------------------------------------------------------------
+   Ubicación:
+   - engine/acs_routes_ui_controller.js
+   - Debajo del header del archivo
+   - Antes de cualquier lógica (funciones / listeners / init)
+   ------------------------------------------------------------
+   Nota:
+   - No ejecuta nada
+   - No toca UI
+   - Solo define el contrato oficial de una ruta
+   ============================================================ */
+
+const ACS_ROUTE_SCHEMA = {
+
+  /* === IDENTITY === */
+  id: "",                       // unique route id
+  airlineId: "",                // owning airline
+
+  /* === GEOGRAPHY === */
+  origin: "",                   // ICAO
+  destination: "",              // ICAO
+  distanceNM: 0,                // nautical miles
+
+  /* === AIRCRAFT & OPS === */
+  aircraftType: "",             // DC-3, B707, A320...
+  frequencyPerWeek: 0,          // integer
+  seatsPerFlight: 0,            // aircraft dependent
+
+  /* === TIME === */
+  openedDate: 0,                // timestamp (ms)
+  lastUpdate: 0,                // timestamp (ms)
+
+  /* === ROUTE STATE === */
+  state: "active",              // active | suspended | closed
+
+  /* === MATURITY & IMAGE === */
+  maturity: 0.0,                // 0.00 → 1.00 (engine driven)
+  routeImage: 0.0,              // 0.00 → 1.00 (engine driven)
+
+  /* === PRICING === */
+  currentTicketPrice: 0,        // USD
+  lastPriceReset: 0,            // timestamp (ms)
+
+  /* === ERA CONTEXT === */
+  era: "1941",                  // display/readability
+  serviceClass: ["Y"],          // Y only in early eras
+
+  /* === META === */
+  createdBy: "player",          // system | player
+};
+
+Object.freeze(ACS_ROUTE_SCHEMA);
+
+  function saveRoutes(routes) {
+    localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
+  }
+
+/* ============================================================
    🟧 ACS ROUTES UI CONTROLLER
    ------------------------------------------------------------
    Purpose:
