@@ -1767,6 +1767,13 @@ function renderSchedule() {
   const items = getItems();
   const fleet = getRealFleet();
 
+// 🔒 OPS FILTER — SkyTrack authority
+const operationalItems = items.filter(it => {
+  if (it.type === "flight") return true;
+  if (it.type === "service") return ACS_isServiceActiveNow(it);
+  return false;
+});
+     
 // ============================================================
 // 🟧 A3.3 — APPLY STATES (READ ONLY + VISUAL ONLY)
 // ------------------------------------------------------------
@@ -1777,7 +1784,8 @@ function renderSchedule() {
 
 fleet.forEach(ac => {
   ACS_ReadOperationalState(ac);
-  ACS_EvaluateScheduleServiceState(ac, items);
+  ACS_EvaluateScheduleServiceState(ac, operationalItems);
+
 });
     
 // ============================================================
