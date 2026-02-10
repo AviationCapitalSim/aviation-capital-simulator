@@ -2620,11 +2620,12 @@ function ACS_closeAssignFlightsModal(){
 }
 
 /* ============================================================
-   🗑 A2 — DELETE FLIGHTS (BULK LOGIC) — PATCH 10FEB26
+   🟥 D2 — DELETE FLIGHTS MODAL ENGINE (QATAR) — 10FEB26
    ------------------------------------------------------------
-   Fix:
-   - Mostrar modal aunque .modal-overlay y .modal tengan display:none global
-   - Implementar ACS_deleteFlight(id) local (no dependencias externas)
+   ✅ UI idéntica a Assign Route (estructura)
+   ✅ Selección POR VUELO (checkbox por flight.id)
+   ✅ NO borra nada desde Flight Modal (solo aquí)
+   ✅ NO cierra Flight Modal aquí (eso lo hace el redirector)
    ============================================================ */
 
 let ACS_DELETE_FLIGHTS_CTX = {
@@ -2635,11 +2636,6 @@ let ACS_DELETE_FLIGHTS_CTX = {
 function ACS_openDeleteFlightsModal(ac) {
 
   if (!ac || !ac.id) return;
-
-  // ✅ Evitar 2 modales apilados (tu captura)
-  try {
-    if (typeof closeFlightModal === "function") closeFlightModal();
-  } catch (e) { /* silent */ }
 
   ACS_DELETE_FLIGHTS_CTX.aircraftId = ac.id;
 
@@ -2653,51 +2649,150 @@ function ACS_openDeleteFlightsModal(ac) {
 
   ACS_DELETE_FLIGHTS_CTX.flights = flights;
 
-  const label = document.getElementById("deleteFlightsAircraftLabel");
-  if (label) label.textContent = ac.registration || ac.id;
-
-  const list = document.getElementById("deleteFlightsList");
-  if (!list) return;
-
-  list.innerHTML = "";
-
   if (!flights.length) {
     alert("ℹ️ This aircraft has no flights to delete.");
     ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
     return;
   }
 
+  const modal = document.getElementById("deleteFlightsModal");
+  const title = document.getElementById("deleteFlightsTitle");
+  const body  = document.getElementById("deleteFlightsBody");
+
+  if (!modal || !title || !body) {
+    alert("⛔ Delete modal missing in HTML.");
+    return;
+  }
+
+  const regLabel = ac.registration || ac.id;
+  title.textContent = `🗑 Delete Flights — ${regLabel}`;
+
+  // ===== Agrupar por día (igual que Assign)
+  const byDay = {};
   flights.forEach(f => {
-    const row = document.createElement("label");
-    row.className = "flight-row";
-
-    row.innerHTML = `
-      <input type="checkbox" data-flight-id="${f.id}">
-      <span>
-        ${(f.day ? String(f.day).toUpperCase() : "—")} ·
-        ${f.origin || "—"} → ${f.destination || "—"} ·
-        ${f.departure || "--:--"}–${f.arrival || "--:--"}
-      </span>
-    `;
-
-    list.appendChild(row);
+    const d = String(f.day || "").trim().toLowerCase();
+    if (!d) return;
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(f);
   });
 
-  const selAll = document.getElementById("deleteFlightsSelectAll");
-  if (selAll) {
-    selAll.checked = false;
-    selAll.onchange = () => {
-      list.querySelectorAll("input[type=checkbox]").forEach(cb => {
-        cb.checked = selAll.checked;
-      });
-    };
-  }
+  const dayOrder = ["mon","tue","wed","thu","fri","sat","sun"];
+  const dayLabel = { mon:"MON", tue:"TUE", wed:"WED", thu:"THU", fri:"FRI", sat:"SAT", sun:"SUN" };
+  const daysSorted = Object.keys(byDay).sort(
+    (a,b)=> dayOrder.indexOf(a)-dayOrder.indexOf(b)
+  );
+
+  // Orden por hora dentro del día
+  daysSorted.forEach(d => {
+    byDay[d].sort((a,b) => (toMin(a.departure) ?? 0) - (toMin(b.departure) ?? 0));
+  });
+
+  // Helpers label
+  const flightNoText = (f) => {
+    const out = f.labelOut || f.flightLabelOut || f.flightNumberOut || "—";
+    const inn = f.labelIn  || f.flightLabelIn  || f.flightNumberIn  || "—";
+    return `${out}/${inn}`;
+  };
+
+  // ===== UI (idéntica estructura Assign Route)
+  body.innerHTML = `
+    <div class="flight-kicker" style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    ">
+      <span>Select the flights you want to permanently delete.</span>
+
+      <button
+        class="btn-modal ghost"
+        style="padding:6px 14px;border-radius:12px;font-weight:800;"
+        onclick="ACS_toggleSelectAllDelete()"
+      >
+        Select all
+      </button>
+    </div>
+
+    ${daysSorted.map(d => `
+      <div class="meta-card" style="margin-bottom:10px;">
+        <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
+
+        <div style="margin-top:8px;display:grid;gap:8px;">
+          ${byDay[d].map(f => `
+            <label style="display:flex;gap:10px;align-items:center;">
+              <input class="acs-delete-check" type="checkbox" data-flight-id="${f.id}">
+
+              <span style="
+                font-weight:800;
+                color:#ffe7a0;
+                min-width:120px;
+              ">
+                ${flightNoText(f)}
+              </span>
+
+              <span style="font-weight:800;color:#ffe7a0;">
+                ${f.origin || "—"} → ${f.destination || "—"}
+              </span>
+
+              <span style="margin-left:auto;font-family:Orbitron,monospace;color:#00ff80;">
+                ${(f.departure || "—")}–${(f.arrival || "—")}
+              </span>
+            </label>
+          `).join("")}
+        </div>
+      </div>
+    `).join("")}
+  `;
+
+  modal.classList.remove("hidden");
+}
+
+function ACS_toggleSelectAllDelete(){
 
   const modal = document.getElementById("deleteFlightsModal");
-  if (modal) {
-    modal.classList.remove("hidden");
-  }
+  if (!modal) return;
+
+  const checks = [...modal.querySelectorAll("input.acs-delete-check")];
+  if (!checks.length) return;
+
+  const allChecked = checks.every(ch => ch.checked === true);
+  checks.forEach(ch => { ch.checked = !allChecked; });
 }
+
+function ACS_closeDeleteFlightsModal() {
+  const modal = document.getElementById("deleteFlightsModal");
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+  ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
+}
+
+function ACS_confirmDeleteFlightsBulk() {
+
+  const modal = document.getElementById("deleteFlightsModal");
+  if (!modal) return;
+
+  const checked = [...modal.querySelectorAll("input.acs-delete-check:checked")];
+
+  if (!checked.length) {
+    alert("⚠ No flights selected.");
+    return;
+  }
+
+  const ok = confirm(
+    `⛔ DELETE ${checked.length} flight(s)?\nThis action cannot be undone.`
+  );
+  if (!ok) return;
+
+  checked.forEach(cb => {
+    const id = cb.dataset.flightId;
+    ACS_deleteFlight(id);
+  });
+
+  ACS_closeDeleteFlightsModal();
+  renderSchedule();
+}
+
 
 function ACS_closeDeleteFlightsModal() {
   const modal = document.getElementById("deleteFlightsModal");
@@ -3500,18 +3595,36 @@ function ACS_restoreFlightModalFooterDefault(){
 
   const canEdit = selected.length === 1;
 
-  footer.innerHTML = `
+    footer.innerHTML = `
   ${canEdit
     ? `<button class="btn-modal gold" onclick="editSelectedFlight()">✏️ EDIT</button>`
     : `<button class="btn-modal gold disabled" disabled>✏️ EDIT</button>`
   }
   <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
-  <button class="btn-modal red"   onclick="deleteSelectedFlights()">🗑 DELETE FLIGHTS</button>
+  <button class="btn-modal red"   onclick="ACS_redirectToDeleteFlights()">🗑 DELETE FLIGHTS</button>
   <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
 `;
 
 }
+     
+/* ============================================================
+   🟥 D0.1 — REDIRECTOR (Flight Modal → Delete Modal) — 10FEB26
+   ORDEN: 1) abrir delete modal  2) cerrar flight modal
+   ============================================================ */
+function ACS_redirectToDeleteFlights(){
 
+  const ac = getCurrentAircraftFromFlight();
+
+  if (!ac || !ac.id) {
+    alert("⚠ No aircraft found for this flight.");
+    return;
+  }
+
+  // ✅ ORDEN EXACTO (como pediste)
+  ACS_openDeleteFlightsModal(ac);
+  closeFlightModal();
+}
+     
 function closeFlightModal(){
   const modal = document.getElementById("flightModal");
   if (modal) {
@@ -4517,10 +4630,10 @@ function ACS_createFlightsFromRoute(route) {
 </script>
 
 <!-- ============================================================
-     🟥 D1 — DELETE FLIGHTS MODAL (QATAR UNICORN)
-     IDÉNTICO A ASSIGN ROUTE MODAL
+     🟥 D1 — DELETE FLIGHTS MODAL (QATAR UNICORN) — 10FEB26
+     UI: IDÉNTICA A ASSIGN ROUTE (estructura)
      ============================================================ -->
-     
+
 <div id="deleteFlightsModal" class="acs-modal hidden">
   <div class="acs-modal-card qatar">
 
@@ -4529,21 +4642,8 @@ function ACS_createFlightsFromRoute(route) {
       <button class="btn-close" onclick="ACS_closeDeleteFlightsModal()">✕</button>
     </div>
 
-    <div class="acs-modal-body">
-      <p class="flight-kicker">
-        Select the flights you want to permanently delete.
-      </p>
-
-      <div class="meta-card" style="margin-bottom:12px;">
-        <label style="display:flex;align-items:center;gap:10px;">
-          <input type="checkbox" id="deleteFlightsSelectAll">
-          <strong>Select all flights</strong>
-        </label>
-      </div>
-
-      <div id="deleteFlightsList" class="meta-card" style="display:grid;gap:10px;">
-        <!-- flights injected by JS -->
-      </div>
+    <div id="deleteFlightsBody" class="acs-modal-body">
+      <!-- contenido dinámico por JS -->
     </div>
 
     <div class="acs-modal-footer">
@@ -4557,6 +4657,7 @@ function ACS_createFlightsFromRoute(route) {
 
   </div>
 </div>
+
      
 </body>
 </html>
