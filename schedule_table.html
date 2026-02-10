@@ -1503,6 +1503,16 @@ function getRealFleet() {
   return JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 }
 
+function getCurrentAircraftFromFlight() {
+  if (!window.ACS_selectedFlightItem) return null;
+
+  const acId = window.ACS_selectedFlightItem.aircraftId;
+  if (!acId) return null;
+
+  const fleet = getRealFleet();
+  return fleet.find(ac => String(ac.id) === String(acId)) || null;
+}
+     
 const TURNAROUND_MIN = 45;
 
 
