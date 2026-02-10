@@ -3610,28 +3610,27 @@ function ACS_restoreFlightModalFooterDefault(){
 }
      
 /* ============================================================
-   🟥 D0.1 — REDIRECTOR (Flight Modal → Delete Modal) — 10FEB26
-   ORDEN: 1) abrir delete modal  2) cerrar flight modal
+   🟥 DELETE REDIRECT — CLEAN & SAFE
    ============================================================ */
-     
-function ACS_redirectToDeleteFlights(){
+function ACS_redirectToDeleteFlights() {
 
-  if (!ACS_selectedFlightItem) {
+  if (!window.ACS_selectedFlightItem) {
     alert("⚠ No flight selected.");
     return;
   }
 
   const ac = getCurrentAircraftFromFlight();
+  if (!ac || !ac.id) return;
 
-  // ⬇️ PASAMOS CONTEXTO EXACTO
+  const f = window.ACS_selectedFlightItem;
+
+  // 👉 SOLO ESTE NUMERO DE VUELO
   ACS_openDeleteFlightsModal({
     aircraft: ac,
-    flightNumbers: [
-      ACS_selectedFlightItem.flightNumberOut,
-      ACS_selectedFlightItem.flightNumberIn
-    ].filter(Boolean)
+    flightNumber: f.flightNumberOut
   });
 
+  // 👉 ORDEN CORRECTO (como pediste)
   closeFlightModal();
 }
 
