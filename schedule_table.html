@@ -2641,11 +2641,13 @@ function ACS_openDeleteFlightsModal(ac) {
 
   const items = getItems();
 
+  const { aircraft, flightNumbers } = ctx;
+
   const flights = items.filter(it =>
-    it &&
-    it.type === "flight" &&
-    String(it.aircraftId || "") === String(ac.id || "")
-  );
+  it.type === "flight" &&
+  String(it.aircraftId) === String(aircraft.id) &&
+  flightNumbers.includes(it.flightNumberOut)
+);
 
   ACS_DELETE_FLIGHTS_CTX.flights = flights;
 
@@ -3611,32 +3613,26 @@ function ACS_restoreFlightModalFooterDefault(){
    🟥 D0.1 — REDIRECTOR (Flight Modal → Delete Modal) — 10FEB26
    ORDEN: 1) abrir delete modal  2) cerrar flight modal
    ============================================================ */
+     
 function ACS_redirectToDeleteFlights(){
 
-  const ac = getCurrentAircraftFromFlight();
-
-  if (!ac || !ac.id) {
-    alert("⚠ No aircraft found for this flight.");
+  if (!ACS_selectedFlightItem) {
+    alert("⚠ No flight selected.");
     return;
   }
 
-  // ✅ ORDEN EXACTO (como pediste)
-  ACS_openDeleteFlightsModal(ac);
+  const ac = getCurrentAircraftFromFlight();
+
+  // ⬇️ PASAMOS CONTEXTO EXACTO
+  ACS_openDeleteFlightsModal({
+    aircraft: ac,
+    flightNumbers: [
+      ACS_selectedFlightItem.flightNumberOut,
+      ACS_selectedFlightItem.flightNumberIn
+    ].filter(Boolean)
+  });
+
   closeFlightModal();
-}
-     
-function closeFlightModal(){
-  const modal = document.getElementById("flightModal");
-  if (modal) {
-  
-    modal.classList.add("hidden");
-  }
-
-  // ✅ restaurar botones originales siempre
-  ACS_restoreFlightModalFooterDefault();
-
-  ACS_selectedFlightItem = null;
-  ACS_selectedChipEl = null;
 }
 
 /* ============================================================
