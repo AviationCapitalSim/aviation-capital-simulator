@@ -1860,10 +1860,16 @@ if (!fleet.length) {
     maintBtn.onclick = () =>
       alert("⚠ No aircraft available. Buy one first.");
 
-    wrap.appendChild(assignBtn);
-    wrap.appendChild(maintBtn);
-    planTd.appendChild(wrap);
-    tr.appendChild(planTd);
+   const deleteBtn = document.createElement("button");
+   deleteBtn.className = "btn btn-danger";
+   deleteBtn.textContent = "Delete Flights";
+   deleteBtn.onclick = () => ACS_openDeleteFlightsModal(ac);
+     
+   wrap.appendChild(assignBtn);
+   wrap.appendChild(maintBtn);
+   wrap.appendChild(deleteBtn);   // ⬅️ AQUÍ
+   planTd.appendChild(wrap);
+   tr.appendChild(planTd);
 
     tbody.appendChild(tr);
   }
