@@ -2058,7 +2058,6 @@ chip.onclick = () => {
 
 td.appendChild(chip);
 }
-
 // ---------------- SERVICE ----------------
 if (it.type === "service") {
 
@@ -2170,12 +2169,11 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 }
      
   // ============================================================
-// UPDATE TIME (SAFE GUARD)
-// ============================================================
-
-const ut = document.getElementById("updateTime");
-if (ut) {
-  ut.textContent = "Last update: " + new Date().toLocaleTimeString();
+  // UPDATE TIME (NO TOCAR)
+  // ============================================================
+     
+  document.getElementById("updateTime").textContent =
+    "Last update: " + new Date().toLocaleTimeString();
 }
 
 /* ============================================================
@@ -4204,8 +4202,6 @@ function removeMaintenanceFromInfo(){
   renderSchedule();
 }
      
-} // 🔴 CIERRE REAL DE renderSchedule()
-
 </script>
 
 <script>
