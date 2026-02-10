@@ -988,104 +988,6 @@ footer {
   color:#ccc;
 }
 
-/* ============================================================
-   🟥 D1 — DELETE FLIGHTS MODAL (VISIBILITY FIX) — 10FEB26
-   ------------------------------------------------------------
-   Fix:
-   - modal-overlay base tiene display:none (rompe este modal)
-   - .modal base tiene display:none (rompe el panel interno)
-   Solution:
-   - Forzar SOLO #deleteFlightsModal a display:flex cuando no está hidden
-   - Forzar SOLO el panel interno de delete a display:block
-   ============================================================ */
-
-#deleteFlightsModal.modal-overlay {
-  display: flex;              /* ✅ visible por defecto */
-}
-
-#deleteFlightsModal.hidden {
-  display: none !important;   /* ✅ hidden manda */
-}
-
-#deleteFlightsModal .modal {
-  display: block !important;  /* ✅ el panel interno no queda oculto */
-}
-
-/* Opcional: asegurar centrado (por si cambia algo arriba) */
-#deleteFlightsModal.modal-overlay {
-  justify-content: center;
-  align-items: center;
-}
-
-/* ============================================================
-   🟥 D3 — DELETE FLIGHTS MODAL (PANEL OVERRIDE + SCROLL) — 10FEB26
-   ------------------------------------------------------------
-   Fix:
-   - .modal global en ACS es full-screen (fixed, 100%, etc.)
-   - #deleteFlightsModal usa .modal => se vuelve inmenso detrás
-   Solution:
-   - Override SOLO para #deleteFlightsModal .modal para que sea CARD
-   ============================================================ */
-
-#deleteFlightsModal.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(3px);
-  z-index: 99999; /* encima de cualquier modal */
-}
-
-#deleteFlightsModal.hidden { display: none !important; }
-#deleteFlightsModal:not(.hidden) { display: flex !important; }
-
-/* El panel (card) — NO fullscreen */
-#deleteFlightsModal > .modal {
-  position: relative !important;
-  top: auto !important;
-  left: auto !important;
-  width: min(980px, 92vw) !important;
-  height: auto !important;
-  max-height: 84vh !important;
-
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  align-items: stretch !important;
-
-  background: rgba(10, 18, 40, 0.92) !important;
-  border: 1px solid rgba(255, 200, 60, 0.35) !important;
-  border-radius: 18px !important;
-  box-shadow: 0 18px 70px rgba(0,0,0,0.55) !important;
-  overflow: hidden !important;
-}
-
-/* Lista con scroll */
-#deleteFlightsModal .modal-body { overflow: hidden; }
-#deleteFlightsModal #deleteFlightsList {
-  margin-top: 10px;
-  padding: 10px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(0,0,0,0.22);
-
-  max-height: 46vh;
-  overflow: auto;
-}
-
-/* Filas */
-#deleteFlightsModal .flight-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-#deleteFlightsModal .flight-row:hover {
-  background: rgba(255,255,255,0.06);
-}
-       
 </style>
 
 </head>
@@ -4615,42 +4517,40 @@ function ACS_createFlightsFromRoute(route) {
 </script>
 
 <!-- ============================================================
-     🗑 DELETE FLIGHTS (BULK) — MODAL
-     ------------------------------------------------------------
-     • Selector múltiple
-     • DELETE REAL (usa lógica existente)
-     • No borra nada por sí solo
+     🟥 D1 — DELETE FLIGHTS MODAL (QATAR UNICORN)
+     IDÉNTICO A ASSIGN ROUTE MODAL
      ============================================================ -->
-<div id="deleteFlightsModal" class="modal-overlay hidden">
-  <div class="modal qatar-modal wide">
+     
+<div id="deleteFlightsModal" class="acs-modal hidden">
+  <div class="acs-modal-card qatar">
 
-    <div class="modal-header danger">
-      <h3>🗑 DELETE FLIGHTS — <span id="deleteFlightsAircraftLabel">Aircraft</span></h3>
-      <button class="modal-close" onclick="ACS_closeDeleteFlightsModal()">✕</button>
+    <div class="acs-modal-header">
+      <h3 id="deleteFlightsTitle">🗑 Delete Flights</h3>
+      <button class="btn-close" onclick="ACS_closeDeleteFlightsModal()">✕</button>
     </div>
 
-    <div class="modal-body">
-      <p class="warn-text">
-        ⚠ This action is <b>PERMANENT</b>. Deleted flights will be removed from the entire ACS system.
+    <div class="acs-modal-body">
+      <p class="flight-kicker">
+        Select the flights you want to permanently delete.
       </p>
 
-      <div class="bulk-actions">
-        <label>
-          <input type="checkbox" id="deleteFlightsSelectAll" />
-          Select all flights
+      <div class="meta-card" style="margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="deleteFlightsSelectAll">
+          <strong>Select all flights</strong>
         </label>
       </div>
 
-      <div id="deleteFlightsList" class="flight-list">
+      <div id="deleteFlightsList" class="meta-card" style="display:grid;gap:10px;">
         <!-- flights injected by JS -->
       </div>
     </div>
 
-    <div class="modal-footer">
-      <button class="btn danger" onclick="ACS_confirmDeleteFlightsBulk()">
+    <div class="acs-modal-footer">
+      <button class="btn-modal red" onclick="ACS_confirmDeleteFlightsBulk()">
         🗑 DELETE SELECTED
       </button>
-      <button class="btn ghost" onclick="ACS_closeDeleteFlightsModal()">
+      <button class="btn-modal ghost" onclick="ACS_closeDeleteFlightsModal()">
         Cancel
       </button>
     </div>
