@@ -2649,11 +2649,11 @@ function ACS_closeAssignFlightsModal(){
 }
 
 /* ============================================================
-   🗑 A2 — DELETE FLIGHTS (BULK LOGIC)
+   🗑 A2 — DELETE FLIGHTS (BULK LOGIC) — PATCH 10FEB26
    ------------------------------------------------------------
-   • Reutiliza DELETE existente (NO se reescribe)
-   • Un solo confirm global
-   • Seguro / aviation-grade
+   Fix:
+   - Mostrar modal aunque .modal-overlay y .modal tengan display:none global
+   - Implementar ACS_deleteFlight(id) local (no dependencias externas)
    ============================================================ */
 
 let ACS_DELETE_FLIGHTS_CTX = {
@@ -2671,17 +2671,27 @@ function ACS_openDeleteFlightsModal(ac) {
 
   // 🔒 SOLO vuelos existentes (DELETE REAL)
   const flights = items.filter(it =>
+    it &&
     it.type === "flight" &&
-    it.aircraftId === ac.id
+    String(it.aircraftId || "") === String(ac.id || "")
   );
 
   ACS_DELETE_FLIGHTS_CTX.flights = flights;
 
-  document.getElementById("deleteFlightsAircraftLabel").textContent =
-    ac.registration || ac.id;
+  const label = document.getElementById("deleteFlightsAircraftLabel");
+  if (label) label.textContent = ac.registration || ac.id;
 
   const list = document.getElementById("deleteFlightsList");
+  if (!list) return;
+
   list.innerHTML = "";
+
+  // Si no hay vuelos, avisar y no abrir modal vacío
+  if (!flights.length) {
+    alert("ℹ️ This aircraft has no flights to delete.");
+    ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
+    return;
+  }
 
   flights.forEach(f => {
     const row = document.createElement("label");
@@ -2690,7 +2700,7 @@ function ACS_openDeleteFlightsModal(ac) {
     row.innerHTML = `
       <input type="checkbox" data-flight-id="${f.id}">
       <span>
-        ${f.day?.toUpperCase() || "—"} ·
+        ${(f.day ? String(f.day).toUpperCase() : "—")} ·
         ${f.origin || "—"} → ${f.destination || "—"} ·
         ${f.departure || "--:--"}–${f.arrival || "--:--"}
       </span>
@@ -2701,24 +2711,65 @@ function ACS_openDeleteFlightsModal(ac) {
 
   // Select all logic
   const selAll = document.getElementById("deleteFlightsSelectAll");
-  selAll.checked = false;
-  selAll.onchange = () => {
-    list.querySelectorAll("input[type=checkbox]").forEach(cb => {
-      cb.checked = selAll.checked;
-    });
-  };
+  if (selAll) {
+    selAll.checked = false;
+    selAll.onchange = () => {
+      list.querySelectorAll("input[type=checkbox]").forEach(cb => {
+        cb.checked = selAll.checked;
+      });
+    };
+  }
 
-  document.getElementById("deleteFlightsModal").classList.remove("hidden");
+  const modal = document.getElementById("deleteFlightsModal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    // 🔥 hard-force por si CSS externo pisa algo
+    modal.style.display = "flex";
+  }
 }
 
 function ACS_closeDeleteFlightsModal() {
-  document.getElementById("deleteFlightsModal").classList.add("hidden");
+  const modal = document.getElementById("deleteFlightsModal");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.style.display = ""; // limpiar override
+  }
   ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
+}
+
+/* ============================================================
+   🟥 D2.1 — DELETE ENGINE (LOCAL) — scheduleItems authority
+   ------------------------------------------------------------
+   - Borra por ID en scheduleItems
+   - No toca SkyTrack directamente (Schedule Table manda)
+   ============================================================ */
+function ACS_deleteFlight(id) {
+
+  if (!id) return;
+
+  const items = getItems();
+  const before = items.length;
+
+  const afterItems = items.filter(it => !(it && it.type === "flight" && String(it.id) === String(id)));
+
+  if (afterItems.length !== before) {
+    setItems(afterItems);
+  }
+
+  // limpiar selección si coincide
+  if (window.ACS_selectedFlightItem && String(window.ACS_selectedFlightItem.id) === String(id)) {
+    window.ACS_selectedFlightItem = null;
+  }
+  if (window.selectedFlight && window.selectedFlight.data && String(window.selectedFlight.data.id) === String(id)) {
+    window.selectedFlight = null;
+  }
 }
 
 function ACS_confirmDeleteFlightsBulk() {
 
   const list = document.getElementById("deleteFlightsList");
+  if (!list) return;
+
   const checked = [...list.querySelectorAll("input[type=checkbox]:checked")];
 
   if (!checked.length) {
@@ -2731,18 +2782,15 @@ function ACS_confirmDeleteFlightsBulk() {
   );
   if (!ok) return;
 
-  // 🔥 DELETE REAL — reutiliza la lógica existente
+  // ✅ DELETE REAL (scheduleItems)
   checked.forEach(cb => {
     const id = cb.dataset.flightId;
-
-    // 👉 ESTA ES TU FUNCIÓN EXISTENTE (NO SE TOCA)
     ACS_deleteFlight(id);
   });
 
   ACS_closeDeleteFlightsModal();
   renderSchedule();
 }
-
      
 /* ============================================================
    === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
