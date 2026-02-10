@@ -1017,6 +1017,75 @@ footer {
   align-items: center;
 }
 
+/* ============================================================
+   🟥 D3 — DELETE FLIGHTS MODAL (PANEL OVERRIDE + SCROLL) — 10FEB26
+   ------------------------------------------------------------
+   Fix:
+   - .modal global en ACS es full-screen (fixed, 100%, etc.)
+   - #deleteFlightsModal usa .modal => se vuelve inmenso detrás
+   Solution:
+   - Override SOLO para #deleteFlightsModal .modal para que sea CARD
+   ============================================================ */
+
+#deleteFlightsModal.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(3px);
+  z-index: 99999; /* encima de cualquier modal */
+}
+
+#deleteFlightsModal.hidden { display: none !important; }
+#deleteFlightsModal:not(.hidden) { display: flex !important; }
+
+/* El panel (card) — NO fullscreen */
+#deleteFlightsModal > .modal {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  width: min(980px, 92vw) !important;
+  height: auto !important;
+  max-height: 84vh !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+
+  background: rgba(10, 18, 40, 0.92) !important;
+  border: 1px solid rgba(255, 200, 60, 0.35) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 18px 70px rgba(0,0,0,0.55) !important;
+  overflow: hidden !important;
+}
+
+/* Lista con scroll */
+#deleteFlightsModal .modal-body { overflow: hidden; }
+#deleteFlightsModal #deleteFlightsList {
+  margin-top: 10px;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.22);
+
+  max-height: 46vh;
+  overflow: auto;
+}
+
+/* Filas */
+#deleteFlightsModal .flight-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#deleteFlightsModal .flight-row:hover {
+  background: rgba(255,255,255,0.06);
+}
+       
 </style>
 
 </head>
@@ -2665,11 +2734,15 @@ function ACS_openDeleteFlightsModal(ac) {
 
   if (!ac || !ac.id) return;
 
+  // ✅ Evitar 2 modales apilados (tu captura)
+  try {
+    if (typeof closeFlightModal === "function") closeFlightModal();
+  } catch (e) { /* silent */ }
+
   ACS_DELETE_FLIGHTS_CTX.aircraftId = ac.id;
 
   const items = getItems();
 
-  // 🔒 SOLO vuelos existentes (DELETE REAL)
   const flights = items.filter(it =>
     it &&
     it.type === "flight" &&
@@ -2686,7 +2759,6 @@ function ACS_openDeleteFlightsModal(ac) {
 
   list.innerHTML = "";
 
-  // Si no hay vuelos, avisar y no abrir modal vacío
   if (!flights.length) {
     alert("ℹ️ This aircraft has no flights to delete.");
     ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
@@ -2709,7 +2781,6 @@ function ACS_openDeleteFlightsModal(ac) {
     list.appendChild(row);
   });
 
-  // Select all logic
   const selAll = document.getElementById("deleteFlightsSelectAll");
   if (selAll) {
     selAll.checked = false;
@@ -2723,8 +2794,6 @@ function ACS_openDeleteFlightsModal(ac) {
   const modal = document.getElementById("deleteFlightsModal");
   if (modal) {
     modal.classList.remove("hidden");
-    // 🔥 hard-force por si CSS externo pisa algo
-    modal.style.display = "flex";
   }
 }
 
