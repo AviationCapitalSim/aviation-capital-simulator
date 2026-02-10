@@ -2170,11 +2170,12 @@ for (let i = 0; i < EMPTY_ROWS; i++) {
 }
      
   // ============================================================
-  // UPDATE TIME (NO TOCAR)
-  // ============================================================
-     
-  document.getElementById("updateTime").textContent =
-    "Last update: " + new Date().toLocaleTimeString();
+// UPDATE TIME (SAFE GUARD)
+// ============================================================
+
+const ut = document.getElementById("updateTime");
+if (ut) {
+  ut.textContent = "Last update: " + new Date().toLocaleTimeString();
 }
 
 /* ============================================================
