@@ -2072,16 +2072,14 @@ if (it.type === "service") {
       ? "🔧 A-Check"
       : "⚙️ B-Check";
 
-  chip.onclick = () => {
+  chip.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     // 🔑 guardar contexto del service seleccionado
-    window.selectedService = it;
+    window.ACS_SELECTED_SERVICE = it;
 
-    chip.onclick = () => {
-  window.ACS_SELECTED_SERVICE = it;
-  openMaintenanceInfoModal(it, ac);
-};
-
-
+    openMaintenanceInfoModal(it, ac);
   };
 
   td.appendChild(chip);
