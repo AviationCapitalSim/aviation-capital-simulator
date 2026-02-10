@@ -987,7 +987,36 @@ footer {
   border:1px solid rgba(255,255,255,0.2);
   color:#ccc;
 }
-       
+
+/* ============================================================
+   🟥 D1 — DELETE FLIGHTS MODAL (VISIBILITY FIX) — 10FEB26
+   ------------------------------------------------------------
+   Fix:
+   - modal-overlay base tiene display:none (rompe este modal)
+   - .modal base tiene display:none (rompe el panel interno)
+   Solution:
+   - Forzar SOLO #deleteFlightsModal a display:flex cuando no está hidden
+   - Forzar SOLO el panel interno de delete a display:block
+   ============================================================ */
+
+#deleteFlightsModal.modal-overlay {
+  display: flex;              /* ✅ visible por defecto */
+}
+
+#deleteFlightsModal.hidden {
+  display: none !important;   /* ✅ hidden manda */
+}
+
+#deleteFlightsModal .modal {
+  display: block !important;  /* ✅ el panel interno no queda oculto */
+}
+
+/* Opcional: asegurar centrado (por si cambia algo arriba) */
+#deleteFlightsModal.modal-overlay {
+  justify-content: center;
+  align-items: center;
+}
+
 </style>
 
 </head>
