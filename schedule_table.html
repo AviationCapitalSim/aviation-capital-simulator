@@ -2602,6 +2602,102 @@ function ACS_closeAssignFlightsModal(){
   ACS_ASSIGN_CTX.aircraft = null;
   ACS_ASSIGN_CTX.flightIds = [];
 }
+
+/* ============================================================
+   🗑 A2 — DELETE FLIGHTS (BULK LOGIC)
+   ------------------------------------------------------------
+   • Reutiliza DELETE existente (NO se reescribe)
+   • Un solo confirm global
+   • Seguro / aviation-grade
+   ============================================================ */
+
+let ACS_DELETE_FLIGHTS_CTX = {
+  aircraftId: null,
+  flights: []
+};
+
+function ACS_openDeleteFlightsModal(ac) {
+
+  if (!ac || !ac.id) return;
+
+  ACS_DELETE_FLIGHTS_CTX.aircraftId = ac.id;
+
+  const items = getItems();
+
+  // 🔒 SOLO vuelos existentes (DELETE REAL)
+  const flights = items.filter(it =>
+    it.type === "flight" &&
+    it.aircraftId === ac.id
+  );
+
+  ACS_DELETE_FLIGHTS_CTX.flights = flights;
+
+  document.getElementById("deleteFlightsAircraftLabel").textContent =
+    ac.registration || ac.id;
+
+  const list = document.getElementById("deleteFlightsList");
+  list.innerHTML = "";
+
+  flights.forEach(f => {
+    const row = document.createElement("label");
+    row.className = "flight-row";
+
+    row.innerHTML = `
+      <input type="checkbox" data-flight-id="${f.id}">
+      <span>
+        ${f.day?.toUpperCase() || "—"} ·
+        ${f.origin || "—"} → ${f.destination || "—"} ·
+        ${f.departure || "--:--"}–${f.arrival || "--:--"}
+      </span>
+    `;
+
+    list.appendChild(row);
+  });
+
+  // Select all logic
+  const selAll = document.getElementById("deleteFlightsSelectAll");
+  selAll.checked = false;
+  selAll.onchange = () => {
+    list.querySelectorAll("input[type=checkbox]").forEach(cb => {
+      cb.checked = selAll.checked;
+    });
+  };
+
+  document.getElementById("deleteFlightsModal").classList.remove("hidden");
+}
+
+function ACS_closeDeleteFlightsModal() {
+  document.getElementById("deleteFlightsModal").classList.add("hidden");
+  ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
+}
+
+function ACS_confirmDeleteFlightsBulk() {
+
+  const list = document.getElementById("deleteFlightsList");
+  const checked = [...list.querySelectorAll("input[type=checkbox]:checked")];
+
+  if (!checked.length) {
+    alert("⚠ No flights selected.");
+    return;
+  }
+
+  const ok = confirm(
+    `⛔ DELETE ${checked.length} flight(s)?\nThis action cannot be undone.`
+  );
+  if (!ok) return;
+
+  // 🔥 DELETE REAL — reutiliza la lógica existente
+  checked.forEach(cb => {
+    const id = cb.dataset.flightId;
+
+    // 👉 ESTA ES TU FUNCIÓN EXISTENTE (NO SE TOCA)
+    ACS_deleteFlight(id);
+  });
+
+  ACS_closeDeleteFlightsModal();
+  renderSchedule();
+}
+
      
 /* ============================================================
    === B3-A — COSTOS INICIALES AL ASIGNAR RUTA (OPERACIÓN) ====
@@ -4355,6 +4451,50 @@ function ACS_createFlightsFromRoute(route) {
   console.log("🟢 Flights created from route:", flights);
 }
 </script>
+
+<!-- ============================================================
+     🗑 DELETE FLIGHTS (BULK) — MODAL
+     ------------------------------------------------------------
+     • Selector múltiple
+     • DELETE REAL (usa lógica existente)
+     • No borra nada por sí solo
+     ============================================================ -->
+<div id="deleteFlightsModal" class="modal-overlay hidden">
+  <div class="modal qatar-modal wide">
+
+    <div class="modal-header danger">
+      <h3>🗑 DELETE FLIGHTS — <span id="deleteFlightsAircraftLabel">Aircraft</span></h3>
+      <button class="modal-close" onclick="ACS_closeDeleteFlightsModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="warn-text">
+        ⚠ This action is <b>PERMANENT</b>. Deleted flights will be removed from the entire ACS system.
+      </p>
+
+      <div class="bulk-actions">
+        <label>
+          <input type="checkbox" id="deleteFlightsSelectAll" />
+          Select all flights
+        </label>
+      </div>
+
+      <div id="deleteFlightsList" class="flight-list">
+        <!-- flights injected by JS -->
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn danger" onclick="ACS_confirmDeleteFlightsBulk()">
+        🗑 DELETE SELECTED
+      </button>
+      <button class="btn ghost" onclick="ACS_closeDeleteFlightsModal()">
+        Cancel
+      </button>
+    </div>
+
+  </div>
+</div>
      
 </body>
 </html>
