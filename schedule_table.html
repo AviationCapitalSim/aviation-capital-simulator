@@ -1389,6 +1389,40 @@ function ACS_ReadOperationalState(ac) {
 
   return ac;
 }
+
+/* ============================================================
+   🟧 A3.7 — ACTIVE SERVICE FILTER (OPS AUTHORITY)
+   ------------------------------------------------------------
+   • Mantiene TODOS los services para planificación visual
+   • SOLO expone services ACTIVOS a SkyTrack / runtime
+   • SkyTrack NO se toca
+   ============================================================ */
+
+function ACS_isServiceActiveNow(service) {
+  if (!service || service.type !== "service") return false;
+  if (!service.assigned) return false;
+
+  // Día actual (mon..sun)
+  const today = ACS_TABLE_TIME?.day;
+  if (!today || service.day !== today) return false;
+
+  // Hora actual en minutos
+  const nowMin = ACS_TABLE_TIME.minute;
+
+  const toMin = (hhmm) => {
+    if (!hhmm || typeof hhmm !== "string") return NaN;
+    const [h, m] = hhmm.split(":").map(Number);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) return NaN;
+    return h * 60 + m;
+  };
+
+  const startMin = toMin(service.start);
+  const endMin   = toMin(service.end);
+
+  if (!Number.isFinite(startMin) || !Number.isFinite(endMin)) return false;
+
+  return nowMin >= startMin && nowMin < endMin;
+}
      
 /* ============================================================
    🟧 A3.1 — SCHEDULE VISUAL SERVICE STATE (ACS)
