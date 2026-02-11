@@ -3586,6 +3586,32 @@ body.innerHTML = `
 }
 
 /* ============================================================
+   🟦 B3 — CLOSE FLIGHT MODAL (GLOBAL) — 11FEB26
+   ------------------------------------------------------------
+   ✅ Cierra modal (X y Close)
+   ✅ Limpia selección
+   ✅ No toca delete logic
+   ============================================================ */
+function closeFlightModal(){
+
+  const modal = document.getElementById("flightModal");
+  if (modal) modal.classList.add("hidden");
+
+  // limpiar selección canonical
+  window.ACS_selectedFlightItem = null;
+  ACS_selectedFlightItem = null;
+  ACS_selectedChipEl = null;
+
+  // limpiar selección usada por chips
+  if (window.selectedFlight) window.selectedFlight = null;
+
+  // si el footer fue cambiado por modo service, restaurarlo
+  if (typeof ACS_restoreFlightModalFooterDefault === "function") {
+    try { ACS_restoreFlightModalFooterDefault(); } catch(e){}
+  }
+}
+     
+/* ============================================================
    ❌ PASO 4 — CANCEL SERVICE — 17DEC25
    ============================================================ */
 
