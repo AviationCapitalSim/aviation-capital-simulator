@@ -2671,15 +2671,15 @@ function ACS_openDeleteFlightsModal(input) {
   if (!it || it.type !== "flight") return false;
   if (String(it.aircraftId) !== String(ac.id)) return false;
 
-  // 🔑 CASO 1 — DELETE DESDE FLIGHT MODAL (1 vuelo)
-  if (flightNumbers && flightNumbers.length === 1) {
+  // 🔑 SI HAY VUELO ACTIVO (desde Flight Modal)
+  if (window.ACS_selectedFlightItem) {
     return (
-      String(it.flightNumberOut) === String(flightNumbers[0]) ||
-      String(it.flightNumberIn)  === String(flightNumbers[0])
+      String(it.flightNumberOut) === String(window.ACS_selectedFlightItem.flightNumberOut) &&
+      String(it.flightNumberIn)  === String(window.ACS_selectedFlightItem.flightNumberIn)
     );
   }
 
-  // 🔑 CASO 2 — DELETE MASIVO (OUT + IN)
+  // 🔑 CASO DELETE MASIVO (si se usa en otro flujo)
   if (flightNumbers && flightNumbers.length === 2) {
     return (
       String(it.flightNumberOut) === String(flightNumbers[0]) &&
@@ -2689,6 +2689,7 @@ function ACS_openDeleteFlightsModal(input) {
 
   return false;
 });
+
 
   ACS_DELETE_FLIGHTS_CTX.flights = flights;
 
