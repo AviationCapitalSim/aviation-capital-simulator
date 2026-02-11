@@ -3635,28 +3635,35 @@ function ACS_restoreFlightModalFooterDefault(){
 }
      
 /* ============================================================
-   🟥 DELETE REDIRECT — CLEAN & SAFE
+   🟥 D3.1 — DELETE FLIGHTS REDIRECT (SINGLE FLIGHT SCOPE)
+   ------------------------------------------------------------
+   Fix:
+   ✅ Pasa aircraft + flightNumberOut
+   ✅ Delete Modal muestra SOLO ese vuelo
+   ✅ No toca la tabla
    ============================================================ */
-function ACS_redirectToDeleteFlights() {
 
-  if (!window.ACS_selectedFlightItem) {
-    alert("⚠ No flight selected.");
+function ACS_redirectToDeleteFlights(ac, flight) {
+
+  if (!ac || !flight) {
+    console.warn("Delete redirect aborted: missing aircraft or flight");
     return;
   }
 
-  const ac = getCurrentAircraftFromFlight();
-  if (!ac || !ac.id) return;
+  // Cerrar Flight Modal (si aplica)
+  const fm = document.getElementById("flightModal");
+  if (fm) fm.classList.add("hidden");
 
-  const f = window.ACS_selectedFlightItem;
-
-  // 👉 SOLO ESTE NUMERO DE VUELO
+  // 🔑 Redirect con scope de vuelo único
   ACS_openDeleteFlightsModal({
     aircraft: ac,
-    flightNumber: f.flightNumberOut
+    flightNumber: String(
+      flight.flightNumberOut ||
+      flight.labelOut ||
+      flight.flightLabelOut ||
+      ""
+    )
   });
-
-  // 👉 ORDEN CORRECTO (como pediste)
-  closeFlightModal();
 }
 
 /* ============================================================
