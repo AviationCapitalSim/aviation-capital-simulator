@@ -4570,6 +4570,56 @@ function removeMaintenanceFromInfo(){
   closeMaintenanceInfoModal();
   renderSchedule();
 }
+
+/* ============================================================
+   🟥 D1.2 — DELETE SELECTED BUTTON (NEW MODAL) — FINAL BIND
+   ------------------------------------------------------------
+   ✅ Hace que el botón "🗑 DELETE SELECTED" ejecute de verdad
+   ✅ Usa el NUEVO modal (#deleteFlightsModal)
+   ✅ Lee checks .acs-delete-check (el HTML actual)
+   ✅ NO toca ACS_deleteFlight()
+   ============================================================ */
+
+function ACS_confirmDeleteFlightsBulk() {
+
+  const modal = document.getElementById("deleteFlightsModal");
+  if (!modal) {
+    console.warn("⛔ Delete modal not found (#deleteFlightsModal).");
+    return;
+  }
+
+  const checked = [...modal.querySelectorAll("input.acs-delete-check:checked")];
+
+  if (!checked.length) {
+    alert("⚠ No flights selected.");
+    return;
+  }
+
+  const ok = confirm(
+    `⛔ DELETE ${checked.length} flight(s)?\nThis action cannot be undone.`
+  );
+  if (!ok) return;
+
+  if (typeof ACS_deleteFlight !== "function") {
+    console.warn("⛔ ACS_deleteFlight() is not available.");
+    return;
+  }
+
+  checked.forEach(cb => {
+    const id = (cb.dataset.flightId || "").trim();
+    if (id) ACS_deleteFlight(id);
+  });
+
+  if (typeof ACS_closeDeleteFlightsModal === "function") {
+    ACS_closeDeleteFlightsModal();
+  } else {
+    modal.classList.add("hidden");
+  }
+
+  if (typeof renderSchedule === "function") {
+    renderSchedule();
+  }
+}
      
 </script>
 
