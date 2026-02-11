@@ -443,11 +443,13 @@ async function handleLogin(event) {
     // === NO_AIRLINE ===
     if (result.status === "NO_AIRLINE") {
       const userPack = {
-        userId: result.user.userId,
-        email: result.user.email,
-        airline: null,
-        airline_id: null
-      };
+      userId: result.user.userId,
+      email: result.user.email,
+      airline: null,
+      airline_id: null,
+      loginAt: Date.now()
+    };
+
       localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
       window.location.href = "create_airline.html";
       return false;
@@ -475,11 +477,12 @@ async function handleLogin(event) {
       }
 
       const userPack = {
-        userId: userId,
-        email: userEmail,
-        airline_id: airlineId,
-        airline: airlineObj     // puede ser objeto o null, pero ya no es solo un string loco
-      };
+      userId: userId,
+      email: userEmail,
+      airline_id: airlineId,
+      airline: airlineObj,     // puede ser objeto o null, pero ya no es solo un string loco
+      loginAt: Date.now()
+     };
 
       localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
       window.location.href = "dashboard.html";
