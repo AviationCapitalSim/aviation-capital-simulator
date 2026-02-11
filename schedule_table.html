@@ -2667,11 +2667,19 @@ function ACS_openDeleteFlightsModal(input) {
    aircraftId + flightNumberOut + flightNumberIn
    ============================================================ */
 
-  const flights = items.filter(it => {
+ const flights = items.filter(it => {
   if (!it || it.type !== "flight") return false;
   if (String(it.aircraftId) !== String(ac.id)) return false;
 
-  // 🔑 FILTRO POR RUTA LÓGICA (OUT + IN)
+  // 🔑 CASO 1 — DELETE DESDE FLIGHT MODAL (1 vuelo)
+  if (flightNumbers && flightNumbers.length === 1) {
+    return (
+      String(it.flightNumberOut) === String(flightNumbers[0]) ||
+      String(it.flightNumberIn)  === String(flightNumbers[0])
+    );
+  }
+
+  // 🔑 CASO 2 — DELETE MASIVO (OUT + IN)
   if (flightNumbers && flightNumbers.length === 2) {
     return (
       String(it.flightNumberOut) === String(flightNumbers[0]) &&
@@ -2679,7 +2687,7 @@ function ACS_openDeleteFlightsModal(input) {
     );
   }
 
-  return false; // sin ruta definida → no mostrar nada
+  return false;
 });
 
   ACS_DELETE_FLIGHTS_CTX.flights = flights;
