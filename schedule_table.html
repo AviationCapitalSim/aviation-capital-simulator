@@ -2812,33 +2812,6 @@ function ACS_closeDeleteFlightsModal() {
   ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
 }
 
-function ACS_confirmDeleteFlightsBulk() {
-
-  const modal = document.getElementById("deleteFlightsModal");
-  if (!modal) return;
-
-  const checked = [...modal.querySelectorAll("input.acs-delete-check:checked")];
-
-  if (!checked.length) {
-    alert("⚠ No flights selected.");
-    return;
-  }
-
-  const ok = confirm(
-    `⛔ DELETE ${checked.length} flight(s)?\nThis action cannot be undone.`
-  );
-  if (!ok) return;
-
-  checked.forEach(cb => {
-    const id = cb.dataset.flightId;
-    ACS_deleteFlight(id);
-  });
-
-  ACS_closeDeleteFlightsModal();
-  renderSchedule();
-}
-
-
 function ACS_closeDeleteFlightsModal() {
   const modal = document.getElementById("deleteFlightsModal");
   if (modal) {
