@@ -2620,20 +2620,39 @@ function ACS_closeAssignFlightsModal(){
 }
 
 /* ============================================================
-   🟥 D2 — DELETE FLIGHTS MODAL ENGINE (QATAR) — 10FEB26
+   🟥 D1.0 — OPEN DELETE FLIGHTS MODAL (CTX SAFE) — 11FEB26
    ------------------------------------------------------------
-   ✅ UI idéntica a Assign Route (estructura)
-   ✅ Selección POR VUELO (checkbox por flight.id)
-   ✅ NO borra nada desde Flight Modal (solo aquí)
-   ✅ NO cierra Flight Modal aquí (eso lo hace el redirector)
+   Fix:
+   ✅ Elimina referencia a ctx (ReferenceError)
+   ✅ Acepta 2 formatos de entrada:
+      1) ACS_openDeleteFlightsModal(ac)
+      2) ACS_openDeleteFlightsModal({ aircraft: ac, flightNumber, flightNumbers })
+   ✅ Permite filtrar SOLO el vuelo seleccionado (por flightNumberOut)
    ============================================================ */
 
 let ACS_DELETE_FLIGHTS_CTX = {
   aircraftId: null,
   flights: []
 };
+     
+function ACS_openDeleteFlightsModal(input) {
 
-function ACS_openDeleteFlightsModal(ac) {
+  // 🔑 Normalizar entrada (acepta aircraft directo o ctx)
+  let ac = null;
+  let flightNumbers = [];
+
+  if (input && typeof input === "object" && input.aircraft) {
+    ac = input.aircraft;
+
+    if (Array.isArray(input.flightNumbers)) {
+      flightNumbers = input.flightNumbers.filter(Boolean).map(String);
+    } else if (input.flightNumber) {
+      flightNumbers = [String(input.flightNumber)];
+    }
+
+  } else {
+    ac = input;
+  }
 
   if (!ac || !ac.id) return;
 
@@ -2641,18 +2660,23 @@ function ACS_openDeleteFlightsModal(ac) {
 
   const items = getItems();
 
-  const { aircraft, flightNumbers } = ctx;
+  // ✅ Flights SOLO de este aircraftId
+  // ✅ Si viene flightNumbers => filtra SOLO esos números (bulk-select controlado)
+  const flights = items.filter(it => {
+    if (!it || it.type !== "flight") return false;
+    if (String(it.aircraftId) !== String(ac.id)) return false;
 
-  const flights = items.filter(it =>
-  it.type === "flight" &&
-  String(it.aircraftId) === String(aircraft.id) &&
-  flightNumbers.includes(it.flightNumberOut)
-);
+    if (flightNumbers.length > 0) {
+      return flightNumbers.includes(String(it.flightNumberOut || ""));
+    }
+
+    return true; // si no hay filtro, muestra todos los vuelos del avión
+  });
 
   ACS_DELETE_FLIGHTS_CTX.flights = flights;
 
   if (!flights.length) {
-    alert("ℹ️ This aircraft has no flights to delete.");
+    alert("ℹ️ No flights found to delete for this selection.");
     ACS_DELETE_FLIGHTS_CTX = { aircraftId: null, flights: [] };
     return;
   }
@@ -2717,18 +2741,19 @@ function ACS_openDeleteFlightsModal(ac) {
 
     ${daysSorted.map(d => `
       <div class="meta-card" style="margin-bottom:10px;">
-        <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <strong style="color:#ffdd80;">${dayLabel[d] || d.toUpperCase()}</strong>
+        </div>
 
         <div style="margin-top:8px;display:grid;gap:8px;">
           ${byDay[d].map(f => `
             <label style="display:flex;gap:10px;align-items:center;">
-              <input class="acs-delete-check" type="checkbox" data-flight-id="${f.id}">
-
-              <span style="
-                font-weight:800;
-                color:#ffe7a0;
-                min-width:120px;
-              ">
+              <input
+                class="acs-delete-check"
+                type="checkbox"
+                data-flight-id="${f.id}"
+              >
+              <span style="font-weight:900;color:#ffcc33;">
                 ${flightNoText(f)}
               </span>
 
