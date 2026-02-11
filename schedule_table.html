@@ -3611,10 +3611,10 @@ function cancelSelectedService(){
 }
      
 /* ============================================================
-   🟥 D4.2 — RESTORE FLIGHT MODAL FOOTER (DELETE FLIGHT SCOPED)
+   🟥 HOTFIX — RESTORE flightModal FOOTER (Edit/Remove/Delete)
    ------------------------------------------------------------
-   Fix:
-   ✅ Delete Flights pasa aircraft + vuelo seleccionado
+   ✅ Usa window.selectedFlight (source of truth real)
+   ✅ Delete llama redirect con (aircraft + flight)
    ============================================================ */
 
 function ACS_restoreFlightModalFooterDefault(){
@@ -3625,12 +3625,9 @@ function ACS_restoreFlightModalFooterDefault(){
   const footer = modal.querySelector(".acs-modal-footer");
   if (!footer) return;
 
-  // 🧠 Usar selección real (source of truth)
-  const selected = Array.isArray(window.selectedFlights)
-    ? window.selectedFlights
-    : [];
-
-  const canEdit = selected.length === 1;
+  // ✅ Source of truth real en tu tabla:
+  // window.selectedFlight = { data: it, element: chip }
+  const canEdit = !!(window.selectedFlight && window.selectedFlight.data);
 
   footer.innerHTML = `
     ${canEdit
@@ -3638,20 +3635,11 @@ function ACS_restoreFlightModalFooterDefault(){
       : `<button class="btn-modal gold disabled" disabled>✏️ EDIT</button>`
     }
     <button class="btn-modal amber" onclick="ACS_removeSelectedFlights()">🧹 REMOVE FLIGHTS</button>
-
-    <button
-      class="btn-modal red"
-      onclick="ACS_redirectToDeleteFlights(
-        getCurrentAircraftFromFlight(),
-        window.selectedFlights && window.selectedFlights[0]
-      )"
-    >
-      🗑 DELETE FLIGHTS
-    </button>
-
+    <button class="btn-modal red" onclick="ACS_redirectToDeleteFlights(getCurrentAircraftFromFlight(), window.selectedFlight?.data || window.ACS_selectedFlightItem)">🗑 DELETE FLIGHTS</button>
     <button class="btn-modal ghost" onclick="closeFlightModal()">Close</button>
   `;
 }
+
      
 /* ============================================================
    🟥 D3.1 — DELETE FLIGHTS REDIRECT (SINGLE FLIGHT SCOPE)
