@@ -3362,6 +3362,12 @@ window.ACS_selectedFlightItem = it || null;
 ACS_selectedFlightItem = it || null;
 ACS_selectedChipEl = chipEl || null;
 
+// 🔑 Compatibilidad con lógica DELETE
+window.selectedFlight = {
+  data: it || null,
+  element: chipEl || null
+};
+     
 
 /* ============================================================
    🛠 PASO 4 — SERVICE CONTEXT (MODAL) — 17DEC25
