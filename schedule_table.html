@@ -2660,18 +2660,27 @@ function ACS_openDeleteFlightsModal(input) {
 
   const items = getItems();
 
-  // ✅ Flights SOLO de este aircraftId
-  // ✅ Si viene flightNumbers => filtra SOLO esos números (bulk-select controlado)
+  /* ============================================================
+   🟥 D5.1 — DELETE FLIGHTS FILTER (ROUTE LOGIC)
+   ------------------------------------------------------------
+   Scope:
+   aircraftId + flightNumberOut + flightNumberIn
+   ============================================================ */
+
   const flights = items.filter(it => {
-    if (!it || it.type !== "flight") return false;
-    if (String(it.aircraftId) !== String(ac.id)) return false;
+  if (!it || it.type !== "flight") return false;
+  if (String(it.aircraftId) !== String(ac.id)) return false;
 
-    if (flightNumbers.length > 0) {
-      return flightNumbers.includes(String(it.flightNumberOut || ""));
-    }
+  // 🔑 FILTRO POR RUTA LÓGICA (OUT + IN)
+  if (flightNumbers && flightNumbers.length === 2) {
+    return (
+      String(it.flightNumberOut) === String(flightNumbers[0]) &&
+      String(it.flightNumberIn)  === String(flightNumbers[1])
+    );
+  }
 
-    return true; // si no hay filtro, muestra todos los vuelos del avión
-  });
+  return false; // sin ruta definida → no mostrar nada
+});
 
   ACS_DELETE_FLIGHTS_CTX.flights = flights;
 
