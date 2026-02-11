@@ -3695,15 +3695,23 @@ function ACS_redirectToDeleteFlights(ac, flight) {
   const fm = document.getElementById("flightModal");
   if (fm) fm.classList.add("hidden");
 
-  // 🔑 Redirect con scope de vuelo único
+  // 🔑 ENVIAR AMBOS flightNumbers (OUT + IN)
   ACS_openDeleteFlightsModal({
     aircraft: ac,
-    flightNumber: String(
-      flight.flightNumberOut ||
-      flight.labelOut ||
-      flight.flightLabelOut ||
-      ""
-    )
+    flightNumbers: [
+      String(
+        flight.flightNumberOut ||
+        flight.labelOut ||
+        flight.flightLabelOut ||
+        ""
+      ),
+      String(
+        flight.flightNumberIn ||
+        flight.labelIn ||
+        flight.flightLabelIn ||
+        ""
+      )
+    ]
   });
 }
 
