@@ -1,17 +1,8 @@
 /* ============================================================
    🔐 ACS SECURITY CORE — CENTRAL SESSION GUARD
    ------------------------------------------------------------
-   Version: 1.0 DEV HARDENING
-   Date: 11 FEB 2026
-   Author: ACS System Core
-
-   PURPOSE:
-   - Centralized session validation
-   - Expiration control
-   - Corruption detection
-   - Public page whitelist
-   - Base for future runtime lock
-
+   Version: 1.1 DEV HARDENING STABLE
+   Date: 12 FEB 2026
    ============================================================ */
 
 (function () {
@@ -22,6 +13,7 @@
 
   const SESSION_KEY = "ACS_activeUser";
   const SESSION_MAX_AGE = 1000 * 60 * 60 * 6; // 6 HOURS
+  const WATCH_INTERVAL = 5000;
 
   const PUBLIC_PAGES = [
     "index.html",
@@ -31,8 +23,8 @@
     "terms.html"
   ];
 
-  const currentPage = window.location.pathname.split("/").pop() || "index.html";
-
+  const currentPage =
+    window.location.pathname.split("/").pop() || "index.html";
 
   /* ============================================================
      🌍 ALLOW PUBLIC PAGES
@@ -42,101 +34,75 @@
     return;
   }
 
-
   /* ============================================================
-     🔐 SESSION VALIDATION
+     🔐 INITIAL SESSION VALIDATION
      ============================================================ */
 
   const raw = localStorage.getItem(SESSION_KEY);
 
   if (!raw) {
-    redirectToLogin();
-    return;
+    return redirectToLogin();
   }
 
   let user;
 
   try {
     user = JSON.parse(raw);
-  } catch (e) {
-    invalidateSession();
-    return;
+  } catch {
+    return invalidateSession();
   }
-
-  /* ============================================================
-     🧪 STRUCTURAL VALIDATION
-     ============================================================ */
 
   if (
     !user ||
     typeof user !== "object" ||
     !user.userId ||
-    !user.email
+    !user.email ||
+    !user.loginAt
   ) {
-    invalidateSession();
-    return;
-  }
-
-  /* ============================================================
-     ⏳ EXPIRATION CONTROL
-     ============================================================ */
-
-  if (!user.loginAt) {
-    invalidateSession();
-    return;
+    return invalidateSession();
   }
 
   const sessionAge = Date.now() - user.loginAt;
 
   if (sessionAge > SESSION_MAX_AGE) {
-    invalidateSession();
-    return;
+    return invalidateSession();
   }
 
   /* ============================================================
-   🔄 LIVE SESSION WATCHER (DEV SAFE)
-   - Verifica sesión cada 5 segundos
-   - Solo redirige si sesión desaparece o expira
-   ============================================================ */
-
-setInterval(() => {
-
-  const rawCheck = localStorage.getItem(SESSION_KEY);
-
-  if (!rawCheck) {
-    invalidateSession();
-    return;
-  }
-
-  try {
-    const userCheck = JSON.parse(rawCheck);
-
-    if (!userCheck.loginAt) {
-      invalidateSession();
-      return;
-    }
-
-    const age = Date.now() - userCheck.loginAt;
-
-    if (age > SESSION_MAX_AGE) {
-     invalidateSession();
-    }
-
-  } catch {
-    invalidateSession();
-  }
-
-}, 5000);
-   
-  /* ============================================================
-     ✅ SESSION OK
+     🔄 LIVE SESSION WATCHER (SINGLE INSTANCE SAFE)
      ============================================================ */
 
-  // Future hook for runtime master lock
-  // initializeRuntimeLock();
+  if (!window.__ACS_SESSION_WATCHER__) {
 
-  return;
+    window.__ACS_SESSION_WATCHER__ = setInterval(() => {
 
+      const rawCheck = localStorage.getItem(SESSION_KEY);
+
+      if (!rawCheck) {
+        return invalidateSession();
+      }
+
+      try {
+
+        const userCheck = JSON.parse(rawCheck);
+
+        if (!userCheck.loginAt) {
+          return invalidateSession();
+        }
+
+        const age = Date.now() - userCheck.loginAt;
+
+        if (age > SESSION_MAX_AGE) {
+          return invalidateSession();
+        }
+
+      } catch {
+        return invalidateSession();
+      }
+
+    }, WATCH_INTERVAL);
+
+  }
 
   /* ============================================================
      🧹 HELPERS
@@ -148,7 +114,9 @@ setInterval(() => {
   }
 
   function redirectToLogin() {
-    window.location.href = "login.html";
+    if (!window.location.pathname.includes("login.html")) {
+      window.location.href = "login.html";
+    }
   }
 
 })();
