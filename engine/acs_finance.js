@@ -522,3 +522,5 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   });
 
 });
+
+})();
