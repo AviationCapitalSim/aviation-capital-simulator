@@ -12,6 +12,9 @@
    - Solo define el contrato oficial de una ruta
    ============================================================ */
 
+const ROUTES_KEY = "ACS_ROUTES";
+const SELECTED_ROUTE_KEY = "ACS_SELECTED_ROUTE";
+
 const ACS_ROUTE_SCHEMA = {
 
   /* === IDENTITY === */
