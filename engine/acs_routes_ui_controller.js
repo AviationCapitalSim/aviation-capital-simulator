@@ -657,8 +657,13 @@ Object.freeze(ACS_ROUTE_FINANCIAL_ENGINE);
   const btnReset  = document.getElementById("btn-reset-price");
   const btnManual = document.getElementById("btn-manual-price");
 
-  /* ============================================================
-   🔹 RENDER ROUTES TABLE (REAL DATA)
+/* ============================================================
+   🟧 1 — RENDER ROUTES TABLE (NO ECONOMY / NO FAKE PROFIT)
+   ------------------------------------------------------------
+   Rule:
+   - This table MUST NOT compute revenue/cost/profit.
+   - It only displays stored route parameters (pricing inputs).
+   - Financial results will be sourced later from Company Finance.
    ============================================================ */
 
 function renderRoutesTable() {
@@ -681,23 +686,24 @@ function renderRoutesTable() {
 
   routes.forEach(route => {
 
-    // 🟦 A7 — REAL FINANCIAL COMPUTE
-    const fin = ACS_ROUTE_FINANCIAL_ENGINE.compute(route);
+    // IMPORTANT:
+    // NO financial compute here. Only show what the route already has stored.
+    const loadFactorText =
+      (typeof route.loadFactor === "number")
+        ? `${Math.round(route.loadFactor * 100)}%`
+        : (typeof route.loadFactorPct === "number")
+          ? `${Math.round(route.loadFactorPct)}%`
+          : "—";
 
-    const loadFactorText = fin ? `${fin.loadFactor}%` : "—";
+    const ticketText =
+      (typeof route.currentTicketPrice === "number")
+        ? `$${route.currentTicketPrice}`
+        : (typeof route.currentTicket === "number")
+          ? `$${route.currentTicket}`
+          : "—";
 
-    let resultText = "—";
-    let resultColor = "#999";
-
-    if (fin) {
-      if (fin.weeklyResult >= 0) {
-        resultText = `+$${fin.weeklyResult}`;
-        resultColor = "#00ff80";
-      } else {
-        resultText = `-$${Math.abs(fin.weeklyResult)}`;
-        resultColor = "#ff7675";
-      }
-    }
+    const resultText = "—";
+    const resultColor = "#999";
 
     const tr = document.createElement("tr");
 
@@ -706,7 +712,7 @@ function renderRoutesTable() {
       <td>${route.aircraftType || "—"}</td>
       <td>${route.frequencyPerWeek ?? "—"}</td>
       <td>${loadFactorText}</td>
-      <td>${route.currentTicketPrice ? `$${route.currentTicketPrice}` : "—"}</td>
+      <td>${ticketText}</td>
       <td style="color:${resultColor}">${resultText}</td>
       <td>
         <button class="route-btn" data-id="${route.id}">
