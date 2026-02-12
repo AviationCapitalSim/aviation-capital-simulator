@@ -94,6 +94,41 @@
   }
 
   /* ============================================================
+   🔄 LIVE SESSION WATCHER (DEV SAFE)
+   - Verifica sesión cada 5 segundos
+   - Solo redirige si sesión desaparece o expira
+   ============================================================ */
+
+setInterval(() => {
+
+  const rawCheck = localStorage.getItem(SESSION_KEY);
+
+  if (!rawCheck) {
+    invalidateSession();
+    return;
+  }
+
+  try {
+    const userCheck = JSON.parse(rawCheck);
+
+    if (!userCheck.loginAt) {
+      invalidateSession();
+      return;
+    }
+
+    const age = Date.now() - userCheck.loginAt;
+
+    if (age > SESSION_MAX_AGE) {
+     invalidateSession();
+    }
+
+  } catch {
+    invalidateSession();
+  }
+
+}, 5000);
+   
+  /* ============================================================
      ✅ SESSION OK
      ============================================================ */
 
