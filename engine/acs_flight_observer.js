@@ -221,6 +221,41 @@ function ACS_OPS_applyImpactToFlight(flight, revenue) {
 
       console.log(`✈️ ACS LEG completed → ${acId} ${leg.origin} → ${leg.destination}`);
 
+      /* ============================================================
+   💰 TRIGGER ECONOMICS ENGINE (CANONICAL — FINAL FIX)
+   ============================================================ */
+
+try {
+
+  window.dispatchEvent(new CustomEvent("ACS_FLIGHT_ARRIVAL", {
+
+    detail: {
+
+      flightId: key,
+
+      aircraftId: acId,
+
+      origin: leg.origin,
+      destination: leg.destination,
+
+      distanceNM: ledger[key].distanceNM || 0,
+
+      arrAbsMin: Math.floor(Date.now() / 60000),
+
+      year: window.ACS_TIME?.currentYear || window.ACS_TIME?.year || 1944
+
+    }
+
+  }));
+
+  console.log("💰 ECONOMICS ENGINE TRIGGERED:", key);
+
+} catch(err) {
+
+  console.warn("Economics trigger failed", err);
+
+}
+       
       try {
         const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
         const dep = Number(ledger[key].departure || 0);
