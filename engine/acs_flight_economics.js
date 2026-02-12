@@ -374,15 +374,44 @@ const navigationCost = Math.round(
   navDistanceUnits * navRatePer100NM
 );
 
-  /* ============================================================
-     💰 REVENUE (SIMPLE & STABLE)
-     ============================================================ */
-  let ticket;
+ /* ============================================================
+   💰 REVENUE (ROUTE CONFIG DRIVEN — CANONICAL)
+   ------------------------------------------------------------
+   • Reads ticketPrice from scheduleItems
+   • Fallback to historical if missing
+   ============================================================ */
+
+let ticket = null;
+
+try {
+
+  const schedule = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+  const routeMatch = schedule.find(item =>
+    item.type === "flight" &&
+    item.aircraftId === d.aircraftId &&
+    item.origin === d.origin &&
+    item.destination === d.destination
+  );
+
+  if (routeMatch && typeof routeMatch.ticketPrice === "number") {
+    ticket = routeMatch.ticketPrice;
+  }
+
+} catch (e) {
+  console.warn("⚠️ Ticket read failed from scheduleItems");
+}
+
+/* --- Fallback histórico SOLO si no hay ticket configurado --- */
+
+if (ticket === null) {
+
   if (distanceNM < 500) ticket = 80;
   else if (distanceNM < 1500) ticket = 150;
   else ticket = 300;
+}
 
-  const revenue = pax * ticket;
+const revenue = pax * ticket;
 
   /* ============================================================
      📐 METRICS (NO COSTS YET)
