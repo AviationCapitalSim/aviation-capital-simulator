@@ -58,6 +58,114 @@ Object.freeze(ACS_ROUTE_SCHEMA);
   }
 
 /* ============================================================
+   🟦 A8 — ROUTE BUILDER FROM SCHEDULE (CANONICAL BRIDGE)
+   ------------------------------------------------------------
+   Source of truth: scheduleItems
+   Purpose:
+   - Build ACS_ROUTES from real scheduled flights
+   - NO economy
+   - NO finance
+   - NO runtime interference
+   ============================================================ */
+
+function ACS_buildRoutesFromSchedule(){
+
+  const ROUTES_KEY = "ACS_ROUTES";
+
+  let routes = [];
+  try{
+    routes = JSON.parse(localStorage.getItem(ROUTES_KEY)) || [];
+  }catch{
+    routes = [];
+  }
+
+  let items = [];
+  try{
+    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  }catch{
+    items = [];
+  }
+
+  if (!Array.isArray(items) || items.length === 0) return;
+
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  const routeMap = {};
+
+  items.forEach(it => {
+
+    if (!it) return;
+    if (it.type !== "flight") return;
+    if (it.assigned !== true) return;
+
+    const origin = it.origin;
+    const destination = it.destination;
+
+    if (!origin || !destination) return;
+
+    const key = `${origin}_${destination}_${it.aircraftId}`;
+
+    if (routeMap[key]) {
+      routeMap[key].frequencyPerWeek++;
+      return;
+    }
+
+    const aircraft = fleet.find(ac => ac.id === it.aircraftId);
+
+    routeMap[key] = {
+
+      id: key,
+
+      airlineId: "PLAYER",
+
+      origin: origin,
+      destination: destination,
+
+      distanceNM: it.distanceNM || it.distance || 0,
+
+      aircraftType:
+        it.modelKey ||
+        aircraft?.model ||
+        aircraft?.type ||
+        "—",
+
+      frequencyPerWeek: 1,
+
+      seatsPerFlight:
+        aircraft?.seats ||
+        aircraft?.capacity ||
+        0,
+
+      openedDate: Date.now(),
+      lastUpdate: Date.now(),
+
+      state: "active",
+
+      maturity: 0,
+      routeImage: 0,
+
+      currentTicketPrice: 0,
+      lastPriceReset: 0,
+
+      era: "1941",
+      serviceClass: ["Y"],
+
+      createdBy: "schedule"
+    };
+
+  });
+
+  const newRoutes = Object.values(routeMap);
+
+  if (newRoutes.length === 0) return;
+
+  saveRoutes(newRoutes);
+
+  console.log("🟦 ACS ROUTES BUILT FROM SCHEDULE:", newRoutes.length);
+
+}
+
+/* ============================================================
    🟦 A3 — ROUTE MATURITY ENGINE (FOUNDATION)
    ------------------------------------------------------------
    Purpose:
@@ -747,4 +855,18 @@ function renderRoutesTable() {
 
   document.addEventListener("DOMContentLoaded", renderRoutesTable);
 
+/* ============================================================
+   🟦 A9 — AUTO SYNC ROUTES WITH SCHEDULE
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  ACS_buildRoutesFromSchedule();
+
+  renderRoutesTable();
+
+});
+
+
+   
 })();
