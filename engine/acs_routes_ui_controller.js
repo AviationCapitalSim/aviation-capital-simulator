@@ -490,111 +490,64 @@ const ACS_ROUTE_PRICE_ENGINE = {
 Object.freeze(ACS_ROUTE_PRICE_ENGINE);
 
 /* ============================================================
-   🟦 A7 — ROUTE REVENUE & COST ENGINE (REAL OPS)
+   🟧 A7 — ROUTE REVENUE & COST ENGINE (DISABLED)
    ------------------------------------------------------------
    Purpose:
-   - Compute REAL weekly revenue per route
-   - Apply aircraft + distance + airport costs
-   - Output net weekly result (profit / loss)
+   - Financial calculations are NOT allowed in Routes UI.
+   - All revenue/cost/profit must be generated exclusively
+     by acs_flight_economics.js → acs_finance.js.
+   - This engine is now neutralized to prevent duplicates.
    ------------------------------------------------------------
    NOTE:
+   - Structure preserved
    - No UI logic
    - No storage
-   - Pure calculation engine
+   - No financial output
    ============================================================ */
 
 const ACS_ROUTE_FINANCIAL_ENGINE = {
 
   /* ============================================================
-     AIRCRAFT COST PER NM (USD) — HISTORICAL
+     AIRCRAFT COST PER NM (DISABLED)
      ============================================================ */
-  COST_PER_NM: {
-    "DC-3": 0.22,
-    "DC-4": 0.30,
-    "B707": 0.55
+  COST_PER_NM: {},
+
+  /* ============================================================
+     FIXED COST PER FLIGHT (DISABLED)
+     ============================================================ */
+  FIXED_COST_PER_FLIGHT: {},
+
+  /* ============================================================
+     AIRPORT COST (DISABLED)
+     ============================================================ */
+  AIRPORT_COST: {},
+
+  /* ============================================================
+     HELPERS (DISABLED)
+     ============================================================ */
+
+  getAircraftCostNM(){
+    return 0;
+  },
+
+  getFixedFlightCost(){
+    return 0;
+  },
+
+  getAirportCost(){
+    return 0;
   },
 
   /* ============================================================
-     FIXED COST PER FLIGHT (USD)
+     MAIN COMPUTE (DISABLED)
      ============================================================ */
-  FIXED_COST_PER_FLIGHT: {
-    "DC-3": 180,
-    "DC-4": 260,
-    "B707": 420
-  },
-
-  /* ============================================================
-     AIRPORT COST (PER MOVEMENT)
-     ============================================================ */
-  AIRPORT_COST: {
-    small: 40,
-    medium: 80,
-    large: 140
-  },
-
-  /* ============================================================
-     HELPERS
-     ============================================================ */
-
-  getAircraftCostNM(type){
-    return this.COST_PER_NM[type] || 0.3;
-  },
-
-  getFixedFlightCost(type){
-    return this.FIXED_COST_PER_FLIGHT[type] || 200;
-  },
-
-  getAirportCost(airportSize){
-    return this.AIRPORT_COST[airportSize] || 80;
-  },
-
-  /* ============================================================
-     MAIN COMPUTE
-     ============================================================ */
-  compute(route){
-    if (!route) return null;
-
-    const {
-      distanceNM,
-      aircraftType,
-      frequencyPerWeek,
-      seatsPerFlight,
-      currentTicketPrice,
-      maturity
-    } = route;
-
-    if (!distanceNM || !aircraftType || !frequencyPerWeek || !seatsPerFlight) {
-      return null;
-    }
-
-    // --- Load Factor grows with maturity ---
-    const loadFactor = Math.min(0.15 + maturity * 0.85, 0.95);
-
-    // --- Passengers ---
-    const paxPerFlight = Math.round(seatsPerFlight * loadFactor);
-    const weeklyPax = paxPerFlight * frequencyPerWeek;
-
-    // --- Revenue ---
-    const weeklyRevenue = weeklyPax * currentTicketPrice;
-
-    // --- Costs ---
-    const costPerNM = this.getAircraftCostNM(aircraftType);
-    const flightCost =
-      distanceNM * costPerNM +
-      this.getFixedFlightCost(aircraftType) +
-      this.getAirportCost("medium") * 2;
-
-    const weeklyCost = flightCost * frequencyPerWeek;
-
-    // --- Result ---
-    const weeklyResult = Math.round(weeklyRevenue - weeklyCost);
-
+  compute(){
     return {
-      loadFactor: Math.round(loadFactor * 100),
-      weeklyPax,
-      weeklyRevenue: Math.round(weeklyRevenue),
-      weeklyCost: Math.round(weeklyCost),
-      weeklyResult
+      loadFactor: null,
+      weeklyPax: 0,
+      weeklyRevenue: 0,
+      weeklyCost: 0,
+      weeklyResult: 0
     };
   }
 };
