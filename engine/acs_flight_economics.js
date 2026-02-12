@@ -531,19 +531,30 @@ const profit = revenue - costTotal;
 
 
 /* ============================================================
-   ✈️ SKYTRACK ARRIVAL LISTENER
+   🟧 A9 — SKYTRACK ARRIVAL LISTENER (HARD ID PROTECTION)
+   ------------------------------------------------------------
+   ✔ One arrival → one economics event
+   ✔ Stable eventId
+   ✔ Multi-tab safe (session level)
+   ✔ Refresh safe (finance-level rejection expected)
    ============================================================ */
+
 window.addEventListener("ACS_FLIGHT_ARRIVAL", e => {
 
   const d = e.detail;
-  if (!d) return;
+  if (!d || !d.flightId) return;
 
-  const key = `${d.flightId}_${d.arrAbsMin ?? "NA"}`;
-  if (ACS_ECO_DEDUP.has(key)) return;
-  ACS_ECO_DEDUP.add(key);
+  const eventId = `${d.flightId}_${d.arrAbsMin ?? "NA"}`;
+
+  // Session-level protection
+  if (ACS_ECO_DEDUP.has(eventId)) return;
+  ACS_ECO_DEDUP.add(eventId);
 
   const economics = ACS_buildFlightEconomics(d);
   if (!economics) return;
+
+  // Attach canonical eventId
+  economics.eventId = eventId;
 
   window.dispatchEvent(
     new CustomEvent("ACS_FLIGHT_ECONOMICS", {
@@ -551,9 +562,4 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", e => {
     })
   );
 
-  console.log(
-    "%c💰 FLIGHT ECONOMICS",
-    "color:#00ff88;font-weight:bold;",
-    economics
-  );
 });
