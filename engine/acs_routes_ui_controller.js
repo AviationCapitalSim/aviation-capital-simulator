@@ -696,6 +696,103 @@ Object.freeze(ACS_ROUTE_FINANCIAL_ENGINE);
     }
   }
 
+
+/* ============================================================
+   🟦 A10 — ROUTES LIVE PERFORMANCE FROM FINANCE (CANONICAL)
+   ------------------------------------------------------------
+   Source of truth: ACS_Finance (ledger)
+   Purpose:
+   - Provide LIVE route performance
+   - NO economy calculation here
+   - NO schedule dependency
+   - Finance is the only source
+   ============================================================ */
+
+function ACS_getFinance() {
+
+  try {
+    return JSON.parse(localStorage.getItem("ACS_Finance")) || null;
+  } catch {
+    return null;
+  }
+
+}
+
+/* ============================================================
+   Resolve route performance from Finance ledger
+   ============================================================ */
+
+function ACS_getRouteFinancePerformance(route) {
+
+  const finance = ACS_getFinance();
+
+  if (!finance) {
+    return {
+      revenue: 0,
+      profit: 0,
+      resultText: "—",
+      resultColor: "#999"
+    };
+  }
+
+  const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+
+  if (!Array.isArray(log) || log.length === 0) {
+    return {
+      revenue: 0,
+      profit: 0,
+      resultText: "—",
+      resultColor: "#999"
+    };
+  }
+
+  let revenue = 0;
+  let cost = 0;
+
+  log.forEach(entry => {
+
+    if (!entry || entry.type !== "INCOME") return;
+
+    const src = entry.source || "";
+
+    if (
+      src.includes(route.origin) &&
+      src.includes(route.destination)
+    ) {
+      revenue += Number(entry.amount || 0);
+    }
+
+  });
+
+  cost = 0; // cost already accounted in finance totals
+
+  const profit = revenue - cost;
+
+  let resultText = "—";
+  let resultColor = "#999";
+
+  if (revenue > 0) {
+
+    resultText = `$${Math.round(profit)}`;
+
+    resultColor =
+      profit > 0
+        ? "#00ff80"
+        : profit < 0
+          ? "#ff5252"
+          : "#ffaa00";
+
+  }
+
+  return {
+    revenue,
+    profit,
+    resultText,
+    resultColor
+  };
+
+}
+   
   function saveRoutes(routes) {
     localStorage.setItem(ROUTES_KEY, JSON.stringify(routes));
   }
@@ -766,8 +863,10 @@ function renderRoutesTable() {
           ? `$${route.currentTicket}`
           : "—";
 
-    const resultText = "—";
-    const resultColor = "#999";
+    const perf = ACS_getRouteFinancePerformance(route);
+
+    const resultText = perf.resultText;
+    const resultColor = perf.resultColor;
 
     const tr = document.createElement("tr");
 
