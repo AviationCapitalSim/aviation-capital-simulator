@@ -1,8 +1,13 @@
 /* ============================================================
    🔐 ACS SECURITY CORE — CENTRAL SESSION GUARD
    ------------------------------------------------------------
-   Version: 1.1 DEV HARDENING STABLE
+   Version: 1.2 DEV HARDENING (LIVE SAFE)
    Date: 12 FEB 2026
+
+   Fix:
+   - No depende solo de setInterval
+   - Revalida sesión en eventos reales (click/focus/visibility/history)
+   - Evita múltiples watchers
    ============================================================ */
 
 (function () {
@@ -35,78 +40,29 @@
   }
 
   /* ============================================================
-     🔐 INITIAL SESSION VALIDATION
+     🔐 CORE CHECK (single source)
      ============================================================ */
 
-  const raw = localStorage.getItem(SESSION_KEY);
+  function sessionIsValid() {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
 
-  if (!raw) {
-    return redirectToLogin();
+    let user;
+    try {
+      user = JSON.parse(raw);
+    } catch {
+      return false;
+    }
+
+    if (!user || typeof user !== "object") return false;
+    if (!user.userId || !user.email) return false;
+    if (!user.loginAt) return false;
+
+    const age = Date.now() - user.loginAt;
+    if (age > SESSION_MAX_AGE) return false;
+
+    return true;
   }
-
-  let user;
-
-  try {
-    user = JSON.parse(raw);
-  } catch {
-    return invalidateSession();
-  }
-
-  if (
-    !user ||
-    typeof user !== "object" ||
-    !user.userId ||
-    !user.email ||
-    !user.loginAt
-  ) {
-    return invalidateSession();
-  }
-
-  const sessionAge = Date.now() - user.loginAt;
-
-  if (sessionAge > SESSION_MAX_AGE) {
-    return invalidateSession();
-  }
-
-  /* ============================================================
-     🔄 LIVE SESSION WATCHER (SINGLE INSTANCE SAFE)
-     ============================================================ */
-
-  if (!window.__ACS_SESSION_WATCHER__) {
-
-    window.__ACS_SESSION_WATCHER__ = setInterval(() => {
-
-      const rawCheck = localStorage.getItem(SESSION_KEY);
-
-      if (!rawCheck) {
-        return invalidateSession();
-      }
-
-      try {
-
-        const userCheck = JSON.parse(rawCheck);
-
-        if (!userCheck.loginAt) {
-          return invalidateSession();
-        }
-
-        const age = Date.now() - userCheck.loginAt;
-
-        if (age > SESSION_MAX_AGE) {
-          return invalidateSession();
-        }
-
-      } catch {
-        return invalidateSession();
-      }
-
-    }, WATCH_INTERVAL);
-
-  }
-
-  /* ============================================================
-     🧹 HELPERS
-     ============================================================ */
 
   function invalidateSession() {
     localStorage.removeItem(SESSION_KEY);
@@ -114,8 +70,71 @@
   }
 
   function redirectToLogin() {
+    // evita bucles raros
     if (!window.location.pathname.includes("login.html")) {
       window.location.href = "login.html";
+    }
+  }
+
+  function enforceNow() {
+    if (!sessionIsValid()) {
+      invalidateSession();
+      return false;
+    }
+    return true;
+  }
+
+  /* ============================================================
+     ✅ INITIAL ENFORCE (on load)
+     ============================================================ */
+
+  enforceNow();
+
+  /* ============================================================
+     🔄 LIVE ENFORCE (SINGLE INSTANCE SAFE)
+     ============================================================ */
+
+  if (!window.__ACS_SESSION_GUARD__) {
+
+    window.__ACS_SESSION_GUARD__ = {
+      intervalId: null,
+      armed: true
+    };
+
+    // 1) Interval watcher (backup)
+    window.__ACS_SESSION_GUARD__.intervalId = setInterval(() => {
+      if (window.__ACS_SESSION_GUARD__ && window.__ACS_SESSION_GUARD__.armed) {
+        enforceNow();
+      }
+    }, WATCH_INTERVAL);
+
+    // 2) Enforce on user actions (no molesta y es inmediato)
+    window.addEventListener("click", () => enforceNow(), true);
+    window.addEventListener("focus", () => enforceNow(), true);
+    window.addEventListener("pageshow", () => enforceNow(), true);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) enforceNow();
+    }, true);
+
+    // 3) Enforce on history navigation (si hay SPA / pushState)
+    try {
+      const _push = history.pushState;
+      history.pushState = function () {
+        const r = _push.apply(this, arguments);
+        enforceNow();
+        return r;
+      };
+
+      const _replace = history.replaceState;
+      history.replaceState = function () {
+        const r = _replace.apply(this, arguments);
+        enforceNow();
+        return r;
+      };
+
+      window.addEventListener("popstate", () => enforceNow(), true);
+    } catch {
+      // si el browser bloquea override, no pasa nada: seguimos con interval + eventos
     }
   }
 
