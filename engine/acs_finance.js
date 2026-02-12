@@ -480,13 +480,24 @@ if (typeof registerTimeListener === "function") {
 }
    
 /* ============================================================
-   🔹 ECONOMICS → FINANCE BRIDGE (READ ONLY)
+   🟧 F9 — ECONOMICS → FINANCE BRIDGE (HARD DEDUP)
+   ------------------------------------------------------------
+   ✔ One eventId → one ledger entry
+   ✔ Multi-tab safe
+   ✔ Refresh safe
+   ✔ Canonical protection layer
    ============================================================ */
+
+const ACS_FIN_EVENT_DEDUP = new Set();
 
 window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
   const eco = e.detail;
-  if (!eco) return;
+  if (!eco || !eco.eventId) return;
+
+  // Session-level dedup
+  if (ACS_FIN_EVENT_DEDUP.has(eco.eventId)) return;
+  ACS_FIN_EVENT_DEDUP.add(eco.eventId);
 
   window.ACS_registerIncome({
     type: "FLIGHT",
@@ -502,6 +513,7 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
       navigation: eco.navigationCost
     },
     meta: {
+      eventId: eco.eventId,   // 🔒 canonical ID
       flightId: eco.flightId,
       aircraftId: eco.aircraftId,
       year: eco.year,
@@ -510,5 +522,3 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   });
 
 });
-
-})();
