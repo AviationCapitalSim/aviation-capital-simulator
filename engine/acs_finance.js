@@ -523,4 +523,53 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
 });
 
+/* ============================================================
+   🟧 F7 — ECONOMICS → FINANCE BRIDGE (CANONICAL)
+   ------------------------------------------------------------
+   ✔ One economics event → one finance entry
+   ✔ No duplicates (finance-level protection expected)
+   ✔ Source: ACS_FLIGHT_ECONOMICS
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
+
+  const eco = e.detail;
+  if (!eco || !eco.eventId) return;
+
+  if (!window.ACS_FINANCE) {
+    console.warn("⚠️ Finance engine not available");
+    return;
+  }
+
+  try {
+
+    window.ACS_FINANCE.registerFlightResult({
+
+      eventId: eco.eventId,
+
+      flightId: eco.flightId,
+      aircraftId: eco.aircraftId,
+
+      origin: eco.origin,
+      destination: eco.destination,
+
+      revenue: eco.revenue,
+      cost: eco.costTotal,
+      profit: eco.profit,
+
+      pax: eco.pax,
+      loadFactor: eco.loadFactor,
+
+      ts: eco.ts
+
+    });
+
+  } catch (err) {
+
+    console.error("❌ Finance registration failed", err);
+
+  }
+
+});
+   
 })();
