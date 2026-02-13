@@ -257,101 +257,85 @@ function updatePendingDeliveries() {
 
   const now = getSimTime();
 
-  let fleetActive  = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-  let pendingRaw   = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+  let fleetActive = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  let pendingRaw  = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
   const pendingForTable = [];
   const stillPending = [];
   let changed = false;
 
   pendingRaw.forEach(entry => {
+
     const d = new Date(entry.deliveryDate);
 
-   if (now >= d && !entry.__delivered) {
+    // 🛑 SOLO ENTREGAR SI NO FUE ENTREGADO ANTES
+    if (now >= d && entry.__delivered !== true) {
 
-  for (let i = 0; i < entry.qty; i++) {
+      for (let i = 0; i < (entry.qty || 1); i++) {
 
-     
- /* ============================================================
-   🟧 MYA-A1 — ASSIGN REGISTRATION ON FLEET ENTRY
-   Source: ACS Registration Manager
-   ============================================================ */
+        let newAircraft = {
+          registration: (typeof ACS_generateRegistration === "function")
+            ? ACS_generateRegistration()
+            : "—",
 
-let newAircraft = {
-  registration: (typeof ACS_generateRegistration === "function")
-    ? ACS_generateRegistration()
-    : "—",
+          manufacturer: entry.manufacturer,
+          model: entry.model,
+          family: entry.family || "",
 
-  manufacturer: entry.manufacturer,
-  model: entry.model,
-  family: entry.family || "",
+          status: entry.isUsed ? "Maintenance" : "Active",
 
-  /* ======================================================
-     🟧 MA-8.5 — DELIVERY & INITIAL MAINTENANCE STATE
-     ------------------------------------------------------
-     • Avión NUEVO  → Active inmediato, condición 100%
-     • Avión USADO  → Maintenance (A & B), 7 días
-     ====================================================== */
-  status: entry.isUsed ? "Maintenance" : "Active",
+          hours: entry.isUsed ? (entry.hours || 0) : 0,
+          cycles: entry.isUsed ? (entry.cycles || 0) : 0,
 
-  hours: entry.isUsed ? (entry.hours || 0) : 0,
-  cycles: entry.isUsed ? (entry.cycles || 0) : 0,
+          conditionPercent: entry.conditionPercent ?? 100,
 
-  // Condición ya normalizada antes (A/B/C/D → %)
-  conditionPercent: entry.conditionPercent ?? 100,
+          nextC: "—",
+          nextD: "—",
 
-  nextC: "—",
-  nextD: "—",
+          base: (entry.baseIcao || entry.base || getCurrentBaseICAO()),
 
-  // Base: prioridad = base guardada en la COMPRA (entry) > base actual (resolver)
-  base: (entry.baseIcao || entry.base || getCurrentBaseICAO()),
+          deliveredDate: now.toISOString(),
+          deliveryDate: null,
 
-  deliveredDate: d.toISOString(),
-  deliveryDate: null,
-  age: entry.age || 0,
+          age: entry.age || 0,
 
-  /* ======================================================
-     🟧 MA-8.5 — REAL MAINTENANCE REFERENCES
-     ====================================================== */
-  lastCCheckDate: entry.lastCCheckDate || null,
-  lastDCheckDate: entry.lastDCheckDate || null,
+          lastCCheckDate: entry.lastCCheckDate || null,
+          lastDCheckDate: entry.lastDCheckDate || null,
 
-  // A & B service window for USED aircraft
-  abServiceEndDate: entry.isUsed
-    ? (() => {
-        const ab = new Date(d);
-        ab.setUTCDate(
-          ab.getUTCDate() + ACS_MAINTENANCE_RULES.USED_AIRCRAFT_AB_SERVICE_DAYS
-        );
-        return ab.toISOString();
-      })()
-    : null,
+          abServiceEndDate: entry.isUsed
+            ? (() => {
+                const ab = new Date(now);
+                ab.setUTCDate(
+                  ab.getUTCDate() + ACS_MAINTENANCE_RULES.USED_AIRCRAFT_AB_SERVICE_DAYS
+                );
+                return ab.toISOString();
+              })()
+            : null,
 
-  /* ======================================================
-     🛠 P5-A — B-CHECK INITIALIZATION (ON FLEET ENTRY)
-     ====================================================== */
-  enteredFleetAt: now.getTime(),
-  bCheckDueAt:    now.getTime() + (7 * 24 * 60 * 60 * 1000),
-  bCheckStatus:   "ok",
-  bCheckPlanned:  false
-};
+          enteredFleetAt: now.getTime(),
+          bCheckDueAt: now.getTime() + (7 * 24 * 60 * 60 * 1000),
+          bCheckStatus: "ok",
+          bCheckPlanned: false
+        };
 
-/* 🔗 A9 — ENRICH FROM AIRCRAFT DB (ONE-TIME) */
-if (typeof ACS_enrichAircraftFromDB === "function") {
-  newAircraft = ACS_enrichAircraftFromDB(newAircraft);
-}
+        if (typeof ACS_enrichAircraftFromDB === "function") {
+          newAircraft = ACS_enrichAircraftFromDB(newAircraft);
+        }
 
-fleetActive.push(newAircraft);
-}
+        fleetActive.push(newAircraft);
+      }
 
-changed = true;
+      changed = true;
 
-// 🛑 CRÍTICO: marcar entry como entregado para evitar duplicación infinita
-entry.__delivered = true;
+      // 🛑 MARCAR COMO ENTREGADO Y NO VOLVER A USAR
+      entry.__delivered = true;
 
-    } else {
-      // === Todavía Pendiente → va a la tabla ===
-       
+      return; // NO agregar a stillPending
+    }
+
+    // mantener pendientes reales
+    if (entry.__delivered !== true) {
+
       pendingForTable.push({
         registration: "—",
         model: entry.model,
@@ -369,22 +353,18 @@ entry.__delivered = true;
 
       stillPending.push(entry);
     }
+
   });
+
+  // 🛑 CRÍTICO: guardar solo pendientes reales
+  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(stillPending));
 
   if (changed) {
     localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetActive));
   }
 
-  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(stillPending));
-
-  // === UNIFICAR LISTAS ===
   fleet = [...pendingForTable, ...fleetActive];
-}
 
-// Actualizar requerimientos HR después de cambios en flota
-
-if (typeof HR_updateRequirementsFromFleet === "function") {
-  HR_updateRequirementsFromFleet();
 }
 
 /* ============================================================
