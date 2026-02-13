@@ -574,11 +574,12 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 });
 
 /* ============================================================
-   🟧 F7 — ECONOMICS → FINANCE BRIDGE (CANONICAL)
+   🟧 F7 — ECONOMICS → FINANCE BRIDGE (CANONICAL) [FIXED]
    ------------------------------------------------------------
    ✔ One economics event → one finance entry
-   ✔ No duplicates (finance-level protection expected)
+   ✔ No duplicates
    ✔ Source: ACS_FLIGHT_ECONOMICS
+   ✔ FIX: correct global engine reference
    ============================================================ */
 
 window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
@@ -586,14 +587,15 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   const eco = e.detail;
   if (!eco || !eco.eventId) return;
 
-  if (!window.ACS_FINANCE) {
+  /* FIX — USE CORRECT GLOBAL ENGINE */
+  if (!window.ACS_FINANCE_ENGINE) {
     console.warn("⚠️ Finance engine not available");
     return;
   }
 
   try {
 
-    window.ACS_FINANCE.registerFlightResult({
+    window.ACS_FINANCE_ENGINE.registerFlightResult({
 
       eventId: eco.eventId,
 
@@ -603,23 +605,22 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
       origin: eco.origin,
       destination: eco.destination,
 
+      distanceNM: eco.distanceNM,
+
       revenue: eco.revenue,
-      cost: eco.costTotal,
+      cost: eco.cost,
       profit: eco.profit,
 
-      pax: eco.pax,
-      loadFactor: eco.loadFactor,
-
-      ts: eco.ts
+      timestamp: eco.timestamp
 
     });
 
   } catch (err) {
 
-    console.error("❌ Finance registration failed", err);
+    console.error("Finance bridge failed:", err);
 
   }
 
 });
-   
+
 })();
