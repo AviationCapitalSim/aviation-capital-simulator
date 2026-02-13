@@ -595,25 +595,35 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
   try {
 
-   window.ACS_registerIncome(
+   window.ACS_registerIncome({
 
-      eventId: eco.eventId,
+  eventId: eco.eventId,
 
-      flightId: eco.flightId,
-      aircraftId: eco.aircraftId,
+  flightId: eco.flightId,
+  aircraftId: eco.aircraftId,
 
-      origin: eco.origin,
-      destination: eco.destination,
+  origin: eco.origin,
+  destination: eco.destination,
 
-      distanceNM: eco.distanceNM,
+  distanceNM: eco.distanceNM,
 
-      revenue: eco.revenue,
-      cost: eco.cost,
-      profit: eco.profit,
+  revenue: eco.revenue,
+  costTotal: eco.costTotal,
+  profit: eco.profit,
 
-      timestamp: eco.timestamp
+  costs: {
+    fuel: eco.fuelCost,
+    handling: eco.handlingCost,
+    slot: eco.slotCost,
+    overflight: eco.overflightCost,
+    navigation: eco.navigationCost
+  },
 
-    });
+  meta: {
+    timestamp: eco.timestamp
+  }
+
+});
 
   } catch (err) {
 
