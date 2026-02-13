@@ -990,6 +990,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
+/* ============================================================
+   🟦 LIVE ROUTE TABLE UPDATE (CANONICAL)
+   ------------------------------------------------------------
+   Purpose:
+   - Update Routes UI immediately when new flight economics arrive
+   - No refresh required
+   - No polling
+   - Pure event-driven
+   ============================================================ */
 
+window.addEventListener("ACS_FLIGHT_ECONOMICS", () => {
+
+  try {
+
+    renderRoutesTable();
+
+    console.log("🟦 Routes UI live updated");
+
+  } catch (err) {
+
+    console.warn("Routes UI live update failed", err);
+
+  }
+
+});
    
 })();
