@@ -374,6 +374,62 @@ const navigationCost = Math.round(
   navDistanceUnits * navRatePer100NM
 );
 
+/* ============================================================
+   🟥 E6 — STRUCTURAL OPERATING COSTS (CRITICAL · HISTORICAL)
+   ============================================================ */
+
+// ---- MAINTENANCE RESERVE
+let maintPerNM = 0;
+
+if (year <= 1945) maintPerNM = 0.08;
+else if (year <= 1960) maintPerNM = 0.12;
+else if (year <= 1980) maintPerNM = 0.18;
+else if (year <= 2000) maintPerNM = 0.24;
+else if (year <= 2015) maintPerNM = 0.32;
+else maintPerNM = 0.40;
+
+const maintenanceCost = maintPerNM * distanceNM;
+
+
+// ---- CREW COST
+let crewCostPerHour = 0;
+
+if (year <= 1945) crewCostPerHour = 12;
+else if (year <= 1960) crewCostPerHour = 22;
+else if (year <= 1980) crewCostPerHour = 45;
+else if (year <= 2000) crewCostPerHour = 85;
+else if (year <= 2015) crewCostPerHour = 160;
+else crewCostPerHour = 240;
+
+const crewCost = crewCostPerHour * flightHours;
+
+
+// ---- OWNERSHIP COST
+let ownershipPerNM = 0;
+
+if (year <= 1945) ownershipPerNM = 0.10;
+else if (year <= 1960) ownershipPerNM = 0.15;
+else if (year <= 1980) ownershipPerNM = 0.22;
+else if (year <= 2000) ownershipPerNM = 0.30;
+else if (year <= 2015) ownershipPerNM = 0.38;
+else ownershipPerNM = 0.45;
+
+const ownershipCost = ownershipPerNM * distanceNM;
+
+
+// ---- OVERHEAD
+const overheadCost =
+  (maintenanceCost + crewCost + ownershipCost + costFuel) * 0.12;
+
+
+// ---- STRUCTURAL TOTAL
+const structuralCost =
+  maintenanceCost +
+  crewCost +
+  ownershipCost +
+  overheadCost;
+
+   
  /* ============================================================
    💰 REVENUE (ROUTE CONFIG DRIVEN — CANONICAL)
    ------------------------------------------------------------
@@ -545,8 +601,30 @@ const profit = revenue - costTotal;
   navigationCost,
       
   // Totals
-  costTotal: costFuel + costSlots + handlingCost + overflightCost + navigationCost,
-  profit: revenue - (costFuel + costSlots + handlingCost + overflightCost + navigationCost),
+  const totalCost =
+  costFuel +
+  costSlots +
+  handlingCost +
+  overflightCost +
+  navigationCost +
+  structuralCost;
+
+
+return {
+
+  ...
+
+  costTotal: totalCost,
+
+  profit: revenue - totalCost,
+
+  maintenanceCost,
+  crewCost,
+  ownershipCost,
+  overheadCost,
+
+  ...
+};
 
   paxPerNM,
   revPerNM,
