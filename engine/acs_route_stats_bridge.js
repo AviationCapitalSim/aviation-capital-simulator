@@ -67,12 +67,12 @@ function ACS_updateRouteStats(economics) {
     stats[key] = {
 
       lifetime: {
-        flightsezaights: 0,
-        pax: 0,
-        revenue: 0,
-        profit: 0,
-        loadFactorSum: 0
-      },
+       flights: 0,
+       pax: 0,
+       revenue: 0,
+       profit: 0,
+       loadFactorSum: 0
+     },
 
       avg: {
         loadFactor: 0,
