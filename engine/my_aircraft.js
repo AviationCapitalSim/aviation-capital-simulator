@@ -267,11 +267,10 @@ function updatePendingDeliveries() {
   pendingRaw.forEach(entry => {
     const d = new Date(entry.deliveryDate);
 
-    if (now >= d) {
+   if (now >= d && !entry.__delivered) {
 
-     // === Convertir a ACTIVO ===
-       
   for (let i = 0; i < entry.qty; i++) {
+
      
  /* ============================================================
    🟧 MYA-A1 — ASSIGN REGISTRATION ON FLEET ENTRY
@@ -346,6 +345,9 @@ fleetActive.push(newAircraft);
 }
 
 changed = true;
+
+// 🛑 CRÍTICO: marcar entry como entregado para evitar duplicación infinita
+entry.__delivered = true;
 
     } else {
       // === Todavía Pendiente → va a la tabla ===
