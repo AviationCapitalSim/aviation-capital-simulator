@@ -160,11 +160,32 @@ function ACS_buildRoutesFromSchedule(){
 
   const newRoutes = Object.values(routeMap);
 
-  if (newRoutes.length === 0) return;
+if (newRoutes.length === 0) return;
 
-  saveRoutes(newRoutes);
+/* ============================================================
+   🟦 AUTO INITIAL TICKET PRICE (CANONICAL)
+   ============================================================ */
 
-  console.log("🟦 ACS ROUTES BUILT FROM SCHEDULE:", newRoutes.length);
+newRoutes.forEach(route => {
+
+  if (!route.currentTicketPrice || route.currentTicketPrice <= 0) {
+
+    const price = ACS_ROUTE_PRICE_ENGINE.compute(route);
+
+    if (price && price > 0) {
+
+      route.currentTicketPrice = price;
+      route.lastPriceReset = Date.now();
+
+    }
+
+  }
+
+});
+
+saveRoutes(newRoutes);
+
+console.log("🟦 ACS ROUTES BUILT FROM SCHEDULE:", newRoutes.length);
 
 }
 
