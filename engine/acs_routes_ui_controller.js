@@ -847,14 +847,35 @@ function renderRoutesTable() {
 
   routes.forEach(route => {
 
-    // IMPORTANT:
-    // NO financial compute here. Only show what the route already has stored.
-    const loadFactorText =
-      (typeof route.loadFactor === "number")
-        ? `${Math.round(route.loadFactor * 100)}%`
-        : (typeof route.loadFactorPct === "number")
-          ? `${Math.round(route.loadFactorPct)}%`
-          : "—";
+    /* ============================================================
+   🟦 ROUTE STATS RESOLUTION (CANONICAL SOURCE)
+   Source: ACS_ROUTE_STATS
+   ============================================================ */
+
+let loadFactorText = "—";
+
+try {
+
+  const stats = JSON.parse(localStorage.getItem("ACS_ROUTE_STATS") || "{}");
+
+  const key = `${route.origin}_${route.destination}`;
+
+  const routeStats = stats[key];
+
+  if (
+    routeStats &&
+    routeStats.avg &&
+    typeof routeStats.avg.loadFactor === "number"
+  ) {
+    loadFactorText =
+      `${Math.round(routeStats.avg.loadFactor * 100)}%`;
+  }
+
+} catch (err) {
+
+  console.warn("Route stats read failed", err);
+
+}
 
     const ticketText =
       (typeof route.currentTicketPrice === "number")
