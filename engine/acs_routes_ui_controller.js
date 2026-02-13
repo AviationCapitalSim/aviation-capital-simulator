@@ -871,17 +871,23 @@ try {
 
   const stats = JSON.parse(localStorage.getItem("ACS_ROUTE_STATS") || "{}");
 
-  const key = `${route.origin}_${route.destination}`;
+  const keyForward  = `${route.origin}_${route.destination}`;
+  const keyReverse  = `${route.destination}_${route.origin}`;
 
-  const routeStats = stats[key];
+  const routeStats =
+    stats[keyForward] ||
+    stats[keyReverse] ||
+    null;
 
   if (
     routeStats &&
     routeStats.avg &&
     typeof routeStats.avg.loadFactor === "number"
   ) {
+
     loadFactorText =
       `${Math.round(routeStats.avg.loadFactor * 100)}%`;
+
   }
 
 } catch (err) {
