@@ -170,31 +170,48 @@ footer{text-align:center;color:#888;font-size:.85rem;margin-top:2rem}
 
 <footer>© 2026 Aviation Capital Simulator</footer>
 
-<!-- UI CONTROLLER (routes) -->
-     
-<script src="engine/acs_routes_ui_controller.js"></script>
-<script src="engine/acs_routes_builder.js"></script>
-
 <!-- ============================================================
-     🟦 ACS FINANCE ENGINE — REQUIRED FOR ROUTE ECONOMICS
+     ⏳ TIME ENGINE (PRIMERO)
      ============================================================ -->
-<script src="engine/acs_finance.js"></script>
-     
-<script src="engine/acs_route_stats_bridge.js"></script>
 
-<!-- ============================================================
-     FLIGHT ECONOMICS (CALCULA Y REGISTRA INGRESOS)
-     ============================================================ -->
-     
-<script src="engine/acs_flight_economics.js"></script>  
-     
-<!-- TIME ENGINE -->
-     
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
 
+<!-- ============================================================
+     💰 FINANCE CORE
+     ============================================================ -->
+
+<script src="engine/acs_finance.js"></script>
+
+<!-- ============================================================
+     ✈️ FLIGHT ECONOMICS (PRODUCE EVENT)
+     ============================================================ -->
+
+<script src="engine/acs_flight_economics.js"></script>
+
+<!-- ============================================================
+     🟦 ROUTE STATS BRIDGE (CONSUME EVENT)
+     ============================================================ -->
+
+<script src="engine/acs_route_stats_bridge.js"></script>
+
+<!-- ============================================================
+     🧠 ROUTE ENGINES
+     ============================================================ -->
+
 <script src="engine/acs_route_maturity_engine.js"></script>
-     
+
+<!-- ============================================================
+     🧱 ROUTE BUILDER
+     ============================================================ -->
+
+<script src="engine/acs_routes_builder.js"></script>
+
+<!-- ============================================================
+     🎮 UI CONTROLLER (SIEMPRE AL FINAL)
+     ============================================================ -->
+
+<script src="engine/acs_routes_ui_controller.js"></script>
 
 <script src="engine/acs_security_core.js?v=1"></script>
      
