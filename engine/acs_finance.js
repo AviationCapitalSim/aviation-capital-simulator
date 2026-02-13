@@ -185,6 +185,45 @@ function initFinanceIfNeeded(){
 
 let ACS_Finance = initFinanceIfNeeded();
 
+/* ============================================================
+   🟦 F0 — GLOBAL ENGINE EXPORT (CRITICAL FIX)
+   Makes Finance visible to Flight Economics
+   ============================================================ */
+
+window.ACS_FINANCE_ENGINE = {
+
+  getLedger(){
+    try {
+      return JSON.parse(localStorage.getItem("ACS_Finance")) || null;
+    } catch {
+      return null;
+    }
+  },
+
+  commit(entry){
+    try {
+      const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+      if (!f.history) f.history = [];
+
+      f.history.push(entry);
+
+      localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+      window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+      return true;
+
+    } catch(e){
+      console.error("FINANCE COMMIT FAILED", e);
+      return false;
+    }
+  }
+
+};
+
+console.log("🟦 ACS_FINANCE_ENGINE exposed globally");
+   
 (function(){
 
   function ACS_FIN_applyLivePayrollAccrual(){
