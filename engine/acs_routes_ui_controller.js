@@ -745,17 +745,6 @@ function ACS_getFinance() {
 
 function ACS_getRouteFinancePerformance(route) {
 
-  const finance = ACS_getFinance();
-
-  if (!finance) {
-    return {
-      revenue: 0,
-      profit: 0,
-      resultText: "—",
-      resultColor: "#999"
-    };
-  }
-
   const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
 
   if (!Array.isArray(log) || log.length === 0) {
@@ -767,12 +756,20 @@ function ACS_getRouteFinancePerformance(route) {
     };
   }
 
+  const now = Date.now();
+
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
   let revenue = 0;
-  let cost = 0;
 
   log.forEach(entry => {
 
     if (!entry || entry.type !== "INCOME") return;
+
+    if (!entry.ts) return;
+
+    // ONLY LAST WEEK
+    if (now - entry.ts > WEEK_MS) return;
 
     const src = entry.source || "";
 
@@ -785,24 +782,19 @@ function ACS_getRouteFinancePerformance(route) {
 
   });
 
-  cost = 0; // cost already accounted in finance totals
+  const profit = revenue;
 
-  const profit = revenue - cost;
-
-  let resultText = "—";
+  let resultText = "$0";
   let resultColor = "#999";
 
-  if (revenue > 0) {
-
+  if (profit > 0) {
     resultText = `$${Math.round(profit)}`;
+    resultColor = "#00ff80";
+  }
 
-    resultColor =
-      profit > 0
-        ? "#00ff80"
-        : profit < 0
-          ? "#ff5252"
-          : "#ffaa00";
-
+  if (profit < 0) {
+    resultText = `$${Math.round(profit)}`;
+    resultColor = "#ff5252";
   }
 
   return {
