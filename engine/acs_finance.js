@@ -183,7 +183,18 @@ function initFinanceIfNeeded(){
   return f;
 }
 
+/* ============================================================
+   🟦 F1 — FINANCE ENGINE INITIALIZATION FIX
+   Guarantees global availability BEFORE any arrival events
+   ============================================================ */
+
 let ACS_Finance = initFinanceIfNeeded();
+
+/* CRITICAL: expose immediately */
+window.ACS_Finance = ACS_Finance;
+
+console.log("🟦 ACS_Finance global ready");
+
 
 /* ============================================================
    🟦 F0 — GLOBAL ENGINE EXPORT (CRITICAL FIX)
