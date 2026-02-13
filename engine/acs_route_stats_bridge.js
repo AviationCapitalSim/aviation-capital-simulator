@@ -108,13 +108,56 @@ function ACS_updateRouteStats(economics) {
 }
 
 /* ============================================================
-   LISTENER
+   🟦 LISTENER + GLOBAL EXPOSURE + STORAGE INIT (CANONICAL FIX)
+   ------------------------------------------------------------
+   Fixes:
+   ✔ Ensures storage always exists
+   ✔ Exposes stats globally for My Routes UI
+   ✔ Guarantees listener active
    ============================================================ */
 
-window.addEventListener("ACS_FLIGHT_ECONOMICS", (e) => {
+// Ensure storage exists on load
+(function(){
+
   try {
-    ACS_updateRouteStats(e.detail);
+
+    let stats = ACS_loadRouteStats();
+
+    if (!stats || typeof stats !== "object") {
+      stats = {};
+      ACS_saveRouteStats(stats);
+    }
+
+    // Expose globally for UI
+    window.ACS_ROUTE_STATS = stats;
+
+    console.log("🟦 ACS_ROUTE_STATS initialized");
+
   } catch (err) {
-    console.warn("ACS_ROUTE_STATS update failed", err);
+
+    console.warn("ACS_ROUTE_STATS init failed", err);
+
   }
+
+})();
+
+// Listen to economics events
+window.addEventListener("ACS_FLIGHT_ECONOMICS", (e) => {
+
+  try {
+
+    if (!e || !e.detail) return;
+
+    ACS_updateRouteStats(e.detail);
+
+    // refresh global reference after update
+    window.ACS_ROUTE_STATS = ACS_loadRouteStats();
+
+  } catch (err) {
+
+    console.warn("ACS_ROUTE_STATS update failed", err);
+
+  }
+
 });
+
