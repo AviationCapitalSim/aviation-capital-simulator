@@ -588,14 +588,14 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   if (!eco || !eco.eventId) return;
 
   /* FIX — USE CORRECT GLOBAL ENGINE */
-  if (!window.ACS_FINANCE) {
-    console.warn("⚠️ Finance engine not available");
-    return;
-  }
+  if (!window.ACS_Finance) {
+  console.warn("⚠️ Finance engine not available");
+  return;
+}
 
   try {
 
-    window.ACS_FINANCE.registerFlightResult({
+   window.ACS_registerIncome(
 
       eventId: eco.eventId,
 
