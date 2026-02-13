@@ -1,5 +1,5 @@
 /* ============================================================
-   🟦 ACS ROUTE STATS BRIDGE — CANONICAL v1.0
+   🟦 ACS ROUTE STATS BRIDGE — CANONICAL v1.1 (FIX)
    ------------------------------------------------------------
    Purpose:
    - Build lifetime + average route stats
@@ -7,9 +7,12 @@
    - Consumer: My Routes UI
    ------------------------------------------------------------
    Storage: ACS_ROUTE_STATS
+   Fix:
+   - flights typo -> flights (was causing NaN -> null in JSON)
+   - numeric guards to prevent null/NaN contamination
    ============================================================ */
 
-console.log("🟦 ACS_ROUTE_STATS_BRIDGE LOADED");
+console.log("🟦 ACS_ROUTE_STATS_BRIDGE v1.1 LOADED");
 
 const ROUTE_STATS_KEY = "ACS_ROUTE_STATS";
 
@@ -18,23 +21,15 @@ const ROUTE_STATS_KEY = "ACS_ROUTE_STATS";
    ============================================================ */
 
 function ACS_loadRouteStats() {
-
   try {
     return JSON.parse(localStorage.getItem(ROUTE_STATS_KEY)) || {};
-  }
-  catch {
+  } catch {
     return {};
   }
-
 }
 
 function ACS_saveRouteStats(stats) {
-
-  localStorage.setItem(
-    ROUTE_STATS_KEY,
-    JSON.stringify(stats)
-  );
-
+  localStorage.setItem(ROUTE_STATS_KEY, JSON.stringify(stats));
 }
 
 /* ============================================================
@@ -42,9 +37,7 @@ function ACS_saveRouteStats(stats) {
    ============================================================ */
 
 function ACS_buildRouteKey(origin, destination) {
-
-  return `${origin}_${destination}`;
-
+  return `${String(origin || "").toUpperCase()}_${String(destination || "").toUpperCase()}`;
 }
 
 /* ============================================================
@@ -52,85 +45,76 @@ function ACS_buildRouteKey(origin, destination) {
    ============================================================ */
 
 function ACS_updateRouteStats(economics) {
-
   if (!economics) return;
 
-  const key = ACS_buildRouteKey(
-    economics.origin,
-    economics.destination
-  );
+  const origin = economics.origin;
+  const destination = economics.destination;
+  if (!origin || !destination) return;
 
+  const key = ACS_buildRouteKey(origin, destination);
   const stats = ACS_loadRouteStats();
 
   if (!stats[key]) {
-
     stats[key] = {
-
       lifetime: {
-       flights: 0,
-       pax: 0,
-       revenue: 0,
-       profit: 0,
-       loadFactorSum: 0
-     },
-
+        flights: 0,
+        pax: 0,
+        revenue: 0,
+        profit: 0,
+        loadFactorSum: 0
+      },
       avg: {
         loadFactor: 0,
         profitPerFlight: 0
       },
-
       lastFlight: {}
-
     };
-
   }
 
   const s = stats[key];
 
-  /* lifetime accumulation */
+  // 🔒 Numeric guards (evita NaN->null)
+  const pax       = Number(economics.pax || 0);
+  const revenue   = Number(economics.revenue || 0);
+  const profit    = Number(economics.profit || 0);
+  const loadF     = Number(economics.loadFactor || 0);
 
-  s.lifetime.flights += 1;
-  s.lifetime.pax += economics.pax;
-  s.lifetime.revenue += economics.revenue;
-  s.lifetime.profit += economics.profit;
-  s.lifetime.loadFactorSum += economics.loadFactor;
+  s.lifetime.flights = Number(s.lifetime.flights || 0) + 1;
+  s.lifetime.pax += pax;
+  s.lifetime.revenue += revenue;
+  s.lifetime.profit += profit;
+  s.lifetime.loadFactorSum += loadF;
 
-  /* averages */
+  // averages
+  const flights = Number(s.lifetime.flights || 0);
+  if (flights > 0) {
+    s.avg.loadFactor = s.lifetime.loadFactorSum / flights;
+    s.avg.profitPerFlight = s.lifetime.profit / flights;
+  } else {
+    s.avg.loadFactor = 0;
+    s.avg.profitPerFlight = 0;
+  }
 
-  s.avg.loadFactor =
-    s.lifetime.loadFactorSum / s.lifetime.flights;
-
-  s.avg.profitPerFlight =
-    s.lifetime.profit / s.lifetime.flights;
-
-  /* last flight */
-
+  // last flight
   s.lastFlight = {
-
     ts: Date.now(),
-    loadFactor: economics.loadFactor,
-    profit: economics.profit
-
+    loadFactor: loadF,
+    profit: profit
   };
 
   ACS_saveRouteStats(stats);
 
-  console.log(
-    "🟦 ROUTE STATS UPDATED:",
-    key,
-    s
-  );
-
+  console.log("🟦 ROUTE STATS UPDATED:", key, s);
 }
 
 /* ============================================================
    LISTENER
    ============================================================ */
 
-window.addEventListener(
-
-  "ACS_FLIGHT_ECONOMICS",
-
-  e => ACS_updateRouteStats(e.detail)
-
-);
+window.addEventListener("ACS_FLIGHT_ECONOMICS", (e) => {
+  try {
+    ACS_updateRouteStats(e.detail);
+  } catch (err) {
+    console.warn("ACS_ROUTE_STATS update failed", err);
+  }
+});
