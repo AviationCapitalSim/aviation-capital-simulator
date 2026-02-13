@@ -577,11 +577,25 @@ const costPerPax = pax > 0 ? costTotal / pax : 0;
 
 const profit = revenue - costTotal;
    
-  /* ============================================================
-     📦 FINAL ECONOMICS OBJECT
-     ============================================================ */
-   
-   return {
+/* ============================================================
+   🟦 FINAL TOTAL COST CALCULATION (CANONICAL)
+   ============================================================ */
+
+const totalCost =
+  costFuel +
+  costSlots +
+  handlingCost +
+  overflightCost +
+  navigationCost +
+  structuralCost;
+
+
+/* ============================================================
+   📦 FINAL ECONOMICS OBJECT
+   ============================================================ */
+
+return {
+
   flightId: d.flightId,
   aircraftId: d.aircraftId,
   origin: d.origin,
@@ -593,38 +607,22 @@ const profit = revenue - costTotal;
 
   revenue,
 
-  // Costs (desglosados)
+  /* Individual costs */
   fuelCost: costFuel,
   slotCost: costSlots,
   handlingCost,
   overflightCost,
   navigationCost,
-      
-  // Totals
-  const totalCost =
-  costFuel +
-  costSlots +
-  handlingCost +
-  overflightCost +
-  navigationCost +
-  structuralCost;
-
-
-return {
-
-  ...
-
-  costTotal: totalCost,
-
-  profit: revenue - totalCost,
 
   maintenanceCost,
   crewCost,
   ownershipCost,
   overheadCost,
 
-  ...
-};
+  /* Final totals */
+  costTotal: totalCost,
+
+  profit: revenue - totalCost,
 
   paxPerNM,
   revPerNM,
@@ -632,6 +630,7 @@ return {
   year,
   arrAbsMin: d.arrAbsMin ?? null,
   ts: Date.now()
+
 };
 
 } // ✅ ESTA LLAVE CIERRA ACS_buildFlightEconomics (TE FALTABA)
