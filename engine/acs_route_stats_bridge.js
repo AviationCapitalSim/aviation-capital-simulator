@@ -108,56 +108,45 @@ function ACS_updateRouteStats(economics) {
 }
 
 /* ============================================================
-   🟦 LISTENER + GLOBAL EXPOSURE + STORAGE INIT (CANONICAL FIX)
+   🟦 LISTENER — CANONICAL GUARANTEED
    ------------------------------------------------------------
-   Fixes:
-   ✔ Ensures storage always exists
-   ✔ Exposes stats globally for My Routes UI
-   ✔ Guarantees listener active
+   • Always capture economics events
+   • Works regardless of load order
    ============================================================ */
 
-// Ensure storage exists on load
 (function(){
 
-  try {
+  function attachListener(){
 
-    let stats = ACS_loadRouteStats();
+    if (!window || !window.addEventListener) return;
 
-    if (!stats || typeof stats !== "object") {
-      stats = {};
-      ACS_saveRouteStats(stats);
-    }
+    window.addEventListener("ACS_FLIGHT_ECONOMICS", function(e){
 
-    // Expose globally for UI
-    window.ACS_ROUTE_STATS = stats;
+      if (!e || !e.detail) return;
 
-    console.log("🟦 ACS_ROUTE_STATS initialized");
+      try {
 
-  } catch (err) {
+        ACS_updateRouteStats(e.detail);
 
-    console.warn("ACS_ROUTE_STATS init failed", err);
+        console.log("🟦 ROUTE STATS EVENT CAPTURED:",
+          e.detail.origin, "→", e.detail.destination);
+
+      } catch(err){
+
+        console.warn("ACS_ROUTE_STATS listener failed", err);
+
+      }
+
+    });
+
+    console.log("🟦 ACS_ROUTE_STATS listener attached");
 
   }
+
+  // attach immediately
+  attachListener();
+
+  // safety attach after load (guaranteed)
+  window.addEventListener("load", attachListener);
 
 })();
-
-// Listen to economics events
-window.addEventListener("ACS_FLIGHT_ECONOMICS", (e) => {
-
-  try {
-
-    if (!e || !e.detail) return;
-
-    ACS_updateRouteStats(e.detail);
-
-    // refresh global reference after update
-    window.ACS_ROUTE_STATS = ACS_loadRouteStats();
-
-  } catch (err) {
-
-    console.warn("ACS_ROUTE_STATS update failed", err);
-
-  }
-
-});
-
