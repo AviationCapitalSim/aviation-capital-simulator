@@ -3,9 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Loan Request — ACS Finance</title>
+  <title>Loan Request — Aviation Capital Simulator</title>
+  
+  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
+
+  <!-- ======== ACS Favicons ======== -->
+  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+  <link rel="apple-touch-icon" href="acs_logo_180.png">
+  <link rel="manifest" href="manifest.json">
+  
   <style>
+
     /* === LOAN REQUEST PAGE (ACS Unified Style) === */
     body {
       margin: 0;
@@ -14,6 +25,119 @@
       font-family: "Segoe UI", sans-serif;
     }
 
+  /* ============================================================
+   HEADER — SHARED ACS STANDARD
+   ============================================================ */
+.acs-header{
+  position:fixed;
+  top:0;
+  width:100%;
+  box-sizing:border-box; /* ← FIX CRÍTICO */
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.8rem 2rem;
+  background:rgba(12,23,50,.45);
+  backdrop-filter:blur(9px);
+  border-bottom:2px solid #ffb300;
+  z-index:5000;
+}
+
+.acs-logo{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+}
+
+.acs-logo img{
+  height:46px;
+}
+
+.acs-logo h1{
+  margin:0;
+  font-size:1.1rem;
+  color:#ffb300;
+}
+
+.acs-nav{
+  display:flex;
+  gap:2rem;
+}
+
+.acs-nav a{
+  text-decoration:none;
+  color:#dbe4ff;
+}
+
+.acs-nav a.active{
+  color:#ffb300;
+}
+
+/* ============================================================
+   🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
+   ============================================================ */
+
+.acs-right{
+  display:flex;
+  align-items:center;
+  gap:14px;              /* espacio real entre botones y reloj */
+  padding-right:12px;    /* aire contra borde derecho */
+  flex-shrink:0;
+}
+
+.support-btn{
+  padding:.45rem 1.1rem;
+  border-radius:12px;
+  font-size:.9rem;
+  font-weight:600;
+  text-decoration:none;
+  color:#8AB4FF;
+  border:1px solid rgba(138,180,255,.45);
+  background:rgba(138,180,255,.08);
+}
+
+.logout-btn{
+  padding:.45rem 1.1rem;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  background:rgba(255,179,0,.05);
+  color:#ffb300;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
+
+.acs-clock-header{
+
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+
+  padding:.45rem .8rem;
+
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  white-space:nowrap;
+
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
+}
+    
     h2 {
       text-align: center;
       color: #FFB300;
@@ -100,30 +224,32 @@
 </head>
 
 <body>
-  <!-- ===== GLOBAL HEADER ===== -->
-  <header class="acs-header">
-    <div class="acs-logo">
-      <img src="acs_logo.png" alt="ACS Logo" />
-      <h1>Aviation Capital Simulator</h1>
-    </div>
+<header class="acs-header">
+  <div class="acs-logo">
+    <img src="acs_logo.png" alt="ACS Logo" />
+    <h1>Aviation Capital Simulator</h1>
+  </div>
 
-    <nav class="acs-nav">
-      <a href="dashboard.html">Main</a>
-      <a href="finance.html" class="active">Finance</a>
-      <a href="aircraft.html">Aircraft</a>
-      <a href="routes.html">Routes</a>
-      <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
-    </nav>
+  <nav class="acs-nav">
+    <a href="dashboard.html">Main</a>
+    <a href="bank.html" class="active">Bank</a>
+    <a href="aircraft.html">Aircraft</a>
+    <a href="routes.html">Routes</a>
+    <a href="hr.html">HR</a>
+    <a href="forum.html">Forum</a>
+  </nav>
 
-    <div class="acs-auth">
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    </div>
-
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </header>
-
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+   <div id="acs-clock" class="acs-clock-header">
+  <span class="clock-text">20:10 — MON 09 JUN 1941</span>
+</div>
+  
+</div>
+  
+</header>
+  
   <!-- ===== MAIN ===== -->
   <main class="acs-main">
     <section class="top-info">
