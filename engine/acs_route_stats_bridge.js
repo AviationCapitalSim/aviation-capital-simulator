@@ -271,6 +271,41 @@ function ACS_refreshRouteKPIs(){
       elImage.textContent =
         airlineImage + "%";
 
+   /* ============================================================
+   🟦 UPDATE NETWORK IMAGE BAR
+   ============================================================ */
+
+const bar =
+  document.getElementById("kpi-airline-image-bar");
+
+const status =
+  document.getElementById("kpi-airline-image-status");
+
+if (bar)
+  bar.style.width = airlineImage + "%";
+
+if (status) {
+
+  if (airlineImage < 30)
+    status.textContent = "Critical Network";
+
+  else if (airlineImage < 50)
+    status.textContent = "Weak Network";
+
+  else if (airlineImage < 70)
+    status.textContent = "Developing Network";
+
+  else if (airlineImage < 85)
+    status.textContent = "Stable Network";
+
+  else if (airlineImage < 95)
+    status.textContent = "Strong Network";
+
+  else
+    status.textContent = "Elite Network";
+
+}
+     
     console.log("🟦 KPI UPDATED FROM ACS_ROUTES");
 
   }
