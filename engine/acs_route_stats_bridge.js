@@ -271,90 +271,178 @@ function ACS_refreshRouteKPIs(){
       elImage.textContent =
         airlineImage + "%";
 
-   /* ============================================================
-   🟦 UPDATE NETWORK IMAGE BAR
+/* ============================================================
+   🟦 OCC BAR ENGINE — ALL KPI (AIRBUS STANDARD)
    ============================================================ */
 
-const bar =
-  document.getElementById("kpi-airline-image-bar");
+/* ---------- COLOR RESOLVER ---------- */
 
-const status =
-  document.getElementById("kpi-airline-image-status");
+function resolveOCCColor(value){
 
-if (bar)
-  bar.style.width = airlineImage + "%";
+  if (value < 30) return "#ff3b30";   // red
+  if (value < 50) return "#ff9f0a";   // orange
+  if (value < 70) return "#34c759";   // green
+  if (value < 85) return "#00d68f";   // cyan-green
 
-const routesBar =
-  document.getElementById("kpi-routes-bar");
-
-if (routesBar){
-
-  const percent =
-    Math.min(100, activeRoutes * 10);
-
-  routesBar.style.width =
-    percent + "%";
+  return "#00c7ff";                   // cyan elite
 
 }
+
+/* ---------- NETWORK IMAGE ---------- */
+
+const netBar =
+  document.getElementById("kpi-airline-image-bar");
+
+const netStatus =
+  document.getElementById("kpi-airline-image-status");
+
+if (netBar){
+
+  netBar.style.width = airlineImage + "%";
+
+  netBar.style.background =
+    resolveOCCColor(airlineImage);
+
+}
+
+if (netStatus){
+
+  if (airlineImage < 30)
+    netStatus.textContent = "Critical Network";
+
+  else if (airlineImage < 50)
+    netStatus.textContent = "Weak Network";
+
+  else if (airlineImage < 70)
+    netStatus.textContent = "Developing Network";
+
+  else if (airlineImage < 85)
+    netStatus.textContent = "Stable Network";
+
+  else
+    netStatus.textContent = "Elite Network";
+
+}
+
+/* ---------- LOAD FACTOR ---------- */
+
+const lfPercent =
+  Math.round(avgLF * 100);
 
 const lfBar =
   document.getElementById("kpi-lf-bar");
 
+const lfStatus =
+  document.getElementById("kpi-lf-status");
+
 if (lfBar){
 
-  const percent =
-    Math.round(avgLF * 100);
-
   lfBar.style.width =
-    percent + "%";
+    lfPercent + "%";
+
+  lfBar.style.background =
+    resolveOCCColor(lfPercent);
 
 }
+
+if (lfStatus){
+
+  if (lfPercent < 30)
+    lfStatus.textContent = "Critical Demand";
+
+  else if (lfPercent < 50)
+    lfStatus.textContent = "Weak Demand";
+
+  else if (lfPercent < 70)
+    lfStatus.textContent = "Healthy Demand";
+
+  else if (lfPercent < 85)
+    lfStatus.textContent = "Strong Demand";
+
+  else
+    lfStatus.textContent = "Excellent Demand";
+
+}
+
+/* ---------- PROFITABLE ROUTES ---------- */
+
+const profitPercent =
+  activeRoutes > 0
+    ? Math.round((profitable / activeRoutes) * 100)
+    : 0;
 
 const profitBar =
   document.getElementById("kpi-profit-bar");
 
+const profitStatus =
+  document.getElementById("kpi-profit-status");
+
 if (profitBar){
 
-  const percent =
-    activeRoutes > 0
-      ? Math.round((profitable / activeRoutes) * 100)
-      : 0;
-
   profitBar.style.width =
-    percent + "%";
+    profitPercent + "%";
+
+  profitBar.style.background =
+    resolveOCCColor(profitPercent);
 
 }
-     
-if (status) {
 
-  if (airlineImage < 30)
-    status.textContent = "Critical Network";
+if (profitStatus){
 
-  else if (airlineImage < 50)
-    status.textContent = "Weak Network";
+  if (profitPercent < 30)
+    profitStatus.textContent = "Critical Profitability";
 
-  else if (airlineImage < 70)
-    status.textContent = "Developing Network";
+  else if (profitPercent < 50)
+    profitStatus.textContent = "Weak Profitability";
 
-  else if (airlineImage < 85)
-    status.textContent = "Stable Network";
+  else if (profitPercent < 70)
+    profitStatus.textContent = "Stable Profitability";
 
-  else if (airlineImage < 95)
-    status.textContent = "Strong Network";
+  else if (profitPercent < 85)
+    profitStatus.textContent = "Strong Profitability";
 
   else
-    status.textContent = "Elite Network";
+    profitStatus.textContent = "Excellent Profitability";
 
 }
-     
-    console.log("🟦 KPI UPDATED FROM ACS_ROUTES");
 
-  }
-  catch(err){
+/* ---------- ACTIVE ROUTES ---------- */
 
-    console.warn("KPI refresh failed", err);
+const routesPercent =
+  Math.min(100, activeRoutes * 10);
 
-  }
+const routesBar =
+  document.getElementById("kpi-routes-bar");
+
+const routesStatus =
+  document.getElementById("kpi-routes-status");
+
+if (routesBar){
+
+  routesBar.style.width =
+    routesPercent + "%";
+
+  routesBar.style.background =
+    resolveOCCColor(routesPercent);
+
+}
+
+if (routesStatus){
+
+  if (activeRoutes === 0)
+    routesStatus.textContent = "No Active Routes";
+
+  else if (activeRoutes < 3)
+    routesStatus.textContent = "Small Network";
+
+  else if (activeRoutes < 6)
+    routesStatus.textContent = "Growing Network";
+
+  else if (activeRoutes < 10)
+    routesStatus.textContent = "Established Network";
+
+  else
+    routesStatus.textContent = "Large Network";
 
 }
 
