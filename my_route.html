@@ -86,54 +86,55 @@ body{margin:0;background:#081530;color:#fff;font-family:"Poppins",sans-serif;ove
 
 footer{text-align:center;color:#888;font-size:.85rem;margin-top:2rem}
 
+
 /* ============================================================
-   🟦 ACS KPI BAR SYSTEM
+   🟦 ACS KPI BAR SYSTEM — GOLD EDITION
    ============================================================ */
 
-.kpi-bar-container {
+.acs-kpi-bar {
 
   width: 100%;
-  height: 8px;
+  height: 6px;
+
+  margin-top: 10px;
+  margin-bottom: 6px;
 
   background: rgba(255,255,255,0.08);
 
-  border-radius: 6px;
-
-  margin-top: 8px;
-  margin-bottom: 6px;
+  border-radius: 4px;
 
   overflow: hidden;
 
 }
 
-.kpi-bar-fill {
+.acs-kpi-bar-fill {
 
   height: 100%;
+
   width: 0%;
 
   background: linear-gradient(
     90deg,
-    #00ffa6,
-    #00d68f
+    #d4af37,
+    #f5d76e
   );
 
   box-shadow:
-    0 0 8px rgba(0,255,166,0.6);
+    0 0 6px rgba(212,175,55,0.45);
 
-  border-radius: 6px;
+  border-radius: 4px;
 
-  transition:
-    width 0.6s ease;
+  transition: width 0.8s ease;
 
 }
 
-.kpi-status {
+.acs-kpi-status {
 
   font-size: 12px;
 
-  opacity: 0.8;
+  opacity: 0.7;
 
-  letter-spacing: 0.5px;
+  margin-top: 2px;
 
 }
      
@@ -186,9 +187,39 @@ footer{text-align:center;color:#888;font-size:.85rem;margin-top:2rem}
 
 </div>
 
-    <div class="kpi-card"><h4>Active Routes</h4><span id="kpi-routes">—</span></div>
-    <div class="kpi-card"><h4>Avg Load Factor</h4><span id="kpi-lf">—</span></div>
-    <div class="kpi-card"><h4>Profitable Routes</h4><span id="kpi-profit">—</span></div>
+    <div class="kpi-card">
+  <h4>Active Routes</h4>
+  <span id="kpi-routes">—</span>
+
+  <div class="acs-kpi-bar">
+    <div id="kpi-routes-bar" class="acs-kpi-bar-fill"></div>
+  </div>
+
+  <div id="kpi-routes-status" class="acs-kpi-status"></div>
+</div>
+
+    <div class="kpi-card">
+  <h4>Avg Load Factor</h4>
+  <span id="kpi-lf">—</span>
+
+  <div class="acs-kpi-bar">
+    <div id="kpi-lf-bar" class="acs-kpi-bar-fill"></div>
+  </div>
+
+  <div id="kpi-lf-status" class="acs-kpi-status"></div>
+</div>
+
+    <div class="kpi-card">
+  <h4>Profitable Routes</h4>
+  <span id="kpi-profit">—</span>
+
+  <div class="acs-kpi-bar">
+    <div id="kpi-profit-bar" class="acs-kpi-bar-fill"></div>
+  </div>
+
+  <div id="kpi-profit-status" class="acs-kpi-status"></div>
+</div>
+
   </section>
 
   <div class="routes-wrapper">
