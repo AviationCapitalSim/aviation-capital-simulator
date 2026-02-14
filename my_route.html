@@ -88,7 +88,7 @@ footer{text-align:center;color:#888;font-size:.85rem;margin-top:2rem}
 
 
 /* ============================================================
-   🟦 ACS KPI BAR SYSTEM — GOLD EDITION
+   🟦 ACS KPI BAR SYSTEM — AIRBUS OCC EDITION
    ============================================================ */
 
 .acs-kpi-bar {
@@ -113,28 +113,24 @@ footer{text-align:center;color:#888;font-size:.85rem;margin-top:2rem}
 
   width: 0%;
 
-  background: linear-gradient(
-    90deg,
-    #d4af37,
-    #f5d76e
-  );
-
-  box-shadow:
-    0 0 6px rgba(212,175,55,0.45);
+  background: #00d68f;
 
   border-radius: 4px;
 
-  transition: width 0.8s ease;
+  transition: width 0.6s ease,
+              background 0.3s ease;
 
 }
 
 .acs-kpi-status {
 
-  font-size: 12px;
+  font-size: 11px;
 
-  opacity: 0.7;
+  opacity: 0.65;
 
-  margin-top: 2px;
+  margin-top: 4px;
+
+  letter-spacing: 0.5px;
 
 }
      
@@ -168,16 +164,13 @@ footer{text-align:center;color:#888;font-size:.85rem;margin-top:2rem}
   <h2 class="page-title">🌍 My Routes & Ticket Pricing</h2>
   <p class="page-sub">Real market behavior. Historical pricing. No shortcuts.</p>
 
-  <!-- KPI STRIP — WIRED TO ENGINE (NO HARDCODE) -->
-  <section class="kpi-strip">
-    <div class="kpi-card">
-  <h4>Network Image</h4>
+ <section class="kpi-strip">
 
-  <span id="kpi-airline-image">—</span>
-
-  <!-- ACS NETWORK IMAGE BAR -->
+  <!-- NETWORK IMAGE -->
   <div class="kpi-card">
+
   <h4>Network Image</h4>
+
   <span id="kpi-airline-image">—</span>
 
   <div class="acs-kpi-bar">
@@ -185,42 +178,49 @@ footer{text-align:center;color:#888;font-size:.85rem;margin-top:2rem}
   </div>
 
   <div id="kpi-airline-image-status" class="acs-kpi-status"></div>
+
 </div>
 
-    <div class="kpi-card">
-  <h4>Active Routes</h4>
-  <span id="kpi-routes">—</span>
+  <!-- ACTIVE ROUTES -->
+      
+  <div class="kpi-card">
+    <h4>Active Routes</h4>
+    <span id="kpi-routes">—</span>
 
-  <div class="acs-kpi-bar">
-    <div id="kpi-routes-bar" class="acs-kpi-bar-fill"></div>
+    <div class="acs-kpi-bar">
+      <div id="kpi-routes-bar" class="acs-kpi-bar-fill"></div>
+    </div>
+
+    <div id="kpi-routes-status" class="acs-kpi-status"></div>
   </div>
 
-  <div id="kpi-routes-status" class="acs-kpi-status"></div>
-</div>
+  <!-- LOAD FACTOR -->
+      
+  <div class="kpi-card">
+    <h4>Avg Load Factor</h4>
+    <span id="kpi-lf">—</span>
 
-    <div class="kpi-card">
-  <h4>Avg Load Factor</h4>
-  <span id="kpi-lf">—</span>
+    <div class="acs-kpi-bar">
+      <div id="kpi-lf-bar" class="acs-kpi-bar-fill"></div>
+    </div>
 
-  <div class="acs-kpi-bar">
-    <div id="kpi-lf-bar" class="acs-kpi-bar-fill"></div>
+    <div id="kpi-lf-status" class="acs-kpi-status"></div>
   </div>
 
-  <div id="kpi-lf-status" class="acs-kpi-status"></div>
-</div>
+  <!-- PROFITABLE -->
+      
+  <div class="kpi-card">
+    <h4>Profitable Routes</h4>
+    <span id="kpi-profit">—</span>
 
-    <div class="kpi-card">
-  <h4>Profitable Routes</h4>
-  <span id="kpi-profit">—</span>
+    <div class="acs-kpi-bar">
+      <div id="kpi-profit-bar" class="acs-kpi-bar-fill"></div>
+    </div>
 
-  <div class="acs-kpi-bar">
-    <div id="kpi-profit-bar" class="acs-kpi-bar-fill"></div>
+    <div id="kpi-profit-status" class="acs-kpi-status"></div>
   </div>
 
-  <div id="kpi-profit-status" class="acs-kpi-status"></div>
-</div>
-
-  </section>
+</section>
 
   <div class="routes-wrapper">
 
