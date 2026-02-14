@@ -170,13 +170,25 @@ function ACS_buildRoutesFromSchedule() {
 
   ACS_saveRoutes(routes);
 
-  console.log(
-    "🟦 ROUTES_BUILDER:",
-    routes.length,
-    "routes built"
-  );
+console.log(
+  "🟦 ROUTES_BUILDER:",
+  routes.length,
+  "routes built"
+);
 
-  return routes;
+/* ============================================================
+   🟦 NOTIFY SYSTEM — ROUTES READY EVENT
+   ============================================================ */
+
+window.ACS_ROUTES = routes;
+
+window.dispatchEvent(
+  new CustomEvent("ACS_ROUTES_READY", {
+    detail: routes
+  })
+);
+
+return routes;
 
 }
 
