@@ -258,3 +258,11 @@ window.addEventListener(
 
 console.log("🟦 KPI REFLECTION ENGINE READY");
 
+/* ============================================================
+   LISTEN FOR ROUTES BUILDER READY
+   ============================================================ */
+
+window.addEventListener(
+  "ACS_ROUTES_READY",
+  ACS_refreshRouteKPIs
+);
