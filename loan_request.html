@@ -278,13 +278,19 @@
         <input type="number" id="loanAmount" placeholder="Enter amount" />
         <label>Term (Years)</label>
         <select id="loanTerm">
-          <option value="1">1 Year</option>
-          <option value="2">2 Years</option>
-          <option value="3">3 Years</option>
-          <option value="4">4 Years</option>
-          <option value="5">5 Years</option>
-          <option value="6">6 Years</option>
-        </select>
+
+  <option value="36">Operational Loan (1–3 years)</option>
+
+  <option value="72">Aircraft Support (4–6 years)</option>
+
+  <option value="120">Aircraft Financing (7–10 years)</option>
+
+  <option value="180">Fleet Expansion (11–15 years)</option>
+
+  <option value="240">Strategic Financing (16–20 years)</option>
+
+</select>
+
       </div>
 
       <!-- === LOAN EVALUATION === -->
@@ -375,24 +381,47 @@ function loadBankData(){
 }
 
 function updateCreditProfile(){
+
   const fleet = Number(BANK_SUMMARY.fleetValue || 0);
-  const loans = Array.isArray(BANK_SUMMARY.loans) ? BANK_SUMMARY.loans : [];
-  const debt  = loans.reduce((s,l)=> s + Number(l.remaining || 0), 0);
 
-  const ratio = fleet > 0 ? debt / fleet : 0;
+  const loans =
+    Array.isArray(BANK_SUMMARY.loans)
+    ? BANK_SUMMARY.loans
+    : [];
 
-  let rating = "AAA";
-  let risk   = "Very Low";
+  const debt =
+    loans.reduce((s,l)=>s + Number(l.remaining||0),0);
 
-  if (ratio > 0.70){ rating="CCC"; risk="Critical"; }
-  else if (ratio > 0.60){ rating="B"; risk="High"; }
-  else if (ratio > 0.40){ rating="BB"; risk="Elevated"; }
-  else if (ratio > 0.25){ rating="BBB"; risk="Moderate"; }
-  else if (ratio > 0.15){ rating="A"; risk="Low"; }
-  else if (ratio > 0.05){ rating="AA"; risk="Very Low"; }
+  const ratio =
+    fleet > 0 ? debt / fleet : 0;
+
+  let rating = "BB";
+  let risk   = "Moderate";
+
+  if(fleet > 50000000){
+    rating = "A";
+    risk   = "Low";
+  }
+  else if(fleet > 20000000){
+    rating = "BBB";
+    risk   = "Stable";
+  }
+  else if(fleet > 5000000){
+    rating = "BB";
+    risk   = "Moderate";
+  }
+  else if(fleet > 1000000){
+    rating = "B";
+    risk   = "Elevated";
+  }
+  else{
+    rating = "CCC";
+    risk   = "High";
+  }
 
   creditRatingEl.textContent = rating;
   riskLevelEl.textContent    = risk;
+
 }
 
 function loadAircraft(){
