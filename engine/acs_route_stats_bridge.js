@@ -149,4 +149,105 @@ function ACS_updateRouteStats(economics) {
   // safety attach after load (guaranteed)
   window.addEventListener("load", attachListener);
 
+
+/* ============================================================
+   🟦 KPI REFLECTION ENGINE (NON-DESTRUCTIVE)
+   ------------------------------------------------------------
+   Purpose:
+   - Reflect stored route stats into KPI strip
+   - Uses existing ACS_ROUTE_STATS storage
+   - Does NOT modify stats system
+   ============================================================ */
+
+function ACS_refreshRouteKPIs(){
+
+  try {
+
+    const stats = ACS_loadRouteStats();
+
+    const keys = Object.keys(stats);
+
+    if (!keys.length) return;
+
+    let totalLF = 0;
+    let profitable = 0;
+
+    keys.forEach(key => {
+
+      const r = stats[key];
+
+      const lf =
+        Number(r?.avg?.loadFactor || 0);
+
+      const profit =
+        Number(r?.lifetime?.profit || 0);
+
+      totalLF += lf;
+
+      if (profit > 0)
+        profitable++;
+
+    });
+
+    const activeRoutes = keys.length;
+
+    const avgLF =
+      activeRoutes > 0
+      ? totalLF / activeRoutes
+      : 0;
+
+    /* Airline Image model */
+    let airlineImage = 50;
+
+    airlineImage += profitable * 4;
+    airlineImage += avgLF * 20;
+
+    airlineImage =
+      Math.min(100, Math.round(airlineImage));
+
+    /* WRITE KPI UI */
+
+    const elRoutes =
+      document.getElementById("kpi-routes");
+
+    const elLF =
+      document.getElementById("kpi-lf");
+
+    const elProfit =
+      document.getElementById("kpi-profit");
+
+    const elImage =
+      document.getElementById("kpi-airline-image");
+
+    if (elRoutes)
+      elRoutes.textContent = activeRoutes;
+
+    if (elLF)
+      elLF.textContent =
+        Math.round(avgLF * 100) + "%";
+
+    if (elProfit)
+      elProfit.textContent = profitable;
+
+    if (elImage)
+      elImage.textContent =
+        airlineImage + "%";
+
+    console.log("🟦 KPI REFRESHED");
+
+  } catch(err){
+
+    console.warn("KPI refresh failed", err);
+
+  }
+
+}
+
+/* ============================================================
+   AUTO REFRESH TRIGGERS
+   ============================================================ */
+
+window.addEventListener(
+  "AC
+   
 })();
