@@ -174,28 +174,67 @@ function ACS_refreshRouteKPIs(){
 
     let totalLF = 0;
     let profitable = 0;
+    let totalRouteImage = 0;
+
 
     routes.forEach(route => {
 
-     const lf =
-     Number(route.avg?.loadFactor || 0);
+  const avgLF =
+    Number(route.avg?.loadFactor || 0);
 
-    const profit =
-    Number(route.lifetime?.profit || 0);
+  const profitPerFlight =
+    Number(route.avg?.profitPerFlight || 0);
 
-      totalLF += lf;
+  const flights =
+    Number(route.lifetime?.flights || 0);
 
-      if (profit > 0)
-        profitable++;
+  /* ============================================================
+     ROUTE IMAGE CALCULATION
+     ============================================================ */
 
-    });
+  // Load Factor contribution (0–50)
+  const LF_score =
+    avgLF * 50;
+
+  // Profit contribution (0–30)
+  let Profit_score = 0;
+
+  if (profitPerFlight > 0)
+    Profit_score = 30;
+  else if (profitPerFlight === 0)
+    Profit_score = 15;
+  else
+    Profit_score = 0;
+
+  // Maturity contribution (0–20)
+  const Maturity_score =
+    Math.min(flights, 50) / 50 * 20;
+
+  // Final Route Image (0–100)
+  const routeImage =
+    Math.min(
+      100,
+      LF_score + Profit_score + Maturity_score
+    );
+
+  totalLF += avgLF;
+
+  totalRouteImage += routeImage;
+
+  if (profitPerFlight > 0)
+    profitable++;
+
+});
 
     const avgLF =
       totalLF / activeRoutes;
 
     /* Airline Image model */
 
-    let airlineImage = 50;
+    const airlineImage =
+    routes.length > 0
+    ? Math.round(totalRouteImage / routes.length)
+    : 0;
 
     airlineImage += profitable * 3;
     airlineImage += avgLF * 25;
