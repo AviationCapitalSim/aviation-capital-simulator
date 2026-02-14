@@ -181,56 +181,131 @@
     <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
-  <!-- ===== SCRIPT ===== -->
-  <script>
-    const aircrafts = [
-      { id: "A300-B4", value: 2200000 },
-      { id: "B737-400", value: 3200000 },
-      { id: "DC-9-15", value: 1800000 },
-    ];
+ <!-- ===== LOAN ENGINE SCRIPTS ===== -->
+<script src="engine/acs_finance.js"></script>
+<script src="engine/acs_bank.js"></script>
 
-    const collateralSelect = document.getElementById("collateralSelect");
-    const aircraftValue = document.getElementById("aircraftValue");
+<!-- ===== SCRIPT ===== -->
+  
+<script>
+/* ============================================================
+   🏦 ACS LOAN REQUEST — REAL AVIATION ENGINE INTEGRATION
+   Rule: Max 70% per loan
+   ============================================================ */
 
-    aircrafts.forEach(a => {
-      const opt = document.createElement("option");
-      opt.value = a.id;
-      opt.textContent = `${a.id} — $${a.value.toLocaleString()}`;
-      collateralSelect.appendChild(opt);
-    });
+const collateralSelect = document.getElementById("collateralSelect");
+const aircraftValue    = document.getElementById("aircraftValue");
+const loanAmountInput  = document.getElementById("loanAmount");
+const loanTermSelect   = document.getElementById("loanTerm");
 
-    collateralSelect.addEventListener("change", e => {
-      const selected = aircrafts.find(a => a.id === e.target.value);
-      aircraftValue.textContent = selected
-        ? `Value: $${selected.value.toLocaleString()}`
-        : "No aircraft selected";
-    });
+const creditRatingEl   = document.getElementById("creditRating");
+const riskLevelEl      = document.getElementById("riskLevel");
+const interestRateEl   = document.getElementById("interestRate");
+const maxLoanEl        = document.getElementById("maxLoan");
 
-    document.getElementById("requestLoanBtn").addEventListener("click", () => {
-      document.getElementById("loanMessage").innerHTML =
-        "✅ Loan request submitted. The International Credit Bank will review your application.";
-    });
+const loanMessageEl    = document.getElementById("loanMessage");
 
-    function handleLogout() {
-      alert("👋 Session closed. See you soon, Captain!");
-      window.location.href = "login.html";
-    }
-  </script>
+let BANK_SUMMARY = null;
+let MAX_PER_LOAN = 0;
 
-   <!-- ============================================================
-     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
-     ============================================================ -->
-<script src="acs_time_recovery.js"></script>
-<script src="time_engine.js"></script>
+function money(x){
+  return "$" + Math.round(Number(x || 0)).toLocaleString();
+}
 
-  <script>
-    // 🕐 Sincronización del reloj cockpit Airbus con el motor global ACS
-    document.addEventListener("DOMContentLoaded", () => {
-      if (typeof registerTimeListener === "function") {
-        registerTimeListener(updateClockDisplay);
-        updateClockDisplay();
-      }
-    });
-  </script>
+function loadBankData(){
+  if (typeof ACS_BANK_getSummary !== "function"){
+    console.error("❌ ACS_BANK_getSummary missing — engine/acs_bank.js not loaded");
+    loanMessageEl.textContent = "BANK ENGINE NOT LOADED (acs_bank.js)";
+    return;
+  }
+
+  BANK_SUMMARY = ACS_BANK_getSummary();
+
+  const capacity = Number(BANK_SUMMARY.loanCapacity || 0);
+  MAX_PER_LOAN = capacity * 0.7;
+
+  interestRateEl.textContent = Number(BANK_SUMMARY.interestRate || 0).toFixed(2) + "%";
+  maxLoanEl.textContent = money(MAX_PER_LOAN);
+
+  updateCreditProfile();
+}
+
+function updateCreditProfile(){
+  const fleet = Number(BANK_SUMMARY.fleetValue || 0);
+  const loans = Array.isArray(BANK_SUMMARY.loans) ? BANK_SUMMARY.loans : [];
+  const debt  = loans.reduce((s,l)=> s + Number(l.remaining || 0), 0);
+
+  const ratio = fleet > 0 ? debt / fleet : 0;
+
+  let rating = "AAA";
+  let risk   = "Very Low";
+
+  if (ratio > 0.70){ rating="CCC"; risk="Critical"; }
+  else if (ratio > 0.60){ rating="B"; risk="High"; }
+  else if (ratio > 0.40){ rating="BB"; risk="Elevated"; }
+  else if (ratio > 0.25){ rating="BBB"; risk="Moderate"; }
+  else if (ratio > 0.15){ rating="A"; risk="Low"; }
+  else if (ratio > 0.05){ rating="AA"; risk="Very Low"; }
+
+  creditRatingEl.textContent = rating;
+  riskLevelEl.textContent    = risk;
+}
+
+function loadAircraft(){
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  collateralSelect.innerHTML = '<option value="">Select Aircraft</option>';
+
+  fleet.forEach(ac => {
+    const value = Number(ac.marketValue || ac.value || ac.price || 0);
+    const label = (ac.type || ac.name || ac.model || "Aircraft");
+
+    const opt = document.createElement("option");
+    opt.value = String(value);
+    opt.textContent = `${label} — ${money(value)}`;
+    collateralSelect.appendChild(opt);
+  });
+}
+
+collateralSelect.addEventListener("change", (e) => {
+  const v = Number(e.target.value || 0);
+  aircraftValue.textContent = v ? `Value: ${money(v)}` : "No aircraft selected";
+});
+
+
+function submitLoan(){
+  const amount = Number(loanAmountInput.value || 0);
+  const years  = Number(loanTermSelect.value || 0);
+  const months = years * 12;
+
+  if (!amount || amount <= 0){
+    loanMessageEl.textContent = "Enter a valid loan amount.";
+    return;
+  }
+
+  if (amount > MAX_PER_LOAN){
+    loanMessageEl.textContent = "Amount exceeds the 70% maximum allowed per loan.";
+    return;
+  }
+
+  try{
+    ACS_BANK_createLoan(amount, months);
+    loanMessageEl.textContent = "✅ Loan approved. Funds transferred to your airline balance.";
+    setTimeout(()=> location.href="bank.html", 1200);
+  }catch(err){
+    loanMessageEl.textContent = (err && err.message) ? err.message : "Loan error.";
+  }
+}
+
+document.getElementById("requestLoanBtn").addEventListener("click", submitLoan);
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadBankData();
+  loadAircraft();
+});
+
+  
+</script>
+  
 </body>
 </html>
