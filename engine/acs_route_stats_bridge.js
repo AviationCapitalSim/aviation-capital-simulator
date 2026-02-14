@@ -148,7 +148,8 @@ function ACS_updateRouteStats(economics) {
 
   // safety attach after load (guaranteed)
   window.addEventListener("load", attachListener);
-
+   
+})();
 
 /* ============================================================
    🟦 KPI REFLECTION ENGINE (NON-DESTRUCTIVE)
@@ -249,5 +250,3 @@ function ACS_refreshRouteKPIs(){
 
 window.addEventListener(
   "AC
-   
-})();
