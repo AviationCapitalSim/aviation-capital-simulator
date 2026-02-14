@@ -164,24 +164,23 @@ function ACS_refreshRouteKPIs(){
 
   try {
 
-    const stats = ACS_loadRouteStats();
+    const routes =
+      window.ACS_ROUTES || [];
 
-    const keys = Object.keys(stats);
+    if (!routes.length) return;
 
-    if (!keys.length) return;
+    const activeRoutes = routes.length;
 
     let totalLF = 0;
     let profitable = 0;
 
-    keys.forEach(key => {
-
-      const r = stats[key];
+    routes.forEach(route => {
 
       const lf =
-        Number(r?.avg?.loadFactor || 0);
+        Number(route.loadFactor || 0);
 
       const profit =
-        Number(r?.lifetime?.profit || 0);
+        Number(route.profit || 0);
 
       totalLF += lf;
 
@@ -190,23 +189,21 @@ function ACS_refreshRouteKPIs(){
 
     });
 
-    const activeRoutes = keys.length;
-
     const avgLF =
-      activeRoutes > 0
-      ? totalLF / activeRoutes
-      : 0;
+      totalLF / activeRoutes;
 
     /* Airline Image model */
+
     let airlineImage = 50;
 
-    airlineImage += profitable * 4;
-    airlineImage += avgLF * 20;
+    airlineImage += profitable * 3;
+    airlineImage += avgLF * 25;
+    airlineImage += activeRoutes * 1.5;
 
     airlineImage =
       Math.min(100, Math.round(airlineImage));
 
-    /* WRITE KPI UI */
+    /* WRITE UI */
 
     const elRoutes =
       document.getElementById("kpi-routes");
@@ -234,9 +231,10 @@ function ACS_refreshRouteKPIs(){
       elImage.textContent =
         airlineImage + "%";
 
-    console.log("🟦 KPI REFRESHED");
+    console.log("🟦 KPI UPDATED FROM ACS_ROUTES");
 
-  } catch(err){
+  }
+  catch(err){
 
     console.warn("KPI refresh failed", err);
 
