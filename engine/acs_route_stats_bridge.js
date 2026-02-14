@@ -554,41 +554,21 @@ function ACS_applyKPIVisualFeedback(){
     el.style.fontWeight =
       "600";
 
-    /* ============================================================
-       LABEL ENGINE
-       ============================================================ */
+  /* ============================================================
+   STATUS ENGINE — USE CANONICAL STATUS ELEMENT ONLY
+   Prevent duplicate labels
+   ============================================================ */
 
-    let label =
-      el.parentElement.querySelector(".acs-kpi-label");
+const statusEl =
+  document.getElementById("kpi-airline-image-status");
 
-    if (!label){
+if (statusEl){
 
-      label =
-        document.createElement("div");
+  statusEl.textContent =
+    visual.label;
 
-      label.className =
-        "acs-kpi-label";
+}
 
-      label.style.fontSize =
-        "11px";
-
-      label.style.opacity =
-        "0.7";
-
-      label.style.marginTop =
-        "4px";
-
-      label.style.letterSpacing =
-        "1px";
-
-      el.parentElement.appendChild(label);
-
-    }
-
-    label.textContent =
-      visual.label;
-
-  }
   catch(err){
 
     console.warn(
