@@ -249,4 +249,14 @@ function ACS_refreshRouteKPIs(){
    ============================================================ */
 
 window.addEventListener(
-  "AC
+  "ACS_FLIGHT_ECONOMICS",
+  ACS_refreshRouteKPIs
+);
+
+window.addEventListener(
+  "load",
+  ACS_refreshRouteKPIs
+);
+
+console.log("🟦 KPI REFLECTION ENGINE READY");
+
