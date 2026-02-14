@@ -626,13 +626,20 @@ console.log(
 document.addEventListener("DOMContentLoaded", function(){
   ACS_refreshRouteKPIs();
 });
-     
+
 /* ============================================================
-   🟦 SAFETY TERMINATOR — FILE INTEGRITY GUARANTEE
-   Prevents unexpected end of script errors
+   🟦 SAFE CLOSE — ACS_refreshRouteKPIs FUNCTION TERMINATION
+   Proper structural closure (no terminator hacks)
    ============================================================ */
 
-(function(){
-  // File terminator — do not remove
-})();
-   
+}
+catch(err){
+
+  console.warn(
+    "ACS_refreshRouteKPIs failed",
+    err
+  );
+
+}
+
+}
