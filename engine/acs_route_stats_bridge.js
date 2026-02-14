@@ -177,11 +177,11 @@ function ACS_refreshRouteKPIs(){
 
     routes.forEach(route => {
 
-      const lf =
-        Number(route.loadFactor || 0);
+     const lf =
+     Number(route.avg?.loadFactor || 0);
 
-      const profit =
-        Number(route.profit || 0);
+    const profit =
+    Number(route.lifetime?.profit || 0);
 
       totalLF += lf;
 
