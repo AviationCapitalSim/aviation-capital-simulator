@@ -266,3 +266,17 @@ window.addEventListener(
   "ACS_ROUTES_READY",
   ACS_refreshRouteKPIs
 );
+
+/* ============================================================
+   INITIAL KPI LOAD
+   ============================================================ */
+
+setTimeout(function(){
+
+  if (typeof ACS_refreshRouteKPIs === "function") {
+    ACS_refreshRouteKPIs();
+    console.log("🟦 KPI INITIAL LOAD OK");
+  }
+
+}, 300);
+
