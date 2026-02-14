@@ -526,7 +526,7 @@ function ACS_applyKPIVisualFeedback(){
 
     }
 
-    /* ============================================================
+  /* ============================================================
        TARGET ELEMENT
        ============================================================ */
 
@@ -559,25 +559,27 @@ function ACS_applyKPIVisualFeedback(){
    Prevent duplicate labels
    ============================================================ */
 
-const statusEl =
-  document.getElementById("kpi-airline-image-status");
+    const statusEl =
+      document.getElementById("kpi-airline-image-status");
 
-if (statusEl){
+    if (statusEl){
 
-  statusEl.textContent =
-    visual.label;
+      statusEl.textContent =
+        visual.label;
+
+    }
 
   }
   catch(err){
 
     console.warn(
-      "ACS_refreshRouteKPIs failed",
+      "ACS KPI visual feedback failed",
       err
     );
 
   }
 
-} // END ACS_refreshRouteKPIs
+} // END ACS_applyKPIVisualFeedback
 
 
 /* ============================================================
