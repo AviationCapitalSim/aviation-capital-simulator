@@ -284,6 +284,47 @@ const status =
 if (bar)
   bar.style.width = airlineImage + "%";
 
+const routesBar =
+  document.getElementById("kpi-routes-bar");
+
+if (routesBar){
+
+  const percent =
+    Math.min(100, activeRoutes * 10);
+
+  routesBar.style.width =
+    percent + "%";
+
+}
+
+const lfBar =
+  document.getElementById("kpi-lf-bar");
+
+if (lfBar){
+
+  const percent =
+    Math.round(avgLF * 100);
+
+  lfBar.style.width =
+    percent + "%";
+
+}
+
+const profitBar =
+  document.getElementById("kpi-profit-bar");
+
+if (profitBar){
+
+  const percent =
+    activeRoutes > 0
+      ? Math.round((profitable / activeRoutes) * 100)
+      : 0;
+
+  profitBar.style.width =
+    percent + "%";
+
+}
+     
 if (status) {
 
   if (airlineImage < 30)
