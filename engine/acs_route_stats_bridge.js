@@ -280,3 +280,8 @@ setTimeout(function(){
 
 }, 300);
 
+document.addEventListener("DOMContentLoaded", function(){
+
+  ACS_refreshRouteKPIs();
+
+});
