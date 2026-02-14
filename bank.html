@@ -1,244 +1,231 @@
-<!-- === BANK MODULE — Qatar Luxury Unified === -->
-<!-- Version: v2 | Date: 25 NOV 2025 -->
+<!-- ============================================================
+     🏦 ACS BANK CENTER — HISTORICAL CREDIT AUTHORITY
+     Version: 1.0
+     Date: 14 FEB 2026
+     Engine: engine/acs_bank.js
+     ============================================================ -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Finance - Aviation Capital Simulator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bank — Aviation Capital Simulator</title>
 
   <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
 
-  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
+  <!-- ======== ACS Favicons ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
-
-  <!-- ======== Apple Home Screen ======== -->
   <link rel="apple-touch-icon" href="acs_logo_180.png">
-
-  <!-- ======== PWA Manifest ======== -->
   <link rel="manifest" href="manifest.json">
 
-<style>
-/* ============================================================
-   === GLOBAL BACKGROUND + FONT ================================
+  <style>
+    body{
+      margin:0;
+      background:#081530;
+      color:white;
+      font-family:"Poppins",sans-serif;
+    }
+
+   /* ============================================================
+   HEADER — SHARED ACS STANDARD
    ============================================================ */
-body {
-  margin: 0;
-  background-color: #081530;
-  color: white;
-  font-family: "Poppins", sans-serif;
+.acs-header{
+  position:fixed;
+  top:0;
+  width:100%;
+  box-sizing:border-box; /* ← FIX CRÍTICO */
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.8rem 2rem;
+  background:rgba(12,23,50,.45);
+  backdrop-filter:blur(9px);
+  border-bottom:2px solid #ffb300;
+  z-index:5000;
 }
 
-/* ============================================================
-     === GLOBAL HEADER (Exact model from Dashboard) ============
-   ============================================================ */
-
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  backdrop-filter: blur(9px);
-  background: rgba(12,23,50,0.45);
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #ffb300;
-  z-index: 5000;
+.acs-logo{
+  display:flex;
+  align-items:center;
+  gap:1rem;
 }
 
-.acs-logo {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.acs-logo img{
+  height:46px;
 }
 
-.acs-logo img {
-  height: 46px;
+.acs-logo h1{
+  margin:0;
+  font-size:1.1rem;
+  color:#ffb300;
 }
 
-.acs-logo h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  color: #ffb300;
-  letter-spacing: 0.5px;
+.acs-nav{
+  display:flex;
+  gap:2rem;
 }
 
-.acs-nav {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
+.acs-nav a{
+  text-decoration:none;
+  color:#dbe4ff;
 }
 
-.acs-nav a {
-  position: relative;
-  font-size: 1rem;
-  letter-spacing: 0.4px;
-  color: #dbe4ff; 
-  text-decoration: none;
-  transition: 0.25s ease;
-  padding-bottom: 6px;
-}
-
-.acs-nav a:hover,
-.acs-nav a.active {
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.6);
-}
-
-.acs-nav a.active::after,
-.acs-nav a:hover::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #ffb300, #ffe7a0);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
-}
-
-.acs-auth {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.logout-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
-
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
+.acs-nav a.active{
+  color:#ffb300;
 }
 
 /* ============================================================
-     === MAIN CONTENT ==========================================
+   🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
    ============================================================ */
 
-.acs-main {
-  padding: 110px 2rem 70px;
-  text-align: center;
+.acs-right{
+  display:flex;
+  align-items:center;
+  gap:14px;              /* espacio real entre botones y reloj */
+  padding-right:12px;    /* aire contra borde derecho */
+  flex-shrink:0;
 }
 
-/* ===== Qatar Luxury Title ===== */
-.acs-main h2 {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #ffca3a;
-  margin-bottom: 0.4rem;
-  text-shadow: 
-    0 0 6px rgba(255,190,60,0.55),
-    0 0 12px rgba(255,190,60,0.35);
+.support-btn{
+  padding:.45rem 1.1rem;
+  border-radius:12px;
+  font-size:.9rem;
+  font-weight:600;
+  text-decoration:none;
+  color:#8AB4FF;
+  border:1px solid rgba(138,180,255,.45);
+  background:rgba(138,180,255,.08);
 }
 
-/* ===== Sub Title ===== */
-.acs-main .sub {
-  font-size: 1.05rem;
-  color: #cbd6ff;
-  opacity: 0.9;
-  text-shadow: 0 0 4px rgba(200,210,255,0.25);
+.logout-btn{
+  padding:.45rem 1.1rem;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  background:rgba(255,179,0,.05);
+  color:#ffb300;
+  font-weight:600;
+  cursor:pointer;
 }
 
 /* ============================================================
-   === PANEL GRID (Dashboard model) ===========================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
    ============================================================ */
 
-.finance-panels {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+.acs-clock-header{
+
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+
+  padding:.45rem .8rem;
+
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  white-space:nowrap;
+
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
 }
 
-/* ============================================================
-   === PANEL — Qatar Luxury Premium ==========================
-   ============================================================ */
+    /* ================= MAIN ================= */
+    .acs-main{
+      padding:120px 30px 70px;
+      max-width:1200px;
+      margin:auto;
+    }
 
-.panel {
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  padding: 1.6rem 1.5rem;
-  border-radius: 22px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.4);
-  transition: 0.25s;
-  border: 1px solid rgba(255,179,0,0.15);
-  cursor: pointer;
-}
+    .title{
+      font-size:2rem;
+      font-weight:600;
+      color:#ffca3a;
+      margin-bottom:0.4rem;
+      text-shadow:0 0 6px rgba(255,190,60,0.55), 0 0 12px rgba(255,190,60,0.35);
+    }
 
-.panel:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 32px rgba(255,179,0,0.25);
-  border: 1px solid rgba(255,179,0,0.35);
-}
+    .subtitle{
+      font-size:1.05rem;
+      color:#cbd6ff;
+      opacity:0.9;
+      text-shadow:0 0 4px rgba(200,210,255,0.25);
+      margin-bottom:28px;
+    }
 
-.panel h3 {
-  font-size: 1.25rem;
-  color: #ffb300;
-  margin-bottom: 0.9rem;
-  text-shadow: 0 0 6px rgba(255,179,0,0.4);
-}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:18px;
+      margin-bottom:24px;
+    }
 
-.panel p {
-  color: #d7e2ff;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
+    .card{
+      background:linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
+      padding:18px 18px;
+      border-radius:18px;
+      box-shadow:0 0 25px rgba(0,0,0,0.4);
+      border:1px solid rgba(255,179,0,0.15);
+    }
 
-/* ============================================================
-   === BUTTON — Cockpit Green (Dashboard standard) ============
-   ============================================================ */
+    .card h3{
+      margin:0 0 10px;
+      color:#ffb300;
+      text-shadow:0 0 6px rgba(255,179,0,0.35);
+      font-size:1.15rem;
+    }
 
-.acs-btn {
-  margin-top: 1rem;
-  background: #00a86b;
-  border: none;
-  padding: 0.7rem 1.1rem;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.25s;
-  color: white;
-}
+    .value{
+      font-family:"Orbitron",monospace;
+      font-size:1.25rem;
+      color:#00ff80;
+    }
 
-.acs-btn:hover {
-  background: #00794f;
-}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+    }
+    th, td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,0.10);
+      font-size:0.95rem;
+    }
+    th{ color:#ffb300; text-align:left; }
 
-/* ============================================================
-   === FOOTER ==================================================
-   ============================================================ */
+    .btn{
+      margin-top:16px;
+      background:#00a86b;
+      border:none;
+      padding:0.7rem 1.1rem;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      transition:0.25s;
+      color:white;
+    }
+    .btn:hover{ background:#00794f; }
 
-.acs-footer {
-  text-align: center;
-  padding: 20px;
-  margin-top: 50px;
-  color: #7c8bb8;
-  font-size: 0.9rem;
-}
-</style>
+    .hint{
+      font-size:0.9rem;
+      color:#9fb3ff;
+      opacity:0.9;
+      margin-top:10px;
+    }
+  </style>
 </head>
 
 <body>
@@ -251,100 +238,148 @@ body {
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="finance.html" class="active">Bank</a>
+    <a href="bank.html" class="active">Bank</a>
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
     <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
   </nav>
 
-  <div class="acs-auth">
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
-  </div>
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+   <div id="acs-clock" class="acs-clock-header">
+  <span class="clock-text">20:10 — MON 09 JUN 1941</span>
+</div>
+  
+</div>
+  
 </header>
 
-<!-- ===== MAIN CONTENT ===== -->
 <main class="acs-main">
-  <h2>Bank-Center</h2>
-  <p class="sub">Manage all financial operations of your airline — from loans to investments.</p>
 
-  <!-- ===== FINANCE PANELS ===== -->
-  <section class="finance-panels">
-    <div class="panel" onclick="openBank()">
-      <h3>🏦 Bank</h3>
-      <p>Access your airline's main financial institution. Check balances, transfers, and interest rates.</p>
-      <button class="acs-btn">Open</button>
+  <div class="title">Bank Authority</div>
+  <div class="subtitle">Historical aviation credit system (1940–2030)</div>
+
+  <section class="grid">
+    <div class="card">
+      <h3>Current Year</h3>
+      <div class="value" id="year">—</div>
     </div>
 
-    <div class="panel" onclick="openLoans()">
-      <h3>💰 Loan Request</h3>
-      <p>Apply for short or long-term loans to expand your operations or acquire new assets.</p>
-      <button class="acs-btn">Open</button>
+    <div class="card">
+      <h3>Fleet Collateral Value</h3>
+      <div class="value" id="fleet">—</div>
     </div>
 
-    <div class="panel" onclick="openBuyCredits()">
-      <h3>💠 Buy Credits</h3>
-      <p>Purchase ACS credits using real currency to fuel your airline’s financial growth.</p>
-      <button class="acs-btn">Open</button>
+    <div class="card">
+      <h3>Loan Capacity Available</h3>
+      <div class="value" id="capacity">—</div>
     </div>
 
-    <div class="panel" onclick="openInvestments()">
-      <h3>📈 Investments</h3>
-      <p>Coming soon — diversify your capital into market assets, airline bonds, or regional projects.</p>
-      <button class="acs-btn">Coming Soon</button>
+    <div class="card">
+      <h3>Interest Rate</h3>
+      <div class="value" id="rate">—</div>
     </div>
   </section>
+
+  <section class="card">
+    <h3>Active Loans</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Remaining</th>
+          <th>Rate</th>
+          <th>Monthly</th>
+        </tr>
+      </thead>
+      <tbody id="loanTable"></tbody>
+    </table>
+
+    <button class="btn" onclick="goLoan()">Request New Loan</button>
+    <div class="hint">Loans are calculated dynamically based on era (1940–2030) and your owned aircraft fleet.</div>
+  </section>
+
 </main>
 
-<!-- ===== FOOTER ===== -->
-<footer class="acs-footer">
-  © 2025 Aviation Capital Simulator. All rights reserved.
-</footer>
-
-<!-- ===== SCRIPT ===== -->
-<script>
-function openBank() {
-  window.location.href = "bank.html";
-}
-
-function openLoans() {
-  window.location.href = "loan_request.html";
-}
-
-function openBuyCredits() {
-  window.location.href = "buy_credits.html";
-}
-
-function openInvestments() {
-  alert("📈 Investment module coming soon!");
-}
-
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href = "login.html";
-}
-</script>
-
 <!-- ============================================================
-     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
+     ⏳ TIME ENGINE
      ============================================================ -->
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
 
-<script src="finance.js"></script>
+<!-- ============================================================
+     🔐 SECURITY CORE
+     ============================================================ -->
+<script src="engine/acs_security_core.js?v=1"></script>
+
+<!-- ============================================================
+     💼 FINANCE + BANK ENGINE
+     (IMPORTANTE: estos dos deben existir en /engine/)
+     ============================================================ -->
+<script src="engine/acs_finance.js"></script>
+<script src="engine/acs_bank.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
+  function money(x){
+    const v = Number(x || 0);
+    return "$" + Math.round(v).toLocaleString();
   }
-});
+
+  function handleLogout(){
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "login.html";
+  }
+
+  function goLoan(){
+    window.location.href = "loan_request.html";
+  }
+
+  function loadBank(){
+    if (typeof ACS_BANK_getSummary !== "function"){
+      console.error("ACS_BANK_getSummary() missing — engine/acs_bank.js not loaded.");
+      return;
+    }
+
+    const s = ACS_BANK_getSummary();
+
+    document.getElementById("year").innerText = s.year;
+    document.getElementById("fleet").innerText = money(s.fleetValue);
+    document.getElementById("capacity").innerText = money(s.loanCapacity);
+    document.getElementById("rate").innerText = Number(s.interestRate).toFixed(2) + "%";
+
+    const table = document.getElementById("loanTable");
+    table.innerHTML = "";
+
+    const loans = Array.isArray(s.loans) ? s.loans : [];
+
+    if (loans.length === 0){
+      table.innerHTML = `<tr><td colspan="4" style="color:#9fb3ff;">No active loans.</td></tr>`;
+      return;
+    }
+
+    loans.forEach(l=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${l.id || "—"}</td>
+        <td>${money(l.remaining)}</td>
+        <td>${Number(l.rate || 0).toFixed(2)}%</td>
+        <td>${money(l.monthlyPayment)}</td>
+      `;
+      table.appendChild(tr);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    try{
+      loadBank();
+    }catch(e){
+      console.error("BANK UI crash:", e);
+    }
+  });
 </script>
 
-<script src="engine/acs_security_core.js?v=1"></script>
-  
 </body>
 </html>
