@@ -50,18 +50,88 @@ body{margin:0;background:#081530;color:#fff;font-family:"Poppins",sans-serif;ove
   z-index:5000;
 }
 
-.acs-logo{display:flex;align-items:center;gap:1rem}
-.acs-logo img{height:46px}
-.acs-logo h1{margin:0;font-size:1.1rem;color:#ffb300}
-.acs-nav{display:flex;gap:2rem}
-.acs-nav a{text-decoration:none;color:#dbe4ff}
-.acs-nav a.active{color:#ffb300}
-.acs-right{display:flex;align-items:center;gap:1rem;flex-shrink:0}
+.acs-logo{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+}
 
-.support-btn{padding:.45rem 1.1rem;border-radius:12px;font-size:.9rem;font-weight:600;text-decoration:none;color:#8AB4FF;border:1px solid rgba(138,180,255,.45);background:rgba(138,180,255,.08)}
-.logout-btn{padding:.45rem 1.1rem;border:1px solid #ffb300;border-radius:12px;background:rgba(255,179,0,.05);color:#ffb300;font-weight:600;cursor:pointer}
+.acs-logo img{
+  height:46px;
+}
 
-.acs-clock-header{font-family:"Orbitron",monospace;font-size:.95rem;color:#00ff80;background:rgba(0,255,128,.08);border-radius:8px;padding:.4rem .6rem;width:240px;display:flex;justify-content:center;align-items:center;white-space:nowrap;font-variant-numeric:tabular-nums}
+.acs-logo h1{
+  margin:0;
+  font-size:1.1rem;
+  color:#ffb300;
+}
+
+.acs-nav{
+  display:flex;
+  gap:2rem;
+}
+
+.acs-nav a{
+  text-decoration:none;
+  color:#dbe4ff;
+}
+
+.acs-nav a.active{
+  color:#ffb300;
+}
+
+/* ============================================================
+   🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
+   ============================================================ */
+
+.acs-right{
+  display:flex;
+  align-items:center;
+  gap:14px;              /* espacio real entre botones y reloj */
+  padding-right:12px;    /* aire contra borde derecho */
+  flex-shrink:0;
+}
+
+.support-btn{
+  padding:.45rem 1.1rem;
+  border-radius:12px;
+  font-size:.9rem;
+  font-weight:600;
+  text-decoration:none;
+  color:#8AB4FF;
+  border:1px solid rgba(138,180,255,.45);
+  background:rgba(138,180,255,.08);
+}
+
+.logout-btn{
+  padding:.45rem 1.1rem;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  background:rgba(255,179,0,.05);
+  color:#ffb300;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* ============================================================
+   🟦 CLOCK CONTAINER — CENTERED & PREMIUM
+   ============================================================ */
+
+.acs-clock-header{
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+  padding:.45rem .8rem;
+  min-width:240px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  border:1px solid rgba(0,255,128,.18);
+}
 
 /* ============================================================
    MAIN LAYOUT
