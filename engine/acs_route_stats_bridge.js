@@ -325,3 +325,136 @@ document.addEventListener("DOMContentLoaded", function(){
   ACS_refreshRouteKPIs();
 
 });
+
+/* ============================================================
+   🟦 K1 — ACS KPI VISUAL FEEDBACK ENGINE v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Apply dynamic visual feedback to KPI panel
+   - NON-DESTRUCTIVE
+   - Visual layer only
+   - Uses existing KPI values
+   ============================================================ */
+
+function ACS_applyKPIVisualFeedback(){
+
+  try{
+
+    /* ============================================================
+       COLOR RESOLUTION ENGINE
+       ============================================================ */
+
+    function resolveColor(value){
+
+      if (value >= 90)
+        return { color:"#ffd700", glow:"rgba(255,215,0,0.6)", label:"Elite Network" };
+
+      if (value >= 75)
+        return { color:"#00ffa6", glow:"rgba(0,255,166,0.6)", label:"Strong Network" };
+
+      if (value >= 60)
+        return { color:"#4dff88", glow:"rgba(77,255,136,0.6)", label:"Stable Network" };
+
+      if (value >= 40)
+        return { color:"#ff944d", glow:"rgba(255,148,77,0.6)", label:"Weak Network" };
+
+      return { color:"#ff4d4d", glow:"rgba(255,77,77,0.6)", label:"Critical Network" };
+
+    }
+
+    /* ============================================================
+       TARGET ELEMENT
+       ============================================================ */
+
+    const el =
+      document.getElementById("kpi-airline-image");
+
+    if (!el) return;
+
+    const value =
+      parseInt(el.textContent) || 0;
+
+    const visual =
+      resolveColor(value);
+
+    /* ============================================================
+       APPLY COLOR
+       ============================================================ */
+
+    el.style.color =
+      visual.color;
+
+    el.style.textShadow =
+      `0 0 12px ${visual.glow}`;
+
+    el.style.fontWeight =
+      "600";
+
+    /* ============================================================
+       LABEL ENGINE
+       ============================================================ */
+
+    let label =
+      el.parentElement.querySelector(".acs-kpi-label");
+
+    if (!label){
+
+      label =
+        document.createElement("div");
+
+      label.className =
+        "acs-kpi-label";
+
+      label.style.fontSize =
+        "11px";
+
+      label.style.opacity =
+        "0.7";
+
+      label.style.marginTop =
+        "4px";
+
+      label.style.letterSpacing =
+        "1px";
+
+      el.parentElement.appendChild(label);
+
+    }
+
+    label.textContent =
+      visual.label;
+
+  }
+  catch(err){
+
+    console.warn(
+      "ACS KPI visual feedback failed",
+      err
+    );
+
+  }
+
+}
+
+/* ============================================================
+   AUTO APPLY
+   ============================================================ */
+
+window.addEventListener(
+  "load",
+  ACS_applyKPIVisualFeedback
+);
+
+window.addEventListener(
+  "ACS_FLIGHT_ECONOMICS",
+  ACS_applyKPIVisualFeedback
+);
+
+setTimeout(
+  ACS_applyKPIVisualFeedback,
+  500
+);
+
+console.log(
+  "🟦 KPI VISUAL FEEDBACK ENGINE READY"
+);
