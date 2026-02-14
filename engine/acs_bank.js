@@ -1,307 +1,296 @@
 /* ============================================================
-🏦 ACS BANK ENGINE — HISTORICAL LOAN SYSTEM
-Version: 1.0
-Date: 14 FEB 2026
-Scope: 1940–2030 historical aviation banking system
-Depends:
-- engine/acs_finance.js
-- time_engine.js
-- ACS_MyAircraft (localStorage)
-============================================================ */
+   🏦 ACS BANK ENGINE — STABLE VERSION
+   Historical Aviation Loan Engine (1940–2030)
+   ============================================================ */
 
 (function(){
 
+"use strict";
+
 /* ============================================================
-🕰️ ERA CONFIGURATION TABLE
-============================================================ */
+   ERA TABLE
+   ============================================================ */
 
-const ACS_BANK_ERA_TABLE = [
+const ERA_TABLE = [
 
-{ year: 1940, maxLTV: 0.35, baseRate: 12.5 },
-{ year: 1950, maxLTV: 0.40, baseRate: 11.0 },
+  { year:1940, maxLTV:0.35, baseRate:12.5 },
+  { year:1950, maxLTV:0.40, baseRate:11.0 },
 
-{ year: 1960, maxLTV: 0.45, baseRate: 10.0 },
-{ year: 1970, maxLTV: 0.50, baseRate: 9.0 },
+  { year:1960, maxLTV:0.45, baseRate:10.0 },
+  { year:1970, maxLTV:0.50, baseRate:9.0 },
 
-{ year: 1980, maxLTV: 0.55, baseRate: 8.0 },
-{ year: 1990, maxLTV: 0.60, baseRate: 7.0 },
+  { year:1980, maxLTV:0.55, baseRate:8.0 },
+  { year:1990, maxLTV:0.60, baseRate:7.0 },
 
-{ year: 2000, maxLTV: 0.65, baseRate: 6.0 },
-{ year: 2010, maxLTV: 0.70, baseRate: 5.0 },
+  { year:2000, maxLTV:0.65, baseRate:6.0 },
+  { year:2010, maxLTV:0.70, baseRate:5.0 },
 
-{ year: 2020, maxLTV: 0.75, baseRate: 4.5 },
-{ year: 2030, maxLTV: 0.72, baseRate: 5.5 }
+  { year:2020, maxLTV:0.75, baseRate:4.5 },
+  { year:2030, maxLTV:0.72, baseRate:5.5 }
 
 ];
 
-/* ============================================================
-📅 GET CURRENT SIM YEAR
-============================================================ */
-
-function ACS_BANK_getCurrentYear(){
-
-if (typeof ACS_getCurrentDate === "function"){
-return ACS_getCurrentDate().year;
-}
-
-if (typeof ACS_TIME !== "undefined"){
-return ACS_TIME.year;
-}
-
-return 1940;
-
-}
 
 /* ============================================================
-✈️ GET FLEET VALUE
-============================================================ */
+   CURRENT YEAR FROM TIME ENGINE
+   ============================================================ */
 
-function ACS_BANK_getFleetValue(){
+function getCurrentYear(){
 
-const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  if(window.ACS_TIME && ACS_TIME.year)
+    return ACS_TIME.year;
 
-let total = 0;
-
-fleet.forEach(ac => {
-
-```
-const value =
-  ac.marketValue ||
-  ac.value ||
-  ac.price ||
-  0;
-
-total += value;
-```
-
-});
-
-return total;
-
+  return 1940;
 }
+
 
 /* ============================================================
-🏦 GET ERA CONFIG
-============================================================ */
+   LOAD FINANCE SAFE
+   ============================================================ */
 
-function ACS_BANK_getEraConfig(year){
+function getFinance(){
 
-let config = ACS_BANK_ERA_TABLE[0];
-
-ACS_BANK_ERA_TABLE.forEach(row => {
-if (year >= row.year){
-config = row;
-}
-});
-
-return config;
+  try{
+    return JSON.parse(localStorage.getItem("ACS_Finance")) || {};
+  }
+  catch{
+    return {};
+  }
 
 }
+
 
 /* ============================================================
-📊 LOAD FINANCE SAFE
-============================================================ */
+   SAVE FINANCE SAFE
+   ============================================================ */
 
-function ACS_BANK_getFinance(){
+function saveFinance(fin){
 
-if (typeof loadFinance === "function"){
-return loadFinance();
-}
-
-return JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  localStorage.setItem("ACS_Finance", JSON.stringify(fin));
 
 }
+
 
 /* ============================================================
-💾 SAVE FINANCE SAFE
-============================================================ */
+   GET FLEET VALUE
+   ============================================================ */
 
-function ACS_BANK_saveFinance(fin){
+function getFleetValue(){
 
-if (typeof saveFinance === "function"){
-saveFinance(fin);
-return;
+  let fleet;
+
+  try{
+    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
+  }
+  catch{
+    fleet = [];
+  }
+
+  let total = 0;
+
+  fleet.forEach(ac => {
+
+    const v =
+      Number(ac.marketValue) ||
+      Number(ac.value) ||
+      Number(ac.price) ||
+      0;
+
+    total += v;
+
+  });
+
+  return total;
+
 }
 
-localStorage.setItem("ACS_Finance", JSON.stringify(fin));
-
-}
 
 /* ============================================================
-💰 CALCULATE LOAN CAPACITY
-============================================================ */
+   GET ERA CONFIG
+   ============================================================ */
 
-function ACS_BANK_calculateLoanCapacity(){
+function getEra(){
 
-const fin = ACS_BANK_getFinance();
+  const year = getCurrentYear();
 
-if (!fin.bank){
-fin.bank = { loans: [] };
-}
+  let result = ERA_TABLE[0];
 
-const year = ACS_BANK_getCurrentYear();
+  ERA_TABLE.forEach(e => {
 
-const era = ACS_BANK_getEraConfig(year);
+    if(year >= e.year)
+      result = e;
 
-const fleetValue = ACS_BANK_getFleetValue();
+  });
 
-const maxLoan = fleetValue * era.maxLTV;
-
-let existing = 0;
-
-fin.bank.loans.forEach(loan=>{
-existing += loan.remaining;
-});
-
-return Math.max(0, maxLoan - existing);
+  return result;
 
 }
+
 
 /* ============================================================
-📈 CALCULATE INTEREST RATE
-============================================================ */
+   CALCULATE LOAN CAPACITY
+   ============================================================ */
 
-function ACS_BANK_calculateInterestRate(){
+function calculateLoanCapacity(){
 
-const year = ACS_BANK_getCurrentYear();
+  const fin = getFinance();
 
-const era = ACS_BANK_getEraConfig(year);
+  if(!fin.bank)
+    fin.bank = { loans:[] };
 
-const fin = ACS_BANK_getFinance();
+  const fleetValue = getFleetValue();
 
-const debtRatio =
-(fin.bank?.loans || []).reduce((s,l)=>s+l.remaining,0)
-/
-Math.max(ACS_BANK_getFleetValue(),1);
+  const era = getEra();
 
-let riskPenalty = 0;
+  const maxLoan = fleetValue * era.maxLTV;
 
-if (debtRatio > 0.6) riskPenalty = 2.5;
-else if (debtRatio > 0.4) riskPenalty = 1.5;
-else if (debtRatio > 0.2) riskPenalty = 0.5;
+  let existing = 0;
 
-return era.baseRate + riskPenalty;
+  fin.bank.loans.forEach(l => {
 
-}
+    existing += Number(l.remaining) || 0;
 
-/* ============================================================
-🧮 MONTHLY PAYMENT CALC
-============================================================ */
+  });
 
-function ACS_BANK_calculateMonthlyPayment(amount, rate, months){
-
-const r = rate / 100 / 12;
-
-return amount * r / (1 - Math.pow(1+r, -months));
+  return Math.max(0, maxLoan - existing);
 
 }
 
+
 /* ============================================================
-🏦 CREATE LOAN
-============================================================ */
+   CALCULATE INTEREST RATE
+   ============================================================ */
+
+function calculateInterestRate(){
+
+  const era = getEra();
+
+  const fin = getFinance();
+
+  const fleetValue = getFleetValue();
+
+  let debt = 0;
+
+  if(fin.bank && fin.bank.loans){
+
+    fin.bank.loans.forEach(l => {
+
+      debt += Number(l.remaining) || 0;
+
+    });
+
+  }
+
+  const ratio = fleetValue > 0 ? debt / fleetValue : 0;
+
+  let penalty = 0;
+
+  if(ratio > 0.6) penalty = 2.5;
+  else if(ratio > 0.4) penalty = 1.5;
+  else if(ratio > 0.2) penalty = 0.5;
+
+  return era.baseRate + penalty;
+
+}
+
+
+/* ============================================================
+   MONTHLY PAYMENT FORMULA
+   ============================================================ */
+
+function calculateMonthlyPayment(amount, rate, months){
+
+  const r = rate / 100 / 12;
+
+  if(r === 0)
+    return amount / months;
+
+  return amount * r / (1 - Math.pow(1+r, -months));
+
+}
+
+
+/* ============================================================
+   CREATE LOAN
+   ============================================================ */
 
 window.ACS_BANK_createLoan = function(amount, months){
 
-const capacity = ACS_BANK_calculateLoanCapacity();
+  const capacity = calculateLoanCapacity();
 
-if (amount > capacity){
-throw new Error("Loan exceeds capacity");
-}
+  if(amount > capacity)
+    throw new Error("Loan exceeds capacity");
 
-const fin = ACS_BANK_getFinance();
+  const fin = getFinance();
 
-if (!fin.bank){
-fin.bank = { loans: [] };
-}
+  if(!fin.bank)
+    fin.bank = { loans:[] };
 
-const rate = ACS_BANK_calculateInterestRate();
+  const rate = calculateInterestRate();
 
-const monthly =
-ACS_BANK_calculateMonthlyPayment(amount, rate, months);
+  const monthly = calculateMonthlyPayment(amount, rate, months);
 
-const loan = {
+  const loan = {
 
-```
-id: "LOAN_" + Date.now(),
+    id: "LOAN_" + Date.now(),
 
-amount,
-remaining: amount,
+    amount: amount,
 
-rate,
+    remaining: amount,
 
-monthlyPayment: monthly,
+    rate: rate,
 
-termMonths: months,
+    monthlyPayment: monthly,
 
-startYear: ACS_BANK_getCurrentYear()
-```
+    termMonths: months,
 
-};
+    startYear: getCurrentYear()
 
-fin.bank.loans.push(loan);
+  };
 
-fin.balance = (fin.balance || 0) + amount;
+  fin.bank.loans.push(loan);
 
-ACS_BANK_saveFinance(fin);
+  fin.balance = (fin.balance || 0) + amount;
 
-return loan;
+  saveFinance(fin);
+
+  return loan;
 
 };
+
 
 /* ============================================================
-🔄 MONTHLY PROCESSING
-============================================================ */
-
-window.ACS_BANK_processMonthlyPayments = function(){
-
-const fin = ACS_BANK_getFinance();
-
-if (!fin.bank?.loans) return;
-
-fin.bank.loans.forEach(loan=>{
-
-```
-if (loan.remaining <= 0) return;
-
-fin.balance -= loan.monthlyPayment;
-
-loan.remaining -= loan.monthlyPayment;
-```
-
-});
-
-ACS_BANK_saveFinance(fin);
-
-};
-
-/* ============================================================
-📊 SUMMARY
-============================================================ */
+   SUMMARY
+   ============================================================ */
 
 window.ACS_BANK_getSummary = function(){
 
-const year = ACS_BANK_getCurrentYear();
+  const fin = getFinance();
 
-const fleetValue = ACS_BANK_getFleetValue();
+  if(!fin.bank)
+    fin.bank = { loans:[] };
 
-const capacity = ACS_BANK_calculateLoanCapacity();
+  return {
 
-const rate = ACS_BANK_calculateInterestRate();
+    year: getCurrentYear(),
 
-const fin = ACS_BANK_getFinance();
+    fleetValue: getFleetValue(),
 
-return {
+    loanCapacity: calculateLoanCapacity(),
 
-```
-year,
-fleetValue,
-loanCapacity: capacity,
-interestRate: rate,
-loans: fin.bank?.loans || []
-```
+    interestRate: calculateInterestRate(),
 
-};
+    loans: fin.bank.loans
+
+  };
 
 };
+
+
+/* ============================================================
+   EXPOSE PAYMENT FUNCTION
+   ============================================================ */
+
+window.ACS_BANK_calculateMonthlyPayment = calculateMonthlyPayment;
 
 })();
