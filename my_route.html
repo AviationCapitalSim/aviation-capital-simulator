@@ -35,7 +35,21 @@ body{margin:0;background:#081530;color:#fff;font-family:"Poppins",sans-serif;ove
 /* ============================================================
    HEADER — SHARED ACS STANDARD
    ============================================================ */
-.acs-header{position:fixed;top:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:.8rem 2rem;background:rgba(12,23,50,.45);backdrop-filter:blur(9px);border-bottom:2px solid #ffb300;z-index:5000}
+.acs-header{
+  position:fixed;
+  top:0;
+  width:100%;
+  box-sizing:border-box; /* ← FIX CRÍTICO */
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.8rem 2rem;
+  background:rgba(12,23,50,.45);
+  backdrop-filter:blur(9px);
+  border-bottom:2px solid #ffb300;
+  z-index:5000;
+}
+
 .acs-logo{display:flex;align-items:center;gap:1rem}
 .acs-logo img{height:46px}
 .acs-logo h1{margin:0;font-size:1.1rem;color:#ffb300}
