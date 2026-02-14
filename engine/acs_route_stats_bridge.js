@@ -231,17 +231,17 @@ function ACS_refreshRouteKPIs(){
 
     /* Airline Image model */
 
-    const airlineImage =
-    routes.length > 0
-    ? Math.round(totalRouteImage / routes.length)
-    : 0;
+    let airlineImage =
+  routes.length > 0
+  ? Math.round(totalRouteImage / routes.length)
+  : 0;
 
-    airlineImage += profitable * 3;
-    airlineImage += avgLF * 25;
-    airlineImage += activeRoutes * 1.5;
+   airlineImage += profitable * 3;
+   airlineImage += avgLF * 25;
+   airlineImage += activeRoutes * 1.5;
 
-    airlineImage =
-      Math.min(100, Math.round(airlineImage));
+  airlineImage =
+  Math.min(100, Math.round(airlineImage));
 
     /* WRITE UI */
 
