@@ -52,7 +52,7 @@ function ACS_updateRouteStats(economics) {
   if (!origin || !destination) return;
 
   const key = ACS_buildRouteKey(origin, destination);
-  const stats = ACS_loadRouteStats();
+  const stats = JSON.parse(localStorage.getItem("ACS_ROUTE_STATS") || "{}");
 
   if (!stats[key]) {
     stats[key] = {
