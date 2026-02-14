@@ -623,6 +623,10 @@ console.log(
   "🟦 KPI VISUAL FEEDBACK ENGINE READY"
 );
 
+document.addEventListener("DOMContentLoaded", function(){
+  ACS_refreshRouteKPIs();
+});
+     
 /* ============================================================
    🟦 SAFETY TERMINATOR — FILE INTEGRITY GUARANTEE
    Prevents unexpected end of script errors
