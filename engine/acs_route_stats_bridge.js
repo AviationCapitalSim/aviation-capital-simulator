@@ -164,8 +164,9 @@ function ACS_refreshRouteKPIs(){
 
   try {
 
-    const routes =
-      window.ACS_ROUTES || [];
+    const stats = JSON.parse(localStorage.getItem("ACS_ROUTE_STATS") || "{}");
+
+    const routes = Object.values(stats);
 
     if (!routes.length) return;
 
