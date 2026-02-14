@@ -114,23 +114,35 @@ body{margin:0;background:#081530;color:#fff;font-family:"Poppins",sans-serif;ove
 }
 
 /* ============================================================
-   🟦 CLOCK CONTAINER — CENTERED & PREMIUM
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
    ============================================================ */
 
 .acs-clock-header{
+
   font-family:"Orbitron",monospace;
   font-size:.95rem;
   color:#00ff80;
+
   background:rgba(0,255,128,.08);
   border-radius:10px;
+
   padding:.45rem .8rem;
-  min-width:240px;
+
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
   display:flex;
   justify-content:center;
   align-items:center;
+
   white-space:nowrap;
+
   font-variant-numeric:tabular-nums;
+
   border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
 }
 
 /* ============================================================
