@@ -567,18 +567,18 @@ if (statusEl){
   statusEl.textContent =
     visual.label;
 
-}
-
+  }
   catch(err){
 
     console.warn(
-      "ACS KPI visual feedback failed",
+      "ACS_refreshRouteKPIs failed",
       err
     );
 
   }
 
-}
+} // END ACS_refreshRouteKPIs
+
 
 /* ============================================================
    AUTO APPLY
