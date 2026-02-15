@@ -374,6 +374,10 @@ function loadBankData(){
   const capacity = Number(BANK_SUMMARY.loanCapacity || 0);
   MAX_PER_LOAN = capacity * 0.7;
 
+  loanAmountInput.max = Math.floor(MAX_PER_LOAN);
+  loanAmountInput.placeholder =
+  "Max allowed: $" + Math.floor(MAX_PER_LOAN).toLocaleString();
+  
   interestRateEl.textContent = Number(BANK_SUMMARY.interestRate || 0).toFixed(2) + "%";
   maxLoanEl.textContent = money(MAX_PER_LOAN);
 
