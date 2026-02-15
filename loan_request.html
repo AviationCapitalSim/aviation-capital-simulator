@@ -1421,27 +1421,72 @@ if(typeof loanSlider !== "undefined" && loanSlider){
 }
   
 function submitLoan(){
-  const amount = Number(loanAmountInput.value || 0);
-  const years  = Number(loanTermSelect.value || 0);
-  const months = years * 12;
+
+  /* ============================================================
+     CLEAN FORMATTED INPUT (remove commas)
+     ============================================================ */
+
+  const cleanAmount =
+    Number(
+      loanAmountInput.value
+      .replace(/,/g,"")
+      .replace(/[^0-9]/g,"")
+    );
+
+  const amount = cleanAmount;
+
+  const years =
+    Number(loanTermSelect.value || 0);
+
+  const months =
+    years * 12;
+
+  /* ============================================================
+     VALIDATION
+     ============================================================ */
 
   if (!amount || amount <= 0){
-    loanMessageEl.textContent = "Enter a valid loan amount.";
+
+    loanMessageEl.textContent =
+      "Enter a valid loan amount.";
+
     return;
+
   }
 
   if (amount > MAX_PER_LOAN){
-    loanMessageEl.textContent = "Amount exceeds the 70% maximum allowed per loan.";
+
+    loanMessageEl.textContent =
+      "Amount exceeds the maximum allowed.";
+
     return;
+
   }
 
+  /* ============================================================
+     CREATE LOAN
+     ============================================================ */
+
   try{
+
     ACS_BANK_createLoan(amount, months);
-    loanMessageEl.textContent = "✅ Loan approved. Funds transferred to your airline balance.";
-    setTimeout(()=> location.href="bank.html", 1200);
-  }catch(err){
-    loanMessageEl.textContent = (err && err.message) ? err.message : "Loan error.";
+
+    loanMessageEl.textContent =
+      "Loan approved. Funds transferred.";
+
+    setTimeout(() =>
+      location.reload(),
+      1000
+    );
+
   }
+  catch(err){
+
+    loanMessageEl.textContent =
+      err?.message || "Loan error.";
+
+  }
+
 }
 
 document.getElementById("requestLoanBtn").addEventListener("click", submitLoan);
