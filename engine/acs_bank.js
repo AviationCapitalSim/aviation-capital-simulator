@@ -245,10 +245,12 @@ function calculateMonthlyPayment(amount, rate, months){
 
 
 /* ============================================================
-   CREATE LOAN
+   🟩 B7 — ACS BANK CREATE LOAN (CANONICAL FINANCE INTEGRATION)
+   Replaces direct balance manipulation
+   Uses Finance Ledger v3.0
    ============================================================ */
 
-window.ACS_BANK_createLoan = function(amount, months){
+ACS_BANK_createLoan = function(amount, months){
 
   const capacity = calculateLoanCapacity();
 
@@ -268,7 +270,7 @@ window.ACS_BANK_createLoan = function(amount, months){
 
     id: "LOAN_" + Date.now(),
 
-    amount: amount,
+    originalAmount: amount,
 
     remaining: amount,
 
@@ -278,20 +280,74 @@ window.ACS_BANK_createLoan = function(amount, months){
 
     termMonths: months,
 
-    startYear: getCurrentYear()
+    startYear: getCurrentYear(),
+
+    type: "BANK_LOAN"
 
   };
 
-  fin.bank.loans.push(loan);
+  /* ============================================================
+     REGISTER LOAN IN BANK STRUCTURE
+     ============================================================ */
 
-  fin.balance = (fin.balance || 0) + amount;
+  fin.bank.loans.push(loan);
 
   saveFinance(fin);
 
+  /* ============================================================
+     REGISTER MONEY IN FINANCE LEDGER (CANONICAL)
+     ============================================================ */
+
+  if(typeof window.ACS_registerIncome === "function"){
+
+    window.ACS_registerIncome({
+
+      revenue: amount,
+
+      source: "BANK_LOAN",
+
+      meta: {
+
+        loanId: loan.id,
+
+        rate: rate,
+
+        termMonths: months
+
+      }
+
+    });
+
+  }
+
+  /* ============================================================
+     REGISTER LEDGER ENTRY (VISIBLE IN COMPANY FINANCE)
+     ============================================================ */
+
+  if(window.ACS_FINANCE_ENGINE &&
+     typeof window.ACS_FINANCE_ENGINE.commit === "function"){
+
+    window.ACS_FINANCE_ENGINE.commit({
+
+      type: "LOAN_IN",
+
+      amount: amount,
+
+      source: "BANK",
+
+      ref: loan.id,
+
+      ts: Date.now()
+
+    });
+
+  }
+
+  console.log("🏦 Loan created and registered in Finance:", loan.id);
+
   return loan;
 
-};
-
+}
 
 /* ============================================================
    SUMMARY
