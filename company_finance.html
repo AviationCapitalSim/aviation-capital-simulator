@@ -768,6 +768,78 @@ function loadBreakdown() {
 }
 
 /* ============================================================
+   🟩 CF-B12 — ADD BANK LOANS FINANCING CARD (SAFE ADDITION)
+   Does NOT modify existing categories
+   Reads canonical bank structure from ACS_Finance.bank.loans
+   ============================================================ */
+
+(function(){
+
+  try{
+
+    const f =
+      JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+    const loans =
+      f.bank?.loans || [];
+
+    if(loans.length === 0) return;
+
+    const total =
+      loans.reduce(
+        (sum, loan) =>
+          sum + Number(loan.originalAmount || 0),
+        0
+      );
+
+    const container =
+      document.querySelector(".finance-breakdown-grid");
+
+    if(!container) return;
+
+    const card =
+      document.createElement("div");
+
+    card.className = "finance-chip";
+
+    card.innerHTML = `
+      <div class="finance-chip-label">
+        bank_loans (Financing)
+      </div>
+
+      <div class="finance-chip-bar">
+        <div class="finance-chip-fill"
+             style="
+               width:100%;
+               background:linear-gradient(
+                 90deg,
+                 #00ffd0,
+                 #00ff88
+               );
+             ">
+        </div>
+      </div>
+
+      <div class="finance-chip-value">
+        $${Math.round(total).toLocaleString()}
+      </div>
+    `;
+
+    container.appendChild(card);
+
+  }
+  catch(e){
+
+    console.warn(
+      "CF-B12 failed:",
+      e
+    );
+
+  }
+
+})();
+     
+/* ============================================================
    🟦 F-UI-3 — FINANCE UI LIVE REFRESH (same-tab)
    ------------------------------------------------------------
    • Trigger: ACS_FINANCE_UPDATED
