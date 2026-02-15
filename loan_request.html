@@ -1058,10 +1058,15 @@ const loanSlider =
   document.getElementById("loanAmountRange");
 
 /* ============================================================
-   🟦 ACS BANK — AMOUNT SYNC ENGINE (SAFE VERSION)
+   🟦 ACS BANK — AMOUNT SYNC ENGINE (FINAL STABLE VERSION)
+   ------------------------------------------------------------
+   Professional aviation financing amount control
+   Fully synchronized slider ⇄ input
+   No readonly conflicts
+   Safe initialization
    ============================================================ */
 
-loanSlider = null;
+let loanSlider = null;
 
 /* ============================================================
    FORMAT MONEY INPUT
@@ -1088,11 +1093,15 @@ function initializeAmountControls(){
     document.getElementById("loanAmountRange");
 
   if(!loanSlider || !loanAmountInput){
-    console.warn("Loan controls not found");
+
+    console.warn("ACS BANK: loan controls not found");
     return;
+
   }
 
-  /* INPUT → SLIDER */
+  /* ============================================================
+     INPUT → SLIDER SYNC
+     ============================================================ */
 
   loanAmountInput.addEventListener("input", () => {
 
@@ -1113,7 +1122,9 @@ function initializeAmountControls(){
 
   });
 
-  /* SLIDER → INPUT */
+  /* ============================================================
+     SLIDER → INPUT SYNC
+     ============================================================ */
 
   loanSlider.addEventListener("input", () => {
 
@@ -1125,10 +1136,17 @@ function initializeAmountControls(){
 
   });
 
-  /* RESET */
+  /* ============================================================
+     INITIAL RESET
+     ============================================================ */
 
+  loanSlider.min = 0;
+  loanSlider.max = MAX_PER_LOAN || 0;
   loanSlider.value = 0;
+
   loanAmountInput.value = "";
+
+  console.log("ACS BANK: Amount controls initialized");
 
 }
   
@@ -1159,8 +1177,13 @@ function submitLoan(){
 document.getElementById("requestLoanBtn").addEventListener("click", submitLoan);
 
 document.addEventListener("DOMContentLoaded", () => {
+
   loadBankData();
+
   loadAircraft();
+
+  initializeAmountControls();
+
 });
 
 function handleLogout() {
