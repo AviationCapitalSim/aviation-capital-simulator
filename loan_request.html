@@ -409,47 +409,89 @@ function loadBankData(){
   updateCreditProfile();
 }
 
+/* ============================================================
+   🏦 ACS FINANCIAL AUTHORITY ENGINE
+   Replaces legacy AAA / CCC model
+   ============================================================ */
+
 function updateCreditProfile(){
 
-  const fleet = Number(BANK_SUMMARY.fleetValue || 0);
+  if(!BANK_SUMMARY){
+    creditRatingEl.textContent = "NO DATA";
+    riskLevelEl.textContent    = "UNKNOWN";
+    return;
+  }
+
+  const fleetValue =
+    Number(BANK_SUMMARY.fleetValue || 0);
 
   const loans =
     Array.isArray(BANK_SUMMARY.loans)
     ? BANK_SUMMARY.loans
     : [];
 
-  const debt =
-    loans.reduce((s,l)=>s + Number(l.remaining||0),0);
+  const totalDebt =
+    loans.reduce((sum,l)=>
+      sum + Number(l.remaining || 0), 0);
 
-  const ratio =
-    fleet > 0 ? debt / fleet : 0;
+  const debtRatio =
+    fleetValue > 0
+      ? totalDebt / fleetValue
+      : 1;
 
-  let rating = "BB";
-  let risk   = "Moderate";
+  let authority = "";
+  let stability = "";
+  let color     = "";
 
-  if(fleet > 50000000){
-    rating = "A";
-    risk   = "Low";
+  /* ============================================================
+     AUTHORITY BASED ON REAL FINANCIAL STRENGTH
+     ============================================================ */
+
+  if(fleetValue >= 100000000){
+
+    authority = "GLOBAL AUTHORITY";
+    stability = "SECURE";
+    color     = "#00ffd0";
+
   }
-  else if(fleet > 20000000){
-    rating = "BBB";
-    risk   = "Stable";
+  else if(fleetValue >= 25000000){
+
+    authority = "EXTENDED AUTHORITY";
+    stability = "STRONG";
+    color     = "#00ff88";
+
   }
-  else if(fleet > 5000000){
-    rating = "BB";
-    risk   = "Moderate";
+  else if(fleetValue >= 5000000){
+
+    authority = "STANDARD AUTHORITY";
+    stability = "STABLE";
+    color     = "#4da3ff";
+
   }
-  else if(fleet > 1000000){
-    rating = "B";
-    risk   = "Elevated";
+  else if(fleetValue >= 1000000){
+
+    authority = "LIMITED AUTHORITY";
+    stability = "ELEVATED RISK";
+    color     = "#ffb300";
+
   }
   else{
-    rating = "CCC";
-    risk   = "High";
+
+    authority = "RESTRICTED AUTHORITY";
+    stability = "UNSTABLE";
+    color     = "#ff8844";
+
   }
 
-  creditRatingEl.textContent = rating;
-  riskLevelEl.textContent    = risk;
+  /* ============================================================
+     APPLY TO UI
+     ============================================================ */
+
+  creditRatingEl.textContent = authority;
+  creditRatingEl.style.color = color;
+
+  riskLevelEl.textContent = stability;
+  riskLevelEl.style.color = color;
 
 }
 
