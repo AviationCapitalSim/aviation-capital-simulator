@@ -1455,6 +1455,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeAmountControls();
 
   loadLoanPortfolio();
+
+  renderLoanPortfolio();
   
 });
 
@@ -1462,6 +1464,145 @@ function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }  
+
+/* ============================================================
+   🏦 ACS BANK — ACTIVE LOAN PORTFOLIO DISPLAY ENGINE
+   ============================================================ */
+
+function renderLoanPortfolio(){
+
+  const container =
+    document.getElementById("loanPortfolioContainer");
+
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  if(!BANK_SUMMARY || !BANK_SUMMARY.loans || BANK_SUMMARY.loans.length === 0){
+
+    container.innerHTML =
+      `<div style="
+        color:#8ca8ff;
+        font-size:0.95rem;
+        opacity:0.8;
+      ">
+        No active loans.
+      </div>`;
+
+    return;
+  }
+
+  BANK_SUMMARY.loans.forEach((loan, index) => {
+
+    const card =
+      document.createElement("div");
+
+    card.style.background =
+      "linear-gradient(180deg, rgba(10,25,60,0.95), rgba(5,15,40,0.98))";
+
+    card.style.border =
+      "1px solid rgba(0,255,180,0.25)";
+
+    card.style.borderRadius =
+      "10px";
+
+    card.style.padding =
+      "12px";
+
+    card.style.display =
+      "flex";
+
+    card.style.justifyContent =
+      "space-between";
+
+    card.style.alignItems =
+      "center";
+
+    const left =
+      document.createElement("div");
+
+    left.innerHTML =
+      `
+      <div style="color:#00ffd0;font-weight:600">
+        Loan: ${money(loan.originalAmount)}
+      </div>
+
+      <div style="color:#8ca8ff;font-size:0.85rem">
+        Remaining: ${money(loan.remaining)}
+      </div>
+
+      <div style="color:#8ca8ff;font-size:0.85rem">
+        Monthly: ${money(loan.monthlyPayment)}
+      </div>
+      `;
+
+    const right =
+      document.createElement("button");
+
+    right.textContent =
+      "Amortize";
+
+    right.style.background =
+      "rgba(0,255,180,0.15)";
+
+    right.style.border =
+      "1px solid rgba(0,255,180,0.35)";
+
+    right.style.color =
+      "#00ffd0";
+
+    right.style.padding =
+      "6px 12px";
+
+    right.style.borderRadius =
+      "8px";
+
+    right.style.cursor =
+      "pointer";
+
+    right.onclick =
+      () => amortizeLoan(index);
+
+    card.appendChild(left);
+    card.appendChild(right);
+
+    container.appendChild(card);
+
+  });
+
+}
+
+/* ============================================================
+   🏦 MANUAL AMORTIZATION ENGINE
+   ============================================================ */
+
+function amortizeLoan(index){
+
+  const amount =
+    prompt("Enter amortization amount:");
+
+  if(!amount) return;
+
+  const value =
+    Number(amount.replace(/[^0-9]/g,""));
+
+  if(!value) return;
+
+  try{
+
+    ACS_BANK_amortizeLoan(index, value);
+
+    loadBankData();
+    renderLoanPortfolio();
+
+  }
+  catch(err){
+
+    alert(err.message || "Amortization failed");
+
+  }
+
+}
   
 </script>
   
