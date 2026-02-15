@@ -1047,6 +1047,91 @@ function updateCollateralTotals(){
 
 }
 
+/* ============================================================
+   🟦 ACS BANK — AMOUNT SYNC ENGINE (Slider ⇄ Input)
+   ------------------------------------------------------------
+   Real banking control system
+   Fully synchronized bidirectional amount control
+   ============================================================ */
+
+const loanSlider =
+  document.getElementById("loanAmountRange");
+
+/* ============================================================
+   🟦 ACS BANK — AMOUNT SYNC ENGINE (SAFE VERSION)
+   ============================================================ */
+
+let loanSlider = null;
+
+/* ============================================================
+   FORMAT MONEY INPUT
+   ============================================================ */
+
+function formatMoneyInput(value){
+
+  const num =
+    Number(String(value).replace(/[^0-9]/g,""));
+
+  if(!num) return "";
+
+  return num.toLocaleString();
+
+}
+
+/* ============================================================
+   INITIALIZE AMOUNT CONTROLS
+   ============================================================ */
+
+function initializeAmountControls(){
+
+  loanSlider =
+    document.getElementById("loanAmountRange");
+
+  if(!loanSlider || !loanAmountInput){
+    console.warn("Loan controls not found");
+    return;
+  }
+
+  /* INPUT → SLIDER */
+
+  loanAmountInput.addEventListener("input", () => {
+
+    let raw =
+      Number(
+        loanAmountInput.value.replace(/[^0-9]/g,"")
+      );
+
+    if(!raw) raw = 0;
+
+    if(raw > MAX_PER_LOAN)
+      raw = MAX_PER_LOAN;
+
+    loanSlider.value = raw;
+
+    loanAmountInput.value =
+      formatMoneyInput(raw);
+
+  });
+
+  /* SLIDER → INPUT */
+
+  loanSlider.addEventListener("input", () => {
+
+    const value =
+      Number(loanSlider.value);
+
+    loanAmountInput.value =
+      formatMoneyInput(value);
+
+  });
+
+  /* RESET */
+
+  loanSlider.value = 0;
+  loanAmountInput.value = "";
+
+}
+  
 function submitLoan(){
   const amount = Number(loanAmountInput.value || 0);
   const years  = Number(loanTermSelect.value || 0);
