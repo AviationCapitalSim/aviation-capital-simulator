@@ -262,10 +262,17 @@
   <div class="subtitle">Historical aviation credit system (1940–2030)</div>
 
   <section class="grid">
-    <div class="card">
-      <h3>Current Year</h3>
-      <div class="value" id="year">—</div>
-    </div>
+       
+    <!-- ============================================================
+   🟩 B17 — LOAN ORIGINATION DATE CARD (REAL BANKING FIX)
+   Replaces Current Year with Loan Start Date
+   ============================================================ -->
+
+<div class="card">
+  <h3>Last Loan Start Date</h3>
+  <div class="value" id="loanStart">—</div>
+</div>
+
 
     <div class="card">
       <h3>Fleet Collateral Value</h3>
@@ -344,7 +351,30 @@
 
     const s = ACS_BANK_getSummary();
 
-    document.getElementById("year").innerText = s.year;
+    /* ============================================================
+   🟩 B18 — DISPLAY LAST LOAN START DATE (REAL BANKING FIX)
+   ============================================================ */
+
+const loans = Array.isArray(s.loans) ? s.loans : [];
+
+if(loans.length > 0){
+
+  const lastLoan =
+    loans[loans.length - 1];
+
+  const startYear =
+    lastLoan.startYear || "—";
+
+  document.getElementById("loanStart").innerText =
+    startYear;
+
+}else{
+
+  document.getElementById("loanStart").innerText =
+    "No loans";
+
+}
+
     document.getElementById("fleet").innerText = money(s.fleetValue);
     document.getElementById("capacity").innerText = money(s.loanCapacity);
     document.getElementById("rate").innerText = Number(s.interestRate).toFixed(2) + "%";
@@ -378,6 +408,7 @@
       console.error("BANK UI crash:", e);
     }
   });
+     
 </script>
 
 </body>
