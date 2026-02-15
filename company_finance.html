@@ -751,23 +751,37 @@ function loadBreakdown() {
    Adds Bank Loan income into Finance breakdown UI
    ============================================================ */
 
-if (f.bank && Array.isArray(f.bank.loans)) {
+/* ============================================================
+   🏦 BANK LOANS — FINANCE INTEGRATION (REAL SOURCE)
+   Reads canonical bank structure from ACS_Finance.bank.loans
+   ============================================================ */
+
+const loans =
+  Array.isArray(f.bank?.loans)
+  ? f.bank.loans
+  : [];
+
+if(loans.length > 0){
 
   const totalLoans =
-    f.bank.loans.reduce((sum, loan) =>
-      sum + Number(loan.originalAmount || 0), 0);
+    loans.reduce(
+      (sum, loan) =>
+        sum + Number(
+          loan.originalAmount ??
+          loan.amount ??
+          loan.remaining ??
+          0
+        ),
+      0
+    );
 
-  if (totalLoans > 0) {
+  categories.push({
 
-    categories.push({
+    label: "Bank Loans (Financing)",
 
-      label: "Bank Loan (Income)",
+    value: totalLoans
 
-      value: totalLoans
-
-    });
-
-  }
+  });
 
 }
      
