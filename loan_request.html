@@ -529,6 +529,110 @@
   margin:0;
 
 }
+
+/* ============================================================
+   🟩 LOAN DETAILS PANEL — PERFECT CENTER ALIGNMENT
+   ============================================================ */
+
+.panel{
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+}
+
+.panel h3{
+
+  text-align:center;
+  width:100%;
+
+}
+
+.panel label{
+
+  width:100%;
+  text-align:left;
+  margin-top:12px;
+
+}
+
+.panel input,
+.panel select{
+
+  width:100%;
+  max-width:320px;
+
+}
+
+.panel p{
+
+  text-align:center;
+  width:100%;
+
+}
+
+/* ============================================================
+   🟩 ACS FINANCIAL SLIDER — PROFESSIONAL STYLE
+   ============================================================ */
+
+.acs-slider-container{
+
+  width:100%;
+  max-width:320px;
+  margin-top:12px;
+
+}
+
+#loanAmountRange{
+
+  -webkit-appearance:none;
+  appearance:none;
+
+  width:100%;
+  height:6px;
+
+  background:
+  linear-gradient(90deg,#00ffd0,#00aaff);
+
+  border-radius:4px;
+  outline:none;
+
+}
+
+/* thumb */
+
+#loanAmountRange::-webkit-slider-thumb{
+
+  -webkit-appearance:none;
+
+  width:18px;
+  height:18px;
+
+  background:#ffffff;
+
+  border-radius:50%;
+
+  border:2px solid #00ffd0;
+
+  cursor:pointer;
+
+}
+
+#loanAmountRange::-moz-range-thumb{
+
+  width:18px;
+  height:18px;
+
+  background:#ffffff;
+
+  border-radius:50%;
+
+  border:2px solid #00ffd0;
+
+  cursor:pointer;
+
+}
     
 </style>
   
@@ -1102,8 +1206,18 @@ function updateCollateralTotals(){
 
   if(slider){
 
-    slider.max = MAX_PER_LOAN;
-    slider.value = Math.min(slider.value, MAX_PER_LOAN);
+    slider.min = 0;
+
+  slider.max = MAX_PER_LOAN > 0
+  ? MAX_PER_LOAN
+  : 100000;
+
+  slider.step =
+  Math.max(1000, Math.floor(MAX_PER_LOAN / 100));
+
+  slider.value =
+  Math.min(Number(slider.value) || 0, slider.max);
+
 
   }
 
@@ -1193,7 +1307,15 @@ function initializeAmountControls(){
      ============================================================ */
 
   loanSlider.min = 0;
-  loanSlider.max = MAX_PER_LOAN || 0;
+
+  loanSlider.max =
+  MAX_PER_LOAN > 0
+  ? MAX_PER_LOAN
+  : 100000;
+
+  loanSlider.step =
+  Math.max(1000, Math.floor(loanSlider.max / 100));
+
   loanSlider.value = 0;
 
   loanAmountInput.value = "";
