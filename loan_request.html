@@ -174,77 +174,92 @@
 
 }
 
-/* terminal container */
+/* ============================================================
+   🟩 ACS PANEL SYSTEM — FINAL CLEAN VERSION
+   SINGLE SOURCE OF TRUTH
+   ============================================================ */
 
 .panel{
 
   background:
   linear-gradient(
     180deg,
-    rgba(5,18,48,0.95),
-    rgba(2,10,30,0.98)
+    rgba(14,34,72,0.96),
+    rgba(8,22,55,0.98)
   );
 
-  border-radius:16px;
+  border-radius:18px;
 
-  border:
-  1px solid rgba(255,179,0,0.18);
+  border:1px solid rgba(255,179,0,0.28);
 
-  padding:28px;
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.45),
+    inset 0 0 18px rgba(0,140,255,0.12);
 
-  min-height:240px;
+  padding:24px;
+
+  min-height:220px;
 
   display:flex;
-
   flex-direction:column;
-
-  justify-content:flex-start;
 
   gap:14px;
 
-  position:relative;
-
 }
 
-/* header */
+/* titles */
 
 .panel h3{
 
-  font-size:1rem;
-
+  font-size:1.05rem;
   font-weight:600;
 
   color:#ffb300;
-
-  letter-spacing:1px;
 
   margin-bottom:6px;
 
 }
 
-/* spacing inside */
+/* inputs */
 
-.panel > *{
+.panel input,
+.panel select{
 
-  margin-top:6px;
+  width:100%;
+
+  padding:10px;
+
+  border-radius:10px;
+
+  border:1px solid rgba(0,140,255,0.25);
+
+  background:
+  linear-gradient(
+    180deg,
+    rgba(10,25,60,0.9),
+    rgba(5,15,40,0.95)
+  );
+
+  color:white;
 
 }
 
-/* authority panel special */
+/* slider clean */
 
-.acs-authority-panel{
+#loanAmountRange{
 
-  border-color:
-  rgba(0,255,180,0.35);
+  width:100%;
+
+  margin-top:8px;
+  margin-bottom:4px;
 
 }
 
-/* submit panel special */
+/* hover */
 
-.panel:last-child{
+.panel:hover{
 
-  border-color:
-  rgba(0,255,140,0.35);
+  border-color:rgba(255,179,0,0.45);
 
 }
 
