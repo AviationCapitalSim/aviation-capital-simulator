@@ -351,13 +351,12 @@
 
     const s = ACS_BANK_getSummary();
 
-    /* ============================================================
-   🟩 B18 — DISPLAY LAST LOAN START DATE (REAL BANKING FIX)
+/* ============================================================
+   🟩 B18 — DISPLAY LAST LOAN START DATE (FIXED — NO REDECLARE)
+   Uses existing loans variable
    ============================================================ */
 
-const loans = Array.isArray(s.loans) ? s.loans : [];
-
-if(loans.length > 0){
+if(loans && loans.length > 0){
 
   const lastLoan =
     loans[loans.length - 1];
