@@ -155,30 +155,98 @@
       margin-bottom: 2rem;
     }
 
-    .main-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1.5rem;
-    }
+    /* ============================================================
+   ACS TERMINAL PANELS — REAL FINANCIAL TERMINAL STRUCTURE
+   ============================================================ */
 
-    .panel {
-      background: #0b1c3f;
-      border-radius: 12px;
-      padding: 1.5rem;
-      border: 1px solid rgba(255,179,0,0.25);
-      box-shadow: 0 0 12px rgba(0,0,0,0.3);
-      transition: transform 0.2s ease;
-    }
+.main-grid{
 
-    .panel:hover { transform: scale(1.02); }
+  display:grid;
 
-    .panel h3 {
-      color: #FFB300;
-      margin-bottom: 0.8rem;
-    }
+  grid-template-columns:
+  repeat(auto-fit, minmax(340px, 1fr));
+
+  gap:32px;
+
+  margin-top:40px;
+
+  padding:20px;
+
+}
+
+/* terminal container */
+
+.panel{
+
+  background:
+  linear-gradient(
+    180deg,
+    rgba(5,18,48,0.95),
+    rgba(2,10,30,0.98)
+  );
+
+  border-radius:16px;
+
+  border:
+  1px solid rgba(255,179,0,0.18);
+
+  padding:28px;
+
+  min-height:240px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  justify-content:flex-start;
+
+  gap:14px;
+
+  position:relative;
+
+}
+
+/* header */
+
+.panel h3{
+
+  font-size:1rem;
+
+  font-weight:600;
+
+  color:#ffb300;
+
+  letter-spacing:1px;
+
+  margin-bottom:6px;
+
+}
+
+/* spacing inside */
+
+.panel > *{
+
+  margin-top:6px;
+
+}
+
+/* authority panel special */
+
+.acs-authority-panel{
+
+  border-color:
+  rgba(0,255,180,0.35);
+
+}
+
+/* submit panel special */
+
+.panel:last-child{
+
+  border-color:
+  rgba(0,255,140,0.35);
+
+}
 
     select, input {
       border-radius: 8px;
