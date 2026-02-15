@@ -453,6 +453,37 @@ function updateCreditProfile(){
 
 }
 
+function getAircraftDatabase(){
+
+  // check common global locations safely
+
+  if(typeof ACS_AIRCRAFT_DB !== "undefined")
+    return ACS_AIRCRAFT_DB;
+
+  if(typeof window.ACS_AIRCRAFT_DB !== "undefined")
+    return window.ACS_AIRCRAFT_DB;
+
+  if(typeof window.ACS !== "undefined" &&
+     typeof window.ACS.AIRCRAFT_DB !== "undefined")
+    return window.ACS.AIRCRAFT_DB;
+
+  // fallback: search dynamically
+  for(const k in window){
+
+    if(Array.isArray(window[k]) &&
+       window[k].length > 0 &&
+       window[k][0]?.price_acs_usd){
+
+      return window[k];
+
+    }
+
+  }
+
+  return null;
+
+}
+  
 function loadAircraft(){
 
   const fleet =
@@ -461,20 +492,21 @@ function loadAircraft(){
   collateralSelect.innerHTML =
     '<option value="">Select Aircraft</option>';
 
-  if(!window.ACS_AIRCRAFT_DB){
-    console.error("ACS_AIRCRAFT_DB not loaded");
-    return;
-  }
+  const DB = getAircraftDatabase();
+
+if(!DB){
+  console.error("Aircraft database not found");
+  return;
+}
 
   fleet.forEach(ac => {
 
     const model = ac.model || "";
 
     // buscar en database real
-    const dbAircraft =
-      window.ACS_AIRCRAFT_DB.find(
-        a => a.model === model
-      );
+    
+   const dbAircraft =
+    DB.find(
 
     let value = 0;
 
