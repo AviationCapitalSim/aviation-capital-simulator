@@ -344,61 +344,87 @@
   }
 
   function loadBank(){
-    if (typeof ACS_BANK_getSummary !== "function"){
-      console.error("ACS_BANK_getSummary() missing — engine/acs_bank.js not loaded.");
-      return;
-    }
 
-    const s = ACS_BANK_getSummary();
+  if (typeof ACS_BANK_getSummary !== "function"){
+    console.error("ACS_BANK_getSummary() missing — engine/acs_bank.js not loaded.");
+    return;
+  }
 
-/* ============================================================
-   🟩 B18 — DISPLAY LAST LOAN START DATE (FIXED — NO REDECLARE)
-   Uses existing loans variable
-   ============================================================ */
+  const s = ACS_BANK_getSummary();
 
-if(loans && loans.length > 0){
+  const loans =
+    Array.isArray(s.loans) ? s.loans : [];
 
-  const lastLoan =
-    loans[loans.length - 1];
+  /* ============================================================
+     🟩 B18 — DISPLAY LAST LOAN START DATE (FIXED ORDER)
+     ============================================================ */
 
-  const startYear =
-    lastLoan.startYear || "—";
+  if(loans.length > 0){
 
-  document.getElementById("loanStart").innerText =
-    startYear;
+    const lastLoan =
+      loans[loans.length - 1];
 
-}else{
+    const startYear =
+      lastLoan.startYear || "—";
 
-  document.getElementById("loanStart").innerText =
-    "No loans";
+    document.getElementById("loanStart").innerText =
+      startYear;
+
+  }else{
+
+    document.getElementById("loanStart").innerText =
+      "No loans";
+
+  }
+
+  /* ============================================================
+     STANDARD CARDS
+     ============================================================ */
+
+  document.getElementById("fleet").innerText =
+    money(s.fleetValue);
+
+  document.getElementById("capacity").innerText =
+    money(s.loanCapacity);
+
+  document.getElementById("rate").innerText =
+    Number(s.interestRate).toFixed(2) + "%";
+
+  /* ============================================================
+     LOAN TABLE
+     ============================================================ */
+
+  const table =
+    document.getElementById("loanTable");
+
+  table.innerHTML = "";
+
+  if(loans.length === 0){
+
+    table.innerHTML =
+      `<tr><td colspan="4" style="color:#9fb3ff;">No active loans.</td></tr>`;
+
+    return;
+
+  }
+
+  loans.forEach(l=>{
+
+    const tr =
+      document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${l.id || "—"}</td>
+      <td>${money(l.remaining)}</td>
+      <td>${Number(l.rate || 0).toFixed(2)}%</td>
+      <td>${money(l.monthlyPayment)}</td>
+    `;
+
+    table.appendChild(tr);
+
+  });
 
 }
-
-    document.getElementById("fleet").innerText = money(s.fleetValue);
-    document.getElementById("capacity").innerText = money(s.loanCapacity);
-    document.getElementById("rate").innerText = Number(s.interestRate).toFixed(2) + "%";
-
-    const table = document.getElementById("loanTable");
-    table.innerHTML = "";
-
-    const loans = Array.isArray(s.loans) ? s.loans : [];
-
-    if (loans.length === 0){
-      table.innerHTML = `<tr><td colspan="4" style="color:#9fb3ff;">No active loans.</td></tr>`;
-      return;
-    }
-
-    loans.forEach(l=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${l.id || "—"}</td>
-        <td>${money(l.remaining)}</td>
-        <td>${Number(l.rate || 0).toFixed(2)}%</td>
-        <td>${money(l.monthlyPayment)}</td>
-      `;
-      table.appendChild(tr);
-    });
-  }
 
   document.addEventListener("DOMContentLoaded", () => {
     try{
