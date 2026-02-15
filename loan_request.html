@@ -1567,7 +1567,7 @@ function renderLoanPortfolio(){
     left.innerHTML =
       `
       <div style="color:#00ffd0;font-weight:600">
-        Loan: ${money(loan.originalAmount)}
+        Loan: ${money(loan.originalAmount || loan.amount || loan.remaining)}
       </div>
 
       <div style="color:#8ca8ff;font-size:0.85rem">
