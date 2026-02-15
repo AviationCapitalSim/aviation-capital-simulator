@@ -787,16 +787,16 @@ function updateCreditProfile(){
   let authority = "";
   let stability = "";
   let color     = "";
+  let level     = 15;
 
-  /* ============================================================
-     AUTHORITY BASED ON REAL FINANCIAL STRENGTH
-     ============================================================ */
+  /* AUTHORITY MODEL */
 
   if(fleetValue >= 100000000){
 
     authority = "GLOBAL AUTHORITY";
     stability = "SECURE";
     color     = "#00ffd0";
+    level     = 100;
 
   }
   else if(fleetValue >= 25000000){
@@ -804,6 +804,7 @@ function updateCreditProfile(){
     authority = "EXTENDED AUTHORITY";
     stability = "STRONG";
     color     = "#00ff88";
+    level     = 75;
 
   }
   else if(fleetValue >= 5000000){
@@ -811,6 +812,7 @@ function updateCreditProfile(){
     authority = "STANDARD AUTHORITY";
     stability = "STABLE";
     color     = "#4da3ff";
+    level     = 55;
 
   }
   else if(fleetValue >= 1000000){
@@ -818,6 +820,7 @@ function updateCreditProfile(){
     authority = "LIMITED AUTHORITY";
     stability = "ELEVATED RISK";
     color     = "#ffb300";
+    level     = 35;
 
   }
   else{
@@ -825,12 +828,11 @@ function updateCreditProfile(){
     authority = "RESTRICTED AUTHORITY";
     stability = "UNSTABLE";
     color     = "#ff8844";
+    level     = 15;
 
   }
 
-  /* ============================================================
-     APPLY TO UI
-     ============================================================ */
+  /* APPLY TEXT */
 
   creditRatingEl.textContent = authority;
   creditRatingEl.style.color = color;
@@ -838,25 +840,15 @@ function updateCreditProfile(){
   riskLevelEl.textContent = stability;
   riskLevelEl.style.color = color;
 
+  /* APPLY AUTHORITY BAR */
+
+  const bar =
+  document.getElementById("authorityFill");
+
+  if(bar)
+    bar.style.width = level + "%";
+
 }
-
-/* ============================================================
-   AUTHORITY BAR LEVEL — FIXED
-   ============================================================ */
-
-let level = 10;
-
-if(fleet >= 100000000) level = 100;
-else if(fleet >= 25000000) level = 75;
-else if(fleet >= 5000000) level = 55;
-else if(fleet >= 1000000) level = 35;
-else level = 15;
-
-const bar =
-document.getElementById("authorityFill");
-
-if(bar)
-  bar.style.width = level + "%";
   
 function getAircraftDatabase(){
 
