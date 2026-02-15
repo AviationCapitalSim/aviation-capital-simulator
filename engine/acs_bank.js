@@ -383,56 +383,12 @@ window.ACS_BANK_getSummary = function(){
 
 window.ACS_BANK_calculateMonthlyPayment = calculateMonthlyPayment;
 
+/* ============================================================
+   🟩 B16 — EXPORT GLOBAL FROM INSIDE CLOSURE (CORRECT FIX)
+   ============================================================ */
+
+window.ACS_BANK_createLoan = ACS_BANK_createLoan;
+
+console.log("🏦 ACS_BANK_ENGINE READY");
+
 })();
-
-/* ============================================================
-   🟧 B10 — EXPORT BANK ENGINE GLOBAL (CRITICAL FIX)
-   Ensures Loan Request and Finance can access Bank engine
-   ============================================================ */
-
-if(typeof window !== "undefined"){
-
-  window.ACS_BANK_createLoan = ACS_BANK_createLoan;
-
-  window.ACS_BANK_getSummary = ACS_BANK_getSummary;
-
-  window.ACS_BANK_amortizeLoan = ACS_BANK_amortizeLoan;
-
-  console.log("🏦 ACS_BANK_ENGINE exposed globally");
-
-}
-
-/* ============================================================
-   🟧 B11 — BANK SUMMARY PROVIDER
-   ============================================================ */
-
-function ACS_BANK_getSummary(){
-
-  const fin =
-    JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-
-  const loans =
-    fin.bank?.loans || [];
-
-  const fleetValue =
-    Number(fin.fleetValue || 0);
-
-  const loanCapacity =
-    fleetValue * 0.5;
-
-  const interestRate =
-    13;
-
-  return {
-
-    loans: loans,
-
-    fleetValue: fleetValue,
-
-    loanCapacity: loanCapacity,
-
-    interestRate: interestRate
-
-  };
-
-}
