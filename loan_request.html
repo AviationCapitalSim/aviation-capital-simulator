@@ -679,7 +679,27 @@
         <p id="loanMessage" style="margin-top:15px; color:#ccc;"></p>
       </div>
     </div>
-  </main>
+
+<!-- ============================================================
+     🏦 ACTIVE LOANS TERMINAL — QATAR LUXURY
+     Shows all active loans from ACS_BANK engine
+     ============================================================ -->
+
+<div class="panel" id="activeLoansPanel">
+
+  <h3>🏦 Active Loan Portfolio</h3>
+
+  <div id="loanPortfolioContainer">
+
+    <p style="color:#8ca8ff;font-size:0.9rem;">
+      No active loans.
+    </p>
+
+  </div>
+
+</div>
+   
+</main>
 
   <!-- ===== FOOTER ===== -->
   <footer class="acs-footer">
@@ -1157,6 +1177,86 @@ let PAYMENT_ENGINE = {
 };
 
 /* ============================================================
+   🏦 ACS BANK — ACTIVE LOANS TERMINAL ENGINE
+   Displays all active loans from bank engine
+   ============================================================ */
+
+function loadLoanPortfolio(){
+
+  const container =
+    document.getElementById("loanPortfolioContainer");
+
+  if(!container) return;
+
+  if(typeof ACS_BANK_getSummary !== "function"){
+    container.innerHTML =
+      "<p style='color:#ff8844'>Bank engine not available</p>";
+    return;
+  }
+
+  const summary =
+    ACS_BANK_getSummary();
+
+  const loans =
+    Array.isArray(summary.loans)
+    ? summary.loans
+    : [];
+
+  if(loans.length === 0){
+
+    container.innerHTML =
+      "<p style='color:#8ca8ff'>No active loans.</p>";
+
+    return;
+  }
+
+  container.innerHTML = "";
+
+  loans.forEach((loan, index) => {
+
+    const block =
+      document.createElement("div");
+
+    block.style.marginTop = "12px";
+    block.style.padding = "12px";
+    block.style.border =
+      "1px solid rgba(0,255,140,0.25)";
+    block.style.borderRadius = "10px";
+
+    const remaining =
+      Number(loan.remaining || 0);
+
+    const payment =
+      Number(loan.payment || 0);
+
+    const rate =
+      Number(loan.rate || 0);
+
+    block.innerHTML = `
+      <div style="font-weight:600;color:#00ffd0;">
+        Loan #${index + 1}
+      </div>
+
+      <div style="font-size:0.9rem;color:#8ca8ff;">
+        Remaining Balance: ${money(remaining)}
+      </div>
+
+      <div style="font-size:0.9rem;color:#8ca8ff;">
+        Monthly Payment: ${money(payment)}
+      </div>
+
+      <div style="font-size:0.9rem;color:#8ca8ff;">
+        Interest Rate: ${rate.toFixed(2)}%
+      </div>
+    `;
+
+    container.appendChild(block);
+
+  });
+
+}
+  
+/* ============================================================
    CALCULATE REAL LOAN PAYMENTS
    ============================================================ */
 
@@ -1353,6 +1453,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initializeAmountControls();
 
+  loadLoanPortfolio();
+  
 });
 
 function handleLogout() {
