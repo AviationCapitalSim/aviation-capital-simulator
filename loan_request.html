@@ -454,26 +454,46 @@ function updateCreditProfile(){
 }
 
 function loadAircraft(){
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  collateralSelect.innerHTML = '<option value="">Select Aircraft</option>';
+  const fleet =
+    JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  collateralSelect.innerHTML =
+    '<option value="">Select Aircraft</option>';
+
+  if(!window.ACS_AIRCRAFT_DB){
+    console.error("ACS_AIRCRAFT_DB not loaded");
+    return;
+  }
 
   fleet.forEach(ac => {
-    const value = Number(ac.marketValue || ac.value || ac.price || 0);
-    const label = (ac.type || ac.name || ac.model || "Aircraft");
+
+    const model = ac.model || "";
+
+    // buscar en database real
+    const dbAircraft =
+      window.ACS_AIRCRAFT_DB.find(
+        a => a.model === model
+      );
+
+    let value = 0;
+
+    if(dbAircraft && dbAircraft.price_acs_usd){
+      value = Number(dbAircraft.price_acs_usd);
+    }
 
     const opt = document.createElement("option");
-    opt.value = String(value);
-    opt.textContent = `${label} — ${money(value)}`;
+
+    opt.value = value;
+
+    opt.textContent =
+      `${ac.manufacturer} ${model} — ${money(value)}`;
+
     collateralSelect.appendChild(opt);
+
   });
+
 }
-
-collateralSelect.addEventListener("change", (e) => {
-  const v = Number(e.target.value || 0);
-  aircraftValue.textContent = v ? `Value: ${money(v)}` : "No aircraft selected";
-});
-
 
 function submitLoan(){
   const amount = Number(loanAmountInput.value || 0);
