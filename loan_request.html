@@ -507,6 +507,56 @@
   inset 0 0 20px rgba(0,255,140,0.08);
 
 }
+
+/* ============================================================
+   🎯 LOAN DETAILS — CENTER + SMALL SLIDER FIX (SAFE)
+   Only affects Loan Details panel
+   ============================================================ */
+
+/* Target ONLY the Loan Details panel (2nd panel in grid) */
+.main-grid .panel:nth-child(2){
+
+  align-items:center;
+
+}
+
+/* Center input and select */
+
+.main-grid .panel:nth-child(2) input[type="text"],
+.main-grid .panel:nth-child(2) select{
+
+  width:260px;
+  text-align:center;
+
+}
+
+/* Smaller, centered slider */
+
+.main-grid .panel:nth-child(2) input[type="range"]{
+
+  width:220px;          /* ← tamaño más corto */
+  margin-left:auto;
+  margin-right:auto;
+  display:block;
+
+}
+
+/* Center labels */
+
+.main-grid .panel:nth-child(2) label{
+
+  text-align:center;
+
+}
+
+/* Center max allowed text */
+
+.main-grid .panel:nth-child(2) p{
+
+  text-align:center;
+
+}
+
     
 </style>
   
@@ -1061,10 +1111,20 @@ function updateCollateralTotals(){
 
   if(slider){
 
-    slider.max = MAX_PER_LOAN;
-    slider.value = Math.min(slider.value, MAX_PER_LOAN);
+  slider.min = 0;
 
-  }
+  // evita slider “muerto” cuando MAX_PER_LOAN es pequeño o 0
+  slider.max = Math.max(0, Number(MAX_PER_LOAN || 0));
+
+  // step razonable (mínimo 1000)
+  slider.step = Math.max(1000, Math.floor(slider.max / 100));
+
+  // si max es 0, fija value 0; si no, clampa correctamente
+  slider.value = slider.max > 0
+    ? Math.min(Number(slider.value) || 0, slider.max)
+    : 0;
+
+}
 
 }
 
