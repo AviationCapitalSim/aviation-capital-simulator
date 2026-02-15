@@ -549,7 +549,7 @@
     <div class="main-grid">
       <!-- === AIRCRAFT COLLATERAL === -->
       <div class="panel">
-        <h3>✈️ Collateral Aircraft</h3>
+        <h3>✈️ Secured Assets</h3>
         <select id="collateralSelect" style="margin-bottom:0.8rem;">
           <option value="">Select Aircraft</option>
         </select>
@@ -671,34 +671,34 @@
 
 </div>
 
-      <!-- === SUBMIT SECTION === -->
+       <!-- === SUBMIT SECTION === -->
       <div class="panel">
         <h3>📝 Submit Request</h3>
         <p>Once approved, funds will be transferred instantly to your airline balance.</p>
         <button id="requestLoanBtn" class="buy-btn">Submit Loan Request</button>
         <p id="loanMessage" style="margin-top:15px; color:#ccc;"></p>
       </div>
+
+      <!-- ============================================================
+           🏦 ACTIVE LOANS TERMINAL — SAME GRID STRUCTURE
+           ============================================================ -->
+
+      <div class="panel" id="activeLoansPanel">
+
+        <h3>🏦 Active Loan Portfolio</h3>
+
+        <div id="loanPortfolioContainer"
+             style="
+             display:flex;
+             flex-direction:column;
+             gap:10px;
+             margin-top:6px;
+             ">
+        </div>
+
+      </div>
+
     </div>
-
-<!-- ============================================================
-     🏦 ACTIVE LOANS TERMINAL — QATAR LUXURY
-     Shows all active loans from ACS_BANK engine
-     ============================================================ -->
-
-<div class="panel" id="activeLoansPanel">
-
-  <h3>🏦 Active Loan Portfolio</h3>
-
-  <div id="loanPortfolioContainer"
-       style="
-       display:flex;
-       flex-direction:column;
-       gap:10px;
-       margin-top:6px;
-       ">
-  </div>
-
-</div>
    
 </main>
 
