@@ -250,7 +250,7 @@ function calculateMonthlyPayment(amount, rate, months){
    Uses Finance Ledger v3.0
    ============================================================ */
 
-ACS_BANK_createLoan = function(amount, months){
+function ACS_BANK_createLoan(amount, months){
 
   const capacity = calculateLoanCapacity();
 
