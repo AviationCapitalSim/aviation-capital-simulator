@@ -245,9 +245,8 @@ function calculateMonthlyPayment(amount, rate, months){
 
 /* ============================================================
    🟩 B7 — ACS BANK CREATE LOAN (CANONICAL FINANCE INTEGRATION)
-   Replaces direct balance manipulation
-   Uses Finance Ledger v3.0
-   Adds real Origination + Maturity Dates (Aviation-grade)
+   FIXED — FULL DATE + MATURITY + TIMESTAMPS
+   Professional Banking Grade
    ============================================================ */
 
 function ACS_BANK_createLoan(amount, months){
@@ -262,13 +261,18 @@ function ACS_BANK_createLoan(amount, months){
   if(!fin.bank)
     fin.bank = { loans:[] };
 
-  const rate = calculateInterestRate();
+  const rate =
+    calculateInterestRate();
 
   const monthly =
-    calculateMonthlyPayment(amount, rate, months);
+    calculateMonthlyPayment(
+      amount,
+      rate,
+      months
+    );
 
   /* ============================================================
-     🟩 REAL SIMULATION DATE (FROM TIME ENGINE)
+     🟩 REAL SIMULATION DATE (CRITICAL FIX)
      ============================================================ */
 
   const now =
@@ -284,26 +288,33 @@ function ACS_BANK_createLoan(amount, months){
   );
 
   /* ============================================================
-     🟩 CREATE LOAN OBJECT (FULL BANKING MODEL)
+     🟩 CREATE LOAN OBJECT (FULL BANK DATA)
      ============================================================ */
 
   const loan = {
 
-    id: "LOAN_" + Date.now(),
+    id:
+      "LOAN_" + Date.now(),
 
-    originalAmount: amount,
+    originalAmount:
+      amount,
 
-    remaining: amount,
+    remaining:
+      amount,
 
-    rate: rate,
+    rate:
+      rate,
 
-    monthlyPayment: monthly,
+    monthlyPayment:
+      monthly,
 
-    termMonths: months,
+    termMonths:
+      months,
 
-    startYear: getCurrentYear(),
+    startYear:
+      now.getUTCFullYear(),
 
-    /* 🟩 REAL CONTRACT DATES */
+    /* NEW — REAL DATE SYSTEM */
 
     startDate:
       now.toISOString(),
@@ -311,7 +322,14 @@ function ACS_BANK_createLoan(amount, months){
     maturityDate:
       maturity.toISOString(),
 
-    type: "BANK_LOAN"
+    startTS:
+      now.getTime(),
+
+    maturityTS:
+      maturity.getTime(),
+
+    type:
+      "BANK_LOAN"
 
   };
 
@@ -324,7 +342,7 @@ function ACS_BANK_createLoan(amount, months){
   saveFinance(fin);
 
   /* ============================================================
-     REGISTER MONEY IN FINANCE LEDGER (CANONICAL)
+     REGISTER MONEY IN FINANCE LEDGER
      ============================================================ */
 
   if(typeof window.ACS_registerIncome === "function"){
@@ -335,17 +353,16 @@ function ACS_BANK_createLoan(amount, months){
 
       source: "BANK_LOAN",
 
-      meta: {
+      meta:{
 
-        loanId: loan.id,
+        loanId:
+          loan.id,
 
-        rate: rate,
+        rate:
+          rate,
 
-        termMonths: months,
-
-        startDate: loan.startDate,
-
-        maturityDate: loan.maturityDate
+        termMonths:
+          months
 
       }
 
@@ -354,7 +371,7 @@ function ACS_BANK_createLoan(amount, months){
   }
 
   /* ============================================================
-     REGISTER LEDGER ENTRY (VISIBLE IN COMPANY FINANCE)
+     REGISTER LEDGER ENTRY
      ============================================================ */
 
   if(window.ACS_FINANCE_ENGINE &&
@@ -362,23 +379,20 @@ function ACS_BANK_createLoan(amount, months){
 
     window.ACS_FINANCE_ENGINE.commit({
 
-      type: "LOAN_IN",
+      type:
+        "LOAN_IN",
 
-      amount: amount,
+      amount:
+        amount,
 
-      source: "BANK",
+      source:
+        "BANK",
 
-      ref: loan.id,
+      ref:
+        loan.id,
 
-      ts: Date.now(),
-
-      meta: {
-
-        startDate: loan.startDate,
-
-        maturityDate: loan.maturityDate
-
-      }
+      ts:
+        now.getTime()
 
     });
 
@@ -387,10 +401,7 @@ function ACS_BANK_createLoan(amount, months){
   console.log(
     "🏦 Loan created:",
     loan.id,
-    "| Start:",
-    loan.startDate,
-    "| Maturity:",
-    loan.maturityDate
+    loan
   );
 
   return loan;
