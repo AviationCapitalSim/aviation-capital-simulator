@@ -330,6 +330,25 @@
       <h3>Interest Rate</h3>
       <div class="value" id="rate">—</div>
     </div>
+
+<!-- 🟩 B22 — ORIGINAL LOAN AMOUNT -->
+<div class="card">
+  <h3>Original Loan Amount</h3>
+  <div class="value" id="loanOriginal">—</div>
+</div>
+
+<!-- 🟩 B23 — MONTHLY DEBT SERVICE -->
+<div class="card">
+  <h3>Monthly Debt Service</h3>
+  <div class="value" id="loanMonthly">—</div>
+</div>
+
+<!-- 🟩 B24 — TOTAL OUTSTANDING DEBT -->
+<div class="card">
+  <h3>Total Outstanding Debt</h3>
+  <div class="value" id="loanOutstanding">—</div>
+</div>
+       
   </section>
 
   <section class="card">
@@ -449,6 +468,53 @@ function calculateRemainingTerm(maturityISO){
   const loans =
     Array.isArray(s.loans) ? s.loans : [];
 
+/* ============================================================
+   🟩 B25 — BANK FINANCIAL SUMMARY CARDS
+   ============================================================ */
+
+let totalOutstanding = 0;
+let totalOriginal = 0;
+let totalMonthly = 0;
+
+loans.forEach(loan=>{
+
+  totalOutstanding +=
+    Number(loan.remaining || 0);
+
+  totalOriginal +=
+    Number(
+      loan.originalAmount ||
+      loan.amount ||
+      0
+    );
+
+  totalMonthly +=
+    Number(loan.monthlyPayment || 0);
+
+});
+
+const originalEl =
+  document.getElementById("loanOriginal");
+
+if(originalEl)
+  originalEl.innerText =
+    money(totalOriginal);
+
+const monthlyEl =
+  document.getElementById("loanMonthly");
+
+if(monthlyEl)
+  monthlyEl.innerText =
+    money(totalMonthly);
+
+const outstandingEl =
+  document.getElementById("loanOutstanding");
+
+if(outstandingEl)
+  outstandingEl.innerText =
+    money(totalOutstanding);
+
+     
 /* ============================================================
    🟩 B21 — REAL LOAN DATE + MATURITY CALCULATION (SAFE)
    Works with old and new loans
