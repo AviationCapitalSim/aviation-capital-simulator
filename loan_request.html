@@ -1139,6 +1139,185 @@ function initializeAmountControls(){
   console.log("ACS BANK: Amount controls initialized");
 
 }
+
+/* ============================================================
+   🏦 ACS BANK — REAL LOAN PAYMENT ENGINE
+   ------------------------------------------------------------
+   Professional aviation financing amortization system
+   Calculates real monthly payment, total repayment, interest
+   Fully integrated with ACS bank + finance engine
+   ============================================================ */
+
+let PAYMENT_ENGINE = {
+
+  monthlyPayment: 0,
+  totalRepayment: 0,
+  totalInterest: 0
+
+};
+
+/* ============================================================
+   CALCULATE REAL LOAN PAYMENTS
+   ============================================================ */
+
+function ACS_calculateLoanPayment(){
+
+  if(!BANK_SUMMARY) return;
+
+  const principal =
+    Number(
+      loanAmountInput.value.replace(/[^0-9]/g,"")
+    );
+
+  if(!principal || principal <= 0){
+
+    updatePaymentUI(0,0,0);
+    return;
+
+  }
+
+  const annualRate =
+    Number(BANK_SUMMARY.interestRate || 0) / 100;
+
+  const monthlyRate =
+    annualRate / 12;
+
+  const months =
+    Number(loanTermSelect.value || 0);
+
+  if(months <= 0){
+
+    updatePaymentUI(0,0,0);
+    return;
+
+  }
+
+  /* ============================================================
+     AMORTIZATION FORMULA
+     ============================================================ */
+
+  let monthlyPayment = 0;
+
+  if(monthlyRate === 0){
+
+    monthlyPayment =
+      principal / months;
+
+  }
+  else{
+
+    monthlyPayment =
+      principal *
+      (
+        monthlyRate *
+        Math.pow(1 + monthlyRate, months)
+      )
+      /
+      (
+        Math.pow(1 + monthlyRate, months) - 1
+      );
+
+  }
+
+  const totalRepayment =
+    monthlyPayment * months;
+
+  const totalInterest =
+    totalRepayment - principal;
+
+  PAYMENT_ENGINE.monthlyPayment =
+    monthlyPayment;
+
+  PAYMENT_ENGINE.totalRepayment =
+    totalRepayment;
+
+  PAYMENT_ENGINE.totalInterest =
+    totalInterest;
+
+  updatePaymentUI(
+    monthlyPayment,
+    totalRepayment,
+    totalInterest
+  );
+
+}
+
+/* ============================================================
+   UPDATE UI DISPLAY
+   ============================================================ */
+
+function updatePaymentUI(monthly, total, interest){
+
+  let box =
+    document.getElementById("loanPaymentBox");
+
+  if(!box){
+
+    box =
+      document.createElement("div");
+
+    box.id = "loanPaymentBox";
+
+    box.style.marginTop = "18px";
+    box.style.padding = "14px";
+    box.style.borderRadius = "10px";
+    box.style.background =
+      "linear-gradient(180deg, rgba(0,25,60,0.6), rgba(0,10,30,0.8))";
+    box.style.border =
+      "1px solid rgba(0,255,180,0.25)";
+    box.style.fontSize = "0.95rem";
+
+    loanTermSelect.parentNode.appendChild(box);
+
+  }
+
+  if(monthly <= 0){
+
+    box.innerHTML =
+      "<span style='color:#8ca8ff'>Enter amount to calculate payment</span>";
+
+    return;
+
+  }
+
+  box.innerHTML =
+
+  "<div style='color:#00ffd0;font-weight:700;margin-bottom:4px'>MONTHLY PAYMENT: " +
+  money(monthly) +
+  "</div>" +
+
+  "<div style='color:#8ca8ff'>TOTAL REPAYMENT: " +
+  money(total) +
+  "</div>" +
+
+  "<div style='color:#ffb300'>INTEREST COST: " +
+  money(interest) +
+  "</div>";
+
+}
+
+/* ============================================================
+   AUTO UPDATE EVENTS
+   ============================================================ */
+
+loanAmountInput.addEventListener(
+  "input",
+  ACS_calculateLoanPayment
+);
+
+loanTermSelect.addEventListener(
+  "change",
+  ACS_calculateLoanPayment
+);
+
+if(typeof loanSlider !== "undefined" && loanSlider){
+
+  loanSlider.addEventListener(
+    "input",
+    ACS_calculateLoanPayment
+  );
+
+}
   
 function submitLoan(){
   const amount = Number(loanAmountInput.value || 0);
