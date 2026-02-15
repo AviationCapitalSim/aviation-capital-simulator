@@ -393,28 +393,31 @@
 }
 
 /* ============================================================
-   🟦 ACS FINANCIAL TERMINAL PANELS — QATAR LUXURY CORE
+   🟩 ACS TERMINAL PANELS — FINANCIAL TERMINAL LIGHT FIX
+   REEMPLAZA COMPLETO EL BLOQUE .panel
    ============================================================ */
 
 .panel{
 
   background:
-  linear-gradient(180deg,
-    rgba(8,22,55,0.96),
-    rgba(3,12,35,0.98));
+  linear-gradient(
+    180deg,
+    rgba(18,38,80,0.96),
+    rgba(10,25,60,0.98)
+  );
 
   border-radius:18px;
 
   border:
-  1px solid rgba(255,179,0,0.25);
+  1px solid rgba(255,179,0,0.35);
 
   box-shadow:
 
-  0 0 30px rgba(0,0,0,0.7),
+  0 8px 30px rgba(0,0,0,0.45),
 
-  inset 0 0 25px rgba(0,60,140,0.15),
+  inset 0 0 30px rgba(0,140,255,0.12),
 
-  inset 0 0 2px rgba(255,200,60,0.15);
+  inset 0 0 2px rgba(255,200,60,0.25);
 
   padding:22px;
 
@@ -424,17 +427,17 @@
 
 }
 
-/* Hover institutional feel */
+/* hover effect */
 
 .panel:hover{
 
-  border-color:rgba(255,179,0,0.55);
+  border-color:rgba(255,179,0,0.65);
 
   box-shadow:
 
-  0 0 40px rgba(255,179,0,0.12),
+  0 12px 40px rgba(0,0,0,0.55),
 
-  inset 0 0 30px rgba(0,60,140,0.2);
+  inset 0 0 35px rgba(0,140,255,0.18);
 
 }
 
@@ -507,6 +510,25 @@
   inset 0 0 20px rgba(0,255,140,0.08);
 
 }
+
+/* ============================================================
+   🟩 SLIDER CONTAINER FIX — PREVENT OVERFLOW
+   ============================================================ */
+
+.acs-slider-container{
+
+  width:100%;
+  padding:6px 4px;
+  box-sizing:border-box;
+
+}
+
+.acs-slider-container input{
+
+  width:100%;
+  margin:0;
+
+}
     
 </style>
   
@@ -570,7 +592,8 @@
   autocomplete="off"
 />
 
-<!-- Smooth slider (always limited to max per loan) -->
+<div class="acs-slider-container">
+
 <input
   type="range"
   id="loanAmountRange"
@@ -578,8 +601,9 @@
   max="50000"
   step="10000"
   value="50000"
-  style="margin-top:10px;width:100%;"
 />
+
+</div>
 
 <p style="margin:10px 0 0;color:#9fb3ff;font-size:0.95rem;">
   Max allowed: <span id="maxAllowedText" style="color:#00ff88;font-weight:700;">$0</span>
@@ -952,51 +976,73 @@ function loadAircraft(){
 
   fleet.forEach((ac, index) => {
 
-    const dbAircraft =
-      DB.find(db =>
-        db.manufacturer === ac.manufacturer &&
-        db.model === ac.model
-      );
+  const dbAircraft =
+    DB.find(db =>
+      db.manufacturer === ac.manufacturer &&
+      db.model === ac.model
+    );
 
-    let value = 0;
+  let value = 0;
 
-    if(dbAircraft && dbAircraft.price_acs_usd)
-      value = Number(dbAircraft.price_acs_usd);
+  if(dbAircraft && dbAircraft.price_acs_usd)
+    value = Number(dbAircraft.price_acs_usd);
 
-    const row =
-      document.createElement("label");
+  const isUsed =
+    ac.collateralActive === true;
 
-    row.style.display = "flex";
-    row.style.alignItems = "center";
-    row.style.gap = "8px";
-    row.style.cursor = "pointer";
-    row.style.fontSize = "0.95rem";
+  const row =
+    document.createElement("label");
 
-    const cb =
-      document.createElement("input");
+  row.style.display = "flex";
+  row.style.alignItems = "center";
+  row.style.gap = "8px";
+  row.style.cursor = isUsed ? "not-allowed" : "pointer";
+  row.style.fontSize = "0.95rem";
+  row.style.opacity = isUsed ? "0.45" : "1";
 
-    cb.type = "checkbox";
-    cb.value = value;
-    cb.dataset.index = index;
+  const cb =
+    document.createElement("input");
+
+  cb.type = "checkbox";
+  cb.value = value;
+  cb.dataset.index = index;
+
+  if(isUsed){
+
+    cb.disabled = true;
+
+  }
+  else{
 
     cb.onchange = updateCollateralTotals;
 
-    const text =
+  }
+
+  const text =
+    document.createElement("span");
+
+  text.textContent =
+    `${ac.manufacturer} ${ac.model} — ${money(value)}`;
+
+  if(isUsed){
+
+    const badge =
       document.createElement("span");
 
-    text.textContent =
-      `${ac.manufacturer} ${ac.model} — ${money(value)}`;
+    badge.textContent = "  [USED AS COLLATERAL]";
+    badge.style.color = "#ff8844";
+    badge.style.fontSize = "0.8rem";
 
-    row.appendChild(cb);
-    row.appendChild(text);
+    text.appendChild(badge);
 
-    container.appendChild(row);
+  }
 
-  });
+  row.appendChild(cb);
+  row.appendChild(text);
 
-  updateCollateralTotals();
+  container.appendChild(row);
 
-}
+});
 
 /* ============================================================
    🟦 COLLATERAL TOTAL CALCULATOR
