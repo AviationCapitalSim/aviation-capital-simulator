@@ -243,7 +243,6 @@ function calculateMonthlyPayment(amount, rate, months){
 
 }
 
-
 /* ============================================================
    🟩 B7 — ACS BANK CREATE LOAN (CANONICAL FINANCE INTEGRATION)
    Replaces direct balance manipulation
@@ -350,6 +349,78 @@ function ACS_BANK_createLoan(amount, months){
 }
 
 /* ============================================================
+   🟩 CF-B14 — ACS BANK MONTHLY LOAN PROCESSOR
+   Registers loan payments into Finance Engine
+   Runs once per financial month
+   ============================================================ */
+
+function ACS_BANK_processMonthlyPayments(){
+
+  const fin = getFinance();
+
+  if(!fin.bank || !Array.isArray(fin.bank.loans))
+    return;
+
+  let totalPayment = 0;
+
+  fin.bank.loans.forEach(loan => {
+
+    if(loan.remaining <= 0)
+      return;
+
+    const payment =
+      Number(loan.monthlyPayment || 0);
+
+    if(payment <= 0)
+      return;
+
+    loan.remaining =
+      Math.max(0, loan.remaining - payment);
+
+    totalPayment += payment;
+
+  });
+
+  saveFinance(fin);
+
+  /* REGISTER EXPENSE IN FINANCE ENGINE */
+
+  if(typeof window.ACS_registerExpense === "function"){
+
+    window.ACS_registerExpense({
+
+      cost: totalPayment,
+
+      source: "BANK_LOAN_PAYMENT"
+
+    });
+
+  }
+
+  /* LEDGER ENTRY */
+
+  if(window.ACS_FINANCE_ENGINE &&
+     typeof window.ACS_FINANCE_ENGINE.commit === "function"){
+
+    window.ACS_FINANCE_ENGINE.commit({
+
+      type: "LOAN_PAYMENT",
+
+      amount: totalPayment,
+
+      source: "BANK",
+
+      ts: Date.now()
+
+    });
+
+  }
+
+  console.log("🏦 Monthly loan payments processed:", totalPayment);
+
+}
+
+/* ============================================================
    SUMMARY
    ============================================================ */
 
@@ -382,6 +453,14 @@ window.ACS_BANK_getSummary = function(){
    ============================================================ */
 
 window.ACS_BANK_calculateMonthlyPayment = calculateMonthlyPayment;
+
+/* ============================================================
+   🟩 CF-B15 — EXPORT MONTHLY PROCESSOR GLOBAL
+   Required for Finance Engine integration
+   ============================================================ */
+
+window.ACS_BANK_processMonthlyPayments =
+  ACS_BANK_processMonthlyPayments;
 
 /* ============================================================
    🟩 B16 — EXPORT GLOBAL FROM INSIDE CLOSURE (CORRECT FIX)
