@@ -30,7 +30,30 @@ const ERA_TABLE = [
 
 ];
 
+/* ============================================================
+   AIRCRAFT BASE VALUES (HISTORICAL COLLATERAL VALUES)
+   ============================================================ */
 
+const AIRCRAFT_VALUES = {
+
+  "307 Stratoliner": 315000,
+
+  "DC-3": 185000,
+
+  "Constellation": 850000,
+
+  "Boeing 707": 5200000,
+
+  "Boeing 727": 4200000,
+
+  "Boeing 737-200": 3100000,
+
+  "Boeing 747-200": 32000000,
+
+  "A300-B4": 22000000
+
+};
+   
 /* ============================================================
    CURRENT YEAR FROM TIME ENGINE
    ============================================================ */
@@ -90,11 +113,23 @@ function getFleetValue(){
 
   fleet.forEach(ac => {
 
-    const v =
+    let v =
       Number(ac.marketValue) ||
       Number(ac.value) ||
       Number(ac.price) ||
       0;
+
+    if(!v){
+
+      const type =
+        ac.type ||
+        ac.name ||
+        ac.model ||
+        "";
+
+      v = AIRCRAFT_VALUES[type] || 0;
+
+    }
 
     total += v;
 
@@ -103,7 +138,6 @@ function getFleetValue(){
   return total;
 
 }
-
 
 /* ============================================================
    GET ERA CONFIG
