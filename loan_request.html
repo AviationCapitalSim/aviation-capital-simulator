@@ -224,7 +224,108 @@
       font-size: 0.9rem;
       margin-left: 1rem;
     }
-  </style>
+
+/* ============================================================
+   🏦 ACS FINANCIAL AUTHORITY PANEL — QATAR LUXURY
+   ============================================================ */
+
+.acs-authority-panel{
+
+  background:
+  linear-gradient(180deg,
+    rgba(10,25,60,0.95),
+    rgba(5,15,40,0.98));
+
+  border-radius:18px;
+
+  border:1px solid rgba(255,179,0,0.25);
+
+  box-shadow:
+  0 0 25px rgba(0,0,0,0.6),
+  inset 0 0 20px rgba(0,40,120,0.15);
+
+}
+
+.acs-authority-block{
+
+  margin-top:14px;
+
+}
+
+.acs-label{
+
+  font-size:0.75rem;
+
+  color:#8ca8ff;
+
+  letter-spacing:1px;
+
+}
+
+.acs-authority-text{
+
+  font-size:1.1rem;
+
+  font-weight:700;
+
+  margin-top:4px;
+
+}
+
+.acs-authority-sub{
+
+  font-size:0.95rem;
+
+  margin-top:3px;
+
+}
+
+.acs-authority-value{
+
+  font-size:1.2rem;
+
+  font-weight:700;
+
+  color:#00ffd0;
+
+}
+
+/* Authority bar */
+
+.acs-authority-bar{
+
+  height:8px;
+
+  background:
+  rgba(0,0,0,0.4);
+
+  border-radius:4px;
+
+  margin-top:6px;
+
+  overflow:hidden;
+
+}
+
+.acs-authority-fill{
+
+  height:100%;
+
+  width:0%;
+
+  background:
+  linear-gradient(90deg,
+    #ff8844,
+    #ffb300,
+    #00ff88,
+    #00ffd0);
+
+  transition:width 0.8s ease;
+
+}
+
+</style>
+  
 </head>
 
 <body>
@@ -317,14 +418,74 @@
 
       </div>
 
-      <!-- === LOAN EVALUATION === -->
-      <div class="panel">
-        <h3>📊 Loan Evaluation</h3>
-        <p>Credit Rating: <span id="creditRating" style="color:#00ff88;">A</span></p>
-        <p>Risk Level: <span id="riskLevel" style="color:#FFD700;">Low</span></p>
-        <p>Estimated Interest Rate: <span id="interestRate" style="color:#FFB300;">3.2%</span></p>
-        <p>Max Available Loan: <span id="maxLoan" style="color:#1E90FF;">$2,100,000</span></p>
+     <!-- === ACS FINANCIAL AUTHORITY PANEL === -->
+<div class="panel acs-authority-panel">
+
+  <h3>🏦 Financial Authority</h3>
+
+  <!-- Authority Level -->
+  <div class="acs-authority-block">
+
+    <div class="acs-label">
+      AUTHORITY LEVEL
+    </div>
+
+    <div class="acs-authority-bar">
+      <div id="authorityFill"
+           class="acs-authority-fill">
       </div>
+    </div>
+
+    <div id="creditRating"
+         class="acs-authority-text">
+      LOADING
+    </div>
+
+  </div>
+
+  <!-- Stability -->
+  <div class="acs-authority-block">
+
+    <div class="acs-label">
+      FINANCIAL STABILITY
+    </div>
+
+    <div id="riskLevel"
+         class="acs-authority-sub">
+      LOADING
+    </div>
+
+  </div>
+
+  <!-- Interest -->
+  <div class="acs-authority-block">
+
+    <div class="acs-label">
+      BASE INTEREST RATE
+    </div>
+
+    <div id="interestRate"
+         class="acs-authority-value">
+      0%
+    </div>
+
+  </div>
+
+  <!-- Capacity -->
+  <div class="acs-authority-block">
+
+    <div class="acs-label">
+      MAXIMUM LOAN CAPACITY
+    </div>
+
+    <div id="maxLoan"
+         class="acs-authority-value">
+      $0
+    </div>
+
+  </div>
+
+</div>
 
       <!-- === SUBMIT SECTION === -->
       <div class="panel">
@@ -495,6 +656,25 @@ function updateCreditProfile(){
 
 }
 
+/* ============================================================
+   AUTHORITY BAR LEVEL
+   ============================================================ */
+
+let level = 10;
+
+if(fleetValue >= 100000000) level = 100;
+else if(fleetValue >= 25000000) level = 75;
+else if(fleetValue >= 5000000) level = 55;
+else if(fleetValue >= 1000000) level = 35;
+else level = 15;
+
+const bar =
+document.getElementById("authorityFill");
+
+if(bar)
+  bar.style.width = level + "%";
+
+  
 function getAircraftDatabase(){
 
   // check common global locations safely
