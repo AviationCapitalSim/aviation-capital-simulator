@@ -746,6 +746,31 @@ function loadBreakdown() {
     });
   }
 
+  /* ============================================================
+   🏦 BANK LOANS — FINANCE INTEGRATION (ACS BANK ENGINE)
+   Adds Bank Loan income into Finance breakdown UI
+   ============================================================ */
+
+if (f.bank && Array.isArray(f.bank.loans)) {
+
+  const totalLoans =
+    f.bank.loans.reduce((sum, loan) =>
+      sum + Number(loan.originalAmount || 0), 0);
+
+  if (totalLoans > 0) {
+
+    categories.push({
+
+      label: "Bank Loan (Income)",
+
+      value: totalLoans
+
+    });
+
+  }
+
+}
+     
   const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
