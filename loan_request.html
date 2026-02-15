@@ -275,7 +275,31 @@
       <div class="panel">
         <h3>💵 Loan Details</h3>
         <label>Loan Amount (USD)</label>
-        <input type="number" id="loanAmount" placeholder="Enter amount" />
+
+<!-- Qatar Luxury Amount (No spinner) -->
+<input
+  type="text"
+  id="loanAmount"
+  placeholder="Enter amount"
+  inputmode="numeric"
+  autocomplete="off"
+/>
+
+<!-- Smooth slider (always limited to max per loan) -->
+<input
+  type="range"
+  id="loanAmountRange"
+  min="50000"
+  max="50000"
+  step="10000"
+  value="50000"
+  style="margin-top:10px;width:100%;"
+/>
+
+<p style="margin:10px 0 0;color:#9fb3ff;font-size:0.95rem;">
+  Max allowed: <span id="maxAllowedText" style="color:#00ff88;font-weight:700;">$0</span>
+</p>
+
         <label>Term (Years)</label>
         <select id="loanTerm">
 
