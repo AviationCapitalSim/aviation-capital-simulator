@@ -324,6 +324,122 @@
 
 }
 
+/* ============================================================
+   🟦 ACS FINANCIAL TERMINAL PANELS — QATAR LUXURY CORE
+   ============================================================ */
+
+.panel{
+
+  background:
+  linear-gradient(180deg,
+    rgba(8,22,55,0.96),
+    rgba(3,12,35,0.98));
+
+  border-radius:18px;
+
+  border:
+  1px solid rgba(255,179,0,0.25);
+
+  box-shadow:
+
+  0 0 30px rgba(0,0,0,0.7),
+
+  inset 0 0 25px rgba(0,60,140,0.15),
+
+  inset 0 0 2px rgba(255,200,60,0.15);
+
+  padding:22px;
+
+  position:relative;
+
+  transition:all 0.25s ease;
+
+}
+
+/* Hover institutional feel */
+
+.panel:hover{
+
+  border-color:rgba(255,179,0,0.55);
+
+  box-shadow:
+
+  0 0 40px rgba(255,179,0,0.12),
+
+  inset 0 0 30px rgba(0,60,140,0.2);
+
+}
+
+/* Panel titles */
+
+.panel h3{
+
+  font-size:1.05rem;
+
+  font-weight:600;
+
+  color:#ffb300;
+
+  letter-spacing:0.6px;
+
+  margin-bottom:14px;
+
+}
+
+/* Internal labels */
+
+.panel label{
+
+  font-size:0.8rem;
+
+  color:#8ca8ff;
+
+  letter-spacing:1px;
+
+}
+
+/* Internal values */
+
+.panel p{
+
+  color:#00ffd0;
+
+  font-weight:600;
+
+}
+
+/* Input styling */
+
+.panel input,
+.panel select{
+
+  background:
+
+  linear-gradient(180deg,
+    rgba(10,25,60,0.9),
+    rgba(5,15,40,0.95));
+
+  border:
+  1px solid rgba(0,140,255,0.25);
+
+  color:#ffffff;
+
+}
+
+/* Submit panel special styling */
+
+.panel:last-child{
+
+  border-color:rgba(0,255,140,0.35);
+
+  box-shadow:
+
+  0 0 25px rgba(0,255,140,0.15),
+
+  inset 0 0 20px rgba(0,255,140,0.08);
+
+}
+    
 </style>
   
 </head>
@@ -657,15 +773,15 @@ function updateCreditProfile(){
 }
 
 /* ============================================================
-   AUTHORITY BAR LEVEL
+   AUTHORITY BAR LEVEL — FIXED
    ============================================================ */
 
 let level = 10;
 
-if(fleetValue >= 100000000) level = 100;
-else if(fleetValue >= 25000000) level = 75;
-else if(fleetValue >= 5000000) level = 55;
-else if(fleetValue >= 1000000) level = 35;
+if(fleet >= 100000000) level = 100;
+else if(fleet >= 25000000) level = 75;
+else if(fleet >= 5000000) level = 55;
+else if(fleet >= 1000000) level = 35;
 else level = 15;
 
 const bar =
@@ -673,7 +789,6 @@ document.getElementById("authorityFill");
 
 if(bar)
   bar.style.width = level + "%";
-
   
 function getAircraftDatabase(){
 
