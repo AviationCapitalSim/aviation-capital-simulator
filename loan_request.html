@@ -501,29 +501,32 @@ if(!DB){
 
   fleet.forEach(ac => {
 
-    const model = ac.model || "";
+  const model = ac.model || "";
 
-    // buscar en database real
-    
-   const dbAircraft =
-    DB.find(
+  // buscar en database real
+  
+  const dbAircraft =
+    DB.find(db =>
+      db.manufacturer === ac.manufacturer &&
+      db.model === model
+    );
 
-    let value = 0;
+  let value = 0;
 
-    if(dbAircraft && dbAircraft.price_acs_usd){
-      value = Number(dbAircraft.price_acs_usd);
-    }
+  if(dbAircraft && dbAircraft.price_acs_usd){
+    value = Number(dbAircraft.price_acs_usd);
+  }
 
-    const opt = document.createElement("option");
+  const opt = document.createElement("option");
 
-    opt.value = value;
+  opt.value = value;
 
-    opt.textContent =
-      `${ac.manufacturer} ${model} — ${money(value)}`;
+  opt.textContent =
+    `${ac.manufacturer} ${model} — ${money(value)}`;
 
-    collateralSelect.appendChild(opt);
+  collateralSelect.appendChild(opt);
 
-  });
+});
 
 }
 
