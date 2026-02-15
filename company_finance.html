@@ -457,7 +457,11 @@ body {
     </div>
   </div>
 
-
+<div class="kpi-card">
+  <small>Monthly Debt Service</small>
+  <div class="kpi-value" id="cf-debt">$0</div>
+</div>
+     
  <!-- BREAKDOWN — Qatar Luxury Thermometers -->
      
 <div class="finance-section">
@@ -466,7 +470,6 @@ body {
        style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem;">
   </div>
 </div>
-
      
   <!-- MONTHLY HISTORY -->
      
@@ -570,7 +573,9 @@ function ACS_money(v){
 /* ============================================================
    === KPI OVERVIEW (SAFE) =====================================
    ============================================================ */
+     
 function updateCompanyOverview() {
+
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
   document.getElementById("cf-capital").textContent  = ACS_money(f.capital);
@@ -578,9 +583,23 @@ function updateCompanyOverview() {
   document.getElementById("cf-expenses").textContent = ACS_money(f.expenses);
   document.getElementById("cf-profit").textContent   = ACS_money(f.profit);
 
-  // color capital (green/ red)
   ACS_updateCapitalColor();
   ACS_updateProfitColor();
+
+  /* 🟩 CF-B19 — MONTHLY DEBT SERVICE */
+
+  let debt = 0;
+
+  if(f.bank && Array.isArray(f.bank.loans)){
+    f.bank.loans.forEach(loan=>{
+      debt += Number(loan.monthlyPayment || 0);
+    });
+  }
+
+  const debtEl = document.getElementById("cf-debt");
+
+  if(debtEl)
+    debtEl.textContent = ACS_money(debt);
 
 }
 
