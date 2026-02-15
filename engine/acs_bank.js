@@ -247,6 +247,7 @@ function calculateMonthlyPayment(amount, rate, months){
    🟩 B7 — ACS BANK CREATE LOAN (CANONICAL FINANCE INTEGRATION)
    Replaces direct balance manipulation
    Uses Finance Ledger v3.0
+   Adds real Origination + Maturity Dates (Aviation-grade)
    ============================================================ */
 
 function ACS_BANK_createLoan(amount, months){
@@ -263,7 +264,28 @@ function ACS_BANK_createLoan(amount, months){
 
   const rate = calculateInterestRate();
 
-  const monthly = calculateMonthlyPayment(amount, rate, months);
+  const monthly =
+    calculateMonthlyPayment(amount, rate, months);
+
+  /* ============================================================
+     🟩 REAL SIMULATION DATE (FROM TIME ENGINE)
+     ============================================================ */
+
+  const now =
+    window.ACS_CurrentSimDate
+    ? new Date(window.ACS_CurrentSimDate)
+    : new Date();
+
+  const maturity =
+    new Date(now);
+
+  maturity.setMonth(
+    maturity.getMonth() + months
+  );
+
+  /* ============================================================
+     🟩 CREATE LOAN OBJECT (FULL BANKING MODEL)
+     ============================================================ */
 
   const loan = {
 
@@ -280,6 +302,14 @@ function ACS_BANK_createLoan(amount, months){
     termMonths: months,
 
     startYear: getCurrentYear(),
+
+    /* 🟩 REAL CONTRACT DATES */
+
+    startDate:
+      now.toISOString(),
+
+    maturityDate:
+      maturity.toISOString(),
 
     type: "BANK_LOAN"
 
@@ -311,7 +341,11 @@ function ACS_BANK_createLoan(amount, months){
 
         rate: rate,
 
-        termMonths: months
+        termMonths: months,
+
+        startDate: loan.startDate,
+
+        maturityDate: loan.maturityDate
 
       }
 
@@ -336,13 +370,28 @@ function ACS_BANK_createLoan(amount, months){
 
       ref: loan.id,
 
-      ts: Date.now()
+      ts: Date.now(),
+
+      meta: {
+
+        startDate: loan.startDate,
+
+        maturityDate: loan.maturityDate
+
+      }
 
     });
 
   }
 
-  console.log("🏦 Loan created and registered in Finance:", loan.id);
+  console.log(
+    "🏦 Loan created:",
+    loan.id,
+    "| Start:",
+    loan.startDate,
+    "| Maturity:",
+    loan.maturityDate
+  );
 
   return loan;
 
