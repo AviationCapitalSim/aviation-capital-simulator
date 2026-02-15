@@ -385,12 +385,13 @@
     window.location.href = "loan_request.html";
   }
 
-  function loadBank(){
+function loadBank(){
 
   if (typeof ACS_BANK_getSummary !== "function"){
     console.error("ACS_BANK_getSummary() missing — engine/acs_bank.js not loaded.");
     return;
   }
+
 function formatDateISO(iso){
 
   if(!iso) return "—";
@@ -448,43 +449,60 @@ function calculateRemainingTerm(maturityISO){
   const loans =
     Array.isArray(s.loans) ? s.loans : [];
 
+/* ============================================================
+   🟩 B21 — REAL LOAN DATE + MATURITY CALCULATION (SAFE)
+   Works with old and new loans
+   ============================================================ */
+
 if(loans.length > 0){
 
   const lastLoan =
     loans[loans.length - 1];
 
-  document.getElementById("loanStart").innerText =
-    formatDateISO(lastLoan.startDate);
+  const startISO =
+    lastLoan.startDate ||
+    lastLoan.startTS ||
+    null;
 
-  document.getElementById("loanMaturity").innerText =
-    formatDateISO(lastLoan.maturityDate);
+  if(startISO){
 
-  document.getElementById("loanTerm").innerText =
-    calculateRemainingTerm(lastLoan.maturityDate);
+    const startDate =
+      new Date(startISO);
 
-}
-       
-  /* ============================================================
-     🟩 B18 — DISPLAY LAST LOAN START DATE (FIXED ORDER)
-     ============================================================ */
+    const maturityDate =
+      new Date(startDate);
 
-  if(loans.length > 0){
+    maturityDate.setMonth(
+      maturityDate.getMonth() +
+      (lastLoan.termMonths || 0)
+    );
 
-    const lastLoan =
-      loans[loans.length - 1];
+    const maturityISO =
+      maturityDate.toISOString();
 
-    const startYear =
-      lastLoan.startYear || "—";
+    const maturityEl =
+      document.getElementById("loanMaturity");
 
-    document.getElementById("loanStart").innerText =
-      startYear;
+    if(maturityEl){
 
-  }else{
+      maturityEl.innerText =
+        formatDateISO(maturityISO);
 
-    document.getElementById("loanStart").innerText =
-      "No loans";
+    }
+
+    const termEl =
+      document.getElementById("loanTerm");
+
+    if(termEl){
+
+      termEl.innerText =
+        calculateRemainingTerm(maturityISO);
+
+    }
 
   }
+
+}
 
   /* ============================================================
      STANDARD CARDS
@@ -535,13 +553,13 @@ if(loans.length > 0){
 
 }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    try{
-      loadBank();
-    }catch(e){
-      console.error("BANK UI crash:", e);
-    }
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  try{
+    loadBank();
+  }catch(e){
+    console.error("BANK UI crash:", e);
+  }
+});
      
 </script>
 
