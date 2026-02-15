@@ -174,92 +174,77 @@
 
 }
 
-/* ============================================================
-   🟩 ACS PANEL SYSTEM — FINAL CLEAN VERSION
-   SINGLE SOURCE OF TRUTH
-   ============================================================ */
+/* terminal container */
 
 .panel{
 
   background:
   linear-gradient(
     180deg,
-    rgba(14,34,72,0.96),
-    rgba(8,22,55,0.98)
+    rgba(5,18,48,0.95),
+    rgba(2,10,30,0.98)
   );
 
-  border-radius:18px;
+  border-radius:16px;
 
-  border:1px solid rgba(255,179,0,0.28);
+  border:
+  1px solid rgba(255,179,0,0.18);
 
-  box-shadow:
-    0 6px 24px rgba(0,0,0,0.45),
-    inset 0 0 18px rgba(0,140,255,0.12);
+  padding:28px;
 
-  padding:24px;
-
-  min-height:220px;
+  min-height:240px;
 
   display:flex;
+
   flex-direction:column;
+
+  justify-content:flex-start;
 
   gap:14px;
 
+  position:relative;
+
 }
 
-/* titles */
+/* header */
 
 .panel h3{
 
-  font-size:1.05rem;
+  font-size:1rem;
+
   font-weight:600;
 
   color:#ffb300;
+
+  letter-spacing:1px;
 
   margin-bottom:6px;
 
 }
 
-/* inputs */
+/* spacing inside */
 
-.panel input,
-.panel select{
+.panel > *{
 
-  width:100%;
-
-  padding:10px;
-
-  border-radius:10px;
-
-  border:1px solid rgba(0,140,255,0.25);
-
-  background:
-  linear-gradient(
-    180deg,
-    rgba(10,25,60,0.9),
-    rgba(5,15,40,0.95)
-  );
-
-  color:white;
+  margin-top:6px;
 
 }
 
-/* slider clean */
+/* authority panel special */
 
-#loanAmountRange{
+.acs-authority-panel{
 
-  width:100%;
-
-  margin-top:8px;
-  margin-bottom:4px;
+  border-color:
+  rgba(0,255,180,0.35);
 
 }
 
-/* hover */
+/* submit panel special */
 
-.panel:hover{
+.panel:last-child{
 
-  border-color:rgba(255,179,0,0.45);
+  border-color:
+  rgba(0,255,140,0.35);
 
 }
 
@@ -408,31 +393,28 @@
 }
 
 /* ============================================================
-   🟩 ACS TERMINAL PANELS — FINANCIAL TERMINAL LIGHT FIX
-   REEMPLAZA COMPLETO EL BLOQUE .panel
+   🟦 ACS FINANCIAL TERMINAL PANELS — QATAR LUXURY CORE
    ============================================================ */
 
 .panel{
 
   background:
-  linear-gradient(
-    180deg,
-    rgba(18,38,80,0.96),
-    rgba(10,25,60,0.98)
-  );
+  linear-gradient(180deg,
+    rgba(8,22,55,0.96),
+    rgba(3,12,35,0.98));
 
   border-radius:18px;
 
   border:
-  1px solid rgba(255,179,0,0.35);
+  1px solid rgba(255,179,0,0.25);
 
   box-shadow:
 
-  0 8px 30px rgba(0,0,0,0.45),
+  0 0 30px rgba(0,0,0,0.7),
 
-  inset 0 0 30px rgba(0,140,255,0.12),
+  inset 0 0 25px rgba(0,60,140,0.15),
 
-  inset 0 0 2px rgba(255,200,60,0.25);
+  inset 0 0 2px rgba(255,200,60,0.15);
 
   padding:22px;
 
@@ -442,17 +424,17 @@
 
 }
 
-/* hover effect */
+/* Hover institutional feel */
 
 .panel:hover{
 
-  border-color:rgba(255,179,0,0.65);
+  border-color:rgba(255,179,0,0.55);
 
   box-shadow:
 
-  0 12px 40px rgba(0,0,0,0.55),
+  0 0 40px rgba(255,179,0,0.12),
 
-  inset 0 0 35px rgba(0,140,255,0.18);
+  inset 0 0 30px rgba(0,60,140,0.2);
 
 }
 
@@ -525,129 +507,6 @@
   inset 0 0 20px rgba(0,255,140,0.08);
 
 }
-
-/* ============================================================
-   🟩 SLIDER CONTAINER FIX — PREVENT OVERFLOW
-   ============================================================ */
-
-.acs-slider-container{
-
-  width:100%;
-  padding:6px 4px;
-  box-sizing:border-box;
-
-}
-
-.acs-slider-container input{
-
-  width:100%;
-  margin:0;
-
-}
-
-/* ============================================================
-   🟩 LOAN DETAILS PANEL — PERFECT CENTER ALIGNMENT
-   ============================================================ */
-
-.panel{
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-
-}
-
-.panel h3{
-
-  text-align:center;
-  width:100%;
-
-}
-
-.panel label{
-
-  width:100%;
-  text-align:left;
-  margin-top:12px;
-
-}
-
-.panel input,
-.panel select{
-
-  width:100%;
-  max-width:320px;
-
-}
-
-.panel p{
-
-  text-align:center;
-  width:100%;
-
-}
-
-/* ============================================================
-   🟩 ACS FINANCIAL SLIDER — PROFESSIONAL STYLE
-   ============================================================ */
-
-.acs-slider-container{
-
-  width:100%;
-  max-width:320px;
-  margin-top:12px;
-
-}
-
-#loanAmountRange{
-
-  -webkit-appearance:none;
-  appearance:none;
-
-  width:100%;
-  height:6px;
-
-  background:
-  linear-gradient(90deg,#00ffd0,#00aaff);
-
-  border-radius:4px;
-  outline:none;
-
-}
-
-/* thumb */
-
-#loanAmountRange::-webkit-slider-thumb{
-
-  -webkit-appearance:none;
-
-  width:18px;
-  height:18px;
-
-  background:#ffffff;
-
-  border-radius:50%;
-
-  border:2px solid #00ffd0;
-
-  cursor:pointer;
-
-}
-
-#loanAmountRange::-moz-range-thumb{
-
-  width:18px;
-  height:18px;
-
-  background:#ffffff;
-
-  border-radius:50%;
-
-  border:2px solid #00ffd0;
-
-  cursor:pointer;
-
-}
     
 </style>
   
@@ -711,8 +570,7 @@
   autocomplete="off"
 />
 
-<div class="acs-slider-container">
-
+<!-- Smooth slider (always limited to max per loan) -->
 <input
   type="range"
   id="loanAmountRange"
@@ -720,9 +578,8 @@
   max="50000"
   step="10000"
   value="50000"
+  style="margin-top:10px;width:100%;"
 />
-
-</div>
 
 <p style="margin:10px 0 0;color:#9fb3ff;font-size:0.95rem;">
   Max allowed: <span id="maxAllowedText" style="color:#00ff88;font-weight:700;">$0</span>
@@ -1046,8 +903,11 @@ function getAircraftDatabase(){
 }
   
 /* ============================================================
-   🟩 ACS BANK — LOAD AIRCRAFT WITH COLLATERAL LOCK SUPPORT
-   SAFE VERSION — FULL FUNCTION REPLACEMENT
+   🟦 ACS BANK — MULTI COLLATERAL CHECKBOX ENGINE
+   ------------------------------------------------------------
+   Professional real aviation financing model
+   Allows multiple aircraft selection as collateral
+   Calculates dynamic loan limit based on real fleet value
    ============================================================ */
 
 function loadAircraft(){
@@ -1061,6 +921,10 @@ function loadAircraft(){
     console.error("Aircraft database not found");
     return;
   }
+
+  /* ============================================================
+     BUILD CHECKBOX LIST UI
+     ============================================================ */
 
   collateralSelect.style.display = "none";
 
@@ -1084,6 +948,8 @@ function loadAircraft(){
 
   container.innerHTML = "";
 
+  let totalCollateral = 0;
+
   fleet.forEach((ac, index) => {
 
     const dbAircraft =
@@ -1097,18 +963,14 @@ function loadAircraft(){
     if(dbAircraft && dbAircraft.price_acs_usd)
       value = Number(dbAircraft.price_acs_usd);
 
-    const isUsed =
-      ac.collateralActive === true;
-
     const row =
       document.createElement("label");
 
     row.style.display = "flex";
     row.style.alignItems = "center";
     row.style.gap = "8px";
-    row.style.cursor = isUsed ? "not-allowed" : "pointer";
+    row.style.cursor = "pointer";
     row.style.fontSize = "0.95rem";
-    row.style.opacity = isUsed ? "0.45" : "1";
 
     const cb =
       document.createElement("input");
@@ -1117,35 +979,13 @@ function loadAircraft(){
     cb.value = value;
     cb.dataset.index = index;
 
-    if(isUsed){
-
-      cb.disabled = true;
-
-    }
-    else{
-
-      cb.onchange = updateCollateralTotals;
-
-    }
+    cb.onchange = updateCollateralTotals;
 
     const text =
       document.createElement("span");
 
     text.textContent =
       `${ac.manufacturer} ${ac.model} — ${money(value)}`;
-
-    if(isUsed){
-
-      const badge =
-        document.createElement("span");
-
-      badge.textContent = "  [USED AS COLLATERAL]";
-      badge.style.color = "#ff8844";
-      badge.style.fontSize = "0.8rem";
-
-      text.appendChild(badge);
-
-    }
 
     row.appendChild(cb);
     row.appendChild(text);
@@ -1221,18 +1061,8 @@ function updateCollateralTotals(){
 
   if(slider){
 
-    slider.min = 0;
-
-  slider.max = MAX_PER_LOAN > 0
-  ? MAX_PER_LOAN
-  : 100000;
-
-  slider.step =
-  Math.max(1000, Math.floor(MAX_PER_LOAN / 100));
-
-  slider.value =
-  Math.min(Number(slider.value) || 0, slider.max);
-
+    slider.max = MAX_PER_LOAN;
+    slider.value = Math.min(slider.value, MAX_PER_LOAN);
 
   }
 
@@ -1322,15 +1152,7 @@ function initializeAmountControls(){
      ============================================================ */
 
   loanSlider.min = 0;
-
-  loanSlider.max =
-  MAX_PER_LOAN > 0
-  ? MAX_PER_LOAN
-  : 100000;
-
-  loanSlider.step =
-  Math.max(1000, Math.floor(loanSlider.max / 100));
-
+  loanSlider.max = MAX_PER_LOAN || 0;
   loanSlider.value = 0;
 
   loanAmountInput.value = "";
