@@ -301,23 +301,44 @@ function ACS_BANK_createLoan(amount, months){
     );
 
   /* ============================================================
-     🟦 AUTHORITATIVE SIMULATION DATE (PRIMARY SOURCE)
-     ============================================================ */
+   🟦 AUTHORITATIVE SIMULATION DATE (PRIMARY SOURCE)
+   FIXED — uses ACS_TIME.currentTime (official sim clock)
+   ============================================================ */
 
-  let simDate = null;
+let simDate = null;
 
-  /* PRIORITY 1 — official time engine variable */
-  if(window.ACS_CurrentSimDate){
+/* ============================================================
+   PRIORITY 1 — OFFICIAL ACS TIME ENGINE (CORRECT SOURCE)
+   ============================================================ */
 
-    const d =
-      new Date(window.ACS_CurrentSimDate);
+if(window.ACS_TIME && ACS_TIME.currentTime){
 
-    if(!isNaN(d.getTime()))
-      simDate = d;
+  const d =
+    new Date(ACS_TIME.currentTime);
 
-  }
+  if(!isNaN(d.getTime()))
+    simDate = d;
 
-  /* PRIORITY 2 — cockpit clock fallback (SAFARI SAFE) */
+}
+
+/* ============================================================
+   PRIORITY 2 — legacy variable support (optional)
+   ============================================================ */
+
+if(!simDate && window.ACS_CurrentSimDate){
+
+  const d =
+    new Date(window.ACS_CurrentSimDate);
+
+  if(!isNaN(d.getTime()))
+    simDate = d;
+
+}
+
+/* ============================================================
+   PRIORITY 3 — cockpit clock fallback (SAFE)
+   ============================================================ */
+
 if(!simDate){
 
   try{
@@ -378,20 +399,33 @@ if(!simDate){
 
 }
 
+/* ============================================================
+   FINAL FALLBACK — NEVER USE REAL TIME IF SIM EXISTS
+   ============================================================ */
 
-  /* PRIORITY 3 — final safe fallback */
-  if(!simDate)
-    simDate = new Date();
+if(!simDate){
 
-  const startDate =
-    new Date(simDate);
-
-  const maturityDate =
-    new Date(startDate);
-
-  maturityDate.setMonth(
-    maturityDate.getMonth() + months
+  console.warn(
+    "ACS BANK WARNING: simDate fallback to real time"
   );
+
+  simDate = new Date();
+
+}
+
+/* ============================================================
+   CREATE START AND MATURITY DATES
+   ============================================================ */
+
+const startDate =
+  new Date(simDate);
+
+const maturityDate =
+  new Date(startDate);
+
+maturityDate.setMonth(
+  maturityDate.getMonth() + months
+);
 
   /* ============================================================
      🟦 CREATE LOAN OBJECT (SIM SAFE)
