@@ -257,7 +257,21 @@
       opacity:0.9;
       margin-top:10px;
     }
-  </style>
+
+/* ============================================================
+   🟦 B-63 — BANK TABLE ALIGNMENT (QATAR LUXURY)
+   ============================================================ */
+
+table th:nth-child(1),
+table th:nth-child(2),
+table th:nth-child(6),
+table td:nth-child(1),
+table td:nth-child(2),
+table td:nth-child(6){
+  text-align:center;
+}
+       
+</style>
 </head>
 
 <body>
@@ -685,13 +699,15 @@ function loadBank(){
       : "#4da3ff";
 
     const closed =
-      remaining <= 0
-      ? formatAviationDate(
-          l.closedDate ||
-          l.lastPaymentDate ||
-          l.paidAt
-        )
-      : "—";
+  remaining <= 0
+  ? formatAviationDate(
+      l.closedDate ||
+      l.lastPaymentDate ||
+      l.paidAt ||
+      l.closedTS ||
+      l.lastPaymentTS
+    )
+  : "—";
 
     tr.innerHTML = `
 
