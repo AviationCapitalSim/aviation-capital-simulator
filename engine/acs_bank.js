@@ -567,17 +567,66 @@ Math.min(amount, loan.remaining);
 loan.remaining =
 Math.max(0, loan.remaining - actualPayment);
 
+/* ============================================================
+   🟩 B-35 — AUTO RELEASE COLLATERAL WHEN LOAN PAID
+   ============================================================ */
+
+if(loan.remaining === 0){
+
+  try{
+
+    const fleet =
+    JSON.parse(
+      localStorage.getItem("ACS_MyAircraft") || "[]"
+    );
+
+    let released = false;
+
+    fleet.forEach(ac => {
+
+      if(ac.collateralLoanId === loan.id){
+
+        ac.collateralActive = false;
+
+        delete ac.collateralLoanId;
+
+        released = true;
+
+      }
+
+    });
+
+    if(released){
+
+      localStorage.setItem(
+        "ACS_MyAircraft",
+        JSON.stringify(fleet)
+      );
+
+      console.log(
+        "✈️ Collateral released:",
+        loan.id
+      );
+
+    }
+
+  }
+  catch(e){
+
+    console.warn(
+      "Collateral release error:",
+      e
+    );
+
+  }
+
+}
+
 saveFinance(fin);
 
 /* ============================================
 REGISTER EXPENSE IN FINANCE ENGINE
 ============================================ */
-
-/* ============================================================
-   🟩 B-33 — REGISTER EXPENSE VIA FINANCE ENGINE (FINAL FIX)
-   Canonical integration with ACS Finance Engine
-   Removes legacy ACS_registerExpense dependency
-   ============================================================ */
 
 if(window.ACS_FINANCE_ENGINE &&
    typeof window.ACS_FINANCE_ENGINE.commit === "function"){
