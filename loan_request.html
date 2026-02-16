@@ -1802,11 +1802,7 @@ function renderLoanPortfolio(){
 }
 
 /* ============================================================
-   🏦 MANUAL AMORTIZATION ENGINE
-   ============================================================ */
-
-/* ============================================================
-   🏦 MANUAL AMORTIZATION ENGINE — FULL REFRESH FIX
+   🟩 B-34 — AMORTIZATION ENGINE WITH LIVE UI UPDATE
    ============================================================ */
 
 function amortizeLoan(loanId){
@@ -1827,35 +1823,32 @@ function amortizeLoan(loanId){
       ACS_BANK_amortizeLoan(loanId, value);
 
     console.log(
-      "Amortization complete. Remaining:",
+      "Loan amortized. Remaining:",
       remaining
     );
 
-    /* REFRESH ALL BANK DATA */
+    /* CRITICAL — reload summary from engine */
+
+    BANK_SUMMARY =
+      ACS_BANK_getSummary();
+
+    /* refresh ALL UI */
 
     loadBankData();
 
-    /* REFRESH PORTFOLIO UI */
-
     renderLoanPortfolio();
-
-    /* CRITICAL: refresh aircraft collateral */
 
     loadAircraft();
 
   }
   catch(err){
 
-    alert(
-      err.message ||
-      "Amortization failed"
-    );
+    alert(err.message || "Amortization failed");
 
   }
 
 }
 
-  
 </script>
   
 </body>
