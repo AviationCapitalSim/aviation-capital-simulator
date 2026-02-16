@@ -268,9 +268,14 @@ function calculateMonthlyPayment(amount, rate, months){
 }
 
 /* ============================================================
-   🟩 B7 — ACS BANK CREATE LOAN (CANONICAL FINANCE INTEGRATION)
-   FIXED — FULL DATE + MATURITY + TIMESTAMPS
-   Professional Banking Grade
+   🟦 C1 — ACS BANK CREATE LOAN (SIM TIME AUTHORITATIVE FIX)
+   ------------------------------------------------------------
+   FIXES:
+   ✔ Uses simulation time (NOT browser time)
+   ✔ Fixes maturity date corruption (2026 / 2032 bug)
+   ✔ Fixes closed date reference base
+   ✔ Fully compatible with Time Engine
+   ✔ Canonical banking timestamp authority
    ============================================================ */
 
 function ACS_BANK_createLoan(amount, months){
@@ -296,14 +301,55 @@ function ACS_BANK_createLoan(amount, months){
     );
 
   /* ============================================================
-     🟩 B-61 FIXED — AUTHORITATIVE SIMULATION DATE
+     🟦 AUTHORITATIVE SIMULATION DATE (PRIMARY SOURCE)
      ============================================================ */
 
-  const simDate =
-    window.ACS_CurrentSimDate &&
-    !isNaN(new Date(window.ACS_CurrentSimDate))
-      ? new Date(window.ACS_CurrentSimDate)
-      : new Date();
+  let simDate = null;
+
+  /* PRIORITY 1 — official time engine variable */
+  if(window.ACS_CurrentSimDate){
+
+    const d =
+      new Date(window.ACS_CurrentSimDate);
+
+    if(!isNaN(d.getTime()))
+      simDate = d;
+
+  }
+
+  /* PRIORITY 2 — cockpit clock fallback */
+  if(!simDate){
+
+    try{
+
+      const el =
+        document.querySelector(".clock-text");
+
+      if(el){
+
+        const parts =
+          el.textContent.split("—");
+
+        if(parts.length >= 2){
+
+          const parsed =
+            new Date(parts[1].trim());
+
+          if(!isNaN(parsed.getTime()))
+            simDate = parsed;
+
+        }
+
+      }
+
+    }
+    catch(e){}
+
+  }
+
+  /* PRIORITY 3 — final safe fallback */
+  if(!simDate)
+    simDate = new Date();
 
   const startDate =
     new Date(simDate);
@@ -316,13 +362,13 @@ function ACS_BANK_createLoan(amount, months){
   );
 
   /* ============================================================
-     🟩 CREATE LOAN OBJECT (CORRECT ORDER)
+     🟦 CREATE LOAN OBJECT (SIM SAFE)
      ============================================================ */
 
   const loan = {
 
     id:
-      "LOAN_" + Date.now(),
+      "LOAN_" + startDate.getTime(),
 
     originalAmount:
       amount,
@@ -354,6 +400,9 @@ function ACS_BANK_createLoan(amount, months){
     maturityTS:
       maturityDate.getTime(),
 
+    createdAt:
+      startDate.getTime(),
+
     type:
       "BANK_LOAN"
 
@@ -383,7 +432,9 @@ function ACS_BANK_createLoan(amount, months){
         loanId: loan.id,
         rate: rate,
         termMonths: months
-      }
+      },
+
+      ts: startDate.getTime()
 
     });
 
@@ -409,8 +460,9 @@ function ACS_BANK_createLoan(amount, months){
   }
 
   console.log(
-    "🏦 Loan created:",
+    "🏦 Loan created (SIM TIME):",
     loan.id,
+    startDate,
     loan
   );
 
