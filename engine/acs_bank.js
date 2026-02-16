@@ -4,25 +4,31 @@
    ============================================================ */
 
 /* ============================================================
-   🟧 B-60 — SIM NOW HELPER (BANK)
-   Uses ACS simulation date when available
+   🟧 FIX-1 — ACS_BANK_now (OFFICIAL SIM CLOCK)
+   Uses ACS_TIME.currentTime as primary source
    ============================================================ */
 
 function ACS_BANK_now(){
 
-  // Prefer simulation date (ACS)
+  // ✅ PRIMARY: official time engine
+  if(window.ACS_TIME && ACS_TIME.currentTime){
+    const d = new Date(ACS_TIME.currentTime);
+    if(!isNaN(d.getTime())) return d;
+  }
+
+  // Legacy support
   if(window.ACS_CurrentSimDate){
     const d = new Date(window.ACS_CurrentSimDate);
     if(!isNaN(d.getTime())) return d;
   }
 
-  // Optional: if your time engine exposes a getter
+  // Optional getter
   if(typeof window.ACS_getSimDate === "function"){
     const d = new Date(window.ACS_getSimDate());
     if(!isNaN(d.getTime())) return d;
   }
 
-  // Fallback: real time
+  // Last resort
   return new Date();
 
 }
@@ -404,14 +410,10 @@ if(!simDate){
    ============================================================ */
 
 if(!simDate){
-
-  console.warn(
-    "ACS BANK WARNING: simDate fallback to real time"
-  );
-
-  simDate = new Date();
-
+  console.warn("ACS BANK WARNING: simDate fallback — using ACS_BANK_now()");
+  simDate = ACS_BANK_now();
 }
+
 
 /* ============================================================
    CREATE START AND MATURITY DATES
