@@ -295,47 +295,28 @@ function ACS_BANK_createLoan(amount, months){
       months
     );
 
- /* ============================================================
-   🟩 B-61 — REAL SIMULATION DATE (FINAL SAFE FIX)
-   Uses ACS simulation date as authoritative bank time
-   Prevents real-world date corruption
-   ============================================================ */
+  /* ============================================================
+     🟩 B-61 FIXED — AUTHORITATIVE SIMULATION DATE
+     ============================================================ */
 
-const now =
-  window.ACS_CurrentSimDate &&
-  !isNaN(new Date(window.ACS_CurrentSimDate).getTime())
-  ? new Date(window.ACS_CurrentSimDate)
-  : new Date();
+  const simDate =
+    window.ACS_CurrentSimDate &&
+    !isNaN(new Date(window.ACS_CurrentSimDate))
+      ? new Date(window.ACS_CurrentSimDate)
+      : new Date();
 
-/* IMPORTANT: store this as the loan start date */
-const startDate =
-  new Date(now);
+  const startDate =
+    new Date(simDate);
 
-const maturity =
-  new Date(startDate);
+  const maturityDate =
+    new Date(startDate);
 
-maturity.setMonth(
-  maturity.getMonth() + months
-);
-
-/* ============================================================
-   SAVE INTO LOAN OBJECT (CRITICAL)
-   ============================================================ */
-
-loan.startDate =
-  startDate.toISOString();
-
-loan.startTS =
-  startDate.getTime();
-
-loan.maturityDate =
-  maturity.toISOString();
-
-loan.maturityTS =
-  maturity.getTime();
+  maturityDate.setMonth(
+    maturityDate.getMonth() + months
+  );
 
   /* ============================================================
-     🟩 CREATE LOAN OBJECT (FULL BANK DATA)
+     🟩 CREATE LOAN OBJECT (CORRECT ORDER)
      ============================================================ */
 
   const loan = {
@@ -359,21 +340,19 @@ loan.maturityTS =
       months,
 
     startYear:
-      now.getUTCFullYear(),
-
-    /* NEW — REAL DATE SYSTEM */
+      startDate.getUTCFullYear(),
 
     startDate:
-      now.toISOString(),
+      startDate.toISOString(),
 
     maturityDate:
-      maturity.toISOString(),
+      maturityDate.toISOString(),
 
     startTS:
-      now.getTime(),
+      startDate.getTime(),
 
     maturityTS:
-      maturity.getTime(),
+      maturityDate.getTime(),
 
     type:
       "BANK_LOAN"
@@ -381,7 +360,7 @@ loan.maturityTS =
   };
 
   /* ============================================================
-     REGISTER LOAN IN BANK STRUCTURE
+     REGISTER LOAN
      ============================================================ */
 
   fin.bank.loans.push(loan);
@@ -389,7 +368,7 @@ loan.maturityTS =
   saveFinance(fin);
 
   /* ============================================================
-     REGISTER MONEY IN FINANCE LEDGER
+     REGISTER FINANCE INCOME
      ============================================================ */
 
   if(typeof window.ACS_registerIncome === "function"){
@@ -401,16 +380,9 @@ loan.maturityTS =
       source: "BANK_LOAN",
 
       meta:{
-
-        loanId:
-          loan.id,
-
-        rate:
-          rate,
-
-        termMonths:
-          months
-
+        loanId: loan.id,
+        rate: rate,
+        termMonths: months
       }
 
     });
@@ -426,20 +398,11 @@ loan.maturityTS =
 
     window.ACS_FINANCE_ENGINE.commit({
 
-      type:
-        "LOAN_IN",
-
-      amount:
-        amount,
-
-      source:
-        "BANK",
-
-      ref:
-        loan.id,
-
-      ts:
-        now.getTime()
+      type: "LOAN_IN",
+      amount: amount,
+      source: "BANK",
+      ref: loan.id,
+      ts: startDate.getTime()
 
     });
 
