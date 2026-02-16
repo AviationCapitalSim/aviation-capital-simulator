@@ -1819,33 +1819,69 @@ function amortizeLoan(loanId){
 
   try{
 
-    const remaining =
-      ACS_BANK_amortizeLoan(loanId, value);
+  const remaining =
+    ACS_BANK_amortizeLoan(loanId, value);
 
-    console.log(
-      "Loan amortized. Remaining:",
-      remaining
-    );
+  console.log(
+    "Loan amortized. Remaining:",
+    remaining
+  );
 
-    /* CRITICAL — reload summary from engine */
+  /* ============================================================
+     🟩 B-35.1 — COLLATERAL RELEASE ENGINE
+     Releases aircraft when loan fully paid
+     ============================================================ */
 
-    BANK_SUMMARY =
-      ACS_BANK_getSummary();
+  if(remaining <= 0){
 
-    /* refresh ALL UI */
+    const fleet =
+      JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-    loadBankData();
+    let changed = false;
 
-    renderLoanPortfolio();
+    fleet.forEach(ac => {
 
-    loadAircraft();
+      if(ac.collateralActive === true){
+
+        ac.collateralActive = false;
+        ac.collateralLoanId = null;
+
+        changed = true;
+
+      }
+
+    });
+
+    if(changed){
+
+      localStorage.setItem(
+        "ACS_MyAircraft",
+        JSON.stringify(fleet)
+      );
+
+      console.log("Collateral released");
+
+    }
 
   }
-  catch(err){
 
-    alert(err.message || "Amortization failed");
+  /* ============================================================
+     🟩 B-35.2 — FULL UI REFRESH
+     ============================================================ */
 
-  }
+  BANK_SUMMARY =
+    ACS_BANK_getSummary();
+
+  loadBankData();
+
+  renderLoanPortfolio();
+
+  loadAircraft();
+
+}
+catch(err){
+
+  alert(err.message || "Amortization failed");
 
 }
 
