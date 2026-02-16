@@ -508,9 +508,9 @@ function termColor(months){
 }
 
 /* ============================================================
-   🟦 D1 — SIM DATE PARSER (SAFARI SAFE)
+   🟦 D1 — SIM DATE PARSER (SAFARI SAFE / NO Date(string))
    Reads: "01:10 — WED 30 SEP 1942"
-   Returns a real Date using manual parse (NO Date(string))
+   Returns: Date UTC midday (prevents TZ shifts)
    ============================================================ */
 
 function getSimulationDate(){
@@ -523,19 +523,21 @@ function getSimulationDate(){
   const txt =
     (el.textContent || "").trim();
 
+  // Split on any dash type with optional spaces: -, – , —
   const parts =
-    txt.split("—");
+    txt.split(/\s*[-–—]\s*/);
 
+  // Expected: ["01:10", "WED 30 SEP 1942"]
   if(parts.length < 2)
     return new Date();
 
   const datePart =
-    parts[1].trim(); // "WED 30 SEP 1942"
+    parts[1].trim();
 
+  // Tokens: [WED, 30, SEP, 1942]
   const tokens =
     datePart.split(/\s+/).filter(Boolean);
 
-  // Expected tokens: [WED, 30, SEP, 1942]
   if(tokens.length < 4)
     return new Date();
 
@@ -559,7 +561,7 @@ function getSimulationDate(){
   if(!day || month === undefined || !year)
     return new Date();
 
-  // Use UTC midday to avoid timezone date-shifts
+  // UTC midday avoids "day -1" issues in timezones
   return new Date(Date.UTC(year, month, day, 12, 0, 0));
 
 }
@@ -634,7 +636,7 @@ function loadBank(){
       activeLoan.startDate ||
       activeLoan.startTS ||
       activeLoan.createdAt ||
-      Date.now();
+      getSimulationDate().getTime();
 
     const startDate =
       new Date(startTS);
