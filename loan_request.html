@@ -1668,7 +1668,9 @@ function renderLoanPortfolio(){
 
   container.innerHTML = "";
 
-  if(!BANK_SUMMARY || !BANK_SUMMARY.loans || BANK_SUMMARY.loans.length === 0){
+  if(!BANK_SUMMARY ||
+     !BANK_SUMMARY.loans ||
+     BANK_SUMMARY.loans.length === 0){
 
     container.innerHTML =
       `<div style="
@@ -1682,7 +1684,7 @@ function renderLoanPortfolio(){
     return;
   }
 
-  BANK_SUMMARY.loans.forEach((loan, index) => {
+  BANK_SUMMARY.loans.forEach((loan) => {
 
     const card =
       document.createElement("div");
@@ -1714,7 +1716,7 @@ function renderLoanPortfolio(){
     left.innerHTML =
       `
       <div style="color:#00ffd0;font-weight:600">
-        Loan: ${money(loan.originalAmount || loan.amount || loan.remaining)}
+        Loan: ${money(loan.originalAmount)}
       </div>
 
       <div style="color:#8ca8ff;font-size:0.85rem">
@@ -1750,8 +1752,9 @@ function renderLoanPortfolio(){
     right.style.cursor =
       "pointer";
 
+    /* FIX CRÍTICO: usar loan.id */
     right.onclick =
-      () => amortizeLoan(index);
+      () => amortizeLoan(loan.id);
 
     card.appendChild(left);
     card.appendChild(right);
@@ -1766,7 +1769,7 @@ function renderLoanPortfolio(){
    🏦 MANUAL AMORTIZATION ENGINE
    ============================================================ */
 
-function amortizeLoan(index){
+function amortizeLoan(loanId){
 
   const amount =
     prompt("Enter amortization amount:");
@@ -1780,9 +1783,10 @@ function amortizeLoan(index){
 
   try{
 
-    ACS_BANK_amortizeLoan(index, value);
+    ACS_BANK_amortizeLoan(loanId, value);
 
     loadBankData();
+
     renderLoanPortfolio();
 
   }
