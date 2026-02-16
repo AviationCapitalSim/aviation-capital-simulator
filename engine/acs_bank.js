@@ -356,67 +356,81 @@ function ACS_BANK_createLoan(amount, months){
       months
     );
 
-  /* ============================================================
-     🟦 AUTHORITATIVE SIMULATION DATE — FIXED
-     SINGLE SOURCE OF TRUTH
-     ============================================================ */
+ /* ============================================================
+   🟩 ACS AUTHORITATIVE SIM TIME RESOLVER — UNIVERSAL SAFE
+   Compatible with ALL ACS Time Engine versions
+   ============================================================ */
 
-  let simDate = null;
+let simDate = null;
 
-  /* PRIORITY 1 — ACS TIME ENGINE */
-  if(window.ACS_TIME && ACS_TIME.currentTime){
+/* PRIORITY 1 — ACS_TIME.currentTime */
+if(window.ACS_TIME){
 
-    const d =
-      new Date(ACS_TIME.currentTime);
-
-    if(!isNaN(d))
-      simDate = d;
-
+  if(ACS_TIME.currentTime){
+    const d = new Date(ACS_TIME.currentTime);
+    if(!isNaN(d)) simDate = d;
   }
 
-  /* PRIORITY 2 — cockpit clock */
-  if(!simDate){
+  if(!simDate && ACS_TIME.now){
+    const d = new Date(ACS_TIME.now);
+    if(!isNaN(d)) simDate = d;
+  }
 
-    try{
+  if(!simDate && ACS_TIME.simulationTime){
+    const d = new Date(ACS_TIME.simulationTime);
+    if(!isNaN(d)) simDate = d;
+  }
 
-      const el =
-        document.querySelector(".clock-text");
+}
 
-      if(el){
+/* PRIORITY 2 — ACS_SIM_TIME */
+if(!simDate && window.ACS_SIM_TIME){
+  const d = new Date(window.ACS_SIM_TIME);
+  if(!isNaN(d)) simDate = d;
+}
 
-        const txt =
-          el.textContent || "";
+/* PRIORITY 3 — ACS_CLOCK */
+if(!simDate && window.ACS_CLOCK && ACS_CLOCK.now){
+  const d = new Date(ACS_CLOCK.now);
+  if(!isNaN(d)) simDate = d;
+}
 
-        const parts =
-          txt.split("—");
+/* PRIORITY 4 — cockpit clock UI */
+if(!simDate){
 
-        if(parts.length >= 2){
+  try{
 
-          const parsed =
-            new Date(parts[1].trim());
+    const el = document.querySelector(".clock-text");
 
-          if(!isNaN(parsed))
-            simDate = parsed;
+    if(el){
 
-        }
+      const txt = el.textContent || "";
+
+      const parts = txt.split("—");
+
+      if(parts.length >= 2){
+
+        const parsed = new Date(parts[1].trim());
+
+        if(!isNaN(parsed)) simDate = parsed;
 
       }
 
     }
-    catch(e){}
 
   }
+  catch(e){}
 
-  /* FINAL FALLBACK */
-  if(!simDate){
+}
 
-    console.error("BANK ENGINE: Time unavailable");
+/* FINAL FALLBACK — NEVER BLOCK SYSTEM */
+if(!simDate){
 
-    throw new Error(
-      "Simulation time unavailable"
-    );
+  console.warn("BANK ENGINE: Using system fallback time");
 
-  }
+  simDate = new Date();
+
+}
 
   /* ============================================================
      USE SAME SOURCE EVERYWHERE
