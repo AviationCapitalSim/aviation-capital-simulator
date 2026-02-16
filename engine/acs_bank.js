@@ -483,10 +483,9 @@ const loanId =
   "_" +
   Math.floor(Math.random() * 1000);
 
-   
 /* ============================================================
-   🟩 B4 — LOAN OBJECT BUILD (MATURITY FIX)
-   Ensures authoritative SIM maturity usage
+   🟩 B-61 — LOAN OBJECT BUILD (CORRECT VARIABLE FIX)
+   Fixes ReferenceError: monthlyPayment
    ============================================================ */
 
 const loan = {
@@ -504,7 +503,7 @@ const loan = {
     rate,
 
   monthly:
-    monthlyPayment,
+    monthly,
 
   startDate:
     simDate.toISOString(),
