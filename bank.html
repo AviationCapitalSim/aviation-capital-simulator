@@ -362,6 +362,7 @@
     <th>Remaining</th>
     <th>Rate</th>
     <th>Monthly</th>
+    <th>Closed Date</th>
   </tr>
 </thead>
       <tbody id="loanTable"></tbody>
@@ -633,9 +634,18 @@ if(loans.length > 0){
 
     <td>${money(remaining)}</td>
 
-    <td>${Number(l.rate || 0).toFixed(2)}%</td>
+<td>${Number(l.rate || 0).toFixed(2)}%</td>
 
-    <td>${money(l.monthlyPayment)}</td>
+<td>${money(l.monthlyPayment)}</td>
+
+<td style="color:#00ffd0">
+  ${
+    remaining <= 0
+    ? formatAviationDate(l.closedDate || l.lastPaymentDate)
+    : "—"
+  }
+</td>
+
   `;
 
   table.appendChild(tr);
