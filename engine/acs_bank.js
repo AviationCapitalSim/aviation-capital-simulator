@@ -334,6 +334,15 @@ function calculateMonthlyPayment(amount, rate, months){
 
 }
 
+/* ============================================================
+   🟩 B-71 — ACS_BANK_createLoan (FULL REBUILD, SYNTAX SAFE)
+   Fixes:
+   ✔ Eliminates broken simDate resolver + missing braces
+   ✔ Uses ONE canonical time source: ACS_BANK_now()
+   ✔ Fixes monthlyPayment variable mismatch
+   ✔ Keeps maturity based on SIM TIME
+   ============================================================ */
+
 function ACS_BANK_createLoan(amount, months){
 
   const capacity = calculateLoanCapacity();
@@ -356,176 +365,94 @@ function ACS_BANK_createLoan(amount, months){
       months
     );
 
- /* ============================================================
-   🟩 ACS AUTHORITATIVE SIM TIME RESOLVER — UNIVERSAL SAFE
-   Compatible with ALL ACS Time Engine versions
-   ============================================================ */
-
-let simDate = null;
-
-/* PRIORITY 1 — ACS_TIME.currentTime */
-if(window.ACS_TIME){
-
-  if(ACS_TIME.currentTime){
-    const d = new Date(ACS_TIME.currentTime);
-    if(!isNaN(d)) simDate = d;
-  }
-
-  if(!simDate && ACS_TIME.now){
-    const d = new Date(ACS_TIME.now);
-    if(!isNaN(d)) simDate = d;
-  }
-
-  if(!simDate && ACS_TIME.simulationTime){
-    const d = new Date(ACS_TIME.simulationTime);
-    if(!isNaN(d)) simDate = d;
-  }
-
-}
-
-/* PRIORITY 2 — ACS_SIM_TIME */
-if(!simDate && window.ACS_SIM_TIME){
-  const d = new Date(window.ACS_SIM_TIME);
-  if(!isNaN(d)) simDate = d;
-}
-
-/* PRIORITY 3 — ACS_CLOCK */
-if(!simDate && window.ACS_CLOCK && ACS_CLOCK.now){
-  const d = new Date(ACS_CLOCK.now);
-  if(!isNaN(d)) simDate = d;
-}
-
-/* PRIORITY 4 — cockpit clock UI */
-if(!simDate){
-
-  try{
-
-    const el = document.querySelector(".clock-text");
-
-    if(el){
-
-      const txt = el.textContent || "";
-
-      const parts = txt.split("—");
-
-      if(parts.length >= 2){
-
-        const parsed = new Date(parts[1].trim());
-
-        if(!isNaN(parsed)) simDate = parsed;
-
-      }
-
-    }
-
-  }
-  catch(e){}
-
-}
-
-/* FINAL FALLBACK — NEVER BLOCK SYSTEM */
-if(!simDate){
-
-  console.warn("BANK ENGINE: Using system fallback time");
-
   /* ============================================================
-   🟩 B-70 — USE CANONICAL BANK TIME ONLY
-   Eliminates duplicated resolvers permanently
-   ============================================================ */
-
-const simDate = ACS_BANK_now();
-
-if(!simDate || isNaN(simDate.getTime())){
-  throw new Error("Simulation time unavailable");
-}
-
-  /* ============================================================
-     USE SAME SOURCE EVERYWHERE
+     🟩 CANONICAL SIM TIME (ONE SOURCE ONLY)
      ============================================================ */
+
+  const simDate = ACS_BANK_now();
+
+  if(!simDate || isNaN(simDate.getTime()))
+    throw new Error("Simulation time unavailable");
 
   const startDate =
     new Date(simDate.getTime());
 
   /* ============================================================
-   🟩 ACS LOAN MATURITY CALCULATION — AUTHORITATIVE SIM TIME
-   Fixes real/system time contamination permanently
-   ============================================================ */
+     🟩 MATURITY (SIM DATE + TERM MONTHS)
+     ============================================================ */
 
-/* CLONE simDate SAFELY */
-const maturity = new Date(
-  simDate.getTime()
-);
+  const maturity =
+    new Date(simDate.getTime());
 
-/* ADD TERM IN MONTHS using SIM YEAR */
-const simYear  = maturity.getFullYear();
-const simMonth = maturity.getMonth();
-const simDay   = maturity.getDate();
+  const simYear  = maturity.getFullYear();
+  const simMonth = maturity.getMonth();
+  const simDay   = maturity.getDate();
 
-/* Calculate new year and month manually */
-const totalMonths = simMonth + months;
+  const totalMonths = simMonth + months;
 
-const newYear  = simYear + Math.floor(totalMonths / 12);
-const newMonth = totalMonths % 12;
+  const newYear  = simYear + Math.floor(totalMonths / 12);
+  const newMonth = totalMonths % 12;
 
-/* Apply new date explicitly */
-maturity.setFullYear(newYear);
-maturity.setMonth(newMonth);
+  maturity.setFullYear(newYear);
+  maturity.setMonth(newMonth);
+  maturity.setDate(simDay);
 
-/* Safety restore original day */
-maturity.setDate(simDay);
+  /* ============================================================
+     🟩 LOAN ID
+     ============================================================ */
 
-console.log(
-  "🏦 Loan maturity calculated from SIM TIME:",
-  maturity.toISOString()
-);
+  const loanId =
+    "LOAN_" +
+    Date.now() +
+    "_" +
+    Math.floor(Math.random() * 1000);
 
-/* ============================================================
-   🟩 B5 — LOAN ID GENERATOR (AUTHORITATIVE)
-   Required for loan object creation
-   ============================================================ */
+  /* ============================================================
+     🟩 LOAN OBJECT (CONSISTENT FIELD NAMES)
+     ============================================================ */
 
-const loanId =
-  "LOAN_" +
-  Date.now() +
-  "_" +
-  Math.floor(Math.random() * 1000);
+  const loan = {
 
-/* ============================================================
-   🟩 B-61 — LOAN OBJECT BUILD (CORRECT VARIABLE FIX)
-   Fixes ReferenceError: monthlyPayment
-   ============================================================ */
+    id:
+      loanId,
 
-const loan = {
+    amount:
+      amount,
 
-  id:
-    loanId,
+    originalAmount:
+      amount,
 
-  amount:
-    amount,
+    remaining:
+      amount,
 
-  remaining:
-    amount,
+    rate:
+      rate,
 
-  rate:
-    rate,
+    monthlyPayment:
+      monthly,
 
-  monthly:
-    monthly,
+    /* backward-compat (some UI reads loan.monthly) */
+    monthly:
+      monthly,
 
-  startDate:
-    simDate.toISOString(),
+    startDate:
+      startDate.toISOString(),
 
-  maturityDate:
-    maturity.toISOString(),
+    maturityDate:
+      maturity.toISOString(),
 
-  status:
-    "ACTIVE"
+    status:
+      "ACTIVE"
 
-};
+  };
 
   fin.bank.loans.push(loan);
 
   saveFinance(fin);
+
+  /* ============================================================
+     FINANCE INTEGRATION
+     ============================================================ */
 
   if(typeof window.ACS_registerIncome === "function"){
 
@@ -565,7 +492,9 @@ const loan = {
   console.log(
     "🏦 Loan created (SIM TIME):",
     loan.id,
-    startDate
+    startDate,
+    "Maturity:",
+    maturity
   );
 
   return loan;
