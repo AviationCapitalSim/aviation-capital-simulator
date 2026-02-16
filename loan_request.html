@@ -1656,7 +1656,12 @@ function handleLogout() {
 }  
 
 /* ============================================================
-   🏦 ACS BANK — ACTIVE LOAN PORTFOLIO DISPLAY ENGINE
+   🟩 B-22 — ACTIVE LOAN PORTFOLIO ENGINE (FILTER + PAID STATE)
+   ------------------------------------------------------------
+   Fix:
+   • Oculta loans pagados del panel activo
+   • Muestra estado PAID correctamente
+   • Bloquea amortización si remaining = 0
    ============================================================ */
 
 function renderLoanPortfolio(){
@@ -1684,7 +1689,34 @@ function renderLoanPortfolio(){
     return;
   }
 
-  BANK_SUMMARY.loans.forEach((loan) => {
+  /* ============================================================
+     FILTER ONLY ACTIVE LOANS
+     ============================================================ */
+
+  const activeLoans =
+    BANK_SUMMARY.loans.filter(
+      loan => Number(loan.remaining || 0) > 0
+    );
+
+  if(activeLoans.length === 0){
+
+    container.innerHTML =
+      `<div style="
+        color:#00ff88;
+        font-size:0.95rem;
+        font-weight:600;
+      ">
+        All loans fully paid.
+      </div>`;
+
+    return;
+  }
+
+  /* ============================================================
+     RENDER ACTIVE LOANS ONLY
+     ============================================================ */
+
+  activeLoans.forEach((loan) => {
 
     const card =
       document.createElement("div");
@@ -1752,7 +1784,6 @@ function renderLoanPortfolio(){
     right.style.cursor =
       "pointer";
 
-    /* FIX CRÍTICO: usar loan.id */
     right.onclick =
       () => amortizeLoan(loan.id);
 
