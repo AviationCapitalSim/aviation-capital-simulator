@@ -428,8 +428,15 @@ if(!simDate){
 
   console.warn("BANK ENGINE: Using system fallback time");
 
-  simDate = new Date();
+  /* ============================================================
+   🟩 B-70 — USE CANONICAL BANK TIME ONLY
+   Eliminates duplicated resolvers permanently
+   ============================================================ */
 
+const simDate = ACS_BANK_now();
+
+if(!simDate || isNaN(simDate.getTime())){
+  throw new Error("Simulation time unavailable");
 }
 
   /* ============================================================
