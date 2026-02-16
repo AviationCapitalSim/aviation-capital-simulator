@@ -1120,8 +1120,9 @@ function loadAircraft(){
 
     container.style.marginTop = "10px";
     container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.gap = "6px";
+   container.style.flexDirection = "column";
+   container.style.gap = "10px";
+   container.style.width = "100%";
 
     collateralSelect.parentNode.appendChild(container);
 
@@ -1158,6 +1159,27 @@ const row =
 row.style.display = "flex";
 row.style.alignItems = "center";
 row.style.justifyContent = "space-between";
+
+/* ============================================================
+   🟩 FULL WIDTH TERMINAL CARD FIX
+   ============================================================ */
+
+row.style.width = "100%";
+row.style.boxSizing = "border-box";
+
+row.style.padding = "14px 16px";
+row.style.borderRadius = "14px";
+
+row.style.background =
+  "linear-gradient(180deg, rgba(18,40,95,0.55), rgba(8,22,60,0.75))";
+
+row.style.border =
+  "1px solid rgba(0,180,255,0.25)";
+
+row.style.boxShadow =
+  "inset 0 0 12px rgba(0,120,255,0.12)";
+
+row.style.transition = "all 0.2s ease";
 
 row.style.padding = "10px 14px";
 row.style.borderRadius = "12px";
