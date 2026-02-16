@@ -334,17 +334,6 @@ function calculateMonthlyPayment(amount, rate, months){
 
 }
 
-/* ============================================================
-   🟦 C1 — ACS BANK CREATE LOAN (SIM TIME AUTHORITATIVE FIX)
-   ------------------------------------------------------------
-   FIXES:
-   ✔ Uses simulation time (NOT browser time)
-   ✔ Fixes maturity date corruption (2026 / 2032 bug)
-   ✔ Fixes closed date reference base
-   ✔ Fully compatible with Time Engine
-   ✔ Canonical banking timestamp authority
-   ============================================================ */
-
 function ACS_BANK_createLoan(amount, months){
 
   const capacity = calculateLoanCapacity();
@@ -368,131 +357,80 @@ function ACS_BANK_createLoan(amount, months){
     );
 
   /* ============================================================
-   🟦 AUTHORITATIVE SIMULATION DATE (PRIMARY SOURCE)
-   FIXED — uses ACS_TIME.currentTime (official sim clock)
-   ============================================================ */
+     🟦 AUTHORITATIVE SIMULATION DATE — FIXED
+     SINGLE SOURCE OF TRUTH
+     ============================================================ */
 
-const simDate = ACS_BANK_now();
+  let simDate = null;
 
-/* ============================================================
-   PRIORITY 1 — OFFICIAL ACS TIME ENGINE (CORRECT SOURCE)
-   ============================================================ */
+  /* PRIORITY 1 — ACS TIME ENGINE */
+  if(window.ACS_TIME && ACS_TIME.currentTime){
 
-if(window.ACS_TIME && ACS_TIME.currentTime){
+    const d =
+      new Date(ACS_TIME.currentTime);
 
-  const d =
-    new Date(ACS_TIME.currentTime);
+    if(!isNaN(d))
+      simDate = d;
 
-  if(!isNaN(d.getTime()))
-    simDate = d;
+  }
 
-}
+  /* PRIORITY 2 — cockpit clock */
+  if(!simDate){
 
-/* ============================================================
-   PRIORITY 2 — legacy variable support (optional)
-   ============================================================ */
+    try{
 
-if(!simDate && window.ACS_CurrentSimDate){
+      const el =
+        document.querySelector(".clock-text");
 
-  const d =
-    new Date(window.ACS_CurrentSimDate);
+      if(el){
 
-  if(!isNaN(d.getTime()))
-    simDate = d;
+        const txt =
+          el.textContent || "";
 
-}
+        const parts =
+          txt.split("—");
 
-/* ============================================================
-   PRIORITY 3 — cockpit clock fallback (SAFE)
-   ============================================================ */
+        if(parts.length >= 2){
 
-if(!simDate){
+          const parsed =
+            new Date(parts[1].trim());
 
-  try{
-
-    const el =
-      document.querySelector(".clock-text");
-
-    if(el){
-
-      const txt =
-        (el.textContent || "").trim();
-
-      const parts =
-        txt.split("—");
-
-      if(parts.length >= 2){
-
-        const datePart =
-          parts[1].trim();
-
-        const tokens =
-          datePart.split(/\s+/).filter(Boolean);
-
-        if(tokens.length >= 4){
-
-          const day =
-            Number(tokens[1]);
-
-          const monStr =
-            String(tokens[2]).toUpperCase();
-
-          const year =
-            Number(tokens[3]);
-
-          const map = {
-            JAN:0, FEB:1, MAR:2, APR:3, MAY:4, JUN:5,
-            JUL:6, AUG:7, SEP:8, OCT:9, NOV:10, DEC:11
-          };
-
-          const month =
-            map[monStr];
-
-          if(day && month !== undefined && year){
-
-            simDate =
-              new Date(Date.UTC(year, month, day, 12, 0, 0));
-
-          }
+          if(!isNaN(parsed))
+            simDate = parsed;
 
         }
 
       }
 
     }
+    catch(e){}
 
   }
-  catch(e){}
 
-}
+  /* FINAL FALLBACK */
+  if(!simDate){
 
-/* ============================================================
-   FINAL FALLBACK — NEVER USE REAL TIME IF SIM EXISTS
-   ============================================================ */
+    console.error("BANK ENGINE: Time unavailable");
 
-if(!simDate){
-  console.warn("ACS BANK WARNING: simDate fallback — using ACS_BANK_now()");
-  simDate = ACS_BANK_now();
-}
+    throw new Error(
+      "Simulation time unavailable"
+    );
 
-
-/* ============================================================
-   CREATE START AND MATURITY DATES
-   ============================================================ */
-
-const startDate =
-  ACS_BANK_getSimTime();
-
-const maturityDate =
-  new Date(startDate);
-
-maturityDate.setMonth(
-  maturityDate.getMonth() + months
-);
+  }
 
   /* ============================================================
-     🟦 CREATE LOAN OBJECT (SIM SAFE)
+     USE SAME SOURCE EVERYWHERE
      ============================================================ */
+
+  const startDate =
+    new Date(simDate.getTime());
+
+  const maturityDate =
+    new Date(simDate.getTime());
+
+  maturityDate.setMonth(
+    maturityDate.getMonth() + months
+  );
 
   const loan = {
 
@@ -537,17 +475,9 @@ maturityDate.setMonth(
 
   };
 
-  /* ============================================================
-     REGISTER LOAN
-     ============================================================ */
-
   fin.bank.loans.push(loan);
 
   saveFinance(fin);
-
-  /* ============================================================
-     REGISTER FINANCE INCOME
-     ============================================================ */
 
   if(typeof window.ACS_registerIncome === "function"){
 
@@ -569,10 +499,6 @@ maturityDate.setMonth(
 
   }
 
-  /* ============================================================
-     REGISTER LEDGER ENTRY
-     ============================================================ */
-
   if(window.ACS_FINANCE_ENGINE &&
      typeof window.ACS_FINANCE_ENGINE.commit === "function"){
 
@@ -591,8 +517,7 @@ maturityDate.setMonth(
   console.log(
     "🏦 Loan created (SIM TIME):",
     loan.id,
-    startDate,
-    loan
+    startDate
   );
 
   return loan;
