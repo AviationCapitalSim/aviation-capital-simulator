@@ -588,13 +588,30 @@ function loadBank(){
 
   if(activeLoan){
 
-    const startTS =
-    activeLoan.startTS ||
-    activeLoan.createdAt ||
-    activeLoan.startDate ||
-    (window.ACS_TIME && ACS_TIME.currentTime
-    ? new Date(ACS_TIME.currentTime).getTime()
-    : Date.now());
+    /* ============================================================
+🟩 FINAL FIX — NEVER USE REAL TIME
+Uses ONLY stored loan timestamp
+============================================================ */
+
+const startTS =
+  activeLoan.startTS ||
+  activeLoan.createdAt ||
+  (activeLoan.startDate
+    ? new Date(activeLoan.startDate).getTime()
+    : null);
+
+/* absolute safety guard */
+if(!startTS){
+
+  console.error(
+    "BANK CRITICAL: Loan missing valid timestamp",
+    activeLoan
+  );
+
+  return;
+
+}
+
 
     const startDate =
       new Date(startTS);
