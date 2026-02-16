@@ -1784,31 +1784,12 @@ if(typeof loanSlider !== "undefined" && loanSlider){
   );
 
 }
+  
 function submitLoan(){
 
 /* ============================================================
-🟩 CRITICAL FIX — HARD TIME ENGINE VALIDATION (REAL SAFE)
-Prevents async loop corruption and ensures real ACS clock usage
+   CLEAN FORMATTED INPUT
 ============================================================ */
-
-const simTS =
-  window.ACS_TIME?.currentTime;
-
-if(!simTS){
-
-  console.warn("BANK ENGINE: Time Engine not ready");
-
-  loanMessageEl.textContent =
-    "System initializing. Try again.";
-
-  return;
-
-}
-
-
-/* ============================================================
-   CLEAN FORMATTED INPUT (remove commas)
-   ============================================================ */
 
 const cleanAmount =
   Number(
@@ -1819,16 +1800,13 @@ const cleanAmount =
 
 const amount = cleanAmount;
 
-const years =
-  Number(loanTermSelect.value || 0);
-
 const months =
-  years * 12;
+  Number(loanTermSelect.value || 0);
 
 
 /* ============================================================
    VALIDATION
-   ============================================================ */
+============================================================ */
 
 if (!amount || amount <= 0){
 
@@ -1851,13 +1829,9 @@ if (amount > MAX_PER_LOAN){
 
 /* ============================================================
    CREATE LOAN
-   ============================================================ */
+============================================================ */
 
 try{
-
-/* ============================================================
-   🟩 B8.1 — COLLATERAL LOCK ENGINE
-   ============================================================ */
 
 const fleet =
   JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
@@ -1868,7 +1842,7 @@ const checkboxes =
   );
 
 let collateralLoanId =
-  "LOAN_" + simTS; // use simulation time, not Date.now()
+  "LOAN_" + Date.now();
 
 checkboxes.forEach(cb => {
 
@@ -1897,16 +1871,16 @@ localStorage.setItem(
 
 
 /* ============================================================
-   CREATE LOAN (SIMULATION TIME SAFE)
-   ============================================================ */
+   CREATE LOAN (ENGINE HANDLES TIME)
+============================================================ */
 
 const loan =
   ACS_BANK_createLoan(amount, months);
 
 
 /* ============================================================
-   LINK COLLATERAL TO REAL LOAN ID
-   ============================================================ */
+   LINK COLLATERAL
+============================================================ */
 
 if(loan && loan.id){
 
@@ -1929,30 +1903,14 @@ if(loan && loan.id){
 }
 
 
-/* ============================================================
-   SUCCESS MESSAGE
-   ============================================================ */
-
 loanMessageEl.textContent =
   "Loan approved. Funds transferred.";
-
-console.log(
-  "🏦 Loan created at sim time:",
-  new Date(simTS),
-  loan
-);
-
-
-/* ============================================================
-   SAFE UI RELOAD
-   ============================================================ */
 
 setTimeout(() => {
 
   location.reload();
 
 }, 600);
-
 
 }
 catch(err){
@@ -1965,6 +1923,7 @@ catch(err){
 }
 
 }
+
 
 /* ============================================================
    EVENT LISTENERS
