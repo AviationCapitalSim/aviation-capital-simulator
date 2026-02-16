@@ -515,55 +515,11 @@ function termColor(months){
 
 function getSimulationDate(){
 
-  const el =
-    document.querySelector(".clock-text");
+  if(window.ACS_TIME && ACS_TIME.currentTime){
+    return new Date(ACS_TIME.currentTime);
+  }
 
-  if(!el) return new Date();
-
-  const txt =
-    (el.textContent || "").trim();
-
-  // Split on any dash type with optional spaces: -, – , —
-  const parts =
-    txt.split(/\s*[-–—]\s*/);
-
-  // Expected: ["01:10", "WED 30 SEP 1942"]
-  if(parts.length < 2)
-    return new Date();
-
-  const datePart =
-    parts[1].trim();
-
-  // Tokens: [WED, 30, SEP, 1942]
-  const tokens =
-    datePart.split(/\s+/).filter(Boolean);
-
-  if(tokens.length < 4)
-    return new Date();
-
-  const day =
-    Number(tokens[1]);
-
-  const monStr =
-    String(tokens[2]).toUpperCase();
-
-  const year =
-    Number(tokens[3]);
-
-  const map = {
-    JAN:0, FEB:1, MAR:2, APR:3, MAY:4, JUN:5,
-    JUL:6, AUG:7, SEP:8, OCT:9, NOV:10, DEC:11
-  };
-
-  const month =
-    map[monStr];
-
-  if(!day || month === undefined || !year)
-    return new Date();
-
-  // UTC midday avoids "day -1" issues in timezones
-  return new Date(Date.UTC(year, month, day, 12, 0, 0));
-
+  return new Date();
 }
      
 /* ============================================================
