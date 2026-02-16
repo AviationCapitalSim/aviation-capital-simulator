@@ -1291,51 +1291,6 @@ else{
 
 }
 
-const cb =
-  document.createElement("input");
-
-cb.type = "checkbox";
-cb.value = value;
-cb.dataset.index = index;
-
-if(isLocked){
-
-  cb.disabled = true;
-
-}
-else{
-
-  cb.onchange = updateCollateralTotals;
-
-}
-
-const text =
-  document.createElement("span");
-
-text.textContent =
-  `${ac.manufacturer} ${ac.model} — ${money(value)}`;
-
-if(isLocked){
-
-  const badge =
-    document.createElement("span");
-
-  badge.textContent =
-    "  (Secured Asset Value)";
-
-  badge.style.color = "#ff8844";
-  badge.style.marginLeft = "6px";
-
-  text.appendChild(badge);
-
-}
-
-row.appendChild(cb);
-row.appendChild(text);
-
-container.appendChild(row);
-
-
   });
 
   updateCollateralTotals();
