@@ -605,17 +605,25 @@ console.log(
   actualPayment
 );
 
-/* ============================================
-RETURN REMAINING BALANCE
-============================================ */
-
 return loan.remaining;
 
-/* EXPORT GLOBAL */
+}
+
+/* ============================================================
+   🟩 B-34 — EXPORT GLOBAL FUNCTIONS (FINAL SAFE EXPORT)
+   Prevents SyntaxError and ensures engine loads correctly
+   ============================================================ */
 
 window.ACS_BANK_amortizeLoan =
 ACS_BANK_amortizeLoan;
 
+window.ACS_BANK_getSummary =
+ACS_BANK_getSummary;
+
+window.ACS_BANK_createLoan =
+ACS_BANK_createLoan;
+
 console.log("🏦 ACS_BANK_ENGINE READY");
 
+/* CLOSE ENGINE IIFE */
 })();
