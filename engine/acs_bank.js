@@ -481,7 +481,7 @@ if(!simDate){
    ============================================================ */
 
 const startDate =
-  new Date(simDate);
+  ACS_BANK_getSimTime();
 
 const maturityDate =
   new Date(startDate);
@@ -884,6 +884,25 @@ ACS_BANK_getSummary;
 window.ACS_BANK_createLoan =
 ACS_BANK_createLoan;
 
+/* ============================================================
+🟩 B-90 — CONNECT BANK ENGINE TO TIME ENGINE (CRITICAL FIX)
+Ensures bank always uses ACS simulation clock
+============================================================ */
+
+function ACS_BANK_getSimTime(){
+
+  if(window.ACS_TIME && ACS_TIME.currentTime){
+
+    return new Date(ACS_TIME.currentTime);
+
+  }
+
+  throw new Error(
+    "BANK ENGINE: Time Engine not ready"
+  );
+
+}
+   
 console.log("🏦 ACS_BANK_ENGINE READY");
 
 /* CLOSE ENGINE IIFE */
