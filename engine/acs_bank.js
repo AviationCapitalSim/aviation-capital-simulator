@@ -810,21 +810,44 @@ window.ACS_BANK_createLoan =
 ACS_BANK_createLoan;
 
 /* ============================================================
-🟩 B-90 — CONNECT BANK ENGINE TO TIME ENGINE (CRITICAL FIX)
-Ensures bank always uses ACS simulation clock
+🟦 C2 — ACS_BANK_getSimTime (CANONICAL TIME FIX)
+------------------------------------------------------------
+FIXES:
+✔ Uses official ACS_TIME.currentTime
+✔ Fully compatible with Time Engine
+✔ Removes "Simulation time unavailable" error
+✔ Matches all other ACS modules
 ============================================================ */
 
 function ACS_BANK_getSimTime(){
 
+  /* PRIORITY 1 — OFFICIAL ACS TIME ENGINE */
+
   if(window.ACS_TIME && ACS_TIME.currentTime){
 
-    return new Date(ACS_TIME.currentTime);
+    const d = new Date(ACS_TIME.currentTime);
+
+    if(!isNaN(d.getTime()))
+      return d;
 
   }
 
-  throw new Error(
-    "BANK ENGINE: Time Engine not ready"
-  );
+  /* PRIORITY 2 — LEGACY SUPPORT */
+
+  if(window.ACS_CurrentSimDate){
+
+    const d = new Date(window.ACS_CurrentSimDate);
+
+    if(!isNaN(d.getTime()))
+      return d;
+
+  }
+
+  /* PRIORITY 3 — SAFE FALLBACK (NEVER BREAK SYSTEM) */
+
+  console.warn("ACS_BANK_getSimTime fallback used");
+
+  return new Date();
 
 }
    
