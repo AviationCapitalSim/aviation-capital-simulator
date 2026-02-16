@@ -519,35 +519,57 @@ if(outstandingEl)
 
      
 /* ============================================================
-   🟩 B21 — REAL LOAN DATE + MATURITY CALCULATION (SAFE)
-   Works with old and new loans
+   🟩 B-45 — AVIATION MATURITY + REMAINING TERM ENGINE (FINAL)
+   FIXES:
+   ✔ Correct maturity date
+   ✔ Uses simulation date
+   ✔ Proper aviation readable format
+   ✔ Aviation color logic
    ============================================================ */
 
 if(loans.length > 0){
 
-  const lastLoan =
-    loans[loans.length - 1];
+  /* get latest ACTIVE loan */
 
-  const startISO =
-    lastLoan.startDate ||
-    lastLoan.startTS ||
-    null;
+  const activeLoan =
+    [...loans]
+    .reverse()
+    .find(l =>
+      Number(l.remaining || 0) > 0
+    );
 
-  if(startISO){
+  if(activeLoan){
+
+    /* resolve start date safely */
+
+    const startTS =
+      activeLoan.startDate ||
+      activeLoan.startTS ||
+      activeLoan.createdAt ||
+      Date.now();
 
     const startDate =
-      new Date(startISO);
+      new Date(startTS);
+
+    /* resolve term */
+
+    const termMonths =
+      Number(
+        activeLoan.termMonths ||
+        activeLoan.months ||
+        0
+      );
+
+    /* calculate maturity */
 
     const maturityDate =
       new Date(startDate);
 
     maturityDate.setMonth(
-      maturityDate.getMonth() +
-      (lastLoan.termMonths || 0)
+      maturityDate.getMonth() + termMonths
     );
 
-    const maturityISO =
-      maturityDate.toISOString();
+    /* display maturity */
 
     const maturityEl =
       document.getElementById("loanMaturity");
@@ -555,9 +577,37 @@ if(loans.length > 0){
     if(maturityEl){
 
       maturityEl.innerText =
-        formatDateISO(maturityISO);
+        formatDateISO(maturityDate);
+
+      maturityEl.style.color =
+        "#00ffcc";
 
     }
+
+    /* calculate remaining term using SIM DATE */
+
+    const simNow =
+      window.ACS_CurrentSimDate
+      ? new Date(window.ACS_CurrentSimDate)
+      : new Date();
+
+    let remainingMonths =
+      (maturityDate.getFullYear() - simNow.getFullYear()) * 12 +
+      (maturityDate.getMonth() - simNow.getMonth());
+
+    if(remainingMonths < 0)
+      remainingMonths = 0;
+
+    const years =
+      Math.floor(remainingMonths / 12);
+
+    const months =
+      remainingMonths % 12;
+
+    const termText =
+      years > 0
+      ? `${years} Years ${months} Months`
+      : `${months} Months`;
 
     const termEl =
       document.getElementById("loanTerm");
@@ -565,11 +615,36 @@ if(loans.length > 0){
     if(termEl){
 
       termEl.innerText =
-        calculateRemainingTerm(maturityISO);
+        remainingMonths <= 0
+        ? "Completed"
+        : termText;
+
+      /* aviation color logic */
+
+      if(remainingMonths > 84)
+        termEl.style.color = "#00ff88";
+
+      else if(remainingMonths > 36)
+        termEl.style.color = "#4da3ff";
+
+      else if(remainingMonths > 12)
+        termEl.style.color = "#ffb300";
+
+      else if(remainingMonths > 0)
+        termEl.style.color = "#ff4444";
+
+      else
+        termEl.style.color = "#00ffcc";
 
     }
 
   }
+
+}
+else{
+
+  document.getElementById("loanMaturity").innerText = "—";
+  document.getElementById("loanTerm").innerText     = "—";
 
 }
 
