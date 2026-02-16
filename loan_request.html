@@ -813,26 +813,77 @@ function money(x){
   return "$" + Math.round(Number(x || 0)).toLocaleString();
 }
 
+/* ============================================================
+   🟩 B-36 — LOAD BANK DATA WITH TRUE CAPACITY DISPLAY
+   Shows real available loan capacity even with no collateral
+   ============================================================ */
+
 function loadBankData(){
-  if (typeof ACS_BANK_getSummary !== "function"){
-    console.error("❌ ACS_BANK_getSummary missing — engine/acs_bank.js not loaded");
-    loanMessageEl.textContent = "BANK ENGINE NOT LOADED (acs_bank.js)";
+
+  if(typeof ACS_BANK_getSummary !== "function"){
+
+    console.error("ACS_BANK_getSummary missing");
+
+    loanMessageEl.textContent =
+      "BANK ENGINE NOT LOADED";
+
     return;
+
   }
 
-  BANK_SUMMARY = ACS_BANK_getSummary();
+  BANK_SUMMARY =
+    ACS_BANK_getSummary();
 
-  const capacity = Number(BANK_SUMMARY.loanCapacity || 0);
-  MAX_PER_LOAN = capacity * 0.7;
+  const capacity =
+    Number(BANK_SUMMARY.loanCapacity || 0);
 
-  loanAmountInput.max = Math.floor(MAX_PER_LOAN);
+  /* ============================================================
+     TRUE BANK CAPACITY
+     ============================================================ */
+
+  MAX_PER_LOAN =
+    Math.floor(capacity);
+
+  /* ============================================================
+     UPDATE UI IMMEDIATELY
+     ============================================================ */
+
   loanAmountInput.placeholder =
-  "Max allowed: $" + Math.floor(MAX_PER_LOAN).toLocaleString();
-  
-  interestRateEl.textContent = Number(BANK_SUMMARY.interestRate || 0).toFixed(2) + "%";
-  maxLoanEl.textContent = money(MAX_PER_LOAN);
+    "Max allowed: " + money(MAX_PER_LOAN);
+
+  document.getElementById("maxAllowedText").textContent =
+    money(MAX_PER_LOAN);
+
+  interestRateEl.textContent =
+    Number(BANK_SUMMARY.interestRate || 0).toFixed(2) + "%";
+
+  maxLoanEl.textContent =
+    money(MAX_PER_LOAN);
+
+  /* ============================================================
+     UPDATE SLIDER SAFELY
+     ============================================================ */
+
+  const slider =
+    document.getElementById("loanAmountRange");
+
+  if(slider){
+
+    slider.min = 0;
+
+    slider.max = MAX_PER_LOAN;
+
+    slider.step =
+      MAX_PER_LOAN <= 1000
+      ? 1
+      : Math.floor(MAX_PER_LOAN / 100);
+
+    slider.value = 0;
+
+  }
 
   updateCreditProfile();
+
 }
 
 /* ============================================================
