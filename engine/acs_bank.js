@@ -522,7 +522,7 @@ function ACS_BANK_processMonthlyPayments(){
       return;
 
     const payment =
-      Number(loan.monthlyPayment || 0);
+    Number(loan.monthlyPayment || loan.monthly || 0);
 
     if(payment <= 0)
       return;
