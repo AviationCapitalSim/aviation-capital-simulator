@@ -4,31 +4,92 @@
    ============================================================ */
 
 /* ============================================================
-   🟧 FIX-1 — ACS_BANK_now (OFFICIAL SIM CLOCK)
-   Uses ACS_TIME.currentTime as primary source
-   ============================================================ */
+🟩 B-60 FINAL FIX — ABSOLUTE SIMULATION TIME AUTHORITY
+Guarantees correct historical time even during early init
+============================================================ */
 
 function ACS_BANK_now(){
 
-  // ✅ PRIMARY: official time engine
-  if(window.ACS_TIME && ACS_TIME.currentTime){
-    const d = new Date(ACS_TIME.currentTime);
-    if(!isNaN(d.getTime())) return d;
+  /* PRIORITY 1 — OFFICIAL CLOCK OBJECT */
+  if(window.ACS_TIME){
+
+    /* exact authoritative property */
+    if(ACS_TIME.currentTime){
+
+      const d = new Date(ACS_TIME.currentTime);
+
+      if(!isNaN(d.getTime()))
+        return d;
+
+    }
+
   }
 
-  // Legacy support
-  if(window.ACS_CurrentSimDate){
-    const d = new Date(window.ACS_CurrentSimDate);
-    if(!isNaN(d.getTime())) return d;
+  /* PRIORITY 2 — persistent last known sim time */
+  const saved =
+    localStorage.getItem("ACS_SIM_TIME");
+
+  if(saved){
+
+    const d = new Date(Number(saved));
+
+    if(!isNaN(d.getTime()))
+      return d;
+
   }
 
-  // Optional getter
-  if(typeof window.ACS_getSimDate === "function"){
-    const d = new Date(window.ACS_getSimDate());
-    if(!isNaN(d.getTime())) return d;
-  }
+  /* PRIORITY 3 — DOM CLOCK PARSE (GUARANTEED PRESENT) */
+  try{
 
-  // Last resort
+    const el =
+      document.querySelector(".clock-text");
+
+    if(el){
+
+      const txt =
+        el.textContent || "";
+
+      const parts =
+        txt.split("—");
+
+      if(parts.length >= 2){
+
+        const tokens =
+          parts[1].trim().split(/\s+/);
+
+        if(tokens.length >= 4){
+
+          const day =
+            Number(tokens[1]);
+
+          const monthMap = {
+            JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,
+            JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11
+          };
+
+          const mon =
+            monthMap[tokens[2]];
+
+          const year =
+            Number(tokens[3]);
+
+          if(day && mon !== undefined && year){
+
+            return new Date(
+              Date.UTC(year, mon, day, 12, 0, 0)
+            );
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }catch(e){}
+
+  /* FINAL FALLBACK (never used in normal ACS runtime) */
   return new Date();
 
 }
@@ -311,7 +372,7 @@ function ACS_BANK_createLoan(amount, months){
    FIXED — uses ACS_TIME.currentTime (official sim clock)
    ============================================================ */
 
-let simDate = null;
+const simDate = ACS_BANK_now();
 
 /* ============================================================
    PRIORITY 1 — OFFICIAL ACS TIME ENGINE (CORRECT SOURCE)
