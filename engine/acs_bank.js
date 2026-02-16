@@ -439,12 +439,38 @@ if(!simDate){
   const startDate =
     new Date(simDate.getTime());
 
-  const maturityDate =
-    new Date(simDate.getTime());
+  /* ============================================================
+   🟩 ACS LOAN MATURITY CALCULATION — AUTHORITATIVE SIM TIME
+   Fixes real/system time contamination permanently
+   ============================================================ */
 
-  maturityDate.setMonth(
-    maturityDate.getMonth() + months
-  );
+/* CLONE simDate SAFELY */
+const maturity = new Date(
+  simDate.getTime()
+);
+
+/* ADD TERM IN MONTHS using SIM YEAR */
+const simYear  = maturity.getFullYear();
+const simMonth = maturity.getMonth();
+const simDay   = maturity.getDate();
+
+/* Calculate new year and month manually */
+const totalMonths = simMonth + months;
+
+const newYear  = simYear + Math.floor(totalMonths / 12);
+const newMonth = totalMonths % 12;
+
+/* Apply new date explicitly */
+maturity.setFullYear(newYear);
+maturity.setMonth(newMonth);
+
+/* Safety restore original day */
+maturity.setDate(simDay);
+
+console.log(
+  "🏦 Loan maturity calculated from SIM TIME:",
+  maturity.toISOString()
+);
 
   const loan = {
 
