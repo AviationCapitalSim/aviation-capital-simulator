@@ -528,6 +528,105 @@ window.ACS_BANK_processMonthlyPayments =
 
 window.ACS_BANK_createLoan = ACS_BANK_createLoan;
 
+/* ============================================================
+🟩 CF-B20 — BANK LOAN AMORTIZATION ENGINE
+Real principal reduction + finance integration
+============================================================ */
+
+function ACS_BANK_amortizeLoan(loanId, amount){
+
+if(!loanId)
+throw new Error("Missing loanId");
+
+amount = Number(amount);
+
+if(!amount || amount <= 0)
+throw new Error("Invalid amortization amount");
+
+const fin = getFinance();
+
+if(!fin.bank || !Array.isArray(fin.bank.loans))
+throw new Error("No loans found");
+
+const loan =
+fin.bank.loans.find(l => l.id === loanId);
+
+if(!loan)
+throw new Error("Loan not found");
+
+if(loan.remaining <= 0)
+throw new Error("Loan already fully paid");
+
+/* ============================================
+APPLY AMORTIZATION
+============================================ */
+
+const actualPayment =
+Math.min(amount, loan.remaining);
+
+loan.remaining =
+Math.max(0, loan.remaining - actualPayment);
+
+saveFinance(fin);
+
+/* ============================================
+REGISTER EXPENSE IN FINANCE ENGINE
+============================================ */
+
+if(typeof window.ACS_registerExpense === "function"){
+
+```
+window.ACS_registerExpense({
+
+  cost: actualPayment,
+  source: "LOAN_AMORTIZATION",
+
+  meta: {
+    loanId: loan.id
+  }
+
+});
+```
+
+}
+
+/* ============================================
+LEDGER ENTRY
+============================================ */
+
+if(window.ACS_FINANCE_ENGINE &&
+typeof window.ACS_FINANCE_ENGINE.commit === "function"){
+
+```
+window.ACS_FINANCE_ENGINE.commit({
+
+  type: "LOAN_AMORTIZATION",
+  amount: actualPayment,
+  source: "BANK",
+  ref: loan.id,
+  ts: Date.now()
+
+});
+```
+
+}
+
+console.log(
+"🏦 Loan amortized:",
+loan.id,
+"Amount:",
+actualPayment
+);
+
+return loan.remaining;
+
+}
+
+/* EXPORT GLOBAL */
+
+window.ACS_BANK_amortizeLoan =
+ACS_BANK_amortizeLoan;
+   
 console.log("🏦 ACS_BANK_ENGINE READY");
 
 })();
