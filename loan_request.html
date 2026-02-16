@@ -934,6 +934,24 @@ function loadBankData(){
 
   }
 
+  /* ============================================================
+     🟦 B-39 — UPDATE UNSECURED CREDIT LINE PANEL
+     ============================================================ */
+
+  const unsecuredCapacityEl =
+    document.getElementById("unsecuredCapacity");
+
+  const unsecuredInterestEl =
+    document.getElementById("unsecuredInterest");
+
+  if(unsecuredCapacityEl)
+    unsecuredCapacityEl.textContent =
+      money(BANK_SUMMARY.loanCapacity || 0);
+
+  if(unsecuredInterestEl)
+    unsecuredInterestEl.textContent =
+      Number(BANK_SUMMARY.interestRate || 0).toFixed(2) + "%";
+
   updateCreditProfile();
 
 }
