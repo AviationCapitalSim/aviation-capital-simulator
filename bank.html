@@ -633,10 +633,12 @@ function loadBank(){
   if(activeLoan){
 
     const startTS =
-      activeLoan.startDate ||
-      activeLoan.startTS ||
-      activeLoan.createdAt ||
-      getSimulationDate().getTime();
+    activeLoan.startTS ||
+    activeLoan.createdAt ||
+    activeLoan.startDate ||
+    (window.ACS_TIME && ACS_TIME.currentTime
+    ? new Date(ACS_TIME.currentTime).getTime()
+    : Date.now());
 
     const startDate =
       new Date(startTS);
