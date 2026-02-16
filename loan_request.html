@@ -1147,13 +1147,137 @@ function loadAircraft(){
 const isLocked =
   ac.collateralActive === true;
 
+/* ============================================================
+   🟩 B-41 — QATAR LUXURY COLLATERAL ROW
+   Premium aircraft asset styling
+   ============================================================ */
+
 const row =
   document.createElement("label");
 
 row.style.display = "flex";
 row.style.alignItems = "center";
-row.style.gap = "8px";
-row.style.fontSize = "0.95rem";
+row.style.justifyContent = "space-between";
+
+row.style.padding = "10px 14px";
+row.style.borderRadius = "12px";
+
+row.style.background =
+  "linear-gradient(180deg, rgba(20,40,90,0.55), rgba(10,20,50,0.65))";
+
+row.style.border =
+  "1px solid rgba(0,180,255,0.18)";
+
+row.style.boxShadow =
+  "inset 0 0 8px rgba(0,120,255,0.08)";
+
+row.style.transition = "all 0.2s ease";
+
+row.onmouseenter = () => {
+  row.style.border =
+    "1px solid rgba(0,255,180,0.45)";
+  row.style.boxShadow =
+    "0 0 12px rgba(0,255,180,0.15)";
+};
+
+row.onmouseleave = () => {
+  row.style.border =
+    "1px solid rgba(0,180,255,0.18)";
+  row.style.boxShadow =
+    "inset 0 0 8px rgba(0,120,255,0.08)";
+};
+
+/* LEFT SIDE */
+
+const left =
+  document.createElement("div");
+
+left.style.display = "flex";
+left.style.alignItems = "center";
+left.style.gap = "10px";
+
+/* checkbox */
+
+const cb =
+  document.createElement("input");
+
+cb.type = "checkbox";
+cb.value = value;
+cb.dataset.index = index;
+
+cb.style.transform = "scale(1.15)";
+cb.style.cursor = "pointer";
+
+if(isLocked){
+  cb.disabled = true;
+}else{
+  cb.onchange = updateCollateralTotals;
+}
+
+/* aircraft name */
+
+const name =
+  document.createElement("div");
+
+name.innerHTML = `
+  <div style="
+    font-weight:600;
+    color:#e6f0ff;
+  ">
+    ${ac.manufacturer} ${ac.model}
+  </div>
+
+  <div style="
+    font-size:0.8rem;
+    color:#7fa8ff;
+    margin-top:2px;
+  ">
+    Asset Class: Aircraft
+  </div>
+`;
+
+left.appendChild(cb);
+left.appendChild(name);
+
+/* RIGHT SIDE */
+
+const right =
+  document.createElement("div");
+
+right.style.textAlign = "right";
+
+right.innerHTML = `
+  <div style="
+    font-weight:700;
+    color:#00ffd0;
+    letter-spacing:0.5px;
+  ">
+    ${money(value)}
+  </div>
+
+  ${
+    isLocked
+    ? `<div style="
+        font-size:0.75rem;
+        color:#ff8844;
+        margin-top:2px;
+      ">
+        COLLATERAL LOCKED
+      </div>`
+    : `<div style="
+        font-size:0.75rem;
+        color:#00ff88;
+        margin-top:2px;
+      ">
+        AVAILABLE
+      </div>`
+  }
+`;
+
+row.appendChild(left);
+row.appendChild(right);
+
+container.appendChild(row);
 
 if(isLocked){
 
