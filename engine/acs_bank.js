@@ -25,19 +25,6 @@ function ACS_BANK_now(){
 
   }
 
-  /* PRIORITY 2 — persistent last known sim time */
-  const saved =
-    localStorage.getItem("ACS_SIM_TIME");
-
-  if(saved){
-
-    const d = new Date(Number(saved));
-
-    if(!isNaN(d.getTime()))
-      return d;
-
-  }
-
   /* PRIORITY 3 — DOM CLOCK PARSE (GUARANTEED PRESENT) */
   try{
 
