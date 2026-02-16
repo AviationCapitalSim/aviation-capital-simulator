@@ -508,6 +508,45 @@ function termColor(months){
 }
 
 /* ============================================================
+   🟩 B-72 — GET REAL SIM DATE FROM CLOCK (HTML SAFE FIX)
+   Reads simulation date directly from cockpit clock UI
+   No engine modification required
+   ============================================================ */
+
+function getSimulationDate(){
+
+  const el =
+    document.querySelector(".clock-text");
+
+  if(!el) return new Date();
+
+  const txt =
+    el.textContent || "";
+
+  /* expected format:
+     03:07 — SUN 21 SEP 1942
+  */
+
+  const parts =
+    txt.split("—");
+
+  if(parts.length < 2)
+    return new Date();
+
+  const datePart =
+    parts[1].trim();
+
+  const parsed =
+    new Date(datePart);
+
+  if(isNaN(parsed.getTime()))
+    return new Date();
+
+  return parsed;
+
+}
+     
+/* ============================================================
    🟩 MAIN BANK LOAD
    ============================================================ */
 
@@ -605,9 +644,7 @@ function loadBank(){
     /* remaining term */
 
     const simNow =
-      window.ACS_CurrentSimDate
-      ? new Date(window.ACS_CurrentSimDate)
-      : new Date();
+    getSimulationDate();
 
     let remainingMonths =
       (maturityDate.getFullYear() - simNow.getFullYear()) * 12 +
