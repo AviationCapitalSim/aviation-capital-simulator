@@ -1784,27 +1784,28 @@ if(typeof loanSlider !== "undefined" && loanSlider){
   );
 
 }
-  
 function submitLoan(){
 
 /* ============================================================
-🟩 CRITICAL FIX — WAIT FOR TIME ENGINE READY (AUTO-SYNC SAFE)
+🟩 CRITICAL FIX — HARD TIME ENGINE VALIDATION (REAL SAFE)
+Prevents async loop corruption and ensures real ACS clock usage
 ============================================================ */
 
-if(!window.ACS_TIME || !ACS_TIME.currentTime){
+const simTS =
+  window.ACS_TIME?.currentTime;
 
-  console.warn("BANK ENGINE: waiting for Time Engine...");
+if(!simTS){
+
+  console.warn("BANK ENGINE: Time Engine not ready");
 
   loanMessageEl.textContent =
-    "System initializing…";
-
-  setTimeout(submitLoan, 150);
+    "System initializing. Try again.";
 
   return;
 
 }
 
-  
+
 /* ============================================================
    CLEAN FORMATTED INPUT (remove commas)
    ============================================================ */
@@ -1856,7 +1857,6 @@ try{
 
 /* ============================================================
    🟩 B8.1 — COLLATERAL LOCK ENGINE
-   Marks aircraft as collateral
    ============================================================ */
 
 const fleet =
@@ -1868,7 +1868,7 @@ const checkboxes =
   );
 
 let collateralLoanId =
-  "LOAN_" + Date.now();
+  "LOAN_" + simTS; // use simulation time, not Date.now()
 
 checkboxes.forEach(cb => {
 
@@ -1897,7 +1897,7 @@ localStorage.setItem(
 
 
 /* ============================================================
-   CREATE LOAN (TIME ENGINE SAFE)
+   CREATE LOAN (SIMULATION TIME SAFE)
    ============================================================ */
 
 const loan =
@@ -1937,19 +1937,22 @@ loanMessageEl.textContent =
   "Loan approved. Funds transferred.";
 
 console.log(
-  "🏦 Loan created using simulation time:",
-  loan?.startDate
+  "🏦 Loan created at sim time:",
+  new Date(simTS),
+  loan
 );
 
 
 /* ============================================================
-   RELOAD UI
+   SAFE UI RELOAD
    ============================================================ */
 
-setTimeout(() =>
-  location.reload(),
-  800
-);
+setTimeout(() => {
+
+  location.reload();
+
+}, 600);
+
 
 }
 catch(err){
@@ -1962,7 +1965,6 @@ catch(err){
 }
 
 }
-
 
 /* ============================================================
    EVENT LISTENERS
