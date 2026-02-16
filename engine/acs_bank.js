@@ -317,35 +317,67 @@ function ACS_BANK_createLoan(amount, months){
 
   }
 
-  /* PRIORITY 2 — cockpit clock fallback */
-  if(!simDate){
+  /* PRIORITY 2 — cockpit clock fallback (SAFARI SAFE) */
+if(!simDate){
 
-    try{
+  try{
 
-      const el =
-        document.querySelector(".clock-text");
+    const el =
+      document.querySelector(".clock-text");
 
-      if(el){
+    if(el){
 
-        const parts =
-          el.textContent.split("—");
+      const txt =
+        (el.textContent || "").trim();
 
-        if(parts.length >= 2){
+      const parts =
+        txt.split("—");
 
-          const parsed =
-            new Date(parts[1].trim());
+      if(parts.length >= 2){
 
-          if(!isNaN(parsed.getTime()))
-            simDate = parsed;
+        const datePart =
+          parts[1].trim();
+
+        const tokens =
+          datePart.split(/\s+/).filter(Boolean);
+
+        if(tokens.length >= 4){
+
+          const day =
+            Number(tokens[1]);
+
+          const monStr =
+            String(tokens[2]).toUpperCase();
+
+          const year =
+            Number(tokens[3]);
+
+          const map = {
+            JAN:0, FEB:1, MAR:2, APR:3, MAY:4, JUN:5,
+            JUL:6, AUG:7, SEP:8, OCT:9, NOV:10, DEC:11
+          };
+
+          const month =
+            map[monStr];
+
+          if(day && month !== undefined && year){
+
+            simDate =
+              new Date(Date.UTC(year, month, day, 12, 0, 0));
+
+          }
 
         }
 
       }
 
     }
-    catch(e){}
 
   }
+  catch(e){}
+
+}
+
 
   /* PRIORITY 3 — final safe fallback */
   if(!simDate)
