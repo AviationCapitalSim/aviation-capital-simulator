@@ -472,48 +472,38 @@ console.log(
   maturity.toISOString()
 );
 
-  const loan = {
+/* ============================================================
+   🟩 B4 — LOAN OBJECT BUILD (MATURITY FIX)
+   Ensures authoritative SIM maturity usage
+   ============================================================ */
 
-    id:
-      "LOAN_" + startDate.getTime(),
+const loan = {
 
-    originalAmount:
-      amount,
+  id:
+    loanId,
 
-    remaining:
-      amount,
+  amount:
+    amount,
 
-    rate:
-      rate,
+  remaining:
+    amount,
 
-    monthlyPayment:
-      monthly,
+  rate:
+    rate,
 
-    termMonths:
-      months,
+  monthly:
+    monthlyPayment,
 
-    startYear:
-      startDate.getUTCFullYear(),
+  startDate:
+    simDate.toISOString(),
 
-    startDate:
-      startDate.toISOString(),
+  maturityDate:
+    maturity.toISOString(),
 
-    maturityDate:
-      maturityDate.toISOString(),
+  status:
+    "ACTIVE"
 
-    startTS:
-      startDate.getTime(),
-
-    maturityTS:
-      maturityDate.getTime(),
-
-    createdAt:
-      startDate.getTime(),
-
-    type:
-      "BANK_LOAN"
-
-  };
+};
 
   fin.bank.loans.push(loan);
 
