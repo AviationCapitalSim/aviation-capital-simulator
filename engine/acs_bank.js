@@ -3,10 +3,34 @@
    Historical Aviation Loan Engine (1940–2030)
    ============================================================ */
 
+/* ============================================================
+   🟧 B-60 — SIM NOW HELPER (BANK)
+   Uses ACS simulation date when available
+   ============================================================ */
+
+function ACS_BANK_now(){
+
+  // Prefer simulation date (ACS)
+  if(window.ACS_CurrentSimDate){
+    const d = new Date(window.ACS_CurrentSimDate);
+    if(!isNaN(d.getTime())) return d;
+  }
+
+  // Optional: if your time engine exposes a getter
+  if(typeof window.ACS_getSimDate === "function"){
+    const d = new Date(window.ACS_getSimDate());
+    if(!isNaN(d.getTime())) return d;
+  }
+
+  // Fallback: real time
+  return new Date();
+
+}
+
 (function(){
 
 "use strict";
-
+   
 /* ============================================================
    ERA TABLE
    ============================================================ */
@@ -271,21 +295,44 @@ function ACS_BANK_createLoan(amount, months){
       months
     );
 
-  /* ============================================================
-     🟩 REAL SIMULATION DATE (CRITICAL FIX)
-     ============================================================ */
+ /* ============================================================
+   🟩 B-61 — REAL SIMULATION DATE (FINAL SAFE FIX)
+   Uses ACS simulation date as authoritative bank time
+   Prevents real-world date corruption
+   ============================================================ */
 
-  const now =
-    window.ACS_CurrentSimDate
-    ? new Date(window.ACS_CurrentSimDate)
-    : new Date();
+const now =
+  window.ACS_CurrentSimDate &&
+  !isNaN(new Date(window.ACS_CurrentSimDate).getTime())
+  ? new Date(window.ACS_CurrentSimDate)
+  : new Date();
 
-  const maturity =
-    new Date(now);
+/* IMPORTANT: store this as the loan start date */
+const startDate =
+  new Date(now);
 
-  maturity.setMonth(
-    maturity.getMonth() + months
-  );
+const maturity =
+  new Date(startDate);
+
+maturity.setMonth(
+  maturity.getMonth() + months
+);
+
+/* ============================================================
+   SAVE INTO LOAN OBJECT (CRITICAL)
+   ============================================================ */
+
+loan.startDate =
+  startDate.toISOString();
+
+loan.startTS =
+  startDate.getTime();
+
+loan.maturityDate =
+  maturity.toISOString();
+
+loan.maturityTS =
+  maturity.getTime();
 
   /* ============================================================
      🟩 CREATE LOAN OBJECT (FULL BANK DATA)
@@ -567,6 +614,27 @@ Math.min(amount, loan.remaining);
 loan.remaining =
 Math.max(0, loan.remaining - actualPayment);
 
+/* ============================================================
+   🟩 B-62 — PAYMENT TIMESTAMPS (SIM DATE)
+   Stores last payment + closed date when fully paid
+   ============================================================ */
+
+const payNow = ACS_BANK_now();
+
+// always track last payment date
+loan.lastPaymentDate = payNow.toISOString();
+loan.lastPaymentTS   = payNow.getTime();
+
+// if fully paid, close the loan
+if(Number(loan.remaining || 0) <= 0){
+
+  loan.remaining = 0;
+
+  loan.closedDate = payNow.toISOString();
+  loan.closedTS   = payNow.getTime();
+
+}
+   
 /* ============================================================
    🟩 B-35 — AUTO RELEASE COLLATERAL WHEN LOAN PAID
    ============================================================ */
