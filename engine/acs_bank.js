@@ -573,60 +573,49 @@ saveFinance(fin);
 REGISTER EXPENSE IN FINANCE ENGINE
 ============================================ */
 
-if(typeof window.ACS_registerExpense === "function"){
+/* ============================================================
+   🟩 B-33 — REGISTER EXPENSE VIA FINANCE ENGINE (FINAL FIX)
+   Canonical integration with ACS Finance Engine
+   Removes legacy ACS_registerExpense dependency
+   ============================================================ */
 
-```
-window.ACS_registerExpense({
+if(window.ACS_FINANCE_ENGINE &&
+   typeof window.ACS_FINANCE_ENGINE.commit === "function"){
 
-  cost: actualPayment,
-  source: "LOAN_AMORTIZATION",
+  window.ACS_FINANCE_ENGINE.commit({
 
-  meta: {
-    loanId: loan.id
-  }
+    type: "LOAN_AMORTIZATION",
+    amount: actualPayment,
+    source: "BANK",
+    ref: loan.id,
+    ts: Date.now()
 
-});
-```
+  });
 
 }
 
 /* ============================================
-LEDGER ENTRY
+CONFIRMATION LOG
 ============================================ */
 
-if(window.ACS_FINANCE_ENGINE &&
-typeof window.ACS_FINANCE_ENGINE.commit === "function"){
-
-```
-window.ACS_FINANCE_ENGINE.commit({
-
-  type: "LOAN_AMORTIZATION",
-  amount: actualPayment,
-  source: "BANK",
-  ref: loan.id,
-  ts: Date.now()
-
-});
-```
-
-}
-
 console.log(
-"🏦 Loan amortized:",
-loan.id,
-"Amount:",
-actualPayment
+  "🏦 Loan amortized:",
+  loan.id,
+  "Amount:",
+  actualPayment
 );
 
-return loan.remaining;
+/* ============================================
+RETURN REMAINING BALANCE
+============================================ */
 
-}
+return loan.remaining;
 
 /* EXPORT GLOBAL */
 
 window.ACS_BANK_amortizeLoan =
 ACS_BANK_amortizeLoan;
-   
+
 console.log("🏦 ACS_BANK_ENGINE READY");
 
 })();
