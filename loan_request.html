@@ -1748,7 +1748,12 @@ function renderLoanPortfolio(){
     left.innerHTML =
       `
       <div style="color:#00ffd0;font-weight:600">
-        Loan: ${money(loan.originalAmount)}
+      Loan: ${money(
+      loan.originalAmount ||
+      loan.amount ||
+      loan.remaining ||
+      0
+      )}
       </div>
 
       <div style="color:#8ca8ff;font-size:0.85rem">
@@ -1800,6 +1805,10 @@ function renderLoanPortfolio(){
    🏦 MANUAL AMORTIZATION ENGINE
    ============================================================ */
 
+/* ============================================================
+   🏦 MANUAL AMORTIZATION ENGINE — FULL REFRESH FIX
+   ============================================================ */
+
 function amortizeLoan(loanId){
 
   const amount =
@@ -1814,20 +1823,38 @@ function amortizeLoan(loanId){
 
   try{
 
-    ACS_BANK_amortizeLoan(loanId, value);
+    const remaining =
+      ACS_BANK_amortizeLoan(loanId, value);
+
+    console.log(
+      "Amortization complete. Remaining:",
+      remaining
+    );
+
+    /* REFRESH ALL BANK DATA */
 
     loadBankData();
 
+    /* REFRESH PORTFOLIO UI */
+
     renderLoanPortfolio();
+
+    /* CRITICAL: refresh aircraft collateral */
+
+    loadAircraft();
 
   }
   catch(err){
 
-    alert(err.message || "Amortization failed");
+    alert(
+      err.message ||
+      "Amortization failed"
+    );
 
   }
 
 }
+
   
 </script>
   
