@@ -473,6 +473,18 @@ console.log(
 );
 
 /* ============================================================
+   🟩 B5 — LOAN ID GENERATOR (AUTHORITATIVE)
+   Required for loan object creation
+   ============================================================ */
+
+const loanId =
+  "LOAN_" +
+  Date.now() +
+  "_" +
+  Math.floor(Math.random() * 1000);
+
+   
+/* ============================================================
    🟩 B4 — LOAN OBJECT BUILD (MATURITY FIX)
    Ensures authoritative SIM maturity usage
    ============================================================ */
