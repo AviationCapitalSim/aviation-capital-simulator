@@ -1149,7 +1149,8 @@ container.appendChild(row);
 }
 
 /* ============================================================
-   🟦 COLLATERAL TOTAL CALCULATOR
+   🟩 B-37 — TRUE BANK CAPACITY DISPLAY ENGINE
+   Shows real bank capacity when no collateral selected
    ============================================================ */
 
 function updateCollateralTotals(){
@@ -1172,25 +1173,33 @@ function updateCollateralTotals(){
     : "No aircraft selected";
 
   /* ============================================================
-     REAL BANK LIMIT CALCULATION
+     REAL BANK CAPACITY (BASE)
      ============================================================ */
 
-  const collateralLimit =
-    total * 0.70;
-
-  const bankLimit =
+  const bankCapacity =
     Number(BANK_SUMMARY?.loanCapacity || 0);
 
-  const fleetLimit =
-    Number(BANK_SUMMARY?.fleetValue || 0) * 0.50;
-
-  const finalLimit =
-    Math.min(collateralLimit, bankLimit, fleetLimit);
-
-  MAX_PER_LOAN = Math.floor(finalLimit);
+  let finalLimit = bankCapacity;
 
   /* ============================================================
-     UPDATE UI
+     IF collateral selected → apply collateral restriction
+     ============================================================ */
+
+  if(total > 0){
+
+    const collateralLimit =
+      total * 0.70;
+
+    finalLimit =
+      Math.min(collateralLimit, bankCapacity);
+
+  }
+
+  MAX_PER_LOAN =
+    Math.floor(finalLimit);
+
+  /* ============================================================
+     UPDATE UI ALWAYS
      ============================================================ */
 
   loanAmountInput.placeholder =
@@ -1200,7 +1209,7 @@ function updateCollateralTotals(){
     money(MAX_PER_LOAN);
 
   maxLoanEl.textContent =
-    money(MAX_PER_LOAN);
+    money(bankCapacity); // ← ALWAYS show true bank capacity
 
   /* ============================================================
      UPDATE SLIDER
@@ -1211,20 +1220,19 @@ function updateCollateralTotals(){
 
   if(slider){
 
-  slider.min = 0;
+    slider.min = 0;
 
-slider.max = Math.max(0, Number(MAX_PER_LOAN || 0));
+    slider.max =
+      Math.max(0, MAX_PER_LOAN);
 
-/* FIX CRÍTICO — step nunca mayor que max */
-slider.step =
-  slider.max <= 1000
-  ? 1
-  : Math.floor(slider.max / 100);
+    slider.step =
+      slider.max <= 1000
+      ? 1
+      : Math.floor(slider.max / 100);
 
-/* reset seguro */
-slider.value = 0;
+    slider.value = 0;
 
-}
+  }
 
 }
 
