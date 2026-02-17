@@ -275,10 +275,18 @@ function ACS_BANK_createLoan(amount, months){
      🟩 REAL SIMULATION DATE (CRITICAL FIX)
      ============================================================ */
 
-  const now =
-    window.ACS_CurrentSimDate
-    ? new Date(window.ACS_CurrentSimDate)
-    : new Date();
+  /* ============================================================
+   🟧 B-TIME-01 — CANONICAL SIM TIME (MASTER CLOCK)
+   ============================================================ */
+
+if(!window.ACS_TIME || !ACS_TIME.currentTime)
+  throw new Error("ACS_TIME not initialized");
+
+const now =
+  new Date(ACS_TIME.currentTime.getTime());
+
+const openSimTime =
+  now.getTime();
 
   const maturity =
     new Date(now);
@@ -291,47 +299,43 @@ function ACS_BANK_createLoan(amount, months){
      🟩 CREATE LOAN OBJECT (FULL BANK DATA)
      ============================================================ */
 
-  const loan = {
+ const loan = {
 
-    id:
-      "LOAN_" + Date.now(),
+  id:
+    "LOAN_" + openSimTime,
 
-    originalAmount:
-      amount,
+  originalAmount:
+    amount,
 
-    remaining:
-      amount,
+  remaining:
+    amount,
 
-    rate:
-      rate,
+  rate:
+    rate,
 
-    monthlyPayment:
-      monthly,
+  monthlyPayment:
+    monthly,
 
-    termMonths:
-      months,
+  termMonths:
+    months,
 
-    startYear:
-      now.getUTCFullYear(),
+  /* ============================================================
+     CANONICAL SIMULATION TIME SYSTEM
+     ============================================================ */
 
-    /* NEW — REAL DATE SYSTEM */
+  openSimTime:
+    openSimTime,
 
-    startDate:
-      now.toISOString(),
+  closedSimTime:
+    null,
 
-    maturityDate:
-      maturity.toISOString(),
+  maturitySimTime:
+    openSimTime + (months * 30 * 24 * 60 * 60 * 1000),
 
-    startTS:
-      now.getTime(),
+  type:
+    "BANK_LOAN"
 
-    maturityTS:
-      maturity.getTime(),
-
-    type:
-      "BANK_LOAN"
-
-  };
+};
 
   /* ============================================================
      REGISTER LOAN IN BANK STRUCTURE
@@ -518,8 +522,21 @@ function ACS_BANK_amortizeLoan(loanId, amount){
     Math.min(amount, Number(loan.remaining));
 
   loan.remaining =
-    Math.max(0, Number(loan.remaining) - payment);
+  Math.max(0, Number(loan.remaining) - payment);
 
+/* ============================================================
+   🟧 B-TIME-03 — SET CLOSED SIM TIME ONLY WHEN FULLY PAID
+   ============================================================ */
+
+if(loan.remaining === 0 && !loan.closedSimTime){
+
+  if(!window.ACS_TIME || !ACS_TIME.currentTime)
+    throw new Error("ACS_TIME not initialized");
+
+  loan.closedSimTime =
+    ACS_TIME.currentTime.getTime();
+
+}
 
   /* REGISTER EXPENSE IN FINANCE ENGINE */
 
