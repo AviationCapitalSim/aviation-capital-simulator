@@ -606,7 +606,59 @@
     </section>
 
     <div class="main-grid">
+
+      <!-- ============================================================
+     🟩 B-38 — UNSECURED CREDIT LINE PANEL
+     Connected directly to ACS_BANK engine
+     ============================================================ -->
+
+<div class="panel acs-authority-panel">
+
+  <h3>🏦 Unsecured Credit Line</h3>
+
+  <div class="acs-authority-block">
+
+    <div class="acs-label">
+      AVAILABLE CREDIT
+    </div>
+
+    <div id="unsecuredCapacity"
+         class="acs-authority-value">
+      $0
+    </div>
+
+  </div>
+
+  <div class="acs-authority-block">
+
+    <div class="acs-label">
+      BASE INTEREST RATE
+    </div>
+
+    <div id="unsecuredInterest"
+         class="acs-authority-sub">
+      0%
+    </div>
+
+  </div>
+
+  <div class="acs-authority-block">
+
+    <div class="acs-label">
+      COLLATERAL
+    </div>
+
+    <div class="acs-authority-text"
+         style="color:#00ff88;">
+      NOT REQUIRED
+    </div>
+
+  </div>
+
+</div>
+      
       <!-- === AIRCRAFT COLLATERAL === -->
+      
       <div class="panel">
         <h3>✈️ Secured Assets</h3>
         <select id="collateralSelect" style="margin-bottom:0.8rem;">
@@ -813,26 +865,95 @@ function money(x){
   return "$" + Math.round(Number(x || 0)).toLocaleString();
 }
 
+/* ============================================================
+   🟩 B-36 — LOAD BANK DATA WITH TRUE CAPACITY DISPLAY
+   Shows real available loan capacity even with no collateral
+   ============================================================ */
+
 function loadBankData(){
-  if (typeof ACS_BANK_getSummary !== "function"){
-    console.error("❌ ACS_BANK_getSummary missing — engine/acs_bank.js not loaded");
-    loanMessageEl.textContent = "BANK ENGINE NOT LOADED (acs_bank.js)";
+
+  if(typeof ACS_BANK_getSummary !== "function"){
+
+    console.error("ACS_BANK_getSummary missing");
+
+    loanMessageEl.textContent =
+      "BANK ENGINE NOT LOADED";
+
     return;
+
   }
 
-  BANK_SUMMARY = ACS_BANK_getSummary();
+  BANK_SUMMARY =
+    ACS_BANK_getSummary();
 
-  const capacity = Number(BANK_SUMMARY.loanCapacity || 0);
-  MAX_PER_LOAN = capacity * 0.7;
+  const capacity =
+    Number(BANK_SUMMARY.loanCapacity || 0);
 
-  loanAmountInput.max = Math.floor(MAX_PER_LOAN);
+  /* ============================================================
+     TRUE BANK CAPACITY
+     ============================================================ */
+
+  MAX_PER_LOAN =
+    Math.floor(capacity);
+
+  /* ============================================================
+     UPDATE UI IMMEDIATELY
+     ============================================================ */
+
   loanAmountInput.placeholder =
-  "Max allowed: $" + Math.floor(MAX_PER_LOAN).toLocaleString();
-  
-  interestRateEl.textContent = Number(BANK_SUMMARY.interestRate || 0).toFixed(2) + "%";
-  maxLoanEl.textContent = money(MAX_PER_LOAN);
+    "Max allowed: " + money(MAX_PER_LOAN);
+
+  document.getElementById("maxAllowedText").textContent =
+    money(MAX_PER_LOAN);
+
+  interestRateEl.textContent =
+    Number(BANK_SUMMARY.interestRate || 0).toFixed(2) + "%";
+
+  maxLoanEl.textContent =
+    money(MAX_PER_LOAN);
+
+  /* ============================================================
+     UPDATE SLIDER SAFELY
+     ============================================================ */
+
+  const slider =
+    document.getElementById("loanAmountRange");
+
+  if(slider){
+
+    slider.min = 0;
+
+    slider.max = MAX_PER_LOAN;
+
+    slider.step =
+      MAX_PER_LOAN <= 1000
+      ? 1
+      : Math.floor(MAX_PER_LOAN / 100);
+
+    slider.value = 0;
+
+  }
+
+  /* ============================================================
+     🟦 B-39 — UPDATE UNSECURED CREDIT LINE PANEL
+     ============================================================ */
+
+  const unsecuredCapacityEl =
+    document.getElementById("unsecuredCapacity");
+
+  const unsecuredInterestEl =
+    document.getElementById("unsecuredInterest");
+
+  if(unsecuredCapacityEl)
+    unsecuredCapacityEl.textContent =
+      money(BANK_SUMMARY.loanCapacity || 0);
+
+  if(unsecuredInterestEl)
+    unsecuredInterestEl.textContent =
+      Number(BANK_SUMMARY.interestRate || 0).toFixed(2) + "%";
 
   updateCreditProfile();
+
 }
 
 /* ============================================================
@@ -999,8 +1120,9 @@ function loadAircraft(){
 
     container.style.marginTop = "10px";
     container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.gap = "6px";
+   container.style.flexDirection = "column";
+   container.style.gap = "10px";
+   container.style.width = "100%";
 
     collateralSelect.parentNode.appendChild(container);
 
@@ -1026,13 +1148,158 @@ function loadAircraft(){
 const isLocked =
   ac.collateralActive === true;
 
+/* ============================================================
+   🟩 B-41 — QATAR LUXURY COLLATERAL ROW
+   Premium aircraft asset styling
+   ============================================================ */
+
 const row =
   document.createElement("label");
 
 row.style.display = "flex";
 row.style.alignItems = "center";
-row.style.gap = "8px";
-row.style.fontSize = "0.95rem";
+row.style.justifyContent = "space-between";
+
+/* ============================================================
+   🟩 FULL WIDTH TERMINAL CARD FIX
+   ============================================================ */
+
+row.style.width = "100%";
+row.style.boxSizing = "border-box";
+
+row.style.padding = "14px 16px";
+row.style.borderRadius = "14px";
+
+row.style.background =
+  "linear-gradient(180deg, rgba(18,40,95,0.55), rgba(8,22,60,0.75))";
+
+row.style.border =
+  "1px solid rgba(0,180,255,0.25)";
+
+row.style.boxShadow =
+  "inset 0 0 12px rgba(0,120,255,0.12)";
+
+row.style.transition = "all 0.2s ease";
+
+row.style.padding = "10px 14px";
+row.style.borderRadius = "12px";
+
+row.style.background =
+  "linear-gradient(180deg, rgba(20,40,90,0.55), rgba(10,20,50,0.65))";
+
+row.style.border =
+  "1px solid rgba(0,180,255,0.18)";
+
+row.style.boxShadow =
+  "inset 0 0 8px rgba(0,120,255,0.08)";
+
+row.style.transition = "all 0.2s ease";
+
+row.onmouseenter = () => {
+  row.style.border =
+    "1px solid rgba(0,255,180,0.45)";
+  row.style.boxShadow =
+    "0 0 12px rgba(0,255,180,0.15)";
+};
+
+row.onmouseleave = () => {
+  row.style.border =
+    "1px solid rgba(0,180,255,0.18)";
+  row.style.boxShadow =
+    "inset 0 0 8px rgba(0,120,255,0.08)";
+};
+
+/* LEFT SIDE */
+
+const left =
+  document.createElement("div");
+
+left.style.display = "flex";
+left.style.alignItems = "center";
+left.style.gap = "10px";
+
+/* checkbox */
+
+const cb =
+  document.createElement("input");
+
+cb.type = "checkbox";
+cb.value = value;
+cb.dataset.index = index;
+
+cb.style.transform = "scale(1.15)";
+cb.style.cursor = "pointer";
+
+if(isLocked){
+  cb.disabled = true;
+}else{
+  cb.onchange = updateCollateralTotals;
+}
+
+/* aircraft name */
+
+const name =
+  document.createElement("div");
+
+name.innerHTML = `
+  <div style="
+    font-weight:600;
+    color:#e6f0ff;
+  ">
+    ${ac.manufacturer} ${ac.model}
+  </div>
+
+  <div style="
+    font-size:0.8rem;
+    color:#7fa8ff;
+    margin-top:2px;
+  ">
+    Asset Class: Aircraft
+  </div>
+`;
+
+left.appendChild(cb);
+left.appendChild(name);
+
+/* RIGHT SIDE */
+
+const right =
+  document.createElement("div");
+
+right.style.textAlign = "right";
+
+right.innerHTML = `
+  <div style="
+    font-weight:700;
+    color:#00ffd0;
+    letter-spacing:0.5px;
+  ">
+    ${money(value)}
+  </div>
+
+  ${
+    isLocked
+    ? `<div style="
+        font-size:0.75rem;
+        color:#ff8844;
+        margin-top:2px;
+      ">
+        COLLATERAL LOCKED
+      </div>`
+    : `<div style="
+        font-size:0.75rem;
+        color:#00ff88;
+        margin-top:2px;
+      ">
+        AVAILABLE
+      </div>`
+  }
+`;
+
+row.appendChild(left);
+row.appendChild(right);
+
+container.appendChild(row);
 
 if(isLocked){
 
@@ -1046,51 +1313,6 @@ else{
 
 }
 
-const cb =
-  document.createElement("input");
-
-cb.type = "checkbox";
-cb.value = value;
-cb.dataset.index = index;
-
-if(isLocked){
-
-  cb.disabled = true;
-
-}
-else{
-
-  cb.onchange = updateCollateralTotals;
-
-}
-
-const text =
-  document.createElement("span");
-
-text.textContent =
-  `${ac.manufacturer} ${ac.model} — ${money(value)}`;
-
-if(isLocked){
-
-  const badge =
-    document.createElement("span");
-
-  badge.textContent =
-    "  (Secured Asset Value)";
-
-  badge.style.color = "#ff8844";
-  badge.style.marginLeft = "6px";
-
-  text.appendChild(badge);
-
-}
-
-row.appendChild(cb);
-row.appendChild(text);
-
-container.appendChild(row);
-
-
   });
 
   updateCollateralTotals();
@@ -1098,7 +1320,8 @@ container.appendChild(row);
 }
 
 /* ============================================================
-   🟦 COLLATERAL TOTAL CALCULATOR
+   🟩 B-37 — TRUE BANK CAPACITY DISPLAY ENGINE
+   Shows real bank capacity when no collateral selected
    ============================================================ */
 
 function updateCollateralTotals(){
@@ -1121,25 +1344,33 @@ function updateCollateralTotals(){
     : "No aircraft selected";
 
   /* ============================================================
-     REAL BANK LIMIT CALCULATION
+     REAL BANK CAPACITY (BASE)
      ============================================================ */
 
-  const collateralLimit =
-    total * 0.70;
-
-  const bankLimit =
+  const bankCapacity =
     Number(BANK_SUMMARY?.loanCapacity || 0);
 
-  const fleetLimit =
-    Number(BANK_SUMMARY?.fleetValue || 0) * 0.50;
-
-  const finalLimit =
-    Math.min(collateralLimit, bankLimit, fleetLimit);
-
-  MAX_PER_LOAN = Math.floor(finalLimit);
+  let finalLimit = bankCapacity;
 
   /* ============================================================
-     UPDATE UI
+     IF collateral selected → apply collateral restriction
+     ============================================================ */
+
+  if(total > 0){
+
+    const collateralLimit =
+      total * 0.70;
+
+    finalLimit =
+      Math.min(collateralLimit, bankCapacity);
+
+  }
+
+  MAX_PER_LOAN =
+    Math.floor(finalLimit);
+
+  /* ============================================================
+     UPDATE UI ALWAYS
      ============================================================ */
 
   loanAmountInput.placeholder =
@@ -1149,7 +1380,7 @@ function updateCollateralTotals(){
     money(MAX_PER_LOAN);
 
   maxLoanEl.textContent =
-    money(MAX_PER_LOAN);
+    money(bankCapacity); // ← ALWAYS show true bank capacity
 
   /* ============================================================
      UPDATE SLIDER
@@ -1160,20 +1391,19 @@ function updateCollateralTotals(){
 
   if(slider){
 
-  slider.min = 0;
+    slider.min = 0;
 
-slider.max = Math.max(0, Number(MAX_PER_LOAN || 0));
+    slider.max =
+      Math.max(0, MAX_PER_LOAN);
 
-/* FIX CRÍTICO — step nunca mayor que max */
-slider.step =
-  slider.max <= 1000
-  ? 1
-  : Math.floor(slider.max / 100);
+    slider.step =
+      slider.max <= 1000
+      ? 1
+      : Math.floor(slider.max / 100);
 
-/* reset seguro */
-slider.value = 0;
+    slider.value = 0;
 
-}
+  }
 
 }
 
@@ -1656,7 +1886,12 @@ function handleLogout() {
 }  
 
 /* ============================================================
-   🏦 ACS BANK — ACTIVE LOAN PORTFOLIO DISPLAY ENGINE
+   🟩 B-22 — ACTIVE LOAN PORTFOLIO ENGINE (FILTER + PAID STATE)
+   ------------------------------------------------------------
+   Fix:
+   • Oculta loans pagados del panel activo
+   • Muestra estado PAID correctamente
+   • Bloquea amortización si remaining = 0
    ============================================================ */
 
 function renderLoanPortfolio(){
@@ -1668,7 +1903,9 @@ function renderLoanPortfolio(){
 
   container.innerHTML = "";
 
-  if(!BANK_SUMMARY || !BANK_SUMMARY.loans || BANK_SUMMARY.loans.length === 0){
+  if(!BANK_SUMMARY ||
+     !BANK_SUMMARY.loans ||
+     BANK_SUMMARY.loans.length === 0){
 
     container.innerHTML =
       `<div style="
@@ -1682,7 +1919,34 @@ function renderLoanPortfolio(){
     return;
   }
 
-  BANK_SUMMARY.loans.forEach((loan, index) => {
+  /* ============================================================
+     FILTER ONLY ACTIVE LOANS
+     ============================================================ */
+
+  const activeLoans =
+    BANK_SUMMARY.loans.filter(
+      loan => Number(loan.remaining || 0) > 0
+    );
+
+  if(activeLoans.length === 0){
+
+    container.innerHTML =
+      `<div style="
+        color:#00ff88;
+        font-size:0.95rem;
+        font-weight:600;
+      ">
+        All loans fully paid.
+      </div>`;
+
+    return;
+  }
+
+  /* ============================================================
+     RENDER ACTIVE LOANS ONLY
+     ============================================================ */
+
+  activeLoans.forEach((loan) => {
 
     const card =
       document.createElement("div");
@@ -1714,7 +1978,12 @@ function renderLoanPortfolio(){
     left.innerHTML =
       `
       <div style="color:#00ffd0;font-weight:600">
-        Loan: ${money(loan.originalAmount || loan.amount || loan.remaining)}
+      Loan: ${money(
+      loan.originalAmount ||
+      loan.amount ||
+      loan.remaining ||
+      0
+      )}
       </div>
 
       <div style="color:#8ca8ff;font-size:0.85rem">
@@ -1751,7 +2020,7 @@ function renderLoanPortfolio(){
       "pointer";
 
     right.onclick =
-      () => amortizeLoan(index);
+      () => amortizeLoan(loan.id);
 
     card.appendChild(left);
     card.appendChild(right);
@@ -1763,10 +2032,11 @@ function renderLoanPortfolio(){
 }
 
 /* ============================================================
-   🏦 MANUAL AMORTIZATION ENGINE
+   🟩 B-35 FINAL — AMORTIZATION ENGINE WITH SAFE COLLATERAL RELEASE
+   Fully closed — NO syntax errors
    ============================================================ */
 
-function amortizeLoan(index){
+function amortizeLoan(loanId){
 
   const amount =
     prompt("Enter amortization amount:");
@@ -1780,20 +2050,79 @@ function amortizeLoan(index){
 
   try{
 
-    ACS_BANK_amortizeLoan(index, value);
+    const remaining =
+      ACS_BANK_amortizeLoan(loanId, value);
+
+    console.log(
+      "Loan amortized. Remaining:",
+      remaining
+    );
+
+    /* ============================================================
+       COLLATERAL RELEASE ENGINE
+       ============================================================ */
+
+    if(remaining <= 0){
+
+      const fleet =
+        JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+      let changed = false;
+
+      fleet.forEach(ac => {
+
+        if(ac.collateralActive === true){
+
+          ac.collateralActive = false;
+          ac.collateralLoanId = null;
+
+          changed = true;
+
+        }
+
+      });
+
+      if(changed){
+
+        localStorage.setItem(
+          "ACS_MyAircraft",
+          JSON.stringify(fleet)
+        );
+
+        console.log("Collateral released");
+
+      }
+
+    }
+
+    /* ============================================================
+       FULL UI REFRESH
+       ============================================================ */
+
+    BANK_SUMMARY =
+      ACS_BANK_getSummary();
 
     loadBankData();
+
     renderLoanPortfolio();
+
+    loadAircraft();
 
   }
   catch(err){
 
-    alert(err.message || "Amortization failed");
+    console.error(err);
+
+    alert(
+      err?.message ||
+      "Amortization failed"
+    );
 
   }
 
 }
-  
+
+
 </script>
   
 </body>
