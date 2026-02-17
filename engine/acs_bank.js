@@ -244,9 +244,9 @@ function calculateMonthlyPayment(amount, rate, months){
 }
 
 /* ============================================================
-   🟩 B7 — ACS BANK CREATE LOAN (CANONICAL FINANCE INTEGRATION)
-   FIXED — FULL DATE + MATURITY + TIMESTAMPS
-   Professional Banking Grade
+   🟩 B7 — ACS BANK CREATE LOAN (CANONICAL SIMULATION TIME FIX)
+   FINAL VERSION — NO REAL TIME FALLBACK
+   Uses ONLY ACS_TIME.currentTime
    ============================================================ */
 
 function ACS_BANK_createLoan(amount, months){
@@ -271,24 +271,22 @@ function ACS_BANK_createLoan(amount, months){
       months
     );
 
-/* ============================================================
-   🟩 ACS CANONICAL SIMULATION TIME — FINAL FIX
-   Uses exact Date object from ACS_TIME (NO conversion)
-   ============================================================ */
+  /* ============================================================
+     🟩 CANONICAL SIMULATION TIME — HARD LOCK
+     NEVER uses real system time
+     ============================================================ */
 
-let now;
+  if(
+    !window.ACS_TIME ||
+    !window.ACS_TIME.currentTime
+  ){
+    throw new Error(
+      "ACS_TIME.currentTime not available — loan creation aborted"
+    );
+  }
 
-if(
-  typeof window.ACS_TIME !== "undefined" &&
-  ACS_TIME &&
-  ACS_TIME.currentTime instanceof Date
-){
-  now = ACS_TIME.currentTime;
-}
-else{
-  now = new Date();
-}
-
+  const now =
+    new Date(window.ACS_TIME.currentTime);
 
   const maturity =
     new Date(now);
@@ -298,66 +296,61 @@ else{
   );
 
   /* ============================================================
-     🟩 CREATE LOAN OBJECT (FULL BANK DATA)
+     🟩 CREATE LOAN OBJECT — FULL SIMULATION SAFE
      ============================================================ */
 
   const loan = {
 
-  id: "LOAN_" + ACS_TIME.currentTime.getTime(),
+    id:
+      "LOAN_" + now.getTime(),
 
+    originalAmount:
+      amount,
 
-  originalAmount:
-    amount,
+    remaining:
+      amount,
 
-  remaining:
-    amount,
+    rate:
+      rate,
 
-  rate:
-    rate,
+    monthlyPayment:
+      monthly,
 
-  monthlyPayment:
-    monthly,
+    termMonths:
+      months,
 
-  termMonths:
-    months,
+    startYear:
+      now.getUTCFullYear(),
 
-  startYear:
-    now.getUTCFullYear(),
+    /* CANONICAL TIME STORAGE */
 
-  /* ============================================================
-   🟩 ACS CANONICAL TIME STORAGE FIX
-   Stores only simulation timestamps (NO ISO STRINGS)
-   ============================================================ */
+    startDate:
+      null,
 
-startDate:
-  null,
+    maturityDate:
+      null,
 
-maturityDate:
-  null,
+    startTS:
+      now.getTime(),
 
-startTS:
-  now.getTime(),
+    maturityTS:
+      maturity.getTime(),
 
-maturityTS:
-  maturity.getTime(),
+    /* STATUS */
 
-  /* ============================================================
-     🟩 STATUS TRACKING FIX (CRITICAL)
-     ============================================================ */
+    status:
+      "ACTIVE",
 
-  status:
-    "ACTIVE",
+    closedDate:
+      null,
 
-  closedDate:
-    null,
+    closedTS:
+      null,
 
-  closedTS:
-    null,
+    type:
+      "BANK_LOAN"
 
-  type:
-    "BANK_LOAN"
-
-};
+  };
 
   /* ============================================================
      REGISTER LOAN IN BANK STRUCTURE
@@ -368,7 +361,7 @@ maturityTS:
   saveFinance(fin);
 
   /* ============================================================
-     REGISTER MONEY IN FINANCE LEDGER
+     REGISTER MONEY IN FINANCE ENGINE
      ============================================================ */
 
   if(typeof window.ACS_registerIncome === "function"){
@@ -397,11 +390,13 @@ maturityTS:
   }
 
   /* ============================================================
-     REGISTER LEDGER ENTRY
+     REGISTER LEDGER ENTRY — SIMULATION TIME SAFE
      ============================================================ */
 
-  if(window.ACS_FINANCE_ENGINE &&
-     typeof window.ACS_FINANCE_ENGINE.commit === "function"){
+  if(
+    window.ACS_FINANCE_ENGINE &&
+    typeof window.ACS_FINANCE_ENGINE.commit === "function"
+  ){
 
     window.ACS_FINANCE_ENGINE.commit({
 
@@ -425,7 +420,7 @@ maturityTS:
   }
 
   console.log(
-    "🏦 Loan created:",
+    "🏦 Loan created (SIM TIME LOCKED):",
     loan.id,
     loan
   );
@@ -433,7 +428,7 @@ maturityTS:
   return loan;
 
 }
-
+   
 /* ============================================================
    🟩 CF-B14 — ACS BANK MONTHLY LOAN PROCESSOR
    Registers loan payments into Finance Engine
