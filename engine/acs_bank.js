@@ -271,14 +271,27 @@ function ACS_BANK_createLoan(amount, months){
       months
     );
 
+ 
   /* ============================================================
-     🟩 REAL SIMULATION DATE (CRITICAL FIX)
-     ============================================================ */
+   🟩 ACS CANONICAL SIMULATION TIME FIX
+   Uses real ACS_TIME instead of system clock
+   ============================================================ */
 
-  const now =
-    window.ACS_CurrentSimDate
-    ? new Date(window.ACS_CurrentSimDate)
-    : new Date();
+let now;
+
+if(
+  typeof window.ACS_TIME !== "undefined" &&
+  ACS_TIME &&
+  ACS_TIME.currentTime
+){
+  now = new Date(ACS_TIME.currentTime);
+}
+else if(window.ACS_CurrentSimDate){
+  now = new Date(window.ACS_CurrentSimDate);
+}
+else{
+  now = new Date();
+}
 
   const maturity =
     new Date(now);
@@ -293,45 +306,56 @@ function ACS_BANK_createLoan(amount, months){
 
   const loan = {
 
-    id:
-      "LOAN_" + Date.now(),
+  id:
+    "LOAN_" + Date.now(),
 
-    originalAmount:
-      amount,
+  originalAmount:
+    amount,
 
-    remaining:
-      amount,
+  remaining:
+    amount,
 
-    rate:
-      rate,
+  rate:
+    rate,
 
-    monthlyPayment:
-      monthly,
+  monthlyPayment:
+    monthly,
 
-    termMonths:
-      months,
+  termMonths:
+    months,
 
-    startYear:
-      now.getUTCFullYear(),
+  startYear:
+    now.getUTCFullYear(),
 
-    /* NEW — REAL DATE SYSTEM */
+  startDate:
+    now.toISOString(),
 
-    startDate:
-      now.toISOString(),
+  maturityDate:
+    maturity.toISOString(),
 
-    maturityDate:
-      maturity.toISOString(),
+  startTS:
+    now.getTime(),
 
-    startTS:
-      now.getTime(),
+  maturityTS:
+    maturity.getTime(),
 
-    maturityTS:
-      maturity.getTime(),
+  /* ============================================================
+     🟩 STATUS TRACKING FIX (CRITICAL)
+     ============================================================ */
 
-    type:
-      "BANK_LOAN"
+  status:
+    "ACTIVE",
 
-  };
+  closedDate:
+    null,
+
+  closedTS:
+    null,
+
+  type:
+    "BANK_LOAN"
+
+};
 
   /* ============================================================
      REGISTER LOAN IN BANK STRUCTURE
@@ -517,9 +541,43 @@ function ACS_BANK_amortizeLoan(loanId, amount){
   const payment =
     Math.min(amount, Number(loan.remaining));
 
-  loan.remaining =
-    Math.max(0, Number(loan.remaining) - payment);
+ loan.remaining =
+  Math.max(0, Number(loan.remaining) - payment);
 
+/* ============================================================
+   🟩 LOAN CLOSE DETECTION FIX
+   Registers closed date ONLY when fully paid
+   ============================================================ */
+
+if(Number(loan.remaining) <= 0){
+
+  loan.remaining = 0;
+
+  loan.status = "PAID";
+
+  let closedNow;
+
+  if(
+    typeof window.ACS_TIME !== "undefined" &&
+    ACS_TIME &&
+    ACS_TIME.currentTime
+  ){
+    closedNow = new Date(ACS_TIME.currentTime);
+  }
+  else if(window.ACS_CurrentSimDate){
+    closedNow = new Date(window.ACS_CurrentSimDate);
+  }
+  else{
+    closedNow = new Date();
+  }
+
+  loan.closedDate =
+    closedNow.toISOString();
+
+  loan.closedTS =
+    closedNow.getTime();
+
+}
 
   /* REGISTER EXPENSE IN FINANCE ENGINE */
 
