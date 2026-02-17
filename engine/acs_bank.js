@@ -3,27 +3,31 @@
    Historical Aviation Loan Engine (1940–2030)
    ============================================================ */
 
+/* ============================================================
+🟩 B-71 — ACS BANK AUTHORITATIVE TIME RESOLVER (FINAL)
+Waits until Time Engine is ready. Never uses system clock.
+============================================================ */
+
 function ACS_BANK_now(){
 
-  if(!window.ACS_TIME || !ACS_TIME.currentTime){
+  if(
+    window.ACS_TIME &&
+    typeof ACS_TIME.currentTime !== "undefined"
+  ){
 
-    throw new Error(
-      "ACS_TIME.currentTime not available — Bank Engine cannot operate"
-    );
+    const d = new Date(ACS_TIME.currentTime);
 
-  }
-
-  const d = new Date(ACS_TIME.currentTime);
-
-  if(isNaN(d.getTime())){
-
-    throw new Error(
-      "Invalid ACS_TIME.currentTime"
-    );
+    if(!isNaN(d.getTime()))
+      return d;
 
   }
 
-  return d;
+  /* TIME ENGINE NOT READY YET */
+  console.warn(
+    "BANK ENGINE waiting for ACS_TIME.currentTime"
+  );
+
+  return null;
 
 }
 
