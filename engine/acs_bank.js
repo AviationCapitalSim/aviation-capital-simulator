@@ -4,42 +4,51 @@
    ============================================================ */
 
 /* ============================================================
-   🟩 B-73 FINAL — UNIVERSAL SIM TIME RESOLVER
-   FIX:
-   ✔ Compatible with ALL ACS time engines
-   ✔ Detects ACS_TIME, ACS_CurrentSimDate, or parent context
-   ✔ Never requires modifying time_engine.js
+   🟩 B-TIME-FINAL — UNIVERSAL TIME RESOLVER (ACS SAFE)
+   Fix:
+   • Compatible with your simulator clock
+   • Does NOT require modifying time_engine.js
+   • Uses all known ACS time sources safely
 ============================================================ */
 
 function ACS_BANK_now(){
 
   let simTS = null;
 
-  /* PRIORITY 1 — ACS_TIME (new engine format) */
-
-  if(window.ACS_TIME && window.ACS_TIME.currentTime){
-    simTS = window.ACS_TIME.currentTime;
-  }
-
-  /* PRIORITY 2 — ACS_CurrentSimDate (your actual engine format) */
-
-  else if(window.ACS_CurrentSimDate){
+  /* PRIORITY 1 — ACS_CurrentSimDate (your simulator clock) */
+  if(typeof window.ACS_CurrentSimDate !== "undefined"){
     simTS = window.ACS_CurrentSimDate;
   }
 
-  /* PRIORITY 3 — parent frame */
-
-  else if(window.parent){
-
-    if(window.parent.ACS_TIME && window.parent.ACS_TIME.currentTime)
-      simTS = window.parent.ACS_TIME.currentTime;
-
-    else if(window.parent.ACS_CurrentSimDate)
-      simTS = window.parent.ACS_CurrentSimDate;
-
+  /* PRIORITY 2 — ACS_TIME.currentTime */
+  else if(
+    typeof window.ACS_TIME !== "undefined" &&
+    typeof window.ACS_TIME.currentTime !== "undefined"
+  ){
+    simTS = window.ACS_TIME.currentTime;
   }
 
-  /* VALIDATE */
+  /* PRIORITY 3 — ACS_CLOCK.currentTime */
+  else if(
+    typeof window.ACS_CLOCK !== "undefined" &&
+    typeof window.ACS_CLOCK.currentTime !== "undefined"
+  ){
+    simTS = window.ACS_CLOCK.currentTime;
+  }
+
+  /* PRIORITY 4 — search global scope fallback */
+  else{
+    for(const k in window){
+      if(
+        window[k] &&
+        typeof window[k] === "object" &&
+        typeof window[k].currentTime !== "undefined"
+      ){
+        simTS = window[k].currentTime;
+        break;
+      }
+    }
+  }
 
   if(simTS){
 
