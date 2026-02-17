@@ -4,16 +4,17 @@
    ============================================================ */
 
 /* ============================================================
-🟩 B-71 — ACS BANK AUTHORITATIVE TIME RESOLVER (FINAL)
-Waits until Time Engine is ready. Never uses system clock.
+🟩 B-60 — ABSOLUTE SIMULATION TIME AUTHORITY (NO SYSTEM TIME)
+Fix:
+- Parses cockpit clock reliably (Safari safe)
+- Accepts — / – / - separators
+- Never returns real/system date
 ============================================================ */
 
 function ACS_BANK_now(){
 
-  if(
-    window.ACS_TIME &&
-    typeof ACS_TIME.currentTime !== "undefined"
-  ){
+  /* PRIORITY 1 — OFFICIAL ACS TIME ENGINE */
+  if(window.ACS_TIME && ACS_TIME.currentTime){
 
     const d = new Date(ACS_TIME.currentTime);
 
@@ -22,12 +23,90 @@ function ACS_BANK_now(){
 
   }
 
-  /* TIME ENGINE NOT READY YET */
-  console.warn(
-    "BANK ENGINE waiting for ACS_TIME.currentTime"
-  );
+  /* PRIORITY 2 — persistent last known sim time (ms) */
+  const saved = localStorage.getItem("ACS_SIM_TIME");
 
-  return null;
+  if(saved){
+
+    const ms = Number(saved);
+    const d = new Date(ms);
+
+    if(!isNaN(d.getTime()))
+      return d;
+
+  }
+
+  /* PRIORITY 3 — DOM CLOCK PARSE (CANONICAL) */
+  try{
+
+    const el = document.querySelector(".clock-text");
+
+    if(el){
+
+      const txtRaw = (el.textContent || "").trim();
+
+      // normalize separators: — or – -> -
+      const txt = txtRaw.replace(/[—–]/g, "-");
+
+      const parts = txt.split("-");
+
+      if(parts.length >= 2){
+
+        const left  = parts[0].trim(); // "10:47"
+        const right = parts[1].trim(); // "SAT 10 OCT 1942"
+
+        const mTime = left.match(/^(\d{1,2}):(\d{2})$/);
+
+        if(mTime){
+
+          const hh = Number(mTime[1]);
+          const mm = Number(mTime[2]);
+
+          const tokens = right.split(/\s+/);
+
+          // tokens can be: ["SAT","10","OCT","1942"] OR ["10","OCT","1942"]
+          let dayTok, monTok, yearTok;
+
+          if(tokens.length >= 4){
+            dayTok  = tokens[1];
+            monTok  = tokens[2];
+            yearTok = tokens[3];
+          }else if(tokens.length >= 3){
+            dayTok  = tokens[0];
+            monTok  = tokens[1];
+            yearTok = tokens[2];
+          }
+
+          const day  = Number(dayTok);
+          const year = Number(yearTok);
+
+          const monthMap = {
+            JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,
+            JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11
+          };
+
+          const mon = monthMap[String(monTok || "").toUpperCase()];
+
+          if(day && mon !== undefined && year){
+
+            // Use LOCAL timezone date because cockpit clock is local UI
+            const d = new Date(year, mon, day, hh, mm, 0);
+
+            if(!isNaN(d.getTime()))
+              return d;
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }catch(e){}
+
+  // FINAL: DO NOT CONTAMINATE WITH REAL TIME
+  throw new Error("Simulation time unavailable");
 
 }
 
