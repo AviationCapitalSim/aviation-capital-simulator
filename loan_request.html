@@ -1948,7 +1948,7 @@ if(loanBtn){
 
   const waitForTime = setInterval(() => {
 
-    if(window.ACS_TIME && ACS_TIME.currentTime){
+    if(typeof computeSimTime === "function" && computeSimTime()){
 
       clearInterval(waitForTime);
 
