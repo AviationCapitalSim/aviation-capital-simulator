@@ -1,6 +1,6 @@
 <!-- ============================================================
      🏦 ACS BANK CENTER — HISTORICAL CREDIT AUTHORITY
-     Version: 2.0
+     Version: 1.0
      Date: 14 FEB 2026
      Engine: engine/acs_bank.js
      ============================================================ -->
@@ -257,21 +257,7 @@
       opacity:0.9;
       margin-top:10px;
     }
-
-/* ============================================================
-   🟦 B-63 — BANK TABLE ALIGNMENT (QATAR LUXURY)
-   ============================================================ */
-
-table th:nth-child(1),
-table th:nth-child(2),
-table th:nth-child(6),
-table td:nth-child(1),
-table td:nth-child(2),
-table td:nth-child(6){
-  text-align:center;
-}
-       
-</style>
+  </style>
 </head>
 
 <body>
@@ -370,15 +356,13 @@ table td:nth-child(6){
 
     <table>
       <thead>
-  <tr>
-    <th>ID</th>
-    <th>Status</th>
-    <th>Remaining</th>
-    <th>Rate</th>
-    <th>Monthly</th>
-    <th>Closed Date</th>
-  </tr>
-</thead>
+        <tr>
+          <th>ID</th>
+          <th>Remaining</th>
+          <th>Rate</th>
+          <th>Monthly</th>
+        </tr>
+      </thead>
       <tbody id="loanTable"></tbody>
     </table>
 
@@ -406,323 +390,185 @@ table td:nth-child(6){
 <script src="engine/acs_bank.js"></script>
 
 <script>
-
-/* ============================================================
-   🟩 B-50 — ACS BANK UI MASTER SCRIPT (FULL FIXED VERSION)
-   Fixes:
-   ✔ Correct maturity date (normalizes broken termMonths)
-   ✔ Adds formatAviationDate
-   ✔ Restores PAID rows
-   ✔ Fixes Closed Date display
-   ✔ Uses simulation date
-   ✔ Aviation-style colors
-   ✔ Fully safe engine integration
-   ============================================================ */
-
-function money(x){
-  const v = Number(x || 0);
-  return "$" + Math.round(v).toLocaleString();
-}
-
-function handleLogout(){
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href = "login.html";
-}
-
-function goLoan(){
-  window.location.href = "loan_request.html";
-}
-
-/* ============================================================
-   🟩 AVIATION DATE FORMATTER
-   ============================================================ */
-
-function formatAviationDate(input){
-
-  if(!input) return "—";
-
-  const d =
-    (input instanceof Date)
-    ? input
-    : new Date(input);
-
-  if(isNaN(d.getTime()))
-    return "—";
-
-  const day =
-    String(d.getDate()).padStart(2,"0");
-
-  const months =
-    ["JAN","FEB","MAR","APR","MAY","JUN",
-     "JUL","AUG","SEP","OCT","NOV","DEC"];
-
-  const mon =
-    months[d.getMonth()];
-
-  const yr =
-    d.getFullYear();
-
-  return `${day} ${mon} ${yr}`;
-}
-
-/* ============================================================
-   🟩 TERM NORMALIZER (FIX 72 → 864 BUG)
-   ============================================================ */
-
-function normalizeTermMonths(loan){
-
-  let m =
-    Number(
-      loan?.termMonths ??
-      loan?.months ??
-      0
-    );
-
-  if(!m) return 0;
-
-  /* detect legacy bug */
-  if(m > 240 && m % 12 === 0){
-
-    const divided = m / 12;
-
-    if(divided <= 240)
-      return divided;
-
+  function money(x){
+    const v = Number(x || 0);
+    return "$" + Math.round(v).toLocaleString();
   }
 
-  return m;
-}
-
-/* ============================================================
-   🟩 TERM COLOR ENGINE
-   ============================================================ */
-
-function termColor(months){
-
-  if(months > 84) return "#00ff88";
-  if(months > 36) return "#4da3ff";
-  if(months > 12) return "#ffb300";
-  if(months > 0)  return "#ff4444";
-
-  return "#00ffcc";
-}
-
-<!-- ✅ 🟩 FIX #1 — SIM TIME WAIT + NO SYSTEM FALLBACK (BANK) -->
-
-/* ============================================================
-   🟩 B-FIX-01 — STRICT SIM TIME (NO SYSTEM DATE)
-   Fix:
-   - NO usa new Date() como fallback (evita 2026)
-   - Espera a ACS_TIME.currentTime antes de loadBank()
-   ============================================================ */
-
-function getSimulationDateStrict(){
-  if(window.ACS_TIME && window.ACS_TIME.currentTime){
-    const d = new Date(window.ACS_TIME.currentTime);
-    if(!isNaN(d.getTime())) return d;
+  function handleLogout(){
+    alert("👋 Session closed. See you soon, Captain!");
+    window.location.href = "login.html";
   }
-  return null; // ✅ sin fallback
-}
 
-function waitForSimTime(readyFn){
-
-  const started = Date.now();
-
-  const t = setInterval(() => {
-
-    const simNow = getSimulationDateStrict();
-
-    if(simNow){
-      clearInterval(t);
-      readyFn(simNow);
-      return;
-    }
-
-    // timeout duro (5s) para no colgar UI
-    if(Date.now() - started > 5000){
-      clearInterval(t);
-
-      console.error(
-        "BANK CRITICAL: ACS_TIME.currentTime not ready. " +
-        "Time Engine not available in this context."
-      );
-
-      // UI fallback explícito (sin usar fecha real)
-      const m = document.getElementById("loanMaturity");
-      const term = document.getElementById("loanTerm");
-      if(m) m.innerText = "TIME ENGINE NOT READY";
-      if(term) term.innerText = "—";
-
-    }
-
-  }, 200);
-
-}
-
-/* ============================================================
-   ✅ INIT (ONLY after sim time is alive)
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-  waitForSimTime(() => loadBank());
-});
-
-     
-/* ============================================================
-   🟩 MAIN BANK LOAD
-   ============================================================ */
+  function goLoan(){
+    window.location.href = "loan_request.html";
+  }
 
 function loadBank(){
 
-  if(typeof ACS_BANK_getSummary !== "function"){
-    console.error("ACS_BANK_getSummary missing");
+  if (typeof ACS_BANK_getSummary !== "function"){
+    console.error("ACS_BANK_getSummary() missing — engine/acs_bank.js not loaded.");
     return;
   }
 
-  const s =
-    ACS_BANK_getSummary();
+function formatDateISO(iso){
 
-  const loans =
-    Array.isArray(s.loans)
-    ? s.loans
-    : [];
+  if(!iso) return "—";
 
-  /* ============================================================
-     SUMMARY TOTALS
-     ============================================================ */
+  const d = new Date(iso);
 
-  let totalOutstanding = 0;
-  let totalOriginal    = 0;
-  let totalMonthly     = 0;
+  const day =
+    String(d.getUTCDate()).padStart(2,"0");
 
-  loans.forEach(loan=>{
+  const months = [
+    "JAN","FEB","MAR","APR","MAY","JUN",
+    "JUL","AUG","SEP","OCT","NOV","DEC"
+  ];
 
-    totalOutstanding +=
-      Number(loan.remaining || 0);
+  const month =
+    months[d.getUTCMonth()];
 
-    totalOriginal +=
-      Number(
-        loan.originalAmount ||
-        loan.amount ||
-        0
-      );
+  const year =
+    d.getUTCFullYear();
 
-    totalMonthly +=
-      Number(loan.monthlyPayment || 0);
-
-  });
-
-  document.getElementById("loanOriginal").innerText =
-    money(totalOriginal);
-
-  document.getElementById("loanMonthly").innerText =
-    money(totalMonthly);
-
-  document.getElementById("loanOutstanding").innerText =
-    money(totalOutstanding);
-
-  /* ============================================================
-     MATURITY + TERM
-     ============================================================ */
-
-  const activeLoan =
-    [...loans]
-    .reverse()
-    .find(l =>
-      Number(l.remaining || 0) > 0
-    );
-
-  if(activeLoan){
-
-    /* ============================================================
-🟩 FINAL FIX — NEVER USE REAL TIME
-Uses ONLY stored loan timestamp
-============================================================ */
-
-const startTS =
-  activeLoan.startTS ||
-  activeLoan.createdAt ||
-  (activeLoan.startDate
-    ? new Date(activeLoan.startDate).getTime()
-    : null);
-
-/* absolute safety guard */
-if(!startTS){
-
-  console.error(
-    "BANK CRITICAL: Loan missing valid timestamp",
-    activeLoan
-  );
-
-  return;
-
+  return `${day} ${month} ${year}`;
 }
 
+function calculateRemainingTerm(maturityISO){
+
+  if(!maturityISO)
+    return "—";
+
+  const now =
+    window.ACS_CurrentSimDate
+    ? new Date(window.ACS_CurrentSimDate)
+    : new Date();
+
+  const maturity =
+    new Date(maturityISO);
+
+  let months =
+    (maturity.getFullYear() - now.getFullYear()) * 12 +
+    (maturity.getMonth() - now.getMonth());
+
+  if(months < 0)
+    return "Completed";
+
+  const years =
+    Math.floor(months / 12);
+
+  const remMonths =
+    months % 12;
+
+  return `${years}Y ${remMonths}M`;
+}
+       
+  const s = ACS_BANK_getSummary();
+
+  const loans =
+    Array.isArray(s.loans) ? s.loans : [];
+
+/* ============================================================
+   🟩 B25 — BANK FINANCIAL SUMMARY CARDS
+   ============================================================ */
+
+let totalOutstanding = 0;
+let totalOriginal = 0;
+let totalMonthly = 0;
+
+loans.forEach(loan=>{
+
+  totalOutstanding +=
+    Number(loan.remaining || 0);
+
+  totalOriginal +=
+    Number(
+      loan.originalAmount ||
+      loan.amount ||
+      0
+    );
+
+  totalMonthly +=
+    Number(loan.monthlyPayment || 0);
+
+});
+
+const originalEl =
+  document.getElementById("loanOriginal");
+
+if(originalEl)
+  originalEl.innerText =
+    money(totalOriginal);
+
+const monthlyEl =
+  document.getElementById("loanMonthly");
+
+if(monthlyEl)
+  monthlyEl.innerText =
+    money(totalMonthly);
+
+const outstandingEl =
+  document.getElementById("loanOutstanding");
+
+if(outstandingEl)
+  outstandingEl.innerText =
+    money(totalOutstanding);
+
+     
+/* ============================================================
+   🟩 B21 — REAL LOAN DATE + MATURITY CALCULATION (SAFE)
+   Works with old and new loans
+   ============================================================ */
+
+if(loans.length > 0){
+
+  const lastLoan =
+    loans[loans.length - 1];
+
+  const startISO =
+    lastLoan.startDate ||
+    lastLoan.startTS ||
+    null;
+
+  if(startISO){
 
     const startDate =
-      new Date(startTS);
-
-    const termMonths =
-      normalizeTermMonths(activeLoan);
+      new Date(startISO);
 
     const maturityDate =
       new Date(startDate);
 
     maturityDate.setMonth(
       maturityDate.getMonth() +
-      termMonths
+      (lastLoan.termMonths || 0)
     );
+
+    const maturityISO =
+      maturityDate.toISOString();
 
     const maturityEl =
       document.getElementById("loanMaturity");
 
-    maturityEl.innerText =
-      formatAviationDate(maturityDate);
+    if(maturityEl){
 
-    maturityEl.style.color =
-      "#00ffcc";
+      maturityEl.innerText =
+        formatDateISO(maturityISO);
 
-    /* remaining term */
-
-    const simNow =
-    getSimulationDate();
-
-    let remainingMonths =
-      (maturityDate.getFullYear() - simNow.getFullYear()) * 12 +
-      (maturityDate.getMonth() - simNow.getMonth());
-
-    if(remainingMonths < 0)
-      remainingMonths = 0;
-
-    const years =
-      Math.floor(remainingMonths / 12);
-
-    const months =
-      remainingMonths % 12;
-
-    const termText =
-      remainingMonths <= 0
-      ? "Completed"
-      : years > 0
-        ? `${years} Years ${months} Months`
-        : `${months} Months`;
+    }
 
     const termEl =
       document.getElementById("loanTerm");
 
-    termEl.innerText =
-      termText;
+    if(termEl){
 
-    termEl.style.color =
-      termColor(remainingMonths);
+      termEl.innerText =
+        calculateRemainingTerm(maturityISO);
 
-  }
-  else{
-
-    document.getElementById("loanMaturity").innerText = "—";
-    document.getElementById("loanTerm").innerText     = "—";
+    }
 
   }
+
+}
 
   /* ============================================================
      STANDARD CARDS
@@ -738,7 +584,7 @@ if(!startTS){
     Number(s.interestRate).toFixed(2) + "%";
 
   /* ============================================================
-     LOAN TABLE (ACTIVE + PAID)
+     LOAN TABLE
      ============================================================ */
 
   const table =
@@ -749,13 +595,10 @@ if(!startTS){
   if(loans.length === 0){
 
     table.innerHTML =
-      `<tr>
-        <td colspan="6" style="color:#9fb3ff;">
-          No loan history.
-        </td>
-      </tr>`;
+      `<tr><td colspan="4" style="color:#9fb3ff;">No active loans.</td></tr>`;
 
     return;
+
   }
 
   loans.forEach(l=>{
@@ -763,52 +606,11 @@ if(!startTS){
     const tr =
       document.createElement("tr");
 
-    const remaining =
-      Number(l.remaining || 0);
-
-    const status =
-      remaining <= 0
-      ? "PAID"
-      : "ACTIVE";
-
-    const statusColor =
-      remaining <= 0
-      ? "#00ff88"
-      : "#4da3ff";
-
-    const closed =
-  remaining <= 0
-  ? formatAviationDate(
-      l.closedDate ||
-      l.lastPaymentDate ||
-      l.paidAt ||
-      l.closedTS ||
-      l.lastPaymentTS
-    )
-  : "—";
-
     tr.innerHTML = `
-
       <td>${l.id || "—"}</td>
-
-      <td style="
-        font-weight:600;
-        color:${statusColor};
-      ">
-        ${status}
-      </td>
-
-      <td>${money(remaining)}</td>
-
-      <td>
-        ${Number(l.rate || 0).toFixed(2)}%
-      </td>
-
+      <td>${money(l.remaining)}</td>
+      <td>${Number(l.rate || 0).toFixed(2)}%</td>
       <td>${money(l.monthlyPayment)}</td>
-
-      <td style="color:#00ffd0">
-        ${closed}
-      </td>
     `;
 
     table.appendChild(tr);
@@ -817,15 +619,14 @@ if(!startTS){
 
 }
 
-/* ============================================================
-   INIT
-   ============================================================ */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  loadBank
-);
-
+document.addEventListener("DOMContentLoaded", () => {
+  try{
+    loadBank();
+  }catch(e){
+    console.error("BANK UI crash:", e);
+  }
+});
+     
 </script>
 
 </body>
