@@ -4,20 +4,27 @@
    ============================================================ */
 
 /* ============================================================
-🟩 B-72 FINAL — CANONICAL TIME SOURCE (DEFINITIVE FIX)
-Uses ONLY ACS_TIME.currentTime (official ACS clock)
-Never uses system time
-============================================================ */
+   🟩 B-73 — ACS_BANK_now (FINAL CONTEXT-SAFE VERSION)
+   FIX:
+   ✔ Works in main window AND iframe / child pages
+   ✔ Uses window.ACS_TIME OR window.parent.ACS_TIME
+   ✔ Eliminates "ACS_TIME.currentTime not available" permanently
+   ✔ Zero fallback to system time (strict simulation authority)
+   ============================================================ */
 
 function ACS_BANK_now(){
 
-  if(
-    typeof window.ACS_TIME !== "undefined" &&
-    ACS_TIME &&
-    ACS_TIME.currentTime
-  ){
+  const T =
+    (typeof window.ACS_TIME !== "undefined" && window.ACS_TIME)
+    ||
+    (typeof window.parent !== "undefined" &&
+     window.parent &&
+     typeof window.parent.ACS_TIME !== "undefined" &&
+     window.parent.ACS_TIME);
 
-    const d = new Date(ACS_TIME.currentTime);
+  if(T && T.currentTime){
+
+    const d = new Date(T.currentTime);
 
     if(!isNaN(d.getTime()))
       return d;
