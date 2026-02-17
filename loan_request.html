@@ -2050,8 +2050,15 @@ function amortizeLoan(loanId){
 
   try{
 
+        const fn =
+      window.ACS_BANK_amortizeLoan;
+
+    if(typeof fn !== "function"){
+      throw new Error("Bank engine amortization not loaded: window.ACS_BANK_amortizeLoan");
+    }
+
     const remaining =
-      ACS_BANK_amortizeLoan(loanId, value);
+      fn(loanId, value);
 
     console.log(
       "Loan amortized. Remaining:",
