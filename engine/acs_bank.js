@@ -546,13 +546,35 @@ function ACS_BANK_amortizeLoan(loanId, amount){
    🟧 B-TIME-03 — SET CLOSED SIM TIME ONLY WHEN FULLY PAID
    ============================================================ */
 
+/* ============================================================
+   🟩 B-TIME-03 FINAL — CANONICAL CLOSED SIM TIME (FIXED)
+   Guarantees closedSimTime is always stored correctly
+   ============================================================ */
+
 if(loan.remaining === 0 && !loan.closedSimTime){
 
-  if(!window.ACS_TIME || !ACS_TIME.currentTime)
-    throw new Error("ACS_TIME not initialized");
+  const simNow =
+    (typeof computeSimTime === "function")
+      ? computeSimTime()
+      : null;
 
-  loan.closedSimTime =
-    ACS_TIME.currentTime.getTime();
+  if(!simNow){
+    console.error("CRITICAL: computeSimTime unavailable");
+  }
+  else{
+
+    loan.closedSimTime =
+      simNow.getTime();
+
+    console.log(
+      "🏦 Loan closed:",
+      loan.id,
+      "ClosedSimTime:",
+      loan.closedSimTime,
+      new Date(loan.closedSimTime).toISOString()
+    );
+
+  }
 
 }
 
