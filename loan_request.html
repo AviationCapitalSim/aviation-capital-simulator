@@ -1873,13 +1873,16 @@ console.log(
 );
 
 /* ============================================================
-   🟩 B-TIME-06 — VERIFY LOAN PERSISTENCE AND SYNC UI
-   Ensures loan exists in Bank Engine immediately
+   🟩 B-TIME-09 FINAL — VERIFY LOAN USING CANONICAL BANK FIELDS
+   Uses startDate and startTS (official Bank Engine fields)
    ============================================================ */
 
-if(!loan || !loan.openSimTime){
+if(!loan || !loan.startDate || !loan.startTS){
 
-  console.error("CRITICAL: Loan missing openSimTime");
+  console.error(
+    "CRITICAL: Loan missing canonical startDate/startTS",
+    loan
+  );
 
   loanMessageEl.textContent =
     "Loan creation failed. Please try again.";
