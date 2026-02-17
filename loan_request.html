@@ -1868,77 +1868,15 @@ function submitLoan(){
 
 document.getElementById("requestLoanBtn").addEventListener("click", submitLoan);
 
-/* ============================================================
-🟩 ACS MASTER INIT — SINGLE ENTRY POINT (FINAL FIX)
-Prevents double DOMContentLoaded and guarantees clean sync
-============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
 
-let ACS_INIT_DONE = false;
+  loadBankData();
 
-document.addEventListener("DOMContentLoaded", function(){
+  loadAircraft();
 
-  console.log("ACS INIT START");
+  initializeAmountControls();
 
-  let attempts = 0;
-
-  const timer = setInterval(function(){
-
-    attempts++;
-
-    if(
-      typeof window.ACS_TIME !== "undefined" &&
-      window.ACS_TIME &&
-      window.ACS_TIME.currentTime instanceof Date &&
-      !isNaN(window.ACS_TIME.currentTime.getTime())
-    ){
-
-      if(ACS_INIT_DONE){
-        clearInterval(timer);
-        return;
-      }
-
-      ACS_INIT_DONE = true;
-
-      console.log(
-        "ACS TIME READY:",
-        window.ACS_TIME.currentTime.toString()
-      );
-
-      try{
-
-        loadBankData();
-        loadAircraft();
-        initializeAmountControls();
-        renderLoanPortfolio();
-
-        console.log("ACS INIT COMPLETE");
-
-      }
-      catch(err){
-
-        console.error("ACS INIT ERROR:", err);
-
-      }
-
-      clearInterval(timer);
-
-      return;
-
-    }
-
-    if(attempts === 1){
-      console.log("Waiting for ACS_TIME...");
-    }
-
-    if(attempts > 200){
-
-      clearInterval(timer);
-
-      console.error("ACS TIME FAILED TO INITIALIZE");
-
-    }
-
-  }, 50);
+  renderLoanPortfolio();
 
 });
 
@@ -2112,15 +2050,8 @@ function amortizeLoan(loanId){
 
   try{
 
-        const fn =
-      window.ACS_BANK_amortizeLoan;
-
-    if(typeof fn !== "function"){
-      throw new Error("Bank engine amortization not loaded: window.ACS_BANK_amortizeLoan");
-    }
-
     const remaining =
-      fn(loanId, value);
+      ACS_BANK_amortizeLoan(loanId, value);
 
     console.log(
       "Loan amortized. Remaining:",
