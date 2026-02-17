@@ -1868,17 +1868,39 @@ function submitLoan(){
 
 document.getElementById("requestLoanBtn").addEventListener("click", submitLoan);
 
+/* ============================================================
+   🟩 ACS SAFE INIT — WAITS FOR TIME ENGINE
+   Guarantees historical simulation time is ready
+   ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
-  loadBankData();
+  const waitForTime = setInterval(() => {
 
-  loadAircraft();
+    if(
+      typeof window.ACS_TIME !== "undefined" &&
+      ACS_TIME &&
+      ACS_TIME.currentTime instanceof Date
+    ){
 
-  initializeAmountControls();
+      clearInterval(waitForTime);
 
-  renderLoanPortfolio();
+      console.log(
+        "🕒 ACS TIME READY:",
+        ACS_TIME.currentTime.toString()
+      );
+
+      loadBankData();
+      loadAircraft();
+      initializeAmountControls();
+      renderLoanPortfolio();
+
+    }
+
+  }, 50);
 
 });
+
 
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
