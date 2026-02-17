@@ -1924,108 +1924,54 @@ catch(err){
 
 }
 
-
 /* ============================================================
-   🟦 B-FIX-02 — LOAN REQUEST INIT (WAIT SIM TIME + SAFE LOAD)
+   🟩 LR-TIME-FIX-01 — UNIVERSAL SIM TIME RESOLVER
    Fix:
-   - Espera ACS_TIME.currentTime antes de usar el bank engine
-   - Deshabilita Submit hasta que BANK_SUMMARY exista
-   - Evita estados MAX_PER_LOAN = 0 falsos
-   ============================================================ */
+   ✔ Compatible with ALL ACS time engine formats
+   ✔ Does NOT require ACS_TIME
+   ✔ Uses ACS_CurrentSimDate if present
+============================================================ */
 
 function getSimulationDateStrict(){
-  if(window.ACS_TIME && window.ACS_TIME.currentTime){
-    const d = new Date(window.ACS_TIME.currentTime);
-    if(!isNaN(d.getTime())) return d;
+
+  let simTS = null;
+
+  /* FORMAT 1 — ACS_CurrentSimDate (your simulator format) */
+
+  if(window.ACS_CurrentSimDate){
+    simTS = window.ACS_CurrentSimDate;
   }
+
+  /* FORMAT 2 — ACS_TIME */
+
+  else if(window.ACS_TIME && window.ACS_TIME.currentTime){
+    simTS = window.ACS_TIME.currentTime;
+  }
+
+  /* FORMAT 3 — parent context */
+
+  else if(window.parent){
+
+    if(window.parent.ACS_CurrentSimDate)
+      simTS = window.parent.ACS_CurrentSimDate;
+
+    else if(window.parent.ACS_TIME && window.parent.ACS_TIME.currentTime)
+      simTS = window.parent.ACS_TIME.currentTime;
+
+  }
+
+  if(simTS){
+
+    const d = new Date(simTS);
+
+    if(!isNaN(d.getTime()))
+      return d;
+
+  }
+
   return null;
-}
-
-function waitForSimTime(readyFn){
-
-  const started = Date.now();
-
-  const t = setInterval(() => {
-
-    const simNow = getSimulationDateStrict();
-
-    if(simNow){
-      clearInterval(t);
-      readyFn(simNow);
-      return;
-    }
-
-    if(Date.now() - started > 5000){
-      clearInterval(t);
-      console.error("LOAN REQUEST: Time Engine not ready (ACS_TIME missing).");
-
-      const btn = document.getElementById("requestLoanBtn");
-      if(btn){
-        btn.disabled = true;
-        btn.style.opacity = "0.55";
-        btn.style.cursor = "not-allowed";
-      }
-
-      if(loanMessageEl){
-        loanMessageEl.textContent =
-          "TIME ENGINE NOT READY — Cannot request loans.";
-      }
-    }
-
-  }, 200);
 
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const btn = document.getElementById("requestLoanBtn");
-
-  // lock submit until bank is loaded
-  if(btn){
-    btn.disabled = true;
-    btn.style.opacity = "0.55";
-    btn.style.cursor = "not-allowed";
-  }
-
-  waitForSimTime(() => {
-
-    try{
-      loadBankData();          // sets BANK_SUMMARY + MAX_PER_LOAN
-      loadAircraft();
-      initializeAmountControls();
-      renderLoanPortfolio();
-
-      // unlock submit only if we have valid bank context
-      if(btn && BANK_SUMMARY && MAX_PER_LOAN > 0){
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.cursor = "pointer";
-      }else{
-        if(loanMessageEl){
-          loanMessageEl.textContent =
-            "BANK ENGINE NOT READY — Cannot submit loans.";
-        }
-      }
-
-    }catch(err){
-      console.error(err);
-
-      if(loanMessageEl){
-        loanMessageEl.textContent =
-          err?.message || "Bank initialization error.";
-      }
-
-      if(btn){
-        btn.disabled = true;
-        btn.style.opacity = "0.55";
-        btn.style.cursor = "not-allowed";
-      }
-    }
-
-  });
-
-});
-
 
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
