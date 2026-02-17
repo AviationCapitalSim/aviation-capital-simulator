@@ -271,10 +271,9 @@ function ACS_BANK_createLoan(amount, months){
       months
     );
 
- 
-  /* ============================================================
-   🟩 ACS CANONICAL SIMULATION TIME FIX
-   Uses real ACS_TIME instead of system clock
+/* ============================================================
+   🟩 ACS CANONICAL SIMULATION TIME — FINAL FIX
+   Uses exact Date object from ACS_TIME (NO conversion)
    ============================================================ */
 
 let now;
@@ -282,16 +281,14 @@ let now;
 if(
   typeof window.ACS_TIME !== "undefined" &&
   ACS_TIME &&
-  ACS_TIME.currentTime
+  ACS_TIME.currentTime instanceof Date
 ){
-  now = new Date(ACS_TIME.currentTime);
-}
-else if(window.ACS_CurrentSimDate){
-  now = new Date(window.ACS_CurrentSimDate);
+  now = ACS_TIME.currentTime;
 }
 else{
   now = new Date();
 }
+
 
   const maturity =
     new Date(now);
@@ -557,19 +554,16 @@ if(Number(loan.remaining) <= 0){
 
   let closedNow;
 
-  if(
-    typeof window.ACS_TIME !== "undefined" &&
-    ACS_TIME &&
-    ACS_TIME.currentTime
-  ){
-    closedNow = new Date(ACS_TIME.currentTime);
-  }
-  else if(window.ACS_CurrentSimDate){
-    closedNow = new Date(window.ACS_CurrentSimDate);
-  }
-  else{
-    closedNow = new Date();
-  }
+if(
+  typeof window.ACS_TIME !== "undefined" &&
+  ACS_TIME &&
+  ACS_TIME.currentTime instanceof Date
+){
+  closedNow = ACS_TIME.currentTime;
+}
+else{
+  closedNow = new Date();
+}
 
   loan.closedDate =
     closedNow.toISOString();
