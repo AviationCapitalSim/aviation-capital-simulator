@@ -303,8 +303,8 @@ else{
 
   const loan = {
 
-  id:
-    "LOAN_" + Date.now(),
+  id: "LOAN_" + ACS_TIME.currentTime.getTime(),
+
 
   originalAmount:
     amount,
