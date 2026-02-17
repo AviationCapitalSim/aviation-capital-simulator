@@ -2261,19 +2261,20 @@ console.log(
   }))
 );
 
-  catch(err){
+} // ← cierre correcto del try
 
-    console.error(err);
+catch(err){
 
-    alert(
-      err?.message ||
-      "Amortization failed"
-    );
+  console.error(err);
 
-  }
+  alert(
+    err?.message ||
+    "Amortization failed"
+  );
 
 }
 
+}
 
 </script>
   
