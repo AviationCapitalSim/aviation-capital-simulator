@@ -674,23 +674,32 @@ function updateFinancialAuthority(summary){
   else if(ratio > 0)
     stability = "STABLE";
 
-  /* ============================================
-     APPLY TO UI
-  ============================================ */
+ /* ============================================
+   APPLY TO UI — FIXED TO MATCH REAL HTML IDS
+============================================ */
 
-  document.getElementById("authLevelText").innerText =
-    authorityText;
+const labelEl =
+  document.getElementById("authorityLabel");
 
-  document.getElementById("authLevelText").style.color =
-    authorityColor;
+const barEl =
+  document.getElementById("authorityBar");
 
-  document.getElementById("authBarFill").style.width =
-    authorityBar;
+const stabilityEl =
+  document.getElementById("authorityStability");
 
-  document.getElementById("authStability").innerText =
-    stability;
-
+if(labelEl){
+  labelEl.innerText = authorityText;
+  labelEl.style.color = authorityColor;
 }
+
+if(barEl){
+  barEl.style.width = authorityBar;
+}
+
+if(stabilityEl){
+  stabilityEl.innerText = stability;
+}
+
      
   /* ============================================================
      LOAN TABLE (ACTIVE + PAID)
@@ -741,11 +750,11 @@ function updateFinancialAuthority(summary){
       : "—";
 
     const openDate =
-      formatAviationDate(
-        l.startDate ||
-        l.startTS ||
-        l.createdAt
-      );
+  formatAviationDate(
+    l.startTS ||
+    l.startDate ||
+    l.createdAt
+  );
 
     tr.innerHTML = `
 
