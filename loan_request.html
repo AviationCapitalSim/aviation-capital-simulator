@@ -1869,13 +1869,50 @@ function submitLoan(){
 document.getElementById("requestLoanBtn").addEventListener("click", submitLoan);
 
 /* ============================================================
-   🟩 ACS SAFE INIT — WAITS FOR TIME ENGINE
-   Guarantees historical simulation time is ready
+   🟩 ACS SAFE INIT — NON-BLOCKING VERSION (FINAL)
+   Works with ALL ACS time engine states
+   Never freezes page
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const waitForTime = setInterval(() => {
+  function initACS(){
+
+    console.log("ACS INIT START");
+
+    try{
+
+      loadBankData();
+      loadAircraft();
+      initializeAmountControls();
+      renderLoanPortfolio();
+
+      console.log("ACS INIT COMPLETE");
+
+    }
+    catch(e){
+
+      console.warn("ACS INIT PARTIAL:", e);
+
+    }
+
+  }
+
+  /* ============================================================
+     PRIMARY INIT
+     ============================================================ */
+
+  initACS();
+
+  /* ============================================================
+     SECONDARY TIME ENGINE CHECK (SAFE)
+     ============================================================ */
+
+  let attempts = 0;
+
+  const timer = setInterval(() => {
+
+    attempts++;
 
     if(
       typeof window.ACS_TIME !== "undefined" &&
@@ -1883,24 +1920,30 @@ document.addEventListener("DOMContentLoaded", () => {
       ACS_TIME.currentTime instanceof Date
     ){
 
-      clearInterval(waitForTime);
-
       console.log(
-        "🕒 ACS TIME READY:",
+        "ACS TIME READY:",
         ACS_TIME.currentTime.toString()
       );
 
-      loadBankData();
-      loadAircraft();
-      initializeAmountControls();
-      renderLoanPortfolio();
+      initACS();
+
+      clearInterval(timer);
+
+    }
+
+    if(attempts > 100){   // stops after 5 seconds
+
+      clearInterval(timer);
+
+      console.warn(
+        "ACS TIME NOT READY — using fallback"
+      );
 
     }
 
   }, 50);
 
 });
-
 
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
