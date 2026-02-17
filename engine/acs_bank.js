@@ -296,10 +296,12 @@ const openSimTime =
   );
 
   /* ============================================================
-     🟩 CREATE LOAN OBJECT (FULL BANK DATA)
-     ============================================================ */
+   🟩 B-BANK-FIX-02 — CANONICAL LOAN TIME STRUCTURE (FINAL)
+   Adds required startTS and startDate
+   Uses SIM TIME ONLY (NO Date.now)
+   ============================================================ */
 
- const loan = {
+const loan = {
 
   id:
     "LOAN_" + openSimTime,
@@ -320,17 +322,33 @@ const openSimTime =
     months,
 
   /* ============================================================
-     CANONICAL SIMULATION TIME SYSTEM
+     CANONICAL SIM TIME FIELDS
+     REQUIRED by Loan + Bank + Finance + UI
      ============================================================ */
 
   openSimTime:
     openSimTime,
 
+  startTS:
+    openSimTime,
+
+  startDate:
+    now.toISOString(),
+
   closedSimTime:
     null,
 
+  closedTS:
+    null,
+
+  closedDate:
+    null,
+
   maturitySimTime:
-    openSimTime + (months * 30 * 24 * 60 * 60 * 1000),
+    maturity.getTime(),
+
+  maturityDate:
+    maturity.toISOString(),
 
   type:
     "BANK_LOAN"
