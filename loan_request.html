@@ -1878,6 +1878,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderLoanPortfolio();
 
+/* ============================================================
+   🟩 TIME ENGINE SYNCHRONIZATION GUARD
+   Blocks loan system until ACS_TIME is ready
+   ============================================================ */
+
+const loanBtn =
+  document.getElementById("requestLoanBtn");
+
+if(loanBtn){
+
+  loanBtn.disabled = true;
+
+  const waitForTime = setInterval(() => {
+
+    if(window.ACS_TIME && ACS_TIME.currentTime){
+
+      clearInterval(waitForTime);
+
+      loanBtn.disabled = false;
+
+      console.log("✅ ACS_TIME synchronized:",
+        ACS_TIME.currentTime);
+
+    }
+
+  }, 100);
+
+}
+  
 });
 
 function handleLogout() {
