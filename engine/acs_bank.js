@@ -4,27 +4,46 @@
    ============================================================ */
 
 /* ============================================================
-   🟩 B-73 — ACS_BANK_now (FINAL CONTEXT-SAFE VERSION)
+   🟩 B-73 FINAL — UNIVERSAL SIM TIME RESOLVER
    FIX:
-   ✔ Works in main window AND iframe / child pages
-   ✔ Uses window.ACS_TIME OR window.parent.ACS_TIME
-   ✔ Eliminates "ACS_TIME.currentTime not available" permanently
-   ✔ Zero fallback to system time (strict simulation authority)
-   ============================================================ */
+   ✔ Compatible with ALL ACS time engines
+   ✔ Detects ACS_TIME, ACS_CurrentSimDate, or parent context
+   ✔ Never requires modifying time_engine.js
+============================================================ */
 
 function ACS_BANK_now(){
 
-  const T =
-    (typeof window.ACS_TIME !== "undefined" && window.ACS_TIME)
-    ||
-    (typeof window.parent !== "undefined" &&
-     window.parent &&
-     typeof window.parent.ACS_TIME !== "undefined" &&
-     window.parent.ACS_TIME);
+  let simTS = null;
 
-  if(T && T.currentTime){
+  /* PRIORITY 1 — ACS_TIME (new engine format) */
 
-    const d = new Date(T.currentTime);
+  if(window.ACS_TIME && window.ACS_TIME.currentTime){
+    simTS = window.ACS_TIME.currentTime;
+  }
+
+  /* PRIORITY 2 — ACS_CurrentSimDate (your actual engine format) */
+
+  else if(window.ACS_CurrentSimDate){
+    simTS = window.ACS_CurrentSimDate;
+  }
+
+  /* PRIORITY 3 — parent frame */
+
+  else if(window.parent){
+
+    if(window.parent.ACS_TIME && window.parent.ACS_TIME.currentTime)
+      simTS = window.parent.ACS_TIME.currentTime;
+
+    else if(window.parent.ACS_CurrentSimDate)
+      simTS = window.parent.ACS_CurrentSimDate;
+
+  }
+
+  /* VALIDATE */
+
+  if(simTS){
+
+    const d = new Date(simTS);
 
     if(!isNaN(d.getTime()))
       return d;
@@ -32,7 +51,7 @@ function ACS_BANK_now(){
   }
 
   throw new Error(
-    "ACS_TIME.currentTime not available — Bank Engine cannot operate"
+    "SIM TIME NOT FOUND — Bank Engine cannot operate"
   );
 
 }
