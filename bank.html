@@ -507,20 +507,66 @@ function termColor(months){
   return "#00ffcc";
 }
 
+<!-- ✅ 🟩 FIX #1 — SIM TIME WAIT + NO SYSTEM FALLBACK (BANK) -->
+
 /* ============================================================
-   🟦 D1 — SIM DATE PARSER (SAFARI SAFE / NO Date(string))
-   Reads: "01:10 — WED 30 SEP 1942"
-   Returns: Date UTC midday (prevents TZ shifts)
+   🟩 B-FIX-01 — STRICT SIM TIME (NO SYSTEM DATE)
+   Fix:
+   - NO usa new Date() como fallback (evita 2026)
+   - Espera a ACS_TIME.currentTime antes de loadBank()
    ============================================================ */
 
-function getSimulationDate(){
-
-  if(window.ACS_TIME && ACS_TIME.currentTime){
-    return new Date(ACS_TIME.currentTime);
+function getSimulationDateStrict(){
+  if(window.ACS_TIME && window.ACS_TIME.currentTime){
+    const d = new Date(window.ACS_TIME.currentTime);
+    if(!isNaN(d.getTime())) return d;
   }
-
-  return new Date();
+  return null; // ✅ sin fallback
 }
+
+function waitForSimTime(readyFn){
+
+  const started = Date.now();
+
+  const t = setInterval(() => {
+
+    const simNow = getSimulationDateStrict();
+
+    if(simNow){
+      clearInterval(t);
+      readyFn(simNow);
+      return;
+    }
+
+    // timeout duro (5s) para no colgar UI
+    if(Date.now() - started > 5000){
+      clearInterval(t);
+
+      console.error(
+        "BANK CRITICAL: ACS_TIME.currentTime not ready. " +
+        "Time Engine not available in this context."
+      );
+
+      // UI fallback explícito (sin usar fecha real)
+      const m = document.getElementById("loanMaturity");
+      const term = document.getElementById("loanTerm");
+      if(m) m.innerText = "TIME ENGINE NOT READY";
+      if(term) term.innerText = "—";
+
+    }
+
+  }, 200);
+
+}
+
+/* ============================================================
+   ✅ INIT (ONLY after sim time is alive)
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  waitForSimTime(() => loadBank());
+});
+
      
 /* ============================================================
    🟩 MAIN BANK LOAD
