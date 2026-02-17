@@ -231,12 +231,21 @@
       border-collapse:collapse;
       margin-top:12px;
     }
+       
     th, td{
-      padding:10px;
-      border-bottom:1px solid rgba(255,255,255,0.10);
-      font-size:0.95rem;
-    }
-    th{ color:#ffb300; text-align:left; }
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,0.10);
+  font-size:0.95rem;
+  text-align:center;
+  vertical-align:middle;
+}
+
+th{
+  color:#ffb300;
+  text-align:center;
+  font-weight:600;
+  letter-spacing:0.4px;
+}
 
     .btn{
       margin-top:16px;
@@ -362,6 +371,7 @@
     <th>Remaining</th>
     <th>Rate</th>
     <th>Monthly</th>
+    <th>Open Date</th>
     <th>Closed Date</th>
   </tr>
 </thead>
@@ -658,7 +668,7 @@ function loadBank(){
 
     table.innerHTML =
       `<tr>
-        <td colspan="6" style="color:#9fb3ff;">
+       <td colspan="7" style="color:#9fb3ff;">
           No loan history.
         </td>
       </tr>`;
@@ -693,29 +703,40 @@ function loadBank(){
         )
       : "—";
 
-    tr.innerHTML = `
+    const openDate =
+  formatAviationDate(
+    l.startDate ||
+    l.startTS ||
+    l.createdAt
+  );
 
-      <td>${l.id || "—"}</td>
+tr.innerHTML = `
 
-      <td style="
-        font-weight:600;
-        color:${statusColor};
-      ">
-        ${status}
-      </td>
+  <td>${l.id || "—"}</td>
 
-      <td>${money(remaining)}</td>
+  <td style="
+    font-weight:600;
+    color:${statusColor};
+  ">
+    ${status}
+  </td>
 
-      <td>
-        ${Number(l.rate || 0).toFixed(2)}%
-      </td>
+  <td>${money(remaining)}</td>
 
-      <td>${money(l.monthlyPayment)}</td>
+  <td>
+    ${Number(l.rate || 0).toFixed(2)}%
+  </td>
 
-      <td style="color:#00ffd0">
-        ${closed}
-      </td>
-    `;
+  <td>${money(l.monthlyPayment)}</td>
+
+  <td style="color:#8ab4ff">
+    ${openDate}
+  </td>
+  
+  <td style="color:#00ffd0">
+    ${closed}
+  </td>
+`;
 
     table.appendChild(tr);
 
