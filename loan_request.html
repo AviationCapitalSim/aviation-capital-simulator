@@ -2076,25 +2076,25 @@ function renderLoanPortfolio(){
     const left =
       document.createElement("div");
 
-    left.innerHTML =
-      `
-      <div style="color:#00ffd0;font-weight:600">
-      Loan: ${money(
-      loan.originalAmount ||
-      loan.amount ||
-      loan.remaining ||
-      0
-      )}
-      </div>
+    /* ============================================================
+   🟩 B-PORTFOLIO-FIX-03 — USE TRUE REMAINING BALANCE ONLY
+   Guarantees panel reflects real amortized balance
+   ============================================================ */
 
-      <div style="color:#8ca8ff;font-size:0.85rem">
-        Remaining: ${money(loan.remaining)}
-      </div>
+left.innerHTML =
+  `
+  <div style="color:#00ffd0;font-weight:600">
+    Balance: ${money(loan.remaining)}
+  </div>
 
-      <div style="color:#8ca8ff;font-size:0.85rem">
-        Monthly: ${money(loan.monthlyPayment)}
-      </div>
-      `;
+  <div style="color:#8ca8ff;font-size:0.85rem">
+    Original: ${money(loan.originalAmount)}
+  </div>
+
+  <div style="color:#8ca8ff;font-size:0.85rem">
+    Monthly: ${money(loan.monthlyPayment)}
+  </div>
+  `;
 
     const right =
       document.createElement("button");
