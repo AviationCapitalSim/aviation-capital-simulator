@@ -613,8 +613,20 @@ loans.forEach(loan=>{
   document.getElementById("capacity").innerText =
     money(s.loanCapacity);
 
-  document.getElementById("rate").innerText =
-    Number(s.interestRate).toFixed(2) + "%";
+  /* ============================================================
+   🟩 B-BANK-FIX-FINAL — FORCE RATE = 0 WHEN NO ACTIVE LOANS
+   ============================================================ */
+
+const activeLoans =
+  loans.filter(l => Number(l.remaining || 0) > 0);
+
+const effectiveRate =
+  activeLoans.length > 0
+    ? Number(s.interestRate || 0)
+    : 0;
+
+document.getElementById("rate").innerText =
+  effectiveRate.toFixed(2) + "%";
 
 /* ============================================================
    🟧 B-AUTH-03 — AUTHORITY MIRROR (LOAN REQUEST MASTER MODEL)
