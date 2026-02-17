@@ -523,11 +523,38 @@ window.ACS_BANK_processMonthlyPayments =
   ACS_BANK_processMonthlyPayments;
 
 /* ============================================================
-   🟩 B16 — EXPORT GLOBAL FROM INSIDE CLOSURE (CORRECT FIX)
-   ============================================================ */
+   🟩 B-EXPORT-FINAL — GLOBAL EXPORT FIX (CRITICAL)
+   Guarantees amortization is visible globally
+============================================================ */
 
-window.ACS_BANK_createLoan = ACS_BANK_createLoan;
+try{
 
-console.log("🏦 ACS_BANK_ENGINE READY");
+  if(typeof ACS_BANK_amortizeLoan === "function"){
+    window.ACS_BANK_amortizeLoan = ACS_BANK_amortizeLoan;
+  }
 
+  if(typeof ACS_BANK_createLoan === "function"){
+    window.ACS_BANK_createLoan = ACS_BANK_createLoan;
+  }
+
+  if(typeof ACS_BANK_getSummary === "function"){
+    window.ACS_BANK_getSummary = ACS_BANK_getSummary;
+  }
+
+  if(typeof ACS_BANK_processMonthlyPayments === "function"){
+    window.ACS_BANK_processMonthlyPayments =
+      ACS_BANK_processMonthlyPayments;
+  }
+
+  console.log("🏦 ACS_BANK_ENGINE READY (EXPORT OK)");
+
+}
+catch(e){
+
+  console.error("BANK ENGINE EXPORT FAILED:", e);
+
+}
+
+/* CLOSE ENGINE IIFE */
 })();
+
