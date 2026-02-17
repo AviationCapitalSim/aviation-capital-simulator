@@ -122,11 +122,18 @@ const AIRCRAFT_VALUES = {
 
 function getCurrentYear(){
 
-  if(window.ACS_TIME && ACS_TIME.year)
-    return ACS_TIME.year;
+  if(window.ACS_TIME && ACS_TIME.currentTime){
+
+    const d = new Date(ACS_TIME.currentTime);
+
+    if(!isNaN(d.getTime()))
+      return d.getFullYear();
+
+  }
 
   return 1940;
 }
+
 
 
 /* ============================================================
