@@ -1904,46 +1904,90 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initACS();
 
-  /* ============================================================
-     SECONDARY TIME ENGINE CHECK (SAFE)
-     ============================================================ */
+ /* ============================================================
+🟩 B-TIME-SAFE-INIT — ACS MASTER CLOCK SYNCHRONIZER
+FINAL — GUARANTEED SINGLE INIT
+Prevents premature fallback and guarantees correct simulation time
+============================================================ */
+
+let ACS_INIT_DONE = false;
+
+document.addEventListener("DOMContentLoaded", function() {
+
+  console.log("ACS INIT START");
 
   let attempts = 0;
 
-  const timer = setInterval(() => {
+  const timer = setInterval(function() {
 
     attempts++;
 
     if(
       typeof window.ACS_TIME !== "undefined" &&
-      ACS_TIME &&
-      ACS_TIME.currentTime instanceof Date
+      window.ACS_TIME &&
+      window.ACS_TIME.currentTime &&
+      window.ACS_TIME.currentTime instanceof Date &&
+      !isNaN(window.ACS_TIME.currentTime.getTime())
     ){
+
+      if(ACS_INIT_DONE){
+        clearInterval(timer);
+        return;
+      }
+
+      ACS_INIT_DONE = true;
 
       console.log(
         "ACS TIME READY:",
-        ACS_TIME.currentTime.toString()
+        window.ACS_TIME.currentTime.toString()
       );
 
-      initACS();
+      try{
+
+        if(typeof loadBankData === "function")
+          loadBankData();
+
+        if(typeof loadAircraft === "function")
+          loadAircraft();
+
+        if(typeof initializeAmountControls === "function")
+          initializeAmountControls();
+
+        if(typeof renderLoanPortfolio === "function")
+          renderLoanPortfolio();
+
+        console.log("ACS INIT COMPLETE");
+
+      }
+      catch(err){
+
+        console.error("ACS INIT ERROR:", err);
+
+      }
 
       clearInterval(timer);
+
+      return;
 
     }
 
-    if(attempts > 100){   // stops after 5 seconds
+    if(attempts === 1){
+      console.log("Waiting for ACS_TIME...");
+    }
+
+    if(attempts > 200){
 
       clearInterval(timer);
 
-      console.warn(
-        "ACS TIME NOT READY — using fallback"
-      );
+      console.error("ACS TIME FAILED TO INITIALIZE");
 
     }
 
   }, 50);
 
 });
+
+
 
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
