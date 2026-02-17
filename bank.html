@@ -610,63 +610,69 @@ function loadBank(){
     Number(s.interestRate).toFixed(2) + "%";
 
 /* ============================================================
-   🟩 B-AUTH-01 — FINANCIAL AUTHORITY LIVE ENGINE LINK
-   Reads REAL data from Bank Engine
-============================================================ */
+   🟧 B-AUTH-03 — AUTHORITY MIRROR (LOAN REQUEST MASTER MODEL)
+   Bank Authority now mirrors Loan Request authority exactly
+   Source: fleetValue thresholds (NOT debt ratio)
+   ============================================================ */
 
 function updateFinancialAuthority(summary){
 
   const fleetValue =
-    Number(summary.fleetValue || 0);
+    Number(summary?.fleetValue || 0);
 
-  let totalDebt = 0;
+  let authorityText = "";
+  let stability     = "";
+  let authorityColor= "";
+  let authorityBar  = "";
 
-  summary.loans.forEach(l=>{
-    totalDebt += Number(l.remaining || 0);
-  });
+  /* ============================================================
+     MASTER AUTHORITY MODEL (IDENTICAL TO LOAN REQUEST)
+     ============================================================ */
 
-  const ratio =
-    fleetValue > 0
-    ? totalDebt / fleetValue
-    : 0;
+  if(fleetValue >= 100000000){
 
-  let authorityText  = "PREFERRED AUTHORITY";
-  let authorityColor = "#00ff88";
-  let authorityBar   = "100%";
+    authorityText  = "GLOBAL AUTHORITY";
+    stability      = "SECURE";
+    authorityColor = "#00ffd0";
+    authorityBar   = "100%";
 
-  if(ratio > 0.6){
-    authorityText  = "CRITICAL AUTHORITY";
-    authorityColor = "#ff4444";
-    authorityBar   = "15%";
   }
-  else if(ratio > 0.4){
-    authorityText  = "RESTRICTED AUTHORITY";
-    authorityColor = "#ff8844";
-    authorityBar   = "35%";
+  else if(fleetValue >= 25000000){
+
+    authorityText  = "EXTENDED AUTHORITY";
+    stability      = "STRONG";
+    authorityColor = "#00ff88";
+    authorityBar   = "75%";
+
   }
-  else if(ratio > 0.2){
+  else if(fleetValue >= 5000000){
+
     authorityText  = "STANDARD AUTHORITY";
-    authorityColor = "#ffcc00";
-    authorityBar   = "60%";
+    stability      = "STABLE";
+    authorityColor = "#4da3ff";
+    authorityBar   = "55%";
+
   }
-  else if(ratio > 0){
-    authorityText  = "STRONG AUTHORITY";
-    authorityColor = "#66ffaa";
-    authorityBar   = "80%";
+  else if(fleetValue >= 1000000){
+
+    authorityText  = "LIMITED AUTHORITY";
+    stability      = "ELEVATED RISK";
+    authorityColor = "#ffb300";
+    authorityBar   = "35%";
+
+  }
+  else{
+
+    authorityText  = "RESTRICTED AUTHORITY";
+    stability      = "UNSTABLE";
+    authorityColor = "#ff8844";
+    authorityBar   = "15%";
+
   }
 
-  let stability = "EXCELLENT";
-
-  if(ratio > 0.6)
-    stability = "CRITICAL";
-  else if(ratio > 0.4)
-    stability = "UNSTABLE";
-  else if(ratio > 0.2)
-    stability = "MODERATE";
-  else if(ratio > 0)
-    stability = "STABLE";
-
-  /* APPLY TO UI — CORRECT IDS */
+  /* ============================================================
+     APPLY TO UI
+     ============================================================ */
 
   const labelEl =
     document.getElementById("authorityLabel");
@@ -684,10 +690,13 @@ function updateFinancialAuthority(summary){
 
   if(barEl){
     barEl.style.width = authorityBar;
+    barEl.style.background =
+      `linear-gradient(90deg, ${authorityColor}, #00ff88)`;
   }
 
   if(stabilityEl){
     stabilityEl.innerText = stability;
+    stabilityEl.style.color = authorityColor;
   }
 
 }
