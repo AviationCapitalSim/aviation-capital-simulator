@@ -741,7 +741,16 @@ function updateFinancialAuthority(summary){
     return;
   }
 
-   loans.forEach(l=>{
+   /* ============================================================
+   🟩 B-BANK-FILTER-01 — SHOW ONLY ACTIVE LOANS IN ACTIVE TABLE
+   ============================================================ */
+
+const activeLoans =
+  loans.filter(
+    l => Number(l.remaining || 0) > 0
+  );
+
+activeLoans.forEach(l=>{
 
     const tr =
       document.createElement("tr");
