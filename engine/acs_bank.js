@@ -3,81 +3,27 @@
    Historical Aviation Loan Engine (1940–2030)
    ============================================================ */
 
-/* ============================================================
-🟩 B-60 FINAL FIX — ABSOLUTE SIMULATION TIME AUTHORITY
-Guarantees correct historical time even during early init
-============================================================ */
-
 function ACS_BANK_now(){
 
-  /* PRIORITY 1 — OFFICIAL CLOCK OBJECT */
-  if(window.ACS_TIME){
+  if(!window.ACS_TIME || !ACS_TIME.currentTime){
 
-    /* exact authoritative property */
-    if(ACS_TIME.currentTime){
-
-      const d = new Date(ACS_TIME.currentTime);
-
-      if(!isNaN(d.getTime()))
-        return d;
-
-    }
+    throw new Error(
+      "ACS_TIME.currentTime not available — Bank Engine cannot operate"
+    );
 
   }
 
-  /* PRIORITY 3 — DOM CLOCK PARSE (GUARANTEED PRESENT) */
-  try{
+  const d = new Date(ACS_TIME.currentTime);
 
-    const el =
-      document.querySelector(".clock-text");
+  if(isNaN(d.getTime())){
 
-    if(el){
+    throw new Error(
+      "Invalid ACS_TIME.currentTime"
+    );
 
-      const txt =
-        el.textContent || "";
+  }
 
-      const parts =
-        txt.split("—");
-
-      if(parts.length >= 2){
-
-        const tokens =
-          parts[1].trim().split(/\s+/);
-
-        if(tokens.length >= 4){
-
-          const day =
-            Number(tokens[1]);
-
-          const monthMap = {
-            JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,
-            JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11
-          };
-
-          const mon =
-            monthMap[tokens[2]];
-
-          const year =
-            Number(tokens[3]);
-
-          if(day && mon !== undefined && year){
-
-            return new Date(
-              Date.UTC(year, mon, day, 12, 0, 0)
-            );
-
-          }
-
-        }
-
-      }
-
-    }
-
-  }catch(e){}
-
-  /* FINAL FALLBACK (never used in normal ACS runtime) */
-  return new Date();
+  return d;
 
 }
 
