@@ -1869,63 +1869,25 @@ function submitLoan(){
 document.getElementById("requestLoanBtn").addEventListener("click", submitLoan);
 
 /* ============================================================
-   🟩 ACS SAFE INIT — NON-BLOCKING VERSION (FINAL)
-   Works with ALL ACS time engine states
-   Never freezes page
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  function initACS(){
-
-    console.log("ACS INIT START");
-
-    try{
-
-      loadBankData();
-      loadAircraft();
-      initializeAmountControls();
-      renderLoanPortfolio();
-
-      console.log("ACS INIT COMPLETE");
-
-    }
-    catch(e){
-
-      console.warn("ACS INIT PARTIAL:", e);
-
-    }
-
-  }
-
-  /* ============================================================
-     PRIMARY INIT
-     ============================================================ */
-
-  initACS();
-
- /* ============================================================
-🟩 B-TIME-SAFE-INIT — ACS MASTER CLOCK SYNCHRONIZER
-FINAL — GUARANTEED SINGLE INIT
-Prevents premature fallback and guarantees correct simulation time
+🟩 ACS MASTER INIT — SINGLE ENTRY POINT (FINAL FIX)
+Prevents double DOMContentLoaded and guarantees clean sync
 ============================================================ */
 
 let ACS_INIT_DONE = false;
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function(){
 
   console.log("ACS INIT START");
 
   let attempts = 0;
 
-  const timer = setInterval(function() {
+  const timer = setInterval(function(){
 
     attempts++;
 
     if(
       typeof window.ACS_TIME !== "undefined" &&
       window.ACS_TIME &&
-      window.ACS_TIME.currentTime &&
       window.ACS_TIME.currentTime instanceof Date &&
       !isNaN(window.ACS_TIME.currentTime.getTime())
     ){
@@ -1944,17 +1906,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
       try{
 
-        if(typeof loadBankData === "function")
-          loadBankData();
-
-        if(typeof loadAircraft === "function")
-          loadAircraft();
-
-        if(typeof initializeAmountControls === "function")
-          initializeAmountControls();
-
-        if(typeof renderLoanPortfolio === "function")
-          renderLoanPortfolio();
+        loadBankData();
+        loadAircraft();
+        initializeAmountControls();
+        renderLoanPortfolio();
 
         console.log("ACS INIT COMPLETE");
 
@@ -1986,8 +1941,6 @@ document.addEventListener("DOMContentLoaded", function() {
   }, 50);
 
 });
-
-
 
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
