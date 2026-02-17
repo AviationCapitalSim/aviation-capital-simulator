@@ -481,6 +481,92 @@ function ACS_BANK_processMonthlyPayments(){
 }
 
 /* ============================================================
+   🟩 B-AMORTIZE — BANK LOAN AMORTIZATION ENGINE
+   Compatible with stable version
+============================================================ */
+
+function ACS_BANK_amortizeLoan(loanId, amount){
+
+  if(!loanId)
+    throw new Error("Missing loanId");
+
+  amount =
+    Number(String(amount).replace(/[^0-9]/g,""));
+
+  if(!amount || amount <= 0)
+    throw new Error("Invalid amount");
+
+  const fin =
+    getFinance();
+
+  if(!fin.bank || !Array.isArray(fin.bank.loans))
+    throw new Error("No bank data");
+
+  const loan =
+    fin.bank.loans.find(l => l.id === loanId);
+
+  if(!loan)
+    throw new Error("Loan not found");
+
+  if(Number(loan.remaining) <= 0)
+    throw new Error("Loan already paid");
+
+
+  /* APPLY PAYMENT */
+
+  const payment =
+    Math.min(amount, Number(loan.remaining));
+
+  loan.remaining =
+    Math.max(0, Number(loan.remaining) - payment);
+
+
+  /* REGISTER EXPENSE IN FINANCE ENGINE */
+
+  const now =
+    window.ACS_CurrentSimDate
+    ? new Date(window.ACS_CurrentSimDate)
+    : new Date();
+
+  if(window.ACS_FINANCE_ENGINE &&
+     typeof window.ACS_FINANCE_ENGINE.commit === "function"){
+
+    window.ACS_FINANCE_ENGINE.commit({
+
+      type: "LOAN_AMORTIZATION",
+
+      amount: payment,
+
+      source: "BANK",
+
+      ref: loan.id,
+
+      ts: now.getTime()
+
+    });
+
+  }
+
+
+  saveFinance(fin);
+
+
+  console.log(
+    "🏦 Loan amortized:",
+    loan.id,
+    "Payment:",
+    payment,
+    "Remaining:",
+    loan.remaining
+  );
+
+
+  return loan.remaining;
+
+}
+
+   
+/* ============================================================
    SUMMARY
    ============================================================ */
 
