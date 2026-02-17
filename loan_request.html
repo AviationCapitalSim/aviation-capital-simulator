@@ -2138,6 +2138,39 @@ function amortizeLoan(loanId){
     const remaining =
       ACS_BANK_amortizeLoan(loanId, value);
 
+   /* ============================================================
+   🟩 B-TIME-07 — VERIFY LOAN CLOSED STATE
+   Confirms closedSimTime was recorded correctly
+   ============================================================ */
+
+if(remaining === 0){
+
+  const summary =
+    ACS_BANK_getSummary();
+
+  const closedLoan =
+    summary.loans.find(l => l.id === loanId);
+
+  if(closedLoan && closedLoan.closedSimTime){
+
+    console.log(
+      "🏦 Loan closed successfully:",
+      loanId,
+      "ClosedSimTime:",
+      closedLoan.closedSimTime
+    );
+
+  }
+  else{
+
+    console.error(
+      "CRITICAL: Loan closed but closedSimTime missing"
+    );
+
+  }
+
+}
+    
     console.log(
       "Loan amortized. Remaining:",
       remaining
