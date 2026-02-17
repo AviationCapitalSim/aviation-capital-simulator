@@ -2220,44 +2220,72 @@ function amortizeLoan(loanId){
    CRITICAL:
    This activates the entire loan system
 ============================================================ */
-
+  
 document.addEventListener("DOMContentLoaded", () => {
 
-  console.log("ACS LOAN REQUEST: INIT START");
+console.log("ACS LOAN REQUEST: INIT START");
 
-  try{
+try{
 
-    if(typeof ACS_BANK_getSummary !== "function"){
+```
+/* ============================================================
+   CORE ENGINE INIT
+============================================================ */
 
-      console.error("BANK ENGINE NOT READY");
-      loanMessageEl.textContent =
-        "Bank engine not available.";
+loadBankData();
 
-      return;
+loadAircraft();
 
-    }
+initializeAmountControls();
 
-    /* CORE INIT */
+renderLoanPortfolio();
 
-    loadBankData();
 
-    loadAircraft();
+/* ============================================================
+   CONNECT SUBMIT BUTTON — CRITICAL FIX
+============================================================ */
 
-    initializeAmountControls();
+const submitBtn =
+  document.getElementById("requestLoanBtn");
 
-    renderLoanPortfolio();
+if(submitBtn){
 
-    console.log("ACS LOAN REQUEST: INIT COMPLETE");
+  submitBtn.onclick = submitLoan;
 
-  }
-  catch(err){
+  submitBtn.disabled = false;
 
-    console.error("INIT FAILED:", err);
+  submitBtn.style.opacity = "1";
 
-    loanMessageEl.textContent =
-      err?.message || "Initialization error.";
+  submitBtn.style.cursor = "pointer";
 
-  }
+  console.log("ACS LOAN REQUEST: Submit button connected");
+
+}
+else{
+
+  console.error("ACS LOAN REQUEST: Submit button NOT FOUND");
+
+}
+
+
+console.log("ACS LOAN REQUEST: INIT COMPLETE");
+```
+
+}
+catch(err){
+
+```
+console.error("ACS LOAN REQUEST: INIT FAILED:", err);
+
+if(typeof loanMessageEl !== "undefined" && loanMessageEl){
+
+  loanMessageEl.textContent =
+    err?.message || "Initialization error.";
+
+}
+```
+
+}
 
 });
   
