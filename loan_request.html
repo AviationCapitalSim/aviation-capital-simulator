@@ -2230,19 +2230,37 @@ if(remaining === 0){
     }
 
     /* ============================================================
-       FULL UI REFRESH
-       ============================================================ */
+   🟩 B-PORTFOLIO-REFRESH-01 — FORCE TRUE BANK STATE SYNC
+   Guarantees portfolio reflects real remaining balance
+   ============================================================ */
 
-    BANK_SUMMARY =
-      ACS_BANK_getSummary();
+BANK_SUMMARY =
+  ACS_BANK_getSummary();
 
-    loadBankData();
+/* HARD RELOAD SUMMARY FROM STORAGE */
 
-    renderLoanPortfolio();
+const freshSummary =
+  ACS_BANK_getSummary();
 
-    loadAircraft();
+BANK_SUMMARY =
+  JSON.parse(JSON.stringify(freshSummary));
 
-  }
+/* FORCE FULL UI REBUILD */
+
+loadBankData();
+
+renderLoanPortfolio();
+
+loadAircraft();
+
+console.log(
+  "🏦 Portfolio refreshed:",
+  BANK_SUMMARY.loans.map(l => ({
+    id: l.id,
+    remaining: l.remaining
+  }))
+);
+
   catch(err){
 
     console.error(err);
