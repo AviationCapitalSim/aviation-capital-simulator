@@ -324,17 +324,22 @@ else{
   startYear:
     now.getUTCFullYear(),
 
-  startDate:
-    now.toISOString(),
+  /* ============================================================
+   🟩 ACS CANONICAL TIME STORAGE FIX
+   Stores only simulation timestamps (NO ISO STRINGS)
+   ============================================================ */
 
-  maturityDate:
-    maturity.toISOString(),
+startDate:
+  null,
 
-  startTS:
-    now.getTime(),
+maturityDate:
+  null,
 
-  maturityTS:
-    maturity.getTime(),
+startTS:
+  now.getTime(),
+
+maturityTS:
+  maturity.getTime(),
 
   /* ============================================================
      🟩 STATUS TRACKING FIX (CRITICAL)
