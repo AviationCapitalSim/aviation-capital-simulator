@@ -1843,10 +1843,19 @@ function submitLoan(){
   );
 
   /* ============================================================
-     CREATE LOAN
-     ============================================================ */
+   🟩 B-TIME-04 — CREATE LOAN WITH OBJECT CAPTURE
+   Captures canonical loan object from Bank Engine
+   ============================================================ */
 
+const loan =
   ACS_BANK_createLoan(amount, months);
+
+console.log(
+  "🏦 Loan created successfully:",
+  loan.id,
+  "OpenSimTime:",
+  loan.openSimTime
+);
 
   loanMessageEl.textContent =
     "Loan approved. Funds transferred.";
