@@ -66,7 +66,57 @@ function getCurrentYear(){
   return 1940;
 }
 
+/* ============================================================
+   🟩 GET CANONICAL SIMULATION DATE (HARD SAFE)
+   Guarantees valid simulation time
+   ============================================================ */
 
+function getSimDate(){
+
+  if(
+    window.ACS_TIME &&
+    window.ACS_TIME.currentTime
+  ){
+    return new Date(window.ACS_TIME.currentTime);
+  }
+
+  /* fallback to last saved simulation timestamp */
+
+  try{
+
+    const fin =
+      JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+    if(fin.lastSimTS){
+      return new Date(fin.lastSimTS);
+    }
+
+  }catch(e){}
+
+  /* FINAL fallback — use clock display */
+
+  const clock =
+    document.querySelector(".clock-text");
+
+  if(clock){
+
+    const txt =
+      clock.innerText || "";
+
+    const parsed =
+      new Date(txt);
+
+    if(!isNaN(parsed))
+      return parsed;
+
+  }
+
+  /* absolute fallback — 1940 */
+
+  return new Date(Date.UTC(1940,0,1));
+
+}
+   
 /* ============================================================
    LOAD FINANCE SAFE
    ============================================================ */
