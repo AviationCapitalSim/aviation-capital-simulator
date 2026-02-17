@@ -2215,7 +2215,52 @@ function amortizeLoan(loanId){
 
 }
 
+/* ============================================================
+   🟩 LR-INIT-01 — LOAN REQUEST PAGE INITIALIZER
+   CRITICAL:
+   This activates the entire loan system
+============================================================ */
 
+document.addEventListener("DOMContentLoaded", () => {
+
+  console.log("ACS LOAN REQUEST: INIT START");
+
+  try{
+
+    if(typeof ACS_BANK_getSummary !== "function"){
+
+      console.error("BANK ENGINE NOT READY");
+      loanMessageEl.textContent =
+        "Bank engine not available.";
+
+      return;
+
+    }
+
+    /* CORE INIT */
+
+    loadBankData();
+
+    loadAircraft();
+
+    initializeAmountControls();
+
+    renderLoanPortfolio();
+
+    console.log("ACS LOAN REQUEST: INIT COMPLETE");
+
+  }
+  catch(err){
+
+    console.error("INIT FAILED:", err);
+
+    loanMessageEl.textContent =
+      err?.message || "Initialization error.";
+
+  }
+
+});
+  
 </script>
   
 </body>
