@@ -1933,8 +1933,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderLoanPortfolio();
 
 /* ============================================================
-   🟩 TIME ENGINE SYNCHRONIZATION GUARD
-   Blocks loan system until ACS_TIME is ready
+   🟩 B-TIME-08 FINAL — CANONICAL SIM CLOCK GUARD (PRODUCTION SAFE)
+   Uses computeSimTime() ONLY — removes ACS_TIME dependency completely
    ============================================================ */
 
 const loanBtn =
@@ -1946,14 +1946,34 @@ if(loanBtn){
 
   const waitForTime = setInterval(() => {
 
-    if(typeof computeSimTime === "function" && computeSimTime()){
+    try{
 
-      clearInterval(waitForTime);
+      if(typeof computeSimTime === "function"){
 
-      loanBtn.disabled = false;
+        const simNow = computeSimTime();
 
-      console.log("✅ ACS_TIME synchronized:",
-        ACS_TIME.currentTime);
+        if(simNow instanceof Date && !isNaN(simNow)){
+
+          clearInterval(waitForTime);
+
+          loanBtn.disabled = false;
+
+          console.log(
+            "✅ SIM CLOCK READY:",
+            simNow.toISOString()
+          );
+
+        }
+
+      }
+
+    }
+    catch(e){
+
+      console.warn(
+        "Waiting for SimClock...",
+        e?.message
+      );
 
     }
 
