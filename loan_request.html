@@ -2220,72 +2220,67 @@ function amortizeLoan(loanId){
    CRITICAL:
    This activates the entire loan system
 ============================================================ */
-  
+
 document.addEventListener("DOMContentLoaded", () => {
 
-console.log("ACS LOAN REQUEST: INIT START");
+  console.log("ACS LOAN REQUEST: INIT START");
 
-try{
+  try{
 
-```
-/* ============================================================
-   CORE ENGINE INIT
-============================================================ */
+    /* ============================================================
+       CORE ENGINE INIT
+    ============================================================ */
 
-loadBankData();
+    loadBankData();
 
-loadAircraft();
+    loadAircraft();
 
-initializeAmountControls();
+    initializeAmountControls();
 
-renderLoanPortfolio();
-
-
-/* ============================================================
-   CONNECT SUBMIT BUTTON — CRITICAL FIX
-============================================================ */
-
-const submitBtn =
-  document.getElementById("requestLoanBtn");
-
-if(submitBtn){
-
-  submitBtn.onclick = submitLoan;
-
-  submitBtn.disabled = false;
-
-  submitBtn.style.opacity = "1";
-
-  submitBtn.style.cursor = "pointer";
-
-  console.log("ACS LOAN REQUEST: Submit button connected");
-
-}
-else{
-
-  console.error("ACS LOAN REQUEST: Submit button NOT FOUND");
-
-}
+    renderLoanPortfolio();
 
 
-console.log("ACS LOAN REQUEST: INIT COMPLETE");
-```
+    /* ============================================================
+       CONNECT SUBMIT BUTTON — CRITICAL FIX
+    ============================================================ */
 
-}
-catch(err){
+    const submitBtn =
+      document.getElementById("requestLoanBtn");
 
-```
-console.error("ACS LOAN REQUEST: INIT FAILED:", err);
+    if(submitBtn){
 
-if(typeof loanMessageEl !== "undefined" && loanMessageEl){
+      submitBtn.onclick = submitLoan;
 
-  loanMessageEl.textContent =
-    err?.message || "Initialization error.";
+      submitBtn.disabled = false;
 
-}
-```
+      submitBtn.style.opacity = "1";
 
-}
+      submitBtn.style.cursor = "pointer";
+
+      console.log("ACS LOAN REQUEST: Submit button connected");
+
+    }
+    else{
+
+      console.error("ACS LOAN REQUEST: Submit button NOT FOUND");
+
+    }
+
+    console.log("ACS LOAN REQUEST: INIT COMPLETE");
+
+  }
+  catch(err){
+
+    console.error("ACS LOAN REQUEST: INIT FAILED:", err);
+
+    if(typeof loanMessageEl !== "undefined" && loanMessageEl){
+
+      loanMessageEl.textContent =
+        err?.message || "Initialization error.";
+
+    }
+
+  }
 
 });
   
