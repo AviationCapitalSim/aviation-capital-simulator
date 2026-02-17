@@ -336,7 +336,7 @@ function ACS_BANK_createLoan(amount, months){
   }
 
   const now =
-    new Date(window.ACS_TIME.currentTime);
+  getSimDate();
 
   const maturity =
     new Date(now);
