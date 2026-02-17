@@ -351,56 +351,37 @@ function ACS_BANK_createLoan(amount, months){
 
   const loan = {
 
-    id:
-      "LOAN_" + now.getTime(),
+  id: "LOAN_" + now.getTime(),
 
-    originalAmount:
-      amount,
+  originalAmount: amount,
 
-    remaining:
-      amount,
+  remaining: amount,
 
-    rate:
-      rate,
+  rate: rate,
 
-    monthlyPayment:
-      monthly,
+  monthlyPayment: monthly,
 
-    termMonths:
-      months,
+  termMonths: months,
 
-    startYear:
-      now.getUTCFullYear(),
+  startYear: now.getUTCFullYear(),
 
-    /* CANONICAL TIME STORAGE */
+  startDate: null,
 
-    startDate:
-      null,
+  maturityDate: null,
 
-    maturityDate:
-      null,
+  startTS: now.getTime(),
 
-    startTS:
-      now.getTime(),
+  maturityTS: maturity.getTime(),
 
-    maturityTS:
-      maturity.getTime(),
+  status: "ACTIVE",
 
-    /* STATUS */
+  closedDate: null,
 
-    status:
-      "ACTIVE",
+  closedTS: null,
 
-    closedDate:
-      null,
+  type: "BANK_LOAN"
 
-    closedTS:
-      null,
-
-    type:
-      "BANK_LOAN"
-
-  };
+};
 
   /* ============================================================
      REGISTER LOAN IN BANK STRUCTURE
