@@ -1,74 +1,12 @@
 /* ============================================================
-   🏦 ACS BANK ENGINE — VERSION 1.0
+   🏦 ACS BANK ENGINE — STABLE VERSION
    Historical Aviation Loan Engine (1940–2030)
    ============================================================ */
-
-/* ============================================================
-   🟩 B-TIME-FINAL — UNIVERSAL TIME RESOLVER (ACS SAFE)
-   Fix:
-   • Compatible with your simulator clock
-   • Does NOT require modifying time_engine.js
-   • Uses all known ACS time sources safely
-============================================================ */
-
-function ACS_BANK_now(){
-
-  let simTS = null;
-
-  /* PRIORITY 1 — ACS_CurrentSimDate (your simulator clock) */
-  if(typeof window.ACS_CurrentSimDate !== "undefined"){
-    simTS = window.ACS_CurrentSimDate;
-  }
-
-  /* PRIORITY 2 — ACS_TIME.currentTime */
-  else if(
-    typeof window.ACS_TIME !== "undefined" &&
-    typeof window.ACS_TIME.currentTime !== "undefined"
-  ){
-    simTS = window.ACS_TIME.currentTime;
-  }
-
-  /* PRIORITY 3 — ACS_CLOCK.currentTime */
-  else if(
-    typeof window.ACS_CLOCK !== "undefined" &&
-    typeof window.ACS_CLOCK.currentTime !== "undefined"
-  ){
-    simTS = window.ACS_CLOCK.currentTime;
-  }
-
-  /* PRIORITY 4 — search global scope fallback */
-  else{
-    for(const k in window){
-      if(
-        window[k] &&
-        typeof window[k] === "object" &&
-        typeof window[k].currentTime !== "undefined"
-      ){
-        simTS = window[k].currentTime;
-        break;
-      }
-    }
-  }
-
-  if(simTS){
-
-    const d = new Date(simTS);
-
-    if(!isNaN(d.getTime()))
-      return d;
-
-  }
-
-  throw new Error(
-    "SIM TIME NOT FOUND — Bank Engine cannot operate"
-  );
-
-}
 
 (function(){
 
 "use strict";
-   
+
 /* ============================================================
    ERA TABLE
    ============================================================ */
@@ -122,18 +60,11 @@ const AIRCRAFT_VALUES = {
 
 function getCurrentYear(){
 
-  if(window.ACS_TIME && ACS_TIME.currentTime){
-
-    const d = new Date(ACS_TIME.currentTime);
-
-    if(!isNaN(d.getTime()))
-      return d.getFullYear();
-
-  }
+  if(window.ACS_TIME && ACS_TIME.year)
+    return ACS_TIME.year;
 
   return 1940;
 }
-
 
 
 /* ============================================================
@@ -313,12 +244,9 @@ function calculateMonthlyPayment(amount, rate, months){
 }
 
 /* ============================================================
-   🟩 B-71 — ACS_BANK_createLoan (FULL REBUILD, SYNTAX SAFE)
-   Fixes:
-   ✔ Eliminates broken simDate resolver + missing braces
-   ✔ Uses ONE canonical time source: ACS_BANK_now()
-   ✔ Fixes monthlyPayment variable mismatch
-   ✔ Keeps maturity based on SIM TIME
+   🟩 B7 — ACS BANK CREATE LOAN (CANONICAL FINANCE INTEGRATION)
+   FIXED — FULL DATE + MATURITY + TIMESTAMPS
+   Professional Banking Grade
    ============================================================ */
 
 function ACS_BANK_createLoan(amount, months){
@@ -344,58 +272,29 @@ function ACS_BANK_createLoan(amount, months){
     );
 
   /* ============================================================
-     🟩 CANONICAL SIM TIME (ONE SOURCE ONLY)
+     🟩 REAL SIMULATION DATE (CRITICAL FIX)
      ============================================================ */
 
-  const simDate = ACS_BANK_now();
-
-  if(!simDate || isNaN(simDate.getTime()))
-    throw new Error("Simulation time unavailable");
-
-  const startDate =
-    new Date(simDate.getTime());
-
-  /* ============================================================
-     🟩 MATURITY (SIM DATE + TERM MONTHS)
-     ============================================================ */
+  const now =
+    window.ACS_CurrentSimDate
+    ? new Date(window.ACS_CurrentSimDate)
+    : new Date();
 
   const maturity =
-    new Date(simDate.getTime());
+    new Date(now);
 
-  const simYear  = maturity.getFullYear();
-  const simMonth = maturity.getMonth();
-  const simDay   = maturity.getDate();
-
-  const totalMonths = simMonth + months;
-
-  const newYear  = simYear + Math.floor(totalMonths / 12);
-  const newMonth = totalMonths % 12;
-
-  maturity.setFullYear(newYear);
-  maturity.setMonth(newMonth);
-  maturity.setDate(simDay);
+  maturity.setMonth(
+    maturity.getMonth() + months
+  );
 
   /* ============================================================
-     🟩 LOAN ID
-     ============================================================ */
-
-  const loanId =
-    "LOAN_" +
-    Date.now() +
-    "_" +
-    Math.floor(Math.random() * 1000);
-
-  /* ============================================================
-     🟩 LOAN OBJECT (CONSISTENT FIELD NAMES)
+     🟩 CREATE LOAN OBJECT (FULL BANK DATA)
      ============================================================ */
 
   const loan = {
 
     id:
-      loanId,
-
-    amount:
-      amount,
+      "LOAN_" + Date.now(),
 
     originalAmount:
       amount,
@@ -409,27 +308,41 @@ function ACS_BANK_createLoan(amount, months){
     monthlyPayment:
       monthly,
 
-    /* backward-compat (some UI reads loan.monthly) */
-    monthly:
-      monthly,
+    termMonths:
+      months,
+
+    startYear:
+      now.getUTCFullYear(),
+
+    /* NEW — REAL DATE SYSTEM */
 
     startDate:
-      startDate.toISOString(),
+      now.toISOString(),
 
     maturityDate:
       maturity.toISOString(),
 
-    status:
-      "ACTIVE"
+    startTS:
+      now.getTime(),
+
+    maturityTS:
+      maturity.getTime(),
+
+    type:
+      "BANK_LOAN"
 
   };
+
+  /* ============================================================
+     REGISTER LOAN IN BANK STRUCTURE
+     ============================================================ */
 
   fin.bank.loans.push(loan);
 
   saveFinance(fin);
 
   /* ============================================================
-     FINANCE INTEGRATION
+     REGISTER MONEY IN FINANCE LEDGER
      ============================================================ */
 
   if(typeof window.ACS_registerIncome === "function"){
@@ -441,38 +354,54 @@ function ACS_BANK_createLoan(amount, months){
       source: "BANK_LOAN",
 
       meta:{
-        loanId: loan.id,
-        rate: rate,
-        termMonths: months
-      },
 
-      ts: startDate.getTime()
+        loanId:
+          loan.id,
+
+        rate:
+          rate,
+
+        termMonths:
+          months
+
+      }
 
     });
 
   }
+
+  /* ============================================================
+     REGISTER LEDGER ENTRY
+     ============================================================ */
 
   if(window.ACS_FINANCE_ENGINE &&
      typeof window.ACS_FINANCE_ENGINE.commit === "function"){
 
     window.ACS_FINANCE_ENGINE.commit({
 
-      type: "LOAN_IN",
-      amount: amount,
-      source: "BANK",
-      ref: loan.id,
-      ts: startDate.getTime()
+      type:
+        "LOAN_IN",
+
+      amount:
+        amount,
+
+      source:
+        "BANK",
+
+      ref:
+        loan.id,
+
+      ts:
+        now.getTime()
 
     });
 
   }
 
   console.log(
-    "🏦 Loan created (SIM TIME):",
+    "🏦 Loan created:",
     loan.id,
-    startDate,
-    "Maturity:",
-    maturity
+    loan
   );
 
   return loan;
@@ -500,7 +429,7 @@ function ACS_BANK_processMonthlyPayments(){
       return;
 
     const payment =
-    Number(loan.monthlyPayment || loan.monthly || 0);
+      Number(loan.monthlyPayment || 0);
 
     if(payment <= 0)
       return;
@@ -599,214 +528,6 @@ window.ACS_BANK_processMonthlyPayments =
 
 window.ACS_BANK_createLoan = ACS_BANK_createLoan;
 
-/* ============================================================
-🟩 CF-B20 — BANK LOAN AMORTIZATION ENGINE
-Real principal reduction + finance integration
-============================================================ */
-
-function ACS_BANK_amortizeLoan(loanId, amount){
-
-if(!loanId)
-throw new Error("Missing loanId");
-
-amount = Number(amount);
-
-if(!amount || amount <= 0)
-throw new Error("Invalid amortization amount");
-
-const fin = getFinance();
-
-if(!fin.bank || !Array.isArray(fin.bank.loans))
-throw new Error("No loans found");
-
-const loan =
-fin.bank.loans.find(l => l.id === loanId);
-
-if(!loan)
-throw new Error("Loan not found");
-
-if(loan.remaining <= 0)
-throw new Error("Loan already fully paid");
-
-/* ============================================
-APPLY AMORTIZATION
-============================================ */
-
-const actualPayment =
-Math.min(amount, loan.remaining);
-
-loan.remaining =
-Math.max(0, loan.remaining - actualPayment);
-
-/* ============================================================
-   🟩 B-62 — PAYMENT TIMESTAMPS (SIM DATE)
-   Stores last payment + closed date when fully paid
-   ============================================================ */
-
-const payNow = ACS_BANK_now();
-
-// always track last payment date
-loan.lastPaymentDate = payNow.toISOString();
-loan.lastPaymentTS   = payNow.getTime();
-
-// if fully paid, close the loan
-if(Number(loan.remaining || 0) <= 0){
-
-  loan.remaining = 0;
-
-  loan.closedDate = payNow.toISOString();
-  loan.closedTS   = payNow.getTime();
-
-}
-   
-/* ============================================================
-   🟩 B-35 — AUTO RELEASE COLLATERAL WHEN LOAN PAID
-   ============================================================ */
-
-if(loan.remaining === 0){
-
-  try{
-
-    const fleet =
-    JSON.parse(
-      localStorage.getItem("ACS_MyAircraft") || "[]"
-    );
-
-    let released = false;
-
-    fleet.forEach(ac => {
-
-      if(ac.collateralLoanId === loan.id){
-
-        ac.collateralActive = false;
-
-        delete ac.collateralLoanId;
-
-        released = true;
-
-      }
-
-    });
-
-    if(released){
-
-      localStorage.setItem(
-        "ACS_MyAircraft",
-        JSON.stringify(fleet)
-      );
-
-      console.log(
-        "✈️ Collateral released:",
-        loan.id
-      );
-
-    }
-
-  }
-  catch(e){
-
-    console.warn(
-      "Collateral release error:",
-      e
-    );
-
-  }
-
-}
-
-saveFinance(fin);
-
-/* ============================================
-REGISTER EXPENSE IN FINANCE ENGINE
-============================================ */
-
-if(window.ACS_FINANCE_ENGINE &&
-   typeof window.ACS_FINANCE_ENGINE.commit === "function"){
-
-  window.ACS_FINANCE_ENGINE.commit({
-
-    type: "LOAN_AMORTIZATION",
-    amount: actualPayment,
-    source: "BANK",
-    ref: loan.id,
-    ts: Date.now()
-
-  });
-
-}
-
-/* ============================================
-CONFIRMATION LOG
-============================================ */
-
-console.log(
-  "🏦 Loan amortized:",
-  loan.id,
-  "Amount:",
-  actualPayment
-);
-
-return loan.remaining;
-
-}
-
-/* ============================================================
-   🟩 B-34 — EXPORT GLOBAL FUNCTIONS (FINAL SAFE EXPORT)
-   Prevents SyntaxError and ensures engine loads correctly
-   ============================================================ */
-
-window.ACS_BANK_amortizeLoan =
-ACS_BANK_amortizeLoan;
-
-window.ACS_BANK_getSummary =
-ACS_BANK_getSummary;
-
-window.ACS_BANK_createLoan =
-ACS_BANK_createLoan;
-
-/* ============================================================
-🟦 C2 — ACS_BANK_getSimTime (CANONICAL TIME FIX)
-------------------------------------------------------------
-FIXES:
-✔ Uses official ACS_TIME.currentTime
-✔ Fully compatible with Time Engine
-✔ Removes "Simulation time unavailable" error
-✔ Matches all other ACS modules
-============================================================ */
-
-function ACS_BANK_getSimTime(){
-
-  /* PRIORITY 1 — OFFICIAL ACS TIME ENGINE */
-
-  if(window.ACS_TIME && ACS_TIME.currentTime){
-
-    const d = new Date(ACS_TIME.currentTime);
-
-    if(!isNaN(d.getTime()))
-      return d;
-
-  }
-
-  /* PRIORITY 2 — LEGACY SUPPORT */
-
-  if(window.ACS_CurrentSimDate){
-
-    const d = new Date(window.ACS_CurrentSimDate);
-
-    if(!isNaN(d.getTime()))
-      return d;
-
-  }
-
-  /* PRIORITY 3 — SAFE FALLBACK (NEVER BREAK SYSTEM) */
-
-  console.warn("ACS_BANK_getSimTime fallback used");
-
-  return new Date();
-
-}
-   
 console.log("🏦 ACS_BANK_ENGINE READY");
 
-/* CLOSE ENGINE IIFE */
 })();
