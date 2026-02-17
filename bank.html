@@ -628,91 +628,87 @@ function loadBank(){
     Number(s.interestRate).toFixed(2) + "%";
 
 /* ============================================================
-🟩 B31 — FINANCIAL AUTHORITY ENGINE
+   🟩 B-AUTH-01 — FINANCIAL AUTHORITY LIVE ENGINE LINK
+   Reads REAL data from Bank Engine
 ============================================================ */
 
-const fleetValue = Number(s.fleetValue || 0);
-const debt       = Number(totalOutstanding || 0);
+function updateFinancialAuthority(summary){
 
-let authorityRatio =
-  fleetValue > 0
-  ? (fleetValue - debt) / fleetValue
-  : 0;
+  const fleetValue =
+    Number(summary.fleetValue || 0);
 
-authorityRatio =
-  Math.max(0, Math.min(1, authorityRatio));
+  let totalDebt = 0;
 
-/* BAR WIDTH */
+  summary.loans.forEach(l=>{
+    totalDebt += Number(l.remaining || 0);
+  });
 
-const bar =
-  document.getElementById("authorityBar");
+  const ratio =
+    fleetValue > 0
+    ? totalDebt / fleetValue
+    : 0;
 
-if(bar)
-  bar.style.width =
-    (authorityRatio * 100).toFixed(0) + "%";
+  /* ============================================
+     AUTHORITY LEVEL
+  ============================================ */
 
-/* LABEL */
+  let authorityText  = "PREFERRED AUTHORITY";
+  let authorityColor = "#00ff88";
+  let authorityBar   = "100%";
 
-let label = "RESTRICTED AUTHORITY";
-let stability = "UNSTABLE";
-let color = "#ff8844";
+  if(ratio > 0.6){
+    authorityText  = "CRITICAL AUTHORITY";
+    authorityColor = "#ff4444";
+    authorityBar   = "15%";
+  }
+  else if(ratio > 0.4){
+    authorityText  = "RESTRICTED AUTHORITY";
+    authorityColor = "#ff8844";
+    authorityBar   = "35%";
+  }
+  else if(ratio > 0.2){
+    authorityText  = "STANDARD AUTHORITY";
+    authorityColor = "#ffcc00";
+    authorityBar   = "60%";
+  }
+  else if(ratio > 0){
+    authorityText  = "STRONG AUTHORITY";
+    authorityColor = "#66ffaa";
+    authorityBar   = "80%";
+  }
 
-if(authorityRatio > 0.75){
+  /* ============================================
+     FINANCIAL STABILITY
+  ============================================ */
 
-  label = "PREFERRED AUTHORITY";
-  stability = "EXCELLENT";
-  color = "#00ff88";
+  let stability = "EXCELLENT";
+
+  if(ratio > 0.6)
+    stability = "CRITICAL";
+  else if(ratio > 0.4)
+    stability = "UNSTABLE";
+  else if(ratio > 0.2)
+    stability = "MODERATE";
+  else if(ratio > 0)
+    stability = "STABLE";
+
+  /* ============================================
+     APPLY TO UI
+  ============================================ */
+
+  document.getElementById("authLevelText").innerText =
+    authorityText;
+
+  document.getElementById("authLevelText").style.color =
+    authorityColor;
+
+  document.getElementById("authBarFill").style.width =
+    authorityBar;
+
+  document.getElementById("authStability").innerText =
+    stability;
 
 }
-else if(authorityRatio > 0.55){
-
-  label = "APPROVED AUTHORITY";
-  stability = "STABLE";
-  color = "#00ffcc";
-
-}
-else if(authorityRatio > 0.35){
-
-  label = "LIMITED AUTHORITY";
-  stability = "MODERATE";
-  color = "#ffb300";
-
-}
-
-const labelEl =
-  document.getElementById("authorityLabel");
-
-if(labelEl){
-
-  labelEl.innerText = label;
-  labelEl.style.color = color;
-
-}
-
-const stabilityEl =
-  document.getElementById("authorityStability");
-
-if(stabilityEl){
-
-  stabilityEl.innerText = stability;
-  stabilityEl.style.color = color;
-
-}
-
-const rateEl =
-  document.getElementById("authorityRate");
-
-if(rateEl)
-  rateEl.innerText =
-    Number(s.interestRate).toFixed(2) + "%";
-
-const capEl =
-  document.getElementById("authorityCapacity");
-
-if(capEl)
-  capEl.innerText =
-    money(s.loanCapacity);
-
      
   /* ============================================================
      LOAN TABLE (ACTIVE + PAID)
@@ -735,7 +731,7 @@ if(capEl)
     return;
   }
 
-  loans.forEach(l=>{
+   loans.forEach(l=>{
 
     const tr =
       document.createElement("tr");
@@ -763,46 +759,52 @@ if(capEl)
       : "—";
 
     const openDate =
-  formatAviationDate(
-    l.startDate ||
-    l.startTS ||
-    l.createdAt
-  );
+      formatAviationDate(
+        l.startDate ||
+        l.startTS ||
+        l.createdAt
+      );
 
-tr.innerHTML = `
+    tr.innerHTML = `
 
-  <td>${l.id || "—"}</td>
+      <td>${l.id || "—"}</td>
 
-  <td style="
-    font-weight:600;
-    color:${statusColor};
-  ">
-    ${status}
-  </td>
+      <td style="
+        font-weight:600;
+        color:${statusColor};
+      ">
+        ${status}
+      </td>
 
-  <td>${money(remaining)}</td>
+      <td>${money(remaining)}</td>
 
-  <td>
-    ${Number(l.rate || 0).toFixed(2)}%
-  </td>
+      <td>
+        ${Number(l.rate || 0).toFixed(2)}%
+      </td>
 
-  <td>${money(l.monthlyPayment)}</td>
+      <td>${money(l.monthlyPayment)}</td>
 
-  <td style="color:#8ab4ff">
-    ${openDate}
-  </td>
-  
-  <td style="color:#00ffd0">
-    ${closed}
-  </td>
-`;
+      <td style="color:#8ab4ff">
+        ${openDate}
+      </td>
+
+      <td style="color:#00ffd0">
+        ${closed}
+      </td>
+    `;
 
     table.appendChild(tr);
 
   });
 
-}
+  /* ============================================================
+     🟩 B-AUTH-02 — CALL AUTHORITY UPDATE (CORRECT LOCATION)
+  ============================================================ */
 
+  updateFinancialAuthority(s);
+
+}
+     
 /* ============================================================
    INIT
    ============================================================ */
