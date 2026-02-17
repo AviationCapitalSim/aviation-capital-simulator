@@ -1762,14 +1762,12 @@ if(typeof loanSlider !== "undefined" && loanSlider){
 function submitLoan(){
 
 /* ============================================================
-   🟩 B-TIME-05 — HARD TIME ENGINE VALIDATION LOCK
-   Prevents execution if ACS_TIME is not fully ready
-   Production-grade protection
+   🟩 B-TIME-05 FIX — USE REAL ACS CLOCK (computeSimTime)
    ============================================================ */
 
-if(!window.ACS_TIME || !ACS_TIME.currentTime){
+if(typeof computeSimTime !== "function" || !computeSimTime()){
 
-  console.error("BLOCKED: ACS_TIME not ready");
+  console.error("BLOCKED: SIM TIME not ready");
 
   loanMessageEl.textContent =
     "System not ready. Please wait a moment.";
