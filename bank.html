@@ -356,13 +356,15 @@
 
     <table>
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Remaining</th>
-          <th>Rate</th>
-          <th>Monthly</th>
-        </tr>
-      </thead>
+  <tr>
+    <th>ID</th>
+    <th>Status</th>
+    <th>Remaining</th>
+    <th>Rate</th>
+    <th>Monthly</th>
+    <th>Closed Date</th>
+  </tr>
+</thead>
       <tbody id="loanTable"></tbody>
     </table>
 
@@ -390,185 +392,245 @@
 <script src="engine/acs_bank.js"></script>
 
 <script>
-  function money(x){
-    const v = Number(x || 0);
-    return "$" + Math.round(v).toLocaleString();
-  }
-
-  function handleLogout(){
-    alert("👋 Session closed. See you soon, Captain!");
-    window.location.href = "login.html";
-  }
-
-  function goLoan(){
-    window.location.href = "loan_request.html";
-  }
-
-function loadBank(){
-
-  if (typeof ACS_BANK_getSummary !== "function"){
-    console.error("ACS_BANK_getSummary() missing — engine/acs_bank.js not loaded.");
-    return;
-  }
-
-function formatDateISO(iso){
-
-  if(!iso) return "—";
-
-  const d = new Date(iso);
-
-  const day =
-    String(d.getUTCDate()).padStart(2,"0");
-
-  const months = [
-    "JAN","FEB","MAR","APR","MAY","JUN",
-    "JUL","AUG","SEP","OCT","NOV","DEC"
-  ];
-
-  const month =
-    months[d.getUTCMonth()];
-
-  const year =
-    d.getUTCFullYear();
-
-  return `${day} ${month} ${year}`;
-}
-
-function calculateRemainingTerm(maturityISO){
-
-  if(!maturityISO)
-    return "—";
-
-  const now =
-    window.ACS_CurrentSimDate
-    ? new Date(window.ACS_CurrentSimDate)
-    : new Date();
-
-  const maturity =
-    new Date(maturityISO);
-
-  let months =
-    (maturity.getFullYear() - now.getFullYear()) * 12 +
-    (maturity.getMonth() - now.getMonth());
-
-  if(months < 0)
-    return "Completed";
-
-  const years =
-    Math.floor(months / 12);
-
-  const remMonths =
-    months % 12;
-
-  return `${years}Y ${remMonths}M`;
-}
-       
-  const s = ACS_BANK_getSummary();
-
-  const loans =
-    Array.isArray(s.loans) ? s.loans : [];
 
 /* ============================================================
-   🟩 B25 — BANK FINANCIAL SUMMARY CARDS
+   🟩 B-50 — ACS BANK UI MASTER SCRIPT (FULL FIXED VERSION)
+   Fixes:
+   ✔ Correct maturity date (normalizes broken termMonths)
+   ✔ Adds formatAviationDate
+   ✔ Restores PAID rows
+   ✔ Fixes Closed Date display
+   ✔ Uses simulation date
+   ✔ Aviation-style colors
+   ✔ Fully safe engine integration
    ============================================================ */
 
-let totalOutstanding = 0;
-let totalOriginal = 0;
-let totalMonthly = 0;
+function money(x){
+  const v = Number(x || 0);
+  return "$" + Math.round(v).toLocaleString();
+}
 
-loans.forEach(loan=>{
+function handleLogout(){
+  alert("👋 Session closed. See you soon, Captain!");
+  window.location.href = "login.html";
+}
 
-  totalOutstanding +=
-    Number(loan.remaining || 0);
+function goLoan(){
+  window.location.href = "loan_request.html";
+}
 
-  totalOriginal +=
+/* ============================================================
+   🟩 AVIATION DATE FORMATTER
+   ============================================================ */
+
+function formatAviationDate(input){
+
+  if(!input) return "—";
+
+  const d =
+    (input instanceof Date)
+    ? input
+    : new Date(input);
+
+  if(isNaN(d.getTime()))
+    return "—";
+
+  const day =
+    String(d.getDate()).padStart(2,"0");
+
+  const months =
+    ["JAN","FEB","MAR","APR","MAY","JUN",
+     "JUL","AUG","SEP","OCT","NOV","DEC"];
+
+  const mon =
+    months[d.getMonth()];
+
+  const yr =
+    d.getFullYear();
+
+  return `${day} ${mon} ${yr}`;
+}
+
+/* ============================================================
+   🟩 TERM NORMALIZER (FIX 72 → 864 BUG)
+   ============================================================ */
+
+function normalizeTermMonths(loan){
+
+  let m =
     Number(
-      loan.originalAmount ||
-      loan.amount ||
+      loan?.termMonths ??
+      loan?.months ??
       0
     );
 
-  totalMonthly +=
-    Number(loan.monthlyPayment || 0);
+  if(!m) return 0;
 
-});
+  /* detect legacy bug */
+  if(m > 240 && m % 12 === 0){
 
-const originalEl =
-  document.getElementById("loanOriginal");
+    const divided = m / 12;
 
-if(originalEl)
-  originalEl.innerText =
-    money(totalOriginal);
+    if(divided <= 240)
+      return divided;
 
-const monthlyEl =
-  document.getElementById("loanMonthly");
+  }
 
-if(monthlyEl)
-  monthlyEl.innerText =
-    money(totalMonthly);
+  return m;
+}
 
-const outstandingEl =
-  document.getElementById("loanOutstanding");
-
-if(outstandingEl)
-  outstandingEl.innerText =
-    money(totalOutstanding);
-
-     
 /* ============================================================
-   🟩 B21 — REAL LOAN DATE + MATURITY CALCULATION (SAFE)
-   Works with old and new loans
+   🟩 TERM COLOR ENGINE
    ============================================================ */
 
-if(loans.length > 0){
+function termColor(months){
 
-  const lastLoan =
-    loans[loans.length - 1];
+  if(months > 84) return "#00ff88";
+  if(months > 36) return "#4da3ff";
+  if(months > 12) return "#ffb300";
+  if(months > 0)  return "#ff4444";
 
-  const startISO =
-    lastLoan.startDate ||
-    lastLoan.startTS ||
-    null;
+  return "#00ffcc";
+}
 
-  if(startISO){
+/* ============================================================
+   🟩 MAIN BANK LOAD
+   ============================================================ */
+
+function loadBank(){
+
+  if(typeof ACS_BANK_getSummary !== "function"){
+    console.error("ACS_BANK_getSummary missing");
+    return;
+  }
+
+  const s =
+    ACS_BANK_getSummary();
+
+  const loans =
+    Array.isArray(s.loans)
+    ? s.loans
+    : [];
+
+  /* ============================================================
+     SUMMARY TOTALS
+     ============================================================ */
+
+  let totalOutstanding = 0;
+  let totalOriginal    = 0;
+  let totalMonthly     = 0;
+
+  loans.forEach(loan=>{
+
+    totalOutstanding +=
+      Number(loan.remaining || 0);
+
+    totalOriginal +=
+      Number(
+        loan.originalAmount ||
+        loan.amount ||
+        0
+      );
+
+    totalMonthly +=
+      Number(loan.monthlyPayment || 0);
+
+  });
+
+  document.getElementById("loanOriginal").innerText =
+    money(totalOriginal);
+
+  document.getElementById("loanMonthly").innerText =
+    money(totalMonthly);
+
+  document.getElementById("loanOutstanding").innerText =
+    money(totalOutstanding);
+
+  /* ============================================================
+     MATURITY + TERM
+     ============================================================ */
+
+  const activeLoan =
+    [...loans]
+    .reverse()
+    .find(l =>
+      Number(l.remaining || 0) > 0
+    );
+
+  if(activeLoan){
+
+    const startTS =
+      activeLoan.startDate ||
+      activeLoan.startTS ||
+      activeLoan.createdAt ||
+      Date.now();
 
     const startDate =
-      new Date(startISO);
+      new Date(startTS);
+
+    const termMonths =
+      normalizeTermMonths(activeLoan);
 
     const maturityDate =
       new Date(startDate);
 
     maturityDate.setMonth(
       maturityDate.getMonth() +
-      (lastLoan.termMonths || 0)
+      termMonths
     );
-
-    const maturityISO =
-      maturityDate.toISOString();
 
     const maturityEl =
       document.getElementById("loanMaturity");
 
-    if(maturityEl){
+    maturityEl.innerText =
+      formatAviationDate(maturityDate);
 
-      maturityEl.innerText =
-        formatDateISO(maturityISO);
+    maturityEl.style.color =
+      "#00ffcc";
 
-    }
+    /* remaining term */
+
+    const simNow =
+      window.ACS_CurrentSimDate
+      ? new Date(window.ACS_CurrentSimDate)
+      : new Date();
+
+    let remainingMonths =
+      (maturityDate.getFullYear() - simNow.getFullYear()) * 12 +
+      (maturityDate.getMonth() - simNow.getMonth());
+
+    if(remainingMonths < 0)
+      remainingMonths = 0;
+
+    const years =
+      Math.floor(remainingMonths / 12);
+
+    const months =
+      remainingMonths % 12;
+
+    const termText =
+      remainingMonths <= 0
+      ? "Completed"
+      : years > 0
+        ? `${years} Years ${months} Months`
+        : `${months} Months`;
 
     const termEl =
       document.getElementById("loanTerm");
 
-    if(termEl){
+    termEl.innerText =
+      termText;
 
-      termEl.innerText =
-        calculateRemainingTerm(maturityISO);
-
-    }
+    termEl.style.color =
+      termColor(remainingMonths);
 
   }
+  else{
 
-}
+    document.getElementById("loanMaturity").innerText = "—";
+    document.getElementById("loanTerm").innerText     = "—";
+
+  }
 
   /* ============================================================
      STANDARD CARDS
@@ -584,7 +646,7 @@ if(loans.length > 0){
     Number(s.interestRate).toFixed(2) + "%";
 
   /* ============================================================
-     LOAN TABLE
+     LOAN TABLE (ACTIVE + PAID)
      ============================================================ */
 
   const table =
@@ -595,10 +657,13 @@ if(loans.length > 0){
   if(loans.length === 0){
 
     table.innerHTML =
-      `<tr><td colspan="4" style="color:#9fb3ff;">No active loans.</td></tr>`;
+      `<tr>
+        <td colspan="6" style="color:#9fb3ff;">
+          No loan history.
+        </td>
+      </tr>`;
 
     return;
-
   }
 
   loans.forEach(l=>{
@@ -606,11 +671,50 @@ if(loans.length > 0){
     const tr =
       document.createElement("tr");
 
+    const remaining =
+      Number(l.remaining || 0);
+
+    const status =
+      remaining <= 0
+      ? "PAID"
+      : "ACTIVE";
+
+    const statusColor =
+      remaining <= 0
+      ? "#00ff88"
+      : "#4da3ff";
+
+    const closed =
+      remaining <= 0
+      ? formatAviationDate(
+          l.closedDate ||
+          l.lastPaymentDate ||
+          l.paidAt
+        )
+      : "—";
+
     tr.innerHTML = `
+
       <td>${l.id || "—"}</td>
-      <td>${money(l.remaining)}</td>
-      <td>${Number(l.rate || 0).toFixed(2)}%</td>
+
+      <td style="
+        font-weight:600;
+        color:${statusColor};
+      ">
+        ${status}
+      </td>
+
+      <td>${money(remaining)}</td>
+
+      <td>
+        ${Number(l.rate || 0).toFixed(2)}%
+      </td>
+
       <td>${money(l.monthlyPayment)}</td>
+
+      <td style="color:#00ffd0">
+        ${closed}
+      </td>
     `;
 
     table.appendChild(tr);
@@ -619,14 +723,15 @@ if(loans.length > 0){
 
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  try{
-    loadBank();
-  }catch(e){
-    console.error("BANK UI crash:", e);
-  }
-});
-     
+/* ============================================================
+   INIT
+   ============================================================ */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  loadBank
+);
+
 </script>
 
 </body>
