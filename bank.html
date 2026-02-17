@@ -567,25 +567,32 @@ function loadBank(){
      ============================================================ */
 
   let totalOutstanding = 0;
-  let totalOriginal    = 0;
-  let totalMonthly     = 0;
+let totalOriginal    = 0;
+let totalMonthly     = 0;
 
-  loans.forEach(loan=>{
+loans.forEach(loan=>{
 
-    totalOutstanding +=
-      Number(loan.remaining || 0);
+  const remaining =
+    Number(loan.remaining || 0);
 
-    totalOriginal +=
-      Number(
-        loan.originalAmount ||
-        loan.amount ||
-        0
-      );
+  totalOutstanding += remaining;
+
+  totalOriginal += Number(
+    loan.originalAmount ||
+    loan.amount ||
+    0
+  );
+
+  /* ✅ SOLO loans activos generan deuda mensual */
+
+  if(remaining > 0){
 
     totalMonthly +=
       Number(loan.monthlyPayment || 0);
 
-  });
+  }
+
+});
 
   document.getElementById("loanOriginal").innerText =
     money(totalOriginal);
