@@ -1761,6 +1761,23 @@ if(typeof loanSlider !== "undefined" && loanSlider){
   
 function submitLoan(){
 
+/* ============================================================
+   🟩 B-TIME-05 — HARD TIME ENGINE VALIDATION LOCK
+   Prevents execution if ACS_TIME is not fully ready
+   Production-grade protection
+   ============================================================ */
+
+if(!window.ACS_TIME || !ACS_TIME.currentTime){
+
+  console.error("BLOCKED: ACS_TIME not ready");
+
+  loanMessageEl.textContent =
+    "System not ready. Please wait a moment.";
+
+  return;
+
+}
+
   /* ============================================================
      CLEAN FORMATTED INPUT (remove commas)
      ============================================================ */
@@ -1857,6 +1874,36 @@ console.log(
   loan.openSimTime
 );
 
+/* ============================================================
+   🟩 B-TIME-06 — VERIFY LOAN PERSISTENCE AND SYNC UI
+   Ensures loan exists in Bank Engine immediately
+   ============================================================ */
+
+if(!loan || !loan.openSimTime){
+
+  console.error("CRITICAL: Loan missing openSimTime");
+
+  loanMessageEl.textContent =
+    "Loan creation failed. Please try again.";
+
+  return;
+
+}
+
+/* FORCE LOCAL SUMMARY SYNC */
+
+BANK_SUMMARY =
+  ACS_BANK_getSummary();
+
+/* SAFE UI UPDATE */
+
+renderLoanPortfolio();
+
+console.log(
+  "🏦 Loan verified in Bank Engine:",
+  loan.id
+);
+    
   loanMessageEl.textContent =
     "Loan approved. Funds transferred.";
 
