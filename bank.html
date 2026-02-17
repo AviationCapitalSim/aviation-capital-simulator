@@ -745,12 +745,12 @@ function updateFinancialAuthority(summary){
    🟩 B-BANK-FILTER-01 — SHOW ONLY ACTIVE LOANS IN ACTIVE TABLE
    ============================================================ */
 
-const activeLoans =
+const visibleLoans =
   loans.filter(
     l => Number(l.remaining || 0) > 0
   );
 
-activeLoans.forEach(l=>{
+visibleLoans.forEach(l=>{
 
     const tr =
       document.createElement("tr");
