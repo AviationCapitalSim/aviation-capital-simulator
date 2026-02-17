@@ -315,10 +315,74 @@ th{
    ============================================================ -->
 
        
+<!-- ============================================================
+🟩 B30 — FINANCIAL AUTHORITY MINI PANEL (BANK DASHBOARD)
+Replaces Loan Maturity Date card
+============================================================ -->
+
 <div class="card">
-  <h3>Loan Maturity Date</h3>
-  <div class="value" id="loanMaturity">—</div>
+
+  <h3>Financial Authority</h3>
+
+  <!-- Authority Level Bar -->
+  <div style="
+    margin-top:10px;
+    margin-bottom:6px;
+    height:8px;
+    background:rgba(255,255,255,0.08);
+    border-radius:6px;
+    overflow:hidden;
+  ">
+
+    <div id="authorityBar" style="
+      height:100%;
+      width:35%;
+      background:linear-gradient(90deg,#ffb300,#00ff88);
+      border-radius:6px;
+    "></div>
+
+  </div>
+
+  <!-- Authority Label -->
+  <div id="authorityLabel"
+       style="
+         font-weight:600;
+         font-size:0.95rem;
+         color:#ffb300;
+         margin-bottom:8px;
+       ">
+    RESTRICTED AUTHORITY
+  </div>
+
+  <!-- Financial Stability -->
+  <div style="font-size:0.85rem;color:#9fb3ff;">
+    Stability:
+    <span id="authorityStability"
+          style="color:#ff8844;font-weight:600;">
+      UNSTABLE
+    </span>
+  </div>
+
+  <!-- Interest Rate -->
+  <div style="font-size:0.85rem;color:#9fb3ff;">
+    Base Rate:
+    <span id="authorityRate"
+          style="color:#00ffcc;font-weight:600;">
+      —
+    </span>
+  </div>
+
+  <!-- Capacity -->
+  <div style="font-size:0.85rem;color:#9fb3ff;">
+    Max Capacity:
+    <span id="authorityCapacity"
+          style="color:#00ff88;font-weight:600;">
+      —
+    </span>
+  </div>
+
 </div>
+
 
 <div class="card">
   <h3>Remaining Term</h3>
@@ -557,92 +621,6 @@ function loadBank(){
     money(totalOutstanding);
 
   /* ============================================================
-     MATURITY + TERM
-     ============================================================ */
-
-  const activeLoan =
-    [...loans]
-    .reverse()
-    .find(l =>
-      Number(l.remaining || 0) > 0
-    );
-
-  if(activeLoan){
-
-    const startTS =
-      activeLoan.startDate ||
-      activeLoan.startTS ||
-      activeLoan.createdAt ||
-      Date.now();
-
-    const startDate =
-      new Date(startTS);
-
-    const termMonths =
-      normalizeTermMonths(activeLoan);
-
-    const maturityDate =
-      new Date(startDate);
-
-    maturityDate.setMonth(
-      maturityDate.getMonth() +
-      termMonths
-    );
-
-    const maturityEl =
-      document.getElementById("loanMaturity");
-
-    maturityEl.innerText =
-      formatAviationDate(maturityDate);
-
-    maturityEl.style.color =
-      "#00ffcc";
-
-    /* remaining term */
-
-    const simNow =
-      window.ACS_CurrentSimDate
-      ? new Date(window.ACS_CurrentSimDate)
-      : new Date();
-
-    let remainingMonths =
-      (maturityDate.getFullYear() - simNow.getFullYear()) * 12 +
-      (maturityDate.getMonth() - simNow.getMonth());
-
-    if(remainingMonths < 0)
-      remainingMonths = 0;
-
-    const years =
-      Math.floor(remainingMonths / 12);
-
-    const months =
-      remainingMonths % 12;
-
-    const termText =
-      remainingMonths <= 0
-      ? "Completed"
-      : years > 0
-        ? `${years} Years ${months} Months`
-        : `${months} Months`;
-
-    const termEl =
-      document.getElementById("loanTerm");
-
-    termEl.innerText =
-      termText;
-
-    termEl.style.color =
-      termColor(remainingMonths);
-
-  }
-  else{
-
-    document.getElementById("loanMaturity").innerText = "—";
-    document.getElementById("loanTerm").innerText     = "—";
-
-  }
-
-  /* ============================================================
      STANDARD CARDS
      ============================================================ */
 
@@ -655,6 +633,93 @@ function loadBank(){
   document.getElementById("rate").innerText =
     Number(s.interestRate).toFixed(2) + "%";
 
+/* ============================================================
+🟩 B31 — FINANCIAL AUTHORITY ENGINE
+============================================================ */
+
+const fleetValue = Number(s.fleetValue || 0);
+const debt       = Number(totalOutstanding || 0);
+
+let authorityRatio =
+  fleetValue > 0
+  ? (fleetValue - debt) / fleetValue
+  : 0;
+
+authorityRatio =
+  Math.max(0, Math.min(1, authorityRatio));
+
+/* BAR WIDTH */
+
+const bar =
+  document.getElementById("authorityBar");
+
+if(bar)
+  bar.style.width =
+    (authorityRatio * 100).toFixed(0) + "%";
+
+/* LABEL */
+
+let label = "RESTRICTED AUTHORITY";
+let stability = "UNSTABLE";
+let color = "#ff8844";
+
+if(authorityRatio > 0.75){
+
+  label = "PREFERRED AUTHORITY";
+  stability = "EXCELLENT";
+  color = "#00ff88";
+
+}
+else if(authorityRatio > 0.55){
+
+  label = "APPROVED AUTHORITY";
+  stability = "STABLE";
+  color = "#00ffcc";
+
+}
+else if(authorityRatio > 0.35){
+
+  label = "LIMITED AUTHORITY";
+  stability = "MODERATE";
+  color = "#ffb300";
+
+}
+
+const labelEl =
+  document.getElementById("authorityLabel");
+
+if(labelEl){
+
+  labelEl.innerText = label;
+  labelEl.style.color = color;
+
+}
+
+const stabilityEl =
+  document.getElementById("authorityStability");
+
+if(stabilityEl){
+
+  stabilityEl.innerText = stability;
+  stabilityEl.style.color = color;
+
+}
+
+const rateEl =
+  document.getElementById("authorityRate");
+
+if(rateEl)
+  rateEl.innerText =
+    Number(s.interestRate).toFixed(2) + "%";
+
+const capEl =
+  document.getElementById("authorityCapacity");
+
+if(capEl)
+  capEl.innerText =
+    money(s.loanCapacity);
+
+     
   /* ============================================================
      LOAN TABLE (ACTIVE + PAID)
      ============================================================ */
