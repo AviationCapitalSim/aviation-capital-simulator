@@ -514,36 +514,51 @@ window.ACS_BANK_getSummary = function(){
 
 window.ACS_BANK_calculateMonthlyPayment = calculateMonthlyPayment;
 
+
 /* ============================================================
    🟩 CF-B15 — EXPORT MONTHLY PROCESSOR GLOBAL
-   Required for Finance Engine integration
    ============================================================ */
 
 window.ACS_BANK_processMonthlyPayments =
   ACS_BANK_processMonthlyPayments;
 
+
 /* ============================================================
    🟩 B-EXPORT-FINAL — GLOBAL EXPORT FIX (CRITICAL)
-   Guarantees amortization is visible globally
+   Guarantees amortization and all core functions are visible globally
 ============================================================ */
+
+/* CRITICAL — EXPORT DIRECTLY FIRST (NO TRY) */
+
+window.ACS_BANK_amortizeLoan =
+  ACS_BANK_amortizeLoan;
+
+window.ACS_BANK_createLoan =
+  ACS_BANK_createLoan;
+
+window.ACS_BANK_getSummary =
+  ACS_BANK_getSummary;
+
+window.ACS_BANK_processMonthlyPayments =
+  ACS_BANK_processMonthlyPayments;
+
+
+/* SAFE VALIDATION LOG */
 
 try{
 
-  if(typeof ACS_BANK_amortizeLoan === "function"){
-    window.ACS_BANK_amortizeLoan = ACS_BANK_amortizeLoan;
+  if(typeof window.ACS_BANK_amortizeLoan === "function"){
+    console.log("✅ EXPORT OK: ACS_BANK_amortizeLoan");
+  }else{
+    console.error("❌ EXPORT FAILED: ACS_BANK_amortizeLoan");
   }
 
-  if(typeof ACS_BANK_createLoan === "function"){
-    window.ACS_BANK_createLoan = ACS_BANK_createLoan;
+  if(typeof window.ACS_BANK_createLoan === "function"){
+    console.log("✅ EXPORT OK: ACS_BANK_createLoan");
   }
 
-  if(typeof ACS_BANK_getSummary === "function"){
-    window.ACS_BANK_getSummary = ACS_BANK_getSummary;
-  }
-
-  if(typeof ACS_BANK_processMonthlyPayments === "function"){
-    window.ACS_BANK_processMonthlyPayments =
-      ACS_BANK_processMonthlyPayments;
+  if(typeof window.ACS_BANK_getSummary === "function"){
+    console.log("✅ EXPORT OK: ACS_BANK_getSummary");
   }
 
   console.log("🏦 ACS_BANK_ENGINE READY (EXPORT OK)");
@@ -555,6 +570,6 @@ catch(e){
 
 }
 
+
 /* CLOSE ENGINE IIFE */
 })();
-
