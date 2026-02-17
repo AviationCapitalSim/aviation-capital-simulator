@@ -1936,8 +1936,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderLoanPortfolio();
 
 /* ============================================================
-   🟩 B-TIME-08 FINAL — CANONICAL SIM CLOCK GUARD (PRODUCTION SAFE)
-   Uses computeSimTime() ONLY — removes ACS_TIME dependency completely
+   🟩 B-TIME-11 FINAL — CANONICAL SIM TIME BRIDGE
+   Creates ACS_TIME from computeSimTime safely
    ============================================================ */
 
 const loanBtn =
@@ -1949,41 +1949,36 @@ if(loanBtn){
 
   const waitForTime = setInterval(() => {
 
-    try{
+    if(typeof computeSimTime === "function"){
 
-      if(typeof computeSimTime === "function"){
+      const simDate = computeSimTime();
 
-        const simNow = computeSimTime();
+      if(simDate instanceof Date){
 
-        if(simNow instanceof Date && !isNaN(simNow)){
+        /* CREATE CANONICAL ACS_TIME OBJECT */
 
-          clearInterval(waitForTime);
+        window.ACS_TIME = {
+          currentTime: simDate,
+          year: simDate.getUTCFullYear()
+        };
 
-          loanBtn.disabled = false;
+        clearInterval(waitForTime);
 
-          console.log(
-            "✅ SIM CLOCK READY:",
-            simNow.toISOString()
-          );
+        loanBtn.disabled = false;
 
-        }
+        console.log(
+          "✅ ACS_TIME bridge established:",
+          simDate.toISOString()
+        );
 
       }
-
-    }
-    catch(e){
-
-      console.warn(
-        "Waiting for SimClock...",
-        e?.message
-      );
 
     }
 
   }, 100);
 
 }
-  
+
 });
 
 function handleLogout() {
