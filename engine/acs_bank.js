@@ -1,5 +1,5 @@
 /* ============================================================
-   🏦 ACS BANK ENGINE — STABLE VERSION
+   🏦 ACS BANK ENGINE — VERSION 1.0
    Historical Aviation Loan Engine (1940–2030)
    ============================================================ */
 
