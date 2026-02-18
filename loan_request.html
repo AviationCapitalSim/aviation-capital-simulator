@@ -1447,19 +1447,30 @@ function updateCollateralTotals(){
 let loanSlider = null;
 
 /* ============================================================
-   FORMAT MONEY INPUT
+   🟩 ACS MONEY FORMATTER — PROFESSIONAL BANKING FORMAT
+   Always:
+   • rounds to nearest 1000
+   • adds $
+   • adds commas
    ============================================================ */
 
 function formatMoneyInput(value){
 
-  const num =
+  let num =
     Number(String(value).replace(/[^0-9]/g,""));
 
-  if(!num) return "";
+  if(!num || num <= 0)
+    return "";
 
-  return num.toLocaleString();
+  /* ROUND TO NEAREST 1000 */
+
+  num =
+    Math.round(num / 1000) * 1000;
+
+  return "$" + num.toLocaleString();
 
 }
+
 
 /* ============================================================
    INITIALIZE AMOUNT CONTROLS
@@ -1483,20 +1494,24 @@ function initializeAmountControls(){
 
   loanAmountInput.addEventListener("input", () => {
 
-    let raw =
-      Number(
-        loanAmountInput.value.replace(/[^0-9]/g,"")
-      );
+   let raw =
+  Number(
+    loanAmountInput.value.replace(/[^0-9]/g,"")
+  );
 
-    if(!raw) raw = 0;
+if(!raw) raw = 0;
 
-    if(raw > MAX_PER_LOAN)
-      raw = MAX_PER_LOAN;
+/* ROUND TO 1000 */
+raw =
+  Math.round(raw / 1000) * 1000;
 
-    loanSlider.value = raw;
+if(raw > MAX_PER_LOAN)
+  raw = MAX_PER_LOAN;
 
-    loanAmountInput.value =
-      formatMoneyInput(raw);
+loanSlider.value = raw;
+
+loanAmountInput.value =
+  formatMoneyInput(raw);
 
   });
 
@@ -1506,13 +1521,19 @@ function initializeAmountControls(){
 
   loanSlider.addEventListener("input", () => {
 
-    const value =
-      Number(loanSlider.value);
+  let value =
+    Number(loanSlider.value);
 
-    loanAmountInput.value =
-      formatMoneyInput(value);
+  /* FORCE ROUND */
+  value =
+    Math.round(value / 1000) * 1000;
 
-  });
+  loanSlider.value = value;
+
+  loanAmountInput.value =
+    formatMoneyInput(value);
+
+});
 
   /* ============================================================
      INITIAL RESET
@@ -1520,6 +1541,7 @@ function initializeAmountControls(){
 
   loanSlider.min = 0;
   loanSlider.max = MAX_PER_LOAN || 0;
+  loanSlider.step = 1000;
   loanSlider.value = 0;
 
   loanAmountInput.value = "";
