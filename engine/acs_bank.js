@@ -367,30 +367,33 @@ const loan = {
      REGISTER MONEY IN FINANCE LEDGER
      ============================================================ */
 
-  if(typeof window.ACS_registerIncome === "function"){
+ /* ============================================================
+   🟩 BANK LOAN — REGISTER CAPITAL INFLOW (NOT REVENUE)
+   ============================================================ */
 
-    window.ACS_registerIncome({
+if(window.ACS_FINANCE_ENGINE &&
+   typeof window.ACS_FINANCE_ENGINE.commit === "function"){
 
-      revenue: amount,
+  window.ACS_FINANCE_ENGINE.commit({
 
-      source: "BANK_LOAN",
+    type: "LOAN_IN",
 
-      meta:{
+    amount: amount,
 
-        loanId:
-          loan.id,
+    source: "BANK",
 
-        rate:
-          rate,
+    ref: loan.id,
 
-        termMonths:
-          months
+    affectsRevenue: false,
+    affectsProfit: false,
+    affectsCapital: true,
+    affectsDebt: true,
 
-      }
+    ts: openSimTime
 
-    });
+  });
 
-  }
+}
 
   /* ============================================================
      REGISTER LEDGER ENTRY
