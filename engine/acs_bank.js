@@ -599,19 +599,22 @@ if(loan.remaining === 0 && !loan.closedSimTime){
 
     window.ACS_FINANCE_ENGINE.commit({
 
-      type: "LOAN_AMORTIZATION",
+  type: "LOAN_PAYMENT",
 
-      amount: payment,
+  amount: payment,
 
-      source: "BANK",
+  source: "BANK",
 
-      ref: loan.id,
+  ref: loan.id,
 
-      ts: now.getTime()
+  affectsCapital: true,
+  affectsDebt: true,
 
-    });
+  ts: now.getTime()
 
-  }
+});
+
+}
 
 
   saveFinance(fin);
