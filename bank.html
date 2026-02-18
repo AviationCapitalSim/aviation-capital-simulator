@@ -195,19 +195,23 @@
       font-size:1.15rem;
     }
 
-    .kpi-value {
+  /* ============================================================
+   🟩 B-70 — AIRBUS KPI UNIFIED SIZE SYSTEM
+   Professional Financial Authority sizing
+   ============================================================ */
+
+.kpi-value {
 
   font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
 
-  font-size: 1.55rem;
-
+  font-size: 1.25rem;      /* reduced size */
   font-weight: 600;
 
   margin-top: 6px;
 
-  color: #00ff80;
+  letter-spacing: 0.4px;
 
-  letter-spacing: 0.5px;
+  transition: color 0.3s ease;
 
 }
 
@@ -345,6 +349,60 @@ th{
          color:#ffb300;
          margin-bottom:8px;
        ">
+       
+    RESTRICTED AUTHORITY
+       
+  </div>
+
+  <!-- Financial Stability -->
+     
+  <div style="font-size:0.85rem;color:#9fb3ff;">
+    Stability:
+    <span id="authorityStability"
+          style="color:#ff8844;font-weight:600;">
+      UNSTABLE
+    </span>
+  </div>
+
+</div>
+
+
+<!-- ============================================================
+   🟩 B17 — FINANCIAL AUTHORITY CARD
+   Airbus-style authority indicator
+   ============================================================ -->
+
+<div class="card">
+
+  <h3>Financial Authority</h3>
+
+  <!-- Authority Level Bar -->
+  <div style="
+    margin-top:10px;
+    margin-bottom:6px;
+    height:8px;
+    background:rgba(255,255,255,0.08);
+    border-radius:6px;
+    overflow:hidden;
+  ">
+
+    <div id="authorityBar" style="
+      height:100%;
+      width:35%;
+      background:linear-gradient(90deg,#ffb300,#00ff88);
+      border-radius:6px;
+    "></div>
+
+  </div>
+
+  <!-- Authority Label -->
+  <div id="authorityLabel"
+       style="
+         font-weight:600;
+         font-size:0.95rem;
+         color:#ffb300;
+         margin-bottom:8px;
+       ">
     RESTRICTED AUTHORITY
   </div>
 
@@ -359,21 +417,16 @@ th{
 
 </div>
 
-
 <!-- ============================================================
    🟩 B-60 — CREDIT AVAILABILITY CARD (AIRBUS STYLE)
-   Shows true available credit after outstanding debt
    ============================================================ -->
 
 <div class="card">
 
   <h3>Credit Availability</h3>
 
-  <div class="kpi-value"
-       id="creditAvailability">
-
+  <div class="kpi-value" id="creditAvailability">
     —
-
   </div>
 
   <div class="hint">
@@ -383,40 +436,96 @@ th{
 </div>
 
 
-    <div class="card">
-      <h3>Fleet Collateral Value</h3>
-      <div class="value" id="fleet">—</div>
-    </div>
+<!-- ============================================================
+   🟩 B-61 — FLEET COLLATERAL VALUE
+   ============================================================ -->
 
-    <div class="card">
-      <h3>Loan Capacity Available</h3>
-      <div class="value" id="capacity">—</div>
-    </div>
-
-    <div class="card">
-      <h3>Interest Rate</h3>
-      <div class="value" id="rate">—</div>
-    </div>
-
-<!-- 🟩 B22 — ORIGINAL LOAN AMOUNT -->
 <div class="card">
+
+  <h3>Fleet Collateral Value</h3>
+
+  <div class="kpi-value" id="fleet">
+    —
+  </div>
+
+</div>
+
+
+<!-- ============================================================
+   🟩 B-62 — LOAN CAPACITY AVAILABLE
+   ============================================================ -->
+
+<div class="card">
+
+  <h3>Loan Capacity Available</h3>
+
+  <div class="kpi-value" id="capacity">
+    —
+  </div>
+
+</div>
+
+
+<!-- ============================================================
+   🟩 B-63 — INTEREST RATE
+   ============================================================ -->
+
+<div class="card">
+
+  <h3>Interest Rate</h3>
+
+  <div class="kpi-value" id="rate">
+    —
+  </div>
+
+</div>
+
+
+<!-- ============================================================
+   🟩 B-64 — ORIGINAL LOAN AMOUNT
+   ============================================================ -->
+
+<div class="card">
+
   <h3>Original Loan Amount</h3>
-  <div class="value" id="loanOriginal">—</div>
+
+  <div class="kpi-value" id="loanOriginal">
+    —
+  </div>
+
 </div>
 
-<!-- 🟩 B23 — MONTHLY DEBT SERVICE -->
+
+<!-- ============================================================
+   🟩 B-65 — MONTHLY DEBT SERVICE
+   ============================================================ -->
+
 <div class="card">
+
   <h3>Monthly Debt Service</h3>
-  <div class="value" id="loanMonthly">—</div>
+
+  <div class="kpi-value" id="loanMonthly">
+    —
+  </div>
+
 </div>
 
-<!-- 🟩 B24 — TOTAL OUTSTANDING DEBT -->
+
+<!-- ============================================================
+   🟩 B-66 — TOTAL OUTSTANDING DEBT
+   ============================================================ -->
+
 <div class="card">
+
   <h3>Total Outstanding Debt</h3>
-  <div class="value" id="loanOutstanding">—</div>
+
+  <div class="kpi-value" id="loanOutstanding">
+    —
+  </div>
+
 </div>
-       
-  </section>
+
+</section>
 
   <section class="card">
     <h3>Active Loans</h3>
@@ -697,6 +806,75 @@ const effectiveRate =
 document.getElementById("rate").innerText =
   effectiveRate.toFixed(2) + "%";
 
+/* ============================================================
+   🟩 B-71 — AIRBUS KPI COLOR ENGINE
+   Applies financial health color coding
+   ============================================================ */
+
+function setKPIColor(elementId, value, type){
+
+  const el = document.getElementById(elementId);
+
+  if(!el) return;
+
+  value = Number(value || 0);
+
+  switch(type){
+
+    case "availability":
+
+      if(value > s.fleetValue * 0.5)
+        el.style.color = "#00ff88";
+      else if(value > s.fleetValue * 0.25)
+        el.style.color = "#4da3ff";
+      else if(value > 0)
+        el.style.color = "#ffb300";
+      else
+        el.style.color = "#ff4444";
+
+    break;
+
+    case "debt":
+
+      if(value === 0)
+        el.style.color = "#00ff88";
+      else if(value < s.fleetValue * 0.25)
+        el.style.color = "#4da3ff";
+      else if(value < s.fleetValue * 0.5)
+        el.style.color = "#ffb300";
+      else
+        el.style.color = "#ff4444";
+
+    break;
+
+    case "rate":
+
+      if(value <= 5)
+        el.style.color = "#00ff88";
+      else if(value <= 8)
+        el.style.color = "#4da3ff";
+      else if(value <= 12)
+        el.style.color = "#ffb300";
+      else
+        el.style.color = "#ff4444";
+
+    break;
+
+  }
+
+}
+
+/* APPLY COLORS */
+
+setKPIColor("creditAvailability", s.loanCapacity, "availability");
+
+setKPIColor("loanOutstanding", totalOutstanding, "debt");
+
+setKPIColor("rate", effectiveRate, "rate");
+
+setKPIColor("loanMonthly", totalMonthly, "debt");
+
+     
 /* ============================================================
    🟧 B-AUTH-03 — AUTHORITY MIRROR (LOAN REQUEST MASTER MODEL)
    Bank Authority now mirrors Loan Request authority exactly
