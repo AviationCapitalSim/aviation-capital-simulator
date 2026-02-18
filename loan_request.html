@@ -667,54 +667,90 @@
         <p id="aircraftValue" style="margin-top:10px; color:#bbb;">No aircraft selected</p>
       </div>
 
-      <!-- === LOAN DETAILS === -->
-      <div class="panel">
-        <h3>💵 Loan Details</h3>
-        <label>Loan Amount (USD)</label>
+<!-- === LOAN DETAILS === -->
+<div class="panel">
+  <h3>💵 Loan Details</h3>
 
-<!-- Qatar Luxury Amount (No spinner) -->
-<input
-  type="text"
-  id="loanAmount"
-  placeholder="Enter amount"
-  inputmode="numeric"
-  autocomplete="off"
-/>
+  <label>Loan Amount (USD)</label>
 
-<!-- Smooth slider (always limited to max per loan) -->
-        
-<input
-  type="range"
-  id="loanAmountRange"
-  min="0"
-  max="0"
-  step="1000"
-  value="0"
-  style="margin-top:10px;width:100%;"
-/>
+  <!-- Qatar Luxury Amount (No spinner) -->
+  <input
+    type="text"
+    id="loanAmount"
+    placeholder="Enter amount"
+    inputmode="numeric"
+    autocomplete="off"
+  />
 
-<p style="margin:10px 0 0;color:#9fb3ff;font-size:0.95rem;">
-  Max allowed: <span id="maxAllowedText" style="color:#00ff88;font-weight:700;">$0</span>
-</p>
+  <!-- Smooth slider -->
+  <input
+    type="range"
+    id="loanAmountRange"
+    min="0"
+    max="0"
+    step="1000"
+    value="0"
+    style="margin-top:10px;width:100%;"
+  />
 
-        <label>Term (Years)</label>
-        <select id="loanTerm">
+  <p style="margin:10px 0 0;color:#9fb3ff;font-size:0.95rem;">
+    Max allowed:
+    <span id="maxAllowedText"
+          style="color:#00ff88;font-weight:700;">
+      $0
+    </span>
+  </p>
 
-  <option value="36">Operational Loan (1–3 years)</option>
+  <label>Term (Years)</label>
 
-  <option value="72">Aircraft Support (4–6 years)</option>
+  <select id="loanTerm">
 
-  <option value="120">Aircraft Financing (7–10 years)</option>
+    <option value="" selected disabled>
+      Select term...
+    </option>
 
-  <option value="180">Fleet Expansion (11–15 years)</option>
+    <option value="36">
+      Operational Loan (1–3 years)
+    </option>
 
-  <option value="240">Strategic Financing (16–20 years)</option>
+    <option value="72">
+      Aircraft Support (4–6 years)
+    </option>
 
-</select>
+    <option value="120">
+      Aircraft Financing (7–10 years)
+    </option>
 
-      </div>
+    <option value="180">
+      Fleet Expansion (11–15 years)
+    </option>
+
+    <option value="240">
+      Strategic Financing (16–20 years)
+    </option>
+
+  </select>
+
+  <!-- ============================================================
+       🟩 SUBMIT BUTTON MOVED HERE (ACS STANDARD POSITION)
+       ============================================================ -->
+
+  <button
+    id="requestLoanBtn"
+    class="buy-btn"
+    style="margin-top:18px;">
+    Submit Loan Request
+  </button>
+
+  <p id="loanMessage"
+     style="margin-top:12px;color:#ccc;text-align:center;">
+  </p>
+
+</div>
+
 
      <!-- === ACS FINANCIAL AUTHORITY PANEL === -->
+      
 <div class="panel acs-authority-panel">
 
   <h3>🏦 Financial Authority</h3>
@@ -782,14 +818,6 @@
   </div>
 
 </div>
-
-       <!-- === SUBMIT SECTION === -->
-      <div class="panel">
-        <h3>📝 Submit Request</h3>
-        <p>Once approved, funds will be transferred instantly to your airline balance.</p>
-        <button id="requestLoanBtn" class="buy-btn">Submit Loan Request</button>
-        <p id="loanMessage" style="margin-top:15px; color:#ccc;"></p>
-      </div>
 
       <!-- ============================================================
            🏦 ACTIVE LOANS TERMINAL — SAME GRID STRUCTURE
