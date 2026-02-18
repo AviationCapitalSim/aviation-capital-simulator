@@ -593,11 +593,28 @@ function updateCompanyOverview() {
 
   let debt = 0;
 
-  if(f.bank && Array.isArray(f.bank.loans)){
-    f.bank.loans.forEach(loan=>{
-      debt += Number(loan.monthlyPayment || 0);
-    });
-  }
+  let debt = 0;
+
+if(f.bank && Array.isArray(f.bank.loans)){
+
+  f.bank.loans.forEach(loan=>{
+
+    const remaining =
+      Number(loan.remaining || 0);
+
+    /* SOLO loans activos generan deuda mensual */
+
+    if(remaining > 0){
+
+      debt += Number(
+        loan.monthlyPayment || 0
+      );
+
+    }
+
+  });
+
+}
 
   const debtEl = document.getElementById("cf-debt");
 
