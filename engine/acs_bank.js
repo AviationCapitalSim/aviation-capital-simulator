@@ -519,106 +519,85 @@ function ACS_BANK_amortizeLoan(loanId, amount){
 
 /* ============================================================
    🟩 B-TIME-03 FINAL FIX — FULL CLOSED DATE STRUCTURE
-   Stores ALL required closed fields for UI and Finance
    ============================================================ */
 
-if(loan.remaining === 0 && !loan.closedSimTime){
+  if(loan.remaining === 0 && !loan.closedSimTime){
 
-  const simNow =
-    (typeof computeSimTime === "function")
-      ? computeSimTime()
-      : null;
+    const simNow =
+      (typeof computeSimTime === "function")
+        ? computeSimTime()
+        : null;
 
-  if(!simNow){
+    if(simNow){
 
-    console.error("CRITICAL: computeSimTime unavailable");
+      const closedTime = simNow.getTime();
 
-  }
-  else{
+      loan.closedSimTime = closedTime;
+      loan.closedTS      = closedTime;
+      loan.closedDate    = simNow.toISOString();
 
-    const closedTime =
-      simNow.getTime();
+      console.log(
+        "🏦 Loan closed:",
+        loan.id,
+        "Closed:",
+        loan.closedDate
+      );
 
-    loan.closedSimTime =
-      closedTime;
-
-    loan.closedTS =
-      closedTime;
-
-    loan.closedDate =
-      simNow.toISOString();
-
-    console.log(
-      "🏦 Loan closed:",
-      loan.id,
-      "Closed:",
-      loan.closedDate
-    );
+    }
 
   }
 
-}
+  /* ============================================================
+     SAVE BANK STATE FIRST
+     ============================================================ */
 
-  /* REGISTER EXPENSE IN FINANCE ENGINE */
+  saveFinance(fin);
+
+  /* ============================================================
+     REGISTER FINANCE LEDGER ENTRY
+     ============================================================ */
 
   const now =
     window.ACS_CurrentSimDate
-    ? new Date(window.ACS_CurrentSimDate)
-    : new Date();
+      ? new Date(window.ACS_CurrentSimDate)
+      : new Date();
 
   if(window.ACS_FINANCE_ENGINE &&
      typeof window.ACS_FINANCE_ENGINE.commit === "function"){
 
-/* ============================================================
-   🟩 SAVE BANK STATE FIRST (CRITICAL ORDER FIX)
-   ============================================================ */
+    window.ACS_FINANCE_ENGINE.commit({
 
-saveFinance(fin);
+      type: "LOAN_PAYMENT",
 
-/* ============================================================
-   🟩 REGISTER FINANCE LEDGER ENTRY (CANONICAL)
-   ============================================================ */
+      amount: payment,
 
-if(window.ACS_FINANCE_ENGINE &&
-   typeof window.ACS_FINANCE_ENGINE.commit === "function"){
+      source: "BANK",
 
-  window.ACS_FINANCE_ENGINE.commit({
+      ref: loan.id,
 
-    type: "LOAN_PAYMENT",
+      affectsCapital: true,
+      affectsDebt: true,
 
-    amount: payment,
+      ts: now.getTime()
 
-    source: "BANK",
+    });
 
-    ref: loan.id,
+  }
 
-    affectsCapital: true,
-    affectsDebt: true,
+  /* ============================================================
+     DEBUG LOG
+     ============================================================ */
 
-    ts: now.getTime()
+  console.log(
+    "🏦 Loan amortized:",
+    loan.id,
+    "Payment:",
+    payment,
+    "Remaining:",
+    loan.remaining
+  );
 
-  });
-
-}
-
-/* ============================================================
-   🟩 DEBUG LOG (VALID POSITION)
-   ============================================================ */
-
-console.log(
-  "🏦 Loan amortized:",
-  loan.id,
-  "Payment:",
-  payment,
-  "Remaining:",
-  loan.remaining
-);
-
-/* ============================================================
-   🟩 RETURN FINAL VALUE (ONLY ONCE)
-   ============================================================ */
-
-return loan.remaining;
+  return loan.remaining;
 
 }
    
