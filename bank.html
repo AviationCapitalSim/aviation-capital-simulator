@@ -406,13 +406,14 @@ th{
     <table>
       <thead>
   <tr>
-    <th>ID</th>
-    <th>Status</th>
-    <th>Remaining</th>
-    <th>Rate</th>
-    <th>Monthly</th>
-    <th>Open Date</th>
-    <th>Closed Date</th>
+    <th>Ref</th>
+<th>Status</th>
+<th>Remaining</th>
+<th>Rate</th>
+<th>Monthly</th>
+<th>Open Date</th>
+<th>Final Payment Date</th>
+<th>Closed Date</th>
   </tr>
 </thead>
       <tbody id="loanTable"></tbody>
@@ -741,71 +742,85 @@ function updateFinancialAuthority(summary){
     return;
   }
 
-   loans.forEach(l=>{
+loans.forEach((l, index)=>{
 
-    const tr =
-      document.createElement("tr");
+  const tr =
+    document.createElement("tr");
 
-    const remaining =
-      Number(l.remaining || 0);
+  const remaining =
+    Number(l.remaining || 0);
 
-    const status =
-      remaining <= 0
-      ? "PAID"
-      : "ACTIVE";
+  const status =
+    remaining <= 0
+    ? "PAID"
+    : "ACTIVE";
 
-    const statusColor =
-      remaining <= 0
-      ? "#00ff88"
-      : "#4da3ff";
+  const statusColor =
+    remaining <= 0
+    ? "#00ff88"
+    : "#4da3ff";
 
-    const closed =
-      remaining <= 0
-      ? formatAviationDate(
-          l.closedDate ||
-          l.lastPaymentDate ||
-          l.paidAt
-        )
-      : "—";
+  const closed =
+    remaining <= 0
+    ? formatAviationDate(
+        l.closedDate
+      )
+    : "—";
 
-    const openDate =
-  formatAviationDate(
-    l.startTS ||
-    l.startDate ||
-    l.createdAt
-  );
+  const openDate =
+    formatAviationDate(
+      l.startDate || l.startTS
+    );
 
-    tr.innerHTML = `
+  const maturityDate =
+    formatAviationDate(
+      l.maturityDate || l.maturitySimTime
+    );
 
-      <td>${l.id || "—"}</td>
+  /* Airbus-style reference number */
 
-      <td style="
-        font-weight:600;
-        color:${statusColor};
-      ">
-        ${status}
-      </td>
+  const ref =
+    l.ref ||
+    "LN-" +
+    String(index + 1).padStart(3,"0");
 
-      <td>${money(remaining)}</td>
+  tr.innerHTML = `
 
-      <td>
-        ${Number(l.rate || 0).toFixed(2)}%
-      </td>
+    <td style="font-weight:600;color:#00ffd0">
+      ${ref}
+    </td>
 
-      <td>${money(l.monthlyPayment)}</td>
+    <td style="
+      font-weight:600;
+      color:${statusColor};
+    ">
+      ${status}
+    </td>
 
-      <td style="color:#8ab4ff">
-        ${openDate}
-      </td>
+    <td>${money(remaining)}</td>
 
-      <td style="color:#00ffd0">
-        ${closed}
-      </td>
-    `;
+    <td>
+      ${Number(l.rate || 0).toFixed(2)}%
+    </td>
 
-    table.appendChild(tr);
+    <td>${money(l.monthlyPayment)}</td>
 
-  });
+    <td style="color:#8ab4ff">
+      ${openDate}
+    </td>
+
+    <td style="color:#ffd166">
+      ${maturityDate}
+    </td>
+
+    <td style="color:#00ffcc">
+      ${closed}
+    </td>
+  `;
+
+  table.appendChild(tr);
+
+});
 
   /* ============================================================
      🟩 B-AUTH-02 — CALL AUTHORITY UPDATE (CORRECT LOCATION)
