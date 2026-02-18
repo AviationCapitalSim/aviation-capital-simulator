@@ -8,6 +8,14 @@
 "use strict";
 
 /* ============================================================
+   🟩 B-COOLDOWN-01 — LOAN COOLDOWN CONFIGURATION
+   Defines minimum waiting time between loans (SIM TIME)
+   ============================================================ */
+
+const LOAN_COOLDOWN_MS =
+  90 * 24 * 60 * 60 * 1000; // 90 simulated days
+   
+/* ============================================================
    ERA TABLE
    ============================================================ */
 
@@ -261,6 +269,39 @@ function ACS_BANK_createLoan(amount, months){
   if(!fin.bank)
     fin.bank = { loans:[] };
 
+/* ============================================================
+   🟩 B-COOLDOWN-02 — ENFORCE LOAN COOLDOWN (SIM TIME)
+   Prevents immediate consecutive loans
+   ============================================================ */
+
+if(fin.bank.lastLoanTS){
+
+  const currentSimTime =
+    ACS_TIME.currentTime.getTime();
+
+  const nextAllowed =
+    fin.bank.lastLoanTS + LOAN_COOLDOWN_MS;
+
+  if(currentSimTime < nextAllowed){
+
+    const remaining =
+      nextAllowed - currentSimTime;
+
+    const daysRemaining =
+      Math.ceil(
+        remaining / (24*60*60*1000)
+      );
+
+    throw new Error(
+      "Credit review in progress. Next loan available in "
+      + daysRemaining +
+      " simulated days."
+    );
+
+  }
+
+}
+   
   const rate =
     calculateInterestRate();
 
@@ -270,11 +311,7 @@ function ACS_BANK_createLoan(amount, months){
       rate,
       months
     );
-
-  /* ============================================================
-     🟩 REAL SIMULATION DATE (CRITICAL FIX)
-     ============================================================ */
-
+   
   /* ============================================================
    🟧 B-TIME-01 — CANONICAL SIM TIME (MASTER CLOCK)
    ============================================================ */
@@ -361,11 +398,14 @@ const loan = {
 
   fin.bank.loans.push(loan);
 
-  saveFinance(fin);
+/* ============================================================
+   🟩 B-COOLDOWN-03 — STORE LAST LOAN TIMESTAMP
+   ============================================================ */
 
-  /* ============================================================
-     REGISTER MONEY IN FINANCE LEDGER
-     ============================================================ */
+  fin.bank.lastLoanTS =
+  openSimTime;
+ 
+  saveFinance(fin);
 
  /* ============================================================
    🟩 BANK LOAN — REGISTER CAPITAL INFLOW (NOT REVENUE)
