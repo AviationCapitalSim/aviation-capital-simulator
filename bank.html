@@ -360,10 +360,28 @@ th{
 </div>
 
 
+<!-- ============================================================
+   🟩 B-60 — CREDIT AVAILABILITY CARD (AIRBUS STYLE)
+   Shows true available credit after outstanding debt
+   ============================================================ -->
+
 <div class="card">
-  <h3>Remaining Term</h3>
-  <div class="value" id="loanTerm">—</div>
+
+  <h3>Credit Availability</h3>
+
+  <div class="kpi-value"
+       id="creditAvailability">
+
+    —
+
+  </div>
+
+  <div class="hint">
+    Available financing capacity after outstanding obligations
+  </div>
+
 </div>
+
 
     <div class="card">
       <h3>Fleet Collateral Value</h3>
@@ -614,6 +632,56 @@ loans.forEach(loan=>{
   document.getElementById("capacity").innerText =
     money(s.loanCapacity);
 
+/* ============================================================
+   🟩 B-61 — CREDIT AVAILABILITY ENGINE (AIRBUS FINANCIAL MODEL)
+   ============================================================ */
+
+const creditAvailability =
+  Number(s.loanCapacity || 0);
+
+const creditEl =
+  document.getElementById("creditAvailability");
+
+if(creditEl){
+
+  creditEl.innerText =
+    money(creditAvailability);
+
+  /* ========================================================
+     AIRBUS COLOR LOGIC
+     ======================================================== */
+
+  const fleetValue =
+    Number(s.fleetValue || 0);
+
+  const ratio =
+    fleetValue > 0
+    ? creditAvailability / fleetValue
+    : 0;
+
+  if(ratio >= 0.6){
+
+    creditEl.style.color = "#00ff88"; // STRONG
+
+  }
+  else if(ratio >= 0.35){
+
+    creditEl.style.color = "#4da3ff"; // MODERATE
+
+  }
+  else if(ratio >= 0.15){
+
+    creditEl.style.color = "#ffb300"; // RESTRICTED
+
+  }
+  else{
+
+    creditEl.style.color = "#ff4444"; // CRITICAL
+
+  }
+
+}
+     
   /* ============================================================
    🟩 B-BANK-FIX-FINAL — FORCE RATE = 0 WHEN NO ACTIVE LOANS
    ============================================================ */
