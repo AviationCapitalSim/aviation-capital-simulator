@@ -785,11 +785,6 @@ function loadBreakdown() {
     });
   }
 
-  /* ============================================================
-   🏦 BANK LOANS — FINANCE INTEGRATION (ACS BANK ENGINE)
-   Adds Bank Loan income into Finance breakdown UI
-   ============================================================ */
-
 /* ============================================================
    🏦 BANK LOANS — FINANCE INTEGRATION (REAL SOURCE)
    Reads canonical bank structure from ACS_Finance.bank.loans
@@ -800,27 +795,19 @@ const loans =
   ? f.bank.loans
   : [];
 
-if(loans.length > 0){
+// ✅ Deuda REAL = remaining (no originalAmount)
+// ✅ Siempre visible (aunque loans esté vacío)
+const totalLoans =
+  loans.reduce(
+    (sum, loan) =>
+      sum + Number(loan?.remaining ?? 0),
+    0
+  );
 
-  const totalLoans =
-    loans.reduce(
-      (sum, loan) =>
-        sum + Number(
-          loan.originalAmount ??
-          loan.amount ??
-          loan.remaining ??
-          0
-        ),
-      0
-    );
-
-  categories.push({
-
-    label: "Bank Loans (Financing)",
-
-    value: totalLoans
-
-  });
+categories.push({
+  label: "Bank Loans (Financing)",
+  value: totalLoans
+});
 
 }
      
