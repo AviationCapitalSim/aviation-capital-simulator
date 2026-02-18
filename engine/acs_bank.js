@@ -395,34 +395,6 @@ if(window.ACS_FINANCE_ENGINE &&
 
 }
 
-  /* ============================================================
-     REGISTER LEDGER ENTRY
-     ============================================================ */
-
-  if(window.ACS_FINANCE_ENGINE &&
-     typeof window.ACS_FINANCE_ENGINE.commit === "function"){
-
-    window.ACS_FINANCE_ENGINE.commit({
-
-      type:
-        "LOAN_IN",
-
-      amount:
-        amount,
-
-      source:
-        "BANK",
-
-      ref:
-        loan.id,
-
-      ts:
-        now.getTime()
-
-    });
-
-  }
-
   console.log(
     "🏦 Loan created:",
     loan.id,
