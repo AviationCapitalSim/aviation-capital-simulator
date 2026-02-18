@@ -1839,11 +1839,13 @@ if(typeof computeSimTime !== "function" || !computeSimTime()){
 
   const amount = cleanAmount;
 
-  const years =
-    Number(loanTermSelect.value || 0);
+  /* ============================================================
+   🟩 B-FIX-TERM-01 — TERM VALUE ALREADY IN MONTHS
+   ============================================================ */
 
   const months =
-    years * 12;
+  Number(loanTermSelect.value || 0);
+
 
   /* ============================================================
      VALIDATION
