@@ -569,7 +569,7 @@ if(loan.remaining === 0 && !loan.closedSimTime){
   if(window.ACS_FINANCE_ENGINE &&
      typeof window.ACS_FINANCE_ENGINE.commit === "function"){
 
- /* ============================================================
+/* ============================================================
    🟩 SAVE BANK STATE FIRST (CRITICAL ORDER FIX)
    ============================================================ */
 
@@ -582,39 +582,45 @@ saveFinance(fin);
 if(window.ACS_FINANCE_ENGINE &&
    typeof window.ACS_FINANCE_ENGINE.commit === "function"){
 
-    window.ACS_FINANCE_ENGINE.commit({
+  window.ACS_FINANCE_ENGINE.commit({
 
-      type: "LOAN_PAYMENT",
+    type: "LOAN_PAYMENT",
 
-      amount: payment,
+    amount: payment,
 
-      source: "BANK",
+    source: "BANK",
 
-      ref: loan.id,
+    ref: loan.id,
 
-      affectsCapital: true,
-      affectsDebt: true,
+    affectsCapital: true,
+    affectsDebt: true,
 
-      ts: now.getTime()
+    ts: now.getTime()
 
-    });
-
-}
-
-  console.log(
-    "🏦 Loan amortized:",
-    loan.id,
-    "Payment:",
-    payment,
-    "Remaining:",
-    loan.remaining
-  );
-
-
-  return loan.remaining;
+  });
 
 }
 
+/* ============================================================
+   🟩 DEBUG LOG (VALID POSITION)
+   ============================================================ */
+
+console.log(
+  "🏦 Loan amortized:",
+  loan.id,
+  "Payment:",
+  payment,
+  "Remaining:",
+  loan.remaining
+);
+
+/* ============================================================
+   🟩 RETURN FINAL VALUE (ONLY ONCE)
+   ============================================================ */
+
+return loan.remaining;
+
+}
    
 /* ============================================================
    SUMMARY
