@@ -313,9 +313,9 @@ th{
 
   <section class="grid">
        
-    <!-- ============================================================
-   🟩 B17 — LOAN ORIGINATION DATE CARD (REAL BANKING FIX)
-   Replaces Current Year with Loan Start Date
+ <!-- ============================================================
+   🟩 B17-FIX — FINANCIAL AUTHORITY CARD (AIRBUS KPI STYLE)
+   Restores correct Airbus financial authority layout
    ============================================================ -->
 
 <div class="card">
@@ -324,8 +324,8 @@ th{
 
   <!-- Authority Level Bar -->
   <div style="
-    margin-top:10px;
-    margin-bottom:6px;
+    margin-top:12px;
+    margin-bottom:10px;
     height:8px;
     background:rgba(255,255,255,0.08);
     border-radius:6px;
@@ -337,35 +337,46 @@ th{
       width:35%;
       background:linear-gradient(90deg,#ffb300,#00ff88);
       border-radius:6px;
+      transition:width .4s ease;
     "></div>
 
   </div>
 
   <!-- Authority Label -->
   <div id="authorityLabel"
+       class="kpi-value"
        style="
-         font-weight:600;
-         font-size:0.95rem;
+         font-size:1.15rem;
+         margin-bottom:4px;
          color:#ffb300;
-         margin-bottom:8px;
        ">
-       
+
     RESTRICTED AUTHORITY
-       
+
   </div>
 
-  <!-- Financial Stability -->
-     
-  <div style="font-size:0.85rem;color:#9fb3ff;">
+  <!-- Stability -->
+  <div style="
+    font-size:.85rem;
+    color:#9fb3ff;
+    margin-top:4px;
+  ">
+
     Stability:
     <span id="authorityStability"
-          style="color:#ff8844;font-weight:600;">
+          style="
+            font-weight:600;
+            margin-left:4px;
+            color:#ff8844;
+          ">
+
       UNSTABLE
+
     </span>
+
   </div>
 
 </div>
-
 
 <!-- ============================================================
    🟩 B17 — FINANCIAL AUTHORITY CARD
