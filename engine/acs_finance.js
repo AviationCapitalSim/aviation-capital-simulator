@@ -212,24 +212,66 @@ window.ACS_FINANCE_ENGINE = {
   },
 
   commit(entry){
-    try {
-      const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  try {
 
-      if (!f.history) f.history = [];
+    const f =
+      JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-      f.history.push(entry);
+    /* Ensure base fields exist */
+    if(typeof f.capital !== "number") f.capital = Number(f.capital || 0);
+    if(typeof f.debt    !== "number") f.debt    = Number(f.debt || 0);
 
-      localStorage.setItem("ACS_Finance", JSON.stringify(f));
+    /* Monthly aggregates (optional but safe) */
+    if(typeof f.monthRevenue  !== "number") f.monthRevenue  = Number(f.monthRevenue  || 0);
+    if(typeof f.monthExpenses !== "number") f.monthExpenses = Number(f.monthExpenses || 0);
+    if(typeof f.monthProfit   !== "number") f.monthProfit   = Number(f.monthProfit   || 0);
 
-      window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+    if(!Array.isArray(f.history)) f.history = [];
 
-      return true;
+    /* Normalize amount */
+    const amt =
+      Number(entry && entry.amount ? entry.amount : 0) || 0;
 
-    } catch(e){
-      console.error("FINANCE COMMIT FAILED", e);
-      return false;
+    const type =
+      String(entry && entry.type ? entry.type : "");
+
+    /* ============================================================
+       APPLY LEDGER ENTRY → REAL FINANCE STATE
+       ============================================================ */
+
+    if(type === "LOAN_IN"){
+      /* Loan disbursement: increases capital + increases debt
+         IMPORTANT: NOT revenue, NOT profit */
+      f.capital += amt;
+      f.debt    += amt;
     }
+
+    else if(type === "LOAN_PAYMENT" || type === "LOAN_AMORTIZATION"){
+      /* Payment: decreases capital (cash out) + decreases debt
+         Expense accounting is handled by ACS_registerExpense on your side,
+         but we also keep monthExpenses/profit consistent if you use them. */
+      f.capital -= amt;
+      f.debt    = Math.max(0, f.debt - amt);
+
+      /* Optional monthly view consistency */
+      f.monthExpenses += amt;
+      f.monthProfit   -= amt;
+    }
+
+    /* Store entry in history AFTER applying */
+    f.history.push(entry);
+
+    localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+    return true;
+
+  } catch(e){
+    console.error("FINANCE COMMIT FAILED", e);
+    return false;
   }
+}
 
 };
 
