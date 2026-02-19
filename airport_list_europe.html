@@ -1231,46 +1231,71 @@ function openAirportInfo(icao) {
   // ===============================
   // BUILD PANEL
   // ===============================
-  content.innerHTML = `
+     
+content.innerHTML = `
 
 <div class="acs-ops-panel">
 
+<!-- HEADER -->
 <div style="
 font-size:12px;
 color:#7f8da3;
 letter-spacing:1px;
+margin-bottom:10px;
 ">
+
 ${ap.category.toUpperCase()} · ${role.toUpperCase()}
+
 </div>
 
-<div class="acs-separator"></div>
+
+<!-- GRID 2×2 STRUCTURE -->
+<div style="
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:18px 24px;
+align-items:start;
+">
+
+
+<!-- ================= LEFT TOP ================= -->
+<div>
 
 <div class="acs-section-title">
 STRUCTURAL CAPACITY
 </div>
 
-<div>
-Runway Length: ${ap.runway_m} m<br>
-Aircraft Capability: ${ap.aircraft_limit}<br>
-Field Elevation: ${ap.elevation_ft} ft<br>
-Operating Window: ${ap.open_hrs}
+<div style="font-size:13px; line-height:1.6">
+
+Runway Length: <b>${ap.runway_m}</b> m<br>
+Aircraft Capability: <b>${ap.aircraft_limit}</b><br>
+Field Elevation: <b>${ap.elevation_ft}</b> ft<br>
+Operating Window: <b>${ap.open_hrs}</b><br>
+
 </div>
 
-<div style="margin-top:8px">
+<div style="margin-top:10px">
 
-Throughput Capacity
+Throughput Capacity<br>
 
 <div style="
 color:#00ff80;
 font-weight:600;
 font-size:16px;
+margin-top:2px;
 ">
+
 ${market.throughput.toLocaleString()} pax/day
+
+</div>
+
 </div>
 
 </div>
 
-<div class="acs-separator"></div>
+
+<!-- ================= RIGHT TOP ================= -->
+<div>
 
 <div class="acs-section-title">
 PASSENGER DEMAND
@@ -1278,14 +1303,17 @@ PASSENGER DEMAND
 
 <div style="
 font-family:monospace;
+font-size:14px;
 letter-spacing:1px;
 margin-top:6px;
 ">
+
 Y ${demand.Y.toLocaleString()}
 &nbsp;&nbsp;&nbsp;
 C ${demand.C.toLocaleString()}
 &nbsp;&nbsp;&nbsp;
 F ${demand.F.toLocaleString()}
+
 </div>
 
 <div style="
@@ -1293,10 +1321,16 @@ margin-top:6px;
 color:#00ff80;
 font-weight:600;
 ">
-Total Demand: ${totalDemand.toLocaleString()} pax/day
+
+Total: ${totalDemand.toLocaleString()} pax/day
+
 </div>
 
-<div class="acs-separator"></div>
+</div>
+
+
+<!-- ================= LEFT BOTTOM ================= -->
+<div>
 
 <div class="acs-section-title">
 REAL TRAFFIC UTILIZATION
@@ -1304,18 +1338,36 @@ REAL TRAFFIC UTILIZATION
 
 <div style="
 margin-top:6px;
-font-family:monospace;
+font-size:13px;
 ">
-Passengers transported: ${realPax.toLocaleString()} pax/day
+
+Passengers transported:<br>
+
+<b>${real.pax.toLocaleString()} / ${market.throughput.toLocaleString()}</b> pax/day
+
 </div>
 
-<div class="acs-capacity-bar">
-<div class="acs-capacity-fill"
-style="
-width:${usedPct}%;
-background:${barColor};
+<div style="
+width:100%;
+max-width:240px;
+height:6px;
+background:#0a162f;
+border-radius:4px;
+margin-top:8px;
+border:1px solid rgba(255,255,255,0.06);
+overflow:hidden;
 ">
+
+<div style="
+width:${usedPct}%;
+height:100%;
+background:${barColor};
+box-shadow:0 0 6px ${barColor};
+transition:width 0.5s ease;
+">
+
 </div>
+
 </div>
 
 <div class="acs-status-chip"
@@ -1323,39 +1375,60 @@ style="
 background:${barColor}22;
 color:${barColor};
 border:1px solid ${barColor};
+margin-top:6px;
 ">
-${usedPct}% utilization · ${status}
+
+${usedPct}% · ${status}
+
 </div>
 
-<div class="acs-separator"></div>
+</div>
+
+
+<!-- ================= RIGHT BOTTOM ================= -->
+<div>
 
 <div class="acs-section-title">
 ECONOMIC ENVIRONMENT
 </div>
 
-<div>
-Slot Fee Index: $${econ.slot_cost.toLocaleString()}<br>
-Landing Fee Index: $${econ.landing_fee.toLocaleString()}<br>
-Fuel Index: $${econ.fuel_price}/gal<br>
-Airport Charge: ${econ.ticket_fee}%
+<div style="font-size:13px; line-height:1.6">
+
+Slot Fee: <b>$${econ.slot_cost.toLocaleString()}</b><br>
+Landing Fee: <b>$${econ.landing_fee.toLocaleString()}</b><br>
+Fuel Price: <b>$${econ.fuel_price}/gal</b><br>
+Airport Charge: <b>${econ.ticket_fee}%</b>
+
 </div>
 
-<div class="acs-separator"></div>
 
-<div class="acs-section-title">
+<div class="acs-section-title" style="margin-top:14px">
 NETWORK STATUS
 </div>
 
-<div>
-Network Role: ${role}<br>
-Congestion Level:
+<div style="font-size:13px">
+
+Role: <b>${role}</b><br>
+
+Congestion:
+
 <span style="
 color:${barColor};
 font-weight:600;
 ">
+
 ${status}
+
 </span>
+
 </div>
+
+</div>
+
+
+</div>
+<!-- END GRID -->
+
 
 </div>
 `;
