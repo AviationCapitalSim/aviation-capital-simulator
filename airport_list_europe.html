@@ -1207,10 +1207,11 @@ function openAirportInfo(icao) {
   else if(ap.category === "Major Regional")
     role = "Regional Hub";
 
- // ===============================
+// ===============================
 // BUILD PANEL — REAL DATA ONLY
 // ===============================
 
+// DEMANDA TEÓRICA DEL MERCADO (estructura del aeropuerto)
 const demand = adjustPassengerClasses(ap.demand);
 
 const totalDemand =
@@ -1218,9 +1219,31 @@ const totalDemand =
   (demand.C || 0) +
   (demand.F || 0);
 
-usedPct = Math.min(100,
-Math.round((totalDemand / market.throughput) * 100)
-);
+// UTILIZACIÓN REAL basada en vuelos reales
+const real = ACS_getAirportRealUtilization(ap.icao);
+
+const usedPct = real.utilizationPct || 0;
+
+// COLOR SEGÚN UTILIZACIÓN REAL
+let barColor = "#1ec97b";
+let status   = "IDLE";
+
+if(usedPct >= 90){
+  barColor = "#ff3b30";
+  status = "CAPACITY CONSTRAINED";
+}
+else if(usedPct >= 75){
+  barColor = "#ff9800";
+  status = "HIGH UTILIZATION";
+}
+else if(usedPct >= 40){
+  barColor = "#FFC107";
+  status = "ACTIVE";
+}
+else if(usedPct > 0){
+  barColor = "#34c759";
+  status = "LOW UTILIZATION";
+}
 
 content.innerHTML = `
 
@@ -1285,10 +1308,8 @@ margin-top:6px;
 
 Y ${demand.Y.toLocaleString()}
 &nbsp;&nbsp;&nbsp;
-
 C ${demand.C.toLocaleString()}
 &nbsp;&nbsp;&nbsp;
-
 F ${demand.F.toLocaleString()}
 
 </div>
@@ -1300,6 +1321,23 @@ font-weight:600;
 ">
 
 Total Demand: ${totalDemand.toLocaleString()} pax/day
+
+</div>
+
+
+<div class="acs-separator"></div>
+
+
+<div class="acs-section-title">
+REAL TRAFFIC UTILIZATION
+</div>
+
+<div style="
+margin-top:6px;
+font-family:monospace;
+">
+
+Passengers transported: ${real.pax.toLocaleString()} pax/day
 
 </div>
 
@@ -1326,7 +1364,7 @@ color:${barColor};
 border:1px solid ${barColor};
 ">
 
-0% utilization · IDLE
+${usedPct}% utilization · ${status}
 
 </div>
 
@@ -1338,7 +1376,6 @@ border:1px solid ${barColor};
 <div class="acs-section-title">
 ECONOMIC ENVIRONMENT
 </div>
-
 
 <div>
 
@@ -1356,7 +1393,6 @@ Airport Charge: ${econ.ticket_fee}%
 <div class="acs-section-title">
 NETWORK STATUS
 </div>
-
 
 <div>
 
@@ -1379,7 +1415,7 @@ ${status}
 </div>
 `;
 
-  modal.style.display = "flex";
+modal.style.display = "flex";
 
 }
 
