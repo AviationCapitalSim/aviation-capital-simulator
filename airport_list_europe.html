@@ -442,6 +442,135 @@ tr:hover {
   box-shadow: 0 0 28px rgba(0,0,0,0.85);
 }
 
+/* ============================================================
+   ACS HYBRID OPS PANEL — AIRBUS + QATAR EXECUTIVE
+   Global — Responsive — Live
+   ============================================================ */
+
+.acs-ops-panel{
+
+  background:
+    linear-gradient(180deg,
+      rgba(8,18,40,0.98),
+      rgba(5,12,28,0.98)
+    );
+
+  border-radius:16px;
+
+  padding:22px;
+
+  border:1px solid rgba(255,179,0,0.35);
+
+  box-shadow:
+    0 0 40px rgba(0,0,0,0.9),
+    inset 0 0 40px rgba(0,174,239,0.05);
+
+}
+
+
+/* section title */
+
+.acs-section-title{
+
+  color:#00AEEF;
+
+  font-size:13px;
+
+  letter-spacing:1.2px;
+
+  margin-top:18px;
+
+  margin-bottom:8px;
+
+  font-weight:600;
+
+}
+
+
+/* separator */
+
+.acs-separator{
+
+  height:1px;
+
+  background:linear-gradient(
+    to right,
+    transparent,
+    rgba(255,179,0,0.4),
+    transparent
+  );
+
+  margin:14px 0;
+
+}
+
+
+/* capacity bar */
+
+.acs-capacity-bar{
+
+  height:14px;
+
+  border-radius:8px;
+
+  background:#0a162f;
+
+  overflow:hidden;
+
+  margin-top:8px;
+
+  border:1px solid rgba(255,255,255,0.08);
+
+}
+
+
+.acs-capacity-fill{
+
+  height:100%;
+
+  border-radius:8px;
+
+  transition:width 0.6s ease;
+
+  box-shadow:0 0 12px currentColor;
+
+}
+
+
+/* status chip */
+
+.acs-status-chip{
+
+  display:inline-block;
+
+  padding:4px 10px;
+
+  border-radius:20px;
+
+  font-size:12px;
+
+  font-weight:600;
+
+  margin-top:6px;
+
+}
+
+
+/* responsive */
+
+@media(max-width:600px){
+
+  .acs-modal-box{
+
+    width:95%;
+
+    padding:14px;
+
+  }
+
+}
+
+     
 .acs-modal-box h3 {
   margin-top: 0;
   margin-bottom: 10px;
@@ -1078,107 +1207,144 @@ function openAirportInfo(icao) {
 
   content.innerHTML = `
 
-  <div style="font-size:12px; color:#7f8da3; margin-bottom:10px;">
-    ${ap.category.toUpperCase()} · ${role.toUpperCase()}
-  </div>
+<div class="acs-ops-panel">
+
+<div style="
+font-size:12px;
+color:#7f8da3;
+letter-spacing:1px;
+">
+
+${ap.category.toUpperCase()} · ${role.toUpperCase()}
+
+</div>
 
 
-  <!-- INFRASTRUCTURE -->
-  <div style="color:#00AEEF; font-weight:600; margin-top:8px;">
-    INFRASTRUCTURE STATUS
-  </div>
-
-  <div style="margin-top:6px; line-height:1.6;">
-    Runway Length: ${ap.runway_m} m<br>
-    Aircraft Capability: ${ap.aircraft_limit}<br>
-    Field Elevation: ${ap.elevation_ft} ft<br>
-    Operating Window: ${ap.open_hrs}
-  </div>
-
-  <div style="margin-top:8px;">
-    Throughput Capacity: 
-    <span style="color:#00ff80">
-      ${market.total.toLocaleString()} seats/day
-    </span>
-  </div>
+<div class="acs-separator"></div>
 
 
-  <!-- MARKET -->
-  <div style="color:#00AEEF; font-weight:600; margin-top:18px;">
-    PASSENGER MARKET
-  </div>
+<div class="acs-section-title">
+INFRASTRUCTURE STATUS
+</div>
 
-  <div style="margin-top:6px; line-height:1.6;">
-    Total Market: ${market.total.toLocaleString()}<br>
-    In Operation: ${market.used.toLocaleString()}<br>
-    Available Capacity: 
-    <span style="color:#00ff80">
-      ${market.available.toLocaleString()}
-    </span>
-  </div>
+<div>
 
+Runway Length: ${ap.runway_m} m<br>
+Aircraft Capability: ${ap.aircraft_limit}<br>
+Field Elevation: ${ap.elevation_ft} ft<br>
+Operating Window: ${ap.open_hrs}
 
-  <!-- LIVE BAR -->
-  <div style="margin-top:12px;">
+</div>
 
-    <div style="
-      background:#0b1220;
-      border-radius:6px;
-      height:14px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.1);
-    ">
+<div style="margin-top:8px">
 
-      <div style="
-        width:${usedPct}%;
-        height:100%;
-        background:${barColor};
-        box-shadow:0 0 8px ${barColor};
-        transition:width 0.5s ease;
-      "></div>
+Throughput Capacity
 
-    </div>
+<div style="
+color:#00ff80;
+font-weight:600;
+font-size:16px;
+">
 
-    <div style="
-      margin-top:6px;
-      font-size:13px;
-      color:${barColor};
-      font-weight:600;
-    ">
-      ${usedPct}% · ${status}
-    </div>
+${market.total.toLocaleString()} seats/day
 
-  </div>
+</div>
+
+</div>
 
 
-  <!-- ECONOMICS -->
-  <div style="color:#00AEEF; font-weight:600; margin-top:18px;">
-    ECONOMIC ENVIRONMENT
-  </div>
-
-  <div style="margin-top:6px; line-height:1.6;">
-    Slot Fee Index: $${econ.slot_cost.toLocaleString()}<br>
-    Landing Fee Index: $${econ.landing_fee.toLocaleString()}<br>
-    Fuel Index: $${econ.fuel_price}/gal<br>
-    Airport Charge: ${econ.ticket_fee}%<br>
-    Market Growth Index: ${econ.market_saturation ? econ.market_saturation : "LIVE"}
-  </div>
+<div class="acs-separator"></div>
 
 
-  <!-- LIVE STATUS -->
-  <div style="color:#00AEEF; font-weight:600; margin-top:18px;">
-    OPERATIONAL STATUS
-  </div>
+<div class="acs-section-title">
+PASSENGER MARKET STATUS
+</div>
 
-  <div style="margin-top:6px;">
-    Network Role: ${role}<br>
-    Congestion Level: 
-    <span style="color:${barColor}; font-weight:600;">
-      ${status}
-    </span>
-  </div>
 
-  `;
+<div>
+
+Total Market: ${market.total.toLocaleString()}<br>
+In Operation: ${market.used.toLocaleString()}<br>
+Available: ${market.available.toLocaleString()}
+
+</div>
+
+
+<div class="acs-capacity-bar">
+
+<div class="acs-capacity-fill"
+
+style="
+width:${usedPct}%;
+background:${barColor};
+color:${barColor};
+">
+
+</div>
+
+</div>
+
+
+<div class="acs-status-chip"
+
+style="
+background:${barColor}22;
+color:${barColor};
+border:1px solid ${barColor};
+">
+
+${usedPct}% · ${status}
+
+</div>
+
+
+
+<div class="acs-separator"></div>
+
+
+<div class="acs-section-title">
+ECONOMIC ENVIRONMENT
+</div>
+
+
+<div>
+
+Slot Fee Index: $${econ.slot_cost.toLocaleString()}<br>
+Landing Fee Index: $${econ.landing_fee.toLocaleString()}<br>
+Fuel Index: $${econ.fuel_price}/gal<br>
+Airport Charge: ${econ.ticket_fee}%
+
+</div>
+
+
+<div class="acs-separator"></div>
+
+
+<div class="acs-section-title">
+NETWORK STATUS
+</div>
+
+
+<div>
+
+Network Role: ${role}<br>
+
+Congestion Level:
+
+<span style="
+color:${barColor};
+font-weight:600;
+">
+
+${status}
+
+</span>
+
+</div>
+
+
+</div>
+`;
 
   modal.style.display = "flex";
 
