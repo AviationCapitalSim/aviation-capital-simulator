@@ -1351,10 +1351,8 @@ function closeAirportInfo() {
 }
 
 /* ============================================================
-   🟦 ACS STRUCTURAL CABIN DEMAND INSTRUMENT
-   Airbus OCC + Qatar Executive Hybrid
-   Structural Capacity Visualization
-   Consistent with table demand
+   🟦 ACS STRUCTURAL CABIN DEMAND INSTRUMENT — QATAR FIX
+   Days on top, bar center, values below (NO "VACIO")
    ============================================================ */
 
 function ACS_openDemandModal(icao){
@@ -1386,7 +1384,12 @@ function ACS_openDemandModal(icao){
   else if(ap.category === "Regional") structuralMax = 350;
   else structuralMax = 180;
 
-  let html = "";
+  let html = `
+    <div style="
+      margin-top:6px;
+      padding:6px 4px 0 4px;
+    ">
+  `;
 
   days.forEach((day, i)=>{
 
@@ -1395,36 +1398,45 @@ function ACS_openDemandModal(icao){
     const F = Math.round(demand.F * distribution[i]);
 
     const total = Y + C + F;
-
     const pct = Math.min(100, (total / structuralMax) * 100);
 
     html += `
+      <div style="
+        margin:0 auto 18px auto;
+        width:420px;
+        max-width:92%;
+      ">
 
-      <div style="margin-bottom:22px;">
-
-        <!-- DAY LABEL -->
+        <!-- DAY (TOP) -->
         <div style="
+          text-align:center;
+          font-family:Orbitron, 'Poppins', sans-serif;
+          font-size:13px;
+          letter-spacing:3px;
           color:#ffb300;
-          font-family:Orbitron;
-          font-size:12px;
-          letter-spacing:2px;
+          text-shadow:0 0 8px rgba(255,179,0,0.18);
           margin-bottom:6px;
         ">
           ${day}
         </div>
 
-
-        <!-- STRUCTURAL BAR -->
+        <!-- BAR (CENTER) -->
         <div style="
-          width:260px;
+          width:340px;
+          max-width:100%;
           height:10px;
-          background:rgba(255,255,255,0.05);
-          border-radius:5px;
+          margin:0 auto;
+          background:rgba(255,255,255,0.06);
+          border-radius:6px;
           position:relative;
           overflow:hidden;
+          border:1px solid rgba(255,179,0,0.22);
+          box-shadow:
+            inset 0 0 10px rgba(0,0,0,0.75),
+            0 0 18px rgba(0,0,0,0.35);
         ">
 
-          <!-- ECONOMY RANGE -->
+          <!-- STRUCTURAL DIVIDERS -->
           <div style="
             position:absolute;
             left:33.33%;
@@ -1434,7 +1446,6 @@ function ACS_openDemandModal(icao){
             background:rgba(255,179,0,0.35);
           "></div>
 
-          <!-- BUSINESS RANGE -->
           <div style="
             position:absolute;
             left:66.66%;
@@ -1444,7 +1455,6 @@ function ACS_openDemandModal(icao){
             background:rgba(255,179,0,0.35);
           "></div>
 
-
           <!-- DEMAND FILL -->
           <div style="
             width:${pct}%;
@@ -1452,48 +1462,39 @@ function ACS_openDemandModal(icao){
             background:
               linear-gradient(
                 90deg,
-                #004a99 0%,
-                #0066cc 30%,
-                #00AEEF 70%,
+                #003a7a 0%,
+                #005bb5 35%,
+                #00AEEF 75%,
                 #33d6ff 100%
               );
             box-shadow:
-              0 0 6px rgba(0,174,239,0.8),
-              0 0 12px rgba(0,174,239,0.4);
-          ">
-          </div>
+              0 0 10px rgba(0,174,239,0.55),
+              0 0 20px rgba(0,174,239,0.22);
+          "></div>
 
         </div>
 
-
-        <!-- VALUE LABELS -->
+        <!-- VALUES (BOTTOM) -->
         <div style="
-          font-family:Orbitron;
-          font-size:11px;
-          color:#ffb300;
           margin-top:6px;
-          letter-spacing:1px;
+          display:flex;
+          justify-content:center;
+          gap:18px;
+          font-family:Orbitron, 'Poppins', sans-serif;
+          font-size:12px;
+          letter-spacing:1.5px;
+          color:#ffb300;
         ">
-
-          Y = ${Y}
-
-          &nbsp;&nbsp;&nbsp;&nbsp;
-
-          VACÍO
-
-          &nbsp;&nbsp;&nbsp;&nbsp;
-
-          C = ${C}
-
-          &nbsp;&nbsp;&nbsp;&nbsp;
-
-          F = ${F}
-
+          <span>Y&nbsp;=&nbsp;${Y}</span>
+          <span>C&nbsp;=&nbsp;${C}</span>
+          <span>F&nbsp;=&nbsp;${F}</span>
         </div>
 
       </div>
     `;
   });
+
+  html += `</div>`;
 
   content.innerHTML = html;
 
