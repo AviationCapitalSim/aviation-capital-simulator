@@ -1172,16 +1172,33 @@ function openAirportInfo(icao) {
   const econ = ACS_adjustAirportFees(ap, year);
 
   // ===============================
-  // LIVE MARKET
+  // STRUCTURAL CAPACITY
   // ===============================
   const market = ACS_getAirportMarketCapacity(ap);
 
-  // utilization now calculated later from REAL demand
-     
-  let usedPct = 0;
+  // ===============================
+  // STRUCTURAL DEMAND (TABLE SOURCE)
+  // ===============================
+  const demand = adjustPassengerClasses(ap.demand);
 
+  const totalDemand =
+    (demand.Y || 0) +
+    (demand.C || 0) +
+    (demand.F || 0);
+
+  // ===============================
+  // REAL UTILIZATION (ONLY REAL DATA)
+  // ===============================
+  const real = ACS_getAirportRealUtilization(ap.icao) || {};
+
+  const usedPct = real.utilizationPct || 0;
+  const realPax = real.pax || 0;
+
+  // ===============================
+  // STATUS COLOR
+  // ===============================
   let barColor = "#1ec97b";
-  let status = "NORMAL";
+  let status   = "IDLE";
 
   if(usedPct >= 90){
     barColor = "#ff3b30";
@@ -1191,9 +1208,13 @@ function openAirportInfo(icao) {
     barColor = "#ff9800";
     status = "HIGH UTILIZATION";
   }
-  else if(usedPct >= 50){
+  else if(usedPct >= 40){
     barColor = "#FFC107";
-    status = "MODERATE UTILIZATION";
+    status = "ACTIVE";
+  }
+  else if(usedPct > 0){
+    barColor = "#34c759";
+    status = "LOW UTILIZATION";
   }
 
   // ===============================
@@ -1207,45 +1228,10 @@ function openAirportInfo(icao) {
   else if(ap.category === "Major Regional")
     role = "Regional Hub";
 
-// ===============================
-// BUILD PANEL — REAL DATA ONLY
-// ===============================
-
-// DEMANDA TEÓRICA DEL MERCADO (estructura del aeropuerto)
-const demand = adjustPassengerClasses(ap.demand);
-
-const totalDemand =
-  (demand.Y || 0) +
-  (demand.C || 0) +
-  (demand.F || 0);
-
-// UTILIZACIÓN REAL basada en vuelos reales
-const real = ACS_getAirportRealUtilization(ap.icao);
-
-const usedPct = real.utilizationPct || 0;
-
-// COLOR SEGÚN UTILIZACIÓN REAL
-let barColor = "#1ec97b";
-let status   = "IDLE";
-
-if(usedPct >= 90){
-  barColor = "#ff3b30";
-  status = "CAPACITY CONSTRAINED";
-}
-else if(usedPct >= 75){
-  barColor = "#ff9800";
-  status = "HIGH UTILIZATION";
-}
-else if(usedPct >= 40){
-  barColor = "#FFC107";
-  status = "ACTIVE";
-}
-else if(usedPct > 0){
-  barColor = "#34c759";
-  status = "LOW UTILIZATION";
-}
-
-content.innerHTML = `
+  // ===============================
+  // BUILD PANEL
+  // ===============================
+  content.innerHTML = `
 
 <div class="acs-ops-panel">
 
@@ -1254,26 +1240,20 @@ font-size:12px;
 color:#7f8da3;
 letter-spacing:1px;
 ">
-
 ${ap.category.toUpperCase()} · ${role.toUpperCase()}
-
 </div>
 
-
 <div class="acs-separator"></div>
-
 
 <div class="acs-section-title">
 STRUCTURAL CAPACITY
 </div>
 
 <div>
-
 Runway Length: ${ap.runway_m} m<br>
 Aircraft Capability: ${ap.aircraft_limit}<br>
 Field Elevation: ${ap.elevation_ft} ft<br>
 Operating Window: ${ap.open_hrs}
-
 </div>
 
 <div style="margin-top:8px">
@@ -1285,16 +1265,12 @@ color:#00ff80;
 font-weight:600;
 font-size:16px;
 ">
-
-${market.throughput.toLocaleString()} per day
-
+${market.throughput.toLocaleString()} pax/day
 </div>
 
 </div>
-
 
 <div class="acs-separator"></div>
-
 
 <div class="acs-section-title">
 PASSENGER DEMAND
@@ -1305,13 +1281,11 @@ font-family:monospace;
 letter-spacing:1px;
 margin-top:6px;
 ">
-
 Y ${demand.Y.toLocaleString()}
 &nbsp;&nbsp;&nbsp;
 C ${demand.C.toLocaleString()}
 &nbsp;&nbsp;&nbsp;
 F ${demand.F.toLocaleString()}
-
 </div>
 
 <div style="
@@ -1319,14 +1293,10 @@ margin-top:6px;
 color:#00ff80;
 font-weight:600;
 ">
-
 Total Demand: ${totalDemand.toLocaleString()} pax/day
-
 </div>
 
-
 <div class="acs-separator"></div>
-
 
 <div class="acs-section-title">
 REAL TRAFFIC UTILIZATION
@@ -1336,86 +1306,61 @@ REAL TRAFFIC UTILIZATION
 margin-top:6px;
 font-family:monospace;
 ">
-
-Passengers transported: ${real.pax.toLocaleString()} pax/day
-
+Passengers transported: ${realPax.toLocaleString()} pax/day
 </div>
 
-
 <div class="acs-capacity-bar">
-
 <div class="acs-capacity-fill"
-
 style="
 width:${usedPct}%;
 background:${barColor};
 ">
-
 </div>
-
 </div>
-
 
 <div class="acs-status-chip"
-
 style="
 background:${barColor}22;
 color:${barColor};
 border:1px solid ${barColor};
 ">
-
 ${usedPct}% utilization · ${status}
-
 </div>
 
-
-
 <div class="acs-separator"></div>
-
 
 <div class="acs-section-title">
 ECONOMIC ENVIRONMENT
 </div>
 
 <div>
-
 Slot Fee Index: $${econ.slot_cost.toLocaleString()}<br>
 Landing Fee Index: $${econ.landing_fee.toLocaleString()}<br>
 Fuel Index: $${econ.fuel_price}/gal<br>
 Airport Charge: ${econ.ticket_fee}%
-
 </div>
 
-
 <div class="acs-separator"></div>
-
 
 <div class="acs-section-title">
 NETWORK STATUS
 </div>
 
 <div>
-
 Network Role: ${role}<br>
-
 Congestion Level:
-
 <span style="
 color:${barColor};
 font-weight:600;
 ">
-
 ${status}
-
 </span>
-
 </div>
-
 
 </div>
 `;
 
-modal.style.display = "flex";
+  modal.style.display = "flex";
 
 }
 
