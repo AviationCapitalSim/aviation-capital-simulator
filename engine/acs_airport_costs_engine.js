@@ -209,28 +209,39 @@ function ACS_getAirportSeatsUsed(icao){
 
 function ACS_getAirportSeatCapacity(airport){
 
-    if(!airport) return 0;
+  if(!airport) return 0;
 
-    const baseCapacity = {
+  const baseModern = {
 
-        "Primary Hub":     120000,
-        "Major Regional":   45000,
-        "Regional":         18000,
-        "Minor":             6000
+    "Primary Hub": 160000,
+    "Major Regional": 60000,
+    "Regional": 18000,
+    "Minor": 5000
 
-    };
+  };
 
-    const base = baseCapacity[airport.category] || 20000;
+  const modern = baseModern[airport.category] || 20000;
 
-    const year = (window.ACS_TIME?.year) || 2026;
+  let year = 1940;
 
-    const histFactor = ACS_getFactorForYear(ACS_HIST_MARKET, year);
+  try{
+    year = ACS_TIME.currentTime.getFullYear();
+  }catch(e){}
 
-    return Math.round(base * histFactor);
+  let factor = 0.03;
+
+  if(year >= 1950) factor = 0.06;
+  if(year >= 1960) factor = 0.12;
+  if(year >= 1970) factor = 0.25;
+  if(year >= 1980) factor = 0.45;
+  if(year >= 1990) factor = 0.65;
+  if(year >= 2000) factor = 0.85;
+  if(year >= 2010) factor = 1.00;
+  if(year >= 2025) factor = 1.15;
+
+  return Math.round(modern * factor);
 
 }
-
-
 
 // ============================================================
 // 10) FULL AIRPORT MARKET STATUS
