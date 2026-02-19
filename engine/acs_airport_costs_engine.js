@@ -243,42 +243,80 @@ function ACS_getAirportSeatCapacity(airport){
 
 }
 
-// ============================================================
-// 10) FULL AIRPORT MARKET STATUS
-// ============================================================
+/* ============================================================
+   ACS HISTORICAL AIRPORT STRUCTURAL CAPACITY ENGINE
+   Realistic throughput adjusted by infrastructure era
+   ============================================================ */
 
-function ACS_getAirportMarketCapacity(airport){
+function ACS_getAirportMarketCapacity(ap){
 
-    if(!airport) return null;
+  if(!ap) return { throughput: 0 };
 
-    const used = ACS_getAirportSeatsUsed(airport.icao);
+  const year =
+    (window.ACS_TIME &&
+     ACS_TIME.currentTime &&
+     ACS_TIME.currentTime.year)
+     ? ACS_TIME.currentTime.year
+     : 2025;
 
-    const total = ACS_getAirportSeatCapacity(airport);
+  /* ---------- MODERN BASE CAPACITY ---------- */
 
-    const available = Math.max(0, total - used);
+  let baseThroughput = 0;
 
-    const saturation = total > 0 ? used / total : 0;
+  switch(ap.category){
 
-    return {
+    case "Primary Hub":
+      baseThroughput = 4800;
+      break;
 
-        total,
-        used,
-        available,
-        saturation,
+    case "Major Regional":
+      baseThroughput = 2200;
+      break;
 
-        congestionLevel:
+    case "Regional":
+      baseThroughput = 900;
+      break;
 
-            saturation > 0.90 ? "CRITICAL" :
-            saturation > 0.75 ? "HIGH" :
-            saturation > 0.50 ? "MODERATE" :
-            saturation > 0.25 ? "LOW" :
-            "VERY LOW"
+    default:
+      baseThroughput = 300;
+  }
 
-    };
+  /* ---------- HISTORICAL MULTIPLIER ---------- */
 
+  let multiplier = 1.0;
+
+  if(year <= 1955)
+    multiplier = 0.12;
+
+  else if(year <= 1975)
+    multiplier = 0.28;
+
+  else if(year <= 1995)
+    multiplier = 0.52;
+
+  else if(year <= 2010)
+    multiplier = 0.74;
+
+  else
+    multiplier = 1.0;
+
+  /* ---------- FINAL STRUCTURAL CAPACITY ---------- */
+
+  const historicalThroughput =
+    Math.round(baseThroughput * multiplier);
+
+  return {
+
+    throughput: historicalThroughput,
+
+    baseThroughput: baseThroughput,
+
+    eraMultiplier: multiplier,
+
+    year: year
+
+  };
 }
-
-
 
 // ============================================================
 // 11) ROUTE MARKET CONSUMPTION
