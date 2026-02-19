@@ -1211,8 +1211,12 @@ function openAirportInfo(icao) {
 // BUILD PANEL — REAL DATA ONLY
 // ===============================
 
-const demand = ACS_ENGINE_computePassengerDemand(ap);
-const totalDemand = demand.Y + demand.C + demand.F;
+const demand = adjustPassengerClasses(ap.demand);
+
+const totalDemand =
+  (demand.Y || 0) +
+  (demand.C || 0) +
+  (demand.F || 0);
 
 usedPct = Math.min(100,
 Math.round((totalDemand / market.throughput) * 100)
