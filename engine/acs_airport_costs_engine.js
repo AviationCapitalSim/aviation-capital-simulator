@@ -429,3 +429,95 @@ function ACS_getAirportRealUtilization(icao){
   };
 
 }
+
+/* ============================================================
+   ✈️ ACS LIVE AIRPORT UTILIZATION ENGINE
+   Airbus OCC real traffic monitor
+   Source of truth: scheduleItems
+   ============================================================ */
+
+function ACS_getAirportRealUtilization(icao){
+
+  try{
+
+    const schedule =
+      JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+    if(!Array.isArray(schedule) || schedule.length === 0){
+
+      return {
+        pax: 0,
+        utilizationPct: 0
+      };
+
+    }
+
+    let totalPax = 0;
+
+    schedule.forEach(flight => {
+
+      if(!flight) return;
+
+      const origin =
+        (flight.origin || "").toUpperCase();
+
+      const dest =
+        (flight.destination || "").toUpperCase();
+
+      if(origin === icao || dest === icao){
+
+        totalPax += Number(flight.pax || 0);
+
+      }
+
+    });
+
+    const airport =
+      ACS_World?.BY_ICAO?.[icao]
+      || WorldAirportsACS?.ALL?.find(a => a.icao === icao);
+
+    if(!airport){
+
+      return {
+        pax: totalPax,
+        utilizationPct: 0
+      };
+
+    }
+
+    const market =
+      ACS_getAirportMarketCapacity(airport);
+
+    const throughput =
+      market?.throughput || 1;
+
+    const pct =
+      Math.min(
+        100,
+        Math.round((totalPax / throughput) * 100)
+      );
+
+    return {
+
+      pax: totalPax,
+
+      utilizationPct: pct
+
+    };
+
+  }
+  catch(err){
+
+    console.warn(
+      "ACS utilization engine error",
+      err
+    );
+
+    return {
+      pax: 0,
+      utilizationPct: 0
+    };
+
+  }
+
+}
