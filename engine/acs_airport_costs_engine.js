@@ -112,3 +112,137 @@ function ACS_adjustAirportFees(ap, year) {
         growth       : (ap.pax_growth_factor * growthFactor).toFixed(2)
     };
 }
+
+/* ============================================================
+   ✈️ ACS AIRPORT MARKET ENGINE — GLOBAL DEMAND & CONGESTION
+   Uses scheduleItems as real market ledger
+   ============================================================ */
+
+function ACS_getScheduleItems(){
+
+  try{
+    return JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  }catch(e){
+    return [];
+  }
+
+}
+
+
+/* ============================================================
+   Calculate total seats using an airport (origin + destination)
+   ============================================================ */
+
+function ACS_getAirportSeatsUsed(icao){
+
+  const items = ACS_getScheduleItems();
+
+  let totalSeats = 0;
+
+  items.forEach(it => {
+
+    if(it.type !== "flight") return;
+
+    if(it.origin === icao || it.destination === icao){
+
+      const seats = Number(it.seats || 0);
+
+      totalSeats += seats;
+
+    }
+
+  });
+
+  return totalSeats;
+
+}
+
+
+/* ============================================================
+   Calculate airport theoretical capacity (based on category)
+   ============================================================ */
+
+function ACS_getAirportSeatCapacity(airport){
+
+  if(!airport) return 0;
+
+  const baseByCategory = {
+
+    "Primary Hub": 60000,
+    "Major Regional": 24000,
+    "Regional": 12000,
+    "Minor": 4000
+
+  };
+
+  const base = baseByCategory[airport.category] || 10000;
+
+  // historical multiplier
+  const year = (window.ACS_TIME && ACS_TIME.year) || 2025;
+
+  let factor = 1;
+
+  if(year < 1960) factor = 0.35;
+  else if(year < 1980) factor = 0.55;
+  else if(year < 2000) factor = 0.75;
+  else if(year < 2010) factor = 0.90;
+  else factor = 1;
+
+  return Math.round(base * factor);
+
+}
+
+
+/* ============================================================
+   Main Market Capacity Object
+   ============================================================ */
+
+function ACS_getAirportMarketCapacity(airport){
+
+  if(!airport) return null;
+
+  const used = ACS_getAirportSeatsUsed(airport.icao);
+
+  const total = ACS_getAirportSeatCapacity(airport);
+
+  const available = Math.max(0, total - used);
+
+  const saturation = total > 0 ? used / total : 0;
+
+  return {
+
+    total,
+    used,
+    available,
+    saturation
+
+  };
+
+}
+
+
+/* ============================================================
+   Route Demand Consumption (Origin → Destination)
+   ============================================================ */
+
+function ACS_getRouteSeatsUsed(origin, destination){
+
+  const items = ACS_getScheduleItems();
+
+  let totalSeats = 0;
+
+  items.forEach(it => {
+
+    if(it.type !== "flight") return;
+
+    if(it.origin === origin && it.destination === destination){
+
+      totalSeats += Number(it.seats || 0);
+
+    }
+
+  });
+
+  return totalSeats;
+
+}
