@@ -1359,8 +1359,8 @@ function closeAirportInfo() {
 }
 
 /* ============================================================
-   🟦 ACS CABIN DEMAND INSTRUMENT — CENTERED QATAR STYLE
-   Structural scale + centered layout
+   🟩 ACS PASSENGER DEMAND — GRID 2×2 AIRBUS OCC LAYOUT
+   Compact, centered, Airbus green airport title
    Fully synchronized with table demand
    ============================================================ */
 
@@ -1374,15 +1374,36 @@ function ACS_openDemandModal(icao){
   const title   = document.getElementById("acsDemandTitle");
   const content = document.getElementById("acsDemandContent");
 
-  // CENTERED TITLE
+  /* ---------- TITLE ---------- */
+
   title.innerHTML = `
-    <div style="text-align:center;">
-      PASSENGER DEMAND<br>
-      <span style="font-size:14px; color:#ffb300;">
+    <div style="text-align:center; line-height:1.25;">
+
+      <div style="
+        font-family:Orbitron;
+        font-size:12px;
+        color:#ffb300;
+        letter-spacing:2px;
+        margin-bottom:4px;
+      ">
+        PASSENGER DEMAND
+      </div>
+
+      <div style="
+        font-family:Orbitron;
+        font-size:22px;
+        color:#00ff9c;
+        letter-spacing:2px;
+        font-weight:600;
+        text-shadow:0 0 8px rgba(0,255,156,0.35);
+      ">
         ${ap.city.toUpperCase()} — ${ap.icao}
-      </span>
+      </div>
+
     </div>
   `;
+
+  /* ---------- REAL DEMAND SOURCE ---------- */
 
   const demand = adjustPassengerClasses(ap.demand);
 
@@ -1391,7 +1412,8 @@ function ACS_openDemandModal(icao){
   const distribution =
     [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
 
-  // STRUCTURAL LIMIT BY CATEGORY
+  /* ---------- STRUCTURAL LIMIT ---------- */
+
   let structuralMax = 300;
 
   if(ap.category === "Primary Hub") structuralMax = 1200;
@@ -1399,7 +1421,17 @@ function ACS_openDemandModal(icao){
   else if(ap.category === "Regional") structuralMax = 350;
   else structuralMax = 180;
 
-  let html = "";
+  /* ---------- BUILD GRID ---------- */
+
+  let html = `
+    <div style="
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px 12px;
+      justify-items:center;
+      margin-top:10px;
+    ">
+  `;
 
   days.forEach((day, i)=>{
 
@@ -1414,54 +1446,53 @@ function ACS_openDemandModal(icao){
 
       <div style="
         text-align:center;
-        margin-bottom:26px;
+        width:100%;
+        max-width:180px;
       ">
 
         <!-- DAY -->
         <div style="
           font-family:Orbitron;
-          font-size:14px;
+          font-size:13px;
           color:#ffffff;
-          letter-spacing:3px;
-          margin-bottom:6px;
+          letter-spacing:2px;
+          margin-bottom:4px;
         ">
           ${day}
         </div>
 
-
-        <!-- STRUCTURAL SCALE -->
+        <!-- BAR -->
         <div style="
-          width:280px;
-          height:12px;
-          margin:0 auto 6px auto;
+          width:100%;
+          height:8px;
+          background:rgba(255,255,255,0.06);
+          border-radius:4px;
           position:relative;
-          background:rgba(255,255,255,0.05);
-          border-radius:6px;
           border:1px solid rgba(255,179,0,0.25);
+          overflow:hidden;
         ">
 
-          <!-- SCALE MARKERS -->
-          <!-- ECONOMY / BUSINESS DIVISION -->
-<div style="
-  position:absolute;
-  left:33.33%;
-  top:0;
-  bottom:0;
-  width:1px;
-  background:rgba(255,179,0,0.45);
-"></div>
+          <!-- DIVISION 1 -->
+          <div style="
+            position:absolute;
+            left:33.33%;
+            top:0;
+            bottom:0;
+            width:1px;
+            background:rgba(255,179,0,0.4);
+          "></div>
 
-<!-- BUSINESS / FIRST DIVISION -->
-<div style="
-  position:absolute;
-  left:66.66%;
-  top:0;
-  bottom:0;
-  width:1px;
-  background:rgba(255,179,0,0.45);
-"></div>
+          <!-- DIVISION 2 -->
+          <div style="
+            position:absolute;
+            left:66.66%;
+            top:0;
+            bottom:0;
+            width:1px;
+            background:rgba(255,179,0,0.4);
+          "></div>
 
-          <!-- DEMAND BAR -->
+          <!-- DEMAND -->
           <div style="
             width:${pct}%;
             height:100%;
@@ -1473,45 +1504,40 @@ function ACS_openDemandModal(icao){
                 #00AEEF,
                 #33d6ff
               );
-            border-radius:6px;
             box-shadow:
-              0 0 10px rgba(0,174,239,0.6);
+              0 0 6px rgba(0,174,239,0.6);
           ">
           </div>
 
         </div>
 
+        <!-- Y C F -->
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr 1fr;
+          font-family:Orbitron;
+          font-size:11px;
+          color:#ffb300;
+          margin-top:4px;
+        ">
 
-        <!-- VALUES BELOW BAR -->
-        
-     <div style="
-  width:100%;
-  max-width:260px;
-  margin:4px auto 0 auto;
-  text-align:center;
-  font-family:Orbitron;
-  font-size:12px;
-  color:#ffb300;
-  letter-spacing:2px;
-">
+          <div>Y ${Y}</div>
+          <div>C ${C}</div>
+          <div>F ${F}</div>
 
-  Y&nbsp;${Y}
-  &nbsp;&nbsp;&nbsp;
-  C&nbsp;${C}
-  &nbsp;&nbsp;&nbsp;
-  F&nbsp;${F}
-
-</div>
+        </div>
 
       </div>
+
     `;
   });
+
+  html += `</div>`;
 
   content.innerHTML = html;
 
   modal.style.display = "flex";
 }
-
 
 function ACS_closeDemandModal(){
   document.getElementById("acsDemandModal").style.display = "none";
