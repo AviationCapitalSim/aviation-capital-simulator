@@ -1351,9 +1351,10 @@ function closeAirportInfo() {
 }
 
 /* ============================================================
-   🟦 ACS GALACTIC PASSENGER DEMAND PANEL
+   🟦 ACS STRUCTURAL CABIN DEMAND INSTRUMENT
    Airbus OCC + Qatar Executive Hybrid
-   Compact Instrument Style
+   Structural Capacity Visualization
+   Consistent with table demand
    ============================================================ */
 
 function ACS_openDemandModal(icao){
@@ -1362,97 +1363,135 @@ function ACS_openDemandModal(icao){
   const ap = airports.find(a => a.icao === icao);
   if(!ap) return;
 
-  const modal = document.getElementById("acsDemandModal");
-  const title = document.getElementById("acsDemandTitle");
+  const modal   = document.getElementById("acsDemandModal");
+  const title   = document.getElementById("acsDemandTitle");
   const content = document.getElementById("acsDemandContent");
 
   title.textContent =
     `${ap.city.toUpperCase()} — PASSENGER DEMAND DISTRIBUTION`;
 
-  const baseDemand = adjustPassengerClasses(ap.demand);
+  // EXACT SAME DEMAND SOURCE AS TABLE
+  const demand = adjustPassengerClasses(ap.demand);
 
   const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
 
   const distribution =
     [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
 
-  const visualMax = Math.max(
-    baseDemand.Y + baseDemand.C + baseDemand.F,
-    120
-  );
+  // STRUCTURAL MAX BASED ON CATEGORY
+  let structuralMax = 300;
+
+  if(ap.category === "Primary Hub") structuralMax = 1200;
+  else if(ap.category === "Major Regional") structuralMax = 700;
+  else if(ap.category === "Regional") structuralMax = 350;
+  else structuralMax = 180;
 
   let html = "";
 
   days.forEach((day, i)=>{
 
-    const Y = Math.round(baseDemand.Y * distribution[i]);
-    const C = Math.round(baseDemand.C * distribution[i]);
-    const F = Math.round(baseDemand.F * distribution[i]);
+    const Y = Math.round(demand.Y * distribution[i]);
+    const C = Math.round(demand.C * distribution[i]);
+    const F = Math.round(demand.F * distribution[i]);
 
     const total = Y + C + F;
 
-    const pct = Math.min(100, (total / visualMax) * 100);
+    const pct = Math.min(100, (total / structuralMax) * 100);
 
     html += `
 
-    <div style="
-      margin-bottom:18px;
-      font-family:Orbitron, sans-serif;
-    ">
+      <div style="margin-bottom:22px;">
 
-      <div style="
-        font-size:11px;
-        letter-spacing:2px;
-        color:#7f8da3;
-        margin-bottom:4px;
-      ">
-        ${day}
-      </div>
-
-      <div style="
-        width:240px;
-        height:8px;
-        background:rgba(255,255,255,0.06);
-        border-radius:4px;
-        overflow:hidden;
-        position:relative;
-        box-shadow:
-          inset 0 0 6px rgba(0,0,0,0.8);
-      ">
-
+        <!-- DAY LABEL -->
         <div style="
-          width:${pct}%;
-          height:100%;
-          background:
-            linear-gradient(
-              90deg,
-              #004a99 0%,
-              #0066cc 30%,
-              #00AEEF 70%,
-              #33d6ff 100%
-            );
-          box-shadow:
-            0 0 6px rgba(0,174,239,0.7),
-            0 0 12px rgba(0,174,239,0.35);
+          color:#ffb300;
+          font-family:Orbitron;
+          font-size:12px;
+          letter-spacing:2px;
+          margin-bottom:6px;
         ">
+          ${day}
+        </div>
+
+
+        <!-- STRUCTURAL BAR -->
+        <div style="
+          width:260px;
+          height:10px;
+          background:rgba(255,255,255,0.05);
+          border-radius:5px;
+          position:relative;
+          overflow:hidden;
+        ">
+
+          <!-- ECONOMY RANGE -->
+          <div style="
+            position:absolute;
+            left:33.33%;
+            top:0;
+            bottom:0;
+            width:1px;
+            background:rgba(255,179,0,0.35);
+          "></div>
+
+          <!-- BUSINESS RANGE -->
+          <div style="
+            position:absolute;
+            left:66.66%;
+            top:0;
+            bottom:0;
+            width:1px;
+            background:rgba(255,179,0,0.35);
+          "></div>
+
+
+          <!-- DEMAND FILL -->
+          <div style="
+            width:${pct}%;
+            height:100%;
+            background:
+              linear-gradient(
+                90deg,
+                #004a99 0%,
+                #0066cc 30%,
+                #00AEEF 70%,
+                #33d6ff 100%
+              );
+            box-shadow:
+              0 0 6px rgba(0,174,239,0.8),
+              0 0 12px rgba(0,174,239,0.4);
+          ">
+          </div>
+
+        </div>
+
+
+        <!-- VALUE LABELS -->
+        <div style="
+          font-family:Orbitron;
+          font-size:11px;
+          color:#ffb300;
+          margin-top:6px;
+          letter-spacing:1px;
+        ">
+
+          Y = ${Y}
+
+          &nbsp;&nbsp;&nbsp;&nbsp;
+
+          VACÍO
+
+          &nbsp;&nbsp;&nbsp;&nbsp;
+
+          C = ${C}
+
+          &nbsp;&nbsp;&nbsp;&nbsp;
+
+          F = ${F}
+
         </div>
 
       </div>
-
-      <div style="
-        font-size:11px;
-        color:#cbd6ff;
-        margin-top:4px;
-        letter-spacing:1px;
-      ">
-        ${Y} Y
-        &nbsp;&nbsp;
-        C ${C}
-        &nbsp;&nbsp;
-        F ${F}
-      </div>
-
-    </div>
     `;
   });
 
