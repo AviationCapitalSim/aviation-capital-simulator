@@ -1014,6 +1014,7 @@ function hideDemandTooltip() {
    === MODAL ====================================================
    ============================================================= */
 function openAirportInfo(icao) {
+
   const airports = getAirportsEuropeSafe();
   const ap = airports.find(a => a.icao === icao);
   if (!ap) return;
@@ -1022,71 +1023,166 @@ function openAirportInfo(icao) {
   const title   = document.getElementById("modalTitle");
   const content = document.getElementById("modalContent");
 
-  title.textContent = `${ap.city} (${ap.icao})`;
+  title.textContent = `${ap.city.toUpperCase()} — ${ap.icao}`;
 
-  /* 🟦 B2 — Obtener valores históricos según el año actual */
+  // ===============================
+  // LIVE TIME
+  // ===============================
   let year = 1940;
   try {
     year = ACS_TIME.currentTime.getFullYear();
-  } catch(e) {
-    console.warn("ACS_TIME not ready, fallback to 1940");
+  } catch(e){}
+
+  // ===============================
+  // LIVE ECONOMICS
+  // ===============================
+  const econ = ACS_adjustAirportFees(ap, year);
+
+  // ===============================
+  // LIVE MARKET
+  // ===============================
+  const market = ACS_getAirportMarketCapacity(ap);
+
+  const usedPct = Math.round(market.saturation * 100);
+
+  let barColor = "#1ec97b";
+  let status = "NORMAL";
+
+  if(usedPct >= 90){
+    barColor = "#ff3b30";
+    status = "CAPACITY CONSTRAINED";
+  }
+  else if(usedPct >= 75){
+    barColor = "#ff9800";
+    status = "HIGH UTILIZATION";
+  }
+  else if(usedPct >= 50){
+    barColor = "#FFC107";
+    status = "MODERATE UTILIZATION";
   }
 
-  // Ajustar tarifas según historia
-  const hist = ACS_adjustAirportFees(ap, year);
+  // ===============================
+  // ROLE
+  // ===============================
+  let role = "Regional Node";
+
+  if(ap.category === "Primary Hub")
+    role = "International Gateway";
+
+  else if(ap.category === "Major Regional")
+    role = "Regional Hub";
+
+  // ===============================
+  // BUILD PANEL
+  // ===============================
 
   content.innerHTML = `
-    <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
-      📍 Location
-    </div>
-    <div><strong style="color:#ffe7a0;">Country:</strong> <span style="color:#dbe4ff;">${ap.country}</span></div>
-    <div><strong style="color:#ffe7a0;">Region:</strong> <span style="color:#dbe4ff;">${ap.region}</span></div>
-    <div><strong style="color:#ffe7a0;">Category:</strong> <span style="color:#dbe4ff;">${ap.category}</span></div>
 
-    <hr style="border-color:rgba(255,179,0,0.35); margin:14px 0;">
+  <div style="font-size:12px; color:#7f8da3; margin-bottom:10px;">
+    ${ap.category.toUpperCase()} · ${role.toUpperCase()}
+  </div>
 
-    <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
-      🧭 Coordinates
-    </div>
-    <div><strong style="color:#ffe7a0;">Latitude:</strong> <span style="color:#dbe4ff;">${ap.latitude}</span></div>
-    <div><strong style="color:#ffe7a0;">Longitude:</strong> <span style="color:#dbe4ff;">${ap.longitude}</span></div>
-    <div><strong style="color:#ffe7a0;">Elevation:</strong> <span style="color:#dbe4ff;">${ap.elevation_ft} ft</span></div>
-    <div><strong style="color:#ffe7a0;">Runway:</strong> <span style="color:#dbe4ff;">${ap.runway_m} m</span></div>
-    <div><strong style="color:#ffe7a0;">Open Hrs:</strong> <span style="color:#dbe4ff;">${ap.open_hrs}</span></div>
-    <div><strong style="color:#ffe7a0;">Aircraft Limit:</strong> <span style="color:#dbe4ff;">${ap.aircraft_limit}</span></div>
 
-    <hr style="border-color:rgba(255,179,0,0.35); margin:14px 0;">
+  <!-- INFRASTRUCTURE -->
+  <div style="color:#00AEEF; font-weight:600; margin-top:8px;">
+    INFRASTRUCTURE STATUS
+  </div>
 
-    <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
-      💰 Costs (Historical)
-    </div>
-    <div><strong style="color:#ffe7a0;">Slot Cost:</strong> 
-      <span style="color:#dbe4ff;">$${hist.slot_cost.toLocaleString()}</span>
-    </div>
-    <div><strong style="color:#ffe7a0;">Landing Fee:</strong> 
-      <span style="color:#dbe4ff;">$${hist.landing_fee.toLocaleString()}</span>
-    </div>
-    <div><strong style="color:#ffe7a0;">Fuel Price:</strong> 
-      <span style="color:#dbe4ff;">$${hist.fuel_price}/gal</span>
-    </div>
-    <div><strong style="color:#ffe7a0;">Ticket %:</strong> 
-      <span style="color:#dbe4ff;">${hist.ticket_fee}%</span>
-    </div>
-    <div><strong style="color:#ffe7a0;">Growth:</strong>
-      <span style="color:#dbe4ff;">+${hist.growth}%</span>
+  <div style="margin-top:6px; line-height:1.6;">
+    Runway Length: ${ap.runway_m} m<br>
+    Aircraft Capability: ${ap.aircraft_limit}<br>
+    Field Elevation: ${ap.elevation_ft} ft<br>
+    Operating Window: ${ap.open_hrs}
+  </div>
+
+  <div style="margin-top:8px;">
+    Throughput Capacity: 
+    <span style="color:#00ff80">
+      ${market.total.toLocaleString()} seats/day
+    </span>
+  </div>
+
+
+  <!-- MARKET -->
+  <div style="color:#00AEEF; font-weight:600; margin-top:18px;">
+    PASSENGER MARKET
+  </div>
+
+  <div style="margin-top:6px; line-height:1.6;">
+    Total Market: ${market.total.toLocaleString()}<br>
+    In Operation: ${market.used.toLocaleString()}<br>
+    Available Capacity: 
+    <span style="color:#00ff80">
+      ${market.available.toLocaleString()}
+    </span>
+  </div>
+
+
+  <!-- LIVE BAR -->
+  <div style="margin-top:12px;">
+
+    <div style="
+      background:#0b1220;
+      border-radius:6px;
+      height:14px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.1);
+    ">
+
+      <div style="
+        width:${usedPct}%;
+        height:100%;
+        background:${barColor};
+        box-shadow:0 0 8px ${barColor};
+        transition:width 0.5s ease;
+      "></div>
+
     </div>
 
-    <hr style="border-color:rgba(255,179,0,0.35); margin:14px 0;">
-
-    <div style="margin-top:6px; color:#ffca3a; font-weight:700; font-size:1.05rem;">
-      📝 Notes
+    <div style="
+      margin-top:6px;
+      font-size:13px;
+      color:${barColor};
+      font-weight:600;
+    ">
+      ${usedPct}% · ${status}
     </div>
-    <div style="color:#dbe4ff;">${ap.notes || "—"}</div>
+
+  </div>
+
+
+  <!-- ECONOMICS -->
+  <div style="color:#00AEEF; font-weight:600; margin-top:18px;">
+    ECONOMIC ENVIRONMENT
+  </div>
+
+  <div style="margin-top:6px; line-height:1.6;">
+    Slot Fee Index: $${econ.slot_cost.toLocaleString()}<br>
+    Landing Fee Index: $${econ.landing_fee.toLocaleString()}<br>
+    Fuel Index: $${econ.fuel_price}/gal<br>
+    Airport Charge: ${econ.ticket_fee}%<br>
+    Market Growth Index: ${econ.market_saturation ? econ.market_saturation : "LIVE"}
+  </div>
+
+
+  <!-- LIVE STATUS -->
+  <div style="color:#00AEEF; font-weight:600; margin-top:18px;">
+    OPERATIONAL STATUS
+  </div>
+
+  <div style="margin-top:6px;">
+    Network Role: ${role}<br>
+    Congestion Level: 
+    <span style="color:${barColor}; font-weight:600;">
+      ${status}
+    </span>
+  </div>
+
   `;
 
   modal.style.display = "flex";
-}
 
+}
 
 function closeAirportInfo() {
   document.getElementById("airportInfoModal").style.display = "none";
