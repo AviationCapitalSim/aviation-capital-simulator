@@ -252,70 +252,59 @@ function ACS_getAirportMarketCapacity(ap){
 
   if(!ap) return { throughput: 0 };
 
-  const year =
-    (window.ACS_TIME &&
-     ACS_TIME.currentTime &&
-     ACS_TIME.currentTime.year)
-     ? ACS_TIME.currentTime.year
-     : 2025;
+  let year = 1940;
 
-  /* ---------- MODERN BASE CAPACITY ---------- */
+  try{
+    year = ACS_TIME.currentTime.getFullYear();
+  }catch(e){}
 
-  let baseThroughput = 0;
+  let modernCapacity = 0;
 
   switch(ap.category){
 
     case "Primary Hub":
-      baseThroughput = 4800;
+      modernCapacity = 4800;
       break;
 
     case "Major Regional":
-      baseThroughput = 2200;
+      modernCapacity = 2200;
       break;
 
     case "Regional":
-      baseThroughput = 900;
+      modernCapacity = 900;
       break;
 
     default:
-      baseThroughput = 300;
+      modernCapacity = 400;
   }
-
-  /* ---------- HISTORICAL MULTIPLIER ---------- */
 
   let multiplier = 1.0;
 
-  if(year <= 1955)
-    multiplier = 0.12;
+  if(year <= 1950)
+    multiplier = 0.11;
 
-  else if(year <= 1975)
-    multiplier = 0.28;
+  else if(year <= 1970)
+    multiplier = 0.26;
 
-  else if(year <= 1995)
-    multiplier = 0.52;
+  else if(year <= 1990)
+    multiplier = 0.48;
 
   else if(year <= 2010)
-    multiplier = 0.74;
+    multiplier = 0.72;
 
   else
     multiplier = 1.0;
 
-  /* ---------- FINAL STRUCTURAL CAPACITY ---------- */
-
-  const historicalThroughput =
-    Math.round(baseThroughput * multiplier);
+  const throughput =
+    Math.round(modernCapacity * multiplier);
 
   return {
-
-    throughput: historicalThroughput,
-
-    baseThroughput: baseThroughput,
-
-    eraMultiplier: multiplier,
-
+    throughput: throughput,
+    modernCapacity: modernCapacity,
+    multiplier: multiplier,
     year: year
-
   };
+
 }
 
 // ============================================================
