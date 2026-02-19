@@ -363,3 +363,69 @@ function ACS_adjustAirportFees(ap, year){
     };
 
 }
+
+/* ============================================================
+   ACS REAL UTILIZATION ENGINE
+   Calculates real passengers using scheduleItems
+   ============================================================ */
+
+function ACS_getAirportRealUtilization(icao){
+
+  if(!icao)
+    return {
+      pax: 0,
+      utilizationPct: 0
+    };
+
+  let schedule = [];
+
+  try{
+    schedule = JSON.parse(localStorage.getItem("scheduleItems")) || [];
+  }catch(e){}
+
+  let totalPax = 0;
+
+  for(const flight of schedule){
+
+    if(
+      flight.origin === icao ||
+      flight.destination === icao
+    ){
+
+      const y = flight.paxY || 0;
+      const c = flight.paxC || 0;
+      const f = flight.paxF || 0;
+
+      const freq = flight.frequency || 1;
+
+      totalPax += (y + c + f) * freq;
+
+    }
+
+  }
+
+  const airports = getAirportsEuropeSafe();
+  const ap = airports.find(a => a.icao === icao);
+
+  if(!ap)
+    return {
+      pax: totalPax,
+      utilizationPct: 0
+    };
+
+  const market = ACS_getAirportMarketCapacity(ap);
+
+  const utilizationPct =
+    market.throughput > 0
+      ? Math.round((totalPax / market.throughput) * 100)
+      : 0;
+
+  return {
+
+    pax: totalPax,
+
+    utilizationPct: Math.min(utilizationPct, 100)
+
+  };
+
+}
