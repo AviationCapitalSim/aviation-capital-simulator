@@ -1035,6 +1035,7 @@ function loadAirports() {
 /* ============================================================
    === FILTER BY COUNTRY =======================================
    ============================================================ */
+     
 function filterByCountry() {
   const selected  = document.getElementById("countrySelect").value;
   const tableBody = document.getElementById("airportTableBody");
@@ -1085,11 +1086,18 @@ function filterByCountry() {
       <td><strong>${a.city}</strong> (${a.icao})</td>
       <td>${a.region}</td>
       <td>${dist} NM</td>
-      <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
-          onmouseout="hideDemandTooltip()">
-        ${d.Y}/${d.C}/${d.F}
-        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+      <td class="col-demand"
+      style="cursor:pointer"
+      onclick="ACS_openDemandModal('${a.icao}')">
+
+      ${d.Y}/${d.C}/${d.F}
+
+      <div class="demand-bar"
+       style="--eco:${ecoPct}%;
+              --biz:${bizPct}%"></div>
+
       </td>
+
       <td>${slotHTML}</td>
       <td style="display:flex; gap:8px; justify-content:center;">
         <button class="acs-btn-info" onclick="openAirportInfo('${a.icao}')">Info</button>
