@@ -1359,8 +1359,9 @@ function closeAirportInfo() {
 }
 
 /* ============================================================
-   🟦 ACS STRUCTURAL CABIN DEMAND INSTRUMENT — QATAR FIX
-   Days on top, bar center, values below (NO "VACIO")
+   🟦 ACS CABIN DEMAND INSTRUMENT — CENTERED QATAR STYLE
+   Structural scale + centered layout
+   Fully synchronized with table demand
    ============================================================ */
 
 function ACS_openDemandModal(icao){
@@ -1373,10 +1374,16 @@ function ACS_openDemandModal(icao){
   const title   = document.getElementById("acsDemandTitle");
   const content = document.getElementById("acsDemandContent");
 
-  title.textContent =
-    `${ap.city.toUpperCase()} — PASSENGER DEMAND DISTRIBUTION`;
+  // CENTERED TITLE
+  title.innerHTML = `
+    <div style="text-align:center;">
+      PASSENGER DEMAND<br>
+      <span style="font-size:14px; color:#ffb300;">
+        ${ap.city.toUpperCase()} — ${ap.icao}
+      </span>
+    </div>
+  `;
 
-  // EXACT SAME DEMAND SOURCE AS TABLE
   const demand = adjustPassengerClasses(ap.demand);
 
   const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
@@ -1384,7 +1391,7 @@ function ACS_openDemandModal(icao){
   const distribution =
     [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
 
-  // STRUCTURAL MAX BASED ON CATEGORY
+  // STRUCTURAL LIMIT BY CATEGORY
   let structuralMax = 300;
 
   if(ap.category === "Primary Hub") structuralMax = 1200;
@@ -1392,12 +1399,7 @@ function ACS_openDemandModal(icao){
   else if(ap.category === "Regional") structuralMax = 350;
   else structuralMax = 180;
 
-  let html = `
-    <div style="
-      margin-top:6px;
-      padding:6px 4px 0 4px;
-    ">
-  `;
+  let html = "";
 
   days.forEach((day, i)=>{
 
@@ -1409,105 +1411,95 @@ function ACS_openDemandModal(icao){
     const pct = Math.min(100, (total / structuralMax) * 100);
 
     html += `
+
       <div style="
-        margin:0 auto 18px auto;
-        width:420px;
-        max-width:92%;
+        text-align:center;
+        margin-bottom:26px;
       ">
 
-        <!-- DAY (TOP) -->
+        <!-- DAY -->
         <div style="
-          text-align:center;
-          font-family:Orbitron, 'Poppins', sans-serif;
-          font-size:13px;
-          letter-spacing:3px;
+          font-family:Orbitron;
+          font-size:14px;
           color:#ffb300;
-          text-shadow:0 0 8px rgba(255,179,0,0.18);
+          letter-spacing:3px;
           margin-bottom:6px;
         ">
           ${day}
         </div>
 
-        <!-- BAR (CENTER) -->
+
+        <!-- STRUCTURAL SCALE -->
         <div style="
-          width:340px;
-          max-width:100%;
-          height:10px;
-          margin:0 auto;
-          background:rgba(255,255,255,0.06);
-          border-radius:6px;
+          width:280px;
+          height:12px;
+          margin:0 auto 6px auto;
           position:relative;
-          overflow:hidden;
-          border:1px solid rgba(255,179,0,0.22);
-          box-shadow:
-            inset 0 0 10px rgba(0,0,0,0.75),
-            0 0 18px rgba(0,0,0,0.35);
+          background:rgba(255,255,255,0.05);
+          border-radius:6px;
+          border:1px solid rgba(255,179,0,0.25);
         ">
 
-          <!-- STRUCTURAL DIVIDERS -->
-          <div style="
-            position:absolute;
-            left:33.33%;
-            top:0;
-            bottom:0;
-            width:1px;
-            background:rgba(255,179,0,0.35);
-          "></div>
+          <!-- SCALE MARKERS -->
+          <div style="position:absolute;left:25%;top:0;bottom:0;width:1px;background:rgba(255,179,0,0.35);"></div>
+          <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,179,0,0.35);"></div>
+          <div style="position:absolute;left:75%;top:0;bottom:0;width:1px;background:rgba(255,179,0,0.35);"></div>
 
-          <div style="
-            position:absolute;
-            left:66.66%;
-            top:0;
-            bottom:0;
-            width:1px;
-            background:rgba(255,179,0,0.35);
-          "></div>
-
-          <!-- DEMAND FILL -->
+          <!-- DEMAND BAR -->
           <div style="
             width:${pct}%;
             height:100%;
             background:
               linear-gradient(
                 90deg,
-                #003a7a 0%,
-                #005bb5 35%,
-                #00AEEF 75%,
-                #33d6ff 100%
+                #003a7a,
+                #0066cc,
+                #00AEEF,
+                #33d6ff
               );
+            border-radius:6px;
             box-shadow:
-              0 0 10px rgba(0,174,239,0.55),
-              0 0 20px rgba(0,174,239,0.22);
-          "></div>
+              0 0 10px rgba(0,174,239,0.6);
+          ">
+          </div>
 
         </div>
 
-        <!-- VALUES (BOTTOM) -->
+
+        <!-- VALUES BELOW BAR -->
         <div style="
-          margin-top:6px;
+          width:280px;
+          margin:0 auto;
           display:flex;
-          justify-content:center;
-          gap:18px;
-          font-family:Orbitron, 'Poppins', sans-serif;
+          justify-content:space-between;
+          font-family:Orbitron;
           font-size:12px;
-          letter-spacing:1.5px;
           color:#ffb300;
         ">
-          <span>Y&nbsp;=&nbsp;${Y}</span>
-          <span>C&nbsp;=&nbsp;${C}</span>
-          <span>F&nbsp;=&nbsp;${F}</span>
+
+          <span>
+            ECONOMY&nbsp;&nbsp;${Y}
+          </span>
+
+          <span>
+            BUSINESS&nbsp;&nbsp;${C}
+          </span>
+
+          <span>
+            FIRST&nbsp;&nbsp;${F}
+          </span>
+
         </div>
 
       </div>
     `;
   });
 
-  html += `</div>`;
-
   content.innerHTML = html;
 
   modal.style.display = "flex";
 }
+
 
 function ACS_closeDemandModal(){
   document.getElementById("acsDemandModal").style.display = "none";
