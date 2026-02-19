@@ -1142,6 +1142,81 @@ function sortTable(n) {
   }
 }
 
+/* ============================================================
+   ACS REAL UTILIZATION ENGINE
+   Reads real flights from scheduleItems
+   Airbus OCC-grade utilization logic
+   ============================================================ */
+function ACS_getAirportRealUtilization(icao){
+
+  const schedule =
+    JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+
+  if(!Array.isArray(schedule))
+    return { pax:0, utilizationPct:0 };
+
+  let totalFlights = 0;
+
+  schedule.forEach(item => {
+
+    if(item.type !== "flight") return;
+
+    if(
+      item.origin === icao ||
+      item.destination === icao
+    ){
+      totalFlights++;
+    }
+
+  });
+
+  /* Aircraft capacity resolution */
+  let aircraftCapacity = 33; // default 307 Stratoliner
+
+  try{
+
+    const fleet =
+      JSON.parse(localStorage.getItem("ACS_Fleet") || "[]");
+
+    if(Array.isArray(fleet) && fleet.length){
+
+      const ac = fleet.find(a =>
+        a.id === schedule[0]?.aircraftId
+      );
+
+      if(ac && ac.capacity)
+        aircraftCapacity = ac.capacity;
+
+    }
+
+  }catch(e){}
+
+  const pax = totalFlights * aircraftCapacity;
+
+  const airports = getAirportsEuropeSafe();
+  const ap = airports.find(a => a.icao === icao);
+
+  let throughput = 500;
+
+  if(ap){
+    const market = ACS_getAirportMarketCapacity(ap);
+    throughput = market.throughput || throughput;
+  }
+
+  const utilizationPct =
+    throughput > 0
+    ? Math.round((pax / throughput) * 100)
+    : 0;
+
+  return {
+
+    pax,
+    utilizationPct: Math.min(utilizationPct, 100)
+
+  };
+
+}
+     
 /* =============================================================
    === MODAL ====================================================
    ============================================================= */
