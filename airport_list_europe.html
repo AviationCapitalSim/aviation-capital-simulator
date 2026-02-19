@@ -1205,11 +1205,18 @@ function openAirportInfo(icao) {
   else if(ap.category === "Major Regional")
     role = "Regional Hub";
 
-  // ===============================
-  // BUILD PANEL
-  // ===============================
+ // ===============================
+// BUILD PANEL — REAL DATA ONLY
+// ===============================
 
-  content.innerHTML = `
+const demand = ACS_ENGINE_computePassengerDemand(ap);
+const totalDemand = demand.Y + demand.C + demand.F;
+
+const usedPct = Math.min(100,
+Math.round((totalDemand / market.throughput) * 100)
+);
+
+content.innerHTML = `
 
 <div class="acs-ops-panel">
 
@@ -1228,7 +1235,7 @@ ${ap.category.toUpperCase()} · ${role.toUpperCase()}
 
 
 <div class="acs-section-title">
-INFRASTRUCTURE STATUS
+STRUCTURAL CAPACITY
 </div>
 
 <div>
@@ -1250,7 +1257,7 @@ font-weight:600;
 font-size:16px;
 ">
 
-${market.total.toLocaleString()} seats/day
+${market.throughput.toLocaleString()} per day
 
 </div>
 
@@ -1261,15 +1268,32 @@ ${market.total.toLocaleString()} seats/day
 
 
 <div class="acs-section-title">
-PASSENGER MARKET STATUS
+PASSENGER DEMAND
 </div>
 
+<div style="
+font-family:monospace;
+letter-spacing:1px;
+margin-top:6px;
+">
 
-<div>
+Y ${demand.Y.toLocaleString()}
+&nbsp;&nbsp;&nbsp;
 
-Total Market: ${market.total.toLocaleString()}<br>
-In Operation: ${market.used.toLocaleString()}<br>
-Available: ${market.available.toLocaleString()}
+C ${demand.C.toLocaleString()}
+&nbsp;&nbsp;&nbsp;
+
+F ${demand.F.toLocaleString()}
+
+</div>
+
+<div style="
+margin-top:6px;
+color:#00ff80;
+font-weight:600;
+">
+
+Total Demand: ${totalDemand.toLocaleString()} pax/day
 
 </div>
 
@@ -1281,7 +1305,6 @@ Available: ${market.available.toLocaleString()}
 style="
 width:${usedPct}%;
 background:${barColor};
-color:${barColor};
 ">
 
 </div>
@@ -1297,7 +1320,7 @@ color:${barColor};
 border:1px solid ${barColor};
 ">
 
-${usedPct}% · ${status}
+${usedPct}% utilization · ${status}
 
 </div>
 
