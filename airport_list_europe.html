@@ -1351,8 +1351,9 @@ function closeAirportInfo() {
 }
 
 /* ============================================================
-   🟩 ACS PASSENGER DEMAND MODAL ENGINE
-   Airbus OCC — Weekly Distribution
+   🟦 ACS GALACTIC PASSENGER DEMAND PANEL
+   Airbus OCC + Qatar Executive Hybrid
+   Compact Instrument Style
    ============================================================ */
 
 function ACS_openDemandModal(icao){
@@ -1366,7 +1367,7 @@ function ACS_openDemandModal(icao){
   const content = document.getElementById("acsDemandContent");
 
   title.textContent =
-    `${ap.city.toUpperCase()} — PASSENGER DEMAND`;
+    `${ap.city.toUpperCase()} — PASSENGER DEMAND DISTRIBUTION`;
 
   const baseDemand = adjustPassengerClasses(ap.demand);
 
@@ -1374,6 +1375,11 @@ function ACS_openDemandModal(icao){
 
   const distribution =
     [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
+
+  const visualMax = Math.max(
+    baseDemand.Y + baseDemand.C + baseDemand.F,
+    120
+  );
 
   let html = "";
 
@@ -1383,39 +1389,70 @@ function ACS_openDemandModal(icao){
     const C = Math.round(baseDemand.C * distribution[i]);
     const F = Math.round(baseDemand.F * distribution[i]);
 
-    const total = Y + C + F || 1;
+    const total = Y + C + F;
 
-    const pctY = (Y/total)*100;
-    const pctC = (C/total)*100;
-    const pctF = (F/total)*100;
+    const pct = Math.min(100, (total / visualMax) * 100);
 
     html += `
-      <div class="acs-demand-row">
 
-        <div class="acs-demand-day">${day}</div>
+    <div style="
+      margin-bottom:18px;
+      font-family:Orbitron, sans-serif;
+    ">
 
-        <div class="acs-demand-bar">
+      <div style="
+        font-size:11px;
+        letter-spacing:2px;
+        color:#7f8da3;
+        margin-bottom:4px;
+      ">
+        ${day}
+      </div>
 
-          <div class="acs-demand-segY"
-               style="width:${pctY}%"></div>
+      <div style="
+        width:240px;
+        height:8px;
+        background:rgba(255,255,255,0.06);
+        border-radius:4px;
+        overflow:hidden;
+        position:relative;
+        box-shadow:
+          inset 0 0 6px rgba(0,0,0,0.8);
+      ">
 
-          <div class="acs-demand-segC"
-               style="width:${pctC}%"></div>
-
-          <div class="acs-demand-segF"
-               style="width:${pctF}%"></div>
-
-        </div>
-
-        <div class="acs-demand-values">
-          Y: ${Y}
-          &nbsp;&nbsp;
-          C: ${C}
-          &nbsp;&nbsp;
-          F: ${F}
+        <div style="
+          width:${pct}%;
+          height:100%;
+          background:
+            linear-gradient(
+              90deg,
+              #004a99 0%,
+              #0066cc 30%,
+              #00AEEF 70%,
+              #33d6ff 100%
+            );
+          box-shadow:
+            0 0 6px rgba(0,174,239,0.7),
+            0 0 12px rgba(0,174,239,0.35);
+        ">
         </div>
 
       </div>
+
+      <div style="
+        font-size:11px;
+        color:#cbd6ff;
+        margin-top:4px;
+        letter-spacing:1px;
+      ">
+        ${Y} Y
+        &nbsp;&nbsp;
+        C ${C}
+        &nbsp;&nbsp;
+        F ${F}
+      </div>
+
+    </div>
     `;
   });
 
