@@ -572,6 +572,53 @@ tr:hover {
   background: #ffb300;
   color: #081530;
 }
+
+/* ============================================================
+   🟩 ACS DEMAND WEEKLY BAR — AIRBUS STYLE
+   ============================================================ */
+
+.acs-demand-row{
+  margin-bottom:14px;
+}
+
+.acs-demand-day{
+  font-size:13px;
+  color:#7f8da3;
+  margin-bottom:4px;
+  letter-spacing:1px;
+}
+
+.acs-demand-bar{
+  width:100%;
+  height:14px;
+  border-radius:6px;
+  overflow:hidden;
+  background:#0a162f;
+  display:flex;
+  box-shadow:0 0 10px rgba(0,0,0,0.6);
+}
+
+.acs-demand-segY{
+  background:#00AEEF;
+  box-shadow:0 0 6px rgba(0,174,239,0.7);
+}
+
+.acs-demand-segC{
+  background:#FF8C00;
+  box-shadow:0 0 6px rgba(255,140,0,0.7);
+}
+
+.acs-demand-segF{
+  background:#FFD700;
+  box-shadow:0 0 8px rgba(255,215,0,0.9);
+}
+
+.acs-demand-values{
+  font-size:12px;
+  margin-top:4px;
+  color:#cbd6ff;
+}
+
      
 </style>
 
@@ -663,7 +710,26 @@ tr:hover {
       <button class="acs-modal-close" onclick="closeAirportInfo()">Close</button>
     </div>
   </div>
+
+<!-- ============================================================
+     🟩 ACS PASSENGER DEMAND MODAL — WEEKLY DISTRIBUTION
+     Airbus OCC + Qatar Executive Style
+     ============================================================ -->
+<div id="acsDemandModal" class="acs-modal">
+  <div class="acs-modal-box" style="max-width:600px">
+
+    <h3 id="acsDemandTitle">Passenger Demand</h3>
+
+    <div id="acsDemandContent"></div>
+
+    <button class="acs-modal-close"
+            onclick="ACS_closeDemandModal()">Close</button>
+
+  </div>
+</div>
+   
   <!-- SCRIPTS -->
+     
 <script>
   window.WorldAirportsACS = window.WorldAirportsACS || {};
 </script>
@@ -943,9 +1009,13 @@ function loadAirports() {
       <td class="col-airport"><strong>${a.city}</strong> (${a.icao})</td>
       <td class="col-country">${a.region}</td>
       <td class="col-distance">${dist} NM</td>
-      <td class="col-demand">
+      <td class="col-demand"
+      style="cursor:pointer"
+      onclick="ACS_openDemandModal('${a.icao}')">
       ${d.Y}/${d.C}/${d.F}
-      <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+      <div class="demand-bar"
+       style="--eco:${ecoPct}%;
+              --biz:${bizPct}%"></div>
       </td>
       <td class="col-slots">${slotHTML}</td>
       <td class="col-action" style="display:flex; gap:10px; justify-content:center;">
@@ -1280,6 +1350,84 @@ function closeAirportInfo() {
   document.getElementById("airportInfoModal").style.display = "none";
 }
 
+/* ============================================================
+   🟩 ACS PASSENGER DEMAND MODAL ENGINE
+   Airbus OCC — Weekly Distribution
+   ============================================================ */
+
+function ACS_openDemandModal(icao){
+
+  const airports = getAirportsEuropeSafe();
+  const ap = airports.find(a => a.icao === icao);
+  if(!ap) return;
+
+  const modal = document.getElementById("acsDemandModal");
+  const title = document.getElementById("acsDemandTitle");
+  const content = document.getElementById("acsDemandContent");
+
+  title.textContent =
+    `${ap.city.toUpperCase()} — PASSENGER DEMAND`;
+
+  const baseDemand = adjustPassengerClasses(ap.demand);
+
+  const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+
+  const distribution =
+    [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
+
+  let html = "";
+
+  days.forEach((day, i)=>{
+
+    const Y = Math.round(baseDemand.Y * distribution[i]);
+    const C = Math.round(baseDemand.C * distribution[i]);
+    const F = Math.round(baseDemand.F * distribution[i]);
+
+    const total = Y + C + F || 1;
+
+    const pctY = (Y/total)*100;
+    const pctC = (C/total)*100;
+    const pctF = (F/total)*100;
+
+    html += `
+      <div class="acs-demand-row">
+
+        <div class="acs-demand-day">${day}</div>
+
+        <div class="acs-demand-bar">
+
+          <div class="acs-demand-segY"
+               style="width:${pctY}%"></div>
+
+          <div class="acs-demand-segC"
+               style="width:${pctC}%"></div>
+
+          <div class="acs-demand-segF"
+               style="width:${pctF}%"></div>
+
+        </div>
+
+        <div class="acs-demand-values">
+          Y: ${Y}
+          &nbsp;&nbsp;
+          C: ${C}
+          &nbsp;&nbsp;
+          F: ${F}
+        </div>
+
+      </div>
+    `;
+  });
+
+  content.innerHTML = html;
+
+  modal.style.display = "flex";
+}
+
+function ACS_closeDemandModal(){
+  document.getElementById("acsDemandModal").style.display = "none";
+}
+     
 window.addEventListener("click", (e) => {
   const modal = document.getElementById("airportInfoModal");
   if (e.target === modal) modal.style.display = "none";
@@ -1361,5 +1509,7 @@ function ACS_openRouteSchedule(destIcao) {
 }
 </script>
 
+<script src="engine/acs_security_core.js?v=1"></script>
+     
 </body>
 </html>
