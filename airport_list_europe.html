@@ -305,28 +305,6 @@ tr:hover {
   color: #081530;
 }
 
-/* Pie chart */
-.demand-pie {
-  width: 58px;
-  height: 58px;
-  margin: 8px auto 0 auto;
-  border-radius: 50%;
-  position: relative;
-  background: conic-gradient(
-    #1DB954 0deg var(--eco),
-    #FFB300 var(--eco) var(--biz),
-    #FF6F00 var(--biz) 360deg
-  );
-  box-shadow: 0 0 10px rgba(255,179,0,0.45);
-}
-
-.demand-pie .slice {
-  position: absolute;
-  inset: 9px;
-  background: #081530;
-  border-radius: 50%;
-}
-
 /* ============================================================
    === SLOT BAR (AGREGADO, COLUMNA 5) ==========================
    ============================================================ */
@@ -593,21 +571,6 @@ tr:hover {
 .acs-modal-close:hover {
   background: #ffb300;
   color: #081530;
-}
-
-/* Tooltip para la demanda (pie) */
-#demandTooltip {
-  position: absolute;
-  display: none;
-  min-width: 200px;
-  background: rgba(12,23,50,0.95);
-  border-radius: 10px;
-  border: 1px solid rgba(255,179,0,0.6);
-  padding: 10px 12px;
-  font-size: 0.85rem;
-  z-index: 7000;
-  pointer-events: none;
-  box-shadow: 0 0 18px rgba(0,0,0,0.7);
 }
      
 </style>
@@ -980,11 +943,9 @@ function loadAirports() {
       <td class="col-airport"><strong>${a.city}</strong> (${a.icao})</td>
       <td class="col-country">${a.region}</td>
       <td class="col-distance">${dist} NM</td>
-      <td class="col-demand"
-          onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
-          onmouseout="hideDemandTooltip()">
-        ${d.Y}/${d.C}/${d.F}
-        <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
+      <td class="col-demand">
+      ${d.Y}/${d.C}/${d.F}
+      <div class="demand-bar" style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
       </td>
       <td class="col-slots">${slotHTML}</td>
       <td class="col-action" style="display:flex; gap:10px; justify-content:center;">
@@ -1102,37 +1063,6 @@ function sortTable(n) {
       switching = true;
     }
   }
-}
-
-/* =============================================================
-   === TOOLTIP PIE CHART =======================================
-   ============================================================= */
-function showDemandTooltip(e, Y, C, F) {
-  const total = Y + C + F || 1;
-
-  const ecoDeg = (Y / total) * 360;
-  const bizDeg = ((Y + C) / total) * 360;
-
-  const tooltip = document.getElementById("demandTooltip");
-  tooltip.innerHTML = `
-    <strong style="color:#ffca3a; font-size:1rem;">Passenger Demand</strong>
-    <div>Economy: ${Y}</div>
-    <div>Business: ${C}</div>
-    <div>First: ${F}</div>
-
-    <div class="demand-pie" 
-      style="--eco:${ecoDeg}deg; --biz:${bizDeg}deg;">
-      <div class="slice"></div>
-    </div>
-  `;
-
-  tooltip.style.display = "block";
-  tooltip.style.left = e.pageX + 15 + "px";
-  tooltip.style.top = e.pageY - 60 + "px";
-}
-
-function hideDemandTooltip() {
-  document.getElementById("demandTooltip").style.display = "none";
 }
 
 /* =============================================================
