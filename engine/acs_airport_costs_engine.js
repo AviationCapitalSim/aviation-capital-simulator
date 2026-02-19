@@ -1,37 +1,88 @@
 /* ============================================================
-   === ACS HISTORICAL AIRPORT COST ENGINE — v1.0 (1940–2026) ==
+   === ACS HISTORICAL AIRPORT ECONOMICS & MARKET ENGINE v2.0 ==
    ------------------------------------------------------------
-   • Ajusta costos según el año de simulación.
-   • No modifica datasets originales.
-   • Compatible con Finance, Schedule, Routes, Modal Info.
-   • Basado en datos reales de precio del petróleo y evolución
-     aeroportuaria global.
+   FULL REALISM MODEL — 1940–2030
+   ------------------------------------------------------------
+   Combina:
+
+   • Historical fuel pricing
+   • Historical airport fees
+   • Historical passenger market growth
+   • Historical airport throughput capacity
+   • Real-time market consumption from scheduleItems
+   • Realistic aviation growth curve (non-linear)
+
+   Uses REAL SEATS from scheduleItems ledger.
+
+   Compatible with:
+   Finance Engine
+   Schedule Engine
+   Routes Engine
+   Airport Info UI
+   Market Visualization
+
+   Author: ACS Core System
    ============================================================ */
 
 
+
 // ============================================================
-// 1) TABLA HISTÓRICA — FACTOR DE COMBUSTIBLE (USD/gal)
+// 1) HISTORICAL GLOBAL AVIATION MARKET MULTIPLIER
+// Based on real ICAO + IATA global passenger growth curves
+// ============================================================
+
+const ACS_HIST_MARKET = [
+
+    { year: 1940, factor: 0.06 },
+    { year: 1945, factor: 0.08 },
+    { year: 1950, factor: 0.14 },
+    { year: 1955, factor: 0.22 },
+    { year: 1960, factor: 0.32 },
+    { year: 1965, factor: 0.45 },
+    { year: 1970, factor: 0.60 },
+    { year: 1975, factor: 0.72 },
+    { year: 1980, factor: 0.82 },
+    { year: 1985, factor: 0.90 },
+    { year: 1990, factor: 0.96 },
+    { year: 1995, factor: 1.00 },
+    { year: 2000, factor: 1.05 },
+    { year: 2005, factor: 1.10 },
+    { year: 2010, factor: 1.15 },
+    { year: 2015, factor: 1.20 },
+    { year: 2020, factor: 1.25 },
+    { year: 2026, factor: 1.30 }
+
+];
+
+
+
+// ============================================================
+// 2) HISTORICAL FUEL PRICE FACTOR
 // ============================================================
 
 const ACS_HIST_FUEL = [
-    { year: 1940, factor: 0.08 },   // 0.25 USD/gal aprox.
-    { year: 1950, factor: 0.12 },   // 0.40 USD/gal
-    { year: 1960, factor: 0.20 },   // 0.60 USD/gal
-    { year: 1970, factor: 0.32 },   // Crisis petrolera
-    { year: 1980, factor: 0.45 },   // Crisis petrolera 2
+
+    { year: 1940, factor: 0.08 },
+    { year: 1950, factor: 0.12 },
+    { year: 1960, factor: 0.20 },
+    { year: 1970, factor: 0.32 },
+    { year: 1980, factor: 0.45 },
     { year: 1990, factor: 0.60 },
     { year: 2000, factor: 0.80 },
     { year: 2010, factor: 0.95 },
     { year: 2020, factor: 1.10 },
     { year: 2026, factor: 1.20 }
+
 ];
 
 
+
 // ============================================================
-// 2) FACTOR HISTÓRICO PARA LANDING FEES & SLOT COST
+// 3) HISTORICAL AIRPORT FEES FACTOR
 // ============================================================
 
 const ACS_HIST_FEES = [
+
     { year: 1940, factor: 0.10 },
     { year: 1950, factor: 0.18 },
     { year: 1960, factor: 0.25 },
@@ -42,15 +93,18 @@ const ACS_HIST_FEES = [
     { year: 2010, factor: 0.95 },
     { year: 2020, factor: 1.05 },
     { year: 2026, factor: 1.15 }
+
 ];
 
 
+
 // ============================================================
-// 3) FACTOR HISTÓRICO PARA TICKET FEE (tarifa de aeropuerto)
+// 4) HISTORICAL TICKET TAX FACTOR
 // ============================================================
 
 const ACS_HIST_TICKET = [
-    { year: 1940, factor: 0.30 },  // tasas más bajas
+
+    { year: 1940, factor: 0.30 },
     { year: 1950, factor: 0.40 },
     { year: 1960, factor: 0.50 },
     { year: 1970, factor: 0.65 },
@@ -60,189 +114,214 @@ const ACS_HIST_TICKET = [
     { year: 2010, factor: 1.05 },
     { year: 2020, factor: 1.10 },
     { year: 2026, factor: 1.15 }
+
 ];
 
 
-// ============================================================
-// 4) FACTOR HISTÓRICO PARA "Growth" (mercado regional)
-// ============================================================
-
-const ACS_HIST_GROWTH = [
-    { year: 1940, factor: 0.20 }, 
-    { year: 1950, factor: 0.35 },
-    { year: 1960, factor: 0.50 },
-    { year: 1970, factor: 0.70 },
-    { year: 1980, factor: 0.85 },
-    { year: 1990, factor: 0.95 },
-    { year: 2000, factor: 1.00 },
-    { year: 2010, factor: 1.05 },
-    { year: 2020, factor: 1.10 },
-    { year: 2026, factor: 1.15 }
-];
-
 
 // ============================================================
-// 5) FUNCIONES — Obtener factor por año
+// 5) HISTORICAL CLASS DISTRIBUTION
+// Critical for realism (1940 had almost no Business / First)
 // ============================================================
 
-function ACS_getFactorForYear(table, year) {
-    for (let i = table.length - 1; i >= 0; i--) {
-        if (year >= table[i].year) return table[i].factor;
-    }
+function ACS_getHistoricalClassDistribution(year){
+
+    if(year <= 1955)
+        return { Y: 0.97, C: 0.03, F: 0.00 };
+
+    if(year <= 1975)
+        return { Y: 0.92, C: 0.07, F: 0.01 };
+
+    if(year <= 1995)
+        return { Y: 0.87, C: 0.10, F: 0.03 };
+
+    if(year <= 2015)
+        return { Y: 0.84, C: 0.12, F: 0.04 };
+
+    return { Y: 0.82, C: 0.14, F: 0.04 };
+
+}
+
+
+
+// ============================================================
+// 6) GENERIC FACTOR LOOKUP
+// ============================================================
+
+function ACS_getFactorForYear(table, year){
+
+    for(let i = table.length - 1; i >= 0; i--)
+        if(year >= table[i].year)
+            return table[i].factor;
+
     return table[0].factor;
+
 }
 
 
+
 // ============================================================
-// 6) MOTOR PRINCIPAL — Ajuste de costos por año
+// 7) LOAD REAL MARKET DATA FROM scheduleItems
 // ============================================================
-
-function ACS_adjustAirportFees(ap, year) {
-
-    const fuelFactor   = ACS_getFactorForYear(ACS_HIST_FUEL,   year);
-    const feesFactor   = ACS_getFactorForYear(ACS_HIST_FEES,   year);
-    const ticketFactor = ACS_getFactorForYear(ACS_HIST_TICKET, year);
-    const growthFactor = ACS_getFactorForYear(ACS_HIST_GROWTH, year);
-
-    return {
-        slot_cost    : Math.round(ap.slot_cost_usd    * feesFactor),
-        landing_fee  : Math.round(ap.landing_fee_usd  * feesFactor),
-        fuel_price   : (ap.fuel_usd_gal * fuelFactor).toFixed(2),
-        ticket_fee   : (ap.ticket_fee_percent * ticketFactor).toFixed(2),
-        growth       : (ap.pax_growth_factor * growthFactor).toFixed(2)
-    };
-}
-
-/* ============================================================
-   ✈️ ACS AIRPORT MARKET ENGINE — GLOBAL DEMAND & CONGESTION
-   Uses scheduleItems as real market ledger
-   ============================================================ */
 
 function ACS_getScheduleItems(){
 
-  try{
-    return JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  }catch(e){
-    return [];
-  }
+    try{
+        return JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+    }
+    catch(e){
+        return [];
+    }
 
 }
 
 
-/* ============================================================
-   Calculate total seats using an airport (origin + destination)
-   ============================================================ */
+
+// ============================================================
+// 8) REAL AIRPORT SEATS USED (LIVE MARKET)
+// ============================================================
 
 function ACS_getAirportSeatsUsed(icao){
 
-  const items = ACS_getScheduleItems();
+    const items = ACS_getScheduleItems();
 
-  let totalSeats = 0;
+    let seats = 0;
 
-  items.forEach(it => {
+    items.forEach(it => {
 
-    if(it.type !== "flight") return;
+        if(it.type !== "flight") return;
 
-    if(it.origin === icao || it.destination === icao){
+        if(it.origin === icao || it.destination === icao)
+            seats += Number(it.seats || 0);
 
-      const seats = Number(it.seats || 0);
+    });
 
-      totalSeats += seats;
-
-    }
-
-  });
-
-  return totalSeats;
+    return seats;
 
 }
 
 
-/* ============================================================
-   Calculate airport theoretical capacity (based on category)
-   ============================================================ */
+
+// ============================================================
+// 9) REALISTIC AIRPORT CAPACITY MODEL
+// Based on real throughput ranges by airport class
+// ============================================================
 
 function ACS_getAirportSeatCapacity(airport){
 
-  if(!airport) return 0;
+    if(!airport) return 0;
 
-  const baseByCategory = {
+    const baseCapacity = {
 
-    "Primary Hub": 60000,
-    "Major Regional": 24000,
-    "Regional": 12000,
-    "Minor": 4000
+        "Primary Hub":     120000,
+        "Major Regional":   45000,
+        "Regional":         18000,
+        "Minor":             6000
 
-  };
+    };
 
-  const base = baseByCategory[airport.category] || 10000;
+    const base = baseCapacity[airport.category] || 20000;
 
-  // historical multiplier
-  const year = (window.ACS_TIME && ACS_TIME.year) || 2025;
+    const year = (window.ACS_TIME?.year) || 2026;
 
-  let factor = 1;
+    const histFactor = ACS_getFactorForYear(ACS_HIST_MARKET, year);
 
-  if(year < 1960) factor = 0.35;
-  else if(year < 1980) factor = 0.55;
-  else if(year < 2000) factor = 0.75;
-  else if(year < 2010) factor = 0.90;
-  else factor = 1;
-
-  return Math.round(base * factor);
+    return Math.round(base * histFactor);
 
 }
 
 
-/* ============================================================
-   Main Market Capacity Object
-   ============================================================ */
+
+// ============================================================
+// 10) FULL AIRPORT MARKET STATUS
+// ============================================================
 
 function ACS_getAirportMarketCapacity(airport){
 
-  if(!airport) return null;
+    if(!airport) return null;
 
-  const used = ACS_getAirportSeatsUsed(airport.icao);
+    const used = ACS_getAirportSeatsUsed(airport.icao);
 
-  const total = ACS_getAirportSeatCapacity(airport);
+    const total = ACS_getAirportSeatCapacity(airport);
 
-  const available = Math.max(0, total - used);
+    const available = Math.max(0, total - used);
 
-  const saturation = total > 0 ? used / total : 0;
+    const saturation = total > 0 ? used / total : 0;
 
-  return {
+    return {
 
-    total,
-    used,
-    available,
-    saturation
+        total,
+        used,
+        available,
+        saturation,
 
-  };
+        congestionLevel:
+
+            saturation > 0.90 ? "CRITICAL" :
+            saturation > 0.75 ? "HIGH" :
+            saturation > 0.50 ? "MODERATE" :
+            saturation > 0.25 ? "LOW" :
+            "VERY LOW"
+
+    };
 
 }
 
 
-/* ============================================================
-   Route Demand Consumption (Origin → Destination)
-   ============================================================ */
+
+// ============================================================
+// 11) ROUTE MARKET CONSUMPTION
+// ============================================================
 
 function ACS_getRouteSeatsUsed(origin, destination){
 
-  const items = ACS_getScheduleItems();
+    const items = ACS_getScheduleItems();
 
-  let totalSeats = 0;
+    let seats = 0;
 
-  items.forEach(it => {
+    items.forEach(it => {
 
-    if(it.type !== "flight") return;
+        if(it.type !== "flight") return;
 
-    if(it.origin === origin && it.destination === destination){
+        if(it.origin === origin && it.destination === destination)
+            seats += Number(it.seats || 0);
 
-      totalSeats += Number(it.seats || 0);
+    });
 
-    }
+    return seats;
 
-  });
+}
 
-  return totalSeats;
+
+
+// ============================================================
+// 12) FULL AIRPORT ECONOMICS (COST + MARKET)
+// ============================================================
+
+function ACS_adjustAirportFees(ap, year){
+
+    const fuelFactor   = ACS_getFactorForYear(ACS_HIST_FUEL, year);
+    const feesFactor   = ACS_getFactorForYear(ACS_HIST_FEES, year);
+    const ticketFactor = ACS_getFactorForYear(ACS_HIST_TICKET, year);
+
+    const market = ACS_getAirportMarketCapacity(ap);
+
+    return {
+
+        slot_cost   : Math.round(ap.slot_cost_usd   * feesFactor),
+        landing_fee : Math.round(ap.landing_fee_usd * feesFactor),
+
+        fuel_price  : (ap.fuel_usd_gal * fuelFactor).toFixed(2),
+
+        ticket_fee  : (ap.ticket_fee_percent * ticketFactor).toFixed(2),
+
+        market_total     : market.total,
+        market_used      : market.used,
+        market_available : market.available,
+        market_saturation: market.saturation,
+
+        congestion       : market.congestionLevel
+
+    };
 
 }
