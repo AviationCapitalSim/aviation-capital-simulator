@@ -1176,7 +1176,9 @@ function openAirportInfo(icao) {
   // ===============================
   const market = ACS_getAirportMarketCapacity(ap);
 
-  const usedPct = Math.round(market.saturation * 100);
+  // utilization now calculated later from REAL demand
+     
+  let usedPct = 0;
 
   let barColor = "#1ec97b";
   let status = "NORMAL";
@@ -1212,7 +1214,7 @@ function openAirportInfo(icao) {
 const demand = ACS_ENGINE_computePassengerDemand(ap);
 const totalDemand = demand.Y + demand.C + demand.F;
 
-const usedPct = Math.min(100,
+usedPct = Math.min(100,
 Math.round((totalDemand / market.throughput) * 100)
 );
 
