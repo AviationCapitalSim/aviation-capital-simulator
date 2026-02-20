@@ -21,6 +21,7 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
+       
 /* ============================================================
    === GLOBAL ACS QATAR LUXURY STYLE ===========================
    ============================================================ */
@@ -323,157 +324,186 @@ tr:hover {
   color: #081530;
 }
 
-/* Pie chart */
-.demand-pie {
-  width: 58px;
-  height: 58px;
-  margin: 8px auto 0 auto;
-  border-radius: 50%;
-  position: relative;
-  background: conic-gradient(
-    #1DB954 0deg var(--eco),
-    #FFB300 var(--eco) var(--biz),
-    #FF6F00 var(--biz) 360deg
-  );
-  box-shadow: 0 0 10px rgba(255,179,0,0.45);
-}
 
-.demand-pie .slice {
-  position: absolute;
-  inset: 9px;
-  background: #081530;
-  border-radius: 50%;
-}
+/* ============================================================
+   9️⃣ MODAL AIRPORT INFO & TOOLTIP — FIX v1.1
+   ============================================================ */
 
-/* Modal */
 .acs-modal {
-  display: none;
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(4px);
-  justify-content: center;
+  inset: 0;
+  display: none;                  /* Oculto por defecto */
   align-items: center;
-  z-index: 9000;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  z-index: 6000;
+}
+
+.acs-modal.is-open {
+  display: flex;                  /* Se muestra cuando tiene esta clase */
 }
 
 .acs-modal-box {
-  background: rgba(12,23,50,0.92);
-  border: 2px solid #ffb300;
-  border-radius: 18px;
-  padding: 20px 26px;
-  width: 420px;
-  max-height: 80vh;
-  overflow-y: auto;
-  color: #fff;
-  box-shadow: 0 0 25px rgba(255,179,0,0.35);
-  animation: fadeIn .25s ease;
+  background: #0d1c3c;
+  border-radius: 16px;
+  padding: 20px 24px 18px 24px;
+  max-width: 520px;
+  width: 90%;
+  border: 1px solid rgba(255,179,0,0.7);
+  box-shadow: 0 0 28px rgba(0,0,0,0.85);
+}
+
+/* ============================================================
+   ACS HYBRID OPS PANEL — AIRBUS + QATAR EXECUTIVE
+   Global — Responsive — Live
+   ============================================================ */
+
+.acs-ops-panel{
+
+  background:
+    linear-gradient(180deg,
+      rgba(8,18,40,0.98),
+      rgba(5,12,28,0.98)
+    );
+
+  border-radius:16px;
+
+  padding:22px;
+
+  border:1px solid rgba(255,179,0,0.35);
+
+  box-shadow:
+    0 0 40px rgba(0,0,0,0.9),
+    inset 0 0 40px rgba(0,174,239,0.05);
+
+}
+
+
+/* section title */
+
+.acs-section-title{
+
+  color:#00AEEF;
+
+  font-size:13px;
+
+  letter-spacing:1.2px;
+
+  margin-top:18px;
+
+  margin-bottom:8px;
+
+  font-weight:600;
+
+}
+
+
+/* separator */
+
+.acs-separator{
+
+  height:1px;
+
+  background:linear-gradient(
+    to right,
+    transparent,
+    rgba(255,179,0,0.4),
+    transparent
+  );
+
+  margin:14px 0;
+
+}
+
+
+/* capacity bar */
+
+.acs-capacity-bar{
+
+  height:6px;
+
+  border-radius:4px;
+
+  background:#0a162f;
+
+  overflow:hidden;
+
+  margin-top:10px;
+
+  border:1px solid rgba(255,255,255,0.06);
+
+}
+
+.acs-capacity-fill{
+
+  height:100%;
+
+  border-radius:4px;
+
+  transition:width 0.6s ease;
+
+  box-shadow:0 0 6px currentColor;
+
+}
+
+
+/* status chip */
+
+.acs-status-chip{
+
+  display:inline-block;
+
+  padding:4px 10px;
+
+  border-radius:20px;
+
+  font-size:12px;
+
+  font-weight:600;
+
+  margin-top:6px;
+
+}
+
+
+/* responsive */
+
+@media(max-width:600px){
+
+  .acs-modal-box{
+
+    width:95%;
+
+    padding:14px;
+
+  }
+
+}
+
+     
+.acs-modal-box h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #ffca3a;
+  font-size: 1.25rem;
+  text-align: left;
 }
 
 .acs-modal-close {
-  margin-top: 18px;
-  width: 100%;
-  background: none;
-  border: 1px solid #ffb300;
+  margin-top: 16px;
+  padding: 8px 16px;
   border-radius: 10px;
+  border: 1px solid #ffb300;
+  background: rgba(255,179,0,0.04);
   color: #ffb300;
-  padding: 10px;
-  cursor: pointer;
   font-weight: 600;
-  transition: .25s;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .acs-modal-close:hover {
   background: #ffb300;
   color: #081530;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-/* Country selector */
-       
-.country-select {
-  background: linear-gradient(180deg, #2e3f6e, #1e2d55);
-  color: #ffffff;
-  border: 2px solid #ffb300;
-  padding: 5px 28px 5px 12px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  box-shadow: 0 0 12px rgba(255,179,0,0.25);
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffffff' height='16' width='16' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 13px;
-}
-
-.country-filter {
-  margin: 4px auto 26px auto;
-  display: flex;
-  justify-content: center;
-}
-
-.country-select {
-  width: 160px;
-}
-
-/* ===== CONTINENT QUICK ACCESS ===== */
-.continent-access {
-  margin-top: 32px;
-  margin-bottom: 38px;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 18px;
-}
-
-.continent-btn {
-  display: inline-block;
-  text-decoration: none;
-  padding: 8px 18px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 12px;
-  border: 2px solid #ffb300;
-  background: rgba(20,40,80,0.45);
-  color: #ffe7a0;
-  cursor: pointer;
-  transition: 0.25s ease;
-  box-shadow: 0 0 10px rgba(255,179,0,0.25);
-}
-
-.continent-btn:hover {
-  background: #ffb300;
-  color: #081530;
-  transform: scale(1.07);
-  box-shadow: 0 0 18px rgba(255,179,0,0.55);
-}
-       
-/* ============================================================
-   === SLOT BAR (AGREGADO, COLUMNA 5) — v1.0 ===================
-   ============================================================ */
-
-.slot-bar {
-  width: 100%;
-  height: 8px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.10);
-  margin-top: 6px;
-  overflow: hidden;
-}
-
-.slot-bar-fill {
-  height: 100%;
-  border-radius: 6px;
-  transition: width .25s ease;
-  box-shadow: 0 0 6px rgba(255,255,255,0.28);
 }
 
 /* ============================================================
@@ -632,8 +662,9 @@ th.sort-desc::after{
   }
 
 }
-       
+     
 </style>
+     
 </head>
 
 <body>
@@ -700,20 +731,25 @@ th.sort-desc::after{
 
    </div>
        
-    <!-- TABLE -->
-       
+     <!-- ============================================================
+         💎 A1 — ULTRA PREMIUM TABLE (HTML COMPLETO)
+         ============================================================ -->
+
     <table id="airportTable">
       <thead>
         <tr>
-          <th onclick="sortTable(0)">Airport (ICAO)</th>
-          <th onclick="sortTable(1)">Country</th>
-          <th onclick="sortTable(2)">Distance (NM)</th>
-          <th onclick="sortTable(3)">Demand (Y/C/F)</th>
-          <th onclick="sortTable(4)">Slots</th>
+          <th class="sortable" onclick="sortTable(0)">Airport (ICAO)</th>
+          <th class="sortable" onclick="sortTable(1)">Country</th>
+          <th class="sortable" onclick="sortTable(2)">Distance (NM)</th>
+          <th class="sortable" onclick="sortTable(3)">Demand (Y/C/F)</th>
+          <th class="sortable" onclick="sortTable(4)">Slots</th>
           <th>Action</th>
         </tr>
       </thead>
-      <tbody id="airportTableBody"></tbody>
+
+      <tbody id="airportTableBody">
+        <!-- Rows are injected dynamically by JS -->
+      </tbody>
     </table>
 
     <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back</button>
@@ -721,11 +757,7 @@ th.sort-desc::after{
 
   <footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
 
-  <!-- Tooltip -->
-  <div id="demandTooltip"></div>
-
   <!-- MODAL -->
-     
   <div id="airportInfoModal" class="acs-modal">
     <div class="acs-modal-box">
       <div id="modalContent">Loading...</div>
@@ -737,7 +769,6 @@ th.sort-desc::after{
      🟩 ACS PASSENGER DEMAND MODAL — WEEKLY DISTRIBUTION
      Airbus OCC + Qatar Executive Style
      ============================================================ -->
-     
 <div id="acsDemandModal" class="acs-modal">
   <div class="acs-modal-box" style="max-width:600px">
 
@@ -756,7 +787,6 @@ th.sort-desc::after{
      Airbus OCC + Qatar Executive Luxury
      Used in ALL continents
      ============================================================ -->
-     
 <div id="acsSlotModal" class="acs-modal">
   <div class="acs-modal-box" style="max-width:600px">
 
@@ -797,10 +827,76 @@ th.sort-desc::after{
   <script src="engine/airports_loader.js"></script>
   <script src="engine/acs_world_engine.js"></script>
 
-   <script>
+<script>
+     
+/* ============================================================
+   🧭 BASE RESOLVER — GLOBAL (ACS STANDARD)
+   ============================================================ */
+     
+function getACSBaseResolved() {
+
+  // 1️⃣ Fuente oficial
+  try {
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+    if (user.base && user.base.icao) {
+      return {
+        icao: user.base.icao.toUpperCase(),
+        city: user.base.city || "",
+        country: user.base.country || "",
+        name: user.base.name || ""
+      };
+    }
+  } catch (e) {
+    console.warn("ACS base parse error", e);
+  }
+
+  // 2️⃣ Legacy fallback (NO recursivo)
+  const legacyICAO = localStorage.getItem("ACS_baseICAO");
+  if (!legacyICAO) return null;
+
+  return {
+    icao: legacyICAO.toUpperCase(),
+    city: localStorage.getItem("ACS_baseCity") || "",
+    country: localStorage.getItem("ACS_baseCountry") || "",
+    name: localStorage.getItem("ACS_baseName") || ""
+  };
+}
+     
+// ============================================================
+// 🧭 ACS — BASE AUTO-RESTORE (COMPAT MODE)
+// ============================================================
+
+(function restoreBaseOnce() {
+  try {
+    let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+    if (activeUser.base && activeUser.base.icao) return;
+
+    // ESTE baseICAO ya existía antes del refactor
+    if (typeof baseICAO === "string" && baseICAO.length === 4) {
+      activeUser.base = {
+        icao: baseICAO,
+        city: baseCity || "",
+        country: baseCountry || "",
+        name: baseName || ""
+      };
+
+      localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+      console.log("🧭 ACS base restored from airport_list (compat)");
+    }
+  } catch (e) {
+    console.warn("ACS base restore failed", e);
+  }
+})();
+     
+</script>
+     
+<script>
+        
 /* ============================================================
    === DISTANCE ENGINE =============================
    ============================================================ */
+        
 function distanceNM(lat1, lon1, lat2, lon2) {
   const R = 3440.065;
   const toRad = deg => deg * Math.PI / 180;
@@ -816,7 +912,6 @@ function distanceNM(lat1, lon1, lat2, lon2) {
 
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
-
 
 /* =============================================================
    === HISTORICAL AIRPORT ENGINE — WITH SAFE FALLBACK ==========
@@ -857,11 +952,9 @@ function getHistoricalFactor(year) {
 }
 
 // ============================================================
-// === BLOQUE 4 — HISTORICAL CLASS ENGINE (AÑADIDO) ============
-// ============================================================
-
+// === BLOQUE 4 — HISTORICAL CLASS ENGINE ======================
+     
 function adjustPassengerClasses(demand) {
-
   const year =
     window.ACS_TIME &&
     window.ACS_TIME.currentTime instanceof Date
@@ -872,13 +965,11 @@ function adjustPassengerClasses(demand) {
   let C = demand.C;
   let F = demand.F;
 
-  // aplicar factor histórico general
   const factor = getHistoricalFactor(year);
   Y = Math.round(Y * factor);
   C = Math.round(C * factor);
   F = Math.round(F * factor);
 
-  // activación histórica de clases
   if (year < 1955) {
     C = 0;
     F = 0;
@@ -892,6 +983,7 @@ function adjustPassengerClasses(demand) {
 /* ============================================================
    === GET SLOT HTML (bar + values) — v1.0 ======================
    ============================================================ */
+     
 function ACS_buildSlotCell(icao, category) {
 
   const max = ACS_getMaxSlotsByCategory(category);  
