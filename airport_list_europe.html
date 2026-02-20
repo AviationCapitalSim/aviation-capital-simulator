@@ -1294,8 +1294,25 @@ function ACS_getAirportRealUtilization(icao, marketThroughput, marketDemand){
      (keeps airports from going IDLE before first arrivals)
      ============================================================ */
 
-  const dayKey = ACS_getSimDayKey();
-  const year   = ACS_getSimYear();
+  /* Resolve sim day safely from ACS_TIME */
+let dayKey = "mon";
+let year = 1944;
+
+try{
+
+  if(window.ACS_TIME?.currentTime){
+
+    const d = window.ACS_TIME.currentTime;
+
+    year = d.getFullYear();
+
+    const days = ["sun","mon","tue","wed","thu","fri","sat"];
+    dayKey = days[d.getDay()] || "mon";
+
+  }
+
+}catch(e){}
+     
 
   let items = [];
   try{
