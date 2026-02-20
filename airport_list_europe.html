@@ -1352,6 +1352,146 @@ function ACS_getAirportRealUtilization(icao){
   };
 
 }
+
+/* ============================================================
+   🟦 U1 — REAL AIRPORT UTILIZATION (LIVE)
+   scheduleItems + ACS_PAX.calculate (seat-capped)
+   ============================================================ */
+
+function ACS_getSimDayKey(){
+  const d =
+    (window.ACS_TIME && ACS_TIME.currentTime instanceof Date)
+      ? ACS_TIME.currentTime
+      : new Date();
+
+  const map = ["sun","mon","tue","wed","thu","fri","sat"];
+  return map[d.getDay()];
+}
+
+function ACS_getSimYear(){
+  try{
+    return ACS_TIME.currentTime.getFullYear();
+  }catch(e){
+    return new Date().getFullYear();
+  }
+}
+
+function ACS_resolveAircraftSeatsForFlight(f){
+  // 1) direct fields on schedule item (if present)
+  const direct =
+    Number(f.seats) ||
+    Number(f.paxCapacity) ||
+    Number(f.capacity);
+
+  if (Number.isFinite(direct) && direct > 0) return direct;
+
+  // 2) try common fleet stores
+  const stores = ["ACS_Fleet","ACS_fleet","ACS_MY_FLEET","ACS_myFleet","myAircraft","ACS_AircraftOwned"];
+  for (const k of stores){
+    try{
+      const arr = JSON.parse(localStorage.getItem(k) || "[]");
+      if (Array.isArray(arr)){
+        const ac = arr.find(x => (x && (x.id === f.aircraftId || x.aircraftId === f.aircraftId)));
+        if (ac){
+          const s =
+            Number(ac.seats) ||
+            Number(ac.paxCapacity) ||
+            Number(ac.capacity) ||
+            Number(ac.totalSeats);
+
+          if (Number.isFinite(s) && s > 0) return s;
+        }
+      }
+    }catch(e){}
+  }
+
+  // 3) last-resort model heuristics (only if nothing else exists)
+  const mk = String(f.modelKey || f.aircraft || "").toUpperCase();
+  if (mk.includes("307")) return 33; // 307 Stratoliner
+  return 0; // unknown -> force 0 (no fake pax)
+}
+
+/**
+ * Returns real pax/day processed by the airport based on flights scheduled TODAY (sim day).
+ * Counts BOTH departures and arrivals as throughput events.
+ */
+function ACS_getAirportRealUtilization(icao, marketThroughput){
+
+  const out = {
+    pax: 0,
+    flights: 0,
+    utilizationPct: 0
+  };
+
+  const I = String(icao || "").toUpperCase();
+  if (!I) return out;
+
+  const dayKey = ACS_getSimDayKey();
+  const year   = ACS_getSimYear();
+
+  let items = [];
+  try{
+    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  }catch(e){
+    items = [];
+  }
+
+  const flights = (Array.isArray(items) ? items : [])
+    .filter(x => x && x.type === "flight")
+    .filter(x => String(x.day || "").toLowerCase() === dayKey);
+
+  if (!flights.length) return out;
+
+  // Need ACS_PAX.calculate
+  const hasPaxEngine = window.ACS_PAX && typeof ACS_PAX.calculate === "function";
+  if (!hasPaxEngine) return out;
+
+  // Sum pax for flights touching this airport (origin OR destination)
+  flights.forEach(f => {
+
+    const origin = String(f.origin || "").toUpperCase();
+    const dest   = String(f.destination || "").toUpperCase();
+
+    if (origin !== I && dest !== I) return;
+
+    const seats = ACS_resolveAircraftSeatsForFlight(f);
+    if (!seats) return;
+
+    const distanceNM = Number(f.distanceNM) || 0;
+
+    // Build minimal input for ACS_PAX.calculate
+    const paxRes = ACS_PAX.calculate({
+      year,
+      route: {
+        origin,
+        destination: dest,
+        distanceNM
+      },
+      aircraft: {
+        seats
+      },
+      time: {
+        // use departure hour if available, else mid-day
+        departureHHMM: String(f.departure || "12:00")
+      }
+    });
+
+    const pax = Math.max(0, Math.round(Number(paxRes && paxRes.pax) || 0));
+    if (!pax) return;
+
+    out.pax += pax;
+    out.flights += 1;
+  });
+
+  const thr = Number(marketThroughput) || 0;
+  if (thr > 0){
+    out.utilizationPct = Math.max(0, Math.min(100, Math.round((out.pax / thr) * 100)));
+  }else{
+    out.utilizationPct = 0;
+  }
+
+  return out;
+}
      
 /* =============================================================
    === MODAL ====================================================
@@ -1394,13 +1534,18 @@ function openAirportInfo(icao) {
     (demand.C || 0) +
     (demand.F || 0);
 
-  // ===============================
-  // REAL UTILIZATION (ONLY REAL DATA)
-  // ===============================
-  const real = ACS_getAirportRealUtilization(ap.icao) || {};
+ // ===============================
+// REAL UTILIZATION (ONLY REAL DATA)
+// ===============================
 
-  const usedPct = real.utilizationPct || 0;
-  const realPax = real.pax || 0;
+// ⚠️ CRITICAL: pass market.throughput to calculate real utilization correctly
+const real = ACS_getAirportRealUtilization(
+  ap.icao,
+  market.throughput
+) || {};
+
+const usedPct = Number(real.utilizationPct) || 0;
+const realPax = Number(real.pax) || 0;
 
   // ===============================
   // STATUS COLOR
