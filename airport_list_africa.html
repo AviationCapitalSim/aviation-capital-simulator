@@ -764,8 +764,8 @@ function adjustPassengerClasses(demand) {
 }
 
 /* ============================================================
-   🟦 AF-A6 — SLOT CELL BUILDER WITH MODAL CLICK SUPPORT
-   Africa clone — exact Europe behavior
+   🟦 AF-A8 — FIX SLOT CELL ENGINE FUNCTION NAME
+   Correct engine call: ACS_getFreeSlots
    ============================================================ */
 
 function ACS_buildSlotCell(icao, category){
@@ -774,7 +774,7 @@ function ACS_buildSlotCell(icao, category){
     ACS_getMaxSlotsByCategory(category);
 
   const free =
-    ACS_getFreeSlotsNow(icao, category);
+    ACS_getFreeSlots(icao, category);
 
   const used = max - free;
 
