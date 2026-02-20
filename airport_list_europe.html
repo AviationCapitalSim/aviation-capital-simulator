@@ -2076,6 +2076,19 @@ function ACS_openDemandModal(icao){
   const distribution =
     [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
 
+   /* ============================================================
+   🟦 ACS WEEKLY MAX CALCULATION — REQUIRED FOR HYBRID SCALING
+   ============================================================ */
+
+  const dailyTotals = distribution.map(p =>
+  Math.round(
+    (demand.Y + demand.C + demand.F) * p
+    )
+ );
+
+  const weeklyMax =
+  Math.max(...dailyTotals, 1);
+     
   /* ---------- STRUCTURAL LIMIT ---------- */
 
   let structuralMax = 300;
@@ -2103,8 +2116,31 @@ function ACS_openDemandModal(icao){
     const C = Math.round(demand.C * distribution[i]);
     const F = Math.round(demand.F * distribution[i]);
 
-    const total = Y + C + F;
-    const pct = Math.min(100, (total / structuralMax) * 100);
+   /* ============================================================
+   🟦 ACS HYBRID DEMAND SCALING ENGINE v1.0
+   Airbus OCC professional scaling
+   Prevents stagnation and preserves realism
+   ============================================================ */
+
+const total = Y + C + F;
+
+const structuralPct =
+  structuralMax > 0
+    ? (total / structuralMax) * 100
+    : 0;
+
+const relativePct =
+  weeklyMax > 0
+    ? (total / weeklyMax) * 100
+    : 0;
+
+/* hybrid scaling */
+let pct =
+  (structuralPct * 0.65) +
+  (relativePct * 0.35);
+
+/* minimum visibility */
+pct = Math.max(12, Math.min(100, pct));
 
     html += `
 
