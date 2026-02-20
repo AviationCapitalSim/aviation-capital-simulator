@@ -2379,14 +2379,24 @@ function handleLogout() {
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 1) Actualizamos el banner (visual)
-  updateGlobalBaseBanner();
+  loadAirports();
 
-  // 2) Nos aseguramos que la BASE REAL exista
-  ensureBaseBeforeLoad(() => {
-    loadAirports();
-  });
+  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
+  if (baseIcao) {
+    const airports = getAirportsAfricaSafe();
+    const base = airports.find(a => a.icao === baseIcao);
 
+    if (base) {
+      const flagEmoji = base.country.replace(/./g, c =>
+        String.fromCodePoint(c.charCodeAt(0) + 127397)
+      );
+
+      document.getElementById("originFlag").textContent = flagEmoji;
+      document.getElementById("originIcao").textContent = base.icao;
+      document.getElementById("originCity").textContent =
+        `— ${base.city}, ${base.region}`;
+    }
+  }
 });
             
 /* ============================================================
