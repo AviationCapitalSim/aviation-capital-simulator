@@ -1129,41 +1129,120 @@ function filterByCountry() {
   });
 }
 
-/* =============================================================
-   === SORT TABLE ==============================================
-   ============================================================= */
-function sortTable(n) {
-  const table = document.getElementById("airportTable");
-  let switching = true, dir = "asc", switchcount = 0;
+/* ============================================================
+   🟩 ACS GLOBAL TABLE SORT ENGINE v3.0
+   Professional aviation-grade sorting engine
+   Supports:
+   ICAO, Country, Distance, Demand, Slots
+   Ignores Action column automatically
+   ============================================================ */
 
-  while (switching) {
-    switching = false;
-    const rows = table.rows;
+const ACS_TABLE_SORT_STATE = {};
 
-    for (let i = 1; i < (rows.length - 1); i++) {
-      let shouldSwitch = false;
-      const x = rows[i].getElementsByTagName("TD")[n];
-      const y = rows[i + 1].getElementsByTagName("TD")[n];
-      const xVal = isNaN(parseFloat(x.textContent)) ? x.textContent.toLowerCase() : parseFloat(x.textContent);
-      const yVal = isNaN(parseFloat(y.textContent)) ? y.textContent.toLowerCase() : parseFloat(y.textContent);
+function ACS_parseCellValue(cell, columnIndex){
 
-      if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
-        shouldSwitch = true;
-        break;
+  if(!cell) return "";
+
+  const txt = cell.textContent.trim();
+
+  switch(columnIndex){
+
+    // Airport (ICAO)
+    case 0:{
+      const match = txt.match(/\((.*?)\)/);
+      return match ? match[1].toUpperCase() : txt.toUpperCase();
+    }
+
+    // Country
+    case 1:
+      return txt.toUpperCase();
+
+    // Distance (NM)
+    case 2:{
+      const num = parseFloat(txt.replace(/[^\d.]/g,""));
+      return isNaN(num) ? 0 : num;
+    }
+
+    // Demand Y/C/F
+    case 3:{
+      const parts = txt.split("/");
+      if(parts.length === 3){
+        return (
+          Number(parts[0]) +
+          Number(parts[1]) +
+          Number(parts[2])
+        );
       }
+      return 0;
     }
 
-    if (shouldSwitch) {
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-      switchcount++;
-    } else if (switchcount === 0 && dir === "asc") {
-      dir = "desc";
-      switching = true;
+    // Slots free/max
+    case 4:{
+      const match = txt.match(/(\d+)\s*\/\s*(\d+)/);
+      return match ? Number(match[1]) : 0;
     }
+
+    default:
+      return txt.toUpperCase();
+
   }
+
 }
 
+function sortTable(columnIndex){
+
+  const table = document.getElementById("airportTable");
+  const tbody = document.getElementById("airportTableBody");
+
+  if(!table || !tbody) return;
+
+  // ignore Action column
+  if(columnIndex === 5) return;
+
+  const rows = Array.from(tbody.querySelectorAll("tr"));
+
+  if(rows.length <= 1) return;
+
+  // determine direction
+  const currentDir =
+    ACS_TABLE_SORT_STATE[columnIndex] === "asc"
+      ? "desc"
+      : "asc";
+
+  ACS_TABLE_SORT_STATE[columnIndex] = currentDir;
+
+  rows.sort((a,b)=>{
+
+    const A = ACS_parseCellValue(
+      a.children[columnIndex],
+      columnIndex
+    );
+
+    const B = ACS_parseCellValue(
+      b.children[columnIndex],
+      columnIndex
+    );
+
+    if(typeof A === "number" && typeof B === "number"){
+
+      return currentDir === "asc"
+        ? A - B
+        : B - A;
+
+    }
+
+    return currentDir === "asc"
+      ? String(A).localeCompare(String(B))
+      : String(B).localeCompare(String(A));
+
+  });
+
+  tbody.innerHTML = "";
+
+  rows.forEach(r => tbody.appendChild(r));
+
+}
+     
 /* ============================================================
    🟦 U1 — REAL AIRPORT UTILIZATION (LIVE) — FIX v2
    Source of Truth: localStorage.scheduleItems
