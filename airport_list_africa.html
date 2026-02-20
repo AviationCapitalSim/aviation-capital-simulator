@@ -555,7 +555,97 @@ tr:hover {
       <button class="acs-modal-close" onclick="closeAirportInfo()">Close</button>
     </div>
   </div>
-  
+
+<!-- ============================================================
+     🟦 ACS PASSENGER DEMAND MODAL — AFRICA CLONE (AIRBUS OCC)
+     ============================================================ -->
+
+<div id="acsDemandModal" class="acs-modal">
+  <div class="acs-modal-box" style="width:520px; max-width:92vw;">
+
+    <h3 style="
+      text-align:center;
+      color:#ffb300;
+      margin-bottom:6px;
+      letter-spacing:1px;
+      font-weight:600;
+    ">
+      PASSENGER DEMAND
+    </h3>
+
+    <div id="acsDemandAirportTitle" style="
+      text-align:center;
+      font-size:1.4rem;
+      color:#00ffa6;
+      margin-bottom:18px;
+      letter-spacing:1px;
+      font-weight:600;
+    ">
+      —
+    </div>
+
+    <div id="acsDemandGrid" style="
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    ">
+      <!-- FILLED BY ENGINE -->
+    </div>
+
+    <button class="acs-modal-close"
+            onclick="ACS_closeDemandModal()">
+      Close
+    </button>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     🟦 ACS AIRPORT SLOT DEMAND MODAL — AFRICA CLONE
+     Airbus OCC + Qatar Executive Luxury
+     Global reusable slot infrastructure modal
+     ============================================================ -->
+
+<div id="acsSlotModal" class="acs-modal">
+  <div class="acs-modal-box" style="width:540px; max-width:92vw;">
+
+    <h3 id="acsSlotModalTitle" style="
+      text-align:center;
+      color:#ffb300;
+      margin-bottom:6px;
+      letter-spacing:1px;
+      font-weight:600;
+    ">
+      AIRPORT SLOT DEMAND
+    </h3>
+
+    <div id="acsSlotAirportTitle" style="
+      text-align:center;
+      font-size:1.4rem;
+      color:#00ffa6;
+      margin-bottom:18px;
+      letter-spacing:1px;
+      font-weight:600;
+    ">
+      —
+    </div>
+
+    <div id="acsSlotGrid" style="
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    ">
+      <!-- FILLED BY SLOT ENGINE -->
+    </div>
+
+    <button class="acs-modal-close"
+            onclick="ACS_closeSlotDemandModal()">
+      Close
+    </button>
+
+  </div>
+</div>
+     
   <!-- SCRIPTS -->
      
   <script>
@@ -674,58 +764,72 @@ function adjustPassengerClasses(demand) {
 }
 
 /* ============================================================
-   === GET SLOT HTML (bar + values) — v1.0 ======================
+   🟦 AF-A6 — SLOT CELL BUILDER WITH MODAL CLICK SUPPORT
+   Africa clone — exact Europe behavior
    ============================================================ */
-        
-function ACS_buildSlotCell(icao, category) {
 
-  // Obtener el máximo de slots según categoría
-  const max = ACS_getMaxSlotsByCategory(category);  
-  if (!max) return "—"; 
+function ACS_buildSlotCell(icao, category){
 
-  let usedTotal = 0;
-  let count = 0;
+  const max =
+    ACS_getMaxSlotsByCategory(category);
 
-  // Leer slots usados desde localStorage
-  const slots = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
-  if (slots) {
-    const days = Object.keys(slots);
-    days.forEach(day => {
-      const times = Object.keys(slots[day]);
-      times.forEach(time => {
-        usedTotal += slots[day][time].used || 0;
-        count++;
-      });
-    });
-  }
+  const free =
+    ACS_getFreeSlotsNow(icao, category);
 
-  // Promedio de uso
-  const usedAvg = count > 0 ? Math.round(usedTotal / count) : 0;
+  const used = max - free;
 
-  // Slots libres
-  const free = Math.max(0, max - usedAvg);
+  const pct =
+    max > 0
+      ? Math.round((used / max) * 100)
+      : 0;
 
-  // Porcentaje visual de la barra
-  const pct = Math.max(0, Math.min(100, (free / max) * 100));
+  let color = "#00ffa6";
 
-  // Color según disponibilidad
-  let color = "#00FF80";        // Verde
-  if (pct < 50 && pct >= 20) color = "#FFB300";  // Amarillo
-  if (pct < 20) color = "#FF2E2E";               // Rojo
+  if(pct >= 85)
+    color = "#ff3b30";
+  else if(pct >= 65)
+    color = "#ff9f0a";
+  else if(pct >= 40)
+    color = "#ffd60a";
 
-  // Retorno del HTML embebido
   return `
-    ${free} / ${max}
-    <div class="slot-bar">
-      <div class="slot-bar-fill"
-           style="width:${pct}%; background:${color};"></div>
+  
+  <div onclick="ACS_openSlotDemandModal('${icao}')"
+       style="cursor:pointer;">
+
+    <div style="
+      font-size:12px;
+      margin-bottom:3px;
+    ">
+      ${free} / ${max}
     </div>
+
+    <div style="
+      height:8px;
+      background:#1a2a4a;
+      border-radius:4px;
+      overflow:hidden;
+    ">
+
+      <div style="
+        width:${pct}%;
+        height:100%;
+        background:${color};
+        box-shadow:0 0 6px ${color};
+      "></div>
+
+    </div>
+
+  </div>
+
   `;
+
 }
         
 /* =============================================================
    === HISTORICAL AIRPORT ENGINE — AFRICA SAFE MODE ============
    ============================================================= */
+        
 function getAirportsAfricaSafe() {
   try {
     if (window.ACS_World &&
@@ -748,6 +852,7 @@ function getAirportsAfricaSafe() {
 /* ============================================================
    === FIND BASE AIRPORT (GLOBAL — ANY CONTINENT) ===============
    ============================================================ */
+        
 function findBaseAirportGlobal() {
 
   const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
@@ -777,7 +882,9 @@ function findBaseAirportGlobal() {
 /* ============================================================
    === WAIT FOR WORLD ENGINE BEFORE LOADING TABLE ===============
    ============================================================ */
+        
 function waitForWorldEngine(callback) {
+     
   if (window.ACS_World && ACS_World.ready === true) {
     callback();
   } else {
@@ -788,6 +895,7 @@ function waitForWorldEngine(callback) {
 /* ============================================================
    === LOAD AIRPORTS (ÁFRICA — NM FIX FINAL) ===================
    ============================================================ */
+        
  function loadAirports() {
 
   const tableBody = document.getElementById("airportTableBody");
@@ -940,6 +1048,7 @@ function filterByCountry() {
     const bizPct = ((d.Y + d.C) / total) * 100;
 
     // Crear fila
+       
     const row = document.createElement("tr");
     row.innerHTML = `
   <td><strong>${a.city}</strong> (${a.icao})</td>
@@ -949,11 +1058,58 @@ function filterByCountry() {
   <td onmouseover="showDemandTooltip(event, ${d.Y}, ${d.C}, ${d.F})"
       onmouseout="hideDemandTooltip()">
     ${d.Y}/${d.C}/${d.F}
-    <div class="demand-bar"
-         style="--eco:${ecoPct}%; --biz:${bizPct}%"></div>
-  </td>
+    <td class="col-demand">
+
+  <div onclick="ACS_openDemandModal('${ap.icao}')"
+       style="cursor:pointer;">
+
+    <div style="
+      font-size:12px;
+      margin-bottom:3px;
+    ">
+      ${ap.demand?.Y || 0} Y /
+      ${ap.demand?.C || 0} C /
+      ${ap.demand?.F || 0} F
+    </div>
+
+    <div style="
+      height:8px;
+      background:#1a2a4a;
+      border-radius:4px;
+      overflow:hidden;
+    ">
+
+      <div style="
+        width:${
+          Math.min(
+            100,
+            (
+              (
+                (ap.demand?.Y || 0) +
+                (ap.demand?.C || 0) +
+                (ap.demand?.F || 0)
+              ) / 1200
+            ) * 100
+          )
+        }%;
+        height:100%;
+        background:linear-gradient(
+          90deg,
+          #00ffa6,
+          #00d4ff
+        );
+      "></div>
+
+    </div>
+
+  </div>
+
+</td>
+
+</td>
 
   <!-- 🔵 A7 — Nueva columna Slots en filtrado -->
+  
   <td class="col-slots">
     ${ACS_buildSlotCell(a.icao, a.category)}
   </td>
@@ -974,6 +1130,7 @@ function filterByCountry() {
    ============================================================ */
         
 function sortTable(n) {
+     
   const table = document.getElementById("airportTable");
   let switching = true, dir = "asc", switchcount = 0;
 
@@ -1006,7 +1163,9 @@ function sortTable(n) {
 /* ============================================================
    === DEMAND TOOLTIP (CLON EXACTO) ============================
    ============================================================ */
+        
 function showDemandTooltip(e, Y, C, F) {
+     
   const total = Y + C + F || 1;
 
   const ecoDeg = (Y / total) * 360;
@@ -1038,7 +1197,9 @@ function hideDemandTooltip() {
 /* ============================================================
    === MODAL INFO (CLONADO Y AJUSTADO) =========================
    ============================================================ */
+        
 function openAirportInfo(icao) {
+     
   const airports = getAirportsAfricaSafe();
   const ap = airports.find(a => a.icao === icao);
   if (!ap) return;
@@ -1125,6 +1286,7 @@ window.addEventListener("click", (e) => {
 /* ============================================================
    === GLOBAL BASE (WAITS FOR LOADER) ==========================
    ============================================================ */
+        
 function updateGlobalBaseBanner() {
 
   const baseIcao = localStorage.getItem("ACS_baseICAO");
@@ -1246,6 +1408,258 @@ function ACS_openRouteSchedule(destIcao) {
 
   // 5) Ir a route_schedule
   window.location.href = "route_schedule.html";
+}
+
+/* ============================================================
+   🟦 ACS PASSENGER DEMAND MODAL ENGINE — AFRICA CLONE
+   Airbus OCC Passenger Demand Visualization
+   ============================================================ */
+
+function ACS_openDemandModal(icao){
+
+  const airports = getAirportsByContinent("Africa");
+  const ap = airports.find(a => a.icao === icao);
+
+  if(!ap) return;
+
+  const demand = ap.demand || {Y:0,C:0,F:0};
+
+  /* structural capacity reference */
+  let structuralMax = 300;
+
+  if(ap.category === "Primary Hub") structuralMax = 1200;
+  else if(ap.category === "Major Regional") structuralMax = 700;
+  else if(ap.category === "Regional") structuralMax = 350;
+  else structuralMax = 180;
+
+  const modal = document.getElementById("acsDemandModal");
+  const title = document.getElementById("acsDemandAirportTitle");
+  const grid  = document.getElementById("acsDemandGrid");
+
+  title.innerHTML =
+    ap.city.toUpperCase() + " — " + ap.icao;
+
+  const days =
+    ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+
+  const distribution =
+    [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
+
+  /* weekly max for hybrid scaling */
+
+  const dailyTotals = distribution.map(p =>
+    Math.round(
+      (demand.Y + demand.C + demand.F) * p
+    )
+  );
+
+  const weeklyMax =
+    Math.max(...dailyTotals, 1);
+
+  grid.innerHTML = "";
+
+  days.forEach((day, i)=>{
+
+    const Y = Math.round(demand.Y * distribution[i]);
+    const C = Math.round(demand.C * distribution[i]);
+    const F = Math.round(demand.F * distribution[i]);
+
+    const total = Y + C + F;
+
+    /* hybrid scaling */
+
+    const structuralPct =
+      structuralMax > 0
+        ? (total / structuralMax) * 100
+        : 0;
+
+    const relativePct =
+      weeklyMax > 0
+        ? (total / weeklyMax) * 100
+        : 0;
+
+    let pct =
+      (structuralPct * 0.65) +
+      (relativePct * 0.35);
+
+    pct = Math.max(12, Math.min(100, pct));
+
+    const cell = document.createElement("div");
+
+    cell.innerHTML = `
+      <div style="font-size:12px; margin-bottom:3px;">
+        ${day}
+      </div>
+
+      <div style="
+        height:8px;
+        background:#1a2a4a;
+        border-radius:4px;
+        overflow:hidden;
+        margin-bottom:3px;
+      ">
+        <div style="
+          width:${pct}%;
+          height:100%;
+          background:linear-gradient(
+            90deg,
+            #00ffa6,
+            #00d4ff
+          );
+        "></div>
+      </div>
+
+      <div style="font-size:11px;">
+        Y ${Y} &nbsp; C ${C} &nbsp; F ${F}
+      </div>
+    `;
+
+    grid.appendChild(cell);
+
+  });
+
+  modal.style.display = "flex";
+
+}
+
+/* ============================================================
+   CLOSE FUNCTION
+   ============================================================ */
+
+function ACS_closeDemandModal(){
+
+  document.getElementById(
+    "acsDemandModal"
+  ).style.display = "none";
+
+}
+
+/* ============================================================
+   🟦 AF-A5 — ACS SLOT DEMAND MODAL ENGINE (AFRICA)
+   Exact clone of Europe Slot Demand Engine
+   ============================================================ */
+
+function ACS_openSlotDemandModal(icao){
+
+  const airports = getAirportsByContinent("Africa");
+  const ap = airports.find(a => a.icao === icao);
+
+  if(!ap) return;
+
+  const modal   = document.getElementById("acsSlotModal");
+  const title   = document.getElementById("acsSlotAirportTitle");
+  const grid    = document.getElementById("acsSlotGrid");
+
+  title.innerHTML =
+    ap.city.toUpperCase() + " — " + ap.icao;
+
+  const maxSlots =
+    ACS_getMaxSlotsByCategory(ap.category) || 0;
+
+  const slots =
+    JSON.parse(
+      localStorage.getItem("ACS_SLOTS") || "{}"
+    )[icao] || {};
+
+  let usedTotal = 0;
+  let count = 0;
+
+  Object.values(slots).forEach(day=>{
+    Object.values(day).forEach(hour=>{
+      usedTotal += Number(hour.used || 0);
+      count++;
+    });
+  });
+
+  const usedAvg =
+    count > 0
+      ? Math.round(usedTotal / count)
+      : 0;
+
+  const freeSlots =
+    Math.max(0, maxSlots - usedAvg);
+
+  const utilization =
+    maxSlots > 0
+      ? Math.round((usedAvg / maxSlots) * 100)
+      : 0;
+
+  let color = "#00ffa6";
+  let status = "AVAILABLE";
+
+  if(utilization >= 85){
+    color = "#ff3b30";
+    status = "CONGESTED";
+  }
+  else if(utilization >= 65){
+    color = "#ff9f0a";
+    status = "HIGH UTILIZATION";
+  }
+  else if(utilization >= 40){
+    color = "#ffd60a";
+    status = "MODERATE";
+  }
+
+  grid.innerHTML = `
+  
+  <div>
+    <div class="acs-section-title">
+      STRUCTURAL CAPACITY
+    </div>
+    <div style="color:${color};">
+      ${maxSlots} slots/hour
+    </div>
+  </div>
+
+  <div>
+    <div class="acs-section-title">
+      LIVE UTILIZATION
+    </div>
+    <div style="color:${color};">
+      ${utilization}%
+    </div>
+  </div>
+
+  <div>
+    <div class="acs-section-title">
+      SLOT AVAILABILITY
+    </div>
+    <div style="color:${color};">
+      ${freeSlots} free
+    </div>
+  </div>
+
+  <div>
+    <div class="acs-section-title">
+      STATUS
+    </div>
+    <div style="
+      color:${color};
+      border:1px solid ${color};
+      padding:4px;
+      text-align:center;
+      border-radius:4px;
+    ">
+      ${status}
+    </div>
+  </div>
+
+  `;
+
+  modal.style.display = "flex";
+
+}
+
+/* ============================================================
+   CLOSE SLOT MODAL
+   ============================================================ */
+
+function ACS_closeSlotDemandModal(){
+
+  document.getElementById(
+    "acsSlotModal"
+  ).style.display = "none";
+
 }
         
 </script>
