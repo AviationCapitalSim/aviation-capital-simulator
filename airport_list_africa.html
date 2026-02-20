@@ -1661,6 +1661,173 @@ function ACS_closeSlotDemandModal(){
   ).style.display = "none";
 
 }
+
+/* ============================================================
+   🟦 AF-A7 — AIRPORT INFO MODAL ENGINE (AFRICA INSTALL)
+   New function — does not replace anything
+   ============================================================ */
+
+function ACS_showAirportInfo(icao){
+
+  const airports =
+    getAirportsByContinent("Africa");
+
+  const ap =
+    airports.find(a => a.icao === icao);
+
+  if(!ap) return;
+
+  const modal =
+    document.getElementById(
+      "airportInfoModal"
+    );
+
+  const title =
+    document.getElementById(
+      "airportInfoTitle"
+    );
+
+  const body =
+    document.getElementById(
+      "airportInfoBody"
+    );
+
+  title.innerHTML =
+    ap.city.toUpperCase() +
+    " — " +
+    ap.icao;
+
+  const demand =
+    ap.demand || {Y:0,C:0,F:0};
+
+  const totalDemand =
+    demand.Y + demand.C + demand.F;
+
+  const slots =
+    JSON.parse(
+      localStorage.getItem("ACS_SLOTS") || "{}"
+    )[icao] || {};
+
+  let usedTotal = 0;
+  let count = 0;
+
+  Object.values(slots).forEach(day=>{
+    Object.values(day).forEach(hour=>{
+      usedTotal += Number(hour.used || 0);
+      count++;
+    });
+  });
+
+  const usedAvg =
+    count > 0
+      ? Math.round(usedTotal / count)
+      : 0;
+
+  const maxSlots =
+    ACS_getMaxSlotsByCategory(ap.category);
+
+  const utilization =
+    maxSlots > 0
+      ? Math.round(
+          (usedAvg / maxSlots) * 100
+        )
+      : 0;
+
+  body.innerHTML = `
+
+  <div class="acs-info-grid">
+
+    <div class="acs-info-block">
+      <div class="acs-info-label">
+        COUNTRY
+      </div>
+      <div class="acs-info-value">
+        ${ap.country}
+      </div>
+    </div>
+
+    <div class="acs-info-block">
+      <div class="acs-info-label">
+        REGION
+      </div>
+      <div class="acs-info-value">
+        ${ap.region}
+      </div>
+    </div>
+
+    <div class="acs-info-block">
+      <div class="acs-info-label">
+        CATEGORY
+      </div>
+      <div class="acs-info-value">
+        ${ap.category}
+      </div>
+    </div>
+
+    <div class="acs-info-block">
+      <div class="acs-info-label">
+        RUNWAY
+      </div>
+      <div class="acs-info-value">
+        ${ap.runway_m} m
+      </div>
+    </div>
+
+    <div class="acs-info-block">
+      <div class="acs-info-label">
+        SLOT CAPACITY
+      </div>
+      <div class="acs-info-value">
+        ${maxSlots}
+      </div>
+    </div>
+
+    <div class="acs-info-block">
+      <div class="acs-info-label">
+        UTILIZATION
+      </div>
+      <div class="acs-info-value">
+        ${utilization}%
+      </div>
+    </div>
+
+    <div class="acs-info-block">
+      <div class="acs-info-label">
+        DEMAND TOTAL
+      </div>
+      <div class="acs-info-value">
+        ${totalDemand}
+      </div>
+    </div>
+
+    <div class="acs-info-block">
+      <div class="acs-info-label">
+        FUEL PRICE
+      </div>
+      <div class="acs-info-value">
+        $${ap.fuel_usd_gal}/gal
+      </div>
+    </div>
+
+  </div>
+
+  `;
+
+  modal.style.display = "flex";
+
+}
+
+/* ============================================================
+   CLOSE INFO MODAL
+   ============================================================ */
+
+function ACS_closeAirportInfo(){
+
+  document.getElementById(
+    "airportInfoModal"
+  ).style.display = "none";
+
+}
         
 </script>
 
