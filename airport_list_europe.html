@@ -667,7 +667,77 @@ th.sort-desc::after{
   color:#ffb300;
 
 }
-     
+
+/* ============================================================
+   ✈️ ACS TABLE HEADER — AIRBUS OCC / QATAR LUXURY STYLE
+   ============================================================ */
+
+#airportTable th{
+  position:relative;
+  cursor:pointer;
+  user-select:none;
+  font-weight:600;
+  letter-spacing:0.4px;
+  transition:all 0.25s ease;
+}
+
+/* hover effect Airbus style */
+#airportTable th:hover{
+  color:#00ffa6;
+  text-shadow:0 0 6px rgba(0,255,166,0.35);
+}
+
+/* default arrows */
+#airportTable th::after{
+  content:"⇅";
+  font-size:13px;
+  margin-left:8px;
+  opacity:0.35;
+  color:#6faeff;
+  transition:all 0.2s ease;
+}
+
+/* ascending */
+#airportTable th.sort-asc{
+  color:#00ffa6;
+}
+
+#airportTable th.sort-asc::after{
+  content:"▲";
+  opacity:1;
+  color:#00ffa6;
+  text-shadow:0 0 6px rgba(0,255,166,0.6);
+}
+
+/* descending */
+#airportTable th.sort-desc{
+  color:#00ffa6;
+}
+
+#airportTable th.sort-desc::after{
+  content:"▼";
+  opacity:1;
+  color:#00ffa6;
+  text-shadow:0 0 6px rgba(0,255,166,0.6);
+}
+
+/* ============================================================
+   ✈️ ACS TABLE HEADER — AIRBUS OCC / QATAR EXECUTIVE STYLE
+   ============================================================ */
+
+#airportTable thead tr{
+  background:linear-gradient(
+    180deg,
+    rgba(25,40,75,0.95),
+    rgba(15,28,55,0.95)
+  );
+
+  border-bottom:1px solid rgba(0,255,166,0.15);
+
+  box-shadow:
+    inset 0 -1px 0 rgba(0,255,166,0.12),
+    0 4px 12px rgba(0,0,0,0.35);
+}     
 </style>
 
 </head>
@@ -1083,6 +1153,9 @@ function loadAirports() {
 }
 
 // update header arrows
+const table = document.getElementById("airportTable");
+if(!table) return;
+
 const headers = table.querySelectorAll("th");
 
 headers.forEach(h=>{
