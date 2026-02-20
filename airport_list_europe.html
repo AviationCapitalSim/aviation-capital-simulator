@@ -1195,71 +1195,91 @@ function ACS_resolveAircraftSeatsForFlight(f){
   return 0; // unknown -> 0
 }
 
-/**
- * Utilización real basada en vuelos programados (semana) → promedio diario.
- * Cuenta tanto departures como arrivals (si el vuelo toca el aeropuerto, cuenta).
- *
- * @param {string} icao
- * @param {number} marketThroughput pax/day structural throughput
- * @returns {{pax:number, paxWeekly:number, flightsWeekly:number, utilizationPct:number}}
- */
+/* ============================================================
+   🟧 U2 — REAL AIRPORT UTILIZATION (CANONICAL · TRAFFIC LOG)
+   ------------------------------------------------------------
+   ✔ Uses ACS_TRAFFIC_LOG (real passengers)
+   ✔ NOT seats
+   ✔ NOT scheduleItems
+   ✔ Based on real completed flights
+   ✔ Global — reusable across all continents
+   ============================================================ */
+
 function ACS_getAirportRealUtilization(icao, marketThroughput){
 
   const out = {
-    pax: 0,           // pax promedio por día (avg)
-    paxWeekly: 0,     // debug: pax/semana (asientos sumados)
-    flightsWeekly: 0, // debug: count vuelos/semana
+
+    pax: 0,              // real pax/day
+    paxWeekly: 0,        // debug
+    flightsWeekly: 0,    // debug
+
     utilizationPct: 0
+
   };
 
-  const I = String(icao || "").toUpperCase();
-  if (!I) return out;
+  if (!icao) return out;
 
-  let items = [];
-  try{
-    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  }catch(e){
-    items = [];
+  const ICAO = String(icao).toUpperCase();
+
+  let log;
+
+  try {
+
+    log = JSON.parse(localStorage.getItem("ACS_TRAFFIC_LOG") || "[]");
+
+  } catch {
+
+    log = [];
+
   }
 
-  const flights = (Array.isArray(items) ? items : [])
-    .filter(x => x && x.type === "flight");
+  if (!Array.isArray(log) || log.length === 0) return out;
 
-  if (!flights.length) return out;
+  /* ============================================================
+     Use last 7 simulated days (rolling window)
+     ============================================================ */
+
+  const now = Date.now();
+
+  const WINDOW = 7 * 24 * 60 * 60 * 1000;
 
   let paxWeekly = 0;
   let flightsWeekly = 0;
 
-  flights.forEach(f => {
+  for (const f of log){
 
-    const origin = String(f.origin || "").toUpperCase();
-    const dest   = String(f.destination || "").toUpperCase();
+    if (!f) continue;
 
-    // Count if flight touches this airport
-    if (origin !== I && dest !== I) return;
+    if (
+      String(f.origin).toUpperCase() !== ICAO &&
+      String(f.destination).toUpperCase() !== ICAO
+    ) continue;
 
-    const seats = ACS_resolveAircraftSeatsForFlight(f);
-    if (!seats) return;
+    if (!f.ts || now - f.ts > WINDOW) continue;
 
-    // scheduleItems represent weekly occurrences (one per stored day)
-    paxWeekly += seats;
-    flightsWeekly += 1;
-  });
+    paxWeekly += Number(f.pax || 0);
 
-  // Weekly → daily average (prevents IDLE when not “today”)
+    flightsWeekly++;
+
+  }
+
   const paxDay = Math.round(paxWeekly / 7);
 
-  out.paxWeekly = paxWeekly;
-  out.flightsWeekly = flightsWeekly;
   out.pax = paxDay;
 
+  out.paxWeekly = paxWeekly;
+
+  out.flightsWeekly = flightsWeekly;
+
   const thr = Number(marketThroughput) || 0;
+
   out.utilizationPct =
-    (thr > 0)
-      ? Math.max(0, Math.min(100, Math.round((paxDay / thr) * 100)))
+    thr > 0
+      ? Math.min(100, Math.round((paxDay / thr) * 100))
       : 0;
 
   return out;
+
 }
      
 /* =============================================================
