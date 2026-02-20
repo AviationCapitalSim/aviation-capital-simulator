@@ -764,66 +764,65 @@ function adjustPassengerClasses(demand) {
 }
 
 /* ============================================================
-   🟦 AF-A8 — FIX SLOT CELL ENGINE FUNCTION NAME
-   Correct engine call: ACS_getFreeSlots
+   🟦 AF-A8R — SLOT CELL BUILDER (NO EXTERNAL HELPERS)
+   Uses ACS_SLOTS live data + opens Slot Demand Modal on click
    ============================================================ */
 
-function ACS_buildSlotCell(icao, category){
+function ACS_buildSlotCell(icao, category) {
 
-  const max =
-    ACS_getMaxSlotsByCategory(category);
+  // Max slots según categoría (engine)
+  const max = ACS_getMaxSlotsByCategory(category);
+  if (!max) return "—";
 
-  const free =
-    ACS_getFreeSlots(icao, category);
+  let usedTotal = 0;
+  let count = 0;
 
-  const used = max - free;
+  // Leer slots usados desde localStorage (LIVE)
+  const slots =
+    JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
 
-  const pct =
-    max > 0
-      ? Math.round((used / max) * 100)
-      : 0;
+  if (slots) {
+    const days = Object.keys(slots);
+    days.forEach(day => {
+      const times = Object.keys(slots[day]);
+      times.forEach(time => {
+        usedTotal += Number(slots[day][time].used || 0);
+        count++;
+      });
+    });
+  }
 
+  // Promedio de uso
+  const usedAvg = count > 0 ? Math.round(usedTotal / count) : 0;
+
+  // Slots libres
+  const free = Math.max(0, max - usedAvg);
+
+  // Utilización (used/max)
+  const usedPct = max > 0 ? Math.round((usedAvg / max) * 100) : 0;
+
+  // Color por congestión (verde→amarillo→naranja→rojo)
   let color = "#00ffa6";
-
-  if(pct >= 85)
-    color = "#ff3b30";
-  else if(pct >= 65)
-    color = "#ff9f0a";
-  else if(pct >= 40)
-    color = "#ffd60a";
+  if (usedPct >= 85) color = "#ff3b30";
+  else if (usedPct >= 65) color = "#ff9f0a";
+  else if (usedPct >= 40) color = "#ffd60a";
 
   return `
-  
-  <div onclick="ACS_openSlotDemandModal('${icao}')"
-       style="cursor:pointer;">
+    <div onclick="ACS_openSlotDemandModal('${icao}')"
+         style="cursor:pointer;">
 
-    <div style="
-      font-size:12px;
-      margin-bottom:3px;
-    ">
-      ${free} / ${max}
-    </div>
+      <div style="font-size:12px; margin-bottom:3px;">
+        ${free} / ${max}
+      </div>
 
-    <div style="
-      height:8px;
-      background:#1a2a4a;
-      border-radius:4px;
-      overflow:hidden;
-    ">
-
-      <div style="
-        width:${pct}%;
-        height:100%;
-        background:${color};
-        box-shadow:0 0 6px ${color};
-      "></div>
+      <div class="slot-bar">
+        <div class="slot-bar-fill"
+             style="width:${usedPct}%; background:${color};">
+        </div>
+      </div>
 
     </div>
-
-  </div>
-
   `;
-
 }
         
 /* =============================================================
