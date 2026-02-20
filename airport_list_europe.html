@@ -1151,22 +1151,6 @@ function loadAirports() {
   table.style.visibility = "hidden";
   setTimeout(() => { table.style.visibility = "visible"; }, 50);
 }
-
-// update header arrows
-const table = document.getElementById("airportTable");
-if(!table) return;
-
-const headers = table.querySelectorAll("th");
-
-headers.forEach(h=>{
-  h.classList.remove("sort-asc","sort-desc");
-});
-
-headers[columnIndex].classList.add(
-  ACS_TABLE_SORT_STATE[columnIndex] === "asc"
-    ? "sort-asc"
-    : "sort-desc"
-);
      
 /* ============================================================
    === FILTER BY COUNTRY =======================================
@@ -1311,14 +1295,12 @@ function sortTable(columnIndex){
 
   if(!table || !tbody) return;
 
-  // ignore Action column
   if(columnIndex === 5) return;
 
   const rows = Array.from(tbody.querySelectorAll("tr"));
 
   if(rows.length <= 1) return;
 
-  // determine direction
   const currentDir =
     ACS_TABLE_SORT_STATE[columnIndex] === "asc"
       ? "desc"
@@ -1326,28 +1308,15 @@ function sortTable(columnIndex){
 
   ACS_TABLE_SORT_STATE[columnIndex] = currentDir;
 
-  // ============================================================
-  // SORT ROWS
-  // ============================================================
-
   rows.sort((a,b)=>{
 
-    const A = ACS_parseCellValue(
-      a.children[columnIndex],
-      columnIndex
-    );
-
-    const B = ACS_parseCellValue(
-      b.children[columnIndex],
-      columnIndex
-    );
+    const A = ACS_parseCellValue(a.children[columnIndex], columnIndex);
+    const B = ACS_parseCellValue(b.children[columnIndex], columnIndex);
 
     if(typeof A === "number" && typeof B === "number"){
-
       return currentDir === "asc"
         ? A - B
         : B - A;
-
     }
 
     return currentDir === "asc"
@@ -1356,33 +1325,21 @@ function sortTable(columnIndex){
 
   });
 
-  // ============================================================
-  // APPLY SORTED ROWS
-  // ============================================================
-
   tbody.innerHTML = "";
+  rows.forEach(r => tbody.appendChild(r));
 
-  rows.forEach(r => {
-    tbody.appendChild(r);
-  });
-
-  // ============================================================
-  // UPDATE HEADER ARROWS (SAFE — NO RETURN HERE)
-  // ============================================================
-
+  // ✅ update arrows (CORRECT LOCATION)
   const headers = table.querySelectorAll("th");
 
   headers.forEach(h=>{
     h.classList.remove("sort-asc","sort-desc");
   });
 
-  if(headers[columnIndex]){
-    headers[columnIndex].classList.add(
-      currentDir === "asc"
-        ? "sort-asc"
-        : "sort-desc"
-    );
-  }
+  headers[columnIndex].classList.add(
+    currentDir === "asc"
+      ? "sort-asc"
+      : "sort-desc"
+  );
 
 }
      
