@@ -638,6 +638,35 @@ tr:hover {
   color:#cbd6ff;
 }
 
+th.sortable::after{
+
+  content:" ⇅";
+
+  font-size:11px;
+
+  color:#00AEEF;
+
+  opacity:0.7;
+
+  margin-left:6px;
+
+}
+
+th.sort-asc::after{
+
+  content:" ▲";
+
+  color:#00ff80;
+
+}
+
+th.sort-desc::after{
+
+  content:" ▼";
+
+  color:#ffb300;
+
+}
      
 </style>
 
@@ -703,11 +732,11 @@ tr:hover {
     <table id="airportTable">
       <thead>
         <tr>
-          <th onclick="sortTable(0)">Airport (ICAO)</th>
-          <th onclick="sortTable(1)">Country</th>
-          <th onclick="sortTable(2)">Distance (NM)</th>
-          <th onclick="sortTable(3)">Demand (Y/C/F)</th>
-          <th onclick="sortTable(4)">Slots</th>
+          <th class="sortable" onclick="sortTable(0)">Airport (ICAO)</th>
+          <th class="sortable" onclick="sortTable(1)">Country</th>
+          <th class="sortable" onclick="sortTable(2)">Distance (NM)</th>
+          <th class="sortable" onclick="sortTable(3)">Demand (Y/C/F)</th>
+          <th class="sortable" onclick="sortTable(4)">Slots</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -1053,6 +1082,19 @@ function loadAirports() {
   setTimeout(() => { table.style.visibility = "visible"; }, 50);
 }
 
+// update header arrows
+const headers = table.querySelectorAll("th");
+
+headers.forEach(h=>{
+  h.classList.remove("sort-asc","sort-desc");
+});
+
+headers[columnIndex].classList.add(
+  ACS_TABLE_SORT_STATE[columnIndex] === "asc"
+    ? "sort-asc"
+    : "sort-desc"
+);
+     
 /* ============================================================
    === FILTER BY COUNTRY =======================================
    ============================================================ */
