@@ -669,3 +669,70 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", e => {
   );
 
 });
+
+/* ============================================================
+   🟧 A10 — GLOBAL TRAFFIC LOG (CANONICAL · AIRPORT UTILIZATION)
+   ------------------------------------------------------------
+   ✔ Stores real passengers transported per flight
+   ✔ Source of Truth for Airport Utilization modal
+   ✔ Uses ACS_FLIGHT_ECONOMICS event (already deduplicated)
+   ✔ Safe for refresh and multi-tab
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
+
+  const eco = e.detail;
+  if (!eco || !eco.flightId) return;
+
+  try {
+
+    const KEY = "ACS_TRAFFIC_LOG";
+
+    let log = JSON.parse(localStorage.getItem(KEY) || "[]");
+
+    if (!Array.isArray(log)) log = [];
+
+    /* Prevent duplicates */
+    if (log.some(x => x.eventId === eco.eventId)) return;
+
+    log.push({
+
+      eventId: eco.eventId,
+
+      flightId: eco.flightId,
+      aircraftId: eco.aircraftId,
+
+      origin: eco.origin,
+      destination: eco.destination,
+
+      pax: eco.pax,
+      seats: Math.round(eco.pax / (eco.loadFactor || 1)),
+
+      loadFactor: eco.loadFactor,
+
+      distanceNM: eco.distanceNM,
+
+      ts: eco.ts || Date.now(),
+
+      year: eco.year
+
+    });
+
+    /* Limit log size (performance safe) */
+    if (log.length > 5000) {
+      log = log.slice(-5000);
+    }
+
+    localStorage.setItem(KEY, JSON.stringify(log));
+
+    // Debug
+    // console.log("📊 ACS_TRAFFIC_LOG updated:", eco.flightId, eco.pax);
+
+  }
+  catch (err) {
+
+    console.error("ACS_TRAFFIC_LOG write failed", err);
+
+  }
+
+});
