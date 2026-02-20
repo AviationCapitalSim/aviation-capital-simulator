@@ -1196,87 +1196,178 @@ function ACS_resolveAircraftSeatsForFlight(f){
 }
 
 /* ============================================================
-   🟧 U2 — REAL AIRPORT UTILIZATION (CANONICAL · TRAFFIC LOG)
+   🟧 U3 — REAL UTILIZATION (HYBRID) + DEMAND CAPTURE (OPTION B)
    ------------------------------------------------------------
-   ✔ Uses ACS_TRAFFIC_LOG (real passengers)
-   ✔ NOT seats
-   ✔ NOT scheduleItems
-   ✔ Based on real completed flights
-   ✔ Global — reusable across all continents
+   PRIMARY: ACS_TRAFFIC_LOG (real transported pax)
+   FALLBACK: scheduleItems + ACS_PAX.calculate (predicted live)
+   Adds: demandCapturePct vs marketDemand (totalDemand)
+   Global-ready for 6 continents
+   Date: 20 FEB 2026
    ============================================================ */
 
-function ACS_getAirportRealUtilization(icao, marketThroughput){
+function ACS_getAirportRealUtilization(icao, marketThroughput, marketDemand){
 
   const out = {
+    pax: 0,
+    flights: 0,
+    utilizationPct: 0,
+    demandCapturePct: 0,
 
-    pax: 0,              // real pax/day
-    paxWeekly: 0,        // debug
-    flightsWeekly: 0,    // debug
-
-    utilizationPct: 0
-
+    // debug / transparency
+    source: "IDLE",
+    paxWeekly: 0,
+    flightsWeekly: 0
   };
 
-  if (!icao) return out;
-
-  const ICAO = String(icao).toUpperCase();
-
-  let log;
-
-  try {
-
-    log = JSON.parse(localStorage.getItem("ACS_TRAFFIC_LOG") || "[]");
-
-  } catch {
-
-    log = [];
-
-  }
-
-  if (!Array.isArray(log) || log.length === 0) return out;
-
-  /* ============================================================
-     Use last 7 simulated days (rolling window)
-     ============================================================ */
-
-  const now = Date.now();
-
-  const WINDOW = 7 * 24 * 60 * 60 * 1000;
-
-  let paxWeekly = 0;
-  let flightsWeekly = 0;
-
-  for (const f of log){
-
-    if (!f) continue;
-
-    if (
-      String(f.origin).toUpperCase() !== ICAO &&
-      String(f.destination).toUpperCase() !== ICAO
-    ) continue;
-
-    if (!f.ts || now - f.ts > WINDOW) continue;
-
-    paxWeekly += Number(f.pax || 0);
-
-    flightsWeekly++;
-
-  }
-
-  const paxDay = Math.round(paxWeekly / 7);
-
-  out.pax = paxDay;
-
-  out.paxWeekly = paxWeekly;
-
-  out.flightsWeekly = flightsWeekly;
+  const I = String(icao || "").toUpperCase();
+  if (!I) return out;
 
   const thr = Number(marketThroughput) || 0;
+  const dem = Number(marketDemand) || 0;
 
-  out.utilizationPct =
-    thr > 0
-      ? Math.min(100, Math.round((paxDay / thr) * 100))
-      : 0;
+  /* ============================================================
+     1) PRIMARY — Real transported pax from ACS_TRAFFIC_LOG (7d avg)
+     ============================================================ */
+  let log = [];
+  try{
+    log = JSON.parse(localStorage.getItem("ACS_TRAFFIC_LOG") || "[]");
+  }catch(e){
+    log = [];
+  }
+
+  if (Array.isArray(log) && log.length){
+
+    const now = Date.now();
+    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+    let paxWeekly = 0;
+    let flightsWeekly = 0;
+
+    for(const f of log){
+
+      if(!f) continue;
+
+      const o = String(f.origin || "").toUpperCase();
+      const d = String(f.destination || "").toUpperCase();
+
+      if(o !== I && d !== I) continue;
+
+      if(!f.ts) continue;
+      if(now - Number(f.ts) > WEEK_MS) continue;
+
+      paxWeekly += Number(f.pax || 0);
+      flightsWeekly += 1;
+
+    }
+
+    const paxDailyReal = Math.round(paxWeekly / 7);
+
+    if(paxDailyReal > 0){
+
+      out.pax = paxDailyReal;
+      out.flights = flightsWeekly;          // weekly flight touches (debug)
+      out.paxWeekly = paxWeekly;
+      out.flightsWeekly = flightsWeekly;
+
+      out.source = "TRAFFIC_LOG";
+
+      if (thr > 0){
+        out.utilizationPct = Math.max(0, Math.min(100, Math.round((out.pax / thr) * 100)));
+      } else {
+        out.utilizationPct = 0;
+      }
+
+      if (dem > 0){
+        out.demandCapturePct = Math.max(0, Math.min(100, Math.round((out.pax / dem) * 100)));
+      } else {
+        out.demandCapturePct = 0;
+      }
+
+      return out;
+
+    }
+
+  }
+
+  /* ============================================================
+     2) FALLBACK — Predicted live pax from scheduleItems + ACS_PAX
+     (keeps airports from going IDLE before first arrivals)
+     ============================================================ */
+
+  const dayKey = ACS_getSimDayKey();
+  const year   = ACS_getSimYear();
+
+  let items = [];
+  try{
+    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  }catch(e){
+    items = [];
+  }
+
+  const normDay = (v) => String(v || "").trim().toLowerCase().slice(0,3);
+  const dayKeyN = normDay(dayKey);
+
+  const allFlights = (Array.isArray(items) ? items : []).filter(x => x && x.type === "flight");
+
+  // flights scheduled for TODAY (sim day)
+  let flights = allFlights.filter(x => normDay(x.day) === dayKeyN);
+
+  // fallback: if none scheduled today, use all flights
+  if (!flights.length) flights = allFlights;
+
+  if (!flights.length) return out;
+
+  const hasPaxEngine = window.ACS_PAX && typeof ACS_PAX.calculate === "function";
+  if (!hasPaxEngine) return out;
+
+  flights.forEach(f => {
+
+    const origin = String(f.origin || "").toUpperCase();
+    const dest   = String(f.destination || "").toUpperCase();
+
+    if (origin !== I && dest !== I) return;
+
+    const seats = ACS_resolveAircraftSeatsForFlight(f);
+    if (!seats) return;
+
+    const distanceNM = Number(f.distanceNM) || 0;
+
+    const paxRes = ACS_PAX.calculate({
+      year,
+      route: {
+        origin,
+        destination: dest,
+        distanceNM
+      },
+      aircraft: {
+        seats
+      },
+      time: {
+        departureHHMM: String(f.departure || "12:00")
+      }
+    });
+
+    const pax = Math.max(0, Math.round(Number(paxRes && paxRes.pax) || 0));
+    if (!pax) return;
+
+    out.pax += pax;
+    out.flights += 1;
+
+  });
+
+  out.source = out.pax > 0 ? "PAX_PREDICT" : "IDLE";
+
+  if (thr > 0){
+    out.utilizationPct = Math.max(0, Math.min(100, Math.round((out.pax / thr) * 100)));
+  }else{
+    out.utilizationPct = 0;
+  }
+
+  if (dem > 0){
+    out.demandCapturePct = Math.max(0, Math.min(100, Math.round((out.pax / dem) * 100)));
+  }else{
+    out.demandCapturePct = 0;
+  }
 
   return out;
 
@@ -1327,12 +1418,12 @@ function openAirportInfo(icao) {
 // REAL UTILIZATION (ONLY REAL DATA)
 // ===============================
 
-// ⚠️ CRITICAL: pass market.throughput to calculate real utilization correctly
 const real = ACS_getAirportRealUtilization(
   ap.icao,
-  market.throughput
+  market.throughput,
+  totalDemand
 ) || {};
-
+     
 const usedPct = Number(real.utilizationPct) || 0;
 const realPax = Number(real.pax) || 0;
 
@@ -1534,10 +1625,15 @@ margin-top:6px;
 font-size:13px;
 ">
 
-Passengers transported:<br>
+<div style="margin-top:8px;">
+Market demand capture:<br>
+<b>${real.demandCapturePct}%</b> of <b>${totalDemand.toLocaleString()}</b> pax/day
+</div>
 
-<b>${real.pax.toLocaleString()} / ${market.throughput.toLocaleString()}</b> pax/day
+<div style="margin-top:6px; opacity:0.75; font-size:12px;">
+Source: <b>${real.source}</b>
 
+</div>
 </div>
 
 
