@@ -737,7 +737,18 @@ th.sort-desc::after{
   box-shadow:
     inset 0 -1px 0 rgba(0,255,166,0.12),
     0 4px 12px rgba(0,0,0,0.35);
-}     
+} 
+
+@media(max-width:600px){
+
+  #acsSlotContent > div{
+
+    grid-template-columns:1fr !important;
+
+  }
+
+}
+     
 </style>
 
 </head>
@@ -845,7 +856,27 @@ th.sort-desc::after{
 
   </div>
 </div>
-   
+
+<!-- ============================================================
+     🟩 ACS AIRPORT SLOT DEMAND MODAL — GLOBAL REUSABLE
+     Airbus OCC + Qatar Executive Luxury
+     Used in ALL continents
+     ============================================================ -->
+<div id="acsSlotModal" class="acs-modal">
+  <div class="acs-modal-box" style="max-width:600px">
+
+    <h3 id="acsSlotTitle"></h3>
+
+    <div id="acsSlotContent"></div>
+
+    <button class="acs-modal-close"
+            onclick="ACS_closeSlotDemandModal()">
+      Close
+    </button>
+
+  </div>
+</div>
+     
   <!-- SCRIPTS -->
      
 <script>
@@ -1055,12 +1086,18 @@ function ACS_buildSlotCell(icao, category) {
   if (pct < 20) color = "#FF2E2E";
 
   return `
+  <div onclick="ACS_openSlotDemandModal('${icao}')"
+       style="cursor:pointer">
+
     ${free} / ${max}
+
     <div class="slot-bar">
       <div class="slot-bar-fill"
            style="width:${pct}%; background:${color};"></div>
     </div>
-  `;
+
+  </div>
+`;
 }
 
 /* ============================================================
@@ -2175,6 +2212,202 @@ window.addEventListener("click", (e) => {
   if (e.target === modal) modal.style.display = "none";
 });
 
+/* ============================================================
+   🟩 ACS SLOT DEMAND MODAL — GLOBAL VERSION
+   Airbus OCC + Qatar Executive
+   Live slot infrastructure visualization
+   ============================================================ */
+
+function ACS_openSlotDemandModal(icao){
+
+  const airports = getAirportsEuropeSafe();
+  const ap = airports.find(a => a.icao === icao);
+
+  if(!ap) return;
+
+  const modal   = document.getElementById("acsSlotModal");
+  const title   = document.getElementById("acsSlotTitle");
+  const content = document.getElementById("acsSlotContent");
+
+  const maxSlots =
+    ACS_getMaxSlotsByCategory(ap.category) || 0;
+
+  let usedTotal = 0;
+  let count = 0;
+
+  const slots =
+    JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
+
+  if(slots){
+
+    Object.values(slots).forEach(day=>{
+      Object.values(day).forEach(hour=>{
+        usedTotal += Number(hour.used || 0);
+        count++;
+      });
+    });
+
+  }
+
+  const usedAvg =
+    count > 0 ? Math.round(usedTotal / count) : 0;
+
+  const freeSlots =
+    Math.max(0, maxSlots - usedAvg);
+
+  const utilization =
+    maxSlots > 0
+      ? Math.round((usedAvg / maxSlots) * 100)
+      : 0;
+
+  /* COLOR LOGIC Airbus OCC */
+
+  let color = "#00ff80";
+  let status = "FULL CAPACITY AVAILABLE";
+
+  if(utilization >= 85){
+    color = "#ff3b30";
+    status = "CAPACITY CONSTRAINED";
+  }
+  else if(utilization >= 65){
+    color = "#ff9f0a";
+    status = "HIGH UTILIZATION";
+  }
+  else if(utilization >= 40){
+    color = "#ffd60a";
+    status = "MODERATE UTILIZATION";
+  }
+
+  /* TITLE */
+
+  title.innerHTML = `
+  <div style="text-align:center">
+
+    <div style="
+      font-family:Orbitron;
+      font-size:12px;
+      color:#ffb300;
+      letter-spacing:2px;
+      margin-bottom:4px;
+    ">
+      AIRPORT SLOT DEMAND
+    </div>
+
+    <div style="
+      font-family:Orbitron;
+      font-size:22px;
+      color:#00ff9c;
+      letter-spacing:2px;
+      font-weight:600;
+    ">
+      ${ap.city.toUpperCase()} — ${ap.icao}
+    </div>
+
+  </div>
+  `;
+
+  /* 2×2 GRID */
+
+  content.innerHTML = `
+
+  <div style="
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-top:12px;
+  ">
+
+  <!-- PANEL 1 -->
+  <div>
+
+    <div class="acs-section-title">
+      STRUCTURAL CAPACITY
+    </div>
+
+    <div style="font-size:14px; color:#00ff80">
+      ${maxSlots} slots/hour
+    </div>
+
+    <div style="font-size:12px; opacity:0.7">
+      Category: ${ap.category}
+    </div>
+
+  </div>
+
+  <!-- PANEL 2 -->
+  <div>
+
+    <div class="acs-section-title">
+      LIVE UTILIZATION
+    </div>
+
+    <div class="acs-capacity-bar">
+      <div class="acs-capacity-fill"
+           style="width:${utilization}%;
+                  background:${color};
+                  color:${color}">
+      </div>
+    </div>
+
+    <div style="font-size:14px; margin-top:6px">
+      ${utilization}%
+    </div>
+
+  </div>
+
+  <!-- PANEL 3 -->
+  <div>
+
+    <div class="acs-section-title">
+      SLOT AVAILABILITY
+    </div>
+
+    <div style="font-size:16px; color:${color}">
+      ${freeSlots} free
+    </div>
+
+    <div style="font-size:12px">
+      ${usedAvg} used
+    </div>
+
+  </div>
+
+  <!-- PANEL 4 -->
+  <div>
+
+    <div class="acs-section-title">
+      STATUS
+    </div>
+
+    <div class="acs-status-chip"
+         style="
+         color:${color};
+         border:1px solid ${color};
+         background:${color}22">
+
+      ${status}
+
+    </div>
+
+  </div>
+
+  </div>
+  `;
+
+  modal.style.display = "flex";
+
+}
+
+/* ============================================================
+   CLOSE SLOT MODAL
+   ============================================================ */
+
+function ACS_closeSlotDemandModal(){
+
+  document.getElementById("acsSlotModal").style.display = "none";
+
+}
+     
 /* =============================================================
    === LOGOUT ===================================================
    ============================================================= */
