@@ -1326,6 +1326,10 @@ function sortTable(columnIndex){
 
   ACS_TABLE_SORT_STATE[columnIndex] = currentDir;
 
+  // ============================================================
+  // SORT ROWS
+  // ============================================================
+
   rows.sort((a,b)=>{
 
     const A = ACS_parseCellValue(
@@ -1352,9 +1356,33 @@ function sortTable(columnIndex){
 
   });
 
+  // ============================================================
+  // APPLY SORTED ROWS
+  // ============================================================
+
   tbody.innerHTML = "";
 
-  rows.forEach(r => tbody.appendChild(r));
+  rows.forEach(r => {
+    tbody.appendChild(r);
+  });
+
+  // ============================================================
+  // UPDATE HEADER ARROWS (SAFE — NO RETURN HERE)
+  // ============================================================
+
+  const headers = table.querySelectorAll("th");
+
+  headers.forEach(h=>{
+    h.classList.remove("sort-asc","sort-desc");
+  });
+
+  if(headers[columnIndex]){
+    headers[columnIndex].classList.add(
+      currentDir === "asc"
+        ? "sort-asc"
+        : "sort-desc"
+    );
+  }
 
 }
      
