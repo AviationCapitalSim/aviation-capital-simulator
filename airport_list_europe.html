@@ -1228,13 +1228,25 @@ function ACS_getAirportRealUtilization(icao, marketThroughput){
     items = [];
   }
 
-  const flights = (Array.isArray(items) ? items : [])
-    .filter(x => x && x.type === "flight")
-    .filter(x => String(x.day || "").toLowerCase() === dayKey);
+  // --- normalize day keys (handles "mon", "MON", "monday", etc.)
+const normDay = (v) => String(v || "").trim().toLowerCase().slice(0,3);
 
-  if (!flights.length) return out;
+const dayKeyN = normDay(dayKey);
+
+const allFlights = (Array.isArray(items) ? items : [])
+  .filter(x => x && x.type === "flight");
+
+// flights scheduled for TODAY (sim day)
+let flights = allFlights.filter(x => normDay(x.day) === dayKeyN);
+
+// ✅ Fallback: if none scheduled today, keep it LIVE by using all flights
+// (prevents IDLE when your current sim day doesn’t match the stored scheduleItems days)
+if (!flights.length) flights = allFlights;
+
+if (!flights.length) return out;
 
   // Need ACS_PAX.calculate
+     
   const hasPaxEngine = window.ACS_PAX && typeof ACS_PAX.calculate === "function";
   if (!hasPaxEngine) return out;
 
