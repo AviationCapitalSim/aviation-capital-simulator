@@ -2149,68 +2149,6 @@ function ACS_openRouteSchedule(destIcao) {
   window.location.href = "route_schedule.html";
 }
 
-/* ============================================================
-   FORCE OVERRIDE — REAL UTILIZATION ENGINE (FINAL AUTHORITY)
-   ============================================================ */
-
-window.ACS_getAirportRealUtilization = function(icao){
-
-  const schedule =
-    JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-
-  const fleet =
-    JSON.parse(localStorage.getItem("ACS_Fleet") || "[]");
-
-  const fleetMap = {};
-  fleet.forEach(ac => fleetMap[ac.id] = ac);
-
-  const modelSeats = {
-    "307 STRATOLINER": 33,
-    "DC-3": 21,
-    "DC-4": 44
-  };
-
-  let paxTotal = 0;
-
-  schedule.forEach(f => {
-
-    if(f.type !== "flight") return;
-
-    if(f.origin !== icao && f.destination !== icao) return;
-
-    const ac = fleetMap[f.aircraftId];
-    if(!ac) return;
-
-    const model = (ac.modelKey || ac.model || "").toUpperCase();
-
-    const seats =
-      modelSeats[model] ||
-      ac.seats ||
-      30;
-
-    paxTotal += seats;
-
-  });
-
-  const airports = getAirportsEuropeSafe();
-  const ap = airports.find(a => a.icao === icao);
-
-  const throughput =
-    ACS_getAirportMarketCapacity(ap).throughput;
-
-  const pct =
-    Math.round((paxTotal / throughput) * 100);
-
-  return {
-
-    pax: paxTotal,
-
-    utilizationPct:
-      Math.max(0, Math.min(100, pct))
-
-  };
-
-};
      
 </script>
 
