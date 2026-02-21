@@ -127,15 +127,38 @@
       background: #ffb300;
       color: #0c1f3c;
     }
-    .acs-clock-header {
-      font-family: 'Orbitron','Consolas',monospace;
-      color:#00ff80;
-      font-weight:bold;
-      background:rgba(0,255,128,0.08);
-      padding:0.3rem 0.8rem;
-      border-radius:6px;
-      font-size:0.9rem;
-    }
+
+    /* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
+
+.acs-clock-header{
+
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+
+  padding:.45rem .8rem;
+
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  white-space:nowrap;
+
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
+}
 
     /* === PAGE TITLE === */
     .acs-intro {
