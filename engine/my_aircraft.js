@@ -361,20 +361,67 @@ function updatePendingDeliveries() {
     if (entry.__delivered !== true) {
 
       pendingForTable.push({
-        registration: "—",
-        model: entry.model,
-        manufacturer: entry.manufacturer,
-        family: entry.family || "",
-        status: "Pending Delivery",
-        hours: "—",
-        cycles: "—",
-        conditionPercent: "—",
-        nextC: "—",
-        nextD: "—",
-        base: "—",
-        deliveryDate: entry.deliveryDate
-      });
 
+  /* ===============================
+     IDENTIDAD
+     =============================== */
+
+  registration: "—",
+
+  manufacturer: entry.manufacturer,
+  model: entry.model,
+  family: entry.family || "—",
+
+  /* ===============================
+     ESTADO
+     =============================== */
+
+  status: "Pending Delivery",
+
+  /* ===============================
+     DATOS OPERACIONALES (AVIACIÓN REAL)
+     =============================== */
+
+  hours: 0,
+  cycles: 0,
+
+  conditionPercent: 100,
+
+  /* ===============================
+     MANTENIMIENTO
+     =============================== */
+
+  baselineCHours: 0,
+  baselineDHours: 0,
+
+  nextC: "—",
+  nextD: "—",
+
+  nextC_days: null,
+  nextD_days: null,
+
+  /* ===============================
+     BASE
+     =============================== */
+
+  base: entry.baseIcao || entry.base || getCurrentBaseICAO(),
+
+  /* ===============================
+     DELIVERY (CRÍTICO)
+     =============================== */
+
+  deliveryDate: entry.deliveryDate,
+  deliveredDate: null,
+
+  /* ===============================
+     META
+     =============================== */
+
+  age: 0,
+
+  isPending: true
+
+});
       stillPending.push(entry);
     }
 
