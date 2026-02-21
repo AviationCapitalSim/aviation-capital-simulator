@@ -1556,6 +1556,8 @@ function openAircraftModal(registration){
     (registration === "—" && a.status === "Pending Delivery")
   );
 
+  ACS_ACTIVE_MODAL_REG = ac.registration;
+   
   if(!ac){
     console.warn("Aircraft not found:", registration);
     return;
@@ -1611,15 +1613,25 @@ function openAircraftModal(registration){
 }
 
 /* ============================================================
-   🟧 MA-8.5.4 — MODAL LAST / NEXT C & D (UI RENDER)
+   🟧 MA-8.5.4 — MODAL LAST / NEXT C & D (UI RENDER) [FIXED]
    ------------------------------------------------------------
-   Purpose:
-   - Pintar Last / Next C & D en el modal
-   - Basado en el pipeline real ACS (NO recalcula lógica)
-   - Respeta Maintenance / Hold / Active
+   FIX:
+   - Usa ACS_ACTIVE_MODAL_REG como source of truth
+   - Elimina ReferenceError: ac undefined
+   - Compatible con Active y Pending
    ============================================================ */
 
-(function renderModalLastNextCD() {
+function renderModalLastNextCD() {
+
+  if (!ACS_ACTIVE_MODAL_REG) return;
+
+  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+
+  const ac = fleetLatest.find(a =>
+    a.registration === ACS_ACTIVE_MODAL_REG
+  );
+
+  if (!ac) return;
 
   const elLastC = document.getElementById("mLastC");
   const elNextC = document.getElementById("mNextC");
@@ -1631,18 +1643,15 @@ function openAircraftModal(registration){
   const fmtDate = (iso) => {
     if (!iso) return "—";
     const d = new Date(iso);
-    return d.toUTCString().substring(5, 16); // "10 FEB 1941"
+    return d.toUTCString().substring(5, 16);
   };
 
-  // LAST CHECKS (fechas reales)
   elLastC.textContent = fmtDate(ac.lastCCheckDate);
   elLastD.textContent = fmtDate(ac.lastDCheckDate);
 
-  // NEXT CHECKS (ya calculados por el pipeline)
   elNextC.textContent = ac.nextC ?? "—";
   elNextD.textContent = ac.nextD ?? "—";
-
-})();
+}
    
  /* ============================================================
    🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (AVIATION CORRECT)
