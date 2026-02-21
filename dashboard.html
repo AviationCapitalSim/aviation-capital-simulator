@@ -37,21 +37,36 @@ body {
    /* ============================================================
    HEADER — SHARED ACS STANDARD
    ============================================================ */
-.acs-header{
+
+ .acs-header{
+
   position:fixed;
   top:0;
-  width:100%;
-  box-sizing:border-box; /* ← FIX CRÍTICO */
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:.8rem 2rem;
-  background:rgba(12,23,50,.45);
-  backdrop-filter:blur(9px);
-  border-bottom:2px solid #ffb300;
-  z-index:5000;
-}
+  left:0;                 /* ✅ CRÍTICO */
+  right:0;                /* ✅ CRÍTICO */
 
+  width:100%;
+
+  box-sizing:border-box;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  padding:.8rem 2rem;
+
+  background:rgba(12,23,50,.45);
+
+  backdrop-filter:blur(9px);
+
+  border-bottom:2px solid #ffb300;
+
+  z-index:5000;
+
+}
+  
 .acs-logo{
   display:flex;
   align-items:center;
@@ -69,8 +84,15 @@ body {
 }
 
 .acs-nav{
+
   display:flex;
+
   gap:2rem;
+
+  flex:1;                 /* ✅ CRÍTICO — ocupa el espacio central */
+
+  justify-content:center; /* centra navegación */
+
 }
 
 .acs-nav a{
@@ -81,19 +103,27 @@ body {
 .acs-nav a.active{
   color:#ffb300;
 }
-
-/* ============================================================
+  
+  /* ============================================================
    🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
    ============================================================ */
 
 .acs-right{
-  display:flex;
-  align-items:center;
-  gap:14px;              /* espacio real entre botones y reloj */
-  padding-right:12px;    /* aire contra borde derecho */
-  flex-shrink:0;
-}
 
+  display:flex;
+
+  align-items:center;
+
+  gap:14px;
+
+  padding-right:12px;
+
+  flex-shrink:0;
+
+  justify-content:flex-end;   /* ✅ evita empujar layout */
+
+}
+  
 .support-btn{
   padding:.45rem 1.1rem;
   border-radius:12px;
