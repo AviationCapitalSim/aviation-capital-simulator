@@ -1800,43 +1800,11 @@ else {
 
   if (!ACS_ACTIVE_MODAL_REG) return;
 
- /* ============================================================
-   🟧 FIX B5 — SUPPORT PENDING AIRCRAFT IN MODAL RENDER
-   ============================================================ */
+  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  const acNow = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
+  if (!acNow) return;
 
-const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-const pendingLatest = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
-
-let acNow = fleetLatest.find(a =>
-  a.registration === ACS_ACTIVE_MODAL_REG
-);
-
-// Si no está en flota activa, buscar en Pending
-if (!acNow) {
-
-  const pending = pendingLatest.find(p =>
-    p.__pendingKey === ACS_ACTIVE_MODAL_REG
-  );
-
-  if (pending) {
-
-    acNow = {
-      registration: pending.registration || "—",
-      model: pending.model,
-      family: pending.family || pending.manufacturer || "—",
-      base: pending.base || pending.baseIcao || "—",
-      status: "Pending Delivery",
-      isPending: true
-    };
-
-  }
-
-}
-
-if (!acNow) return;
-    
   // Limpieza visual previa
-    
   elMaintStatus.classList.remove(
     "ql-status-airworthy",
     "ql-status-ccheck",
@@ -1908,32 +1876,14 @@ if (acNow.status === "Pending Delivery") {
   return;
 }
 
-/* ============================================================
-   🟧 FIX B6 — HARD BLOCK FOR PENDING DELIVERY
-   ============================================================ */
-
-if (acNow.isPending === true || acNow.status === "Pending Delivery") {
-
-  elMaintStatus.textContent = "PENDING DELIVERY";
-
-  elMaintStatus.classList.remove(
-    "ql-status-airworthy",
-    "ql-status-ccheck",
-    "ql-status-dcheck",
-    "ql-status-overdue"
-  );
-
-  elMaintStatus.style.color = "#f1b21a";
-
-  box.style.display = "none";
-
-  return;
-
-}
+// ─────────────────────────────────────────
+// 4️⃣ AIRWORTHY (REAL ACTIVE AIRCRAFT)
+// ─────────────────────────────────────────
 
 elMaintStatus.textContent = "AIRWORTHY";
 elMaintStatus.classList.add("ql-status-airworthy");
 box.style.display = "none";
+}
 
 // Pintar inmediato al abrir
 render();
