@@ -2554,30 +2554,44 @@ function handleLogout() {
 }
         
 
- /* ============================================================
-   === INITIALIZATION (AFRICA - SIMPLE, COMO EUROPA) ===========
+/* ============================================================
+   🟩 ACS BASE DISPLAY — GLOBAL SAFE VERSION (FIX FINAL)
+   Works with ANY continent
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
   loadAirports();
 
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (baseIcao) {
-    const airports = getAirportsAfricaSafe();
-    const base = airports.find(a => a.icao === baseIcao);
+  const base = findBaseAirportGlobal();
 
-    if (base) {
-      const flagEmoji = base.country.replace(/./g, c =>
+  if (base) {
+
+    const flagEmoji =
+      (base.country || "")
+      .toUpperCase()
+      .replace(/./g, c =>
         String.fromCodePoint(c.charCodeAt(0) + 127397)
       );
 
-      document.getElementById("originFlag").textContent = flagEmoji;
-      document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent =
-        `— ${base.city}, ${base.region}`;
-    }
+    document.getElementById("originFlag").textContent =
+      flagEmoji || "🏳️";
+
+    document.getElementById("originIcao").textContent =
+      base.icao || "---";
+
+    document.getElementById("originCity").textContent =
+      `— ${base.city || ""}, ${base.country || ""}`;
+
   }
+  else {
+
+    document.getElementById("originFlag").textContent = "🏳️";
+    document.getElementById("originIcao").textContent = "---";
+    document.getElementById("originCity").textContent = "— No base selected";
+
+  }
+
 });
             
 /* ============================================================
