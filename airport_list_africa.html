@@ -2553,44 +2553,19 @@ function handleLogout() {
   window.location.href = "login.html";
 }
         
-
-/* ============================================================
-   🟩 ACS BASE DISPLAY — GLOBAL SAFE VERSION (FIX FINAL)
-   Works with ANY continent
+ /* ============================================================
+   === INITIALIZATION (AFRICA - SIMPLE, COMO EUROPA) ===========
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  loadAirports();
+  // 1) Actualizamos el banner (visual)
+  updateGlobalBaseBanner();
 
-  const base = findBaseAirportGlobal();
-
-  if (base) {
-
-    const flagEmoji =
-      (base.country || "")
-      .toUpperCase()
-      .replace(/./g, c =>
-        String.fromCodePoint(c.charCodeAt(0) + 127397)
-      );
-
-    document.getElementById("originFlag").textContent =
-      flagEmoji || "🏳️";
-
-    document.getElementById("originIcao").textContent =
-      base.icao || "---";
-
-    document.getElementById("originCity").textContent =
-      `— ${base.city || ""}, ${base.country || ""}`;
-
-  }
-  else {
-
-    document.getElementById("originFlag").textContent = "🏳️";
-    document.getElementById("originIcao").textContent = "---";
-    document.getElementById("originCity").textContent = "— No base selected";
-
-  }
+  // 2) Nos aseguramos que la BASE REAL exista
+  ensureBaseBeforeLoad(() => {
+    loadAirports();
+  });
 
 });
             
