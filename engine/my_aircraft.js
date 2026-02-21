@@ -1883,6 +1883,7 @@ if (acNow.status === "Pending Delivery") {
 elMaintStatus.textContent = "AIRWORTHY";
 elMaintStatus.classList.add("ql-status-airworthy");
 box.style.display = "none";
+}
 
 // Pintar inmediato al abrir
 render();
@@ -1902,7 +1903,7 @@ if (typeof registerTimeListener === "function") {
 }
 
 })();
-
+   
 /* ============================================================
    🟦 MA-8.5.3B — TECH SUMMARY ENGINE (REAL DATA)
    ------------------------------------------------------------
