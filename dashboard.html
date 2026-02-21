@@ -34,94 +34,79 @@ body {
   font-family: "Poppins", sans-serif;
 }
 
-   /* ============================================================
-   HEADER — SHARED ACS STANDARD
+/* ============================================================
+     === GLOBAL HEADER (Exact Copy from index.html) ============
    ============================================================ */
 
- .acs-header{
-
-  position:fixed;
-  top:0;
-  left:0;                 /* ✅ CRÍTICO */
-  right:0;                /* ✅ CRÍTICO */
-
-  width:100%;
-
-  box-sizing:border-box;
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:space-between;
-
-  padding:.8rem 2rem;
-
-  background:rgba(12,23,50,.45);
-
-  backdrop-filter:blur(9px);
-
-  border-bottom:2px solid #ffb300;
-
-  z-index:5000;
-
-}
-  
-.acs-logo{
-  display:flex;
-  align-items:center;
-  gap:1rem;
+.acs-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  backdrop-filter: blur(9px);
+  background: rgba(12,23,50,0.45);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #ffb300;
+  z-index: 5000;
 }
 
-.acs-logo img{
-  height:46px;
+.acs-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.acs-logo h1{
-  margin:0;
-  font-size:1.1rem;
-  color:#ffb300;
+.acs-left img {
+  height: 46px;
 }
 
-.acs-nav{
-
-  display:flex;
-
-  gap:2rem;
-
-  flex:1;                 /* ✅ CRÍTICO — ocupa el espacio central */
-
-  justify-content:center; /* centra navegación */
-
+.acs-left h1 {
+  font-size: 1.15rem;
+  margin: 0;
+  color: #ffb300;
+  letter-spacing: 0.5px;
 }
 
-.acs-nav a{
-  text-decoration:none;
-  color:#dbe4ff;
+.acs-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
 }
 
-.acs-nav a.active{
-  color:#ffb300;
-}
-  
-  /* ============================================================
-   🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
+/* ============================================================
+   === NAVIGATION — QATAR PEARL GLOW STYLE =====================
    ============================================================ */
 
-.acs-right{
+.acs-nav a {
+  position: relative;
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff; 
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
 
-  display:flex;
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
 
-  align-items:center;
-
-  gap:14px;
-
-  padding-right:12px;
-
-  flex-shrink:0;
-
-  justify-content:flex-end;   /* ✅ evita empujar layout */
-
+.acs-nav a.active::after,
+.acs-nav a:hover::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #ffb300, #ffe7a0);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255,200,60,0.45);
 }
   
 .support-btn{
@@ -182,28 +167,14 @@ body {
    ============================================================ */
 
 .acs-main {
-  padding: 110px 2rem 70px;
+  padding: 70px 2rem 70px;
   text-align: center;
 }
 
-.acs-main h2 {
-  font-size: 2.1rem;
-  font-weight: 600;
-  color: #ffca3a;
-  margin-top: 18px;
-  margin-bottom: 6px;
-  text-shadow:
-    0 0 6px rgba(255,190,60,0.55),
-    0 0 12px rgba(255,190,60,0.35);
-}
-
-.sub {
-  text-align: center;
+.acs-main .sub {
+  margin-top: -0.4rem;
   color: #cbd6ff;
-  opacity: 0.9;
-  font-size: 1.05rem;
-  margin-top: 10px;
-  margin-bottom: 32px;
+  font-size: 1rem;
 }
 
 /* ============================================================
