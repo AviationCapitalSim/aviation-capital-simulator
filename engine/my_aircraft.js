@@ -1384,14 +1384,16 @@ function ACS_applyIdleVisualStatus(ac) {
 
 function renderFleetTable() {
 
+  const list = ACS_getFleetForUI();
+
   fleetTableBody.innerHTML = "";
 
-  if (!fleet || fleet.length === 0) {
+  if (!list || list.length === 0) {
     ensureEmptyRows();
     return;
   }
 
-  fleet.forEach(ac => {
+  list.forEach(ac => {
 
     if (!passesFilters(ac)) return;
 
@@ -1403,45 +1405,44 @@ function renderFleetTable() {
       row.classList.add("active-row");
     }
 
-  row.innerHTML = `
-  <td>${ac.registration}</td>
-  <td>${ac.model}</td>
+    row.innerHTML = `
+      <td>${ac.registration}</td>
+      <td>${ac.model}</td>
 
-  <td>
-    <span class="status-badge status-${ac.status.replace(/\s+/g, "-").toLowerCase()}">
-      ${ac.status}
-    </span>
-  </td>
+      <td>
+        <span class="status-badge status-${String(ac.status).replace(/\s+/g, "-").toLowerCase()}">
+          ${ac.status}
+        </span>
+      </td>
 
-  <td>${ac.hours}</td>
-  <td>${ac.cycles}</td>
+      <td>${ac.hours}</td>
+      <td>${ac.cycles}</td>
 
-  <td>
-    ${typeof ac.conditionPercent === "number"
-    ? ac.conditionPercent + "%"
-    : "—"}
-    ${ac.idleTag
-    ? `<div class="idle-tag">${ac.idleTag}</div>`
-    : ""}
-  </td>
+      <td>
+        ${typeof ac.conditionPercent === "number"
+          ? ac.conditionPercent + "%"
+          : "—"}
+        ${ac.idleTag
+          ? `<div class="idle-tag">${ac.idleTag}</div>`
+          : ""}
+      </td>
 
+      <td class="${ac.nextC_overdue ? "overdue-text" : ""}">
+        ${ac.nextC}
+      </td>
 
-  <td class="${ac.nextC_overdue ? "overdue-text" : ""}">
-    ${ac.nextC}
-  </td>
+      <td class="${ac.nextD_overdue ? "overdue-text" : ""}">
+        ${ac.nextD}
+      </td>
 
-  <td class="${ac.nextD_overdue ? "overdue-text" : ""}">
-    ${ac.nextD}
-  </td>
+      <td>${ac.base}</td>
 
-  <td>${ac.base}</td>
-
-  <td>
-    <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">
-      View
-    </button>
-  </td>
-`;
+      <td>
+        <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">
+          View
+        </button>
+      </td>
+    `;
 
     fleetTableBody.appendChild(row);
   });
@@ -1534,6 +1535,7 @@ let ACS_ACTIVE_MODAL_REG = null;
    - Siempre re-lee ACS_MyAircraft desde localStorage.
    - Normaliza alias típicos de mantenimiento (por compatibilidad).
    ============================================================ */
+
 function openAircraftModal(reg) {
 
   // ✅ 1) SIEMPRE leer lo último desde localStorage
