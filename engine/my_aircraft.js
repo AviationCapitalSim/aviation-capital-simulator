@@ -1916,17 +1916,16 @@ if (typeof registerTimeListener === "function") {
       ACS_confirmAndExecuteMaintenance(ac.registration, "D");
   }
 
-  // ─────────────────────────────────────────
   // 🟦 VIEW LOG — PASO 1 (ACTIVO)
-  // ─────────────────────────────────────────
-  if (btnL) {
-    btnL.onclick = () => {
-      openMaintenanceLog();
-    };
-  }
+
+if (btnL) {
+  btnL.onclick = () => {
+    openMaintenanceLog();
+  };
 }
-   
-  modal.style.display = "flex";
+
+// Mostrar modal correctamente
+modal.style.display = "flex";
 }
 
 function closeModal() {
