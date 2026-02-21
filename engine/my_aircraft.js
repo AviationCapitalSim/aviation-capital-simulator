@@ -1585,10 +1585,66 @@ let ACS_ACTIVE_MODAL_REG = null;
 
 function openAircraftModal(reg) {
 
-  // ✅ 1) SIEMPRE leer lo último desde localStorage
-  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-  const acRaw = fleetLatest.find(a => a.registration === reg);
-  if (!acRaw) return;
+ /* ============================================================
+   🟢 FIX A1 — OPEN MODAL SUPPORT FOR ACTIVE + PENDING AIRCRAFT
+   ------------------------------------------------------------
+   Date: 21 FEB 2026
+   Author: ACS Core Fix
+
+   Purpose:
+   - Permitir abrir modal para:
+       • Active aircraft (ACS_MyAircraft)
+       • Pending Delivery aircraft (ACS_PendingAircraft)
+   ============================================================ */
+
+const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+const pendingLatest = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+// 1️⃣ Buscar primero en flota activa
+let acRaw = fleetLatest.find(a => a.registration === reg);
+
+// 2️⃣ Si no existe, buscar en Pending Delivery
+if (!acRaw) {
+
+  const pending = pendingLatest.find(a =>
+    a.registration === reg ||
+    a.tempId === reg ||
+    a.id === reg
+  );
+
+  if (pending) {
+
+    // Normalizar estructura a formato fleet
+    acRaw = {
+
+      registration: pending.registration || "—",
+      model: pending.model,
+      family: pending.family || "—",
+      base: pending.base || "—",
+
+      status: "Pending Delivery",
+
+      deliveryDate: pending.deliveryDate || null,
+      deliveredDate: null,
+
+      conditionPercent: pending.conditionPercent ?? 100,
+
+      hours: pending.hours ?? 0,
+      cycles: pending.cycles ?? 0,
+      age: pending.age ?? 0,
+
+      lastCCheckDate: null,
+      lastDCheckDate: null,
+
+      isPending: true
+    };
+
+  }
+
+}
+
+// 3️⃣ Seguridad final
+if (!acRaw) return;
 
   // ✅ 2) Copia segura (no mutar directo el objeto de storage aquí)
   const ac = { ...acRaw };
