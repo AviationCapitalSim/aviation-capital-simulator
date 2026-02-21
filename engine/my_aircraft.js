@@ -1684,7 +1684,7 @@ if (!acRaw) return;
   document.getElementById("modalTitle").textContent = `${ac.model} — ${ac.registration}`;
   document.getElementById("mReg").textContent = ac.registration;
   document.getElementById("mModel").textContent = ac.model;
-  document.getElementById("mFamily").textContent = ac.family || "—";
+  document.getElementById("mFamily").textContent = ac.family || ac.manufacturer || (ac.model ? ac.model.split(" ")[0] : "—");
   document.getElementById("mBase").textContent = ac.base || "—";
   document.getElementById("mStatus").textContent = ac.status;
 
@@ -1840,6 +1840,7 @@ if (!acRaw) return;
   // ─────────────────────────────────────────
   // 3️⃣ AIRWORTHY
   // ─────────────────────────────────────────
+    
   elMaintStatus.textContent = "AIRWORTHY";
   elMaintStatus.classList.add("ql-status-airworthy");
   box.style.display = "none";
