@@ -1258,7 +1258,7 @@ function filterByCountry() {
   tableBody.innerHTML = "";
 
   // Obtener aeropuertos del continente
-  const airports = getAirportsAfricaSafe();
+  const airports = getAirportsNorthAmericaSafe();
   if (!airports || airports.length === 0) return;
 
   // ✔ BASE REAL DEL JUGADOR (GLOBAL)
