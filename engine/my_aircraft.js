@@ -1555,14 +1555,14 @@ function openAircraftModal(registration){
     a.registration === registration ||
     (registration === "—" && a.status === "Pending Delivery")
   );
-
-  ACS_ACTIVE_MODAL_REG = ac.registration;
-   
+ 
   if(!ac){
     console.warn("Aircraft not found:", registration);
     return;
   }
 
+  ACS_ACTIVE_MODAL_REG = ac.registration;
+   
   // TITLE
   modalTitle.textContent =
     `${ac.model} — ${ac.registration !== "—" ? ac.registration : "Pending Delivery"}`;
