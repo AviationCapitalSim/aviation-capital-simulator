@@ -1732,7 +1732,7 @@ try{
    ============================================================= */
 function openAirportInfo(icao) {
 
-  const airports = getAirportsEuropeSafe();
+  const airports = getAirportsAfricaSafe();
   const ap = airports.find(a => a.icao === icao);
   if (!ap) return;
 
@@ -2131,7 +2131,7 @@ function closeAirportInfo() {
 
 function ACS_openDemandModal(icao){
 
-  const airports = getAirportsEuropeSafe();
+  const airports = getAirportsAfricaSafe();
   const ap = airports.find(a => a.icao === icao);
   if(!ap) return;
 
@@ -2357,7 +2357,7 @@ window.addEventListener("click", (e) => {
 
 function ACS_openSlotDemandModal(icao){
 
-  const airports = getAirportsEuropeSafe();
+  const airports = getAirportsAfricaSafe();
   const ap = airports.find(a => a.icao === icao);
 
   if(!ap) return;
