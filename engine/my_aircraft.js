@@ -361,19 +361,35 @@ function updatePendingDeliveries() {
     if (entry.__delivered !== true) {
 
       pendingForTable.push({
-        registration: "—",
-        model: entry.model,
-        manufacturer: entry.manufacturer,
-        family: entry.family || "",
-        status: "Pending Delivery",
-        hours: "—",
-        cycles: "—",
-        conditionPercent: "—",
-        nextC: "—",
-        nextD: "—",
-        base: "—",
-        deliveryDate: entry.deliveryDate
-      });
+
+  registration: "—",
+
+  model: entry.model,
+
+  manufacturer: entry.manufacturer,
+
+  family: entry.family || entry.model || "—",
+
+  status: "Pending Delivery",
+
+  // AVIATION REAL VALUES
+  hours: 0,
+
+  cycles: 0,
+
+  conditionPercent: 100,
+
+  nextC: "Delivery",
+
+  nextD: "Delivery",
+
+  base: entry.baseIcao || getCurrentBaseICAO(),
+
+  deliveryDate: entry.deliveryDate,
+
+  age: 0
+
+});
 
       stillPending.push(entry);
     }
@@ -1528,73 +1544,71 @@ const modal = document.getElementById("aircraftModal");
 let ACS_ACTIVE_MODAL_REG = null;
 
 /* ============================================================
-   🟧 MA-8.5.1 — MODAL FRESH READ + C/D NORMALIZER
-   ------------------------------------------------------------
-   Fix:
-   - El modal NO usa el objeto viejo en memoria.
-   - Siempre re-lee ACS_MyAircraft desde localStorage.
-   - Normaliza alias típicos de mantenimiento (por compatibilidad).
+   🟦 D.1 — Open Aircraft Modal (Active + Pending Delivery)
    ============================================================ */
 
-function openAircraftModal(reg) {
+function openAircraftModal(registration){
 
-  // ✅ 1) SIEMPRE leer lo último desde localStorage
-  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-  const acRaw = fleetLatest.find(a => a.registration === reg);
-  if (!acRaw) return;
+  const list = ACS_getFleetForUI();
 
-  // ✅ 2) Copia segura (no mutar directo el objeto de storage aquí)
-  const ac = { ...acRaw };
+  const ac = list.find(a =>
+    a.registration === registration ||
+    (registration === "—" && a.status === "Pending Delivery")
+  );
 
-  // 🔗 Guardar avión activo del modal (CLAVE PARA BOTONES)
-  ACS_ACTIVE_MODAL_REG = ac.registration;
-
-  // ✅ 3) Normalización de campos C/D
-  if (!ac.lastCCheckDate) {
-    ac.lastCCheckDate =
-      ac.lastC ||
-      (ac.maintenance && (ac.maintenance.lastCCheckDate || ac.maintenance.lastC)) ||
-      null;
-  }
-  if (!ac.lastDCheckDate) {
-    ac.lastDCheckDate =
-      ac.lastD ||
-      (ac.maintenance && (ac.maintenance.lastDCheckDate || ac.maintenance.lastD)) ||
-      null;
+  if(!ac){
+    console.warn("Aircraft not found:", registration);
+    return;
   }
 
-  // ✅ 4) Pintar modal
-  document.getElementById("modalTitle").textContent = `${ac.model} — ${ac.registration}`;
-  document.getElementById("mReg").textContent = ac.registration;
-  document.getElementById("mModel").textContent = ac.model;
-  document.getElementById("mFamily").textContent = ac.family || "—";
-  document.getElementById("mBase").textContent = ac.base || "—";
-  document.getElementById("mStatus").textContent = ac.status;
+  // TITLE
+  modalTitle.textContent =
+    `${ac.model} — ${ac.registration !== "—" ? ac.registration : "Pending Delivery"}`;
 
-  if (ac.status === "Pending Delivery" && ac.deliveryDate) {
-    const d = new Date(ac.deliveryDate);
-    document.getElementById("mDeliveryDate").textContent = d.toUTCString().substring(5, 16);
-  } else {
-    document.getElementById("mDeliveryDate").textContent = "—";
-  }
+  // GENERAL INFO
+  mReg.textContent = ac.registration !== "—" ? ac.registration : "Pending Delivery";
+  mModel.textContent = ac.model || "—";
+  mFamily.textContent = ac.family || "—";
+  mBase.textContent = ac.base || getCurrentBaseICAO();
+  mStatus.textContent = ac.status;
 
-  if (ac.deliveredDate) {
-    const dd = new Date(ac.deliveredDate);
-    document.getElementById("mDeliveredDate").textContent = dd.toUTCString().substring(5, 16);
-  } else {
-    document.getElementById("mDeliveredDate").textContent = "—";
-  }
+  // DELIVERY
+  mDeliveryDate.textContent =
+    ac.deliveryDate
+      ? new Date(ac.deliveryDate).toLocaleDateString()
+      : "Delivered";
 
-  if (typeof ac.conditionPercent === "number") {
-    const letter = ACS_getConditionLetter(ac.conditionPercent);
-    document.getElementById("mCondition").textContent = `${ac.conditionPercent}% (${letter})`;
-  } else {
-    document.getElementById("mCondition").textContent = "—";
-  }
+  mDeliveredDate.textContent =
+    ac.deliveredDate
+      ? new Date(ac.deliveredDate).toLocaleDateString()
+      : "—";
 
-  document.getElementById("mHours").textContent = ac.hours;
-  document.getElementById("mCycles").textContent = ac.cycles;
-  document.getElementById("mAge").textContent = ac.age || 0;
+  // CONDITION
+  mCondition.textContent =
+    typeof ac.conditionPercent === "number"
+      ? ac.conditionPercent + "%"
+      : "100%";
+
+  // HOURS / CYCLES
+  mHours.textContent = ac.hours ?? 0;
+  mCycles.textContent = ac.cycles ?? 0;
+
+  // AGE
+  mAge.textContent = ac.age ?? 0;
+
+  // MAINTENANCE
+  mMaintStatus.textContent =
+    ac.status === "Pending Delivery"
+      ? "NOT DELIVERED"
+      : "AIRWORTHY";
+
+  mLastC.textContent = ac.lastCCheckDate || "—";
+  mNextC.textContent = ac.nextC || "—";
+  mLastD.textContent = ac.lastDCheckDate || "—";
+  mNextD.textContent = ac.nextD || "—";
+
+  aircraftModal.style.display = "flex";
+}
 
 /* ============================================================
    🟧 MA-8.5.4 — MODAL LAST / NEXT C & D (UI RENDER)
