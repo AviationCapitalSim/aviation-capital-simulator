@@ -1555,17 +1555,13 @@ function openAircraftModal(registration){
     a.registration === registration ||
     (registration === "—" && a.status === "Pending Delivery")
   );
- 
+
   if(!ac){
     console.warn("Aircraft not found:", registration);
     return;
   }
 
-  ACS_ACTIVE_MODAL_REG = ac.registration;
-  ACS_renderTechSummary(ac);
-   
   // TITLE
-   
   modalTitle.textContent =
     `${ac.model} — ${ac.registration !== "—" ? ac.registration : "Pending Delivery"}`;
 
@@ -1615,25 +1611,15 @@ function openAircraftModal(registration){
 }
 
 /* ============================================================
-   🟧 MA-8.5.4 — MODAL LAST / NEXT C & D (UI RENDER) [FIXED]
+   🟧 MA-8.5.4 — MODAL LAST / NEXT C & D (UI RENDER)
    ------------------------------------------------------------
-   FIX:
-   - Usa ACS_ACTIVE_MODAL_REG como source of truth
-   - Elimina ReferenceError: ac undefined
-   - Compatible con Active y Pending
+   Purpose:
+   - Pintar Last / Next C & D en el modal
+   - Basado en el pipeline real ACS (NO recalcula lógica)
+   - Respeta Maintenance / Hold / Active
    ============================================================ */
 
-function renderModalLastNextCD() {
-
-  if (!ACS_ACTIVE_MODAL_REG) return;
-
-  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-
-  const ac = fleetLatest.find(a =>
-    a.registration === ACS_ACTIVE_MODAL_REG
-  );
-
-  if (!ac) return;
+(function renderModalLastNextCD() {
 
   const elLastC = document.getElementById("mLastC");
   const elNextC = document.getElementById("mNextC");
@@ -1645,15 +1631,18 @@ function renderModalLastNextCD() {
   const fmtDate = (iso) => {
     if (!iso) return "—";
     const d = new Date(iso);
-    return d.toUTCString().substring(5, 16);
+    return d.toUTCString().substring(5, 16); // "10 FEB 1941"
   };
 
+  // LAST CHECKS (fechas reales)
   elLastC.textContent = fmtDate(ac.lastCCheckDate);
   elLastD.textContent = fmtDate(ac.lastDCheckDate);
 
+  // NEXT CHECKS (ya calculados por el pipeline)
   elNextC.textContent = ac.nextC ?? "—";
   elNextD.textContent = ac.nextD ?? "—";
-}
+
+})();
    
  /* ============================================================
    🟦 MA-8.5.3 — MODAL MAINTENANCE ADAPTER (AVIATION CORRECT)
@@ -1871,7 +1860,7 @@ if (typeof registerTimeListener === "function") {
     <div class="tech-line">${statusTag(remainingD)}</div>
   `;
 
-});
+})(ac);
    
 /* ============================================================
    🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE) [FIX]
