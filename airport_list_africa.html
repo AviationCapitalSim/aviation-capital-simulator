@@ -1010,18 +1010,18 @@ function getAirportsAfricaSafe() {
     if (window.ACS_World &&
         ACS_World.ready &&
         ACS_World.BY_CONTINENT &&
-        Array.isArray(ACS_World.BY_CONTINENT["Europe"]) &&
-        ACS_World.BY_CONTINENT["Europe"].length > 0) {
+        Array.isArray(ACS_World.BY_CONTINENT["Africa"]) &&
+        ACS_World.BY_CONTINENT["Africa"].length > 0) {
 
       console.log("🟦 Using ACS_World (historical mode)");
-      return ACS_World.BY_CONTINENT["Europe"];
+      return ACS_World.BY_CONTINENT["Africa"];
     }
   } catch (err) {
     console.warn("ACS_World failed:", err);
   }
 
   console.log("🟧 Fallback → Using WorldAirportsACS (standard mode)");
-  return WorldAirportsACS["Europe"] || [];
+  return WorldAirportsACS["Africa"] || [];
 }
 
 // ============================================================
