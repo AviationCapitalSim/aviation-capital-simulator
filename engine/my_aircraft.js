@@ -1627,34 +1627,54 @@ if (!acRaw) {
   a.id === reg
 );
 
-  if (pending) {
+if (pending) {
 
-    // Normalizar estructura a formato fleet
-    acRaw = {
+  /* ============================================================
+     🟢 FIX FINAL — NORMALIZACIÓN COMPLETA PENDING AIRCRAFT
+     Garantiza que Family y Base SIEMPRE existan
+     ============================================================ */
 
-      registration: pending.registration || "—",
-      model: pending.model,
-      family: pending.family || "—",
-      base: pending.base || "—",
+  acRaw = {
 
-      status: "Pending Delivery",
+    // identidad
+    registration: "—",
 
-      deliveryDate: pending.deliveryDate || null,
-      deliveredDate: null,
+    manufacturer: pending.manufacturer || "",
+    model: pending.model || "—",
 
-      conditionPercent: pending.conditionPercent ?? 100,
+    // FIX FAMILY
+    family:
+      pending.family ||
+      pending.aircraftFamily ||
+      pending.type ||
+      (pending.model ? pending.model.split(" ")[0] : "—"),
 
-      hours: pending.hours ?? 0,
-      cycles: pending.cycles ?? 0,
-      age: pending.age ?? 0,
+    // FIX BASE
+    base:
+      pending.base ||
+      pending.baseIcao ||
+      pending.deliveryBase ||
+      pending.baseICAO ||
+      getCurrentBaseICAO(),
 
-      lastCCheckDate: null,
-      lastDCheckDate: null,
+    status: "Pending Delivery",
 
-      isPending: true
-    };
+    deliveryDate: pending.deliveryDate || null,
+    deliveredDate: null,
 
-  }
+    conditionPercent: pending.conditionPercent ?? 100,
+
+    hours: pending.hours ?? 0,
+    cycles: pending.cycles ?? 0,
+    age: pending.age ?? 0,
+
+    lastCCheckDate: null,
+    lastDCheckDate: null,
+
+    isPending: true
+  };
+
+}
 
 }
 
