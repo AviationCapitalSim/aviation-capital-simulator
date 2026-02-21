@@ -47,14 +47,30 @@ const ACS_MAINTENANCE_COSTS_BY_ERA = [
 ];
 
 /* ============================================================
-   🟦 C.1 — Cargar flota ACTIVA
+   🟦 C.1 — Cargar flota ACTIVA (STORAGE) + Fleet View (UI)
+   ------------------------------------------------------------
+   Rule:
+   - fleet      = SOLO flota real guardada en ACS_MyAircraft
+   - fleetView  = SOLO vista UI (pending rows + fleet real)
+   - saveFleet() JAMÁS guarda filas pending UI
    ============================================================ */
 
 let fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
-/* Guardar cambios correctamente */
+// ✅ UI-only buffer (no se guarda en localStorage)
+let fleetView = null;
+
+/* Guardar cambios correctamente (SOLO STORAGE FLEET) */
 function saveFleet() {
   localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleet));
+}
+
+/* ============================================================
+   🟦 C.1.1 — UI Fleet Source (Active + Pending)
+   ============================================================ */
+
+function ACS_getFleetForUI() {
+  return Array.isArray(fleetView) ? fleetView : fleet;
 }
 
 /* ============================================================
@@ -251,14 +267,22 @@ function ACS_enrichAircraftFromDB(aircraft) {
 
 /* ============================================================
    🟦 C.2 — Sync Pending Deliveries (Unified Table)
+   ------------------------------------------------------------
+   FIX:
+   - NO mezclar pendingForTable dentro de fleet (storage)
+   - fleetView = pendingForTable + fleetActive (SOLO UI)
+   - fleet     = fleetActive (SOLO STORAGE)
    ============================================================ */
 
 function updatePendingDeliveries() {
 
   const now = getSimTime();
 
+  // ✅ STORAGE FLEET REAL
   let fleetActive = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-  let pendingRaw  = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+  // ✅ PENDING LIST (se programa desde Buy New / Used Market)
+  let pendingRaw = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
   const pendingForTable = [];
   const stillPending = [];
@@ -327,13 +351,13 @@ function updatePendingDeliveries() {
 
       changed = true;
 
-      // 🛑 MARCAR COMO ENTREGADO Y NO VOLVER A USAR
+      // 🛑 MARCAR COMO ENTREGADO (pero NO reinsertarlo en stillPending)
       entry.__delivered = true;
 
-      return; // NO agregar a stillPending
+      return;
     }
 
-    // mantener pendientes reales
+    // ✅ Mantener PENDING REAL (solo los no entregados)
     if (entry.__delivered !== true) {
 
       pendingForTable.push({
@@ -344,7 +368,7 @@ function updatePendingDeliveries() {
         status: "Pending Delivery",
         hours: "—",
         cycles: "—",
-        condition: "—",
+        conditionPercent: "—",
         nextC: "—",
         nextD: "—",
         base: "—",
@@ -356,15 +380,19 @@ function updatePendingDeliveries() {
 
   });
 
-  // 🛑 CRÍTICO: guardar solo pendientes reales
+  // ✅ Guardar solo pendientes reales
   localStorage.setItem("ACS_PendingAircraft", JSON.stringify(stillPending));
 
+  // ✅ Si hubo entregas → persistir SOLO flota real
   if (changed) {
     localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetActive));
   }
 
-  fleet = [...pendingForTable, ...fleetActive];
-
+  // ✅ CRÍTICO:
+  // fleet     = STORAGE REAL
+  // fleetView = UI (pending + real)
+  fleet = fleetActive;
+  fleetView = [...pendingForTable, ...fleetActive];
 }
 
 /* ============================================================
