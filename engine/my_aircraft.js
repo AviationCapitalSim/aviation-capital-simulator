@@ -1465,7 +1465,7 @@ function populateFilterOptions() {
   const families = new Set();
   const bases   = new Set();
 
-  fleet.forEach(ac => {
+  ACS_getFleetForUI().forEach(ac => {
     models.add(ac.model);
     families.add(ac.family || "");
     bases.add(ac.base || "");
