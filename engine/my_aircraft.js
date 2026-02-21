@@ -1871,7 +1871,7 @@ if (typeof registerTimeListener === "function") {
     <div class="tech-line">${statusTag(remainingD)}</div>
   `;
 
-})(ac);
+});
    
 /* ============================================================
    🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE) [FIX]
