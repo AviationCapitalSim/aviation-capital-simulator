@@ -288,8 +288,8 @@ function updatePendingDeliveries() {
   const stillPending = [];
   let changed = false;
 
-  pendingRaw.forEach(entry => {
-
+  pendingRaw.forEach((entry, pIndex) => {
+     
     const d = new Date(entry.deliveryDate);
 
     // 🛑 SOLO ENTREGAR SI NO FUE ENTREGADO ANTES
