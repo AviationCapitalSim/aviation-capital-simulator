@@ -1813,9 +1813,30 @@ else {
 
   if (!ACS_ACTIVE_MODAL_REG) return;
 
-  const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-  const acNow = fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG);
-  if (!acNow) return;
+  /* ============================================================
+   🟢 FIX CORE — LIVE MODAL RESOLVER (ACTIVE + PENDING SAFE)
+   ============================================================ */
+
+const fleetLatest   = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+const pendingLatest = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+let acNow =
+  fleetLatest.find(a => a.registration === ACS_ACTIVE_MODAL_REG) ||
+  pendingLatest.find(p => p.__pendingKey === ACS_ACTIVE_MODAL_REG);
+
+if (!acNow) return;
+
+// Normalizar Pending aircraft
+if (acNow.__pendingKey) {
+  acNow = {
+    registration: "—",
+    model: acNow.model,
+    family: acNow.family || "—",
+    base: acNow.base || "—",
+    status: "Pending Delivery",
+    isPending: true
+  };
+}
 
   // Limpieza visual previa
   elMaintStatus.classList.remove(
