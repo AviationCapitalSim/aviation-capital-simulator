@@ -1689,7 +1689,7 @@ try{
    ============================================================= */
 function openAirportInfo(icao) {
 
-  const airports = getAirportsAfricaSafe();
+  const airports = getAirportsAsiaSafe();
   const ap = airports.find(a => a.icao === icao);
   if (!ap) return;
 
@@ -2088,7 +2088,7 @@ function closeAirportInfo() {
 
 function ACS_openDemandModal(icao){
 
-  const airports = getAirportsAfricaSafe();
+  const airports = getAirportsAsiaSafe();
   const ap = airports.find(a => a.icao === icao);
   if(!ap) return;
 
@@ -2314,7 +2314,7 @@ window.addEventListener("click", (e) => {
 
 function ACS_openSlotDemandModal(icao){
 
-  const airports = getAirportsAfricaSafe();
+  const airports = getAirportsAsiaSafe();
   const ap = airports.find(a => a.icao === icao);
 
   if(!ap) return;
@@ -2505,6 +2505,7 @@ function ACS_closeSlotDemandModal(){
 /* =============================================================
    === LOGOUT ===================================================
    ============================================================= */
+     
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
