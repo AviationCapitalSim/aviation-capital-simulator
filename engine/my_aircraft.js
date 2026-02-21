@@ -1562,8 +1562,10 @@ function openAircraftModal(registration){
   }
 
   ACS_ACTIVE_MODAL_REG = ac.registration;
+  ACS_renderTechSummary(ac);
    
   // TITLE
+   
   modalTitle.textContent =
     `${ac.model} — ${ac.registration !== "—" ? ac.registration : "Pending Delivery"}`;
 
