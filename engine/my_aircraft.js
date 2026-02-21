@@ -1685,8 +1685,28 @@ if (!acRaw) return;
   document.getElementById("mReg").textContent = ac.registration;
   document.getElementById("mModel").textContent = ac.model;
   document.getElementById("mFamily").textContent = ac.family || ac.manufacturer || (ac.model ? ac.model.split(" ")[0] : "—");
-  document.getElementById("mBase").textContent = ac.base || "—";
-  document.getElementById("mStatus").textContent = ac.status;
+  document.getElementById("mBase").textContent = ac.base || ac.baseIcao || ac.deliveryBase || "—";
+  
+   /* ============================================================
+   🟧 FIX B4 — STATUS COLOR RESOLVER (PENDING / ACTIVE)
+   ============================================================ */
+
+const mStatusEl = document.getElementById("mStatus");
+
+mStatusEl.textContent = ac.status || "—";
+
+if (ac.status === "Pending Delivery") {
+
+  mStatusEl.style.color = "#f1b21a"; // amarillo ACS Pending
+  mStatusEl.style.fontWeight = "600";
+
+}
+else {
+
+  mStatusEl.style.color = "#3ddc97"; // verde ACS Active
+  mStatusEl.style.fontWeight = "600";
+
+}
 
   if (ac.status === "Pending Delivery" && ac.deliveryDate) {
     const d = new Date(ac.deliveryDate);
@@ -1838,13 +1858,31 @@ if (!acRaw) return;
   }
 
   // ─────────────────────────────────────────
-  // 3️⃣ AIRWORTHY
-  // ─────────────────────────────────────────
-    
-  elMaintStatus.textContent = "AIRWORTHY";
-  elMaintStatus.classList.add("ql-status-airworthy");
+// 3️⃣ PENDING DELIVERY (NEW FIX)
+// ─────────────────────────────────────────
+
+if (acNow.status === "Pending Delivery") {
+
+  elMaintStatus.textContent = "PENDING DELIVERY";
+  elMaintStatus.classList.remove(
+    "ql-status-airworthy",
+    "ql-status-ccheck",
+    "ql-status-dcheck",
+    "ql-status-overdue"
+  );
+
   box.style.display = "none";
+
+  return;
 }
+
+// ─────────────────────────────────────────
+// 4️⃣ AIRWORTHY (REAL ACTIVE AIRCRAFT)
+// ─────────────────────────────────────────
+
+elMaintStatus.textContent = "AIRWORTHY";
+elMaintStatus.classList.add("ql-status-airworthy");
+box.style.display = "none";
 
 // Pintar inmediato al abrir
 render();
