@@ -1807,14 +1807,11 @@ else {
 const fleetLatest = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 const pendingLatest = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
-/* ============================================================
-   🟧 FIX B7 — FULL NORMALIZATION FOR PENDING AIRCRAFT
-   ============================================================ */
-
 let acNow = fleetLatest.find(a =>
   a.registration === ACS_ACTIVE_MODAL_REG
 );
 
+// Si no está en flota activa, buscar en Pending
 if (!acNow) {
 
   const pending = pendingLatest.find(p =>
@@ -1824,34 +1821,12 @@ if (!acNow) {
   if (pending) {
 
     acNow = {
-
       registration: pending.registration || "—",
-
-      model: pending.model || "—",
-
-      // FIX FAMILY DEFINITIVO
-      family:
-        pending.family ||
-        pending.manufacturer ||
-        (pending.model ? pending.model.split(" ")[0] : "—"),
-
-      // FIX BASE DEFINITIVO
-      base:
-        pending.base ||
-        pending.baseIcao ||
-        pending.deliveryBase ||
-        "—",
-
+      model: pending.model,
+      family: pending.family || pending.manufacturer || "—",
+      base: pending.base || pending.baseIcao || "—",
       status: "Pending Delivery",
-
-      hours: pending.hours ?? 0,
-
-      cycles: pending.cycles ?? 0,
-
-      conditionPercent: pending.conditionPercent ?? 100,
-
       isPending: true
-
     };
 
   }
