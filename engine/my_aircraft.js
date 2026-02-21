@@ -1908,14 +1908,32 @@ if (acNow.status === "Pending Delivery") {
   return;
 }
 
-// ─────────────────────────────────────────
-// 4️⃣ AIRWORTHY (REAL ACTIVE AIRCRAFT)
-// ─────────────────────────────────────────
+/* ============================================================
+   🟧 FIX B6 — HARD BLOCK FOR PENDING DELIVERY
+   ============================================================ */
+
+if (acNow.isPending === true || acNow.status === "Pending Delivery") {
+
+  elMaintStatus.textContent = "PENDING DELIVERY";
+
+  elMaintStatus.classList.remove(
+    "ql-status-airworthy",
+    "ql-status-ccheck",
+    "ql-status-dcheck",
+    "ql-status-overdue"
+  );
+
+  elMaintStatus.style.color = "#f1b21a";
+
+  box.style.display = "none";
+
+  return;
+
+}
 
 elMaintStatus.textContent = "AIRWORTHY";
 elMaintStatus.classList.add("ql-status-airworthy");
 box.style.display = "none";
-}
 
 // Pintar inmediato al abrir
 render();
