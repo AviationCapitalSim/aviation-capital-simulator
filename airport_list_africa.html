@@ -2552,7 +2552,64 @@ function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
+
+/* ============================================================
+   === GLOBAL BASE (WAITS FOR LOADER) ==========================
+   ============================================================ */
+function updateGlobalBaseBanner() {
+
+  const baseIcao = localStorage.getItem("ACS_baseICAO");
+  if (!baseIcao) return;
+
+  const base = findBaseAirportGlobal();
+
+  // Loader aún no listo → reintentar
+  if (!base) {
+    setTimeout(updateGlobalBaseBanner, 200);
+    return;
+  }
+
+  // Ya listo → actualizar banner
+  const flagEmoji = base.country.replace(/./g, c =>
+    String.fromCodePoint(c.charCodeAt(0) + 127397)
+  );
+
+  document.getElementById("originFlag").textContent = flagEmoji;
+  document.getElementById("originIcao").textContent = base.icao;
+  document.getElementById("originCity").textContent =
+    `— ${base.city}, ${base.region}`;
+}
         
+function ensureBaseBeforeLoad(callback) {
+  const base = localStorage.getItem("ACS_baseICAO");
+
+  // No hay base → no cargamos
+  if (!base) {
+    console.warn("⚠️ No base set yet");
+    return;
+  }
+
+  // Intentar obtener aeropuerto real del motor o del fallback
+  const ap = findBaseAirportGlobal();
+
+  if (ap) {
+    callback(); // ahora sí existe → cargar tabla
+    return;
+  }
+
+  // Aún no está cargada → reintentar
+  setTimeout(() => ensureBaseBeforeLoad(callback), 60);
+}
+        
+ function waitForWorldEngine(callback) {
+  if (window.ACS_World && ACS_World.ready === true) {
+    callback();
+    return;
+  }
+  console.warn("⏳ Esperando que ACS_World esté listo...");
+  setTimeout(() => waitForWorldEngine(callback), 120);
+}
+     
  /* ============================================================
    === INITIALIZATION (AFRICA - SIMPLE, COMO EUROPA) ===========
    ============================================================ */
