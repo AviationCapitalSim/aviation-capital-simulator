@@ -1521,6 +1521,7 @@ const fBase    = document.getElementById("filterBase");
 const fSearch  = document.getElementById("searchInput");
 
 function populateFilterOptions() {
+   
   const models  = new Set();
   const families = new Set();
   const bases   = new Set();
@@ -1663,8 +1664,20 @@ if (!acRaw) return;
   // ✅ 2) Copia segura (no mutar directo el objeto de storage aquí)
   const ac = { ...acRaw };
 
-  // 🔗 Guardar avión activo del modal (CLAVE PARA BOTONES)
-  ACS_ACTIVE_MODAL_REG = ac.registration;
+  /* ============================================================
+   🟢 FIX CORE — MODAL IDENTITY RESOLVER (ACTIVE + PENDING SAFE)
+   ------------------------------------------------------------
+   Date: 21 FEB 2026
+   Purpose:
+   - El modal usa SIEMPRE el ID correcto
+   - Pending aircraft usa __pendingKey
+   - Active aircraft usa registration
+   ============================================================ */
+
+ACS_ACTIVE_MODAL_REG =
+  ac.isPending === true
+    ? (reg)   // ← CRÍTICO: usar el pendingKey original
+    : ac.registration;
 
   // ✅ 3) Normalización de campos C/D
   if (!ac.lastCCheckDate) {
