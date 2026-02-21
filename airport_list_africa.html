@@ -21,7 +21,6 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
-       
 /* ============================================================
    === GLOBAL ACS QATAR LUXURY STYLE ===========================
    ============================================================ */
@@ -146,6 +145,7 @@ body {
   overflow:hidden;            /* protección extra */
 }
 
+
 /* ================= MAIN CONTENT ================= */
 .acs-main {
   padding: 110px 2rem 70px;
@@ -156,23 +156,21 @@ body {
   font-size: 2.1rem;
   font-weight: 600;
   color: #ffca3a;
-  margin-top: 18px;     /* Sube el título */
-  margin-bottom: 6px;   /* Espacio con el subtítulo */
+  margin-top: 18px;
+  margin-bottom: 6px;
   text-shadow:
     0 0 6px rgba(255,190,60,0.55),
     0 0 12px rgba(255,190,60,0.35);
 }
-
 
 .sub {
   text-align: center;
   color: #cbd6ff;
   opacity: 0.9;
   font-size: 1.05rem;
-  margin-top: 10px;       /* despega del título */
-  margin-bottom: 32px;    /* aire antes del Origin */
+  margin-top: 10px;
+  margin-bottom: 32px;
 }
-
 
 /* ===== Origin Banner ===== */
 .origin-banner {
@@ -237,6 +235,10 @@ th, td {
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
+td.col-action {
+  text-align: center !important;   /* Botones se quedan centrados */
+}
+     
 th {
   color: #ffb300;
   cursor: pointer;
@@ -269,9 +271,8 @@ tr:hover {
   box-shadow: 0 0 6px rgba(255,179,0,0.3);
   margin-top: 6px;
 }
-       
+
 /* Buttons */
-       
 .acs-btn {
   background-color: #00a86b;
   color: #fff;
@@ -324,6 +325,92 @@ tr:hover {
   color: #081530;
 }
 
+/* ============================================================
+   === SLOT BAR (AGREGADO, COLUMNA 5) ==========================
+   ============================================================ */
+
+.slot-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.10);
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.slot-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width .25s ease;
+  box-shadow: 0 0 6px rgba(255,255,255,0.28);
+}
+
+/* ============================================================
+   === COUNTRY SELECTOR — ORIGINAL STYLE RESTORE ===============
+   ============================================================ */
+
+.country-select {
+  background: linear-gradient(180deg, #2e3f6e, #1e2d55);
+  color: #ffffff;
+  border: 2px solid #ffb300;
+  padding: 5px 28px 5px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  box-shadow: 0 0 12px rgba(255,179,0,0.25);
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23ffffff' height='16' width='16' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 13px;
+}
+
+.country-filter {
+  margin: 4px auto 26px auto;
+  display: flex;
+  justify-content: center;
+}
+
+.country-select {
+  width: 160px;
+}
+
+/* ============================================================
+   === CONTINENT BUTTONS — ORIGINAL STYLE RESTORE ==============
+   ============================================================ */
+
+.continent-access {
+  margin-top: 32px;
+  margin-bottom: 38px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.continent-btn {
+  display: inline-block;
+  text-decoration: none;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid #ffb300;
+  background: rgba(20,40,80,0.45);
+  color: #ffe7a0;
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 0 10px rgba(255,179,0,0.25);
+}
+
+.continent-btn:hover {
+  background: #ffb300;
+  color: #081530;
+  transform: scale(1.07);
+  box-shadow: 0 0 18px rgba(255,179,0,0.55);
+}
 
 /* ============================================================
    9️⃣ MODAL AIRPORT INFO & TOOLTIP — FIX v1.1
