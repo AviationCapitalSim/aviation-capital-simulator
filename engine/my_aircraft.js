@@ -360,12 +360,25 @@ function updatePendingDeliveries() {
     // ✅ Mantener PENDING REAL (solo los no entregados)
     if (entry.__delivered !== true) {
 
-      pendingForTable.push({
+    pendingForTable.push({
 
   /* ===============================
      IDENTIDAD
      =============================== */
 
+  // ✅ ID estable para poder abrir modal (persistido en ACS_PendingAircraft)
+  __pendingKey: (() => {
+    if (!entry.__pendingKey) {
+      const base = (entry.baseIcao || entry.base || "");
+      const dd = (entry.deliveryDate || "");
+      const m  = (entry.model || "");
+      const mf = (entry.manufacturer || "");
+      entry.__pendingKey = `PEND|${mf}|${m}|${base}|${dd}|${pIndex}`;
+    }
+    return entry.__pendingKey;
+  })(),
+
+  // ✅ UI muestra “—”, pero el botón View usará __pendingKey
   registration: "—",
 
   manufacturer: entry.manufacturer,
@@ -1485,8 +1498,8 @@ function renderFleetTable() {
       <td>${ac.base}</td>
 
       <td>
-        <button class="btn-action" onclick="openAircraftModal('${ac.registration}')">
-          View
+        <button class="btn-action" onclick="openAircraftModal('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
+        View
         </button>
       </td>
     `;
@@ -1607,10 +1620,11 @@ let acRaw = fleetLatest.find(a => a.registration === reg);
 if (!acRaw) {
 
   const pending = pendingLatest.find(a =>
-    a.registration === reg ||
-    a.tempId === reg ||
-    a.id === reg
-  );
+  a.__pendingKey === reg ||   // ✅ NUEVO — identificador correcto
+  a.registration === reg ||
+  a.tempId === reg ||
+  a.id === reg
+);
 
   if (pending) {
 
