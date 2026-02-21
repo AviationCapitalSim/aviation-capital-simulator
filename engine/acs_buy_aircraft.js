@@ -560,23 +560,50 @@ document.addEventListener("DOMContentLoaded", () => {
       saveSlots();
 
       /* 2) BASE ENTRY */
-      let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
-      const entry = {
-        id: "order-" + Date.now(),
-        manufacturer: ac.manufacturer,
-        model: ac.model,
-        qty,
-        type: op,
-        price: ac.price_acs_usd || 0,
-        image: selectedAircraftImage,
-        deliveryDate: deliveryDate.toISOString(),
-        created: new Date().toISOString(),
+const entry = {
 
-        buy_initial_pct: null,
-        buy_initial_payment: null,
-        buy_final_payment: null
-      };
+  id: "order-" + Date.now(),
+
+  manufacturer: ac.manufacturer,
+
+  model: ac.model,
+
+  /* ============================================================
+     FIX CORE — FAMILY FIELD (CRITICAL)
+     Esto evita que aparezca "BUY" en lugar de la familia real
+     ============================================================ */
+  family:
+    ac.family ||
+    ac.manufacturer ||
+    ac.model.split(" ")[0],
+
+  /* ============================================================
+     FIX CORE — BASE FIELD
+     ============================================================ */
+  base:
+    (typeof getCurrentBaseICAO === "function")
+      ? getCurrentBaseICAO()
+      : "UNASSIGNED",
+
+  qty,
+
+  type: op,
+
+  price: ac.price_acs_usd || 0,
+
+  image: selectedAircraftImage,
+
+  deliveryDate: deliveryDate.toISOString(),
+
+  created: new Date().toISOString(),
+
+  buy_initial_pct: null,
+  buy_initial_payment: null,
+  buy_final_payment: null
+
+};
 
       /* ============================================================
          BUY NEW — Registro financiero + entry completo
