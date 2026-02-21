@@ -35,132 +35,116 @@ body {
 }
 
 /* ============================================================
-     === GLOBAL HEADER (Exact Copy from index.html) ============
+   HEADER — SHARED ACS STANDARD
    ============================================================ */
-
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  backdrop-filter: blur(9px);
-  background: rgba(12,23,50,0.45);
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #ffb300;
-  z-index: 5000;
+.acs-header{
+  position:fixed;
+  top:0;
+  width:100%;
+  box-sizing:border-box; /* ← FIX CRÍTICO */
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.8rem 2rem;
+  background:rgba(12,23,50,.45);
+  backdrop-filter:blur(9px);
+  border-bottom:2px solid #ffb300;
+  z-index:5000;
 }
 
-.acs-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.acs-logo{
+  display:flex;
+  align-items:center;
+  gap:1rem;
 }
 
-.acs-left img {
-  height: 46px;
+.acs-logo img{
+  height:46px;
 }
 
-.acs-left h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  color: #ffb300;
-  letter-spacing: 0.5px;
+.acs-logo h1{
+  margin:0;
+  font-size:1.1rem;
+  color:#ffb300;
 }
 
-.acs-nav {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
+.acs-nav{
+  display:flex;
+  gap:2rem;
+}
+
+.acs-nav a{
+  text-decoration:none;
+  color:#dbe4ff;
+}
+
+.acs-nav a.active{
+  color:#ffb300;
 }
 
 /* ============================================================
-   === NAVIGATION — QATAR PEARL GLOW STYLE =====================
+   🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
    ============================================================ */
 
-.acs-nav a {
-  position: relative;
-  font-size: 1rem;
-  letter-spacing: 0.4px;
-  color: #dbe4ff; 
-  text-decoration: none;
-  transition: 0.25s ease;
-  padding-bottom: 6px;
+.acs-right{
+  display:flex;
+  align-items:center;
+  gap:14px;              /* espacio real entre botones y reloj */
+  padding-right:12px;    /* aire contra borde derecho */
+  flex-shrink:0;
 }
 
-.acs-nav a:hover,
-.acs-nav a.active {
-  color: #ffca3a;
-  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+.support-btn{
+  padding:.45rem 1.1rem;
+  border-radius:12px;
+  font-size:.9rem;
+  font-weight:600;
+  text-decoration:none;
+  color:#8AB4FF;
+  border:1px solid rgba(138,180,255,.45);
+  background:rgba(138,180,255,.08);
 }
 
-.acs-nav a.active::after,
-.acs-nav a:hover::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #ffb300, #ffe7a0);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
+.logout-btn{
+  padding:.45rem 1.1rem;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  background:rgba(255,179,0,.05);
+  color:#ffb300;
+  font-weight:600;
+  cursor:pointer;
 }
 
-/* 🟢 1.3 ACS RIGHT HEADER — Support / Logout / Clock */
-  
-.acs-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+/* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
 
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
+.acs-clock-header{
 
-.logout-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
 
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
-}
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
 
-/* SUPPORT BUTTON — Qatar Luxury */
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
-  transition: 0.25s ease;
-}
+  padding:.45rem .8rem;
 
-.support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-  color: #dfe9ff;
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  white-space:nowrap;
+
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
 }
   
 /* ============================================================
