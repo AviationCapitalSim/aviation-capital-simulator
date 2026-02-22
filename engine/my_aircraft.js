@@ -781,63 +781,18 @@ function ACS_checkMaintenanceAutoTrigger(ac) {
    ============================================================ */
 
 function ACS_resolveMaintenanceStatus(ac) {
-  // Devuelve estado calculado (READ-ONLY)
   if (!ac) {
     return {
-      nextC_days: "—",
-      nextD_days: "—",
-      nextC_years: "—",
+      nextC_months: "—",
       nextD_years: "—",
       isCOverdue: false,
       isDOverdue: false
     };
   }
 
-  // ⛔ En servicio → no mostrar Next (se maneja en modal)
-  if (ac.status === "Maintenance") {
-    return {
-      nextC_days: "—",
-      nextD_days: "—",
-      nextC_years: "—",
-      nextD_years: "—",
-      isCOverdue: false,
-      isDOverdue: false,
-      inMaintenance: true
-    };
-  }
-
-  // Pending → no aplica
   if (ac.status === "Pending Delivery") {
     return {
-      nextC_days: "—",
-      nextD_days: "—",
-      nextC_years: "—",
-      nextD_years: "—",
-      isCOverdue: false,
-      isDOverdue: false,
-      isPending: true
-    };
-  }
-
-  // Asegurar fechas base (si faltan)
-  const baseISO = (() => {
-    if (typeof ac.lastCCheckDate === "string" && ac.lastCCheckDate) return ac.lastCCheckDate;
-    if (typeof ac.deliveredDate === "string" && ac.deliveredDate) return ac.deliveredDate;
-    if (typeof ac.delivered === "string" && ac.delivered) return ac.delivered;
-    if (typeof ac.enteredFleetAt === "number" && isFinite(ac.enteredFleetAt)) {
-      return new Date(ac.enteredFleetAt).toISOString();
-    }
-    return null;
-  })();
-
-  const lastCISO = (typeof ac.lastCCheckDate === "string" && ac.lastCCheckDate) ? ac.lastCCheckDate : baseISO;
-  const lastDISO = (typeof ac.lastDCheckDate === "string" && ac.lastDCheckDate) ? ac.lastDCheckDate : baseISO;
-
-  if (!lastCISO || !lastDISO) {
-    return {
-      nextC_days: "—",
-      nextD_days: "—",
-      nextC_years: "—",
+      nextC_months: "—",
       nextD_years: "—",
       isCOverdue: false,
       isDOverdue: false
@@ -846,57 +801,43 @@ function ACS_resolveMaintenanceStatus(ac) {
 
   const now = getSimTime();
 
-  const addMonthsUTC = (iso, months) => {
-    const d = new Date(iso);
-    if (isNaN(d)) return null;
-    const out = new Date(Date.UTC(
-      d.getUTCFullYear(),
-      d.getUTCMonth(),
-      d.getUTCDate(),
-      d.getUTCHours(),
-      d.getUTCMinutes(),
-      d.getUTCSeconds()
-    ));
-    out.setUTCMonth(out.getUTCMonth() + months);
-    return out;
-  };
+  const lastC = ac.lastCCheckDate || ac.deliveredDate || ac.delivered;
+  const lastD = ac.lastDCheckDate || ac.deliveredDate || ac.delivered;
 
-  const nextCDate = addMonthsUTC(lastCISO, ACS_MAINTENANCE_RULES.C_CHECK_MONTHS); // 12
-  const nextDDate = addMonthsUTC(lastDISO, ACS_MAINTENANCE_RULES.D_CHECK_MONTHS); // 96
-
-  if (!nextCDate || !nextDDate) {
+  if (!lastC || !lastD) {
     return {
-      nextC_days: "—",
-      nextD_days: "—",
-      nextC_years: "—",
+      nextC_months: "—",
       nextD_years: "—",
       isCOverdue: false,
       isDOverdue: false
     };
   }
 
-  const DAY_MS = 86400000;
+  const C_INTERVAL_MONTHS = 12;
+  const D_INTERVAL_MONTHS = 96;
 
-  const remC_days = Math.round((nextCDate - now) / DAY_MS);
-  const remD_days = Math.round((nextDDate - now) / DAY_MS);
+  const addMonths = (iso, months) => {
+    const d = new Date(iso);
+    d.setUTCMonth(d.getUTCMonth() + months);
+    return d;
+  };
 
-  const remC_years = (nextCDate - now) / (DAY_MS * 365);
-  const remD_years = (nextDDate - now) / (DAY_MS * 365);
+  const nextCDate = addMonths(lastC, C_INTERVAL_MONTHS);
+  const nextDDate = addMonths(lastD, D_INTERVAL_MONTHS);
+
+  const monthDiff = (future) =>
+    (future - now) / (1000 * 60 * 60 * 24 * 30.4375);
+
+  const remC_months = monthDiff(nextCDate);
+  const remD_months = monthDiff(nextDDate);
+
+  const remD_years = remD_months / 12;
 
   return {
-    // Compatibilidad con lógica existente (days)
-    nextC_days: remC_days,
-    nextD_days: remD_days,
-
-    // ✅ UI CANON: years con 1 decimal (0.9 / 7.9 etc)
-    nextC_years: remC_years,
+    nextC_months: remC_months,
     nextD_years: remD_years,
-
-    isCOverdue: remC_days < 0,
-    isDOverdue: remD_days < 0,
-
-    nextCDateISO: nextCDate.toISOString(),
-    nextDDateISO: nextDDate.toISOString()
+    isCOverdue: remC_months < 0,
+    isDOverdue: remD_years < 0
   };
 }
 
@@ -953,9 +894,6 @@ function ACS_executeMaintenance(ac, type = "C") {
   const C_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.C_CHECK_RECOVERY; // 20
   const D_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.D_CHECK_RECOVERY; // 100
 
-  /* ============================================================
-     🟧 MA-8.8.C — MAINTENANCE COST CHARGE (ON START)
-     ============================================================ */
 
 /* ============================================================
    🟧 MA-LOG-2 — WRITE MAINTENANCE START EVENT
@@ -1443,48 +1381,28 @@ function ACS_applyMaintenanceComputedFields(ac) {
 
   const m = ACS_resolveMaintenanceStatus(ac);
 
-  // Guardar numéricos para otras piezas del sistema
-  ac.nextC_days = m.nextC_days;
-  ac.nextD_days = m.nextD_days;
+  const fmtMonths = (v) => {
+    if (v === "—") return "—";
+    if (typeof v !== "number" || !isFinite(v)) return "—";
+    if (v < 0) return `OVERDUE`;
+    return `${v.toFixed(1)} months`;
+  };
+
+  const fmtYears = (v) => {
+    if (v === "—") return "—";
+    if (typeof v !== "number" || !isFinite(v)) return "—";
+    if (v < 0) return `OVERDUE`;
+    return `${v.toFixed(1)} years`;
+  };
+
+  ac.nextC = fmtMonths(m.nextC_months);
+  ac.nextD = fmtYears(m.nextD_years);
 
   ac.nextC_overdue = m.isCOverdue;
   ac.nextD_overdue = m.isDOverdue;
 
-  // UI formatter (years with 1 decimal)
-  const fmtYears = (v) => {
-    if (v === "—" || v === null || v === undefined) return "—";
-    if (typeof v !== "number" || !isFinite(v)) return "—";
-    const abs = Math.abs(v);
-    const y = abs.toFixed(1);
-    if (v < 0) return `${y} yrs overdue`;
-    return `${y} yrs`;
-  };
-
-  /* ======================================================
-     🛑 MAINTENANCE HOLD → mantener comportamiento (calendar)
-     ====================================================== */
-  if (ac.status === "Maintenance Hold") {
-
-    // Si por alguna razón aún no hay números, inicializar
-    if (typeof ac.nextC_days !== "number") ac.nextC_days = 0;
-    if (typeof ac.nextD_days !== "number") ac.nextD_days = 0;
-
-    ac.nextC_overdue = ac.nextC_days < 0;
-    ac.nextD_overdue = ac.nextD_days < 0;
-
-    // En HOLD mostramos DÍAS (más directo para overdue)
-    const fmtDays = (v) => {
-      if (v === "—" || v === null || v === undefined) return "—";
-      if (typeof v !== "number") return "—";
-      if (v < 0) return `${Math.abs(v)} days overdue`;
-      return `${v} days`;
-    };
-
-    ac.nextC = fmtDays(ac.nextC_days);
-    ac.nextD = fmtDays(ac.nextD_days);
-
-    return ac;
-  }
+  return ac;
+}
 
   /* ======================================================
      🟢 NORMAL ACTIVE MODE → YEARS DECIMALS (CANON)
