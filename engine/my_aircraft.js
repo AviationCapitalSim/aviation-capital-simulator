@@ -1505,7 +1505,12 @@ function renderFleetTable() {
 
   list.forEach(ac => {
 
-    if (!passesFilters(ac)) return;
+  // 🟢 APLICAR MOTOR REAL DE MANTENIMIENTO ANTES DE RENDER
+  ac = ACS_applyMaintenanceBaseline(ac);
+  ac = ACS_applyMaintenanceHold(ac);
+  ac = ACS_applyMaintenanceComputedFields(ac);
+
+  if (!passesFilters(ac)) return;
 
     const row = document.createElement("tr");
 
