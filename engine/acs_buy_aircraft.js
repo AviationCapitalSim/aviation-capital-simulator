@@ -753,40 +753,58 @@ function checkDeliveries() {
 
     if (reached) {
 
-      /* ENTREGAR */
+         /* ENTREGAR */
       for (let i = 0; i < entry.qty; i++) {
+
+        const MS_PER_DAY = 24 * 60 * 60 * 1000;
+        const C_INTERVAL_DAYS = 365;
+        const D_INTERVAL_DAYS = 365 * 8;
+
+        const deliveryDateObj = new Date(entry.deliveryDate);
+
+        const nextCDate = new Date(
+          deliveryDateObj.getTime() + (C_INTERVAL_DAYS * MS_PER_DAY)
+        );
+
+        const nextDDate = new Date(
+          deliveryDateObj.getTime() + (D_INTERVAL_DAYS * MS_PER_DAY)
+        );
+
         myFleet.push({
-  id: "AC-" + Date.now() + "-" + i,
-  model: entry.model,
-  manufacturer: entry.manufacturer,
-  year: now.getUTCFullYear(),
-  delivered: d.toISOString(),
-  image: entry.image,
-  status: "Active",
-  hours: 0,
-  cycles: 0,
 
-  // 🟧 MA-3 — condición canónica
-  conditionPercent: ACS_normalizeConditionPercent(
-    entry.condition || "A"
-  ),
+          id: "AC-" + Date.now() + "-" + i,
+          model: entry.model,
+          manufacturer: entry.manufacturer,
+          year: now.getUTCFullYear(),
+          delivered: deliveryDateObj.toISOString(),
+          image: entry.image,
+          status: "Active",
 
-  registration: (typeof ACS_generateRegistration === "function")
-    ? ACS_generateRegistration()
-    : ("N" + Math.floor(10000 + Math.random() * 90000)),
+          hours: 0,
+          cycles: 0,
 
-  data: resolveAircraftDB().find(m =>
-    m.manufacturer === entry.manufacturer &&
-    m.model === entry.model
-  ) || {},
+          // 🟢 FASE 1 — NUEVO AVIÓN SIEMPRE 100%
+          conditionPercent: 100,
 
-  lastC: null,
-  lastD: null,
-  nextC: null,
-  nextD: null
-});
+          registration: (typeof ACS_generateRegistration === "function")
+            ? ACS_generateRegistration()
+            : ("N" + Math.floor(10000 + Math.random() * 90000)),
 
-}
+          data: resolveAircraftDB().find(m =>
+            m.manufacturer === entry.manufacturer &&
+            m.model === entry.model
+          ) || {},
+
+          // 🟢 BASELINE MANTENIMIENTO LIMPIO
+          lastC: deliveryDateObj.toISOString(),
+          lastD: deliveryDateObj.toISOString(),
+
+          nextC: nextCDate.toISOString(),
+          nextD: nextDDate.toISOString()
+
+        });
+
+      }
 
       /* Reducir backlog */
       if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
