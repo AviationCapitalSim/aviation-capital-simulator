@@ -343,7 +343,9 @@ function renderCards(filterManufacturer = "All") {
       <div class="spec-line">Seats: ${ac.seats}</div>
       <div class="spec-line">Range: ${ac.range_nm.toLocaleString()} nm</div>
       <div class="spec-line">Engines: ${engineLine}</div>
-      <div class="spec-line">Price: $${(ac.price_acs_usd / 1_000_000).toFixed(1)}M</div>
+      <div class="spec-line">
+      Price: $${ac.price_acs_usd.toLocaleString("en-US")}
+      </div>
 
       <button data-index="${idx}" class="view-options-btn">VIEW OPTIONS</button>
     `;
