@@ -1,780 +1,150 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Settings - Aviation Capital Simulator</title>
-  
-  <!-- ======== ACS Styles ======== -->
-  <link rel="stylesheet" href="styles.css?v=3.1" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Settings - Aviation Capital Simulator</title>
 
-  <!-- ======== ACS Favicons (16 / 32 / 64) ======== -->
-  <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+<link rel="stylesheet" href="styles.css?v=3.1"/>
+<link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
+<link rel="apple-touch-icon" href="acs_logo_180.png">
+<link rel="manifest" href="manifest.json">
 
-  <!-- ======== Apple iPhone/iPad Home Screen Icon ======== -->
-  <link rel="apple-touch-icon" href="acs_logo_180.png">
-
-  <!-- ======== PWA Manifest ======== -->
-  <link rel="manifest" href="manifest.json">
-
-  <style>
-  /* ============================================================
-       === ACS Qatar Luxury Dashboard — Base Design ============
-     ============================================================ */
-
-  body {
-    margin: 0;
-    background-color: #081530;
-    color: white;
-    font-family: "Poppins", sans-serif;
-  }
-
-  /* ============================================================
-       === GLOBAL HEADER (Exact Copy from index/dashboard) =====
-     ============================================================ */
-
-  .acs-header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    backdrop-filter: blur(9px);
-    background: rgba(12,23,50,0.45);
-    padding: 0.8rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid #ffb300;
-    z-index: 5000;
-  }
-
-  .acs-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  .acs-left img {
-    height: 46px;
-  }
-
-  .acs-left h1 {
-    font-size: 1.15rem;
-    margin: 0;
-    color: #ffb300;
-    letter-spacing: 0.5px;
-  }
-
-  .acs-nav {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-  }
-
-  /* ============================================================
-       === NAVIGATION — QATAR PEARL GLOW STYLE =================
-     ============================================================ */
-
-  .acs-nav a {
-    position: relative;
-    font-size: 1rem;
-    letter-spacing: 0.4px;
-    color: #dbe4ff;
-    text-decoration: none;
-    transition: 0.25s ease;
-    padding-bottom: 6px;
-  }
-
-  .acs-nav a:hover,
-  .acs-nav a.active {
-    color: #ffca3a;
-    text-shadow: 0 0 6px rgba(255,179,0,0.45);
-  }
-
-  .acs-nav a.active::after,
-  .acs-nav a:hover::after {
-    content: "";
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(to right, #ffb300, #ffe7a0);
-    border-radius: 2px;
-    box-shadow: 0 0 8px rgba(255,200,60,0.45);
-  }
-
-  .acs-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  /* LOGOUT BUTTON (Qatar style) */
-  .logout-btn {
-    padding: 0.45rem 1.1rem;
-    border: 1px solid #ffb300;
-    border-radius: 12px;
-    background: rgba(255,179,0,0.05);
-    color: #ffb300;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-  }
-
-  .logout-btn:hover {
-    background: #ffb300;
-    color: #0c1f3c;
-  }
-
-  /* CLOCK (same as dashboard) */
-  .acs-clock-header {
-    font-family: "Orbitron", monospace;
-    padding: 0.4rem 0.8rem;
-    background: rgba(0,255,128,0.08);
-    border-radius: 8px;
-    font-size: 0.95rem;
-    color: #00ff80;
-  }
-
-  /* ============================================================
-       === SUPPORT BUTTON (igual dashboard) =====================
-     ============================================================ */
-
-  .support-btn {
-    padding: 0.45rem 1.1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    color: #8AB4FF;
-    border: 1px solid rgba(138,180,255,0.45);
-    background: rgba(138,180,255,0.08);
-    backdrop-filter: blur(6px);
-    transition: 0.25s ease;
-  }
-
-  .support-btn:hover {
-    background: rgba(138,180,255,0.20);
-    box-shadow: 0 0 14px rgba(138,180,255,0.55);
-    color: #dfe9ff;
-  }
-
-   /* TITLE */
-    .acs-intro {
-      margin-top: 6rem;
-      text-align: center;
-    }
-    .acs-title {
-      color: #FFB300;
-      font-size: 1.6rem;
-      margin-bottom: 0.3rem;
-    }
-    .acs-subtitle {
-      color: #ccc;
-      font-style: italic;
-    }
-
-    /* PANELS GRID */
-    .finance-panels {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
-      gap: 1.5rem;
-      padding: 2rem;
-      margin-top: 1.5rem;
-      box-sizing: border-box;
-    }
-
-    .panel {
-      background: #0d1c3c;
-      padding: 1.2rem 1.4rem;
-      border-radius: 10px;
-      border: 1px solid rgba(255,179,0,0.25);
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      transition: 0.2s;
-    }
-    .panel:hover { transform: scale(1.02); }
-
-    .panel h3 {
-      color: #FFB300;
-      margin-bottom: 0.8rem;
-      letter-spacing: 0.5px;
-    }
-
-    label { display:block; margin:0.4rem 0; }
-
-    .acs-btn {
-      background-color: #00a86b;
-      color:#fff;
-      border:none;
-      border-radius: 6px;
-      padding:8px 14px;
-      margin-top: 0.6rem;
-      font-weight: 600;
-      cursor:pointer;
-      transition: 0.2s;
-    }
-    .acs-btn:hover { background:#007d4e; }
-    .acs-btn.secondary { background:#444; }
-    .acs-btn.secondary:hover { background:#555; }
-
-    .save-group { text-align:center; margin-top:1rem; }
-
-    table {
-      width:100%;
-      border-collapse:collapse;
-      background:rgba(255,255,255,0.03);
-      border-radius:8px;
-      margin-top:0.5rem;
-      font-size:0.9rem;
-    }
-    th,td {
-      padding:0.5rem;
-      border:1px solid rgba(255,255,255,0.12);
-      text-align:left;
-    }
-    th {
-      color:#FFB300;
-      background:rgba(255,255,255,0.05);
-    }
-
-    input[type="text"],
-    input[type="number"],
-    input[type="email"] {
-      width:100%;
-      padding:0.3rem 0.4rem;
-      border-radius:4px;
-      border:1px solid rgba(255,255,255,0.2);
-      background:rgba(0,0,0,0.3);
-      color:#fff;
-      box-sizing:border-box;
-    }
-
-    .warning {
-      color:#ffae00;
-      font-size:0.85rem;
-      margin-top:0.6rem;
-    }
-
-    footer {
-      text-align:center;
-      padding:1rem;
-      color:#ccc;
-      font-size:0.85rem;
-    }
-
-    /* SIMPLE MODAL PARA SAVE/RESET */
-    .save-modal {
-      display:none;
-      position:fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background:rgba(0,0,0,0.7);
-      align-items:center;
-      justify-content:center;
-      z-index:2000;
-    }
-    .save-modal-content {
-      background:#0d1c3c;
-      padding:1.5rem 2rem;
-      border-radius:10px;
-      border:1px solid #FFB300;
-      text-align:center;
-      box-shadow:0 0 12px rgba(255,179,0,0.4);
-      max-width:360px;
-    }
-    .save-modal-content h3 {
-      color:#FFB300;
-      margin-bottom:0.8rem;
-    }
-  </style>
+<style>
+body{margin:0;background:#081530;color:white;font-family:"Poppins",sans-serif}
+.acs-header{position:fixed;top:0;width:100%;backdrop-filter:blur(9px);
+background:rgba(12,23,50,0.45);padding:0.8rem 2rem;display:flex;
+align-items:center;justify-content:space-between;border-bottom:2px solid #ffb300;z-index:5000}
+.acs-logo{display:flex;align-items:center;gap:1rem}
+.acs-logo img{height:46px}
+.acs-logo h1{margin:0;font-size:1.15rem;color:#ffb300}
+.acs-nav{flex:1;display:flex;justify-content:center;gap:2rem}
+.acs-nav a{color:#dbe4ff;text-decoration:none;padding-bottom:6px}
+.acs-nav a.active{color:#ffca3a}
+.acs-right{display:flex;align-items:center;gap:1rem}
+.logout-btn{padding:.45rem 1.1rem;border:1px solid #ffb300;border-radius:12px;
+background:rgba(255,179,0,0.05);color:#ffb300;font-weight:600;cursor:pointer}
+.logout-btn:hover{background:#ffb300;color:#0c1f3c}
+.acs-clock-header{font-family:"Orbitron",monospace;padding:.4rem .8rem;
+background:rgba(0,255,128,.08);border-radius:8px;color:#00ff80}
+.acs-intro{margin-top:6rem;text-align:center}
+.acs-title{color:#FFB300;font-size:1.6rem}
+.finance-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:1.5rem;padding:2rem;margin-top:1.5rem}
+.panel{background:#0d1c3c;padding:1.2rem 1.4rem;border-radius:10px;
+border:1px solid rgba(255,179,0,.25)}
+.panel h3{color:#FFB300}
+.acs-btn{background:#00a86b;color:#fff;border:none;border-radius:6px;
+padding:8px 14px;margin-top:.6rem;font-weight:600;cursor:pointer}
+.acs-btn.secondary{background:#444}
+.save-group{text-align:center;margin-top:1rem}
+</style>
 </head>
 
 <body>
 
 <header class="acs-header">
-  <div class="acs-logo">
-    <img src="acs_logo.png" alt="ACS Logo" />
-    <h1>Aviation Capital Simulator</h1>
-  </div>
+<div class="acs-logo">
+<img src="acs_logo.png">
+<h1>Aviation Capital Simulator</h1>
+</div>
 
-  <nav class="acs-nav">
-    <a href="dashboard.html"class="active">Main</a>
-    <a href="finance.html">Finance</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html">Routes</a>
-    <a href="hr.html">HR</a>
-    <a href="forum.html">Forum</a>
-  </nav>
+<nav class="acs-nav">
+<a href="dashboard.html">Main</a>
+<a href="finance.html">Finance</a>
+<a href="aircraft.html">Aircraft</a>
+<a href="routes.html">Routes</a>
+<a href="hr.html">HR</a>
+<a href="forum.html">Forum</a>
+</nav>
 
-  <div class="acs-right">
-    <a href="support.html" class="support-btn">Support</a>
-    <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
-  </div>
+<div class="acs-right">
+<a class="logout-btn" onclick="handleLogout()">Logout</a>
+<div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+</div>
 </header>
 
 <section class="acs-intro">
-  <h2 class="acs-title">⚙️ Settings Control Panel</h2>
-  <p class="acs-subtitle">Manage interface, automation and the global simulation engine.</p>
+<h2 class="acs-title">⚙️ Settings Control Panel</h2>
 </section>
 
 <main>
-  <section class="finance-panels">
+<section class="finance-panels">
 
-    <!-- 1. Interface -->
-    <div class="panel">
-      <h3>🎨 Interface Settings</h3>
-      <p>Coming soon.</p>
-    </div>
-
-    <!-- 2. Notifications -->
-    <div class="panel">
-      <h3>🔔 Notification Settings</h3>
-      <p>Coming soon.</p>
-    </div>
-
-    <!-- 3. Aircraft -->
-    <div class="panel">
-      <h3>✈️ Aircraft Settings</h3>
-
-      <section>
-        <h4>Maintenance Automation</h4>
-        <label><input type="checkbox" id="autoCcheck"> Automatically perform C Check</label>
-        <label><input type="checkbox" id="autoDcheck"> Automatically perform D Check</label>
-      </section>
-
-      <section>
-        <h4>Default Registration Format</h4>
-        <table>
-          <tr><th>Family</th><th>Prefix</th></tr>
-          <tr><td>A320 Family</td><td><input id="regA320" value="EX-"></td></tr>
-          <tr><td>B737 Family</td><td><input id="regB737" value="EX-"></td></tr>
-          <tr><td>Embraer / CRJ / ATR</td><td><input id="regECRJ" value="EX-"></td></tr>
-        </table>
-      </section>
-
-      <section>
-        <h4>Default Turnaround Time</h4>
-        <table>
-          <tr><th>Family</th><th>Mins</th></tr>
-          <tr><td>A320 Family</td><td><input type="number" id="taA320" value="45"></td></tr>
-          <tr><td>B737 Family</td><td><input type="number" id="taB737" value="45"></td></tr>
-          <tr><td>E190</td><td><input type="number" id="taE190" value="35"></td></tr>
-          <tr><td>CRJ</td><td><input type="number" id="taCRJ" value="35"></td></tr>
-          <tr><td>ATR</td><td><input type="number" id="taATR" value="30"></td></tr>
-        </table>
-      </section>
-
-      <div class="save-group">
-        <button class="acs-btn" onclick="saveAircraft()">💾 Save</button>
-        <button class="acs-btn secondary" onclick="resetAircraft()">↩ Reset</button>
-      </div>
-    </div>
-
-    <!-- 4. Company -->
-    <div class="panel">
-      <h3>🏢 Company Settings</h3>
-
-      <label><input type="checkbox" id="autoHire"> Auto hiring personnel</label>
-      <label><input type="checkbox" id="autoSalary"> Auto increase salary</label>
-
-      <div class="save-group">
-        <button class="acs-btn" onclick="saveCompany()">💾 Save</button>
-        <button class="acs-btn secondary" onclick="resetCompany()">↩ Reset</button>
-      </div>
-    </div>
-
-    <!-- 5. Simulation Control -->
-    <div class="panel">
-      <h3>🕹️ Simulation Control</h3>
-      <p>Admin access required.</p>
-
-      <!-- Caja de email SIEMPRE visible -->
-      <div id="adminAuthSection">
-        <input type="email" id="adminEmailInput" placeholder="Enter admin email" />
-        <button class="acs-btn" onclick="verifyAdminEmail()">🔓 Unlock</button>
-      </div>
-
-      <!-- Panel que se abre sólo cuando eres admin -->
-      <div id="adminPanelContent" style="display:none; margin-top:1rem;">
-        <table>
-          <tr><th>Cycle</th><th>Start</th><th>Status</th></tr>
-          <tr>
-            <td id="simCycle">1940–2026</td>
-            <td id="simStart">—</td>
-            <td id="simStatus" style="color:#ff4040;font-weight:bold;">OFF</td>
-          </tr>
-        </table>
-
-        <div class="save-group">
-          <button class="acs-btn" onclick="toggleSimState()">🟢 Toggle</button>
-          <button class="acs-btn secondary" onclick="resetSimulationData()">♻ Reset</button>
-          <button class="acs-btn secondary" onclick="closeAdminPanel()">❌ Close</button>
-        </div>
-
-        <p class="warning">⚠️ Global time engine control.</p>
-      </div>
-    </div>
-
-  </section>
-</main>
-
-<footer>
-  © 2025 Aviation Capital Simulator. All rights reserved.
-</footer>
-
-<!-- MODAL PARA SAVE/RESET -->
-<div class="save-modal" id="saveModal">
-  <div class="save-modal-content">
-    <h3 id="saveModalTitle">✔ Settings</h3>
-    <p id="saveModalMessage">Settings updated.</p>
-    <button class="acs-btn" style="margin-top:0.8rem;" onclick="closeSaveModal()">OK</button>
-  </div>
+<div class="panel">
+<h3>✈ Aircraft Settings</h3>
+<label><input type="checkbox" id="autoCcheck"> Auto C Check</label>
+<label><input type="checkbox" id="autoDcheck"> Auto D Check</label>
+<div class="save-group">
+<button class="acs-btn" onclick="saveAircraft()">💾 Save</button>
+<button class="acs-btn secondary" onclick="resetAircraft()">↩ Reset</button>
+</div>
 </div>
 
-<!-- ============================================================
-     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
-     ============================================================ -->
+<div class="panel">
+<h3>🏢 Company Settings</h3>
+<label><input type="checkbox" id="autoHire"> Auto Hire</label>
+<label><input type="checkbox" id="autoSalary"> Auto Salary</label>
+<div class="save-group">
+<button class="acs-btn" onclick="saveCompany()">💾 Save</button>
+<button class="acs-btn secondary" onclick="resetCompany()">↩ Reset</button>
+</div>
+</div>
+
+</section>
+</main>
+
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
 
 <script>
-// 🛑 Congelar INMEDIATAMENTE después de cargar el motor,
-// antes de que setting.html registre listeners o dibuje el reloj.
-if (localStorage.getItem("ACS_NewCycle") === "true") {
-    if (typeof stopACSTime === "function") stopACSTime();
-    if (typeof updateClockDisplay === "function") updateClockDisplay();
-}
-</script>
-
-<!-- MASTER RESET ENGINE -->
-<script src="engine/acs_master_reset.js"></script>
-
-<script>
-/* ========== UTIL MODAL ========== */
-function openSaveModal(title, msg){
-  document.getElementById("saveModalTitle").textContent = title;
-  document.getElementById("saveModalMessage").textContent = msg;
-  document.getElementById("saveModal").style.display = "flex";
-}
-function closeSaveModal(){
-  document.getElementById("saveModal").style.display = "none";
-}
-
-/* ========== LOGOUT ========== */
 function handleLogout(){
-  alert("👋 Session closed. See you soon, Captain!");
-  window.location.href = "login.html";
+alert("Session closed.");
+window.location.href="login.html";
 }
 
-/* ========== LOAD SETTINGS AL ENTRAR ========== */
-  
-document.addEventListener("DOMContentLoaded", () => {
-
-  /* ============================================================
-     🟦 A3.5.1 — DEFAULT COMPANY SETTINGS BOOTSTRAP
-     ------------------------------------------------------------
-     • Primera vez jugador → Auto Hire ON
-     • Primera vez jugador → Auto Salary ON
-     • Persistente por partida
-     ============================================================ */
-
-  // 🔧 Auto Hire default ON
-  if (localStorage.getItem("autoHire") === null) {
-    localStorage.setItem("autoHire", "true");
-  }
-
-  // 🔧 Auto Salary default ON
-  if (localStorage.getItem("ACS_AutoSalary") === null) {
-    localStorage.setItem("ACS_AutoSalary", "ON");
-  }
-  
- ["autoCcheck","autoDcheck","autoHire"].forEach(id=>{
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (localStorage.getItem(id) === "true") el.checked = true;
+document.addEventListener("DOMContentLoaded",()=>{
+["autoCcheck","autoDcheck","autoHire"].forEach(id=>{
+const el=document.getElementById(id);
+if(!el)return;
+if(localStorage.getItem(id)==="true")el.checked=true;
 });
 
-  /* ============================================================
-     🟦 A3.5.2 — LOAD COMPANY SETTINGS (CANONICAL)
-     ============================================================ */
-
-  // Auto Hire
-  const autoHireFlag = localStorage.getItem("autoHire");
-  const autoHireCB = document.getElementById("autoHire");
-  if (autoHireCB) {
-    autoHireCB.checked = (autoHireFlag !== "false"); // default true
-  }
-
-  // 🔧 AUTO SALARY DEFAULT + LOAD STATE
-let autoSalaryFlag = localStorage.getItem("ACS_AutoSalary");
-
-// Default ON si no existe (jugador nuevo)
-if (!autoSalaryFlag) {
-  localStorage.setItem("ACS_AutoSalary", "ON");
-  autoSalaryFlag = "ON";
-}
-
-const autoSalaryCB = document.getElementById("autoSalary");
-if (autoSalaryCB) {
-
-  autoSalaryCB.checked = (autoSalaryFlag === "ON");
-
-  // Listener directo
-  autoSalaryCB.addEventListener("change", () => {
-    syncAutoSalarySetting();
-  });
-}
-
-  ["regA320","regB737","regECRJ",
-   "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    const val = localStorage.getItem(id);
-    if (val !== null) el.value = val;
-  });
-
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  if (user && user.email === "aviationcapitalsim@gmail.com") {
-    document.getElementById("adminAuthSection").style.display = "block";
-    document.getElementById("adminPanelContent").style.display = "block";
-  }
-
-  refreshSimPanel();
-
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
+const autoSalaryFlag=localStorage.getItem("ACS_AutoSalary")||"ON";
+document.getElementById("autoSalary").checked=(autoSalaryFlag==="ON");
 });
 
-/* ========== SAVE / RESET AIRCRAFT ========== */
 function saveAircraft(){
-  ["autoCcheck","autoDcheck",
-   "regA320","regB737","regECRJ",
-   "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    localStorage.setItem(
-      id,
-      el.type === "checkbox" ? el.checked : el.value
-    );
-  });
-  openSaveModal("Aircraft Settings", "Aircraft configuration saved successfully.");
+["autoCcheck","autoDcheck"].forEach(id=>{
+const el=document.getElementById(id);
+localStorage.setItem(id,el.checked);
+});
+alert("Aircraft settings saved.");
 }
 
 function resetAircraft(){
-  ["autoCcheck","autoDcheck"].forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.checked = false;
-    localStorage.removeItem(id);
-  });
-
-  const defaults = {
-    regA320:"EX-",
-    regB737:"EX-",
-    regECRJ:"EX-",
-    taA320:45,
-    taB737:45,
-    taE190:35,
-    taCRJ:35,
-    taATR:30
-  };
-
-  Object.keys(defaults).forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.value = defaults[id];
-    localStorage.removeItem(id);
-  });
-
-  openSaveModal("Aircraft Settings", "Aircraft settings reset to defaults.");
+["autoCcheck","autoDcheck"].forEach(id=>{
+localStorage.removeItem(id);
+document.getElementById(id).checked=false;
+});
+alert("Aircraft reset.");
 }
-
-/* ============================================================
-   🟦 A3.5.3 — SAVE COMPANY SETTINGS (AUTO SALARY HOOK)
-   ============================================================ */
 
 function saveCompany(){
-
-  const autoHire   = document.getElementById("autoHire").checked;
-  const autoSalary = document.getElementById("autoSalary").checked;
-
-  // Guardar settings
-  localStorage.setItem("autoHire", autoHire ? "true" : "false");
-  localStorage.setItem("ACS_AutoSalary", autoSalary ? "ON" : "OFF");
-
-  /* ============================================================
-     🟦 AUTO HIRE HOOK — EJECUCIÓN INMEDIATA DESDE SETTINGS
-     ============================================================ */
-
-    // 🔥 SI AUTO HIRE ACTIVADO → EJECUTAR INMEDIATAMENTE
-  if (autoHire) {
-
-    if (typeof window.ACS_HR_runAutoHire === "function") {
-
-      console.log(
-        "%c🧑‍✈️ AUTO HIRE ENABLED — RUNNING NOW",
-        "color:#00ff80;font-weight:800"
-      );
-
-      window.ACS_HR_runAutoHire();
-
-    } else {
-
-      console.warn("⚠️ AUTO HIRE ENABLED BUT ENGINE NOT FOUND");
-    }
-  }
-
-  /* ============================================================
-     🟦 AUTO SALARY HOOK (YA EXISTENTE)
-     ============================================================ */
-
-  if (autoSalary) {
-
-    if (typeof ACS_HR_applyAutoSalaryNormalization === "function") {
-
-      console.log("%c⚙️ AUTO SALARY ENABLED — NORMALIZING NOW",
-        "color:#00ff88;font-weight:700");
-
-      ACS_HR_applyAutoSalaryNormalization();
-    }
-  }
-
-  openSaveModal("Company Settings", "Company settings saved successfully.");
+localStorage.setItem("autoHire",document.getElementById("autoHire").checked);
+localStorage.setItem("ACS_AutoSalary",
+document.getElementById("autoSalary").checked?"ON":"OFF");
+alert("Company settings saved.");
 }
-
-/* ============================================================
-   🟦 A3.7.2 — AUTO SALARY SETTINGS SYNC ENGINE (CANONICAL)
-   ------------------------------------------------------------
-   • SOLO guarda estado ON / OFF
-   • NO ejecuta lógica salarial
-   • Muestra warning si hubo override manual
-   ============================================================ */
-
-function syncAutoSalarySetting() {
-
-  const cb = document.getElementById("autoSalary");
-  if (!cb) return;
-
-  const enabled = cb.checked;
-
-  // Guardar estado
-  localStorage.setItem("ACS_AutoSalary", enabled ? "ON" : "OFF");
-
-  console.log(
-    "%c⚙ AUTO SALARY SETTING CHANGED",
-    "color:#ffb300;font-weight:700",
-    enabled ? "ON" : "OFF"
-  );
-
-  /* ============================================================
-     ⚠️ MANUAL SALARY OVERRIDE WARNING
-     ============================================================ */
-
-  if (localStorage.getItem("ACS_AutoSalary_Override") === "true") {
-
-    alert(
-      "⚠️ Manual Salary Adjustment Detected\n\n" +
-      "Auto Salary was automatically DISABLED to protect your manual changes.\n\n" +
-      "You can re-enable Auto Salary at any time from Settings."
-    );
-
-    localStorage.removeItem("ACS_AutoSalary_Override");
-  }
-}
-
-/* ============================================================
-   🟦 A3.5.4 — RESET COMPANY SETTINGS (DEFAULT ON)
-   ============================================================ */
 
 function resetCompany(){
-
-  // Defaults ON
-  localStorage.setItem("autoHire", "true");
-  localStorage.setItem("ACS_AutoSalary", "ON");
-
-  document.getElementById("autoHire").checked = true;
-  document.getElementById("autoSalary").checked = true;
-
-  // Normalizar salarios inmediatamente
-  if (typeof ACS_HR_applyAutoSalaryNormalization === "function") {
-    ACS_HR_applyAutoSalaryNormalization();
-  }
-
-  openSaveModal("Company Settings", "Company settings reset to defaults (Auto ON).");
-}
-
-/* ========== ADMIN PANEL ========== */
-function verifyAdminEmail(){
-  const input = document.getElementById("adminEmailInput").value.trim().toLowerCase();
-
-  if (input === "aviationcapitalsim@gmail.com") {
-    localStorage.setItem("ACS_activeUser", JSON.stringify({
-      email: input,
-      name: "Administrator"
-    }));
-    document.getElementById("adminPanelContent").style.display = "block";
-    alert("✅ Admin access granted.");
-  } else {
-    alert("❌ Incorrect email. Access denied.");
-  }
-}
-
-function closeAdminPanel(){
-  document.getElementById("adminPanelContent").style.display = "none";
-}
-
-/* ========== REFRESCAR PANEL DE CICLO ========== */
-function refreshSimPanel(){
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-
-  const simCycleEl = document.getElementById("simCycle");
-  const simStartEl = document.getElementById("simStart");
-  const simStatusEl = document.getElementById("simStatus");
-
-  if (!simCycleEl || !simStartEl || !simStatusEl) return;
-
-  if (cycle.startYear && cycle.endYear) {
-    simCycleEl.textContent = `${cycle.startYear}–${cycle.endYear}`;
-  }
-
-  if (cycle.realStartDate) {
-    const d = new Date(cycle.realStartDate);
-    simStartEl.textContent = d.toDateString();
-  } else {
-    simStartEl.textContent = "—";
-  }
-
-  const st = (cycle.status || "OFF").toUpperCase();
-  simStatusEl.textContent = st;
-  simStatusEl.style.color = st === "ON" ? "#00ff80" : "#ff4040";
-}
-
-/* ============================================================
-   === MASTER RESET CALL (Settings) ============================
-   ============================================================ */
-function resetSimulationData(){
-  if (typeof window.ACS_MasterReset === "function") {
-
-    const result = window.ACS_MasterReset();
-
-    openSaveModal(
-      "Master Reset Completed",
-      "🟦 " + result.message + "\n\nA new clean cycle is now ready."
-    );
-
-    setTimeout(() => {
-      refreshSimPanel();
-      updateClockDisplay();
-    }, 200);
-  }
+localStorage.setItem("autoHire","true");
+localStorage.setItem("ACS_AutoSalary","ON");
+document.getElementById("autoHire").checked=true;
+document.getElementById("autoSalary").checked=true;
+alert("Company reset to default.");
 }
 </script>
 
