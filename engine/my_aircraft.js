@@ -802,88 +802,47 @@ function ACS_resolveMaintenanceStatus(ac) {
 
   if (!ac) {
     return {
-      nextC_months: "—",
-      nextD_years: "—",
+      nextC_days: null,
+      nextD_days: null,
       isCOverdue: false,
       isDOverdue: false
     };
   }
 
- /* ============================================================
-   🟢 AUTO INITIALIZER — ACS_MyAircraft SAFE
-   ============================================================ */
+  const now = getSimTime();
 
-const now = getSimTime();
-
-// Usar campo real
-const deliveredDate = ac.delivered || now.toISOString();
-
-// Inicializar C si no existe
-if (ac.baselineCHours == null) {
-  ac.baselineCHours  = ac.hours  || 0;
-  ac.baselineCCycles = ac.cycles || 0;
-  ac.lastCCheckDate  = deliveredDate;
-}
-
-// Inicializar D si no existe
-if (ac.baselineDHours == null) {
-  ac.baselineDHours  = ac.hours  || 0;
-  ac.baselineDCycles = ac.cycles || 0;
-  ac.lastDCheckDate  = deliveredDate;
-}
+  const MS_PER_DAY = 86400000;
 
   /* ===============================
-     SAFE BASELINES
+     LAST CHECK DATES
      =============================== */
 
-  const lastC = ac.lastCCheckDate || ac.deliveredDate;
-  const lastD = ac.lastDCheckDate || ac.deliveredDate;
+  const lastC = ac.lastCCheckDate
+    ? new Date(ac.lastCCheckDate)
+    : new Date(ac.deliveredDate || now);
 
-  if (!lastC || !lastD) {
-    return {
-      nextC_months: "—",
-      nextD_years: "—",
-      isCOverdue: false,
-      isDOverdue: false
-    };
-  }
-
-  const monthsBetween = (d1, d2) =>
-    (d2 - d1) / (1000 * 60 * 60 * 24 * 30.4375);
+  const lastD = ac.lastDCheckDate
+    ? new Date(ac.lastDCheckDate)
+    : new Date(ac.deliveredDate || now);
 
   /* ===============================
-     C-CHECK CALCULATIONS
+     CALENDAR INTERVALS (AVIATION REAL)
      =============================== */
 
-  const monthsUsedC = monthsBetween(new Date(lastC), now);
-  const hoursUsedC  = (ac.hours  || 0) - (ac.baselineCHours  || 0);
-  const cyclesUsedC = (ac.cycles || 0) - (ac.baselineCCycles || 0);
+  const C_INTERVAL_DAYS = ACS_MAINTENANCE_RULES.C_MONTHS * 30.4375;
+  const D_INTERVAL_DAYS = ACS_MAINTENANCE_RULES.D_MONTHS * 30.4375;
 
-  const remCalC   = ACS_MAINTENANCE_RULES.C_MONTHS - monthsUsedC;
-  const remHourC  = (ACS_MAINTENANCE_RULES.C_HOURS  - hoursUsedC) / 100;
-  const remCycleC = (ACS_MAINTENANCE_RULES.C_CYCLES - cyclesUsedC) / 100;
+  const daysSinceC = (now - lastC) / MS_PER_DAY;
+  const daysSinceD = (now - lastD) / MS_PER_DAY;
 
-  const minC = Math.min(remCalC, remHourC, remCycleC);
-
-  /* ===============================
-     D-CHECK CALCULATIONS
-     =============================== */
-
-  const monthsUsedD = monthsBetween(new Date(lastD), now);
-  const hoursUsedD  = (ac.hours  || 0) - (ac.baselineDHours  || 0);
-  const cyclesUsedD = (ac.cycles || 0) - (ac.baselineDCycles || 0);
-
-  const remCalD   = ACS_MAINTENANCE_RULES.D_MONTHS - monthsUsedD;
-  const remHourD  = (ACS_MAINTENANCE_RULES.D_HOURS  - hoursUsedD) / 300;
-  const remCycleD = (ACS_MAINTENANCE_RULES.D_CYCLES - cyclesUsedD) / 300;
-
-  const minD = Math.min(remCalD, remHourD, remCycleD);
+  const remainingC = Math.floor(C_INTERVAL_DAYS - daysSinceC);
+  const remainingD = Math.floor(D_INTERVAL_DAYS - daysSinceD);
 
   return {
-    nextC_months: minC,
-    nextD_years: minD / 12,
-    isCOverdue: minC <= 0,
-    isDOverdue: minD <= 0
+    nextC_days: remainingC,
+    nextD_days: remainingD,
+    isCOverdue: remainingC <= 0,
+    isDOverdue: remainingD <= 0
   };
 }
 
@@ -1427,22 +1386,22 @@ function ACS_applyMaintenanceComputedFields(ac) {
 
   const m = ACS_resolveMaintenanceStatus(ac);
 
-  const fmtMonths = (v) => {
-    if (v === "—") return "—";
-    if (typeof v !== "number" || !isFinite(v)) return "—";
-    if (v < 0) return "OVERDUE";
-    return `${v.toFixed(1)} months`;
+  const fmt = (days) => {
+    if (days == null) return "—";
+    if (days <= 0) return "OVERDUE";
+
+    const months = days / 30.4375;
+    if (months >= 12) {
+      return `${(months / 12).toFixed(1)} years`;
+    }
+    return `${months.toFixed(1)} months`;
   };
 
-  const fmtYears = (v) => {
-    if (v === "—") return "—";
-    if (typeof v !== "number" || !isFinite(v)) return "—";
-    if (v < 0) return "OVERDUE";
-    return `${v.toFixed(1)} years`;
-  };
+  ac.nextC = fmt(m.nextC_days);
+  ac.nextD = fmt(m.nextD_days);
 
-  ac.nextC = fmtMonths(m.nextC_months);
-  ac.nextD = fmtYears(m.nextD_years);
+  ac.nextC_days = m.nextC_days;
+  ac.nextD_days = m.nextD_days;
 
   ac.nextC_overdue = m.isCOverdue;
   ac.nextD_overdue = m.isDOverdue;
