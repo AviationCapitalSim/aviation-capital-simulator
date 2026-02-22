@@ -1404,16 +1404,6 @@ function ACS_applyMaintenanceComputedFields(ac) {
   return ac;
 }
 
-  /* ======================================================
-     🟢 NORMAL ACTIVE MODE → YEARS DECIMALS (CANON)
-     ====================================================== */
-
-  ac.nextC = m.isCOverdue ? "OVERDUE" : fmtYears(m.nextC_years);
-  ac.nextD = m.isDOverdue ? "OVERDUE" : fmtYears(m.nextD_years);
-
-  return ac;
-}
-
 /* ============================================================
    🟧 MA-8.7.D — IDLE STATUS VISUAL FEEDBACK (UI ONLY)
    ------------------------------------------------------------
