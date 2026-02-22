@@ -750,56 +750,59 @@ function ACS_checkMaintenanceAutoTrigger(ac) {
    ============================================================ */
 
 function ACS_resolveMaintenanceStatus(ac) {
-  if (!ac || typeof ac.hours !== "number") {
+
+  if (!ac) {
     return {
-      nextC_days: "—",
-      nextD_days: "—",
+      nextC_months: "—",
+      nextD_months: "—",
       isCOverdue: false,
       isDOverdue: false
     };
   }
 
-  /* ⛔ EN SERVICIO → NO MOSTRAR NEXT */
+  // Si está en mantenimiento activo, no mostrar cálculo
   if (ac.status === "Maintenance") {
     return {
-      nextC_days: "—",
-      nextD_days: "—",
-      isCOverdue: false,
-      isDOverdue: false,
-      inMaintenance: true
-    };
-  }
-
-  if (
-    typeof ac.baselineCHours !== "number" ||
-    typeof ac.baselineDHours !== "number"
-  ) {
-    return {
-      nextC_days: "—",
-      nextD_days: "—",
+      nextC_months: "—",
+      nextD_months: "—",
       isCOverdue: false,
       isDOverdue: false
     };
   }
 
-  const C_INTERVAL_HOURS = 1200;
-  const D_INTERVAL_HOURS = 6000;
-  const HOURS_PER_DAY = 8;
+  if (!ac.lastCCheckDate || !ac.lastDCheckDate) {
+    return {
+      nextC_months: "—",
+      nextD_months: "—",
+      isCOverdue: false,
+      isDOverdue: false
+    };
+  }
 
-  const nextCHoursAt = ac.baselineCHours + C_INTERVAL_HOURS;
-  const nextDHoursAt = ac.baselineDHours + D_INTERVAL_HOURS;
+  const now = getSimTime();
 
-  const remainingCHours = nextCHoursAt - ac.hours;
-  const remainingDHours = nextDHoursAt - ac.hours;
+  const lastC = new Date(ac.lastCCheckDate);
+  const lastD = new Date(ac.lastDCheckDate);
 
-  const nextC_days = Math.round(remainingCHours / HOURS_PER_DAY);
-  const nextD_days = Math.round(remainingDHours / HOURS_PER_DAY);
+  const C_INTERVAL_MONTHS = 12;
+  const D_INTERVAL_MONTHS = 96;
+
+  const diffC =
+    (now.getUTCFullYear() - lastC.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - lastC.getUTCMonth());
+
+  const diffD =
+    (now.getUTCFullYear() - lastD.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - lastD.getUTCMonth());
+
+  const remainingC = C_INTERVAL_MONTHS - diffC;
+  const remainingD = D_INTERVAL_MONTHS - diffD;
 
   return {
-    nextC_days,
-    nextD_days,
-    isCOverdue: nextC_days < 0,
-    isDOverdue: nextD_days < 0
+    nextC_months: remainingC,
+    nextD_months: remainingD,
+    isCOverdue: remainingC < 0,
+    isDOverdue: remainingD < 0
   };
 }
 
@@ -1388,15 +1391,17 @@ function ACS_applyMaintenanceComputedFields(ac) {
 
   const m = ACS_resolveMaintenanceStatus(ac);
 
-  ac.nextC_days = m.nextC_days;
-  ac.nextD_days = m.nextD_days;
-
   ac.nextC_overdue = m.isCOverdue;
   ac.nextD_overdue = m.isDOverdue;
 
-  ac.nextC = fmtDays(m.nextC_days);
-  ac.nextD = fmtDays(m.nextD_days);
+  ac.nextC = m.isCOverdue
+  ? "OVERDUE"
+  : `${m.nextC_months} months`;
 
+  ac.nextD = m.isDOverdue
+  ? "OVERDUE"
+  : `${m.nextD_months} months`;
+   
   return ac;
 }
 
