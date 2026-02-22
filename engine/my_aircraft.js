@@ -1631,8 +1631,18 @@ if (pending) {
 
   /* ============================================================
      🟢 FIX FINAL — NORMALIZACIÓN COMPLETA PENDING AIRCRAFT
-     Garantiza que Family y Base SIEMPRE existan
+     Family ahora se resuelve desde la DATABASE (igual que Active)
      ============================================================ */
+
+  // 🔎 Buscar en la base oficial
+  const db = (typeof resolveAircraftDB === "function")
+    ? resolveAircraftDB()
+    : [];
+
+  const dbMatch = db.find(m =>
+    m.manufacturer === pending.manufacturer &&
+    m.model === pending.model
+  );
 
   acRaw = {
 
@@ -1642,20 +1652,21 @@ if (pending) {
     manufacturer: pending.manufacturer || "",
     model: pending.model || "—",
 
-    // FIX FAMILY
+    // ✅ FIX FAMILY (YA NO USA pending.type → "BUY")
     family:
-      pending.family ||
-      pending.aircraftFamily ||
-      pending.type ||
+      dbMatch?.family ||
+      pending.manufacturer ||
       (pending.model ? pending.model.split(" ")[0] : "—"),
 
-    // FIX BASE
+    // FIX BASE (igual que tenías)
     base:
       pending.base ||
       pending.baseIcao ||
       pending.deliveryBase ||
       pending.baseICAO ||
-      getCurrentBaseICAO(),
+      (typeof getCurrentBaseICAO === "function"
+        ? getCurrentBaseICAO()
+        : "—"),
 
     status: "Pending Delivery",
 
