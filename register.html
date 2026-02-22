@@ -745,12 +745,12 @@ async function handleRegister(event) {
     "https://script.google.com/macros/s/AKfycby1XOb40ciRLjVOZpKEAaCZPU_m1f1IUuF7g0f7yLUQ8LxRLChuSQEU7jwLAC2USIb0BA/exec";
 
   try {
-    const response = await fetch(ACS_API_URL, {
+       
+  const response = await fetch(ACS_API_URL, {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(payload)
+  body: new URLSearchParams({
+    data: JSON.stringify(payload)
+  })
 });
 
     const raw = await response.text();
