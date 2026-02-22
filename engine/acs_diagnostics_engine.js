@@ -130,15 +130,166 @@
   };
 
   /* ============================================================
-     🔵 FULL SCAN (PHASE 2 — STUB FOR NOW)
+   🔵 FULL SCAN — STRUCTURAL AUDIT
+   ============================================================ */
+
+DIAG.fullScan = function(){
+
+  const report = {
+    overall: "GREEN",
+    score: 100,
+    modules: {},
+    issues: [],
+    timestamp: Date.now()
+  };
+
+  function warn(module, msg){
+    if (report.overall === "GREEN") report.overall = "WARNING";
+    report.score -= 5;
+    report.issues.push({ level: "WARNING", module, message: msg });
+  }
+
+  function critical(module, msg){
+    report.overall = "CRITICAL";
+    report.score -= 15;
+    report.issues.push({ level: "CRITICAL", module, message: msg });
+  }
+
+  function safeParse(key){
+    try{
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){
+      return "__CORRUPTED__";
+    }
+  }
+
+  /* ============================================================
+     🟢 SCHEDULE MODULE
      ============================================================ */
 
-  DIAG.fullScan = function(){
-    return {
-      status: "NOT_IMPLEMENTED",
-      message: "Full scan coming in Phase 2"
+  const schedule = safeParse("scheduleItems");
+
+  if (schedule === "__CORRUPTED__"){
+    critical("SCHEDULE", "scheduleItems JSON corrupted.");
+  } else if (!Array.isArray(schedule)){
+    critical("SCHEDULE", "scheduleItems is not an array.");
+  } else {
+    const aircraftAssignments = {};
+    schedule.forEach(flight=>{
+      if (!flight.aircraftId){
+        warn("SCHEDULE", "Flight without aircraftId.");
+      } else {
+        if (aircraftAssignments[flight.aircraftId]){
+          critical("SCHEDULE", `Aircraft ${flight.aircraftId} assigned multiple times.`);
+        }
+        aircraftAssignments[flight.aircraftId] = true;
+      }
+    });
+
+    report.modules.schedule = {
+      totalFlights: schedule.length
     };
+  }
+
+  /* ============================================================
+     🟢 FLEET MODULE (ACS_MyAircraft)
+     ============================================================ */
+
+  const fleet = safeParse("ACS_MyAircraft");
+
+  if (fleet === "__CORRUPTED__"){
+    critical("FLEET", "ACS_MyAircraft corrupted JSON.");
+  } else if (!Array.isArray(fleet)){
+    critical("FLEET", "ACS_MyAircraft is not an array.");
+  } else {
+
+    const ids = fleet.map(a=>a.id).filter(Boolean);
+
+    if (ids.length !== new Set(ids).size){
+      critical("FLEET", "Duplicate aircraft IDs detected.");
+    }
+
+    fleet.forEach(ac=>{
+      if (typeof ac.hours === "number" && ac.hours < 0){
+        warn("FLEET", `Aircraft ${ac.id} has negative hours.`);
+      }
+      if (ac.status === "D_CHECK" && ac.active){
+        critical("FLEET", `Aircraft ${ac.id} active while in D_CHECK.`);
+      }
+    });
+
+    report.modules.fleet = {
+      totalAircraft: fleet.length
+    };
+  }
+
+  /* ============================================================
+     🟢 FINANCE MODULE
+     ============================================================ */
+
+  const financeUpper = safeParse("ACS_FINANCE");
+  const financeLower = safeParse("ACS_Finance");
+
+  if (financeUpper && financeLower){
+    warn("FINANCE", "Both ACS_FINANCE and ACS_Finance exist (possible duplication).");
+  }
+
+  const finance = financeUpper || financeLower;
+
+  if (finance === "__CORRUPTED__"){
+    critical("FINANCE", "Finance JSON corrupted.");
+  } else if (finance){
+
+    if (typeof finance.cash !== "number"){
+      warn("FINANCE", "Finance cash is not numeric.");
+    } else if (!isFinite(finance.cash)){
+      critical("FINANCE", "Finance cash invalid (NaN/Infinity).");
+    }
+
+    report.modules.finance = {
+      cash: finance.cash || 0
+    };
+  }
+
+  /* ============================================================
+     🟢 TIME MODULE
+     ============================================================ */
+
+  const simTime = safeParse("ACS_LAST_SIM_TIME");
+
+  if (simTime === "__CORRUPTED__"){
+    critical("TIME", "ACS_LAST_SIM_TIME corrupted.");
+  } else if (!simTime){
+    warn("TIME", "No ACS_LAST_SIM_TIME detected.");
+  }
+
+  report.modules.time = {
+    simTimeExists: !!simTime
   };
+
+  /* ============================================================
+     🟢 STORAGE HEALTH
+     ============================================================ */
+
+  try{
+    const sizeEstimate = JSON.stringify(localStorage).length;
+    if (sizeEstimate > 4_500_000){
+      warn("STORAGE", "localStorage near browser limit.");
+    }
+    report.modules.storage = {
+      keys: Object.keys(localStorage).length,
+      approxSizeBytes: sizeEstimate
+    };
+  }catch(e){
+    warn("STORAGE", "Unable to estimate storage size.");
+  }
+
+  if (report.score < 0) report.score = 0;
+
+  return report;
+};
 
   /* ============================================================
      🟢 PUBLIC EXPORT
