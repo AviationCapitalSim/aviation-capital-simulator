@@ -675,39 +675,67 @@ function ACS_getConditionLetter(percent) {
 function ACS_applyMaintenanceBaseline(ac) {
   if (!ac) return ac;
 
-  // Si ya tiene baseline válido → no tocar
-  if (ac.lastCCheckDate || ac.lastDCheckDate) {
+  // Si ya existe cualquier referencia de C o D, NO tocar baseline
+  if (
+    ac.baselineCHours !== undefined ||
+    ac.baselineDHours !== undefined ||
+    ac.lastCCheckDate ||
+    ac.lastDCheckDate
+  ) {
     return ac;
   }
 
-  const deliveredISO =
-    ac.deliveredDate ||
-    ac.delivered ||
-    (typeof ac.enteredFleetAt === "number"
-      ? new Date(ac.enteredFleetAt).toISOString()
-      : getSimTime().toISOString());
+  // Seguridad
+  if (typeof ac.hours !== "number") return ac;
 
-  // Avión NUEVO (sin horas)
-  if ((ac.hours || 0) === 0) {
-    ac.lastCCheckDate = deliveredISO;
-    ac.lastDCheckDate = deliveredISO;
-    ac.baselineCHours = 0;
-    ac.baselineDHours = 0;
-    return ac;
-  }
+  // 🔧 Intervalos estándar (legacy hours baseline para Used / imports)
+  const C_INTERVAL_HOURS = 1200;   // C-Check
+  const D_INTERVAL_HOURS = 6000;   // D-Check
 
-  // Avión USADO (calcular último múltiplo técnico real)
-  const C_INT = ACS_MAINTENANCE_RULES.C_HOURS;
-  const D_INT = ACS_MAINTENANCE_RULES.D_HOURS;
+  // Calcular último múltiplo técnico
+  const baselineC = Math.floor(ac.hours / C_INTERVAL_HOURS) * C_INTERVAL_HOURS;
+  const baselineD = Math.floor(ac.hours / D_INTERVAL_HOURS) * D_INTERVAL_HOURS;
 
-  ac.baselineCHours = Math.floor(ac.hours / C_INT) * C_INT;
-  ac.baselineDHours = Math.floor(ac.hours / D_INT) * D_INT;
+  // Guardar baseline
+  ac.baselineCHours = baselineC;
+  ac.baselineDHours = baselineD;
 
-  ac.lastCCheckDate = deliveredISO;
-  ac.lastDCheckDate = deliveredISO;
+  // Flags informativos (opcional, útil para debug/UI)
+  ac.maintenanceBaselineApplied = true;
+
+  /* ============================================================
+     🟢 MA-F4 — INIT LAST C/D DATES (CANONICAL, NO GLOBAL 'ac')
+     ------------------------------------------------------------
+     Fix:
+     - Evita ReferenceError por 'ac' fuera de scope
+     - Garantiza que aviones NUEVOS tengan lastC/lastD desde delivery
+     - Base para cálculo calendario (C=12m, D=96m)
+     ============================================================ */
+
+  const deliveredISO = (() => {
+    // preferir deliveredDate / delivered (ISO)
+    if (typeof ac.deliveredDate === "string" && ac.deliveredDate) return ac.deliveredDate;
+    if (typeof ac.delivered === "string" && ac.delivered) return ac.delivered;
+
+    // enteredFleetAt puede ser epoch ms
+    if (typeof ac.enteredFleetAt === "number" && isFinite(ac.enteredFleetAt)) {
+      return new Date(ac.enteredFleetAt).toISOString();
+    }
+
+    // fallback: ahora simulado (no ideal, pero seguro)
+    try {
+      return getSimTime().toISOString();
+    } catch (e) {
+      return new Date().toISOString();
+    }
+  })();
+
+  if (!ac.lastCCheckDate) ac.lastCCheckDate = deliveredISO;
+  if (!ac.lastDCheckDate) ac.lastDCheckDate = deliveredISO;
 
   return ac;
 }
+
 
 function ACS_getMaintenancePolicy() {
   return {
@@ -760,13 +788,14 @@ function ACS_checkMaintenanceAutoTrigger(ac) {
 }
 
 /* ============================================================
-   🟦 MA-2 — HYBRID MAINTENANCE RESOLVER (AVIATION REAL)
+   🟦 MA-2 — HYBRID MAINTENANCE RESOLVER (REAL AVIATION)
    ------------------------------------------------------------
-   C & D vencen por el PRIMERO que ocurra:
-   - Calendar (días)
-   - Flight Hours
-   - Flight Cycles
-   Retorna SIEMPRE next*_days (para formato Airwaysim en UI)
+   - C & D vencen por:
+       • Calendar
+       • Hours
+       • Cycles
+   - Se toma el menor remanente
+   - D reinicia C (baseline ya controlado en completion)
    ============================================================ */
 
 function ACS_resolveMaintenanceStatus(ac) {
@@ -781,71 +810,39 @@ function ACS_resolveMaintenanceStatus(ac) {
   }
 
   const now = getSimTime();
+
   const MS_PER_DAY = 86400000;
 
-  // --- Fechas de referencia (si faltan, usar delivered/deliveredDate/enteredFleetAt)
-  const refISO =
-    ac.lastCCheckDate ||
-    ac.deliveredDate ||
-    ac.delivered ||
-    (typeof ac.enteredFleetAt === "number" ? new Date(ac.enteredFleetAt).toISOString() : null);
+  /* ===============================
+     LAST CHECK DATES
+     =============================== */
 
-  const refISO_D =
-    ac.lastDCheckDate ||
-    ac.deliveredDate ||
-    ac.delivered ||
-    (typeof ac.enteredFleetAt === "number" ? new Date(ac.enteredFleetAt).toISOString() : null);
+  const lastC = ac.lastCCheckDate
+    ? new Date(ac.lastCCheckDate)
+    : new Date(ac.deliveredDate || now);
 
-  const lastC = refISO ? new Date(refISO) : now;
-  const lastD = refISO_D ? new Date(refISO_D) : now;
+  const lastD = ac.lastDCheckDate
+    ? new Date(ac.lastDCheckDate)
+    : new Date(ac.deliveredDate || now);
 
-  // --- Intervalos calendario
+  /* ===============================
+     CALENDAR INTERVALS (AVIATION REAL)
+     =============================== */
+
   const C_INTERVAL_DAYS = ACS_MAINTENANCE_RULES.C_MONTHS * 30.4375;
   const D_INTERVAL_DAYS = ACS_MAINTENANCE_RULES.D_MONTHS * 30.4375;
 
   const daysSinceC = (now - lastC) / MS_PER_DAY;
   const daysSinceD = (now - lastD) / MS_PER_DAY;
 
-  const remCalC = Math.floor(C_INTERVAL_DAYS - daysSinceC);
-  const remCalD = Math.floor(D_INTERVAL_DAYS - daysSinceD);
-
-  // --- Intervalos técnicos (horas/ciclos)
-  const h = (typeof ac.hours === "number") ? ac.hours : 0;
-  const c = (typeof ac.cycles === "number") ? ac.cycles : 0;
-
-  const baseCH = (typeof ac.baselineCHours === "number") ? ac.baselineCHours : 0;
-  const baseDH = (typeof ac.baselineDHours === "number") ? ac.baselineDHours : 0;
-
-  const baseCC = (typeof ac.baselineCCycles === "number") ? ac.baselineCCycles : 0;
-  const baseDC = (typeof ac.baselineDCycles === "number") ? ac.baselineDCycles : 0;
-
-  const usedCH = h - baseCH;
-  const usedDH = h - baseDH;
-
-  const usedCC = c - baseCC;
-  const usedDC = c - baseDC;
-
-  const remHourC  = ACS_MAINTENANCE_RULES.C_HOURS  - usedCH;
-  const remHourD  = ACS_MAINTENANCE_RULES.D_HOURS  - usedDH;
-
-  const remCycleC = ACS_MAINTENANCE_RULES.C_CYCLES - usedCC;
-  const remCycleD = ACS_MAINTENANCE_RULES.D_CYCLES - usedDC;
-
-  // ✅ OVERDUE real si cualquiera se pasó
-  const isCOverdue = (remCalC <= 0) || (remHourC <= 0) || (remCycleC <= 0);
-  const isDOverdue = (remCalD <= 0) || (remHourD <= 0) || (remCycleD <= 0);
-
-  // ✅ Para UI Airwaysim necesitamos "days". Si vence por horas/ciclos y no tengo tasa,
-  // usamos calendario como display, PERO mantenemos overdue real por horas/ciclos.
-  // (Esto es aviación real: el límite existe aunque no sepamos la tasa exacta).
-  const nextC_days = remCalC;
-  const nextD_days = remCalD;
+  const remainingC = Math.floor(C_INTERVAL_DAYS - daysSinceC);
+  const remainingD = Math.floor(D_INTERVAL_DAYS - daysSinceD);
 
   return {
-    nextC_days,
-    nextD_days,
-    isCOverdue,
-    isDOverdue
+    nextC_days: remainingC,
+    nextD_days: remainingD,
+    isCOverdue: remainingC <= 0,
+    isDOverdue: remainingD <= 0
   };
 }
 
@@ -1376,13 +1373,12 @@ function ACS_applyCalendarMaintenanceProgress(ac) {
 }
 
 /* ============================================================
-   🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (AIRWAYSIM FORMAT)
+   🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (CALENDAR-SAFE)
    ------------------------------------------------------------
-   INPUT: resolver devuelve nextC_days / nextD_days (números)
-   OUTPUT UI:
-   - C: "10.1 months"
-   - D: "4.7 years"
-   - "OVERDUE" si <= 0
+   FIX ESTRUCTURAL:
+   - Elimina bloque duplicado fuera de función
+   - Unifica formato decimal
+   - Cierra correctamente la función
    ============================================================ */
 
 function ACS_applyMaintenanceComputedFields(ac) {
@@ -1390,36 +1386,25 @@ function ACS_applyMaintenanceComputedFields(ac) {
 
   const m = ACS_resolveMaintenanceStatus(ac);
 
-  // Helpers reales (aviación): mes promedio y año solar
-  const DAYS_PER_MONTH = 30.4375;
-  const DAYS_PER_YEAR  = 365.25;
-
-  const fmtMonths = (days) => {
-    if (days === null || days === undefined) return "—";
-    if (typeof days !== "number" || !isFinite(days)) return "—";
+  const fmt = (days) => {
+    if (days == null) return "—";
     if (days <= 0) return "OVERDUE";
-    const months = days / DAYS_PER_MONTH;
+
+    const months = days / 30.4375;
+    if (months >= 12) {
+      return `${(months / 12).toFixed(1)} years`;
+    }
     return `${months.toFixed(1)} months`;
   };
 
-  const fmtYears = (days) => {
-    if (days === null || days === undefined) return "—";
-    if (typeof days !== "number" || !isFinite(days)) return "—";
-    if (days <= 0) return "OVERDUE";
-    const years = days / DAYS_PER_YEAR;
-    return `${years.toFixed(1)} years`;
-  };
+  ac.nextC = fmt(m.nextC_days);
+  ac.nextD = fmt(m.nextD_days);
 
-  // ✅ AIRWAYSIM style
-  ac.nextC = fmtMonths(m.nextC_days);
-  ac.nextD = fmtYears(m.nextD_days);
+  ac.nextC_days = m.nextC_days;
+  ac.nextD_days = m.nextD_days;
 
-  ac.nextC_overdue = !!m.isCOverdue;
-  ac.nextD_overdue = !!m.isDOverdue;
-
-  // opcional (debug/UI futuro)
-  ac._maintC_days = (typeof m.nextC_days === "number") ? m.nextC_days : null;
-  ac._maintD_days = (typeof m.nextD_days === "number") ? m.nextD_days : null;
+  ac.nextC_overdue = m.isCOverdue;
+  ac.nextD_overdue = m.isDOverdue;
 
   return ac;
 }
