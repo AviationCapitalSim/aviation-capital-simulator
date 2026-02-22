@@ -730,8 +730,13 @@ function ACS_applyMaintenanceBaseline(ac) {
     }
   })();
 
-  if (!ac.lastCCheckDate) ac.lastCCheckDate = deliveredISO;
-  if (!ac.lastDCheckDate) ac.lastDCheckDate = deliveredISO;
+if (!ac.lastCCheckDate) {
+  ac.lastCCheckDate = getSimTime().toISOString();
+}
+
+if (!ac.lastDCheckDate) {
+  ac.lastDCheckDate = getSimTime().toISOString();
+}
 
   return ac;
 }
