@@ -809,7 +809,28 @@ function ACS_resolveMaintenanceStatus(ac) {
     };
   }
 
-  const now = getSimTime();
+ /* ============================================================
+   🟢 AUTO INITIALIZER — ACS_MyAircraft SAFE
+   ============================================================ */
+
+const now = getSimTime();
+
+// Usar campo real
+const deliveredDate = ac.delivered || now.toISOString();
+
+// Inicializar C si no existe
+if (ac.baselineCHours == null) {
+  ac.baselineCHours  = ac.hours  || 0;
+  ac.baselineCCycles = ac.cycles || 0;
+  ac.lastCCheckDate  = deliveredDate;
+}
+
+// Inicializar D si no existe
+if (ac.baselineDHours == null) {
+  ac.baselineDHours  = ac.hours  || 0;
+  ac.baselineDCycles = ac.cycles || 0;
+  ac.lastDCheckDate  = deliveredDate;
+}
 
   /* ===============================
      SAFE BASELINES
