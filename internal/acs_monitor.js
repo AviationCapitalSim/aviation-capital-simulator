@@ -345,5 +345,28 @@ async function runMasterReset(){
 
 if (btnReset) btnReset.addEventListener("click", runMasterReset);
 
+/* ============================================================
+   🛡️ FULL SYSTEM SCAN BUTTON
+   ============================================================ */
+
+const btnFullScan = document.getElementById("btnFullScan");
+const outFullScan = document.getElementById("outFullScan");
+
+async function runFullScan(){
+
+  if (!window.ACS_DIAG){
+    outFullScan.textContent = "Diagnostics engine not loaded.";
+    return;
+  }
+
+  const result = window.ACS_DIAG.fullScan();
+
+  outFullScan.textContent = JSON.stringify(result, null, 2);
+}
+
+if (btnFullScan){
+  btnFullScan.addEventListener("click", runFullScan);
+}
+  
 })();
 
