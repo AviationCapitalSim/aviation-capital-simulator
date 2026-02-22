@@ -691,6 +691,15 @@ function ACS_applyMaintenanceBaseline(ac) {
   return ac;
 }
 
+// 🟢 FIX FASE 2 — Inicializar fechas si no existen
+if (!ac.lastCCheckDate) {
+  ac.lastCCheckDate = ac.deliveredDate || new Date().toISOString();
+}
+if (!ac.lastDCheckDate) {
+  ac.lastDCheckDate = ac.deliveredDate || new Date().toISOString();
+
+}
+
 function ACS_getMaintenancePolicy() {
   return {
     autoC: localStorage.getItem("autoCcheck") === "true",
@@ -751,29 +760,19 @@ function ACS_checkMaintenanceAutoTrigger(ac) {
 
 function ACS_resolveMaintenanceStatus(ac) {
 
-  if (!ac) {
+  if (!ac || !ac.lastCCheckDate || !ac.lastDCheckDate) {
     return {
-      nextC_months: "—",
-      nextD_months: "—",
+      nextC: "—",
+      nextD: "—",
       isCOverdue: false,
       isDOverdue: false
     };
   }
 
-  // Si está en mantenimiento activo, no mostrar cálculo
   if (ac.status === "Maintenance") {
     return {
-      nextC_months: "—",
-      nextD_months: "—",
-      isCOverdue: false,
-      isDOverdue: false
-    };
-  }
-
-  if (!ac.lastCCheckDate || !ac.lastDCheckDate) {
-    return {
-      nextC_months: "—",
-      nextD_months: "—",
+      nextC: "—",
+      nextD: "—",
       isCOverdue: false,
       isDOverdue: false
     };
@@ -784,25 +783,23 @@ function ACS_resolveMaintenanceStatus(ac) {
   const lastC = new Date(ac.lastCCheckDate);
   const lastD = new Date(ac.lastDCheckDate);
 
-  const C_INTERVAL_MONTHS = 12;
-  const D_INTERVAL_MONTHS = 96;
+  const C_INTERVAL_YEARS = 1;
+  const D_INTERVAL_YEARS = 8;
 
-  const diffC =
-    (now.getUTCFullYear() - lastC.getUTCFullYear()) * 12 +
-    (now.getUTCMonth() - lastC.getUTCMonth());
+  const yearsSinceC =
+    (now - lastC) / (1000 * 60 * 60 * 24 * 365);
 
-  const diffD =
-    (now.getUTCFullYear() - lastD.getUTCFullYear()) * 12 +
-    (now.getUTCMonth() - lastD.getUTCMonth());
+  const yearsSinceD =
+    (now - lastD) / (1000 * 60 * 60 * 24 * 365);
 
-  const remainingC = C_INTERVAL_MONTHS - diffC;
-  const remainingD = D_INTERVAL_MONTHS - diffD;
+  const remainingC = C_INTERVAL_YEARS - yearsSinceC;
+  const remainingD = D_INTERVAL_YEARS - yearsSinceD;
 
   return {
-    nextC_months: remainingC,
-    nextD_months: remainingD,
-    isCOverdue: remainingC < 0,
-    isDOverdue: remainingD < 0
+    nextC: remainingC,
+    nextD: remainingD,
+    isCOverdue: remainingC <= 0,
+    isDOverdue: remainingD <= 0
   };
 }
 
@@ -1394,13 +1391,13 @@ function ACS_applyMaintenanceComputedFields(ac) {
   ac.nextC_overdue = m.isCOverdue;
   ac.nextD_overdue = m.isDOverdue;
 
-  ac.nextC = m.isCOverdue
-  ? "OVERDUE"
-  : `${m.nextC_months} months`;
+    ac.nextC = m.isCOverdue
+    ? "OVERDUE"
+    : (typeof m.nextC === "number" ? m.nextC.toFixed(1) : "—");
 
   ac.nextD = m.isDOverdue
-  ? "OVERDUE"
-  : `${m.nextD_months} months`;
+    ? "OVERDUE"
+    : (typeof m.nextD === "number" ? m.nextD.toFixed(1) : "—");
    
   return ac;
 }
