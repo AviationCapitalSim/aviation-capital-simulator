@@ -2549,6 +2549,45 @@ if (typeof registerTimeListener === "function") {
 }
 
 /* ============================================================
+   🟢 FASE 2 — DYNAMIC TIME-BASED MAINTENANCE ENGINE
+   ------------------------------------------------------------
+   • C = 1.0 año
+   • D = 8.0 años
+   • Formato decimal
+   • Basado en lastC / lastD
+   ============================================================ */
+
+function ACS_calculateMaintenanceStatus(ac) {
+
+  if (!ac || !ac.lastC || !ac.lastD) {
+    return {
+      remainingC: 1.0,
+      remainingD: 8.0
+    };
+  }
+
+  const now = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+    ? new Date(ACS_TIME.currentTime)
+    : new Date();
+
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+  const lastCDate = new Date(ac.lastC);
+  const lastDDate = new Date(ac.lastD);
+
+  const daysSinceC = (now - lastCDate) / MS_PER_DAY;
+  const daysSinceD = (now - lastDDate) / MS_PER_DAY;
+
+  const remainingC = 1 - (daysSinceC / 365);
+  const remainingD = 8 - (daysSinceD / (365 * 8));
+
+  return {
+    remainingC: Math.max(-5, remainingC),
+    remainingD: Math.max(-5, remainingD)
+  };
+}
+
+/* ============================================================
    🧠 MA-1 — TIME ENGINE HOOK (ACS OFFICIAL)
    ------------------------------------------------------------
    Purpose:
