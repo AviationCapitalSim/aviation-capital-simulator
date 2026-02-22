@@ -294,4 +294,56 @@ runAll();
 const btn = el("btnRefresh");
 if (btn) btn.addEventListener("click", runAll);
 
+/* ============================================================
+   🧨 MASTER RESET (FULL WIPE) — INTERNAL MONITOR ONLY
+   ------------------------------------------------------------
+   Safety:
+   - Requires typed confirmation: RESET ACS
+   - Writes a report to #outResetLog
+   ============================================================ */
+const btnReset = el("btnMasterReset");
+const outReset = el("outResetLog");
+
+async function runMasterReset(){
+  try{
+    if (outReset) outReset.textContent = "Waiting confirmation…";
+
+    const typed = prompt("⚠️ MASTER RESET FULL WIPE\n\nType exactly: RESET ACS\n\nThis will delete EVERYTHING.", "");
+    if (typed !== "RESET ACS") {
+      if (outReset) outReset.textContent = "Cancelled (confirmation mismatch).";
+      return;
+    }
+
+    if (typeof window.ACS_MasterReset !== "function") {
+      if (outReset) outReset.textContent = "ERROR: ACS_MasterReset() not loaded.";
+      return;
+    }
+
+    if (outReset) outReset.textContent = "Running FULL WIPE…";
+
+    const report = await window.ACS_MasterReset();
+
+    if (outReset) {
+      outReset.textContent = [
+        `OK: ${report && report.ok ? "true" : "false"}`,
+        `TS: ${report && report.ts ? report.ts : "—"}`,
+        "",
+        "STEPS:",
+        (report && report.steps && report.steps.length) ? report.steps.map(s => `- ${s}`).join("\n") : "- (none)",
+        "",
+        "ERRORS:",
+        (report && report.errors && report.errors.length) ? report.errors.map(e => `- ${e}`).join("\n") : "- (none)",
+        "",
+        "Redirecting to index…"
+      ].join("\n");
+    }
+
+  }catch(e){
+    if (outReset) outReset.textContent = `FATAL ERROR: ${e && e.message ? e.message : String(e)}`;
+  }
+}
+
+if (btnReset) btnReset.addEventListener("click", runMasterReset);
+
 })();
+
