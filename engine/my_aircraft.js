@@ -804,6 +804,24 @@ function ACS_resolveMaintenanceStatus(ac) {
   const lastC = ac.lastCCheckDate || ac.deliveredDate || ac.delivered;
   const lastD = ac.lastDCheckDate || ac.deliveredDate || ac.delivered;
 
+  /* ============================================================
+   🟢 FIX — INVALID FUTURE DATES NORMALIZER (AIRWAYSIM SAFE)
+   ------------------------------------------------------------
+   - Si lastC o lastD están en el futuro respecto al sim time
+   - Se normalizan al deliveredDate
+   ============================================================ */
+
+let safeLastC = lastC;
+let safeLastD = lastD;
+
+if (new Date(lastC) > now) {
+  safeLastC = ac.deliveredDate || now.toISOString();
+}
+
+if (new Date(lastD) > now) {
+  safeLastD = ac.deliveredDate || now.toISOString();
+}
+   
   if (!lastC || !lastD) {
     return {
       nextC_months: "—",
@@ -822,8 +840,8 @@ function ACS_resolveMaintenanceStatus(ac) {
     return d;
   };
 
-  const nextCDate = addMonths(lastC, C_INTERVAL_MONTHS);
-  const nextDDate = addMonths(lastD, D_INTERVAL_MONTHS);
+  const nextCDate = addMonths(safeLastC, C_INTERVAL_MONTHS);
+  const nextDDate = addMonths(safeLastD, D_INTERVAL_MONTHS);
 
   const monthDiff = (future) =>
     (future - now) / (1000 * 60 * 60 * 24 * 30.4375);
