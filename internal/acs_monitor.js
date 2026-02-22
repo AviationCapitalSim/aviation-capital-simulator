@@ -367,6 +367,56 @@ async function runFullScan(){
 if (btnFullScan){
   btnFullScan.addEventListener("click", runFullScan);
 }
-  
+
+/* ============================================================
+   🟢 TIME ENGINE CONTROL PANEL (Monitor)
+   ============================================================ */
+
+function updateTimeControlStatus() {
+  const out = document.getElementById("outTimeControl");
+  if (!out) return;
+
+  const frozen = localStorage.getItem("acs_frozen_time");
+  const simTime = localStorage.getItem("ACS_LAST_SIM_TIME");
+
+  let status = frozen === "true" ? "OFF" : "ON";
+
+  out.textContent =
+    "ENGINE STATUS: " + status + "\n\n" +
+    "Frozen Flag: " + frozen + "\n" +
+    "Last Sim Time: " + simTime;
+}
+
+document.getElementById("btnStartTime")?.addEventListener("click", () => {
+  localStorage.setItem("acs_frozen_time", "false");
+
+  if (typeof startACSTime === "function") {
+    startACSTime();
+  }
+
+  updateTimeControlStatus();
+});
+
+document.getElementById("btnStopTime")?.addEventListener("click", () => {
+  localStorage.setItem("acs_frozen_time", "true");
+
+  if (typeof stopACSTime === "function") {
+    stopACSTime();
+  }
+
+  updateTimeControlStatus();
+});
+
+document.getElementById("btnResetCycle")?.addEventListener("click", () => {
+
+  if (typeof window.ACS_MasterReset === "function") {
+    window.ACS_MasterReset();
+  }
+
+  updateTimeControlStatus();
+});
+
+setTimeout(updateTimeControlStatus, 300);
+   
 })();
 
