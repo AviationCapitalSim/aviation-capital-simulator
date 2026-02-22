@@ -675,67 +675,39 @@ function ACS_getConditionLetter(percent) {
 function ACS_applyMaintenanceBaseline(ac) {
   if (!ac) return ac;
 
-  // Si ya existe cualquier referencia de C o D, NO tocar baseline
-  if (
-    ac.baselineCHours !== undefined ||
-    ac.baselineDHours !== undefined ||
-    ac.lastCCheckDate ||
-    ac.lastDCheckDate
-  ) {
+  // Si ya tiene baseline válido → no tocar
+  if (ac.lastCCheckDate || ac.lastDCheckDate) {
     return ac;
   }
 
-  // Seguridad
-  if (typeof ac.hours !== "number") return ac;
+  const deliveredISO =
+    ac.deliveredDate ||
+    ac.delivered ||
+    (typeof ac.enteredFleetAt === "number"
+      ? new Date(ac.enteredFleetAt).toISOString()
+      : getSimTime().toISOString());
 
-  // 🔧 Intervalos estándar (legacy hours baseline para Used / imports)
-  const C_INTERVAL_HOURS = 1200;   // C-Check
-  const D_INTERVAL_HOURS = 6000;   // D-Check
+  // Avión NUEVO (sin horas)
+  if ((ac.hours || 0) === 0) {
+    ac.lastCCheckDate = deliveredISO;
+    ac.lastDCheckDate = deliveredISO;
+    ac.baselineCHours = 0;
+    ac.baselineDHours = 0;
+    return ac;
+  }
 
-  // Calcular último múltiplo técnico
-  const baselineC = Math.floor(ac.hours / C_INTERVAL_HOURS) * C_INTERVAL_HOURS;
-  const baselineD = Math.floor(ac.hours / D_INTERVAL_HOURS) * D_INTERVAL_HOURS;
+  // Avión USADO (calcular último múltiplo técnico real)
+  const C_INT = ACS_MAINTENANCE_RULES.C_HOURS;
+  const D_INT = ACS_MAINTENANCE_RULES.D_HOURS;
 
-  // Guardar baseline
-  ac.baselineCHours = baselineC;
-  ac.baselineDHours = baselineD;
+  ac.baselineCHours = Math.floor(ac.hours / C_INT) * C_INT;
+  ac.baselineDHours = Math.floor(ac.hours / D_INT) * D_INT;
 
-  // Flags informativos (opcional, útil para debug/UI)
-  ac.maintenanceBaselineApplied = true;
-
-  /* ============================================================
-     🟢 MA-F4 — INIT LAST C/D DATES (CANONICAL, NO GLOBAL 'ac')
-     ------------------------------------------------------------
-     Fix:
-     - Evita ReferenceError por 'ac' fuera de scope
-     - Garantiza que aviones NUEVOS tengan lastC/lastD desde delivery
-     - Base para cálculo calendario (C=12m, D=96m)
-     ============================================================ */
-
-  const deliveredISO = (() => {
-    // preferir deliveredDate / delivered (ISO)
-    if (typeof ac.deliveredDate === "string" && ac.deliveredDate) return ac.deliveredDate;
-    if (typeof ac.delivered === "string" && ac.delivered) return ac.delivered;
-
-    // enteredFleetAt puede ser epoch ms
-    if (typeof ac.enteredFleetAt === "number" && isFinite(ac.enteredFleetAt)) {
-      return new Date(ac.enteredFleetAt).toISOString();
-    }
-
-    // fallback: ahora simulado (no ideal, pero seguro)
-    try {
-      return getSimTime().toISOString();
-    } catch (e) {
-      return new Date().toISOString();
-    }
-  })();
-
-  if (!ac.lastCCheckDate) ac.lastCCheckDate = deliveredISO;
-  if (!ac.lastDCheckDate) ac.lastDCheckDate = deliveredISO;
+  ac.lastCCheckDate = deliveredISO;
+  ac.lastDCheckDate = deliveredISO;
 
   return ac;
 }
-
 
 function ACS_getMaintenancePolicy() {
   return {
