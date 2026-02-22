@@ -17,17 +17,32 @@
 const ACS_FLEET_KEY = "ACS_MyAircraft";
 
 /* ============================================================
-   🟧 MA-8.1 — MAINTENANCE CONSTANTS (CANONICAL)
+   🟦 MA-1 — HYBRID MAINTENANCE RULES (AVIATION REAL)
+   ------------------------------------------------------------
+   - C & D trabajan bajo el mismo motor
+   - Vence por el primero que ocurra:
+       • Calendar
+       • Flight Hours
+       • Flight Cycles
+   - D reinicia también el ciclo C
+   - Escalable para 700+ jugadores
    ============================================================ */
 
 const ACS_MAINTENANCE_RULES = {
-  C_CHECK_MONTHS: 12,
-  D_CHECK_MONTHS: 96, // 8 años
 
-  USED_AIRCRAFT_AB_SERVICE_DAYS: 7,
+  // ───────────── C-CHECK ─────────────
+  C_MONTHS: 12,
+  C_HOURS: 1200,
+  C_CYCLES: 1000,
 
-  C_CHECK_RECOVERY: 20,
-  D_CHECK_RECOVERY: 100
+  // ───────────── D-CHECK ─────────────
+  D_MONTHS: 96,          // 8 years
+  D_HOURS: 24000,
+  D_CYCLES: 20000,
+
+  // ───────────── DOWNTIME ─────────────
+  C_RECOVERY_DAYS: 20,
+  D_RECOVERY_DAYS: 100
 };
 
 /* ============================================================
@@ -773,24 +788,19 @@ function ACS_checkMaintenanceAutoTrigger(ac) {
 }
 
 /* ============================================================
-   🟦 MA-8.5.B — MAINTENANCE RESOLVER (C & D) [READ-ONLY]
+   🟦 MA-2 — HYBRID MAINTENANCE RESOLVER (REAL AVIATION)
    ------------------------------------------------------------
-   Fix:
-   - NO muestra Next C/D si está en Maintenance
-   - El recalculo ocurre SOLO tras finalizar el servicio
+   - C & D vencen por:
+       • Calendar
+       • Hours
+       • Cycles
+   - Se toma el menor remanente
+   - D reinicia C (baseline ya controlado en completion)
    ============================================================ */
 
 function ACS_resolveMaintenanceStatus(ac) {
-  if (!ac) {
-    return {
-      nextC_months: "—",
-      nextD_years: "—",
-      isCOverdue: false,
-      isDOverdue: false
-    };
-  }
 
-  if (ac.status === "Pending Delivery") {
+  if (!ac) {
     return {
       nextC_months: "—",
       nextD_years: "—",
@@ -801,27 +811,13 @@ function ACS_resolveMaintenanceStatus(ac) {
 
   const now = getSimTime();
 
-  const lastC = ac.lastCCheckDate || ac.deliveredDate || ac.delivered;
-  const lastD = ac.lastDCheckDate || ac.deliveredDate || ac.delivered;
+  /* ===============================
+     SAFE BASELINES
+     =============================== */
 
-  /* ============================================================
-   🟢 FIX — INVALID FUTURE DATES NORMALIZER (AIRWAYSIM SAFE)
-   ------------------------------------------------------------
-   - Si lastC o lastD están en el futuro respecto al sim time
-   - Se normalizan al deliveredDate
-   ============================================================ */
+  const lastC = ac.lastCCheckDate || ac.deliveredDate;
+  const lastD = ac.lastDCheckDate || ac.deliveredDate;
 
-let safeLastC = lastC;
-let safeLastD = lastD;
-
-if (new Date(lastC) > now) {
-  safeLastC = ac.deliveredDate || now.toISOString();
-}
-
-if (new Date(lastD) > now) {
-  safeLastD = ac.deliveredDate || now.toISOString();
-}
-   
   if (!lastC || !lastD) {
     return {
       nextC_months: "—",
@@ -831,31 +827,42 @@ if (new Date(lastD) > now) {
     };
   }
 
-  const C_INTERVAL_MONTHS = 12;
-  const D_INTERVAL_MONTHS = 96;
+  const monthsBetween = (d1, d2) =>
+    (d2 - d1) / (1000 * 60 * 60 * 24 * 30.4375);
 
-  const addMonths = (iso, months) => {
-    const d = new Date(iso);
-    d.setUTCMonth(d.getUTCMonth() + months);
-    return d;
-  };
+  /* ===============================
+     C-CHECK CALCULATIONS
+     =============================== */
 
-  const nextCDate = addMonths(safeLastC, C_INTERVAL_MONTHS);
-  const nextDDate = addMonths(safeLastD, D_INTERVAL_MONTHS);
+  const monthsUsedC = monthsBetween(new Date(lastC), now);
+  const hoursUsedC  = (ac.hours  || 0) - (ac.baselineCHours  || 0);
+  const cyclesUsedC = (ac.cycles || 0) - (ac.baselineCCycles || 0);
 
-  const monthDiff = (future) =>
-    (future - now) / (1000 * 60 * 60 * 24 * 30.4375);
+  const remCalC   = ACS_MAINTENANCE_RULES.C_MONTHS - monthsUsedC;
+  const remHourC  = (ACS_MAINTENANCE_RULES.C_HOURS  - hoursUsedC) / 100;
+  const remCycleC = (ACS_MAINTENANCE_RULES.C_CYCLES - cyclesUsedC) / 100;
 
-  const remC_months = monthDiff(nextCDate);
-  const remD_months = monthDiff(nextDDate);
+  const minC = Math.min(remCalC, remHourC, remCycleC);
 
-  const remD_years = remD_months / 12;
+  /* ===============================
+     D-CHECK CALCULATIONS
+     =============================== */
+
+  const monthsUsedD = monthsBetween(new Date(lastD), now);
+  const hoursUsedD  = (ac.hours  || 0) - (ac.baselineDHours  || 0);
+  const cyclesUsedD = (ac.cycles || 0) - (ac.baselineDCycles || 0);
+
+  const remCalD   = ACS_MAINTENANCE_RULES.D_MONTHS - monthsUsedD;
+  const remHourD  = (ACS_MAINTENANCE_RULES.D_HOURS  - hoursUsedD) / 300;
+  const remCycleD = (ACS_MAINTENANCE_RULES.D_CYCLES - cyclesUsedD) / 300;
+
+  const minD = Math.min(remCalD, remHourD, remCycleD);
 
   return {
-    nextC_months: remC_months,
-    nextD_years: remD_years,
-    isCOverdue: remC_months < 0,
-    isDOverdue: remD_years < 0
+    nextC_months: minC,
+    nextD_years: minD / 12,
+    isCOverdue: minC <= 0,
+    isDOverdue: minD <= 0
   };
 }
 
@@ -2377,17 +2384,25 @@ function ACS_processMaintenanceCompletion() {
       })();
 
       // ✅ Reset REAL al finalizar (DESPUÉS del log)
+       
       if (t === "C") {
-        ac.baselineCHours = ac.hours;
-        ac.lastCCheckDate = now.toISOString();
-      }
 
-      if (t === "D") {
-        ac.baselineDHours = ac.hours;
-        ac.baselineCHours = ac.hours;
-        ac.lastDCheckDate = now.toISOString();
-        ac.lastCCheckDate = now.toISOString();
-      }
+  ac.baselineCHours   = ac.hours;
+  ac.baselineCCycles  = ac.cycles;
+  ac.lastCCheckDate   = now.toISOString();
+}
+
+if (t === "D") {
+
+  // D reinicia TODO
+  ac.baselineDHours   = ac.hours;
+  ac.baselineDCycles  = ac.cycles;
+  ac.lastDCheckDate   = now.toISOString();
+
+  ac.baselineCHours   = ac.hours;
+  ac.baselineCCycles  = ac.cycles;
+  ac.lastCCheckDate   = now.toISOString();
+}
 
       // Liberar
       ac.status = "Active";
