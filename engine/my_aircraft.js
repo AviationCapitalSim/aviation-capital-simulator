@@ -1384,14 +1384,14 @@ function ACS_applyMaintenanceComputedFields(ac) {
   const fmtMonths = (v) => {
     if (v === "—") return "—";
     if (typeof v !== "number" || !isFinite(v)) return "—";
-    if (v < 0) return `OVERDUE`;
+    if (v < 0) return "OVERDUE";
     return `${v.toFixed(1)} months`;
   };
 
   const fmtYears = (v) => {
     if (v === "—") return "—";
     if (typeof v !== "number" || !isFinite(v)) return "—";
-    if (v < 0) return `OVERDUE`;
+    if (v < 0) return "OVERDUE";
     return `${v.toFixed(1)} years`;
   };
 
