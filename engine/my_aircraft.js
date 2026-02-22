@@ -1370,10 +1370,10 @@ function ACS_applyCalendarMaintenanceProgress(ac) {
 /* ============================================================
    🟦 MA-8.5.2 — APPLY COMPUTED MAINTENANCE FIELDS (CALENDAR-SAFE)
    ------------------------------------------------------------
-   Fix B1:
-   - Maintenance Hold usa SOLO calendario
-   - NO recalcula C/D desde horas cuando está HOLD
-   - Días siguen corriendo aunque el jugador no entre
+   FIX ESTRUCTURAL:
+   - Elimina bloque duplicado fuera de función
+   - Unifica formato decimal
+   - Cierra correctamente la función
    ============================================================ */
 
 function ACS_applyMaintenanceComputedFields(ac) {
