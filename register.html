@@ -729,17 +729,59 @@ async function handleRegister(event) {
 
   const passwordHash = await hashPassword(password);
 
-  const payload = {
-    fullName,
-    email,
-    country,
-    dob,
-    ip: "",
-    passwordHash,
-    termsAccepted: true,
-    termsVersion: "1.0",
-    termsAcceptedAt: new Date().toISOString(),
-  };
+  if (data.action === "register") {
+
+  const usersSheet = ss.getSheetByName("USERS");
+  const authSheet  = ss.getSheetByName("USERS_AUTH");
+
+  const existingEmails = authSheet
+    .getRange(2,2,authSheet.getLastRow()-1,1)
+    .getValues()
+    .flat()
+    .map(e => String(e).toLowerCase());
+
+  if (existingEmails.includes(data.email.toLowerCase())) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        status:"error",
+        msg:"Email already registered"
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const user_id = "USR-" + Date.now();
+
+  usersSheet.appendRow([
+    user_id,
+    data.fullName,
+    data.email.toLowerCase(),
+    data.country,
+    data.dob,
+    "",
+    new Date(),
+    true,
+    "",
+    data.ip || ""
+  ]);
+
+  authSheet.appendRow([
+    user_id,
+    data.email.toLowerCase(),
+    data.passwordHash,
+    "",
+    "",
+    "",
+    0,
+    ""
+  ]);
+
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      status:"success",
+      user_id
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
   const ACS_API_URL =
     "https://script.google.com/macros/s/AKfycby1XOb40ciRLjVOZpKEAaCZPU_m1f1IUuF7g0f7yLUQ8LxRLChuSQEU7jwLAC2USIb0BA/exec";
