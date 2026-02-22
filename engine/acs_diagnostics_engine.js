@@ -166,33 +166,29 @@ DIAG.fullScan = function(){
   }
 
   /* ============================================================
-     🟢 SCHEDULE MODULE
-     ============================================================ */
+   🟢 SCHEDULE MODULE (OPERATIONAL SAFE)
+   ============================================================ */
 
-  const schedule = safeParse("scheduleItems");
+const schedule = safeParse("scheduleItems");
 
-  if (schedule === "__CORRUPTED__"){
-    critical("SCHEDULE", "scheduleItems JSON corrupted.");
-  } else if (!Array.isArray(schedule)){
-    critical("SCHEDULE", "scheduleItems is not an array.");
-  } else {
-    const aircraftAssignments = {};
-    schedule.forEach(flight=>{
-      if (!flight.aircraftId){
-        warn("SCHEDULE", "Flight without aircraftId.");
-      } else {
-        if (aircraftAssignments[flight.aircraftId]){
-          critical("SCHEDULE", `Aircraft ${flight.aircraftId} assigned multiple times.`);
-        }
-        aircraftAssignments[flight.aircraftId] = true;
-      }
-    });
+if (schedule === "__CORRUPTED__"){
+  critical("SCHEDULE", "scheduleItems JSON corrupted.");
+} else if (!Array.isArray(schedule)){
+  critical("SCHEDULE", "scheduleItems is not an array.");
+} else {
 
-    report.modules.schedule = {
-      totalFlights: schedule.length
-    };
-  }
+  let missingAircraftRefs = 0;
 
+  schedule.forEach(flight=>{
+    if (!flight.aircraftId){
+      warn("SCHEDULE", "Flight without aircraftId.");
+    }
+  });
+
+  report.modules.schedule = {
+    totalFlights: schedule.length
+  };
+}
   /* ============================================================
      🟢 FLEET MODULE (ACS_MyAircraft)
      ============================================================ */
@@ -223,6 +219,12 @@ DIAG.fullScan = function(){
     report.modules.fleet = {
       totalAircraft: fleet.length
     };
+
+     /* --- Cross-check Fleet ↔ Schedule --- */
+    if (Array.isArray(schedule) && schedule.length > 0 && fleet.length === 0){
+    critical("FLEET", "Flights exist but fleet is empty (structural inconsistency).");
+    }
+     
   }
 
   /* ============================================================
@@ -254,20 +256,30 @@ DIAG.fullScan = function(){
   }
 
   /* ============================================================
-     🟢 TIME MODULE
-     ============================================================ */
+   🟢 TIME MODULE (FLEXIBLE FORMAT)
+   ============================================================ */
 
-  const simTime = safeParse("ACS_LAST_SIM_TIME");
+const rawTime = localStorage.getItem("ACS_LAST_SIM_TIME");
 
-  if (simTime === "__CORRUPTED__"){
-    critical("TIME", "ACS_LAST_SIM_TIME corrupted.");
-  } else if (!simTime){
-    warn("TIME", "No ACS_LAST_SIM_TIME detected.");
+if (!rawTime){
+  warn("TIME", "No ACS_LAST_SIM_TIME detected.");
+} else {
+  let parsedTime;
+
+  try{
+    parsedTime = JSON.parse(rawTime);
+  }catch(e){
+    parsedTime = rawTime;
   }
 
-  report.modules.time = {
-    simTimeExists: !!simTime
-  };
+  if (!parsedTime){
+    warn("TIME", "ACS_LAST_SIM_TIME empty.");
+  }
+}
+
+report.modules.time = {
+  simTimeExists: !!rawTime
+};
 
   /* ============================================================
      🟢 STORAGE HEALTH
@@ -286,8 +298,11 @@ DIAG.fullScan = function(){
     warn("STORAGE", "Unable to estimate storage size.");
   }
 
-  if (report.score < 0) report.score = 0;
+if (report.score < 0) report.score = 0;
 
+if (report.overall === "CRITICAL" && report.score > 40){
+  report.score = 40;
+}
   return report;
 };
 
