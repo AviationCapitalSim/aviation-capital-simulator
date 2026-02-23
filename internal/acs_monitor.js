@@ -382,8 +382,12 @@ function updateTimeControlStatus() {
   const frozen = localStorage.getItem("acs_frozen_time");
   const simTime = localStorage.getItem("ACS_LAST_SIM_TIME");
 
-  out.textContent =
-    "ENGINE STATUS: " + status + "\n\n" +
+  const statusColor = status === "ON" ? "#00ff80" : "#ff4040";
+
+  out.innerHTML =
+    "ENGINE STATUS: <span style='color:" + statusColor + "; font-weight:600'>" 
+    + status + 
+    "</span>\n\n" +
     "Frozen Time: " + (frozen || "—") + "\n" +
     "Last Sim Time: " + (simTime || "—");
 }
@@ -391,13 +395,13 @@ function updateTimeControlStatus() {
 /* ================================
    ▶ START
 ================================ */
+   
 document.getElementById("btnStartTime")?.addEventListener("click", () => {
 
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
 
   cycle.status = "ON";
 
-  // Si nunca arrancó, inicializar realStartDate
   if (!cycle.realStartDate) {
     cycle.realStartDate = new Date().toISOString();
   }
@@ -410,11 +414,11 @@ document.getElementById("btnStartTime")?.addEventListener("click", () => {
 /* ================================
    ⏸ STOP (FREEZE CORRECTO)
 ================================ */
+   
 document.getElementById("btnStopTime")?.addEventListener("click", () => {
 
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
 
-  // Guardar el tiempo actual antes de apagar
   if (typeof window.ACS_TIME !== "undefined" && window.ACS_TIME.currentTime instanceof Date) {
     localStorage.setItem(
       "acs_frozen_time",
@@ -430,14 +434,32 @@ document.getElementById("btnStopTime")?.addEventListener("click", () => {
 });
 
 /* ================================
-   ♻ RESET CYCLE
+   ♻ RESET CYCLE (TIME ENGINE SAFE)
 ================================ */
+   
 document.getElementById("btnResetCycle")?.addEventListener("click", () => {
 
-  if (typeof window.ACS_MasterReset === "function") {
-    window.ACS_MasterReset();
+  // 1️⃣ Parar motor si está activo
+  if (typeof stopACSTime === "function") {
+    stopACSTime();
   }
 
+  // 2️⃣ Resetear ciclo
+  const newCycle = {
+    realStartDate: null,
+    status: "OFF"
+  };
+
+  localStorage.setItem("ACS_Cycle", JSON.stringify(newCycle));
+
+  // 3️⃣ Resetear tiempo congelado a 1940
+  const simStart = new Date("1940-01-01T00:00:00Z");
+  localStorage.setItem("acs_frozen_time", simStart.toISOString());
+
+  // 4️⃣ Disparar evento de reset global
+  localStorage.setItem("acs_reset", Date.now());
+
+  // 5️⃣ Refrescar panel
   updateTimeControlStatus();
 });
 
