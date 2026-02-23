@@ -372,20 +372,48 @@ function updatePendingDeliveries() {
       return;
     }
 
-    let pendingAircraft = {
-   // ... tu objeto actual
-   };
+   // =============================
+// 🟢 PENDING AIRCRAFT OBJECT
+// =============================
 
-   pendingAircraft = ACS_applyMaintenanceBaseline(pendingAircraft);
-   pendingAircraft = ACS_applyMaintenanceComputedFields(pendingAircraft);
+let pendingAircraft = {
 
-   pendingForTable.push(pendingAircraft);     
-     
-    // ✅ Mantener PENDING REAL (solo los no entregados)
-     
-    if (entry.__delivered !== true) {
+  __pendingKey: entry.__pendingKey || `PEND_${pIndex}_${Date.now()}`,
 
-    pendingForTable.push({
+  registration: entry.registration && /^YV-\d{4}$/.test(entry.registration)
+    ? entry.registration
+    : ACS_generateRegistration(),
+
+  manufacturer: entry.manufacturer,
+  model: entry.model,
+  family: entry.family || "",
+
+  status: "Pending Delivery",
+
+  hours: entry.hours ?? 0,
+  cycles: entry.cycles ?? 0,
+
+  conditionPercent: entry.conditionPercent ?? 100,
+
+  base: getCurrentBaseICAO(),
+
+  deliveryDate: entry.deliveryDate,
+  deliveredDate: null,
+
+  age: entry.age || 0,
+
+  lastCCheckDate: entry.lastCCheckDate || null,
+  lastDCheckDate: entry.lastDCheckDate || null,
+
+  isPending: true
+};
+
+// 🔵 Aplicar baseline REAL si es usado
+pendingAircraft = ACS_applyMaintenanceBaseline(pendingAircraft);
+pendingAircraft = ACS_applyMaintenanceComputedFields(pendingAircraft);
+
+// 🔵 PUSH ÚNICO
+pendingForTable.push(pendingAircraft);
 
   /* ===============================
      IDENTIDAD
