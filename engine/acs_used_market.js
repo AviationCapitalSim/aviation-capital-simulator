@@ -326,7 +326,7 @@ if (ac.condition === "B") conditionPercent = 80 + Math.floor(Math.random() * 8);
 if (ac.condition === "C") conditionPercent = 68 + Math.floor(Math.random() * 10);
 
 /* --- Generar historial C/D coherente con edad --- */
-const monthsAge = age * 12;
+
 const MS_PER_DAY = 86400000;
 
 const C_INTERVAL_MONTHS = 12;
