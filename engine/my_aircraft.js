@@ -1539,12 +1539,12 @@ function ACS_applyIdleVisualStatus(ac) {
 
 /* ============================================================
    🟦 C.3 — Render Full Fleet Table (Active + Pending)
+   FIXED STRUCTURE — 23 FEB 2026
    ============================================================ */
 
 function renderFleetTable() {
 
   const list = ACS_getFleetForUI();
-
   fleetTableBody.innerHTML = "";
 
   if (!list || list.length === 0) {
@@ -1554,14 +1554,12 @@ function renderFleetTable() {
 
   list.forEach(ac => {
 
-  // 🟢 APLICAR MOTOR REAL DE MANTENIMIENTO ANTES DE RENDER
-     
-  
-  ac = ACS_applyMaintenanceBaseline(ac);
-  ac = ACS_applyMaintenanceHold(ac);
-  ac = ACS_applyMaintenanceComputedFields(ac);
-}
-  if (!passesFilters(ac)) return;
+    // 🟢 Aplicar pipeline antes de render
+    ac = ACS_applyMaintenanceBaseline(ac);
+    ac = ACS_applyMaintenanceHold(ac);
+    ac = ACS_applyMaintenanceComputedFields(ac);
+
+    if (!passesFilters(ac)) return;
 
     const row = document.createElement("tr");
 
@@ -1605,7 +1603,7 @@ function renderFleetTable() {
 
       <td>
         <button class="btn-action" onclick="openAircraftModal('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
-        View
+          View
         </button>
       </td>
     `;
