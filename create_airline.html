@@ -340,11 +340,19 @@
   </section>
 
   <footer>
-    <p>© 2025 Aviation Capital Simulator. All rights reserved.</p>
+    <p>© 2026 Aviation Capital Simulator. All rights reserved.</p>
   </footer>
 
 
 <!-- ❗AQUIE EMPIEZA SCRIPT -->
+
+<!-- ============================================================
+     ⏳ TIME ENGINE
+     ============================================================ -->
+<script src="acs_time_recovery.js"></script>
+<script src="time_engine.js"></script>
+     
+<script src="engine/acs_country_history.js"></script>
      
 <script>
 const realAirlines = [
@@ -383,8 +391,6 @@ function updateCountries() {
   });
 }
 
-
-
 function generateUniqueCodes() {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const random = n => Array.from({length:n},()=>letters[Math.floor(Math.random()*letters.length)]).join("");
@@ -403,9 +409,6 @@ function generateUniqueCodes() {
 }
 
 document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
-
-
-
 
 /* ============================================================
    HANDLE AIRLINE CREATION
@@ -601,14 +604,6 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 </script>
-
-<!-- ============================================================
-     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
-     ============================================================ -->
-<script src="acs_time_recovery.js"></script>
-<script src="time_engine.js"></script>
-
-<script src="engine/acs_country_history.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
