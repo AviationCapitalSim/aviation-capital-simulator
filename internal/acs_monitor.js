@@ -388,21 +388,27 @@ function updateTimeControlStatus() {
 }
 
 document.getElementById("btnStartTime")?.addEventListener("click", () => {
-  localStorage.setItem("acs_frozen_time", "false");
 
-  if (typeof startACSTime === "function") {
-    startACSTime();
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+
+  cycle.status = "ON";
+
+  if (!cycle.realStartDate) {
+    cycle.realStartDate = new Date().toISOString();
   }
+
+  localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
 
   updateTimeControlStatus();
 });
 
 document.getElementById("btnStopTime")?.addEventListener("click", () => {
-  localStorage.setItem("acs_frozen_time", "true");
 
-  if (typeof stopACSTime === "function") {
-    stopACSTime();
-  }
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+
+  cycle.status = "OFF";
+
+  localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
 
   updateTimeControlStatus();
 });
