@@ -2661,6 +2661,48 @@ if (typeof registerTimeListener === "function") {
 }
 
 /* ============================================================
+   🟢 MYA-REG-1 — FORCE NUMERIC REGISTRATION FORMAT
+   ------------------------------------------------------------
+   • Elimina matrículas legacy tipo YV-ABC
+   • Convierte TODO a YV-#### 
+   • Source of truth: ACS_MyAircraft
+   ============================================================ */
+
+(function normalizeAircraftRegistrations(){
+
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  let changed = false;
+
+  const existingNumeric = fleet
+    .map(a => a.registration)
+    .filter(r => /^YV-\d{4}$/.test(r));
+
+  let nextNumber = 1000;
+
+  fleet.forEach(ac => {
+
+    if (!/^YV-\d{4}$/.test(ac.registration)) {
+
+      while (existingNumeric.includes(`YV-${nextNumber}`)) {
+        nextNumber++;
+      }
+
+      ac.registration = `YV-${nextNumber}`;
+      existingNumeric.push(ac.registration);
+      nextNumber++;
+      changed = true;
+    }
+
+  });
+
+  if (changed) {
+    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+    console.warn("🛠 Registrations normalized to numeric format (YV-####)");
+  }
+
+})();
+
+/* ============================================================
    🟢 FASE 2 — DYNAMIC TIME-BASED MAINTENANCE ENGINE
    ------------------------------------------------------------
    • C = 1.0 año
