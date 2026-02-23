@@ -372,53 +372,66 @@ function updatePendingDeliveries() {
       return;
     }
 
-   // =============================
-// 🟢 PENDING AIRCRAFT OBJECT
-// =============================
+// ✅ Mantener PENDING REAL (solo los no entregados)
+if (entry.__delivered !== true) {
 
-let pendingAircraft = {
+  // =============================
+  // 🟦 PENDING AIRCRAFT OBJECT
+  // =============================
 
-  __pendingKey: entry.__pendingKey || `PEND_${pIndex}_${Date.now()}`,
+  let pendingAircraft = {
 
-  registration: entry.registration && /^YV-\d{4}$/.test(entry.registration)
-    ? entry.registration
-    : ACS_generateRegistration(),
+    __pendingKey: entry.__pendingKey || `PEND_${pIndex}_${Date.now()}`,
 
-  manufacturer: entry.manufacturer,
-  model: entry.model,
-  family: entry.family || "",
+    registration: entry.registration && /^YV-\d{4}$/.test(entry.registration)
+      ? entry.registration
+      : (typeof ACS_generateRegistration === "function"
+          ? ACS_generateRegistration()
+          : "YV-0000"),
 
-  status: "Pending Delivery",
+    manufacturer: entry.manufacturer,
+    model: entry.model,
+    family: entry.family || "",
 
-  hours: entry.hours ?? 0,
-  cycles: entry.cycles ?? 0,
+    status: "Pending Delivery",
 
-  conditionPercent: entry.conditionPercent ?? 100,
+    hours: entry.hours ?? 0,
+    cycles: entry.cycles ?? 0,
+    conditionPercent: entry.conditionPercent ?? 100,
 
-  base: getCurrentBaseICAO(),
+    base: getCurrentBaseICAO(),
 
-  deliveryDate: entry.deliveryDate,
-  deliveredDate: null,
+    deliveryDate: entry.deliveryDate,
+    deliveredDate: null,
 
-  age: entry.age || 0,
+    age: entry.age || 0,
 
-  lastCCheckDate: entry.lastCCheckDate || null,
-  lastDCheckDate: entry.lastDCheckDate || null,
+    lastCCheckDate: entry.lastCCheckDate || null,
+    lastDCheckDate: entry.lastDCheckDate || null,
 
-  isPending: true
-};
+    isPending: true
+  };
 
-// Si no tenía matrícula válida, persistirla en pending original
-if (!entry.registration || !/^YV-\d{4}$/.test(entry.registration)) {
-  entry.registration = pendingAircraft.registration;
-}     
-// 🔵 Aplicar baseline REAL si es usado
-pendingAircraft = ACS_applyMaintenanceBaseline(pendingAircraft);
-pendingAircraft = ACS_applyMaintenanceComputedFields(pendingAircraft);
+  // 🔒 Persistir matrícula una sola vez
+  if (!entry.registration || !/^YV-\d{4}$/.test(entry.registration)) {
+    entry.registration = pendingAircraft.registration;
+  }
 
-// 🔵 PUSH ÚNICO
-pendingForTable.push(pendingAircraft);
+  // 🔒 Persistir pendingKey
+  if (!entry.__pendingKey) {
+    entry.__pendingKey = pendingAircraft.__pendingKey;
+  }
 
+  // Aplicar baseline real si corresponde
+  pendingAircraft = ACS_applyMaintenanceBaseline(pendingAircraft);
+  pendingAircraft = ACS_applyMaintenanceComputedFields(pendingAircraft);
+
+  // Push único
+  pendingForTable.push(pendingAircraft);
+
+  // Mantener en storage
+  stillPending.push(entry);
+}
   /* ===============================
      IDENTIDAD
      =============================== */
