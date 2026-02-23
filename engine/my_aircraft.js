@@ -372,7 +372,17 @@ function updatePendingDeliveries() {
       return;
     }
 
+    let pendingAircraft = {
+   // ... tu objeto actual
+   };
+
+   pendingAircraft = ACS_applyMaintenanceBaseline(pendingAircraft);
+   pendingAircraft = ACS_applyMaintenanceComputedFields(pendingAircraft);
+
+   pendingForTable.push(pendingAircraft);     
+     
     // ✅ Mantener PENDING REAL (solo los no entregados)
+     
     if (entry.__delivered !== true) {
 
     pendingForTable.push({
@@ -394,7 +404,12 @@ function updatePendingDeliveries() {
   })(),
 
   // ✅ UI muestra “—”, pero el botón View usará __pendingKey
-  registration: "—",
+       
+  registration: entry.registration && /^YV-\d{4}$/.test(entry.registration)
+  ? entry.registration
+  : (typeof ACS_generateRegistration === "function"
+      ? ACS_generateRegistration()
+      : "YV-0000"),
 
   manufacturer: entry.manufacturer,
   model: entry.model,
@@ -432,7 +447,7 @@ function updatePendingDeliveries() {
      BASE
      =============================== */
 
-  base: entry.baseIcao || entry.base || getCurrentBaseICAO(),
+ base: getCurrentBaseICAO(),
 
   /* ===============================
      DELIVERY (CRÍTICO)
