@@ -331,7 +331,7 @@ function updatePendingDeliveries() {
           nextC: "—",
           nextD: "—",
 
-          base: (entry.baseIcao || entry.base || getCurrentBaseICAO()),
+          base: getCurrentBaseICAO(),
 
           deliveredDate: now.toISOString(),
           deliveryDate: null,
@@ -410,10 +410,10 @@ function updatePendingDeliveries() {
      DATOS OPERACIONALES (AVIACIÓN REAL)
      =============================== */
 
-  hours: 0,
-  cycles: 0,
+ hours: entry.hours ?? 0,
+ cycles: entry.cycles ?? 0,
 
-  conditionPercent: 100,
+ conditionPercent: entry.conditionPercent ?? 100,
 
   /* ===============================
      MANTENIMIENTO
@@ -2760,4 +2760,20 @@ function ACS_calculateMaintenanceStatus(ac) {
 
   waitForTimeEngine();
 
+function ACS_generateRegistration() {
+
+  const fleetNow = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  const existing = fleetNow
+    .map(a => a.registration)
+    .filter(r => /^YV-\d{4}$/.test(r));
+
+  let num = 1000;
+
+  while (existing.includes(`YV-${num}`)) {
+    num++;
+  }
+
+  return `YV-${num}`;
+}   
 })();
