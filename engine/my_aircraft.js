@@ -432,19 +432,7 @@ if (entry.__delivered !== true) {
   // Mantener en storage
   stillPending.push(entry);
 }
-  /* ===============================
-     IDENTIDAD
-     =============================== */
-
-  // ✅ ID estable para poder abrir modal (persistido en ACS_PendingAircraft)
-  __pendingKey: (() => {
-    if (!entry.__pendingKey) {
-      const base = (entry.baseIcao || entry.base || "");
-      const dd = (entry.deliveryDate || "");
-      const m  = (entry.model || "");
-      const mf = (entry.manufacturer || "");
-      entry.__pendingKey = `PEND|${mf}|${m}|${base}|${dd}|${pIndex}`;
-    }
+  
     return entry.__pendingKey;
   })(),
 
