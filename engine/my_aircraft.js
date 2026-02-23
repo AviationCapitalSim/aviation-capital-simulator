@@ -281,12 +281,14 @@ function ACS_enrichAircraftFromDB(aircraft) {
 }
 
 /* ============================================================
-   🟦 C.2 — Sync Pending Deliveries (Unified Table)
+   🟧 MA-FIX-1 — updatePendingDeliveries() (CLEAN + CANON)
    ------------------------------------------------------------
-   FIX:
-   - NO mezclar pendingForTable dentro de fleet (storage)
-   - fleetView = pendingForTable + fleetActive (SOLO UI)
-   - fleet     = fleetActive (SOLO STORAGE)
+   Fix:
+   - Elimina duplicados y tokens sueltos (SyntaxError)
+   - fleet     = SOLO STORAGE REAL (ACS_MyAircraft)
+   - fleetView = SOLO UI (pending + real)
+   - Pending usa __pendingKey estable (persistido)
+   - Registration en pending se persiste una sola vez
    ============================================================ */
 
 function updatePendingDeliveries() {
@@ -296,7 +298,7 @@ function updatePendingDeliveries() {
   // ✅ STORAGE FLEET REAL
   let fleetActive = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
-  // ✅ PENDING LIST (se programa desde Buy New / Used Market)
+  // ✅ PENDING LIST (programado desde Buy New / Used Market)
   let pendingRaw = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
   const pendingForTable = [];
@@ -304,21 +306,29 @@ function updatePendingDeliveries() {
   let changed = false;
 
   pendingRaw.forEach((entry, pIndex) => {
-     
-    const d = new Date(entry.deliveryDate);
 
-    // 🛑 SOLO ENTREGAR SI NO FUE ENTREGADO ANTES
-    if (now >= d && entry.__delivered !== true) {
+    // Seguridad mínima
+    if (!entry || typeof entry !== "object") return;
 
-      for (let i = 0; i < (entry.qty || 1); i++) {
+    const deliveryISO = entry.deliveryDate || null;
+    const d = deliveryISO ? new Date(deliveryISO) : null;
+
+    /* ======================================================
+       ✅ ENTREGA: si llegó la fecha y NO se entregó antes
+       ====================================================== */
+    if (d && now >= d && entry.__delivered !== true) {
+
+      const qty = Number(entry.qty || 1);
+
+      for (let i = 0; i < qty; i++) {
 
         let newAircraft = {
           registration: (typeof ACS_generateRegistration === "function")
             ? ACS_generateRegistration()
             : "—",
 
-          manufacturer: entry.manufacturer,
-          model: entry.model,
+          manufacturer: entry.manufacturer || "",
+          model: entry.model || "—",
           family: entry.family || "",
 
           status: entry.isUsed ? "Maintenance" : "Active",
@@ -331,7 +341,9 @@ function updatePendingDeliveries() {
           nextC: "—",
           nextD: "—",
 
-          base: getCurrentBaseICAO(),
+          base: (typeof getCurrentBaseICAO === "function")
+            ? getCurrentBaseICAO()
+            : (entry.base || entry.baseIcao || "—"),
 
           deliveredDate: now.toISOString(),
           deliveryDate: null,
@@ -341,12 +353,17 @@ function updatePendingDeliveries() {
           lastCCheckDate: entry.lastCCheckDate || null,
           lastDCheckDate: entry.lastDCheckDate || null,
 
+          // Used Aircraft A/B service (si existe la constante; si no, no rompe)
           abServiceEndDate: entry.isUsed
             ? (() => {
+                const days = (ACS_MAINTENANCE_RULES && ACS_MAINTENANCE_RULES.USED_AIRCRAFT_AB_SERVICE_DAYS)
+                  ? ACS_MAINTENANCE_RULES.USED_AIRCRAFT_AB_SERVICE_DAYS
+                  : 0;
+
+                if (!days) return null;
+
                 const ab = new Date(now);
-                ab.setUTCDate(
-                  ab.getUTCDate() + ACS_MAINTENANCE_RULES.USED_AIRCRAFT_AB_SERVICE_DAYS
-                );
+                ab.setUTCDate(ab.getUTCDate() + days);
                 return ab.toISOString();
               })()
             : null,
@@ -361,81 +378,104 @@ function updatePendingDeliveries() {
           newAircraft = ACS_enrichAircraftFromDB(newAircraft);
         }
 
+        // Pipeline mínimo (sin romper lógica)
+        if (typeof ACS_applyMaintenanceBaseline === "function") {
+          newAircraft = ACS_applyMaintenanceBaseline(newAircraft);
+        }
+        if (typeof ACS_applyMaintenanceHold === "function") {
+          newAircraft = ACS_applyMaintenanceHold(newAircraft);
+        }
+        if (typeof ACS_applyMaintenanceComputedFields === "function") {
+          newAircraft = ACS_applyMaintenanceComputedFields(newAircraft);
+        }
+
         fleetActive.push(newAircraft);
       }
 
       changed = true;
 
-      // 🛑 MARCAR COMO ENTREGADO (pero NO reinsertarlo en stillPending)
+      // Marcar entregado y NO mantener en pending
       entry.__delivered = true;
-
       return;
     }
 
-// ✅ Mantener PENDING REAL (solo los no entregados)
-if (entry.__delivered !== true) {
+    /* ======================================================
+       ✅ MANTENER PENDING: solo los NO entregados
+       ====================================================== */
+    if (entry.__delivered === true) return;
 
-  // =============================
-  // 🟦 PENDING AIRCRAFT OBJECT
-  // =============================
+    // 🔒 Persistir pendingKey estable (solo una vez)
+    if (!entry.__pendingKey) {
+      const base = (entry.baseIcao || entry.base || "");
+      const dd = (entry.deliveryDate || "");
+      const m  = (entry.model || "");
+      const mf = (entry.manufacturer || "");
+      entry.__pendingKey = `PEND|${mf}|${m}|${base}|${dd}|${pIndex}`;
+    }
 
-  let pendingAircraft = {
+    // 🔒 Persistir matrícula pending una sola vez (si no es válida)
+    if (!entry.registration || !/^YV-\d{4}$/.test(entry.registration)) {
+      entry.registration = (typeof ACS_generateRegistration === "function")
+        ? ACS_generateRegistration()
+        : "YV-0000";
+    }
 
-    __pendingKey: entry.__pendingKey || `PEND_${pIndex}_${Date.now()}`,
+    // Construir objeto UI Pending
+    let pendingAircraft = {
+      __pendingKey: entry.__pendingKey,
 
-    registration: entry.registration && /^YV-\d{4}$/.test(entry.registration)
-      ? entry.registration
-      : (typeof ACS_generateRegistration === "function"
-          ? ACS_generateRegistration()
-          : "YV-0000"),
+      // UI: puede mostrar matrícula real o "—". Tú ya decidiste usar matrícula persistida.
+      registration: entry.registration,
 
-    manufacturer: entry.manufacturer,
-    model: entry.model,
-    family: entry.family || "",
+      manufacturer: entry.manufacturer || "",
+      model: entry.model || "—",
+      family: entry.family || "",
 
-    status: "Pending Delivery",
+      status: "Pending Delivery",
 
-    hours: entry.hours ?? 0,
-    cycles: entry.cycles ?? 0,
-    conditionPercent: entry.conditionPercent ?? 100,
+      hours: entry.hours ?? 0,
+      cycles: entry.cycles ?? 0,
+      conditionPercent: entry.conditionPercent ?? 100,
 
-    base: getCurrentBaseICAO(),
+      base: (typeof getCurrentBaseICAO === "function")
+        ? getCurrentBaseICAO()
+        : (entry.base || entry.baseIcao || "—"),
 
-    deliveryDate: entry.deliveryDate,
-    deliveredDate: null,
+      deliveryDate: entry.deliveryDate || null,
+      deliveredDate: null,
 
-    age: entry.age || 0,
+      age: entry.age || 0,
 
-    lastCCheckDate: entry.lastCCheckDate || null,
-    lastDCheckDate: entry.lastDCheckDate || null,
+      lastCCheckDate: entry.lastCCheckDate || null,
+      lastDCheckDate: entry.lastDCheckDate || null,
 
-    isPending: true
-  };
+      isPending: true
+    };
 
-  // 🔒 Persistir matrícula una sola vez
-  if (!entry.registration || !/^YV-\d{4}$/.test(entry.registration)) {
-    entry.registration = pendingAircraft.registration;
+    if (typeof ACS_applyMaintenanceBaseline === "function") {
+      pendingAircraft = ACS_applyMaintenanceBaseline(pendingAircraft);
+    }
+    if (typeof ACS_applyMaintenanceComputedFields === "function") {
+      pendingAircraft = ACS_applyMaintenanceComputedFields(pendingAircraft);
+    }
+
+    pendingForTable.push(pendingAircraft);
+    stillPending.push(entry);
+  });
+
+  // ✅ Guardar solo pendientes reales
+  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(stillPending));
+
+  // ✅ Si hubo entregas → persistir SOLO flota real
+  if (changed) {
+    localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetActive));
   }
 
-  // 🔒 Persistir pendingKey
-  if (!entry.__pendingKey) {
-    entry.__pendingKey = pendingAircraft.__pendingKey;
-  }
-
-  // Aplicar baseline real si corresponde
-  pendingAircraft = ACS_applyMaintenanceBaseline(pendingAircraft);
-  pendingAircraft = ACS_applyMaintenanceComputedFields(pendingAircraft);
-
-  // Push único
-  pendingForTable.push(pendingAircraft);
-
-  // Mantener en storage
-  stillPending.push(entry);
+  // ✅ Autoridad final:
+  fleet = fleetActive;
+  fleetView = [...pendingForTable, ...fleetActive];
 }
   
-    return entry.__pendingKey;
-  })(),
-
   // ✅ UI muestra “—”, pero el botón View usará __pendingKey
        
   registration: entry.registration && /^YV-\d{4}$/.test(entry.registration)
