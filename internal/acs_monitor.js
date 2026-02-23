@@ -376,23 +376,28 @@ function updateTimeControlStatus() {
   const out = document.getElementById("outTimeControl");
   if (!out) return;
 
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+
+  const status = cycle.status || "OFF";
   const frozen = localStorage.getItem("acs_frozen_time");
   const simTime = localStorage.getItem("ACS_LAST_SIM_TIME");
 
-  let status = frozen === "true" ? "OFF" : "ON";
-
   out.textContent =
     "ENGINE STATUS: " + status + "\n\n" +
-    "Frozen Flag: " + frozen + "\n" +
-    "Last Sim Time: " + simTime;
+    "Frozen Time: " + (frozen || "—") + "\n" +
+    "Last Sim Time: " + (simTime || "—");
 }
 
+/* ================================
+   ▶ START
+================================ */
 document.getElementById("btnStartTime")?.addEventListener("click", () => {
 
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
 
   cycle.status = "ON";
 
+  // Si nunca arrancó, inicializar realStartDate
   if (!cycle.realStartDate) {
     cycle.realStartDate = new Date().toISOString();
   }
@@ -402,9 +407,20 @@ document.getElementById("btnStartTime")?.addEventListener("click", () => {
   updateTimeControlStatus();
 });
 
+/* ================================
+   ⏸ STOP (FREEZE CORRECTO)
+================================ */
 document.getElementById("btnStopTime")?.addEventListener("click", () => {
 
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+
+  // Guardar el tiempo actual antes de apagar
+  if (typeof window.ACS_TIME !== "undefined" && window.ACS_TIME.currentTime instanceof Date) {
+    localStorage.setItem(
+      "acs_frozen_time",
+      window.ACS_TIME.currentTime.toISOString()
+    );
+  }
 
   cycle.status = "OFF";
 
@@ -413,6 +429,9 @@ document.getElementById("btnStopTime")?.addEventListener("click", () => {
   updateTimeControlStatus();
 });
 
+/* ================================
+   ♻ RESET CYCLE
+================================ */
 document.getElementById("btnResetCycle")?.addEventListener("click", () => {
 
   if (typeof window.ACS_MasterReset === "function") {
@@ -422,6 +441,9 @@ document.getElementById("btnResetCycle")?.addEventListener("click", () => {
   updateTimeControlStatus();
 });
 
+/* ================================
+   INIT
+================================ */
 setTimeout(updateTimeControlStatus, 300);
    
 })();
