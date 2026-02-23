@@ -408,6 +408,10 @@ let pendingAircraft = {
   isPending: true
 };
 
+// Si no tenía matrícula válida, persistirla en pending original
+if (!entry.registration || !/^YV-\d{4}$/.test(entry.registration)) {
+  entry.registration = pendingAircraft.registration;
+}     
 // 🔵 Aplicar baseline REAL si es usado
 pendingAircraft = ACS_applyMaintenanceBaseline(pendingAircraft);
 pendingAircraft = ACS_applyMaintenanceComputedFields(pendingAircraft);
