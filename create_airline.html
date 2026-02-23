@@ -351,6 +351,28 @@
      ============================================================ -->
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
+
+<script>
+(function ensureTimeDefaults(){
+
+  if (!localStorage.getItem("ACS_year")) {
+    localStorage.setItem("ACS_year", "1940");
+  }
+
+  if (!localStorage.getItem("ACS_month")) {
+    localStorage.setItem("ACS_month", "1");
+  }
+
+  if (!localStorage.getItem("ACS_day")) {
+    localStorage.setItem("ACS_day", "1");
+  }
+
+  if (!localStorage.getItem("ACS_hour")) {
+    localStorage.setItem("ACS_hour", "12");
+  }
+
+})();
+</script>
      
 <script src="engine/acs_country_history.js"></script>
      
