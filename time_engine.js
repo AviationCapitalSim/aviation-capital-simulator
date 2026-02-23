@@ -368,20 +368,9 @@ document.addEventListener("DOMContentLoaded", () => {
     startACSTime();
   } else {
     const frozen = localStorage.getItem("acs_frozen_time");
-    let frozen = localStorage.getItem("acs_frozen_time");
-
-if (frozen) {
-  const parsed = new Date(frozen);
-  if (!isNaN(parsed.getTime())) {
-    ACS_TIME.currentTime = parsed;
-  } else {
-    ACS_TIME.currentTime = new Date(SIM_START);
-    localStorage.setItem("acs_frozen_time", SIM_START.toISOString());
-  }
-} else {
-  ACS_TIME.currentTime = new Date(SIM_START);
-  localStorage.setItem("acs_frozen_time", SIM_START.toISOString());
-}
+    ACS_TIME.currentTime = frozen
+      ? new Date(frozen)
+      : new Date(SIM_START);
 
     stopACSTime();
     updateClockDisplay();
