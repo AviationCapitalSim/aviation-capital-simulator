@@ -730,6 +730,7 @@ async function handleRegister(event) {
   const passwordHash = await hashPassword(password);
 
   const payload = {
+  action: "REGISTER",
     fullName,
     email,
     country,
