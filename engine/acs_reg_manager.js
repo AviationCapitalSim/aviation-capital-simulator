@@ -19,104 +19,125 @@ function saveMyAircraft(arr) {
 }
 
 /* ============================================================
-   🟧 MA-2.0 — REG PREFIX RESOLVER (BASE-AWARE, SINGLE TRUTH)
+   🟧 MA-2.2 — REG PREFIX RESOLVER (GLOBAL REAL AVIATION)
    ------------------------------------------------------------
-   Purpose:
-   - Derivar prefijo de matrícula desde la base REAL del usuario
-   - Prioridad:
-     1) ACS_activeUser.base (nuevo)
-     2) Legacy keys (ACS_baseCountry / ACS_baseICAO)
-     3) Legacy objects (ACS_Base / ACS_Airline)
-   ------------------------------------------------------------
-   Version: v2.1 | Date: 05 FEB 2026
+   • Fuente principal: ICAO prefix (primeras 2 letras)
+   • Basado en asignaciones reales de registro mundial
+   • Compatible con estructura actual
+   • Sin archivo nuevo
+   • Sin romper legacy
    ============================================================ */
 
 function getRegistrationPrefix() {
 
-  // 0) Load legacy objects (safe)
-  let airline = {};
-  let baseObj = {};
-  try { airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}"); } catch(e) {}
-  try { baseObj = JSON.parse(localStorage.getItem("ACS_Base") || "{}"); } catch(e) {}
-
-  // 1) Load activeUser (official new source)
   let user = {};
+  let baseObj = {};
+  let airline = {};
+
   try { user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}"); } catch(e) {}
+  try { baseObj = JSON.parse(localStorage.getItem("ACS_Base") || "{}"); } catch(e) {}
+  try { airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}"); } catch(e) {}
 
-  // 2) Resolve base ICAO (strong signal)
+  // 🔵 Resolver ICAO base (fuente más fuerte)
   const baseICAO =
-    (user && user.base && user.base.icao) ? String(user.base.icao).toUpperCase() :
-    (localStorage.getItem("ACS_baseICAO") ? String(localStorage.getItem("ACS_baseICAO")).toUpperCase() : "") ||
-    (baseObj && baseObj.icao ? String(baseObj.icao).toUpperCase() : "");
+    (user?.base?.icao) ||
+    localStorage.getItem("ACS_baseICAO") ||
+    baseObj?.icao ||
+    "";
 
-  // 3) Resolve country name (fallback signal)
-  const country =
-    (user && user.base && (user.base.country || user.base.countryName)) ? (user.base.country || user.base.countryName) :
-    (localStorage.getItem("ACS_baseCountry") || "") ||
-    (baseObj.country || airline.country || "Unknown");
-
-  // 4) Prefix table by country name (your existing logic, preserved)
-  const PREFIX_TABLE = {
-    "United States": "N-",
-    "Spain": "EC-",
-    "Kyrgyzstan": "EX-",
-    "Russia": "RA-",
-    "China": "B-",
-    "Japan": "JA-",
-    "France": "F-",
-    "Germany": "D-",
-    "Italy": "I-",
-    "United Kingdom": "G-",
-    "Canada": "C-",
-    "Brazil": "PR-",
-    "Mexico": "XA-",
-    "Argentina": "LV-",
-    "Chile": "CC-",
-    "Peru": "OB-",
-    "Australia": "VH-",
-    "India": "VT-",
-    "United Arab Emirates": "A6-",
-    "Saudi Arabia": "HZ-",
-    "South Korea": "HL-",
-    "South Africa": "ZS-",
-    "Unknown": "XX-"
-  };
-
-  // 5) ICAO-based override (more reliable than legacy country strings)
-  //    Use first 2 letters when possible, else first 1 letter.
-  const ICAO_TO_PREFIX_2 = {
-    "LE": "EC-", // Spain
-    "LI": "I-",  // Italy
-    "LF": "F-",  // France
-    "ED": "D-",  // Germany
-    "EG": "G-",  // UK
-    "RJ": "JA-", // Japan (your format)
-    "FA": "ZS-", // South Africa
-    "SB": "PR-", // Brazil (simplified in your model)
-    "MM": "XA-", // Mexico
-    "SA": "LV-", // Argentina
-    "CC": "CC-", // Chile (not ICAO, kept only if you later use it)
-  };
-
-  const ICAO_TO_PREFIX_1 = {
-    "K": "N-",   // USA
-    "C": "C-",   // Canada
-    "Y": "VH-",  // Australia
-    "Z": "B-"    // China (simplified)
-  };
-
-  if (baseICAO && baseICAO.length === 4) {
-    const k2 = baseICAO.substring(0, 2);
-    const k1 = baseICAO.substring(0, 1);
-    if (ICAO_TO_PREFIX_2[k2]) return ICAO_TO_PREFIX_2[k2];
-    if (ICAO_TO_PREFIX_1[k1]) return ICAO_TO_PREFIX_1[k1];
+  if (!baseICAO || baseICAO.length !== 4) {
+    console.warn("⚠️ Invalid base ICAO — fallback to country.");
   }
 
-  // 6) Country-name fallback
-  return PREFIX_TABLE[country] || PREFIX_TABLE["Unknown"];
+  const k2 = baseICAO.substring(0,2).toUpperCase();
+
+  /* ============================================================
+     🌍 GLOBAL ICAO → REGISTRATION PREFIX TABLE
+     (Real Aviation Core Mapping)
+     ============================================================ */
+
+  const ICAO_REG_DB = {
+
+    // 🇺🇸 Americas
+    "K":  "N-",   // USA
+    "C":  "C-",   // Canada
+    "SV": "YV-",  // Venezuela
+    "SK": "HK-",  // Colombia
+    "SB": "PR-",  // Brazil
+    "MM": "XA-",  // Mexico
+    "SA": "LV-",  // Argentina
+    "SC": "CC-",  // Chile
+    "SP": "OB-",  // Peru
+
+    // 🇪🇺 Europe
+    "LE": "EC-",  // Spain
+    "LI": "I-",   // Italy
+    "LF": "F-",   // France
+    "ED": "D-",   // Germany
+    "EG": "G-",   // UK
+    "EH": "PH-",  // Netherlands
+    "EB": "OO-",  // Belgium
+    "LS": "HB-",  // Switzerland
+
+    // 🇯🇵 Asia
+    "RJ": "JA-",  // Japan
+    "ZB": "B-",   // China
+    "ZL": "ZK-",  // New Zealand
+    "Y":  "VH-",  // Australia
+    "OM": "A6-",  // UAE
+    "OE": "VT-",  // India
+    "RK": "HL-",  // South Korea
+    "OJ": "JY-",  // Jordan
+    "HS": "HS-",  // Thailand
+
+    // 🌍 Africa
+    "FA": "ZS-",  // South Africa
+    "HE": "SU-",  // Egypt
+    "DN": "5N-",  // Nigeria
+
+    // 🌊 Oceania
+    "NZ": "ZK-",  // New Zealand alt
+    "AY": "P2-",  // Papua New Guinea
+    "NF": "DQ-"   // Fiji
+  };
+
+  // 🔵 PRIORIDAD 1: Coincidencia 2 letras ICAO
+  if (ICAO_REG_DB[k2]) return ICAO_REG_DB[k2];
+
+  // 🔵 PRIORIDAD 2: Coincidencia 1 letra ICAO
+  const k1 = baseICAO.substring(0,1).toUpperCase();
+  if (ICAO_REG_DB[k1]) return ICAO_REG_DB[k1];
+
+  // 🔵 PRIORIDAD 3: Fallback country (legacy)
+  const country =
+    user?.base?.country ||
+    localStorage.getItem("ACS_baseCountry") ||
+    baseObj?.country ||
+    airline?.country ||
+    "Unknown";
+
+  const COUNTRY_FALLBACK = {
+    "United States": "N-",
+    "Spain": "EC-",
+    "Italy": "I-",
+    "France": "F-",
+    "Germany": "D-",
+    "United Kingdom": "G-",
+    "Venezuela": "YV-",
+    "Brazil": "PR-",
+    "Japan": "JA-",
+    "Australia": "VH-"
+  };
+
+  if (COUNTRY_FALLBACK[country]) return COUNTRY_FALLBACK[country];
+
+  console.warn("⚠️ Registration prefix not mapped:", baseICAO, country);
+
+  return "XX-"; // último fallback controlado
 }
 
 /* ========= VARIABLES DEL MODAL ============================== */
+
 let REG_SELECTED_ID = null;
 
 function openRegModal(acId) {
