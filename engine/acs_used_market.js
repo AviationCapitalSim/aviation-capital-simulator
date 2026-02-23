@@ -364,7 +364,7 @@ const newAircraft = {
 
   isUsed: true,
 
-  status: (deliveryMode === "IMMEDIATE") ? "Active" : "Pending",
+  status: (deliveryMode === "IMMEDIATE") ? "Active" : "Pending Delivery",
 
 deliveryDate:
   (deliveryMode === "PENDING")
