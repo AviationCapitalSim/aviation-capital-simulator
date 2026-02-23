@@ -338,6 +338,19 @@ const monthsSinceD = monthsAge % D_INTERVAL_MONTHS;
 const lastCDate = new Date(simNow.getTime() - (monthsSinceC * 30.4375 * MS_PER_DAY));
 const lastDDate = new Date(simNow.getTime() - (monthsSinceD * 30.4375 * MS_PER_DAY));
 
+/* ============================================================
+   🟨 UA-3.1 — DELIVERY DECISION (3 Aircraft Rule)
+   ============================================================ */
+
+let currentFleet =
+  JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+let deliveryMode = "IMMEDIATE";
+
+if (currentFleet.length >= 3) {
+  deliveryMode = "PENDING";
+}
+     
 const newAircraft = {
   id: "AC-" + Date.now(),
   registration: reg,
@@ -351,11 +364,22 @@ const newAircraft = {
 
   isUsed: true,
 
-  deliveryDate: deliveredISO,
-  deliveredDate: deliveredISO,
-  delivered: deliveredISO,
+  status: (deliveryMode === "IMMEDIATE") ? "Active" : "Pending",
 
-  status: "Active",
+deliveryDate:
+  (deliveryMode === "PENDING")
+    ? new Date(simNow.getTime() + (7 * 24 * 60 * 60 * 1000)).toISOString()
+    : null,
+
+deliveredDate:
+  (deliveryMode === "IMMEDIATE")
+    ? deliveredISO
+    : null,
+
+delivered:
+  (deliveryMode === "IMMEDIATE")
+    ? deliveredISO
+    : null,
 
   base: baseICAO,
   base_city: baseCity,
@@ -374,9 +398,24 @@ const newAircraft = {
   data: fullData
 };
 
-    let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-    fleet.push(newAircraft);
-    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+    if (deliveryMode === "IMMEDIATE") {
+
+  let fleet =
+    JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  fleet.push(newAircraft);
+
+  localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+
+} else {
+
+  let pending =
+    JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+  pending.push(newAircraft);
+
+  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+}
 
     let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
     f.capital  = f.capital  || 0;
