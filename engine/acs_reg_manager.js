@@ -244,36 +244,81 @@ function ACS_normalizeAircraft(ac) {
 }
 
 /* ============================================================
-   ACS REGISTRATION GENERATOR — v2.0
-   ✔ Usa getRegistrationPrefix()
-   ✔ Genera matrícula según país de base
-   ✔ Compatible con Italia (I-ABC), USA, Brasil, etc.
+   🟦 REGISTRATION RULES — MODERN REAL SYSTEM (STRUCTURAL)
+   ------------------------------------------------------------
+   ✔ Sin random
+   ✔ Secuencial desde 1000
+   ✔ Patrón real moderno por país
+   ✔ Escalable
+   ============================================================ */
+
+const REG_RULES = {
+
+  "YV-": { type: "numeric", length: 4 },   // Venezuela
+  "N":   { type: "numeric", length: 5 },   // USA (sin guion)
+  "HK-": { type: "numeric", length: 4 },   // Colombia
+  "EC-": { type: "letters", length: 3 },   // Spain
+  "D-":  { type: "letters", length: 4 },   // Germany
+  "G-":  { type: "letters", length: 4 },   // UK
+  "F-":  { type: "letters", length: 4 },   // France
+  "I-":  { type: "letters", length: 4 },   // Italy
+  "PR-": { type: "letters", length: 3 },   // Brazil
+  "XA-": { type: "letters", length: 3 },   // Mexico
+  "C-":  { type: "letters", length: 4 }    // Canada simplified
+
+};
+/* ============================================================
+   🟦 ACS REGISTRATION GENERATOR — v5.0 (STRUCTURAL UNIVERSAL)
+   ------------------------------------------------------------
+   ✔ Usa REG_RULES
+   ✔ Secuencial desde 1000
+   ✔ Sin random
+   ✔ Compatible con todo el sistema actual
    ============================================================ */
 
 function ACS_generateRegistration() {
 
-  const prefix = getRegistrationPrefix();  // ejemplo: "I-"
+  const prefix = getRegistrationPrefix();
+  const rule = REG_RULES[prefix];
 
-  // === Formatos especiales por país ===
-  if (prefix === "N-") {
-    // USA: N123AB
-    const num = Math.floor(100 + Math.random() * 900);
-    const letters = randomLetters(2);
-    return `N${num}${letters}`;
+  // Si no existe regla definida, fallback controlado
+  if (!rule) {
+    console.warn("⚠️ No REG_RULE defined for prefix:", prefix);
+    return prefix + "1000";
   }
 
-  if (prefix === "I-") {
-    // Italia: I-ABC
-    return `I-${randomLetters(3)}`;
+  const counterKey = "ACS_REG_COUNTER_" + prefix;
+  let counter = parseInt(localStorage.getItem(counterKey) || "999");
+
+  counter++;
+  localStorage.setItem(counterKey, counter);
+
+  /* ================================
+     NUMERIC PATTERN
+     ================================ */
+  if (rule.type === "numeric") {
+
+    let numberPart = counter.toString().padStart(rule.length, "0");
+
+    // USA sin guion
+    if (prefix === "N") {
+      return "N" + numberPart;
+    }
+
+    return prefix + numberPart;
   }
 
-  if (prefix === "PR-") {
-    // Brasil: PR-ABC
-    return `PR-${randomLetters(3)}`;
+  /* ================================
+     LETTER PATTERN (Base26)
+     ================================ */
+  if (rule.type === "letters") {
+
+    const letters = numberToLetters(counter - 1000, rule.length);
+    return prefix + letters;
   }
 
-  // === Default global ===
-  return prefix + randomLetters(3);
+  // Fallback seguro
+  return prefix + "1000";
 }
 
 /* ============================================================
