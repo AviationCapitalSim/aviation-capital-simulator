@@ -1682,7 +1682,7 @@ function populateFilterOptions() {
   const fill = (el, set) => {
     el.innerHTML = `<option value="">${el.id.replace("filter","")}</option>`;
     set.forEach(v => {
-      if (v.trim() !== "") {
+      if (typeof v === "string" && v.trim() !== "") {
         const opt = document.createElement("option");
         opt.value = v;
         opt.textContent = v;
