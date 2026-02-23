@@ -39,11 +39,13 @@ function getRegistrationPrefix() {
   try { airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}"); } catch(e) {}
 
   // 🔵 Resolver ICAO base (fuente más fuerte)
+   
   const baseICAO =
-    (user?.base?.icao) ||
-    localStorage.getItem("ACS_baseICAO") ||
-    baseObj?.icao ||
-    "";
+  (user?.base?.icao) ||
+  localStorage.getItem("ACS_baseICAO") ||
+  baseObj?.icao ||
+  airline?.baseICAO ||
+  "";
 
   if (!baseICAO || baseICAO.length !== 4) {
     console.warn("⚠️ Invalid base ICAO — fallback to country.");
