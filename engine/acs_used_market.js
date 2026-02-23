@@ -304,37 +304,75 @@ function buyUsed(id) {
         ) || {}
       : {};
 
-    const newAircraft = {
-      id: "AC-" + Date.now(),
-      registration: reg,
+    /* ============================================================
+   🟨 UA-2.1 — USED AIRCRAFT TECH STATE GENERATOR
+   ------------------------------------------------------------
+   • Industrial maintenance transfer
+   • No nextC/nextD strings
+   • Real baseline for MyAircraft engine
+   ============================================================ */
 
-      manufacturer: ac.manufacturer,
-      model: ac.model,
-      family: fullData.family || "",
+const simNow =
+  (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+    ? new Date(ACS_TIME.currentTime)
+    : new Date();
 
-      year: ac.year,
-      age: age,
-      delivered: new Date().toISOString(),
-      status: "Active",
+const deliveredISO = simNow.toISOString();
 
-      base: baseICAO,
-      base_city: baseCity,
-      base_region: baseRegion,
+/* --- Convertir condición A/B/C a porcentaje --- */
+let conditionPercent = 90;
+if (ac.condition === "A") conditionPercent = 92 + Math.floor(Math.random() * 5);
+if (ac.condition === "B") conditionPercent = 80 + Math.floor(Math.random() * 8);
+if (ac.condition === "C") conditionPercent = 68 + Math.floor(Math.random() * 10);
 
-      image: ac.image,
+/* --- Generar historial C/D coherente con edad --- */
+const monthsAge = age * 12;
+const MS_PER_DAY = 86400000;
 
-      hours: ac.hours,
-      cycles: ac.cycles,
-      condition: ac.condition,
+const C_INTERVAL_MONTHS = 12;
+const D_INTERVAL_MONTHS = 96;
 
-      lastC: null,
-      lastD: null,
+const monthsSinceC = monthsAge % C_INTERVAL_MONTHS;
+const monthsSinceD = monthsAge % D_INTERVAL_MONTHS;
 
-      nextC: `${nextC} months`,
-      nextD: `${nextD} months`,
+const lastCDate = new Date(simNow.getTime() - (monthsSinceC * 30.4375 * MS_PER_DAY));
+const lastDDate = new Date(simNow.getTime() - (monthsSinceD * 30.4375 * MS_PER_DAY));
 
-      data: fullData
-    };
+const newAircraft = {
+  id: "AC-" + Date.now(),
+  registration: reg,
+
+  manufacturer: ac.manufacturer,
+  model: ac.model,
+  family: fullData.family || "",
+
+  year: ac.year,
+  age: age,
+
+  isUsed: true,
+
+  deliveryDate: deliveredISO,
+  deliveredDate: deliveredISO,
+  delivered: deliveredISO,
+
+  status: "Active",
+
+  base: baseICAO,
+  base_city: baseCity,
+  base_region: baseRegion,
+
+  image: ac.image,
+
+  hours: ac.hours,
+  cycles: ac.cycles,
+
+  conditionPercent: conditionPercent,
+
+  lastCCheckDate: lastCDate.toISOString(),
+  lastDCheckDate: lastDDate.toISOString(),
+
+  data: fullData
+};
 
     let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
     fleet.push(newAircraft);
