@@ -658,18 +658,47 @@ function ACS_getConditionLetter(percent) {
 }
 
 /* ============================================================
-   🟧 MA-8.5.A — MAINTENANCE BASELINE ENGINE (C & D)
+   🧩 MA-8.5.A.H1 — SEEDED RNG (DETERMINISTIC)
+   ------------------------------------------------------------
+   Purpose:
+   - Generar valores “random” pero determinísticos por aeronave
+   - Evita que cambie en cada refresh
+   ============================================================ */
+
+function ACS_xmur3(str){
+  let h = 1779033703 ^ (str ? str.length : 0);
+  for (let i = 0; i < (str ? str.length : 0); i++){
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function(){
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= (h >>> 16)) >>> 0;
+  };
+}
+
+function ACS_mulberry32(a){
+  return function(){
+    let t = (a += 0x6D2B79F5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ============================================================
+   🟧 MA-8.5.A — MAINTENANCE BASELINE ENGINE (C & D) [FIXED]
    ------------------------------------------------------------
    Purpose:
    - Crear baseline técnico de mantenimiento para aviones usados
-   - Basado en horas actuales (NO fechas reales)
-   - Ejecuta SOLO si el avión no tiene baseline previo
+   - Si es USED y no trae historial, generar:
+       • hours/cycles realistas (si vienen 0)
+       • lastCCheckDate / lastDCheckDate en el pasado
+     (determinístico por aeronave)
+   - Si es NEW, asegurar lastC/lastD desde delivery
    ------------------------------------------------------------
-   Logic:
-   - Interno en HORAS
-   - UI lo convertirá luego a DÍAS
-   ------------------------------------------------------------
-   Version: v1.0 | Date: 05 FEB 2026
+   Version: v1.1 | Date: 23 FEB 2026
    ============================================================ */
 
 function ACS_applyMaintenanceBaseline(ac) {
@@ -685,62 +714,118 @@ function ACS_applyMaintenanceBaseline(ac) {
     return ac;
   }
 
-  // Seguridad
-  if (typeof ac.hours !== "number") return ac;
+  const now = getSimTime();
 
-  // 🔧 Intervalos estándar (legacy hours baseline para Used / imports)
-  const C_INTERVAL_HOURS = 1200;   // C-Check
-  const D_INTERVAL_HOURS = 6000;   // D-Check
+  // Seed determinístico por aeronave
+  const seedKey =
+    String(ac.registration || ac.reg || ac.id || "") +
+    "|" + String(ac.model || "") +
+    "|" + String(ac.enteredFleetAt || ac.deliveredDate || "");
 
-  // Calcular último múltiplo técnico
+  const seed = ACS_xmur3(seedKey)();
+  const rnd = ACS_mulberry32(seed);
+
+  // Intervalos (legacy baseline en horas)
+  const C_INTERVAL_HOURS = 1200;   // C-Check baseline por horas (legacy)
+  const D_INTERVAL_HOURS = 6000;   // D-Check baseline por horas (legacy)
+
+  // Intervalos calendario (para fechas lastC/lastD)
+  const MS_PER_DAY = 86400000;
+  const C_INTERVAL_DAYS = ACS_MAINTENANCE_RULES.C_MONTHS * 30.4375;
+  const D_INTERVAL_DAYS = ACS_MAINTENANCE_RULES.D_MONTHS * 30.4375;
+
+  /* ===============================
+     ✅ USED AIRCRAFT: generar historial real
+     =============================== */
+  if (ac.isUsed === true) {
+
+    // 1) Hours/Cycles realistas si vienen en 0 / undefined
+    const ageYears = (typeof ac.age === "number" && isFinite(ac.age) && ac.age > 0) ? ac.age : 0;
+
+    // rangos realistas por año (aprox):
+    // - horas: 1,800–4,000 / año (según rnd)
+    // - ciclos: 500–1,200 / año
+    if (!(typeof ac.hours === "number" && isFinite(ac.hours) && ac.hours > 0)) {
+      const perYearHours = 1800 + Math.floor(rnd() * 2200);
+      ac.hours = Math.max(50, Math.round(ageYears * perYearHours));
+    }
+
+    if (!(typeof ac.cycles === "number" && isFinite(ac.cycles) && ac.cycles > 0)) {
+      const perYearCycles = 500 + Math.floor(rnd() * 700);
+      ac.cycles = Math.max(20, Math.round(ageYears * perYearCycles));
+    }
+
+    // 2) Baseline por horas (legacy)
+    const baselineC = Math.floor(ac.hours / C_INTERVAL_HOURS) * C_INTERVAL_HOURS;
+    const baselineD = Math.floor(ac.hours / D_INTERVAL_HOURS) * D_INTERVAL_HOURS;
+
+    ac.baselineCHours = baselineC;
+    ac.baselineDHours = baselineD;
+    ac.maintenanceBaselineApplied = true;
+
+    // 3) Generar lastC/lastD en el pasado (determinístico)
+    // Ajuste ligero por condición: peor condición => más “cerca de vencer”
+    const cond = (typeof ac.conditionPercent === "number" && isFinite(ac.conditionPercent)) ? ac.conditionPercent : 100;
+    let condBias = 0;
+    if (cond < 90) condBias += 0.05;
+    if (cond < 80) condBias += 0.08;
+    if (cond < 70) condBias += 0.10;
+
+    // Fracción usada del intervalo (0..1). Más alto = más tiempo desde el último check
+    // Para USED queremos que NO llegue “full fresh” siempre.
+    let fracC = 0.20 + rnd() * 0.70 + condBias;   // 0.20..0.90(+)
+    fracC = Math.max(0.05, Math.min(0.95, fracC));
+
+    let fracD = 0.25 + rnd() * 0.65 + (condBias * 0.6); // 0.25..0.90(+)
+    fracD = Math.max(0.10, Math.min(0.95, fracD));
+
+    const daysSinceC = Math.floor(fracC * C_INTERVAL_DAYS);
+    let daysSinceD = Math.floor(fracD * D_INTERVAL_DAYS);
+
+    // D debe ser más antiguo que C (mínimo 30 días más viejo)
+    if (daysSinceD < (daysSinceC + 30)) {
+      daysSinceD = Math.min(Math.floor(D_INTERVAL_DAYS * 0.95), daysSinceC + 30);
+    }
+
+    const lastC = new Date(now.getTime() - (daysSinceC * MS_PER_DAY));
+    const lastD = new Date(now.getTime() - (daysSinceD * MS_PER_DAY));
+
+    ac.lastCCheckDate = lastC.toISOString();
+    ac.lastDCheckDate = lastD.toISOString();
+
+    return ac;
+  }
+
+  /* ===============================
+     ✅ NEW AIRCRAFT: lastC/lastD = delivered
+     =============================== */
+
+  // Seguridad: asegurar hours numérico
+  if (!(typeof ac.hours === "number" && isFinite(ac.hours))) {
+    ac.hours = 0;
+  }
+
   const baselineC = Math.floor(ac.hours / C_INTERVAL_HOURS) * C_INTERVAL_HOURS;
   const baselineD = Math.floor(ac.hours / D_INTERVAL_HOURS) * D_INTERVAL_HOURS;
 
-  // Guardar baseline
   ac.baselineCHours = baselineC;
   ac.baselineDHours = baselineD;
-
-  // Flags informativos (opcional, útil para debug/UI)
   ac.maintenanceBaselineApplied = true;
 
-  /* ============================================================
-     🟢 MA-F4 — INIT LAST C/D DATES (CANONICAL, NO GLOBAL 'ac')
-     ------------------------------------------------------------
-     Fix:
-     - Evita ReferenceError por 'ac' fuera de scope
-     - Garantiza que aviones NUEVOS tengan lastC/lastD desde delivery
-     - Base para cálculo calendario (C=12m, D=96m)
-     ============================================================ */
-
   const deliveredISO = (() => {
-    // preferir deliveredDate / delivered (ISO)
     if (typeof ac.deliveredDate === "string" && ac.deliveredDate) return ac.deliveredDate;
     if (typeof ac.delivered === "string" && ac.delivered) return ac.delivered;
-
-    // enteredFleetAt puede ser epoch ms
     if (typeof ac.enteredFleetAt === "number" && isFinite(ac.enteredFleetAt)) {
       return new Date(ac.enteredFleetAt).toISOString();
     }
-
-    // fallback: ahora simulado (no ideal, pero seguro)
-    try {
-      return getSimTime().toISOString();
-    } catch (e) {
-      return new Date().toISOString();
-    }
+    return now.toISOString();
   })();
 
-if (!ac.lastCCheckDate) {
-  ac.lastCCheckDate = getSimTime().toISOString();
-}
-
-if (!ac.lastDCheckDate) {
-  ac.lastDCheckDate = getSimTime().toISOString();
-}
+  if (!ac.lastCCheckDate) ac.lastCCheckDate = deliveredISO;
+  if (!ac.lastDCheckDate) ac.lastDCheckDate = deliveredISO;
 
   return ac;
 }
-
 
 function ACS_getMaintenancePolicy() {
   return {
