@@ -144,11 +144,36 @@ body {
       color: #0c1f3c;
     }
      
-.acs-clock-header {
-  font-family: "Orbitron", sans-serif;
-  color: #7CFFB2;
-  text-shadow: 0 0 8px rgba(0,255,160,0.35);
-  font-size: 0.95rem;
+/* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
+
+.acs-clock-header{
+
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+
+  padding:.45rem .8rem;
+
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  white-space:nowrap;
+
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
 }
 
 /* ===== MAIN (Fix “descudrado”) ===== */
@@ -263,7 +288,7 @@ body {
 
   <nav class="acs-nav">
     <a href="dashboard.html">Main</a>
-    <a href="finance.html">Bank</a>
+    <a href="bank.html">Bank</a>
     <a href="aircraft.html" class="active">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
