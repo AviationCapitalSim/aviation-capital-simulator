@@ -1556,7 +1556,7 @@ function renderFleetTable() {
 
   // 🟢 APLICAR MOTOR REAL DE MANTENIMIENTO ANTES DE RENDER
      
-  if (ac.status !== "Pending Delivery") {
+  
   ac = ACS_applyMaintenanceBaseline(ac);
   ac = ACS_applyMaintenanceHold(ac);
   ac = ACS_applyMaintenanceComputedFields(ac);
