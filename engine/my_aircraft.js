@@ -1639,9 +1639,14 @@ function renderFleetTable() {
 
     row.innerHTML = `
       <td>${ac.registration}</td>
-      <td>${ac.model}</td>
-
       <td>
+      <span class="acs-model-click"
+        onclick="openAircraftModal('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
+      ${ac.model}
+     </span>
+    </td>
+
+    <td>
   ${
     (() => {
 
