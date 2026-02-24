@@ -828,7 +828,8 @@
 @keyframes fadeInChip {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
-}    
+} 
+    
 </style>
 </head>
 
@@ -1181,6 +1182,41 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
   </div>
 </div>
 
+<!-- ============================================================
+     🟦 1️⃣ AIRCRAFT DOSSIER MODAL — GLOBAL (USES EXISTING SYSTEM)
+     Location: Bottom of my_aircraft.html
+     Pattern: SAME AS aircraftModal
+     ============================================================ -->
+
+<div class="modal-bg" id="aircraftDossierModal" style="display:none;">
+  <div class="modal-detail ql-modal">
+
+    <div class="modal-header">
+      <h3 id="dossierTitle" class="ql-title">Aircraft Dossier</h3>
+      <span class="modal-close" onclick="closeAircraftDossierModal()">×</span>
+    </div>
+
+    <div class="modal-content-grid">
+
+      <!-- LEFT COLUMN -->
+      <div class="modal-box ql-box">
+        <h4 class="ql-title">Technical Profile</h4>
+        <div id="dossierTechnicalData"></div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="modal-box ql-box">
+        <h4 class="ql-title">Market & Valuation</h4>
+        <div id="dossierPriceData"></div>
+        <hr class="ql-sep">
+        <div id="dossierMarketValueData"></div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+  
 
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
@@ -1196,8 +1232,12 @@ function handleLogout(){
 
 <script>
 function closeAircraftDossierModal(){
-  document.getElementById("aircraftDossierModal").style.display = "none";
+  const modal = document.getElementById("aircraftDossierModal");
+  modal.style.display = "none";
 }
+  
+</script>
+  
 </script>
   
 <!-- TIME -->
@@ -1218,77 +1258,6 @@ function closeAircraftDossierModal(){
 <script src="engine/my_aircraft.js"></script>
 
 <script src="engine/acs_security_core.js?v=1"></script>
-
-<!-- ============================================================
-     🟦 AIRCRAFT DOSSIER MODAL — Airbus OCC Edition
-     DB Authority + Dynamic Valuation Ready
-     ============================================================ -->
-
-<div id="aircraftDossierModal" class="modal">
-
-  <div class="modal-content">
-
-    <!-- HEADER -->
-    <div class="modal-header-row">
-      <div class="modal-header-text">
-        <h3 id="dossierTitle" class="modal-title">
-          Aircraft Model
-        </h3>
-        <p class="modal-subtitle">
-          Technical Aircraft Dossier • Airbus OCC Data Panel
-        </p>
-      </div>
-      <img id="dossierImage" src="" alt="" class="modal-image" />
-    </div>
-
-    <!-- BODY -->
-    <div class="modal-body">
-
-      <!-- TECHNICAL PROFILE -->
-      <div class="modal-summary-box">
-        <p class="modal-summary" style="font-weight:600; margin-bottom:0.4rem;">
-          TECHNICAL PROFILE
-        </p>
-
-        <div id="dossierTechnicalData" style="font-size:0.85rem; line-height:1.5;">
-          <!-- Injected dynamically -->
-        </div>
-      </div>
-
-      <!-- PRICE REFERENCE -->
-      <div class="modal-summary-box" style="margin-top:0.8rem;">
-        <p class="modal-summary" style="font-weight:600; margin-bottom:0.4rem;">
-          PRICE REFERENCE
-        </p>
-
-        <div id="dossierPriceData" style="font-size:0.85rem; line-height:1.5;">
-          <!-- Injected dynamically -->
-        </div>
-      </div>
-
-      <!-- CURRENT MARKET VALUE -->
-      <div class="modal-summary-box" style="margin-top:0.8rem;">
-        <p class="modal-summary" style="font-weight:600; margin-bottom:0.4rem;">
-          CURRENT MARKET VALUATION
-        </p>
-
-        <div id="dossierMarketValueData" style="font-size:0.85rem; line-height:1.5;">
-          <!-- Injected dynamically -->
-        </div>
-      </div>
-
-    </div>
-
-    <!-- FOOTER -->
-    <div class="modal-footer">
-      <button class="close-btn" onclick="closeAircraftDossierModal()">
-        Close
-      </button>
-    </div>
-
-  </div>
-</div>
-
   
 </body>
 </html>
