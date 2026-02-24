@@ -1183,42 +1183,42 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
 </div>
 
 <!-- ============================================================
-     🟦 1️⃣ AIRCRAFT DOSSIER MODAL — GLOBAL (USES EXISTING SYSTEM)
+     🟦 1️⃣ AIRCRAFT DOSSIER MODAL — CLEAN STRUCTURE
      Location: Bottom of my_aircraft.html
-     Pattern: SAME AS aircraftModal
+     Independent modal (does NOT interfere with aircraftModal)
      ============================================================ -->
 
 <div class="modal-bg" id="aircraftDossierModal" style="display:none;">
+
   <div class="modal-detail ql-modal">
 
+    <!-- HEADER -->
     <div class="modal-header">
       <h3 id="dossierTitle" class="ql-title">Aircraft Dossier</h3>
       <span class="modal-close" onclick="closeAircraftDossierModal()">×</span>
     </div>
 
+    <!-- IMAGE (separate row, outside grid for proper layout) -->
+    <div style="text-align:center; margin: 0.8rem 0 1.2rem;">
+      <img id="dossierImage"
+           src=""
+           alt="Aircraft"
+           style="max-width:260px;
+                  border-radius:10px;
+                  object-fit:cover;
+                  box-shadow:0 0 14px rgba(0,0,0,0.6);" />
+    </div>
+
+    <!-- CONTENT GRID -->
     <div class="modal-content-grid">
 
-<!-- ============================================================
-     🟦 MYA-IMG-1 — AIRCRAFT IMAGE (DB-CONVENTION)
-     ============================================================ -->
-
-<div style="text-align:center; margin: 0.6rem 0 1rem;">
-  <img id="mAircraftImage"
-       src=""
-       alt="Aircraft"
-       style="max-width:260px;
-              border-radius:10px;
-              object-fit:cover;
-              box-shadow:0 0 14px rgba(0,0,0,0.6);" />
-</div>
-      
-      <!-- LEFT COLUMN -->
+      <!-- LEFT COLUMN — TECHNICAL -->
       <div class="modal-box ql-box">
         <h4 class="ql-title">Technical Profile</h4>
         <div id="dossierTechnicalData"></div>
       </div>
 
-      <!-- RIGHT COLUMN -->
+      <!-- RIGHT COLUMN — MARKET -->
       <div class="modal-box ql-box">
         <h4 class="ql-title">Market & Valuation</h4>
         <div id="dossierPriceData"></div>
@@ -1231,7 +1231,6 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
   </div>
 </div>
   
-
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
 
