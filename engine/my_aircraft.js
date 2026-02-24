@@ -1829,7 +1829,13 @@ if (pending) {
 if (!acRaw) return;
 
   // ✅ 2) Copia segura (no mutar directo el objeto de storage aquí)
-  const ac = { ...acRaw };
+   
+  let ac = { ...acRaw };
+
+// 🟢 Ensure aircraft is enriched (seats, specs)
+if (typeof ACS_enrichAircraftFromDB === "function") {
+  ac = ACS_enrichAircraftFromDB(ac);
+}
 
   /* ============================================================
    🟢 FIX CORE — MODAL IDENTITY RESOLVER (ACTIVE + PENDING SAFE)
