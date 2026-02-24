@@ -231,7 +231,18 @@ function ACS_enrichAircraftFromDB(aircraft) {
 
   // 🔎 Buscar match primero
    
-const db = window.ACS_AIRCRAFT_DB;
+/* ============================================================
+   🔎 DB ACCESS SAFE RESOLUTION
+   Ensures DB is found regardless of scope mode
+   ============================================================ */
+
+let db = null;
+
+if (typeof ACS_AIRCRAFT_DB !== "undefined") {
+  db = ACS_AIRCRAFT_DB;
+} else if (typeof window !== "undefined" && window.ACS_AIRCRAFT_DB) {
+  db = window.ACS_AIRCRAFT_DB;
+}
 
 const match = Array.isArray(db)
   ? db.find(a =>
