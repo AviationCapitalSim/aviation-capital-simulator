@@ -229,16 +229,7 @@ function ACS_enrichAircraftFromDB(aircraft) {
     return aircraft;
   }
 
-  // Si ya coincide exactamente con el DB, no tocar
-   if (match &&
-    aircraft.seats === match.seats &&
-    aircraft.speed_kts === match.speed_kts &&
-    aircraft.fuel_burn_kgph === match.fuel_burn_kgph) {
-      
-   return aircraft;
-  }
-
-  // Buscar match exacto en el DB
+  // 🔎 Buscar match primero
   const match = Array.isArray(window.ACS_AIRCRAFT_DB)
     ? ACS_AIRCRAFT_DB.find(a =>
         a.manufacturer === aircraft.manufacturer &&
@@ -247,28 +238,35 @@ function ACS_enrichAircraftFromDB(aircraft) {
     : null;
 
   if (!match) {
-  console.error(
-    `❌ CRITICAL: Aircraft DB match NOT FOUND for ${aircraft.manufacturer} ${aircraft.model}`
-  );
+    console.error(
+      `❌ CRITICAL: Aircraft DB match NOT FOUND for ${aircraft.manufacturer} ${aircraft.model}`
+    );
+    aircraft.__enrichError = true;
+    return aircraft;
+  }
 
-  aircraft.__enrichError = true;
-  return aircraft;
-}
+  // ✅ Si ya coincide EXACTAMENTE con DB → no tocar
+  if (
+    aircraft.seats === match.seats &&
+    aircraft.speed_kts === match.speed_kts &&
+    aircraft.fuel_burn_kgph === match.fuel_burn_kgph
+  ) {
+    return aircraft;
+  }
 
-  // Copiar SOLO specs técnicos
-  aircraft.seats = aircraft.seats ?? match.seats;
-  aircraft.range_nm = aircraft.range_nm ?? match.range_nm;
-  aircraft.speed_kts = aircraft.speed_kts ?? match.speed_kts;
-  aircraft.fuel_burn_kgph = aircraft.fuel_burn_kgph ?? match.fuel_burn_kgph;
-  aircraft.price_acs_usd = aircraft.price_acs_usd ?? match.price_acs_usd;
+  // 🟢 Aplicar specs oficiales del DB
+  aircraft.seats = match.seats;
+  aircraft.range_nm = match.range_nm;
+  aircraft.speed_kts = match.speed_kts;
+  aircraft.fuel_burn_kgph = match.fuel_burn_kgph;
+  aircraft.price_acs_usd = match.price_acs_usd;
 
-  // Campos opcionales (informativos / futuro)
   aircraft.year = aircraft.year ?? match.year;
   aircraft.mtow_kg = aircraft.mtow_kg ?? match.mtow_kg;
   aircraft.engines = aircraft.engines ?? match.engines;
 
   console.log(
-    `🟢 Aircraft enriched: ${aircraft.manufacturer} ${aircraft.model} — ${aircraft.seats} seats`
+    `🟢 Aircraft enriched (DB authority): ${aircraft.manufacturer} ${aircraft.model} — ${aircraft.seats} seats`
   );
 
   return aircraft;
