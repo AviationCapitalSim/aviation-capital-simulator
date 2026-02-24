@@ -2212,65 +2212,71 @@ if (typeof registerTimeListener === "function") {
 })(ac);
    
 /* ============================================================
-   🟩 MA-9 — MANUAL MAINTENANCE BUTTON LOGIC (LUX SAFE) [FIX]
-   ------------------------------------------------------------
-   PASO 1:
-   - Activar botón VIEW LOG
-   - Solo abre el modal
-   - Sin lógica, sin histórico, sin costos
-   ============================================================ */
+🟦 MA-11 — MANUAL SERVICE CHIP CONTROLLER
+Ubicación: Dentro de openAircraftModal(reg)
+Reemplaza completamente el bloque MA-9
+============================================================ */
 
 {
   const btnC = document.getElementById("btnCcheck");
   const btnD = document.getElementById("btnDcheck");
   const btnL = document.getElementById("btnLog");
 
-  // Resolver estado SIEMPRE dentro del scope
-  const mLocal = ACS_resolveMaintenanceStatus(ac);
+  const chip      = document.getElementById("maintenanceConfirmChip");
+  const chipTitle = document.getElementById("chipServiceTitle");
+  const chipCost  = document.getElementById("chipServiceCost");
+  const chipConfirm = document.getElementById("chipConfirmBtn");
+  const chipCancel  = document.getElementById("chipCancelBtn");
 
-  // Reset seguro
-  if (btnC) {
-    btnC.onclick = null;
-    btnC.disabled = true;
-  }
-  if (btnD) {
-    btnD.onclick = null;
-    btnD.disabled = true;
-  }
+  if (!btnC || !btnD || !chip) return;
+
+  // 🔓 BOTONES SIEMPRE ACTIVOS (excepto si está en mantenimiento)
+  const isInMaintenance = ac.status === "Maintenance";
+
+  btnC.disabled = isInMaintenance;
+  btnD.disabled = isInMaintenance;
+
+  // 🧮 Helper formato moneda
+  const formatMoney = (n) => {
+    return "$ " + Number(n || 0).toLocaleString("en-US") + " USD";
+  };
+
+  // 🎯 Mostrar chip
+  const showChip = (type) => {
+
+    const cost = ACS_calculateMaintenanceCost(ac, type);
+
+    chipTitle.textContent =
+      type === "D" ? "D-CHECK SERVICE" : "C-CHECK SERVICE";
+
+    chipCost.textContent =
+      (type === "D" ? "D-Check Cost: " : "C-Check Cost: ") +
+      formatMoney(cost);
+
+    chip.style.display = "block";
+
+    // Confirmar servicio
+    chipConfirm.onclick = () => {
+
+      chip.style.display = "none";
+
+      ACS_confirmAndExecuteMaintenance(ac.registration, type);
+    };
+
+    // Cancelar
+    chipCancel.onclick = () => {
+      chip.style.display = "none";
+    };
+  };
+
+  // 🟢 Eventos botones
+  btnC.onclick = () => showChip("C");
+  btnD.onclick = () => showChip("D");
+
+  // 🟦 View Log intacto
   if (btnL) {
-    btnL.onclick = null;
-  }
-
-  // ─────────────────────────────────────────
-  // C / D CHECK ENABLE LOGIC (NO TOCADO)
-  // ─────────────────────────────────────────
-
-  if (ac.status === "Maintenance") {
-    // permanece deshabilitado
-  }
-  else if (mLocal.isDOverdue || mLocal.nextD_days === 0) {
-    if (btnD) btnD.disabled = false;
-  }
-  else if (mLocal.isCOverdue || mLocal.nextC_days === 0) {
-    if (btnC) btnC.disabled = false;
-  }
-
-  if (btnC) {
-    btnC.onclick = () =>
-      ACS_confirmAndExecuteMaintenance(ac.registration, "C");
-  }
-
-  if (btnD) {
-    btnD.onclick = () =>
-      ACS_confirmAndExecuteMaintenance(ac.registration, "D");
-  }
-
-  // ─────────────────────────────────────────
-  // 🟦 VIEW LOG — PASO 1 (ACTIVO)
-  // ─────────────────────────────────────────
-  if (btnL) {
-    btnL.onclick = () => {
-      openMaintenanceLog();
+    btnL.onclick = () => openMaintenanceLog();
+     
     };
   }
 }
