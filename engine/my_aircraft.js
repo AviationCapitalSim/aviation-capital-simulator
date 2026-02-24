@@ -1580,10 +1580,34 @@ function renderFleetTable() {
       <td>${ac.model}</td>
 
       <td>
-        <span class="status-badge status-${String(ac.status).replace(/\s+/g, "-").toLowerCase()}">
-          ${ac.status}
+  ${
+    (() => {
+
+      let label = ac.status;
+
+      if (ac.status === "Maintenance" && ac.maintenanceType) {
+        label = ac.maintenanceType === "D"
+          ? "D-Check"
+          : "C-Check";
+      }
+
+      if (ac.status === "Maintenance Hold") {
+        label = "Maintenance Hold";
+      }
+
+      if (ac.abServiceEndDate && ac.status === "Maintenance") {
+        label = "A/B Service";
+      }
+
+      return `
+        <span class="status-badge status-${String(label).replace(/\s+/g, "-").toLowerCase()}">
+          ${label}
         </span>
-      </td>
+      `;
+
+    })()
+  }
+</td>
 
       <td>${ac.hours}</td>
       <td>${ac.cycles}</td>
