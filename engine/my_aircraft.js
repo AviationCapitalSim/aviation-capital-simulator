@@ -2571,6 +2571,13 @@ fleet = fleet.map(ac => {
   return ac;
 });
 
+fleet = fleet.map(ac => {
+  if (!ac.seats || ac.seats <= 0) {
+    return ACS_enrichAircraftFromDB(ac);
+  }
+  return ac;
+});
+   
 saveFleet();
 
   // Normalize aircraft data (registration + maintenance fields)
