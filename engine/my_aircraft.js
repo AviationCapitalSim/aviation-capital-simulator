@@ -2026,8 +2026,9 @@ if (acNow.__pendingKey) {
     const days  = Math.floor(remainingMs / 86400000);
     const hours = Math.floor((remainingMs % 86400000) / 3600000);
 
-    const type = (acNow.maintenanceType === "D") ? "D-CHECK" : "C-CHECK";
-
+    const type =
+    acNow.abServiceEndDate ? "A/B SERVICE" :
+    (acNow.maintenanceType === "D" ? "D-CHECK" : "C-CHECK");
     elMaintStatus.textContent = `IN ${type}`;
     elMaintStatus.classList.add(
       acNow.maintenanceType === "D"
