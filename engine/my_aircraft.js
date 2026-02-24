@@ -229,13 +229,13 @@ function ACS_enrichAircraftFromDB(aircraft) {
     return aircraft;
   }
 
-  // Si ya fue enriquecido → NO tocar
-  if (
-    aircraft.seats !== undefined &&
-    aircraft.speed_kts !== undefined &&
-    aircraft.fuel_burn_kgph !== undefined
-  ) {
-    return aircraft;
+  // Si ya coincide exactamente con el DB, no tocar
+   if (match &&
+    aircraft.seats === match.seats &&
+    aircraft.speed_kts === match.speed_kts &&
+    aircraft.fuel_burn_kgph === match.fuel_burn_kgph) {
+      
+   return aircraft;
   }
 
   // Buscar match exacto en el DB
