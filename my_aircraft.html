@@ -1508,31 +1508,35 @@ function openAircraftDossier(modelName, registration){
   }
 
   // TITLE
+  
   document.getElementById("dossierTitle").innerText =
     modelName + " — " + registration;
 
   // IMAGE (Buy New logic — PNG → fallback JPG)
-  const formattedName = modelName
-      .toLowerCase()
-      .replace(/\s+/g, "_")
-      .replace(/\./g, "")
-      .replace(/-/g, "_");
-
-  const img = document.getElementById("dossierImage");
+  
+    const img = document.getElementById("dossierImage");
 
   if(img){
-    const basePath = "images/aircraft/" + formattedName;
+
+    const imagePath = getAircraftImage(aircraftData);
+
+    // Detectar extensión inicial
+    const baseWithoutExt = imagePath.replace(/\.(png|jpg)$/i, "");
 
     img.onerror = function(){
+
+      // Si era PNG → intentar JPG
       if(this.src.endsWith(".png")){
-        this.src = basePath + ".jpg";
-      } else {
+        this.src = baseWithoutExt + ".jpg";
+      } 
+      // Si era JPG → fallback final
+      else{
         this.onerror = null;
-        this.src = "images/aircraft/default.png";
+        this.src = "img/placeholder_aircraft.png";
       }
     };
 
-    img.src = basePath + ".png";
+    img.src = imagePath;
   }
 
   // TECHNICAL PROFILE (NEW STRUCTURE)
