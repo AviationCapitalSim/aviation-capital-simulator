@@ -228,6 +228,8 @@ function ACS_enrichAircraftFromDB(aircraft) {
     console.warn("⚠️ Enrichment skipped: invalid aircraft object");
     return aircraft;
   }
+
+  // 🔎 Buscar match primero
    
 /* ============================================================
    🔎 DB ACCESS SAFE RESOLUTION
@@ -1590,14 +1592,9 @@ function renderFleetTable() {
 
     row.innerHTML = `
       <td>${ac.registration}</td>
-      <td>
-      <span class="acs-model-click"
-        onclick="openAircraftDossier('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
-      ${ac.model}
-     </span>
-    </td>
+      <td>${ac.model}</td>
 
-    <td>
+      <td>
   ${
     (() => {
 
