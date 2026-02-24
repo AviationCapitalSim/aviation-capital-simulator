@@ -1194,6 +1194,12 @@ function handleLogout(){
 }
 </script>
 
+<script>
+function closeAircraftDossierModal(){
+  document.getElementById("aircraftDossierModal").style.display = "none";
+}
+</script>
+  
 <!-- TIME -->
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
@@ -1212,6 +1218,77 @@ function handleLogout(){
 <script src="engine/my_aircraft.js"></script>
 
 <script src="engine/acs_security_core.js?v=1"></script>
+
+<!-- ============================================================
+     🟦 AIRCRAFT DOSSIER MODAL — Airbus OCC Edition
+     DB Authority + Dynamic Valuation Ready
+     ============================================================ -->
+
+<div id="aircraftDossierModal" class="modal">
+
+  <div class="modal-content">
+
+    <!-- HEADER -->
+    <div class="modal-header-row">
+      <div class="modal-header-text">
+        <h3 id="dossierTitle" class="modal-title">
+          Aircraft Model
+        </h3>
+        <p class="modal-subtitle">
+          Technical Aircraft Dossier • Airbus OCC Data Panel
+        </p>
+      </div>
+      <img id="dossierImage" src="" alt="" class="modal-image" />
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <!-- TECHNICAL PROFILE -->
+      <div class="modal-summary-box">
+        <p class="modal-summary" style="font-weight:600; margin-bottom:0.4rem;">
+          TECHNICAL PROFILE
+        </p>
+
+        <div id="dossierTechnicalData" style="font-size:0.85rem; line-height:1.5;">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <!-- PRICE REFERENCE -->
+      <div class="modal-summary-box" style="margin-top:0.8rem;">
+        <p class="modal-summary" style="font-weight:600; margin-bottom:0.4rem;">
+          PRICE REFERENCE
+        </p>
+
+        <div id="dossierPriceData" style="font-size:0.85rem; line-height:1.5;">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <!-- CURRENT MARKET VALUE -->
+      <div class="modal-summary-box" style="margin-top:0.8rem;">
+        <p class="modal-summary" style="font-weight:600; margin-bottom:0.4rem;">
+          CURRENT MARKET VALUATION
+        </p>
+
+        <div id="dossierMarketValueData" style="font-size:0.85rem; line-height:1.5;">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      <button class="close-btn" onclick="closeAircraftDossierModal()">
+        Close
+      </button>
+    </div>
+
+  </div>
+</div>
+
   
 </body>
 </html>
