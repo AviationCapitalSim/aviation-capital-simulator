@@ -2276,8 +2276,6 @@ Reemplaza completamente el bloque MA-9
   // 🟦 View Log intacto
   if (btnL) {
     btnL.onclick = () => openMaintenanceLog();
-     
-    };
   }
 }
    
