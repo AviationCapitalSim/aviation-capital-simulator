@@ -298,9 +298,14 @@ registerTimeListener((currentTime) => {
     }
   });
 
-  if (changed) {
-    saveFleet(fleet);
-  }
+  /* ============================================================
+   🔐 SAFE FLEET SAVE CALL — Prevent ReferenceError
+   Only saves if Fleet module is loaded
+   ============================================================ */
+
+if (changed && typeof saveFleet === "function") {
+  saveFleet(fleet);
+}
 });
 
 /* ============================================================
