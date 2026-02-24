@@ -247,19 +247,13 @@ function ACS_enrichAircraftFromDB(aircraft) {
     : null;
 
   if (!match) {
-    console.warn(
-      `⚠️ Aircraft DB match NOT FOUND for ${aircraft.manufacturer} ${aircraft.model}. Applying fallback values.`
-    );
+  console.error(
+    `❌ CRITICAL: Aircraft DB match NOT FOUND for ${aircraft.manufacturer} ${aircraft.model}`
+  );
 
-    // Fallback seguro (no rompe el juego)
-    aircraft.seats = aircraft.seats ?? 50;
-    aircraft.range_nm = aircraft.range_nm ?? 800;
-    aircraft.speed_kts = aircraft.speed_kts ?? 250;
-    aircraft.fuel_burn_kgph = aircraft.fuel_burn_kgph ?? 500;
-    aircraft.price_acs_usd = aircraft.price_acs_usd ?? 1000000;
-
-    return aircraft;
-  }
+  aircraft.__enrichError = true;
+  return aircraft;
+}
 
   // Copiar SOLO specs técnicos
   aircraft.seats = aircraft.seats ?? match.seats;
@@ -354,6 +348,7 @@ function updatePendingDeliveries() {
           lastDCheckDate: entry.lastDCheckDate || null,
 
           // Used Aircraft A/B service (si existe la constante; si no, no rompe)
+           
           abServiceEndDate: entry.isUsed
             ? (() => {
                 const days = (ACS_MAINTENANCE_RULES && ACS_MAINTENANCE_RULES.USED_AIRCRAFT_AB_SERVICE_DAYS)
@@ -377,8 +372,14 @@ function updatePendingDeliveries() {
         if (typeof ACS_enrichAircraftFromDB === "function") {
           newAircraft = ACS_enrichAircraftFromDB(newAircraft);
         }
-
+        
+        if (newAircraft.__enrichError) {
+        console.error("🚫 Delivery blocked — Aircraft DB not ready");
+        return;
+        }
+         
         // Pipeline mínimo (sin romper lógica)
+         
         if (typeof ACS_applyMaintenanceBaseline === "function") {
           newAircraft = ACS_applyMaintenanceBaseline(newAircraft);
         }
