@@ -831,157 +831,69 @@
 } 
 
 /* ============================================================
-🟦 2️⃣ DOSSIER MODAL V2 — AIRBUS OCC STYLE
-Responsive • Buy_New Hero Image • Clean Layout
+🟢 MA-NEW-2 — MY AIRCRAFT BUY STYLE MODAL CSS
 ============================================================ */
 
-.dossier-modal{
-  max-width: 720px;
-  width: 95%;
-  padding: 0;
-  overflow: hidden;
+.buy-modal-container {
+  width: 720px;
+  max-width: 95%;
+  background: linear-gradient(180deg, #0c1f3f, #07132a);
   border-radius: 14px;
-}
-
-/* =============================
-   HERO IMAGE (BUY NEW STYLE)
-============================= */
-
-.dossier-image-wrapper{
-  width: 100%;
-  height: 260px;
   overflow: hidden;
-  background: #0f1b3d;
-  border-bottom: 1px solid rgba(255,179,0,0.25);
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  animation: fadeInScale 0.2s ease-out;
 }
 
-.dossier-image{
+.buy-modal-hero img {
   width: 100%;
-  height: 100%;
+  height: 220px;
   object-fit: cover;
-  display: block;
 }
 
-/* =============================
-   HEADER
-============================= */
-
-.dossier-header{
-  padding: 1.2rem 1.4rem 0.8rem 1.4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+.buy-modal-content {
+  padding: 24px;
+  color: #fff;
 }
 
-.dossier-title{
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #ffb300;
-  letter-spacing: 0.5px;
-}
-
-.dossier-status{
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 999px;
-  display: inline-block;
-  width: fit-content;
-  background: rgba(80,200,120,0.15);
-  color: #50C878;
-  border: 1px solid rgba(80,200,120,0.6);
-}
-
-/* =============================
-   SECTIONS
-============================= */
-
-.dossier-section{
-  padding: 1rem 1.4rem;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-
-.dossier-section-title{
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #9fb3c8;
-  margin-bottom: 0.8rem;
-}
-
-.dossier-row{
+.buy-modal-header {
   display: flex;
   justify-content: space-between;
-  font-size: 0.9rem;
-  margin: 0.4rem 0;
+  align-items: center;
+  margin-bottom: 18px;
 }
 
-.dossier-row span:first-child{
-  color: rgba(230,230,230,0.7);
-}
-
-.dossier-row span:last-child{
-  color: #ffffff;
+.ma-status-badge {
+  background: #1e9b62;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
   font-weight: 600;
 }
 
-/* =============================
-   ACTION BUTTONS (FUTURE)
-============================= */
-
-.dossier-actions{
+.buy-modal-grid {
   display: flex;
-  justify-content: center;
-  gap: 0.8rem;
-  padding: 1.2rem;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  gap: 40px;
+  margin-bottom: 20px;
 }
 
-.dossier-btn{
-  padding: 0.5rem 1.2rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255,179,0,0.35);
-  background: transparent;
-  color: #ffb300;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: not-allowed;
-  opacity: 0.6;
+.buy-modal-col div {
+  margin-bottom: 10px;
+  font-size: 14px;
 }
 
-/* =============================
-   RESPONSIVE
-============================= */
-
-@media (max-width: 768px){
-
-  .dossier-modal{
-    max-width: 100%;
-    width: 100%;
-    border-radius: 0;
-  }
-
-  .dossier-image-wrapper{
-    height: 200px;
-  }
-
-  .dossier-title{
-    font-size: 1.05rem;
-  }
-
-  .dossier-row{
-    font-size: 0.85rem;
-  }
-
-  .dossier-actions{
-    flex-direction: column;
-  }
-
-  .dossier-btn{
-    width: 100%;
-  }
+.buy-modal-actions {
+  text-align: right;
 }
 
+.btn-gold {
+  background: #f4b400;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+    
 /* ============================================================
 🟦 MYA-UI-1 — MODEL CLICK POINTER
 ============================================================ */
@@ -1351,93 +1263,56 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
 </div>
 
 <!-- ============================================================
-🟦 1️⃣ AIRCRAFT DOSSIER MODAL V2 — AIRBUS OCC STYLE
-Reemplazo completo del bloque aircraftDossierModal
+🟢 MA-NEW-1 — MY AIRCRAFT MODAL (BUY NEW STYLE)
+Location: my_aircraft-10.html (before </body>)
 ============================================================ -->
 
-<div class="modal-bg" id="aircraftDossierModal" style="display:none;">
+<div class="modal-bg" id="myAircraftBuyStyleModal" style="display:none;">
 
-  <div class="modal-detail ql-modal dossier-modal">
+  <div class="buy-modal-container">
 
-    <!-- HEADER IMAGE (BUY NEW STYLE) -->
-    <div class="dossier-image-wrapper">
-      <img id="dossierImage"
-           src=""
-           alt="Aircraft"
-           class="dossier-image" />
+    <!-- HERO IMAGE -->
+    <div class="buy-modal-hero">
+      <img id="maHeroImage"
+           src="img/placeholder_aircraft.png"
+           alt="Aircraft Image"
+           onerror="this.src='img/placeholder_aircraft.png';">
     </div>
 
-    <!-- TITLE + STATUS -->
-    <div class="dossier-header">
-      <div class="dossier-title" id="dossierTitle">
-        Aircraft Model — REG
+    <!-- CONTENT -->
+    <div class="buy-modal-content">
+
+      <div class="buy-modal-header">
+        <h2 id="maTitle">Aircraft</h2>
+        <span id="maStatusBadge" class="ma-status-badge">ACTIVE</span>
       </div>
-      <div class="dossier-status" id="dossierStatus">
-        ACTIVE
+
+      <div class="buy-modal-grid">
+
+        <div class="buy-modal-col">
+          <div><strong>Registration:</strong> <span id="maReg">—</span></div>
+          <div><strong>Manufacturer:</strong> <span id="maManu">—</span></div>
+          <div><strong>Model:</strong> <span id="maModel">—</span></div>
+          <div><strong>Base:</strong> <span id="maBase">—</span></div>
+        </div>
+
+        <div class="buy-modal-col">
+          <div><strong>Hours:</strong> <span id="maHours">—</span></div>
+          <div><strong>Cycles:</strong> <span id="maCycles">—</span></div>
+          <div><strong>Condition:</strong> <span id="maCondition">—</span></div>
+          <div><strong>Age:</strong> <span id="maAge">—</span></div>
+        </div>
+
       </div>
+
+      <div class="buy-modal-actions">
+        <button class="btn-gold" onclick="closeMyAircraftBuyModal()">Close</button>
+      </div>
+
     </div>
-
-    <!-- ============================= -->
-    <!-- TECHNICAL PROFILE -->
-    <!-- ============================= -->
-    <div class="dossier-section">
-      <div class="dossier-section-title">Technical Profile</div>
-      <div class="dossier-row">
-        <span>Manufacturer</span>
-        <span id="dossierManufacturer">—</span>
-      </div>
-    </div>
-
-    <!-- ============================= -->
-    <!-- OPERATIONAL STATE -->
-    <!-- ============================= -->
-    <div class="dossier-section">
-      <div class="dossier-section-title">Operational State</div>
-
-      <div class="dossier-row">
-        <span>Hours</span>
-        <span id="dossierHours">—</span>
-      </div>
-
-      <div class="dossier-row">
-        <span>Condition</span>
-        <span id="dossierCondition">—</span>
-      </div>
-
-      <div class="dossier-row">
-        <span>Age</span>
-        <span id="dossierAge">—</span>
-      </div>
-    </div>
-
-    <!-- ============================= -->
-    <!-- ASSET VALUATION -->
-    <!-- ============================= -->
-    <div class="dossier-section">
-      <div class="dossier-section-title">Asset Valuation</div>
-
-      <div class="dossier-row">
-        <span>Purchase</span>
-        <span id="dossierPurchase">—</span>
-      </div>
-
-      <div class="dossier-row">
-        <span>Est. Value</span>
-        <span id="dossierEstValue">—</span>
-      </div>
-    </div>
-
-    <!-- ============================= -->
-    <!-- FUTURE ACTION BUTTONS -->
-    <!-- ============================= -->
-    <div class="dossier-actions">
-      <button class="dossier-btn" disabled>SELL</button>
-      <button class="dossier-btn" disabled>RENT</button>
-      <button class="dossier-btn" disabled>SCRAP</button>
-    </div>
-
   </div>
 </div>
+
   
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
