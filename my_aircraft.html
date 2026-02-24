@@ -765,7 +765,70 @@
   padding: 20px;
   color: #888;
 }
-    
+
+/* ============================================================
+🟦 MA-10A — SERVICE CONFIRM CHIP STYLES
+============================================================ */
+
+.maintenance-confirm-chip {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #13233f;
+  border: 1px solid #2a3f66;
+  animation: fadeInChip 0.2s ease-in-out;
+}
+
+.chip-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1b21a;
+  margin-bottom: 8px;
+}
+
+.chip-cost {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 14px;
+}
+
+.chip-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-confirm-service {
+  background: #3ddc97;
+  color: #0b1b32;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-confirm-service:hover {
+  opacity: 0.9;
+}
+
+.btn-cancel-service {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #2a3f66;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-cancel-service:hover {
+  background: #1c2e4d;
+}
+
+@keyframes fadeInChip {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}    
 </style>
 </head>
 
@@ -920,6 +983,7 @@
         </div>
 
         <!-- ACTIVE SERVICE PANEL -->
+        
         <div class="ql-service-box" id="maintenanceServiceBox" style="display:none;">
           <div class="ql-service-title">ACTIVE MAINTENANCE</div>
 
@@ -963,6 +1027,32 @@
 
 </div>
 
+<!-- ============================================================
+🟦 MA-10 — SERVICE CONFIRM CHIP (UI BASE)
+Ubicación: Dentro del aircraftModal, debajo de botones C/D
+============================================================ -->
+
+<div id="maintenanceConfirmChip" class="maintenance-confirm-chip" style="display:none;">
+
+  <div class="chip-title" id="chipServiceTitle">
+    C-CHECK SERVICE
+  </div>
+
+  <div class="chip-cost" id="chipServiceCost">
+    Cost: $ 0 USD
+  </div>
+
+  <div class="chip-actions">
+    <button id="chipConfirmBtn" class="btn-confirm-service">
+      Confirm Service
+    </button>
+
+    <button id="chipCancelBtn" class="btn-cancel-service">
+      Cancel
+    </button>
+  </div>
+
+</div>
 
       </div>
 
@@ -1053,6 +1143,7 @@
      - Centrado, fixed, premium
      - Mismo patrón que aircraftModal
      ========================================================= -->
+  
 <div class="modal-bg" id="maintenanceLogModal" style="display:none;">
   <div class="modal-detail ql-modal ql-log-modal">
 
