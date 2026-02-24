@@ -229,6 +229,53 @@ function ACS_enrichAircraftFromDB(aircraft) {
     return aircraft;
   }
 
+/* ============================================================
+   🟦 MYA-TECH-RENDER — IMAGE + DB DATA
+   ============================================================ */
+
+// 🔹 IMAGE (same convention as Buy New)
+
+const formattedName = ac.model
+  .toLowerCase()
+  .replace(/\s+/g, "_")
+  .replace(/\./g, "")
+  .replace(/-/g, "_");
+
+const imgEl = document.getElementById("mAircraftImage");
+
+if (imgEl) {
+  imgEl.src = `images/aircraft/${formattedName}.jpg`;
+}
+
+// 🔹 TECH DATA (DB authority)
+
+document.getElementById("mTechManufacturer").innerHTML =
+  `<b>Manufacturer:</b> ${ac.manufacturer}`;
+
+document.getElementById("mTechYear").innerHTML =
+  `<b>Year:</b> ${ac.year}`;
+
+document.getElementById("mTechSeats").innerHTML =
+  `<b>Seats:</b> ${ac.seats}`;
+
+document.getElementById("mTechRange").innerHTML =
+  `<b>Range:</b> ${ac.range_nm} nm`;
+
+document.getElementById("mTechSpeed").innerHTML =
+  `<b>Cruise Speed:</b> ${ac.speed_kts} kts`;
+
+document.getElementById("mTechMTOW").innerHTML =
+  `<b>MTOW:</b> ${ac.mtow_kg?.toLocaleString()} kg`;
+
+document.getElementById("mTechFuelBurn").innerHTML =
+  `<b>Fuel Burn:</b> ${ac.fuel_burn_kgph} kg/h`;
+
+document.getElementById("mTechEngines").innerHTML =
+  `<b>Engines:</b> ${ac.engines}`;
+
+document.getElementById("mTechBasePrice").innerHTML =
+  `<b>Base Price (New):</b> $${ac.price_acs_usd?.toLocaleString()}`;
+     
   // 🔎 Buscar match primero
    
 /* ============================================================
