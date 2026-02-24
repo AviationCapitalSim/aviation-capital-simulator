@@ -1050,8 +1050,10 @@ function ACS_executeMaintenance(ac, type = "C") {
   }
 
   // ✅ INICIAR SERVICIO (sin reset aún)
+   
   ac.status = "Maintenance";
-  ac.maintenanceType = type;
+  ac.maintenanceType = type;     // "C" | "D"
+  ac.serviceType = type;         // ✅ NUEVO: "C" | "D"
   ac.maintenanceStartDate = now.toISOString();
 
   const days = (type === "D") ? D_DOWNTIME_DAYS : C_DOWNTIME_DAYS;
@@ -2027,14 +2029,18 @@ if (acNow.__pendingKey) {
     const hours = Math.floor((remainingMs % 86400000) / 3600000);
 
     const type =
-    acNow.abServiceEndDate ? "A/B SERVICE" :
-    (acNow.maintenanceType === "D" ? "D-CHECK" : "C-CHECK");
-    elMaintStatus.textContent = `IN ${type}`;
-    elMaintStatus.classList.add(
-      acNow.maintenanceType === "D"
-        ? "ql-status-dcheck"
-        : "ql-status-ccheck"
-    );
+  (acNow.serviceType === "B") ? "B-CHECK" :
+  (acNow.serviceType === "D") ? "D-CHECK" :
+  (acNow.serviceType === "C") ? "C-CHECK" :
+  (acNow.abServiceEndDate ? "A/B SERVICE" : "MAINTENANCE");
+
+elMaintStatus.textContent = `IN ${type}`;
+
+elMaintStatus.classList.add(
+  acNow.serviceType === "D"
+    ? "ql-status-dcheck"
+    : "ql-status-ccheck"
+);
 
     box.style.display = "block";
 
@@ -2512,8 +2518,9 @@ if (t === "D") {
 
       // Liberar
       ac.status = "Active";
-
-      // Limpiar service state
+      delete ac.serviceType;   // ✅ NUEVO: limpiar tipo de servicio
+       
+       // Limpiar service state
       delete ac.maintenanceType;
       delete ac.maintenanceStartDate;
       delete ac.maintenanceEndDate;
