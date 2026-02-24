@@ -230,12 +230,15 @@ function ACS_enrichAircraftFromDB(aircraft) {
   }
 
   // 🔎 Buscar match primero
-  const match = Array.isArray(window.ACS_AIRCRAFT_DB)
-    ? ACS_AIRCRAFT_DB.find(a =>
-        a.manufacturer === aircraft.manufacturer &&
-        a.model === aircraft.model
-      )
-    : null;
+   
+const db = window.ACS_AIRCRAFT_DB;
+
+const match = Array.isArray(db)
+  ? db.find(a =>
+      a.manufacturer === aircraft.manufacturer &&
+      a.model === aircraft.model
+    )
+  : null;
 
   if (!match) {
     console.error(
