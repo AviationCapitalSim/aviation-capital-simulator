@@ -1494,6 +1494,10 @@ document.addEventListener("DOMContentLoaded", function(){
 
 <script>
 
+/* ============================================================
+🟦 DOSSIER-CORE — CLEAN VERSION (MATCHES NEW MODAL STRUCTURE)
+============================================================ */
+
 function openAircraftDossier(modelName, registration){
 
   const aircraftData = ACS_AIRCRAFT_DB.find(a => a.model === modelName);
@@ -1503,48 +1507,56 @@ function openAircraftDossier(modelName, registration){
     return;
   }
 
-  // Title
+  // TITLE
   document.getElementById("dossierTitle").innerText =
     modelName + " — " + registration;
 
-  // IMAGE (Same logic as Buy New)
+  // IMAGE (Buy New logic — PNG → fallback JPG)
   const formattedName = modelName
       .toLowerCase()
       .replace(/\s+/g, "_")
       .replace(/\./g, "")
       .replace(/-/g, "_");
 
-  document.getElementById("dossierImage").src =
-    "images/aircraft/" + formattedName + ".jpg";
+  const img = document.getElementById("dossierImage");
 
-  // TECHNICAL DATA
-  document.getElementById("dossierTechnicalData").innerHTML = `
-    <p><b>Manufacturer</b><span>${aircraftData.manufacturer}</span></p>
-    <p><b>Year</b><span>${aircraftData.year}</span></p>
-    <p><b>Seats</b><span>${aircraftData.seats}</span></p>
-    <p><b>Range</b><span>${aircraftData.range_nm} nm</span></p>
-    <p><b>Cruise Speed</b><span>${aircraftData.speed_kts} kts</span></p>
-    <p><b>MTOW</b><span>${aircraftData.mtow_kg.toLocaleString()} kg</span></p>
-    <p><b>Fuel Burn</b><span>${aircraftData.fuel_burn_kgph} kg/h</span></p>
-    <p><b>Engines</b><span>${aircraftData.engines}</span></p>
-  `;
+  if(img){
+    const basePath = "images/aircraft/" + formattedName;
 
-  // PRICE
-  document.getElementById("dossierPriceData").innerHTML = `
-    <p><b>Base New Price</b>
-    <span>$${aircraftData.price_acs_usd.toLocaleString()}</span></p>
-  `;
+    img.onerror = function(){
+      if(this.src.endsWith(".png")){
+        this.src = basePath + ".jpg";
+      } else {
+        this.onerror = null;
+        this.src = "images/aircraft/default.png";
+      }
+    };
 
-  // Placeholder valuation (next phase)
-  document.getElementById("dossierMarketValueData").innerHTML = `
-    <p><b>Current Estimated Value</b>
-    <span>— Pending Valuation Engine —</span></p>
-  `;
+    img.src = basePath + ".png";
+  }
+
+  // TECHNICAL PROFILE (NEW STRUCTURE)
+  document.getElementById("dossierManufacturer").innerText =
+    aircraftData.manufacturer || "—";
+
+  // OPERATIONAL (placeholder for now)
+  document.getElementById("dossierHours").innerText = "—";
+  document.getElementById("dossierCondition").innerText = "—";
+  document.getElementById("dossierAge").innerText = "—";
+
+  // VALUATION
+  document.getElementById("dossierPurchase").innerText =
+    aircraftData.price_acs_usd
+      ? "$" + aircraftData.price_acs_usd.toLocaleString()
+      : "—";
+
+  document.getElementById("dossierEstValue").innerText =
+    "— Pending Valuation Engine —";
 
   // OPEN MODAL
   document.getElementById("aircraftDossierModal").style.display = "flex";
 }
-
+  
 </script>
 
   
