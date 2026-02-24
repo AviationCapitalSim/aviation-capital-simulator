@@ -1592,7 +1592,7 @@ function renderFleetTable() {
       <td>${ac.registration}</td>
       <td>
       <span class="acs-model-click"
-        onclick="openAircraftModal('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
+        onclick="openAircraftDossier('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
       ${ac.model}
      </span>
     </td>
