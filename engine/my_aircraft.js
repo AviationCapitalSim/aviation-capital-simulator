@@ -1910,8 +1910,11 @@ else {
   document.getElementById("mCycles").textContent = ac.cycles || 0;
   document.getElementById("mAge").textContent = ac.age || "—";
   
-  /* ============================================================
-🟦 MODAL AGE RESOLVER — ACTIVE vs PENDING
+/* ============================================================
+🟦 MODAL AGE RESOLVER — UNIFIED (ACTIVE + PENDING)
+------------------------------------------------------------
+• Edad calculada siempre desde ac.year
+• Basado en reloj ACS
 ============================================================ */
 
 (function resolveModalAge(){
@@ -1919,19 +1922,17 @@ else {
   const elAge = document.getElementById("mAge");
   if (!elAge) return;
 
-  // Pending aircraft → edad técnica aún no aplica
-  if (ac.status === "Pending" || ac.status === "Pending Delivery") {
-    elAge.textContent = "—";
-    return;
-  }
-
-  // Active aircraft → calcular edad real desde year
   if (typeof ac.year === "number") {
+
     const simYear = getSimTime().getUTCFullYear();
     const age = Math.max(0, simYear - ac.year);
+
     elAge.textContent = `${age} yrs`;
+
   } else {
-    elAge.textContent = ac.age ?? "—";
+
+    elAge.textContent = "—";
+
   }
 
 })();
