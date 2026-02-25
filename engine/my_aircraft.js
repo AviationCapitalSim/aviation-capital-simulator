@@ -1829,11 +1829,11 @@ else {
 }
 
 /* ============================================================
-   🟦 DELIVERY DATE RENDER — PENDING FIX
+   🟦 DELIVERY DATE RENDER — CLEAN MODE (DATE ONLY)
    ------------------------------------------------------------
-   • Muestra fecha real de entrega
-   • Soporta pendingReleaseDate (canónico)
-   • Muestra countdown debajo
+   • Pending muestra SOLO fecha
+   • Sin countdown
+   • Mismo formato que Delivered Date
    ============================================================ */
 
 (function renderDeliveryCountdown(){
@@ -1841,7 +1841,6 @@ else {
   const elDelivery = document.getElementById("mDeliveryDate");
   if (!elDelivery) return;
 
-  // Soporte canónico
   const releaseISO =
     ac.pendingReleaseDate ||
     ac.deliveryDate ||
@@ -1851,33 +1850,8 @@ else {
     (ac.status === "Pending" || ac.status === "Pending Delivery") &&
     releaseISO
   ) {
-
-    const now = getSimTime();
-    const release = new Date(releaseISO);
-
-    const diffMs = release - now;
-
-    const fmtDate = (d) =>
-      d.toUTCString().substring(5, 16); // "30 APR 1940"
-
-    if (diffMs <= 0) {
-      elDelivery.innerHTML = `
-        ${fmtDate(release)}
-        <div class="delivery-countdown">Arriving now</div>
-      `;
-      return;
-    }
-
-    const days = Math.floor(diffMs / 86400000);
-    const hours = Math.floor((diffMs % 86400000) / 3600000);
-
-    elDelivery.innerHTML = `
-      ${fmtDate(release)}
-      <div class="delivery-countdown">
-        ${days}d ${hours}h remaining
-      </div>
-    `;
-
+    const d = new Date(releaseISO);
+    elDelivery.textContent = d.toUTCString().substring(5, 16); // 13 MAR 1940
   } else {
     elDelivery.textContent = "—";
   }
