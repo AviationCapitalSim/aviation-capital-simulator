@@ -1,0 +1,108 @@
+# ACS TECHNICAL SESSION LOG
+ID: TSL-2026-02-25-C
+Módulo: My Aircraft / Used Market / Pending Activation / Baseline Engine
+Estado: ABIERTO (INVESTIGACIÓN ACTIVA)
+
+---
+
+## 1. Problema Detectado
+
+❌ Aeronaves compradas desde Used Market en estado Pending continúan mostrando:
+
+- Hours = 50
+- Cycles = 20
+
+Incluso después de aplicar persistencia en renderFleetTable().
+
+Síntomas actuales:
+
+- Valores 50 / 20 persisten tras refresh.
+- Baseline parece ejecutarse en algunos flujos.
+- No hay consistencia entre aeronaves Active iniciales y Pending activadas.
+- La persistencia aplicada no resuelve el problema estructural.
+
+El incidente NO está resuelto.
+
+---
+
+## 2. Contexto Técnico
+
+El pipeline actual aplica:
+
+- ACS_applyMaintenanceBaseline()
+- ACS_applyMaintenanceHold()
+- ACS_applyMaintenanceComputedFields()
+
+Se agregó persistencia explícita en renderFleetTable().
+
+Sin embargo:
+
+Los valores hours / cycles siguen sin modificarse en el storage real.
+
+Esto indica que el problema no es exclusivamente de render ni de persistencia superficial.
+
+---
+
+## 3. Hipótesis Actuales
+
+Posibles causas estructurales aún bajo análisis:
+
+1. createFleetAircraft() puede estar sobrescribiendo valores.
+2. updatePendingDeliveries() puede estar regenerando objeto.
+3. El flujo Pending → Active puede estar reconstruyendo el avión.
+4. Existe una segunda fuente de datos (ACS_PendingAircraft).
+5. Baseline puede estar siendo bloqueado por flags previos.
+6. El objeto mostrado puede no ser el mismo objeto persistido.
+
+El origen exacto aún no está confirmado.
+
+---
+
+## 4. Riesgo Arquitectónico
+
+El valor 50 / 20 es claramente un default técnico.
+
+Si persiste:
+
+- Indica que el baseline no se está aplicando estructuralmente.
+- Puede afectar cálculos C/D.
+- Puede generar inconsistencias futuras en mantenimiento y aging.
+- Puede romper equilibrio de simulación.
+
+---
+
+## 5. Estado Actual del Sistema
+
+✔ Time Engine estable  
+✔ No loops detectados  
+✔ No corrupción masiva  
+⚠ Persistencia técnica incompleta en Used Pending  
+
+El sistema funciona, pero con anomalía estructural pendiente.
+
+---
+
+## 6. Próximo Paso Técnico
+
+Se requiere:
+
+- Verificación directa de localStorage después de compra.
+- Confirmar objeto exacto almacenado en ACS_MyAircraft.
+- Confirmar si Pending utiliza wrapper independiente.
+- Trazar flujo completo desde buyUsed() → createFleetAircraft() → activation → render.
+
+Investigación continúa.
+
+---
+
+## 7. Nota de Estado
+
+Este incidente permanece ABIERTO hasta que:
+
+- Hours y cycles reflejen valores reales desde Used Market.
+- Se confirme persistencia correcta en storage.
+- Se valide estabilidad bajo múltiples compras.
+
+---
+
+Fin del reporte (abierto).
