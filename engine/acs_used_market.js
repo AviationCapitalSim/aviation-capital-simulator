@@ -292,12 +292,24 @@ function buyUsed(id) {
    🟢 UA-NEW — Fleet Creation via Factory (CLEAN)
    ============================================================ */
 
+/* ============================================================
+   🟦 UA-NEW — Fleet Creation via Factory (USED DATA SAFE)
+   ------------------------------------------------------------
+   • Preserva horas reales
+   • Preserva ciclos reales
+   • Preserva año real
+   ============================================================ */
+
 const created = createFleetAircraft({
   manufacturer: ac.manufacturer,
   model: ac.model,
-  isUsed: true
-});
+  isUsed: true,
 
+  // 🔵 PASAR DATOS REALES DEL USED MARKET
+  hours: ac.hours,
+  cycles: ac.cycles,
+  year: ac.year
+});
 if (!created) {
   alert("❌ Error creating aircraft.");
   return;
