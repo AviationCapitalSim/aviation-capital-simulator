@@ -1906,8 +1906,9 @@ else {
     document.getElementById("mCondition").textContent = "—";
   }
 
-  document.getElementById("mHours").textContent = ac.hours;
-  document.getElementById("mCycles").textContent = ac.cycles;
+  document.getElementById("mHours").textContent = ac.hours || 0;
+  document.getElementById("mCycles").textContent = ac.cycles || 0;
+  document.getElementById("mAge").textContent = ac.age || "—";
   
   /* ============================================================
 🟦 MODAL AGE RESOLVER — ACTIVE vs PENDING
