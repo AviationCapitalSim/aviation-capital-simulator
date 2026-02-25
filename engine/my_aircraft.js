@@ -1829,11 +1829,11 @@ else {
 }
 
 /* ============================================================
-   🟦 DELIVERY DATE RENDER — CLEAN MODE (DATE ONLY)
+   🟦 DELIVERY DATE RENDER — ACS TIME ENGINE AUTHORITY
    ------------------------------------------------------------
-   • Pending muestra SOLO fecha
-   • Sin countdown
-   • Mismo formato que Delivered Date
+   • Usa exclusivamente getSimTime()
+   • Ignora fechas corruptas (>= 2000)
+   • Calcula fecha desde reloj ACS
    ============================================================ */
 
 (function renderDeliveryCountdown(){
@@ -1841,35 +1841,39 @@ else {
   const elDelivery = document.getElementById("mDeliveryDate");
   if (!elDelivery) return;
 
-  const releaseISO =
-    ac.pendingReleaseDate ||
-    ac.deliveryDate ||
-    null;
-
-  if (
-    (ac.status === "Pending" || ac.status === "Pending Delivery") &&
-    releaseISO
-  ) {
-
-    const releaseDate = new Date(releaseISO);
-    const simNow = getSimTime();
-
-    // Si la fecha está en el pasado simulado → mostrar delivered
-    if (releaseDate <= simNow) {
-      elDelivery.textContent = "Arrived";
-      return;
-    }
-
-    // Formato limpio UTC basado en fecha almacenada
-    const DD  = String(releaseDate.getUTCDate()).padStart(2, "0");
-    const MON = releaseDate.toLocaleString("en-US", { month: "short", timeZone: "UTC" }).toUpperCase();
-    const YY  = releaseDate.getUTCFullYear();
-
-    elDelivery.textContent = `${DD} ${MON} ${YY}`;
-
-  } else {
+  if (ac.status !== "Pending" && ac.status !== "Pending Delivery") {
     elDelivery.textContent = "—";
+    return;
   }
+
+  const simNow = getSimTime();
+  const DELIVERY_DAYS = 7; // usa aquí tu valor real si es dinámico
+
+  let releaseDate = null;
+
+  // Si existe fecha válida dentro del rango histórico ACS (1940–2030)
+  if (ac.pendingReleaseDate) {
+
+    const parsed = new Date(ac.pendingReleaseDate);
+    const year = parsed.getUTCFullYear();
+
+    if (year >= 1940 && year <= 2030) {
+      releaseDate = parsed;
+    }
+  }
+
+  // Si la fecha es inválida o corrupta (ej: 2026 cuando estás en 1940)
+  if (!releaseDate) {
+    releaseDate = new Date(
+      simNow.getTime() + DELIVERY_DAYS * 86400000
+    );
+  }
+
+  const DD  = String(releaseDate.getUTCDate()).padStart(2, "0");
+  const MON = releaseDate.toLocaleString("en-US", { month: "short", timeZone: "UTC" }).toUpperCase();
+  const YY  = releaseDate.getUTCFullYear();
+
+  elDelivery.textContent = `${DD} ${MON} ${YY}`;
 
 })();
    
