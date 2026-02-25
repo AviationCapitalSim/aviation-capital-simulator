@@ -322,6 +322,87 @@ function ACS_generateRegistration() {
 }
 
 /* ============================================================
+   🟦 ACS FLEET FACTORY — createFleetAircraft()
+   ------------------------------------------------------------
+   Purpose:
+   - Único punto oficial de creación de aeronaves
+   - Compatible con Buy New + Used
+   - Arquitectura limpia y escalable
+   ------------------------------------------------------------
+   Version: v1.0
+   ============================================================ */
+
+function createFleetAircraft(data = {}) {
+
+  if (!data.manufacturer || !data.model) {
+    console.error("❌ createFleetAircraft: Missing manufacturer/model");
+    return null;
+  }
+
+  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+  // 🔹 1 — ID técnico
+  const newId = `AC-${Date.now()}-${fleet.length}`;
+
+  // 🔹 2 — Matrícula oficial
+  const registration = ACS_generateRegistration();
+
+  // 🔹 3 — Determinar status según regla 3 primeros
+  let status = fleet.length < 3 ? "Active" : "Pending";
+
+  // 🔹 4 — Base actual
+  let base = null;
+  if (typeof getCurrentBaseICAO === "function") {
+    base = getCurrentBaseICAO();
+  }
+
+  // 🔹 5 — Construir objeto base
+  let aircraft = {
+    id: newId,
+    registration,
+    manufacturer: data.manufacturer,
+    model: data.model,
+    family: data.family || "",
+    base: base,
+    status: status,
+    hours: 0,
+    cycles: 0,
+    conditionPercent: 100,
+    isUsed: data.isUsed === true
+  };
+
+  // 🔹 6 — Si Pending → asignar fecha liberación
+  if (status === "Pending") {
+
+    const now = (typeof ACS_getSimTime === "function")
+      ? new Date(ACS_getSimTime())
+      : new Date();
+
+    const release = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    aircraft.pendingReleaseDate = release.toISOString();
+  }
+
+  // 🔹 7 — Enrichment desde DB si existe
+  if (typeof ACS_enrichAircraftFromDB === "function") {
+    aircraft = ACS_enrichAircraftFromDB(aircraft);
+  }
+
+  // 🔹 8 — Aplicar baseline mantenimiento
+  if (typeof ACS_applyMaintenanceBaseline === "function") {
+    aircraft = ACS_applyMaintenanceBaseline(aircraft);
+  }
+
+  // 🔹 9 — Insertar en flota
+  fleet.push(aircraft);
+  localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+
+  console.log(`🟢 Aircraft created: ${registration} (${status})`);
+
+  return aircraft;
+}
+
+/* ============================================================
    Helper — Random Letters (A–Z)
    ============================================================ */
 
