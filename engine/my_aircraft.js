@@ -359,21 +359,16 @@ const match = Array.isArray(db)
 }
 
 /* ============================================================
-   🟦 MA-STRUCT-4 — updatePendingDeliveries() (STATUS ONLY)
+   🟦 MA-STRUCT-4 — updatePendingDeliveries() (ACS TIME SAFE)
    ------------------------------------------------------------
-   Arquitectura limpia:
-   - No reconstruye aviones
-   - No crea objetos nuevos
-   - Pending vive en ACS_MyAircraft
-   - Solo cambia status cuando llega la fecha
-   - fleetView se construye desde el mismo storage
+   • Usa exclusivamente getSimTime()
+   • Repara fechas corruptas (ej: 2026 en era 1940)
+   • Nunca usa reloj real
    ============================================================ */
 
 function updatePendingDeliveries() {
 
   const now = getSimTime();
-
-  // 🔹 STORAGE ÚNICO — FLEET REAL
   let fleetStorage = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
 
   let updated = false;
@@ -382,28 +377,48 @@ function updatePendingDeliveries() {
 
     if (!ac || typeof ac !== "object") return;
 
-    // 🔵 ACTIVAR SI ES PENDING Y YA LLEGÓ LA FECHA
-    if (
-      ac.status === "Pending" &&
-      ac.pendingReleaseDate &&
-      new Date(ac.pendingReleaseDate) <= now
-    ) {
-      ac.status = "Active";
-      delete ac.pendingReleaseDate;
-      updated = true;
-    }
+    if (ac.status === "Pending") {
 
+      // 🔎 Validar fecha
+      let releaseDate = ac.pendingReleaseDate
+        ? new Date(ac.pendingReleaseDate)
+        : null;
+
+      const invalidDate =
+        !releaseDate ||
+        isNaN(releaseDate.getTime()) ||
+        releaseDate.getUTCFullYear() > now.getUTCFullYear() + 5 ||
+        releaseDate.getUTCFullYear() < 1940;
+
+      // 🔧 Si fecha inválida → reconstruir desde reloj ACS
+      if (invalidDate) {
+
+        const DELIVERY_DAYS = 7; // usa aquí tu valor real si es dinámico
+
+        releaseDate = new Date(
+          now.getTime() + DELIVERY_DAYS * 86400000
+        );
+
+        ac.pendingReleaseDate = releaseDate.toISOString();
+        updated = true;
+      }
+
+      // 🔵 Activar si llegó fecha
+      if (releaseDate <= now) {
+        ac.status = "Active";
+        ac.deliveredDate = releaseDate.toISOString();
+        delete ac.pendingReleaseDate;
+        updated = true;
+      }
+    }
   });
 
-  // 🔹 Persistir si hubo cambios
   if (updated) {
     localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetStorage));
-    console.log("🟢 Pending aircraft activated (status switch only).");
   }
 
-  // 🔹 Autoridad final
   fleet = fleetStorage;
-  fleetView = fleetStorage;  // Pending y Active vienen del mismo array
+  fleetView = fleetStorage;
 }
   
 /* ============================================================
