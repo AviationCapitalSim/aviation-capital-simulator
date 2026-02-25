@@ -2641,6 +2641,13 @@ ACS_forceFleetBaseSync();
   // 2) Procesar entregas pendientes
   updatePendingDeliveries();
 
+  // ============================================================
+// 🟦 MA-STRUCT-2 — FORCE ID NORMALIZATION AFTER PENDING RELEASE
+// Ensures newly delivered aircraft receive stable ID
+// ============================================================
+
+  normalizeAircraftIds();
+   
   ACS_processABCompletion();
    
   // 3) Filtros
@@ -2655,29 +2662,28 @@ ACS_forceFleetBaseSync();
   }
 });
 
-/* ============================================================
-   🟦 ACS — ENSURE AIRCRAFT ID (AC_xxx)
-   Source of truth: ACS_MyAircraft
-   ============================================================ */
+// ============================================================
+// 🟦 MA-STRUCT-1 — NORMALIZE AIRCRAFT IDS (Reusable)
+// Ensures every aircraft has a stable technical ID
+// ============================================================
 
-(function normalizeAircraftIds() {
+function normalizeAircraftIds() {
 
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  let changed = false;
+  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  let updated = false;
 
   fleet.forEach((ac, index) => {
     if (!ac.id) {
-      ac.id = `AC_${String(index + 1).padStart(4, "0")}`;
-      changed = true;
+      ac.id = `AC-${Date.now()}-${index}`;
+      updated = true;
     }
   });
 
-  if (changed) {
+  if (updated) {
     localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-    console.warn("🛠 Aircraft IDs normalized (AC_xxxx assigned)");
+    console.log("🟢 Aircraft IDs normalized.");
   }
-
-})();
+}
 
 /* ============================================================
    === TIME ENGINE SYNC =======================================
