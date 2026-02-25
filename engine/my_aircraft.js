@@ -2587,9 +2587,14 @@ fleet = fleet.map(ac => {
 });
 
 fleet = fleet.map(ac => {
-  if (!ac.seats || ac.seats <= 0) {
-    return ACS_enrichAircraftFromDB(ac);
-  }
+  if (
+  !ac.seats ||
+  !ac.range_nm ||
+  !ac.speed_kts ||
+  !ac.fuel_burn_kgph
+) {
+  return ACS_enrichAircraftFromDB(ac);
+}
   return ac;
 });
    
