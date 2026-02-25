@@ -704,8 +704,13 @@ function ACS_applyMaintenanceBaseline(ac) {
   if (ac.isUsed === true) {
 
     // 1) Hours/Cycles realistas si vienen en 0 / undefined
-    const ageYears = (typeof ac.age === "number" && isFinite(ac.age) && ac.age > 0) ? ac.age : 0;
+    let ageYears = 0;
 
+    if (typeof ac.year === "number") {
+    const simYear = getSimTime().getUTCFullYear();
+    ageYears = Math.max(0, simYear - ac.year);
+    }
+     
     // rangos realistas por año (aprox):
     // - horas: 1,800–4,000 / año (según rnd)
     // - ciclos: 500–1,200 / año
