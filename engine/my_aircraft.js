@@ -2762,20 +2762,4 @@ function ACS_calculateMaintenanceStatus(ac) {
 
   waitForTimeEngine();
 
-function ACS_generateRegistration() {
-
-  const fleetNow = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-  const existing = fleetNow
-    .map(a => a.registration)
-    .filter(r => /^YV-\d{4}$/.test(r));
-
-  let num = 1000;
-
-  while (existing.includes(`YV-${num}`)) {
-    num++;
-  }
-
-  return `YV-${num}`;
-}   
 })();
