@@ -288,15 +288,13 @@ function buyUsed(id) {
     let nextD = 96 - (monthsAge % 96);
     if (nextD <= 0) nextD = 96;
 
-    
-    /* ============================================================
-   🟢 UA-NEW — Fleet Creation via Factory (STRUCTURAL)
+/* ============================================================
+   🟢 UA-NEW — Fleet Creation via Factory (CLEAN)
    ============================================================ */
 
 const created = createFleetAircraft({
   manufacturer: ac.manufacturer,
   model: ac.model,
-  family: fullData.family || "",
   isUsed: true
 });
 
