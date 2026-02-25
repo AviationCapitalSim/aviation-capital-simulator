@@ -1828,41 +1828,62 @@ else {
 
 }
 
-  /* ============================================================
-🟦 DELIVERY COUNTDOWN ENGINE (PENDING ONLY)
-============================================================ */
+/* ============================================================
+   🟦 DELIVERY DATE RENDER — PENDING FIX
+   ------------------------------------------------------------
+   • Muestra fecha real de entrega
+   • Soporta pendingReleaseDate (canónico)
+   • Muestra countdown debajo
+   ============================================================ */
 
 (function renderDeliveryCountdown(){
 
   const elDelivery = document.getElementById("mDeliveryDate");
   if (!elDelivery) return;
 
+  // Soporte canónico
+  const releaseISO =
+    ac.pendingReleaseDate ||
+    ac.deliveryDate ||
+    null;
+
   if (
     (ac.status === "Pending" || ac.status === "Pending Delivery") &&
-    ac.deliveryDate
+    releaseISO
   ) {
 
     const now = getSimTime();
-    const release = new Date(ac.deliveryDate);
+    const release = new Date(releaseISO);
 
     const diffMs = release - now;
 
+    const fmtDate = (d) =>
+      d.toUTCString().substring(5, 16); // "30 APR 1940"
+
     if (diffMs <= 0) {
-      elDelivery.textContent = "Arriving now";
+      elDelivery.innerHTML = `
+        ${fmtDate(release)}
+        <div class="delivery-countdown">Arriving now</div>
+      `;
       return;
     }
 
     const days = Math.floor(diffMs / 86400000);
     const hours = Math.floor((diffMs % 86400000) / 3600000);
 
-    elDelivery.textContent = `${days}d ${hours}h remaining`;
+    elDelivery.innerHTML = `
+      ${fmtDate(release)}
+      <div class="delivery-countdown">
+        ${days}d ${hours}h remaining
+      </div>
+    `;
 
   } else {
     elDelivery.textContent = "—";
   }
 
 })();
-
+   
   if (ac.deliveredDate) {
     const dd = new Date(ac.deliveredDate);
     document.getElementById("mDeliveredDate").textContent = dd.toUTCString().substring(5, 16);
