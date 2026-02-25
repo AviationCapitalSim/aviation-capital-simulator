@@ -337,6 +337,8 @@ function updatePendingDeliveries() {
           model: entry.model || "—",
           family: entry.family || "",
 
+          isUsed: entry.isUsed === true,
+           
           status: entry.isUsed ? "Maintenance" : "Active",
 
           hours: entry.isUsed ? (entry.hours || 0) : 0,
@@ -427,6 +429,7 @@ function updatePendingDeliveries() {
     }
 
     // 🔒 Persistir matrícula pending una sola vez (si no es válida)
+     
     if (!entry.registration || !/^YV-\d{4}$/.test(entry.registration)) {
       entry.registration = (typeof ACS_generateRegistration === "function")
         ? ACS_generateRegistration()
