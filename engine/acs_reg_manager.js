@@ -203,6 +203,38 @@ function saveRegistration() {
   if (typeof refreshFleetTable === "function") refreshFleetTable();
 }
 
+/* ============================================================
+   🟦 ACS BASE RESOLVER — STRUCTURAL
+   ------------------------------------------------------------
+   ✔ Sin fallback país fijo
+   ✔ Compatible con multi-continente
+   ✔ Fuente única de verdad
+   ============================================================ */
+
+function getCurrentBaseICAO() {
+
+  let user = {};
+  let baseObj = {};
+  let airline = {};
+
+  try { user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}"); } catch(e){}
+  try { baseObj = JSON.parse(localStorage.getItem("ACS_Base") || "{}"); } catch(e){}
+  try { airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}"); } catch(e){}
+
+  const icao =
+    user?.base?.icao ||
+    baseObj?.icao ||
+    airline?.baseICAO ||
+    null;
+
+  if (!icao) {
+    console.warn("⚠️ No base ICAO defined.");
+    return null;
+  }
+
+  return icao;
+}
+
 /* ========= ELIMINAR MATRÍCULA =============================== */
 function removeRegistration(acId) {
   let fleet = loadMyAircraft();
