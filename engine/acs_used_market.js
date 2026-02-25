@@ -288,135 +288,23 @@ function buyUsed(id) {
     let nextD = 96 - (monthsAge % 96);
     if (nextD <= 0) nextD = 96;
 
-    const baseObj =
-      JSON.parse(localStorage.getItem("ACS_BaseAirport") || "{}");
-
-    const baseICAO   = baseObj.icao   || "LIRN";
-    const baseCity   = baseObj.city   || "Naples";
-    const baseRegion = baseObj.region || "Italy";
-
-    const reg = ACS_assignUsedRegistration();
-
-    const fullData = (typeof ACS_AIRCRAFT_DB !== "undefined")
-      ? ACS_AIRCRAFT_DB.find(m =>
-          m.manufacturer === ac.manufacturer &&
-          m.model === ac.model
-        ) || {}
-      : {};
-
+    
     /* ============================================================
-   🟨 UA-2.1 — USED AIRCRAFT TECH STATE GENERATOR
-   ------------------------------------------------------------
-   • Industrial maintenance transfer
-   • No nextC/nextD strings
-   • Real baseline for MyAircraft engine
+   🟢 UA-NEW — Fleet Creation via Factory (STRUCTURAL)
    ============================================================ */
 
-const simNow =
-  (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
-    ? new Date(ACS_TIME.currentTime)
-    : new Date();
-
-const deliveredISO = simNow.toISOString();
-
-/* --- Convertir condición A/B/C a porcentaje --- */
-let conditionPercent = 90;
-if (ac.condition === "A") conditionPercent = 92 + Math.floor(Math.random() * 5);
-if (ac.condition === "B") conditionPercent = 80 + Math.floor(Math.random() * 8);
-if (ac.condition === "C") conditionPercent = 68 + Math.floor(Math.random() * 10);
-
-/* --- Generar historial C/D coherente con edad --- */
-
-const MS_PER_DAY = 86400000;
-
-const C_INTERVAL_MONTHS = 12;
-const D_INTERVAL_MONTHS = 96;
-
-const monthsSinceC = monthsAge % C_INTERVAL_MONTHS;
-const monthsSinceD = monthsAge % D_INTERVAL_MONTHS;
-
-const lastCDate = new Date(simNow.getTime() - (monthsSinceC * 30.4375 * MS_PER_DAY));
-const lastDDate = new Date(simNow.getTime() - (monthsSinceD * 30.4375 * MS_PER_DAY));
-
-/* ============================================================
-   🟨 UA-3.1 — DELIVERY DECISION (3 Aircraft Rule)
-   ============================================================ */
-
-let currentFleet =
-  JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-let deliveryMode = "IMMEDIATE";
-
-if (currentFleet.length >= 3) {
-  deliveryMode = "PENDING";
-}
-     
-const newAircraft = {
-  id: "AC-" + Date.now(),
-  registration: reg,
-
+const created = createFleetAircraft({
   manufacturer: ac.manufacturer,
   model: ac.model,
   family: fullData.family || "",
+  isUsed: true
+});
 
-  year: ac.year,
-  age: age,
-
-  isUsed: true,
-
-  status: (deliveryMode === "IMMEDIATE") ? "Active" : "Pending Delivery",
-
-deliveryDate:
-  (deliveryMode === "PENDING")
-    ? new Date(simNow.getTime() + (7 * 24 * 60 * 60 * 1000)).toISOString()
-    : null,
-
-deliveredDate:
-  (deliveryMode === "IMMEDIATE")
-    ? deliveredISO
-    : null,
-
-delivered:
-  (deliveryMode === "IMMEDIATE")
-    ? deliveredISO
-    : null,
-
-  base: baseICAO,
-  base_city: baseCity,
-  base_region: baseRegion,
-
-  image: ac.image,
-
-  hours: ac.hours,
-  cycles: ac.cycles,
-
-  conditionPercent: conditionPercent,
-
-  lastCCheckDate: lastCDate.toISOString(),
-  lastDCheckDate: lastDDate.toISOString(),
-
-  data: fullData
-};
-
-    if (deliveryMode === "IMMEDIATE") {
-
-  let fleet =
-    JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-  fleet.push(newAircraft);
-
-  localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-
-} else {
-
-  let pending =
-    JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
-
-  pending.push(newAircraft);
-
-  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
+if (!created) {
+  alert("❌ Error creating aircraft.");
+  return;
 }
-
+     
     let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
     f.capital  = f.capital  || 0;
     f.revenue  = f.revenue  || 0;
