@@ -383,11 +383,19 @@ function updatePendingDeliveries() {
     if (!ac || typeof ac !== "object") return;
 
     // 🔵 ACTIVAR SI ES PENDING Y YA LLEGÓ LA FECHA
+     
     if (
-      ac.status === "Pending" &&
-      ac.pendingReleaseDate &&
-      new Date(ac.pendingReleaseDate) <= now
-    ) {
+  ac.status === "Pending" &&
+  ac.pendingReleaseDate &&
+  new Date(ac.pendingReleaseDate) <= now
+) {
+  ac.status = "Active";
+  ac.deliveredDate = now.toISOString();   // ✅ NUEVO
+  delete ac.pendingReleaseDate;
+  updated = true;
+}
+    
+   {
       ac.status = "Active";
       delete ac.pendingReleaseDate;
       updated = true;
