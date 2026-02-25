@@ -1828,12 +1828,40 @@ else {
 
 }
 
-  if (ac.status === "Pending Delivery" && ac.deliveryDate) {
-    const d = new Date(ac.deliveryDate);
-    document.getElementById("mDeliveryDate").textContent = d.toUTCString().substring(5, 16);
+  /* ============================================================
+🟦 DELIVERY COUNTDOWN ENGINE (PENDING ONLY)
+============================================================ */
+
+(function renderDeliveryCountdown(){
+
+  const elDelivery = document.getElementById("mDeliveryDate");
+  if (!elDelivery) return;
+
+  if (
+    (ac.status === "Pending" || ac.status === "Pending Delivery") &&
+    ac.deliveryDate
+  ) {
+
+    const now = getSimTime();
+    const release = new Date(ac.deliveryDate);
+
+    const diffMs = release - now;
+
+    if (diffMs <= 0) {
+      elDelivery.textContent = "Arriving now";
+      return;
+    }
+
+    const days = Math.floor(diffMs / 86400000);
+    const hours = Math.floor((diffMs % 86400000) / 3600000);
+
+    elDelivery.textContent = `${days}d ${hours}h remaining`;
+
   } else {
-    document.getElementById("mDeliveryDate").textContent = "—";
+    elDelivery.textContent = "—";
   }
+
+})();
 
   if (ac.deliveredDate) {
     const dd = new Date(ac.deliveredDate);
@@ -1851,8 +1879,34 @@ else {
 
   document.getElementById("mHours").textContent = ac.hours;
   document.getElementById("mCycles").textContent = ac.cycles;
-  document.getElementById("mAge").textContent = ac.age || 0;
+  
+  /* ============================================================
+🟦 MODAL AGE RESOLVER — ACTIVE vs PENDING
+============================================================ */
 
+(function resolveModalAge(){
+
+  const elAge = document.getElementById("mAge");
+  if (!elAge) return;
+
+  // Pending aircraft → edad técnica aún no aplica
+  if (ac.status === "Pending" || ac.status === "Pending Delivery") {
+    elAge.textContent = "—";
+    return;
+  }
+
+  // Active aircraft → calcular edad real desde year
+  if (typeof ac.year === "number") {
+    const simYear = getSimTime().getUTCFullYear();
+    const age = Math.max(0, simYear - ac.year);
+    elAge.textContent = `${age} yrs`;
+  } else {
+    elAge.textContent = ac.age ?? "—";
+  }
+
+})();
+
+   
 /* ============================================================
    🟧 MA-8.5.4 — MODAL LAST / NEXT C & D (UI RENDER)
    ------------------------------------------------------------
@@ -2003,13 +2057,14 @@ elMaintStatus.classList.add(
     return;
   }
 
-  // ─────────────────────────────────────────
-// 3️⃣ PENDING DELIVERY (NEW FIX)
+// ─────────────────────────────────────────
+// 3️⃣ PENDING DELIVERY (STRUCTURAL FIX)
 // ─────────────────────────────────────────
 
-if (acNow.status === "Pending Delivery") {
+if (acNow.status === "Pending" || acNow.status === "Pending Delivery") {
 
-  elMaintStatus.textContent = "PENDING DELIVERY";
+  elMaintStatus.textContent = "PENDING";
+  
   elMaintStatus.classList.remove(
     "ql-status-airworthy",
     "ql-status-ccheck",
@@ -2017,11 +2072,12 @@ if (acNow.status === "Pending Delivery") {
     "ql-status-overdue"
   );
 
+  elMaintStatus.classList.add("ql-status-pending");
+
   box.style.display = "none";
 
   return;
 }
-
 // ─────────────────────────────────────────
 // 4️⃣ AIRWORTHY (REAL ACTIVE AIRCRAFT)
 // ─────────────────────────────────────────
