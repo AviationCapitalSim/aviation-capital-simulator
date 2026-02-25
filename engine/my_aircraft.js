@@ -81,6 +81,78 @@ function saveFleet() {
 }
 
 /* ============================================================
+   🟦 MA-STRUCT-LEGACY — STRUCTURAL FLEET MIGRATION LAYER
+   ------------------------------------------------------------
+   Purpose:
+   - Normalizar cualquier aeronave legacy
+   - Garantizar integridad estructural total
+   - No modificar aeronaves ya correctas
+   ------------------------------------------------------------
+   Version: v1.0
+   ============================================================ */
+
+function ACS_structuralFleetMigration() {
+
+  let fleetData = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
+  let changed = false;
+
+  fleetData.forEach((ac, index) => {
+
+    if (!ac || typeof ac !== "object") return;
+
+    // 🟢 1 — ID obligatorio
+    if (!ac.id || typeof ac.id !== "string") {
+      ac.id = `AC-${Date.now()}-${index}`;
+      changed = true;
+    }
+
+    // 🟢 2 — Status obligatorio
+    if (!ac.status) {
+      ac.status = "Active";
+      changed = true;
+    }
+
+    // 🟢 3 — Registration obligatoria
+    if (!ac.registration) {
+      if (typeof ACS_generateRegistration === "function") {
+        ac.registration = ACS_generateRegistration();
+        changed = true;
+      }
+    }
+
+    // 🟢 4 — Base obligatoria
+    if (!ac.base && typeof getCurrentBaseICAO === "function") {
+      ac.base = getCurrentBaseICAO();
+      changed = true;
+    }
+
+    // 🟢 5 — Campos mínimos mantenimiento
+    if (ac.hours === undefined) {
+      ac.hours = 0;
+      changed = true;
+    }
+
+    if (ac.cycles === undefined) {
+      ac.cycles = 0;
+      changed = true;
+    }
+
+    if (ac.conditionPercent === undefined) {
+      ac.conditionPercent = 100;
+      changed = true;
+    }
+
+  });
+
+  if (changed) {
+    localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetData));
+    console.log("🟢 Fleet structural migration applied.");
+  }
+
+  return fleetData;
+}
+
+/* ============================================================
    🟦 C.1.1 — UI Fleet Source (Active + Pending)
    ============================================================ */
 
@@ -2415,6 +2487,8 @@ document.addEventListener("DOMContentLoaded", () => {
    🟨 MA-8.6.C — MAINTENANCE PIPELINE (TIME TICK)
    ============================================================ */
 
+fleet = ACS_structuralFleetMigration();
+   
 ACS_processMaintenanceCompletion();
    
 // 1) Recargar flota + pipeline de mantenimiento
