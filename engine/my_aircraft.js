@@ -2639,15 +2639,33 @@ ACS_forceFleetBaseSync();
 
    
   // 2) Procesar entregas pendientes
+   
   updatePendingDeliveries();
 
   // ============================================================
-// 🟦 MA-STRUCT-2 — FORCE ID NORMALIZATION AFTER PENDING RELEASE
-// Ensures newly delivered aircraft receive stable ID
+// 🟦 MA-STRUCT-3 — HARD ID NORMALIZATION AFTER PENDING
+// Forces ID creation directly on storage (no memory conflict)
 // ============================================================
 
-  normalizeAircraftIds();
-   
+(function forceNormalizeAfterPending(){
+
+  let fleetStorage = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  let updated = false;
+
+  fleetStorage.forEach((ac, index) => {
+    if (!ac.id) {
+      ac.id = `AC-${Date.now()}-${index}`;
+      updated = true;
+    }
+  });
+
+  if (updated) {
+    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleetStorage));
+    console.log("🟢 Post-pending ID repair applied.");
+  }
+
+})();
+
   ACS_processABCompletion();
    
   // 3) Filtros
