@@ -1523,15 +1523,21 @@ function renderFleetTable() {
     return;
   }
 
-  list.forEach(ac => {
+  list.forEach((ac, index) => {
 
-    // 🟢 Aplicar pipeline antes de render
-    ac = ACS_applyMaintenanceBaseline(ac);
-    ac = ACS_applyMaintenanceHold(ac);
-    ac = ACS_applyMaintenanceComputedFields(ac);
+  // 🔵 Aplicar pipeline
+  ac = ACS_applyMaintenanceBaseline(ac);
+  ac = ACS_applyMaintenanceHold(ac);
+  ac = ACS_applyMaintenanceComputedFields(ac);
 
-    if (!passesFilters(ac)) return;
+  // 🔴 FIX CRÍTICO — Persistir cambios en flota real
+  const realIndex = fleet.findIndex(f => f.registration === ac.registration);
+  if (realIndex !== -1) {
+    fleet[realIndex] = ac;
+  }
 
+  if (!passesFilters(ac)) return;
+     
     const row = document.createElement("tr");
 
    /* ============================================================
@@ -1609,6 +1615,7 @@ function renderFleetTable() {
 
     fleetTableBody.appendChild(row);
   });
+  saveFleet();   
 }
 
 /* ============================================================
