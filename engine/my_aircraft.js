@@ -1850,8 +1850,23 @@ else {
     (ac.status === "Pending" || ac.status === "Pending Delivery") &&
     releaseISO
   ) {
-    const d = new Date(releaseISO);
-    elDelivery.textContent = d.toUTCString().substring(5, 16); // 13 MAR 1940
+
+    const releaseDate = new Date(releaseISO);
+    const simNow = getSimTime();
+
+    // Si la fecha está en el pasado simulado → mostrar delivered
+    if (releaseDate <= simNow) {
+      elDelivery.textContent = "Arrived";
+      return;
+    }
+
+    // Formato limpio UTC basado en fecha almacenada
+    const DD  = String(releaseDate.getUTCDate()).padStart(2, "0");
+    const MON = releaseDate.toLocaleString("en-US", { month: "short", timeZone: "UTC" }).toUpperCase();
+    const YY  = releaseDate.getUTCFullYear();
+
+    elDelivery.textContent = `${DD} ${MON} ${YY}`;
+
   } else {
     elDelivery.textContent = "—";
   }
