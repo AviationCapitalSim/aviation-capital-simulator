@@ -1501,10 +1501,14 @@ function renderFleetTable() {
 
     const row = document.createElement("tr");
 
-    if (ac.status === "Pending Delivery") {
-      row.classList.add("pending-row");
+   /* ============================================================
+   🟦 ROW STATE CLASS — STRUCTURAL (Active / Pending)
+   ============================================================ */
+
+    if (ac.status === "Pending") {
+    row.classList.add("pending-row");
     } else {
-      row.classList.add("active-row");
+    row.classList.add("active-row");
     }
 
     row.innerHTML = `
