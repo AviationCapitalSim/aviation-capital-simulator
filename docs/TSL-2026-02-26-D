@@ -1,0 +1,36 @@
+# Maintenance Baseline Refactor Report  
+**Module:** ACS – My Aircraft  
+**Date:** 26 FEB 2026  
+**Author:** Internal Structural Fix  
+
+---
+
+## 1. Executive Summary
+
+A structural issue was detected in the Maintenance Baseline Engine affecting both **Active** and **Pending** aircraft.
+
+Symptoms included:
+
+- Used aircraft entering fleet with:
+  - `50 flight hours`
+  - `20 cycles`
+- Baseline values becoming permanently frozen.
+- Inconsistent behavior between:
+  - First 3 aircraft (Active)
+  - Subsequent aircraft (Pending → Active)
+
+The issue was traced to artificial minimum values and overly aggressive baseline protection logic.
+
+This report documents the root cause and the structural fix applied.
+
+---
+
+## 2. Root Cause Analysis
+
+### 2.1 Artificial Minimum Values
+
+The baseline engine originally contained:
+
+```js
+ac.hours  = Math.max(50, Math.round(ageYears * perYearHours));
+ac.cycles = Math.max(20, Math.round(ageYears * perYearCycles));
