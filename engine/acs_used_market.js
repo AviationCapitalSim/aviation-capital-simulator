@@ -308,7 +308,7 @@ const newAircraft = {
   manufacturer: ac.manufacturer,
   model: ac.model,
 
-  registration: reg,
+  registration: registration,
   base: (typeof getCurrentBaseICAO === "function") 
         ? getCurrentBaseICAO() 
         : null,
