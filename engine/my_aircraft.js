@@ -411,16 +411,6 @@ function updatePendingDeliveries() {
   ac.deliveredDate = releaseDate.toISOString();
   delete ac.pendingReleaseDate;
 
-  // 🟢 FORZAR RE-BASELINE SI ERA USED
-         
-  if (ac.isUsed === true) {
-    delete ac.lastCCheckDate;
-    delete ac.lastDCheckDate;
-    delete ac.baselineCHours;
-    delete ac.baselineDHours;
-    delete ac.maintenanceBaselineApplied;
-  }
-
   updated = true;
 }
     }
