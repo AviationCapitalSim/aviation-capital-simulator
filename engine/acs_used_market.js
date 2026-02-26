@@ -289,31 +289,45 @@ function buyUsed(id) {
     if (nextD <= 0) nextD = 96;
 
 /* ============================================================
-   🟢 UA-NEW — Fleet Creation via Factory (CLEAN)
-   ============================================================ */
-
-/* ============================================================
-   🟦 UA-NEW — Fleet Creation via Factory (USED DATA SAFE)
+   🟢 UA-NEW-STRUCT-1 — DIRECT USED FLEET INSERT (CANONICAL)
    ------------------------------------------------------------
-   • Preserva horas reales
-   • Preserva ciclos reales
-   • Preserva año real
+   • NO usa createFleetAircraft()
+   • Preserva hours reales
+   • Preserva cycles reales
+   • Preserva year real
+   • Inserta directamente en ACS_MyAircraft
    ============================================================ */
 
-const created = createFleetAircraft({
+let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+
+const registration = ACS_assignUsedRegistration();
+
+const newAircraft = {
+  id: "AC-" + Date.now(),
+
   manufacturer: ac.manufacturer,
   model: ac.model,
+
+  registration: registration,
+  base: (typeof getCurrentBaseICAO === "function") 
+        ? getCurrentBaseICAO() 
+        : null,
+
+  status: "Active",
   isUsed: true,
 
-  // 🔵 PASAR DATOS REALES DEL USED MARKET
-  hours: ac.hours,
-  cycles: ac.cycles,
-  year: ac.year
-});
-if (!created) {
-  alert("❌ Error creating aircraft.");
-  return;
-}
+  // 🔵 CRÍTICO: FORZAR NUMÉRICO
+  hours: Number(ac.hours),
+  cycles: Number(ac.cycles),
+
+  year: Number(ac.year),
+  deliveredDate: getSimTime().toISOString(),
+
+  conditionPercent: 100
+};
+
+myFleet.push(newAircraft);
+localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
      
     let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
     f.capital  = f.capital  || 0;
