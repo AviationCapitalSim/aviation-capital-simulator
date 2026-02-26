@@ -1550,7 +1550,7 @@ function renderFleetTable() {
     row.classList.add("active-row");
     }
 
-  row.innerHTML = `
+row.innerHTML = `
   <td>${ac.registration}</td>
 
   <td class="aircraft-model-cell"
@@ -1571,63 +1571,59 @@ function renderFleetTable() {
     ${
       (() => {
         let label = ac.status;
-        return label;
+
+        if (ac.status === "Maintenance" && ac.maintenanceType) {
+          label = ac.maintenanceType === "D"
+            ? "D-Check"
+            : "C-Check";
+        }
+
+        if (ac.status === "Maintenance Hold") {
+          label = "Maintenance Hold";
+        }
+
+        if (ac.abServiceEndDate && ac.status === "Maintenance") {
+          label = "A/B Service";
+        }
+
+        return `
+          <span class="status-badge status-${String(label).replace(/\s+/g, "-").toLowerCase()}">
+            ${label}
+          </span>
+        `;
       })()
     }
   </td>
+
+  <td>${ac.hours}</td>
+  <td>${ac.cycles}</td>
+
+  <td>
+    ${typeof ac.conditionPercent === "number"
+      ? ac.conditionPercent + "%"
+      : "—"}
+    ${ac.idleTag
+      ? `<div class="idle-tag">${ac.idleTag}</div>`
+      : ""}
+  </td>
+
+  <td class="${ac.nextC_overdue ? "overdue-text" : ""}">
+    ${ac.nextC}
+  </td>
+
+  <td class="${ac.nextD_overdue ? "overdue-text" : ""}">
+    ${ac.nextD}
+  </td>
+
+  <td>${ac.base}</td>
+
+  <td>
+    <button class="btn-action"
+      onclick="openAircraftModal('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
+      View
+    </button>
+  </td>
 `;
-      if (ac.status === "Maintenance" && ac.maintenanceType) {
-        label = ac.maintenanceType === "D"
-          ? "D-Check"
-          : "C-Check";
-      }
-
-      if (ac.status === "Maintenance Hold") {
-        label = "Maintenance Hold";
-      }
-
-      if (ac.abServiceEndDate && ac.status === "Maintenance") {
-        label = "A/B Service";
-      }
-
-      return `
-        <span class="status-badge status-${String(label).replace(/\s+/g, "-").toLowerCase()}">
-          ${label}
-        </span>
-      `;
-
-    })()
-  }
-</td>
-
-      <td>${ac.hours}</td>
-      <td>${ac.cycles}</td>
-
-      <td>
-        ${typeof ac.conditionPercent === "number"
-          ? ac.conditionPercent + "%"
-          : "—"}
-        ${ac.idleTag
-          ? `<div class="idle-tag">${ac.idleTag}</div>`
-          : ""}
-      </td>
-
-      <td class="${ac.nextC_overdue ? "overdue-text" : ""}">
-        ${ac.nextC}
-      </td>
-
-      <td class="${ac.nextD_overdue ? "overdue-text" : ""}">
-        ${ac.nextD}
-      </td>
-
-      <td>${ac.base}</td>
-
-      <td>
-        <button class="btn-action" onclick="openAircraftModal('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
-          View
-        </button>
-      </td>
-    `;
 
     fleetTableBody.appendChild(row);
   });
