@@ -1526,11 +1526,7 @@ function renderFleetTable() {
   list.forEach((ac, index) => {
 
   // 🔵 Aplicar pipeline
-  // 🟢 Aplicar baseline SOLO si es Active
-     
-if (ac.status === "Active") {
   ac = ACS_applyMaintenanceBaseline(ac);
-}
   ac = ACS_applyMaintenanceHold(ac);
   ac = ACS_applyMaintenanceComputedFields(ac);
 
@@ -2614,9 +2610,7 @@ ACS_processMaintenanceCompletion();
 // 1) Recargar flota + pipeline de mantenimiento
 fleet = fleet.map(ac => {
 
-  if (ac.status === "Active") {
   ac = ACS_applyMaintenanceBaseline(ac);
-}
   ac = ACS_applyMaintenanceHold(ac);
   ac = ACS_checkMaintenanceAutoTrigger(ac);
   ac = ACS_applyMaintenanceComputedFields(ac);
@@ -2759,9 +2753,7 @@ if (typeof registerTimeListener === "function") {
  ac = ACS_applyGroundTimeAccrual(ac);
  ac = ACS_applyIdleCalendarDegradation(ac);
  ac = ACS_applyIdleVisualStatus(ac);   // ← AQUÍ
-if (ac.status === "Active") {
-  ac = ACS_applyMaintenanceBaseline(ac);
-}
+ ac = ACS_applyMaintenanceBaseline(ac);
  ac = ACS_applyMaintenanceHold(ac);
  ac = ACS_checkMaintenanceAutoTrigger(ac);
  ac = ACS_applyMaintenanceComputedFields(ac);
