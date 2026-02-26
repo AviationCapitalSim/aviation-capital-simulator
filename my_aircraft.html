@@ -1211,7 +1211,96 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
   </div>
 </div>
 
+<!-- ============================================================
+     🟦 MA-INFO-1 — AIRCRAFT ASSET MODAL (v1.0)
+     Ubicación: my_aircraft.html
+     Insertar antes de <footer> o antes de los <script>
+     ============================================================ -->
 
+<div id="aircraftInfoModal" class="modal">
+  <div class="modal-content">
+
+    <!-- HEADER -->
+    <div class="modal-header-row">
+      <div class="modal-header-text">
+        <h3 id="infoModalTitle" class="modal-title"></h3>
+        <p id="infoModalRegistration" class="modal-subtitle"></p>
+      </div>
+      <img id="infoModalImage" src="" alt="" class="modal-image" />
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+
+      <div class="modal-row">
+
+        <!-- LEFT COLUMN — TECHNICAL -->
+        <div class="modal-col">
+
+          <div class="modal-summary-box">
+            <p class="modal-summary">
+              <strong>Technical Specifications</strong>
+            </p>
+          </div>
+
+          <p class="modal-summary">
+            Seats: <span id="infoSeats"></span>
+          </p>
+
+          <p class="modal-summary">
+            Range: <span id="infoRange"></span> NM
+          </p>
+
+          <p class="modal-summary">
+            Engines: <span id="infoEngines"></span>
+          </p>
+
+          <p class="modal-summary">
+            Year: <span id="infoYear"></span>
+          </p>
+
+        </div>
+
+        <!-- RIGHT COLUMN — FINANCIAL -->
+        <div class="modal-col">
+
+          <div class="modal-summary-box">
+            <p class="modal-summary">
+              <strong>Financial Overview</strong>
+            </p>
+          </div>
+
+          <p class="modal-summary">
+            Ownership: <span id="infoOwnership">Owned</span>
+          </p>
+
+          <p class="modal-summary">
+            Purchase Price: <span id="infoPurchasePrice"></span>
+          </p>
+
+          <p class="modal-summary">
+            Current Estimated Value: <span id="infoCurrentValue"></span>
+          </p>
+
+          <p class="modal-summary">
+            Estimated Sell Value: <span id="infoSellValue"></span>
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      <button class="close-btn" onclick="closeAircraftInfoModal()">Close</button>
+    </div>
+
+  </div>
+</div>
+
+  
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
 
