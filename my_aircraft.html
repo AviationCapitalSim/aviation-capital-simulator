@@ -1365,94 +1365,82 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
 </div>
 
 <!-- ============================================================
-     🟦 ACS ASSET PANEL — QATAR × AIRBUS OCC
-     Universal / Responsive / Multiplayer Safe
+     ✈️ AIRCRAFT ASSET PANEL — My Aircraft (Pattern A)
+     Qatar Luxury × Airbus OCC
      ============================================================ -->
 
-<div class="modal-bg" id="aircraftAssetPanel">
+<div id="aircraftAssetPanel" class="asset-overlay">
 
-  <div class="modal-detail asset-panel">
+  <div class="asset-panel-container">
 
     <!-- HEADER -->
-    <div class="asset-header">
-      <h2 id="assetTitle"></h2>
-      <div class="asset-sub">
-        <span id="assetReg"></span>
-        <span class="asset-sep">|</span>
-        <span id="assetOwnership" class="asset-badge"></span>
+    <div class="asset-header-row">
+
+      <div class="asset-header-text">
+        <h2 id="assetTitle" class="asset-title"></h2>
+        <div id="assetSubtitle" class="asset-subtitle"></div>
       </div>
-    </div>
 
-    <div class="asset-divider"></div>
+      <img id="assetImage" class="asset-image" src="" />
 
-    <!-- IMAGE -->
-    <div class="asset-image-wrap">
-      <img id="assetImage" />
     </div>
 
     <!-- TECH GRID -->
-    <div class="asset-grid">
-      <div class="asset-row">
-        <span>Seats</span>
-        <strong id="assetSeats"></strong>
+    <div class="asset-tech-grid">
+
+      <div>
+        <strong>Seats</strong><br>
+        <span id="assetSeats"></span>
       </div>
-      <div class="asset-row">
-        <span>Range</span>
-        <strong id="assetRange"></strong>
+
+      <div>
+        <strong>Range</strong><br>
+        <span id="assetRange"></span>
       </div>
-      <div class="asset-row">
-        <span>Engines</span>
-        <strong id="assetEngines"></strong>
+
+      <div>
+        <strong>Engines</strong><br>
+        <span id="assetEngines"></span>
       </div>
-      <div class="asset-row">
-        <span>Year</span>
-        <strong id="assetYear"></strong>
+
+      <div>
+        <strong>Year</strong><br>
+        <span id="assetYear"></span>
       </div>
+
     </div>
 
-    <div class="asset-divider"></div>
+    <!-- FINANCIAL PANEL -->
+    <div class="asset-financial-panel">
 
-    <!-- FINANCIAL CORE -->
-    <div class="asset-financial">
-
-      <div class="asset-fin-title">
+      <div class="asset-financial-title">
         Financial Instrument Panel
       </div>
 
-      <div class="asset-row">
-        <span>Ownership</span>
-        <strong id="assetOwnershipType"></strong>
-      </div>
+      <div class="asset-financial-grid">
 
-      <div class="asset-row">
-        <span>Acquisition</span>
-        <strong id="assetAcquisition"></strong>
-      </div>
+        <div>Ownership</div>
+        <div id="assetOwnership"></div>
 
-      <div class="asset-row">
-        <span>Original Cost</span>
-        <strong id="assetOriginal"></strong>
-      </div>
+        <div>Acquisition</div>
+        <div id="assetAcquisition"></div>
 
-      <div class="asset-row">
-        <span>Market Value</span>
-        <strong id="assetMarket"></strong>
-      </div>
+        <div>Original Cost</div>
+        <div id="assetOriginalCost"></div>
 
-      <div class="asset-row">
-        <span>Gain / Loss</span>
-        <strong id="assetGain"></strong>
-      </div>
+        <div>Market Value</div>
+        <div id="assetMarketValue"></div>
 
-      <div class="asset-bar">
-        <div id="assetLiquidityFill"></div>
+        <div>Gain / Loss</div>
+        <div id="assetGainLoss"></div>
+
       </div>
 
     </div>
 
-    <!-- CLOSE -->
-    <div class="asset-close">
-      <button onclick="closeAssetPanel()">Close</button>
+   
+    <div class="asset-footer">
+      <button class="asset-close-btn" onclick="closeAssetPanel()">Close</button>
     </div>
 
   </div>
