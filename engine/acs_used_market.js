@@ -82,7 +82,7 @@ function getCurrentSimYear() {
 }
 
 /* ============================================================
-   3) FUNCIÓN DE IMÁGENES — IGUAL A BUY AIRCRAFT (FIX v3.1)
+   GLOBAL AIRCRAFT IMAGE RESOLVER — v4 (PNG + JPG SAFE)
    ============================================================ */
 
 function getAircraftImage(ac) {
@@ -94,11 +94,11 @@ function getAircraftImage(ac) {
   let manuFolder = ac.manufacturer.trim().replace(/\s+/g, " ");
 
   if (ac.manufacturer.toLowerCase() === "de havilland") {
-  manuFolder = "de_havilland";
+    manuFolder = "de_havilland";
   }
 
   const rawModel = ac.model.toLowerCase().trim();
-  let base = rawModel.replace(/[^a-z0-9]+/g, "_");
+  const base = rawModel.replace(/[^a-z0-9]+/g, "_");
 
   const variants = new Set();
   variants.add(base);
@@ -114,9 +114,14 @@ function getAircraftImage(ac) {
   }
 
   const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  candidates.push(`img/${base}.png`);
-  candidates.push(`img/${manuSlug}_${base}.png`);
 
+  candidates.push(`img/${base}.png`);
+  candidates.push(`img/${base}.jpg`);
+  candidates.push(`img/${manuSlug}_${base}.png`);
+  candidates.push(`img/${manuSlug}_${base}.jpg`);
+
+  // Devuelve el primer candidato (la verificación real
+  // la hace el navegador si falla la carga)
   return candidates[0] || "img/placeholder_aircraft.png";
 }
 
