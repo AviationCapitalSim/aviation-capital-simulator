@@ -3042,5 +3042,49 @@ window.openAssetPanel = function(id){
 window.closeAssetPanel = function(){
   document.getElementById("aircraftAssetPanel").style.display = "none";
 }
-      
+
+/* ============================================================
+   GLOBAL AIRCRAFT IMAGE RESOLVER — v4 (PNG + JPG SAFE)
+   ============================================================ */
+
+function getAircraftImage(ac) {
+
+  if (!ac || !ac.model || !ac.manufacturer) {
+    return "img/placeholder_aircraft.png";
+  }
+
+  let manuFolder = ac.manufacturer.trim().replace(/\s+/g, " ");
+
+  if (ac.manufacturer.toLowerCase() === "de havilland") {
+    manuFolder = "de_havilland";
+  }
+
+  const rawModel = ac.model.toLowerCase().trim();
+  const base = rawModel.replace(/[^a-z0-9]+/g, "_");
+
+  const variants = new Set();
+  variants.add(base);
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
+  variants.add(base.replace(/_/g, ""));
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
+
+  const candidates = [];
+
+  for (const v of variants) {
+    candidates.push(`img/${manuFolder}/${v}.png`);
+    candidates.push(`img/${manuFolder}/${v}.jpg`);
+  }
+
+  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+
+  candidates.push(`img/${base}.png`);
+  candidates.push(`img/${base}.jpg`);
+  candidates.push(`img/${manuSlug}_${base}.png`);
+  candidates.push(`img/${manuSlug}_${base}.jpg`);
+
+  // Devuelve el primer candidato (la verificación real
+  // la hace el navegador si falla la carga)
+  return candidates[0] || "img/placeholder_aircraft.png";
+}
+   
 })();
