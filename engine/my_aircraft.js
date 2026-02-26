@@ -2964,6 +2964,14 @@ function ACS_calculateMaintenanceStatus(ac) {
 
   waitForTimeEngine();
 
+function openAssetPanel(data){
+  document.getElementById("aircraftAssetPanel").style.display="flex";
+}
+
+function closeAssetPanel(){
+  document.getElementById("aircraftAssetPanel").style.display="none";
+}
+   
 /* ============================================================
    🟦 MA-INFO-2 — GLOBAL MODAL FUNCTION
    ============================================================ */
