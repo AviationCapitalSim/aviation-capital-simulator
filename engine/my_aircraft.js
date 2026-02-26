@@ -1806,29 +1806,9 @@ if (!acRaw) return;
    
   let ac = { ...acRaw };
 
-// 🔹 7 — Enrichment desde DB (OBLIGATORIO para Used)
+// 🟢 Ensure aircraft is enriched (seats, specs)
 if (typeof ACS_enrichAircraftFromDB === "function") {
-  aircraft = ACS_enrichAircraftFromDB(aircraft);
-}
-
-// 🔹 7.1 — Garantizar YEAR desde DB (CRÍTICO)
-if (!aircraft.year) {
-
-  const db =
-    (typeof ACS_AIRCRAFT_DB !== "undefined")
-      ? ACS_AIRCRAFT_DB
-      : (window.ACS_AIRCRAFT_DB || []);
-
-  const match = Array.isArray(db)
-    ? db.find(a =>
-        a.manufacturer === aircraft.manufacturer &&
-        a.model === aircraft.model
-      )
-    : null;
-
-  if (match && match.year) {
-    aircraft.year = match.year;
-  }
+  ac = ACS_enrichAircraftFromDB(ac);
 }
 
   /* ============================================================
