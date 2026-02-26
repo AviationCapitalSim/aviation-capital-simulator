@@ -711,36 +711,59 @@ function ACS_applyMaintenanceBaseline(ac) {
     ageYears = Math.max(0, simYear - ac.year);
     }
      
-    /* ============================================================
-   🟢 MA-BASELINE-FIX-2 — USED DATA PROTECTION LAYER
-   ------------------------------------------------------------
-   • SI hours/cycles ya vienen del Used Market → NO recalcular
-   • SOLO generar historial si realmente vienen vacíos
-   ============================================================ */
+    // rangos realistas por año (aprox):
+    // - horas: 1,800–4,000 / año (según rnd)
+    // - ciclos: 500–1,200 / año
+    if (!(typeof ac.hours === "number" && isFinite(ac.hours) && ac.hours > 0)) {
+      const perYearHours = 1800 + Math.floor(rnd() * 2200);
+      ac.hours = Math.max(50, Math.round(ageYears * perYearHours));
+    }
 
-if (ac.isUsed === true) {
+    if (!(typeof ac.cycles === "number" && isFinite(ac.cycles) && ac.cycles > 0)) {
+      const perYearCycles = 500 + Math.floor(rnd() * 700);
+      ac.cycles = Math.max(20, Math.round(ageYears * perYearCycles));
+    }
 
-  // 🔒 Si ya trae horas reales, NO tocar
-  if (typeof ac.hours === "number" && ac.hours > 0 &&
-      typeof ac.cycles === "number" && ac.cycles > 0) {
+    // 2) Baseline por horas (legacy)
+    const baselineC = Math.floor(ac.hours / C_INTERVAL_HOURS) * C_INTERVAL_HOURS;
+    const baselineD = Math.floor(ac.hours / D_INTERVAL_HOURS) * D_INTERVAL_HOURS;
 
-    ac.baselineCHours = Math.floor(ac.hours / 1200) * 1200;
-    ac.baselineDHours = Math.floor(ac.hours / 6000) * 6000;
+    ac.baselineCHours = baselineC;
+    ac.baselineDHours = baselineD;
     ac.maintenanceBaselineApplied = true;
+
+    // 3) Generar lastC/lastD en el pasado (determinístico)
+    // Ajuste ligero por condición: peor condición => más “cerca de vencer”
+    const cond = (typeof ac.conditionPercent === "number" && isFinite(ac.conditionPercent)) ? ac.conditionPercent : 100;
+    let condBias = 0;
+    if (cond < 90) condBias += 0.05;
+    if (cond < 80) condBias += 0.08;
+    if (cond < 70) condBias += 0.10;
+
+    // Fracción usada del intervalo (0..1). Más alto = más tiempo desde el último check
+    // Para USED queremos que NO llegue “full fresh” siempre.
+    let fracC = 0.20 + rnd() * 0.70 + condBias;   // 0.20..0.90(+)
+    fracC = Math.max(0.05, Math.min(0.95, fracC));
+
+    let fracD = 0.25 + rnd() * 0.65 + (condBias * 0.6); // 0.25..0.90(+)
+    fracD = Math.max(0.10, Math.min(0.95, fracD));
+
+    const daysSinceC = Math.floor(fracC * C_INTERVAL_DAYS);
+    let daysSinceD = Math.floor(fracD * D_INTERVAL_DAYS);
+
+    // D debe ser más antiguo que C (mínimo 30 días más viejo)
+    if (daysSinceD < (daysSinceC + 30)) {
+      daysSinceD = Math.min(Math.floor(D_INTERVAL_DAYS * 0.95), daysSinceC + 30);
+    }
+
+    const lastC = new Date(now.getTime() - (daysSinceC * MS_PER_DAY));
+    const lastD = new Date(now.getTime() - (daysSinceD * MS_PER_DAY));
+
+    ac.lastCCheckDate = lastC.toISOString();
+    ac.lastDCheckDate = lastD.toISOString();
 
     return ac;
   }
-
-  // ⚠️ Solo si realmente vienen vacíos
-  ac.hours = 0;
-  ac.cycles = 0;
-
-  ac.baselineCHours = 0;
-  ac.baselineDHours = 0;
-  ac.maintenanceBaselineApplied = true;
-
-  return ac;
-}
 
   /* ===============================
      ✅ NEW AIRCRAFT: lastC/lastD = delivered
