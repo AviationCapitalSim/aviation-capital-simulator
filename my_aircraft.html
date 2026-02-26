@@ -870,112 +870,109 @@
 }
 
 /* ============================================================
-   🟦 MA-DOSSIER-STYLE — Qatar Luxury + Airbus OCC
+   🟦 ACS ASSET PANEL — UNIVERSAL RESPONSIVE
    ============================================================ */
 
-.dossier-modal {
-  background: radial-gradient(circle at top, #132b55 0%, #0b1b34 60%, #06101f 100%);
-  border: 1px solid rgba(255,179,0,0.4);
-  border-radius: 14px;
-  padding: 1.8rem;
-  width: 92%;
-  max-width: 520px;
-  box-shadow: 0 0 25px rgba(0,0,0,0.7);
-  color: white;
+.asset-panel{
+  max-width:640px;
+  width:92%;
+  background:linear-gradient(180deg,#0b1b34,#081530);
+  border:1px solid rgba(255,179,0,0.35);
+  border-radius:14px;
+  padding:1.6rem;
 }
 
-.dossier-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.asset-header h2{
+  margin:0;
+  color:#ffb300;
+  font-size:1.35rem;
+  letter-spacing:.5px;
 }
 
-.dossier-title {
-  color: #ffb300;
-  font-size: 1.4rem;
-  margin: 0;
+.asset-sub{
+  margin-top:4px;
+  font-size:.9rem;
+  color:#9fb3d9;
 }
 
-.dossier-reg {
-  color: #9fb3d9;
-  font-size: 0.9rem;
-  margin-top: 4px;
+.asset-badge{
+  color:#ffb300;
+  font-weight:600;
 }
 
-.dossier-divider {
-  height: 1px;
-  background: rgba(255,179,0,0.25);
-  margin: 1rem 0;
+.asset-divider{
+  height:1px;
+  background:rgba(255,179,0,.25);
+  margin:14px 0;
 }
 
-.dossier-main-grid {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 1rem;
+.asset-image-wrap{
+  text-align:center;
+  margin-bottom:12px;
 }
 
-.dossier-image {
-  width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 0 12px rgba(0,0,0,0.6);
+.asset-image-wrap img{
+  width:100%;
+  border-radius:8px;
 }
 
-.spec-row,
-.financial-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
+.asset-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
 }
 
-.spec-label {
-  color: #9fb3d9;
-  font-size: 0.85rem;
+.asset-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:.9rem;
 }
 
-.spec-value {
-  color: white;
-  font-weight: 600;
+.asset-financial{
+  background:rgba(0,0,0,.25);
+  padding:12px;
+  border-radius:10px;
 }
 
-.dossier-financial {
-  background: rgba(0,0,0,0.25);
-  border: 1px solid rgba(255,179,0,0.25);
-  border-radius: 10px;
-  padding: 1rem;
+.asset-fin-title{
+  color:#ffb300;
+  font-size:.85rem;
+  margin-bottom:8px;
 }
 
-.financial-title {
-  color: #ffb300;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
+.asset-bar{
+  height:6px;
+  background:rgba(255,255,255,.08);
+  border-radius:6px;
+  margin-top:10px;
+  overflow:hidden;
 }
 
-.dossier-footer {
-  text-align: center;
-  margin-top: 1.2rem;
+.asset-bar div{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#3ddc97,#ffb300);
+  transition:width .4s ease;
 }
 
-.btn-close-dossier {
-  background: #ffb300;
-  border: none;
-  padding: 6px 18px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
+.asset-close{
+  text-align:center;
+  margin-top:14px;
 }
 
-/* ============================================================
-   🟦 MA-DOSSIER-OVERLAY — SOLO ESTE MODAL
-   ============================================================ */
+.asset-close button{
+  background:#ffb300;
+  border:none;
+  padding:6px 18px;
+  border-radius:6px;
+  cursor:pointer;
+}
 
-#aircraftDossierModal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+/* Mobile */
+@media(max-width:600px){
+  .asset-grid{
+    grid-template-columns:1fr;
+  }
 }
     
 </style>
@@ -1331,102 +1328,99 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
 </div>
 
 <!-- ============================================================
-     🟦 MA-DOSSIER-1 — FLEET DOSSIER MODAL (Qatar + OCC)
+     🟦 ACS ASSET PANEL — QATAR × AIRBUS OCC
+     Universal / Responsive / Multiplayer Safe
      ============================================================ -->
 
-<div id="aircraftDossierModal" class="modal">
+<div class="modal-bg" id="aircraftAssetPanel">
 
-  <div class="modal-content dossier-modal">
+  <div class="modal-detail asset-panel">
 
     <!-- HEADER -->
-    <div class="dossier-header">
-      <div>
-        <h2 id="dossierTitle" class="dossier-title"></h2>
-        <div id="dossierReg" class="dossier-reg"></div>
+    <div class="asset-header">
+      <h2 id="assetTitle"></h2>
+      <div class="asset-sub">
+        <span id="assetReg"></span>
+        <span class="asset-sep">|</span>
+        <span id="assetOwnership" class="asset-badge"></span>
       </div>
     </div>
 
-    <div class="dossier-divider"></div>
+    <div class="asset-divider"></div>
 
-    <!-- IMAGE + TECH SPECS -->
-    <div class="dossier-main-grid">
+    <!-- IMAGE -->
+    <div class="asset-image-wrap">
+      <img id="assetImage" />
+    </div>
 
-      <!-- LEFT: IMAGE -->
-      <div class="dossier-image-box">
-        <img id="dossierImage" class="dossier-image" />
+    <!-- TECH GRID -->
+    <div class="asset-grid">
+      <div class="asset-row">
+        <span>Seats</span>
+        <strong id="assetSeats"></strong>
       </div>
-
-      <!-- RIGHT: KEY SPECS -->
-      <div class="dossier-specs">
-
-        <div class="spec-row">
-          <span class="spec-label">Seats</span>
-          <span id="dossierSeats" class="spec-value"></span>
-        </div>
-
-        <div class="spec-row">
-          <span class="spec-label">Range</span>
-          <span id="dossierRange" class="spec-value"></span>
-        </div>
-
-        <div class="spec-row">
-          <span class="spec-label">Engines</span>
-          <span id="dossierEngines" class="spec-value"></span>
-        </div>
-
-        <div class="spec-row">
-          <span class="spec-label">Year</span>
-          <span id="dossierYear" class="spec-value"></span>
-        </div>
-
+      <div class="asset-row">
+        <span>Range</span>
+        <strong id="assetRange"></strong>
+      </div>
+      <div class="asset-row">
+        <span>Engines</span>
+        <strong id="assetEngines"></strong>
+      </div>
+      <div class="asset-row">
+        <span>Year</span>
+        <strong id="assetYear"></strong>
       </div>
     </div>
 
-    <div class="dossier-divider"></div>
+    <div class="asset-divider"></div>
 
-    <!-- FINANCIAL PANEL -->
-    <div class="dossier-financial">
+    <!-- FINANCIAL CORE -->
+    <div class="asset-financial">
 
-      <div class="financial-title">
+      <div class="asset-fin-title">
         Financial Instrument Panel
       </div>
 
-      <div class="financial-row">
-        <span class="spec-label">Purchase Value</span>
-        <span id="dossierPurchase" class="spec-value"></span>
+      <div class="asset-row">
+        <span>Ownership</span>
+        <strong id="assetOwnershipType"></strong>
       </div>
 
-      <div class="financial-row">
-        <span class="spec-label">Market Value</span>
-        <span id="dossierMarket" class="spec-value"></span>
+      <div class="asset-row">
+        <span>Acquisition</span>
+        <strong id="assetAcquisition"></strong>
       </div>
 
-      <div class="financial-row">
-        <span class="spec-label">Liquidity Index</span>
-        <span id="dossierLiquidity" class="spec-value"></span>
+      <div class="asset-row">
+        <span>Original Cost</span>
+        <strong id="assetOriginal"></strong>
+      </div>
+
+      <div class="asset-row">
+        <span>Market Value</span>
+        <strong id="assetMarket"></strong>
+      </div>
+
+      <div class="asset-row">
+        <span>Gain / Loss</span>
+        <strong id="assetGain"></strong>
+      </div>
+
+      <div class="asset-bar">
+        <div id="assetLiquidityFill"></div>
       </div>
 
     </div>
 
-    <!-- FOOTER -->
-    <div class="dossier-footer">
-      <button class="btn-close-dossier" onclick="closeModelAircraftModal()">
-        Close
-      </button>
+    <!-- CLOSE -->
+    <div class="asset-close">
+      <button onclick="closeAssetPanel()">Close</button>
     </div>
 
   </div>
 </div>
-  
-    <!-- FOOTER -->
-    <div class="modal-footer">
-      <button class="close-btn" onclick="closeAircraftInfoModal()">Close</button>
-    </div>
-
-  </div>
-</div>
-
-  
+ 
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
 
