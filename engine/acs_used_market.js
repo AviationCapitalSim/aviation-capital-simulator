@@ -321,7 +321,13 @@ const newAircraft = {
   cycles: Number(ac.cycles),
 
   year: Number(ac.year),
-  deliveredDate: getSimTime().toISOString(),
+  deliveredDate: (
+  typeof ACS_getSimTime === "function"
+    ? new Date(ACS_getSimTime())
+    : (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime
+        ? new Date(ACS_TIME.currentTime)
+        : new Date())
+).toISOString(),
 
   conditionPercent: 100
 };
