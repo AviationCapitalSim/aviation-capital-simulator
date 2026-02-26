@@ -1552,7 +1552,19 @@ function renderFleetTable() {
 
     row.innerHTML = `
       <td>${ac.registration}</td>
-      <td>${ac.model}</td>
+      <td class="aircraft-model-cell"
+    style="
+      cursor:pointer;
+      color:#ffb300;
+      font-weight:600;
+      text-decoration:underline;
+      transition:0.2s ease;
+    "
+    onmouseover="this.style.color='#ffd666'"
+    onmouseout="this.style.color='#ffb300'"
+    onclick="openModelAircraftModal('${ac.id}')">
+  ${ac.model}
+</td>
 
       <td>
   ${
