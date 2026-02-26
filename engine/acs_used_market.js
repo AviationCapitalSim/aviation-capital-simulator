@@ -300,6 +300,9 @@ function buyUsed(id) {
 
 let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
+// 🔹 Regla 3 activos / resto Pending
+let status = myFleet.length < 3 ? "Active" : "Pending";
+     
 const registration = ACS_generateRegistration();
 
 const newAircraft = {
@@ -313,7 +316,7 @@ const newAircraft = {
         ? getCurrentBaseICAO() 
         : null,
 
-  status: "Active",
+  status: status,
   isUsed: true,
 
   // 🔵 CRÍTICO: FORZAR NUMÉRICO
