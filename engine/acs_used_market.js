@@ -300,7 +300,7 @@ function buyUsed(id) {
 
 let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-const registration = ACS_assignUsedRegistration();
+const registration = ACS_generateRegistration();
 
 const newAircraft = {
   id: "AC-" + Date.now(),
