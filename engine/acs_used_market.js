@@ -308,7 +308,7 @@ const newAircraft = {
   manufacturer: ac.manufacturer,
   model: ac.model,
 
-  registration: registration,
+  registration: reg,
   base: (typeof getCurrentBaseICAO === "function") 
         ? getCurrentBaseICAO() 
         : null,
@@ -458,7 +458,7 @@ if (prefix === "N-") {
     hours: ac.hours,
     cycles: ac.cycles,
     condition: ac.condition,
-    registration: registration,
+    registration: reg,
 
     data: modelData,
 
