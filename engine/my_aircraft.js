@@ -668,7 +668,17 @@ function ACS_mulberry32(a){
 function ACS_applyMaintenanceBaseline(ac) {
   if (!ac) return ac;
 
+  // 🟢 NORMALIZACIÓN ESTRUCTURAL
+   
+  if (ac.hours !== undefined) {
+  ac.hours = Number(ac.hours);
+  }
+  if (ac.cycles !== undefined) {
+  ac.cycles = Number(ac.cycles);
+  }   
+   
   // Si ya existe cualquier referencia de C o D, NO tocar baseline
+   
   if (
     ac.baselineCHours !== undefined ||
     ac.baselineDHours !== undefined ||
