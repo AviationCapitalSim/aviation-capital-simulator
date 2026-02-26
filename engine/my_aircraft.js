@@ -1562,7 +1562,7 @@ function renderFleetTable() {
     "
     onmouseover="this.style.color='#ffd666'"
     onmouseout="this.style.color='#ffb300'"
-    onclick="openModelAircraftModal('${ac.id}')">
+    onclick="openAssetPanel('${ac.id}')"
   ${ac.model}
 </td>
 
@@ -2971,58 +2971,5 @@ function openAssetPanel(data){
 function closeAssetPanel(){
   document.getElementById("aircraftAssetPanel").style.display="none";
 }
-   
-/* ============================================================
-   🟦 MA-INFO-2 — GLOBAL MODAL FUNCTION
-   ============================================================ */
-
-window.openModelAircraftModal = function(aircraftId){
-
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
-  const ac = fleet.find(a => a.id === aircraftId);
-
-  if(!ac) return;
-
-  function formatUSD(value){
-    return "$" + value.toLocaleString("en-US", {maximumFractionDigits:0});
-  }
-
-  const simYear = new Date().getFullYear(); // temporal
-  const age = simYear - ac.year;
-
-  const depreciationRate = 0.05;
-  const currentValue = ac.price_acs_usd * (1 - depreciationRate * age);
-  const sellValue = currentValue * 0.9;
-
-  document.getElementById("infoModalTitle").innerText =
-    ac.manufacturer + " " + ac.model;
-
-  document.getElementById("infoModalRegistration").innerText =
-    ac.registration;
-
-  document.getElementById("infoModalImage").src =
-    `images/${ac.manufacturer.toLowerCase()}_${ac.model.replace(/\s/g,'').toLowerCase()}.jpg`;
-
-  document.getElementById("infoSeats").innerText = ac.seats;
-  document.getElementById("infoRange").innerText = ac.range_nm;
-  document.getElementById("infoEngines").innerText = ac.engines;
-  document.getElementById("infoYear").innerText = ac.year;
-
-  document.getElementById("infoPurchasePrice").innerText =
-    formatUSD(ac.price_acs_usd);
-
-  document.getElementById("infoCurrentValue").innerText =
-    formatUSD(currentValue);
-
-  document.getElementById("infoSellValue").innerText =
-    formatUSD(sellValue);
-
-  document.getElementById("aircraftInfoModal").style.display = "flex";
-};
-
-
-window.closeModelAircraftModal = function(){
-  document.getElementById("aircraftInfoModal").style.display = "none";
-};
-   
+      
 })();
