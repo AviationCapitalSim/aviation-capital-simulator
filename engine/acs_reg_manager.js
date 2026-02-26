@@ -361,7 +361,7 @@ function ACS_generateRegistration() {
    - Compatible con Buy New + Used
    - Arquitectura limpia y escalable
    ------------------------------------------------------------
-   Version: v1.0
+   Version: v2.0 (Used-compatible)
    ============================================================ */
 
 function createFleetAircraft(data = {}) {
@@ -388,7 +388,7 @@ function createFleetAircraft(data = {}) {
     base = getCurrentBaseICAO();
   }
 
-  // 🔹 5 — Construir objeto base
+  // 🔹 5 — Construcción del objeto (RESPETA DATA SI EXISTE)
   let aircraft = {
     id: newId,
     registration,
@@ -397,9 +397,14 @@ function createFleetAircraft(data = {}) {
     family: data.family || "",
     base: base,
     status: status,
-    hours: 0,
-    cycles: 0,
-    conditionPercent: 100,
+
+    // 🔵 CLAVE: respetar valores si vienen del Used Market
+    hours: typeof data.hours === "number" ? data.hours : 0,
+    cycles: typeof data.cycles === "number" ? data.cycles : 0,
+    conditionPercent: typeof data.conditionPercent === "number"
+      ? data.conditionPercent
+      : 100,
+
     isUsed: data.isUsed === true
   };
 
@@ -411,7 +416,6 @@ function createFleetAircraft(data = {}) {
       : new Date();
 
     const release = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
     aircraft.pendingReleaseDate = release.toISOString();
   }
 
@@ -420,8 +424,8 @@ function createFleetAircraft(data = {}) {
     aircraft = ACS_enrichAircraftFromDB(aircraft);
   }
 
-  // 🔹 8 — Aplicar baseline mantenimiento
-  if (typeof ACS_applyMaintenanceBaseline === "function") {
+  // 🔹 8 — Aplicar baseline SOLO a aviones nuevos
+  if (!aircraft.isUsed && typeof ACS_applyMaintenanceBaseline === "function") {
     aircraft = ACS_applyMaintenanceBaseline(aircraft);
   }
 
