@@ -870,14 +870,13 @@
 }
 
 /* ============================================================
-   ✈️ AIRCRAFT ASSET PANEL — Qatar Luxury × Airbus OCC
-   Responsive Stable Version
+   ✈️ AIRCRAFT ASSET PANEL — Compact Pattern A
    ============================================================ */
 
-#aircraftAssetPanel {
+.asset-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0,0,0,0.65);
   backdrop-filter: blur(6px);
   display: none;
   justify-content: center;
@@ -887,89 +886,127 @@
 
 .asset-panel-container {
   width: 92%;
-  max-width: 880px;
-  max-height: 85vh;
-  overflow-y: auto;
-
-  background: linear-gradient(145deg, #0b1f3a, #0e2a4f);
-  border: 1px solid rgba(255, 179, 0, 0.4);
+  max-width: 760px;
+  background: radial-gradient(circle at top, #12254a 0%, #091326 60%, #050814 100%);
+  padding: 1.6rem 1.8rem;
   border-radius: 14px;
-  padding: 22px;
-
-  box-shadow:
-    0 0 25px rgba(255, 179, 0, 0.15),
-    0 15px 40px rgba(0, 0, 0, 0.6);
-
-  animation: fadePanel 0.25s ease-out;
+  border: 1px solid rgba(255,179,0,0.45);
+  box-shadow: 0 0 22px rgba(0,0,0,0.7);
 }
 
-/* Image */
+/* HEADER */
+
+.asset-header-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.asset-header-text {
+  flex: 1;
+}
+
+.asset-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #ffb300;
+}
+
+.asset-subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #a8b4d8;
+}
+
+/* IMAGE */
 
 .asset-image {
-  width: 100%;
-  max-height: 320px;
-  object-fit: cover;
+  width: 140px;
+  height: 90px;
   border-radius: 10px;
-  margin-bottom: 18px;
+  object-fit: cover;
+  background:#0f1b3d;
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
-/* Tech grid */
+/* TECH GRID */
 
 .asset-tech-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px 30px;
-  font-size: 14px;
-  margin-bottom: 18px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
 }
 
-/* Financial panel */
+/* FINANCIAL */
 
 .asset-financial-panel {
-  background: rgba(0, 0, 0, 0.25);
+  margin-top: 0.6rem;
+  padding: 0.7rem 0.9rem;
   border-radius: 10px;
-  padding: 16px;
-  font-size: 14px;
+  background: radial-gradient(circle at left, rgba(255,179,0,0.19), rgba(7,15,32,0.9));
+  border: 1px solid rgba(255,179,0,0.35);
 }
 
-/* Close button */
+.asset-financial-title {
+  font-size: 0.85rem;
+  color: #ffb300;
+  margin-bottom: 0.5rem;
+}
+
+.asset-financial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 20px;
+  font-size: 0.85rem;
+  color: #ffe7a0;
+}
+
+/* FOOTER */
+
+.asset-footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
 
 .asset-close-btn {
-  margin-top: 18px;
-  padding: 8px 18px;
-  background: #ffb300;
+  background: linear-gradient(135deg, #ffb300, #ffd666);
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
+  padding: 0.45rem 1.2rem;
   font-weight: 600;
+  color: #071022;
   cursor: pointer;
-  transition: 0.2s ease;
+  font-size: 0.9rem;
+  box-shadow: 0 0 12px rgba(255,179,0,0.45);
 }
 
 .asset-close-btn:hover {
-  background: #ffd666;
+  filter: brightness(1.05);
 }
 
-/* Animation */
-
-@keyframes fadePanel {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Mobile optimization */
+/* MOBILE */
 
 @media (max-width: 768px) {
 
-  .asset-panel-container {
-    max-width: 95%;
-    padding: 16px;
+  .asset-header-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .asset-image {
-    max-height: 220px;
+    width: 100%;
+    height: 160px;
   }
 
   .asset-tech-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-financial-grid {
     grid-template-columns: 1fr;
   }
 
