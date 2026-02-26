@@ -1550,8 +1550,9 @@ function renderFleetTable() {
     row.classList.add("active-row");
     }
 
-    row.innerHTML = `
+  row.innerHTML = `
   <td>${ac.registration}</td>
+
   <td class="aircraft-model-cell"
       style="
         cursor:pointer;
@@ -1565,13 +1566,16 @@ function renderFleetTable() {
       onclick="openAssetPanel('${ac.id}')">
     ${ac.model}
   </td>
+
+  <td>
+    ${
+      (() => {
+        let label = ac.status;
+        return label;
+      })()
+    }
+  </td>
 `;
-      <td>
-  ${
-    (() => {
-
-      let label = ac.status;
-
       if (ac.status === "Maintenance" && ac.maintenanceType) {
         label = ac.maintenanceType === "D"
           ? "D-Check"
