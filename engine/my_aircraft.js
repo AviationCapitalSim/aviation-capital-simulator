@@ -2965,8 +2965,79 @@ function ACS_calculateMaintenanceStatus(ac) {
   waitForTimeEngine();
 
 window.openAssetPanel = function(id){
+
+  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
+  const ac = fleet.find(a => a.id === id);
+
+  if(!ac) return;
+
+  // HEADER
+  document.getElementById("assetTitle").innerText =
+    ac.manufacturer + " " + ac.model;
+
+  document.getElementById("assetReg").innerText =
+    ac.registration;
+
+  document.getElementById("assetOwnership").innerText =
+    ac.ownershipType || "OWNED";
+
+  // IMAGE
+  document.getElementById("assetImage").src =
+    getAircraftImage(ac);
+
+  // TECH DATA
+  document.getElementById("assetSeats").innerText =
+    ac.seats ?? "—";
+
+  document.getElementById("assetRange").innerText =
+    ac.range_nm ? ac.range_nm + " nm" : "—";
+
+  document.getElementById("assetEngines").innerText =
+    ac.engines ?? "—";
+
+  document.getElementById("assetYear").innerText =
+    ac.year ?? "—";
+
+  // FINANCIAL
+  const originalCost = ac.price_acs_usd || 0;
+
+  const simYear = getSimTime().year;
+  const age = simYear - (ac.year || simYear);
+
+  const depreciation = 0.04;
+  const marketValue = Math.max(
+    originalCost * (1 - depreciation * age),
+    originalCost * 0.25
+  );
+
+  const gainLoss = marketValue - originalCost;
+
+  const formatUSD = v =>
+    "$" + v.toLocaleString("en-US", {maximumFractionDigits:0});
+
+  document.getElementById("assetOwnershipType").innerText =
+    ac.ownershipType || "OWNED";
+
+  document.getElementById("assetAcquisition").innerText =
+    ac.acquisitionType || "Factory";
+
+  document.getElementById("assetOriginal").innerText =
+    formatUSD(originalCost);
+
+  document.getElementById("assetMarket").innerText =
+    formatUSD(marketValue);
+
+  document.getElementById("assetGain").innerText =
+    formatUSD(gainLoss);
+
+  // Liquidity bar
+  const liquidity = Math.min(marketValue / originalCost, 1);
+  document.getElementById("assetLiquidityFill").style.width =
+    (liquidity * 100) + "%";
+
+  // SHOW
   document.getElementById("aircraftAssetPanel").style.display = "flex";
-}
+};
 
 window.closeAssetPanel = function(){
   document.getElementById("aircraftAssetPanel").style.display = "none";
