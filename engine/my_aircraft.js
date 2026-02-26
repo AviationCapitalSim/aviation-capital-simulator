@@ -669,14 +669,15 @@ function ACS_applyMaintenanceBaseline(ac) {
    
   // Si ya existe cualquier referencia de C o D, NO tocar baseline
    
-  if (
-    ac.baselineCHours !== undefined ||
-    ac.baselineDHours !== undefined ||
-    ac.lastCCheckDate ||
-    ac.lastDCheckDate
-  ) {
-    return ac;
-  }
+  // 🟢 Permitir baseline si aircraft no tiene horas reales
+if (
+  ac.baselineCHours !== undefined &&
+  ac.baselineDHours !== undefined &&
+  ac.lastCCheckDate &&
+  ac.lastDCheckDate
+) {
+  return ac;
+}
 
   const now = getSimTime();
 
