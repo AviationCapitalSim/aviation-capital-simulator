@@ -711,18 +711,21 @@ function ACS_applyMaintenanceBaseline(ac) {
     ageYears = Math.max(0, simYear - ac.year);
     }
      
-    // rangos realistas por año (aprox):
-    // - horas: 1,800–4,000 / año (según rnd)
-    // - ciclos: 500–1,200 / año
-    if (!(typeof ac.hours === "number" && isFinite(ac.hours) && ac.hours > 0)) {
-      const perYearHours = 1800 + Math.floor(rnd() * 2200);
-      ac.hours = Math.max(50, Math.round(ageYears * perYearHours));
-    }
+    // 🟢 USED aircraft real hours generator (NO artificial minimum)
 
-    if (!(typeof ac.cycles === "number" && isFinite(ac.cycles) && ac.cycles > 0)) {
-      const perYearCycles = 500 + Math.floor(rnd() * 700);
-      ac.cycles = Math.max(20, Math.round(ageYears * perYearCycles));
-    }
+if (!(typeof ac.hours === "number" && isFinite(ac.hours) && ac.hours > 0)) {
+
+  const perYearHours = 1800 + Math.floor(rnd() * 2200);
+  ac.hours = Math.round(ageYears * perYearHours);
+
+}
+
+if (!(typeof ac.cycles === "number" && isFinite(ac.cycles) && ac.cycles > 0)) {
+
+  const perYearCycles = 500 + Math.floor(rnd() * 700);
+  ac.cycles = Math.round(ageYears * perYearCycles);
+
+}
 
     // 2) Baseline por horas (legacy)
     const baselineC = Math.floor(ac.hours / C_INTERVAL_HOURS) * C_INTERVAL_HOURS;
