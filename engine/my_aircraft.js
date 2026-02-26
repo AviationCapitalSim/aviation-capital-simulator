@@ -1551,21 +1551,21 @@ function renderFleetTable() {
     }
 
     row.innerHTML = `
-      <td>${ac.registration}</td>
-      <td class="aircraft-model-cell"
-    style="
-      cursor:pointer;
-      color:#ffb300;
-      font-weight:600;
-      text-decoration:underline;
-      transition:0.2s ease;
-    "
-    onmouseover="this.style.color='#ffd666'"
-    onmouseout="this.style.color='#ffb300'"
-    onclick="openAssetPanel('${ac.id}')"
-  ${ac.model}
-</td>
-
+  <td>${ac.registration}</td>
+  <td class="aircraft-model-cell"
+      style="
+        cursor:pointer;
+        color:#ffb300;
+        font-weight:600;
+        text-decoration:underline;
+        transition:0.2s ease;
+      "
+      onmouseover="this.style.color='#ffd666'"
+      onmouseout="this.style.color='#ffb300'"
+      onclick="openAssetPanel('${ac.id}')">
+    ${ac.model}
+  </td>
+`;
       <td>
   ${
     (() => {
@@ -2964,12 +2964,12 @@ function ACS_calculateMaintenanceStatus(ac) {
 
   waitForTimeEngine();
 
-function openAssetPanel(data){
-  document.getElementById("aircraftAssetPanel").style.display="flex";
+window.openAssetPanel = function(id){
+  document.getElementById("aircraftAssetPanel").style.display = "flex";
 }
 
-function closeAssetPanel(){
-  document.getElementById("aircraftAssetPanel").style.display="none";
+window.closeAssetPanel = function(){
+  document.getElementById("aircraftAssetPanel").style.display = "none";
 }
       
 })();
