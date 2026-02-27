@@ -1542,9 +1542,7 @@ function renderFleetTable() {
 
   list.forEach((ac, index) => {
 
-  // 🔵 Aplicar pipeline
-  ac = ACS_applyMaintenanceBaseline(ac);
-  ac = ACS_applyMaintenanceHold(ac);
+  // 🔵 Render SOLO usa estado ya calculado por el pipeline
   ac = ACS_applyMaintenanceComputedFields(ac);
 
   // 🔴 FIX CRÍTICO — Persistir cambios en flota real
