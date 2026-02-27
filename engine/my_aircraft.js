@@ -2981,12 +2981,7 @@ const marketValue =
 
 // 🔥 Gain/Loss SIEMPRE contra lo que pagaste
 const gainLoss = marketValue - acquisitionCost;
-
-const formatUSD = v =>
-  "$" + Number(v || 0).toLocaleString("en-US", {
-    maximumFractionDigits: 0
-  });
-
+   
 setText("assetAcquisition", ac.acquisitionType || "factory");
 setText("assetOriginal", formatUSD(originalCost));
 setText("assetMarket", formatUSD(marketValue));
