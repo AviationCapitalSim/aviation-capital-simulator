@@ -2939,8 +2939,11 @@ window.openAssetPanel = function(id){
   document.getElementById("assetTitle").innerText =
     ac.manufacturer + " " + ac.model;
 
-  document.getElementById("assetReg").innerText =
-    ac.registration;
+  document.getElementById("assetTitle").innerText =
+  ac.manufacturer + " " + ac.model;
+
+  document.getElementById("assetSubtitle").innerText =
+  "Registration: " + ac.registration;
 
   document.getElementById("assetOwnership").innerText =
     ac.ownershipType || "OWNED";
