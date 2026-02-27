@@ -2776,17 +2776,47 @@ if (typeof registerTimeListener === "function") {
        🟩 MA-8.6.D — MAINTENANCE PIPELINE (TIME TICK)
        ============================================================ */
 
-    fleet = fleet.map(ac => {
+fleet = fleet.map(ac => {
 
- ac = ACS_applyDailyAging(ac);
- ac = ACS_applyGroundTimeAccrual(ac);
- ac = ACS_applyIdleCalendarDegradation(ac);
- ac = ACS_applyIdleVisualStatus(ac);   // ← AQUÍ
- ac = ACS_applyMaintenanceBaseline(ac);
- ac = ACS_applyMaintenanceHold(ac);
- ac = ACS_checkMaintenanceAutoTrigger(ac);
- ac = ACS_applyMaintenanceComputedFields(ac);
- ac = ACS_applyCalendarMaintenanceProgress(ac);
+  /* ===============================
+     1️⃣ OPERACIONAL
+     =============================== */
+
+  ac = ACS_applyDailyAging(ac);
+  ac = ACS_applyGroundTimeAccrual(ac);
+  ac = ACS_applyIdleCalendarDegradation(ac);
+  ac = ACS_applyIdleVisualStatus(ac);
+
+  /* ===============================
+     2️⃣ BASELINE
+     =============================== */
+
+  ac = ACS_applyMaintenanceBaseline(ac);
+
+  /* ============================================================
+     🟢 ESTADO DOMINANTE — SERVICE ACTIVE
+     Si el avión está en mantenimiento activo,
+     el sistema técnico se pausa.
+     ============================================================ */
+
+  if (ac.status === "Maintenance") {
+
+    ac = ACS_applyCalendarMaintenanceProgress(ac);
+    ac = ACS_applyMaintenanceComputedFields(ac);
+
+    return ac;
+  }
+
+  /* ===============================
+     3️⃣ EVALUACIÓN TÉCNICA
+     =============================== */
+
+  ac = ACS_applyMaintenanceHold(ac);
+  ac = ACS_checkMaintenanceAutoTrigger(ac);
+
+  /* ===============================
+     4️⃣ AUTO EXECUTION
+     =============================== */
 
   if (ac.pendingDCheck) {
     ac = ACS_executeMaintenance(ac, "D");
@@ -2794,7 +2824,27 @@ if (typeof registerTimeListener === "function") {
     ac = ACS_executeMaintenance(ac, "C");
   }
 
+  /* ===============================
+     5️⃣ COMPUTED FIELDS
+     =============================== */
+
   ac = ACS_applyMaintenanceComputedFields(ac);
+
+  /* ============================================================
+     🟢 ORPHAN SAFETY
+     ============================================================ */
+
+  if (
+    ac.status === "Maintenance" &&
+    !ac.maintenanceType &&
+    !ac.maintenanceEndDate &&
+    !ac.abServiceEndDate
+  ) {
+    ac.status = "Active";
+  }
+
+  return ac;
+});
 
   /* ============================================================
    🟢 MA-STRUCT-1 — ORPHAN MAINTENANCE FIX
