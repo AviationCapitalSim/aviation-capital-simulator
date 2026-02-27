@@ -410,22 +410,24 @@ let aircraft = {
 
   isUsed: data.isUsed === true,
 
-  // ================================
-  // FINANCIAL CORE (STRUCTURAL)
-  // ================================
-  acquisitionType: data.isUsed === true ? "used" : "factory",
+ // ================================
+// FINANCIAL CORE (CANONICAL FIX)
+// ================================
 
-  originalCost: typeof data.originalCost === "number"
-    ? data.originalCost
-    : null,
+// Tipo real enviado desde Used / Buy
+acquisitionType: typeof data.acquisitionType === "string"
+  ? data.acquisitionType
+  : (data.isUsed === true ? "Used Market" : "Factory"),
 
-  acquisitionCost: typeof data.acquisitionCost === "number"
-    ? data.acquisitionCost
-    : null,
+// Precio OEM histórico (desde DB)
+originalCost: typeof data.oemPrice === "number"
+  ? data.oemPrice
+  : (typeof data.originalCost === "number" ? data.originalCost : 0),
 
-  entryYear: typeof ACS_getCurrentSimYear === "function"
-    ? ACS_getCurrentSimYear()
-    : new Date().getFullYear()
+// Precio realmente pagado
+acquisitionCost: typeof data.acquisitionPrice === "number"
+  ? data.acquisitionPrice
+  : (typeof data.acquisitionCost === "number" ? data.acquisitionCost : 0),
 };
 
   // 🔹 6 — Si Pending → asignar fecha liberación
