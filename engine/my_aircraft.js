@@ -2933,40 +2933,50 @@ window.openAssetPanel = function(id){
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
   const ac = fleet.find(a => a.id === id);
 
-  if(!ac) return;
+  if (!ac) return;
 
-  // HEADER
-  document.getElementById("assetTitle").innerText =
-    ac.manufacturer + " " + ac.model;
-
-  document.getElementById("assetTitle").innerText =
-  ac.manufacturer + " " + ac.model;
-
-  document.getElementById("assetSubtitle").innerText =
-  "Registration: " + ac.registration;
-
-  const elOwnership = document.getElementById("assetOwnershipType");
-  if (elOwnership) {
-  elOwnership.innerText = ac.ownershipType || "OWNED";
+  // 🔒 Helper seguro
+  function setText(elementId, value) {
+    const el = document.getElementById(elementId);
+    if (el) el.innerText = value;
   }
 
+  function setSrc(elementId, value) {
+    const el = document.getElementById(elementId);
+    if (el) el.src = value;
+  }
+
+  // =========================
+  // HEADER
+  // =========================
+
+  setText("assetTitle", ac.manufacturer + " " + ac.model);
+  setText("assetSubtitle", "Registration: " + ac.registration);
+  setText("assetOwnershipType", ac.ownershipType || "OWNED");
+
+  // =========================
   // IMAGE
-  document.getElementById("assetImage").src =
-    getAircraftImage(ac);
+  // =========================
 
+  setSrc("assetImage", getAircraftImage(ac));
+
+  // =========================
   // TECH DATA
-  document.getElementById("assetSeats").innerText =
-    ac.seats ?? "—";
+  // =========================
 
-  document.getElementById("assetRange").innerText =
-    ac.range_nm ? ac.range_nm + " nm" : "—";
+  setText("assetSeats", ac.seats ?? "—");
+  setText("assetRange", ac.range_nm ? ac.range_nm + " nm" : "—");
+  setText("assetEngines", ac.engines ?? "—");
+  setText("assetYear", ac.year ?? "—");
 
-  document.getElementById("assetEngines").innerText =
-    ac.engines ?? "—";
+  // =========================
+  // SHOW PANEL
+  // =========================
 
-  document.getElementById("assetYear").innerText =
-    ac.year ?? "—";
-
+  const panel = document.getElementById("aircraftAssetPanel");
+  if (panel) panel.style.display = "flex";
+};
+   
   // FINANCIAL
   const originalCost = ac.price_acs_usd || 0;
 
