@@ -2968,34 +2968,38 @@ window.openAssetPanel = function(id){
   setText("assetYear", ac.year ?? "—");
 
 // ============================================================
-// 🟢 MA-FIN-2.2 — FINANCIAL (CANONICAL STRUCTURE CLEAN)
-// ------------------------------------------------------------
-// • Sin variables duplicadas
-// • Usa acquisitionPrice (lo que pagaste)
-// • Usa oemPrice (precio OEM histórico)
-// • Usa Finance Engine real
-// • Sin defaults mágicos
+// 🟢 MA-FIN-3.0 — FINANCIAL (ALIGNED WITH FLEET STRUCTURE)
 // ============================================================
 
-// 🔹 1 — Datos base
-const entryPrice = Number(ac.acquisitionPrice) || 0;
-const oemPrice = Number(ac.oemPrice) || 0;
-const acquisitionType = ac.acquisitionType || "Unknown";
+// 🔹 Datos reales guardados por reg_manager
+const entryPrice = Number(ac.acquisitionCost) || 0;
+const oemPrice = Number(ac.originalCost) || 0;
 
-// 🔹 2 — Market Value (Engine oficial)
+// 🔹 Tipo con fabricante real
+let acquisitionLabel = "Unknown";
+
+if (ac.acquisitionType === "factory") {
+  acquisitionLabel = `${ac.manufacturer} Factory`;
+} else if (ac.acquisitionType === "used") {
+  acquisitionLabel = "Used Market";
+} else if (typeof ac.acquisitionType === "string") {
+  acquisitionLabel = ac.acquisitionType;
+}
+
+// 🔹 Market Value
 const marketValue =
   window.ACS_FINANCE_ENGINE?.calculateAircraftMarketValue(ac) || 0;
 
-// 🔹 3 — Gain / Loss real contra lo pagado
+// 🔹 Gain / Loss
 const gainLoss = marketValue - entryPrice;
 
-// 🔹 4 — Render UI
-setText("assetAcquisition", acquisitionType);
+// 🔹 Render
+setText("assetAcquisition", acquisitionLabel);
 setText("assetOriginal", formatUSD(entryPrice));
 setText("assetMarket", formatUSD(marketValue));
 setText("assetGain", formatUSD(gainLoss));
 
-// 🔹 5 — Liquidity (vs Entry Price)
+// 🔹 Liquidity
 const liquidity =
   entryPrice > 0
     ? Math.min(marketValue / entryPrice, 1)
@@ -3006,7 +3010,6 @@ if (liquidityBar) {
   liquidityBar.style.width = (liquidity * 100) + "%";
 }
 
-// 🔹 6 — Formatter (safe single declaration)
 function formatUSD(v) {
   return "$" + Number(v || 0).toLocaleString("en-US", {
     maximumFractionDigits: 0
