@@ -839,3 +839,4 @@ if (typeof ACS_generateRegistration !== "function") {
     return `N${a}${b}-${n}`;
   }
 }
+window.checkDeliveries = checkDeliveries;
