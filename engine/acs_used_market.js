@@ -325,10 +325,10 @@ const created = createFleetAircraft({
   hours: Number(ac.hours),
   cycles: Number(ac.cycles),
 
-  // 🔵 FINANCIAL STRUCTURE
-  oemPrice: Number(dbModel.price_acs_usd),
-  acquisitionPrice: Number(ac.price_acs_usd),
-  acquisitionType: "Used Market"
+  // 🔵 FINANCIAL STRUCTURE — CANONICAL
+  originalCost: Number(dbModel.price_acs_usd),
+  acquisitionCost: Number(ac.price_acs_usd),
+  acquisitionType: "USED"
 });
 
 if (!created) {
