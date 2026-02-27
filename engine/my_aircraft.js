@@ -2979,11 +2979,27 @@ const marketValue =
   window.ACS_FINANCE_ENGINE
     ?.calculateAircraftMarketValue(ac) || 0;
 
-// 🔥 Gain/Loss SIEMPRE contra lo que pagaste
+/* ============================================================
+   🟢 MA-FIN-1 — CLEAN FINANCIAL DATA (NO DEFAULTS)
+   ------------------------------------------------------------
+   • No fallback a "Factory"
+   • No costos inventados
+   • Gain/Loss real contra lo pagado
+   ============================================================ */
+
+// 🔹 1 — Datos reales del activo
+const acquisitionCost = Number(ac.acquisitionCost) || 0;
+const acquisitionLabel = ac.acquisitionLabel || ac.acquisitionType || "Unknown";
+
+// 🔹 2 — Valor de mercado (usa tu función existente)
+const marketValue = Number(calculateMarketValue(ac)) || 0;
+
+// 🔹 3 — Gain / Loss real
 const gainLoss = marketValue - acquisitionCost;
-   
-setText("assetAcquisition", ac.acquisitionType || "factory");
-setText("assetOriginal", formatUSD(originalCost));
+
+// 🔹 4 — Render UI
+setText("assetAcquisition", acquisitionLabel);
+setText("assetOriginal", formatUSD(acquisitionCost));
 setText("assetMarket", formatUSD(marketValue));
 setText("assetGain", formatUSD(gainLoss));
 
