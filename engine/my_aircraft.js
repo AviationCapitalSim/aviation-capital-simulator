@@ -2945,8 +2945,10 @@ window.openAssetPanel = function(id){
   document.getElementById("assetSubtitle").innerText =
   "Registration: " + ac.registration;
 
-  document.getElementById("assetOwnership").innerText =
-    ac.ownershipType || "OWNED";
+  const elOwnership = document.getElementById("assetOwnershipType");
+  if (elOwnership) {
+  elOwnership.innerText = ac.ownershipType || "OWNED";
+  }
 
   // IMAGE
   document.getElementById("assetImage").src =
