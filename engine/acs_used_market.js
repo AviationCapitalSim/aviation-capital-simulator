@@ -294,54 +294,46 @@ function buyUsed(id) {
     if (nextD <= 0) nextD = 96;
 
 /* ============================================================
-   🟢 UA-NEW-STRUCT-1 — DIRECT USED FLEET INSERT (CANONICAL)
+   🟢 UA-REAL-STRUCT-2 — USED PURCHASE VIA FLEET FACTORY
    ------------------------------------------------------------
-   • NO usa createFleetAircraft()
-   • Preserva hours reales
-   • Preserva cycles reales
-   • Preserva year real
-   • Inserta directamente en ACS_MyAircraft
+   ✔ Usa createFleetAircraft()
+   ✔ Preserva hours reales
+   ✔ Preserva cycles reales
+   ✔ Preserva año real
+   ✔ Inyecta estructura financiera correcta
+   ✔ Arquitectura limpia multiplayer-safe
    ============================================================ */
 
-let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+const db = resolveUsedDB();
+const dbModel = db.find(m =>
+  m.manufacturer === ac.manufacturer &&
+  m.model === ac.model
+);
 
-// 🔹 Regla 3 activos / resto Pending
-let status = myFleet.length < 3 ? "Active" : "Pending";
-     
-const registration = ACS_generateRegistration();
+if (!dbModel) {
+  alert("❌ Aircraft data not found in DB.");
+  return;
+}
 
-const newAircraft = {
-  id: "AC-" + Date.now(),
-
+const created = createFleetAircraft({
   manufacturer: ac.manufacturer,
   model: ac.model,
+  family: dbModel.family || "",
 
-  registration: registration,
-  base: (typeof getCurrentBaseICAO === "function") 
-        ? getCurrentBaseICAO() 
-        : null,
-
-  status: status,
+  // 🔵 USED CORE
   isUsed: true,
-
-  // 🔵 CRÍTICO: FORZAR NUMÉRICO
   hours: Number(ac.hours),
   cycles: Number(ac.cycles),
 
-  year: Number(ac.year),
-  deliveredDate: (
-  typeof ACS_getSimTime === "function"
-    ? new Date(ACS_getSimTime())
-    : (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime
-        ? new Date(ACS_TIME.currentTime)
-        : new Date())
-).toISOString(),
+  // 🔵 FINANCIAL STRUCTURE
+  originalCost: Number(dbModel.price_acs_usd),
+  acquisitionCost: Number(ac.price_acs_usd)
+});
 
-  conditionPercent: 100
-};
-
-myFleet.push(newAircraft);
-localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
+if (!created) {
+  alert("❌ Error creating aircraft.");
+  return;
+}
      
     let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
     f.capital  = f.capital  || 0;
