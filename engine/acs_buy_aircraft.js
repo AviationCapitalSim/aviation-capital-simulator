@@ -753,7 +753,7 @@ function checkDeliveries() {
 
     if (reached) {
 
-         /* ENTREGAR */
+      /* ENTREGAR */
       for (let i = 0; i < entry.qty; i++) {
 
         const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -770,39 +770,31 @@ function checkDeliveries() {
           deliveryDateObj.getTime() + (D_INTERVAL_DAYS * MS_PER_DAY)
         );
 
-        myFleet.push({
+        /* ============================================================
+           🟢 BN-STRUCT-1 — BUY NEW DELIVERY VIA FLEET FACTORY
+           ------------------------------------------------------------
+           ✔ Reemplaza push manual
+           ✔ Mantiene arquitectura unificada
+           ✔ No altera lógica externa
+           ============================================================ */
 
-          id: "AC-" + Date.now() + "-" + i,
-          model: entry.model,
+        const created = createFleetAircraft({
           manufacturer: entry.manufacturer,
-          year: now.getUTCFullYear(),
-          delivered: deliveryDateObj.toISOString(),
-          image: entry.image,
-          status: "Active",
+          model: entry.model,
+          family: entry.family || "",
 
+          isUsed: false,
           hours: 0,
           cycles: 0,
 
-          // 🟢 FASE 1 — NUEVO AVIÓN SIEMPRE 100%
-          conditionPercent: 100,
-
-          registration: (typeof ACS_generateRegistration === "function")
-            ? ACS_generateRegistration()
-            : ("N" + Math.floor(10000 + Math.random() * 90000)),
-
-          data: resolveAircraftDB().find(m =>
-            m.manufacturer === entry.manufacturer &&
-            m.model === entry.model
-          ) || {},
-
-          // 🟢 BASELINE MANTENIMIENTO LIMPIO
-          lastC: deliveryDateObj.toISOString(),
-          lastD: deliveryDateObj.toISOString(),
-
-          nextC: nextCDate.toISOString(),
-          nextD: nextDDate.toISOString()
-
+          originalCost: Number(entry.price),
+          acquisitionCost: Number(entry.price),
+          acquisitionType: "OEM"
         });
+
+        if (!created) {
+          console.error("❌ Delivery failed for:", entry.model);
+        }
 
       }
 
