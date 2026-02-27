@@ -951,11 +951,19 @@ function ACS_executeMaintenance(ac, type = "C") {
 
   // Protección: si ya está en mantenimiento
   if (ac.status === "Maintenance") {
+    console.log("🟡 MA-DIAG-0 — Already in Maintenance:", ac.registration);
     return ac;
   }
 
+  console.log("🔵 MA-DIAG-START — Execute Requested");
+  console.log("   Aircraft:", ac.registration);
+  console.log("   Current Status:", ac.status);
+  console.log("   Requested Type:", type);
+
   // 🔵 CREAR SNAPSHOT UNA SOLA VEZ
   const snapshot = ACS_createMaintenanceSnapshot(ac, type);
+
+  console.log("🔵 MA-DIAG-SNAPSHOT:", snapshot);
 
   // 🔵 ESCRIBIR LOG START
   if (snapshot && !ac.__maintenanceLogStarted) {
@@ -971,10 +979,14 @@ function ACS_executeMaintenance(ac, type = "C") {
     localStorage.setItem(LOG_KEY, JSON.stringify(logs));
 
     ac.__maintenanceLogStarted = true;
+
+    console.log("🟢 MA-DIAG-LOG WRITTEN");
   }
 
   // 🔵 COBRO
   const cost = snapshot ? snapshot.totalCost : 0;
+
+  console.log("🔵 MA-DIAG-COST:", cost);
 
   if (cost > 0 && typeof ACS_registerExpense === "function") {
     ACS_registerExpense({
@@ -988,13 +1000,17 @@ function ACS_executeMaintenance(ac, type = "C") {
     });
 
     ac.lastMaintenanceCost = cost;
+
+    console.log("🟢 MA-DIAG-EXPENSE REGISTERED");
   }
 
-  // 🔵 DURACIONES CORRECTAS (tus constantes reales)
+  // 🔵 DURACIONES CORRECTAS
   const C_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.C_RECOVERY_DAYS;
   const D_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.D_RECOVERY_DAYS;
 
   const days = (type === "D") ? D_DOWNTIME_DAYS : C_DOWNTIME_DAYS;
+
+  console.log("🔵 MA-DIAG-DAYS:", days);
 
   // 🔵 INICIAR SERVICIO
   ac.status = "Maintenance";
@@ -1002,9 +1018,13 @@ function ACS_executeMaintenance(ac, type = "C") {
   ac.serviceType = type;
   ac.maintenanceStartDate = now.toISOString();
 
+  console.log("🟢 MA-DIAG-STATUS SET TO:", ac.status);
+
   ac.maintenanceEndDate = new Date(
     now.getTime() + days * 86400000
   ).toISOString();
+
+  console.log("🟢 MA-DIAG-END DATE:", ac.maintenanceEndDate);
 
   // Liberar hold
   ac.maintenanceHold = false;
@@ -1013,6 +1033,8 @@ function ACS_executeMaintenance(ac, type = "C") {
   // Reset flags automáticos
   ac.pendingCCheck = false;
   ac.pendingDCheck = false;
+
+  console.log("🟢 MA-DIAG-FINAL OBJECT:", ac);
 
   return ac;
 }
