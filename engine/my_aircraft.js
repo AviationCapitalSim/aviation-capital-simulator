@@ -2967,61 +2967,50 @@ window.openAssetPanel = function(id){
   setText("assetEngines", ac.engines ?? "—");
   setText("assetYear", ac.year ?? "—");
 
-// =========================
-// FINANCIAL (FLEET CANONICAL STRUCTURE)
-// =========================
+// ============================================================
+// 🟢 MA-FIN-2.2 — FINANCIAL (CANONICAL STRUCTURE CLEAN)
+// ------------------------------------------------------------
+// • Sin variables duplicadas
+// • Usa acquisitionPrice (lo que pagaste)
+// • Usa oemPrice (precio OEM histórico)
+// • Usa Finance Engine real
+// • Sin defaults mágicos
+// ============================================================
 
-const originalCost = Number(ac.originalCost || 0);
-const acquisitionCost =
-  Number(ac.acquisitionCost || originalCost);
+// 🔹 1 — Datos base
+const entryPrice = Number(ac.acquisitionPrice) || 0;
+const oemPrice = Number(ac.oemPrice) || 0;
+const acquisitionType = ac.acquisitionType || "Unknown";
 
+// 🔹 2 — Market Value (Engine oficial)
 const marketValue =
-  window.ACS_FINANCE_ENGINE
-    ?.calculateAircraftMarketValue(ac) || 0;
+  window.ACS_FINANCE_ENGINE?.calculateAircraftMarketValue(ac) || 0;
 
-/* ============================================================
-   🟢 MA-FIN-1 — CLEAN FINANCIAL DATA (NO DEFAULTS)
-   ------------------------------------------------------------
-   • No fallback a "Factory"
-   • No costos inventados
-   • Gain/Loss real contra lo pagado
-   ============================================================ */
-
-// 🔹 1 — Datos reales del activo
-const acquisitionCost = Number(ac.acquisitionCost) || 0;
-const acquisitionLabel = ac.acquisitionLabel || ac.acquisitionType || "Unknown";
-
-// 🔹 2 — Valor de mercado (usa tu función existente)
-const marketValue = Number(calculateMarketValue(ac)) || 0;
-
-// 🔹 3 — Gain / Loss real
-const gainLoss = marketValue - acquisitionCost;
+// 🔹 3 — Gain / Loss real contra lo pagado
+const gainLoss = marketValue - entryPrice;
 
 // 🔹 4 — Render UI
-setText("assetAcquisition", acquisitionLabel);
-setText("assetOriginal", formatUSD(acquisitionCost));
+setText("assetAcquisition", acquisitionType);
+setText("assetOriginal", formatUSD(entryPrice));
 setText("assetMarket", formatUSD(marketValue));
 setText("assetGain", formatUSD(gainLoss));
 
-function formatUSD(v) {
-  return "$" + Number(v || 0).toLocaleString("en-US", {
-    maximumFractionDigits: 0
-  });
-}
-
-setText("assetAcquisition", ac.acquisitionType || "Factory");
-setText("assetOriginal", formatUSD(originalCost));
-setText("assetMarket", formatUSD(marketValue));
-setText("assetGain", formatUSD(gainLoss));
-
+// 🔹 5 — Liquidity (vs Entry Price)
 const liquidity =
-  originalCost > 0
-    ? Math.min(marketValue / originalCost, 1)
+  entryPrice > 0
+    ? Math.min(marketValue / entryPrice, 1)
     : 0;
 
 const liquidityBar = document.getElementById("assetLiquidityFill");
 if (liquidityBar) {
   liquidityBar.style.width = (liquidity * 100) + "%";
+}
+
+// 🔹 6 — Formatter (safe single declaration)
+function formatUSD(v) {
+  return "$" + Number(v || 0).toLocaleString("en-US", {
+    maximumFractionDigits: 0
+  });
 }
    
   // =========================
