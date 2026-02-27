@@ -869,8 +869,22 @@ function ACS_resolveMaintenanceStatus(ac) {
   }
 
   const now = getSimTime();
-
   const MS_PER_DAY = 86400000;
+
+  /* ============================================================
+     🟢 FIX — PAUSE DURING ACTIVE MAINTENANCE
+     If aircraft is already in maintenance,
+     DO NOT mark overdue.
+     ============================================================ */
+
+  if (ac.status === "Maintenance") {
+    return {
+      nextC_days: 0,
+      nextD_days: 0,
+      isCOverdue: false,
+      isDOverdue: false
+    };
+  }
 
   /* ===============================
      LAST CHECK DATES
@@ -885,7 +899,7 @@ function ACS_resolveMaintenanceStatus(ac) {
     : new Date(ac.deliveredDate || now);
 
   /* ===============================
-     CALENDAR INTERVALS (AVIATION REAL)
+     CALENDAR INTERVALS
      =============================== */
 
   const C_INTERVAL_DAYS = ACS_MAINTENANCE_RULES.C_MONTHS * 30.4375;
