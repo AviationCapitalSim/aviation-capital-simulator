@@ -934,30 +934,87 @@ function ACS_applyMaintenanceHold(ac) {
 }
 
 /* ============================================================
-   🟩 MA-8.6.D1 — MAINTENANCE EXECUTION ENGINE (START ONLY)
+   🟩 MA-8.6.D1 — MAINTENANCE EXECUTION ENGINE (FIXED)
    ------------------------------------------------------------
-   Fix:
-   - NO resetea baseline/lastCheck al inicio
-   - Solo inicia el servicio y fija maintenanceEndDate
-   - El reset real ocurre al COMPLETAR (ver MA-8.6.D2)
-   ------------------------------------------------------------
-   Version: v1.2 | Date: 06 FEB 2026
+   FIX:
+   - snapshot ahora es visible fuera del log writer
+   - No rompe ejecución
+   - Status cambia correctamente
    ============================================================ */
 
 function ACS_executeMaintenance(ac, type = "C") {
+
   if (!ac || !type) return ac;
 
   const now = getSimTime();
 
-  // ⚠️ PROTECCIÓN: si ya está en mantenimiento, NO volver a ejecutar ni cobrar
+  // Protección: si ya está en mantenimiento
   if (ac.status === "Maintenance") {
     return ac;
   }
 
-  // Duraciones (días de simulación)
-  const C_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.C_CHECK_RECOVERY; // 20
-  const D_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.D_CHECK_RECOVERY; // 100
+  // 🔵 CREAR SNAPSHOT UNA SOLA VEZ
+  const snapshot = ACS_createMaintenanceSnapshot(ac, type);
 
+  // 🔵 ESCRIBIR LOG START
+  if (snapshot && !ac.__maintenanceLogStarted) {
+
+    const LOG_KEY = "ACS_MAINTENANCE_LOG";
+    const logs = JSON.parse(localStorage.getItem(LOG_KEY) || "{}");
+
+    if (!logs[ac.registration]) {
+      logs[ac.registration] = [];
+    }
+
+    logs[ac.registration].push(snapshot);
+    localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+
+    ac.__maintenanceLogStarted = true;
+  }
+
+  // 🔵 COBRO
+  const cost = snapshot ? snapshot.totalCost : 0;
+
+  if (cost > 0 && typeof ACS_registerExpense === "function") {
+    ACS_registerExpense({
+      category: "Maintenance",
+      subtype: `${type}-Check`,
+      aircraftId: ac.id,
+      registration: ac.registration,
+      amount: cost,
+      currency: "USD",
+      date: now.toISOString()
+    });
+
+    ac.lastMaintenanceCost = cost;
+  }
+
+  // 🔵 DURACIONES CORRECTAS (tus constantes reales)
+  const C_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.C_RECOVERY_DAYS;
+  const D_DOWNTIME_DAYS = ACS_MAINTENANCE_RULES.D_RECOVERY_DAYS;
+
+  const days = (type === "D") ? D_DOWNTIME_DAYS : C_DOWNTIME_DAYS;
+
+  // 🔵 INICIAR SERVICIO
+  ac.status = "Maintenance";
+  ac.maintenanceType = type;
+  ac.serviceType = type;
+  ac.maintenanceStartDate = now.toISOString();
+
+  ac.maintenanceEndDate = new Date(
+    now.getTime() + days * 86400000
+  ).toISOString();
+
+  // Liberar hold
+  ac.maintenanceHold = false;
+  ac.maintenanceOverdue = false;
+
+  // Reset flags automáticos
+  ac.pendingCCheck = false;
+  ac.pendingDCheck = false;
+
+  return ac;
+}
 
 /* ============================================================
    🟧 MA-LOG-2 — WRITE MAINTENANCE START EVENT
