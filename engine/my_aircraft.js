@@ -2955,36 +2955,42 @@ window.openAssetPanel = function(id){
   // =========================
   // IMAGE
   // =========================
+   
   setSrc("assetImage", getAircraftImage(ac));
 
   // =========================
   // TECH DATA
   // =========================
+   
   setText("assetSeats", ac.seats ?? "—");
   setText("assetRange", ac.range_nm ? ac.range_nm + " nm" : "—");
   setText("assetEngines", ac.engines ?? "—");
   setText("assetYear", ac.year ?? "—");
 
-  // =========================
-// FINANCIAL (CANONICAL VIA FINANCE ENGINE)
+// =========================
+// FINANCIAL (FLEET CANONICAL STRUCTURE)
 // =========================
 
-/* ============================================================
-   🟢 AV-2 — MARKET VALUE FROM FINANCE ENGINE
-   ============================================================ */
-
-const originalCost =
-  ac.oemPrice ||
-  ac.acquisitionPrice ||
-  ac.price ||
-  ac.price_acs_usd ||
-  0;
+const originalCost = Number(ac.originalCost || 0);
+const acquisitionCost =
+  Number(ac.acquisitionCost || originalCost);
 
 const marketValue =
   window.ACS_FINANCE_ENGINE
     ?.calculateAircraftMarketValue(ac) || 0;
 
-const gainLoss = marketValue - originalCost;
+// 🔥 Gain/Loss SIEMPRE contra lo que pagaste
+const gainLoss = marketValue - acquisitionCost;
+
+const formatUSD = v =>
+  "$" + Number(v || 0).toLocaleString("en-US", {
+    maximumFractionDigits: 0
+  });
+
+setText("assetAcquisition", ac.acquisitionType || "factory");
+setText("assetOriginal", formatUSD(originalCost));
+setText("assetMarket", formatUSD(marketValue));
+setText("assetGain", formatUSD(gainLoss));
 
 const formatUSD = v =>
   "$" + Number(v || 0).toLocaleString("en-US", {
