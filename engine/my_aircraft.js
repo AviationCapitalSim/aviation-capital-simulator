@@ -2932,24 +2932,22 @@ window.openAssetPanel = function(id){
 
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
   const ac = fleet.find(a => a.id === id);
-
   if (!ac) return;
 
-  // 🔒 Helper seguro
-  function setText(elementId, value) {
-    const el = document.getElementById(elementId);
+  // 🔒 Helpers seguros
+  function setText(id, value) {
+    const el = document.getElementById(id);
     if (el) el.innerText = value;
   }
 
-  function setSrc(elementId, value) {
-    const el = document.getElementById(elementId);
+  function setSrc(id, value) {
+    const el = document.getElementById(id);
     if (el) el.src = value;
   }
 
   // =========================
   // HEADER
   // =========================
-
   setText("assetTitle", ac.manufacturer + " " + ac.model);
   setText("assetSubtitle", "Registration: " + ac.registration);
   setText("assetOwnershipType", ac.ownershipType || "OWNED");
@@ -2957,27 +2955,19 @@ window.openAssetPanel = function(id){
   // =========================
   // IMAGE
   // =========================
-
   setSrc("assetImage", getAircraftImage(ac));
 
   // =========================
   // TECH DATA
   // =========================
-
   setText("assetSeats", ac.seats ?? "—");
   setText("assetRange", ac.range_nm ? ac.range_nm + " nm" : "—");
   setText("assetEngines", ac.engines ?? "—");
   setText("assetYear", ac.year ?? "—");
 
   // =========================
-  // SHOW PANEL
-  // =========================
-
-  const panel = document.getElementById("aircraftAssetPanel");
-  if (panel) panel.style.display = "flex";
-};
-   
   // FINANCIAL
+  // =========================
   const originalCost = ac.price_acs_usd || 0;
 
   const simYear = getSimTime().year;
@@ -2994,35 +2984,32 @@ window.openAssetPanel = function(id){
   const formatUSD = v =>
     "$" + v.toLocaleString("en-US", {maximumFractionDigits:0});
 
-  document.getElementById("assetOwnershipType").innerText =
-    ac.ownershipType || "OWNED";
+  setText("assetAcquisition", ac.acquisitionType || "Factory");
+  setText("assetOriginal", formatUSD(originalCost));
+  setText("assetMarket", formatUSD(marketValue));
+  setText("assetGain", formatUSD(gainLoss));
 
-  document.getElementById("assetAcquisition").innerText =
-    ac.acquisitionType || "Factory";
+  const liquidity = originalCost > 0
+    ? Math.min(marketValue / originalCost, 1)
+    : 0;
 
-  document.getElementById("assetOriginal").innerText =
-    formatUSD(originalCost);
+  const liquidityBar = document.getElementById("assetLiquidityFill");
+  if (liquidityBar) {
+    liquidityBar.style.width = (liquidity * 100) + "%";
+  }
 
-  document.getElementById("assetMarket").innerText =
-    formatUSD(marketValue);
-
-  document.getElementById("assetGain").innerText =
-    formatUSD(gainLoss);
-
-  // Liquidity bar
-  const liquidity = Math.min(marketValue / originalCost, 1);
-  document.getElementById("assetLiquidityFill").style.width =
-    (liquidity * 100) + "%";
-
-  // SHOW
-  document.getElementById("aircraftAssetPanel").style.display = "flex";
+  // =========================
+  // SHOW PANEL
+  // =========================
+  const panel = document.getElementById("aircraftAssetPanel");
+  if (panel) panel.style.display = "flex";
 };
 
 window.closeAssetPanel = function(){
   const panel = document.getElementById("aircraftAssetPanel");
   if (panel) panel.style.display = "none";
 };
-
+   
 /* ============================================================
    GLOBAL AIRCRAFT IMAGE RESOLVER — v4 (PNG + JPG SAFE)
    ============================================================ */
