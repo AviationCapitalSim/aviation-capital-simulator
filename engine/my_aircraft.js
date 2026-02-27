@@ -878,13 +878,13 @@ function ACS_resolveMaintenanceStatus(ac) {
      ============================================================ */
 
   if (ac.status === "Maintenance") {
-    return {
-      nextC_days: 0,
-      nextD_days: 0,
-      isCOverdue: false,
-      isDOverdue: false
-    };
-  }
+  return {
+    nextC_days: null,
+    nextD_days: null,
+    isCOverdue: false,
+    isDOverdue: false
+  };
+}
 
   /* ===============================
      LAST CHECK DATES
