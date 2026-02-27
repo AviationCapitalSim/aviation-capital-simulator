@@ -675,4 +675,41 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
 });
 
+function ACS_calculateAircraftMarketValue(ac) {
+
+  if (!ac) return 0;
+
+  const simYear = getSimTime().year;
+
+  const basePrice =
+    ac.oemPrice ||
+    ac.acquisitionPrice ||
+    ac.price ||
+    0;
+
+  if (basePrice <= 0) return 0;
+
+  const aircraftYear = ac.year || simYear;
+  const age = Math.max(simYear - aircraftYear, 0);
+
+  // Depreciación controlada
+  const depreciationRate = 0.035; // 3.5% anual histórico
+  let value = basePrice * (1 - depreciationRate * age);
+
+  // Residual floor 20%
+  value = Math.max(value, basePrice * 0.20);
+
+  // Ajuste por condición
+  if (typeof ac.conditionPercent === "number") {
+    value *= (ac.conditionPercent / 100);
+  }
+
+  // Penalización por hold
+  if (ac.status === "Maintenance Hold") {
+    value *= 0.85;
+  }
+
+  return Math.round(value);
+}
+  
 })();
