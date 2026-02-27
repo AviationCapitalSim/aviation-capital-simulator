@@ -2987,10 +2987,11 @@ setText("assetOriginal", formatUSD(originalCost));
 setText("assetMarket", formatUSD(marketValue));
 setText("assetGain", formatUSD(gainLoss));
 
-const formatUSD = v =>
-  "$" + Number(v || 0).toLocaleString("en-US", {
+function formatUSD(v) {
+  return "$" + Number(v || 0).toLocaleString("en-US", {
     maximumFractionDigits: 0
   });
+}
 
 setText("assetAcquisition", ac.acquisitionType || "Factory");
 setText("assetOriginal", formatUSD(originalCost));
