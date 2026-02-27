@@ -3053,5 +3053,11 @@ function getAircraftImage(ac) {
   // la hace el navegador si falla la carga)
   return candidates[0] || "img/placeholder_aircraft.png";
 }
+
+/* ============================================================
+   ✈️ EXPORT — AIRCRAFT VALUATION ENGINE
+   ============================================================ */
+
+window.ACS_calculateAircraftMarketValue = ACS_calculateAircraftMarketValue;
    
 })();
