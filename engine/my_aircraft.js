@@ -1540,110 +1540,66 @@ function renderFleetTable() {
     return;
   }
 
-  list.forEach((ac, index) => {
+list.forEach((ac) => {
 
-  // 🔵 Render SOLO usa estado ya calculado por el pipeline
-  ac = ACS_applyMaintenanceComputedFields(ac);
+  // Render solo lee estado ya procesado
+  const computed = ACS_applyMaintenanceComputedFields({ ...ac });
 
-  // 🔴 FIX CRÍTICO — Persistir cambios en flota real
-  const realIndex = fleet.findIndex(f => f.registration === ac.registration);
-  if (realIndex !== -1) {
-    fleet[realIndex] = ac;
+  if (!passesFilters(computed)) return;
+
+  const row = document.createElement("tr");
+
+  if (computed.status === "Pending") {
+    row.classList.add("pending-row");
+  } else {
+    row.classList.add("active-row");
   }
 
-  if (!passesFilters(ac)) return;
-     
-    const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${computed.registration}</td>
+    <td class="aircraft-model-cell"
+        style="cursor:pointer;color:#ffb300;font-weight:600;text-decoration:underline;transition:0.2s ease;"
+        onmouseover="this.style.color='#ffd666'"
+        onmouseout="this.style.color='#ffb300'"
+        onclick="openAssetPanel('${computed.id}')">
+      ${computed.model}
+    </td>
 
-   /* ============================================================
-   🟦 ROW STATE CLASS — STRUCTURAL (Active / Pending)
-   ============================================================ */
+    <td>
+      <span class="status-badge status-${String(computed.status).replace(/\s+/g, "-").toLowerCase()}">
+        ${computed.status}
+      </span>
+    </td>
 
-    if (ac.status === "Pending") {
-    row.classList.add("pending-row");
-    } else {
-    row.classList.add("active-row");
-    }
+    <td>${computed.hours}</td>
+    <td>${computed.cycles}</td>
 
-row.innerHTML = `
-  <td>${ac.registration}</td>
+    <td>
+      ${typeof computed.conditionPercent === "number"
+        ? computed.conditionPercent + "%"
+        : "—"}
+    </td>
 
-  <td class="aircraft-model-cell"
-      style="
-        cursor:pointer;
-        color:#ffb300;
-        font-weight:600;
-        text-decoration:underline;
-        transition:0.2s ease;
-      "
-      onmouseover="this.style.color='#ffd666'"
-      onmouseout="this.style.color='#ffb300'"
-      onclick="openAssetPanel('${ac.id}')">
-    ${ac.model}
-  </td>
+    <td class="${computed.nextC_overdue ? "overdue-text" : ""}">
+      ${computed.nextC}
+    </td>
 
-  <td>
-    ${
-      (() => {
-        let label = ac.status;
+    <td class="${computed.nextD_overdue ? "overdue-text" : ""}">
+      ${computed.nextD}
+    </td>
 
-        if (ac.status === "Maintenance" && ac.maintenanceType) {
-          label = ac.maintenanceType === "D"
-            ? "D-Check"
-            : "C-Check";
-        }
+    <td>${computed.base}</td>
 
-        if (ac.status === "Maintenance Hold") {
-          label = "Maintenance Hold";
-        }
+    <td>
+      <button class="btn-action"
+        onclick="openAircraftModal('${computed.registration}')">
+        View
+      </button>
+    </td>
+  `;
 
-        if (ac.abServiceEndDate && ac.status === "Maintenance") {
-          label = "A/B Service";
-        }
-
-        return `
-          <span class="status-badge status-${String(label).replace(/\s+/g, "-").toLowerCase()}">
-            ${label}
-          </span>
-        `;
-      })()
-    }
-  </td>
-
-  <td>${ac.hours}</td>
-  <td>${ac.cycles}</td>
-
-  <td>
-    ${typeof ac.conditionPercent === "number"
-      ? ac.conditionPercent + "%"
-      : "—"}
-    ${ac.idleTag
-      ? `<div class="idle-tag">${ac.idleTag}</div>`
-      : ""}
-  </td>
-
-  <td class="${ac.nextC_overdue ? "overdue-text" : ""}">
-    ${ac.nextC}
-  </td>
-
-  <td class="${ac.nextD_overdue ? "overdue-text" : ""}">
-    ${ac.nextD}
-  </td>
-
-  <td>${ac.base}</td>
-
-  <td>
-    <button class="btn-action"
-      onclick="openAircraftModal('${ac.isPending ? (ac.__pendingKey || "") : ac.registration}')">
-      View
-    </button>
-  </td>
-`;
-
-    fleetTableBody.appendChild(row);
-  });
-  saveFleet();   
-}
+  fleetTableBody.appendChild(row);
+});
 
 /* ============================================================
    === FILTERS ================================================
@@ -2909,44 +2865,6 @@ fleet = fleet.map(ac => {
 
 })();
 
-/* ============================================================
-   🟢 FASE 2 — DYNAMIC TIME-BASED MAINTENANCE ENGINE
-   ------------------------------------------------------------
-   • C = 1.0 año
-   • D = 8.0 años
-   • Formato decimal
-   • Basado en lastC / lastD
-   ============================================================ */
-
-function ACS_calculateMaintenanceStatus(ac) {
-
-  if (!ac || !ac.lastC || !ac.lastD) {
-    return {
-      remainingC: 1.0,
-      remainingD: 8.0
-    };
-  }
-
-  const now = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
-    ? new Date(ACS_TIME.currentTime)
-    : new Date();
-
-  const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-  const lastCDate = new Date(ac.lastC);
-  const lastDDate = new Date(ac.lastD);
-
-  const daysSinceC = (now - lastCDate) / MS_PER_DAY;
-  const daysSinceD = (now - lastDDate) / MS_PER_DAY;
-
-  const remainingC = 1 - (daysSinceC / 365);
-  const remainingD = 8 - (daysSinceD / (365 * 8));
-
-  return {
-    remainingC: Math.max(-5, remainingC),
-    remainingD: Math.max(-5, remainingD)
-  };
-}
 
 /* ============================================================
    🧠 MA-1 — TIME ENGINE HOOK (ACS OFFICIAL)
