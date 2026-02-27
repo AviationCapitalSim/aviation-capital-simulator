@@ -870,44 +870,51 @@
 }
 
 /* ============================================================
-   ✈️ AIRCRAFT ASSET PANEL — Compact Pattern A
+   ✈️ AIRCRAFT ASSET PANEL — Qatar Luxury × Airbus OCC
+   Responsive / Controlled Width
    ============================================================ */
 
 .asset-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(6px);
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(8px);
   display: none;
   justify-content: center;
   align-items: center;
   z-index: 9999;
 }
 
+/* =========================
+   MAIN CONTAINER
+   ========================= */
+
 .asset-panel-container {
   width: 92%;
-  max-width: 420px;
-  background: radial-gradient(circle at top, #12254a 0%, #091326 60%, #050814 100%);
-  padding: 1.6rem 1.8rem;
-  border-radius: 14px;
-  border: 1px solid rgba(255,179,0,0.45);
-  box-shadow: 0 0 22px rgba(0,0,0,0.7);
+  max-width: 680px;          /* equilibrio premium */
+  max-height: 88vh;          /* nunca rompe vertical */
+  overflow-y: auto;
+
+  background: linear-gradient(145deg, #071a34 0%, #0b2a52 55%, #061428 100%);
+  padding: 28px 30px;
+  border-radius: 18px;
+
+  border: 1px solid rgba(255,215,0,0.28);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.65);
 }
 
-.asset-tech-grid {
-  grid-template-columns: 1fr;
-}
-
-.asset-financial-grid {
-  grid-template-columns: 1fr;
-}    
-/* HEADER */
+/* =========================
+   HEADER — Airbus OCC Style
+   ========================= */
 
 .asset-header-row {
   display: flex;
-  gap: 1rem;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 1.2rem;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .asset-header-text {
@@ -916,88 +923,175 @@
 
 .asset-title {
   margin: 0;
-  font-size: 1.25rem;
-  color: #ffb300;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #ffd76a;
+  letter-spacing: 0.4px;
 }
 
 .asset-subtitle {
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
-  color: #a8b4d8;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: #9fb7e3;
 }
 
-/* IMAGE */
+/* Ownership badge */
+
+.asset-badge {
+  background: linear-gradient(90deg, #caa83a, #ffd76a);
+  color: #071a34;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 14px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* =========================
+   IMAGE
+   ========================= */
 
 .asset-image {
-  width: 140px;
-  height: 90px;
-  border-radius: 10px;
+  width: 150px;
+  height: 95px;
+  border-radius: 12px;
   object-fit: cover;
-  background:#0f1b3d;
+  background: #0f1b3d;
   border: 1px solid rgba(255,255,255,0.12);
 }
 
-/* TECH GRID */
+/* =========================
+   TECH GRID — OCC Cards
+   ========================= */
 
 .asset-tech-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px 30px;
-  font-size: 0.85rem;
-  margin-bottom: 1rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-top: 10px;
+  margin-bottom: 26px;
 }
 
-/* FINANCIAL */
+.asset-tech-card {
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px 10px;
+  text-align: center;
+}
+
+.asset-tech-card span {
+  font-size: 0.65rem;
+  color: #8faad6;
+  display: block;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+
+.asset-tech-card strong {
+  font-size: 0.95rem;
+  color: #ffffff;
+}
+
+/* =========================
+   FINANCIAL PANEL
+   ========================= */
 
 .asset-financial-panel {
-  margin-top: 0.6rem;
-  padding: 0.7rem 0.9rem;
-  border-radius: 10px;
-  background: radial-gradient(circle at left, rgba(255,179,0,0.19), rgba(7,15,32,0.9));
-  border: 1px solid rgba(255,179,0,0.35);
+  margin-top: 10px;
+  padding: 18px 20px;
+  border-radius: 14px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(255,215,0,0.08),
+    rgba(255,215,0,0.02)
+  );
+
+  border: 1px solid rgba(255,215,0,0.25);
 }
 
 .asset-financial-title {
-  font-size: 0.85rem;
-  color: #ffb300;
-  margin-bottom: 0.5rem;
+  font-size: 0.82rem;
+  color: #ffd76a;
+  margin-bottom: 12px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .asset-financial-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 20px;
-  font-size: 0.85rem;
-  color: #ffe7a0;
+  gap: 8px 30px;
+  font-size: 0.82rem;
+  color: #e6f0ff;
 }
 
-/* FOOTER */
+/* =========================
+   Liquidity Bar — OCC Style
+   ========================= */
+
+.asset-liquidity-bar {
+  margin-top: 14px;
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.asset-liquidity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff9d, #00d0ff);
+  transition: width 0.35s ease;
+}
+
+/* =========================
+   FOOTER
+   ========================= */
 
 .asset-footer {
-  margin-top: 1rem;
+  margin-top: 28px;
   display: flex;
   justify-content: center;
 }
 
 .asset-close-btn {
-  background: linear-gradient(135deg, #ffb300, #ffd666);
+  background: linear-gradient(90deg, #caa83a, #ffd76a);
   border: none;
-  border-radius: 9px;
-  padding: 0.45rem 1.2rem;
+  border-radius: 22px;
+  padding: 8px 26px;
   font-weight: 600;
-  color: #071022;
+  font-size: 0.85rem;
+  color: #071a34;
   cursor: pointer;
-  font-size: 0.9rem;
-  box-shadow: 0 0 12px rgba(255,179,0,0.45);
+  transition: 0.2s ease;
+  box-shadow: 0 8px 24px rgba(255,215,0,0.35);
 }
 
 .asset-close-btn:hover {
-  filter: brightness(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(255,215,0,0.45);
 }
 
-/* MOBILE */
+/* =========================
+   RESPONSIVE
+   ========================= */
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+
+  .asset-panel-container {
+    max-width: 620px;
+  }
+
+  .asset-tech-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 600px) {
 
   .asset-header-row {
     flex-direction: column;
@@ -1006,7 +1100,7 @@
 
   .asset-image {
     width: 100%;
-    height: 160px;
+    height: 170px;
   }
 
   .asset-tech-grid {
@@ -1372,15 +1466,17 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
 </div>
 
 <!-- ============================================================
-     ✈️ AIRCRAFT ASSET PANEL — My Aircraft (Pattern A)
-     Qatar Luxury × Airbus OCC
+     ✈️ AIRCRAFT ASSET PANEL — Qatar Luxury × Airbus OCC
+     Responsive / Production Ready
      ============================================================ -->
 
 <div id="aircraftAssetPanel" class="asset-overlay">
 
   <div class="asset-panel-container">
 
-    <!-- HEADER -->
+    <!-- =========================
+         HEADER — Airbus OCC
+         ========================= -->
     <div class="asset-header-row">
 
       <div class="asset-header-text">
@@ -1388,36 +1484,43 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
         <div id="assetSubtitle" class="asset-subtitle"></div>
       </div>
 
+      <!-- Ownership Badge -->
+      <span id="assetOwnershipType" class="asset-badge"></span>
+
       <img id="assetImage" class="asset-image" src="" />
 
     </div>
 
-    <!-- TECH GRID -->
+    <!-- =========================
+         TECH GRID — OCC Cards
+         ========================= -->
     <div class="asset-tech-grid">
 
-      <div>
-        <strong>Seats</strong><br>
-        <span id="assetSeats"></span>
+      <div class="asset-tech-card">
+        <span>Seats</span>
+        <strong id="assetSeats"></strong>
       </div>
 
-      <div>
-        <strong>Range</strong><br>
-        <span id="assetRange"></span>
+      <div class="asset-tech-card">
+        <span>Range</span>
+        <strong id="assetRange"></strong>
       </div>
 
-      <div>
-        <strong>Engines</strong><br>
-        <span id="assetEngines"></span>
+      <div class="asset-tech-card">
+        <span>Engines</span>
+        <strong id="assetEngines"></strong>
       </div>
 
-      <div>
-        <strong>Year</strong><br>
-        <span id="assetYear"></span>
+      <div class="asset-tech-card">
+        <span>Year</span>
+        <strong id="assetYear"></strong>
       </div>
 
     </div>
 
-    <!-- FINANCIAL PANEL -->
+    <!-- =========================
+         FINANCIAL PANEL
+         ========================= -->
     <div class="asset-financial-panel">
 
       <div class="asset-financial-title">
@@ -1426,33 +1529,38 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
 
       <div class="asset-financial-grid">
 
-        <div>Ownership</div>
-        <div id="assetOwnership"></div>
-
         <div>Acquisition</div>
         <div id="assetAcquisition"></div>
 
         <div>Original Cost</div>
-        <div id="assetOriginalCost"></div>
+        <div id="assetOriginal"></div>
 
         <div>Market Value</div>
-        <div id="assetMarketValue"></div>
+        <div id="assetMarket"></div>
 
         <div>Gain / Loss</div>
-        <div id="assetGainLoss"></div>
+        <div id="assetGain"></div>
 
+      </div>
+
+      <!-- Liquidity Bar -->
+      <div class="asset-liquidity-bar">
+        <div id="assetLiquidityFill" class="asset-liquidity-fill"></div>
       </div>
 
     </div>
 
-   
+    <!-- =========================
+         FOOTER
+         ========================= -->
     <div class="asset-footer">
       <button class="asset-close-btn" onclick="closeAssetPanel()">Close</button>
     </div>
 
   </div>
+
 </div>
- 
+  
 <!-- FOOTER SPACER -->
 <div style="height:4rem;"></div>
 
