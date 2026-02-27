@@ -3019,8 +3019,9 @@ window.openAssetPanel = function(id){
 };
 
 window.closeAssetPanel = function(){
-  document.getElementById("aircraftAssetPanel").style.display = "none";
-}
+  const panel = document.getElementById("aircraftAssetPanel");
+  if (panel) panel.style.display = "none";
+};
 
 /* ============================================================
    GLOBAL AIRCRAFT IMAGE RESOLVER — v4 (PNG + JPG SAFE)
