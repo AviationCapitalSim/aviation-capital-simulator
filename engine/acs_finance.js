@@ -212,66 +212,88 @@ window.ACS_FINANCE_ENGINE = {
   },
 
   commit(entry){
-  try {
+    try {
 
-    const f =
-      JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+      const f =
+        JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-    /* Ensure base fields exist */
-    if(typeof f.capital !== "number") f.capital = Number(f.capital || 0);
-    if(typeof f.debt    !== "number") f.debt    = Number(f.debt || 0);
+      if(typeof f.capital !== "number") f.capital = Number(f.capital || 0);
+      if(typeof f.debt    !== "number") f.debt    = Number(f.debt || 0);
 
-    /* Monthly aggregates (optional but safe) */
-    if(typeof f.monthRevenue  !== "number") f.monthRevenue  = Number(f.monthRevenue  || 0);
-    if(typeof f.monthExpenses !== "number") f.monthExpenses = Number(f.monthExpenses || 0);
-    if(typeof f.monthProfit   !== "number") f.monthProfit   = Number(f.monthProfit   || 0);
+      if(typeof f.monthRevenue  !== "number") f.monthRevenue  = Number(f.monthRevenue  || 0);
+      if(typeof f.monthExpenses !== "number") f.monthExpenses = Number(f.monthExpenses || 0);
+      if(typeof f.monthProfit   !== "number") f.monthProfit   = Number(f.monthProfit   || 0);
 
-    if(!Array.isArray(f.history)) f.history = [];
+      if(!Array.isArray(f.history)) f.history = [];
 
-    /* Normalize amount */
-    const amt =
-      Number(entry && entry.amount ? entry.amount : 0) || 0;
+      const amt =
+        Number(entry && entry.amount ? entry.amount : 0) || 0;
 
-    const type =
-      String(entry && entry.type ? entry.type : "");
+      const type =
+        String(entry && entry.type ? entry.type : "");
 
-    /* ============================================================
-       APPLY LEDGER ENTRY → REAL FINANCE STATE
-       ============================================================ */
+      if(type === "LOAN_IN"){
+        f.capital += amt;
+        f.debt    += amt;
+      }
 
-    if(type === "LOAN_IN"){
-      /* Loan disbursement: increases capital + increases debt
-         IMPORTANT: NOT revenue, NOT profit */
-      f.capital += amt;
-      f.debt    += amt;
+      else if(type === "LOAN_PAYMENT" || type === "LOAN_AMORTIZATION"){
+        f.capital -= amt;
+        f.debt    = Math.max(0, f.debt - amt);
+        f.monthExpenses += amt;
+        f.monthProfit   -= amt;
+      }
+
+      f.history.push(entry);
+
+      localStorage.setItem("ACS_Finance", JSON.stringify(f));
+      window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+      return true;
+
+    } catch(e){
+      console.error("FINANCE COMMIT FAILED", e);
+      return false;
+    }
+  },
+
+  /* ============================================================
+     ✈️ AIRCRAFT VALUATION ENGINE (CANONICAL)
+     ============================================================ */
+
+  calculateAircraftMarketValue(ac){
+
+    if (!ac) return 0;
+
+    const simYear = getSimTime().getUTCFullYear();
+
+    const basePrice =
+      ac.oemPrice ||
+      ac.acquisitionPrice ||
+      ac.price ||
+      ac.price_acs_usd ||
+      0;
+
+    if (basePrice <= 0) return 0;
+
+    const aircraftYear = ac.year || simYear;
+    const age = Math.max(simYear - aircraftYear, 0);
+
+    const depreciationRate = 0.035;
+    let value = basePrice * (1 - depreciationRate * age);
+
+    value = Math.max(value, basePrice * 0.20);
+
+    if (typeof ac.conditionPercent === "number") {
+      value *= (ac.conditionPercent / 100);
     }
 
-    else if(type === "LOAN_PAYMENT" || type === "LOAN_AMORTIZATION"){
-      /* Payment: decreases capital (cash out) + decreases debt
-         Expense accounting is handled by ACS_registerExpense on your side,
-         but we also keep monthExpenses/profit consistent if you use them. */
-      f.capital -= amt;
-      f.debt    = Math.max(0, f.debt - amt);
-
-      /* Optional monthly view consistency */
-      f.monthExpenses += amt;
-      f.monthProfit   -= amt;
+    if (ac.status === "Maintenance Hold") {
+      value *= 0.85;
     }
 
-    /* Store entry in history AFTER applying */
-    f.history.push(entry);
-
-    localStorage.setItem("ACS_Finance", JSON.stringify(f));
-
-    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
-
-    return true;
-
-  } catch(e){
-    console.error("FINANCE COMMIT FAILED", e);
-    return false;
+    return Math.round(value);
   }
-}
 
 };
 
