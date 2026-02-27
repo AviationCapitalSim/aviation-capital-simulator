@@ -326,8 +326,9 @@ const created = createFleetAircraft({
   cycles: Number(ac.cycles),
 
   // 🔵 FINANCIAL STRUCTURE
-  originalCost: Number(dbModel.price_acs_usd),
-  acquisitionCost: Number(ac.price_acs_usd)
+  oemPrice: Number(dbModel.price_acs_usd),
+  acquisitionPrice: Number(ac.price_acs_usd),
+  acquisitionType: "Used Market"
 });
 
 if (!created) {
