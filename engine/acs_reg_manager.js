@@ -388,25 +388,45 @@ function createFleetAircraft(data = {}) {
     base = getCurrentBaseICAO();
   }
 
-  // 🔹 5 — Construcción del objeto (RESPETA DATA SI EXISTE)
-  let aircraft = {
-    id: newId,
-    registration,
-    manufacturer: data.manufacturer,
-    model: data.model,
-    family: data.family || "",
-    base: base,
-    status: status,
+  // 🔹 5 — Construcción del objeto (REAL AVIATION FINANCIAL STRUCTURE)
 
-    // 🔵 CLAVE: respetar valores si vienen del Used Market
-    hours: typeof data.hours === "number" ? data.hours : 0,
-    cycles: typeof data.cycles === "number" ? data.cycles : 0,
-    conditionPercent: typeof data.conditionPercent === "number"
-      ? data.conditionPercent
-      : 100,
+let aircraft = {
+  id: newId,
+  registration,
+  manufacturer: data.manufacturer,
+  model: data.model,
+  family: data.family || "",
+  base: base,
+  status: status,
 
-    isUsed: data.isUsed === true
-  };
+  // ================================
+  // OPERACIONAL
+  // ================================
+  hours: typeof data.hours === "number" ? data.hours : 0,
+  cycles: typeof data.cycles === "number" ? data.cycles : 0,
+  conditionPercent: typeof data.conditionPercent === "number"
+    ? data.conditionPercent
+    : 100,
+
+  isUsed: data.isUsed === true,
+
+  // ================================
+  // FINANCIAL CORE (STRUCTURAL)
+  // ================================
+  acquisitionType: data.isUsed === true ? "used" : "factory",
+
+  originalCost: typeof data.originalCost === "number"
+    ? data.originalCost
+    : null,
+
+  acquisitionCost: typeof data.acquisitionCost === "number"
+    ? data.acquisitionCost
+    : null,
+
+  entryYear: typeof ACS_getCurrentSimYear === "function"
+    ? ACS_getCurrentSimYear()
+    : new Date().getFullYear()
+};
 
   // 🔹 6 — Si Pending → asignar fecha liberación
   if (status === "Pending") {
