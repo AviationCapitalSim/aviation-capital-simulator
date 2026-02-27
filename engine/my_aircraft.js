@@ -2846,26 +2846,6 @@ fleet = fleet.map(ac => {
   return ac;
 });
 
-  /* ============================================================
-   🟢 MA-STRUCT-1 — ORPHAN MAINTENANCE FIX
-   ------------------------------------------------------------
-   Si un avión está en Maintenance pero
-   NO tiene ningún servicio activo,
-   se libera automáticamente.
-   ============================================================ */
-
-if (
-  ac.status === "Maintenance" &&
-  !ac.maintenanceType &&
-  !ac.maintenanceEndDate &&
-  !ac.abServiceEndDate
-) {
-  ac.status = "Active";
-}
-       
-  return ac;
-});
-
     saveFleet();
     ACS_logMaintenanceTickOncePerDay();
      
