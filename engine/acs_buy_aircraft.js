@@ -724,7 +724,7 @@ document.addEventListener("click", e => {
 function checkDeliveries() {
 
   /* 1) Cargar */
-  let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  
   let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
 
   /* 2) Tiempo sim */
@@ -823,7 +823,7 @@ function checkDeliveries() {
 
   /* 4) Guardar */
   localStorage.setItem("ACS_PendingAircraft", JSON.stringify(remaining));
-  localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
+
   saveSlots();
 }
 
