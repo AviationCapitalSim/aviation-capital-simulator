@@ -906,18 +906,19 @@ function ACS_resolveMaintenanceStatus(ac) {
 }
 
 /* ============================================================
-   🟥 MA-8.5.C — AUTO-GROUNDING LOGIC (C & D OVERDUE)
+   🟥 MA-8.5.C — AUTO-GROUNDING LOGIC (FIXED)
    ------------------------------------------------------------
-   Purpose:
-   - Detener automáticamente el avión si C o D está overdue
-   - Marcar Maintenance Hold
-   - El wear sigue (jugable)
-   ------------------------------------------------------------
-   Version: v1.0 | Date: 05 FEB 2026
+   FIX:
+   - Nunca pisa status si ya está en "Maintenance"
    ============================================================ */
 
 function ACS_applyMaintenanceHold(ac) {
   if (!ac) return ac;
+
+  // 🔴 CRÍTICO: si está en mantenimiento activo, NO tocar
+  if (ac.status === "Maintenance") {
+    return ac;
+  }
 
   const m = ACS_resolveMaintenanceStatus(ac);
 
