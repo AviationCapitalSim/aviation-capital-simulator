@@ -647,8 +647,9 @@ if (typeof ACS_registerExpense === "function") {
     date: new Date().toISOString()
   });
 }
-
-      /* ============================================================
+} // ← CIERRE CORRECTO DE if (op === "BUY")
+       
+       /* ============================================================
          LEASE NEW — Registrar contrato activo + pago inicial
          ============================================================ */
        
