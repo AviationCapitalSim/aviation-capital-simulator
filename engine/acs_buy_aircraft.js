@@ -623,15 +623,30 @@ const entry = {
         entry.buy_initial_payment = initialPay;
         entry.buy_final_payment   = finalPay;
 
-        // Registrar en Finance
-        if (typeof ACS_registerExpense === "function") {
-        ACS_registerExpense({
-        amount: initialPay,
-        category: "new_aircraft_purchase",
-        subtype: "Initial Payment",
-        date: new Date().toISOString()
-      });
-     }
+       /* ============================================================
+   🔎 CAPITAL VALIDATION — OEM ORDER
+   ============================================================ */
+
+const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+const currentCapital = Number(finance.capital || 0);
+
+if (currentCapital < initialPay) {
+  alert("❌ Not enough capital to place this order.");
+  return;
+}
+
+/* ============================================================
+   💰 REGISTER INITIAL PAYMENT (DEPOSIT)
+   ============================================================ */
+
+if (typeof ACS_registerExpense === "function") {
+  ACS_registerExpense({
+    amount: initialPay,
+    category: "new_aircraft_purchase",
+    subtype: "Initial Payment",
+    date: new Date().toISOString()
+  });
+}
 
       /* ============================================================
          LEASE NEW — Registrar contrato activo + pago inicial
