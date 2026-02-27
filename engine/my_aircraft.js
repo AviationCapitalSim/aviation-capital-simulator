@@ -83,12 +83,12 @@ function saveFleet() {
 /* ============================================================
    🟦 MA-STRUCT-LEGACY — STRUCTURAL FLEET MIGRATION LAYER
    ------------------------------------------------------------
-   Purpose:
-   - Normalizar cualquier aeronave legacy
-   - Garantizar integridad estructural total
-   - No modificar aeronaves ya correctas
+   EXTENDED:
+   - Normaliza estructura técnica
+   - Normaliza core financiero
+   - No pisa aeronaves ya correctas
    ------------------------------------------------------------
-   Version: v1.0
+   Version: v1.1 (Financial Alignment)
    ============================================================ */
 
 function ACS_structuralFleetMigration() {
@@ -100,33 +100,30 @@ function ACS_structuralFleetMigration() {
 
     if (!ac || typeof ac !== "object") return;
 
-    // 🟢 1 — ID obligatorio
+    /* ============================================================
+       🟢 CORE STRUCTURE
+       ============================================================ */
+
     if (!ac.id || typeof ac.id !== "string") {
       ac.id = `AC-${Date.now()}-${index}`;
       changed = true;
     }
 
-    // 🟢 2 — Status obligatorio
     if (!ac.status) {
       ac.status = "Active";
       changed = true;
     }
 
-    // 🟢 3 — Registration obligatoria
-    if (!ac.registration) {
-      if (typeof ACS_generateRegistration === "function") {
-        ac.registration = ACS_generateRegistration();
-        changed = true;
-      }
+    if (!ac.registration && typeof ACS_generateRegistration === "function") {
+      ac.registration = ACS_generateRegistration();
+      changed = true;
     }
 
-    // 🟢 4 — Base obligatoria
     if (!ac.base && typeof getCurrentBaseICAO === "function") {
       ac.base = getCurrentBaseICAO();
       changed = true;
     }
 
-    // 🟢 5 — Campos mínimos mantenimiento
     if (ac.hours === undefined) {
       ac.hours = 0;
       changed = true;
@@ -142,11 +139,53 @@ function ACS_structuralFleetMigration() {
       changed = true;
     }
 
+    /* ============================================================
+       🟢 FINANCIAL NORMALIZATION (CRITICAL)
+       ============================================================ */
+
+    // 🔹 acquisitionCost
+    if (ac.acquisitionCost === undefined) {
+
+      if (typeof ac.acquisitionPrice === "number") {
+        ac.acquisitionCost = ac.acquisitionPrice;
+        delete ac.acquisitionPrice;
+        changed = true;
+      } else {
+        ac.acquisitionCost = 0;
+        changed = true;
+      }
+    }
+
+    // 🔹 originalCost
+    if (ac.originalCost === undefined) {
+
+      if (typeof ac.oemPrice === "number") {
+        ac.originalCost = ac.oemPrice;
+        delete ac.oemPrice;
+        changed = true;
+      } else {
+        ac.originalCost = 0;
+        changed = true;
+      }
+    }
+
+    // 🔹 acquisitionType
+    if (!ac.acquisitionType) {
+
+      if (ac.isUsed === true) {
+        ac.acquisitionType = "Used Market";
+      } else {
+        ac.acquisitionType = "Factory";
+      }
+
+      changed = true;
+    }
+
   });
 
   if (changed) {
     localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleetData));
-    console.log("🟢 Fleet structural migration applied.");
+    console.log("🟢 Fleet structural + financial migration applied.");
   }
 
   return fleetData;
