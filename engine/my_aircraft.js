@@ -2966,38 +2966,46 @@ window.openAssetPanel = function(id){
   setText("assetYear", ac.year ?? "—");
 
   // =========================
-  // FINANCIAL
-  // =========================
-  const originalCost = ac.price_acs_usd || 0;
+// FINANCIAL (CANONICAL VIA FINANCE ENGINE)
+// =========================
 
-  const simYear = getSimTime().year;
-  const age = simYear - (ac.year || simYear);
+/* ============================================================
+   🟢 AV-2 — MARKET VALUE FROM FINANCE ENGINE
+   ============================================================ */
 
-  const depreciation = 0.04;
-  const marketValue = Math.max(
-    originalCost * (1 - depreciation * age),
-    originalCost * 0.25
-  );
+const originalCost =
+  ac.oemPrice ||
+  ac.acquisitionPrice ||
+  ac.price ||
+  ac.price_acs_usd ||
+  0;
 
-  const gainLoss = marketValue - originalCost;
+const marketValue =
+  window.ACS_FINANCE_ENGINE
+    ?.calculateAircraftMarketValue(ac) || 0;
 
-  const formatUSD = v =>
-    "$" + v.toLocaleString("en-US", {maximumFractionDigits:0});
+const gainLoss = marketValue - originalCost;
 
-  setText("assetAcquisition", ac.acquisitionType || "Factory");
-  setText("assetOriginal", formatUSD(originalCost));
-  setText("assetMarket", formatUSD(marketValue));
-  setText("assetGain", formatUSD(gainLoss));
+const formatUSD = v =>
+  "$" + Number(v || 0).toLocaleString("en-US", {
+    maximumFractionDigits: 0
+  });
 
-  const liquidity = originalCost > 0
+setText("assetAcquisition", ac.acquisitionType || "Factory");
+setText("assetOriginal", formatUSD(originalCost));
+setText("assetMarket", formatUSD(marketValue));
+setText("assetGain", formatUSD(gainLoss));
+
+const liquidity =
+  originalCost > 0
     ? Math.min(marketValue / originalCost, 1)
     : 0;
 
-  const liquidityBar = document.getElementById("assetLiquidityFill");
-  if (liquidityBar) {
-    liquidityBar.style.width = (liquidity * 100) + "%";
-  }
-
+const liquidityBar = document.getElementById("assetLiquidityFill");
+if (liquidityBar) {
+  liquidityBar.style.width = (liquidity * 100) + "%";
+}
+   
   // =========================
   // SHOW PANEL
   // =========================
