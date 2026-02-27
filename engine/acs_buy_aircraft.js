@@ -625,9 +625,13 @@ const entry = {
 
         // Registrar en Finance
         if (typeof ACS_registerExpense === "function") {
-          ACS_registerExpense("new_aircraft_purchase", initialPay, `Initial payment — ${ac.model}`);
-        }
-      }
+        ACS_registerExpense({
+        amount: initialPay,
+        category: "new_aircraft_purchase",
+        subtype: "Initial Payment",
+        date: new Date().toISOString()
+      });
+     }
 
       /* ============================================================
          LEASE NEW — Registrar contrato activo + pago inicial
@@ -697,6 +701,7 @@ const entry = {
 });    // ← Cierra DOMContentLoaded (ÚNICA Y CORRECTA)
 
 /* ---- Card click → open modal ---- */
+
 document.addEventListener("click", e => {
   const btn = e.target.closest(".view-options-btn");
   if (!btn) return;
