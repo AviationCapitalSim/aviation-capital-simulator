@@ -3110,5 +3110,72 @@ function getAircraftImage(ac) {
   // la hace el navegador si falla la carga)
   return candidates[0] || "img/placeholder_aircraft.png";
 }
-   
+
+/* ============================================================
+   ✈️ FO-1 — Fleet Overview Panel Engine
+   Modular / Read-Only / No Side Effects
+   ============================================================ */
+
+function ACS_updateFleetOverview(){
+
+  try{
+
+    const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    const pendingOrders = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+    // 🟡 On Order
+    const onOrderCount = pendingOrders.length;
+
+    // 🔵 Pending Delivery (entregado pero no activo aún)
+    const pendingDeliveryCount = fleet.filter(ac => ac.status === "Pending Delivery").length;
+
+    // 🟣 For Sale
+    const forSaleCount = fleet.filter(ac => ac.forSale === true).length;
+
+    // 🟢 Lease Offering
+    const leaseOfferingCount = fleet.filter(ac => ac.leaseOffering === true).length;
+
+    // ⚫ Reserve Fleet
+    const reserveFleetCount = fleet.filter(ac => ac.status === "Reserve").length;
+
+    // === DOM UPDATE (safe check) ===
+    const setValue = (id, value) => {
+      const el = document.getElementById(id);
+      if(el) el.textContent = value;
+    };
+
+    setValue("foOnOrderValue", onOrderCount);
+    setValue("foPendingDeliveryValue", pendingDeliveryCount);
+    setValue("foForSaleValue", forSaleCount);
+    setValue("foLeaseOfferingValue", leaseOfferingCount);
+    setValue("foReserveFleetValue", reserveFleetCount);
+
+  }catch(err){
+    console.warn("Fleet Overview Update Error:", err);
+  }
+}
+
+
+/* ============================================================
+   FO-2 — Auto Sync Hook
+   Ensures refresh without touching existing logic
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  // Initial load
+  ACS_updateFleetOverview();
+
+  // Re-run when storage changes (multitab safe)
+  window.addEventListener("storage", function(e){
+    if(
+      e.key === "ACS_MyAircraft" ||
+      e.key === "ACS_PendingAircraft"
+    ){
+      ACS_updateFleetOverview();
+    }
+  });
+
+});
+
 })();
