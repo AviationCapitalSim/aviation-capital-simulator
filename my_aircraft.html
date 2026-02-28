@@ -1112,6 +1112,146 @@
   }
 
 }
+
+/* ============================================================
+   ✈️ FLEET OVERVIEW PANEL — Airbus OCC × Qatar Luxury
+   Instrument Board Style
+   ============================================================ */
+
+.fleet-overview-wrapper{
+  width:94%;
+  margin: 1.8rem auto 1.2rem;
+  padding: 1.2rem 1.4rem;
+
+  background: linear-gradient(
+    145deg,
+    rgba(10,25,55,0.95),
+    rgba(5,15,35,0.98)
+  );
+
+  border-radius:14px;
+  border:1px solid rgba(255,179,0,0.28);
+
+  box-shadow:
+    0 0 0 1px rgba(255,179,0,0.08),
+    0 25px 60px rgba(0,0,0,0.55);
+
+  backdrop-filter: blur(6px);
+}
+
+/* Header */
+
+.fleet-overview-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:1rem;
+}
+
+.fleet-overview-title{
+  font-size:1.05rem;
+  font-weight:600;
+  color:#ffb300;
+  letter-spacing:0.6px;
+}
+
+.fleet-overview-sub{
+  font-size:0.75rem;
+  color:#9fb3c8;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+}
+
+/* Grid */
+
+.fleet-overview-grid{
+  display:grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+/* Cards */
+
+.fleet-card{
+  position:relative;
+  padding: 1rem 0.8rem;
+  border-radius:12px;
+
+  background: rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+
+  text-align:center;
+  cursor:pointer;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.25s ease,
+    border 0.25s ease;
+}
+
+/* subtle top glow line */
+.fleet-card::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:2px;
+  border-radius:12px 12px 0 0;
+  background: linear-gradient(
+    to right,
+    rgba(255,179,0,0.0),
+    rgba(255,179,0,0.65),
+    rgba(255,179,0,0.0)
+  );
+  opacity:0.6;
+}
+
+/* Hover effect — OCC Instrument feel */
+
+.fleet-card:hover{
+  transform: translateY(-3px);
+
+  border:1px solid rgba(255,179,0,0.6);
+
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.6),
+    0 0 18px rgba(255,179,0,0.35);
+}
+
+/* Label */
+
+.fleet-card-label{
+  font-size:0.72rem;
+  color:#9fb3c8;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  margin-bottom:0.5rem;
+}
+
+/* Value */
+
+.fleet-card-value{
+  font-family:"Orbitron", monospace;
+  font-size:1.6rem;
+  font-weight:600;
+  color:#ffffff;
+  letter-spacing:1px;
+}
+
+/* Responsive */
+
+@media (max-width:1100px){
+  .fleet-overview-grid{
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width:700px){
+  .fleet-overview-grid{
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
     
 </style>
   
@@ -1148,6 +1288,52 @@
   <p class="acs-subtitle">Your complete fleet overview, synchronized with global time.</p>
 </section>
 
+
+<!-- ============================================================
+     ✈️ FLEET OVERVIEW PANEL — Airbus OCC × Qatar Luxury
+     Modular / Independent / No Table Coupling
+     ============================================================ -->
+
+<div class="fleet-overview-wrapper">
+
+  <div class="fleet-overview-header">
+    <span class="fleet-overview-title">Fleet Overview</span>
+    <span class="fleet-overview-sub">
+      Operational Control Status Board
+    </span>
+  </div>
+
+  <div class="fleet-overview-grid">
+
+    <div class="fleet-card" id="foOnOrder">
+      <div class="fleet-card-label">On Order</div>
+      <div class="fleet-card-value" id="foOnOrderValue">0</div>
+    </div>
+
+    <div class="fleet-card" id="foPendingDelivery">
+      <div class="fleet-card-label">Pending Delivery</div>
+      <div class="fleet-card-value" id="foPendingDeliveryValue">0</div>
+    </div>
+
+    <div class="fleet-card" id="foForSale">
+      <div class="fleet-card-label">For Sale</div>
+      <div class="fleet-card-value" id="foForSaleValue">0</div>
+    </div>
+
+    <div class="fleet-card" id="foLeaseOffering">
+      <div class="fleet-card-label">Lease Offering</div>
+      <div class="fleet-card-value" id="foLeaseOfferingValue">0</div>
+    </div>
+
+    <div class="fleet-card" id="foReserveFleet">
+      <div class="fleet-card-label">Reserve Fleet</div>
+      <div class="fleet-card-value" id="foReserveFleetValue">0</div>
+    </div>
+
+  </div>
+
+</div>
+  
   <!-- === FILTER BAR === -->
   
 <div class="filter-bar">
