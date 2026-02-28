@@ -175,8 +175,7 @@ body {
    ============================================================ */
 
 .acs-main {
-  padding: 70px 2rem 70px;
-  text-align: center;
+  padding: 110px 2rem 90px;
 }
 
 .acs-main .sub {
@@ -314,40 +313,59 @@ body {
 }
   
 /* ============================================================
-   === HERO TITLE — Airbus OCC Clean v1.0 =====================
+   === HERO — Airbus OCC Signature =============================
    ============================================================ */
+
+#welcomeMessage{
+  font-size:3.4rem;              /* más grande */
+  font-weight:700;
+  letter-spacing:6px;
+  text-transform:uppercase;
+  color:#F2F6FF;
+
+  margin-top:40px;
+  margin-bottom:30px;
+
+  text-shadow:
+    0 0 10px rgba(180,210,255,0.35),
+    0 0 30px rgba(0,120,255,0.15);
+}
+
+/* Línea técnica digital debajo del título */
 
 #welcomeMessage::after{
   content:"";
   display:block;
-  width:120px;
+  width:160px;
   height:2px;
-  margin:14px auto 0;
-  background:linear-gradient(to right, transparent, #4db8ff, transparent);
-  animation:pulseLine 3s infinite ease-in-out;
+  margin:22px auto 0;
+
+  background:linear-gradient(
+    to right,
+    transparent,
+    rgba(120,180,255,0.9),
+    transparent
+  );
+
+  animation:occPulse 3.5s ease-in-out infinite;
 }
 
-@keyframes pulseLine{
-  0%{opacity:0.3;}
+@keyframes occPulse{
+  0%{opacity:0.25;}
   50%{opacity:1;}
-  100%{opacity:0.3;}
+  100%{opacity:0.25;}
 }
 
-  margin-bottom:26px;
-}
-
-/* Subtítulo técnico OCC */
+/* Subtítulo técnico */
 
 .hero-subtitle{
-  font-size:0.85rem;
-  letter-spacing:3px;
+  font-size:0.9rem;
+  letter-spacing:4px;
   text-transform:uppercase;
-  color:rgba(120,180,255,0.85);
+  color:rgba(150,190,255,0.85);
 
-  border-top:1px solid rgba(120,180,255,0.22);
-  display:inline-block;
-  padding-top:14px;
-  margin-bottom:34px;
+  margin-top:28px;
+  margin-bottom:48px;
 }
   
 </style>
