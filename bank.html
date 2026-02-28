@@ -271,6 +271,26 @@ th{
       margin-top:10px;
     }
 
+/* ============================================================
+   🟦 ACS NAV — ACTIVE INDICATOR GLOBAL
+   ============================================================ */
+
+.acs-nav a {
+  position: relative;        /* 🔥 ESTO ES CLAVE */
+  font-size: 1rem;
+  letter-spacing: 0.4px;
+  color: #dbe4ff;
+  text-decoration: none;
+  transition: 0.25s ease;
+  padding-bottom: 6px;
+}
+
+.acs-nav a:hover,
+.acs-nav a.active {
+  color: #ffca3a;
+  text-shadow: 0 0 6px rgba(255,179,0,0.45);
+}
+
 .acs-nav a.active::after,
 .acs-nav a:hover::after {
   content: "";
