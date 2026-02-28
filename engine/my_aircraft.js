@@ -3216,7 +3216,7 @@ function ACS_openOrderBookModal(){
           <span class="modal-close" onclick="document.getElementById('orderBookModal').remove()">×</span>
         </div>
 
-        <table class="fleet-table" style="margin-top:1rem;">
+        <table class="fleet-table order-book-table" style="margin-top:1rem;">
           <thead>
   <tr>
     <th>Factory</th>
