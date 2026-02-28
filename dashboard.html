@@ -315,13 +315,12 @@ body {
    === HERO TITLE — Qatar Luxury Premium v2.3 (Balanceado) ====
    ============================================================ */
 
-#welcomeMessage {
-  font-size: 2.2rem;               /* tamaño reducido */
-  font-weight: 700;
-  margin-bottom: 0.3rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  text-align: center;
+#welcomeMessage{
+  font-size:2.3rem;
+  font-weight:700;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  text-shadow:0 0 12px rgba(255,255,255,0.15);
 }
 
 #welcomeMessage .w-welcome {
@@ -336,7 +335,13 @@ body {
   text-shadow: 0 0 12px rgba(255,255,255,0.25);
 }
 
-  
+.hero-subtitle{
+  margin-top:8px;
+  font-size:0.95rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.65);
+}
 </style>
 </head>
 <body>
@@ -369,8 +374,7 @@ body {
      ============================================================ -->
 
   <h2 id="welcomeMessage"></h2>
-
-  <div class="welcome-badges">
+  <p class="hero-subtitle">Global Fleet & Capital Command</p>  <div class="welcome-badges">
 
     <!-- RANK -->
     
@@ -669,10 +673,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const welcome = document.getElementById("welcomeMessage");
   if (welcome) {
     welcome.innerHTML = `
-      <span class="w-welcome">WELCOME TO</span>
-      &nbsp;
-      <span class="w-airline">${airlineObj.name}</span>
-    `;
+  <span class="w-airline">${airlineObj.name}</span>
+`;
   }
 
   // 3️⃣ COUNTRY + FLAG
