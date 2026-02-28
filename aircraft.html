@@ -33,110 +33,116 @@ body {
 }
 
 /* ============================================================
-     === HEADER (Adapted to Qatar Luxury Dashboard) ============
+   HEADER — SHARED ACS STANDARD
+   ============================================================ */
+.acs-header{
+  position:fixed;
+  top:0;
+  width:100%;
+  box-sizing:border-box; /* ← FIX CRÍTICO */
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:.8rem 2rem;
+  background:rgba(12,23,50,.45);
+  backdrop-filter:blur(9px);
+  border-bottom:2px solid #ffb300;
+  z-index:5000;
+}
+
+.acs-logo{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+}
+
+.acs-logo img{
+  height:46px;
+}
+
+.acs-logo h1{
+  margin:0;
+  font-size:1.1rem;
+  color:#ffb300;
+}
+
+.acs-nav{
+  display:flex;
+  gap:2rem;
+}
+
+.acs-nav a{
+  text-decoration:none;
+  color:#dbe4ff;
+}
+
+.acs-nav a.active{
+  color:#ffb300;
+}
+
+/* ============================================================
+   🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
    ============================================================ */
 
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  backdrop-filter: blur(9px);
-  background: rgba(12,23,50,0.45);
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #ffb300;
-  z-index: 5000;
+.acs-right{
+  display:flex;
+  align-items:center;
+  gap:14px;              /* espacio real entre botones y reloj */
+  padding-right:12px;    /* aire contra borde derecho */
+  flex-shrink:0;
 }
 
-/* === Left block === */
-.acs-logo {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+.support-btn{
+  padding:.45rem 1.1rem;
+  border-radius:12px;
+  font-size:.9rem;
+  font-weight:600;
+  text-decoration:none;
+  color:#8AB4FF;
+  border:1px solid rgba(138,180,255,.45);
+  background:rgba(138,180,255,.08);
 }
 
-.acs-logo img {
-  height: 46px;
+.logout-btn{
+  padding:.45rem 1.1rem;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  background:rgba(255,179,0,.05);
+  color:#ffb300;
+  font-weight:600;
+  cursor:pointer;
 }
 
-.acs-logo h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  color: #ffb300;
-  letter-spacing: 0.5px;
-}
+/* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
 
-/* === Navigation (center) === */
-.acs-nav {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-}
+.acs-clock-header{
 
-.acs-nav a {
-  position: relative;
-  font-size: 1rem;
-  letter-spacing: 0.4px;
-  color: #dbe4ff;
-  text-decoration: none;
-  padding-bottom: 6px;
-  transition: 0.25s ease;
-}
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
 
-.acs-nav a:hover,
-.acs-nav a.active {
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.6);
-}
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
 
-.acs-nav a.active::after,
-.acs-nav a:hover::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #ffb300, #ffe7a0);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
-}
+  padding:.45rem .8rem;
 
-/* === Right block === */
-.acs-auth {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
 
-/* Logout button (Dashboard match) */
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
+  display:flex;
+  justify-content:center;
+  align-items:center;
 
-.logout-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
+  white-space:nowrap;
 
-/* Clock — exact dashboard copy */
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
 }
 
 /* ============================================================
@@ -263,18 +269,21 @@ body {
 
   <nav class="acs-nav">
       <a href="dashboard.html">Main</a>
-      <a href="finance.html">Bank</a>
+      <a href="bank.html">Bank</a>
       <a href="aircraft.html" class="active">Aircraft</a>
       <a href="routes.html">Routes</a>
       <a href="hr.html">HR</a>
-      <a href="forum.html">Forum</a>
-      <a href="support.html">Support</a>
   </nav>
 
-  <div class="acs-auth">
-      <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-      <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
-  </div>
+ <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+   <div id="acs-clock" class="acs-clock-header">
+  <span class="clock-text">20:10 — MON 09 JUN 1941</span>
+</div>
+  
+</div>
+  
 </header>
 
 <main class="acs-main">
