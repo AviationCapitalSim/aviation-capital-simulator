@@ -427,6 +427,20 @@ async function handleLogin(event) {
       return false;
     }
 
+    // ============================================================
+// 🔐 L-FRONT-1 — NUEVOS ESTADOS DE SEGURIDAD (BACKEND v2)
+// ============================================================
+
+if (result.status === "INVALID_CREDENTIALS") {
+  alert("❌ Invalid email or password.");
+  return false;
+}
+
+if (result.status === "ACCOUNT_LOCKED") {
+  alert("🔒 Account locked due to multiple failed attempts.\nPlease wait 15 minutes before trying again.");
+  return false;
+}
+    
     // === NO_USER ===
     if (result.status === "NO_USER") {
       alert("❌ This email is not registered.\nPlease create your account.");
