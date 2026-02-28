@@ -1619,13 +1619,29 @@ list.forEach((ac) => {
         : "—"}
     </td>
 
-    <td class="${computed.nextC_overdue ? "overdue-text" : ""}">
-      ${computed.nextC}
-    </td>
+    <td class="${
+  computed.nextC_overdue
+    ? "overdue-text"
+    : (computed.nextC_days <= 20
+        ? "maint-critical"
+        : (computed.nextC_days <= 30
+            ? "maint-warning"
+            : ""))
+}">
+  ${computed.nextC}
+</td>
 
-    <td class="${computed.nextD_overdue ? "overdue-text" : ""}">
-      ${computed.nextD}
-    </td>
+    <td class="${
+  computed.nextD_overdue
+    ? "overdue-text"
+    : (computed.nextD_days <= 20
+        ? "maint-critical"
+        : (computed.nextD_days <= 30
+            ? "maint-warning"
+            : ""))
+}">
+  ${computed.nextD}
+</td>
 
     <td>${computed.base}</td>
 
