@@ -274,74 +274,82 @@ body {
 }
 
 /* ============================================================
-   === WELCOME CHIPS — Qatar Luxury (Tamaño unificado) ========
+   === WELCOME CHIPS — Airbus OCC Clean =======================
    ============================================================ */
 
-.welcome-badges {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 22px;
-  margin-bottom: 28px;
-  gap: 26px;
+.welcome-badges{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin-top:8px;
+  margin-bottom:36px;
+  gap:32px;
 }
 
-/* 👉 Todos con el MISMO tamaño (clonado del Base),
-      pero Rank y País conservan su recuadro dorado original */
-.welcome-chip {
-  padding: 5px 18px;          /* más grande que el original */
-  font-size: 0.90rem;         /* texto un poco más grande */
-  border-radius: 12px;
-  background: rgba(255,179,0,0.12);       /* recuadro dorado original */
-  border: 1px solid rgba(255,179,0,0.35); /* recuadro dorado original */
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 0 6px rgba(0,0,0,0.35);
-  height: 28px;
-  line-height: 28px;
+.welcome-chip{
+  padding:6px 18px;
+  font-size:0.85rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+
+  border-radius:6px;
+
+  background:rgba(25,45,85,0.65);
+  border:1px solid rgba(120,180,255,0.25);
+
+  color:#dbe6ff;
+
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  backdrop-filter:blur(4px);
 }
 
-/* CHIP BASE — Azul Qatar Royal */
-.welcome-chip.base-chip {
-  background: rgba(0, 102, 204, 0.20);
-  border: 1px solid rgba(0, 135, 255, 0.50);
-  color: #3aaaff;
+/* Base — un poco más técnico (no royal blue) */
+.welcome-chip.base-chip{
+  background:rgba(0,80,160,0.25);
+  border:1px solid rgba(120,180,255,0.55);
+  color:#8ecbff;
 }
   
 /* ============================================================
-   === HERO TITLE — Qatar Luxury Premium v2.3 (Balanceado) ====
+   === HERO TITLE — Airbus OCC Clean v1.0 =====================
    ============================================================ */
 
-#welcomeMessage{
-  font-size:2.3rem;
-  font-weight:700;
-  letter-spacing:4px;
-  text-transform:uppercase;
-  text-shadow:0 0 12px rgba(255,255,255,0.15);
+#welcomeMessage::after{
+  content:"";
+  display:block;
+  width:120px;
+  height:2px;
+  margin:14px auto 0;
+  background:linear-gradient(to right, transparent, #4db8ff, transparent);
+  animation:pulseLine 3s infinite ease-in-out;
 }
 
-#welcomeMessage .w-welcome {
-  background: linear-gradient(90deg, #ffe7a0, #ffb300, #ffd75a);
-  -webkit-background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 14px rgba(255,190,60,0.35);
+@keyframes pulseLine{
+  0%{opacity:0.3;}
+  50%{opacity:1;}
+  100%{opacity:0.3;}
 }
 
-#welcomeMessage .w-airline {
-  color: #ffffff;
-  text-shadow: 0 0 12px rgba(255,255,255,0.25);
+  margin-bottom:26px;
 }
+
+/* Subtítulo técnico OCC */
 
 .hero-subtitle{
-  margin-top:8px;
-  font-size:0.95rem;
-  letter-spacing:2px;
+  font-size:0.85rem;
+  letter-spacing:3px;
   text-transform:uppercase;
-  color:rgba(255,255,255,0.65);
+  color:rgba(120,180,255,0.85);
+
+  border-top:1px solid rgba(120,180,255,0.22);
+  display:inline-block;
+  padding-top:14px;
+  margin-bottom:34px;
 }
+  
 </style>
 </head>
 <body>
