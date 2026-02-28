@@ -3178,4 +3178,84 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 
+/* ============================================================
+   FO-3 — On Order Click Handler
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  const onOrderCard = document.getElementById("foOnOrder");
+
+  if(onOrderCard){
+    onOrderCard.addEventListener("click", function(){
+      ACS_openOrderBookModal();
+    });
+  }
+
+});
+
+/* ============================================================
+   FO-4 — Aircraft Order Book Modal Builder
+   ============================================================ */
+
+function ACS_openOrderBookModal(){
+
+  const pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+
+  if(pending.length === 0){
+    alert("No aircraft currently on order.");
+    return;
+  }
+
+  let html = `
+    <div class="modal-bg" id="orderBookModal" style="display:flex;">
+      <div class="modal-detail ql-modal" style="max-width:900px;">
+
+        <div class="modal-header">
+          <h3 class="ql-title">Aircraft Order Book</h3>
+          <span class="modal-close" onclick="document.getElementById('orderBookModal').remove()">×</span>
+        </div>
+
+        <table class="fleet-table" style="margin-top:1rem;">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Type</th>
+              <th>Qty</th>
+              <th>Delivery</th>
+              <th>Initial Paid</th>
+              <th>Balance</th>
+              <th>Base</th>
+            </tr>
+          </thead>
+          <tbody>
+  `;
+
+  pending.forEach(order => {
+
+    const balance = (order.price * order.qty) - (order.buy_initial_payment || 0);
+
+    html += `
+      <tr>
+        <td>${order.model}</td>
+        <td>${order.type}</td>
+        <td>${order.qty}</td>
+        <td>${new Date(order.deliveryDate).toLocaleDateString()}</td>
+        <td>$${Number(order.buy_initial_payment || 0).toLocaleString()}</td>
+        <td>$${Number(balance).toLocaleString()}</td>
+        <td>${order.base || "UNASSIGNED"}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+}
+   
 })();
