@@ -3218,16 +3218,17 @@ function ACS_openOrderBookModal(){
 
         <table class="fleet-table" style="margin-top:1rem;">
           <thead>
-            <tr>
-              <th>Model</th>
-              <th>Type</th>
-              <th>Qty</th>
-              <th>Delivery</th>
-              <th>Initial Paid</th>
-              <th>Balance</th>
-              <th>Base</th>
-            </tr>
-          </thead>
+  <tr>
+    <th>Factory</th>
+    <th>Model</th>
+    <th>Type</th>
+    <th>Qty</th>
+    <th>Delivery</th>
+    <th>Initial Paid</th>
+    <th>Balance</th>
+    <th>Base</th>
+  </tr>
+</thead>
           <tbody>
   `;
 
@@ -3237,14 +3238,21 @@ function ACS_openOrderBookModal(){
 
     html += `
       <tr>
-        <td>${order.model}</td>
-        <td>${order.type}</td>
-        <td>${order.qty}</td>
-        <td>${new Date(order.deliveryDate).toLocaleDateString()}</td>
-        <td>$${Number(order.buy_initial_payment || 0).toLocaleString()}</td>
-        <td>$${Number(balance).toLocaleString()}</td>
-        <td>${order.base || "UNASSIGNED"}</td>
-      </tr>
+  <td>${order.manufacturer}</td>
+  <td>${order.model}</td>
+  <td>${order.type}</td>
+  <td>${order.qty}</td>
+  <td>${new Date(order.deliveryDate).toLocaleDateString()}</td>
+  <td>$${Number(order.buy_initial_payment || 0).toLocaleString()}</td>
+  <td>$${Number(balance).toLocaleString()}</td>
+  <td>
+  ${
+    order.base && order.base !== "UNASSIGNED"
+      ? order.base
+      : `<span style="color:#f1b21a;font-weight:600;">PLANNING</span>`
+  }
+</td>
+</tr>
     `;
   });
 
