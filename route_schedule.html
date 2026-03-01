@@ -639,15 +639,24 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
     <!-- A2: se añade autoGenerateFlightNumber al onchange -->
     <select id="departureTime" onchange="autoCalculate(); autoGenerateFlightNumber();"></select>
 
-    <label style="text-align:center;margin-top:1.2rem;">Days of Operation</label>
+   <label style="text-align:center;margin-top:1.2rem;">Days of Operation</label>
+
 <div class="days-row">
-  <label><input type="checkbox" id="mon"> Mo</label>
-  <label><input type="checkbox" id="tue"> Tu</label>
-  <label><input type="checkbox" id="wed"> We</label>
-  <label><input type="checkbox" id="thu"> Th</label>
-  <label><input type="checkbox" id="fri"> Fr</label>
-  <label><input type="checkbox" id="sat"> Sa</label>
-  <label><input type="checkbox" id="sun"> Su</label>
+
+  <!-- 🟢 Facilitador ALL -->
+  <label>
+    <input type="checkbox" id="allDays" onchange="RS_toggleAllDays(this)">
+    All
+  </label>
+
+  <label><input type="checkbox" id="mon" onchange="RS_syncAllDays()"> Mo</label>
+  <label><input type="checkbox" id="tue" onchange="RS_syncAllDays()"> Tu</label>
+  <label><input type="checkbox" id="wed" onchange="RS_syncAllDays()"> We</label>
+  <label><input type="checkbox" id="thu" onchange="RS_syncAllDays()"> Th</label>
+  <label><input type="checkbox" id="fri" onchange="RS_syncAllDays()"> Fr</label>
+  <label><input type="checkbox" id="sat" onchange="RS_syncAllDays()"> Sa</label>
+  <label><input type="checkbox" id="sun" onchange="RS_syncAllDays()"> Su</label>
+
 </div>
 
 <hr class="divider" />
@@ -2084,6 +2093,36 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("✅ Confirm Route button correctly bound");
 
 });
+
+/* ============================================================
+   🟩 RS — ALL DAYS FACILITATOR (SAFE / UI ONLY)
+   ------------------------------------------------------------
+   • All marca o desmarca Mo–Su
+   • Si se desmarca un día manualmente → All se desmarca
+   • NO altera confirmRoute ni lógica interna
+   ============================================================ */
+
+function RS_toggleAllDays(master) {
+
+  const checked = master.checked;
+
+  ["mon","tue","wed","thu","fri","sat","sun"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = checked;
+  });
+}
+
+function RS_syncAllDays() {
+
+  const allBox = document.getElementById("allDays");
+  if (!allBox) return;
+
+  const allChecked =
+    ["mon","tue","wed","thu","fri","sat","sun"]
+      .every(id => document.getElementById(id)?.checked);
+
+  allBox.checked = allChecked;
+}
      
 </script>
 
