@@ -1776,6 +1776,12 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
+  const nowTs = Date.now();
+
+// 🟦 B-CYCLE AUTHORITY APPLY
+fleet.forEach(ac => {
+  ACS_evaluateMonthlyBCycle(ac, items, nowTs);
+});
 
 // 🔒 OPS FILTER — SkyTrack authority
 const operationalItems = items.filter(it => {
@@ -2917,6 +2923,7 @@ function applyMaintenance(){
   // ============================================================
   // 0) GUARDIA
   // ============================================================
+     
   if (!maintTail && !maintAircraftId) {
     closeMaintModal();
     return;
@@ -3104,6 +3111,27 @@ function applyMaintenance(){
   // 6) FINAL
   // ============================================================
   setItems(items);
+
+// 🟢 RESET B-CYCLE si es B-Check
+if (t === "B") {
+
+  const fleetNow = getRealFleet();
+  const idx = fleetNow.findIndex(x =>
+    String(x.id) === String(ac.id)
+  );
+
+  if (idx !== -1) {
+    fleetNow[idx].lastBCheckAt = Date.now();
+    fleetNow[idx].maintenanceOverdue = false;
+    if (!fleetNow[idx].maintenance) {
+      fleetNow[idx].maintenance = {};
+    }
+    fleetNow[idx].maintenance.bOverdue = false;
+
+    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleetNow));
+  }
+}
+     
   closeMaintModal();
   renderSchedule();
 }
@@ -4135,7 +4163,55 @@ console.log(
 
 })();
      
+/* ============================================================
+   🟦 B-CYCLE ENGINE v1.0 — MONTHLY AUTHORITY (SCHEDULE)
+   ------------------------------------------------------------
+   • Autoridad mensual del B-Check
+   • 30 días por ciclo
+   • Si vence y NO hay B programado → OVERDUE
+   • NO inserta servicios automáticamente
+   ============================================================ */
 
+function ACS_evaluateMonthlyBCycle(aircraft, scheduleItems, nowTs){
+
+  if (!aircraft) return aircraft;
+
+  const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+
+  if (!aircraft.maintenance) {
+    aircraft.maintenance = {};
+  }
+
+  const lastB = aircraft.lastBCheckAt || aircraft.enteredFleetAt;
+
+  if (!lastB) return aircraft;
+
+  const elapsed = nowTs - Number(lastB);
+
+  // 🔴 Si no ha pasado 1 mes → todo bien
+  if (elapsed < MONTH_MS) {
+    aircraft.maintenance.bOverdue = false;
+    return aircraft;
+  }
+
+  // 🔍 Verificar si hay B-Check programado
+  const hasScheduledB = (scheduleItems || []).some(it =>
+    it &&
+    it.type === "service" &&
+    it.serviceType === "B" &&
+    String(it.aircraftId) === String(aircraft.id)
+  );
+
+  if (!hasScheduledB) {
+    aircraft.maintenance.bOverdue = true;
+    aircraft.maintenanceOverdue = true;
+  } else {
+    aircraft.maintenance.bOverdue = false;
+  }
+
+  return aircraft;
+}
+     
 /* ============================================================
    7) LOG
    ============================================================ */
