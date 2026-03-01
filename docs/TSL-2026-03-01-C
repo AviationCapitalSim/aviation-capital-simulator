@@ -1,0 +1,145 @@
+# ACS TECHNICAL SESSION LOG
+ID: TSL-2026-03-01-C
+Módulo: Schedule Table / B-Check Monthly Cycle
+Estado: ABIERTO
+
+---
+
+## 1. Contexto
+
+Durante pruebas funcionales del B-Check mensual dentro del módulo Schedule Table, se detectó una inconsistencia estructural entre:
+
+- El ciclo mensual de 30 días
+- La programación del servicio B en la tabla
+- La activación automática del mantenimiento
+
+El objetivo del B-Check mensual es:
+
+- Si está programado → debe activarse automáticamente al llegar al día 30.
+- Si NO está programado → debe entrar en estado OVERDUE.
+
+---
+
+## 2. Comportamiento Esperado (Diseño Oficial)
+
+### 🟢 Caso A — B Programado en Tabla
+
+1. El ciclo mensual alcanza 30 días.
+2. El servicio B está programado en Schedule.
+3. El avión entra automáticamente en B-Check.
+4. Duración: 24 horas simuladas.
+5. Al finalizar:
+   - status → Active
+   - canFly → true
+   - lastBCheckAt actualizado
+   - ciclo reiniciado.
+
+---
+
+### 🔴 Caso B — B NO Programado
+
+1. El ciclo mensual alcanza 30 días.
+2. No existe servicio B asignado en Schedule.
+3. El avión entra en:
+   - maintenanceOverdue = true
+   - bOverdue = true
+   - bloqueo operativo.
+
+---
+
+## 3. Problemas Detectados
+
+Durante la sesión se identificaron los siguientes puntos:
+
+### ❌ 3.1 Servicios no persistidos
+
+`localStorage.getItem("ACS_ScheduleItems")` devolvía `null`.
+
+Esto impide que el motor automático detecte servicios programados.
+
+---
+
+### ❌ 3.2 Desacople entre ciclo mensual y activación
+
+La función `ACS_evaluateMonthlyBCycle()`:
+
+- Marca overdue correctamente.
+- Pero NO activa automáticamente el B-Check cuando está programado.
+
+Actualmente el ciclo mensual y el schedule funcionan como sistemas independientes.
+
+---
+
+### ❌ 3.3 Uso parcial de Date.now()
+
+Se detectó uso de `Date.now()` en partes del cálculo mensual,
+mientras que el Schedule usa `ACS_TABLE_TIME` (Time Engine simulado).
+
+Esto puede generar desincronización entre:
+
+- Tiempo real del navegador
+- Tiempo simulado del juego
+
+---
+
+## 4. Estado Actual del Sistema
+
+✔ Time Engine funcional  
+✔ ACS_TABLE_TIME correcto  
+✔ Modal B-Check operativo  
+✔ Barra de ciclo funcional  
+✔ Evaluación de overdue funcional  
+
+❌ Activación automática mensual no implementada  
+❌ Persistencia de servicios requiere verificación  
+
+---
+
+## 5. Decisión Arquitectónica Pendiente
+
+Se debe definir formalmente:
+
+Cuando el ciclo mensual llega a 30 días y el B está programado:
+
+A) ¿Debe activarse inmediatamente?
+B) ¿Debe esperar al día/hora programado en Schedule?
+
+Esta decisión impacta la lógica de integración entre:
+
+- ACS_evaluateMonthlyBCycle()
+- ACS_isServiceActiveNow()
+- renderSchedule()
+
+---
+
+## 6. Próximo Paso Técnico
+
+Implementar integración directa entre:
+
+Ciclo mensual vencido
++
+Existencia de servicio B programado
+=
+Activación automática del B-Check
+
+Sin romper:
+
+- C-Check
+- D-Check
+- SkyTrack
+- Estado operativo global
+
+---
+
+## 7. Conclusión
+
+El sistema no está roto.
+
+Existe desacople entre:
+Ciclo mensual
+y
+Activación automática del servicio.
+
+El módulo requiere integración estructural controlada.
+
+Estado del TSL: ABIERTO
