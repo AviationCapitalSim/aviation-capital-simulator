@@ -840,12 +840,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🔹 Restaurar datos SIEMPRE
   restoreRegisterCache();
 
-  // 🔹 Verificar si ya aceptó términos
-  if (localStorage.getItem("ACS_termsAccepted") === "yes") {
-    checkbox.disabled = false;
-    checkbox.checked = true;
-    registerBtn.disabled = false;
-  }
+  // 🔹 Solo habilitar si viene JUSTO de aceptar
+  if (sessionStorage.getItem("ACS_termsJustAccepted") === "yes") {
+
+  checkbox.disabled = false;
+  checkbox.checked = true;
+  registerBtn.disabled = false;
+
+  // Limpiar flag temporal
+  sessionStorage.removeItem("ACS_termsJustAccepted");
+
+} else {
+  checkbox.disabled = true;
+  checkbox.checked = false;
+  registerBtn.disabled = true;
+}
 
   // 🔹 Si hace click en el enlace Terms
   const termsLink = document.querySelector('a[href="terms.html"]');
