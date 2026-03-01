@@ -2835,35 +2835,6 @@ function ACS_applyInitialFlightCosts(route, ac){
     console.warn("❗ Error B3-A:", err);
   }
 }
-
-/* ============================================================
-   🟦 B-CHECK REMAINING CALCULATOR (30 DAY CYCLE)
-   ------------------------------------------------------------
-   • Source: aircraft.lastBCheckAt
-   • Cycle: 30 days
-   • Returns remaining days + percentage
-   ============================================================ */
-
-function ACS_getBCycleStatus(aircraft){
-
-  if (!aircraft || !aircraft.lastBCheckAt) {
-    return null;
-  }
-
-  const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-
-  const elapsed = now - Number(aircraft.lastBCheckAt);
-  const remainingMs = MONTH_MS - elapsed;
-
-  const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
-  const pct = Math.max(0, Math.min(100, (remainingMs / MONTH_MS) * 100));
-
-  return {
-    remainingDays: remainingDays,
-    percent: pct
-  };
-}
      
 // ============================================================
 // 🛠 MAINTENANCE (FIX EDIT vs APPLY) — 07 FEB 2026
@@ -4487,6 +4458,35 @@ function ACS_sortDayEvents(events) {
 }
 
 /* ============================================================
+   🟦 B-CHECK REMAINING CALCULATOR (30 DAY CYCLE)
+   ------------------------------------------------------------
+   • Source: aircraft.lastBCheckAt
+   • Cycle: 30 days
+   • Returns remaining days + percentage
+   ============================================================ */
+
+function ACS_getBCycleStatus(aircraft){
+
+  if (!aircraft || !aircraft.lastBCheckAt) {
+    return null;
+  }
+
+  const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  const elapsed = now - Number(aircraft.lastBCheckAt);
+  const remainingMs = MONTH_MS - elapsed;
+
+  const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
+  const pct = Math.max(0, Math.min(100, (remainingMs / MONTH_MS) * 100));
+
+  return {
+    remainingDays: remainingDays,
+    percent: pct
+  };
+}
+     
+/* ============================================================
    🦄 M3 — MAINTENANCE INFO MODAL ENGINE
    ============================================================ */
 
@@ -4506,43 +4506,83 @@ function openMaintenanceInfoModal(service, aircraft){
 
   title.textContent = typeLabel;
 
-  body.innerHTML = `
-    <div class="flight-kicker">
-      <strong>${aircraft.registration || "—"}</strong>
-      · ${aircraft.model || "—"}
-    </div>
+const bCycle = service.serviceType === "B"
+  ? ACS_getBCycleStatus(aircraft)
+  : null;
 
-    <div class="flight-hero">
-      <div class="route">Maintenance Window</div>
-      <div class="times">
-        ${service.start} → ${service.end}
+let barHTML = "";
+
+if (bCycle) {
+
+  let color;
+
+  if (bCycle.remainingDays > 15) {
+    color = "#00c853"; // verde técnico
+  } else if (bCycle.remainingDays > 7) {
+    color = "#ffd600"; // amarillo
+  } else if (bCycle.remainingDays > 3) {
+    color = "#ff9100"; // naranja
+  } else {
+    color = "#d50000"; // rojo
+  }
+
+  barHTML = `
+    <div class="bcycle-box">
+      <div class="bcycle-header">B-CHECK CYCLE</div>
+
+      <div class="bcycle-bar">
+        <div class="bcycle-fill"
+             style="width:${bCycle.percent}%; background:${color};">
+        </div>
       </div>
-    </div>
 
-    <div class="flight-meta">
-      <div class="meta-card">
-        <span class="label">Day</span>
-        <span class="value">${service.day.toUpperCase()}</span>
-      </div>
-
-      <div class="meta-card">
-        <span class="label">Duration</span>
-        <span class="value">
-          ${service.serviceType === "B" ? "24 hours" : "5 hours"}
-        </span>
-      </div>
-
-      <div class="meta-card">
-        <span class="label">Status</span>
-        <span class="value">Scheduled</span>
-      </div>
-
-      <div class="meta-card">
-        <span class="label">Type</span>
-        <span class="value">${typeLabel}</span>
+      <div class="bcycle-info">
+        <span>Remaining</span>
+        <span>${bCycle.remainingDays > 0 ? bCycle.remainingDays + " days" : "0 days"}</span>
       </div>
     </div>
   `;
+}
+
+body.innerHTML = `
+  <div class="flight-kicker">
+    <strong>${aircraft.registration || "—"}</strong>
+    · ${aircraft.model || "—"}
+  </div>
+
+  <div class="flight-hero">
+    <div class="route">Maintenance Window</div>
+    <div class="times">
+      ${service.start} → ${service.end}
+    </div>
+  </div>
+
+  ${barHTML}
+
+  <div class="flight-meta">
+    <div class="meta-card">
+      <span class="label">Day</span>
+      <span class="value">${service.day.toUpperCase()}</span>
+    </div>
+
+    <div class="meta-card">
+      <span class="label">Duration</span>
+      <span class="value">
+        ${service.serviceType === "B" ? "24 hours" : "5 hours"}
+      </span>
+    </div>
+
+    <div class="meta-card">
+      <span class="label">Status</span>
+      <span class="value">Scheduled</span>
+    </div>
+
+    <div class="meta-card">
+      <span class="label">Type</span>
+      <span class="value">${typeLabel}</span>
+    </div>
+  </div>
+`;
 
   modal.classList.remove("hidden");
 }
