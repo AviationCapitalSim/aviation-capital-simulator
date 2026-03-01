@@ -675,6 +675,31 @@ async function hashPassword(password) {
 async function handleRegister(event) {
   event.preventDefault();
 
+  /* ============================================================
+   🔒 TERMS ENFORCEMENT — BLOCK REGISTER IF NOT ACCEPTED
+   ============================================================ */
+
+const termsAccepted = localStorage.getItem("ACS_termsAccepted");
+
+if (termsAccepted !== "yes") {
+
+  // Guardar datos actuales antes de redirigir
+  const temp = {
+    fullName: document.getElementById("fullName").value.trim(),
+    email:    document.getElementById("email").value.trim(),
+    day:      document.getElementById("dob-day").value,
+    month:    document.getElementById("dob-month").value,
+    year:     document.getElementById("dob-year").value,
+    country:  document.getElementById("country").value
+  };
+
+  localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
+
+  alert("⚠️ You must read and accept the Terms & Conditions first.");
+  window.location.href = "terms.html";
+  return;
+}
+     
   const fullName = document.getElementById("fullName").value.trim();
   const email    = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
@@ -785,45 +810,28 @@ function closeAgeModal() {
 </script>
 
 <script>
+     
 // ======================================================
-//   TERMS CONTROL — FINAL WORKING VERSION
+//   TERMS CONTROL — CLEAN VERSION (FIXED FLOW)
 // ======================================================
+
 document.addEventListener("DOMContentLoaded", () => {
 
   const checkbox = document.getElementById("terms");
   if (!checkbox) return;
 
-  // Siempre deshabilitada al cargar
-  checkbox.checked = false;
-  checkbox.disabled = true;
-
-  // Si ya aceptó en terms.html → habilitar
   const accepted = localStorage.getItem("ACS_termsAccepted");
+
+  // Si ya aceptó en terms.html
   if (accepted === "yes") {
     checkbox.disabled = false;
-    return;
+    checkbox.checked = true;
+  } else {
+    checkbox.checked = false;
+    checkbox.disabled = true;
   }
 
-  // Si intenta marcar sin aceptar → guardar datos y enviar
-  checkbox.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    const temp = {
-      fullName: document.getElementById("fullName").value.trim(),
-      email:    document.getElementById("email").value.trim(),
-      day:      document.getElementById("dob-day").value,
-      month:    document.getElementById("dob-month").value,
-      year:     document.getElementById("dob-year").value,
-      country:  document.getElementById("country").value
-    };
-
-    localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
-
-    alert("⚠️ You must read and accept the Terms & Conditions first.");
-    window.location.href = "terms.html";
-  });
-
-  // Restaurar datos cuando regresa desde terms.html
+  // Restaurar datos guardados
   const saved = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
 
   if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
