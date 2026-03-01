@@ -735,22 +735,29 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
-/* 🟦 A4 — ROUTE SCHEDULE: Auto Flight Number AFTER selecting aircraft */
-     
+/* ============================================================
+   🟦 AUTO-GENERATE FLIGHT NUMBER — MODEL BASED
+   ============================================================ */
+
 function autoGenerateFlightNumber() {
 
-    if (!userIATA || userIATA.length !== 2) return;
+  if (!userIATA || userIATA.length !== 2) {
+    console.warn("❌ IATA code missing or invalid");
+    return;
+  }
 
-    const origin = document.getElementById("origin").value.trim();
-    const dest   = document.getElementById("destination").value.trim();
-    const ac     = document.getElementById("aircraft").value;
+  const origin = document.getElementById("origin").value.trim();
+  const dest   = document.getElementById("destination").value.trim();
+  const model  = document.getElementById("aircraft").value;
 
-    if (!origin || !dest || !ac) return;
+  // Ahora depende de modelo seleccionado
+  if (!origin || !dest || !model) return;
 
-    const pair = generateFlightPair();
-    if (flightNumberInput) {
-        flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
-    }
+  const pair = generateFlightPair();
+
+  if (flightNumberInput) {
+    flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
+  }
 }
 
 /* ============================================================
