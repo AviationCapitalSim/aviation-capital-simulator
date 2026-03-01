@@ -1825,7 +1825,7 @@ function renderSchedule() {
 
   const items = getItems();
   const fleet = getRealFleet();
-  const nowTs = Date.now();
+  const nowTs = ACS_TABLE_TIME?.date?.getTime?.() || Date.now();
 
 // 🟦 B-CYCLE AUTHORITY APPLY
 fleet.forEach(ac => {
