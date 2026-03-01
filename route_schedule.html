@@ -1632,18 +1632,21 @@ function confirmRoute() {
   const destination = (document.getElementById("destination")?.value || "").trim().toUpperCase();
   const departure   = (document.getElementById("departureTime")?.value || "").trim();
 
-  const aircraftSel = document.getElementById("aircraft");
-  const selectedAircraftId = aircraftSel ? (aircraftSel.value || "").trim() : "";
+  /* ============================================================
+   🟢 MODEL VALIDATION (STRUCTURAL · NO AIRCRAFT ID)
+   ============================================================ */
 
-  if (!origin || !destination || !departure) {
-    alert("⚠️ Please complete all fields before confirming.");
-    return;
-  }
+const modelKey = (document.getElementById("aircraft")?.value || "").trim();
 
-  if (!selectedAircraftId || !/^AC[-_]/.test(selectedAircraftId)) {
-    alert("Please select a valid aircraft.");
-    return;
-  }
+if (!origin || !destination || !departure) {
+  alert("⚠️ Please complete all fields before confirming.");
+  return;
+}
+
+if (!modelKey) {
+  alert("Please select an aircraft model.");
+  return;
+}
 
   // 2) Días seleccionados (UI real)
   const selectedDays = DAY_IDS.filter(id => document.getElementById(id)?.checked);
@@ -1686,18 +1689,7 @@ function confirmRoute() {
   const arrM = arrivalTotalMin % 60;
   const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
 
-  // 6) Resolver modelKey REAL por aircraftId
-  let fleet = [];
-  try { fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]"); } catch { fleet = []; }
-
-  const acObj = fleet.find(a => (a?.id || "") === selectedAircraftId) || null;
-  const modelKey = (acObj?.model || "").toString().trim();
-
-  if (!modelKey) {
-    alert("⚠ Aircraft model not found in fleet. Please reselect aircraft.");
-    return;
-  }
-
+  
   // 7) Distancia (safety net)
   let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
   if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
@@ -1878,23 +1870,27 @@ createdFlights.push(flight);
   }
 
   // 13) Legacy route pool (si lo quieres mantener para chips / compat)
+     
   let routesPool = [];
   try { routesPool = JSON.parse(localStorage.getItem("ACS_ROUTES_POOL") || "[]"); } catch { routesPool = []; }
 
   // Guardar un objeto “route” compatible (sin romper)
+     
   const newRoute = {
-    id: "RT_" + Math.floor(100000 + Math.random() * 900000),
-    type: "route",
-    origin,
-    destination,
-    days: [...selectedDays],
-    departure,
-    blockTimeMin,
-    aircraftId: selectedAircraftId,
-    modelKey: modelKey.toUpperCase(),
-    flightNumberOut,
-    flightNumberIn
-  };
+  id: "RT_" + Math.floor(100000 + Math.random() * 900000),
+  type: "route",
+  origin,
+  destination,
+  days: [...selectedDays],
+  departure,
+  blockTimeMin,
+
+  aircraftId: null, // 🔥 ya no se asigna aquí
+  modelKey: modelKey.toUpperCase(),
+
+  flightNumberOut,
+  flightNumberIn
+};
 
   routesPool.push(newRoute);
   localStorage.setItem("ACS_ROUTES_POOL", JSON.stringify(routesPool));
