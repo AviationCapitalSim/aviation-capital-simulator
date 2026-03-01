@@ -466,8 +466,15 @@ function RS_getOperationalFleet() {
 }
 
 /* ============================================================
-   🧭 POPULATE AIRCRAFT SELECTOR — FINAL (MOTOR ÚNICO)
+   🟢 RS_populateAircraftSelector — MODEL ONLY (STRUCTURAL)
+   ------------------------------------------------------------
+   • Muestra SOLO modelo
+   • No muestra matrícula
+   • No muestra status
+   • No duplica modelos
+   • Usa modelKey como value
    ============================================================ */
+
 function RS_populateAircraftSelector() {
 
   const select = document.getElementById("aircraft");
@@ -475,25 +482,29 @@ function RS_populateAircraftSelector() {
 
   select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-  const fleet = RS_getOperationalFleet();
+  const raw = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
+  if (!Array.isArray(raw) || !raw.length) return;
 
-  if (!fleet.length) {
-    console.warn("⚠ No operational aircraft (Active or Pending) found");
-    return;
-  }
+  // 🟢 Solo activos
+  const activeFleet = raw.filter(ac =>
+    String(ac.status || "").toLowerCase() === "active"
+  );
 
-  fleet.forEach(ac => {
+  if (!activeFleet.length) return;
+
+  // 🟢 Obtener modelos únicos
+  const uniqueModels = [...new Set(
+    activeFleet
+      .map(ac => (ac.model || "").trim())
+      .filter(m => m.length > 0)
+  )];
+
+  uniqueModels.forEach(model => {
 
     const opt = document.createElement("option");
 
-    opt.value = ac.id;
-    opt.textContent = `${ac.model || "Unknown"} • ${ac.registration || "N/A"} • ${
-      (ac.status || "").toLowerCase().includes("pending") ? "Pending" : "Active"
-    }`;
-
-    opt.dataset.speed    = ac.speed || 440;
-    opt.dataset.range    = ac.range || 1500;
-    opt.dataset.category = ac.category || "";
+    opt.value = model.toUpperCase();  // 🔥 ahora value = modelKey
+    opt.textContent = model;          // 🔥 solo modelo visible
 
     select.appendChild(opt);
   });
@@ -1427,7 +1438,7 @@ function autoCalculate() {
 
   const origin = document.getElementById("origin").value.trim();
   const dest   = document.getElementById("destination").value.trim();
-  const aircraftId = document.getElementById("aircraft").value;
+  const modelKey = document.getElementById("aircraft").value;
 
   if (!origin || !dest || !aircraftId) {
     document.getElementById("techData").style.display = "none";
@@ -1435,7 +1446,9 @@ function autoCalculate() {
   }
 
   const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const ac = fleet.find(a => a.id === aircraftId);
+  const ac = fleet.find(a =>
+  (a.model || "").toUpperCase() === modelKey
+  );
 
   if (!ac) {
     console.warn("Aircraft not found:", aircraftId);
