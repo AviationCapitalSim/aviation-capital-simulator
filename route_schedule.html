@@ -1438,27 +1438,43 @@ function normalizeModel(model) {
 }
      
 /* ============================================================
-   🔵 B — AUTO CALCULATE (NO REGISTRATIONS)
+   🔵 B — AUTO CALCULATE (MODEL-BASED · CLEAN · SAFE)
+   ------------------------------------------------------------
+   • Ya NO usa aircraftId
+   • Usa modelKey
+   • No rompe si no hay selección
+   • Compatible con 700+ players
    ============================================================ */
 
 function autoCalculate() {
 
-  const origin = document.getElementById("origin").value.trim();
-  const dest   = document.getElementById("destination").value.trim();
-  const modelKey = document.getElementById("aircraft").value;
+  const origin   = document.getElementById("origin")?.value.trim();
+  const dest     = document.getElementById("destination")?.value.trim();
+  const modelKey = document.getElementById("aircraft")?.value;
 
-  if (!origin || !dest || !aircraftId) {
+  // 🔒 Validación base
+  if (!origin || !dest || !modelKey) {
     document.getElementById("techData").style.display = "none";
     return;
   }
 
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  // 🔹 Obtener flota
+  let fleet = [];
+  try {
+    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  } catch {
+    fleet = [];
+  }
+
+  // 🔹 Buscar primer avión activo de ese modelo
   const ac = fleet.find(a =>
-  (a.model || "").toUpperCase() === modelKey
+    String(a?.model || "").toUpperCase() === String(modelKey).toUpperCase() &&
+    String(a?.status || "").toLowerCase() === "active"
   );
 
   if (!ac) {
-    console.warn("Aircraft not found:", aircraftId);
+    console.warn("Aircraft model not found in fleet:", modelKey);
+    document.getElementById("techData").style.display = "none";
     return;
   }
 
@@ -1466,58 +1482,66 @@ function autoCalculate() {
   const category = ac.category || "";
   const range    = ac.range || 1500;
 
+  /* ===============================
+     1️⃣ DISTANCE
+     =============================== */
+  const distNM = rs_getDistanceNM(origin, dest);
 
-    // 🔹 Distancia
-    const distNM = rs_getDistanceNM(origin, dest);
+  /* ===============================
+     2️⃣ BLOCK TIME
+     =============================== */
+  const block = rs_getBlockTime(distNM, speed);
 
-    // 🔹 Block time
-    const block = rs_getBlockTime(distNM, speed);
+  /* ===============================
+     3️⃣ TURNAROUND
+     =============================== */
+  const baseTurn   = rs_getTurnaround(category);
+  const optimizeON = document.getElementById("optimizeRotation")?.checked || false;
 
-    // 🔹 Turnaround
-    const baseTurn = rs_getTurnaround(category);
-    const optimizeON = document.getElementById("optimizeRotation")?.checked || false;
+  const optTurn = optimizeON
+      ? rs_getOptimizedTurnaround(baseTurn, category)
+      : baseTurn;
 
-    const optTurn = optimizeON
-        ? rs_getOptimizedTurnaround(baseTurn, category)
-        : baseTurn;
+  const totalBase = block + baseTurn + block;
+  const totalOpt  = block + optTurn  + block;
 
-    const totalBase = block + baseTurn + block;
-    const totalOpt  = block + optTurn  + block;
+  /* ===============================
+     4️⃣ UI UPDATE
+     =============================== */
 
-    // 🔥 Mostrar bloque técnico
-    document.getElementById("techData").style.display = "block";
+  document.getElementById("techData").style.display = "block";
 
-    document.getElementById("distance").textContent = distNM;
-    document.getElementById("blockTime").textContent =
-        `${Math.floor(block/60)}h ${block%60}m`;
+  document.getElementById("distance").textContent = distNM;
 
-    if (!optimizeON) {
-        document.getElementById("turnaround").innerHTML = `${baseTurn} min`;
-    } else {
-        document.getElementById("turnaround").innerHTML =
-            `${baseTurn} min<br><span style="color:#ffd54f">Optimized: ${optTurn} min</span>`;
-    }
+  document.getElementById("blockTime").textContent =
+      `${Math.floor(block/60)}h ${block%60}m`;
 
-    if (!optimizeON) {
-        document.getElementById("totalRotation").innerHTML =
-            `${Math.floor(totalBase/60)}h ${totalBase%60}m`;
-    } else {
-        document.getElementById("totalRotation").innerHTML =
-            `${Math.floor(totalBase/60)}h ${totalBase%60}m<br>
-             <span style="color:#ffd54f">Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m</span>`;
-    }
+  document.getElementById("turnaround").innerHTML =
+      !optimizeON
+        ? `${baseTurn} min`
+        : `${baseTurn} min<br><span style="color:#ffd54f">Optimized: ${optTurn} min</span>`;
 
-    document.getElementById("delayRisk").textContent = "3%";
-    document.getElementById("effIndex").textContent  = "90%";
+  document.getElementById("totalRotation").innerHTML =
+      !optimizeON
+        ? `${Math.floor(totalBase/60)}h ${totalBase%60}m`
+        : `${Math.floor(totalBase/60)}h ${totalBase%60}m<br>
+           <span style="color:#ffd54f">
+             Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m
+           </span>`;
 
-    // Guardar para confirmRoute
-    window.ACS_RouteTechData = {
-        distNM,
-        blockMin: block,
-        turnMin: baseTurn,
-        turnMinOptimized: optTurn,
-        totalMin: optimizeON ? totalOpt : totalBase
-    };
+  document.getElementById("delayRisk").textContent = "3%";
+  document.getElementById("effIndex").textContent  = "90%";
+
+  /* ===============================
+     5️⃣ SAVE FOR CONFIRM
+     =============================== */
+  window.ACS_RouteTechData = {
+      distNM,
+      blockMin: block,
+      turnMin: baseTurn,
+      turnMinOptimized: optTurn,
+      totalMin: optimizeON ? totalOpt : totalBase
+  };
 }
 
 /* ============================================================
