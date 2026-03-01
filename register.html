@@ -551,11 +551,12 @@
           </select>
     
   <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:#c8d6ff; margin-top:0.4rem;">
-    <input type="checkbox" id="terms" required style="width:16px; height:16px;" />
-    I accept the <a href="terms.html" target="_blank" style="color:#ffb300;">Terms & Conditions</a>
-  </label>
+  <input type="checkbox" id="terms" disabled style="width:16px; height:16px;" />
+  I accept the 
+  <a href="terms.html" style="color:#ffb300;">Terms & Conditions</a>
+</label>
 
-  <button type="submit">Register Now</button>
+  <button type="submit" id="registerBtn" disabled>Register Now</button>
 </form>
 
         <p class="login-link">
@@ -714,8 +715,17 @@ if (termsAccepted !== "yes") {
     alert("⚠️ Please complete all fields.");
     return;
   }
+     
+// 🔐 Verificación estructural de Terms
+const termsCheckbox = document.getElementById("terms");
 
-  const emailPattern =
+if (!termsCheckbox || !termsCheckbox.checked ||
+    localStorage.getItem("ACS_termsAccepted") !== "yes") {
+  alert("⚠️ You must accept the Terms & Conditions before registering.");
+  return;
+}
+     
+     const emailPattern =
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
 
   if (!emailPattern.test(email)) {
@@ -812,36 +822,79 @@ function closeAgeModal() {
 <script>
      
 // ======================================================
-//   TERMS CONTROL — CLEAN VERSION (FIXED FLOW)
+//   🔐 TERMS CONTROL — STRUCTURAL VERSION (PHASE II)
 // ======================================================
 
 document.addEventListener("DOMContentLoaded", () => {
 
   const checkbox = document.getElementById("terms");
-  if (!checkbox) return;
+  const registerBtn = document.getElementById("registerBtn");
 
-  const accepted = localStorage.getItem("ACS_termsAccepted");
+  if (!checkbox || !registerBtn) return;
 
-  // Si ya aceptó en terms.html
-  if (accepted === "yes") {
+  // 🔹 Estado inicial
+  checkbox.checked = false;
+  checkbox.disabled = true;
+  registerBtn.disabled = true;
+
+  // 🔹 Restaurar datos SIEMPRE
+  restoreRegisterCache();
+
+  // 🔹 Verificar si ya aceptó términos
+  if (localStorage.getItem("ACS_termsAccepted") === "yes") {
     checkbox.disabled = false;
     checkbox.checked = true;
-  } else {
-    checkbox.checked = false;
-    checkbox.disabled = true;
+    registerBtn.disabled = false;
   }
 
-  // Restaurar datos guardados
-  const saved = JSON.parse(localStorage.getItem("ACS_registerTemp") || "{}");
+  // 🔹 Si hace click en el enlace Terms
+  const termsLink = document.querySelector('a[href="terms.html"]');
+  if (termsLink) {
+    termsLink.addEventListener("click", () => {
+      saveRegisterCache();
+    });
+  }
 
-  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
-  if (saved.email)    document.getElementById("email").value = saved.email;
-  if (saved.day)      document.getElementById("dob-day").value = saved.day;
-  if (saved.month)    document.getElementById("dob-month").value = saved.month;
-  if (saved.year)     document.getElementById("dob-year").value = saved.year;
-  if (saved.country)  document.getElementById("country").value = saved.country;
+  // 🔹 Si intenta marcar sin haber aceptado
+  checkbox.addEventListener("change", () => {
+    if (!checkbox.checked) {
+      registerBtn.disabled = true;
+    } else {
+      registerBtn.disabled = false;
+    }
+  });
 
 });
+
+// ===============================
+// 💾 SAVE CACHE (STRUCTURAL)
+// ===============================
+function saveRegisterCache() {
+  const data = {
+    fullName: document.getElementById("fullName").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    day: document.getElementById("dob-day").value,
+    month: document.getElementById("dob-month").value,
+    year: document.getElementById("dob-year").value,
+    country: document.getElementById("country").value
+  };
+
+  localStorage.setItem("ACS_registerCache", JSON.stringify(data));
+}
+
+// ===============================
+// 🔁 RESTORE CACHE
+// ===============================
+function restoreRegisterCache() {
+  const saved = JSON.parse(localStorage.getItem("ACS_registerCache") || "{}");
+
+  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
+  if (saved.email) document.getElementById("email").value = saved.email;
+  if (saved.day) document.getElementById("dob-day").value = saved.day;
+  if (saved.month) document.getElementById("dob-month").value = saved.month;
+  if (saved.year) document.getElementById("dob-year").value = saved.year;
+  if (saved.country) document.getElementById("country").value = saved.country;
+}
 </script>
      
 </body>
