@@ -1302,10 +1302,13 @@ function ACS_getAircraftStatusBadge(ac){
     return { label: "UNKNOWN", class: "badge-unknown" };
   }
 
-  // 🔴 OVERDUE — máxima prioridad
-  if (ac.maintenanceOverdue === true) {
-    return { label: "OVERDUE", class: "badge-overdue" };
-  }
+  // 🔴 OVERDUE — prioridad absoluta
+if (
+  ac.maintenanceOverdue === true ||
+  ac?.maintenance?.bOverdue === true
+) {
+  return { label: "OVERDUE", class: "badge-overdue" };
+}
 
   // 🔧 SERVICIOS MAYORES
   if (ac.status === "In D-Check") {
