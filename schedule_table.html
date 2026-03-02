@@ -1709,7 +1709,6 @@ function ACS_handleMonthlyBIntegration(ac) {
     return;
   }
 
-  // Buscar servicio B programado para este avión
   const items = getItems?.() || [];
 
   const bService = items.find(it =>
@@ -1718,7 +1717,6 @@ function ACS_handleMonthlyBIntegration(ac) {
     it.aircraftId === ac.id
   );
 
-  // Si no existe servicio programado → OVERDUE
   if (!bService) {
     ac.maintenanceOverdue = true;
     ac.status = "Overdue";
@@ -1726,37 +1724,30 @@ function ACS_handleMonthlyBIntegration(ac) {
     return;
   }
 
-  // ==============================
-  // Calcular ventana actual semanal
-  // ==============================
+  // ============================================================
+  // 🟦 Calcular ventana basada en dueDate (NO en fecha actual)
+  // ============================================================
 
-  const simDate = new Date(now);
-  const currentWeekday = simDate.getDay(); // 0=Sun
+  const dayMap = { sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6 };
 
-  const dayMap = {
-    sun: 0,
-    mon: 1,
-    tue: 2,
-    wed: 3,
-    thu: 4,
-    fri: 5,
-    sat: 6
-  };
+  const due = new Date(dueDate);
+  const dueWeekday = due.getDay();
 
   const targetDay = dayMap[bService.day];
-  const dayDiff = (targetDay - currentWeekday + 7) % 7;
 
-  const nextWindow = new Date(simDate);
-  nextWindow.setDate(simDate.getDate() + dayDiff);
-  nextWindow.setHours(0,0,0,0);
-  nextWindow.setMinutes(bService.startMinute || 0);
+  const dayDiff = (targetDay - dueWeekday + 7) % 7;
 
-  const windowStart = nextWindow.getTime();
+  const windowStartDate = new Date(due);
+  windowStartDate.setDate(due.getDate() + dayDiff);
+  windowStartDate.setHours(0,0,0,0);
+  windowStartDate.setMinutes(bService.startMinute || 0);
+
+  const windowStart = windowStartDate.getTime();
   const windowEnd = windowStart + (bService.durationMin * 60 * 1000);
 
-  // ==============================
+  // ============================================================
   // Activar mantenimiento si estamos en ventana
-  // ==============================
+  // ============================================================
 
   if (now >= windowStart && now < windowEnd) {
 
@@ -1767,11 +1758,24 @@ function ACS_handleMonthlyBIntegration(ac) {
     return;
   }
 
-  // Si ya pasó ventana sin ejecutarse → OVERDUE
-  if (now > windowEnd) {
-    ac.maintenanceOverdue = true;
+  // ============================================================
+  // Si ya pasó la ventana sin ejecutarse → OVERDUE
+  // ============================================================
+
+  if (now >= windowEnd) {
+
+    // Si estaba en B-Check y ya terminó → cerrar ciclo
+    if (ac.status === "B-Check") {
+      ac.status = "Active";
+      ac.canFly = true;
+      ac.lastBCheckAt = windowEnd;
+      ac.maintenanceOverdue = false;
+      return;
+    }
+
     ac.status = "Overdue";
     ac.canFly = false;
+    ac.maintenanceOverdue = true;
   }
 }
      
