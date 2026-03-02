@@ -1883,15 +1883,15 @@ function renderSchedule() {
   const fleet = getRealFleet();
   const nowTs = ACS_TABLE_TIME?.date?.getTime?.() || Date.now();
 
-// 🟦 B-CYCLE AUTHORITY APPLY
-     
+// 🟥 CAMO MONTHLY AUTHORITY (INTERVAL + WINDOW)
+
 fleet.forEach(ac => {
 
-  // 1️⃣ Evaluar ciclo mensual
+  // 1️⃣ Evaluación técnica mensual (intervalo 30 días)
   ACS_evaluateMonthlyBCycle(ac, items, nowTs);
 
-  // 2️⃣ Activación automática B
-  ACS_handleBCheckActivation(ac, items, nowTs);
+  // 2️⃣ Integración CAMO real (ventana + overdue + activación)
+  ACS_handleMonthlyBIntegration(ac);
 
 });
 
