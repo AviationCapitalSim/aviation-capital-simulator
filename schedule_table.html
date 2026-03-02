@@ -4467,7 +4467,7 @@ function ACS_handleBCheckActivation(aircraft, scheduleItems, nowTs){
   const bServices = scheduleItems.filter(it =>
     it.type === "service" &&
     it.serviceType === "B" &&
-    it.tail === aircraft.tailNumber
+    it.aircraftId === aircraft.id
   );
 
   if (!bServices.length) return;
