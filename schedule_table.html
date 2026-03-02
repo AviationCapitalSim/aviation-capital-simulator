@@ -1732,8 +1732,8 @@ function ACS_handleMonthlyBIntegration(ac) {
     return ac;
   }
 
-  // ============================================================
-// 2️⃣ BUSCAR PROGRAMACIÓN EN SCHEDULE (REAL SOURCE)
+// ============================================================
+// 2️⃣ BUSCAR PROGRAMACIÓN REAL (SERVICE TYPE B)
 // ============================================================
 
 let scheduleData = [];
@@ -1746,7 +1746,8 @@ try {
 
 const schedule = scheduleData.find(e =>
   e.aircraftId === ac.id &&
-  (e.type === "B" || e.type === "B-Check")
+  e.type === "service" &&
+  e.serviceType === "B"
 );
 
   // No está programado → Overdue
