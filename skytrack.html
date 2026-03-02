@@ -583,21 +583,6 @@ card.addEventListener("click", () => {
   });
 }
      
-    // 🔵 ATC MARKER — SMALL
-    const atcIcon = L.divIcon({
-      className: "acs-atc-aircraft",
-      html: `<div style="
-        width:8px;
-        height:8px;
-        background:#0b3cff;
-        border:1px solid #001a66;
-        border-radius:2px;
-        box-shadow:0 0 4px rgba(0,0,0,.6);
-      "></div>`,
-      iconSize: [18, 18],
-      iconAnchor: [9, 9]
-    });
-
 /* ============================================================
    🟦 A9.4.2 — RESOLVE DEP/ARR FROM RUNTIME (NO snapshot times)
    Fuente: window.ACS_SkyTrack.itemsByAircraft (Schedule Table expanded)
@@ -908,7 +893,34 @@ function renderFlightDetails(snapshot) {
     spawnPos = [ap.latitude, ap.longitude];
   }
 
-  m = L.marker(spawnPos, { icon: atcIcon }).addTo(map);
+  /* ============================================================
+   🎨 STATE-BASED ATC ICON (GROUND / EN_ROUTE / MAINTENANCE)
+   ============================================================ */
+
+let markerColor = "#0b3cff"; // 🔵 default GROUND
+
+if (item.state === "EN_ROUTE") {
+  markerColor = "#00c878";   // 🟢 green
+}
+else if (item.state === "MAINTENANCE") {
+  markerColor = "#ffcc00";   // 🟡 yellow
+}
+
+const dynamicIcon = L.divIcon({
+  className: "acs-atc-aircraft",
+  html: `<div style="
+    width:8px;
+    height:8px;
+    background:${markerColor};
+    border:1px solid #001a66;
+    border-radius:2px;
+    box-shadow:0 0 4px rgba(0,0,0,.6);
+  "></div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9]
+});
+
+  m = L.marker(spawnPos, { icon: dynamicIcon }).addTo(map);
   markers[item.aircraftId] = m;
 
   // 🟦 A6.4.2 — Persistent ATC Popup (bind once)
