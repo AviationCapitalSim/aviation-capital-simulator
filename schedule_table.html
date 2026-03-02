@@ -1631,29 +1631,37 @@ const setFleet = f => localStorage.setItem("ACS_MyAircraft", JSON.stringify(f));
 
 function ACS_getMonthlyBCycleVisual(ac) {
 
-  if (!ac) {
-    return {
-      remainingDays: 30,
-      percentUsed: 0,
-      color: "#4caf50"
-    };
-  }
+  const DEFAULT = {
+    remainingDays: 30,
+    percentUsed: 0,
+    color: "#4caf50"
+  };
 
-  const now = ACS_TIME?.currentTime || 0;
-  const last = ac.lastBCheckAt || now;
+  if (!ac) return DEFAULT;
+  if (!ACS_TIME || !Number.isFinite(ACS_TIME.currentTime)) return DEFAULT;
+
+  const now = ACS_TIME.currentTime;
+
+  // Si nunca ha tenido B-check, consideramos ciclo recién iniciado
+  const last = Number.isFinite(ac.lastBCheckAt)
+    ? ac.lastBCheckAt
+    : now;
 
   const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
   const daysPassed = Math.max(0, (now - last) / MS_PER_DAY);
 
-  const remaining = Math.max(0, 30 - daysPassed);
-  const percentUsed = Math.min(100, (daysPassed / 30) * 100);
+  const remainingRaw = 30 - daysPassed;
+  const remaining = Math.max(0, remainingRaw);
 
-  let color = "#4caf50"; // verde
+  const percentUsed = Math.min(100, Math.max(0, (daysPassed / 30) * 100));
+
+  let color = "#4caf50"; // Verde normal
 
   if (remaining <= 2) {
-    color = "#e53935"; // rojo crítico
+    color = "#e53935"; // Rojo crítico
   } else if (remaining <= 7) {
-    color = "#ffb300"; // amarillo warning
+    color = "#ffb300"; // Amarillo advertencia
   }
 
   return {
@@ -1661,7 +1669,7 @@ function ACS_getMonthlyBCycleVisual(ac) {
     percentUsed,
     color
   };
-}     
+}
      
 // ============================================================
 // === AIRCRAFT HOVER CARD — Qatar Luxury v3 ==================
