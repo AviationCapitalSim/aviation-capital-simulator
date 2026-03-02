@@ -615,11 +615,7 @@ function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
    ------------------------------------------------------------
    • SkyTrack NO decide mantenimiento
    • Lee estado CANÓNICO desde ACS_MyAircraft
-   • Bloquea EN_ROUTE cuando el avión está:
-     - "Maintenance Hold"
-     - In C-Check / In D-Check
-     - B-Check
-     - maintenanceOverdue = true
+   • Cualquier status "Maintenance" bloquea vuelo
    ============================================================ */
 
 function ACS_SkyTrack_getGroundBlock(ac) {
@@ -630,17 +626,22 @@ function ACS_SkyTrack_getGroundBlock(ac) {
 
   const st = String(ac.status || "").trim();
 
+  // 🔒 BLOQUEO UNIVERSAL DE MANTENIMIENTO
+  if (st === "Maintenance") {
+    return { blocked: true, reason: "MAINTENANCE", label: "MAINTENANCE" };
+  }
+
   // 1) HARD HOLD
   if (st === "Maintenance Hold") {
     return { blocked: true, reason: "HOLD", label: "MAINTENANCE" };
   }
 
-  // 2) C / D CHECK
+  // 2) C / D CHECK (legacy compatibility)
   if (st === "In C-Check" || st === "In D-Check") {
     return { blocked: true, reason: st, label: "MAINTENANCE" };
   }
 
-  // 3) B-CHECK (REAL STATUS FROM FLEET)
+  // 3) B-CHECK (legacy compatibility)
   if (st === "B-Check") {
     return { blocked: true, reason: "B-Check", label: "MAINTENANCE" };
   }
@@ -652,6 +653,7 @@ function ACS_SkyTrack_getGroundBlock(ac) {
 
   return { blocked: false, reason: null, label: null };
 }
+
 /* ============================================================
    🧠 STATE RESOLVER — FR24 LOGIC
    🟦 A6.1 — Arrival / Turnaround Boundary FIX (NO jumps)
