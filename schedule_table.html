@@ -1715,7 +1715,7 @@ function ACS_getMonthlyBCycleVisual(ac) {
 
 function ACS_handleMonthlyBIntegration(ac) {
 
-  const now = Date.now();
+  const now = ACS_TIME?.currentTime?.getTime?.() || Date.now();
   const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
