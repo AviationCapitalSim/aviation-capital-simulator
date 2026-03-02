@@ -4731,10 +4731,6 @@ function openMaintenanceInfoModal(service, aircraft){
 
   title.textContent = typeLabel;
 
-const bCycle = service.serviceType === "B"
-  ? ACS_getBCycleStatus(aircraft)
-  : null;
-
 let barHTML = "";
 
 const bCycle = ACS_getMonthlyBCycleVisual(aircraft);
