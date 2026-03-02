@@ -4532,31 +4532,32 @@ function ACS_sortDayEvents(events) {
 }
 
 /* ============================================================
-   🟦 B-CHECK REMAINING CALCULATOR (30 DAY CYCLE)
+   🟢 B-CYCLE STATUS (SIM TIME SAFE)
    ------------------------------------------------------------
-   • Source: aircraft.lastBCheckAt
-   • Cycle: 30 days
-   • Returns remaining days + percentage
+   • Calcula días restantes correctamente
+   • Corrige valores legacy Date.now()
+   • Nunca muestra números absurdos
    ============================================================ */
 
 function ACS_getBCycleStatus(aircraft){
 
-  if (!aircraft || !aircraft.lastBCheckAt) {
-    return null;
-  }
-
-  const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+  const DAY_MS = 24 * 60 * 60 * 1000;
   const now = ACS_TABLE_TIME?.date?.getTime?.() || 0;
 
-  const elapsed = now - Number(aircraft.lastBCheckAt);
-  const remainingMs = MONTH_MS - elapsed;
+  if (!aircraft.lastBCheckAt || aircraft.lastBCheckAt > now) {
+    aircraft.lastBCheckAt = now;
+  }
 
-  const remainingDays = Math.ceil(remainingMs / (24 * 60 * 60 * 1000));
-  const pct = Math.max(0, Math.min(100, (remainingMs / MONTH_MS) * 100));
+  const daysPassed = Math.floor((now - aircraft.lastBCheckAt) / DAY_MS);
+  const safeDaysPassed = Math.max(0, daysPassed);
+
+  const remaining = Math.max(0, 30 - safeDaysPassed);
+  const percent = Math.min(100, (safeDaysPassed / 30) * 100);
 
   return {
-    remainingDays: remainingDays,
-    percent: pct
+    remainingDays: remaining,
+    percentUsed: percent,
+    overdue: safeDaysPassed >= 30
   };
 }
      
