@@ -1702,49 +1702,71 @@ function ACS_getMonthlyBCycleVisual(ac) {
 }
 
 /* ============================================================
-   🟢 CAMO B-CHECK ENGINE — HARD RESET SAFE VERSION
+   🟢 CAMO B-CHECK ENGINE — FINAL STABLE VERSION
    ============================================================ */
 
 function ACS_handleMonthlyBIntegration(ac) {
 
   const now = ACS_TIME?.currentTime?.getTime?.() || Date.now();
-  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const CYCLE_MS = 30 * DAY_MS;
 
   if (!ac.lastBCheckAt) return ac;
 
-  const dueDate = ac.lastBCheckAt + THIRTY_DAYS;
+  const dueDate = ac.lastBCheckAt + CYCLE_MS;
 
-  // 🟢 1️⃣ AÚN NO VENCE → FORZAR LIMPIEZA TOTAL
+  // 🔹 1️⃣ Aún no vence → limpiar flags
   if (now < dueDate) {
     ac.bOverdue = false;
     ac.maintenanceOverdue = false;
-    ac.bInProgress = false;
-    if (ac.status === "B-Check") {
-      ac.status = "Active";
-    }
     return ac;
   }
 
-  // 🟢 2️⃣ YA VENCIÓ → VERIFICAR PROGRAMACIÓN
-  let scheduleData = [];
+  // 🔹 2️⃣ Leer programación real
+  let scheduleItems = [];
   try {
-    scheduleData = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  } catch(e) {}
+    scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
+  } catch (e) {}
 
-  const hasBProgram = scheduleData.some(e =>
+  const service = scheduleItems.find(e =>
     e.aircraftId === ac.id &&
     e.type === "service" &&
     e.serviceType === "B"
   );
 
-  if (!hasBProgram) {
+  // 🔹 3️⃣ Si no hay programación → overdue
+  if (!service) {
     ac.bOverdue = true;
     ac.maintenanceOverdue = true;
     return ac;
   }
 
-  // 🟢 3️⃣ ESTÁ PROGRAMADO → NO OVERDUE
+  // 🔹 4️⃣ Activación automática
+
+  const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
+  const todaySim = daysMap[new Date(now).getDay()];
+
+  const isScheduledToday = service.day === todaySim;
+
+  // Si ya venció y hoy es su día → entrar en B-Check
+  if (isScheduledToday && ac.status !== "B-Check") {
+    ac.status = "B-Check";
+    ac.bInProgress = true;
+    ac.bStartTime = now;
+  }
+
+  // 🔹 5️⃣ Completar después de 24h
+  if (ac.bInProgress && ac.bStartTime) {
+    if (now >= ac.bStartTime + DAY_MS) {
+      ac.lastBCheckAt = now;
+      ac.status = "Active";
+      ac.bInProgress = false;
+      ac.bOverdue = false;
+      ac.maintenanceOverdue = false;
+    }
+  }
+
+  // 🔹 6️⃣ Si ya venció pero no es su día todavía → mantener due (sin overdue)
   ac.bOverdue = false;
   ac.maintenanceOverdue = false;
 
