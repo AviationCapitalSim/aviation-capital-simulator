@@ -1999,6 +1999,11 @@ fleet.forEach(ac => {
      
   ACS_handleMonthlyBIntegration(ac);
 
+  // ============================================================
+// 🔒 PERSISTIR CAMBIOS DEL B-CHECK (CRÍTICO)
+// ============================================================
+localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+     
 });
 
 // 🔒 OPS FILTER — SkyTrack authority
