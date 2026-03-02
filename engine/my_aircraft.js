@@ -2803,18 +2803,23 @@ fleet = fleet.map(ac => {
   ac = ACS_applyMaintenanceBaseline(ac);
 
   /* ============================================================
-     🟢 ESTADO DOMINANTE — SERVICE ACTIVE
-     Si el avión está en mantenimiento activo,
-     el sistema técnico se pausa.
-     ============================================================ */
+   🔒 MA-CORE-1 — HARD FILTER: ONLY C/D ACTIVATE TECH PIPELINE
+   Date: 2026-03-02
+   Purpose:
+   - Prevent A/B (Schedule) from triggering C/D logic
+   - Only true Major Checks (C/D) run technical pipeline
+   ============================================================ */
 
-  if (ac.status === "Maintenance") {
+if (
+  ac.status === "Maintenance" &&
+  (ac.maintenanceType === "C" || ac.maintenanceType === "D")
+) {
 
-    ac = ACS_applyCalendarMaintenanceProgress(ac);
-    ac = ACS_applyMaintenanceComputedFields(ac);
+  ac = ACS_applyCalendarMaintenanceProgress(ac);
+  ac = ACS_applyMaintenanceComputedFields(ac);
 
-    return ac;
-  }
+  return ac;
+}
 
   /* ===============================
      3️⃣ EVALUACIÓN TÉCNICA
