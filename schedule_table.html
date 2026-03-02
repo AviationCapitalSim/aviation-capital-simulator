@@ -1621,13 +1621,12 @@ const setFleet = f => localStorage.setItem("ACS_MyAircraft", JSON.stringify(f));
 })();
 
 /* ============================================================
-   🟦 B-CHECK MONTHLY OCC BAR ENGINE (AVIATION REAL LOGIC)
+   🟦 B-CHECK OCC BAR — FULLY INTERCONNECTED (SCHEDULE DRIVEN)
    ------------------------------------------------------------
-   • Ciclo fijo: 30 días
-   • Barra representa DÍAS RESTANTES
-   • Día 30 → 100% verde
-   • Día 0 → 0% rojo
-   • NO modifica estado real
+   • SIEMPRE depende del próximo B programado
+   • Si está activo → muestra progreso 24h
+   • Si no existe → fallback ciclo mensual
+   • Usa exclusivamente ACS_TIME
    ============================================================ */
 
 function ACS_getMonthlyBCycleVisual(ac) {
@@ -1642,35 +1641,80 @@ function ACS_getMonthlyBCycleVisual(ac) {
   if (!ACS_TIME || !Number.isFinite(ACS_TIME.currentTime)) return DEFAULT;
 
   const now = ACS_TIME.currentTime;
-  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  const MS_DAY = 24 * 60 * 60 * 1000;
 
+  const items = getItems?.() || [];
+
+  // Buscar servicios B de este avión
+  const bServices = items
+    .filter(it =>
+      it.type === "service" &&
+      it.serviceType === "B" &&
+      it.aircraftId === ac.id
+    )
+    .sort((a, b) => a.startTime - b.startTime);
+
+  if (bServices.length) {
+
+    const nextB = bServices.find(it => it.endTime >= now);
+
+    if (nextB) {
+
+      // 🔵 Caso: mantenimiento activo
+      if (now >= nextB.startTime && now < nextB.endTime) {
+
+        const duration = nextB.endTime - nextB.startTime;
+        const progress = (now - nextB.startTime) / duration;
+
+        return {
+          remainingDays: 0,
+          percent: Math.min(100, Math.max(0, progress * 100)),
+          color: "#ff9100"
+        };
+      }
+
+      // 🟢 Caso: antes de que empiece
+      if (now < nextB.startTime) {
+
+        const timeUntil = nextB.startTime - now;
+        const daysUntil = timeUntil / MS_DAY;
+
+        const percentRemaining = Math.min(
+          100,
+          Math.max(0, (daysUntil / 30) * 100)
+        );
+
+        let color = "#00c853";
+
+        if (daysUntil <= 2) {
+          color = "#d50000";
+        } else if (daysUntil <= 7) {
+          color = "#ff9100";
+        } else if (daysUntil <= 15) {
+          color = "#ffd600";
+        }
+
+        return {
+          remainingDays: Math.ceil(daysUntil),
+          percent: percentRemaining,
+          color
+        };
+      }
+    }
+  }
+
+  // 🔄 Fallback: ciclo mensual clásico
   const last = Number.isFinite(ac.lastBCheckAt)
     ? ac.lastBCheckAt
     : now;
 
-  const daysPassed = Math.max(0, (now - last) / MS_PER_DAY);
-  const remainingRaw = 30 - daysPassed;
-  const remaining = Math.max(0, remainingRaw);
-
-  const percentRemaining = Math.min(
-    100,
-    Math.max(0, (remaining / 30) * 100)
-  );
-
-  let color = "#00c853"; // Verde técnico Airbus
-
-  if (remaining <= 2) {
-    color = "#d50000"; // Rojo crítico
-  } else if (remaining <= 7) {
-    color = "#ff9100"; // Naranja
-  } else if (remaining <= 15) {
-    color = "#ffd600"; // Amarillo
-  }
+  const daysPassed = Math.max(0, (now - last) / MS_DAY);
+  const remaining = Math.max(0, 30 - daysPassed);
 
   return {
     remainingDays: Math.ceil(remaining),
-    percent: percentRemaining,
-    color
+    percent: (remaining / 30) * 100,
+    color: "#00c853"
   };
 }
      
