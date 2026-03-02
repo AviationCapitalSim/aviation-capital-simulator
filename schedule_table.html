@@ -1702,12 +1702,13 @@ function ACS_getMonthlyBCycleVisual(ac) {
 }
 
 /* ============================================================
-   🟥 B-CHECK MONTHLY INTEGRATION — CAMO REAL
+   🟥 B-CHECK MONTHLY INTEGRATION — FIXED (DETERMINISTIC)
    ------------------------------------------------------------
+   • Reconstruye estado siempre
    • Intervalo manda
-   • Ventana ejecuta
-   • Overdue si no hay ventana válida
-   • NO usa Date.now()
+   • Ventana activa servicio
+   • Overdue fuera de ventana
+   • Sin estados fantasmas
    ============================================================ */
 
 function ACS_handleMonthlyBIntegration(ac) {
@@ -1725,11 +1726,22 @@ function ACS_handleMonthlyBIntegration(ac) {
 
   const dueDate = last + INTERVAL;
 
-  // Si aún no vence → salir
+  // ============================================================
+  // 1️⃣ ESTADO BASE (SIEMPRE SE RECONSTRUYE)
+  // ============================================================
+
+  ac.status = "Active";
+  ac.canFly = true;
+  ac.maintenanceOverdue = false;
+
+  // Si aún no vence → quedarse Active
   if (now < dueDate) {
-    ac.maintenanceOverdue = false;
     return;
   }
+
+  // ============================================================
+  // 2️⃣ BUSCAR SERVICIO PROGRAMADO
+  // ============================================================
 
   const items = getItems?.() || [];
 
@@ -1740,38 +1752,45 @@ function ACS_handleMonthlyBIntegration(ac) {
   );
 
   if (!bService) {
-    ac.maintenanceOverdue = true;
     ac.status = "Overdue";
     ac.canFly = false;
+    ac.maintenanceOverdue = true;
     return;
   }
 
   // ============================================================
-  // 🟦 Calcular ventana basada en dueDate (NO en fecha actual)
+  // 3️⃣ CALCULAR VENTANA
   // ============================================================
 
-  const dayMap = { sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6 };
+  const simDate = new Date(now);
+  const currentWeekday = simDate.getDay();
 
-  const due = new Date(dueDate);
-  const dueWeekday = due.getDay();
+  const dayMap = {
+    sun: 0,
+    mon: 1,
+    tue: 2,
+    wed: 3,
+    thu: 4,
+    fri: 5,
+    sat: 6
+  };
 
   const targetDay = dayMap[bService.day];
+  const dayDiff = (targetDay - currentWeekday + 7) % 7;
 
-  const dayDiff = (targetDay - dueWeekday + 7) % 7;
+  const nextWindow = new Date(simDate);
+  nextWindow.setDate(simDate.getDate() + dayDiff);
+  nextWindow.setHours(0,0,0,0);
+  nextWindow.setMinutes(bService.startMinute || 0);
 
-  const windowStartDate = new Date(due);
-  windowStartDate.setDate(due.getDate() + dayDiff);
-  windowStartDate.setHours(0,0,0,0);
-  windowStartDate.setMinutes(bService.startMinute || 0);
-
-  const windowStart = windowStartDate.getTime();
+  const windowStart = nextWindow.getTime();
   const windowEnd = windowStart + (bService.durationMin * 60 * 1000);
 
   // ============================================================
-  // Activar mantenimiento si estamos en ventana
+  // 4️⃣ DENTRO DE VENTANA → B-CHECK
   // ============================================================
 
-  if (now >= dueDate && now >= windowStart && now < windowEnd) {
+  if (now >= windowStart && now < windowEnd) {
 
     ac.status = "B-Check";
     ac.canFly = false;
@@ -1781,24 +1800,12 @@ function ACS_handleMonthlyBIntegration(ac) {
   }
 
   // ============================================================
-  // Si ya pasó la ventana sin ejecutarse → OVERDUE
+  // 5️⃣ FUERA DE VENTANA Y YA VENCIDO → OVERDUE
   // ============================================================
 
-  if (now >= windowEnd) {
-
-    // Si estaba en B-Check y ya terminó → cerrar ciclo
-    if (ac.status === "B-Check") {
-      ac.status = "Active";
-      ac.canFly = true;
-      ac.lastBCheckAt = windowEnd;
-      ac.maintenanceOverdue = false;
-      return;
-    }
-
-    ac.status = "Overdue";
-    ac.canFly = false;
-    ac.maintenanceOverdue = true;
-  }
+  ac.status = "Overdue";
+  ac.canFly = false;
+  ac.maintenanceOverdue = true;
 }
      
 // ============================================================
