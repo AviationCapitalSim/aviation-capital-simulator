@@ -1011,13 +1011,6 @@ footer {
   color:#ccc;
 }
 
-/* 🟡 MAINTENANCE (My Aircraft style) */
-       
-.badge-maintenance{
-  background:rgba(255,179,0,0.18);
-  border:1px solid rgba(255,179,0,0.60);
-  color:#ffb300;
-}  
        
 /* ============================================================
    🟦 B-CHECK CYCLE BAR — AIRBUS OCC STYLE
@@ -1063,6 +1056,37 @@ footer {
   display: flex;
   justify-content: space-between;
   color: #dbe4ff;
+}
+
+/* ============================================================
+   🧭 ASSIGN ROUTE MODAL — FIXED SIZE + INTERNAL SCROLL
+   ------------------------------------------------------------
+   • No cambia tamaño del modal
+   • Body scrollea internamente
+   • Footer siempre visible
+   • Solo afecta assignFlightsModal
+   ============================================================ */
+
+#assignFlightsModal .acs-modal-card.qatar {
+  max-height: 85vh;          /* Altura estable */
+  height: 85vh;              /* Fija el tamaño */
+  display: flex;
+  flex-direction: column;
+}
+
+#assignFlightsModal .acs-modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+#assignFlightsModal .acs-modal-footer {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
+  background: #0b1a35; /* mismo fondo oscuro */
+  padding-top: 10px;
+  z-index: 2;
 }
        
 </style>
