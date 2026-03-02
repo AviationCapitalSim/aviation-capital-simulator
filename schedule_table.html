@@ -1999,6 +1999,62 @@ function hideAircraftHover(){
 
 })();
 
+/* ============================================================
+   🧠 ST-MA LINK — DOMINANT MAINTENANCE OVERRIDE (C/D > B)
+   Date: 2026-03-02
+   Purpose:
+   - If My Aircraft says C/D, Schedule Table MUST ignore B status
+   - B time is frozen while in C/D
+   - When released from C/D, B timer restarts from release moment
+   ============================================================ */
+
+function ACS_isMajorCheckStatus(status){
+  const st = String(status || "").trim();
+  return (
+    st === "In C-Check" || st === "C-Check" || st === "C" ||
+    st === "In D-Check" || st === "D-Check" || st === "D"
+  );
+}
+
+function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
+  // fleetAircraft = objeto que usa Schedule Table (tu "real fleet")
+  // myAircraft = objeto del array ACS_MyAircraft (source of truth para status)
+
+  if (!fleetAircraft || !myAircraft) return fleetAircraft;
+
+  const now = (window.ACS_TIME && ACS_TIME.currentTime) ? +ACS_TIME.currentTime : Date.now();
+
+  const myStatus = String(myAircraft.status || "").trim();
+
+  // 1) Si My Aircraft está en C/D → domina y bloquea B
+  if (ACS_isMajorCheckStatus(myStatus)) {
+
+    // domina el status en la tabla
+    fleetAircraft.status = myStatus;
+
+    // bloquea B mientras esté en C/D
+    fleetAircraft.__bcheckLockedByMajor = true;
+    if (!fleetAircraft.__bcheckLockSince) fleetAircraft.__bcheckLockSince = now;
+
+    // IMPORTANTÍSIMO: mientras esté bloqueado, NO debe quedar B overdue.
+    // (tu cálculo de overdue debe respetar __bcheckLockedByMajor)
+    return fleetAircraft;
+  }
+
+  // 2) Si ya NO está en C/D pero antes lo estuvo → liberar y reiniciar reloj B
+  if (fleetAircraft.__bcheckLockedByMajor) {
+
+    // salir del lock
+    fleetAircraft.__bcheckLockedByMajor = false;
+    fleetAircraft.__bcheckLockSince = null;
+
+    // reset del reloj B al momento de liberación
+    // (esto cumple tu regla: “esperar lo libere my aircraft para que empiece a rodar el tiempo de B check”)
+    fleetAircraft.lastBCheckAt = now;
+  }
+
+  return fleetAircraft;
+}     
 
 // ============================================================
 // === RENDER PRINCIPAL DEL SCHEDULE ==========================
