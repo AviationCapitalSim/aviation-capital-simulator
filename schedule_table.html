@@ -1638,9 +1638,12 @@ function ACS_getMonthlyBCycleVisual(ac) {
   };
 
   if (!ac) return DEFAULT;
-  if (!ACS_TIME || !Number.isFinite(ACS_TIME.currentTime)) return DEFAULT;
+  if (!ACS_TIME || !ACS_TIME.currentTime) return DEFAULT;
 
-  const now = ACS_TIME.currentTime;
+  const now = ACS_TIME.currentTime instanceof Date
+  ? ACS_TIME.currentTime.getTime()
+  : ACS_TIME.currentTime;
+     
   const MS_DAY = 24 * 60 * 60 * 1000;
   const INTERVAL = 30 * MS_DAY;
 
