@@ -3330,7 +3330,7 @@ if (t === "B") {
   );
 
   if (idx !== -1) {
-    fleetNow[idx].lastBCheckAt = Date.now();
+    fleetNow[idx].lastBCheckAt = ACS_TIME?.currentTime || Date.now();
     fleetNow[idx].maintenanceOverdue = false;
     if (!fleetNow[idx].maintenance) {
       fleetNow[idx].maintenance = {};
