@@ -1702,111 +1702,92 @@ function ACS_getMonthlyBCycleVisual(ac) {
 }
 
 /* ============================================================
-   🟥 B-CHECK MONTHLY INTEGRATION — FIXED (DETERMINISTIC)
+   🟢 CAMO B-CHECK ENGINE — SINGLE AUTHORITY (v2.0)
    ------------------------------------------------------------
-   • Reconstruye estado siempre
-   • Intervalo manda
-   • Ventana activa servicio
-   • Overdue fuera de ventana
-   • Sin estados fantasmas
+   • Intervalo técnico fijo: 30 días
+   • Ventana tomada desde Schedule Table
+   • Activación automática
+   • Duración exacta: 24h simuladas
+   • Reset limpio post-servicio
+   • Sin dependencia de modal
+   • Determinístico / Multiplayer-safe
    ============================================================ */
 
 function ACS_handleMonthlyBIntegration(ac) {
 
-  if (!ac) return;
-  if (!ACS_TIME || !Number.isFinite(ACS_TIME.currentTime)) return;
+  const now = Date.now();
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
-  const now = ACS_TIME.currentTime;
-  const MS_DAY = 24 * 60 * 60 * 1000;
-  const INTERVAL = 30 * MS_DAY;
+  if (!ac.lastBCheckAt) return ac;
 
-  const last = Number.isFinite(ac.lastBCheckAt)
-    ? ac.lastBCheckAt
-    : now;
-
-  const dueDate = last + INTERVAL;
+  const dueDate = ac.lastBCheckAt + THIRTY_DAYS;
 
   // ============================================================
-  // 1️⃣ ESTADO BASE (SIEMPRE SE RECONSTRUYE)
+  // 1️⃣ AÚN NO VENCE
   // ============================================================
 
-  ac.status = "Active";
-  ac.canFly = true;
-  ac.maintenanceOverdue = false;
-
-  // Si aún no vence → quedarse Active
   if (now < dueDate) {
-    return;
+    ac.bOverdue = false;
+    return ac;
   }
 
   // ============================================================
-  // 2️⃣ BUSCAR SERVICIO PROGRAMADO
+  // 2️⃣ BUSCAR PROGRAMACIÓN EN SCHEDULE
   // ============================================================
 
-  const items = getItems?.() || [];
-
-  const bService = items.find(it =>
-    it.type === "service" &&
-    it.serviceType === "B" &&
-    it.aircraftId === ac.id
+  const schedule = (window.ACS_SCHEDULE || []).find(e =>
+    e.aircraftId === ac.id && e.type === "B"
   );
 
-  if (!bService) {
-    ac.status = "Overdue";
-    ac.canFly = false;
+  // No está programado → Overdue
+  if (!schedule) {
+    ac.bOverdue = true;
     ac.maintenanceOverdue = true;
-    return;
+    return ac;
+  }
+
+  const startTime = new Date(schedule.startTime).getTime();
+  const endTime = startTime + TWENTY_FOUR_HOURS;
+
+  // ============================================================
+  // 3️⃣ ACTIVACIÓN AUTOMÁTICA
+  // ============================================================
+
+  if (now >= startTime && now < endTime) {
+    ac.status = "B-Check";
+    ac.bInProgress = true;
+    ac.bOverdue = false;
+    return ac;
   }
 
   // ============================================================
-  // 3️⃣ CALCULAR VENTANA
+  // 4️⃣ COMPLETAR AUTOMÁTICAMENTE (POST 24H)
   // ============================================================
 
-  const simDate = new Date(now);
-  const currentWeekday = simDate.getDay();
+  if (now >= endTime && ac.bInProgress) {
 
-  const dayMap = {
-    sun: 0,
-    mon: 1,
-    tue: 2,
-    wed: 3,
-    thu: 4,
-    fri: 5,
-    sat: 6
-  };
-
-  const targetDay = dayMap[bService.day];
-  const dayDiff = (targetDay - currentWeekday + 7) % 7;
-
-  const nextWindow = new Date(simDate);
-  nextWindow.setDate(simDate.getDate() + dayDiff);
-  nextWindow.setHours(0,0,0,0);
-  nextWindow.setMinutes(bService.startMinute || 0);
-
-  const windowStart = nextWindow.getTime();
-  const windowEnd = windowStart + (bService.durationMin * 60 * 1000);
-
-  // ============================================================
-  // 4️⃣ DENTRO DE VENTANA → B-CHECK
-  // ============================================================
-
-  if (now >= windowStart && now < windowEnd) {
-
-    ac.status = "B-Check";
-    ac.canFly = false;
+    ac.lastBCheckAt = now;
+    ac.status = "Active";
+    ac.bInProgress = false;
+    ac.bOverdue = false;
     ac.maintenanceOverdue = false;
 
-    return;
+    return ac;
   }
 
   // ============================================================
-  // 5️⃣ FUERA DE VENTANA Y YA VENCIDO → OVERDUE
+  // 5️⃣ FUERA DE VENTANA SIN EJECUTARSE
   // ============================================================
 
-  ac.status = "Overdue";
-  ac.canFly = false;
-  ac.maintenanceOverdue = true;
+  if (now > dueDate && now < startTime) {
+    ac.bOverdue = true;
+    ac.maintenanceOverdue = true;
+  }
+
+  return ac;
 }
+
      
 // ============================================================
 // === AIRCRAFT HOVER CARD — Qatar Luxury v3 ==================
