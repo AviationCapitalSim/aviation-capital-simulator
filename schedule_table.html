@@ -1828,8 +1828,15 @@ function renderSchedule() {
   const nowTs = ACS_TABLE_TIME?.date?.getTime?.() || Date.now();
 
 // 🟦 B-CYCLE AUTHORITY APPLY
+     
 fleet.forEach(ac => {
+
+  // 1️⃣ Evaluar ciclo mensual
   ACS_evaluateMonthlyBCycle(ac, items, nowTs);
+
+  // 2️⃣ Activación automática B
+  ACS_handleBCheckActivation(ac, items, nowTs);
+
 });
 
 // 🔒 OPS FILTER — SkyTrack authority
@@ -4259,6 +4266,73 @@ function ACS_evaluateMonthlyBCycle(aircraft, scheduleItems, nowTs){
   }
 
   return aircraft;
+}
+
+/* ============================================================
+   🟢 B-AUTO ACTIVATION ENGINE (SIM TIME AUTHORITY)
+   ------------------------------------------------------------
+   • Activa automáticamente B-Check cuando entra en ventana
+   • Usa exclusivamente ACS_TABLE_TIME
+   • Sincroniza status + ciclo
+   ============================================================ */
+
+function ACS_handleBCheckActivation(aircraft, scheduleItems, nowTs){
+
+  if (!aircraft || !scheduleItems || !nowTs) return;
+
+  const bServices = scheduleItems.filter(it =>
+    it.type === "service" &&
+    it.serviceType === "B" &&
+    it.tail === aircraft.tailNumber
+  );
+
+  if (!bServices.length) return;
+
+  const activeService = bServices.find(it =>
+    nowTs >= it.startTime && nowTs < it.endTime
+  );
+
+  // ==============================
+  // 🟢 ACTIVAR B-CHECK
+  // ==============================
+
+  if (activeService) {
+
+    if (aircraft.status !== "B-Check") {
+      aircraft.status = "B-Check";
+      aircraft.canFly = false;
+      aircraft.activeMaintenanceType = "B";
+      aircraft.maintenanceStartedAt = activeService.startTime;
+    }
+
+    return;
+  }
+
+  // ==============================
+  // 🔄 FINALIZAR B-CHECK
+  // ==============================
+
+  if (
+    aircraft.status === "B-Check" &&
+    aircraft.activeMaintenanceType === "B"
+  ) {
+
+    const finishedService = bServices.find(it =>
+      nowTs >= it.endTime
+    );
+
+    if (finishedService) {
+
+      aircraft.status = "Active";
+      aircraft.canFly = true;
+      aircraft.activeMaintenanceType = null;
+
+      aircraft.lastBCheckAt = finishedService.startTime;
+
+      aircraft.maintenanceOverdue = false;
+      aircraft.maintenance.bOverdue = false;
+    }
+  }
 }
      
 /* ============================================================
