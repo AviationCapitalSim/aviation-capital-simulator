@@ -611,14 +611,17 @@ function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
 }
 
 /* ============================================================
-   🟧 G1 — HARD GROUND BLOCK RESOLVER (SCHEDULE AUTHORITY)
+   🟧 G1 — HARD GROUND BLOCK RESOLVER (FLEET AUTHORITY)
    ------------------------------------------------------------
-   • SkyTrack NO decide reglas: solo APLICA la autoridad operacional
+   • SkyTrack NO decide mantenimiento
+   • Lee estado CANÓNICO desde ACS_MyAircraft
    • Bloquea EN_ROUTE cuando el avión está:
-     - "Maintenance Hold" (C/D overdue en MyAircraft)
-     - In C/D Check
-     - B mandatory (sin B planificado / sin lastBCheckAt)
+     - "Maintenance Hold"
+     - In C-Check / In D-Check
+     - B-Check
+     - maintenanceOverdue = true
    ============================================================ */
+
 function ACS_SkyTrack_getGroundBlock(ac) {
 
   if (!ac) {
@@ -632,15 +635,23 @@ function ACS_SkyTrack_getGroundBlock(ac) {
     return { blocked: true, reason: "HOLD", label: "MAINTENANCE" };
   }
 
-  // 2) ACTIVE REAL MAINTENANCE (C / D ONLY)
+  // 2) C / D CHECK
   if (st === "In C-Check" || st === "In D-Check") {
     return { blocked: true, reason: st, label: "MAINTENANCE" };
   }
 
-  // ✅ Nada más aquí
+  // 3) B-CHECK (REAL STATUS FROM FLEET)
+  if (st === "B-Check") {
+    return { blocked: true, reason: "B-Check", label: "MAINTENANCE" };
+  }
+
+  // 4) MAINTENANCE OVERDUE
+  if (ac.maintenanceOverdue === true) {
+    return { blocked: true, reason: "OVERDUE", label: "MAINTENANCE" };
+  }
+
   return { blocked: false, reason: null, label: null };
 }
-
 /* ============================================================
    🧠 STATE RESOLVER — FR24 LOGIC
    🟦 A6.1 — Arrival / Turnaround Boundary FIX (NO jumps)
