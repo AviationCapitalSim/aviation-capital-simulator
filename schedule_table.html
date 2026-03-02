@@ -4472,7 +4472,7 @@ function ACS_getBCycleStatus(aircraft){
   }
 
   const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
-  const now = Date.now();
+  const now = ACS_TABLE_TIME?.date?.getTime?.() || 0;
 
   const elapsed = now - Number(aircraft.lastBCheckAt);
   const remainingMs = MONTH_MS - elapsed;
