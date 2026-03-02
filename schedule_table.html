@@ -4012,7 +4012,7 @@ function applyLongChipBehavior(){
 /* ============================================================
    🟦 A10.17.2 — APPLY MAINTENANCE DUE FLAGS
    ============================================================ */
-const nowTs = Date.now();
+const nowTs = ACS_TIME?.currentTime?.getTime?.() || 0;
 
 fleet.forEach(ac => {
   ACS_calculateMaintenanceDue(ac, nowTs);
