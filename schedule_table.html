@@ -1749,7 +1749,7 @@ function ACS_handleMonthlyBIntegration(ac) {
   // Activar mantenimiento si estamos en ventana
   // ============================================================
 
-  if (now >= windowStart && now < windowEnd) {
+  if (now >= dueDate && now >= windowStart && now < windowEnd) {
 
     ac.status = "B-Check";
     ac.canFly = false;
