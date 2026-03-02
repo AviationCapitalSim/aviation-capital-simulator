@@ -1620,6 +1620,49 @@ const setFleet = f => localStorage.setItem("ACS_MyAircraft", JSON.stringify(f));
   }
 })();
 
+/* ============================================================
+   🟦 B-CHECK MONTHLY OCC BAR ENGINE (SIM TIME)
+   ------------------------------------------------------------
+   • Lee lastBCheckAt
+   • Usa ACS_TIME.currentTime
+   • Devuelve remainingDays + percentUsed + color
+   • NO modifica estado real
+   ============================================================ */
+
+function ACS_getMonthlyBCycleVisual(ac) {
+
+  if (!ac) {
+    return {
+      remainingDays: 30,
+      percentUsed: 0,
+      color: "#4caf50"
+    };
+  }
+
+  const now = ACS_TIME?.currentTime || 0;
+  const last = ac.lastBCheckAt || now;
+
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  const daysPassed = Math.max(0, (now - last) / MS_PER_DAY);
+
+  const remaining = Math.max(0, 30 - daysPassed);
+  const percentUsed = Math.min(100, (daysPassed / 30) * 100);
+
+  let color = "#4caf50"; // verde
+
+  if (remaining <= 2) {
+    color = "#e53935"; // rojo crítico
+  } else if (remaining <= 7) {
+    color = "#ffb300"; // amarillo warning
+  }
+
+  return {
+    remainingDays: Math.ceil(remaining),
+    percentUsed,
+    color
+  };
+}     
+     
 // ============================================================
 // === AIRCRAFT HOVER CARD — Qatar Luxury v3 ==================
 // ============================================================
