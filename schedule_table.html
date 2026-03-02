@@ -1983,10 +1983,8 @@ function renderSchedule() {
 
 fleet.forEach(ac => {
 
-  // 1️⃣ Evaluación técnica mensual (intervalo 30 días)
-  ACS_evaluateMonthlyBCycle(ac, items, nowTs);
-
-  // 2️⃣ Integración CAMO real (ventana + overdue + activación)
+  // Integración CAMO real (ventana + overdue + activación)
+     
   ACS_handleMonthlyBIntegration(ac);
 
 });
