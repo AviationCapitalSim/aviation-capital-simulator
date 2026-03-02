@@ -1665,10 +1665,11 @@ function ACS_getMonthlyBCycleVisual(ac) {
   }
 
   return {
-    remainingDays: Math.ceil(remaining),
-    percentUsed,
-    color
-  };
+  remainingDays: Math.ceil(remaining),
+  percent: percentUsed,   // ← clave alineada con render existente
+  percentUsed,            // ← dejamos ambos por seguridad futura
+  color
+};
 }
      
 // ============================================================
