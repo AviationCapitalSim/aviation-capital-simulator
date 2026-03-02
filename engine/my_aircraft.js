@@ -2418,7 +2418,6 @@ function openMaintenanceLog() {
           <td>${r.startDate || "—"}</td>
           <td>${r.endDate || "—"}</td>
           <td>${r.base || "—"}</td>
-          <td>${r.era || "—"}</td>
           <td>${r.status || "COMPLETED"}</td>
         </tr>`;
     });
