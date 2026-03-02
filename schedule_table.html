@@ -1744,6 +1744,33 @@ function ACS_handleMonthlyBIntegration(ac) {
   const DAY_MS = 24 * 60 * 60 * 1000;
   const CYCLE_MS = 30 * DAY_MS;
 
+  /* ============================================================
+   🔒 MAJOR CHECK OVERRIDE — RESET & FREEZE B
+   Date: 2026-03-02
+   Purpose:
+   - If aircraft enters C/D:
+       • Reset B cycle
+       • Freeze B completely
+       • Prevent overdue
+       • Prevent activation
+   ============================================================ */
+
+if (
+  ac.status === "Maintenance" &&
+  (ac.maintenanceType === "C" || ac.maintenanceType === "D")
+) {
+
+  // 🔹 Reset B cycle to NOW (C kills B)
+  ac.lastBCheckAt = now;
+
+  // 🔹 Clear any B flags
+  ac.bOverdue = false;
+  ac.bInProgress = false;
+  ac.bStartTime = null;
+
+  return ac; // Freeze while C/D active
+}
+     
   if (!ac.lastBCheckAt) return ac;
 
   const dueDate = ac.lastBCheckAt + CYCLE_MS;
