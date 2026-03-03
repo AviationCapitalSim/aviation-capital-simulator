@@ -554,21 +554,6 @@ function ACS_applyKPIVisualFeedback(){
     el.style.fontWeight =
       "600";
 
-  /* ============================================================
-   STATUS ENGINE — USE CANONICAL STATUS ELEMENT ONLY
-   Prevent duplicate labels
-   ============================================================ */
-
-    const statusEl =
-      document.getElementById("kpi-airline-image-status");
-
-    if (statusEl){
-
-      statusEl.textContent =
-        visual.label;
-
-    }
-
   }
   catch(err){
 
