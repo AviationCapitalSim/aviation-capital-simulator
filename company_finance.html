@@ -838,6 +838,22 @@ const filtered = recent.filter(entry => {
 
 });
 
+/* ============================================================
+   🟦 GROUP BY TYPE (RESTORED)
+   ============================================================ */
+
+const groupedByType = {};
+
+filtered.forEach(entry => {
+
+  if (!groupedByType[entry.type]) {
+    groupedByType[entry.type] = [];
+  }
+
+  groupedByType[entry.type].push(entry);
+
+});
+     
   const types = Object.keys(groupedByType);
 
   if (!types.length) {
