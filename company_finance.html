@@ -748,7 +748,7 @@ function ACS_updateProfitColor() {
   }
 }
      
-function loadTransactionLog(filter="all") {
+function loadTransactionLog()
 
   const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
   const container = document.getElementById("financeActivityFeed");
@@ -764,10 +764,7 @@ function loadTransactionLog(filter="all") {
     return (now - entry.timestamp) <= THIRTY_DAYS;
   });
 
-  const filtered = recent.filter(entry => {
-    if (filter === "all") return true;
-    return entry.type === filter;
-  });
+  const filtered = recent;
 
   // 🔥 Agrupar por TYPE primero
   const groupedByType = {};
