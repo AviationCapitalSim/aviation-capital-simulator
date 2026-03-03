@@ -395,6 +395,47 @@ body {
   box-shadow: 0 0 8px rgba(255,200,60,0.45);
 }
 
+/* ============================================================
+   🧠 FINANCIAL ACTIVITY FEED — OCC STYLE
+   ============================================================ */
+
+.activity-card {
+  background: #0d1a42;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.7rem;
+  border-left: 4px solid #999;
+  box-shadow: 0 0 10px rgba(0,0,0,0.35);
+}
+
+.activity-card.income {
+  border-left-color: #00ff80;
+}
+
+.activity-card.expense {
+  border-left-color: #ff4d4d;
+}
+
+.activity-card.info {
+  border-left-color: #8ab4ff;
+}
+
+.activity-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.activity-meta {
+  font-size: 0.8rem;
+  color: #cbd6ff;
+  opacity: 0.8;
+}
+
+.activity-amount {
+  font-weight: 700;
+  margin-top: 4px;
+}
      
 </style>
 </head>
@@ -499,30 +540,24 @@ body {
   </div>
 </div>
      
-  <!-- TRANSACTION LOG -->
-  <div class="finance-section">
-    <h2>Transaction Log</h2>
+ <!-- TRANSACTION LOG -->
+     
+<div class="finance-section">
+  <h2>Financial Activity (Last 30 Days)</h2>
 
-    <div class="log-filter">
-      <div class="filter-btn active" data-filter="all">All</div>
-      <div class="filter-btn" data-filter="INCOME">Income</div>
-      <div class="filter-btn" data-filter="EXPENSE">Expenses</div>
-      <div class="filter-btn" data-filter="INFO">Info</div>
-    </div>
-
-    <table class="log-table">
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Source</th>
-          <th>USD</th>
-        </tr>
-      </thead>
-      <tbody id="cf-log-body"></tbody>
-    </table>
+  <div class="log-filter">
+    <div class="filter-btn active" data-filter="all">All</div>
+    <div class="filter-btn" data-filter="INCOME">Income</div>
+    <div class="filter-btn" data-filter="EXPENSE">Expenses</div>
+    <div class="filter-btn" data-filter="INFO">Info</div>
   </div>
 
+  <div id="financeActivityFeed"></div>
+
+</div>
+     
   <!-- LEASING CONTRACTS -->
+     
   <div class="finance-section">
     <h2>Active Leasing Contracts</h2>
     <div id="leasingContainer" class="leasing-grid"></div>
@@ -679,52 +714,87 @@ function ACS_updateProfitColor() {
   }
 }
      
-/* ============================================================
-   === TRANSACTION LOG WITH FILTERS ============================
-   ============================================================ */
 function loadTransactionLog(filter="all") {
+
   const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-  const body = document.getElementById("cf-log-body");
-  body.innerHTML = "";
+  const container = document.getElementById("financeActivityFeed");
+  if (!container) return;
 
- log.slice().reverse().forEach(entry => {
+  container.innerHTML = "";
 
-  if (filter !== "all" && entry.type !== filter) return;
+  // 🔥 Tomar solo últimos 30 días (si existe timestamp)
+  const now = Date.now();
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 
-  // ❌ OCULTAR INGRESOS DE VUELOS (NO UI)
-  if (
-    entry.type === "INCOME" &&
-    typeof entry.source === "string"
-  ) {
-    const src = entry.source.toUpperCase();
+  const recent = log.filter(entry => {
+    if (!entry.timestamp) return true;
+    return (now - entry.timestamp) <= THIRTY_DAYS;
+  });
 
-    if (
-      src.includes("FLIGHT") ||
-      src.includes("AUTO FLIGHT") ||
-      src.includes("BASE FLIGHT") ||
-      src.includes("FALLBACK")
-    ) {
-      return; // ⛔ NO mostrar vuelos en Transaction Log
+  // 🔥 Aplicar filtro visual
+  const filtered = recent.filter(entry => {
+    if (filter === "all") return true;
+    return entry.type === filter;
+  });
+
+  // 🔥 Agrupar por source + type
+  const grouped = {};
+
+  filtered.forEach(entry => {
+
+    const key = `${entry.type}_${entry.source}`;
+
+    if (!grouped[key]) {
+      grouped[key] = {
+        type: entry.type,
+        source: entry.source,
+        count: 0,
+        total: 0
+      };
     }
+
+    grouped[key].count++;
+    grouped[key].total += Number(entry.amount || 0);
+
+  });
+
+  const entries = Object.values(grouped);
+
+  if (!entries.length) {
+    container.innerHTML = "<div style='opacity:.6'>No recent activity.</div>";
+    return;
   }
 
-    body.innerHTML += `
-    <tr>
-      <td>${entry.type}</td>
-      <td>${entry.source}</td>
-      <td>$${entry.amount.toLocaleString()}</td>
-    </tr>`;
+  // 🔥 Ordenar por impacto
+  entries.sort((a,b)=> b.total - a.total);
+
+  entries.forEach(item => {
+
+    const card = document.createElement("div");
+
+    const typeClass =
+      item.type === "INCOME" ? "income" :
+      item.type === "EXPENSE" ? "expense" : "info";
+
+    card.className = `activity-card ${typeClass}`;
+
+    card.innerHTML = `
+      <div class="activity-title">
+        ${item.source}
+      </div>
+      <div class="activity-meta">
+        ${item.count} movements • ${item.type}
+      </div>
+      <div class="activity-amount">
+        ${ACS_money(item.total)}
+      </div>
+    `;
+
+    container.appendChild(card);
+
   });
 
 }
-
-document.querySelectorAll(".filter-btn").forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    loadTransactionLog(btn.dataset.filter);
-  };
-});
      
 /* ============================================================
    🟦 F-UI-2 — LIVE + WEEKLY INCOME (VIEW ONLY) — v2.1
