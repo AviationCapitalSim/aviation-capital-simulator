@@ -723,7 +723,7 @@ function ACS_updateProfitColor() {
   }
 }
      
-function loadTransactionLog()
+function loadTransactionLog() {
 
   const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
   const container = document.getElementById("financeActivityFeed");
@@ -836,7 +836,7 @@ function loadTransactionLog()
   });
 
 }
-
+     
 function ACS_toggleGroup(header){
 
   const allBodies =
