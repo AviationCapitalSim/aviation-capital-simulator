@@ -927,16 +927,18 @@ try {
     tableBody.appendChild(tr);
   });
 
- /* ============================================================
-   🟦 KPI REFRESH — SAFE FINAL POINT (ORIGINAL)
-   ============================================================ */
+  /* ============================================================
+     🟦 KPI REFRESH — SAFE FINAL POINT
+     ============================================================ */
 
-if (typeof ACS_refreshRouteKPIs === "function") {
+  if (typeof ACS_refreshRouteKPIs === "function") {
 
-  ACS_refreshRouteKPIs();
+    ACS_refreshRouteKPIs();
+
+  }
 
 }
-   
+
   /* ============================================================
      🔹 ROUTE SELECTION
      ============================================================ */
