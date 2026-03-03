@@ -1189,10 +1189,10 @@ function ACS_runMonthlySnapshot(simDate){
     year,
     month,
 
-    revenue : Number(f.revenue  || 0),
-    expenses: Number(f.expenses || 0),
-    profit  : Number(f.profit   || 0),
-    capital : Number(f.capital  || 0),
+    revenue : Math.round(Number(f.revenue  || 0)),
+    expenses: Math.round(Number(f.expenses || 0)),
+    profit  : Math.round(Number(f.profit   || 0)),
+    capital : Math.round(Number(f.capital  || 0)),
     debt    : debt,
     fleetSize: fleet.length,
 
