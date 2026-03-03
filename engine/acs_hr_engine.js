@@ -305,118 +305,16 @@ function ACS_HR_applyHistoricalSalaries() {
 
     localStorage.setItem("ACS_HR", JSON.stringify(HR));
 }
-
-
-
-function ACS_HR_sanitizeState(raw) {
-
-  // 0) Normalizar contenedor raíz
-  let hr = raw;
-  if (!hr || typeof hr !== "object" || Array.isArray(hr)) hr = {};
-
-  const official = Array.isArray(window.ACS_HR_DEPARTMENTS) ? window.ACS_HR_DEPARTMENTS : [];
-  const officialIds = new Set(
-    official
-      .filter(d => d && typeof d === "object" && d.id)
-      .map(d => d.id)
-  );
-
-  let changed = false;
-
-  // 1) Eliminar keys basura (no oficiales)
-  Object.keys(hr).forEach(k => {
-    if (!officialIds.has(k)) {
-      delete hr[k];
-      changed = true;
-    }
-  });
-
-  // 2) Reinyectar/normalizar departamentos oficiales
-  official.forEach(d => {
-
-    // ✅ d debe ser objeto válido
-    if (!d || typeof d !== "object" || !d.id) return;
-
-    // 2.1 Asegurar contenedor dep válido (ojo: null pasa typeof "object")
-    const existing = hr[d.id];
-    const isValidObj = existing && typeof existing === "object" && !Array.isArray(existing);
-
-    if (!isValidObj) {
-      hr[d.id] = {};
-      changed = true;
-    }
-
-    const dep = hr[d.id]; // ✅ siempre objeto desde aquí
-
-    // 2.2 Campos canónicos SIEMPRE
-    if (dep.id !== d.id) { dep.id = d.id; changed = true; }
-
-    if (typeof dep.name !== "string" || !dep.name.trim()) {
-      dep.name = d.name;
-      changed = true;
-    }
-
-    if (typeof dep.base !== "string" || !dep.base.trim()) {
-      dep.base = d.base;
-      changed = true;
-    }
-
-    // 2.3 Numéricos seguros (evita NaN / undefined / null)
-    const staff = Number(dep.staff);
-    dep.staff = Number.isFinite(staff) ? staff : (Number(d.initial) || 0);
-
-    const req = Number(dep.required);
-    dep.required = Number.isFinite(req) ? req : dep.staff;
-
-    const morale = Number(dep.morale);
-    dep.morale = Number.isFinite(morale) ? morale : 100;
-
-    const salary = Number(dep.salary);
-    dep.salary = Number.isFinite(salary) ? salary : 0;
-
-    const payroll = Number(dep.payroll);
-    dep.payroll = Number.isFinite(payroll) ? payroll : Math.round(dep.staff * dep.salary);
-
-    // 2.4 Opcionales seguros
-    const bonus = Number(dep.bonus);
-    dep.bonus = Number.isFinite(bonus) ? bonus : 0;
-
-    const years = Number(dep.years);
-    dep.years = Number.isFinite(years) ? years : 0;
-
-  });
-
-  // 3) Guardar solo si hubo cambios
-  if (changed) {
-    try {
-      localStorage.setItem("ACS_HR", JSON.stringify(hr));
-      console.log("%c✅ HR SANITIZED — null-safe / undefined rows prevented", "color:#00ff9c;font-weight:800");
-    } catch (e) {
-      console.warn("⚠️ HR sanitize save failed:", e);
-    }
-  }
-
-  return hr;
-}
-
 /* ============================================================
-   ✅ SAFE LOAD/SAVE (NOW SANITIZED)
+   === HELPERS ==================================================
    ============================================================ */
 
 function ACS_HR_load() {
-  let raw = null;
-  try {
-    raw = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
-  } catch (e) {
-    console.warn("⚠️ ACS_HR parse failed, resetting:", e);
-    raw = {};
-  }
-  return ACS_HR_sanitizeState(raw);
+    return JSON.parse(localStorage.getItem("ACS_HR"));
 }
 
 function ACS_HR_save(data) {
-  const safe = ACS_HR_sanitizeState(data);
-  localStorage.setItem("ACS_HR", JSON.stringify(safe));
+    localStorage.setItem("ACS_HR", JSON.stringify(data));
 }
 
 /* ============================================================
@@ -528,71 +426,54 @@ function ACS_HR_applyBonus(deptID, percent) {
 }
 
 /* ============================================================
-   2026-03-03 — 4️⃣🛡 SAFE HR VIEW (ANTI-UNDEFINED HARD FIX)
+   🟩 HR-B1 — DEPARTMENTS VIEW (STATE-DRIVEN, SAFE)
    ------------------------------------------------------------
-   • Filtra elementos inválidos en ACS_HR_DEPARTMENTS
-   • Evita crash si d es undefined
-   • Nunca evalúa d.id sin validación
-   • 100% safe para multiplayer scale
+   Source of Truth: ACS_HR_STATE
+   Compatible with: department_control.html
+   ------------------------------------------------------------
+   Version: v1.2 | Date: 05 FEB 2026
    ============================================================ */
 
 function ACS_HR_getDepartmentsView() {
 
     const hr = ACS_HR_load() || {};
 
-    if (!Array.isArray(ACS_HR_DEPARTMENTS)) {
-        console.error("❌ ACS_HR_DEPARTMENTS is not an array");
-        return [];
-    }
+    return ACS_HR_DEPARTMENTS.map(d => {
 
-    return ACS_HR_DEPARTMENTS
-        .filter(d => {
-            if (!d || typeof d !== "object") {
-                console.warn("⚠️ Invalid department entry skipped:", d);
-                return false;
-            }
-            if (!d.id) {
-                console.warn("⚠️ Department without ID skipped:", d);
-                return false;
-            }
-            return true;
-        })
-        .map(d => {
+        // Si el departamento no existe aún en el estado → inicializarlo
+        if (!hr[d.id]) {
 
-            // Bootstrap seguro
-            if (!hr[d.id] || typeof hr[d.id] !== "object") {
+            console.warn("⚠️ HR missing department:", d.id, "→ bootstrap");
 
-                console.warn("⚠️ HR missing department:", d.id, "→ bootstrap");
-
-                hr[d.id] = {
-                    id: d.id,
-                    name: d.name,
-                    base: d.base,
-                    staff: Number(d.initial) || 0,
-                    required: Number(d.initial) || 0,
-                    morale: 100,
-                    salary: 0,
-                    payroll: 0,
-                    bonus: 0,
-                    years: 0
-                };
-
-                ACS_HR_save(hr);
-            }
-
-            const dep = hr[d.id];
-
-            return {
-                id: dep.id,
-                name: dep.name,
-                base: dep.base,
-                staff: Number(dep.staff) || 0,
-                required: Number(dep.required ?? dep.staff) || 0,
-                morale: Number(dep.morale) || 100,
-                salary: Number(dep.salary) || 0,
-                payroll: Number(dep.payroll) || 0
+            hr[d.id] = {
+                id: d.id,
+                name: d.name,
+                base: d.base,
+                staff: d.initial || 0,
+                required: d.initial || 0,
+                morale: 100,
+                salary: 0,
+                payroll: 0,
+                bonus: 0,
+                years: 0
             };
-        });
+
+            ACS_HR_save(hr);
+        }
+
+        const dep = hr[d.id];
+
+        return {
+            id: dep.id,
+            name: dep.name,
+            base: dep.base,
+            staff: Number(dep.staff) || 0,
+            required: Number(dep.required ?? dep.staff) || 0,
+            morale: Number(dep.morale) || 100,
+            salary: Number(dep.salary) || 0,
+            payroll: Number(dep.payroll) || 0
+        };
+    });
 }
 
 /* ============================================================
@@ -1149,3 +1030,85 @@ function ACS_HR_syncSalaryToView() {
   );
 }
 
+/* ============================================================
+   🟩 HR-A2 — HR BOOTSTRAP CORE (ACS OFFICIAL)
+   ------------------------------------------------------------
+   Purpose:
+   - Garantizar que HR exista antes de ser usado
+   - Crear estructura mínima si no existe
+   - Ejecutarse SOLO una vez
+   ------------------------------------------------------------
+   Version: v1.0 | Date: 05 FEB 2026
+   ============================================================ */
+
+function ACS_HR_bootstrap() {
+
+  let HR = null;
+
+  try {
+    HR = JSON.parse(localStorage.getItem("ACS_HR_STATE"));
+  } catch (e) {
+    HR = null;
+  }
+
+  // ================================
+  // CASO 1: HR YA EXISTE → salir
+  // ================================
+  if (HR && typeof HR === "object" && Object.keys(HR).length > 0) {
+    return;
+  }
+
+  console.log(
+    "%c🧩 HR BOOTSTRAP — INITIALIZING HR STATE",
+    "color:#ffb300;font-weight:700"
+  );
+
+  // ================================
+  // ESTRUCTURA MÍNIMA DEPARTAMENTAL
+  // ================================
+  HR = {
+
+    operations: {
+      id: "operations",
+      name: "Operations",
+      staff: 0,
+      salary: 120,
+      morale: 100
+    },
+
+    finance: {
+      id: "finance",
+      name: "Finance",
+      staff: 0,
+      salary: 140,
+      morale: 100
+    },
+
+    hr: {
+      id: "hr",
+      name: "Human Resources",
+      staff: 0,
+      salary: 110,
+      morale: 100
+    }
+
+  };
+
+  localStorage.setItem("ACS_HR_STATE", JSON.stringify(HR));
+
+  console.log(
+    "%c✅ HR BOOTSTRAP COMPLETE",
+    "color:#00ff88;font-weight:700",
+    HR
+  );
+}
+
+/* ============================================================
+   🟩 HR-A3 — AUTO BOOTSTRAP ON LOAD
+   ============================================================ */
+
+ACS_HR_bootstrap();
+
+/* Declarar HR como listo SOLO después de bootstrap */
+localStorage.setItem("ACS_HR_INITIALIZED", "true");
+console.info("✅ HR INITIALIZED — SYSTEM FLAG SET");
