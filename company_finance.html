@@ -1057,9 +1057,7 @@ categories.push({
   function refreshAll(){
     updateCompanyOverview();
     loadBreakdown();
-    loadTransactionLog(
-      document.querySelector(".filter-btn.active")?.dataset?.filter || "all"
-    );
+    loadTransactionLog();
     loadLeasing();
   }
 
@@ -1192,8 +1190,6 @@ function handleLogout(){
       updateCompanyOverview();
       loadBreakdown();
       loadTransactionLog(
-        document.querySelector(".filter-btn.active")?.dataset?.filter || "all"
-      );
       loadLeasing();
     }
   }, 700);
