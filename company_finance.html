@@ -559,7 +559,7 @@ body {
  <!-- TRANSACTION LOG -->
      
 <div class="finance-section">
-  <h2>Financial Activity (Last 30 Days)</h2>
+  <h2>Financial Activity (Last 15 Days)</h2>
 
   <div id="financeActivityFeed"></div>
 
@@ -745,11 +745,11 @@ function loadTransactionLog() {
   container.innerHTML = "";
 
   const now = Date.now();
-  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const FIFTEEN_DAYS = 15 * 24 * 60 * 60 * 1000;
 
   const recent = log.filter(entry => {
     if (!entry.timestamp) return true;
-    return (now - entry.timestamp) <= THIRTY_DAYS;
+    return (now - entry.timestamp) <= FIFTEEN_DAYS;
   });
 
   const filtered = recent;
