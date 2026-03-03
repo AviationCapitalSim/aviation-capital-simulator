@@ -100,30 +100,70 @@
       gap: 1rem;
     }
 
-    .logout-btn {
-      padding: 0.45rem 1.1rem;
-      border: 1px solid #ffb300;
-      border-radius: 12px;
-      background: rgba(255,179,0,0.05);
-      color: #ffb300;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-    }
+    /* ============================================================
+   🟦 RIGHT HEADER AREA — PERFECT SPACING & CLOCK ALIGNMENT
+   ============================================================ */
 
-    .logout-btn:hover {
-      background: #ffb300;
-      color: #0c1f3c;
-    }
+.acs-right{
+  display:flex;
+  align-items:center;
+  gap:14px;              /* espacio real entre botones y reloj */
+  padding-right:12px;    /* aire contra borde derecho */
+  flex-shrink:0;
+}
 
-    .acs-clock-header {
-      font-family: "Orbitron", monospace;
-      padding: 0.4rem 0.8rem;
-      background: rgba(0,255,128,0.08);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      color: #00ff80;
-    }
+.support-btn{
+  padding:.45rem 1.1rem;
+  border-radius:12px;
+  font-size:.9rem;
+  font-weight:600;
+  text-decoration:none;
+  color:#8AB4FF;
+  border:1px solid rgba(138,180,255,.45);
+  background:rgba(138,180,255,.08);
+}
+
+.logout-btn{
+  padding:.45rem 1.1rem;
+  border:1px solid #ffb300;
+  border-radius:12px;
+  background:rgba(255,179,0,.05);
+  color:#ffb300;
+  font-weight:600;
+  cursor:pointer;
+}
+
+    /* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
+
+.acs-clock-header{
+
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+
+  padding:.45rem .8rem;
+
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  white-space:nowrap;
+
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
+}
 
     /* ================= MAIN CONTENT ================= */
     .acs-main {
@@ -257,15 +297,15 @@
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html" class="active">Routes</a>
     <a href="hr.html">HR</a>
-    <a href="forum.html">Forum</a>
-    <a href="support.html">Support</a>
   </nav>
 
-  <div class="acs-auth">
-    <a href="#" class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 1940</div>
+  <div class="acs-right">
+    <a href="support.html" class="support-btn">Support</a>
+    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <div id="acs-clock" class="acs-clock-header">00:00 — 01 JAN 1940</div>
   </div>
 </header>
+
 
 <main class="acs-main">
   <h2>🌍 World Airports Database</h2>
