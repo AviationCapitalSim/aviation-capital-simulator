@@ -306,24 +306,20 @@ function ACS_HR_applyHistoricalSalaries() {
     localStorage.setItem("ACS_HR", JSON.stringify(HR));
 }
 
-/* ============================================================
-   2026-03-03 — 1️⃣🧹 HR STATE SANITIZER (UNDEFINED FIX)
-   ------------------------------------------------------------
-   Purpose:
-   • Elimina entradas corruptas / meta dentro de ACS_HR
-   • Garantiza {id,name,base} y campos numéricos por dept
-   • Mantiene SOLO los de ACS_HR_DEPARTMENTS
-   • Evita filas "undefined" en Department Control
-   ============================================================ */
+
 
 function ACS_HR_sanitizeState(raw) {
 
-  // 0) Normalizar contenedor
+  // 0) Normalizar contenedor raíz
   let hr = raw;
   if (!hr || typeof hr !== "object" || Array.isArray(hr)) hr = {};
 
   const official = Array.isArray(window.ACS_HR_DEPARTMENTS) ? window.ACS_HR_DEPARTMENTS : [];
-  const officialIds = new Set(official.map(d => d?.id).filter(Boolean));
+  const officialIds = new Set(
+    official
+      .filter(d => d && typeof d === "object" && d.id)
+      .map(d => d.id)
+  );
 
   let changed = false;
 
@@ -338,24 +334,36 @@ function ACS_HR_sanitizeState(raw) {
   // 2) Reinyectar/normalizar departamentos oficiales
   official.forEach(d => {
 
-    if (!d || !d.id) return;
+    // ✅ d debe ser objeto válido
+    if (!d || typeof d !== "object" || !d.id) return;
 
-    // Si falta el objeto → bootstrap
-    if (!hr[d.id] || typeof hr[d.id] !== "object") {
+    // 2.1 Asegurar contenedor dep válido (ojo: null pasa typeof "object")
+    const existing = hr[d.id];
+    const isValidObj = existing && typeof existing === "object" && !Array.isArray(existing);
+
+    if (!isValidObj) {
       hr[d.id] = {};
       changed = true;
     }
 
-    const dep = hr[d.id];
+    const dep = hr[d.id]; // ✅ siempre objeto desde aquí
 
-    // 2.1 Campos canónicos SIEMPRE
+    // 2.2 Campos canónicos SIEMPRE
     if (dep.id !== d.id) { dep.id = d.id; changed = true; }
-    if (typeof dep.name !== "string" || !dep.name.trim()) { dep.name = d.name; changed = true; }
-    if (typeof dep.base !== "string" || !dep.base.trim()) { dep.base = d.base; changed = true; }
 
-    // 2.2 Numéricos seguros (evita NaN / undefined)
+    if (typeof dep.name !== "string" || !dep.name.trim()) {
+      dep.name = d.name;
+      changed = true;
+    }
+
+    if (typeof dep.base !== "string" || !dep.base.trim()) {
+      dep.base = d.base;
+      changed = true;
+    }
+
+    // 2.3 Numéricos seguros (evita NaN / undefined / null)
     const staff = Number(dep.staff);
-    dep.staff = Number.isFinite(staff) ? staff : (d.initial || 0);
+    dep.staff = Number.isFinite(staff) ? staff : (Number(d.initial) || 0);
 
     const req = Number(dep.required);
     dep.required = Number.isFinite(req) ? req : dep.staff;
@@ -369,16 +377,20 @@ function ACS_HR_sanitizeState(raw) {
     const payroll = Number(dep.payroll);
     dep.payroll = Number.isFinite(payroll) ? payroll : Math.round(dep.staff * dep.salary);
 
-    // 2.3 Campos opcionales (si faltan, se inicializan sin romper nada)
-    if (typeof dep.bonus !== "number") dep.bonus = Number(dep.bonus) || 0;
-    if (typeof dep.years !== "number") dep.years = Number(dep.years) || 0;
+    // 2.4 Opcionales seguros
+    const bonus = Number(dep.bonus);
+    dep.bonus = Number.isFinite(bonus) ? bonus : 0;
+
+    const years = Number(dep.years);
+    dep.years = Number.isFinite(years) ? years : 0;
+
   });
 
   // 3) Guardar solo si hubo cambios
   if (changed) {
     try {
       localStorage.setItem("ACS_HR", JSON.stringify(hr));
-      console.log("%c✅ HR SANITIZED — undefined rows prevented", "color:#00ff9c;font-weight:800");
+      console.log("%c✅ HR SANITIZED — null-safe / undefined rows prevented", "color:#00ff9c;font-weight:800");
     } catch (e) {
       console.warn("⚠️ HR sanitize save failed:", e);
     }
