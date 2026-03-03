@@ -928,17 +928,28 @@ try {
   });
 
   /* ============================================================
-     🟦 KPI REFRESH — SAFE FINAL POINT
-     ============================================================ */
+   🟦 KPI REFRESH — STABLE (NO DOM REWRITE LOOP)
+   ------------------------------------------------------------
+   - Prevents text flicker on Network Image
+   - Only refreshes if value changed
+   ============================================================ */
 
-  if (typeof ACS_refreshRouteKPIs === "function") {
+if (typeof ACS_refreshRouteKPIs === "function") {
 
-    ACS_refreshRouteKPIs();
+  const prevStatus =
+    document.getElementById("kpi-airline-image-status")?.textContent;
 
+  ACS_refreshRouteKPIs();
+
+  const newStatus =
+    document.getElementById("kpi-airline-image-status")?.textContent;
+
+  if (prevStatus === newStatus) {
+    // revert DOM write if identical (prevents repaint flicker)
+    document.getElementById("kpi-airline-image-status").textContent = prevStatus;
   }
 
 }
-
   /* ============================================================
      🔹 ROUTE SELECTION
      ============================================================ */
