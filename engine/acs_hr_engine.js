@@ -516,54 +516,71 @@ function ACS_HR_applyBonus(deptID, percent) {
 }
 
 /* ============================================================
-   🟩 HR-B1 — DEPARTMENTS VIEW (STATE-DRIVEN, SAFE)
+   2026-03-03 — 4️⃣🛡 SAFE HR VIEW (ANTI-UNDEFINED HARD FIX)
    ------------------------------------------------------------
-   Source of Truth: ACS_HR_STATE
-   Compatible with: department_control.html
-   ------------------------------------------------------------
-   Version: v1.2 | Date: 05 FEB 2026
+   • Filtra elementos inválidos en ACS_HR_DEPARTMENTS
+   • Evita crash si d es undefined
+   • Nunca evalúa d.id sin validación
+   • 100% safe para multiplayer scale
    ============================================================ */
 
 function ACS_HR_getDepartmentsView() {
 
     const hr = ACS_HR_load() || {};
 
-    return ACS_HR_DEPARTMENTS.map(d => {
+    if (!Array.isArray(ACS_HR_DEPARTMENTS)) {
+        console.error("❌ ACS_HR_DEPARTMENTS is not an array");
+        return [];
+    }
 
-        // Si el departamento no existe aún en el estado → inicializarlo
-        if (!hr[d.id]) {
+    return ACS_HR_DEPARTMENTS
+        .filter(d => {
+            if (!d || typeof d !== "object") {
+                console.warn("⚠️ Invalid department entry skipped:", d);
+                return false;
+            }
+            if (!d.id) {
+                console.warn("⚠️ Department without ID skipped:", d);
+                return false;
+            }
+            return true;
+        })
+        .map(d => {
 
-            console.warn("⚠️ HR missing department:", d.id, "→ bootstrap");
+            // Bootstrap seguro
+            if (!hr[d.id] || typeof hr[d.id] !== "object") {
 
-            hr[d.id] = {
-                id: d.id,
-                name: d.name,
-                base: d.base,
-                staff: d.initial || 0,
-                required: d.initial || 0,
-                morale: 100,
-                salary: 0,
-                payroll: 0,
-                bonus: 0,
-                years: 0
+                console.warn("⚠️ HR missing department:", d.id, "→ bootstrap");
+
+                hr[d.id] = {
+                    id: d.id,
+                    name: d.name,
+                    base: d.base,
+                    staff: Number(d.initial) || 0,
+                    required: Number(d.initial) || 0,
+                    morale: 100,
+                    salary: 0,
+                    payroll: 0,
+                    bonus: 0,
+                    years: 0
+                };
+
+                ACS_HR_save(hr);
+            }
+
+            const dep = hr[d.id];
+
+            return {
+                id: dep.id,
+                name: dep.name,
+                base: dep.base,
+                staff: Number(dep.staff) || 0,
+                required: Number(dep.required ?? dep.staff) || 0,
+                morale: Number(dep.morale) || 100,
+                salary: Number(dep.salary) || 0,
+                payroll: Number(dep.payroll) || 0
             };
-
-            ACS_HR_save(hr);
-        }
-
-        const dep = hr[d.id];
-
-        return {
-            id: dep.id,
-            name: dep.name,
-            base: dep.base,
-            staff: Number(dep.staff) || 0,
-            required: Number(dep.required ?? dep.staff) || 0,
-            morale: Number(dep.morale) || 100,
-            salary: Number(dep.salary) || 0,
-            payroll: Number(dep.payroll) || 0
-        };
-    });
+        });
 }
 
 /* ============================================================
