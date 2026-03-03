@@ -922,7 +922,6 @@ categories.push({
   function refreshAll(){
     updateCompanyOverview();
     loadBreakdown();
-    loadHistory();
     loadTransactionLog(
       document.querySelector(".filter-btn.active")?.dataset?.filter || "all"
     );
@@ -1008,7 +1007,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   updateCompanyOverview();
-  loadHistory();
   loadBreakdown();
   loadTransactionLog();
   loadLeasing();
@@ -1023,7 +1021,6 @@ function ACS_subscribeFinanceUIRefresh() {
   window.addEventListener("storage", (e) => {
     if (e.key === "ACS_Finance" || e.key === "ACS_Log") {
       updateCompanyOverview();
-      loadHistory();
       loadBreakdown();
       loadTransactionLog();
   
