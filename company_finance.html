@@ -680,29 +680,6 @@ function ACS_updateProfitColor() {
 }
      
 /* ============================================================
-   === MONTHLY HISTORY (SAFE) ==================================
-   ============================================================ */
-function loadHistory() {
-  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  const tbody = document.getElementById("cf-history");
-  tbody.innerHTML = "";
-
-  const hist = Array.isArray(f.history) ? f.history : [];
-  if (!hist.length) return;
-
-  hist.forEach(h => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${h.month || "—"}</td>
-        <td>${ACS_money(h.revenue)}</td>
-        <td>${ACS_money(h.expenses)}</td>
-        <td>${ACS_money(h.profit)}</td>
-      </tr>`;
-  });
-}
-
-
-/* ============================================================
    === TRANSACTION LOG WITH FILTERS ============================
    ============================================================ */
 function loadTransactionLog(filter="all") {
@@ -1055,7 +1032,6 @@ function handleLogout(){
       lastLogStr = lStr;
 
       updateCompanyOverview();
-      loadHistory();
       loadBreakdown();
       loadTransactionLog(
         document.querySelector(".filter-btn.active")?.dataset?.filter || "all"
