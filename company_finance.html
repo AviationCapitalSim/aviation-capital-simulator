@@ -811,20 +811,32 @@ function loadTransactionLog() {
     return (now - entry.timestamp) <= FIFTEEN_DAYS;
   });
 
-  const filtered = recent;
+  /* ============================================================
+   🟦 FILTER — REMOVE INDIVIDUAL ROUTE INCOME
+   ------------------------------------------------------------
+   • Keeps aggregated "FLIGHT"
+   • Removes "FLIGHT XXX → YYY"
+   ============================================================ */
 
-  // 🔥 Agrupar por TYPE primero
-  const groupedByType = {};
+const filtered = recent.filter(entry => {
 
-  filtered.forEach(entry => {
+  // Solo aplicamos filtro a ingresos
+  if (entry.type === "INCOME") {
 
-    if (!groupedByType[entry.type]) {
-      groupedByType[entry.type] = [];
+    // Si es ruta individual (contiene flecha)
+    if (
+      typeof entry.source === "string" &&
+      entry.source.startsWith("FLIGHT ") &&
+      entry.source.includes("→")
+    ) {
+      return false; // ❌ No renderizar rutas individuales
     }
 
-    groupedByType[entry.type].push(entry);
+  }
 
-  });
+  return true; // ✔ Mantener todo lo demás
+
+});
 
   const types = Object.keys(groupedByType);
 
