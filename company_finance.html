@@ -1192,15 +1192,14 @@ function updateClockDisplay(simTime){
 document.addEventListener("DOMContentLoaded", () => {
 
   if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
 
-  if (typeof registerTimeListener === "function") {
   registerTimeListener((simDate)=>{
+    updateClockDisplay(simDate);
     ACS_runMonthlySnapshot(simDate);
   });
- }
+
+  updateClockDisplay();
+}
      
   updateCompanyOverview();
   loadBreakdown();
