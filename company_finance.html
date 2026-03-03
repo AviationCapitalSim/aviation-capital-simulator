@@ -452,7 +452,48 @@ body {
   margin-bottom: 0.5rem;
   border-left: 3px solid rgba(255,255,255,0.15);
 }
-     
+
+/* ============================================================
+   🟦 MONTHLY EXECUTIVE CARDS — OCC PREMIUM
+   ============================================================ */
+
+.exec-card {
+  background: #0d1a42;
+  border-radius: 14px;
+  padding: 1rem;
+  border: 1px solid #ffb30055;
+  box-shadow: 0 0 14px rgba(0,0,0,0.45);
+}
+
+.exec-title {
+  font-size: 0.85rem;
+  color: #ffca5c;
+}
+
+.exec-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.exec-trend {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.trend-up {
+  color: #00ff80;
+}
+
+.trend-down {
+  color: #ff4d4d;
+}
+
+.trend-neutral {
+  color: #8ab4ff;
+}
+    
 </style>
 </head>
 
@@ -540,9 +581,23 @@ body {
   </div>
 
   <!-- 🟩 ESTA ES LA POSICIÓN CORRECTA -->
+      
   <div class="kpi-card">
     <small>Active Loan Summary</small>
     <div class="kpi-value" id="cf-debt">$0</div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     🟦 MONTHLY EXECUTIVE SUMMARY — Airbus OCC Style
+     ============================================================ -->
+
+<div class="finance-section" id="monthlyExecutiveSection">
+  <h2>📈 Monthly Executive Summary</h2>
+
+  <div id="monthlyExecutiveGrid" 
+       style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem;">
   </div>
 
 </div>
@@ -1153,6 +1208,77 @@ function ACS_runMonthlySnapshot(simDate){
   );
 
   console.log("📦 Monthly snapshot saved:", monthKey);
+
+}
+
+/* ============================================================
+   🟦 FASE 4 — MONTHLY EXECUTIVE SUMMARY ENGINE
+   ------------------------------------------------------------
+   • Lee ACS_Finance_History
+   • Compara último vs anterior
+   • Renderiza tendencia ▲ ▼
+   ============================================================ */
+
+function ACS_renderMonthlyExecutive(){
+
+  const history =
+    JSON.parse(localStorage.getItem("ACS_Finance_History") || "[]");
+
+  const container =
+    document.getElementById("monthlyExecutiveGrid");
+
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  if(history.length < 1){
+    container.innerHTML = "<div style='opacity:.6'>No monthly data yet.</div>";
+    return;
+  }
+
+  const current = history[history.length - 1];
+  const previous = history[history.length - 2] || null;
+
+  function buildMetric(label, currentVal, previousVal){
+
+    let trendClass = "trend-neutral";
+    let trendSymbol = "▬";
+    let diff = 0;
+
+    if(previousVal !== null){
+
+      diff = currentVal - previousVal;
+
+      if(diff > 0){
+        trendClass = "trend-up";
+        trendSymbol = "▲";
+      }
+      else if(diff < 0){
+        trendClass = "trend-down";
+        trendSymbol = "▼";
+      }
+
+    }
+
+    const card = document.createElement("div");
+    card.className = "exec-card";
+
+    card.innerHTML = `
+      <div class="exec-title">${label}</div>
+      <div class="exec-value">${ACS_money(currentVal)}</div>
+      <div class="exec-trend ${trendClass}">
+        ${trendSymbol} ${previousVal !== null ? ACS_money(diff) : "No previous month"}
+      </div>
+    `;
+
+    container.appendChild(card);
+  }
+
+  buildMetric("Revenue", current.revenue, previous?.revenue ?? null);
+  buildMetric("Expenses", current.expenses, previous?.expenses ?? null);
+  buildMetric("Profit", current.profit, previous?.profit ?? null);
+  buildMetric("Capital", current.capital, previous?.capital ?? null);
+  buildMetric("Debt", current.debt, previous?.debt ?? null);
 
 }
      
