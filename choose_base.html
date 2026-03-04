@@ -319,10 +319,38 @@
   
 </script>
   
-<!-- ============================================================
-     === INITIALIZER (ÚNICO BLOQUE CORRECTO) ====================
-     ============================================================ -->
+
 <script>
+
+/* ============================================================
+   🔒 ACS BASE LOCK SYSTEM
+   ------------------------------------------------------------
+   • Si el jugador ya tiene base → bloquear choose_base
+   • Evita cambios gratuitos de hub
+   • Arquitectura segura para economía del simulador
+   ============================================================ */
+
+(function preventBaseChange(){
+
+  try {
+
+    const base = localStorage.getItem("ACS_baseICAO");
+
+    if (base) {
+
+      console.log("🔒 Base already defined:", base);
+      console.log("➡ Redirecting to dashboard...");
+
+      window.location.href = "dashboard.html";
+
+    }
+
+  } catch (err) {
+    console.warn("⚠ Base lock check failed:", err);
+  }
+
+})();
+  
 document.addEventListener("DOMContentLoaded", () => {
 
   loadAirportScripts(() => {
