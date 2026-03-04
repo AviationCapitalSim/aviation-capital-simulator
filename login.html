@@ -410,9 +410,6 @@ async function handleLogin(event) {
   try {
     const response = await fetch(ACS_API_URL, {
     method: "POST",
-    headers: {
-    "Content-Type": "application/json"
-    },
     body: JSON.stringify({
     action: "LOGIN",
     email: email,
