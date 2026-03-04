@@ -730,6 +730,58 @@ function setBase(icao) {
 
   console.log("✅ Base establecida correctamente:", user.base);
 
+  /* ============================================================
+   🌐 SYNC BASE WITH SERVER — ACS CLOUD PERSISTENCE
+   ------------------------------------------------------------
+   • Envía base ICAO al backend
+   • Usa session_token existente
+   • No rompe funcionamiento local
+   ============================================================ */
+
+(function syncBaseToServer(){
+
+  try {
+
+    const sessionToken = localStorage.getItem("ACS_session_token");
+
+    if (!sessionToken) {
+      console.warn("⚠️ No session token found — skipping server sync.");
+      return;
+    }
+
+    const ACS_API_URL = "https://script.google.com/macros/s/AKfycby1XOb40ciRLjVOZpKEAaCZPU_m1f1IUuF7g0f7yLUQ8LxRLChuSQEU7jwLAC2USIb0BA/exec";
+
+    fetch(ACS_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "SET_BASE",
+        session_token: sessionToken,
+        base_icao: airport.icao
+      })
+    })
+    .then(r => r.json())
+    .then(res => {
+
+      if (res.status === "success") {
+        console.log("🌍 Base synced to server:", res.base);
+      } else {
+        console.warn("⚠️ Server base sync failed:", res);
+      }
+
+    })
+    .catch(err => {
+      console.error("❌ Base sync error:", err);
+    });
+
+  } catch (err) {
+    console.error("❌ Base sync crash:", err);
+  }
+
+})();
+  
 /* ============================================================
    🟦 PASO 1 — FLIGHT SYSTEM CONTEXT SYNC (SAFE / NON-BREAKING)
    ------------------------------------------------------------
