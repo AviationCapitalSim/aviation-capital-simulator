@@ -132,7 +132,20 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", function(e){
 
   if(!d || !d.flightId) return;
 
-  ACS_sendArrival(d.flightId);
+  ACS_sendDeparture({
+    flightId: d.flightId,
+    origin: d.origin,
+    destination: d.destination,
+    lat: null,
+    lng: null,
+    speed: 0,
+    depAbsMin: d.depAbsMin,
+    arrAbsMin: d.arrAbsMin
+  });
+
+  setTimeout(()=>{
+    ACS_sendArrival(d.flightId);
+  },60000);
 
 });
 
