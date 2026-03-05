@@ -182,3 +182,55 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", function(e){
 });
 
 console.log("🌍 ACS WORLD BRIDGE READY");
+
+/* ============================================================
+   🌍 WORLD TRAFFIC FETCH
+   ============================================================ */
+
+async function ACS_fetchWorldFlights(){
+
+  try{
+
+    if(!window.map) return;
+
+    const b = map.getBounds();
+
+    const minLat = b.getSouth();
+    const maxLat = b.getNorth();
+    const minLng = b.getWest();
+    const maxLng = b.getEast();
+
+    const url =
+      WORLD_SERVER +
+      "/v1/flights?minLat=" + minLat +
+      "&maxLat=" + maxLat +
+      "&minLng=" + minLng +
+      "&maxLng=" + maxLng;
+
+    const res = await fetch(url);
+
+    if(!res.ok){
+      console.warn("WORLD flights fetch error");
+      return;
+    }
+
+    const data = await res.json();
+
+    console.log("🌍 WORLD TRAFFIC:", data.count);
+
+    window.ACS_WORLD_FLIGHTS = data.flights;
+
+  }
+  catch(err){
+
+    console.warn("WORLD flights failed", err);
+
+  }
+
+}
+
+/* ============================================================
+   AUTO REFRESH
+   ============================================================ */
+
+setInterval(ACS_fetchWorldFlights, 5000);
