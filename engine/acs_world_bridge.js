@@ -33,18 +33,37 @@ async function ACS_sendDeparture(flight){
       origin: flight.origin,
       destination: flight.destination,
 
-      latitude: Number(flight.lat) || null,
-      longitude: Number(flight.lng) || null,
+      // ✅ FIX: NO usar "|| null" porque 0 se vuelve null
+      latitude:
+        (flight.lat !== undefined && flight.lat !== null)
+          ? Number(flight.lat)
+          : null,
 
-      speed: Number(flight.speed) || null,
+      longitude:
+        (flight.lng !== undefined && flight.lng !== null)
+          ? Number(flight.lng)
+          : null,
 
-      dep_time: Number(flight.depAbsMin) || null,
-      arr_time: Number(flight.arrAbsMin) || null,
+      speed:
+        (flight.speed !== undefined && flight.speed !== null)
+          ? Number(flight.speed)
+          : null,
+
+      // ✅ FIX: NO usar "|| null" porque 0 se vuelve null
+      dep_time:
+        (flight.depAbsMin !== undefined && flight.depAbsMin !== null)
+          ? Number(flight.depAbsMin)
+          : null,
+
+      arr_time:
+        (flight.arrAbsMin !== undefined && flight.arrAbsMin !== null)
+          ? Number(flight.arrAbsMin)
+          : null,
 
       status: 1
     };
 
-    await fetch(
+    const res = await fetch(
       WORLD_SERVER + "/v1/flight/departure",
       {
         method:"POST",
@@ -52,6 +71,13 @@ async function ACS_sendDeparture(flight){
         body: JSON.stringify(body)
       }
     );
+
+    // ✅ DEBUG: ver código y respuesta si falla
+    if(!res.ok){
+      const t = await res.text().catch(()=>"(no body)");
+      console.warn("🌍 WORLD departure NOT OK", res.status, t, body);
+      return;
+    }
 
     console.log("🌍 WORLD DEPARTURE SENT:", flight.flightId);
 
@@ -72,7 +98,7 @@ async function ACS_sendArrival(flightId){
 
   try{
 
-    await fetch(
+    const res = await fetch(
       WORLD_SERVER + "/v1/flight/arrival",
       {
         method:"POST",
@@ -80,6 +106,12 @@ async function ACS_sendArrival(flightId){
         body: JSON.stringify({ flight_id: flightId })
       }
     );
+
+    if(!res.ok){
+      const t = await res.text().catch(()=>"(no body)");
+      console.warn("🌍 WORLD arrival NOT OK", res.status, t, { flight_id: flightId });
+      return;
+    }
 
     ACTIVE_FLIGHTS.delete(flightId);
 
