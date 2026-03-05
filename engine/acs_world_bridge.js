@@ -202,10 +202,6 @@ window.addEventListener("ACS_FLIGHT_ARRIVAL", function(e){
     arrAbsMin: d.arrAbsMin
   });
 
-  setTimeout(()=>{
-    ACS_sendArrival(d.flightId);
-  },60000);
-
 });
 
 console.log("🌍 ACS WORLD BRIDGE READY");
