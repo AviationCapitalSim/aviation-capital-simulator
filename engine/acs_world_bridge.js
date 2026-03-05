@@ -122,11 +122,11 @@ window.addEventListener(
 
     snapshot.forEach(flight=>{
 
-      if(
-        flight.state === "EN_ROUTE" &&
-        flight.flightId &&
-        !ACTIVE_FLIGHTS.has(flight.flightId)
-      ){
+     if(
+  (flight.state === "EN_ROUTE" || flight.status === "EN_ROUTE") &&
+  flight.flightId &&
+  !ACTIVE_FLIGHTS.has(flight.flightId)
+   )
 
         ACTIVE_FLIGHTS.add(flight.flightId);
 
