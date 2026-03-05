@@ -155,6 +155,33 @@ window.addEventListener("ACS_SKYTRACK_SNAPSHOT", function(e){
 });
 
 /* ============================================================
+   LISTEN C3 FLIGHT EVENT (RUNTIME ROUTE EVENT)
+   ============================================================ */
+
+window.addEventListener("ACS_C3_EVENT", function(e){
+
+  const d = e.detail;
+
+  if(!d || !d.flightId) return;
+
+  if(ACTIVE_FLIGHTS.has(d.flightId)) return;
+
+  ACTIVE_FLIGHTS.add(d.flightId);
+
+  ACS_sendDeparture({
+    flightId: d.flightId,
+    origin: d.origin,
+    destination: d.destination,
+    lat: null,
+    lng: null,
+    speed: 0,
+    depAbsMin: d.depAbsMin,
+    arrAbsMin: d.arrAbsMin
+  });
+
+});
+
+/* ============================================================
    LISTEN ARRIVALS
    ============================================================ */
 
