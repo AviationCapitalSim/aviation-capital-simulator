@@ -1,8 +1,5 @@
 /* ============================================================
    🌍 ACS WORLD BRIDGE — SKYTRACK → WORLD SERVER
-   ------------------------------------------------------------
-   Connects local SkyTrack runtime with global ACS world server
-   Server: Railway
    ============================================================ */
 
 console.log("🌍 ACS WORLD BRIDGE LOADED");
@@ -33,29 +30,18 @@ async function ACS_sendDeparture(flight){
       aircraft_type:
         flight.aircraftType || null,
 
-      origin:
-        flight.origin,
+      origin: flight.origin,
+      destination: flight.destination,
 
-      destination:
-        flight.destination,
+      latitude: Number(flight.lat) || null,
+      longitude: Number(flight.lng) || null,
 
-      latitude:
-        Number(flight.lat) || null,
+      speed: Number(flight.speed) || null,
 
-      longitude:
-        Number(flight.lng) || null,
-
-      speed:
-        Number(flight.speed) || null,
-
-      dep_time:
-        Number(flight.depAbsMin) || null,
-
-      arr_time:
-        Number(flight.arrAbsMin) || null,
+      dep_time: Number(flight.depAbsMin) || null,
+      arr_time: Number(flight.arrAbsMin) || null,
 
       status: 1
-
     };
 
     await fetch(
@@ -63,7 +49,7 @@ async function ACS_sendDeparture(flight){
       {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify(body)
+        body: JSON.stringify(body)
       }
     );
 
@@ -91,7 +77,7 @@ async function ACS_sendArrival(flightId){
       {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ flight_id:flightId })
+        body: JSON.stringify({ flight_id: flightId })
       }
     );
 
@@ -112,48 +98,42 @@ async function ACS_sendArrival(flightId){
    LISTEN SKYTRACK SNAPSHOT
    ============================================================ */
 
-window.addEventListener(
-  "ACS_SKYTRACK_SNAPSHOT",
-  function(e){
+window.addEventListener("ACS_SKYTRACK_SNAPSHOT", function(e){
 
-    const snapshot = e.detail || [];
+  const snapshot = e.detail || [];
 
-    if(!Array.isArray(snapshot)) return;
+  if(!Array.isArray(snapshot)) return;
 
-    snapshot.forEach(flight=>{
+  snapshot.forEach(flight => {
 
-     if(
-  (flight.state === "EN_ROUTE" || flight.status === "EN_ROUTE") &&
-  flight.flightId &&
-  !ACTIVE_FLIGHTS.has(flight.flightId)
-   )
+    if(
+      (flight.state === "EN_ROUTE" || flight.status === "EN_ROUTE") &&
+      flight.flightId &&
+      !ACTIVE_FLIGHTS.has(flight.flightId)
+    ){
 
-        ACTIVE_FLIGHTS.add(flight.flightId);
+      ACTIVE_FLIGHTS.add(flight.flightId);
 
-        ACS_sendDeparture(flight);
+      ACS_sendDeparture(flight);
 
-      }
+    }
 
-    });
+  });
 
-  }
-);
+});
 
 /* ============================================================
    LISTEN ARRIVALS
    ============================================================ */
 
-window.addEventListener(
-  "ACS_FLIGHT_ARRIVAL",
-  function(e){
+window.addEventListener("ACS_FLIGHT_ARRIVAL", function(e){
 
-    const d = e.detail;
+  const d = e.detail;
 
-    if(!d || !d.flightId) return;
+  if(!d || !d.flightId) return;
 
-    ACS_sendArrival(d.flightId);
+  ACS_sendArrival(d.flightId);
 
-  }
-);
+});
 
 console.log("🌍 ACS WORLD BRIDGE READY");
