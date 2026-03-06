@@ -5,7 +5,8 @@
 
 (function(){
 
-const WORLD_SERVER = "https://TU_SERVER.up.railway.app/v1/flights";
+const WORLD_SERVER =
+"https://acs-world-server-production.up.railway.app/v1/flights";
 
 async function ACS_fetchWorldFlights(){
 
