@@ -32,12 +32,12 @@ const ACS_TIME = {
 };
 
 /* === LOAD OR INIT CYCLE === */
-let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle") || "null");
+let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
 
-if (!ACS_CYCLE) {
+if (!ACS_CYCLE.realStartDate) {
   ACS_CYCLE = {
     realStartDate: null,
-    status: "OFF"
+    status: "OFF",
   };
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
 }
@@ -47,34 +47,21 @@ if (!ACS_CYCLE) {
    ============================================================ */
 
 function computeSimTime() {
-
-  // Si el simulador está apagado
   if (ACS_CYCLE.status !== "ON") return ACS_TIME.currentTime;
 
-  // Validar realStartDate
-  if (!ACS_CYCLE.realStartDate) {
-    console.warn("ACS TIME: realStartDate missing");
-    return ACS_TIME.currentTime;
-  }
+  const now = new Date();
+  const realStart = new Date(ACS_CYCLE.realStartDate);
 
-  const now = Date.now();
-  const realStart = Number(ACS_CYCLE.realStartDate);
+  // total real seconds passed
+  const secPassed = Math.floor((now - realStart) / 1000);
 
-  // Protección contra valores corruptos
-  if (isNaN(realStart)) {
-    console.error("ACS TIME: invalid realStartDate");
-    return ACS_TIME.currentTime;
-  }
+  // convert to game minutes
+  const simMinutes = secPassed;
 
-  // segundos reales
-  const realSeconds = Math.floor((now - realStart) / 1000);
+  // compute: SIM_START + simMinutes
+  const sim = new Date(SIM_START.getTime() + simMinutes * 60000);
 
-  // escala del simulador
-  const simMinutes = realSeconds;
-
-  const simTime = new Date(SIM_START.getTime() + simMinutes * 60000);
-
-  return simTime;
+  return sim;
 }
 
 /* ============================================================
@@ -85,7 +72,7 @@ function startACSTime() {
   stopACSTime();
 
   if (!ACS_CYCLE.realStartDate) {
-    ACS_CYCLE.realStartDate = Date.now();
+    ACS_CYCLE.realStartDate = new Date().toISOString();
     localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
   }
 
@@ -102,7 +89,7 @@ function startACSTime() {
        ============================================================ */
     try {
       localStorage.setItem("ACS_LAST_REAL_TIME", Date.now());
-      localStorage.setItem("ACS_LAST_SIM_TIME", ACS_TIME.currentTime.getTime());
+      localStorage.setItem("ACS_LAST_SIM_TIME", ACS_TIME.currentTime);
     } catch (e) {
       console.warn("⚠️ ACS TIME SNAPSHOT FAILED:", e);
     }
@@ -163,7 +150,7 @@ function toggleSimState() {
     const simMinutes = Math.floor((frozen - SIM_START) / 60000);
     const newRealStart = new Date(now - simMinutes * 1000);
 
-    ACS_CYCLE.realStartDate = newRealStart.getTime();
+    ACS_CYCLE.realStartDate = newRealStart.toISOString();
     ACS_CYCLE.status = "ON";
     localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
 
