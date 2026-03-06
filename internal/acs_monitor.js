@@ -408,6 +408,12 @@ document.getElementById("btnStartTime")?.addEventListener("click", () => {
 
   localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
 
+  // 🔴 FORZAR SINCRONIZACIÓN DEL ENGINE EN ESTA MISMA TAB
+  window.dispatchEvent(new StorageEvent("storage", {
+    key: "ACS_Cycle",
+    newValue: JSON.stringify(cycle)
+  }));
+
   updateTimeControlStatus();
 });
 
@@ -429,6 +435,12 @@ document.getElementById("btnStopTime")?.addEventListener("click", () => {
   cycle.status = "OFF";
 
   localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
+
+  // 🔴 FORZAR SINCRONIZACIÓN DEL ENGINE EN ESTA MISMA TAB
+  window.dispatchEvent(new StorageEvent("storage", {
+    key: "ACS_Cycle",
+    newValue: JSON.stringify(cycle)
+  }));
 
   updateTimeControlStatus();
 });
