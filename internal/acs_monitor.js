@@ -423,7 +423,12 @@ document.getElementById("btnStartTime")?.addEventListener("click", () => {
 
   localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
 
-  // ✅ Forzar arranque real del engine en esta misma página
+  // 🔴 sincronizar con engine interno
+  if (typeof ACS_CYCLE !== "undefined") {
+    ACS_CYCLE.status = "ON";
+    ACS_CYCLE.realStartDate = cycle.realStartDate;
+  }
+
   if (typeof startACSTime === "function") {
     startACSTime();
   }
@@ -437,21 +442,20 @@ document.getElementById("btnStartTime")?.addEventListener("click", () => {
    
 document.getElementById("btnStopTime")?.addEventListener("click", () => {
 
-  // ✅ Congelar usando la fuente real visible del engine
-  try {
-    if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime instanceof Date) {
-      localStorage.setItem("acs_frozen_time", ACS_TIME.currentTime.toISOString());
-      localStorage.setItem("ACS_LAST_SIM_TIME", ACS_TIME.currentTime.getTime());
-    }
-  } catch (e) {
-    console.warn("STOP freeze snapshot failed:", e);
+  if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime instanceof Date) {
+    localStorage.setItem("acs_frozen_time", ACS_TIME.currentTime.toISOString());
   }
 
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
   cycle.status = "OFF";
+
   localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
 
-  // ✅ Forzar parada real del engine en esta misma página
+  // 🔴 actualizar también el ciclo interno del engine
+  if (typeof ACS_CYCLE !== "undefined") {
+    ACS_CYCLE.status = "OFF";
+  }
+
   if (typeof stopACSTime === "function") {
     stopACSTime();
   }
