@@ -1,5 +1,5 @@
 /* ============================================================
-   ⏳ ACS TIME RECOVERY ENGINE — Ver 12 (DIAGNOSTIC MODE)
+   ⏳ ACS TIME RECOVERY ENGINE — V 12 (DIAGNOSTIC MODE)
    Project: Aviation Capital Simulator (ACS)
    Purpose:
    - Detect offline real time
@@ -25,8 +25,8 @@
 
   // Parse safely
   const lastReal = parseInt(rawLastReal || "0");
-  const lastSim  = parseInt(rawLastSim || "0", 10);
-
+  const lastSim  = Date.parse(rawLastSim || "0");
+   
   if (!lastReal || !lastSim || isNaN(lastSim)) {
 
   console.warn("🟠 TIME DATA CORRUPTED — Resetting anchors");
