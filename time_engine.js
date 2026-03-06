@@ -14,6 +14,44 @@ const SIM_START = new Date("1940-01-01T00:00:00Z");
 const SIM_END = new Date("2026-01-01T00:00:00Z"); // end exactly at 31 DEC 2025 23:59 UTC
 
 /* ============================================================
+   🌍 LOAD GLOBAL WORLD STATE FROM SERVER
+   ============================================================ */
+
+async function loadWorldState() {
+
+  try {
+
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/world"
+    );
+
+    const world = await res.json();
+
+    console.log("🌍 ACS WORLD LOADED:", world);
+
+    if (world.status === "OFF") {
+
+      ACS_CYCLE.status = "OFF";
+      ACS_TIME.currentTime = new Date(world.frozen_sim_time);
+
+    }
+
+    if (world.status === "ON") {
+
+      ACS_CYCLE.status = "ON";
+      ACS_CYCLE.realStartDate = world.real_start;
+
+    }
+
+  } catch (err) {
+
+    console.warn("⚠️ WORLD LOAD FAILED — fallback local", err);
+
+  }
+
+}
+
+/* ============================================================
    🟧 A6 — GAME MINUTE NORMALIZATION (GLOBAL)
    - Define ACS_TIME.minute oficialmente
    - Minutos absolutos desde SIM_START
@@ -362,26 +400,33 @@ function economicWatcher() {
    === INITIALIZATION (EVERY PAGE) =============================
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+
+  // 🌍 Load world from server
+  await loadWorldState();
+
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
 
-  ACS_CYCLE.status = cycle.status || "OFF";
-  ACS_CYCLE.realStartDate = cycle.realStartDate || null;
+  ACS_CYCLE.status = cycle.status || ACS_CYCLE.status || "OFF";
+  ACS_CYCLE.realStartDate = cycle.realStartDate || ACS_CYCLE.realStartDate || null;
 
   if (ACS_CYCLE.status === "ON") {
     ACS_TIME.currentTime = computeSimTime();
     startACSTime();
   } else {
+
     const frozen = localStorage.getItem("acs_frozen_time");
+
     ACS_TIME.currentTime = frozen
       ? new Date(frozen)
-      : new Date(SIM_START);
+      : ACS_TIME.currentTime;
 
     stopACSTime();
     updateClockDisplay();
   }
 
   economicWatcher();
+
 });
 
 /* ============================================================
