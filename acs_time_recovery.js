@@ -126,30 +126,15 @@ function applyRecoveryWhenReady() {
     console.log("NEW SIM TIME :", newSimTime.toLocaleString());
 
 
-   // Apply recovered simulation time
+ // Apply recovered simulation time
 window.ACS_TIME.currentTime = newSimTime;
 
-// 🔵 Adjust engine anchor so the clock continues correctly
-const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-
-if (cycle.realStartDate) {
-
-  const nowReal = Date.now();
-
-  const simMinutesFromStart =
-    (newSimTime.getTime() - new Date("1940-01-01T00:00:00Z").getTime()) / 60000;
-
-  const newRealStart = new Date(nowReal - simMinutesFromStart * 1000);
-
-  cycle.realStartDate = newRealStart.toISOString();
-
-  localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
-
-}
-
-    // Persist
-    localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
-
+// Persist recovered simulated time only
+     
+// ⛔ DO NOT rewrite ACS_Cycle.realStartDate here.
+// The Time Engine remains the single authority of the world anchor.
+localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
+     
     // Prevent double execution
     window.ACS_TIME_RECOVERY.applied = true;
 
