@@ -1,11 +1,14 @@
 /* ============================================================
    ⏳ ACS TIME RECOVERY ENGINE — V13 (SAFE WAIT MODE)
    Project: Aviation Capital Simulator (ACS)
-   Purpose:
+
+   PURPOSE
    - Detect offline real time
    - Calculate lost simulated time
-   - Wait safely for ACS_TIME
-   - Multiplatform safe (iOS / Android / PC / Mac)
+   - Wait safely for ACS_TIME initialization
+   - Apply recovery only once
+   - Cross-platform safe (Chrome / Safari / iOS / Android)
+
    ============================================================ */
 
 (function () {
@@ -17,51 +20,65 @@
   const rawLastReal = localStorage.getItem("ACS_LAST_REAL_TIME");
   const rawLastSim  = localStorage.getItem("ACS_LAST_SIM_TIME");
 
-  // TRUE FIRST RUN = both missing
+  /* ============================================================
+     FIRST RUN
+     ============================================================ */
+
   if (!rawLastReal && !rawLastSim) {
+
     console.log("🟡 FIRST RUN — No previous time data found");
+
     localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
+    localStorage.setItem("ACS_LAST_SIM_TIME", nowReal);
+
     return;
   }
 
-  // Parse safely
+  /* ============================================================
+     PARSE STORED VALUES
+     ============================================================ */
+
   const lastReal = parseInt(rawLastReal || "0", 10);
   const lastSim  = parseInt(rawLastSim || "0", 10);
 
   if (!lastReal || !lastSim || isNaN(lastSim)) {
 
-  console.warn("🟠 TIME DATA CORRUPTED — Resetting anchors");
+    console.warn("🟠 TIME DATA CORRUPTED — Resetting anchors");
 
-  localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
-  localStorage.setItem("ACS_LAST_SIM_TIME", nowReal);
+    localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
+    localStorage.setItem("ACS_LAST_SIM_TIME", nowReal);
 
-  window.ACS_TIME_RECOVERY = {
-    offlineMs: 0,
-    offlineSeconds: 0,
-    offlineSimMinutes: 0,
-    lastReal: nowReal,
-    lastSim: nowReal,
-    applied: true
-  };
+    window.ACS_TIME_RECOVERY = {
+      offlineMs: 0,
+      offlineSeconds: 0,
+      offlineSimMinutes: 0,
+      lastReal: nowReal,
+      lastSim: nowReal,
+      applied: true
+    };
 
-}
+    return;
+  }
+
+  /* ============================================================
+     OFFLINE TIME CALCULATION
+     ============================================================ */
 
   const offlineMs = nowReal - lastReal;
 
   if (offlineMs < 30000) {
+
     console.log("🟢 No significant offline time detected");
+
     return;
   }
 
-  // Convert offline real time to seconds
   const offlineSeconds = offlineMs / 1000;
 
-  // Same speed as time_engine
   const simSpeed = window.SIM_SPEED || 1;
 
   const offlineSimMinutes = offlineSeconds * simSpeed;
 
-  // Format human readable time
   const offlineMinutes = Math.floor(offlineSeconds / 60);
   const offlineHours   = Math.floor(offlineMinutes / 60);
   const offlineDays    = Math.floor(offlineHours / 24);
@@ -71,136 +88,110 @@
   console.log("LAST CLOSE REAL:", new Date(lastReal).toLocaleString());
   console.log("LAST CLOSE SIM :", new Date(lastSim).toLocaleString());
   console.log("NOW REAL       :", new Date(nowReal).toLocaleString());
+
   console.log(
     "OFFLINE REAL   :",
     offlineDays + " days " +
     (offlineHours % 24) + " hours " +
     (offlineMinutes % 60) + " minutes"
   );
-  console.log("SIM SPEED      :", simSpeed, " sim minutes / real second");
+
+  console.log("SIM SPEED      :", simSpeed, "sim minutes / real second");
   console.log("SIM MINUTES LOST:", Math.floor(offlineSimMinutes));
   console.log("==========================================");
 
-  // Save recovery info
+  /* ============================================================
+     STORE RECOVERY DATA
+     ============================================================ */
+
   window.ACS_TIME_RECOVERY = {
+
     offlineMs,
     offlineSeconds,
     offlineSimMinutes,
     lastReal,
     lastSim,
+
     applied: false
+
   };
 
   /* ============================================================
-     APPLY RECOVERY SAFELY WHEN ACS_TIME EXISTS
+     WAIT FOR TIME ENGINE
      ============================================================ */
+
   function ACS_applyRecoveryWhenReady() {
 
-  if (!window.ACS_TIME || !window.ACS_TIME.currentTime) {
+    if (!window.ACS_TIME || !window.ACS_TIME.currentTime) {
 
-    console.warn("⏳ Waiting for ACS_TIME initialization...");
+      console.warn("⏳ Waiting for ACS_TIME initialization...");
 
-    setTimeout(ACS_applyRecoveryWhenReady, 300);
+      setTimeout(ACS_applyRecoveryWhenReady, 300);
 
-    return;
-  }
-
-  if (!window.ACS_TIME_RECOVERY || window.ACS_TIME_RECOVERY.applied) {
-    return;
-  }
-
-  const rec = window.ACS_TIME_RECOVERY;
-
-  try {
-
-    const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
-
-    const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
-
-    const newSimTime = new Date(currentSim + recoveredMs);
-
-    console.log("🟦 APPLYING OFFLINE SIM RECOVERY");
-
-    console.log("OLD SIM TIME :", new Date(currentSim).toLocaleString());
-
-    console.log("RECOVERED +  :", Math.floor(rec.offlineSimMinutes), "sim minutes");
-
-    console.log("NEW SIM TIME :", newSimTime.toLocaleString());
-
-    window.ACS_TIME.currentTime = newSimTime;
-
-    localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
-
-    localStorage.setItem("acs_frozen_time", newSimTime.toISOString());
-
-    window.ACS_TIME_RECOVERY.applied = true;
-
-    if (typeof updateClockDisplay === "function") {
-      updateClockDisplay();
+      return;
     }
 
-    if (typeof notifyTimeListeners === "function") {
-      notifyTimeListeners();
+    if (!window.ACS_TIME_RECOVERY || window.ACS_TIME_RECOVERY.applied) {
+
+      return;
     }
 
-    console.log("✅ OFFLINE RECOVERY APPLIED");
+    const rec = window.ACS_TIME_RECOVERY;
 
-  } catch (e) {
+    try {
 
-    console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
+      const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
+
+      const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
+
+      const newSimTime = new Date(currentSim + recoveredMs);
+
+      console.log("🟦 APPLYING OFFLINE SIM RECOVERY");
+
+      console.log("OLD SIM TIME :", new Date(currentSim).toLocaleString());
+
+      console.log(
+        "RECOVERED +  :",
+        Math.floor(rec.offlineSimMinutes),
+        "sim minutes"
+      );
+
+      console.log("NEW SIM TIME :", newSimTime.toLocaleString());
+
+      window.ACS_TIME.currentTime = newSimTime;
+
+      localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
+
+      localStorage.setItem("acs_frozen_time", newSimTime.toISOString());
+
+      window.ACS_TIME_RECOVERY.applied = true;
+
+      if (typeof updateClockDisplay === "function") {
+
+        updateClockDisplay();
+
+      }
+
+      if (typeof notifyTimeListeners === "function") {
+
+        notifyTimeListeners();
+
+      }
+
+      console.log("✅ OFFLINE RECOVERY APPLIED");
+
+    } catch (e) {
+
+      console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
+
+    }
 
   }
 
-}
-
-  }
+  /* ============================================================
+     START WATCHER
+     ============================================================ */
 
   ACS_applyRecoveryWhenReady();
 
 })();
-   
-/* ============================================================
-   🟧 A3 — APPLY OFFLINE TIME RECOVERY (SAFE MODE)
-   - Applies recovered sim minutes to ACS_TIME
-   - One time only per session
-   ============================================================ */
-
-if (
-  window.ACS_TIME_RECOVERY &&
-  !window.ACS_TIME_RECOVERY.applied &&
-  window.ACS_TIME &&
-  window.ACS_TIME.currentTime
-) {
-
-  const rec = window.ACS_TIME_RECOVERY;
-
-  try {
-
-    const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
-
-    const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
-
-    const newSimTime = new Date(currentSim + recoveredMs);
-
-    console.log("🟦 APPLYING OFFLINE SIM RECOVERY");
-    console.log("OLD SIM TIME :", new Date(currentSim).toLocaleString());
-    console.log("RECOVERED +  :", Math.floor(rec.offlineSimMinutes), "sim minutes");
-    console.log("NEW SIM TIME :", newSimTime.toLocaleString());
-
-    window.ACS_TIME.currentTime = newSimTime;
-
-    // Save immediately
-    localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
-
-    // Mark as applied (avoid double recovery)
-    window.ACS_TIME_RECOVERY.applied = true;
-
-  } catch (e) {
-    console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
-  }
-
-} else if (window.ACS_TIME_RECOVERY && !window.ACS_TIME) {
-
-  console.warn("⚠️ ACS_TIME not ready yet — offline recovery deferred");
-
-}
