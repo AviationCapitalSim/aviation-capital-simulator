@@ -89,7 +89,7 @@ function startACSTime() {
        ============================================================ */
     try {
       localStorage.setItem("ACS_LAST_REAL_TIME", Date.now());
-      localStorage.setItem("ACS_LAST_SIM_TIME", ACS_TIME.currentTime);
+      localStorage.setItem("ACS_LAST_SIM_TIME", ACS_TIME.currentTime.getTime());
     } catch (e) {
       console.warn("⚠️ ACS TIME SNAPSHOT FAILED:", e);
     }
