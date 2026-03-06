@@ -163,7 +163,7 @@ function toggleSimState() {
     const simMinutes = Math.floor((frozen - SIM_START) / 60000);
     const newRealStart = new Date(now - simMinutes * 1000);
 
-    ACS_CYCLE.realStartDate = newRealStart.toISOString();
+    ACS_CYCLE.realStartDate = newRealStart.getTime();
     ACS_CYCLE.status = "ON";
     localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
 
