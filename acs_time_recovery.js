@@ -152,6 +152,12 @@
   }
 
 }
+
+  }
+
+  ACS_applyRecoveryWhenReady();
+
+})();
    
 /* ============================================================
    🟧 A3 — APPLY OFFLINE TIME RECOVERY (SAFE MODE)
