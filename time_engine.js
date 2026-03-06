@@ -32,12 +32,12 @@ const ACS_TIME = {
 };
 
 /* === LOAD OR INIT CYCLE === */
-let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle") || "null");
 
-if (!ACS_CYCLE.realStartDate) {
+if (!ACS_CYCLE) {
   ACS_CYCLE = {
     realStartDate: null,
-    status: "OFF",
+    status: "OFF"
   };
   localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
 }
@@ -58,7 +58,7 @@ function computeSimTime() {
   }
 
   const now = Date.now();
-  const realStart = new Date(ACS_CYCLE.realStartDate).getTime();
+  const realStart = Number(ACS_CYCLE.realStartDate);
 
   // Protección contra valores corruptos
   if (isNaN(realStart)) {
@@ -85,7 +85,7 @@ function startACSTime() {
   stopACSTime();
 
   if (!ACS_CYCLE.realStartDate) {
-    ACS_CYCLE.realStartDate = new Date().toISOString();
+    ACS_CYCLE.realStartDate = Date.now();
     localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
   }
 
