@@ -93,46 +93,22 @@
 
 /* ============================================================
    🟧 A3 — APPLY OFFLINE TIME RECOVERY (SAFE MODE)
-   - Applies recovered sim minutes to ACS_TIME
-   - One time only per session
+   - Waits for ACS_TIME
+   - Applies recovered sim minutes once
    ============================================================ */
 
 function applyRecoveryWhenReady() {
 
+  // Wait until the Time Engine is ready
   if (!window.ACS_TIME || !window.ACS_TIME.currentTime) {
     setTimeout(applyRecoveryWhenReady, 200);
     return;
   }
 
+  // Nothing to apply
   if (!window.ACS_TIME_RECOVERY || window.ACS_TIME_RECOVERY.applied) {
     return;
   }
-
-  const rec = window.ACS_TIME_RECOVERY;
-
-  try {
-
-    const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
-
-    const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
-
-    const newSimTime = new Date(currentSim + recoveredMs);
-
-    console.log("🟦 APPLYING OFFLINE SIM RECOVERY");
-
-    window.ACS_TIME.currentTime = newSimTime;
-
-    localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
-
-    window.ACS_TIME_RECOVERY.applied = true;
-
-  } catch (e) {
-    console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
-  }
-
-}
-
-applyRecoveryWhenReady();
 
   const rec = window.ACS_TIME_RECOVERY;
 
@@ -149,20 +125,22 @@ applyRecoveryWhenReady();
     console.log("RECOVERED +  :", Math.floor(rec.offlineSimMinutes), "sim minutes");
     console.log("NEW SIM TIME :", newSimTime.toLocaleString());
 
+    // Apply recovered simulation time
     window.ACS_TIME.currentTime = newSimTime;
 
-    // Save immediately
+    // Persist
     localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
 
-    // Mark as applied (avoid double recovery)
+    // Prevent double execution
     window.ACS_TIME_RECOVERY.applied = true;
 
   } catch (e) {
+
     console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
+
   }
 
-} else if (window.ACS_TIME_RECOVERY && !window.ACS_TIME) {
-
-  console.warn("⚠️ ACS_TIME not ready yet — offline recovery deferred");
-
 }
+
+// Start watcher
+applyRecoveryWhenReady();
