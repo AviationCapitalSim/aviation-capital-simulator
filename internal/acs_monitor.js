@@ -377,19 +377,34 @@ function updateTimeControlStatus() {
   if (!out) return;
 
   const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-
   const status = cycle.status || "OFF";
   const frozen = localStorage.getItem("acs_frozen_time");
-  const simTime = localStorage.getItem("ACS_LAST_SIM_TIME");
+  const simTimeRaw = localStorage.getItem("ACS_LAST_SIM_TIME");
+
+  let simTimeText = "—";
+  if (simTimeRaw !== null && simTimeRaw !== "") {
+    const simTs = Number(simTimeRaw);
+    if (!Number.isNaN(simTs)) {
+      simTimeText = new Date(simTs).toUTCString();
+    } else {
+      simTimeText = String(simTimeRaw);
+    }
+  }
+
+  let frozenText = "—";
+  if (frozen) {
+    const f = new Date(frozen);
+    frozenText = !isNaN(f) ? f.toUTCString() : frozen;
+  }
 
   const statusColor = status === "ON" ? "#00ff80" : "#ff4040";
 
   out.innerHTML =
-    "ENGINE STATUS: <span style='color:" + statusColor + "; font-weight:600'>" 
-    + status + 
+    "ENGINE STATUS: <span style='color:" + statusColor + "; font-weight:600'>" +
+    status +
     "</span>\n\n" +
-    "Frozen Time: " + (frozen || "—") + "\n" +
-    "Last Sim Time: " + (simTime || "—");
+    "Frozen Time: " + frozenText + "\n" +
+    "Last Sim Time: " + simTimeText;
 }
 
 /* ================================
@@ -408,43 +423,42 @@ document.getElementById("btnStartTime")?.addEventListener("click", () => {
 
   localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
 
-  // 🔴 FORZAR SINCRONIZACIÓN DEL ENGINE EN ESTA MISMA TAB
-  window.dispatchEvent(new StorageEvent("storage", {
-    key: "ACS_Cycle",
-    newValue: JSON.stringify(cycle)
-  }));
+  // ✅ Forzar arranque real del engine en esta misma página
+  if (typeof startACSTime === "function") {
+    startACSTime();
+  }
 
   updateTimeControlStatus();
 });
-
+   
 /* ================================
    ⏸ STOP (FREEZE CORRECTO)
 ================================ */
    
 document.getElementById("btnStopTime")?.addEventListener("click", () => {
 
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-
-  if (typeof window.ACS_TIME !== "undefined" && window.ACS_TIME.currentTime instanceof Date) {
-    localStorage.setItem(
-      "acs_frozen_time",
-      window.ACS_TIME.currentTime.toISOString()
-    );
+  // ✅ Congelar usando la fuente real visible del engine
+  try {
+    if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime instanceof Date) {
+      localStorage.setItem("acs_frozen_time", ACS_TIME.currentTime.toISOString());
+      localStorage.setItem("ACS_LAST_SIM_TIME", ACS_TIME.currentTime.getTime());
+    }
+  } catch (e) {
+    console.warn("STOP freeze snapshot failed:", e);
   }
 
+  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
   cycle.status = "OFF";
-
   localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
 
-  // 🔴 FORZAR SINCRONIZACIÓN DEL ENGINE EN ESTA MISMA TAB
-  window.dispatchEvent(new StorageEvent("storage", {
-    key: "ACS_Cycle",
-    newValue: JSON.stringify(cycle)
-  }));
+  // ✅ Forzar parada real del engine en esta misma página
+  if (typeof stopACSTime === "function") {
+    stopACSTime();
+  }
 
   updateTimeControlStatus();
 });
-
+   
 /* ================================
    ♻ RESET CYCLE (TIME ENGINE SAFE)
 ================================ */
