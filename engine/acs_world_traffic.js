@@ -92,47 +92,6 @@ function ACS_convertWorldFlight(f){
 }
 
 /* ============================================================
-   ✈️ CONVERT WORLD FLIGHT → SKYTRACK SNAPSHOT ITEM
-   ============================================================ */
-
-function ACS_convertWorldFlight(f){
-
-  const now = window.ACS_TIME?.absMin;
-
-  if(now == null) return null;
-
-  const dep = Number(f.dep_time);
-  const arr = Number(f.arr_time);
-
-  if(!Number.isFinite(dep) || !Number.isFinite(arr)) return null;
-
-  if(arr <= dep) return null;
-
-  let progress = (now - dep) / (arr - dep);
-
-  progress = Math.max(0, Math.min(1, progress));
-
-  return {
-
-    aircraftId: "WORLD_"+f.flight_id,
-
-    flightNumber: f.flight_number || "WORLD",
-
-    originICAO: f.origin,
-
-    destinationICAO: f.destination,
-
-    state: progress >= 1 ? "GROUND" : "EN_ROUTE",
-
-    position: {
-      progress: progress
-    }
-
-  };
-
-}
-
-/* ============================================================
    🌍 BUILD WORLD SNAPSHOT
    ============================================================ */
 
