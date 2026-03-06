@@ -24,8 +24,8 @@
   }
 
   // Parse safely
-  const lastReal = parseInt(rawLastReal || "0");
-  const lastSim  = Date.parse(rawLastSim || "0");
+const lastReal = parseInt(rawLastReal || "0");
+const lastSim  = parseInt(rawLastSim || "0");
    
   if (!lastReal || !lastSim || isNaN(lastSim)) {
 
