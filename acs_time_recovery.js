@@ -96,60 +96,63 @@
      ============================================================ */
   function ACS_applyRecoveryWhenReady() {
 
-    if (
-      !window.ACS_TIME ||
-      !window.ACS_TIME.currentTime
-    ) {
-      setTimeout(ACS_applyRecoveryWhenReady, 200);
-      return;
-    }
+  if (!window.ACS_TIME || !window.ACS_TIME.currentTime) {
 
-    if (
-      !window.ACS_TIME_RECOVERY ||
-      window.ACS_TIME_RECOVERY.applied
-    ) {
-      return;
-    }
+    console.warn("⏳ Waiting for ACS_TIME initialization...");
 
-    const rec = window.ACS_TIME_RECOVERY;
+    setTimeout(ACS_applyRecoveryWhenReady, 300);
 
-    try {
-
-      const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
-      const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
-      const newSimTime = new Date(currentSim + recoveredMs);
-
-      console.log("🟦 APPLYING OFFLINE SIM RECOVERY");
-      console.log("OLD SIM TIME :", new Date(currentSim).toLocaleString());
-      console.log("RECOVERED +  :", Math.floor(rec.offlineSimMinutes), "sim minutes");
-      console.log("NEW SIM TIME :", newSimTime.toLocaleString());
-
-      window.ACS_TIME.currentTime = newSimTime;
-
-      localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
-      localStorage.setItem("acs_frozen_time", newSimTime.toISOString());
-
-      window.ACS_TIME_RECOVERY.applied = true;
-
-      if (typeof updateClockDisplay === "function") {
-        updateClockDisplay();
-      }
-
-      if (typeof notifyTimeListeners === "function") {
-        notifyTimeListeners();
-      }
-
-      console.log("✅ OFFLINE RECOVERY APPLIED");
-
-    } catch (e) {
-      console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
-    }
+    return;
   }
 
-  ACS_applyRecoveryWhenReady();
+  if (!window.ACS_TIME_RECOVERY || window.ACS_TIME_RECOVERY.applied) {
+    return;
+  }
 
-})();
+  const rec = window.ACS_TIME_RECOVERY;
 
+  try {
+
+    const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
+
+    const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
+
+    const newSimTime = new Date(currentSim + recoveredMs);
+
+    console.log("🟦 APPLYING OFFLINE SIM RECOVERY");
+
+    console.log("OLD SIM TIME :", new Date(currentSim).toLocaleString());
+
+    console.log("RECOVERED +  :", Math.floor(rec.offlineSimMinutes), "sim minutes");
+
+    console.log("NEW SIM TIME :", newSimTime.toLocaleString());
+
+    window.ACS_TIME.currentTime = newSimTime;
+
+    localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
+
+    localStorage.setItem("acs_frozen_time", newSimTime.toISOString());
+
+    window.ACS_TIME_RECOVERY.applied = true;
+
+    if (typeof updateClockDisplay === "function") {
+      updateClockDisplay();
+    }
+
+    if (typeof notifyTimeListeners === "function") {
+      notifyTimeListeners();
+    }
+
+    console.log("✅ OFFLINE RECOVERY APPLIED");
+
+  } catch (e) {
+
+    console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
+
+  }
+
+}
+   
 /* ============================================================
    🟧 A3 — APPLY OFFLINE TIME RECOVERY (SAFE MODE)
    - Applies recovered sim minutes to ACS_TIME
