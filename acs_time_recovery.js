@@ -97,12 +97,42 @@
    - One time only per session
    ============================================================ */
 
-if (
-  window.ACS_TIME_RECOVERY &&
-  !window.ACS_TIME_RECOVERY.applied &&
-  window.ACS_TIME &&
-  window.ACS_TIME.currentTime
-) {
+function applyRecoveryWhenReady() {
+
+  if (!window.ACS_TIME || !window.ACS_TIME.currentTime) {
+    setTimeout(applyRecoveryWhenReady, 200);
+    return;
+  }
+
+  if (!window.ACS_TIME_RECOVERY || window.ACS_TIME_RECOVERY.applied) {
+    return;
+  }
+
+  const rec = window.ACS_TIME_RECOVERY;
+
+  try {
+
+    const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
+
+    const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
+
+    const newSimTime = new Date(currentSim + recoveredMs);
+
+    console.log("🟦 APPLYING OFFLINE SIM RECOVERY");
+
+    window.ACS_TIME.currentTime = newSimTime;
+
+    localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
+
+    window.ACS_TIME_RECOVERY.applied = true;
+
+  } catch (e) {
+    console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
+  }
+
+}
+
+applyRecoveryWhenReady();
 
   const rec = window.ACS_TIME_RECOVERY;
 
