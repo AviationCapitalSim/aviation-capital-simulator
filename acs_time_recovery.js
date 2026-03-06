@@ -192,6 +192,14 @@
      START WATCHER
      ============================================================ */
 
-  ACS_applyRecoveryWhenReady();
+  window.addEventListener("load", function () {
+
+  setTimeout(function(){
+
+    ACS_applyRecoveryWhenReady();
+
+  }, 500);
+
+});
 
 })();
