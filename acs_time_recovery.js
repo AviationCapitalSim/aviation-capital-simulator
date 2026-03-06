@@ -1,5 +1,5 @@
 /* ============================================================
-   ⏳ ACS TIME RECOVERY ENGINE — V12 (DIAGNOSTIC MODE)
+   ⏳ ACS TIME RECOVERY ENGINE — Ver 12 (DIAGNOSTIC MODE)
    Project: Aviation Capital Simulator (ACS)
    Purpose:
    - Detect offline real time
