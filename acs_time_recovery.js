@@ -29,16 +29,17 @@ const lastSim  = parseInt(rawLastSim || "0");
    
   if (!lastReal || !lastSim || isNaN(lastSim)) {
 
-  console.warn("🟠 TIME DATA CORRUPTED — Resetting snapshots");
+  console.warn("🟠 TIME DATA CORRUPTED — Resetting anchors");
 
   localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
+  localStorage.setItem("ACS_LAST_SIM_TIME", nowReal);
 
   window.ACS_TIME_RECOVERY = {
     offlineMs: 0,
     offlineSeconds: 0,
     offlineSimMinutes: 0,
     lastReal: nowReal,
-    lastSim: 0,
+    lastSim: nowReal,
     applied: true
   };
 
@@ -124,16 +125,12 @@ function applyRecoveryWhenReady() {
     console.log("RECOVERED +  :", Math.floor(rec.offlineSimMinutes), "sim minutes");
     console.log("NEW SIM TIME :", newSimTime.toLocaleString());
 
+    // Apply recovered simulation time
+    window.ACS_TIME.currentTime = newSimTime;
 
- // Apply recovered simulation time
-window.ACS_TIME.currentTime = newSimTime;
+    // Persist
+    localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
 
-// Persist recovered simulated time only
-     
-// ⛔ DO NOT rewrite ACS_Cycle.realStartDate here.
-// The Time Engine remains the single authority of the world anchor.
-localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
-     
     // Prevent double execution
     window.ACS_TIME_RECOVERY.applied = true;
 
