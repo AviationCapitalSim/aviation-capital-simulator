@@ -47,21 +47,34 @@ if (!ACS_CYCLE.realStartDate) {
    ============================================================ */
 
 function computeSimTime() {
+
+  // Si el simulador está apagado
   if (ACS_CYCLE.status !== "ON") return ACS_TIME.currentTime;
 
-  const now = new Date();
-  const realStart = new Date(ACS_CYCLE.realStartDate);
+  // Validar realStartDate
+  if (!ACS_CYCLE.realStartDate) {
+    console.warn("ACS TIME: realStartDate missing");
+    return ACS_TIME.currentTime;
+  }
 
-  // total real seconds passed
-  const secPassed = Math.floor((now - realStart) / 1000);
+  const now = Date.now();
+  const realStart = new Date(ACS_CYCLE.realStartDate).getTime();
 
-  // convert to game minutes
-  const simMinutes = secPassed;
+  // Protección contra valores corruptos
+  if (isNaN(realStart)) {
+    console.error("ACS TIME: invalid realStartDate");
+    return ACS_TIME.currentTime;
+  }
 
-  // compute: SIM_START + simMinutes
-  const sim = new Date(SIM_START.getTime() + simMinutes * 60000);
+  // segundos reales
+  const realSeconds = Math.floor((now - realStart) / 1000);
 
-  return sim;
+  // escala del simulador
+  const simMinutes = realSeconds;
+
+  const simTime = new Date(SIM_START.getTime() + simMinutes * 60000);
+
+  return simTime;
 }
 
 /* ============================================================
