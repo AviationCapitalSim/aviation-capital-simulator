@@ -157,38 +157,35 @@ async function ACS_buildWorldSnapshot(){
 window.ACS_buildWorldSnapshot = ACS_buildWorldSnapshot;
 
 /* ============================================================
-   🔗 MERGE WORLD TRAFFIC WITH LOCAL SNAPSHOT
+   🟧 W3 — MERGE WORLD TRAFFIC WITH SKYTRACK SNAPSHOT
    ============================================================ */
 
 (function(){
 
-  const originalDispatch = window.dispatchEvent;
+window.addEventListener("ACS_SKYTRACK_SNAPSHOT", async function(e){
 
-  window.dispatchEvent = async function(event){
+  const localSnapshot = e.detail || [];
 
-    if(event?.type === "ACS_SKYTRACK_SNAPSHOT"){
+  try{
 
-      const localSnapshot = event.detail || [];
+    const worldFlights = await window.ACS_buildWorldSnapshot();
 
-      try{
+    const merged = [
+      ...localSnapshot,
+      ...worldFlights
+    ];
 
-        const worldSnapshot = await window.ACS_buildWorldSnapshot();
+    e.detail.length = 0;
+    merged.forEach(v => e.detail.push(v));
 
-        const merged = [
-          ...localSnapshot,
-          ...worldSnapshot
-        ];
+  }catch(err){
 
-        event.detail = merged;
+    console.warn("🌍 World traffic merge error:", err);
 
-      }catch(e){
-        console.warn("🌍 world merge error", e);
-      }
+  }
 
-    }
+});
 
-    return originalDispatch.call(this, event);
-
-  };
+console.log("🌍 W3 World Snapshot Merge Active");
 
 })();
