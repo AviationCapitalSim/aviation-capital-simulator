@@ -148,3 +148,45 @@ window.addEventListener("ACS_SKYTRACK_SNAPSHOT", async function(e){
 console.log("🌍 W3 World Snapshot Merge Active");
 
 })();
+
+/* ============================================================
+   🟧 W4 — WORLD SNAPSHOT INJECTOR
+   ============================================================ */
+
+(function(){
+
+let worldCache = [];
+
+/* actualizar cache cada 10s */
+
+async function updateWorldCache(){
+
+  try{
+
+    worldCache = await window.ACS_buildWorldSnapshot();
+
+  }catch(err){
+
+    console.warn("🌍 world cache error", err);
+
+  }
+
+}
+
+setInterval(updateWorldCache,10000);
+
+updateWorldCache();
+
+/* merge con snapshot antes de render */
+
+window.addEventListener("ACS_SKYTRACK_SNAPSHOT", function(e){
+
+  if(!Array.isArray(e.detail)) return;
+
+  worldCache.forEach(f => e.detail.push(f));
+
+});
+
+console.log("🌍 W4 World Traffic Injector active");
+
+})();
