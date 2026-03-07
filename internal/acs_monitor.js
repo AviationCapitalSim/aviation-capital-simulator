@@ -459,23 +459,42 @@ async function updateWorld(data){
    
 document.getElementById("btnStartTime")?.addEventListener("click", async () => {
 
-  const now = new Date().toISOString();
+  try {
 
-  await updateWorld({
-    status: "ON",
-    real_start: now
-  });
+    const res = await fetch("https://acs-world-server-production.up.railway.app/v1/world");
+    const world = await res.json();
 
-  if (typeof ACS_CYCLE !== "undefined") {
-    ACS_CYCLE.status = "ON";
-    ACS_CYCLE.realStartDate = now;
+    const simStart = new Date("1940-01-01T00:00:00Z");
+    const frozenSim = new Date(world.frozen_sim_time || "1940-01-01T00:00:00Z");
+    const now = Date.now();
+
+    // minutos simulados transcurridos desde 1940
+    const simMinutes = Math.floor((frozenSim.getTime() - simStart.getTime()) / 60000);
+
+    // 1 real second = 1 simulated minute
+    // por lo tanto real_start debe retroceder simMinutes segundos
+    const realStartMs = now - (simMinutes * 1000);
+    const realStartISO = new Date(realStartMs).toISOString();
+
+    await updateWorld({
+      status: "ON",
+      real_start: realStartISO
+    });
+
+    if (typeof ACS_CYCLE !== "undefined") {
+      ACS_CYCLE.status = "ON";
+      ACS_CYCLE.realStartDate = realStartISO;
+    }
+
+    if (typeof startACSTime === "function") {
+      startACSTime();
+    }
+
+    await updateTimeControlStatus();
+
+  } catch (err) {
+    console.error("START WORLD FAILED", err);
   }
-
-  if (typeof startACSTime === "function") {
-    startACSTime();
-  }
-
-  await updateTimeControlStatus();
 });
    
 /* ================================
