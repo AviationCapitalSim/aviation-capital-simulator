@@ -151,12 +151,8 @@ function computeSimTime() {
   // minutos simulados
   const simMinutes = secPassed;
 
-  // usar frozen time como base
-  const frozen = localStorage.getItem("acs_frozen_time");
-
-  const base = frozen
-    ? new Date(frozen).getTime()
-    : SIM_START.getTime();
+  // usar el tiempo actual cargado desde el servidor como base
+  const base = ACS_TIME.currentTime.getTime();
 
   const sim = new Date(base + simMinutes * 60000);
 
