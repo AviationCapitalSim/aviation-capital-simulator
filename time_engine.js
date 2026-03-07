@@ -38,10 +38,15 @@ async function loadWorldState() {
 
     if (world.status === "ON") {
 
-      ACS_CYCLE.status = "ON";
-      ACS_CYCLE.realStartDate = world.real_start;
+    ACS_CYCLE.status = "ON";
+    ACS_CYCLE.realStartDate = world.real_start;
 
-    }
+    if (world.frozen_sim_time) {
+    ACS_TIME.currentTime = new Date(world.frozen_sim_time);
+    localStorage.setItem("acs_frozen_time", world.frozen_sim_time);
+  }
+
+}
 
   } catch (err) {
 
