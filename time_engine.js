@@ -78,13 +78,19 @@ setInterval(async () => {
 
     if (world.status === "OFF" && ACS_CYCLE.status !== "OFF") {
 
-      console.log("🌍 WORLD STOP DETECTED");
+  console.log("🌍 WORLD STOP DETECTED");
 
-      ACS_CYCLE.status = "OFF";
+  ACS_CYCLE.status = "OFF";
 
-      stopACSTime();
+  if (typeof ACS_TIME !== "undefined" && world.frozen_sim_time) {
+    ACS_TIME.currentTime = new Date(world.frozen_sim_time);
+  }
 
-    }
+  if (typeof stopACSTime === "function") {
+    stopACSTime();
+  }
+
+}
 
   } catch (err) {
 
