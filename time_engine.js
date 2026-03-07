@@ -145,18 +145,13 @@ function computeSimTime() {
   const now = Date.now();
   const realStart = new Date(ACS_CYCLE.realStartDate).getTime();
 
-  // segundos reales transcurridos
-  const secPassed = Math.floor((now - realStart) / 1000);
+  // base fija del arranque actual
+  const frozenBase = Number(ACS_CYCLE.frozenBaseTime || SIM_START.getTime());
 
-  // minutos simulados
+  const secPassed = Math.floor((now - realStart) / 1000);
   const simMinutes = secPassed;
 
-  // usar el tiempo actual cargado desde el servidor como base
-  const base = ACS_TIME.currentTime.getTime();
-
-  const sim = new Date(base + simMinutes * 60000);
-
-  return sim;
+  return new Date(frozenBase + simMinutes * 60000);
 }
 
 /* ============================================================
@@ -171,6 +166,10 @@ function startACSTime() {
     localStorage.setItem("ACS_Cycle", JSON.stringify(ACS_CYCLE));
   }
 
+  if (!ACS_CYCLE.frozenBaseTime && ACS_TIME.currentTime instanceof Date) {
+  ACS_CYCLE.frozenBaseTime = ACS_TIME.currentTime.getTime();
+  }   
+   
   ACS_TIME.currentTime = computeSimTime();
   updateClockDisplay();
   notifyTimeListeners();
