@@ -148,15 +148,18 @@ function computeSimTime() {
   // minutos simulados
   const simMinutes = secPassed;
 
-  // punto de inicio real del mundo
-  const baseSim = ACS_TIME.currentTime instanceof Date
-    ? ACS_TIME.currentTime.getTime()
-    : new Date(ACS_TIME.currentTime).getTime();
+  // usar frozen_sim_time como base fija
+  const frozen = localStorage.getItem("acs_frozen_time");
 
-  const sim = new Date(baseSim + simMinutes * 60000);
+  const base = frozen
+    ? new Date(frozen).getTime()
+    : SIM_START.getTime();
+
+  const sim = new Date(base + simMinutes * 60000);
 
   return sim;
 }
+
 /* ============================================================
    === START SIMULATION =======================================
    ============================================================ */
