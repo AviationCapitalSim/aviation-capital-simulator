@@ -52,6 +52,49 @@ async function loadWorldState() {
 }
 
 /* ============================================================
+   🌍 WORLD STATE WATCHER
+   ============================================================ */
+
+setInterval(async () => {
+
+  try {
+
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/world"
+    );
+
+    const world = await res.json();
+
+    if (world.status === "ON" && ACS_CYCLE.status !== "ON") {
+
+      console.log("🌍 WORLD START DETECTED");
+
+      ACS_CYCLE.status = "ON";
+      ACS_CYCLE.realStartDate = world.real_start;
+
+      startACSTime();
+
+    }
+
+    if (world.status === "OFF" && ACS_CYCLE.status !== "OFF") {
+
+      console.log("🌍 WORLD STOP DETECTED");
+
+      ACS_CYCLE.status = "OFF";
+
+      stopACSTime();
+
+    }
+
+  } catch (err) {
+
+    console.warn("WORLD WATCH FAILED", err);
+
+  }
+
+}, 5000);
+
+/* ============================================================
    🟧 A6 — GAME MINUTE NORMALIZATION (GLOBAL)
    - Define ACS_TIME.minute oficialmente
    - Minutos absolutos desde SIM_START
