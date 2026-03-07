@@ -466,11 +466,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 🌍 Load world from server
   await loadWorldState();
 
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-
-  ACS_CYCLE.status = cycle.status || ACS_CYCLE.status || "OFF";
-  ACS_CYCLE.realStartDate = cycle.realStartDate || ACS_CYCLE.realStartDate || null;
-
   if (ACS_CYCLE.status === "ON") {
     ACS_TIME.currentTime = computeSimTime();
     startACSTime();
