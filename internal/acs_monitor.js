@@ -372,41 +372,56 @@ if (btnFullScan){
    🟢 TIME ENGINE CONTROL PANEL (Monitor)
    ============================================================ */
 
-function updateTimeControlStatus() {
+async function updateTimeControlStatus() {
+
   const out = document.getElementById("outTimeControl");
   if (!out) return;
 
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-  const status = cycle.status || "OFF";
-  const frozen = localStorage.getItem("acs_frozen_time");
-  const simTimeRaw = localStorage.getItem("ACS_LAST_SIM_TIME");
+  try {
 
-  let simTimeText = "—";
-  if (simTimeRaw !== null && simTimeRaw !== "") {
-    const simTs = Number(simTimeRaw);
-    if (!Number.isNaN(simTs)) {
-      simTimeText = new Date(simTs).toUTCString();
-    } else {
-      simTimeText = String(simTimeRaw);
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/world"
+    );
+
+    const world = await res.json();
+
+    const status = world.status || "OFF";
+
+    const frozen = world.frozen_sim_time;
+
+    const simTimeRaw = world.frozen_sim_time;
+
+    let simTimeText = "—";
+
+    if (simTimeRaw) {
+      const simTs = new Date(simTimeRaw);
+      simTimeText = simTs.toUTCString();
     }
+
+    let frozenText = "—";
+
+    if (frozen) {
+      const f = new Date(frozen);
+      frozenText = !isNaN(f) ? f.toUTCString() : frozen;
+    }
+
+    const statusColor = status === "ON" ? "#00ff80" : "#ff4040";
+
+    out.innerHTML =
+      "ENGINE STATUS: <span style='color:" + statusColor + "; font-weight:600'>" +
+      status +
+      "</span>\n\n" +
+      "Frozen Time: " + frozenText + "\n" +
+      "Last Sim Time: " + simTimeText;
+
+  } catch (err) {
+
+    console.warn("Monitor world fetch failed", err);
+
   }
 
-  let frozenText = "—";
-  if (frozen) {
-    const f = new Date(frozen);
-    frozenText = !isNaN(f) ? f.toUTCString() : frozen;
-  }
-
-  const statusColor = status === "ON" ? "#00ff80" : "#ff4040";
-
-  out.innerHTML =
-    "ENGINE STATUS: <span style='color:" + statusColor + "; font-weight:600'>" +
-    status +
-    "</span>\n\n" +
-    "Frozen Time: " + frozenText + "\n" +
-    "Last Sim Time: " + simTimeText;
 }
-
+   
 /* ============================================================
    🌍 UPDATE GLOBAL WORLD STATE
 ============================================================ */
