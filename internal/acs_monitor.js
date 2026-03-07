@@ -466,12 +466,16 @@ document.getElementById("btnStartTime")?.addEventListener("click", async () => {
     real_start: now
   });
 
+  if (typeof ACS_CYCLE !== "undefined") {
+    ACS_CYCLE.status = "ON";
+    ACS_CYCLE.realStartDate = now;
+  }
+
   if (typeof startACSTime === "function") {
     startACSTime();
   }
 
-  updateTimeControlStatus();
-
+  await updateTimeControlStatus();
 });
    
 /* ================================
@@ -480,7 +484,21 @@ document.getElementById("btnStartTime")?.addEventListener("click", async () => {
    
 document.getElementById("btnStopTime")?.addEventListener("click", async () => {
 
-  const frozen = ACS_TIME?.currentTime?.toISOString();
+  let frozen = null;
+
+  if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime instanceof Date) {
+    frozen = ACS_TIME.currentTime.toISOString();
+  } else {
+    const lastSimRaw = localStorage.getItem("ACS_LAST_SIM_TIME");
+
+    if (lastSimRaw) {
+      const simTs = Number(lastSimRaw);
+
+      if (!Number.isNaN(simTs)) {
+        frozen = new Date(simTs).toISOString();
+      }
+    }
+  }
 
   await updateWorld({
     status: "OFF",
@@ -491,8 +509,7 @@ document.getElementById("btnStopTime")?.addEventListener("click", async () => {
     stopACSTime();
   }
 
-  updateTimeControlStatus();
-
+  await updateTimeControlStatus();
 });
    
 /* ================================
@@ -501,7 +518,7 @@ document.getElementById("btnStopTime")?.addEventListener("click", async () => {
    
 document.getElementById("btnResetCycle")?.addEventListener("click", async () => {
 
-  const simStart = "1940-01-01T00:00:00Z";
+  const simStart = "1940-01-01T00:00:00.000Z";
 
   await updateWorld({
     status: "OFF",
@@ -513,8 +530,7 @@ document.getElementById("btnResetCycle")?.addEventListener("click", async () => 
     stopACSTime();
   }
 
-  updateTimeControlStatus();
-
+  await updateTimeControlStatus();
 });
    
 /* ================================
