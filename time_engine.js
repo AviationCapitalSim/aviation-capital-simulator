@@ -134,23 +134,29 @@ if (!ACS_CYCLE.realStartDate) {
    ============================================================ */
 
 function computeSimTime() {
-  if (ACS_CYCLE.status !== "ON") return ACS_TIME.currentTime;
 
-  const now = new Date();
-  const realStart = new Date(ACS_CYCLE.realStartDate);
+  if (ACS_CYCLE.status !== "ON") {
+    return ACS_TIME.currentTime;
+  }
 
-  // total real seconds passed
+  const now = Date.now();
+  const realStart = new Date(ACS_CYCLE.realStartDate).getTime();
+
+  // segundos reales transcurridos
   const secPassed = Math.floor((now - realStart) / 1000);
 
-  // convert to game minutes
+  // minutos simulados
   const simMinutes = secPassed;
 
-  // compute: SIM_START + simMinutes
-  const sim = new Date(SIM_START.getTime() + simMinutes * 60000);
+  // punto de inicio real del mundo
+  const baseSim = ACS_TIME.currentTime instanceof Date
+    ? ACS_TIME.currentTime.getTime()
+    : new Date(ACS_TIME.currentTime).getTime();
+
+  const sim = new Date(baseSim + simMinutes * 60000);
 
   return sim;
 }
-
 /* ============================================================
    === START SIMULATION =======================================
    ============================================================ */
