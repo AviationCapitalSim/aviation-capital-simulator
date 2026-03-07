@@ -407,92 +407,101 @@ function updateTimeControlStatus() {
     "Last Sim Time: " + simTimeText;
 }
 
+/* ============================================================
+   🌍 UPDATE GLOBAL WORLD STATE
+============================================================ */
+
+async function updateWorld(data){
+
+  try{
+
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/world",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      }
+    );
+
+    const json = await res.json();
+
+    console.log("WORLD UPDATED", json);
+
+    return json;
+
+  }catch(err){
+
+    console.error("WORLD UPDATE FAILED", err);
+
+  }
+
+}
+   
 /* ================================
    ▶ START
 ================================ */
    
-document.getElementById("btnStartTime")?.addEventListener("click", () => {
+document.getElementById("btnStartTime")?.addEventListener("click", async () => {
 
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
+  const now = new Date().toISOString();
 
-  cycle.status = "ON";
-
-  if (!cycle.realStartDate) {
-    cycle.realStartDate = new Date().toISOString();
-  }
-
-  localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
-
-  // 🔴 sincronizar con engine interno
-  if (typeof ACS_CYCLE !== "undefined") {
-    ACS_CYCLE.status = "ON";
-    ACS_CYCLE.realStartDate = cycle.realStartDate;
-  }
+  await updateWorld({
+    status: "ON",
+    real_start: now
+  });
 
   if (typeof startACSTime === "function") {
     startACSTime();
   }
 
   updateTimeControlStatus();
+
 });
    
 /* ================================
    ⏸ STOP (FREEZE CORRECTO)
 ================================ */
    
-document.getElementById("btnStopTime")?.addEventListener("click", () => {
+document.getElementById("btnStopTime")?.addEventListener("click", async () => {
 
-  if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime instanceof Date) {
-    localStorage.setItem("acs_frozen_time", ACS_TIME.currentTime.toISOString());
-  }
+  const frozen = ACS_TIME?.currentTime?.toISOString();
 
-  const cycle = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
-  cycle.status = "OFF";
-
-  localStorage.setItem("ACS_Cycle", JSON.stringify(cycle));
-
-  // 🔴 actualizar también el ciclo interno del engine
-  if (typeof ACS_CYCLE !== "undefined") {
-    ACS_CYCLE.status = "OFF";
-  }
+  await updateWorld({
+    status: "OFF",
+    frozen_sim_time: frozen
+  });
 
   if (typeof stopACSTime === "function") {
     stopACSTime();
   }
 
   updateTimeControlStatus();
+
 });
    
 /* ================================
    ♻ RESET CYCLE (TIME ENGINE SAFE)
 ================================ */
    
-document.getElementById("btnResetCycle")?.addEventListener("click", () => {
+document.getElementById("btnResetCycle")?.addEventListener("click", async () => {
 
-  // 1️⃣ Parar motor si está activo
+  const simStart = "1940-01-01T00:00:00Z";
+
+  await updateWorld({
+    status: "OFF",
+    real_start: null,
+    frozen_sim_time: simStart
+  });
+
   if (typeof stopACSTime === "function") {
     stopACSTime();
   }
 
-  // 2️⃣ Resetear ciclo
-  const newCycle = {
-    realStartDate: null,
-    status: "OFF"
-  };
-
-  localStorage.setItem("ACS_Cycle", JSON.stringify(newCycle));
-
-  // 3️⃣ Resetear tiempo congelado a 1940
-  const simStart = new Date("1940-01-01T00:00:00Z");
-  localStorage.setItem("acs_frozen_time", simStart.toISOString());
-
-  // 4️⃣ Disparar evento de reset global
-  localStorage.setItem("acs_reset", Date.now());
-
-  // 5️⃣ Refrescar panel
   updateTimeControlStatus();
-});
 
+});
+   
 /* ================================
    INIT
 ================================ */
