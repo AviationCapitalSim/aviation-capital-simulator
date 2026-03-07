@@ -112,6 +112,12 @@ setInterval(async () => {
    - Fuente única para Runtime / SkyTrack / Maintenance
    ============================================================ */
 
+/* ============================================================
+   🔒 TIME ENGINE LOCK (PREVENT MULTIPLE STARTS)
+   ============================================================ */
+
+let ACS_TIME_ENGINE_RUNNING = false;
+
 const ACS_TIME = {
   currentTime: new Date(SIM_START),
   tickInterval: null,
@@ -124,6 +130,7 @@ const ACS_TIME = {
 };
 
 /* === LOAD OR INIT CYCLE === */
+
 let ACS_CYCLE = JSON.parse(localStorage.getItem("ACS_Cycle") || "{}");
 
 if (!ACS_CYCLE.realStartDate) {
@@ -159,6 +166,15 @@ function computeSimTime() {
    ============================================================ */
 
 function startACSTime() {
+
+  // 🔒 Prevent multiple engine instances
+  if (ACS_TIME_ENGINE_RUNNING) {
+    console.warn("⏳ ACS Time Engine already running");
+    return;
+  }
+
+  ACS_TIME_ENGINE_RUNNING = true;
+
   stopACSTime();
 
   if (!ACS_CYCLE.realStartDate) {
@@ -208,8 +224,16 @@ function startACSTime() {
    ============================================================ */
 
 function stopACSTime() {
-  if (ACS_TIME.tickInterval) clearInterval(ACS_TIME.tickInterval);
+
+  if (ACS_TIME.tickInterval) {
+    clearInterval(ACS_TIME.tickInterval);
+  }
+
   ACS_TIME.tickInterval = null;
+
+  // 🔓 release engine lock
+  ACS_TIME_ENGINE_RUNNING = false;
+
 }
 
 /* ============================================================
