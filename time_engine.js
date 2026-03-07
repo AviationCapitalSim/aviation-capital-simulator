@@ -140,9 +140,7 @@ if (!ACS_CYCLE.realStartDate) {
 
 function computeSimTime() {
 
-  if (ACS_CYCLE.status !== "ON") {
-    return ACS_TIME.currentTime;
-  }
+  if (ACS_CYCLE.status !== "ON") return ACS_TIME.currentTime;
 
   const now = Date.now();
   const realStart = new Date(ACS_CYCLE.realStartDate).getTime();
@@ -153,7 +151,7 @@ function computeSimTime() {
   // minutos simulados
   const simMinutes = secPassed;
 
-  // usar frozen_sim_time como base fija
+  // usar frozen time como base
   const frozen = localStorage.getItem("acs_frozen_time");
 
   const base = frozen
