@@ -708,30 +708,34 @@ function ACS_getAirlineColor(airline){
 </script>
 
 <script>
-   
+
 /* ============================================================
    🌍 SKYTRACK TRAFFIC VIEW MODE
    ============================================================ */
 
 window.ACS_SKYTRACK_VIEW_MODE = "global";
 
-document.querySelectorAll('input[name="stViewMode"]').forEach(radio => {
+document.addEventListener("DOMContentLoaded", () => {
 
-  radio.addEventListener("change", () => {
+  document.querySelectorAll('input[name="stViewMode"]').forEach(radio => {
 
-    window.ACS_SKYTRACK_VIEW_MODE = radio.value;
+    radio.addEventListener("change", () => {
 
-    console.log(
-      "🌍 SkyTrack view mode:",
-      window.ACS_SKYTRACK_VIEW_MODE
-    );
+      window.ACS_SKYTRACK_VIEW_MODE = radio.value;
+
+      console.log(
+        "🌍 SkyTrack view mode:",
+        window.ACS_SKYTRACK_VIEW_MODE
+      );
+
+    });
 
   });
 
 });
 
-<script>
-   
+</script>
+
 <!-- ============================================================
      🟦 A3 — SKYTRACK MARKER ENGINE (ATC FIXED)
      Solo visualiza — NO calcula
