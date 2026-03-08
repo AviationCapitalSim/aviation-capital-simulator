@@ -149,7 +149,32 @@ window.addEventListener("ACS_SKYTRACK_SNAPSHOT", function(e){
 
   if(!Array.isArray(e.detail)) return;
 
-  worldCache.forEach(f => e.detail.push(f));
+  const mode = window.ACS_SKYTRACK_VIEW_MODE || "global";
+
+  // GLOBAL TRAFFIC
+  if(mode === "global"){
+
+    worldCache.forEach(f => e.detail.push(f));
+    return;
+
+  }
+
+  // SELECTED AIRLINES
+  if(mode === "selected"){
+
+    const selected = window.ACS_SELECTED_AIRLINES || [];
+
+    worldCache.forEach(f => {
+
+      const airline = f.airline_id || "";
+
+      if(selected.includes(airline)){
+        e.detail.push(f);
+      }
+
+    });
+
+  }
 
 });
 
