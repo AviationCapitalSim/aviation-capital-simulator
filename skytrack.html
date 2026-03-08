@@ -272,6 +272,128 @@ body {
 .badge-air    { background: rgba(0,255,160,0.25); color:#8fffd2; }
 .badge-maint  { background: rgba(255,179,0,0.30); color:#ffe7a0; }
 
+/* ============================================================
+   ✈ SKYTRACK GLOBAL TRAFFIC PANEL
+   Airbus OCC × Qatar Executive
+   ============================================================ */
+
+#skytrackTrafficPanel{
+
+  position:absolute;
+  top:16px;
+  right:16px;
+
+  width:260px;
+
+  background:rgba(8,20,48,0.92);
+
+  border:1px solid rgba(255,179,0,0.35);
+
+  border-radius:14px;
+
+  backdrop-filter:blur(8px);
+
+  box-shadow:0 0 18px rgba(0,0,0,0.5);
+
+  padding:14px;
+
+  font-size:13px;
+
+  z-index:4000;
+
+  color:#dbe4ff;
+
+}
+
+/* header */
+
+.st-header{
+
+  font-weight:700;
+
+  color:#ffca3a;
+
+  letter-spacing:.5px;
+
+  margin-bottom:10px;
+
+}
+
+/* section */
+
+.st-section{
+
+  margin-bottom:14px;
+
+}
+
+/* section label */
+
+.st-label{
+
+  font-size:11px;
+
+  letter-spacing:.6px;
+
+  color:#8aa2ff;
+
+  margin-bottom:6px;
+
+}
+
+/* options */
+
+.st-option{
+
+  display:block;
+
+  margin-bottom:4px;
+
+  cursor:pointer;
+
+}
+
+/* airlines list */
+
+.st-airlines{
+
+  max-height:120px;
+
+  overflow-y:auto;
+
+}
+
+/* aircraft counter */
+
+.st-count{
+
+  border-top:1px solid rgba(255,179,0,0.2);
+
+  padding-top:8px;
+
+  font-weight:600;
+
+}
+
+/* ============================================================
+   📱 MOBILE MODE
+   ============================================================ */
+
+@media(max-width:768px){
+
+  #skytrackTrafficPanel{
+
+    width:220px;
+
+    top:10px;
+    right:10px;
+
+    font-size:12px;
+
+  }
+
+}
+    
 </style>
 
 </head>
@@ -315,24 +437,78 @@ body {
   <p class="sub">Real-time aircraft tracking based on your operational schedule.</p>
 
   <!-- ========================= MAP PANEL ========================= -->
+   
   <div class="panel">
     <h3>🌍 World Map</h3>
-    <div id="skytrack-map"></div>
+    <div id="skytrack-map">
+
+  <!-- ============================================================
+       ✈ SKYTRACK GLOBAL TRAFFIC PANEL
+       Airbus OCC × Qatar Luxury
+       ============================================================ -->
+
+  <div id="skytrackTrafficPanel">
+
+    <div class="st-header">
+      SKYTRACK TRAFFIC
+    </div>
+
+    <div class="st-section">
+
+      <div class="st-label">VIEW</div>
+
+      <label class="st-option">
+        <input type="radio" name="stViewMode" value="selected">
+        Selected Airlines
+      </label>
+
+      <label class="st-option">
+        <input type="radio" name="stViewMode" value="global" checked>
+        Global Traffic
+      </label>
+
+    </div>
+
+    <div class="st-section">
+
+      <div class="st-label">ACTIVE AIRLINES</div>
+
+      <div id="skytrackAirlineList" class="st-airlines">
+
+        <!-- dynamic airlines inserted here -->
+
+      </div>
+
+    </div>
+
+    <div class="st-section st-count">
+
+      <span id="skytrackVisibleCount">0</span> aircraft visible
+
+    </div>
+
   </div>
 
+</div>
+
   <!-- ========================= GRID ========================= -->
+     
 <div class="skytrack-grid">
 
   <!-- ===== LEFT: LIVE TRAFFIC ===== -->
+   
   <div class="panel">
     <h3>✈️ Live Traffic</h3>
 
     <div class="skytrack-list" id="skytrackLiveList">
+       
       <!-- Live traffic rendered by JS -->
+       
     </div>
   </div>
 
   <!-- ===== RIGHT: DETAILS / FUTURE ===== -->
+   
   <div class="panel">
     <h3>📊 Flight Details</h3>
     <p>Select a flight to view detailed information.</p>
@@ -404,6 +580,7 @@ body {
 <!-- ============================================================
      🗺️ C1.1 — LEAFLET MAP INIT (WORLD MAP)
      ============================================================ -->
+   
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -602,6 +779,20 @@ card.addEventListener("click", () => {
       iconAnchor: [9, 9]
     });
 
+/* ============================================================
+   SKYTRACK VISIBLE AIRCRAFT COUNTER
+   ============================================================ */
+
+function ACS_updateVisibleAircraftCount(count){
+
+  const el = document.getElementById("skytrackVisibleCount");
+
+  if(el){
+    el.textContent = count;
+  }
+
+}
+     
 /* ============================================================
    🟦 A9.4.2 — RESOLVE DEP/ARR FROM RUNTIME (NO snapshot times)
    Fuente: window.ACS_SkyTrack.itemsByAircraft (Schedule Table expanded)
