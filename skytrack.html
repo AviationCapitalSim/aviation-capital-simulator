@@ -576,7 +576,82 @@ body {
 <script src="engine/acs_world_bridge.js"></script>
 
 <script src="engine/acs_world_traffic.js"></script>
-   
+
+<script>
+
+/* ============================================================
+   ✈ SKYTRACK GLOBAL TRAFFIC ENGINE
+   ============================================================ */
+
+window.ACS_GLOBAL_TRAFFIC = {
+  aircraft: [],
+  lastFetch: 0
+};
+
+/* ============================================================
+   GET MAP BOUNDS
+   ============================================================ */
+
+function ACS_getMapBounds(){
+
+  const map = window.ACS_SkyTrack_Map;
+
+  if(!map) return null;
+
+  const b = map.getBounds();
+
+  return {
+    lat_min: b.getSouth(),
+    lat_max: b.getNorth(),
+    lon_min: b.getWest(),
+    lon_max: b.getEast()
+  };
+
+}
+
+/* ============================================================
+   FETCH GLOBAL TRAFFIC
+   ============================================================ */
+
+async function ACS_fetchGlobalTraffic(){
+
+  const bounds = ACS_getMapBounds();
+
+  if(!bounds) return;
+
+  try{
+
+    const url =
+      `/api/global-traffic?lat_min=${bounds.lat_min}&lat_max=${bounds.lat_max}&lon_min=${bounds.lon_min}&lon_max=${bounds.lon_max}`;
+
+    const res = await fetch(url);
+
+    const data = await res.json();
+
+    if(Array.isArray(data)){
+      ACS_GLOBAL_TRAFFIC.aircraft = data;
+    }
+
+  }catch(err){
+
+    console.warn("Global traffic fetch failed",err);
+
+  }
+
+}
+
+/* ============================================================
+   REFRESH GLOBAL TRAFFIC
+   ============================================================ */
+
+setInterval(()=>{
+
+  ACS_fetchGlobalTraffic();
+
+},5000);
+
+</script>
+  
 <!-- ============================================================
      🗺️ C1.1 — LEAFLET MAP INIT (WORLD MAP)
      ============================================================ -->
