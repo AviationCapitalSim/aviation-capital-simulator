@@ -660,12 +660,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
 })();
 </script>
+
+<script>
+
+/* ============================================================
+   ✈ SKYTRACK AIRLINE COLOR SYSTEM
+   ============================================================ */
+
+window.ACS_AIRLINE_COLORS = {};
+
+const ACS_COLOR_PALETTE = [
+"#0b3cff",
+"#00d084",
+"#ff3b3b",
+"#ffd000",
+"#9c27ff",
+"#00c2ff",
+"#ff6f00",
+"#6cff00",
+"#ff00c8",
+"#00ffc8"
+];
+
+let ACS_COLOR_INDEX = 0;
+
+function ACS_getAirlineColor(airline){
+
+  if(!airline) return "#0b3cff";
+
+  if(!ACS_AIRLINE_COLORS[airline]){
+
+    ACS_AIRLINE_COLORS[airline] =
+      ACS_COLOR_PALETTE[
+        ACS_COLOR_INDEX % ACS_COLOR_PALETTE.length
+      ];
+
+    ACS_COLOR_INDEX++;
+
+  }
+
+  return ACS_AIRLINE_COLORS[airline];
+
+}
+
+</script>
    
 <!-- ============================================================
      🟦 A3 — SKYTRACK MARKER ENGINE (ATC FIXED)
      Solo visualiza — NO calcula
 ============================================================ -->
+   
 <script>
+   
 (function () {
 
   function waitForMap(cb) {
@@ -807,7 +853,9 @@ function ACS_ST_toHHMM(absMin) {
 }
 
 function ACS_ST_nowAbsMin() {
+   
   // runtime normaliza a semana (0..10079). Mantenemos igual.
+   
   if (Number.isFinite(window.ACS_SkyTrack?.nowAbsMin)) return window.ACS_SkyTrack.nowAbsMin;
   if (Number.isFinite(window.ACS_TIME?.absMin)) return (window.ACS_TIME.absMin % 10080);
   if (Number.isFinite(window.ACS_TIME?.minute)) return (window.ACS_TIME.minute % 10080);
@@ -815,6 +863,7 @@ function ACS_ST_nowAbsMin() {
 }
 
 function ACS_ST_resolveTimesFromRuntime(snapshotItem) {
+   
   const acId = snapshotItem?.aircraftId;
   if (!acId) return null;
 
@@ -957,6 +1006,7 @@ function renderFlightDetails(snapshot) {
 
      
     function apLatLng(icao) {
+       
       const ap = window.ACS_AIRPORT_INDEX?.[icao];
       if (!ap) return null;
       const lat = Number(ap.latitude);
@@ -966,6 +1016,7 @@ function renderFlightDetails(snapshot) {
     }
 
     function centerMapOnce(snapshot) {
+       
       if (didCenter) return;
       const baseICAO = localStorage.getItem("ACS_baseICAO");
       const ll = baseICAO ? apLatLng(baseICAO) : null;
@@ -999,6 +1050,7 @@ function renderFlightDetails(snapshot) {
     }
 
     function buildATCContent(item) {
+       
       const reg =
         item.registration ||
         item.tail ||
@@ -1052,9 +1104,11 @@ function renderFlightDetails(snapshot) {
     function render(snapshot) {
 
     // 🟦 A7.2 — Update Live Track Panel
+       
     renderLiveTrackPanel(snapshot);
        
    // 🟦 A9.3 — Update Flight Details Panel
+       
     renderFlightDetails(snapshot);
 
       if (!Array.isArray(snapshot)) return;
@@ -1063,7 +1117,18 @@ function renderFlightDetails(snapshot) {
 
       snapshot.forEach(item => {
 
+/* ============================================================
+   SKYTRACK VISIBLE AIRCRAFT COUNTER
+   ============================================================ */
+
+const counter = document.getElementById("skytrackVisibleCount");
+
+if(counter){
+  counter.textContent = snapshot.length;
+}
+         
   // 🟦 A6.5.1 — IGNORE OUT-OF-ORDER SNAPSHOTS
+         
   const key = item.aircraftId;
   const logicalTime =
     Number.isFinite(item.depAbsMin) ? item.depAbsMin :
@@ -1076,6 +1141,7 @@ function renderFlightDetails(snapshot) {
   lastSeenSnapshot[key] = logicalTime;
 
   // 🟦 A6.4.1 — STATE-AWARE POSITION (NO mixed states)
+         
   let pos = null;
 
   if (item.state === "EN_ROUTE") {
@@ -1134,6 +1200,7 @@ function renderFlightDetails(snapshot) {
   m.setLatLng(pos);
 
   // 🟦 A8.4 — Highlight active aircraft
+     
   if (window.ACS_ACTIVE_FLIGHT_ID === item.aircraftId) {
     m.setZIndexOffset(1000);
   } else {
@@ -1141,6 +1208,7 @@ function renderFlightDetails(snapshot) {
   }
 
   // 🟦 ATC TRACE — only when airborne
+     
   if (item.state === "EN_ROUTE") {
 
     if (!traces[item.aircraftId]) {
@@ -1174,9 +1242,11 @@ function renderFlightDetails(snapshot) {
   });
 
 })();
+   
 </script>
 
 <script>
+   
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
