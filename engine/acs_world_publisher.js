@@ -40,8 +40,14 @@ function getAirlineId(){
 async function publishDeparture(item){
 
   const airline = getAirlineId();
-
   if(!airline) return;
+
+  const now = Date.now();
+
+  const flightId =
+    item.aircraftId + "|" +
+    item.originICAO + "|" +
+    item.destinationICAO;
 
   try{
 
@@ -52,11 +58,7 @@ async function publishDeparture(item){
       },
       body:JSON.stringify({
 
-        flight_id:
-          item.aircraftId+"|"+
-          item.originICAO+"|"+
-          item.destinationICAO+"|"+
-          item.depAbsMin,
+        flight_id: flightId,
 
         airline_id: airline,
 
@@ -68,14 +70,20 @@ async function publishDeparture(item){
 
         destination: item.destinationICAO,
 
-        dep_time: item.depAbsMin,
+        latitude: null,
+        longitude: null,
+        speed: null,
 
-        arr_time: item.arrAbsMin,
+        dep_time: now,
+
+        arr_time: now + 7200000,
 
         status:1
 
       })
     });
+
+    console.log("🌍 WORLD departure sent", flightId);
 
   }catch(err){
 
@@ -84,7 +92,7 @@ async function publishDeparture(item){
   }
 
 }
-
+   
 /* ============================================================
    FLIGHT ARRIVAL
    ============================================================ */
