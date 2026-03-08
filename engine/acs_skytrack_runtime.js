@@ -884,3 +884,55 @@ if (!window.__ACS_RUNTIME_ACTIVE__) {
   }
 
 }
+
+/* ============================================================
+   🌍 SKYTRACK → WORLD SERVER SYNC
+   Envia snapshot al backend Railway
+   ============================================================ */
+
+(function(){
+
+const SERVER = "https://acs-world-server-production.up.railway.app";
+
+window.addEventListener("ACS_SKYTRACK_SNAPSHOT", async (e)=>{
+
+  const snapshot = e.detail || [];
+
+  for(const f of snapshot){
+
+    if(f.state !== "EN_ROUTE") continue;
+
+    try{
+
+      await fetch(`${SERVER}/v1/flight/departure`,{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+
+          flight_id:
+            `${f.aircraftId}|${f.originICAO}|${f.destinationICAO}|${Date.now()}`,
+
+          airline_id: "VE",
+
+          flight_number: f.flightNumber || null,
+          aircraft_type: f.model || null,
+
+          origin: f.originICAO,
+          destination: f.destinationICAO,
+
+          dep_time: null,
+          arr_time: null,
+
+          status: 1
+        })
+      });
+
+    }catch(err){
+      console.warn("SkyTrack sync error",err);
+    }
+
+  }
+
+});
+
+})();
