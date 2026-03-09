@@ -68,26 +68,34 @@ function getAirlineId(){
 
 async function publishDeparture(item){
 
+  if (!AirportIndex) return;
+
   const airline = getAirlineId();
   if(!airline) return;
 
-  const now = Date.now();
-
   const originICAO = (item.originICAO || "").trim().toUpperCase();
+  const destinationICAO = (item.destinationICAO || "").trim().toUpperCase();
+
+  if (!Number.isFinite(item.depAbsMin)) return;
+
+  const airport =
+    AirportIndex[originICAO] || null;
+
+  if (!airport) return;
+
+  const lat = Number(airport.latitude);
+  const lon = Number(airport.longitude);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
   const flightId =
-  item.aircraftId + "|" +
-  originICAO + "|" +
-  item.destinationICAO + "|" +
-  item.depAbsMin;
+    item.aircraftId + "|" +
+    originICAO + "|" +
+    destinationICAO + "|" +
+    item.depAbsMin;
 
- const airport =
-  AirportIndex && AirportIndex[originICAO]
-    ? AirportIndex[originICAO]
-    : null;
-
-const lat = airport ? airport.latitude : null;
-const lon = airport ? airport.longitude : null;
+  const depAbsMin = Number(item.depAbsMin);
+  const arrAbsMin = Number(item.arrAbsMin);
 
   try{
 
@@ -108,15 +116,14 @@ const lon = airport ? airport.longitude : null;
 
         origin: originICAO,
 
-        destination: item.destinationICAO,
+        destination: destinationICAO,
 
         latitude: lat,
         longitude: lon,
         speed: 0,
 
-        dep_time: now,
-
-        arr_time: now + 7200000,
+        dep_time: Number.isFinite(depAbsMin) ? depAbsMin : null,
+        arr_time: Number.isFinite(arrAbsMin) ? arrAbsMin : null,
 
         status:1
 
