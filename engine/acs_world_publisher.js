@@ -33,10 +33,6 @@ function getAirlineId(){
 
 }
 
-/* ============================================================
-   FLIGHT DEPARTURE
-   ============================================================ */
-
 async function publishDeparture(item){
 
   const airline = getAirlineId();
@@ -48,6 +44,11 @@ async function publishDeparture(item){
     item.aircraftId + "|" +
     item.originICAO + "|" +
     item.destinationICAO;
+
+  const airport = window.ACS_WORLD_AIRPORTS?.[item.originICAO];
+
+  const lat = airport ? airport.lat : null;
+  const lon = airport ? airport.lon : null;
 
   try{
 
@@ -70,10 +71,9 @@ async function publishDeparture(item){
 
         destination: item.destinationICAO,
 
-        const airport = window.ACS_WORLD_AIRPORTS?.[item.originICAO];
-
-        const lat = airport ? airport.lat : null;
-        const lon = airport ? airport.lon : null;
+        latitude: lat,
+        longitude: lon,
+        speed: 0,
 
         dep_time: now,
 
