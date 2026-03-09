@@ -45,7 +45,10 @@ async function publishDeparture(item){
     item.originICAO + "|" +
     item.destinationICAO;
 
-  const airport = findAirport(item.originICAO);
+  const airport =
+  typeof findAirport === "function"
+    ? findAirport(item.originICAO)
+    : null;
 
   const lat = airport ? airport.latitude : null;
   const lon = airport ? airport.longitude : null;
