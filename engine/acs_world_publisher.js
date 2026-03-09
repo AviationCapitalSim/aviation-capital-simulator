@@ -45,10 +45,10 @@ async function publishDeparture(item){
     item.originICAO + "|" +
     item.destinationICAO;
 
-  const airport = window.ACS_WORLD_AIRPORTS?.[item.originICAO];
+  const airport = findAirport(item.originICAO);
 
-  const lat = airport ? airport.lat : null;
-  const lon = airport ? airport.lon : null;
+  const lat = airport ? airport.latitude : null;
+  const lon = airport ? airport.longitude : null;
 
   try{
 
