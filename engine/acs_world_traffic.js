@@ -72,21 +72,23 @@ function ACS_convertWorldFlight(f){
 
   return {
 
-    aircraftId: "WORLD_" + f.flight_id,
+  aircraftId: "WORLD_" + f.flight_id,
 
-    flightNumber: f.flight_number || "WORLD",
+  flightNumber: f.flight_number || "WORLD",
 
-    originICAO: f.origin,
+  originICAO: f.origin,
 
-    destinationICAO: f.destination,
+  destinationICAO: f.destination,
 
-    state: progress >= 1 ? "GROUND" : "EN_ROUTE",
+  state: progress >= 1 ? "GROUND" : "EN_ROUTE",
 
-    position: {
-      progress: progress
-    }
+  position: {
+    lat: f.latitude,
+    lng: f.longitude,
+    progress: progress
+  }
 
-  };
+};
 
 }
 
