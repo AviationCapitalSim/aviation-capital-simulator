@@ -72,14 +72,16 @@ async function publishDeparture(item){
 
   const now = Date.now();
 
+  const originICAO = (item.originICAO || "").trim().toUpperCase();
+
   const flightId =
     item.aircraftId + "|" +
-    item.originICAO + "|" +
+    originICAO + "|" +
     item.destinationICAO;
 
  const airport =
-  AirportIndex && AirportIndex[item.originICAO]
-    ? AirportIndex[item.originICAO]
+  AirportIndex && AirportIndex[originICAO]
+    ? AirportIndex[originICAO]
     : null;
 
 const lat = airport ? airport.latitude : null;
@@ -102,7 +104,7 @@ const lon = airport ? airport.longitude : null;
 
         aircraft_type: item.model || null,
 
-        origin: item.originICAO,
+        origin: originICAO,
 
         destination: item.destinationICAO,
 
