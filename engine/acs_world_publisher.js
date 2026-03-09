@@ -70,9 +70,10 @@ async function publishDeparture(item){
 
         destination: item.destinationICAO,
 
-        latitude: null,
-        longitude: null,
-        speed: null,
+        const airport = window.ACS_WORLD_AIRPORTS?.[item.originICAO];
+
+        const lat = airport ? airport.lat : null;
+        const lon = airport ? airport.lon : null;
 
         dep_time: now,
 
