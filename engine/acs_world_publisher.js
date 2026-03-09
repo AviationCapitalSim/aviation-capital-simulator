@@ -14,14 +14,28 @@ let lastFlights = {};
    AIRPORT INDEX LINK
    ============================================================ */
 
-let AirportIndex = null;
+let AirportIndex = window.ACS_AIRPORT_INDEX || null;
+
+/* Si el índice ya existe lo usamos inmediatamente */
+
+if (AirportIndex) {
+
+  console.log(
+    "🌍 WORLD Publisher linked immediately:",
+    Object.keys(AirportIndex).length,
+    "airports"
+  );
+
+}
+
+/* Si aún no existe esperamos el evento */
 
 document.addEventListener("ACS_AIRPORTS_READY", () => {
 
   AirportIndex = window.ACS_AIRPORT_INDEX;
 
   console.log(
-    "🌍 WORLD Publisher linked to AirportIndex:",
+    "🌍 WORLD Publisher linked after event:",
     Object.keys(AirportIndex).length,
     "airports"
   );
