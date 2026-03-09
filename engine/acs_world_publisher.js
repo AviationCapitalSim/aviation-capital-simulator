@@ -21,17 +21,13 @@ document.addEventListener("ACS_AIRPORTS_READY", () => {
   AirportIndex = window.ACS_AIRPORT_INDEX;
 
   console.log(
- `[ACS] WorldAirportsACS loaded: ${Object.keys(AirportIndex).length} airports indexed`
-);
-
-window.ACS_AIRPORT_INDEX = AirportIndex;
-
-document.dispatchEvent(
-  new Event("ACS_AIRPORTS_READY")
-);
+    "🌍 WORLD Publisher linked to AirportIndex:",
+    Object.keys(AirportIndex).length,
+    "airports"
+  );
 
 });
-
+   
 /* ============================================================
    AIRLINE ID
    ============================================================ */
