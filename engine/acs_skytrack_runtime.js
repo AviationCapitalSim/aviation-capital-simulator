@@ -910,9 +910,10 @@ window.addEventListener("ACS_SKYTRACK_SNAPSHOT", async (e)=>{
         body: JSON.stringify({
 
           flight_id:
-            `${f.aircraftId}|${f.originICAO}|${f.destinationICAO}|${Date.now()}`,
+            `${f.aircraftId}|${f.originICAO}|${f.destinationICAO}|${f.depAbsMin}`,
 
-          airline_id: "VE",
+          airline_id:
+            JSON.parse(localStorage.getItem("ACS_Airline") || "{}")?.iata || null,
 
           flight_number: f.flightNumber || null,
           aircraft_type: f.model || null,
@@ -920,8 +921,11 @@ window.addEventListener("ACS_SKYTRACK_SNAPSHOT", async (e)=>{
           origin: f.originICAO,
           destination: f.destinationICAO,
 
-          dep_time: null,
-          arr_time: null,
+          latitude: f.position?.lat ?? null,
+          longitude: f.position?.lng ?? null,
+
+          dep_time: f.depAbsMin ?? null,
+          arr_time: f.arrAbsMin ?? null,
 
           status: 1
         })
