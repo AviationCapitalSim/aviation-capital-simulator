@@ -3,6 +3,7 @@
    Publica vuelos del jugador al servidor global
    ============================================================ */
 
+
 (function(){
 
 const SERVER =
