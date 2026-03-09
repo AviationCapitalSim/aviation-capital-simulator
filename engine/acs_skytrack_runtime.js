@@ -887,56 +887,11 @@ if (!window.__ACS_RUNTIME_ACTIVE__) {
 
 /* ============================================================
    🌍 SKYTRACK → WORLD SERVER SYNC
-   Envia snapshot al backend Railway
+   DESACTIVADO — WORLD PUBLISHER ES EL ÚNICO AUTORIZADO
    ============================================================ */
 
 (function(){
 
-const SERVER = "https://acs-world-server-production.up.railway.app";
-
-window.addEventListener("ACS_SKYTRACK_SNAPSHOT", async (e)=>{
-
-  const snapshot = e.detail || [];
-
-  for(const f of snapshot){
-
-    if(f.state !== "EN_ROUTE") continue;
-
-    try{
-
-      await fetch(`${SERVER}/v1/flight/departure`,{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-
-          flight_id:
-            `${f.aircraftId}|${f.originICAO}|${f.destinationICAO}|${f.depAbsMin}`,
-
-          airline_id:
-            JSON.parse(localStorage.getItem("ACS_Airline") || "{}")?.iata || null,
-
-          flight_number: f.flightNumber || null,
-          aircraft_type: f.model || null,
-
-          origin: f.originICAO,
-          destination: f.destinationICAO,
-
-          latitude: f.position?.lat ?? null,
-          longitude: f.position?.lng ?? null,
-
-          dep_time: f.depAbsMin ?? null,
-          arr_time: f.arrAbsMin ?? null,
-
-          status: 1
-        })
-      });
-
-    }catch(err){
-      console.warn("SkyTrack sync error",err);
-    }
-
-  }
-
-});
+  console.log("🌍 SKYTRACK → WORLD SERVER SYNC DISABLED (using acs_world_publisher.js)");
 
 })();
