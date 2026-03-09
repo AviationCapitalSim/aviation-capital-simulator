@@ -75,9 +75,10 @@ async function publishDeparture(item){
   const originICAO = (item.originICAO || "").trim().toUpperCase();
 
   const flightId =
-    item.aircraftId + "|" +
-    originICAO + "|" +
-    item.destinationICAO;
+  item.aircraftId + "|" +
+  originICAO + "|" +
+  item.destinationICAO + "|" +
+  item.depAbsMin;
 
  const airport =
   AirportIndex && AirportIndex[originICAO]
