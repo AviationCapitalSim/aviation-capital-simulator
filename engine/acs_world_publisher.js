@@ -11,6 +11,28 @@ const SERVER =
 let lastFlights = {};
 
 /* ============================================================
+   AIRPORT INDEX LINK
+   ============================================================ */
+
+let AirportIndex = null;
+
+document.addEventListener("ACS_AIRPORTS_READY", () => {
+
+  AirportIndex = window.ACS_AIRPORT_INDEX;
+
+  console.log(
+ `[ACS] WorldAirportsACS loaded: ${Object.keys(AirportIndex).length} airports indexed`
+);
+
+window.ACS_AIRPORT_INDEX = AirportIndex;
+
+document.dispatchEvent(
+  new Event("ACS_AIRPORTS_READY")
+);
+
+});
+
+/* ============================================================
    AIRLINE ID
    ============================================================ */
 
@@ -45,13 +67,13 @@ async function publishDeparture(item){
     item.originICAO + "|" +
     item.destinationICAO;
 
-  const airport =
-  (typeof AirportIndex !== "undefined")
+ const airport =
+  AirportIndex && AirportIndex[item.originICAO]
     ? AirportIndex[item.originICAO]
     : null;
 
-  const lat = airport ? airport.latitude : null;
-  const lon = airport ? airport.longitude : null;
+const lat = airport ? airport.latitude : null;
+const lon = airport ? airport.longitude : null;
 
   try{
 
