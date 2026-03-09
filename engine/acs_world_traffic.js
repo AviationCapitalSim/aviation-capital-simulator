@@ -15,7 +15,6 @@ async function ACS_fetchWorldFlights(){
     const map = window.ACS_SkyTrack_Map;
 
     if(!map){
-      console.warn("🌍 Map not ready");
       return [];
     }
 
