@@ -417,17 +417,8 @@ acquisitionCost: typeof data.acquisitionPrice === "number"
 }
 
 /* ============================================================
-   Helper — Random Letters (A–Z)
+   Helper — Letters (A–Z)
    ============================================================ */
-
-function randomLetters(n) {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let s = "";
-  for (let i = 0; i < n; i++) {
-    s += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
-  return s;
-}
 
 function numberToLetters(num, length) {
 
