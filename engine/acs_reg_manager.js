@@ -171,29 +171,27 @@ function saveRegistration() {
 
 function getCurrentBaseICAO() {
 
-  let user = {};
-  let baseObj = {};
-  let airline = {};
+  try {
 
-  try { user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}"); } catch(e){}
-  try { baseObj = JSON.parse(localStorage.getItem("ACS_Base") || "{}"); } catch(e){}
-  try { airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}"); } catch(e){}
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-  const icao =
-    user?.base?.icao ||
-    baseObj?.icao ||
-    airline?.baseICAO ||
-    null;
+    const icao = user?.base?.icao || null;
 
-  if (!icao) {
-    console.warn("⚠️ No base ICAO defined.");
+    if (!icao) {
+      console.warn("⚠️ No base ICAO defined in ACS_activeUser");
+      return null;
+    }
+
+    return icao;
+
+  } catch(err) {
+    console.warn("⚠️ Base ICAO read error:", err);
     return null;
   }
-
-  return icao;
 }
 
 /* ========= ELIMINAR MATRÍCULA =============================== */
+
 function removeRegistration(acId) {
   let fleet = loadMyAircraft();
   const idx = fleet.findIndex(ac => ac.id === acId);
@@ -429,4 +427,17 @@ function randomLetters(n) {
     s += alphabet[Math.floor(Math.random() * alphabet.length)];
   }
   return s;
+}
+
+function numberToLetters(num, length) {
+
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let result = "";
+
+  for (let i = 0; i < length; i++) {
+    result = alphabet[num % 26] + result;
+    num = Math.floor(num / 26);
+  }
+
+  return result;
 }
