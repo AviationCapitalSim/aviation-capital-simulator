@@ -1,17 +1,18 @@
 /* ============================================================
-   🧨 ACS MASTER RESET ENGINE — v2.0 (FULL WIPE)
+   🧨 ACS MASTER RESET ENGINE — v3.0 GLOBAL
    ------------------------------------------------------------
-   Goal:
-   - BORRAR ABSOLUTAMENTE TODO ACS del navegador y dejarlo en cero.
-   - Incluye: localStorage, sessionStorage, CacheStorage, SW, IndexedDB.
-   - Diseñado para ejecutarse desde ACS Internal Monitor.
+   GLOBAL HARD RESET
+   Compatible:
+   Safari / Chrome / iOS / Android / Mac / PC
    ------------------------------------------------------------
-   Notes:
-   - Esto también borrará usuarios (ACS_users) y sesión (ACS_activeUser).
-   - Tras ejecutar, redirige a ../index.html
+   Purpose
+   - Bloquear engines
+   - Notificar otras pestañas
+   - Limpiar absolutamente todo
+   - Reiniciar ACS
    ============================================================ */
 
-console.log("🧨 ACS MASTER RESET ENGINE — v2.0 Loaded");
+console.log("🧨 ACS MASTER RESET ENGINE — v3 GLOBAL LOADED");
 
 window.ACS_MasterReset = async function ACS_MasterReset() {
 
@@ -22,103 +23,206 @@ window.ACS_MasterReset = async function ACS_MasterReset() {
     ts: new Date().toISOString()
   };
 
-  function step(msg){ report.steps.push(msg); console.log(msg); }
+  function step(msg){
+    report.steps.push(msg);
+    console.log(msg);
+  }
+
   function fail(msg, err){
     report.ok = false;
-    report.errors.push(`${msg}${err ? " — " + (err.message || String(err)) : ""}`);
+    report.errors.push(msg);
     console.warn(msg, err);
   }
 
-  /* ============================================================
-     1) localStorage + sessionStorage
-     ============================================================ */
-  try{
-    const lsCount = localStorage.length;
-    localStorage.clear();
-    step(`✔ localStorage cleared (${lsCount} keys)`);
-  }catch(e){ fail("✖ localStorage clear failed", e); }
 
-  try{
-    const ssCount = sessionStorage.length;
-    sessionStorage.clear();
-    step(`✔ sessionStorage cleared (${ssCount} keys)`);
-  }catch(e){ fail("✖ sessionStorage clear failed", e); }
+/* ============================================================
+   0) GLOBAL RESET SIGNAL
+   ============================================================ */
 
-  /* ============================================================
-     2) CacheStorage (PWA caches)
-     ============================================================ */
-  try{
-    if (window.caches && caches.keys) {
-      const keys = await caches.keys();
-      for (const k of keys) {
-        await caches.delete(k);
-      }
-      step(`✔ caches cleared (${keys.length} caches)`);
-    } else {
-      step("ℹ caches API not available");
+try {
+
+  const resetSignal = String(Date.now());
+
+  localStorage.setItem("ACS_SYSTEM_RESET", resetSignal);
+  sessionStorage.setItem("ACS_SYSTEM_RESET", resetSignal);
+
+  step("✔ GLOBAL RESET SIGNAL EMITTED");
+
+} catch(e) {
+  fail("✖ reset signal failed", e);
+}
+
+
+/* ============================================================
+   1) CROSS TAB RESET NOTIFICATION
+   ============================================================ */
+
+try {
+
+  if (window.BroadcastChannel) {
+
+    const bc = new BroadcastChannel("ACS_SYSTEM");
+
+    bc.postMessage({
+      type: "ACS_SYSTEM_RESET",
+      ts: Date.now()
+    });
+
+    bc.close();
+
+    step("✔ broadcast reset sent");
+
+  } else {
+
+    step("ℹ BroadcastChannel not supported");
+
+  }
+
+} catch(e) {
+  fail("✖ broadcast failed", e);
+}
+
+
+/* ============================================================
+   2) CLEAR LOCAL STORAGE
+   ============================================================ */
+
+try {
+
+  const lsCount = localStorage.length;
+
+  localStorage.clear();
+
+  step(`✔ localStorage cleared (${lsCount} keys)`);
+
+} catch(e) {
+  fail("✖ localStorage clear failed", e);
+}
+
+
+/* ============================================================
+   3) CLEAR SESSION STORAGE
+   ============================================================ */
+
+try {
+
+  const ssCount = sessionStorage.length;
+
+  sessionStorage.clear();
+
+  step(`✔ sessionStorage cleared (${ssCount} keys)`);
+
+} catch(e) {
+  fail("✖ sessionStorage clear failed", e);
+}
+
+
+/* ============================================================
+   4) CACHE STORAGE
+   ============================================================ */
+
+try {
+
+  if (window.caches && caches.keys) {
+
+    const keys = await caches.keys();
+
+    for (const k of keys) {
+      await caches.delete(k);
     }
-  }catch(e){ fail("✖ caches clear failed", e); }
 
-  /* ============================================================
-     3) Service Worker unregister
-     ============================================================ */
-  try{
-    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      for (const r of regs) {
-        await r.unregister();
-      }
-      step(`✔ service workers unregistered (${regs.length})`);
-    } else {
-      step("ℹ serviceWorker API not available");
+    step(`✔ caches cleared (${keys.length})`);
+
+  } else {
+
+    step("ℹ caches API not available");
+
+  }
+
+} catch(e) {
+  fail("✖ caches clear failed", e);
+}
+
+
+/* ============================================================
+   5) SERVICE WORKERS
+   ============================================================ */
+
+try {
+
+  if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+
+    const regs = await navigator.serviceWorker.getRegistrations();
+
+    for (const r of regs) {
+      await r.unregister();
     }
-  }catch(e){ fail("✖ service worker unregister failed", e); }
 
-  /* ============================================================
-     4) IndexedDB wipe (si el navegador permite enumeración)
-     ============================================================ */
-  try{
-    if (window.indexedDB) {
+    step(`✔ service workers removed (${regs.length})`);
 
-      // browsers modernos: indexedDB.databases()
-      if (indexedDB.databases) {
-        const dbs = await indexedDB.databases();
-        const names = (dbs || []).map(d => d && d.name).filter(Boolean);
+  } else {
 
-        for (const name of names) {
-          await new Promise((resolve) => {
-            const req = indexedDB.deleteDatabase(name);
-            req.onsuccess = () => resolve(true);
-            req.onerror = () => resolve(false);
-            req.onblocked = () => resolve(false);
-          });
-        }
+    step("ℹ serviceWorker API not available");
 
-        step(`✔ indexedDB cleared (${names.length} dbs)`);
-      } else {
-        step("ℹ indexedDB.databases() not available (skipped enumeration)");
-      }
+  }
 
-    } else {
-      step("ℹ indexedDB not available");
+} catch(e) {
+  fail("✖ service worker unregister failed", e);
+}
+
+
+/* ============================================================
+   6) INDEXED DB
+   ============================================================ */
+
+try {
+
+  if (window.indexedDB && indexedDB.databases) {
+
+    const dbs = await indexedDB.databases();
+
+    const names = (dbs || []).map(d => d && d.name).filter(Boolean);
+
+    for (const name of names) {
+
+      await new Promise(resolve => {
+
+        const req = indexedDB.deleteDatabase(name);
+
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => resolve(false);
+        req.onblocked = () => resolve(false);
+
+      });
+
     }
-  }catch(e){ fail("✖ indexedDB wipe failed", e); }
 
-  /* ============================================================
-     5) Signal + redirect
-     ============================================================ */
-  try{
-    // Señal útil para otras pestañas (si quedara alguna viva)
-    try{ localStorage.setItem("acs_reset", String(Date.now())); }catch(_){}
+    step(`✔ indexedDB cleared (${names.length})`);
 
-    step("✔ reset signal emitted");
+  } else {
 
-    // Redirigir a inicio (nuevo juego / login)
-    setTimeout(() => {
-      window.location.href = "../index.html";
-    }, 350);
+    step("ℹ indexedDB enumeration unavailable");
 
-  }catch(e){ fail("✖ redirect failed", e); }
+  }
 
-  return report;
+} catch(e) {
+  fail("✖ indexedDB wipe failed", e);
+}
+
+
+/* ============================================================
+   7) FINAL REDIRECT
+   ============================================================ */
+
+step("✔ redirecting to index");
+
+setTimeout(() => {
+
+  window.location.href = "../index.html";
+
+}, 500);
+
+
+return report;
+
 };
