@@ -304,6 +304,75 @@ if (btn) btn.addEventListener("click", runAll);
 const btnReset = el("btnMasterReset");
 const outReset = el("outResetLog");
 
+/* ============================================================
+   🌍 ACS MASTER RESET — BACKEND CALL
+   Connects Internal Monitor with Railway reset endpoint
+   ============================================================ */
+
+window.ACS_MasterReset = async function(){
+
+  const report = {
+    ok: false,
+    ts: new Date().toISOString(),
+    steps: [],
+    errors: []
+  };
+
+  try{
+
+    report.steps.push("Connecting to Railway world server…");
+
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/system/reset",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": localStorage.getItem("ACS_ADMIN_TOKEN") || ""
+        }
+      }
+    );
+
+    if (!res.ok) {
+      report.errors.push("HTTP ERROR: " + res.status);
+      return report;
+    }
+
+    const json = await res.json();
+
+    report.steps.push("Server response received");
+
+    if (json.ok) {
+
+      report.ok = true;
+
+      report.steps.push("Global season reset executed");
+
+      if (json.system && json.system.current_season) {
+        report.steps.push("New Season: " + json.system.current_season);
+      }
+
+      if (json.system && json.system.game_year) {
+        report.steps.push("Game Year Reset: " + json.system.game_year);
+      }
+
+    } else {
+
+      report.errors.push("Server returned ok:false");
+
+    }
+
+    return report;
+
+  }catch(err){
+
+    report.errors.push(err.message || String(err));
+    return report;
+
+  }
+
+};
+   
 async function runMasterReset(){
   try{
     if (outReset) outReset.textContent = "Waiting confirmation…";
