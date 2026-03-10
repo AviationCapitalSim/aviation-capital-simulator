@@ -28,114 +28,72 @@ function saveMyAircraft(arr) {
    • Sin romper legacy
    ============================================================ */
 
-function getRegistrationPrefix() {
+function getRegistrationPrefix(){
 
-  let user = {};
-  let baseObj = {};
-  let airline = {};
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-  try { user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}"); } catch(e) {}
-  try { baseObj = JSON.parse(localStorage.getItem("ACS_Base") || "{}"); } catch(e) {}
-  try { airline = JSON.parse(localStorage.getItem("ACS_Airline") || "{}"); } catch(e) {}
+  const baseICAO = user?.base?.icao;
 
-  // 🔵 Resolver ICAO base (fuente más fuerte)
-   
-  const baseICAO =
-  (user?.base?.icao) ||
-  localStorage.getItem("ACS_baseICAO") ||
-  baseObj?.icao ||
-  airline?.baseICAO ||
-  "";
-
-  if (!baseICAO || baseICAO.length !== 4) {
-    console.warn("⚠️ Invalid base ICAO — fallback to country.");
+  if(!baseICAO){
+    console.warn("⚠ No base ICAO found");
+    return "XX-";
   }
 
   const k2 = baseICAO.substring(0,2).toUpperCase();
 
-  /* ============================================================
-     🌍 GLOBAL ICAO → REGISTRATION PREFIX TABLE
-     (Real Aviation Core Mapping)
-     ============================================================ */
-
   const ICAO_REG_DB = {
 
-    // 🇺🇸 Americas
-    "K":  "N-",   // USA
-    "C":  "C-",   // Canada
-    "SV": "YV-",  // Venezuela
-    "SK": "HK-",  // Colombia
-    "SB": "PR-",  // Brazil
-    "MM": "XA-",  // Mexico
-    "SA": "LV-",  // Argentina
-    "SC": "CC-",  // Chile
-    "SP": "OB-",  // Peru
+    // Americas
+    "K":  "N",
+    "C":  "C-",
+    "SV": "YV-",
+    "SK": "HK-",
+    "SB": "PR-",
+    "MM": "XA-",
+    "SA": "LV-",
+    "SC": "CC-",
+    "SP": "OB-",
 
-    // 🇪🇺 Europe
-    "LE": "EC-",  // Spain
-    "LI": "I-",   // Italy
-    "LF": "F-",   // France
-    "ED": "D-",   // Germany
-    "EG": "G-",   // UK
-    "EH": "PH-",  // Netherlands
-    "EB": "OO-",  // Belgium
-    "LS": "HB-",  // Switzerland
+    // Europe
+    "LE": "EC-",
+    "LI": "I-",
+    "LF": "F-",
+    "ED": "D-",
+    "EG": "G-",
+    "EH": "PH-",
+    "EB": "OO-",
+    "LS": "HB-",
 
-    // 🇯🇵 Asia
-    "RJ": "JA-",  // Japan
-    "ZB": "B-",   // China
-    "ZL": "ZK-",  // New Zealand
-    "Y":  "VH-",  // Australia
-    "OM": "A6-",  // UAE
-    "OE": "VT-",  // India
-    "RK": "HL-",  // South Korea
-    "OJ": "JY-",  // Jordan
-    "HS": "HS-",  // Thailand
+    // Asia
+    "RJ": "JA-",
+    "ZB": "B-",
+    "OM": "A6-",
+    "OE": "VT-",
+    "RK": "HL-",
+    "OJ": "JY-",
+    "HS": "HS-",
 
-    // 🌍 Africa
-    "FA": "ZS-",  // South Africa
-    "HE": "SU-",  // Egypt
-    "DN": "5N-",  // Nigeria
+    // Africa
+    "FA": "ZS-",
+    "HE": "SU-",
+    "DN": "5N-",
 
-    // 🌊 Oceania
-    "NZ": "ZK-",  // New Zealand alt
-    "AY": "P2-",  // Papua New Guinea
-    "NF": "DQ-"   // Fiji
+    // Oceania
+    "Y":  "VH-",
+    "NZ": "ZK-",
+    "AY": "P2-",
+    "NF": "DQ-"
   };
 
-  // 🔵 PRIORIDAD 1: Coincidencia 2 letras ICAO
-  if (ICAO_REG_DB[k2]) return ICAO_REG_DB[k2];
+  if(ICAO_REG_DB[k2]) return ICAO_REG_DB[k2];
 
-  // 🔵 PRIORIDAD 2: Coincidencia 1 letra ICAO
   const k1 = baseICAO.substring(0,1).toUpperCase();
-  if (ICAO_REG_DB[k1]) return ICAO_REG_DB[k1];
 
-  // 🔵 PRIORIDAD 3: Fallback country (legacy)
-  const country =
-    user?.base?.country ||
-    localStorage.getItem("ACS_baseCountry") ||
-    baseObj?.country ||
-    airline?.country ||
-    "Unknown";
+  if(ICAO_REG_DB[k1]) return ICAO_REG_DB[k1];
 
-  const COUNTRY_FALLBACK = {
-    "United States": "N-",
-    "Spain": "EC-",
-    "Italy": "I-",
-    "France": "F-",
-    "Germany": "D-",
-    "United Kingdom": "G-",
-    "Venezuela": "YV-",
-    "Brazil": "PR-",
-    "Japan": "JA-",
-    "Australia": "VH-"
-  };
+  console.warn("⚠ Unknown ICAO prefix:",baseICAO);
 
-  if (COUNTRY_FALLBACK[country]) return COUNTRY_FALLBACK[country];
-
-  console.warn("⚠️ Registration prefix not mapped:", baseICAO, country);
-
-  return "XX-"; // último fallback controlado
+  return "XX-";
 }
 
 /* ========= VARIABLES DEL MODAL ============================== */
