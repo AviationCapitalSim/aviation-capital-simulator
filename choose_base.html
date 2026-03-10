@@ -790,23 +790,23 @@ function setBase(icao) {
         base_icao: airport.icao
       })
     })
+      
     .then(r => r.json())
     .then(res => {
 
-      if (res.status === "success") {
-        console.log("🌍 Base synced to server:", res.base);
-      } else {
-        console.warn("⚠️ Server base sync failed:", res);
-      }
+  console.log("🌍 SERVER RESPONSE:", res);
 
-    })
-    .catch(err => {
-      console.error("❌ Base sync error:", err);
-    });
-
-  } catch (err) {
-    console.error("❌ Base sync crash:", err);
+  if (res.status === "success") {
+    console.log("✅ Base saved in server:", res.base);
+  } else {
+    console.warn("⚠️ Base NOT saved in server:", res);
+    alert("⚠️ Server did not save the base. Check console.");
   }
+
+})
+.catch(err => {
+  console.error("❌ Base sync network error:", err);
+});
 
 })();
   
