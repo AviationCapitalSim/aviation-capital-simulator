@@ -286,8 +286,8 @@ function ACS_generateRegistration() {
      ================================ */
   if (rule.type === "numeric") {
 
-    let numberPart = counter.toString().padStart(rule.length, "0");
-
+   let numberPart = counter.toString().padStart(rule.length, "0").slice(-rule.length);
+     
     // USA sin guion
     if (prefix === "N") {
       return "N" + numberPart;
