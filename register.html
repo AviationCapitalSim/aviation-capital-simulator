@@ -779,13 +779,16 @@ if (!termsCheckbox || !termsCheckbox.checked ||
   };
 
   const ACS_API_URL =
-    "https://script.google.com/macros/s/AKfycby1XOb40ciRLjVOZpKEAaCZPU_m1f1IUuF7g0f7yLUQ8LxRLChuSQEU7jwLAC2USIb0BA/exec";
+  "https://acs-world-server-production.up.railway.app/v1/auth/register";
 
   try {
     const response = await fetch(ACS_API_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload)
+});
 
     const raw = await response.text();
     let result = JSON.parse(raw);
