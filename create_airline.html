@@ -444,8 +444,43 @@ function handleAirlineCreation(event) {
 
   const airline = { name: airlineName, icao, iata, slogan, region, country, businessModel, operationMode };
 
-  let user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+ /* ============================================================
+   🔐 ACS SESSION HANDLER (UNIFIED)
+============================================================ */
 
+function getActiveUser(){
+
+  try{
+
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "null");
+
+    if(!user){
+      console.warn("⚠ No active session found");
+      return null;
+    }
+
+    if(!user.userId){
+      console.warn("⚠ Invalid user session");
+      return null;
+    }
+
+    return user;
+
+  }catch(err){
+    console.error("SESSION PARSE ERROR:", err);
+    return null;
+  }
+
+}
+
+const user = getActiveUser();
+
+if(!user){
+  alert("⚠ Session required. Please login.");
+  window.location.href = "login.html";
+  throw new Error("ACS_SESSION_REQUIRED");
+}
+     
 if (!user.userId) {
   console.warn("⚠ No active user found — dev mode continuing.");
 }
