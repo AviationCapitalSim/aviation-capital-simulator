@@ -580,20 +580,6 @@ if(!user){
 if (!user.userId) {
   console.warn("⚠ No active user found — dev mode continuing.");
 }
-
-  // 🔥 Force airline to always be an OBJECT
-     
-  user.airline = {
-    id: user.airline_id || null,
-    name: airline.name,
-    iata: airline.iata,
-    icao: airline.icao,
-    slogan: airline.slogan,
-    region: airline.region,
-    country: airline.country,
-    businessModel: airline.businessModel,
-    operationMode: airline.operationMode
-  };
      
 /* ============================================================
    🟦 PASO 2 — ENSURE AIRLINE IATA (MANDATORY / SAFE)
