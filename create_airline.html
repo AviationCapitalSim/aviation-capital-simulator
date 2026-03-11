@@ -442,8 +442,10 @@ function handleAirlineCreation(event) {
   }
 
   const airline = { name: airlineName, icao, iata, slogan, region, country, businessModel, operationMode };
-
- /* ============================================================
+  const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]"); 
+     
+     
+/* ============================================================
    🔐 ACS SESSION HANDLER (UNIFIED)
 ============================================================ */
 
