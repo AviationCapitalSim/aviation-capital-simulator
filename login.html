@@ -381,7 +381,7 @@
 // Limpiar sesiones viejas al abrir login
 localStorage.removeItem("ACS_activeUser");
 
-const ACS_API_URL = "https://acs-world-server-production.up.railway.app/api/auth";
+const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/auth/login";
 
 /* === Utility: Hash password (same as register) =============== */
   
@@ -411,14 +411,16 @@ async function handleLogin(event) {
 
   try {
     const response = await fetch(ACS_API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-    action: "LOGIN",
-    email: email,
-    passwordHash: passwordHash
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    email,
+    passwordHash
   })
 });
-
+    
     const text = await response.text();
     console.log("LOGIN RAW RESPONSE:", text);
 
