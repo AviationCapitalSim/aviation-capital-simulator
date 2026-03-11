@@ -400,8 +400,6 @@ function generateUniqueCodes() {
   document.getElementById("icao").value = random(3);
 }
 
-document.getElementById("airlineName").addEventListener("input", generateUniqueCodes);
-
 /* ============================================================
    HANDLE AIRLINE CREATION
    ============================================================ */
@@ -635,13 +633,22 @@ if (!user.userId) {
 }
  
 document.addEventListener("DOMContentLoaded", () => {
+
   const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+
   if (!user) {
     alert("⚠️ Please log in to access this page.");
     window.location.href = "login.html";
+    return;
   }
-});
 
+  const airlineInput = document.getElementById("airlineName");
+
+  if (airlineInput) {
+    airlineInput.addEventListener("input", generateUniqueCodes);
+  }
+
+});
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
