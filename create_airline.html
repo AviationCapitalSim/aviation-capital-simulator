@@ -562,8 +562,8 @@ try {
    ============================================================ */
 
 const ACS_API_URL =
-  "https://script.google.com/macros/s/AKfycby1XOb40ciRLjVOZpKEAaCZPU_m1f1IUuF7g0f7yLUQ8LxRLChuSQEU7jwLAC2USIb0BA/exec";
-
+"https://acs-world-server-production.up.railway.app/v1/airlines/create";
+     
 /* ============================================================
    🔐 GET SESSION TOKEN (ACS STANDARD)
    ============================================================ */
@@ -587,14 +587,21 @@ if (!token) {
      
 fetch(ACS_API_URL, {
   method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
   body: JSON.stringify({
-    action: "CREATE_AIRLINE",
-    session_token: token,
+    user_id: user.userId,
     airline_name: airlineName,
     airline_iata: airline.iata,
-    country: country
+    airline_icao: airline.icao,
+    country: country,
+    region: region,
+    business_model: businessModel,
+    operation_mode: operationMode
   })
 })
+     
 .then(res => res.text())
 .then(raw => {
   console.log("CREATE_AIRLINE RAW:", raw);
@@ -602,7 +609,7 @@ fetch(ACS_API_URL, {
   let result = null;
   try { result = JSON.parse(raw); } catch(e) {}
 
-  if (result && result.status === "success") {
+  if (result && result.ok) {
     alert("✔ Airline synced with server!");
     window.location.href = "choose_base.html";
     return;
