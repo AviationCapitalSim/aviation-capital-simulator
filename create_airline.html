@@ -578,59 +578,6 @@ if(!user){
 if (!user.userId) {
   console.warn("⚠ No active user found — dev mode continuing.");
 }
-     
-/* ============================================================
-   🟦 PASO 2 — ENSURE AIRLINE IATA (MANDATORY / SAFE)
-   ------------------------------------------------------------
-   • Garantiza que TODA airline tenga IATA
-   • Fuente única de verdad para el sistema de vuelos
-   • No rompe sesiones existentes
-   ============================================================ */
-
-(function ensureAirlineIATA(){
-
-  try {
-    if (!user.airline) {
-      console.error("❌ Airline object missing — cannot ensure IATA.");
-      return;
-    }
-
-    // Normalizar IATA existente
-    if (user.airline.iata && typeof user.airline.iata === "string") {
-      user.airline.iata = user.airline.iata.toUpperCase().trim();
-      console.log("🟢 Airline IATA already defined:", user.airline.iata);
-      return;
-    }
-
-    // Generación controlada de IATA (fallback oficial)
-    const name = (user.airline.name || "AIR").toUpperCase().replace(/[^A-Z]/g, "");
-    let iata = name.slice(0, 2);
-
-    // Garantía mínima
-    if (iata.length < 2) {
-      iata = "XX";
-    }
-
-    user.airline.iata = iata;
-
-    console.warn("⚠️ Airline IATA was missing — generated automatically:", iata);
-
-  } catch (err) {
-    console.error("❌ ensureAirlineIATA failed:", err);
-  }
-
-})();
-     
-  // 🔥 aseguramos que la base existe
-  if (typeof user.base === "undefined") {
-    user.base = null;
-  }
-
-  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-     
-  if (user.airline) {
-  localStorage.setItem("ACS_Airline", JSON.stringify(user.airline));
-}
  
 document.addEventListener("DOMContentLoaded", () => {
 
