@@ -435,7 +435,6 @@ function handleAirlineCreation(event) {
     return false;
   }
 
-  const allUsers = JSON.parse(localStorage.getItem("ACS_users") || "[]");
   const nameExists = allUsers.some(u => u.airline && u.airline.name.toLowerCase() === airlineName.toLowerCase());
   if (nameExists) {
     alert("⚠️ Airline name already taken by another user in ACS. Please choose a different one.");
