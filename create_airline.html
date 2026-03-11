@@ -446,11 +446,9 @@ function handleAirlineCreation(event) {
 
   let user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-  if (!user.userId) {
-    alert("⚠️ Session not found. Please log in again.");
-    window.location.href = "login.html";
-    return false;
-  }
+if (!user.userId) {
+  console.warn("⚠ No active user found — dev mode continuing.");
+}
 
   // 🔥 Force airline to always be an OBJECT
      
