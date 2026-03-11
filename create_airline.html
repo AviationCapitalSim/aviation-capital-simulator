@@ -588,7 +588,7 @@ try {
 }
 
 /* ============================================================
-   ✅ SEND AIRLINE TO GOOGLE SHEET (REGISTRO / BACKEND)
+   ✅ SEND AIRLINE Railway PostgreSQL (REGISTRO / BACKEND)
    • Envía session_token
    • Lee status === "success"
    • Evita crash si backend devuelve texto raro
@@ -608,12 +608,6 @@ const token =
 
 if (!token) {
   console.warn("⚠ No session token found — continuing in dev mode.");
-}
-
-if (!token) {
-  alert("⚠ Session not found. Please login again.");
-  window.location.href = "login.html";
-  return false;
 }
      
 fetch(ACS_API_URL, {
