@@ -303,10 +303,10 @@
     <h2>Create Your Airline</h2>
     <p>Enter your airline details below to begin your aviation journey.</p>
 
-    <form id="createAirlineForm" onsubmit="return handleAirlineCreation(event)">
-      <input type="text" id="airlineName" placeholder="Airline Name" required />
-      <input type="text" id="icao" placeholder="ICAO Code (auto)" maxlength="3" readonly />
-      <input type="text" id="iata" placeholder="IATA Code (auto)" maxlength="2" readonly />
+   <form id="createAirlineForm" autocomplete="off" onsubmit="return handleAirlineCreation(event)">
+      <input type="text" id="airlineName" placeholder="Airline Name" autocomplete="off" required />
+      <input type="text" id="icao" placeholder="ICAO Code (auto)" maxlength="3" autocomplete="off" readonly />
+      <input type="text" id="iata" placeholder="IATA Code (auto)" maxlength="2" autocomplete="off" readonly />
       <input type="text" id="slogan" placeholder="Airline Slogan (optional)" />
 
       <select id="region" required>
