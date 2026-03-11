@@ -629,8 +629,10 @@ if (!user.userId) {
   }
 
   localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-  localStorage.setItem("ACS_Airline", JSON.stringify(airline));
-
+     
+  if (user.airline) {
+  localStorage.setItem("ACS_Airline", JSON.stringify(user.airline));
+}
  
 document.addEventListener("DOMContentLoaded", () => {
   const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
