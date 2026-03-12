@@ -581,7 +581,7 @@ if (!user.userId) {
  
 document.addEventListener("DOMContentLoaded", () => {
 
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+ const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser"));
 
   if (!user) {
     alert("⚠️ Please log in to access this page.");
