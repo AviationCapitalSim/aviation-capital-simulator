@@ -808,9 +808,16 @@ function setBase(icao) {
   }
 
 })
+      
 .catch(err => {
   console.error("❌ Base sync network error:", err);
 });
+
+} catch(err) {
+
+  console.error("❌ Base sync failure:", err);
+
+}
 
 })();
   
