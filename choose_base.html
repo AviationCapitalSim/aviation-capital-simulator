@@ -354,18 +354,22 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   loadAirportScripts(() => {
-    buildAirportIndex();     // loader original
-    ACS_World.initialize();  // <-- ESTA LÍNEA ES LA QUE FALTABA
+
+    buildAirportIndex();
+    ACS_World.initialize();
+
     console.log("🌍 Motor mundial listo:", ACS_World.ready);
 
     document.getElementById("continentSelect")
-      .addEventListener("change", loadCountries);
+      .addEventListener("change", () => loadCountries());
 
     document.getElementById("countrySelect")
-      .addEventListener("change", loadAirports);
+      .addEventListener("change", () => loadAirports());
+
   });
 
 });
+  
 </script>
 
 <script>
