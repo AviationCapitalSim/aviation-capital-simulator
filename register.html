@@ -766,17 +766,18 @@ if (!termsCheckbox || !termsCheckbox.checked ||
 
   const payload = {
   action: "REGISTER",
-    fullName,
-    email,
-    country,
-    dob,
-    ip: "",
-    passwordHash,
-    termsAccepted: true,
-    termsVersion: "1.0",
-    termsAcceptedAt: new Date().toISOString(),
-    client_timestamp: Date.now(),
-  };
+  fullName,
+  email,
+  country,
+  dob,
+  age,
+  ip: "",
+  passwordHash,
+  termsAccepted: true,
+  termsVersion: "1.0",
+  termsAcceptedAt: new Date().toISOString(),
+  client_timestamp: Date.now(),
+};
 
   const ACS_API_URL =
   "https://acs-world-server-production.up.railway.app/v1/auth/register";
