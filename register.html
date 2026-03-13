@@ -669,38 +669,22 @@ async function hashPassword(password) {
 }
 </script>
 
-<!-- ============================================================
-     HANDLE REGISTER — SEND DATA TO SERVER
-============================================================ -->
 <script>
+
+/* ============================================================
+   ✈️ ACS REGISTER MODULE — RAILWAY VERSION
+   VERSION: Migration Cleanup — No LocalStorage
+   DATE: 13 MAR 2026
+   ------------------------------------------------------------
+   • Registro con Railway backend
+   • Eliminada dependencia de localStorage
+   • Terms verificados por checkbox
+   • Redirección a create_airline.html
+   ============================================================ */
+
 async function handleRegister(event) {
   event.preventDefault();
 
-  /* ============================================================
-   🔒 TERMS ENFORCEMENT — BLOCK REGISTER IF NOT ACCEPTED
-   ============================================================ */
-
-const termsAccepted = localStorage.getItem("ACS_termsAccepted");
-
-if (termsAccepted !== "yes") {
-
-  // Guardar datos actuales antes de redirigir
-  const temp = {
-    fullName: document.getElementById("fullName").value.trim(),
-    email:    document.getElementById("email").value.trim(),
-    day:      document.getElementById("dob-day").value,
-    month:    document.getElementById("dob-month").value,
-    year:     document.getElementById("dob-year").value,
-    country:  document.getElementById("country").value
-  };
-
-  localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
-
-  alert("⚠️ You must read and accept the Terms & Conditions first.");
-  window.location.href = "terms.html";
-  return;
-}
-     
   const fullName = document.getElementById("fullName").value.trim();
   const email    = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
@@ -715,17 +699,23 @@ if (termsAccepted !== "yes") {
     alert("⚠️ Please complete all fields.");
     return;
   }
-     
-// 🔐 Verificación estructural de Terms
-const termsCheckbox = document.getElementById("terms");
 
-if (!termsCheckbox || !termsCheckbox.checked ||
-    localStorage.getItem("ACS_termsAccepted") !== "yes") {
-  alert("⚠️ You must accept the Terms & Conditions before registering.");
-  return;
-}
-     
-     const emailPattern =
+  /* ============================================================
+     TERMS VALIDATION
+     ============================================================ */
+
+  const termsCheckbox = document.getElementById("terms");
+
+  if (!termsCheckbox || !termsCheckbox.checked) {
+    alert("⚠️ You must accept the Terms & Conditions before registering.");
+    return;
+  }
+
+  /* ============================================================
+     EMAIL VALIDATION
+     ============================================================ */
+
+  const emailPattern =
     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int|info|biz|co|io|kg|es|ru|fr|us|de|uk)$/i;
 
   if (!emailPattern.test(email)) {
@@ -733,7 +723,12 @@ if (!termsCheckbox || !termsCheckbox.checked ||
     return;
   }
 
+  /* ============================================================
+     PASSWORD VALIDATION
+     ============================================================ */
+
   const regex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+
   if (!regex.test(password)) {
     alert("⚠️ Password must include 8+ characters, one uppercase letter and one number.");
     return;
@@ -744,6 +739,10 @@ if (!termsCheckbox || !termsCheckbox.checked ||
     return;
   }
 
+  /* ============================================================
+     AGE VALIDATION
+     ============================================================ */
+
   const mm  = String(month).padStart(2, "0");
   const dd  = String(day).padStart(2, "0");
   const dob = `${year}-${mm}-${dd}`;
@@ -753,6 +752,7 @@ if (!termsCheckbox || !termsCheckbox.checked ||
 
   let age = today.getFullYear() - birthDate.getFullYear();
   let m   = today.getMonth() - birthDate.getMonth();
+
   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
     age--;
   }
@@ -762,53 +762,70 @@ if (!termsCheckbox || !termsCheckbox.checked ||
     return;
   }
 
+  /* ============================================================
+     PASSWORD HASH
+     ============================================================ */
+
   const passwordHash = await hashPassword(password);
 
+  /* ============================================================
+     PAYLOAD TO RAILWAY
+     ============================================================ */
+
   const payload = {
-  action: "REGISTER",
-  fullName,
-  email,
-  country,
-  dob,
-  age,
-  ip: "",
-  passwordHash,
-  termsAccepted: true,
-  termsVersion: "1.0",
-  termsAcceptedAt: new Date().toISOString(),
-  client_timestamp: Date.now(),
-};
+    action: "REGISTER",
+    fullName,
+    email,
+    country,
+    dob,
+    age,
+    ip: "",
+    passwordHash,
+    termsAccepted: true,
+    termsVersion: "1.0",
+    termsAcceptedAt: new Date().toISOString(),
+    client_timestamp: Date.now(),
+  };
 
   const ACS_API_URL =
   "https://acs-world-server-production.up.railway.app/v1/auth/register";
 
   try {
+
     const response = await fetch(ACS_API_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(payload)
-});
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
 
     const raw = await response.text();
     let result = JSON.parse(raw);
 
     if (result.status === "success") {
+
       alert("✅ Registration complete! Welcome to ACS, Captain.");
-      localStorage.removeItem("ACS_registerCache");
+
       window.location.assign("create_airline.html");
+
     } else {
+
       alert("❌ Registration failed: " + result.msg);
+
     }
 
   } catch (err) {
+
     console.error(err);
     alert("❌ Error connecting to ACS server. Please try again.");
-  }
-}
-</script>
 
+  }
+
+}
+
+</script>
+     
 <!-- ============================================================
      AGE MODAL
 ============================================================ -->
@@ -821,93 +838,6 @@ function openAgeModal() {
 function closeAgeModal() { 
   const modal = document.getElementById("ageModal");
   if (modal) modal.style.display = "none";
-}
-</script>
-
-<script>
-     
-// ======================================================
-//   🔐 TERMS CONTROL — STRUCTURAL VERSION (PHASE II)
-// ======================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const checkbox = document.getElementById("terms");
-  const registerBtn = document.getElementById("registerBtn");
-
-  if (!checkbox || !registerBtn) return;
-
-  // 🔹 Estado inicial
-  checkbox.checked = false;
-  checkbox.disabled = true;
-  registerBtn.disabled = true;
-
-  // 🔹 Restaurar datos SIEMPRE
-  restoreRegisterCache();
-
-  // 🔹 Solo habilitar si viene JUSTO de aceptar
-  if (sessionStorage.getItem("ACS_termsJustAccepted") === "yes") {
-
-  checkbox.disabled = false;
-  checkbox.checked = true;
-  registerBtn.disabled = false;
-
-  // Limpiar flag temporal
-  sessionStorage.removeItem("ACS_termsJustAccepted");
-
-} else {
-  checkbox.disabled = true;
-  checkbox.checked = false;
-  registerBtn.disabled = true;
-}
-
-  // 🔹 Si hace click en el enlace Terms
-  const termsLink = document.querySelector('a[href="terms.html"]');
-  if (termsLink) {
-    termsLink.addEventListener("click", () => {
-      saveRegisterCache();
-    });
-  }
-
-  // 🔹 Si intenta marcar sin haber aceptado
-  checkbox.addEventListener("change", () => {
-    if (!checkbox.checked) {
-      registerBtn.disabled = true;
-    } else {
-      registerBtn.disabled = false;
-    }
-  });
-
-});
-
-// ===============================
-// 💾 SAVE CACHE (STRUCTURAL)
-// ===============================
-function saveRegisterCache() {
-  const data = {
-    fullName: document.getElementById("fullName").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    day: document.getElementById("dob-day").value,
-    month: document.getElementById("dob-month").value,
-    year: document.getElementById("dob-year").value,
-    country: document.getElementById("country").value
-  };
-
-  localStorage.setItem("ACS_registerCache", JSON.stringify(data));
-}
-
-// ===============================
-// 🔁 RESTORE CACHE
-// ===============================
-function restoreRegisterCache() {
-  const saved = JSON.parse(localStorage.getItem("ACS_registerCache") || "{}");
-
-  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
-  if (saved.email) document.getElementById("email").value = saved.email;
-  if (saved.day) document.getElementById("dob-day").value = saved.day;
-  if (saved.month) document.getElementById("dob-month").value = saved.month;
-  if (saved.year) document.getElementById("dob-year").value = saved.year;
-  if (saved.country) document.getElementById("country").value = saved.country;
 }
 </script>
      
