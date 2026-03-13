@@ -457,9 +457,13 @@ function handleAirlineCreation(event) {
     operationMode: airline.operationMode
   };
 
-  if (typeof user.base === "undefined") {
-    user.base = null;
-  }
+  /* ============================================================
+   RESET BASE AFTER AIRLINE CREATION
+   (force choose_base step)
+   ============================================================ */
+
+user.base = null;
+user.base_icao = null;
 
   try {
     if (!airline.iata || typeof airline.iata !== "string") {
