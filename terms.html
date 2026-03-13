@@ -581,16 +581,6 @@
       console.error("localStorage error:", e);
       // Aunque falle localStorage, seguimos con el flujo
     }
-
-    function acceptTerms() {
-
-  localStorage.setItem("ACS_termsAccepted", "yes");
-  sessionStorage.setItem("ACS_termsJustAccepted", "yes");
-
-  alert("✔ Thank you. You accepted the Terms & Conditions.");
-  window.location.href = "register.html";
-
-}
      
 </script>
 
