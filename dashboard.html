@@ -607,121 +607,178 @@ function getFlagEmojiFromCountryName(countryName) {
 </script>
 
 <script>
-/* ============================================================
-   2️⃣ BASE RESOLVER — Qatar Luxury v2.0
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
   
-  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  let base = activeUser.base || {};
-
-  // Función de limpieza
-  const clean = v => (!v || v === "undefined") ? "" : v;
-
-  base.icao    = clean(base.icao);
-  base.city    = clean(base.city);
-  base.country = clean(base.country);
-  base.name    = clean(base.name);
-
-  // Fallback: leer de los 7 HTML tradicionales
-  if (!base.icao) {
-    base.icao    = clean(localStorage.getItem("ACS_baseICAO"));
-    base.city    = clean(localStorage.getItem("ACS_baseCity"));
-    base.country = clean(localStorage.getItem("ACS_baseCountry"));
-    base.name    = clean(localStorage.getItem("ACS_baseName"));
-  }
-
-  // Si sigue sin base → salir
-  if (!base.icao) return;
-
-  // Guardar limpio
-  activeUser.base = {
-    icao: base.icao.toUpperCase(),
-    city: base.city,
-    country: base.country,
-    name: base.name
-  };
-
-  localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
-
-  console.log("✅ Base Resolver listo:", activeUser.base);
-
-});
-</script>
-
-<script>
 /* ============================================================
-   3 DASHBOARD MASTER LOADER — Qatar Luxury v5.0 (OFICIAL)
+   2️⃣ DASHBOARD PROFILE BOOTSTRAP — RAILWAY CANONICAL SOURCE
    ------------------------------------------------------------
-   • Carga airline desde Google Sheet si hace falta
-   • Muestra Welcome con estilo Qatar
-   • Carga País + Bandera
-   • Carga Base
-   • Carga Rank (si existe)
-   • Evita sobrescrituras (un solo motor)
+   • Fuente oficial: Railway API
+   • Usa localStorage solo para identificar sesión activa
+   • Elimina dependencia de base local
+   • Elimina dependencia de Google Apps Script
+   • Renderiza airline + country + rank + base desde servidor
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const API_BASE =
+    window.ACS_API_BASE ||
+    localStorage.getItem("ACS_API_BASE") ||
+    "https://TU-APP-RAILWAY.up.railway.app";
 
-  let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-  if (!activeUser || !activeUser.airline_id) {
+  if (!activeUser || !activeUser.user_id) {
+    console.warn("❌ No active user found. Redirecting to login.");
     window.location.href = "login.html";
     return;
   }
 
-  const airlineId = activeUser.airline_id;
-  let airlineObj = activeUser.airline || null;
+  const userId = activeUser.user_id;
 
-  // 1️⃣ Si airlineObj no existe → traerlo del servidor
-  if (!airlineObj) {
-    try {
-      const url =
-        "https://script.google.com/macros/s/AKfycby1XOb40ciRLjVOZpKEAaCZPU_m1f1IUuF7g0f7yLUQ8LxRLChuSQEU7jwLAC2USIb0BA/exec" +
-        `?action=getAirline&airline_id=${airlineId}`;
+  const clean = (v) => {
+    if (v === null || v === undefined) return "";
+    if (String(v).trim().toLowerCase() === "undefined") return "";
+    if (String(v).trim().toLowerCase() === "null") return "";
+    return String(v).trim();
+  };
 
-      const resp = await fetch(url);
-      const data = await resp.json();
+  async function loadProfileFromRailway() {
+    const url = `${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`;
 
-      if (data.status === "success") {
-        airlineObj = data.airline;
-        activeUser.airline = airlineObj;
-        localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
+    console.log("🌐 Loading dashboard profile from Railway:", url);
+
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
       }
-    } catch (err) {
-      console.error("❌ Error loading airline:", err);
+    });
+
+    if (!resp.ok) {
+      throw new Error(`PROFILE_HTTP_${resp.status}`);
+    }
+
+    const data = await resp.json();
+
+    if (!data || data.status !== "success") {
+      throw new Error(data?.message || "PROFILE_LOAD_FAILED");
+    }
+
+    return data;
+  }
+
+  function renderDashboardProfile(data) {
+    const user = data.user || {};
+    const airline = data.airline || {};
+
+    const airlineName =
+      clean(airline.airline_name) ||
+      clean(airline.name) ||
+      clean(activeUser?.airline?.airline_name) ||
+      clean(activeUser?.airline?.name) ||
+      "Airline";
+
+    const airlineCountry =
+      clean(airline.country) ||
+      clean(user.country) ||
+      clean(activeUser?.airline?.country);
+
+    const airlineRank =
+      clean(airline.rank) ||
+      clean(activeUser?.airline?.rank) ||
+      "Silver Carrier Rank";
+
+    const baseIcao =
+      clean(user.base_icao).toUpperCase();
+
+    const baseCity =
+      clean(user.base_city);
+
+    const baseCountry =
+      clean(user.base_country) ||
+      airlineCountry;
+
+    // ------------------------------------------------------------
+    // HERO TITLE
+    // ------------------------------------------------------------
+    const welcome = document.getElementById("welcomeMessage");
+    if (welcome) {
+      welcome.innerHTML = `<span class="w-airline">${airlineName}</span>`;
+    }
+
+    // ------------------------------------------------------------
+    // WORLD CHIP
+    // ------------------------------------------------------------
+    const chipWorld = document.getElementById("chipWorld");
+    if (chipWorld) {
+      const flag = getFlagEmojiFromCountryName(airlineCountry || baseCountry);
+      chipWorld.textContent = airlineCountry
+        ? `${flag} ${airlineCountry}`
+        : "🌍 —";
+    }
+
+    // ------------------------------------------------------------
+    // BASE CHIP
+    // ------------------------------------------------------------
+    const chipBase = document.getElementById("chipBase");
+    if (chipBase) {
+      if (baseCity && baseIcao) {
+        chipBase.textContent = `Base: ${baseCity} (${baseIcao})`;
+      } else if (baseIcao) {
+        chipBase.textContent = `Base: ${baseIcao}`;
+      } else {
+        chipBase.textContent = "Base: —";
+      }
+    }
+
+    // ------------------------------------------------------------
+    // RANK CHIP
+    // ------------------------------------------------------------
+    const chipRank = document.getElementById("chipRank");
+    if (chipRank) {
+      chipRank.textContent = airlineRank;
+    }
+
+    // ------------------------------------------------------------
+    // SESSION MIRROR (solo cache ligera, no fuente oficial)
+    // ------------------------------------------------------------
+    const mergedActiveUser = {
+      ...activeUser,
+      user_id: user.user_id || activeUser.user_id,
+      airline_id: user.airline_id || activeUser.airline_id,
+      country: user.country || activeUser.country,
+      airline: {
+        ...(activeUser.airline || {}),
+        ...airline
+      }
+    };
+
+    localStorage.setItem("ACS_activeUser", JSON.stringify(mergedActiveUser));
+
+    console.log("✅ Dashboard profile loaded from Railway:", {
+      user_id: user.user_id,
+      airline_id: user.airline_id,
+      base_icao: user.base_icao,
+      airline_name: airlineName
+    });
+  }
+
+  try {
+    const profileData = await loadProfileFromRailway();
+    renderDashboardProfile(profileData);
+  } catch (error) {
+    console.error("❌ Dashboard Railway bootstrap failed:", error);
+
+    const chipBase = document.getElementById("chipBase");
+    if (chipBase) chipBase.textContent = "Base: —";
+
+    const chipWorld = document.getElementById("chipWorld");
+    if (chipWorld) chipWorld.textContent = "🌍 —";
+
+    const welcome = document.getElementById("welcomeMessage");
+    if (welcome) {
+      welcome.innerHTML = `<span class="w-airline">Dashboard Load Error</span>`;
     }
   }
-
-  // 2️⃣ WELCOME TITLE
-  const welcome = document.getElementById("welcomeMessage");
-  if (welcome) {
-    welcome.innerHTML = `
-  <span class="w-airline">${airlineObj.name}</span>
-`;
-  }
-
-  // 3️⃣ COUNTRY + FLAG
-  const chipWorld = document.getElementById("chipWorld");
-  if (chipWorld && airlineObj.country) {
-    const flag = getFlagEmojiFromCountryName(airlineObj.country);
-    chipWorld.textContent = `${flag} ${airlineObj.country}`;
-  }
-
-  // 4️⃣ BASE
-  const chipBase = document.getElementById("chipBase");
-  if (chipBase && activeUser.base && activeUser.base.city && activeUser.base.icao) {
-    chipBase.textContent =
-      `Base: ${activeUser.base.city} (${activeUser.base.icao})`;
-  }
-
-  // 5️⃣ RANK
-  const chipRank = document.getElementById("chipRank");
-  if (chipRank && airlineObj.rank) {
-    chipRank.textContent = airlineObj.rank;
-  }
-
 });
 </script>
   
