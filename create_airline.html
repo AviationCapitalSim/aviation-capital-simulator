@@ -355,35 +355,19 @@
 <!-- ❗AQUIE EMPIEZA SCRIPT -->
      
 <script>
-
-/* ============================================================
-   ACS CREATE AIRLINE MODULE
-   Railway Migration Safe Version
-   Only session localStorage removed
-   ============================================================ */
-
 const realAirlines = [
   "American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
   "Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
   "Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
   "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
 ];
-
-
+     
 /* ============================================================
    UPDATE COUNTRIES (HISTORICAL REAL-WORLD)
    ============================================================ */
-
 function updateCountries() {
 
-  /* ============================================================
-     YEAR SOURCE
-     If Railway time engine exists → use it
-     otherwise fallback to 1940
-     ============================================================ */
-
-  const simYear = window.ACS_YEAR || 1940;
-
+  const simYear = parseInt(localStorage.getItem("ACS_year") || "1940");
   const countrySelect = document.getElementById("country");
   const selectedRegion = document.getElementById("region").value;
 
@@ -407,32 +391,20 @@ function updateCountries() {
   });
 }
 
-
-/* ============================================================
-   AUTO GENERATE IATA / ICAO
-   ============================================================ */
-
 function generateUniqueCodes() {
-
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
   const random = (n) =>
-    Array.from({ length: n }, () =>
-      letters[Math.floor(Math.random() * letters.length)]
-    ).join("");
+    Array.from({ length: n }, () => letters[Math.floor(Math.random() * letters.length)]).join("");
 
   document.getElementById("iata").value = random(2);
   document.getElementById("icao").value = random(3);
-
 }
-
 
 /* ============================================================
    HANDLE AIRLINE CREATION
    ============================================================ */
-
+     
 function handleAirlineCreation(event) {
-
   event.preventDefault();
 
   const airlineName = document.getElementById("airlineName").value.trim();
@@ -444,48 +416,25 @@ function handleAirlineCreation(event) {
   const icao = document.getElementById("icao").value.trim().toUpperCase();
   const iata = document.getElementById("iata").value.trim().toUpperCase();
 
-
-  /* ============================================================
-     REAL AIRLINE NAME CHECK
-     ============================================================ */
-
   const normalizedName = airlineName.toLowerCase().replace(/[^a-z\s]/gi, "").trim();
 
   if (realAirlines.some(real => {
-
     const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, "").trim();
-
     return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
-
   })) {
-
     alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
     return false;
-
   }
-
-
-  /* ============================================================
-     SESSION VALIDATION (RAILWAY)
-     ============================================================ */
 
   const user = getActiveUser();
 
   if (!user) {
-
     alert("⚠ Session required. Please login.");
     window.location.href = "login.html";
     return false;
-
   }
 
-
-  /* ============================================================
-     AIRLINE OBJECT
-     ============================================================ */
-
   const airline = {
-
     name: airlineName,
     icao,
     iata,
@@ -494,12 +443,9 @@ function handleAirlineCreation(event) {
     country,
     businessModel,
     operationMode
-
   };
 
-
   user.airline = {
-
     id: user.airline_id || null,
     name: airline.name,
     iata: airline.iata,
@@ -509,65 +455,44 @@ function handleAirlineCreation(event) {
     country: airline.country,
     businessModel: airline.businessModel,
     operationMode: airline.operationMode
-
   };
 
-
-  /* ============================================================
-     RESET BASE AFTER AIRLINE CREATION
-     ============================================================ */
-
-  user.base = null;
-  user.base_icao = null;
-
+  if (typeof user.base === "undefined") {
+    user.base = null;
+  }
 
   try {
-
     if (!airline.iata || typeof airline.iata !== "string") {
-
-      const cleanName = (airlineName || "ACS")
-        .toUpperCase()
-        .replace(/[^A-Z]/g, "");
-
+      const cleanName = (airlineName || "ACS").toUpperCase().replace(/[^A-Z]/g, "");
       airline.iata = cleanName.slice(0, 2) || "XX";
-
     } else {
-
       airline.iata = airline.iata.toUpperCase().trim();
-
     }
 
     user.airline.iata = airline.iata;
 
-    console.log("🟩 Airline initialized:", airline.iata);
+    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+    localStorage.setItem("ACS_Airline", JSON.stringify(airline));
+    localStorage.setItem("userIATA", airline.iata);
+    localStorage.setItem("lastFlightNumber", "100");
+    localStorage.setItem("flightNumbers", JSON.stringify([]));
+
+    console.log("🟩 Flight Number System initialized:", airline.iata);
 
   } catch (e) {
-
     console.error("❌ CREATE AIRLINE INIT FAILED:", e);
-    alert("❌ Failed to initialize airline.");
+    alert("❌ Failed to initialize airline locally.");
     return false;
-
   }
 
-
-  /* ============================================================
-     SEND AIRLINE TO RAILWAY BACKEND
-     ============================================================ */
-
-  const ACS_API_URL =
-  "https://acs-world-server-production.up.railway.app/v1/airlines/create";
-
+  const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/airlines/create";
 
   fetch(ACS_API_URL, {
-
     method: "POST",
-
     headers: {
       "Content-Type": "application/json"
     },
-
     body: JSON.stringify({
-
       user_id: user.userId,
       airline_name: airlineName,
       airline_iata: airline.iata,
@@ -576,45 +501,27 @@ function handleAirlineCreation(event) {
       region: region,
       business_model: businessModel,
       operation_mode: operationMode
-
     })
-
   })
-
   .then(res => res.text())
-
   .then(raw => {
-
     console.log("CREATE_AIRLINE RAW:", raw);
 
     let result = null;
-
     try {
-
       result = JSON.parse(raw);
-
     } catch (e) {}
 
-
     if (result && result.ok) {
-
       if (result.airline_id) {
-
         user.airline_id = result.airline_id;
-
-        if (user.airline)
-          user.airline.id = result.airline_id;
-
-        console.log("🟩 Airline ID assigned:", result.airline_id);
-
+        if (user.airline) user.airline.id = result.airline_id;
+        localStorage.setItem("ACS_activeUser", JSON.stringify(user));
       }
 
       alert("✔ Airline synced with server!");
-
       window.location.href = "choose_base.html";
-
       return;
-
     }
 
     const msg = (result && result.error)
@@ -622,77 +529,91 @@ function handleAirlineCreation(event) {
       : raw;
 
     alert("❌ Server error: " + msg);
-
   })
-
   .catch(err => {
-
     console.error("CREATE_AIRLINE ERROR:", err);
     alert("❌ Error connecting to ACS server: " + err.message);
-
   });
 
   return false;
-
 }
-
-
+     
 /* ============================================================
-   SESSION HANDLER — RAILWAY
-   ============================================================ */
+   🔐 ACS SESSION HANDLER (UNIFIED)
+============================================================ */
 
 function getActiveUser(){
 
-  if(!window.ACS_USER){
+  try{
 
-    console.warn("⚠ No active session (Railway backend required)");
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "null");
+
+    if(!user){
+      console.warn("⚠ No active session found");
+      return null;
+    }
+
+    if(!user.userId){
+      console.warn("⚠ Invalid user session");
+      return null;
+    }
+
+    return user;
+
+  }catch(err){
+    console.error("SESSION PARSE ERROR:", err);
     return null;
-
   }
 
-  return window.ACS_USER;
-
 }
-
-
-/* ============================================================
-   PAGE INIT
-   ============================================================ */
 
 const user = getActiveUser();
 
 if(!user){
-
   alert("⚠ Session required. Please login.");
   window.location.href = "login.html";
   throw new Error("ACS_SESSION_REQUIRED");
-
 }
-
-
+     
+if (!user.userId) {
+  console.warn("⚠ No active user found — dev mode continuing.");
+}
+ 
 document.addEventListener("DOMContentLoaded", () => {
+
+ const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser"));
+
+  if (!user) {
+    alert("⚠️ Please log in to access this page.");
+    window.location.href = "login.html";
+    return;
+  }
 
   const airlineInput = document.getElementById("airlineName");
 
   if (airlineInput) {
-
     airlineInput.addEventListener("input", generateUniqueCodes);
-
   }
 
 });
-
-
-/* ============================================================
-   LOGOUT
-   ============================================================ */
-
 function handleLogout() {
-
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
-
 }
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  updateCountries();  
+
+  if (typeof registerTimeListener === "function") {
+    registerTimeListener(updateClockDisplay);
+    updateClockDisplay();
+  }
+});
+
+// 🔥 ESTA ES LA LÍNEA QUE FALTABA
+document.getElementById("region").addEventListener("change", updateCountries);
 
 </script>
 
