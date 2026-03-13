@@ -820,14 +820,17 @@ async function setBase(icao) {
 (function syncFlightSystemWithAirline(){
 
   try {
-    const airlineIATA = (user.airline && user.airline.iata || "").toUpperCase();
-    const storedIATA  = (localStorage.getItem("userIATA") || "").toUpperCase();
 
-    // Si no hay airline válida, no hacemos nada
-    if (!airlineIATA) {
+    // Obtener usuario activo de la sesión local
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "null");
+
+    if (!user || !user.airline || !user.airline.iata) {
       console.warn("⚠️ Flight Sync skipped — no airline IATA found.");
       return;
     }
+
+    const airlineIATA = String(user.airline.iata).toUpperCase();
+    const storedIATA  = (localStorage.getItem("userIATA") || "").toUpperCase();
 
     // Si el sistema de vuelos está desalineado → sincronizar
     if (!storedIATA || storedIATA !== airlineIATA) {
@@ -845,16 +848,20 @@ async function setBase(icao) {
       localStorage.setItem("flightNumbers", JSON.stringify([]));
 
       console.log("🟩 Flight System synchronized successfully.");
+
     } else {
+
       console.log("🟢 Flight System already in sync:", airlineIATA);
+
     }
 
   } catch (err) {
+
     console.error("❌ Flight System Sync Error:", err);
+
   }
 
 })();
-
 
 /* ============================================================
    DEMAND TOOLTIP
