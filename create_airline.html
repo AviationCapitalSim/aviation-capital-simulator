@@ -513,17 +513,32 @@ function handleAirlineCreation(event) {
     } catch (e) {}
 
     if (result && result.ok) {
-      if (result.airline_id) {
-        user.airline_id = result.airline_id;
-        if (user.airline) user.airline.id = result.airline_id;
-        localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-      }
 
-      alert("✔ Airline synced with server!");
-      window.location.href = "choose_base.html";
-      return;
-    }
+  if (result.airline_id) {
+    user.airline_id = result.airline_id;
+    if (user.airline) user.airline.id = result.airline_id;
+    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+  }
 
+  /* ============================================================
+     🧹 CLEAN LEGACY BASE CACHE BEFORE CHOOSE BASE
+     ------------------------------------------------------------
+     • Evita saltos falsos por bases viejas guardadas localmente
+     • Necesario mientras termina la migración Railway
+     ============================================================ */
+  localStorage.removeItem("ACS_baseICAO");
+  localStorage.removeItem("ACS_baseIATA");
+  localStorage.removeItem("ACS_baseCity");
+  localStorage.removeItem("ACS_baseName");
+  localStorage.removeItem("ACS_baseCountry");
+  localStorage.removeItem("ACS_baseContinent");
+  localStorage.removeItem("ACS_baseReady");
+
+  alert("✔ Airline synced with server!");
+  window.location.href = "choose_base.html";
+  return;
+}
+       
     const msg = (result && result.error)
       ? result.error
       : raw;
