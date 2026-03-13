@@ -571,17 +571,22 @@
 </footer>
 
 <script>
-   
-  function acceptTerms() {
-    // 1) Guardar bandera local para register.html
-    try {
-      localStorage.setItem("ACS_termsAccepted", "yes");
-      sessionStorage.setItem("ACS_termsJustAccepted", "yes");
-    } catch (e) {
-      console.error("localStorage error:", e);
-      // Aunque falle localStorage, seguimos con el flujo
-    }
-     
+
+function acceptTerms() {
+
+  try {
+    localStorage.setItem("ACS_termsAccepted", "yes");
+    sessionStorage.setItem("ACS_termsJustAccepted", "yes");
+  } catch (e) {
+    console.error("localStorage error:", e);
+  }
+
+  alert("✔ Thank you. You accepted the Terms & Conditions.");
+
+  window.location.href = "register.html";
+
+}
+
 </script>
 
 </body>
