@@ -296,25 +296,15 @@
 <script>
 
 /* ============================================================
-   🧭 BASE RESTORE — Choose Base Safe Guard (ONE TIME)
+   🧭 BASE RESTORE — DISABLED DURING RAILWAY MIGRATION
+   ------------------------------------------------------------
+   choose_base no debe reconstruir base desde localStorage.
+   La base válida debe venir del flujo real y guardarse en Railway.
    ============================================================ */
 
 (function restoreBaseIfExists(){
-
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  if (!user || !user.base || !user.base.icao) return;
-
-  // 🔹 Reinyectar legacy keys si faltan
-  if (!localStorage.getItem("ACS_baseICAO")) {
-    localStorage.setItem("ACS_baseICAO", user.base.icao);
-    localStorage.setItem("ACS_baseCity", user.base.city || "");
-    localStorage.setItem("ACS_baseName", user.base.name || "");
-    localStorage.setItem("ACS_baseCountry", user.base.country || "");
-    localStorage.setItem("ACS_baseContinent", user.base.continent || "");
-  }
-
-  console.log("🧭 Base restaurada desde ACS_activeUser:", user.base);
-
+  console.log("🟦 Legacy base restore disabled.");
+  
 })();
   
 </script>
@@ -323,22 +313,40 @@
 <script>
 
 /* ============================================================
-   🔓 ACS BASE LOCK SYSTEM — TEMP DISABLED FOR RAILWAY MIGRATION
+   🔓 ACS BASE FLOW — RAILWAY MODE
    ------------------------------------------------------------
-   • Durante la migración a Railway NO usamos ACS_baseICAO
-   • choose_base debe abrir siempre después de create_airline
-   • La validación final se hará luego contra PostgreSQL
+   choose_base no debe redirigir por localStorage.
+   Esta pantalla debe abrirse normalmente después de create_airline.
    ============================================================ */
 
 (function preventBaseChange(){
 
   try {
-    console.log("🟦 Base lock disabled during Railway migration.");
+    console.log("🟦 Local base lock disabled in choose_base.");
   } catch (err) {
-    console.warn("⚠ Base lock log failed:", err);
+    console.warn("⚠ Base flow log failed:", err);
   }
 
 })();
+  
+document.addEventListener("DOMContentLoaded", () => {
+
+  loadAirportScripts(() => {
+
+    buildAirportIndex();
+    ACS_World.initialize();
+
+    console.log("🌍 Motor mundial listo:", ACS_World.ready);
+
+    document.getElementById("continentSelect")
+      .addEventListener("change", () => loadCountries());
+
+    document.getElementById("countrySelect")
+      .addEventListener("change", () => loadAirports());
+
+  });
+
+});
   
 </script>
 
@@ -675,28 +683,21 @@ const ISO2_TO_COUNTRY = {
   "ZM":"Zambia","ZW":"Zimbabwe"
 };
   
-/* ============================================================
-   SET BASE — SE MANTIENE MODERNO (GUARDA a.region)
-   (Luego el Dashboard hará la magia histórica con banderas)
-============================================================ */
-
-function setBase(icao) {
+async function setBase(icao) {
   const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
-  if (!airport) return alert("⚠️ Airport not found.");
+  if (!airport) {
+    alert("⚠️ Airport not found.");
+    return;
+  }
 
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-  if (!user || !user.airline) {
-    alert("⚠️ No active session or airline found.");
+  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "null");
+  if (!user || !user.userId) {
+    alert("⚠️ No active session found.");
     window.location.href = "login.html";
     return;
   }
 
-  // 🔥 Guardar país moderno del aeropuerto
-  const raw = (airport.country || airport.region || "").toUpperCase();
-  user.airline.country = ISO2_TO_COUNTRY[raw] || raw;
-
-  // 🔥 BASE REAL (estructura moderna ACS)
-  user.base = {
+  const basePayload = {
     icao: airport.icao,
     iata: airport.iata,
     city: airport.city,
@@ -711,27 +712,44 @@ function setBase(icao) {
     slot_cost_usd: airport.slot_cost_usd
   };
 
-  // 🔥 COMPATIBILIDAD CON LOS 7 CONTINENTES (FORZADA)
-  localStorage.setItem("ACS_baseICAO", airport.icao);
-  localStorage.setItem("ACS_baseIATA", airport.iata || "");
-  localStorage.setItem("ACS_baseCity", airport.city || "");
-  localStorage.setItem("ACS_baseName", airport.name || "");
-  localStorage.setItem("ACS_baseCountry", airport.country || airport.region || "");
-  localStorage.setItem("ACS_baseContinent", selectedContinent || "");
+  try {
+    const API = "https://acs-world-server-production.up.railway.app/v1/users/set-base";
 
-  // 🔒 MARCA EXPLÍCITA DE BASE VÁLIDA (AJUSTE CLAVE)
-  localStorage.setItem("ACS_baseReady", "1");
+    const response = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_id: user.userId,
+        base_icao: airport.icao
+      })
+    });
 
-  // 🔥 Guardar en ACS_activeUser y ACS_users
-  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
+    const result = await response.json();
+    console.log("BASE SAVE RESPONSE:", result);
 
-  const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
-  const index = users.findIndex(u => u.email === user.email);
-  if (index !== -1) users[index] = user;
-  localStorage.setItem("ACS_users", JSON.stringify(users));
+    if (!response.ok || result.ok !== true) {
+      alert("❌ Railway did not save the base.");
+      return;
+    }
 
-  console.log("✅ Base establecida correctamente:", user.base);
+    // Solo después de guardar correctamente en Railway,
+    // actualizamos la sesión local como espejo temporal.
+    user.base = basePayload;
+    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
 
+    console.log("✅ Base saved in Railway and mirrored locally:", basePayload);
+
+    alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
+    window.location.href = "dashboard.html";
+
+  } catch (err) {
+    console.error("SET BASE ERROR:", err);
+    alert("❌ Error saving base in Railway.");
+  }
+}
+  
   /* ============================================================
    🌐 SYNC BASE WITH SERVER — ACS CLOUD PERSISTENCE
    ------------------------------------------------------------
