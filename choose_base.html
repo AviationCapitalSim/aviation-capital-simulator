@@ -296,53 +296,76 @@
 <script>
 
 /* ============================================================
-   🧭 BASE RESTORE — Choose Base Safe Guard (ONE TIME)
+   ✈️ ACS SESSION HANDLER — RAILWAY
+   ------------------------------------------------------------
+   • Fuente de sesión: window.ACS_USER
+   • Elimina dependencia de ACS_activeUser / ACS_users
    ============================================================ */
+  
+function getActiveUser() {
+  if (!window.ACS_USER) {
+    console.warn("⚠ No active Railway session found");
+    return null;
+  }
+  return window.ACS_USER;
+}
 
+/* ============================================================
+   🧭 BASE RESTORE — Choose Base Safe Guard (ONE TIME)
+   ------------------------------------------------------------
+   • Ya NO usa ACS_activeUser de localStorage
+   • Usa sesión Railway
+   • Mantiene compatibilidad con módulos legacy
+   ============================================================ */
+  
 (function restoreBaseIfExists(){
 
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  if (!user || !user.base || !user.base.icao) return;
+  try {
+    const user = getActiveUser();
+    const base = user?.base || null;
 
-  // 🔹 Reinyectar legacy keys si faltan
-  if (!localStorage.getItem("ACS_baseICAO")) {
-    localStorage.setItem("ACS_baseICAO", user.base.icao);
-    localStorage.setItem("ACS_baseCity", user.base.city || "");
-    localStorage.setItem("ACS_baseName", user.base.name || "");
-    localStorage.setItem("ACS_baseCountry", user.base.country || "");
-    localStorage.setItem("ACS_baseContinent", user.base.continent || "");
+    if (!base || !base.icao) return;
+
+    // 🔹 Reinyectar legacy keys si faltan
+    if (!localStorage.getItem("ACS_baseICAO")) {
+      localStorage.setItem("ACS_baseICAO", base.icao);
+      localStorage.setItem("ACS_baseCity", base.city || "");
+      localStorage.setItem("ACS_baseName", base.name || "");
+      localStorage.setItem("ACS_baseCountry", base.country || "");
+      localStorage.setItem("ACS_baseContinent", base.continent || "");
+    }
+
+    console.log("🧭 Base restaurada desde Railway session:", base);
+
+  } catch (err) {
+    console.warn("⚠ Base restore failed:", err);
   }
-
-  console.log("🧭 Base restaurada desde ACS_activeUser:", user.base);
 
 })();
   
 </script>
-  
 
 <script>
 
 /* ============================================================
    🔒 ACS BASE LOCK SYSTEM
    ------------------------------------------------------------
-   • Si el jugador ya tiene base → bloquear choose_base
-   • Evita cambios gratuitos de hub
-   • Arquitectura segura para economía del simulador
+   • Si el jugador ya tiene base en Railway → bloquear choose_base
+   • Fallback legacy: ACS_baseICAO
    ============================================================ */
-
 (function preventBaseChange(){
 
   try {
 
-    const base = localStorage.getItem("ACS_baseICAO");
+    const user = getActiveUser();
+    const backendBase = user?.base_icao || user?.base?.icao || "";
+    const legacyBase  = localStorage.getItem("ACS_baseICAO") || "";
+    const base = backendBase || legacyBase;
 
     if (base) {
-
       console.log("🔒 Base already defined:", base);
       console.log("➡ Redirecting to dashboard...");
-
       window.location.href = "dashboard.html";
-
     }
 
   } catch (err) {
@@ -606,40 +629,41 @@ function loadAirports() {
     </td></tr>`;
     return;
   }
-/* ============================================================
-   === HISTORICAL SORTING SYSTEM (C-2) =========================
-   ------------------------------------------------------------
-   • 1940–1954 → ordenar por Y
-   • 1955–1975 → ordenar por Y + C
-   • 1976+     → ordenar por Y + C + F
-   ============================================================ */
-airports.sort((a, b) => {
 
-  const D1 = ACS_World.getHistoricalDemand(a, year);
-  const D2 = ACS_World.getHistoricalDemand(b, year);
+  /* ============================================================
+     === HISTORICAL SORTING SYSTEM (C-2) =========================
+     ------------------------------------------------------------
+     • 1940–1954 → ordenar por Y
+     • 1955–1975 → ordenar por Y + C
+     • 1976+     → ordenar por Y + C + F
+     ============================================================ */
+  airports.sort((a, b) => {
 
-  let totalA = 0;
-  let totalB = 0;
+    const D1 = ACS_World.getHistoricalDemand(a, year);
+    const D2 = ACS_World.getHistoricalDemand(b, year);
 
-  if (year < 1955) {
-    // SOLO Y
-    totalA = (D1.Y || 0);
-    totalB = (D2.Y || 0);
-  }
-  else if (year < 1976) {
-    // Y + C
-    totalA = (D1.Y || 0) + (D1.C || 0);
-    totalB = (D2.Y || 0) + (D2.C || 0);
-  }
-  else {
-    // Y + C + F
-    totalA = (D1.Y || 0) + (D1.C || 0) + (D1.F || 0);
-    totalB = (D2.Y || 0) + (D2.C || 0) + (D2.F || 0);
-  }
+    let totalA = 0;
+    let totalB = 0;
 
-  // ORDEN DESCENDENTE (Mayor → Menor)
-  return totalB - totalA;
-});
+    if (year < 1955) {
+      // SOLO Y
+      totalA = (D1.Y || 0);
+      totalB = (D2.Y || 0);
+    }
+    else if (year < 1976) {
+      // Y + C
+      totalA = (D1.Y || 0) + (D1.C || 0);
+      totalB = (D2.Y || 0) + (D2.C || 0);
+    }
+    else {
+      // Y + C + F
+      totalA = (D1.Y || 0) + (D1.C || 0) + (D1.F || 0);
+      totalB = (D2.Y || 0) + (D2.C || 0) + (D2.F || 0);
+    }
+
+    // ORDEN DESCENDENTE (Mayor → Menor)
+    return totalB - totalA;
+  });
 
   airports.forEach(a => {
     // Demanda histórica real del motor mundial
@@ -706,17 +730,26 @@ const ISO2_TO_COUNTRY = {
 };
   
 /* ============================================================
-   SET BASE — SE MANTIENE MODERNO (GUARDA a.region)
-   (Luego el Dashboard hará la magia histórica con banderas)
-============================================================ */
-
+   SET BASE — RAILWAY + LEGACY COMPAT
+   ------------------------------------------------------------
+   • Ya NO usa ACS_activeUser
+   • Ya NO usa ACS_users
+   • Ya NO usa ACS_session_token
+   • Mantiene localStorage legacy SOLO para módulos del simulador
+   ============================================================ */
 function setBase(icao) {
   const airport = Object.values(WorldAirportsACS).flat().find(a => a.icao === icao);
   if (!airport) return alert("⚠️ Airport not found.");
 
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser"));
-  if (!user || !user.airline) {
-    alert("⚠️ No active session or airline found.");
+  const user = getActiveUser();
+  if (!user || !user.userId) {
+    alert("⚠️ No active Railway session found.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  if (!user.airline) {
+    alert("⚠️ No airline found in session.");
     window.location.href = "login.html";
     return;
   }
@@ -741,7 +774,9 @@ function setBase(icao) {
     slot_cost_usd: airport.slot_cost_usd
   };
 
-  // 🔥 COMPATIBILIDAD CON LOS 7 CONTINENTES (FORZADA)
+  user.base_icao = airport.icao;
+
+  // 🔥 COMPATIBILIDAD LEGACY DEL SIMULADOR
   localStorage.setItem("ACS_baseICAO", airport.icao);
   localStorage.setItem("ACS_baseIATA", airport.iata || "");
   localStorage.setItem("ACS_baseCity", airport.city || "");
@@ -749,122 +784,99 @@ function setBase(icao) {
   localStorage.setItem("ACS_baseCountry", airport.country || airport.region || "");
   localStorage.setItem("ACS_baseContinent", selectedContinent || "");
 
-  // 🔒 MARCA EXPLÍCITA DE BASE VÁLIDA (AJUSTE CLAVE)
+  // 🔒 MARCA EXPLÍCITA DE BASE VÁLIDA
   localStorage.setItem("ACS_baseReady", "1");
 
-  // 🔥 Guardar en ACS_activeUser y ACS_users
-  localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-
-  const users = JSON.parse(localStorage.getItem("ACS_users") || "[]");
-  const index = users.findIndex(u => u.email === user.email);
-  if (index !== -1) users[index] = user;
-  localStorage.setItem("ACS_users", JSON.stringify(users));
-
-  console.log("✅ Base establecida correctamente:", user.base);
+  console.log("✅ Base establecida localmente (legacy compat):", user.base);
 
   /* ============================================================
-   🌐 SYNC BASE WITH SERVER — ACS CLOUD PERSISTENCE
-   ------------------------------------------------------------
-   • Envía base ICAO al backend
-   • Usa session_token existente
-   • No rompe funcionamiento local
-   ============================================================ */
+     🌐 SYNC BASE WITH SERVER — RAILWAY
+     ------------------------------------------------------------
+     • Envía user_id + base_icao
+     • Sin session_token legacy
+     ============================================================ */
+  (function syncBaseToServer(){
 
-(function syncBaseToServer(){
+    try {
 
-  try {
+      const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/users/set-base";
 
-    const sessionToken = localStorage.getItem("ACS_session_token");
+      fetch(ACS_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          user_id: user.userId,
+          base_icao: airport.icao
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
 
-    if (!sessionToken) {
-      console.warn("⚠️ No session token found — skipping server sync.");
-      return;
-    }
+        console.log("🌍 SERVER RESPONSE:", res);
 
-    const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/users/set-base";
+        if (res.status === "success") {
+          console.log("✅ Base saved in server:", res.base);
+        } else {
+          console.warn("⚠️ Base NOT saved in server:", res);
+          alert("⚠️ Server did not save the base. Check console.");
+        }
 
-    fetch(ACS_API_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    user_id: user.userId,
-    base_icao: airport.icao
-  })
-})
-      
-    .then(r => r.json())
-    .then(res => {
-
-  console.log("🌍 SERVER RESPONSE:", res);
-
-  if (res.status === "success") {
-    console.log("✅ Base saved in server:", res.base);
-  } else {
-    console.warn("⚠️ Base NOT saved in server:", res);
-    alert("⚠️ Server did not save the base. Check console.");
-  }
-
-})
-      
-.catch(err => {
-  console.error("❌ Base sync network error:", err);
-});
-
-} catch(err) {
-
-  console.error("❌ Base sync failure:", err);
-
-}
-
-})();
-  
-/* ============================================================
-   🟦 PASO 1 — FLIGHT SYSTEM CONTEXT SYNC (SAFE / NON-BREAKING)
-   ------------------------------------------------------------
-   • Fuente de verdad: ACS_activeUser.airline.iata
-   • Mantiene compatibilidad con módulos legacy
-   • Solo corrige si hay inconsistencia
-   ============================================================ */
-
-(function syncFlightSystemWithAirline(){
-
-  try {
-    const airlineIATA = (user.airline && user.airline.iata || "").toUpperCase();
-    const storedIATA  = (localStorage.getItem("userIATA") || "").toUpperCase();
-
-    // Si no hay airline válida, no hacemos nada
-    if (!airlineIATA) {
-      console.warn("⚠️ Flight Sync skipped — no airline IATA found.");
-      return;
-    }
-
-    // Si el sistema de vuelos está desalineado → sincronizar
-    if (!storedIATA || storedIATA !== airlineIATA) {
-
-      console.log("🔁 Syncing Flight System IATA:", {
-        previous: storedIATA || "(none)",
-        current: airlineIATA
+      })
+      .catch(err => {
+        console.error("❌ Base sync network error:", err);
       });
 
-      // Prefijo correcto de vuelos
-      localStorage.setItem("userIATA", airlineIATA);
-
-      // Reinicio seguro del sistema de numeración
-      localStorage.setItem("lastFlightNumber", "100");
-      localStorage.setItem("flightNumbers", JSON.stringify([]));
-
-      console.log("🟩 Flight System synchronized successfully.");
-    } else {
-      console.log("🟢 Flight System already in sync:", airlineIATA);
+    } catch(err) {
+      console.error("❌ Base sync failure:", err);
     }
 
-  } catch (err) {
-    console.error("❌ Flight System Sync Error:", err);
-  }
+  })();
+  
+  /* ============================================================
+     🟦 PASO 1 — FLIGHT SYSTEM CONTEXT SYNC (SAFE / NON-BREAKING)
+     ------------------------------------------------------------
+     • Fuente de verdad: user.airline.iata
+     • Mantiene compatibilidad con módulos legacy
+     ============================================================ */
+  (function syncFlightSystemWithAirline(){
 
-})();
+    try {
+      const airlineIATA = ((user.airline && user.airline.iata) || "").toUpperCase();
+      const storedIATA  = (localStorage.getItem("userIATA") || "").toUpperCase();
+
+      // Si no hay airline válida, no hacemos nada
+      if (!airlineIATA) {
+        console.warn("⚠️ Flight Sync skipped — no airline IATA found.");
+        return;
+      }
+
+      // Si el sistema de vuelos está desalineado → sincronizar
+      if (!storedIATA || storedIATA !== airlineIATA) {
+
+        console.log("🔁 Syncing Flight System IATA:", {
+          previous: storedIATA || "(none)",
+          current: airlineIATA
+        });
+
+        // Prefijo correcto de vuelos
+        localStorage.setItem("userIATA", airlineIATA);
+
+        // Reinicio seguro del sistema de numeración
+        localStorage.setItem("lastFlightNumber", "100");
+        localStorage.setItem("flightNumbers", JSON.stringify([]));
+
+        console.log("🟩 Flight System synchronized successfully.");
+      } else {
+        console.log("🟢 Flight System already in sync:", airlineIATA);
+      }
+
+    } catch (err) {
+      console.error("❌ Flight System Sync Error:", err);
+    }
+
+  })();
   
   alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
   window.location.href = "dashboard.html";
@@ -872,8 +884,7 @@ function setBase(icao) {
 
 /* ============================================================
    DEMAND TOOLTIP
-============================================================ */
-  
+   ============================================================ */
 const tooltip = document.getElementById("demandTooltip");
 
 document.addEventListener("mousemove", e => {
@@ -882,9 +893,6 @@ document.addEventListener("mousemove", e => {
     const parts = cell.textContent.trim().split("/");
     if (parts.length === 3) {
       const [Y, C, F] = parts.map(Number);
-      const total = Y + C + F;
-      const ecoDeg = total ? (Y/total)*360 : 0;
-      const bizDeg = total ? ((Y+C)/total)*360 : 0;
 
       tooltip.innerHTML = `
         <h4>Passenger Demand</h4>
@@ -902,6 +910,6 @@ document.addEventListener("mousemove", e => {
 });
 
 </script>
-
+  
 </body>
 </html>
