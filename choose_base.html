@@ -866,6 +866,44 @@ function setBase(icao) {
   }
 
 })();
+
+/* ============================================================
+SAVE BASE TO RAILWAY
+============================================================ */
+
+(async function saveBase(){
+
+  try {
+
+    const API = "https://acs-world-server-production.up.railway.app/v1/users/set-base";
+
+    const response = await fetch(API, {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        user_id: user.userId,
+        base_icao: airport.icao
+      })
+
+    });
+
+    const result = await response.json();
+
+    console.log("BASE SAVED:", result);
+
+  } catch(err) {
+
+    console.error("BASE SAVE ERROR:", err);
+
+  }
+
+})();
+
   
   alert(`✅ Base set successfully at ${airport.city} (${airport.icao}).`);
   window.location.href = "dashboard.html";
