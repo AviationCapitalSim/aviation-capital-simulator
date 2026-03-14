@@ -290,38 +290,98 @@ function ACS_getRemainingMonths(targetDate) {
 }
 
 /* ============================================================
-   🟩 MA-1 — BASE RESOLVER (ACS SINGLE SOURCE OF TRUTH)
+   🌍 MA-1.1 — GLOBAL BASE RESOLVER (RAILWAY AUTHORITY)
    ------------------------------------------------------------
-   Rule:
-   - MyAircraft NEVER invents base
-   - Base MUST come from choose_base (ACS_activeUser)
-   - No silent fallbacks
+   Source priority:
+   1️⃣ Railway API (users.profile.base_icao)
+   2️⃣ Local fallback (ACS_activeUser.base.icao)
    ------------------------------------------------------------
-   Version: v1.1 | Date: 05 FEB 2026
+   Compatible with:
+   • Dashboard
+   • My Aircraft
+   • Future multiplayer sync
    ============================================================ */
 
-function getCurrentBaseICAO() {
+async function getCurrentBaseICAO() {
+
+  const API_BASE =
+    window.ACS_API_BASE ||
+    localStorage.getItem("ACS_API_BASE") ||
+    "https://acs-world-server-production.up.railway.app";
 
   let user;
 
   try {
-    user = JSON.parse(localStorage.getItem("ACS_activeUser"));
+    user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
   } catch (e) {
-    throw new Error("❌ Invalid ACS_activeUser JSON");
+    console.warn("⚠️ Invalid ACS_activeUser JSON");
+    user = {};
   }
+
+  const userId = user.user_id || user.userId;
+
+  /* ============================================================
+     1️⃣ TRY RAILWAY (PRIMARY SOURCE)
+     ============================================================ */
+
+  if (userId) {
+
+    try {
+
+      const resp = await fetch(
+        `${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
+      if (resp.ok) {
+
+        const data = await resp.json();
+
+        const baseICAO = data?.profile?.base_icao;
+
+        if (baseICAO && baseICAO.length === 4) {
+
+          console.log("🌍 Base loaded from Railway:", baseICAO);
+
+          return baseICAO.toUpperCase();
+        }
+
+      }
+
+    } catch (err) {
+
+      console.warn("⚠️ Railway base lookup failed — fallback local", err);
+
+    }
+
+  }
+
+  /* ============================================================
+     2️⃣ LOCAL FALLBACK (LEGACY SUPPORT)
+     ============================================================ */
 
   if (
-    !user ||
-    !user.base ||
-    !user.base.icao ||
-    user.base.icao.length !== 4
+    user &&
+    user.base &&
+    user.base.icao &&
+    user.base.icao.length === 4
   ) {
-    throw new Error(
-      "❌ COMPANY BASE NOT SET — choose_base.html must be completed first"
-    );
+
+    console.log("🟡 Base fallback from localStorage:", user.base.icao);
+
+    return user.base.icao.toUpperCase();
   }
 
-  return user.base.icao.toUpperCase();
+  /* ============================================================
+     3️⃣ HARD FAIL
+     ============================================================ */
+
+  console.error("❌ COMPANY BASE NOT SET");
+
+  return null;
 }
 
 /* ============================================================
