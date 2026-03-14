@@ -129,15 +129,38 @@
     color: #0c1f3c;
   }
 
-  /* CLOCK (same as dashboard) */
-  .acs-clock-header {
-    font-family: "Orbitron", monospace;
-    padding: 0.4rem 0.8rem;
-    background: rgba(0,255,128,0.08);
-    border-radius: 8px;
-    font-size: 0.95rem;
-    color: #00ff80;
-  }
+ /* ============================================================
+   🟦 ACS GLOBAL CLOCK — STABLE HEADER FIX (NO LAYOUT SHIFT)
+   Use in ALL ACS modules
+   ============================================================ */
+
+.acs-clock-header{
+
+  font-family:"Orbitron",monospace;
+  font-size:.95rem;
+  color:#00ff80;
+
+  background:rgba(0,255,128,.08);
+  border-radius:10px;
+
+  padding:.45rem .8rem;
+
+  width:260px;                 /* ancho fijo absoluto */
+  flex:0 0 260px;             /* evita expansión o compresión */
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  white-space:nowrap;
+
+  font-variant-numeric:tabular-nums;
+
+  border:1px solid rgba(0,255,128,.18);
+
+  overflow:hidden;            /* protección extra */
+}
+
 
   /* ============================================================
        === SUPPORT BUTTON (igual dashboard) =====================
@@ -303,11 +326,10 @@
 
   <nav class="acs-nav">
     <a href="dashboard.html"class="active">Main</a>
-    <a href="finance.html">Finance</a>
+    <a href="bank.html">Bank</a>
     <a href="aircraft.html">Aircraft</a>
     <a href="routes.html">Routes</a>
     <a href="hr.html">HR</a>
-    <a href="forum.html">Forum</a>
   </nav>
 
   <div class="acs-right">
