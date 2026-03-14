@@ -2576,27 +2576,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try {
 
-    const token = localStorage.getItem("ACS_TOKEN");
+    const activeUser =
+      JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-    const res = await fetch(
-      "https://acs-production.up.railway.app/api/airline/base",
-      {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+    const userId = activeUser.user_id || activeUser.userId;
+
+    if (!userId) {
+      console.warn("⚠️ No user id available");
+    } else {
+
+      const res = await fetch(
+        `https://acs-world-server-production.up.railway.app/v1/users/profile/${userId}`
+      );
+
+      const data = await res.json();
+
+      const baseICAO = data?.user?.base_icao;
+
+      if (baseICAO) {
+
+        // guardar donde tu sistema actual lo espera
+        localStorage.setItem("ACS_baseICAO", baseICAO);
+
+        console.log("🟢 Base loaded from USERS:", baseICAO);
+
       }
-    );
-
-    const base = await res.json();
-
-    if (base && base.icao) {
-
-      // Guardar solo la base necesaria
-      localStorage.setItem("ACS_baseICAO", base.icao);
-      localStorage.setItem("ACS_baseCity", base.city || "");
-      localStorage.setItem("ACS_baseCountry", base.country || "");
-
-      console.log("🟢 Base loaded from Railway:", base.icao);
 
     }
 
@@ -2613,7 +2617,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
 });
-
+     
 /* ============================================================
    === PHASE 2.1 — SEND ORIGIN & DESTINATION TO SCHEDULE ======
    ------------------------------------------------------------
