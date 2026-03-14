@@ -1672,7 +1672,7 @@ list.forEach((ac) => {
   ${computed.nextD}
 </td>
 
-    <td>${computed.base}</td>
+    <td>${typeof computed.base === "string" ? computed.base : window.ACS_COMPANY_BASE}</td>
 
     <td>
       <button class="btn-action"
