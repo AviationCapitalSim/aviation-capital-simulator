@@ -2693,121 +2693,114 @@ if (t === "D") {
 
 /* ============================================================
    === INITIALIZATION =========================================
+   RAILWAY BASE FIRST BOOTSTRAP
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
   /* ============================================================
-   🟨 MA-8.6.C — MAINTENANCE PIPELINE (TIME TICK)
-   ============================================================ */
+     1️⃣ LOAD COMPANY BASE FROM RAILWAY
+     ============================================================ */
 
-fleet = ACS_structuralFleetMigration();
-   
-ACS_processMaintenanceCompletion();
-   
-// 1) Recargar flota + pipeline de mantenimiento
-fleet = fleet.map(ac => {
+  const baseICAO = await getCurrentBaseICAO();
 
-  ac = ACS_applyMaintenanceBaseline(ac);
-  ac = ACS_applyMaintenanceHold(ac);
-  ac = ACS_checkMaintenanceAutoTrigger(ac);
-  ac = ACS_applyMaintenanceComputedFields(ac);
+  if (baseICAO) {
+    window.ACS_COMPANY_BASE = baseICAO;
+  }
 
-  return ac;
-});
+  /* ============================================================
+     2️⃣ MAINTENANCE PIPELINE (TIME TICK)
+     ============================================================ */
 
-fleet = fleet.map(ac => {
-  if (
-  !ac.seats ||
-  !ac.range_nm ||
-  !ac.speed_kts ||
-  !ac.fuel_burn_kgph
-) {
-  return ACS_enrichAircraftFromDB(ac);
-}
-  return ac;
-});
-   
-saveFleet();
+  fleet = ACS_structuralFleetMigration();
 
-  // Normalize aircraft data (registration + maintenance fields)
-  if (typeof ACS_normalizeAircraft === "function") {
-  fleet = fleet.map(ac => ACS_normalizeAircraft(ac));
-}
+  ACS_processMaintenanceCompletion();
 
-/* ============================================================
-   🟦 MYA-B1 — FORCE BASE SYNC (COMPANY BASE AUTHORITY)
-   ------------------------------------------------------------
-   • Garantiza que TODOS los aviones usen la base actual
-   • Elimina bases fantasma (LIRN legacy, pruebas antiguas)
-   • Source of truth: ACS_activeUser.base
-   ============================================================ */
+  fleet = fleet.map(ac => {
 
-function ACS_forceFleetBaseSync() {
+    ac = ACS_applyMaintenanceBaseline(ac);
+    ac = ACS_applyMaintenanceHold(ac);
+    ac = ACS_checkMaintenanceAutoTrigger(ac);
+    ac = ACS_applyMaintenanceComputedFields(ac);
 
-  const currentBase = getCurrentBaseICAO();
-  if (!currentBase || currentBase === "—") return;
-
-  let fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  let changed = false;
-
-  fleet.forEach(ac => {
-    if (!ac.base || ac.base !== currentBase) {
-      ac.base = currentBase;
-      changed = true;
-    }
+    return ac;
   });
 
-  if (changed) {
-    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
-    console.log(`🟢 Fleet base synchronized to ${currentBase}`);
+  fleet = fleet.map(ac => {
+    if (
+      !ac.seats ||
+      !ac.range_nm ||
+      !ac.speed_kts ||
+      !ac.fuel_burn_kgph
+    ) {
+      return ACS_enrichAircraftFromDB(ac);
+    }
+    return ac;
+  });
+
+  saveFleet();
+
+  if (typeof ACS_normalizeAircraft === "function") {
+    fleet = fleet.map(ac => ACS_normalizeAircraft(ac));
   }
-}
 
-/* ✅ ESTA LÍNEA ES LA QUE FALTABA */
-ACS_forceFleetBaseSync();
+  /* ============================================================
+     3️⃣ FORCE BASE SYNC USING RAILWAY BASE
+     ============================================================ */
 
-   
-  // 2) Procesar entregas pendientes
-   
+  if (window.ACS_COMPANY_BASE) {
+
+    fleet.forEach(ac => {
+      if (!ac.base) {
+        ac.base = window.ACS_COMPANY_BASE;
+      }
+    });
+
+    saveFleet();
+  }
+
+  /* ============================================================
+     4️⃣ PROCESS DELIVERIES
+     ============================================================ */
+
   updatePendingDeliveries();
 
-  // ============================================================
-// 🟦 MA-STRUCT-3 — HARD ID NORMALIZATION AFTER PENDING
-// Forces ID creation directly on storage (no memory conflict)
-// ============================================================
+  /* ============================================================
+     5️⃣ POST-PENDING ID NORMALIZATION
+     ============================================================ */
 
-(function forceNormalizeAfterPending(){
+  (function forceNormalizeAfterPending(){
 
-  let fleetStorage = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  let updated = false;
+    let fleetStorage = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+    let updated = false;
 
-  fleetStorage.forEach((ac, index) => {
-    if (!ac.id) {
-      ac.id = `AC-${Date.now()}-${index}`;
-      updated = true;
+    fleetStorage.forEach((ac, index) => {
+      if (!ac.id) {
+        ac.id = `AC-${Date.now()}-${index}`;
+        updated = true;
+      }
+    });
+
+    if (updated) {
+      localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleetStorage));
+      console.log("🟢 Post-pending ID repair applied.");
     }
-  });
 
-  if (updated) {
-    localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleetStorage));
-    console.log("🟢 Post-pending ID repair applied.");
-  }
-
-})();
+  })();
 
   ACS_processABCompletion();
-   
-  // 3) Filtros
-  populateFilterOptions();
 
-  // 4) Render tabla principal
+  /* ============================================================
+     6️⃣ UI
+     ============================================================ */
+
+  populateFilterOptions();
   renderFleetTable();
 
-  // 5) Si no hay flota → filas vacías
   if (fleet.length === 0) {
     ensureEmptyRows();
   }
+
 });
 
 // ============================================================
