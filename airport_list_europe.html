@@ -1175,10 +1175,12 @@ function loadAirports() {
     return;
   }
 
+ // ✔ BASE REAL DEL JUGADOR (GLOBAL)
+     
   const userBase = localStorage.getItem("ACS_baseICAO") || null;
-  const base = airports.find(a => a.icao === userBase);
-  let baseLat = null, baseLon = null;
+  const base = findBaseAirportGlobal();
 
+  let baseLat = null, baseLon = null;
   if (base) {
     baseLat = base.latitude;
     baseLon = base.longitude;
