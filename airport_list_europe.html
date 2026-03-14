@@ -938,6 +938,68 @@ function getACSBaseResolved() {
     name: localStorage.getItem("ACS_baseName") || ""
   };
 }
+
+function findBaseAirportGlobal() {
+
+  const baseObj = getACSBaseResolved();
+  if (!baseObj || !baseObj.icao) return null;
+
+  const icao = baseObj.icao.toUpperCase();
+
+  try {
+
+    if (
+      window.ACS_World &&
+      ACS_World.BY_ICAO &&
+      ACS_World.BY_ICAO[icao]
+    ) {
+      return ACS_World.BY_ICAO[icao];
+    }
+
+  } catch (e) {}
+
+  const continents = Object.values(WorldAirportsACS || {});
+
+  for (const list of continents) {
+    const ap = list.find(a => a.icao === icao);
+    if (ap) return ap;
+  }
+
+  return null;
+
+}
+
+function ensureBaseBeforeLoad(callback) {
+
+  let tries = 0;
+
+  const timer = setInterval(() => {
+
+    const base = findBaseAirportGlobal();
+
+    if (base) {
+
+      clearInterval(timer);
+
+      console.log("🟢 Base resolved:", base.icao);
+
+      if (typeof callback === "function") {
+        callback();
+      }
+
+    }
+
+    tries++;
+
+    if (tries > 50) {
+      clearInterval(timer);
+      console.warn("⚠️ Base could not be resolved");
+      if (typeof callback === "function") callback();
+    }
+
+  }, 100);
+
+}
      
 // ============================================================
 // 🧭 ACS — BASE AUTO-RESTORE (COMPAT MODE)
