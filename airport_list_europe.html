@@ -2452,6 +2452,32 @@ function handleLogout() {
   window.location.href = "login.html";
 }
 
+/* ============================================================
+   === GLOBAL BASE (WAITS FOR LOADER) ==========================
+   ============================================================ */
+     
+function updateGlobalBaseBanner() {
+
+  const baseIcao = localStorage.getItem("ACS_baseICAO");
+  if (!baseIcao) return;
+
+  const base = findBaseAirportGlobal();
+
+  if (!base) {
+    setTimeout(updateGlobalBaseBanner, 200);
+    return;
+  }
+
+  const flagEmoji = base.country.replace(/./g, c =>
+    String.fromCodePoint(c.charCodeAt(0) + 127397)
+  );
+
+  document.getElementById("originFlag").textContent = flagEmoji;
+  document.getElementById("originIcao").textContent = base.icao;
+  document.getElementById("originCity").textContent =
+    `— ${base.city}, ${base.region}`;
+}
+    
 /* =============================================================
    === INITIALIZATION ==========================================
    ============================================================= */
@@ -2494,9 +2520,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   }
 
-  if (typeof updateGlobalBaseBanner === "function") {
   updateGlobalBaseBanner();
-}
 
   ensureBaseBeforeLoad(() => {
     loadAirports();
