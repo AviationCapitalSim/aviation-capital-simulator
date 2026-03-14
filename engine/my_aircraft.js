@@ -340,7 +340,7 @@ async function getCurrentBaseICAO() {
 
         const data = await resp.json();
 
-        const baseICAO = data?.base_icao;
+        const baseICAO = data?.data?.base_icao;
 
         if (baseICAO && baseICAO.length === 4) {
 
