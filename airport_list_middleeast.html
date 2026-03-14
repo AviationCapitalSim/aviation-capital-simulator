@@ -2625,9 +2625,46 @@ function ensureBaseBeforeLoad(callback) {
 }
 
 /* ============================================================
-   === INITIALIZATION (MIDDLE EAST - SIMPLE, COMO ÁFRICA) ===========
+   === INITIALIZATION ===========
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
+     
+document.addEventListener("DOMContentLoaded", async () => {
+
+  try {
+
+    const activeUser =
+      JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+    const userId = activeUser.user_id || activeUser.userId;
+
+    if (!userId) {
+      console.warn("⚠️ No user id available");
+    } else {
+
+      const res = await fetch(
+        `https://acs-world-server-production.up.railway.app/v1/users/profile/${userId}`
+      );
+
+      const data = await res.json();
+
+      const baseICAO = data?.user?.base_icao;
+
+      if (baseICAO) {
+
+        // guardar donde tu sistema actual lo espera
+        localStorage.setItem("ACS_baseICAO", baseICAO);
+
+        console.log("🟢 Base loaded from USERS:", baseICAO);
+
+      }
+
+    }
+
+  } catch (err) {
+
+    console.warn("⚠️ Could not load base from Railway", err);
+
+  }
 
   updateGlobalBaseBanner();
 
