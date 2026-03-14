@@ -361,17 +361,17 @@ async function getCurrentBaseICAO() {
      2️⃣ LOCAL FALLBACK (LEGACY SUPPORT)
      ============================================================ */
 
-  if (
-    user &&
-    user.base &&
-    user.base.icao &&
-    user.base.icao.length === 4
-  ) {
+ if (
+  activeUser &&
+  activeUser.base &&
+  activeUser.base.icao &&
+  activeUser.base.icao.length === 4
+)
+{
+  console.log("🟡 Base fallback from localStorage:", activeUser.base.icao);
 
-    console.log("🟡 Base fallback from localStorage:", user.base.icao);
-
-    return user.base.icao.toUpperCase();
-  }
+  return activeUser.base.icao.toUpperCase();
+}
 
   /* ============================================================
      3️⃣ HARD FAIL
@@ -2696,6 +2696,15 @@ if (t === "D") {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
+const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+
+const userId = activeUser.user_id || activeUser.userId;
+
+if (!userId) {
+  window.location.href = "login.html";
+  return;
+}
+  
   /* ============================================================
      1️⃣ LOAD COMPANY BASE FROM RAILWAY
      ============================================================ */
