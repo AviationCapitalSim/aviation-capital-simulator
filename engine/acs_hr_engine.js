@@ -369,6 +369,8 @@ function ACS_HR_hire(deptID, amount) {
 
     ACS_HR_save(hr);
 
+    ACS_HR_disableAutoHire();
+   
     // Registrar gasto real en Finance
     ACS_addExpense("salaries", amount * d.salary);
 }
@@ -388,7 +390,9 @@ function ACS_HR_fire(deptID, amount) {
     d.payroll = d.staff * d.salary;
 
     ACS_HR_save(hr);
+    ACS_HR_disableAutoHire();
 }
+
 
 /* ============================================================
    🟧 API: AJUSTE SALARIAL MANUAL (CANONICAL)
