@@ -256,6 +256,7 @@ ACS_HR_getBaseSalary = function(year, role){
 /* ============================================================
    4) PILOTS — MULTIPLICADORES POR TAMAÑO (REPARADO)
    ============================================================ */
+
 function ACS_HR_getPilotSalarySized(year, size){
 
   const base = ACS_HR_getBaseSalary(year, "pilot");
@@ -274,6 +275,7 @@ function ACS_HR_getPilotSalarySized(year, size){
 /* ============================================================
    5) APPLY HISTORICAL SALARIES — FIXED
    ============================================================ */
+
 function ACS_HR_applyHistoricalSalaries() {
 
     const HR = JSON.parse(localStorage.getItem("ACS_HR")||"{}");
@@ -318,8 +320,35 @@ function ACS_HR_save(data) {
 }
 
 /* ============================================================
+   🟦 HR AUTOMATION FLAGS — CANONICAL SYSTEM
+   ------------------------------------------------------------
+   • Unifica AutoHire + AutoSalary
+   • Evita conflictos "true" vs "ON"
+   • Fuente única para HR
+   ============================================================ */
+
+function ACS_HR_isAutoHireEnabled() {
+  return localStorage.getItem("autoHire") === "true";
+}
+
+function ACS_HR_isAutoSalaryEnabled() {
+  return localStorage.getItem("ACS_AutoSalary") === "ON";
+}
+
+function ACS_HR_disableAutoHire() {
+  localStorage.setItem("autoHire", "false");
+  console.warn("⚠ AUTO HIRE DISABLED BY MANUAL ACTION");
+}
+
+function ACS_HR_disableAutoSalary() {
+  localStorage.setItem("ACS_AutoSalary", "OFF");
+  console.warn("⚠ AUTO SALARY DISABLED BY MANUAL ACTION");
+}
+
+/* ============================================================
    CALCULAR PAYROLL TOTAL (Reparado)
    ============================================================ */
+
 function ACS_HR_getTotalPayroll() {
     const hr = ACS_HR_load();
     return Object.values(hr).reduce((sum, d) => sum + (d.staff * d.salary), 0);
@@ -329,6 +358,7 @@ function ACS_HR_getTotalPayroll() {
 /* ============================================================
    API: CONTRATAR PERSONAL (Reparado)
    ============================================================ */
+
 function ACS_HR_hire(deptID, amount) {
     const hr = ACS_HR_load();
     const d = hr[deptID];
@@ -367,6 +397,7 @@ function ACS_HR_fire(deptID, amount) {
    • Congela el salario resultante
    • NO recalcula por época
    ============================================================ */
+
 function ACS_HR_adjustSalary(deptID, percentage) {
 
     const hr = ACS_HR_load();
@@ -550,8 +581,7 @@ function ACS_HR_recalculateAll() {
 
 function ACS_HR_runAutoSalaryEngine(year) {
 
-  const auto = localStorage.getItem("ACS_AutoSalary");
-  if (auto !== "ON") return;
+  if (!ACS_HR_isAutoSalaryEnabled()) return;
 
   const HR = JSON.parse(localStorage.getItem("ACS_HR") || {});
   if (!HR) return;
@@ -574,6 +604,7 @@ function ACS_HR_runAutoSalaryEngine(year) {
 /* ============================================================
    5) CLASSIFY AIRCRAFT (Sin cambios)
    ============================================================ */
+
 function ACS_classifyAircraft(model) {
 
   model = model.toLowerCase();
@@ -598,6 +629,7 @@ function ACS_classifyAircraft(model) {
 /* ============================================================
    8) SELECTOR DEL MODAL — Reparado
    ============================================================ */
+
 function HR_fillDepartmentSelector() {
 
     const hrData = ACS_HR_load();
@@ -619,6 +651,7 @@ function HR_fillDepartmentSelector() {
 /* ============================================================
    9) CAMBIO DE DEPARTAMENTO EN MODAL — Reparado
    ============================================================ */
+
 document.addEventListener("change", (e) => {
 
     if (e.target && e.target.id === "hrDeptSelector") {
@@ -730,6 +763,7 @@ function ACS_HR_compareToIndustryStandard() {
 /* ============================================================
    🟠 C2 — Enviar alerta automática al Alert Center
    ============================================================ */
+
 function ACS_HR_triggerIndustryAlert() {
 
     const diff = ACS_HR_compareToIndustryStandard();
@@ -752,6 +786,7 @@ function ACS_HR_triggerIndustryAlert() {
 /* ============================================================
    🟨 D1 — AUTO-ADJUST SALARY (Aplicar estándar 5Y)
    ============================================================ */
+
 function ACS_HR_autoAdjust5Y() {
 
   const HR = ACS_HR_load();
@@ -797,6 +832,7 @@ function ACS_HR_autoAdjust5Y() {
 /* ============================================================
    🟧 E1 — Conectar panel Salary Cycle del HTML
    ============================================================ */
+
 function HR_updateIndustryPanel() {
 
     const year = window.ACS_getYear ? ACS_getYear() : 1940;
@@ -812,6 +848,7 @@ function HR_updateIndustryPanel() {
 /* ============================================================
    🟧 E2 — Conectar botón “Apply 5-Year Adjustment”
    ============================================================ */
+
 const __btnAdjust = setTimeout(() => {
   const btn = document.getElementById("btnAutoAdjust5Y");
   if (btn) {
@@ -880,8 +917,8 @@ window.addEventListener("ACS_FLIGHT_ASSIGNED", e => {
 
 function ACS_HR_runAutoHire() {
 
-  const flag = localStorage.getItem("autoHire");
-  if (flag !== "true") {
+ if (!ACS_HR_isAutoHireEnabled()) {
+    
     console.log("🟡 AUTO HIRE OFF — skipped");
     return;
   }
@@ -1113,3 +1150,14 @@ ACS_HR_bootstrap();
 /* Declarar HR como listo SOLO después de bootstrap */
 localStorage.setItem("ACS_HR_INITIALIZED", "true");
 console.info("✅ HR INITIALIZED — SYSTEM FLAG SET");
+
+/* ============================================================
+   🟧 AUTO HIRE EXECUTION ON HR INIT
+   ------------------------------------------------------------
+   • Garantiza personal mínimo al iniciar compañía
+   • Solo corre si AutoHire está activado
+   ============================================================ */
+
+if (typeof ACS_HR_runAutoHire === "function") {
+  ACS_HR_runAutoHire();
+}
