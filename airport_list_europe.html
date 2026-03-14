@@ -2494,7 +2494,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   }
 
+  if (typeof updateGlobalBaseBanner === "function") {
   updateGlobalBaseBanner();
+}
 
   ensureBaseBeforeLoad(() => {
     loadAirports();
