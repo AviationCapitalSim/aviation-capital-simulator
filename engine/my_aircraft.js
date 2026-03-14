@@ -309,16 +309,13 @@ async function getCurrentBaseICAO() {
     localStorage.getItem("ACS_API_BASE") ||
     "https://acs-world-server-production.up.railway.app";
 
-  let user;
+ const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+ const userId = activeUser.user_id || activeUser.userId;
 
-  try {
-    user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-  } catch (e) {
-    console.warn("⚠️ Invalid ACS_activeUser JSON");
-    user = {};
-  }
-
-  const userId = user.user_id || user.userId;
+  if (!userId) {
+  console.error("❌ SESSION USER ID NOT FOUND");
+  return null;
+}
 
   /* ============================================================
      1️⃣ TRY RAILWAY (PRIMARY SOURCE)
