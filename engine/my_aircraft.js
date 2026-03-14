@@ -290,96 +290,67 @@ function ACS_getRemainingMonths(targetDate) {
 }
 
 /* ============================================================
-   🌍 MA-1.1 — GLOBAL BASE RESOLVER (RAILWAY AUTHORITY)
+   🌍 ACS BASE RESOLVER — RAILWAY CANONICAL SOURCE
    ------------------------------------------------------------
-   Source priority:
-   1️⃣ Railway API (users.profile.base_icao)
-   2️⃣ Local fallback (ACS_activeUser.base.icao)
-   ------------------------------------------------------------
-   Compatible with:
-   • Dashboard
-   • My Aircraft
-   • Future multiplayer sync
+   Source of truth: Railway API
+   Endpoint: /v1/users/profile/{userId}
+   No localStorage fallback
    ============================================================ */
 
 async function getCurrentBaseICAO() {
 
   const API_BASE =
     window.ACS_API_BASE ||
-    localStorage.getItem("ACS_API_BASE") ||
     "https://acs-world-server-production.up.railway.app";
 
- 
- const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
- const userId = activeUser.user_id || activeUser.userId;
+  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+  const userId = activeUser.user_id || activeUser.userId;
 
   if (!userId) {
-  console.error("❌ SESSION USER ID NOT FOUND");
-  return null;
-}
-
-  /* ============================================================
-     1️⃣ TRY RAILWAY (PRIMARY SOURCE)
-     ============================================================ */
-
-  if (userId) {
-
-    try {
-
-      const resp = await fetch(
-        `${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" }
-        }
-      );
-
-      if (resp.ok) {
-
-        const data = await resp.json();
-
-        const baseICAO = data?.data?.base_icao;
-
-        if (baseICAO && baseICAO.length === 4) {
-
-          console.log("🌍 Base loaded from Railway:", baseICAO);
-
-          return baseICAO.toUpperCase();
-        }
-
-      }
-
-    } catch (err) {
-
-      console.warn("⚠️ Railway base lookup failed — fallback local", err);
-
-    }
-
+    console.error("❌ SESSION USER ID NOT FOUND");
+    return null;
   }
 
-  /* ============================================================
-     2️⃣ LOCAL FALLBACK (LEGACY SUPPORT)
-     ============================================================ */
+  try {
 
- if (
-  activeUser &&
-  activeUser.base &&
-  activeUser.base.icao &&
-  activeUser.base.icao.length === 4
-)
-{
-  console.log("🟡 Base fallback from localStorage:", activeUser.base.icao);
+    const url = `${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`;
 
-  return activeUser.base.icao.toUpperCase();
-}
+    console.log("🌐 Loading base from Railway:", url);
 
-  /* ============================================================
-     3️⃣ HARD FAIL
-     ============================================================ */
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
 
-  console.error("❌ COMPANY BASE NOT SET");
+    if (!resp.ok) {
+      throw new Error(`PROFILE_HTTP_${resp.status}`);
+    }
 
-  return null;
+    const data = await resp.json();
+
+    if (!data || data.status !== "success") {
+      throw new Error(data?.message || "PROFILE_LOAD_FAILED");
+    }
+
+    const baseICAO = data?.user?.base_icao;
+
+    if (!baseICAO || baseICAO.length !== 4) {
+      console.error("❌ COMPANY BASE NOT SET IN DATABASE");
+      return null;
+    }
+
+    console.log("🌍 Base loaded from Railway:", baseICAO);
+
+    return baseICAO.toUpperCase();
+
+  } catch (err) {
+
+    console.error("❌ Railway base lookup failed:", err);
+
+    return null;
+  }
 }
 
 /* ============================================================
