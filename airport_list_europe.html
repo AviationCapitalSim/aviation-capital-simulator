@@ -2455,28 +2455,53 @@ function handleLogout() {
 /* =============================================================
    === INITIALIZATION ==========================================
    ============================================================= */
-document.addEventListener("DOMContentLoaded", () => {
+     
+document.addEventListener("DOMContentLoaded", async () => {
 
-  loadAirports();
+  try {
 
-  const baseIcao = localStorage.getItem("ACS_baseICAO") || null;
-  if (baseIcao) {
-    const airports = getAirportsEuropeSafe();
-    const base = airports.find(a => a.icao === baseIcao);
+    const activeUser =
+      JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
 
-    if (base) {
-      const flagEmoji = base.country.replace(/./g, c =>
-        String.fromCodePoint(c.charCodeAt(0) + 127397)
+    const userId = activeUser.user_id || activeUser.userId;
+
+    if (!userId) {
+      console.warn("⚠️ No user id available");
+    } else {
+
+      const res = await fetch(
+        `https://acs-world-server-production.up.railway.app/v1/users/profile/${userId}`
       );
 
-      document.getElementById("originFlag").textContent = flagEmoji;
-      document.getElementById("originIcao").textContent = base.icao;
-      document.getElementById("originCity").textContent =
-        `— ${base.city}, ${base.region}`;
-    }
-  }
-});
+      const data = await res.json();
 
+      const baseICAO = data?.user?.base_icao;
+
+      if (baseICAO) {
+
+        // guardar donde tu sistema actual lo espera
+        localStorage.setItem("ACS_baseICAO", baseICAO);
+
+        console.log("🟢 Base loaded from USERS:", baseICAO);
+
+      }
+
+    }
+
+  } catch (err) {
+
+    console.warn("⚠️ Could not load base from Railway", err);
+
+  }
+
+  updateGlobalBaseBanner();
+
+  ensureBaseBeforeLoad(() => {
+    loadAirports();
+  });
+
+});
+     
 /* ============================================================
    === SEND ORIGIN & DESTINATION TO SCHEDULE ===================
    ============================================================ */
