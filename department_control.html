@@ -1523,68 +1523,66 @@ function ACS_applyMoraleColor(value, el) {
 }
      
 /* ============================================================
-   === HR KPI UPDATE — SAFE CORE (ANTI-NULL / ANTI-NaN) ========
+   🟦 HR KPI UPDATE — GLOBAL HR STATE
+   ------------------------------------------------------------
+   Corrige inconsistencia entre:
+   HR Overview  vs  Department Control
    ============================================================ */
 
 function HR_updateKPI() {
 
   const hr = ACS_HR_load();
-  if (!hr || typeof hr !== "object") return;
+  if (!hr) return;
 
-  let totalStaff   = 0;
+  const departments = Object.values(hr);
+
+  let totalStaff = 0;
   let totalPayroll = 0;
-  let moraleSum    = 0;
-  let moraleItems  = 0;
+  let moraleSum = 0;
 
-  Object.keys(hr).forEach(id => {
+  departments.forEach(d => {
 
-    const d = hr[id];
+    const staff = Number(d.staff) || 0;
+    const salary = Number(d.salary) || 0;
+    const morale = Number(d.morale) || 100;
 
-    // 🛑 FIX CRÍTICO: ignora cualquier entrada corrupta o meta
-    if (!d || typeof d !== "object") return;
-    if (typeof d.staff !== "number") return;
-    if (typeof d.salary !== "number") return;
-    if (typeof d.morale !== "number") return;
+    totalStaff += staff;
+    totalPayroll += staff * salary;
+    moraleSum += morale;
 
-    totalStaff   += d.staff;
-    totalPayroll += d.staff * d.salary;
-
-    moraleSum   += d.morale;
-    moraleItems++;
   });
 
-  const avgMorale = moraleItems > 0
-    ? Math.round(moraleSum / moraleItems)
+  const avgMorale = departments.length
+    ? Math.round(moraleSum / departments.length)
     : 100;
 
-  // === UI UPDATE SEGURO ===
-  const staffBox   = document.getElementById("kpiTotalStaff");
-  const payrollBox = document.getElementById("kpiMonthlyPayroll");
-  const moraleBox  = document.getElementById("kpiAverageMorale");
+  // === UI UPDATE ===
 
-  if (staffBox)   staffBox.textContent   = totalStaff;
-  if (payrollBox) payrollBox.textContent = `$${Math.round(totalPayroll)}`;
-  if (moraleBox) {
-  moraleBox.textContent = `${avgMorale}%`;
+  document.getElementById("kpiTotalStaff").textContent = totalStaff;
 
-  // 🟢 Morale forzada a estado saludable (maquillaje only)
-  moraleBox.classList.remove(
+  document.getElementById("kpiMonthlyPayroll").textContent =
+    "$" + totalPayroll.toLocaleString();
+
+  const moraleEl = document.getElementById("kpiAverageMorale");
+
+  moraleEl.textContent = avgMorale + "%";
+
+  moraleEl.classList.remove(
     "morale-yellow",
     "morale-orange",
     "morale-red"
   );
-  moraleBox.classList.add("morale-green");
-}
+
+  moraleEl.classList.add("morale-green");
 
   console.log(
-    "%c📊 HR KPI OK",
-    "color:#00ffcc;font-weight:600",
+    "%c📊 HR KPI SYNC FIXED",
+    "color:#00ffcc;font-weight:700",
     "Staff:", totalStaff,
-    "Payroll:", totalPayroll,
-    "Morale:", avgMorale
+    "Payroll:", totalPayroll
   );
 }
-
+     
 setTimeout(HR_updateKPI, 350);
 
 function openHire(id) {
