@@ -462,7 +462,8 @@ function ACS_HR_getDepartmentsView() {
         }
 
         const dep = hr[d.id];
-
+        dep.name = dep.name || d.name;
+       
         return {
             id: dep.id,
             name: dep.name,
