@@ -2572,7 +2572,39 @@ function ensureBaseBeforeLoad(callback) {
    === INITIALIZATION =========================================
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+
+  try {
+
+    const token = localStorage.getItem("ACS_TOKEN");
+
+    const res = await fetch(
+      "https://acs-production.up.railway.app/api/airline/base",
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const base = await res.json();
+
+    if (base && base.icao) {
+
+      // Guardar solo la base necesaria
+      localStorage.setItem("ACS_baseICAO", base.icao);
+      localStorage.setItem("ACS_baseCity", base.city || "");
+      localStorage.setItem("ACS_baseCountry", base.country || "");
+
+      console.log("🟢 Base loaded from Railway:", base.icao);
+
+    }
+
+  } catch (err) {
+
+    console.warn("⚠️ Could not load base from Railway", err);
+
+  }
 
   updateGlobalBaseBanner();
 
