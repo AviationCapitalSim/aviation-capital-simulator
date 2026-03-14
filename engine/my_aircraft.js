@@ -119,9 +119,9 @@ function ACS_structuralFleetMigration() {
       changed = true;
     }
 
-    if (!ac.base && typeof getCurrentBaseICAO === "function") {
-      ac.base = getCurrentBaseICAO();
-      changed = true;
+    if (!ac.base && window.ACS_COMPANY_BASE) {
+    ac.base = window.ACS_COMPANY_BASE;
+    changed = true;
     }
 
     if (ac.hours === undefined) {
