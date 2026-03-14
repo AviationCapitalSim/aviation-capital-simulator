@@ -309,6 +309,7 @@ async function getCurrentBaseICAO() {
     localStorage.getItem("ACS_API_BASE") ||
     "https://acs-world-server-production.up.railway.app";
 
+ 
  const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
  const userId = activeUser.user_id || activeUser.userId;
 
