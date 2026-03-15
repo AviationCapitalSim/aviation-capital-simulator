@@ -1707,8 +1707,7 @@ function handleLogout() {
 }
      
 /* ============================================================
-   🟦 HR RAILWAY SYNC — INITIAL LOAD
-   Source of truth: PostgreSQL
+   🟦 HR RAILWAY SYNC — ACS ENGINE COMPATIBLE
    ============================================================ */
 
 async function ACS_HR_syncFromServer() {
@@ -1716,7 +1715,6 @@ async function ACS_HR_syncFromServer() {
   try {
 
     const airlineId = localStorage.getItem("airline_id");
-
     if (!airlineId) {
       console.warn("⚠️ HR SYNC SKIPPED — airline_id missing");
       return;
@@ -1736,16 +1734,32 @@ async function ACS_HR_syncFromServer() {
       return;
     }
 
+    const year = window.ACS_getYear ? ACS_getYear() : 1940;
+
     const hr = {};
 
     data.departments.forEach(dep => {
 
-      hr[dep.dept_id] = {
-        id: dep.dept_id,
-        staff: dep.staff,
-        salary: dep.salary || 0,
+      const meta = ACS_HR_DEPARTMENTS.find(d => d.id === dep.dept_id);
+
+      if (!meta) {
+        console.warn("⚠️ Unknown HR department:", dep.dept_id);
+        return;
+      }
+
+      const salary = ACS_HR_getBaseSalary(year, meta.base);
+
+      hr[meta.id] = {
+        name: meta.name,
+        base: meta.base,
+        role: meta.base,
+        staff: dep.staff || 0,
+        required: meta.initial || 0,
         morale: dep.morale || 100,
-        payroll: (dep.salary || 0) * dep.staff
+        years: 0,
+        bonus: 0,
+        salary: salary,
+        payroll: salary * (dep.staff || 0)
       };
 
     });
@@ -1753,10 +1767,10 @@ async function ACS_HR_syncFromServer() {
     ACS_HR_save(hr);
 
     console.log(
-      "%c🌐 HR SYNC SUCCESS",
+      "%c🌐 HR SYNC SUCCESS (ENGINE SAFE)",
       "color:#00ffcc;font-weight:700",
-      data.departments.length,
-      "departments loaded"
+      Object.keys(hr).length,
+      "departments synced"
     );
 
   } catch (err) {
