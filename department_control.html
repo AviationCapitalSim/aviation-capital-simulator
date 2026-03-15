@@ -1714,8 +1714,20 @@ async function ACS_HR_syncFromServer() {
 
   try {
        
+    let airlineId = null;
+
+// 1️⃣ intentar desde estado global server
+if (window.ACS_SERVER_SESSION && window.ACS_SERVER_SESSION.airline_id) {
+  airlineId = window.ACS_SERVER_SESSION.airline_id;
+}
+
+// 2️⃣ fallback legacy (temporal)
+if (!airlineId) {
+  try {
     const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-    const airlineId = activeUser.airline_id;
+    airlineId = activeUser.airline_id;
+  } catch(e){}
+}
        
     if (!airlineId) {
       console.warn("⚠️ HR SYNC SKIPPED — airline_id missing");
@@ -1770,6 +1782,9 @@ async function ACS_HR_syncFromServer() {
 
     ACS_HR_save(hr);
 
+// 🔐 Estado server oficial
+window.ACS_HR_SERVER_STATE = hr;
+
     console.log(
       "%c🌐 HR SYNC SUCCESS (ENGINE SAFE)",
       "color:#00ffcc;font-weight:700",
@@ -1787,28 +1802,23 @@ async function ACS_HR_syncFromServer() {
 
 window.addEventListener("DOMContentLoaded", async () => {
 
-  // 1️⃣ Cargar HR desde Railway
   await ACS_HR_syncFromServer();
 
-  // 2️⃣ Verificar que el estado llegó
+  // Si no llegó estado server, usar estado local existente
   if (!window.ACS_HR_SERVER_STATE) {
-    console.warn("HR SERVER STATE NOT READY");
-    return;
+
+    console.warn("⚠️ HR SERVER STATE NOT READY — fallback HR load");
+
+    try {
+      const hr = ACS_HR_load();
+      if (hr) window.ACS_HR_SERVER_STATE = hr;
+    } catch(e){}
+
   }
 
-  console.log(
-    "%cHR SERVER STATE READY",
-    "color:#00ffcc;font-weight:700",
-    window.ACS_HR_SERVER_STATE
-  );
-
-  // 3️⃣ Dibujar departamentos
   loadDepartments();
-
-  // 4️⃣ KPI
   HR_updateKPI();
 
-  // 5️⃣ Clock
   if (typeof updateClockDisplay === "function") {
     updateClockDisplay();
   }
