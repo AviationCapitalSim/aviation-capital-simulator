@@ -8,23 +8,32 @@
    ============================================================ */
 
 /* ============================================================
-   🟦 F4.1 — TIME AUTHORITY LOCK (ACS CANONICAL)
+   HR — GET GAME YEAR (TIME ENGINE BRIDGE)
    ------------------------------------------------------------
-   • ÚNICA fuente de tiempo para HR
-   • NO grita error durante BOOT
-   • SOLO válida cuando el Time Engine está listo
+   Obtiene el año real del simulador desde el Time Engine
    ============================================================ */
+
 function ACS_HR_getGameYear() {
 
-  if (
-    window.ACS_TIME_CURRENT instanceof Date &&
-    !isNaN(window.ACS_TIME_CURRENT)
-  ) {
-    return window.ACS_TIME_CURRENT.getUTCFullYear();
+  try {
+
+    if (window.ACS_TIME_CURRENT instanceof Date) {
+      return window.ACS_TIME_CURRENT.getUTCFullYear();
+    }
+
+    if (typeof getSimTime === "function") {
+      const t = getSimTime();
+      if (t instanceof Date) {
+        return t.getUTCFullYear();
+      }
+    }
+
+  } catch (err) {
+    console.warn("HR TIME BRIDGE ERROR", err);
   }
 
-  // ⏸️ Boot phase → tiempo aún no publicado (estado NORMAL)
   return undefined;
+
 }
 
 /* ============================================================
