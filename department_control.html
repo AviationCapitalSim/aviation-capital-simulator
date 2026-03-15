@@ -1714,7 +1714,9 @@ async function ACS_HR_syncFromServer() {
 
   try {
 
-    const airlineId = localStorage.getItem("airline_id");
+    const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+    const airlineId = activeUser.airline_id;
+       
     if (!airlineId) {
       console.warn("⚠️ HR SYNC SKIPPED — airline_id missing");
       return;
