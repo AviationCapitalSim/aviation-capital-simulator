@@ -1714,6 +1714,24 @@ async function ACS_HR_syncFromServer() {
 
   try {
 
+/* ============================================================
+   🛑 HR LOCAL STATE PROTECTION
+   Prevent server sync from overwriting local gameplay state
+   ============================================================ */
+
+const existingHR = localStorage.getItem("ACS_HR");
+
+if (existingHR) {
+
+  console.log(
+    "%c🛑 HR LOCAL STATE DETECTED — SERVER SYNC SKIPPED",
+    "color:#ffaa00;font-weight:800"
+  );
+
+  return;
+
+}
+       
     const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
     const airlineId = activeUser.airline_id;
        
