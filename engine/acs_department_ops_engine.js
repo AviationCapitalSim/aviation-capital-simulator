@@ -1007,6 +1007,34 @@ registerTimeListener((time) => {
 });
 
 /* ============================================================
+   🟢 HR SALARY ENGINE SAFE START (TIME READY)
+   ------------------------------------------------------------
+   • Ejecuta Salary Engine solo cuando el Time Engine ya existe
+   • Evita bootstrap temprano con year undefined
+   ============================================================ */
+
+let __HR_salaryInitialized = false;
+
+registerTimeListener((time) => {
+
+  if (__HR_salaryInitialized) return;
+  if (!(time instanceof Date)) return;
+
+  console.log(
+    "%c💰 HR SALARY ENGINE START (TIME READY)",
+    "color:#00ffcc;font-weight:700",
+    "Year:", time.getUTCFullYear()
+  );
+
+  if (typeof ACS_HR_salaryEngineBootstrap === "function") {
+    ACS_HR_salaryEngineBootstrap();
+  }
+
+  __HR_salaryInitialized = true;
+
+});
+
+/* ============================================================
    🟦 A3.1.1 — HISTORICAL SALARY MATRIX (ACS OFFICIAL)
    ------------------------------------------------------------
    • Define frecuencia de revisión histórica
