@@ -1672,6 +1672,37 @@ function HR_hireOne(depId) {
 
     ACS_HR_save(HR);
 
+    // ============================================================
+// 🌐 HR SYNC → SERVER
+// ============================================================
+
+try {
+
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
+
+  fetch(
+    `https://acs-world-server-production.up.railway.app/v1/hr/update`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        airline_id: airlineId,
+        dept_id: depId,
+        staff: dep.staff
+      })
+    }
+  );
+
+} catch(e) {
+
+  console.warn("⚠️ HR SERVER UPDATE FAILED", e);
+
+}
+     
     console.log(
       "%c🟢 HR HIRE OK",
       "color:#7CFFB2;font-weight:700",
@@ -2091,36 +2122,29 @@ function confirmFireMiniModal() {
 
 })();
 
-/* ============================================================
-   🟢 HR LIVE SYNC — VISIBILITY / FOCUS RECALC (CANONICAL)
-   ------------------------------------------------------------
-   Purpose:
-   • Force HR to re-read OPS demand when user returns to HR
-   • Simulates "live" behavior without breaking Routes/Delete
-   • ZERO coupling with Schedule Table
-   ------------------------------------------------------------
-   Triggers:
-   • Tab focus
-   • Page visibility change
-   ============================================================ */
+let __ACS_HR_LAST_SYNC = 0;
 
 function ACS_HR_liveSync() {
 
+  const now = Date.now();
+
+  // ⛔ evitar loops continuos
+  if (now - __ACS_HR_LAST_SYNC < 5000) return;
+
+  __ACS_HR_LAST_SYNC = now;
+
+  console.log(
+    "%c🟢 HR LIVE SYNC (THROTTLED)",
+    "color:#00ffcc;font-weight:700"
+  );
+
   if (typeof ACS_OPS_recalculateAllRequired === "function") {
-    console.log(
-      "%c🟢 HR LIVE SYNC — OPS RECALC ON FOCUS",
-      "color:#00ffcc;font-weight:700"
-    );
     ACS_OPS_recalculateAllRequired();
   }
 
-  if (typeof loadDepartments === "function") {
-    loadDepartments();
-  }
+  loadDepartments();
+  HR_updateKPI();
 
-  if (typeof HR_updateKPI === "function") {
-    HR_updateKPI();
-  }
 }
 
 // Cuando vuelves a la pestaña
