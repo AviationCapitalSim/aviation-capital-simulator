@@ -8,31 +8,30 @@
    ============================================================ */
 
 /* ============================================================
-   HR — GET GAME YEAR (TIME ENGINE BRIDGE)
+   🟦 HR — GAME YEAR AUTHORITY (TIME ENGINE LINK)
    ------------------------------------------------------------
-   Obtiene el año real del simulador desde el Time Engine
+   Fuente oficial del año del simulador
+   Compatible con Railway + Time Engine v4.4
    ============================================================ */
 
 function ACS_HR_getGameYear() {
 
   try {
 
-    if (window.ACS_TIME_CURRENT instanceof Date) {
-      return window.ACS_TIME_CURRENT.getUTCFullYear();
+    if (
+      typeof ACS_TIME !== "undefined" &&
+      ACS_TIME.currentTime instanceof Date
+    ) {
+
+      return ACS_TIME.currentTime.getUTCFullYear();
+
     }
 
-    if (typeof getSimTime === "function") {
-      const t = getSimTime();
-      if (t instanceof Date) {
-        return t.getUTCFullYear();
-      }
-    }
-
-  } catch (err) {
-    console.warn("HR TIME BRIDGE ERROR", err);
+  } catch (e) {
+    console.warn("⚠️ HR YEAR READ FAILED", e);
   }
 
-  return undefined;
+  return null;
 
 }
 
