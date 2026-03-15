@@ -1722,7 +1722,9 @@ async function ACS_HR_syncFromServer() {
       return;
     }
 
-    const res = await fetch(`/v1/hr/departments/${airlineId}`);
+    const res = await fetch(
+  `https://acs-world-server-production.up.railway.app/v1/hr/departments/${airlineId}`
+);
 
     if (!res.ok) {
       console.warn("⚠️ HR SYNC FAILED — API error");
