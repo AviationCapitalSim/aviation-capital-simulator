@@ -1707,47 +1707,101 @@ function handleLogout() {
 }
      
 /* ============================================================
-   🟦 A3.1.8 — DOM READY HR BOOTSTRAP ORDER (CRITICAL)
-   ------------------------------------------------------------
-   • Salary engine primero
-   • Luego HR recalculation
-   • Luego tabla
-   • Luego KPI
-   • Luego reloj
+   🟦 HR RAILWAY SYNC — INITIAL LOAD
+   Source of truth: PostgreSQL
    ============================================================ */
 
-window.addEventListener("DOMContentLoaded", () => {
+async function ACS_HR_syncFromServer() {
 
-  // 1️⃣ Inicializar Salary Engine (Auto Salary ON por defecto)
+  try {
+
+    const airlineId = localStorage.getItem("airline_id");
+
+    if (!airlineId) {
+      console.warn("⚠️ HR SYNC SKIPPED — airline_id missing");
+      return;
+    }
+
+    const res = await fetch(`/v1/hr/departments/${airlineId}`);
+
+    if (!res.ok) {
+      console.warn("⚠️ HR SYNC FAILED — API error");
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data.ok || !Array.isArray(data.departments)) {
+      console.warn("⚠️ HR SYNC FAILED — invalid response");
+      return;
+    }
+
+    const hr = {};
+
+    data.departments.forEach(dep => {
+
+      hr[dep.dept_id] = {
+        id: dep.dept_id,
+        staff: dep.staff,
+        salary: dep.salary || 0,
+        morale: dep.morale || 100,
+        payroll: (dep.salary || 0) * dep.staff
+      };
+
+    });
+
+    ACS_HR_save(hr);
+
+    console.log(
+      "%c🌐 HR SYNC SUCCESS",
+      "color:#00ffcc;font-weight:700",
+      data.departments.length,
+      "departments loaded"
+    );
+
+  } catch (err) {
+
+    console.warn("⚠️ HR SYNC ERROR:", err);
+
+  }
+
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+
+  // 🌐 Cargar HR desde Railway
+  await ACS_HR_syncFromServer();
+
+  // 1️⃣ Inicializar Salary Engine
   if (typeof ACS_HR_salaryEngineBootstrap === "function") {
     ACS_HR_salaryEngineBootstrap();
   }
 
-  // 2️⃣ Recalcular HR completo con salarios ya normalizados
+  // 2️⃣ Recalcular HR completo
   if (typeof ACS_HR_recalculateAll === "function") {
     ACS_HR_recalculateAll();
   }
 
-  // 3️⃣ Cargar tabla YA con salarios correctos
+  // 3️⃣ Cargar tabla
   if (typeof loadDepartments === "function") {
     loadDepartments();
   }
 
-  // 4️⃣ KPI SIEMPRE DESPUÉS del recalculo real
+  // 4️⃣ KPI
   setTimeout(() => {
     if (typeof HR_updateKPI === "function") {
       HR_updateKPI();
     }
   }, 200);
 
-  // 5️⃣ Clock engine
+  // 5️⃣ Clock
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
 
 });
-
+     
 /* ============================================================
    🟦 E1 — Department Selector Fill (HR Modal)
    ============================================================ */
