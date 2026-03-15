@@ -1780,10 +1780,16 @@ if (!airlineId) {
 
     });
 
-    ACS_HR_save(hr);
+    // Guardar estado HR
+ACS_HR_save(hr);
 
-// 🔐 Estado server oficial
+// 🔐 ESTADO SERVER AUTORIDAD
 window.ACS_HR_SERVER_STATE = hr;
+
+// 🔄 Sincronizar HR engine inmediatamente
+if (typeof ACS_HR_recalculateAll === "function") {
+  ACS_HR_recalculateAll();
+}
 
     console.log(
       "%c🌐 HR SYNC SUCCESS (ENGINE SAFE)",
