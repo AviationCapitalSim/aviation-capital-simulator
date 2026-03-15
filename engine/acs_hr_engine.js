@@ -315,16 +315,22 @@ function ACS_HR_applyHistoricalSalaries() {
 
     localStorage.setItem("ACS_HR", JSON.stringify(HR));
 }
+
 /* ============================================================
-   === HELPERS ==================================================
+   🛑 HR STATE AUTHORITY — SERVER FIRST
+   ------------------------------------------------------------
+   • HR deja de depender de localStorage como estado principal
+   • Fuente oficial: window.ACS_HR_SERVER_STATE
+   • localStorage ya NO es autoridad
    ============================================================ */
 
 function ACS_HR_load() {
-    return JSON.parse(localStorage.getItem("ACS_HR"));
+  return window.ACS_HR_SERVER_STATE || {};
 }
 
 function ACS_HR_save(data) {
-    localStorage.setItem("ACS_HR", JSON.stringify(data));
+  window.ACS_HR_SERVER_STATE = data || {};
+  return window.ACS_HR_SERVER_STATE;
 }
 
 /* ============================================================
@@ -469,55 +475,42 @@ function ACS_HR_applyBonus(deptID, percent) {
 }
 
 /* ============================================================
-   🟩 HR-B1 — DEPARTMENTS VIEW (STATE-DRIVEN, SAFE)
+   🛑 HR DEPARTMENTS VIEW — SERVER STATE ONLY
    ------------------------------------------------------------
-   Source of Truth: ACS_HR_STATE
-   Compatible with: department_control.html
-   ------------------------------------------------------------
-   Version: v1.2 | Date: 05 FEB 2026
+   • NO bootstrap automático
+   • NO crea departamentos faltantes en local
+   • SOLO renderiza lo que venga de Railway
    ============================================================ */
 
 function ACS_HR_getDepartmentsView() {
 
-    const hr = ACS_HR_load() || {};
+  const hr = ACS_HR_load() || {};
 
-    return ACS_HR_DEPARTMENTS.map(d => {
+  return ACS_HR_DEPARTMENTS.map(d => {
 
-        // Si el departamento no existe aún en el estado → inicializarlo
-        if (!hr[d.id]) {
+    const dep = hr[d.id] || {
+      id: d.id,
+      name: d.name,
+      base: d.base,
+      staff: 0,
+      required: 0,
+      morale: 100,
+      salary: 0,
+      payroll: 0
+    };
 
-            console.warn("⚠️ HR missing department:", d.id, "→ bootstrap");
+    return {
+      id: dep.id || d.id,
+      name: dep.name || d.name,
+      base: dep.base || d.base,
+      staff: Number(dep.staff) || 0,
+      required: Number(dep.required ?? 0) || 0,
+      morale: Number(dep.morale) || 100,
+      salary: Number(dep.salary) || 0,
+      payroll: Number(dep.payroll) || 0
+    };
+  });
 
-            hr[d.id] = {
-                id: d.id,
-                name: d.name,
-                base: d.base,
-                staff: d.initial || 0,
-                required: d.initial || 0,
-                morale: 100,
-                salary: 0,
-                payroll: 0,
-                bonus: 0,
-                years: 0
-            };
-
-            ACS_HR_save(hr);
-        }
-
-        const dep = hr[d.id];
-        dep.name = dep.name || d.name;
-       
-        return {
-            id: dep.id,
-            name: dep.name,
-            base: dep.base,
-            staff: Number(dep.staff) || 0,
-            required: Number(dep.required ?? dep.staff) || 0,
-            morale: Number(dep.morale) || 100,
-            salary: Number(dep.salary) || 0,
-            payroll: Number(dep.payroll) || 0
-        };
-    });
 }
 
 /* ============================================================
@@ -1154,14 +1147,13 @@ function ACS_HR_bootstrap() {
 }
 
 /* ============================================================
-   🟩 HR-A3 — AUTO BOOTSTRAP ON LOAD
+   🛑 HR LOCAL AUTO-BOOTSTRAP DISABLED
+   ------------------------------------------------------------
+   • HR ya no debe autoconstruirse desde localStorage
+   • Railway será la autoridad
    ============================================================ */
 
-ACS_HR_bootstrap();
-
-/* Declarar HR como listo SOLO después de bootstrap */
-localStorage.setItem("ACS_HR_INITIALIZED", "true");
-console.info("✅ HR INITIALIZED — SYSTEM FLAG SET");
+console.info("🛑 HR LOCAL AUTO-BOOTSTRAP DISABLED — WAITING FOR SERVER STATE");
 
 /* ============================================================
    🟧 AUTO HIRE EXECUTION ON HR INIT
