@@ -1707,36 +1707,36 @@ function handleLogout() {
 }
      
 /* ============================================================
-   🟦 HR RAILWAY SYNC — ACS ENGINE COMPATIBLE
+   🟦 HR RAILWAY SYNC — ACS ENGINE COMPATIBLE (FIXED)
    ============================================================ */
 
 async function ACS_HR_syncFromServer() {
 
   try {
-       
+
     let airlineId = null;
 
-// 1️⃣ intentar desde estado global server
-if (window.ACS_SERVER_SESSION && window.ACS_SERVER_SESSION.airline_id) {
-  airlineId = window.ACS_SERVER_SESSION.airline_id;
-}
+    // 1️⃣ SERVER SESSION
+    if (window.ACS_SERVER_SESSION && window.ACS_SERVER_SESSION.airline_id) {
+      airlineId = window.ACS_SERVER_SESSION.airline_id;
+    }
 
-// 2️⃣ fallback legacy (temporal)
-if (!airlineId) {
-  try {
-    const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-    airlineId = activeUser.airline_id;
-  } catch(e){}
-}
-       
+    // 2️⃣ FALLBACK LEGACY
+    if (!airlineId) {
+      try {
+        const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+        airlineId = activeUser.airline_id;
+      } catch(e){}
+    }
+
     if (!airlineId) {
       console.warn("⚠️ HR SYNC SKIPPED — airline_id missing");
       return;
     }
 
     const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/hr/departments/${airlineId}`
-);
+      `https://acs-world-server-production.up.railway.app/v1/hr/departments/${airlineId}`
+    );
 
     if (!res.ok) {
       console.warn("⚠️ HR SYNC FAILED — API error");
@@ -1766,33 +1766,42 @@ if (!airlineId) {
       const salary = ACS_HR_getBaseSalary(year, meta.base);
 
       hr[meta.id] = {
+
+        id: meta.id,                    // 🔧 CRÍTICO
         name: meta.name,
-        base: meta.base,
         role: meta.base,
-        staff: dep.staff || 0,
-        required: meta.initial || 0,
-        morale: dep.morale || 100,
+
+        staff: Number(dep.staff || 0),
+
+        // 🔧 REQUIRED CANONICAL
+        required: Number(dep.required || meta.required || 0),
+
+        morale: Number(dep.morale || 100),
+
         years: 0,
         bonus: 0,
+
         salary: salary,
-        payroll: salary * (dep.staff || 0)
+
+        payroll: salary * Number(dep.staff || 0)
+
       };
 
     });
 
-    // Guardar estado HR
-ACS_HR_save(hr);
+    // 🔐 GUARDAR ESTADO HR
+    ACS_HR_save(hr);
 
-// 🔐 ESTADO SERVER AUTORIDAD
-window.ACS_HR_SERVER_STATE = hr;
+    // 🔐 ESTADO SERVER AUTORIDAD
+    window.ACS_HR_SERVER_STATE = hr;
 
-// 🔄 Sincronizar HR engine inmediatamente
-if (typeof ACS_HR_recalculateAll === "function") {
-  ACS_HR_recalculateAll();
-}
+    // 🔄 RECALCULAR ENGINE
+    if (typeof ACS_HR_recalculateAll === "function") {
+      ACS_HR_recalculateAll();
+    }
 
     console.log(
-      "%c🌐 HR SYNC SUCCESS (ENGINE SAFE)",
+      "%c🌐 HR SYNC SUCCESS",
       "color:#00ffcc;font-weight:700",
       Object.keys(hr).length,
       "departments synced"
