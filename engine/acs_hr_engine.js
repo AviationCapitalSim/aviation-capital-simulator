@@ -109,8 +109,7 @@ if (!rawHR || rawHR === "null" || rawHR === "{}") {
             if (dep.id === "pilots_large")  size = "large";
             if (dep.id === "pilots_vlarge") size = "vlarge";
 
-            const basePilot = __getBase("pilot");
-            salary = Math.round(basePilot * PILOT_MULT[size]);
+            salary = ACS_HR_getPilotSalarySized(year, size);
 
         } else {
             salary = __getBase(dep.base);
