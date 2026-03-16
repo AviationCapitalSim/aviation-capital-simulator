@@ -330,6 +330,11 @@ window.ACS_Finance = ACS_Finance;
 
 console.log("🟦 ACS_Finance global ready");
 
+/* ============================================================
+   🔗 RAILWAY FINANCE SYNC (NEW)
+============================================================ */
+
+ACS_FINANCE_syncFromServer();
 
 /* ============================================================
    🟦 F0 — GLOBAL ENGINE EXPORT (CRITICAL FIX)
