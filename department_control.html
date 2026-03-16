@@ -1483,7 +1483,7 @@ try {
 
   // Recalcular payroll SOLO en base a staff actual
   if (typeof ACS_HR_recalculatePayroll === "function") {
-    const payroll = ACS_HR_recalculatePayroll();
+    const payroll = ACS_HR_getTotalPayroll()
     console.log("💾 HR payroll actualizado (OPS-safe):", payroll);
   }
 
@@ -1671,7 +1671,8 @@ function HR_hireOne(depId) {
     dep.payroll = dep.staff * dep.salary;
 
     ACS_HR_save(HR);
-
+    window.ACS_HR_SERVER_STATE = HR;
+       
     // ============================================================
 // 🌐 HR SYNC → SERVER
 // ============================================================
