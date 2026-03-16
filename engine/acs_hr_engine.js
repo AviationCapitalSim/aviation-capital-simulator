@@ -299,14 +299,16 @@ function ACS_HR_applyHistoricalSalaries() {
         // ---- Pilotos (4 grupos) ----
         if (id.startsWith("pilots_")) {
 
-            let size="medium";
-            if(id==="pilots_small") size="small";
-            if(id==="pilots_medium") size="medium";
-            if(id==="pilots_large") size="large";
-            if(id==="pilots_vlarge") size="vlarge";
+    let size = "medium";
 
-            finalSalary = ACS_HR_getPilotSalarySized(year, size);
+    if (id === "pilots_small")  size = "small";
+    if (id === "pilots_medium") size = "medium";
+    if (id === "pilots_large")  size = "large";
+    if (id === "pilots_vlarge") size = "vlarge";
 
+    finalSalary = ACS_HR_getPilotSalarySized(year, size);
+
+}
         } else {
             // ---- Demás roles ----
             finalSalary = ACS_HR_getBaseSalary(year, dep.base);
@@ -562,20 +564,24 @@ function ACS_HR_calcDynamic(dep) {
 
 function ACS_HR_recalculateAll() {
 
-  const HR = JSON.parse(localStorage.getItem("ACS_HR") || "{}");
+  const HR = ACS_HR_load();
+  if (!HR) return;
+
   let totalPayroll = 0;
 
   Object.values(HR).forEach(dep => {
+
     if (!dep || typeof dep.staff !== "number" || typeof dep.salary !== "number") return;
-    totalPayroll += dep.staff * dep.salary;
+
+    dep.payroll = dep.staff * dep.salary;
+    totalPayroll += dep.payroll;
+
   });
 
   totalPayroll = Math.round(totalPayroll);
 
-  // 🔴 FUENTE CANÓNICA PARA FINANCE
   localStorage.setItem("ACS_HR_PAYROLL", totalPayroll);
 
-  // 🔔 Avisar a Finance / UI
   window.dispatchEvent(new Event("ACS_HR_UPDATED"));
 }
 
@@ -596,7 +602,7 @@ function ACS_HR_runAutoSalaryEngine(year) {
 
   Object.entries(HR).forEach(([id, dep]) => {
 
-    if (!dep || !dep.base || !dep.count) return;
+    if (!dep || !dep.base || typeof dep.staff !== "number") return;
 
     if (id.startsWith("pilots_")) {
       const size = dep.size || "small";
