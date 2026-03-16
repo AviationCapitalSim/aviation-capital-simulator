@@ -145,21 +145,6 @@ return Math.round(base*(MULT[size]||1));
 
 }
 
-function ACS_HR_getPilotSalarySized(year,size){
-
-const base = ACS_HR_getBaseSalary(year,"pilot");
-
-const MULT={
-small:0.55,
-medium:0.75,
-large:1.0,
-vlarge:1.4
-};
-
-return Math.round(base*(MULT[size]||1));
-
-}
-
 /* ============================================================
    🛑 HR STATE AUTHORITY — SERVER FIRST
    ------------------------------------------------------------
