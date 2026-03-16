@@ -2107,10 +2107,11 @@ try {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        airline_id: airlineId,
-        dept_id: depId,
-        staff: dep.staff
-      })
+      airline_id: airlineId,
+      dept_id: depId,
+      staff: dep.staff,
+      morale: dep.morale
+     })
     }
   )
   .then(r => r.json())
