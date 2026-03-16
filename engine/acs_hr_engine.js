@@ -103,8 +103,6 @@ return S.admin;
 
 }
 
-}
-
 function ACS_HR_getPilotSalarySized(year,size){
 
 const base = ACS_HR_getBaseSalary(year,"pilot");
