@@ -40,6 +40,29 @@ function ACS_HR_getGameYear() {
    ============================================================ */
 
 const ACS_HR_DEPARTMENTS = [
+
+{ id: "ceo", name: "Airline CEO", base: "ceo", initial: 1 },
+{ id: "vp", name: "High Level Management (VP)", base: "ceo", initial: 0 },
+{ id: "middle", name: "Middle Level Management", base: "admin", initial: 1 },
+{ id: "economics", name: "Economics & Finance", base: "admin", initial: 1 },
+{ id: "comms", name: "Corporate Communications", base: "admin", initial: 0 },
+{ id: "hr", name: "Human Resources", base: "admin", initial: 1 },
+{ id: "quality", name: "Quality Department", base: "ground", initial: 1 },
+{ id: "security", name: "Safety & Security", base: "ground", initial: 0 },
+{ id: "customers", name: "Customer Services", base: "flight_ops", initial: 0 },
+{ id: "flightops", name: "Flight Ops Division", base: "flight_ops", initial: 1 },
+{ id: "maintenance", name: "Technical Maintenance", base: "maintenance", initial: 0 },
+{ id: "ground", name: "Ground Handling", base: "ground", initial: 0 },
+{ id: "routes", name: "Route Strategies Department", base: "flight_ops", initial: 1 },
+
+{ id: "pilots_small",  name: "Pilots (Small A/C)",  base: "pilot_small",  initial: 0 },
+{ id: "pilots_medium", name: "Pilots (Medium A/C)", base: "pilot_medium", initial: 0 },
+{ id: "pilots_large",  name: "Pilots (Large A/C)",  base: "pilot_large",  initial: 0 },
+{ id: "pilots_vlarge", name: "Pilots (Very Large A/C)", base: "pilot_vlarge", initial: 0 },
+
+{ id: "cabin", name: "Cabin Crew", base: "cabin", initial: 0 }
+
+];
    
 /* ============================================================
    HR HISTORICAL SALARY ENGINE
