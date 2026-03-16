@@ -267,18 +267,19 @@ ACS_HR_getBaseSalary = function(year, role){
 
 function ACS_HR_getPilotSalarySized(year, size){
 
-  const base = ACS_HR_getBaseSalary(year, "pilot");
+  const base = ACS_HR_getBaseSalary5Y(year, "pilot");
 
-  const FACTOR = {
+  const MULT = {
     small: 0.55,
-    medium:0.75,
+    medium: 0.75,
     large: 1.00,
-    vlarge:1.40
+    vlarge: 1.40
   };
 
-  return Math.round(base * (FACTOR[size] || 1));
-}
+  const factor = MULT[size] || 1;
 
+  return Math.round(base * factor);
+}
 
 /* ============================================================
    5) APPLY HISTORICAL SALARIES — FIXED
