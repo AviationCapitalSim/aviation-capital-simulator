@@ -1689,11 +1689,14 @@ try {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      airline_id: airlineId,
-      dept_id: depId,
-      staff: dep.staff
-    })
+   body: JSON.stringify({
+  airline_id: airlineId,
+  dept_id: depId,
+  staff: dep.staff,
+  morale: dep.morale,
+  salary: dep.salary,
+  payroll: dep.payroll
+})
   }
 )
 .then(r => r.json())
@@ -2107,11 +2110,13 @@ try {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-      airline_id: airlineId,
-      dept_id: depId,
-      staff: dep.staff,
-      morale: dep.morale
-     })
+  airline_id: airlineId,
+  dept_id: depId,
+  staff: dep.staff,
+  morale: dep.morale,
+  salary: dep.salary,
+  payroll: dep.payroll
+})
     }
   )
   .then(r => r.json())
