@@ -163,6 +163,8 @@ function saveFinance(f){
     lastUpdate: Date.now()
   };
   localStorage.setItem("ACS_Finance", JSON.stringify(f));
+
+ACS_FINANCE_saveToServer();
 }
 
 /* ============================================================
