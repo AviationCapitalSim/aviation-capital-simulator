@@ -38,11 +38,12 @@ function ACS_HR_getGameYear() {
 /* ============================================================
    1) LISTADO OFICIAL DE LOS 18 DEPARTAMENTOS VISIBLES
    ============================================================ */
+
 const ACS_HR_DEPARTMENTS = [
    
 /* ============================================================
-   HR HISTORICAL SALARY ENGINE (1940–2030)
-============================================================ */
+   HR HISTORICAL SALARY ENGINE
+   ============================================================ */
 
 function ACS_HR_getBaseSalary(year, role){
 
@@ -57,9 +58,10 @@ const TABLE = {
 2000:{pilot:4700,cabin:1100,tech:1400,ground:720,admin:1100,flight_ops:1300,security:850,exec:7200},
 2010:{pilot:6200,cabin:1600,tech:2000,ground:1050,admin:1600,flight_ops:1850,security:1200,exec:9800},
 2020:{pilot:8300,cabin:2400,tech:2800,ground:1450,admin:2300,flight_ops:2600,security:1700,exec:13500}
+
 };
 
-const decade = Math.max(...Object.keys(TABLE).map(Number).filter(d=>year>=d));
+const decade = Math.max(...Object.keys(TABLE).map(Number).filter(d => year >= d));
 const S = TABLE[decade] || TABLE[1940];
 
 switch(role){
@@ -100,6 +102,23 @@ return S.exec;
 
 default:
 return S.admin;
+
+}
+
+}
+
+function ACS_HR_getPilotSalarySized(year,size){
+
+const base = ACS_HR_getBaseSalary(year,"pilot");
+
+const MULT={
+small:0.55,
+medium:0.75,
+large:1.0,
+vlarge:1.4
+};
+
+return Math.round(base*(MULT[size]||1));
 
 }
 
