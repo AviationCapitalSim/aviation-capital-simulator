@@ -1,4 +1,139 @@
 /* ============================================================
+   ACS FINANCE — SERVER SYNC
+   ------------------------------------------------------------
+   Sincroniza estado financiero con Railway
+============================================================ */
+
+async function ACS_FINANCE_syncFromServer(){
+
+  try{
+
+    const airlineId =
+      Number(localStorage.getItem("ACS_Airline_ID"));
+
+    if(!airlineId) return;
+
+    const res = await fetch(
+      `/v1/finance/${airlineId}`
+    );
+
+    const data = await res.json();
+
+    if(!data.ok) return;
+
+    const f = data.finance;
+
+    const financeObject = {
+
+      capital: f.capital || 0,
+      revenue: f.revenue || 0,
+      expenses: f.expenses || 0,
+      profit: f.profit || 0,
+
+      income:{
+        live_revenue: f.live_revenue || 0,
+        weekly_revenue: f.weekly_revenue || 0
+      },
+
+      cost:{
+        fuel: f.cost_fuel || 0,
+        maintenance: f.cost_maintenance || 0,
+        hr: f.cost_hr || 0,
+        leasing: f.cost_leasing || 0,
+        airport: f.cost_airport || 0,
+        other: f.cost_other || 0
+      },
+
+      debt: f.debt || 0,
+      fleet_size: f.fleet_size || 0
+
+    };
+
+    localStorage.setItem(
+      "ACS_Finance",
+      JSON.stringify(financeObject)
+    );
+
+    window.dispatchEvent(
+      new Event("ACS_FINANCE_UPDATED")
+    );
+
+  }
+  catch(err){
+
+    console.warn(
+      "Finance sync failed:",
+      err
+    );
+
+  }
+
+}
+
+/* ============================================================
+   ACS FINANCE — SAVE TO SERVER
+============================================================ */
+
+async function ACS_FINANCE_saveToServer(){
+
+  try{
+
+    const airline_id =
+      Number(localStorage.getItem("ACS_Airline_ID"));
+
+    if(!airline_id) return;
+
+    const f =
+      JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+    const payload = {
+
+      airline_id,
+
+      capital: f.capital || 0,
+      revenue: f.revenue || 0,
+      expenses: f.expenses || 0,
+      profit: f.profit || 0,
+
+      live_revenue: f.income?.live_revenue || 0,
+      weekly_revenue: f.income?.weekly_revenue || 0,
+
+      cost_fuel: f.cost?.fuel || 0,
+      cost_maintenance: f.cost?.maintenance || 0,
+      cost_hr: f.cost?.hr || 0,
+      cost_leasing: f.cost?.leasing || 0,
+      cost_airport: f.cost?.airport || 0,
+      cost_other: f.cost?.other || 0,
+
+      debt: f.debt || 0,
+      fleet_size: f.fleet_size || 0
+
+    };
+
+    await fetch(
+      "/v1/finance/update",
+      {
+        method:"PATCH",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+  }
+  catch(err){
+
+    console.warn(
+      "Finance save failed:",
+      err
+    );
+
+  }
+
+}
+
+/* ============================================================
    💰 ACS FINANCE ENGINE — CANONICAL LEDGER v3.0
    ------------------------------------------------------------
    • Finance = REGISTRO CONTABLE (NO calcula vuelos)
