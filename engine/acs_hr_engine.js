@@ -246,7 +246,9 @@ function ACS_HR_save(data) {
 
     }
 
-    dep.salary = salary;
+    if(!dep.salary || dep.salary === 0){
+  dep.salary = salary;
+}
     dep.payroll = dep.staff * salary;
 
   });
