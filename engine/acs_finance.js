@@ -196,29 +196,29 @@ function ACS_FINANCE_saveToServer(){
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
+      body: JSON.stringify({
 
-          airline_id: airlineId,
+  airline_id: airlineId,
 
-          capital: f.capital || 0,
-          revenue: f.revenue || 0,
-          expenses: f.expenses || 0,
-          profit: f.profit || 0,
+  capital: Number(f.capital) || 0,
+  revenue: Number(f.revenue) || 0,
+  expenses: Number(f.expenses) || 0,
+  profit: Number(f.profit) || 0,
 
-          live_revenue: f.income?.live_revenue || 0,
-          weekly_revenue: f.income?.weekly_revenue || 0,
+  live_revenue: Number(f.income?.live_revenue) || 0,
+  weekly_revenue: Number(f.income?.weekly_revenue) || 0,
 
-          cost_fuel: f.cost?.fuel || 0,
-          cost_maintenance: f.cost?.maintenance || 0,
-          cost_hr: f.cost?.salaries || 0,
-          cost_leasing: f.cost?.leasing || 0,
-          cost_airport: f.cost?.slot_fees || 0,
-          cost_other: 0,
+  cost_fuel: Number(f.cost?.fuel) || 0,
+  cost_maintenance: Number(f.cost?.maintenance) || 0,
+  cost_hr: Number(f.cost?.salaries) || 0,
+  cost_leasing: Number(f.cost?.leasing) || 0,
+  cost_airport: Number(f.cost?.slot_fees) || 0,
+  cost_other: 0,
 
-          debt: f.debt || 0,
-          fleet_size: 0
+  debt: Number(f.debt) || 0,
+  fleet_size: Number(f.fleet_size) || 0
 
-        })
+})
       }
     );
 
