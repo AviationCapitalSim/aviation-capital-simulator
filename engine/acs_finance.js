@@ -158,13 +158,75 @@ function loadFinance(){
 }
 
 function saveFinance(f){
+
   f.meta = {
     version: "3.0",
     lastUpdate: Date.now()
   };
-  localStorage.setItem("ACS_Finance", JSON.stringify(f));
 
-ACS_FINANCE_saveToServer();
+  localStorage.setItem(
+    "ACS_Finance",
+    JSON.stringify(f)
+  );
+
+  ACS_FINANCE_saveToServer();
+
+}
+   
+  /* ============================================================
+     🌐 FINANCE SYNC → SERVER
+  ============================================================ */
+
+  try {
+
+    const airlineId =
+      window.ACS_SERVER_SESSION?.airline_id ||
+      JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
+
+    if(!airlineId) return;
+
+    fetch(
+      "https://acs-world-server-production.up.railway.app/v1/finance/update",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+
+          airline_id: airlineId,
+
+          capital: f.capital || 0,
+          revenue: f.revenue || 0,
+          expenses: f.expenses || 0,
+          profit: f.profit || 0,
+
+          live_revenue: f.income?.live_revenue || 0,
+          weekly_revenue: f.income?.weekly_revenue || 0,
+
+          cost_fuel: f.cost?.fuel || 0,
+          cost_maintenance: f.cost?.maintenance || 0,
+          cost_hr: f.cost?.salaries || 0,
+          cost_leasing: f.cost?.leasing || 0,
+          cost_airport: f.cost?.slot_fees || 0,
+          cost_other: 0,
+
+          debt: f.debt || 0,
+          fleet_size: 0
+
+        })
+      }
+    );
+
+  } catch(err){
+
+    console.warn(
+      "Finance sync failed:",
+      err
+    );
+
+  }
+
 }
 
 /* ============================================================
