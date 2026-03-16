@@ -334,8 +334,43 @@ function ACS_HR_load() {
 }
 
 function ACS_HR_save(data) {
+
   window.ACS_HR_SERVER_STATE = data || {};
+
+  const HR = window.ACS_HR_SERVER_STATE;
+  const year = (typeof ACS_getYear === "function") ? ACS_getYear() : 1940;
+
+  Object.keys(HR).forEach(id => {
+
+    const dep = HR[id];
+    if (!dep) return;
+
+    let salary = 0;
+
+    if (id.startsWith("pilots_")) {
+
+      let size = "medium";
+
+      if (id === "pilots_small")  size = "small";
+      if (id === "pilots_medium") size = "medium";
+      if (id === "pilots_large")  size = "large";
+      if (id === "pilots_vlarge") size = "vlarge";
+
+      salary = ACS_HR_getPilotSalarySized(year, size);
+
+    } else {
+
+      salary = ACS_HR_getBaseSalary(year, dep.base);
+
+    }
+
+    dep.salary = salary;
+    dep.payroll = dep.staff * salary;
+
+  });
+
   return window.ACS_HR_SERVER_STATE;
+
 }
 
 /* ============================================================
