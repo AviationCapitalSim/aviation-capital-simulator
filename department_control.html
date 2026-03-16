@@ -1683,19 +1683,27 @@ try {
     JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
 
   fetch(
-    `https://acs-world-server-production.up.railway.app/v1/hr/update`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        airline_id: airlineId,
-        dept_id: depId,
-        staff: dep.staff
-      })
-    }
+  `https://acs-world-server-production.up.railway.app/v1/hr/staff`,
+  {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      airline_id: airlineId,
+      dept_id: depId,
+      staff: dep.staff
+    })
+  }
+)
+.then(r => r.json())
+.then(d => {
+  console.log(
+    "%c🌐 HR SERVER UPDATE OK",
+    "color:#00ffcc;font-weight:700",
+    d
   );
+})
 
 } catch(e) {
 
