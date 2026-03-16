@@ -1864,17 +1864,26 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   await ACS_HR_syncFromServer();
 
-  // Si no llegó estado server, usar estado local existente
-  if (!window.ACS_HR_SERVER_STATE) {
+  // ============================================================
+  // 🧠 FORCE OPS REQUIRED CALCULATION
+  // ============================================================
 
-    console.warn("⚠️ HR SERVER STATE NOT READY — fallback HR load");
+  if (typeof ACS_OPS_recalculateAllRequired === "function") {
 
-    try {
-      const hr = ACS_HR_load();
-      if (hr) window.ACS_HR_SERVER_STATE = hr;
-    } catch(e){}
+    console.log(
+      "%c🧠 INITIAL OPS REQUIRED CALC",
+      "color:#00ffcc;font-weight:700"
+    );
+
+    ACS_OPS_recalculateAllRequired();
+
+  } else {
+
+    console.warn("⚠️ OPS REQUIRED ENGINE NOT FOUND");
 
   }
+
+  // ============================================================
 
   loadDepartments();
   HR_updateKPI();
