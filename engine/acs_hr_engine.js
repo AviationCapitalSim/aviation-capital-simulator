@@ -308,7 +308,7 @@ function ACS_HR_applyHistoricalSalaries() {
 
     finalSalary = ACS_HR_getPilotSalarySized(year, size);
 
-}
+
         } else {
             // ---- Demás roles ----
             finalSalary = ACS_HR_getBaseSalary(year, dep.base);
