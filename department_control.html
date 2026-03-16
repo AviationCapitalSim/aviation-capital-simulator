@@ -2080,6 +2080,48 @@ function confirmFireMiniModal() {
 
   ACS_HR_save(HR);
 
+// ============================================================
+// 🌐 HR FIRE SYNC → SERVER
+// ============================================================
+
+try {
+
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
+
+  fetch(
+    `https://acs-world-server-production.up.railway.app/v1/hr/staff`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        airline_id: airlineId,
+        dept_id: depId,
+        staff: dep.staff
+      })
+    }
+  )
+  .then(r => r.json())
+  .then(d => {
+
+    console.log(
+      "%c🌐 HR FIRE SERVER UPDATE OK",
+      "color:#ff7b7b;font-weight:700",
+      dep.name,
+      "New staff:", dep.staff
+    );
+
+  });
+
+} catch(e) {
+
+  console.warn("⚠️ HR FIRE SERVER UPDATE FAILED", e);
+
+}
+     
   // ============================================================
   // 🔄 REFRESH TOTAL
   // ============================================================
