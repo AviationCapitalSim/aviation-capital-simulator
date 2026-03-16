@@ -1829,11 +1829,15 @@ console.log("🧭 HR SYNC USING AIRLINE:", airlineId);
   years: 0,
   bonus: 0,
 
-  // 🔴 AHORA VIENE DEL SERVER
-  salary: Number(dep.salary || 0),
+  // ============================================================
+// 💰 SALARIO HISTÓRICO — CALCULADO POR EL MOTOR HR
+// ============================================================
 
-  payroll: Number(dep.payroll || 0)
+salary: ACS_HR_getBaseSalary(year, meta.base),
 
+// Payroll siempre recalculado por HR engine
+payroll: 0
+           
 };
     });
 
@@ -1843,6 +1847,13 @@ console.log("🧭 HR SYNC USING AIRLINE:", airlineId);
     // 🔐 ESTADO SERVER AUTORIDAD
     window.ACS_HR_SERVER_STATE = hr;
 
+// ============================================================
+// 🧠 HR HISTORICAL SALARY ENGINE
+// ============================================================
+
+ACS_HR_applyHistoricalSalaries();
+ACS_HR_recalculateAll();
+       
     // 🔄 RECALCULAR ENGINE
     if (typeof ACS_HR_recalculateAll === "function") {
       ACS_HR_recalculateAll();
