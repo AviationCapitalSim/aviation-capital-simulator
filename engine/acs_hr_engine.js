@@ -146,7 +146,9 @@ return Math.round(base*(MULT[size]||1));
 }
 
 /* ============================================================
-   APPLY HISTORICAL SALARIES TO HR STATE
+   ACS HR — APPLY HISTORICAL SALARIES
+   ------------------------------------------------------------
+   Calcula salarios según año del simulador
    ============================================================ */
 
 function ACS_HR_applyHistoricalSalaries(){
@@ -166,7 +168,10 @@ function ACS_HR_applyHistoricalSalaries(){
 
     let salary = 0;
 
-    // PILOTS
+    // ============================================================
+    // PILOTS POR TAMAÑO
+    // ============================================================
+
     if(id.startsWith("pilots_")){
 
       let size="medium";
@@ -181,7 +186,7 @@ function ACS_HR_applyHistoricalSalaries(){
     }
     else{
 
-      salary = ACS_HR_getBaseSalary(year,dep.base);
+      salary = ACS_HR_getBaseSalary(year,dep.role || dep.base);
 
     }
 
@@ -193,10 +198,9 @@ function ACS_HR_applyHistoricalSalaries(){
   window.ACS_HR_SERVER_STATE = HR;
 
   console.log(
-    "%cHR HISTORICAL SALARIES APPLIED",
+    "%c💰 HR HISTORICAL SALARIES APPLIED",
     "color:#00ffcc;font-weight:700"
   );
-
 }
 
 /* ============================================================
