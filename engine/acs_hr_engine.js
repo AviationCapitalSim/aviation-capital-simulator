@@ -335,9 +335,7 @@ function ACS_HR_load() {
 
 function ACS_HR_save(data) {
 
-  window.ACS_HR_SERVER_STATE = data || {};
-
-  const HR = window.ACS_HR_SERVER_STATE;
+  const HR = data || {};
   const year = (typeof ACS_getYear === "function") ? ACS_getYear() : 1940;
 
   Object.keys(HR).forEach(id => {
@@ -347,6 +345,7 @@ function ACS_HR_save(data) {
 
     let salary = 0;
 
+    // PILOTS
     if (id.startsWith("pilots_")) {
 
       let size = "medium";
@@ -358,7 +357,8 @@ function ACS_HR_save(data) {
 
       salary = ACS_HR_getPilotSalarySized(year, size);
 
-    } else {
+    }
+    else {
 
       salary = ACS_HR_getBaseSalary(year, dep.base);
 
@@ -369,8 +369,9 @@ function ACS_HR_save(data) {
 
   });
 
-  return window.ACS_HR_SERVER_STATE;
+  window.ACS_HR_SERVER_STATE = HR;
 
+  return window.ACS_HR_SERVER_STATE;
 }
 
 /* ============================================================
