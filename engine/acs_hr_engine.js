@@ -219,32 +219,68 @@ function ACS_HR_get5YBlock(year){
 }
 
 function ACS_HR_getBaseSalary5Y(year, role){
+
   const block = ACS_HR_get5YBlock(year);
   const S = ACS_HR_SALARY_5Y[block] || ACS_HR_SALARY_5Y[2025];
 
-  switch(role){
+  // 🔧 Normalizar roles de departamentos → roles salariales
+  const MAP = {
+    ceo: "exec",
+    vp: "exec",
+
+    admin: "admin",
+    economics: "admin",
+    comms: "admin",
+    hr: "admin",
+    quality: "admin",
+    middle: "admin",
+
+    security: "security",
+
+    ground: "ground",
+    customers: "ground",
+
+    maintenance: "maintenance",
+
+    flight_ops: "flight_ops",
+    flightops: "flight_ops",
+    routes: "flight_ops",
+
+    cabin: "cabin",
+
+    pilot: "pilot",
+    pilot_small: "pilot",
+    pilot_medium: "pilot",
+    pilot_large: "pilot",
+    pilot_vlarge: "pilot"
+  };
+
+  const r = MAP[role] || role;
+
+  switch(r){
+
     case "pilot":
-    case "pilot_small":
-    case "pilot_medium":
-    case "pilot_large":
-    case "pilot_vlarge":
       return S.pilot;
 
-    case "cabin":       return S.cabin;
-    case "maintenance": return S.tech;
-    case "ground":      return S.ground;
-    case "flight_ops":  return S.flightops;
-    case "security":    return S.security;
+    case "cabin":
+      return S.cabin;
+
+    case "maintenance":
+      return S.tech;
+
+    case "ground":
+      return S.ground;
+
+    case "flight_ops":
+      return S.flightops;
+
+    case "security":
+      return S.security;
 
     case "admin":
-    case "economics":
-    case "comms":
-    case "hr":
-    case "quality":
       return S.admin;
 
-    case "ceo":
-    case "vp":
+    case "exec":
       return S.exec;
 
     default:
@@ -253,6 +289,7 @@ function ACS_HR_getBaseSalary5Y(year, role){
 }
 
 /* WRAPPER — usar 5Y sin romper el motor viejo */
+
 const __oldBaseSalary = ACS_HR_getBaseSalary;
 
 ACS_HR_getBaseSalary = function(year, role){
