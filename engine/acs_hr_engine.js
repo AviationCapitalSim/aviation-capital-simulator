@@ -519,7 +519,6 @@ registerTimeListener((time) => {
 
     if (localStorage.getItem("ACS_AutoSalary") !== "ON") return;
 
-    ACS_HR_runAutoSalaryEngine(year);
 });
 
 /* ============================================================
