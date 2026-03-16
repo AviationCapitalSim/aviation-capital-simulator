@@ -103,14 +103,17 @@ if (!rawHR || rawHR === "null" || rawHR === "{}") {
         let salary = 0;
 
         if (dep.id.startsWith("pilots_")) {
-            let size = "medium";
-            if (dep.id === "pilots_small")  size = "small";
-            if (dep.id === "pilots_medium") size = "medium";
-            if (dep.id === "pilots_large")  size = "large";
-            if (dep.id === "pilots_vlarge") size = "vlarge";
 
-            salary = ACS_HR_getPilotSalarySized(year, size);
+    let size = "medium";
 
+    if (dep.id === "pilots_small")  size = "small";
+    if (dep.id === "pilots_medium") size = "medium";
+    if (dep.id === "pilots_large")  size = "large";
+    if (dep.id === "pilots_vlarge") size = "vlarge";
+
+    salary = ACS_HR_getPilotSalarySized(year, size);
+
+}
         } else {
             salary = __getBase(dep.base);
         }
@@ -266,7 +269,7 @@ ACS_HR_getBaseSalary = function(year, role){
 
 function ACS_HR_getPilotSalarySized(year, size){
 
-  const base = ACS_HR_getBaseSalary5Y(year, "pilot");
+  const base = ACS_HR_getBaseSalary(year, "pilot");
 
   const MULT = {
     small: 0.55,
