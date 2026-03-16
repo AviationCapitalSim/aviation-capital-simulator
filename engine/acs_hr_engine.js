@@ -904,3 +904,11 @@ console.info("🛑 HR LOCAL AUTO-BOOTSTRAP DISABLED — WAITING FOR SERVER STATE
 if (typeof ACS_HR_runAutoHire === "function") {
   ACS_HR_runAutoHire();
 }
+
+/* ============================================================
+   HR ENGINE END SAFETY
+   ============================================================ */
+
+   console.log("%cACS HR ENGINE LOADED", "color:#00ffcc;font-weight:700");
+
+   
