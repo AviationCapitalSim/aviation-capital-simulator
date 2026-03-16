@@ -173,9 +173,11 @@ function saveFinance(f){
 
 }
    
-  /* ============================================================
-     🌐 FINANCE SYNC → SERVER
-  ============================================================ */
+/* ============================================================
+   🌐 FINANCE SYNC → SERVER
+============================================================ */
+
+function ACS_FINANCE_saveToServer(){
 
   try {
 
@@ -184,6 +186,8 @@ function saveFinance(f){
       JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
 
     if(!airlineId) return;
+
+    const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
     fetch(
       "https://acs-world-server-production.up.railway.app/v1/finance/update",
