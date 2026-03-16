@@ -1352,20 +1352,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (typeof registerTimeListener === "function") {
 
-  registerTimeListener((simDate)=>{
-    updateClockDisplay(simDate);
-    ACS_runMonthlySnapshot(simDate);
-  });
+    registerTimeListener((simDate)=>{
+      updateClockDisplay(simDate);
+      ACS_runMonthlySnapshot(simDate);
+    });
 
-  updateClockDisplay();
-}
-     
+    updateClockDisplay();
+  }
+
   updateCompanyOverview();
   loadBreakdown();
   loadTransactionLog();
   loadLeasing();
   ACS_renderMonthlyExecutive();
-     
+
+  // 🔗 SYNC FINANCE FROM SERVER
+  ACS_FINANCE_syncFromServer();
+
 });
 
 /* ============================================================
