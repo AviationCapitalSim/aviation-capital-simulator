@@ -39,29 +39,86 @@ function ACS_HR_getGameYear() {
    1) LISTADO OFICIAL DE LOS 18 DEPARTAMENTOS VISIBLES
    ============================================================ */
 const ACS_HR_DEPARTMENTS = [
-    { id: "ceo", name: "Airline CEO", base: "ceo", initial: 1 },
-    { id: "vp", name: "High Level Management (VP)", base: "ceo", initial: 0 },
-    { id: "middle", name: "Middle Level Management", base: "admin", initial: 1 },
-    { id: "economics", name: "Economics & Finance", base: "admin", initial: 1 },
-    { id: "comms", name: "Corporate Communications", base: "admin", initial: 0 },
-    { id: "hr", name: "Human Resources", base: "admin", initial: 1 },
-    { id: "quality", name: "Quality Department", base: "ground", initial: 1 },
-    { id: "security", name: "Safety & Security", base: "ground", initial: 0 },
-    { id: "customers", name: "Customer Services", base: "flight_ops", initial: 0 },
-    { id: "flightops", name: "Flight Ops Division", base: "flight_ops", initial: 1 },
-    { id: "maintenance", name: "Technical Maintenance", base: "maintenance", initial: 0 },
-    { id: "ground", name: "Ground Handling", base: "ground", initial: 0 },
-    { id: "routes", name: "Route Strategies Department", base: "flight_ops", initial: 1 },
+   
+/* ============================================================
+   HR HISTORICAL SALARY ENGINE (1940–2030)
+============================================================ */
 
-    // Pilotos con clasificación
-    { id: "pilots_small",  name: "Pilots (Small A/C)",  base: "pilot_small",  initial: 0 },
-    { id: "pilots_medium", name: "Pilots (Medium A/C)", base: "pilot_medium", initial: 0 },
-    { id: "pilots_large",  name: "Pilots (Large A/C)",  base: "pilot_large",  initial: 0 },
-    { id: "pilots_vlarge", name: "Pilots (Very Large A/C)", base: "pilot_vlarge", initial: 0 },
+function ACS_HR_getBaseSalary(year, role){
 
-    { id: "cabin", name: "Cabin Crew", base: "cabin", initial: 0 }
-];
+const TABLE = {
 
+1940:{pilot:380,cabin:140,tech:200,ground:120,admin:180,flight_ops:220,security:150,exec:650},
+1950:{pilot:520,cabin:170,tech:240,ground:140,admin:210,flight_ops:260,security:170,exec:800},
+1960:{pilot:900,cabin:240,tech:330,ground:190,admin:280,flight_ops:340,security:230,exec:1200},
+1970:{pilot:1600,cabin:360,tech:500,ground:280,admin:420,flight_ops:520,security:340,exec:2200},
+1980:{pilot:2600,cabin:600,tech:800,ground:420,admin:620,flight_ops:760,security:520,exec:3600},
+1990:{pilot:3600,cabin:820,tech:1050,ground:520,admin:820,flight_ops:980,security:660,exec:5200},
+2000:{pilot:4700,cabin:1100,tech:1400,ground:720,admin:1100,flight_ops:1300,security:850,exec:7200},
+2010:{pilot:6200,cabin:1600,tech:2000,ground:1050,admin:1600,flight_ops:1850,security:1200,exec:9800},
+2020:{pilot:8300,cabin:2400,tech:2800,ground:1450,admin:2300,flight_ops:2600,security:1700,exec:13500}
+};
+
+const decade = Math.max(...Object.keys(TABLE).map(Number).filter(d=>year>=d));
+const S = TABLE[decade] || TABLE[1940];
+
+switch(role){
+
+case "pilot":
+case "pilot_small":
+case "pilot_medium":
+case "pilot_large":
+case "pilot_vlarge":
+return S.pilot;
+
+case "cabin":
+return S.cabin;
+
+case "maintenance":
+return S.tech;
+
+case "ground":
+return S.ground;
+
+case "flight_ops":
+return S.flight_ops;
+
+case "security":
+return S.security;
+
+case "admin":
+case "economics":
+case "comms":
+case "hr":
+case "quality":
+case "middle":
+return S.admin;
+
+case "ceo":
+case "vp":
+return S.exec;
+
+default:
+return S.admin;
+
+}
+
+}
+
+function ACS_HR_getPilotSalarySized(year,size){
+
+const base = ACS_HR_getBaseSalary(year,"pilot");
+
+const MULT={
+small:0.55,
+medium:0.75,
+large:1.0,
+vlarge:1.4
+};
+
+return Math.round(base*(MULT[size]||1));
+
+}
 
 /* ============================================================
    🛑 HR STATE AUTHORITY — SERVER FIRST
