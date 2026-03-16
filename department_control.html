@@ -1815,26 +1815,25 @@ console.log("🧭 HR SYNC USING AIRLINE:", airlineId);
 
       hr[meta.id] = {
 
-        id: meta.id,                    // 🔧 CRÍTICO
-        name: meta.name,
-        role: meta.base,
+  id: meta.id,
+  name: meta.name,
+  role: meta.base,
 
-        staff: Number(dep.staff || 0),
+  staff: Number(dep.staff || 0),
 
-        // 🔧 REQUIRED CANONICAL
-        required: Number(dep.required || meta.required || 0),
+  required: Number(dep.required || meta.required || 0),
 
-        morale: Number(dep.morale || 100),
+  morale: Number(dep.morale || 100),
 
-        years: 0,
-        bonus: 0,
+  years: 0,
+  bonus: 0,
 
-        salary: salary,
+  // 🔴 AHORA VIENE DEL SERVER
+  salary: Number(dep.salary || 0),
 
-        payroll: salary * Number(dep.staff || 0)
+  payroll: Number(dep.payroll || 0)
 
-      };
-
+};
     });
 
     // 🔐 GUARDAR ESTADO HR
