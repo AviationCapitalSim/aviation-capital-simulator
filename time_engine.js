@@ -14,6 +14,13 @@ const SIM_START = new Date("1940-01-01T00:00:00Z");
 const SIM_END = new Date("2026-01-01T00:00:00Z"); // end exactly at 31 DEC 2025 23:59 UTC
 
 /* ============================================================
+   🌍 GLOBAL WORLD SNAPSHOT (SERVER AUTHORITY)
+   ============================================================ */
+
+let ACS_WORLD = null;
+
+
+/* ============================================================
    🌍 LOAD GLOBAL WORLD STATE FROM SERVER
    ============================================================ */
 
@@ -27,6 +34,8 @@ async function loadWorldState() {
 
     const world = await res.json();
 
+    ACS_WORLD = world;
+     
     console.log("🌍 ACS WORLD LOADED:", world);
 
     if (world.status === "OFF") {
@@ -70,6 +79,8 @@ setInterval(async () => {
 
     const world = await res.json();
 
+    ACS_WORLD = world;
+ 
     if (world.status === "ON" && ACS_CYCLE.status !== "ON") {
 
       console.log("🌍 WORLD START DETECTED");
@@ -103,7 +114,7 @@ setInterval(async () => {
 
   }
 
-}, 5000);
+}, 30000);
 
 /* ============================================================
    🟧 A6 — GAME MINUTE NORMALIZATION (GLOBAL)
@@ -147,18 +158,26 @@ if (!ACS_CYCLE.realStartDate) {
 
 function computeSimTime() {
 
-  if (ACS_CYCLE.status !== "ON") return ACS_TIME.currentTime;
+  if (!ACS_WORLD) return ACS_TIME.currentTime;
 
-  const now = Date.now();
-  const realStart = new Date(ACS_CYCLE.realStartDate).getTime();
+  if (ACS_WORLD.status !== "ON") return ACS_TIME.currentTime;
 
-  // base fija del arranque actual
-  const frozenBase = Number(ACS_CYCLE.frozenBaseTime || SIM_START.getTime());
+  const clientNow = Date.now();
 
-  const secPassed = Math.floor((now - realStart) / 1000);
-  const simMinutes = secPassed;
+  const serverNow = ACS_WORLD.server_now;
 
-  return new Date(frozenBase + simMinutes * 60000);
+  const realStart = new Date(ACS_WORLD.real_start).getTime();
+
+  const elapsedClient = clientNow - serverNow;
+
+  const realElapsed = (serverNow - realStart) + elapsedClient;
+
+  const simMinutes = Math.floor(realElapsed / 1000);
+
+  const simTime = SIM_START.getTime() + simMinutes * 60000;
+
+  return new Date(simTime);
+
 }
 
 /* ============================================================
