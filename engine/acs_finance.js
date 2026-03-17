@@ -499,6 +499,25 @@ function pushLog(entry){
   localStorage.setItem("ACS_Log", JSON.stringify(log));
 }
 
+fetch(
+  "https://acs-world-server-production.up.railway.app/v1/finance/log",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      airline_id: Number(localStorage.getItem("ACS_Airline_ID")),
+      type: entry.type,
+      source: entry.source,
+      amount: Math.round(entry.amount || 0),
+      timestamp: new Date().toISOString()
+    })
+  }
+).catch(err=>{
+  console.warn("Finance log sync failed:", err);
+});
+   
 /* ============================================================
    🔹 PUBLIC API — REGISTER INCOME
    ============================================================ */
