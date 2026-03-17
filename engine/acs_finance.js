@@ -114,7 +114,7 @@ function saveFinance(f){
    🌐 FINANCE SYNC → SERVER
 ============================================================ */
 
-async function ACS_FINANCE_saveToServer(){
+function ACS_FINANCE_saveToServer(){
 
   try {
 
@@ -127,41 +127,31 @@ async function ACS_FINANCE_saveToServer(){
 
     const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-   function safeInt(v){
+    const payload = {
 
-  const n = Number(v);
+      airline_id: airlineId,
 
-  if(!Number.isFinite(n)) return 0;
+      capital: Number(f.capital) || 0,
+      revenue: Number(f.revenue) || 0,
+      expenses: Number(f.expenses) || 0,
+      profit: Number(f.profit) || 0,
 
-  return Math.floor(n).toString(); // 🔒 evita notación científica
+      live_revenue: Number(f.income?.live_revenue) || 0,
+      weekly_revenue: Number(f.income?.weekly_revenue) || 0,
 
-}
+      cost_fuel: Number(f.cost?.fuel) || 0,
+      cost_maintenance: Number(f.cost?.maintenance) || 0,
+      cost_hr: Number(f.cost?.hr) || 0,
+      cost_leasing: Number(f.cost?.leasing) || 0,
+      cost_airport: Number(f.cost?.airport) || 0,
+      cost_other: Number(f.cost?.other) || 0,
 
-const payload = {
+      debt: Number(f.debt) || 0,
+      fleet_size: Number(f.fleet_size) || 0
 
-  airline_id: airlineId,
+    };
 
-  capital: safeInt(f.capital),
-  revenue: safeInt(f.revenue),
-  expenses: safeInt(f.expenses),
-  profit: safeInt(f.profit),
-
-  live_revenue: safeInt(f.income?.live_revenue),
-  weekly_revenue: safeInt(f.income?.weekly_revenue),
-
-  cost_fuel: safeInt(f.cost?.fuel),
-  cost_maintenance: safeInt(f.cost?.maintenance),
-  cost_hr: safeInt(f.cost?.salaries),
-  cost_leasing: safeInt(f.cost?.leasing),
-  cost_airport: safeInt(f.cost?.airport),
-  cost_other: safeInt(f.cost?.other),
-
-  debt: safeInt(f.debt),
-  fleet_size: safeInt(f.fleet_size)
-
-};
-     
-    const res = await fetch(
+    fetch(
       "https://acs-world-server-production.up.railway.app/v1/finance/update",
       {
         method: "PATCH",
@@ -171,14 +161,6 @@ const payload = {
         body: JSON.stringify(payload)
       }
     );
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      console.warn("⚠️ Finance sync error:", data);
-    } else {
-      console.log("✅ Finance synced to Railway");
-    }
 
   } catch(err){
 
@@ -500,53 +482,15 @@ console.log("🟦 ACS_FINANCE_ENGINE exposed globally");
    ============================================================ */
 
 function pushLog(entry){
-
   let log = [];
-
   try {
     log = JSON.parse(localStorage.getItem("ACS_Log")) || [];
   } catch {}
 
   log.push({ ts: Date.now(), ...entry });
-
-  localStorage.setItem(
-    "ACS_Log",
-    JSON.stringify(log)
-  );
-
-  /* ============================================
-     SYNC LOG → RAILWAY
-  ============================================ */
-
-  fetch(
-    "https://acs-world-server-production.up.railway.app/v1/finance/log",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-
-        airline_id: Number(
-          localStorage.getItem("ACS_Airline_ID")
-        ),
-
-        type: entry.type || "UNKNOWN",
-        source: entry.source || "SYSTEM",
-
-        amount: Math.round(entry.amount || 0),
-
-        timestamp: new Date().toISOString()
-
-      })
-    }
-  )
-  .catch(err=>{
-    console.warn("Finance log sync failed:", err);
-  });
-
+  localStorage.setItem("ACS_Log", JSON.stringify(log));
 }
-   
+
 /* ============================================================
    🔹 PUBLIC API — REGISTER INCOME
    ============================================================ */
@@ -841,5 +785,64 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
 });
 
+/* ============================================================
+   🟧 F7 — ECONOMICS → FINANCE BRIDGE (CANONICAL) [FIXED]
+   ------------------------------------------------------------
+   ✔ One economics event → one finance entry
+   ✔ No duplicates
+   ✔ Source: ACS_FLIGHT_ECONOMICS
+   ✔ FIX: correct global engine reference
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
+
+  const eco = e.detail;
+  if (!eco || !eco.eventId) return;
+
+  /* FIX — USE CORRECT GLOBAL ENGINE */
+  if (!window.ACS_Finance) {
+  console.warn("⚠️ Finance engine not available");
+  return;
+}
+
+  try {
+
+   window.ACS_registerIncome({
+
+  eventId: eco.eventId,
+
+  flightId: eco.flightId,
+  aircraftId: eco.aircraftId,
+
+  origin: eco.origin,
+  destination: eco.destination,
+
+  distanceNM: eco.distanceNM,
+
+  revenue: eco.revenue,
+  costTotal: eco.costTotal,
+  profit: eco.profit,
+
+  costs: {
+    fuel: eco.fuelCost,
+    handling: eco.handlingCost,
+    slot: eco.slotCost,
+    overflight: eco.overflightCost,
+    navigation: eco.navigationCost
+  },
+
+  meta: {
+    timestamp: eco.timestamp
+  }
+
+});
+
+  } catch (err) {
+
+    console.error("Finance bridge failed:", err);
+
+  }
+
+});
   
 })();
