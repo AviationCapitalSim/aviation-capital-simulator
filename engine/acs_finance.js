@@ -127,30 +127,40 @@ async function ACS_FINANCE_saveToServer(){
 
     const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-    const payload = {
+   function safeInt(v){
 
-      airline_id: airlineId,
+  const n = Number(v);
 
-      capital: Math.round(Number(f.capital) || 0),
-      revenue: Math.round(Number(f.revenue) || 0),
-      expenses: Math.round(Number(f.expenses) || 0),
-      profit: Math.round(Number(f.profit) || 0),
+  if(!Number.isFinite(n)) return 0;
 
-      live_revenue: Math.round(Number(f.income?.live_revenue) || 0),
-      weekly_revenue: Math.round(Number(f.income?.weekly_revenue) || 0),
+  return Math.floor(n).toString(); // 🔒 evita notación científica
 
-      cost_fuel: Math.round(Number(f.cost?.fuel) || 0),
-      cost_maintenance: Math.round(Number(f.cost?.maintenance) || 0),
-      cost_hr: Math.round(Number(f.cost?.salaries) || 0),
-      cost_leasing: Math.round(Number(f.cost?.leasing) || 0),
-      cost_airport: Math.round(Number(f.cost?.airport) || 0),
-      cost_other: Math.round(Number(f.cost?.other) || 0),
+}
 
-      debt: Math.round(Number(f.debt) || 0),
-      fleet_size: Math.round(Number(f.fleet_size) || 0)
+const payload = {
 
-    };
+  airline_id: airlineId,
 
+  capital: safeInt(f.capital),
+  revenue: safeInt(f.revenue),
+  expenses: safeInt(f.expenses),
+  profit: safeInt(f.profit),
+
+  live_revenue: safeInt(f.income?.live_revenue),
+  weekly_revenue: safeInt(f.income?.weekly_revenue),
+
+  cost_fuel: safeInt(f.cost?.fuel),
+  cost_maintenance: safeInt(f.cost?.maintenance),
+  cost_hr: safeInt(f.cost?.salaries),
+  cost_leasing: safeInt(f.cost?.leasing),
+  cost_airport: safeInt(f.cost?.airport),
+  cost_other: safeInt(f.cost?.other),
+
+  debt: safeInt(f.debt),
+  fleet_size: safeInt(f.fleet_size)
+
+};
+     
     const res = await fetch(
       "https://acs-world-server-production.up.railway.app/v1/finance/update",
       {
