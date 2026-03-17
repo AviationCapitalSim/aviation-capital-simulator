@@ -1,76 +1,4 @@
 /* ============================================================
-   ACS FINANCE — SERVER SYNC
-   ------------------------------------------------------------
-   Sincroniza estado financiero con Railway
-============================================================ */
-
-async function ACS_FINANCE_syncFromServer(){
-
-  try{
-
-    const airlineId =
-      Number(localStorage.getItem("ACS_Airline_ID"));
-
-    if(!airlineId) return;
-
-    const res = await fetch(
-      `/v1/finance/${airlineId}`
-    );
-
-    const data = await res.json();
-
-    if(!data.ok) return;
-
-    const f = data.finance;
-
-    const financeObject = {
-
-      capital: f.capital || 0,
-      revenue: f.revenue || 0,
-      expenses: f.expenses || 0,
-      profit: f.profit || 0,
-
-      income:{
-        live_revenue: f.live_revenue || 0,
-        weekly_revenue: f.weekly_revenue || 0
-      },
-
-      cost:{
-        fuel: f.cost_fuel || 0,
-        maintenance: f.cost_maintenance || 0,
-        hr: f.cost_hr || 0,
-        leasing: f.cost_leasing || 0,
-        airport: f.cost_airport || 0,
-        other: f.cost_other || 0
-      },
-
-      debt: f.debt || 0,
-      fleet_size: f.fleet_size || 0
-
-    };
-
-    localStorage.setItem(
-      "ACS_Finance",
-      JSON.stringify(financeObject)
-    );
-
-    window.dispatchEvent(
-      new Event("ACS_FINANCE_UPDATED")
-    );
-
-  }
-  catch(err){
-
-    console.warn(
-      "Finance sync failed:",
-      err
-    );
-
-  }
-
-}
-
-/* ============================================================
    💰 ACS FINANCE ENGINE — CANONICAL LEDGER v3.0
    ------------------------------------------------------------
    • Finance = REGISTRO CONTABLE (NO calcula vuelos)
@@ -95,84 +23,13 @@ function loadFinance(){
 }
 
 function saveFinance(f){
-
   f.meta = {
     version: "3.0",
     lastUpdate: Date.now()
   };
-
-  localStorage.setItem(
-    "ACS_Finance",
-    JSON.stringify(f)
-  );
-
-  ACS_FINANCE_saveToServer();
-
+  localStorage.setItem("ACS_Finance", JSON.stringify(f));
 }
-   
-/* ============================================================
-   🌐 FINANCE SYNC → SERVER
-============================================================ */
 
-function ACS_FINANCE_saveToServer(){
-
-  try {
-
-    const airlineId =
-      window.ACS_SERVER_SESSION?.airline_id ||
-      JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id ||
-      Number(localStorage.getItem("ACS_Airline_ID"));
-
-    if(!airlineId) return;
-
-    const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-
-    const payload = {
-
-      airline_id: airlineId,
-
-      capital: Number(f.capital) || 0,
-      revenue: Number(f.revenue) || 0,
-      expenses: Number(f.expenses) || 0,
-      profit: Number(f.profit) || 0,
-
-      live_revenue: Number(f.income?.live_revenue) || 0,
-      weekly_revenue: Number(f.income?.weekly_revenue) || 0,
-
-      cost_fuel: Number(f.cost?.fuel) || 0,
-      cost_maintenance: Number(f.cost?.maintenance) || 0,
-      cost_hr: Number(f.cost?.hr) || 0,
-      cost_leasing: Number(f.cost?.leasing) || 0,
-      cost_airport: Number(f.cost?.airport) || 0,
-      cost_other: Number(f.cost?.other) || 0,
-
-      debt: Number(f.debt) || 0,
-      fleet_size: Number(f.fleet_size) || 0
-
-    };
-
-    fetch(
-      "https://acs-world-server-production.up.railway.app/v1/finance/update",
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-
-  } catch(err){
-
-    console.warn(
-      "Finance sync failed:",
-      err
-    );
-
-  }
-
-}
-   
 /* ============================================================
    🟧 A1 — WEEK CLOSE DISPATCH (FIXED)
    - Envía Finance REAL al cerrar semana
@@ -338,11 +195,6 @@ window.ACS_Finance = ACS_Finance;
 
 console.log("🟦 ACS_Finance global ready");
 
-/* ============================================================
-   🔗 RAILWAY FINANCE SYNC (NEW)
-============================================================ */
-
-ACS_FINANCE_syncFromServer();
 
 /* ============================================================
    🟦 F0 — GLOBAL ENGINE EXPORT (CRITICAL FIX)
