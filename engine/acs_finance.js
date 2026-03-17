@@ -141,7 +141,7 @@ async function ACS_FINANCE_saveToServer(){
 
       cost_fuel: Math.round(Number(f.cost?.fuel) || 0),
       cost_maintenance: Math.round(Number(f.cost?.maintenance) || 0),
-      cost_hr: Math.round(Number(f.cost?.hr) || 0),
+      cost_hr: Math.round(Number(f.cost?.salaries) || 0),
       cost_leasing: Math.round(Number(f.cost?.leasing) || 0),
       cost_airport: Math.round(Number(f.cost?.airport) || 0),
       cost_other: Math.round(Number(f.cost?.other) || 0),
