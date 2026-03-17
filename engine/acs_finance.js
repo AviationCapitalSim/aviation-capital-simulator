@@ -76,11 +76,26 @@ async function ACS_FINANCE_syncFromServer(){
 
 function ACS_getAirlineId(){
 
-  return (
-    window.ACS_SERVER_SESSION?.airline_id ||
-    Number(localStorage.getItem("ACS_Airline_ID")) ||
-    null
-  );
+  try{
+
+    const airlineId =
+      window.ACS_SERVER_SESSION?.airline_id ||
+      JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id ||
+      null;
+
+    return airlineId;
+
+  }
+  catch(err){
+
+    console.warn(
+      "ACS_getAirlineId failed:",
+      err
+    );
+
+    return null;
+
+  }
 
 }
 
