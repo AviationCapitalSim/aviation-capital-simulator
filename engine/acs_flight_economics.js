@@ -508,15 +508,16 @@ function ACS_resolveFuelBurnPerNM(ac, year) {
   return 10.5;
 }
 
-function ACS_resolveFuelPricePerKg(year) {
-  // precio histórico aproximado (USD / kg)
-  if (year <= 1945) return 0.12;
-  if (year <= 1955) return 0.18;
-  if (year <= 1965) return 0.25;
-  if (year <= 1975) return 0.35;
-  if (year <= 1990) return 0.45;
-  if (year <= 2010) return 0.65;
-  return 0.85;
+function ACS_resolveFuelPricePerKg(year){
+
+  if(year <= 1945) return 0.05;
+  if(year <= 1955) return 0.08;
+  if(year <= 1965) return 0.12;
+  if(year <= 1975) return 0.18;
+  if(year <= 1990) return 0.25;
+  if(year <= 2010) return 0.45;
+
+  return 0.70;
 }
 
 const fuelBurnPerNM = ACS_resolveFuelBurnPerNM(ac, year);
