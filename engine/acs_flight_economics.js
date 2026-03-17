@@ -82,21 +82,52 @@ function ACS_buildFlightEconomics(d) {
     ) || 1;
 
   /* ============================================================
-     🟧 E2 — CONTINENT RESOLVER (ECONOMICS LOCAL)
-     ============================================================ */
-  function ACS_resolveContinentFromICAO(icao) {
-    if (!icao) return null;
-    const p = icao.substring(0, 2).toUpperCase();
+   🟧 E2 — CONTINENT / REGION RESOLVER (ICAO GLOBAL STANDARD)
+   ------------------------------------------------------------
+   Regions used by ACS economics engine
+   NA = North America
+   SA = South America
+   EU = Europe
+   AF = Africa
+   AS = Asia
+   ME = Middle East
+   OC = Oceania
+   PAC = Pacific Islands
+   ============================================================ */
 
-    if (["LE","LF","LG","LI","ED","EH","EB","LP","LO","LK","LS","LQ","LT","LV","LY"].includes(p)) return "EU";
-    if (["K","C"].includes(p.charAt(0))) return "NA";
-    if (["SA","SB","SC","SD","SE","SG","SH","SK","SL","SM","SN","SO","SP","SS","SU","SV","SY","SZ"].includes(p)) return "SA";
-    if (["RJ","RK","RO","RP","RC","ZS","ZB","ZG","ZH","ZK","ZP","ZY","VT","VV","VA","VI","VO","VR"].includes(p)) return "AS";
-    if (["FA","FB","FC","FD","FE","FG","FH","FI","FJ","FK","FL","FM","FN","FO","FP","FQ","FS","FT","FV","FW","FX","FY","FZ"].includes(p)) return "AF";
-    if (["Y"].includes(p.charAt(0))) return "OC";
+function ACS_resolveContinentFromICAO(icao){
 
-    return null;
-  }
+  if(!icao) return null;
+
+  const p = icao[0].toUpperCase();
+
+  /* NORTH AMERICA */
+  if(["K","C","M","T"].includes(p)) return "NA";
+
+  /* SOUTH AMERICA */
+  if(p === "S") return "SA";
+
+  /* EUROPE */
+  if(["E","L","G"].includes(p)) return "EU";
+
+  /* AFRICA */
+  if(["F","H"].includes(p)) return "AF";
+
+  /* MIDDLE EAST */
+  if(p === "O") return "ME";
+
+  /* ASIA */
+  if(["R","V","W","Z","U"].includes(p)) return "AS";
+
+  /* OCEANIA */
+  if(p === "Y") return "OC";
+
+  /* PACIFIC ISLANDS */
+  if(["N","P"].includes(p)) return "PAC";
+
+  return null;
+
+}
 
   const continentA = ACS_resolveContinentFromICAO(d.origin);
   const continentB = ACS_resolveContinentFromICAO(d.destination);
