@@ -8,13 +8,11 @@ async function ACS_FINANCE_syncFromServer(){
 
   try{
 
-    const airlineId =
-      ACS_getAirlineId()
-     
+    const airlineId = ACS_getAirlineId();
     if(!airlineId) return;
 
     const res = await fetch(
-      `/v1/finance/${airlineId}`
+      `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`
     );
 
     const data = await res.json();
@@ -38,7 +36,7 @@ async function ACS_FINANCE_syncFromServer(){
       cost:{
         fuel: f.cost_fuel || 0,
         maintenance: f.cost_maintenance || 0,
-        hr: f.cost_hr || 0,
+        salaries: f.cost_hr || 0,
         leasing: f.cost_leasing || 0,
         airport: f.cost_airport || 0,
         other: f.cost_other || 0
