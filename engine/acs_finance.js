@@ -114,7 +114,7 @@ function saveFinance(f){
    🌐 FINANCE SYNC → SERVER
 ============================================================ */
 
-function ACS_FINANCE_saveToServer(){
+async function ACS_FINANCE_saveToServer(){
 
   try {
 
@@ -129,29 +129,29 @@ function ACS_FINANCE_saveToServer(){
 
     const payload = {
 
-  airline_id: airlineId,
+      airline_id: airlineId,
 
-  capital: Math.round(Number(f.capital) || 0),
-  revenue: Math.round(Number(f.revenue) || 0),
-  expenses: Math.round(Number(f.expenses) || 0),
-  profit: Math.round(Number(f.profit) || 0),
+      capital: Math.round(Number(f.capital) || 0),
+      revenue: Math.round(Number(f.revenue) || 0),
+      expenses: Math.round(Number(f.expenses) || 0),
+      profit: Math.round(Number(f.profit) || 0),
 
-  live_revenue: Math.round(Number(f.income?.live_revenue) || 0),
-  weekly_revenue: Math.round(Number(f.income?.weekly_revenue) || 0),
+      live_revenue: Math.round(Number(f.income?.live_revenue) || 0),
+      weekly_revenue: Math.round(Number(f.income?.weekly_revenue) || 0),
 
-  cost_fuel: Math.round(Number(f.cost?.fuel) || 0),
-  cost_maintenance: Math.round(Number(f.cost?.maintenance) || 0),
-  cost_hr: Math.round(Number(f.cost?.hr) || 0),
-  cost_leasing: Math.round(Number(f.cost?.leasing) || 0),
-  cost_airport: Math.round(Number(f.cost?.airport) || 0),
-  cost_other: Math.round(Number(f.cost?.other) || 0),
+      cost_fuel: Math.round(Number(f.cost?.fuel) || 0),
+      cost_maintenance: Math.round(Number(f.cost?.maintenance) || 0),
+      cost_hr: Math.round(Number(f.cost?.hr) || 0),
+      cost_leasing: Math.round(Number(f.cost?.leasing) || 0),
+      cost_airport: Math.round(Number(f.cost?.airport) || 0),
+      cost_other: Math.round(Number(f.cost?.other) || 0),
 
-  debt: Math.round(Number(f.debt) || 0),
-  fleet_size: Math.round(Number(f.fleet_size) || 0)
+      debt: Math.round(Number(f.debt) || 0),
+      fleet_size: Math.round(Number(f.fleet_size) || 0)
 
-};
+    };
 
-    fetch(
+    const res = await fetch(
       "https://acs-world-server-production.up.railway.app/v1/finance/update",
       {
         method: "PATCH",
@@ -161,6 +161,14 @@ function ACS_FINANCE_saveToServer(){
         body: JSON.stringify(payload)
       }
     );
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      console.warn("⚠️ Finance sync error:", data);
+    } else {
+      console.log("✅ Finance synced to Railway");
+    }
 
   } catch(err){
 
@@ -785,64 +793,5 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
 
 });
 
-/* ============================================================
-   🟧 F7 — ECONOMICS → FINANCE BRIDGE (CANONICAL) [FIXED]
-   ------------------------------------------------------------
-   ✔ One economics event → one finance entry
-   ✔ No duplicates
-   ✔ Source: ACS_FLIGHT_ECONOMICS
-   ✔ FIX: correct global engine reference
-   ============================================================ */
-
-window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
-
-  const eco = e.detail;
-  if (!eco || !eco.eventId) return;
-
-  /* FIX — USE CORRECT GLOBAL ENGINE */
-  if (!window.ACS_Finance) {
-  console.warn("⚠️ Finance engine not available");
-  return;
-}
-
-  try {
-
-   window.ACS_registerIncome({
-
-  eventId: eco.eventId,
-
-  flightId: eco.flightId,
-  aircraftId: eco.aircraftId,
-
-  origin: eco.origin,
-  destination: eco.destination,
-
-  distanceNM: eco.distanceNM,
-
-  revenue: eco.revenue,
-  costTotal: eco.costTotal,
-  profit: eco.profit,
-
-  costs: {
-    fuel: eco.fuelCost,
-    handling: eco.handlingCost,
-    slot: eco.slotCost,
-    overflight: eco.overflightCost,
-    navigation: eco.navigationCost
-  },
-
-  meta: {
-    timestamp: eco.timestamp
-  }
-
-});
-
-  } catch (err) {
-
-    console.error("Finance bridge failed:", err);
-
-  }
-
-});
   
 })();
