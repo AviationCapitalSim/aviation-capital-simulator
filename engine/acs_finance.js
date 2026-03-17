@@ -9,8 +9,8 @@ async function ACS_FINANCE_syncFromServer(){
   try{
 
     const airlineId =
-      Number(localStorage.getItem("ACS_Airline_ID"));
-
+      ACS_getAirlineId()
+     
     if(!airlineId) return;
 
     const res = await fetch(
@@ -71,6 +71,20 @@ async function ACS_FINANCE_syncFromServer(){
 }
 
 /* ============================================================
+   🔹 GET ACTIVE AIRLINE ID (SERVER FIRST)
+   ============================================================ */
+
+function ACS_getAirlineId(){
+
+  return (
+    window.ACS_SERVER_SESSION?.airline_id ||
+    Number(localStorage.getItem("ACS_Airline_ID")) ||
+    null
+  );
+
+}
+
+/* ============================================================
    💰 ACS FINANCE ENGINE — CANONICAL LEDGER v3.0
    ------------------------------------------------------------
    • Finance = REGISTRO CONTABLE (NO calcula vuelos)
@@ -121,7 +135,7 @@ async function ACS_FINANCE_saveToServer(){
     const airlineId =
       window.ACS_SERVER_SESSION?.airline_id ||
       JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id ||
-      Number(localStorage.getItem("ACS_Airline_ID"));
+      ACS_getAirlineId()
 
     if(!airlineId) return;
 
@@ -510,7 +524,7 @@ function pushLog(entry){
 
  const airlineId =
   window.ACS_SERVER_SESSION?.airline_id ||
-  Number(localStorage.getItem("ACS_Airline_ID"));
+ ACS_getAirlineId()
 
 if(!airlineId){
   console.warn("Finance log skipped: no airline_id");
