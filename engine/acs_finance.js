@@ -609,25 +609,50 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   const eco = e.detail;
   if (!eco || !eco.eventId) return;
 
-  // Session-level dedup
-  if (ACS_FIN_EVENT_DEDUP.has(eco.eventId)) return;
-  ACS_FIN_EVENT_DEDUP.add(eco.eventId);
+  /* ============================================================
+     🔒 HARD DEDUP — MULTI TAB + RELOAD SAFE
+     ============================================================ */
+
+  const processed =
+    JSON.parse(localStorage.getItem("ACS_PROCESSED_FLIGHTS") || "[]");
+
+  if(processed.includes(eco.eventId)){
+    return;
+  }
+
+  processed.push(eco.eventId);
+
+  /* mantener tamaño razonable */
+  if(processed.length > 5000){
+    processed.shift();
+  }
+
+  localStorage.setItem(
+    "ACS_PROCESSED_FLIGHTS",
+    JSON.stringify(processed)
+  );
+
+  /* ============================================================
+     REGISTER INCOME
+     ============================================================ */
 
   window.ACS_registerIncome({
     type: "FLIGHT",
     source: `FLIGHT ${eco.origin} → ${eco.destination}`,
-    revenue: eco.revenue,
-    costTotal: eco.costTotal,
-    profit: eco.profit,
-    costs: {
-      fuel: eco.fuelCost,
-      handling: eco.handlingCost,
-      slot: eco.slotCost,
-      overflight: eco.overflightCost,
-      navigation: eco.navigationCost
+    revenue: Number(eco.revenue || 0),
+    costTotal: Number(eco.costTotal || 0),
+    profit: Number(eco.profit || 0),
+
+    costs:{
+      fuel: Number(eco.fuelCost || 0),
+      handling: Number(eco.handlingCost || 0),
+      slot: Number(eco.slotCost || 0),
+      overflight: Number(eco.overflightCost || 0),
+      navigation: Number(eco.navigationCost || 0)
     },
-    meta: {
-      eventId: eco.eventId,   // 🔒 canonical ID
+
+    meta:{
+      eventId: eco.eventId,
       flightId: eco.flightId,
       aircraftId: eco.aircraftId,
       year: eco.year,
@@ -636,65 +661,5 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   });
 
 });
-
-/* ============================================================
-   🟧 F7 — ECONOMICS → FINANCE BRIDGE (CANONICAL) [FIXED]
-   ------------------------------------------------------------
-   ✔ One economics event → one finance entry
-   ✔ No duplicates
-   ✔ Source: ACS_FLIGHT_ECONOMICS
-   ✔ FIX: correct global engine reference
-   ============================================================ */
-
-window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
-
-  const eco = e.detail;
-  if (!eco || !eco.eventId) return;
-
-  /* FIX — USE CORRECT GLOBAL ENGINE */
-  if (!window.ACS_Finance) {
-  console.warn("⚠️ Finance engine not available");
-  return;
-}
-
-  try {
-
-   window.ACS_registerIncome({
-
-  eventId: eco.eventId,
-
-  flightId: eco.flightId,
-  aircraftId: eco.aircraftId,
-
-  origin: eco.origin,
-  destination: eco.destination,
-
-  distanceNM: eco.distanceNM,
-
-  revenue: eco.revenue,
-  costTotal: eco.costTotal,
-  profit: eco.profit,
-
-  costs: {
-    fuel: eco.fuelCost,
-    handling: eco.handlingCost,
-    slot: eco.slotCost,
-    overflight: eco.overflightCost,
-    navigation: eco.navigationCost
-  },
-
-  meta: {
-    timestamp: eco.timestamp
-  }
-
-});
-
-  } catch (err) {
-
-    console.error("Finance bridge failed:", err);
-
-  }
-
-});
-  
+     
 })();
