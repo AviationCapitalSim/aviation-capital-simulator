@@ -508,32 +508,40 @@ function pushLog(entry){
      SYNC LOG → RAILWAY
   ============================================ */
 
-  fetch(
-    "https://acs-world-server-production.up.railway.app/v1/finance/log",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
+ const airlineId =
+  window.ACS_SERVER_SESSION?.airline_id ||
+  Number(localStorage.getItem("ACS_Airline_ID"));
 
-        airline_id: Number(
-          localStorage.getItem("ACS_Airline_ID")
-        ),
+if(!airlineId){
+  console.warn("Finance log skipped: no airline_id");
+  return;
+}
 
-        type: entry.type || "UNKNOWN",
-        source: entry.source || "SYSTEM",
+fetch(
+  "https://acs-world-server-production.up.railway.app/v1/finance/log",
+  {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify({
 
-        amount: Math.round(entry.amount || 0),
+      airline_id: airlineId,
 
-        timestamp: new Date().toISOString()
+      type: entry.type || "SYSTEM",
 
-      })
-    }
-  )
-  .catch(err=>{
-    console.warn("Finance log sync failed:", err);
-  });
+      source: entry.source || "UNKNOWN",
+
+      amount: Math.round(entry.amount || 0),
+
+      timestamp: new Date().toISOString()
+
+    })
+  }
+)
+.catch(err=>{
+  console.warn("Finance log sync failed:",err);
+});
 
 }
    
