@@ -9,8 +9,8 @@ async function ACS_FINANCE_syncFromServer(){
   try{
 
     const airlineId =
-      ACS_getAirlineId()
-     
+      Number(localStorage.getItem("ACS_Airline_ID"));
+
     if(!airlineId) return;
 
     const res = await fetch(
@@ -71,20 +71,6 @@ async function ACS_FINANCE_syncFromServer(){
 }
 
 /* ============================================================
-   🔹 GET ACTIVE AIRLINE ID (SERVER FIRST)
-   ============================================================ */
-
-function ACS_getAirlineId(){
-
-  return (
-    window.ACS_SERVER_SESSION?.airline_id ||
-    Number(localStorage.getItem("ACS_Airline_ID")) ||
-    null
-  );
-
-}
-
-/* ============================================================
    💰 ACS FINANCE ENGINE — CANONICAL LEDGER v3.0
    ------------------------------------------------------------
    • Finance = REGISTRO CONTABLE (NO calcula vuelos)
@@ -135,7 +121,7 @@ async function ACS_FINANCE_saveToServer(){
     const airlineId =
       window.ACS_SERVER_SESSION?.airline_id ||
       JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id ||
-      ACS_getAirlineId()
+      Number(localStorage.getItem("ACS_Airline_ID"));
 
     if(!airlineId) return;
 
@@ -522,40 +508,32 @@ function pushLog(entry){
      SYNC LOG → RAILWAY
   ============================================ */
 
- const airlineId =
-  window.ACS_SERVER_SESSION?.airline_id ||
- ACS_getAirlineId()
+  fetch(
+    "https://acs-world-server-production.up.railway.app/v1/finance/log",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
 
-if(!airlineId){
-  console.warn("Finance log skipped: no airline_id");
-  return;
-}
+        airline_id: Number(
+          localStorage.getItem("ACS_Airline_ID")
+        ),
 
-fetch(
-  "https://acs-world-server-production.up.railway.app/v1/finance/log",
-  {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
+        type: entry.type || "UNKNOWN",
+        source: entry.source || "SYSTEM",
 
-      airline_id: airlineId,
+        amount: Math.round(entry.amount || 0),
 
-      type: entry.type || "SYSTEM",
+        timestamp: new Date().toISOString()
 
-      source: entry.source || "UNKNOWN",
-
-      amount: Math.round(entry.amount || 0),
-
-      timestamp: new Date().toISOString()
-
-    })
-  }
-)
-.catch(err=>{
-  console.warn("Finance log sync failed:",err);
-});
+      })
+    }
+  )
+  .catch(err=>{
+    console.warn("Finance log sync failed:", err);
+  });
 
 }
    
