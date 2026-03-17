@@ -497,7 +497,6 @@ function pushLog(entry){
 
   log.push({ ts: Date.now(), ...entry });
   localStorage.setItem("ACS_Log", JSON.stringify(log));
-}
 
 fetch(
   "https://acs-world-server-production.up.railway.app/v1/finance/log",
