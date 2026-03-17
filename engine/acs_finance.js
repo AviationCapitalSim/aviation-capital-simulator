@@ -129,27 +129,27 @@ function ACS_FINANCE_saveToServer(){
 
     const payload = {
 
-      airline_id: airlineId,
+  airline_id: airlineId,
 
-      capital: Number(f.capital) || 0,
-      revenue: Number(f.revenue) || 0,
-      expenses: Number(f.expenses) || 0,
-      profit: Number(f.profit) || 0,
+  capital: Math.round(Number(f.capital) || 0),
+  revenue: Math.round(Number(f.revenue) || 0),
+  expenses: Math.round(Number(f.expenses) || 0),
+  profit: Math.round(Number(f.profit) || 0),
 
-      live_revenue: Number(f.income?.live_revenue) || 0,
-      weekly_revenue: Number(f.income?.weekly_revenue) || 0,
+  live_revenue: Math.round(Number(f.income?.live_revenue) || 0),
+  weekly_revenue: Math.round(Number(f.income?.weekly_revenue) || 0),
 
-      cost_fuel: Number(f.cost?.fuel) || 0,
-      cost_maintenance: Number(f.cost?.maintenance) || 0,
-      cost_hr: Number(f.cost?.hr) || 0,
-      cost_leasing: Number(f.cost?.leasing) || 0,
-      cost_airport: Number(f.cost?.airport) || 0,
-      cost_other: Number(f.cost?.other) || 0,
+  cost_fuel: Math.round(Number(f.cost?.fuel) || 0),
+  cost_maintenance: Math.round(Number(f.cost?.maintenance) || 0),
+  cost_hr: Math.round(Number(f.cost?.hr) || 0),
+  cost_leasing: Math.round(Number(f.cost?.leasing) || 0),
+  cost_airport: Math.round(Number(f.cost?.airport) || 0),
+  cost_other: Math.round(Number(f.cost?.other) || 0),
 
-      debt: Number(f.debt) || 0,
-      fleet_size: Number(f.fleet_size) || 0
+  debt: Math.round(Number(f.debt) || 0),
+  fleet_size: Math.round(Number(f.fleet_size) || 0)
 
-    };
+};
 
     fetch(
       "https://acs-world-server-production.up.railway.app/v1/finance/update",
