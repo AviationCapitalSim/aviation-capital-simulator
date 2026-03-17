@@ -532,43 +532,59 @@ function pushLog(entry){
   );
 
   /* ============================================
+     NORMALIZAR AMOUNT (CRITICAL FIX)
+  ============================================ */
+
+  let safeAmount = 0;
+
+  if(entry && entry.amount !== undefined){
+
+    const n = Number(entry.amount);
+
+    if(Number.isFinite(n)){
+      safeAmount = Math.trunc(n);
+    }
+
+  }
+
+  /* ============================================
      SYNC LOG → RAILWAY
   ============================================ */
 
- const airlineId =
-  window.ACS_SERVER_SESSION?.airline_id ||
- ACS_getAirlineId()
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    ACS_getAirlineId();
 
-if(!airlineId){
-  console.warn("Finance log skipped: no airline_id");
-  return;
-}
-
-fetch(
-  "https://acs-world-server-production.up.railway.app/v1/finance/log",
-  {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify({
-
-      airline_id: airlineId,
-
-      type: entry.type || "SYSTEM",
-
-      source: entry.source || "UNKNOWN",
-
-      amount: Math.round(entry.amount || 0),
-
-      timestamp: new Date().toISOString()
-
-    })
+  if(!airlineId){
+    console.warn("Finance log skipped: no airline_id");
+    return;
   }
-)
-.catch(err=>{
-  console.warn("Finance log sync failed:",err);
-});
+
+  fetch(
+    "https://acs-world-server-production.up.railway.app/v1/finance/log",
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+
+        airline_id: airlineId,
+
+        type: entry.type || "SYSTEM",
+
+        source: entry.source || "UNKNOWN",
+
+        amount: safeAmount,
+
+        timestamp: new Date().toISOString()
+
+      })
+    }
+  )
+  .catch(err=>{
+    console.warn("Finance log sync failed:",err);
+  });
 
 }
    
