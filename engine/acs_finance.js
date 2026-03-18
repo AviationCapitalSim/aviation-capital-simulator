@@ -643,17 +643,100 @@ window.addEventListener("ACS_FINANCE_UPDATED", () => {
 })();
    
 /* ============================================================
-   🔹 LOG (CENTRAL)
+   🔹 LOG (CENTRAL) — CANONICAL RAILWAY LEDGER
+   Railway = autoridad
+   localStorage = backup
    ============================================================ */
 
-function pushLog(entry){
-  let log = [];
-  try {
-    log = JSON.parse(localStorage.getItem("ACS_Log")) || [];
-  } catch {}
+async function pushLog(entry){
 
-  log.push({ ts: Date.now(), ...entry });
-  localStorage.setItem("ACS_Log", JSON.stringify(log));
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
+    localStorage.getItem("ACS_AIRLINE_ID");
+
+  if(!airlineId){
+    console.warn("FINANCE LOG: airlineId missing");
+    return;
+  }
+
+  /* ============================================================
+     SIM TIME (CANONICAL TIMESTAMP)
+     ============================================================ */
+
+  let simTime;
+
+  try{
+    simTime = getSimTime().toISOString();
+  }
+  catch{
+    simTime = new Date().toISOString();
+  }
+
+  const payload = {
+
+    airline_id: Number(airlineId),
+
+    type: String(entry.type || "UNKNOWN"),
+
+    source: String(entry.source || "SYSTEM"),
+
+    amount: Number(entry.amount || 0),
+
+    timestamp: simTime
+  };
+
+  /* ============================================================
+     SEND TO RAILWAY (AUTHORITY)
+     ============================================================ */
+
+  fetch(
+    "https://acs-world-server-production.up.railway.app/v1/finance/log",
+    {
+      method: "POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify(payload)
+    }
+  )
+  .then(res => res.json())
+  .then(data => {
+
+    if(!data?.ok){
+      console.warn("FINANCE LOG SERVER ERROR", data);
+    }
+
+  })
+  .catch(err => {
+
+    console.warn("FINANCE LOG FAILED → fallback local", err);
+
+    /* fallback local */
+
+    try{
+
+      let log =
+        JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+
+      log.push({
+        ts: Date.now(),
+        ...entry
+      });
+
+      localStorage.setItem(
+        "ACS_Log",
+        JSON.stringify(log)
+      );
+
+    }
+    catch(e){
+      console.warn("LOCAL LOG FALLBACK FAILED");
+    }
+
+  });
+
 }
 
 /* ============================================================
