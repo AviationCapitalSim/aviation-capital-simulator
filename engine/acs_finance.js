@@ -148,36 +148,36 @@ function initFinanceIfNeeded(){
   let f = loadFinance();
   if (f) return f;
 
-  f = {
-    capital: 500000,
+ f = {
+  capital: 500000,
 
-    revenue: 0,
-    expenses: 0,
-    profit: 0,
+  revenue: 0,
+  expenses: 0,
+  profit: 0,
 
-    income: {
-      live_revenue: 0,
-      weekly_revenue: 0,
-      current_week_key: null
-    },
+  income: {
+    live_revenue: 0,
+    weekly_revenue: 0,
+    current_week_key: null
+  },
 
-    cost: {
-      fuel: 0,
-      ground_handling: 0,
-      slot_fees: 0,
-      overflight: 0,
-      navigation: 0,
-      leasing: 0,
-      salaries: 0,
-      maintenance: 0,
-      penalties: 0,
-      used_aircraft_purchase: 0,
-      new_aircraft_purchase: 0
-    },
+  cost: {
+    fuel: 0,
+    ground_handling: 0,
+    slot_fees: 0,
+    overflight: 0,
+    navigation: 0,
+    leasing: 0,
+    salaries: 0,
+    maintenance: 0,
+    penalties: 0,
+    used_aircraft_purchase: 0,
+    new_aircraft_purchase: 0
+  },
 
-    history: [],
-    current_month: null
-  };
+  history: [],
+  current_month: ACS_getMonthKey(Date.now())
+};
 
   saveFinance(f);
   return f;
