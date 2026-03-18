@@ -668,7 +668,7 @@ async function pushLog(entry){
   let simTime;
 
   try{
-    simTime = getSimTime().toISOString();
+    timestamp = getSimTime().getTime()
   }
   catch{
     simTime = new Date().toISOString();
