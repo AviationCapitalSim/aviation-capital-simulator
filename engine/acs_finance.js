@@ -516,28 +516,126 @@ window.addEventListener("ACS_FINANCE_UPDATED", () => {
    
 (function(){
 
-  function ACS_FIN_applyLivePayrollAccrual(){
+  async function ACS_FIN_applyLivePayrollAccrual(){
 
-    const payroll = Number(localStorage.getItem("ACS_HR_PAYROLL") || 0);
-    if (!Number.isFinite(payroll) || payroll <= 0) return;
+    let payroll = 0;
 
-    const f = loadFinance();
-    if (!f) return;
+    try {
 
-    // Mostrar salaries en vivo (informativo)
-    f.cost.salaries = payroll;
+      const airlineId =
+        window.ACS_SERVER_SESSION?.airline_id ||
+        JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id ||
+        localStorage.getItem("ACS_AIRLINE_ID");
 
-    // Recalcular profit en vivo (sin tocar capital)
-    f.profit = (f.revenue || 0) - (f.expenses || 0) - payroll;
+      /* ============================================================
+         1️⃣ PRIMARY SOURCE — RAILWAY HR
+      ============================================================ */
 
-    saveFinance(f);
-    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+      if (airlineId) {
+
+        try {
+
+          const res = await fetch(
+            `https://acs-world-server-production.up.railway.app/v1/hr/payroll/${airlineId}`
+          );
+
+          const data = await res.json();
+
+          if (data?.ok && Number(data.payroll) > 0) {
+
+            payroll = Number(data.payroll);
+
+            localStorage.setItem(
+              "ACS_HR_PAYROLL_LAST_VALID",
+              payroll
+            );
+
+            console.log(
+              "%c🌍 HR PAYROLL FROM RAILWAY",
+              "color:#00ffcc;font-weight:700",
+              payroll
+            );
+
+          }
+
+        } catch(e){
+
+          console.warn("HR payroll fetch failed");
+
+        }
+
+      }
+
+      /* ============================================================
+         2️⃣ FALLBACK — HR ENGINE LOCAL
+      ============================================================ */
+
+      if (!payroll && typeof ACS_HR_getTotalPayroll === "function") {
+
+        const local = Number(ACS_HR_getTotalPayroll());
+
+        if (Number.isFinite(local) && local > 0) {
+
+          payroll = local;
+
+          console.log(
+            "%c🧠 HR PAYROLL FROM ENGINE",
+            "color:#8ab4ff;font-weight:700",
+            payroll
+          );
+
+        }
+
+      }
+
+      /* ============================================================
+         3️⃣ LAST SAFE VALUE
+      ============================================================ */
+
+      if (!payroll) {
+
+        payroll =
+          Number(localStorage.getItem("ACS_HR_PAYROLL_LAST_VALID")) ||
+          Number(localStorage.getItem("ACS_HR_PAYROLL")) ||
+          0;
+
+        console.log(
+          "%c🛟 HR PAYROLL FALLBACK",
+          "color:#ffaa00;font-weight:700",
+          payroll
+        );
+
+      }
+
+      /* ============================================================
+         APPLY TO FINANCE
+      ============================================================ */
+
+      if (!Number.isFinite(payroll) || payroll <= 0) return;
+
+      const f = loadFinance();
+      if (!f) return;
+
+      if (!f.cost) f.cost = {};
+
+      f.cost.salaries = payroll;
+
+      f.profit = (f.revenue || 0) - (f.expenses || 0) - payroll;
+
+      saveFinance(f);
+
+      window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+    } catch(err){
+
+      console.warn("FINANCE HR PAYROLL SYNC ERROR", err);
+
+    }
+
   }
 
-  // Ejecutar al cargar Finance
   ACS_FIN_applyLivePayrollAccrual();
 
-  // Re-ejecutar cuando HR cambie algo relevante
   window.addEventListener("ACS_HR_UPDATED", () => {
     ACS_FIN_applyLivePayrollAccrual();
   });
