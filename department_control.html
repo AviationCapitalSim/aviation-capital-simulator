@@ -1582,6 +1582,10 @@ function HR_updateKPI() {
     "Payroll:", totalPayroll
   );
 }
+
+window.dispatchEvent(
+  new Event("ACS_HR_UPDATED")
+);
      
 setTimeout(HR_updateKPI, 350);
 
@@ -1853,7 +1857,48 @@ payroll: 0
 
 ACS_HR_applyHistoricalSalaries();
 ACS_HR_recalculateAll();
-       
+
+/* ============================================================
+   🌐 PUSH HR PAYROLL TO SERVER (INITIAL SYNC)
+============================================================ */
+
+try {
+
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
+
+  Object.values(hr).forEach(dep => {
+
+    fetch(
+      "https://acs-world-server-production.up.railway.app/v1/hr/staff",
+      {
+        method:"PATCH",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+
+          airline_id: airlineId,
+          dept_id: dep.id,
+          staff: dep.staff,
+          morale: dep.morale,
+          salary: dep.salary,
+          payroll: dep.staff * dep.salary
+
+        })
+      }
+    );
+
+  });
+
+  console.log("%c🌍 HR INITIAL PAYROLL SYNC OK","color:#00ffcc");
+
+} catch(e){
+
+  console.warn("HR INITIAL PAYROLL SYNC FAILED",e);
+
+}
+
+     
     // 🔄 RECALCULAR ENGINE
     if (typeof ACS_HR_recalculateAll === "function") {
       ACS_HR_recalculateAll();
