@@ -827,9 +827,17 @@ function loadTransactionLog() {
   const FIFTEEN_DAYS = 15 * 24 * 60 * 60 * 1000;
 
   const recent = log.filter(entry => {
-    if (!entry.timestamp) return true;
-    return (now - entry.timestamp) <= FIFTEEN_DAYS;
-  });
+
+  const ts =
+    entry.ts ||
+    entry.timestamp ||
+    0;
+
+  if(!ts) return true;
+
+  return (now - ts) <= FIFTEEN_DAYS;
+
+});
 
   /* ============================================================
    🟦 FILTER — REMOVE INDIVIDUAL ROUTE INCOME
@@ -1150,11 +1158,12 @@ categories.push({
 (function ACS_bindFinanceUILive(){
 
   function refreshAll(){
-    updateCompanyOverview();
-    loadBreakdown();
-    loadTransactionLog();
-    loadLeasing();
-  }
+  updateCompanyOverview();
+  loadBreakdown();
+  loadTransactionLog();
+  loadLeasing();
+  ACS_renderMonthlyExecutive();
+}
 
   // 🔥 Evento financiero real (MISMA PESTAÑA)
   window.addEventListener("ACS_FINANCE_UPDATED", refreshAll);
@@ -1235,6 +1244,13 @@ function ACS_runMonthlySnapshot(simDate){
         )
       : 0;
 
+  if(
+  Number(f.revenue || 0) === 0 &&
+  Number(f.expenses || 0) === 0
+  ){
+  return;
+  }
+     
   const snapshot = {
 
     monthKey,
@@ -1284,9 +1300,49 @@ function ACS_renderMonthlyExecutive(){
   container.innerHTML = "";
 
   if(history.length < 1){
-    container.innerHTML = "<div style='opacity:.6'>No monthly data yet.</div>";
-    return;
+
+  const f =
+    JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+  const current = {
+
+    revenue : Number(f.revenue  || 0),
+    expenses: Number(f.expenses || 0),
+    profit  : Number(f.profit   || 0),
+    capital : Number(f.capital  || 0),
+    debt    : Array.isArray(f.bank?.loans)
+      ? f.bank.loans.reduce(
+          (s,l)=> s + Number(l.remaining || 0),
+          0
+        )
+      : 0
+
+  };
+
+  function buildMetric(label,value){
+
+    const card = document.createElement("div");
+    card.className = "exec-card";
+
+    card.innerHTML = `
+      <div class="exec-title">${label}</div>
+      <div class="exec-value">${ACS_money(value)}</div>
+      <div class="exec-trend trend-neutral">
+        ▬ Current month
+      </div>
+    `;
+
+    container.appendChild(card);
   }
+
+  buildMetric("Revenue", current.revenue);
+  buildMetric("Expenses", current.expenses);
+  buildMetric("Profit", current.profit);
+  buildMetric("Capital", current.capital);
+  buildMetric("Debt", current.debt);
+
+  return;
+}
 
   const current = history[history.length - 1];
   const previous = history[history.length - 2] || null;
