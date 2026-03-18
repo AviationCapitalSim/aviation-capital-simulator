@@ -461,7 +461,7 @@ const ownershipCost = ownershipPerNM * distanceNM;
 
 // ---- OVERHEAD
 const overheadCost =
-  (maintenanceCost + crewCost + ownershipCost + costFuel) * 0.12;
+  (maintenanceCost + crewCost + ownershipCost) * 0.12;
 
 
 // ---- STRUCTURAL TOTAL
