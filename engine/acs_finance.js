@@ -662,30 +662,30 @@ async function pushLog(entry){
   }
 
   /* ============================================================
-     SIM TIME (CANONICAL TIMESTAMP)
-     ============================================================ */
+   SIM TIME (CANONICAL TIMESTAMP)
+   ============================================================ */
 
-  let simTime;
+let simTime;
 
-  try{
-    timestamp = getSimTime().getTime()
-  }
-  catch{
-    simTime = new Date().toISOString();
-  }
+try{
+  simTime = Date.now();
+}
+catch{
+  simTime = Date.now();
+}
 
-  const payload = {
+const payload = {
 
-    airline_id: Number(airlineId),
+  airline_id: Number(airlineId),
 
-    type: String(entry.type || "UNKNOWN"),
+  type: String(entry.type || "UNKNOWN"),
 
-    source: String(entry.source || "SYSTEM"),
+  source: String(entry.source || "SYSTEM"),
 
-    amount: Number(entry.amount || 0),
+  amount: Number(entry.amount || 0),
 
-    timestamp: simTime
-  };
+  timestamp: simTime
+};
 
   /* ============================================================
      SEND TO RAILWAY (AUTHORITY)
