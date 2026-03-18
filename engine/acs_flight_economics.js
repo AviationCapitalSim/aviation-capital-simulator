@@ -192,11 +192,22 @@ const cruiseSpeed =
 
 const flightHours = distanceNM / cruiseSpeed;
 
-// 5️⃣ Historical fuel price (USD/kg)
-let fuelPricePerKg = 0.8; // default 1940s
-if (year >= 1960) fuelPricePerKg = 0.6;
-if (year >= 1980) fuelPricePerKg = 0.9;
-if (year >= 2000) fuelPricePerKg = 1.2;
+/* ============================================================
+   🟧 A5.1 — HISTORICAL FUEL PRICE (USD/kg)
+   ------------------------------------------------------------
+   Realistic aviation fuel evolution
+   Used by all aircraft types
+   ============================================================ */
+
+let fuelPricePerKg = 0.10;        // 1935–1945 piston era
+
+if (year >= 1950) fuelPricePerKg = 0.14;
+if (year >= 1960) fuelPricePerKg = 0.18;
+if (year >= 1970) fuelPricePerKg = 0.22;
+if (year >= 1980) fuelPricePerKg = 0.32;
+if (year >= 1990) fuelPricePerKg = 0.42;
+if (year >= 2000) fuelPricePerKg = 0.55;
+if (year >= 2010) fuelPricePerKg = 0.70;
 
 // 6️⃣ Final fuel cost
 const costFuel =
