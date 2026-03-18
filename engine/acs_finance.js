@@ -312,7 +312,9 @@ async function ACS_FINANCE_syncFromServer(){
   try{
 
     const airlineId =
-      localStorage.getItem("ACS_AIRLINE_ID");
+    window.ACS_activeUser?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
+    localStorage.getItem("ACS_AIRLINE_ID");
 
     if(!airlineId){
       console.warn("FINANCE SYNC: airlineId missing");
