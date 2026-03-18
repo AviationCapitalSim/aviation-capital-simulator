@@ -882,7 +882,7 @@ filtered.forEach(entry => {
 
 });
      
-  const types = Object.keys(groupedByType);
+  const types = ["INCOME","EXPENSE"];
 
   if (!types.length) {
     container.innerHTML = "<div style='opacity:.6'>No recent activity.</div>";
@@ -891,7 +891,7 @@ filtered.forEach(entry => {
 
   types.forEach(type => {
 
-    const entries = groupedByType[type];
+    const entries = groupedByType[type] || [];
 
     // 🔥 Agrupar por source dentro del type
     const grouped = {};
