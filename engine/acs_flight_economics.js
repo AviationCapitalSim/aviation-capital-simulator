@@ -190,7 +190,18 @@ const cruiseSpeed =
   Number(ac.data?.speed_kts) ||
   180; // DC-3 safe default
 
-const flightHours = distanceNM / cruiseSpeed;
+/* ============================================================
+   🕒 BLOCK TIME ESTIMATION (AIRLINE REALISM)
+   ------------------------------------------------------------
+   Includes climb, descent and routing factors
+   ============================================================ */
+
+let blockFactor = 1.12;
+
+if (distanceNM < 500) blockFactor = 1.25;
+else if (distanceNM < 1500) blockFactor = 1.18;
+
+const flightHours = (distanceNM / cruiseSpeed) * blockFactor;
 
 /* ============================================================
    🟧 A5.1 — HISTORICAL FUEL PRICE (USD/kg)
