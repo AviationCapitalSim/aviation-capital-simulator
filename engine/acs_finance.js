@@ -239,6 +239,8 @@ ACS_FINANCE_BOOT();
    Makes Finance visible to Flight Economics
    ============================================================ */
 
+window.ACS_FINANCE_CACHE = null;   
+
 window.ACS_FINANCE_ENGINE = {
 
   getLedger(){
