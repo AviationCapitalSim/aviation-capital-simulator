@@ -746,7 +746,8 @@ function ACS_updateCapitalColor() {
   if (!el) return;
 
   // Obtener valor numérico del localStorage
-  let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  let f = window.ACS_FINANCE_CACHE;
+  if(!f) return;
   let cap = f.capital || 0;
 
   if (cap < 0) {
@@ -788,7 +789,8 @@ function ACS_updateProfitColor() {
      
 function loadTransactionLog() {
 
-  const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+  const f = window.ACS_FINANCE_CACHE;
+  if(!f) return;
   const container = document.getElementById("financeActivityFeed");
   if (!container) return;
 
