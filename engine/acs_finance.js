@@ -480,37 +480,58 @@ if(!window.ACS_FINANCE_READY){
       return;
     }
 
-    const payload = {
-      airline_id: String(airlineId),
+    const safeNumber = (v, fallback = null) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+};
 
-      capital: Number(f.capital || 0),
-      revenue: Number(f.revenue || 0),
-      expenses: Number(f.expenses || 0),
-      profit: Number(f.profit || 0),
+const payload = {
 
-      live_revenue: Number(f.income?.live_revenue || 0),
-      weekly_revenue: Number(f.income?.weekly_revenue || 0),
+  airline_id: String(airlineId),
 
-      cost_fuel: Number(f.cost?.fuel || 0),
-      cost_maintenance: Number(f.cost?.maintenance || 0),
-      cost_hr: Number(f.cost?.salaries || 0),
-      cost_leasing: Number(f.cost?.leasing || 0),
+  capital: safeNumber(f.capital),
+  revenue: safeNumber(f.revenue),
+  expenses: safeNumber(f.expenses),
+  profit: safeNumber(f.profit),
 
-      cost_airport:
-        Number(f.cost?.ground_handling || 0) +
-        Number(f.cost?.slot_fees || 0) +
-        Number(f.cost?.overflight || 0) +
-        Number(f.cost?.navigation || 0),
+  live_revenue: safeNumber(f.income?.live_revenue),
+  weekly_revenue: safeNumber(f.income?.weekly_revenue),
 
-      cost_other:
-        Number(f.cost?.penalties || 0) +
-        Number(f.cost?.used_aircraft_purchase || 0) +
-        Number(f.cost?.new_aircraft_purchase || 0),
+  cost_fuel: safeNumber(f.cost?.fuel),
+  cost_maintenance: safeNumber(f.cost?.maintenance),
+  cost_hr: safeNumber(f.cost?.salaries),
+  cost_leasing: safeNumber(f.cost?.leasing),
 
-      debt: Number(f.debt || 0),
-      fleet_size: Number(f.fleet_size || 0)
-    };
+  cost_airport:
+    safeNumber(f.cost?.ground_handling, 0) +
+    safeNumber(f.cost?.slot_fees, 0) +
+    safeNumber(f.cost?.overflight, 0) +
+    safeNumber(f.cost?.navigation, 0),
 
+  cost_other:
+    safeNumber(f.cost?.penalties, 0) +
+    safeNumber(f.cost?.used_aircraft_purchase, 0) +
+    safeNumber(f.cost?.new_aircraft_purchase, 0),
+
+  debt: safeNumber(f.debt),
+  fleet_size: safeNumber(f.fleet_size)
+};
+
+/* ============================================================
+   🛑 HARD VALIDATION — PREVENT DATA CORRUPTION
+   ============================================================ */
+
+if(
+  payload.capital === null ||
+  payload.revenue === null ||
+  payload.expenses === null ||
+  payload.profit === null
+){
+  console.error("❌ FINANCE PUSH BLOCKED — INVALID DATA", payload);
+  ACS_FINANCE_SYNC_LOCK = false;
+  return;
+}
+     
     const res = await fetch(
       "https://acs-world-server-production.up.railway.app/v1/finance/update",
       {
