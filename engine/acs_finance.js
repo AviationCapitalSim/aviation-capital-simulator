@@ -786,6 +786,11 @@ const payload = {
    🔹 PUBLIC API — REGISTER INCOME
    ============================================================ */
 
+if(!window.ACS_FINANCE_READY){
+  console.warn("⛔ INCOME BLOCKED (FINANCE NOT READY)");
+  return;
+}
+   
 window.ACS_registerIncome = function(payload){
 
   if (!payload || typeof payload.revenue !== "number") return;
@@ -854,6 +859,11 @@ window.ACS_registerIncome = function(payload){
    Version: v1.0 | Date: 08 FEB 2026
    ============================================================ */
 
+if(!window.ACS_FINANCE_READY){
+  console.warn("⛔ EXPENSE BLOCKED (FINANCE NOT READY)");
+  return;
+}
+   
 window.ACS_registerExpense = function(payload){
 
   if (!payload || typeof payload.amount !== "number") return;
