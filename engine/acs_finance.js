@@ -434,12 +434,6 @@ async function ACS_FINANCE_syncFromServer(){
 
 }
 
-/* ejecutar una vez al cargar finance */
-setTimeout(()=>{
-  ACS_FINANCE_syncFromServer();
-},1000);
-
-
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
    ------------------------------------------------------------
@@ -791,14 +785,14 @@ const payload = {
 /* ============================================================
    🔹 PUBLIC API — REGISTER INCOME
    ============================================================ */
+   
+  window.ACS_registerIncome = function(payload){
 
-if(!window.ACS_FINANCE_READY){
+   if(!window.ACS_FINANCE_READY){
   console.warn("⛔ INCOME BLOCKED (FINANCE NOT READY)");
   return;
-}
+  }
    
-window.ACS_registerIncome = function(payload){
-
   if (!payload || typeof payload.revenue !== "number") return;
 
   const f = loadFinance();
@@ -864,13 +858,13 @@ window.ACS_registerIncome = function(payload){
    ------------------------------------------------------------
    Version: v1.0 | Date: 08 FEB 2026
    ============================================================ */
+   
+  window.ACS_registerExpense = function(payload){
 
-if(!window.ACS_FINANCE_READY){
+  if(!window.ACS_FINANCE_READY){
   console.warn("⛔ EXPENSE BLOCKED (FINANCE NOT READY)");
   return;
-}
-   
-window.ACS_registerExpense = function(payload){
+  }   
 
   if (!payload || typeof payload.amount !== "number") return;
 
