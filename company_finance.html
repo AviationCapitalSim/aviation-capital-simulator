@@ -1201,44 +1201,49 @@ function ACS_runMonthlySnapshot(simDate){
 
   if(exists) return;
 
-  const f =
-    JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+const finance =
+  JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-  const fleet =
-    JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+const fleet =
+  JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  const debt = 
-       Array.isArray(f.bank?.loans)
-      ? f.bank.loans.reduce(
-          (sum, loan) =>
-            sum + Number(loan.remaining || 0),
-          0
-        )
-      : 0;
+/* ============================================================
+   🟦 DEBT — FROM RAILWAY AUTHORITY (NO bank.loans)
+   ============================================================ */
 
-  if(
-  Number(f.revenue || 0) === 0 &&
-  Number(f.expenses || 0) === 0
-  ){
+const debt = Number(finance.debt || 0);
+
+/* ============================================================
+   🟦 VALIDATION — AVOID EMPTY SNAPSHOT
+   ============================================================ */
+
+if(
+  Number(finance.revenue || 0) === 0 &&
+  Number(finance.expenses || 0) === 0
+){
   return;
-  }
-     
-  const snapshot = {
+}
 
-    monthKey,
-    year,
-    month,
+/* ============================================================
+   🟦 SNAPSHOT OBJECT
+   ============================================================ */
 
-    revenue : Math.round(Number(f.revenue  || 0)),
-    expenses: Math.round(Number(f.expenses || 0)),
-    profit  : Math.round(Number(f.profit   || 0)),
-    capital : Math.round(Number(f.capital  || 0)),
-    debt    : debt,
-    fleetSize: fleet.length,
+const snapshot = {
 
-    timestamp: Date.now()
+  monthKey,
+  year,
+  month,
 
-  };
+  revenue : Math.round(Number(finance.revenue  || 0)),
+  expenses: Math.round(Number(finance.expenses || 0)),
+  profit  : Math.round(Number(finance.profit   || 0)),
+  capital : Math.round(Number(finance.capital  || 0)),
+  debt    : debt,
+  fleetSize: fleet.length,
+
+  timestamp: Date.now()
+
+};
 
   history.push(snapshot);
 
