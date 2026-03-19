@@ -78,18 +78,22 @@
     (offlineHours % 24) + " hours " + 
     (offlineMinutes % 60) + " minutes"
   );
-  console.log("SIM SPEED      :", simSpeed, " sim minutes / real second");
-  console.log("SIM MINUTES LOST:", Math.floor(offlineSimMinutes));
-  console.log("==========================================");
+ console.log("SIM SPEED      :", simSpeed, " sim minutes / real second");
+ console.log("SIM MINUTES LOST:", Math.floor(offlineSimMinutes));
+ console.log("MODE            : WATCHDOG (NO TIME OVERRIDE)");
+ console.log("==========================================");
 
-  // Store recovery info for next phases
-  window.ACS_TIME_RECOVERY = {
-    offlineMs,
-    offlineSeconds,
-    offlineSimMinutes,
-    lastReal,
-    lastSim
-  };
+// Store recovery info (WATCHDOG MODE)
+   
+window.ACS_TIME_RECOVERY = {
+  offlineMs,
+  offlineSeconds,
+  offlineSimMinutes,
+  lastReal,
+  lastSim,
+  mode: "WATCHDOG",
+  applied: true
+};
 
 })();
 
