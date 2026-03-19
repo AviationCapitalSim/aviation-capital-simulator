@@ -704,19 +704,29 @@ function ACS_money(v){
      
 function updateCompanyOverview() {
 
-  const f = window.ACS_FINANCE_CACHE;
-  if(!f) return;
+  let f;
 
+  try{
+    f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  }catch{
+    f = {};
+  }
+
+  // 🔧 SAFE NUMBERS
   const capital  = Number(f.capital)  || 0;
   const revenue  = Number(f.revenue)  || 0;
   const expenses = Number(f.expenses) || 0;
 
+  // 🔧 RECALCULATE PROFIT IF BROKEN
   let profit = Number(f.profit);
+
   if(!Number.isFinite(profit)){
     profit = revenue - expenses;
   }
 
+  // 🔧 REPAIR CAPITAL IF ZERO
   let fixedCapital = capital;
+
   if(capital === 0 && revenue > 0){
     fixedCapital = revenue - expenses;
   }
@@ -726,14 +736,35 @@ function updateCompanyOverview() {
   document.getElementById("cf-expenses").textContent = ACS_money(expenses);
   document.getElementById("cf-profit").textContent   = ACS_money(profit);
 
-  const debt = Number(f.debt || 0);
+  ACS_updateCapitalColor();
+  ACS_updateProfitColor();
+
+  /* === LOANS === */
+
+  let debt = 0;
+
+  if(f.bank && Array.isArray(f.bank.loans)){
+
+    f.bank.loans.forEach(loan=>{
+
+      const remaining =
+        Number(loan.remaining || 0);
+
+      if(remaining > 0){
+        debt += Number(
+          loan.monthlyPayment || 0
+        );
+      }
+
+    });
+
+  }
 
   const debtEl = document.getElementById("cf-debt");
+
   if(debtEl)
     debtEl.textContent = ACS_money(debt);
 
-  ACS_updateCapitalColor();
-  ACS_updateProfitColor();
 }
      
 /* ============================================================
@@ -746,8 +777,7 @@ function ACS_updateCapitalColor() {
   if (!el) return;
 
   // Obtener valor numérico del localStorage
-  let f = window.ACS_FINANCE_CACHE;
-  if(!f) return;
+  let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   let cap = f.capital || 0;
 
   if (cap < 0) {
@@ -772,7 +802,6 @@ window.addEventListener("storage", (e) => {
 /* ============================================================
    === PROFIT UI COLOR — NEGATIVE RED / POSITIVE GREEN ========
    ============================================================ */
-     
 function ACS_updateProfitColor() {
   const el = document.getElementById("cf-profit");
   if (!el) return;
@@ -787,29 +816,30 @@ function ACS_updateProfitColor() {
   }
 }
      
-function loadTransactionLog(){
+function loadTransactionLog() {
 
-  try{
+  const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+  const container = document.getElementById("financeActivityFeed");
+  if (!container) return;
 
-    const log =
-      JSON.parse(localStorage.getItem("ACS_Log") || "[]");
+  container.innerHTML = "";
 
-    if(!Array.isArray(log)){
-      console.warn("LOG INVALID");
-      return;
-    }
+  const now = Date.now();
+  const FIFTEEN_DAYS = 15 * 24 * 60 * 60 * 1000;
 
-    console.log("📊 TRANSACTION LOG LOADED:", log.length);
+  const recent = log.filter(entry => {
 
-    // 👉 aquí puedes renderizar luego si quieres
+  const ts =
+    entry.ts ||
+    entry.timestamp ||
+    0;
 
-  }
-  catch(err){
-    console.error("❌ LOG LOAD FAILED", err);
-  }
+  if(!ts) return true;
 
-}
-     
+  return (now - ts) <= FIFTEEN_DAYS;
+
+});
+
   /* ============================================================
    🟦 FILTER — REMOVE INDIVIDUAL ROUTE INCOME
    ------------------------------------------------------------
@@ -968,8 +998,7 @@ function ACS_toggleGroup(header){
    ============================================================ */
 
 function loadBreakdown() {
-
-  const f = window.ACS_FINANCE_CACHE;
+  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const grid = document.getElementById("breakdownGrid");
   if (!f || !grid) return;
 
@@ -977,45 +1006,58 @@ function loadBreakdown() {
 
   const categories = [];
 
+  // ===============================
+  // 💰 INCOME — FINANCE REAL
+  // ===============================
   categories.push({
     label: "Live Route Revenue (Income)",
-    value: Number(f.live_revenue || 0)
+    value: Number(f.income?.live_revenue || 0)
   });
 
   categories.push({
     label: "Weekly Route Revenue (Income)",
-    value: Number(f.weekly_revenue || 0)
+    value: Number(f.income?.weekly_revenue || 0)
   });
 
-  categories.push({
-    label: "Fuel (Cost)",
-    value: Number(f.cost_fuel || 0)
-  });
+  // ===============================
+  // 💸 COSTS — FINANCE REAL (MONTH)
+  // ===============================
+  if (f.cost) {
+    Object.keys(f.cost).forEach(k => {
+      categories.push({
+        label: `${k} (Cost)`,
+        value: Number(f.cost[k]) || 0
+      });
+    });
+  }
 
-  categories.push({
-    label: "Maintenance (Cost)",
-    value: Number(f.cost_maintenance || 0)
-  });
+/* ============================================================
+   🏦 BANK LOANS — FINANCE INTEGRATION (REAL SOURCE)
+   Reads canonical bank structure from ACS_Finance.bank.loans
+   ============================================================ */
 
-  categories.push({
-    label: "HR (Cost)",
-    value: Number(f.cost_hr || 0)
-  });
+const loans =
+  Array.isArray(f.bank?.loans)
+  ? f.bank.loans
+  : [];
 
-  categories.push({
-    label: "Leasing (Cost)",
-    value: Number(f.cost_leasing || 0)
-  });
+// ✅ Deuda REAL = remaining (no originalAmount)
+// ✅ Siempre visible (aunque loans esté vacío)
+const totalLoans =
+  loans.reduce(
+    (sum, loan) =>
+      sum + Number(loan?.remaining ?? 0),
+    0
+  );
 
-  categories.push({
-    label: "Debt (Financing)",
-    value: Number(f.debt || 0)
-  });
-
+categories.push({
+  label: "Bank Loans (Financing)",
+  value: totalLoans
+});
+     
   const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
-
     const pct = (cat.value / max) * 100;
 
     const wrapper = document.createElement("div");
@@ -1023,7 +1065,7 @@ function loadBreakdown() {
 
     wrapper.innerHTML = `
       <div class="finance-meter-title">
-        ${cat.label} — ${ACS_money(cat.value)}
+        ${cat.label} — $${Math.round(cat.value).toLocaleString()}
       </div>
       <div class="finance-meter-bar">
         <div class="finance-meter-fill" style="width:${pct}%;"></div>
@@ -1031,7 +1073,6 @@ function loadBreakdown() {
     `;
 
     grid.appendChild(wrapper);
-
   });
 }
 
@@ -1180,10 +1221,8 @@ function ACS_runMonthlySnapshot(simDate){
 
   const monthKey = `${year}-${String(month).padStart(2,"0")}`;
 
-  const f =
-  JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-
-  const history = []; // 🔥 TEMPORAL: DESACTIVADO (Railway authority)
+  const history =
+    JSON.parse(localStorage.getItem("ACS_Finance_History") || "[]");
 
   // 🔒 Evitar duplicado
   const exists =
@@ -1191,49 +1230,44 @@ function ACS_runMonthlySnapshot(simDate){
 
   if(exists) return;
 
-const finance =
-  JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+  const f =
+    JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
 
-const fleet =
-  JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
+  const fleet =
+    JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-/* ============================================================
-   🟦 DEBT — FROM RAILWAY AUTHORITY (NO bank.loans)
-   ============================================================ */
+  const debt =
+    Array.isArray(f.bank?.loans)
+      ? f.bank.loans.reduce(
+          (sum, loan) =>
+            sum + Number(loan.remaining || 0),
+          0
+        )
+      : 0;
 
-const debt = Number(finance.debt || 0);
-
-/* ============================================================
-   🟦 VALIDATION — AVOID EMPTY SNAPSHOT
-   ============================================================ */
-
-if(
-  Number(finance.revenue || 0) === 0 &&
-  Number(finance.expenses || 0) === 0
-){
+  if(
+  Number(f.revenue || 0) === 0 &&
+  Number(f.expenses || 0) === 0
+  ){
   return;
-}
+  }
+     
+  const snapshot = {
 
-/* ============================================================
-   🟦 SNAPSHOT OBJECT
-   ============================================================ */
+    monthKey,
+    year,
+    month,
 
-const snapshot = {
+    revenue : Math.round(Number(f.revenue  || 0)),
+    expenses: Math.round(Number(f.expenses || 0)),
+    profit  : Math.round(Number(f.profit   || 0)),
+    capital : Math.round(Number(f.capital  || 0)),
+    debt    : debt,
+    fleetSize: fleet.length,
 
-  monthKey,
-  year,
-  month,
+    timestamp: Date.now()
 
-  revenue : Math.round(Number(finance.revenue  || 0)),
-  expenses: Math.round(Number(finance.expenses || 0)),
-  profit  : Math.round(Number(finance.profit   || 0)),
-  capital : Math.round(Number(finance.capital  || 0)),
-  debt    : debt,
-  fleetSize: fleet.length,
-
-  timestamp: Date.now()
-
-};
+  };
 
   history.push(snapshot);
 
@@ -1277,7 +1311,7 @@ function ACS_renderMonthlyExecutive(){
     expenses: Number(f.expenses || 0),
     profit  : Number(f.profit   || 0),
     capital : Number(f.capital  || 0),
-    debt: Number(f.debt || 0)
+    debt    : Array.isArray(f.bank?.loans)
       ? f.bank.loans.reduce(
           (s,l)=> s + Number(l.remaining || 0),
           0
