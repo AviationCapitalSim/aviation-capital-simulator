@@ -815,169 +815,153 @@ function ACS_updateProfitColor() {
   }
 }
      
-async function loadTransactionLog() {
+function loadTransactionLog() {
 
+  const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
   const container = document.getElementById("financeActivityFeed");
   if (!container) return;
 
-  container.innerHTML = "<div style='opacity:.6'>Loading...</div>";
+  container.innerHTML = "";
 
-  try{
+  const now = Date.now();
+  const FIFTEEN_DAYS = 15 * 24 * 60 * 60 * 1000;
 
-    const airlineId =
-      window.ACS_activeUser?.airline_id ||
-      JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
-      localStorage.getItem("ACS_AIRLINE_ID");
+  const recent = log.filter(entry => {
 
-    if(!airlineId){
-      container.innerHTML = "<div style='opacity:.6'>No airline.</div>";
-      return;
+  const ts =
+    entry.ts ||
+    entry.timestamp ||
+    0;
+
+  if(!ts) return true;
+
+  return (now - ts) <= FIFTEEN_DAYS;
+
+});
+
+  /* ============================================================
+   🟦 FILTER — REMOVE INDIVIDUAL ROUTE INCOME
+   ------------------------------------------------------------
+   • Keeps aggregated "FLIGHT"
+   • Removes "FLIGHT XXX → YYY"
+   ============================================================ */
+
+const filtered = recent.filter(entry => {
+
+  // Solo aplicamos filtro a ingresos
+  if (entry.type === "INCOME") {
+
+    // Si es ruta individual (contiene flecha)
+    if (
+      typeof entry.source === "string" &&
+      entry.source.startsWith("FLIGHT ") &&
+      entry.source.includes("→")
+    ) {
+      return false; // ❌ No renderizar rutas individuales
     }
 
-    const res = await fetch(
-      `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`
-    );
+  }
 
-    const data = await res.json();
+  return true; // ✔ Mantener todo lo demás
 
-    if(!data?.ok){
-      container.innerHTML = "<div style='opacity:.6'>No data.</div>";
-      return;
-    }
+});
 
-    const log = data.logs || [];
+/* ============================================================
+   🟦 GROUP BY TYPE (RESTORED)
+   ============================================================ */
 
-    container.innerHTML = "";
+const groupedByType = {};
 
-    /* ============================================================
-       🟦 FILTER LAST 15 DAYS (SIM TIME)
-       ============================================================ */
+filtered.forEach(entry => {
 
-    const now = Date.now();
-    const FIFTEEN_DAYS = 15 * 24 * 60 * 60 * 1000;
+  if (!groupedByType[entry.type]) {
+    groupedByType[entry.type] = [];
+  }
 
-    const recent = log.filter(entry => {
-      const ts = Number(entry.timestamp || 0);
-      if(!ts) return false;
-      return (now - ts) <= FIFTEEN_DAYS;
-    });
+  groupedByType[entry.type].push(entry);
 
-    /* ============================================================
-       🟦 REMOVE INDIVIDUAL ROUTES
-       ============================================================ */
+});
+     
+  const types = ["INCOME","EXPENSE"];
 
-    const filtered = recent.filter(entry => {
+  if (!types.length) {
+    container.innerHTML = "<div style='opacity:.6'>No recent activity.</div>";
+    return;
+  }
 
-      if (entry.type === "INCOME") {
+  types.forEach(type => {
 
-        if (
-          typeof entry.source === "string" &&
-          entry.source.startsWith("FLIGHT ") &&
-          entry.source.includes("→")
-        ) {
-          return false;
-        }
+    const entries = groupedByType[type] || [];
 
+    // 🔥 Agrupar por source dentro del type
+    const grouped = {};
+
+    entries.forEach(entry => {
+
+      const key = entry.source;
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          source: entry.source,
+          count: 0,
+          total: 0
+        };
       }
 
-      return true;
+      grouped[key].count++;
+      grouped[key].total += Number(entry.amount || 0);
 
     });
 
-    /* ============================================================
-       🟦 GROUP BY TYPE
-       ============================================================ */
+    const items = Object.values(grouped)
+      .sort((a,b)=> b.total - a.total);
 
-    const groupedByType = {};
+    const totalType = items.reduce((s,i)=> s+i.total,0);
 
-    filtered.forEach(entry => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "activity-group";
 
-      const type = entry.type || "UNKNOWN";
+    const typeClass =
+      type === "INCOME" ? "income" :
+      type === "EXPENSE" ? "expense" : "info";
 
-      if (!groupedByType[type]) {
-        groupedByType[type] = [];
-      }
-
-      groupedByType[type].push(entry);
-
-    });
-
-    const types = ["INCOME","EXPENSE"];
-
-    types.forEach(type => {
-
-      const entries = groupedByType[type] || [];
-
-      const grouped = {};
-
-      entries.forEach(entry => {
-
-        const key = entry.source;
-
-        if (!grouped[key]) {
-          grouped[key] = {
-            source: entry.source,
-            count: 0,
-            total: 0
-          };
-        }
-
-        grouped[key].count++;
-        grouped[key].total += Number(entry.amount || 0);
-
-      });
-
-      const items = Object.values(grouped)
-        .sort((a,b)=> b.total - a.total);
-
-      const totalType = items.reduce((s,i)=> s+i.total,0);
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "activity-group";
-
-      const typeClass =
-        type === "INCOME" ? "income" :
-        type === "EXPENSE" ? "expense" : "info";
-
-      wrapper.innerHTML = `
-        <div class="activity-header ${typeClass}" onclick="ACS_toggleGroup(this)">
-          <div>
-            <strong>${type}</strong> — $${Math.round(totalType).toLocaleString()}
-          </div>
-          <div>▼</div>
+    wrapper.innerHTML = `
+      <div class="activity-header ${typeClass}" onclick="ACS_toggleGroup(this)">
+        <div>
+          <strong>${type}</strong> — ${ACS_money(totalType)}
         </div>
-        <div class="activity-body"></div>
+        <div>▼</div>
+      </div>
+      <div class="activity-body">
+      </div>
+    `;
+
+    const body = wrapper.querySelector(".activity-body");
+
+    items.forEach(item => {
+
+      const row = document.createElement("div");
+      row.className = "activity-card";
+
+      row.innerHTML = `
+        <div class="activity-title">
+          ${item.source}
+        </div>
+        <div class="activity-meta">
+          ${item.count} movements
+        </div>
+        <div class="activity-amount">
+          ${ACS_money(item.total)}
+        </div>
       `;
 
-      const body = wrapper.querySelector(".activity-body");
-
-      items.forEach(item => {
-
-        const row = document.createElement("div");
-        row.className = "activity-card";
-
-        row.innerHTML = `
-          <div class="activity-title">${item.source}</div>
-          <div class="activity-meta">${item.count} movements</div>
-          <div class="activity-amount">$${Math.round(item.total).toLocaleString()}</div>
-        `;
-
-        body.appendChild(row);
-
-      });
-
-      container.appendChild(wrapper);
+      body.appendChild(row);
 
     });
 
-  }
-  catch(err){
+    container.appendChild(wrapper);
 
-    console.warn("FINANCE LOG LOAD FAILED", err);
-
-    container.innerHTML = "<div style='opacity:.6'>Connection error.</div>";
-
-  }
+  });
 
 }
      
