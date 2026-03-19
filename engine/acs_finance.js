@@ -250,6 +250,12 @@ window.ACS_FINANCE_ENGINE = {
   },
 
   commit(entry){
+
+    if(!window.ACS_FINANCE_READY){
+      console.warn("⛔ COMMIT BLOCKED (FINANCE NOT READY)");
+      return false;
+    }
+
     try {
 
       const f =
