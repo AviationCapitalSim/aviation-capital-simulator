@@ -1282,7 +1282,7 @@ function ACS_renderMonthlyExecutive(){
     expenses: Number(f.expenses || 0),
     profit  : Number(f.profit   || 0),
     capital : Number(f.capital  || 0),
-    debt    : Array.isArray(f.bank?.loans)
+    debt: Number(f.debt || 0)
       ? f.bank.loans.reduce(
           (s,l)=> s + Number(l.remaining || 0),
           0
