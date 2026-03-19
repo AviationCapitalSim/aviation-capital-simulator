@@ -1,10 +1,11 @@
 /* ============================================================
-   ⏳ ACS TIME RECOVERY ENGINE — V 12 (DIAGNOSTIC MODE)
+   ⏳ ACS TIME WATCHDOG — V13 (SERVER AUTHORITATIVE MODE)
    Project: Aviation Capital Simulator (ACS)
    Purpose:
    - Detect offline real time
-   - Calculate lost simulated time
-   - Multiplatform safe (iOS / Android / PC / Mac)
+   - Calculate theoretical lost simulated time
+   - DOES NOT modify simulation time
+   - Server is the ONLY time authority
    ============================================================ */
 
 (function () {
@@ -35,13 +36,14 @@
   localStorage.setItem("ACS_LAST_SIM_TIME", nowReal);
 
   window.ACS_TIME_RECOVERY = {
-    offlineMs: 0,
-    offlineSeconds: 0,
-    offlineSimMinutes: 0,
-    lastReal: nowReal,
-    lastSim: nowReal,
-    applied: true
-  };
+  offlineMs,
+  offlineSeconds,
+  offlineSimMinutes,
+  lastReal,
+  lastSim,
+  mode: "WATCHDOG",
+  applied: true
+};
 
   return;
 }
@@ -99,46 +101,22 @@
 
 function applyRecoveryWhenReady() {
 
-  // Wait until the Time Engine is ready
   if (!window.ACS_TIME || !window.ACS_TIME.currentTime) {
     setTimeout(applyRecoveryWhenReady, 200);
     return;
   }
 
-  // Nothing to apply
-  if (!window.ACS_TIME_RECOVERY || window.ACS_TIME_RECOVERY.applied) {
+  if (!window.ACS_TIME_RECOVERY) {
     return;
   }
 
   const rec = window.ACS_TIME_RECOVERY;
 
-  try {
-
-    const currentSim = new Date(window.ACS_TIME.currentTime).getTime();
-
-    const recoveredMs = rec.offlineSimMinutes * 60 * 1000;
-
-    const newSimTime = new Date(currentSim + recoveredMs);
-
-    console.log("🟦 APPLYING OFFLINE SIM RECOVERY");
-    console.log("OLD SIM TIME :", new Date(currentSim).toLocaleString());
-    console.log("RECOVERED +  :", Math.floor(rec.offlineSimMinutes), "sim minutes");
-    console.log("NEW SIM TIME :", newSimTime.toLocaleString());
-
-    // Apply recovered simulation time
-    window.ACS_TIME.currentTime = newSimTime;
-
-    // Persist
-    localStorage.setItem("ACS_LAST_SIM_TIME", newSimTime.getTime());
-
-    // Prevent double execution
-    window.ACS_TIME_RECOVERY.applied = true;
-
-  } catch (e) {
-
-    console.error("❌ OFFLINE RECOVERY APPLY FAILED", e);
-
-  }
+  console.log("🟡 ACS TIME WATCHDOG ACTIVE");
+  console.log("MODE            : SERVER AUTHORITATIVE");
+  console.log("CURRENT SIM TIME:", new Date(window.ACS_TIME.currentTime).toLocaleString());
+  console.log("OFFLINE DETECTED:", Math.floor(rec.offlineSimMinutes), "sim minutes (informational)");
+}
 
 }
 
