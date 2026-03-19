@@ -35,7 +35,7 @@
   localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
   localStorage.setItem("ACS_LAST_SIM_TIME", nowReal);
 
-  window.ACS_TIME_RECOVERY = {
+ window.ACS_TIME_RECOVERY = {
   offlineMs,
   offlineSeconds,
   offlineSimMinutes,
