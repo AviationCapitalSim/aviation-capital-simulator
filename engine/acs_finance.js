@@ -140,12 +140,11 @@ function ACS_getMonthKey(ts){
 }
 
 /* ============================================================
-   🟦 F1 — FINANCE BOOT CONTROLLER (RAILWAY AUTHORITY)
+   🟦 F1 — FINANCE BOOT CONTROLLER (RAILWAY ONLY — CLEAN)
    ------------------------------------------------------------
-   • Railway = única fuente de verdad
-   • localStorage = cache mínima
-   • No crea finance local por defecto
-   • Bloquea el engine hasta hidratar desde Railway
+   • Railway = única fuente
+   • NO depende de localStorage para UI
+   • Hidrata CACHE GLOBAL
    ============================================================ */
 
 window.ACS_FINANCE_READY = false;
@@ -172,15 +171,19 @@ async function ACS_FINANCE_BOOT(){
     const data = await res.json();
 
     if(!data?.ok || !data.finance){
-      console.error("❌ FINANCE BOOT FAILED: invalid server response");
+      console.error("❌ FINANCE BOOT FAILED");
       return false;
     }
 
     const f = data.finance;
 
-    const financeObject = {
-      capital: Number(f.capital || 0),
+    /* ============================================================
+       🟦 NORMALIZED OBJECT (CANONICAL)
+       ============================================================ */
 
+    const financeObject = {
+
+      capital: Number(f.capital || 0),
       revenue: Number(f.revenue || 0),
       expenses: Number(f.expenses || 0),
       profit: Number(f.profit || 0),
@@ -188,13 +191,13 @@ async function ACS_FINANCE_BOOT(){
       debt: Number(f.debt || 0),
       fleet_size: Number(f.fleet_size || 0),
 
-      income: {
+      income:{
         live_revenue: Number(f.live_revenue || 0),
         weekly_revenue: Number(f.weekly_revenue || 0),
         current_week_key: null
       },
 
-      cost: {
+      cost:{
         fuel: Number(f.cost_fuel || 0),
         ground_handling: 0,
         slot_fees: 0,
@@ -212,12 +215,24 @@ async function ACS_FINANCE_BOOT(){
       current_month: ACS_getMonthKey(Date.now())
     };
 
-    saveFinance(financeObject);
+    /* ============================================================
+       🟦 CACHE GLOBAL (SOURCE FOR UI)
+       ============================================================ */
+
+    window.ACS_FINANCE_CACHE = financeObject;
+
+    /* ============================================================
+       🟦 BACKUP ONLY (NO UI USAGE)
+       ============================================================ */
+
+    localStorage.setItem("ACS_Finance", JSON.stringify(financeObject));
+
     window.ACS_Finance = financeObject;
     window.ACS_FINANCE_READY = true;
 
-    console.log("🟢 FINANCE BOOT COMPLETED (RAILWAY AUTHORITY)");
+    console.log("🟢 FINANCE BOOT OK (RAILWAY)");
 
+    window.dispatchEvent(new Event("ACS_FINANCE_READY"));
     window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
     return true;
@@ -353,7 +368,14 @@ console.log("🟦 ACS_FINANCE_ENGINE exposed globally");
    • Solo ejecuta al iniciar el engine
 ============================================================ */
 
+/* ============================================================
+   ⛔ DISABLED — SYNC FROM SERVER
+   (Replaced by BOOT controller)
+   ============================================================ */
+
 async function ACS_FINANCE_syncFromServer(){
+  console.warn("⛔ DISABLED: BOOT controller handles sync");
+}
 
   try{
 
