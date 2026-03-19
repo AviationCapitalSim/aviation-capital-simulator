@@ -787,31 +787,29 @@ function ACS_updateProfitColor() {
   }
 }
      
-function loadTransactionLog() {
+function loadTransactionLog(){
 
-  const f = window.ACS_FINANCE_CACHE;
-  if(!f) return;
-  const container = document.getElementById("financeActivityFeed");
-  if (!container) return;
+  try{
 
-  container.innerHTML = "";
+    const log =
+      JSON.parse(localStorage.getItem("ACS_Log") || "[]");
 
-  const now = Date.now();
-  const FIFTEEN_DAYS = 15 * 24 * 60 * 60 * 1000;
+    if(!Array.isArray(log)){
+      console.warn("LOG INVALID");
+      return;
+    }
 
-  const recent = log.filter(entry => {
+    console.log("📊 TRANSACTION LOG LOADED:", log.length);
 
-  const ts =
-    entry.ts ||
-    entry.timestamp ||
-    0;
+    // 👉 aquí puedes renderizar luego si quieres
 
-  if(!ts) return true;
+  }
+  catch(err){
+    console.error("❌ LOG LOAD FAILED", err);
+  }
 
-  return (now - ts) <= FIFTEEN_DAYS;
-
-});
-
+}
+     
   /* ============================================================
    🟦 FILTER — REMOVE INDIVIDUAL ROUTE INCOME
    ------------------------------------------------------------
