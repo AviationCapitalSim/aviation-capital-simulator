@@ -31,7 +31,7 @@
   // Corrupted data → reset anchors safely
   if (!lastReal || !lastSim || isNaN(lastSim)) {
 
-    console.warn("🟠 TIME DATA CORRUPTED — Resetting anchors");
+    console.log("🟡 TIME WATCHDOG — Anchors initialized");
 
     localStorage.setItem("ACS_LAST_REAL_TIME", nowReal);
     localStorage.setItem("ACS_LAST_SIM_TIME", nowReal);
