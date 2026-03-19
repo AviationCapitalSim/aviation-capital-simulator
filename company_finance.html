@@ -704,29 +704,19 @@ function ACS_money(v){
      
 function updateCompanyOverview() {
 
-  let f;
+  const f = window.ACS_FINANCE_CACHE;
+  if(!f) return;
 
-  try{
-    f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  }catch{
-    f = {};
-  }
-
-  // 🔧 SAFE NUMBERS
   const capital  = Number(f.capital)  || 0;
   const revenue  = Number(f.revenue)  || 0;
   const expenses = Number(f.expenses) || 0;
 
-  // 🔧 RECALCULATE PROFIT IF BROKEN
   let profit = Number(f.profit);
-
   if(!Number.isFinite(profit)){
     profit = revenue - expenses;
   }
 
-  // 🔧 REPAIR CAPITAL IF ZERO
   let fixedCapital = capital;
-
   if(capital === 0 && revenue > 0){
     fixedCapital = revenue - expenses;
   }
@@ -736,16 +726,14 @@ function updateCompanyOverview() {
   document.getElementById("cf-expenses").textContent = ACS_money(expenses);
   document.getElementById("cf-profit").textContent   = ACS_money(profit);
 
-  ACS_updateCapitalColor();
-  ACS_updateProfitColor();
-
   const debt = Number(f.debt || 0);
-     
-  const debtEl = document.getElementById("cf-debt");
 
+  const debtEl = document.getElementById("cf-debt");
   if(debtEl)
     debtEl.textContent = ACS_money(debt);
 
+  ACS_updateCapitalColor();
+  ACS_updateProfitColor();
 }
      
 /* ============================================================
@@ -980,8 +968,8 @@ function ACS_toggleGroup(header){
    ============================================================ */
 
 function loadBreakdown() {
-     
-  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+  const f = window.ACS_FINANCE_CACHE;
   const grid = document.getElementById("breakdownGrid");
   if (!f || !grid) return;
 
@@ -989,44 +977,45 @@ function loadBreakdown() {
 
   const categories = [];
 
-  // ===============================
-  // 💰 INCOME — FINANCE REAL
-  // ===============================
   categories.push({
     label: "Live Route Revenue (Income)",
-    value: Number(f.income?.live_revenue || 0)
+    value: Number(f.live_revenue || 0)
   });
 
   categories.push({
     label: "Weekly Route Revenue (Income)",
-    value: Number(f.income?.weekly_revenue || 0)
+    value: Number(f.weekly_revenue || 0)
   });
 
-  // ===============================
-  // 💸 COSTS — FINANCE REAL (MONTH)
-  // ===============================
-  if (f.cost) {
-    Object.keys(f.cost).forEach(k => {
-      categories.push({
-        label: `${k} (Cost)`,
-        value: Number(f.cost[k]) || 0
-      });
-    });
-  }
+  categories.push({
+    label: "Fuel (Cost)",
+    value: Number(f.cost_fuel || 0)
+  });
 
-/* ============================================================
-   🏦 BANK LOANS — FINANCE INTEGRATION (REAL SOURCE)
-   Reads canonical bank structure from ACS_Finance.bank.loans
-   ============================================================ */
+  categories.push({
+    label: "Maintenance (Cost)",
+    value: Number(f.cost_maintenance || 0)
+  });
 
-categories.push({
-  label: "Debt (Financing)",
-  value: Number(f.debt || 0)
-});
-     
+  categories.push({
+    label: "HR (Cost)",
+    value: Number(f.cost_hr || 0)
+  });
+
+  categories.push({
+    label: "Leasing (Cost)",
+    value: Number(f.cost_leasing || 0)
+  });
+
+  categories.push({
+    label: "Debt (Financing)",
+    value: Number(f.debt || 0)
+  });
+
   const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
+
     const pct = (cat.value / max) * 100;
 
     const wrapper = document.createElement("div");
@@ -1034,7 +1023,7 @@ categories.push({
 
     wrapper.innerHTML = `
       <div class="finance-meter-title">
-        ${cat.label} — $${Math.round(cat.value).toLocaleString()}
+        ${cat.label} — ${ACS_money(cat.value)}
       </div>
       <div class="finance-meter-bar">
         <div class="finance-meter-fill" style="width:${pct}%;"></div>
@@ -1042,6 +1031,7 @@ categories.push({
     `;
 
     grid.appendChild(wrapper);
+
   });
 }
 
