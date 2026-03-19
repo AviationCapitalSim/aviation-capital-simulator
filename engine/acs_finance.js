@@ -140,60 +140,98 @@ function ACS_getMonthKey(ts){
 }
 
 /* ============================================================
-   🔹 INIT STRUCTURE (ONCE)
+   🟦 F1 — FINANCE BOOT CONTROLLER (RAILWAY AUTHORITY)
+   ------------------------------------------------------------
+   • Railway = única fuente de verdad
+   • localStorage = cache mínima
+   • No crea finance local por defecto
+   • Bloquea el engine hasta hidratar desde Railway
    ============================================================ */
 
-function initFinanceIfNeeded(){
+window.ACS_FINANCE_READY = false;
 
-  let f = loadFinance();
-  if (f) return f;
+async function ACS_FINANCE_BOOT(){
 
- f = {
-  capital: 500000,
+  try{
 
-  revenue: 0,
-  expenses: 0,
-  profit: 0,
+    const airlineId =
+      window.ACS_SERVER_SESSION?.airline_id ||
+      window.ACS_activeUser?.airline_id ||
+      JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
+      localStorage.getItem("ACS_AIRLINE_ID");
 
-  income: {
-    live_revenue: 0,
-    weekly_revenue: 0,
-    current_week_key: null
-  },
+    if(!airlineId){
+      console.error("❌ FINANCE BOOT: airlineId missing");
+      return false;
+    }
 
-  cost: {
-    fuel: 0,
-    ground_handling: 0,
-    slot_fees: 0,
-    overflight: 0,
-    navigation: 0,
-    leasing: 0,
-    salaries: 0,
-    maintenance: 0,
-    penalties: 0,
-    used_aircraft_purchase: 0,
-    new_aircraft_purchase: 0
-  },
+    const res = await fetch(
+      `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`
+    );
 
-  history: [],
-  current_month: ACS_getMonthKey(Date.now())
-};
+    const data = await res.json();
 
-  saveFinance(f);
-  return f;
+    if(!data?.ok || !data.finance){
+      console.error("❌ FINANCE BOOT FAILED: invalid server response");
+      return false;
+    }
+
+    const f = data.finance;
+
+    const financeObject = {
+      capital: Number(f.capital || 0),
+
+      revenue: Number(f.revenue || 0),
+      expenses: Number(f.expenses || 0),
+      profit: Number(f.profit || 0),
+
+      debt: Number(f.debt || 0),
+      fleet_size: Number(f.fleet_size || 0),
+
+      income: {
+        live_revenue: Number(f.live_revenue || 0),
+        weekly_revenue: Number(f.weekly_revenue || 0),
+        current_week_key: null
+      },
+
+      cost: {
+        fuel: Number(f.cost_fuel || 0),
+        ground_handling: 0,
+        slot_fees: 0,
+        overflight: 0,
+        navigation: 0,
+        leasing: Number(f.cost_leasing || 0),
+        salaries: Number(f.cost_hr || 0),
+        maintenance: Number(f.cost_maintenance || 0),
+        penalties: 0,
+        used_aircraft_purchase: 0,
+        new_aircraft_purchase: 0
+      },
+
+      history: [],
+      current_month: ACS_getMonthKey(Date.now())
+    };
+
+    saveFinance(financeObject);
+    window.ACS_Finance = financeObject;
+    window.ACS_FINANCE_READY = true;
+
+    console.log("🟢 FINANCE BOOT COMPLETED (RAILWAY AUTHORITY)");
+
+    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+    return true;
+
+  }
+  catch(err){
+    console.error("❌ FINANCE BOOT ERROR", err);
+    return false;
+  }
+
 }
 
-/* ============================================================
-   🟦 F1 — FINANCE ENGINE INITIALIZATION FIX
-   Guarantees global availability BEFORE any arrival events
-   ============================================================ */
-
-let ACS_Finance = initFinanceIfNeeded();
-
-/* CRITICAL: expose immediately */
-window.ACS_Finance = ACS_Finance;
-
-console.log("🟦 ACS_Finance global ready");
+/* Boot inmediato */
+ACS_FINANCE_BOOT();
 
 
 /* ============================================================
@@ -410,6 +448,11 @@ let ACS_FINANCE_SYNC_PENDING = false;
 
 async function ACS_FINANCE_pushToServer(){
 
+if(!window.ACS_FINANCE_READY){
+  console.warn("⛔ FINANCE PUSH BLOCKED (NOT READY)");
+  return;
+}
+   
   if (ACS_FINANCE_SYNC_LOCK) {
     ACS_FINANCE_SYNC_PENDING = true;
     return;
