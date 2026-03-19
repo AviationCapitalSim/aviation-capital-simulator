@@ -739,27 +739,8 @@ function updateCompanyOverview() {
   ACS_updateCapitalColor();
   ACS_updateProfitColor();
 
-  /* === LOANS === */
-
-  let debt = 0;
-
-  if(f.bank && Array.isArray(f.bank.loans)){
-
-    f.bank.loans.forEach(loan=>{
-
-      const remaining =
-        Number(loan.remaining || 0);
-
-      if(remaining > 0){
-        debt += Number(
-          loan.monthlyPayment || 0
-        );
-      }
-
-    });
-
-  }
-
+  const debt = Number(f.debt || 0);
+     
   const debtEl = document.getElementById("cf-debt");
 
   if(debtEl)
@@ -802,6 +783,7 @@ window.addEventListener("storage", (e) => {
 /* ============================================================
    === PROFIT UI COLOR — NEGATIVE RED / POSITIVE GREEN ========
    ============================================================ */
+     
 function ACS_updateProfitColor() {
   const el = document.getElementById("cf-profit");
   if (!el) return;
@@ -998,6 +980,7 @@ function ACS_toggleGroup(header){
    ============================================================ */
 
 function loadBreakdown() {
+     
   const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
   const grid = document.getElementById("breakdownGrid");
   if (!f || !grid) return;
@@ -1036,23 +1019,9 @@ function loadBreakdown() {
    Reads canonical bank structure from ACS_Finance.bank.loans
    ============================================================ */
 
-const loans =
-  Array.isArray(f.bank?.loans)
-  ? f.bank.loans
-  : [];
-
-// ✅ Deuda REAL = remaining (no originalAmount)
-// ✅ Siempre visible (aunque loans esté vacío)
-const totalLoans =
-  loans.reduce(
-    (sum, loan) =>
-      sum + Number(loan?.remaining ?? 0),
-    0
-  );
-
 categories.push({
-  label: "Bank Loans (Financing)",
-  value: totalLoans
+  label: "Debt (Financing)",
+  value: Number(f.debt || 0)
 });
      
   const max = Math.max(...categories.map(c => c.value), 1);
@@ -1221,8 +1190,10 @@ function ACS_runMonthlySnapshot(simDate){
 
   const monthKey = `${year}-${String(month).padStart(2,"0")}`;
 
-  const history =
-    JSON.parse(localStorage.getItem("ACS_Finance_History") || "[]");
+  const f =
+  JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+
+  const history = []; // 🔥 TEMPORAL: DESACTIVADO (Railway authority)
 
   // 🔒 Evitar duplicado
   const exists =
@@ -1236,8 +1207,8 @@ function ACS_runMonthlySnapshot(simDate){
   const fleet =
     JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
 
-  const debt =
-    Array.isArray(f.bank?.loans)
+  const debt = 
+       Array.isArray(f.bank?.loans)
       ? f.bank.loans.reduce(
           (sum, loan) =>
             sum + Number(loan.remaining || 0),
