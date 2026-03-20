@@ -103,11 +103,6 @@ function ACS_FINANCE_boot(){
 
   ACS_FINANCE_syncFromServer();
 }
-
-/* 🔥 AUTO BOOT CONTROLADO */
-setTimeout(() => {
-  ACS_FINANCE_boot();
-}, 1000);
    
 // ============================================================
 // 🔹 FETCH FINANCE LOG HISTORY (RAILWAY → CACHE)
