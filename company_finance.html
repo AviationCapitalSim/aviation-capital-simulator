@@ -1204,121 +1204,6 @@ function loadLeasing() {
   });
 }
 
-/* ============================================================
-   📦 ACS MONTHLY SNAPSHOT ENGINE — v1.0
-   ------------------------------------------------------------
-   • Guarda resumen financiero al cambiar de mes
-   • Evita duplicados
-   • No depende de UI
-   ============================================================ */
-
-function ACS_runMonthlySnapshot(simDate){
-
-  if(!simDate || !(simDate instanceof Date)) return;
-
-  const year  = simDate.getUTCFullYear();
-  const month = simDate.getUTCMonth() + 1; // 1-12
-
-  const monthKey = `${year}-${String(month).padStart(2,"0")}`;
-
-  const history =
-    JSON.parse(localStorage.getItem("ACS_Finance_History") || "[]");
-
-  // 🔒 Evitar duplicado
-  const exists =
-    history.some(entry => entry.monthKey === monthKey);
-
-  if(exists) return;
-
-  const f =
-    JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-
-  const fleet =
-    JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-  const debt =
-    Array.isArray(f.bank?.loans)
-      ? f.bank.loans.reduce(
-          (sum, loan) =>
-            sum + Number(loan.remaining || 0),
-          0
-        )
-      : 0;
-
-  if(
-  Number(f.revenue || 0) === 0 &&
-  Number(f.expenses || 0) === 0
-  ){
-  return;
-  }
-     
-  const snapshot = {
-
-    monthKey,
-    year,
-    month,
-
-    revenue : Math.round(Number(f.revenue  || 0)),
-    expenses: Math.round(Number(f.expenses || 0)),
-    profit  : Math.round(Number(f.profit   || 0)),
-    capital : Math.round(Number(f.capital  || 0)),
-    debt    : debt,
-    fleetSize: fleet.length,
-
-    timestamp: Date.now()
-
-  };
-
-  history.push(snapshot);
-
-  localStorage.setItem(
-    "ACS_Finance_History",
-    JSON.stringify(history)
-  );
-
-  console.log("📦 Monthly snapshot saved:", monthKey);
-
-}
-
-/* ============================================================
-   🟦 FASE 4 — MONTHLY EXECUTIVE SUMMARY ENGINE
-   ------------------------------------------------------------
-   • Lee ACS_Finance_History
-   • Compara último vs anterior
-   • Renderiza tendencia ▲ ▼
-   ============================================================ */
-
-function ACS_renderMonthlyExecutive(){
-
-  const history =
-    JSON.parse(localStorage.getItem("ACS_Finance_History") || "[]");
-
-  const container =
-    document.getElementById("monthlyExecutiveGrid");
-
-  if(!container) return;
-
-  container.innerHTML = "";
-
-  if(history.length < 1){
-
-  const f =
-    JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-
-  const current = {
-
-    revenue : Number(f.revenue  || 0),
-    expenses: Number(f.expenses || 0),
-    profit  : Number(f.profit   || 0),
-    capital : Number(f.capital  || 0),
-    debt    : Array.isArray(f.bank?.loans)
-      ? f.bank.loans.reduce(
-          (s,l)=> s + Number(l.remaining || 0),
-          0
-        )
-      : 0
-
-  };
 
   function buildMetric(label,value){
 
@@ -1430,7 +1315,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   registerTimeListener((simDate)=>{
     updateClockDisplay(simDate);
-    ACS_runMonthlySnapshot(simDate);
+
   });
 
   updateClockDisplay();
@@ -1440,7 +1325,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loadBreakdown();
   loadTransactionLog();
   loadLeasing();
-  ACS_renderMonthlyExecutive();
      
 });
 
