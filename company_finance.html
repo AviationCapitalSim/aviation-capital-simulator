@@ -763,7 +763,7 @@ function updateCompanyOverview() {
 
 function ACS_renderMonthlyExecutive(){
 
-  const container = document.getElementById("monthlyExecutiveContainer");
+ const container = document.getElementById("monthlyExecutiveGrid");
   if(!container) return;
 
   container.innerHTML = "";
@@ -804,19 +804,14 @@ function ACS_renderMonthlyExecutive(){
    === (Colorea capital en rojo si es negativo) ================
    ============================================================ */
      
-function ACS_updateCapitalColor() {
-  const el = document.getElementById("cf-capital");
+function ACS_updateProfitColor() {
+  const el = document.getElementById("cf-profit");
   if (!el) return;
 
-  // Obtener valor numérico del localStorage
-  let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  let cap = f.capital || 0;
+  const f = window.ACS_Finance || {};
+  const profit = Number(f.profit || 0);
 
-  if (cap < 0) {
-    el.style.color = "#ff4d4d";   // 🔴 rojo
-  } else {
-   el.style.color = "#00ff80";   // 🟢 ACS green
-  }
+  el.style.color = profit < 0 ? "#ff4d4d" : "#00ff80";
 }
 
 /* === Activar cambio automático cuando el DOM carga === */
@@ -831,45 +826,29 @@ window.addEventListener("storage", (e) => {
   }
 });
 
-/* ============================================================
-   === PROFIT UI COLOR — NEGATIVE RED / POSITIVE GREEN ========
-   ============================================================ */
-function ACS_updateProfitColor() {
-  const el = document.getElementById("cf-profit");
-  if (!el) return;
+async function loadTransactionLog() {
 
-  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  const profit = Number(f.profit || 0);
-
-  if (profit < 0) {
-    el.style.color = "#ff4d4d";   // 🔴 rojo pérdidas
-  } else {
-    el.style.color = "#00ff80";   // 🟢 verde ganancias
-  }
-}
-     
-function loadTransactionLog() {
-
-  const log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
   const container = document.getElementById("financeActivityFeed");
   if (!container) return;
 
   container.innerHTML = "";
 
-  const now = Date.now();
-  const FIFTEEN_DAYS = 15 * 24 * 60 * 60 * 1000;
+  const airlineId =
+    window.ACS_activeUser?.airline_id;
 
-  const recent = log.filter(entry => {
+  if(!airlineId) return;
 
-  const ts =
-    entry.ts ||
-    entry.timestamp ||
-    0;
+  try{
 
-  if(!ts) return true;
+    const res = await fetch(
+      `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`
+    );
 
-  return (now - ts) <= FIFTEEN_DAYS;
+    const data = await res.json();
 
+    if(!data.ok) return;
+
+    const log = data.logs || [];
 });
 
   /* ============================================================
@@ -1030,7 +1009,8 @@ function ACS_toggleGroup(header){
    ============================================================ */
 
 function loadBreakdown() {
-  const f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+     
+  const f = window.ACS_Finance || {};
   const grid = document.getElementById("breakdownGrid");
   if (!f || !grid) return;
 
@@ -1118,11 +1098,12 @@ categories.push({
 
   try{
 
-    const f =
-      JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    const f = window.ACS_Finance || {};
 
     const loans =
-      f.bank?.loans || [];
+      Array.isArray(f.bank?.loans)
+      ? f.bank.loans
+      : [];
 
     if(loans.length === 0) return;
 
@@ -1134,35 +1115,23 @@ categories.push({
       );
 
     const container =
-      document.querySelector(".finance-breakdown");
+      document.getElementById("breakdownGrid");
 
     if(!container) return;
 
     const card =
       document.createElement("div");
 
-    card.className = "finance-chip";
+    card.className = "finance-meter";
 
     card.innerHTML = `
-      <div class="finance-chip-label">
-        bank_loans (Financing)
+      <div class="finance-meter-title">
+        Bank Loans (Financing) — $${Math.round(total).toLocaleString()}
       </div>
-
-      <div class="finance-chip-bar">
-        <div class="finance-chip-fill"
-             style="
-               width:100%;
-               background:linear-gradient(
-                 90deg,
-                 #00ffd0,
-                 #00ff88
-               );
-             ">
+      <div class="finance-meter-bar">
+        <div class="finance-meter-fill"
+             style="width:100%; background:#00ffd0;">
         </div>
-      </div>
-
-      <div class="finance-chip-value">
-        $${Math.round(total).toLocaleString()}
       </div>
     `;
 
@@ -1171,10 +1140,7 @@ categories.push({
   }
   catch(e){
 
-    console.warn(
-      "CF-B12 failed:",
-      e
-    );
+    console.warn("CF-B12 failed:", e);
 
   }
 
@@ -1215,25 +1181,38 @@ categories.push({
    ============================================================ */
      
 function loadLeasing() {
+
   const container = document.getElementById("leasingContainer");
+  if(!container) return;
+
   container.innerHTML = "";
 
-  let leasingContracts = [];
-  try {
-    const store = JSON.parse(localStorage.getItem("ACS_Leasing") || "{}");
-    leasingContracts = store.contracts || [];
-  } catch {}
+  const f = window.ACS_Finance || {};
 
-  leasingContracts.filter(c => c.status === "ACTIVE").forEach(c => {
-    container.innerHTML += `
-      <div class="leasing-card">
+  const leasingContracts =
+    Array.isArray(f.leasing?.contracts)
+    ? f.leasing.contracts
+    : [];
+
+  leasingContracts
+    .filter(c => c.status === "ACTIVE")
+    .forEach(c => {
+
+      const card = document.createElement("div");
+      card.className = "leasing-card";
+
+      card.innerHTML = `
         <h4>${c.model}</h4>
         <p>Type: ${c.type}</p>
-        <p>Monthly: $${c.monthlyRate.toLocaleString()}</p>
+        <p>Monthly: $${Number(c.monthlyRate || 0).toLocaleString()}</p>
         <p>Months Left: ${c.monthsRemaining}</p>
         <p>Status: ${c.status}</p>
-      </div>`;
-  });
+      `;
+
+      container.appendChild(card);
+
+    });
+
 }
      
 /* ============================================================
@@ -1302,9 +1281,6 @@ function ACS_subscribeFinanceUIRefresh() {
     }
   });
 }
-
-// Activar refresh en vivo
-ACS_subscribeFinanceUIRefresh();
 
 function handleLogout(){
   window.location.href="login.html";
