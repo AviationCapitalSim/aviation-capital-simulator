@@ -372,6 +372,8 @@ async function ACS_FINANCE_syncFromServer(){
       JSON.stringify(financeObject)
     );
 
+    window.ACS_Finance = financeObject;
+     
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
 
     window.dispatchEvent(
