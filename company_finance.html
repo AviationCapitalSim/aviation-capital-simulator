@@ -826,6 +826,22 @@ window.addEventListener("storage", (e) => {
   }
 });
 
+/* ============================================================
+   === CAPITAL UI COLOR — NEGATIVE RED =========================
+   ============================================================ */
+
+function ACS_updateCapitalColor() {
+
+  const el = document.getElementById("cf-capital");
+  if (!el) return;
+
+  const f = window.ACS_Finance || {};
+  const capital = Number(f.capital || 0);
+
+  el.style.color = capital < 0 ? "#ff4d4d" : "#00ff80";
+
+}
+     
 async function loadTransactionLog() {
 
   const container = document.getElementById("financeActivityFeed");
