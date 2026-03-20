@@ -10,28 +10,22 @@
 
 (async function(){
 
-/* ============================================================
-   🟧 A1 — WEEK CLOSE DISPATCH (FIXED)
-   - Envía Finance REAL al cerrar semana
-   ============================================================ */
-
 try {
 
- const f = window.ACS_Finance;
- if(!f) return;
-
-  window.dispatchEvent(
-    new CustomEvent("ACS_WEEK_CLOSED", {
-      detail: f
-    })
-  );
+  if(window.ACS_Finance){
+    window.dispatchEvent(
+      new CustomEvent("ACS_WEEK_CLOSED", {
+        detail: window.ACS_Finance
+      })
+    );
+  }
 
   console.log("📅 ACS WEEK CLOSED EVENT DISPATCHED");
 
 } catch (e) {
   console.warn("ACS_WEEK_CLOSED dispatch failed", e);
 }
-
+   
 /* ============================================================
    🟦 F8 — WEEK CLOSED CONSUMER (OFFICIAL FINANCE BRIDGE — FIXED)
    ------------------------------------------------------------
@@ -733,7 +727,9 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   const eco = e.detail;
   if (!eco || !eco.eventId) return;
 
- 
+if(ACS_FIN_EVENT_DEDUP.has(eco.eventId)) return;
+ACS_FIN_EVENT_DEDUP.add(eco.eventId);
+   
   /* ============================================================
      REGISTER INCOME
      ============================================================ */
