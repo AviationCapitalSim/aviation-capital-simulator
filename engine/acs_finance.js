@@ -184,19 +184,6 @@ function initFinanceIfNeeded(){
 }
 
 /* ============================================================
-   🟦 F1 — FINANCE ENGINE INITIALIZATION FIX
-   Guarantees global availability BEFORE any arrival events
-   ============================================================ */
-
-let ACS_Finance = null;
-
-/* CRITICAL: expose immediately */
-window.ACS_Finance = ACS_Finance;
-
-console.log("🟦 ACS_Finance global ready");
-
-
-/* ============================================================
    🟦 F0 — GLOBAL ENGINE EXPORT (CRITICAL FIX)
    Makes Finance visible to Flight Economics
    ============================================================ */
@@ -309,6 +296,21 @@ console.log("🟦 ACS_FINANCE_ENGINE exposed globally");
 
 async function ACS_FINANCE_syncFromServer(){
 
+// ============================================================
+// 🔹 FINAL INIT (AFTER RAILWAY SYNC)
+// ============================================================
+
+let ACS_Finance = loadFinance();
+
+if(!ACS_Finance){
+  ACS_Finance = initFinanceIfNeeded();
+}
+
+window.ACS_Finance = ACS_Finance;
+
+console.log("🟦 ACS_Finance global ready (AFTER SYNC)");
+
+   
   try{
 
     const airlineId =
