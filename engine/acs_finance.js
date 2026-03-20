@@ -1121,5 +1121,36 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   });
 
 });
+
+/* ============================================================
+   ✈️ ECONOMICS → FINANCE BRIDGE (CRÍTICO RESTORE)
+   ------------------------------------------------------------
+   • Conecta Flight Economics con Backend Finance
+   • 1 vuelo = 1 registro
+   • SIN localStorage
+   ============================================================ */
+
+window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
+
+  const eco = e.detail;
+  if (!eco) return;
+
+  console.log("💰 FINANCE RECEIVES FLIGHT", eco.flightId);
+
+  window.ACS_registerIncome({
+
+    revenue: Number(eco.revenue || 0),
+
+    costs:{
+      fuel: Number(eco.fuelCost || 0),
+      handling: Number(eco.handlingCost || 0),
+      slot: Number(eco.slotCost || 0),
+      overflight: Number(eco.overflightCost || 0),
+      navigation: Number(eco.navigationCost || 0)
+    }
+
+  });
+
+});   
      
 })();
