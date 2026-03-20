@@ -759,19 +759,6 @@ window.ACS_registerExpense = function(payload){
   window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 };
    
-/* ============================================================
-   🟧 HR → FINANCE MONTHLY PAYROLL BRIDGE (LIVE)
-   ------------------------------------------------------------
-   • Corre EN VIVO al cambio de mes (Time Engine)
-   • Finance absorbe HR payroll como salaries (Cost)
-   • Anti-duplicado: 1 cargo por mes
-   ============================================================ */
-
-function ACS_FIN_readMonthlyPayroll(){
-  const v = Number(localStorage.getItem("ACS_HR_PAYROLL") || 0);
-  return Number.isFinite(v) ? v : 0;
-}
-
 function ACS_FIN_closeMonthIfNeeded(f, monthKey){
 
   if (f.current_month === monthKey) return;
