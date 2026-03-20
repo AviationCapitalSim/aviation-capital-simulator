@@ -17,7 +17,8 @@
 
 try {
 
-  const f = loadFinance();   // ← Finance real desde storage
+ const f = window.ACS_Finance;
+ if(!f) return;
 
   window.dispatchEvent(
     new CustomEvent("ACS_WEEK_CLOSED", {
@@ -71,24 +72,6 @@ window.addEventListener("ACS_WEEK_CLOSED", (e) => {
   ACS_handleWeekClosed(e.detail);
 });
 
-/* 🔹 RECOVERY: si el evento ya ocurrió antes de que este listener cargara */
-try {
-
-  const recovered = loadFinance();
-
-  if (recovered && recovered.income?.weekly_revenue !== undefined) {
-
-    console.log("🔁 WEEK CLOSE RECOVERED FROM FINANCE CORE");
-
-    ACS_handleWeekClosed({
-      weeklyRevenue: recovered.income.weekly_revenue
-    });
-  }
-
-} catch (e) {
-  console.warn("⚠️ WEEK CLOSE RECOVERY FAILED", e);
-}
-
 /* ============================================================
    🗓️ WEEK HELPERS — ISO WEEK (MONDAY RESET)
    ============================================================ */
@@ -112,127 +95,6 @@ function ACS_getMonthKey(ts){
   const d = new Date(ts);
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2,"0")}`;
 }
-
-/* ============================================================
-   🔹 INIT STRUCTURE (ONCE)
-   ============================================================ */
-
-function initFinanceIfNeeded(){
-
-  let f = loadFinance();
-  if (f) return f;
-
- f = {
-  capital: 700000,
-
-  revenue: 0,
-  expenses: 0,
-  profit: 0,
-
-  income: {
-    live_revenue: 0,
-    weekly_revenue: 0,
-    current_week_key: null
-  },
-
-  cost: {
-    fuel: 0,
-    ground_handling: 0,
-    slot_fees: 0,
-    overflight: 0,
-    navigation: 0,
-    leasing: 0,
-    salaries: 0,
-    maintenance: 0,
-    penalties: 0,
-    used_aircraft_purchase: 0,
-    new_aircraft_purchase: 0
-  },
-
-  history: [],
-  current_month: ACS_getMonthKey(Date.now())
-};
-
-  saveFinance(f);
-  return f;
-}
-
-/* ============================================================
-   🟦 F0 — GLOBAL ENGINE EXPORT (CRITICAL FIX)
-   Makes Finance visible to Flight Economics
-   ============================================================ */
-
-window.ACS_FINANCE_ENGINE = {
-
-      if(typeof f.capital !== "number") f.capital = Number(f.capital || 0);
-      if(typeof f.debt    !== "number") f.debt    = Number(f.debt || 0);
-
-      if(typeof f.monthRevenue  !== "number") f.monthRevenue  = Number(f.monthRevenue  || 0);
-      if(typeof f.monthExpenses !== "number") f.monthExpenses = Number(f.monthExpenses || 0);
-      if(typeof f.monthProfit   !== "number") f.monthProfit   = Number(f.monthProfit   || 0);
-
-      if(!Array.isArray(f.history)) f.history = [];
-
-      const amt =
-        Number(entry && entry.amount ? entry.amount : 0) || 0;
-
-      const type =
-        String(entry && entry.type ? entry.type : "");
-
-      if(type === "LOAN_IN"){
-        f.capital += amt;
-        f.debt    += amt;
-      }
-
-      else if(type === "LOAN_PAYMENT" || type === "LOAN_AMORTIZATION"){
-        f.capital -= amt;
-        f.debt    = Math.max(0, f.debt - amt);
-        f.monthExpenses += amt;
-        f.monthProfit   -= amt;
-      }
-
-
-  /* ============================================================
-     ✈️ AIRCRAFT VALUATION ENGINE (CANONICAL)
-     ============================================================ */
-
-  calculateAircraftMarketValue(ac){
-
-    if (!ac) return 0;
-
-    const simYear = getSimTime().getUTCFullYear();
-
-    const basePrice =
-      ac.oemPrice ||
-      ac.acquisitionPrice ||
-      ac.price ||
-      ac.price_acs_usd ||
-      0;
-
-    if (basePrice <= 0) return 0;
-
-    const aircraftYear = ac.year || simYear;
-    const age = Math.max(simYear - aircraftYear, 0);
-
-    const depreciationRate = 0.035;
-    let value = basePrice * (1 - depreciationRate * age);
-
-    value = Math.max(value, basePrice * 0.20);
-
-    if (typeof ac.conditionPercent === "number") {
-      value *= (ac.conditionPercent / 100);
-    }
-
-    if (ac.status === "Maintenance Hold") {
-      value *= 0.85;
-    }
-
-    return Math.round(value);
-  }
-
-};
-
-console.log("🟦 ACS_FINANCE_ENGINE exposed globally");
 
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — READ ONLY (SAFE)
@@ -446,7 +308,7 @@ let ACS_FINANCE_SYNC_PENDING = false;
 
       if (!Number.isFinite(payroll) || payroll <= 0) return;
 
-      const f = loadFinance();
+      const f = window.ACS_Finance;
       if (!f) return;
 
       if (!f.cost) f.cost = {};
@@ -454,8 +316,6 @@ let ACS_FINANCE_SYNC_PENDING = false;
       f.cost.salaries = payroll;
 
       f.profit = (f.revenue || 0) - (f.expenses || 0) - payroll;
-
-      saveFinance(f);
 
       window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
@@ -470,7 +330,8 @@ let ACS_FINANCE_SYNC_PENDING = false;
   ACS_FIN_applyLivePayrollAccrual();
 
   window.addEventListener("ACS_HR_UPDATED", () => {
-    ACS_FIN_applyLivePayrollAccrual();
+  ACS_FIN_applyLivePayrollAccrual();
+     
   });
 
 })();
@@ -659,6 +520,7 @@ window.ACS_registerIncome = async function(payload){
        🔔 FORCE UI REFRESH (REAL TIME)
        ============================================================ */
 
+    window.ACS_Finance = f;
     window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
     console.log("✅ FINANCE SYNC AFTER FLIGHT OK");
@@ -693,9 +555,9 @@ window.ACS_registerExpense = function(payload){
 
   if (!payload || typeof payload.amount !== "number") return;
 
-  const f = loadFinance();
+  const f = window.ACS_Finance;
   if (!f) return;
-
+   
   const amount   = Number(payload.amount) || 0;
   const category = payload.category || "unknown";
   const subtype  = payload.subtype  || null;
@@ -755,8 +617,11 @@ window.ACS_registerExpense = function(payload){
      SAVE + NOTIFY
      =============================== */
 
-  saveFinance(f);
+  
+   
+  window.ACS_Finance = f;
   window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+   
 };
    
 function ACS_FIN_closeMonthIfNeeded(f, monthKey){
@@ -789,7 +654,7 @@ function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
   const lockKey = "ACS_FIN_SALARY_CHARGED_MONTH";
   
 
-  const payroll = ACS_FIN_readMonthlyPayroll();
+  const payroll = 0;
   if (payroll <= 0) {
    
     return;
@@ -833,7 +698,7 @@ if (typeof registerTimeListener === "function") {
     // Solo en cambio de mes
     if (monthKey !== __FIN_lastMonthKey) {
 
-      const f = loadFinance();
+      const f = window.ACS_Finance;
       if (!f) return;
 
       // 1) Cerrar/abrir mes en Finance (live)
@@ -842,7 +707,7 @@ if (typeof registerTimeListener === "function") {
       // 2) Aplicar cargo salarial para el nuevo mes
       ACS_FIN_applyMonthlyPayrollCharge(f, monthKey);
 
-      saveFinance(f);
+      window.ACS_Finance = f;
       window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
       __FIN_lastMonthKey = monthKey;
