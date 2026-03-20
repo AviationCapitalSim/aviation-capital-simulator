@@ -444,116 +444,6 @@ await ACS_FINANCE_syncFromServer();
 
 let ACS_FINANCE_SYNC_LOCK = false;
 let ACS_FINANCE_SYNC_PENDING = false;
-
-async function ACS_FINANCE_pushToServer(){
-
-  if (ACS_FINANCE_SYNC_LOCK) {
-    ACS_FINANCE_SYNC_PENDING = true;
-    return;
-  }
-
-  ACS_FINANCE_SYNC_LOCK = true;
-
-  try{
-
-    const f = loadFinance();
-    if(!f){
-      ACS_FINANCE_SYNC_LOCK = false;
-      return;
-    }
-
-    const airlineId =
-      window.ACS_SERVER_SESSION?.airline_id ||
-      window.ACS_activeUser?.airline_id ||
-      JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
-      localStorage.getItem("ACS_AIRLINE_ID");
-
-    if(!airlineId){
-      console.warn("FINANCE PUSH: airlineId missing");
-      ACS_FINANCE_SYNC_LOCK = false;
-      return;
-    }
-
-    const payload = {
-      airline_id: String(airlineId),
-
-      capital: Number(f.capital || 0),
-      revenue: Number(f.revenue || 0),
-      expenses: Number(f.expenses || 0),
-      profit: Number(f.profit || 0),
-
-      live_revenue: Number(f.income?.live_revenue || 0),
-      weekly_revenue: Number(f.income?.weekly_revenue || 0),
-
-      cost_fuel: Number(f.cost?.fuel || 0),
-      cost_maintenance: Number(f.cost?.maintenance || 0),
-      cost_hr: Number(f.cost?.salaries || 0),
-      cost_leasing: Number(f.cost?.leasing || 0),
-
-      cost_airport:
-        Number(f.cost?.ground_handling || 0) +
-        Number(f.cost?.slot_fees || 0) +
-        Number(f.cost?.overflight || 0) +
-        Number(f.cost?.navigation || 0),
-
-      cost_other:
-        Number(f.cost?.penalties || 0) +
-        Number(f.cost?.used_aircraft_purchase || 0) +
-        Number(f.cost?.new_aircraft_purchase || 0),
-
-      debt: Number(f.debt || 0),
-      fleet_size: Number(f.fleet_size || 0)
-    };
-
-    const res = await fetch(
-      "https://acs-world-server-production.up.railway.app/v1/finance/update",
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    const data = await res.json();
-
-    if(!data?.ok){
-      console.warn("FINANCE PUSH: server returned not ok", data);
-    } else {
-      console.log("🌍 FINANCE PUSH TO RAILWAY OK");
-    }
-
-  }
-  catch(err){
-
-    console.warn("FINANCE PUSH FAILED", err);
-
-  }
-  finally{
-
-    ACS_FINANCE_SYNC_LOCK = false;
-
-    if(ACS_FINANCE_SYNC_PENDING){
-      ACS_FINANCE_SYNC_PENDING = false;
-      setTimeout(() => {
-        ACS_FINANCE_pushToServer();
-      }, 200);
-    }
-
-  }
-
-}
-
-window.addEventListener("ACS_FINANCE_UPDATED", async () => {
-
-  // 🟦 1. PUSH A RAILWAY
-  await ACS_FINANCE_pushToServer();
-
-  // 🟩 2. FETCH INMEDIATO DESDE RAILWAY (FUENTE REAL)
-  await ACS_FINANCE_syncFromServer();
-
-});
    
 (function(){
 
@@ -757,10 +647,6 @@ const payload = {
 }
 
 /* ============================================================
-   🔹 PUBLIC API — REGISTER INCOME
-   ============================================================ */
-
-/* ============================================================
    ✈️ REGISTER INCOME — BACKEND AUTHORITATIVE (OCC) ✅ FIXED
    ------------------------------------------------------------
    • NO localStorage
@@ -817,45 +703,56 @@ window.ACS_registerIncome = async function(payload){
        🟩 SINGLE SOURCE OF TRUTH → WINDOW (NO STORAGE)
        ============================================================ */
 
-    const f = data.finance;
+ /* ============================================================
+   🔄 APPLY SERVER STATE (OCC AUTHORITATIVE)
+   ============================================================ */
 
-    window.ACS_Finance = {
+const f = data.finance;
 
-      capital: Number(f.capital || 0),
+/* ❌ ELIMINAMOS localStorage COMPLETAMENTE */
 
-      revenue: Number(f.revenue || 0),
-      expenses: Number(f.expenses || 0),
-      profit: Number(f.profit || 0),
+window.ACS_Finance = {
 
-      income:{
-        live_revenue: Number(f.live_revenue || 0),
-        weekly_revenue: Number(f.weekly_revenue || 0)
-      },
+  capital: Number(f.capital || 0),
 
-      cost:{
-  fuel: Number(f.cost_fuel || 0),
+  revenue: Number(f.revenue || 0),
+  expenses: Number(f.expenses || 0),
+  profit: Number(f.profit || 0),
 
-  ground_handling: Number(f.cost_handling || 0),
-  slot_fees: Number(f.cost_slots || 0),
-  navigation: Number(f.cost_navigation || 0),
-  overflight: Number(f.cost_overflight || 0),
+  income:{
+    live_revenue: Number(f.live_revenue || 0),
+    weekly_revenue: Number(f.weekly_revenue || 0)
+  },
 
-  leasing: Number(f.cost_leasing || 0),
-  salaries: Number(f.cost_hr || 0),
-  maintenance: Number(f.cost_maintenance || 0),
+  cost:{
+    fuel: Number(f.cost_fuel || 0),
 
-  penalties: 0,
-  used_aircraft_purchase: 0,
-  new_aircraft_purchase: 0
-},
+    ground_handling: Number(f.cost_handling || 0),
+    slot_fees: Number(f.cost_slots || 0),
+    navigation: Number(f.cost_navigation || 0),
+    overflight: Number(f.cost_overflight || 0),
 
-    };
+    leasing: Number(f.cost_leasing || 0),
+    salaries: Number(f.cost_hr || 0),
+    maintenance: Number(f.cost_maintenance || 0),
+
+    penalties: Number(f.cost_other || 0),
+
+    used_aircraft_purchase: 0,
+    new_aircraft_purchase: 0
+  }
+
+};
+
+/* 🔄 SOLO REFRESH UI */
+     
+window.dispatchEvent(new Event("ACS_FINANCE_RENDER"));
 
     /* ============================================================
        🔔 UI UPDATE (ONLY THIS)
        ============================================================ */
 
-    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+ window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
   }
   catch(err){
