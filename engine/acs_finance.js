@@ -653,7 +653,6 @@ const payload = {
    • Backend = única fuente
    • UI se actualiza en vivo
    ============================================================ */
-
 window.ACS_registerIncome = async function(payload){
 
   if (!payload || typeof payload.revenue !== "number") return;
@@ -670,6 +669,10 @@ window.ACS_registerIncome = async function(payload){
   }
 
   try{
+
+    /* ============================================================
+       1️⃣ POST FLIGHT EVENT → BACKEND
+       ============================================================ */
 
     const res = await fetch(
       "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
@@ -700,59 +703,66 @@ window.ACS_registerIncome = async function(payload){
     }
 
     /* ============================================================
-       🟩 SINGLE SOURCE OF TRUTH → WINDOW (NO STORAGE)
+       2️⃣ 🔥 FETCH REAL STATE FROM BACKEND (OCC)
        ============================================================ */
 
- /* ============================================================
-   🔄 APPLY SERVER STATE (OCC AUTHORITATIVE)
-   ============================================================ */
+    const syncRes = await fetch(
+      `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`
+    );
 
-const f = data.finance;
+    const syncData = await syncRes.json();
 
-/* ❌ ELIMINAMOS localStorage COMPLETAMENTE */
+    if(!syncData?.ok){
+      console.warn("SYNC AFTER FLIGHT FAILED");
+      return;
+    }
 
-window.ACS_Finance = {
-
-  capital: Number(f.capital || 0),
-
-  revenue: Number(f.revenue || 0),
-  expenses: Number(f.expenses || 0),
-  profit: Number(f.profit || 0),
-
-  income:{
-    live_revenue: Number(f.live_revenue || 0),
-    weekly_revenue: Number(f.weekly_revenue || 0)
-  },
-
-  cost:{
-    fuel: Number(f.cost_fuel || 0),
-
-    ground_handling: Number(f.cost_handling || 0),
-    slot_fees: Number(f.cost_slots || 0),
-    navigation: Number(f.cost_navigation || 0),
-    overflight: Number(f.cost_overflight || 0),
-
-    leasing: Number(f.cost_leasing || 0),
-    salaries: Number(f.cost_hr || 0),
-    maintenance: Number(f.cost_maintenance || 0),
-
-    penalties: Number(f.cost_other || 0),
-
-    used_aircraft_purchase: 0,
-    new_aircraft_purchase: 0
-  }
-
-};
-
-/* 🔄 SOLO REFRESH UI */
-     
-window.dispatchEvent(new Event("ACS_FINANCE_RENDER"));
+    const f = syncData.finance;
 
     /* ============================================================
-       🔔 UI UPDATE (ONLY THIS)
+       3️⃣ APPLY SERVER STATE (SINGLE SOURCE OF TRUTH)
        ============================================================ */
 
- window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+    window.ACS_Finance = {
+
+      capital: Number(f.capital || 0),
+
+      revenue: Number(f.revenue || 0),
+      expenses: Number(f.expenses || 0),
+      profit: Number(f.profit || 0),
+
+      income:{
+        live_revenue: Number(f.live_revenue || 0),
+        weekly_revenue: Number(f.weekly_revenue || 0)
+      },
+
+      cost:{
+        fuel: Number(f.cost_fuel || 0),
+
+        ground_handling: Number(f.cost_handling || 0),
+        slot_fees: Number(f.cost_slots || 0),
+        navigation: Number(f.cost_navigation || 0),
+        overflight: Number(f.cost_overflight || 0),
+
+        leasing: Number(f.cost_leasing || 0),
+        salaries: Number(f.cost_hr || 0),
+        maintenance: Number(f.cost_maintenance || 0),
+
+        penalties: Number(f.cost_other || 0),
+
+        used_aircraft_purchase: 0,
+        new_aircraft_purchase: 0
+      }
+
+    };
+
+    /* ============================================================
+       🔔 FORCE UI REFRESH (REAL TIME)
+       ============================================================ */
+
+    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+    console.log("✅ FINANCE SYNC AFTER FLIGHT OK");
 
   }
   catch(err){
