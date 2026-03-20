@@ -418,8 +418,6 @@ catch(err){
      
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
 
-    window.dispatchEvent(
-      new Event("ACS_FINANCE_UPDATED")
     );
 
   }
