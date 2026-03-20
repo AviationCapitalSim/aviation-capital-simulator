@@ -1024,85 +1024,79 @@ function ACS_toggleGroup(header){
    ============================================================ */
 
 function loadBreakdown() {
-     
+
   const f = window.ACS_Finance || {};
   const grid = document.getElementById("breakdownGrid");
-  if (!f || !grid) return;
+  if (!grid) return;
 
   grid.innerHTML = "";
 
-  const categories = [];
+  // 🔥 FALLBACK: si Railway no trae detalle, usar local cache
+  let cost = f.cost;
+  let income = f.income;
 
-  // ===============================
-  // 💰 INCOME — FINANCE REAL
-  // ===============================
-  categories.push({
-    label: "Live Route Revenue (Income)",
-    value: Number(f.income?.live_revenue || 0)
-  });
-
-  categories.push({
-    label: "Weekly Route Revenue (Income)",
-    value: Number(f.income?.weekly_revenue || 0)
-  });
-
-  // ===============================
-  // 💸 COSTS — FINANCE REAL (MONTH)
-  // ===============================
-  if (f.cost) {
-    Object.keys(f.cost).forEach(k => {
-      categories.push({
-        label: `${k} (Cost)`,
-        value: Number(f.cost[k]) || 0
-      });
-    });
+  if(!cost || Object.keys(cost).length === 0){
+    try{
+      const local = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+      cost = local.cost || {};
+      income = local.income || {};
+    }catch{}
   }
 
-/* ============================================================
-   🏦 BANK LOANS — FINANCE INTEGRATION (REAL SOURCE)
-   Reads canonical bank structure from ACS_Finance.bank.loans
-   ============================================================ */
+  const categories = [];
 
-const loans =
-  Array.isArray(f.bank?.loans)
-  ? f.bank.loans
-  : [];
+  // INCOME
+  categories.push({
+    label: "Live Route Revenue",
+    value: Number(income?.live_revenue || 0)
+  });
 
-// ✅ Deuda REAL = remaining (no originalAmount)
-// ✅ Siempre visible (aunque loans esté vacío)
-const totalLoans =
-  loans.reduce(
-    (sum, loan) =>
-      sum + Number(loan?.remaining ?? 0),
-    0
-  );
+  categories.push({
+    label: "Weekly Route Revenue",
+    value: Number(income?.weekly_revenue || 0)
+  });
 
-categories.push({
-  label: "Bank Loans (Financing)",
-  value: totalLoans
-});
-     
+  // COSTS
+  Object.keys(cost || {}).forEach(k => {
+    categories.push({
+      label: k,
+      value: Number(cost[k] || 0)
+    });
+  });
+
+  // LOANS
+  const loans = Array.isArray(f.bank?.loans) ? f.bank.loans : [];
+  const totalLoans = loans.reduce((s,l)=>s + Number(l?.remaining || 0),0);
+
+  categories.push({
+    label: "Bank Loans",
+    value: totalLoans
+  });
+
   const max = Math.max(...categories.map(c => c.value), 1);
 
   categories.forEach(cat => {
+
     const pct = (cat.value / max) * 100;
 
-    const wrapper = document.createElement("div");
-    wrapper.className = "finance-meter";
+    const el = document.createElement("div");
+    el.className = "finance-meter";
 
-    wrapper.innerHTML = `
+    el.innerHTML = `
       <div class="finance-meter-title">
-        ${cat.label} — $${Math.round(cat.value).toLocaleString()}
+        ${cat.label} — ${ACS_money(cat.value)}
       </div>
       <div class="finance-meter-bar">
-        <div class="finance-meter-fill" style="width:${pct}%;"></div>
+        <div class="finance-meter-fill" style="width:${pct}%"></div>
       </div>
     `;
 
-    grid.appendChild(wrapper);
-  });
-}
+    grid.appendChild(el);
 
+  });
+
+}
+     
 /* ============================================================
    🟩 CF-B12 — ADD BANK LOANS FINANCING CARD (SAFE ADDITION)
    Does NOT modify existing categories
