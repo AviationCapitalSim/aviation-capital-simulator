@@ -548,10 +548,14 @@ async function ACS_FINANCE_pushToServer(){
 
 }
 
-window.addEventListener("ACS_FINANCE_UPDATED", () => {
-  setTimeout(() => {
-    ACS_FINANCE_pushToServer();
-  }, 120);
+window.addEventListener("ACS_FINANCE_UPDATED", async () => {
+
+  // 🟦 1. PUSH A RAILWAY
+  await ACS_FINANCE_pushToServer();
+
+  // 🟩 2. FETCH INMEDIATO DESDE RAILWAY (FUENTE REAL)
+  await ACS_FINANCE_syncFromServer();
+
 });
    
 (function(){
