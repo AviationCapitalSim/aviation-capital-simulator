@@ -760,6 +760,44 @@ function updateCompanyOverview() {
     debtEl.textContent = ACS_money(debt);
 
 }
+
+function ACS_renderMonthlyExecutive(){
+
+  const container = document.getElementById("monthlyExecutiveContainer");
+  if(!container) return;
+
+  container.innerHTML = "";
+
+  const f = window.ACS_Finance;
+  if(!f) return;
+
+  const metrics = [
+    { label:"Revenue", value: f.revenue || 0 },
+    { label:"Expenses", value: f.expenses || 0 },
+    { label:"Profit", value: f.profit || 0 },
+    { label:"Capital", value: f.capital || 0 },
+    { label:"Debt", value: f.debt || 0 }
+  ];
+
+  metrics.forEach(m => {
+
+    const card = document.createElement("div");
+    card.className = "exec-card";
+
+    card.innerHTML = `
+      <div class="exec-title">${m.label}</div>
+      <div class="exec-value">${ACS_money(m.value)}</div>
+      <div class="exec-trend trend-neutral">
+        ▬ Server state
+      </div>
+    `;
+
+    container.appendChild(card);
+
+  });
+
+}
+     
      
 /* ============================================================
    === CAPITAL UI COLOR FIX — NEGATIVE RED =====================
