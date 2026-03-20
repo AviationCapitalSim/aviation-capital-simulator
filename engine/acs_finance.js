@@ -188,7 +188,7 @@ function initFinanceIfNeeded(){
    Guarantees global availability BEFORE any arrival events
    ============================================================ */
 
-let ACS_Finance = initFinanceIfNeeded();
+let ACS_Finance = null;
 
 /* CRITICAL: expose immediately */
 window.ACS_Finance = ACS_Finance;
