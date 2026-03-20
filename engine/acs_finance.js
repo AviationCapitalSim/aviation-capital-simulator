@@ -22,14 +22,6 @@ function loadFinance(){
   }
 }
 
-function saveFinance(f){
-  f.meta = {
-    version: "3.0",
-    lastUpdate: Date.now()
-  };
-  localStorage.setItem("ACS_Finance", JSON.stringify(f));
-}
-
 /* ============================================================
    🟧 A1 — WEEK CLOSE DISPATCH (FIXED)
    - Envía Finance REAL al cerrar semana
@@ -72,12 +64,6 @@ function ACS_handleWeekClosed(eDetail) {
 
     // 🔥 REGISTRO OFICIAL
     finance.income.weekly_revenue = weekly;
-
-    // Snapshot semanal persistente
-    localStorage.setItem("ACS_FINANCE_WEEKLY_CLOSED", weekly);
-
-    // Persistir Finance completo
-    localStorage.setItem("ACS_Finance", JSON.stringify(finance));
 
     // Exponer objeto vivo
     window.ACS_Finance = finance;
@@ -190,20 +176,6 @@ function initFinanceIfNeeded(){
 
 window.ACS_FINANCE_ENGINE = {
 
-  getLedger(){
-    try {
-      return JSON.parse(localStorage.getItem("ACS_Finance")) || null;
-    } catch {
-      return null;
-    }
-  },
-
-  commit(entry){
-    try {
-
-      const f =
-        JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-
       if(typeof f.capital !== "number") f.capital = Number(f.capital || 0);
       if(typeof f.debt    !== "number") f.debt    = Number(f.debt || 0);
 
@@ -231,18 +203,6 @@ window.ACS_FINANCE_ENGINE = {
         f.monthProfit   -= amt;
       }
 
-      f.history.push(entry);
-
-      localStorage.setItem("ACS_Finance", JSON.stringify(f));
-      window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
-
-      return true;
-
-    } catch(e){
-      console.error("FINANCE COMMIT FAILED", e);
-      return false;
-    }
-  },
 
   /* ============================================================
      ✈️ AIRCRAFT VALUATION ENGINE (CANONICAL)
@@ -299,24 +259,12 @@ async function ACS_FINANCE_syncFromServer(){
 // ============================================================
 // 🔹 FINAL INIT (AFTER RAILWAY SYNC)
 // ============================================================
-
-let ACS_Finance = loadFinance();
-
-if(!ACS_Finance){
-  ACS_Finance = initFinanceIfNeeded();
-}
-
-window.ACS_Finance = ACS_Finance;
-
-console.log("🟦 ACS_Finance global ready (AFTER SYNC)");
-
-   
+  
   try{
 
-    const airlineId =
-    window.ACS_activeUser?.airline_id ||
-    JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
-    localStorage.getItem("ACS_AIRLINE_ID");
+   const airlineId =
+  window.ACS_activeUser?.airline_id ||
+  window.ACS_SERVER_SESSION?.airline_id;
 
     if(!airlineId){
       console.warn("FINANCE SYNC: airlineId missing");
@@ -454,10 +402,9 @@ let ACS_FINANCE_SYNC_PENDING = false;
     try {
 
       const airlineId =
-        window.ACS_SERVER_SESSION?.airline_id ||
-        JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id ||
-        localStorage.getItem("ACS_AIRLINE_ID");
-
+  window.ACS_SERVER_SESSION?.airline_id ||
+  window.ACS_activeUser?.airline_id;
+       
       /* ============================================================
          1️⃣ PRIMARY SOURCE — RAILWAY HR
       ============================================================ */
@@ -519,25 +466,7 @@ let ACS_FINANCE_SYNC_PENDING = false;
 
       }
 
-      /* ============================================================
-         3️⃣ LAST SAFE VALUE
-      ============================================================ */
-
-      if (!payroll) {
-
-        payroll =
-          Number(localStorage.getItem("ACS_HR_PAYROLL_LAST_VALID")) ||
-          Number(localStorage.getItem("ACS_HR_PAYROLL")) ||
-          0;
-
-        console.log(
-          "%c🛟 HR PAYROLL FALLBACK",
-          "color:#ffaa00;font-weight:700",
-          payroll
-        );
-
-      }
-
+    
       /* ============================================================
          APPLY TO FINANCE
       ============================================================ */
@@ -582,10 +511,8 @@ let ACS_FINANCE_SYNC_PENDING = false;
 async function pushLog(entry){
 
   const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    window.ACS_activeUser?.airline_id ||
-    JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
-    localStorage.getItem("ACS_AIRLINE_ID");
+  window.ACS_SERVER_SESSION?.airline_id ||
+  window.ACS_activeUser?.airline_id;
 
   if(!airlineId){
     console.warn("FINANCE LOG: airlineId missing");
@@ -657,11 +584,9 @@ window.ACS_registerIncome = async function(payload){
 
   if (!payload || typeof payload.revenue !== "number") return;
 
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    window.ACS_activeUser?.airline_id ||
-    JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
-    localStorage.getItem("ACS_AIRLINE_ID");
+ const airlineId =
+  window.ACS_SERVER_SESSION?.airline_id ||
+  window.ACS_activeUser?.airline_id;
 
   if(!airlineId){
     console.warn("NO AIRLINE ID");
@@ -901,11 +826,11 @@ function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
 
   // Candado: 1 cargo por mes
   const lockKey = "ACS_FIN_SALARY_CHARGED_MONTH";
-  if (localStorage.getItem(lockKey) === monthKey) return;
+  
 
   const payroll = ACS_FIN_readMonthlyPayroll();
   if (payroll <= 0) {
-    localStorage.setItem(lockKey, monthKey); // igual bloquea para no spamear
+   
     return;
   }
 
@@ -922,7 +847,6 @@ function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
     meta: { month: monthKey }
   });
 
-  localStorage.setItem(lockKey, monthKey);
 }
 
 /* ============================================================
@@ -984,29 +908,7 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   const eco = e.detail;
   if (!eco || !eco.eventId) return;
 
-  /* ============================================================
-     🔒 HARD DEDUP — MULTI TAB + RELOAD SAFE
-     ============================================================ */
-
-  const processed =
-    JSON.parse(localStorage.getItem("ACS_PROCESSED_FLIGHTS") || "[]");
-
-  if(processed.includes(eco.eventId)){
-    return;
-  }
-
-  processed.push(eco.eventId);
-
-  /* mantener tamaño razonable */
-  if(processed.length > 5000){
-    processed.shift();
-  }
-
-  localStorage.setItem(
-    "ACS_PROCESSED_FLIGHTS",
-    JSON.stringify(processed)
-  );
-
+ 
   /* ============================================================
      REGISTER INCOME
      ============================================================ */
