@@ -321,6 +321,46 @@ async function ACS_FINANCE_syncFromServer(){
       return;
     }
 
+// ============================================================
+// 🔹 FETCH FINANCE LOG HISTORY (RAILWAY → CACHE)
+// ============================================================
+
+try{
+
+  const logRes = await fetch(
+    `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`
+  );
+
+  const logData = await logRes.json();
+
+  if(logData?.ok && Array.isArray(logData.logs)){
+
+    // 🔧 Normalizar formato para UI existente
+    const normalized = logData.logs.map(l => ({
+      type: l.type,
+      source: l.source,
+      amount: Number(l.amount || 0),
+      ts: Number(l.timestamp || 0)
+    }));
+
+    localStorage.setItem(
+      "ACS_Log",
+      JSON.stringify(normalized)
+    );
+
+    console.log("📊 FINANCE LOG SYNC OK", normalized.length);
+
+  } else {
+    console.warn("LOG SYNC: server returned not ok");
+  }
+
+}
+catch(err){
+
+  console.warn("LOG SYNC FAILED", err);
+
+}
+     
     const res = await fetch(
       `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`
     );
