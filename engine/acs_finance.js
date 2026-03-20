@@ -8,7 +8,7 @@
    Date: 17 JAN 2026
    ============================================================ */
 
-(function(){
+(async function(){
 
 /* ============================================================
    🔹 SAFE LOAD / SAVE
@@ -390,11 +390,7 @@ async function ACS_FINANCE_syncFromServer(){
 
 }
 
-/* ejecutar una vez al cargar finance */
-setTimeout(()=>{
-  ACS_FINANCE_syncFromServer();
-},1000);
-
+await ACS_FINANCE_syncFromServer();
 
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
