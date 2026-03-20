@@ -207,8 +207,6 @@ catch(err){
 
 }
 
-await ACS_FINANCE_syncFromServer();
-
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
    ------------------------------------------------------------
