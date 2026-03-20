@@ -90,31 +90,25 @@ function ACS_getMonthKey(ts){
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2,"0")}`;
 }
 
-/* ============================================================
-   🌍 RAILWAY FINANCE SYNC — READ ONLY (SAFE)
-   ------------------------------------------------------------
-   • Carga Finance desde Railway
-   • No rompe localStorage si falla
-   • Solo ejecuta al iniciar el engine
-============================================================ */
+function ACS_FINANCE_boot(){
 
-async function ACS_FINANCE_syncFromServer(){
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id;
 
-// ============================================================
-// 🔹 FINAL INIT (AFTER RAILWAY SYNC)
-// ============================================================
-  
-  try{
+  if(!airlineId){
+    console.warn("FINANCE BOOT WAITING FOR SESSION");
+    return;
+  }
 
-   const airlineId =
-  window.ACS_activeUser?.airline_id ||
-  window.ACS_SERVER_SESSION?.airline_id;
+  ACS_FINANCE_syncFromServer();
+}
 
-    if(!airlineId){
-      console.warn("FINANCE SYNC: airlineId missing");
-      return;
-    }
-
+/* 🔥 AUTO BOOT CONTROLADO */
+setTimeout(() => {
+  ACS_FINANCE_boot();
+}, 1000);
+   
 // ============================================================
 // 🔹 FETCH FINANCE LOG HISTORY (RAILWAY → CACHE)
 // ============================================================
