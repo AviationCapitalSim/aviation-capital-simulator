@@ -833,13 +833,21 @@ window.ACS_registerIncome = async function(payload){
       },
 
       cost:{
-        fuel: Number(f.cost_fuel || 0),
-        leasing: Number(f.cost_leasing || 0),
-        salaries: Number(f.cost_hr || 0),
-        maintenance: Number(f.cost_maintenance || 0),
-        airport: Number(f.cost_airport || 0),
-        other: Number(f.cost_other || 0)
-      }
+  fuel: Number(f.cost_fuel || 0),
+
+  ground_handling: Number(f.cost_handling || 0),
+  slot_fees: Number(f.cost_slots || 0),
+  navigation: Number(f.cost_navigation || 0),
+  overflight: Number(f.cost_overflight || 0),
+
+  leasing: Number(f.cost_leasing || 0),
+  salaries: Number(f.cost_hr || 0),
+  maintenance: Number(f.cost_maintenance || 0),
+
+  penalties: 0,
+  used_aircraft_purchase: 0,
+  new_aircraft_purchase: 0
+},
 
     };
 
