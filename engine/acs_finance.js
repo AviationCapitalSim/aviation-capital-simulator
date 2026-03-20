@@ -760,57 +760,104 @@ const payload = {
    🔹 PUBLIC API — REGISTER INCOME
    ============================================================ */
 
-window.ACS_registerIncome = function(payload){
+/* ============================================================
+   ✈️ REGISTER INCOME — BACKEND AUTHORITATIVE (OCC) ✅ FIXED
+   ------------------------------------------------------------
+   • NO localStorage
+   • Backend = única fuente
+   • UI se actualiza en vivo
+   ============================================================ */
+
+window.ACS_registerIncome = async function(payload){
 
   if (!payload || typeof payload.revenue !== "number") return;
 
-  const f = loadFinance();
-  if (!f) return;
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "null")?.airline_id ||
+    localStorage.getItem("ACS_AIRLINE_ID");
 
-  const now = Date.now();
+  if(!airlineId){
+    console.warn("NO AIRLINE ID");
+    return;
+  }
 
-  /* ============================================================
-     🔄 WEEKLY LOGIC — LIVE + WEEK CLOSE
-     ============================================================ */
+  try{
 
-  const weekKey = ACS_getISOWeekKey(now);
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
+      {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
 
-  if (f.income.current_week_key !== weekKey) {
-    if (f.income.current_week_key !== null) {
-      f.income.weekly_revenue = f.income.live_revenue;
+          airline_id: Number(airlineId),
+
+          revenue: payload.revenue,
+
+          cost_fuel: payload.costs?.fuel || 0,
+          cost_handling: payload.costs?.handling || 0,
+          cost_slot: payload.costs?.slot || 0,
+          cost_navigation: payload.costs?.navigation || 0,
+          cost_overflight: payload.costs?.overflight || 0
+
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    if(!data?.ok){
+      console.warn("FLIGHT EVENT FAILED", data);
+      return;
     }
-    f.income.live_revenue = 0;
-    f.income.current_week_key = weekKey;
+
+    /* ============================================================
+       🟩 SINGLE SOURCE OF TRUTH → WINDOW (NO STORAGE)
+       ============================================================ */
+
+    const f = data.finance;
+
+    window.ACS_Finance = {
+
+      capital: Number(f.capital || 0),
+
+      revenue: Number(f.revenue || 0),
+      expenses: Number(f.expenses || 0),
+      profit: Number(f.profit || 0),
+
+      income:{
+        live_revenue: Number(f.live_revenue || 0),
+        weekly_revenue: Number(f.weekly_revenue || 0)
+      },
+
+      cost:{
+        fuel: Number(f.cost_fuel || 0),
+        leasing: Number(f.cost_leasing || 0),
+        salaries: Number(f.cost_hr || 0),
+        maintenance: Number(f.cost_maintenance || 0),
+        airport: Number(f.cost_airport || 0),
+        other: Number(f.cost_other || 0)
+      }
+
+    };
+
+    /* ============================================================
+       🔔 UI UPDATE (ONLY THIS)
+       ============================================================ */
+
+    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+  }
+  catch(err){
+
+    console.warn("FLIGHT EVENT ERROR", err);
+
   }
 
-  f.income.live_revenue += payload.revenue;
-
-  /* === TOTALS === */
-  f.revenue  += payload.revenue;
-  f.expenses += payload.costTotal || 0;
-  f.profit   += payload.profit || 0;
-  f.capital  += payload.profit || 0;
-
-  /* === COST BREAKDOWN === */
-  if (payload.costs) {
-    if (payload.costs.fuel) f.cost.fuel += payload.costs.fuel;
-    if (payload.costs.handling) f.cost.ground_handling += payload.costs.handling;
-    if (payload.costs.slot) f.cost.slot_fees += payload.costs.slot;
-    if (payload.costs.overflight) f.cost.overflight += payload.costs.overflight;
-    if (payload.costs.navigation) f.cost.navigation += payload.costs.navigation;
-  }
-
-  pushLog({
-    type: "INCOME",
-    source: payload.source || "FLIGHT",
-    amount: payload.revenue,
-    meta: payload.meta || {}
-  });
-
-  saveFinance(f);
-  window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 };
-
+   
 /* ============================================================
    🔹 PUBLIC API — REGISTER EXPENSE (MAINTENANCE / SERVICES)
    ------------------------------------------------------------
