@@ -702,62 +702,119 @@ function ACS_money(v){
    === KPI OVERVIEW (SAFE) =====================================
    ============================================================ */
      
-function updateCompanyOverview() {
+async function updateCompanyOverview() {
 
-  const f = window.ACS_Finance || {};
+  const airlineId = window.ACS_activeUser?.airline_id;
+  if (!airlineId) return;
 
-  // 🔧 SAFE NUMBERS
-  const capital  = Number(f.capital)  || 0;
-  const revenue  = Number(f.revenue)  || 0;
-  const expenses = Number(f.expenses) || 0;
+  try {
 
-  // 🔧 RECALCULATE PROFIT IF BROKEN
-  let profit = Number(f.profit);
+    const res = await fetch(
+      `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`
+    );
 
-  if(!Number.isFinite(profit)){
-    profit = revenue - expenses;
-  }
+    const data = await res.json();
+    if (!data.ok) return;
 
-  // 🔧 REPAIR CAPITAL IF ZERO
-  let fixedCapital = capital;
+    const logs = Array.isArray(data.logs) ? data.logs : [];
 
-  if(capital === 0 && revenue > 0){
-    fixedCapital = revenue - expenses;
-  }
+    // ============================================================
+    // 🟦 CALCULO REAL DESDE LOG
+    // ============================================================
 
-  document.getElementById("cf-capital").textContent  = ACS_money(fixedCapital);
-  document.getElementById("cf-revenue").textContent  = ACS_money(revenue);
-  document.getElementById("cf-expenses").textContent = ACS_money(expenses);
-  document.getElementById("cf-profit").textContent   = ACS_money(profit);
+    let revenue = 0;
+    let expenses = 0;
 
-  ACS_updateCapitalColor();
-  ACS_updateProfitColor();
+    logs.forEach(entry => {
 
-  /* === LOANS === */
+      const amount = Number(entry.amount || 0);
 
-  let debt = 0;
+      if (entry.type === "INCOME") {
+        revenue += amount;
+      }
 
-  if(f.bank && Array.isArray(f.bank.loans)){
-
-    f.bank.loans.forEach(loan=>{
-
-      const remaining =
-        Number(loan.remaining || 0);
-
-      if(remaining > 0){
-        debt += Number(
-          loan.monthlyPayment || 0
-        );
+      if (entry.type === "EXPENSE") {
+        expenses += amount;
       }
 
     });
 
+    const profit = revenue - expenses;
+
+    // ============================================================
+    // 🟦 CAPITAL (BASE + RESULTADO)
+    // ============================================================
+
+    // 🔵 Obtener capital base desde finance (NO revenue fake)
+    let baseCapital = 700000;
+
+    try {
+
+      const resFinance = await fetch(
+        `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`
+      );
+
+      const dataFinance = await resFinance.json();
+
+      if (dataFinance.ok && dataFinance.finance) {
+        baseCapital = Number(dataFinance.finance.capital || 700000);
+      }
+
+    } catch(e){
+      console.warn("Finance base fetch failed", e);
+    }
+
+    const capital = baseCapital + profit;
+
+    // ============================================================
+    // 🟦 RENDER UI
+    // ============================================================
+
+    document.getElementById("cf-capital").textContent  = ACS_money(capital);
+    document.getElementById("cf-revenue").textContent  = ACS_money(revenue);
+    document.getElementById("cf-expenses").textContent = ACS_money(expenses);
+    document.getElementById("cf-profit").textContent   = ACS_money(profit);
+
+    // 🔵 actualizar colores
+    window.ACS_Finance = {
+      capital,
+      revenue,
+      expenses,
+      profit
+    };
+
+    ACS_updateCapitalColor();
+    ACS_updateProfitColor();
+
+    // ============================================================
+    // 🟦 DEBT (se mantiene igual)
+    // ============================================================
+
+    let debt = 0;
+
+    if (window.ACS_Finance?.bank?.loans) {
+
+      window.ACS_Finance.bank.loans.forEach(loan => {
+
+        const remaining = Number(loan.remaining || 0);
+
+        if (remaining > 0) {
+          debt += Number(loan.monthlyPayment || 0);
+        }
+
+      });
+
+    }
+
+    const debtEl = document.getElementById("cf-debt");
+    if (debtEl) debtEl.textContent = ACS_money(debt);
+
   }
+  catch (err) {
 
-  const debtEl = document.getElementById("cf-debt");
+    console.error("❌ Company overview error:", err);
 
-  if(debtEl)
-    debtEl.textContent = ACS_money(debt);
+  }
 
 }
 
