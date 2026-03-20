@@ -750,33 +750,9 @@ const payload = {
 
   })
   .catch(err => {
-
-    console.warn("FINANCE LOG FAILED → fallback local", err);
-
-    /* fallback local */
-
-    try{
-
-      let log =
-        JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-
-      log.push({
-        ts: Date.now(),
-        ...entry
-      });
-
-      localStorage.setItem(
-        "ACS_Log",
-        JSON.stringify(log)
-      );
-
-    }
-    catch(e){
-      console.warn("LOCAL LOG FALLBACK FAILED");
-    }
-
-  });
-
+  console.warn("FINANCE LOG FAILED (NO LOCAL FALLBACK)", err);
+});
+   
 }
 
 /* ============================================================
