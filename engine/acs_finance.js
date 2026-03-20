@@ -194,9 +194,7 @@ catch(err){
      
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
 
-  }
-     
-  catch(err){
+  } catch(err){
 
     console.warn(
       "FINANCE SYNC FAILED",
