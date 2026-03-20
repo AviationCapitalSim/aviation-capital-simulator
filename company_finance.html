@@ -704,13 +704,7 @@ function ACS_money(v){
      
 function updateCompanyOverview() {
 
-  let f;
-
-  try{
-    f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  }catch{
-    f = {};
-  }
+  const f = window.ACS_Finance || {};
 
   // 🔧 SAFE NUMBERS
   const capital  = Number(f.capital)  || 0;
