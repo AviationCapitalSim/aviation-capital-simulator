@@ -418,9 +418,8 @@ catch(err){
      
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
 
-    );
-
   }
+     
   catch(err){
 
     console.warn(
