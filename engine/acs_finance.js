@@ -11,18 +11,6 @@
 (async function(){
 
 /* ============================================================
-   🔹 SAFE LOAD / SAVE
-   ============================================================ */
-
-function loadFinance(){
-  try {
-    return JSON.parse(localStorage.getItem("ACS_Finance")) || null;
-  } catch {
-    return null;
-  }
-}
-
-/* ============================================================
    🟧 A1 — WEEK CLOSE DISPATCH (FIXED)
    - Envía Finance REAL al cerrar semana
    ============================================================ */
@@ -58,7 +46,7 @@ function ACS_handleWeekClosed(eDetail) {
 
     const weekly = Number(eDetail?.weeklyRevenue || 0);
 
-    let finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
+    let finance = window.ACS_Finance || {};
 
     if (!finance.income) finance.income = {};
 
@@ -135,7 +123,7 @@ function initFinanceIfNeeded(){
   if (f) return f;
 
  f = {
-  capital: 500000,
+  capital: 700000,
 
   revenue: 0,
   expenses: 0,
@@ -293,11 +281,6 @@ try{
       ts: Number(l.timestamp || 0)
     }));
 
-    localStorage.setItem(
-      "ACS_Log",
-      JSON.stringify(normalized)
-    );
-
     console.log("📊 FINANCE LOG SYNC OK", normalized.length);
 
   } else {
@@ -357,11 +340,6 @@ catch(err){
       current_month: ACS_getMonthKey(Date.now())
     };
 
-    localStorage.setItem(
-      "ACS_Finance",
-      JSON.stringify(financeObject)
-    );
-
     window.ACS_Finance = financeObject;
      
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
@@ -401,7 +379,7 @@ let ACS_FINANCE_SYNC_PENDING = false;
 
     try {
 
-      const airlineId =
+  const airlineId =
   window.ACS_SERVER_SESSION?.airline_id ||
   window.ACS_activeUser?.airline_id;
        
@@ -422,11 +400,6 @@ let ACS_FINANCE_SYNC_PENDING = false;
           if (data?.ok && Number(data.payroll) > 0) {
 
             payroll = Number(data.payroll);
-
-            localStorage.setItem(
-              "ACS_HR_PAYROLL_LAST_VALID",
-              payroll
-            );
 
             console.log(
               "%c🌍 HR PAYROLL FROM RAILWAY",
@@ -580,6 +553,7 @@ const payload = {
    • Backend = única fuente
    • UI se actualiza en vivo
    ============================================================ */
+
 window.ACS_registerIncome = async function(payload){
 
   if (!payload || typeof payload.revenue !== "number") return;
