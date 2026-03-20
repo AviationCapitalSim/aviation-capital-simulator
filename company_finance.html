@@ -709,115 +709,78 @@ async function updateCompanyOverview() {
 
   try {
 
-    const res = await fetch(
-      `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`
+    /* ============================================================
+       1) SERVER AUTHORITY — COMPANY FINANCE
+       ============================================================ */
+
+    const financeRes = await fetch(
+      `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`
     );
 
-    const data = await res.json();
-    if (!data.ok) return;
+    const financeData = await financeRes.json();
 
-    const logs = Array.isArray(data.logs) ? data.logs : [];
-
-    // ============================================================
-    // 🟦 CALCULO REAL DESDE LOG
-    // ============================================================
-
-    let revenue = 0;
-    let expenses = 0;
-
-    logs.forEach(entry => {
-
-      const amount = Number(entry.amount || 0);
-
-      if (entry.type === "INCOME") {
-        revenue += amount;
-      }
-
-      if (entry.type === "EXPENSE") {
-        expenses += amount;
-      }
-
-    });
-
-    const profit = revenue - expenses;
-
-    // ============================================================
-    // 🟦 CAPITAL (BASE + RESULTADO)
-    // ============================================================
-
-    // 🔵 Obtener capital base desde finance (NO revenue fake)
-    let baseCapital = 700000;
-
-    try {
-
-      const resFinance = await fetch(
-        `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`
-      );
-
-      const dataFinance = await resFinance.json();
-
-      if (dataFinance.ok && dataFinance.finance) {
-        baseCapital = Number(dataFinance.finance.capital || 700000);
-      }
-
-    } catch(e){
-      console.warn("Finance base fetch failed", e);
+    if (!financeData?.ok || !financeData.finance) {
+      console.warn("COMPANY FINANCE FETCH FAILED");
+      return;
     }
 
-    const capital = baseCapital + profit;
+    const f = financeData.finance;
 
-    // ============================================================
-    // 🟦 RENDER UI
-    // ============================================================
+    const capital  = Number(f.capital || 0);
+    const revenue  = Number(f.revenue || 0);
+    const expenses = Number(f.expenses || 0);
+    const profit   = Number(f.profit || 0);
+    const debt     = Number(f.debt || 0);
 
-    document.getElementById("cf-capital").textContent  = ACS_money(capital);
-    document.getElementById("cf-revenue").textContent  = ACS_money(revenue);
-    document.getElementById("cf-expenses").textContent = ACS_money(expenses);
-    document.getElementById("cf-profit").textContent   = ACS_money(profit);
+    /* ============================================================
+       2) RENDER TOP KPI
+       ============================================================ */
 
-    // 🔵 actualizar colores
-    window.ACS_Finance = {
-      capital,
-      revenue,
-      expenses,
-      profit
-    };
+    const capitalEl  = document.getElementById("cf-capital");
+    const revenueEl  = document.getElementById("cf-revenue");
+    const expensesEl = document.getElementById("cf-expenses");
+    const profitEl   = document.getElementById("cf-profit");
+    const debtEl     = document.getElementById("cf-debt");
+
+    if (capitalEl)  capitalEl.textContent  = ACS_money(capital);
+    if (revenueEl)  revenueEl.textContent  = ACS_money(revenue);
+    if (expensesEl) expensesEl.textContent = ACS_money(expenses);
+    if (profitEl)   profitEl.textContent   = ACS_money(profit);
+    if (debtEl)     debtEl.textContent     = ACS_money(debt);
+
+    /* ============================================================
+       3) PRESERVE FULL RUNTIME OBJECT
+       IMPORTANT:
+       - NO sobrescribir window.ACS_Finance completo
+       - solo refrescar campos top-level necesarios
+       ============================================================ */
+
+    if (!window.ACS_Finance || typeof window.ACS_Finance !== "object") {
+      window.ACS_Finance = {};
+    }
+
+    window.ACS_Finance.capital  = capital;
+    window.ACS_Finance.revenue  = revenue;
+    window.ACS_Finance.expenses = expenses;
+    window.ACS_Finance.profit   = profit;
+    window.ACS_Finance.debt     = debt;
+
+    /* ============================================================
+       4) COLORS
+       ============================================================ */
 
     ACS_updateCapitalColor();
     ACS_updateProfitColor();
 
-    // ============================================================
-    // 🟦 DEBT (se mantiene igual)
-    // ============================================================
-
-    let debt = 0;
-
-    if (window.ACS_Finance?.bank?.loans) {
-
-      window.ACS_Finance.bank.loans.forEach(loan => {
-
-        const remaining = Number(loan.remaining || 0);
-
-        if (remaining > 0) {
-          debt += Number(loan.monthlyPayment || 0);
-        }
-
-      });
-
-    }
-
-    const debtEl = document.getElementById("cf-debt");
-    if (debtEl) debtEl.textContent = ACS_money(debt);
-
   }
   catch (err) {
 
-    console.error("❌ Company overview error:", err);
+    console.error("❌ updateCompanyOverview failed:", err);
 
   }
 
 }
-
+     
 function ACS_renderMonthlyExecutive(){
 
  const container = document.getElementById("monthlyExecutiveGrid");
