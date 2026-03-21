@@ -92,6 +92,11 @@ function ACS_getMonthKey(ts){
 
 window.ACS_FINANCE_boot = function(){
 
+window.addEventListener("ACS_WORLD_LOADED", () => {
+  console.log("🟢 FINANCE BOOT TRIGGERED BY WORLD");
+  window.ACS_FINANCE_boot();
+});
+   
   const airlineId =
     window.ACS_SERVER_SESSION?.airline_id ||
     window.ACS_activeUser?.airline_id;
