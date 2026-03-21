@@ -104,53 +104,19 @@ window.ACS_FINANCE_boot = function(){
   ACS_FINANCE_syncFromServer();
 }
    
-// ============================================================
-// 🔹 FETCH FINANCE LOG HISTORY (RAILWAY → CACHE)
-// ============================================================
+/* ============================================================
+   🌍 ACS FINANCE — CANONICAL BOOT + SYNC (FINAL)
+   ------------------------------------------------------------
+   ✔ NO auto-run
+   ✔ NO timing hacks
+   ✔ Espera sesión real
+   ✔ Ejecuta una sola vez
+   ✔ Arquitectura OCC READY
+   ============================================================ */
 
-try {
+let __ACS_FINANCE_STARTED = false;
 
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    window.ACS_activeUser?.airline_id;
-
-  if(!airlineId){
-    console.warn("LOG SYNC: airlineId missing");
-  } else {
-
-    const logRes = await fetch(
-      `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`
-    );
-
-    const logData = await logRes.json();
-
-    if(logData?.ok && Array.isArray(logData.logs)){
-
-      const normalized = logData.logs.map(l => ({
-        type: l.type,
-        source: l.source,
-        amount: Number(l.amount || 0),
-        ts: Number(l.timestamp || 0)
-      }));
-
-      console.log("📊 FINANCE LOG SYNC OK", normalized.length);
-
-    } else {
-      console.warn("LOG SYNC: server returned not ok");
-    }
-
-  }
-
-} catch(err){
-  console.warn("LOG SYNC FAILED", err);
-}
-
-
-// ============================================================
-// 🔹 FETCH FINANCE STATE (RAILWAY → CORE)
-// ============================================================
-
-try {
+async function ACS_FINANCE_syncFromServer(){
 
   const airlineId =
     window.ACS_SERVER_SESSION?.airline_id ||
@@ -158,7 +124,14 @@ try {
 
   if(!airlineId){
     console.warn("FINANCE SYNC: airlineId missing");
-  } else {
+    return;
+  }
+
+  try{
+
+    /* =========================
+       1️⃣ FETCH FINANCE STATE
+       ========================= */
 
     const res = await fetch(
       `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`
@@ -168,59 +141,107 @@ try {
 
     if(!data?.ok){
       console.warn("FINANCE SYNC: server returned not ok");
-    } else {
-
-      const f = data.finance;
-      if(!f) return;
-
-      const financeObject = {
-
-        capital: Number(f.capital || 0),
-
-        revenue: Number(f.revenue || 0),
-        expenses: Number(f.expenses || 0),
-        profit: Number(f.profit || 0),
-
-        income:{
-          live_revenue: Number(f.live_revenue || 0),
-          weekly_revenue: Number(f.weekly_revenue || 0),
-          current_week_key: null
-        },
-
-        cost:{
-          fuel: Number(f.cost_fuel || 0),
-          ground_handling: 0,
-          slot_fees: 0,
-          overflight: 0,
-          navigation: 0,
-          leasing: Number(f.cost_leasing || 0),
-          salaries: Number(f.cost_hr || 0),
-          maintenance: Number(f.cost_maintenance || 0),
-          penalties: 0,
-          used_aircraft_purchase: 0,
-          new_aircraft_purchase: 0
-        },
-
-        history: [],
-        current_month: ACS_getMonthKey(Date.now())
-      };
-
-      window.ACS_Finance = financeObject;
-
-      console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
-
+      return;
     }
+
+    const f = data.finance;
+    if(!f) return;
+
+    window.ACS_Finance = {
+
+      capital: Number(f.capital || 0),
+
+      revenue: Number(f.revenue || 0),
+      expenses: Number(f.expenses || 0),
+      profit: Number(f.profit || 0),
+
+      income:{
+        live_revenue: Number(f.live_revenue || 0),
+        weekly_revenue: Number(f.weekly_revenue || 0),
+        current_week_key: null
+      },
+
+      cost:{
+        fuel: Number(f.cost_fuel || 0),
+        ground_handling: Number(f.cost_handling || 0),
+        slot_fees: Number(f.cost_slots || 0),
+        overflight: Number(f.cost_overflight || 0),
+        navigation: Number(f.cost_navigation || 0),
+        leasing: Number(f.cost_leasing || 0),
+        salaries: Number(f.cost_hr || 0),
+        maintenance: Number(f.cost_maintenance || 0),
+        penalties: Number(f.cost_other || 0),
+        used_aircraft_purchase: 0,
+        new_aircraft_purchase: 0
+      },
+
+      history: [],
+      current_month: ACS_getMonthKey(Date.now())
+    };
+
+    console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
+
+    /* =========================
+       2️⃣ FETCH LOG (OPCIONAL)
+       ========================= */
+
+    try{
+
+      const logRes = await fetch(
+        `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`
+      );
+
+      const logData = await logRes.json();
+
+      if(logData?.ok){
+        console.log("📊 FINANCE LOG SYNC OK", logData.logs?.length || 0);
+      }
+
+    } catch(err){
+      console.warn("LOG SYNC FAILED", err);
+    }
+
+    /* =========================
+       🔔 UI UPDATE
+       ========================= */
+
+    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+  }
+  catch(err){
+
+    console.warn("FINANCE SYNC FAILED", err);
 
   }
 
-} catch(err){
-
-  console.warn(
-    "FINANCE SYNC FAILED",
-    err
-  );
-
 }
+
+
+/* ============================================================
+   🚀 AUTO BOOT — SESSION WATCHER (REAL, NO PATCH)
+   ============================================================ */
+
+function ACS_waitForSessionAndBoot(){
+
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id;
+
+  if(airlineId && !__ACS_FINANCE_STARTED){
+
+    __ACS_FINANCE_STARTED = true;
+
+    console.log("🟢 FINANCE BOOT WITH SESSION", airlineId);
+
+    ACS_FINANCE_syncFromServer();
+  }
+}
+
+/* ============================================================
+   🔁 WATCH LOOP (LIGHTWEIGHT — SAFE FOR 700 PLAYERS)
+   ============================================================ */
+
+setInterval(ACS_waitForSessionAndBoot, 300);
    
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
