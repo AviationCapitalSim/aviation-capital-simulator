@@ -356,6 +356,7 @@
   <!-- ============================================================
      === RESET PASSWORD MODAL — Qatar Luxury Edition ===========
      ============================================================ -->
+  
 <div id="resetPasswordModal" class="acs-modal-overlay" style="display:none;">
   <div class="acs-modal">
     
@@ -373,12 +374,14 @@
 </div>
   
 <script>
+  
 /* ============================================================
-   === ACS LOGIN — GOOGLE SHEETS BACKEND =======================
-   === Version: Stable + AirlineObjectFix | 06 DEC 2025 ========
+   === ACS LOGIN MODULE — RAILWAY SESSION AUTH =================
+   === Version: v2.0 | Secure Cookie Architecture ==============
    ============================================================ */
-
+  
 // Limpiar sesiones viejas al abrir login
+  
 localStorage.removeItem("ACS_activeUser");
 
 const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/auth/login";
@@ -396,7 +399,9 @@ async function hashPassword(password) {
 /* ============================================================
    === HANDLE LOGIN ============================================
    ============================================================ */
+  
 async function handleLogin(event) {
+  
   event.preventDefault();
 
   const email = document.getElementById("email").value.trim().toLowerCase();
@@ -410,8 +415,10 @@ async function handleLogin(event) {
   const passwordHash = await hashPassword(password);
 
   try {
-    const response = await fetch(ACS_API_URL, {
+    
+  const response = await fetch(ACS_API_URL, {
   method: "POST",
+  credentials: "include", // 🔥 CRÍTICO
   headers: {
     "Content-Type": "application/json"
   },
@@ -432,7 +439,7 @@ async function handleLogin(event) {
       return false;
     }
 
-    // ============================================================
+// ============================================================
 // 🔐 L-FRONT-1 — NUEVOS ESTADOS DE SEGURIDAD (BACKEND v2)
 // ============================================================
 
@@ -447,6 +454,7 @@ if (result.status === "ACCOUNT_LOCKED") {
 }
     
     // === NO_USER ===
+    
     if (result.status === "NO_USER") {
       alert("❌ This email is not registered.\nPlease create your account.");
       window.location.href = "register.html";
@@ -454,6 +462,7 @@ if (result.status === "ACCOUNT_LOCKED") {
     }
 
     // === WRONG_PASSWORD ===
+    
     if (result.status === "WRONG_PASSWORD") {
       alert("❌ Incorrect password. Please try again.");
       return false;
@@ -466,6 +475,7 @@ if (result.status === "ACCOUNT_LOCKED") {
    • Aún no tiene aerolínea creada
    • Redirigir a create_airline.html
    ============================================================ */
+    
 if (result.status === "NO_AIRLINE") {
 
   const userId    = result.user?.userId || "";
@@ -474,11 +484,6 @@ if (result.status === "NO_AIRLINE") {
   if (!userId || !userEmail) {
     alert("❌ Login response missing user data.");
     return false;
-  }
-
-  // 🔐 Guardar session token si el backend lo entrega (opcional)
-  if (result.session_token) {
-    localStorage.setItem("ACS_SESSION_TOKEN", result.session_token);
   }
 
   const userPack = {
@@ -495,24 +500,21 @@ if (result.status === "NO_AIRLINE") {
   return false;
 }
 
-    // === HAS_AIRLINE — FIX COMPLETO ==========================
+  // === HAS_AIRLINE — FIX COMPLETO ==========================
     
-    if (result.status === "HAS_AIRLINE") {
+  if (result.status === "HAS_AIRLINE") {
 
   const userId    = result.user.userId;
   const userEmail = result.user.email;
   const airlineId = result.user.airline;
 
-  // 🔐 Guardar session token seguro
-  if (result.session_token) {
-    localStorage.setItem("ACS_session_token", result.session_token);
-  }
-
+ 
   // Opcional: intentar traer objeto airline completo
+    
   let airlineObj = null;
   try {
     const urlAir =
-      `${ACS_API_URL}?action=getAirline&airline_id=${encodeURIComponent(airlineId)}`;
+      ${ACS_API_URL}?action=getAirline&airline_id=${encodeURIComponent(airlineId)}`;
     const respAir = await fetch(urlAir);
     const dataAir = await respAir.json();
     if (dataAir.status === "success") {
