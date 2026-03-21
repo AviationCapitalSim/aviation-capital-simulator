@@ -90,7 +90,7 @@ function ACS_getMonthKey(ts){
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2,"0")}`;
 }
 
-function ACS_FINANCE_boot(){
+window.ACS_FINANCE_boot = function(){
 
   const airlineId =
     window.ACS_SERVER_SESSION?.airline_id ||
