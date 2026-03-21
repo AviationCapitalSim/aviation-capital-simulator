@@ -429,8 +429,7 @@ async function handleLogin(event) {
 });
     
     const text = await response.text();
-    console.log("LOGIN RAW RESPONSE:", text);
-
+   
     let result;
     try {
       result = JSON.parse(text);
@@ -506,23 +505,6 @@ if (result.status === "NO_AIRLINE") {
   const userId    = result.user.userId;
   const userEmail = result.user.email;
   const airlineId = result.user.airline;
-
- 
-  // Opcional: intentar traer objeto airline completo
-    
-  let airlineObj = null;
-  try {
-    const urlAir =
-      ${ACS_API_URL}?action=getAirline&airline_id=${encodeURIComponent(airlineId)}`;
-    const respAir = await fetch(urlAir);
-    const dataAir = await respAir.json();
-    if (dataAir.status === "success") {
-      airlineObj = dataAir.airline;
-    }
-  } catch (e) {
-    console.warn("⚠️ Could not load airline object:", e);
-  }
-
   const userPack = {
     userId: userId,
     email: userEmail,
