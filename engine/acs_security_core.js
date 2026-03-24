@@ -1,13 +1,13 @@
 /* ============================================================
    🔐 ACS SECURITY CORE — CENTRAL SESSION GUARD
    ------------------------------------------------------------
-   Version: 1.2 DEV HARDENING (LIVE SAFE)
-   Date: 12 FEB 2026
+   Version: 1.3 RAILWAY COMPAT MODE (TRANSITION SAFE)
+   Date: 24 MAR 2026
 
-   Fix:
-   - No depende solo de setInterval
-   - Revalida sesión en eventos reales (click/focus/visibility/history)
-   - Evita múltiples watchers
+   ✔ Compatible con Railway Sessions (token)
+   ✔ Mantiene compatibilidad legacy (localStorage)
+   ✔ NO bloquea sistema nuevo
+   ✔ NO rompe flujo actual
    ============================================================ */
 
 (function () {
@@ -40,37 +40,51 @@
   }
 
   /* ============================================================
-     🔐 CORE CHECK (single source)
+     🔐 CORE CHECK (RAILWAY + LEGACY)
      ============================================================ */
 
   function sessionIsValid() {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return false;
 
-    let user;
-    try {
-      user = JSON.parse(raw);
-    } catch {
-      return false;
+    // 🟢 1. LOCAL SESSION (legacy support)
+    const raw = localStorage.getItem(SESSION_KEY);
+
+    if (raw) {
+      try {
+        const user = JSON.parse(raw);
+
+        if (
+          user &&
+          typeof user === "object" &&
+          user.userId &&
+          user.email &&
+          user.loginAt &&
+          (Date.now() - user.loginAt) <= SESSION_MAX_AGE
+        ) {
+          return true;
+        }
+      } catch {}
     }
 
-    if (!user || typeof user !== "object") return false;
-    if (!user.userId || !user.email) return false;
-    if (!user.loginAt) return false;
+    // 🟡 2. TOKEN SESSION (Railway)
+    if (window.ACS_TOKEN && typeof window.ACS_TOKEN === "string") {
+      return true;
+    }
 
-    const age = Date.now() - user.loginAt;
-    if (age > SESSION_MAX_AGE) return false;
-
-    return true;
+    // 🔴 3. NO SESSION
+    return false;
   }
 
   function invalidateSession() {
+
+    // 🔴 limpiar solo cache local
     localStorage.removeItem(SESSION_KEY);
+
+    // ⚠️ NO borrar token (backend manda)
+
     redirectToLogin();
   }
 
   function redirectToLogin() {
-    // evita bucles raros
     if (!window.location.pathname.includes("login.html")) {
       window.location.href = "login.html";
     }
@@ -85,10 +99,13 @@
   }
 
   /* ============================================================
-     ✅ INITIAL ENFORCE (on load)
+     ✅ INITIAL ENFORCE (SAFE)
      ============================================================ */
 
-  enforceNow();
+  // ⚠️ SOLO validar si NO hay token (Railway manda)
+  if (!window.ACS_TOKEN) {
+    enforceNow();
+  }
 
   /* ============================================================
      🔄 LIVE ENFORCE (SINGLE INSTANCE SAFE)
@@ -101,22 +118,23 @@
       armed: true
     };
 
-    // 1) Interval watcher (backup)
+    // 🔁 Interval fallback
     window.__ACS_SESSION_GUARD__.intervalId = setInterval(() => {
       if (window.__ACS_SESSION_GUARD__ && window.__ACS_SESSION_GUARD__.armed) {
         enforceNow();
       }
     }, WATCH_INTERVAL);
 
-    // 2) Enforce on user actions (no molesta y es inmediato)
+    // ⚡ Eventos reales (mejor que polling)
     window.addEventListener("click", () => enforceNow(), true);
     window.addEventListener("focus", () => enforceNow(), true);
     window.addEventListener("pageshow", () => enforceNow(), true);
+
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) enforceNow();
     }, true);
 
-    // 3) Enforce on history navigation (si hay SPA / pushState)
+    // 🔄 Navegación SPA safe
     try {
       const _push = history.pushState;
       history.pushState = function () {
@@ -133,8 +151,9 @@
       };
 
       window.addEventListener("popstate", () => enforceNow(), true);
+
     } catch {
-      // si el browser bloquea override, no pasa nada: seguimos con interval + eventos
+      // fallback silencioso
     }
   }
 
