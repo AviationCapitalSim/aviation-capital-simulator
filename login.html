@@ -473,13 +473,16 @@ if (result.status === "ACCOUNT_LOCKED") {
     
 if (result.status === "NO_AIRLINE") {
 
-  const userId    = result.user?.userId || "";
-  const userEmail = result.user?.email  || "";
+  const userId    = result.user?.user_id || "";
+  const userEmail = result.user?.email   || "";
+  const token     = result.token || "";
 
-  if (!userId || !userEmail) {
-    alert("❌ Login response missing user data.");
+  if (!userId || !userEmail || !token) {
+    alert("❌ Login response missing token or user data.");
     return false;
   }
+
+  localStorage.setItem("acs_token", token);
 
   const userPack = {
     userId: userId,
@@ -493,14 +496,23 @@ if (result.status === "NO_AIRLINE") {
   window.location.href = "create_airline.html";
   return false;
 }
-
+    
   // === HAS_AIRLINE — FIX COMPLETO ==========================
     
   if (result.status === "HAS_AIRLINE") {
 
-  const userId    = result.user.userId;
+  const userId    = result.user.user_id;
   const userEmail = result.user.email;
-  const airlineId = result.user.airline;
+  const airlineId = result.user.airline_id;
+  const token     = result.token || "";
+
+  if (!userId || !userEmail || !airlineId || !token) {
+    alert("❌ Login response missing token or user data.");
+    return false;
+  }
+
+  localStorage.setItem("acs_token", token);
+
   const userPack = {
     userId: userId,
     email: userEmail,
