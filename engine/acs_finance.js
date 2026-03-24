@@ -256,7 +256,7 @@ function ACS_waitForSessionAndBoot(){
    🔁 WATCH LOOP (LIGHTWEIGHT — SAFE FOR 700 PLAYERS)
    ============================================================ */
 
-setInterval(ACS_waitForSessionAndBoot, 300);
+setInterval(ACS_waitForSessionAndBoot, 2000);
    
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
