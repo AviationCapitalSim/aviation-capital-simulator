@@ -849,14 +849,21 @@ async function loadTransactionLog() {
 
   container.innerHTML = "";
 
-  const airlineId = window.ACS_activeUser?.airline_id;
+  const airlineId =
+  window.ACS_SERVER_SESSION?.airline_id ||
+  window.ACS_activeUser?.airline_id;
   if (!airlineId) return;
 
   try {
 
     const res = await fetch(
-      `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`
-    );
+  `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`,
+  {
+    headers: {
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+    }
+  }
+);
 
     const data = await res.json();
     if (!data.ok) return;
