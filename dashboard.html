@@ -621,40 +621,41 @@ function getFlagEmojiFromCountryName(countryName) {
 document.addEventListener("DOMContentLoaded", async () => {
 
 const API_BASE = "https://acs-world-server-production.up.railway.app";
-  
+const token = localStorage.getItem("acs_token");
+
+if (!token) {
+  console.warn("❌ NO TOKEN");
+  window.location.href = "login.html";
+  return;
+}
+
 let sessionUser;
 
 try {
-  const res = await fetch(`${API_BASE}/v1/session`, {
-    credentials: "include"
+  const res = await fetch(`${API_BASE}/v1/auth/me`, {
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + token,
+      "Content-Type": "application/json"
+    }
   });
 
-  if (!res.ok) throw new Error("NO_SESSION");
+  if (!res.ok) throw new Error(`AUTH_HTTP_${res.status}`);
 
   const data = await res.json();
 
-  if (!data.ok) throw new Error("NO_SESSION");
-
-  sessionUser = data.user;
-
-} catch (e) {
-  console.warn("⚠️ Session check failed (temporary):", e);
-
-  // 🚧 MODO DESARROLLO (NO BLOQUEAR DASHBOARD)
-  const devMode = true;
-
-  if (!devMode) {
-    window.location.href = "login.html";
-    return;
+  if (!data.ok || !data.user?.user_id) {
+    throw new Error("INVALID_AUTH_RESPONSE");
   }
 
-  // 👇 fallback temporal para poder trabajar
-  sessionUser = {
-    user_id: "DEV_USER",
-    airline_id: "DEV_AIRLINE"
-  };
+  sessionUser = data.user;
+  console.log("✅ TOKEN AUTH OK:", sessionUser);
 
-  console.warn("🟡 DEV MODE ACTIVE — Dashboard unlocked");
+} catch (e) {
+  console.warn("❌ TOKEN AUTH FAILED:", e);
+  localStorage.removeItem("acs_token");
+  window.location.href = "login.html";
+  return;
 }
   
  const activeUser = {
