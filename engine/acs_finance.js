@@ -425,16 +425,18 @@ const payload = {
      SEND TO RAILWAY (AUTHORITY)
      ============================================================ */
 
-  fetch(
-    "https://acs-world-server-production.up.railway.app/v1/finance/log",
-    {
-      method: "POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body: JSON.stringify(payload)
-    }
-  )
+ fetch(
+  "https://acs-world-server-production.up.railway.app/v1/finance/log",
+  {
+    method: "POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+    },
+    body: JSON.stringify(payload)
+  }
+)
+    
   .then(res => res.json())
   .then(data => {
 
@@ -477,10 +479,14 @@ window.ACS_registerIncome = async function(payload){
        ============================================================ */
 
     const res = await fetch(
-      "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
-      {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
+    "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
+    {
+     method:"POST",
+     headers:{
+      "Content-Type":"application/json",
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+    },
+     
         body: JSON.stringify({
 
           airline_id: Number(airlineId),
