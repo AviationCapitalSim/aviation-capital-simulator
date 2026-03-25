@@ -1713,6 +1713,8 @@ list.forEach((ac) => {
   // Render solo lee estado ya procesado
   const computed = ACS_applyMaintenanceComputedFields({ ...ac });
 
+  const occStatus = ACS_getAircraftOCCStatus(computed);
+   
   if (!passesFilters(computed)) return;
 
   const row = document.createElement("tr");
@@ -1734,10 +1736,11 @@ list.forEach((ac) => {
     </td>
 
     <td>
-      <span class="status-badge status-${String(computed.status).replace(/\s+/g, "-").toLowerCase()}">
-        ${computed.status}
-      </span>
-    </td>
+    <span class="status-badge ${occStatus.className}">
+    ${occStatus.main}
+    ${occStatus.sub ? `<br><small>${occStatus.sub}</small>` : ""}
+   </span>
+   </td>
 
     <td>${computed.hours}</td>
     <td>${computed.cycles}</td>
