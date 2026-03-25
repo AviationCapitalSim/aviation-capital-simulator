@@ -123,12 +123,6 @@ let __ACS_FINANCE_STARTED = false;
 
 async function ACS_FINANCE_syncFromServer(){
 
-  const token = window.ACS_TOKEN;
-  if(!token){
-    console.warn("⛔ FINANCE SYNC BLOCKED — NO TOKEN");
-    return;
-  }
-
   const airlineId =
     window.ACS_SERVER_SESSION?.airline_id ||
     window.ACS_activeUser?.airline_id;
@@ -145,11 +139,10 @@ async function ACS_FINANCE_syncFromServer(){
        ========================= */
 
     const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance`,
+  `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
   {
-     credentials: "include",
-     headers: {
-      Authorization: "Bearer " + localStorage.getItem("acs_token")
+    headers: {
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
     }
   }
 );
@@ -205,12 +198,10 @@ async function ACS_FINANCE_syncFromServer(){
     try{
 
       const logRes = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance/log`,
+  `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`,
   {
-    
-     credentials: "include",
-     headers: {
-      Authorization: "Bearer " + localStorage.getItem("acs_token")
+    headers: {
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
     }
   }
 );
@@ -242,59 +233,30 @@ async function ACS_FINANCE_syncFromServer(){
 
 
 /* ============================================================
-   🟧 A1 — FINANCE AUTH (CLON DASHBOARD)
+   🚀 AUTO BOOT — SESSION WATCHER (REAL, NO PATCH)
    ============================================================ */
 
-async function ACS_FINANCE_authAndStart(){
+function ACS_waitForSessionAndBoot(){
 
-  try{
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id;
 
-    const API_BASE = "https://acs-world-server-production.up.railway.app";
+  if(airlineId && !__ACS_FINANCE_STARTED){
 
-    const token = localStorage.getItem("acs_token");
+    __ACS_FINANCE_STARTED = true;
 
-    if(!token){
-      console.warn("❌ FINANCE — NO TOKEN");
-      return;
-    }
+    console.log("🟢 FINANCE BOOT WITH SESSION", airlineId);
 
-    const res = await fetch(`${API_BASE}/v1/auth/me`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json"
-      }
-    });
-
-    if(!res.ok){
-      throw new Error("AUTH_HTTP_" + res.status);
-    }
-
-    const data = await res.json();
-
-    if(!data.ok || !data.user){
-      throw new Error("INVALID_AUTH_RESPONSE");
-    }
-
-    // 🔥 MISMA SESSION QUE DASHBOARD
-    window.ACS_SERVER_SESSION = {
-      user_id: data.user.user_id,
-      airline_id: data.user.airline_id
-    };
-
-    console.log("✅ FINANCE AUTH OK:", window.ACS_SERVER_SESSION);
-
-    // 🔥 ARRANQUE REAL
     ACS_FINANCE_syncFromServer();
-
-  }catch(e){
-
-    console.error("❌ FINANCE AUTH FAILED", e);
-
   }
-
 }
+
+/* ============================================================
+   🔁 WATCH LOOP (LIGHTWEIGHT — SAFE FOR 700 PLAYERS)
+   ============================================================ */
+
+setInterval(ACS_waitForSessionAndBoot, 2000);
    
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
@@ -329,12 +291,10 @@ let ACS_FINANCE_SYNC_PENDING = false;
         try {
 
           const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/hr/payroll`,
+  `https://acs-world-server-production.up.railway.app/v1/hr/payroll/${airlineId}`,
   {
-    
-     credentials: "include",
-     headers: {
-      Authorization: "Bearer " + localStorage.getItem("acs_token")
+    headers: {
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
     }
   }
 );
@@ -469,10 +429,9 @@ const payload = {
   "https://acs-world-server-production.up.railway.app/v1/finance/log",
   {
     method: "POST",
-    credentials: "include",
     headers:{
       "Content-Type":"application/json",
-      Authorization: "Bearer " + localStorage.getItem("acs_token")
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
     },
     body: JSON.stringify(payload)
   }
@@ -523,10 +482,9 @@ window.ACS_registerIncome = async function(payload){
     "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
     {
      method:"POST",
-     credentials: "include",
      headers:{
       "Content-Type":"application/json",
-      Authorization: "Bearer " + localStorage.getItem("acs_token")
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
     },
      
         body: JSON.stringify({
@@ -557,11 +515,10 @@ window.ACS_registerIncome = async function(payload){
        ============================================================ */
 
     const syncRes = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance`,
+  `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
   {
-     credentials: "include",     
-     headers: {
-     Authorization: "Bearer " + localStorage.getItem("acs_token")
+    headers: {
+      Authorization: "Bearer " + (window.ACS_TOKEN || "")
     }
   }
 );
@@ -712,6 +669,8 @@ window.ACS_registerExpense = function(payload){
      SAVE + NOTIFY
      =============================== */
 
+  
+   
   window.ACS_Finance = f;
   window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
    
