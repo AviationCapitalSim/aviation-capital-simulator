@@ -650,7 +650,7 @@ body {
 
 <!-- SCRIPTS -->
 
-<!-- 🟧 SESSION SYNC FROM DASHBOARD -->
+<!-- 🟧 A1 — SESSION BOOT (TOKEN BASED — CANONICAL) -->
      
 <script>
      
@@ -658,29 +658,54 @@ body {
 
   try{
 
-    // 🔥 reutiliza sesión activa del dashboard (cookie)
-    const res = await fetch(
-      "https://acs-world-server-production.up.railway.app/v1/session",
-      {
-        credentials: "include"
-      }
-    );
+    const API_BASE = "https://acs-world-server-production.up.railway.app";
 
-    const data = await res.json();
+    // 1️⃣ Obtener token (MISMO QUE DASHBOARD)
+    const token = localStorage.getItem("acs_token");
 
-    if(!data.ok){
-      console.error("❌ NO SESSION FROM SERVER");
+    if(!token){
+      console.error("❌ NO TOKEN — redirecting to login");
+      window.location.href = "login.html";
       return;
     }
 
-    // ✅ ESTO ES LO QUE TE FALTA
-    window.ACS_TOKEN = data.token;
-    window.ACS_SERVER_SESSION = data.session;
+    // 2️⃣ Exponer token global (CRÍTICO)
+    window.ACS_TOKEN = token;
 
-    console.log("✅ SESSION LOADED:", data.session);
+    // 3️⃣ Obtener sesión real desde Railway (MISMO FLUJO DASHBOARD)
+    const res = await fetch(`${API_BASE}/v1/auth/me`, {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if(!res.ok){
+      throw new Error("AUTH_HTTP_" + res.status);
+    }
+
+    const data = await res.json();
+
+    if(!data.ok || !data.user){
+      throw new Error("INVALID_AUTH_RESPONSE");
+    }
+
+    // 4️⃣ Construir sesión global (ESTÁNDAR ACS)
+    window.ACS_SERVER_SESSION = {
+      user_id: data.user.user_id,
+      airline_id: data.user.airline_id
+    };
+
+    console.log("✅ SESSION READY:", window.ACS_SERVER_SESSION);
 
   }catch(e){
-    console.error("SESSION LOAD ERROR", e);
+
+    console.error("❌ SESSION BOOT FAILED", e);
+
+    localStorage.removeItem("acs_token");
+    window.location.href = "login.html";
+
   }
 
 })();
