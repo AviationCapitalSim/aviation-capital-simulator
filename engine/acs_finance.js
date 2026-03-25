@@ -242,6 +242,14 @@ function ACS_waitForSessionAndBoot(){
     window.ACS_SERVER_SESSION?.airline_id ||
     window.ACS_activeUser?.airline_id;
 
+  const token = window.ACS_TOKEN;
+
+  // 🔒 BLOQUEO CRÍTICO — SIN TOKEN NO ARRANCA
+  if(!token){
+    console.warn("⏳ FINANCE WAITING FOR TOKEN...");
+    return;
+  }
+
   if(airlineId && !__ACS_FINANCE_STARTED){
 
     __ACS_FINANCE_STARTED = true;
@@ -669,8 +677,6 @@ window.ACS_registerExpense = function(payload){
      SAVE + NOTIFY
      =============================== */
 
-  
-   
   window.ACS_Finance = f;
   window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
    
