@@ -238,35 +238,59 @@ async function ACS_FINANCE_syncFromServer(){
 }
 
 
-(function waitForSessionAndStartFinance(){
+/* ============================================================
+   🟧 A1 — FINANCE AUTH (CLON DASHBOARD)
+   ============================================================ */
 
-  let attempts = 0;
+async function ACS_FINANCE_authAndStart(){
 
-  const interval = setInterval(() => {
+  try{
+
+    const API_BASE = "https://acs-world-server-production.up.railway.app";
 
     const token = localStorage.getItem("acs_token");
-    const session = window.ACS_SERVER_SESSION;
 
-    if(token && session?.airline_id){
-
-      clearInterval(interval);
-
-      console.log("🟢 FINANCE START (SESSION CONFIRMED)", session);
-
-      ACS_FINANCE_syncFromServer();
-
+    if(!token){
+      console.warn("❌ FINANCE — NO TOKEN");
+      return;
     }
 
-    attempts++;
+    const res = await fetch(`${API_BASE}/v1/auth/me`, {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json"
+      }
+    });
 
-    if(attempts > 20){
-      clearInterval(interval);
-      console.warn("⛔ FINANCE FAILED TO START — SESSION TIMEOUT");
+    if(!res.ok){
+      throw new Error("AUTH_HTTP_" + res.status);
     }
 
-  }, 150);
+    const data = await res.json();
 
-})();
+    if(!data.ok || !data.user){
+      throw new Error("INVALID_AUTH_RESPONSE");
+    }
+
+    // 🔥 MISMA SESSION QUE DASHBOARD
+    window.ACS_SERVER_SESSION = {
+      user_id: data.user.user_id,
+      airline_id: data.user.airline_id
+    };
+
+    console.log("✅ FINANCE AUTH OK:", window.ACS_SERVER_SESSION);
+
+    // 🔥 ARRANQUE REAL
+    ACS_FINANCE_syncFromServer();
+
+  }catch(e){
+
+    console.error("❌ FINANCE AUTH FAILED", e);
+
+  }
+
+}
    
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
