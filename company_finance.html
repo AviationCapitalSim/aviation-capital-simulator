@@ -650,38 +650,57 @@ body {
 
 <!-- SCRIPTS -->
 
-<!-- 🟧 A1 — SESSION BRIDGE (REQUIRED FOR RAILWAY) -->
-     
 <script>
      
-(function(){
+/* ============================================================
+   🟧 A1 — ACS GLOBAL SESSION LOADER (CANONICAL)
+   ============================================================ */
+
+window.ACS_SERVER_SESSION = null;
+
+async function ACS_loadSession() {
 
   try {
 
-    const raw = localStorage.getItem("ACS_SESSION");
-    if (!raw) return;
+    const token = localStorage.getItem("acs_token");
 
-    const s = JSON.parse(raw);
-
-    if (!s) return;
-
-    if (s.token) {
-      window.ACS_TOKEN = s.token;
+    if (!token) {
+      console.warn("❌ NO TOKEN FOUND");
+      return;
     }
 
-    if (s.airline_id) {
-      window.ACS_SERVER_SESSION = {
-        airline_id: s.airline_id
-      };
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/auth/me",
+      {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      console.warn("❌ SESSION INVALID");
+      return;
     }
 
-    console.log("🟢 SESSION BRIDGE LOADED", window.ACS_SERVER_SESSION);
+    window.ACS_SERVER_SESSION = data.user;
 
-  } catch(e){
-    console.warn("SESSION BRIDGE FAILED", e);
+    console.log(
+      "%c✅ SESSION LOADED",
+      "color:#00ffcc;font-weight:700",
+      window.ACS_SERVER_SESSION
+    );
+
+  } catch (e) {
+    console.warn("❌ SESSION LOAD ERROR", e);
   }
+}
 
-})();
+// 🔥 EJECUTAR INMEDIATO
+ACS_loadSession();
+     
 </script>
     
 <!-- ============================================================
