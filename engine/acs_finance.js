@@ -141,7 +141,7 @@ async function ACS_FINANCE_syncFromServer(){
    const token = localStorage.getItem("acs_token");
 
    const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
+  `https://acs-world-server-production.up.railway.app/v1/finance`,
   {
     headers: {
       Authorization: "Bearer " + (token || "")
