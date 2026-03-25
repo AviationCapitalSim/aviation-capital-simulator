@@ -90,24 +90,49 @@ function ACS_getMonthKey(ts){
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2,"0")}`;
 }
 
-window.ACS_FINANCE_boot = function(){
+window.ACS_FINANCE_boot = async function(){
 
-window.addEventListener("ACS_WORLD_LOADED", () => {
-  console.log("🟢 FINANCE BOOT TRIGGERED BY WORLD");
-  window.ACS_FINANCE_boot();
-});
-   
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    window.ACS_activeUser?.airline_id;
+  try {
 
-  if(!airlineId){
-    console.warn("FINANCE BOOT WAITING FOR SESSION");
-    return;
+    const token = localStorage.getItem("acs_token");
+
+    if (!token) {
+      console.warn("FINANCE: NO TOKEN");
+      return;
+    }
+
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/auth/me",
+      {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data?.ok || !data.user?.airline_id) {
+      console.warn("FINANCE: INVALID SESSION");
+      return;
+    }
+
+    // 🔥 ESTA ES LA CLAVE
+    window.ACS_SERVER_SESSION = {
+      airline_id: data.user.airline_id
+    };
+
+    console.log("🟢 FINANCE SESSION READY:", data.user.airline_id);
+
+    ACS_FINANCE_syncFromServer();
+
+  } catch(err) {
+
+    console.warn("FINANCE BOOT FAILED", err);
+
   }
 
-  ACS_FINANCE_syncFromServer();
-}
+};
    
 /* ============================================================
    🌍 ACS FINANCE — CANONICAL BOOT + SYNC (FINAL)
