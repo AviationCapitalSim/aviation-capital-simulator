@@ -123,6 +123,12 @@ let __ACS_FINANCE_STARTED = false;
 
 async function ACS_FINANCE_syncFromServer(){
 
+  const token = window.ACS_TOKEN;
+  if(!token){
+    console.warn("⛔ FINANCE SYNC BLOCKED — NO TOKEN");
+    return;
+  }
+
   const airlineId =
     window.ACS_SERVER_SESSION?.airline_id ||
     window.ACS_activeUser?.airline_id;
