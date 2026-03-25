@@ -238,39 +238,23 @@ async function ACS_FINANCE_syncFromServer(){
 }
 
 
-/* ============================================================
-   🚀 AUTO BOOT — SESSION WATCHER (REAL, NO PATCH)
-   ============================================================ */
+window.addEventListener("load", () => {
 
-function ACS_waitForSessionAndBoot(){
+  const token = localStorage.getItem("acs_token");
+  const session = window.ACS_SERVER_SESSION;
 
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    window.ACS_activeUser?.airline_id;
+  console.log("🔎 FINANCE CHECK:", { token, session });
 
-  const token = window.ACS_TOKEN;
-
-  // 🔒 BLOQUEO CRÍTICO — SIN TOKEN NO ARRANCA
-  if(!token){
-    console.warn("⏳ FINANCE WAITING FOR TOKEN...");
+  if (!token || !session?.airline_id) {
+    console.warn("⛔ FINANCE BLOCKED — NO SESSION");
     return;
   }
 
-  if(airlineId && !__ACS_FINANCE_STARTED){
+  console.log("🟢 FINANCE START CLEAN");
 
-    __ACS_FINANCE_STARTED = true;
+  ACS_FINANCE_syncFromServer();
 
-    console.log("🟢 FINANCE BOOT WITH SESSION", airlineId);
-
-    ACS_FINANCE_syncFromServer();
-  }
-}
-
-/* ============================================================
-   🔁 WATCH LOOP (LIGHTWEIGHT — SAFE FOR 700 PLAYERS)
-   ============================================================ */
-
-setInterval(ACS_waitForSessionAndBoot, 2000);
+});
    
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
