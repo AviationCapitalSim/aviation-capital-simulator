@@ -139,7 +139,7 @@ async function ACS_FINANCE_syncFromServer(){
        ========================= */
 
     const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
+  `https://acs-world-server-production.up.railway.app/v1/finance`,
   {
     headers: {
       Authorization: "Bearer " + (window.ACS_TOKEN || "")
@@ -198,7 +198,7 @@ async function ACS_FINANCE_syncFromServer(){
     try{
 
       const logRes = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`,
+  `https://acs-world-server-production.up.railway.app/v1/finance/log`,
   {
     headers: {
       Authorization: "Bearer " + (window.ACS_TOKEN || "")
@@ -291,7 +291,7 @@ let ACS_FINANCE_SYNC_PENDING = false;
         try {
 
           const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/hr/payroll/${airlineId}`,
+  `https://acs-world-server-production.up.railway.app/v1/hr/payroll`,
   {
     headers: {
       Authorization: "Bearer " + (window.ACS_TOKEN || "")
@@ -515,7 +515,7 @@ window.ACS_registerIncome = async function(payload){
        ============================================================ */
 
     const syncRes = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
+  `https://acs-world-server-production.up.railway.app/v1/finance`,
   {
     headers: {
       Authorization: "Bearer " + (window.ACS_TOKEN || "")
