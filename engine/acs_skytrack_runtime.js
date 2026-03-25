@@ -611,11 +611,7 @@ function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
 }
 
 /* ============================================================
-   🟧 G1 — HARD GROUND BLOCK RESOLVER (FLEET AUTHORITY)
-   ------------------------------------------------------------
-   • SkyTrack NO decide mantenimiento
-   • Lee estado CANÓNICO desde ACS_MyAircraft
-   • Cualquier status "Maintenance" bloquea vuelo
+   ✈️ SKYTRACK GROUND BLOCK — EXPLICIT CHECK LABELS
    ============================================================ */
 
 function ACS_SkyTrack_getGroundBlock(ac) {
@@ -624,31 +620,56 @@ function ACS_SkyTrack_getGroundBlock(ac) {
     return { blocked: false, reason: null, label: null };
   }
 
-  const st = String(ac.status || "").trim();
-
-  // 🔒 BLOQUEO UNIVERSAL DE MANTENIMIENTO
-  if (st === "Maintenance") {
-    return { blocked: true, reason: "MAINTENANCE", label: "MAINTENANCE" };
+  // ============================================================
+  // 🔴 D CHECK
+  // ============================================================
+  if (ac.status === "Maintenance" && ac.maintenanceType === "D") {
+    return { blocked: true, reason: "D_CHECK", label: "D CHECK" };
   }
 
-  // 1) HARD HOLD
-  if (st === "Maintenance Hold") {
-    return { blocked: true, reason: "HOLD", label: "MAINTENANCE" };
+  // ============================================================
+  // 🔴 C CHECK
+  // ============================================================
+  if (ac.status === "Maintenance" && ac.maintenanceType === "C") {
+    return { blocked: true, reason: "C_CHECK", label: "C CHECK" };
   }
 
-  // 2) C / D CHECK (legacy compatibility)
-  if (st === "In C-Check" || st === "In D-Check") {
-    return { blocked: true, reason: st, label: "MAINTENANCE" };
+  // ============================================================
+  // 🔴 D CHECK OVERDUE
+  // ============================================================
+  if (ac.isDOverdue === true) {
+    return { blocked: true, reason: "D_CHECK_OVERDUE", label: "D CHECK OVERDUE" };
   }
 
-  // 3) B-CHECK (legacy compatibility)
-  if (st === "B-Check") {
-    return { blocked: true, reason: "B-Check", label: "MAINTENANCE" };
+  // ============================================================
+  // 🔴 C CHECK OVERDUE
+  // ============================================================
+  if (ac.isCOverdue === true) {
+    return { blocked: true, reason: "C_CHECK_OVERDUE", label: "C CHECK OVERDUE" };
   }
 
-  // 4) MAINTENANCE OVERDUE
-  if (ac.maintenanceOverdue === true) {
-    return { blocked: true, reason: "OVERDUE", label: "MAINTENANCE" };
+  // ============================================================
+  // 🟡 B CHECK
+  // ------------------------------------------------------------
+  // B viene desde Schedule.
+  // Si ya venció y está programado → B CHECK
+  // Si venció y NO está programado → B CHECK OVERDUE
+  // ============================================================
+  if (ac.isBOverdue === true) {
+
+    const items = ACS_SkyTrack.itemsByAircraft?.[ac.id] || [];
+
+    const hasB = items.some(it =>
+      it &&
+      it.type === "service" &&
+      it.serviceType === "B"
+    );
+
+    if (hasB) {
+      return { blocked: true, reason: "B_CHECK", label: "B CHECK" };
+    }
+
+    return { blocked: true, reason: "B_CHECK_OVERDUE", label: "B CHECK OVERDUE" };
   }
 
   return { blocked: false, reason: null, label: null };
@@ -658,6 +679,7 @@ function ACS_SkyTrack_getGroundBlock(ac) {
    🧠 STATE RESOLVER — FR24 LOGIC
    🟦 A6.1 — Arrival / Turnaround Boundary FIX (NO jumps)
    ============================================================ */
+
 function ACS_SkyTrack_resolveState(aircraftId) {
 
   const ac = ACS_SkyTrack.aircraftIndex[aircraftId];
@@ -669,6 +691,7 @@ function ACS_SkyTrack_resolveState(aircraftId) {
   /* ============================================================
      1️⃣ MAINTENANCE — B-CHECK ONLY (NO CHANGE)
      ============================================================ */
+   
   const bCheck = items.find(it => {
     if (it.type !== "service" || it.serviceType !== "B") return false;
     if (!it.day || !it.start || !Number.isFinite(it.durationMin)) return false;
@@ -689,28 +712,46 @@ function ACS_SkyTrack_resolveState(aircraftId) {
 
   if (Number.isFinite(startAbs) && now >= startAbs && now < endAbs) {
     return {
-      state: "MAINTENANCE",
-      position: { airport: ac.baseAirport || null },
-      flight: null
-    };
+  state: "B CHECK",
+  position: { airport: ac.baseAirport || null },
+  flight: null
+};
   }
 }
 
-  /* ============================================================
-     🟥 1.5 — HARD MAINTENANCE BLOCK (AUTHORITATIVE)
-     ------------------------------------------------------------
-     • Si el avión NO puede volar, SE PARA AQUÍ
-     • Esto bloquea EN_ROUTE incluso si hay vuelos
-     ============================================================ */
-  const hardBlock = ACS_SkyTrack_getGroundBlock(ac);
 
-  if (hardBlock && hardBlock.blocked) {
-    return {
-      state: "MAINTENANCE",
-      position: { airport: ac.baseAirport || null },
-      flight: null
-    };
+  // ============================================================
+// 🔴 HARD BLOCK — OCC SERVICE LABEL
+// ============================================================
+
+const hardBlock = ACS_SkyTrack_getGroundBlock(ac);
+
+if (hardBlock && hardBlock.blocked) {
+
+  let label = "GROUND";
+
+  if (hardBlock.reason === "B_CHECK_OVERDUE") {
+    label = "B CHECK OVERDUE";
   }
+  else if (hardBlock.reason === "C_CHECK_OVERDUE") {
+    label = "C CHECK OVERDUE";
+  }
+  else if (hardBlock.reason === "D_CHECK_OVERDUE") {
+    label = "D CHECK OVERDUE";
+  }
+  else if (hardBlock.reason === "C_CHECK") {
+    label = "C CHECK";
+  }
+  else if (hardBlock.reason === "D_CHECK") {
+    label = "D CHECK";
+  }
+
+  return {
+    state: label,
+    position: { airport: ac.baseAirport || null },
+    flight: null
+  };
+}
    
  /* ============================================================
    2️⃣ EN ROUTE — ACTIVE FLIGHT (STABLE)
