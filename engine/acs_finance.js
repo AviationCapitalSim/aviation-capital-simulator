@@ -138,15 +138,14 @@ async function ACS_FINANCE_syncFromServer(){
        1️⃣ FETCH FINANCE STATE
        ========================= */
 
-    const res = await fetch(
+   const token = localStorage.getItem("acs_token");
+
+   const res = await fetch(
   `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
   {
-    const token = localStorage.getItem("acs_token");
-
     headers: {
-    Authorization: "Bearer " + (token || "")
-   }
-     
+      Authorization: "Bearer " + (token || "")
+    }
   }
 );
 
