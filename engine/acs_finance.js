@@ -148,7 +148,7 @@ async function ACS_FINANCE_syncFromServer(){
   `https://acs-world-server-production.up.railway.app/v1/finance`,
   {
     headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + localStorage.getItem("acs_token")
     }
   }
 );
@@ -207,7 +207,7 @@ async function ACS_FINANCE_syncFromServer(){
   `https://acs-world-server-production.up.railway.app/v1/finance/log`,
   {
     headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + localStorage.getItem("acs_token")
     }
   }
 );
@@ -308,7 +308,7 @@ let ACS_FINANCE_SYNC_PENDING = false;
   `https://acs-world-server-production.up.railway.app/v1/hr/payroll`,
   {
     headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + localStorage.getItem("acs_token")
     }
   }
 );
@@ -445,7 +445,7 @@ const payload = {
     method: "POST",
     headers:{
       "Content-Type":"application/json",
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + localStorage.getItem("acs_token")
     },
     body: JSON.stringify(payload)
   }
@@ -498,7 +498,7 @@ window.ACS_registerIncome = async function(payload){
      method:"POST",
      headers:{
       "Content-Type":"application/json",
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + localStorage.getItem("acs_token")
     },
      
         body: JSON.stringify({
@@ -532,7 +532,7 @@ window.ACS_registerIncome = async function(payload){
   `https://acs-world-server-production.up.railway.app/v1/finance`,
   {
     headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+     Authorization: "Bearer " + localStorage.getItem("acs_token")
     }
   }
 );
