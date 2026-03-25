@@ -650,38 +650,41 @@ body {
 
 <!-- SCRIPTS -->
 
-<!-- 🟧 A1 — SESSION BRIDGE (REQUIRED FOR RAILWAY) -->
+<!-- 🟧 SESSION SYNC FROM DASHBOARD -->
      
 <script>
      
-(function(){
+(async function(){
 
-  try {
+  try{
 
-    const raw = localStorage.getItem("ACS_SESSION");
-    if (!raw) return;
+    // 🔥 reutiliza sesión activa del dashboard (cookie)
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/session",
+      {
+        credentials: "include"
+      }
+    );
 
-    const s = JSON.parse(raw);
+    const data = await res.json();
 
-    if (!s) return;
-
-    if (s.token) {
-      window.ACS_TOKEN = s.token;
+    if(!data.ok){
+      console.error("❌ NO SESSION FROM SERVER");
+      return;
     }
 
-    if (s.airline_id) {
-      window.ACS_SERVER_SESSION = {
-        airline_id: s.airline_id
-      };
-    }
+    // ✅ ESTO ES LO QUE TE FALTA
+    window.ACS_TOKEN = data.token;
+    window.ACS_SERVER_SESSION = data.session;
 
-    console.log("🟢 SESSION BRIDGE LOADED", window.ACS_SERVER_SESSION);
+    console.log("✅ SESSION LOADED:", data.session);
 
-  } catch(e){
-    console.warn("SESSION BRIDGE FAILED", e);
+  }catch(e){
+    console.error("SESSION LOAD ERROR", e);
   }
 
 })();
+     
 </script>
     
 <!-- ============================================================
