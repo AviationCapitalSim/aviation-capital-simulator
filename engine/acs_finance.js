@@ -238,23 +238,35 @@ async function ACS_FINANCE_syncFromServer(){
 }
 
 
-window.addEventListener("load", () => {
+(function waitForSessionAndStartFinance(){
 
-  const token = localStorage.getItem("acs_token");
-  const session = window.ACS_SERVER_SESSION;
+  let attempts = 0;
 
-  console.log("🔎 FINANCE CHECK:", { token, session });
+  const interval = setInterval(() => {
 
-  if (!token || !session?.airline_id) {
-    console.warn("⛔ FINANCE BLOCKED — NO SESSION");
-    return;
-  }
+    const token = localStorage.getItem("acs_token");
+    const session = window.ACS_SERVER_SESSION;
 
-  console.log("🟢 FINANCE START CLEAN");
+    if(token && session?.airline_id){
 
-  ACS_FINANCE_syncFromServer();
+      clearInterval(interval);
 
-});
+      console.log("🟢 FINANCE START (SESSION CONFIRMED)", session);
+
+      ACS_FINANCE_syncFromServer();
+
+    }
+
+    attempts++;
+
+    if(attempts > 20){
+      clearInterval(interval);
+      console.warn("⛔ FINANCE FAILED TO START — SESSION TIMEOUT");
+    }
+
+  }, 150);
+
+})();
    
 /* ============================================================
    🌍 RAILWAY FINANCE SYNC — WRITE BACK (CANONICAL BRIDGE)
