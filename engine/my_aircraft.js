@@ -1594,6 +1594,106 @@ function ACS_applyIdleVisualStatus(ac) {
 }
 
 /* ============================================================
+   ✈️ ACS OCC STATUS LABEL RESOLVER — EXPLICIT CHECK NAMES
+   ------------------------------------------------------------
+   • Nunca usa "Maintenance"
+   • Nunca usa "In Progress"
+   • Siempre muestra el servicio exacto: B / C / D
+   ============================================================ */
+
+function ACS_getAircraftOCCStatus(ac) {
+
+  if (!ac) {
+    return {
+      main: "UNKNOWN",
+      sub: "",
+      className: "status-warning"
+    };
+  }
+
+  // ============================================================
+  // 🔴 D CHECK EN EJECUCIÓN
+  // ============================================================
+  if (ac.status === "Maintenance" && ac.maintenanceType === "D") {
+    return {
+      main: "GROUND",
+      sub: "D CHECK",
+      className: "status-maintenance"
+    };
+  }
+
+  // ============================================================
+  // 🔴 C CHECK EN EJECUCIÓN
+  // ============================================================
+  if (ac.status === "Maintenance" && ac.maintenanceType === "C") {
+    return {
+      main: "GROUND",
+      sub: "C CHECK",
+      className: "status-maintenance"
+    };
+  }
+
+  // ============================================================
+  // 🔴 D CHECK OVERDUE
+  // ============================================================
+  if (ac.isDOverdue === true) {
+    return {
+      main: "GROUND",
+      sub: "D CHECK OVERDUE",
+      className: "status-maintenance-hold"
+    };
+  }
+
+  // ============================================================
+  // 🔴 C CHECK OVERDUE
+  // ============================================================
+  if (ac.isCOverdue === true) {
+    return {
+      main: "GROUND",
+      sub: "C CHECK OVERDUE",
+      className: "status-maintenance-hold"
+    };
+  }
+
+  // ============================================================
+  // 🟡 B CHECK
+  // ------------------------------------------------------------
+  // B se controla desde Schedule.
+  // Si está programado/ejecutándose → "B CHECK"
+  // Si no está programado y ya venció → "B CHECK OVERDUE"
+  // ============================================================
+  if (ac.isBOverdue === true) {
+
+    const scheduled = (typeof ACS_isBScheduled === "function")
+      ? ACS_isBScheduled(ac)
+      : false;
+
+    if (scheduled) {
+      return {
+        main: "GROUND",
+        sub: "B CHECK",
+        className: "status-maintenance"
+      };
+    }
+
+    return {
+      main: "GROUND",
+      sub: "B CHECK OVERDUE",
+      className: "status-maintenance-hold"
+    };
+  }
+
+  // ============================================================
+  // 🟢 NORMAL
+  // ============================================================
+  return {
+    main: "ACTIVE",
+    sub: "",
+    className: "status-active"
+  };
+}
+
+/* ============================================================
    🟦 C.3 — Render Full Fleet Table (Active + Pending)
    FIXED STRUCTURE — 23 FEB 2026
    ============================================================ */
