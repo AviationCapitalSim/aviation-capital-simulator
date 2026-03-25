@@ -480,33 +480,27 @@ window.ACS_registerIncome = async function(payload){
        1️⃣ POST FLIGHT EVENT → BACKEND
        ============================================================ */
 
-    const res = await fetch(
-    "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
-    {
-     method:"POST",
-     const token = localStorage.getItem("acs_token");
+   const token = localStorage.getItem("acs_token");
 
-     headers:{
-    "Content-Type":"application/json",
-     Authorization: "Bearer " + (token || "")
-
+const res = await fetch(
+  "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
+  {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      Authorization: "Bearer " + (token || "")
     },
-     
-        body: JSON.stringify({
-
-          airline_id: Number(airlineId),
-
-          revenue: payload.revenue,
-
-          cost_fuel: payload.costs?.fuel || 0,
-          cost_handling: payload.costs?.handling || 0,
-          cost_slot: payload.costs?.slot || 0,
-          cost_navigation: payload.costs?.navigation || 0,
-          cost_overflight: payload.costs?.overflight || 0
-
-        })
-      }
-    );
+    body: JSON.stringify({
+      airline_id: Number(airlineId),
+      revenue: payload.revenue,
+      cost_fuel: payload.costs?.fuel || 0,
+      cost_handling: payload.costs?.handling || 0,
+      cost_slot: payload.costs?.slot || 0,
+      cost_navigation: payload.costs?.navigation || 0,
+      cost_overflight: payload.costs?.overflight || 0
+    })
+  }
+);
 
     const data = await res.json();
 
