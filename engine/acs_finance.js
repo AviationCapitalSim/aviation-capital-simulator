@@ -141,9 +141,12 @@ async function ACS_FINANCE_syncFromServer(){
     const res = await fetch(
   `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
   {
+    const token = localStorage.getItem("acs_token");
+
     headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
-    }
+    Authorization: "Bearer " + (token || "")
+   }
+     
   }
 );
 
