@@ -778,40 +778,66 @@ if (typeof ACS_HR_emitSalaryAlerts === "function") {
 }
 
 /* ============================================================
-   ⏱️ MONTHLY DEFICIT MORALE TICK — ACS OFFICIAL
+   ⏱️ MONTHLY DEFICIT MORALE TICK — SAFE REGISTER (ACS OFFICIAL)
    ------------------------------------------------------------
-   • Ejecuta degradación SOLO 1 vez por mes de juego
-   • Moral baja lentamente y de forma estratégica
-   • Mucho más jugable en simulación dinámica
+   • Espera a que el Time Engine esté disponible
+   • Evita pérdida de listener por orden de carga
+   • Garantiza ejecución mensual real
    ============================================================ */
 
 let __OPS_lastMonth = null;
+let __OPS_listenerRegistered = false;
 
-registerTimeListener((time) => {
+function __OPS_registerMonthlyListener_SAFE() {
 
-  const year  = time.getUTCFullYear();
-  const month = time.getUTCMonth(); // 0–11
+  if (__OPS_listenerRegistered) return;
 
-  const key = `${year}-${month}`;
-
-  if (__OPS_lastMonth === null) __OPS_lastMonth = key;
-
-  // Ejecutar solo cuando cambia el mes de juego
-  if (key !== __OPS_lastMonth) {
-
-    console.log(
-      "%c🗓 OPS MONTH TICK — MORALE CHECK",
-      "color:#00ffcc;font-weight:600",
-      "Year:", year,
-      "Month:", month + 1
-    );
-
-    ACS_OPS_checkDepartmentDeficits_Monthly();
-
-    __OPS_lastMonth = key;
+  if (typeof registerTimeListener !== "function") {
+    // ⏳ Esperar a que Time Engine esté listo
+    setTimeout(__OPS_registerMonthlyListener_SAFE, 500);
+    return;
   }
 
-});
+  registerTimeListener((time) => {
+
+    if (!(time instanceof Date)) return;
+
+    const year  = time.getUTCFullYear();
+    const month = time.getUTCMonth();
+
+    const key = `${year}-${month}`;
+
+    if (__OPS_lastMonth === null) {
+      __OPS_lastMonth = key;
+      return;
+    }
+
+    if (key !== __OPS_lastMonth) {
+
+      console.log(
+        "%c🗓 OPS MONTH TICK — MORALE CHECK (SAFE)",
+        "color:#00ffcc;font-weight:700",
+        "Year:", year,
+        "Month:", month + 1
+      );
+
+      ACS_OPS_checkDepartmentDeficits_Monthly();
+
+      __OPS_lastMonth = key;
+    }
+
+  });
+
+  __OPS_listenerRegistered = true;
+
+  console.log(
+    "%c✅ OPS MONTH LISTENER REGISTERED",
+    "color:#7CFFB2;font-weight:700"
+  );
+}
+
+// 🚀 INIT SAFE REGISTRATION
+__OPS_registerMonthlyListener_SAFE();
 
 /* ============================================================
    🟦 PHASE B — DELAY ENGINE + OPERATIONAL IMPACT CORE
