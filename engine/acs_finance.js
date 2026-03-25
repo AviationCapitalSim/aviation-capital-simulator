@@ -228,7 +228,7 @@ async function ACS_FINANCE_syncFromServer(){
   `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`,
   {
     headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + (localStorage.getItem("acs_token") || "")
     }
   }
 );
@@ -321,7 +321,7 @@ let ACS_FINANCE_SYNC_PENDING = false;
   `https://acs-world-server-production.up.railway.app/v1/hr/payroll/${airlineId}`,
   {
     headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + (localStorage.getItem("acs_token") || "")
     }
   }
 );
@@ -458,7 +458,7 @@ const payload = {
     method: "POST",
     headers:{
       "Content-Type":"application/json",
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + (localStorage.getItem("acs_token") || "")
     },
     body: JSON.stringify(payload)
   }
@@ -542,7 +542,7 @@ const res = await fetch(
   `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
   {
     headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      Authorization: "Bearer " + (localStorage.getItem("acs_token") || "")
     }
   }
 );
