@@ -485,9 +485,12 @@ window.ACS_registerIncome = async function(payload){
     "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
     {
      method:"POST",
+     const token = localStorage.getItem("acs_token");
+
      headers:{
-      "Content-Type":"application/json",
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+    "Content-Type":"application/json",
+     Authorization: "Bearer " + (token || "")
+
     },
      
         body: JSON.stringify({
