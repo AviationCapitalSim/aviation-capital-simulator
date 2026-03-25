@@ -147,7 +147,8 @@ async function ACS_FINANCE_syncFromServer(){
     const res = await fetch(
   `https://acs-world-server-production.up.railway.app/v1/finance`,
   {
-    headers: {
+     credentials: "include",
+     headers: {
       Authorization: "Bearer " + localStorage.getItem("acs_token")
     }
   }
@@ -206,7 +207,9 @@ async function ACS_FINANCE_syncFromServer(){
       const logRes = await fetch(
   `https://acs-world-server-production.up.railway.app/v1/finance/log`,
   {
-    headers: {
+    
+     credentials: "include",
+     headers: {
       Authorization: "Bearer " + localStorage.getItem("acs_token")
     }
   }
@@ -257,6 +260,7 @@ async function ACS_FINANCE_authAndStart(){
 
     const res = await fetch(`${API_BASE}/v1/auth/me`, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Authorization": "Bearer " + token,
         "Content-Type": "application/json"
@@ -327,7 +331,9 @@ let ACS_FINANCE_SYNC_PENDING = false;
           const res = await fetch(
   `https://acs-world-server-production.up.railway.app/v1/hr/payroll`,
   {
-    headers: {
+    
+     credentials: "include",
+     headers: {
       Authorization: "Bearer " + localStorage.getItem("acs_token")
     }
   }
@@ -463,6 +469,7 @@ const payload = {
   "https://acs-world-server-production.up.railway.app/v1/finance/log",
   {
     method: "POST",
+    credentials: "include",
     headers:{
       "Content-Type":"application/json",
       Authorization: "Bearer " + localStorage.getItem("acs_token")
@@ -516,6 +523,7 @@ window.ACS_registerIncome = async function(payload){
     "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
     {
      method:"POST",
+     credentials: "include",
      headers:{
       "Content-Type":"application/json",
       Authorization: "Bearer " + localStorage.getItem("acs_token")
@@ -551,7 +559,8 @@ window.ACS_registerIncome = async function(payload){
     const syncRes = await fetch(
   `https://acs-world-server-production.up.railway.app/v1/finance`,
   {
-    headers: {
+     credentials: "include",     
+     headers: {
      Authorization: "Bearer " + localStorage.getItem("acs_token")
     }
   }
