@@ -2254,18 +2254,8 @@ fleet.forEach(ac => {
       if (x.type === "service") return true;
 
 // ============================================================
-// 🔴 AIRWORTHINESS GATE — SCHEDULE AUTHORITY
-// Bloquea vuelos si el avión NO puede volar
+// 🟦 OCC AIRWORTHINESS GATE — SINGLE SOURCE OF TRUTH
 // ============================================================
-
-const isAircraftGrounded =
-  ac.status === "Maintenance" ||
-  ac.status === "Maintenance Hold" ||
-  ac.maintenanceHold === true ||
-  ac.nextC_overdue === true ||
-  ac.nextD_overdue === true ||
-  ac.isCOverdue === true ||
-  ac.isDOverdue === true;
 
 const occ = ACS_getAircraftOCCStatus(ac);
 const isAircraftGrounded = occ?.grounded === true;
