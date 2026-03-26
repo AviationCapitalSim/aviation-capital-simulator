@@ -1556,6 +1556,107 @@ function ACS_applyMaintenanceComputedFields(ac) {
 }
 
 /* ============================================================
+   🧠 ACS OPERATIONAL STATE ENGINE (OCC CORE)
+   ------------------------------------------------------------
+   • Fuente única de verdad para:
+     - Schedule
+     - SkyTrack
+     - UI
+   ============================================================ */
+
+function ACS_buildOperationalState(ac, scheduleItems = []) {
+
+  const ops = {
+    grounded: false,
+    reason: null,
+    label: null,
+    source: null
+  };
+
+  if (!ac) return ops;
+
+  // ============================================================
+  // 🔴 C / D — AIRCRAFT AUTHORITY
+  // ============================================================
+
+  if (ac.status === "Maintenance" && ac.maintenanceType === "D") {
+    return {
+      grounded: true,
+      reason: "D_CHECK",
+      label: "D CHECK",
+      source: "aircraft"
+    };
+  }
+
+  if (ac.status === "Maintenance" && ac.maintenanceType === "C") {
+    return {
+      grounded: true,
+      reason: "C_CHECK",
+      label: "C CHECK",
+      source: "aircraft"
+    };
+  }
+
+  if (ac.isDOverdue === true) {
+    return {
+      grounded: true,
+      reason: "D_CHECK_OVERDUE",
+      label: "D CHECK OVERDUE",
+      source: "aircraft"
+    };
+  }
+
+  if (ac.isCOverdue === true) {
+    return {
+      grounded: true,
+      reason: "C_CHECK_OVERDUE",
+      label: "C CHECK OVERDUE",
+      source: "aircraft"
+    };
+  }
+
+  // ============================================================
+  // 🟡 B — SCHEDULE AUTHORITY
+  // ============================================================
+
+  const hasB = scheduleItems.some(it =>
+    it &&
+    it.type === "service" &&
+    it.serviceType === "B"
+  );
+
+  if (ac.isBOverdue === true) {
+
+    if (hasB) {
+      return {
+        grounded: true,
+        reason: "B_CHECK",
+        label: "B CHECK",
+        source: "schedule"
+      };
+    }
+
+    return {
+      grounded: true,
+      reason: "B_CHECK_OVERDUE",
+      label: "B CHECK OVERDUE",
+      source: "schedule"
+    };
+  }
+
+  // ============================================================
+  // 🟢 NORMAL
+  // ============================================================
+
+  return {
+    grounded: false,
+    reason: null,
+    label: "ACTIVE",
+    source: null
+  };
+}
+
+/* ============================================================
    🟧 MA-8.7.D — IDLE STATUS VISUAL FEEDBACK (UI ONLY)
    ------------------------------------------------------------
    Purpose:
@@ -1713,6 +1814,11 @@ list.forEach((ac) => {
   // Render solo lee estado ya procesado
   const computed = ACS_applyMaintenanceComputedFields({ ...ac });
 
+  const scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]")
+  .filter(it => it.aircraftId === computed.id);
+
+  computed.__ops = ACS_buildOperationalState(computed, scheduleItems);
+   
   const occStatus = ACS_getAircraftOCCStatus(computed);
    
   if (!passesFilters(computed)) return;
