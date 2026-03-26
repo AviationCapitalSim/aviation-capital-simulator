@@ -2267,10 +2267,8 @@ const isAircraftGrounded =
   ac.isCOverdue === true ||
   ac.isDOverdue === true;
 
-// Si es vuelo y el avión está grounded → NO mostrar
-if (x.type === "flight" && isAircraftGrounded) {
-  return false;
-}
+const occ = ACS_getAircraftOCCStatus(ac);
+const isAircraftGrounded = occ?.grounded === true;
      
       if (x.type === "flight") {
         if (x.assigned !== true) return false;
