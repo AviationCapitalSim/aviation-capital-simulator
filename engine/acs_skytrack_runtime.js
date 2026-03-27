@@ -655,22 +655,23 @@ function ACS_SkyTrack_getGroundBlock(ac) {
   // Si ya venció y está programado → B CHECK
   // Si venció y NO está programado → B CHECK OVERDUE
   // ============================================================
-  if (ac.isBOverdue === true) {
+   
+  if (ac.bOverdue === true) {
 
-    const items = ACS_SkyTrack.itemsByAircraft?.[ac.id] || [];
+  const items = ACS_SkyTrack.itemsByAircraft?.[ac.id] || [];
 
-    const hasB = items.some(it =>
-      it &&
-      it.type === "service" &&
-      it.serviceType === "B"
-    );
+  const hasB = items.some(it =>
+    it &&
+    it.type === "service" &&
+    it.serviceType === "B"
+  );
 
-    if (hasB) {
-      return { blocked: true, reason: "B_CHECK", label: "B CHECK" };
-    }
-
-    return { blocked: true, reason: "B_CHECK_OVERDUE", label: "B CHECK OVERDUE" };
+  if (hasB) {
+    return { blocked: true, reason: "B_CHECK", label: "B CHECK" };
   }
+
+  return { blocked: true, reason: "B_CHECK_OVERDUE", label: "B CHECK OVERDUE" };
+}
 
   return { blocked: false, reason: null, label: null };
 }
