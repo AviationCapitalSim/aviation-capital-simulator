@@ -1740,131 +1740,95 @@ function ACS_getMonthlyBCycleVisual(ac) {
 
 function ACS_handleMonthlyBIntegration(ac) {
 
-  const now =
-    (window.ACS_TIME && ACS_TIME.currentTime && ACS_TIME.currentTime.getTime)
-      ? ACS_TIME.currentTime.getTime()
-      : Date.now();
-
+  const now = ACS_TIME?.currentTime?.getTime?.() || Date.now();
   const DAY_MS = 24 * 60 * 60 * 1000;
   const CYCLE_MS = 30 * DAY_MS;
 
-  // 🔴 C/D dominan
-  if (
-    ac.status === "Maintenance" &&
-    (ac.maintenanceType === "C" || ac.maintenanceType === "D")
-  ) {
-    ac.bOverdue = false;
-    ac.bInProgress = false;
-    ac.bStartTime = null;
-    ac.bEndTime = null;
-    return ac;
-  }
+  /* ============================================================
+   🔒 MAJOR CHECK OVERRIDE — RESET & FREEZE B
+   Date: 2026-03-02
+   Purpose:
+   - If aircraft enters C/D:
+       • Reset B cycle
+       • Freeze B completely
+       • Prevent overdue
+       • Prevent activation
+   ============================================================ */
 
-  // 🔴 Si nunca tuvo B
+if (
+  ac.status === "Maintenance" &&
+  (ac.maintenanceType === "C" || ac.maintenanceType === "D")
+) {
+
+  // 🔹 Reset B cycle to NOW (C kills B)
+  ac.lastBCheckAt = now;
+
+  // 🔹 Clear any B flags
+  ac.bOverdue = false;
+  ac.bInProgress = false;
+  ac.bStartTime = null;
+
+  return ac; // Freeze while C/D active
+}
+     
   if (!ac.lastBCheckAt) return ac;
 
   const dueDate = ac.lastBCheckAt + CYCLE_MS;
 
+  // 🔹 1️⃣ Aún no vence → limpiar flags
+  if (now < dueDate) {
+    ac.bOverdue = false;
+    ac.maintenanceOverdue = false;
+    return ac;
+  }
+
+  // 🔹 2️⃣ Leer programación real
   let scheduleItems = [];
   try {
     scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   } catch (e) {}
 
   const service = scheduleItems.find(e =>
-    e &&
     e.aircraftId === ac.id &&
     e.type === "service" &&
-    e.serviceType === "B" &&
-    e.assigned === true
+    e.serviceType === "B"
   );
 
-  // ============================================================
-  // 🟡 B EN PROGRESO
-  // ============================================================
-  if (ac.bInProgress === true) {
-
-    // 🔴 asegurar endTime válido
-    if (!ac.bEndTime || isNaN(ac.bEndTime)) {
-      ac.bEndTime = now + DAY_MS;
-    }
-
-    if (now >= ac.bEndTime) {
-
-  ac.bInProgress = false;
-  ac.bStartTime = null;
-  ac.bEndTime = null;
-  ac.bOverdue = false;
-  ac.lastBCheckAt = now;
-
-  // 🔴 FORZAR ESTADO GLOBAL
-  ac.status = "Active";
-
-  // 🔴 LIMPIEZA EXTRA (CLAVE)
-  delete ac.bInProgress;
-  delete ac.bStartTime;
-  delete ac.bEndTime;
-
-  return ac;
-}
-
-    ac.status = "B-Check";
-    return ac;
-  }
-
-  // ============================================================
-  // 🟢 AÚN NO VENCE
-  // ============================================================
-  if (now < dueDate) {
-    ac.bOverdue = false;
-    return ac;
-  }
-
-  // ============================================================
-  // 🔴 OVERDUE SIN SERVICIO
-  // ============================================================
+  // 🔹 3️⃣ Si no hay programación → overdue
   if (!service) {
     ac.bOverdue = true;
-    ac.status = "OVERDUE";
+    ac.maintenanceOverdue = true;
     return ac;
   }
 
-  // ============================================================
-  // 🟠 OVERDUE + SERVICIO → ENTRA INMEDIATO
-  // ============================================================
-  if (ac.bOverdue === true && service.assigned === true) {
+  // 🔹 4️⃣ Activación automática
 
-    ac.status = "B-Check";
-    ac.bInProgress = true;
-    ac.bStartTime = now;
-    ac.bEndTime = now + DAY_MS;
-    ac.bOverdue = false;
-
-    return ac;
-  }
-
-  // ============================================================
-  // 🟡 PROGRAMADO (DÍA)
-  // ============================================================
   const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
   const todaySim = daysMap[new Date(now).getDay()];
+
   const isScheduledToday = service.day === todaySim;
 
-  if (isScheduledToday) {
-
+  // Si ya venció y hoy es su día → entrar en B-Check
+  if (isScheduledToday && ac.status !== "B-Check") {
     ac.status = "B-Check";
     ac.bInProgress = true;
     ac.bStartTime = now;
-    ac.bEndTime = now + DAY_MS;
-    ac.bOverdue = false;
-
-    return ac;
   }
 
-  // ============================================================
-  // 🔴 SI LLEGÓ AQUÍ → OVERDUE
-  // ============================================================
-  ac.bOverdue = true;
-  ac.status = "OVERDUE";
+  // 🔹 5️⃣ Completar después de 24h
+  if (ac.bInProgress && ac.bStartTime) {
+    if (now >= ac.bStartTime + DAY_MS) {
+      ac.lastBCheckAt = now;
+      ac.status = "Active";
+      ac.bInProgress = false;
+      ac.bOverdue = false;
+      ac.maintenanceOverdue = false;
+    }
+  }
+
+  // 🔹 6️⃣ Si ya venció pero no es su día todavía → mantener due (sin overdue)
+  ac.bOverdue = false;
+  ac.maintenanceOverdue = false;
 
   return ac;
 }
@@ -2119,22 +2083,6 @@ function ACS_applyDominantMaintenanceFromMyAircraft(fleetAircraft, myAircraft){
   return fleetAircraft;
 }     
 
-/* ============================================================
-   🟦 OCC STATUS — MINIMAL SAFE IMPLEMENTATION
-   ============================================================ */
-
-function ACS_getAircraftOCCStatus(ac) {
-  return {
-    grounded:
-      ac?.status === "Maintenance" ||
-      ac?.maintenanceHold === true ||
-      ac?.nextC_overdue === true ||
-      ac?.nextD_overdue === true ||
-      ac?.isCOverdue === true ||
-      ac?.isDOverdue === true
-  };
-}
-     
 // ============================================================
 // === RENDER PRINCIPAL DEL SCHEDULE ==========================
 // ============================================================
@@ -2150,14 +2098,19 @@ function renderSchedule() {
 
 // 🟥 CAMO MONTHLY AUTHORITY (INTERVAL + WINDOW)
 
-fleet.forEach((ac, i) => {
+fleet.forEach(ac => {
 
-  const updated = ACS_handleMonthlyBIntegration(ac);
-
-  fleet[i] = updated;
-
-});
+  // Integración CAMO real (ventana + overdue + activación)
      
+  ACS_handleMonthlyBIntegration(ac);
+
+  // ============================================================
+// 🔒 PERSISTIR CAMBIOS DEL B-CHECK (CRÍTICO)
+// ============================================================
+localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleet));
+     
+});
+
 // 🔒 OPS FILTER — SkyTrack authority
 const operationalItems = items.filter(it => {
   if (it.type === "flight") return true;
@@ -2300,13 +2253,6 @@ fleet.forEach(ac => {
 
       if (x.type === "service") return true;
 
-// ============================================================
-// 🟦 OCC AIRWORTHINESS GATE — SINGLE SOURCE OF TRUTH
-// ============================================================
-
-const occ = ACS_getAircraftOCCStatus(ac);
-const isAircraftGrounded = occ?.grounded === true;
-     
       if (x.type === "flight") {
         if (x.assigned !== true) return false;
         return ACS_isFlightCompatibleWithAircraft(x, ac);
@@ -3495,16 +3441,20 @@ function applyMaintenance(){
   setItems(items);
 
 // 🟢 RESET B-CYCLE si es B-Check
-     
 if (t === "B") {
+
   const fleetNow = getRealFleet();
   const idx = fleetNow.findIndex(x =>
     String(x.id) === String(ac.id)
   );
 
   if (idx !== -1) {
+    fleetNow[idx].lastBCheckAt = ACS_TIME?.currentTime || Date.now();
     fleetNow[idx].maintenanceOverdue = false;
-    fleetNow[idx].bOverdue = false;
+    if (!fleetNow[idx].maintenance) {
+      fleetNow[idx].maintenance = {};
+    }
+    fleetNow[idx].maintenance.bOverdue = false;
 
     localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleetNow));
   }
