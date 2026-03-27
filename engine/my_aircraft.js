@@ -1625,7 +1625,7 @@ function ACS_buildOperationalState(ac, scheduleItems = []) {
     it.serviceType === "B"
   );
 
-  if (ac.isBOverdue === true) {
+ if (ac.bOverdue === true) {
 
     if (hasB) {
       return {
@@ -1763,7 +1763,8 @@ function ACS_getAircraftOCCStatus(ac) {
   // Si está programado/ejecutándose → "B CHECK"
   // Si no está programado y ya venció → "B CHECK OVERDUE"
   // ============================================================
-  if (ac.isBOverdue === true) {
+   
+  if (ac.bOverdue === true) {
 
     const scheduled = (typeof ACS_isBScheduled === "function")
       ? ACS_isBScheduled(ac)
