@@ -2141,14 +2141,14 @@ function renderSchedule() {
 
 // 🟥 CAMO MONTHLY AUTHORITY (INTERVAL + WINDOW)
 
-fleet.forEach(ac => {
+fleet.forEach((ac, i) => {
 
-  // Integración CAMO real (ventana + overdue + activación)
-     
-  ACS_handleMonthlyBIntegration(ac);
-     
+  const updated = ACS_handleMonthlyBIntegration(ac);
+
+  fleet[i] = updated;
+
 });
-
+     
 // 🔒 OPS FILTER — SkyTrack authority
 const operationalItems = items.filter(it => {
   if (it.type === "flight") return true;
