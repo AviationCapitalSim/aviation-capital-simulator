@@ -1719,7 +1719,6 @@ function ACS_applyIdleVisualStatus(ac) {
    ============================================================ */
 
 function ACS_getAircraftOCCStatus(ac) {
-
   if (!ac) {
     return {
       main: "UNKNOWN",
@@ -1728,9 +1727,6 @@ function ACS_getAircraftOCCStatus(ac) {
     };
   }
 
-  // ============================================================
-  // 🔴 D CHECK EN EJECUCIÓN
-  // ============================================================
   if (ac.status === "Maintenance" && ac.maintenanceType === "D") {
     return {
       main: "GROUND",
@@ -1739,9 +1735,6 @@ function ACS_getAircraftOCCStatus(ac) {
     };
   }
 
-  // ============================================================
-  // 🔴 C CHECK EN EJECUCIÓN
-  // ============================================================
   if (ac.status === "Maintenance" && ac.maintenanceType === "C") {
     return {
       main: "GROUND",
@@ -1750,9 +1743,6 @@ function ACS_getAircraftOCCStatus(ac) {
     };
   }
 
-  // ============================================================
-  // 🔴 D CHECK OVERDUE
-  // ============================================================
   if (ac.isDOverdue === true) {
     return {
       main: "GROUND",
@@ -1761,9 +1751,6 @@ function ACS_getAircraftOCCStatus(ac) {
     };
   }
 
-  // ============================================================
-  // 🔴 C CHECK OVERDUE
-  // ============================================================
   if (ac.isCOverdue === true) {
     return {
       main: "GROUND",
@@ -1772,28 +1759,15 @@ function ACS_getAircraftOCCStatus(ac) {
     };
   }
 
-  // ============================================================
-  // 🟡 B CHECK
-  // ------------------------------------------------------------
-  // B se controla desde Schedule.
-  // Si está programado/ejecutándose → "B CHECK"
-  // Si no está programado y ya venció → "B CHECK OVERDUE"
-  // ============================================================
-   
+  if (ac.bInProgress === true || ac.status === "B-Check") {
+    return {
+      main: "GROUND",
+      sub: "B CHECK",
+      className: "status-maintenance"
+    };
+  }
+
   if (ac.bOverdue === true) {
-
-    const scheduled = (typeof ACS_isBScheduled === "function")
-      ? ACS_isBScheduled(ac)
-      : false;
-
-    if (scheduled) {
-      return {
-        main: "GROUND",
-        sub: "B CHECK",
-        className: "status-maintenance"
-      };
-    }
-
     return {
       main: "GROUND",
       sub: "B CHECK OVERDUE",
@@ -1801,9 +1775,6 @@ function ACS_getAircraftOCCStatus(ac) {
     };
   }
 
-  // ============================================================
-  // 🟢 NORMAL
-  // ============================================================
   return {
     main: "ACTIVE",
     sub: "",
