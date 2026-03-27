@@ -1739,106 +1739,107 @@ function ACS_getMonthlyBCycleVisual(ac) {
    ============================================================ */
 
 function ACS_handleMonthlyBIntegration(ac) {
+  const now =
+    (window.ACS_TIME && ACS_TIME.currentTime && ACS_TIME.currentTime.getTime)
+      ? ACS_TIME.currentTime.getTime()
+      : Date.now();
 
-  const now = ACS_TIME?.currentTime?.getTime?.() || Date.now();
   const DAY_MS = 24 * 60 * 60 * 1000;
   const CYCLE_MS = 30 * DAY_MS;
 
-  /* ============================================================
-   🔒 MAJOR CHECK OVERRIDE — RESET & FREEZE B
-   Date: 2026-03-02
-   Purpose:
-   - If aircraft enters C/D:
-       • Reset B cycle
-       • Freeze B completely
-       • Prevent overdue
-       • Prevent activation
-   ============================================================ */
+  if (
+    ac.status === "Maintenance" &&
+    (ac.maintenanceType === "C" || ac.maintenanceType === "D")
+  ) {
+    ac.lastBCheckAt = now;
+    ac.bOverdue = false;
+    ac.bInProgress = false;
+    ac.bStartTime = null;
+    ac.bEndTime = null;
+    return ac;
+  }
 
-if (
-  ac.status === "Maintenance" &&
-  (ac.maintenanceType === "C" || ac.maintenanceType === "D")
-) {
+  if (ac.__bcheckLockedByMajor === true) {
+    ac.bOverdue = false;
+    ac.bInProgress = false;
+    ac.bStartTime = null;
+    ac.bEndTime = null;
+    return ac;
+  }
 
-  // 🔹 Reset B cycle to NOW (C kills B)
-  ac.lastBCheckAt = now;
-
-  // 🔹 Clear any B flags
-  ac.bOverdue = false;
-  ac.bInProgress = false;
-  ac.bStartTime = null;
-
-  return ac; // Freeze while C/D active
-}
-     
   if (!ac.lastBCheckAt) return ac;
 
   const dueDate = ac.lastBCheckAt + CYCLE_MS;
 
-  // 🔹 1️⃣ Aún no vence → limpiar flags
-  if (now < dueDate) {
-    ac.bOverdue = false;
-    ac.maintenanceOverdue = false;
-    return ac;
-  }
-
-  // 🔹 2️⃣ Leer programación real
   let scheduleItems = [];
   try {
     scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
   } catch (e) {}
 
   const service = scheduleItems.find(e =>
+    e &&
     e.aircraftId === ac.id &&
     e.type === "service" &&
-    e.serviceType === "B"
+    e.serviceType === "B" &&
+    e.assigned === true
   );
 
-  // 🔹 3️⃣ Si no hay programación → overdue
-  if (!service) {
-    ac.bOverdue = true;
-    ac.maintenanceOverdue = true;
+  if (ac.bInProgress === true) {
+    const endMs = ac.bEndTime ? new Date(ac.bEndTime).getTime() : NaN;
+
+    if (Number.isFinite(endMs) && now >= endMs) {
+      ac.bInProgress = false;
+      ac.bStartTime = null;
+      ac.bEndTime = null;
+      ac.bOverdue = false;
+      ac.lastBCheckAt = now;
+      ac.status = "Active";
+      return ac;
+    }
+
+    ac.status = "B-Check";
     return ac;
   }
 
-  // 🔹 4️⃣ Activación automática
+  if (now < dueDate) {
+    ac.bOverdue = false;
+    ac.maintenanceOverdue = false;
+    return ac;
+  }
+
+  if (!service) {
+    ac.bOverdue = true;
+    ac.maintenanceOverdue = true;
+    ac.status = "OVERDUE";
+    return ac;
+  }
 
   const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
   const todaySim = daysMap[new Date(now).getDay()];
+  const isScheduledToday = service.day === todaySim;
 
-// 🔹 4️⃣ Activación automática
-
-const isScheduledToday = service.day === todaySim;
-
-// 🔴 PRIORIDAD 1 — OVERDUE → ENTRA INMEDIATO
-if (ac.bOverdue === true && ac.status !== "B-Check") {
-  ac.status = "B-Check";
-  ac.bInProgress = true;
-  ac.bStartTime = now;
-}
-
-// 🟢 PRIORIDAD 2 — PROGRAMADO NORMAL
-else if (isScheduledToday && ac.status !== "B-Check") {
-  ac.status = "B-Check";
-  ac.bInProgress = true;
-  ac.bStartTime = now;
-}
-
-  // 🔹 5️⃣ Completar después de 24h
-  if (ac.bInProgress && ac.bStartTime) {
-    if (now >= ac.bStartTime + DAY_MS) {
-      ac.lastBCheckAt = now;
-      ac.status = "Active";
-      ac.bInProgress = false;
-      ac.bOverdue = false;
-      ac.maintenanceOverdue = false;
-    }
+  if (ac.bOverdue === true && service.assigned === true) {
+    ac.status = "B-Check";
+    ac.bInProgress = true;
+    ac.bStartTime = now;
+    ac.bEndTime = new Date(now + DAY_MS).toISOString();
+    ac.maintenanceOverdue = false;
+    return ac;
   }
 
-  // 🔹 6️⃣ Si ya venció pero no es su día todavía → mantener due (sin overdue)
-  ac.bOverdue = false;
-  ac.maintenanceOverdue = false;
+  if (isScheduledToday && ac.status !== "B-Check") {
+    ac.status = "B-Check";
+    ac.bInProgress = true;
+    ac.bStartTime = now;
+    ac.bEndTime = new Date(now + DAY_MS).toISOString();
+    ac.bOverdue = false;
+    ac.maintenanceOverdue = false;
+    return ac;
+  }
 
+  ac.bOverdue = true;
+  ac.maintenanceOverdue = true;
+  ac.status = "OVERDUE";
   return ac;
 }
      
