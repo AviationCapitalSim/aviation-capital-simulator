@@ -800,6 +800,14 @@ function ACS_applyMaintenanceBaseline(ac) {
     ac.baselineDHours = baselineD;
     ac.maintenanceBaselineApplied = true;
 
+    if (!Number.isFinite(ac.lastBCheckAt)) {
+    ac.lastBCheckAt = now.getTime();
+    }
+
+   ac.bOverdue = false;
+   ac.maintenanceOverdue = false;
+   ac.bInProgress = false;
+     
     // 3) Generar lastC/lastD en el pasado (determinístico)
     // Ajuste ligero por condición: peor condición => más “cerca de vencer”
     const cond = (typeof ac.conditionPercent === "number" && isFinite(ac.conditionPercent)) ? ac.conditionPercent : 100;
@@ -849,6 +857,14 @@ function ACS_applyMaintenanceBaseline(ac) {
   ac.baselineDHours = baselineD;
   ac.maintenanceBaselineApplied = true;
 
+   if (!Number.isFinite(ac.lastBCheckAt)) {
+    ac.lastBCheckAt = now.getTime();
+    }
+
+   ac.bOverdue = false;
+   ac.maintenanceOverdue = false;
+   ac.bInProgress = false;
+   
   const deliveredISO = (() => {
     if (typeof ac.deliveredDate === "string" && ac.deliveredDate) return ac.deliveredDate;
     if (typeof ac.delivered === "string" && ac.delivered) return ac.delivered;
