@@ -2735,26 +2735,7 @@ function ensureEmptyRows() {
    ============================================================ */
 
 function ACS_processABCompletion() {
-
-  const now = getSimTime();
-  let fleet = JSON.parse(localStorage.getItem(ACS_FLEET_KEY) || "[]");
-  let changed = false;
-
-  fleet.forEach(ac => {
-    if (
-      ac.status === "Maintenance" &&
-      ac.abServiceEndDate &&
-      new Date(ac.abServiceEndDate) <= now
-    ) {
-      ac.status = "Active";
-      delete ac.abServiceEndDate;
-      changed = true;
-    }
-  });
-
-  if (changed) {
-    localStorage.setItem(ACS_FLEET_KEY, JSON.stringify(fleet));
-  }
+  return;
 }
 
 /* ============================================================
