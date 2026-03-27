@@ -1785,21 +1785,22 @@ function ACS_handleMonthlyBIntegration(ac) {
   );
 
   if (ac.bInProgress === true) {
-    const endMs = ac.bEndTime ? new Date(ac.bEndTime).getTime() : NaN;
 
-    if (Number.isFinite(endMs) && now >= endMs) {
-      ac.bInProgress = false;
-      ac.bStartTime = null;
-      ac.bEndTime = null;
-      ac.bOverdue = false;
-      ac.lastBCheckAt = now;
-      ac.status = "Active";
-      return ac;
-    }
+  const endMs = Number(ac.bEndTime || NaN);
 
-    ac.status = "B-Check";
+  if (Number.isFinite(endMs) && now >= endMs) {
+    ac.bInProgress = false;
+    ac.bStartTime = null;
+    ac.bEndTime = null;
+    ac.bOverdue = false;
+    ac.lastBCheckAt = now;
+    ac.status = "Active";
     return ac;
   }
+
+  ac.status = "B-Check";
+  return ac;
+}
 
   if (now < dueDate) {
     ac.bOverdue = false;
@@ -1831,7 +1832,7 @@ function ACS_handleMonthlyBIntegration(ac) {
     ac.status = "B-Check";
     ac.bInProgress = true;
     ac.bStartTime = now;
-    ac.bEndTime = new Date(now + DAY_MS).toISOString();
+    ac.bEndTime = now + DAY_MS;
     ac.bOverdue = false;
     ac.maintenanceOverdue = false;
     return ac;
