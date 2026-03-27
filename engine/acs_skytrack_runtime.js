@@ -615,63 +615,33 @@ function ACS_SkyTrack_dayTimeToAbs(day, hhmm) {
    ============================================================ */
 
 function ACS_SkyTrack_getGroundBlock(ac) {
-
   if (!ac) {
     return { blocked: false, reason: null, label: null };
   }
 
-  // ============================================================
-  // 🔴 D CHECK
-  // ============================================================
   if (ac.status === "Maintenance" && ac.maintenanceType === "D") {
     return { blocked: true, reason: "D_CHECK", label: "D CHECK" };
   }
 
-  // ============================================================
-  // 🔴 C CHECK
-  // ============================================================
   if (ac.status === "Maintenance" && ac.maintenanceType === "C") {
     return { blocked: true, reason: "C_CHECK", label: "C CHECK" };
   }
 
-  // ============================================================
-  // 🔴 D CHECK OVERDUE
-  // ============================================================
   if (ac.isDOverdue === true) {
     return { blocked: true, reason: "D_CHECK_OVERDUE", label: "D CHECK OVERDUE" };
   }
 
-  // ============================================================
-  // 🔴 C CHECK OVERDUE
-  // ============================================================
   if (ac.isCOverdue === true) {
     return { blocked: true, reason: "C_CHECK_OVERDUE", label: "C CHECK OVERDUE" };
   }
 
-  // ============================================================
-  // 🟡 B CHECK
-  // ------------------------------------------------------------
-  // B viene desde Schedule.
-  // Si ya venció y está programado → B CHECK
-  // Si venció y NO está programado → B CHECK OVERDUE
-  // ============================================================
-   
-  if (ac.bOverdue === true) {
-
-  const items = ACS_SkyTrack.itemsByAircraft?.[ac.id] || [];
-
-  const hasB = items.some(it =>
-    it &&
-    it.type === "service" &&
-    it.serviceType === "B"
-  );
-
-  if (hasB) {
+  if (ac.bInProgress === true || ac.status === "B-Check") {
     return { blocked: true, reason: "B_CHECK", label: "B CHECK" };
   }
 
-  return { blocked: true, reason: "B_CHECK_OVERDUE", label: "B CHECK OVERDUE" };
-}
+  if (ac.bOverdue === true) {
+    return { blocked: true, reason: "B_CHECK_OVERDUE", label: "B CHECK OVERDUE" };
+  }
 
   return { blocked: false, reason: null, label: null };
 }
@@ -684,66 +654,27 @@ function ACS_SkyTrack_getGroundBlock(ac) {
 function ACS_SkyTrack_resolveState(aircraftId) {
 
   const ac = ACS_SkyTrack.aircraftIndex[aircraftId];
-  const items = ACS_SkyTrack.itemsByAircraft[aircraftId] || [];
-  const now = ACS_SkyTrack.nowAbsMin;
+const items = ACS_SkyTrack.itemsByAircraft[aircraftId] || [];
+const now = ACS_SkyTrack.nowAbsMin;
 
-  if (!ac || !Number.isFinite(now)) return null;
-
-  /* ============================================================
-     1️⃣ MAINTENANCE — B-CHECK ONLY (NO CHANGE)
-     ============================================================ */
-   
-  const bCheck = items.find(it => {
-    if (it.type !== "service" || it.serviceType !== "B") return false;
-    if (!it.day || !it.start || !Number.isFinite(it.durationMin)) return false;
-
-    const startAbs = ACS_SkyTrack_dayTimeToAbs(it.day, it.start);
-    const endAbs = startAbs + it.durationMin;
-    return now >= startAbs && now < endAbs;
-  });
-
- if (
-  bCheck &&
-  typeof bCheck.day === "string" &&
-  typeof bCheck.start === "string" &&
-  Number.isFinite(bCheck.durationMin)
-) {
-  const startAbs = ACS_SkyTrack_dayTimeToAbs(bCheck.day, bCheck.start);
-  const endAbs   = startAbs + bCheck.durationMin;
-
-  if (Number.isFinite(startAbs) && now >= startAbs && now < endAbs) {
-    return {
-  state: "B CHECK",
-  position: { airport: ac.baseAirport || null },
-  flight: null
-};
-  }
-}
-
-
-  // ============================================================
-// 🔴 HARD BLOCK — OCC SERVICE LABEL
-// ============================================================
+if (!ac || !Number.isFinite(now)) return null;
 
 const hardBlock = ACS_SkyTrack_getGroundBlock(ac);
 
 if (hardBlock && hardBlock.blocked) {
-
   let label = "GROUND";
 
-  if (hardBlock.reason === "B_CHECK_OVERDUE") {
+  if (hardBlock.reason === "B_CHECK") {
+    label = "B CHECK";
+  } else if (hardBlock.reason === "B_CHECK_OVERDUE") {
     label = "B CHECK OVERDUE";
-  }
-  else if (hardBlock.reason === "C_CHECK_OVERDUE") {
+  } else if (hardBlock.reason === "C_CHECK_OVERDUE") {
     label = "C CHECK OVERDUE";
-  }
-  else if (hardBlock.reason === "D_CHECK_OVERDUE") {
+  } else if (hardBlock.reason === "D_CHECK_OVERDUE") {
     label = "D CHECK OVERDUE";
-  }
-  else if (hardBlock.reason === "C_CHECK") {
+  } else if (hardBlock.reason === "C_CHECK") {
     label = "C CHECK";
-  }
-  else if (hardBlock.reason === "D_CHECK") {
+  } else if (hardBlock.reason === "D_CHECK") {
     label = "D CHECK";
   }
 
