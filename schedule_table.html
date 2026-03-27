@@ -1789,14 +1789,23 @@ function ACS_handleMonthlyBIntegration(ac) {
     }
 
     if (now >= ac.bEndTime) {
-      ac.bInProgress = false;
-      ac.bStartTime = null;
-      ac.bEndTime = null;
-      ac.bOverdue = false;
-      ac.lastBCheckAt = now;
-      ac.status = "Active";
-      return ac;
-    }
+
+  ac.bInProgress = false;
+  ac.bStartTime = null;
+  ac.bEndTime = null;
+  ac.bOverdue = false;
+  ac.lastBCheckAt = now;
+
+  // 🔴 FORZAR ESTADO GLOBAL
+  ac.status = "Active";
+
+  // 🔴 LIMPIEZA EXTRA (CLAVE)
+  delete ac.bInProgress;
+  delete ac.bStartTime;
+  delete ac.bEndTime;
+
+  return ac;
+}
 
     ac.status = "B-Check";
     return ac;
