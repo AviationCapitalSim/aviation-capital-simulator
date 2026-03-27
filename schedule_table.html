@@ -1739,6 +1739,7 @@ function ACS_getMonthlyBCycleVisual(ac) {
    ============================================================ */
 
 function ACS_handleMonthlyBIntegration(ac) {
+
   const now =
     (window.ACS_TIME && ACS_TIME.currentTime && ACS_TIME.currentTime.getTime)
       ? ACS_TIME.currentTime.getTime()
@@ -1747,11 +1748,11 @@ function ACS_handleMonthlyBIntegration(ac) {
   const DAY_MS = 24 * 60 * 60 * 1000;
   const CYCLE_MS = 30 * DAY_MS;
 
+  // 🔴 C/D dominan
   if (
     ac.status === "Maintenance" &&
     (ac.maintenanceType === "C" || ac.maintenanceType === "D")
   ) {
-    ac.lastBCheckAt = now;
     ac.bOverdue = false;
     ac.bInProgress = false;
     ac.bStartTime = null;
@@ -1759,14 +1760,7 @@ function ACS_handleMonthlyBIntegration(ac) {
     return ac;
   }
 
-  if (ac.__bcheckLockedByMajor === true) {
-    ac.bOverdue = false;
-    ac.bInProgress = false;
-    ac.bStartTime = null;
-    ac.bEndTime = null;
-    return ac;
-  }
-
+  // 🔴 Si nunca tuvo B
   if (!ac.lastBCheckAt) return ac;
 
   const dueDate = ac.lastBCheckAt + CYCLE_MS;
@@ -1784,63 +1778,85 @@ function ACS_handleMonthlyBIntegration(ac) {
     e.assigned === true
   );
 
+  // ============================================================
+  // 🟡 B EN PROGRESO
+  // ============================================================
   if (ac.bInProgress === true) {
 
-  const endMs = Number(ac.bEndTime || NaN);
+    // 🔴 asegurar endTime válido
+    if (!ac.bEndTime || isNaN(ac.bEndTime)) {
+      ac.bEndTime = now + DAY_MS;
+    }
 
-  if (Number.isFinite(endMs) && now >= endMs) {
-    ac.bInProgress = false;
-    ac.bStartTime = null;
-    ac.bEndTime = null;
-    ac.bOverdue = false;
-    ac.lastBCheckAt = now;
-    ac.status = "Active";
+    if (now >= ac.bEndTime) {
+      ac.bInProgress = false;
+      ac.bStartTime = null;
+      ac.bEndTime = null;
+      ac.bOverdue = false;
+      ac.lastBCheckAt = now;
+      ac.status = "Active";
+      return ac;
+    }
+
+    ac.status = "B-Check";
     return ac;
   }
 
-  ac.status = "B-Check";
-  return ac;
-}
-
+  // ============================================================
+  // 🟢 AÚN NO VENCE
+  // ============================================================
   if (now < dueDate) {
     ac.bOverdue = false;
-    ac.maintenanceOverdue = false;
     return ac;
   }
 
+  // ============================================================
+  // 🔴 OVERDUE SIN SERVICIO
+  // ============================================================
   if (!service) {
     ac.bOverdue = true;
-    ac.maintenanceOverdue = true;
     ac.status = "OVERDUE";
     return ac;
   }
 
-  const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
-  const todaySim = daysMap[new Date(now).getDay()];
-  const isScheduledToday = service.day === todaySim;
-
+  // ============================================================
+  // 🟠 OVERDUE + SERVICIO → ENTRA INMEDIATO
+  // ============================================================
   if (ac.bOverdue === true && service.assigned === true) {
-    ac.status = "B-Check";
-    ac.bInProgress = true;
-    ac.bStartTime = now;
-    ac.bEndTime = new Date(now + DAY_MS).toISOString();
-    ac.maintenanceOverdue = false;
-    return ac;
-  }
 
-  if (isScheduledToday && ac.status !== "B-Check") {
     ac.status = "B-Check";
     ac.bInProgress = true;
     ac.bStartTime = now;
     ac.bEndTime = now + DAY_MS;
     ac.bOverdue = false;
-    ac.maintenanceOverdue = false;
+
     return ac;
   }
 
+  // ============================================================
+  // 🟡 PROGRAMADO (DÍA)
+  // ============================================================
+  const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
+  const todaySim = daysMap[new Date(now).getDay()];
+  const isScheduledToday = service.day === todaySim;
+
+  if (isScheduledToday) {
+
+    ac.status = "B-Check";
+    ac.bInProgress = true;
+    ac.bStartTime = now;
+    ac.bEndTime = now + DAY_MS;
+    ac.bOverdue = false;
+
+    return ac;
+  }
+
+  // ============================================================
+  // 🔴 SI LLEGÓ AQUÍ → OVERDUE
+  // ============================================================
   ac.bOverdue = true;
-  ac.maintenanceOverdue = true;
   ac.status = "OVERDUE";
+
   return ac;
 }
      
