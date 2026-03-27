@@ -1806,14 +1806,23 @@ if (
   const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
   const todaySim = daysMap[new Date(now).getDay()];
 
-  const isScheduledToday = service.day === todaySim;
+// 🔹 4️⃣ Activación automática
 
-  // Si ya venció y hoy es su día → entrar en B-Check
-  if (isScheduledToday && ac.status !== "B-Check") {
-    ac.status = "B-Check";
-    ac.bInProgress = true;
-    ac.bStartTime = now;
-  }
+const isScheduledToday = service.day === todaySim;
+
+// 🔴 PRIORIDAD 1 — OVERDUE → ENTRA INMEDIATO
+if (ac.bOverdue === true && ac.status !== "B-Check") {
+  ac.status = "B-Check";
+  ac.bInProgress = true;
+  ac.bStartTime = now;
+}
+
+// 🟢 PRIORIDAD 2 — PROGRAMADO NORMAL
+else if (isScheduledToday && ac.status !== "B-Check") {
+  ac.status = "B-Check";
+  ac.bInProgress = true;
+  ac.bStartTime = now;
+}
 
   // 🔹 5️⃣ Completar después de 24h
   if (ac.bInProgress && ac.bStartTime) {
