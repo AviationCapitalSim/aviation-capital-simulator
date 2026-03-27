@@ -3469,20 +3469,16 @@ function applyMaintenance(){
   setItems(items);
 
 // 🟢 RESET B-CYCLE si es B-Check
+     
 if (t === "B") {
-
   const fleetNow = getRealFleet();
   const idx = fleetNow.findIndex(x =>
     String(x.id) === String(ac.id)
   );
 
   if (idx !== -1) {
-    fleetNow[idx].lastBCheckAt = ACS_TIME?.currentTime || Date.now();
     fleetNow[idx].maintenanceOverdue = false;
-    if (!fleetNow[idx].maintenance) {
-      fleetNow[idx].maintenance = {};
-    }
-    fleetNow[idx].maintenance.bOverdue = false;
+    fleetNow[idx].bOverdue = false;
 
     localStorage.setItem("ACS_MyAircraft", JSON.stringify(fleetNow));
   }
