@@ -1703,6 +1703,67 @@ const setFleet = f => localStorage.setItem("ACS_MyAircraft", JSON.stringify(f));
 })();
 
 /* ============================================================
+   🟦 A-CHECK — WEEKLY VISUAL ENGINE
+   ------------------------------------------------------------
+   • NO usa lastCheck
+   • Basado en día + hora programada
+   • Devuelve remaining en días + horas
+   ============================================================ */
+
+function ACS_getWeeklyACheckVisual(dayStr, hourStart){
+
+  const DAYS = ["sun","mon","tue","wed","thu","fri","sat"];
+
+  const nowRaw = ACS_TIME?.currentTime;
+  const now =
+    nowRaw instanceof Date ? nowRaw.getTime() :
+    typeof nowRaw === "number" ? nowRaw :
+    new Date(nowRaw).getTime();
+
+  if (!Number.isFinite(now)) {
+    return { label: "—", days: 0, hours: 0 };
+  }
+
+  const nowDate = new Date(now);
+
+  const currentDay = nowDate.getUTCDay(); // 0–6
+  const targetDay = DAYS.indexOf(dayStr.toLowerCase());
+
+  if (targetDay === -1) {
+    return { label: "—", days: 0, hours: 0 };
+  }
+
+  // 🔹 calcular días hasta el próximo target
+  let deltaDays = targetDay - currentDay;
+  if (deltaDays < 0) deltaDays += 7;
+
+  // 🔹 construir fecha objetivo
+  const next = new Date(now);
+  next.setUTCDate(nowDate.getUTCDate() + deltaDays);
+
+  const [hh, mm] = hourStart.split(":").map(Number);
+  next.setUTCHours(hh || 0, mm || 0, 0, 0);
+
+  // 🔴 si es hoy pero ya pasó la hora → próxima semana
+  if (deltaDays === 0 && next.getTime() <= now) {
+    next.setUTCDate(next.getUTCDate() + 7);
+  }
+
+  const diff = next.getTime() - now;
+
+  const totalHours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+
+  return {
+    label: `${days}d ${hours}h`,
+    days,
+    hours,
+    cycle: "7 days"
+  };
+}
+     
+/* ============================================================
    🟦 B-CHECK CYCLE — CAMO REAL (INTERVAL DRIVEN)
    ------------------------------------------------------------
    • Intervalo fijo 30 días
