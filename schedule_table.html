@@ -4943,6 +4943,8 @@ function openMaintenanceInfoModal(service, aircraft){
 
   title.textContent = typeLabel;
 
+const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
+     
 let barHTML = "";
 
 const bCycle = ACS_getMonthlyBCycleVisual(aircraft);
