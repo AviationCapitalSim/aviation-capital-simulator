@@ -1702,6 +1702,12 @@ function ACS_getMonthlyBCycleVisual(ac) {
   const MS_DAY = 24 * 60 * 60 * 1000;
   const INTERVAL = 30 * MS_DAY;
 
+  // 🛠️ NORMALIZACIÓN lastBCheckAt
+  if (typeof ac.lastBCheckAt === "string") {
+  const parsed = new Date(ac.lastBCheckAt).getTime();
+  ac.lastBCheckAt = Number.isFinite(parsed) ? parsed : now;
+  }     
+     
   const last = Number.isFinite(ac.lastBCheckAt)
     ? ac.lastBCheckAt
     : now;
