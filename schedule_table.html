@@ -1756,7 +1756,8 @@ if (!Number.isFinite(last)) {
 
 function ACS_handleMonthlyBIntegration(ac) {
 
-  const now = ACS_TIME?.currentTime?.getTime?.() || Date.now();
+  const now = ACS_getSimTimeSafe();
+  if (!Number.isFinite(now)) return ac;
   const DAY_MS = 24 * 60 * 60 * 1000;
   const CYCLE_MS = 30 * DAY_MS;
 
@@ -3511,7 +3512,14 @@ if (t === "B") {
   );
 
   if (idx !== -1) {
-    fleetNow[idx].lastBCheckAt = ACS_TIME?.currentTime || Date.now();
+    const simNow = ACS_getSimTimeSafe();
+
+  if (!Number.isFinite(simNow)) {
+  alert("⚠ Time Engine not ready");
+  return;
+  }
+
+    fleetNow[idx].lastBCheckAt = simNow;
     fleetNow[idx].maintenanceOverdue = false;
     if (!fleetNow[idx].maintenance) {
       fleetNow[idx].maintenance = {};
