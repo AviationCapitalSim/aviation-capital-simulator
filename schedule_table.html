@@ -4954,9 +4954,11 @@ let barHTML = "";
 
 if (service.serviceType?.toUpperCase().includes("A")) {
 
-  const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
+const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
 
-const totalWeek = 7 * 24; // 168h
+const remainingHours = (visual.days * 24) + visual.hours;
+
+const totalWeek = 7 * 24;
 const percent = (remainingHours / totalWeek) * 100;
 
 // 🎯 COLOR
