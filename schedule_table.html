@@ -4956,35 +4956,23 @@ if (service.serviceType?.toUpperCase().includes("A")) {
 
   const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
 
-const totalHoursWeek = 7 * 24;
-const remainingHours = visual.remainingHours;
+const totalWeek = 7 * 24; // 168h
+const percent = (remainingHours / totalWeek) * 100;
 
+// 🎯 COLOR
 let color;
-let progress;
 
-// 🟢 6–7 días (muy lejos)
-if (remainingHours > 144) {          // >6 días
-  color = "#00c853";
-  progress = 100;
+if (percent > 75) {
+  color = "#00c853"; // verde
+} else if (percent > 50) {
+  color = "#ffd600"; // amarillo
+} else if (percent > 25) {
+  color = "#ff9100"; // naranja
+} else {
+  color = "#d50000"; // rojo
 }
 
-// 🟡 4–6 días
-else if (remainingHours > 72) {      // 3–6 días
-  color = "#ffd600";
-  progress = 70;
-}
-
-// 🟠 2–3 días
-else if (remainingHours > 48) {      // 2–3 días
-  color = "#ff9100";
-  progress = 40;
-}
-
-// 🔴 <2 días
-else {
-  color = "#d50000";
-  progress = 10;
-}
+const progress = percent;
      
   barHTML = `
   <div class="bcycle-box">
