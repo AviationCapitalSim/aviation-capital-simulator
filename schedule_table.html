@@ -4960,27 +4960,30 @@ const totalHoursWeek = 7 * 24;
 const remainingHours = visual.remainingHours;
 
 let color;
-
-if (remainingHours > 48) {
-  color = "#00c853"; // verde
-} else if (remainingHours > 24) {
-  color = "#ffd600"; // amarillo
-} else if (remainingHours > 6) {
-  color = "#ff9100"; // naranja
-} else {
-  color = "#d50000"; // rojo
-}
-
 let progress;
 
-if (remainingHours > 48) {
-  progress = 35;
-} else if (remainingHours > 24) {
-  progress = 70;
-} else if (remainingHours > 6) {
-  progress = 90;
-} else {
+// 🟢 VERDE — lejos (≈7 días)
+if (remainingHours > 120) {            // >5 días
+  color = "#00c853";
   progress = 100;
+}
+
+// 🟡 AMARILLO — entrando en ventana media (≈5 días)
+else if (remainingHours > 72) {        // 3–5 días
+  color = "#ffd600";
+  progress = 70;
+}
+
+// 🟠 NARANJA — cerca (≈3 días)
+else if (remainingHours > 24) {        // 1–3 días
+  color = "#ff9100";
+  progress = 40;
+}
+
+// 🔴 ROJO — crítico (≤1 día)
+else {
+  color = "#d50000";
+  progress = 10;
 }
      
   barHTML = `
