@@ -4956,11 +4956,9 @@ if (service.serviceType?.toUpperCase().includes("A")) {
 
   const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
 
-  // 🎯 color por proximidad real
-  const totalHoursWeek = 7 * 24;
-  const remainingHours = visual.remainingHours;
+const totalHoursWeek = 7 * 24;
+const remainingHours = visual.remainingHours;
 
-// 🎯 color por proximidad real
 let color;
 
 if (remainingHours > 48) {
