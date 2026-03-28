@@ -4962,25 +4962,25 @@ const remainingHours = visual.remainingHours;
 let color;
 let progress;
 
-// 🟢 VERDE — lejos (≈7 días)
-if (remainingHours > 120) {            // >5 días
+// 🟢 6–7 días (muy lejos)
+if (remainingHours > 144) {          // >6 días
   color = "#00c853";
   progress = 100;
 }
 
-// 🟡 AMARILLO — entrando en ventana media (≈5 días)
-else if (remainingHours > 72) {        // 3–5 días
+// 🟡 4–6 días
+else if (remainingHours > 72) {      // 3–6 días
   color = "#ffd600";
   progress = 70;
 }
 
-// 🟠 NARANJA — cerca (≈3 días)
-else if (remainingHours > 24) {        // 1–3 días
+// 🟠 2–3 días
+else if (remainingHours > 48) {      // 2–3 días
   color = "#ff9100";
   progress = 40;
 }
 
-// 🔴 ROJO — crítico (≤1 día)
+// 🔴 <2 días
 else {
   color = "#d50000";
   progress = 10;
