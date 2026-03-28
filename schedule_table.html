@@ -1726,25 +1726,31 @@ function ACS_getWeeklyACheckVisual(dayStr, hourStart){
 
   const nowDate = new Date(now);
 
-  const currentDay = nowDate.getUTCDay(); // 0–6
-  const targetDay = DAYS.indexOf(dayStr.toLowerCase());
+  const currentDay = nowDate.getUTCDay();
+  const targetDay = DAYS.indexOf((dayStr || "").toLowerCase());
 
   if (targetDay === -1) {
     return { label: "—", days: 0, hours: 0 };
   }
 
-  // 🔹 calcular días hasta el próximo target
+  // 🔹 días hasta próximo día elegido
   let deltaDays = targetDay - currentDay;
   if (deltaDays < 0) deltaDays += 7;
 
-  // 🔹 construir fecha objetivo
   const next = new Date(now);
+
   next.setUTCDate(nowDate.getUTCDate() + deltaDays);
 
-  const [hh, mm] = hourStart.split(":").map(Number);
+  // 🔹 usar EXACTAMENTE la hora elegida por el usuario
+  let hh = 0, mm = 0;
+
+  if (typeof hourStart === "string" && hourStart.includes(":")) {
+    [hh, mm] = hourStart.split(":").map(Number);
+  }
+
   next.setUTCHours(hh || 0, mm || 0, 0, 0);
 
-  // 🔴 si es hoy pero ya pasó la hora → próxima semana
+  // 🔹 si es hoy y ya pasó → próxima semana
   if (deltaDays === 0 && next.getTime() <= now) {
     next.setUTCDate(next.getUTCDate() + 7);
   }
@@ -1758,8 +1764,7 @@ function ACS_getWeeklyACheckVisual(dayStr, hourStart){
   return {
     label: `${days}d ${hours}h`,
     days,
-    hours,
-    cycle: "7 days"
+    hours
   };
 }
      
