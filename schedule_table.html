@@ -1807,19 +1807,48 @@ if (
     return ac;
   }
 
-  // 🔹 4️⃣ Activación automática
+  // 🔹 4️⃣ Activación automática (DÍA + HORA REAL)
 
-  const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
-  const todaySim = daysMap[new Date(now).getDay()];
+const daysMap = ["sun","mon","tue","wed","thu","fri","sat"];
+const nowDate = new Date(now);
 
-  const isScheduledToday = service.day === todaySim;
+const todaySim = daysMap[nowDate.getDay()];
+const currentMinutes = nowDate.getHours() * 60 + nowDate.getMinutes();
 
-  // Si ya venció y hoy es su día → entrar en B-Check
-  if (isScheduledToday && ac.status !== "B-Check") {
-    ac.status = "B-Check";
-    ac.bInProgress = true;
-    ac.bStartTime = now;
-  }
+// Convertir ventana "01:00" → minutos
+function toMinutes(hhmm) {
+  if (!hhmm || !hhmm.includes(":")) return null;
+  const [h, m] = hhmm.split(":").map(Number);
+  return (h * 60) + m;
+}
+
+const startMin = toMinutes(service.start);
+const endMin   = toMinutes(service.end);
+
+// Validaciones
+const isScheduledToday = service.day === todaySim;
+const isWithinWindow =
+  startMin !== null &&
+  endMin !== null &&
+  currentMinutes >= startMin &&
+  currentMinutes <= endMin;
+
+// 👉 ENTRADA REAL AL B
+if (
+  isScheduledToday &&
+  isWithinWindow &&
+  ac.status !== "B-Check"
+) {
+  ac.status = "B-Check";
+  ac.bInProgress = true;
+  ac.bStartTime = now;
+
+  console.log("🟡 B-CHECK START:", {
+    aircraft: ac.id,
+    simTime: nowDate.toISOString(),
+    window: service.start + " → " + service.end
+  });
+}
 
   // 🔹 5️⃣ Completar después de 24h — FIX ROBUSTO
 
