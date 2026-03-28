@@ -1644,6 +1644,33 @@ const toHHMM = min => {
 const days = ["mon","tue","wed","thu","fri","sat","sun"];
 
 /* ============================================================
+   ⏱ SAFE SIM TIME — SCHEDULE ONLY
+   ============================================================ */
+
+function ACS_getSimTimeSafe(){
+
+  if (typeof ACS_TIME === "undefined") return null;
+
+  const t = ACS_TIME.currentTime;
+
+  if (t instanceof Date) {
+    const ts = t.getTime();
+    return Number.isFinite(ts) ? ts : null;
+  }
+
+  if (typeof t === "number" && Number.isFinite(t)) {
+    return t;
+  }
+
+  if (typeof t === "string") {
+    const parsed = new Date(t).getTime();
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+     
+/* ============================================================
    🔧 B2 — RESTAURAR STORE KEYS (OBLIGATORIO)
    ============================================================ */
      
