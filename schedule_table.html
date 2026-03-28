@@ -4957,22 +4957,21 @@ if (service.serviceType?.toUpperCase().includes("A")) {
   const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
 
   // 🎯 color por proximidad real
-  let color;
+  const totalHoursWeek = 7 * 24;
+  const remainingHours = (visual.days * 24) + visual.hours;
 
-  const totalHours = (visual.days * 24) + visual.hours;
+// 🎯 color por proximidad real
+let color;
 
-  if (totalHours > 48) {
-    color = "#00c853"; // verde
-  } else if (totalHours > 24) {
-    color = "#ffd600"; // amarillo
-  } else if (totalHours > 6) {
-    color = "#ff9100"; // naranja
-  } else {
-    color = "#d50000"; // rojo
-  }
-
-const totalHoursWeek = 7 * 24;
-const remainingHours = (visual.days * 24) + visual.hours;
+if (remainingHours > 48) {
+  color = "#00c853"; // verde
+} else if (remainingHours > 24) {
+  color = "#ffd600"; // amarillo
+} else if (remainingHours > 6) {
+  color = "#ff9100"; // naranja
+} else {
+  color = "#d50000"; // rojo
+}
 
 let progress;
 
