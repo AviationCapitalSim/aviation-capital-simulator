@@ -1704,16 +1704,24 @@ function ACS_getMonthlyBCycleVisual(ac) {
 
   let last = ac.lastBCheckAt;
 
-  // ✅ Normalizar si viene como string ISO
-  if (typeof last === "string") {
-    const parsed = new Date(last).getTime();
+// 🔹 FIX REAL: soportar number, string ISO y string numérico
+if (typeof last === "string") {
+  const trimmed = last.trim();
+
+  // Caso 1: string numérico puro
+  if (/^\d+$/.test(trimmed)) {
+    last = Number(trimmed);
+  } else {
+    // Caso 2: ISO date string
+    const parsed = new Date(trimmed).getTime();
     last = Number.isFinite(parsed) ? parsed : now;
   }
+}
 
-  // ✅ Normalizar si viene inválido
-  if (!Number.isFinite(last)) {
-    last = now;
-  }
+// 🔹 Fallback final seguro
+if (!Number.isFinite(last)) {
+  last = now;
+}
 
   const dueDate = last + INTERVAL;
   const remainingMs = Math.max(0, dueDate - now);
