@@ -4947,17 +4947,20 @@ const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
      
 let barHTML = "";
 
-const bCycle = ACS_getMonthlyBCycleVisual(aircraft);
-     
-if (bCycle) {
+if (service.serviceType?.toUpperCase().includes("A")) {
 
+  const visual = ACS_getWeeklyACheckVisual(service.day, service.start);
+
+  // 🎯 color por proximidad real
   let color;
 
-  if (bCycle.remainingDays > 15) {
-    color = "#00c853"; // verde técnico
-  } else if (bCycle.remainingDays > 7) {
+  const totalHours = (visual.days * 24) + visual.hours;
+
+  if (totalHours > 48) {
+    color = "#00c853"; // verde
+  } else if (totalHours > 24) {
     color = "#ffd600"; // amarillo
-  } else if (bCycle.remainingDays > 3) {
+  } else if (totalHours > 6) {
     color = "#ff9100"; // naranja
   } else {
     color = "#d50000"; // rojo
@@ -4965,22 +4968,63 @@ if (bCycle) {
 
   barHTML = `
     <div class="bcycle-box">
-      <div class="bcycle-header">B-CHECK CYCLE</div>
+      <div class="bcycle-header">A-CHECK CYCLE</div>
 
       <div class="bcycle-bar">
         <div class="bcycle-fill"
-             style="width:${bCycle.percent}%; background:${color};">
+             style="width:100%; background:${color};">
         </div>
       </div>
 
       <div class="bcycle-info">
-        <span>Remaining</span>
-        <span>${bCycle.remainingDays > 0 ? bCycle.remainingDays + " days" : "0 days"}</span>
+        <span>Next</span>
+        <span>${visual.label}</span>
+      </div>
+
+      <div class="bcycle-info">
+        <span>Cycle</span>
+        <span>7 days</span>
       </div>
     </div>
   `;
-}
 
+} else {
+
+  const bCycle = ACS_getMonthlyBCycleVisual(aircraft);
+
+  if (bCycle) {
+
+    let color;
+
+    if (bCycle.remainingDays > 15) {
+      color = "#00c853";
+    } else if (bCycle.remainingDays > 7) {
+      color = "#ffd600";
+    } else if (bCycle.remainingDays > 3) {
+      color = "#ff9100";
+    } else {
+      color = "#d50000";
+    }
+
+    barHTML = `
+      <div class="bcycle-box">
+        <div class="bcycle-header">B-CHECK CYCLE</div>
+
+        <div class="bcycle-bar">
+          <div class="bcycle-fill"
+               style="width:${bCycle.percent}%; background:${color};">
+          </div>
+        </div>
+
+        <div class="bcycle-info">
+          <span>Remaining</span>
+          <span>${bCycle.remainingDays > 0 ? bCycle.remainingDays + " days" : "0 days"}</span>
+        </div>
+      </div>
+    `;
+  }
+}
+     
 body.innerHTML = `
   <div class="flight-kicker">
     <strong>${aircraft.registration || "—"}</strong>
