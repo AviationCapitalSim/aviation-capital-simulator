@@ -4971,6 +4971,16 @@ if (service.serviceType?.toUpperCase().includes("A")) {
     color = "#d50000"; // rojo
   }
 
+// 🔹 progreso real dentro del ciclo semanal (0 → 7 días)
+const totalHoursWeek = 7 * 24;
+
+const remainingHours = (visual.days * 24) + visual.hours;
+
+const usedHours = totalHoursWeek - remainingHours;
+
+// % de barra
+const progress = Math.max(0, Math.min(100, (usedHours / totalHoursWeek) * 100));
+     
   barHTML = `
     <div class="bcycle-box">
       <div class="bcycle-header">A-CHECK CYCLE</div>
