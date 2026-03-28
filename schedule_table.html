@@ -1815,16 +1815,33 @@ if (
     ac.bStartTime = now;
   }
 
-  // 🔹 5️⃣ Completar después de 24h
-  if (ac.bInProgress && ac.bStartTime) {
-    if (now >= ac.bStartTime + DAY_MS) {
-      ac.lastBCheckAt = now;
-      ac.status = "Active";
-      ac.bInProgress = false;
-      ac.bOverdue = false;
-      ac.maintenanceOverdue = false;
-    }
+  // 🔹 5️⃣ Completar después de 24h — FIX ROBUSTO
+
+if (ac.bInProgress) {
+
+  // 🛡️ Validar bStartTime correctamente
+  if (!Number.isFinite(ac.bStartTime)) {
+    console.warn("⚠️ B-CHECK: bStartTime inválido — reiniciando");
+    ac.bStartTime = now;
+    return ac;
   }
+
+  const endTime = ac.bStartTime + DAY_MS;
+
+  if (now >= endTime) {
+
+    // ✅ Cierre correcto del B
+    ac.lastBCheckAt = now;
+    ac.status = "Active";
+    ac.bInProgress = false;
+    ac.bStartTime = null;
+
+    ac.bOverdue = false;
+    ac.maintenanceOverdue = false;
+
+    console.log("🟢 B-CHECK COMPLETED:", ac.id);
+  }
+}
 
   // 🔹 6️⃣ Si ya venció pero no es su día todavía → mantener due (sin overdue)
   ac.bOverdue = false;
