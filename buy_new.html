@@ -691,6 +691,13 @@
   window.ACS_BUY_NEW_IMAGE_FALLBACK = true;
 </script>
 
+<script>
+function ACS_formatUSD(value) {
+  if (!Number.isFinite(value)) return "$0";
+  return "$" + Math.round(value).toLocaleString("en-US");
+}
+</script>     
+     
 <script src="engine/acs_buy_aircraft.js"></script>
 
 <script>
