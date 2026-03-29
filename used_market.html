@@ -498,7 +498,20 @@ body {
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
 
+     
 <script>
+
+/* ============================================================
+   💰 ACS MONEY FORMATTER — FULL USD (NO M FORMAT)
+   ============================================================ */
+
+function ACS_formatUSD(value) {
+  if (!Number.isFinite(value)) return "$0";
+
+  return "$" + Math.round(value).toLocaleString("en-US");
+}
+
+     
 function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
   if(!el) return;
@@ -583,7 +596,7 @@ function openBuyModal(id) {
   titleEl.textContent = `Purchase ${ac.manufacturer} ${ac.model}`;
 
   detailsEl.innerHTML = `
-    <b>Price:</b> $${(ac.price_acs_usd / 1_000_000).toFixed(2)}M<br>
+    <b>Price:</b> ${ACS_formatUSD(ac.price_acs_usd)}<br>
     <b>Condition:</b> ${ac.condition}<br>
     <b>Hours:</b> ${ac.hours.toLocaleString()}<br>
     <b>Cycles:</b> ${ac.cycles.toLocaleString()}<br><br>
