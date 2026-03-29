@@ -948,12 +948,19 @@ function renderRoutesTable() {
 
   localStorage.setItem(SELECTED_ROUTE_KEY, routeId);
 
-  // Update pricing panel (NO calculations)
+  if (priceRoute) {
   priceRoute.textContent = `${route.origin} → ${route.destination}`;
+}
+
+if (priceValue) {
   priceValue.textContent = route.currentTicket
     ? `$${route.currentTicket}`
     : "—";
+}
+
+if (priceEra) {
   priceEra.textContent = route.era || "—";
+}
 
   /* ============================================================
      🟦 OCC PANEL — ROUTES OPERATIONAL RENDER (PHASE 1 BASE)
