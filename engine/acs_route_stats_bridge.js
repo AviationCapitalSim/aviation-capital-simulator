@@ -459,34 +459,6 @@ window.addEventListener(
 console.log("🟦 KPI REFLECTION ENGINE READY (CLEAN)");
 
 /* ============================================================
-   LISTEN FOR ROUTES BUILDER READY
-   ============================================================ */
-
-window.addEventListener(
-  "ACS_ROUTES_READY",
-  ACS_refreshRouteKPIs
-);
-
-/* ============================================================
-   INITIAL KPI LOAD
-   ============================================================ */
-
-setTimeout(function(){
-
-  if (typeof ACS_refreshRouteKPIs === "function") {
-    ACS_refreshRouteKPIs();
-    console.log("🟦 KPI INITIAL LOAD OK");
-  }
-
-}, 300);
-
-document.addEventListener("DOMContentLoaded", function(){
-
-  ACS_refreshRouteKPIs();
-
-});
-
-/* ============================================================
    🟦 K1 — ACS KPI VISUAL FEEDBACK ENGINE v1.0
    ------------------------------------------------------------
    Purpose:
