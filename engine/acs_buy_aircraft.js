@@ -264,26 +264,11 @@ function buildFilterChips() {
 }
 
 /* ============================================================
-   🧠 ACS IMAGE RESOLVER — SMART CACHE (PNG ⇄ JPG NO 404)
+   5) IMAGEN AUTOMÁTICA
    ============================================================ */
-
-const ACS_IMAGE_CACHE = JSON.parse(localStorage.getItem("ACS_IMAGE_CACHE") || "{}");
-
-function saveImageCache() {
-  localStorage.setItem("ACS_IMAGE_CACHE", JSON.stringify(ACS_IMAGE_CACHE));
-}
-
 function getAircraftImage(ac) {
-
   if (!ac || !ac.model || !ac.manufacturer) {
     return "img/placeholder_aircraft.png";
-  }
-
-  const key = `${ac.manufacturer}|${ac.model}`;
-
-  // 🔥 1. CACHE HIT (NO 404, NO TEST)
-  if (ACS_IMAGE_CACHE[key]) {
-    return ACS_IMAGE_CACHE[key];
   }
 
   let manuFolder = ac.manufacturer.trim().replace(/\s+/g, " ");
@@ -293,19 +278,26 @@ function getAircraftImage(ac) {
   }
 
   const rawModel = ac.model.toLowerCase().trim();
-  const base = rawModel.replace(/[^a-z0-9]+/g, "_");
+  let base = rawModel.replace(/[^a-z0-9]+/g, "_");
 
-  // 🔹 candidatos (orden inteligente)
-  const candidates = [
-    `img/${manuFolder}/${base}.jpg`,
-    `img/${manuFolder}/${base}.png`,
-    `img/${base}.jpg`,
-    `img/${base}.png`
-  ];
+  const variants = new Set();
+  variants.add(base);
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
+  variants.add(base.replace(/_/g, ""));
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
 
-  // 🔥 2. DEVUELVE EL PRIMERO (SIN TEST)
-  // el test se hará UNA VEZ en fallback
-  return candidates[0];
+  const candidates = [];
+
+  for (const v of variants) {
+    candidates.push(`img/${manuFolder}/${v}.png`);
+    candidates.push(`img/${manuFolder}/${v}.jpg`);
+  }
+
+  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  candidates.push(`img/${base}.png`);
+  candidates.push(`img/${manuSlug}_${base}.png`);
+
+  return candidates[0] || "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
@@ -369,41 +361,21 @@ function renderCards(filterManufacturer = "All") {
 
 function ACS_handleImageFallback(img) {
 
-  const acName = img.alt || "";
-  const parent = img.closest(".card");
-
-  if (!parent) {
+  if (img.dataset.fallback === "1") {
+    img.onerror = null;
     img.src = "img/placeholder_aircraft.png";
     return;
   }
 
-  const idx = parent.dataset.idx;
-  const ac = ACS_currentRenderedList?.[idx];
+  img.dataset.fallback = "1";
 
-  if (!ac) {
+  if (img.src.endsWith(".png")) {
+    img.src = img.src.replace(".png", ".jpg");
+  } else if (img.src.endsWith(".jpg")) {
+    img.src = img.src.replace(".jpg", ".png");
+  } else {
     img.src = "img/placeholder_aircraft.png";
-    return;
   }
-
-  const key = `${ac.manufacturer}|${ac.model}`;
-
-  // 🔥 Ya falló JPG → probar PNG
-  if (!img.dataset.fallback) {
-    img.dataset.fallback = "1";
-
-    if (img.src.endsWith(".jpg")) {
-      img.src = img.src.replace(".jpg", ".png");
-      return;
-    }
-  }
-
-  // 🔥 Guardar resultado final en cache
-  ACS_IMAGE_CACHE[key] = img.src;
-  saveImageCache();
-
-  // Si ambos fallan
-  img.onerror = null;
-  img.src = "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
