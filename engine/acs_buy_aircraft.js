@@ -361,21 +361,36 @@ function renderCards(filterManufacturer = "All") {
 
 function ACS_handleImageFallback(img) {
 
-  if (img.dataset.fallback === "1") {
-    img.onerror = null;
-    img.src = "img/placeholder_aircraft.png";
-    return;
-  }
-
-  img.dataset.fallback = "1";
-
-  if (img.src.endsWith(".png")) {
-    img.src = img.src.replace(".png", ".jpg");
-  } else if (img.src.endsWith(".jpg")) {
-    img.src = img.src.replace(".jpg", ".png");
+  if (!img.dataset.tryIndex) {
+    img.dataset.tryIndex = "1";
   } else {
-    img.src = "img/placeholder_aircraft.png";
+    img.dataset.tryIndex = String(Number(img.dataset.tryIndex) + 1);
   }
+
+  const tryIndex = Number(img.dataset.tryIndex);
+
+  // 🔹 generar variantes dinámicamente
+  const original = img.src;
+
+  if (tryIndex === 1) {
+    // png → jpg
+    if (original.endsWith(".png")) {
+      img.src = original.replace(".png", ".jpg");
+      return;
+    }
+  }
+
+  if (tryIndex === 2) {
+    // jpg → png
+    if (original.endsWith(".jpg")) {
+      img.src = original.replace(".jpg", ".png");
+      return;
+    }
+  }
+
+  // 🔹 si todo falla → placeholder
+  img.onerror = null;
+  img.src = "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
