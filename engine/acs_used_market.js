@@ -126,6 +126,29 @@ function getAircraftImage(ac) {
 }
 
 /* ============================================================
+   🖼️ ACS IMAGE FALLBACK SYSTEM — GLOBAL (SYNC WITH BUY NEW)
+   ============================================================ */
+
+function ACS_handleImageFallback(img) {
+
+  if (img.dataset.fallback === "1") {
+    img.onerror = null;
+    img.src = "img/placeholder_aircraft.png";
+    return;
+  }
+
+  img.dataset.fallback = "1";
+
+  if (img.src.endsWith(".png")) {
+    img.src = img.src.replace(".png", ".jpg");
+  } else if (img.src.endsWith(".jpg")) {
+    img.src = img.src.replace(".jpg", ".png");
+  } else {
+    img.src = "img/placeholder_aircraft.png";
+  }
+}
+
+/* ============================================================
    Helper — leer y guardar Used Market crudo
    ============================================================ */
 function loadUsedMarketRaw() {
@@ -204,7 +227,7 @@ function renderUsedMarket(filter = "all") {
 
     card.innerHTML = `
       <img src="${getAircraftImage(ac)}"
-           onerror="this.src='img/placeholder_aircraft.png'" />
+       onerror="ACS_handleImageFallback(this)" />
 
       <h3>${ac.manufacturer} ${ac.model}</h3>
 
