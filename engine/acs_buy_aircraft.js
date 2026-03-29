@@ -470,9 +470,9 @@ function updateModalSummary() {
     const final = total - initial;
 
     summary += `
-      Initial Payment: <b>$${(initial / 1_000_000).toFixed(2)}M</b><br>
-      Delivery Payment: <b>$${(final / 1_000_000).toFixed(2)}M</b>
-    `;
+    Initial Payment: <b>${ACS_formatUSD(initial)}</b><br>
+    Delivery Payment: <b>${ACS_formatUSD(final)}</b>
+`  ;
 
     document.getElementById("leaseOptions").style.display = "none";
   }
@@ -493,11 +493,11 @@ function updateModalSummary() {
     const monthlyPay = Math.round(remaining / months);
 
     summary += `
-      Lease Duration: <b>${years} years</b><br>
-      Initial Payment (50%): <b>$${(initialPay / 1_000_000).toFixed(2)}M</b><br>
-      Monthly Payment (~): <b>$${monthlyPay.toLocaleString()}</b><br>
-      Total Aircraft Value: <b>$${(total / 1_000_000).toFixed(2)}M</b>
-    `;
+    Lease Duration: <b>${years} years</b><br>
+    Initial Payment (50%): <b>${ACS_formatUSD(initialPay)}</b><br>
+    Monthly Payment (~): <b>${ACS_formatUSD(monthlyPay)}</b><br>
+    Total Aircraft Value: <b>${ACS_formatUSD(total)}</b>
+`  ;
 
     document.getElementById("leaseOptions").style.display = "block";
   }
