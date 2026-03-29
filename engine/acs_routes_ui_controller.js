@@ -936,8 +936,25 @@ function renderRoutesTable() {
   }
 
   /* ============================================================
+     🔹 ROUTE SELECTION
+     ============================================================ */
+
+  function selectRoute(routeId) {
+  const routes = getRoutes();
+  const route = routes.find(r => r.id === routeId);
+  if (!route) return;
+
+  localStorage.setItem(SELECTED_ROUTE_KEY, routeId);
+
+  // Update pricing panel (NO calculations)
+  priceRoute.textContent = `${route.origin} → ${route.destination}`;
+  priceValue.textContent = route.currentTicket
+    ? `$${route.currentTicket}`
+    : "—";
+  priceEra.textContent = route.era || "—";
+
+  /* ============================================================
      🟦 OCC PANEL — ROUTES OPERATIONAL RENDER (PHASE 1 BASE)
-     Source: ACS_ROUTES
      ============================================================ */
 
   try {
@@ -946,7 +963,8 @@ function renderRoutesTable() {
 
     if (!routes.length) return;
 
-    const firstRoute = routes[0];
+    const firstRoute = routes.find(r => r.id === routeId);
+    if (!firstRoute) return;
 
     const aircraftType = firstRoute.aircraftType || "UNK";
     const aircraftReg = firstRoute.aircraftReg || "YV-0000";
@@ -1028,27 +1046,9 @@ function renderRoutesTable() {
     console.warn("OCC render error", err);
   }
 
-}
+} // ✅ ESTA ES LA ÚNICA LLAVE DE CIERRE CORRECTA
 
-  /* ============================================================
-     🔹 ROUTE SELECTION
-     ============================================================ */
-
-  function selectRoute(routeId) {
-    const routes = getRoutes();
-    const route = routes.find(r => r.id === routeId);
-    if (!route) return;
-
-    localStorage.setItem(SELECTED_ROUTE_KEY, routeId);
-
-    // Update pricing panel (NO calculations)
-    priceRoute.textContent = `${route.origin} → ${route.destination}`;
-    priceValue.textContent = route.currentTicket
-      ? `$${route.currentTicket}`
-      : "—";
-    priceEra.textContent = route.era || "—";
-  }
-
+   
   /* ============================================================
      🔹 RESET PRICE (HOOK ONLY)
      ============================================================ */
