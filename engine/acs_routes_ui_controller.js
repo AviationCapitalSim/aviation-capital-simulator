@@ -983,7 +983,9 @@ function renderRoutesTable() {
 
     const routePairs = {};
 
-    routes.forEach(r => {
+   const aircraftRoutes = routes.filter(r => r.aircraftReg === aircraftReg);
+
+   aircraftRoutes.forEach(r => {
 
       if (!r.origin || !r.destination) return;
 
