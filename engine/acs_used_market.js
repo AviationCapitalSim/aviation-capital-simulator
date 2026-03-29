@@ -214,7 +214,7 @@ function renderUsedMarket(filter = "all") {
       <p>Hours: ${ac.hours.toLocaleString()}</p>
       <p>Cycles: ${ac.cycles.toLocaleString()}</p>
       <p>Condition: ${ac.condition}</p>
-      <p><b>Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M</b></p>
+      <p><b>Price: ${ACS_formatUSD(ac.price_acs_usd)}</b></p>
 
       <button class="ac-buy" onclick="buyUsed('${ac.id}')">BUY</button>
       <button class="ac-lease" onclick="leaseUsed('${ac.id}')">LEASE</button>
@@ -595,7 +595,7 @@ function openInfo(id) {
     C-Check: ${C_status}<br>
     D-Check: ${D_status}<br>
     <hr style="border-color:#444;">
-    Price: $${(ac.price_acs_usd/1_000_000).toFixed(2)}M<br>
+    Price: ${ACS_formatUSD(ac.price_acs_usd)}<br>
     Source: ${ac.source}<br>
   `;
 
