@@ -730,14 +730,19 @@ document.addEventListener("click", e => {
   openBuyModal(ac);
 });
 
-  /* ---- INIT ---- */
+/* ============================================================
+   🚀 INIT SEQUENCE — STABLE RENDER (FIX)
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
 
   buildFilterChips();
   renderCards("All");
   checkDeliveries();
 
-  console.log("🟩 Buy Aircraft Cards System — Ready");
+  console.log("🟩 Buy Aircraft Cards System — Initialized (DOM Ready)");
 
+});
 
 /* ============================================================
    11) AUTO-DELIVERY ENGINE — (ACS_TIME Sync v3.2)
