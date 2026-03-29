@@ -861,40 +861,40 @@ function renderRoutesTable() {
   routes.forEach(route => {
 
     /* ============================================================
-   🟦 ROUTE STATS RESOLUTION (CANONICAL SOURCE)
-   Source: ACS_ROUTE_STATS
-   ============================================================ */
+       🟦 ROUTE STATS RESOLUTION (CANONICAL SOURCE)
+       Source: ACS_ROUTE_STATS
+       ============================================================ */
 
-let loadFactorText = "—";
+    let loadFactorText = "—";
 
-try {
+    try {
 
-  const stats = JSON.parse(localStorage.getItem("ACS_ROUTE_STATS") || "{}");
+      const stats = JSON.parse(localStorage.getItem("ACS_ROUTE_STATS") || "{}");
 
-  const keyForward  = `${route.origin}_${route.destination}`;
-  const keyReverse  = `${route.destination}_${route.origin}`;
+      const keyForward  = `${route.origin}_${route.destination}`;
+      const keyReverse  = `${route.destination}_${route.origin}`;
 
-  const routeStats =
-    stats[keyForward] ||
-    stats[keyReverse] ||
-    null;
+      const routeStats =
+        stats[keyForward] ||
+        stats[keyReverse] ||
+        null;
 
-  if (
-    routeStats &&
-    routeStats.avg &&
-    typeof routeStats.avg.loadFactor === "number"
-  ) {
+      if (
+        routeStats &&
+        routeStats.avg &&
+        typeof routeStats.avg.loadFactor === "number"
+      ) {
 
-    loadFactorText =
-      `${Math.round(routeStats.avg.loadFactor * 100)}%`;
+        loadFactorText =
+          `${Math.round(routeStats.avg.loadFactor * 100)}%`;
 
-  }
+      }
 
-} catch (err) {
+    } catch (err) {
 
-  console.warn("Route stats read failed", err);
+      console.warn("Route stats read failed", err);
 
-}
+    }
 
     const ticketText =
       (typeof route.currentTicketPrice === "number")
@@ -932,9 +932,100 @@ try {
      ============================================================ */
 
   if (typeof ACS_refreshRouteKPIs === "function") {
-
     ACS_refreshRouteKPIs();
+  }
 
+  /* ============================================================
+     🟦 OCC PANEL — ROUTES OPERATIONAL RENDER (PHASE 1 BASE)
+     Source: ACS_ROUTES
+     ============================================================ */
+
+  try {
+
+    const routes = JSON.parse(localStorage.getItem("ACS_ROUTES") || "[]");
+
+    if (!routes.length) return;
+
+    const firstRoute = routes[0];
+
+    const aircraftType = firstRoute.aircraftType || "UNK";
+    const aircraftReg = firstRoute.aircraftReg || "YV-0000";
+
+    const headerEl = document.getElementById("occ-aircraft-info");
+
+    if (headerEl) {
+      headerEl.innerText = `Aircraft: ${aircraftReg} | Type: ${aircraftType}`;
+    }
+
+    const container = document.getElementById("occ-routes-container");
+
+    if (!container) return;
+
+    const routePairs = {};
+
+    routes.forEach(r => {
+
+      if (!r.origin || !r.destination) return;
+
+      const key = [r.origin, r.destination].sort().join("_");
+
+      if (!routePairs[key]) {
+        routePairs[key] = [];
+      }
+
+      routePairs[key].push(r);
+
+    });
+
+    let html = "";
+
+    Object.values(routePairs).forEach(pair => {
+
+      const r1 = pair[0];
+      const r2 = pair[1] || null;
+
+      const routeTitle = `${r1.origin} ⇄ ${r1.destination}`;
+
+      const lf1 = Math.round((r1.loadFactor || 0.3) * 100);
+      const lf2 = r2 ? Math.round((r2.loadFactor || 0.3) * 100) : lf1;
+
+      const price = r1.currentTicketPrice || 0;
+
+      html += `
+        <div class="occ-route-block">
+
+          <div class="occ-route-title">${routeTitle}</div>
+
+          <div class="occ-route-legs">
+            <div>OUTBOUND — LF ${lf1}% — $${price}</div>
+            <div>RETURN — LF ${lf2}% — $${price}</div>
+          </div>
+
+          <div class="occ-route-metrics">
+            Rev: $0 | Profit: $0
+          </div>
+
+          <div class="occ-pricing">
+            <div>Y: [ ${price} ]</div>
+            <div>C: [ — ]</div>
+            <div>F: [ — ]</div>
+            <div>Adj: [ 0% ]</div>
+          </div>
+
+          <div class="occ-actions">
+            <button>APPLY CHANGES</button>
+            <button>RESET TO MARKET</button>
+          </div>
+
+        </div>
+      `;
+
+    });
+
+    container.innerHTML = html;
+
+  } catch (err) {
+    console.warn("OCC render error", err);
   }
 
 }
