@@ -927,6 +927,8 @@ function renderRoutesTable() {
     tableBody.appendChild(tr);
   });
 
+} // ✅ CIERRA renderRoutesTable()
+   
   /* ============================================================
      🟦 KPI REFRESH — SAFE FINAL POINT
      ============================================================ */
