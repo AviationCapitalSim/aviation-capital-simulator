@@ -215,9 +215,21 @@ const ACS_AIRCRAFT_DB = [
     engines: "Bristol Hercules"},
    
 // ============================================================
-// 1940 — 1974 (de Havilland Complete + Comet Family + Trident)
+// 1940 — 1974 (de Havilland Complete + Curtiss + Comet Family + Trident)
 // ============================================================
 
+{
+  manufacturer: "Curtiss",
+  model: "C-46 Commando",
+  year: 1941,
+  seats: 40,
+  range_nm: 2000,
+  speed_kts: 270,
+  mtow_kg: 20400,
+  fuel_burn_kgph: 1200,
+  price_acs_usd: 1700000,
+  engines: "Wright R-2800"},
+   
 {
   manufacturer: "de Havilland",
   model: "DH.86 Express",
