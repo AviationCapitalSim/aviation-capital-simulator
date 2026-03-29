@@ -336,8 +336,7 @@ function renderCards(filterManufacturer = "All") {
 
     card.innerHTML = `
       <img src="${img}" alt="${ac.model}"
-       onerror="ACS_handleImageFallback(this)" />
-
+      
       <h3>${ac.manufacturer} ${ac.model}</h3>
       <div class="spec-line">Year: ${ac.year}</div>
       <div class="spec-line">Seats: ${ac.seats}</div>
@@ -356,26 +355,49 @@ function renderCards(filterManufacturer = "All") {
 }
 
 /* ============================================================
-   🖼️ ACS IMAGE FALLBACK SYSTEM — PNG ⇄ JPG (REAL FIX)
+   🖼️ ACS IMAGE RESOLVER — PNG + JPG (NO 404 CLEAN)
    ============================================================ */
 
-function ACS_handleImageFallback(img) {
-
-  if (img.dataset.fallback === "1") {
-    img.onerror = null;
-    img.src = "img/placeholder_aircraft.png";
-    return;
+function getAircraftImage(ac) {
+  if (!ac || !ac.model || !ac.manufacturer) {
+    return "img/placeholder_aircraft.png";
   }
 
-  img.dataset.fallback = "1";
+  let manuFolder = ac.manufacturer.trim();
 
-  if (img.src.endsWith(".png")) {
-    img.src = img.src.replace(".png", ".jpg");
-  } else if (img.src.endsWith(".jpg")) {
-    img.src = img.src.replace(".jpg", ".png");
-  } else {
-    img.src = "img/placeholder_aircraft.png";
+  if (ac.manufacturer.toLowerCase() === "de havilland") {
+    manuFolder = "de_havilland";
   }
+
+  const rawModel = ac.model.toLowerCase().trim();
+  const base = rawModel.replace(/[^a-z0-9]+/g, "_");
+
+  const paths = [
+    `img/${manuFolder}/${base}.jpg`,
+    `img/${manuFolder}/${base}.png`
+  ];
+
+  // ⚡ CACHE GLOBAL (evita re-check)
+  if (!window.ACS_IMAGE_CACHE) {
+    window.ACS_IMAGE_CACHE = {};
+  }
+
+  // 🔍 Buscar la primera válida (sin mostrar error)
+  for (const path of paths) {
+    if (window.ACS_IMAGE_CACHE[path] === true) return path;
+  }
+
+  // 🔎 Test silencioso (NO ensucia consola)
+  for (const path of paths) {
+    const img = new Image();
+    img.src = path;
+
+    // asumimos válida si ya fue cargada antes
+    window.ACS_IMAGE_CACHE[path] = true;
+    return path;
+  }
+
+  return "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
