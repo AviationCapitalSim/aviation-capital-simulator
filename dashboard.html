@@ -273,6 +273,39 @@ body {
 }
 
 /* ============================================================
+     === PANEL DISABLED =====================================
+   ============================================================ */
+  
+.panel-disabled {
+  background: linear-gradient(180deg, rgba(12,18,35,0.85), rgba(6,10,20,0.95));
+  border: 1px solid rgba(120,140,180,0.15);
+  box-shadow: none;
+  opacity: 0.75;
+}
+
+.panel-disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border: 1px solid rgba(120,140,180,0.15);
+}
+
+.panel-disabled h3 {
+  color: #8ea2c8;
+  text-shadow: none;
+}
+
+.panel-disabled p {
+  color: #7f93bd;
+}
+
+.panel-disabled .acs-btn {
+  background: #2a2f3a !important;
+  color: #9aa4b5;
+  cursor: not-allowed;
+  border: 1px solid rgba(150,160,180,0.2);
+}
+  
+/* ============================================================
    === WELCOME CHIPS — Airbus OCC Clean =======================
    ============================================================ */
 
@@ -483,24 +516,23 @@ body {
 
   <div class="dashboard-grid row-capital">
 
-    <div class="panel">
-      <h3>💠 Credits</h3>
-      <p>Coming soon: credit, token, buy.</p>
-      <button class="acs-btn" style="background:#444; cursor:not-allowed;">Coming Soon</button>      
-    </div>
+    <div class="panel panel-disabled">
+  <h3>💠 Credits</h3>
+  <p>Coming soon: credit, token, buy.</p>
+  <button class="acs-btn">Coming Soon</button>      
+</div>
 
-    <div class="panel">
-      <h3>👥 HR Summary</h3>
-      <p>Coming soon: morale, payroll, staff overview.</p>
-      <button class="acs-btn" style="background:#444; cursor:not-allowed;">Coming Soon</button>      
-    </div>
+<div class="panel panel-disabled">
+  <h3>👥 HR Summary</h3>
+  <p>Coming soon: morale, payroll, staff overview.</p>
+  <button class="acs-btn">Coming Soon</button>      
+</div>
 
-    <div class="panel">
-      <h3>🛫 Fleet Snapshot</h3>
-      <p>Coming soon: total aircraft, utilization %, active leases.</p>
-      <button class="acs-btn" style="background:#444; cursor:not-allowed;">Coming Soon</button>      
-    </div>
-
+<div class="panel panel-disabled">
+  <h3>🛫 Fleet Snapshot</h3>
+  <p>Coming soon: total aircraft, utilization %, active leases.</p>
+  <button class="acs-btn">Coming Soon</button>      
+</div>
   </div>
 
 </main>
