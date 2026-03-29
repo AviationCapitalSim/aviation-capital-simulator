@@ -1002,23 +1002,32 @@ try {
     });
   }
 
-  /* ============================================================
-     🔹 INIT
-     ============================================================ */
-
-  document.addEventListener("DOMContentLoaded", renderRoutesTable);
-
 /* ============================================================
-   🟦 A9 — AUTO SYNC ROUTES WITH SCHEDULE
+   🟦 INIT — SINGLE EXECUTION (NO DUPLICATES)
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+if (!window.__ACS_ROUTES_UI_INIT__) {
 
-  ACS_buildRoutesFromSchedule();
+  window.__ACS_ROUTES_UI_INIT__ = true;
 
-  renderRoutesTable();
+  document.addEventListener("DOMContentLoaded", () => {
 
-});
+    try {
+
+      ACS_buildRoutesFromSchedule();
+      renderRoutesTable();
+
+      console.log("🟦 Routes UI initialized (ONCE)");
+
+    } catch (err) {
+
+      console.warn("Routes UI init failed", err);
+
+    }
+
+  });
+
+}
 
 /* ============================================================
    🟦 LIVE ROUTE TABLE UPDATE (CANONICAL)
