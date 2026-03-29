@@ -731,16 +731,27 @@ document.addEventListener("click", e => {
 });
 
 /* ============================================================
-   🚀 INIT SEQUENCE — STABLE RENDER (FIX)
+   🚀 INIT SEQUENCE — TIME-READY STABLE RENDER
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  buildFilterChips();
-  renderCards("All");
-  checkDeliveries();
+  function initBuyNewWhenTimeReady() {
+    const simYear = getCurrentSimYear();
 
-  console.log("🟩 Buy Aircraft Cards System — Initialized (DOM Ready)");
+    // Esperar hasta que el reloj ACS ya esté cargado más allá del año base
+    if (!simYear || simYear <= 1940) {
+      return setTimeout(initBuyNewWhenTimeReady, 200);
+    }
+
+    buildFilterChips();
+    renderCards("All");
+    checkDeliveries();
+
+    console.log("🟩 Buy Aircraft Cards System — Initialized (TIME READY):", simYear);
+  }
+
+  initBuyNewWhenTimeReady();
 
 });
 
