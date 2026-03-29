@@ -108,47 +108,41 @@ function ACS_updateRouteStats(economics) {
 }
 
 /* ============================================================
-   🟦 LISTENER — CANONICAL GUARANTEED
-   ------------------------------------------------------------
-   • Always capture economics events
-   • Works regardless of load order
+   🟦 LISTENER — SINGLE ATTACH (NO DUPLICATES)
    ============================================================ */
 
 (function(){
 
-  function attachListener(){
-
-    if (!window || !window.addEventListener) return;
-
-    window.addEventListener("ACS_FLIGHT_ECONOMICS", function(e){
-
-      if (!e || !e.detail) return;
-
-      try {
-
-        ACS_updateRouteStats(e.detail);
-
-        console.log("🟦 ROUTE STATS EVENT CAPTURED:",
-          e.detail.origin, "→", e.detail.destination);
-
-      } catch(err){
-
-        console.warn("ACS_ROUTE_STATS listener failed", err);
-
-      }
-
-    });
-
-    console.log("🟦 ACS_ROUTE_STATS listener attached");
-
+  if (window.__ACS_ROUTE_STATS_LISTENER__) {
+    console.log("🟦 ROUTE_STATS listener already attached — skip");
+    return;
   }
 
-  // attach immediately
-  attachListener();
+  window.__ACS_ROUTE_STATS_LISTENER__ = true;
 
-  // safety attach after load (guaranteed)
-  window.addEventListener("load", attachListener);
-   
+  if (!window || !window.addEventListener) return;
+
+  window.addEventListener("ACS_FLIGHT_ECONOMICS", function(e){
+
+    if (!e || !e.detail) return;
+
+    try {
+
+      ACS_updateRouteStats(e.detail);
+
+      console.log("🟦 ROUTE STATS EVENT:",
+        e.detail.origin, "→", e.detail.destination);
+
+    } catch(err){
+
+      console.warn("ACS_ROUTE_STATS listener failed", err);
+
+    }
+
+  });
+
+  console.log("🟦 ACS_ROUTE_STATS listener attached (ONCE)");
+
 })();
 
 /* ============================================================
@@ -447,20 +441,22 @@ if (routesStatus){
 }
 
 /* ============================================================
-   AUTO REFRESH TRIGGERS
+   🟦 KPI REFRESH — CLEAN TRIGGERS (NO SPAM)
    ============================================================ */
 
+// 🔹 Actualización en vivo SOLO cuando hay eventos reales
 window.addEventListener(
   "ACS_FLIGHT_ECONOMICS",
   ACS_refreshRouteKPIs
 );
 
+// 🔹 Carga inicial
 window.addEventListener(
   "load",
   ACS_refreshRouteKPIs
 );
 
-console.log("🟦 KPI REFLECTION ENGINE READY");
+console.log("🟦 KPI REFLECTION ENGINE READY (CLEAN)");
 
 /* ============================================================
    LISTEN FOR ROUTES BUILDER READY
@@ -568,32 +564,21 @@ function ACS_applyKPIVisualFeedback(){
 
 
 /* ============================================================
-   AUTO APPLY
+   🟦 KPI VISUAL FEEDBACK — CLEAN TRIGGERS
    ============================================================ */
-
-window.addEventListener(
-  "load",
-  ACS_applyKPIVisualFeedback
-);
 
 window.addEventListener(
   "ACS_FLIGHT_ECONOMICS",
   ACS_applyKPIVisualFeedback
 );
 
-setTimeout(
-  ACS_applyKPIVisualFeedback,
-  500
+window.addEventListener(
+  "load",
+  ACS_applyKPIVisualFeedback
 );
 
-console.log(
-  "🟦 KPI VISUAL FEEDBACK ENGINE READY"
-);
-
-document.addEventListener("DOMContentLoaded", function(){
-  ACS_refreshRouteKPIs();
-});
-
+console.log("🟦 KPI VISUAL FEEDBACK ENGINE READY (CLEAN)");
+     
 /* ============================================================
    🟦 SAFE CLOSE — ACS_refreshRouteKPIs FUNCTION TERMINATION
    Proper structural closure (no terminator hacks)
