@@ -336,7 +336,7 @@ function renderCards(filterManufacturer = "All") {
 
     card.innerHTML = `
       <img src="${img}" alt="${ac.model}"
-        onerror="this.onerror=null; this.src='img/placeholder_aircraft.png';" />
+       onerror="ACS_handleImageFallback(this)" />
 
       <h3>${ac.manufacturer} ${ac.model}</h3>
       <div class="spec-line">Year: ${ac.year}</div>
@@ -353,6 +353,29 @@ function renderCards(filterManufacturer = "All") {
     card.dataset.idx = idx;
     grid.appendChild(card);
   });
+}
+
+/* ============================================================
+   🖼️ ACS IMAGE FALLBACK SYSTEM — PNG ⇄ JPG (REAL FIX)
+   ============================================================ */
+
+function ACS_handleImageFallback(img) {
+
+  if (img.dataset.fallback === "1") {
+    img.onerror = null;
+    img.src = "img/placeholder_aircraft.png";
+    return;
+  }
+
+  img.dataset.fallback = "1";
+
+  if (img.src.endsWith(".png")) {
+    img.src = img.src.replace(".png", ".jpg");
+  } else if (img.src.endsWith(".jpg")) {
+    img.src = img.src.replace(".jpg", ".png");
+  } else {
+    img.src = "img/placeholder_aircraft.png";
+  }
 }
 
 /* ============================================================
