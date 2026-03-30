@@ -555,17 +555,24 @@ function handleLogout() {
 </script>
   
 <!-- ============================================================
+     🔐 ACS AUTH GUARD (PROTECCIÓN DE SESIÓN)
+     ============================================================ -->
+<script src="engine/acs_auth_guard.js"></script>
+<script>
+  ACS_REQUIRE_AUTH();
+</script>
+
+<!-- ============================================================
      ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
      ============================================================ -->
 <script src="acs_time_recovery.js"></script>  
 <script src="time_engine.js"></script>
 
-
 <script src="engine/acs_finance.js"></script>
 
 <!-- 💼 COMPANY VALUE ENGINE (CANONICAL SOURCE) -->
 <script src="engine/acs_company_value.js"></script>
-
+  
 <script>
 /* ============================================================
    💼 DASHBOARD — COMPANY VALUE (REAL ENGINE MIRROR)
