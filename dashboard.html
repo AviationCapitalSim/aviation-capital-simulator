@@ -401,8 +401,15 @@ body {
   margin-top:28px;
   margin-bottom:48px;
 }
+  
 </style>
 
+<style>
+html {
+  visibility: hidden;
+}
+</style>
+ 
 </head>
 <body>
 
@@ -557,16 +564,16 @@ function handleLogout() {
 <script src="engine/acs_auth_guard.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
+(async () => {
 
   const ok = await ACS_REQUIRE_AUTH();
 
   if (!ok) return;
 
+  // ✅ SOLO después de validar sesión
   document.documentElement.style.visibility = "visible";
 
-});
-  
+})();
 </script>
 
 <!-- ============================================================
