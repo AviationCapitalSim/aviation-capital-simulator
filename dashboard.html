@@ -564,16 +564,16 @@ function handleLogout() {
 <script src="engine/acs_auth_guard.js"></script>
 
 <script>
-(async () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
   const ok = await ACS_REQUIRE_AUTH();
 
   if (!ok) return;
 
-  // ✅ SOLO después de validar sesión
   document.documentElement.style.visibility = "visible";
 
-})();
+});
+  
 </script>
 
 <!-- ============================================================
