@@ -42,11 +42,6 @@ async function ACS_REQUIRE_AUTH() {
 
       console.warn("🚫 NO SESSION");
 
-const isLoginPage = window.location.pathname.includes("login");
-
-if (!isLoginPage) {
-  console.warn("➡️ Redirecting to login");
-  window.location.href = "/login.html";
 }
 
 return false;
