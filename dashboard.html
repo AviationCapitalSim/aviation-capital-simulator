@@ -676,40 +676,34 @@ function getFlagEmojiFromCountryName(countryName) {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-const API_BASE = "https://acs-world-server-production.up.railway.app";
-const token = localStorage.getItem("acs_token");
-
-if (!token) {
-  console.warn("❌ NO TOKEN");
-  window.location.href = "login.html";
-  return;
-}
-
+const API_BASE = "https://api.aviationcapitalsim.com";
 let sessionUser;
 
 try {
-  const res = await fetch(`${API_BASE}/v1/auth/me`, {
+  const res = await fetch(`${API_BASE}/v1/session`, {
     method: "GET",
-    headers: {
-      "Authorization": "Bearer " + token,
-      "Content-Type": "application/json"
-    }
+    credentials: "include"
   });
 
-  if (!res.ok) throw new Error(`AUTH_HTTP_${res.status}`);
+  if (res.status === 401) {
+    throw new Error("SESSION_EXPIRED");
+  }
+
+  if (!res.ok) {
+    throw new Error(`SESSION_HTTP_${res.status}`);
+  }
 
   const data = await res.json();
 
   if (!data.ok || !data.user?.user_id) {
-    throw new Error("INVALID_AUTH_RESPONSE");
+    throw new Error("INVALID_SESSION");
   }
 
   sessionUser = data.user;
-  console.log("✅ TOKEN AUTH OK:", sessionUser);
+  console.log("✅ SESSION OK:", sessionUser);
 
 } catch (e) {
-  console.warn("❌ TOKEN AUTH FAILED:", e);
-  localStorage.removeItem("acs_token");
+  console.warn("❌ SESSION FAILED:", e);
   window.location.href = "login.html";
   return;
 }
@@ -739,10 +733,8 @@ if (!userId) {
     console.log("🌐 Loading dashboard profile from Railway:", url);
 
     const resp = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
+    method: "GET",
+    credentials: "include"
     });
 
     if (!resp.ok) {
