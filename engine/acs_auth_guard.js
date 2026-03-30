@@ -1,32 +1,51 @@
 // ============================================================
-// 🔐 ACS AUTH GUARD v1.0
-// Protege acceso a páginas (frontend)
+// 🔐 ACS AUTH GUARD v2.0 (STABLE SESSION)
+// Evita rebotes post-login
 // ============================================================
 
 async function ACS_REQUIRE_AUTH() {
 
-  try {
+  let attempts = 0;
+  const MAX_ATTEMPTS = 3;
 
-    const res = await fetch("https://api.aviationcapitalsim.com/v1/auth/session", {
-      method: "GET",
-      credentials: "include"
-    });
+  async function checkSession() {
 
-    const data = await res.json();
+    try {
 
-    if (!res.ok || !data.ok) {
-      throw new Error("NO_SESSION");
+      const res = await fetch("https://api.aviationcapitalsim.com/v1/auth/session", {
+        method: "GET",
+        credentials: "include"
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        throw new Error("NO_SESSION");
+      }
+
+      console.log("🔐 SESSION OK:", data);
+
+      window.ACS_SESSION = data;
+      window.ACS_USER = data.user;
+
+      return true;
+
+    } catch (err) {
+
+      attempts++;
+
+      if (attempts < MAX_ATTEMPTS) {
+        console.warn(`🔁 Retry session check (${attempts})`);
+        await new Promise(r => setTimeout(r, 300));
+        return checkSession();
+      }
+
+      console.warn("🚫 NO SESSION → redirect to login");
+
+      window.location.href = "/login.html";
+      return false;
     }
-
-    console.log("🔐 SESSION OK:", data);
-
-    // opcional: exponer sesión global
-    window.ACS_SESSION = data;
-
-  } catch (err) {
-
-    console.warn("🚫 NO SESSION → redirect to login");
-
-    window.location.href = "/login.html";
   }
+
+  return checkSession();
 }
