@@ -40,10 +40,16 @@ async function ACS_REQUIRE_AUTH() {
         return checkSession();
       }
 
-      console.warn("🚫 NO SESSION → redirect to login");
+      console.warn("🚫 NO SESSION");
 
-      window.location.href = "/login.html";
-      return false;
+const isLoginPage = window.location.pathname.includes("login");
+
+if (!isLoginPage) {
+  console.warn("➡️ Redirecting to login");
+  window.location.href = "/login.html";
+}
+
+return false;
     }
   }
 
