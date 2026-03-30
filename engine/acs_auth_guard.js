@@ -1,63 +1,51 @@
 // ============================================================
-// 🔐 ACS AUTH GUARD — SIMPLE & STABLE (RESET)
+// 🔐 ACS AUTH GUARD v2.0 (STABLE SESSION)
+// Evita rebotes post-login
 // ============================================================
-
-const ACS_API_BASE = "https://api.aviationcapitalsim.com";
-
-window.ACS_SESSION = null;
-window.ACS_USER = null;
 
 async function ACS_REQUIRE_AUTH() {
 
-  try {
+  let attempts = 0;
+  const MAX_ATTEMPTS = 3;
 
-    console.log("🔍 Checking session...");
+  async function checkSession() {
 
-    const res = await fetch(`${ACS_API_BASE}/v1/session`, {
-      method: "GET",
-      credentials: "include"
-    });
+    try {
 
-    console.log("📡 Response status:", res.status);
+      const res = await fetch("https://api.aviationcapitalsim.com/v1/auth/session", {
+        method: "GET",
+        credentials: "include"
+      });
 
-    if (res.status === 401) {
-      console.warn("🚫 Unauthorized");
-      return redirectToLogin();
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        throw new Error("NO_SESSION");
+      }
+
+      console.log("🔐 SESSION OK:", data);
+
+      window.ACS_SESSION = data;
+      window.ACS_USER = data.user;
+
+      return true;
+
+    } catch (err) {
+
+      attempts++;
+
+      if (attempts < MAX_ATTEMPTS) {
+        console.warn(`🔁 Retry session check (${attempts})`);
+        await new Promise(r => setTimeout(r, 300));
+        return checkSession();
+      }
+
+      console.warn("🚫 NO SESSION → redirect to login");
+
+      window.location.href = "/login.html";
+      return false;
     }
-
-    if (!res.ok) {
-      console.warn("⚠️ Server error");
-      return redirectToLogin();
-    }
-
-    const data = await res.json();
-
-    console.log("📦 Session data:", data);
-
-    if (!data.ok) {
-      return redirectToLogin();
-    }
-
-    window.ACS_SESSION = data;
-    window.ACS_USER = data.user;
-
-    console.log("✅ SESSION OK");
-
-    return true;
-
-  } catch (err) {
-
-    console.error("🔥 FETCH ERROR:", err);
-
-    return redirectToLogin();
-  }
-}
-
-function redirectToLogin() {
-
-  if (!window.location.pathname.includes("login.html")) {
-    window.location.href = "/login.html";
   }
 
-  return false;
+  return checkSession();
 }
