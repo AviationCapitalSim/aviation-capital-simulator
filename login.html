@@ -410,82 +410,109 @@ async function handleLogin(event) {
 
   const passwordHash = await hashPassword(password);
 
- try {
-
-  const response = await fetch(ACS_API_URL, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      email,
-      passwordHash
-    })
-  });
-
-  const text = await response.text();
-
-  let result;
   try {
-    result = JSON.parse(text);
-  } catch (e) {
-    alert("❌ Server returned invalid response:\n" + text);
-    return false;
-  }
-
-  // ============================================================
-  // 🔐 LOGIN SUCCESS — SESSION MODE (REAL BACKEND)
-  // ============================================================
-
-  if (result.ok && result.user) {
-
-    console.log("✅ LOGIN SUCCESS (SESSION)");
-
-    if (result.user.airline_id) {
-      window.location.href = "dashboard.html";
+    
+  const response = await fetch(ACS_API_URL, {
+  method: "POST",
+  credentials: "include", // 🔥 CRÍTICO
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    email,
+    passwordHash
+  })
+});
+    
+    const text = await response.text();
+   
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      alert("❌ Server returned invalid response:\n" + text);
       return false;
     }
 
-    window.location.href = "create_airline.html";
-    return false;
-  }
+// ============================================================
+// 🔐 L-FRONT-1 — NUEVOS ESTADOS DE SEGURIDAD (BACKEND v2)
+// ============================================================
 
-  // ============================================================
-  // 🔐 FALLBACK ERRORES BACKEND
-  // ============================================================
-
-  if (result.status === "INVALID_CREDENTIALS") {
-    alert("❌ Invalid email or password.");
-    return false;
-  }
-
-  if (result.status === "ACCOUNT_LOCKED") {
-    alert("🔒 Account locked. Try again later.");
-    return false;
-  }
-
-  if (result.status === "NO_USER") {
-    alert("❌ This email is not registered.");
-    window.location.href = "register.html";
-    return false;
-  }
-
-  if (result.status === "WRONG_PASSWORD") {
-    alert("❌ Incorrect password.");
-    return false;
-  }
-
-  alert("❌ Unexpected login response.");
-
-} catch (err) {
-
-  alert("❌ Login failed: " + err.message);
+if (result.status === "INVALID_CREDENTIALS") {
+  alert("❌ Invalid email or password.");
   return false;
 }
 
+if (result.status === "ACCOUNT_LOCKED") {
+  alert("🔒 Account locked due to multiple failed attempts.\nPlease wait 15 minutes before trying again.");
+  return false;
 }
-  
+    
+    // === NO_USER ===
+    
+    if (result.status === "NO_USER") {
+      alert("❌ This email is not registered.\nPlease create your account.");
+      window.location.href = "register.html";
+      return false;
+    }
+
+    // === WRONG_PASSWORD ===
+    
+    if (result.status === "WRONG_PASSWORD") {
+      alert("❌ Incorrect password. Please try again.");
+      return false;
+    }
+
+   /* ============================================================
+   ✅ NO_AIRLINE — PRIMER LOGIN (usuario nuevo)
+   ------------------------------------------------------------
+   • Usuario existe y credenciales OK
+   • Aún no tiene aerolínea creada
+   • Redirigir a create_airline.html
+   ============================================================ */
+    
+if (result.status === "NO_AIRLINE") {
+
+  const userId    = result.user?.user_id || "";
+  const userEmail = result.user?.email   || "";
+  const token     = result.token || "";
+
+  if (!userId || !userEmail || !token) {
+    alert("❌ Login response missing token or user data.");
+    return false;
+  }
+
+ // 🔐 Session ya creada por cookie (backend)
+  console.log("✅ LOGIN OK (SESSION MODE)");
+  window.location.href = "create_airline.html";
+  return false;
+}
+    
+  // === HAS_AIRLINE — FIX COMPLETO ==========================
+    
+  if (result.status === "HAS_AIRLINE") {
+
+  const userId    = result.user.user_id;
+  const userEmail = result.user.email;
+  const airlineId = result.user.airline_id;
+  const token     = result.token || "";
+
+  if (!userId || !userEmail || !airlineId || !token) {
+    alert("❌ Login response missing token or user data.");
+    return false;
+  }
+
+  // 🔐 Session ya creada por cookie (backend)
+  console.log("✅ LOGIN OK (SESSION MODE)");
+  window.location.href = "dashboard.html";
+  return false;
+}
+    
+  } catch (err) {
+    alert("❌ Login failed: " + err.message);
+    return false;
+  }
+}
 </script>
 
 </body>
