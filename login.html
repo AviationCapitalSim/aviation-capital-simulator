@@ -484,25 +484,6 @@ async function handleLogin(event) {
   return false;
 }
 
-// ============================================================
-// 🔐 LOGIN SUCCESS — SESSION MODE (REAL BACKEND)
-// ============================================================
-
-if (result.ok && result.user) {
-
-  console.log("✅ LOGIN SUCCESS (SESSION)");
-
-  // Tiene aerolínea → dashboard
-  if (result.user.airline_id) {
-    window.location.href = "dashboard.html";
-    return false;
-  }
-
-  // No tiene → crear aerolínea
-  window.location.href = "create_airline.html";
-  return false;
-}
-
 }
   
 </script>
