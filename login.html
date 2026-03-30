@@ -482,17 +482,8 @@ if (result.status === "NO_AIRLINE") {
     return false;
   }
 
-  localStorage.setItem("acs_token", token);
-
-  const userPack = {
-    userId: userId,
-    email: userEmail,
-    airline_id: null,
-    airline: null,
-    loginAt: Date.now()
-  };
-
-  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
+ // 🔐 Session ya creada por cookie (backend)
+  console.log("✅ LOGIN OK (SESSION MODE)");
   window.location.href = "create_airline.html";
   return false;
 }
@@ -511,17 +502,8 @@ if (result.status === "NO_AIRLINE") {
     return false;
   }
 
-  localStorage.setItem("acs_token", token);
-
-  const userPack = {
-    userId: userId,
-    email: userEmail,
-    airline_id: airlineId,
-    airline: null,
-    loginAt: Date.now()
-  };
-
-  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
+  // 🔐 Session ya creada por cookie (backend)
+  console.log("✅ LOGIN OK (SESSION MODE)");
   window.location.href = "dashboard.html";
   return false;
 }
