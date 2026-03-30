@@ -403,6 +403,13 @@ body {
 }
   
 </style>
+
+<style>
+html {
+  visibility: hidden;
+}
+</style>
+ 
 </head>
 <body>
 
@@ -554,12 +561,19 @@ function handleLogout() {
 }
 </script>
   
-<!-- ============================================================
-     🔐 ACS AUTH GUARD (PROTECCIÓN DE SESIÓN)
-     ============================================================ -->
 <script src="engine/acs_auth_guard.js"></script>
+
 <script>
-  ACS_REQUIRE_AUTH();
+(async () => {
+
+  const ok = await ACS_REQUIRE_AUTH();
+
+  if (!ok) return;
+
+  // ✅ SOLO después de validar sesión
+  document.documentElement.style.visibility = "visible";
+
+})();
 </script>
 
 <!-- ============================================================
