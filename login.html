@@ -463,56 +463,25 @@ if (result.status === "ACCOUNT_LOCKED") {
       return false;
     }
 
-   /* ============================================================
-   ✅ NO_AIRLINE — PRIMER LOGIN (usuario nuevo)
-   ------------------------------------------------------------
-   • Usuario existe y credenciales OK
-   • Aún no tiene aerolínea creada
-   • Redirigir a create_airline.html
-   ============================================================ */
-    
-if (result.status === "NO_AIRLINE") {
+// ============================================================
+// 🔐 LOGIN SUCCESS — SESSION MODE (REAL BACKEND)
+// ============================================================
 
-  const userId    = result.user?.user_id || "";
-  const userEmail = result.user?.email   || "";
-  const token     = result.token || "";
+if (result.ok && result.user) {
 
-  if (!userId || !userEmail || !token) {
-    alert("❌ Login response missing token or user data.");
+  console.log("✅ LOGIN SUCCESS (SESSION)");
+
+  // Tiene aerolínea → dashboard
+  if (result.user.airline_id) {
+    window.location.href = "dashboard.html";
     return false;
   }
 
- // 🔐 Session ya creada por cookie (backend)
-  console.log("✅ LOGIN OK (SESSION MODE)");
+  // No tiene → crear aerolínea
   window.location.href = "create_airline.html";
   return false;
 }
     
-  // === HAS_AIRLINE — FIX COMPLETO ==========================
-    
-  if (result.status === "HAS_AIRLINE") {
-
-  const userId    = result.user.user_id;
-  const userEmail = result.user.email;
-  const airlineId = result.user.airline_id;
-  const token     = result.token || "";
-
-  if (!userId || !userEmail || !airlineId || !token) {
-    alert("❌ Login response missing token or user data.");
-    return false;
-  }
-
-  // 🔐 Session ya creada por cookie (backend)
-  console.log("✅ LOGIN OK (SESSION MODE)");
-  window.location.href = "dashboard.html";
-  return false;
-}
-    
-  } catch (err) {
-    alert("❌ Login failed: " + err.message);
-    return false;
-  }
-}
 </script>
 
 </body>
