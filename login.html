@@ -1,4 +1,4 @@
-<!-- === LOGIN MODULE   === -->
+<!-- === LOGIN MODULE === -->
 <!-- Version: Beta v1.2 | Date: 17 NOV 2025 -->
 <!-- Qatar Luxury Edition + Dynamic Captain Engine -->
 <!DOCTYPE html>
@@ -482,8 +482,17 @@ if (result.status === "NO_AIRLINE") {
     return false;
   }
 
- // 🔐 Session ya creada por cookie (backend)
-  console.log("✅ LOGIN OK (SESSION MODE)");
+  localStorage.setItem("acs_token", token);
+
+  const userPack = {
+    userId: userId,
+    email: userEmail,
+    airline_id: null,
+    airline: null,
+    loginAt: Date.now()
+  };
+
+  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
   window.location.href = "create_airline.html";
   return false;
 }
@@ -502,8 +511,17 @@ if (result.status === "NO_AIRLINE") {
     return false;
   }
 
-  // 🔐 Session ya creada por cookie (backend)
-  console.log("✅ LOGIN OK (SESSION MODE)");
+  localStorage.setItem("acs_token", token);
+
+  const userPack = {
+    userId: userId,
+    email: userEmail,
+    airline_id: airlineId,
+    airline: null,
+    loginAt: Date.now()
+  };
+
+  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
   window.location.href = "dashboard.html";
   return false;
 }
