@@ -403,13 +403,6 @@ body {
 }
   
 </style>
-
-<style>
-html {
-  visibility: hidden;
-}
-</style>
- 
 </head>
 <body>
 
@@ -561,32 +554,18 @@ function handleLogout() {
 }
 </script>
   
-<script src="engine/acs_auth_guard.js"></script>
-
-<script>
-(async () => {
-
-  const ok = await ACS_REQUIRE_AUTH();
-
-  if (!ok) return;
-
-  // ✅ SOLO después de validar sesión
-  document.documentElement.style.visibility = "visible";
-
-})();
-</script>
-
 <!-- ============================================================
      ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
      ============================================================ -->
 <script src="acs_time_recovery.js"></script>  
 <script src="time_engine.js"></script>
 
+
 <script src="engine/acs_finance.js"></script>
 
 <!-- 💼 COMPANY VALUE ENGINE (CANONICAL SOURCE) -->
 <script src="engine/acs_company_value.js"></script>
-  
+
 <script>
 /* ============================================================
    💼 DASHBOARD — COMPANY VALUE (REAL ENGINE MIRROR)
@@ -676,15 +655,43 @@ function getFlagEmojiFromCountryName(countryName) {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-const API_BASE = "https://api.aviationcapitalsim.com";
+const API_BASE = "https://acs-world-server-production.up.railway.app";
+const token = localStorage.getItem("acs_token");
 
-const sessionUser = window.ACS_USER;
-
-if (!sessionUser || !sessionUser.user_id) {
-  console.warn("❌ No session from AUTH GUARD");
+if (!token) {
+  console.warn("❌ NO TOKEN");
   window.location.href = "login.html";
   return;
-}  
+}
+
+let sessionUser;
+
+try {
+  const res = await fetch(`${API_BASE}/v1/auth/me`, {
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + token,
+      "Content-Type": "application/json"
+    }
+  });
+
+  if (!res.ok) throw new Error(`AUTH_HTTP_${res.status}`);
+
+  const data = await res.json();
+
+  if (!data.ok || !data.user?.user_id) {
+    throw new Error("INVALID_AUTH_RESPONSE");
+  }
+
+  sessionUser = data.user;
+  console.log("✅ TOKEN AUTH OK:", sessionUser);
+
+} catch (e) {
+  console.warn("❌ TOKEN AUTH FAILED:", e);
+  localStorage.removeItem("acs_token");
+  window.location.href = "login.html";
+  return;
+}
   
  const activeUser = {
   user_id: sessionUser.user_id,
@@ -711,8 +718,10 @@ if (!userId) {
     console.log("🌐 Loading dashboard profile from Railway:", url);
 
     const resp = await fetch(url, {
-    method: "GET",
-    credentials: "include"
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
     });
 
     if (!resp.ok) {
