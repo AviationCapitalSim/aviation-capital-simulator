@@ -677,36 +677,14 @@ function getFlagEmojiFromCountryName(countryName) {
 document.addEventListener("DOMContentLoaded", async () => {
 
 const API_BASE = "https://api.aviationcapitalsim.com";
-let sessionUser;
 
-try {
-  const res = await fetch(`${API_BASE}/v1/session`, {
-    method: "GET",
-    credentials: "include"
-  });
+const sessionUser = window.ACS_USER;
 
-  if (res.status === 401) {
-    throw new Error("SESSION_EXPIRED");
-  }
-
-  if (!res.ok) {
-    throw new Error(`SESSION_HTTP_${res.status}`);
-  }
-
-  const data = await res.json();
-
-  if (!data.ok || !data.user?.user_id) {
-    throw new Error("INVALID_SESSION");
-  }
-
-  sessionUser = data.user;
-  console.log("✅ SESSION OK:", sessionUser);
-
-} catch (e) {
-  console.warn("❌ SESSION FAILED:", e);
+if (!sessionUser || !sessionUser.user_id) {
+  console.warn("❌ No session from AUTH GUARD");
   window.location.href = "login.html";
   return;
-}
+}  
   
  const activeUser = {
   user_id: sessionUser.user_id,
