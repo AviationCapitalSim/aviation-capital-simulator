@@ -12,10 +12,10 @@ async function ACS_REQUIRE_AUTH() {
 
     try {
 
-      const res = await fetch("https://api.aviationcapitalsim.com/v1/auth/session", {
-        method: "GET",
-        credentials: "include"
-      });
+      const res = await fetch("https://api.aviationcapitalsim.com/v1/session", {
+      method: "GET",
+      credentials: "include"
+     });
 
       const data = await res.json();
 
