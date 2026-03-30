@@ -19,10 +19,10 @@ async function ACS_REQUIRE_AUTH() {
 
     try {
 
-      const res = await fetch(`${ACS_API_BASE}/v1/session`, {
-        method: "GET",
-        credentials: "include"
-      });
+      const res = await fetch("/v1/session", {
+  method: "GET",
+  credentials: "include"
+});
 
       // 🔴 Caso 1: sesión inválida (401 / backend reject)
       if (res.status === 401) {
