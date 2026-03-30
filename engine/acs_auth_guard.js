@@ -50,22 +50,30 @@ async function ACS_REQUIRE_AUTH() {
 
     } catch (err) {
 
-      attempts++;
+  attempts++;
 
-      // 🔁 Retry SOLO para errores temporales
-      if (err.message === "SERVER_ERROR" && attempts < MAX_ATTEMPTS) {
-        console.warn(`🔁 Retry session check (${attempts})`);
-        await new Promise(r => setTimeout(r, 400));
-        return checkSession();
-      }
-
-      console.warn("🚫 AUTH FAILED:", err.message);
-
-      ACS_HANDLE_UNAUTHORIZED();
-
-      return false;
-    }
+  // 🔁 Retry solo si es error temporal del servidor
+  if (err.message === "SERVER_ERROR" && attempts < MAX_ATTEMPTS) {
+    console.warn(`🔁 Retry session check (${attempts})`);
+    await new Promise(r => setTimeout(r, 400));
+    return checkSession();
   }
+
+  console.warn("🚫 AUTH FAILED:", err.message);
+
+  // 🔴 SOLO redirigir si realmente no hay sesión
+  if (err.message === "UNAUTHORIZED" || err.message === "INVALID_SESSION") {
+    ACS_HANDLE_UNAUTHORIZED();
+    return false;
+  }
+
+  // 🟡 Otros errores (network, engines, etc.)
+  console.warn("⚠️ Non-auth error — session preserved");
+
+  return true; // 👉 IMPORTANTE: NO romper la app
+  }
+  
+}
 
   return await checkSession();
 }
