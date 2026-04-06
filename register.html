@@ -661,12 +661,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
      
-async function hashPassword(password) {
-  const enc = new TextEncoder().encode(password);
-  const buffer = await crypto.subtle.digest("SHA-256", enc);
-  const hashArray = Array.from(new Uint8Array(buffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
 </script>
 
 <!-- ============================================================
@@ -762,21 +756,14 @@ if (!termsCheckbox || !termsCheckbox.checked ||
     return;
   }
 
-  const passwordHash = await hashPassword(password);
-
   const payload = {
-  action: "REGISTER",
   fullName,
   email,
   country,
   dob,
   age,
-  ip: "",
-  passwordHash,
-  termsAccepted: true,
-  termsVersion: "1.0",
-  termsAcceptedAt: new Date().toISOString(),
-  client_timestamp: Date.now(),
+  password,
+  termsAccepted: true
 };
 
   const ACS_API_URL =
