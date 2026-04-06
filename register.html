@@ -638,6 +638,7 @@ function togglePassword(id, element) {
 /* ============================================================
    === AUTO-GENERATE DOB SELECT OPTIONS ========================
    ============================================================ */
+     
 document.addEventListener("DOMContentLoaded", () => {
   const daySelect = document.getElementById("dob-day");
   const monthSelect = document.getElementById("dob-month");
@@ -666,34 +667,11 @@ document.addEventListener("DOMContentLoaded", () => {
 <!-- ============================================================
      HANDLE REGISTER — SEND DATA TO SERVER
 ============================================================ -->
+     
 <script>
+     
 async function handleRegister(event) {
   event.preventDefault();
-
-  /* ============================================================
-   🔒 TERMS ENFORCEMENT — BLOCK REGISTER IF NOT ACCEPTED
-   ============================================================ */
-
-const termsAccepted = localStorage.getItem("ACS_termsAccepted");
-
-if (termsAccepted !== "yes") {
-
-  // Guardar datos actuales antes de redirigir
-  const temp = {
-    fullName: document.getElementById("fullName").value.trim(),
-    email:    document.getElementById("email").value.trim(),
-    day:      document.getElementById("dob-day").value,
-    month:    document.getElementById("dob-month").value,
-    year:     document.getElementById("dob-year").value,
-    country:  document.getElementById("country").value
-  };
-
-  localStorage.setItem("ACS_registerTemp", JSON.stringify(temp));
-
-  alert("⚠️ You must read and accept the Terms & Conditions first.");
-  window.location.href = "terms.html";
-  return;
-}
      
   const fullName = document.getElementById("fullName").value.trim();
   const email    = document.getElementById("email").value.trim();
@@ -713,8 +691,7 @@ if (termsAccepted !== "yes") {
 // 🔐 Verificación estructural de Terms
 const termsCheckbox = document.getElementById("terms");
 
-if (!termsCheckbox || !termsCheckbox.checked ||
-    localStorage.getItem("ACS_termsAccepted") !== "yes") {
+if (!termsCheckbox || !termsCheckbox.checked) {
   alert("⚠️ You must accept the Terms & Conditions before registering.");
   return;
 }
@@ -799,7 +776,9 @@ if (!termsCheckbox || !termsCheckbox.checked ||
 <!-- ============================================================
      AGE MODAL
 ============================================================ -->
+     
 <script>
+     
 function openAgeModal() { 
   const modal = document.getElementById("ageModal");
   if (modal) modal.style.display = "flex";
