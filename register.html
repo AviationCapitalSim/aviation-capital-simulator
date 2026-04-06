@@ -829,8 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
   checkbox.disabled = true;
   registerBtn.disabled = true;
 
-  // 🔹 Restaurar datos SIEMPRE
-  restoreRegisterCache();
+  
 
   // 🔹 Solo habilitar si viene JUSTO de aceptar
   if (sessionStorage.getItem("ACS_termsJustAccepted") === "yes") {
@@ -852,7 +851,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const termsLink = document.querySelector('a[href="terms.html"]');
   if (termsLink) {
     termsLink.addEventListener("click", () => {
-      saveRegisterCache();
+    
     });
   }
 
@@ -867,35 +866,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-// ===============================
-// 💾 SAVE CACHE (STRUCTURAL)
-// ===============================
-function saveRegisterCache() {
-  const data = {
-    fullName: document.getElementById("fullName").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    day: document.getElementById("dob-day").value,
-    month: document.getElementById("dob-month").value,
-    year: document.getElementById("dob-year").value,
-    country: document.getElementById("country").value
-  };
 
-  localStorage.setItem("ACS_registerCache", JSON.stringify(data));
-}
-
-// ===============================
-// 🔁 RESTORE CACHE
-// ===============================
-function restoreRegisterCache() {
-  const saved = JSON.parse(localStorage.getItem("ACS_registerCache") || "{}");
-
-  if (saved.fullName) document.getElementById("fullName").value = saved.fullName;
-  if (saved.email) document.getElementById("email").value = saved.email;
-  if (saved.day) document.getElementById("dob-day").value = saved.day;
-  if (saved.month) document.getElementById("dob-month").value = saved.month;
-  if (saved.year) document.getElementById("dob-year").value = saved.year;
-  if (saved.country) document.getElementById("country").value = saved.country;
-}
 </script>
      
 </body>
