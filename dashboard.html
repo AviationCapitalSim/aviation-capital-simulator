@@ -787,22 +787,46 @@ setTimeout(async () => {
   let sessionUser;
 
   try {
-    sessionUser = await getSession();
 
-    if (!sessionUser?.user_id) {
-      throw new Error("SESSION_USER_ID_MISSING");
+  const res = await fetch(`${API_BASE}/v1/session`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json"
     }
+  });
 
-    console.log("✅ DASHBOARD SESSION OK:", {
-      user_id: sessionUser.user_id,
-      airline_id: sessionUser.airline_id
-    });
-
-  } catch (error) {
-    console.error("❌ DASHBOARD SESSION FAILED:", error);
+  // 🔴 SOLO si backend dice NO SESSION → logout
+  if (res.status === 401) {
+    console.warn("⛔ NO SESSION — redirecting to login");
     window.location.href = "login.html";
     return;
   }
+
+  if (!res.ok) {
+    throw new Error(`SESSION_HTTP_${res.status}`);
+  }
+
+  const data = await res.json();
+
+  if (!data?.ok || !data?.user) {
+    console.warn("⚠️ SESSION RESPONSE INVALID — but NOT logging out");
+    sessionUser = {};
+  } else {
+    sessionUser = data.user;
+  }
+
+  console.log("✅ DASHBOARD SESSION OK:", sessionUser);
+
+} catch (error) {
+
+  // 🔴 ERROR DE RED ≠ LOGOUT
+  console.warn("⚠️ SESSION LOAD FAILED (network):", error);
+
+  // NO redirige — deja entrar con fallback
+  sessionUser = {};
+
+}
 
   try {
     const profileData = await getProfile(sessionUser.user_id);
