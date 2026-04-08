@@ -643,9 +643,13 @@ function getFlagEmojiFromCountryName(countryName) {
 </script>
   
 <script>
-
+  
 /* ============================================================
-   🔐 AUTH FIRST + PROFILE LOAD (STABLE VERSION)
+   2️⃣ DASHBOARD SESSION BOOTSTRAP — AUTH ISOLATED FROM PROFILE
+   ------------------------------------------------------------
+   • /v1/session define acceso
+   • /v1/users/profile mejora render
+   • Si profile falla, NO se pierde sesión
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -660,47 +664,74 @@ document.addEventListener("DOMContentLoaded", async () => {
     return s;
   }
 
+  function renderSessionFallback(sessionUser) {
+    const welcome = document.getElementById("welcomeMessage");
+    if (welcome) {
+      welcome.innerHTML = `<span class="w-airline">Airline ${sessionUser.airline_id ?? ""}</span>`;
+    }
+
+    const chipWorld = document.getElementById("chipWorld");
+    if (chipWorld) chipWorld.textContent = "🌍 —";
+
+    const chipBase = document.getElementById("chipBase");
+    if (chipBase) chipBase.textContent = "Base: —";
+
+    const chipRank = document.getElementById("chipRank");
+    if (chipRank) chipRank.textContent = "Silver Carrier Rank";
+  }
+
   async function getSession() {
     const res = await fetch(`${API_BASE}/v1/session`, {
-      credentials: "include"
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      }
     });
 
-    if (!res.ok) throw new Error("NO_SESSION");
+    if (!res.ok) {
+      throw new Error(`SESSION_HTTP_${res.status}`);
+    }
 
     const data = await res.json();
 
     if (!data?.ok || !data?.user) {
-      throw new Error("INVALID_SESSION");
+      throw new Error("INVALID_SESSION_RESPONSE");
     }
 
     return data.user;
   }
 
   async function getProfile(userId) {
-    const res = await fetch(`${API_BASE}/v1/users/profile/${userId}`, {
-      credentials: "include"
+    const res = await fetch(`${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      }
     });
 
-    if (!res.ok) throw new Error("PROFILE_FAILED");
+    if (!res.ok) {
+      throw new Error(`PROFILE_HTTP_${res.status}`);
+    }
 
     const data = await res.json();
 
-    if (data.status !== "success") {
-      throw new Error("PROFILE_INVALID");
+    if (!data || data.status !== "success") {
+      throw new Error(data?.message || "PROFILE_LOAD_FAILED");
     }
 
     return data;
   }
 
-  function render(profileData) {
-
+  function renderDashboardProfile(sessionUser, profileData) {
     const user = profileData.user || {};
     const airline = profileData.airline || {};
 
     const airlineName =
       clean(airline.airline_name) ||
       clean(airline.name) ||
-      "Airline";
+      `Airline ${sessionUser.airline_id ?? ""}`;
 
     const airlineCountry =
       clean(airline.country) ||
@@ -712,64 +743,76 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const baseIcao = clean(user.base_icao).toUpperCase();
     const baseCity = clean(user.base_city);
+    const baseCountry =
+      clean(user.base_country) ||
+      airlineCountry;
 
-    document.getElementById("welcomeMessage").innerHTML = airlineName;
+    const welcome = document.getElementById("welcomeMessage");
+    if (welcome) {
+      welcome.innerHTML = `<span class="w-airline">${airlineName}</span>`;
+    }
 
     const chipWorld = document.getElementById("chipWorld");
-    chipWorld.textContent = airlineCountry || "🌍 —";
+    if (chipWorld) {
+      const flag = getFlagEmojiFromCountryName(airlineCountry || baseCountry);
+      chipWorld.textContent = airlineCountry
+        ? `${flag} ${airlineCountry}`
+        : "🌍 —";
+    }
 
     const chipBase = document.getElementById("chipBase");
-    chipBase.textContent =
-      baseCity && baseIcao
-        ? `Base: ${baseCity} (${baseIcao})`
-        : `Base: ${baseIcao || "—"}`;
+    if (chipBase) {
+      if (baseCity && baseIcao) {
+        chipBase.textContent = `Base: ${baseCity} (${baseIcao})`;
+      } else if (baseIcao) {
+        chipBase.textContent = `Base: ${baseIcao}`;
+      } else {
+        chipBase.textContent = "Base: —";
+      }
+    }
 
-    document.getElementById("chipRank").textContent = airlineRank;
+    const chipRank = document.getElementById("chipRank");
+    if (chipRank) {
+      chipRank.textContent = airlineRank;
+    }
 
-    console.log("✅ PROFILE RENDERED");
+    console.log("✅ DASHBOARD PROFILE OK:", {
+      user_id: user.user_id,
+      airline_id: user.airline_id,
+      airline_name: airlineName,
+      base_icao: user.base_icao
+    });
+  }
+
+  let sessionUser;
+
+  try {
+    sessionUser = await getSession();
+
+    if (!sessionUser?.user_id) {
+      throw new Error("SESSION_USER_ID_MISSING");
+    }
+
+    console.log("✅ DASHBOARD SESSION OK:", {
+      user_id: sessionUser.user_id,
+      airline_id: sessionUser.airline_id
+    });
+
+  } catch (error) {
+    console.error("❌ DASHBOARD SESSION FAILED:", error);
+    window.location.href = "login.html";
+    return;
   }
 
   try {
-    const session = await getSession();
-
-    console.log("✅ SESSION OK");
-
-    const profile = await getProfile(session.user_id);
-
-    render(profile);
-
-    // 🚀 ARRANCAR ENGINES SOLO DESPUÉS
-    startEngines();
-
-  } catch (err) {
-    console.error("❌ AUTH FLOW FAILED:", err);
-    window.location.href = "login.html";
+    const profileData = await getProfile(sessionUser.user_id);
+    renderDashboardProfile(sessionUser, profileData);
+  } catch (error) {
+    console.warn("⚠️ DASHBOARD PROFILE FAILED — FALLBACK RENDER:", error);
+    renderSessionFallback(sessionUser);
   }
-
 });
-
-/* ============================================================
-   🚀 ENGINE LOADER (SAFE)
-   ============================================================ */
-
-function startEngines() {
-
-  const scripts = [
-    "acs_time_recovery.js",
-    "time_engine.js"
-  ];
-
-  scripts.forEach(src => {
-    const s = document.createElement("script");
-    s.src = src;
-    s.defer = true;
-    document.body.appendChild(s);
-  });
-
-  console.log("🚀 Engines started AFTER auth");
-
-}
-
+  
 </script>
   
 <script>
