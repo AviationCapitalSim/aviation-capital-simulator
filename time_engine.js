@@ -29,7 +29,7 @@ async function loadWorldState() {
   try {
 
     const res = await fetch(
-  "https://acs-world-server-production.up.railway.app/v1/world",
+ "https://api.aviationcapitalsim.com/v1/world"
   {
     credentials: "include"
   }
