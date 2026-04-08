@@ -690,13 +690,6 @@ async function setBase(icao) {
     return;
   }
 
-  const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "null");
-  if (!user || !user.userId) {
-    alert("⚠️ No active session found.");
-    window.location.href = "login.html";
-    return;
-  }
-
   const basePayload = {
     icao: airport.icao,
     iata: airport.iata,
@@ -713,18 +706,19 @@ async function setBase(icao) {
   };
 
   try {
-    const API = "https://acs-world-server-production.up.railway.app/v1/users/set-base";
+    
+const API = "https://api.aviationcapitalsim.com/v1/users/set-base";
 
-    const response = await fetch(API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        user_id: user.userId,
-        base_icao: airport.icao
-      })
-    });
+const response = await fetch(API, {
+  method: "POST",
+  credentials: "include", // 🔥 CLAVE
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    base_icao: airport.icao
+  })
+});
 
     const result = await response.json();
     console.log("BASE SAVE RESPONSE:", result);
@@ -749,66 +743,7 @@ async function setBase(icao) {
     alert("❌ Error saving base in Railway.");
   }
 }
-  
-  /* ============================================================
-   🌐 SYNC BASE WITH SERVER — ACS CLOUD PERSISTENCE
-   ------------------------------------------------------------
-   • Envía base ICAO al backend
-   • Usa session_token existente
-   • No rompe funcionamiento local
-   ============================================================ */
-
-(function syncBaseToServer(){
-
-  try {
-
-    const sessionToken = localStorage.getItem("ACS_session_token");
-
-    if (!sessionToken) {
-      console.warn("⚠️ No session token found — skipping server sync.");
-      return;
-    }
-
-    const ACS_API_URL = "https://script.google.com/macros/s/AKfycby1XOb40ciRLjVOZpKEAaCZPU_m1f1IUuF7g0f7yLUQ8LxRLChuSQEU7jwLAC2USIb0BA/exec";
-
-    fetch(ACS_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        action: "SET_BASE",
-        session_token: sessionToken,
-        base_icao: airport.icao
-      })
-    })
-      
-    .then(r => r.json())
-    .then(res => {
-
-  console.log("🌍 SERVER RESPONSE:", res);
-
-  if (res.status === "success") {
-    console.log("✅ Base saved in server:", res.base);
-  } else {
-    console.warn("⚠️ Base NOT saved in server:", res);
-    alert("⚠️ Server did not save the base. Check console.");
-  }
-
-})
-      
-.catch(err => {
-  console.error("❌ Base sync network error:", err);
-});
-
-} catch(err) {
-
-  console.error("❌ Base sync failure:", err);
-
-}
-
-})();
-  
+    
 /* ============================================================
    🟦 PASO 1 — FLIGHT SYSTEM CONTEXT SYNC (SAFE / NON-BREAKING)
    ------------------------------------------------------------
