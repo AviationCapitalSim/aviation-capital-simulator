@@ -485,7 +485,7 @@ function handleAirlineCreation(event) {
     return false;
   }
 
-  const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/airlines/create";
+  const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/airlines/create";
 
   fetch(ACS_API_URL, {
     method: "POST",
@@ -557,37 +557,27 @@ function handleAirlineCreation(event) {
    🔐 ACS SESSION HANDLER (UNIFIED)
 ============================================================ */
 
-function getActiveUser(){
+async function getActiveUser(){
 
   try{
 
-    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "null");
+    const res = await fetch("https://api.aviationcapitalsim.com/v1/session", {
+      credentials: "include"
+    });
 
-    if(!user){
-      console.warn("⚠ No active session found");
+    const data = await res.json();
+
+    if(!data.ok){
       return null;
     }
 
-    if(!user.userId){
-      console.warn("⚠ Invalid user session");
-      return null;
-    }
-
-    return user;
+    return data.user;
 
   }catch(err){
-    console.error("SESSION PARSE ERROR:", err);
+    console.error("SESSION ERROR:", err);
     return null;
   }
 
-}
-
-const user = getActiveUser();
-
-if(!user){
-  alert("⚠ Session required. Please login.");
-  window.location.href = "login.html";
-  throw new Error("ACS_SESSION_REQUIRED");
 }
      
 if (!user.userId) {
@@ -596,13 +586,17 @@ if (!user.userId) {
  
 document.addEventListener("DOMContentLoaded", () => {
 
- const activeUser = JSON.parse(localStorage.getItem("ACS_activeUser"));
+ let user = null;
 
-  if (!user) {
-    alert("⚠️ Please log in to access this page.");
+(async () => {
+  user = await getActiveUser();
+
+  if(!user){
+    alert("⚠ Session required. Please login.");
     window.location.href = "login.html";
-    return;
   }
+     
+})();
 
   const airlineInput = document.getElementById("airlineName");
 
@@ -611,6 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+     
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
