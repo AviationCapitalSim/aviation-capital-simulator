@@ -361,9 +361,9 @@ const realAirlines = [
   "Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
   "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
 ];
-     
+
 /* ============================================================
-   UPDATE COUNTRIES (HISTORICAL REAL-WORLD)
+   UPDATE COUNTRIES
    ============================================================ */
 function updateCountries() {
 
@@ -401,11 +401,19 @@ function generateUniqueCodes() {
 }
 
 /* ============================================================
-   HANDLE AIRLINE CREATION
+   HANDLE AIRLINE CREATION (CLEAN)
    ============================================================ */
-     
-function handleAirlineCreation(event) {
+
+async function handleAirlineCreation(event) {
   event.preventDefault();
+
+  const user = await getActiveUser();
+
+  if (!user) {
+    alert("⚠ Session required. Please login.");
+    window.location.href = "login.html";
+    return false;
+  }
 
   const airlineName = document.getElementById("airlineName").value.trim();
   const region = document.getElementById("region").value;
@@ -422,15 +430,7 @@ function handleAirlineCreation(event) {
     const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, "").trim();
     return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
   })) {
-    alert("⚠️ That airline name is too similar to a real-world airline. Please choose a fictional one.");
-    return false;
-  }
-
-  const user = getActiveUser();
-
-  if (!user) {
-    alert("⚠ Session required. Please login.");
-    window.location.href = "login.html";
+    alert("⚠️ That airline name is too similar to a real-world airline.");
     return false;
   }
 
@@ -445,131 +445,68 @@ function handleAirlineCreation(event) {
     operationMode
   };
 
-  user.airline = {
-    id: user.airline_id || null,
-    name: airline.name,
-    iata: airline.iata,
-    icao: airline.icao,
-    slogan: airline.slogan,
-    region: airline.region,
-    country: airline.country,
-    businessModel: airline.businessModel,
-    operationMode: airline.operationMode
-  };
-
-  if (typeof user.base === "undefined") {
-    user.base = null;
-  }
-
-  try {
-    if (!airline.iata || typeof airline.iata !== "string") {
-      const cleanName = (airlineName || "ACS").toUpperCase().replace(/[^A-Z]/g, "");
-      airline.iata = cleanName.slice(0, 2) || "XX";
-    } else {
-      airline.iata = airline.iata.toUpperCase().trim();
-    }
-
-    user.airline.iata = airline.iata;
-
-    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-    localStorage.setItem("ACS_Airline", JSON.stringify(airline));
-    localStorage.setItem("userIATA", airline.iata);
-    localStorage.setItem("lastFlightNumber", "100");
-    localStorage.setItem("flightNumbers", JSON.stringify([]));
-
-    console.log("🟩 Flight Number System initialized:", airline.iata);
-
-  } catch (e) {
-    console.error("❌ CREATE AIRLINE INIT FAILED:", e);
-    alert("❌ Failed to initialize airline locally.");
-    return false;
-  }
-
   const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/airlines/create";
 
-  fetch(ACS_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      user_id: user.userId,
-      airline_name: airlineName,
-      airline_iata: airline.iata,
-      airline_icao: airline.icao,
-      country: country,
-      region: region,
-      business_model: businessModel,
-      operation_mode: operationMode
-    })
-  })
-  .then(res => res.text())
-  .then(raw => {
-    console.log("CREATE_AIRLINE RAW:", raw);
+  try {
 
-    let result = null;
-    try {
-      result = JSON.parse(raw);
-    } catch (e) {}
+    const res = await fetch(ACS_API_URL, {
+      method: "POST",
+      credentials: "include", // 🔥 CRÍTICO
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        airline_name: airline.name,
+        airline_iata: airline.iata,
+        airline_icao: airline.icao,
+        country,
+        region,
+        business_model: businessModel,
+        operation_mode: operationMode
+      })
+    });
 
-    if (result && result.ok) {
+    const result = await res.json();
 
-  if (result.airline_id) {
-    user.airline_id = result.airline_id;
-    if (user.airline) user.airline.id = result.airline_id;
-    localStorage.setItem("ACS_activeUser", JSON.stringify(user));
-  }
+    if (!result.ok) {
+      alert("❌ Server error: " + (result.error || "Unknown"));
+      return false;
+    }
 
-  /* ============================================================
-     🧹 CLEAN LEGACY BASE CACHE BEFORE CHOOSE BASE
-     ------------------------------------------------------------
-     • Evita saltos falsos por bases viejas guardadas localmente
-     • Necesario mientras termina la migración Railway
-     ============================================================ */
-  localStorage.removeItem("ACS_baseICAO");
-  localStorage.removeItem("ACS_baseIATA");
-  localStorage.removeItem("ACS_baseCity");
-  localStorage.removeItem("ACS_baseName");
-  localStorage.removeItem("ACS_baseCountry");
-  localStorage.removeItem("ACS_baseContinent");
-  localStorage.removeItem("ACS_baseReady");
+    /* 🧹 CLEAN LEGACY CACHE */
+    localStorage.removeItem("ACS_baseICAO");
+    localStorage.removeItem("ACS_baseIATA");
+    localStorage.removeItem("ACS_baseCity");
+    localStorage.removeItem("ACS_baseName");
+    localStorage.removeItem("ACS_baseCountry");
+    localStorage.removeItem("ACS_baseContinent");
+    localStorage.removeItem("ACS_baseReady");
 
-  alert("✔ Airline synced with server!");
-  window.location.href = "choose_base.html";
-  return;
-}
-       
-    const msg = (result && result.error)
-      ? result.error
-      : raw;
+    alert("✔ Airline synced with server!");
+    window.location.href = "choose_base.html";
 
-    alert("❌ Server error: " + msg);
-  })
-  .catch(err => {
+  } catch (err) {
     console.error("CREATE_AIRLINE ERROR:", err);
     alert("❌ Error connecting to ACS server: " + err.message);
-  });
+  }
 
   return false;
 }
-     
+
 /* ============================================================
-   🔐 ACS SESSION HANDLER (UNIFIED)
-============================================================ */
+   SESSION (BACKEND ONLY)
+   ============================================================ */
 
 async function getActiveUser(){
 
   try{
-
     const res = await fetch("https://api.aviationcapitalsim.com/v1/session", {
       credentials: "include"
     });
 
     const data = await res.json();
 
-    if(!data.ok){
-      return null;
-    }
+    if(!data.ok) return null;
 
     return data.user;
 
@@ -577,54 +514,37 @@ async function getActiveUser(){
     console.error("SESSION ERROR:", err);
     return null;
   }
-
 }
-     
-if (!user.userId) {
-  console.warn("⚠ No active user found — dev mode continuing.");
-}
- 
-document.addEventListener("DOMContentLoaded", () => {
 
- let user = null;
+/* ============================================================
+   INIT
+   ============================================================ */
 
-(async () => {
-  user = await getActiveUser();
+document.addEventListener("DOMContentLoaded", async () => {
+
+  const user = await getActiveUser();
 
   if(!user){
     alert("⚠ Session required. Please login.");
     window.location.href = "login.html";
+    return;
   }
-     
-})();
 
   const airlineInput = document.getElementById("airlineName");
-
   if (airlineInput) {
     airlineInput.addEventListener("input", generateUniqueCodes);
   }
 
 });
-     
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+
 function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  updateCountries();  
-
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
-});
-
-// 🔥 ESTA ES LA LÍNEA QUE FALTABA
-document.getElementById("region").addEventListener("change", updateCountries);
-
 </script>
 
 </body>
