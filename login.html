@@ -386,7 +386,7 @@ const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/auth/login";
    ============================================================ */
   
 async function handleLogin(event) {
-  
+
   const email = document.getElementById("email").value.trim().toLowerCase();
   const password = document.getElementById("password").value;
 
@@ -396,33 +396,22 @@ async function handleLogin(event) {
   }
 
   try {
-    
+
     const response = await fetch(ACS_API_URL, {
       method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        email,
-        password
-      })
+      body: JSON.stringify({ email, password })
     });
 
     const result = await response.json();
-
-    // ============================================================
-    // ❌ LOGIN FAILED
-    // ============================================================
 
     if (!result.ok) {
       alert("❌ Invalid email or password.");
       return false;
     }
-
-    // ============================================================
-    // ✅ LOGIN SUCCESS (COOKIE SESSION)
-    // ============================================================
 
     const airlineId = result.user?.airline_id;
 
@@ -431,9 +420,28 @@ async function handleLogin(event) {
       return false;
     }
 
+    // ✅ 🔥 VALIDAR SESIÓN REAL ANTES DE REDIRIGIR
+    const sessionCheck = await fetch("https://api.aviationcapitalsim.com/v1/session", {
+      method: "GET",
+      credentials: "include"
+    });
+
+    if (!sessionCheck.ok) {
+      alert("❌ Session not established. Please try again.");
+      return false;
+    }
+
+    const sessionData = await sessionCheck.json();
+
+    if (!sessionData?.ok || !sessionData?.user) {
+      alert("❌ Invalid session. Please login again.");
+      return false;
+    }
+
+    // ✅ SOLO AQUÍ ENTRA AL DASHBOARD
     window.location.href = "dashboard.html";
     return false;
-    
+
   } catch (err) {
     alert("❌ Login failed: " + err.message);
     return false;
