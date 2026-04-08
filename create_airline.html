@@ -355,12 +355,18 @@
 <!-- ❗AQUIE EMPIEZA SCRIPT -->
      
 <script>
+     
 const realAirlines = [
   "American Airlines","Delta Air Lines","Lufthansa","Emirates","Qatar Airways",
   "Turkish Airlines","Singapore Airlines","British Airways","United Airlines",
   "Air France","Iberia","LATAM","Avianca","Air Europa","Air Canada",
   "Aeroflot","Alaska Airlines","JetBlue","Southwest Airlines","EasyJet","Ryanair"
 ];
+
+/* ============================================================
+   🔒 SUBMIT LOCK (ANTI DUPLICATE)
+   ============================================================ */
+let isSubmittingAirline = false;
 
 /* ============================================================
    UPDATE COUNTRIES
@@ -414,9 +420,18 @@ function generateUniqueCodes() {
 async function handleAirlineCreation(event) {
   event.preventDefault();
 
+  // 🚫 BLOQUEO DOBLE SUBMIT
+  if (isSubmittingAirline) {
+    console.warn("🚫 Duplicate submit blocked");
+    return false;
+  }
+
+  isSubmittingAirline = true;
+
   const user = await getActiveUser();
 
   if (!user) {
+    isSubmittingAirline = false;
     alert("⚠ Session required. Please login.");
     window.location.href = "login.html";
     return false;
@@ -437,6 +452,7 @@ async function handleAirlineCreation(event) {
     const realNorm = real.toLowerCase().replace(/[^a-z\s]/gi, "").trim();
     return normalizedName.includes(realNorm) || realNorm.includes(normalizedName);
   })) {
+    isSubmittingAirline = false;
     alert("⚠️ That airline name is too similar to a real-world airline.");
     return false;
   }
@@ -458,7 +474,7 @@ async function handleAirlineCreation(event) {
 
     const res = await fetch(ACS_API_URL, {
       method: "POST",
-      credentials: "include", // 🔥 CRÍTICO
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
@@ -476,6 +492,7 @@ async function handleAirlineCreation(event) {
     const result = await res.json();
 
     if (!result.ok) {
+      isSubmittingAirline = false;
       alert("❌ Server error: " + (result.error || "Unknown"));
       return false;
     }
@@ -494,6 +511,7 @@ async function handleAirlineCreation(event) {
 
   } catch (err) {
     console.error("CREATE_AIRLINE ERROR:", err);
+    isSubmittingAirline = false;
     alert("❌ Error connecting to ACS server: " + err.message);
   }
 
@@ -549,12 +567,9 @@ async function getSimYear(){
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // 🔥 1. traer año REAL del backend
   window.ACS_SIM_YEAR = await getSimYear();
-
   console.log("🌍 SIM YEAR:", window.ACS_SIM_YEAR);
 
-  // 🔐 2. validar sesión
   const user = await getActiveUser();
 
   if(!user){
@@ -563,16 +578,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // 🔥 3. inicializar countries (YA con año)
   await updateCountries();
 
-  // 🎯 eventos UI
   const airlineInput = document.getElementById("airlineName");
   if (airlineInput) {
     airlineInput.addEventListener("input", generateUniqueCodes);
   }
 
-  // 🔥 evento region (FALTABA)
   const regionSelect = document.getElementById("region");
   if (regionSelect) {
     regionSelect.addEventListener("change", async () => {
