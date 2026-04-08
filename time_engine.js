@@ -29,10 +29,15 @@ async function loadWorldState() {
   try {
 
     const res = await fetch(
-      "https://acs-world-server-production.up.railway.app/v1/world"
-    );
+  "https://acs-world-server-production.up.railway.app/v1/world",
+  {
+    credentials: "include"
+  }
+);
 
-    const world = await res.json();
+if (!res.ok) throw new Error("WORLD_FETCH_FAIL");
+
+const world = await res.json();
 
     ACS_WORLD = world;
      
