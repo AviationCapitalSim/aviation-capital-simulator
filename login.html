@@ -376,21 +376,10 @@
 <script>
   
 /* ============================================================
-   === ACS LOGIN MODULE — RAILWAY SESSION AUTH =================
-   === Version: v2.0 | Secure Cookie Architecture ==============
+   === ACS LOGIN MODULE — CLEAN SESSION ARCHITECTURE ===========
    ============================================================ */
   
-const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/auth/login";
-
-/* === Utility: Hash password (same as register) =============== */
-  
-async function hashPassword(password) {
-  const enc = new TextEncoder().encode(password);
-  const buffer = await crypto.subtle.digest("SHA-256", enc);
-  return Array.from(new Uint8Array(buffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
+const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/auth/login";
 
 /* ============================================================
    === HANDLE LOGIN ============================================
@@ -408,103 +397,52 @@ async function handleLogin(event) {
 
   try {
     
-  const response = await fetch(ACS_API_URL, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      email,
-      password
-    })
-  });
-    
-    const text = await response.text();
-   
-    let result;
-    try {
-      result = JSON.parse(text);
-    } catch (e) {
-      alert("❌ Server returned invalid response:\n" + text);
+    const response = await fetch(ACS_API_URL, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        password
+      })
+    });
+
+    const result = await response.json();
+
+    // ============================================================
+    // ❌ LOGIN FAILED
+    // ============================================================
+
+    if (!result.ok) {
+      alert("❌ Invalid email or password.");
       return false;
     }
 
-// ============================================================
-// 🔐 L-FRONT-1 — NUEVOS ESTADOS DE SEGURIDAD (BACKEND v2)
-// ============================================================
+    // ============================================================
+    // ✅ LOGIN SUCCESS (COOKIE SESSION)
+    // ============================================================
 
-if (result.status === "INVALID_CREDENTIALS") {
-  alert("❌ Invalid email or password.");
-  return false;
-}
+    const airlineId = result.user?.airline_id;
 
-if (result.status === "ACCOUNT_LOCKED") {
-  alert("🔒 Account locked due to multiple failed attempts.\nPlease wait 15 minutes before trying again.");
-  return false;
-}
-    
-    // === NO_USER ===
-    
-    if (result.status === "NO_USER") {
-      alert("❌ This email is not registered.\nPlease create your account.");
-      window.location.href = "register.html";
+    if (!airlineId) {
+      window.location.href = "create_airline.html";
       return false;
     }
 
-    // === WRONG_PASSWORD ===
-    
-    if (result.status === "WRONG_PASSWORD") {
-      alert("❌ Incorrect password. Please try again.");
-      return false;
-    }
-
-   /* ============================================================
-   ✅ NO_AIRLINE — PRIMER LOGIN (usuario nuevo)
-   ------------------------------------------------------------
-   • Usuario existe y credenciales OK
-   • Aún no tiene aerolínea creada
-   • Redirigir a create_airline.html
-   ============================================================ */
-    
-if (result.status === "NO_AIRLINE") {
-
-  const userId    = result.user?.user_id || "";
-  const userEmail = result.user?.email   || "";
-  const token     = result.token || "";
-
-  if (!userId || !userEmail || !token) {
-    alert("❌ Login response missing token or user data.");
+    window.location.href = "dashboard.html";
     return false;
-  }
-
-  window.location.href = "create_airline.html";
-  return false;
-}
-    
-  // === HAS_AIRLINE — FIX COMPLETO ==========================
-    
-  if (result.status === "HAS_AIRLINE") {
-
-  const userId    = result.user.user_id;
-  const userEmail = result.user.email;
-  const airlineId = result.user.airline_id;
-  const token     = result.token || "";
-
-  if (!userId || !userEmail || !airlineId || !token) {
-    alert("❌ Login response missing token or user data.");
-    return false;
-  }
-
-  window.location.href = "dashboard.html";
-  return false;
-}
     
   } catch (err) {
     alert("❌ Login failed: " + err.message);
     return false;
   }
 }
+
+/* ============================================================
+   === FORM BINDING ============================================
+   ============================================================ */
 
 document.getElementById("loginForm").addEventListener("submit", async (event) => {
   event.preventDefault();
