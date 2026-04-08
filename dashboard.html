@@ -645,14 +645,10 @@ function getFlagEmojiFromCountryName(countryName) {
 <script>
   
 /* ============================================================
-   2️⃣ DASHBOARD SESSION BOOTSTRAP — AUTH ISOLATED FROM PROFILE
-   ------------------------------------------------------------
-   • /v1/session define acceso
-   • /v1/users/profile mejora render
-   • Si profile falla, NO se pierde sesión
+   🧠 DASHBOARD BOOTSTRAP — ISOLATED (ENGINE SAFE)
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", async () => {
+(async () => {
 
   const API_BASE = "https://api.aviationcapitalsim.com";
 
@@ -676,47 +672,59 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function getSession() {
-    const res = await fetch(`${API_BASE}/v1/session`, {
-      credentials: "include"
-    });
+    try {
+      const res = await fetch(`${API_BASE}/v1/session`, {
+        credentials: "include"
+      });
 
-    if (!res.ok) {
-      if (res.status === 401) {
-        window.location.href = "login.html";
-        return null;
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = "login.html";
+          return null;
+        }
+        throw new Error("SESSION_HTTP_FAIL");
       }
-      throw new Error("SESSION_HTTP_FAIL");
+
+      const data = await res.json();
+
+      if (!data?.ok || !data?.user) {
+        throw new Error("INVALID_SESSION");
+      }
+
+      return data.user;
+
+    } catch (e) {
+      console.warn("⚠️ SESSION FETCH FAILED (ISOLATED)", e);
+      return null;
     }
-
-    const data = await res.json();
-
-    if (!data?.ok || !data?.user) {
-      throw new Error("INVALID_SESSION");
-    }
-
-    return data.user;
   }
 
   async function getProfile(userId) {
-    const res = await fetch(`${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`, {
-      credentials: "include"
-    });
+    try {
+      const res = await fetch(`${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`, {
+        credentials: "include"
+      });
 
-    if (!res.ok) throw new Error("PROFILE_FAIL");
+      if (!res.ok) throw new Error("PROFILE_FAIL");
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!data || data.status !== "success") {
-      throw new Error("PROFILE_INVALID");
+      if (!data || data.status !== "success") {
+        throw new Error("PROFILE_INVALID");
+      }
+
+      return data;
+
+    } catch (e) {
+      console.warn("⚠️ PROFILE FAIL (ISOLATED)", e);
+      return null;
     }
-
-    return data;
   }
 
   function renderDashboardProfile(sessionUser, profileData) {
 
-    const user = profileData.user || {};
-    const airline = profileData.airline || {};
+    const user = profileData?.user || {};
+    const airline = profileData?.airline || {};
 
     const airlineName =
       clean(airline.airline_name) ||
@@ -735,28 +743,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const chipRank = document.getElementById("chipRank");
     if (chipRank) chipRank.textContent = airline.rank || "Silver Carrier Rank";
-
   }
 
-  try {
+  /* ===============================
+     🚀 SAFE START (NO ENGINE BREAK)
+     =============================== */
 
-    const sessionUser = await getSession();
+  await new Promise(r => setTimeout(r, 50));
 
-    if (!sessionUser) return;
+  const sessionUser = await getSession();
 
-    try {
-      const profileData = await getProfile(sessionUser.user_id);
-      renderDashboardProfile(sessionUser, profileData);
-    } catch (e) {
-      console.warn("⚠️ PROFILE FALLBACK", e);
-      renderSessionFallback(sessionUser);
-    }
+  if (!sessionUser) return;
 
-  } catch (err) {
-    console.warn("⚠️ SESSION ERROR", err);
+  const profileData = await getProfile(sessionUser.user_id);
+
+  if (profileData) {
+    renderDashboardProfile(sessionUser, profileData);
+  } else {
+    renderSessionFallback(sessionUser);
   }
 
-});
+})();
   
 </script>
   
