@@ -365,9 +365,15 @@ const realAirlines = [
 /* ============================================================
    UPDATE COUNTRIES
    ============================================================ */
-function updateCountries() {
+async function updateCountries() {
 
-  const simYear = parseInt(localStorage.getItem("ACS_year") || "1940");
+  const simYear = window.ACS_SIM_YEAR;
+
+  if (!simYear) {
+    console.warn("⏳ simYear not ready yet");
+    return;
+  }
+
   const countrySelect = document.getElementById("country");
   const selectedRegion = document.getElementById("region").value;
 
@@ -389,8 +395,9 @@ function updateCountries() {
     opt.textContent = c.name;
     countrySelect.appendChild(opt);
   });
-}
 
+}
+     
 function generateUniqueCodes() {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const random = (n) =>
@@ -516,12 +523,38 @@ async function getActiveUser(){
   }
 }
 
+async function getSimYear(){
+
+  try{
+    const res = await fetch("https://api.aviationcapitalsim.com/v1/world", {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    if(!data.ok) return null;
+
+    return data.sim_year;
+
+  }catch(err){
+    console.error("WORLD FETCH ERROR:", err);
+    return null;
+  }
+
+}
+     
 /* ============================================================
    INIT
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
 
+  // 🔥 1. traer año REAL del backend
+  window.ACS_SIM_YEAR = await getSimYear();
+
+  console.log("🌍 SIM YEAR:", window.ACS_SIM_YEAR);
+
+  // 🔐 2. validar sesión
   const user = await getActiveUser();
 
   if(!user){
@@ -530,9 +563,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // 🔥 3. inicializar countries (YA con año)
+  await updateCountries();
+
+  // 🎯 eventos UI
   const airlineInput = document.getElementById("airlineName");
   if (airlineInput) {
     airlineInput.addEventListener("input", generateUniqueCodes);
+  }
+
+  // 🔥 evento region (FALTABA)
+  const regionSelect = document.getElementById("region");
+  if (regionSelect) {
+    regionSelect.addEventListener("change", async () => {
+      await updateCountries();
+    });
   }
 
 });
