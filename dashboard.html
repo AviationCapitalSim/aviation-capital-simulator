@@ -643,15 +643,9 @@ function getFlagEmojiFromCountryName(countryName) {
 </script>
   
 <script>
-  
+
 /* ============================================================
-   2️⃣ DASHBOARD SESSION BOOTSTRAP — BACKEND CANONICAL SOURCE
-   ------------------------------------------------------------
-   • Fuente oficial: /v1/session
-   • Sin localStorage
-   • Sin Bearer token
-   • Cookie httpOnly como única sesión válida
-   • Backend = source of truth
+   🔐 AUTH FIRST + PROFILE LOAD (STABLE VERSION)
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -668,49 +662,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function getSession() {
     const res = await fetch(`${API_BASE}/v1/session`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      }
+      credentials: "include"
     });
 
-    if (!res.ok) {
-      throw new Error(`SESSION_HTTP_${res.status}`);
-    }
+    if (!res.ok) throw new Error("NO_SESSION");
 
     const data = await res.json();
 
     if (!data?.ok || !data?.user) {
-      throw new Error("INVALID_SESSION_RESPONSE");
+      throw new Error("INVALID_SESSION");
     }
 
     return data.user;
   }
 
   async function getProfile(userId) {
-    const res = await fetch(`${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      }
+    const res = await fetch(`${API_BASE}/v1/users/profile/${userId}`, {
+      credentials: "include"
     });
 
-    if (!res.ok) {
-      throw new Error(`PROFILE_HTTP_${res.status}`);
-    }
+    if (!res.ok) throw new Error("PROFILE_FAILED");
 
     const data = await res.json();
 
-    if (!data || data.status !== "success") {
-      throw new Error(data?.message || "PROFILE_LOAD_FAILED");
+    if (data.status !== "success") {
+      throw new Error("PROFILE_INVALID");
     }
 
     return data;
   }
 
-  function renderDashboardProfile(sessionUser, profileData) {
+  function render(profileData) {
+
     const user = profileData.user || {};
     const airline = profileData.airline || {};
 
@@ -729,69 +712,64 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const baseIcao = clean(user.base_icao).toUpperCase();
     const baseCity = clean(user.base_city);
-    const baseCountry =
-      clean(user.base_country) ||
-      airlineCountry;
 
-    const welcome = document.getElementById("welcomeMessage");
-    if (welcome) {
-      welcome.innerHTML = `<span class="w-airline">${airlineName}</span>`;
-    }
+    document.getElementById("welcomeMessage").innerHTML = airlineName;
 
     const chipWorld = document.getElementById("chipWorld");
-    if (chipWorld) {
-      const flag = getFlagEmojiFromCountryName(airlineCountry || baseCountry);
-      chipWorld.textContent = airlineCountry
-        ? `${flag} ${airlineCountry}`
-        : "🌍 —";
-    }
+    chipWorld.textContent = airlineCountry || "🌍 —";
 
     const chipBase = document.getElementById("chipBase");
-    if (chipBase) {
-      if (baseCity && baseIcao) {
-        chipBase.textContent = `Base: ${baseCity} (${baseIcao})`;
-      } else if (baseIcao) {
-        chipBase.textContent = `Base: ${baseIcao}`;
-      } else {
-        chipBase.textContent = "Base: —";
-      }
-    }
+    chipBase.textContent =
+      baseCity && baseIcao
+        ? `Base: ${baseCity} (${baseIcao})`
+        : `Base: ${baseIcao || "—"}`;
 
-    const chipRank = document.getElementById("chipRank");
-    if (chipRank) {
-      chipRank.textContent = airlineRank;
-    }
+    document.getElementById("chipRank").textContent = airlineRank;
 
-    console.log("✅ DASHBOARD SESSION OK:", {
-      user_id: sessionUser.user_id,
-      airline_id: sessionUser.airline_id
-    });
-
-    console.log("✅ DASHBOARD PROFILE OK:", {
-      user_id: user.user_id,
-      airline_id: user.airline_id,
-      airline_name: airlineName,
-      base_icao: user.base_icao
-    });
+    console.log("✅ PROFILE RENDERED");
   }
 
   try {
-    const sessionUser = await getSession();
+    const session = await getSession();
 
-    if (!sessionUser?.user_id) {
-      throw new Error("SESSION_USER_ID_MISSING");
-    }
+    console.log("✅ SESSION OK");
 
-    const profileData = await getProfile(sessionUser.user_id);
+    const profile = await getProfile(session.user_id);
 
-    renderDashboardProfile(sessionUser, profileData);
+    render(profile);
 
-  } catch (error) {
-    console.error("❌ DASHBOARD SESSION BOOTSTRAP FAILED:", error);
+    // 🚀 ARRANCAR ENGINES SOLO DESPUÉS
+    startEngines();
+
+  } catch (err) {
+    console.error("❌ AUTH FLOW FAILED:", err);
     window.location.href = "login.html";
   }
+
 });
-  
+
+/* ============================================================
+   🚀 ENGINE LOADER (SAFE)
+   ============================================================ */
+
+function startEngines() {
+
+  const scripts = [
+    "acs_time_recovery.js",
+    "time_engine.js"
+  ];
+
+  scripts.forEach(src => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.defer = true;
+    document.body.appendChild(s);
+  });
+
+  console.log("🚀 Engines started AFTER auth");
+
+}
+
 </script>
   
 <script>
