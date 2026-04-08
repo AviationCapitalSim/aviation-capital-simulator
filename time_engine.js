@@ -502,7 +502,7 @@ function economicWatcher() {
 document.addEventListener("DOMContentLoaded", async () => {
 
   // 🌍 Load world from server
-  await loadWorldState();
+  loadWorldState();
 
   if (ACS_CYCLE.status === "ON") {
     ACS_TIME.currentTime = computeSimTime();
