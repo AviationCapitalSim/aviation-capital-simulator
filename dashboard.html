@@ -653,7 +653,7 @@ function getFlagEmojiFromCountryName(countryName) {
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
-  
+
   const API_BASE = "https://api.aviationcapitalsim.com";
 
   function clean(v) {
@@ -670,33 +670,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       welcome.innerHTML = `<span class="w-airline">Airline ${sessionUser.airline_id ?? ""}</span>`;
     }
 
-    const chipWorld = document.getElementById("chipWorld");
-    if (chipWorld) chipWorld.textContent = "🌍 —";
-
-    const chipBase = document.getElementById("chipBase");
-    if (chipBase) chipBase.textContent = "Base: —";
-
-    const chipRank = document.getElementById("chipRank");
-    if (chipRank) chipRank.textContent = "Silver Carrier Rank";
+    document.getElementById("chipWorld").textContent = "🌍 —";
+    document.getElementById("chipBase").textContent = "Base: —";
+    document.getElementById("chipRank").textContent = "Silver Carrier Rank";
   }
 
   async function getSession() {
     const res = await fetch(`${API_BASE}/v1/session`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      }
+      credentials: "include"
     });
 
     if (!res.ok) {
-      throw new Error(`SESSION_HTTP_${res.status}`);
+      if (res.status === 401) {
+        window.location.href = "login.html";
+        return null;
+      }
+      throw new Error("SESSION_HTTP_FAIL");
     }
 
     const data = await res.json();
 
     if (!data?.ok || !data?.user) {
-      throw new Error("INVALID_SESSION_RESPONSE");
+      throw new Error("INVALID_SESSION");
     }
 
     return data.user;
@@ -704,48 +699,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function getProfile(userId) {
     const res = await fetch(`${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      }
+      credentials: "include"
     });
 
-    if (!res.ok) {
-      throw new Error(`PROFILE_HTTP_${res.status}`);
-    }
+    if (!res.ok) throw new Error("PROFILE_FAIL");
 
     const data = await res.json();
 
     if (!data || data.status !== "success") {
-      throw new Error(data?.message || "PROFILE_LOAD_FAILED");
+      throw new Error("PROFILE_INVALID");
     }
 
     return data;
   }
 
   function renderDashboardProfile(sessionUser, profileData) {
+
     const user = profileData.user || {};
     const airline = profileData.airline || {};
 
     const airlineName =
       clean(airline.airline_name) ||
-      clean(airline.name) ||
       `Airline ${sessionUser.airline_id ?? ""}`;
-
-    const airlineCountry =
-      clean(airline.country) ||
-      clean(user.country);
-
-    const airlineRank =
-      clean(airline.rank) ||
-      "Silver Carrier Rank";
-
-    const baseIcao = clean(user.base_icao).toUpperCase();
-    const baseCity = clean(user.base_city);
-    const baseCountry =
-      clean(user.base_country) ||
-      airlineCountry;
 
     const welcome = document.getElementById("welcomeMessage");
     if (welcome) {
@@ -753,105 +728,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const chipWorld = document.getElementById("chipWorld");
-    if (chipWorld) {
-      const flag = getFlagEmojiFromCountryName(airlineCountry || baseCountry);
-      chipWorld.textContent = airlineCountry
-        ? `${flag} ${airlineCountry}`
-        : "🌍 —";
-    }
+    if (chipWorld) chipWorld.textContent = airline.country || "🌍 —";
 
     const chipBase = document.getElementById("chipBase");
-    if (chipBase) {
-      if (baseCity && baseIcao) {
-        chipBase.textContent = `Base: ${baseCity} (${baseIcao})`;
-      } else if (baseIcao) {
-        chipBase.textContent = `Base: ${baseIcao}`;
-      } else {
-        chipBase.textContent = "Base: —";
-      }
-    }
+    if (chipBase) chipBase.textContent = user.base_icao || "Base: —";
 
     const chipRank = document.getElementById("chipRank");
-    if (chipRank) {
-      chipRank.textContent = airlineRank;
+    if (chipRank) chipRank.textContent = airline.rank || "Silver Carrier Rank";
+
+  }
+
+  try {
+
+    const sessionUser = await getSession();
+
+    if (!sessionUser) return;
+
+    try {
+      const profileData = await getProfile(sessionUser.user_id);
+      renderDashboardProfile(sessionUser, profileData);
+    } catch (e) {
+      console.warn("⚠️ PROFILE FALLBACK", e);
+      renderSessionFallback(sessionUser);
     }
 
-    console.log("✅ DASHBOARD PROFILE OK:", {
-      user_id: user.user_id,
-      airline_id: user.airline_id,
-      airline_name: airlineName,
-      base_icao: user.base_icao
-    });
+  } catch (err) {
+    console.warn("⚠️ SESSION ERROR", err);
   }
 
-  let sessionUser;
-
-  try {
-
-  const res = await fetch(`${API_BASE}/v1/session`, {
-    method: "GET",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-
-  // 🔴 SOLO si backend dice NO SESSION → logout
-  if (res.status === 401) {
-    console.warn("⛔ NO SESSION — redirecting to login");
-    window.location.href = "login.html";
-    return;
-  }
-
-  if (!res.ok) {
-    throw new Error(`SESSION_HTTP_${res.status}`);
-  }
-
-  const data = await res.json();
-
-  if (!data?.ok || !data?.user) {
-    console.warn("⚠️ SESSION RESPONSE INVALID — but NOT logging out");
-    sessionUser = {};
-  } else {
-    sessionUser = data.user;
-  }
-
-  console.log("✅ DASHBOARD SESSION OK:", sessionUser);
-
-} catch (error) {
-
-  // 🔴 ERROR DE RED ≠ LOGOUT
-  console.warn("⚠️ SESSION LOAD FAILED (network):", error);
-
-  // NO redirige — deja entrar con fallback
-  sessionUser = {};
-
-}
-
-  try {
-    
-    // 🛑 SOLO intentar profile si existe user_id real
-   if (sessionUser?.user_id) {
-
-  try {
-    const profileData = await getProfile(sessionUser.user_id);
-    renderDashboardProfile(sessionUser, profileData);
-  } catch (error) {
-    console.warn("⚠️ DASHBOARD PROFILE FAILED — FALLBACK:", error);
-    renderSessionFallback(sessionUser);
-  }
-
-} else {
-
-  console.warn("⚠️ NO user_id in session — fallback render");
-  renderSessionFallback(sessionUser);
-
-}
-    
-  } catch (error) {
-    console.warn("⚠️ DASHBOARD PROFILE FAILED — FALLBACK RENDER:", error);
-    renderSessionFallback(sessionUser);
-  }
 });
   
 </script>
