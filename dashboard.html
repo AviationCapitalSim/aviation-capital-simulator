@@ -829,8 +829,25 @@ setTimeout(async () => {
 }
 
   try {
+    
+    // 🛑 SOLO intentar profile si existe user_id real
+   if (sessionUser?.user_id) {
+
+  try {
     const profileData = await getProfile(sessionUser.user_id);
     renderDashboardProfile(sessionUser, profileData);
+  } catch (error) {
+    console.warn("⚠️ DASHBOARD PROFILE FAILED — FALLBACK:", error);
+    renderSessionFallback(sessionUser);
+  }
+
+} else {
+
+  console.warn("⚠️ NO user_id in session — fallback render");
+  renderSessionFallback(sessionUser);
+
+}
+    
   } catch (error) {
     console.warn("⚠️ DASHBOARD PROFILE FAILED — FALLBACK RENDER:", error);
     renderSessionFallback(sessionUser);
