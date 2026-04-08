@@ -672,33 +672,39 @@ function getFlagEmojiFromCountryName(countryName) {
   }
 
   async function getSession() {
-    try {
-      const res = await fetch(`${API_BASE}/v1/session`, {
-        credentials: "include"
-      });
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          window.location.href = "login.html";
-          return null;
-        }
-        throw new Error("SESSION_HTTP_FAIL");
+  try {
+    const res = await fetch(`${API_BASE}/v1/session`, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
       }
+    });
 
-      const data = await res.json();
-
-      if (!data?.ok || !data?.user) {
-        throw new Error("INVALID_SESSION");
+    if (!res.ok) {
+      if (res.status === 401) {
+        window.location.href = "login.html";
+        return null;
       }
-
-      return data.user;
-
-    } catch (e) {
-      console.warn("⚠️ SESSION FETCH FAILED (ISOLATED)", e);
-      return null;
+      throw new Error("SESSION_HTTP_FAIL");
     }
-  }
 
+    const data = await res.json();
+
+    if (!data?.ok || !data?.user) {
+      throw new Error("INVALID_SESSION");
+    }
+
+    console.log("🟢 SESSION OK:", data);
+
+    return data.user;
+
+  } catch (e) {
+    console.warn("⚠️ SESSION FETCH FAILED (ISOLATED)", e);
+    return null;
+  }
+}
+  
   async function getProfile(userId) {
     try {
       const res = await fetch(`${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`, {
