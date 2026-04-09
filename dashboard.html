@@ -671,51 +671,24 @@ function getFlagEmojiFromCountryName(countryName) {
     document.getElementById("chipRank").textContent = "Silver Carrier Rank";
   }
 
-  async function getSession() {
+async function getSession() {
   try {
     const res = await fetch(`${API_BASE}/v1/session`, {
-      method: "GET",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!res.ok) {
-
-  if (res.status === 401) {
-    console.warn("⚠️ 401 recibido, reintentando sesión...");
-
-    // 🔁 REINTENTO UNA VEZ (crítico para cookies cross-domain)
-    await new Promise(r => setTimeout(r, 200));
-
-    const retry = await fetch(`${API_BASE}/v1/session`, {
       method: "GET",
       credentials: "include"
     });
 
-    if (!retry.ok) {
-      window.location.href = "login.html";
-      return null;
+    if (!res.ok) {
+      if (res.status === 401) {
+        return null;
+      }
+      throw new Error("SESSION_HTTP_FAIL");
     }
-
-    const retryData = await retry.json();
-
-    if (!retryData?.ok || !retryData?.user) {
-      window.location.href = "login.html";
-      return null;
-    }
-
-    return retryData.user;
-  }
-
-  throw new Error("SESSION_HTTP_FAIL");
-}
 
     const data = await res.json();
 
     if (!data?.ok || !data?.user) {
-      throw new Error("INVALID_SESSION");
+      return null;
     }
 
     console.log("🟢 SESSION OK:", data);
@@ -723,7 +696,7 @@ function getFlagEmojiFromCountryName(countryName) {
     return data.user;
 
   } catch (e) {
-    console.warn("⚠️ SESSION FETCH FAILED (ISOLATED)", e);
+    console.warn("⚠️ SESSION FETCH FAILED", e);
     return null;
   }
 }
