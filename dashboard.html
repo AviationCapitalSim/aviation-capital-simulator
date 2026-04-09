@@ -682,12 +682,35 @@ function getFlagEmojiFromCountryName(countryName) {
     });
 
     if (!res.ok) {
-      if (res.status === 401) {
-        window.location.href = "login.html";
-        return null;
-      }
-      throw new Error("SESSION_HTTP_FAIL");
+
+  if (res.status === 401) {
+    console.warn("⚠️ 401 recibido, reintentando sesión...");
+
+    // 🔁 REINTENTO UNA VEZ (crítico para cookies cross-domain)
+    await new Promise(r => setTimeout(r, 200));
+
+    const retry = await fetch(`${API_BASE}/v1/session`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    if (!retry.ok) {
+      window.location.href = "login.html";
+      return null;
     }
+
+    const retryData = await retry.json();
+
+    if (!retryData?.ok || !retryData?.user) {
+      window.location.href = "login.html";
+      return null;
+    }
+
+    return retryData.user;
+  }
+
+  throw new Error("SESSION_HTTP_FAIL");
+}
 
     const data = await res.json();
 
