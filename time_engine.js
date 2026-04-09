@@ -506,6 +506,12 @@ function economicWatcher() {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
+  // ⛔ BLOCK ENGINE IF SESSION NOT READY
+  if (!window.ACS_SESSION_READY) {
+    console.warn("⛔ Time Engine blocked — no session");
+    return;
+  }
+   
   // 🌍 Load world from server
   loadWorldState();
 
