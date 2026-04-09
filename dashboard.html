@@ -755,10 +755,7 @@ async function getSession() {
 
   const sessionUser = await getSession();
 
-if (!sessionUser) {
-  window.location.href = "login.html";
-  return;
-}
+  if (!sessionUser) return;
 
   const profileData = await getProfile(sessionUser.user_id);
 
