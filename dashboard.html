@@ -403,12 +403,7 @@ body {
 }
   
 </style>
-
-<!-- 🔒 ACS SESSION LOCK (HIDE UNTIL AUTH OK) -->
-<style id="acs-lock">
-  html { visibility: hidden; }
-</style>
-   
+  
 </head>
 <body>
 
@@ -558,43 +553,6 @@ function handleLogout() {
   alert("👋 Session closed. See you soon, Captain!");
   window.location.href = "login.html";
 }
-  
-</script>
-
-<!-- 🔐 ACS SESSION GATE — BLOCK ALL ENGINES -->
-  
-<script id="acs-session-gate">
-(async () => {
-
-  try {
-    const res = await fetch("https://api.aviationcapitalsim.com/v1/session", {
-      credentials: "include"
-    });
-
-    if (!res.ok) {
-      window.location.href = "login.html";
-      return;
-    }
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      window.location.href = "login.html";
-      return;
-    }
-
-    // ✅ SESSION OK
-    window.ACS_SESSION_READY = true;
-
-    // 🔓 SHOW PAGE
-    document.documentElement.style.visibility = "visible";
-
-  } catch (e) {
-    console.error("SESSION GATE FAILED:", e);
-    window.location.href = "login.html";
-  }
-
-})();
   
 </script>
   
