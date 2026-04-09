@@ -420,25 +420,8 @@ async function handleLogin(event) {
       return false;
     }
 
-    // ✅ 🔥 VALIDAR SESIÓN REAL ANTES DE REDIRIGIR
-    const sessionCheck = await fetch("https://api.aviationcapitalsim.com/v1/session", {
-      method: "GET",
-      credentials: "include"
-    });
-
-    if (!sessionCheck.ok) {
-      alert("❌ Session not established. Please try again.");
-      return false;
-    }
-
-    const sessionData = await sessionCheck.json();
-
-    if (!sessionData?.ok || !sessionData?.user) {
-      alert("❌ Invalid session. Please login again.");
-      return false;
-    }
-
-    // ✅ SOLO AQUÍ ENTRA AL DASHBOARD
+   // ✅ REDIRECT DIRECTO — EL DASHBOARD VALIDA LA SESIÓN
+    
     window.location.href = "dashboard.html";
     return false;
 
