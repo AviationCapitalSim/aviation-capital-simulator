@@ -642,68 +642,54 @@ function getFlagEmojiFromCountryName(countryName) {
 </script>
 
 <script>
-  
 /* ============================================================
-   2️⃣ DASHBOARD PROFILE BOOTSTRAP — RAILWAY CANONICAL SOURCE
-   ------------------------------------------------------------
-   • Fuente oficial: Railway API
-   • Usa localStorage solo para identificar sesión activa
-   • Elimina dependencia de base local
-   • Elimina dependencia de Google Apps Script
-   • Renderiza airline + country + rank + base desde servidor
+   🟧 A2 — DASHBOARD PROFILE BOOTSTRAP (COOKIE SESSION ONLY)
+   REEMPLAZA COMPLETO EL BLOQUE VIEJO DE TOKEN/localStorage
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-const API_BASE = "https://acs-world-server-production.up.railway.app";
-const token = localStorage.getItem("acs_token");
+  const API_BASE = "https://api.aviationcapitalsim.com";
 
-if (!token) {
-  console.warn("❌ NO TOKEN");
-  window.location.href = "login.html";
-  return;
-}
+  let sessionUser = null;
 
-let sessionUser;
+  try {
+    const sessionRes = await fetch(`${API_BASE}/v1/session`, {
+      method: "GET",
+      credentials: "include"
+    });
 
-try {
-  const res = await fetch(`${API_BASE}/v1/auth/me`, {
-    method: "GET",
-    headers: {
-      "Authorization": "Bearer " + token,
-      "Content-Type": "application/json"
+    if (!sessionRes.ok) {
+      throw new Error(`SESSION_HTTP_${sessionRes.status}`);
     }
-  });
 
-  if (!res.ok) throw new Error(`AUTH_HTTP_${res.status}`);
+    const sessionData = await sessionRes.json();
 
-  const data = await res.json();
+    if (!sessionData.ok || !sessionData.user?.user_id) {
+      throw new Error("INVALID_SESSION_RESPONSE");
+    }
 
-  if (!data.ok || !data.user?.user_id) {
-    throw new Error("INVALID_AUTH_RESPONSE");
+    sessionUser = sessionData.user;
+    console.log("✅ COOKIE SESSION OK:", sessionUser);
+
+  } catch (e) {
+    console.warn("❌ DASHBOARD SESSION FAILED:", e);
+    window.location.href = "login.html";
+    return;
   }
 
-  sessionUser = data.user;
-  console.log("✅ TOKEN AUTH OK:", sessionUser);
+  const activeUser = {
+    user_id: sessionUser.user_id,
+    airline_id: sessionUser.airline_id,
+    email: sessionUser.email
+  };
 
-} catch (e) {
-  console.warn("❌ TOKEN AUTH FAILED:", e);
-  localStorage.removeItem("acs_token");
-  window.location.href = "login.html";
-  return;
-}
-  
- const activeUser = {
-  user_id: sessionUser.user_id,
-  airline_id: sessionUser.airline_id
-};
-  
-const userId = activeUser.user_id || activeUser.userId;
+  const userId = activeUser.user_id;
 
-if (!userId) {
-  window.location.href = "login.html";
-  return;
-}
+  if (!userId) {
+    window.location.href = "login.html";
+    return;
+  }
 
   const clean = (v) => {
     if (v === null || v === undefined) return "";
@@ -712,13 +698,14 @@ if (!userId) {
     return String(v).trim();
   };
 
-  async function loadProfileFromRailway() {
+  async function loadProfileFromServer() {
     const url = `${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`;
 
-    console.log("🌐 Loading dashboard profile from Railway:", url);
+    console.log("🌐 Loading dashboard profile from API:", url);
 
     const resp = await fetch(url, {
       method: "GET",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       }
@@ -744,18 +731,14 @@ if (!userId) {
     const airlineName =
       clean(airline.airline_name) ||
       clean(airline.name) ||
-      clean(activeUser?.airline?.airline_name) ||
-      clean(activeUser?.airline?.name) ||
       "Airline";
 
     const airlineCountry =
       clean(airline.country) ||
-      clean(user.country) ||
-      clean(activeUser?.airline?.country);
+      clean(user.country);
 
     const airlineRank =
       clean(airline.rank) ||
-      clean(activeUser?.airline?.rank) ||
       "Silver Carrier Rank";
 
     const baseIcao =
@@ -768,17 +751,11 @@ if (!userId) {
       clean(user.base_country) ||
       airlineCountry;
 
-    // ------------------------------------------------------------
-    // HERO TITLE
-    // ------------------------------------------------------------
     const welcome = document.getElementById("welcomeMessage");
     if (welcome) {
       welcome.innerHTML = `<span class="w-airline">${airlineName}</span>`;
     }
 
-    // ------------------------------------------------------------
-    // WORLD CHIP
-    // ------------------------------------------------------------
     const chipWorld = document.getElementById("chipWorld");
     if (chipWorld) {
       const flag = getFlagEmojiFromCountryName(airlineCountry || baseCountry);
@@ -787,9 +764,6 @@ if (!userId) {
         : "🌍 —";
     }
 
-    // ------------------------------------------------------------
-    // BASE CHIP
-    // ------------------------------------------------------------
     const chipBase = document.getElementById("chipBase");
     if (chipBase) {
       if (baseCity && baseIcao) {
@@ -801,29 +775,12 @@ if (!userId) {
       }
     }
 
-    // ------------------------------------------------------------
-    // RANK CHIP
-    // ------------------------------------------------------------
     const chipRank = document.getElementById("chipRank");
     if (chipRank) {
       chipRank.textContent = airlineRank;
     }
 
-    // ------------------------------------------------------------
-    // SESSION MIRROR (solo cache ligera, no fuente oficial)
-    // ------------------------------------------------------------
-    const mergedActiveUser = {
-      ...activeUser,
-      user_id: user.user_id || activeUser.user_id,
-      airline_id: user.airline_id || activeUser.airline_id,
-      country: user.country || activeUser.country,
-      airline: {
-        ...(activeUser.airline || {}),
-        ...airline
-      }
-    };
-
-    console.log("✅ Dashboard profile loaded from Railway:", {
+    console.log("✅ Dashboard profile loaded from API:", {
       user_id: user.user_id,
       airline_id: user.airline_id,
       base_icao: user.base_icao,
@@ -832,10 +789,10 @@ if (!userId) {
   }
 
   try {
-    const profileData = await loadProfileFromRailway();
+    const profileData = await loadProfileFromServer();
     renderDashboardProfile(profileData);
   } catch (error) {
-    console.error("❌ Dashboard Railway bootstrap failed:", error);
+    console.error("❌ Dashboard profile bootstrap failed:", error);
 
     const chipBase = document.getElementById("chipBase");
     if (chipBase) chipBase.textContent = "Base: —";
