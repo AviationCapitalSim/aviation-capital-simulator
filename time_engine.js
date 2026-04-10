@@ -28,16 +28,11 @@ async function loadWorldState() {
 
   try {
 
- const res = await fetch(
-  "https://api.aviationcapitalsim.com/v1/world",
-  {
-    credentials: "include"
-  }
-);
+    const res = await fetch(
+      "https://acs-world-server-production.up.railway.app/v1/world"
+    );
 
-if (!res.ok) throw new Error("WORLD_FETCH_FAIL");
-
-const world = await res.json();
+    const world = await res.json();
 
     ACS_WORLD = world;
      
@@ -79,7 +74,7 @@ setInterval(async () => {
   try {
 
     const res = await fetch(
-      "https://api.aviationcapitalsim.com/v1/world"
+      "https://acs-world-server-production.up.railway.app/v1/world"
     );
 
     const world = await res.json();
@@ -506,14 +501,8 @@ function economicWatcher() {
 
 document.addEventListener("DOMContentLoaded", async () => {
 
-  // ⛔ BLOCK ENGINE IF SESSION NOT READY
-  if (!window.ACS_SESSION_READY) {
-    console.warn("⛔ Time Engine blocked — no session");
-    return;
-  }
-   
   // 🌍 Load world from server
-  loadWorldState();
+  await loadWorldState();
 
   if (ACS_CYCLE.status === "ON") {
     ACS_TIME.currentTime = computeSimTime();
