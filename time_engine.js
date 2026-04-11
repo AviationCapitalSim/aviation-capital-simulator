@@ -1,5 +1,5 @@
 /* ============================================================
-   === AVIATION CAPITAL SIMULATOR - GLOBAL TIME ENGINE v4.4 ===
+   === AVIATION CAPITAL SIMULATOR - GLOBAL TIME ENGINE v4.5 ===
    ------------------------------------------------------------
    ▪ Global UTC Clock (1940 → 2026)
    ▪ 1 real second = 1 simulated minute
