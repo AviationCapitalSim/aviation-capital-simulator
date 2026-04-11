@@ -639,76 +639,41 @@ function getFlagEmojiFromCountryName(countryName) {
     iso.charCodeAt(1) - 65 + 0x1F1E6
   );
 }
+  
 </script>
-
+  
 <script>
+  
 /* ============================================================
-   🟧 A2 — DASHBOARD PROFILE BOOTSTRAP (COOKIE SESSION ONLY)
-   REEMPLAZA COMPLETO EL BLOQUE VIEJO DE TOKEN/localStorage
+   🧠 DASHBOARD BOOTSTRAP — ISOLATED (ENGINE SAFE)
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", async () => {
+(async () => {
 
   const API_BASE = "https://api.aviationcapitalsim.com";
 
-  let sessionUser = null;
-
-  try {
-    const sessionRes = await fetch(`${API_BASE}/v1/session`, {
-      method: "GET",
-      credentials: "include"
-    });
-
-    if (!sessionRes.ok) {
-      throw new Error(`SESSION_HTTP_${sessionRes.status}`);
-    }
-
-    const sessionData = await sessionRes.json();
-
-    if (!sessionData.ok || !sessionData.user?.user_id) {
-      throw new Error("INVALID_SESSION_RESPONSE");
-    }
-
-    sessionUser = sessionData.user;
-    console.log("✅ COOKIE SESSION OK:", sessionUser);
-
-  } catch (e) {
-  console.warn("❌ SESSION FETCH ERROR:", e);
-
-  // SOLO redirigir si realmente no hay sesión
-  if (String(e.message).includes("SESSION_HTTP_401")) {
-    window.location.href = "login.html";
-  }
-
-  return;
-}
-
-  const activeUser = {
-    user_id: sessionUser.user_id,
-    airline_id: sessionUser.airline_id,
-    email: sessionUser.email
-  };
-
-  const userId = activeUser.user_id;
-
-  if (!userId) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  const clean = (v) => {
+  function clean(v) {
     if (v === null || v === undefined) return "";
-    if (String(v).trim().toLowerCase() === "undefined") return "";
-    if (String(v).trim().toLowerCase() === "null") return "";
-    return String(v).trim();
-  };
+    const s = String(v).trim();
+    if (s.toLowerCase() === "undefined") return "";
+    if (s.toLowerCase() === "null") return "";
+    return s;
+  }
 
-  async function loadProfileFromServer() {
-    const url = `${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`;
+  function renderSessionFallback(sessionUser) {
+    const welcome = document.getElementById("welcomeMessage");
+    if (welcome) {
+      welcome.innerHTML = `<span class="w-airline">Airline ${sessionUser.airline_id ?? ""}</span>`;
+    }
 
-    console.log("🌐 Loading dashboard profile from API:", url);
+    document.getElementById("chipWorld").textContent = "🌍 —";
+    document.getElementById("chipBase").textContent = "Base: —";
+    document.getElementById("chipRank").textContent = "Silver Carrier Rank";
+  }
 
-    const resp = await fetch(url, {
+  async function getSession() {
+  try {
+    const res = await fetch(`${API_BASE}/v1/session`, {
       method: "GET",
       credentials: "include",
       headers: {
@@ -716,45 +681,60 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    if (!resp.ok) {
-      throw new Error(`PROFILE_HTTP_${resp.status}`);
+    if (!res.ok) {
+      if (res.status === 401) {
+        window.location.href = "login.html";
+        return null;
+      }
+      throw new Error("SESSION_HTTP_FAIL");
     }
 
-    const data = await resp.json();
+    const data = await res.json();
 
-    if (!data || data.status !== "success") {
-      throw new Error(data?.message || "PROFILE_LOAD_FAILED");
+    if (!data?.ok || !data?.user) {
+      throw new Error("INVALID_SESSION");
     }
 
-    return data;
+    console.log("🟢 SESSION OK:", data);
+
+    return data.user;
+
+  } catch (e) {
+    console.warn("⚠️ SESSION FETCH FAILED (ISOLATED)", e);
+    return null;
+  }
+}
+  
+  async function getProfile(userId) {
+    try {
+      const res = await fetch(`${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`, {
+        credentials: "include"
+      });
+
+      if (!res.ok) throw new Error("PROFILE_FAIL");
+
+      const data = await res.json();
+
+      if (!data || data.status !== "success") {
+        throw new Error("PROFILE_INVALID");
+      }
+
+      return data;
+
+    } catch (e) {
+      console.warn("⚠️ PROFILE FAIL (ISOLATED)", e);
+      return null;
+    }
   }
 
-  function renderDashboardProfile(data) {
-    const user = data.user || {};
-    const airline = data.airline || {};
+  function renderDashboardProfile(sessionUser, profileData) {
+
+    const user = profileData?.user || {};
+    const airline = profileData?.airline || {};
 
     const airlineName =
       clean(airline.airline_name) ||
-      clean(airline.name) ||
-      "Airline";
-
-    const airlineCountry =
-      clean(airline.country) ||
-      clean(user.country);
-
-    const airlineRank =
-      clean(airline.rank) ||
-      "Silver Carrier Rank";
-
-    const baseIcao =
-      clean(user.base_icao).toUpperCase();
-
-    const baseCity =
-      clean(user.base_city);
-
-    const baseCountry =
-      clean(user.base_country) ||
-      airlineCountry;
+      `Airline ${sessionUser.airline_id ?? ""}`;
 
     const welcome = document.getElementById("welcomeMessage");
     if (welcome) {
@@ -762,55 +742,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const chipWorld = document.getElementById("chipWorld");
-    if (chipWorld) {
-      const flag = getFlagEmojiFromCountryName(airlineCountry || baseCountry);
-      chipWorld.textContent = airlineCountry
-        ? `${flag} ${airlineCountry}`
-        : "🌍 —";
-    }
+    if (chipWorld) chipWorld.textContent = airline.country || "🌍 —";
 
     const chipBase = document.getElementById("chipBase");
-    if (chipBase) {
-      if (baseCity && baseIcao) {
-        chipBase.textContent = `Base: ${baseCity} (${baseIcao})`;
-      } else if (baseIcao) {
-        chipBase.textContent = `Base: ${baseIcao}`;
-      } else {
-        chipBase.textContent = "Base: —";
-      }
-    }
+    if (chipBase) chipBase.textContent = user.base_icao || "Base: —";
 
     const chipRank = document.getElementById("chipRank");
-    if (chipRank) {
-      chipRank.textContent = airlineRank;
-    }
-
-    console.log("✅ Dashboard profile loaded from API:", {
-      user_id: user.user_id,
-      airline_id: user.airline_id,
-      base_icao: user.base_icao,
-      airline_name: airlineName
-    });
+    if (chipRank) chipRank.textContent = airline.rank || "Silver Carrier Rank";
   }
 
-  try {
-    const profileData = await loadProfileFromServer();
-    renderDashboardProfile(profileData);
-  } catch (error) {
-    console.error("❌ Dashboard profile bootstrap failed:", error);
+  /* ===============================
+     🚀 SAFE START (NO ENGINE BREAK)
+     =============================== */
 
-    const chipBase = document.getElementById("chipBase");
-    if (chipBase) chipBase.textContent = "Base: —";
+  await new Promise(r => setTimeout(r, 50));
 
-    const chipWorld = document.getElementById("chipWorld");
-    if (chipWorld) chipWorld.textContent = "🌍 —";
+  const sessionUser = await getSession();
 
-    const welcome = document.getElementById("welcomeMessage");
-    if (welcome) {
-      welcome.innerHTML = `<span class="w-airline">Dashboard Load Error</span>`;
-    }
+  if (!sessionUser) return;
+
+  const profileData = await getProfile(sessionUser.user_id);
+
+  if (profileData) {
+    renderDashboardProfile(sessionUser, profileData);
+  } else {
+    renderSessionFallback(sessionUser);
   }
-});
+
+})();
+  
 </script>
   
 <script>
