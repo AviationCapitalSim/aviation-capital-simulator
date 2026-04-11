@@ -374,32 +374,30 @@
 </div>
   
 <script>
+  
 /* ============================================================
-   🟧 A1 — LOGIN CLEAN ARCHITECTURE (COOKIE SESSION ONLY)
-   REEMPLAZA TODO EL SCRIPT ACTUAL
+   === ACS LOGIN MODULE — CLEAN SESSION ARCHITECTURE ===========
    ============================================================ */
-
-const ACS_API_BASE = "https://api.aviationcapitalsim.com";
+  
+const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/auth/login";
 
 /* ============================================================
-   LOGIN HANDLER
+   === HANDLE LOGIN ============================================
    ============================================================ */
-
+  
 async function handleLogin(event) {
-  event.preventDefault();
 
   const email = document.getElementById("email").value.trim().toLowerCase();
   const password = document.getElementById("password").value;
 
   if (!email || !password) {
     alert("⚠️ Please enter both email and password.");
-    return;
+    return false;
   }
 
   try {
 
-    // 🔐 STEP 1 — LOGIN (SETS COOKIE)
-    const res = await fetch(`${ACS_API_BASE}/v1/auth/login`, {
+    const response = await fetch(ACS_API_URL, {
       method: "POST",
       credentials: "include",
       headers: {
@@ -408,47 +406,57 @@ async function handleLogin(event) {
       body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
+    const result = await response.json();
 
-    if (!data.ok) {
+    if (!result.ok) {
       alert("❌ Invalid email or password.");
-      return;
+      return false;
     }
 
-    // 🔐 STEP 2 — VALIDATE SESSION (CRITICAL)
-    const sessionRes = await fetch(`${ACS_API_BASE}/v1/session`, {
+    const airlineId = result.user?.airline_id;
+
+    if (!airlineId) {
+      window.location.href = "create_airline.html";
+      return false;
+    }
+
+    // ✅ 🔥 VALIDAR SESIÓN REAL ANTES DE REDIRIGIR
+    const sessionCheck = await fetch("https://api.aviationcapitalsim.com/v1/session", {
+      method: "GET",
       credentials: "include"
     });
 
-    const session = await sessionRes.json();
-
-    if (!session.ok || !session.user) {
-      alert("❌ Session not established.");
-      return;
+    if (!sessionCheck.ok) {
+      alert("❌ Session not established. Please try again.");
+      return false;
     }
 
-    // 🎯 STEP 3 — DECIDE FLOW
-    const user = session.user;
+    const sessionData = await sessionCheck.json();
 
-    if (!user.airline_id) {
-      window.location.href = "create_airline.html";
-      return;
+    if (!sessionData?.ok || !sessionData?.user) {
+      alert("❌ Invalid session. Please login again.");
+      return false;
     }
 
+    // ✅ SOLO AQUÍ ENTRA AL DASHBOARD
     window.location.href = "dashboard.html";
+    return false;
 
   } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    alert("❌ Connection error: " + err.message);
+    alert("❌ Login failed: " + err.message);
+    return false;
   }
 }
 
 /* ============================================================
-   INIT
+   === FORM BINDING ============================================
    ============================================================ */
 
-document.getElementById("loginForm").addEventListener("submit", handleLogin);
-
+document.getElementById("loginForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await handleLogin(event);
+});
+  
 </script>
 
 </body>
