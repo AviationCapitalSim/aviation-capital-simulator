@@ -337,7 +337,7 @@
   <h2 class="login-title" id="loginTitle">Welcome back</h2>
   <p class="login-subtitle">The skies await your command.</p>
 
-  <form id="loginForm">
+  <form onsubmit="return handleLogin(event)">
     <input type="email" id="email" placeholder="Email Address" required>
     <input type="password" id="password" placeholder="Password" required>
     <button type="submit">Login</button>
@@ -376,16 +376,29 @@
 <script>
   
 /* ============================================================
-   === ACS LOGIN MODULE — CLEAN SESSION ARCHITECTURE ===========
+   === ACS LOGIN MODULE — RAILWAY SESSION AUTH =================
+   === Version: v2.0 | Secure Cookie Architecture ==============
    ============================================================ */
   
-const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/auth/login";
+const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/auth/login";
+
+/* === Utility: Hash password (same as register) =============== */
+  
+async function hashPassword(password) {
+  const enc = new TextEncoder().encode(password);
+  const buffer = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 /* ============================================================
    === HANDLE LOGIN ============================================
    ============================================================ */
   
 async function handleLogin(event) {
+  
+  event.preventDefault();
 
   const email = document.getElementById("email").value.trim().toLowerCase();
   const password = document.getElementById("password").value;
@@ -395,68 +408,129 @@ async function handleLogin(event) {
     return false;
   }
 
+  const passwordHash = await hashPassword(password);
+
   try {
-
-    const response = await fetch(ACS_API_URL, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
-    });
-
-    const result = await response.json();
-
-    if (!result.ok) {
-      alert("❌ Invalid email or password.");
+    
+  const response = await fetch(ACS_API_URL, {
+  method: "POST",
+  credentials: "include", // 🔥 CRÍTICO
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    email,
+    passwordHash
+  })
+});
+    
+    const text = await response.text();
+   
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      alert("❌ Server returned invalid response:\n" + text);
       return false;
     }
 
-    const airlineId = result.user?.airline_id;
+// ============================================================
+// 🔐 L-FRONT-1 — NUEVOS ESTADOS DE SEGURIDAD (BACKEND v2)
+// ============================================================
 
-    if (!airlineId) {
-      window.location.href = "create_airline.html";
+if (result.status === "INVALID_CREDENTIALS") {
+  alert("❌ Invalid email or password.");
+  return false;
+}
+
+if (result.status === "ACCOUNT_LOCKED") {
+  alert("🔒 Account locked due to multiple failed attempts.\nPlease wait 15 minutes before trying again.");
+  return false;
+}
+    
+    // === NO_USER ===
+    
+    if (result.status === "NO_USER") {
+      alert("❌ This email is not registered.\nPlease create your account.");
+      window.location.href = "register.html";
       return false;
     }
 
-    // ✅ 🔥 VALIDAR SESIÓN REAL ANTES DE REDIRIGIR
-    const sessionCheck = await fetch("https://api.aviationcapitalsim.com/v1/session", {
-      method: "GET",
-      credentials: "include"
-    });
-
-    if (!sessionCheck.ok) {
-      alert("❌ Session not established. Please try again.");
+    // === WRONG_PASSWORD ===
+    
+    if (result.status === "WRONG_PASSWORD") {
+      alert("❌ Incorrect password. Please try again.");
       return false;
     }
 
-    const sessionData = await sessionCheck.json();
+   /* ============================================================
+   ✅ NO_AIRLINE — PRIMER LOGIN (usuario nuevo)
+   ------------------------------------------------------------
+   • Usuario existe y credenciales OK
+   • Aún no tiene aerolínea creada
+   • Redirigir a create_airline.html
+   ============================================================ */
+    
+if (result.status === "NO_AIRLINE") {
 
-    if (!sessionData?.ok || !sessionData?.user) {
-      alert("❌ Invalid session. Please login again.");
-      return false;
-    }
+  const userId    = result.user?.user_id || "";
+  const userEmail = result.user?.email   || "";
+  const token     = result.token || "";
 
-    // ✅ SOLO AQUÍ ENTRA AL DASHBOARD
-    window.location.href = "dashboard.html";
+  if (!userId || !userEmail || !token) {
+    alert("❌ Login response missing token or user data.");
     return false;
+  }
 
+  localStorage.setItem("acs_token", token);
+
+  const userPack = {
+    userId: userId,
+    email: userEmail,
+    airline_id: null,
+    airline: null,
+    loginAt: Date.now()
+  };
+
+  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
+  window.location.href = "create_airline.html";
+  return false;
+}
+    
+  // === HAS_AIRLINE — FIX COMPLETO ==========================
+    
+  if (result.status === "HAS_AIRLINE") {
+
+  const userId    = result.user.user_id;
+  const userEmail = result.user.email;
+  const airlineId = result.user.airline_id;
+  const token     = result.token || "";
+
+  if (!userId || !userEmail || !airlineId || !token) {
+    alert("❌ Login response missing token or user data.");
+    return false;
+  }
+
+  localStorage.setItem("acs_token", token);
+
+  const userPack = {
+    userId: userId,
+    email: userEmail,
+    airline_id: airlineId,
+    airline: null,
+    loginAt: Date.now()
+  };
+
+  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
+  window.location.href = "dashboard.html";
+  return false;
+}
+    
   } catch (err) {
     alert("❌ Login failed: " + err.message);
     return false;
   }
 }
-
-/* ============================================================
-   === FORM BINDING ============================================
-   ============================================================ */
-
-document.getElementById("loginForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  await handleLogin(event);
-});
-  
 </script>
 
 </body>
