@@ -673,10 +673,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("✅ COOKIE SESSION OK:", sessionUser);
 
   } catch (e) {
-    console.warn("❌ DASHBOARD SESSION FAILED:", e);
+  console.warn("❌ SESSION FETCH ERROR:", e);
+
+  // SOLO redirigir si realmente no hay sesión
+  if (String(e.message).includes("SESSION_HTTP_401")) {
     window.location.href = "login.html";
-    return;
   }
+
+  return;
+}
 
   const activeUser = {
     user_id: sessionUser.user_id,
