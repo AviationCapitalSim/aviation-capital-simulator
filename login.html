@@ -380,7 +380,8 @@
    === Version: v2.0 | Secure Cookie Architecture ==============
    ============================================================ */
   
-const ACS_API_URL = "https://acs-world-server-production.up.railway.app/v1/auth/login";
+// 🔄 API BASE (recomendado usar dominio principal si ya lo tienes)
+const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/auth/login";
 
 /* === Utility: Hash password (same as register) =============== */
   
@@ -408,8 +409,6 @@ async function handleLogin(event) {
     return false;
   }
 
-  const passwordHash = await hashPassword(password);
-
   try {
     
   const response = await fetch(ACS_API_URL, {
@@ -420,7 +419,7 @@ async function handleLogin(event) {
   },
   body: JSON.stringify({
     email,
-    passwordHash
+    password
   })
 });
     
@@ -464,64 +463,19 @@ if (result.status === "ACCOUNT_LOCKED") {
     }
 
    /* ============================================================
-   ✅ NO_AIRLINE — PRIMER LOGIN (usuario nuevo)
-   ------------------------------------------------------------
-   • Usuario existe y credenciales OK
-   • Aún no tiene aerolínea creada
-   • Redirigir a create_airline.html
+   ✅ NO_AIRLINE — PRIMER LOGIN
    ============================================================ */
     
 if (result.status === "NO_AIRLINE") {
 
-  const userId    = result.user?.user_id || "";
-  const userEmail = result.user?.email   || "";
-  const token     = result.token || "";
-
-  if (!userId || !userEmail || !token) {
-    alert("❌ Login response missing token or user data.");
-    return false;
-  }
-
-  localStorage.setItem("acs_token", token);
-
-  const userPack = {
-    userId: userId,
-    email: userEmail,
-    airline_id: null,
-    airline: null,
-    loginAt: Date.now()
-  };
-
-  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
   window.location.href = "create_airline.html";
   return false;
 }
     
-  // === HAS_AIRLINE — FIX COMPLETO ==========================
+  // === HAS_AIRLINE ===
     
   if (result.status === "HAS_AIRLINE") {
 
-  const userId    = result.user.user_id;
-  const userEmail = result.user.email;
-  const airlineId = result.user.airline_id;
-  const token     = result.token || "";
-
-  if (!userId || !userEmail || !airlineId || !token) {
-    alert("❌ Login response missing token or user data.");
-    return false;
-  }
-
-  localStorage.setItem("acs_token", token);
-
-  const userPack = {
-    userId: userId,
-    email: userEmail,
-    airline_id: airlineId,
-    airline: null,
-    loginAt: Date.now()
-  };
-
-  localStorage.setItem("ACS_activeUser", JSON.stringify(userPack));
   window.location.href = "dashboard.html";
   return false;
 }
