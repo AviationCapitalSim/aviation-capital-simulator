@@ -383,16 +383,6 @@
 // 🔄 API BASE (recomendado usar dominio principal si ya lo tienes)
 const ACS_API_URL = "https://api.aviationcapitalsim.com/v1/auth/login";
 
-/* === Utility: Hash password (same as register) =============== */
-  
-async function hashPassword(password) {
-  const enc = new TextEncoder().encode(password);
-  const buffer = await crypto.subtle.digest("SHA-256", enc);
-  return Array.from(new Uint8Array(buffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 /* ============================================================
    === HANDLE LOGIN ============================================
    ============================================================ */
