@@ -550,9 +550,9 @@ async function getSimYear(){
 
     const data = await res.json();
 
-    if(!data.ok) return null;
+    if(!data) return null;
 
-    return data.sim_year;
+    return new Date(data.sim_start).getFullYear();
 
   }catch(err){
     console.error("WORLD FETCH ERROR:", err);
