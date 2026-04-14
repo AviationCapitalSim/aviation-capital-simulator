@@ -659,8 +659,15 @@ document.addEventListener("DOMContentLoaded", async () => {
      🔐 SESSION VALIDATION (COOKIE)
      ============================================================ */
   
-  async function getSession() {
+ async function getSession() {
+
+  let attempts = 0;
+  const maxAttempts = 3;
+
+  while (attempts < maxAttempts) {
+
     try {
+
       const res = await fetch(`${API_BASE}/v1/session`, {
         credentials: "include"
       });
@@ -675,20 +682,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         throw new Error("INVALID_SESSION_PAYLOAD");
       }
 
+      console.log("✅ SESSION OK", data);
+
       return data.user;
 
     } catch (err) {
-      console.warn("❌ SESSION FAILED:", err);
-      window.location.href = "login.html";
-      return null;
+
+      attempts++;
+
+      console.warn(`⚠️ SESSION ATTEMPT ${attempts} FAILED`, err);
+
+      // esperar antes de reintentar
+      await new Promise(r => setTimeout(r, 500));
+
+      if (attempts >= maxAttempts) {
+        console.error("❌ SESSION DEFINITIVELY FAILED");
+
+        // SOLO aquí redirige
+        window.location.href = "login.html";
+        return null;
+      }
     }
   }
-
-  const sessionUser = await getSession();
-  if (!sessionUser) return;
-
-  const userId = sessionUser.user_id;
-
+}
+  
   /* ============================================================
      🧼 CLEAN HELPER
      ============================================================ */
