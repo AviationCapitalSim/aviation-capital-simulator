@@ -688,20 +688,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     } catch (err) {
 
-      attempts++;
+  console.warn("❌ SESSION ERROR:", err);
 
-      console.warn(`⚠️ SESSION ATTEMPT ${attempts} FAILED`, err);
+  // 🔴 SOLO redirigir si el backend respondió y dijo que no hay sesión
+  if (err.message && err.message.startsWith("SESSION_HTTP_")) {
 
-      // esperar antes de reintentar
-      await new Promise(r => setTimeout(r, 500));
+    const code = err.message.replace("SESSION_HTTP_", "");
 
-      if (attempts >= maxAttempts) {
-        console.error("❌ SESSION DEFINITIVELY FAILED");
+    if (code === "401") {
+      console.warn("🔐 REAL SESSION INVALID → redirect login");
+      window.location.href = "login.html";
+      return null;
+    }
+  }
 
-        // SOLO aquí redirige
-        window.location.href = "login.html";
-        return null;
-      }
+  // 🟡 Si es error de red (Load failed), NO cerrar sesión
+  console.warn("🌐 NETWORK ISSUE — keeping session alive");
+
+  return null;
+}
     }
   }
 }
