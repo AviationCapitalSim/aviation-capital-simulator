@@ -658,63 +658,71 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* ============================================================
      🔐 SESSION VALIDATION (COOKIE)
      ============================================================ */
-  
- async function getSession() {
 
-  let attempts = 0;
-  const maxAttempts = 3;
+  async function getSession() {
 
-  while (attempts < maxAttempts) {
+    let attempts = 0;
+    const maxAttempts = 3;
 
-    try {
+    while (attempts < maxAttempts) {
+      try {
 
-      const res = await fetch(`${API_BASE}/v1/session`, {
-        credentials: "include"
-      });
+        const res = await fetch(`${API_BASE}/v1/session`, {
+          credentials: "include"
+        });
 
-      if (!res.ok) {
-        throw new Error(`SESSION_HTTP_${res.status}`);
+        if (!res.ok) {
+          throw new Error(`SESSION_HTTP_${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!data.ok || !data.user || !data.user.user_id) {
+          throw new Error("INVALID_SESSION_PAYLOAD");
+        }
+
+        console.log("✅ SESSION OK", data);
+        return data.user;
+
+      } catch (err) {
+
+        attempts++;
+        console.warn(`❌ SESSION ERROR [attempt ${attempts}/${maxAttempts}]`, err);
+
+        // 🔴 SOLO redirigir si el backend respondió 401
+        if (err.message && err.message.startsWith("SESSION_HTTP_")) {
+          const code = err.message.replace("SESSION_HTTP_", "");
+
+          if (code === "401") {
+            console.warn("🔐 REAL SESSION INVALID → redirect login");
+            window.location.href = "login.html";
+            return null;
+          }
+        }
+
+        // 🟡 Si es error de red, reintenta hasta agotar intentos
+        if (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          continue;
+        }
+
+        console.warn("🌐 NETWORK ISSUE — session could not be validated");
+        return null;
       }
-
-      const data = await res.json();
-
-      if (!data.ok || !data.user || !data.user.user_id) {
-        throw new Error("INVALID_SESSION_PAYLOAD");
-      }
-
-      console.log("✅ SESSION OK", data);
-
-      return data.user;
-
-    } catch (err) {
-
-  console.warn("❌ SESSION ERROR:", err);
-
-  // 🔴 SOLO redirigir si el backend respondió y dijo que no hay sesión
-  if (err.message && err.message.startsWith("SESSION_HTTP_")) {
-
-    const code = err.message.replace("SESSION_HTTP_", "");
-
-    if (code === "401") {
-      console.warn("🔐 REAL SESSION INVALID → redirect login");
-      window.location.href = "login.html";
-      return null;
     }
+
+    return null;
   }
 
-  // 🟡 Si es error de red (Load failed), NO cerrar sesión
-  console.warn("🌐 NETWORK ISSUE — keeping session alive");
+  const sessionUser = await getSession();
+  if (!sessionUser) return;
 
-  return null;
-}
-    }
-  }
-}
-  
+  const userId = sessionUser.user_id;
+
   /* ============================================================
      🧼 CLEAN HELPER
      ============================================================ */
-  
+
   function clean(v) {
     if (v === null || v === undefined) return "";
     const s = String(v).trim();
@@ -727,7 +735,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* ============================================================
      🌐 LOAD PROFILE FROM RAILWAY
      ============================================================ */
-  
+
   async function loadProfileFromRailway() {
     const url = `${API_BASE}/v1/users/profile/${encodeURIComponent(userId)}`;
 
@@ -757,7 +765,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* ============================================================
      🎨 RENDER DASHBOARD
      ============================================================ */
-  
+
   function renderDashboardProfile(data) {
     const user = data.user || {};
     const airline = data.airline || {};
@@ -829,7 +837,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* ============================================================
      🚀 BOOTSTRAP
      ============================================================ */
-  
+
   try {
     const profileData = await loadProfileFromRailway();
     renderDashboardProfile(profileData);
@@ -849,7 +857,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
 });
-  
 </script>
   
 <script>
