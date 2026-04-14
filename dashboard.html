@@ -538,7 +538,7 @@ body {
 </main>
 
 <footer class="acs-footer">
-  © 2025 Aviation Capital Simulator. All rights reserved.
+  © 2026 Aviation Capital Simulator. All rights reserved.
 </footer>
 
 <script>
@@ -554,17 +554,31 @@ function handleLogout() {
 }
 </script>
   
-<!-- ============================================================
-     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
-     ============================================================ -->
-<script src="acs_time_recovery.js"></script>  
-<script src="time_engine.js"></script>
+<script>
+/* ============================================================
+   🚀 ACS ENGINE LOADER — CONTROLLED START AFTER AUTH
+   ============================================================ */
 
+function loadACSEngines() {
 
-<script src="engine/acs_finance.js"></script>
+  const scripts = [
+    "acs_time_recovery.js",
+    "time_engine.js",
+    "engine/acs_finance.js",
+    "engine/acs_company_value.js",
+    "engine/acs_alerts.js?v=1.0"
+  ];
 
-<!-- 💼 COMPANY VALUE ENGINE (CANONICAL SOURCE) -->
-<script src="engine/acs_company_value.js"></script>
+  scripts.forEach(src => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.defer = true;
+    document.body.appendChild(s);
+  });
+
+  console.log("🚀 ACS Engines Loaded AFTER AUTH");
+}
+</script>
 
 <script>
 /* ============================================================
@@ -581,7 +595,6 @@ function handleLogout() {
   function tryConnect() {
 
     if (typeof window.ACS_getCompanyValue !== "function") {
-      // esperar a que cargue el engine
       return setTimeout(tryConnect, 200);
     }
 
@@ -608,8 +621,6 @@ function handleLogout() {
 
 })();
 </script>
-  
-<script src="engine/acs_alerts.js?v=1.0"></script>
 
 <script>
 /* ============================================================
@@ -689,7 +700,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         attempts++;
         console.warn(`❌ SESSION ERROR [attempt ${attempts}/${maxAttempts}]`, err);
 
-        // 🔴 SOLO redirigir si el backend respondió 401
         if (err.message && err.message.startsWith("SESSION_HTTP_")) {
           const code = err.message.replace("SESSION_HTTP_", "");
 
@@ -700,7 +710,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
 
-        // 🟡 Si es error de red, reintenta hasta agotar intentos
         if (attempts < maxAttempts) {
           await new Promise(resolve => setTimeout(resolve, 500));
           continue;
@@ -793,13 +802,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       clean(user.base_country) ||
       airlineCountry;
 
-    /* ===== HERO ===== */
     const welcome = document.getElementById("welcomeMessage");
     if (welcome) {
       welcome.innerHTML = `<span class="w-airline">${airlineName}</span>`;
     }
 
-    /* ===== WORLD ===== */
     const chipWorld = document.getElementById("chipWorld");
     if (chipWorld) {
       const flag = getFlagEmojiFromCountryName(airlineCountry || baseCountry);
@@ -808,7 +815,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         : "🌍 —";
     }
 
-    /* ===== BASE ===== */
     const chipBase = document.getElementById("chipBase");
     if (chipBase) {
       if (baseCity && baseIcao) {
@@ -820,7 +826,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    /* ===== RANK ===== */
     const chipRank = document.getElementById("chipRank");
     if (chipRank) {
       chipRank.textContent = airlineRank;
@@ -841,6 +846,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     const profileData = await loadProfileFromRailway();
     renderDashboardProfile(profileData);
+
+    // 🚀 ARRANQUE CONTROLADO DEL SISTEMA
+    loadACSEngines();
+
   } catch (error) {
     console.error("❌ Dashboard bootstrap failed:", error);
 
@@ -858,7 +867,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 });
 </script>
-  
+
 <script>
 /* ============================================================
    4 ALERT ENGINE — Qatar Luxury v3 FINAL
@@ -887,7 +896,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!list) return;
 
-    // título con contador
     title.innerHTML = `⚠️ Operational Alerts${alerts.length > 0 ? " (" + alerts.length + ")" : ""}`;
 
     if (alerts.length === 0) {
@@ -911,10 +919,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
-  /* 🔁 Auto-refresh cada 40s:
-     - Vuelve a correr ACS_runAlertScan (si existe)
-     - Vuelve a pintar la tarjeta Operational Alerts
-  */
   setInterval(async () => {
     try {
       if (typeof ACS_runAlertScan === "function") {
@@ -924,7 +928,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.warn("⚠️ Dashboard auto-refresh failed:", err);
     }
-  }, 40000); // 40,000 ms = 40 segundos
+  }, 40000);
 
 });
 </script>
