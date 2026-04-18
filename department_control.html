@@ -1667,8 +1667,7 @@ async function ACS_HR_syncFromServer() {
 const airlineId = window.ACS_SERVER_SESSION?.airline_id;
 
 if (!airlineId) {
-  console.error("❌ NO AIRLINE ID — SESSION INVALID");
-  window.location.href = "login.html";
+  console.warn("⚠️ HR SYNC SKIPPED — NO AIRLINE ID YET");
   return;
 }
 
