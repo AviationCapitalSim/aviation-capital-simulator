@@ -1685,7 +1685,7 @@ try {
 
   const airlineId =
     window.ACS_SERVER_SESSION?.airline_id ||
-    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
+    const airlineId = window.ACS_SERVER_SESSION?.airline_id;
 
   fetch(
   `https://acs-world-server-production.up.railway.app/v1/hr/staff`,
