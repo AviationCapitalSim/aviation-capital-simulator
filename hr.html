@@ -442,92 +442,123 @@ async function ACS_HR_bootstrapSession() {
 </script> 
     
 <script>
-     
+
 /* ============================================================
-   🟩 HR DASHBOARD — DATA LOADER (SAFE & OPS-READY)
+   👥 HR DASHBOARD — BACKEND DATA LOADER (SERVER AUTHORITATIVE)
    ------------------------------------------------------------
-   Purpose:
-   - Cargar KPIs HR sin producir NaN
-   - Ser robusto aunque OPS aún no haya calculado
-   ------------------------------------------------------------
-   Version: v1.1 | Date: 05 FEB 2026
+   • Fuente única: /v1/hr/departments
+   • Sin localStorage
+   • HR = solo visualización (no lógica)
+   • Datos reales desde Railway
    ============================================================ */
+     
+async function loadHRDashboard() {
 
-function loadHRDashboard() {
+  try {
 
-  const hr = ACS_HR_load() || {};
-  const departments = Object.values(hr);
+    const airlineId = window.ACS_SERVER_SESSION?.airline_id;
 
-  // =========================
-  // TOTAL STAFF
-  // =========================
-  const totalStaff = departments.reduce(
-    (sum, d) => sum + (Number(d.staff) || 0),
-    0
-  );
+    if (!airlineId) {
+      throw new Error("NO AIRLINE ID");
+    }
 
-  // =========================
-  // AVERAGE MORALE
-  // =========================
-  const morale = departments.length
-    ? Math.round(
-        departments.reduce(
-          (sum, d) => sum + (Number(d.morale) || 100),
-          0
-        ) / departments.length
-      )
-    : 100;
+    const res = await fetch(
+      `https://api.aviationcapitalsim.com/v1/hr/departments/${airlineId}`,
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`HR_HTTP_${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!data?.ok || !Array.isArray(data.departments)) {
+      throw new Error("INVALID HR DATA");
+    }
+
+    const deps = data.departments;
 
     // =========================
-  // TOTAL PAYROLL (SAFE)
-  // =========================
-     
-  let payroll = 0;
+    // CALCULOS REALES
+    // =========================
 
-  // 1) Prefer engine total payroll (if available)
-  if (typeof ACS_HR_getTotalPayroll === "function") {
-    payroll = Number(ACS_HR_getTotalPayroll()) || 0;
+    const totalStaff = deps.reduce(
+      (sum, d) => sum + (Number(d.staff) || 0),
+      0
+    );
+
+    const totalPayroll = deps.reduce(
+      (sum, d) => sum + (Number(d.payroll) || 0),
+      0
+    );
+
+    const avgMorale = deps.length
+      ? Math.round(
+          deps.reduce(
+            (sum, d) => sum + (Number(d.morale) || 100),
+            0
+          ) / deps.length
+        )
+      : 100;
+
+    // =========================
+    // RENDER UI
+    // =========================
+
+    document.getElementById("totalStaff").textContent = totalStaff;
+    document.getElementById("totalStaff2").textContent = totalStaff;
+
+    document.getElementById("avgMorale").textContent = avgMorale + "%";
+    document.getElementById("avgMorale2").textContent = avgMorale + "%";
+
+    document.getElementById("totalPayroll").textContent =
+      "$" + totalPayroll.toLocaleString() + " / month";
+
+    document.getElementById("monthlyPayroll").textContent =
+      "$" + totalPayroll.toLocaleString();
+
+    console.log("✅ HR DASHBOARD LOADED FROM BACKEND");
+
+  } catch (err) {
+
+    console.error("❌ HR LOAD FAILED", err);
+
+    document.getElementById("totalStaff").textContent = "—";
+    document.getElementById("totalPayroll").textContent = "—";
+    document.getElementById("avgMorale").textContent = "—";
+
   }
 
-  // 2) Fallback: compute from state (staff * salary)
-  if (payroll <= 0 && departments.length) {
-    payroll = departments.reduce((sum, d) => {
-      const staff = Number(d.staff) || 0;
-      const salary = Number(d.salary) || 0;
-      return sum + (staff * salary);
-    }, 0);
-  }
-
-  // =========================
-  // PAINT UI
-  // =========================
-     
-  document.getElementById("totalStaff").textContent = totalStaff;
-  document.getElementById("totalStaff2").textContent = totalStaff;
-
-  document.getElementById("avgMorale").textContent = morale + "%";
-  document.getElementById("avgMorale2").textContent = morale + "%";
-
-  document.getElementById("totalPayroll").textContent =
-    "$" + payroll.toLocaleString() + " / month";
-
-  document.getElementById("monthlyPayroll").textContent =
-    "$" + payroll.toLocaleString();
 }
 
 /* ============================================================
    INIT
    ============================================================ */
-window.addEventListener("DOMContentLoaded", () => {
+     
+window.addEventListener("DOMContentLoaded", async () => {
 
-  loadHRDashboard();
+  try {
 
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
+    await ACS_HR_bootstrapSession();
+
+    await loadHRDashboard();
+
+    if (typeof registerTimeListener === "function") {
+      registerTimeListener(updateClockDisplay);
+      updateClockDisplay();
+    }
+
+  } catch (err) {
+
+    console.error("❌ HR BOOT FAILED", err);
+    window.location.href = "login.html";
+
   }
-});
 
+});
 /* ============================================================
    🟦 B4 — AUTO-BALANCE STAFF ENGINE (HR_fullModal)
    ============================================================ */
