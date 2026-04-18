@@ -1272,7 +1272,6 @@ function ACS_HR_renderLoadBar(dep) {
 /* ============================================================
    === HR_prepareTableData — RECONSTRUIDA PREMIUM v2 ============
    ============================================================ */
-     
 function HR_prepareTableData(d) {
     const staff    = d.staff || 0;
     const required = (typeof d.required === "number") ? d.required : staff;
@@ -1301,17 +1300,7 @@ function HR_prepareTableData(d) {
 }
      
 /* ============================================================
-   === SERVER HR STATE — SINGLE SOURCE OF TRUTH ===============
-   ============================================================ */
-
-function ACS_getDepartmentState() {
-  return Array.isArray(window.ACS_DEPT_SERVER_STATE)
-    ? window.ACS_DEPT_SERVER_STATE
-    : [];
-}
-
-/* ============================================================
-   === LOAD DEPARTMENTS — SERVER AUTHORITATIVE =================
+   === LOAD DEPARTMENTS — FINAL OPERATIONAL CORE (ACS) =========
    ============================================================ */
 
 function loadDepartments() {
@@ -1320,30 +1309,50 @@ function loadDepartments() {
 
   rows.innerHTML = "";
 
-  const depts = ACS_getDepartmentState();
-
-  if (!Array.isArray(depts) || depts.length === 0) {
-    console.warn("⚠️ No department data available from server state");
+  const depts = ACS_HR_getDepartmentsView();
+  if (!depts || !Array.isArray(depts)) {
+    console.warn("⚠️ HR view vacío o inválido");
     return;
   }
+     
+  // 🔧 Salary status refresh (only if needed)
+  if (typeof ACS_HR_updateSalaryStatus === "function") {
+  ACS_HR_updateSalaryStatus();
+  }
+     
+  depts.forEach(d => {
 
-  depts.forEach((raw) => {
-    if (!raw || typeof raw !== "object") return;
+    // 🛑 Protección total
+    if (!d || typeof d !== "object") return;
 
-    const dep = HR_prepareTableData(raw);
+    const dep = HR_prepareTableData(d);
 
     const staff = Number(dep.staff || 0);
-    const requiredAbsolute = Number(dep.required || 0);
+
+    // 🔧 Required absoluto real (desde HR engine)
+    const requiredAbsolute =
+      (typeof d.required === "number") ? d.required : staff;
+
+    // ============================================================
+    // ✅ REQUIRED (MODO CANÓNICO QUE PEDISTE)
+    //   • 0  → 🟢 verde (NO falta personal)
+    //   • -X → 🔴 rojo (FALTA personal) + ALERT
+    //   • NUNCA muestra +X (exceso NO se muestra aquí)
+    // ============================================================
+
     const missing = Math.max(0, requiredAbsolute - staff);
 
     let requiredClass = "required-ok";
-    let requiredText = "0";
+    let requiredText  = "0";
 
     if (missing > 0) {
-      requiredClass = "required-missing";
-      requiredText = `-${missing}`;
 
+      requiredClass = "required-missing";
+      requiredText  = `-${missing}`; // 🔴 ej: -10
+
+      // 🔔 ALERTA SOLO SI FALTA PERSONAL (sin spam)
       if (window.ACS_Alerts && typeof window.ACS_Alerts.push === "function") {
+
         const alertKey = `HR_MISSING_${dep.id}`;
         if (!window.__ACS_HR_ALERTS) window.__ACS_HR_ALERTS = {};
 
@@ -1359,134 +1368,228 @@ function loadDepartments() {
         }
       }
     }
-
+       
     rows.innerHTML += `
-      <tr>
-        <td>${dep.name}</td>
-        <td class="staff">${staff}</td>
-        <td class="${requiredClass}">${requiredText}</td>
-        <td class="salary">
-          $${Number(dep.salary || 0).toLocaleString()}
-        </td>
-        <td class="morale" data-morale="${Number(dep.morale || 0)}">
-          ${Number(dep.morale || 0)}%
-        </td>
-        <td>
-          <div style="
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            gap:12px;
-            width:100%;
-          ">
-            ${dep.id === "ceo" ? `
-              <button class="btn btn-adjust" title="Adjust Salary"
-                onclick="openSalaryInline('${dep.id}')">
-                💰
-              </button>
-            ` : `
-              <button class="btn btn-hire" title="Hire Staff"
-                onclick="HR_hireOne('${dep.id}')">
-                👤➕
-              </button>
+  <tr>
+    <td>${dep.name}</td>
+    <td class="staff">${staff}</td>
+    <td class="${requiredClass}">${requiredText}</td>
+    <td class="salary ${dep.salaryStatus === "lagging" ? "salary-lagging" : (dep.salaryStatus === "review" ? "salary-review" : "salary-ok")}">
+     $${dep.salary.toLocaleString()}</td>
+    <td class="morale morale-green" data-morale="${dep.morale}">
+    ${dep.morale}%
+    </td>
 
-              <button class="btn btn-dismiss" title="Fire Staff"
-                onclick="openFireMiniModal('${dep.id}')">
-                👤➖
-              </button>
+   <td>
 
-              <button class="btn btn-adjust" title="Adjust Salary"
-                onclick="openSalaryInline('${dep.id}')">
-                💰
-              </button>
+  <div style="
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    width:100%;
+  ">
 
-              <button class="btn btn-bonus" title="Give Bonus"
-                onclick="openBonusModal('${dep.id}')">
-                🎁
-              </button>
-            `}
-          </div>
-        </td>
-      </tr>
-    `;
+    ${dep.id === "ceo" ? `
+
+      <!-- CEO: SOLO SALARY -->
+      <button class="btn btn-adjust" title="Adjust Salary"
+        onclick="openSalaryInline('${dep.id}')">
+        💰
+      </button>
+
+    ` : `
+
+      <!-- Hire +1 -->
+      <button class="btn btn-hire" title="Hire Staff"
+        onclick="HR_hireOne('${dep.id}')">
+        👤➕
+      </button>
+
+      <!-- Fire -->
+      <button class="btn btn-dismiss" title="Fire Staff"
+        onclick="openFireMiniModal('${dep.id}')">
+        👤➖
+      </button>
+
+      <!-- Salary -->
+      <button class="btn btn-adjust" title="Adjust Salary"
+        onclick="openSalaryInline('${dep.id}')">
+        💰
+      </button>
+
+      <!-- Bonus -->
+      <button class="btn btn-bonus" title="Give Bonus"
+        onclick="openBonusModal('${dep.id}')">
+        🎁
+      </button>
+
+    `}
+
+  </div>
+
+</td>
+
+</tr>
+`;
+
   });
 
-  const moraleCells = rows.querySelectorAll("[data-morale]");
-  moraleCells.forEach((cell) => {
-    const value = Number(cell.dataset.morale || 0);
-    ACS_applyMoraleColor(value, cell);
-  });
+/* ============================================================
+   🎯 APPLY MORALE COLORS — POST RENDER (UI ONLY)
+   ============================================================ */
 
+const moraleCells = rows.querySelectorAll("[data-morale]");
+moraleCells.forEach(cell => {
+  const value = Number(cell.dataset.morale);
+  ACS_applyMoraleColor(value, cell);
+});
+     
+    /* ============================================================
+     🟧 A7.2 — AUTO HIRE EXECUTION (POST REQUIRED CALC)
+     ------------------------------------------------------------
+     • Corre solo si autoHire ON
+     • Se ejecuta después de dibujar required
+     • Antes de recálculo payroll / KPI
+     ============================================================ */
+
+  if (localStorage.getItem("autoHire") === "true") {
+
+    if (typeof ACS_HR_applyAutoHire_Instant === "function") {
+
+      console.log(
+        "%c🧑‍✈️ AUTO HIRE TRIGGERED FROM HR VIEW",
+        "color:#00ff80;font-weight:800"
+      );
+
+      ACS_HR_applyAutoHire_Instant();
+
+    } else {
+
+      console.warn("❌ AUTO HIRE ENGINE NOT FOUND");
+    }
+  }
+     
+  // ============================================================
+// 🟦 HR PAYROLL & KPI REFRESH (OPS-SAFE)
+// ------------------------------------------------------------
+// ❗ CRÍTICO:
+// - HR NO recalcula `required`
+// - OPS es la única fuente de demand
+// - HR solo refresca payroll, morale y KPI
+// ============================================================
+
+try {
+
+  // Recalcular payroll SOLO en base a staff actual
+  if (typeof ACS_HR_recalculatePayroll === "function") {
+    const payroll = ACS_HR_getTotalPayroll()
+    console.log("💾 HR payroll actualizado (OPS-safe):", payroll);
+  }
+
+} catch (e) {
+  console.warn("⚠️ HR payroll refresh failed:", e);
+}
+
+  // 🔄 KPI refresh seguro
   if (typeof HR_updateKPI === "function") {
     HR_updateKPI();
   }
 }
 
 /* ============================================================
-   🟦 HR KPI UPDATE — SERVER AUTHORITATIVE =====================
+   🎯 ACS — MORALE COLOR ENGINE (UI ONLY)
+   ============================================================ */
+
+function ACS_applyMoraleColor(value, el) {
+  if (!el) return;
+
+  el.classList.remove(
+    "morale-green",
+    "morale-yellow",
+    "morale-orange",
+    "morale-red"
+  );
+
+  if (value >= 97) {
+    el.classList.add("morale-green");
+  } else if (value >= 90) {
+    el.classList.add("morale-yellow");
+  } else if (value >= 80) {
+    el.classList.add("morale-orange");
+  } else {
+    el.classList.add("morale-red");
+  }
+}
+     
+/* ============================================================
+   🟦 HR KPI UPDATE — GLOBAL HR STATE
+   ------------------------------------------------------------
+   Corrige inconsistencia entre:
+   HR Overview  vs  Department Control
    ============================================================ */
 
 function HR_updateKPI() {
-  const departments = ACS_getDepartmentState();
-  if (!Array.isArray(departments) || departments.length === 0) return;
+
+  const hr = ACS_HR_load();
+  if (!hr) return;
+
+  const departments = Object.values(hr);
 
   let totalStaff = 0;
   let totalPayroll = 0;
   let moraleSum = 0;
 
-  departments.forEach((d) => {
-    const staff = Number(d.staff || 0);
-    const salary = Number(d.salary || 0);
-    const morale = Number(d.morale || 0);
+  departments.forEach(d => {
+
+    const staff = Number(d.staff) || 0;
+    const salary = Number(d.salary) || 0;
+    const morale = Number(d.morale) || 100;
 
     totalStaff += staff;
     totalPayroll += staff * salary;
     moraleSum += morale;
+
   });
 
   const avgMorale = departments.length
     ? Math.round(moraleSum / departments.length)
-    : 0;
+    : 100;
 
-  const totalStaffEl = document.getElementById("kpiTotalStaff");
-  const monthlyPayrollEl = document.getElementById("kpiMonthlyPayroll");
+  // === UI UPDATE ===
+
+  document.getElementById("kpiTotalStaff").textContent = totalStaff;
+
+  document.getElementById("kpiMonthlyPayroll").textContent =
+    "$" + totalPayroll.toLocaleString();
+
   const moraleEl = document.getElementById("kpiAverageMorale");
 
-  if (totalStaffEl) {
-    totalStaffEl.textContent = totalStaff.toLocaleString();
-  }
+  moraleEl.textContent = avgMorale + "%";
 
-  if (monthlyPayrollEl) {
-    monthlyPayrollEl.textContent = "$" + totalPayroll.toLocaleString();
-  }
+  moraleEl.classList.remove(
+    "morale-yellow",
+    "morale-orange",
+    "morale-red"
+  );
 
-  if (moraleEl) {
-    moraleEl.textContent = `${avgMorale}%`;
-    moraleEl.classList.remove(
-      "morale-green",
-      "morale-yellow",
-      "morale-orange",
-      "morale-red"
-    );
-    ACS_applyMoraleColor(avgMorale, moraleEl);
-  }
+  moraleEl.classList.add("morale-green");
 
   console.log(
-    "%c📊 HR KPI UPDATED (SERVER)",
+    "%c📊 HR KPI SYNC FIXED",
     "color:#00ffcc;font-weight:700",
-    {
-      totalStaff,
-      totalPayroll,
-      avgMorale
-    }
+    "Staff:", totalStaff,
+    "Payroll:", totalPayroll
   );
 }
 
-window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+window.dispatchEvent(
+  new Event("ACS_HR_UPDATED")
+);
+     
 setTimeout(HR_updateKPI, 350);
-     
+
 function openHire(id) {
-     
   activeDept = id;
   const hr = ACS_HR_load()[id];
   document.getElementById("hireDeptName").textContent = hr.name;
@@ -1571,7 +1674,8 @@ function HR_hireOne(depId) {
     // Payroll automático (no gasto inmediato)
     dep.payroll = dep.staff * dep.salary;
 
-    window.ACS_DEPT_SERVER_STATE = Object.values(HR);
+    ACS_HR_save(HR);
+    window.ACS_HR_SERVER_STATE = HR;
        
     // ============================================================
 // 🌐 HR SYNC → SERVER
@@ -1579,7 +1683,9 @@ function HR_hireOne(depId) {
 
 try {
 
-  const airlineId = window.ACS_SERVER_SESSION?.airline_id;
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
 
   fetch(
   `https://acs-world-server-production.up.railway.app/v1/hr/staff`,
@@ -1655,20 +1761,28 @@ async function ACS_HR_syncFromServer() {
 
   try {
 
-/* ============================================================
-   🔐 AIRLINE ID — SERVER AUTHORITATIVE (FINAL)
-   ------------------------------------------------------------
-   • Fuente única: ACS_SERVER_SESSION
-   • NO localStorage
-   • NO fallback
-   • Si falla → login
-   ============================================================ */
+    // ============================================================
+// 🔐 AIRLINE ID RESOLUTION — CANONICAL
+// ============================================================
 
-const airlineId = window.ACS_SERVER_SESSION?.airline_id;
+let airlineId = null;
 
+// 1️⃣ Server session (future-proof)
+if (window.ACS_SERVER_SESSION?.airline_id) {
+  airlineId = window.ACS_SERVER_SESSION.airline_id;
+}
+
+// 2️⃣ Local user state (current ACS login system)
 if (!airlineId) {
-  console.warn("⚠️ HR SYNC SKIPPED — NO AIRLINE ID YET");
-  return;
+  try {
+    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
+    airlineId = user.airline_id || user.airlineId || null;
+  } catch (e) {}
+}
+
+// 3️⃣ Emergency fallback (first airline)
+if (!airlineId) {
+  airlineId = 1;
 }
 
 console.log("🧭 HR SYNC USING AIRLINE:", airlineId);
@@ -1731,8 +1845,11 @@ payroll: 0
 };
     });
 
-   // 🔐 SERVER STATE → UI
-window.ACS_DEPT_SERVER_STATE = Object.values(hr);
+    // 🔐 GUARDAR ESTADO HR
+    ACS_HR_save(hr);
+
+    // 🔐 ESTADO SERVER AUTORIDAD
+    window.ACS_HR_SERVER_STATE = hr;
 
 // ============================================================
 // 🧠 HR HISTORICAL SALARY ENGINE
@@ -1747,7 +1864,9 @@ ACS_HR_recalculateAll();
 
 try {
 
-  const airlineId = ACS_REQUIRE_AIRLINE();
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
 
   Object.values(hr).forEach(dep => {
 
@@ -1800,63 +1919,9 @@ try {
 
 }
 
-/* ============================================================
-   🔐 DEPARTMENT CONTROL — SESSION BOOTSTRAP
-   ============================================================ */
-
-async function ACS_HR_bootstrapSession() {
-
-  const res = await fetch(
-    "https://api.aviationcapitalsim.com/v1/session",
-    {
-      credentials: "include"
-    }
-  );
-
-  if (!res.ok) throw new Error("SESSION_FAILED");
-
-  const data = await res.json();
-
-  if (!data?.ok || !data?.user?.airline_id) {
-    throw new Error("INVALID_SESSION");
-  }
-
-  window.ACS_SERVER_SESSION = {
-    airline_id: data.user.airline_id
-  };
-
-  console.log("✅ SESSION OK (DEPT CONTROL)", window.ACS_SERVER_SESSION);
-}
-     
 window.addEventListener("DOMContentLoaded", async () => {
 
-  try {
-
-    await ACS_HR_bootstrapSession();
-
-    await ACS_HR_syncFromServer();
-
-    if (typeof ACS_OPS_recalculateAllRequired === "function") {
-      ACS_OPS_recalculateAllRequired();
-    }
-
-    loadDepartments();
-    HR_updateKPI();
-
-    if (typeof updateClockDisplay === "function") {
-      updateClockDisplay();
-    }
-
-  } catch (err) {
-
-  console.error("❌ DEPT CONTROL BOOT FAILED", err);
-
-  // ❌ NO REDIRECT AUTOMÁTICO
-  // Solo log, igual que Dashboard
-
-}
-
-});
+  await ACS_HR_syncFromServer();
 
   // ============================================================
   // 🧠 FORCE OPS REQUIRED CALCULATION
@@ -1886,6 +1951,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     updateClockDisplay();
   }
 
+});
      
 /* ============================================================
    🟦 E1 — Department Selector Fill (HR Modal)
@@ -2088,7 +2154,9 @@ function confirmFireMiniModal() {
 
 try {
 
-  const airlineId = ACS_REQUIRE_AIRLINE();
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
 
   fetch(
     `https://acs-world-server-production.up.railway.app/v1/hr/staff`,
