@@ -653,40 +653,6 @@ body {
 </footer>
      
 <!-- SCRIPTS -->
-
-<!-- 🟧 A1 — SESSION BRIDGE (REQUIRED FOR RAILWAY) -->
-     
-<script>
-     
-(function(){
-
-  try {
-
-    const raw = localStorage.getItem("ACS_SESSION");
-    if (!raw) return;
-
-    const s = JSON.parse(raw);
-
-    if (!s) return;
-
-    if (s.token) {
-      window.ACS_TOKEN = s.token;
-    }
-
-    if (s.airline_id) {
-      window.ACS_SERVER_SESSION = {
-        airline_id: s.airline_id
-      };
-    }
-
-    console.log("🟢 SESSION BRIDGE LOADED", window.ACS_SERVER_SESSION);
-
-  } catch(e){
-    console.warn("SESSION BRIDGE FAILED", e);
-  }
-
-})();
-</script>
     
 <!-- ============================================================
      ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
@@ -887,39 +853,31 @@ async function loadTransactionLog() {
 
   container.innerHTML = "";
 
-  const airlineId =
-  window.ACS_SERVER_SESSION?.airline_id ||
-  window.ACS_activeUser?.airline_id;
-  if (!airlineId) return;
-
   try {
 
     const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`,
-  {
-    headers: {
-      Authorization: "Bearer " + (window.ACS_TOKEN || "")
+      "https://api.aviationcapitalsim.com/v1/finance/log",
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`FINANCE_LOG_HTTP_${res.status}`);
     }
-  }
-);
 
     const data = await res.json();
-    if (!data.ok) return;
 
-    // 🔵 SOURCE OF TRUTH (Railway)
+    if (!data?.ok) {
+      throw new Error(data?.error || "FINANCE_LOG_LOAD_FAILED");
+    }
+
     const logs = Array.isArray(data.logs) ? data.logs : [];
-
-    // 🔵 LIMIT FOR UI PERFORMANCE (Airbus OCC safe)
     const recent = logs.slice(0, 100);
-
-    /* ============================================================
-       🟦 FILTER — REMOVE INDIVIDUAL ROUTE INCOME
-       ============================================================ */
 
     const filtered = recent.filter(entry => {
 
       if (entry.type === "INCOME") {
-
         if (
           typeof entry.source === "string" &&
           entry.source.startsWith("FLIGHT ") &&
@@ -927,27 +885,18 @@ async function loadTransactionLog() {
         ) {
           return false;
         }
-
       }
 
       return true;
-
     });
-
-    /* ============================================================
-       🟦 GROUP BY TYPE
-       ============================================================ */
 
     const groupedByType = {};
 
     filtered.forEach(entry => {
-
       if (!groupedByType[entry.type]) {
         groupedByType[entry.type] = [];
       }
-
       groupedByType[entry.type].push(entry);
-
     });
 
     const types = ["INCOME", "EXPENSE"];
@@ -960,8 +909,6 @@ async function loadTransactionLog() {
     types.forEach(type => {
 
       const entries = groupedByType[type] || [];
-
-      // 🔵 GROUP BY SOURCE
       const grouped = {};
 
       entries.forEach(entry => {
@@ -1302,23 +1249,58 @@ function updateClockDisplay(simTime){
    === INIT =====================================================
    ============================================================ */
      
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
   if (typeof registerTimeListener === "function") {
+    registerTimeListener((simDate) => {
+      updateClockDisplay(simDate);
+    });
 
-  registerTimeListener((simDate)=>{
-    updateClockDisplay(simDate);
+    updateClockDisplay();
+  }
 
-  });
+  try {
 
-  updateClockDisplay();
-}
-     
-  updateCompanyOverview();
-  loadBreakdown();
-  loadTransactionLog();
-  loadLeasing();
-     
+    const sessionRes = await fetch(
+      "https://api.aviationcapitalsim.com/v1/session",
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!sessionRes.ok) {
+      throw new Error(`SESSION_HTTP_${sessionRes.status}`);
+    }
+
+    const sessionData = await sessionRes.json();
+
+    if (!sessionData?.ok || !sessionData?.user?.airline_id) {
+      throw new Error("INVALID_SESSION_PAYLOAD");
+    }
+
+    window.ACS_SERVER_SESSION = {
+      airline_id: sessionData.user.airline_id
+    };
+
+    console.log("✅ FINANCE SESSION OK", window.ACS_SERVER_SESSION);
+
+    if (typeof window.ACS_FINANCE_syncFromServer === "function") {
+      await window.ACS_FINANCE_syncFromServer();
+    }
+
+    updateCompanyOverview();
+    loadBreakdown();
+    loadTransactionLog();
+    loadLeasing();
+    ACS_renderMonthlyExecutive();
+
+  } catch (err) {
+
+    console.error("❌ COMPANY FINANCE BOOT FAILED", err);
+    window.location.href = "login.html";
+
+  }
+
 });
 
 /* ============================================================
