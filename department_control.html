@@ -1857,9 +1857,7 @@ ACS_HR_recalculateAll();
 
 try {
 
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
+  const airlineId = ACS_REQUIRE_AIRLINE();
 
   Object.values(hr).forEach(dep => {
 
@@ -2199,9 +2197,7 @@ function confirmFireMiniModal() {
 
 try {
 
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
+  const airlineId = ACS_REQUIRE_AIRLINE();
 
   fetch(
     `https://acs-world-server-production.up.railway.app/v1/hr/staff`,
