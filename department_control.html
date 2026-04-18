@@ -1272,6 +1272,7 @@ function ACS_HR_renderLoadBar(dep) {
 /* ============================================================
    === HR_prepareTableData — RECONSTRUIDA PREMIUM v2 ============
    ============================================================ */
+     
 function HR_prepareTableData(d) {
     const staff    = d.staff || 0;
     const required = (typeof d.required === "number") ? d.required : staff;
@@ -1303,7 +1304,8 @@ function HR_prepareTableData(d) {
    === LOAD DEPARTMENTS — FINAL OPERATIONAL CORE (ACS) =========
    ============================================================ */
 
-function loadDepartments() {
+async function loadDepartments()
+     
   const rows = document.getElementById("departmentRows");
   if (!rows) return;
 
@@ -1330,6 +1332,7 @@ function loadDepartments() {
     const staff = Number(dep.staff || 0);
 
     // 🔧 Required absoluto real (desde HR engine)
+       
     const requiredAbsolute =
       (typeof d.required === "number") ? d.required : staff;
 
