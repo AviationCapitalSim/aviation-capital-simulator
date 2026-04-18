@@ -400,7 +400,47 @@
 
 <!-- 🧠 DEPARTMENT OPS + SALARY ENGINE (CRÍTICO) -->
 <script src="engine/acs_department_ops_engine.js"></script>
-     
+
+<script>
+/* ============================================================
+   🔐 HR SESSION BOOTSTRAP — COOKIE AUTHORITY
+   ------------------------------------------------------------
+   • Igual filosofía que Dashboard / Finance
+   • NO localStorage session
+   • NO Bearer token
+   • Backend cookie = única autoridad
+   ============================================================ */
+
+async function ACS_HR_bootstrapSession() {
+
+  const res = await fetch(
+    "https://api.aviationcapitalsim.com/v1/session",
+    {
+      credentials: "include"
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`SESSION_HTTP_${res.status}`);
+  }
+
+  const data = await res.json();
+
+  if (!data?.ok || !data?.user?.airline_id) {
+    throw new Error("INVALID_SESSION_PAYLOAD");
+  }
+
+  window.ACS_SERVER_SESSION = {
+    airline_id: data.user.airline_id,
+    user_id: data.user.user_id || null
+  };
+
+  console.log("✅ HR SESSION OK", window.ACS_SERVER_SESSION);
+
+  return window.ACS_SERVER_SESSION;
+}
+</script> 
+    
 <script>
      
 /* ============================================================
