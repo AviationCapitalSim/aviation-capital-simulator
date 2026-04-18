@@ -1919,9 +1919,61 @@ try {
 
 }
 
+/* ============================================================
+   🔐 DEPARTMENT CONTROL — SESSION BOOTSTRAP
+   ============================================================ */
+
+async function ACS_HR_bootstrapSession() {
+
+  const res = await fetch(
+    "https://api.aviationcapitalsim.com/v1/session",
+    {
+      credentials: "include"
+    }
+  );
+
+  if (!res.ok) throw new Error("SESSION_FAILED");
+
+  const data = await res.json();
+
+  if (!data?.ok || !data?.user?.airline_id) {
+    throw new Error("INVALID_SESSION");
+  }
+
+  window.ACS_SERVER_SESSION = {
+    airline_id: data.user.airline_id
+  };
+
+  console.log("✅ SESSION OK (DEPT CONTROL)", window.ACS_SERVER_SESSION);
+}
+     
 window.addEventListener("DOMContentLoaded", async () => {
 
-  await ACS_HR_syncFromServer();
+  try {
+
+    await ACS_HR_bootstrapSession();
+
+    await ACS_HR_syncFromServer();
+
+    if (typeof ACS_OPS_recalculateAllRequired === "function") {
+      ACS_OPS_recalculateAllRequired();
+    }
+
+    loadDepartments();
+    HR_updateKPI();
+
+    if (typeof updateClockDisplay === "function") {
+      updateClockDisplay();
+    }
+
+  } catch (err) {
+
+    console.error("❌ DEPT CONTROL BOOT FAILED", err);
+    window.location.href = "login.html";
+
+  }
+
+});
 
   // ============================================================
   // 🧠 FORCE OPS REQUIRED CALCULATION
