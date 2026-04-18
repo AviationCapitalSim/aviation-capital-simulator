@@ -1579,9 +1579,7 @@ function HR_hireOne(depId) {
 
 try {
 
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    const airlineId = window.ACS_SERVER_SESSION?.airline_id;
+  const airlineId = window.ACS_SERVER_SESSION?.airline_id;
 
   fetch(
   `https://acs-world-server-production.up.railway.app/v1/hr/staff`,
@@ -1734,11 +1732,8 @@ payroll: 0
 };
     });
 
-    // 🔐 GUARDAR ESTADO HR
-    ACS_HR_save(hr);
-
-    // 🔐 ESTADO SERVER AUTORIDAD
-    window.ACS_HR_SERVER_STATE = hr;
+   // 🔐 SERVER STATE → UI
+window.ACS_DEPT_SERVER_STATE = Object.values(hr);
 
 // ============================================================
 // 🧠 HR HISTORICAL SALARY ENGINE
