@@ -1571,8 +1571,7 @@ function HR_hireOne(depId) {
     // Payroll automático (no gasto inmediato)
     dep.payroll = dep.staff * dep.salary;
 
-    ACS_HR_save(HR);
-    window.ACS_HR_SERVER_STATE = HR;
+    window.ACS_DEPT_SERVER_STATE = Object.values(hr);
        
     // ============================================================
 // 🌐 HR SYNC → SERVER
