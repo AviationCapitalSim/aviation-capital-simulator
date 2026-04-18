@@ -1849,10 +1849,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   } catch (err) {
 
-    console.error("❌ DEPT CONTROL BOOT FAILED", err);
-    window.location.href = "login.html";
+  console.error("❌ DEPT CONTROL BOOT FAILED", err);
 
-  }
+  // ❌ NO REDIRECT AUTOMÁTICO
+  // Solo log, igual que Dashboard
+
+}
 
 });
 
