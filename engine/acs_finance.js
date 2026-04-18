@@ -94,21 +94,17 @@ window.ACS_FINANCE_boot = async function(){
 
   try {
 
-    const token = localStorage.getItem("acs_token");
-
-    if (!token) {
-      console.warn("FINANCE: NO TOKEN");
-      return;
-    }
-
     const res = await fetch(
-      "https://acs-world-server-production.up.railway.app/v1/auth/me",
+      "https://api.aviationcapitalsim.com/v1/session",
       {
-        headers: {
-          Authorization: "Bearer " + token
-        }
+        credentials: "include"
       }
     );
+
+    if (!res.ok) {
+      console.warn("FINANCE: SESSION HTTP", res.status);
+      return;
+    }
 
     const data = await res.json();
 
@@ -117,14 +113,13 @@ window.ACS_FINANCE_boot = async function(){
       return;
     }
 
-    // 🔥 ESTA ES LA CLAVE
     window.ACS_SERVER_SESSION = {
       airline_id: data.user.airline_id
     };
 
     console.log("🟢 FINANCE SESSION READY:", data.user.airline_id);
 
-    ACS_FINANCE_syncFromServer();
+    await ACS_FINANCE_syncFromServer();
 
   } catch(err) {
 
@@ -152,53 +147,48 @@ async function ACS_FINANCE_syncFromServer(){
     window.ACS_SERVER_SESSION?.airline_id ||
     window.ACS_activeUser?.airline_id;
 
-  if(!airlineId){
+  if (!airlineId) {
     console.warn("FINANCE SYNC: airlineId missing");
     return;
   }
 
-  try{
+  try {
 
-    /* =========================
-       1️⃣ FETCH FINANCE STATE
-       ========================= */
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/finance",
+      {
+        credentials: "include"
+      }
+    );
 
-   const token = localStorage.getItem("acs_token");
-
-   const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance`,
-  {
-    headers: {
-      Authorization: "Bearer " + (token || "")
+    if (!res.ok) {
+      console.warn("FINANCE SYNC HTTP:", res.status);
+      return;
     }
-  }
-);
 
     const data = await res.json();
 
-    if(!data?.ok){
+    if (!data?.ok) {
       console.warn("FINANCE SYNC: server returned not ok");
       return;
     }
 
     const f = data.finance;
-    if(!f) return;
+    if (!f) return;
 
     window.ACS_Finance = {
-
       capital: Number(f.capital || 0),
-
       revenue: Number(f.revenue || 0),
       expenses: Number(f.expenses || 0),
       profit: Number(f.profit || 0),
 
-      income:{
+      income: {
         live_revenue: Number(f.live_revenue || 0),
         weekly_revenue: Number(f.weekly_revenue || 0),
         current_week_key: null
       },
 
-      cost:{
+      cost: {
         fuel: Number(f.cost_fuel || 0),
         ground_handling: Number(f.cost_handling || 0),
         slot_fees: Number(f.cost_slots || 0),
@@ -218,39 +208,29 @@ async function ACS_FINANCE_syncFromServer(){
 
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
 
-    /* =========================
-       2️⃣ FETCH LOG (OPCIONAL)
-       ========================= */
-
-    try{
+    try {
 
       const logRes = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance/log/${airlineId}`,
-  {
-    headers: {
-      Authorization: "Bearer " + (localStorage.getItem("acs_token") || "")
-    }
-  }
-);
+        "https://api.aviationcapitalsim.com/v1/finance/log",
+        {
+          credentials: "include"
+        }
+      );
 
-      const logData = await logRes.json();
-
-      if(logData?.ok){
-        console.log("📊 FINANCE LOG SYNC OK", logData.logs?.length || 0);
+      if (logRes.ok) {
+        const logData = await logRes.json();
+        if (logData?.ok) {
+          console.log("📊 FINANCE LOG SYNC OK", logData.logs?.length || 0);
+        }
       }
 
-    } catch(err){
+    } catch (err) {
       console.warn("LOG SYNC FAILED", err);
     }
 
-    /* =========================
-       🔔 UI UPDATE
-       ========================= */
-
     window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
-  }
-  catch(err){
+  } catch(err) {
 
     console.warn("FINANCE SYNC FAILED", err);
 
@@ -414,195 +394,102 @@ let ACS_FINANCE_SYNC_PENDING = false;
 async function pushLog(entry){
 
   const airlineId =
-  window.ACS_SERVER_SESSION?.airline_id ||
-  window.ACS_activeUser?.airline_id;
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id;
 
-  if(!airlineId){
+  if (!airlineId) {
     console.warn("FINANCE LOG: airlineId missing");
     return;
   }
 
-  /* ============================================================
-   SIM TIME (CANONICAL TIMESTAMP)
-   ============================================================ */
+  let simTime;
 
-let simTime;
-
-try{
-  simTime = Date.now();
-}
-catch{
-  simTime = Date.now();
-}
-
-const payload = {
-
-  airline_id: Number(airlineId),
-
-  type: String(entry.type || "UNKNOWN"),
-
-  source: String(entry.source || "SYSTEM"),
-
-  amount: Number(entry.amount || 0),
-
-  timestamp: simTime
-};
-
-  /* ============================================================
-     SEND TO RAILWAY (AUTHORITY)
-     ============================================================ */
-
- fetch(
-  "https://acs-world-server-production.up.railway.app/v1/finance/log",
-  {
-    method: "POST",
-    headers:{
-      "Content-Type":"application/json",
-      Authorization: "Bearer " + (localStorage.getItem("acs_token") || "")
-    },
-    body: JSON.stringify(payload)
+  try {
+    simTime = Date.now();
+  } catch {
+    simTime = Date.now();
   }
-)
-    
-  .then(res => res.json())
-  .then(data => {
 
-    if(!data?.ok){
-      console.warn("FINANCE LOG SERVER ERROR", data);
+  const payload = {
+    airline_id: Number(airlineId),
+    type: String(entry.type || "UNKNOWN"),
+    source: String(entry.source || "SYSTEM"),
+    amount: Number(entry.amount || 0),
+    timestamp: simTime
+  };
+
+  fetch(
+    "https://api.aviationcapitalsim.com/v1/finance/log",
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
     }
+  )
+    .then(res => res.json())
+    .then(data => {
+      if (!data?.ok) {
+        console.warn("FINANCE LOG SERVER ERROR", data);
+      }
+    })
+    .catch(err => {
+      console.warn("FINANCE LOG FAILED (NO LOCAL FALLBACK)", err);
+    });
 
-  })
-  .catch(err => {
-  console.warn("FINANCE LOG FAILED (NO LOCAL FALLBACK)", err);
-});
-   
 }
-
-/* ============================================================
-   ✈️ REGISTER INCOME — BACKEND AUTHORITATIVE (OCC) ✅ FIXED
-   ------------------------------------------------------------
-   • NO localStorage
-   • Backend = única fuente
-   • UI se actualiza en vivo
-   ============================================================ */
 
 window.ACS_registerIncome = async function(payload){
 
   if (!payload || typeof payload.revenue !== "number") return;
 
- const airlineId =
-  window.ACS_SERVER_SESSION?.airline_id ||
-  window.ACS_activeUser?.airline_id;
+  const airlineId =
+    window.ACS_SERVER_SESSION?.airline_id ||
+    window.ACS_activeUser?.airline_id;
 
-  if(!airlineId){
+  if (!airlineId) {
     console.warn("NO AIRLINE ID");
     return;
   }
 
-  try{
+  try {
 
-    /* ============================================================
-       1️⃣ POST FLIGHT EVENT → BACKEND
-       ============================================================ */
-
-   const token = localStorage.getItem("acs_token");
-
-const res = await fetch(
-  "https://acs-world-server-production.up.railway.app/v1/finance/flight-event",
-  {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      Authorization: "Bearer " + (token || "")
-    },
-    body: JSON.stringify({
-      airline_id: Number(airlineId),
-      revenue: payload.revenue,
-      cost_fuel: payload.costs?.fuel || 0,
-      cost_handling: payload.costs?.handling || 0,
-      cost_slot: payload.costs?.slot || 0,
-      cost_navigation: payload.costs?.navigation || 0,
-      cost_overflight: payload.costs?.overflight || 0
-    })
-  }
-);
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/finance/flight-event",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          airline_id: Number(airlineId),
+          revenue: payload.revenue,
+          cost_fuel: payload.costs?.fuel || 0,
+          cost_handling: payload.costs?.handling || 0,
+          cost_slot: payload.costs?.slot || 0,
+          cost_navigation: payload.costs?.navigation || 0,
+          cost_overflight: payload.costs?.overflight || 0
+        })
+      }
+    );
 
     const data = await res.json();
 
-    if(!data?.ok){
+    if (!data?.ok) {
       console.warn("FLIGHT EVENT FAILED", data);
       return;
     }
 
-    /* ============================================================
-       2️⃣ 🔥 FETCH REAL STATE FROM BACKEND (OCC)
-       ============================================================ */
-
-    const syncRes = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/finance/${airlineId}`,
-  {
-    headers: {
-      Authorization: "Bearer " + (localStorage.getItem("acs_token") || "")
-    }
-  }
-);
-
-    const syncData = await syncRes.json();
-
-    if(!syncData?.ok){
-      console.warn("SYNC AFTER FLIGHT FAILED");
-      return;
-    }
-
-    const f = syncData.finance;
-
-    /* ============================================================
-       3️⃣ APPLY SERVER STATE (SINGLE SOURCE OF TRUTH)
-       ============================================================ */
-
-    window.ACS_Finance = {
-
-      capital: Number(f.capital || 0),
-
-      revenue: Number(f.revenue || 0),
-      expenses: Number(f.expenses || 0),
-      profit: Number(f.profit || 0),
-
-      income:{
-        live_revenue: Number(f.live_revenue || 0),
-        weekly_revenue: Number(f.weekly_revenue || 0)
-      },
-
-      cost:{
-        fuel: Number(f.cost_fuel || 0),
-
-        ground_handling: Number(f.cost_handling || 0),
-        slot_fees: Number(f.cost_slots || 0),
-        navigation: Number(f.cost_navigation || 0),
-        overflight: Number(f.cost_overflight || 0),
-
-        leasing: Number(f.cost_leasing || 0),
-        salaries: Number(f.cost_hr || 0),
-        maintenance: Number(f.cost_maintenance || 0),
-
-        penalties: Number(f.cost_other || 0),
-
-        used_aircraft_purchase: 0,
-        new_aircraft_purchase: 0
-      }
-
-    };
-
-    /* ============================================================
-       🔔 FORCE UI REFRESH (REAL TIME)
-       ============================================================ */
+    await ACS_FINANCE_syncFromServer();
 
     window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
     console.log("✅ FINANCE SYNC AFTER FLIGHT OK");
 
-  }
-  catch(err){
+  } catch(err) {
 
     console.warn("FLIGHT EVENT ERROR", err);
 
