@@ -1309,7 +1309,15 @@ function loadDepartments() {
 
   rows.innerHTML = "";
 
-  const depts = ACS_HR_getDepartmentsView();
+   const HR = window.ACS_HR_SERVER_STATE;
+
+  if (!HR || !Array.isArray(HR.departments)) {
+  console.error("❌ HR STATE NOT READY");
+  return;
+  }
+
+  const depts = HR.departments;
+     
   if (!depts || !Array.isArray(depts)) {
     console.warn("⚠️ HR view vacío o inválido");
     return;
