@@ -1909,34 +1909,38 @@ try {
 
 window.addEventListener("DOMContentLoaded", async () => {
 
-  await ACS_HR_syncFromServer();
+  try {
 
-  // ============================================================
-  // 🧠 FORCE OPS REQUIRED CALCULATION
-  // ============================================================
+    // 🔐 1. SESSION YA DEBE EXISTIR (vienes de Dashboard)
 
-  if (typeof ACS_OPS_recalculateAllRequired === "function") {
+    // 🌐 2. SYNC REAL DESDE BACKEND
+    await ACS_HR_syncFromServer();
 
-    console.log(
-      "%c🧠 INITIAL OPS REQUIRED CALC",
-      "color:#00ffcc;font-weight:700"
-    );
+    // 🧠 3. FORZAR OPS (NO TOCAR)
+    if (typeof ACS_OPS_recalculateAllRequired === "function") {
 
-    ACS_OPS_recalculateAllRequired();
+      console.log(
+        "%c🧠 INITIAL OPS REQUIRED CALC",
+        "color:#00ffcc;font-weight:700"
+      );
 
-  } else {
+      ACS_OPS_recalculateAllRequired();
+    }
 
-    console.warn("⚠️ OPS REQUIRED ENGINE NOT FOUND");
+    // 🟢 4. RENDER (YA CON DATOS DEL SERVER)
+    loadDepartments();
+    HR_updateKPI();
 
-  }
+    // 🕒 5. CLOCK
+    if (typeof updateClockDisplay === "function") {
+      updateClockDisplay();
+    }
 
-  // ============================================================
+  } catch (err) {
 
-  loadDepartments();
-  HR_updateKPI();
+    console.error("❌ DEPARTMENT CONTROL BOOT FAILED", err);
+    window.location.href = "login.html";
 
-  if (typeof updateClockDisplay === "function") {
-    updateClockDisplay();
   }
 
 });
