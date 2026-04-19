@@ -195,7 +195,7 @@ async function ACS_FINANCE_syncFromServer(){
         overflight: Number(f.cost_overflight || 0),
         navigation: Number(f.cost_navigation || 0),
         leasing: Number(f.cost_leasing || 0),
-        salaries: Number(f.cost_hr || 0),
+        salaries: 0, // 🔒 HR AUTHORITY — DO NOT LOAD FROM SERVER
         maintenance: Number(f.cost_maintenance || 0),
         penalties: Number(f.cost_other || 0),
         used_aircraft_purchase: 0,
