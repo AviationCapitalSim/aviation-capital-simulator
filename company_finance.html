@@ -1246,63 +1246,88 @@ function updateClockDisplay(simTime){
 
      
 /* ============================================================
-   === INIT =====================================================
+   🟦 A0 — DEPARTMENT CONTROL BOOTSTRAP (SESSION FIRST)
    ============================================================ */
-     
+
 document.addEventListener("DOMContentLoaded", async () => {
 
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener((simDate) => {
-      updateClockDisplay(simDate);
-    });
+  const API_BASE = "https://api.aviationcapitalsim.com";
 
-    updateClockDisplay();
+  async function getSession() {
+
+    let attempts = 0;
+
+    while (attempts < 3) {
+
+      try {
+
+        const res = await fetch(`${API_BASE}/v1/session`, {
+          credentials: "include"
+        });
+
+        if (!res.ok) {
+          throw new Error(`SESSION_HTTP_${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!data?.ok || !data?.user?.airline_id) {
+          throw new Error("INVALID_SESSION_PAYLOAD");
+        }
+
+        window.ACS_SERVER_SESSION = {
+          airline_id: data.user.airline_id,
+          user_id: data.user.user_id || null
+        };
+
+        console.log("✅ SESSION OK (DEPT CONTROL)", window.ACS_SERVER_SESSION);
+
+        return true;
+
+      } catch (err) {
+
+        attempts++;
+        console.warn(`❌ SESSION ERROR [${attempts}]`, err);
+
+        // 🔴 SOLO REDIRECT SI ES 401 REAL
+        if (err.message?.includes("SESSION_HTTP_401")) {
+          window.location.href = "login.html";
+          return false;
+        }
+
+        await new Promise(r => setTimeout(r, 400));
+      }
+    }
+
+    console.warn("🌐 SESSION NETWORK FAIL — no redirect");
+    return false;
   }
+
+  const ok = await getSession();
+  if (!ok) return;
 
   try {
 
-    const sessionRes = await fetch(
-      "https://api.aviationcapitalsim.com/v1/session",
-      {
-        credentials: "include"
-      }
-    );
+    // 🔥 ORDEN CORRECTO
+    await ACS_HR_syncFromServer();
 
-    if (!sessionRes.ok) {
-      throw new Error(`SESSION_HTTP_${sessionRes.status}`);
+    if (typeof loadDepartments === "function") {
+      loadDepartments();
     }
 
-    const sessionData = await sessionRes.json();
-
-    if (!sessionData?.ok || !sessionData?.user?.airline_id) {
-      throw new Error("INVALID_SESSION_PAYLOAD");
+    if (typeof HR_updateKPI === "function") {
+      HR_updateKPI();
     }
-
-    window.ACS_SERVER_SESSION = {
-      airline_id: sessionData.user.airline_id
-    };
-
-    console.log("✅ FINANCE SESSION OK", window.ACS_SERVER_SESSION);
-
-    if (typeof window.ACS_FINANCE_syncFromServer === "function") {
-      await window.ACS_FINANCE_syncFromServer();
-    }
-
-    updateCompanyOverview();
-    loadBreakdown();
-    loadTransactionLog();
-    loadLeasing();
-    ACS_renderMonthlyExecutive();
 
   } catch (err) {
 
-    console.error("❌ COMPANY FINANCE BOOT FAILED", err);
-    window.location.href = "login.html";
+    console.error("❌ DEPARTMENT CONTROL LOAD FAILED", err);
 
+    // 🔴 SOLO aquí si quieres fallback visual, NO redirect automático
   }
 
 });
-
+     
 /* ============================================================
    === FINANCE UI LIVE REFRESH — FIX v1.0 =====================
    ============================================================ */
