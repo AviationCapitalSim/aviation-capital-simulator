@@ -2135,6 +2135,49 @@ function closeFireMiniModal() {
 }
 
 /* ============================================================
+   🟦 OPEN FIRE MINI MODAL (MISSING LINK — FIX)
+   ============================================================ */
+
+function openFireMiniModal(depId) {
+
+  const HR = window.ACS_HR_SERVER_STATE;
+
+  if (!HR || !HR[depId]) {
+    console.warn("❌ FIRE MODAL — Department not found:", depId);
+    return;
+  }
+
+  const dep = HR[depId];
+
+  // 🔐 Guardar contexto activo
+  __ACS_ACTIVE_FIRE_DEPT = depId;
+
+  // 🎯 Set UI
+  document.getElementById("fireMiniDeptName").textContent = dep.name;
+
+  const select = document.getElementById("fireMiniQty");
+  select.innerHTML = "";
+
+  const max = Math.max(1, Number(dep.staff || 0));
+
+  for (let i = 1; i <= max; i++) {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = i;
+    select.appendChild(opt);
+  }
+
+  // 🟢 Mostrar modal
+  document.getElementById("hrFireMiniModal").style.display = "flex";
+
+  console.log(
+    "%c🔥 FIRE MODAL OPENED",
+    "color:#ffaa00;font-weight:700",
+    dep.name
+  );
+}
+     
+/* ============================================================
    🟦 A-FIRE-BOOT-RESET — FINAL CANONICAL FIX
    ============================================================ */
 
