@@ -984,12 +984,14 @@ async function ACS_HR_loadFromServer(){
 
   try {
 
-    const res = await fetch(
-      "https://api.aviationcapitalsim.com/v1/hr_departments",
-      {
-        credentials: "include"
-      }
-    );
+  const airlineId = window.ACS_SESSION?.airline_id;
+
+const res = await fetch(
+  `https://api.aviationcapitalsim.com/v1/hr/departments/${airlineId}`,
+  {
+    credentials: "include"
+  }
+);
 
     if (!res.ok) {
       console.warn("HR SERVER LOAD HTTP ERROR", res.status);
