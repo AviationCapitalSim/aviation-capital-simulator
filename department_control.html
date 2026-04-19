@@ -1765,24 +1765,12 @@ async function ACS_HR_syncFromServer() {
 // 🔐 AIRLINE ID RESOLUTION — CANONICAL
 // ============================================================
 
-let airlineId = null;
+const airlineId = window.ACS_SERVER_SESSION?.airline_id;
 
-// 1️⃣ Server session (future-proof)
-if (window.ACS_SERVER_SESSION?.airline_id) {
-  airlineId = window.ACS_SERVER_SESSION.airline_id;
-}
-
-// 2️⃣ Local user state (current ACS login system)
 if (!airlineId) {
-  try {
-    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-    airlineId = user.airline_id || user.airlineId || null;
-  } catch (e) {}
-}
-
-// 3️⃣ Emergency fallback (first airline)
-if (!airlineId) {
-  airlineId = 1;
+  console.error("❌ NO AIRLINE ID — SESSION INVALID");
+  window.location.href = "login.html";
+  return;
 }
 
 console.log("🧭 HR SYNC USING AIRLINE:", airlineId);
