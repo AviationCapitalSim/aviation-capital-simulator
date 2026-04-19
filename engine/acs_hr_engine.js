@@ -972,6 +972,86 @@ function ACS_HR_syncSalaryToView() {
 }
 
 /* ============================================================
+   🟢 HR SERVER SYNC — CANONICAL LOAD FROM RAILWAY
+   ------------------------------------------------------------
+   • Carga hr_department desde backend
+   • Construye estructura compatible con engine actual
+   • Alimenta window.ACS_HR_SERVER_STATE
+   • Dispara evento global para Finance
+   ============================================================ */
+
+async function ACS_HR_loadFromServer(){
+
+  try {
+
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/hr_departments",
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!res.ok) {
+      console.warn("HR SERVER LOAD HTTP ERROR", res.status);
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data?.ok || !Array.isArray(data.departments)) {
+      console.warn("HR SERVER LOAD INVALID DATA", data);
+      return;
+    }
+
+    const HR = {};
+
+    data.departments.forEach(dep => {
+
+      if (!dep?.dept_id) return;
+
+      HR[dep.dept_id] = {
+        id: dep.dept_id,
+        name: dep.dept_name,
+        base: dep.base_role,
+
+        staff: Number(dep.staff || 0),
+        required: Number(dep.required || 0),
+        morale: Number(dep.morale || 100),
+
+        salary: Number(dep.salary || 0),
+        payroll: Number(dep.payroll || 0),
+
+        bonus: Number(dep.bonus || 0),
+        years: Number(dep.years || 0)
+      };
+
+    });
+
+    window.ACS_HR_SERVER_STATE = HR;
+
+    console.log(
+      "%c🟢 HR LOADED FROM RAILWAY",
+      "color:#00ffcc;font-weight:800",
+      HR
+    );
+
+    // 🔔 Disparar sincronización global
+    window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+
+  } catch(err){
+
+    console.warn("HR SERVER LOAD FAILED", err);
+
+  }
+
+}
+
+// 🔄 HR SERVER BOOT (NO BLOQUEA TIME ENGINE)
+setTimeout(() => {
+  ACS_HR_loadFromServer();
+}, 800);
+
+/* ============================================================
    🛑 HR LOCAL AUTO-BOOTSTRAP DISABLED
    ------------------------------------------------------------
    • HR ya no debe autoconstruirse desde localStorage
