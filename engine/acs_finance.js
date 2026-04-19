@@ -279,94 +279,62 @@ let ACS_FINANCE_SYNC_PENDING = false;
    
 (function(){
 
-  async function ACS_FIN_applyLivePayrollAccrual(){
-
-    let payroll = 0;
+  function ACS_FIN_applyLivePayrollAccrual(){
 
     try {
 
-  const airlineId =
-  window.ACS_SERVER_SESSION?.airline_id ||
-  window.ACS_activeUser?.airline_id;
-       
-      /* ============================================================
-         1️⃣ PRIMARY SOURCE — RAILWAY HR
-      ============================================================ */
+      // ============================================================
+      // 1️⃣ SINGLE AUTHORITY — DEPARTMENT CONTROL / HR ENGINE
+      // ============================================================
 
-      if (airlineId) {
-
-        try {
-
-          const res = await fetch(
-  `https://acs-world-server-production.up.railway.app/v1/hr/payroll/${airlineId}`,
-  {
-    headers: {
-      Authorization: "Bearer " + (localStorage.getItem("acs_token") || "")
-    }
-  }
-);
-
-          const data = await res.json();
-
-          if (data?.ok && Number(data.payroll) > 0) {
-
-            payroll = Number(data.payroll);
-
-            console.log(
-              "%c🌍 HR PAYROLL FROM RAILWAY",
-              "color:#00ffcc;font-weight:700",
-              payroll
-            );
-
-          }
-
-        } catch(e){
-
-          console.warn("HR payroll fetch failed");
-
-        }
-
+      if (typeof ACS_HR_getTotalPayroll !== "function") {
+        console.warn("FINANCE HR PAYROLL SYNC ERROR — ACS_HR_getTotalPayroll not found");
+        return;
       }
 
-      /* ============================================================
-         2️⃣ FALLBACK — HR ENGINE LOCAL
-      ============================================================ */
+      const payroll = Number(ACS_HR_getTotalPayroll());
 
-      if (!payroll && typeof ACS_HR_getTotalPayroll === "function") {
-
-        const local = Number(ACS_HR_getTotalPayroll());
-
-        if (Number.isFinite(local) && local > 0) {
-
-          payroll = local;
-
-          console.log(
-            "%c🧠 HR PAYROLL FROM ENGINE",
-            "color:#8ab4ff;font-weight:700",
-            payroll
-          );
-
-        }
-
+      if (!Number.isFinite(payroll) || payroll < 0) {
+        console.warn("FINANCE HR PAYROLL SYNC ERROR — invalid payroll:", payroll);
+        return;
       }
-
-    
-      /* ============================================================
-         APPLY TO FINANCE
-      ============================================================ */
-
-      if (!Number.isFinite(payroll) || payroll <= 0) return;
 
       const f = window.ACS_Finance;
       if (!f) return;
 
       if (!f.cost) f.cost = {};
 
-      f.cost.salaries = payroll;
+      // ============================================================
+      // 2️⃣ APPLY HR PAYROLL AS CANONICAL SALARY COST
+      // ============================================================
 
-      f.profit = (f.revenue || 0) - (f.expenses || 0) - payroll;
+      f.cost.salaries = Math.round(payroll);
 
+      // Rebuild expenses from canonical breakdown
+      const totalCosts =
+        Number(f.cost.fuel || 0) +
+        Number(f.cost.ground_handling || 0) +
+        Number(f.cost.slot_fees || 0) +
+        Number(f.cost.overflight || 0) +
+        Number(f.cost.navigation || 0) +
+        Number(f.cost.leasing || 0) +
+        Number(f.cost.salaries || 0) +
+        Number(f.cost.maintenance || 0) +
+        Number(f.cost.penalties || 0) +
+        Number(f.cost.used_aircraft_purchase || 0) +
+        Number(f.cost.new_aircraft_purchase || 0);
+
+      f.expenses = Math.round(totalCosts);
+      f.profit   = Math.round(Number(f.revenue || 0) - f.expenses);
+
+      window.ACS_Finance = f;
       window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+      console.log(
+        "%c💰 FINANCE PAYROLL SYNC FROM DEPARTMENT CONTROL",
+        "color:#00ffcc;font-weight:700",
+        f.cost.salaries
+      );
 
     } catch(err){
 
@@ -376,11 +344,12 @@ let ACS_FINANCE_SYNC_PENDING = false;
 
   }
 
+  // Initial sync
   ACS_FIN_applyLivePayrollAccrual();
 
+  // Live sync every time HR changes
   window.addEventListener("ACS_HR_UPDATED", () => {
-  ACS_FIN_applyLivePayrollAccrual();
-     
+    ACS_FIN_applyLivePayrollAccrual();
   });
 
 })();
@@ -613,26 +582,43 @@ function ACS_FIN_closeMonthIfNeeded(f, monthKey){
 
 function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
 
-  // Candado: 1 cargo por mes
-  const lockKey = "ACS_FIN_SALARY_CHARGED_MONTH";
-  
+  // Department Control / HR = única autoridad
+  if (typeof ACS_HR_getTotalPayroll !== "function") {
+    console.warn("MONTHLY PAYROLL CHARGE SKIPPED — HR authority not available");
+    return;
+  }
 
-  const payroll = 0;
-  if (payroll <= 0) {
-   
+  const payroll = Number(ACS_HR_getTotalPayroll());
+
+  if (!Number.isFinite(payroll) || payroll <= 0) {
+    console.warn("MONTHLY PAYROLL CHARGE SKIPPED — invalid payroll:", payroll);
     return;
   }
 
   // Registrar como costo salarial del mes
-  f.cost.salaries += payroll;
-  f.expenses      += payroll;
-  f.profit        -= payroll;
-  f.capital       -= payroll;
+  f.cost.salaries = Math.round(payroll);
+
+  // Rebuild total monthly expenses from canonical breakdown
+  const totalCosts =
+    Number(f.cost.fuel || 0) +
+    Number(f.cost.ground_handling || 0) +
+    Number(f.cost.slot_fees || 0) +
+    Number(f.cost.overflight || 0) +
+    Number(f.cost.navigation || 0) +
+    Number(f.cost.leasing || 0) +
+    Number(f.cost.salaries || 0) +
+    Number(f.cost.maintenance || 0) +
+    Number(f.cost.penalties || 0) +
+    Number(f.cost.used_aircraft_purchase || 0) +
+    Number(f.cost.new_aircraft_purchase || 0);
+
+  f.expenses = Math.round(totalCosts);
+  f.profit   = Math.round(Number(f.revenue || 0) - f.expenses);
 
   pushLog({
     type: "EXPENSE",
     source: "HR PAYROLL",
-    amount: payroll,
+    amount: Math.round(payroll),
     meta: { month: monthKey }
   });
 
