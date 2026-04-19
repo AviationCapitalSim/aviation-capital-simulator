@@ -1309,12 +1309,15 @@ function loadDepartments() {
 
   rows.innerHTML = "";
 
-   const HR = window.ACS_HR_SERVER_STATE;
+  const HR = window.ACS_HR_SERVER_STATE;
 
-  if (!HR || !Array.isArray(HR.departments)) {
+  if (!HR || typeof HR !== "object") {
   console.error("❌ HR STATE NOT READY");
   return;
-  }
+}
+
+// 🔥 Convertir objeto → array
+const depts = Object.values(HR);
 
   const depts = HR.departments;
      
