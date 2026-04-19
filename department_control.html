@@ -1311,13 +1311,16 @@ function loadDepartments() {
 
   const HR = window.ACS_HR_SERVER_STATE;
 
-  if (!HR || typeof HR !== "object") {
+if (!HR || typeof HR !== "object") {
   console.error("❌ HR STATE NOT READY");
   return;
 }
 
-// 🔥 Convertir objeto → array
-const depts = Object.values(HR);
+// ✅ Fuente canónica de orden y vista oficial del HR engine
+const depts =
+  (typeof ACS_HR_getDepartmentsView === "function")
+    ? ACS_HR_getDepartmentsView()
+    : Object.values(HR);
      
   if (!depts || !Array.isArray(depts)) {
     console.warn("⚠️ HR view vacío o inválido");
