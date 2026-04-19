@@ -1885,39 +1885,81 @@ try {
 
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
+/* ============================================================
+   🟦 A0 — DEPARTMENT CONTROL BOOTSTRAP (SESSION-FIRST FINAL)
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  const API_BASE = "https://api.aviationcapitalsim.com";
 
   try {
 
-    // 🔐 1. SESSION YA DEBE EXISTIR (vienes de Dashboard)
+    // ============================================================
+    // 🔐 1. SESSION FIRST (IGUAL QUE HR / FINANCE)
+    // ============================================================
 
-    // 🌐 2. SYNC REAL DESDE BACKEND
+    const res = await fetch(`${API_BASE}/v1/session`, {
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      throw new Error(`SESSION_HTTP_${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!data?.ok || !data?.user?.airline_id) {
+      throw new Error("INVALID_SESSION");
+    }
+
+    window.ACS_SERVER_SESSION = {
+      airline_id: data.user.airline_id,
+      user_id: data.user.user_id || null
+    };
+
+    console.log("✅ DEPT CONTROL SESSION OK", window.ACS_SERVER_SESSION);
+
+    // ============================================================
+    // 🌐 2. SYNC DESDE BACKEND
+    // ============================================================
+
     await ACS_HR_syncFromServer();
 
-    // 🧠 3. FORZAR OPS (NO TOCAR)
+    // ============================================================
+    // 🧠 3. OPS ENGINE (SI EXISTE)
+    // ============================================================
+
     if (typeof ACS_OPS_recalculateAllRequired === "function") {
-
-      console.log(
-        "%c🧠 INITIAL OPS REQUIRED CALC",
-        "color:#00ffcc;font-weight:700"
-      );
-
       ACS_OPS_recalculateAllRequired();
     }
 
-    // 🟢 4. RENDER (YA CON DATOS DEL SERVER)
+    // ============================================================
+    // 🖥️ 4. RENDER
+    // ============================================================
+
     loadDepartments();
     HR_updateKPI();
 
+    // ============================================================
     // 🕒 5. CLOCK
+    // ============================================================
+
     if (typeof updateClockDisplay === "function") {
       updateClockDisplay();
     }
 
   } catch (err) {
 
-    console.error("❌ DEPARTMENT CONTROL BOOT FAILED", err);
-    window.location.href = "login.html";
+    console.error("❌ DEPT CONTROL BOOT FAILED", err);
+
+    // 🔴 SOLO REDIRECT SI ES SESIÓN REALMENTE INVÁLIDA
+    if (
+      err.message.includes("401") ||
+      err.message.includes("INVALID_SESSION")
+    ) {
+      window.location.href = "login.html";
+    }
 
   }
 
