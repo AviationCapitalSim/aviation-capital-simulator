@@ -1063,85 +1063,96 @@ setTimeout(() => {
 console.info("🛑 HR LOCAL AUTO-BOOTSTRAP DISABLED — WAITING FOR SERVER STATE");
 
 /* ============================================================
-   🟢 HR SERVER LOAD — REAL BACKEND CONNECTION
+   🟢 HR SERVER LOAD — WAIT FOR SESSION (FIX FINAL)
    ============================================================ */
 
-setTimeout(async () => {
+async function ACS_HR_waitForSessionAndLoad(){
 
-  try {
+  let attempts = 0;
+
+  while (attempts < 20) {
 
     const airlineId =
       window.ACS_SERVER_SESSION?.airline_id ||
       window.ACS_activeUser?.airline_id;
 
-    console.log("HR LOAD → airlineId:", airlineId);
+    if (airlineId) {
 
-    if (!airlineId) {
-      console.warn("⛔ HR LOAD ABORTED — No airlineId");
-      return;
-    }
+      console.log("HR LOAD → airlineId:", airlineId);
 
-    const res = await fetch(
-      `https://api.aviationcapitalsim.com/v1/hr/departments/${airlineId}`,
-      {
-        credentials: "include"
+      try {
+
+        const res = await fetch(
+          `https://api.aviationcapitalsim.com/v1/hr/departments/${airlineId}`,
+          {
+            credentials: "include"
+          }
+        );
+
+        if (!res.ok) {
+          console.warn("HR SERVER LOAD HTTP ERROR", res.status);
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!data?.ok || !Array.isArray(data.departments)) {
+          console.warn("HR SERVER LOAD INVALID DATA", data);
+          return;
+        }
+
+        const HR = {};
+
+        data.departments.forEach(dep => {
+
+          if (!dep?.dept_id) return;
+
+          HR[dep.dept_id] = {
+            id: dep.dept_id,
+            name: dep.dept_name,
+            base: dep.base_role,
+            staff: Number(dep.staff || 0),
+            required: Number(dep.required || 0),
+            morale: Number(dep.morale || 100),
+            salary: Number(dep.salary || 0),
+            payroll: Number(dep.payroll || 0),
+            bonus: Number(dep.bonus || 0),
+            years: Number(dep.years || 0)
+          };
+
+        });
+
+        window.ACS_HR_SERVER_STATE = HR;
+
+        console.log(
+          "%c🟢 HR LOADED FROM RAILWAY",
+          "color:#00ffcc;font-weight:800",
+          HR
+        );
+
+        window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+
+        return;
+
+      } catch(err){
+        console.warn("HR SERVER LOAD FAILED", err);
+        return;
       }
-    );
 
-    if (!res.ok) {
-      console.warn("HR SERVER LOAD HTTP ERROR", res.status);
-      return;
     }
 
-    const data = await res.json();
-
-    if (!data?.ok || !Array.isArray(data.departments)) {
-      console.warn("HR SERVER LOAD INVALID DATA", data);
-      return;
-    }
-
-    const HR = {};
-
-    data.departments.forEach(dep => {
-
-      if (!dep?.dept_id) return;
-
-      HR[dep.dept_id] = {
-        id: dep.dept_id,
-        name: dep.dept_name,
-        base: dep.base_role,
-
-        staff: Number(dep.staff || 0),
-        required: Number(dep.required || 0),
-        morale: Number(dep.morale || 100),
-
-        salary: Number(dep.salary || 0),
-        payroll: Number(dep.payroll || 0),
-
-        bonus: Number(dep.bonus || 0),
-        years: Number(dep.years || 0)
-      };
-
-    });
-
-    window.ACS_HR_SERVER_STATE = HR;
-
-    console.log(
-      "%c🟢 HR LOADED FROM RAILWAY",
-      "color:#00ffcc;font-weight:800",
-      HR
-    );
-
-    // 🔥 DISPARA FINANCE
-    window.dispatchEvent(new Event("ACS_HR_UPDATED"));
-
-  } catch(err) {
-
-    console.warn("HR SERVER LOAD FAILED", err);
+    // ⏳ esperar 300ms y reintentar
+    await new Promise(r => setTimeout(r, 300));
+    attempts++;
 
   }
 
-}, 1200);
+  console.warn("⛔ HR LOAD FAILED — session never ready");
+
+}
+
+// 🚀 ejecutar
+ACS_HR_waitForSessionAndLoad();
 
 /* ============================================================
    🟧 AUTO HIRE EXECUTION ON HR INIT
