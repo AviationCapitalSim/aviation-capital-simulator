@@ -195,7 +195,7 @@ async function ACS_FINANCE_syncFromServer(){
         overflight: Number(f.cost_overflight || 0),
         navigation: Number(f.cost_navigation || 0),
         leasing: Number(f.cost_leasing || 0),
-        salaries: Number(window.ACS_Finance?.cost?.salaries || 0),
+        salaries: 0,
         maintenance: Number(f.cost_maintenance || 0),
         penalties: Number(f.cost_other || 0),
         used_aircraft_purchase: 0,
@@ -228,6 +228,54 @@ async function ACS_FINANCE_syncFromServer(){
       console.warn("LOG SYNC FAILED", err);
     }
 
+    // ============================================================
+    // ✈️ OCC REBUILD — HR IS CANONICAL AUTHORITY FOR SALARIES
+    // ============================================================
+
+    if (typeof ACS_HR_getTotalPayroll === "function") {
+
+      const payroll = Math.round(Number(ACS_HR_getTotalPayroll()) || 0);
+      const liveFinance = window.ACS_Finance;
+
+      if (liveFinance && liveFinance.cost) {
+
+        liveFinance.cost.salaries = payroll;
+
+        const totalCosts =
+          Number(liveFinance.cost.fuel || 0) +
+          Number(liveFinance.cost.ground_handling || 0) +
+          Number(liveFinance.cost.slot_fees || 0) +
+          Number(liveFinance.cost.overflight || 0) +
+          Number(liveFinance.cost.navigation || 0) +
+          Number(liveFinance.cost.leasing || 0) +
+          Number(liveFinance.cost.salaries || 0) +
+          Number(liveFinance.cost.maintenance || 0) +
+          Number(liveFinance.cost.penalties || 0) +
+          Number(liveFinance.cost.used_aircraft_purchase || 0) +
+          Number(liveFinance.cost.new_aircraft_purchase || 0);
+
+        liveFinance.expenses = Math.round(totalCosts);
+        liveFinance.profit   = Math.round(Number(liveFinance.revenue || 0) - liveFinance.expenses);
+        liveFinance.capital  = Math.round(Number(f.capital || 0) - payroll);
+
+        window.ACS_Finance = liveFinance;
+
+        console.log(
+          "%c✈️ OCC FINANCE REBUILT WITH HR",
+          "color:#00ffcc;font-weight:700",
+          {
+            salaries: liveFinance.cost.salaries,
+            expenses: liveFinance.expenses,
+            profit: liveFinance.profit,
+            capital: liveFinance.capital
+          }
+        );
+      }
+
+    } else {
+      console.warn("OCC FINANCE REBUILD SKIPPED — ACS_HR_getTotalPayroll not found");
+    }
+
     window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
 
   } catch(err) {
@@ -237,7 +285,6 @@ async function ACS_FINANCE_syncFromServer(){
   }
 
 }
-
 
 /* ============================================================
    🚀 AUTO BOOT — SESSION WATCHER (REAL, NO PATCH)
