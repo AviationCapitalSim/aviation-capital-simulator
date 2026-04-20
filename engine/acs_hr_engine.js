@@ -1050,10 +1050,6 @@ const res = await fetch(
 
 }
 
-// 🔄 HR SERVER BOOT (NO BLOQUEA TIME ENGINE)
-setTimeout(() => {
-  ACS_HR_loadFromServer();
-}, 800);
 
 /* ============================================================
    🛑 HR LOCAL AUTO-BOOTSTRAP DISABLED
