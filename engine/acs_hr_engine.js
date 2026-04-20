@@ -984,7 +984,9 @@ async function ACS_HR_loadFromServer(){
 
   try {
 
-  const airlineId = window.ACS_SESSION?.airline_id;
+  const airlineId =
+  window.ACS_SERVER_SESSION?.airline_id ||
+  window.ACS_activeUser?.airline_id;
 
 const res = await fetch(
   `https://api.aviationcapitalsim.com/v1/hr/departments/${airlineId}`,
