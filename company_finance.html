@@ -1221,12 +1221,19 @@ function loadLeasing() {
    ============================================================ */
      
 function updateClockDisplay(simTime){
+
   const el = document.getElementById("acs-clock");
   if(!el) return;
 
+  // ⛔ NO FALLBACK — SOLO TIEMPO DEL SIMULADOR
+  if(!(simTime instanceof Date)){
+    console.warn("⛔ CLOCK BLOCKED — NO SIM TIME");
+    return;
+  }
+
   window.ACS_CurrentSimDate = simTime;
 
-  const d = simTime instanceof Date ? simTime : new Date();
+  const d = simTime;
 
   const weekday = d
     .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
@@ -1243,7 +1250,6 @@ function updateClockDisplay(simTime){
 
   el.textContent = `${hh}:${mm} — ${weekday} ${day} ${month} ${year}`;
 }
-
      
 /* ============================================================
    🟦 A0 — DEPARTMENT CONTROL BOOTSTRAP (SESSION FIRST)
