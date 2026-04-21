@@ -1221,19 +1221,12 @@ function loadLeasing() {
    ============================================================ */
      
 function updateClockDisplay(simTime){
-
   const el = document.getElementById("acs-clock");
   if(!el) return;
 
-  // ⛔ NO FALLBACK — SOLO TIEMPO DEL SIMULADOR
-  if(!(simTime instanceof Date)){
-    console.warn("⛔ CLOCK BLOCKED — NO SIM TIME");
-    return;
-  }
-
   window.ACS_CurrentSimDate = simTime;
 
-  const d = simTime;
+  const d = simTime instanceof Date ? simTime : new Date();
 
   const weekday = d
     .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
