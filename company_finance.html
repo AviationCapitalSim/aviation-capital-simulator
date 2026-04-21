@@ -1226,7 +1226,7 @@ function updateClockDisplay(simTime){
 
   window.ACS_CurrentSimDate = simTime;
 
-  const d = simTime instanceof Date ? simTime : new Date();
+ 
 
   const weekday = d
     .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
@@ -1243,6 +1243,28 @@ function updateClockDisplay(simTime){
 
   el.textContent = `${hh}:${mm} — ${weekday} ${day} ${month} ${year}`;
 }
+
+/* ============================================================
+   🟢 FIX — TIME ENGINE HOOK (CRÍTICO)
+   ============================================================ */
+
+(function ACS_bindClock(){
+
+  if (typeof registerTimeListener === "function") {
+
+    console.log("🟢 FINANCE CLOCK CONNECTED TO TIME ENGINE");
+
+    registerTimeListener((simDate)=>{
+      updateClockDisplay(simDate);
+    });
+
+  } else {
+
+    console.warn("⚠️ TIME ENGINE NOT READY (registerTimeListener missing)");
+
+  }
+
+})();
      
 /* ============================================================
    🟦 A0 — DEPARTMENT CONTROL BOOTSTRAP (SESSION FIRST)
