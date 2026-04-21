@@ -1225,13 +1225,11 @@ function updateClockDisplay(simTime){
   const el = document.getElementById("acs-clock");
   if(!el) return;
 
-  // 🔴 BLOQUEAR SI NO HAY TIEMPO REAL DEL SIM
+  // 🟡 IGNORAR llamadas vacías (NO romper, NO log spam)
   if(!(simTime instanceof Date)){
-    console.warn("⛔ CLOCK BLOCKED — NO SIM TIME");
     return;
   }
 
-  // 🟢 DEFINICIÓN CORRECTA
   const d = simTime;
 
   window.ACS_CurrentSimDate = d;
