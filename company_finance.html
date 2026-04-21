@@ -1221,12 +1221,20 @@ function loadLeasing() {
    ============================================================ */
      
 function updateClockDisplay(simTime){
+
   const el = document.getElementById("acs-clock");
   if(!el) return;
 
-  window.ACS_CurrentSimDate = simTime;
+  // 🔴 BLOQUEAR SI NO HAY TIEMPO REAL DEL SIM
+  if(!(simTime instanceof Date)){
+    console.warn("⛔ CLOCK BLOCKED — NO SIM TIME");
+    return;
+  }
 
- 
+  // 🟢 DEFINICIÓN CORRECTA
+  const d = simTime;
+
+  window.ACS_CurrentSimDate = d;
 
   const weekday = d
     .toLocaleString("en-US", { weekday: "short", timeZone: "UTC" })
@@ -1243,7 +1251,7 @@ function updateClockDisplay(simTime){
 
   el.textContent = `${hh}:${mm} — ${weekday} ${day} ${month} ${year}`;
 }
-
+     
 /* ============================================================
    🟢 FIX — TIME ENGINE HOOK (CRÍTICO)
    ============================================================ */
