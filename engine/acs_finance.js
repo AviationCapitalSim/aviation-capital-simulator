@@ -256,7 +256,11 @@ async function ACS_FINANCE_syncFromServer(){
 
         liveFinance.expenses = Math.round(totalCosts);
         liveFinance.profit   = Math.round(Number(liveFinance.revenue || 0) - liveFinance.expenses);
-        liveFinance.capital  = Math.round(Number(f.capital || 0) - payroll);
+        
+         // ❌ NO recalcular capital aquí
+        // capital es autoridad del servidor
+
+        liveFinance.capital = Math.round(Number(f.capital || 0));
 
         window.ACS_Finance = liveFinance;
 
@@ -660,14 +664,20 @@ function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
     Number(f.cost.new_aircraft_purchase || 0);
 
   f.expenses = Math.round(totalCosts);
-  f.profit   = Math.round(Number(f.revenue || 0) - f.expenses);
+f.profit   = Math.round(Number(f.revenue || 0) - f.expenses);
 
-  pushLog({
-    type: "EXPENSE",
-    source: "HR PAYROLL",
-    amount: Math.round(payroll),
-    meta: { month: monthKey }
-  });
+pushLog({
+  type: "EXPENSE",
+  source: "HR PAYROLL",
+  amount: Math.round(payroll),
+  meta: { month: monthKey }
+});
+
+// ============================================================
+// 💰 OCC — MONTHLY CAPITAL IMPACT (CRÍTICO)
+// ============================================================
+
+f.capital = Math.round(Number(f.capital || 0) - payroll);
 
 }
 
