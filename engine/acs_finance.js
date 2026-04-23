@@ -631,7 +631,7 @@ function ACS_FIN_closeMonthIfNeeded(f, monthKey){
   f.current_month = monthKey;
 }
 
-function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
+async function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
 
   // Department Control / HR = única autoridad
   if (typeof ACS_HR_getTotalPayroll !== "function") {
@@ -646,38 +646,48 @@ function ACS_FIN_applyMonthlyPayrollCharge(f, monthKey){
     return;
   }
 
-  // Registrar como costo salarial del mes
-  f.cost.salaries = Math.round(payroll);
+  try {
 
-  // Rebuild total monthly expenses from canonical breakdown
-  const totalCosts =
-    Number(f.cost.fuel || 0) +
-    Number(f.cost.ground_handling || 0) +
-    Number(f.cost.slot_fees || 0) +
-    Number(f.cost.overflight || 0) +
-    Number(f.cost.navigation || 0) +
-    Number(f.cost.leasing || 0) +
-    Number(f.cost.salaries || 0) +
-    Number(f.cost.maintenance || 0) +
-    Number(f.cost.penalties || 0) +
-    Number(f.cost.used_aircraft_purchase || 0) +
-    Number(f.cost.new_aircraft_purchase || 0);
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/finance/payroll",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          month_key: monthKey,
+          amount: Math.round(payroll)
+        })
+      }
+    );
 
-  f.expenses = Math.round(totalCosts);
-f.profit   = Math.round(Number(f.revenue || 0) - f.expenses);
+    const data = await res.json();
 
-pushLog({
-  type: "EXPENSE",
-  source: "HR PAYROLL",
-  amount: Math.round(payroll),
-  meta: { month: monthKey }
-});
+    if (!data?.ok) {
+      console.warn("MONTHLY PAYROLL BACKEND FAILED", data);
+      return;
+    }
 
-// ============================================================
-// 💰 OCC — MONTHLY CAPITAL IMPACT (CRÍTICO)
-// ============================================================
+    if (data.already_applied) {
+      console.log("📌 MONTHLY PAYROLL ALREADY APPLIED:", monthKey);
+    } else {
+      console.log("✅ MONTHLY PAYROLL APPLIED IN BACKEND:", {
+        monthKey,
+        payroll: Math.round(payroll)
+      });
+    }
 
-f.capital = Math.round(Number(f.capital || 0) - payroll);
+    await ACS_FINANCE_syncFromServer();
+
+    window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+  } catch(err){
+
+    console.warn("MONTHLY PAYROLL REQUEST FAILED", err);
+
+  }
 
 }
 
@@ -689,7 +699,7 @@ if (typeof registerTimeListener === "function") {
 
   let __FIN_lastMonthKey = null;
 
-  registerTimeListener((time) => {
+  registerTimeListener(async (time) => {
 
     if (!time || typeof time.getTime !== "function") return;
 
@@ -705,16 +715,21 @@ if (typeof registerTimeListener === "function") {
     if (monthKey !== __FIN_lastMonthKey) {
 
       const f = window.ACS_Finance;
-      if (!f) return;
+      if (!f) {
+        __FIN_lastMonthKey = monthKey;
+        return;
+      }
 
-      // 1) Cerrar/abrir mes en Finance (live)
+      const previousMonthKey = __FIN_lastMonthKey;
+
+      // 1) cerrar mes anterior (solo UI / histórico)
       ACS_FIN_closeMonthIfNeeded(f, monthKey);
-
-      // 2) Aplicar cargo salarial para el nuevo mes
-      ACS_FIN_applyMonthlyPayrollCharge(f, monthKey);
 
       window.ACS_Finance = f;
       window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+
+      // 2) aplicar payroll REAL en backend (mes anterior)
+      await ACS_FIN_applyMonthlyPayrollCharge(f, previousMonthKey);
 
       __FIN_lastMonthKey = monthKey;
     }
@@ -740,8 +755,8 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   const eco = e.detail;
   if (!eco || !eco.eventId) return;
 
-if(ACS_FIN_EVENT_DEDUP.has(eco.eventId)) return;
-ACS_FIN_EVENT_DEDUP.add(eco.eventId);
+  if(ACS_FIN_EVENT_DEDUP.has(eco.eventId)) return;
+  ACS_FIN_EVENT_DEDUP.add(eco.eventId);
    
   /* ============================================================
      REGISTER INCOME
@@ -774,3 +789,4 @@ ACS_FIN_EVENT_DEDUP.add(eco.eventId);
 });
      
 })();
+
