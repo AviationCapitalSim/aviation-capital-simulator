@@ -823,13 +823,6 @@ document.addEventListener("DOMContentLoaded", () => {
   ACS_updateCapitalColor();
 });
 
-/* === Activar cambio en tiempo real si cambia ACS_Finance === */
-window.addEventListener("storage", (e) => {
-  if (e.key === "ACS_Finance") {
-    ACS_updateCapitalColor();
-  }
-});
-
 /* ============================================================
    === CAPITAL UI COLOR — NEGATIVE RED =========================
    ============================================================ */
@@ -1158,13 +1151,6 @@ function loadBreakdown() {
 
   // 🔥 Evento financiero real (MISMA PESTAÑA)
   window.addEventListener("ACS_FINANCE_UPDATED", refreshAll);
-
-  // 🟡 Fallback multi-tab (solo si cambia otra pestaña)
-  window.addEventListener("storage", (e) => {
-    if (e.key === "ACS_Finance" || e.key === "ACS_Log") {
-      refreshAll();
-    }
-  });
 
 })();
 
