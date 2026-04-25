@@ -228,6 +228,12 @@ async function ACS_FINANCE_syncFromServer(){
       console.warn("LOG SYNC FAILED", err);
     }
 
+    } catch (err) {
+
+     console.warn("FINANCE SYNC FAILED", err);
+
+   }   
+   
 /* ============================================================
    🚀 AUTO BOOT — SESSION WATCHER (REAL, NO PATCH)
    ============================================================ */
