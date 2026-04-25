@@ -654,11 +654,5 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   });
 
 });
-     
-} catch (err) {
-
-  console.error("❌ ACS FINANCE ENGINE FATAL ERROR", err);
-
-}
 
 })();
