@@ -1058,6 +1058,14 @@ function loadBreakdown() {
     });
   });
 
+  // 🔥 OVERRIDE REAL — SALARIES DESDE HR (AUTORIDAD)
+  if (typeof ACS_HR_getTotalPayroll === "function") {
+  categories.push({
+    label: "salaries",
+    value: Number(ACS_HR_getTotalPayroll() || 0)
+  });
+  }
+     
   // LOANS
   const loans = Array.isArray(f.bank?.loans) ? f.bank.loans : [];
   const totalLoans = loans.reduce((s,l)=>s + Number(l?.remaining || 0),0);
