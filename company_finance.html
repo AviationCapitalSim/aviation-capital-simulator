@@ -708,7 +708,11 @@ function ACS_money(v){
      
 function updateCompanyOverview() {
 
-  const f = window.ACS_Finance || {};
+  const f = window.ACS_Finance;
+  if (!f) {
+  console.error("❌ Finance not loaded (updateCompanyOverview)");
+  return;
+  }
 
   // 🔧 SAFE NUMBERS
   const capital  = Number(f.capital)  || 0;
@@ -812,7 +816,9 @@ function ACS_updateProfitColor() {
   const el = document.getElementById("cf-profit");
   if (!el) return;
 
-  const f = window.ACS_Finance || {};
+  const f = window.ACS_Finance;
+  if (!f) return;
+     
   const profit = Number(f.profit || 0);
 
   el.style.color = profit < 0 ? "#ff4d4d" : "#00ff80";
@@ -832,7 +838,9 @@ function ACS_updateCapitalColor() {
   const el = document.getElementById("cf-capital");
   if (!el) return;
 
-  const f = window.ACS_Finance || {};
+  const f = window.ACS_Finance;
+  if (!f) return;
+     
   const capital = Number(f.capital || 0);
 
   el.style.color = capital < 0 ? "#ff4d4d" : "#00ff80";
@@ -1010,7 +1018,12 @@ function ACS_toggleGroup(header){
 
 function loadBreakdown() {
 
-  const f = window.ACS_Finance || {};
+  const f = window.ACS_Finance;
+  if (!f) {
+  console.error("❌ Finance not loaded (loadBreakdown)");
+  return;
+  }
+     
   const grid = document.getElementById("breakdownGrid");
   if (!grid) return;
 
@@ -1083,7 +1096,8 @@ function loadBreakdown() {
 
   try{
 
-    const f = window.ACS_Finance || {};
+    const f = window.ACS_Finance;
+    if (!f) return;
 
     const loans =
       Array.isArray(f.bank?.loans)
@@ -1165,7 +1179,8 @@ function loadLeasing() {
 
   container.innerHTML = "";
 
-  const f = window.ACS_Finance || {};
+  const f = window.ACS_Finance;
+  if (!f) return;
 
   const leasingContracts =
     Array.isArray(f.leasing?.contracts)
