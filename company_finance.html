@@ -1023,18 +1023,9 @@ function loadBreakdown() {
 
   grid.innerHTML = "";
 
-  // 🔥 FALLBACK: si Railway no trae detalle, usar local cache
-  let cost = f.cost;
-  let income = f.income;
-
-  if(!cost || Object.keys(cost).length === 0){
-    try{
-      const local = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-      cost = local.cost || {};
-      income = local.income || {};
-    }catch{}
-  }
-
+  let cost = f.cost || {};
+  let income = f.income || {};
+     
   const categories = [];
 
   // INCOME
@@ -1352,21 +1343,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 });
      
-/* ============================================================
-   === FINANCE UI LIVE REFRESH — FIX v1.0 =====================
-   ============================================================ */
-
-function ACS_subscribeFinanceUIRefresh() {
-  window.addEventListener("storage", (e) => {
-    if (e.key === "ACS_Finance" || e.key === "ACS_Log") {
-      updateCompanyOverview();
-      loadBreakdown();
-      loadTransactionLog();
-  
-    }
-  });
-}
-
 function handleLogout(){
   window.location.href="login.html";
 }
