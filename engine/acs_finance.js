@@ -207,7 +207,9 @@ async function ACS_FINANCE_syncFromServer(){
     };
 
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
-
+   
+     window.dispatchEvent(new Event("ACS_FINANCE_UPDATED"));
+     
        try {
 
       const logRes = await fetch(
