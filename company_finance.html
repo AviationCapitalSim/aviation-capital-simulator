@@ -1333,34 +1333,6 @@ function handleLogout(){
   window.location.href="login.html";
 }
      
-/* ============================================================
-   ⛔ DISABLED — LIVE REFRESH (same-tab)
-   ------------------------------------------------------------
-   • Reemplazado por eventos reales
-   ============================================================ */
-
-/*
-(function ACS_liveFinanceUI(){
-  let lastFinanceStr = null;
-  let lastLogStr = null;
-
-  setInterval(() => {
-    const fStr = localStorage.getItem("ACS_Finance") || "";
-    const lStr = localStorage.getItem("ACS_Log") || "";
-
-    if (fStr !== lastFinanceStr || lStr !== lastLogStr) {
-      lastFinanceStr = fStr;
-      lastLogStr = lStr;
-
-      updateCompanyOverview();
-      loadBreakdown();
-      loadTransactionLog(
-      loadLeasing();
-    }
-  }, 700);
-})();
-*/
-
      
 </script>
      
