@@ -656,8 +656,6 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
       distanceNM: eco.distanceNM
     }
   });
-
-});
      
 })();
 
