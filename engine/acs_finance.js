@@ -208,7 +208,7 @@ async function ACS_FINANCE_syncFromServer(){
 
     console.log("🌍 FINANCE SYNC FROM RAILWAY OK");
 
-    try {
+       try {
 
       const logRes = await fetch(
         "https://api.aviationcapitalsim.com/v1/finance/log",
@@ -228,11 +228,11 @@ async function ACS_FINANCE_syncFromServer(){
       console.warn("LOG SYNC FAILED", err);
     }
 
-    } catch (err) {
+  } catch (err) {
+    console.warn("FINANCE SYNC FAILED", err);
+  }
 
-     console.warn("FINANCE SYNC FAILED", err);
-
-   }   
+}
    
 /* ============================================================
    🚀 AUTO BOOT — SESSION WATCHER (REAL, NO PATCH)
