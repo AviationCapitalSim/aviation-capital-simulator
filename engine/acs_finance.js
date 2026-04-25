@@ -629,10 +629,6 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
   if(ACS_FIN_EVENT_DEDUP.has(eco.eventId)) return;
   ACS_FIN_EVENT_DEDUP.add(eco.eventId);
    
-  /* ============================================================
-     REGISTER INCOME
-     ============================================================ */
-
   window.ACS_registerIncome({
     type: "FLIGHT",
     source: `FLIGHT ${eco.origin} → ${eco.destination}`,
@@ -656,6 +652,8 @@ window.addEventListener("ACS_FLIGHT_ECONOMICS", e => {
       distanceNM: eco.distanceNM
     }
   });
+
+});
      
 } catch (err) {
 
