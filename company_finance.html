@@ -914,7 +914,12 @@ async function loadTransactionLog() {
 
       entries.forEach(entry => {
 
-        const key = entry.source || "UNKNOWN";
+        let key = entry.source || "UNKNOWN";
+
+     // 🔥 AGRUPAR TODOS LOS PAYROLL COMO UNO SOLO
+     if (key.startsWith("HR_PAYROLL")) {
+     key = "HR PAYROLL";
+     }
 
         if (!grouped[key]) {
           grouped[key] = {
