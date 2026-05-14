@@ -983,24 +983,37 @@ function __OPS_registerMonthlyListener_SAFE() {
 __OPS_registerMonthlyListener_SAFE();
 
 /* ============================================================
-   🟦 PHASE B — DELAY ENGINE + OPERATIONAL IMPACT CORE
+   🟦 OPS IMPACT STATE — NO LOCALSTORAGE
    ------------------------------------------------------------
-   • Activa delays si déficit persiste >= 4 semanas
-   • Penaliza eficiencia y revenue (sin accidentes)
-   • Integración pasiva con Observer / SkyTrack
+   Date: 15 MAY 2026
+   • Runtime memory only
+   • NO localStorage
+   • Tracks operational impact during active session
+   • Backend persistence can be added later
    ============================================================ */
 
-// Storage de impacto operacional
+window.ACS_OPS_IMPACT_STATE =
+  window.ACS_OPS_IMPACT_STATE || {};
+
 function ACS_OPS_loadImpactState() {
-  return JSON.parse(localStorage.getItem("ACS_OPS_IMPACTS") || "{}");
+
+  if (!window.ACS_OPS_IMPACT_STATE) {
+    window.ACS_OPS_IMPACT_STATE = {};
+  }
+
+  return window.ACS_OPS_IMPACT_STATE;
+
 }
 
 function ACS_OPS_saveImpactState(state) {
-  localStorage.setItem("ACS_OPS_IMPACTS", JSON.stringify(state));
-}
 
-if (!localStorage.getItem("ACS_OPS_IMPACTS")) {
-  ACS_OPS_saveImpactState({});
+  window.ACS_OPS_IMPACT_STATE =
+    state && typeof state === "object"
+      ? state
+      : {};
+
+  return window.ACS_OPS_IMPACT_STATE;
+
 }
 
 /* ============================================================
