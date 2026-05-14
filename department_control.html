@@ -1736,44 +1736,54 @@ function handleLogout() {
 }
      
 /* ============================================================
-   🟦 HR RAILWAY SYNC — ACS ENGINE COMPATIBLE (FIXED)
+   🟦 HR BACKEND SYNC — ACS API CANONICAL
+   ------------------------------------------------------------
+   • API oficial: https://api.aviationcapitalsim.com
+   • NO Railway direct URL
+   • NO localStorage fallback
+   • Session cookie required
+   • Railway/PostgreSQL remains authority
    ============================================================ */
 
 async function ACS_HR_syncFromServer() {
 
+  const API_BASE = "https://api.aviationcapitalsim.com";
+
   try {
 
-    // ============================================================
-// 🔐 AIRLINE ID RESOLUTION — CANONICAL
-// ============================================================
+    const airlineId = window.ACS_SERVER_SESSION?.airline_id;
 
-const airlineId = window.ACS_SERVER_SESSION?.airline_id;
+    if (!airlineId) {
+      console.error("❌ HR SYNC FAILED — NO AIRLINE ID IN SESSION");
+      return false;
+    }
 
-if (!airlineId) {
-  console.error("❌ NO AIRLINE ID — SESSION INVALID");
-  window.location.href = "login.html";
-  return;
-}
-
-console.log("🧭 HR SYNC USING AIRLINE:", airlineId);
+    console.log("🧭 HR SYNC USING AIRLINE:", airlineId);
 
     const res = await fetch(
-      `https://acs-world-server-production.up.railway.app/v1/hr/departments/${airlineId}`
+      `${API_BASE}/v1/hr/departments/${airlineId}`,
+      {
+        method: "GET",
+        credentials: "include"
+      }
     );
 
     if (!res.ok) {
-      console.warn("⚠️ HR SYNC FAILED — API error");
-      return;
+      console.warn("⚠️ HR SYNC FAILED — API HTTP:", res.status);
+      return false;
     }
 
     const data = await res.json();
 
-    if (!data.ok || !Array.isArray(data.departments)) {
-      console.warn("⚠️ HR SYNC FAILED — invalid response");
-      return;
+    if (!data?.ok || !Array.isArray(data.departments)) {
+      console.warn("⚠️ HR SYNC FAILED — invalid response", data);
+      return false;
     }
 
-    const year = window.ACS_getYear ? ACS_getYear() : 1940;
+    const year =
+      (typeof ACS_getYear === "function")
+        ? ACS_getYear()
+        : 1940;
 
     const hr = {};
 
@@ -1786,104 +1796,57 @@ console.log("🧭 HR SYNC USING AIRLINE:", airlineId);
         return;
       }
 
-      const salary = ACS_HR_getBaseSalary(year, meta.base);
+      const salary =
+        Number(dep.salary || 0) > 0
+          ? Number(dep.salary)
+          : ACS_HR_getBaseSalary(year, meta.base);
+
+      const staff = Number(dep.staff || 0);
 
       hr[meta.id] = {
+        id: meta.id,
+        name: meta.name,
+        base: meta.base,
+        role: meta.base,
 
-  id: meta.id,
-  name: meta.name,
-  role: meta.base,
+        staff: staff,
+        required: Number(dep.required || 0),
+        morale: Number(dep.morale || 100),
 
-  staff: Number(dep.staff || 0),
+        salary: salary,
+        payroll: Math.round(staff * salary),
 
-  required: Number(dep.required || meta.required || 0),
+        years: Number(dep.years || 0),
+        bonus: Number(dep.bonus || 0)
+      };
 
-  morale: Number(dep.morale || 100),
-
-  years: 0,
-  bonus: 0,
-
-  // ============================================================
-// 💰 SALARIO HISTÓRICO — CALCULADO POR EL MOTOR HR
-// ============================================================
-
-salary: ACS_HR_getBaseSalary(year, meta.base),
-
-// Payroll siempre recalculado por HR engine
-payroll: 0
-           
-};
     });
 
-    // 🔐 GUARDAR ESTADO HR
-    ACS_HR_save(hr);
-
-    // 🔐 ESTADO SERVER AUTORIDAD
     window.ACS_HR_SERVER_STATE = hr;
 
-// ============================================================
-// 🧠 HR HISTORICAL SALARY ENGINE
-// ============================================================
+    if (typeof ACS_HR_save === "function") {
+      ACS_HR_save(hr);
+    }
 
-ACS_HR_applyHistoricalSalaries();
-ACS_HR_recalculateAll();
-
-/* ============================================================
-   🌐 PUSH HR PAYROLL TO SERVER (INITIAL SYNC)
-============================================================ */
-
-try {
-
-  const airlineId =
-    window.ACS_SERVER_SESSION?.airline_id ||
-    JSON.parse(localStorage.getItem("ACS_activeUser") || "{}")?.airline_id;
-
-  Object.values(hr).forEach(dep => {
-
-    fetch(
-      "https://acs-world-server-production.up.railway.app/v1/hr/staff",
-      {
-        method:"PATCH",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-
-          airline_id: airlineId,
-          dept_id: dep.id,
-          staff: dep.staff,
-          morale: dep.morale,
-          salary: dep.salary,
-          payroll: dep.staff * dep.salary
-
-        })
-      }
-    );
-
-  });
-
-  console.log("%c🌍 HR INITIAL PAYROLL SYNC OK","color:#00ffcc");
-
-} catch(e){
-
-  console.warn("HR INITIAL PAYROLL SYNC FAILED",e);
-
-}
-
-     
-    // 🔄 RECALCULAR ENGINE
     if (typeof ACS_HR_recalculateAll === "function") {
       ACS_HR_recalculateAll();
     }
 
     console.log(
-      "%c🌐 HR SYNC SUCCESS",
+      "%c🌐 HR SYNC SUCCESS — API CANONICAL",
       "color:#00ffcc;font-weight:700",
       Object.keys(hr).length,
       "departments synced"
     );
 
+    window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+
+    return true;
+
   } catch (err) {
 
     console.warn("⚠️ HR SYNC ERROR:", err);
+    return false;
 
   }
 
