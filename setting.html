@@ -422,160 +422,201 @@ if (localStorage.getItem("ACS_NewCycle") === "true") {
 </script>
 
 <!-- MASTER RESET ENGINE -->
+  
 <script src="engine/acs_master_reset.js"></script>
 
 <script>
+  
 /* ========== UTIL MODAL ========== */
+  
 function openSaveModal(title, msg){
   document.getElementById("saveModalTitle").textContent = title;
   document.getElementById("saveModalMessage").textContent = msg;
   document.getElementById("saveModal").style.display = "flex";
 }
+
 function closeSaveModal(){
   document.getElementById("saveModal").style.display = "none";
 }
 
 /* ========== LOGOUT ========== */
+  
 function handleLogout(){
-  alert("👋 Session closed. See you soon, Captain!");
+  alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
 
-/* ========== LOAD SETTINGS AL ENTRAR ========== */
-  
+/* ============================================================
+   🟦 ACS COMPANY SETTINGS — RUNTIME AUTHORITY v1.0
+   ------------------------------------------------------------
+   • NO localStorage for Company Settings
+   • Keeps Auto Hire / Auto Salary as real game features
+   • Settings page controls runtime state
+   • Next phase: persist this object in Railway/PostgreSQL
+   ============================================================ */
+
+window.ACS_COMPANY_SETTINGS =
+  window.ACS_COMPANY_SETTINGS || {
+    autoHire: true,
+    autoSalary: true,
+    manualSalaryOverride: false
+  };
+
+function ACS_getCompanySettings() {
+
+  if (!window.ACS_COMPANY_SETTINGS) {
+    window.ACS_COMPANY_SETTINGS = {
+      autoHire: true,
+      autoSalary: true,
+      manualSalaryOverride: false
+    };
+  }
+
+  return window.ACS_COMPANY_SETTINGS;
+
+}
+
+function ACS_setCompanySettings(nextSettings) {
+
+  const current = ACS_getCompanySettings();
+
+  window.ACS_COMPANY_SETTINGS = {
+    autoHire:
+      typeof nextSettings?.autoHire === "boolean"
+        ? nextSettings.autoHire
+        : current.autoHire,
+
+    autoSalary:
+      typeof nextSettings?.autoSalary === "boolean"
+        ? nextSettings.autoSalary
+        : current.autoSalary,
+
+    manualSalaryOverride:
+      typeof nextSettings?.manualSalaryOverride === "boolean"
+        ? nextSettings.manualSalaryOverride
+        : current.manualSalaryOverride
+  };
+
+  window.dispatchEvent(
+    new CustomEvent("ACS_COMPANY_SETTINGS_UPDATED", {
+      detail: window.ACS_COMPANY_SETTINGS
+    })
+  );
+
+  console.log(
+    "%c⚙ COMPANY SETTINGS UPDATED",
+    "color:#ffb300;font-weight:700",
+    window.ACS_COMPANY_SETTINGS
+  );
+
+  return window.ACS_COMPANY_SETTINGS;
+
+}
+
+function ACS_renderCompanySettings() {
+
+  const settings = ACS_getCompanySettings();
+
+  const autoHireCB = document.getElementById("autoHire");
+  const autoSalaryCB = document.getElementById("autoSalary");
+
+  if (autoHireCB) {
+    autoHireCB.checked = settings.autoHire === true;
+  }
+
+  if (autoSalaryCB) {
+    autoSalaryCB.checked = settings.autoSalary === true;
+  }
+
+}
+
+/* ============================================================
+   🟦 LOAD SETTINGS ON PAGE READY
+   ------------------------------------------------------------
+   • Company Settings use ACS_COMPANY_SETTINGS only
+   • Aircraft Settings remain untouched for now
+   ============================================================ */
+
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ============================================================
-     🟦 A3.5.1 — DEFAULT COMPANY SETTINGS BOOTSTRAP
-     ------------------------------------------------------------
-     • Primera vez jugador → Auto Hire ON
-     • Primera vez jugador → Auto Salary ON
-     • Persistente por partida
-     ============================================================ */
+  ACS_renderCompanySettings();
 
-  // 🔧 Auto Hire default ON
-  if (localStorage.getItem("autoHire") === null) {
-    localStorage.setItem("autoHire", "true");
+  const autoSalaryCB = document.getElementById("autoSalary");
+
+  if (autoSalaryCB) {
+    autoSalaryCB.addEventListener("change", () => {
+      syncAutoSalarySetting();
+    });
   }
-
-  // 🔧 Auto Salary default ON
-  if (localStorage.getItem("ACS_AutoSalary") === null) {
-    localStorage.setItem("ACS_AutoSalary", "ON");
-  }
-  
- ["autoCcheck","autoDcheck","autoHire"].forEach(id=>{
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (localStorage.getItem(id) === "true") el.checked = true;
-});
-
-  /* ============================================================
-     🟦 A3.5.2 — LOAD COMPANY SETTINGS (CANONICAL)
-     ============================================================ */
-
-  // Auto Hire
-  const autoHireFlag = localStorage.getItem("autoHire");
-  const autoHireCB = document.getElementById("autoHire");
-  if (autoHireCB) {
-    autoHireCB.checked = (autoHireFlag !== "false"); // default true
-  }
-
-  // 🔧 AUTO SALARY DEFAULT + LOAD STATE
-let autoSalaryFlag = localStorage.getItem("ACS_AutoSalary");
-
-// Default ON si no existe (jugador nuevo)
-if (!autoSalaryFlag) {
-  localStorage.setItem("ACS_AutoSalary", "ON");
-  autoSalaryFlag = "ON";
-}
-
-const autoSalaryCB = document.getElementById("autoSalary");
-if (autoSalaryCB) {
-
-  autoSalaryCB.checked = (autoSalaryFlag === "ON");
-
-  // Listener directo
-  autoSalaryCB.addEventListener("change", () => {
-    syncAutoSalarySetting();
-  });
-}
-
-  ["regA320","regB737","regECRJ",
-   "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    const val = localStorage.getItem(id);
-    if (val !== null) el.value = val;
-  });
 
   if (typeof registerTimeListener === "function") {
     registerTimeListener(updateClockDisplay);
     updateClockDisplay();
   }
+
 });
 
-/* ========== SAVE / RESET AIRCRAFT ========== */
+/* ============================================================
+   SAVE / RESET AIRCRAFT
+   ------------------------------------------------------------
+   NOTE:
+   Aircraft automation still uses legacy storage.
+   We are NOT touching Aircraft Settings in this HR cleanup step.
+   ============================================================ */
+
 function saveAircraft(){
-  ["autoCcheck","autoDcheck",
-   "regA320","regB737","regECRJ",
-   "taA320","taB737","taE190","taCRJ","taATR"].forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    localStorage.setItem(
-      id,
-      el.type === "checkbox" ? el.checked : el.value
-    );
-  });
-  openSaveModal("Aircraft Settings", "Aircraft configuration saved successfully.");
+
+  console.warn(
+    "⚠ Aircraft Settings still use legacy storage. Not modified in HR cleanup step."
+  );
+
+  openSaveModal(
+    "Aircraft Settings",
+    "Aircraft settings were not modified in this HR cleanup step."
+  );
+
 }
 
 function resetAircraft(){
-  ["autoCcheck","autoDcheck"].forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.checked = false;
-    localStorage.removeItem(id);
-  });
 
-  const defaults = {
-    regA320:"EX-",
-    regB737:"EX-",
-    regECRJ:"EX-",
-    taA320:45,
-    taB737:45,
-    taE190:35,
-    taCRJ:35,
-    taATR:30
-  };
+  const autoC = document.getElementById("autoCcheck");
+  const autoD = document.getElementById("autoDcheck");
 
-  Object.keys(defaults).forEach(id=>{
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.value = defaults[id];
-    localStorage.removeItem(id);
-  });
+  if (autoC) autoC.checked = false;
+  if (autoD) autoD.checked = false;
 
-  openSaveModal("Aircraft Settings", "Aircraft settings reset to defaults.");
+  openSaveModal(
+    "Aircraft Settings",
+    "Aircraft settings reset visually. Backend persistence pending."
+  );
+
 }
 
 /* ============================================================
-   🟦 A3.5.3 — SAVE COMPANY SETTINGS (AUTO SALARY HOOK)
+   🟦 SAVE COMPANY SETTINGS — NO LOCALSTORAGE
+   ------------------------------------------------------------
+   • Updates runtime authority
+   • Runs Auto Hire immediately if enabled and engine exists
+   • Runs Auto Salary normalization if enabled and engine exists
    ============================================================ */
 
 function saveCompany(){
 
-  const autoHire   = document.getElementById("autoHire").checked;
-  const autoSalary = document.getElementById("autoSalary").checked;
+  const autoHireEl = document.getElementById("autoHire");
+  const autoSalaryEl = document.getElementById("autoSalary");
 
-  // Guardar settings
-  localStorage.setItem("autoHire", autoHire ? "true" : "false");
-  localStorage.setItem("ACS_AutoSalary", autoSalary ? "ON" : "OFF");
+  const autoHire =
+    autoHireEl ? autoHireEl.checked === true : true;
 
-  /* ============================================================
-     🟦 AUTO HIRE HOOK — EJECUCIÓN INMEDIATA DESDE SETTINGS
-     ============================================================ */
+  const autoSalary =
+    autoSalaryEl ? autoSalaryEl.checked === true : true;
 
-    // 🔥 SI AUTO HIRE ACTIVADO → EJECUTAR INMEDIATAMENTE
+  ACS_setCompanySettings({
+    autoHire,
+    autoSalary,
+    manualSalaryOverride: false
+  });
+
   if (autoHire) {
 
     if (typeof window.ACS_HR_runAutoHire === "function") {
@@ -589,34 +630,43 @@ function saveCompany(){
 
     } else {
 
-      console.warn("⚠️ AUTO HIRE ENABLED BUT ENGINE NOT FOUND");
-    }
-  }
+      console.warn("⚠️ AUTO HIRE ENABLED BUT ENGINE NOT FOUND ON SETTINGS PAGE");
 
-  /* ============================================================
-     🟦 AUTO SALARY HOOK (YA EXISTENTE)
-     ============================================================ */
+    }
+
+  }
 
   if (autoSalary) {
 
-    if (typeof ACS_HR_applyAutoSalaryNormalization === "function") {
+    if (typeof window.ACS_HR_applyAutoSalaryNormalization === "function") {
 
-      console.log("%c⚙️ AUTO SALARY ENABLED — NORMALIZING NOW",
-        "color:#00ff88;font-weight:700");
+      console.log(
+        "%c⚙️ AUTO SALARY ENABLED — NORMALIZING NOW",
+        "color:#00ff88;font-weight:700"
+      );
 
-      ACS_HR_applyAutoSalaryNormalization();
+      window.ACS_HR_applyAutoSalaryNormalization();
+
+    } else {
+
+      console.warn("⚠️ AUTO SALARY ENABLED BUT ENGINE NOT FOUND ON SETTINGS PAGE");
+
     }
+
   }
 
-  openSaveModal("Company Settings", "Company settings saved successfully.");
+  openSaveModal(
+    "Company Settings",
+    "Company settings saved in runtime authority. Backend persistence is the next phase."
+  );
+
 }
 
 /* ============================================================
-   🟦 A3.7.2 — AUTO SALARY SETTINGS SYNC ENGINE (CANONICAL)
+   🟦 AUTO SALARY SETTINGS SYNC — NO LOCALSTORAGE
    ------------------------------------------------------------
-   • SOLO guarda estado ON / OFF
-   • NO ejecuta lógica salarial
-   • Muestra warning si hubo override manual
+   • Only updates runtime setting
+   • Does not execute salary logic by itself
    ============================================================ */
 
 function syncAutoSalarySetting() {
@@ -624,52 +674,61 @@ function syncAutoSalarySetting() {
   const cb = document.getElementById("autoSalary");
   if (!cb) return;
 
-  const enabled = cb.checked;
+  const settings = ACS_getCompanySettings();
 
-  // Guardar estado
-  localStorage.setItem("ACS_AutoSalary", enabled ? "ON" : "OFF");
+  ACS_setCompanySettings({
+    autoHire: settings.autoHire,
+    autoSalary: cb.checked === true,
+    manualSalaryOverride: settings.manualSalaryOverride
+  });
 
   console.log(
     "%c⚙ AUTO SALARY SETTING CHANGED",
     "color:#ffb300;font-weight:700",
-    enabled ? "ON" : "OFF"
+    cb.checked ? "ON" : "OFF"
   );
 
-  /* ============================================================
-     ⚠️ MANUAL SALARY OVERRIDE WARNING
-     ============================================================ */
-
-  if (localStorage.getItem("ACS_AutoSalary_Override") === "true") {
+  if (settings.manualSalaryOverride === true) {
 
     alert(
       "⚠️ Manual Salary Adjustment Detected\n\n" +
-      "Auto Salary was automatically DISABLED to protect your manual changes.\n\n" +
+      "Auto Salary was disabled to protect your manual changes.\n\n" +
       "You can re-enable Auto Salary at any time from Settings."
     );
 
-    localStorage.removeItem("ACS_AutoSalary_Override");
+    ACS_setCompanySettings({
+      autoHire: settings.autoHire,
+      autoSalary: cb.checked === true,
+      manualSalaryOverride: false
+    });
+
   }
+
 }
 
 /* ============================================================
-   🟦 A3.5.4 — RESET COMPANY SETTINGS (DEFAULT ON)
+   🟦 RESET COMPANY SETTINGS — DEFAULT ON / NO LOCALSTORAGE
    ============================================================ */
 
 function resetCompany(){
 
-  // Defaults ON
-  localStorage.setItem("autoHire", "true");
-  localStorage.setItem("ACS_AutoSalary", "ON");
+  ACS_setCompanySettings({
+    autoHire: true,
+    autoSalary: true,
+    manualSalaryOverride: false
+  });
 
-  document.getElementById("autoHire").checked = true;
-  document.getElementById("autoSalary").checked = true;
+  ACS_renderCompanySettings();
 
-  // Normalizar salarios inmediatamente
-  if (typeof ACS_HR_applyAutoSalaryNormalization === "function") {
-    ACS_HR_applyAutoSalaryNormalization();
+  if (typeof window.ACS_HR_applyAutoSalaryNormalization === "function") {
+    window.ACS_HR_applyAutoSalaryNormalization();
   }
 
-  openSaveModal("Company Settings", "Company settings reset to defaults (Auto ON).");
+  openSaveModal(
+    "Company Settings",
+    "Company settings reset to defaults: Auto Hire ON / Auto Salary ON."
+  );
+
 }
 </script>
   
