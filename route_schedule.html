@@ -430,6 +430,163 @@ footer {
 </select>
 
 <script>
+
+/* ============================================================
+   🧭 ACS ROUTE SCHEDULE CONTEXT — BACKEND + URL AUTHORITY
+   ------------------------------------------------------------
+   File: route_schedule.html
+   Purpose:
+   - Load company context from backend session
+   - Read origin/destination from URL parameters
+   - Validate origin against backend users.base_icao
+   - NO localStorage for route origin/destination
+   ============================================================ */
+
+window.ACS_COMPANY_CONTEXT = null;
+window.ACS_ROUTE_CONTEXT = null;
+
+async function RS_loadCompanyContext() {
+
+  try {
+
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/company/context",
+      {
+        credentials: "include"
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true) {
+      console.warn("⚠️ RS company context failed:", data);
+      window.ACS_COMPANY_CONTEXT = null;
+      return null;
+    }
+
+    window.ACS_COMPANY_CONTEXT = data;
+
+    console.log("🟢 RS COMPANY CONTEXT LOADED:", {
+      user_id: data.user?.user_id,
+      airline_id: data.user?.airline_id,
+      base_icao: data.user?.base_icao,
+      airline: data.airline?.airline_name
+    });
+
+    return data;
+
+  } catch (err) {
+
+    console.warn("⚠️ RS company context fetch error:", err);
+    window.ACS_COMPANY_CONTEXT = null;
+    return null;
+
+  }
+
+}
+
+function RS_getRouteContextFromURL() {
+
+  const params = new URLSearchParams(window.location.search);
+
+  const origin = String(params.get("origin") || "")
+    .trim()
+    .toUpperCase();
+
+  const destination = String(params.get("destination") || "")
+    .trim()
+    .toUpperCase();
+
+  if (!origin || !destination) {
+    return null;
+  }
+
+  return {
+    origin,
+    destination,
+    source: "url"
+  };
+
+}
+
+function RS_validateRouteContext(routeCtx, companyCtx) {
+
+  if (!routeCtx || !companyCtx || companyCtx.ok !== true) {
+    return {
+      ok: false,
+      error: "ROUTE_CONTEXT_MISSING"
+    };
+  }
+
+  const backendBase = String(companyCtx.user?.base_icao || "")
+    .trim()
+    .toUpperCase();
+
+  if (!backendBase) {
+    return {
+      ok: false,
+      error: "BACKEND_BASE_MISSING"
+    };
+  }
+
+  if (routeCtx.origin !== backendBase) {
+    return {
+      ok: false,
+      error: "ORIGIN_DOES_NOT_MATCH_BACKEND_BASE",
+      backendBase,
+      receivedOrigin: routeCtx.origin
+    };
+  }
+
+  return {
+    ok: true,
+    origin: routeCtx.origin,
+    destination: routeCtx.destination,
+    backendBase
+  };
+
+}
+
+async function RS_initRouteContext() {
+
+  const companyCtx = await RS_loadCompanyContext();
+  const routeCtx = RS_getRouteContextFromURL();
+
+  const validation = RS_validateRouteContext(routeCtx, companyCtx);
+
+  if (!validation.ok) {
+
+    console.warn("⛔ Route context validation failed:", validation);
+
+    alert("⛔ Route context invalid. Please start again from Create Route.");
+
+    window.location.href = "routes.html";
+    return null;
+
+  }
+
+  window.ACS_ROUTE_CONTEXT = {
+    origin: validation.origin,
+    destination: validation.destination,
+    source: "backend+url"
+  };
+
+  const originInput = document.getElementById("origin");
+  const destInput = document.getElementById("destination");
+
+  if (originInput && destInput) {
+    originInput.value = validation.origin;
+    destInput.value = validation.destination;
+
+    originInput.readOnly = true;
+    destInput.readOnly = true;
+  }
+
+  console.log("🟢 RS ROUTE CONTEXT READY:", window.ACS_ROUTE_CONTEXT);
+
+  return window.ACS_ROUTE_CONTEXT;
+
+}
      
 /* ============================================================
    🛫 ACS ROUTE SCHEDULE — AIRCRAFT SOURCE (ACTIVE + PENDING)
@@ -513,6 +670,7 @@ function RS_populateAircraftSelector() {
 /* ============================================================
    🟧 A9 — rs_populateAircraftSelect (ALIAS ÚNICO Y SEGURO)
    ============================================================ */
+     
 function rs_populateAircraftSelect(selectedId = "") {
 
   RS_populateAircraftSelector();
@@ -604,44 +762,34 @@ function loadAvailableAircraft() {
 }
 
 /* ============================================================
-   🟦 SINGLE INIT POINT (GUARD) — evita doble init destructivo
+   🟦 SINGLE INIT POINT — ROUTE SCHEDULE CORE
    ------------------------------------------------------------
-   Tu archivo tiene varios DOMContentLoaded.
-   Este guard asegura que la parte crítica (origin/dest + aircraft)
-   se ejecute de forma segura.
+   Source:
+   - company context from backend
+   - origin/destination from URL
+   - NO localStorage for origin/destination
    ============================================================ */
 
-function RS_initCoreOnce() {
+async function RS_initCoreOnce() {
+
   if (window.__RS_CORE_INIT_DONE) return;
   window.__RS_CORE_INIT_DONE = true;
 
-  const originInput = document.getElementById("origin");
-  const destInput   = document.getElementById("destination");
+  const routeContext = await RS_initRouteContext();
 
-  if (originInput && destInput) {
-    originInput.value = (localStorage.getItem("ACS_selectedOrigin") || originInput.value || "").toUpperCase();
-    destInput.value   = (localStorage.getItem("ACS_selectedDestination") || destInput.value || "").toUpperCase();
-
-    originInput.readOnly = true;
-    destInput.readOnly   = true;
-
-    localStorage.removeItem("ACS_selectedOrigin");
-    localStorage.removeItem("ACS_selectedDestination");
+  if (!routeContext) {
+    return;
   }
 
-  // ✅ Siempre cargar selector (robusto)
-  rs_populateAircraftSelect(localStorage.getItem("routeSelectedAircraft") || "");
+  rs_populateAircraftSelect("");
 
-  // 💾 Persistencia de selección (ya tienes otro bloque, esto no estorba)
-  const sel = document.getElementById("aircraft");
-  if (sel) {
-    sel.addEventListener("change", () => {
-      localStorage.setItem("routeSelectedAircraft", sel.value || "");
-    });
+  const aircraftSelect = document.getElementById("aircraft");
+  if (aircraftSelect) {
+    aircraftSelect.value = "";
   }
+
 }
 
-// Ejecutar
 document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
      
 </script>
