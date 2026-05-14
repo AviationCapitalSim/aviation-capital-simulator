@@ -2124,67 +2124,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
      
 /* ============================================================
-   🟦 KEEP ORIGIN & DESTINATION AFTER REFRESH — FIX v2
-   ============================================================ */
-
-// ⛔ YA NO guardamos destination — solo origin
-function persistOriginDest() {
-    const O = document.getElementById("origin")?.value || "";
-    localStorage.setItem("ACS_Route_LastOrigin", O);
-}
-
-// Restaurar ORIGIN al cargar, pero NO DESTINATION
-document.addEventListener("DOMContentLoaded", () => {
-    const storedO = localStorage.getItem("ACS_Route_LastOrigin") || "";
-    if (storedO) document.getElementById("origin").value = storedO;
-});
-
-// Solo escuchar cambios de ORIGIN
-document.getElementById("origin")?.addEventListener("input", persistOriginDest);
-document.getElementById("origin")?.addEventListener("change", persistOriginDest);
-
-/* ============================================================
-   🔄 AIRCRAFT SELECTION — KEEP ON RELOAD, RESET ON NEW VISIT
-   ============================================================ */
-
-window.addEventListener("DOMContentLoaded", () => {
-    const sel = document.getElementById("aircraft");
-    if (!sel) return;
-
-    // Detectar si llegamos por REFRESH o por navegación normal
-    let isReload = false;
-
-    try {
-        const navEntry = performance.getEntriesByType("navigation")[0];
-        if (navEntry && navEntry.type === "reload") {
-            isReload = true;
-        } else if (performance.navigation && performance.navigation.type === 1) {
-            // Fallback Safari viejo
-            isReload = true;
-        }
-    } catch (e) {
-        // Si algo falla, asumimos navegación normal
-        isReload = false;
-    }
-
-    if (isReload) {
-        // 🔁 REFRESH: restaurar selección previa
-        const saved = localStorage.getItem("routeSelectedAircraft");
-        if (saved) {
-            sel.value = saved;
-        }
-    } else {
-        // 🆕 Visita nueva: limpiar borrador y dejar "-- Select Aircraft --"
-        localStorage.removeItem("routeSelectedAircraft");
-    }
-
-    // 💾 Guardar cada vez que el jugador cambie el avión
-    sel.addEventListener("change", () => {
-        localStorage.setItem("routeSelectedAircraft", sel.value || "");
-    });
-});
-
-/* ============================================================
    DOM READY FIX (Safari)
    ============================================================ */
 
@@ -2313,8 +2252,6 @@ function RS_syncAllDays() {
 }
      
 </script>
-
-<script src="engine/acs_security_core.js?v=1"></script>
      
 </body>
 </html>
