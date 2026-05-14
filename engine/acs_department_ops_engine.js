@@ -23,6 +23,139 @@
    Date: 21 JAN 2026
    ============================================================ */
 
+/* ============================================================
+   🟦 OPS COMPANY SETTINGS BRIDGE — BACKEND AUTHORITY v1.0
+   ------------------------------------------------------------
+   Date: 14 MAY 2026
+   • Loads Auto Hire / Auto Salary from Railway backend
+   • NO localStorage
+   • Used by Department Ops / HR Salary Engine
+   • Safe default: OFF until backend confirms state
+   ============================================================ */
+
+const ACS_OPS_API_BASE = "https://api.aviationcapitalsim.com";
+
+window.ACS_COMPANY_SETTINGS =
+  window.ACS_COMPANY_SETTINGS || {
+    autoHire: false,
+    autoSalary: false,
+    manualSalaryOverride: false,
+    loadedFromBackend: false
+  };
+
+function ACS_getCompanySettings() {
+
+  if (!window.ACS_COMPANY_SETTINGS) {
+    window.ACS_COMPANY_SETTINGS = {
+      autoHire: false,
+      autoSalary: false,
+      manualSalaryOverride: false,
+      loadedFromBackend: false
+    };
+  }
+
+  return window.ACS_COMPANY_SETTINGS;
+
+}
+
+function ACS_setCompanySettings(nextSettings) {
+
+  const current = ACS_getCompanySettings();
+
+  window.ACS_COMPANY_SETTINGS = {
+    autoHire:
+      typeof nextSettings?.autoHire === "boolean"
+        ? nextSettings.autoHire
+        : current.autoHire,
+
+    autoSalary:
+      typeof nextSettings?.autoSalary === "boolean"
+        ? nextSettings.autoSalary
+        : current.autoSalary,
+
+    manualSalaryOverride:
+      typeof nextSettings?.manualSalaryOverride === "boolean"
+        ? nextSettings.manualSalaryOverride
+        : current.manualSalaryOverride,
+
+    loadedFromBackend:
+      typeof nextSettings?.loadedFromBackend === "boolean"
+        ? nextSettings.loadedFromBackend
+        : current.loadedFromBackend
+  };
+
+  window.dispatchEvent(
+    new CustomEvent("ACS_COMPANY_SETTINGS_UPDATED", {
+      detail: window.ACS_COMPANY_SETTINGS
+    })
+  );
+
+  console.log(
+    "%c⚙ OPS COMPANY SETTINGS UPDATED",
+    "color:#ffb300;font-weight:700",
+    window.ACS_COMPANY_SETTINGS
+  );
+
+  return window.ACS_COMPANY_SETTINGS;
+
+}
+
+async function ACS_OPS_loadCompanySettingsFromBackend() {
+
+  try {
+
+    const res = await fetch(
+      `${ACS_OPS_API_BASE}/v1/company/settings`,
+      {
+        method: "GET",
+        credentials: "include"
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`COMPANY_SETTINGS_HTTP_${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!data?.ok || !data?.settings) {
+      throw new Error("INVALID_COMPANY_SETTINGS_RESPONSE");
+    }
+
+    ACS_setCompanySettings({
+      autoHire: data.settings.auto_hire === true,
+      autoSalary: data.settings.auto_salary === true,
+      manualSalaryOverride: data.settings.manual_salary_override === true,
+      loadedFromBackend: true
+    });
+
+    console.log(
+      "%c🌐 OPS COMPANY SETTINGS LOADED FROM BACKEND",
+      "color:#00ffcc;font-weight:700",
+      data.settings
+    );
+
+    return true;
+
+  } catch (err) {
+
+    console.warn("⚠ OPS COMPANY SETTINGS LOAD FAILED:", err);
+
+    ACS_setCompanySettings({
+      autoHire: false,
+      autoSalary: false,
+      manualSalaryOverride: false,
+      loadedFromBackend: false
+    });
+
+    return false;
+
+  }
+
+}
+
+/* Auto-load settings when OPS engine is loaded */
+ACS_OPS_loadCompanySettingsFromBackend();
 
 /* ============================================================
    🟦 A1 — DISTANCE CLASSIFICATION ENGINE
@@ -1666,23 +1799,20 @@ function ACS_HR_shouldRunAutoSalary() {
    • Default ON al crear jugador
    • Punto único de lectura del sistema
    ============================================================ */
-
 function ACS_HR_isAutoSalaryEnabled() {
 
-  let flag = localStorage.getItem("ACS_AutoSalary");
+  const settings = ACS_getCompanySettings();
 
-  // 🟢 DEFAULT: ON si no existe aún (jugador nuevo)
-  if (!flag) {
-    localStorage.setItem("ACS_AutoSalary", "ON");
-    flag = "ON";
-
+  if (settings.loadedFromBackend !== true) {
     console.log(
-      "%c⚙ AUTO SALARY DEFAULT ENABLED",
-      "color:#00ffcc;font-weight:700"
+      "%c🔒 AUTO SALARY OFF — Settings not loaded from backend yet",
+      "color:#ffcf66;font-weight:800"
     );
+    return false;
   }
 
-  return flag === "ON";
+  return settings.autoSalary === true;
+
 }
 
 /* ============================================================
@@ -2122,9 +2252,23 @@ function applySalaryPolicy() {
 
 function ACS_HR_applyAutoHire_Instant() {
 
-  // 🔒 Leer estado real desde Settings
-  const autoHire = localStorage.getItem("autoHire") === "true";
-  if (!autoHire) return;
+  const settings = ACS_getCompanySettings();
+
+  if (settings.loadedFromBackend !== true) {
+    console.log(
+      "%c🔒 AUTO HIRE BLOCKED — Settings not loaded from backend yet",
+      "color:#ffcf66;font-weight:800"
+    );
+    return;
+  }
+
+  if (settings.autoHire !== true) {
+    console.log(
+      "%c🔒 AUTO HIRE OFF — Backend company setting",
+      "color:#ff5555;font-weight:800"
+    );
+    return;
+  }
 
   const HR = ACS_HR_load();
   if (!HR) return;
@@ -2136,22 +2280,17 @@ function ACS_HR_applyAutoHire_Instant() {
     const dep = HR[id];
     if (!dep) return;
 
-    // Solo departamentos con estructura válida
     if (typeof dep.required !== "number") return;
     if (typeof dep.staff !== "number") return;
 
-    const staff    = dep.staff;
-    const required = dep.required;
+    const staff = Number(dep.staff || 0);
+    const required = Number(dep.required || 0);
 
     const deficit = Math.max(0, required - staff);
     if (deficit === 0) return;
 
-    // ========================================================
-    // ✅ INYECCIÓN INSTANTÁNEA EXACTA
-    // ========================================================
-
-    dep.staff += deficit;
-    dep.payroll = dep.staff * dep.salary;
+    dep.staff = staff + deficit;
+    dep.payroll = Number(dep.staff || 0) * Number(dep.salary || 0);
 
     totalHired += deficit;
 
@@ -2170,12 +2309,10 @@ function ACS_HR_applyAutoHire_Instant() {
 
     ACS_HR_save(HR);
 
-    // Recalcular HR completo
     if (typeof ACS_HR_recalculateAll === "function") {
       ACS_HR_recalculateAll();
     }
 
-    // Refrescar UI
     if (typeof loadDepartments === "function") loadDepartments();
     if (typeof HR_updateKPI === "function") HR_updateKPI();
 
@@ -2184,7 +2321,16 @@ function ACS_HR_applyAutoHire_Instant() {
       "color:#00ffcc;font-weight:700",
       "Total hired:", totalHired
     );
+
+  } else {
+
+    console.log(
+      "%c🟢 AUTO HIRE CHECK — No deficits to hire",
+      "color:#7CFFB2;font-weight:700"
+    );
+
   }
+
 }
 
 /* ============================================================
