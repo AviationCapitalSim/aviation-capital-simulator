@@ -1653,10 +1653,18 @@ function confirmSalary() {
 }
 
 /* ============================================================
-   🟦 A1 — HR HIRE ONE (BACKEND ONLY — FINAL)
+   🟦 A1 — HR HIRE ONE (API CANONICAL)
+   ------------------------------------------------------------
+   • NO localStorage
+   • NO Railway direct URL
+   • Uses official API domain
+   • Session cookie required
+   • Backend remains authority
    ============================================================ */
 
 async function HR_hireOne(depId) {
+
+  const API_BASE = "https://api.aviationcapitalsim.com";
 
   try {
 
@@ -1683,21 +1691,23 @@ async function HR_hireOne(depId) {
     }
 
     const currentStaff = Number(dep.staff || 0);
+    const salary = Number(dep.salary || 0);
     const newStaff = currentStaff + 1;
 
     const payload = {
-      airline_id: airlineId,
+      airline_id: Number(airlineId),
       dept_id: depId,
       staff: newStaff,
       morale: Number(dep.morale || 100),
-      salary: Number(dep.salary || 0),
-      payroll: Math.round(newStaff * Number(dep.salary || 0))
+      salary: salary,
+      payroll: Math.round(newStaff * salary)
     };
 
     const res = await fetch(
-      "https://acs-world-server-production.up.railway.app/v1/hr/staff",
+      `${API_BASE}/v1/hr/staff`,
       {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json"
         },
@@ -1719,15 +1729,17 @@ async function HR_hireOne(depId) {
       "New staff:", newStaff
     );
 
-    // 🔄 Refresh authority from backend
     await ACS_HR_syncFromServer();
 
     if (typeof loadDepartments === "function") loadDepartments();
     if (typeof HR_updateKPI === "function") HR_updateKPI();
 
   } catch (err) {
+
     console.warn("❌ HR_hireOne failed:", err);
+
   }
+
 }
      
 function handleLogout() {
