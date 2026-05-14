@@ -1075,28 +1075,43 @@ function ACS_OPS_applyOperationalImpact() {
 
 
 /* ============================================================
-   🟦 PHASE C — BONUS & RECOVERY ENGINE
+   🟦 OPS BONUS STATE — NO LOCALSTORAGE
    ------------------------------------------------------------
-   • Máx 2 bonus por departamento
-   • Cooldown 2 semanas
-   • Subida proporcional real de moral
+   Date: 15 MAY 2026
+   • Runtime memory only
+   • NO localStorage
+   • Tracks bonus usage during active session
+   • Backend persistence can be added later
    ============================================================ */
 
+window.ACS_OPS_BONUS_STATE =
+  window.ACS_OPS_BONUS_STATE || {};
+
 function ACS_OPS_loadBonusState() {
-  return JSON.parse(localStorage.getItem("ACS_OPS_BONUS") || "{}");
+
+  if (!window.ACS_OPS_BONUS_STATE) {
+    window.ACS_OPS_BONUS_STATE = {};
+  }
+
+  return window.ACS_OPS_BONUS_STATE;
+
 }
 
 function ACS_OPS_saveBonusState(state) {
-  localStorage.setItem("ACS_OPS_BONUS", JSON.stringify(state));
-}
 
-if (!localStorage.getItem("ACS_OPS_BONUS")) {
-  ACS_OPS_saveBonusState({});
+  window.ACS_OPS_BONUS_STATE =
+    state && typeof state === "object"
+      ? state
+      : {};
+
+  return window.ACS_OPS_BONUS_STATE;
+
 }
 
 /* ============================================================
    🎁 APPLY BONUS (API PUBLICA PARA HR MODAL)
    ============================================================ */
+
 function ACS_OPS_applyDepartmentBonus(depID, percent) {
 
   const HR = ACS_HR_load();
