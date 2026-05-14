@@ -1109,7 +1109,14 @@ function ACS_OPS_saveBonusState(state) {
 }
 
 /* ============================================================
-   🎁 APPLY BONUS (API PUBLICA PARA HR MODAL)
+   🎁 APPLY BONUS — HR / OPS ONLY (NO FINANCE DIRECT WRITE)
+   ------------------------------------------------------------
+   Date: 15 MAY 2026
+   • NO localStorage
+   • NO direct Finance write
+   • Adjusts morale in HR runtime
+   • Returns calculated bonus cost for future backend ledger
+   • Finance integration must be handled by official backend route
    ============================================================ */
 
 function ACS_OPS_applyDepartmentBonus(depID, percent) {
@@ -1117,7 +1124,14 @@ function ACS_OPS_applyDepartmentBonus(depID, percent) {
   const HR = ACS_HR_load();
   const bonusState = ACS_OPS_loadBonusState();
 
-  if (!HR[depID]) return false;
+  if (!HR || !HR[depID]) {
+    console.warn("❌ BONUS FAILED — Department not found:", depID);
+    return {
+      ok: false,
+      error: "DEPARTMENT_NOT_FOUND",
+      cost: 0
+    };
+  }
 
   if (!bonusState[depID]) {
     bonusState[depID] = {
@@ -1128,48 +1142,103 @@ function ACS_OPS_applyDepartmentBonus(depID, percent) {
 
   const entry = bonusState[depID];
 
-  // Máximo 2 bonus
+  /* ============================================================
+     BONUS LIMIT
+     ============================================================ */
+
   if (entry.used >= 2) {
     alert("⚠️ Bonus limit reached for this department.");
-    return false;
+    return {
+      ok: false,
+      error: "BONUS_LIMIT_REACHED",
+      cost: 0
+    };
   }
 
-  // Cooldown 2 semanas
-  const currentWeek = Math.floor(Date.now() / (7 * 24 * 3600 * 1000));
-  if (currentWeek - entry.lastWeek < 2) {
+  /* ============================================================
+     COOLDOWN — 2 WEEKS
+     ============================================================ */
+
+  const currentWeek =
+    window.ACS_TIME_CURRENT instanceof Date
+      ? Math.floor(window.ACS_TIME_CURRENT.getTime() / (7 * 24 * 3600 * 1000))
+      : Math.floor(Date.now() / (7 * 24 * 3600 * 1000));
+
+  if (currentWeek - Number(entry.lastWeek || -999) < 2) {
     alert("⏳ Bonus cooldown active. Wait 2 weeks.");
-    return false;
+    return {
+      ok: false,
+      error: "BONUS_COOLDOWN_ACTIVE",
+      cost: 0
+    };
   }
 
   const dep = HR[depID];
 
-  // Cálculo subida moral realista
-  const gain = Math.min(15, Math.round(percent / 2));
-  dep.morale = Math.min(100, dep.morale + gain);
+  const pct = Number(percent || 0);
+  const staff = Number(dep.staff || 0);
+  const salary = Number(dep.salary || 0);
 
-  // Coste económico real
-  const cost = Math.round(dep.staff * dep.salary * (percent / 100));
+  if (pct <= 0 || staff <= 0 || salary <= 0) {
+    console.warn("❌ BONUS FAILED — Invalid bonus inputs:", {
+      depID,
+      percent: pct,
+      staff,
+      salary
+    });
 
-  ACS_addExpense("bonuses", cost);
+    return {
+      ok: false,
+      error: "INVALID_BONUS_INPUT",
+      cost: 0
+    };
+  }
 
-  entry.used++;
+  /* ============================================================
+     MORALE IMPACT
+     ============================================================ */
+
+  const gain = Math.min(15, Math.round(pct / 2));
+
+  dep.morale = Math.min(
+    100,
+    Number(dep.morale || 100) + gain
+  );
+
+  const cost = Math.round(staff * salary * (pct / 100));
+
+  entry.used += 1;
   entry.lastWeek = currentWeek;
 
   ACS_HR_save(HR);
   ACS_OPS_saveBonusState(bonusState);
 
+  if (typeof loadDepartments === "function") loadDepartments();
+  if (typeof HR_updateKPI === "function") HR_updateKPI();
+
   console.log(
-    `%c🎁 BONUS APPLIED — ${dep.name}`,
-    "color:#00ff88;font-weight:600",
-    "Percent:", percent,
+    "%c🎁 BONUS APPLIED — HR/OPS ONLY",
+    "color:#00ff88;font-weight:700",
+    dep.name,
+    "Percent:", pct,
     "Morale gain:", gain,
     "New morale:", dep.morale,
-    "Cost:", cost
+    "Calculated cost:", cost,
+    "Finance write: DISABLED"
   );
 
-  return true;
-}
+  return {
+    ok: true,
+    departmentId: depID,
+    departmentName: dep.name,
+    percent: pct,
+    moraleGain: gain,
+    newMorale: dep.morale,
+    cost: cost,
+    financeWrite: false
+  };
 
+}
 
 /* ============================================================
    ⏱️ WEEKLY OPS MASTER TICK (ACS OFFICIAL FIXED)
