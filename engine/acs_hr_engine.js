@@ -259,144 +259,207 @@ function ACS_HR_save(data) {
 }
 
 /* ============================================================
-   🟦 HR AUTOMATION FLAGS — CANONICAL SYSTEM
+   🟦 HR AUTOMATION FLAGS — BACKEND-SAFE RUNTIME STATE
    ------------------------------------------------------------
-   • Unifica AutoHire + AutoSalary
-   • Evita conflictos "true" vs "ON"
-   • Fuente única para HR
+   • NO localStorage
+   • NO Finance writes
+   • Department Control / Backend remain authority
+   • Runtime flags exist only to protect UI behavior
    ============================================================ */
 
+window.ACS_HR_AUTOMATION_FLAGS =
+  window.ACS_HR_AUTOMATION_FLAGS || {
+    autoHire: false,
+    autoSalary: false,
+    manualSalaryOverride: false
+  };
+
 function ACS_HR_isAutoHireEnabled() {
-  return localStorage.getItem("autoHire") === "true";
+  return window.ACS_HR_AUTOMATION_FLAGS.autoHire === true;
 }
 
 function ACS_HR_isAutoSalaryEnabled() {
-  return localStorage.getItem("ACS_AutoSalary") === "ON";
+  return window.ACS_HR_AUTOMATION_FLAGS.autoSalary === true;
 }
 
 function ACS_HR_disableAutoHire() {
-  localStorage.setItem("autoHire", "false");
+  window.ACS_HR_AUTOMATION_FLAGS.autoHire = false;
   console.warn("⚠ AUTO HIRE DISABLED BY MANUAL ACTION");
 }
 
 function ACS_HR_disableAutoSalary() {
-  localStorage.setItem("ACS_AutoSalary", "OFF");
+  window.ACS_HR_AUTOMATION_FLAGS.autoSalary = false;
+  window.ACS_HR_AUTOMATION_FLAGS.manualSalaryOverride = true;
   console.warn("⚠ AUTO SALARY DISABLED BY MANUAL ACTION");
 }
 
 /* ============================================================
-   CALCULAR PAYROLL TOTAL (Reparado)
+   CALCULAR PAYROLL TOTAL — SERVER STATE ONLY
    ============================================================ */
 
 function ACS_HR_getTotalPayroll() {
-    const hr = ACS_HR_load();
-    return Object.values(hr).reduce((sum, d) => sum + (d.staff * d.salary), 0);
+
+  const hr = ACS_HR_load();
+
+  return Object.values(hr).reduce((sum, d) => {
+
+    if (!d) return sum;
+
+    const staff = Number(d.staff || 0);
+    const salary = Number(d.salary || 0);
+
+    return sum + (staff * salary);
+
+  }, 0);
+
 }
 
-
 /* ============================================================
-   API: CONTRATAR PERSONAL (Reparado)
+   API: CONTRATAR PERSONAL — RUNTIME ONLY / NO FINANCE WRITE
+   ------------------------------------------------------------
+   • Modifica estado HR en memoria runtime
+   • NO usa localStorage
+   • NO registra gasto directo en Finance
+   • Department Control debe persistir en backend
    ============================================================ */
 
 function ACS_HR_hire(deptID, amount) {
-    const hr = ACS_HR_load();
-    const d = hr[deptID];
-    if (!d) return;
 
-    d.staff += amount;
-    d.payroll = d.staff * d.salary;
+  const hr = ACS_HR_load();
+  const d = hr[deptID];
 
-    ACS_HR_save(hr);
+  if (!d) return;
 
-    ACS_HR_disableAutoHire();
-   
-    // Registrar gasto real en Finance
-    ACS_addExpense("salaries", amount * d.salary);
+  const qty = Math.max(0, Number(amount || 0));
+  if (qty <= 0) return;
+
+  d.staff = Number(d.staff || 0) + qty;
+  d.payroll = Number(d.staff || 0) * Number(d.salary || 0);
+
+  ACS_HR_save(hr);
+  ACS_HR_disableAutoHire();
+
+  window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+
 }
 
-
 /* ============================================================
-   API: DESPEDIR PERSONAL (Reparado)
-   ============================================================ */
-   
-function ACS_HR_fire(deptID, amount) {
-    const hr = ACS_HR_load();
-    const d = hr[deptID];
-    if (!d) return;
-
-    const removed = Math.min(amount, d.staff);
-    d.staff -= removed;
-    d.payroll = d.staff * d.salary;
-
-    ACS_HR_save(hr);
-    ACS_HR_disableAutoHire();
-}
-
-
-/* ============================================================
-   🟧 API: AJUSTE SALARIAL MANUAL (CANONICAL)
+   API: DESPEDIR PERSONAL — RUNTIME ONLY / NO FINANCE WRITE
    ------------------------------------------------------------
-   • Mata Auto Salary automáticamente
-   • Congela el salario resultante
-   • NO recalcula por época
+   • Modifica estado HR en memoria runtime
+   • NO usa localStorage
+   • Department Control debe persistir en backend
+   ============================================================ */
+
+function ACS_HR_fire(deptID, amount) {
+
+  const hr = ACS_HR_load();
+  const d = hr[deptID];
+
+  if (!d) return;
+
+  const qty = Math.max(0, Number(amount || 0));
+  if (qty <= 0) return;
+
+  const removed = Math.min(qty, Number(d.staff || 0));
+
+  d.staff = Number(d.staff || 0) - removed;
+  d.payroll = Number(d.staff || 0) * Number(d.salary || 0);
+
+  ACS_HR_save(hr);
+  ACS_HR_disableAutoHire();
+
+  window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+
+}
+
+/* ============================================================
+   🟧 API: AJUSTE SALARIAL MANUAL — NO LOCALSTORAGE
+   ------------------------------------------------------------
+   • Desactiva Auto Salary en runtime
+   • Congela salario resultante
+   • NO toca Finance
    ============================================================ */
 
 function ACS_HR_adjustSalary(deptID, percentage) {
 
-    const hr = ACS_HR_load();
-    const d = hr[deptID];
-    if (!d) return;
+  const hr = ACS_HR_load();
+  const d = hr[deptID];
 
-    // 🔴 Si Auto Salary estaba ON → apagarlo
-    if (localStorage.getItem("ACS_AutoSalary") === "ON") {
-        localStorage.setItem("ACS_AutoSalary", "OFF");
-        localStorage.setItem("ACS_AutoSalary_Override", "true");
-    }
+  if (!d) return;
 
-    const year = (typeof ACS_getYear === "function") ? ACS_getYear() : 1940;
+  ACS_HR_disableAutoSalary();
 
-    let baseSalary = 0;
+  const year =
+    (typeof ACS_getYear === "function")
+      ? ACS_getYear()
+      : 1940;
 
-    // Pilotos → por tamaño
-    if (deptID.startsWith("pilots_")) {
+  let baseSalary = 0;
 
-        let size = "medium";
-        if (deptID === "pilots_small")  size = "small";
-        if (deptID === "pilots_medium") size = "medium";
-        if (deptID === "pilots_large")  size = "large";
-        if (deptID === "pilots_vlarge") size = "vlarge";
+  if (deptID.startsWith("pilots_")) {
 
-        baseSalary = ACS_HR_getPilotSalarySized(year, size);
+    let size = "medium";
 
-    } else {
-        // Otros departamentos
-        baseSalary = ACS_HR_getBaseSalary(year, d.base);
-    }
+    if (deptID === "pilots_small")  size = "small";
+    if (deptID === "pilots_medium") size = "medium";
+    if (deptID === "pilots_large")  size = "large";
+    if (deptID === "pilots_vlarge") size = "vlarge";
 
-    // Aplicar porcentaje manual
-    d.salary = Math.round(baseSalary * (percentage / 100));
+    baseSalary = ACS_HR_getPilotSalarySized(year, size);
 
-    // Guardar SIN recalcular payroll aquí
-    ACS_HR_save(hr);
+  } else {
+
+    baseSalary = ACS_HR_getBaseSalary(year, d.base || d.role);
+
+  }
+
+  const pct = Number(percentage || 0);
+
+  d.salary = Math.max(0, Math.round(baseSalary * (pct / 100)));
+  d.payroll = Number(d.staff || 0) * Number(d.salary || 0);
+
+  ACS_HR_save(hr);
+
+  window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+
 }
 
 /* ============================================================
-   API: BONUS DEPARTAMENTAL — Reparado
+   API: BONUS DEPARTAMENTAL — HR ONLY / NO FINANCE WRITE
+   ------------------------------------------------------------
+   • Ajusta moral en HR runtime
+   • Retorna costo calculado
+   • NO registra gasto directo en Finance
+   • El costo real debe persistirse por backend/control oficial
    ============================================================ */
-   
+
 function ACS_HR_applyBonus(deptID, percent) {
-    const hr = ACS_HR_load();
-    const d = hr[deptID];
-    if (!d) return;
 
-    const cost = d.staff * d.salary * (percent / 100);
+  const hr = ACS_HR_load();
+  const d = hr[deptID];
 
-    d.morale = Math.min(100, d.morale + percent / 5);
+  if (!d) return 0;
 
-    ACS_HR_save(hr);
+  const pct = Number(percent || 0);
+  const staff = Number(d.staff || 0);
+  const salary = Number(d.salary || 0);
 
-    ACS_addExpense("salaries", cost);
-    return cost;
+  const cost = Math.round(staff * salary * (pct / 100));
+
+  d.morale = Math.min(
+    100,
+    Number(d.morale || 100) + (pct / 5)
+  );
+
+  d.payroll = staff * salary;
+
+  ACS_HR_save(hr);
+
+  window.dispatchEvent(new Event("ACS_HR_UPDATED"));
+
+  return cost;
+
 }
 
 /* ============================================================
