@@ -2127,35 +2127,35 @@ function updateSalaryPreview() {
 }
 
 /* ============================================================
-   🟦 SAL-JS-APPLY-FIX — MANUAL SALARY POLICY CORE (FINAL)
+   🟦 SAL-JS-APPLY — MANUAL SALARY POLICY (BACKEND CANONICAL)
    ------------------------------------------------------------
-   • Aplica salario manual real
-   • Actualiza salario base y referencia
-   • Bloquea Auto Salary global
-   • Sin recálculos destructivos
+   Date: 14 MAY 2026
+   • NO localStorage
+   • Disables Auto Salary in backend company_settings
+   • Persists salary / payroll / morale to HR backend
+   • Updates runtime HR after backend confirmation
    ============================================================ */
 
-function applySalaryPolicy() {
+async function applySalaryPolicy() {
 
-  // ============================================================
-  // ⚠️ MANUAL POLICY CONFIRMATION
-  // ============================================================
   const proceed = confirm(
     "⚠ Manual Salary Policy\n\n" +
     "This action will DISABLE Auto Salary automation for the company.\n" +
-    "All future salary adjustments must be done manually.\n\n" +
+    "All future salary adjustments must be done manually unless Auto Salary is re-enabled in Settings.\n\n" +
     "Are you sure you want to proceed?"
   );
 
   if (!proceed) {
-    console.log("%c🟡 SALARY APPLY CANCELLED BY USER", "color:#ffaa00;font-weight:700");
+    console.log(
+      "%c🟡 SALARY APPLY CANCELLED BY USER",
+      "color:#ffaa00;font-weight:700"
+    );
     return;
   }
 
-  // ============================================================
-  // 🟢 LECTURA CANÓNICA DEL DEPARTAMENTO ACTIVO
-  // ============================================================
-  const depId = window.__ACS_ACTIVE_SALARY_DEPT;
+  const depId =
+    window.__ACS_ACTIVE_SALARY_DEPT ||
+    __SAL_currentDep;
 
   if (!depId) {
     console.warn("❌ APPLY SALARY FAILED — No active department");
@@ -2163,6 +2163,7 @@ function applySalaryPolicy() {
   }
 
   const HR = ACS_HR_load();
+
   if (!HR || !HR[depId]) {
     console.warn("❌ APPLY SALARY FAILED — Department not found:", depId);
     return;
@@ -2170,73 +2171,166 @@ function applySalaryPolicy() {
 
   const dep = HR[depId];
 
+  const airlineId = window.ACS_SERVER_SESSION?.airline_id;
+
+  if (!airlineId) {
+    console.error("❌ APPLY SALARY FAILED — No airline_id in session");
+    return;
+  }
+
   const currentSalary = Number(dep.salary || 0);
   const staff = Number(dep.staff || 0);
 
   const slider = document.getElementById("sal_slider");
-  const ui = Number(slider.value || 0);
-  const percent = ACS_SAL_mapSliderToPercent(ui);
+  const ui = Number(slider?.value || 0);
 
-  const newSalary = Math.max(0, Math.round(currentSalary * (1 + percent / 100)));
+  const percent =
+    (typeof ACS_SAL_mapSliderToPercent === "function")
+      ? ACS_SAL_mapSliderToPercent(ui)
+      : ui;
 
-  // ============================================================
-  // 🟢 APLICAR SALARIO REAL (CANÓNICO)
-  // ============================================================
-  dep.salary = newSalary;
-  dep.baseSalary = newSalary;            // 🔒 CLAVE PARA UI
-  dep.marketReference = Math.round(newSalary * 2.6); // 🔒 CLAVE PARA RATIO
-
-  dep.payroll = Math.round(staff * newSalary);
-
-  // ============================================================
-  // 🔒 MANUAL OVERRIDE MODE ACTIVATED
-  // ============================================================
-  dep.salaryPolicy   = "MANUAL";
-  dep.salaryOverride = true;
-
-  // ============================================================
-  // 🔒 DESACTIVAR AUTO SALARY GLOBAL
-  // ============================================================
-  localStorage.setItem("ACS_AutoSalary", "OFF");
-
-  console.log(
-    "%c🔒 AUTO SALARY DISABLED — MANUAL OVERRIDE ACTIVE",
-    "color:#ff5555;font-weight:800",
-    dep.name
+  const newSalary = Math.max(
+    0,
+    Math.round(currentSalary * (1 + percent / 100))
   );
 
-  // ============================================================
-  // 🕒 REGISTRO HISTÓRICO
-  // ============================================================
-  const currentYear =
-    (window.ACS_TIME_CURRENT instanceof Date)
-      ? window.ACS_TIME_CURRENT.getUTCFullYear()
-      : new Date().getUTCFullYear();
+  let newMorale = Number(dep.morale || 100);
 
-  dep.lastSalaryReviewYear = currentYear;
-  dep.salaryStatus = "manual";
+  if (percent >= 20) newMorale += 4;
+  else if (percent >= 5) newMorale += 2;
+  else if (percent <= -15) newMorale -= 6;
+  else if (percent < 0) newMorale -= 3;
 
-  // ============================================================
-  // 💾 GUARDADO DEFINITIVO
-  // ============================================================
-  ACS_HR_save(HR);
+  newMorale = Math.max(40, Math.min(100, newMorale));
 
-  // ============================================================
-  // 🔄 REFRESH LIMPIO (SIN NORMALIZACIÓN)
-  // ============================================================
-  if (typeof loadDepartments === "function") loadDepartments();
-  if (typeof HR_updateKPI === "function") HR_updateKPI();
+  const newPayroll = Math.round(staff * newSalary);
 
-  console.log(
-    "%c✅ SALARY APPLIED (MANUAL POLICY — FINAL)",
-    "color:#7CFFB2;font-weight:800",
-    dep.name,
-    "| %:", percent,
-    "| Old:", currentSalary,
-    "| New:", newSalary
-  );
+  try {
 
-  closeSalaryModal();
+    /* ============================================================
+       1) DISABLE AUTO SALARY IN BACKEND COMPANY SETTINGS
+       ============================================================ */
+
+    const settingsRes = await fetch(
+      `${ACS_OPS_API_BASE}/v1/company/settings`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          auto_salary: false,
+          manual_salary_override: true
+        })
+      }
+    );
+
+    const settingsData = await settingsRes.json();
+
+    if (!settingsRes.ok || !settingsData?.ok) {
+      console.warn("❌ COMPANY SETTINGS PATCH FAILED", settingsData);
+      return;
+    }
+
+    ACS_setCompanySettings({
+      autoHire: settingsData.settings.auto_hire === true,
+      autoSalary: settingsData.settings.auto_salary === true,
+      manualSalaryOverride: settingsData.settings.manual_salary_override === true,
+      loadedFromBackend: true
+    });
+
+    console.log(
+      "%c🔒 AUTO SALARY DISABLED IN BACKEND — MANUAL OVERRIDE ACTIVE",
+      "color:#ff5555;font-weight:800",
+      dep.name
+    );
+
+    /* ============================================================
+       2) PERSIST HR SALARY CHANGE TO BACKEND
+       ============================================================ */
+
+    const hrRes = await fetch(
+      `${ACS_OPS_API_BASE}/v1/hr/staff`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          airline_id: Number(airlineId),
+          dept_id: depId,
+          staff: staff,
+          morale: newMorale,
+          salary: newSalary,
+          payroll: newPayroll
+        })
+      }
+    );
+
+    const hrData = await hrRes.json();
+
+    if (!hrRes.ok || !hrData?.ok) {
+      console.warn("❌ HR SALARY PATCH FAILED", hrData);
+      return;
+    }
+
+    /* ============================================================
+       3) UPDATE RUNTIME HR STATE AFTER BACKEND SUCCESS
+       ============================================================ */
+
+    dep.salary = newSalary;
+    dep.baseSalary = newSalary;
+    dep.marketReference = Math.round(newSalary * 2.6);
+    dep.payroll = newPayroll;
+    dep.morale = newMorale;
+
+    dep.salaryPolicy = "MANUAL";
+    dep.salaryOverride = true;
+
+    const currentYear =
+      (window.ACS_TIME_CURRENT instanceof Date)
+        ? window.ACS_TIME_CURRENT.getUTCFullYear()
+        : (
+            typeof ACS_HR_getGameYear === "function"
+              ? ACS_HR_getGameYear()
+              : null
+          );
+
+    if (typeof currentYear === "number") {
+      dep.lastSalaryReviewYear = currentYear;
+    }
+
+    dep.salaryStatus = "manual";
+
+    ACS_HR_save(HR);
+
+    if (typeof ACS_HR_syncFromServer === "function") {
+      await ACS_HR_syncFromServer();
+    }
+
+    if (typeof loadDepartments === "function") loadDepartments();
+    if (typeof HR_updateKPI === "function") HR_updateKPI();
+
+    console.log(
+      "%c✅ SALARY APPLIED — BACKEND CANONICAL",
+      "color:#7CFFB2;font-weight:800",
+      dep.name,
+      "| %:", percent,
+      "| Old:", currentSalary,
+      "| New:", newSalary,
+      "| Payroll:", newPayroll
+    );
+
+    closeSalaryModal();
+
+  } catch (err) {
+
+    console.warn("❌ APPLY SALARY BACKEND ERROR:", err);
+
+  }
+
 }
 
 /* ============================================================
