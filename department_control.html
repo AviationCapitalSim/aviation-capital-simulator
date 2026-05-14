@@ -1971,11 +1971,18 @@ function HR_fillDepartmentSelector() {
 let __ACS_ACTIVE_FIRE_DEPT = null;
 
 /* ============================================================
-   🟥 A2 — CONFIRM FIRE MINI MODAL (BACKEND ONLY — FINAL)
+   🟥 A2 — CONFIRM FIRE MINI MODAL (API CANONICAL)
+   ------------------------------------------------------------
+   • NO localStorage
+   • NO Railway direct URL
+   • Uses official API domain
+   • Session cookie required
+   • Backend remains authority
    ============================================================ */
 
 async function confirmFireMiniModal() {
 
+  const API_BASE = "https://api.aviationcapitalsim.com";
   const depId = __ACS_ACTIVE_FIRE_DEPT;
 
   if (!depId) {
@@ -1988,8 +1995,8 @@ async function confirmFireMiniModal() {
 
   const proceed = confirm(
     "⚠ Fire Staff Action\n\n" +
-    "This action will DISABLE Auto Hire automation for the company.\n" +
-    "Future hiring must be done manually or Auto Hire must be re-enabled in Settings.\n\n" +
+    "This action will disable Auto Hire for this runtime session.\n" +
+    "Future hiring must be done manually unless Auto Hire is re-enabled later.\n\n" +
     "Are you sure you want to proceed?"
   );
 
@@ -2030,13 +2037,17 @@ async function confirmFireMiniModal() {
     if (qty >= 3) moraleDrop = 10;
     if (qty >= 6) moraleDrop = 20;
 
-    const newMorale = Math.max(40, Number(dep.morale || 100) - moraleDrop);
+    const newMorale = Math.max(
+      40,
+      Number(dep.morale || 100) - moraleDrop
+    );
 
-    // 🔒 Mantener comportamiento existente
-    localStorage.setItem("autoHire", "false");
+    if (typeof ACS_HR_disableAutoHire === "function") {
+      ACS_HR_disableAutoHire();
+    }
 
     const payload = {
-      airline_id: airlineId,
+      airline_id: Number(airlineId),
       dept_id: depId,
       staff: newStaff,
       morale: newMorale,
@@ -2045,9 +2056,10 @@ async function confirmFireMiniModal() {
     };
 
     const res = await fetch(
-      "https://acs-world-server-production.up.railway.app/v1/hr/staff",
+      `${API_BASE}/v1/hr/staff`,
       {
         method: "PATCH",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json"
         },
@@ -2070,7 +2082,6 @@ async function confirmFireMiniModal() {
       "New morale:", newMorale
     );
 
-    // 🔄 Refresh authority from backend
     await ACS_HR_syncFromServer();
 
     if (typeof loadDepartments === "function") loadDepartments();
@@ -2079,8 +2090,11 @@ async function confirmFireMiniModal() {
     closeFireMiniModal();
 
   } catch (err) {
+
     console.warn("❌ FIRE ERROR:", err);
+
   }
+
 }
 
 /* ============================================================
