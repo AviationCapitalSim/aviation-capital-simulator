@@ -781,27 +781,37 @@ function ACS_OPS_recalculateAllRequired() {
 }
 
 /* ============================================================
-   🟦 B2 — DEFICIT TIMERS + MORALE DEGRADATION ENGINE (PHASE A)
-   Ubicación: FINAL DEL ARCHIVO acs_department_ops_engine.js
+   🟦 OPS DEFICIT STATE — NO LOCALSTORAGE
    ------------------------------------------------------------
-   • Detecta déficit persistente por departamento
-   • Escala alertas semanalmente
-   • Inicia degradación de moral progresiva
-   • NO aplica delays todavía (Phase B)
+   Date: 15 MAY 2026
+   • Runtime memory only
+   • NO localStorage
+   • Tracks department deficit months during active session
+   • Backend persistence can be added later
    ============================================================ */
 
-// Storage: estado de déficit por departamento
+window.ACS_OPS_DEFICIT_STATE =
+  window.ACS_OPS_DEFICIT_STATE || {};
+
 function ACS_OPS_loadDeficitState() {
-  return JSON.parse(localStorage.getItem("ACS_OPS_DEFICITS") || "{}");
+
+  if (!window.ACS_OPS_DEFICIT_STATE) {
+    window.ACS_OPS_DEFICIT_STATE = {};
+  }
+
+  return window.ACS_OPS_DEFICIT_STATE;
+
 }
 
 function ACS_OPS_saveDeficitState(state) {
-  localStorage.setItem("ACS_OPS_DEFICITS", JSON.stringify(state));
-}
 
-// Inicializar estructura si no existe
-if (!localStorage.getItem("ACS_OPS_DEFICITS")) {
-  ACS_OPS_saveDeficitState({});
+  window.ACS_OPS_DEFICIT_STATE =
+    state && typeof state === "object"
+      ? state
+      : {};
+
+  return window.ACS_OPS_DEFICIT_STATE;
+
 }
 
 /* ============================================================
