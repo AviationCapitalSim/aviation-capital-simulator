@@ -1520,24 +1520,38 @@ function ACS_HR_buildFinanceMetrics() {
 }
 
 /* ============================================================
-   🟦 A3.3.1 — SALARY ALERT STATE STORAGE
+   🟦 A3.3.1 — SALARY ALERT STATE STORAGE (NO LOCALSTORAGE)
    ------------------------------------------------------------
-   • Evita spam de alertas salariales
-   • 1 alerta por departamento por año
+   Date: 15 MAY 2026
+   • Runtime memory only
+   • NO localStorage
+   • Prevents alert spam during active session
+   • Backend persistence can be added later if needed
    ============================================================ */
 
+window.ACS_HR_SALARY_ALERT_STATE =
+  window.ACS_HR_SALARY_ALERT_STATE || {};
+
 function ACS_HR_loadSalaryAlertState() {
-  return JSON.parse(localStorage.getItem("ACS_HR_SALARY_ALERTS") || "{}");
+
+  if (!window.ACS_HR_SALARY_ALERT_STATE) {
+    window.ACS_HR_SALARY_ALERT_STATE = {};
+  }
+
+  return window.ACS_HR_SALARY_ALERT_STATE;
+
 }
 
 function ACS_HR_saveSalaryAlertState(state) {
-  localStorage.setItem("ACS_HR_SALARY_ALERTS", JSON.stringify(state));
-}
 
-if (!localStorage.getItem("ACS_HR_SALARY_ALERTS")) {
-  ACS_HR_saveSalaryAlertState({});
-}
+  window.ACS_HR_SALARY_ALERT_STATE =
+    state && typeof state === "object"
+      ? state
+      : {};
 
+  return window.ACS_HR_SALARY_ALERT_STATE;
+
+}
 
 /* ============================================================
    🟦 A3.3.2 — SALARY ALERT EMITTER CORE (ACS OFFICIAL)
