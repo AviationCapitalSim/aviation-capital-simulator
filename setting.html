@@ -445,21 +445,26 @@ function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
-
 /* ============================================================
-   🟦 ACS COMPANY SETTINGS — RUNTIME AUTHORITY v1.0
+   🟦 ACS COMPANY SETTINGS — BACKEND AUTHORITY v2.0
    ------------------------------------------------------------
+   Date: 14 MAY 2026
+   • Backend authority: Railway/PostgreSQL
+   • Endpoint:
+       GET   /v1/company/settings
+       PATCH /v1/company/settings
    • NO localStorage for Company Settings
-   • Keeps Auto Hire / Auto Salary as real game features
-   • Settings page controls runtime state
-   • Next phase: persist this object in Railway/PostgreSQL
+   • Keeps Auto Hire / Auto Salary as real ACS features
    ============================================================ */
+
+const ACS_API_BASE = "https://api.aviationcapitalsim.com";
 
 window.ACS_COMPANY_SETTINGS =
   window.ACS_COMPANY_SETTINGS || {
     autoHire: true,
     autoSalary: true,
-    manualSalaryOverride: false
+    manualSalaryOverride: false,
+    loadedFromBackend: false
   };
 
 function ACS_getCompanySettings() {
@@ -468,7 +473,8 @@ function ACS_getCompanySettings() {
     window.ACS_COMPANY_SETTINGS = {
       autoHire: true,
       autoSalary: true,
-      manualSalaryOverride: false
+      manualSalaryOverride: false,
+      loadedFromBackend: false
     };
   }
 
@@ -494,7 +500,12 @@ function ACS_setCompanySettings(nextSettings) {
     manualSalaryOverride:
       typeof nextSettings?.manualSalaryOverride === "boolean"
         ? nextSettings.manualSalaryOverride
-        : current.manualSalaryOverride
+        : current.manualSalaryOverride,
+
+    loadedFromBackend:
+      typeof nextSettings?.loadedFromBackend === "boolean"
+        ? nextSettings.loadedFromBackend
+        : current.loadedFromBackend
   };
 
   window.dispatchEvent(
@@ -510,6 +521,17 @@ function ACS_setCompanySettings(nextSettings) {
   );
 
   return window.ACS_COMPANY_SETTINGS;
+
+}
+
+function ACS_mapBackendSettings(raw) {
+
+  return {
+    autoHire: raw?.auto_hire === true,
+    autoSalary: raw?.auto_salary === true,
+    manualSalaryOverride: raw?.manual_salary_override === true,
+    loadedFromBackend: true
+  };
 
 }
 
@@ -531,17 +553,158 @@ function ACS_renderCompanySettings() {
 }
 
 /* ============================================================
-   🟦 LOAD SETTINGS ON PAGE READY
-   ------------------------------------------------------------
-   • Company Settings use ACS_COMPANY_SETTINGS only
-   • Aircraft Settings remain untouched for now
+   🟦 LOAD COMPANY SETTINGS FROM BACKEND
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+async function ACS_loadCompanySettingsFromBackend() {
 
-  ACS_renderCompanySettings();
+  try {
 
+    const res = await fetch(
+      `${ACS_API_BASE}/v1/company/settings`,
+      {
+        method: "GET",
+        credentials: "include"
+      }
+    );
+
+    if (res.status === 401) {
+      console.warn("❌ SETTINGS LOAD FAILED — NO VALID SESSION");
+      window.location.href = "login.html";
+      return false;
+    }
+
+    if (!res.ok) {
+      throw new Error(`SETTINGS_HTTP_${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!data?.ok || !data?.settings) {
+      throw new Error("INVALID_SETTINGS_RESPONSE");
+    }
+
+    ACS_setCompanySettings(
+      ACS_mapBackendSettings(data.settings)
+    );
+
+    ACS_renderCompanySettings();
+
+    console.log(
+      "%c🌐 COMPANY SETTINGS LOADED FROM BACKEND",
+      "color:#00ffcc;font-weight:700",
+      data.settings
+    );
+
+    return true;
+
+  } catch (err) {
+
+    console.warn("⚠ COMPANY SETTINGS LOAD ERROR:", err);
+
+    ACS_setCompanySettings({
+      autoHire: true,
+      autoSalary: true,
+      manualSalaryOverride: false,
+      loadedFromBackend: false
+    });
+
+    ACS_renderCompanySettings();
+
+    return false;
+
+  }
+
+}
+
+/* ============================================================
+   🟦 SAVE COMPANY SETTINGS TO BACKEND
+   ============================================================ */
+
+async function ACS_saveCompanySettingsToBackend(settings) {
+
+  try {
+
+    const payload = {
+      auto_hire: settings.autoHire === true,
+      auto_salary: settings.autoSalary === true,
+      manual_salary_override: settings.manualSalaryOverride === true
+    };
+
+    const res = await fetch(
+      `${ACS_API_BASE}/v1/company/settings`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (res.status === 401) {
+      console.warn("❌ SETTINGS SAVE FAILED — NO VALID SESSION");
+      window.location.href = "login.html";
+      return false;
+    }
+
+    if (!res.ok) {
+      throw new Error(`SETTINGS_PATCH_HTTP_${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (!data?.ok || !data?.settings) {
+      throw new Error("INVALID_SETTINGS_PATCH_RESPONSE");
+    }
+
+    ACS_setCompanySettings(
+      ACS_mapBackendSettings(data.settings)
+    );
+
+    ACS_renderCompanySettings();
+
+    console.log(
+      "%c✅ COMPANY SETTINGS SAVED TO BACKEND",
+      "color:#7CFFB2;font-weight:800",
+      data.settings
+    );
+
+    return true;
+
+  } catch (err) {
+
+    console.warn("❌ COMPANY SETTINGS SAVE ERROR:", err);
+    return false;
+
+  }
+
+}
+
+/* ============================================================
+   🟦 LOAD SETTINGS ON PAGE READY
+   ------------------------------------------------------------
+   • Company Settings load from backend
+   • Aircraft Settings remain untouched in this HR cleanup step
+   ============================================================ */
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  await ACS_loadCompanySettingsFromBackend();
+
+  const autoHireCB = document.getElementById("autoHire");
   const autoSalaryCB = document.getElementById("autoSalary");
+
+  if (autoHireCB) {
+    autoHireCB.addEventListener("change", () => {
+      const current = ACS_getCompanySettings();
+      ACS_setCompanySettings({
+        ...current,
+        autoHire: autoHireCB.checked === true
+      });
+    });
+  }
 
   if (autoSalaryCB) {
     autoSalaryCB.addEventListener("change", () => {
@@ -593,31 +756,37 @@ function resetAircraft(){
 }
 
 /* ============================================================
-   🟦 SAVE COMPANY SETTINGS — NO LOCALSTORAGE
+   🟦 SAVE COMPANY SETTINGS — BACKEND AUTHORITY
    ------------------------------------------------------------
-   • Updates runtime authority
-   • Runs Auto Hire immediately if enabled and engine exists
-   • Runs Auto Salary normalization if enabled and engine exists
+   • Saves Auto Hire / Auto Salary to Railway
+   • Then runs automation if engine is available on this page
    ============================================================ */
 
-function saveCompany(){
+async function saveCompany(){
 
   const autoHireEl = document.getElementById("autoHire");
   const autoSalaryEl = document.getElementById("autoSalary");
 
-  const autoHire =
-    autoHireEl ? autoHireEl.checked === true : true;
+  const nextSettings = {
+    autoHire: autoHireEl ? autoHireEl.checked === true : true,
+    autoSalary: autoSalaryEl ? autoSalaryEl.checked === true : true,
+    manualSalaryOverride: false,
+    loadedFromBackend: true
+  };
 
-  const autoSalary =
-    autoSalaryEl ? autoSalaryEl.checked === true : true;
+  const ok = await ACS_saveCompanySettingsToBackend(nextSettings);
 
-  ACS_setCompanySettings({
-    autoHire,
-    autoSalary,
-    manualSalaryOverride: false
-  });
+  if (!ok) {
+    openSaveModal(
+      "Company Settings",
+      "Company settings could not be saved. Please check session/backend."
+    );
+    return;
+  }
 
-  if (autoHire) {
+  const saved = ACS_getCompanySettings();
+
+  if (saved.autoHire) {
 
     if (typeof window.ACS_HR_runAutoHire === "function") {
 
@@ -636,7 +805,7 @@ function saveCompany(){
 
   }
 
-  if (autoSalary) {
+  if (saved.autoSalary) {
 
     if (typeof window.ACS_HR_applyAutoSalaryNormalization === "function") {
 
@@ -657,16 +826,16 @@ function saveCompany(){
 
   openSaveModal(
     "Company Settings",
-    "Company settings saved in runtime authority. Backend persistence is the next phase."
+    "Company settings saved successfully to backend."
   );
 
 }
 
 /* ============================================================
-   🟦 AUTO SALARY SETTINGS SYNC — NO LOCALSTORAGE
+   🟦 AUTO SALARY SETTINGS SYNC — BACKEND READY
    ------------------------------------------------------------
-   • Only updates runtime setting
-   • Does not execute salary logic by itself
+   • Updates runtime state immediately
+   • Backend save happens when user presses Save
    ============================================================ */
 
 function syncAutoSalarySetting() {
@@ -674,12 +843,11 @@ function syncAutoSalarySetting() {
   const cb = document.getElementById("autoSalary");
   if (!cb) return;
 
-  const settings = ACS_getCompanySettings();
+  const current = ACS_getCompanySettings();
 
   ACS_setCompanySettings({
-    autoHire: settings.autoHire,
-    autoSalary: cb.checked === true,
-    manualSalaryOverride: settings.manualSalaryOverride
+    ...current,
+    autoSalary: cb.checked === true
   });
 
   console.log(
@@ -688,7 +856,7 @@ function syncAutoSalarySetting() {
     cb.checked ? "ON" : "OFF"
   );
 
-  if (settings.manualSalaryOverride === true) {
+  if (current.manualSalaryOverride === true) {
 
     alert(
       "⚠️ Manual Salary Adjustment Detected\n\n" +
@@ -697,8 +865,7 @@ function syncAutoSalarySetting() {
     );
 
     ACS_setCompanySettings({
-      autoHire: settings.autoHire,
-      autoSalary: cb.checked === true,
+      ...ACS_getCompanySettings(),
       manualSalaryOverride: false
     });
 
@@ -707,16 +874,27 @@ function syncAutoSalarySetting() {
 }
 
 /* ============================================================
-   🟦 RESET COMPANY SETTINGS — DEFAULT ON / NO LOCALSTORAGE
+   🟦 RESET COMPANY SETTINGS — DEFAULT ON / BACKEND AUTHORITY
    ============================================================ */
 
-function resetCompany(){
+async function resetCompany(){
 
-  ACS_setCompanySettings({
+  const nextSettings = {
     autoHire: true,
     autoSalary: true,
-    manualSalaryOverride: false
-  });
+    manualSalaryOverride: false,
+    loadedFromBackend: true
+  };
+
+  const ok = await ACS_saveCompanySettingsToBackend(nextSettings);
+
+  if (!ok) {
+    openSaveModal(
+      "Company Settings",
+      "Company settings could not be reset. Please check backend/session."
+    );
+    return;
+  }
 
   ACS_renderCompanySettings();
 
@@ -730,6 +908,7 @@ function resetCompany(){
   );
 
 }
+  
 </script>
   
 </body>
