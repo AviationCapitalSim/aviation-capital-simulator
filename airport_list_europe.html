@@ -903,130 +903,150 @@ th.sort-desc::after{
 
 <!-- 5) Motor mundial (usa datos ya cargados) -->
 <script src="engine/acs_world_engine.js?v=1.0"></script>
-
 <script>
      
 /* ============================================================
-   🧭 BASE RESOLVER — GLOBAL (ACS STANDARD)
+   🧭 ACS COMPANY CONTEXT BRIDGE — BACKEND AUTHORITY v1.0
+   ------------------------------------------------------------
+   File: airport_list_europe.html
+   Purpose:
+   - Load company/user context from backend session
+   - Source of truth: /v1/company/context
+   - Provides base_icao for airport list and route creation
+   - NO localStorage authority
    ============================================================ */
-     
-function getACSBaseResolved() {
 
-  // 1️⃣ Fuente oficial
+window.ACS_COMPANY_CONTEXT = null;
+
+async function ACS_loadCompanyContext() {
+
   try {
-    const user = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-    if (user.base && user.base.icao) {
-      return {
-        icao: user.base.icao.toUpperCase(),
-        city: user.base.city || "",
-        country: user.base.country || "",
-        name: user.base.name || ""
-      };
+
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/company/context",
+      {
+        credentials: "include"
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true) {
+      console.warn("⚠️ ACS company context failed:", data);
+      window.ACS_COMPANY_CONTEXT = null;
+      return null;
     }
-  } catch (e) {
-    console.warn("ACS base parse error", e);
+
+    window.ACS_COMPANY_CONTEXT = data;
+
+    console.log("🟢 ACS COMPANY CONTEXT LOADED:", {
+      user_id: data.user?.user_id,
+      airline_id: data.user?.airline_id,
+      base_icao: data.user?.base_icao,
+      airline: data.airline?.airline_name
+    });
+
+    return data;
+
+  } catch (err) {
+
+    console.warn("⚠️ ACS company context fetch error:", err);
+    window.ACS_COMPANY_CONTEXT = null;
+    return null;
+
   }
 
-  // 2️⃣ Legacy fallback (NO recursivo)
-  const legacyICAO = localStorage.getItem("ACS_baseICAO");
-  if (!legacyICAO) return null;
+}
+
+/* ============================================================
+   🧭 BASE RESOLVER — BACKEND RUNTIME ONLY
+   ============================================================ */
+
+function getACSBaseResolved() {
+
+  const ctx = window.ACS_COMPANY_CONTEXT;
+
+  const baseIcao =
+    ctx &&
+    ctx.user &&
+    ctx.user.base_icao
+      ? String(ctx.user.base_icao).trim().toUpperCase()
+      : "";
+
+  if (!baseIcao) return null;
 
   return {
-    icao: legacyICAO.toUpperCase(),
-    city: localStorage.getItem("ACS_baseCity") || "",
-    country: localStorage.getItem("ACS_baseCountry") || "",
-    name: localStorage.getItem("ACS_baseName") || ""
+    icao: baseIcao,
+    city: "",
+    country: ctx.user?.country || "",
+    name: "",
+    source: "company_context"
   };
+
 }
+
+/* ============================================================
+   === FIND BASE AIRPORT — BACKEND CONTEXT AUTHORITY ===========
+   ============================================================ */
 
 function findBaseAirportGlobal() {
 
-  const baseObj = getACSBaseResolved();
-  if (!baseObj || !baseObj.icao) return null;
+  const baseCtx = getACSBaseResolved();
 
-  const icao = baseObj.icao.toUpperCase();
+  if (!baseCtx || !baseCtx.icao) {
+    return null;
+  }
 
-  try {
+  const baseIcao = String(baseCtx.icao).trim().toUpperCase();
 
-    if (
-      window.ACS_World &&
-      ACS_World.BY_ICAO &&
-      ACS_World.BY_ICAO[icao]
-    ) {
-      return ACS_World.BY_ICAO[icao];
-    }
+  if (window.ACS_World &&
+      ACS_World.ready &&
+      ACS_World.INDEX_ICAO &&
+      ACS_World.INDEX_ICAO[baseIcao]) {
 
-  } catch (e) {}
+    return ACS_World.INDEX_ICAO[baseIcao];
+  }
 
-  const continents = Object.values(WorldAirportsACS || {});
+  for (const cont in WorldAirportsACS) {
 
-  for (const list of continents) {
-    const ap = list.find(a => a.icao === icao);
+    const list = WorldAirportsACS[cont];
+
+    if (!Array.isArray(list)) continue;
+
+    const ap = list.find(a =>
+      String(a.icao || "").toUpperCase() === baseIcao
+    );
+
     if (ap) return ap;
+
   }
 
   return null;
-
 }
+
+/* ============================================================
+   === ENSURE BASE BEFORE LOAD — BACKEND CONTEXT ===============
+   ============================================================ */
 
 function ensureBaseBeforeLoad(callback) {
 
-  let tries = 0;
+  const baseCtx = getACSBaseResolved();
 
-  const timer = setInterval(() => {
+  if (!baseCtx || !baseCtx.icao) {
+    console.warn("⚠️ No backend base set yet");
+    return;
+  }
 
-    const base = findBaseAirportGlobal();
+  const ap = findBaseAirportGlobal();
 
-    if (base) {
+  if (ap) {
+    callback();
+    return;
+  }
 
-      clearInterval(timer);
-
-      console.log("🟢 Base resolved:", base.icao);
-
-      if (typeof callback === "function") {
-        callback();
-      }
-
-    }
-
-    tries++;
-
-    if (tries > 50) {
-      clearInterval(timer);
-      console.warn("⚠️ Base could not be resolved");
-      if (typeof callback === "function") callback();
-    }
-
-  }, 100);
+  setTimeout(() => ensureBaseBeforeLoad(callback), 60);
 
 }
-     
-// ============================================================
-// 🧭 ACS — BASE AUTO-RESTORE (COMPAT MODE)
-// ============================================================
-
-(function restoreBaseOnce() {
-  try {
-    let activeUser = JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-    if (activeUser.base && activeUser.base.icao) return;
-
-    // ESTE baseICAO ya existía antes del refactor
-    if (typeof baseICAO === "string" && baseICAO.length === 4) {
-      activeUser.base = {
-        icao: baseICAO,
-        city: baseCity || "",
-        country: baseCountry || "",
-        name: baseName || ""
-      };
-
-      localStorage.setItem("ACS_activeUser", JSON.stringify(activeUser));
-      console.log("🧭 ACS base restored from airport_list (compat)");
-    }
-  } catch (e) {
-    console.warn("ACS base restore failed", e);
-  }
-})();
      
 </script>
      
@@ -1175,9 +1195,10 @@ function loadAirports() {
     return;
   }
 
- // ✔ BASE REAL DEL JUGADOR (GLOBAL)
+   // ✔ BASE REAL DEL JUGADOR — BACKEND CONTEXT
      
-  const userBase = localStorage.getItem("ACS_baseICAO") || null;
+  const baseCtx = getACSBaseResolved();
+  const userBase = baseCtx?.icao || null;
   const base = findBaseAirportGlobal();
 
   let baseLat = null, baseLon = null;
@@ -1265,10 +1286,10 @@ function filterByCountry() {
   const airports = getAirportsEuropeSafe();
   if (!airports || airports.length === 0) return;
 
-  const baseObj = getACSBaseResolved();
-  const userBase = baseObj ? baseObj.icao : null;
-
-  const base = airports.find(a => a.icao === userBase);
+  const baseCtx = getACSBaseResolved();
+  const userBase = baseCtx?.icao || null;
+     
+  const base = findBaseAirportGlobal();
 
   let baseLat = null, baseLon = null;
   if (base) {
@@ -2508,22 +2529,25 @@ function ACS_closeSlotDemandModal(){
 
 }
      
-/* =============================================================
-   === LOGOUT ===================================================
-   ============================================================= */
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
+/* ========== LOGOUT ========== */
+  
+function handleLogout(){
+  alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
 
 /* ============================================================
-   === GLOBAL BASE (WAITS FOR LOADER) ==========================
+   === GLOBAL BASE BANNER — BACKEND CONTEXT ====================
    ============================================================ */
-     
+
 function updateGlobalBaseBanner() {
 
-  const baseIcao = localStorage.getItem("ACS_baseICAO");
-  if (!baseIcao) return;
+  const baseCtx = getACSBaseResolved();
+
+  if (!baseCtx || !baseCtx.icao) {
+    console.warn("⚠️ No backend base context available");
+    return;
+  }
 
   const base = findBaseAirportGlobal();
 
@@ -2532,57 +2556,32 @@ function updateGlobalBaseBanner() {
     return;
   }
 
-  const flagEmoji = base.country.replace(/./g, c =>
-    String.fromCodePoint(c.charCodeAt(0) + 127397)
-  );
+  let flagEmoji = "🏳️";
+
+  try {
+    if (base.country) {
+      flagEmoji = String(base.country).replace(/./g, c =>
+        String.fromCodePoint(c.charCodeAt(0) + 127397)
+      );
+    }
+  } catch {
+    flagEmoji = "🏳️";
+  }
 
   document.getElementById("originFlag").textContent = flagEmoji;
   document.getElementById("originIcao").textContent = base.icao;
   document.getElementById("originCity").textContent =
     `— ${base.city}, ${base.region}`;
+
 }
-    
+
 /* =============================================================
-   === INITIALIZATION ==========================================
+   === INITIALIZATION — BACKEND COMPANY CONTEXT ================
    ============================================================= */
      
 document.addEventListener("DOMContentLoaded", async () => {
 
-  try {
-
-    const activeUser =
-      JSON.parse(localStorage.getItem("ACS_activeUser") || "{}");
-
-    const userId = activeUser.user_id || activeUser.userId;
-
-    if (!userId) {
-      console.warn("⚠️ No user id available");
-    } else {
-
-      const res = await fetch(
-        `https://acs-world-server-production.up.railway.app/v1/users/profile/${userId}`
-      );
-
-      const data = await res.json();
-
-      const baseICAO = data?.user?.base_icao;
-
-      if (baseICAO) {
-
-        // guardar donde tu sistema actual lo espera
-        localStorage.setItem("ACS_baseICAO", baseICAO);
-
-        console.log("🟢 Base loaded from USERS:", baseICAO);
-
-      }
-
-    }
-
-  } catch (err) {
-
-    console.warn("⚠️ Could not load base from Railway", err);
-
-  }
+  await ACS_loadCompanyContext();
 
   updateGlobalBaseBanner();
 
@@ -2593,51 +2592,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
      
 /* ============================================================
-   === SEND ORIGIN & DESTINATION TO SCHEDULE ===================
+   === SEND ORIGIN & DESTINATION TO ROUTE SCHEDULE =============
+   ------------------------------------------------------------
+   Source: backend company context
+   Transfer: URL parameters only
+   NO localStorage
    ============================================================ */
+
 function ACS_openRouteSchedule(destIcao) {
 
   let originIcao = null;
 
   try {
-    if (typeof findBaseAirportGlobal === "function") {
-      const base = findBaseAirportGlobal();
-      if (base && base.icao) {
-        originIcao = base.icao.toUpperCase();
-      }
+
+    const baseCtx = getACSBaseResolved();
+
+    if (baseCtx && baseCtx.icao) {
+      originIcao = String(baseCtx.icao).trim().toUpperCase();
     }
 
-    if (!originIcao) {
-      const baseIcao = localStorage.getItem("ACS_baseICAO");
-      if (baseIcao) originIcao = baseIcao.toUpperCase();
-    }
   } catch (e) {
-    console.warn("ACS_openRouteSchedule: cannot resolve base", e);
+
+    console.warn("ACS_openRouteSchedule: cannot resolve backend base", e);
+
   }
 
   if (!originIcao) {
-    alert("⚠️ No base selected. Please choose a base first.");
+    alert("⚠️ No operational base found from backend session.");
     return;
   }
 
-  const dest = (destIcao || "").toUpperCase();
+  const dest = String(destIcao || "").trim().toUpperCase();
+
   if (!dest) {
     alert("⚠️ Destination not valid.");
     return;
   }
 
-  localStorage.setItem("ACS_selectedOrigin", originIcao);
-  localStorage.setItem("ACS_selectedDestination", dest);
+  const url =
+    `route_schedule.html?origin=${encodeURIComponent(originIcao)}&destination=${encodeURIComponent(dest)}`;
 
-  localStorage.removeItem("editFlightID");
+  window.location.href = url;
 
-  window.location.href = "route_schedule.html";
 }
-
      
 </script>
-
-<script src="engine/acs_security_core.js?v=1"></script>
      
 </body>
 </html>
