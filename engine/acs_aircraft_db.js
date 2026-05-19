@@ -2410,6 +2410,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 110,
   price_acs_usd: 950000,
   engines: "RR300"},
+   
 // ============================================================
 // PARTE 12 — AVIACIÓN GENERAL (GA) — 1935–2025
 // ============================================================
@@ -2428,75 +2429,10 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 240,
   price_acs_usd: 650000,
   engines: "PW R-985"},
-{
-  
-  manufacturer: "Cessna",
-  model: "Cessna 120",
-  year: 1946,
-  seats: 2,
-  range_nm: 350,
-  speed_kts: 95,
-  mtow_kg: 680,
-  fuel_burn_kgph: 30,
-  price_acs_usd: 140000,
-  engines: "Continental C-85"},
-{
-  manufacturer: "Piper",
-  model: "PA-18 Super Cub",
-  year: 1949,
-  seats: 2,
-  range_nm: 400,
-  speed_kts: 90,
-  mtow_kg: 900,
-  fuel_burn_kgph: 35,
-  price_acs_usd: 180000,
-  engines: "Lycoming O-320"},
+
+   
 // ======================= GENERAL AVIATION MASIVA (1970–1990) =======================
 
-{
-  manufacturer: "Cessna",
-  model: "Cessna 150",
-  year: 1958,
-  seats: 2,
-  range_nm: 350,
-  speed_kts: 95,
-  mtow_kg: 725,
-  fuel_burn_kgph: 22,
-  price_acs_usd: 130000,
-  engines: "Continental O-200"},
-{
-  manufacturer: "Cessna",
-  model: "Cessna 152",
-  year: 1977,
-  seats: 2,
-  range_nm: 415,
-  speed_kts: 107,
-  mtow_kg: 760,
-  fuel_burn_kgph: 23,
-  price_acs_usd: 160000,
-  engines: "Lycoming O-235"},
-{
-  manufacturer: "Cessna",
-  model: "Cessna 172 Skyhawk",
-  year: 1956,
-  seats: 4,
-  range_nm: 640,
-  speed_kts: 122,
-  mtow_kg: 1110,
-  fuel_burn_kgph: 35,
-  price_acs_usd: 420000,
-  engines: "Lycoming IO-360"},
-{
-  manufacturer: "Piper",
-  model: "PA-28 Cherokee",
-  year: 1961,
-  seats: 4,
-  range_nm: 520,
-  speed_kts: 118,
-  mtow_kg: 1110,
-  fuel_burn_kgph: 33,
-  price_acs_usd: 380000,
-  engines: "Lycoming O-320"},
 {
   manufacturer: "Piper",
   model: "PA-32 Cherokee Six",
@@ -2508,28 +2444,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 55,
   price_acs_usd: 650000,
   engines: "Lycoming IO-540"},
-{
-  manufacturer: "Beechcraft",
-  model: "Bonanza V35",
-  year: 1965,
-  seats: 4,
-  range_nm: 725,
-  speed_kts: 165,
-  mtow_kg: 1540,
-  fuel_burn_kgph: 60,
-  price_acs_usd: 850000,
-  engines: "Continental IO-520"},
-{
-  manufacturer: "Mooney",
-  model: "M20J 201",
-  year: 1977,
-  seats: 4,
-  range_nm: 700,
-  speed_kts: 160,
-  mtow_kg: 1335,
-  fuel_burn_kgph: 42,
-  price_acs_usd: 600000,
-  engines: "Lycoming IO-360"},
+
 // ======================= TWIN PISTON (BIMOTORES) =======================
 
 {
@@ -2565,63 +2480,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 105,
   price_acs_usd: 900000,
   engines: "Continental IO-470"},
-{
-  manufacturer: "Piper",
-  model: "PA-44 Seminole",
-  year: 1978,
-  seats: 4,
-  range_nm: 700,
-  speed_kts: 162,
-  mtow_kg: 1715,
-  fuel_burn_kgph: 75,
-  price_acs_usd: 800000,
-  engines: "Lycoming O-360"},
-// ======================= HIGH PERFORMANCE PISTON TOURING =======================
 
-{
-  manufacturer: "Cirrus",
-  model: "SR20",
-  year: 1999,
-  seats: 4,
-  range_nm: 600,
-  speed_kts: 155,
-  mtow_kg: 1400,
-  fuel_burn_kgph: 45,
-  price_acs_usd: 500000,
-  engines: "Continental IO-360"},
-{
-  manufacturer: "Cirrus",
-  model: "SR22",
-  year: 2001,
-  seats: 4,
-  range_nm: 1000,
-  speed_kts: 180,
-  mtow_kg: 1600,
-  fuel_burn_kgph: 65,
-  price_acs_usd: 900000,
-  engines: "Continental IO-550"},
-{
-  manufacturer: "Diamond",
-  model: "DA40 NG",
-  year: 2001,
-  seats: 4,
-  range_nm: 940,
-  speed_kts: 140,
-  mtow_kg: 1310,
-  fuel_burn_kgph: 21,
-  price_acs_usd: 500000,
-  engines: "Austro AE300 (Diesel)"},
-{
-  manufacturer: "Diamond",
-  model: "DA62",
-  year: 2015,
-  seats: 7,
-  range_nm: 1300,
-  speed_kts: 190,
-  mtow_kg: 2300,
-  fuel_burn_kgph: 85,
-  price_acs_usd: 1350000,
-  engines: "Austro AE330"},
 // ======================= TURBOPROP LIGERO Y EJECUTIVO =======================
 
 {
@@ -2690,6 +2549,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 360,
   price_acs_usd: 7800000,
   engines: "PT6A-60A"},
+   
 // ============================================================
 // PARTE 13 — COMMUTER / REGIONAL SPECIAL OPS (1950–2025)
 // ============================================================
@@ -2765,6 +2625,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 210,
   price_acs_usd: 2200000,
   engines: "Lycoming IO-540 (x3)"},
+   
 // ======================= LET AIRCRAFT =======================
 
 {
