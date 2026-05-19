@@ -159,17 +159,6 @@ const ACS_AIRCRAFT_DB = [
     price_acs_usd: 600000,
     engines: "Bristol Perseus"},
   {
-    manufacturer: "Douglas",
-    model: "Super DC-3 (R4D-8)",
-    year: 1949,
-    seats: 30,
-    range_nm: 1800,
-    speed_kts: 210,
-    mtow_kg: 13500,
-    fuel_burn_kgph: 500,
-    price_acs_usd: 900000,
-    engines: "PW R-1830"},
-  {
     manufacturer: "Avro",
     model: "Lancastrian",
     year: 1943,
