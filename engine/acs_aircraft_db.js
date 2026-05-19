@@ -357,6 +357,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 6500,
   price_acs_usd: 15000000,
   engines: "RR Spey 555-15"},
+   
 // ============================================================
 // 1950 — 1970 (British Turboprops & Early Europeans)
 // Viscount • Vanguard • Britannia • Others
@@ -495,6 +496,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 3400,
   price_acs_usd: 14500000,
   engines: "Ivchenko AI-20M"},
+   
 // ============================================================
 // DOUGLAS — FULL PASSENGER SERIES (Clean / No Duplicates)
 // ============================================================
@@ -659,6 +661,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 9500,
   price_acs_usd: 250000000,
   engines: "GE90-110B/115B"},
+   
 // ============================================================
 // McDONNELL DOUGLAS — FULL PASSENGER LINEUP (No duplicates)
 // ============================================================
@@ -737,6 +740,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 8500,
   price_acs_usd: 21000000,
   engines: "JT3D"},
+   
 // --- DC-8-70 (1982) — Re-motores CFM56 ---
 {
   manufacturer: "McDonnell Douglas",
@@ -771,6 +775,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 6450,
   price_acs_usd: 24500000,
   engines: "CFM56-2"},
+   
 /* ===========================
    === DC-9 FAMILY (1965–1982)
    =========================== */
@@ -835,6 +840,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 3150,
   price_acs_usd: 16500000,
   engines: "JT8D-17"},
+   
 /* ===========================
    === MD-80 SERIES (1980–1997)
    =========================== */
@@ -851,6 +857,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 3500,
   price_acs_usd: 21000000,
   engines: "JT8D-209"},
+   
 // --- MD-83 (1985) ---
 {
   manufacturer: "McDonnell Douglas",
@@ -887,6 +894,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 3500,
   price_acs_usd: 24000000,
   engines: "JT8D-219"},
+   
 /* ===========================
    === MD-90 FAMILY (1993–1999)
    =========================== */
@@ -903,6 +911,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 3100,
   price_acs_usd: 26000000,
   engines: "IAE V2500"},
+   
 /* ===========================
    === MD-95 (Boeing 717) — 1999
    =========================== */
@@ -918,6 +927,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 2600,
   price_acs_usd: 30000000,
   engines: "RR BR715"},
+   
 // ============================================================
 // AIRBUS — FULL PASSENGER SERIES (Missing Models Added)
 // ============================================================
@@ -962,6 +972,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 5600,
   price_acs_usd: 62000000,
   engines: "GE CF6-50C2"},
+   
 /* =============================
    === A318/A319/A320/A321 FAMILY (1988–2025)
    ============================= */
@@ -990,6 +1001,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 2400,
   price_acs_usd: 99000000,
   engines: "LEAP-1A26"},
+   
 /* =============================
    === A330 FAMILY (1994–2025)
    ============================= */
@@ -1069,6 +1081,7 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 900,
   price_acs_usd: 18500000,
   engines: "PW123"},
+   
 /* =============================
    === CRJ FAMILY (1991–2010)
    ============================= */
@@ -1490,23 +1503,13 @@ const ACS_AIRCRAFT_DB = [
   fuel_burn_kgph: 6800,
   price_acs_usd: 24000000,
   engines: "Lotarev D-36"},
+   
 // ============================================================
 // 1950 — 1975 (Convair / Martin / Sud Aviation / USA Rare)
 // ============================================================
 
 // ======================= CONVAIR =======================
 
-{
-  manufacturer: "Convair",
-  model: "CV-240",
-  year: 1948,
-  seats: 40,
-  range_nm: 1000,
-  speed_kts: 245,
-  mtow_kg: 16500,
-  fuel_burn_kgph: 850,
-  price_acs_usd: 3200000,
-  engines: "PW R-2800"},
 {
   manufacturer: "Convair",
   model: "CV-340",
