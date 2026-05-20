@@ -206,34 +206,213 @@ function getCurrentSimYear() {
 }
 
 /* ============================================================
-   3) RESOLVER BASE DE DATOS
-   ============================================================ */
-function resolveAircraftDB() {
-  if (typeof ACS_AIRCRAFT_DB !== "undefined") return ACS_AIRCRAFT_DB;
-  if (typeof ACS_AIRCRAFT_MASTER_DB !== "undefined") return ACS_AIRCRAFT_MASTER_DB;
+   3) FACTORY CATALOG — BACKEND AUTHORITY
+   ------------------------------------------------------------
+   Source of truth:
+   GET /v1/aircraft/factory/catalog?year=<ACS_YEAR>
 
-  console.error("❌ No se encontró base de datos ACS_AIRCRAFT_DB");
-  return [];
+   Purpose:
+   - Remove ACS_AIRCRAFT_DB dependency from Buy New
+   - Consume PostgreSQL factory catalog
+   - Keep historical OEM availability in backend
+   - Normalize backend rows for existing Buy New UI
+   ============================================================ */
+
+const ACS_FACTORY_CATALOG_ENDPOINT =
+  "https://api.aviationcapitalsim.com/v1/aircraft/factory/catalog";
+
+let ACS_FACTORY_CATALOG_CACHE = {
+  year: null,
+  aircraft: []
+};
+
+function ACS_normalizeFactoryAircraft(row) {
+
+  const manufacturer =
+    row.manufacturer ||
+    row.oem ||
+    row.make ||
+    "Unknown";
+
+  const model =
+    row.model ||
+    row.aircraft_model ||
+    row.aircraft_name ||
+    row.model_key ||
+    "Unknown Model";
+
+  const year = Number(
+    row.year ??
+    row.production_year ??
+    row.available_from ??
+    row.start_year ??
+    1940
+  );
+
+  const seats = Number(
+    row.seats ??
+    row.passenger_capacity ??
+    row.capacity ??
+    0
+  );
+
+  const range_nm = Number(
+    row.range_nm ??
+    row.range ??
+    row.max_range_nm ??
+    0
+  );
+
+  const speed_kts = Number(
+    row.speed_kts ??
+    row.cruise_speed_kts ??
+    row.speed ??
+    0
+  );
+
+  const price_acs_usd = Number(
+    row.price_acs_usd ??
+    row.price ??
+    row.factory_price ??
+    row.catalog_price ??
+    0
+  );
+
+  const engines = Number(
+    row.engines ??
+    row.engine_count ??
+    0
+  );
+
+  return {
+    ...row,
+
+    manufacturer,
+    model,
+
+    aircraft_name:
+      row.aircraft_name ||
+      `${manufacturer} ${model}`,
+
+    model_key:
+      row.model_key ||
+      `${manufacturer}_${model}`
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_|_$/g, ""),
+
+    family:
+      row.family ||
+      manufacturer ||
+      model.split(" ")[0],
+
+    year,
+    seats,
+    range_nm,
+    speed_kts,
+    price_acs_usd,
+    engines
+  };
 }
 
-function getAircraftBase() {
-  const db = resolveAircraftDB();
-  const simYear = getCurrentSimYear();
+async function ACS_fetchFactoryCatalog(year) {
 
-  return db
-    .filter(a => a.year <= simYear)
-    .sort((a, b) => a.year - b.year);
+  const simYear = Number(year || getCurrentSimYear() || 1940);
+
+  if (
+    ACS_FACTORY_CATALOG_CACHE.year === simYear &&
+    Array.isArray(ACS_FACTORY_CATALOG_CACHE.aircraft) &&
+    ACS_FACTORY_CATALOG_CACHE.aircraft.length > 0
+  ) {
+    return ACS_FACTORY_CATALOG_CACHE.aircraft;
+  }
+
+  const url =
+    `${ACS_FACTORY_CATALOG_ENDPOINT}?year=${encodeURIComponent(simYear)}`;
+
+  try {
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Factory Catalog HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const rawList =
+      data.aircraft ||
+      data.factory_catalog ||
+      data.catalog ||
+      data.items ||
+      [];
+
+    if (!data.ok && !Array.isArray(rawList)) {
+      throw new Error("Factory Catalog returned invalid payload");
+    }
+
+    const normalized = rawList
+      .map(ACS_normalizeFactoryAircraft)
+      .filter(ac => ac.year <= simYear)
+      .sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        if (a.manufacturer !== b.manufacturer) {
+          return a.manufacturer.localeCompare(b.manufacturer);
+        }
+        return a.model.localeCompare(b.model);
+      });
+
+    ACS_FACTORY_CATALOG_CACHE = {
+      year: simYear,
+      aircraft: normalized
+    };
+
+    console.log(
+      "🟩 ACS Factory Catalog loaded:",
+      simYear,
+      "COUNT:",
+      normalized.length
+    );
+
+    return normalized;
+
+  } catch (error) {
+
+    console.error("❌ ACS Factory Catalog load failed:", error);
+
+    ACS_FACTORY_CATALOG_CACHE = {
+      year: simYear,
+      aircraft: []
+    };
+
+    return [];
+  }
+}
+
+async function getAircraftBase() {
+  const simYear = getCurrentSimYear();
+  return await ACS_fetchFactoryCatalog(simYear);
 }
 
 /* ============================================================
    4) CHIPS DE FABRICANTE
    ============================================================ */
-function buildFilterChips() {
+
+async function buildFilterChips() {
   const bar = document.getElementById("filterBar");
   if (!bar) return;
 
-  const base = getAircraftBase();
-  const set = new Set(base.map(a => a.manufacturer));
+  const base = await getAircraftBase();
+
+  const set = new Set(
+    base
+      .map(a => a.manufacturer)
+      .filter(Boolean)
+  );
+
   const list = Array.from(set).sort();
 
   bar.innerHTML = "";
@@ -252,15 +431,18 @@ function buildFilterChips() {
     bar.appendChild(chip);
   });
 
-  bar.addEventListener("click", e => {
+  bar.onclick = async e => {
     const chip = e.target.closest(".chip");
     if (!chip) return;
 
-    bar.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+    bar.querySelectorAll(".chip").forEach(c => {
+      c.classList.remove("active");
+    });
+
     chip.classList.add("active");
 
-    renderCards(chip.dataset.manufacturer);
-  });
+    await renderCards(chip.dataset.manufacturer);
+  };
 }
 
 /* ============================================================
@@ -303,20 +485,42 @@ function getAircraftImage(ac) {
 /* ============================================================
    6) RENDER DE TARJETAS
    ============================================================ */
+
 let ACS_currentRenderedList = [];
 
-function renderCards(filterManufacturer = "All") {
+async function renderCards(filterManufacturer = "All") {
   const grid = document.getElementById("cardsGrid");
   if (!grid) return;
 
-  const base = getAircraftBase();
+  grid.innerHTML = `
+    <div class="card">
+      <h3>Loading Factory Catalog...</h3>
+      <div class="spec-line">Reading PostgreSQL OEM availability.</div>
+    </div>
+  `;
+
+  const base = await getAircraftBase();
+
   const list =
     filterManufacturer === "All"
       ? base
       : base.filter(a => a.manufacturer === filterManufacturer);
-      ACS_currentRenderedList = list;   // <<— GUARDA LA LISTA FILTRADA
-   
+
+  ACS_currentRenderedList = list;
+
   grid.innerHTML = "";
+
+  if (!list.length) {
+    grid.innerHTML = `
+      <div class="card">
+        <h3>No Aircraft Available</h3>
+        <div class="spec-line">
+          No factory aircraft are available for the current simulation year.
+        </div>
+      </div>
+    `;
+    return;
+  }
 
   list.forEach((ac, idx) => {
     const card = document.createElement("div");
@@ -327,12 +531,18 @@ function renderCards(filterManufacturer = "All") {
     const eng =
       ACS_ENGINE_SPECS[ac.model] ||
       ACS_ENGINE_SPECS[
-        ac.model.replace(/^Airbus |Boeing |McDonnell Douglas |Douglas |Lockheed /, "")
+        String(ac.model).replace(
+          /^Airbus |Boeing |McDonnell Douglas |Douglas |Lockheed /,
+          ""
+        )
       ];
 
     const engineLine = eng
       ? `${eng.code} (${eng.n}×${eng.power})`
-      : ac.engines;
+      : `${ac.engines || 0}`;
+
+    const rangeLine = Number(ac.range_nm || 0).toLocaleString("en-US");
+    const priceLine = Number(ac.price_acs_usd || 0).toLocaleString("en-US");
 
     card.innerHTML = `
       <img src="${img}" alt="${ac.model}"
@@ -341,10 +551,10 @@ function renderCards(filterManufacturer = "All") {
       <h3>${ac.manufacturer} ${ac.model}</h3>
       <div class="spec-line">Year: ${ac.year}</div>
       <div class="spec-line">Seats: ${ac.seats}</div>
-      <div class="spec-line">Range: ${ac.range_nm.toLocaleString()} nm</div>
+      <div class="spec-line">Range: ${rangeLine} nm</div>
       <div class="spec-line">Engines: ${engineLine}</div>
       <div class="spec-line">
-      Price: $${ac.price_acs_usd.toLocaleString("en-US")}
+        Price: $${priceLine}
       </div>
 
       <button data-index="${idx}" class="view-options-btn">VIEW OPTIONS</button>
@@ -426,6 +636,7 @@ function closeBuyModal() {
 /* ============================================================
    8) DELIVERY ENGINE (BACKLOG MES A MES)
    ============================================================ */
+
 function calculateDeliveryDate(ac, qty) {
 
   const manu = ac.manufacturer;
@@ -769,24 +980,34 @@ document.addEventListener("click", e => {
 });
 
 /* ============================================================
-   🚀 INIT SEQUENCE — TIME-READY STABLE RENDER
+   🚀 INIT SEQUENCE — FACTORY CATALOG READY
+   ------------------------------------------------------------
+   Purpose:
+   - Wait for ACS Time Engine when available
+   - Allow 1940 as valid simulation year
+   - Load Factory Catalog from backend
+   - Render Buy New cards from PostgreSQL authority
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  function initBuyNewWhenTimeReady() {
-    const simYear = getCurrentSimYear();
+  async function initBuyNewWhenTimeReady() {
 
-    // Esperar hasta que el reloj ACS ya esté cargado más allá del año base
-    if (!simYear || simYear <= 1940) {
+    const simYear = Number(getCurrentSimYear() || 1940);
+
+    if (!simYear || simYear < 1940) {
       return setTimeout(initBuyNewWhenTimeReady, 200);
     }
 
-    buildFilterChips();
-    renderCards("All");
+    await buildFilterChips();
+    await renderCards("All");
+
     checkDeliveries();
 
-    console.log("🟩 Buy Aircraft Cards System — Initialized (TIME READY):", simYear);
+    console.log(
+      "🟩 Buy New Aircraft — Factory Catalog Initialized:",
+      simYear
+    );
   }
 
   initBuyNewWhenTimeReady();
