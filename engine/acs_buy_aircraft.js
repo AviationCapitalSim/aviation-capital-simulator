@@ -446,40 +446,137 @@ async function buildFilterChips() {
 }
 
 /* ============================================================
-   5) IMAGEN AUTOMÁTICA
+   5) IMAGEN AUTOMÁTICA — FACTORY CATALOG NORMALIZER
+   ------------------------------------------------------------
+   Purpose:
+   - Adapt backend PostgreSQL aircraft names to ACS image filenames
+   - Remove duplicated manufacturer prefix from model names
+   - Support JPG first because ACS aircraft images are mostly JPG
+   - Keep fallback to PNG
+   - Preserve existing folder structure
    ============================================================ */
-function getAircraftImage(ac) {
-  if (!ac || !ac.model || !ac.manufacturer) {
-    return "img/placeholder_aircraft.png";
+
+function ACS_slugAircraftName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function ACS_cleanImageModelName(ac) {
+  if (!ac) return "";
+
+  const manufacturer = String(ac.manufacturer || "").trim();
+  let model = String(ac.model || ac.aircraft_name || "").trim();
+
+  /* Remove manufacturer prefix if backend already includes it */
+  if (manufacturer) {
+    const re = new RegExp("^" + manufacturer.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s+", "i");
+    model = model.replace(re, "").trim();
   }
 
-  let manuFolder = ac.manufacturer.trim().replace(/\s+/g, " ");
+  /* Remove common duplicated manufacturer names */
+  model = model
+    .replace(/^boeing\s+/i, "")
+    .replace(/^douglas\s+/i, "")
+    .replace(/^lockheed\s+/i, "")
+    .replace(/^airbus\s+/i, "")
+    .replace(/^avro\s+/i, "")
+    .replace(/^convair\s+/i, "")
+    .replace(/^de\s+havilland\s+/i, "")
+    .replace(/^vickers\s+/i, "")
+    .trim();
 
-  if (ac.manufacturer.toLowerCase() === "de havilland") {
+  return model;
+}
+
+/* ============================================================
+   IMAGE ALIASES — ACS CANONICAL FILE NAMES
+   ------------------------------------------------------------
+   Add aliases here only when PostgreSQL model names differ from
+   existing ACS image filenames.
+   ============================================================ */
+
+const ACS_IMAGE_MODEL_ALIASES = {
+
+  /* Avro */
+  "lancastrian": "lancastrian",
+
+  /* Boeing */
+  "247": "boeing_247",
+  "307_stratoliner": "boeing_307_stratoliner",
+  "377_stratocruiser": "b_377_stratocruiser",
+  "c_97_stratofreighter": "c_97_stratofreighter",
+
+  /* Douglas */
+  "dc_2": "dc_2",
+  "dc_3": "dc_3",
+  "dc_4": "dc_4",
+  "dc_5": "dc_5",
+  "dc_6": "dc_6",
+
+  /* Lockheed */
+  "l_10_electra": "l_10_electra",
+  "l_12_electra_junior": "l_12_electra_junior",
+  "l_14_super_electra": "l_14_super_electra",
+  "l_18_lodestar": "l_18_lodestar",
+  "l_049_constellation": "l_049_constellation",
+  "l_649_constellation": "l_649_constellation",
+  "l_749_constellation": "l_749_constellation",
+
+  /* Convair */
+  "cv_240": "cv_240",
+  "convair_cv_240": "cv_240",
+
+  /* de Havilland */
+  "dh_84_dragon": "dh_84_dragon",
+  "dh_86_express": "dh_86_express",
+  "dh_104_dove": "dh_104_dove",
+  "dh_114_heron": "dh_114_heron"
+};
+
+function getAircraftImage(ac) {
+  if (!ac || !ac.model || !ac.manufacturer) {
+    return "img/placeholder_aircraft.jpg";
+  }
+
+  const manufacturer = String(ac.manufacturer || "").trim();
+
+  let manuFolder = manufacturer;
+
+  if (manufacturer.toLowerCase() === "de havilland") {
     manuFolder = "de_havilland";
   }
 
-  const rawModel = ac.model.toLowerCase().trim();
-  let base = rawModel.replace(/[^a-z0-9]+/g, "_");
+  const cleanModel = ACS_cleanImageModelName(ac);
+  const baseSlug = ACS_slugAircraftName(cleanModel);
+  const manufacturerSlug = ACS_slugAircraftName(manufacturer);
 
-  const variants = new Set();
-  variants.add(base);
-  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
-  variants.add(base.replace(/_/g, ""));
-  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
+  const aliasSlug =
+    ACS_IMAGE_MODEL_ALIASES[baseSlug] ||
+    ACS_IMAGE_MODEL_ALIASES[`${manufacturerSlug}_${baseSlug}`] ||
+    baseSlug;
 
   const candidates = [];
 
-  for (const v of variants) {
-    candidates.push(`img/${manuFolder}/${v}.png`);
-    candidates.push(`img/${manuFolder}/${v}.jpg`);
-  }
+  /* JPG first — ACS aircraft library priority */
+  candidates.push(`img/${manuFolder}/${aliasSlug}.jpg`);
+  candidates.push(`img/${manuFolder}/${aliasSlug}.png`);
 
-  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  candidates.push(`img/${base}.png`);
-  candidates.push(`img/${manuSlug}_${base}.png`);
+  /* fallback variants */
+  candidates.push(`img/${manuFolder}/${baseSlug}.jpg`);
+  candidates.push(`img/${manuFolder}/${baseSlug}.png`);
 
-  return candidates[0] || "img/placeholder_aircraft.png";
+  candidates.push(`img/${manuFolder}/${manufacturerSlug}_${baseSlug}.jpg`);
+  candidates.push(`img/${manuFolder}/${manufacturerSlug}_${baseSlug}.png`);
+
+  /* root fallback */
+  candidates.push(`img/${aliasSlug}.jpg`);
+  candidates.push(`img/${aliasSlug}.png`);
+
+  return candidates[0];
 }
 
 /* ============================================================
@@ -566,41 +663,40 @@ async function renderCards(filterManufacturer = "All") {
 }
 
 /* ============================================================
-   🖼️ ACS IMAGE FALLBACK SYSTEM — PNG ⇄ JPG (REAL FIX)
+   🖼️ ACS IMAGE FALLBACK SYSTEM — FACTORY CATALOG SAFE
+   ------------------------------------------------------------
+   Purpose:
+   - Try JPG / PNG variants
+   - Avoid infinite 404 loops
+   - Use JPG placeholder first
    ============================================================ */
 
 function ACS_handleImageFallback(img) {
 
-  if (!img.dataset.tryIndex) {
-    img.dataset.tryIndex = "1";
-  } else {
-    img.dataset.tryIndex = String(Number(img.dataset.tryIndex) + 1);
+  if (!img) return;
+
+  const currentSrc = img.getAttribute("src") || "";
+
+  if (!img.dataset.fallbackStep) {
+    img.dataset.fallbackStep = "0";
   }
 
-  const tryIndex = Number(img.dataset.tryIndex);
+  let step = Number(img.dataset.fallbackStep);
+  step += 1;
+  img.dataset.fallbackStep = String(step);
 
-  // 🔹 generar variantes dinámicamente
-  const original = img.src;
-
-  if (tryIndex === 1) {
-    // png → jpg
-    if (original.endsWith(".png")) {
-      img.src = original.replace(".png", ".jpg");
-      return;
-    }
+  if (step === 1 && currentSrc.endsWith(".jpg")) {
+    img.src = currentSrc.replace(".jpg", ".png");
+    return;
   }
 
-  if (tryIndex === 2) {
-    // jpg → png
-    if (original.endsWith(".jpg")) {
-      img.src = original.replace(".jpg", ".png");
-      return;
-    }
+  if (step === 2 && currentSrc.endsWith(".png")) {
+    img.src = currentSrc.replace(".png", ".jpg");
+    return;
   }
 
-  // 🔹 si todo falla → placeholder
   img.onerror = null;
-  img.src = "img/placeholder_aircraft.png";
+  img.src = "img/placeholder_aircraft.jpg";
 }
 
 /* ============================================================
