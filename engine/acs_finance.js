@@ -188,7 +188,7 @@ async function ACS_FINANCE_syncFromServer(){
         current_week_key: null
       },
 
-      cost: {
+        cost: {
         fuel: Number(f.cost_fuel || 0),
         ground_handling: Number(f.cost_handling || 0),
         slot_fees: Number(f.cost_slots || 0),
@@ -198,8 +198,10 @@ async function ACS_FINANCE_syncFromServer(){
         salaries: Number(f.cost_hr || 0),
         maintenance: Number(f.cost_maintenance || 0),
         penalties: Number(f.cost_other || 0),
-        used_aircraft_purchase: 0,
-        new_aircraft_purchase: 0
+
+        /* OEM / AIRCRAFT ACQUISITION */
+        used_aircraft_purchase: Number(f.cost_used_aircraft_purchase || 0),
+        new_aircraft_purchase: Number(f.cost_new_aircraft_purchase || 0)
       },
 
       history: [],
