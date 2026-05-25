@@ -278,11 +278,13 @@ function ACS_normalizeFactoryAircraft(row) {
     0
   );
 
-  const engines = Number(
-    row.engines ??
-    row.engine_count ??
-    0
-  );
+    const engines =
+    String(
+      row.engines ??
+      row.powerplant ??
+      row.engine_model ??
+      ""
+    ).trim();
 
   return {
     ...row,
@@ -625,18 +627,9 @@ async function renderCards(filterManufacturer = "All") {
 
     const img = getAircraftImage(ac);
 
-    const eng =
-      ACS_ENGINE_SPECS[ac.model] ||
-      ACS_ENGINE_SPECS[
-        String(ac.model).replace(
-          /^Airbus |Boeing |McDonnell Douglas |Douglas |Lockheed /,
-          ""
-        )
-      ];
-
-    const engineLine = eng
-      ? `${eng.code} (${eng.n}×${eng.power})`
-      : `${ac.engines || 0}`;
+      const engineLine =
+      String(ac.engines || "").trim() || "Not specified";
+     
 
     const rangeLine = Number(ac.range_nm || 0).toLocaleString("en-US");
     const priceLine = Number(ac.price_acs_usd || 0).toLocaleString("en-US");
