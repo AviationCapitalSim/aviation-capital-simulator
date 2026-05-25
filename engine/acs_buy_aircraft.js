@@ -781,6 +781,31 @@ function calculateDeliveryDate(ac, qty) {
 }
 
 /* ============================================================
+   🟦 ACS DELIVERY PREVIEW — NO LOCALSTORAGE
+   ------------------------------------------------------------
+   Purpose:
+   - Estimate modal delivery date without reserving slots
+   - Does NOT write ACS_SLOT_CALENDAR
+   - Does NOT mutate localStorage
+   - Final delivery authority will be backend order endpoint
+   ============================================================ */
+
+function ACS_calculateDeliveryPreviewDate(qty) {
+  const now = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+    ? new Date(ACS_TIME.currentTime)
+    : new Date();
+
+  const quantity = Math.max(1, Number(qty || 1));
+
+  const baseDays = 60;
+  const bufferDays = Math.max(0, quantity - 1) * 15;
+
+  return new Date(
+    now.getTime() + ((baseDays + bufferDays) * 24 * 60 * 60 * 1000)
+  );
+}
+
+/* ============================================================
    9) MODAL SUMMARY — BUY + LEASE
    ============================================================ */
 
@@ -793,10 +818,11 @@ function updateModalSummary() {
 
   let summary = "";
 
-  // Delivery
-  const deliveryDate = calculateDeliveryDate(selectedAircraft, qty);
+  // Delivery preview only — no localStorage mutation
+   
+  const deliveryDate = ACS_calculateDeliveryPreviewDate(qty);
   const d = deliveryDate.toUTCString().substring(5, 16);
-
+   
   summary += `Estimated delivery: <b>${d}</b><br>`;
 
   /* BUY NEW */
@@ -883,171 +909,104 @@ document.addEventListener("DOMContentLoaded", () => {
      CONFIRMAR ORDEN
      ============================================================ */
    
-  if (confirmBtn) {
-    confirmBtn.addEventListener("click", () => {
+    if (confirmBtn) {
+    confirmBtn.addEventListener("click", async () => {
 
       if (!selectedAircraft) return;
 
-      const ac   = selectedAircraft;
-      const op   = document.getElementById("modalOperation").value;
-      const qty  = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
-      const manu = ac.manufacturer;
+      const ac = selectedAircraft;
 
-      /* 1) DELIVERY */
-      const deliveryDate = calculateDeliveryDate(ac, qty);
-      if (!ACS_SLOTS[manu]) ACS_SLOTS[manu] = 0;
-      ACS_SLOTS[manu] += qty;
-      saveSlots();
+      const op = document.getElementById("modalOperation").value;
+      const qty = Math.max(
+        1,
+        parseInt(document.getElementById("modalQty").value, 10) || 1
+      );
 
-      /* 2) BASE ENTRY */
-let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
+      const ownershipType =
+        op === "LEASE"
+          ? "LEASE"
+          : "BUY";
 
-const entry = {
+      const initialPaymentPct =
+        ownershipType === "LEASE"
+          ? 50
+          : (parseInt(document.getElementById("modalBuyInitialPct").value, 10) || 100);
 
-  id: "order-" + Date.now(),
+      const simYear = Number(getCurrentSimYear() || ac.year || 1940);
 
-  manufacturer: ac.manufacturer,
+      if (!ac.model_key) {
+        alert("❌ Aircraft model_key missing. Order cannot be created.");
+        return;
+      }
 
-  model: ac.model,
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = "Processing...";
 
-  /* ============================================================
-     FIX CORE — FAMILY FIELD (CRITICAL)
-     Esto evita que aparezca "BUY" en lugar de la familia real
-     ============================================================ */
-  family:
-    ac.family ||
-    ac.manufacturer ||
-    ac.model.split(" ")[0],
+      try {
 
-  /* ============================================================
-     FIX CORE — BASE FIELD
-     ============================================================ */
-  base:
-    (typeof getCurrentBaseICAO === "function")
-      ? getCurrentBaseICAO()
-      : "UNASSIGNED",
+        const response = await fetch(
+          "https://api.aviationcapitalsim.com/v1/aircraft/orders",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model_key: ac.model_key,
+              quantity: qty,
+              ownership_type: ownershipType,
+              initial_payment_pct: initialPaymentPct,
+              sim_year: simYear
+            })
+          }
+        );
 
-  qty,
+        const result = await response.json();
 
-  type: op,
+        if (!response.ok || !result.ok) {
 
-  price: ac.price_acs_usd || 0,
+          if (result.error === "INSUFFICIENT_CAPITAL") {
+            alert(
+              "❌ Not enough capital to place this order.\n\n" +
+              "Available capital: " + ACS_formatUSD(Number(result.capital || 0)) + "\n" +
+              "Required payment: " + ACS_formatUSD(Number(result.required || 0))
+            );
+            return;
+          }
 
-  image: selectedAircraftImage,
-
-  deliveryDate: deliveryDate.toISOString(),
-
-  created: new Date().toISOString(),
-
-  buy_initial_pct: null,
-  buy_initial_payment: null,
-  buy_final_payment: null
-
-};
-
-      /* ============================================================
-         BUY NEW — Registro financiero + entry completo
-         ============================================================ */
-       
-      if (op === "BUY") {
-
-        const pct   = parseInt(document.getElementById("modalBuyInitialPct").value) || 100;
-        const total = ac.price_acs_usd * qty;
-
-        const initialPay = total * (pct / 100);
-        const finalPay   = total - initialPay;
-
-        entry.buy_initial_pct     = pct;
-        entry.buy_initial_payment = initialPay;
-        entry.buy_final_payment   = finalPay;
-
-       /* ============================================================
-   🔎 CAPITAL VALIDATION — OEM ORDER
-   ============================================================ */
-
-const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-const currentCapital = Number(finance.capital || 0);
-
-if (currentCapital < initialPay) {
-  alert("❌ Not enough capital to place this order.");
-  return;
-}
-
-/* ============================================================
-   💰 REGISTER INITIAL PAYMENT (DEPOSIT)
-   ============================================================ */
-
-if (typeof ACS_registerExpense === "function") {
-  ACS_registerExpense({
-    amount: initialPay,
-    category: "new_aircraft_purchase",
-    subtype: "Initial Payment",
-    date: new Date().toISOString()
-  });
-}
-} // ← CIERRE CORRECTO DE if (op === "BUY")
-       
-       /* ============================================================
-         LEASE NEW — Registrar contrato activo + pago inicial
-         ============================================================ */
-       
-      if (op === "LEASE") {
-
-        const years = parseInt(document.getElementById("modalLeaseYears").value) || 10;
-
-        const total = ac.price_acs_usd * qty;
-        const initialPct = 50;
-        const initialPay = total * 0.50;
-
-        entry.years = years;
-        entry.initialPct = initialPct;
-        entry.initialPayment = initialPay;
-
-        /* Pago inicial en Finance */
-        if (typeof ACS_registerExpense === "function") {
-          ACS_registerExpense("leasing", initialPay, `Lease initial — ${ac.model}`);
+          alert(
+            "❌ Order rejected by backend.\n\n" +
+            (result.error || result.details || "Unknown error")
+          );
+          return;
         }
 
-        /* Registrar contrato en ACS_ACTIVE_LEASES */
-        let activeLeases = JSON.parse(localStorage.getItem("ACS_ACTIVE_LEASES") || "[]");
+        console.log("🟩 ACS OEM ORDER CREATED:", result);
 
-        const monthlyPayment = (total - initialPay) / (years * 12);
+        alert("✅ Order placed successfully!");
 
-        activeLeases.push({
-          id: entry.id,
-          manufacturer: ac.manufacturer,
-          model: ac.model,
-          qty,
-          years,
-          startDate: entry.created,
-          deliveryDate: entry.deliveryDate,
-          initialPct,
-          initialPayment: initialPay,
-          monthlyPayment,
-          image: selectedAircraftImage
-        });
+        closeBuyModal();
 
-        localStorage.setItem("ACS_ACTIVE_LEASES", JSON.stringify(activeLeases));
+        setTimeout(() => {
+          window.location.href = "my_aircraft.html";
+        }, 300);
+
+      } catch (error) {
+
+        console.error("❌ ACS ORDER CREATE FAILED:", error);
+
+        alert(
+          "❌ Could not create aircraft order.\n\n" +
+          "Please check connection and try again."
+        );
+
+      } finally {
+
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Confirm Order";
+
       }
-
-      /* ============================================================
-         5) GUARDAR EN PENDING
-         ============================================================ */
-       
-      pending.push(entry);
-      localStorage.setItem("ACS_PendingAircraft", JSON.stringify(pending));
-
-      /* 6) ALERTA VISUAL */
-      if (typeof ACS_addAlert === "function") {
-        ACS_addAlert("order", "low", `Aircraft order: ${entry.model} x${entry.qty}`);
-      }
-
-            /* 7) REDIRECCIONAR */
-      alert("✅ Order placed successfully!");
-      closeBuyModal();
-      setTimeout(() => {
-        window.location.href = "my_aircraft.html";
-      }, 300);
 
     }); // ← Cierra confirmBtn.addEventListener
   }     // ← Cierra if(confirmBtn)
