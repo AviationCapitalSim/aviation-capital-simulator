@@ -914,11 +914,31 @@ async function ACS_loadFactorySlotsAvailability() {
       (capacity > 0 ? Math.round((reserved / capacity) * 100) : 0)
     );
 
-    const nextWindow =
-      data.next_available_delivery_window ||
-      slot.next_available_delivery_window ||
-      data.next_window ||
-      "—";
+   const rawNextWindow =
+  data.next_available_delivery_window ||
+  slot.next_available_delivery_window ||
+  data.next_window ||
+  null;
+
+let nextWindow = "—";
+
+if (typeof rawNextWindow === "string") {
+  nextWindow = rawNextWindow;
+} else if (rawNextWindow && typeof rawNextWindow === "object") {
+  const nwYear =
+    rawNextWindow.year ||
+    rawNextWindow.slot_year ||
+    rawNextWindow.delivery_year;
+
+  const nwMonth =
+    rawNextWindow.month ||
+    rawNextWindow.slot_month ||
+    rawNextWindow.delivery_month;
+
+  if (nwYear && nwMonth) {
+    nextWindow = ACS_getMonthLabel(Number(nwYear), Number(nwMonth));
+  }
+}
 
     if (capacityEl) capacityEl.textContent = `${capacity}/month`;
     if (reservedEl) reservedEl.textContent = String(reserved);
