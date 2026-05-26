@@ -934,7 +934,7 @@ async function ACS_loadFactorySlotsAvailability() {
       (capacity > 0 ? Math.round((reserved / capacity) * 100) : 0)
     );
 
-   const rawNextWindow =
+  const rawNextWindow =
   data.next_available_delivery_window ||
   slot.next_available_delivery_window ||
   data.next_window ||
@@ -955,8 +955,18 @@ if (typeof rawNextWindow === "string") {
     rawNextWindow.slot_month ||
     rawNextWindow.delivery_month;
 
+  const nwDay =
+    rawNextWindow.day ||
+    rawNextWindow.slot_day ||
+    rawNextWindow.delivery_day ||
+    15;
+
   if (nwYear && nwMonth) {
-    nextWindow = ACS_getMonthLabel(Number(nwYear), Number(nwMonth));
+    nextWindow = ACS_getOperationalDateLabel(
+      Number(nwYear),
+      Number(nwMonth),
+      Number(nwDay)
+    );
   }
 }
 
