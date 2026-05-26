@@ -742,6 +742,7 @@ function ACS_getCurrentSimDateParts() {
 }
 
 function ACS_getMonthLabel(year, month) {
+   
   const d = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
   const monthName = d.toLocaleString("en-US", {
     month: "short",
@@ -751,7 +752,26 @@ function ACS_getMonthLabel(year, month) {
   return `${monthName} ${d.getUTCFullYear()}`;
 }
 
+function ACS_getOperationalDateLabel(year, month, day = 15) {
+   
+  const d = new Date(Date.UTC(
+    Number(year),
+    Number(month) - 1,
+    Number(day)
+  ));
+
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+
+  const monthName = d.toLocaleString("en-US", {
+    month: "short",
+    timeZone: "UTC"
+  }).toUpperCase();
+
+  return `${dd} ${monthName} ${d.getUTCFullYear()}`;
+}
+
 function ACS_shiftFactorySlotsMonth(delta) {
+   
   const y = Number(ACS_factorySlotsState.year);
   const m = Number(ACS_factorySlotsState.month);
 
