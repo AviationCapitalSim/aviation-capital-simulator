@@ -262,6 +262,7 @@
 }
 
 /* Footer buttons */
+       
 .modal-footer {
   margin-top: 1.1rem;
   display: flex;
@@ -285,6 +286,27 @@
   filter: brightness(1.05);
 }
 
+/* ============================================================
+   🟦 FACTORY SLOTS BUTTON — OEM BOARD ACCESS
+   ============================================================ */
+
+.factory-slots-btn {
+  background: rgba(138,180,255,0.10);
+  border: 1px solid rgba(138,180,255,0.55);
+  border-radius: 9px;
+  padding: 0.45rem 1.1rem;
+  font-weight: 600;
+  color: #dbe7ff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  box-shadow: 0 0 10px rgba(138,180,255,0.18);
+}
+
+.factory-slots-btn:hover {
+  background: rgba(138,180,255,0.18);
+  box-shadow: 0 0 14px rgba(138,180,255,0.35);
+}
+     
 .close-btn {
   background: #d33;
   border-radius: 9px;
@@ -293,6 +315,91 @@
   font-weight: 500;
   cursor: pointer;
   font-size: 0.88rem;
+}
+
+/* ============================================================
+   🟦 FACTORY SLOTS MODAL — AIRBUS OCC STYLE
+   ============================================================ */
+
+.factory-slots-modal-content {
+  max-width: 520px;
+  text-align: left;
+}
+
+.factory-slots-board {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(5,12,28,0.72);
+  border: 1px solid rgba(138,180,255,0.28);
+}
+
+.factory-slots-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.factory-slots-nav-btn {
+  width: 38px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(138,180,255,0.45);
+  background: rgba(138,180,255,0.10);
+  color: #dbe7ff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.factory-slots-months {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Consolas", monospace;
+  color: #aebce8;
+  font-size: 0.88rem;
+}
+
+.factory-slots-months strong {
+  color: #ffb300;
+  font-size: 1rem;
+}
+
+.factory-slots-metrics {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+.factory-slot-line {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 0.35rem;
+  color: #dbe7ff;
+  font-size: 0.9rem;
+}
+
+.factory-slot-line strong {
+  color: #ffe7a0;
+  font-family: "Consolas", monospace;
+}
+
+.factory-slots-next-window {
+  margin-top: 1rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 9px;
+  background: rgba(255,179,0,0.08);
+  border: 1px solid rgba(255,179,0,0.25);
+  color: #dbe7ff;
+  font-size: 0.9rem;
+}
+
+.factory-slots-next-window strong {
+  color: #ffb300;
 }
        
   /* ----------------------------------------------------------- */
@@ -670,11 +777,78 @@
     </div>
 
     <div class="modal-footer">
-      <button id="modalConfirm" class="primary-btn">Confirm Order</button>
-      <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
-    </div>
+  <button id="factorySlotsBtn" class="factory-slots-btn" type="button">Factory Slots</button>
+  <button id="modalConfirm" class="primary-btn">Confirm Order</button>
+  <button class="close-btn" onclick="closeBuyModal()">Cancel</button>
+  </div>
   </div>
 
+<!-- ============================================================
+     🟦 FACTORY SLOTS MODAL — OEM SLOT BOARD
+     ============================================================ -->
+
+<div id="factorySlotsModal" class="modal">
+  <div class="modal-content factory-slots-modal-content">
+
+    <div class="modal-header-row">
+      <div class="modal-header-text">
+        <h3 id="factorySlotsTitle" class="modal-title">OEM SLOT BOARD</h3>
+        <p id="factorySlotsSubtitle" class="modal-subtitle">
+          Aircraft Model · Simulation Year
+        </p>
+      </div>
+    </div>
+
+    <div class="factory-slots-board">
+
+      <div class="factory-slots-nav">
+        <button id="factorySlotsPrevMonth" class="factory-slots-nav-btn" type="button">←</button>
+
+        <div class="factory-slots-months">
+          <span id="factorySlotsPrevLabel">AUG 1951</span>
+          <strong id="factorySlotsCurrentLabel">SEP 1951</strong>
+          <span id="factorySlotsNextLabel">OCT 1951</span>
+        </div>
+
+        <button id="factorySlotsNextMonth" class="factory-slots-nav-btn" type="button">→</button>
+      </div>
+
+      <div class="factory-slots-metrics">
+        <div class="factory-slot-line">
+          <span>Capacity:</span>
+          <strong id="factorySlotsCapacity">—</strong>
+        </div>
+
+        <div class="factory-slot-line">
+          <span>Reserved:</span>
+          <strong id="factorySlotsReserved">—</strong>
+        </div>
+
+        <div class="factory-slot-line">
+          <span>Available:</span>
+          <strong id="factorySlotsAvailable">—</strong>
+        </div>
+
+        <div class="factory-slot-line">
+          <span>Utilization:</span>
+          <strong id="factorySlotsUtilization">—</strong>
+        </div>
+      </div>
+
+      <div class="factory-slots-next-window">
+        Next available delivery window:
+        <strong id="factorySlotsNextWindow">—</strong>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="close-btn" type="button" onclick="closeFactorySlotsModal()">Close</button>
+    </div>
+
+  </div>
+</div>
+     
 <footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
      
 <!-- === SCRIPTS === -->
