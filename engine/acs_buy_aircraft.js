@@ -700,6 +700,268 @@ function closeBuyModal() {
 }
 
 /* ============================================================
+   🟦 FACTORY SLOTS MODAL — OEM SLOT BOARD
+   ------------------------------------------------------------
+   Purpose:
+   - Open secondary Factory Slots modal from Buy New modal
+   - Read PostgreSQL factory slot availability endpoint
+   - Display operational OEM capacity only
+   - Does NOT reserve slots
+   - Does NOT touch POST /v1/aircraft/orders
+   - Does NOT touch Finance
+   - Does NOT touch Time Engine
+   - Does NOT use localStorage
+   ============================================================ */
+
+const ACS_FACTORY_SLOTS_AVAILABILITY_ENDPOINT =
+  "https://api.aviationcapitalsim.com/v1/aircraft/factory/slots/availability";
+
+let ACS_factorySlotsState = {
+  model_key: null,
+  year: null,
+  month: null
+};
+
+function ACS_getCurrentSimDateParts() {
+  try {
+    if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime) {
+      const d = new Date(ACS_TIME.currentTime);
+      return {
+        year: d.getUTCFullYear(),
+        month: d.getUTCMonth() + 1
+      };
+    }
+  } catch (error) {
+    console.warn("⚠️ Factory Slots could not read ACS_TIME:", error);
+  }
+
+  return {
+    year: Number(getCurrentSimYear() || 1940),
+    month: 1
+  };
+}
+
+function ACS_getMonthLabel(year, month) {
+  const d = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
+  const monthName = d.toLocaleString("en-US", {
+    month: "short",
+    timeZone: "UTC"
+  }).toUpperCase();
+
+  return `${monthName} ${d.getUTCFullYear()}`;
+}
+
+function ACS_shiftFactorySlotsMonth(delta) {
+  const y = Number(ACS_factorySlotsState.year);
+  const m = Number(ACS_factorySlotsState.month);
+
+  const d = new Date(Date.UTC(y, m - 1 + Number(delta || 0), 1));
+
+  ACS_factorySlotsState.year = d.getUTCFullYear();
+  ACS_factorySlotsState.month = d.getUTCMonth() + 1;
+
+  ACS_loadFactorySlotsAvailability();
+}
+
+function openFactorySlotsModal() {
+  if (!selectedAircraft) {
+    alert("❌ No aircraft selected.");
+    return;
+  }
+
+  if (!selectedAircraft.model_key) {
+    alert("❌ Aircraft model_key missing. Factory Slots cannot be loaded.");
+    return;
+  }
+
+  const modal = document.getElementById("factorySlotsModal");
+
+  if (!modal) {
+    alert("❌ Factory Slots modal HTML not found.");
+    return;
+  }
+
+  const simDate = ACS_getCurrentSimDateParts();
+
+  ACS_factorySlotsState = {
+    model_key: selectedAircraft.model_key,
+    year: simDate.year,
+    month: simDate.month
+  };
+
+  const manufacturer = String(selectedAircraft.manufacturer || "OEM").toUpperCase();
+  const model = String(selectedAircraft.model || selectedAircraft.aircraft_name || "Aircraft");
+
+  const title = document.getElementById("factorySlotsTitle");
+  const subtitle = document.getElementById("factorySlotsSubtitle");
+
+  if (title) {
+    title.textContent = `${manufacturer} OEM SLOT BOARD`;
+  }
+
+  if (subtitle) {
+    subtitle.textContent = `${model} · ${ACS_factorySlotsState.year}`;
+  }
+
+  modal.style.display = "flex";
+
+  ACS_loadFactorySlotsAvailability();
+}
+
+function closeFactorySlotsModal() {
+  const modal = document.getElementById("factorySlotsModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+async function ACS_loadFactorySlotsAvailability() {
+  const state = ACS_factorySlotsState;
+
+  if (!state.model_key || !state.year || !state.month) {
+    console.warn("⚠️ Factory Slots state incomplete:", state);
+    return;
+  }
+
+  const prevDate = new Date(Date.UTC(state.year, state.month - 2, 1));
+  const nextDate = new Date(Date.UTC(state.year, state.month, 1));
+
+  const prevLabel = document.getElementById("factorySlotsPrevLabel");
+  const currentLabel = document.getElementById("factorySlotsCurrentLabel");
+  const nextLabel = document.getElementById("factorySlotsNextLabel");
+
+  if (prevLabel) {
+    prevLabel.textContent = ACS_getMonthLabel(
+      prevDate.getUTCFullYear(),
+      prevDate.getUTCMonth() + 1
+    );
+  }
+
+  if (currentLabel) {
+    currentLabel.textContent = ACS_getMonthLabel(state.year, state.month);
+  }
+
+  if (nextLabel) {
+    nextLabel.textContent = ACS_getMonthLabel(
+      nextDate.getUTCFullYear(),
+      nextDate.getUTCMonth() + 1
+    );
+  }
+
+  const capacityEl = document.getElementById("factorySlotsCapacity");
+  const reservedEl = document.getElementById("factorySlotsReserved");
+  const availableEl = document.getElementById("factorySlotsAvailable");
+  const utilizationEl = document.getElementById("factorySlotsUtilization");
+  const nextWindowEl = document.getElementById("factorySlotsNextWindow");
+
+  if (capacityEl) capacityEl.textContent = "Loading...";
+  if (reservedEl) reservedEl.textContent = "—";
+  if (availableEl) availableEl.textContent = "—";
+  if (utilizationEl) utilizationEl.textContent = "—";
+  if (nextWindowEl) nextWindowEl.textContent = "—";
+
+  const url =
+    `${ACS_FACTORY_SLOTS_AVAILABILITY_ENDPOINT}` +
+    `?model_key=${encodeURIComponent(state.model_key)}` +
+    `&year=${encodeURIComponent(state.year)}` +
+    `&month=${encodeURIComponent(state.month)}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || `Factory Slots HTTP ${response.status}`);
+    }
+
+    const slot =
+      data.slot ||
+      data.availability ||
+      data.factory_slot ||
+      data;
+
+    const capacity = Number(
+      data.capacity ??
+      slot.capacity ??
+      slot.max_quantity ??
+      slot.available_quantity ??
+      0
+    );
+
+    const reserved = Number(
+      data.reserved ??
+      slot.reserved ??
+      slot.reserved_quantity ??
+      0
+    );
+
+    const available = Number(
+      data.available ??
+      slot.available ??
+      slot.available_quantity ??
+      Math.max(0, capacity - reserved)
+    );
+
+    const utilization = Number(
+      data.utilization ??
+      data.utilization_pct ??
+      slot.utilization ??
+      slot.utilization_pct ??
+      (capacity > 0 ? Math.round((reserved / capacity) * 100) : 0)
+    );
+
+    const nextWindow =
+      data.next_available_delivery_window ||
+      slot.next_available_delivery_window ||
+      data.next_window ||
+      "—";
+
+    if (capacityEl) capacityEl.textContent = `${capacity}/month`;
+    if (reservedEl) reservedEl.textContent = String(reserved);
+    if (availableEl) availableEl.textContent = String(available);
+    if (utilizationEl) utilizationEl.textContent = `${utilization}%`;
+    if (nextWindowEl) nextWindowEl.textContent = nextWindow;
+
+    console.log("🟩 ACS Factory Slots Availability:", data);
+
+  } catch (error) {
+    console.error("❌ ACS Factory Slots load failed:", error);
+
+    if (capacityEl) capacityEl.textContent = "Unavailable";
+    if (reservedEl) reservedEl.textContent = "—";
+    if (availableEl) availableEl.textContent = "—";
+    if (utilizationEl) utilizationEl.textContent = "—";
+    if (nextWindowEl) nextWindowEl.textContent = "Unavailable";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const factorySlotsBtn = document.getElementById("factorySlotsBtn");
+  const prevBtn = document.getElementById("factorySlotsPrevMonth");
+  const nextBtn = document.getElementById("factorySlotsNextMonth");
+
+  if (factorySlotsBtn) {
+    factorySlotsBtn.addEventListener("click", openFactorySlotsModal);
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      ACS_shiftFactorySlotsMonth(-1);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      ACS_shiftFactorySlotsMonth(1);
+    });
+  }
+});
+
+/* ============================================================
    🟦 ACS DELIVERY PREVIEW — NO LOCALSTORAGE
    ------------------------------------------------------------
    Purpose:
