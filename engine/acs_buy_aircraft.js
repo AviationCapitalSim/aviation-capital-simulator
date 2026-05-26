@@ -142,29 +142,9 @@ function ACS_normalizeConditionPercent(input) {
 }
 
 /* ============================================================
-   0) SLOT CALENDAR SYSTEM — v1.0 (Backlog mensual real)
-   ============================================================ */
-
-let ACS_SLOT_CALENDAR = JSON.parse(localStorage.getItem("ACS_SLOT_CALENDAR") || "{}");
-
-function saveSlotCalendar() {
-  localStorage.setItem("ACS_SLOT_CALENDAR", JSON.stringify(ACS_SLOT_CALENDAR));
-}
-
-/* Asegurar estructura */
-function ensureManufacturerCalendar(manu, year) {
-  if (!ACS_SLOT_CALENDAR[manu]) ACS_SLOT_CALENDAR[manu] = {};
-  if (!ACS_SLOT_CALENDAR[manu][year]) ACS_SLOT_CALENDAR[manu][year] = {};
-
-  for (let m = 0; m < 12; m++) {
-    if (typeof ACS_SLOT_CALENDAR[manu][year][m] !== "number") {
-      ACS_SLOT_CALENDAR[manu][year][m] = 0;
-    }
-  }
-}
-/* ============================================================
    1) SLOTS POR FABRICANTE
    ============================================================ */
+
 const ACS_MANUFACTURER_SLOTS = {
   Douglas: 30,
   "McDonnell Douglas": 30,
@@ -185,14 +165,10 @@ const ACS_MANUFACTURER_SLOTS = {
   Sukhoi: 18
 };
 
-let ACS_SLOTS = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}");
-function saveSlots() {
-  localStorage.setItem("ACS_SLOTS", JSON.stringify(ACS_SLOTS));
-}
-
 /* ============================================================
    2) RESOLVER AÑO DE SIMULACIÓN
    ============================================================ */
+
 function getCurrentSimYear() {
   try {
     if (typeof getSimYear === "function") return getSimYear();
@@ -695,6 +671,7 @@ function ACS_handleImageFallback(img) {
 /* ============================================================
    7) MODAL — OPEN / CLOSE
    ============================================================ */
+
 let selectedAircraft = null;
 let selectedAircraftImage = "";
 
@@ -723,64 +700,6 @@ function closeBuyModal() {
 }
 
 /* ============================================================
-   8) DELIVERY ENGINE (BACKLOG MES A MES)
-   ============================================================ */
-
-function calculateDeliveryDate(ac, qty) {
-
-  const manu = ac.manufacturer;
-  const now = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
-    ? new Date(ACS_TIME.currentTime)
-    : new Date();
-
-  let year = now.getUTCFullYear();
-  let month = now.getUTCMonth();
-
-  const MIN_MONTHS = 2;
-  const MONTHLY_CAPACITY = 5;
-
-  // Salto mínimo
-  month += MIN_MONTHS;
-  if (month >= 12) {
-    year += Math.floor(month / 12);
-    month = month % 12;
-  }
-
-  // Buscar mes disponible
-  let remaining = qty;
-
-  while (remaining > 0) {
-    ensureManufacturerCalendar(manu, year);
-
-    const used = ACS_SLOT_CALENDAR[manu][year][month];
-
-    if (used < MONTHLY_CAPACITY) {
-      const free = MONTHLY_CAPACITY - used;
-
-      if (remaining <= free) {
-        ACS_SLOT_CALENDAR[manu][year][month] += remaining;
-        remaining = 0;
-      } else {
-        ACS_SLOT_CALENDAR[manu][year][month] = MONTHLY_CAPACITY;
-        remaining -= free;
-      }
-
-    } else {
-      month++;
-      if (month >= 12) {
-        year++;
-        month = 0;
-      }
-      continue;
-    }
-  }
-
-  saveSlotCalendar();
-
-  return new Date(Date.UTC(year, month, 15));
-}
-
-/* ============================================================
    🟦 ACS DELIVERY PREVIEW — NO LOCALSTORAGE
    ------------------------------------------------------------
    Purpose:
@@ -791,6 +710,7 @@ function calculateDeliveryDate(ac, qty) {
    ============================================================ */
 
 function ACS_calculateDeliveryPreviewDate(qty) {
+   
   const now = (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
     ? new Date(ACS_TIME.currentTime)
     : new Date();
@@ -1047,129 +967,18 @@ document.addEventListener("DOMContentLoaded", () => {
       return setTimeout(initBuyNewWhenTimeReady, 200);
     }
 
-    await buildFilterChips();
-    await renderCards("All");
+ await buildFilterChips();
+await renderCards("All");
 
-    checkDeliveries();
-
-    console.log(
-      "🟩 Buy New Aircraft — Factory Catalog Initialized:",
-      simYear
-    );
+console.log(
+  "🟩 Buy New Aircraft — Factory Catalog Initialized:",
+  simYear
+);
   }
 
   initBuyNewWhenTimeReady();
 
 });
-
-/* ============================================================
-   11) AUTO-DELIVERY ENGINE — (ACS_TIME Sync v3.2)
-   ============================================================ */
-function checkDeliveries() {
-
-  /* 1) Cargar */
-  
-  let pending = JSON.parse(localStorage.getItem("ACS_PendingAircraft") || "[]");
-
-  /* 2) Tiempo sim */
-  let now;
-  if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime) {
-    now = new Date(ACS_TIME.currentTime);
-  } else {
-    now = new Date();
-  }
-
-  const remaining = [];
-
-  /* 3) Procesar cada pending */
-  pending.forEach(entry => {
-    const d = new Date(entry.deliveryDate);
-
-    const deliveryYear = d.getUTCFullYear();
-    const deliveryMonth = d.getUTCMonth();
-
-    const nowYear = now.getUTCFullYear();
-    const nowMonth = now.getUTCMonth();
-
-    const reached =
-      (nowYear > deliveryYear) ||
-      (nowYear === deliveryYear && nowMonth >= deliveryMonth);
-
-    if (reached) {
-
-      /* ENTREGAR */
-      for (let i = 0; i < entry.qty; i++) {
-
-        const MS_PER_DAY = 24 * 60 * 60 * 1000;
-        const C_INTERVAL_DAYS = 365;
-        const D_INTERVAL_DAYS = 365 * 8;
-
-        const deliveryDateObj = new Date(entry.deliveryDate);
-
-        const nextCDate = new Date(
-          deliveryDateObj.getTime() + (C_INTERVAL_DAYS * MS_PER_DAY)
-        );
-
-        const nextDDate = new Date(
-          deliveryDateObj.getTime() + (D_INTERVAL_DAYS * MS_PER_DAY)
-        );
-
-        /* ============================================================
-           🟢 BN-STRUCT-1 — BUY NEW DELIVERY VIA FLEET FACTORY
-           ------------------------------------------------------------
-           ✔ Reemplaza push manual
-           ✔ Mantiene arquitectura unificada
-           ✔ No altera lógica externa
-           ============================================================ */
-
-        const created = createFleetAircraft({
-          manufacturer: entry.manufacturer,
-          model: entry.model,
-          family: entry.family || "",
-
-          isUsed: false,
-          hours: 0,
-          cycles: 0,
-
-          originalCost: Number(entry.price),
-          acquisitionCost: Number(entry.price),
-          acquisitionType: "OEM"
-        });
-
-        if (!created) {
-          console.error("❌ Delivery failed for:", entry.model);
-        }
-
-      }
-
-      /* Reducir backlog */
-      if (!ACS_SLOTS[entry.manufacturer]) ACS_SLOTS[entry.manufacturer] = 0;
-      ACS_SLOTS[entry.manufacturer] =
-        Math.max(0, ACS_SLOTS[entry.manufacturer] - entry.qty);
-
-      /* Pago final (BUY) */
-      if (entry.type === "BUY") {
-        const finalPay = entry.buy_final_payment || 0;
-
-        if (finalPay > 0 && typeof ACS_registerExpense === "function") {
-          ACS_registerExpense(
-            "new_aircraft_final_payment",
-            finalPay,
-            `Final delivery payment — ${entry.model}`
-          );
-        }
-      }
-
-    } else {
-      remaining.push(entry);
-    }
-  });
-
-  /* 4) Guardar */
-  localStorage.setItem("ACS_PendingAircraft", JSON.stringify(remaining));
-
-  saveSlots();
-}
 
 /* ============================================================
    FIX — REGISTRATION GENERATOR
@@ -1183,4 +992,3 @@ if (typeof ACS_generateRegistration !== "function") {
     return `N${a}${b}-${n}`;
   }
 }
-window.checkDeliveries = checkDeliveries;
