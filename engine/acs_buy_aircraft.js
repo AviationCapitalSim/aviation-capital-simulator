@@ -752,8 +752,11 @@ function ACS_getMonthLabel(year, month) {
   return `${monthName} ${d.getUTCFullYear()}`;
 }
 
+function ACS_getDaysInMonthUTC(year, month) {
+  return new Date(Date.UTC(Number(year), Number(month), 0)).getUTCDate();
+}
+
 function ACS_getOperationalDateLabel(year, month, day = 15) {
-   
   const d = new Date(Date.UTC(
     Number(year),
     Number(month) - 1,
@@ -768,6 +771,33 @@ function ACS_getOperationalDateLabel(year, month, day = 15) {
   }).toUpperCase();
 
   return `${dd} ${monthName} ${d.getUTCFullYear()}`;
+}
+
+function ACS_getProjectedFactorySlotDateLabel(year, month, capacity, reserved) {
+  const y = Number(year);
+  const m = Number(month);
+  const cap = Math.max(1, Number(capacity || 1));
+  const res = Math.max(0, Number(reserved || 0));
+
+  const nextSlotIndex = Math.min(res + 1, cap);
+  const daysInMonth = ACS_getDaysInMonthUTC(y, m);
+
+  /*
+    Spread production releases across the month.
+    Example:
+    capacity 4  → day 6, 12, 18, 24 approx.
+    capacity 8  → day 3/4, 7/8, 11/12, etc.
+    capacity 1  → middle of month.
+  */
+  const projectedDay = Math.max(
+    1,
+    Math.min(
+      daysInMonth,
+      Math.round((nextSlotIndex / (cap + 1)) * daysInMonth)
+    )
+  );
+
+  return ACS_getOperationalDateLabel(y, m, projectedDay);
 }
 
 function ACS_shiftFactorySlotsMonth(delta) {
@@ -942,9 +972,7 @@ async function ACS_loadFactorySlotsAvailability() {
 
 let nextWindow = "—";
 
-if (typeof rawNextWindow === "string") {
-  nextWindow = rawNextWindow;
-} else if (rawNextWindow && typeof rawNextWindow === "object") {
+if (rawNextWindow && typeof rawNextWindow === "object") {
   const nwYear =
     rawNextWindow.year ||
     rawNextWindow.slot_year ||
@@ -955,19 +983,24 @@ if (typeof rawNextWindow === "string") {
     rawNextWindow.slot_month ||
     rawNextWindow.delivery_month;
 
-  const nwDay =
-    rawNextWindow.day ||
-    rawNextWindow.slot_day ||
-    rawNextWindow.delivery_day ||
-    15;
-
   if (nwYear && nwMonth) {
-    nextWindow = ACS_getOperationalDateLabel(
+    nextWindow = ACS_getProjectedFactorySlotDateLabel(
       Number(nwYear),
       Number(nwMonth),
-      Number(nwDay)
+      capacity,
+      reserved
     );
   }
+} else if (typeof rawNextWindow === "string") {
+  nextWindow = rawNextWindow;
+} else {
+  nextWindow = ACS_getProjectedFactorySlotDateLabel(
+    state.year,
+    state.month,
+    capacity,
+    reserved
+  );
+}
 }
 
     if (capacityEl) capacityEl.textContent = `${capacity}/month`;
