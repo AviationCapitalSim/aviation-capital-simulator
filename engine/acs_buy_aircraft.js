@@ -726,18 +726,25 @@ function ACS_getCurrentSimDateParts() {
   try {
     if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime) {
       const d = new Date(ACS_TIME.currentTime);
+
       return {
         year: d.getUTCFullYear(),
-        month: d.getUTCMonth() + 1
+        month: d.getUTCMonth() + 1,
+        day: d.getUTCDate(),
+        absoluteMonth: (d.getUTCFullYear() * 12) + (d.getUTCMonth() + 1)
       };
     }
   } catch (error) {
     console.warn("⚠️ Factory Slots could not read ACS_TIME:", error);
   }
 
+  const fallbackYear = Number(getCurrentSimYear() || 1940);
+
   return {
-    year: Number(getCurrentSimYear() || 1940),
-    month: 1
+    year: fallbackYear,
+    month: 1,
+    day: 1,
+    absoluteMonth: (fallbackYear * 12) + 1
   };
 }
 
@@ -801,14 +808,24 @@ function ACS_getProjectedFactorySlotDateLabel(year, month, capacity, reserved) {
 }
 
 function ACS_shiftFactorySlotsMonth(delta) {
-   
+  const currentSim = ACS_getCurrentSimDateParts();
+
   const y = Number(ACS_factorySlotsState.year);
   const m = Number(ACS_factorySlotsState.month);
 
   const d = new Date(Date.UTC(y, m - 1 + Number(delta || 0), 1));
 
-  ACS_factorySlotsState.year = d.getUTCFullYear();
-  ACS_factorySlotsState.month = d.getUTCMonth() + 1;
+  const targetYear = d.getUTCFullYear();
+  const targetMonth = d.getUTCMonth() + 1;
+  const targetAbsoluteMonth = (targetYear * 12) + targetMonth;
+
+  if (targetAbsoluteMonth < currentSim.absoluteMonth) {
+    console.warn("⛔ Factory Slots cannot navigate to past production months.");
+    return;
+  }
+
+  ACS_factorySlotsState.year = targetYear;
+  ACS_factorySlotsState.month = targetMonth;
 
   ACS_loadFactorySlotsAvailability();
 }
@@ -872,19 +889,30 @@ async function ACS_loadFactorySlotsAvailability() {
     console.warn("⚠️ Factory Slots state incomplete:", state);
     return;
   }
+  const currentSim = ACS_getCurrentSimDateParts();
+
+  const currentAbsoluteMonth =
+    (Number(state.year) * 12) + Number(state.month);
 
   const prevDate = new Date(Date.UTC(state.year, state.month - 2, 1));
   const nextDate = new Date(Date.UTC(state.year, state.month, 1));
 
+  const prevAbsoluteMonth =
+    (prevDate.getUTCFullYear() * 12) + (prevDate.getUTCMonth() + 1);
+
   const prevLabel = document.getElementById("factorySlotsPrevLabel");
   const currentLabel = document.getElementById("factorySlotsCurrentLabel");
   const nextLabel = document.getElementById("factorySlotsNextLabel");
+  const prevBtn = document.getElementById("factorySlotsPrevMonth");
 
   if (prevLabel) {
-    prevLabel.textContent = ACS_getMonthLabel(
-      prevDate.getUTCFullYear(),
-      prevDate.getUTCMonth() + 1
-    );
+    prevLabel.textContent =
+      prevAbsoluteMonth < currentSim.absoluteMonth
+        ? "—"
+        : ACS_getMonthLabel(
+            prevDate.getUTCFullYear(),
+            prevDate.getUTCMonth() + 1
+          );
   }
 
   if (currentLabel) {
@@ -896,6 +924,12 @@ async function ACS_loadFactorySlotsAvailability() {
       nextDate.getUTCFullYear(),
       nextDate.getUTCMonth() + 1
     );
+  }
+
+  if (prevBtn) {
+    prevBtn.disabled = currentAbsoluteMonth <= currentSim.absoluteMonth;
+    prevBtn.style.opacity = prevBtn.disabled ? "0.35" : "1";
+    prevBtn.style.cursor = prevBtn.disabled ? "not-allowed" : "pointer";
   }
 
   const capacityEl = document.getElementById("factorySlotsCapacity");
@@ -964,43 +998,57 @@ async function ACS_loadFactorySlotsAvailability() {
       (capacity > 0 ? Math.round((reserved / capacity) * 100) : 0)
     );
 
-  const rawNextWindow =
-  data.next_available_delivery_window ||
-  slot.next_available_delivery_window ||
-  data.next_window ||
-  null;
+      const rawNextWindow =
+      data.next_available_delivery_window ||
+      slot.next_available_delivery_window ||
+      data.next_window ||
+      null;
 
-let nextWindow = "—";
+    let nextWindow = "—";
 
-if (rawNextWindow && typeof rawNextWindow === "object") {
-  const nwYear =
-    rawNextWindow.year ||
-    rawNextWindow.slot_year ||
-    rawNextWindow.delivery_year;
+    if (
+      rawNextWindow &&
+      typeof rawNextWindow === "object" &&
+      rawNextWindow.estimated_delivery_preview
+    ) {
+      const deliveryDate = new Date(rawNextWindow.estimated_delivery_preview);
 
-  const nwMonth =
-    rawNextWindow.month ||
-    rawNextWindow.slot_month ||
-    rawNextWindow.delivery_month;
+      if (!Number.isNaN(deliveryDate.getTime())) {
+        nextWindow = ACS_getOperationalDateLabel(
+          deliveryDate.getUTCFullYear(),
+          deliveryDate.getUTCMonth() + 1,
+          deliveryDate.getUTCDate()
+        );
+      }
+    } else if (rawNextWindow && typeof rawNextWindow === "object") {
+      const nwYear =
+        rawNextWindow.year ||
+        rawNextWindow.slot_year ||
+        rawNextWindow.delivery_year;
 
-  if (nwYear && nwMonth) {
-    nextWindow = ACS_getProjectedFactorySlotDateLabel(
-      Number(nwYear),
-      Number(nwMonth),
-      capacity,
-      reserved
-    );
-  }
-} else if (typeof rawNextWindow === "string") {
-  nextWindow = rawNextWindow;
-} else {
-  nextWindow = ACS_getProjectedFactorySlotDateLabel(
-    state.year,
-    state.month,
-    capacity,
-    reserved
-  );
-}
+      const nwMonth =
+        rawNextWindow.month ||
+        rawNextWindow.slot_month ||
+        rawNextWindow.delivery_month;
+
+      if (nwYear && nwMonth) {
+        nextWindow = ACS_getProjectedFactorySlotDateLabel(
+          Number(nwYear),
+          Number(nwMonth),
+          capacity,
+          reserved
+        );
+      }
+    } else if (typeof rawNextWindow === "string") {
+      nextWindow = rawNextWindow;
+    } else {
+      nextWindow = ACS_getProjectedFactorySlotDateLabel(
+        state.year,
+        state.month,
+        capacity,
+        reserved
+      );
+    }
 
     if (capacityEl) capacityEl.textContent = `${capacity}/month`;
     if (reservedEl) reservedEl.textContent = String(reserved);
