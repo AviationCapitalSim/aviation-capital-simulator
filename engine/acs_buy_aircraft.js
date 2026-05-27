@@ -1196,8 +1196,15 @@ document.addEventListener("DOMContentLoaded", () => {
           ? 50
           : (parseInt(document.getElementById("modalBuyInitialPct").value, 10) || 100);
 
-      const simYear = Number(getCurrentSimYear() || ac.year || 1940);
+            const simDateSource =
+        (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
+          ? new Date(ACS_TIME.currentTime)
+          : new Date(Date.UTC(Number(getCurrentSimYear() || ac.year || 1940), 0, 1));
 
+      const simYear = simDateSource.getUTCFullYear();
+      const simMonth = simDateSource.getUTCMonth() + 1;
+      const simDay = simDateSource.getUTCDate();
+       
       if (!ac.model_key) {
         alert("❌ Aircraft model_key missing. Order cannot be created.");
         return;
@@ -1221,7 +1228,9 @@ document.addEventListener("DOMContentLoaded", () => {
               quantity: qty,
               ownership_type: ownershipType,
               initial_payment_pct: initialPaymentPct,
-              sim_year: simYear
+              sim_year: simYear,
+              sim_month: simMonth,
+              sim_day: simDay
             })
           }
         );
