@@ -1001,7 +1001,6 @@ if (rawNextWindow && typeof rawNextWindow === "object") {
     reserved
   );
 }
-}
 
     if (capacityEl) capacityEl.textContent = `${capacity}/month`;
     if (reservedEl) reservedEl.textContent = String(reserved);
