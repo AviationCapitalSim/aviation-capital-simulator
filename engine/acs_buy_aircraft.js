@@ -1125,55 +1125,101 @@ function updateModalSummary() {
   if (!selectedAircraft) return;
 
   const op = document.getElementById("modalOperation").value;
-  const qty = Math.max(1, parseInt(document.getElementById("modalQty").value) || 1);
-  const price = selectedAircraft.price_acs_usd || 0;
+  const qty = Math.max(
+    1,
+    parseInt(document.getElementById("modalQty").value, 10) || 1
+  );
+
+  const price = Number(selectedAircraft.price_acs_usd || 0);
+  const total = price * qty;
 
   let summary = "";
 
-  // Delivery preview only — no localStorage mutation
-   
+  /* ============================================================
+     🟦 DELIVERY PREVIEW — VIEW ONLY
+     ------------------------------------------------------------
+     Real delivery authority remains backend factory slot resolver.
+     This preview does NOT reserve slots.
+     ============================================================ */
+
   const deliveryDate = ACS_calculateDeliveryPreviewDate(qty);
   const d = deliveryDate.toUTCString().substring(5, 16);
-   
+
   summary += `Estimated delivery: <b>${d}</b><br>`;
 
-  /* BUY NEW */
-   
+  /* ============================================================
+     🟩 BUY NEW — PURCHASE / FINANCED PURCHASE
+     ============================================================ */
+
   if (op === "BUY") {
-    const pct = parseInt(document.getElementById("modalBuyInitialPct").value) || 100;
-    const total = price * qty;
-    const initial = total * (pct / 100);
-    const final = total - initial;
+    const pct =
+      parseInt(document.getElementById("modalBuyInitialPct").value, 10) || 100;
+
+    const initial = Math.round(total * (pct / 100));
+    const final = Math.max(total - initial, 0);
 
     summary += `
-    Initial Payment: <b>${ACS_formatUSD(initial)}</b><br>
-    Delivery Payment: <b>${ACS_formatUSD(final)}</b>
-`  ;
+      Initial Payment: <b>${ACS_formatUSD(initial)}</b><br>
+      Delivery Payment: <b>${ACS_formatUSD(final)}</b>
+    `;
 
     document.getElementById("leaseOptions").style.display = "none";
   }
 
-  /* LEASE NEW */
-   
+  /* ============================================================
+     🟦 LEASE NEW — AIRBUS OCC CONTRACT RULE v1.0
+     ------------------------------------------------------------
+     Lease New is NOT financed purchase.
+     Lease New is a controlled operational lease contract.
+
+     Rules:
+     - Initial Lease Commitment: 15%
+     - Monthly payment based on aircraft catalog value
+     - No final purchase balance
+     - No free return before contract end
+     - End options handled later in My Aircraft:
+       Extend / Buyout / Return at Contract End
+     ============================================================ */
+
   if (op === "LEASE") {
     const years =
-      parseInt(document.getElementById("modalLeaseYears").value) || 10;
+      parseInt(document.getElementById("modalLeaseYears").value, 10) || 10;
 
-    const total = price * qty;
+    const leaseInitialPct = 15;
+    const leaseInitialCommitment = Math.round(total * (leaseInitialPct / 100));
 
-    const initialPct = 50;
-    const initialPay = total * 0.5;
+    let monthlyRatePct = 0.0095;
 
-    const remaining = total - initialPay;
-    const months = years * 12;
-    const monthlyPay = Math.round(remaining / months);
+    if (years === 5) {
+      monthlyRatePct = 0.0125;
+    } else if (years === 10) {
+      monthlyRatePct = 0.0095;
+    } else if (years === 15) {
+      monthlyRatePct = 0.0075;
+    }
+
+    const termMonths = years * 12;
+    const monthlyLeasePayment = Math.round(total * monthlyRatePct);
+
+    const monthlyRateDisplay = (monthlyRatePct * 100).toFixed(2);
 
     summary += `
-    Lease Duration: <b>${years} years</b><br>
-    Initial Payment (50%): <b>${ACS_formatUSD(initialPay)}</b><br>
-    Monthly Payment (~): <b>${ACS_formatUSD(monthlyPay)}</b><br>
-    Total Aircraft Value: <b>${ACS_formatUSD(total)}</b>
-`  ;
+      Lease Duration: <b>${years} years / ${termMonths} months</b><br>
+      Initial Lease Commitment (15%): <b>${ACS_formatUSD(leaseInitialCommitment)}</b><br>
+      Monthly Lease Payment: <b>${ACS_formatUSD(monthlyLeasePayment)}</b><br>
+      Monthly Lease Rate: <b>${monthlyRateDisplay}% of aircraft value</b><br>
+      Total Aircraft Value: <b>${ACS_formatUSD(total)}</b><br><br>
+
+      <span style="color:#ffca3a;">
+        OCC Contract Lock:
+      </span>
+      <b>No free return before contract end.</b><br>
+
+      <span style="color:#8ab4ff;">
+        End-of-Lease options will be managed in My Aircraft:
+      </span>
+      <b>Extend / Buyout / Return at Contract End</b>
+    `;
 
     document.getElementById("leaseOptions").style.display = "block";
   }
