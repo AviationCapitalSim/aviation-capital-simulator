@@ -1280,15 +1280,80 @@ document.addEventListener("DOMContentLoaded", () => {
         parseInt(document.getElementById("modalQty").value, 10) || 1
       );
 
-      const ownershipType =
-        op === "LEASE"
-          ? "LEASE"
-          : "BUY";
+      /* ============================================================
+   🟦 ACS LEASE NEW OCC PAYLOAD RULE v1.0
+   ------------------------------------------------------------
+   BUY:
+   - Uses selected initial payment percentage.
 
-      const initialPaymentPct =
-        ownershipType === "LEASE"
-          ? 50
-          : (parseInt(document.getElementById("modalBuyInitialPct").value, 10) || 100);
+   LEASE:
+   - Initial Lease Commitment = 15%
+   - Monthly lease rate based on selected contract duration.
+   - Lease is NOT financed purchase.
+   - Aircraft cannot be freely returned before contract end.
+   ============================================================ */
+
+const ownershipType =
+  op === "LEASE"
+    ? "LEASE"
+    : "BUY";
+
+const leaseYears =
+  ownershipType === "LEASE"
+    ? (parseInt(document.getElementById("modalLeaseYears").value, 10) || 10)
+    : null;
+
+const leaseTermMonths =
+  ownershipType === "LEASE"
+    ? leaseYears * 12
+    : null;
+
+let leaseRatePctMonthly = null;
+
+if (ownershipType === "LEASE") {
+  if (leaseYears === 5) {
+    leaseRatePctMonthly = 0.0125;
+  } else if (leaseYears === 10) {
+    leaseRatePctMonthly = 0.0095;
+  } else if (leaseYears === 15) {
+    leaseRatePctMonthly = 0.0075;
+  } else {
+    leaseRatePctMonthly = 0.0095;
+  }
+}
+
+const aircraftTotalValue =
+  Number(ac.price_acs_usd || 0) * qty;
+
+const monthlyLeasePayment =
+  ownershipType === "LEASE"
+    ? Math.round(aircraftTotalValue * leaseRatePctMonthly)
+    : null;
+
+const initialPaymentPct =
+  ownershipType === "LEASE"
+    ? 15
+    : (parseInt(document.getElementById("modalBuyInitialPct").value, 10) || 100);
+
+const leaseInitialCommitmentAmount =
+  ownershipType === "LEASE"
+    ? Math.round(aircraftTotalValue * 0.15)
+    : null;
+
+const lessorName =
+  ownershipType === "LEASE"
+    ? "Eagle Aviation Capital"
+    : null;
+
+const remarketingAgent =
+  ownershipType === "LEASE"
+    ? "Eagle Broker"
+    : null;
+
+const leasePolicyVersion =
+  ownershipType === "LEASE"
+    ? "ACS_LEASE_NEW_OCC_V1"
+    : null;
 
             const simDateSource =
         (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime)
@@ -1317,15 +1382,26 @@ document.addEventListener("DOMContentLoaded", () => {
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-              model_key: ac.model_key,
-              quantity: qty,
-              ownership_type: ownershipType,
-              initial_payment_pct: initialPaymentPct,
-              sim_year: simYear,
-              sim_month: simMonth,
-              sim_day: simDay
-            })
+          body: JSON.stringify({
+  model_key: ac.model_key,
+  quantity: qty,
+  ownership_type: ownershipType,
+  initial_payment_pct: initialPaymentPct,
+  sim_year: simYear,
+  sim_month: simMonth,
+  sim_day: simDay,
+
+  /* Lease New OCC metadata */
+  lease_years: leaseYears,
+  lease_term_months: leaseTermMonths,
+  monthly_lease_payment: monthlyLeasePayment,
+  lease_initial_commitment_pct: ownershipType === "LEASE" ? 15 : null,
+  lease_initial_commitment_amount: leaseInitialCommitmentAmount,
+  lease_rate_pct_monthly: leaseRatePctMonthly,
+  lessor_name: lessorName,
+  remarketing_agent: remarketingAgent,
+  lease_policy_version: leasePolicyVersion
+})
           }
         );
 
