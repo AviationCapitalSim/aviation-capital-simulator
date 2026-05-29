@@ -203,7 +203,12 @@ function ACS_normalizeUsedMarketRow(row) {
     hours: Number(row.total_hours || 0),
     cycles: Number(row.total_cycles || 0),
     condition: `${Math.round(conditionPct)}%`,
-    source: row.market_source || "SYSTEM_GENERATED",
+    source:
+    row.remarketing_agent && (row.previous_operator_name || row.previous_operator)
+    ? `${row.remarketing_agent} / ${row.previous_operator_name || row.previous_operator}`
+    : row.remarketing_agent
+      ? row.remarketing_agent
+      : row.previous_operator_name || row.previous_operator || "Eagle Broker",
 
     /* Backend fields preserved */
     model_key: row.model_key,
