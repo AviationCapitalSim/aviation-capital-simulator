@@ -149,61 +149,147 @@ function ACS_handleImageFallback(img) {
 }
 
 /* ============================================================
-   Helper — leer y guardar Used Market crudo
+   🟦 ACS USED MARKET — BACKEND DATA BRIDGE v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Keep the old Used Market UI stable
+   - Remove localStorage authority
+   - Read real market listings from PostgreSQL backend
+   - Normalize backend rows into the old card format
+   - No frontend generation
+   - No frontend finance mutation
+   - No frontend fleet creation
    ============================================================ */
-function loadUsedMarketRaw() {
-  return JSON.parse(localStorage.getItem("ACS_UsedMarket") || "[]");
-}
 
-function saveUsedMarketRaw(list) {
-  localStorage.setItem("ACS_UsedMarket", JSON.stringify(list));
+const ACS_USED_MARKET_ENDPOINT =
+  "https://api.aviationcapitalsim.com/v1/aircraft/used-market";
+
+let ACS_USED_MARKET_BACKEND_LIST = [];
+let ACS_USED_MARKET_BACKEND_LOADED = false;
+let ACS_USED_MARKET_BACKEND_LOADING = false;
+let ACS_USED_MARKET_BACKEND_ERROR = null;
+
+/* ============================================================
+   NORMALIZE BACKEND ROW → OLD USED CARD FORMAT
+   ------------------------------------------------------------
+   This preserves the old UI fields:
+   model, manufacturer, year, hours, cycles, condition, price_acs_usd
+   ============================================================ */
+
+function ACS_normalizeUsedMarketRow(row) {
+  const manufacturer = row.manufacturer || "Unknown";
+
+  const model =
+    row.model ||
+    String(row.aircraft_name || "")
+      .replace(new RegExp("^" + manufacturer + "\\s+", "i"), "")
+      .trim() ||
+    row.model_key ||
+    "Unknown Model";
+
+  const conditionPct = Number(row.condition_pct || 0);
+
+  return {
+    ...row,
+
+    /* Old UI compatibility */
+    id: String(row.id),
+    model,
+    manufacturer,
+    year: Number(row.year_built || row.generated_for_sim_year || 1940),
+    seats: Number(row.seats || 0),
+    range_nm: Number(row.range_nm || 0),
+    price_acs_usd: Number(row.market_price || 0),
+    hours: Number(row.total_hours || 0),
+    cycles: Number(row.total_cycles || 0),
+    condition: `${Math.round(conditionPct)}%`,
+    source: row.market_source || "SYSTEM_GENERATED",
+
+    /* Backend fields preserved */
+    model_key: row.model_key,
+    aircraft_name: row.aircraft_name,
+    image_filename: row.image_filename || row.image_file_name || null,
+    serial_number: row.serial_number,
+    previous_registration: row.previous_registration,
+    previous_operator: row.previous_operator_name || row.previous_operator,
+    maintenance_status: row.maintenance_status,
+    listing_status: row.listing_status,
+    remarketing_agent: row.remarketing_agent
+  };
 }
 
 /* ============================================================
-   4) GENERACIÓN BASE — 300 AVIONES (UNA SOLA VEZ)
+   LOAD USED MARKET FROM BACKEND
    ============================================================ */
-function generateUsedMarket() {
-  let used = loadUsedMarketRaw();
 
-  if (used.length > 0) return used;
-
-  const db = resolveUsedDB();
-  const simYear = getCurrentSimYear();
-
-  const pool = db.filter(a => a.year <= simYear);
-  if (!pool.length) {
-    console.warn("⚠️ Used Market: pool vacío, revisar ACS_AIRCRAFT_DB.");
-    saveUsedMarketRaw([]);
-    return [];
+async function ACS_loadUsedMarketFromBackend() {
+  if (ACS_USED_MARKET_BACKEND_LOADING) {
+    return ACS_USED_MARKET_BACKEND_LIST;
   }
 
-  const result = [];
-  let count = 0;
+  ACS_USED_MARKET_BACKEND_LOADING = true;
+  ACS_USED_MARKET_BACKEND_ERROR = null;
 
-  while (count < 300) {
-    const ac = pool[Math.floor(Math.random() * pool.length)];
-    if (!ac) break;
-
-    result.push({
-      id: "USED-" + Date.now() + "-" + count,
-      model: ac.model,
-      manufacturer: ac.manufacturer,
-      year: ac.year,
-      seats: ac.seats,
-      range_nm: ac.range_nm,
-      price_acs_usd: Math.floor(ac.price_acs_usd * 0.35),
-      hours: Math.floor(Math.random() * 15000) + 2000,
-      cycles: Math.floor(Math.random() * 9000) + 1000,
-      condition: ["A", "B", "C"][Math.floor(Math.random() * 3)],
-      image: getAircraftImage(ac),
-      source: "BANK"
+  try {
+    const response = await fetch(ACS_USED_MARKET_ENDPOINT, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Accept": "application/json"
+      }
     });
 
-    count++;
-  }
+    const data = await response.json().catch(() => null);
 
-  saveUsedMarketRaw(result);
-  return result;
+    if (!response.ok || !data || data.ok !== true) {
+      throw new Error(data?.error || `USED_MARKET_HTTP_${response.status}`);
+    }
+
+    const rows = Array.isArray(data.used_market)
+      ? data.used_market
+      : [];
+
+    ACS_USED_MARKET_BACKEND_LIST =
+      rows.map(ACS_normalizeUsedMarketRow);
+
+    ACS_USED_MARKET_BACKEND_LOADED = true;
+    ACS_USED_MARKET_BACKEND_LOADING = false;
+
+    console.log("✅ ACS Used Market loaded from backend:", {
+      count: ACS_USED_MARKET_BACKEND_LIST.length,
+      seed_status: data.seed_status || null,
+      policy: data.policy || null
+    });
+
+    return ACS_USED_MARKET_BACKEND_LIST;
+
+  } catch (error) {
+    ACS_USED_MARKET_BACKEND_LOADING = false;
+    ACS_USED_MARKET_BACKEND_ERROR = error.message;
+
+    console.error("❌ ACS Used Market backend load failed:", error);
+
+    ACS_USED_MARKET_BACKEND_LIST = [];
+    return [];
+  }
+}
+
+/* ============================================================
+   LEGACY FUNCTION NAMES — NOW BACKEND ONLY
+   ------------------------------------------------------------
+   These names stay so the old UI does not break.
+   ============================================================ */
+
+function loadUsedMarketRaw() {
+  return ACS_USED_MARKET_BACKEND_LIST;
+}
+
+function saveUsedMarketRaw() {
+  console.warn("⛔ saveUsedMarketRaw disabled — backend authority only.");
+}
+
+function generateUsedMarket() {
+  return ACS_USED_MARKET_BACKEND_LIST;
 }
 
 /* ============================================================
@@ -626,9 +712,22 @@ function openInfo(id) {
 }
 
 /* ============================================================
-   9) INIT
+   9) INIT — BACKEND AUTHORITY
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const grid = document.getElementById("usedGrid");
+
+  if (grid) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1; padding:2rem; color:#ffb300;">
+        Loading Used Aircraft Market...
+      </div>
+    `;
+  }
+
+  await ACS_loadUsedMarketFromBackend();
+
   buildFilterChips();
   renderUsedMarket("all");
 });
