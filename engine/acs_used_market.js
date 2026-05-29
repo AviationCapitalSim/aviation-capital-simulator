@@ -58,151 +58,209 @@ function ACS_escapeHTML(value) {
 }
 
 /* ============================================================
-   🖼️ AIRCRAFT IMAGE RESOLVER — ACS MULTI-CANDIDATE v1.1
+   🖼️ ACS USED MARKET IMAGE RESOLVER — BUY NEW SYNC v1.0
    ------------------------------------------------------------
    Purpose:
-   - Backend Used Market only provides aircraft data.
-   - Image files remain frontend assets.
-   - Try multiple ACS naming conventions safely.
-   - No localStorage.
+   - Use the same aircraft image logic as Buy New
+   - Backend Used Market rows may not include "model"
+   - Normalize from aircraft_name / model_key
+   - JPG first because ACS aircraft library uses mostly JPG
+   - Fallback to PNG, then placeholder
    ============================================================ */
 
-function ACS_slug(value) {
+function ACS_slugAircraftName(value) {
   return String(value || "")
     .toLowerCase()
     .trim()
+    .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
 }
 
-function ACS_uniqueList(list) {
-  return Array.from(new Set(list.filter(Boolean)));
-}
-
-function ACS_getManufacturerFolders(manufacturer) {
-  const raw = String(manufacturer || "").trim();
-  const lower = raw.toLowerCase();
-
-  const folders = [];
-
-  if (raw) folders.push(raw);
-  if (raw) folders.push(raw.replace(/\s+/g, "_"));
-  if (raw) folders.push(raw.replace(/\s+/g, "-"));
-  if (raw) folders.push(ACS_slug(raw));
-
-  if (lower === "de havilland") {
-    folders.push("de_havilland");
-    folders.push("de Havilland");
-    folders.push("De Havilland");
-  }
-
-  if (lower === "boeing") folders.push("Boeing", "boeing");
-  if (lower === "douglas") folders.push("Douglas", "douglas");
-  if (lower === "lockheed") folders.push("Lockheed", "lockheed");
-  if (lower === "beechcraft") folders.push("Beechcraft", "beechcraft");
-  if (lower === "fokker") folders.push("Fokker", "fokker");
-  if (lower === "junkers") folders.push("Junkers", "junkers");
-  if (lower === "ford") folders.push("Ford", "ford");
-
-  return ACS_uniqueList(folders);
-}
-
-function ACS_getAircraftImageCandidates(ac) {
-  if (!ac) return ["img/placeholder_aircraft.png"];
+function ACS_cleanUsedImageModelName(ac) {
+  if (!ac) return "";
 
   const manufacturer = String(ac.manufacturer || "").trim();
-  const modelKey = String(ac.model_key || "").trim();
-  const aircraftName = String(ac.aircraft_name || "").trim();
 
-  const rawNames = ACS_uniqueList([
-    ac.image_filename,
-    ac.image_file_name,
-    modelKey,
-    aircraftName,
-    aircraftName.replace(manufacturer, "").trim()
-  ]);
+  let model = String(
+    ac.model ||
+    ac.aircraft_model ||
+    ac.aircraft_name ||
+    ac.model_key ||
+    ""
+  ).trim();
 
-  const bases = [];
-
-  rawNames.forEach(name => {
-    const raw = String(name || "").trim();
-    if (!raw) return;
-
-    const noExt = raw.replace(/\.(png|jpg|jpeg|webp)$/i, "");
-
-    bases.push(raw);
-    bases.push(noExt);
-    bases.push(ACS_slug(noExt));
-    bases.push(ACS_slug(noExt).replace(/^l_([0-9]+)/, "l$1"));
-    bases.push(ACS_slug(noExt).replace(/_/g, ""));
-  });
-
-  const cleanBases = ACS_uniqueList(bases);
-  const folders = ACS_getManufacturerFolders(manufacturer);
-
-  const candidates = [];
-
-  for (const base of cleanBases) {
-    if (/^img\//i.test(base)) {
-      candidates.push(base);
-      continue;
-    }
-
-    if (/\.(png|jpg|jpeg|webp)$/i.test(base)) {
-      for (const folder of folders) {
-        candidates.push(`img/${folder}/${base}`);
-      }
-      candidates.push(`img/${base}`);
-      continue;
-    }
-
-    for (const folder of folders) {
-      candidates.push(`img/${folder}/${base}.jpg`);
-      candidates.push(`img/${folder}/${base}.png`);
-      candidates.push(`img/${folder}/${base}.webp`);
-    }
-
-    candidates.push(`img/${base}.jpg`);
-    candidates.push(`img/${base}.png`);
-    candidates.push(`img/${base}.webp`);
+  if (manufacturer) {
+    const re = new RegExp(
+      "^" + manufacturer.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\s+",
+      "i"
+    );
+    model = model.replace(re, "").trim();
   }
 
-  candidates.push("img/placeholder_aircraft.png");
+  model = model
+    .replace(/^boeing\s+/i, "")
+    .replace(/^douglas\s+/i, "")
+    .replace(/^lockheed\s+/i, "")
+    .replace(/^airbus\s+/i, "")
+    .replace(/^avro\s+/i, "")
+    .replace(/^convair\s+/i, "")
+    .replace(/^de\s+havilland\s+/i, "")
+    .replace(/^vickers\s+/i, "")
+    .replace(/^beechcraft\s+/i, "")
+    .replace(/^fokker\s+/i, "")
+    .replace(/^ford\s+/i, "")
+    .replace(/^junkers\s+/i, "")
+    .trim();
 
-  return ACS_uniqueList(candidates);
-}
-
-function getAircraftImage(ac) {
-  const candidates = ACS_getAircraftImageCandidates(ac);
-  return candidates[0] || "img/placeholder_aircraft.png";
+  return model;
 }
 
 /* ============================================================
-   🖼️ IMAGE FALLBACK SYSTEM — MULTI-CANDIDATE v1.1
+   IMAGE ALIASES — ACS CANONICAL FILE NAMES
+   ------------------------------------------------------------
+   Same philosophy as Buy New.
+   Add aliases here only when PostgreSQL names differ from
+   existing ACS image filenames.
+   ============================================================ */
+
+const ACS_USED_IMAGE_MODEL_ALIASES = {
+  /* Avro */
+  "lancastrian": "lancastrian",
+
+  /* Beechcraft */
+  "model_18": "beechcraft_model_18",
+  "beechcraft_model_18": "beechcraft_model_18",
+
+  /* Boeing */
+  "247": "boeing_247",
+  "boeing_247": "boeing_247",
+  "307_stratoliner": "boeing_307_stratoliner",
+  "boeing_307_stratoliner": "boeing_307_stratoliner",
+  "377_stratocruiser": "b_377_stratocruiser",
+  "b_377_stratocruiser": "b_377_stratocruiser",
+  "c_97_stratofreighter": "c_97_stratofreighter",
+
+  /* Douglas */
+  "dc_2": "dc_2",
+  "dc_3": "dc_3",
+  "dc_4": "dc_4",
+  "dc_5": "dc_5",
+  "dc_6": "dc_6",
+
+  /* Lockheed */
+  "model_9_orion": "model_9_orion",
+  "l_10_electra": "l_10_electra",
+  "l_12_electra_junior": "l_12_electra_junior",
+  "l_14_super_electra": "l_14_super_electra",
+  "l_18_lodestar": "l_18_lodestar",
+  "l_049_constellation": "l_049_constellation",
+  "l_649_constellation": "l_649_constellation",
+  "l_749_constellation": "l_749_constellation",
+
+  /* Convair */
+  "cv_240": "cv_240",
+  "convair_cv_240": "cv_240",
+
+  /* de Havilland */
+  "dh_84_dragon": "dh_84_dragon",
+  "dh_86_express": "dh_86_express",
+  "dh_89_dragon_rapide": "dh_89_dragon_rapide",
+  "dh_91_albatross": "dh_91_albatross",
+  "dh_95_flamingo": "dh_95_flamingo",
+  "dh_104_dove": "dh_104_dove",
+  "dh_114_heron": "dh_114_heron"
+};
+
+function ACS_getUsedAircraftManufacturerFolder(ac) {
+  const manufacturer = String(ac?.manufacturer || "").trim();
+
+  if (manufacturer.toLowerCase() === "de havilland") {
+    return "de_havilland";
+  }
+
+  return manufacturer;
+}
+
+function getAircraftImage(ac) {
+  if (!ac || !ac.manufacturer) {
+    return "img/placeholder_aircraft.jpg";
+  }
+
+  const manufacturer = String(ac.manufacturer || "").trim();
+  const manuFolder = ACS_getUsedAircraftManufacturerFolder(ac);
+
+  const cleanModel = ACS_cleanUsedImageModelName(ac);
+  const baseSlug = ACS_slugAircraftName(cleanModel);
+  const manufacturerSlug = ACS_slugAircraftName(manufacturer);
+
+  const modelKeySlug = ACS_slugAircraftName(ac.model_key || "");
+
+  const aliasSlug =
+    ACS_USED_IMAGE_MODEL_ALIASES[baseSlug] ||
+    ACS_USED_IMAGE_MODEL_ALIASES[modelKeySlug] ||
+    ACS_USED_IMAGE_MODEL_ALIASES[`${manufacturerSlug}_${baseSlug}`] ||
+    ACS_USED_IMAGE_MODEL_ALIASES[`${manufacturerSlug}_${modelKeySlug}`] ||
+    baseSlug ||
+    modelKeySlug;
+
+  const candidates = [];
+
+  /* JPG first — ACS image library priority */
+  candidates.push(`img/${manuFolder}/${aliasSlug}.jpg`);
+  candidates.push(`img/${manuFolder}/${aliasSlug}.png`);
+
+  /* fallback variants */
+  candidates.push(`img/${manuFolder}/${baseSlug}.jpg`);
+  candidates.push(`img/${manuFolder}/${baseSlug}.png`);
+
+  candidates.push(`img/${manuFolder}/${modelKeySlug}.jpg`);
+  candidates.push(`img/${manuFolder}/${modelKeySlug}.png`);
+
+  candidates.push(`img/${manuFolder}/${manufacturerSlug}_${baseSlug}.jpg`);
+  candidates.push(`img/${manuFolder}/${manufacturerSlug}_${baseSlug}.png`);
+
+  /* root fallback */
+  candidates.push(`img/${aliasSlug}.jpg`);
+  candidates.push(`img/${aliasSlug}.png`);
+
+  return candidates[0];
+}
+
+/* ============================================================
+   🖼️ ACS IMAGE FALLBACK SYSTEM — BUY NEW SYNC
+   ------------------------------------------------------------
+   Purpose:
+   - Try JPG / PNG variants
+   - Avoid infinite 404 loops
+   - Use JPG placeholder first
    ============================================================ */
 
 function ACS_handleImageFallback(img) {
   if (!img) return;
 
-  let candidates = [];
+  const currentSrc = img.getAttribute("src") || "";
 
-  try {
-    candidates = JSON.parse(img.dataset.candidates || "[]");
-  } catch (err) {
-    candidates = [];
+  if (!img.dataset.fallbackStep) {
+    img.dataset.fallbackStep = "0";
   }
 
-  let index = Number(img.dataset.candidateIndex || 0);
-  index++;
+  let step = Number(img.dataset.fallbackStep);
+  step += 1;
+  img.dataset.fallbackStep = String(step);
 
-  if (!Array.isArray(candidates) || index >= candidates.length) {
-    img.onerror = null;
-    img.src = "img/placeholder_aircraft.png";
+  if (step === 1 && currentSrc.endsWith(".jpg")) {
+    img.src = currentSrc.replace(".jpg", ".png");
     return;
   }
 
-  img.dataset.candidateIndex = String(index);
-  img.src = candidates[index];
+  if (step === 2 && currentSrc.endsWith(".png")) {
+    img.src = currentSrc.replace(".png", ".jpg");
+    return;
+  }
+
+  img.onerror = null;
+  img.src = "img/placeholder_aircraft.jpg";
 }
 
 /* ============================================================
