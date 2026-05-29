@@ -543,9 +543,17 @@ function renderUsedMarket(filter = "all") {
     const broker = ac.remarketing_agent || "N/A";
 
     card.innerHTML = `
-      <img src="${getAircraftImage(ac)}"
-           onerror="ACS_handleImageFallback(this)"
-           alt="${ACS_escapeHTML(title)}" />
+    
+      ${(() => {
+  const imageCandidates = ACS_buildUsedImageCandidates(ac);
+  return `
+    <img src="${ACS_escapeHTML(imageCandidates[0])}"
+         data-image-candidates='${ACS_escapeHTML(JSON.stringify(imageCandidates))}'
+         data-image-index="0"
+         onerror="ACS_handleImageFallback(this)"
+         alt="${ACS_escapeHTML(title)}" />
+  `;
+})()}
 
       <h3>${ACS_escapeHTML(title)}</h3>
 
