@@ -182,19 +182,45 @@ function ACS_getUsedAircraftManufacturerFolder(ac) {
   return manufacturer;
 }
 
-function getAircraftImage(ac) {
-  if (!ac || !ac.manufacturer) {
-    return "img/placeholder_aircraft.jpg";
+function ACS_switchImageExtension(filename) {
+  const value = String(filename || "").trim();
+
+  if (value.toLowerCase().endsWith(".jpg")) {
+    return value.replace(/\.jpg$/i, ".png");
   }
+
+  if (value.toLowerCase().endsWith(".png")) {
+    return value.replace(/\.png$/i, ".jpg");
+  }
+
+  return null;
+}
+
+function ACS_stripManufacturerPrefix(filename, manufacturer) {
+  const value = String(filename || "").trim();
+  const manuSlug = ACS_slugAircraftName(manufacturer || "");
+
+  if (!value || !manuSlug) return value;
+
+  return value.replace(new RegExp("^" + manuSlug + "_", "i"), "");
+}
+
+function ACS_buildUsedImageCandidates(ac) {
+  if (!ac) return ["img/placeholder_aircraft.png"];
 
   const manufacturer = String(ac.manufacturer || "").trim();
   const manuFolder = ACS_getUsedAircraftManufacturerFolder(ac);
 
+  const imageFilename = String(
+    ac.image_filename ||
+    ac.image_file_name ||
+    ""
+  ).trim();
+
   const cleanModel = ACS_cleanUsedImageModelName(ac);
   const baseSlug = ACS_slugAircraftName(cleanModel);
-  const manufacturerSlug = ACS_slugAircraftName(manufacturer);
-
   const modelKeySlug = ACS_slugAircraftName(ac.model_key || "");
+  const manufacturerSlug = ACS_slugAircraftName(manufacturer);
 
   const aliasSlug =
     ACS_USED_IMAGE_MODEL_ALIASES[baseSlug] ||
@@ -206,25 +232,75 @@ function getAircraftImage(ac) {
 
   const candidates = [];
 
-  /* JPG first — ACS image library priority */
-  candidates.push(`img/${manuFolder}/${aliasSlug}.jpg`);
-  candidates.push(`img/${manuFolder}/${aliasSlug}.png`);
+  function pushCandidate(path) {
+    if (!path) return;
+    if (!candidates.includes(path)) candidates.push(path);
+  }
 
-  /* fallback variants */
-  candidates.push(`img/${manuFolder}/${baseSlug}.jpg`);
-  candidates.push(`img/${manuFolder}/${baseSlug}.png`);
+  function pushWithExtensionPair(path) {
+    if (!path) return;
 
-  candidates.push(`img/${manuFolder}/${modelKeySlug}.jpg`);
-  candidates.push(`img/${manuFolder}/${modelKeySlug}.png`);
+    pushCandidate(path);
 
-  candidates.push(`img/${manuFolder}/${manufacturerSlug}_${baseSlug}.jpg`);
-  candidates.push(`img/${manuFolder}/${manufacturerSlug}_${baseSlug}.png`);
+    const switched = ACS_switchImageExtension(path);
+    if (switched) pushCandidate(switched);
+  }
 
-  /* root fallback */
-  candidates.push(`img/${aliasSlug}.jpg`);
-  candidates.push(`img/${aliasSlug}.png`);
+  /*
+    1) Backend image_filename is authority.
+    It may be:
+    - lockheed_model_9_orion.jpg
+    - model_9_orion.jpg
+    - img/Lockheed/model_9_orion.jpg
+    - png or jpg
+  */
+  if (imageFilename) {
+    if (/^img\//i.test(imageFilename)) {
+      pushWithExtensionPair(imageFilename);
+    } else {
+      pushWithExtensionPair(`img/${manuFolder}/${imageFilename}`);
+      pushWithExtensionPair(`img/${imageFilename}`);
 
-  return candidates[0];
+      const stripped = ACS_stripManufacturerPrefix(imageFilename, manufacturer);
+      if (stripped && stripped !== imageFilename) {
+        pushWithExtensionPair(`img/${manuFolder}/${stripped}`);
+        pushWithExtensionPair(`img/${stripped}`);
+      }
+    }
+  }
+
+  /*
+    2) Buy New style fallback aliases.
+  */
+  if (aliasSlug) {
+    pushWithExtensionPair(`img/${manuFolder}/${aliasSlug}.jpg`);
+    pushWithExtensionPair(`img/${manuFolder}/${aliasSlug}.png`);
+    pushWithExtensionPair(`img/${aliasSlug}.jpg`);
+    pushWithExtensionPair(`img/${aliasSlug}.png`);
+  }
+
+  if (baseSlug) {
+    pushWithExtensionPair(`img/${manuFolder}/${baseSlug}.jpg`);
+    pushWithExtensionPair(`img/${manuFolder}/${baseSlug}.png`);
+  }
+
+  if (modelKeySlug) {
+    pushWithExtensionPair(`img/${manuFolder}/${modelKeySlug}.jpg`);
+    pushWithExtensionPair(`img/${manuFolder}/${modelKeySlug}.png`);
+  }
+
+  /*
+    3) Final placeholders.
+  */
+  pushCandidate("img/placeholder_aircraft.png");
+  pushCandidate("img/placeholder_aircraft.jpg");
+
+  return candidates;
+}
+
+function getAircraftImage(ac) {
+  const candidates = ACS_buildUsedImageCandidates(ac);
+  return candidates[0] || "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
@@ -239,28 +315,25 @@ function getAircraftImage(ac) {
 function ACS_handleImageFallback(img) {
   if (!img) return;
 
-  const currentSrc = img.getAttribute("src") || "";
+  let candidates = [];
 
-  if (!img.dataset.fallbackStep) {
-    img.dataset.fallbackStep = "0";
+  try {
+    candidates = JSON.parse(img.dataset.imageCandidates || "[]");
+  } catch (err) {
+    candidates = [];
   }
 
-  let step = Number(img.dataset.fallbackStep);
-  step += 1;
-  img.dataset.fallbackStep = String(step);
+  let index = Number(img.dataset.imageIndex || 0);
+  index += 1;
 
-  if (step === 1 && currentSrc.endsWith(".jpg")) {
-    img.src = currentSrc.replace(".jpg", ".png");
+  if (!Array.isArray(candidates) || index >= candidates.length) {
+    img.onerror = null;
+    img.src = "img/placeholder_aircraft.png";
     return;
   }
 
-  if (step === 2 && currentSrc.endsWith(".png")) {
-    img.src = currentSrc.replace(".png", ".jpg");
-    return;
-  }
-
-  img.onerror = null;
-  img.src = "img/placeholder_aircraft.jpg";
+  img.dataset.imageIndex = String(index);
+  img.src = candidates[index];
 }
 
 /* ============================================================
