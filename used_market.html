@@ -370,6 +370,197 @@ body {
   background: #1a2e55;
   box-shadow: 0 0 10px rgba(255,179,0,0.4);
 }
+
+/* ============================================================
+   🟧 USED AIRCRAFT BUY MODAL — AIRBUS OCC STYLE v1.0
+   ============================================================ */
+
+#buyUsedModal .acs-modal-content {
+  max-width: 760px !important;
+  width: 92% !important;
+  background: radial-gradient(circle at top, #12254a 0%, #091326 60%, #050814 100%);
+  border: 1px solid rgba(255,179,0,0.45);
+  box-shadow: 0 0 26px rgba(0,0,0,0.75);
+}
+
+#buyTitle {
+  letter-spacing: 0.6px;
+  font-size: 1.15rem;
+}
+
+.used-occ-loading {
+  padding: 1.2rem;
+  color: #ffb300;
+  text-align: center;
+  font-weight: 600;
+}
+
+.used-occ-modal-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0.9rem;
+  text-align: left;
+}
+
+.used-occ-image-wrap {
+  grid-row: span 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #081530;
+  border: 1px solid rgba(255,179,0,0.28);
+  box-shadow: inset 0 0 18px rgba(0,0,0,0.45);
+}
+
+.used-occ-aircraft-img {
+  width: 100%;
+  height: 100%;
+  min-height: 330px;
+  object-fit: cover;
+  display: block;
+}
+
+.used-occ-panel {
+  padding: 0.75rem 0.85rem;
+  border-radius: 11px;
+  background: rgba(8,21,48,0.72);
+  border: 1px solid rgba(255,179,0,0.22);
+}
+
+.used-occ-section-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.12rem;
+  color: #ffb300;
+  margin-bottom: 0.55rem;
+  font-weight: 800;
+}
+
+.used-occ-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.86rem;
+}
+
+.used-occ-line span {
+  color: #aebce8;
+}
+
+.used-occ-line b {
+  color: #f4f7ff;
+  text-align: right;
+  font-weight: 700;
+}
+
+.used-occ-ok {
+  color: #00ff80;
+}
+
+.used-occ-danger {
+  color: #ff5b5b;
+}
+
+.used-occ-gate-box {
+  margin-top: 0.65rem;
+}
+
+.used-occ-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.32rem 0.75rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05rem;
+}
+
+.used-occ-chip-clear {
+  color: #061629;
+  background: #00ff80;
+  box-shadow: 0 0 12px rgba(0,255,128,0.25);
+}
+
+.used-occ-chip-hold {
+  color: #081530;
+  background: #ffb300;
+  box-shadow: 0 0 12px rgba(255,179,0,0.35);
+}
+
+.used-occ-gate-detail {
+  margin-top: 0.4rem;
+  color: #ffdf8a;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.used-occ-maint-panel {
+  grid-column: 2;
+}
+
+.used-occ-maint-status {
+  color: #ffe7a0;
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+.used-occ-maint-option {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.used-occ-checkbox-line {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #dbe7ff;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.used-occ-checkbox-line input {
+  width: auto;
+  margin: 0;
+  accent-color: #ffb300;
+}
+
+.used-occ-extension {
+  margin-top: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 9px;
+  background: rgba(255,179,0,0.08);
+  border: 1px solid rgba(255,179,0,0.22);
+  color: #ffe7a0;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+#confirmBuyBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+@media (max-width: 780px) {
+  .used-occ-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .used-occ-image-wrap {
+    grid-row: auto;
+  }
+
+  .used-occ-aircraft-img {
+    min-height: 210px;
+  }
+
+  .used-occ-maint-panel {
+    grid-column: auto;
+  }
+}
+     
 </style>
 </head>
 
@@ -559,10 +750,416 @@ function getUsedById(id) {
 }
      
 /* ============================================================
-   === BUY MODAL — FIX v2.4 (Capital Sync Patch) ===============
+   🟧 BUY USED MODAL — AIRBUS OCC / BACKEND AUTHORITY v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Display used aircraft acquisition panel with OCC styling
+   - Read company capital from backend only
+   - Remove localStorage dependency
+   - Show estimated delivery date from ACS clock
+   - Show market gate status
+   - Show maintenance advisory from backend/listing status only
+   - Does NOT create fleet
+   - Does NOT mutate Finance
+   - Does NOT redirect to My Aircraft
    ============================================================ */
-     
-function openBuyModal(id) {
+
+const ACS_USED_FINANCE_ENDPOINT =
+  "https://api.aviationcapitalsim.com/v1/finance";
+
+/* ============================================================
+   Helper — Backend Finance Capital
+   ============================================================ */
+
+async function ACS_getBackendCompanyCapital() {
+  try {
+    const response = await fetch(ACS_USED_FINANCE_ENDPOINT, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data) {
+      throw new Error(data?.error || `FINANCE_HTTP_${response.status}`);
+    }
+
+    const candidates = [
+      data.capital,
+      data.finance?.capital,
+      data.company_finance?.capital,
+      data.companyFinance?.capital,
+      data.account?.capital,
+      data.airline?.capital
+    ];
+
+    for (const value of candidates) {
+      const n = Number(value);
+      if (Number.isFinite(n)) return n;
+    }
+
+    console.warn("⚠️ Finance payload received but capital field was not found:", data);
+    return 0;
+
+  } catch (error) {
+    console.error("❌ Used Market capital backend load failed:", error);
+    return 0;
+  }
+}
+
+/* ============================================================
+   Helper — ACS Current Date
+   ============================================================ */
+
+function ACS_getUsedMarketSimDate() {
+  try {
+    if (typeof ACS_TIME !== "undefined" && ACS_TIME.currentTime) {
+      const d = new Date(ACS_TIME.currentTime);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+  } catch (error) {
+    console.warn("⚠️ Could not read ACS_TIME for Used Market:", error);
+  }
+
+  return new Date(Date.UTC(1940, 0, 1));
+}
+
+/* ============================================================
+   Helper — Add ACS Days
+   ============================================================ */
+
+function ACS_addUsedMarketDays(date, days) {
+  const base = date instanceof Date ? date : ACS_getUsedMarketSimDate();
+
+  return new Date(
+    base.getTime() + (Number(days || 0) * 24 * 60 * 60 * 1000)
+  );
+}
+
+/* ============================================================
+   Helper — Format ACS Date
+   ============================================================ */
+
+function ACS_formatUsedMarketDate(date) {
+  const d = date instanceof Date ? date : new Date(date);
+
+  if (Number.isNaN(d.getTime())) return "—";
+
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const months = [
+    "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+  ];
+
+  return `${day} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+/* ============================================================
+   Helper — Used Aircraft Image
+   ============================================================ */
+
+function ACS_getUsedAircraftModalImage(ac) {
+  if (!ac) return "img/placeholder_aircraft.png";
+
+  if (ac.image_filename) {
+    const manufacturer = String(ac.manufacturer || "").trim();
+    let folder = manufacturer;
+
+    if (manufacturer.toLowerCase() === "de havilland") {
+      folder = "de_havilland";
+    }
+
+    return `img/${folder}/${ac.image_filename}`;
+  }
+
+  if (typeof getAircraftImage === "function") {
+    return getAircraftImage(ac);
+  }
+
+  return "img/placeholder_aircraft.png";
+}
+
+/* ============================================================
+   Helper — Market Gate Display
+   ------------------------------------------------------------
+   Backend final rule later:
+   - CLEAR
+   - NEXT_DAY
+   ============================================================ */
+
+function ACS_getUsedMarketGate(ac) {
+  const raw =
+    ac?.market_gate ||
+    ac?.marketGate ||
+    ac?.purchase_gate ||
+    ac?.used_market_gate ||
+    "CLEAR";
+
+  const gate = String(raw || "CLEAR").toUpperCase();
+
+  if (
+    gate === "NEXT_DAY" ||
+    gate === "NEXT DAY" ||
+    gate === "HOLD" ||
+    gate === "BLOCKED"
+  ) {
+    return {
+      code: "NEXT_DAY",
+      label: "MARKET GATE: NEXT DAY",
+      detail: "Used market cycle limit.",
+      clear: false
+    };
+  }
+
+  return {
+    code: "CLEAR",
+    label: "Market Gate: CLEAR",
+    detail: "",
+    clear: true
+  };
+}
+
+/* ============================================================
+   Helper — Maintenance Advisory
+   ------------------------------------------------------------
+   Uses explicit backend/listing fields only.
+   No frontend-invented C/D status.
+   ============================================================ */
+
+function ACS_getUsedMaintenanceAdvisory(ac) {
+  if (!ac) {
+    return {
+      code: "CLEAR",
+      label: "CLEAR",
+      detail: "",
+      extensionDays: 0,
+      checkboxLabel: "",
+      hasOption: false
+    };
+  }
+
+  const statusText = String(
+    ac.maintenance_status ||
+    ac.maintenanceStatus ||
+    ac.check_status ||
+    ""
+  ).toUpperCase();
+
+  const dOverdue =
+    ac.d_check_overdue === true ||
+    ac.dCheckOverdue === true ||
+    ac.d_check_status === "OVERDUE" ||
+    ac.dCheckStatus === "OVERDUE" ||
+    statusText.includes("D-CHECK OVERDUE") ||
+    statusText.includes("D CHECK OVERDUE") ||
+    statusText.includes("D_OVERDUE");
+
+  const cOverdue =
+    ac.c_check_overdue === true ||
+    ac.cCheckOverdue === true ||
+    ac.c_check_status === "OVERDUE" ||
+    ac.cCheckStatus === "OVERDUE" ||
+    statusText.includes("C-CHECK OVERDUE") ||
+    statusText.includes("C CHECK OVERDUE") ||
+    statusText.includes("C_OVERDUE");
+
+  if (dOverdue) {
+    return {
+      code: "D_OVERDUE",
+      label: "🟥 D-Check Overdue",
+      detail: "D-Check pre-delivery option available.",
+      extensionDays: 30,
+      checkboxLabel: "Perform D-Check before delivery",
+      hasOption: true
+    };
+  }
+
+  if (cOverdue) {
+    return {
+      code: "C_OVERDUE",
+      label: "⚠ C-Check Overdue",
+      detail: "C-Check pre-delivery option available.",
+      extensionDays: 14,
+      checkboxLabel: "Perform C-Check before delivery",
+      hasOption: true
+    };
+  }
+
+  return {
+    code: "CLEAR",
+    label: "CLEAR",
+    detail: "",
+    extensionDays: 0,
+    checkboxLabel: "",
+    hasOption: false
+  };
+}
+
+/* ============================================================
+   Helper — Render BUY Used Modal Body
+   ============================================================ */
+
+function ACS_renderBuyUsedModalBody(ac, capital) {
+  const detailsEl = document.getElementById("buyDetails");
+  const confirmBtn = document.getElementById("confirmBuyBtn");
+
+  if (!detailsEl || !confirmBtn || !ac) return;
+
+  const price = Number(ac.price_acs_usd || 0);
+  const enoughCapital = Number(capital || 0) >= price;
+
+  const gate = ACS_getUsedMarketGate(ac);
+  const advisory = ACS_getUsedMaintenanceAdvisory(ac);
+
+  const baseDeliveryDate = ACS_addUsedMarketDays(
+    ACS_getUsedMarketSimDate(),
+    10
+  );
+
+  const revisedDeliveryDate = ACS_addUsedMarketDays(
+    baseDeliveryDate,
+    advisory.extensionDays
+  );
+
+  const maintenanceOptionHTML = advisory.hasOption
+    ? `
+      <div class="used-occ-maint-option">
+        <label class="used-occ-checkbox-line">
+          <input id="usedPreDeliveryMaintenance" type="checkbox">
+          <span>${advisory.checkboxLabel}</span>
+        </label>
+
+        <div id="usedMaintenanceExtension"
+             class="used-occ-extension"
+             style="display:none;">
+          Adds +${advisory.extensionDays} ACS days<br>
+          Revised Delivery Date:
+          <b>${ACS_formatUsedMarketDate(revisedDeliveryDate)}</b>
+        </div>
+      </div>
+    `
+    : "";
+
+  const capitalStatusHTML = enoughCapital
+    ? `<span class="used-occ-ok">Capital Available</span>`
+    : `<span class="used-occ-danger">Insufficient Capital</span>`;
+
+  const gateHTML = gate.clear
+    ? `<span class="used-occ-chip used-occ-chip-clear">${gate.label}</span>`
+    : `
+      <span class="used-occ-chip used-occ-chip-hold">${gate.label}</span>
+      <div class="used-occ-gate-detail">${gate.detail}</div>
+    `;
+
+  detailsEl.innerHTML = `
+    <div class="used-occ-modal-grid">
+
+      <div class="used-occ-image-wrap">
+        <img
+          class="used-occ-aircraft-img"
+          src="${ACS_getUsedAircraftModalImage(ac)}"
+          alt="${ac.manufacturer} ${ac.model}"
+          onerror="ACS_handleImageFallback(this)"
+        />
+      </div>
+
+      <div class="used-occ-panel">
+        <div class="used-occ-section-title">BROKER / ASSET</div>
+
+        <div class="used-occ-line">
+          <span>Broker</span>
+          <b>${ac.source || ac.remarketing_agent || "Eagle Broker"}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Year</span>
+          <b>${ac.year || "—"}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Condition</span>
+          <b>${ac.condition || "—"}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Hours</span>
+          <b>${Number(ac.hours || 0).toLocaleString("en-US")}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Cycles</span>
+          <b>${Number(ac.cycles || 0).toLocaleString("en-US")}</b>
+        </div>
+      </div>
+
+      <div class="used-occ-panel">
+        <div class="used-occ-section-title">ACQUISITION</div>
+
+        <div class="used-occ-line">
+          <span>Price</span>
+          <b>${ACS_formatUSD(price)}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Company Capital</span>
+          <b>${ACS_formatUSD(capital)}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Status</span>
+          <b>${capitalStatusHTML}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Estimated Delivery Date</span>
+          <b>${ACS_formatUsedMarketDate(baseDeliveryDate)}</b>
+        </div>
+
+        <div class="used-occ-gate-box">
+          ${gateHTML}
+        </div>
+      </div>
+
+      <div class="used-occ-panel used-occ-maint-panel">
+        <div class="used-occ-section-title">MAINTENANCE ADVISORY</div>
+
+        <div class="used-occ-maint-status">
+          ${advisory.label}
+        </div>
+
+        ${maintenanceOptionHTML}
+      </div>
+
+    </div>
+  `;
+
+  const maintenanceCheckbox =
+    document.getElementById("usedPreDeliveryMaintenance");
+
+  if (maintenanceCheckbox) {
+    maintenanceCheckbox.addEventListener("change", () => {
+      const ext = document.getElementById("usedMaintenanceExtension");
+      if (ext) {
+        ext.style.display = maintenanceCheckbox.checked ? "block" : "none";
+      }
+    });
+  }
+
+  confirmBtn.disabled = true;
+  confirmBtn.title =
+    "Backend purchase authority pending. No frontend purchase execution.";
+
+  confirmBtn.textContent = "Confirm Purchase";
+}
+
+/* ============================================================
+   BUY MODAL — OPEN
+   ============================================================ */
+
+async function openBuyModal(id) {
   selectedUsedID = id;
 
   const ac = getUsedById(id);
@@ -573,55 +1170,34 @@ function openBuyModal(id) {
   const modalEl = document.getElementById("buyUsedModal");
   const confirmBtn = document.getElementById("confirmBuyBtn");
 
-  /* ---------------------------------------------------------
-     🟦 FIX v2.4 — Leer SIEMPRE el capital real del motor
-     --------------------------------------------------------- */
-  let finance = {};
+  if (!titleEl || !detailsEl || !modalEl || !confirmBtn) return;
 
-  // 1) Si el motor ACS_Finance está cargado en RAM, úsalo
-  if (typeof ACS_Finance !== "undefined" && ACS_Finance !== null) {
-    finance = ACS_Finance;   // CAPITAL VIVO
-  }
-  // 2) Si aún no está en RAM, trae desde localStorage
-  else {
-    finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  }
-
-  const capital = finance.capital ?? 0;
-  const enough = capital >= ac.price_acs_usd;
-
-  /* ---------------------------------------------------------
-     🟦 Información visual
-     --------------------------------------------------------- */
-  titleEl.textContent = `Purchase ${ac.manufacturer} ${ac.model}`;
+  titleEl.textContent = `USED AIRCRAFT ACQUISITION`;
+  confirmBtn.disabled = true;
 
   detailsEl.innerHTML = `
-    <b>Price:</b> ${ACS_formatUSD(ac.price_acs_usd)}<br>
-    <b>Condition:</b> ${ac.condition}<br>
-    <b>Hours:</b> ${ac.hours.toLocaleString()}<br>
-    <b>Cycles:</b> ${ac.cycles.toLocaleString()}<br><br>
-
-    <span style="color:#00ff80; font-weight:600;">
-      Company Capital: $${capital.toLocaleString()}
-    </span><br>
-
-    ${
-      !enough
-        ? `<span style="color:#ff4444; font-weight:700;">❌ Not enough capital to purchase this aircraft.</span>`
-        : `<span style="color:#00e676; font-weight:700;">✔ Enough capital</span>`
-    }
+    <div class="used-occ-loading">
+      Loading acquisition data...
+    </div>
   `;
 
-  // Deshabilitar botón si no alcanza
-  confirmBtn.disabled = !enough;
-
   modalEl.style.display = "flex";
+
+  const capital = await ACS_getBackendCompanyCapital();
+
+  ACS_renderBuyUsedModalBody(ac, capital);
 }
+
+/* ============================================================
+   BUY MODAL — CLOSE
+   ============================================================ */
 
 function closeBuyModal() {
   const m = document.getElementById("buyUsedModal");
   if (m) m.style.display = "none";
 }
+
+
 
 /* ------------------- LEASE MODAL (SIN CAMBIOS) -------------- */
 
@@ -653,40 +1229,40 @@ function closeLeaseModal() {
   if (m) m.style.display = "none";
 }
 
-/* ------------------- CONFIRM PURCHASE ----------------------- */
+
+/* ============================================================
+   🟧 USED MARKET CONFIRM BUTTONS — BACKEND AUTHORITY LOCK v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Prevent false redirect to My Aircraft
+   - Prevent frontend purchase/lease execution
+   - Keep BUY / LEASE controlled until backend endpoints are ready
+   ============================================================ */
 
 (function(){
   const buyBtn = document.getElementById("confirmBuyBtn");
+
   if (buyBtn) {
     buyBtn.addEventListener("click", () => {
-
-      if (!selectedUsedID) return;
-
-      // Ejecutar compra REAL en acs_used_market.js
-      if (typeof buyUsed === "function") {
-        buyUsed(selectedUsedID);
-      }
-
-      closeBuyModal();
-
-      // Redirigir a My Aircraft
-      setTimeout(() => {
-        window.location.href = "my_aircraft.html";
-      }, 300);
+      console.warn(
+        "⛔ BUY USED confirm blocked — backend purchase endpoint pending.",
+        { selectedUsedID }
+      );
     });
   }
 
   const leaseBtn = document.getElementById("confirmLeaseBtn");
+
   if (leaseBtn) {
     leaseBtn.addEventListener("click", () => {
-      if (!selectedUsedID) return;
-      if (typeof leaseUsed === "function") {
-        leaseUsed(selectedUsedID);
-      }
-      closeLeaseModal();
+      console.warn(
+        "⛔ LEASE USED confirm blocked — backend lease endpoint pending.",
+        { selectedUsedID }
+      );
     });
   }
 })();
+
 
 /* ---------------- WIRE CARD BUTTONS -------------------------- */
 
