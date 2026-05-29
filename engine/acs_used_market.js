@@ -58,69 +58,151 @@ function ACS_escapeHTML(value) {
 }
 
 /* ============================================================
-   🖼️ AIRCRAFT IMAGE RESOLVER — BACKEND SAFE
+   🖼️ AIRCRAFT IMAGE RESOLVER — ACS MULTI-CANDIDATE v1.1
    ------------------------------------------------------------
-   Uses manufacturer + model_key / aircraft_name.
-   The browser fallback handles png/jpg switching.
+   Purpose:
+   - Backend Used Market only provides aircraft data.
+   - Image files remain frontend assets.
+   - Try multiple ACS naming conventions safely.
+   - No localStorage.
    ============================================================ */
 
-function getAircraftImage(ac) {
-  if (!ac) return "img/placeholder_aircraft.png";
+function ACS_slug(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function ACS_uniqueList(list) {
+  return Array.from(new Set(list.filter(Boolean)));
+}
+
+function ACS_getManufacturerFolders(manufacturer) {
+  const raw = String(manufacturer || "").trim();
+  const lower = raw.toLowerCase();
+
+  const folders = [];
+
+  if (raw) folders.push(raw);
+  if (raw) folders.push(raw.replace(/\s+/g, "_"));
+  if (raw) folders.push(raw.replace(/\s+/g, "-"));
+  if (raw) folders.push(ACS_slug(raw));
+
+  if (lower === "de havilland") {
+    folders.push("de_havilland");
+    folders.push("de Havilland");
+    folders.push("De Havilland");
+  }
+
+  if (lower === "boeing") folders.push("Boeing", "boeing");
+  if (lower === "douglas") folders.push("Douglas", "douglas");
+  if (lower === "lockheed") folders.push("Lockheed", "lockheed");
+  if (lower === "beechcraft") folders.push("Beechcraft", "beechcraft");
+  if (lower === "fokker") folders.push("Fokker", "fokker");
+  if (lower === "junkers") folders.push("Junkers", "junkers");
+  if (lower === "ford") folders.push("Ford", "ford");
+
+  return ACS_uniqueList(folders);
+}
+
+function ACS_getAircraftImageCandidates(ac) {
+  if (!ac) return ["img/placeholder_aircraft.png"];
 
   const manufacturer = String(ac.manufacturer || "").trim();
   const modelKey = String(ac.model_key || "").trim();
   const aircraftName = String(ac.aircraft_name || "").trim();
 
-  if (!manufacturer && !modelKey && !aircraftName) {
-    return "img/placeholder_aircraft.png";
+  const rawNames = ACS_uniqueList([
+    ac.image_filename,
+    ac.image_file_name,
+    modelKey,
+    aircraftName,
+    aircraftName.replace(manufacturer, "").trim()
+  ]);
+
+  const bases = [];
+
+  rawNames.forEach(name => {
+    const raw = String(name || "").trim();
+    if (!raw) return;
+
+    const noExt = raw.replace(/\.(png|jpg|jpeg|webp)$/i, "");
+
+    bases.push(raw);
+    bases.push(noExt);
+    bases.push(ACS_slug(noExt));
+    bases.push(ACS_slug(noExt).replace(/^l_([0-9]+)/, "l$1"));
+    bases.push(ACS_slug(noExt).replace(/_/g, ""));
+  });
+
+  const cleanBases = ACS_uniqueList(bases);
+  const folders = ACS_getManufacturerFolders(manufacturer);
+
+  const candidates = [];
+
+  for (const base of cleanBases) {
+    if (/^img\//i.test(base)) {
+      candidates.push(base);
+      continue;
+    }
+
+    if (/\.(png|jpg|jpeg|webp)$/i.test(base)) {
+      for (const folder of folders) {
+        candidates.push(`img/${folder}/${base}`);
+      }
+      candidates.push(`img/${base}`);
+      continue;
+    }
+
+    for (const folder of folders) {
+      candidates.push(`img/${folder}/${base}.jpg`);
+      candidates.push(`img/${folder}/${base}.png`);
+      candidates.push(`img/${folder}/${base}.webp`);
+    }
+
+    candidates.push(`img/${base}.jpg`);
+    candidates.push(`img/${base}.png`);
+    candidates.push(`img/${base}.webp`);
   }
 
-  let manuFolder = manufacturer.replace(/\s+/g, " ");
+  candidates.push("img/placeholder_aircraft.png");
 
-  if (manufacturer.toLowerCase() === "de havilland") {
-    manuFolder = "de_havilland";
-  }
+  return ACS_uniqueList(candidates);
+}
 
-  const rawModel = modelKey || aircraftName;
-  const base = rawModel
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-
-  if (!base) return "img/placeholder_aircraft.png";
-
-  return `img/${manuFolder}/${base}.png`;
+function getAircraftImage(ac) {
+  const candidates = ACS_getAircraftImageCandidates(ac);
+  return candidates[0] || "img/placeholder_aircraft.png";
 }
 
 /* ============================================================
-   🖼️ IMAGE FALLBACK SYSTEM
+   🖼️ IMAGE FALLBACK SYSTEM — MULTI-CANDIDATE v1.1
    ============================================================ */
 
 function ACS_handleImageFallback(img) {
   if (!img) return;
 
-  const fallbackCount = Number(img.dataset.fallbackCount || 0);
+  let candidates = [];
 
-  if (fallbackCount >= 2) {
+  try {
+    candidates = JSON.parse(img.dataset.candidates || "[]");
+  } catch (err) {
+    candidates = [];
+  }
+
+  let index = Number(img.dataset.candidateIndex || 0);
+  index++;
+
+  if (!Array.isArray(candidates) || index >= candidates.length) {
     img.onerror = null;
     img.src = "img/placeholder_aircraft.png";
     return;
   }
 
-  img.dataset.fallbackCount = String(fallbackCount + 1);
-
-  if (img.src.endsWith(".png")) {
-    img.src = img.src.replace(".png", ".jpg");
-    return;
-  }
-
-  if (img.src.endsWith(".jpg")) {
-    img.src = "img/placeholder_aircraft.png";
-    return;
-  }
-
-  img.src = "img/placeholder_aircraft.png";
+  img.dataset.candidateIndex = String(index);
+  img.src = candidates[index];
 }
 
 /* ============================================================
