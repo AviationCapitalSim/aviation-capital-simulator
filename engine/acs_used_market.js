@@ -366,259 +366,71 @@ function ACS_assignUsedRegistration() {
 
 
 /* ============================================================
-   === BUY USED AIRCRAFT
+   🟦 BUY USED AIRCRAFT — BACKEND AUTHORITY LOCK v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Prevent legacy localStorage purchase flow
+   - Prevent frontend finance mutation
+   - Prevent frontend fleet creation
+   - Prepare for backend endpoint:
+     POST /v1/aircraft/used-market/:id/buy
    ============================================================ */
 
 function buyUsed(id) {
-  try {
+  const list = generateUsedMarket();
+  const ac = list.find(x => String(x.id) === String(id));
 
-    let list = JSON.parse(localStorage.getItem("ACS_UsedMarket") || "[]");
-    const ac = list.find(x => x.id === id);
-
-    if (!ac) {
-      alert("❌ Aircraft not found in Used Market.");
-      return;
-    }
-
-    const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    const capital = finance.capital || 0;
-
-    if (capital < ac.price_acs_usd) {
-      alert("❌ Not enough capital to complete this purchase.");
-      return;
-    }
-
-    const simYear = (typeof getSimYear === "function")
-      ? getSimYear()
-      : (ACS_TIME?.year || 1940);
-
-    const age = Math.max(0, simYear - ac.year);
-
-    const monthsAge = age * 12;
-
-    let nextC = 12 - (monthsAge % 12);
-    if (nextC <= 0) nextC = 12;
-
-    let nextD = 96 - (monthsAge % 96);
-    if (nextD <= 0) nextD = 96;
-
-/* ============================================================
-   🟢 UA-REAL-STRUCT-2 — USED PURCHASE VIA FLEET FACTORY
-   ------------------------------------------------------------
-   ✔ Usa createFleetAircraft()
-   ✔ Preserva hours reales
-   ✔ Preserva cycles reales
-   ✔ Preserva año real
-   ✔ Inyecta estructura financiera correcta
-   ✔ Arquitectura limpia multiplayer-safe
-   ============================================================ */
-
-const db = resolveUsedDB();
-const dbModel = db.find(m =>
-  m.manufacturer === ac.manufacturer &&
-  m.model === ac.model
-);
-
-if (!dbModel) {
-  alert("❌ Aircraft data not found in DB.");
-  return;
-}
-
-const created = createFleetAircraft({
-  manufacturer: ac.manufacturer,
-  model: ac.model,
-  family: dbModel.family || "",
-
-  // 🔵 USED CORE
-  isUsed: true,
-  hours: Number(ac.hours),
-  cycles: Number(ac.cycles),
-
-  // 🔵 FINANCIAL STRUCTURE — CANONICAL
-  originalCost: Number(dbModel.price_acs_usd),
-  acquisitionCost: Number(ac.price_acs_usd),
-  acquisitionType: "USED"
-});
-
-if (!created) {
-  alert("❌ Error creating aircraft.");
-  return;
-}
-     
-    let f = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-    f.capital  = f.capital  || 0;
-    f.revenue  = f.revenue  || 0;
-    f.expenses = f.expenses || 0;
-    f.cost     = f.cost     || {};
-    f.cost.used_aircraft_purchase =
-      f.cost.used_aircraft_purchase || 0;
-
-    f.capital -= ac.price_acs_usd;
-    f.expenses += ac.price_acs_usd;
-    f.cost.used_aircraft_purchase += ac.price_acs_usd;
-    f.profit = f.revenue - f.expenses;
-
-    localStorage.setItem("ACS_Finance", JSON.stringify(f));
-
-    let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-    log.push({
-      time: window.ACS_CurrentSimDate,
-      type: "EXPENSE",
-      source:
-        `Used Market Purchase — ${ac.manufacturer} ${ac.model}`,
-      amount: ac.price_acs_usd
-    });
-
-    localStorage.setItem("ACS_Log", JSON.stringify(log));
-
-    const updatedList = list.filter(x => x.id !== id);
-    localStorage.setItem("ACS_UsedMarket", JSON.stringify(updatedList));
-
-    alert(
-      `✅ Purchase Successful!\n${ac.manufacturer} ${ac.model} added to your fleet.`
-    );
-
-  } catch (err) {
-    console.error("❌ ERROR in buyUsed():", err);
-    alert("❌ Unexpected error purchasing aircraft.");
+  if (!ac) {
+    alert("❌ Aircraft not found in Used Market.");
+    return;
   }
+
+  console.log("🟦 BUY USED REQUEST BLOCKED — BACKEND ENDPOINT REQUIRED:", {
+    listing_id: id,
+    aircraft: ac
+  });
+
+  alert(
+    "🟦 ACS Used Market\n\n" +
+    "Used aircraft purchase is now backend-controlled.\n\n" +
+    "Next step:\n" +
+    "POST /v1/aircraft/used-market/:id/buy\n\n" +
+    "No localStorage finance, fleet, or market mutation was executed."
+  );
 }
 
 /* ============================================================
-   === 7) LEASE USADO — COMPATIBILIDAD
+   🟦 LEASE USED AIRCRAFT — BACKEND AUTHORITY LOCK v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Prevent legacy localStorage lease flow
+   - Prevent frontend finance mutation
+   - Prevent frontend fleet creation
+   - Prepare for future backend endpoint:
+     POST /v1/aircraft/used-market/:id/lease
    ============================================================ */
-
-function getLeasingUpfront(year){
-  if (year < 1960) return 0;
-  if (year < 1970) return 0.35;
-  if (year < 1980) return 0.30;
-  if (year < 1990) return 0.22;
-  if (year < 2000) return 0.18;
-  if (year < 2010) return 0.12;
-  return 0.10;
-}
-
-function getLeasingMonthlyRate(year){
-  if (year < 1960) return 0;
-  if (year < 1970) return 0.022;
-  if (year < 1980) return 0.018;
-  if (year < 1990) return 0.015;
-  if (year < 2000) return 0.013;
-  if (year < 2010) return 0.011;
-  return 0.009;
-}
 
 function leaseUsed(id) {
+  const list = generateUsedMarket();
+  const ac = list.find(x => String(x.id) === String(id));
 
-  let usedList = loadUsedMarketRaw();
-  const ac = usedList.find(x => x.id === id);
-  if (!ac) return alert("❌ Aircraft not found.");
-
-  let year = 1940;
-  try {
-    if (typeof ACS_TIME !== "undefined") {
-      year = ACS_TIME.year || 1940;
-    }
-  } catch(e){}
-
-  const upfrontRate = getLeasingUpfront(year);
-  const monthlyRate = getLeasingMonthlyRate(year);
-
-  if (upfrontRate === 0 || monthlyRate === 0) {
-    return alert("❌ Leasing was not available in this historical period.");
+  if (!ac) {
+    alert("❌ Aircraft not found in Used Market.");
+    return;
   }
 
-  const upfront = Math.round(ac.price_acs_usd * upfrontRate);
-  const monthly = Math.round(ac.price_acs_usd * monthlyRate);
-
-  const nextPayment = new Date();
-  nextPayment.setUTCMonth(nextPayment.getUTCMonth() + 1);
-
-  let myFleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-
-  const modelData = (resolveUsedDB().find(m =>
-    m.manufacturer === ac.manufacturer &&
-    m.model === ac.model
-  ) || {});
-
-  // ✔ Registro realista basado en país — Registration Manager
-   
-const prefix = (typeof getRegistrationPrefix === "function")
-  ? getRegistrationPrefix()
-  : "XX-";
-
-let reg = "";
-if (prefix === "N-") {
-  // Formato FAA
-  const num = Math.floor(100 + Math.random() * 900);
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const la = letters[Math.floor(Math.random() * 26)];
-  const lb = letters[Math.floor(Math.random() * 26)];
-  reg = `N${num}${la}${lb}`;
-} else {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const a = letters[Math.floor(Math.random() * 26)];
-  const b = letters[Math.floor(Math.random() * 26)];
-  const c = letters[Math.floor(Math.random() * 26)];
-  reg = prefix + a + b + c;
-}
-
-  myFleet.push({
-    id: "AC-" + Date.now(),
-    model: ac.model,
-    manufacturer: ac.manufacturer,
-    delivered: new Date().toISOString(),
-    image: ac.image,
-    status: "Active",
-
-    hours: ac.hours,
-    cycles: ac.cycles,
-    condition: ac.condition,
-    registration: reg,
-
-    data: modelData,
-
-    leasing: {
-      upfront,
-      monthly,
-      rate: monthlyRate,
-      nextPayment: nextPayment.toISOString(),
-      frequency: "monthly",
-      started: new Date().toISOString()
-    },
-
-    lastC: null,
-    lastD: null,
-    nextC: null,
-    nextD: null
+  console.log("🟦 LEASE USED REQUEST BLOCKED — BACKEND ENDPOINT REQUIRED:", {
+    listing_id: id,
+    aircraft: ac
   });
 
-  localStorage.setItem("ACS_MyAircraft", JSON.stringify(myFleet));
-
-  const finance = JSON.parse(localStorage.getItem("ACS_Finance") || "{}");
-  if (finance && typeof finance.capital === "number") {
-    finance.capital -= upfront;
-    finance.expenses =
-      (finance.expenses || 0) + upfront;
-    finance.profit =
-      (finance.revenue || 0) - (finance.expenses || 0);
-    localStorage.setItem("ACS_Finance", JSON.stringify(finance));
-  }
-
-  let log = JSON.parse(localStorage.getItem("ACS_Log") || "[]");
-  log.push({
-    time: window.ACS_CurrentSimDate,
-    type: "EXPENSE",
-    source:
-      `Used Aircraft Lease: ${ac.manufacturer} ${ac.model}`,
-    amount: upfront
-  });
-  localStorage.setItem("ACS_Log", JSON.stringify(log));
-
-  usedList = usedList.filter(x => x.id !== id);
-  saveUsedMarketRaw(usedList);
-
-  alert("📘 Aircraft leased successfully.");
+  alert(
+    "🟦 ACS Used Market\n\n" +
+    "Used aircraft leasing is now backend-controlled.\n\n" +
+    "Future step:\n" +
+    "POST /v1/aircraft/used-market/:id/lease\n\n" +
+    "No localStorage leasing, finance, fleet, or market mutation was executed."
+  );
 }
 
 /* ============================================================
