@@ -413,8 +413,9 @@ body {
 
 .used-occ-aircraft-img {
   width: 100%;
-  height: 100%;
-  min-height: 330px;
+  height: 240px;
+  min-height: 240px;
+  max-height: 240px;
   object-fit: cover;
   display: block;
 }
@@ -553,8 +554,10 @@ body {
   }
 
   .used-occ-aircraft-img {
-    min-height: 210px;
-  }
+  height: 190px;
+  min-height: 190px;
+  max-height: 190px;
+}
 
   .used-occ-maint-panel {
     grid-column: auto;
@@ -858,21 +861,46 @@ function ACS_formatUsedMarketDate(date) {
 }
 
 /* ============================================================
-   Helper — Used Aircraft Image
+   Helper — Used Aircraft Image Resolver
+   ------------------------------------------------------------
+   Priority:
+   1. Backend image_filename from aircraft_catalog
+   2. Existing Used Market card resolver as fallback
+   3. Placeholder
    ============================================================ */
 
 function ACS_getUsedAircraftModalImage(ac) {
   if (!ac) return "img/placeholder_aircraft.png";
 
-  if (ac.image_filename) {
+  const backendFile = String(
+    ac.image_filename ||
+    ac.image_file_name ||
+    ac.imageFileName ||
+    ""
+  ).trim();
+
+  if (backendFile) {
+    if (
+      backendFile.startsWith("http://") ||
+      backendFile.startsWith("https://") ||
+      backendFile.startsWith("img/")
+    ) {
+      return backendFile;
+    }
+
+    if (backendFile.includes("/")) {
+      return backendFile;
+    }
+
     const manufacturer = String(ac.manufacturer || "").trim();
-    let folder = manufacturer;
+
+    let folder = manufacturer.replace(/\s+/g, " ");
 
     if (manufacturer.toLowerCase() === "de havilland") {
       folder = "de_havilland";
     }
 
-    return `img/${folder}/${ac.image_filename}`;
+    return `img/${folder}/${backendFile}`;
   }
 
   if (typeof getAircraftImage === "function") {
@@ -881,6 +909,33 @@ function ACS_getUsedAircraftModalImage(ac) {
 
   return "img/placeholder_aircraft.png";
 }
+
+/* ============================================================
+   Helper — Used Modal Image Fallback
+   ------------------------------------------------------------
+   If backend image path fails, try the existing Used Market
+   image resolver before going to placeholder.
+   ============================================================ */
+
+function ACS_handleUsedModalImageFallback(img) {
+  if (!img) return;
+
+  const fallbackSrc = img.dataset.fallbackSrc || "";
+
+  if (fallbackSrc && img.dataset.usedFallbackTried !== "1") {
+    img.dataset.usedFallbackTried = "1";
+    img.src = fallbackSrc;
+    return;
+  }
+
+  if (typeof ACS_handleImageFallback === "function") {
+    ACS_handleImageFallback(img);
+    return;
+  }
+
+  img.onerror = null;
+  img.src = "img/placeholder_aircraft.png";
+}     
 
 /* ============================================================
    Helper — Market Gate Display
@@ -1059,11 +1114,12 @@ function ACS_renderBuyUsedModalBody(ac, capital) {
 
       <div class="used-occ-image-wrap">
         <img
-          class="used-occ-aircraft-img"
-          src="${ACS_getUsedAircraftModalImage(ac)}"
-          alt="${ac.manufacturer} ${ac.model}"
-          onerror="ACS_handleImageFallback(this)"
-        />
+       class="used-occ-aircraft-img"
+       src="${ACS_getUsedAircraftModalImage(ac)}"
+       data-fallback-src="${typeof getAircraftImage === "function" ? getAircraftImage(ac) : "img/placeholder_aircraft.png"}"
+       alt="${ac.manufacturer} ${ac.model}"
+       onerror="ACS_handleUsedModalImageFallback(this)"
+      />
       </div>
 
       <div class="used-occ-panel">
