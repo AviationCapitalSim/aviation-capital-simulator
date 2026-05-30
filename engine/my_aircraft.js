@@ -29,17 +29,21 @@
   "use strict";
 
   /* ============================================================
-     🟦 MODULE STATE
-     ============================================================ */
+   🟦 MODULE STATE
+   ============================================================ */
 
-  const ACS_MY_AIRCRAFT = {
-    version: "ACS_MY_AIRCRAFT_BACKEND_AUTHORITY_V1_0",
-    endpoint: "/v1/aircraft/fleet",
-    fleet: [],
-    filteredFleet: [],
-    selectedAircraft: null
-  };
+const ACS_MY_AIRCRAFT_API_BASE =
+  window.ACS_API_BASE ||
+  "https://acs-world-server-production.up.railway.app";
 
+const ACS_MY_AIRCRAFT = {
+  version: "ACS_MY_AIRCRAFT_BACKEND_AUTHORITY_V1_0",
+  endpoint: `${ACS_MY_AIRCRAFT_API_BASE}/v1/aircraft/fleet`,
+  fleet: [],
+  filteredFleet: [],
+  selectedAircraft: null
+};
+   
   /* ============================================================
      🟦 SAFE DOM HELPERS
      ============================================================ */
