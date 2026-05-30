@@ -1634,15 +1634,26 @@ function ACS_getUsedInfoStatus(conditionPct, cCheckPct, dCheckPct) {
   };
 }
 
+function ACS_getUsedInfoBarClass(value) {
+  const pct = ACS_clampPct(value);
+
+  if (pct >= 75) return "used-info-bar-green";
+  if (pct >= 50) return "used-info-bar-mustard";
+  if (pct >= 25) return "used-info-bar-orange";
+
+  return "used-info-bar-red";
+}
+     
 function ACS_infoMetricHTML(label, value) {
   const pct = ACS_clampPct(value);
+  const barClass = ACS_getUsedInfoBarClass(pct);
 
   return `
     <div class="used-info-metric">
       <div class="used-info-metric-label">${label}</div>
       <div class="used-info-metric-value">${pct}%</div>
       <div class="used-info-bar">
-        <div class="used-info-bar-fill" style="width:${pct}%;"></div>
+        <div class="used-info-bar-fill ${barClass}" style="width:${pct}%;"></div>
       </div>
     </div>
   `;
