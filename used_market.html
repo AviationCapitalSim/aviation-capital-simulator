@@ -1376,13 +1376,14 @@ ${maintenanceOptionHTML}
     confirmBtn.disabled = !enoughCapital || !gate.clear;
   confirmBtn.textContent = "Confirm Purchase";
 
-  if (!enoughCapital) {
+    if (!enoughCapital) {
     confirmBtn.title = "Insufficient company capital.";
   } else if (!gate.clear) {
     confirmBtn.title = "Used market cycle limit.";
   } else {
     confirmBtn.title = "Confirm backend-authorized used aircraft acquisition.";
   }
+}
 
 /* ============================================================
    BUY MODAL — OPEN
