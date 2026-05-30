@@ -629,6 +629,72 @@ body {
   filter: grayscale(0.4);
 }
 
+/* ============================================================
+   🟦 USED AIRCRAFT LEASE MODAL — AIRBUS OCC BROKER DESK v1.0
+   ============================================================ */
+
+#leaseUsedModal .acs-modal-content {
+  max-width: 760px !important;
+  width: 92% !important;
+  background: radial-gradient(circle at top, #12254a 0%, #091326 60%, #050814 100%);
+  border: 1px solid rgba(255,179,0,0.45);
+  box-shadow: 0 0 26px rgba(0,0,0,0.75);
+}
+
+#leaseTitle {
+  letter-spacing: 0.6px;
+  font-size: 1.15rem;
+}
+
+.used-occ-lease-select {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.42rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,179,0,0.35);
+  background: rgba(8,21,48,0.92);
+  color: #f4f7ff;
+  font-weight: 700;
+  outline: none;
+}
+
+.used-occ-lease-select:focus {
+  border-color: rgba(255,179,0,0.85);
+  box-shadow: 0 0 10px rgba(255,179,0,0.22);
+}
+
+.used-occ-lease-note {
+  margin-top: 0.6rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 9px;
+  background: rgba(0,140,255,0.10);
+  border: 1px solid rgba(0,140,255,0.28);
+  color: #cfe6ff;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.used-occ-lease-pending {
+  color: #ffdf8a !important;
+  font-weight: 800;
+  text-shadow: 0 0 8px rgba(255,179,0,0.35);
+}
+
+#confirmLeaseBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+@media (max-width: 780px) {
+  #leaseUsedModal .acs-modal-content {
+    width: 94% !important;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 1.1rem;
+  }
+}
+     
 @media (max-width: 780px) {
   .used-occ-modal-grid {
     grid-template-columns: 1fr;
@@ -743,23 +809,26 @@ body {
 </div>
 
 <!-- ============================================================
-     === MODAL 3: LEASE — Qatar Luxury Premium ==================
+     === MODAL 3: LEASE USED — AIRBUS OCC BROKER DESK ===========
      ============================================================ -->
 <div id="leaseUsedModal" class="acs-modal" style="display:none;">
-  <div class="acs-modal-content" style="max-width:420px;">
+  <div class="acs-modal-content">
     <span class="acs-close" onclick="closeLeaseModal()">&times;</span>
 
     <h2 id="leaseTitle"
-        style="color:#FFB300; margin-bottom:10px; text-align:center;"></h2>
+        style="color:#FFB300; margin-bottom:10px; text-align:center;">
+      USED AIRCRAFT LEASE OFFER
+    </h2>
 
     <div id="leaseDetails"
          style="font-size:16px; line-height:1.4; margin-bottom:25px; text-align:center;">
     </div>
 
-    <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
-      <button id="confirmLeaseBtn" class="acs-btn-primary">
-        Confirm Lease
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:10px; flex-wrap:wrap;">
+      <button id="confirmLeaseBtn" class="acs-btn-primary" disabled>
+        Backend Lease Endpoint Pending
       </button>
+
       <button class="acs-btn-secondary" onclick="closeLeaseModal()">
         Cancel
       </button>
@@ -1427,11 +1496,327 @@ function closeBuyModal() {
   if (m) m.style.display = "none";
 }
 
+/* ============================================================
+   🟦 LEASE USED MODAL — AIRBUS OCC / BROKER DESK v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Display professional Used Aircraft Lease Offer modal.
+   - No localStorage authority.
+   - No frontend finance mutation.
+   - No frontend fleet creation.
+   - No fake redirect.
+   - Confirm Lease remains blocked until backend endpoint exists:
+     POST /v1/aircraft/used-market/:id/lease
+   ============================================================ */
 
+function ACS_getUsedLeaseTerms() {
+  return [
+    { months: 6, label: "6 Months" },
+    { months: 12, label: "1 Year" },
+    { months: 24, label: "2 Years" },
+    { months: 36, label: "3 Years" },
+    { months: 48, label: "4 Years" },
+    { months: 60, label: "5 Years" },
+    { months: 72, label: "6 Years" }
+  ];
+}
 
-/* ------------------- LEASE MODAL (SIN CAMBIOS) -------------- */
+function ACS_parseUsedConditionPct(ac) {
+  const direct = Number(ac?.condition_pct || ac?.conditionPct || 0);
 
-function openLeaseModal(id) {
+  if (Number.isFinite(direct) && direct > 0) {
+    return Math.max(0, Math.min(100, direct));
+  }
+
+  const text = String(ac?.condition || "0").replace("%", "").trim();
+  const parsed = Number(text);
+
+  if (Number.isFinite(parsed)) {
+    return Math.max(0, Math.min(100, parsed));
+  }
+
+  return 0;
+}
+
+function ACS_getUsedAircraftAgeYears(ac) {
+  const simDate = ACS_getUsedMarketSimDate();
+  const simYear = simDate.getUTCFullYear();
+  const builtYear = Number(ac?.year || ac?.year_built || ac?.generated_for_sim_year || simYear);
+
+  if (!Number.isFinite(builtYear)) return 0;
+
+  return Math.max(0, simYear - builtYear);
+}
+
+function ACS_calculateUsedLeaseOffer(ac, termMonths) {
+  const assetValue = Math.max(0, Math.round(Number(ac?.price_acs_usd || ac?.market_price || 0)));
+  const conditionPct = ACS_parseUsedConditionPct(ac);
+  const ageYears = ACS_getUsedAircraftAgeYears(ac);
+
+  const baseRates = {
+    6: 0.032,
+    12: 0.026,
+    24: 0.021,
+    36: 0.0185,
+    48: 0.0165,
+    60: 0.015,
+    72: 0.014
+  };
+
+  const baseMonthlyRate = Number(baseRates[Number(termMonths)] || 0.021);
+
+  let conditionRiskFactor = 1.00;
+
+  if (conditionPct < 80) conditionRiskFactor += 0.08;
+  if (conditionPct < 70) conditionRiskFactor += 0.10;
+  if (conditionPct < 60) conditionRiskFactor += 0.12;
+
+  let ageRiskFactor = 1.00;
+
+  if (ageYears > 15) ageRiskFactor += 0.05;
+  if (ageYears > 25) ageRiskFactor += 0.07;
+  if (ageYears > 35) ageRiskFactor += 0.08;
+
+  const adjustedMonthlyRate =
+    baseMonthlyRate * conditionRiskFactor * ageRiskFactor;
+
+  const monthlyLease = Math.max(
+    1,
+    Math.round(assetValue * adjustedMonthlyRate)
+  );
+
+  const securityDeposit = Math.round(monthlyLease * 2);
+
+  const totalContractValue = Math.round(monthlyLease * Number(termMonths));
+
+  return {
+    assetValue,
+    conditionPct,
+    ageYears,
+    termMonths: Number(termMonths),
+    baseMonthlyRate,
+    adjustedMonthlyRate,
+    monthlyLease,
+    securityDeposit,
+    totalContractValue
+  };
+}
+
+function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
+  const detailsEl = document.getElementById("leaseDetails");
+  const confirmBtn = document.getElementById("confirmLeaseBtn");
+
+  if (!detailsEl || !confirmBtn || !ac) return;
+
+  const lease = ACS_calculateUsedLeaseOffer(ac, selectedTermMonths);
+  const gate = ACS_getUsedMarketGate(ac);
+  const advisory = ACS_getUsedMaintenanceAdvisory(ac);
+
+  const enoughCapital =
+    Number(capital || 0) >= Number(lease.securityDeposit || 0);
+
+  const estimatedDeliveryDate = ACS_addUsedMarketDays(
+    ACS_getUsedMarketSimDate(),
+    10
+  );
+
+  const imageSrc = ACS_getUsedAircraftModalImage(ac);
+  const fallbackSrc =
+    typeof getAircraftImage === "function"
+      ? getAircraftImage(ac)
+      : "img/placeholder_aircraft.png";
+
+  const broker =
+    ac.remarketing_agent ||
+    ac.source ||
+    "Eagle Broker";
+
+  const lessor =
+    ac.lessor_name ||
+    ac.lessor ||
+    "Eagle Aviation Capital";
+
+  const aircraftName =
+    ac.aircraft_name ||
+    `${ac.manufacturer || ""} ${ac.model || ""}`.trim() ||
+    "Used Aircraft";
+
+  const termOptions = ACS_getUsedLeaseTerms()
+    .map(term => `
+      <option value="${term.months}" ${Number(term.months) === Number(selectedTermMonths) ? "selected" : ""}>
+        ${term.label}
+      </option>
+    `)
+    .join("");
+
+  const capitalStatusHTML = enoughCapital
+    ? `<b class="used-occ-ok">Capital Available</b>`
+    : `<b class="used-occ-danger">Insufficient Capital</b>`;
+
+  const gateChipClass = gate.clear
+    ? "used-occ-chip-clear"
+    : "used-occ-chip-hold";
+
+  const advisoryClass =
+    advisory.code === "D_OVERDUE"
+      ? "used-occ-maint-danger"
+      : advisory.code === "C_OVERDUE"
+        ? "used-occ-maint-warning"
+        : "used-occ-ok";
+
+  detailsEl.innerHTML = `
+    <div class="used-occ-modal-grid">
+
+      <div class="used-occ-image-wrap">
+        <img
+          class="used-occ-aircraft-img"
+          src="${imageSrc}"
+          data-fallback-src="${fallbackSrc}"
+          onerror="ACS_handleUsedModalImageFallback(this)"
+          alt="${aircraftName}"
+        />
+      </div>
+
+      <div class="used-occ-panel">
+        <div class="used-occ-section-title">BROKER / LESSOR DESK</div>
+
+        <div class="used-occ-line">
+          <span>Broker</span>
+          <b>${broker}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Lessor</span>
+          <b>${lessor}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Year</span>
+          <b>${ac.year || "—"}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Condition</span>
+          <b>${lease.conditionPct}%</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Hours</span>
+          <b>${Number(ac.hours || ac.total_hours || 0).toLocaleString("en-US")}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Cycles</span>
+          <b>${Number(ac.cycles || ac.total_cycles || 0).toLocaleString("en-US")}</b>
+        </div>
+      </div>
+
+      <div class="used-occ-panel">
+        <div class="used-occ-section-title">LEASE TERMS</div>
+
+        <div class="used-occ-line">
+          <span>Aircraft Value</span>
+          <b>${ACS_formatUSD(lease.assetValue)}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Company Capital</span>
+          <b>${ACS_formatUSD(Number(capital || 0))}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Status</span>
+          ${capitalStatusHTML}
+        </div>
+
+        <div class="used-occ-line">
+          <span>Lease Term</span>
+          <b style="min-width:145px;">
+            <select id="usedLeaseTermSelect" class="used-occ-lease-select">
+              ${termOptions}
+            </select>
+          </b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Monthly Lease</span>
+          <b>${ACS_formatUSD(lease.monthlyLease)}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Security Deposit</span>
+          <b>${ACS_formatUSD(lease.securityDeposit)}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Total Contract Value</span>
+          <b>${ACS_formatUSD(lease.totalContractValue)}</b>
+        </div>
+
+        <div class="used-occ-line">
+          <span>Estimated Delivery Date</span>
+          <b>${ACS_formatUsedMarketDate(estimatedDeliveryDate)}</b>
+        </div>
+
+        <div class="used-occ-gate-box">
+          <span class="used-occ-chip ${gateChipClass}">
+            ${gate.label}
+          </span>
+
+          ${
+            gate.detail
+              ? `<div class="used-occ-gate-detail">${gate.detail}</div>`
+              : ""
+          }
+        </div>
+      </div>
+
+      <div class="used-occ-panel used-occ-maint-panel">
+        <div class="used-occ-section-title">MAINTENANCE ADVISORY</div>
+
+        <div class="used-occ-maint-status ${advisoryClass}">
+          ${advisory.label}
+        </div>
+
+        ${
+          advisory.detail
+            ? `<div class="used-occ-maint-detail">${advisory.detail}</div>`
+            : `<div class="used-occ-maint-detail">Aircraft is technically clear for lease evaluation.</div>`
+        }
+
+        <div class="used-occ-lease-note">
+          Lease execution is backend-authorized only. Contract creation, finance impact,
+          fleet transfer and market status transition will be enabled after the secure
+          endpoint is created.
+        </div>
+
+        <div class="used-occ-lease-note">
+          <b class="used-occ-lease-pending">CONFIRM LEASE LOCKED:</b>
+          POST /v1/aircraft/used-market/:id/lease pending.
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  const termSelect = document.getElementById("usedLeaseTermSelect");
+
+  if (termSelect) {
+    termSelect.addEventListener("change", () => {
+      ACS_renderLeaseUsedModalBody(ac, capital, Number(termSelect.value));
+    });
+  }
+
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = "Backend Lease Endpoint Pending";
+  confirmBtn.title = "Lease Used backend endpoint is not connected yet.";
+}
+
+/* ============================================================
+   LEASE MODAL — OPEN
+   ============================================================ */
+
+async function openLeaseModal(id) {
   selectedUsedID = id;
 
   const ac = getUsedById(id);
@@ -1440,19 +1825,32 @@ function openLeaseModal(id) {
   const titleEl = document.getElementById("leaseTitle");
   const detailsEl = document.getElementById("leaseDetails");
   const modalEl = document.getElementById("leaseUsedModal");
+  const confirmBtn = document.getElementById("confirmLeaseBtn");
 
-  const leaseMonth = Math.floor(ac.price_acs_usd * 0.015);
+  if (!titleEl || !detailsEl || !modalEl || !confirmBtn) return;
 
-  titleEl.textContent = `Lease ${ac.manufacturer} ${ac.model}`;
+  titleEl.textContent = "USED AIRCRAFT LEASE OFFER";
+
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = "Backend Lease Endpoint Pending";
+  confirmBtn.title = "Lease Used backend endpoint is not connected yet.";
+
   detailsEl.innerHTML = `
-    <b>Monthly Lease:</b> $${leaseMonth.toLocaleString()}<br>
-    <b>Term:</b> 12 months<br>
-    <b>Condition:</b> ${ac.condition}<br>
-    <b>Hours:</b> ${ac.hours.toLocaleString()}
+    <div class="used-occ-loading">
+      Loading lease offer data...
+    </div>
   `;
 
   modalEl.style.display = "flex";
+
+  const capital = await ACS_getBackendCompanyCapital();
+
+  ACS_renderLeaseUsedModalBody(ac, capital, 12);
 }
+
+/* ============================================================
+   LEASE MODAL — CLOSE
+   ============================================================ */
 
 function closeLeaseModal() {
   const m = document.getElementById("leaseUsedModal");
