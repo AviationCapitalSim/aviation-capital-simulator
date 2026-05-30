@@ -164,6 +164,38 @@ function ACS_handleImageFallback(img) {
 const ACS_USED_MARKET_ENDPOINT =
   "https://api.aviationcapitalsim.com/v1/aircraft/used-market";
 
+/* ============================================================
+   🕒 ACS USED MARKET SIM QUERY — FRONTEND TIME AUTHORITY v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Send ACS simulated date to backend Used Market endpoint.
+   - Backend must not invent simulation date.
+   ============================================================ */
+
+function ACS_getUsedMarketSimQueryString() {
+  if (
+    typeof ACS_TIME === "undefined" ||
+    !ACS_TIME ||
+    !ACS_TIME.currentTime
+  ) {
+    throw new Error("ACS_TIME_NOT_AVAILABLE");
+  }
+
+  const simDate = new Date(ACS_TIME.currentTime);
+
+  if (Number.isNaN(simDate.getTime())) {
+    throw new Error("INVALID_ACS_TIME");
+  }
+
+  const params = new URLSearchParams({
+    sim_year: String(simDate.getUTCFullYear()),
+    sim_month: String(simDate.getUTCMonth() + 1),
+    sim_day: String(simDate.getUTCDate())
+  });
+
+  return params.toString();
+}
+
 let ACS_USED_MARKET_BACKEND_LIST = [];
 let ACS_USED_MARKET_BACKEND_LOADED = false;
 let ACS_USED_MARKET_BACKEND_LOADING = false;
