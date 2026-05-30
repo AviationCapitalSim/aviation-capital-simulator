@@ -372,6 +372,167 @@ body {
 }
 
 /* ============================================================
+   🟦 USED AIRCRAFT INFO MODAL — ACS / AIRBUS OCC DOSSIER v1.0
+   ============================================================ */
+
+#infoModal .acs-modal-content {
+  max-width: 760px !important;
+  width: 92% !important;
+  background: radial-gradient(circle at top, #12254a 0%, #091326 60%, #050814 100%);
+  border: 1px solid rgba(255,179,0,0.45);
+  box-shadow: 0 0 26px rgba(0,0,0,0.75);
+}
+
+#modalName {
+  letter-spacing: 0.6px;
+  font-size: 1.15rem;
+}
+
+.used-info-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0.9rem;
+  text-align: left;
+}
+
+.used-info-image-wrap {
+  height: 255px;
+  max-height: 255px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #081530;
+  border: 1px solid rgba(255,179,0,0.28);
+  box-shadow: inset 0 0 18px rgba(0,0,0,0.45);
+}
+
+.used-info-aircraft-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+}
+
+.used-info-panel {
+  padding: 0.75rem 0.85rem;
+  border-radius: 11px;
+  background: rgba(8,21,48,0.72);
+  border: 1px solid rgba(255,179,0,0.22);
+}
+
+.used-info-section-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.12rem;
+  color: #ffb300;
+  margin-bottom: 0.55rem;
+  font-weight: 800;
+}
+
+.used-info-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.28rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.86rem;
+}
+
+.used-info-line span {
+  color: #aebce8;
+}
+
+.used-info-line b {
+  color: #f4f7ff;
+  text-align: right;
+  font-weight: 700;
+}
+
+.used-info-metrics {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.used-info-metric {
+  padding: 0.85rem;
+  border-radius: 12px;
+  background: rgba(8,21,48,0.78);
+  border: 1px solid rgba(255,179,0,0.22);
+}
+
+.used-info-metric-label {
+  color: #aebce8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08rem;
+  margin-bottom: 0.35rem;
+}
+
+.used-info-metric-value {
+  color: #f4f7ff;
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.used-info-bar {
+  margin-top: 0.65rem;
+  height: 7px;
+  width: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.10);
+}
+
+.used-info-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #00ff80, #ffb300);
+}
+
+.used-info-status-ok {
+  color: #00ff80 !important;
+  text-shadow: 0 0 8px rgba(0,255,128,0.35);
+}
+
+.used-info-status-warn {
+  color: #ffb300 !important;
+  text-shadow: 0 0 8px rgba(255,179,0,0.35);
+}
+
+.used-info-status-danger {
+  color: #ff4d4d !important;
+  text-shadow: 0 0 8px rgba(255,77,77,0.35);
+}
+
+.used-info-status-panel {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 780px) {
+  #infoModal .acs-modal-content {
+    width: 94% !important;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 1.1rem;
+  }
+
+  .used-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .used-info-image-wrap {
+    height: 185px;
+    max-height: 185px;
+  }
+
+  .used-info-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+     
+/* ============================================================
    🟧 USED BUY RESULT BOX — AIRBUS OCC STYLE
    ============================================================ */
 
@@ -762,17 +923,19 @@ body {
 </main>
 
 <!-- ============================================================
-     === MODAL 1: INFO — Qatar Luxury Premium ===================
+     === MODAL 1: INFO — ACS / AIRBUS OCC DOSSIER ===============
      ============================================================ -->
 <div id="infoModal" class="acs-modal" style="display:none;">
-  <div class="acs-modal-content" style="max-width:420px;">
+  <div class="acs-modal-content">
     <span class="acs-close" onclick="closeInfoModal()">&times;</span>
 
     <h2 id="modalName"
-        style="color:#FFB300; margin-bottom:10px; text-align:center;"></h2>
+        style="color:#FFB300; margin-bottom:10px; text-align:center;">
+      USED AIRCRAFT INFO
+    </h2>
 
     <div id="modalDetails"
-         style="font-size:16px; line-height:1.4; margin-bottom:25px; text-align:center;">
+         style="font-size:16px; line-height:1.4; margin-bottom:25px;">
     </div>
 
     <button class="acs-btn-secondary"
