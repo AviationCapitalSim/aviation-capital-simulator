@@ -268,7 +268,9 @@ async function ACS_loadUsedMarketFromBackend() {
   ACS_USED_MARKET_BACKEND_ERROR = null;
 
   try {
-    const response = await fetch(ACS_USED_MARKET_ENDPOINT, {
+       const simQuery = ACS_getUsedMarketSimQueryString();
+
+    const response = await fetch(`${ACS_USED_MARKET_ENDPOINT}?${simQuery}`, {
       method: "GET",
       credentials: "include",
       headers: {
