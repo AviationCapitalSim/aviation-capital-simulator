@@ -372,6 +372,67 @@ body {
 }
 
 /* ============================================================
+   🟧 USED BUY RESULT BOX — AIRBUS OCC STYLE
+   ============================================================ */
+
+.used-occ-result-box {
+  grid-column: 1 / -1;
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 11px;
+  background: rgba(8,21,48,0.82);
+  border: 1px solid rgba(255,179,0,0.25);
+}
+
+.used-occ-result-success {
+  border-color: rgba(0,255,128,0.35);
+  box-shadow: 0 0 12px rgba(0,255,128,0.12);
+}
+
+.used-occ-result-error {
+  border-color: rgba(255,77,77,0.42);
+  box-shadow: 0 0 12px rgba(255,77,77,0.12);
+}
+
+.used-occ-result-title {
+  color: #ffb300;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.13rem;
+  margin-bottom: 0.45rem;
+}
+
+.used-occ-result-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.84rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0.25rem 0;
+}
+
+.used-occ-result-line span {
+  color: #aebce8;
+}
+
+.used-occ-result-line b {
+  color: #f4f7ff;
+}
+
+.used-occ-result-text {
+  margin-top: 0.45rem;
+  color: #dbe7ff;
+  font-size: 0.84rem;
+}
+
+.used-occ-result-code {
+  margin-top: 0.35rem;
+  color: #ff8a8a;
+  font-size: 0.72rem;
+  font-family: "Consolas", monospace;
+}
+     
+/* ============================================================
    🟧 USED AIRCRAFT BUY MODAL — AIRBUS OCC STYLE v1.0
    ============================================================ */
 
@@ -1312,12 +1373,16 @@ ${maintenanceOptionHTML}
     });
   }
 
-  confirmBtn.disabled = true;
-  confirmBtn.title =
-    "Backend purchase authority pending. No frontend purchase execution.";
-
+    confirmBtn.disabled = !enoughCapital || !gate.clear;
   confirmBtn.textContent = "Confirm Purchase";
-}
+
+  if (!enoughCapital) {
+    confirmBtn.title = "Insufficient company capital.";
+  } else if (!gate.clear) {
+    confirmBtn.title = "Used market cycle limit.";
+  } else {
+    confirmBtn.title = "Confirm backend-authorized used aircraft acquisition.";
+  }
 
 /* ============================================================
    BUY MODAL — OPEN
@@ -1393,26 +1458,215 @@ function closeLeaseModal() {
   if (m) m.style.display = "none";
 }
 
-
 /* ============================================================
-   🟧 USED MARKET CONFIRM BUTTONS — BACKEND AUTHORITY LOCK v1.0
+   🟧 USED MARKET CONFIRM BUTTONS — BACKEND AUTHORITY v1.1
    ------------------------------------------------------------
    Purpose:
-   - Prevent false redirect to My Aircraft
-   - Prevent frontend purchase/lease execution
-   - Keep BUY / LEASE controlled until backend endpoints are ready
+   - Confirm BUY USED through backend authority.
+   - Send ACS sim date explicitly.
+   - No localStorage.
+   - No false redirect.
+   - Refresh market after successful purchase.
    ============================================================ */
+
+const ACS_USED_BUY_ENDPOINT_BASE =
+  "https://api.aviationcapitalsim.com/v1/aircraft/used-market";
+
+function ACS_getUsedBuySimPayload() {
+  if (
+    typeof ACS_TIME === "undefined" ||
+    !ACS_TIME ||
+    !ACS_TIME.currentTime
+  ) {
+    throw new Error("ACS_TIME_NOT_AVAILABLE");
+  }
+
+  const simDate = new Date(ACS_TIME.currentTime);
+
+  if (Number.isNaN(simDate.getTime())) {
+    throw new Error("INVALID_ACS_TIME");
+  }
+
+  return {
+    sim_year: simDate.getUTCFullYear(),
+    sim_month: simDate.getUTCMonth() + 1,
+    sim_day: simDate.getUTCDate()
+  };
+}
+
+function ACS_setUsedBuyBusy(isBusy) {
+  const btn = document.getElementById("confirmBuyBtn");
+
+  if (!btn) return;
+
+  btn.disabled = Boolean(isBusy);
+  btn.textContent = isBusy
+    ? "Processing..."
+    : "Confirm Purchase";
+}
+
+function ACS_renderUsedBuyError(errorData) {
+  const detailsEl = document.getElementById("buyDetails");
+
+  if (!detailsEl) return;
+
+  const errorCode =
+    errorData?.error ||
+    "USED_PURCHASE_FAILED";
+
+  let message = "Used aircraft acquisition could not be completed.";
+
+  if (errorCode === "MARKET_GATE_NEXT_DAY") {
+    message = "MARKET GATE: NEXT DAY<br>Used market cycle limit.";
+  }
+
+  if (errorCode === "INSUFFICIENT_CAPITAL") {
+    message = "Insufficient company capital.";
+  }
+
+  if (
+    errorCode === "USED_LISTING_NOT_AVAILABLE" ||
+    errorCode === "USED_LISTING_NOT_FOUND"
+  ) {
+    message = "Aircraft no longer available.";
+  }
+
+  if (
+    errorCode === "ACS_SIM_TIME_UNAVAILABLE" ||
+    errorCode === "INVALID_ACS_SIM_TIME" ||
+    errorCode === "ACS_TIME_NOT_AVAILABLE" ||
+    errorCode === "INVALID_ACS_TIME"
+  ) {
+    message = "ACS simulation time unavailable.";
+  }
+
+  detailsEl.innerHTML += `
+    <div class="used-occ-result-box used-occ-result-error">
+      <div class="used-occ-result-title">ACQUISITION REJECTED</div>
+      <div class="used-occ-result-text">${message}</div>
+      <div class="used-occ-result-code">${errorCode}</div>
+    </div>
+  `;
+}
+
+function ACS_renderUsedBuySuccess(data) {
+  const detailsEl = document.getElementById("buyDetails");
+  const confirmBtn = document.getElementById("confirmBuyBtn");
+
+  if (!detailsEl) return;
+
+  const aircraft = data?.aircraft || {};
+  const purchase = data?.purchase || {};
+  const delivery = purchase?.delivery || {};
+
+  const status =
+    delivery.status ||
+    aircraft.status ||
+    "—";
+
+  const operationalStatus =
+    delivery.operational_status ||
+    aircraft.operational_status ||
+    "—";
+
+  const mode =
+    delivery.mode ||
+    purchase?.used_purchase_policy?.delivery_mode ||
+    "—";
+
+  detailsEl.innerHTML += `
+    <div class="used-occ-result-box used-occ-result-success">
+      <div class="used-occ-result-title">ACQUISITION CONFIRMED</div>
+
+      <div class="used-occ-result-line">
+        <span>Status</span>
+        <b>${status}</b>
+      </div>
+
+      <div class="used-occ-result-line">
+        <span>Operational</span>
+        <b>${operationalStatus}</b>
+      </div>
+
+      <div class="used-occ-result-line">
+        <span>Mode</span>
+        <b>${mode}</b>
+      </div>
+
+      <div class="used-occ-result-text">
+        Aircraft transferred to company fleet.
+      </div>
+    </div>
+  `;
+
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Confirmed";
+  }
+}
+
+async function ACS_confirmUsedPurchase() {
+  if (!selectedUsedID) {
+    ACS_renderUsedBuyError({
+      error: "NO_USED_LISTING_SELECTED"
+    });
+    return;
+  }
+
+  ACS_setUsedBuyBusy(true);
+
+  try {
+    const simPayload = ACS_getUsedBuySimPayload();
+
+    const response = await fetch(
+      `${ACS_USED_BUY_ENDPOINT_BASE}/${selectedUsedID}/buy`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(simPayload)
+      }
+    );
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok || !data || data.ok !== true) {
+      ACS_setUsedBuyBusy(false);
+      ACS_renderUsedBuyError(data || {
+        error: `USED_BUY_HTTP_${response.status}`
+      });
+      return;
+    }
+
+    ACS_renderUsedBuySuccess(data);
+
+    if (typeof ACS_loadUsedMarketFromBackend === "function") {
+      await ACS_loadUsedMarketFromBackend();
+    }
+
+    if (typeof renderUsedMarket === "function") {
+      renderUsedMarket("all");
+    }
+
+  } catch (error) {
+    console.error("❌ Used aircraft purchase failed:", error);
+
+    ACS_setUsedBuyBusy(false);
+
+    ACS_renderUsedBuyError({
+      error: error.message || "USED_PURCHASE_EXCEPTION"
+    });
+  }
+}
 
 (function(){
   const buyBtn = document.getElementById("confirmBuyBtn");
 
   if (buyBtn) {
-    buyBtn.addEventListener("click", () => {
-      console.warn(
-        "⛔ BUY USED confirm blocked — backend purchase endpoint pending.",
-        { selectedUsedID }
-      );
-    });
+    buyBtn.addEventListener("click", ACS_confirmUsedPurchase);
   }
 
   const leaseBtn = document.getElementById("confirmLeaseBtn");
@@ -1426,7 +1680,6 @@ function closeLeaseModal() {
     });
   }
 })();
-
 
 /* ---------------- WIRE CARD BUTTONS -------------------------- */
 
