@@ -1443,6 +1443,326 @@ function ACS_getUsedMaintenanceAdvisory(ac) {
 }
 
 /* ============================================================
+   🟦 INFO MODAL — ACS / AIRBUS OCC DOSSIER v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Real backend listing data.
+   - No localStorage authority.
+   - No old A/B/C/D text logic.
+   - Clean ACS/OCC visual indicators only.
+   ============================================================ */
+
+function ACS_clampPct(value) {
+  const n = Number(value);
+
+  if (!Number.isFinite(n)) return 0;
+
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function ACS_parsePct(value) {
+  if (typeof value === "number") {
+    return ACS_clampPct(value);
+  }
+
+  const raw = String(value || "")
+    .replace("%", "")
+    .trim();
+
+  const n = Number(raw);
+
+  return Number.isFinite(n)
+    ? ACS_clampPct(n)
+    : 0;
+}
+
+function ACS_resolveUsedLastOwner(ac) {
+  const candidates = [
+    ac?.previous_operator_name,
+    ac?.previous_operator,
+    ac?.last_owner_name,
+    ac?.lastOwnerName,
+    ac?.seller_name,
+    ac?.sellerName,
+    ac?.lessor_name,
+    ac?.lessorName
+  ];
+
+  for (const candidate of candidates) {
+    const value = String(candidate || "").trim();
+
+    if (value) {
+      return value.toUpperCase();
+    }
+  }
+
+  const source = String(ac?.source || "").trim();
+
+  if (source.includes("/")) {
+    const clean = source.split("/").pop().trim();
+
+    if (clean) {
+      return clean.toUpperCase();
+    }
+  }
+
+  if (source) {
+    return source.toUpperCase();
+  }
+
+  return "UNKNOWN";
+}
+
+function ACS_getUsedInfoConditionPct(ac) {
+  return ACS_parsePct(
+    ac?.condition_pct ||
+    ac?.conditionPct ||
+    ac?.condition ||
+    0
+  );
+}
+
+function ACS_getUsedCCheckRemainingPct(ac) {
+  const currentHours = Number(
+    ac?.hours ||
+    ac?.total_hours ||
+    ac?.totalHours ||
+    0
+  );
+
+  const currentCycles = Number(
+    ac?.cycles ||
+    ac?.total_cycles ||
+    ac?.totalCycles ||
+    0
+  );
+
+  const dueHours = Number(
+    ac?.c_check_due_hours ||
+    ac?.cCheckDueHours ||
+    0
+  );
+
+  const dueCycles = Number(
+    ac?.c_check_due_cycles ||
+    ac?.cCheckDueCycles ||
+    0
+  );
+
+  const hourPct =
+    dueHours > 0
+      ? ((dueHours - currentHours) / dueHours) * 100
+      : 100;
+
+  const cyclePct =
+    dueCycles > 0
+      ? ((dueCycles - currentCycles) / dueCycles) * 100
+      : 100;
+
+  return ACS_clampPct(Math.min(hourPct, cyclePct));
+}
+
+function ACS_getUsedDCheckRemainingPct(ac) {
+  const rawDate =
+    ac?.d_check_due_date ||
+    ac?.dCheckDueDate ||
+    ac?.d_check_due ||
+    null;
+
+  if (!rawDate) return 100;
+
+  const dueDate = new Date(rawDate);
+
+  if (Number.isNaN(dueDate.getTime())) return 100;
+
+  const simDate = ACS_getUsedMarketSimDate();
+
+  const remainingMs = dueDate.getTime() - simDate.getTime();
+
+  if (remainingMs <= 0) return 0;
+
+  const dCheckCycleMs = 8 * 365 * 24 * 60 * 60 * 1000;
+
+  return ACS_clampPct((remainingMs / dCheckCycleMs) * 100);
+}
+
+function ACS_getUsedInfoStatus(conditionPct, cCheckPct, dCheckPct) {
+  if (dCheckPct <= 0) {
+    return {
+      label: "D-CHECK REQUIRED",
+      className: "used-info-status-danger"
+    };
+  }
+
+  if (cCheckPct <= 0) {
+    return {
+      label: "C-CHECK REQUIRED",
+      className: "used-info-status-danger"
+    };
+  }
+
+  if (conditionPct < 55 || cCheckPct < 20 || dCheckPct < 20) {
+    return {
+      label: "LIMITED",
+      className: "used-info-status-warn"
+    };
+  }
+
+  return {
+    label: "OPERATIONAL",
+    className: "used-info-status-ok"
+  };
+}
+
+function ACS_infoMetricHTML(label, value) {
+  const pct = ACS_clampPct(value);
+
+  return `
+    <div class="used-info-metric">
+      <div class="used-info-metric-label">${label}</div>
+      <div class="used-info-metric-value">${pct}%</div>
+      <div class="used-info-bar">
+        <div class="used-info-bar-fill" style="width:${pct}%;"></div>
+      </div>
+    </div>
+  `;
+}
+
+function openInfo(id) {
+  selectedUsedID = id;
+
+  const ac = getUsedById(id);
+
+  if (!ac) {
+    console.warn("⚠️ INFO modal aircraft not found:", id);
+    return;
+  }
+
+  const nameEl = document.getElementById("modalName");
+  const detailsEl = document.getElementById("modalDetails");
+  const modalEl = document.getElementById("infoModal");
+
+  if (!nameEl || !detailsEl || !modalEl) return;
+
+  const aircraftName =
+    ac.aircraft_name ||
+    `${ac.manufacturer || ""} ${ac.model || ""}`.trim() ||
+    "Used Aircraft";
+
+  const lastOwner = ACS_resolveUsedLastOwner(ac);
+
+  const conditionPct = ACS_getUsedInfoConditionPct(ac);
+  const cCheckPct = ACS_getUsedCCheckRemainingPct(ac);
+  const dCheckPct = ACS_getUsedDCheckRemainingPct(ac);
+
+  const status = ACS_getUsedInfoStatus(
+    conditionPct,
+    cCheckPct,
+    dCheckPct
+  );
+
+  const hours = Number(
+    ac.hours ||
+    ac.total_hours ||
+    ac.totalHours ||
+    0
+  );
+
+  const cycles = Number(
+    ac.cycles ||
+    ac.total_cycles ||
+    ac.totalCycles ||
+    0
+  );
+
+  const price = Number(
+    ac.price_acs_usd ||
+    ac.market_price ||
+    0
+  );
+
+  const imageSrc = ACS_getUsedAircraftModalImage(ac);
+
+  const fallbackSrc =
+    typeof getAircraftImage === "function"
+      ? getAircraftImage(ac)
+      : "img/placeholder_aircraft.png";
+
+  nameEl.textContent = "USED AIRCRAFT INFO";
+
+  detailsEl.innerHTML = `
+    <div class="used-info-grid">
+
+      <div class="used-info-image-wrap">
+        <img
+          class="used-info-aircraft-img"
+          src="${imageSrc}"
+          data-fallback-src="${fallbackSrc}"
+          alt="${aircraftName}"
+          onerror="ACS_handleUsedModalImageFallback(this)"
+        />
+      </div>
+
+      <div class="used-info-panel">
+        <div class="used-info-section-title">ASSET</div>
+
+        <div class="used-info-line">
+          <span>Aircraft</span>
+          <b>${aircraftName}</b>
+        </div>
+
+        <div class="used-info-line">
+          <span>Last Owner</span>
+          <b>${lastOwner}</b>
+        </div>
+
+        <div class="used-info-line">
+          <span>Year</span>
+          <b>${ac.year || ac.year_built || "—"}</b>
+        </div>
+
+        <div class="used-info-line">
+          <span>Price</span>
+          <b>${ACS_formatUSD(price)}</b>
+        </div>
+      </div>
+
+      <div class="used-info-panel">
+        <div class="used-info-section-title">OPERATIONAL DATA</div>
+
+        <div class="used-info-line">
+          <span>Hours</span>
+          <b>${hours.toLocaleString("en-US")}</b>
+        </div>
+
+        <div class="used-info-line">
+          <span>Cycles</span>
+          <b>${cycles.toLocaleString("en-US")}</b>
+        </div>
+      </div>
+
+      <div class="used-info-panel">
+        <div class="used-info-section-title">TECHNICAL STATUS</div>
+
+        <div class="used-info-line">
+          <span>Status</span>
+          <b class="${status.className}">${status.label}</b>
+        </div>
+      </div>
+
+      <div class="used-info-metrics">
+        ${ACS_infoMetricHTML("AIRCRAFT CONDITION", conditionPct)}
+        ${ACS_infoMetricHTML("C-CHECK REMAINING", cCheckPct)}
+        ${ACS_infoMetricHTML("D-CHECK REMAINING", dCheckPct)}
+      </div>
+
+    </div>
+  `;
+
+  modalEl.style.display = "flex";
+}
+     
+/* ============================================================
    Helper — Render BUY Used Modal Body
    ============================================================ */
 
