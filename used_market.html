@@ -545,6 +545,23 @@ body {
   line-height: 1.4;
 }
 
+.used-occ-maint-danger {
+  color: #ff4d4d !important;
+  text-shadow: 0 0 8px rgba(255,77,77,0.35);
+}
+
+.used-occ-maint-warning {
+  color: #ffb300 !important;
+  text-shadow: 0 0 8px rgba(255,179,0,0.35);
+}
+
+.used-occ-maint-detail {
+  margin-top: 0.45rem;
+  color: #dbe7ff;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+     
 #confirmBuyBtn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -995,8 +1012,11 @@ function ACS_getUsedMarketGate(ac) {
 /* ============================================================
    Helper — Maintenance Advisory
    ------------------------------------------------------------
-   Uses explicit backend/listing fields only.
-   No frontend-invented C/D status.
+   ACS OCC rule:
+   - D-check due date is evaluated against ACS sim date.
+   - C-check is evaluated against hours/cycles.
+   - D-check overrides C-check.
+   - Does not trust maintenance_status alone.
    ============================================================ */
 
 function ACS_getUsedMaintenanceAdvisory(ac) {
@@ -1011,6 +1031,8 @@ function ACS_getUsedMaintenanceAdvisory(ac) {
     };
   }
 
+  const simDate = ACS_getUsedMarketSimDate();
+
   const statusText = String(
     ac.maintenance_status ||
     ac.maintenanceStatus ||
@@ -1018,43 +1040,102 @@ function ACS_getUsedMaintenanceAdvisory(ac) {
     ""
   ).toUpperCase();
 
-  const dOverdue =
+  /* ============================================================
+     D-CHECK OVERDUE — date based
+     ============================================================ */
+
+  const rawDDate =
+    ac.d_check_due_date ||
+    ac.dCheckDueDate ||
+    ac.d_check_due ||
+    null;
+
+  const dCheckDate = rawDDate ? new Date(rawDDate) : null;
+
+  const dCheckOverdue =
     ac.d_check_overdue === true ||
     ac.dCheckOverdue === true ||
-    ac.d_check_status === "OVERDUE" ||
-    ac.dCheckStatus === "OVERDUE" ||
+    String(ac.d_check_status || "").toUpperCase() === "OVERDUE" ||
+    String(ac.dCheckStatus || "").toUpperCase() === "OVERDUE" ||
     statusText.includes("D-CHECK OVERDUE") ||
     statusText.includes("D CHECK OVERDUE") ||
-    statusText.includes("D_OVERDUE");
+    statusText.includes("D_OVERDUE") ||
+    (
+      dCheckDate instanceof Date &&
+      !Number.isNaN(dCheckDate.getTime()) &&
+      dCheckDate.getTime() <= simDate.getTime()
+    );
 
-  const cOverdue =
+  /* ============================================================
+     C-CHECK OVERDUE — hours / cycles based
+     ============================================================ */
+
+  const currentHours = Number(
+    ac.hours ||
+    ac.total_hours ||
+    ac.totalHours ||
+    0
+  );
+
+  const currentCycles = Number(
+    ac.cycles ||
+    ac.total_cycles ||
+    ac.totalCycles ||
+    0
+  );
+
+  const cDueHours = Number(
+    ac.c_check_due_hours ||
+    ac.cCheckDueHours ||
+    0
+  );
+
+  const cDueCycles = Number(
+    ac.c_check_due_cycles ||
+    ac.cCheckDueCycles ||
+    0
+  );
+
+  const cCheckOverdue =
     ac.c_check_overdue === true ||
     ac.cCheckOverdue === true ||
-    ac.c_check_status === "OVERDUE" ||
-    ac.cCheckStatus === "OVERDUE" ||
+    String(ac.c_check_status || "").toUpperCase() === "OVERDUE" ||
+    String(ac.cCheckStatus || "").toUpperCase() === "OVERDUE" ||
     statusText.includes("C-CHECK OVERDUE") ||
     statusText.includes("C CHECK OVERDUE") ||
-    statusText.includes("C_OVERDUE");
+    statusText.includes("C_OVERDUE") ||
+    (
+      cDueHours > 0 &&
+      currentHours >= cDueHours
+    ) ||
+    (
+      cDueCycles > 0 &&
+      currentCycles >= cDueCycles
+    );
 
-  if (dOverdue) {
+  /* ============================================================
+     D-CHECK has priority over C-CHECK
+     ============================================================ */
+
+  if (dCheckOverdue) {
     return {
       code: "D_OVERDUE",
       label: "🟥 D-Check Overdue",
-      detail: "D-Check pre-delivery option available.",
-      extensionDays: 30,
-      checkboxLabel: "Perform D-Check before delivery",
-      hasOption: true
+      detail: "Aircraft will enter D-Check maintenance after acquisition.",
+      extensionDays: 0,
+      checkboxLabel: "",
+      hasOption: false
     };
   }
 
-  if (cOverdue) {
+  if (cCheckOverdue) {
     return {
       code: "C_OVERDUE",
       label: "⚠ C-Check Overdue",
-      detail: "C-Check pre-delivery option available.",
-      extensionDays: 14,
-      checkboxLabel: "Perform C-Check before delivery",
-      hasOption: true
+      detail: "Aircraft will enter C-Check maintenance after acquisition.",
+      extensionDays: 0,
+      checkboxLabel: "",
+      hasOption: false
     };
   }
 
@@ -1197,11 +1278,23 @@ function ACS_renderBuyUsedModalBody(ac, capital) {
       <div class="used-occ-panel used-occ-maint-panel">
         <div class="used-occ-section-title">MAINTENANCE ADVISORY</div>
 
-        <div class="used-occ-maint-status">
-          ${advisory.label}
-        </div>
+        <div class="used-occ-maint-status ${
+  advisory.code === "D_OVERDUE"
+    ? "used-occ-maint-danger"
+    : advisory.code === "C_OVERDUE"
+      ? "used-occ-maint-warning"
+      : ""
+}">
+  ${advisory.label}
+</div>
 
-        ${maintenanceOptionHTML}
+${
+  advisory.detail
+    ? `<div class="used-occ-maint-detail">${advisory.detail}</div>`
+    : ""
+}
+
+${maintenanceOptionHTML}
       </div>
 
     </div>
