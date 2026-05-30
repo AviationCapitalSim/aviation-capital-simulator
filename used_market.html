@@ -1607,60 +1607,28 @@ function ACS_getUsedDCheckRemainingPct(ac) {
 }
 
 function ACS_getUsedInfoStatus(conditionPct, cCheckPct, dCheckPct) {
-  const readinessPct = Math.min(
-    ACS_clampPct(conditionPct),
-    ACS_clampPct(cCheckPct),
-    ACS_clampPct(dCheckPct)
-  );
-
   if (dCheckPct <= 0) {
     return {
       label: "D-CHECK REQUIRED",
-      className: "used-info-status-danger",
-      readinessPct
+      className: "used-info-status-danger"
     };
   }
 
   if (cCheckPct <= 0) {
     return {
       label: "C-CHECK REQUIRED",
-      className: "used-info-status-danger",
-      readinessPct
-    };
-  }
-
-  if (dCheckPct < 25) {
-    return {
-      label: "D-CHECK DUE SOON",
-      className: "used-info-status-warn",
-      readinessPct
-    };
-  }
-
-  if (cCheckPct < 25) {
-    return {
-      label: "C-CHECK DUE SOON",
-      className: "used-info-status-warn",
-      readinessPct
-    };
-  }
-
-  if (conditionPct < 55) {
-    return {
-      label: "CONDITION LIMITED",
-      className: "used-info-status-warn",
-      readinessPct
+      className: "used-info-status-danger"
     };
   }
 
   return {
     label: "OPERATIONAL",
-    className: "used-info-status-ok",
-    readinessPct
+    className: "used-info-status-ok"
   };
 }
 
 function ACS_getUsedInfoBarClass(value) {
+     
   const pct = ACS_clampPct(value);
 
   if (pct >= 75) return "used-info-bar-green";
@@ -1708,15 +1676,24 @@ function openInfo(id) {
 
   const lastOwner = ACS_resolveUsedLastOwner(ac);
 
-  const conditionPct = ACS_getUsedInfoConditionPct(ac);
-  const cCheckPct = ACS_getUsedCCheckRemainingPct(ac);
-  const dCheckPct = ACS_getUsedDCheckRemainingPct(ac);
+  const rawConditionPct = ACS_getUsedInfoConditionPct(ac);
+const cCheckPct = ACS_getUsedCCheckRemainingPct(ac);
+const dCheckPct = ACS_getUsedDCheckRemainingPct(ac);
 
-  const status = ACS_getUsedInfoStatus(
-    conditionPct,
-    cCheckPct,
-    dCheckPct
-  );
+/*
+  ACS OCC visual rule:
+  The displayed aircraft condition cannot be higher than
+  its C/D maintenance readiness.
+*/
+const conditionPct = ACS_clampPct(
+  Math.min(rawConditionPct, cCheckPct, dCheckPct)
+);
+
+const status = ACS_getUsedInfoStatus(
+  conditionPct,
+  cCheckPct,
+  dCheckPct
+);
 
   const hours = Number(
     ac.hours ||
