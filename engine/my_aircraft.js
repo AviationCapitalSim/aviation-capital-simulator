@@ -1,0 +1,835 @@
+/* ============================================================
+   🟦 ACS MY AIRCRAFT — BACKEND AUTHORITY v1.0
+   ------------------------------------------------------------
+   File: engine/my_aircraft.js
+   Date: 30 MAY 2026
+
+   Purpose:
+   - Airbus OCC / ACS Fleet Control Center
+   - Read airline fleet from PostgreSQL backend authority
+   - Render real aircraft_fleet records
+   - No localStorage authority
+   - No frontend fleet creation
+   - No frontend finance mutation
+   - No Buy New mutation
+   - No Used Market mutation
+
+   Backend source:
+   GET /v1/aircraft/fleet
+
+   ACS Rules:
+   - My Aircraft reads what backend already decided.
+   - ACTIVE means operationally available unless maintenance says otherwise.
+   - PENDING_DELIVERY means waiting for backend delivery process.
+   - MAINTENANCE / IN_MAINTENANCE means not schedulable.
+   - SOLD / DELIVERED are not visual active states here.
+   ============================================================ */
+
+(() => {
+  "use strict";
+
+  /* ============================================================
+     🟦 MODULE STATE
+     ============================================================ */
+
+  const ACS_MY_AIRCRAFT = {
+    version: "ACS_MY_AIRCRAFT_BACKEND_AUTHORITY_V1_0",
+    endpoint: "/v1/aircraft/fleet",
+    fleet: [],
+    filteredFleet: [],
+    selectedAircraft: null
+  };
+
+  /* ============================================================
+     🟦 SAFE DOM HELPERS
+     ============================================================ */
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function setText(id, value) {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = value ?? "—";
+  }
+
+  function safeText(value, fallback = "—") {
+    if (value === null || value === undefined || value === "") return fallback;
+    return String(value);
+  }
+
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function formatNumber(value) {
+    const n = safeNumber(value, 0);
+    return n.toLocaleString("en-US");
+  }
+
+  function formatMoney(value, currency = "USD") {
+    const n = safeNumber(value, 0);
+    return `${currency} ${n.toLocaleString("en-US", {
+      maximumFractionDigits: 0
+    })}`;
+  }
+
+  function formatDate(value) {
+    if (!value) return "—";
+
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+
+    return d.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    }).toUpperCase();
+  }
+
+  function normalizeStatus(value) {
+    return String(value || "")
+      .trim()
+      .toUpperCase()
+      .replace(/\s+/g, "_");
+  }
+
+  function normalizeDisplay(value) {
+    return String(value || "—")
+      .trim()
+      .replace(/_/g, " ")
+      .toUpperCase();
+  }
+
+  /* ============================================================
+     🟦 AIRCRAFT STATUS RESOLUTION
+     ------------------------------------------------------------
+     My Aircraft does NOT decide backend status.
+     It only translates backend values into OCC display states.
+     ============================================================ */
+
+  function resolveFleetStatus(aircraft) {
+    const status = normalizeStatus(aircraft.status);
+    const operational = normalizeStatus(aircraft.operational_status);
+    const maintenance = normalizeStatus(aircraft.maintenance_status);
+
+    if (status === "SCRAPPED") {
+      return {
+        key: "SCRAPPED",
+        label: "SCRAPPED",
+        className: "status-maintenance-hold",
+        sub: "FINAL DISPOSITION"
+      };
+    }
+
+    if (status === "RETURNED_TO_LESSOR") {
+      return {
+        key: "RETURNED_TO_LESSOR",
+        label: "RETURNED",
+        className: "status-maintenance-hold",
+        sub: "LESSOR RETURN"
+      };
+    }
+
+    if (status === "FOR_SALE") {
+      return {
+        key: "FOR_SALE",
+        label: "FOR SALE",
+        className: "status-pending",
+        sub: "MARKET LISTING"
+      };
+    }
+
+    if (status === "FOR_LEASE") {
+      return {
+        key: "FOR_LEASE",
+        label: "FOR LEASE",
+        className: "status-pending",
+        sub: "LEASE OFFER"
+      };
+    }
+
+    if (status === "FOR_SALE_OR_LEASE") {
+      return {
+        key: "FOR_SALE_OR_LEASE",
+        label: "SALE / LEASE",
+        className: "status-pending",
+        sub: "MARKET OFFER"
+      };
+    }
+
+    if (status === "STORED") {
+      return {
+        key: "STORED",
+        label: "STORED",
+        className: "status-pending",
+        sub: "NOT IN SERVICE"
+      };
+    }
+
+    if (status === "PENDING_DELIVERY") {
+      return {
+        key: "PENDING_DELIVERY",
+        label: "PENDING DELIVERY",
+        className: "status-pending",
+        sub: "AWAITING ARRIVAL"
+      };
+    }
+
+    if (
+      status === "MAINTENANCE" ||
+      status === "IN_MAINTENANCE" ||
+      operational === "IN_MAINTENANCE" ||
+      maintenance === "CHECK_REQUIRED"
+    ) {
+      return {
+        key: "MAINTENANCE",
+        label: "MAINTENANCE",
+        className: "status-maintenance",
+        sub: maintenance === "CHECK_REQUIRED" ? "CHECK REQUIRED" : "IN SERVICE EVENT"
+      };
+    }
+
+    if (status === "ON_ORDER") {
+      return {
+        key: "ON_ORDER",
+        label: "ON ORDER",
+        className: "status-pending",
+        sub: "ORDER BOOK"
+      };
+    }
+
+    if (status === "ACTIVE" || operational === "AVAILABLE") {
+      return {
+        key: "ACTIVE",
+        label: "ACTIVE",
+        className: "status-active",
+        sub: "AVAILABLE"
+      };
+    }
+
+    return {
+      key: status || "UNKNOWN",
+      label: normalizeDisplay(status || operational || "UNKNOWN"),
+      className: "status-pending",
+      sub: normalizeDisplay(operational || maintenance || "REVIEW")
+    };
+  }
+
+  function isSchedulable(aircraft) {
+    const statusInfo = resolveFleetStatus(aircraft);
+    const operational = normalizeStatus(aircraft.operational_status);
+    const maintenance = normalizeStatus(aircraft.maintenance_status);
+
+    return (
+      statusInfo.key === "ACTIVE" &&
+      operational === "AVAILABLE" &&
+      maintenance !== "CHECK_REQUIRED" &&
+      Boolean(aircraft.registration)
+    );
+  }
+
+  function getRegistrationDisplay(aircraft) {
+    return aircraft.registration || "PENDING";
+  }
+
+  function getSourceDisplay(aircraft) {
+    const source = normalizeStatus(aircraft.source);
+
+    if (source === "FACTORY") return "FACTORY";
+    if (source === "USED_MARKET") return "USED MARKET";
+    if (source === "LEASE_NEW") return "LEASE NEW";
+    if (source === "LEASE_USED") return "LEASE USED";
+
+    return normalizeDisplay(source || "UNKNOWN");
+  }
+
+  function getOwnershipDisplay(aircraft) {
+    const ownership = normalizeStatus(aircraft.ownership_type);
+
+    if (ownership === "OWNED") return "OWNED";
+    if (ownership === "LEASED") return "LEASED";
+    if (ownership === "FINANCED") return "FINANCED";
+
+    return normalizeDisplay(ownership || "UNKNOWN");
+  }
+
+  function getMaintenanceDisplay(aircraft) {
+    const maintenance = normalizeStatus(aircraft.maintenance_status);
+
+    if (!maintenance) return "—";
+    if (maintenance === "SERVICEABLE") return "SERVICEABLE";
+    if (maintenance === "CHECK_REQUIRED") return "CHECK REQUIRED";
+    if (maintenance.includes("D")) return "D-CHECK";
+    if (maintenance.includes("C")) return "C-CHECK";
+
+    return normalizeDisplay(maintenance);
+  }
+
+  /* ============================================================
+     🟦 DATA LOADING
+     ============================================================ */
+
+  async function loadFleetFromBackend() {
+    const response = await fetch(ACS_MY_AIRCRAFT.endpoint, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      let details = "";
+
+      try {
+        const payload = await response.json();
+        details = payload?.error || payload?.details || "";
+      } catch (_) {
+        details = response.statusText;
+      }
+
+      throw new Error(`Fleet load failed: ${response.status} ${details}`);
+    }
+
+    const payload = await response.json();
+
+    if (!payload || payload.ok !== true || !Array.isArray(payload.fleet)) {
+      throw new Error("Invalid fleet payload from backend.");
+    }
+
+    ACS_MY_AIRCRAFT.fleet = payload.fleet;
+    ACS_MY_AIRCRAFT.filteredFleet = [...payload.fleet];
+
+    console.log("🟦 ACS MY AIRCRAFT — Fleet loaded:", {
+      version: ACS_MY_AIRCRAFT.version,
+      count: ACS_MY_AIRCRAFT.fleet.length,
+      backend_authority: true,
+      localStorage: false
+    });
+  }
+
+  /* ============================================================
+     🟦 FLEET OVERVIEW
+     ------------------------------------------------------------
+     Uses existing HTML cards:
+     - On Order
+     - Pending Delivery
+     - For Sale
+     - Lease Offering
+     - Reserve Fleet
+     ============================================================ */
+
+  function renderFleetOverview() {
+    const fleet = ACS_MY_AIRCRAFT.fleet;
+
+    const counts = {
+      onOrder: 0,
+      pendingDelivery: 0,
+      forSale: 0,
+      leaseOffering: 0,
+      reserveFleet: 0
+    };
+
+    for (const aircraft of fleet) {
+      const status = normalizeStatus(aircraft.status);
+
+      if (status === "ON_ORDER") counts.onOrder += 1;
+      if (status === "PENDING_DELIVERY") counts.pendingDelivery += 1;
+      if (status === "FOR_SALE") counts.forSale += 1;
+      if (status === "FOR_LEASE" || status === "FOR_SALE_OR_LEASE") {
+        counts.leaseOffering += 1;
+      }
+      if (status === "STORED") counts.reserveFleet += 1;
+    }
+
+    setText("foOnOrderValue", counts.onOrder);
+    setText("foPendingDeliveryValue", counts.pendingDelivery);
+    setText("foForSaleValue", counts.forSale);
+    setText("foLeaseOfferingValue", counts.leaseOffering);
+    setText("foReserveFleetValue", counts.reserveFleet);
+  }
+
+  /* ============================================================
+     🟦 FILTERS
+     ============================================================ */
+
+  function populateFilters() {
+    const modelSelect = $("filterModel");
+    const familySelect = $("filterFamily");
+    const baseSelect = $("filterBase");
+
+    const models = new Set();
+    const families = new Set();
+    const bases = new Set();
+
+    for (const aircraft of ACS_MY_AIRCRAFT.fleet) {
+      if (aircraft.aircraft_name) models.add(aircraft.aircraft_name);
+      if (aircraft.manufacturer) families.add(aircraft.manufacturer);
+      if (aircraft.base_icao) bases.add(aircraft.base_icao);
+    }
+
+    fillSelect(modelSelect, "Model", models);
+    fillSelect(familySelect, "Family", families);
+    fillSelect(baseSelect, "Base", bases);
+  }
+
+  function fillSelect(select, placeholder, values) {
+    if (!select) return;
+
+    const current = select.value;
+
+    select.innerHTML = "";
+
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = placeholder;
+    select.appendChild(defaultOption);
+
+    [...values].sort().forEach((value) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+
+    select.value = current;
+  }
+
+  function applyFilters() {
+    const modelValue = $("filterModel")?.value || "";
+    const familyValue = $("filterFamily")?.value || "";
+    const statusValue = $("filterStatus")?.value || "";
+    const conditionValue = $("filterCondition")?.value || "";
+    const ageValue = $("filterAge")?.value || "";
+    const baseValue = $("filterBase")?.value || "";
+    const searchValue = ($("searchInput")?.value || "").trim().toLowerCase();
+
+    ACS_MY_AIRCRAFT.filteredFleet = ACS_MY_AIRCRAFT.fleet.filter((aircraft) => {
+      const statusInfo = resolveFleetStatus(aircraft);
+      const condition = safeNumber(aircraft.condition_pct, 0);
+      const age = resolveAircraftAge(aircraft);
+
+      if (modelValue && aircraft.aircraft_name !== modelValue) return false;
+      if (familyValue && aircraft.manufacturer !== familyValue) return false;
+      if (baseValue && aircraft.base_icao !== baseValue) return false;
+
+      if (statusValue) {
+        const requested = normalizeStatus(statusValue);
+        const actual = normalizeStatus(statusInfo.label);
+
+        if (requested === "ACTIVE" && statusInfo.key !== "ACTIVE") return false;
+        if (requested === "PENDING_DELIVERY" && statusInfo.key !== "PENDING_DELIVERY") return false;
+        if (
+          ["IN_C_CHECK", "IN_D_CHECK", "A_CHECK", "B_CHECK"].includes(requested) &&
+          statusInfo.key !== "MAINTENANCE"
+        ) return false;
+
+        if (
+          !["ACTIVE", "PENDING_DELIVERY", "IN_C_CHECK", "IN_D_CHECK", "A_CHECK", "B_CHECK"].includes(requested) &&
+          actual !== requested
+        ) {
+          return false;
+        }
+      }
+
+      if (conditionValue && condition <= Number(conditionValue)) return false;
+
+      if (ageValue && !matchAgeFilter(age, ageValue)) return false;
+
+      if (searchValue) {
+        const haystack = [
+          aircraft.registration,
+          aircraft.aircraft_name,
+          aircraft.model_key,
+          aircraft.manufacturer,
+          aircraft.serial_number,
+          aircraft.base_icao,
+          aircraft.current_airport,
+          aircraft.source,
+          aircraft.ownership_type
+        ]
+          .map((v) => String(v || "").toLowerCase())
+          .join(" ");
+
+        if (!haystack.includes(searchValue)) return false;
+      }
+
+      return true;
+    });
+
+    renderFleetTable();
+  }
+
+  function matchAgeFilter(age, filterValue) {
+    if (!Number.isFinite(age)) return false;
+
+    if (filterValue === "0-5") return age >= 0 && age <= 5;
+    if (filterValue === "5-10") return age > 5 && age <= 10;
+    if (filterValue === "10-20") return age > 10 && age <= 20;
+    if (filterValue === "20+") return age > 20;
+
+    return true;
+  }
+
+  function bindFilters() {
+    [
+      "filterModel",
+      "filterFamily",
+      "filterStatus",
+      "filterCondition",
+      "filterAge",
+      "filterBase",
+      "searchInput"
+    ].forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+
+      const eventName = el.tagName === "INPUT" ? "input" : "change";
+      el.addEventListener(eventName, applyFilters);
+    });
+  }
+
+  /* ============================================================
+     🟦 TABLE RENDER
+     ============================================================ */
+
+  function renderFleetTable() {
+    const tbody = $("fleetTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (!ACS_MY_AIRCRAFT.filteredFleet.length) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td colspan="10" style="text-align:center; padding:1.4rem; color:#9fb3c8;">
+          No aircraft found in fleet backend authority.
+        </td>
+      `;
+      tbody.appendChild(row);
+      return;
+    }
+
+    for (const aircraft of ACS_MY_AIRCRAFT.filteredFleet) {
+      const row = document.createElement("tr");
+      const statusInfo = resolveFleetStatus(aircraft);
+
+      if (statusInfo.key === "PENDING_DELIVERY") {
+        row.classList.add("pending-row");
+      }
+
+      const condition = Math.round(safeNumber(aircraft.condition_pct, 0));
+      const schedulable = isSchedulable(aircraft);
+
+      row.innerHTML = `
+        <td>
+          <strong>${escapeHtml(getRegistrationDisplay(aircraft))}</strong>
+          <div class="status-sub">${escapeHtml(getOwnershipDisplay(aircraft))}</div>
+        </td>
+
+        <td>
+          <strong>${escapeHtml(safeText(aircraft.aircraft_name))}</strong>
+          <div class="status-sub">${escapeHtml(getSourceDisplay(aircraft))}</div>
+        </td>
+
+        <td>
+          <span class="status-badge ${statusInfo.className}">
+            ${escapeHtml(statusInfo.label)}
+          </span>
+          <div class="status-sub">${escapeHtml(statusInfo.sub)}</div>
+        </td>
+
+        <td>${formatNumber(aircraft.total_hours)}</td>
+
+        <td>${formatNumber(aircraft.total_cycles)}</td>
+
+        <td>
+          <strong>${condition}%</strong>
+        </td>
+
+        <td class="${statusInfo.key === "MAINTENANCE" ? "maint-warning" : ""}">
+          ${escapeHtml(resolveNextCDisplay(aircraft))}
+        </td>
+
+        <td class="${statusInfo.key === "MAINTENANCE" ? "maint-critical" : ""}">
+          ${escapeHtml(resolveNextDDisplay(aircraft))}
+        </td>
+
+        <td>
+          ${escapeHtml(safeText(aircraft.base_icao))}
+          <div class="status-sub">${escapeHtml(safeText(aircraft.current_airport))}</div>
+        </td>
+
+        <td>
+          <button class="btn-action" data-aircraft-id="${aircraft.id}">
+            Dossier
+          </button>
+          <div class="status-sub">${schedulable ? "SCHEDULE ELIGIBLE" : "OPS REVIEW"}</div>
+        </td>
+      `;
+
+      const button = row.querySelector("button[data-aircraft-id]");
+      if (button) {
+        button.addEventListener("click", () => openAircraftModal(aircraft.id));
+      }
+
+      tbody.appendChild(row);
+    }
+  }
+
+  function resolveNextCDisplay(aircraft) {
+    const maintenance = normalizeStatus(aircraft.maintenance_status);
+
+    if (maintenance === "CHECK_REQUIRED") return "CHECK REQUIRED";
+    if (maintenance.includes("C")) return "C-CHECK";
+    if (normalizeStatus(aircraft.operational_status) === "IN_MAINTENANCE") return "MAINT";
+
+    return "—";
+  }
+
+  function resolveNextDDisplay(aircraft) {
+    const maintenance = normalizeStatus(aircraft.maintenance_status);
+
+    if (maintenance.includes("D")) return "D-CHECK";
+    if (maintenance === "CHECK_REQUIRED") return "REVIEW";
+
+    return "—";
+  }
+
+  function resolveAircraftAge(aircraft) {
+    const yearBuilt = Number(aircraft.year_built);
+    if (!Number.isInteger(yearBuilt) || yearBuilt <= 0) return NaN;
+
+    const now = new Date();
+    return Math.max(0, now.getUTCFullYear() - yearBuilt);
+  }
+
+  /* ============================================================
+     🟦 AIRCRAFT DOSSIER MODAL
+     ============================================================ */
+
+  function openAircraftModal(aircraftId) {
+    const aircraft = ACS_MY_AIRCRAFT.fleet.find(
+      (item) => Number(item.id) === Number(aircraftId)
+    );
+
+    if (!aircraft) return;
+
+    ACS_MY_AIRCRAFT.selectedAircraft = aircraft;
+
+    const statusInfo = resolveFleetStatus(aircraft);
+
+    setText("modalTitle", `${safeText(aircraft.aircraft_name)} — Fleet Dossier`);
+
+    setText("mReg", getRegistrationDisplay(aircraft));
+    setText("mModel", safeText(aircraft.aircraft_name));
+    setText("mFamily", safeText(aircraft.manufacturer));
+    setText("mBase", safeText(aircraft.base_icao));
+    setText("mStatus", `${statusInfo.label} / ${safeText(aircraft.operational_status)}`);
+
+    setText("mDeliveryDate", formatDate(aircraft.delivery_date));
+    setText("mDeliveredDate", formatDate(aircraft.entry_into_service_date));
+    setText("mCondition", `${Math.round(safeNumber(aircraft.condition_pct, 0))}%`);
+    setText("mHours", formatNumber(aircraft.total_hours));
+    setText("mCycles", formatNumber(aircraft.total_cycles));
+    setText("mAge", formatAge(aircraft));
+
+    setText("mMaintStatus", getMaintenanceDisplay(aircraft));
+    setText("mLastC", "—");
+    setText("mNextC", resolveNextCDisplay(aircraft));
+    setText("mLastD", "—");
+    setText("mNextD", resolveNextDDisplay(aircraft));
+
+    const maintStatusEl = $("mMaintStatus");
+    if (maintStatusEl) {
+      maintStatusEl.classList.remove(
+        "ql-status-airworthy",
+        "ql-status-pending",
+        "ql-status-ccheck",
+        "ql-status-dcheck",
+        "ql-status-overdue"
+      );
+
+      if (statusInfo.key === "ACTIVE") {
+        maintStatusEl.classList.add("ql-status-airworthy");
+      } else if (statusInfo.key === "PENDING_DELIVERY") {
+        maintStatusEl.classList.add("ql-status-pending");
+      } else if (statusInfo.key === "MAINTENANCE") {
+        maintStatusEl.classList.add("ql-status-overdue");
+      }
+    }
+
+    setMaintenanceButtonsReadOnly(aircraft);
+
+    const modal = $("aircraftModal");
+    if (modal) {
+      modal.style.display = "flex";
+    }
+  }
+
+  function formatAge(aircraft) {
+    const age = resolveAircraftAge(aircraft);
+    return Number.isFinite(age) ? String(age) : "—";
+  }
+
+  function setMaintenanceButtonsReadOnly(aircraft) {
+    const btnC = $("btnCcheck");
+    const btnD = $("btnDcheck");
+    const btnLog = $("btnLog");
+
+    /*
+      v1.0 is reader-only.
+      Maintenance actions require backend endpoints.
+      We do not allow frontend-only mutations.
+    */
+
+    if (btnC) {
+      btnC.disabled = true;
+      btnC.title = "Backend maintenance endpoint required.";
+    }
+
+    if (btnD) {
+      btnD.disabled = true;
+      btnD.title = "Backend maintenance endpoint required.";
+    }
+
+    if (btnLog) {
+      btnLog.disabled = false;
+      btnLog.onclick = () => openMaintenanceLogReadOnly(aircraft);
+    }
+  }
+
+  function closeModal() {
+    const modal = $("aircraftModal");
+    if (modal) modal.style.display = "none";
+
+    ACS_MY_AIRCRAFT.selectedAircraft = null;
+  }
+
+  function openMaintenanceLogReadOnly(aircraft) {
+    setText(
+      "logAircraftTitle",
+      `${safeText(aircraft.aircraft_name)} — ${getRegistrationDisplay(aircraft)}`
+    );
+
+    const body = $("maintenanceLogBody");
+    if (body) {
+      body.innerHTML = `
+        <tr>
+          <td colspan="5" class="ql-log-empty">
+            Maintenance log endpoint not connected yet. Backend authority required.
+          </td>
+        </tr>
+      `;
+    }
+
+    const modal = $("maintenanceLogModal");
+    if (modal) modal.style.display = "flex";
+  }
+
+  function closeMaintenanceLog() {
+    const modal = $("maintenanceLogModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  function closeAssetPanel() {
+    const panel = $("aircraftAssetPanel");
+    if (panel) panel.style.display = "none";
+  }
+
+  /* ============================================================
+     🟦 LEGACY MODAL SAFETY STUBS
+     ------------------------------------------------------------
+     These prevent old inline onclick handlers from breaking page.
+     They do not mutate data.
+     ============================================================ */
+
+  function closeRegModal() {
+    const modal = $("regModal");
+    if (modal) modal.style.display = "none";
+  }
+
+  function saveRegistration() {
+    alert(
+      "Registration assignment requires backend authority endpoint. No local save was performed."
+    );
+  }
+
+  /* ============================================================
+     🟦 SECURITY / ESCAPE
+     ============================================================ */
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  /* ============================================================
+     🟦 INIT
+     ============================================================ */
+
+  async function initMyAircraft() {
+    try {
+      renderLoadingState();
+
+      await loadFleetFromBackend();
+
+      populateFilters();
+      bindFilters();
+      renderFleetOverview();
+      renderFleetTable();
+
+    } catch (err) {
+      console.error("🟥 ACS MY AIRCRAFT INIT ERROR:", err);
+      renderErrorState(err);
+    }
+  }
+
+  function renderLoadingState() {
+    const tbody = $("fleetTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" style="text-align:center; padding:1.4rem; color:#9fb3c8;">
+          Loading fleet from backend authority...
+        </td>
+      </tr>
+    `;
+  }
+
+  function renderErrorState(err) {
+    const tbody = $("fleetTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" style="text-align:center; padding:1.4rem; color:#ff4d4d;">
+          My Aircraft failed to load backend fleet authority.<br>
+          ${escapeHtml(err?.message || "Unknown error")}
+        </td>
+      </tr>
+    `;
+  }
+
+  document.addEventListener("DOMContentLoaded", initMyAircraft);
+
+  /* ============================================================
+     🟦 GLOBAL EXPORTS FOR EXISTING INLINE HTML HANDLERS
+     ============================================================ */
+
+  window.closeModal = closeModal;
+  window.closeMaintenanceLog = closeMaintenanceLog;
+  window.closeAssetPanel = closeAssetPanel;
+  window.closeRegModal = closeRegModal;
+  window.saveRegistration = saveRegistration;
+  window.ACS_MY_AIRCRAFT = ACS_MY_AIRCRAFT;
+
+})();
