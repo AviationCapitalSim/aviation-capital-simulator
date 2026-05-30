@@ -197,19 +197,18 @@ function ACS_getUsedMarketSimQueryString() {
 }
 
 /* ============================================================
-   🕒 ACS USED MARKET — WAIT FOR LIVE ACS TIME v1.1
+   🕒 ACS USED MARKET — TIME AUTHORITY WAIT v1.2
    ------------------------------------------------------------
    Purpose:
-   - Prevent Used Market from loading with default bootstrap time.
-   - Wait until ACS_TIME.currentTime is no longer 01 JAN 1940.
-   - Backend receives live ACS simulated date authority.
+   - Wait for live ACS simulated time.
+   - Reject bootstrap 01 JAN 1940.
+   - No console spam.
+   - Backend receives ACS time authority only.
    ============================================================ */
 
 function ACS_waitForUsedMarketTimeReady(maxAttempts = 80, delayMs = 250) {
   return new Promise((resolve, reject) => {
     let attempts = 0;
-
-    const defaultBootstrapTime = Date.UTC(1940, 0, 1, 0, 0, 0);
 
     const check = () => {
       attempts += 1;
@@ -225,21 +224,16 @@ function ACS_waitForUsedMarketTimeReady(maxAttempts = 80, delayMs = 250) {
           const isValidDate =
             !Number.isNaN(simDate.getTime());
 
-          const isNotBootstrapDefault =
-            simDate.getTime() !== defaultBootstrapTime &&
+          const isLiveACSDate =
+            isValidDate &&
             simDate.getUTCFullYear() > 1940;
 
-          if (isValidDate && isNotBootstrapDefault) {
+          if (isLiveACSDate) {
             return resolve(simDate);
           }
-
-          console.log("⏳ ACS Used Market waiting for live ACS time:", {
-            attempt: attempts,
-            current_time: simDate.toISOString()
-          });
         }
       } catch (error) {
-        console.warn("⚠️ ACS Used Market waiting for Time Engine:", error);
+        /* Silent wait — no console spam */
       }
 
       if (attempts >= maxAttempts) {
