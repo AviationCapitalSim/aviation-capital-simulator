@@ -1074,7 +1074,7 @@ function getUsedById(id) {
     ? generateUsedMarket()
     : [];
 
-  return list.find(ac => ac.id === id) || null;
+  return list.find(ac => String(ac.id) === String(id)) || null;
 }
      
 /* ============================================================
