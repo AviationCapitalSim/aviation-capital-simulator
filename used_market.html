@@ -1771,7 +1771,7 @@ function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
         </div>
       </div>
 
-      <div class="used-occ-panel used-occ-maint-panel">
+        <div class="used-occ-panel used-occ-maint-panel">
         <div class="used-occ-section-title">MAINTENANCE ADVISORY</div>
 
         <div class="used-occ-maint-status ${advisoryClass}">
@@ -1783,17 +1783,6 @@ function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
             ? `<div class="used-occ-maint-detail">${advisory.detail}</div>`
             : `<div class="used-occ-maint-detail">Aircraft is technically clear for lease evaluation.</div>`
         }
-
-        <div class="used-occ-lease-note">
-          Lease execution is backend-authorized only. Contract creation, finance impact,
-          fleet transfer and market status transition will be enabled after the secure
-          endpoint is created.
-        </div>
-
-        <div class="used-occ-lease-note">
-          <b class="used-occ-lease-pending">CONFIRM LEASE LOCKED:</b>
-          POST /v1/aircraft/used-market/:id/lease pending.
-        </div>
       </div>
 
     </div>
@@ -1808,8 +1797,8 @@ function ACS_renderLeaseUsedModalBody(ac, capital, selectedTermMonths = 12) {
   }
 
   confirmBtn.disabled = true;
-  confirmBtn.textContent = "Backend Lease Endpoint Pending";
-  confirmBtn.title = "Lease Used backend endpoint is not connected yet.";
+  confirmBtn.textContent = "Confirm Lease";
+  confirmBtn.title = "Lease Desk authorization pending.";
 }
 
 /* ============================================================
@@ -1832,8 +1821,8 @@ async function openLeaseModal(id) {
   titleEl.textContent = "USED AIRCRAFT LEASE OFFER";
 
   confirmBtn.disabled = true;
-  confirmBtn.textContent = "Backend Lease Endpoint Pending";
-  confirmBtn.title = "Lease Used backend endpoint is not connected yet.";
+  confirmBtn.textContent = "Confirm Lease";
+  confirmBtn.title = "Lease Desk authorization pending.";
 
   detailsEl.innerHTML = `
     <div class="used-occ-loading">
