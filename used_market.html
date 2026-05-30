@@ -1607,30 +1607,56 @@ function ACS_getUsedDCheckRemainingPct(ac) {
 }
 
 function ACS_getUsedInfoStatus(conditionPct, cCheckPct, dCheckPct) {
+  const readinessPct = Math.min(
+    ACS_clampPct(conditionPct),
+    ACS_clampPct(cCheckPct),
+    ACS_clampPct(dCheckPct)
+  );
+
   if (dCheckPct <= 0) {
     return {
       label: "D-CHECK REQUIRED",
-      className: "used-info-status-danger"
+      className: "used-info-status-danger",
+      readinessPct
     };
   }
 
   if (cCheckPct <= 0) {
     return {
       label: "C-CHECK REQUIRED",
-      className: "used-info-status-danger"
+      className: "used-info-status-danger",
+      readinessPct
     };
   }
 
-  if (conditionPct < 55 || cCheckPct < 20 || dCheckPct < 20) {
+  if (dCheckPct < 25) {
     return {
-      label: "LIMITED",
-      className: "used-info-status-warn"
+      label: "D-CHECK DUE SOON",
+      className: "used-info-status-warn",
+      readinessPct
+    };
+  }
+
+  if (cCheckPct < 25) {
+    return {
+      label: "C-CHECK DUE SOON",
+      className: "used-info-status-warn",
+      readinessPct
+    };
+  }
+
+  if (conditionPct < 55) {
+    return {
+      label: "CONDITION LIMITED",
+      className: "used-info-status-warn",
+      readinessPct
     };
   }
 
   return {
     label: "OPERATIONAL",
-    className: "used-info-status-ok"
+    className: "used-info-status-ok",
+    readinessPct
   };
 }
 
