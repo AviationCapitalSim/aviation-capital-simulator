@@ -196,6 +196,52 @@ function ACS_getUsedMarketSimQueryString() {
   return params.toString();
 }
 
+/* ============================================================
+   🕒 ACS USED MARKET — WAIT FOR TIME ENGINE READY v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Prevent Used Market from loading with default 1940-01-01.
+   - Wait until ACS_TIME.currentTime is valid and beyond bootstrap.
+   - Backend receives real ACS simulated date authority.
+   ============================================================ */
+
+function ACS_waitForUsedMarketTimeReady(maxAttempts = 40, delayMs = 250) {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+
+    const check = () => {
+      attempts += 1;
+
+      try {
+        if (
+          typeof ACS_TIME !== "undefined" &&
+          ACS_TIME &&
+          ACS_TIME.currentTime
+        ) {
+          const simDate = new Date(ACS_TIME.currentTime);
+
+          if (
+            !Number.isNaN(simDate.getTime()) &&
+            simDate.getUTCFullYear() >= 1940
+          ) {
+            return resolve(simDate);
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ ACS Used Market waiting for Time Engine:", error);
+      }
+
+      if (attempts >= maxAttempts) {
+        return reject(new Error("ACS_TIME_READY_TIMEOUT"));
+      }
+
+      setTimeout(check, delayMs);
+    };
+
+    check();
+  });
+}
+
 let ACS_USED_MARKET_BACKEND_LIST = [];
 let ACS_USED_MARKET_BACKEND_LOADED = false;
 let ACS_USED_MARKET_BACKEND_LOADING = false;
@@ -563,7 +609,7 @@ function openInfo(id) {
 }
 
 /* ============================================================
-   9) INIT — BACKEND AUTHORITY
+   9) INIT — BACKEND AUTHORITY + ACS TIME READY v1.1
    ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -572,15 +618,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (grid) {
     grid.innerHTML = `
       <div style="grid-column:1/-1; padding:2rem; color:#ffb300;">
-        Loading Used Aircraft Market...
+        Synchronizing ACS Time Engine...
       </div>
     `;
   }
 
-  await ACS_loadUsedMarketFromBackend();
+  try {
+    const simDate = await ACS_waitForUsedMarketTimeReady();
 
-  buildFilterChips();
-  renderUsedMarket("all");
+    console.log("🕒 ACS Used Market Time Authority Ready:", {
+      sim_year: simDate.getUTCFullYear(),
+      sim_month: simDate.getUTCMonth() + 1,
+      sim_day: simDate.getUTCDate(),
+      iso: simDate.toISOString()
+    });
+
+    if (grid) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; padding:2rem; color:#ffb300;">
+          Loading Used Aircraft Market...
+        </div>
+      `;
+    }
+
+    await ACS_loadUsedMarketFromBackend();
+
+    buildFilterChips();
+    renderUsedMarket("all");
+
+  } catch (error) {
+    console.error("❌ Used Market could not load — ACS Time unavailable:", error);
+
+    if (grid) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; padding:2rem; color:#ff4d4d;">
+          ACS Time Engine unavailable. Used Market cannot be loaded safely.
+        </div>
+      `;
+    }
+  }
 });
 
 window.buyUsed = buyUsed;
