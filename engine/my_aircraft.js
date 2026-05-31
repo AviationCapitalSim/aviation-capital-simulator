@@ -257,8 +257,14 @@ const ACS_MY_AIRCRAFT = {
   }
 
   function getRegistrationDisplay(aircraft) {
-    return aircraft.registration || "PENDING";
+  const registration = String(aircraft.registration || "").trim();
+
+  if (!registration || registration.toUpperCase() === "PENDING") {
+    return "REG REQUIRED";
   }
+
+  return registration;
+}
 
   function getSourceDisplay(aircraft) {
     const source = normalizeStatus(aircraft.source);
