@@ -131,15 +131,6 @@ const ACS_MY_AIRCRAFT = {
      Backend remains the source of truth.
      ============================================================ */
 
-  if (!registration || registration === "PENDING") {
-    return {
-      key: "REGISTRATION_PENDING",
-      label: "PENDING",
-      className: "status-pending",
-      sub: "REGISTRATION REQUIRED"
-    };
-  }
-
   if (status === "SCRAPPED") {
     return {
       key: "SCRAPPED",
@@ -256,11 +247,11 @@ const ACS_MY_AIRCRAFT = {
     );
   }
 
-  function getRegistrationDisplay(aircraft) {
+function getRegistrationDisplay(aircraft) {
   const registration = String(aircraft.registration || "").trim();
 
   if (!registration || registration.toUpperCase() === "PENDING") {
-    return "REG REQUIRED";
+    return "—";
   }
 
   return registration;
@@ -342,6 +333,110 @@ const ACS_MY_AIRCRAFT = {
     });
   }
 
+
+  /* ============================================================
+   🟦 ACS-RA-UI3 — AUTO REGISTRATION SYNC
+   ------------------------------------------------------------
+   Purpose:
+   - My Aircraft must not show aircraft without registration.
+   - Registration is resolved automatically by backend authority.
+   - My Aircraft does not generate registrations.
+   - Backend/PostgreSQL remains source of truth.
+   ============================================================ */
+
+function ACS_RA_needsAutoRegistration(aircraft) {
+  const registration = String(aircraft?.registration || "").trim().toUpperCase();
+
+  return (
+    !registration ||
+    registration === "PENDING" ||
+    registration === "NULL" ||
+    registration === "N/A"
+  );
+}
+
+async function ACS_RA_autoAssignRegistration(aircraft) {
+  const aircraftId = Number(aircraft?.id);
+
+  if (!aircraftId || !Number.isInteger(aircraftId)) {
+    return {
+      ok: false,
+      skipped: true,
+      reason: "INVALID_AIRCRAFT_ID"
+    };
+  }
+
+  const response = await fetch(
+    `${ACS_MY_AIRCRAFT_API_BASE}/v1/aircraft/fleet/${aircraftId}/registration/auto-assign`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({})
+    }
+  );
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok || !payload?.ok) {
+    console.warn("🟨 ACS RA AUTO REGISTRATION FAILED:", {
+      aircraft_id: aircraftId,
+      status: response.status,
+      payload
+    });
+
+    return {
+      ok: false,
+      aircraft_id: aircraftId,
+      status: response.status,
+      payload
+    };
+  }
+
+  console.log("🟦 ACS RA AUTO REGISTRATION SYNC:", {
+    aircraft_id: aircraftId,
+    action: payload.action,
+    registration: payload.registration
+  });
+
+  return {
+    ok: true,
+    aircraft_id: aircraftId,
+    payload
+  };
+}
+
+async function ACS_RA_syncMissingRegistrations() {
+  const fleet = Array.isArray(ACS_MY_AIRCRAFT.fleet)
+    ? ACS_MY_AIRCRAFT.fleet
+    : [];
+
+  const aircraftNeedingRegistration = fleet.filter(ACS_RA_needsAutoRegistration);
+
+  if (!aircraftNeedingRegistration.length) {
+    return {
+      changed: false,
+      count: 0
+    };
+  }
+
+  console.log("🟦 ACS RA — Auto registration required:", {
+    count: aircraftNeedingRegistration.length
+  });
+
+  for (const aircraft of aircraftNeedingRegistration) {
+    await ACS_RA_autoAssignRegistration(aircraft);
+  }
+
+  return {
+    changed: true,
+    count: aircraftNeedingRegistration.length
+  };
+}
+   
   /* ============================================================
      🟦 FLEET OVERVIEW
      ------------------------------------------------------------
@@ -807,21 +902,35 @@ const ACS_MY_AIRCRAFT = {
      ============================================================ */
 
   async function initMyAircraft() {
-    try {
-      renderLoadingState();
+  try {
+    renderLoadingState();
 
+    await loadFleetFromBackend();
+
+    /* ============================================================
+       ACS-RA-UI3 — AUTO REGISTRATION BEFORE RENDER
+       ------------------------------------------------------------
+       Registration is not a visual status.
+       If an aircraft has no registration, backend assigns it first.
+       Then My Aircraft reloads and renders the final fleet state.
+       ============================================================ */
+
+    const registrationSync = await ACS_RA_syncMissingRegistrations();
+
+    if (registrationSync.changed) {
       await loadFleetFromBackend();
-
-      populateFilters();
-      bindFilters();
-      renderFleetOverview();
-      renderFleetTable();
-
-    } catch (err) {
-      console.error("🟥 ACS MY AIRCRAFT INIT ERROR:", err);
-      renderErrorState(err);
     }
+
+    populateFilters();
+    bindFilters();
+    renderFleetOverview();
+    renderFleetTable();
+
+  } catch (err) {
+    console.error("🟥 ACS MY AIRCRAFT INIT ERROR:", err);
+    renderErrorState(err);
   }
+}
 
   function renderLoadingState() {
     const tbody = $("fleetTableBody");
