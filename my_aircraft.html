@@ -1372,34 +1372,34 @@
     </span>
   </div>
 
-  <div class="fleet-overview-grid">
+<div class="fleet-overview-grid">
 
-    <div class="fleet-card" id="foOnOrder">
-      <div class="fleet-card-label">On Order</div>
-      <div class="fleet-card-value" id="foOnOrderValue">0</div>
-    </div>
-
-    <div class="fleet-card" id="foPendingDelivery">
-      <div class="fleet-card-label">Pending Delivery</div>
-      <div class="fleet-card-value" id="foPendingDeliveryValue">0</div>
-    </div>
-
-    <div class="fleet-card" id="foForSale">
-      <div class="fleet-card-label">For Sale</div>
-      <div class="fleet-card-value" id="foForSaleValue">0</div>
-    </div>
-
-    <div class="fleet-card" id="foLeaseOffering">
-      <div class="fleet-card-label">Lease Offering</div>
-      <div class="fleet-card-value" id="foLeaseOfferingValue">0</div>
-    </div>
-
-    <div class="fleet-card" id="foReserveFleet">
-      <div class="fleet-card-label">Reserve Fleet</div>
-      <div class="fleet-card-value" id="foReserveFleetValue">0</div>
-    </div>
-
+  <div class="fleet-card" id="foTotalFleet">
+    <div class="fleet-card-label">Total Fleet</div>
+    <div class="fleet-card-value" id="foTotalFleetValue">0</div>
   </div>
+
+  <div class="fleet-card" id="foActive">
+    <div class="fleet-card-label">Active</div>
+    <div class="fleet-card-value" id="foActiveValue">0</div>
+  </div>
+
+  <div class="fleet-card" id="foPendingDelivery">
+    <div class="fleet-card-label">Pending Delivery</div>
+    <div class="fleet-card-value" id="foPendingDeliveryValue">0</div>
+  </div>
+
+  <div class="fleet-card" id="foMaintenance">
+    <div class="fleet-card-label">Maintenance</div>
+    <div class="fleet-card-value" id="foMaintenanceValue">0</div>
+  </div>
+
+  <div class="fleet-card" id="foLeased">
+    <div class="fleet-card-label">Leased</div>
+    <div class="fleet-card-value" id="foLeasedValue">0</div>
+  </div>
+
+</div>
 
 </div>
   
@@ -1822,7 +1822,7 @@ Ubicación: Dentro del aircraftModal, debajo de botones C/D
 
 <script>
 function handleLogout(){
-  alert("👋 Session closed. See you soon, Captain!");
+  alert("👋 Session closed. Your fleet awaits your command!);
   window.location.href = "login.html";
 }
 </script>
