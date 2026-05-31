@@ -1827,25 +1827,25 @@ function handleLogout(){
 }
 </script>
 
-<!-- TIME -->
+<!-- ============================================================
+     🟦 ACS MY AIRCRAFT — BACKEND AUTHORITY SCRIPT STACK
+     ------------------------------------------------------------
+     Date: 31 MAY 2026
+     Rule:
+     - PostgreSQL = authority
+     - Backend = decides
+     - My Aircraft = reads and displays
+     - No localStorage fleet authority
+     ============================================================ -->
+
+<!-- TIME CORE — kept for ACS global clock / simulation date display -->
 <script src="acs_time_recovery.js"></script>
 <script src="time_engine.js"></script>
 
-<!-- REGISTRATION -->
-<script src="engine/acs_reg_manager.js"></script>
-
-<!-- 🧠 WEAR LOGIC (CORE) -->
-<script src="engine/acs_aircraft_wear_engine.js"></script>
-
-<!-- 👀 OBSERVER (HOOK AL RUNTIME) -->
-<script src="engine/acs_flight_observer.js"></script>
-
-<!-- 🖥 UI -->
-<script src="engine/acs_aircraft_db.js"></script>
-
-<!-- 💰 FINANCE ENGINE (antes de My Aircraft) -->
+<!-- FINANCE ENGINE — temporarily kept pending backend finance audit -->
 <script src="engine/acs_finance.js"></script>
 
+<!-- MY AIRCRAFT — backend authority reader -->
 <script src="engine/my_aircraft.js"></script>
  
 </body>
