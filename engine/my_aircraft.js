@@ -438,45 +438,86 @@ async function ACS_RA_syncMissingRegistrations() {
 }
    
   /* ============================================================
-     🟦 FLEET OVERVIEW
-     ------------------------------------------------------------
-     Uses existing HTML cards:
-     - On Order
-     - Pending Delivery
-     - For Sale
-     - Lease Offering
-     - Reserve Fleet
-     ============================================================ */
+   🟦 FLEET OVERVIEW — ACS OCC BACKEND AUTHORITY v2.0
+   ------------------------------------------------------------
+   Purpose:
+   - Render real operational indicators from aircraft_fleet.
+   - No localStorage.
+   - No frontend authority.
+   - Reads only backend payload already loaded into ACS_MY_AIRCRAFT.fleet.
 
-  function renderFleetOverview() {
-    const fleet = ACS_MY_AIRCRAFT.fleet;
+   Indicators:
+   - Total Fleet
+   - Active
+   - Pending Delivery
+   - Maintenance
+   - Leased
+   ============================================================ */
 
-    const counts = {
-      onOrder: 0,
-      pendingDelivery: 0,
-      forSale: 0,
-      leaseOffering: 0,
-      reserveFleet: 0
-    };
+function renderFleetOverview() {
+  const fleet = Array.isArray(ACS_MY_AIRCRAFT.fleet)
+    ? ACS_MY_AIRCRAFT.fleet
+    : [];
 
-    for (const aircraft of fleet) {
-      const status = normalizeStatus(aircraft.status);
+  const counts = {
+    totalFleet: fleet.length,
+    active: 0,
+    pendingDelivery: 0,
+    maintenance: 0,
+    leased: 0
+  };
 
-      if (status === "ON_ORDER") counts.onOrder += 1;
-      if (status === "PENDING_DELIVERY") counts.pendingDelivery += 1;
-      if (status === "FOR_SALE") counts.forSale += 1;
-      if (status === "FOR_LEASE" || status === "FOR_SALE_OR_LEASE") {
-        counts.leaseOffering += 1;
-      }
-      if (status === "STORED") counts.reserveFleet += 1;
+  for (const aircraft of fleet) {
+    const status = normalizeStatus(aircraft.status);
+    const operational = normalizeStatus(aircraft.operational_status);
+    const maintenance = normalizeStatus(aircraft.maintenance_status);
+    const ownership = normalizeStatus(aircraft.ownership_type);
+
+    const statusInfo = resolveFleetStatus(aircraft);
+
+    if (
+      statusInfo.key === "ACTIVE" &&
+      status === "ACTIVE" &&
+      operational === "AVAILABLE" &&
+      maintenance !== "CHECK_REQUIRED"
+    ) {
+      counts.active += 1;
     }
 
-    setText("foOnOrderValue", counts.onOrder);
-    setText("foPendingDeliveryValue", counts.pendingDelivery);
-    setText("foForSaleValue", counts.forSale);
-    setText("foLeaseOfferingValue", counts.leaseOffering);
-    setText("foReserveFleetValue", counts.reserveFleet);
+    if (
+      status === "PENDING_DELIVERY" ||
+      statusInfo.key === "PENDING_DELIVERY"
+    ) {
+      counts.pendingDelivery += 1;
+    }
+
+    if (
+      status === "MAINTENANCE" ||
+      status === "IN_MAINTENANCE" ||
+      operational === "IN_MAINTENANCE" ||
+      maintenance === "CHECK_REQUIRED" ||
+      statusInfo.key === "MAINTENANCE"
+    ) {
+      counts.maintenance += 1;
+    }
+
+    if (ownership === "LEASED") {
+      counts.leased += 1;
+    }
   }
+
+  setText("foTotalFleetValue", counts.totalFleet);
+  setText("foActiveValue", counts.active);
+  setText("foPendingDeliveryValue", counts.pendingDelivery);
+  setText("foMaintenanceValue", counts.maintenance);
+  setText("foLeasedValue", counts.leased);
+
+  console.log("🟦 ACS OCC FLEET OVERVIEW UPDATED:", {
+    backend_authority: true,
+    localStorage: false,
+    counts
+  });
+}
 
   /* ============================================================
      🟦 FILTERS
