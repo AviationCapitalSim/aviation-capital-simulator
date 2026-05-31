@@ -114,113 +114,134 @@ const ACS_MY_AIRCRAFT = {
      It only translates backend values into OCC display states.
      ============================================================ */
 
-  function resolveFleetStatus(aircraft) {
-    const status = normalizeStatus(aircraft.status);
-    const operational = normalizeStatus(aircraft.operational_status);
-    const maintenance = normalizeStatus(aircraft.maintenance_status);
+ function resolveFleetStatus(aircraft) {
+  const status = normalizeStatus(aircraft.status);
+  const operational = normalizeStatus(aircraft.operational_status);
+  const maintenance = normalizeStatus(aircraft.maintenance_status);
+  const registration = String(aircraft.registration || "").trim().toUpperCase();
 
-    if (status === "SCRAPPED") {
-      return {
-        key: "SCRAPPED",
-        label: "SCRAPPED",
-        className: "status-maintenance-hold",
-        sub: "FINAL DISPOSITION"
-      };
-    }
+  /* ============================================================
+     ACS-RA-UI2 — REGISTRATION PENDING OVERRIDE
+     ------------------------------------------------------------
+     If the aircraft has no registration, it cannot be shown as
+     operationally ACTIVE in My Aircraft, even if backend status
+     is ACTIVE / AVAILABLE.
 
-    if (status === "RETURNED_TO_LESSOR") {
-      return {
-        key: "RETURNED_TO_LESSOR",
-        label: "RETURNED",
-        className: "status-maintenance-hold",
-        sub: "LESSOR RETURN"
-      };
-    }
+     This is a visual/operational safety override only.
+     Backend remains the source of truth.
+     ============================================================ */
 
-    if (status === "FOR_SALE") {
-      return {
-        key: "FOR_SALE",
-        label: "FOR SALE",
-        className: "status-pending",
-        sub: "MARKET LISTING"
-      };
-    }
-
-    if (status === "FOR_LEASE") {
-      return {
-        key: "FOR_LEASE",
-        label: "FOR LEASE",
-        className: "status-pending",
-        sub: "LEASE OFFER"
-      };
-    }
-
-    if (status === "FOR_SALE_OR_LEASE") {
-      return {
-        key: "FOR_SALE_OR_LEASE",
-        label: "SALE / LEASE",
-        className: "status-pending",
-        sub: "MARKET OFFER"
-      };
-    }
-
-    if (status === "STORED") {
-      return {
-        key: "STORED",
-        label: "STORED",
-        className: "status-pending",
-        sub: "NOT IN SERVICE"
-      };
-    }
-
-    if (status === "PENDING_DELIVERY") {
-      return {
-        key: "PENDING_DELIVERY",
-        label: "PENDING DELIVERY",
-        className: "status-pending",
-        sub: "AWAITING ARRIVAL"
-      };
-    }
-
-    if (
-      status === "MAINTENANCE" ||
-      status === "IN_MAINTENANCE" ||
-      operational === "IN_MAINTENANCE" ||
-      maintenance === "CHECK_REQUIRED"
-    ) {
-      return {
-        key: "MAINTENANCE",
-        label: "MAINTENANCE",
-        className: "status-maintenance",
-        sub: maintenance === "CHECK_REQUIRED" ? "CHECK REQUIRED" : "IN SERVICE EVENT"
-      };
-    }
-
-    if (status === "ON_ORDER") {
-      return {
-        key: "ON_ORDER",
-        label: "ON ORDER",
-        className: "status-pending",
-        sub: "ORDER BOOK"
-      };
-    }
-
-    if (status === "ACTIVE" || operational === "AVAILABLE") {
-      return {
-        key: "ACTIVE",
-        label: "ACTIVE",
-        className: "status-active",
-        sub: "AVAILABLE"
-      };
-    }
-
+  if (!registration || registration === "PENDING") {
     return {
-      key: status || "UNKNOWN",
-      label: normalizeDisplay(status || operational || "UNKNOWN"),
+      key: "REGISTRATION_PENDING",
+      label: "PENDING",
       className: "status-pending",
-      sub: normalizeDisplay(operational || maintenance || "REVIEW")
+      sub: "REGISTRATION REQUIRED"
     };
   }
+
+  if (status === "SCRAPPED") {
+    return {
+      key: "SCRAPPED",
+      label: "SCRAPPED",
+      className: "status-maintenance-hold",
+      sub: "FINAL DISPOSITION"
+    };
+  }
+
+  if (status === "RETURNED_TO_LESSOR") {
+    return {
+      key: "RETURNED_TO_LESSOR",
+      label: "RETURNED",
+      className: "status-maintenance-hold",
+      sub: "LESSOR RETURN"
+    };
+  }
+
+  if (status === "FOR_SALE") {
+    return {
+      key: "FOR_SALE",
+      label: "FOR SALE",
+      className: "status-pending",
+      sub: "MARKET LISTING"
+    };
+  }
+
+  if (status === "FOR_LEASE") {
+    return {
+      key: "FOR_LEASE",
+      label: "FOR LEASE",
+      className: "status-pending",
+      sub: "LEASE OFFER"
+    };
+  }
+
+  if (status === "FOR_SALE_OR_LEASE") {
+    return {
+      key: "FOR_SALE_OR_LEASE",
+      label: "SALE / LEASE",
+      className: "status-pending",
+      sub: "MARKET OFFER"
+    };
+  }
+
+  if (status === "STORED") {
+    return {
+      key: "STORED",
+      label: "STORED",
+      className: "status-pending",
+      sub: "NOT IN SERVICE"
+    };
+  }
+
+  if (status === "PENDING_DELIVERY") {
+    return {
+      key: "PENDING_DELIVERY",
+      label: "PENDING DELIVERY",
+      className: "status-pending",
+      sub: "AWAITING ARRIVAL"
+    };
+  }
+
+  if (
+    status === "MAINTENANCE" ||
+    status === "IN_MAINTENANCE" ||
+    operational === "IN_MAINTENANCE" ||
+    maintenance === "CHECK_REQUIRED"
+  ) {
+    return {
+      key: "MAINTENANCE",
+      label: "MAINTENANCE",
+      className: "status-maintenance",
+      sub: maintenance === "CHECK_REQUIRED" ? "CHECK REQUIRED" : "IN SERVICE EVENT"
+    };
+  }
+
+  if (status === "ON_ORDER") {
+    return {
+      key: "ON_ORDER",
+      label: "ON ORDER",
+      className: "status-pending",
+      sub: "ORDER BOOK"
+    };
+  }
+
+  if (status === "ACTIVE" || operational === "AVAILABLE") {
+    return {
+      key: "ACTIVE",
+      label: "ACTIVE",
+      className: "status-active",
+      sub: "AVAILABLE"
+    };
+  }
+
+  return {
+    key: status || "UNKNOWN",
+    label: normalizeDisplay(status || operational || "UNKNOWN"),
+    className: "status-pending",
+    sub: normalizeDisplay(operational || maintenance || "REVIEW")
+  };
+}
 
   function isSchedulable(aircraft) {
     const statusInfo = resolveFleetStatus(aircraft);
