@@ -1526,6 +1526,204 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   ✈️ AIRCRAFT AUTHORITY PANEL — RESPONSIVE OCC REFINEMENT
+   ------------------------------------------------------------
+   Clean operational layout.
+   No fake data.
+   No default browser buttons.
+   Cross-device safe: desktop / tablet / mobile.
+   ============================================================ */
+
+.acp-panel {
+  box-sizing: border-box;
+  width: min(94vw, 820px);
+  max-height: 88vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.acp-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.acp-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.acp-status-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.acp-status-board div,
+.acp-tech-card {
+  min-width: 0;
+  word-break: break-word;
+}
+
+.acp-line strong {
+  word-break: break-word;
+}
+
+/* ACTION CENTER */
+
+.acp-action-center {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.acp-action-btn {
+  appearance: none;
+  -webkit-appearance: none;
+
+  min-height: 42px;
+  padding: 0.65rem 0.75rem;
+
+  border-radius: 11px;
+  border: 1px solid rgba(138,180,255,0.42);
+
+  background:
+    linear-gradient(180deg, rgba(138,180,255,0.12), rgba(20,45,85,0.30));
+
+  color: #dbe7ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.03),
+    0 8px 20px rgba(0,0,0,0.30);
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.acp-action-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255,179,0,0.65);
+  background:
+    linear-gradient(180deg, rgba(255,179,0,0.16), rgba(20,45,85,0.34));
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.38),
+    0 0 14px rgba(255,179,0,0.22);
+}
+
+.acp-action-btn:active {
+  transform: translateY(0);
+}
+
+.acp-action-primary {
+  color: #ffe7a0;
+  border-color: rgba(255,179,0,0.58);
+  background:
+    linear-gradient(180deg, rgba(255,179,0,0.18), rgba(80,55,10,0.24));
+}
+
+.acp-action-danger {
+  color: #ffd6d6;
+  border-color: rgba(255,77,77,0.55);
+  background:
+    linear-gradient(180deg, rgba(180,58,58,0.34), rgba(70,20,20,0.30));
+}
+
+.acp-action-danger:hover {
+  border-color: rgba(255,90,90,0.85);
+  background:
+    linear-gradient(180deg, rgba(200,65,65,0.42), rgba(90,24,24,0.36));
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.38),
+    0 0 14px rgba(255,77,77,0.25);
+}
+
+.acp-action-close {
+  color: #dbe4ff;
+  border-color: rgba(255,255,255,0.25);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(20,45,85,0.22));
+}
+
+/* TABLE BUTTON — MANAGE */
+
+.btn-action {
+  border-radius: 10px;
+  border: 1px solid rgba(138,180,255,0.50);
+  background: rgba(138,180,255,0.12);
+  color: #dbe7ff;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.btn-action:hover {
+  background: rgba(255,179,0,0.16);
+  color: #ffe7a0;
+  border-color: rgba(255,179,0,0.65);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .acp-status-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .acp-tech-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .acp-action-center {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .acp-panel {
+    width: 96vw;
+    max-height: 92vh;
+    padding: 1.1rem;
+    border-radius: 14px;
+  }
+
+  .acp-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .acp-image {
+    width: 100%;
+    height: 170px;
+  }
+
+  .acp-grid-2,
+  .acp-status-board,
+  .acp-tech-grid,
+  .acp-action-center {
+    grid-template-columns: 1fr;
+  }
+
+  .acp-action-btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}
     
 </style>
   
@@ -1781,11 +1979,6 @@
             <span>Cycles</span>
             <strong id="acpCycles">—</strong>
           </div>
-
-          <div class="acp-tech-card">
-            <span>Age</span>
-            <strong id="acpAge">—</strong>
-          </div>
         </div>
       </div>
 
@@ -1805,45 +1998,36 @@
           </div>
         </div>
       </div>
-
-      <!-- CAPITAL -->
-      <div class="modal-summary-box acp-capital-box">
-        <p class="modal-summary">
-          Capital Available:
-          <strong id="acpCapital">—</strong>
-        </p>
-      </div>
-
     </div>
 
     <!-- ACTION CENTER -->
-    <div class="modal-footer acp-footer">
+<div class="acp-action-center">
 
-      <button id="acpServiceCD" class="factory-slots-btn" type="button">
-        Service C & D
-      </button>
+  <button id="acpServiceCD" class="acp-action-btn acp-action-primary" type="button">
+    Service C & D
+  </button>
 
-      <button id="acpInsurance" class="factory-slots-btn" type="button">
-        Insurance
-      </button>
+  <button id="acpInsurance" class="acp-action-btn" type="button">
+    Insurance
+  </button>
 
-      <button id="acpStorage" class="factory-slots-btn" type="button">
-        Storage
-      </button>
+  <button id="acpStorage" class="acp-action-btn" type="button">
+    Storage
+  </button>
 
-      <button id="acpScrap" class="close-btn acp-danger-btn" type="button">
-        Scrap Aircraft
-      </button>
+  <button id="acpScrap" class="acp-action-btn acp-action-danger" type="button">
+    Scrap Aircraft
+  </button>
 
-      <button id="acpReturnLessor" class="factory-slots-btn" type="button">
-        Return to Lessor
-      </button>
+  <button id="acpReturnLessor" class="acp-action-btn" type="button">
+    Return to Lessor
+  </button>
 
-      <button class="close-btn" type="button" onclick="closeModal()">
-        Close
-      </button>
+  <button class="acp-action-btn acp-action-close" type="button" onclick="closeModal()">
+    Close
+  </button>
 
-    </div>
+</div>
 
   </div>
 </div>
