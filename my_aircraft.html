@@ -1922,6 +1922,121 @@
     min-height: 38px;
   }
 }
+
+/* ============================================================
+   🟦 MY AIRCRAFT TABLE — OCC VISUAL CLEANUP
+   ------------------------------------------------------------
+   Scope:
+   - Remove redundant Fleet Overview title
+   - Center OCC board title
+   - Center table headers and cells
+   - Keep table clean and operational
+   ============================================================ */
+
+/* Fleet Overview header cleanup */
+
+.fleet-overview-header-centered {
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.fleet-overview-sub-centered {
+  color: #ffb300;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 8px rgba(255,179,0,0.28),
+    0 0 18px rgba(255,179,0,0.12);
+}
+
+/* Table headers centered */
+
+.fleet-table thead th {
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Table cells centered */
+
+.fleet-table tbody td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Keep model column readable but still centered */
+
+.fleet-table tbody td:nth-child(2) {
+  text-align: center;
+}
+
+/* Cleaner status display */
+
+.fleet-table .status-badge {
+  min-width: 118px;
+  text-align: center;
+}
+
+/* Remove noisy sublabels only inside Actions column after JS cleanup */
+
+.fleet-table td:last-child .status-sub {
+  display: none;
+}
+
+/* Manage button restored as blue operational access */
+
+.btn-action {
+  border-radius: 9px;
+  border: 1px solid rgba(65,145,255,0.75);
+
+  background:
+    linear-gradient(180deg, rgba(35,120,255,0.95), rgba(18,72,165,0.95));
+
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+
+  padding: 0.42rem 0.82rem;
+
+  box-shadow:
+    0 0 10px rgba(65,145,255,0.25),
+    inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+.btn-action:hover {
+  transform: translateY(-1px);
+  background:
+    linear-gradient(180deg, rgba(60,150,255,1), rgba(24,88,190,1));
+  border-color: rgba(120,185,255,0.95);
+  color: #ffffff;
+  box-shadow:
+    0 0 14px rgba(65,145,255,0.42),
+    0 8px 18px rgba(0,0,0,0.32);
+}
+
+/* Next C / Next D visual placeholders.
+   Real dates will come later from Railway/PostgreSQL. */
+
+.maint-date-ok {
+  color: #dbe4ff;
+  font-weight: 700;
+}
+
+.maint-date-warning {
+  color: #ffb300;
+  font-weight: 800;
+  text-shadow: 0 0 8px rgba(255,179,0,0.25);
+}
+
+.maint-date-overdue {
+  color: #ff4d4d;
+  font-weight: 900;
+  text-shadow: 0 0 8px rgba(255,77,77,0.32);
+}
     
 </style>
   
@@ -1965,12 +2080,11 @@
 
 <div class="fleet-overview-wrapper">
 
-  <div class="fleet-overview-header">
-    <span class="fleet-overview-title">Fleet Overview</span>
-    <span class="fleet-overview-sub">
-      Operational Control Status Board
-    </span>
-  </div>
+  <div class="fleet-overview-header fleet-overview-header-centered">
+  <span class="fleet-overview-sub fleet-overview-sub-centered">
+    Operational Control Status Board
+  </span>
+</div>
 
 <div class="fleet-overview-grid">
 
