@@ -1724,6 +1724,69 @@
     min-height: 44px;
   }
 }
+
+/* ============================================================
+   ✈️ AIRCRAFT AUTHORITY PANEL — CLEAN CENTERED HEADER
+   ============================================================ */
+
+.acp-clean-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.acp-main-title {
+  margin: 0 0 1rem 0;
+
+  color: #ffb300;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 10px rgba(255,179,0,0.28),
+    0 0 22px rgba(255,179,0,0.10);
+}
+
+.acp-main-image {
+  width: min(100%, 360px);
+  height: 190px;
+
+  object-fit: cover;
+  border-radius: 14px;
+
+  background: #0f1b3d;
+  border: 1px solid rgba(255,179,0,0.22);
+
+  box-shadow:
+    0 16px 34px rgba(0,0,0,0.42),
+    0 0 16px rgba(255,179,0,0.10);
+}
+
+/* Disable old header/badge visual remnants if still present */
+.acp-badge-row {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .acp-main-title {
+    font-size: 1.05rem;
+    letter-spacing: 0.10em;
+  }
+
+  .acp-main-image {
+    width: 100%;
+    height: 160px;
+  }
+}
     
 </style>
   
@@ -1883,27 +1946,19 @@
   <div class="modal-content acp-panel">
 
     <!-- HEADER -->
-    <div class="modal-header-row acp-header-row">
+    
+<div class="acp-clean-header">
 
-      <div class="modal-header-text">
-        <h3 id="acpTitle" class="modal-title">Aircraft Authority Panel</h3>
-        <p id="acpSubtitle" class="modal-subtitle">
-          Technical & Operational Control
-        </p>
+  <h3 id="acpTitle" class="acp-main-title">
+    Aircraft Authority Panel
+  </h3>
 
-        <div class="acp-badge-row">
-          <span id="acpSourceBadge" class="acp-badge acp-badge-blue">SOURCE</span>
-          <span id="acpOwnershipBadge" class="acp-badge acp-badge-gold">OWNERSHIP</span>
-          <span id="acpStatusBadge" class="acp-badge acp-badge-green">STATUS</span>
-          <span id="acpOperationalBadge" class="acp-badge acp-badge-silver">OPS</span>
-        </div>
-      </div>
+  <img id="acpImage" src="" alt="Aircraft" class="acp-main-image" />
 
-      <img id="acpImage" src="" alt="Aircraft" class="modal-image acp-image" />
-
-    </div>
+</div>
 
     <!-- BODY -->
+    
     <div class="modal-body acp-body">
 
       <!-- AIRCRAFT IDENTITY -->
