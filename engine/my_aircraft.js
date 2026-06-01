@@ -689,7 +689,6 @@ function renderFleetOverview() {
       }
 
       const condition = Math.round(safeNumber(aircraft.condition_pct, 0));
-      const schedulable = isSchedulable(aircraft);
 
       row.innerHTML = `
         <td>
@@ -703,10 +702,9 @@ function renderFleetOverview() {
         </td>
 
         <td>
-          <span class="status-badge ${statusInfo.className}">
-            ${escapeHtml(statusInfo.label)}
-          </span>
-          <div class="status-sub">${escapeHtml(statusInfo.sub)}</div>
+         <span class="status-badge ${statusInfo.className}">
+         ${escapeHtml(resolvePrimaryTableStatus(aircraft))}
+        </span>
         </td>
 
         <td>${formatNumber(aircraft.total_hours)}</td>
@@ -731,10 +729,9 @@ function renderFleetOverview() {
         </td>
 
         <td>
-          <button class="btn-action" data-aircraft-id="${aircraft.id}">
-            Manage
-          </button>
-          <div class="status-sub">${schedulable ? "SCHEDULE ELIGIBLE" : "OPS REVIEW"}</div>
+        <button class="btn-action" data-aircraft-id="${aircraft.id}">
+        Manage
+        </button>
         </td>
       `;
 
@@ -747,25 +744,90 @@ function renderFleetOverview() {
     }
   }
 
-  function resolveNextCDisplay(aircraft) {
-    const maintenance = normalizeStatus(aircraft.maintenance_status);
+  /* ============================================================
+   🟦 TABLE PRIMARY STATUS — CLEAN OCC DISPLAY
+   ------------------------------------------------------------
+   Purpose:
+   - Status column shows only the aircraft main operational state.
+   - No AVAILABLE / CHECK REQUIRED sublabels.
+   - Maintenance required becomes the primary status when backend
+     maintenance_status says CHECK_REQUIRED.
+   ============================================================ */
 
-    if (maintenance === "CHECK_REQUIRED") return "CHECK REQUIRED";
-    if (maintenance.includes("C")) return "C-CHECK";
-    if (normalizeStatus(aircraft.operational_status) === "IN_MAINTENANCE") return "MAINT";
+function resolvePrimaryTableStatus(aircraft) {
+  const status = normalizeStatus(aircraft.status);
+  const operational = normalizeStatus(aircraft.operational_status);
+  const maintenance = normalizeStatus(aircraft.maintenance_status);
 
-    return "—";
+  if (maintenance === "CHECK_REQUIRED") {
+    return "MAINTENANCE REQUIRED";
   }
+
+  if (
+    status === "MAINTENANCE" ||
+    status === "IN_MAINTENANCE" ||
+    operational === "IN_MAINTENANCE"
+  ) {
+    return "MAINTENANCE";
+  }
+
+  if (status === "ACTIVE") {
+    return "ACTIVE";
+  }
+
+  if (status === "PENDING_DELIVERY") {
+    return "PENDING DELIVERY";
+  }
+
+  if (status === "STORED") {
+    return "STORED";
+  }
+
+  if (status === "SCRAPPED") {
+    return "SCRAPPED";
+  }
+
+  if (status === "RETURNED_TO_LESSOR") {
+    return "RETURNED";
+  }
+
+  return normalizeDisplay(status || operational || "REVIEW");
+}
+
+  function resolveNextCDisplay(aircraft) {
+  /*
+    Railway/PostgreSQL will become the authority for real C-check dates.
+    Until backend sends next_c_check_due_date, do not invent dates.
+  */
+
+  const value =
+    aircraft.next_c_check_due_date ||
+    aircraft.next_c_due_date ||
+    aircraft.c_check_due_date ||
+    null;
+
+  if (!value) return "—";
+
+  return formatDate(value);
+}
 
   function resolveNextDDisplay(aircraft) {
-    const maintenance = normalizeStatus(aircraft.maintenance_status);
+  /*
+    Railway/PostgreSQL will become the authority for real D-check dates.
+    Until backend sends next_d_check_due_date, do not invent dates.
+  */
 
-    if (maintenance.includes("D")) return "D-CHECK";
-    if (maintenance === "CHECK_REQUIRED") return "REVIEW";
+  const value =
+    aircraft.next_d_check_due_date ||
+    aircraft.next_d_due_date ||
+    aircraft.d_check_due_date ||
+    null;
 
-    return "—";
-  }
+  if (!value) return "—";
 
+  return formatDate(value);
+}
+   
   function resolveAircraftAge(aircraft) {
     const yearBuilt = Number(aircraft.year_built);
     if (!Number.isInteger(yearBuilt) || yearBuilt <= 0) return NaN;
