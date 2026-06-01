@@ -822,15 +822,6 @@ function openAircraftModal(aircraftId) {
   setText("acpManufacturer", safeText(aircraft.catalog_manufacturer || aircraft.manufacturer));
   setText("acpBase", safeText(aircraft.base_icao));
 
-  setText("acpStatus", statusInfo.label);
-  setText("acpOperational", normalizeDisplay(aircraft.operational_status));
-  setText("acpScheduleStatus", schedulable ? "ELIGIBLE" : "BLOCKED");
-  setText("acpMaintenance", getMaintenanceDisplay(aircraft));
-
-  setText("acpCondition", `${condition}%`);
-  setText("acpHours", formatNumber(aircraft.total_hours));
-  setText("acpCycles", formatNumber(aircraft.total_cycles));
-
   /*
     A/B line maintenance is controlled by Schedule Table.
     This panel only mirrors windows when backend/schedule data is available.
@@ -853,6 +844,7 @@ function openAircraftModal(aircraftId) {
 }
 
 function bindAircraftAuthorityActions(aircraft) {
+   
   const btnServiceCD = $("acpServiceCD");
   const btnInsurance = $("acpInsurance");
   const btnStorage = $("acpStorage");
