@@ -849,8 +849,7 @@ function bindAircraftAuthorityActions(aircraft) {
   const btnInsurance = $("acpInsurance");
   const btnStorage = $("acpStorage");
   const btnScrap = $("acpScrap");
-  const btnReturn = $("acpReturnLessor");
-
+ 
   if (btnServiceCD) {
     btnServiceCD.onclick = () => {
       console.log("🟦 Service C & D Control pending:", aircraft);
@@ -876,17 +875,6 @@ function bindAircraftAuthorityActions(aircraft) {
     btnScrap.onclick = () => {
       console.log("🟦 Scrap Aircraft Evaluation pending:", aircraft);
       alert("Scrap Aircraft Evaluation will be connected in a later block.");
-    };
-  }
-
-  if (btnReturn) {
-    const ownership = normalizeStatus(aircraft.ownership_type);
-
-    btnReturn.style.display = ownership === "LEASED" ? "inline-block" : "none";
-
-    btnReturn.onclick = () => {
-      console.log("🟦 Return to Lessor pending:", aircraft);
-      alert("Return to Lessor will be connected in a later block.");
     };
   }
 }   
