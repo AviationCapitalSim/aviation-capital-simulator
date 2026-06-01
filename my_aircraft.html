@@ -1322,6 +1322,210 @@
 .status-maintenance-hold + .status-sub{
   color:#FF4D4D;
 }
+
+/* ============================================================
+   ✈️ AIRCRAFT AUTHORITY PANEL — Airbus OCC + ACS
+   ------------------------------------------------------------
+   Inspired by Buy New modal language:
+   - premium dark radial panel
+   - aircraft image header
+   - compact operational boards
+   - action center
+   ============================================================ */
+
+.acp-panel {
+  width: 92%;
+  max-width: 760px;
+  max-height: 88vh;
+  overflow-y: auto;
+  text-align: left;
+
+  background: radial-gradient(circle at top, #12254a 0%, #091326 60%, #050814 100%);
+  padding: 1.6rem 1.8rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255,179,0,0.45);
+  box-shadow: 0 0 22px rgba(0,0,0,0.75);
+}
+
+.acp-header-row {
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.acp-image {
+  width: 160px;
+  height: 105px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: #0f1b3d;
+}
+
+.acp-badge-row {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.acp-badge {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.acp-badge-blue {
+  color: #dbe7ff;
+  background: rgba(138,180,255,0.10);
+  border: 1px solid rgba(138,180,255,0.55);
+}
+
+.acp-badge-gold {
+  color: #1b1404;
+  background: linear-gradient(135deg, #ffb300, #ffd666);
+  border: 1px solid rgba(255,179,0,0.65);
+}
+
+.acp-badge-green {
+  color: #dfffee;
+  background: rgba(80,200,120,0.13);
+  border: 1px solid rgba(80,200,120,0.6);
+}
+
+.acp-badge-silver {
+  color: #dbe4ff;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.20);
+}
+
+.acp-body {
+  margin-top: 1rem;
+}
+
+.acp-section {
+  margin-top: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 12px;
+  background: rgba(5,12,28,0.70);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.acp-section-title {
+  color: #ffb300;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 0.7rem;
+}
+
+.acp-grid {
+  display: grid;
+  gap: 0.55rem 1rem;
+}
+
+.acp-grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.acp-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.acp-line span {
+  color: #9fb3c8;
+  font-size: 0.82rem;
+}
+
+.acp-line strong {
+  color: #f5f7fa;
+  font-size: 0.86rem;
+  text-align: right;
+}
+
+.acp-status-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.65rem;
+}
+
+.acp-status-board div,
+.acp-tech-card {
+  padding: 0.75rem 0.55rem;
+  border-radius: 10px;
+  text-align: center;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.acp-status-board span,
+.acp-tech-card span {
+  display: block;
+  color: #8faad6;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.acp-status-board strong,
+.acp-tech-card strong {
+  color: #ffffff;
+  font-size: 0.88rem;
+}
+
+.acp-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.65rem;
+}
+
+.acp-capital-box {
+  margin-top: 1rem;
+}
+
+.acp-capital-box strong {
+  color: #ffe7a0;
+}
+
+.acp-footer {
+  margin-top: 1.2rem;
+}
+
+.acp-danger-btn {
+  background: #8f2f2f;
+  color: #ffffff;
+}
+
+.acp-danger-btn:hover {
+  background: #b43a3a;
+}
+
+@media (max-width: 760px) {
+  .acp-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .acp-image {
+    width: 100%;
+    height: 180px;
+  }
+
+  .acp-grid-2,
+  .acp-status-board,
+  .acp-tech-grid {
+    grid-template-columns: 1fr;
+  }
+}
     
 </style>
   
@@ -1472,133 +1676,177 @@
   </table>
 </div>
 
-<!-- === MODAL DETALLE === -->
-  
-<div class="modal-bg" id="aircraftModal">
-  <div class="modal-detail ql-modal">
-    
-    <div class="modal-header">
-      <h3 id="modalTitle">Aircraft Detail</h3>
-      <span class="modal-close" onclick="closeModal()">×</span>
-    </div>
-
-    <div class="modal-content-grid">
-      
-      <!-- LEFT COLUMN -->
-      <div class="modal-box ql-box">
-        <h4 class="ql-title">General Info</h4>
-
-        <p><b>Registration</b><span id="mReg"></span></p>
-        <p><b>Model</b><span id="mModel"></span></p>
-        <p><b>Family</b><span id="mFamily"></span></p>
-        <p><b>Base</b><span id="mBase"></span></p>
-        <p><b>Status</b><span id="mStatus"></span></p>
-
-        <hr class="ql-sep">
-
-        <p><b>Delivery Date</b><span id="mDeliveryDate">—</span></p>
-        <p><b>Delivered Date</b><span id="mDeliveredDate">—</span></p>
-        <p><b>Condition</b><span id="mCondition"></span></p>
-        <p><b>Hours</b><span id="mHours"></span></p>
-        <p><b>Cycles</b><span id="mCycles"></span></p>
-        <p><b>Age</b><span><span id="mAge"></span> yrs</span></p>
-      </div>
-
-      <!-- RIGHT COLUMN -->
-      <div class="modal-box ql-box">
-
-        <!-- MAINTENANCE STATUS -->
-        <div class="ql-maint-status">
-          <div class="ql-label">Maintenance Status</div>
-          <div class="ql-status-text" id="mMaintStatus">—</div>
-        </div>
-
-        <!-- MAINTENANCE SCHEDULE -->
-        <div class="ql-maint-schedule">
-          <p><b>Last C Check</b><span id="mLastC"></span></p>
-          <p><b>Next C Check</b><span id="mNextC"></span></p>
-          <p><b>Last D Check</b><span id="mLastD"></span></p>
-          <p><b>Next D Check</b><span id="mNextD"></span></p>
-        </div>
-
-        <!-- ACTIVE SERVICE PANEL -->
-        
-        <div class="ql-service-box" id="maintenanceServiceBox" style="display:none;">
-          <div class="ql-service-title">ACTIVE MAINTENANCE</div>
-
-          <div class="ql-service-row">
-            <span class="ql-muted">Service</span>
-            <span id="mServiceType">—</span>
-          </div>
-
-          <div class="ql-service-row ql-focus">
-            <span class="ql-muted">Remaining Time</span>
-            <span id="mServiceRemaining">—</span>
-          </div>
-
-          <div class="ql-service-row">
-            <span class="ql-muted">Expected Release</span>
-            <span id="mServiceRelease">—</span>
-          </div>
-        </div>
-
-        <!-- ACTIONS -->
-        
-       <div class="ql-service-actions">
-
-  <button
-    id="btnCcheck"
-    class="ql-btn-service ql-btn-ccheck">
-    INITIATE C-CHECK
-  </button>
-
-  <button
-    id="btnDcheck"
-    class="ql-btn-service ql-btn-dcheck">
-    INITIATE D-CHECK
-  </button>
-
-  <button
-    id="btnLog"
-    class="ql-btn-service ql-btn-log">
-    VIEW MAINTENANCE LOG
-  </button>
-
-</div>
-
 <!-- ============================================================
-🟦 MA-10 — SERVICE CONFIRM CHIP (UI BASE)
-Ubicación: Dentro del aircraftModal, debajo de botones C/D
-============================================================ -->
+     ✈️ AIRCRAFT AUTHORITY PANEL — Technical & Operational Control
+     Airbus OCC + ACS visual language / Backend-read only
+     ============================================================ -->
 
-<div id="maintenanceConfirmChip" class="maintenance-confirm-chip" style="display:none;">
+<div class="modal-bg" id="aircraftModal">
+  <div class="modal-content acp-panel">
 
-  <div class="chip-title" id="chipServiceTitle">
-    C-CHECK SERVICE
-  </div>
+    <!-- HEADER -->
+    <div class="modal-header-row acp-header-row">
 
-  <div class="chip-cost" id="chipServiceCost">
-    Cost: $ 0 USD
-  </div>
+      <div class="modal-header-text">
+        <h3 id="acpTitle" class="modal-title">Aircraft Authority Panel</h3>
+        <p id="acpSubtitle" class="modal-subtitle">
+          Technical & Operational Control
+        </p>
 
-  <div class="chip-actions">
-    <button id="chipConfirmBtn" class="btn-confirm-service">
-      Confirm Service
-    </button>
+        <div class="acp-badge-row">
+          <span id="acpSourceBadge" class="acp-badge acp-badge-blue">SOURCE</span>
+          <span id="acpOwnershipBadge" class="acp-badge acp-badge-gold">OWNERSHIP</span>
+          <span id="acpStatusBadge" class="acp-badge acp-badge-green">STATUS</span>
+          <span id="acpOperationalBadge" class="acp-badge acp-badge-silver">OPS</span>
+        </div>
+      </div>
 
-    <button id="chipCancelBtn" class="btn-cancel-service">
-      Cancel
-    </button>
-  </div>
+      <img id="acpImage" src="" alt="Aircraft" class="modal-image acp-image" />
 
-</div>
+    </div>
 
+    <!-- BODY -->
+    <div class="modal-body acp-body">
+
+      <!-- AIRCRAFT IDENTITY -->
+      <div class="acp-section">
+        <div class="acp-section-title">Aircraft Identity</div>
+
+        <div class="acp-grid acp-grid-2">
+          <div class="acp-line">
+            <span>Registration</span>
+            <strong id="acpRegistration">—</strong>
+          </div>
+
+          <div class="acp-line">
+            <span>Aircraft</span>
+            <strong id="acpAircraftName">—</strong>
+          </div>
+
+          <div class="acp-line">
+            <span>Manufacturer</span>
+            <strong id="acpManufacturer">—</strong>
+          </div>
+
+          <div class="acp-line">
+            <span>Base</span>
+            <strong id="acpBase">—</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPERATIONAL STATUS -->
+      <div class="acp-section">
+        <div class="acp-section-title">Operational Status</div>
+
+        <div class="acp-status-board">
+          <div>
+            <span>Status</span>
+            <strong id="acpStatus">—</strong>
+          </div>
+
+          <div>
+            <span>Operational</span>
+            <strong id="acpOperational">—</strong>
+          </div>
+
+          <div>
+            <span>Schedule</span>
+            <strong id="acpScheduleStatus">—</strong>
+          </div>
+
+          <div>
+            <span>Maintenance</span>
+            <strong id="acpMaintenance">—</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONDITION & UTILIZATION -->
+      <div class="acp-section">
+        <div class="acp-section-title">Condition & Utilization</div>
+
+        <div class="acp-tech-grid">
+          <div class="acp-tech-card">
+            <span>Condition</span>
+            <strong id="acpCondition">—</strong>
+          </div>
+
+          <div class="acp-tech-card">
+            <span>Hours</span>
+            <strong id="acpHours">—</strong>
+          </div>
+
+          <div class="acp-tech-card">
+            <span>Cycles</span>
+            <strong id="acpCycles">—</strong>
+          </div>
+
+          <div class="acp-tech-card">
+            <span>Age</span>
+            <strong id="acpAge">—</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- LINE MAINTENANCE MIRROR -->
+      <div class="acp-section">
+        <div class="acp-section-title">Line Maintenance</div>
+
+        <div class="acp-grid acp-grid-2">
+          <div class="acp-line">
+            <span>A-Check</span>
+            <strong id="acpACheckWindow">—</strong>
+          </div>
+
+          <div class="acp-line">
+            <span>B-Check</span>
+            <strong id="acpBCheckWindow">—</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAPITAL -->
+      <div class="modal-summary-box acp-capital-box">
+        <p class="modal-summary">
+          Capital Available:
+          <strong id="acpCapital">—</strong>
+        </p>
       </div>
 
     </div>
+
+    <!-- ACTION CENTER -->
+    <div class="modal-footer acp-footer">
+
+      <button id="acpServiceCD" class="factory-slots-btn" type="button">
+        Service C & D
+      </button>
+
+      <button id="acpInsurance" class="factory-slots-btn" type="button">
+        Insurance
+      </button>
+
+      <button id="acpStorage" class="factory-slots-btn" type="button">
+        Storage
+      </button>
+
+      <button id="acpScrap" class="close-btn acp-danger-btn" type="button">
+        Scrap Aircraft
+      </button>
+
+      <button id="acpReturnLessor" class="factory-slots-btn" type="button">
+        Return to Lessor
+      </button>
+
+      <button class="close-btn" type="button" onclick="closeModal()">
+        Close
+      </button>
+
+    </div>
+
   </div>
 </div>
-
 
 <!-- === ACS AIRCRAFT REGISTRATION MODAL — DARK PANEL === -->
   
