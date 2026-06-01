@@ -732,7 +732,7 @@ function renderFleetOverview() {
 
         <td>
           <button class="btn-action" data-aircraft-id="${aircraft.id}">
-            Dossier
+            Manage
           </button>
           <div class="status-sub">${schedulable ? "SCHEDULE ELIGIBLE" : "OPS REVIEW"}</div>
         </td>
@@ -775,67 +775,140 @@ function renderFleetOverview() {
   }
 
   /* ============================================================
-     🟦 AIRCRAFT DOSSIER MODAL
-     ============================================================ */
+   🟦 AIRCRAFT AUTHORITY PANEL
+   ------------------------------------------------------------
+   Player-facing modal:
+   - Aircraft Authority Panel
+   - Technical & Operational Control
+   - Read-only backend authority payload
+   - Action buttons prepared for sub-modals
+   ============================================================ */
 
-  function openAircraftModal(aircraftId) {
-    const aircraft = ACS_MY_AIRCRAFT.fleet.find(
-      (item) => Number(item.id) === Number(aircraftId)
-    );
+function openAircraftModal(aircraftId) {
+  const aircraft = ACS_MY_AIRCRAFT.fleet.find(
+    (item) => Number(item.id) === Number(aircraftId)
+  );
 
-    if (!aircraft) return;
+  if (!aircraft) return;
 
-    ACS_MY_AIRCRAFT.selectedAircraft = aircraft;
+  ACS_MY_AIRCRAFT.selectedAircraft = aircraft;
 
-    const statusInfo = resolveFleetStatus(aircraft);
+  const statusInfo = resolveFleetStatus(aircraft);
+  const condition = Math.round(safeNumber(aircraft.condition_pct, 0));
+  const schedulable = isSchedulable(aircraft);
+  const ownership = getOwnershipDisplay(aircraft);
+  const source = getSourceDisplay(aircraft);
 
-    setText("modalTitle", `${safeText(aircraft.aircraft_name)} — Fleet Dossier`);
+  const aircraftName = safeText(
+    aircraft.catalog_aircraft_name ||
+    aircraft.aircraft_name
+  );
 
-    setText("mReg", getRegistrationDisplay(aircraft));
-    setText("mModel", safeText(aircraft.aircraft_name));
-    setText("mFamily", safeText(aircraft.manufacturer));
-    setText("mBase", safeText(aircraft.base_icao));
-    setText("mStatus", `${statusInfo.label} / ${safeText(aircraft.operational_status)}`);
+  const imageFile = safeText(aircraft.image_filename, "");
+  const imagePath = imageFile
+    ? `images/aircraft/${imageFile}`
+    : "images/aircraft/placeholder_aircraft.jpg";
 
-    setText("mDeliveryDate", formatDate(aircraft.delivery_date));
-    setText("mDeliveredDate", formatDate(aircraft.entry_into_service_date));
-    setText("mCondition", `${Math.round(safeNumber(aircraft.condition_pct, 0))}%`);
-    setText("mHours", formatNumber(aircraft.total_hours));
-    setText("mCycles", formatNumber(aircraft.total_cycles));
-    setText("mAge", formatAge(aircraft));
+  setText("acpTitle", "Aircraft Authority Panel");
+  setText(
+    "acpSubtitle",
+    `${aircraftName} · ${getRegistrationDisplay(aircraft)}`
+  );
 
-    setText("mMaintStatus", getMaintenanceDisplay(aircraft));
-    setText("mLastC", "—");
-    setText("mNextC", resolveNextCDisplay(aircraft));
-    setText("mLastD", "—");
-    setText("mNextD", resolveNextDDisplay(aircraft));
-
-    const maintStatusEl = $("mMaintStatus");
-    if (maintStatusEl) {
-      maintStatusEl.classList.remove(
-        "ql-status-airworthy",
-        "ql-status-pending",
-        "ql-status-ccheck",
-        "ql-status-dcheck",
-        "ql-status-overdue"
-      );
-
-      if (statusInfo.key === "ACTIVE") {
-        maintStatusEl.classList.add("ql-status-airworthy");
-      } else if (statusInfo.key === "PENDING_DELIVERY") {
-        maintStatusEl.classList.add("ql-status-pending");
-      } else if (statusInfo.key === "MAINTENANCE") {
-        maintStatusEl.classList.add("ql-status-overdue");
-      }
-    }
-
-    setMaintenanceButtonsReadOnly(aircraft);
-
-    const modal = $("aircraftModal");
-    if (modal) {
-      modal.style.display = "flex";
-    }
+  const img = $("acpImage");
+  if (img) {
+    img.src = imagePath;
+    img.alt = aircraftName;
   }
+
+  setText("acpSourceBadge", source);
+  setText("acpOwnershipBadge", ownership);
+  setText("acpStatusBadge", statusInfo.label);
+  setText("acpOperationalBadge", normalizeDisplay(aircraft.operational_status));
+
+  setText("acpRegistration", getRegistrationDisplay(aircraft));
+  setText("acpAircraftName", aircraftName);
+  setText("acpManufacturer", safeText(aircraft.catalog_manufacturer || aircraft.manufacturer));
+  setText("acpBase", safeText(aircraft.base_icao));
+
+  setText("acpStatus", statusInfo.label);
+  setText("acpOperational", normalizeDisplay(aircraft.operational_status));
+  setText("acpScheduleStatus", schedulable ? "ELIGIBLE" : "BLOCKED");
+  setText("acpMaintenance", getMaintenanceDisplay(aircraft));
+
+  setText("acpCondition", `${condition}%`);
+  setText("acpHours", formatNumber(aircraft.total_hours));
+  setText("acpCycles", formatNumber(aircraft.total_cycles));
+  setText("acpAge", `${formatAge(aircraft)} yrs`);
+
+  /*
+    A/B line maintenance is controlled by Schedule Table.
+    This panel only mirrors windows when backend/schedule data is available.
+    No "not scheduled" warning is shown here.
+  */
+  setText("acpACheckWindow", safeText(aircraft.a_check_window, "—"));
+  setText("acpBCheckWindow", safeText(aircraft.b_check_window, "—"));
+
+  /*
+    Capital display will be connected when finance snapshot is available
+    through backend or approved finance module. No localStorage authority.
+  */
+  setText("acpCapital", "—");
+
+  bindAircraftAuthorityActions(aircraft);
+
+  const modal = $("aircraftModal");
+  if (modal) {
+    modal.style.display = "flex";
+  }
+}
+
+function bindAircraftAuthorityActions(aircraft) {
+  const btnServiceCD = $("acpServiceCD");
+  const btnInsurance = $("acpInsurance");
+  const btnStorage = $("acpStorage");
+  const btnScrap = $("acpScrap");
+  const btnReturn = $("acpReturnLessor");
+
+  if (btnServiceCD) {
+    btnServiceCD.onclick = () => {
+      console.log("🟦 Service C & D Control pending:", aircraft);
+      alert("Service C & D Control will be connected in the next block.");
+    };
+  }
+
+  if (btnInsurance) {
+    btnInsurance.onclick = () => {
+      console.log("🟦 Insurance Control pending:", aircraft);
+      alert("Insurance Control will be connected in a later block.");
+    };
+  }
+
+  if (btnStorage) {
+    btnStorage.onclick = () => {
+      console.log("🟦 Storage Control pending:", aircraft);
+      alert("Storage Control will be connected in a later block.");
+    };
+  }
+
+  if (btnScrap) {
+    btnScrap.onclick = () => {
+      console.log("🟦 Scrap Aircraft Evaluation pending:", aircraft);
+      alert("Scrap Aircraft Evaluation will be connected in a later block.");
+    };
+  }
+
+  if (btnReturn) {
+    const ownership = normalizeStatus(aircraft.ownership_type);
+
+    btnReturn.style.display = ownership === "LEASED" ? "inline-block" : "none";
+
+    btnReturn.onclick = () => {
+      console.log("🟦 Return to Lessor pending:", aircraft);
+      alert("Return to Lessor will be connected in a later block.");
+    };
+  }
+}   
 
   function formatAge(aircraft) {
     const age = resolveAircraftAge(aircraft);
