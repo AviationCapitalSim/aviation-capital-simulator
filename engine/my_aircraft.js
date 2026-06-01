@@ -810,22 +810,13 @@ function openAircraftModal(aircraftId) {
     : "images/aircraft/placeholder_aircraft.jpg";
 
   setText("acpTitle", "Aircraft Authority Panel");
-  setText(
-    "acpSubtitle",
-    `${aircraftName} · ${getRegistrationDisplay(aircraft)}`
-  );
-
+ 
   const img = $("acpImage");
   if (img) {
     img.src = imagePath;
     img.alt = aircraftName;
   }
-
-  setText("acpSourceBadge", source);
-  setText("acpOwnershipBadge", ownership);
-  setText("acpStatusBadge", statusInfo.label);
-  setText("acpOperationalBadge", normalizeDisplay(aircraft.operational_status));
-
+   
   setText("acpRegistration", getRegistrationDisplay(aircraft));
   setText("acpAircraftName", aircraftName);
   setText("acpManufacturer", safeText(aircraft.catalog_manufacturer || aircraft.manufacturer));
