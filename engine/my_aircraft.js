@@ -839,7 +839,6 @@ function openAircraftModal(aircraftId) {
   setText("acpCondition", `${condition}%`);
   setText("acpHours", formatNumber(aircraft.total_hours));
   setText("acpCycles", formatNumber(aircraft.total_cycles));
-  setText("acpAge", `${formatAge(aircraft)} yrs`);
 
   /*
     A/B line maintenance is controlled by Schedule Table.
@@ -853,8 +852,7 @@ function openAircraftModal(aircraftId) {
     Capital display will be connected when finance snapshot is available
     through backend or approved finance module. No localStorage authority.
   */
-  setText("acpCapital", "—");
-
+  
   bindAircraftAuthorityActions(aircraft);
 
   const modal = $("aircraftModal");
