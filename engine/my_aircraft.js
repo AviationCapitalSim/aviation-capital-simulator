@@ -990,10 +990,18 @@ function applyAircraftImage(img, aircraft, aircraftName) {
       aircraft.aircraft_name
     );
 
-  setText("acpTitle", "Aircraft Authority Panel");
+    const imageFile = safeText(aircraft.image_filename, "");
+    const imagePath = imageFile
+      ? `images/aircraft/${imageFile}`
+      : "images/aircraft/placeholder_aircraft.jpg";
 
-  const img = $("acpImage");
-  applyAircraftImage(img, aircraft, aircraftName);
+    setText("acpTitle", "Aircraft Authority Panel");
+
+    const img = $("acpImage");
+    if (img) {
+      img.src = imagePath;
+      img.alt = aircraftName;
+    }
 
     setText("acpRegistration", getRegistrationDisplay(aircraft));
     setText("acpAircraftName", aircraftName);
@@ -1461,4 +1469,3 @@ window.saveRegistration = saveRegistration;
 window.ACS_MY_AIRCRAFT = ACS_MY_AIRCRAFT;
 
 })();
-
