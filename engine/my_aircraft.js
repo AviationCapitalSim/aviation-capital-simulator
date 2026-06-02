@@ -1029,18 +1029,20 @@ function normalizeMyAircraftImageObject(aircraft) {
       aircraft.aircraft_name
     );
 
-    const imageFile = safeText(aircraft.image_filename, "");
-    const imagePath = imageFile
-      ? `images/aircraft/${imageFile}`
-      : "images/aircraft/placeholder_aircraft.jpg";
-
     setText("acpTitle", "Aircraft Authority Panel");
 
     const img = $("acpImage");
     if (img) {
-      img.src = imagePath;
-      img.alt = aircraftName;
-    }
+    const imageAircraft = normalizeMyAircraftImageObject(aircraft);
+
+    img.dataset.fallback = "0";
+    img.onerror = function() {
+    ACS_handleImageFallback(this);
+   };
+
+   img.src = getAircraftImage(imageAircraft);
+   img.alt = aircraftName;
+   }
 
     setText("acpRegistration", getRegistrationDisplay(aircraft));
     setText("acpAircraftName", aircraftName);
