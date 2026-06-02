@@ -1307,7 +1307,7 @@ function closeServiceCDControlModal() {
   }
 }
 
-function startMaintenanceCheck(checkType) {
+async function startMaintenanceCheck(checkType) {
   const aircraft = ACS_MY_AIRCRAFT.selectedAircraft;
 
   if (!aircraft?.id) {
@@ -1315,21 +1315,97 @@ function startMaintenanceCheck(checkType) {
     return;
   }
 
-  /*
-    Next backend block:
-    POST /v1/aircraft/fleet/:id/maintenance/start
+  const normalizedCheckType = normalizeStatus(checkType);
 
-    This function intentionally does not mutate frontend state.
-    It waits for backend authority.
-  */
+  if (!["C_CHECK", "D_CHECK"].includes(normalizedCheckType)) {
+    alert("Invalid maintenance check type.");
+    return;
+  }
 
-  console.log("🟦 ACS MAINTENANCE START — BACKEND ENDPOINT PENDING:", {
-    aircraft_id: aircraft.id,
-    registration: aircraft.registration,
-    check_type: checkType
-  });
+  const confirmMessage =
+    `Start ${normalizedCheckType.replace("_", " ")} for ${getRegistrationDisplay(aircraft)}?\n\n` +
+    "ACS will charge the maintenance cost from Company Finance and move the aircraft to IN MAINTENANCE.";
 
-  alert(`${checkType.replace("_", " ")} start endpoint is the next backend block.`);
+  if (!confirm(confirmMessage)) {
+    return;
+  }
+
+  const btnC = $("scdStartC");
+  const btnD = $("scdStartD");
+
+  if (btnC) btnC.disabled = true;
+  if (btnD) btnD.disabled = true;
+
+  try {
+    const response = await fetch(
+      `${ACS_MY_AIRCRAFT_API_BASE}/v1/aircraft/fleet/${aircraft.id}/maintenance/start`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          check_type: normalizedCheckType
+        })
+      }
+    );
+
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok || !result?.ok) {
+      const errorCode =
+        result?.error ||
+        result?.details ||
+        `MAINTENANCE_START_FAILED_${response.status}`;
+
+      if (errorCode === "INSUFFICIENT_CAPITAL_FOR_MAINTENANCE") {
+        alert(
+          "❌ Insufficient capital for maintenance.\n\n" +
+          `Available capital: ${formatMoney(Number(result.capital || 0), "USD")}\n` +
+          `Required: ${formatMoney(Number(result.required || 0), "USD")}`
+        );
+        return;
+      }
+
+      alert(`❌ Maintenance start failed.\n\n${errorCode}`);
+      return;
+    }
+
+    console.log("🟩 ACS MAINTENANCE EVENT STARTED:", result);
+
+    await loadFleetFromBackend();
+
+    ACS_MY_AIRCRAFT.filteredFleet = [...ACS_MY_AIRCRAFT.fleet];
+
+    populateFilters();
+    renderFleetOverview();
+    renderFleetTable();
+
+    closeServiceCDControlModal();
+    closeModal();
+
+    alert(
+      `✅ ${normalizedCheckType.replace("_", " ")} started successfully.\n\n` +
+      `Aircraft: ${result.aircraft?.registration || getRegistrationDisplay(aircraft)}\n` +
+      `Status: IN MAINTENANCE\n` +
+      `Duration: ${result.event?.duration_days || "—"} days\n` +
+      `Charged: ${formatMoney(Number(result.finance?.charged_amount || 0), "USD")}`
+    );
+
+  } catch (error) {
+    console.error("🟥 ACS MAINTENANCE START ERROR:", error);
+
+    alert(
+      "❌ Maintenance start failed.\n\n" +
+      "Please check backend connection and try again."
+    );
+
+  } finally {
+    if (btnC) btnC.disabled = false;
+    if (btnD) btnD.disabled = false;
+  }
 }
    
   function formatAge(aircraft) {
