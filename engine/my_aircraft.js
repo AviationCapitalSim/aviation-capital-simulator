@@ -420,6 +420,53 @@ function normalizeMyAircraftImageObject(aircraft) {
     model
   };
 }
+
+/* ============================================================
+   🟦 ACS MAINTENANCE RESOLVER SYNC — MY AIRCRAFT v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Ask backend to close completed maintenance events before
+     loading fleet table.
+   - Backend remains authority.
+   - No frontend date calculation.
+   - No localStorage.
+   ============================================================ */
+
+async function resolveCompletedMaintenanceEvents() {
+  try {
+    const response = await fetch(
+      `${ACS_MY_AIRCRAFT_API_BASE}/v1/aircraft/maintenance/resolver`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Accept": "application/json"
+        }
+      }
+    );
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok || !payload?.ok) {
+      console.warn("🟨 ACS MAINTENANCE RESOLVER WARNING:", {
+        status: response.status,
+        payload
+      });
+      return null;
+    }
+
+    console.log("🟦 ACS MAINTENANCE RESOLVER SYNC:", {
+      completed_count: payload.completed_count,
+      completed_events: payload.completed_events
+    });
+
+    return payload;
+
+  } catch (error) {
+    console.warn("🟨 ACS MAINTENANCE RESOLVER CONNECTION WARNING:", error);
+    return null;
+  }
+}
    
   /* ============================================================
      🟦 DATA LOADING
