@@ -330,6 +330,96 @@
   }
 
   /* ============================================================
+   GLOBAL AIRCRAFT IMAGE RESOLVER — SYNC WITH USED / BUY NEW
+   ============================================================ */
+
+function getAircraftImage(ac) {
+
+  if (!ac || !ac.model || !ac.manufacturer) {
+    return "img/placeholder_aircraft.png";
+  }
+
+  let manuFolder = ac.manufacturer.trim().replace(/\s+/g, " ");
+
+  if (ac.manufacturer.toLowerCase() === "de havilland") {
+    manuFolder = "de_havilland";
+  }
+
+  const rawModel = ac.model.toLowerCase().trim();
+  const base = rawModel.replace(/[^a-z0-9]+/g, "_");
+
+  const variants = new Set();
+  variants.add(base);
+  variants.add(base.replace(/^l_([0-9]+)/, "l$1"));
+  variants.add(base.replace(/_/g, ""));
+  variants.add(rawModel.replace(/[^a-z0-9]+/g, ""));
+
+  const candidates = [];
+
+  for (const v of variants) {
+    candidates.push(`img/${manuFolder}/${v}.png`);
+    candidates.push(`img/${manuFolder}/${v}.jpg`);
+  }
+
+  const manuSlug = ac.manufacturer.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+
+  candidates.push(`img/${base}.png`);
+  candidates.push(`img/${base}.jpg`);
+  candidates.push(`img/${manuSlug}_${base}.png`);
+  candidates.push(`img/${manuSlug}_${base}.jpg`);
+
+  return candidates[0] || "img/placeholder_aircraft.png";
+}
+
+/* ============================================================
+   🖼️ ACS IMAGE FALLBACK SYSTEM — SYNC WITH USED / BUY NEW
+   ============================================================ */
+
+function ACS_handleImageFallback(img) {
+
+  if (img.dataset.fallback === "1") {
+    img.onerror = null;
+    img.src = "img/placeholder_aircraft.png";
+    return;
+  }
+
+  img.dataset.fallback = "1";
+
+  if (img.src.endsWith(".png")) {
+    img.src = img.src.replace(".png", ".jpg");
+  } else if (img.src.endsWith(".jpg")) {
+    img.src = img.src.replace(".jpg", ".png");
+  } else {
+    img.src = "img/placeholder_aircraft.png";
+  }
+}
+
+/* ============================================================
+   MY AIRCRAFT → IMAGE MODEL NORMALIZER
+   ------------------------------------------------------------
+   My Aircraft receives aircraft_name but not always model.
+   This prepares the same object shape used by Used Market.
+   ============================================================ */
+
+function normalizeMyAircraftImageObject(aircraft) {
+  const manufacturer = String(aircraft.manufacturer || "").trim();
+
+  const model =
+    aircraft.model ||
+    String(aircraft.aircraft_name || "")
+      .replace(new RegExp("^" + manufacturer + "\\s+", "i"), "")
+      .trim() ||
+    aircraft.model_key ||
+    "Unknown Model";
+
+  return {
+    ...aircraft,
+    manufacturer,
+    model
+  };
+}
+   
+  /* ============================================================
    🟦 AIRCRAFT IMAGE RESOLVER — ACS CATALOG AUTHORITY
    ------------------------------------------------------------
    Purpose:
