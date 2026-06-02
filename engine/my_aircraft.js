@@ -891,6 +891,17 @@ function normalizeMyAircraftImageObject(aircraft) {
     }
   }
 
+  function isAircraftInMaintenanceEvent(aircraft) {
+  const status = normalizeStatus(aircraft.status);
+  const operational = normalizeStatus(aircraft.operational_status);
+
+  return (
+    status === "MAINTENANCE" ||
+    status === "IN_MAINTENANCE" ||
+    operational === "IN_MAINTENANCE"
+  );
+}
+   
   /* ============================================================
    🟦 TABLE PRIMARY STATUS — CLEAN OCC DISPLAY
    ------------------------------------------------------------
@@ -902,95 +913,115 @@ function normalizeMyAircraftImageObject(aircraft) {
    ============================================================ */
 
   function resolvePrimaryTableStatus(aircraft) {
-    const status = normalizeStatus(aircraft.status);
-    const operational = normalizeStatus(aircraft.operational_status);
-    const maintenanceControl = normalizeStatus(aircraft.maintenance_control_status);
+  const status = normalizeStatus(aircraft.status);
+  const operational = normalizeStatus(aircraft.operational_status);
+  const maintenanceControl = normalizeStatus(aircraft.maintenance_control_status);
 
-    if (maintenanceControl === "MAINTENANCE_REQUIRED") {
-      return "MAINTENANCE REQUIRED";
-    }
-
-    if (
-      status === "MAINTENANCE" ||
-      status === "IN_MAINTENANCE" ||
-      operational === "IN_MAINTENANCE"
-    ) {
-      return "MAINTENANCE";
-    }
-
-    if (status === "ACTIVE") {
-      return "ACTIVE";
-    }
-
-    if (status === "PENDING_DELIVERY") {
-      return "PENDING DELIVERY";
-    }
-
-    if (status === "STORED") {
-      return "STORED";
-    }
-
-    if (status === "SCRAPPED") {
-      return "SCRAPPED";
-    }
-
-    if (status === "RETURNED_TO_LESSOR") {
-      return "RETURNED";
-    }
-
-    return normalizeDisplay(status || operational || "REVIEW");
+  /*
+    ACS OCC Rule:
+    Real maintenance event has priority over technical warning.
+    If aircraft is physically IN_MAINTENANCE, table must show MAINTENANCE,
+    not MAINTENANCE REQUIRED.
+  */
+  if (isAircraftInMaintenanceEvent(aircraft)) {
+    return "MAINTENANCE";
   }
 
+  if (maintenanceControl === "MAINTENANCE_REQUIRED") {
+    return "MAINTENANCE REQUIRED";
+  }
+
+  if (status === "ACTIVE") {
+    return "ACTIVE";
+  }
+
+  if (status === "PENDING_DELIVERY") {
+    return "PENDING DELIVERY";
+  }
+
+  if (status === "STORED") {
+    return "STORED";
+  }
+
+  if (status === "SCRAPPED") {
+    return "SCRAPPED";
+  }
+
+  if (status === "RETURNED_TO_LESSOR") {
+    return "RETURNED";
+  }
+
+  return normalizeDisplay(status || operational || "REVIEW");
+}
+   
   function resolveNextCDisplay(aircraft) {
-    const status = normalizeStatus(aircraft.c_check_status);
-
-    if (status === "OVERDUE") {
-      return "OVERDUE";
-    }
-
-    const value =
-      aircraft.next_c_check_due_date ||
-      aircraft.next_c_due_date ||
-      aircraft.c_check_due_date ||
-      null;
-
-    if (!value) return "—";
-
-    if (
-      aircraft.current_sim_time &&
-      isDatePastAgainstCurrentSimTime(value, aircraft.current_sim_time)
-    ) {
-      return "OVERDUE";
-    }
-
-    return formatDate(value);
+  /*
+    ACS OCC Rule:
+    During a real maintenance event, Next C is suspended visually.
+    New date appears only after maintenance resolver completes the event.
+  */
+  if (isAircraftInMaintenanceEvent(aircraft)) {
+    return "—";
   }
+
+  const status = normalizeStatus(aircraft.c_check_status);
+
+  if (status === "OVERDUE") {
+    return "OVERDUE";
+  }
+
+  const value =
+    aircraft.next_c_check_due_date ||
+    aircraft.next_c_due_date ||
+    aircraft.c_check_due_date ||
+    null;
+
+  if (!value) return "—";
+
+  if (
+    aircraft.current_sim_time &&
+    isDatePastAgainstCurrentSimTime(value, aircraft.current_sim_time)
+  ) {
+    return "OVERDUE";
+  }
+
+  return formatDate(value);
+}
 
   function resolveNextDDisplay(aircraft) {
-    const status = normalizeStatus(aircraft.d_check_status);
-
-    if (status === "OVERDUE") {
-      return "OVERDUE";
-    }
-
-    const value =
-      aircraft.next_d_check_due_date ||
-      aircraft.next_d_due_date ||
-      aircraft.d_check_due_date ||
-      null;
-
-    if (!value) return "—";
-
-    if (
-      aircraft.current_sim_time &&
-      isDatePastAgainstCurrentSimTime(value, aircraft.current_sim_time)
-    ) {
-      return "OVERDUE";
-    }
-
-    return formatDate(value);
+  /*
+    ACS OCC Rule:
+    During a real maintenance event, Next D is suspended visually.
+    New date appears only after maintenance resolver completes the event.
+  */
+  if (isAircraftInMaintenanceEvent(aircraft)) {
+    return "—";
   }
 
+  const status = normalizeStatus(aircraft.d_check_status);
+
+  if (status === "OVERDUE") {
+    return "OVERDUE";
+  }
+
+  const value =
+    aircraft.next_d_check_due_date ||
+    aircraft.next_d_due_date ||
+    aircraft.d_check_due_date ||
+    null;
+
+  if (!value) return "—";
+
+  if (
+    aircraft.current_sim_time &&
+    isDatePastAgainstCurrentSimTime(value, aircraft.current_sim_time)
+  ) {
+    return "OVERDUE";
+  }
+
+  return formatDate(value);
+}
+   
   function resolveAircraftAge(aircraft) {
     const yearBuilt = Number(aircraft.year_built);
     if (!Number.isInteger(yearBuilt) || yearBuilt <= 0) return NaN;
