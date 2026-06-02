@@ -1199,6 +1199,8 @@ function resolveServiceStatusLabel(statusValue) {
   const status = normalizeStatus(statusValue);
 
   if (status === "OVERDUE") return "OVERDUE";
+  if (status === "MAINTENANCE") return "IN MAINTENANCE";
+  if (status === "IN_MAINTENANCE") return "IN MAINTENANCE";
   if (status === "OPEN") return "OPEN";
   if (status === "NOT_ESTABLISHED") return "NOT REQUIRED";
   if (status === "IN_PROGRESS") return "IN PROGRESS";
@@ -1221,13 +1223,15 @@ function setServiceStatusElement(id, statusValue) {
     "scd-status-required"
   );
 
-  if (status === "OPEN") {
-    el.classList.add("scd-status-open");
-  } else if (status === "OVERDUE") {
-    el.classList.add("scd-status-overdue");
-  } else {
-    el.classList.add("scd-status-required");
-  }
+ if (status === "OPEN") {
+  el.classList.add("scd-status-open");
+} else if (status === "OVERDUE") {
+  el.classList.add("scd-status-overdue");
+} else if (status === "MAINTENANCE" || status === "IN_MAINTENANCE") {
+  el.classList.add("scd-status-required");
+} else {
+  el.classList.add("scd-status-required");
+}
 }
 
 function setServiceButtonState(buttonId, servicePayload, checkType) {
@@ -1278,18 +1282,26 @@ async function openServiceCDControlModal(aircraft) {
   `Aircraft ${quote.aircraft?.registration || getRegistrationDisplay(aircraft)} — ${safeText(quote.aircraft?.aircraft_name || aircraft.aircraft_name)}`
    );
 
-    setServiceStatusElement("scdCStatus", quote.c_check?.status);
-    setServiceStatusElement("scdDStatus", quote.d_check?.status);
+if (isAircraftInMaintenanceEvent(aircraft)) {
+  setServiceStatusElement("scdCStatus", "IN_MAINTENANCE");
+  setServiceStatusElement("scdDStatus", "IN_MAINTENANCE");
 
-    setText(
-      "scdCDuration",
-      `${Number(quote.c_check?.duration_days || 0)} days`
-    );
+  setText("scdCDuration", "Suspended");
+  setText("scdDDuration", "In progress");
+} else {
+  setServiceStatusElement("scdCStatus", quote.c_check?.status);
+  setServiceStatusElement("scdDStatus", quote.d_check?.status);
 
-    setText(
-      "scdDDuration",
-      `${Number(quote.d_check?.duration_days || 0)} days`
-    );
+  setText(
+    "scdCDuration",
+    `${Number(quote.c_check?.duration_days || 0)} days`
+  );
+
+  setText(
+    "scdDDuration",
+    `${Number(quote.d_check?.duration_days || 0)} days`
+  );
+}
 
     setText(
       "scdCCost",
