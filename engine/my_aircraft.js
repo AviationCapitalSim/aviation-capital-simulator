@@ -988,18 +988,18 @@
   }
 
   function bindAircraftAuthorityActions(aircraft) {
+     
     const btnServiceCD = $("acpServiceCD");
     const btnInsurance = $("acpInsurance");
     const btnStorage = $("acpStorage");
     const btnScrap = $("acpScrap");
 
     if (btnServiceCD) {
-      btnServiceCD.onclick = () => {
-        console.log("🟦 Service C & D Control pending:", aircraft);
-        alert("Service C & D Control will be connected in the next block.");
-      };
-    }
-
+  btnServiceCD.onclick = () => {
+    openServiceCDControlModal(aircraft);
+  };
+}
+     
     if (btnInsurance) {
       btnInsurance.onclick = () => {
         console.log("🟦 Insurance Control pending:", aircraft);
@@ -1022,6 +1022,222 @@
     }
   }
 
+  /* ============================================================
+   ✈️ SERVICE C & D CONTROL — BACKEND QUOTE AUTHORITY v1.0
+   ------------------------------------------------------------
+   Purpose:
+   - Opens Service C & D Control modal
+   - Loads quote from backend authority
+   - No frontend cost/duration calculation
+   - No localStorage
+   - No temporary values
+   ============================================================ */
+
+async function fetchMaintenanceQuote(aircraftId) {
+  const response = await fetch(
+    `${ACS_MY_AIRCRAFT_API_BASE}/v1/aircraft/fleet/${aircraftId}/maintenance/quote`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Accept": "application/json"
+      }
+    }
+  );
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok || !payload?.ok) {
+    throw new Error(
+      payload?.details ||
+      payload?.error ||
+      `MAINTENANCE_QUOTE_FAILED_${response.status}`
+    );
+  }
+
+  return payload;
+}
+
+function formatMaintenanceCost(value, currency = "USD") {
+  const n = Number(value);
+
+  if (!Number.isFinite(n)) {
+    return "QUOTE UNAVAILABLE";
+  }
+
+  return `${currency} ${n.toLocaleString("en-US", {
+    maximumFractionDigits: 0
+  })}`;
+}
+
+function resolveServiceStatusLabel(statusValue) {
+  const status = normalizeStatus(statusValue);
+
+  if (status === "OVERDUE") return "OVERDUE";
+  if (status === "OPEN") return "OPEN";
+  if (status === "NOT_ESTABLISHED") return "NOT REQUIRED";
+  if (status === "IN_PROGRESS") return "IN PROGRESS";
+  if (status === "COMPLETED") return "COMPLETED";
+
+  return normalizeDisplay(status || "REVIEW");
+}
+
+function setServiceStatusElement(id, statusValue) {
+  const el = $(id);
+  if (!el) return;
+
+  const status = normalizeStatus(statusValue);
+
+  el.textContent = resolveServiceStatusLabel(status);
+
+  el.classList.remove(
+    "scd-status-open",
+    "scd-status-overdue",
+    "scd-status-required"
+  );
+
+  if (status === "OPEN") {
+    el.classList.add("scd-status-open");
+  } else if (status === "OVERDUE") {
+    el.classList.add("scd-status-overdue");
+  } else {
+    el.classList.add("scd-status-required");
+  }
+}
+
+function setServiceButtonState(buttonId, servicePayload, checkType) {
+  const btn = $(buttonId);
+  if (!btn) return;
+
+  const status = normalizeStatus(servicePayload?.status);
+
+  btn.disabled = (
+    status === "NOT_ESTABLISHED" ||
+    status === "IN_PROGRESS" ||
+    status === "COMPLETED"
+  );
+
+  btn.onclick = () => {
+    startMaintenanceCheck(checkType);
+  };
+}
+
+async function openServiceCDControlModal(aircraft) {
+  if (!aircraft?.id) return;
+
+  ACS_MY_AIRCRAFT.selectedAircraft = aircraft;
+
+  const modal = $("serviceCDModal");
+  if (modal) {
+    modal.style.display = "flex";
+  }
+
+  setText(
+    "scdAircraftLabel",
+    `Aircraft ${getRegistrationDisplay(aircraft)}`
+  );
+
+  setServiceStatusElement("scdCStatus", "LOADING");
+  setServiceStatusElement("scdDStatus", "LOADING");
+
+  setText("scdCDuration", "Loading...");
+  setText("scdDDuration", "Loading...");
+  setText("scdCCost", "Loading...");
+  setText("scdDCost", "Loading...");
+
+  try {
+    const quote = await fetchMaintenanceQuote(aircraft.id);
+
+    setText(
+      "scdAircraftLabel",
+      `Aircraft ${quote.aircraft?.registration || getRegistrationDisplay(aircraft)}`
+    );
+
+    setServiceStatusElement("scdCStatus", quote.c_check?.status);
+    setServiceStatusElement("scdDStatus", quote.d_check?.status);
+
+    setText(
+      "scdCDuration",
+      `${Number(quote.c_check?.duration_days || 0)} days`
+    );
+
+    setText(
+      "scdDDuration",
+      `${Number(quote.d_check?.duration_days || 0)} days`
+    );
+
+    setText(
+      "scdCCost",
+      formatMaintenanceCost(
+        quote.c_check?.estimated_cost,
+        quote.c_check?.currency || quote.aircraft?.currency || "USD"
+      )
+    );
+
+    setText(
+      "scdDCost",
+      formatMaintenanceCost(
+        quote.d_check?.estimated_cost,
+        quote.d_check?.currency || quote.aircraft?.currency || "USD"
+      )
+    );
+
+    setServiceButtonState("scdStartC", quote.c_check, "C_CHECK");
+    setServiceButtonState("scdStartD", quote.d_check, "D_CHECK");
+
+    console.log("🟦 ACS SERVICE C & D QUOTE LOADED:", quote);
+
+  } catch (err) {
+    console.error("🟥 ACS SERVICE C & D QUOTE ERROR:", err);
+
+    setServiceStatusElement("scdCStatus", "REVIEW");
+    setServiceStatusElement("scdDStatus", "REVIEW");
+
+    setText("scdCDuration", "QUOTE ERROR");
+    setText("scdDDuration", "QUOTE ERROR");
+    setText("scdCCost", "QUOTE ERROR");
+    setText("scdDCost", "QUOTE ERROR");
+
+    const btnC = $("scdStartC");
+    const btnD = $("scdStartD");
+
+    if (btnC) btnC.disabled = true;
+    if (btnD) btnD.disabled = true;
+  }
+}
+
+function closeServiceCDControlModal() {
+  const modal = $("serviceCDModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+function startMaintenanceCheck(checkType) {
+  const aircraft = ACS_MY_AIRCRAFT.selectedAircraft;
+
+  if (!aircraft?.id) {
+    alert("No aircraft selected.");
+    return;
+  }
+
+  /*
+    Next backend block:
+    POST /v1/aircraft/fleet/:id/maintenance/start
+
+    This function intentionally does not mutate frontend state.
+    It waits for backend authority.
+  */
+
+  console.log("🟦 ACS MAINTENANCE START — BACKEND ENDPOINT PENDING:", {
+    aircraft_id: aircraft.id,
+    registration: aircraft.registration,
+    check_type: checkType
+  });
+
+  alert(`${checkType.replace("_", " ")} start endpoint is the next backend block.`);
+}
+   
   function formatAge(aircraft) {
     const age = resolveAircraftAge(aircraft);
     return Number.isFinite(age) ? String(age) : "—";
@@ -1191,12 +1407,13 @@
      🟦 GLOBAL EXPORTS FOR EXISTING INLINE HTML HANDLERS
      ============================================================ */
 
-  window.closeModal = closeModal;
-  window.closeMaintenanceLog = closeMaintenanceLog;
-  window.closeAssetPanel = closeAssetPanel;
-  window.closeRegModal = closeRegModal;
-  window.saveRegistration = saveRegistration;
-  window.ACS_MY_AIRCRAFT = ACS_MY_AIRCRAFT;
+window.closeModal = closeModal;
+window.closeMaintenanceLog = closeMaintenanceLog;
+window.closeAssetPanel = closeAssetPanel;
+window.closeRegModal = closeRegModal;
+window.closeServiceCDControlModal = closeServiceCDControlModal;
+window.saveRegistration = saveRegistration;
+window.ACS_MY_AIRCRAFT = ACS_MY_AIRCRAFT;
 
 })();
 
