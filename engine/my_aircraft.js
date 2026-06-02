@@ -1133,8 +1133,8 @@ async function openServiceCDControlModal(aircraft) {
   }
 
   setText(
-    "scdAircraftLabel",
-    `Aircraft ${getRegistrationDisplay(aircraft)}`
+  "scdAircraftLabel",
+  `Aircraft ${getRegistrationDisplay(aircraft)} — ${safeText(aircraft.aircraft_name)}`
   );
 
   setServiceStatusElement("scdCStatus", "LOADING");
@@ -1149,9 +1149,9 @@ async function openServiceCDControlModal(aircraft) {
     const quote = await fetchMaintenanceQuote(aircraft.id);
 
     setText(
-      "scdAircraftLabel",
-      `Aircraft ${quote.aircraft?.registration || getRegistrationDisplay(aircraft)}`
-    );
+  "scdAircraftLabel",
+  `Aircraft ${quote.aircraft?.registration || getRegistrationDisplay(aircraft)} — ${safeText(quote.aircraft?.aircraft_name || aircraft.aircraft_name)}`
+   );
 
     setServiceStatusElement("scdCStatus", quote.c_check?.status);
     setServiceStatusElement("scdDStatus", quote.d_check?.status);
