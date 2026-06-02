@@ -1607,8 +1607,10 @@ async function startMaintenanceCheck(checkType) {
     try {
       renderLoadingState();
 
-      await loadFleetFromBackend();
+      await resolveCompletedMaintenanceEvents();
 
+      await loadFleetFromBackend();
+       
       /* ============================================================
          ACS-RA-UI3 — AUTO REGISTRATION BEFORE RENDER
          ------------------------------------------------------------
