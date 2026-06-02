@@ -330,6 +330,59 @@
   }
 
   /* ============================================================
+   🟦 AIRCRAFT IMAGE RESOLVER — ACS CATALOG AUTHORITY
+   ------------------------------------------------------------
+   Purpose:
+   - My Aircraft uses the same image authority as Buy New.
+   - Primary source: image_filename from aircraft_catalog/backend.
+   - Accepts image_filename / image_file_name / catalog_image_filename.
+   - No fake aircraft image.
+   - If missing or broken, use ACS placeholder only.
+   ============================================================ */
+
+function resolveAircraftImagePath(aircraft) {
+  const imageFile = String(
+    aircraft.image_filename ||
+    aircraft.image_file_name ||
+    aircraft.catalog_image_filename ||
+    aircraft.image_url ||
+    ""
+  ).trim();
+
+  if (!imageFile) {
+    return "images/aircraft/placeholder_aircraft.jpg";
+  }
+
+  if (
+    imageFile.startsWith("http://") ||
+    imageFile.startsWith("https://") ||
+    imageFile.startsWith("/")
+  ) {
+    return imageFile;
+  }
+
+  if (imageFile.includes("/")) {
+    return imageFile;
+  }
+
+  return `images/aircraft/${imageFile}`;
+}
+
+function applyAircraftImage(img, aircraft, aircraftName) {
+  if (!img) return;
+
+  const imagePath = resolveAircraftImagePath(aircraft);
+
+  img.alt = aircraftName;
+  img.src = imagePath;
+
+  img.onerror = () => {
+    img.onerror = null;
+    img.src = "images/aircraft/placeholder_aircraft.jpg";
+  };
+}
+   
+  /* ============================================================
      🟦 DATA LOADING
      ============================================================ */
 
