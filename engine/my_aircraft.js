@@ -862,11 +862,11 @@ function normalizeMyAircraftImageObject(aircraft) {
           <strong>${condition}%</strong>
         </td>
 
-        <td class="${normalizeStatus(aircraft.c_check_status) === "OVERDUE" ? "maint-warning" : ""}">
+        <td class="${!isAircraftInMaintenanceEvent(aircraft) && normalizeStatus(aircraft.c_check_status) === "OVERDUE" ? "maint-warning" : ""}">
           ${escapeHtml(resolveNextCDisplay(aircraft))}
         </td>
 
-        <td class="${normalizeStatus(aircraft.d_check_status) === "OVERDUE" ? "maint-critical" : ""}">
+        <td class="${!isAircraftInMaintenanceEvent(aircraft) && normalizeStatus(aircraft.d_check_status) === "OVERDUE" ? "maint-critical" : ""}">
           ${escapeHtml(resolveNextDDisplay(aircraft))}
         </td>
 
