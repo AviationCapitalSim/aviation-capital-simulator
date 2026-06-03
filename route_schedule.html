@@ -2028,20 +2028,51 @@ function confirmRoute() {
   const departure   = (document.getElementById("departureTime")?.value || "").trim();
 
   /* ============================================================
-   🟢 MODEL VALIDATION (STRUCTURAL · NO AIRCRAFT ID)
+   🟢 AIRCRAFT VALIDATION — BACKEND AUTHORITY v1.0
+   ------------------------------------------------------------
+   Source:
+   - Aircraft selector value = aircraft.id from backend
+   - Aircraft technical data comes from /v1/aircraft/fleet cache
+   - No ACS_MyAircraft localStorage authority
    ============================================================ */
 
-const modelKey = (document.getElementById("aircraft")?.value || "").trim();
+  const selectedAircraft =
+    typeof RS_getSelectedAircraftFromBackendCache === "function"
+      ? RS_getSelectedAircraftFromBackendCache()
+      : null;
 
-if (!origin || !destination || !departure) {
-  alert("⚠️ Please complete all fields before confirming.");
-  return;
-}
+  if (!origin || !destination || !departure) {
+    alert("⚠️ Please complete all fields before confirming.");
+    return;
+  }
 
-if (!modelKey) {
-  alert("Please select an aircraft model.");
-  return;
-}
+  if (!selectedAircraft) {
+    alert("Please select an available aircraft.");
+    return;
+  }
+
+  const aircraftId = Number(selectedAircraft.id || 0);
+
+  const modelKey = String(selectedAircraft.model_key || "")
+    .trim()
+    .toUpperCase();
+
+  const aircraftName = String(
+    selectedAircraft.aircraft_name ||
+    selectedAircraft.model_key ||
+    "Aircraft"
+  ).trim();
+
+  const registration = String(
+    selectedAircraft.registration ||
+    "UNREGISTERED"
+  ).trim();
+
+  if (!aircraftId || !modelKey) {
+    alert("⛔ Aircraft data incomplete. Please reload Route Schedule.");
+    console.warn("Invalid selected aircraft:", selectedAircraft);
+    return;
+  }
 
   // 2) Días seleccionados (UI real)
   const selectedDays = DAY_IDS.filter(id => document.getElementById(id)?.checked);
@@ -2057,7 +2088,23 @@ if (!modelKey) {
     return;
   }
 
+    /* ============================================================
+     🟥 ROUTE CHECK AUTHORITY — NOT DISPATCHABLE BLOCK
+     ------------------------------------------------------------
+     If aircraft range does not satisfy route distance,
+     the route cannot be confirmed.
+     ============================================================ */
+
+  if (
+    window.ACS_RouteTechData?.rangeCheck &&
+    window.ACS_RouteTechData.rangeCheck.ok === false
+  ) {
+    alert("⛔ ROUTE CHECK — NOT DISPATCHABLE. Aircraft range insufficient for this route.");
+    return;
+  }
+     
   // 4) Flight Number (UI → engine)
+     
   let flightNumberOut = window.currentFN_Out || null;
   let flightNumberIn  = window.currentFN_In  || null;
 
@@ -2078,6 +2125,7 @@ if (!modelKey) {
   }
 
   // 5) Calcular llegada (HH:MM)
+     
   const [depH, depM] = departure.split(":").map(n => parseInt(n, 10));
   const arrivalTotalMin = (depH * 60 + depM) + blockTimeMin;
   const arrH = Math.floor(arrivalTotalMin / 60) % 24;
@@ -2086,6 +2134,7 @@ if (!modelKey) {
 
   
   // 7) Distancia (safety net)
+     
   let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
   if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
     if (typeof rs_getDistanceNM === "function") {
@@ -2094,6 +2143,7 @@ if (!modelKey) {
   }
 
   // 8) Cargar scheduleItems
+     
   let scheduleItems = [];
   try { scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]"); } catch { scheduleItems = []; }
 
@@ -2142,6 +2192,7 @@ if (isEditMode) {
 if (isEditMode === true && f && f.id) {
 
   // 1️⃣ Crear NUEVO vuelo a partir del original
+     
   const newFlight = {
     ...f,
 
@@ -2203,32 +2254,42 @@ if (isEditMode === true && f && f.id) {
 
     const flightId = "FL_" + Math.floor(100000 + Math.random() * 900000);
 
-    const flight = {
-  id: flightId,
-  type: "flight",
+      const flight = {
+      id: flightId,
+      type: "flight",
 
-  aircraftId: null,
-  modelKey: modelKey.toUpperCase(),
-  aircraft: modelKey.toUpperCase(),
+      aircraftId,
+      aircraft_id: aircraftId,
+      assigned: true,
 
-  origin,
-  destination,
-  day,
-  departure,
-  arrival,
+      modelKey,
+      aircraft: aircraftName,
+      aircraftName,
+      registration,
 
-  distanceNM: finalDistanceNM,
-  blockTimeMin,
+      origin,
+      destination,
+      day,
+      departure,
+      arrival,
 
-  turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
-  turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-  totalRotationMin: window.ACS_RouteTechData?.totalMin ?? (blockTimeMin * 2 + 45),
+      distanceNM: finalDistanceNM,
+      blockTimeMin,
 
-  optimized: document.getElementById("optimizeRotation")?.checked || false,
+      turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
+      turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
+      totalRotationMin: window.ACS_RouteTechData?.totalMin ?? (blockTimeMin * 2 + 45),
 
-  flightNumberOut,
-  flightNumberIn
-};
+      rangeNm: window.ACS_RouteTechData?.rangeNm ?? null,
+      speedKts: window.ACS_RouteTechData?.speedKts ?? null,
+
+      optimized: document.getElementById("optimizeRotation")?.checked || false,
+
+      flightNumberOut,
+      flightNumberIn,
+
+      source: "ACS_ROUTE_SCHEDULE_BACKEND_AIRCRAFT_V1"
+    };
 
 scheduleItems.push(flight);
 createdFlights.push(flight);
@@ -2271,22 +2332,35 @@ createdFlights.push(flight);
 
   // Guardar un objeto “route” compatible (sin romper)
      
-  const newRoute = {
-  id: "RT_" + Math.floor(100000 + Math.random() * 900000),
-  type: "route",
-  origin,
-  destination,
-  days: [...selectedDays],
-  departure,
-  blockTimeMin,
+    const newRoute = {
+    id: "RT_" + Math.floor(100000 + Math.random() * 900000),
+    type: "route",
 
-  aircraftId: null, // 🔥 ya no se asigna aquí
-  modelKey: modelKey.toUpperCase(),
+    origin,
+    destination,
+    days: [...selectedDays],
+    departure,
+    blockTimeMin,
 
-  flightNumberOut,
-  flightNumberIn
-};
+    aircraftId,
+    aircraft_id: aircraftId,
+    assigned: true,
 
+    modelKey,
+    aircraft: aircraftName,
+    aircraftName,
+    registration,
+
+    distanceNM: finalDistanceNM,
+    rangeNm: window.ACS_RouteTechData?.rangeNm ?? null,
+    speedKts: window.ACS_RouteTechData?.speedKts ?? null,
+
+    flightNumberOut,
+    flightNumberIn,
+
+    source: "ACS_ROUTE_SCHEDULE_BACKEND_AIRCRAFT_V1"
+  };
+     
   routesPool.push(newRoute);
   localStorage.setItem("ACS_ROUTES_POOL", JSON.stringify(routesPool));
   localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
