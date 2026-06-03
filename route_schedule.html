@@ -1600,110 +1600,150 @@ function normalizeModel(model) {
 }
      
 /* ============================================================
-   🔵 B — AUTO CALCULATE (MODEL-BASED · CLEAN · SAFE)
+   🔵 B — AUTO CALCULATE (BACKEND AIRCRAFT AUTHORITY v1.0)
    ------------------------------------------------------------
-   • Ya NO usa aircraftId
-   • Usa modelKey
-   • No rompe si no hay selección
-   • Compatible con 700+ players
+   Source:
+   - Selected aircraft comes from /v1/aircraft/fleet cache
+   - No ACS_MyAircraft localStorage
+   - Uses backend aircraft_id as selector value
    ============================================================ */
 
 function autoCalculate() {
 
-  const origin   = document.getElementById("origin")?.value.trim();
-  const dest     = document.getElementById("destination")?.value.trim();
-  const modelKey = document.getElementById("aircraft")?.value;
+  const origin = document.getElementById("origin")?.value.trim().toUpperCase();
+  const dest   = document.getElementById("destination")?.value.trim().toUpperCase();
 
-  // 🔒 Validación base
-  if (!origin || !dest || !modelKey) {
-    document.getElementById("techData").style.display = "none";
+  const selectedAircraft =
+    typeof RS_getSelectedAircraftFromBackendCache === "function"
+      ? RS_getSelectedAircraftFromBackendCache()
+      : null;
+
+  if (!origin || !dest || !selectedAircraft) {
+    const techData = document.getElementById("techData");
+    if (techData) techData.style.display = "none";
     return;
   }
 
-  // 🔹 Obtener flota
-  let fleet = [];
-  try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  } catch {
-    fleet = [];
-  }
+  const aircraftId = Number(selectedAircraft.id || 0);
 
-  // 🔹 Buscar primer avión activo de ese modelo
-  const ac = fleet.find(a =>
-    String(a?.model || "").toUpperCase() === String(modelKey).toUpperCase() &&
-    String(a?.status || "").toLowerCase() === "active"
+  const aircraftName = String(
+    selectedAircraft.aircraft_name ||
+    selectedAircraft.model_key ||
+    "Aircraft"
+  ).trim();
+
+  const modelKey = String(selectedAircraft.model_key || "").trim().toUpperCase();
+
+  const speed = Number(
+    selectedAircraft.speed_kts ||
+    selectedAircraft.speed ||
+    440
   );
 
-  if (!ac) {
-    console.warn("Aircraft model not found in fleet:", modelKey);
-    document.getElementById("techData").style.display = "none";
+  const range = Number(
+    selectedAircraft.range_nm ||
+    selectedAircraft.range ||
+    1500
+  );
+
+  const category = String(
+    selectedAircraft.aircraft_category ||
+    selectedAircraft.category ||
+    aircraftName ||
+    ""
+  ).trim();
+
+  if (!aircraftId || !Number.isFinite(speed) || speed <= 0) {
+    console.warn("⛔ Invalid selected aircraft technical data:", selectedAircraft);
+
+    const techData = document.getElementById("techData");
+    if (techData) techData.style.display = "none";
+
     return;
   }
 
-  const speed    = ac.speed || 440;
-  const category = ac.category || "";
-  const range    = ac.range || 1500;
-
-  /* ===============================
-     1️⃣ DISTANCE
-     =============================== */
   const distNM = rs_getDistanceNM(origin, dest);
 
-  /* ===============================
-     2️⃣ BLOCK TIME
-     =============================== */
+  if (!Number.isFinite(distNM) || distNM <= 0) {
+    console.warn("⛔ Route distance could not be calculated:", {
+      origin,
+      destination: dest
+    });
+
+    const techData = document.getElementById("techData");
+    if (techData) techData.style.display = "none";
+
+    return;
+  }
+
+  const rangeCheck =
+    typeof ACS_checkRangeSimple === "function"
+      ? ACS_checkRangeSimple(distNM, range)
+      : { ok: true, penalty: 0, msg: "Range check unavailable" };
+
+  if (!rangeCheck.ok) {
+    alert(rangeCheck.msg || "Route exceeds aircraft maximum range.");
+
+    const techData = document.getElementById("techData");
+    if (techData) techData.style.display = "none";
+
+    window.ACS_RouteTechData = null;
+    return;
+  }
+
   const block = rs_getBlockTime(distNM, speed);
 
-  /* ===============================
-     3️⃣ TURNAROUND
-     =============================== */
-  const baseTurn   = rs_getTurnaround(category);
-  const optimizeON = document.getElementById("optimizeRotation")?.checked || false;
+  const baseTurn = rs_getTurnaround(category);
+
+  const optimizeON =
+    document.getElementById("optimizeRotation")?.checked || false;
 
   const optTurn = optimizeON
-      ? rs_getOptimizedTurnaround(baseTurn, category)
-      : baseTurn;
+    ? rs_getOptimizedTurnaround(baseTurn, category)
+    : baseTurn;
 
   const totalBase = block + baseTurn + block;
-  const totalOpt  = block + optTurn  + block;
-
-  /* ===============================
-     4️⃣ UI UPDATE
-     =============================== */
+  const totalOpt  = block + optTurn + block;
 
   document.getElementById("techData").style.display = "block";
 
   document.getElementById("distance").textContent = distNM;
 
   document.getElementById("blockTime").textContent =
-      `${Math.floor(block/60)}h ${block%60}m`;
+    `${Math.floor(block / 60)}h ${block % 60}m`;
 
   document.getElementById("turnaround").innerHTML =
-      !optimizeON
-        ? `${baseTurn} min`
-        : `${baseTurn} min<br><span style="color:#ffd54f">Optimized: ${optTurn} min</span>`;
+    !optimizeON
+      ? `${baseTurn} min`
+      : `${baseTurn} min<br><span style="color:#ffd54f">Optimized: ${optTurn} min</span>`;
 
   document.getElementById("totalRotation").innerHTML =
-      !optimizeON
-        ? `${Math.floor(totalBase/60)}h ${totalBase%60}m`
-        : `${Math.floor(totalBase/60)}h ${totalBase%60}m<br>
-           <span style="color:#ffd54f">
-             Optimized: ${Math.floor(totalOpt/60)}h ${totalOpt%60}m
-           </span>`;
+    !optimizeON
+      ? `${Math.floor(totalBase / 60)}h ${totalBase % 60}m`
+      : `${Math.floor(totalBase / 60)}h ${totalBase % 60}m<br>
+         <span style="color:#ffd54f">
+           Optimized: ${Math.floor(totalOpt / 60)}h ${totalOpt % 60}m
+         </span>`;
 
   document.getElementById("delayRisk").textContent = "3%";
   document.getElementById("effIndex").textContent  = "90%";
 
-  /* ===============================
-     5️⃣ SAVE FOR CONFIRM
-     =============================== */
   window.ACS_RouteTechData = {
-      distNM,
-      blockMin: block,
-      turnMin: baseTurn,
-      turnMinOptimized: optTurn,
-      totalMin: optimizeON ? totalOpt : totalBase
+    aircraftId,
+    aircraftName,
+    modelKey,
+    speedKts: speed,
+    rangeNm: range,
+    category,
+    distNM,
+    blockMin: block,
+    turnMin: baseTurn,
+    turnMinOptimized: optTurn,
+    totalMin: optimizeON ? totalOpt : totalBase,
+    rangeCheck
   };
+
+  console.log("🟢 RS AUTO CALCULATE BACKEND AIRCRAFT READY:", window.ACS_RouteTechData);
 }
 
 /* ============================================================
