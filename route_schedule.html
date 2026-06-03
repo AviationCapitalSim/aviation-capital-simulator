@@ -589,98 +589,162 @@ async function RS_initRouteContext() {
 }
      
 /* ============================================================
-   🛫 ACS ROUTE SCHEDULE — AIRCRAFT SOURCE (ACTIVE + PENDING)
+   🛫 ACS ROUTE SCHEDULE — MY AIRCRAFT BACKEND AUTHORITY v1.0
    ------------------------------------------------------------
-   PASO 1 DEFINITIVO:
-   - Fuente operativa: Active + Pending
-   - Clave lógica: aircraftId
-   - UI: model + registration + status
+   Source:
+   - GET /v1/aircraft/fleet
+   - Same backend authority used by My Aircraft
+   - No ACS_MyAircraft localStorage
+   - Only ACTIVE / AVAILABLE / SERVICEABLE aircraft
    ============================================================ */
 
-/* ============================================================
-   🟧 A8 — GET OPERATIONAL FLEET (FIXED)
-   ============================================================ */
-function RS_getOperationalFleet() {
+window.ACS_ROUTE_AVAILABLE_AIRCRAFT = [];
 
-  const raw = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
-  if (!Array.isArray(raw)) return [];
+async function RS_loadOperationalFleetFromBackend() {
 
-  const base = JSON.parse(localStorage.getItem("ACS_activeUser"))?.base?.icao
-            || JSON.parse(localStorage.getItem("ACS_activeUser"))?.airline?.base
-            || null;
+  try {
 
-  return raw.filter(ac => {
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/aircraft/fleet",
+      {
+        method: "GET",
+        credentials: "include"
+      }
+    );
 
-    // ✅ SOLO condiciones REALES
-    const isActive =
-      (ac.status || "").toLowerCase() === "active";
+    const data = await res.json();
 
-    const sameBase =
-      !base || ac.base === base;
+    if (!res.ok || !data || data.ok !== true || !Array.isArray(data.fleet)) {
+      console.warn("⚠️ RS fleet backend load failed:", data);
+      window.ACS_ROUTE_AVAILABLE_AIRCRAFT = [];
+      return [];
+    }
 
-    return isActive && sameBase;
-  });
+    const availableFleet = data.fleet.filter(ac => {
+
+      const status = String(ac.status || "").trim().toUpperCase();
+      const operationalStatus = String(ac.operational_status || "").trim().toUpperCase();
+      const maintenanceStatus = String(ac.maintenance_status || "").trim().toUpperCase();
+      const maintenanceControl = String(ac.maintenance_control_status || "").trim().toUpperCase();
+
+      const isActive =
+        status === "ACTIVE";
+
+      const isAvailable =
+        operationalStatus === "AVAILABLE";
+
+      const isServiceable =
+        maintenanceStatus === "SERVICEABLE" ||
+        maintenanceControl === "SERVICEABLE";
+
+      return isActive && isAvailable && isServiceable;
+
+    });
+
+    window.ACS_ROUTE_AVAILABLE_AIRCRAFT = availableFleet;
+
+    console.log("🟢 RS MY AIRCRAFT BACKEND FLEET READY:", {
+      total: data.fleet.length,
+      available: availableFleet.length,
+      aircraft: availableFleet.map(ac => ({
+        id: ac.id,
+        registration: ac.registration,
+        aircraft_name: ac.aircraft_name,
+        status: ac.status,
+        operational_status: ac.operational_status,
+        maintenance_status: ac.maintenance_status,
+        condition_pct: ac.condition_pct
+      }))
+    });
+
+    return availableFleet;
+
+  } catch (err) {
+
+    console.warn("⚠️ RS fleet backend fetch error:", err);
+    window.ACS_ROUTE_AVAILABLE_AIRCRAFT = [];
+    return [];
+
+  }
+
 }
 
-/* ============================================================
-   🟢 RS_populateAircraftSelector — MODEL ONLY (STRUCTURAL)
-   ------------------------------------------------------------
-   • Muestra SOLO modelo
-   • No muestra matrícula
-   • No muestra status
-   • No duplica modelos
-   • Usa modelKey como value
-   ============================================================ */
-
-function RS_populateAircraftSelector() {
+async function RS_populateAircraftSelector(selectedAircraftId = "") {
 
   const select = document.getElementById("aircraft");
   if (!select) return;
 
   select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
 
-  const raw = JSON.parse(localStorage.getItem("ACS_MyAircraft")) || [];
-  if (!Array.isArray(raw) || !raw.length) return;
+  const fleet = await RS_loadOperationalFleetFromBackend();
 
-  // 🟢 Solo activos
-  const activeFleet = raw.filter(ac =>
-    String(ac.status || "").toLowerCase() === "active"
-  );
+  if (!fleet.length) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No available aircraft";
+    opt.disabled = true;
+    select.appendChild(opt);
+    return;
+  }
 
-  if (!activeFleet.length) return;
-
-  // 🟢 Obtener modelos únicos
-  const uniqueModels = [...new Set(
-    activeFleet
-      .map(ac => (ac.model || "").trim())
-      .filter(m => m.length > 0)
-  )];
-
-  uniqueModels.forEach(model => {
+  fleet.forEach(ac => {
 
     const opt = document.createElement("option");
 
-    opt.value = model.toUpperCase();  // 🔥 ahora value = modelKey
-    opt.textContent = model;          // 🔥 solo modelo visible
+    const aircraftId = String(ac.id || "").trim();
+    const registration = String(ac.registration || "UNREGISTERED").trim();
+    const aircraftName = String(ac.aircraft_name || ac.model_key || "Aircraft").trim();
+    const condition = Number(ac.condition_pct || 0);
+
+    opt.value = aircraftId;
+    opt.textContent = `${aircraftName} • ${registration} • ${condition}%`;
+
+    opt.dataset.aircraftId = aircraftId;
+    opt.dataset.registration = registration;
+    opt.dataset.aircraftName = aircraftName;
+    opt.dataset.modelKey = String(ac.model_key || "").trim();
+    opt.dataset.manufacturer = String(ac.manufacturer || "").trim();
+    opt.dataset.conditionPct = String(condition);
+    opt.dataset.totalHours = String(ac.total_hours || 0);
+    opt.dataset.totalCycles = String(ac.total_cycles || 0);
 
     select.appendChild(opt);
+
   });
-}
 
-/* ============================================================
-   🟧 A9 — rs_populateAircraftSelect (ALIAS ÚNICO Y SEGURO)
-   ============================================================ */
-     
-function rs_populateAircraftSelect(selectedId = "") {
-
-  RS_populateAircraftSelector();
-
-  const sel = document.getElementById("aircraft");
-  if (sel && selectedId) {
-    sel.value = selectedId;
+  if (selectedAircraftId) {
+    select.value = String(selectedAircraftId);
+  } else {
+    select.value = "";
   }
+
 }
 
+async function rs_populateAircraftSelect(selectedId = "") {
+  await RS_populateAircraftSelector(selectedId);
+}
+
+function RS_getSelectedAircraftFromBackendCache() {
+
+  const select = document.getElementById("aircraft");
+  if (!select || !select.value) return null;
+
+  const selectedId = String(select.value || "").trim();
+
+  return window.ACS_ROUTE_AVAILABLE_AIRCRAFT.find(ac =>
+    String(ac.id || "") === selectedId
+  ) || null;
+
+}
+
+function loadAircraftById() {
+  rs_populateAircraftSelect("");
+}
+
+function loadAvailableAircraft() {
+  rs_populateAircraftSelect("");
+}
+     
 /* ============================================================
    🧹 A0 — ROUTE SCHEDULE ENTRY CLEANUP (CRÍTICO)
    ------------------------------------------------------------
@@ -714,7 +778,8 @@ function rs_populateAircraftSelect(selectedId = "") {
 /* ============================================================
    🧩 SINGLE INIT POINT — ROUTE SCHEDULE
    ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
+     
+document.addEventListener("DOMContentLoaded", async () => {
 
   const originInput = document.getElementById("origin");
   const destInput   = document.getElementById("destination");
@@ -724,11 +789,10 @@ document.addEventListener("DOMContentLoaded", () => {
     destInput.readOnly   = true;
   }
 
-  // ✅ USAR SIEMPRE EL ALIAS (minúsculas)
-  rs_populateAircraftSelect();
+  await rs_populateAircraftSelect("");
 
 });
-
+     
 /* ============================================================
    🟧 RS-01 — RESET AIRCRAFT SELECTION ON LOAD
    ------------------------------------------------------------
@@ -781,7 +845,7 @@ async function RS_initCoreOnce() {
     return;
   }
 
-  rs_populateAircraftSelect("");
+    await rs_populateAircraftSelect("");
 
   const aircraftSelect = document.getElementById("aircraft");
   if (aircraftSelect) {
@@ -1237,56 +1301,6 @@ window.confirmRoute = function () {
      
 }); // 🔴 CIERRA document.addEventListener("DOMContentLoaded")
      
-/* ============================================================
-   ✅ FIX DEFINITIVO — loadAvailableAircraft (ROBUST / NO BASE)
-   ------------------------------------------------------------
-   Antes: ac.base === origin  (rompía por datos legacy)
-   Ahora: Active + AC_ (sin filtrar por base aún)
-   ============================================================ */
-function loadAvailableAircraft() {
-
-  const select = document.getElementById("aircraft");
-  if (!select) return;
-
-  select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
-
-  let fleet = [];
-  try {
-    fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  } catch (e) {
-    console.warn("⚠ ACS_MyAircraft parse error:", e);
-    fleet = [];
-  }
-
-  const available = fleet.filter(ac =>
-    ac?.id &&
-    String(ac.id).startsWith("AC_") &&
-    String(ac.status || "").trim().toLowerCase() === "active"
-  );
-
-  if (!available.length) {
-    console.warn("⚠ No active aircraft available (robust mode)");
-    return;
-  }
-
-  available.forEach(ac => {
-    const opt = document.createElement("option");
-    opt.value = ac.id;
-    const baseInfo = ac.base ? ` • Base: ${ac.base}` : "";
-    opt.textContent = `${ac.model || ac.id}${baseInfo}`;
-
-    // datasets técnicos
-    opt.dataset.speed    = ac.speed || 440;
-    opt.dataset.range    = ac.range || 1500;
-    opt.dataset.category = ac.category || "";
-
-    select.appendChild(opt);
-  });
-
-  // Mantener placeholder si no hay selección válida
-  select.selectedIndex = 0;
-}
-
 /* ============================================================
    === GLOBAL DISTANCE ENGINE — FIX v2 (NM)
    ------------------------------------------------------------
