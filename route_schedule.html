@@ -366,6 +366,74 @@ input[type="checkbox"]:checked::after {
 .status-ok { color: #00ff80; }
 .status-warning { color: #ffd54f; }
 
+/* ============================================================
+   🟦 ACS ROUTE CHECK CHIP — Airbus OCC Range Feasibility
+   ============================================================ */
+
+.route-check-chip {
+  display: none;
+  margin-top: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 16px;
+  background: rgba(8, 18, 40, 0.92);
+  border: 1px solid rgba(255, 179, 0, 0.28);
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.32);
+}
+
+.route-check-title {
+  color: #ffb300;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-align: center;
+  margin-bottom: 0.85rem;
+  text-shadow: 0 0 8px rgba(255, 179, 0, 0.35);
+}
+
+.route-check-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #dbe4ff;
+  font-weight: 600;
+}
+
+.route-check-row:last-child {
+  border-bottom: none;
+}
+
+.route-check-value {
+  color: #ffffff;
+  font-weight: 800;
+  text-align: right;
+}
+
+.route-check-ok {
+  border-color: rgba(0, 255, 128, 0.38);
+  box-shadow: 0 0 18px rgba(0, 255, 128, 0.10);
+}
+
+.route-check-ok .route-check-title {
+  color: #00ff80;
+  text-shadow: 0 0 8px rgba(0, 255, 128, 0.35);
+}
+
+.route-check-danger {
+  border-color: rgba(255, 70, 90, 0.55);
+  box-shadow: 0 0 22px rgba(255, 70, 90, 0.18);
+}
+
+.route-check-danger .route-check-title {
+  color: #ff4d5e;
+  text-shadow: 0 0 8px rgba(255, 70, 90, 0.35);
+}
+
+.route-check-excess {
+  color: #ff4d5e;
+  font-weight: 900;
+}
+     
 footer {
   text-align: center;
   padding: 20px;
@@ -887,15 +955,33 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
     <div class="options-center" style="text-align:center;">
       <label><input type="checkbox" id="optimizeRotation" onchange="toggleOptimization()"> Optimize Rotation (avoid delay & maintenance conflict)</label>
     </div>
+<div id="techData" class="tech-list" style="display:none;">
+  <div class="tech-item">Distance (NM): <span id="distance">--</span></div>
+  <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
+  <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
+  <div class="tech-item">Total Rotation: <span id="totalRotation">--</span></div>
+  <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
+  <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
 
-    <div id="techData" class="tech-list" style="display:none;">
-      <div class="tech-item">Distance (NM): <span id="distance">--</span></div>
-      <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
-      <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
-      <div class="tech-item">Total Rotation: <span id="totalRotation">--</span></div>
-      <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
-      <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
+  <div id="routeCheckChip" class="route-check-chip">
+    <div id="routeCheckTitle" class="route-check-title">ROUTE CHECK</div>
+
+    <div class="route-check-row">
+      <div>ROUTE DISTANCE</div>
+      <div id="routeCheckDistance" class="route-check-value">-- NM</div>
     </div>
+
+    <div class="route-check-row">
+      <div>AIRCRAFT MAX RANGE</div>
+      <div id="routeCheckRange" class="route-check-value">-- NM</div>
+    </div>
+
+    <div class="route-check-row">
+      <div>EXCESS</div>
+      <div id="routeCheckExcess" class="route-check-value">-- NM</div>
+    </div>
+  </div>
+</div>
 
     <div class="result" id="result"></div>
     <div id="optStatus" class="status-line"></div>
@@ -997,6 +1083,7 @@ let usedFlights = JSON.parse(
 /* ============================================================
    🟧 A3 — Safe Flight Pair Generator (OUT → IN)
    ============================================================ */
+     
 function generateFlightPair() {
 
   let num  = lastFlightNumber;
@@ -1024,6 +1111,7 @@ function generateFlightPair() {
 /* ============================================================
    🟦 AUTO-GENERATE FLIGHT NUMBER (LLAMADO DESDE EL SELECT)
    ============================================================ */
+     
 function autoGenerateFlightNumber() {
 
   // Necesitamos IATA válido
@@ -1546,6 +1634,79 @@ function ACS_checkRangeSimple(distNM, publishedRange) {
     };
 }
 
+/* ============================================================
+   🟦 ACS ROUTE CHECK CHIP — Airbus OCC Feasibility Display
+   ============================================================ */
+
+function RS_updateRouteCheckChip(distNM, aircraftRangeNM, rangeCheck) {
+
+  const chip = document.getElementById("routeCheckChip");
+  const title = document.getElementById("routeCheckTitle");
+  const distanceEl = document.getElementById("routeCheckDistance");
+  const rangeEl = document.getElementById("routeCheckRange");
+  const excessEl = document.getElementById("routeCheckExcess");
+  const confirmBtn = document.getElementById("confirmRouteBtn");
+
+  if (!chip || !title || !distanceEl || !rangeEl || !excessEl) {
+    return;
+  }
+
+  const distance = Math.round(Number(distNM || 0));
+  const range = Math.round(Number(aircraftRangeNM || 0));
+  const excess = Math.max(0, distance - range);
+
+  chip.style.display = "block";
+
+  distanceEl.textContent = `${distance} NM`;
+  rangeEl.textContent = `${range} NM`;
+  excessEl.textContent = `${excess} NM`;
+
+  chip.classList.remove("route-check-ok", "route-check-danger");
+  excessEl.classList.remove("route-check-excess");
+
+  if (rangeCheck && rangeCheck.ok === false) {
+    chip.classList.add("route-check-danger");
+    title.textContent = "ROUTE CHECK — NOT FEASIBLE";
+    excessEl.classList.add("route-check-excess");
+
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.style.opacity = "0.45";
+      confirmBtn.style.cursor = "not-allowed";
+      confirmBtn.title = "Aircraft range insufficient for this route.";
+    }
+
+    return;
+  }
+
+  chip.classList.add("route-check-ok");
+  title.textContent = "ROUTE CHECK — FEASIBLE";
+
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = "1";
+    confirmBtn.style.cursor = "pointer";
+    confirmBtn.title = "";
+  }
+}
+
+function RS_clearRouteCheckChip() {
+
+  const chip = document.getElementById("routeCheckChip");
+  const confirmBtn = document.getElementById("confirmRouteBtn");
+
+  if (chip) {
+    chip.style.display = "none";
+    chip.classList.remove("route-check-ok", "route-check-danger");
+  }
+
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+    confirmBtn.style.opacity = "1";
+    confirmBtn.style.cursor = "pointer";
+    confirmBtn.title = "";
+  }
+}     
      
 /* ============================================================
    🟦 C) CREW ENGINE — Reemplazo para Route Schedule
@@ -1618,9 +1779,14 @@ function autoCalculate() {
       ? RS_getSelectedAircraftFromBackendCache()
       : null;
 
-  if (!origin || !dest || !selectedAircraft) {
+   if (!origin || !dest || !selectedAircraft) {
     const techData = document.getElementById("techData");
     if (techData) techData.style.display = "none";
+
+    if (typeof RS_clearRouteCheckChip === "function") {
+      RS_clearRouteCheckChip();
+    }
+
     return;
   }
 
@@ -1681,13 +1847,36 @@ function autoCalculate() {
       ? ACS_checkRangeSimple(distNM, range)
       : { ok: true, penalty: 0, msg: "Range check unavailable" };
 
-  if (!rangeCheck.ok) {
-    alert(rangeCheck.msg || "Route exceeds aircraft maximum range.");
+    if (!rangeCheck.ok) {
+    document.getElementById("techData").style.display = "block";
 
-    const techData = document.getElementById("techData");
-    if (techData) techData.style.display = "none";
+    document.getElementById("distance").textContent = distNM;
+    document.getElementById("blockTime").textContent = "--";
+    document.getElementById("turnaround").textContent = "--";
+    document.getElementById("totalRotation").textContent = "--";
+    document.getElementById("delayRisk").textContent = "RANGE";
+    document.getElementById("effIndex").textContent = "0%";
 
-    window.ACS_RouteTechData = null;
+    if (typeof RS_updateRouteCheckChip === "function") {
+      RS_updateRouteCheckChip(distNM, range, rangeCheck);
+    }
+
+    window.ACS_RouteTechData = {
+      aircraftId,
+      aircraftName,
+      modelKey,
+      speedKts: speed,
+      rangeNm: range,
+      category,
+      distNM,
+      blockMin: 0,
+      turnMin: 0,
+      turnMinOptimized: 0,
+      totalMin: 0,
+      rangeCheck
+    };
+
+    console.warn("🔴 RS ROUTE CHECK FAILED:", window.ACS_RouteTechData);
     return;
   }
 
@@ -1724,9 +1913,13 @@ function autoCalculate() {
          <span style="color:#ffd54f">
            Optimized: ${Math.floor(totalOpt / 60)}h ${totalOpt % 60}m
          </span>`;
-
+     
   document.getElementById("delayRisk").textContent = "3%";
   document.getElementById("effIndex").textContent  = "90%";
+
+  if (typeof RS_updateRouteCheckChip === "function") {
+    RS_updateRouteCheckChip(distNM, range, rangeCheck);
+  }
 
   window.ACS_RouteTechData = {
     aircraftId,
