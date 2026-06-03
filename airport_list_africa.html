@@ -757,7 +757,8 @@ function ACS_adaptAirport(row) {
 
     latitude: ACS_lat(row),
     longitude: ACS_lon(row),
-
+    elevation_ft: ACS_num(row.elevation_ft ?? row.elevation ?? row.elevationFeet, 0),
+       
     runway_m:
       runwayM !== null
         ? ACS_num(runwayM, 0)
@@ -1228,6 +1229,7 @@ function openAirportInfo(icao) {
           <div class="acs-section-title">STRUCTURAL CAPACITY</div>
           <div style="font-size:13px; line-height:1.65;">
             Runway Length: <strong>${ACS_formatNumber(ap.runway_m)} m</strong><br>
+            Elevation: <strong>${ACS_formatNumber(ap.elevation_ft)} ft</strong><br>
             Aircraft Capability: <strong>${ap.aircraft_limit || "Not specified"}</strong><br>
             Operating Window: <strong>${ap.open_hrs || "Not specified"}</strong>
           </div>
