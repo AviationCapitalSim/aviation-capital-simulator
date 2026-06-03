@@ -729,35 +729,81 @@ function ACS_lon(row) {
 }
 
 function ACS_adaptAirport(row) {
+  const runwayM =
+    row.runway_m ??
+    row.runway_length_m ??
+    row.runway_length ??
+    row.runwayMeters ??
+    null;
+
+  const runwayFt =
+    row.runway_ft ??
+    row.runway_length_ft ??
+    row.runwayFeet ??
+    null;
+
   return {
     id: row.id,
+
     icao: ACS_icao(row.icao),
     iata: ACS_icao(row.iata),
+
     city: ACS_text(row.city, ACS_text(row.icao, "Unknown")),
     country: ACS_countryCode(row),
     region: ACS_countryLabel(row),
     continent: ACS_text(row.continent, ACS_CONTINENT),
-    category: ACS_text(row.category, "Regional"),
+
+    category: ACS_text(row.category, "Not specified"),
+
     latitude: ACS_lat(row),
     longitude: ACS_lon(row),
-    runway_length_m: ACS_num(row.runway_length_m, 0),
-    runway_length_ft: ACS_num(row.runway_length_ft, 0),
-    aircraft_limit: ACS_text(row.aircraft_limit, "Medium"),
+
+    runway_m:
+      runwayM !== null
+        ? ACS_num(runwayM, 0)
+        : runwayFt !== null
+          ? Math.round(ACS_num(runwayFt, 0) * 0.3048)
+          : 0,
+
+    runway_ft:
+      runwayFt !== null
+        ? ACS_num(runwayFt, 0)
+        : runwayM !== null
+          ? Math.round(ACS_num(runwayM, 0) * 3.28084)
+          : 0,
+
+    open_hrs: row.open_hrs ? String(row.open_hrs).trim() : "",
+
+    aircraft_limit: ACS_text(row.aircraft_limit, "Not specified"),
+
     slot_capacity: ACS_num(row.slot_capacity, 0),
+
     demand: {
       Y: ACS_num(row.demand_y ?? row.demand?.Y, 0),
       C: ACS_num(row.demand_c ?? row.demand?.C, 0),
       F: ACS_num(row.demand_f ?? row.demand?.F, 0)
     },
+
+    slot_cost_usd: ACS_num(row.slot_cost_usd, 0),
+    landing_fee_usd: ACS_num(row.landing_fee_usd, 0),
+    fuel_usd_gal: ACS_num(row.fuel_usd_gal, 0),
+    ticket_fee_percent: ACS_num(row.ticket_fee_percent, 0),
+    pax_growth_factor: ACS_num(row.pax_growth_factor, 1),
+
     fuel_price_index: ACS_num(row.fuel_price_index, 1),
     landing_fee_index: ACS_num(row.landing_fee_index, 1),
     handling_fee_index: ACS_num(row.handling_fee_index, 1),
+
     cargo_factor: ACS_num(row.cargo_factor, 0),
     tourist_factor: ACS_num(row.tourist_factor, 0),
     business_factor: ACS_num(row.business_factor, 0),
+
     active_from: ACS_num(row.active_from, 1940),
     active_to: ACS_num(row.active_to, 2035),
-    source: "airport_catalog"
+
+    notes: ACS_text(row.notes, ""),
+
+    authority: "BACKEND_AIRPORT_CATALOG"
   };
 }
 
@@ -835,7 +881,7 @@ async function ACS_loadBaseAirport() {
   console.log("🟢 ACS BASE AIRPORT LOADED:", {
     base_icao: baseIcao,
     found: !!ACS_BASE_AIRPORT,
-    source: ACS_BASE_AIRPORT?.source || null
+    source: ACS_BASE_AIRPORT?.authority || null
   });
 
   return ACS_BASE_AIRPORT;
@@ -910,16 +956,11 @@ function adjustPassengerClasses(demand) {
 }
 
 function ACS_calculateEconomics(ap) {
-  const landing = Math.round(220 * ACS_num(ap.landing_fee_index, 1));
-  const slot = Math.round(250 * ACS_num(ap.handling_fee_index, 1));
-  const fuel = (0.38 * ACS_num(ap.fuel_price_index, 1)).toFixed(2);
-  const airportCharge = (0.02 * ACS_num(ap.handling_fee_index, 1)).toFixed(2);
-
   return {
-    landingFee: landing,
-    slotFee: slot,
-    fuelPrice: fuel,
-    airportCharge
+    landingFee: ACS_num(ap.landing_fee_usd, 0),
+    slotFee: ACS_num(ap.slot_cost_usd, 0),
+    fuelPrice: ACS_num(ap.fuel_usd_gal, 0).toFixed(2),
+    airportCharge: (ACS_num(ap.ticket_fee_percent, 0) * 100).toFixed(1)
   };
 }
 
@@ -1071,7 +1112,8 @@ function ACS_parseCellValue(cell, columnIndex) {
   }
 
   if (columnIndex === 4) {
-    const n = Number((text.match(/\d+/) || [0])[0]);
+    const numbers = text.match(/\d[\d,]*/g) || [];
+    const n = Number((numbers[0] || "0").replace(/,/g, ""));
     return Number.isFinite(n) ? n : 0;
   }
 
@@ -1183,12 +1225,12 @@ function openAirportInfo(icao) {
       ">
 
         <div>
-       <div class="acs-section-title">STRUCTURAL CAPACITY</div>
-       <div style="font-size:13px; line-height:1.65;">
-       Runway Length: <strong>${ACS_formatNumber(ap.runway_m)} m</strong><br>
-       Aircraft Capability: <strong>${ap.aircraft_limit || "Not specified"}</strong><br>
-       Operating Window: <strong>${ap.open_hrs || "Not specified"}</strong>
-       </div>
+          <div class="acs-section-title">STRUCTURAL CAPACITY</div>
+          <div style="font-size:13px; line-height:1.65;">
+            Runway Length: <strong>${ACS_formatNumber(ap.runway_m)} m</strong><br>
+            Aircraft Capability: <strong>${ap.aircraft_limit || "Not specified"}</strong><br>
+            Operating Window: <strong>${ap.open_hrs || "Not specified"}</strong>
+          </div>
 
           <div style="margin-top:12px; font-size:15px;">
             Daily Slot Capacity<br>
@@ -1559,9 +1601,6 @@ function ACS_openSlotDemandModal(icao) {
         <div class="acs-section-title">SLOT AVAILABILITY</div>
         <div style="font-size:16px; color:${color}; font-weight:600">
           ${ACS_formatNumber(freeSlots)} / ${ACS_formatNumber(maxSlots)}
-        </div>
-        <div style="font-size:12px; opacity:0.7">
-          Source: airport_catalog
         </div>
       </div>
 
