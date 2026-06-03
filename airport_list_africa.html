@@ -1183,11 +1183,11 @@ function openAirportInfo(icao) {
       ">
 
         <div>
-        <div class="acs-section-title">STRUCTURAL CAPACITY</div>
-        <div style="font-size:13px; line-height:1.65;">
-        Runway Length: <strong>${ACS_formatNumber(ap.runway_m)} m</strong><br>
-        Aircraft Capability: <strong>${ap.aircraft_limit}</strong><br>
-        Operating Window: <strong>${ap.open_hrs || "24H"}</strong>
+       <div class="acs-section-title">STRUCTURAL CAPACITY</div>
+       <div style="font-size:13px; line-height:1.65;">
+       Runway Length: <strong>${ACS_formatNumber(ap.runway_m)} m</strong><br>
+       Aircraft Capability: <strong>${ap.aircraft_limit || "Not specified"}</strong><br>
+       Operating Window: <strong>${ap.open_hrs || "Not specified"}</strong>
        </div>
 
           <div style="margin-top:12px; font-size:15px;">
