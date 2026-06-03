@@ -687,7 +687,12 @@ tr:hover {
 
 <script>
 const ACS_API_BASE = "https://api.aviationcapitalsim.com/v1";
-const ACS_CONTINENT = "Middle East";
+const ACS_CONTINENT = "Asia";
+const ACS_PAGE_REGION = "Middle East";
+const ACS_MIDDLE_EAST_COUNTRIES = new Set([
+  "AE", "BH", "CY", "IL", "IQ", "IR", "JO", "KW",
+  "LB", "OM", "PS", "QA", "SA", "SY", "TR", "YE"
+]);
 
 let ACS_COMPANY_CONTEXT = null;
 let ACS_AIRPORTS = [];
@@ -841,12 +846,14 @@ async function ACS_loadAirportCatalog() {
   ACS_AIRPORTS =
     (Array.isArray(data.airports) ? data.airports : [])
       .map(ACS_adaptAirport)
-      .filter(a => a.icao);
+      .filter(a => a.icao)
+      .filter(a => ACS_MIDDLE_EAST_COUNTRIES.has(String(a.country || "").toUpperCase()));
 
   console.log("🟢 ACS AIRPORT BACKEND CATALOG LOADED — Middle East:", {
     count: ACS_AIRPORTS.length,
     source: "airport_catalog",
-    continent: ACS_CONTINENT
+    continent: ACS_CONTINENT,
+    page_region: ACS_PAGE_REGION
   });
 
   return ACS_AIRPORTS;
