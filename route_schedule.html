@@ -840,26 +840,6 @@ function loadAvailableAircraft() {
   }
 
 })();
-
-
-     
-/* ============================================================
-   🧩 SINGLE INIT POINT — ROUTE SCHEDULE
-   ============================================================ */
-     
-document.addEventListener("DOMContentLoaded", async () => {
-
-  const originInput = document.getElementById("origin");
-  const destInput   = document.getElementById("destination");
-
-  if (originInput && destInput) {
-    originInput.readOnly = true;
-    destInput.readOnly   = true;
-  }
-
-  await rs_populateAircraftSelect("");
-
-});
      
 /* ============================================================
    🟧 RS-01 — RESET AIRCRAFT SELECTION ON LOAD
@@ -991,7 +971,7 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
   </div>
 </main>
 
-<footer>© 2025 Aviation Capital Simulator. All rights reserved.</footer>
+<footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
 
 <!-- ============================================================
      === JAVASCRIPT ORIGINAL — MOTOR INTACTO ===================
@@ -1028,8 +1008,8 @@ function toggleOptimization() {
   window.rotationOptimized = document.getElementById("optimizeRotation").checked;
 }
 
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
+function handleLogout(){
+  alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
 
