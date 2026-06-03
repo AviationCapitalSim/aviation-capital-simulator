@@ -1615,64 +1615,15 @@ function sortTable(columnIndex){
 }
 
 /* ============================================================
-   🟦 U1 — REAL AIRPORT UTILIZATION (LIVE) — FIX v2
-   Source of Truth: localStorage.scheduleItems
-   - NO depende de ACS_PAX (evita 0/IDLE por passenger_engine ausente)
-   - Weekly schedule → Daily average (÷7) para % realista
-   - No fake pax: si no se resuelven seats → 0
-   ============================================================ */
-
-function ACS_resolveAircraftSeatsForFlight(f){
-  // 1) direct fields on schedule item (if present)
-  const direct =
-    Number(f.seats) ||
-    Number(f.paxCapacity) ||
-    Number(f.capacity);
-
-  if (Number.isFinite(direct) && direct > 0) return direct;
-
-  // 2) try common fleet stores (by aircraftId)
-  const stores = [
-    "ACS_Fleet",
-    "ACS_fleet",
-    "ACS_MY_FLEET",
-    "ACS_myFleet",
-    "myAircraft",
-    "ACS_AircraftOwned"
-  ];
-
-  for (const k of stores){
-    try{
-      const arr = JSON.parse(localStorage.getItem(k) || "[]");
-      if (Array.isArray(arr)){
-        const ac = arr.find(x => x && (x.id === f.aircraftId || x.aircraftId === f.aircraftId));
-        if (ac){
-          const s =
-            Number(ac.seats) ||
-            Number(ac.paxCapacity) ||
-            Number(ac.capacity) ||
-            Number(ac.totalSeats);
-
-          if (Number.isFinite(s) && s > 0) return s;
-        }
-      }
-    }catch(e){}
-  }
-
-  // 3) last-resort model heuristics (ONLY if known — no fake pax)
-  const mk = String(f.modelKey || f.aircraft || "").toUpperCase();
-  if (mk.includes("307")) return 33; // 307 Stratoliner (known)
-  return 0; // unknown -> 0
-}
-
-/* ============================================================
-   🟧 U3 — REAL UTILIZATION (HYBRID) + DEMAND CAPTURE (OPTION B)
+   🟦 ACS AIRPORT UTILIZATION — BACKEND CLEAN STUB v1.0
+   Source of Truth: PostgreSQL / Railway
    ------------------------------------------------------------
-   PRIMARY: ACS_TRAFFIC_LOG (real transported pax)
-   FALLBACK: scheduleItems + ACS_PAX.calculate (predicted live)
-   Adds: demandCapturePct vs marketDemand (totalDemand)
-   Global-ready for 6 continents
-   Date: 20 FEB 2026
+   Current phase:
+   - Airport catalog now comes from backend.
+   - Real route operations are not yet connected to backend traffic.
+   - No localStorage authority.
+   - Until route execution / traffic logging is backend-ready,
+     utilization remains IDLE / 0.
    ============================================================ */
 
 function ACS_getAirportRealUtilization(icao, marketThroughput, marketDemand){
@@ -1682,179 +1633,27 @@ function ACS_getAirportRealUtilization(icao, marketThroughput, marketDemand){
     flights: 0,
     utilizationPct: 0,
     demandCapturePct: 0,
-
-    // debug / transparency
-    source: "IDLE",
+    source: "BACKEND_PENDING",
     paxWeekly: 0,
     flightsWeekly: 0
   };
 
-  const I = String(icao || "").toUpperCase();
+  const I = String(icao || "").trim().toUpperCase();
+
   if (!I) return out;
 
   const thr = Number(marketThroughput) || 0;
   const dem = Number(marketDemand) || 0;
 
-  /* ============================================================
-     1) PRIMARY — Real transported pax from ACS_TRAFFIC_LOG (7d avg)
-     ============================================================ */
-  let log = [];
-  try{
-    log = JSON.parse(localStorage.getItem("ACS_TRAFFIC_LOG") || "[]");
-  }catch(e){
-    log = [];
-  }
+  out.utilizationPct =
+    thr > 0
+      ? 0
+      : 0;
 
-  if (Array.isArray(log) && log.length){
-
-    const now = Date.now();
-    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-    let paxWeekly = 0;
-    let flightsWeekly = 0;
-
-    for(const f of log){
-
-      if(!f) continue;
-
-      const o = String(f.origin || "").toUpperCase();
-      const d = String(f.destination || "").toUpperCase();
-
-      if(o !== I && d !== I) continue;
-
-      if(!f.ts) continue;
-      if(now - Number(f.ts) > WEEK_MS) continue;
-
-      paxWeekly += Number(f.pax || 0);
-      flightsWeekly += 1;
-
-    }
-
-    const paxDailyReal = Math.round(paxWeekly / 7);
-
-    if(paxDailyReal > 0){
-
-      out.pax = paxDailyReal;
-      out.flights = flightsWeekly;          // weekly flight touches (debug)
-      out.paxWeekly = paxWeekly;
-      out.flightsWeekly = flightsWeekly;
-
-      out.source = "TRAFFIC_LOG";
-
-      if (thr > 0){
-        out.utilizationPct = Math.max(0, Math.min(100, Math.round((out.pax / thr) * 100)));
-      } else {
-        out.utilizationPct = 0;
-      }
-
-      if (dem > 0){
-        out.demandCapturePct = Math.max(0, Math.min(100, Math.round((out.pax / dem) * 100)));
-      } else {
-        out.demandCapturePct = 0;
-      }
-
-      return out;
-
-    }
-
-  }
-
-  /* ============================================================
-     2) FALLBACK — Predicted live pax from scheduleItems + ACS_PAX
-     (keeps airports from going IDLE before first arrivals)
-     ============================================================ */
-
-  /* Resolve sim day safely from ACS_TIME */
-let dayKey = "mon";
-let year = 1944;
-
-try{
-
-  if(window.ACS_TIME?.currentTime){
-
-    const d = window.ACS_TIME.currentTime;
-
-    year = d.getFullYear();
-
-    const days = ["sun","mon","tue","wed","thu","fri","sat"];
-    dayKey = days[d.getDay()] || "mon";
-
-  }
-
-}catch(e){}
-     
-
-  let items = [];
-  try{
-    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  }catch(e){
-    items = [];
-  }
-
-  const normDay = (v) => String(v || "").trim().toLowerCase().slice(0,3);
-  const dayKeyN = normDay(dayKey);
-
-  const allFlights = (Array.isArray(items) ? items : []).filter(x => x && x.type === "flight");
-
-  // flights scheduled for TODAY (sim day)
-  let flights = allFlights.filter(x => normDay(x.day) === dayKeyN);
-
-  // fallback: if none scheduled today, use all flights
-  if (!flights.length) flights = allFlights;
-
-  if (!flights.length) return out;
-
-  const hasPaxEngine = window.ACS_PAX && typeof ACS_PAX.calculate === "function";
-  if (!hasPaxEngine) return out;
-
-  flights.forEach(f => {
-
-    const origin = String(f.origin || "").toUpperCase();
-    const dest   = String(f.destination || "").toUpperCase();
-
-    if (origin !== I && dest !== I) return;
-
-    const seats = ACS_resolveAircraftSeatsForFlight(f);
-    if (!seats) return;
-
-    const distanceNM = Number(f.distanceNM) || 0;
-
-    const paxRes = ACS_PAX.calculate({
-      year,
-      route: {
-        origin,
-        destination: dest,
-        distanceNM
-      },
-      aircraft: {
-        seats
-      },
-      time: {
-        departureHHMM: String(f.departure || "12:00")
-      }
-    });
-
-    const pax = Math.max(0, Math.round(Number(paxRes && paxRes.pax) || 0));
-    if (!pax) return;
-
-    out.pax += pax;
-    out.flights += 1;
-
-  });
-
-  out.source = out.pax > 0 ? "PAX_PREDICT" : "IDLE";
-
-  if (thr > 0){
-    out.utilizationPct = Math.max(0, Math.min(100, Math.round((out.pax / thr) * 100)));
-  }else{
-    out.utilizationPct = 0;
-  }
-
-  if (dem > 0){
-    out.demandCapturePct = Math.max(0, Math.min(100, Math.round((out.pax / dem) * 100)));
-  }else{
-    out.demandCapturePct = 0;
-  }
+  out.demandCapturePct =
+    dem > 0
+      ? 0
+      : 0;
 
   return out;
 
