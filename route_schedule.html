@@ -1666,7 +1666,7 @@ function RS_updateRouteCheckChip(distNM, aircraftRangeNM, rangeCheck) {
 
   if (rangeCheck && rangeCheck.ok === false) {
     chip.classList.add("route-check-danger");
-    title.textContent = "ROUTE CHECK — NOT FEASIBLE";
+    title.textContent = "ROUTE CHECK — NOT DISPATCHABLE";
     excessEl.classList.add("route-check-excess");
 
     if (confirmBtn) {
