@@ -755,7 +755,21 @@ async function RS_populateAircraftSelector(selectedAircraftId = "") {
     return;
   }
 
+    const uniqueFleet = [];
+  const seenAircraftIds = new Set();
+
   fleet.forEach(ac => {
+    const aircraftId = String(ac.id || "").trim();
+
+    if (!aircraftId || seenAircraftIds.has(aircraftId)) {
+      return;
+    }
+
+    seenAircraftIds.add(aircraftId);
+    uniqueFleet.push(ac);
+  });
+
+  uniqueFleet.forEach(ac => {
 
     const opt = document.createElement("option");
 
