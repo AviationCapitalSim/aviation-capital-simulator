@@ -2501,27 +2501,14 @@ function ACS_openSlotDemandModal(icao){
   const content = document.getElementById("acsSlotContent");
 
   const maxSlots =
-    ACS_getMaxSlotsByCategory(ap.category) || 0;
+    Number(ap.slot_capacity || 0) ||
+    ACS_getMaxSlotsByCategory(ap.category) ||
+    0;
 
   let usedTotal = 0;
   let count = 0;
 
-  const slots =
-    JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
-
-  if(slots){
-
-    Object.values(slots).forEach(day=>{
-      Object.values(day).forEach(hour=>{
-        usedTotal += Number(hour.used || 0);
-        count++;
-      });
-    });
-
-  }
-
-  const usedAvg =
-    count > 0 ? Math.round(usedTotal / count) : 0;
+  const usedAvg = 0;
 
   const freeSlots =
     Math.max(0, maxSlots - usedAvg);
@@ -2668,7 +2655,7 @@ function ACS_openSlotDemandModal(icao){
   modal.style.display = "flex";
 
 }
-
+     
 /* ============================================================
    CLOSE SLOT MODAL
    ============================================================ */
