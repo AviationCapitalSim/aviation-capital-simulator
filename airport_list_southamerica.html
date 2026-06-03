@@ -998,6 +998,109 @@ function getACSBaseResolved() {
 }
      
 </script>
+
+<script>
+/* ============================================================
+   🟦 ACS AIRPORT CATALOG BRIDGE — SOUTH AMERICA BACKEND v1.0
+   ------------------------------------------------------------
+   File: airport_list_southamerica.html
+
+   Purpose:
+   - Load South America airports from backend airport_catalog
+   - Convert backend rows into legacy frontend-compatible objects
+   - Preserve current table, demand modal, slot modal, route schedule
+   - No localStorage authority
+   - PostgreSQL / Railway is airport authority
+   ============================================================ */
+
+window.ACS_BACKEND_AIRPORTS = window.ACS_BACKEND_AIRPORTS || {};
+window.ACS_BACKEND_AIRPORTS.SouthAmerica = [];
+
+function ACS_normalizeAirportNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function ACS_adaptBackendAirportToLegacy(row) {
+  return {
+    id: row.id,
+
+    icao: String(row.icao || "").trim().toUpperCase(),
+    iata: row.iata ? String(row.iata).trim().toUpperCase() : "",
+
+    city: String(row.city || row.icao || "").trim(),
+    country: String(row.country || "").trim(),
+    continent: String(row.continent || "South America").trim(),
+    region: String(row.region || row.country || "").trim(),
+
+    latitude: ACS_normalizeAirportNumber(row.latitude, 0),
+    longitude: ACS_normalizeAirportNumber(row.longitude, 0),
+    elevation_ft: ACS_normalizeAirportNumber(row.elevation_ft, 0),
+
+    runway_m: ACS_normalizeAirportNumber(row.runway_m, 0),
+    open_hrs: String(row.open_hrs || "24H").trim(),
+    category: String(row.category || "Major Regional").trim(),
+
+    demand: {
+      Y: ACS_normalizeAirportNumber(row.demand_y, 0),
+      C: ACS_normalizeAirportNumber(row.demand_c, 0),
+      F: ACS_normalizeAirportNumber(row.demand_f, 0)
+    },
+
+    slot_cost_usd: ACS_normalizeAirportNumber(row.slot_cost_usd, 0),
+    landing_fee_usd: ACS_normalizeAirportNumber(row.landing_fee_usd, 0),
+    fuel_usd_gal: ACS_normalizeAirportNumber(row.fuel_usd_gal, 0),
+    ticket_fee_percent: ACS_normalizeAirportNumber(row.ticket_fee_percent, 0),
+    pax_growth_factor: ACS_normalizeAirportNumber(row.pax_growth_factor, 1),
+
+    slot_capacity: ACS_normalizeAirportNumber(row.slot_capacity, 0),
+    aircraft_limit: String(row.aircraft_limit || "").trim(),
+
+    notes: String(row.notes || "").trim(),
+
+    backend_id: row.id,
+    backend_source: row.source || "airport_catalog",
+    authority: "BACKEND_AIRPORT_CATALOG"
+  };
+}
+
+async function ACS_loadSouthAmericaAirportCatalogFromBackend() {
+  try {
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/airports/catalog?continent=South%20America&limit=5000",
+      {
+        credentials: "include"
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true || !Array.isArray(data.airports)) {
+      console.warn("⚠️ ACS airport backend catalog failed:", data);
+      window.ACS_BACKEND_AIRPORTS.SouthAmerica = [];
+      return [];
+    }
+
+    const adapted = data.airports
+      .map(ACS_adaptBackendAirportToLegacy)
+      .filter(a => a && a.icao);
+
+    window.ACS_BACKEND_AIRPORTS.SouthAmerica = adapted;
+
+    console.log("🟢 ACS AIRPORT BACKEND CATALOG LOADED — South America:", {
+      count: adapted.length,
+      authority: "public.airport_catalog"
+    });
+
+    return adapted;
+
+  } catch (err) {
+    console.warn("⚠️ ACS airport backend catalog fetch error:", err);
+    window.ACS_BACKEND_AIRPORTS.SouthAmerica = [];
+    return [];
+  }
+}
+</script>
      
 <script>
 /* ============================================================
@@ -1111,23 +1214,33 @@ function ACS_buildSlotCell(icao, category) {
 }
           
 /* ============================================================
-   === SOUTH AMERICA SAFE LOADER ===============================
+   === SOUTH AMERICA SAFE LOADER — BACKEND AUTHORITY ===========
    ============================================================ */
+     
 function getAirportsSouthAmericaSafe() {
+
+  if (
+    window.ACS_BACKEND_AIRPORTS &&
+    Array.isArray(window.ACS_BACKEND_AIRPORTS.SouthAmerica) &&
+    window.ACS_BACKEND_AIRPORTS.SouthAmerica.length > 0
+  ) {
+    return window.ACS_BACKEND_AIRPORTS.SouthAmerica;
+  }
+
+  console.warn("⚠️ Backend airport catalog unavailable — South America fallback active.");
+
   try {
     if (window.ACS_World &&
         ACS_World.ready &&
         Array.isArray(ACS_World.BY_CONTINENT["SouthAmerica"]) &&
         ACS_World.BY_CONTINENT["SouthAmerica"].length > 0) {
 
-      console.log("🟦 Using ACS_World (historical mode) — South America");
       return ACS_World.BY_CONTINENT["SouthAmerica"];
     }
   } catch (err) {
-    console.warn("ACS_World failed (SouthAmerica):", err);
+    console.warn("ACS_World fallback failed (SouthAmerica):", err);
   }
 
-  console.log("🟧 Fallback → Using WorldAirportsACS (standard mode) — South America");
   return WorldAirportsACS["SouthAmerica"] || [];
 }
 
@@ -1145,31 +1258,48 @@ function findBaseAirportGlobal() {
 
   const baseIcao = String(baseCtx.icao).trim().toUpperCase();
 
-  if (window.ACS_World &&
-      ACS_World.ready &&
-      ACS_World.INDEX_ICAO &&
-      ACS_World.INDEX_ICAO[baseIcao]) {
+  const backendAirports =
+    window.ACS_BACKEND_AIRPORTS &&
+    Array.isArray(window.ACS_BACKEND_AIRPORTS.SouthAmerica)
+      ? window.ACS_BACKEND_AIRPORTS.SouthAmerica
+      : [];
 
-    return ACS_World.INDEX_ICAO[baseIcao];
+  const backendBase = backendAirports.find(a =>
+    String(a.icao || "").toUpperCase() === baseIcao
+  );
+
+  if (backendBase) return backendBase;
+
+  try {
+    if (window.ACS_World &&
+        ACS_World.ready &&
+        ACS_World.INDEX_ICAO &&
+        ACS_World.INDEX_ICAO[baseIcao]) {
+
+      return ACS_World.INDEX_ICAO[baseIcao];
+    }
+  } catch (err) {
+    console.warn("ACS_World base fallback failed:", err);
   }
 
-  for (const cont in WorldAirportsACS) {
+  try {
+    for (const cont in WorldAirportsACS) {
+      const list = WorldAirportsACS[cont];
+      if (!Array.isArray(list)) continue;
 
-    const list = WorldAirportsACS[cont];
+      const ap = list.find(a =>
+        String(a.icao || "").toUpperCase() === baseIcao
+      );
 
-    if (!Array.isArray(list)) continue;
-
-    const ap = list.find(a =>
-      String(a.icao || "").toUpperCase() === baseIcao
-    );
-
-    if (ap) return ap;
-
+      if (ap) return ap;
+    }
+  } catch (err) {
+    console.warn("WorldAirportsACS base fallback failed:", err);
   }
 
   return null;
 }
-
+     
 /* ============================================================
    === WAIT FOR ENGINE ========================================
    ============================================================ */
@@ -1733,6 +1863,7 @@ try{
 /* =============================================================
    === MODAL ====================================================
    ============================================================= */
+     
 function openAirportInfo(icao) {
 
   const airports = getAirportsSouthAmericaSafe();
@@ -2548,12 +2679,10 @@ function ACS_closeSlotDemandModal(){
 
 }
      
-/* =============================================================
-   === LOGOUT ===================================================
-   ============================================================= */
-     
-function handleLogout() {
-  alert("👋 Session closed. See you soon, Captain!");
+/* ========== LOGOUT ========== */
+  
+function handleLogout(){
+  alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
      
