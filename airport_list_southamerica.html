@@ -1172,31 +1172,31 @@ function adjustPassengerClasses(demand) {
      
 function ACS_buildSlotCell(icao, category) {
 
-  const max = ACS_getMaxSlotsByCategory(category);  
-  if (!max) return "—"; 
+  const airports = getAirportsSouthAmericaSafe();
+  const ap = airports.find(a =>
+    String(a.icao || "").toUpperCase() === String(icao || "").toUpperCase()
+  );
 
-  let usedTotal = 0;
-  let count = 0;
+  const structuralCapacity =
+    ap && Number(ap.slot_capacity) > 0
+      ? Number(ap.slot_capacity)
+      : ACS_getMaxSlotsByCategory(category);
 
-  const slots = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
-  if (slots) {
-    const days = Object.keys(slots);
-    days.forEach(day => {
-      const times = Object.keys(slots[day]);
-      times.forEach(time => {
-        usedTotal += slots[day][time].used || 0;
-        count++;
-      });
-    });
-  }
+  const max = Number(structuralCapacity || 0);
 
-  const usedAvg = count > 0 ? Math.round(usedTotal / count) : 0;
-  const free = Math.max(0, max - usedAvg);
-  const pct = Math.max(0, Math.min(100, (free / max) * 100));
+  if (!max) return "—";
 
-  let color = "#00FF80";
-  if (pct < 50 && pct >= 20) color = "#FFB300";
-  if (pct < 20) color = "#FF2E2E";
+  /*
+    Temporary backend-authority display:
+    - airport_catalog.slot_capacity is structural/base capacity.
+    - Real free/used slots will later come from airport_slot_capacity
+      and airport_slot_bookings.
+    - No localStorage authority.
+  */
+
+  const free = max;
+  const pct = 100;
+  const color = "#00FF80";
 
   return `
   <div onclick="ACS_openSlotDemandModal('${icao}')"
@@ -2756,6 +2756,8 @@ function ensureBaseBeforeLoad(callback) {
 document.addEventListener("DOMContentLoaded", async () => {
 
   await ACS_loadCompanyContext();
+
+  await ACS_loadSouthAmericaAirportCatalogFromBackend();
 
   updateGlobalBaseBanner();
 
