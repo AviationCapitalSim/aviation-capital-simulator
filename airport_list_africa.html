@@ -1275,20 +1275,25 @@ function closeAirportInfo() {
   document.getElementById("airportInfoModal").classList.remove("is-open");
 }
 
-function ACS_openDemandModal(icao) {
-  const ap = ACS_findAirport(icao);
-  if (!ap) return;
+/* ============================================================
+   🟩 ACS PASSENGER DEMAND — GRID 2×2 AIRBUS OCC LAYOUT
+   Backend-only data source / Original South America visual style
+   ============================================================ */
 
-  const modal = document.getElementById("acsDemandModal");
-  const title = document.getElementById("acsDemandTitle");
+function ACS_openDemandModal(icao){
+
+  const ap = ACS_findAirport(icao);
+  if(!ap) return;
+
+  const modal   = document.getElementById("acsDemandModal");
+  const title   = document.getElementById("acsDemandTitle");
   const content = document.getElementById("acsDemandContent");
 
-  const demand = adjustPassengerClasses(ap.demand);
-  const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
-  const distribution = [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
+  /* ---------- TITLE ---------- */
 
   title.innerHTML = `
     <div style="text-align:center; line-height:1.25;">
+
       <div style="
         font-family:Orbitron;
         font-size:12px;
@@ -1298,6 +1303,7 @@ function ACS_openDemandModal(icao) {
       ">
         PASSENGER DEMAND
       </div>
+
       <div style="
         font-family:Orbitron;
         font-size:22px;
@@ -1306,43 +1312,183 @@ function ACS_openDemandModal(icao) {
         font-weight:600;
         text-shadow:0 0 8px rgba(0,255,156,0.35);
       ">
-        ${ap.city.toUpperCase()} — ${ap.icao}
+        ${String(ap.city || ap.icao).toUpperCase()} — ${ap.icao}
       </div>
+
     </div>
   `;
 
-  let html = `<div style="margin-top:10px;">`;
+  /* ---------- REAL DEMAND SOURCE ---------- */
 
-  distribution.forEach((p, i) => {
-    const Y = Math.round(demand.Y * p);
-    const C = Math.round(demand.C * p);
-    const F = Math.round(demand.F * p);
-    const total = Math.max(Y + C + F, 1);
-    const yPct = (Y / total) * 100;
-    const cPct = (C / total) * 100;
-    const fPct = (F / total) * 100;
+  const demand = adjustPassengerClasses(ap.demand);
+
+  const days = ["MON","TUE","WED","THU","FRI","SAT","SUN"];
+
+  const distribution =
+    [0.14,0.13,0.14,0.13,0.16,0.17,0.13];
+
+  /* ============================================================
+     🟦 ACS WEEKLY MAX CALCULATION — REQUIRED FOR HYBRID SCALING
+     ============================================================ */
+
+  const dailyTotals = distribution.map(p =>
+    Math.round(
+      (demand.Y + demand.C + demand.F) * p
+    )
+  );
+
+  const weeklyMax =
+    Math.max(...dailyTotals, 1);
+
+  /* ---------- STRUCTURAL LIMIT ---------- */
+
+  let structuralMax = 300;
+
+  if(ap.category === "Primary Hub") structuralMax = 1200;
+  else if(ap.category === "Major Regional") structuralMax = 700;
+  else if(ap.category === "Regional") structuralMax = 350;
+  else structuralMax = 180;
+
+  /* ---------- BUILD GRID ---------- */
+
+  let html = `
+    <div style="
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px 12px;
+      justify-items:center;
+      margin-top:10px;
+    ">
+  `;
+
+  days.forEach((day, i)=>{
+
+    const Y = Math.round(demand.Y * distribution[i]);
+    const C = Math.round(demand.C * distribution[i]);
+    const F = Math.round(demand.F * distribution[i]);
+
+    /* ============================================================
+       🟦 ACS HYBRID DEMAND SCALING ENGINE v1.0
+       Airbus OCC professional scaling
+       Prevents stagnation and preserves realism
+       ============================================================ */
+
+    const total = Y + C + F;
+
+    const structuralPct =
+      structuralMax > 0
+        ? (total / structuralMax) * 100
+        : 0;
+
+    const relativePct =
+      weeklyMax > 0
+        ? (total / weeklyMax) * 100
+        : 0;
+
+    let pct =
+      (structuralPct * 0.65) +
+      (relativePct * 0.35);
+
+    pct = Math.max(12, Math.min(100, pct));
 
     html += `
-      <div class="acs-demand-row">
-        <div class="acs-demand-day">${days[i]}</div>
-        <div class="acs-demand-bar">
-          <div class="acs-demand-segY" style="width:${yPct}%"></div>
-          <div class="acs-demand-segC" style="width:${cPct}%"></div>
-          <div class="acs-demand-segF" style="width:${fPct}%"></div>
+
+      <div style="
+        text-align:center;
+        width:100%;
+        max-width:180px;
+      ">
+
+        <!-- DAY -->
+        <div style="
+          font-family:Orbitron;
+          font-size:13px;
+          color:#ffffff;
+          letter-spacing:2px;
+          margin-bottom:4px;
+        ">
+          ${day}
         </div>
-        <div class="acs-demand-values">
-          Y ${ACS_formatNumber(Y)} · C ${ACS_formatNumber(C)} · F ${ACS_formatNumber(F)}
+
+        <!-- BAR -->
+        <div style="
+          width:100%;
+          height:8px;
+          background:rgba(255,255,255,0.06);
+          border-radius:4px;
+          position:relative;
+          border:1px solid rgba(255,179,0,0.25);
+          overflow:hidden;
+        ">
+
+          <!-- DIVISION 1 -->
+          <div style="
+            position:absolute;
+            left:33.33%;
+            top:0;
+            bottom:0;
+            width:1px;
+            background:rgba(255,179,0,0.4);
+          "></div>
+
+          <!-- DIVISION 2 -->
+          <div style="
+            position:absolute;
+            left:66.66%;
+            top:0;
+            bottom:0;
+            width:1px;
+            background:rgba(255,179,0,0.4);
+          "></div>
+
+          <!-- DEMAND -->
+          <div style="
+            width:${pct}%;
+            height:100%;
+            background:
+              linear-gradient(
+                90deg,
+                #003a7a,
+                #0066cc,
+                #00AEEF,
+                #33d6ff
+              );
+            box-shadow:
+              0 0 6px rgba(0,174,239,0.6);
+          ">
+          </div>
+
         </div>
+
+        <!-- Y C F -->
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr 1fr;
+          font-family:Orbitron;
+          font-size:11px;
+          color:#ffb300;
+          margin-top:4px;
+        ">
+
+          <div>Y ${Y}</div>
+          <div>C ${C}</div>
+          <div>F ${F}</div>
+
+        </div>
+
       </div>
+
     `;
   });
 
   html += `</div>`;
+
   content.innerHTML = html;
+
   modal.classList.add("is-open");
 }
 
-function ACS_closeDemandModal() {
+function ACS_closeDemandModal(){
   document.getElementById("acsDemandModal").classList.remove("is-open");
 }
 
