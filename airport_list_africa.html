@@ -1183,20 +1183,17 @@ function openAirportInfo(icao) {
       ">
 
         <div>
-          <div class="acs-section-title">STRUCTURAL CAPACITY</div>
-          <div style="font-size:13px; line-height:1.65;">
-            Runway Length: <strong>${ACS_formatNumber(ap.runway_length_m)} m</strong><br>
-            Aircraft Capability: <strong>${ap.aircraft_limit}</strong><br>
-            Operating Window: <strong>24H</strong>
-          </div>
+        <div class="acs-section-title">STRUCTURAL CAPACITY</div>
+        <div style="font-size:13px; line-height:1.65;">
+        Runway Length: <strong>${ACS_formatNumber(ap.runway_m)} m</strong><br>
+        Aircraft Capability: <strong>${ap.aircraft_limit}</strong><br>
+        Operating Window: <strong>${ap.open_hrs || "24H"}</strong>
+       </div>
 
           <div style="margin-top:12px; font-size:15px;">
             Daily Slot Capacity<br>
             <div style="color:#00ff80; font-weight:600; font-size:18px; margin-top:2px;">
               ${ACS_formatNumber(ap.slot_capacity)} slots/day
-            </div>
-            <div style="font-size:10px; color:#7f8da3; margin-top:4px; letter-spacing:0.4px;">
-              Source: airport_catalog
             </div>
           </div>
         </div>
