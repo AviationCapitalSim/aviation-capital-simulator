@@ -20,7 +20,7 @@
   <link rel="apple-touch-icon" href="acs_logo_180.png">
   <link rel="manifest" href="manifest.json">
 
-  <style>
+   <style>
 /* ============================================================
    === GLOBAL ACS QATAR LUXURY STYLE ===========================
    ============================================================ */
@@ -753,10 +753,10 @@ th.sort-desc::after{
 </style>
      
 </head>
-
 <body>
 
   <!-- HEADER -->
+     
   <header class="acs-header">
     <div class="acs-logo">
       <img src="acs_logo.png" alt="ACS Logo" />
@@ -773,13 +773,12 @@ th.sort-desc::after{
 
     <div class="acs-right">
     <a href="support.html" class="support-btn">Support</a>
-    <a class="logout-btn" onclick="handleLogout()">Logout</a>
+    <a class="logout-btn">Logout</a>
     <div class="acs-clock-header"><span id="acs-clock">00:00 — 01 JAN 1940</span></div>
   </div>
 </header>
      
   <!-- MAIN -->
-     
   <main class="acs-main">
     <h2>🌍 African Airports</h2>
     <p class="sub">Sort by demand, cost, or runway length. Click “Create Route” to plan flights.</p>
@@ -791,8 +790,8 @@ th.sort-desc::after{
       <strong id="originIcao">---</strong>
       <span id="originCity">— Loading...</span>
     </div>
-
-     <!-- Country selector -->
+   
+    <!-- Country selector -->
        
     <div class="country-filter">
       <select id="countrySelect" class="country-select" onchange="filterByCountry()">
@@ -808,16 +807,16 @@ th.sort-desc::after{
 
      <a href="airport_list_asia.html" class="continent-btn">Asia</a>
 
-     <a href="airport_list_northamerica.html" class="continent-btn">North America</a>
-
      <a href="airport_list_southamerica.html" class="continent-btn">South America</a>
+
+     <a href="airport_list_northamerica.html" class="continent-btn">North America</a>
 
      <a href="airport_list_oceania.html" class="continent-btn">Oceania</a>
 
      <a href="airport_list_middleeast.html" class="continent-btn">Middle East</a>
 
-   </div>
-       
+    </div>
+ 
      <!-- ============================================================
          💎 A1 — ULTRA PREMIUM TABLE (HTML COMPLETO)
          ============================================================ -->
@@ -999,19 +998,120 @@ function getACSBaseResolved() {
 }
      
 </script>
+
+<script>
+/* ============================================================
+   🟦 ACS AIRPORT CATALOG BRIDGE — SOUTH AMERICA BACKEND v1.0
+   ------------------------------------------------------------
+   File: airport_list_africa.html
+
+   Purpose:
+   - Load Africa airports from backend airport_catalog
+   - Convert backend rows into legacy frontend-compatible objects
+   - Preserve current table, demand modal, slot modal, route schedule
+   - No localStorage authority
+   - PostgreSQL / Railway is airport authority
+   ============================================================ */
+
+window.ACS_BACKEND_AIRPORTS = window.ACS_BACKEND_AIRPORTS || {};
+window.ACS_BACKEND_AIRPORTS.Africa = [];
+
+function ACS_normalizeAirportNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function ACS_adaptBackendAirportToLegacy(row) {
+  return {
+    id: row.id,
+
+    icao: String(row.icao || "").trim().toUpperCase(),
+    iata: row.iata ? String(row.iata).trim().toUpperCase() : "",
+
+    city: String(row.city || row.icao || "").trim(),
+    country: String(row.country || "").trim(),
+    continent: String(row.continent || "Africa").trim(),
+    region: String(row.region || row.country || "").trim(),
+
+    latitude: ACS_normalizeAirportNumber(row.latitude, 0),
+    longitude: ACS_normalizeAirportNumber(row.longitude, 0),
+    elevation_ft: ACS_normalizeAirportNumber(row.elevation_ft, 0),
+
+    runway_m: ACS_normalizeAirportNumber(row.runway_m, 0),
+    open_hrs: String(row.open_hrs || "24H").trim(),
+    category: String(row.category || "Major Regional").trim(),
+
+    demand: {
+      Y: ACS_normalizeAirportNumber(row.demand_y, 0),
+      C: ACS_normalizeAirportNumber(row.demand_c, 0),
+      F: ACS_normalizeAirportNumber(row.demand_f, 0)
+    },
+
+    slot_cost_usd: ACS_normalizeAirportNumber(row.slot_cost_usd, 0),
+    landing_fee_usd: ACS_normalizeAirportNumber(row.landing_fee_usd, 0),
+    fuel_usd_gal: ACS_normalizeAirportNumber(row.fuel_usd_gal, 0),
+    ticket_fee_percent: ACS_normalizeAirportNumber(row.ticket_fee_percent, 0),
+    pax_growth_factor: ACS_normalizeAirportNumber(row.pax_growth_factor, 1),
+
+    slot_capacity: ACS_normalizeAirportNumber(row.slot_capacity, 0),
+    aircraft_limit: String(row.aircraft_limit || "").trim(),
+
+    notes: String(row.notes || "").trim(),
+
+    backend_id: row.id,
+    backend_source: row.source || "airport_catalog",
+    authority: "BACKEND_AIRPORT_CATALOG"
+  };
+}
+
+async function ACS_loadAfricaAirportCatalogFromBackend() {
+  try {
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/airports/catalog?continent=Africa&limit=5000",
+      {
+        credentials: "include"
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true || !Array.isArray(data.airports)) {
+      console.warn("⚠️ ACS airport backend catalog failed:", data);
+      window.ACS_BACKEND_AIRPORTS.Africa = [];
+      return [];
+    }
+
+    const adapted = data.airports
+      .map(ACS_adaptBackendAirportToLegacy)
+      .filter(a => a && a.icao);
+
+    window.ACS_BACKEND_AIRPORTS.Africa = adapted;
+
+    console.log("🟢 ACS AIRPORT BACKEND CATALOG LOADED — Africa:", {
+      count: adapted.length,
+      authority: "public.airport_catalog"
+    });
+
+    return adapted;
+
+  } catch (err) {
+    console.warn("⚠️ ACS airport backend catalog fetch error:", err);
+    window.ACS_BACKEND_AIRPORTS.Africa = [];
+    return [];
+  }
+}
+</script>
      
 <script>
-        
 /* ============================================================
-   === DISTANCE ENGINE =============================
+   === DISTANCE ENGINE =========================================
    ============================================================ */
-        
 function distanceNM(lat1, lon1, lat2, lon2) {
   const R = 3440.065;
   const toRad = deg => deg * Math.PI / 180;
 
   const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);  // ✔ CORRECTO
+  const dLon = toRad(lon2 - lon1);
 
   const a =
     Math.sin(dLat / 2) ** 2 +
@@ -1023,41 +1123,18 @@ function distanceNM(lat1, lon1, lat2, lon2) {
 }
 
 /* =============================================================
-   === HISTORICAL AIRPORT ENGINE — WITH SAFE FALLBACK ==========
-   ============================================================= */
-function getAirportsAfricaSafe() {
-  try {
-    if (window.ACS_World &&
-        ACS_World.ready &&
-        ACS_World.BY_CONTINENT &&
-        Array.isArray(ACS_World.BY_CONTINENT["Africa"]) &&
-        ACS_World.BY_CONTINENT["Africa"].length > 0) {
-
-      console.log("🟦 Using ACS_World (historical mode)");
-      return ACS_World.BY_CONTINENT["Africa"];
-    }
-  } catch (err) {
-    console.warn("ACS_World failed:", err);
-  }
-
-  console.log("🟧 Fallback → Using WorldAirportsACS (standard mode)");
-  return WorldAirportsACS["Africa"] || [];
-}
-
-// ============================================================
-// === BLOQUE 3 — HISTORICAL DEMAND CURVE (AÑADIDO) ============
-// ============================================================
-
+   === HISTORICAL FACTOR CURVE ================================
+   ============================================================ */
 function getHistoricalFactor(year) {
 
-  if (year < 1940) return 0.05;     // Aviación temprana
-  if (year < 1950) return 0.10;     // WWII / posguerra
-  if (year < 1958) return 0.25;     // Era turboprop
-  if (year < 1965) return 0.45;     // Jet Age inicial
-  if (year < 1975) return 0.60;     // Boom internacional
-  if (year < 1990) return 0.80;     // Aviación moderna temprana
+  if (year < 1940) return 0.05;
+  if (year < 1950) return 0.10;
+  if (year < 1958) return 0.25;
+  if (year < 1965) return 0.45;
+  if (year < 1975) return 0.60;
+  if (year < 1990) return 0.80;
 
-  return 1.00; // 1990–2025 demanda moderna
+  return 1.00;
 }
 
 // ============================================================
@@ -1095,31 +1172,31 @@ function adjustPassengerClasses(demand) {
      
 function ACS_buildSlotCell(icao, category) {
 
-  const max = ACS_getMaxSlotsByCategory(category);  
-  if (!max) return "—"; 
+  const airports = getAirportsAfricaSafe();
+  const ap = airports.find(a =>
+    String(a.icao || "").toUpperCase() === String(icao || "").toUpperCase()
+  );
 
-  let usedTotal = 0;
-  let count = 0;
+  const structuralCapacity =
+    ap && Number(ap.slot_capacity) > 0
+      ? Number(ap.slot_capacity)
+      : ACS_getMaxSlotsByCategory(category);
 
-  const slots = JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
-  if (slots) {
-    const days = Object.keys(slots);
-    days.forEach(day => {
-      const times = Object.keys(slots[day]);
-      times.forEach(time => {
-        usedTotal += slots[day][time].used || 0;
-        count++;
-      });
-    });
-  }
+  const max = Number(structuralCapacity || 0);
 
-  const usedAvg = count > 0 ? Math.round(usedTotal / count) : 0;
-  const free = Math.max(0, max - usedAvg);
-  const pct = Math.max(0, Math.min(100, (free / max) * 100));
+  if (!max) return "—";
 
-  let color = "#00FF80";
-  if (pct < 50 && pct >= 20) color = "#FFB300";
-  if (pct < 20) color = "#FF2E2E";
+  /*
+    Temporary backend-authority display:
+    - airport_catalog.slot_capacity is structural/base capacity.
+    - Real free/used slots will later come from airport_slot_capacity
+      and airport_slot_bookings.
+    - No localStorage authority.
+  */
+
+  const free = max;
+  const pct = 100;
+  const color = "#00FF80";
 
   return `
   <div onclick="ACS_openSlotDemandModal('${icao}')"
@@ -1135,30 +1212,38 @@ function ACS_buildSlotCell(icao, category) {
   </div>
 `;
 }
-        
-/* =============================================================
-   === HISTORICAL AIRPORT ENGINE — AFRICA SAFE MODE ============
-   ============================================================= */
-        
+          
+/* ============================================================
+   === SOUTH AMERICA SAFE LOADER — BACKEND AUTHORITY ===========
+   ============================================================ */
+     
 function getAirportsAfricaSafe() {
+
+  if (
+    window.ACS_BACKEND_AIRPORTS &&
+    Array.isArray(window.ACS_BACKEND_AIRPORTS.Africa) &&
+    window.ACS_BACKEND_AIRPORTS.Africa.length > 0
+  ) {
+    return window.ACS_BACKEND_AIRPORTS.Africa;
+  }
+
+  console.warn("⚠️ Backend airport catalog unavailable — Africa fallback active.");
+
   try {
     if (window.ACS_World &&
         ACS_World.ready &&
-        ACS_World.BY_CONTINENT &&
         Array.isArray(ACS_World.BY_CONTINENT["Africa"]) &&
         ACS_World.BY_CONTINENT["Africa"].length > 0) {
 
-      console.log("🟦 Using ACS_World (historical mode) — Africa");
       return ACS_World.BY_CONTINENT["Africa"];
     }
   } catch (err) {
-    console.warn("ACS_World failed (Africa):", err);
+    console.warn("ACS_World fallback failed (Africa):", err);
   }
 
-  console.log("🟧 Fallback → Using WorldAirportsACS (standard mode) — Africa");
   return WorldAirportsACS["Africa"] || [];
 }
-        
+
 /* ============================================================
    === FIND BASE AIRPORT — BACKEND CONTEXT AUTHORITY ===========
    ============================================================ */
@@ -1173,37 +1258,53 @@ function findBaseAirportGlobal() {
 
   const baseIcao = String(baseCtx.icao).trim().toUpperCase();
 
-  if (window.ACS_World &&
-      ACS_World.ready &&
-      ACS_World.INDEX_ICAO &&
-      ACS_World.INDEX_ICAO[baseIcao]) {
+  const backendAirports =
+    window.ACS_BACKEND_AIRPORTS &&
+    Array.isArray(window.ACS_BACKEND_AIRPORTS.Africa)
+      ? window.ACS_BACKEND_AIRPORTS.Africa
+      : [];
 
-    return ACS_World.INDEX_ICAO[baseIcao];
+  const backendBase = backendAirports.find(a =>
+    String(a.icao || "").toUpperCase() === baseIcao
+  );
+
+  if (backendBase) return backendBase;
+
+  try {
+    if (window.ACS_World &&
+        ACS_World.ready &&
+        ACS_World.INDEX_ICAO &&
+        ACS_World.INDEX_ICAO[baseIcao]) {
+
+      return ACS_World.INDEX_ICAO[baseIcao];
+    }
+  } catch (err) {
+    console.warn("ACS_World base fallback failed:", err);
   }
 
-  for (const cont in WorldAirportsACS) {
+  try {
+    for (const cont in WorldAirportsACS) {
+      const list = WorldAirportsACS[cont];
+      if (!Array.isArray(list)) continue;
 
-    const list = WorldAirportsACS[cont];
+      const ap = list.find(a =>
+        String(a.icao || "").toUpperCase() === baseIcao
+      );
 
-    if (!Array.isArray(list)) continue;
-
-    const ap = list.find(a =>
-      String(a.icao || "").toUpperCase() === baseIcao
-    );
-
-    if (ap) return ap;
-
+      if (ap) return ap;
+    }
+  } catch (err) {
+    console.warn("WorldAirportsACS base fallback failed:", err);
   }
 
   return null;
 }
-        
-/* ============================================================
-   === WAIT FOR WORLD ENGINE BEFORE LOADING TABLE ===============
-   ============================================================ */
-        
-function waitForWorldEngine(callback) {
      
+/* ============================================================
+   === WAIT FOR ENGINE ========================================
+   ============================================================ */
+     
+function waitForWorldEngine(callback) {
   if (window.ACS_World && ACS_World.ready === true) {
     callback();
   } else {
@@ -1226,10 +1327,10 @@ function waitForWorldEngine(callback) {
     return;
   }
 
-    // ✔ BASE REAL DEL JUGADOR — BACKEND CONTEXT
-  const baseCtx = getACSBaseResolved();
-  const userBase = baseCtx?.icao || null;
-  const base = findBaseAirportGlobal();
+  // ✔ BASE REAL DEL JUGADOR — BACKEND CONTEXT
+const baseCtx = getACSBaseResolved();
+const userBase = baseCtx?.icao || null;
+const base = findBaseAirportGlobal();
 
   let baseLat = null, baseLon = null;
   if (base) {
@@ -1311,7 +1412,7 @@ if (selector) {
 }
 
 /* ============================================================
-   === FILTER BY COUNTRY (AFRICA — FINAL FIX) ==================
+   === FILTER BY COUNTRY (NA — FINAL FIX) ==================
    ============================================================ */
         
 function filterByCountry() {
@@ -1324,10 +1425,10 @@ function filterByCountry() {
   const airports = getAirportsAfricaSafe();
   if (!airports || airports.length === 0) return;
 
-    // ✔ BASE REAL DEL JUGADOR — BACKEND CONTEXT
-  const baseCtx = getACSBaseResolved();
-  const userBase = baseCtx?.icao || null;
-  const base = findBaseAirportGlobal();
+  // ✔ BASE REAL DEL JUGADOR — BACKEND CONTEXT
+const baseCtx = getACSBaseResolved();
+const userBase = baseCtx?.icao || null;
+const base = findBaseAirportGlobal();
 
   let baseLat = null;
   let baseLon = null;
@@ -1392,6 +1493,7 @@ function filterByCountry() {
     tableBody.appendChild(row);
   });
 }
+
 
 /* ============================================================
    🟩 ACS GLOBAL TABLE SORT ENGINE v3.0
@@ -1513,64 +1615,15 @@ function sortTable(columnIndex){
 }
 
 /* ============================================================
-   🟦 U1 — REAL AIRPORT UTILIZATION (LIVE) — FIX v2
-   Source of Truth: localStorage.scheduleItems
-   - NO depende de ACS_PAX (evita 0/IDLE por passenger_engine ausente)
-   - Weekly schedule → Daily average (÷7) para % realista
-   - No fake pax: si no se resuelven seats → 0
-   ============================================================ */
-
-function ACS_resolveAircraftSeatsForFlight(f){
-  // 1) direct fields on schedule item (if present)
-  const direct =
-    Number(f.seats) ||
-    Number(f.paxCapacity) ||
-    Number(f.capacity);
-
-  if (Number.isFinite(direct) && direct > 0) return direct;
-
-  // 2) try common fleet stores (by aircraftId)
-  const stores = [
-    "ACS_Fleet",
-    "ACS_fleet",
-    "ACS_MY_FLEET",
-    "ACS_myFleet",
-    "myAircraft",
-    "ACS_AircraftOwned"
-  ];
-
-  for (const k of stores){
-    try{
-      const arr = JSON.parse(localStorage.getItem(k) || "[]");
-      if (Array.isArray(arr)){
-        const ac = arr.find(x => x && (x.id === f.aircraftId || x.aircraftId === f.aircraftId));
-        if (ac){
-          const s =
-            Number(ac.seats) ||
-            Number(ac.paxCapacity) ||
-            Number(ac.capacity) ||
-            Number(ac.totalSeats);
-
-          if (Number.isFinite(s) && s > 0) return s;
-        }
-      }
-    }catch(e){}
-  }
-
-  // 3) last-resort model heuristics (ONLY if known — no fake pax)
-  const mk = String(f.modelKey || f.aircraft || "").toUpperCase();
-  if (mk.includes("307")) return 33; // 307 Stratoliner (known)
-  return 0; // unknown -> 0
-}
-
-/* ============================================================
-   🟧 U3 — REAL UTILIZATION (HYBRID) + DEMAND CAPTURE (OPTION B)
+   🟦 ACS AIRPORT UTILIZATION — BACKEND CLEAN STUB v1.0
+   Source of Truth: PostgreSQL / Railway
    ------------------------------------------------------------
-   PRIMARY: ACS_TRAFFIC_LOG (real transported pax)
-   FALLBACK: scheduleItems + ACS_PAX.calculate (predicted live)
-   Adds: demandCapturePct vs marketDemand (totalDemand)
-   Global-ready for 6 continents
-   Date: 20 FEB 2026
+   Current phase:
+   - Airport catalog now comes from backend.
+   - Real route operations are not yet connected to backend traffic.
+   - No localStorage authority.
+   - Until route execution / traffic logging is backend-ready,
+     utilization remains IDLE / 0.
    ============================================================ */
 
 function ACS_getAirportRealUtilization(icao, marketThroughput, marketDemand){
@@ -1580,179 +1633,27 @@ function ACS_getAirportRealUtilization(icao, marketThroughput, marketDemand){
     flights: 0,
     utilizationPct: 0,
     demandCapturePct: 0,
-
-    // debug / transparency
-    source: "IDLE",
+    source: "BACKEND_PENDING",
     paxWeekly: 0,
     flightsWeekly: 0
   };
 
-  const I = String(icao || "").toUpperCase();
+  const I = String(icao || "").trim().toUpperCase();
+
   if (!I) return out;
 
   const thr = Number(marketThroughput) || 0;
   const dem = Number(marketDemand) || 0;
 
-  /* ============================================================
-     1) PRIMARY — Real transported pax from ACS_TRAFFIC_LOG (7d avg)
-     ============================================================ */
-  let log = [];
-  try{
-    log = JSON.parse(localStorage.getItem("ACS_TRAFFIC_LOG") || "[]");
-  }catch(e){
-    log = [];
-  }
+  out.utilizationPct =
+    thr > 0
+      ? 0
+      : 0;
 
-  if (Array.isArray(log) && log.length){
-
-    const now = Date.now();
-    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-    let paxWeekly = 0;
-    let flightsWeekly = 0;
-
-    for(const f of log){
-
-      if(!f) continue;
-
-      const o = String(f.origin || "").toUpperCase();
-      const d = String(f.destination || "").toUpperCase();
-
-      if(o !== I && d !== I) continue;
-
-      if(!f.ts) continue;
-      if(now - Number(f.ts) > WEEK_MS) continue;
-
-      paxWeekly += Number(f.pax || 0);
-      flightsWeekly += 1;
-
-    }
-
-    const paxDailyReal = Math.round(paxWeekly / 7);
-
-    if(paxDailyReal > 0){
-
-      out.pax = paxDailyReal;
-      out.flights = flightsWeekly;          // weekly flight touches (debug)
-      out.paxWeekly = paxWeekly;
-      out.flightsWeekly = flightsWeekly;
-
-      out.source = "TRAFFIC_LOG";
-
-      if (thr > 0){
-        out.utilizationPct = Math.max(0, Math.min(100, Math.round((out.pax / thr) * 100)));
-      } else {
-        out.utilizationPct = 0;
-      }
-
-      if (dem > 0){
-        out.demandCapturePct = Math.max(0, Math.min(100, Math.round((out.pax / dem) * 100)));
-      } else {
-        out.demandCapturePct = 0;
-      }
-
-      return out;
-
-    }
-
-  }
-
-  /* ============================================================
-     2) FALLBACK — Predicted live pax from scheduleItems + ACS_PAX
-     (keeps airports from going IDLE before first arrivals)
-     ============================================================ */
-
-  /* Resolve sim day safely from ACS_TIME */
-let dayKey = "mon";
-let year = 1944;
-
-try{
-
-  if(window.ACS_TIME?.currentTime){
-
-    const d = window.ACS_TIME.currentTime;
-
-    year = d.getFullYear();
-
-    const days = ["sun","mon","tue","wed","thu","fri","sat"];
-    dayKey = days[d.getDay()] || "mon";
-
-  }
-
-}catch(e){}
-     
-
-  let items = [];
-  try{
-    items = JSON.parse(localStorage.getItem("scheduleItems") || "[]");
-  }catch(e){
-    items = [];
-  }
-
-  const normDay = (v) => String(v || "").trim().toLowerCase().slice(0,3);
-  const dayKeyN = normDay(dayKey);
-
-  const allFlights = (Array.isArray(items) ? items : []).filter(x => x && x.type === "flight");
-
-  // flights scheduled for TODAY (sim day)
-  let flights = allFlights.filter(x => normDay(x.day) === dayKeyN);
-
-  // fallback: if none scheduled today, use all flights
-  if (!flights.length) flights = allFlights;
-
-  if (!flights.length) return out;
-
-  const hasPaxEngine = window.ACS_PAX && typeof ACS_PAX.calculate === "function";
-  if (!hasPaxEngine) return out;
-
-  flights.forEach(f => {
-
-    const origin = String(f.origin || "").toUpperCase();
-    const dest   = String(f.destination || "").toUpperCase();
-
-    if (origin !== I && dest !== I) return;
-
-    const seats = ACS_resolveAircraftSeatsForFlight(f);
-    if (!seats) return;
-
-    const distanceNM = Number(f.distanceNM) || 0;
-
-    const paxRes = ACS_PAX.calculate({
-      year,
-      route: {
-        origin,
-        destination: dest,
-        distanceNM
-      },
-      aircraft: {
-        seats
-      },
-      time: {
-        departureHHMM: String(f.departure || "12:00")
-      }
-    });
-
-    const pax = Math.max(0, Math.round(Number(paxRes && paxRes.pax) || 0));
-    if (!pax) return;
-
-    out.pax += pax;
-    out.flights += 1;
-
-  });
-
-  out.source = out.pax > 0 ? "PAX_PREDICT" : "IDLE";
-
-  if (thr > 0){
-    out.utilizationPct = Math.max(0, Math.min(100, Math.round((out.pax / thr) * 100)));
-  }else{
-    out.utilizationPct = 0;
-  }
-
-  if (dem > 0){
-    out.demandCapturePct = Math.max(0, Math.min(100, Math.round((out.pax / dem) * 100)));
-  }else{
-    out.demandCapturePct = 0;
-  }
+  out.demandCapturePct =
+    dem > 0
+      ? 0
+      : 0;
 
   return out;
 
@@ -1761,6 +1662,7 @@ try{
 /* =============================================================
    === MODAL ====================================================
    ============================================================= */
+     
 function openAirportInfo(icao) {
 
   const airports = getAirportsAfricaSafe();
@@ -1943,7 +1845,7 @@ Operating Window: <b>${ap.open_hrs}</b>
 
 <div style="margin-top:10px">
 
-Throughput Capacity<br>
+MAX Capacity<br>
 
 <div style="
 color:#00ff80;
@@ -2002,7 +1904,7 @@ Total: ${totalDemand.toLocaleString()} pax/day
 <div>
 
 <div class="acs-section-title">
-REAL TRAFFIC UTILIZATION
+TRAFFIC UTILIZATION
 </div>
 
 <div style="
@@ -2011,12 +1913,12 @@ font-size:13px;
 ">
 
 <div style="margin-top:8px;">
-Market demand capture:<br>
+Market Demand:<br>
 <b>${real.demandCapturePct}%</b> of <b>${totalDemand.toLocaleString()}</b> pax/day
 </div>
 
 <div style="margin-top:6px; opacity:0.75; font-size:12px;">
-Source: <b>${real.source}</b>
+Traffic: <b>No Traffic</b>
 
 </div>
 </div>
@@ -2116,27 +2018,6 @@ Airport Charge: <b>${econ.ticket_fee}%</b>
 
 </div>
 
-
-<div class="acs-section-title" style="margin-top:14px">
-NETWORK STATUS
-</div>
-
-<div style="font-size:13px">
-
-Role: <b>${role}</b><br>
-
-Congestion:
-
-<span style="
-color:${barColor};
-font-weight:600;
-">
-
-${status}
-
-</span>
-
-</div>
 
 </div>
 
@@ -2398,27 +2279,14 @@ function ACS_openSlotDemandModal(icao){
   const content = document.getElementById("acsSlotContent");
 
   const maxSlots =
-    ACS_getMaxSlotsByCategory(ap.category) || 0;
+    Number(ap.slot_capacity || 0) ||
+    ACS_getMaxSlotsByCategory(ap.category) ||
+    0;
 
   let usedTotal = 0;
   let count = 0;
 
-  const slots =
-    JSON.parse(localStorage.getItem("ACS_SLOTS") || "{}")[icao];
-
-  if(slots){
-
-    Object.values(slots).forEach(day=>{
-      Object.values(day).forEach(hour=>{
-        usedTotal += Number(hour.used || 0);
-        count++;
-      });
-    });
-
-  }
-
-  const usedAvg =
-    count > 0 ? Math.round(usedTotal / count) : 0;
+  const usedAvg = 0;
 
   const freeSlots =
     Math.max(0, maxSlots - usedAvg);
@@ -2493,7 +2361,7 @@ function ACS_openSlotDemandModal(icao){
     </div>
 
     <div style="font-size:14px; color:#00ff80">
-      ${maxSlots} slots/hour
+      ${maxSlots} daily slots
     </div>
 
     <div style="font-size:12px; opacity:0.7">
@@ -2565,7 +2433,7 @@ function ACS_openSlotDemandModal(icao){
   modal.style.display = "flex";
 
 }
-
+     
 /* ============================================================
    CLOSE SLOT MODAL
    ============================================================ */
@@ -2582,7 +2450,7 @@ function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
-
+     
 /* ============================================================
    === GLOBAL BASE BANNER — BACKEND CONTEXT ====================
    ============================================================ */
@@ -2646,13 +2514,15 @@ function ensureBaseBeforeLoad(callback) {
 
 }
 
-/* =============================================================
+/* ============================================================
    === INITIALIZATION — BACKEND COMPANY CONTEXT ================
-   ============================================================= */
+   ============================================================ */
 
 document.addEventListener("DOMContentLoaded", async () => {
 
   await ACS_loadCompanyContext();
+
+  await ACS_loadAfricaAirportCatalogFromBackend();
 
   updateGlobalBaseBanner();
 
@@ -2661,7 +2531,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
 });
-            
+
 /* ============================================================
    === SEND ORIGIN & DESTINATION TO ROUTE SCHEDULE =============
    ------------------------------------------------------------
@@ -2706,7 +2576,7 @@ function ACS_openRouteSchedule(destIcao) {
   window.location.href = url;
 
 }
-        
+     
 </script>
 
 </body>
