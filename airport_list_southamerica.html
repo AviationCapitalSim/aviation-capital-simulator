@@ -1187,7 +1187,23 @@ function openAirportInfo(icao) {
   const demand = adjustPassengerClasses(ap.demand);
   const totalDemand = demand.Y + demand.C + demand.F;
   const real = ACS_getAirportRealUtilization();
+  const maxSlots = ACS_num(ap.slot_capacity, 0);
+  const reservedSlots = ACS_num(ap.reserved_slots, 0);
+  const availableSlots = ACS_num(ap.available_slots, maxSlots);
+  const slotUtilization = ACS_num(ap.slot_utilization_pct, 0);
 
+  const slotColor =
+    slotUtilization >= 90 ? "#ff4d5e" :
+    slotUtilization >= 70 ? "#ffb300" :
+    "#00ff80";
+
+  const slotStatus =
+    slotUtilization >= 90 ? "CRITICAL SLOT PRESSURE" :
+    slotUtilization >= 70 ? "HIGH SLOT UTILIZATION" :
+    reservedSlots > 0 ? "SLOTS RESERVED" :
+    "FULL CAPACITY AVAILABLE";
+
+     
   const role =
     ap.category === "Primary Hub"
       ? "International Gateway"
@@ -1274,18 +1290,18 @@ function openAirportInfo(icao) {
           </div>
         </div>
 
-        <div>
-          <div class="acs-section-title">TRAFFIC UTILIZATION</div>
+         <div>
+          <div class="acs-section-title">SLOT UTILIZATION</div>
 
           <div style="font-size:13px; line-height:1.55;">
-            Market Demand:<br>
-            <strong>${real.demandCapturePct}% of ${ACS_formatNumber(totalDemand)} pax/day</strong><br>
-            Traffic: <strong>No Traffic</strong>
+            Reserved Slots:<br>
+            <strong>${ACS_formatNumber(reservedSlots)} of ${ACS_formatNumber(maxSlots)} daily slots</strong><br>
+            Available: <strong>${ACS_formatNumber(availableSlots)}</strong>
           </div>
 
           <div class="acs-capacity-bar">
             <div class="acs-capacity-fill"
-                 style="width:${real.utilizationPct}%; background:#1ec97b; color:#1ec97b">
+                 style="width:${slotUtilization}%; background:${slotColor}; color:${slotColor}">
             </div>
           </div>
 
@@ -1301,13 +1317,13 @@ function openAirportInfo(icao) {
 
           <span class="acs-status-chip" style="
             background:rgba(0,255,128,.10);
-            color:#00ff80;
-            border:1px solid rgba(0,255,128,.35);
+            color:${slotColor};
+            border:1px solid ${slotColor};
           ">
-            0% · IDLE
+            ${slotUtilization.toFixed(2)}% · ${slotStatus}
           </span>
         </div>
-
+        
         <div>
           <div class="acs-section-title">ECONOMIC ENVIRONMENT</div>
           <div style="font-size:13px; line-height:1.65;">
