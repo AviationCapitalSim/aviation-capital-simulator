@@ -779,6 +779,9 @@ function ACS_adaptAirport(row) {
     aircraft_limit: ACS_text(row.aircraft_limit, "Not specified"),
 
     slot_capacity: ACS_num(row.slot_capacity, 0),
+    reserved_slots: ACS_num(row.reserved_slots, 0),
+    available_slots: ACS_num(row.available_slots, ACS_num(row.slot_capacity, 0)),
+    slot_utilization_pct: ACS_num(row.slot_utilization_pct, 0),
 
     demand: {
       Y: ACS_num(row.demand_y ?? row.demand?.Y, 0),
@@ -983,13 +986,22 @@ function ACS_findAirport(icao) {
 
 function ACS_buildSlotCell(icao) {
   const ap = ACS_findAirport(icao);
+
   const max = ACS_num(ap?.slot_capacity, 0);
+  const available = ACS_num(ap?.available_slots, max);
+  const reserved = ACS_num(ap?.reserved_slots, 0);
+  const utilization = ACS_num(ap?.slot_utilization_pct, 0);
+
+  const fillWidth = Math.max(0, Math.min(100, 100 - utilization));
 
   return `
     <div onclick="ACS_openSlotDemandModal('${icao}')" style="cursor:pointer">
-      ${ACS_formatNumber(max)} / ${ACS_formatNumber(max)}
+      ${ACS_formatNumber(available)} / ${ACS_formatNumber(max)}
       <div class="slot-bar">
-        <div class="slot-bar-fill"></div>
+        <div class="slot-bar-fill" style="width:${fillWidth}%"></div>
+      </div>
+      <div style="font-size:11px; opacity:0.72; margin-top:2px;">
+        ${ACS_formatNumber(reserved)} reserved
       </div>
     </div>
   `;
@@ -1176,6 +1188,22 @@ function openAirportInfo(icao) {
   const totalDemand = demand.Y + demand.C + demand.F;
   const real = ACS_getAirportRealUtilization();
 
+  const maxSlots = ACS_num(ap.slot_capacity, 0);
+  const reservedSlots = ACS_num(ap.reserved_slots, 0);
+  const availableSlots = ACS_num(ap.available_slots, maxSlots);
+  const slotUtilization = ACS_num(ap.slot_utilization_pct, 0);
+
+  const slotColor =
+    slotUtilization >= 90 ? "#ff4d5e" :
+    slotUtilization >= 70 ? "#ffb300" :
+    "#00ff80";
+
+  const slotStatus =
+    slotUtilization >= 90 ? "CRITICAL SLOT PRESSURE" :
+    slotUtilization >= 70 ? "HIGH SLOT UTILIZATION" :
+    reservedSlots > 0 ? "SLOTS RESERVED" :
+    "FULL CAPACITY AVAILABLE";
+
   const role =
     ap.category === "Primary Hub"
       ? "International Gateway"
@@ -1263,17 +1291,17 @@ function openAirportInfo(icao) {
         </div>
 
         <div>
-          <div class="acs-section-title">TRAFFIC UTILIZATION</div>
+          <div class="acs-section-title">SLOT UTILIZATION</div>
 
           <div style="font-size:13px; line-height:1.55;">
-            Market Demand:<br>
-            <strong>${real.demandCapturePct}% of ${ACS_formatNumber(totalDemand)} pax/day</strong><br>
-            Traffic: <strong>No Traffic</strong>
+            Reserved Slots:<br>
+            <strong>${ACS_formatNumber(reservedSlots)} of ${ACS_formatNumber(maxSlots)} daily slots</strong><br>
+            Available: <strong>${ACS_formatNumber(availableSlots)}</strong>
           </div>
 
           <div class="acs-capacity-bar">
             <div class="acs-capacity-fill"
-                 style="width:${real.utilizationPct}%; background:#1ec97b; color:#1ec97b">
+                 style="width:${slotUtilization}%; background:${slotColor}; color:${slotColor}">
             </div>
           </div>
 
@@ -1289,10 +1317,10 @@ function openAirportInfo(icao) {
 
           <span class="acs-status-chip" style="
             background:rgba(0,255,128,.10);
-            color:#00ff80;
-            border:1px solid rgba(0,255,128,.35);
+            color:${slotColor};
+            border:1px solid ${slotColor};
           ">
-            0% · IDLE
+            ${slotUtilization.toFixed(2)}% · ${slotStatus}
           </span>
         </div>
 
@@ -1543,9 +1571,20 @@ function ACS_openSlotDemandModal(icao) {
   const content = document.getElementById("acsSlotContent");
 
   const maxSlots = ACS_num(ap.slot_capacity, 0);
-  const utilization = 0;
-  const freeSlots = maxSlots;
-  const color = "#00ff80";
+  const reservedSlots = ACS_num(ap.reserved_slots, 0);
+  const freeSlots = ACS_num(ap.available_slots, maxSlots);
+  const utilization = ACS_num(ap.slot_utilization_pct, 0);
+
+  const color =
+    utilization >= 90 ? "#ff4d5e" :
+    utilization >= 70 ? "#ffb300" :
+    "#00ff80";
+
+  const statusLabel =
+    utilization >= 90 ? "CRITICAL SLOT PRESSURE" :
+    utilization >= 70 ? "HIGH SLOT UTILIZATION" :
+    reservedSlots > 0 ? "SLOTS RESERVED" :
+    "FULL CAPACITY AVAILABLE";
 
   title.innerHTML = `
     <div style="text-align:center">
@@ -1595,8 +1634,8 @@ function ACS_openSlotDemandModal(icao) {
                style="width:${utilization}%; background:${color}; color:${color}">
           </div>
         </div>
-        <div style="font-size:14px; margin-top:6px">
-          ${utilization}%
+        <div style="font-size:14px; margin-top:6px; color:${color}; font-weight:600;">
+          ${utilization.toFixed(2)}%
         </div>
       </div>
 
@@ -1605,16 +1644,19 @@ function ACS_openSlotDemandModal(icao) {
         <div style="font-size:16px; color:${color}; font-weight:600">
           ${ACS_formatNumber(freeSlots)} / ${ACS_formatNumber(maxSlots)}
         </div>
+        <div style="font-size:12px; opacity:0.72; margin-top:4px;">
+          ${ACS_formatNumber(reservedSlots)} reserved slots
+        </div>
       </div>
 
       <div>
         <div class="acs-section-title">STATUS</div>
         <span class="acs-status-chip" style="
           background:rgba(0,255,128,.10);
-          color:#00ff80;
-          border:1px solid rgba(0,255,128,.35);
+          color:${color};
+          border:1px solid ${color};
         ">
-          FULL CAPACITY AVAILABLE
+          ${statusLabel}
         </span>
       </div>
 
