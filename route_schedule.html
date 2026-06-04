@@ -2012,371 +2012,291 @@ function ACS_convertDepartureToArrival(dep, blockMin) {
   return `${ah}:${am}`;
 }
 
-function confirmRoute() {
-
-  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-
-  // 1) Capturar valores del formulario
-  const origin      = (document.getElementById("origin")?.value || "").trim().toUpperCase();
-  const destination = (document.getElementById("destination")?.value || "").trim().toUpperCase();
-  const departure   = (document.getElementById("departureTime")?.value || "").trim();
-
-  /* ============================================================
-   🟢 AIRCRAFT VALIDATION — BACKEND AUTHORITY v1.0
+/* ============================================================
+   🟩 CONFIRM ROUTE — BACKEND AUTHORITY v3.0
    ------------------------------------------------------------
-   Source:
-   - Aircraft selector value = aircraft.id from backend
-   - Aircraft technical data comes from /v1/aircraft/fleet cache
-   - No ACS_MyAircraft localStorage authority
+   File: route_schedule.html
+   Purpose:
+   - Confirm route through Railway/PostgreSQL
+   - NO localStorage scheduleItems authority
+   - NO ACS_ROUTES_POOL authority
+   - NO confirmedRoute authority
+   - Backend creates:
+     route_plans
+     schedule_items
+     airport_slot_bookings
+     company_finance debit
+     finance_log
    ============================================================ */
 
-  const selectedAircraft =
-    typeof RS_getSelectedAircraftFromBackendCache === "function"
-      ? RS_getSelectedAircraftFromBackendCache()
-      : null;
+async function confirmRoute() {
 
-  if (!origin || !destination || !departure) {
-    alert("⚠️ Please complete all fields before confirming.");
-    return;
-  }
+  const DAY_IDS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  const confirmBtn = document.getElementById("confirmRouteBtn");
 
-  if (!selectedAircraft) {
-    alert("Please select an available aircraft.");
-    return;
-  }
+  try {
 
-  const aircraftId = Number(selectedAircraft.id || 0);
-
-  const modelKey = String(selectedAircraft.model_key || "")
-    .trim()
-    .toUpperCase();
-
-  const aircraftName = String(
-    selectedAircraft.aircraft_name ||
-    selectedAircraft.model_key ||
-    "Aircraft"
-  ).trim();
-
-  const registration = String(
-    selectedAircraft.registration ||
-    "UNREGISTERED"
-  ).trim();
-
-  if (!aircraftId || !modelKey) {
-    alert("⛔ Aircraft data incomplete. Please reload Route Schedule.");
-    console.warn("Invalid selected aircraft:", selectedAircraft);
-    return;
-  }
-
-  // 2) Días seleccionados (UI real)
-  const selectedDays = DAY_IDS.filter(id => document.getElementById(id)?.checked);
-  if (!selectedDays.length) {
-    alert("Please select at least one day.");
-    return;
-  }
-
-  // 3) TechData requerido
-  const blockTimeMin = parseInt(String(window.ACS_RouteTechData?.blockMin ?? ""), 10);
-  if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
-    alert("⛔ Block time invalid. Please recalculate route.");
-    return;
-  }
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.style.opacity = "0.55";
+      confirmBtn.style.cursor = "wait";
+      confirmBtn.textContent = "CONFIRMING...";
+    }
 
     /* ============================================================
-     🟥 ROUTE CHECK AUTHORITY — NOT DISPATCHABLE BLOCK
-     ------------------------------------------------------------
-     If aircraft range does not satisfy route distance,
-     the route cannot be confirmed.
-     ============================================================ */
+       1️⃣ FORM DATA
+       ============================================================ */
 
-  if (
-    window.ACS_RouteTechData?.rangeCheck &&
-    window.ACS_RouteTechData.rangeCheck.ok === false
-  ) {
-    alert("⛔ ROUTE CHECK — NOT DISPATCHABLE. Aircraft range insufficient for this route.");
-    return;
-  }
-     
-  // 4) Flight Number (UI → engine)
-     
-  let flightNumberOut = window.currentFN_Out || null;
-  let flightNumberIn  = window.currentFN_In  || null;
+    const origin = String(document.getElementById("origin")?.value || "")
+      .trim()
+      .toUpperCase();
 
-  if (!flightNumberOut || !flightNumberIn) {
-    const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
-    const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
-    if (!match) {
-      alert("⛔ Invalid flight number. Please regenerate the flight number.");
+    const destination = String(document.getElementById("destination")?.value || "")
+      .trim()
+      .toUpperCase();
+
+    const departure = String(document.getElementById("departureTime")?.value || "")
+      .trim();
+
+    if (!origin || !destination || !departure) {
+      alert("⚠️ Please complete all fields before confirming.");
       return;
     }
-    flightNumberOut = match[1];
-    flightNumberIn  = match[2];
-  }
 
-  if (!flightNumberOut || !flightNumberIn) {
-    alert("⛔ Flight numbers missing. Cannot confirm route.");
-    return;
-  }
+    /* ============================================================
+       2️⃣ AIRCRAFT — BACKEND CACHE AUTHORITY
+       ============================================================ */
 
-  // 5) Calcular llegada (HH:MM)
-     
-  const [depH, depM] = departure.split(":").map(n => parseInt(n, 10));
-  const arrivalTotalMin = (depH * 60 + depM) + blockTimeMin;
-  const arrH = Math.floor(arrivalTotalMin / 60) % 24;
-  const arrM = arrivalTotalMin % 60;
-  const arrival = `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
+    const selectedAircraft =
+      typeof RS_getSelectedAircraftFromBackendCache === "function"
+        ? RS_getSelectedAircraftFromBackendCache()
+        : null;
 
-  
-  // 7) Distancia (safety net)
-     
-  let finalDistanceNM = Number(window.ACS_RouteTechData?.distNM);
-  if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
-    if (typeof rs_getDistanceNM === "function") {
-      finalDistanceNM = rs_getDistanceNM(origin, destination);
+    if (!selectedAircraft) {
+      alert("⚠️ Please select an available aircraft.");
+      return;
     }
-  }
 
-  // 8) Cargar scheduleItems
-     
-  let scheduleItems = [];
-  try { scheduleItems = JSON.parse(localStorage.getItem("scheduleItems") || "[]"); } catch { scheduleItems = []; }
+    const aircraftId = Number(selectedAircraft.id || 0);
 
-  // ============================================================
-// 🟧 EDIT MODE — SINGLE FLIGHT UPDATE (FINAL)
-// ------------------------------------------------------------
-// ✔ NO crea vuelos
-// ✔ NO borra otros vuelos
-// ✔ NO toca el day
-// ✔ NO regenera flight number
-// ============================================================
+    const modelKey = String(selectedAircraft.model_key || "")
+      .trim()
+      .toUpperCase();
 
-const editRaw = localStorage.getItem("ACS_ROUTE_EDIT");
-const isEditMode = !!editRaw;
+    const aircraftName = String(
+      selectedAircraft.aircraft_name ||
+      selectedAircraft.model_key ||
+      "Aircraft"
+    ).trim();
 
-if (isEditMode) {
+    const registration = String(
+      selectedAircraft.registration ||
+      "UNREGISTERED"
+    ).trim();
 
-  let editCtx;
-  try {
-    editCtx = JSON.parse(editRaw);
-  } catch {
-    alert("⛔ Edit context corrupted");
-    return;
-  }
+    if (!aircraftId || !modelKey) {
+      alert("⛔ Aircraft data incomplete. Please reload Route Schedule.");
+      console.warn("Invalid selected aircraft:", selectedAircraft);
+      return;
+    }
 
-   let scheduleItems = [];
-   try {
-   scheduleItems = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-   } catch {
-   scheduleItems = [];
-   }
-     
-  const idx = scheduleItems.findIndex(f => f.id === editCtx.routeKey);
-  if (idx === -1) {
-    alert("⛔ Flight to edit not found");
-    return;
-  }
+    /* ============================================================
+       3️⃣ DAYS OF OPERATION
+       ============================================================ */
 
-  const f = scheduleItems[idx];
-     
-// ============================================================
-// 🟢 EDIT ROUTE — CREATE NEW FLIGHT INSTANCE (CANONICAL ACS)
-// Regla: EDIT = NUEVO VUELO OPERATIVO
-// ============================================================
+    const selectedDays = DAY_IDS.filter(id =>
+      document.getElementById(id)?.checked
+    );
 
-if (isEditMode === true && f && f.id) {
+    if (!selectedDays.length) {
+      alert("⚠️ Please select at least one day.");
+      return;
+    }
 
-  // 1️⃣ Crear NUEVO vuelo a partir del original
-     
-  const newFlight = {
-    ...f,
+    /* ============================================================
+       4️⃣ TECH DATA / ROUTE CHECK
+       ============================================================ */
 
-    // 🔑 NUEVA identidad
-    id: `FL_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+    const tech = window.ACS_RouteTechData || {};
 
-    // 🕓 Nuevos datos operativos (del formulario)
-    day: day,
-    departure: departure,
-    arrival: arrival,
+    const blockTimeMin = Number(tech.blockMin || 0);
 
-    // 🔁 RESET TOTAL DE ASIGNACIÓN
-    aircraftId: null,
-    assigned: false,
+    if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
+      alert("⛔ Block time invalid. Please recalculate route.");
+      return;
+    }
 
-    // 🧹 Limpiar estado runtime
-    depAbsMin: null,
-    arrAbsMin: null,
-    pendingAircraftId: null,
+    if (tech.rangeCheck && tech.rangeCheck.ok === false) {
+      alert("⛔ ROUTE CHECK — NOT DISPATCHABLE. Aircraft range insufficient for this route.");
+      return;
+    }
 
-    // 🧠 Metadata técnica (se recalcula)
-    modelKey: (modelKey || f.modelKey || "").toString().trim().toUpperCase(),
-    blockTimeMin: blockTimeMin,
-    turnaroundMin: window.ACS_RouteTechData?.turnMin ?? f.turnaroundMin,
-    turnaroundMinOptimized:
-      window.ACS_RouteTechData?.turnMinOptimized ?? f.turnaroundMinOptimized,
-    totalRotationMin:
-      window.ACS_RouteTechData?.totalMin ?? f.totalRotationMin,
+    const finalDistanceNM = Number(tech.distNM || 0);
 
-    optimized:
-      document.getElementById("optimizeRotation")?.checked || false,
+    if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
+      alert("⛔ Route distance invalid. Please recalculate route.");
+      return;
+    }
 
-    // 📎 Marca informativa (opcional)
-    recreatedFromEdit: true
-  };
+    const optimizeRotation =
+      !!document.getElementById("optimizeRotation")?.checked;
 
-  // 2️⃣ Eliminar vuelo anterior
-  const updatedItems = scheduleItems.filter(it => it.id !== f.id);
+    const turnaroundMin = Number(
+      optimizeRotation
+        ? (tech.turnMinOptimized || tech.turnMin || 45)
+        : (tech.turnMin || 45)
+    );
 
-  // 3️⃣ Insertar nuevo vuelo
-  updatedItems.push(newFlight);
+    const totalRotationMin = Number(
+      tech.totalMin ||
+      ((blockTimeMin * 2) + turnaroundMin)
+    );
 
-  // 4️⃣ Guardar
-  localStorage.setItem("scheduleItems", JSON.stringify(updatedItems));
+    const aircraftRangeNm = Number(
+      tech.rangeNm ||
+      selectedAircraft.range_nm ||
+      selectedAircraft.range ||
+      0
+    );
 
-  // 5️⃣ Limpiar estado de edición
-  localStorage.removeItem("ACS_ROUTE_EDIT");
+    const speedKts = Number(
+      tech.speedKts ||
+      selectedAircraft.speed_kts ||
+      selectedAircraft.speed ||
+      0
+    );
 
-  alert("Flight re-planned successfully.");
-  window.location.href = "schedule_table.html";
-  return;
- }
-}
-     
-// 10) Crear vuelos por día (1 día = 1 vuelo)
-  const createdFlights = [];
+    /* ============================================================
+       5️⃣ ARRIVAL TIME
+       ============================================================ */
 
-  selectedDays.forEach(day => {
+    const arrival =
+      typeof ACS_convertDepartureToArrival === "function"
+        ? ACS_convertDepartureToArrival(departure, blockTimeMin)
+        : (() => {
+            const [depH, depM] = departure.split(":").map(n => parseInt(n, 10));
+            const arrivalTotalMin = (depH * 60 + depM) + blockTimeMin;
+            const arrH = Math.floor(arrivalTotalMin / 60) % 24;
+            const arrM = arrivalTotalMin % 60;
+            return `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
+          })();
 
-    const flightId = "FL_" + Math.floor(100000 + Math.random() * 900000);
+    /* ============================================================
+       6️⃣ FLIGHT NUMBERS
+       ============================================================ */
 
-      const flight = {
-      id: flightId,
-      type: "flight",
+    let flightNumberOut = window.currentFN_Out || null;
+    let flightNumberIn  = window.currentFN_In  || null;
 
-      aircraftId,
-      aircraft_id: aircraftId,
-      assigned: true,
+    if (!flightNumberOut || !flightNumberIn) {
+      const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
+      const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
 
-      modelKey,
-      aircraft: aircraftName,
-      aircraftName,
-      registration,
+      if (!match) {
+        alert("⛔ Invalid flight number. Please regenerate the flight number.");
+        return;
+      }
 
+      flightNumberOut = match[1];
+      flightNumberIn  = match[2];
+    }
+
+    if (!flightNumberOut || !flightNumberIn) {
+      alert("⛔ Flight numbers missing. Cannot confirm route.");
+      return;
+    }
+
+    /* ============================================================
+       7️⃣ BACKEND PAYLOAD
+       ============================================================ */
+
+    const payload = {
       origin,
       destination,
-      day,
+
+      aircraft_id: aircraftId,
+      aircraftId,
+
+      selected_days: selectedDays,
+      days: selectedDays,
+
       departure,
       arrival,
 
-      distanceNM: finalDistanceNM,
-      blockTimeMin,
+      route_type: "PASSENGER",
 
-      turnaroundMin: window.ACS_RouteTechData?.turnMin ?? 45,
-      turnaroundMinOptimized: window.ACS_RouteTechData?.turnMinOptimized ?? null,
-      totalRotationMin: window.ACS_RouteTechData?.totalMin ?? (blockTimeMin * 2 + 45),
+      distance_nm: Math.round(finalDistanceNM),
+      block_time_min: Math.round(blockTimeMin),
+      turnaround_min: Math.round(turnaroundMin),
+      total_rotation_min: Math.round(totalRotationMin),
 
-      rangeNm: window.ACS_RouteTechData?.rangeNm ?? null,
-      speedKts: window.ACS_RouteTechData?.speedKts ?? null,
+      aircraft_range_nm: Math.round(aircraftRangeNm),
+      speed_kts: Math.round(speedKts),
 
-      optimized: document.getElementById("optimizeRotation")?.checked || false,
+      model_key: modelKey,
+      aircraft: aircraftName,
+      registration,
 
-      flightNumberOut,
-      flightNumberIn,
+      flight_number_out: flightNumberOut,
+      flight_number_in: flightNumberIn,
 
-      source: "ACS_ROUTE_SCHEDULE_BACKEND_AIRCRAFT_V1"
+      optimize_rotation: optimizeRotation,
+      source: "ACS_ROUTE_SCHEDULE_BACKEND_CONFIRM_V3"
     };
 
-scheduleItems.push(flight);
-createdFlights.push(flight);
-});
+    console.log("🟦 RS CONFIRM ROUTE PAYLOAD:", payload);
 
-  // 11) Guardar scheduleItems (SOURCE OF TRUTH)
-  localStorage.setItem("scheduleItems", JSON.stringify(scheduleItems));
+    /* ============================================================
+       8️⃣ POST TO RAILWAY / POSTGRESQL AUTHORITY
+       ============================================================ */
 
-  // 12) SLOT ENGINE (si existe) — DENTRO de confirmRoute (returns válidos)
-  if (typeof ACS_buildSlotsForRoute === "function" && typeof ACS_bookRoute === "function") {
-
-    for (const f of createdFlights) {
-
-      const slotRoute = {
-        origin: f.origin,
-        destination: f.destination,
-        weekdays: [f.day],
-        departureUTC: f.departure,
-        arrivalUTC: ACS_convertDepartureToArrival(f.departure, f.blockTimeMin)
-      };
-
-      const slotsCreated = ACS_buildSlotsForRoute(slotRoute);
-      if (!slotsCreated || !slotsCreated.length) {
-        alert("⚠️ Slots could not be generated. Check schedule.");
-        return;
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/routes/plans",
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
       }
+    );
 
-      const success = ACS_bookRoute(slotRoute);
-      if (!success) {
-        alert("❌ Route cannot be created. Slot unavailable.");
-        return;
-      }
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true) {
+      console.error("🔴 RS CONFIRM ROUTE FAILED:", data);
+
+      alert(
+        "⛔ Route confirmation failed: " +
+        (data?.error || data?.details || "Unknown backend error")
+      );
+
+      return;
     }
-  }
 
-  // 13) Legacy route pool (si lo quieres mantener para chips / compat)
-     
-  let routesPool = [];
-  try { routesPool = JSON.parse(localStorage.getItem("ACS_ROUTES_POOL") || "[]"); } catch { routesPool = []; }
+    console.log("🟢 RS ROUTE CONFIRMED IN BACKEND:", data);
 
-  // Guardar un objeto “route” compatible (sin romper)
-     
-    const newRoute = {
-    id: "RT_" + Math.floor(100000 + Math.random() * 900000),
-    type: "route",
+    alert("✅ Route confirmed. Airport Slot Fee applied.");
 
-    origin,
-    destination,
-    days: [...selectedDays],
-    departure,
-    blockTimeMin,
+    window.location.href = "schedule_table.html";
 
-    aircraftId,
-    aircraft_id: aircraftId,
-    assigned: true,
+  } catch (err) {
 
-    modelKey,
-    aircraft: aircraftName,
-    aircraftName,
-    registration,
+    console.error("🔴 RS CONFIRM ROUTE ERROR:", err);
 
-    distanceNM: finalDistanceNM,
-    rangeNm: window.ACS_RouteTechData?.rangeNm ?? null,
-    speedKts: window.ACS_RouteTechData?.speedKts ?? null,
+    alert("⛔ Route confirmation failed. Check console/Railway logs.");
 
-    flightNumberOut,
-    flightNumberIn,
+  } finally {
 
-    source: "ACS_ROUTE_SCHEDULE_BACKEND_AIRCRAFT_V1"
-  };
-     
-  routesPool.push(newRoute);
-  localStorage.setItem("ACS_ROUTES_POOL", JSON.stringify(routesPool));
-  localStorage.setItem("confirmedRoute", JSON.stringify(newRoute));
-
-  // 14) Solo en CREATE: marcar números usados
-  if (!isEditMode) {
-    if (typeof markNumbersUsed === "function") markNumbersUsed(flightNumberOut, flightNumberIn);
-    if (typeof bumpFlightCounter === "function") bumpFlightCounter();
-  }
-
-  // 15) HR update (si existe)
-  try {
-    if (typeof HR_updateRequirementsFromFleet === "function") {
-      HR_updateRequirementsFromFleet();
-      console.log("🟢 HR REQUIREMENTS UPDATED AFTER ROUTE CONFIRM");
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.style.opacity = "1";
+      confirmBtn.style.cursor = "pointer";
+      confirmBtn.textContent = "CONFIRM ROUTE";
     }
-  } catch (e) {
-    console.warn("⚠ HR update after route confirm failed:", e);
-  }
 
-  alert("Route successfully added to Schedule.");
-  window.location.href = "schedule_table.html";
+  }
 }
 
 </script>
