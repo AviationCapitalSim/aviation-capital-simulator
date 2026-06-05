@@ -694,6 +694,10 @@ let ACS_AIRPORTS = [];
 let ACS_BASE_AIRPORT = null;
 let ACS_TABLE_SORT_STATE = {};
 
+let ACS_AIRPORT_CATALOG_YEAR = null;
+let ACS_AIRPORT_YEAR_WATCHER = null;
+let ACS_AIRPORT_REFRESH_IN_PROGRESS = false;
+
 function ACS_num(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -836,8 +840,13 @@ async function ACS_loadCompanyContext() {
 }
 
 async function ACS_loadAirportCatalog() {
+  const simYear = ACS_currentYear();
+
   const url =
-    `${ACS_API_BASE}/airports/catalog?continent=${encodeURIComponent(ACS_CONTINENT)}&limit=5000`;
+    `${ACS_API_BASE}/airports/catalog` +
+    `?continent=${encodeURIComponent(ACS_CONTINENT)}` +
+    `&sim_year=${encodeURIComponent(simYear)}` +
+    `&limit=5000`;
 
   const data = await ACS_fetchJson(url);
 
@@ -846,10 +855,14 @@ async function ACS_loadAirportCatalog() {
       .map(ACS_adaptAirport)
       .filter(a => a.icao);
 
-  console.log("🟢 ACS AIRPORT BACKEND CATALOG LOADED — North America:", {
+  ACS_AIRPORT_CATALOG_YEAR = simYear;
+
+  console.log(`🟢 ACS AIRPORT BACKEND CATALOG LOADED — ${ACS_CONTINENT}:`, {
     count: ACS_AIRPORTS.length,
-    source: "airport_catalog",
-    continent: ACS_CONTINENT
+    source: data?.historical_resolution?.source || "UNKNOWN",
+    continent: ACS_CONTINENT,
+    sim_year: simYear,
+    version: data?.version || null
   });
 
   return ACS_AIRPORTS;
@@ -859,7 +872,13 @@ async function ACS_loadAirportByIcao(icao) {
   const code = ACS_icao(icao);
   if (!code) return null;
 
-  const data = await ACS_fetchJson(`${ACS_API_BASE}/airports/catalog/${encodeURIComponent(code)}`);
+  const simYear = ACS_currentYear();
+
+  const url =
+    `${ACS_API_BASE}/airports/catalog/${encodeURIComponent(code)}` +
+    `?sim_year=${encodeURIComponent(simYear)}`;
+
+  const data = await ACS_fetchJson(url);
 
   const row =
     data.airport ||
@@ -1718,6 +1737,62 @@ function ACS_openRouteSchedule(destIcao) {
     `route_schedule.html?origin=${encodeURIComponent(originIcao)}&destination=${encodeURIComponent(dest)}`;
 }
 
+async function ACS_refreshAirportCatalogForCurrentYear() {
+  if (ACS_AIRPORT_REFRESH_IN_PROGRESS) {
+    return;
+  }
+
+  const currentYear = ACS_currentYear();
+
+  if (currentYear === ACS_AIRPORT_CATALOG_YEAR) {
+    return;
+  }
+
+  ACS_AIRPORT_REFRESH_IN_PROGRESS = true;
+
+  try {
+    const selectedCountry =
+      document.getElementById("countrySelect")?.value || "ALL";
+
+    await ACS_loadAirportCatalog();
+    await ACS_loadBaseAirport();
+
+    updateGlobalBaseBanner();
+    ACS_renderCountrySelector(ACS_AIRPORTS);
+
+    const selector = document.getElementById("countrySelect");
+
+    if (
+      selector &&
+      [...selector.options].some(option => option.value === selectedCountry)
+    ) {
+      selector.value = selectedCountry;
+    }
+
+    filterByCountry();
+
+    console.log("🟢 ACS AIRPORT HISTORICAL YEAR REFRESH COMPLETED:", {
+      continent: ACS_CONTINENT,
+      sim_year: ACS_AIRPORT_CATALOG_YEAR
+    });
+
+  } catch (err) {
+    console.error("🔴 ACS AIRPORT HISTORICAL YEAR REFRESH FAILED:", err);
+  } finally {
+    ACS_AIRPORT_REFRESH_IN_PROGRESS = false;
+  }
+}
+
+function ACS_startAirportYearWatcher() {
+  if (ACS_AIRPORT_YEAR_WATCHER !== null) {
+    clearInterval(ACS_AIRPORT_YEAR_WATCHER);
+  }
+
+  ACS_AIRPORT_YEAR_WATCHER = window.setInterval(() => {
+    void ACS_refreshAirportCatalogForCurrentYear();
+  }, 30000);
+}
+    
 function handleLogout() {
   window.location.href = "index.html";
 }
@@ -1732,9 +1807,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     updateGlobalBaseBanner();
     loadAirports();
+    ACS_startAirportYearWatcher();
 
   } catch (err) {
-    console.error("🔴 ACS NORTH AMERICA BACKEND LOAD FAILED:", err);
+    console.error(
+      `🔴 ACS ${ACS_CONTINENT.toUpperCase()} BACKEND LOAD FAILED:`,
+      err
+    );
+
     tableBody.innerHTML = `
       <tr>
         <td colspan="6">
@@ -1744,6 +1824,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     `;
   }
 });
+
+window.addEventListener("beforeunload", () => {
+  if (ACS_AIRPORT_YEAR_WATCHER !== null) {
+    clearInterval(ACS_AIRPORT_YEAR_WATCHER);
+    ACS_AIRPORT_YEAR_WATCHER = null;
+  }
+});
+     
 </script>
 
 </body>
