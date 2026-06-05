@@ -927,7 +927,7 @@ document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
 
     <label>Departure Time (Local)</label>
     <!-- A2: se añade autoGenerateFlightNumber al onchange -->
-    <select id="departureTime" onchange="autoCalculate(); autoGenerateFlightNumber();"></select>
+    <select id="departureTime" onchange="autoCalculate();"></select>
 
    <label style="text-align:center;margin-top:1.2rem;">Days of Operation</label>
 
@@ -1030,128 +1030,6 @@ function toggleOptimization() {
 function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
-}
-
-/* ============================================================
-   🟦 AUTO-GENERATE FLIGHT NUMBER — MODEL BASED
-   ============================================================ */
-
-function autoGenerateFlightNumber() {
-
-  if (!userIATA || userIATA.length !== 2) {
-    console.warn("❌ IATA code missing or invalid");
-    return;
-  }
-
-  const origin = document.getElementById("origin").value.trim();
-  const dest   = document.getElementById("destination").value.trim();
-  const model  = document.getElementById("aircraft").value;
-
-  // Ahora depende de modelo seleccionado
-  if (!origin || !dest || !model) return;
-
-  const pair = generateFlightPair();
-
-  if (flightNumberInput) {
-    flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
-  }
-}
-
-/* ============================================================
-   🟦 FLIGHT NUMBER ENGINE — IATA CONNECTED v1.1 (COMPLETO)
-   ============================================================ */
-
-// Input del número de vuelo
-const flightNumberInput = document.getElementById("flightNumber");
-
-// Traer IATA guardado en create_airline
-let userIATA = localStorage.getItem("userIATA") || "AT";
-if (!localStorage.getItem("userIATA")) {
-  console.warn("⚠️ No userIATA found — using default AT");
-}
-
-// Contadores globales
-let lastFlightNumber = parseInt(
-  localStorage.getItem("lastFlightNumber") || "100",
-  10
-);
-let usedFlights = JSON.parse(
-  localStorage.getItem("flightNumbers") || "[]"
-);
-
-/* ============================================================
-   🟧 A3 — Safe Flight Pair Generator (OUT → IN)
-   ============================================================ */
-     
-function generateFlightPair() {
-
-  let num  = lastFlightNumber;
-  let out  = `${userIATA}${num}`;
-  let inn  = `${userIATA}${num + 1}`;
-
-  // Evitar números ya usados
-  while (usedFlights.includes(out) || usedFlights.includes(inn)) {
-    num += 2;
-    out = `${userIATA}${num}`;
-    inn = `${userIATA}${num + 1}`;
-  }
-
-  // Actualizar el contador global
-  lastFlightNumber = num;
-
-  // Pintar en input
-  if (flightNumberInput) {
-    flightNumberInput.value = `${out} ➜ ${inn}`;
-  }
-
-  return { out, inn };
-}
-
-/* ============================================================
-   🟦 AUTO-GENERATE FLIGHT NUMBER (LLAMADO DESDE EL SELECT)
-   ============================================================ */
-     
-function autoGenerateFlightNumber() {
-
-  // Necesitamos IATA válido
-  if (!userIATA || userIATA.length !== 2) {
-    console.warn("❌ IATA code missing or invalid");
-    return;
-  }
-
-  const origin = document.getElementById("origin").value.trim();
-  const dest   = document.getElementById("destination").value.trim();
-  const ac     = document.getElementById("aircraft").value;
-
-  // Solo generar si todo está seleccionado
-  if (!origin || !dest || !ac) return;
-
-  // Generamos nueva pareja OUT/IN
-  const pair = generateFlightPair();
-
-  if (flightNumberInput) {
-    flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
-  }
-}
-
-/* ============================================================
-   🟦 FLIGHT NUMBER UTILITIES (NO TOCAR)
-   ============================================================ */
-
-function bumpFlightCounter() {
-  lastFlightNumber += 2;
-  localStorage.setItem("lastFlightNumber", String(lastFlightNumber));
-}
-
-function markNumbersUsed(out, inn) {
-  usedFlights.push(out, inn);
-  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-}
-
-function freeNumbers(out, inn) {
-  if (!out || !inn) return;
-  usedFlights = usedFlights.filter(n => n !== out && n !== inn);
-  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
 }
 
 /* ============================================================
