@@ -1832,13 +1832,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const depSel = document.getElementById("departureTime");
     const optBox = document.getElementById("optimizeRotation");
 
-    /* 🔹 Evento: cambio de avión */
     if (acSel) {
-        acSel.addEventListener("change", () => {
-            autoCalculate();                       // 🔥 recalcular
-            autoGenerateFlightNumber();            // 🔥 regenerar OUT/IN
-        });
-    }
+    acSel.addEventListener("change", () => {
+    autoCalculate();
+    });
+   }
 
     /* 🔹 Evento: cambio de hora */
     if (depSel) {
@@ -1859,17 +1857,11 @@ document.addEventListener("DOMContentLoaded", () => {
    ============================================================ */
 setTimeout(() => {
 
-  const isEdit = !!localStorage.getItem("ACS_ROUTE_EDIT");
-  const model  = acSel?.value || "";
+  const model = acSel?.value || "";
 
   if (!model) return;
 
   autoCalculate();
-
-  // ⛔ NO regenerar flight number en EDIT
-  if (!isEdit) {
-    autoGenerateFlightNumber();
-  }
 
 }, 60);
 
@@ -2065,31 +2057,6 @@ async function confirmRoute() {
           })();
 
     /* ============================================================
-       6️⃣ FLIGHT NUMBERS
-       ============================================================ */
-
-    let flightNumberOut = window.currentFN_Out || null;
-    let flightNumberIn  = window.currentFN_In  || null;
-
-    if (!flightNumberOut || !flightNumberIn) {
-      const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
-      const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
-
-      if (!match) {
-        alert("⛔ Invalid flight number. Please regenerate the flight number.");
-        return;
-      }
-
-      flightNumberOut = match[1];
-      flightNumberIn  = match[2];
-    }
-
-    if (!flightNumberOut || !flightNumberIn) {
-      alert("⛔ Flight numbers missing. Cannot confirm route.");
-      return;
-    }
-
-    /* ============================================================
        7️⃣ BACKEND PAYLOAD
        ============================================================ */
 
@@ -2119,9 +2086,6 @@ async function confirmRoute() {
       model_key: modelKey,
       aircraft: aircraftName,
       registration,
-
-      flight_number_out: flightNumberOut,
-      flight_number_in: flightNumberIn,
 
       optimize_rotation: optimizeRotation,
       source: "ACS_ROUTE_SCHEDULE_BACKEND_CONFIRM_V3"
