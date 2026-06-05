@@ -482,15 +482,16 @@ footer {
     <label>Destination (ICAO)</label>
     <input type="text" id="destination" readonly />
 
-    <!-- Número de vuelo — VACÍO, motor intacto pero no se ejecuta -->
+    <!-- Número de vuelo — autoridad PostgreSQL -->
        
     <label>Flight Number</label>
     <input
-    type="text"
-    id="flightNumber"
-    value="Assigned automatically on confirmation"
-    readonly
-   />
+      type="text"
+      id="flightNumber"
+      value=""
+      placeholder="Loading official flight number..."
+      readonly
+    />
 
     <!-- Aircraft limpia -->
        
@@ -901,6 +902,73 @@ function loadAvailableAircraft() {
    - NO localStorage for origin/destination
    ============================================================ */
 
+/* ============================================================
+   🟦 OFFICIAL FLIGHT NUMBER PREVIEW — BACKEND AUTHORITY
+   ------------------------------------------------------------
+   Source:
+   GET /v1/routes/flight-number-preview
+   ============================================================ */
+
+async function RS_loadOfficialFlightNumberPreview() {
+
+  const input = document.getElementById("flightNumber");
+  if (!input) return null;
+
+  input.value = "";
+  input.placeholder = "Loading official flight number...";
+
+  try {
+
+    const res = await fetch(
+      "https://api.aviationcapitalsim.com/v1/routes/flight-number-preview",
+      {
+        method: "GET",
+        credentials: "include"
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok || !data || data.ok !== true) {
+      throw new Error(
+        data?.details ||
+        data?.error ||
+        "FLIGHT_NUMBER_PREVIEW_FAILED"
+      );
+    }
+
+    input.value = `${data.flight_number_out} ➜ ${data.flight_number_in}`;
+    input.placeholder = "";
+
+    window.ACS_FLIGHT_NUMBER_PREVIEW = {
+      outbound: data.flight_number_out,
+      inbound: data.flight_number_in,
+      iata_code: data.iata_code,
+      authority: data.authority
+    };
+
+    console.log(
+      "🟢 RS OFFICIAL FLIGHT NUMBER READY:",
+      window.ACS_FLIGHT_NUMBER_PREVIEW
+    );
+
+    return window.ACS_FLIGHT_NUMBER_PREVIEW;
+
+  } catch (error) {
+
+    console.error(
+      "🔴 RS FLIGHT NUMBER PREVIEW FAILED:",
+      error
+    );
+
+    input.value = "";
+    input.placeholder = "Flight number unavailable";
+    window.ACS_FLIGHT_NUMBER_PREVIEW = null;
+
+    return null;
+  }
+}
+
 async function RS_initCoreOnce() {
 
   if (window.__RS_CORE_INIT_DONE) return;
@@ -913,6 +981,7 @@ async function RS_initCoreOnce() {
   }
 
     await rs_populateAircraftSelect("");
+    await RS_loadOfficialFlightNumberPreview();
 
   const aircraftSelect = document.getElementById("aircraft");
   if (aircraftSelect) {
@@ -1031,6 +1100,15 @@ function handleLogout(){
   alert("👋 Session closed. Your fleet awaits your command!");
   window.location.href = "login.html";
 }
+
+/* ============================================================
+   🟦 FLIGHT NUMBER — POSTGRESQL PREVIEW AUTHORITY
+   ------------------------------------------------------------
+   - No localStorage
+   - No frontend counter
+   - Official pair loaded from backend
+   - Final pair allocated transactionally on confirmation
+   ============================================================ */
 
 /* ============================================================
    🟧 B1 — ROUTE SCHEDULE MODE DETECTION (EDIT · FIX FINAL)
@@ -1832,11 +1910,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const depSel = document.getElementById("departureTime");
     const optBox = document.getElementById("optimizeRotation");
 
+    /* 🔹 Evento: cambio de avión */
     if (acSel) {
-    acSel.addEventListener("change", () => {
-    autoCalculate();
-    });
-   }
+        acSel.addEventListener("change", () => {
+            autoCalculate();
+        });
+    }
 
     /* 🔹 Evento: cambio de hora */
     if (depSel) {
@@ -2124,7 +2203,19 @@ async function confirmRoute() {
 
     console.log("🟢 RS ROUTE CONFIRMED IN BACKEND:", data);
 
-    alert("✅ OCC Route confirmed.");
+    const officialOut = data?.flight_numbers?.outbound || "";
+    const officialIn = data?.flight_numbers?.inbound || "";
+    const flightNumberInput = document.getElementById("flightNumber");
+
+    if (flightNumberInput && officialOut && officialIn) {
+      flightNumberInput.value = `${officialOut} ➜ ${officialIn}`;
+    }
+
+    alert(
+      officialOut && officialIn
+        ? `✅ Route confirmed: ${officialOut} ➜ ${officialIn}`
+        : "✅ Route confirmed."
+    );
 
     window.location.href = "schedule_table.html";
 
