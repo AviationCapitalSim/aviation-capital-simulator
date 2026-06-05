@@ -1,8 +1,3 @@
-<!-- ============================================================
-     === ROUTE SCHEDULE MODULE — Qatar Luxury Edition ===========
-     ------------------------------------------------------------
-     Version:  v3.0 | Date: 09 DEC 2025
-     ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,2483 +5,1030 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Route Schedule - Aviation Capital Simulator</title>
 
-  <!-- ======== ACS Styles ======== -->
   <link rel="stylesheet" href="styles.css?v=3.1" />
-
-  <!-- ======== ACS Favicons (A Confirmado) ======== -->
   <link rel="icon" type="image/png" sizes="16x16" href="acs_logo_16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="acs_logo_32.png">
   <link rel="icon" type="image/png" sizes="64x64" href="acs_logo_64.png">
   <link rel="apple-touch-icon" href="acs_logo_180.png">
 
-<style>
-/* ============================================================
-     === ROUTE SCHEDULE — Qatar Luxury Edition CLEAN v1.1 ======
-   ============================================================ */
+  <style>
+    /* ============================================================
+       ACS ROUTE SCHEDULE — AIRBUS OCC v4.0
+       Backend-authoritative / No browser persistence authority / No frontend IDs
+       ============================================================ */
 
-body {
-  margin: 0;
-  background-color: #081530;
-  color: white;
-  font-family: "Poppins", sans-serif;
-}
+    :root {
+      --acs-bg: #081530;
+      --acs-panel: rgba(13, 27, 58, 0.92);
+      --acs-panel-2: rgba(7, 18, 42, 0.96);
+      --acs-gold: #ffb300;
+      --acs-gold-soft: #ffd56a;
+      --acs-blue: #8ab4ff;
+      --acs-text: #e8eeff;
+      --acs-muted: #9dadd5;
+      --acs-green: #00d88a;
+      --acs-red: #ff5263;
+      --acs-border: rgba(255, 179, 0, 0.22);
+    }
 
-/* ============================================================
-     === GLOBAL HEADER — EXACT DASHBOARD COPY =================
-   ============================================================ */
+    * { box-sizing: border-box; }
 
-.acs-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  backdrop-filter: blur(9px);
-  background: rgba(12,23,50,0.45);
-  padding: 0.8rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 2px solid #ffb300;
-  z-index: 5000;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top right, rgba(37, 87, 164, 0.22), transparent 35%),
+        linear-gradient(180deg, #07132c 0%, var(--acs-bg) 100%);
+      color: var(--acs-text);
+      font-family: "Poppins", Arial, sans-serif;
+    }
 
-.acs-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+    .acs-header {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 5000;
+      min-height: 72px;
+      padding: 0.75rem 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      backdrop-filter: blur(12px);
+      background: rgba(7, 18, 42, 0.86);
+      border-bottom: 2px solid var(--acs-gold);
+    }
 
-.acs-left img {
-  height: 46px;
-}
+    .acs-left, .acs-right, .acs-nav {
+      display: flex;
+      align-items: center;
+    }
 
-.acs-left h1 {
-  font-size: 1.15rem;
-  margin: 0;
-  color: #ffb300;
-  letter-spacing: 0.5px;
-}
+    .acs-left { gap: 0.8rem; min-width: 260px; }
+    .acs-left img { height: 44px; }
+    .acs-left h1 {
+      margin: 0;
+      color: var(--acs-gold);
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
+    }
 
-.acs-nav {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-}
+    .acs-nav {
+      justify-content: center;
+      gap: 1.5rem;
+      flex: 1;
+    }
 
-.acs-nav a {
-  position: relative;
-  font-size: 1rem;
-  letter-spacing: 0.4px;
-  color: #dbe4ff;
-  text-decoration: none;
-  transition: 0.25s ease;
-  padding-bottom: 6px;
-}
+    .acs-nav a, .support-btn, .logout-btn {
+      color: #dce6ff;
+      text-decoration: none;
+      font-size: 0.93rem;
+    }
 
-.acs-nav a:hover,
-.acs-nav a.active {
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.6);
-}
+    .acs-nav a.active, .acs-nav a:hover { color: var(--acs-gold); }
 
-.acs-nav a.active::after,
-.acs-nav a:hover::after {
-  content: "";
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(to right, #ffb300, #ffe7a0);
-  border-radius: 2px;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
-}
+    .acs-right { gap: 0.7rem; }
 
-.acs-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+    .support-btn, .logout-btn {
+      padding: 0.45rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid rgba(138, 180, 255, 0.35);
+      background: rgba(138, 180, 255, 0.08);
+    }
 
-.support-btn {
-  padding: 0.45rem 1.1rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  color: #8AB4FF;
-  border: 1px solid rgba(138,180,255,0.45);
-  background: rgba(138,180,255,0.08);
-  backdrop-filter: blur(6px);
-  transition: 0.25s ease;
-}
+    .logout-btn {
+      color: var(--acs-gold);
+      border-color: rgba(255, 179, 0, 0.5);
+      cursor: pointer;
+    }
 
-.support-btn:hover {
-  background: rgba(138,180,255,0.20);
-  box-shadow: 0 0 14px rgba(138,180,255,0.55);
-  color: #dfe9ff;
-}
+    .acs-clock-header {
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      background: rgba(0, 216, 138, 0.08);
+      color: var(--acs-green);
+      font-family: "Orbitron", monospace;
+      font-size: 0.84rem;
+      white-space: nowrap;
+    }
 
-.logout-btn {
-  padding: 0.45rem 1.1rem;
-  border: 1px solid #ffb300;
-  border-radius: 12px;
-  background: rgba(255,179,0,0.05);
-  color: #ffb300;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-}
+    .acs-main {
+      width: min(940px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 104px 0 64px;
+    }
 
-.logout-btn:hover {
-  background: #ffb300;
-  color: #0c1f3c;
-}
+    .page-title { text-align: center; margin-bottom: 1.8rem; }
+    .page-title h2 {
+      margin: 0 0 0.45rem;
+      color: var(--acs-gold);
+      letter-spacing: 0.06em;
+    }
+    .page-title p { margin: 0; color: var(--acs-muted); }
 
-.acs-clock-header {
-  font-family: "Orbitron", monospace;
-  padding: 0.4rem 0.8rem;
-  background: rgba(0,255,128,0.08);
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: #00ff80;
-}
+    .authority-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
 
-/* ============================================================
-     === MAIN CONTENT ==========================================
-   ============================================================ */
+    .authority-chip {
+      padding: 0.7rem 0.8rem;
+      border: 1px solid rgba(0, 216, 138, 0.24);
+      border-radius: 12px;
+      background: rgba(0, 216, 138, 0.06);
+      color: #bfffe8;
+      text-align: center;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
 
-.acs-main {
-  padding: 105px 2rem 70px;
-  max-width: 900px;
-  margin: 0 auto;
-  text-align: center;
-}
+    .schedule-container {
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(180deg, var(--acs-panel), var(--acs-panel-2));
+      border: 1px solid var(--acs-border);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+    }
 
-h2 {
-  color: #ffb300;
-  text-shadow: 0 0 6px rgba(255,179,0,0.4);
-}
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
 
-.sub {
-  color: #cbd6ff;
-  margin-bottom: 2.2rem;
-}
+    label {
+      display: block;
+      margin: 0 0 0.4rem;
+      color: var(--acs-gold);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
 
-/* ============================================================
-     === CENTRAL CARD — Qatar Luxury ===========================
-   ============================================================ */
+    input, select {
+      width: 100%;
+      min-height: 44px;
+      padding: 0.68rem 0.8rem;
+      border: 1px solid rgba(255, 179, 0, 0.2);
+      border-radius: 10px;
+      background: #0a1734;
+      color: white;
+      font-size: 0.96rem;
+      outline: none;
+    }
 
-.schedule-container {
-  background: linear-gradient(180deg, rgba(20,35,70,0.75), rgba(10,18,40,0.85));
-  border-radius: 22px;
-  padding: 1.8rem 2rem;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.42);
-  border: 1px solid rgba(255,179,0,0.18);
-  margin-bottom: 3rem;
-  text-align: left;
-}
+    input:focus, select:focus {
+      border-color: var(--acs-gold);
+      box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.1);
+    }
 
-/* ============================================================
-     === FORM ELEMENTS — CLEANED ===============================
-   ============================================================ */
+    input[readonly] {
+      color: #c9d6f6;
+      background: #08142e;
+      cursor: default;
+    }
 
-label {
-  display: block;
-  margin-top: 1rem;
-  font-weight: 600;
-  color: #ffb300;
-}
+    .flight-number-authority {
+      color: var(--acs-green) !important;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
 
-input, select {
-  width: 100%;
-  padding: 0.7rem;
-  margin-top: 0.3rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255,179,0,0.18);
-  background: #0c1a34;
-  color: #fff;
-  font-size: 1rem;
-  transition: 0.2s;
-  outline: none;
-}
+    .section { margin-top: 1rem; }
+    .divider {
+      height: 1px;
+      margin: 1.2rem 0;
+      border: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,179,0,.5), transparent);
+    }
 
-input:focus, select:focus {
-  border-color: #ffca50;
-  box-shadow: 0 0 8px rgba(255,200,60,0.45);
-}
+    .days-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.7rem;
+      margin-top: 0.75rem;
+    }
 
-/* Origen/Destino — readonly */
-input[readonly] {
-  background: #0a1530;
-  opacity: 0.85;
-  cursor: not-allowed;
-}
+    .day-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0;
+      padding: 0.5rem 0.65rem;
+      border-radius: 9px;
+      background: rgba(138, 180, 255, 0.07);
+      color: #dbe5ff;
+      cursor: pointer;
+    }
 
-/* Clean Aircraft select — FIXED (all aircraft visible) */
-select#aircraft option {
-  display: block;
-}
+    input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      min-height: 17px;
+      margin: 0;
+      accent-color: var(--acs-green);
+    }
 
-/* Checkboxes cockpit ACS */
-input[type="checkbox"] {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  border: 2px solid #3a4a7a;
-  background-color: #1e2b55;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-}
+    .tech-list {
+      display: none;
+      margin-top: 1.2rem;
+      padding: 1rem;
+      border: 1px solid rgba(138, 180, 255, 0.18);
+      border-radius: 14px;
+      background: rgba(5, 14, 34, 0.78);
+    }
 
-input[type="checkbox"]:checked {
-  background-color: #00a86b;
-  border-color: #00a86b;
-}
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.7rem 1rem;
+    }
 
-input[type="checkbox"]:checked::after {
-  content: "✔";
-  color: white;
-  position: absolute;
-  top: -3px;
-  left: 3px;
-  font-size: 0.85rem;
-}
+    .tech-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      color: #dbe5ff;
+    }
 
-.days-row {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 0.8rem;
-}
+    .tech-item span { color: var(--acs-gold-soft); font-weight: 700; }
 
-.divider {
-  border: none;
-  height: 1px;
-  background: linear-gradient(to right, rgba(255,200,60,0.7), rgba(255,200,60,0.3));
-  margin: 1.4rem 0;
-}
+    .route-check-chip {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 13px;
+      border: 1px solid var(--acs-border);
+      background: rgba(7, 18, 42, 0.92);
+    }
 
-/* ============================================================
-     === TECH PANEL ============================================
-   ============================================================ */
+    .route-check-title {
+      margin-bottom: 0.7rem;
+      text-align: center;
+      color: var(--acs-gold);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
 
-.tech-list {
-  margin-top: 1.5rem;
-  background: rgba(10,18,40,0.8);
-  border-radius: 16px;
-  padding: 1rem 1.2rem;
-  border: 1px solid rgba(255,179,0,0.22);
-  box-shadow: 0 4px 22px rgba(0,0,0,0.35);
-}
+    .route-check-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
 
-.tech-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.45rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  color: #d7e2ff;
-}
+    .route-check-ok { border-color: rgba(0, 216, 138, 0.5); }
+    .route-check-ok .route-check-title { color: var(--acs-green); }
+    .route-check-danger { border-color: rgba(255, 82, 99, 0.62); }
+    .route-check-danger .route-check-title { color: var(--acs-red); }
+    .route-check-excess { color: var(--acs-red); font-weight: 800; }
 
-.tech-item span {
-  color: #ffb300;
-  font-weight: 600;
-}
-     
-/* 🅰️1 — ALIGN RIGHT FOR TECH VALUES — v1.0 | 09 DEC 2025 */
-.tech-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+    .result {
+      min-height: 18px;
+      margin-top: 1rem;
+      text-align: center;
+      color: var(--acs-muted);
+    }
 
-.tech-item span {
-    margin-left: auto;
-    text-align: right;
-    min-width: 120px;   /* asegura columna derecha alineada */
-    display: inline-block;
-}
-     
-/* ============================================================
-     === BUTTONS ===============================================
-   ============================================================ */
+    .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 1.25rem;
+    }
 
-.acs-btn {
-  display: block;
-  background: #00a86b;
-  color: #fff;
-  padding: 0.8rem 1.5rem;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  margin: 1.5rem auto 0.8rem;
-  transition: 0.2s ease;
-  border: none;
-}
+    .acs-btn, .back-btn {
+      padding: 0.72rem 1.2rem;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
 
-.acs-btn:hover {
-  background: #00794f;
-}
+    .acs-btn {
+      border: 0;
+      background: var(--acs-green);
+      color: #061a14;
+    }
 
-.back-btn {
-  display: block;
-  margin: 0 auto 0.5rem;
-  color: #00a86b;
-  background: none;
-  border: 1px solid #00a86b;
-  border-radius: 10px;
-  padding: 0.45rem 1.2rem;
-  cursor: pointer;
-  transition: 0.2s;
-}
+    .acs-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.back-btn:hover {
-  background: #00a86b;
-  color: #081530;
-}
+    .back-btn {
+      border: 1px solid rgba(0, 216, 138, 0.55);
+      background: transparent;
+      color: var(--acs-green);
+    }
 
-.result {
-  margin-top: 1rem;
-  background: #0b1838;
-  padding: 1rem;
-  border-radius: 14px;
-  color: #cbd6ff;
-}
+    footer {
+      padding: 1.5rem;
+      text-align: center;
+      color: #7183ad;
+      font-size: 0.85rem;
+    }
 
-.status-line {
-  margin-top: 0.8rem;
-  font-weight: 600;
-  text-align: center;
-}
+    @media (max-width: 900px) {
+      .acs-header { position: static; flex-wrap: wrap; }
+      .acs-left { min-width: 0; }
+      .acs-nav { order: 3; width: 100%; overflow-x: auto; justify-content: flex-start; }
+      .acs-main { padding-top: 28px; }
+      .authority-strip, .grid-2, .tech-grid { grid-template-columns: 1fr; }
+      .acs-right { margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+    }
 
-.status-ok { color: #00ff80; }
-.status-warning { color: #ffd54f; }
-
-/* ============================================================
-   🟦 ACS ROUTE CHECK CHIP — Airbus OCC Range Feasibility
-   ============================================================ */
-
-.route-check-chip {
-  display: none;
-  margin-top: 1rem;
-  padding: 1rem 1.2rem;
-  border-radius: 16px;
-  background: rgba(8, 18, 40, 0.92);
-  border: 1px solid rgba(255, 179, 0, 0.28);
-  box-shadow: 0 0 18px rgba(0, 0, 0, 0.32);
-}
-
-.route-check-title {
-  color: #ffb300;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-align: center;
-  margin-bottom: 0.85rem;
-  text-shadow: 0 0 8px rgba(255, 179, 0, 0.35);
-}
-
-.route-check-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: #dbe4ff;
-  font-weight: 600;
-}
-
-.route-check-row:last-child {
-  border-bottom: none;
-}
-
-.route-check-value {
-  color: #ffffff;
-  font-weight: 800;
-  text-align: right;
-}
-
-.route-check-ok {
-  border-color: rgba(0, 255, 128, 0.38);
-  box-shadow: 0 0 18px rgba(0, 255, 128, 0.10);
-}
-
-.route-check-ok .route-check-title {
-  color: #00ff80;
-  text-shadow: 0 0 8px rgba(0, 255, 128, 0.35);
-}
-
-.route-check-danger {
-  border-color: rgba(255, 70, 90, 0.55);
-  box-shadow: 0 0 22px rgba(255, 70, 90, 0.18);
-}
-
-.route-check-danger .route-check-title {
-  color: #ff4d5e;
-  text-shadow: 0 0 8px rgba(255, 70, 90, 0.35);
-}
-
-.route-check-excess {
-  color: #ff4d5e;
-  font-weight: 900;
-}
-     
-footer {
-  text-align: center;
-  padding: 20px;
-  color: #7c8bb8;
-  font-size: 0.9rem;
-  margin-top: 40px;
-}
-</style>
+    @media (max-width: 560px) {
+      .acs-main { width: min(100% - 1rem, 940px); }
+      .schedule-container { padding: 1rem; }
+      .button-row { flex-direction: column; }
+      .acs-btn, .back-btn { width: 100%; }
+      .acs-left h1 { display: none; }
+      .acs-clock-header { width: 100%; text-align: center; }
+    }
+  </style>
 </head>
-
 <body>
-
-<header class="acs-header">
-  <div class="acs-left">
-    <img src="acs_logo.png" alt="ACS Logo">
-    <h1>Aviation Capital Simulator</h1>
-  </div>
-
-  <nav class="acs-nav">
-    <a href="dashboard.html">Main</a>
-    <a href="finance.html">Finance</a>
-    <a href="aircraft.html">Aircraft</a>
-    <a href="routes.html" class="active">Routes</a>
-    <a href="hr.html">HR</a>
-    <a href="forum.html">Forum</a>
-  </nav>
-
-  <div class="acs-right">
-    <a href="support.html" class="support-btn">Support</a>
-    <a class="logout-btn" onclick="handleLogout()">Logout</a>
-    <div class="acs-clock-header" id="acs-clock">00:00 — 01 JAN 2025</div>
-  </div>
-</header>
-
-<main class="acs-main">
-
-  <h2>🧭 Route Schedule Setup</h2>
-  <p class="sub">Plan and evaluate your route performance based on technical parameters and operational constraints.</p>
-
-  <div class="schedule-container">
-
-    <!-- ORIGEN Y DESTINO — Limpios y bloqueados -->
-    <label>Origin (ICAO)</label>
-    <input type="text" id="origin" readonly />
-
-    <label>Destination (ICAO)</label>
-    <input type="text" id="destination" readonly />
-
-    <!-- Número de vuelo — VACÍO, motor intacto pero no se ejecuta -->
-       
-    <label>Flight Number (Auto)</label>
-    <input type="text" id="flightNumber" readonly />
-
-    <!-- Aircraft limpia -->
-       
-    <label>Aircraft Type</label>
-       
-    <!-- A2: se añade autoGenerateFlightNumber al onchange -->
-       
-    <select id="aircraft" onchange="autoCalculate(); autoGenerateFlightNumber();">
-  <option value="">-- Select Aircraft --</option>
-</select>
-
-<script>
-
-/* ============================================================
-   🧭 ACS ROUTE SCHEDULE CONTEXT — BACKEND + URL AUTHORITY
-   ------------------------------------------------------------
-   File: route_schedule.html
-   Purpose:
-   - Load company context from backend session
-   - Read origin/destination from URL parameters
-   - Validate origin against backend users.base_icao
-   - NO localStorage for route origin/destination
-   ============================================================ */
-
-window.ACS_COMPANY_CONTEXT = null;
-window.ACS_ROUTE_CONTEXT = null;
-
-async function RS_loadCompanyContext() {
-
-  try {
-
-    const res = await fetch(
-      "https://api.aviationcapitalsim.com/v1/company/context",
-      {
-        credentials: "include"
-      }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok || !data || data.ok !== true) {
-      console.warn("⚠️ RS company context failed:", data);
-      window.ACS_COMPANY_CONTEXT = null;
-      return null;
-    }
-
-    window.ACS_COMPANY_CONTEXT = data;
-
-    console.log("🟢 RS COMPANY CONTEXT LOADED:", {
-      user_id: data.user?.user_id,
-      airline_id: data.user?.airline_id,
-      base_icao: data.user?.base_icao,
-      airline: data.airline?.airline_name
-    });
-
-    return data;
-
-  } catch (err) {
-
-    console.warn("⚠️ RS company context fetch error:", err);
-    window.ACS_COMPANY_CONTEXT = null;
-    return null;
-
-  }
-
-}
-
-function RS_getRouteContextFromURL() {
-
-  const params = new URLSearchParams(window.location.search);
-
-  const origin = String(params.get("origin") || "")
-    .trim()
-    .toUpperCase();
-
-  const destination = String(params.get("destination") || "")
-    .trim()
-    .toUpperCase();
-
-  if (!origin || !destination) {
-    return null;
-  }
-
-  return {
-    origin,
-    destination,
-    source: "url"
-  };
-
-}
-
-function RS_validateRouteContext(routeCtx, companyCtx) {
-
-  if (!routeCtx || !companyCtx || companyCtx.ok !== true) {
-    return {
-      ok: false,
-      error: "ROUTE_CONTEXT_MISSING"
-    };
-  }
-
-  const backendBase = String(companyCtx.user?.base_icao || "")
-    .trim()
-    .toUpperCase();
-
-  if (!backendBase) {
-    return {
-      ok: false,
-      error: "BACKEND_BASE_MISSING"
-    };
-  }
-
-  if (routeCtx.origin !== backendBase) {
-    return {
-      ok: false,
-      error: "ORIGIN_DOES_NOT_MATCH_BACKEND_BASE",
-      backendBase,
-      receivedOrigin: routeCtx.origin
-    };
-  }
-
-  return {
-    ok: true,
-    origin: routeCtx.origin,
-    destination: routeCtx.destination,
-    backendBase
-  };
-
-}
-
-async function RS_initRouteContext() {
-
-  const companyCtx = await RS_loadCompanyContext();
-  const routeCtx = RS_getRouteContextFromURL();
-
-  const validation = RS_validateRouteContext(routeCtx, companyCtx);
-
-  if (!validation.ok) {
-
-    console.warn("⛔ Route context validation failed:", validation);
-
-    alert("⛔ Route context invalid. Please start again from Create Route.");
-
-    window.location.href = "routes.html";
-    return null;
-
-  }
-
-  window.ACS_ROUTE_CONTEXT = {
-    origin: validation.origin,
-    destination: validation.destination,
-    source: "backend+url"
-  };
-
-  const originInput = document.getElementById("origin");
-  const destInput = document.getElementById("destination");
-
-  if (originInput && destInput) {
-    originInput.value = validation.origin;
-    destInput.value = validation.destination;
-
-    originInput.readOnly = true;
-    destInput.readOnly = true;
-  }
-
-  console.log("🟢 RS ROUTE CONTEXT READY:", window.ACS_ROUTE_CONTEXT);
-
-  return window.ACS_ROUTE_CONTEXT;
-
-}
-     
-/* ============================================================
-   🛫 ACS ROUTE SCHEDULE — MY AIRCRAFT BACKEND AUTHORITY v1.0
-   ------------------------------------------------------------
-   Source:
-   - GET /v1/aircraft/fleet
-   - Same backend authority used by My Aircraft
-   - No ACS_MyAircraft localStorage
-   - Only ACTIVE / AVAILABLE / SERVICEABLE aircraft
-   ============================================================ */
-
-window.ACS_ROUTE_AVAILABLE_AIRCRAFT = [];
-
-async function RS_loadOperationalFleetFromBackend() {
-
-  try {
-
-    const res = await fetch(
-      "https://api.aviationcapitalsim.com/v1/aircraft/fleet",
-      {
-        method: "GET",
-        credentials: "include"
-      }
-    );
-
-    const data = await res.json();
-
-    if (!res.ok || !data || data.ok !== true || !Array.isArray(data.fleet)) {
-      console.warn("⚠️ RS fleet backend load failed:", data);
-      window.ACS_ROUTE_AVAILABLE_AIRCRAFT = [];
-      return [];
-    }
-
-    const availableFleet = data.fleet.filter(ac => {
-
-      const status = String(ac.status || "").trim().toUpperCase();
-      const operationalStatus = String(ac.operational_status || "").trim().toUpperCase();
-      const maintenanceStatus = String(ac.maintenance_status || "").trim().toUpperCase();
-      const maintenanceControl = String(ac.maintenance_control_status || "").trim().toUpperCase();
-
-      const isActive =
-        status === "ACTIVE";
-
-      const isAvailable =
-        operationalStatus === "AVAILABLE";
-
-      const isServiceable =
-        maintenanceStatus === "SERVICEABLE" ||
-        maintenanceControl === "SERVICEABLE";
-
-      return isActive && isAvailable && isServiceable;
-
-    });
-
-    window.ACS_ROUTE_AVAILABLE_AIRCRAFT = availableFleet;
-
-    console.log("🟢 RS MY AIRCRAFT BACKEND FLEET READY:", {
-      total: data.fleet.length,
-      available: availableFleet.length,
-      aircraft: availableFleet.map(ac => ({
-        id: ac.id,
-        registration: ac.registration,
-        aircraft_name: ac.aircraft_name,
-        status: ac.status,
-        operational_status: ac.operational_status,
-        maintenance_status: ac.maintenance_status,
-        condition_pct: ac.condition_pct
-      }))
-    });
-
-    return availableFleet;
-
-  } catch (err) {
-
-    console.warn("⚠️ RS fleet backend fetch error:", err);
-    window.ACS_ROUTE_AVAILABLE_AIRCRAFT = [];
-    return [];
-
-  }
-
-}
-
-async function RS_populateAircraftSelector(selectedAircraftId = "") {
-
-  const select = document.getElementById("aircraft");
-  if (!select) return;
-
-  select.innerHTML = `<option value="">-- Select Aircraft --</option>`;
-
-  const fleet = await RS_loadOperationalFleetFromBackend();
-
-  if (!fleet.length) {
-    const opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "No available aircraft";
-    opt.disabled = true;
-    select.appendChild(opt);
-    return;
-  }
-
-    const uniqueFleet = [];
-  const seenAircraftIds = new Set();
-
-  fleet.forEach(ac => {
-    const aircraftId = String(ac.id || "").trim();
-
-    if (!aircraftId || seenAircraftIds.has(aircraftId)) {
-      return;
-    }
-
-    seenAircraftIds.add(aircraftId);
-    uniqueFleet.push(ac);
-  });
-
-  uniqueFleet.forEach(ac => {
-
-    const opt = document.createElement("option");
-
-    const aircraftId = String(ac.id || "").trim();
-    const registration = String(ac.registration || "UNREGISTERED").trim();
-    const aircraftName = String(ac.aircraft_name || ac.model_key || "Aircraft").trim();
-    const condition = Number(ac.condition_pct || 0);
-
-    opt.value = aircraftId;
-    opt.textContent = aircraftName;
-
-    opt.dataset.aircraftId = aircraftId;
-    opt.dataset.registration = registration;
-    opt.dataset.aircraftName = aircraftName;
-    opt.dataset.modelKey = String(ac.model_key || "").trim();
-    opt.dataset.manufacturer = String(ac.manufacturer || "").trim();
-    opt.dataset.conditionPct = String(condition);
-    opt.dataset.totalHours = String(ac.total_hours || 0);
-    opt.dataset.totalCycles = String(ac.total_cycles || 0);
-
-    select.appendChild(opt);
-
-  });
-
-  if (selectedAircraftId) {
-    select.value = String(selectedAircraftId);
-  } else {
-    select.value = "";
-  }
-
-}
-
-async function rs_populateAircraftSelect(selectedId = "") {
-  await RS_populateAircraftSelector(selectedId);
-}
-
-function RS_getSelectedAircraftFromBackendCache() {
-
-  const select = document.getElementById("aircraft");
-  if (!select || !select.value) return null;
-
-  const selectedId = String(select.value || "").trim();
-
-  return window.ACS_ROUTE_AVAILABLE_AIRCRAFT.find(ac =>
-    String(ac.id || "") === selectedId
-  ) || null;
-
-}
-
-function loadAircraftById() {
-  rs_populateAircraftSelect("");
-}
-
-function loadAvailableAircraft() {
-  rs_populateAircraftSelect("");
-}
-     
-/* ============================================================
-   🧹 A0 — ROUTE SCHEDULE ENTRY CLEANUP (CRÍTICO)
-   ------------------------------------------------------------
-   Regla:
-   - SI entramos a route_schedule.html SIN intención de editar,
-     ACS_ROUTE_EDIT DEBE SER BORRADO.
-   ============================================================ */
-
-(function () {
-
-  const editRaw = localStorage.getItem("ACS_ROUTE_EDIT");
-  const cameFromEdit = !!editRaw;
-
-  // Si NO venimos explícitamente desde "Edit" en la tabla,
-  // limpiamos cualquier estado residual
-  const ref = document.referrer || "";
-
-  const isFromScheduleTable =
-    ref.includes("schedule_table.html") ||
-    ref.includes("schedule-table");
-
-  if (!isFromScheduleTable && cameFromEdit) {
-    console.warn("🧹 Clearing stale ACS_ROUTE_EDIT (new route)");
-    localStorage.removeItem("ACS_ROUTE_EDIT");
-  }
-
-})();
-     
-/* ============================================================
-   🟧 RS-01 — RESET AIRCRAFT SELECTION ON LOAD
-   ------------------------------------------------------------
-   • Nunca preseleccionar avión
-   • El usuario SIEMPRE decide
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-  const aircraftSelect = document.getElementById("aircraft");
-  if (aircraftSelect) {
-    aircraftSelect.value = "";
-  }
-});
-
-/* ============================================================
-   ✅ COMPAT LAYER — NO ROMPER llamadas viejas
-   ------------------------------------------------------------
-   En tu HTML hay llamadas mezcladas a:
-   - loadAircraftById()
-   - loadAvailableAircraft()
-   Las unificamos a un solo motor robusto.
-   ============================================================ */
-
-function loadAircraftById() {
-  rs_populateAircraftSelect("");
-}
-
-function loadAvailableAircraft() {
-  // Legacy name — ahora robusto (NO filtra por base)
-  rs_populateAircraftSelect("");
-}
-
-/* ============================================================
-   🟦 SINGLE INIT POINT — ROUTE SCHEDULE CORE
-   ------------------------------------------------------------
-   Source:
-   - company context from backend
-   - origin/destination from URL
-   - NO localStorage for origin/destination
-   ============================================================ */
-
-async function RS_initCoreOnce() {
-
-  if (window.__RS_CORE_INIT_DONE) return;
-  window.__RS_CORE_INIT_DONE = true;
-
-  const routeContext = await RS_initRouteContext();
-
-  if (!routeContext) {
-    return;
-  }
-
-    await rs_populateAircraftSelect("");
-
-  const aircraftSelect = document.getElementById("aircraft");
-  if (aircraftSelect) {
-    aircraftSelect.value = "";
-  }
-
-}
-
-document.addEventListener("DOMContentLoaded", RS_initCoreOnce);
-     
-</script>
-
-    <label>Departure Time (Local)</label>
-    <!-- A2: se añade autoGenerateFlightNumber al onchange -->
-    <select id="departureTime" onchange="autoCalculate(); autoGenerateFlightNumber();"></select>
-
-   <label style="text-align:center;margin-top:1.2rem;">Days of Operation</label>
-
-<div class="days-row">
-
-  <!-- 🟢 Facilitador ALL -->
-  <label>
-    <input type="checkbox" id="allDays" onchange="RS_toggleAllDays(this)">
-    All
-  </label>
-
-  <label><input type="checkbox" id="mon" onchange="RS_syncAllDays()"> Mo</label>
-  <label><input type="checkbox" id="tue" onchange="RS_syncAllDays()"> Tu</label>
-  <label><input type="checkbox" id="wed" onchange="RS_syncAllDays()"> We</label>
-  <label><input type="checkbox" id="thu" onchange="RS_syncAllDays()"> Th</label>
-  <label><input type="checkbox" id="fri" onchange="RS_syncAllDays()"> Fr</label>
-  <label><input type="checkbox" id="sat" onchange="RS_syncAllDays()"> Sa</label>
-  <label><input type="checkbox" id="sun" onchange="RS_syncAllDays()"> Su</label>
-
-</div>
-
-<hr class="divider" />
-
-    <div class="options-center" style="text-align:center;">
-      <label><input type="checkbox" id="optimizeRotation" onchange="toggleOptimization()"> Optimize Rotation (avoid delay & maintenance conflict)</label>
-    </div>
-<div id="techData" class="tech-list" style="display:none;">
-  <div class="tech-item">Distance (NM): <span id="distance">--</span></div>
-  <div class="tech-item">Block Time: <span id="blockTime">--</span></div>
-  <div class="tech-item">Turnaround Time: <span id="turnaround">--</span></div>
-  <div class="tech-item">Total Rotation: <span id="totalRotation">--</span></div>
-  <div class="tech-item">Delay Risk (%): <span id="delayRisk">--</span></div>
-  <div class="tech-item">Efficiency Index (%): <span id="effIndex">--</span></div>
-
-  <div id="routeCheckChip" class="route-check-chip">
-    <div id="routeCheckTitle" class="route-check-title">ROUTE CHECK</div>
-
-    <div class="route-check-row">
-      <div>ROUTE DISTANCE</div>
-      <div id="routeCheckDistance" class="route-check-value">-- NM</div>
+  <header class="acs-header">
+    <div class="acs-left">
+      <img src="acs_logo.png" alt="ACS Logo">
+      <h1>Aviation Capital Simulator</h1>
     </div>
 
-    <div class="route-check-row">
-      <div>AIRCRAFT MAX RANGE</div>
-      <div id="routeCheckRange" class="route-check-value">-- NM</div>
+    <nav class="acs-nav">
+      <a href="dashboard.html">Main</a>
+      <a href="finance.html">Finance</a>
+      <a href="aircraft.html">Aircraft</a>
+      <a href="routes.html" class="active">Routes</a>
+      <a href="hr.html">HR</a>
+      <a href="forum.html">Forum</a>
+    </nav>
+
+    <div class="acs-right">
+      <a href="support.html" class="support-btn">Support</a>
+      <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
+      <div class="acs-clock-header" id="acs-clock">ACS TIME LOADING</div>
     </div>
-
-    <div class="route-check-row">
-      <div>EXCESS</div>
-      <div id="routeCheckExcess" class="route-check-value">-- NM</div>
-    </div>
-  </div>
-</div>
-
-    <div class="result" id="result"></div>
-    <div id="optStatus" class="status-line"></div>
-
-    <button class="acs-btn" id="confirmRouteBtn" onclick="confirmRoute()">CONFIRM ROUTE</button>
-    <button class="back-btn" onclick="window.location.href='routes.html'">⬅ Back to Routes</button>
-  </div>
-</main>
-
-<footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
-
-<!-- ============================================================
-     === JAVASCRIPT ORIGINAL — MOTOR INTACTO ===================
-   ============================================================ -->
-
-
-<script>
-
-/* ============================================================
-   === BASE: GENERAR HORARIOS DE SALIDA ========================
-   ============================================================ */
-     
-const timeSelect = document.getElementById("departureTime");
-for (let h = 6; h < 24; h++) {
-  for (let m = 0; m < 60; m += 5) {
-    const hh = String(h).padStart(2,"0");
-    const mm = String(m).padStart(2,"0");
-    const opt = document.createElement("option");
-    opt.value = `${hh}:${mm}`;
-    opt.textContent = `${hh}:${mm}`;
-    timeSelect.appendChild(opt);
-  }
-}
-timeSelect.value = "06:00";
-
-function toggleEveryDay() {
-  const all = document.getElementById("everyDay").checked;
-  ["mon","tue","wed","thu","fri","sat","sun"].forEach(id => {
-    document.getElementById(id).checked = all;
-  });
-}
-
-function toggleOptimization() {
-  window.rotationOptimized = document.getElementById("optimizeRotation").checked;
-}
-
-function handleLogout(){
-  alert("👋 Session closed. Your fleet awaits your command!");
-  window.location.href = "login.html";
-}
-
-/* ============================================================
-   🟦 AUTO-GENERATE FLIGHT NUMBER — MODEL BASED
-   ============================================================ */
-
-function autoGenerateFlightNumber() {
-
-  if (!userIATA || userIATA.length !== 2) {
-    console.warn("❌ IATA code missing or invalid");
-    return;
-  }
-
-  const origin = document.getElementById("origin").value.trim();
-  const dest   = document.getElementById("destination").value.trim();
-  const model  = document.getElementById("aircraft").value;
-
-  // Ahora depende de modelo seleccionado
-  if (!origin || !dest || !model) return;
-
-  const pair = generateFlightPair();
-
-  if (flightNumberInput) {
-    flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
-  }
-}
-
-/* ============================================================
-   🟦 FLIGHT NUMBER ENGINE — IATA CONNECTED v1.1 (COMPLETO)
-   ============================================================ */
-
-// Input del número de vuelo
-const flightNumberInput = document.getElementById("flightNumber");
-
-// Traer IATA guardado en create_airline
-let userIATA = localStorage.getItem("userIATA") || "AT";
-if (!localStorage.getItem("userIATA")) {
-  console.warn("⚠️ No userIATA found — using default AT");
-}
-
-// Contadores globales
-let lastFlightNumber = parseInt(
-  localStorage.getItem("lastFlightNumber") || "100",
-  10
-);
-let usedFlights = JSON.parse(
-  localStorage.getItem("flightNumbers") || "[]"
-);
-
-/* ============================================================
-   🟧 A3 — Safe Flight Pair Generator (OUT → IN)
-   ============================================================ */
-     
-function generateFlightPair() {
-
-  let num  = lastFlightNumber;
-  let out  = `${userIATA}${num}`;
-  let inn  = `${userIATA}${num + 1}`;
-
-  // Evitar números ya usados
-  while (usedFlights.includes(out) || usedFlights.includes(inn)) {
-    num += 2;
-    out = `${userIATA}${num}`;
-    inn = `${userIATA}${num + 1}`;
-  }
-
-  // Actualizar el contador global
-  lastFlightNumber = num;
-
-  // Pintar en input
-  if (flightNumberInput) {
-    flightNumberInput.value = `${out} ➜ ${inn}`;
-  }
-
-  return { out, inn };
-}
-
-/* ============================================================
-   🟦 AUTO-GENERATE FLIGHT NUMBER (LLAMADO DESDE EL SELECT)
-   ============================================================ */
-     
-function autoGenerateFlightNumber() {
-
-  // Necesitamos IATA válido
-  if (!userIATA || userIATA.length !== 2) {
-    console.warn("❌ IATA code missing or invalid");
-    return;
-  }
-
-  const origin = document.getElementById("origin").value.trim();
-  const dest   = document.getElementById("destination").value.trim();
-  const ac     = document.getElementById("aircraft").value;
-
-  // Solo generar si todo está seleccionado
-  if (!origin || !dest || !ac) return;
-
-  // Generamos nueva pareja OUT/IN
-  const pair = generateFlightPair();
-
-  if (flightNumberInput) {
-    flightNumberInput.value = `${pair.out} ➜ ${pair.inn}`;
-  }
-}
-
-/* ============================================================
-   🟦 FLIGHT NUMBER UTILITIES (NO TOCAR)
-   ============================================================ */
-
-function bumpFlightCounter() {
-  lastFlightNumber += 2;
-  localStorage.setItem("lastFlightNumber", String(lastFlightNumber));
-}
-
-function markNumbersUsed(out, inn) {
-  usedFlights.push(out, inn);
-  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-}
-
-function freeNumbers(out, inn) {
-  if (!out || !inn) return;
-  usedFlights = usedFlights.filter(n => n !== out && n !== inn);
-  localStorage.setItem("flightNumbers", JSON.stringify(usedFlights));
-}
-
-/* ============================================================
-   🟧 B1 — ROUTE SCHEDULE MODE DETECTION (EDIT · FIX FINAL)
-   ------------------------------------------------------------
-   FIXES:
-   ✔ Restores Every Day correctly
-   ✔ Preserves flight numbers (NO regeneration)
-   ✔ Does NOT free numbers on edit
-   ✔ Uses canonical ACS_ROUTE_EDIT
-   ============================================================ */
-document.addEventListener("DOMContentLoaded", () => {
-
-  const editCtxRaw = localStorage.getItem("ACS_ROUTE_EDIT");
-  if (!editCtxRaw) {
-    // 🟢 CREATE MODE
-    return;
-  }
-
-  let editCtx;
-  try {
-    editCtx = JSON.parse(editCtxRaw);
-  } catch (e) {
-    console.warn("⚠ Invalid ACS_ROUTE_EDIT, ignored");
-    return;
-  }
-
-  if (!editCtx || editCtx.mode !== "EDIT") return;
-
-  console.log("🟧 ROUTE SCHEDULE — EDIT MODE ACTIVE", editCtx);
-
-  const $ = id => document.getElementById(id);
-
-  /* ============================================================
-     1️⃣ BASIC DATA
-     ============================================================ */
-  $("origin").value      = editCtx.origin || "";
-  $("destination").value = editCtx.destination || "";
-
-  $("origin").readOnly      = true;
-  $("destination").readOnly = true;
-
-  if (editCtx.departure) {
-    $("departureTime").value = editCtx.departure;
-  }
-
-  /* ============================================================
-     2️⃣ AIRCRAFT (BY aircraftId)
-     ============================================================ */
-  if (editCtx.aircraftId && typeof rs_populateAircraftSelect === "function") {
-    rs_populateAircraftSelect(editCtx.aircraftId);
-  }
-
-  document.getElementById("aircraft")
-    ?.addEventListener("change", autoCalculate);
-
-  /* ============================================================
-     3️⃣ FLIGHT NUMBERS — PRESERVE (CRITICAL)
-     ============================================================ */
-  if (editCtx.flightNumberOut && editCtx.flightNumberIn) {
-    const fn = $("flightNumber");
-    if (fn) {
-      fn.value = `${editCtx.flightNumberOut} ➜ ${editCtx.flightNumberIn}`;
-    }
-  }
-
-/* ============================================================
-   🟢 EDIT — RESTORE SINGLE DAY (FINAL FIX)
-   ------------------------------------------------------------
-   Regla:
-   • EDIT = 1 vuelo = 1 día
-   • NO usar scheduleMode
-   • NO usar days[]
-   ============================================================ */
-
-if (editCtx.day) {
-  const dayId = editCtx.day.toLowerCase();
-  const dayEl = document.getElementById(dayId);
-
-  if (dayEl) {
-    dayEl.checked = true;
-    console.log("🟢 EDIT day restored:", dayId);
-  } else {
-    console.warn("⚠ EDIT day checkbox not found:", dayId);
-  }
-}
-     
-  /* ============================================================
-     5️⃣ UI — EDIT MODE
-     ============================================================ */
-  const notice = document.createElement("div");
-  notice.style.color = "#FFB300";
-  notice.style.marginBottom = "1rem";
-  notice.style.fontWeight = "600";
-  notice.innerHTML =
-    `✏️ Editing route: <strong>${editCtx.origin} ➜ ${editCtx.destination}</strong>`;
-  document.querySelector(".schedule-container")?.prepend(notice);
-
-  const btn = document.querySelector(".acs-btn");
-  if (btn) btn.textContent = "UPDATE ROUTE";
-
-/* ============================================================
-   🟧 B1.2 — EDIT CONFIRM ROUTE (SINGLE FLIGHT) — NO AUTO ASSIGN ✅
-   ------------------------------------------------------------
-   REGLA FINAL (la tuya):
-   - EDIT = vuelve como vuelo NUEVO
-   - NO auto-asignar
-   - aircraftId = null
-   - assigned = false
-   - id NUEVO
-   ============================================================ */
-
-window.confirmRoute = function () {
-
-  const DAY_IDS = ["mon","tue","wed","thu","fri","sat","sun"];
-
-  let items = [];
-  try {
-    items = JSON.parse(localStorage.getItem("scheduleItems")) || [];
-  } catch {
-    items = [];
-  }
-
-  const idx = items.findIndex(f => String(f?.id || "") === String(editCtx.flightId || ""));
-  if (idx === -1) {
-    alert("⛔ Flight to edit not found.");
-    return;
-  }
-
-  const flight = items[idx];
-  const oldFlightId = String(flight.id || "");
-
-  // 1) Día seleccionado (solo 1)
-  const selectedDays = DAY_IDS.filter(d => document.getElementById(d)?.checked);
-  if (!selectedDays.length) {
-    alert("⚠️ Select one day.");
-    return;
-  }
-  if (selectedDays.length > 1) {
-    alert("⚠️ EDIT = only 1 day allowed.");
-    return;
-  }
-  const newDay = selectedDays[0];
-
-  // 2) Departure
-  const newDeparture = (document.getElementById("departureTime")?.value || flight.departure || "").trim();
-  if (!newDeparture) {
-    alert("⚠️ Departure time missing.");
-    return;
-  }
-
-  // 3) Arrival (recalcular si se puede)
-  const blockMin = Number(flight.blockTimeMin || window.ACS_RouteTechData?.blockMin || 0);
-  let newArrival = flight.arrival;
-
-  if (Number.isFinite(blockMin) && blockMin > 0 && typeof ACS_convertDepartureToArrival === "function") {
-    newArrival = ACS_convertDepartureToArrival(newDeparture, blockMin);
-  } else {
-    newArrival = flight.arrival || newArrival;
-  }
-
-  // 4) Antes de cambiar ID: mover/limpiar slots del vuelo viejo
-  try {
-    let slots = JSON.parse(localStorage.getItem("ACS_SLOTS_SIMPLE") || "[]");
-    if (Array.isArray(slots) && slots.length) {
-
-      // quitar slots anteriores de este vuelo (OLD id)
-      slots = slots.filter(s => String(s?.flightId || "") !== oldFlightId);
-
-      // detectar conflicto (DEP) en nuevo día/hora/origen
-      const depConflict = slots.find(s =>
-        s?.type === "DEP" &&
-        String(s?.airport || "") === String(flight.origin || "") &&
-        String(s?.day || "") === String(newDay || "") &&
-        String(s?.time || "") === String(newDeparture || "")
-      );
-
-      if (depConflict) {
-        alert("⛔ Slot conflict detected for the new day/time. Edit cancelled.");
-        return;
-      }
-
-      // reinsertar slots nuevos (todavía sin asignación, pero slot sí reserva el horario)
-      const newTempId = "FL_" + Math.floor(100000 + Math.random() * 900000);
-
-      slots.push(
-        { airport: flight.origin,      day: newDay, time: newDeparture, flightId: newTempId, type: "DEP" },
-        { airport: flight.destination, day: newDay, time: newArrival,   flightId: newTempId, type: "ARR" }
-      );
-
-      localStorage.setItem("ACS_SLOTS_SIMPLE", JSON.stringify(slots));
-
-      // aplicar ese nuevo id al vuelo
-      flight.id = newTempId;
-
-    } else {
-      // si no hay slots, igual generamos id nuevo
-      flight.id = "FL_" + Math.floor(100000 + Math.random() * 900000);
-    }
-  } catch (e) {
-    console.warn("⚠ Slots update skipped (error):", e);
-    // aunque falle slots, igual hacemos el comportamiento “nuevo”
-    flight.id = "FL_" + Math.floor(100000 + Math.random() * 900000);
-  }
-
-  // 5) Aplicar cambios (EDIT = vuelve como NUEVO)
-  flight.day = newDay;
-  flight.departure = newDeparture;
-  flight.arrival = newArrival;
-
-  // ✅ REGLA CRÍTICA: NO AUTO ASSIGN
-  flight.aircraftId = null;
-  flight.assigned = false;
-
-  // Marca técnica para que la tabla lo trate como pendiente
-  flight.__edited = true;
-
-  // Limpieza
-  delete flight.pendingAircraftId;
-
-  // Opcional (solo flags)
-  flight.optimized = document.getElementById("optimizeRotation")?.checked || false;
-
-  // Persistir
-  items[idx] = flight;
-  localStorage.setItem("scheduleItems", JSON.stringify(items));
-
-  // 6) Limpiar contexto de edición
-  localStorage.removeItem("ACS_ROUTE_EDIT");
-
-  alert("Flight re-planned successfully (requires Assign Route).");
-  window.location.href = "schedule_table.html";
-};
-     
-}); // 🔴 CIERRA document.addEventListener("DOMContentLoaded")
-     
-/* ============================================================
-   === GLOBAL DISTANCE ENGINE — FIX v2 (NM)
-   ------------------------------------------------------------
-   Evita error: "Can't find variable: distanceNM"
-   ============================================================ */
-     
-function distanceNM(lat1, lon1, lat2, lon2) {
-
-    const R = 3440.065; // Earth radius in NM
-    const toRad = x => (x * Math.PI) / 180;
-
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-
-    const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(lat1)) *
-            Math.cos(toRad(lat2)) *
-            Math.sin(dLon / 2) ** 2;
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return Math.round(R * c);
-}
-     
-/* ============================================================
-   🟦 FASE 2 — TECH ENGINE (Distance / Time / Cost / Crew)
-   ============================================================ */
-
-// 1) Distancia (NM)
-function rs_getDistanceNM(origin, dest) {
-  if (!origin || !dest) return 0;
-  let O = null, D = null;
-
-  for (const cont in WorldAirportsACS) {
-    const list = WorldAirportsACS[cont];
-    if (!Array.isArray(list)) continue;
-    O = O || list.find(a => a.icao === origin);
-    D = D || list.find(a => a.icao === dest);
-  }
-
-  if (!O || !D) return 0;
-  return distanceNM(O.latitude, O.longitude, D.latitude, D.longitude);
-}
-
-// 2) Block Time
-     
-function rs_getBlockTime(distance, speed) {
-  if (!distance || !speed) return 0;
-  const cruise = distance / speed;
-  const climbDesc = 0.25;
-  return Math.round((cruise + climbDesc) * 60);
-}
-
-// 3) Turnaround
-     
-/* ============================================================
-   🛫 TURNAROUND REAL (1940–2026) — FINAL v4
-   ============================================================ */
-     
-function rs_getTurnaround(category) {
-
-    if (!category) return 45; // default seguro
-
-    const c = category.toUpperCase();
-
-    // ============================
-    // 1) LIGHT / SMALL (DC-3, Cessna, Beech)
-    // ============================
-    if (c.includes("SMALL") || c.includes("LIGHT") ||
-        c.includes("DC-3") || c.includes("PIPER") || c.includes("CESSNA")) {
-        return 35;  
-    }
-
-    // ============================
-    // 2) TURBOPROP / ATR / Regional Early
-    // ============================
-    if (c.includes("ATR") || c.includes("TURBO") ||
-        c.includes("REGIONAL")) {
-        return 45;
-    }
-
-    // ============================
-    // 3) Narrow-body Jets (A320, 737, 727, MD-80, Tu-154)
-    // ============================
-    if (c.includes("NARROW") || 
-        c.includes("A320") || c.includes("A318") || c.includes("A319") ||
-        c.includes("A321") ||
-        c.includes("737")  || c.includes("727")  ||
-        c.includes("MD-80") || c.includes("TU-154") || c.includes("DC-9")) {
-        return 50;
-    }
-
-    // ============================
-    // 4) Wide-body Jets (A300, A310, 767, L-1011, DC-10, 787)
-    // ============================
-    if (c.includes("WIDE")  ||
-        c.includes("A300")  || c.includes("A310") ||
-        c.includes("767")   || c.includes("787")  ||
-        c.includes("L-1011") || c.includes("DC-10")) {
-        return 60;
-    }
-
-    // ============================
-    // 5) Large Heavy Jets (747, A340, DC-8, 707)
-    // ============================
-    if (c.includes("HEAVY") ||
-        c.includes("747") || c.includes("A340") ||
-        c.includes("707") || c.includes("DC-8")) {
-        return 75;
-    }
-
-    // ============================
-    // 6) A380 (Ultra Heavy)
-    // ============================
-    if (c.includes("A380")) {
-        return 90;
-    }
-
-    // Default
-    return 50;
-}
-     
-/* ============================================================
-   🟦 OPTIMIZATION BUFFER — FINAL v2
-   ============================================================ */
-     
-function rs_getOptimizedTurnaround(baseTurn, category) {
-    if (!document.getElementById("optimizeRotation").checked) {
-        return baseTurn; // sin optimización
-    }
-
-    const c = (category || "").toUpperCase();
-
-    // Light / Small
-    if (c.includes("SMALL") || c.includes("DC-3") || c.includes("PIPER")) {
-        return baseTurn + 10;
-    }
-
-    // Turboprop / Regional
-    if (c.includes("ATR") || c.includes("TURBO") || c.includes("REGIONAL")) {
-        return baseTurn + 10;
-    }
-
-    // Narrow-body
-    if (c.includes("A320") || c.includes("737") || c.includes("MD-80") || c.includes("TU-154")) {
-        return baseTurn + 15;
-    }
-
-    // Wide-body
-    if (c.includes("A300") || c.includes("767") || c.includes("DC-10") || c.includes("L-1011")) {
-        return baseTurn + 20;
-    }
-
-    // Heavy / 747 / DC-8 / 707
-    if (c.includes("747") || c.includes("A340") || c.includes("707") || c.includes("DC-8")) {
-        return baseTurn + 25;
-    }
-
-    // A380
-    if (c.includes("A380")) {
-        return baseTurn + 30;
-    }
-
-    return baseTurn + 15;
-}
-
-// 4) Fuel
-     
-function rs_getFuelBurn(category) {
-  if (!category) return 2400;
-  const c = category.toUpperCase();
-  if (c.includes("ATR")) return 900;
-  if (c.includes("REGIONAL")) return 1800;
-  return 2500;
-}
-
-// 5) Crew
-function rs_getCrewNeeded(category) {
-  const c = (category || "").toUpperCase();
-  if (c.includes("ATR")) return { pilots: 2, cabin: 2 };
-  if (c.includes("REGIONAL")) return { pilots: 2, cabin: 2 };
-  return { pilots: 2, cabin: 3 };
-}
-
-// 6) Costos
-function rs_getTripCost(distance, blockMin, category) {
-  const fuelKG = rs_getFuelBurn(category) * (blockMin / 60);
-  const fuelCost = fuelKG * 0.85;
-  return {
-    fuelCost: Math.round(fuelCost),
-    handling: 350,
-    maintenance: 180,
-    total: Math.round(fuelCost + 350 + 180)
-  };
-}
-
-/* ============================================================
-   🛫 ACS RANGE CHECK — SIMPLE & REALISTIC v2.0
-   ============================================================ */
-/*
-    REGLAS:
-    - Hasta (range - 15 NM) → sin penalización (normal ops)
-    - De (range - 15) a range → penalización proporcional (máx 35%)
-    - > range → NO permitido
-*/
-function ACS_checkRangeSimple(distNM, publishedRange) {
-
-    if (!distNM || !publishedRange) {
-        return { ok: true, penalty: 0, msg: "No range data" };
-    }
-
-    // Nuevo rango libre sin penalización
-    const freeLimit = publishedRange - 15;   // Ej: 510 → 495
-
-    // 🟩 1) Perfectamente dentro del rango operativo
-    if (distNM <= freeLimit) {
-        return {
-            ok: true,
-            penalty: 0,
-            msg: "✔ Within safe operational range"
-        };
-    }
-
-    // 🟨 2) Cerca del límite → penalización suave
-    if (distNM <= publishedRange) {
-
-        const ratio = (distNM - freeLimit) / (publishedRange - freeLimit);  // 0 → 1 lineal
-        const penalty = Math.min(0.35, ratio);  // Máximo 35%
-
-        return {
-            ok: true,
-            penalty,
-            msg: `⚠ Near max range — payload reduced by ${(penalty * 100).toFixed(0)}%`
-        };
-    }
-
-    // 🟥 3) Excedido → no permitido
-    return {
-        ok: false,
-        penalty: 1,
-        msg: "❌ Route exceeds aircraft maximum published range"
-    };
-}
-
-/* ============================================================
-   🟦 ACS ROUTE CHECK CHIP — Airbus OCC Feasibility Display
-   ============================================================ */
-
-function RS_updateRouteCheckChip(distNM, aircraftRangeNM, rangeCheck) {
-
-  const chip = document.getElementById("routeCheckChip");
-  const title = document.getElementById("routeCheckTitle");
-  const distanceEl = document.getElementById("routeCheckDistance");
-  const rangeEl = document.getElementById("routeCheckRange");
-  const excessEl = document.getElementById("routeCheckExcess");
-  const confirmBtn = document.getElementById("confirmRouteBtn");
-
-  if (!chip || !title || !distanceEl || !rangeEl || !excessEl) {
-    return;
-  }
-
-  const distance = Math.round(Number(distNM || 0));
-  const range = Math.round(Number(aircraftRangeNM || 0));
-  const excess = Math.max(0, distance - range);
-
-  chip.style.display = "block";
-
-  distanceEl.textContent = `${distance} NM`;
-  rangeEl.textContent = `${range} NM`;
-  excessEl.textContent = `${excess} NM`;
-
-  chip.classList.remove("route-check-ok", "route-check-danger");
-  excessEl.classList.remove("route-check-excess");
-
-  if (rangeCheck && rangeCheck.ok === false) {
-    chip.classList.add("route-check-danger");
-    title.textContent = "ROUTE CHECK — NOT DISPATCHABLE";
-    excessEl.classList.add("route-check-excess");
-
-    if (confirmBtn) {
-      confirmBtn.disabled = true;
-      confirmBtn.style.opacity = "0.45";
-      confirmBtn.style.cursor = "not-allowed";
-      confirmBtn.title = "Aircraft range insufficient for this route.";
-    }
-
-    return;
-  }
-
-  chip.classList.add("route-check-ok");
-  title.textContent = "ROUTE CHECK — DISPATCHABLE";
-
-  if (confirmBtn) {
-    confirmBtn.disabled = false;
-    confirmBtn.style.opacity = "1";
-    confirmBtn.style.cursor = "pointer";
-    confirmBtn.title = "";
-  }
-}
-
-function RS_clearRouteCheckChip() {
-
-  const chip = document.getElementById("routeCheckChip");
-  const confirmBtn = document.getElementById("confirmRouteBtn");
-
-  if (chip) {
-    chip.style.display = "none";
-    chip.classList.remove("route-check-ok", "route-check-danger");
-  }
-
-  if (confirmBtn) {
-    confirmBtn.disabled = false;
-    confirmBtn.style.opacity = "1";
-    confirmBtn.style.cursor = "pointer";
-    confirmBtn.title = "";
-  }
-}     
-     
-/* ============================================================
-   🟦 C) CREW ENGINE — Reemplazo para Route Schedule
-   ------------------------------------------------------------
-   Usa ACS_CrewEngine.getCrewFromDatabase(modelo_exacto)
-   ============================================================ */
-
-/**
- * Devuelve crew REAL a partir del REG del avión seleccionado.
- * Entrada: registration (ej: "N123AA")
- * Salida: { pilots, flight_engineers, navigators, radio_ops, cabin, total }
- */
-function rs_getCrewReal(registration) {
-
-  // Fallback universal si algo falla
-  const fallback = {
-    pilots: 2,
-    flight_engineers: 0,
-    navigators: 0,
-    radio_ops: 0,
-    cabin: 2,
-    total: 4
-  };
-
-  if (!registration) return fallback;
-
-  // Obtener flota
-  const fleet = JSON.parse(localStorage.getItem("ACS_MyAircraft") || "[]");
-  const ac = fleet.find(a => a.registration === registration);
-
-  if (!ac || !ac.model) return fallback;
-
-  // Crew REAL según el modelo exacto (A300, Tu-154, DC-10, MD-80, Do328…)
-  try {
-    return ACS_CrewEngine.getCrewFromDatabase(ac.model);
-  } catch (e) {
-    console.warn("CrewEngine error:", e);
-    return fallback;
-  }
-}
-
-// 🛠️ A2 — MODEL NORMALIZER — v1.0
-// Normaliza cualquier modelo a formato seguro
-     
-function normalizeModel(model) {
-    if (!model) return "";
-    return model
-        .normalize("NFKC")        // corrige Unicode raro
-        .replace(/\s+/g, " ")     // colapsa espacios múltiples
-        .replace(/\u00A0/g, " ")  // elimina espacios no separables
-        .trim();                  // limpia izquierda/derecha
-}
-     
-/* ============================================================
-   🔵 B — AUTO CALCULATE (BACKEND AIRCRAFT AUTHORITY v1.0)
-   ------------------------------------------------------------
-   Source:
-   - Selected aircraft comes from /v1/aircraft/fleet cache
-   - No ACS_MyAircraft localStorage
-   - Uses backend aircraft_id as selector value
-   ============================================================ */
-
-function autoCalculate() {
-
-  const origin = document.getElementById("origin")?.value.trim().toUpperCase();
-  const dest   = document.getElementById("destination")?.value.trim().toUpperCase();
-
-  const selectedAircraft =
-    typeof RS_getSelectedAircraftFromBackendCache === "function"
-      ? RS_getSelectedAircraftFromBackendCache()
-      : null;
-
-   if (!origin || !dest || !selectedAircraft) {
-    const techData = document.getElementById("techData");
-    if (techData) techData.style.display = "none";
-
-    if (typeof RS_clearRouteCheckChip === "function") {
-      RS_clearRouteCheckChip();
-    }
-
-    return;
-  }
-
-  const aircraftId = Number(selectedAircraft.id || 0);
-
-  const aircraftName = String(
-    selectedAircraft.aircraft_name ||
-    selectedAircraft.model_key ||
-    "Aircraft"
-  ).trim();
-
-  const modelKey = String(selectedAircraft.model_key || "").trim().toUpperCase();
-
-  const speed = Number(
-    selectedAircraft.speed_kts ||
-    selectedAircraft.speed ||
-    440
-  );
-
-  const range = Number(
-    selectedAircraft.range_nm ||
-    selectedAircraft.range ||
-    1500
-  );
-
-  const category = String(
-    selectedAircraft.aircraft_category ||
-    selectedAircraft.category ||
-    aircraftName ||
-    ""
-  ).trim();
-
-  if (!aircraftId || !Number.isFinite(speed) || speed <= 0) {
-    console.warn("⛔ Invalid selected aircraft technical data:", selectedAircraft);
-
-    const techData = document.getElementById("techData");
-    if (techData) techData.style.display = "none";
-
-    return;
-  }
-
-  const distNM = rs_getDistanceNM(origin, dest);
-
-  if (!Number.isFinite(distNM) || distNM <= 0) {
-    console.warn("⛔ Route distance could not be calculated:", {
-      origin,
-      destination: dest
-    });
-
-    const techData = document.getElementById("techData");
-    if (techData) techData.style.display = "none";
-
-    return;
-  }
-
-  const rangeCheck =
-    typeof ACS_checkRangeSimple === "function"
-      ? ACS_checkRangeSimple(distNM, range)
-      : { ok: true, penalty: 0, msg: "Range check unavailable" };
-
-    if (!rangeCheck.ok) {
-    document.getElementById("techData").style.display = "block";
-
-    document.getElementById("distance").textContent = distNM;
-    document.getElementById("blockTime").textContent = "--";
-    document.getElementById("turnaround").textContent = "--";
-    document.getElementById("totalRotation").textContent = "--";
-    document.getElementById("delayRisk").textContent = "RANGE";
-    document.getElementById("effIndex").textContent = "0%";
-
-    if (typeof RS_updateRouteCheckChip === "function") {
-      RS_updateRouteCheckChip(distNM, range, rangeCheck);
-    }
-
-    window.ACS_RouteTechData = {
-      aircraftId,
-      aircraftName,
-      modelKey,
-      speedKts: speed,
-      rangeNm: range,
-      category,
-      distNM,
-      blockMin: 0,
-      turnMin: 0,
-      turnMinOptimized: 0,
-      totalMin: 0,
-      rangeCheck
+  </header>
+
+  <main class="acs-main">
+    <section class="page-title">
+      <h2>ROUTE SCHEDULE SETUP</h2>
+      <p>Airbus OCC route planning with PostgreSQL operational authority.</p>
+    </section>
+
+    <section class="authority-strip" aria-label="Authority status">
+      <div class="authority-chip">WORLD TIME · POSTGRESQL</div>
+      <div class="authority-chip">FLIGHT NUMBERS · BACKEND</div>
+      <div class="authority-chip">SLOTS & FINANCE · TRANSACTIONAL</div>
+    </section>
+
+    <section class="schedule-container">
+      <div class="grid-2">
+        <div>
+          <label for="origin">Origin (ICAO)</label>
+          <input id="origin" type="text" readonly>
+        </div>
+        <div>
+          <label for="destination">Destination (ICAO)</label>
+          <input id="destination" type="text" readonly>
+        </div>
+      </div>
+
+      <div class="section">
+        <label for="flightNumber">Flight Numbers</label>
+        <input
+          id="flightNumber"
+          class="flight-number-authority"
+          type="text"
+          value="Assigned automatically on confirmation"
+          readonly
+        >
+      </div>
+
+      <div class="grid-2 section">
+        <div>
+          <label for="aircraft">Aircraft</label>
+          <select id="aircraft">
+            <option value="">-- Select Aircraft --</option>
+          </select>
+        </div>
+        <div>
+          <label for="departureTime">Departure Time (Local)</label>
+          <select id="departureTime"></select>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="section">
+        <label style="text-align:center;">Days of Operation</label>
+        <div class="days-row">
+          <label class="day-control"><input type="checkbox" id="allDays"> All</label>
+          <label class="day-control"><input type="checkbox" id="mon"> Mo</label>
+          <label class="day-control"><input type="checkbox" id="tue"> Tu</label>
+          <label class="day-control"><input type="checkbox" id="wed"> We</label>
+          <label class="day-control"><input type="checkbox" id="thu"> Th</label>
+          <label class="day-control"><input type="checkbox" id="fri"> Fr</label>
+          <label class="day-control"><input type="checkbox" id="sat"> Sa</label>
+          <label class="day-control"><input type="checkbox" id="sun"> Su</label>
+        </div>
+      </div>
+
+      <div class="section" style="text-align:center;">
+        <label class="day-control">
+          <input type="checkbox" id="optimizeRotation">
+          Optimize Rotation
+        </label>
+      </div>
+
+      <section id="techData" class="tech-list">
+        <div class="tech-grid">
+          <div class="tech-item">Distance (NM)<span id="distance">--</span></div>
+          <div class="tech-item">Block Time<span id="blockTime">--</span></div>
+          <div class="tech-item">Turnaround<span id="turnaround">--</span></div>
+          <div class="tech-item">Total Rotation<span id="totalRotation">--</span></div>
+          <div class="tech-item">Delay Risk<span id="delayRisk">--</span></div>
+          <div class="tech-item">Efficiency Index<span id="effIndex">--</span></div>
+        </div>
+
+        <div id="routeCheckChip" class="route-check-chip">
+          <div id="routeCheckTitle" class="route-check-title">ROUTE CHECK</div>
+          <div class="route-check-row"><span>ROUTE DISTANCE</span><strong id="routeCheckDistance">-- NM</strong></div>
+          <div class="route-check-row"><span>AIRCRAFT MAX RANGE</span><strong id="routeCheckRange">-- NM</strong></div>
+          <div class="route-check-row"><span>EXCESS</span><strong id="routeCheckExcess">-- NM</strong></div>
+        </div>
+      </section>
+
+      <div id="result" class="result"></div>
+
+      <div class="button-row">
+        <button class="acs-btn" id="confirmRouteBtn" type="button">CONFIRM ROUTE</button>
+        <button class="back-btn" id="backBtn" type="button">BACK TO ROUTES</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 2026 Aviation Capital Simulator. All rights reserved.</footer>
+
+  <script>
+    /* ============================================================
+       ACS ROUTE SCHEDULE CONTROLLER — AIRBUS OCC v4.0
+       ------------------------------------------------------------
+       No browser persistence authority. No local flight-number authority.
+       All operational creation is confirmed by Railway/PostgreSQL.
+       ============================================================ */
+
+    const ACS_API_BASE = "https://api.aviationcapitalsim.com/v1";
+    const ACS_DAY_IDS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+    const RS_STATE = {
+      company: null,
+      route: null,
+      fleet: [],
+      originAirport: null,
+      destinationAirport: null,
+      world: null,
+      tech: null,
+      confirming: false,
+      clockTimer: null
     };
 
-    console.warn("🔴 RS ROUTE CHECK FAILED:", window.ACS_RouteTechData);
-    return;
-  }
-
-  const block = rs_getBlockTime(distNM, speed);
-
-  const baseTurn = rs_getTurnaround(category);
-
-  const optimizeON =
-    document.getElementById("optimizeRotation")?.checked || false;
-
-  const optTurn = optimizeON
-    ? rs_getOptimizedTurnaround(baseTurn, category)
-    : baseTurn;
-
-  const totalBase = block + baseTurn + block;
-  const totalOpt  = block + optTurn + block;
-
-  document.getElementById("techData").style.display = "block";
-
-  document.getElementById("distance").textContent = distNM;
-
-  document.getElementById("blockTime").textContent =
-    `${Math.floor(block / 60)}h ${block % 60}m`;
-
-  document.getElementById("turnaround").innerHTML =
-    !optimizeON
-      ? `${baseTurn} min`
-      : `${baseTurn} min<br><span style="color:#ffd54f">Optimized: ${optTurn} min</span>`;
-
-  document.getElementById("totalRotation").innerHTML =
-    !optimizeON
-      ? `${Math.floor(totalBase / 60)}h ${totalBase % 60}m`
-      : `${Math.floor(totalBase / 60)}h ${totalBase % 60}m<br>
-         <span style="color:#ffd54f">
-           Optimized: ${Math.floor(totalOpt / 60)}h ${totalOpt % 60}m
-         </span>`;
-     
-  document.getElementById("delayRisk").textContent = "3%";
-  document.getElementById("effIndex").textContent  = "90%";
-
-  if (typeof RS_updateRouteCheckChip === "function") {
-    RS_updateRouteCheckChip(distNM, range, rangeCheck);
-  }
-
-  window.ACS_RouteTechData = {
-    aircraftId,
-    aircraftName,
-    modelKey,
-    speedKts: speed,
-    rangeNm: range,
-    category,
-    distNM,
-    blockMin: block,
-    turnMin: baseTurn,
-    turnMinOptimized: optTurn,
-    totalMin: optimizeON ? totalOpt : totalBase,
-    rangeCheck
-  };
-
-  console.log("🟢 RS AUTO CALCULATE BACKEND AIRCRAFT READY:", window.ACS_RouteTechData);
-}
-
-/* ============================================================
-   🔵 D — ROUTE SCHEDULE EVENT LINKER — FINAL VERSION
-   ============================================================
-   Mantiene toda la lógica viva al cambiar:
-   • Avión (model)
-   • Hora de salida
-   • Optimized Rotation
-   • Reload / Safari FIX
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    const acSel  = document.getElementById("aircraft");
-    const depSel = document.getElementById("departureTime");
-    const optBox = document.getElementById("optimizeRotation");
-
-    /* 🔹 Evento: cambio de avión */
-    if (acSel) {
-        acSel.addEventListener("change", () => {
-            autoCalculate();                       // 🔥 recalcular
-            autoGenerateFlightNumber();            // 🔥 regenerar OUT/IN
-        });
+    function RS_text(value) {
+      return String(value ?? "").trim();
     }
 
-    /* 🔹 Evento: cambio de hora */
-    if (depSel) {
-        depSel.addEventListener("change", () => {
-            autoCalculate();
-        });
+    function RS_icao(value) {
+      return RS_text(value).toUpperCase();
     }
 
-    /* 🔹 Evento: activar Optimized Rotation */
-    if (optBox) {
-        optBox.addEventListener("change", () => {
-            autoCalculate();
-        });
+    function RS_setResult(message, type = "info") {
+      const result = document.getElementById("result");
+      if (!result) return;
+
+      result.textContent = message || "";
+      result.style.color =
+        type === "error" ? "#ff5263" :
+        type === "success" ? "#00d88a" :
+        "#9dadd5";
     }
 
-    /* ============================================================
-   🔹 SAFARI / CHROME RELOAD FIX — SAFE
-   ============================================================ */
-setTimeout(() => {
-
-  const isEdit = !!localStorage.getItem("ACS_ROUTE_EDIT");
-  const model  = acSel?.value || "";
-
-  if (!model) return;
-
-  autoCalculate();
-
-  // ⛔ NO regenerar flight number en EDIT
-  if (!isEdit) {
-    autoGenerateFlightNumber();
-  }
-
-}, 60);
-
-});
-
-/* ============================================================
-   🟩 CONFIRM ROUTE — CANONICAL SINGLE FUNCTION v2.0
-   ------------------------------------------------------------
-   FIXES:
-   ✅ Elimina SyntaxError (NO hay returns fuera de funciones)
-   ✅ 1 día = 1 vuelo (scheduleItems)
-   ✅ EDIT safe (borra SOLO routeKey)
-   ✅ Slot booking INSIDE confirmRoute (si existe engine)
-   ✅ Guarda rutas legacy (ACS_ROUTES_POOL) sin romper Schedule Table
-   ============================================================ */
-
-function ACS_convertDepartureToArrival(dep, blockMin) {
-  if (!dep || !blockMin) return "00:00";
-  const [h, m] = dep.split(":").map(Number);
-  const total = h * 60 + m + blockMin;
-  const ah = String(Math.floor(total / 60) % 24).padStart(2, "0");
-  const am = String(total % 60).padStart(2, "0");
-  return `${ah}:${am}`;
-}
-
-/* ============================================================
-   🟩 CONFIRM ROUTE — BACKEND AUTHORITY v3.0
-   ------------------------------------------------------------
-   File: route_schedule.html
-   Purpose:
-   - Confirm route through Railway/PostgreSQL
-   - NO localStorage scheduleItems authority
-   - NO ACS_ROUTES_POOL authority
-   - NO confirmedRoute authority
-   - Backend creates:
-     route_plans
-     schedule_items
-     airport_slot_bookings
-     company_finance debit
-     finance_log
-   ============================================================ */
-
-async function confirmRoute() {
-
-  const DAY_IDS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-  const confirmBtn = document.getElementById("confirmRouteBtn");
-
-  try {
-
-    if (confirmBtn) {
-      confirmBtn.disabled = true;
-      confirmBtn.style.opacity = "0.55";
-      confirmBtn.style.cursor = "wait";
-      confirmBtn.textContent = "CONFIRMING...";
-    }
-
-    /* ============================================================
-       1️⃣ FORM DATA
-       ============================================================ */
-
-    const origin = String(document.getElementById("origin")?.value || "")
-      .trim()
-      .toUpperCase();
-
-    const destination = String(document.getElementById("destination")?.value || "")
-      .trim()
-      .toUpperCase();
-
-    const departure = String(document.getElementById("departureTime")?.value || "")
-      .trim();
-
-    if (!origin || !destination || !departure) {
-      alert("⚠️ Please complete all fields before confirming.");
-      return;
-    }
-
-    /* ============================================================
-       2️⃣ AIRCRAFT — BACKEND CACHE AUTHORITY
-       ============================================================ */
-
-    const selectedAircraft =
-      typeof RS_getSelectedAircraftFromBackendCache === "function"
-        ? RS_getSelectedAircraftFromBackendCache()
-        : null;
-
-    if (!selectedAircraft) {
-      alert("⚠️ Please select an available aircraft.");
-      return;
-    }
-
-    const aircraftId = Number(selectedAircraft.id || 0);
-
-    const modelKey = String(selectedAircraft.model_key || "")
-      .trim()
-      .toUpperCase();
-
-    const aircraftName = String(
-      selectedAircraft.aircraft_name ||
-      selectedAircraft.model_key ||
-      "Aircraft"
-    ).trim();
-
-    const registration = String(
-      selectedAircraft.registration ||
-      "UNREGISTERED"
-    ).trim();
-
-    if (!aircraftId || !modelKey) {
-      alert("⛔ Aircraft data incomplete. Please reload Route Schedule.");
-      console.warn("Invalid selected aircraft:", selectedAircraft);
-      return;
-    }
-
-    /* ============================================================
-       3️⃣ DAYS OF OPERATION
-       ============================================================ */
-
-    const selectedDays = DAY_IDS.filter(id =>
-      document.getElementById(id)?.checked
-    );
-
-    if (!selectedDays.length) {
-      alert("⚠️ Please select at least one day.");
-      return;
-    }
-
-    /* ============================================================
-       4️⃣ TECH DATA / ROUTE CHECK
-       ============================================================ */
-
-    const tech = window.ACS_RouteTechData || {};
-
-    const blockTimeMin = Number(tech.blockMin || 0);
-
-    if (!Number.isFinite(blockTimeMin) || blockTimeMin <= 0) {
-      alert("⛔ Block time invalid. Please recalculate route.");
-      return;
-    }
-
-    if (tech.rangeCheck && tech.rangeCheck.ok === false) {
-      alert("⛔ ROUTE CHECK — NOT DISPATCHABLE. Aircraft range insufficient for this route.");
-      return;
-    }
-
-    const finalDistanceNM = Number(tech.distNM || 0);
-
-    if (!Number.isFinite(finalDistanceNM) || finalDistanceNM <= 0) {
-      alert("⛔ Route distance invalid. Please recalculate route.");
-      return;
-    }
-
-    const optimizeRotation =
-      !!document.getElementById("optimizeRotation")?.checked;
-
-    const turnaroundMin = Number(
-      optimizeRotation
-        ? (tech.turnMinOptimized || tech.turnMin || 45)
-        : (tech.turnMin || 45)
-    );
-
-    const totalRotationMin = Number(
-      tech.totalMin ||
-      ((blockTimeMin * 2) + turnaroundMin)
-    );
-
-    const aircraftRangeNm = Number(
-      tech.rangeNm ||
-      selectedAircraft.range_nm ||
-      selectedAircraft.range ||
-      0
-    );
-
-    const speedKts = Number(
-      tech.speedKts ||
-      selectedAircraft.speed_kts ||
-      selectedAircraft.speed ||
-      0
-    );
-
-    /* ============================================================
-       5️⃣ ARRIVAL TIME
-       ============================================================ */
-
-    const arrival =
-      typeof ACS_convertDepartureToArrival === "function"
-        ? ACS_convertDepartureToArrival(departure, blockTimeMin)
-        : (() => {
-            const [depH, depM] = departure.split(":").map(n => parseInt(n, 10));
-            const arrivalTotalMin = (depH * 60 + depM) + blockTimeMin;
-            const arrH = Math.floor(arrivalTotalMin / 60) % 24;
-            const arrM = arrivalTotalMin % 60;
-            return `${String(arrH).padStart(2, "0")}:${String(arrM).padStart(2, "0")}`;
-          })();
-
-    /* ============================================================
-       6️⃣ FLIGHT NUMBERS
-       ============================================================ */
-
-    let flightNumberOut = window.currentFN_Out || null;
-    let flightNumberIn  = window.currentFN_In  || null;
-
-    if (!flightNumberOut || !flightNumberIn) {
-      const rawFN = document.getElementById("flightNumber")?.value?.trim() || "";
-      const match = rawFN.match(/^([A-Z]{2}\d+)\s*➜\s*([A-Z]{2}\d+)$/);
-
-      if (!match) {
-        alert("⛔ Invalid flight number. Please regenerate the flight number.");
-        return;
-      }
-
-      flightNumberOut = match[1];
-      flightNumberIn  = match[2];
-    }
-
-    if (!flightNumberOut || !flightNumberIn) {
-      alert("⛔ Flight numbers missing. Cannot confirm route.");
-      return;
-    }
-
-    /* ============================================================
-       7️⃣ BACKEND PAYLOAD
-       ============================================================ */
-
-    const payload = {
-      origin,
-      destination,
-
-      aircraft_id: aircraftId,
-      aircraftId,
-
-      selected_days: selectedDays,
-      days: selectedDays,
-
-      departure,
-      arrival,
-
-      route_type: "PASSENGER",
-
-      distance_nm: Math.round(finalDistanceNM),
-      block_time_min: Math.round(blockTimeMin),
-      turnaround_min: Math.round(turnaroundMin),
-      total_rotation_min: Math.round(totalRotationMin),
-
-      aircraft_range_nm: Math.round(aircraftRangeNm),
-      speed_kts: Math.round(speedKts),
-
-      model_key: modelKey,
-      aircraft: aircraftName,
-      registration,
-
-      flight_number_out: flightNumberOut,
-      flight_number_in: flightNumberIn,
-
-      optimize_rotation: optimizeRotation,
-      source: "ACS_ROUTE_SCHEDULE_BACKEND_CONFIRM_V3"
-    };
-
-    console.log("🟦 RS CONFIRM ROUTE PAYLOAD:", payload);
-
-    /* ============================================================
-       8️⃣ POST TO RAILWAY / POSTGRESQL AUTHORITY
-       ============================================================ */
-
-    const res = await fetch(
-      "https://api.aviationcapitalsim.com/v1/routes/plans",
-      {
-        method: "POST",
+    async function RS_fetchJson(url, options = {}) {
+      const response = await fetch(url, {
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        cache: "no-store",
+        ...options
+      });
+
+      let payload = null;
+
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
       }
-    );
 
-    const data = await res.json();
+      if (!response.ok || !payload) {
+        const error = new Error(
+          payload?.details || payload?.error || `HTTP_${response.status}`
+        );
+        error.status = response.status;
+        error.payload = payload;
+        throw error;
+      }
 
-    if (!res.ok || !data || data.ok !== true) {
-      console.error("🔴 RS CONFIRM ROUTE FAILED:", data);
+      return payload;
+    }
 
-      alert(
-        "⛔ Route confirmation failed: " +
-        (data?.error || data?.details || "Unknown backend error")
+    async function RS_loadWorld() {
+      const payload = await RS_fetchJson(`${ACS_API_BASE}/world`);
+
+      if (!payload.ok || !payload.world?.current_sim_time) {
+        throw new Error("ACS_WORLD_INVALID_RESPONSE");
+      }
+
+      RS_STATE.world = payload.world;
+      RS_renderClock(payload.world.current_sim_time);
+      return payload.world;
+    }
+
+    function RS_renderClock(value) {
+      const clock = document.getElementById("acs-clock");
+      const date = new Date(value);
+
+      if (!clock || Number.isNaN(date.getTime())) return;
+
+      const hh = String(date.getUTCHours()).padStart(2, "0");
+      const mm = String(date.getUTCMinutes()).padStart(2, "0");
+      const weekday = date.toLocaleString("en-US", {
+        weekday: "short",
+        timeZone: "UTC"
+      }).toUpperCase();
+      const day = String(date.getUTCDate()).padStart(2, "0");
+      const month = date.toLocaleString("en-US", {
+        month: "short",
+        timeZone: "UTC"
+      }).toUpperCase();
+      const year = date.getUTCFullYear();
+
+      clock.textContent = `${hh}:${mm} — ${weekday} ${day} ${month} ${year}`;
+    }
+
+    function RS_startClock() {
+      if (RS_STATE.clockTimer !== null) {
+        clearInterval(RS_STATE.clockTimer);
+      }
+
+      RS_STATE.clockTimer = window.setInterval(() => {
+        void RS_loadWorld().catch(error => {
+          console.warn("ACS world refresh failed:", error);
+        });
+      }, 30000);
+    }
+
+    async function RS_loadCompanyContext() {
+      const payload = await RS_fetchJson(`${ACS_API_BASE}/company/context`);
+
+      if (!payload.ok) {
+        throw new Error("COMPANY_CONTEXT_FAILED");
+      }
+
+      RS_STATE.company = payload;
+      return payload;
+    }
+
+    function RS_getRouteFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const origin = RS_icao(params.get("origin"));
+      const destination = RS_icao(params.get("destination"));
+
+      if (!origin || !destination) return null;
+      return { origin, destination };
+    }
+
+    function RS_validateRouteContext(route, company) {
+      const backendBase = RS_icao(company?.user?.base_icao);
+
+      if (!route) throw new Error("ROUTE_CONTEXT_MISSING");
+      if (!backendBase) throw new Error("BACKEND_BASE_MISSING");
+      if (route.origin !== backendBase) {
+        throw new Error("ORIGIN_DOES_NOT_MATCH_BACKEND_BASE");
+      }
+      if (route.origin === route.destination) {
+        throw new Error("ORIGIN_DESTINATION_CANNOT_MATCH");
+      }
+
+      return route;
+    }
+
+    async function RS_loadAirport(icao) {
+      const year = new Date(RS_STATE.world.current_sim_time).getUTCFullYear();
+      const payload = await RS_fetchJson(
+        `${ACS_API_BASE}/airports/catalog/${encodeURIComponent(icao)}` +
+        `?sim_year=${encodeURIComponent(year)}`
       );
 
-      return;
+      if (!payload.ok || !payload.airport) {
+        throw new Error(`AIRPORT_NOT_FOUND_${icao}`);
+      }
+
+      return payload.airport;
     }
 
-    console.log("🟢 RS ROUTE CONFIRMED IN BACKEND:", data);
+    async function RS_loadOperationalFleet() {
+      const payload = await RS_fetchJson(`${ACS_API_BASE}/aircraft/fleet`);
+      const fleet = Array.isArray(payload.fleet) ? payload.fleet : [];
 
-    alert("✅ OCC Route confirmed.");
+      RS_STATE.fleet = fleet.filter(aircraft => {
+        const status = RS_text(aircraft.status).toUpperCase();
+        const operational = RS_text(aircraft.operational_status).toUpperCase();
+        const maintenance = RS_text(aircraft.maintenance_status).toUpperCase();
+        const control = RS_text(aircraft.maintenance_control_status).toUpperCase();
 
-    window.location.href = "schedule_table.html";
+        return status === "ACTIVE"
+          && operational === "AVAILABLE"
+          && (maintenance === "SERVICEABLE" || control === "SERVICEABLE");
+      });
 
-  } catch (err) {
-
-    console.error("🔴 RS CONFIRM ROUTE ERROR:", err);
-
-    alert("⛔ Route confirmation failed. Check console/Railway logs.");
-
-  } finally {
-
-    if (confirmBtn) {
-      confirmBtn.disabled = false;
-      confirmBtn.style.opacity = "1";
-      confirmBtn.style.cursor = "pointer";
-      confirmBtn.textContent = "CONFIRM ROUTE";
+      return RS_STATE.fleet;
     }
 
-  }
-}
+    function RS_populateFleet() {
+      const select = document.getElementById("aircraft");
+      select.innerHTML = '<option value="">-- Select Aircraft --</option>';
 
-</script>
+      const seen = new Set();
 
-<!-- ===========================================================
-     🟦 ACS SCRIPT ORDER — ROUTE SCHEDULE (FINAL v1.0)
-     -----------------------------------------------------------
-     ESTE ORDEN ES OBLIGATORIO PARA QUE LOS 4000+ AEROPUERTOS
-     SE CARGUEN SIN ERRORES. NO CAMBIARLO NUNCA.
-     =========================================================== -->
+      for (const aircraft of RS_STATE.fleet) {
+        const id = RS_text(aircraft.id);
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
 
-<!-- 1) ENGINE BASES -->
-<!-- ============================================================
-     ⏳ ACS TIME ENGINE V12 — 24/7 RECOVERY LAYER
-     ============================================================ -->
-<script src="acs_time_recovery.js"></script>
-<script src="time_engine.js"></script>
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = `${RS_text(aircraft.aircraft_name || aircraft.model_key || "Aircraft")} · ${RS_text(aircraft.registration || "UNREGISTERED")}`;
+        select.appendChild(option);
+      }
 
-<script src="./engine/acs_crew_engine.js"></script>
-<script src="./engine/acs_finance.js"></script>
-
-<!-- 1.4) SLOT ENGINE — necesita time_engine y antes del loader -->
-<script src="./engine/acs_slots_engine.js?v=2.0"></script>
-
-<!-- ===========================================================
-     2) AIRPORT LOADER — CREA WorldAirportsACS
-     Debe cargarse ANTES que los continent scripts
-     =========================================================== -->
-<script src="engine/airports_loader.js?v=1.0"></script>
-
-<!-- ===========================================================
-     3) WORLD ENGINE — USA los datos cargados por el loader
-     Genera índices ICAO/IATA, filtros históricos, etc.
-     =========================================================== -->
-<script src="engine/acs_world_engine.js?v=1.0"></script>
-
-<!-- ===========================================================
-     4) CONTINENTS — AHORA SÍ
-     Estos archivos dependen de que WorldAirportsACS YA exista.
-     =========================================================== -->
-<script src="engine/airports/world_airports_na.js?v=1.0"></script>
-<script src="engine/airports/world_airports_sa.js?v=1.0"></script>
-<script src="engine/airports/world_airports_eu.js?v=1.0"></script>
-<script src="engine/airports/world_airports_me.js?v=1.0"></script>
-<script src="engine/airports/world_airports_af.js?v=1.0"></script>
-<script src="engine/airports/world_airports_as.js?v=1.0"></script>
-<script src="engine/airports/world_airports_oc.js?v=1.0"></script>
-
-<script>
-     
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof registerTimeListener === "function") {
-    registerTimeListener(updateClockDisplay);
-    updateClockDisplay();
-  }
-});
-     
-</script>
-     
-<script>
-     
-/* ============================================================
-   DOM READY FIX (Safari)
-   ============================================================ */
-
-  document.addEventListener("DOMContentLoaded", () => {
-  if (typeof window.confirmRoute === "function") return;
-
-  if (typeof confirmRoute === "function") {
-    window.confirmRoute = confirmRoute;
-  } else {
-    console.warn("⚠ confirmRoute not available at DOMContentLoaded (script may have failed earlier)");
-  }
-});
-
-/* ============================================================
-   🔒 ACS ROUTE SCHEDULE — AIRCRAFT SELECTOR LOCK
-   ------------------------------------------------------------
-   Evita que código legacy vuelva a vaciar el <select id="aircraft">
-   después de haber sido poblado correctamente.
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const sel = document.getElementById("aircraft");
-  if (!sel) return;
-
-  const proto = HTMLSelectElement.prototype;
-  const desc = Object.getOwnPropertyDescriptor(proto, "innerHTML");
-  if (!desc || !desc.set || !desc.get) return;
-
-  Object.defineProperty(sel, "innerHTML", {
-  set(value) {
-
-    // ✅ PERMITIR el reset inicial legítimo (primer llenado)
-    if (
-      typeof value === "string" &&
-      value.includes("-- Select Aircraft --") &&
-      sel.options.length === 0
-    ) {
-      desc.set.call(this, value);
-      return;
+      if (!RS_STATE.fleet.length) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No dispatchable aircraft";
+        option.disabled = true;
+        select.appendChild(option);
+      }
     }
 
-    // ❌ BLOQUEAR solo resets destructivos posteriores
-    if (
-      typeof value === "string" &&
-      value.includes("-- Select Aircraft --") &&
-      sel.options.length > 1
-    ) {
-      console.warn("🛑 Aircraft selector reset blocked (legacy code)");
-      return;
+    function RS_getSelectedAircraft() {
+      const selectedId = RS_text(document.getElementById("aircraft")?.value);
+      return RS_STATE.fleet.find(item => RS_text(item.id) === selectedId) || null;
     }
 
-    // Default
-    desc.set.call(this, value);
-  },
-  get() {
-    return desc.get.call(this);
-  }
-});
+    function RS_buildDepartureTimes() {
+      const select = document.getElementById("departureTime");
+      select.innerHTML = "";
 
-});
+      for (let hour = 0; hour < 24; hour += 1) {
+        for (let minute = 0; minute < 60; minute += 5) {
+          const hh = String(hour).padStart(2, "0");
+          const mm = String(minute).padStart(2, "0");
+          const option = document.createElement("option");
+          option.value = `${hh}:${mm}`;
+          option.textContent = `${hh}:${mm}`;
+          select.appendChild(option);
+        }
+      }
 
-/* ============================================================
-   🟩 A2 — CONFIRM ROUTE BUTTON BIND (FIX DEFINITIVO)
-   ------------------------------------------------------------
-   - Un solo binding
-   - Sin duplicar listeners
-   - confirmRoute debe existir al hacer click
-   ============================================================ */
-
-document.addEventListener("DOMContentLoaded", function () {
-
-  const confirmBtn =
-    document.getElementById("confirmRouteBtn") ||
-    document.querySelector("button.confirm-route");
-
-  if (!confirmBtn) {
-    console.warn("⚠ Confirm Route button not found in DOM");
-    return;
-  }
-
-  confirmBtn.onclick = function (e) {
-    e.preventDefault();
-
-    if (typeof window.confirmRoute !== "function") {
-      alert("⛔ confirmRoute() no está disponible (JS roto antes)");
-      console.error("❌ confirmRoute() not defined");
-      return;
+      select.value = "06:00";
     }
 
-    window.confirmRoute();
-  };
+    function RS_distanceNm(lat1, lon1, lat2, lon2) {
+      const values = [lat1, lon1, lat2, lon2].map(Number);
+      if (values.some(value => !Number.isFinite(value))) return 0;
 
-  console.log("✅ Confirm Route button correctly bound");
+      const [aLat, aLon, bLat, bLon] = values;
+      const radiusNm = 3440.065;
+      const radians = value => (value * Math.PI) / 180;
+      const dLat = radians(bLat - aLat);
+      const dLon = radians(bLon - aLon);
 
-});
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(radians(aLat)) *
+        Math.cos(radians(bLat)) *
+        Math.sin(dLon / 2) ** 2;
 
-/* ============================================================
-   🟩 RS — ALL DAYS FACILITATOR (SAFE / UI ONLY)
-   ------------------------------------------------------------
-   • All marca o desmarca Mo–Su
-   • Si se desmarca un día manualmente → All se desmarca
-   • NO altera confirmRoute ni lógica interna
-   ============================================================ */
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return Math.round(radiusNm * c);
+    }
 
-function RS_toggleAllDays(master) {
+    function RS_blockTimeMinutes(distanceNm, speedKts) {
+      if (!distanceNm || !speedKts) return 0;
+      return Math.round(((distanceNm / speedKts) + 0.25) * 60);
+    }
 
-  const checked = master.checked;
+    function RS_turnaroundMinutes(category) {
+      const value = RS_text(category).toUpperCase();
 
-  ["mon","tue","wed","thu","fri","sat","sun"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.checked = checked;
-  });
-}
+      if (/A380/.test(value)) return 90;
+      if (/747|A340|707|DC-8|HEAVY/.test(value)) return 75;
+      if (/A300|A310|767|787|L-1011|DC-10|WIDE/.test(value)) return 60;
+      if (/A320|A318|A319|A321|737|727|MD-80|TU-154|DC-9|NARROW/.test(value)) return 50;
+      if (/ATR|TURBO|REGIONAL/.test(value)) return 45;
+      if (/SMALL|LIGHT|DC-3|PIPER|CESSNA/.test(value)) return 35;
+      return 50;
+    }
 
-function RS_syncAllDays() {
+    function RS_optimizedTurnaround(base, category) {
+      const value = RS_text(category).toUpperCase();
 
-  const allBox = document.getElementById("allDays");
-  if (!allBox) return;
+      if (/A380/.test(value)) return base + 30;
+      if (/747|A340|707|DC-8|HEAVY/.test(value)) return base + 25;
+      if (/A300|A310|767|787|L-1011|DC-10|WIDE/.test(value)) return base + 20;
+      if (/A320|A318|A319|A321|737|727|MD-80|TU-154|DC-9|NARROW/.test(value)) return base + 15;
+      return base + 10;
+    }
 
-  const allChecked =
-    ["mon","tue","wed","thu","fri","sat","sun"]
-      .every(id => document.getElementById(id)?.checked);
+    function RS_rangeCheck(distance, publishedRange) {
+      if (!distance || !publishedRange) {
+        return { ok: false, penalty: 0, message: "Aircraft range unavailable" };
+      }
 
-  allBox.checked = allChecked;
-}
-     
-</script>
-     
+      const freeLimit = Math.max(0, publishedRange - 15);
+      if (distance <= freeLimit) {
+        return { ok: true, penalty: 0, message: "Within safe operating range" };
+      }
+
+      if (distance <= publishedRange) {
+        const denominator = Math.max(1, publishedRange - freeLimit);
+        const penalty = Math.min(0.35, (distance - freeLimit) / denominator);
+        return { ok: true, penalty, message: "Near maximum published range" };
+      }
+
+      return { ok: false, penalty: 1, message: "Route exceeds published range" };
+    }
+
+    function RS_formatDuration(minutes) {
+      const safe = Math.max(0, Math.round(Number(minutes || 0)));
+      return `${Math.floor(safe / 60)}h ${safe % 60}m`;
+    }
+
+    function RS_renderRouteCheck(distance, range, check) {
+      const chip = document.getElementById("routeCheckChip");
+      const title = document.getElementById("routeCheckTitle");
+      const excess = Math.max(0, Math.round(distance - range));
+      const button = document.getElementById("confirmRouteBtn");
+
+      chip.style.display = "block";
+      chip.classList.remove("route-check-ok", "route-check-danger");
+
+      document.getElementById("routeCheckDistance").textContent = `${Math.round(distance)} NM`;
+      document.getElementById("routeCheckRange").textContent = `${Math.round(range)} NM`;
+      document.getElementById("routeCheckExcess").textContent = `${excess} NM`;
+      document.getElementById("routeCheckExcess").classList.toggle("route-check-excess", !check.ok);
+
+      if (check.ok) {
+        chip.classList.add("route-check-ok");
+        title.textContent = "ROUTE CHECK — DISPATCHABLE";
+        button.disabled = false;
+      } else {
+        chip.classList.add("route-check-danger");
+        title.textContent = "ROUTE CHECK — NOT DISPATCHABLE";
+        button.disabled = true;
+      }
+    }
+
+    function RS_clearTechnicalPanel() {
+      RS_STATE.tech = null;
+      document.getElementById("techData").style.display = "none";
+      document.getElementById("routeCheckChip").style.display = "none";
+      document.getElementById("confirmRouteBtn").disabled = false;
+      RS_setResult("");
+    }
+
+    function RS_recalculate() {
+      const aircraft = RS_getSelectedAircraft();
+      if (!aircraft || !RS_STATE.originAirport || !RS_STATE.destinationAirport) {
+        RS_clearTechnicalPanel();
+        return;
+      }
+
+      const distance = RS_distanceNm(
+        RS_STATE.originAirport.latitude,
+        RS_STATE.originAirport.longitude,
+        RS_STATE.destinationAirport.latitude,
+        RS_STATE.destinationAirport.longitude
+      );
+
+      const speed = Number(aircraft.speed_kts || aircraft.speed || 0);
+      const range = Number(aircraft.range_nm || aircraft.range || 0);
+      const category = RS_text(
+        aircraft.aircraft_category || aircraft.category || aircraft.aircraft_name
+      );
+
+      if (!distance || !speed || !range) {
+        RS_clearTechnicalPanel();
+        RS_setResult("Aircraft or airport technical data is incomplete.", "error");
+        return;
+      }
+
+      const block = RS_blockTimeMinutes(distance, speed);
+      const baseTurnaround = RS_turnaroundMinutes(category);
+      const optimized = document.getElementById("optimizeRotation").checked;
+      const turnaround = optimized
+        ? RS_optimizedTurnaround(baseTurnaround, category)
+        : baseTurnaround;
+      const total = (block * 2) + turnaround;
+      const check = RS_rangeCheck(distance, range);
+
+      RS_STATE.tech = {
+        aircraftId: Number(aircraft.id),
+        distanceNm: distance,
+        speedKts: speed,
+        rangeNm: range,
+        blockTimeMin: block,
+        turnaroundMin: turnaround,
+        totalRotationMin: total,
+        rangeCheck: check
+      };
+
+      document.getElementById("techData").style.display = "block";
+      document.getElementById("distance").textContent = distance;
+      document.getElementById("blockTime").textContent = RS_formatDuration(block);
+      document.getElementById("turnaround").textContent = `${turnaround} min`;
+      document.getElementById("totalRotation").textContent = RS_formatDuration(total);
+      document.getElementById("delayRisk").textContent = optimized ? "2%" : "3%";
+      document.getElementById("effIndex").textContent = optimized ? "93%" : "90%";
+
+      RS_renderRouteCheck(distance, range, check);
+      RS_setResult(check.message, check.ok ? "success" : "error");
+    }
+
+    function RS_selectedDays() {
+      return ACS_DAY_IDS.filter(id => document.getElementById(id).checked);
+    }
+
+    function RS_toggleAllDays() {
+      const checked = document.getElementById("allDays").checked;
+      ACS_DAY_IDS.forEach(id => {
+        document.getElementById(id).checked = checked;
+      });
+    }
+
+    function RS_syncAllDays() {
+      document.getElementById("allDays").checked = ACS_DAY_IDS.every(
+        id => document.getElementById(id).checked
+      );
+    }
+
+    function RS_arrivalTime(departure, blockMinutes) {
+      const [hours, minutes] = departure.split(":").map(Number);
+      const total = (hours * 60) + minutes + blockMinutes;
+      const hh = String(Math.floor(total / 60) % 24).padStart(2, "0");
+      const mm = String(total % 60).padStart(2, "0");
+      return `${hh}:${mm}`;
+    }
+
+    function RS_setConfirming(confirming) {
+      RS_STATE.confirming = confirming;
+      const button = document.getElementById("confirmRouteBtn");
+
+      button.disabled = confirming || RS_STATE.tech?.rangeCheck?.ok === false;
+      button.textContent = confirming ? "CONFIRMING..." : "CONFIRM ROUTE";
+      button.style.cursor = confirming ? "wait" : "pointer";
+    }
+
+    async function RS_confirmRoute() {
+      if (RS_STATE.confirming) return;
+
+      try {
+        RS_setConfirming(true);
+        RS_setResult("Submitting route to PostgreSQL authority...");
+
+        const aircraft = RS_getSelectedAircraft();
+        const tech = RS_STATE.tech;
+        const selectedDays = RS_selectedDays();
+        const departure = RS_text(document.getElementById("departureTime").value);
+
+        if (!aircraft) throw new Error("SELECT_AIRCRAFT_REQUIRED");
+        if (!selectedDays.length) throw new Error("SELECTED_DAYS_REQUIRED");
+        if (!tech || tech.rangeCheck?.ok !== true) {
+          throw new Error("ROUTE_NOT_DISPATCHABLE");
+        }
+
+        const arrival = RS_arrivalTime(departure, tech.blockTimeMin);
+
+        const payload = {
+          origin: RS_STATE.route.origin,
+          destination: RS_STATE.route.destination,
+          aircraft_id: Number(aircraft.id),
+          selected_days: selectedDays,
+          departure,
+          arrival,
+          route_type: "PASSENGER",
+          distance_nm: Math.round(tech.distanceNm),
+          block_time_min: Math.round(tech.blockTimeMin),
+          turnaround_min: Math.round(tech.turnaroundMin),
+          total_rotation_min: Math.round(tech.totalRotationMin),
+          optimize_rotation: document.getElementById("optimizeRotation").checked,
+          source: "ACS_ROUTE_SCHEDULE_AIRBUS_OCC_V4"
+        };
+
+        const data = await RS_fetchJson(`${ACS_API_BASE}/routes/plans`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const outbound = data.flight_numbers?.outbound || "--";
+        const inbound = data.flight_numbers?.inbound || "--";
+        document.getElementById("flightNumber").value = `${outbound} ➜ ${inbound}`;
+
+        RS_setResult(
+          `Route confirmed · ${outbound}/${inbound} · Slot fee $${Number(data.finance?.airport_slot_fee || 0).toLocaleString()}`,
+          "success"
+        );
+
+        window.setTimeout(() => {
+          window.location.href = "schedule_table.html";
+        }, 900);
+
+      } catch (error) {
+        console.error("ACS Route Schedule confirmation failed:", error);
+        RS_setResult(error.message || "ROUTE_CONFIRMATION_FAILED", "error");
+        alert(`Route confirmation failed: ${error.message || "Unknown backend error"}`);
+      } finally {
+        RS_setConfirming(false);
+      }
+    }
+
+    function RS_bindEvents() {
+      document.getElementById("aircraft").addEventListener("change", RS_recalculate);
+      document.getElementById("departureTime").addEventListener("change", RS_recalculate);
+      document.getElementById("optimizeRotation").addEventListener("change", RS_recalculate);
+      document.getElementById("allDays").addEventListener("change", RS_toggleAllDays);
+
+      ACS_DAY_IDS.forEach(id => {
+        document.getElementById(id).addEventListener("change", RS_syncAllDays);
+      });
+
+      document.getElementById("confirmRouteBtn").addEventListener("click", RS_confirmRoute);
+      document.getElementById("backBtn").addEventListener("click", () => {
+        window.location.href = "routes.html";
+      });
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        window.location.href = "login.html";
+      });
+    }
+
+    async function RS_initialize() {
+      try {
+        RS_setResult("Loading backend authorities...");
+        RS_buildDepartureTimes();
+        RS_bindEvents();
+
+        const [world, company] = await Promise.all([
+          RS_loadWorld(),
+          RS_loadCompanyContext()
+        ]);
+
+        const route = RS_validateRouteContext(RS_getRouteFromUrl(), company);
+        RS_STATE.route = route;
+
+        document.getElementById("origin").value = route.origin;
+        document.getElementById("destination").value = route.destination;
+
+        const [originAirport, destinationAirport] = await Promise.all([
+          RS_loadAirport(route.origin),
+          RS_loadAirport(route.destination)
+        ]);
+
+        RS_STATE.originAirport = originAirport;
+        RS_STATE.destinationAirport = destinationAirport;
+
+        await RS_loadOperationalFleet();
+        RS_populateFleet();
+        RS_startClock();
+
+        RS_setResult(
+          `${company.airline?.airline_name || "Airline"} · ACS ${new Date(world.current_sim_time).getUTCFullYear()} · Backend authority ready`,
+          "success"
+        );
+      } catch (error) {
+        console.error("ACS Route Schedule initialization failed:", error);
+        RS_setResult(error.message || "ROUTE_SCHEDULE_INIT_FAILED", "error");
+        document.getElementById("confirmRouteBtn").disabled = true;
+      }
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if (RS_STATE.clockTimer !== null) {
+        clearInterval(RS_STATE.clockTimer);
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", RS_initialize);
+       
+  </script>
 </body>
 </html>
